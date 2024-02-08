@@ -40,7 +40,28 @@
   $: taskType = value !== undefined ? $taskTypeStore.get(value.kind) : undefined
 </script>
 
-{#if value}
+{#if inline && value}
+  <DocNavLink
+    object={value}
+    {onClick}
+    {disabled}
+    {noUnderline}
+    {inline}
+    component={tracker.component.EditIssue}
+    shrink={0}
+  >
+    {#if inline}
+      <span class="antiMention" use:tooltip={{ label: tracker.string.Issue }}>@{value.identifier}</span>
+    {/if}
+  </DocNavLink>
+  {#if presenters.length > 0}
+    <div class="flex-row-center">
+      {#each presenters as mixinPresenter}
+        <Component is={mixinPresenter.presenter} props={{ value }} />
+      {/each}
+    </div>
+  {/if}
+{:else if value}
   <div class="flex-row-center">
     <DocNavLink
       object={value}
@@ -51,25 +72,21 @@
       component={tracker.component.EditIssue}
       shrink={0}
     >
-      {#if inline}
-        <span class="antiMention" use:tooltip={{ label: tracker.string.Issue }}>@{value.identifier}</span>
-      {:else}
-        <span class="issuePresenterRoot" class:list={kind === 'list'} class:cursor-pointer={!disabled}>
-          {#if shouldShowAvatar}
-            <div class="icon" use:tooltip={{ label: tracker.string.Issue }}>
-              {#if taskType !== undefined}
-                <TaskTypeIcon value={taskType} />
-              {:else}
-                <Icon icon={icon ?? tracker.icon.Issues} size={'small'} />
-              {/if}
-            </div>
-          {/if}
-          <span class="overflow-label" class:select-text={!noSelect} title={value?.title}>
-            {value.identifier}
-            <slot name="details" />
-          </span>
+      <span class="issuePresenterRoot" class:list={kind === 'list'} class:cursor-pointer={!disabled}>
+        {#if shouldShowAvatar}
+          <div class="icon" use:tooltip={{ label: tracker.string.Issue }}>
+            {#if taskType !== undefined}
+              <TaskTypeIcon value={taskType} />
+            {:else}
+              <Icon icon={icon ?? tracker.icon.Issues} size={'small'} />
+            {/if}
+          </div>
+        {/if}
+        <span class="overflow-label" class:select-text={!noSelect} title={value?.title}>
+          {value.identifier}
+          <slot name="details" />
         </span>
-      {/if}
+      </span>
     </DocNavLink>
     {#if presenters.length > 0}
       <div class="flex-row-center">
@@ -90,9 +107,11 @@
     &:not(.list) {
       color: var(--theme-content-color);
     }
+
     &.list {
       color: var(--theme-halfcontent-color);
     }
+
     .icon {
       margin-right: 0.5rem;
       color: var(--theme-dark-color);

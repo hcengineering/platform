@@ -39,7 +39,7 @@
 
 <style lang="scss">
   .root {
-    display: flex;
-    flex-direction: column;
+    display: inline-block;
+    color: var(--global-primary-TextColor);
   }
 </style>
