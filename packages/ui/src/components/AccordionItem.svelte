@@ -25,6 +25,7 @@
   export let icon: Asset | AnySvelteComponent | ComponentType | undefined = undefined
   export let iconProps: any | undefined = undefined
   export let size: 'small' | 'medium' | 'large'
+  export let kind: 'default' | 'second' = 'default'
   export let nested: boolean = false
   export let isOpen: boolean = false
   export let selected: boolean = false
@@ -35,9 +36,9 @@
   export let background: string | undefined = undefined
 </script>
 
-<div class="hulyAccordionItem-container default" class:nested>
+<div class="hulyAccordionItem-container {kind}" class:nested>
   <button
-    class="hulyAccordionItem-header default {size}"
+    class="hulyAccordionItem-header {kind} {size}"
     class:bottomSpace
     class:nested
     class:isOpen

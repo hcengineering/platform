@@ -45,7 +45,7 @@
       </span>
     </div>
   {:else if kind === 'todo'}
-    <div class="todoLabel-container font-medium-12 overflow-label max-w-40" style:background-color={colors[0].color}>
+    <div class="todoLabel-container font-medium-12 max-w-40" style:background-color={colors[0].color}>
       <Label label={plugin.string.NumberLabels} params={{ count: items.length }} />
     </div>
   {/if}
@@ -54,6 +54,7 @@
 <style lang="scss">
   .todoLabel-container {
     padding: var(--spacing-0_25) var(--spacing-0_5);
+    color: var(--global-on-accent-TextColor);
     border-radius: var(--extra-small-BorderRadius);
   }
   .listitems-container {

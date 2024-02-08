@@ -509,6 +509,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  gap: var(--spacing-1);
   margin: 0;
   padding: var(--spacing-1) var(--spacing-1_5) var(--spacing-1) var(--spacing-0_75);
   width: 100%;
@@ -520,7 +521,7 @@
   outline: none;
   
   &.small {
-    max-height: var(--global-medium-Size);
+    max-height: var(--global-max-Size);
   }
 
   .hulyToDoLine-dragbox,
