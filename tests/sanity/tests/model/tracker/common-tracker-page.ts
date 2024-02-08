@@ -14,6 +14,7 @@ export class CommonTrackerPage extends CalendarPage {
   readonly buttonKeepOriginalMoveIssuesModal: Locator
   readonly inputKeepOriginalMoveIssuesModal: Locator
   readonly buttonMoreActions: Locator
+  readonly textActivityContent: Locator
 
   constructor (page: Page) {
     super(page)
@@ -30,6 +31,7 @@ export class CommonTrackerPage extends CalendarPage {
     this.buttonKeepOriginalMoveIssuesModal = page.locator('form[id="tracker:string:MoveIssues"] span.toggle-switch')
     this.inputKeepOriginalMoveIssuesModal = page.locator('form[id="tracker:string:MoveIssues"] input[type="checkbox"]')
     this.buttonMoreActions = page.locator('div.popupPanel-title div.flex-row-center > button:first-child')
+    this.textActivityContent = page.locator('div.activityMessage div.content div.content')
   }
 
   async selectFilter (filter: string, filterSecondLevel?: string): Promise<void> {
@@ -149,5 +151,15 @@ export class CommonTrackerPage extends CalendarPage {
     }
 
     await this.buttonMoveIssuesModal.click({ delay: 1000 })
+  }
+
+  async addMentions (mention: string): Promise<void> {
+    await this.inputComment.fill('@')
+    await this.selectMention(this.page, mention)
+    await this.buttonSendComment.click()
+  }
+
+  async checkActivityContentExist (activityContent: string): Promise<void> {
+    await expect(this.textActivityContent.filter({ hasText: activityContent })).toBeVisible()
   }
 }
