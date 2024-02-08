@@ -5,6 +5,9 @@ import { IssuesPage } from '../model/tracker/issues-page'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
 import { NewIssue } from '../model/tracker/types'
 import { allure } from 'allure-playwright'
+import { ContactsNavigationMenuPage } from '../model/contacts/navigation-menu-page'
+import { EmployeesPage } from '../model/contacts/employees-page'
+import { EmployeeDetailsPage } from '../model/contacts/employee-details-page'
 
 test.use({
   storageState: PlatformSetting
@@ -65,5 +68,37 @@ test.describe('Mentions issue tests', () => {
     await issuesDetailsPage.checkActivityContentExist('Assignee set to Dirak Kainin')
     await issuesDetailsPage.checkCollaboratorsCount('2 members')
     await issuesDetailsPage.checkCollaborators(['Appleseed John', 'Dirak Kainin'])
+  })
+
+  test('Check that the backlink shown in the Contact activity', async ({ page }) => {
+    const mentionName = 'Dirak Kainin'
+    const mentionIssue: NewIssue = {
+      title: `Check that the backlink shown in the Contact activity-${generateId()}`,
+      description: 'Check that the backlink shown in the Contact activity description'
+    }
+
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    await leftSideMenuPage.buttonTracker.click()
+
+    const issuesPage = new IssuesPage(page)
+    await issuesPage.modelSelectorAll.click()
+    await issuesPage.createNewIssue(mentionIssue)
+    await issuesPage.searchIssueByName(mentionIssue.title)
+    await issuesPage.openIssueByName(mentionIssue.title)
+
+    const issuesDetailsPage = new IssuesDetailsPage(page)
+    await issuesDetailsPage.addMentions(mentionName)
+    await issuesDetailsPage.checkCommentExist(`@${mentionName}`)
+
+    await leftSideMenuPage.buttonContacts.click()
+
+    const contactsNavigationMenuPage = new ContactsNavigationMenuPage(page)
+    await contactsNavigationMenuPage.buttonEmployee.click()
+
+    const employeesPage = new EmployeesPage(page)
+    await employeesPage.openEmployeeByName(mentionName)
+
+    const employeeDetailsPage = new EmployeeDetailsPage(page)
+    await employeeDetailsPage.checkActivityExist(`mentioned ${mentionName} in`, `@${mentionName}`)
   })
 })
