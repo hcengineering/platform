@@ -216,8 +216,8 @@ async function move (issues: Issue | Issue[]): Promise<void> {
 async function editWorkflowStatuses (project: Project): Promise<void> {
   const loc = getCurrentLocation()
   loc.path[2] = settingId
-  loc.path[3] = settingId
-  loc.path[4] = 'statuses'
+  loc.path[3] = 'statuses'
+  loc.path[4] = project.type
   loc.query = {
     descriptorId: tracker.descriptors.ProjectType,
     typeId: project.type
