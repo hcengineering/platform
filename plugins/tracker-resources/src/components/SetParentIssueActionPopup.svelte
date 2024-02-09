@@ -15,12 +15,11 @@
 <script lang="ts">
   import core, { AttachedData, FindOptions, Ref, SortingOrder } from '@hcengineering/core'
   import { ObjectPopup, getClient } from '@hcengineering/presentation'
+  import { calcRank } from '@hcengineering/task'
   import { Issue, IssueDraft } from '@hcengineering/tracker'
   import { createEventDispatcher } from 'svelte'
-  import { getIssueId } from '../issues'
   import tracker from '../plugin'
   import IssueStatusIcon from './issues/IssueStatusIcon.svelte'
-  import { calcRank } from '@hcengineering/task'
 
   export let value: Issue | AttachedData<Issue> | Issue[] | IssueDraft
   export let width: 'medium' | 'large' | 'full' = 'large'
@@ -29,7 +28,6 @@
   const dispatch = createEventDispatcher()
   const options: FindOptions<Issue> = {
     lookup: {
-      space: tracker.class.Project,
       status: [tracker.class.IssueStatus, { category: core.class.StatusCategory }]
     },
     sort: { modifiedOn: SortingOrder.Descending }
@@ -98,17 +96,14 @@
   on:close={onClose}
 >
   <svelte:fragment slot="item" let:item={issue}>
-    {@const issueId = getIssueId(issue.$lookup.space, issue)}
-    {#if issueId}
-      <div class="flex-center clear-mins w-full h-9">
-        {#if issue?.$lookup?.status}
-          <div class="icon mr-4 h-8">
-            <IssueStatusIcon value={issue.$lookup.status} space={issue.space} size="small" />
-          </div>
-        {/if}
-        <span class="overflow-label flex-no-shrink mr-3">{issueId}</span>
-        <span class="overflow-label w-full content-color">{issue.title}</span>
-      </div>
-    {/if}
+    <div class="flex-center clear-mins w-full h-9">
+      {#if issue?.$lookup?.status}
+        <div class="icon mr-4 h-8">
+          <IssueStatusIcon value={issue.$lookup.status} space={issue.space} size="small" />
+        </div>
+      {/if}
+      <span class="overflow-label flex-no-shrink mr-3">{issue.identifier}</span>
+      <span class="overflow-label w-full content-color">{issue.title}</span>
+    </div>
   </svelte:fragment>
 </ObjectPopup>

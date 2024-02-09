@@ -13,33 +13,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Issue, Project } from '@hcengineering/tracker'
-  import { Button, IconClose, Spinner } from '@hcengineering/ui'
+  import { Issue } from '@hcengineering/tracker'
+  import { Button, IconClose } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { getIssueId } from '../../issues'
   import tracker from '../../plugin'
-  import { activeProjects } from '../../utils'
   import PriorityRefPresenter from './PriorityRefPresenter.svelte'
 
   export let issue: Issue
 
   const dispatch = createEventDispatcher()
-
-  let project: Project | undefined
-
-  $: project = $activeProjects.get(issue.space)
-  $: issueId = project && getIssueId(project, issue)
 </script>
 
 <div class="parentIssue-container">
   <div class="flex-no-shrink mr-1-5">
     <PriorityRefPresenter value={issue.priority} shouldShowLabel={false} />
   </div>
-  {#if issueId}
-    <span class="overflow-label flex-no-shrink content-dark-color">{issueId}</span>
-  {:else}
-    <Spinner size="small" />
-  {/if}
+  <span class="overflow-label flex-no-shrink content-dark-color">{issue.identifier}</span>
   <span class="overflow-label issue-title">{issue.title}</span>
   <Button
     icon={IconClose}

@@ -20,12 +20,12 @@
   import type { Customer, Funnel, Lead } from '@hcengineering/lead'
   import { OK, Status } from '@hcengineering/platform'
   import { Card, createQuery, getClient, InlineAttributeBar, SpaceSelector } from '@hcengineering/presentation'
-  import task, { calcRank, getStates } from '@hcengineering/task'
+  import task, { calcRank, getStates, TaskType } from '@hcengineering/task'
+  import { TaskKindSelector, typeStore } from '@hcengineering/task-resources'
   import { Button, createFocusManager, EditBox, FocusHandler, Label, Status as StatusControl } from '@hcengineering/ui'
   import { statusStore } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import lead from '../plugin'
-  import { typeStore } from '@hcengineering/task-resources'
 
   export let space: Ref<Funnel>
   export let customer: Ref<Contact> | null = null
@@ -71,19 +71,27 @@
 
   $: funnel = funnels.find((it) => it._id === _space)
 
+  let kind: Ref<TaskType> | undefined = undefined
+
   async function createLead () {
     const sequence = await client.findOne(task.class.Sequence, { attachedTo: lead.class.Lead })
     if (sequence === undefined || customer == null) {
       throw new Error('Lead  creation failed')
     }
+    if (kind === undefined) {
+      throw new Error('kind is not specified')
+    }
 
     const lastOne = await client.findOne(lead.class.Lead, {}, { sort: { rank: SortingOrder.Descending } })
     const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
+    const number = (incResult as any).object.sequence
 
     const value: AttachedData<Lead> = {
       status: state,
-      number: (incResult as any).object.sequence,
+      number,
+      identifier: `LEAD-${number}`,
       title,
+      kind,
       rank: calcRank(lastOne, undefined),
       assignee: null,
       startDate: null,
@@ -137,6 +145,7 @@
         label: lead.string.CreateFunnel
       }}
     />
+    <TaskKindSelector projectType={funnel?.type} bind:value={kind} baseClass={lead.class.Lead} />
   </svelte:fragment>
   <svelte:fragment slot="title">
     <div class="flex-row-center gap-2">

@@ -165,7 +165,8 @@ export default plugin(chunterId, {
     Hashtag: '' as Asset,
     Thread: '' as Asset,
     Lock: '' as Asset,
-    ChannelBrowser: '' as Asset
+    ChannelBrowser: '' as Asset,
+    Copy: '' as Asset
   },
   component: {
     DmHeader: '' as AnyComponent,
@@ -230,7 +231,9 @@ export default plugin(chunterId, {
     DescriptionOptional: '' as IntlString,
     Visibility: '' as IntlString,
     Public: '' as IntlString,
-    Private: '' as IntlString
+    Private: '' as IntlString,
+    NewDirectChat: '' as IntlString,
+    AddMembers: '' as IntlString
   },
   ids: {
     DMNotification: '' as Ref<NotificationType>,

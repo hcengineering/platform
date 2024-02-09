@@ -15,7 +15,6 @@
 import { type IntlString } from '@hcengineering/platform'
 import { type DocumentQuery } from '@hcengineering/core'
 import { type DocNotifyContext } from '@hcengineering/notification'
-import { type AnyComponent } from '@hcengineering/ui'
 
 export type Mode = 'channels' | 'direct' | 'activity'
 
@@ -23,7 +22,5 @@ export interface ChatNavGroupModel {
   id: Mode
   label: IntlString
   tabLabel: IntlString
-  addLabel?: IntlString
-  addComponent?: AnyComponent
   query: DocumentQuery<DocNotifyContext>
 }

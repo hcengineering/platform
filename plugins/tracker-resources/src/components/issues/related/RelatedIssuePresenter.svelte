@@ -13,19 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Issue, Project } from '@hcengineering/tracker'
+  import { Issue } from '@hcengineering/tracker'
   import { statusStore } from '@hcengineering/view-resources'
 
   import IssueStatusIcon from '../IssueStatusIcon.svelte'
-  import { getIssueId } from '../../../issues'
 
-  export let project: Project | undefined
   export let issue: Issue
   export let size: 'small' | 'medium' | 'large' = 'small'
 
   $: status = $statusStore.byId.get(issue.status)
   $: huge = size === 'medium' || size === 'large'
-  $: text = project ? `${getIssueId(project, issue)} ${issue.title}` : issue.title
+  $: text = `${issue.identifier} ${issue.title}`
 </script>
 
 <div class="flex-row-center">

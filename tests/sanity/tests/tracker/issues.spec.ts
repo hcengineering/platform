@@ -229,6 +229,7 @@ test.describe('Tracker issue tests', () => {
     await issuesDetailsPage.checkIssue({
       ...moveIssue
     })
+    // TODO need to return back after bug with activity fixed
     // await issuesDetailsPage.checkActivityExist('changed project in')
     // await issuesDetailsPage.checkActivityExist('changed number in')
   })

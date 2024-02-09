@@ -14,7 +14,7 @@
 //
 
 import { TxOperations } from '@hcengineering/core'
-import { leadId } from '@hcengineering/lead'
+import { type Lead, leadId } from '@hcengineering/lead'
 import {
   tryMigrate,
   tryUpgrade,
@@ -23,7 +23,7 @@ import {
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
-import task, { createProjectType, createSequence, fixTaskTypes } from '@hcengineering/model-task'
+import task, { DOMAIN_TASK, createProjectType, createSequence, fixTaskTypes } from '@hcengineering/model-task'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 import lead from './plugin'
 
@@ -39,7 +39,7 @@ async function createSpace (tx: TxOperations): Promise<void> {
         descriptor: lead.descriptors.FunnelType,
         description: '',
         tasks: [],
-        classic: true
+        classic: false
       },
       [
         {
@@ -121,6 +121,19 @@ async function createDefaults (tx: TxOperations): Promise<void> {
   await createSequence(tx, lead.class.Lead)
 }
 
+async function migrateIdentifiers (client: MigrationClient): Promise<void> {
+  const docs = await client.find<Lead>(DOMAIN_TASK, { _class: lead.class.Lead, identifier: { $exists: false } })
+  for (const doc of docs) {
+    await client.update(
+      DOMAIN_TASK,
+      { _id: doc._id },
+      {
+        identifier: `LEAD-${doc.number}`
+      }
+    )
+  }
+}
+
 export const leadOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, leadId, [
@@ -157,6 +170,10 @@ export const leadOperation: MigrateOperation = {
             }
           ])
         }
+      },
+      {
+        state: 'identifier',
+        func: migrateIdentifiers
       }
     ])
   },

@@ -16,14 +16,13 @@
   import { WithLookup } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import type { Issue, Project } from '@hcengineering/tracker'
+  import { taskTypeStore } from '@hcengineering/task-resources'
+  import TaskTypeIcon from '@hcengineering/task-resources/src/components/taskTypes/TaskTypeIcon.svelte'
+  import type { Issue } from '@hcengineering/tracker'
   import { AnySvelteComponent, Component, Icon, tooltip } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { DocNavLink } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
-  import { activeProjects } from '../../utils'
-  import { taskTypeStore } from '@hcengineering/task-resources'
-  import TaskTypeIcon from '@hcengineering/task-resources/src/components/taskTypes/TaskTypeIcon.svelte'
 
   export let value: WithLookup<Issue> | undefined
   export let disabled: boolean = false
@@ -35,21 +34,34 @@
   export let kind: 'list' | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
 
-  let currentProject: Project | undefined = value?.$lookup?.space
-
-  $: if (value !== undefined) {
-    currentProject = $activeProjects.get(value?.space) as Project
-  }
-
-  $: title = currentProject ? `${currentProject.identifier}-${value?.number}` : `${value?.number}`
-
   $: presenters =
     value !== undefined ? getClient().getHierarchy().findMixinMixins(value, view.mixin.ObjectPresenter) : []
 
   $: taskType = value !== undefined ? $taskTypeStore.get(value.kind) : undefined
 </script>
 
-{#if value}
+{#if inline && value}
+  <DocNavLink
+    object={value}
+    {onClick}
+    {disabled}
+    {noUnderline}
+    {inline}
+    component={tracker.component.EditIssue}
+    shrink={0}
+  >
+    {#if inline}
+      <span class="antiMention" use:tooltip={{ label: tracker.string.Issue }}>@{value.identifier}</span>
+    {/if}
+  </DocNavLink>
+  {#if presenters.length > 0}
+    <div class="flex-row-center">
+      {#each presenters as mixinPresenter}
+        <Component is={mixinPresenter.presenter} props={{ value }} />
+      {/each}
+    </div>
+  {/if}
+{:else if value}
   <div class="flex-row-center">
     <DocNavLink
       object={value}
@@ -60,25 +72,21 @@
       component={tracker.component.EditIssue}
       shrink={0}
     >
-      {#if inline}
-        <span class="antiMention" use:tooltip={{ label: tracker.string.Issue }}>@{title}</span>
-      {:else}
-        <span class="issuePresenterRoot" class:list={kind === 'list'} class:cursor-pointer={!disabled}>
-          {#if shouldShowAvatar}
-            <div class="icon" use:tooltip={{ label: tracker.string.Issue }}>
-              {#if taskType !== undefined}
-                <TaskTypeIcon value={taskType} />
-              {:else}
-                <Icon icon={icon ?? tracker.icon.Issues} size={'small'} />
-              {/if}
-            </div>
-          {/if}
-          <span class="overflow-label" class:select-text={!noSelect} title={value?.title}>
-            {title}
-            <slot name="details" />
-          </span>
+      <span class="issuePresenterRoot" class:list={kind === 'list'} class:cursor-pointer={!disabled}>
+        {#if shouldShowAvatar}
+          <div class="icon" use:tooltip={{ label: tracker.string.Issue }}>
+            {#if taskType !== undefined}
+              <TaskTypeIcon value={taskType} />
+            {:else}
+              <Icon icon={icon ?? tracker.icon.Issues} size={'small'} />
+            {/if}
+          </div>
+        {/if}
+        <span class="overflow-label" class:select-text={!noSelect} title={value?.title}>
+          {value.identifier}
+          <slot name="details" />
         </span>
-      {/if}
+      </span>
     </DocNavLink>
     {#if presenters.length > 0}
       <div class="flex-row-center">
@@ -99,9 +107,11 @@
     &:not(.list) {
       color: var(--theme-content-color);
     }
+
     &.list {
       color: var(--theme-halfcontent-color);
     }
+
     .icon {
       margin-right: 0.5rem;
       color: var(--theme-dark-color);

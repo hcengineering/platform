@@ -38,10 +38,15 @@
   } from '@hcengineering/ui'
   import { FilterBar, FilterButton, SpacePresenter } from '@hcengineering/view-resources'
   import workbench from '@hcengineering/workbench'
+  import { Channel } from '@hcengineering/chunter'
+  import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
+  import { get } from 'svelte/store'
+  import notification from '@hcengineering/notification'
 
-  import { getChannelIcon } from '../../../utils'
+  import { getChannelIcon, joinChannel, leaveChannel } from '../../../utils'
+  import chunter from './../../../plugin'
 
-  export let _class: Ref<Class<Space>>
+  export let _class: Ref<Class<Channel>> = chunter.class.Channel
   export let label: IntlString
   export let createItemDialog: AnyComponent | undefined = undefined
   export let createItemLabel: IntlString = presentation.string.Create
@@ -49,32 +54,37 @@
   export let withFilterButton: boolean = true
   export let search: string = ''
 
-  const me = getCurrentAccount()._id
   const client = getClient()
-  const spaceQuery = createQuery()
+  const me = getCurrentAccount()._id
+  const channelsQuery = createQuery()
+
+  const notificationClient = InboxNotificationsClientImpl.getClient()
+
   const sort: SortingQuery<Space> = {
     name: SortingOrder.Ascending
   }
-  let searchQuery: DocumentQuery<Space>
-  let resultQuery: DocumentQuery<Space>
 
-  let spaces: Space[] = []
+  let searchQuery: DocumentQuery<Channel>
+  let resultQuery: DocumentQuery<Channel>
+
+  let channels: Channel[] = []
 
   $: updateSearchQuery(search)
   $: update(sort, resultQuery)
 
-  async function update (sort: SortingQuery<Space>, resultQuery: DocumentQuery<Space>): Promise<void> {
-    const options: FindOptions<Space> = {
+  async function update (sort: SortingQuery<Channel>, resultQuery: DocumentQuery<Channel>): Promise<void> {
+    const options: FindOptions<Channel> = {
       sort
     }
 
-    spaceQuery.query(
+    channelsQuery.query(
       _class,
       {
-        ...resultQuery
+        ...resultQuery,
+        private: false
       },
       (res) => {
-        spaces = res
+        channels = res
       },
       options
     )
@@ -88,27 +98,43 @@
     showPopup(createItemDialog as AnyComponent, {}, 'middle')
   }
 
-  async function join (space: Space): Promise<void> {
-    if (space.members.includes(me)) return
-    await client.update(space, {
-      $push: {
-        members: me
-      }
-    })
+  async function join (channel: Channel): Promise<void> {
+    if (channel.members.includes(me)) {
+      return
+    }
+
+    await joinChannel(channel, me)
   }
 
-  async function leave (space: Space): Promise<void> {
-    if (!space.members.includes(me)) return
-    await client.update(space, {
-      $pull: {
-        members: me
-      }
-    })
+  async function leave (channel: Channel): Promise<void> {
+    if (!channel.members.includes(me)) {
+      return
+    }
+    await leaveChannel(channel, me)
   }
 
-  async function view (space: Space): Promise<void> {
+  async function view (channel: Channel): Promise<void> {
     const loc = getCurrentResolvedLocation()
-    loc.path[3] = space._id
+    const context = get(notificationClient.docNotifyContextByDoc).get(channel._id)
+
+    let contextId = context?._id
+
+    if (contextId === undefined) {
+      contextId = await client.createDoc(notification.class.DocNotifyContext, channel.space, {
+        attachedToClass: channel._class,
+        attachedTo: channel._id,
+        user: me,
+        hidden: false,
+        lastViewedTimestamp: Date.now()
+      })
+    }
+
+    if (contextId === undefined) {
+      return
+    }
+
+    loc.path[3] = contextId
+
     navigate(loc)
   }
 </script>
@@ -154,12 +180,13 @@
     </div>
   </div>
 {/if}
+
 <FilterBar {_class} query={searchQuery} space={undefined} on:change={(e) => (resultQuery = e.detail)} />
 <Scroller padding={'2.5rem'}>
   <div class="spaces-container">
-    {#each spaces as space (space._id)}
-      {@const icon = getChannelIcon(space._class)}
-      {@const joined = space.members.includes(me)}
+    {#each channels as channel (channel._id)}
+      {@const icon = getChannelIcon(channel._class)}
+      {@const joined = channel.members.includes(me)}
       <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
       <div class="item flex-between" tabindex="0">
         <div class="flex-col clear-mins">
@@ -167,16 +194,16 @@
             {#if icon}
               <div class="icon"><Icon {icon} size={'small'} /></div>
             {/if}
-            <SpacePresenter value={space} />
+            <SpacePresenter value={channel} />
           </div>
           <div class="flex-row-center">
             {#if joined}
               <Label label={workbench.string.Joined} />
               &#183
             {/if}
-            {space.members.length}
+            {channel.members.length}
             &#183
-            {space.description}
+            {channel.description}
           </div>
         </div>
         <div class="tools flex-row-center gap-2">
@@ -185,7 +212,7 @@
               size={'x-large'}
               label={workbench.string.Leave}
               on:click={async () => {
-                await leave(space)
+                await leave(channel)
               }}
             />
           {:else}
@@ -193,7 +220,7 @@
               size={'x-large'}
               label={workbench.string.View}
               on:click={async () => {
-                await view(space)
+                await view(channel)
               }}
             />
             <Button
@@ -201,7 +228,7 @@
               kind={'primary'}
               label={workbench.string.Join}
               on:click={async () => {
-                await join(space)
+                await join(channel)
               }}
             />
           {/if}

@@ -33,6 +33,7 @@
   export let disabledWhen: string[] = []
   export let index: number // index = -1 ; for custom sizes without saving to a localStorage
   export let float: string | boolean = false // false - default state, true - hidden state for float, name - panel name for resize (float state)
+  export let short: boolean = false
 
   let sState: SeparatorState
   $: sState = typeof float === 'string' ? SeparatorState.FLOAT : float ? SeparatorState.HIDDEN : SeparatorState.NORMAL
@@ -505,6 +506,7 @@
     style:background-color={color}
     style:pointer-events={disabled ? 'none' : 'all'}
     class="antiSeparator {direction}"
+    class:short
     class:hovered={isSeparate}
     data-size={separatorSize}
     on:mousedown|stopPropagation={mouseDown}
@@ -537,10 +539,16 @@
     }
     &.horizontal {
       width: var(--separator-size, 1px);
-      height: 100%;
       max-width: var(--separator-size, 1px);
       cursor: col-resize;
 
+      &:not(.short) {
+        height: 100%;
+      }
+      &.short {
+        height: calc(100% - 1rem);
+        margin-top: 0.5rem;
+      }
       &::after,
       &::before {
         top: 0;
@@ -557,11 +565,17 @@
       }
     }
     &.vertical {
-      width: 100%;
       height: var(--separator-size, 1px);
       max-height: var(--separator-size, 1px);
       cursor: row-resize;
 
+      &:not(.short) {
+        width: 100%;
+      }
+      &.short {
+        width: calc(100% - 1rem);
+        margin-left: 0.5rem;
+      }
       &::after,
       &::before {
         top: -2px;

@@ -24,8 +24,8 @@ import {
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import tags, { type TagCategory } from '@hcengineering/model-tags'
-import { createProjectType, createSequence, fixTaskTypes } from '@hcengineering/model-task'
-import { recruitId } from '@hcengineering/recruit'
+import { DOMAIN_TASK, createProjectType, createSequence, fixTaskTypes } from '@hcengineering/model-task'
+import { type Applicant, recruitId } from '@hcengineering/recruit'
 import task, { type ProjectType } from '@hcengineering/task'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 import recruit from './plugin'
@@ -67,6 +67,10 @@ export const recruitOperation: MigrateOperation = {
             }
           ])
         }
+      },
+      {
+        state: 'identifier',
+        func: migrateIdentifiers
       }
     ])
   },
@@ -86,6 +90,22 @@ export const recruitOperation: MigrateOperation = {
         }
       }
     ])
+  }
+}
+
+async function migrateIdentifiers (client: MigrationClient): Promise<void> {
+  const docs = await client.find<Applicant>(DOMAIN_TASK, {
+    _class: recruit.class.Applicant,
+    identifier: { $exists: false }
+  })
+  for (const doc of docs) {
+    await client.update(
+      DOMAIN_TASK,
+      { _id: doc._id },
+      {
+        identifier: `APP-${doc.number}`
+      }
+    )
   }
 }
 
@@ -137,7 +157,7 @@ async function createDefaultKanbanTemplate (tx: TxOperations): Promise<Ref<Proje
       descriptor: recruit.descriptors.VacancyType,
       description: '',
       tasks: [],
-      classic: true
+      classic: false
     },
     [
       {

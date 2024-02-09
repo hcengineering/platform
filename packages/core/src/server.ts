@@ -74,6 +74,7 @@ export interface ServerStorage extends LowLevelStorage {
     query: DocumentQuery<T>,
     options?: FindOptions<T> & {
       domain?: Domain // Allow to find for Doc's in specified domain only.
+      prefix?: string
     }
   ) => Promise<FindResult<T>>
   searchFulltext: (ctx: MeasureContext, query: SearchQuery, options: SearchOptions) => Promise<SearchResult>

@@ -18,6 +18,7 @@
 
   export let icon: Asset | undefined = undefined
   export let label: IntlString | undefined = undefined
+  export let title: string | undefined = undefined
   export let type: 'type-link' | 'type-tag' | 'type-anchor-link' | 'type-object' = 'type-link'
   export let color: string | null = null
   export let count: number | null = null
@@ -49,6 +50,7 @@
   {/if}
   <span class="hulyNavItem-label" style:color={type === 'type-tag' && selected ? color : null}>
     {#if label}<Label {label} />{/if}
+    {#if title}{title}{/if}
   </span>
   {#if count !== null}
     <span class="hulyNavItem-count font-regular-12">
@@ -82,9 +84,9 @@
 
       &__tag {
         flex-shrink: 0;
-        width: 0.875rem;
-        height: 0.875rem;
-        border-radius: 50%;
+        width: 0.625rem;
+        height: 0.625rem;
+        border-radius: var(--min-BorderRadius);
       }
       &.right {
         visibility: hidden;
@@ -126,6 +128,9 @@
     &.type-link {
       padding: 0 0.625rem;
 
+      .hulyNavItem-label {
+        flex-grow: 1;
+      }
       &.selected {
         &:not(.fold) {
           padding: 0 0.375rem 0 0.625rem;
@@ -137,7 +142,6 @@
           color: var(--global-accent-TextColor);
         }
         .hulyNavItem-label {
-          flex-grow: 1;
           color: var(--global-accent-TextColor);
         }
         .hulyNavItem-icon.right {

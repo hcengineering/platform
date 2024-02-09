@@ -18,7 +18,7 @@
   import { getPlatformColorDef, themeStore, Label } from '@hcengineering/ui'
 
   export let items: TagReference[]
-  export let kind: 'list' | 'link' = 'list'
+  export let kind: 'list' | 'link' | 'todo' = 'list'
 
   $: colors = items.slice(0, 3).map((it) => {
     return getPlatformColorDef(it.color ?? 0, $themeStore.dark)
@@ -44,10 +44,19 @@
         <Label label={plugin.string.NumberLabels} params={{ count: items.length }} />
       </span>
     </div>
+  {:else if kind === 'todo'}
+    <div class="todoLabel-container font-medium-12 max-w-40" style:background-color={colors[0].color}>
+      <Label label={plugin.string.NumberLabels} params={{ count: items.length }} />
+    </div>
   {/if}
 {/if}
 
 <style lang="scss">
+  .todoLabel-container {
+    padding: var(--spacing-0_25) var(--spacing-0_5);
+    color: var(--global-on-accent-TextColor);
+    border-radius: var(--extra-small-BorderRadius);
+  }
   .listitems-container {
     overflow: hidden;
     display: flex;

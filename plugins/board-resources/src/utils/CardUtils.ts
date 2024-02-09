@@ -27,15 +27,17 @@ export async function createCard (
 
   const lastOne = await client.findOne(board.class.Card, {}, { sort: { rank: SortingOrder.Descending } })
   const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
+  const number = (incResult as any).object.sequence
 
   const value: AttachedData<Card> = {
     title: '',
     status,
     startDate: null,
     dueDate: null,
-    number: (incResult as any).object.sequence,
+    number,
     rank: calcRank(lastOne, undefined),
     assignee: null,
+    identifier: `CARD-${number}`,
     description: '',
     ...attribues
   }

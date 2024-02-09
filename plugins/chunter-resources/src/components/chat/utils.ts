@@ -46,7 +46,7 @@ export const chatSpecials: SpecialNavModel[] = [
   {
     id: 'chunterBrowser',
     label: chunter.string.ChunterBrowser,
-    icon: workbench.icon.Search,
+    icon: view.icon.Database,
     component: chunter.component.ChunterBrowser,
     position: 'top'
   },
@@ -80,9 +80,7 @@ export const chatNavGroupsModel: ChatNavGroupModel[] = [
     label: chunter.string.AllChannels,
     query: {
       attachedToClass: { $in: [chunter.class.Channel] }
-    },
-    addLabel: chunter.string.CreateChannel,
-    addComponent: chunter.component.CreateChannel
+    }
   },
   {
     id: 'direct',
@@ -90,9 +88,7 @@ export const chatNavGroupsModel: ChatNavGroupModel[] = [
     label: chunter.string.AllContacts,
     query: {
       attachedToClass: { $in: [chunter.class.DirectMessage] }
-    },
-    addLabel: chunter.string.NewDirectMessage,
-    addComponent: chunter.component.CreateDirectMessage
+    }
   },
   {
     id: 'activity',

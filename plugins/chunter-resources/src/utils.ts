@@ -30,7 +30,8 @@ import {
   type Ref,
   type Space,
   type Class,
-  type Timestamp
+  type Timestamp,
+  type Account
 } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import {
@@ -50,7 +51,7 @@ import activity, {
   type DocUpdateMessage
 } from '@hcengineering/activity'
 import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
-import { type DocNotifyContext, inboxId } from '@hcengineering/notification'
+import notification, { type DocNotifyContext, inboxId } from '@hcengineering/notification'
 import { get, type Unsubscriber } from 'svelte/store'
 
 import chunter from './plugin'
@@ -64,6 +65,14 @@ export async function getDmName (client: Client, space?: Space): Promise<string>
   }
 
   const employeeAccounts: PersonAccount[] = await getDmAccounts(client, space)
+
+  return await buildDmName(client, employeeAccounts)
+}
+
+export async function buildDmName (client: Client, employeeAccounts: PersonAccount[]): Promise<string> {
+  if (employeeAccounts.length === 0) {
+    return ''
+  }
 
   let unsub: Unsubscriber | undefined
   const promise = new Promise<IdMap<Employee>>((resolve) => {
@@ -371,14 +380,17 @@ export async function filterChatMessages (
   return messages.filter((message) => filtersFns.some((filterFn) => filterFn(message, objectClass)))
 }
 
-export function navigateToThread (loc: Location, contextId: Ref<DocNotifyContext>, _id: Ref<ActivityMessage>): void {
+export function buildThreadLink (loc: Location, contextId: Ref<DocNotifyContext>, _id: Ref<ActivityMessage>): Location {
   const specials = chatSpecials.map(({ id }) => id)
+  const isSameContext = loc.path[3] === contextId
+
+  if (!isSameContext) {
+    loc.query = { message: _id }
+  }
 
   if (loc.path[2] === chunterId && specials.includes(loc.path[3])) {
     loc.path[4] = _id
-    loc.query = { message: _id }
-    navigate(loc)
-    return
+    return loc
   }
 
   if (loc.path[2] !== inboxId) {
@@ -389,5 +401,54 @@ export function navigateToThread (loc: Location, contextId: Ref<DocNotifyContext
   loc.path[4] = _id
   loc.fragment = undefined
   loc.query = { message: _id }
-  navigate(loc)
+
+  return loc
+}
+
+export async function getThreadLink (doc: ThreadMessage): Promise<Location> {
+  const loc = getCurrentResolvedLocation()
+  const client = getClient()
+  const inboxClient = InboxNotificationsClientImpl.getClient()
+
+  let contextId: Ref<DocNotifyContext> | undefined = get(inboxClient.docNotifyContextByDoc).get(doc.objectId)?._id
+
+  if (contextId === undefined) {
+    contextId = await client.createDoc(notification.class.DocNotifyContext, doc.space, {
+      attachedTo: doc.attachedTo,
+      attachedToClass: doc.attachedToClass,
+      user: getCurrentAccount()._id,
+      hidden: false,
+      lastViewedTimestamp: Date.now()
+    })
+  }
+
+  if (contextId === undefined) {
+    return loc
+  }
+
+  return buildThreadLink(loc, contextId, doc.attachedTo)
+}
+
+export async function joinChannel (channel: Channel, value: Ref<Account> | Array<Ref<Account>>): Promise<void> {
+  const client = getClient()
+
+  if (Array.isArray(value)) {
+    if (value.length > 0) {
+      await client.update(channel, { $push: { members: { $each: value, $position: 0 } } })
+    }
+  } else {
+    await client.update(channel, { $push: { members: value } })
+  }
+}
+
+export async function leaveChannel (channel: Channel, value: Ref<Account> | Array<Ref<Account>>): Promise<void> {
+  const client = getClient()
+
+  if (Array.isArray(value)) {
+    if (value.length > 0) {
+      await client.update(channel, { $pull: { members: { $in: value } } })
+    }
+  } else {
+    await client.update(channel, { $pull: { members: value } })
+  }
 }

@@ -102,11 +102,15 @@
               <div class="color" style:background-color={item.color} />
             {/if}
             {#if item.label || item.labelIntl}
-              <span class="overflow-label" class:ml-1-5={item.icon || item.color}>
+              <span class="flex-center overflow-label" class:ml-1-5={item.icon || item.color}>
                 {#if item.label}
                   {item.label}
                 {:else if item.labelIntl}
                   <Label label={item.labelIntl} params={item.labelParams} />
+                {/if}
+
+                {#if item.showNotify}
+                  <div class="notifyMarker" />
                 {/if}
               </span>
             {/if}
@@ -284,5 +288,13 @@
         }
       }
     }
+  }
+
+  .notifyMarker {
+    width: 4px;
+    height: 4px;
+    border-radius: 1px;
+    background: var(--global-higlight-Color);
+    margin-left: 0.5rem;
   }
 </style>

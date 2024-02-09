@@ -25,7 +25,7 @@
   import { ActionIcon, Component, DueDatePresenter, IconMoreH, showPopup } from '@hcengineering/ui'
   import { BuildModelKey } from '@hcengineering/view'
   import { ContextMenu, enabledConfig, openDoc, statusStore } from '@hcengineering/view-resources'
-  import { ChatMessagesPresenter } from '@hcengineering/notification-resources'
+  import { ChatMessagesPresenter } from '@hcengineering/chunter-resources'
   import task from '@hcengineering/task'
 
   import lead from '../plugin'

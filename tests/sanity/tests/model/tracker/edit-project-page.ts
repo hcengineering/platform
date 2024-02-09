@@ -90,11 +90,6 @@ export class EditProjectPage extends CommonTrackerPage {
     if (data.title != null) {
       await this.inputTitle.fill(data.title)
     }
-    if (data.identifier != null) {
-      await this.buttonEditIdentifier.click()
-      await this.inputEditProjectIdentifier.fill(data.identifier)
-      await this.buttonEditProjectIdentifier.click()
-    }
     if (data.description != null) {
       await this.inputDescription.fill(data.description)
     }

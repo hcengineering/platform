@@ -17,7 +17,6 @@
 import {
   ACCOUNT_DB,
   assignWorkspace,
-  ClientWorkspaceInfo,
   confirmEmail,
   createAcc,
   createWorkspace,
@@ -30,7 +29,8 @@ import {
   replacePassword,
   setAccountAdmin,
   setRole,
-  upgradeWorkspace
+  upgradeWorkspace,
+  WorkspaceInfo
 } from '@hcengineering/account'
 import { setMetadata } from '@hcengineering/platform'
 import {
@@ -46,7 +46,7 @@ import toolPlugin, { FileModelLogger } from '@hcengineering/server-tool'
 import { Command, program } from 'commander'
 import { Db, MongoClient } from 'mongodb'
 import { clearTelegramHistory } from './telegram'
-import { diffWorkspace } from './workspace'
+import { diffWorkspace, updateField } from './workspace'
 
 import { Data, getWorkspaceId, RateLimitter, Tx, Version } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
@@ -161,7 +161,7 @@ export function devTool (
         }
         console.log('assigning to workspace', workspaceInfo)
         try {
-          await assignWorkspace(db, productId, email, workspaceInfo?.workspaceUrl ?? workspaceInfo.workspace)
+          await assignWorkspace(db, productId, email, workspaceInfo.workspace)
         } catch (err: any) {
           console.error(err)
         }
@@ -276,14 +276,23 @@ export function devTool (
         const workspaces = await listWorkspaces(db, productId)
         const withError: string[] = []
 
-        async function _upgradeWorkspace (ws: ClientWorkspaceInfo): Promise<void> {
+        async function _upgradeWorkspace (ws: WorkspaceInfo): Promise<void> {
           const t = Date.now()
           const logger = cmd.console
             ? consoleModelLogger
             : new FileModelLogger(path.join(cmd.logs, `${ws.workspace}.log`))
           console.log('---UPGRADING----', ws.workspace, !cmd.console ? (logger as FileModelLogger).file : '')
           try {
-            await upgradeWorkspace(version, txes, migrateOperations, productId, db, ws.workspace, logger, cmd.force)
+            await upgradeWorkspace(
+              version,
+              txes,
+              migrateOperations,
+              productId,
+              db,
+              ws.workspaceUrl ?? ws.workspace,
+              logger,
+              cmd.force
+            )
             console.log('---UPGRADING-DONE----', ws.workspace, Date.now() - t)
           } catch (err: any) {
             withError.push(ws.workspace)
@@ -627,6 +636,25 @@ export function devTool (
       const { mongodbUri } = prepareTools()
       await fixSkills(mongodbUri, getWorkspaceId(workspace, productId), transactorUrl, step)
     })
+
+  program
+    .command('change-field <workspace>')
+    .description('change field value for the object')
+    .requiredOption('--objectId <objectId>', 'objectId')
+    .requiredOption('--objectClass <objectClass>')
+    .requiredOption('--attribute <attribute>')
+    .requiredOption('--type <type>', 'number | string')
+    .requiredOption('--value <value>')
+    .requiredOption('--domain <domain>')
+    .action(
+      async (
+        workspace: string,
+        cmd: { objectId: string, objectClass: string, type: string, attribute: string, value: string, domain: string }
+      ) => {
+        const { mongodbUri } = prepareTools()
+        await updateField(mongodbUri, getWorkspaceId(workspace, productId), transactorUrl, cmd)
+      }
+    )
 
   extendProgram?.(program)
 

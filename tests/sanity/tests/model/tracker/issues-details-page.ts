@@ -20,6 +20,7 @@ export class IssuesDetailsPage extends CommonTrackerPage {
   readonly textParentTitle: Locator
   readonly buttonAddSubIssue: Locator
   readonly textRelated: Locator
+  readonly buttonCollaborators: Locator
 
   constructor (page: Page) {
     super(page)
@@ -36,10 +37,11 @@ export class IssuesDetailsPage extends CommonTrackerPage {
     this.textEstimation = page.locator('//span[text()="Estimation"]/following-sibling::div[1]/button/span')
     this.buttonEstimation = page.locator('(//span[text()="Estimation"]/../div/button)[3]')
     this.buttonCreatedBy = page.locator('(//span[text()="Assignee"]/../div/button)[1]')
-    this.buttonCloseIssue = page.locator('div.popupPanel-title > button')
+    this.buttonCloseIssue = page.locator('#btnPClose')
     this.textParentTitle = page.locator('span.issue-title')
     this.buttonAddSubIssue = page.locator('#add-sub-issue')
     this.textRelated = page.locator('//span[text()="Related"]/following-sibling::div[1]/div//span')
+    this.buttonCollaborators = page.locator('//span[text()="Collaborators"]/following-sibling::div[1]/button')
   }
 
   async editIssue (data: Issue): Promise<void> {
@@ -125,5 +127,24 @@ export class IssuesDetailsPage extends CommonTrackerPage {
 
   async checkIssueContainsAttachment (fileName: string): Promise<void> {
     await this.page.locator('div.attachment-grid div.name', { hasText: fileName }).click()
+  }
+
+  async checkCollaborators (names: Array<string>): Promise<void> {
+    await this.buttonCollaborators.click()
+    for (const name of names) {
+      await expect(
+        this.page
+          .locator('//div[contains(@class, "popup")]//span[@class="label"]//div[contains(@class, "text-left")]', {
+            hasText: name
+          })
+          .locator('xpath=../../../../..')
+          .locator('div.check div')
+      ).toBeVisible()
+    }
+    await this.inputTitle.click({ force: true })
+  }
+
+  async checkCollaboratorsCount (count: string): Promise<void> {
+    await expect(this.buttonCollaborators).toHaveText(count)
   }
 }

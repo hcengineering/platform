@@ -46,7 +46,7 @@
   import view from '@hcengineering/view'
   import { ContextMenu, DocNavLink, ParentsNavigator } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy } from 'svelte'
-  import { generateIssueShortLink, getIssueId } from '../../../issues'
+  import { generateIssueShortLink } from '../../../issues'
   import tracker from '../../../plugin'
   import IssueStatusActivity from '../IssueStatusActivity.svelte'
   import ControlPanel from './ControlPanel.svelte'
@@ -104,7 +104,6 @@
       { lookup: { attachedTo: tracker.class.Issue, space: tracker.class.Project } }
     )
 
-  $: issueId = currentProject !== undefined && issue !== undefined && getIssueId(currentProject, issue)
   $: canSave = title.trim().length > 0
   $: parentIssue = issue?.$lookup?.attachedTo
 
@@ -195,12 +194,12 @@
       {#if !embedded}
         <ParentsNavigator element={issue} />
       {/if}
-      {#if embedded && issueId}
+      {#if embedded}
         <DocNavLink noUnderline object={issue}>
-          <div class="title">{issueId}</div>
+          <div class="title">{issue.identifier}</div>
         </DocNavLink>
-      {:else if issueId}
-        <div class="title not-active">{issueId}</div>
+      {:else}
+        <div class="title not-active">{issue.identifier}</div>
       {/if}
 
       {#if (projectType?.tasks.length ?? 0) > 1 && taskType !== undefined}
@@ -223,9 +222,7 @@
 
     <svelte:fragment slot="utils">
       <Button icon={IconMoreH} iconProps={{ size: 'medium' }} kind={'icon'} on:click={showMenu} />
-      {#if issueId}
-        <CopyToClipboard issueUrl={generateIssueShortLink(issueId)} />
-      {/if}
+      <CopyToClipboard issueUrl={generateIssueShortLink(issue.identifier)} />
       <Button
         icon={setting.icon.Setting}
         kind={'icon'}
@@ -298,7 +295,7 @@
     {/if}
 
     <span slot="actions-label" class="select-text">
-      {#if issueId}{issueId}{/if}
+      {issue.identifier}
     </span>
 
     <svelte:fragment slot="custom-attributes">

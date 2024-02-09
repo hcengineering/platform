@@ -133,7 +133,14 @@ export class TTask extends TAttachedDoc implements Task {
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
-  isDone?: boolean
+  @Prop(TypeBoolean(), getEmbeddedLabel('isDone'))
+  @Hidden()
+    isDone?: boolean
+
+  @Prop(TypeString(), task.string.Identifier)
+  @ReadOnly()
+  @Index(IndexKind.Indexed)
+    identifier!: string
 }
 
 @Mixin(task.mixin.KanbanCard, core.class.Class)

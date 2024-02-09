@@ -61,7 +61,7 @@
   import view from '@hcengineering/view'
   import { ObjectBox } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy } from 'svelte'
-  import { activeComponent, activeMilestone, generateIssueShortLink, getIssueId, updateIssueRelation } from '../issues'
+  import { activeComponent, activeMilestone, generateIssueShortLink, updateIssueRelation } from '../issues'
   import tracker from '../plugin'
   import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
   import ComponentSelector from './components/ComponentSelector.svelte'
@@ -300,7 +300,7 @@
 
   $: spaceQuery.query(tracker.class.Project, { _id: _space }, (res) => {
     resetDefaultAssigneeId()
-    currentProject = res.shift()
+    currentProject = res[0]
   })
 
   const docCreateManager = DocCreateExtensionManager.create(tracker.class.Issue)
@@ -370,13 +370,15 @@
         true
       )
 
+      const number = (incResult as any).object.sequence
+
       const value: DocData<Issue> = {
         title: getTitle(object.title),
         description: object.description,
         assignee: object.assignee,
         component: object.component,
         milestone: object.milestone,
-        number: (incResult as any).object.sequence,
+        number,
         status: object.status,
         priority: object.priority,
         rank: calcRank(lastOne, undefined),
@@ -396,7 +398,8 @@
         reports: 0,
         relations: relatedTo !== undefined ? [{ _id: relatedTo._id, _class: relatedTo._class }] : [],
         childInfo: [],
-        kind
+        kind,
+        identifier: `${currentProject?.identifier}-${number}`
       }
 
       await docCreateManager.commit(operations, _id, _space, value)
@@ -439,7 +442,7 @@
         {
           issueId: _id,
           subTitlePostfix: (await translate(tracker.string.CreatedOne, {}, $themeStore.language)).toLowerCase(),
-          issueUrl: currentProject != null && generateIssueShortLink(getIssueId(currentProject, value as Issue))
+          issueUrl: currentProject != null && generateIssueShortLink(value.identifier)
         }
       )
 

@@ -21,15 +21,22 @@
     navigate,
     location as locationStore,
     Scroller,
-    SearchEdit
+    SearchEdit,
+    Label,
+    Button,
+    IconAdd,
+    showPopup,
+    Menu,
+    Action
   } from '@hcengineering/ui'
-  import { DocNotifyContext } from '@hcengineering/notification'
+  import { DocNotifyContext, InboxNotification } from '@hcengineering/notification'
   import { SpecialNavModel } from '@hcengineering/workbench'
   import { NavLink } from '@hcengineering/view-resources'
   import { TreeSeparator } from '@hcengineering/workbench-resources'
   import { getResource, type IntlString } from '@hcengineering/platform'
-  import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
+  import { getNotificationsCount, InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { getClient } from '@hcengineering/presentation'
+  import activity from '@hcengineering/activity'
 
   import chunter from '../../../plugin'
   import ChatNavGroup from './ChatNavGroup.svelte'
@@ -47,6 +54,26 @@
   const hierarchy = client.getHierarchy()
   const notificationClient = InboxNotificationsClientImpl.getClient()
   const contextsStore = notificationClient.docNotifyContexts
+  const notificationsByContextStore = notificationClient.inboxNotificationsByContext
+
+  const actions = [
+    {
+      label: chunter.string.NewChannel,
+      icon: chunter.icon.Hashtag,
+      action: async (_id: Ref<Doc>): Promise<void> => {
+        showPopup(chunter.component.CreateChannel, {}, 'top')
+      }
+    },
+    {
+      label: chunter.string.NewDirectChat,
+      icon: chunter.icon.Thread,
+      action: async (_id: Ref<Doc>): Promise<void> => {
+        showPopup(chunter.component.CreateDirectChat, {}, 'top')
+      }
+    }
+  ]
+
+  const searchValue: string = ''
 
   const modesConfig: Array<[Mode, IntlString, object]> = chatNavGroupsModel.map(({ id, tabLabel }) => [
     id,
@@ -56,8 +83,7 @@
 
   let modeSelectorProps: IModeSelector
   let mode: Mode | undefined
-
-  const searchValue: string = ''
+  let notifyModes: Mode[] = []
 
   $: mode = ($locationStore.query?.mode ?? undefined) as Mode | undefined
 
@@ -72,6 +98,10 @@
       handleModeChanged(mode as Mode)
     }
   }
+
+  $: getModesWithNotifications($contextsStore, $notificationsByContextStore).then((res) => {
+    notifyModes = res
+  })
 
   $: updateSelectedContextMode(selectedObjectClass)
 
@@ -115,9 +145,63 @@
 
     return await getIsVisible(docNotifyContexts as any)
   }
+
+  async function addButtonClicked (ev: MouseEvent) {
+    showPopup(Menu, { actions }, ev.target as HTMLElement)
+  }
+
+  async function getModesWithNotifications (
+    contexts: DocNotifyContext[],
+    inboxNotificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>
+  ) {
+    const contextIds = Array.from(inboxNotificationsByContext.keys())
+    const modes: Mode[] = []
+
+    for (const contextId of contextIds) {
+      if (modes.length === 3) {
+        break
+      }
+
+      const context = contexts.find(({ _id }) => _id === contextId)
+
+      if (
+        context === undefined ||
+        hierarchy.classHierarchyMixin(context.attachedToClass, activity.mixin.ActivityDoc) === undefined
+      ) {
+        continue
+      }
+
+      let tmpMode: Mode = 'activity'
+
+      if (hierarchy.isDerived(context.attachedToClass, chunter.class.Channel)) {
+        tmpMode = 'channels'
+      } else if (hierarchy.isDerived(context.attachedToClass, chunter.class.DirectMessage)) {
+        tmpMode = 'direct'
+      }
+
+      if (modes.includes(tmpMode)) {
+        continue
+      }
+
+      const notificationsCount = await getNotificationsCount(context, inboxNotificationsByContext.get(contextId))
+
+      if (notificationsCount > 0) {
+        modes.push(tmpMode)
+      }
+    }
+
+    return modes
+  }
 </script>
 
 <Scroller shrink>
+  <div class="header">
+    <div class="overflow-label">
+      <Label label={chunter.string.Chat} />
+    </div>
+    <Button icon={IconAdd} kind="primary" size="medium" iconProps={{ size: 'small' }} on:click={addButtonClicked} />
+  </div>
+
   {#each chatSpecials as special, row}
     {#if row > 0 && chatSpecials[row].position !== chatSpecials[row - 1].position}
       <TreeSeparator line />
@@ -145,12 +229,28 @@
     />
   </div>
 
-  <ModeSelector props={modeSelectorProps} kind="separated-free" padding="0" expansion="stretch" />
+  <ModeSelector
+    props={modeSelectorProps}
+    kind="separated-free"
+    padding="0"
+    expansion="stretch"
+    notifyFor={notifyModes}
+  />
   <ChatNavGroup {selectedContextId} {model} on:select />
   <div class="antiNav-space" />
 </Scroller>
 
 <style lang="scss">
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0.75rem;
+    margin-left: 1.25rem;
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--theme-content-color);
+  }
   .search {
     padding: 12px;
   }

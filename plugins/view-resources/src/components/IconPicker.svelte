@@ -75,6 +75,7 @@
         {:else}
           <EmojiPopup
             embedded
+            selected={String.fromCodePoint(color ?? 0)}
             on:close={(evt) => {
               dispatch('close', { icon: iconWithEmoji, color: evt.detail.codePointAt(0) })
             }}

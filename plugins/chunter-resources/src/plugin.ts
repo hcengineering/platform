@@ -24,7 +24,7 @@ import { type DocNotifyContext, type InboxNotification } from '@hcengineering/no
 export default mergeIds(chunterId, chunter, {
   component: {
     CreateChannel: '' as AnyComponent,
-    CreateDirectMessage: '' as AnyComponent,
+    CreateDirectChat: '' as AnyComponent,
     ChannelHeader: '' as AnyComponent,
     ChannelPanel: '' as AnyComponent,
     ThreadViewPanel: '' as AnyComponent,
@@ -103,6 +103,7 @@ export default mergeIds(chunterId, chunter, {
     NoMessages: '' as IntlString,
     On: '' as IntlString,
     Mentioned: '' as IntlString,
-    SentMessage: '' as IntlString
+    SentMessage: '' as IntlString,
+    PinnedCount: '' as IntlString
   }
 })

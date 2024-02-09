@@ -5,7 +5,7 @@
   //
 
   import type { Asset, IntlString } from '@hcengineering/platform'
-  import { AnySvelteComponent } from '../types'
+  import { AnySvelteComponent, IconSize } from '../types'
   import { ComponentType } from 'svelte'
   import ButtonBase from './ButtonBase.svelte'
 
@@ -15,9 +15,11 @@
   export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
   export let size: 'large' | 'medium' | 'small' = 'large'
   export let icon: Asset | AnySvelteComponent | ComponentType | undefined = undefined
+  export let iconSize: IconSize | undefined = undefined
   export let disabled: boolean = false
   export let loading: boolean = false
   export let hasMenu: boolean = false
+  export let inheritFont: boolean = false
 </script>
 
 <ButtonBase
@@ -28,9 +30,11 @@
   {kind}
   {size}
   {icon}
+  {iconSize}
   {loading}
   {disabled}
   {hasMenu}
+  {inheritFont}
   on:click
 >
   <slot />

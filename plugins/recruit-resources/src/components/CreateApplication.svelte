@@ -89,6 +89,7 @@
     attachedToClass: recruit.mixin.Candidate,
     _class: recruit.class.Applicant,
     space,
+    identifier: '',
     _id: generateId(),
     collection: 'applications',
     modifiedOn: Date.now(),
@@ -137,6 +138,8 @@
       )
     }
 
+    const number = (incResult as any).object.sequence
+
     await client.addCollection(
       recruit.class.Applicant,
       _space,
@@ -146,7 +149,8 @@
       {
         ...doc,
         status: selectedState._id,
-        number: (incResult as any).object.sequence,
+        number,
+        identifier: `APP-${number}`,
         assignee: doc.assignee,
         rank: calcRank(lastOne, undefined),
         startDate: null,

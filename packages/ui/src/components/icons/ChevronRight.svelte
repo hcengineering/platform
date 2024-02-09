@@ -17,6 +17,6 @@
   const fill: string = 'currentColor'
 </script>
 
-<svg class="svg-{size}" {fill} viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-  <path d="M11.0001 8L6.00008 3L5.29297 3.70711L9.58586 8L5.29297 12.2929L6.00008 13L11.0001 8Z" />
+<svg class="svg-{size}" {fill} viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <path d="M21.9999 16L11.9999 6L10.5857 7.41421L19.1715 16L10.5857 24.5858L11.9999 26L21.9999 16Z" />
 </svg>

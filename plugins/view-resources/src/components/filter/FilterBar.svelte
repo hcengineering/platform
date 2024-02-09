@@ -31,6 +31,7 @@
   export let space: Ref<Space> | undefined
   export let query: DocumentQuery<Doc>
   export let viewOptions: ViewOptions | undefined = undefined
+  export let hideSaveButtons: boolean = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -190,26 +191,28 @@
       </div>
     </div>
 
-    <div class="flex gap-1-5">
-      <Button
-        icon={view.icon.Views}
-        label={view.string.SaveAs}
-        width={'fit-content'}
-        on:click={async () => {
-          await saveFilteredView()
-        }}
-      />
-      {#if selectedFilterChanged($selectedFilterStore, $filterStore, $activeViewlet, $viewOptionStore)}
+    {#if !hideSaveButtons}
+      <div class="flex gap-1-5">
         <Button
           icon={view.icon.Views}
-          label={view.string.Save}
+          label={view.string.SaveAs}
           width={'fit-content'}
           on:click={async () => {
-            await saveCurrentFilteredView($selectedFilterStore)
+            await saveFilteredView()
           }}
         />
-      {/if}
-    </div>
+        {#if selectedFilterChanged($selectedFilterStore, $filterStore, $activeViewlet, $viewOptionStore)}
+          <Button
+            icon={view.icon.Views}
+            label={view.string.Save}
+            width={'fit-content'}
+            on:click={async () => {
+              await saveCurrentFilteredView($selectedFilterStore)
+            }}
+          />
+        {/if}
+      </div>
+    {/if}
   </div>
 {/if}
 

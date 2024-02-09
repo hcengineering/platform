@@ -85,7 +85,7 @@ export class TCommonBoardPreference extends TPreference implements CommonBoardPr
 }
 
 @Model(board.class.Card, task.class.Task)
-@UX(board.string.Card, board.icon.Card, undefined, 'title')
+@UX(board.string.Card, board.icon.Card, 'CARD', 'title')
 export class TCard extends TTask implements Card {
   @Prop(TypeString(), board.string.Title)
   @Index(IndexKind.FullText)

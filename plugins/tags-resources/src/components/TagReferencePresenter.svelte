@@ -21,7 +21,7 @@
 
   export let value: TagReference
   export let isEditable: boolean = false
-  export let kind: 'list' | 'link' | 'skills' = 'skills'
+  export let kind: 'list' | 'link' | 'skills' | 'todo' = 'skills'
   export let realWidth: number | undefined = undefined
   export let attr: AnyAttribute | undefined
   export let inline: boolean = false
@@ -64,10 +64,25 @@
         </button>
       {/if}
     </div>
+  {:else if kind === 'todo'}
+    <div
+      class="todoLabel-container font-medium-12 overflow-label max-w-40"
+      style:background-color={color.color}
+      use:resizeObserver={(element) => {
+        realWidth = element.clientWidth
+      }}
+    >
+      {value.title}
+    </div>
   {/if}
 {/if}
 
 <style lang="scss">
+  .todoLabel-container {
+    padding: var(--spacing-0_25) var(--spacing-0_5);
+    color: var(--global-on-accent-TextColor);
+    border-radius: var(--extra-small-BorderRadius);
+  }
   .listitems-container {
     overflow: hidden;
     display: flex;

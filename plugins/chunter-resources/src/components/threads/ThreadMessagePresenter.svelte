@@ -14,8 +14,13 @@
 -->
 <script lang="ts">
   import { ThreadMessage } from '@hcengineering/chunter'
+  import { Action, Label } from '@hcengineering/ui'
+  import { getDocLinkTitle } from '@hcengineering/view-resources'
+  import { getClient } from '@hcengineering/presentation'
+  import activity from '@hcengineering/activity'
+
+  import chunter from '../../plugin'
   import ChatMessagePresenter from '../chat-message/ChatMessagePresenter.svelte'
-  import { Action } from '@hcengineering/ui'
 
   export let value: ThreadMessage | undefined
   export let showNotify: boolean = false
@@ -30,26 +35,43 @@
   export let actions: Action[] = []
   export let excludedActions: string[] = []
   export let hoverable = true
+  export let inline = false
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
+
+  const client = getClient()
 </script>
 
-<ChatMessagePresenter
-  {value}
-  {showNotify}
-  {isHighlighted}
-  {isSelected}
-  {shouldScroll}
-  {withActions}
-  {showEmbedded}
-  {embedded}
-  {skipLabel}
-  {withFlatActions}
-  {excludedActions}
-  {actions}
-  {hoverable}
-  {hoverStyles}
-  {onClick}
-  {onReply}
-/>
+{#if inline && value}
+  {#await getDocLinkTitle(client, value.objectId, value.objectClass) then title}
+    <span>
+      <span class="lower">
+        <Label label={chunter.string.Thread} />
+      </span>
+      <span class="lower">
+        <Label label={activity.string.In} />
+      </span>
+      {title}
+    </span>
+  {/await}
+{:else}
+  <ChatMessagePresenter
+    {value}
+    {showNotify}
+    {isHighlighted}
+    {isSelected}
+    {shouldScroll}
+    {withActions}
+    {showEmbedded}
+    {embedded}
+    {skipLabel}
+    {withFlatActions}
+    {excludedActions}
+    {actions}
+    {hoverable}
+    {hoverStyles}
+    {onClick}
+    {onReply}
+  />
+{/if}

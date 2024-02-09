@@ -2,7 +2,7 @@ import { expect, type Locator, type Page } from '@playwright/test'
 import { NewIssue } from './types'
 import path from 'path'
 import { CommonTrackerPage } from './common-tracker-page'
-import { iterateLocator } from '../../utils'
+import { attachScreenshot, iterateLocator } from '../../utils'
 
 export class IssuesPage extends CommonTrackerPage {
   readonly page: Page
@@ -85,6 +85,7 @@ export class IssuesPage extends CommonTrackerPage {
     if (closeNotification) {
       await this.closeNotification(this.page)
     }
+    await attachScreenshot(`createdNewIssue-${data.title}.png`, this.page)
   }
 
   async fillNewIssueForm (data: NewIssue): Promise<void> {

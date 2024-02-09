@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { boardId } from '@hcengineering/board'
+import { type Card, boardId } from '@hcengineering/board'
 import { type Ref, TxOperations } from '@hcengineering/core'
 import {
   type MigrateOperation,
@@ -23,7 +23,7 @@ import {
   tryMigrate
 } from '@hcengineering/model'
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
-import { createProjectType, createSequence, fixTaskTypes } from '@hcengineering/model-task'
+import { DOMAIN_TASK, createProjectType, createSequence, fixTaskTypes } from '@hcengineering/model-task'
 import tags from '@hcengineering/tags'
 import task, { type ProjectType } from '@hcengineering/task'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
@@ -59,7 +59,7 @@ async function createDefaultProjectType (tx: TxOperations): Promise<Ref<ProjectT
       descriptor: board.descriptors.BoardType,
       description: '',
       tasks: [],
-      classic: true
+      classic: false
     },
     [
       {
@@ -126,6 +126,19 @@ async function createDefaults (tx: TxOperations): Promise<void> {
   )
 }
 
+async function migrateIdentifiers (client: MigrationClient): Promise<void> {
+  const docs = await client.find<Card>(DOMAIN_TASK, { _class: board.class.Card, identifier: { $exists: false } })
+  for (const doc of docs) {
+    await client.update(
+      DOMAIN_TASK,
+      { _id: doc._id },
+      {
+        identifier: `CARD-${doc.number}`
+      }
+    )
+  }
+}
+
 export const boardOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, boardId, [
@@ -162,6 +175,10 @@ export const boardOperation: MigrateOperation = {
             }
           ])
         }
+      },
+      {
+        state: 'identifier',
+        func: migrateIdentifiers
       }
     ])
   },

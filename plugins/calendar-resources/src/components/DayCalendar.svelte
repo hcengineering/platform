@@ -65,10 +65,10 @@
   export let clearCells: boolean = false
   export let dragItemId: Ref<Event> | null = null
 
+  export let todayDate = new Date()
+
   const client = getClient()
   const dispatch = createEventDispatcher()
-
-  let todayDate = new Date()
 
   $: checkToday($ticker)
 
@@ -174,6 +174,7 @@
   let adRows: CalendarADRows[]
   const cellBorder: number = 1
   const stepsPerHour: number = 4
+  const heightHeader: number = 4.75
   const heightAD: number = 2
   const minAD: number = 2
   const maxAD: number = 3
@@ -372,7 +373,7 @@
       result.visibility = 0
     }
     result.top =
-      (showHeader ? rem(3.5) : 0) +
+      (showHeader ? rem(heightHeader) : 0) +
       styleAD +
       cellHeight * startTime.hours +
       (startTime.mins / 60) * cellHeight +
@@ -462,7 +463,7 @@
   const getTopOffset = (date: Date): number => {
     const d = convertToTime(date)
     return (
-      (showHeader ? rem(3.5) : 0) +
+      (showHeader ? rem(heightHeader) : 0) +
       styleAD +
       cellHeight * d.hours +
       (d.mins / 60) * cellHeight +
@@ -510,13 +511,19 @@
     if (timer) clearInterval(timer)
   })
 
+  const calcColumnWidth = (calWidth: number): number => (calWidth - rem(3.5)) / displayedDaysCount
+  const needDecColumnWidth = (calWidth: number): boolean => calcColumnWidth(calWidth) < 200 && displayedDaysCount > 1
+  const needIncColumnWidth = (calWidth: number): boolean =>
+    displayedDaysCount < initDisplayedDaysCount && (displayedDaysCount + 1) * 200 + rem(3.5) < calWidth
+
   const checkSizes = (element: HTMLElement | Element) => {
     calendarRect = element.getBoundingClientRect()
     calendarWidth = calendarRect.width
-    if (calendarWidth < 356 && initDisplayedDaysCount >= 1) displayedDaysCount = 1
-    else if (calendarWidth < 512 && initDisplayedDaysCount >= 2) displayedDaysCount = 2
-    else if (calendarWidth >= 512 && displayedDaysCount < initDisplayedDaysCount) displayedDaysCount = 3
-    colWidth = (calendarWidth - 3.5 * fontSize) / displayedDaysCount
+    while (needDecColumnWidth(calendarWidth) || needIncColumnWidth(calendarWidth)) {
+      if (needDecColumnWidth(calendarWidth)) displayedDaysCount--
+      else if (needIncColumnWidth(calendarWidth)) displayedDaysCount++
+    }
+    colWidth = calcColumnWidth(calendarWidth)
   }
   $: if (docHeight && calendarRect?.top) {
     const proc = ((docHeight - calendarRect.top) * 30) / 100
@@ -762,7 +769,7 @@
 
 <Scroller
   bind:divScroll={scroller}
-  fade={{ multipler: { top: (showHeader ? 3.5 : 0) + styleAD / fontSize, bottom: 0 } }}
+  fade={{ multipler: { top: (showHeader ? heightHeader : 0) + styleAD / fontSize, bottom: 0 } }}
 >
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
@@ -772,7 +779,8 @@
     class:clearCells={clearCells || resizeId !== null || dragId !== null}
     class:cursor-row-resize={resizeId !== null && directionResize !== null}
     style:--calendar-ad-height={styleAD + 'px'}
-    style:grid={`${showHeader ? '[header] 3.5rem ' : ''}[all-day] ${styleAD}px repeat(${
+    style:--calendar-header-height={heightHeader + 'rem'}
+    style:grid={`${showHeader ? '[header] ' + heightHeader + 'rem ' : ''}[all-day] ${styleAD}px repeat(${
       (displayedHours - startHour) * 2
     }, [row-start] 2rem) / [time-col] 3.5rem repeat(${displayedDaysCount}, [col-start] 1fr)`}
     use:resizeObserver={(element) => {
@@ -783,9 +791,17 @@
       <div class="sticky-header head center"><span class="zone">{getTimeZone()}</span></div>
       {#each [...Array(displayedDaysCount).keys()] as dayOfWeek}
         {@const day = getDay(weekMonday, dayOfWeek)}
+        {@const tday = areDatesEqual(todayDate, day)}
         <div class="sticky-header head title" class:center={displayedDaysCount > 1}>
-          <span class="day" class:today={areDatesEqual(todayDate, day)}>{day.getDate()}</span>
-          <span class="weekday">{getWeekDayName(day, weekFormat)}</span>
+          <span class="day" class:today={tday}>{day.getDate()}</span>
+          {#if tday}
+            <div class="flex-col">
+              <span class="today"><Label label={calendar.string.Today} /></span>
+              <span class="weekday">{getWeekDayName(day, weekFormat)}</span>
+            </div>
+          {:else}
+            <span class="weekday">{getWeekDayName(day, weekFormat)}</span>
+          {/if}
         </div>
       {/each}
     {/if}
@@ -1195,7 +1211,7 @@
     z-index: 15;
 
     &:not(.head) {
-      top: calc(3.5rem - 0.5px);
+      top: calc(var(--calendar-header-height, 4.75rem) - 0.5px);
       border-top: 1px solid var(--theme-divider-color);
       border-bottom: 1px solid var(--theme-divider-color);
     }
@@ -1208,37 +1224,54 @@
       mask-image: linear-gradient(to top, #0000, #000f 0.5rem, #000f calc(100% - 0.5rem), #0000 100%);
       z-index: 1;
     }
+    &.head:not(.zm) {
+      padding: var(--spacing-2_5) var(--spacing-3) var(--spacing-2);
+    }
     &.center {
       justify-content: center;
     }
     &.title {
-      font-size: 1.125rem;
-      color: var(--theme-caption-color);
+      gap: var(--spacing-2);
+      font-weight: 500;
+      font-size: 0.875rem;
+      line-height: 1rem;
+      color: var(--input-PlaceholderColor);
 
       &.center {
         justify-content: center;
       }
       &:not(.center) {
-        padding-left: 1.375rem;
+        padding-left: var(--spacing-3);
       }
 
-      .day.today {
+      .today {
+        font-weight: 700;
+        color: var(--global-accent-TextColor);
+
+        & + .weekday {
+          color: var(--global-primary-TextColor);
+        }
+      }
+      .day {
         display: flex;
         justify-content: center;
         align-items: center;
-        min-width: 2.25rem;
-        padding: 0.375rem;
-        color: var(--primary-button-color);
-        background-color: #3871e0;
-        border-radius: 0.375rem;
-      }
-      .weekday {
-        margin-left: 0.25rem;
-        opacity: 0.4;
+        width: var(--global-medium-Size);
+        height: var(--global-medium-Size);
+        font-weight: 500;
+        font-size: 1.5rem;
+        line-height: 1.75rem;
+        border-radius: var(--medium-BorderRadius);
 
-        &::first-letter {
-          text-transform: uppercase;
+        &:not(.today) {
+          color: var(--global-primary-TextColor);
         }
+        &.today {
+          font-weight: 500;
+        }
+      }
+      .weekday::first-letter {
+        text-transform: uppercase;
       }
     }
     &:not(.allday-container) {

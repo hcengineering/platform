@@ -15,12 +15,12 @@
 -->
 <script lang="ts">
   import { AttributeEditor, getClient } from '@hcengineering/presentation'
-  import task, { ProjectType, TaskType, calculateStatuses } from '@hcengineering/task'
+  import task, { ProjectType, TaskType, calculateStatuses, findStatusAttr } from '@hcengineering/task'
   import { Ref, Status } from '@hcengineering/core'
   import { Asset, getEmbeddedLabel } from '@hcengineering/platform'
   import { Label, showPopup, ButtonIcon, ModernButton, IconSquareExpand, IconAdd, Icon } from '@hcengineering/ui'
   import { IconPicker, statusStore } from '@hcengineering/view-resources'
-  import { ClassAttributes } from '@hcengineering/setting-resources'
+  import { ClassAttributes, settingsStore } from '@hcengineering/setting-resources'
   import { taskTypeStore } from '../..'
   import StatesProjectEditor from '../state/StatesProjectEditor.svelte'
   import TaskTypeKindEditor from '../taskTypes/TaskTypeKindEditor.svelte'
@@ -51,6 +51,25 @@
         }
       }
     )
+  }
+  function handleAddStatus (el: MouseEvent): void {
+    const icons: Asset[] = []
+    const attr = findStatusAttr(getClient().getHierarchy(), taskType.ofClass)
+    $settingsStore = {
+      id: '#',
+      component: task.component.CreateStatePopup,
+      props: {
+        status: undefined,
+        taskType,
+        _class: taskType.statusClass,
+        category: task.statusCategory.Active,
+        type: projectType,
+        ofAttribute: attr,
+        icon: undefined,
+        color: 0,
+        icons
+      }
+    }
   }
 </script>
 
@@ -105,7 +124,7 @@
   <div class="hulyTableAttr-header font-medium-12">
     <Icon icon={task.icon.ManageTemplates} size={'small'} />
     <span><Label label={plugin.string.ProcessStates} /></span>
-    <ButtonIcon kind={'primary'} icon={IconAdd} size={'small'} on:click={(ev) => {}} />
+    <ButtonIcon kind={'primary'} icon={IconAdd} size={'small'} on:click={handleAddStatus} />
   </div>
   <StatesProjectEditor
     {taskType}

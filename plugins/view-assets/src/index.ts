@@ -39,5 +39,6 @@ loadMetadata(view.icon, {
   DevModel: `${icons}#devmodel`,
   ViewButton: `${icons}#viewButton`,
   Filter: `${icons}#filter`,
-  Configure: `${icons}#configure`
+  Configure: `${icons}#configure`,
+  Database: `${icons}#database`
 })

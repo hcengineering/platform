@@ -72,25 +72,6 @@
     }
   )
 
-  function getGroupActions (): Action[] {
-    const result: Action[] = []
-
-    if (model.addLabel !== undefined && model.addComponent !== undefined) {
-      result.push({
-        label: model.addLabel,
-        icon: IconAdd,
-        action: async (_id: Ref<Doc>): Promise<void> => {
-          dispatch('open')
-          if (model.addComponent !== undefined) {
-            showPopup(model.addComponent, {}, 'top')
-          }
-        }
-      })
-    }
-
-    return result
-  }
-
   function getPinnedActions (): Action[] {
     return [
       {
@@ -148,7 +129,7 @@
   {/if}
 
   <div class="block">
-    <ChatGroupHeader header={model.label} actions={getGroupActions()} />
+    <ChatGroupHeader header={model.label} />
     {#each contexts as context (context._id)}
       <ChatNavItem {context} isSelected={selectedContextId === context._id} on:select />
     {/each}

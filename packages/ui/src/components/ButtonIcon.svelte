@@ -19,7 +19,7 @@
   import ButtonBase from './ButtonBase.svelte'
 
   export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
-  export let size: 'large' | 'medium' | 'small' = 'large'
+  export let size: 'large' | 'medium' | 'small' | 'extra-small' = 'large'
   export let icon: Asset | AnySvelteComponent | ComponentType
   export let iconProps: any | undefined = undefined
   export let disabled: boolean = false

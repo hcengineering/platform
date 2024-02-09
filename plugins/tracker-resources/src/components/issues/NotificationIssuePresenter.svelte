@@ -21,14 +21,12 @@
   let currentProject: Project | undefined = undefined
 
   $: currentProject = $activeProjects.get(value.space) as Project
-
-  $: title = currentProject ? `${currentProject.identifier}-${value?.number}` : `${value?.number}`
 </script>
 
 {#if value}
   <div class="flex-col">
     <div class="flex-row-center crop-presenter">
-      <span class="font-medium mr-2 whitespace-nowrap clear-mins">{title}</span>
+      <span class="font-medium mr-2 whitespace-nowrap clear-mins">{value.identifier}</span>
       <span class="overflow-label">
         {currentProject?.name}
       </span>

@@ -21,6 +21,7 @@ import serverToken from '@hcengineering/server-token'
 import { serverFactories } from '@hcengineering/server-ws'
 import { start } from '.'
 import serverNotification from '@hcengineering/server-notification'
+import contactPlugin from '@hcengineering/contact'
 
 const serverPort = parseInt(process.env.SERVER_PORT ?? '3333')
 
@@ -91,10 +92,12 @@ if (accountsUrl === undefined) {
 const sesUrl = process.env.SES_URL
 const cursorMaxTime = process.env.SERVER_CURSOR_MAXTIMEMS
 
+const lastNameFirst = process.env.LAST_NAME_FIRST === 'true' ?? false
 setMetadata(serverCore.metadata.CursorMaxTimeMS, cursorMaxTime)
 setMetadata(serverCore.metadata.FrontUrl, frontUrl)
 setMetadata(serverToken.metadata.Secret, serverSecret)
 setMetadata(serverNotification.metadata.SesUrl, sesUrl ?? '')
+setMetadata(contactPlugin.metadata.LastNameFirst, lastNameFirst)
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 console.log(

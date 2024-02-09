@@ -45,11 +45,6 @@
     { limit: 1 }
   )
 
-  let currentProject: Project | undefined
-
-  $: currentProject = $activeProjects.get(space) as Project
-  $: issueName = currentProject && issue && `${currentProject.identifier}-${issue.number}`
-
   const limit: number = 350
   let cHeight: number = 0
 
@@ -74,7 +69,7 @@
           <span class="overflow-label content-color">{parent.title}</span>
           <IconForward size={'x-small'} />
         {/if}
-        <span class="content-dark-color">{issueName}</span>
+        <span class="content-dark-color">{issue.identifier}</span>
       </div>
       <span class="overflow-label text-xl caption-color">{issue.title}</span>
     </div>

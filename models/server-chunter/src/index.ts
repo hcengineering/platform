@@ -59,6 +59,14 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverChunter.trigger.OnChannelMembersChanged,
+    txMatch: {
+      _class: core.class.TxUpdateDoc,
+      objectClass: chunter.class.Channel
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverChunter.trigger.OnDirectMessageSent,
     txMatch: {
       _class: core.class.TxCollectionCUD,

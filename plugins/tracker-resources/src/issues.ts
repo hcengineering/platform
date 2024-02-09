@@ -1,8 +1,8 @@
 import { type Doc, type DocumentUpdate, type Ref, type RelatedDocument, type TxOperations } from '@hcengineering/core'
-import presentation, { getClient } from '@hcengineering/presentation'
 import { getMetadata } from '@hcengineering/platform'
-import { type Component, type Issue, type Project, type Milestone, trackerId } from '@hcengineering/tracker'
-import { type Location, type ResolvedLocation, getPanelURI, getCurrentResolvedLocation } from '@hcengineering/ui'
+import presentation, { getClient } from '@hcengineering/presentation'
+import { trackerId, type Component, type Issue, type Milestone } from '@hcengineering/tracker'
+import { getCurrentResolvedLocation, getPanelURI, type Location, type ResolvedLocation } from '@hcengineering/ui'
 import { workbenchId } from '@hcengineering/workbench'
 import { writable } from 'svelte/store'
 import tracker from './plugin'
@@ -10,22 +10,14 @@ import tracker from './plugin'
 export const activeComponent = writable<Ref<Component> | undefined>(undefined)
 export const activeMilestone = writable<Ref<Milestone> | undefined>(undefined)
 
-export function getIssueId (project: Project, issue: Issue): string {
-  return `${project.identifier}-${issue.number}`
-}
-
 export function isIssueId (shortLink: string): boolean {
   return /^\S+-\d+$/.test(shortLink)
 }
 
 export async function issueIdentifierProvider (client: TxOperations, ref: Ref<Doc>): Promise<string> {
-  const object = await client.findOne(
-    tracker.class.Issue,
-    { _id: ref as Ref<Issue> },
-    { lookup: { space: tracker.class.Project } }
-  )
-  if (object?.$lookup?.space === undefined) throw new Error(`Issue project not found, _id: ${ref}`)
-  return getIssueId(object.$lookup.space, object)
+  const object = await client.findOne(tracker.class.Issue, { _id: ref as Ref<Issue> })
+  if (object === undefined) throw new Error(`Issue project not found, _id: ${ref}`)
+  return object.identifier
 }
 
 export async function issueTitleProvider (client: TxOperations, ref: Ref<Doc>): Promise<string> {
@@ -42,20 +34,13 @@ export async function issueTitleProvider (client: TxOperations, ref: Ref<Doc>): 
   return await getIssueTitle(object)
 }
 
-async function getTitle (doc: Doc): Promise<string> {
-  const client = getClient()
+export async function getTitle (doc: Doc): Promise<string> {
   const issue = doc as Issue
-  const object = await client.findOne(tracker.class.Project, { _id: issue.space })
-  if (object === undefined) return `?-${issue.number}`
-  return getIssueId(object, issue)
+  return issue.identifier
 }
 
 export function generateIssuePanelUri (issue: Issue): string {
   return getPanelURI(tracker.component.EditIssue, issue._id, issue._class, 'content')
-}
-
-export async function issueIdProvider (doc: Doc): Promise<string> {
-  return await getTitle(doc)
 }
 
 export async function issueLinkFragmentProvider (doc: Doc): Promise<Location> {
@@ -85,21 +70,8 @@ export function generateIssueShortLink (issueId: string): string {
 }
 
 export async function generateIssueLocation (loc: Location, issueId: string): Promise<ResolvedLocation | undefined> {
-  const tokens = issueId.split('-')
-  if (tokens.length < 2) {
-    return undefined
-  }
-  const projectId = tokens[0]
-  const issueNumber = Number(tokens[1])
   const client = getClient()
-  const project = await client.findOne(tracker.class.Project, { identifier: projectId })
-  if (project === undefined) {
-    console.error(
-      `Could not find project ${projectId}. Make sure you are in correct workspace and the project was not deleted or renamed.`
-    )
-    return undefined
-  }
-  const issue = await client.findOne(tracker.class.Issue, { number: issueNumber, space: project._id })
+  const issue = await client.findOne(tracker.class.Issue, { identifier: issueId })
   if (issue === undefined) {
     console.error(`Could not find issue ${issueId}.`)
     return undefined
@@ -112,7 +84,7 @@ export async function generateIssueLocation (loc: Location, issueId: string): Pr
       fragment: generateIssuePanelUri(issue)
     },
     defaultLocation: {
-      path: [appComponent, workspace, trackerId, project._id, 'issues'],
+      path: [appComponent, workspace, trackerId, issue.space, 'issues'],
       fragment: generateIssuePanelUri(issue)
     }
   }

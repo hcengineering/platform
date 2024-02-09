@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ActionIcon } from '@hcengineering/ui'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import activity, { ActivityMessage, SavedMessage } from '@hcengineering/activity'
   import preference from '@hcengineering/preference'
 
-  import Bookmark from './icons/Bookmark.svelte'
+  import BookmarkBorder from './icons/BookmarkBorder.svelte'
   import ActivityMessageAction from './ActivityMessageAction.svelte'
+  import Bookmark from './icons/Bookmark.svelte'
 
   export let object: ActivityMessage
 
@@ -45,7 +45,8 @@
 </script>
 
 <ActivityMessageAction
-  icon={Bookmark}
-  iconProps={savedMessage ? { fill: '#3265cb' } : undefined}
+  icon={savedMessage ? Bookmark : BookmarkBorder}
+  size={savedMessage ? 'x-small' : 'small'}
+  iconProps={{ fill: savedMessage ? 'var(--global-accent-TextColor)' : 'currentColor' }}
   action={toggleSaveMessage}
 />

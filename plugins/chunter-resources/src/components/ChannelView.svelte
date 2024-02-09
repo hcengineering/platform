@@ -19,12 +19,13 @@
   import activity, { ActivityMessage, ActivityMessagesFilter } from '@hcengineering/activity'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { combineActivityMessages } from '@hcengineering/activity-resources'
+  import { Channel } from '@hcengineering/chunter'
 
-  import Channel from './Channel.svelte'
-  import PinnedMessages from './PinnedMessages.svelte'
+  import ChannelComponent from './Channel.svelte'
   import ChannelHeader from './ChannelHeader.svelte'
-  import DocChatPanel from './chat/DocChatPanel.svelte'
+  import DocAside from './chat/DocAside.svelte'
   import chunter from '../plugin'
+  import ChannelAside from './chat/ChannelAside.svelte'
 
   export let context: DocNotifyContext
   export let object: Doc | undefined = undefined
@@ -47,7 +48,8 @@
   })
 
   $: isDocChat = !hierarchy.isDerived(context.attachedToClass, chunter.class.ChunterSpace)
-  $: withAside = !embedded && isDocChat && !isThreadOpened
+  $: withAside =
+    !embedded && !isThreadOpened && !hierarchy.isDerived(context.attachedToClass, chunter.class.DirectMessage)
 
   $: updateMessagesQuery(isDocChat ? activity.class.ActivityMessage : chunter.class.ChatMessage, context.attachedTo)
 
@@ -75,6 +77,14 @@
     }
   }
 
+  function toChannel (object?: Doc) {
+    return object as Channel | undefined
+  }
+
+  function toChannelRef (ref: Ref<Doc>) {
+    return ref as Ref<Channel>
+  }
+
   defineSeparators('aside', panelSeparators)
 </script>
 
@@ -99,8 +109,7 @@
       <Loading />
     {:else}
       <div class="popupPanel-body__main">
-        <PinnedMessages {context} />
-        <Channel {context} {object} {filters} messages={activityMessages} />
+        <ChannelComponent {context} {object} {filters} messages={activityMessages} />
       </div>
 
       {#if withAside && isAsideShown}
@@ -108,7 +117,15 @@
         <div class="popupPanel-body__aside" class:float={false} class:shown={withAside && isAsideShown}>
           <Separator name="aside" float index={0} />
           <div class="antiPanel-wrap__content">
-            <DocChatPanel _id={context.attachedTo} _class={context.attachedToClass} {object} />
+            {#if hierarchy.isDerived(context.attachedToClass, chunter.class.Channel)}
+              <ChannelAside
+                _id={toChannelRef(context.attachedTo)}
+                _class={context.attachedToClass}
+                object={toChannel(object)}
+              />
+            {:else}
+              <DocAside _id={context.attachedTo} _class={context.attachedToClass} {object} />
+            {/if}
           </div>
         </div>
       {/if}

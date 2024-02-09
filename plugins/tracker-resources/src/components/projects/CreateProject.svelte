@@ -130,9 +130,6 @@
     if (projectData.defaultTimeReportDay !== project?.defaultTimeReportDay) {
       update.defaultTimeReportDay = projectData.defaultTimeReportDay
     }
-    if (projectData.identifier.toUpperCase() !== project?.identifier) {
-      update.identifier = projectData.identifier.toUpperCase()
-    }
     if (projectData.members.length !== project?.members.length) {
       update.members = projectData.members
     } else {
@@ -180,7 +177,6 @@
         close(projectId)
       } else {
         isSaving = false
-        changeIdentity(changeIdentityRef)
       }
     }
   }
@@ -195,13 +191,6 @@
       }
     }
     showPopup(IconPicker, { icon, color, icons }, 'top', update, update)
-  }
-  function changeIdentity (element: HTMLElement): void {
-    showPopup(ChangeIdentity, { identifier, projectsIdentifiers }, element, (result) => {
-      if (result != null) {
-        identifier = result.toLocaleUpperCase()
-      }
-    })
   }
 
   function close (id?: Ref<Project>): void {
@@ -286,17 +275,7 @@
           kind={'large-style'}
           uppercase
         />
-        {#if !isNew}
-          <div class="ml-1">
-            <Button
-              size={'small'}
-              icon={IconEdit}
-              on:click={(ev) => {
-                changeIdentity(eventToHTMLElement(ev))
-              }}
-            />
-          </div>
-        {:else if !isSaving && projectsIdentifiers.has(identifier.toUpperCase())}
+        {#if !isSaving && projectsIdentifiers.has(identifier.toUpperCase())}
           <div class="absolute overflow-label duplicated-identifier">
             <Label label={tracker.string.IdentifierExists} />
           </div>

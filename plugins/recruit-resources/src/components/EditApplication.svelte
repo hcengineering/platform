@@ -31,11 +31,11 @@
 
   const dispatch = createEventDispatcher()
   const sendOpen = () => {
-    if (object?.number !== undefined) {
+    if (object !== undefined) {
       dispatch('open', {
-        ignoreKeys: ['comments', 'number'],
+        ignoreKeys: ['comments', 'number', 'identifier'],
         allowedCollections: ['labels'],
-        title: `APP-${object.number}`
+        title: object.identifier
       })
     }
   }

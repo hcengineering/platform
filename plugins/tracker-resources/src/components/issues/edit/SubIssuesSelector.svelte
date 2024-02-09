@@ -16,14 +16,13 @@
   import core, { IdMap, Ref, SortingOrder, StatusCategory, WithLookup, toIdMap } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import task, { getStates } from '@hcengineering/task'
+  import { typeStore } from '@hcengineering/task-resources'
   import { Issue, Project } from '@hcengineering/tracker'
   import { Button, ButtonKind, ButtonSize, ProgressCircle, SelectPopup, showPanel } from '@hcengineering/ui'
   import { statusStore } from '@hcengineering/view-resources'
-  import { getIssueId } from '../../../issues'
   import tracker from '../../../plugin'
   import { listIssueStatusOrder } from '../../../utils'
   import IssueStatusIcon from '../IssueStatusIcon.svelte'
-  import { typeStore } from '@hcengineering/task-resources'
 
   export let value: WithLookup<Issue>
   export let currentProject: Project | undefined = undefined
@@ -116,7 +115,7 @@
   }
 
   $: subIssuesValue = _subIssues.map((iss) => {
-    const text = project != null ? `${getIssueId(project, iss)} ${iss.title}` : iss.title
+    const text = `${iss.identifier} ${iss.title}`
     const c = $statusStore.byId.get(iss.status)?.category
     const category = c !== undefined ? categories.get(c) : undefined
     return {
