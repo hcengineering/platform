@@ -44,16 +44,10 @@ class InMemoryTxAdapter extends DummyDbAdapter implements TxAdapter {
     return await this.txdb.findAll(_class, query, options)
   }
 
-  async tx (...tx: Tx[]): Promise<TxResult> {
+  async tx (...tx: Tx[]): Promise<TxResult[]> {
     const r: TxResult[] = []
     for (const t of tx) {
       r.push(await this.txdb.tx(t))
-    }
-    if (r.length === 1) {
-      return r[0]
-    }
-    if (r.length === 0) {
-      return {}
     }
     return r
   }

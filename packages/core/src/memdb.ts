@@ -258,9 +258,9 @@ export class TxDb extends MemDb {
     throw new Error('Method not implemented.')
   }
 
-  async tx (tx: Tx): Promise<TxResult> {
+  async tx (tx: Tx): Promise<TxResult[]> {
     this.addDoc(tx)
-    return {}
+    return []
   }
 }
 

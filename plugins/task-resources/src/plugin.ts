@@ -88,7 +88,10 @@ export default mergeIds(taskId, task, {
     ProcessStates: '' as IntlString,
     Type: '' as IntlString,
     Group: '' as IntlString,
-    Color: '' as IntlString
+    Color: '' as IntlString,
+
+    RenameStatus: '' as IntlString,
+    UpdateTasksStatusRequest: '' as IntlString
   },
   status: {
     AssigneeRequired: '' as IntlString

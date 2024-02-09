@@ -139,6 +139,7 @@ export {
   EmployeeArrayEditor,
   EmployeeEditor,
   PersonAccountRefPresenter,
+  PersonAccountPresenter,
   MembersPresenter,
   EditPerson,
   EmployeeRefPresenter,
@@ -168,7 +169,8 @@ export {
   UsersList,
   SelectUsersPopup,
   IconAddMember,
-  UserDetails
+  UserDetails,
+  DeleteConfirmationPopup
 }
 
 const toObjectSearchResult = (e: WithLookup<Contact>): ObjectSearchResult => ({

@@ -144,8 +144,8 @@ abstract class MongoAdapterBase implements DbAdapter {
     }
   }
 
-  async tx (...tx: Tx[]): Promise<TxResult> {
-    return {}
+  async tx (...tx: Tx[]): Promise<TxResult[]> {
+    return []
   }
 
   async close (): Promise<void> {
@@ -830,7 +830,7 @@ class MongoAdapter extends MongoAdapterBase {
     console.error('Unknown/Unsupported operation:', tx._class, tx)
   }
 
-  async tx (...txes: Tx[]): Promise<TxResult> {
+  async tx (...txes: Tx[]): Promise<TxResult[]> {
     const result: TxResult[] = []
 
     const bulkOperations: DomainOperation[] = []
@@ -875,13 +875,10 @@ class MongoAdapter extends MongoAdapterBase {
       }
       await bulkExecute()
     } else {
-      return (await this.getOperations(txes[0])?.raw()) ?? {}
-    }
-    if (result.length === 0) {
-      return false
-    }
-    if (result.length === 1) {
-      return result[0]
+      const r = await this.getOperations(txes[0])?.raw()
+      if (r !== undefined) {
+        result.push(r)
+      }
     }
     return result
   }
@@ -1163,12 +1160,12 @@ class MongoAdapter extends MongoAdapterBase {
 class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
   txColl: Collection | undefined
 
-  override async tx (...tx: Tx[]): Promise<TxResult> {
+  override async tx (...tx: Tx[]): Promise<TxResult[]> {
     if (tx.length === 0) {
-      return {}
+      return []
     }
     await this.txCollection().insertMany(tx.map((it) => translateDoc(it)))
-    return {}
+    return []
   }
 
   private txCollection (): Collection {

@@ -25,8 +25,9 @@
   import { ObjectPresenter } from '@hcengineering/view-resources'
 
   export let object: Doc | Doc[]
-  export let deleteAction: () => void
+  export let deleteAction: () => void | Promise<void>
   export let skipCheck: boolean = false
+  export let canDeleteExtra: boolean = true
   const objectArray = Array.isArray(object) ? object : [object]
   const owners: PersonAccount[] = Array.from($personAccountByIdStore.values()).filter(
     (acc) => acc.role === AccountRole.Owner
@@ -34,9 +35,10 @@
   const dispatch = createEventDispatcher()
   $: creators = [...new Set(objectArray.map((obj) => obj.createdBy as Ref<PersonAccount>))]
   $: canDelete =
-    skipCheck ||
-    (creators.length === 1 && creators.includes(getCurrentAccount()._id as Ref<PersonAccount>)) ||
-    getCurrentAccount().role === AccountRole.Owner
+    (skipCheck ||
+      (creators.length === 1 && creators.includes(getCurrentAccount()._id as Ref<PersonAccount>)) ||
+      getCurrentAccount().role === AccountRole.Owner) &&
+    canDeleteExtra
   $: label = canDelete ? view.string.DeleteObject : view.string.DeletePopupNoPermissionTitle
 </script>
 
@@ -56,9 +58,11 @@
     {#if canDelete}
       <div class="mb-2">
         <Label label={view.string.DeleteObjectConfirm} params={{ count: objectArray.length }} />
-        {#if objectArray.length === 1}
-          <ObjectPresenter _class={objectArray[0]._class} objectId={objectArray[0]._id} value={objectArray[0]} />
-        {/if}
+        <div class="mt-2">
+          {#if objectArray.length === 1}
+            <ObjectPresenter _class={objectArray[0]._class} objectId={objectArray[0]._id} value={objectArray[0]} />
+          {/if}
+        </div>
       </div>
     {:else}
       <div class="mb-2">
@@ -82,4 +86,5 @@
       </div>
     {/if}
   </div>
+  <slot />
 </Card>

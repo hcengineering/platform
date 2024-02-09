@@ -113,7 +113,7 @@
   $: icon = projectState?.icon === view.ids.IconWithEmoji ? IconWithEmoji : projectState?.icon
 
   const dispatchAccentColor = (color?: ColorDefinition, icon?: Asset | typeof IconWithEmoji): void => {
-    if (icon === undefined) {
+    if (icon == null) {
       dispatch('accent-color', color)
     } else {
       dispatch('accent-color', null)
