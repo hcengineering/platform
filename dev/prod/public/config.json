@@ -6,5 +6,6 @@
   "GMAIL_URL": "http://localhost:8088",
   "CALENDAR_URL": "http://localhost:8095",
   "REKONI_URL": "http://localhost:4004",
-  "COLLABORATOR_URL": "ws://localhost:3078"
+  "COLLABORATOR_URL": "ws://localhost:3078",
+  "LAST_NAME_FIRST": "true"
 }

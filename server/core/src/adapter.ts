@@ -53,7 +53,7 @@ export interface DbAdapter {
       domain?: Domain // Allow to find for Doc's in specified domain only.
     }
   ) => Promise<FindResult<T>>
-  tx: (...tx: Tx[]) => Promise<TxResult>
+  tx: (...tx: Tx[]) => Promise<TxResult[]>
 
   find: (domain: Domain) => StorageIterator
 
@@ -107,8 +107,8 @@ export class DummyDbAdapter implements DbAdapter {
   async createIndexes (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>): Promise<void> {}
   async removeOldIndex (domain: Domain, deletePattern: RegExp, keepPattern: RegExp): Promise<void> {}
 
-  async tx (...tx: Tx[]): Promise<TxResult> {
-    return {}
+  async tx (...tx: Tx[]): Promise<TxResult[]> {
+    return []
   }
 
   async close (): Promise<void> {}
@@ -147,7 +147,7 @@ class InMemoryAdapter extends DummyDbAdapter implements DbAdapter {
     return await this.modeldb.findAll(_class, query, options)
   }
 
-  async tx (...tx: Tx[]): Promise<TxResult> {
+  async tx (...tx: Tx[]): Promise<TxResult[]> {
     return await this.modeldb.tx(...tx)
   }
 

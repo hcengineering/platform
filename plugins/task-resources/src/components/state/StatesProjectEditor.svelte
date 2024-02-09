@@ -19,7 +19,7 @@
   import { settingsStore } from '@hcengineering/setting-resources'
   import { ProjectStatus, ProjectType, TaskType } from '@hcengineering/task'
   import { IconMoreV2, IconOpenedArrow, Label } from '@hcengineering/ui'
-  import { ObjectPresenter } from '@hcengineering/view-resources'
+  import { ObjectPresenter, statusStore } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import task from '../../plugin'
 
@@ -83,7 +83,11 @@
     return map
   }
 
-  $: groups = group(categories, states)
+  $: taskTypeStates = states
+    .filter((it) => taskType.statuses.includes(it._id))
+    .filter((it, idx, arr) => arr.findIndex((qt) => qt._id === it._id) === idx)
+
+  $: groups = group(categories, taskTypeStates)
 
   function getPrevIndex (groups: Map<Ref<StatusCategory>, Status[]>, categories: Ref<StatusCategory>): number {
     let index = 0
@@ -107,6 +111,13 @@
       const category = _status.category !== undefined ? categoriesMap.get(_status.category) : undefined
       const projectStatus = getProjectStatus(type, _status)
       const color = getProjectStatus(type, _status)?.color ?? _status.color ?? category?.color
+      const sameCategory = (
+        taskType.statuses
+          .map((it) => $statusStore.byId.get(it))
+          .filter((it) => it !== undefined)
+          .filter((it) => it?.category === _status.category) as Status[]
+      ).filter((it, idx, arr) => arr.findIndex((qt) => qt._id === it._id) === idx)
+
       $settingsStore = {
         id: opened,
         component: task.component.CreateStatePopup,
@@ -117,14 +128,16 @@
           ofAttribute: _status.ofAttribute,
           icon: projectStatus?.icon,
           color,
-          icons
+          icons,
+          canDelete: sameCategory.length > 1,
+          selectableStates: sameCategory.filter((it) => it._id !== _status._id)
         }
       }
     }
   }
 </script>
 
-{#each categories as cat, i}
+{#each categories as cat (cat._id)}
   {@const states = groups.get(cat._id) ?? []}
   {@const prevIndex = getPrevIndex(groups, cat._id)}
   <div class="hulyTableAttr-content class withTitle">
@@ -132,7 +145,7 @@
       <Label label={cat.label} />
     </div>
     <div class="hulyTableAttr-content__wrapper">
-      {#each states as state, i}
+      {#each states as state, i (state._id)}
         <!-- svelte-ignore a11y-no-static-element-interactions -->
         <button
           bind:this={elements[prevIndex + i]}

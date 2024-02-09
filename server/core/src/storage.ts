@@ -187,7 +187,7 @@ class TServerStorage implements ServerStorage {
     return adapter
   }
 
-  private async routeTx (ctx: MeasureContext, removedDocs: Map<Ref<Doc>, Doc>, ...txes: Tx[]): Promise<TxResult> {
+  private async routeTx (ctx: MeasureContext, removedDocs: Map<Ref<Doc>, Doc>, ...txes: Tx[]): Promise<TxResult[]> {
     let part: TxCUD<Doc>[] = []
     let lastDomain: Domain | undefined
     const result: TxResult[] = []
@@ -244,13 +244,6 @@ class TServerStorage implements ServerStorage {
       }
     }
     await processPart()
-
-    if (result.length === 1) {
-      return result[0]
-    }
-    if (result.length === 0) {
-      return false
-    }
     return result
   }
 
@@ -720,7 +713,7 @@ class TServerStorage implements ServerStorage {
     return { passed, onEnd }
   }
 
-  async apply (ctx: MeasureContext, txes: Tx[], broadcast: boolean, target?: string[]): Promise<TxResult> {
+  async apply (ctx: MeasureContext, txes: Tx[], broadcast: boolean, target?: string[]): Promise<TxResult[]> {
     const result = await this.processTxes(ctx, txes)
     let derived: Tx[] = []
 
@@ -749,7 +742,7 @@ class TServerStorage implements ServerStorage {
     }
   }
 
-  async processTxes (ctx: MeasureContext, txes: Tx[]): Promise<[TxResult, Tx[]]> {
+  async processTxes (ctx: MeasureContext, txes: Tx[]): Promise<[TxResult[], Tx[]]> {
     // store tx
     const _findAll: ServerStorage['findAll'] = async <T extends Doc>(
       ctx: MeasureContext,
@@ -766,7 +759,7 @@ class TServerStorage implements ServerStorage {
     const triggerFx = new Effects()
     const removedMap = new Map<Ref<Doc>, Doc>()
     const onEnds: (() => void)[] = []
-    let result: TxResult = {}
+    const result: TxResult[] = []
     let derived: Tx[] = []
 
     try {
@@ -777,8 +770,17 @@ class TServerStorage implements ServerStorage {
         const passed = await this.verifyApplyIf(ctx, applyIf, _findAll)
         onEnds.push(passed.onEnd)
         if (passed.passed) {
+          result.push({
+            derived: [],
+            success: true
+          })
           this.fillTxes(applyIf.txes, txToStore, modelTx, txToProcess, applyTxes)
           derived = [...applyIf.txes]
+        } else {
+          result.push({
+            derived: [],
+            success: false
+          })
         }
       }
       for (const tx of modelTx) {
@@ -790,7 +792,7 @@ class TServerStorage implements ServerStorage {
         await this.modelDb.tx(tx)
       }
       await ctx.with('domain-tx', {}, async () => await this.getAdapter(DOMAIN_TX).tx(...txToStore))
-      result = await ctx.with('apply', {}, (ctx) => this.routeTx(ctx, removedMap, ...txToProcess))
+      result.push(...(await ctx.with('apply', {}, (ctx) => this.routeTx(ctx, removedMap, ...txToProcess))))
 
       // invoke triggers and store derived objects
       derived = derived.concat(await this.processDerived(ctx, txToProcess, triggerFx, _findAll, removedMap))
@@ -816,12 +818,14 @@ class TServerStorage implements ServerStorage {
         p()
       })
     }
-
     return [result, derived]
   }
 
   async tx (ctx: MeasureContext, tx: Tx): Promise<[TxResult, Tx[]]> {
-    return await ctx.with('client-tx', { _class: tx._class }, async (ctx) => await this.processTxes(ctx, [tx]))
+    return await ctx.with('client-tx', { _class: tx._class }, async (ctx) => {
+      const result = await this.processTxes(ctx, [tx])
+      return [result[0][0], result[1]]
+    })
   }
 
   find (domain: Domain): StorageIterator {

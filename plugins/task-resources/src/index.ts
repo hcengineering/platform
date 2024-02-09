@@ -41,7 +41,7 @@ import { type ViewletDescriptor } from '@hcengineering/view'
 import { CategoryQuery, statusStore } from '@hcengineering/view-resources'
 
 import AssignedTasks from './components/AssignedTasks.svelte'
-import CreateStatePopup from './components/CreateStatePopup.svelte'
+import CreateStatePopup from './components/state/CreateStatePopup.svelte'
 import Dashboard from './components/Dashboard.svelte'
 import DueDateEditor from './components/DueDateEditor.svelte'
 import KanbanTemplatePresenter from './components/KanbanTemplatePresenter.svelte'
