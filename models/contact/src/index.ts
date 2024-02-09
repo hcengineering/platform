@@ -99,25 +99,25 @@ export class TChannelProvider extends TDoc implements ChannelProvider {
 export class TContact extends TDoc implements Contact {
   @Prop(TypeString(), contact.string.Name)
   @Index(IndexKind.FullText)
-    name!: string
+  name!: string
 
   @Prop(TypeAttachment(), contact.string.Avatar)
   @Index(IndexKind.FullText)
   @Hidden()
-    avatar?: string | null
+  avatar?: string | null
 
   @Prop(Collection(contact.class.Channel), contact.string.ContactInfo)
-    channels?: number
+  channels?: number
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
-    attachments?: number
+  attachments?: number
 
   @Prop(Collection(chunter.class.ChatMessage), chunter.string.Comments)
-    comments?: number
+  comments?: number
 
   @Prop(TypeString(), contact.string.Location)
   @Index(IndexKind.FullText)
-    city!: string
+  city!: string
 }
 
 @Model(contact.class.Channel, core.class.AttachedDoc, DOMAIN_CHANNEL)
@@ -125,37 +125,40 @@ export class TContact extends TDoc implements Contact {
 export class TChannel extends TAttachedDoc implements Channel {
   @Prop(TypeRef(contact.class.ChannelProvider), contact.string.ChannelProvider)
   @Index(IndexKind.Indexed)
-    provider!: Ref<ChannelProvider>
+  provider!: Ref<ChannelProvider>
 
   @Prop(TypeString(), contact.string.Value)
   @Index(IndexKind.FullText)
-    value!: string
+  value!: string
 
   items?: number
 
   @Prop(TypeTimestamp(), core.string.Modified)
-    lastMessage?: Timestamp
+  lastMessage?: Timestamp
 }
 
 @Model(contact.class.Person, contact.class.Contact)
 @UX(contact.string.Person, contact.icon.Person, 'PRSN', 'name')
 export class TPerson extends TContact implements Person {
   @Prop(TypeDate(DateRangeMode.DATE, false), contact.string.Birthday)
-    birthday?: Timestamp
+  birthday?: Timestamp
+  
+  @Prop(TypeBoolean(), contact.string.IsOnVacation)
+  isOnVacation?: boolean
 }
 
 @Model(contact.class.Member, core.class.AttachedDoc, DOMAIN_CONTACT)
 @UX(contact.string.Member, contact.icon.Person, undefined, 'name')
 export class TMember extends TAttachedDoc implements Member {
   @Prop(TypeRef(contact.class.Contact), contact.string.Contact)
-    contact!: Ref<Contact>
+  contact!: Ref<Contact>
 }
 
 @Model(contact.class.Organization, contact.class.Contact)
 @UX(contact.string.Organization, contact.icon.Company, 'ORG', 'name')
 export class TOrganization extends TContact implements Organization {
   @Prop(Collection(contact.class.Member), contact.string.Members)
-    members!: number
+  members!: number
 }
 
 @Model(contact.class.Status, core.class.AttachedDoc, DOMAIN_CONTACT)
@@ -173,15 +176,15 @@ export class TEmployee extends TPerson implements Employee {
   @Prop(TypeBoolean(), contact.string.Active)
   @ReadOnly()
   @Hidden()
-    active!: boolean
+  active!: boolean
 
   @Prop(Collection(contact.class.Status), contact.string.Status)
   @Hidden()
-    statuses?: number
+  statuses?: number
 
   @Prop(TypeString(), contact.string.Position)
   @Hidden()
-    position?: string | null
+  position?: string | null
 }
 
 @Model(contact.class.PersonAccount, core.class.Account)

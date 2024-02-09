@@ -73,7 +73,7 @@
     "UseGravatar": "Граватар",
     "UseColor": "Цвет",
     "AvatarProvider": "Тип аватара",
-    "NotSpecified": "Не указан",    
+    "NotSpecified": "Не указан",
     "Whatsapp": "Whatsapp",
     "WhatsappPlaceholder": "Whatsapp",
     "Skype": "Skype",
@@ -101,6 +101,8 @@
     "HasNewMessagesIn": "имеет новые сообщения в",
     "Employees": "Сотрудники",
     "People": "Люди",
-    "For": "Для"
+    "For": "Для",
+    "BackToOffice": "когда вы вернулся в офис из отпуска",
+    "OutOfOffice": "Вне офиса"
   }
 }

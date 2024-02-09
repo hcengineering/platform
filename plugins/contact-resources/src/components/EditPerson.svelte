@@ -18,18 +18,19 @@
   import { getCurrentAccount, Ref } from '@hcengineering/core'
   import { AttributeEditor, createQuery, getClient } from '@hcengineering/presentation'
   import setting, { IntegrationType } from '@hcengineering/setting'
-  import { createFocusManager, EditBox, FocusHandler, Scroller } from '@hcengineering/ui'
+  import { createFocusManager, EditBox, FocusHandler, Scroller, ToggleWithLabel } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import contact from '../plugin'
   import ChannelsEditor from './ChannelsEditor.svelte'
   import EditableAvatar from './EditableAvatar.svelte'
-
+  
   export let object: Person
   const client = getClient()
 
   const account = getCurrentAccount() as PersonAccount
 
   let avatarEditor: EditableAvatar
+  let isOnVacation = object.isOnVacation
 
   let firstName = getFirstName(object.name)
   let lastName = getLastName(object.name)
@@ -52,6 +53,13 @@
   function lastNameChange () {
     client.update(object, {
       name: combineName(getFirstName(object.name), lastName)
+    })
+  }
+
+  function isOnVacationChange() {
+    isOnVacation = !isOnVacation
+    client.update(object, {
+      isOnVacation: isOnVacation
     })
   }
 
@@ -129,6 +137,15 @@
           focusIndex={10}
         />
       </Scroller>
+      <div class="separator" />
+      <div class="out-off-office">
+        <ToggleWithLabel
+          label={ contact.string.OutOfOffice}
+          description={isOnVacation && contact.string.BackToOffice}
+          on={isOnVacation}
+          on:change={isOnVacationChange}
+        />
+      </div>
     </div>
   </div>
 {/if}
