@@ -102,7 +102,6 @@ test.describe('Mentions issue tests', () => {
     await employeeDetailsPage.checkActivityExist(`mentioned ${mentionName} in`, `@${mentionName}`)
   })
 
-
   test('Check that the backlink shown in the Issue activity', async ({ page }) => {
     const mentionName = 'Dirak Kainin'
     const backlinkIssue: NewIssue = {
