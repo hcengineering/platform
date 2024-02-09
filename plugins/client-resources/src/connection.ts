@@ -27,19 +27,20 @@ import core, {
   FindOptions,
   FindResult,
   LoadModelResponse,
+  MeasureDoneOperation,
   Ref,
+  SearchOptions,
+  SearchQuery,
+  SearchResult,
   Timestamp,
   Tx,
   TxApplyIf,
+  TxApplyResult,
   TxHandler,
   TxResult,
   TxWorkspaceEvent,
   WorkspaceEvent,
-  generateId,
-  SearchQuery,
-  SearchOptions,
-  SearchResult,
-  MeasureDoneOperation
+  generateId
 } from '@hcengineering/core'
 import { PlatformError, UNAUTHORIZED, broadcastEvent, getMetadata, unknownError } from '@hcengineering/platform'
 
@@ -57,7 +58,8 @@ class RequestPromise {
   reconnect?: () => void
   constructor (
     readonly method: string,
-    readonly params: any[]
+    readonly params: any[],
+    readonly handleResult?: (result: any) => Promise<void>
   ) {
     this.promise = new Promise((resolve, reject) => {
       this.resolve = resolve
@@ -263,7 +265,13 @@ class Connection implements ClientConnection {
             )
             promise.reject(new PlatformError(resp.error))
           } else {
-            promise.resolve(resp.result)
+            if (request?.handleResult !== undefined) {
+              void request.handleResult(resp.result).then(() => {
+                promise.resolve(resp.result)
+              })
+            } else {
+              promise.resolve(resp.result)
+            }
           }
           void broadcastEvent(client.event.NetworkRequests, this.requests.size)
         } else {
@@ -336,13 +344,14 @@ class Connection implements ClientConnection {
     params: any[]
     // If not defined, on reconnect with timeout, will retry automatically.
     retry?: () => Promise<boolean>
+    handleResult?: (result: any) => Promise<void>
   }): Promise<any> {
     if (this.closed) {
       throw new PlatformError(unknownError('connection closed'))
     }
 
     const id = this.lastId++
-    const promise = new RequestPromise(data.method, data.params)
+    const promise = new RequestPromise(data.method, data.params, data.handleResult)
 
     const sendData = async (): Promise<void> => {
       if (this.websocket instanceof Promise) {
@@ -423,7 +432,19 @@ class Connection implements ClientConnection {
           return (await this.findAll(core.class.Tx, { _id: (tx as TxApplyIf).txes[0]._id }, { limit: 1 })).length === 0
         }
         return (await this.findAll(core.class.Tx, { _id: tx._id }, { limit: 1 })).length === 0
-      }
+      },
+      handleResult:
+        tx._class === core.class.TxApplyIf
+          ? async (result) => {
+            if (tx._class === core.class.TxApplyIf) {
+              // We need to check extra broadcast's and perform them before
+              const r = result as TxApplyResult
+              for (const d of r?.derived ?? []) {
+                this.handler(d)
+              }
+            }
+          }
+          : undefined
     })
   }
 

@@ -41,7 +41,7 @@ import { type ViewletDescriptor } from '@hcengineering/view'
 import { CategoryQuery, statusStore } from '@hcengineering/view-resources'
 
 import AssignedTasks from './components/AssignedTasks.svelte'
-import CreateStatePopup from './components/CreateStatePopup.svelte'
+import CreateStatePopup from './components/state/CreateStatePopup.svelte'
 import Dashboard from './components/Dashboard.svelte'
 import DueDateEditor from './components/DueDateEditor.svelte'
 import KanbanTemplatePresenter from './components/KanbanTemplatePresenter.svelte'
@@ -76,21 +76,10 @@ export * from './utils'
 export { StatePresenter, StateRefPresenter, TypeStatesPopup, TaskKindSelector }
 
 async function editStatuses (object: Project, ev: Event): Promise<void> {
-  const client = getClient()
-  const descriptor = await client.findOne(task.class.ProjectTypeDescriptor, { attachedToClass: object._class })
   const loc = getCurrentLocation()
   loc.path[2] = 'setting'
-  loc.path[3] = 'setting'
-  loc.path[4] = 'statuses'
-  loc.query =
-    descriptor != null
-      ? {
-          descriptorId: descriptor._id,
-          typeId: object.type
-        }
-      : {
-          typeId: object.type
-        }
+  loc.path[3] = 'statuses'
+  loc.path[4] = object.type
   navigate(loc)
 }
 

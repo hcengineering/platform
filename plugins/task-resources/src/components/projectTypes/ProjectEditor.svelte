@@ -14,51 +14,49 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, onDestroy } from 'svelte'
   import { ComponentExtensions, createQuery, getClient } from '@hcengineering/presentation'
   import task, { Project, ProjectType, ProjectTypeDescriptor, Task, TaskType } from '@hcengineering/task'
+  import { createEventDispatcher, onDestroy } from 'svelte'
 
   import { Ref, SortingOrder } from '@hcengineering/core'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
-  import type { Asset, IntlString } from '@hcengineering/platform'
-  import ui, {
+  import type { IntlString } from '@hcengineering/platform'
+  import setting from '@hcengineering/setting'
+  import { ClassAttributes, clearSettingsStore, settingsStore } from '@hcengineering/setting-resources'
+  import {
+    Breadcrumbs,
     ButtonIcon,
     Component,
-    ModernEditbox,
-    TextArea,
+    Header,
     IconAdd,
     IconCopy,
     IconDelete,
-    IconSquareExpand,
-    IconMoreV,
+    IconDescription,
     IconFolder,
+    IconMoreV,
+    IconSquareExpand,
     Label,
     Location,
+    ModernButton,
+    ModernEditbox,
+    NavItem,
+    Scroller,
+    Separator,
+    TextArea,
+    defineSeparators,
     eventToHTMLElement,
     getCurrentResolvedLocation,
     navigate,
     resolvedLocationStore,
-    showPopup,
-    Header,
-    Breadcrumbs,
-    ModernButton,
-    IconSend,
-    IconDescription,
-    Separator,
-    Scroller,
-    defineSeparators,
     secondNavSeparators,
-    NavItem
+    showPopup
   } from '@hcengineering/ui'
   import { ContextMenu } from '@hcengineering/view-resources'
   import plugin from '../../plugin'
-  import setting from '@hcengineering/setting'
-  import { ClassAttributes, clearSettingsStore, settingsStore } from '@hcengineering/setting-resources'
+  import IconLayers from '../icons/Layers.svelte'
   import CreateTaskType from '../taskTypes/CreateTaskType.svelte'
   import TaskTypeEditor from '../taskTypes/TaskTypeEditor.svelte'
   import TaskTypeIcon from '../taskTypes/TaskTypeIcon.svelte'
   import TaskTypeKindEditor from '../taskTypes/TaskTypeKindEditor.svelte'
-  import IconLayers from '../icons/Layers.svelte'
 
   export let type: ProjectType
   export let descriptor: ProjectTypeDescriptor | undefined
@@ -182,6 +180,7 @@
       icon={IconCopy}
       size={'small'}
       kind={'secondary'}
+      disabled
       on:click={(ev) => {
         // Do copy of type
       }}
@@ -190,6 +189,7 @@
       icon={IconDelete}
       size={'small'}
       kind={'secondary'}
+      disabled
       on:click={(ev) => {
         // Ask for delete
       }}

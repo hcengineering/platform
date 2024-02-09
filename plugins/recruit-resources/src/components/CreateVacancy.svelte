@@ -47,7 +47,7 @@
 
   let appliedTemplateId: Ref<ProjectType> | undefined
   let objectId: Ref<VacancyClass> = generateId()
-  let issueTemplates: FindResult<IssueTemplate>
+  let issueTemplates: FindResult<IssueTemplate> = []
 
   let fullDescription: string = ''
 

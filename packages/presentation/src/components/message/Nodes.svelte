@@ -86,7 +86,7 @@
     {:else if node.nodeName === 'HR'}
       <hr />
     {:else if node.nodeName === 'IMG'}
-      <div class="max-h-60 max-w-60">{@html node.outerHTML}</div>
+      <div class="imgContainer max-h-60 max-w-60">{@html node.outerHTML}</div>
     {:else if node.nodeName === 'H1'}
       <h1><svelte:self nodes={node.childNodes} /></h1>
     {:else if node.nodeName === 'H2'}
@@ -160,6 +160,10 @@
 {/if}
 
 <style lang="scss">
+  .imgContainer {
+    display: inline;
+  }
+
   .img {
     :global(img) {
       object-fit: contain;

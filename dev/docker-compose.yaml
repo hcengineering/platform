@@ -89,6 +89,7 @@ services:
       - MINIO_SECRET_KEY=minioadmin
       - TITLE=DevPlatform
       - DEFAULT_LANGUAGE=ru
+      - LAST_NAME_FIRST=true
     restart: unless-stopped
   collaborator:
     image: hardcoreeng/collaborator
@@ -156,6 +157,7 @@ services:
       # - APM_SERVER_URL=http://apm-server:8200
       - SERVER_PROVIDER=ws
       - ACCOUNTS_URL=http://account:3000
+      - LAST_NAME_FIRST=true
     restart: unless-stopped
   rekoni:
     image: hardcoreeng/rekoni-service

@@ -51,11 +51,9 @@
     if (kind === undefined) {
       statuses = []
     } else {
-      if (kind !== undefined) {
-        const type = taskTypes.get(kind)
-        if (type !== undefined) {
-          statuses = type.statuses.map((p) => store.get(p)).filter((p) => p !== undefined) as Status[]
-        }
+      const type = taskTypes.get(kind)
+      if (type !== undefined) {
+        statuses = type.statuses.map((p) => store.get(p)).filter((p) => p !== undefined) as Status[]
       }
     }
   }
@@ -71,7 +69,7 @@
   allowDeselect={true}
   selected={current}
   on:close={(evt) => {
-    changeStatus(evt.detail === null ? null : evt.detail?._id)
+    void changeStatus(evt.detail === null ? null : evt.detail?._id)
   }}
   {placeholder}
   {width}
@@ -87,7 +85,14 @@
         value={item}
         inline={false}
         noUnderline
-        props={{ disabled: true, inline: false, size: 'small', avatarSize: 'smaller' }}
+        props={{
+          disabled: true,
+          inline: false,
+          size: 'small',
+          avatarSize: 'smaller',
+          taskType: kind,
+          projectType: kind !== undefined ? $taskTypeStore.get(kind)?.parent : undefined
+        }}
       />
     </div>
   </svelte:fragment>

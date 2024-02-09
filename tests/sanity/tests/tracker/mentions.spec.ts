@@ -19,7 +19,7 @@ test.describe('Mentions issue tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
-  test.skip('If user mentioned in the issue than he should be added as Collaborators', async ({ page }) => {
+  test('If user mentioned in the issue than he should be added as Collaborators', async ({ page }) => {
     const mentionIssue: NewIssue = {
       title: `Issue user mentioned as Collaborators-${generateId()}`,
       description: 'Issue user mentioned as Collaborators description'
@@ -43,7 +43,7 @@ test.describe('Mentions issue tests', () => {
     // await issuesDetailsPage.checkCollaborators(['Appleseed John', 'Dirak Kainin'])
   })
 
-  test.skip('When Change assigner user should be added as Collaborators', async ({ page }) => {
+  test('When Change assigner user should be added as Collaborators', async ({ page }) => {
     const mentionIssue: NewIssue = {
       title: `When Change assigner user should be added as Collaborators-${generateId()}`,
       description: 'When Change assigner user should be added as Collaborators description'
@@ -70,7 +70,7 @@ test.describe('Mentions issue tests', () => {
     await issuesDetailsPage.checkCollaborators(['Appleseed John', 'Dirak Kainin'])
   })
 
-  test.skip('Check that the backlink shown in the Contact activity', async ({ page }) => {
+  test('Check that the backlink shown in the Contact activity', async ({ page }) => {
     const mentionName = 'Dirak Kainin'
     const mentionIssue: NewIssue = {
       title: `Check that the backlink shown in the Contact activity-${generateId()}`,

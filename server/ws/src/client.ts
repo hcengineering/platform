@@ -14,8 +14,12 @@
 //
 
 import core, {
-  type Account,
   AccountRole,
+  TxFactory,
+  TxProcessor,
+  WorkspaceEvent,
+  generateId,
+  type Account,
   type BulkUpdateEvent,
   type Class,
   type Doc,
@@ -25,19 +29,16 @@ import core, {
   type LoadModelResponse,
   type MeasureContext,
   type Ref,
+  type SearchOptions,
+  type SearchQuery,
+  type SearchResult,
   type Timestamp,
   type Tx,
   type TxApplyIf,
+  type TxApplyResult,
   type TxCUD,
-  TxProcessor,
   type TxResult,
-  type TxWorkspaceEvent,
-  WorkspaceEvent,
-  generateId,
-  type SearchQuery,
-  type SearchOptions,
-  type SearchResult,
-  TxFactory
+  type TxWorkspaceEvent
 } from '@hcengineering/core'
 import { type Pipeline, type SessionContext } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
@@ -166,12 +167,24 @@ export class ClientSession implements Session {
             }
           }
           console.log('Broadcasting bulk', derived.length)
-          this.broadcast(null, this.token.workspace, { result: this.createBroadcastEvent(Array.from(classes)) }, target)
+          const bevent = this.createBroadcastEvent(Array.from(classes))
+          if (tx._class === core.class.TxApplyIf) {
+            ;(result as TxApplyResult).derived.push(bevent)
+          }
+          this.broadcast(this, this.token.workspace, { result: bevent }, target)
         } else {
+          if (tx._class === core.class.TxApplyIf) {
+            ;(result as TxApplyResult).derived.push(...derived)
+          }
           while (derived.length > 0) {
             const part = derived.splice(0, 250)
             console.log('Broadcasting part', part.length, derived.length)
-            this.broadcast(null, this.token.workspace, { result: part }, target)
+            this.broadcast(
+              tx._class === core.class.TxApplyIf ? this : null,
+              this.token.workspace,
+              { result: part },
+              target
+            )
           }
         }
       } else {
@@ -184,7 +197,7 @@ export class ClientSession implements Session {
       const apply = tx as TxApplyIf
 
       if (apply.extraNotify !== undefined && apply.extraNotify.length > 0) {
-        this.broadcast(null, this.token.workspace, { result: this.createBroadcastEvent(apply.extraNotify) }, target)
+        ;(result as TxApplyResult).derived.push(this.createBroadcastEvent(apply.extraNotify))
       }
     }
     return result

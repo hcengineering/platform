@@ -19,13 +19,13 @@ import type {
   DocumentQuery,
   FindOptions,
   FindResult,
-  SearchQuery,
   SearchOptions,
+  SearchQuery,
   SearchResult,
   TxResult,
   WithLookup
 } from './storage'
-import { DocumentClassQuery, Tx, TxCUD, TxFactory, TxProcessor } from './tx'
+import { DocumentClassQuery, Tx, TxApplyResult, TxCUD, TxFactory, TxProcessor } from './tx'
 
 /**
  * @public
@@ -464,17 +464,19 @@ export class ApplyOperations extends TxOperations {
 
   async commit (notify: boolean = true, extraNotify: Ref<Class<Doc>>[] = []): Promise<boolean> {
     if (this.txes.length > 0) {
-      return await ((await this.ops.tx(
-        this.ops.txFactory.createTxApplyIf(
-          core.space.Tx,
-          this.scope,
-          this.matches,
-          this.notMatches,
-          this.txes,
-          notify,
-          extraNotify
-        )
-      )) as Promise<boolean>)
+      return (
+        await ((await this.ops.tx(
+          this.ops.txFactory.createTxApplyIf(
+            core.space.Tx,
+            this.scope,
+            this.matches,
+            this.notMatches,
+            this.txes,
+            notify,
+            extraNotify
+          )
+        )) as Promise<TxApplyResult>)
+      ).success
     }
     return true
   }

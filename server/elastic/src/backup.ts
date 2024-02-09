@@ -52,8 +52,8 @@ class ElasticDataAdapter implements DbAdapter {
     return Object.assign([], { total: 0 })
   }
 
-  async tx (...tx: Tx[]): Promise<TxResult> {
-    return {}
+  async tx (...tx: Tx[]): Promise<TxResult[]> {
+    return []
   }
 
   async init (model: Tx[]): Promise<void> {}

@@ -52,7 +52,7 @@
       }
     )
   }
-  function handleAddStatus (el: MouseEvent): void {
+  function handleAddStatus (): void {
     const icons: Asset[] = []
     const attr = findStatusAttr(getClient().getHierarchy(), taskType.ofClass)
     $settingsStore = {
@@ -64,7 +64,7 @@
         _class: taskType.statusClass,
         category: task.statusCategory.Active,
         type: projectType,
-        ofAttribute: attr,
+        ofAttribute: attr._id,
         icon: undefined,
         color: 0,
         icons
