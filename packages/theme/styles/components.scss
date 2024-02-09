@@ -287,6 +287,7 @@
 .hulyAccordionItem-container {
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
   width: 100%;
   min-width: 0;
   min-height: 0;
