@@ -39,11 +39,10 @@ import tags from '@hcengineering/tags'
 import task, { type ProjectType, type TaskType } from '@hcengineering/task'
 import {
   TimeReportDayType,
-  baseIssueTaskStatuses,
   classicIssueTaskStatuses,
   createStatesData,
-  type IssueStatus,
   type Issue,
+  type IssueStatus,
   type Project
 } from '@hcengineering/tracker'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
