@@ -39,11 +39,10 @@ import tags from '@hcengineering/tags'
 import task, { type ProjectType, type TaskType } from '@hcengineering/task'
 import {
   TimeReportDayType,
-  baseIssueTaskStatuses,
   classicIssueTaskStatuses,
   createStatesData,
-  type IssueStatus,
   type Issue,
+  type IssueStatus,
   type Project
 } from '@hcengineering/tracker'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
@@ -87,36 +86,37 @@ async function createDefaultProject (tx: TxOperations): Promise<void> {
     )
   }
 
-  if ((await tx.findOne(task.class.ProjectType, { _id: tracker.ids.BaseProjectType })) === undefined) {
-    const issueId: Ref<TaskType> = generateId()
+  // temporary disabled until nice automation
+  // if ((await tx.findOne(task.class.ProjectType, { _id: tracker.ids.BaseProjectType })) === undefined) {
+  //   const issueId: Ref<TaskType> = generateId()
 
-    const states: Omit<Data<Status>, 'rank'>[] = createStatesData(baseIssueTaskStatuses)
-    await createProjectType(
-      tx,
-      {
-        name: 'Base project',
-        descriptor: tracker.descriptors.ProjectType,
-        description: '',
-        tasks: [],
-        classic: false
-      },
-      [
-        {
-          _id: issueId,
-          name: 'Issue',
-          descriptor: tracker.descriptors.Issue,
-          factory: states,
-          ofClass: tracker.class.Issue,
-          targetClass: tracker.class.Issue,
-          statusCategories: baseIssueTaskStatuses.map((it) => it.category),
-          statusClass: core.class.Status,
-          kind: 'both',
-          allowedAsChildOf: [issueId]
-        }
-      ],
-      tracker.ids.BaseProjectType
-    )
-  }
+  //   const states: Omit<Data<Status>, 'rank'>[] = createStatesData(baseIssueTaskStatuses)
+  //   await createProjectType(
+  //     tx,
+  //     {
+  //       name: 'Base project',
+  //       descriptor: tracker.descriptors.ProjectType,
+  //       description: '',
+  //       tasks: [],
+  //       classic: false
+  //     },
+  //     [
+  //       {
+  //         _id: issueId,
+  //         name: 'Issue',
+  //         descriptor: tracker.descriptors.Issue,
+  //         factory: states,
+  //         ofClass: tracker.class.Issue,
+  //         targetClass: tracker.class.Issue,
+  //         statusCategories: baseIssueTaskStatuses.map((it) => it.category),
+  //         statusClass: core.class.Status,
+  //         kind: 'both',
+  //         allowedAsChildOf: [issueId]
+  //       }
+  //     ],
+  //     tracker.ids.BaseProjectType
+  //   )
+  // }
 
   // Create new if not deleted by customers.
   if (current === undefined && currentDeleted === undefined) {
