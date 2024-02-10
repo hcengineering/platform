@@ -5,12 +5,13 @@
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
   "scripts": {
-    "build": "tsc",
-    "build:watch": "tsc",
-    "lint:fix": "eslint --fix src",
-    "lint": "eslint src",
+    "build": "compile",
+    "build:watch": "compile",
     "format": "format src",
-    "test": "jest --passWithNoTests --silent"
+    "test": "jest --passWithNoTests --silent",
+    "_phase:build": "compile",
+    "_phase:test": "jest --passWithNoTests --silent",
+    "_phase:format": "format src"
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "^0.6.0",
@@ -27,7 +28,7 @@
     "@types/uuid": "^8.3.1",
     "@types/cors": "^2.8.12",
     "prettier": "^3.1.0",
-    "typescript": "^5.2.2",
+    "typescript": "^5.3.3",
     "@types/body-parser": "~1.19.2",
     "cross-env": "~7.0.3",
     "ts-node": "^10.8.0",

@@ -1,7 +1,7 @@
 {
   "incrementalBuildIgnoredGlobs": [
     "temp/**", 
-    "dist_cache/**", 
+    ".build/**", 
     "coverage/**",
     "**/*.svelte",
     ".build/**"
@@ -11,7 +11,7 @@
   "operationSettings": [
     {
       "operationName": "build",
-      "outputFolderNames": ["lib", "dist_cache"]
+      "outputFolderNames": ["lib", ".build"]
     },
     {
       "operationName": "test",
@@ -19,7 +19,23 @@
     },
     {
       "operationName": "build:watch",
-      "outputFolderNames": ["lib", "dist_cache"]
-    }   
+      "outputFolderNames": ["lib", ".build"]
+    },
+    {
+      "operationName": "_phase:build",
+      "outputFolderNames": ["lib", ".build"]
+    },
+    {
+      "operationName": "_phase:bundle",
+      "outputFolderNames": ["bundle"]
+    },
+    {
+      "operationName": "_phase:svelte-check",
+      "outputFolderNames": [".svelte-check"]
+    },
+    {
+      "operationName": "_phase:test",
+      "outputFolderNames": ["coverage"]
+    }  
   ]
 }

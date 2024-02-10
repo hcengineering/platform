@@ -75,7 +75,7 @@ jobs:
       - name: Building...
         run: node common/scripts/install-run-rush.js build
 
-      - name: Bundle
+      - name: Building...
         run: node common/scripts/install-run-rush.js bundle
 
       - name: Cache build results
@@ -156,16 +156,12 @@ jobs:
           path: ${{ env.CacheFolders}}
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-      - name: Docker build
-        run: node common/scripts/install-run-rush.js docker:build
-        env:
-          DOCKER_CLI_HINTS: false
       - name: Prepare server
         run: |
           cd ./tests
           ./prepare-tests.sh
       - name: Testing...
-        run: node common/scripts/install-run-rush.js test --verbose
+        run: node common/scripts/install-run-rush.js test
         env:
           ELASTIC_URL: 'http://localhost:9201'
           MONGO_URL: 'mongodb://localhost:27018'
@@ -282,15 +278,7 @@ jobs:
 
       - name: Model version from git tags
         run: node common/scripts/install-run-rush.js model-version
-
-      - name: Building...
-        run: node common/scripts/install-run-rush.js build
   
-      - name: Print model version
-        run: node common/scripts/install-run-rush.js model-version
-  
-      - name: Bundle
-        run: node common/scripts/install-run-rush.js bundle
       - name: Docker build
         run: node common/scripts/install-run-rush.js docker:build
         env:

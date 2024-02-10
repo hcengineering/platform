@@ -73,8 +73,9 @@ common/temp/
 common/autoinstallers/*/.npmrc
 **/.rush/temp/
 bundle.js
+bundle/*.js
 dist
-dist_cache
+.build
 tsconfig.tsbuildinfo
 ingest-attachment-*.zip
 tsdoc-metadata.json

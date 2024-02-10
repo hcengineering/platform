@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { BackupClient, Client as CoreClient, TxFactory, WorkspaceId } from '@hcengineering/core'
+import core, { type BackupClient, type Client as CoreClient, TxFactory, type WorkspaceId } from '@hcengineering/core'
 import { connect } from '@hcengineering/server-tool'
 
 function toLen (val: string, sep: string, len: number): string {

@@ -5,13 +5,14 @@
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
   "scripts": {
-    "build": "tsc  --noEmit --outDir ./dist_cache && echo build",
+    "build": "compile ui",
     "build:docs": "api-extractor run --local",
-    "lint": "eslint src",
-    "lint:fix": "eslint --fix src",
     "format": "format src",
-    "svelte-check": "svelte-check --output human  && mkdir -p .rush/temp/.svelte-check",
-    "build:watch": "tsc  --noEmit --outDir ./dist_cache"
+    "svelte-check": "do-svelte-check",
+    "_phase:svelte-check": "do-svelte-check",
+    "build:watch": "compile ui",
+    "_phase:build": "compile ui",
+    "_phase:format": "format src"
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "^0.6.0",
@@ -33,7 +34,7 @@
     "svelte-loader": "^3.1.9",
     "svelte-preprocess": "^5.1.0",
     "ts-jest": "^29.1.1",
-    "typescript": "^5.2.2"
+    "typescript": "^5.3.3"
   },
   "dependencies": {
     "@hcengineering/activity": "^0.6.0",

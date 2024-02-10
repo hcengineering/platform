@@ -1,4 +1,13 @@
-import { AttachedData, AttachedDoc, Class, Doc, DocumentUpdate, Ref, Space, TxOperations } from '@hcengineering/core'
+import {
+  type AttachedData,
+  type AttachedDoc,
+  type Class,
+  type Doc,
+  type DocumentUpdate,
+  type Ref,
+  type Space,
+  type TxOperations
+} from '@hcengineering/core'
 
 export async function findOrUpdateAttached<T extends AttachedDoc> (
   client: TxOperations,

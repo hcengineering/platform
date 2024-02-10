@@ -8,4 +8,4 @@ export TRANSACTOR_URL=ws://localhost:3334
 export ELASTIC_URL=http://localhost:9201
 export SERVER_SECRET=secret
 
-node ../dev/tool/bundle.js $@
+node ../dev/tool/bundle/bundle.js $@

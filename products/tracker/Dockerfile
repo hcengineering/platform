@@ -2,7 +2,7 @@ FROM node:20
 
 WORKDIR /usr/src/app
 
-COPY bundle.js ./
+COPY bundle/bundle.js ./
 COPY dist/ ./dist/
 
 EXPOSE 8080

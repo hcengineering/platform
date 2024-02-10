@@ -14,18 +14,18 @@
 //
 
 import core, {
-  AnyAttribute,
-  BackupClient,
-  Class,
+  type AnyAttribute,
+  type BackupClient,
+  type Class,
   ClassifierKind,
-  Client as CoreClient,
-  Doc,
-  Domain,
+  type Client as CoreClient,
+  type Doc,
+  type Domain,
   Hierarchy,
-  Obj,
-  Ref,
+  type Obj,
+  type Ref,
   SortingOrder,
-  WorkspaceId
+  type WorkspaceId
 } from '@hcengineering/core'
 import { getWorkspaceDB } from '@hcengineering/mongo'
 import { connect } from '@hcengineering/server-tool'

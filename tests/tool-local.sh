@@ -8,4 +8,4 @@ export ELASTIC_URL=http://localhost:9200
 export SERVER_SECRET=secret
 
 # Restore workspace contents in mongo/elastic
-node ../dev/tool/bundle.js $@
+node ../dev/tool/bundle/bundle.js $@

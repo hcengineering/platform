@@ -30,7 +30,7 @@ import {
   setAccountAdmin,
   setRole,
   upgradeWorkspace,
-  WorkspaceInfo
+  type WorkspaceInfo
 } from '@hcengineering/account'
 import { setMetadata } from '@hcengineering/platform'
 import {
@@ -43,14 +43,14 @@ import {
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
 import toolPlugin, { FileModelLogger } from '@hcengineering/server-tool'
 
-import { Command, program } from 'commander'
-import { Db, MongoClient } from 'mongodb'
+import { type Command, program } from 'commander'
+import { type Db, MongoClient } from 'mongodb'
 import { clearTelegramHistory } from './telegram'
 import { diffWorkspace, updateField } from './workspace'
 
-import { Data, getWorkspaceId, RateLimitter, Tx, Version } from '@hcengineering/core'
-import { MinioService } from '@hcengineering/minio'
-import { consoleModelLogger, MigrateOperation } from '@hcengineering/model'
+import { type Data, getWorkspaceId, RateLimitter, type Tx, type Version } from '@hcengineering/core'
+import { type MinioService } from '@hcengineering/minio'
+import { consoleModelLogger, type MigrateOperation } from '@hcengineering/model'
 import { openAIConfigDefaults } from '@hcengineering/openai'
 import path from 'path'
 import { benchmark } from './benchmark'

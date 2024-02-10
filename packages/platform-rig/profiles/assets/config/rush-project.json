@@ -22,7 +22,19 @@
       },
       {
         "operationName": "format",
-        "outputFolderNames": [".rush/temp/.format"]
+        "outputFolderNames": [".format"]
+      },
+      {
+        "operationName": "_phase:build",
+        "outputFolderNames": ["lib", ".build"]
+      },
+      {
+        "operationName": "_phase:bundle",
+        "outputFolderNames": ["bundle"]
+      },
+      {
+        "operationName": "_phase:test",
+        "outputFolderNames": ["coverage"]
       }
     ]
   }

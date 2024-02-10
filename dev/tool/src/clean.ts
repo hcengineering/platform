@@ -17,28 +17,28 @@ import attachment from '@hcengineering/attachment'
 import contact from '@hcengineering/contact'
 import { deepEqual } from 'fast-equals'
 import core, {
-  BackupClient,
-  Client as CoreClient,
+  type BackupClient,
+  type Client as CoreClient,
   DOMAIN_TX,
-  Doc,
-  Domain,
-  Ref,
+  type Doc,
+  type Domain,
+  type Ref,
   SortingOrder,
-  TxCreateDoc,
+  type TxCreateDoc,
   TxOperations,
   TxProcessor,
-  WorkspaceId,
+  type WorkspaceId,
   generateId,
   getObjectValue
 } from '@hcengineering/core'
-import { MinioService } from '@hcengineering/minio'
+import { type MinioService } from '@hcengineering/minio'
 import { getWorkspaceDB } from '@hcengineering/mongo'
 import recruit from '@hcengineering/recruit'
 import { connect } from '@hcengineering/server-tool'
 import tracker from '@hcengineering/tracker'
-import tags, { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
+import tags, { type TagCategory, type TagElement, type TagReference } from '@hcengineering/tags'
 import { MongoClient } from 'mongodb'
-import chunter, { ChatMessage } from '@hcengineering/chunter'
+import chunter, { type ChatMessage } from '@hcengineering/chunter'
 
 export const DOMAIN_ACTIVITY = 'activity' as Domain
 
