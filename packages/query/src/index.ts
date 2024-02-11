@@ -1373,7 +1373,7 @@ export class LiveQuery implements WithTx, Client {
     for (const key in ops) {
       if (!key.startsWith('$')) {
         if (q.options !== undefined) {
-          const lookup = (q.options.lookup as any)?.[key]
+          const lookup = (q.options.lookup)?.[key]
           if (lookup !== undefined) {
             const lookupClass = getLookupClass(lookup)
             const nestedLookup = getNestedLookup(lookup)
@@ -1397,7 +1397,7 @@ export class LiveQuery implements WithTx, Client {
           const pops = ops[key] ?? {}
           for (const pkey of Object.keys(pops)) {
             if (q.options !== undefined) {
-              const lookup = (q.options.lookup as any)?.[pkey]
+              const lookup = (q.options.lookup)?.[pkey]
               if (lookup !== undefined) {
                 const lookupClass = getLookupClass(lookup)
                 const nestedLookup = getNestedLookup(lookup)
@@ -1425,7 +1425,7 @@ export class LiveQuery implements WithTx, Client {
           const pops = ops[key] ?? {}
           for (const pkey of Object.keys(pops)) {
             if (q.options !== undefined) {
-              const lookup = (q.options.lookup as any)?.[pkey]
+              const lookup = (q.options.lookup)?.[pkey]
               if (lookup !== undefined) {
                 const pid = pops[pkey]
                 const pp = updatedDoc.$lookup as any

@@ -46,13 +46,13 @@
   export let onScroll: ((params: ScrollParams) => void) | undefined = undefined
   export let onResize: (() => void) | undefined = undefined
 
-  export function scroll(top: number, left?: number, behavior: 'auto' | 'smooth' = 'auto') {
+  export function scroll (top: number, left?: number, behavior: 'auto' | 'smooth' = 'auto') {
     if (divScroll) {
       if (top !== 0) divScroll.scroll({ top, left: 0, behavior })
       if (left !== 0 || left !== undefined) divScroll.scroll({ top: 0, left, behavior })
     }
   }
-  export function scrollBy(top: number, left?: number, behavior: 'auto' | 'smooth' = 'auto') {
+  export function scrollBy (top: number, left?: number, behavior: 'auto' | 'smooth' = 'auto') {
     if (divScroll) {
       if (top !== 0) divScroll.scrollBy({ top, left: 0, behavior })
       if (left !== 0 || left !== undefined) divScroll.scrollBy({ top: 0, left, behavior })
@@ -291,7 +291,7 @@
     }
   }
 
-  function checkAutoScroll() {
+  function checkAutoScroll () {
     if (firstScroll && divHeight && divScroll) {
       scrollDown()
       firstScroll = false

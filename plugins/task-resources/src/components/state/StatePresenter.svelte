@@ -62,7 +62,7 @@
 
   const client = getClient()
 
-  async function getType(
+  async function getType (
     space: Ref<Project> | undefined,
     projectType: Ref<ProjectType> | undefined,
     types: IdMap<ProjectType>
@@ -87,7 +87,7 @@
   )
   $: void updateCategory(value)
 
-  async function updateCategory(value: Status | undefined): Promise<void> {
+  async function updateCategory (value: Status | undefined): Promise<void> {
     if (value === undefined) {
       category = undefined
       return

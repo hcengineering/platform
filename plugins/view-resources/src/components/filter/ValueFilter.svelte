@@ -54,7 +54,7 @@
 
   let filterUpdateTimeout: any | undefined
 
-  async function getValues(search: string): Promise<void> {
+  async function getValues (search: string): Promise<void> {
     if (objectsPromise) {
       await objectsPromise
     }
@@ -91,7 +91,7 @@
             )
           ).map((it) => it._id)
 
-    async function doQuery(limit: number | undefined, first1000?: any[]): Promise<boolean> {
+    async function doQuery (limit: number | undefined, first1000?: any[]): Promise<boolean> {
       const p = client.findAll(
         _class,
         {
@@ -138,7 +138,7 @@
     }
   }
 
-  function getValue(obj: any): any {
+  function getValue (obj: any): any {
     if (typeof obj === 'string') {
       const trim = obj.trim()
       return trim.length > 0 ? trim.toUpperCase() : undefined
@@ -147,11 +147,11 @@
     }
   }
 
-  function isSelected(value: any, values: Set<any>): boolean {
+  function isSelected (value: any, values: Set<any>): boolean {
     return values.has(value)
   }
 
-  function handleFilterToggle(value: any): void {
+  function handleFilterToggle (value: any): void {
     if (isSelected(value, selectedValues)) {
       selectedValues.delete(value)
     } else {
@@ -162,7 +162,7 @@
     updateFilter(selectedValues)
   }
 
-  function updateFilter(newValues: Set<any>) {
+  function updateFilter (newValues: Set<any>) {
     clearTimeout(filterUpdateTimeout)
 
     filterUpdateTimeout = setTimeout(() => {

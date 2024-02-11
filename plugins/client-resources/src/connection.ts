@@ -96,7 +96,7 @@ class Connection implements ClientConnection {
         const s = this.websocket
 
         if (!(s instanceof Promise)) {
-          console.log('no ping response from server. Closing socket.', s, (s as any)?.readyState)
+          console.log('no ping response from server. Closing socket.', s, (s)?.readyState)
           // Trying to close connection and re-establish it.
           s?.close()
         } else {

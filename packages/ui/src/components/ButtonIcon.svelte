@@ -33,7 +33,7 @@
 
   let element: ButtonBase | undefined
 
-  export function focus() {
+  export function focus () {
     element?.focus()
   }
 </script>

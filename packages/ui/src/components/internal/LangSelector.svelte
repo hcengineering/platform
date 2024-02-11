@@ -20,7 +20,7 @@
 
   let pressed: boolean = false
 
-  const { currentLanguage, setLanguage } = getContext<{ currentLanguage: string; setLanguage: (lang: string) => void }>(
+  const { currentLanguage, setLanguage } = getContext<{ currentLanguage: string, setLanguage: (lang: string) => void }>(
     'lang'
   )
   const uiLangs = new Set(getMetadata(ui.metadata.Languages))

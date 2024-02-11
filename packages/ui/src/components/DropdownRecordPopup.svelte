@@ -29,13 +29,13 @@
   let list: ListView
   $: objects = Object.entries(items)
 
-  async function handleSelection(evt: Event | undefined, selection: number): Promise<void> {
+  async function handleSelection (evt: Event | undefined, selection: number): Promise<void> {
     const item = items[selection]
 
     dispatch('close', item)
   }
 
-  function onKeydown(key: KeyboardEvent): void {
+  function onKeydown (key: KeyboardEvent): void {
     if (key.code === 'ArrowUp') {
       key.stopPropagation()
       key.preventDefault()

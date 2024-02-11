@@ -50,7 +50,7 @@
   let filterUpdateTimeout: any | undefined
 
   const client = getClient()
-  async function getValues(search: string): Promise<void> {
+  async function getValues (search: string): Promise<void> {
     if (objectsPromise) {
       await objectsPromise
     }
@@ -80,11 +80,11 @@
     objectsPromise = undefined
   }
 
-  function isSelected(value: Ref<Milestone> | undefined, values: Set<Ref<Milestone> | undefined | null>): boolean {
+  function isSelected (value: Ref<Milestone> | undefined, values: Set<Ref<Milestone> | undefined | null>): boolean {
     return values.has(value)
   }
 
-  function handleFilterToggle(value: Ref<Milestone> | undefined): void {
+  function handleFilterToggle (value: Ref<Milestone> | undefined): void {
     if (isSelected(value, selectedValues)) {
       selectedValues.delete(value)
     } else {
@@ -95,7 +95,7 @@
     updateFilter(selectedValues)
   }
 
-  function updateFilter(newValues: Set<Ref<Milestone> | null | undefined>) {
+  function updateFilter (newValues: Set<Ref<Milestone> | null | undefined>) {
     clearTimeout(filterUpdateTimeout)
 
     filterUpdateTimeout = setTimeout(() => {
@@ -104,13 +104,13 @@
     }, FILTER_DEBOUNCE_MS)
   }
 
-  function getStatusItem(status: MilestoneStatus, docs: Milestone[]): Milestone[] {
+  function getStatusItem (status: MilestoneStatus, docs: Milestone[]): Milestone[] {
     let vals = docs.filter((p) => p.status === status)
     vals = sortFilterValues(vals, (v) => isSelected(v._id, selectedValues))
     return vals
   }
 
-  function getStatuses(): MilestoneStatus[] {
+  function getStatuses (): MilestoneStatus[] {
     const res = Array.from(Object.values(MilestoneStatus).filter((v) => !isNaN(Number(v)))) as MilestoneStatus[]
     return res
   }

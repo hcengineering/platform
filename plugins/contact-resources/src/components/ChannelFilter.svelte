@@ -45,7 +45,7 @@
     return false
   }
 
-  function handleFilterToggle(element: ChannelProvider) {
+  function handleFilterToggle (element: ChannelProvider) {
     if (isSelected(element, selected)) {
       selected = selected.filter((p) => p !== element._id)
     } else {
@@ -55,7 +55,7 @@
     updateFilter(selected)
   }
 
-  function updateFilter(newValues: Ref<ChannelProvider>[]) {
+  function updateFilter (newValues: Ref<ChannelProvider>[]) {
     clearTimeout(filterUpdateTimeout)
 
     filterUpdateTimeout = setTimeout(() => {

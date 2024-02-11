@@ -67,7 +67,7 @@
     objects = newElements.concat(result)
   })
 
-  async function createTagElement(): Promise<void> {
+  async function createTagElement (): Promise<void> {
     showPopup(CreateTagElement, { targetClass }, 'top')
   }
 

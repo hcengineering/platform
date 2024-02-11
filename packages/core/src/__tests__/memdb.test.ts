@@ -341,7 +341,7 @@ describe('memdb', () => {
       { _id: second },
       { lookup: { attachedTo: [test.class.TestComment, { attachedTo: spaces[0]._class } as any] } }
     )
-    expect((nested[0].$lookup?.attachedTo as any).$lookup?.attachedTo).toEqual(spaces[0])
+    expect((nested[0].$lookup?.attachedTo).$lookup?.attachedTo).toEqual(spaces[0])
 
     const reverse = await client.findAll(
       spaces[0]._class,

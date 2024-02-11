@@ -63,7 +63,7 @@
 
   let filterUpdateTimeout: any | undefined
 
-  async function getValues(
+  async function getValues (
     search: string,
     selectedType: Ref<TaskType> | undefined,
     typeStore: IdMap<TaskType>,
@@ -128,7 +128,7 @@
     objectsPromise = undefined
   }
 
-  async function sort(statuses: Status[]): Promise<Status[]> {
+  async function sort (statuses: Status[]): Promise<Status[]> {
     const categories = toIdMap(await client.findAll(core.class.StatusCategory, {}))
     statuses.sort((a, b) => {
       if (a.category !== undefined && b.category !== undefined && a.category !== b.category) {
@@ -144,11 +144,11 @@
     return statuses
   }
 
-  function isSelected(value: Doc | undefined | null, values: any[]): boolean {
+  function isSelected (value: Doc | undefined | null, values: any[]): boolean {
     return values.includes(value?._id ?? value)
   }
 
-  function handleFilterToggle(value: any): void {
+  function handleFilterToggle (value: any): void {
     if (isSelected(value, filter.value)) {
       filter.value = filter.value.filter((p) => (value ? p !== value._id : p != null))
     } else {
@@ -162,7 +162,7 @@
     updateFilter()
   }
 
-  function updateFilter(): void {
+  function updateFilter (): void {
     clearTimeout(filterUpdateTimeout)
 
     filterUpdateTimeout = setTimeout(() => {

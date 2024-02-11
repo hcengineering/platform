@@ -66,7 +66,7 @@
     { limit: 200 }
   )
 
-  function handleSelection(contacts: Employee[], index: number) {
+  function handleSelection (contacts: Employee[], index: number) {
     const contact = contacts[index]
 
     if (contact === undefined) {
@@ -78,7 +78,7 @@
     dispatch('select', Array.from(selectedItems))
   }
 
-  function onKeydown(key: KeyboardEvent): void {
+  function onKeydown (key: KeyboardEvent): void {
     if (key.code === 'ArrowUp') {
       key.stopPropagation()
       key.preventDefault()

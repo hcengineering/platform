@@ -9,7 +9,7 @@
   locationStore.subscribe((newLocation) => {
     isLoggedIn = newLocation.path[0] === 'workbench'
   })
-  function openPopup() {
+  function openPopup () {
     if (popup !== undefined) showPopup(popup, {}, 'top')
   }
 </script>
