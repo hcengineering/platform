@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { Asset, IntlString } from '@hcengineering/platform'
-  import { AnySvelteComponent, IconSize, LabelAndProps } from '../types'
+  import { AnySvelteComponent, ButtonType, IconSize, LabelAndProps } from '../types'
   import { tooltip as tp } from '../tooltips'
   import { registerFocus } from '../focus'
   import { ComponentType } from 'svelte'
@@ -39,6 +39,7 @@
   export let inheritFont: boolean = false
   export let tooltip: LabelAndProps | undefined = undefined
   export let element: HTMLButtonElement | undefined = undefined
+  export let type: ButtonType = 'button'
 
   let actualIconSize: IconSize = 'small'
 
@@ -78,6 +79,7 @@
 
 <button
   bind:this={element}
+  {type}
   class="font-medium-14 {kind} {size} {mode}"
   class:loading
   class:pressed
