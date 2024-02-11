@@ -113,7 +113,7 @@ test.describe('Tracker issue tests', () => {
     }
   })
 
-  test.skip('Set parent issue', async ({ page }) => {
+  test('Set parent issue', async ({ page }) => {
     const parentIssue: NewIssue = {
       title: `PARENT ISSUE-${generateId(2)}`,
       description: 'Created issue to be parent issue'
@@ -316,5 +316,29 @@ test.describe('Tracker issue tests', () => {
 
     await issuesPage.searchIssueByName(deleteIssue.title)
     await issuesPage.checkIssueNotExist(deleteIssue.title)
+  })
+
+  test('Check the changed description activity', async ({ page }) => {
+    const additionalDescription = 'New row for the additional description'
+    const changedDescriptionIssue: NewIssue = {
+      title: `Check the changed description activity-${generateId()}`,
+      description: 'Check the changed description activity description'
+    }
+
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    await leftSideMenuPage.buttonTracker.click()
+
+    const issuesPage = new IssuesPage(page)
+    await issuesPage.modelSelectorAll.click()
+    await issuesPage.createNewIssue(changedDescriptionIssue)
+    await issuesPage.searchIssueByName(changedDescriptionIssue.title)
+    await issuesPage.openIssueByName(changedDescriptionIssue.title)
+
+    const issuesDetailsPage = new IssuesDetailsPage(page)
+    await issuesDetailsPage.waitDetailsOpened(changedDescriptionIssue.title)
+    await issuesDetailsPage.checkIssue(changedDescriptionIssue)
+    await issuesDetailsPage.addToDescription(additionalDescription)
+    await issuesDetailsPage.openShowMoreLink('changed description')
+    await issuesDetailsPage.checkComparingTextAdded(additionalDescription)
   })
 })
