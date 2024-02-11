@@ -24,7 +24,7 @@
 </script>
 
 <ButtonBase
-  type={'type-button'}
+  mode={'default'}
   {title}
   {label}
   {labelParams}

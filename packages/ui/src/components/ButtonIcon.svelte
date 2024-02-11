@@ -32,14 +32,14 @@
 
   let element: ButtonBase | undefined
 
-  export function focus () {
+  export function focus() {
     element?.focus()
   }
 </script>
 
 <ButtonBase
   bind:this={element}
-  type={'type-button-icon'}
+  mode={'icon'}
   {kind}
   {size}
   {icon}

@@ -34,7 +34,7 @@
   export let loading: boolean = false
   export let pressed: boolean = false
   export let hasMenu: boolean = false
-  export let type: 'type-button' | 'type-button-icon'
+  export let mode: 'default' | 'icon'
   export let inheritColor: boolean = false
   export let inheritFont: boolean = false
   export let tooltip: LabelAndProps | undefined = undefined
@@ -44,7 +44,7 @@
 
   $: if (iconSize) {
     actualIconSize = iconSize
-  } else if (type === 'type-button' && !hasMenu) {
+  } else if (mode === 'default' && !hasMenu) {
     actualIconSize = 'medium'
   }
 
@@ -78,7 +78,7 @@
 
 <button
   bind:this={element}
-  class="font-medium-14 {kind} {size} {type}"
+  class="font-medium-14 {kind} {size} {mode}"
   class:loading
   class:pressed
   class:inheritColor
@@ -90,7 +90,7 @@
   on:keydown
 >
   {#if loading}
-    <div class="icon animate"><Spinner size={type === 'type-button' && !hasMenu ? 'medium' : 'small'} /></div>
+    <div class="icon animate"><Spinner size={mode === 'default' && !hasMenu ? 'medium' : 'small'} /></div>
   {:else if icon}<div class="icon">
       <Icon {icon} {iconProps} size={actualIconSize} />
     </div>{/if}
