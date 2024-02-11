@@ -34,7 +34,7 @@
   let dragState: Ref<Status>
   let opened: Ref<Status> | undefined
 
-  function dragswap (ev: MouseEvent, i: number): boolean {
+  function dragswap(ev: MouseEvent, i: number): boolean {
     const s = selected as number
     if (i < s) {
       return ev.offsetY < elements[i].offsetHeight / 2
@@ -44,7 +44,7 @@
     return false
   }
 
-  function dragover (ev: MouseEvent, i: number): void {
+  function dragover(ev: MouseEvent, i: number): void {
     const s = selected as number
     if (dragswap(ev, i)) {
       ;[states[i], states[s]] = [states[s], states[i]]
@@ -52,7 +52,7 @@
     }
   }
 
-  function onMove (to: number): void {
+  function onMove(to: number): void {
     dispatch('move', {
       stateID: dragState,
       position: to
@@ -68,11 +68,11 @@
     categoriesMap = toIdMap(res)
   })
 
-  function getProjectStatus (type: ProjectType, state: Status): ProjectStatus | undefined {
+  function getProjectStatus(type: ProjectType, state: Status): ProjectStatus | undefined {
     return type.statuses.find((p) => p._id === state._id)
   }
 
-  function group (categories: StatusCategory[], states: Status[]): Map<Ref<StatusCategory>, Status[]> {
+  function group(categories: StatusCategory[], states: Status[]): Map<Ref<StatusCategory>, Status[]> {
     const map = new Map<Ref<StatusCategory>, Status[]>(categories.map((p) => [p._id, []]))
     for (const state of states) {
       if (state.category === undefined) continue
@@ -89,7 +89,7 @@
 
   $: groups = group(categories, taskTypeStates)
 
-  function getPrevIndex (groups: Map<Ref<StatusCategory>, Status[]>, categories: Ref<StatusCategory>): number {
+  function getPrevIndex(groups: Map<Ref<StatusCategory>, Status[]>, categories: Ref<StatusCategory>): number {
     let index = 0
     for (const [cat, states] of groups) {
       if (cat === categories) {

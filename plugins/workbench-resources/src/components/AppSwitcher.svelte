@@ -27,7 +27,7 @@
   let activeElement: HTMLElement
   const btns: HTMLElement[] = []
 
-  function focusTarget (target: HTMLElement): void {
+  function focusTarget(target: HTMLElement): void {
     activeElement = target
   }
 

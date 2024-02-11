@@ -25,7 +25,7 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  function getTypes (): DropdownIntlItem[] {
+  function getTypes(): DropdownIntlItem[] {
     const descendants = hierarchy.getDescendants(core.class.Type)
     const res: DropdownIntlItem[] = []
     for (const descendant of descendants) {

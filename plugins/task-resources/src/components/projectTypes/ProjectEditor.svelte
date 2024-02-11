@@ -85,7 +85,7 @@
     },
     { sort: { _id: SortingOrder.Ascending } }
   )
-  async function onShortDescriptionChange (value: string): Promise<void> {
+  async function onShortDescriptionChange(value: string): Promise<void> {
     if (type !== undefined) {
       await client.diffUpdate(type, { shortDescription: value })
     }
@@ -138,7 +138,7 @@
     })
   )
 
-  function selectTaskType (id: string | undefined): void {
+  function selectTaskType(id: string | undefined): void {
     const loc = getCurrentResolvedLocation()
     if (id !== undefined) {
       loc.path[5] = id

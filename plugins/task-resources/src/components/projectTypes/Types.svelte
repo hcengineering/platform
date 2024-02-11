@@ -25,7 +25,7 @@
   export let types: WithLookup<ProjectType>[] = []
 
   const dispatch = createEventDispatcher()
-  function select (item: ProjectType): void {
+  function select(item: ProjectType): void {
     typeId = item._id
     dispatch('change', typeId)
   }

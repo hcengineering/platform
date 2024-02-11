@@ -50,7 +50,7 @@
 
   let selected: any
 
-  function sendSelect (id: SelectPopupValueType['id']): void {
+  function sendSelect(id: SelectPopupValueType['id']): void {
     selected = id
     if (onSelect) {
       onSelect(id)
@@ -59,7 +59,7 @@
     }
   }
 
-  function onKeydown (key: KeyboardEvent): void {
+  function onKeydown(key: KeyboardEvent): void {
     if (key.code === 'Tab') {
       dispatch('close')
       key.preventDefault()

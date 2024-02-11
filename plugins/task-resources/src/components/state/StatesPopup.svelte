@@ -36,7 +36,7 @@
 
   const client = getClient()
 
-  async function getType (space: Ref<Project>, types: IdMap<ProjectType>): Promise<ProjectType | undefined> {
+  async function getType(space: Ref<Project>, types: IdMap<ProjectType>): Promise<ProjectType | undefined> {
     const _space = await client.findOne(task.class.Project, { _id: space })
     if (_space === undefined) {
       type = undefined

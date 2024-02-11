@@ -30,7 +30,7 @@
     documents = result
   })
 
-  async function handleClick (issue: RelatedDocument) {
+  async function handleClick(issue: RelatedDocument) {
     if (readonly || disabled) return
     const prop = type === 'isBlocking' ? 'blockedBy' : type
     const isBlockingValue = await client.findAll(value._class, { 'blockedBy._id': value._id })
@@ -69,7 +69,7 @@
     await update(value, type, docs, label)
   }
 
-  async function handleRedirect (issue: Issue) {
+  async function handleRedirect(issue: Issue) {
     if (disabled) return
     const loc = await issueLinkFragmentProvider(issue)
     navigate(loc)

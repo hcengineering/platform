@@ -64,7 +64,7 @@
 
   const dispatch = createEventDispatcher()
 
-  function getStyle (backgroundColor: string | undefined, width: string | undefined) {
+  function getStyle(backgroundColor: string | undefined, width: string | undefined) {
     let style = width ? `width: ${width};` : ''
     if (backgroundColor) {
       style += ` background: ${backgroundColor};`

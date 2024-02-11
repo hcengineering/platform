@@ -87,7 +87,7 @@
   let selection = 0
   let list: ListView
 
-  async function handleSelection (evt: Event | undefined, objects: Doc[], selection: number): Promise<void> {
+  async function handleSelection(evt: Event | undefined, objects: Doc[], selection: number): Promise<void> {
     const item = objects[selection]
 
     if (!multiSelect) {
@@ -102,7 +102,7 @@
     }
   }
 
-  function onKeydown (key: KeyboardEvent): void {
+  function onKeydown(key: KeyboardEvent): void {
     if (key.code === 'ArrowUp') {
       key.stopPropagation()
       key.preventDefault()
@@ -121,7 +121,7 @@
   }
   const manager = createFocusManager()
 
-  function onCreate (): void {
+  function onCreate(): void {
     if (create === undefined) {
       return
     }
@@ -138,13 +138,13 @@
       }
     })
   }
-  function toAny (obj: any): any {
+  function toAny(obj: any): any {
     return obj
   }
 
   const forbiddenDeselectItemIds = new Set(disallowDeselect)
 
-  function getGroup (doc: Doc, groupBy: any): any {
+  function getGroup(doc: Doc, groupBy: any): any {
     if (created.find((it) => it._id === doc._id) !== undefined) {
       return '_created'
     }

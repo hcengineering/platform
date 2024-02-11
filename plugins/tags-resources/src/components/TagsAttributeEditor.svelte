@@ -22,11 +22,11 @@
   $: query.query(tags.class.TagReference, { attachedTo: object._id }, (result) => {
     items = result
   })
-  async function tagsHandler (evt: MouseEvent): Promise<void> {
+  async function tagsHandler(evt: MouseEvent): Promise<void> {
     if (readonly) return
     showPopup(TagsEditorPopup, { object, targetClass }, getEventPopupPositionElement(evt))
   }
-  async function removeTag (tag: TagReference): Promise<void> {
+  async function removeTag(tag: TagReference): Promise<void> {
     if (tag !== undefined) await client.remove(tag)
   }
 </script>

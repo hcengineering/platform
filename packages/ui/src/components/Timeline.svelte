@@ -79,7 +79,7 @@
     }
   }
 
-  const getDateByOffset = (x: number): { date: Date, delta: number } => {
+  const getDateByOffset = (x: number): { date: Date; delta: number } => {
     const deltaDays = Math.floor(x / dayWidth)
     const calcDay = new Date(currentTime + deltaDays * MILLISECONDS_IN_DAY)
     return { date: calcDay, delta: deltaDays }

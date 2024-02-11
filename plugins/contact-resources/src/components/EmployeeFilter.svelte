@@ -48,7 +48,7 @@
 
   let filterUpdateTimeout: any | undefined
 
-  async function getValues (search: string): Promise<void> {
+  async function getValues(search: string): Promise<void> {
     if (objectsPromise) {
       await objectsPromise
     }
@@ -103,11 +103,11 @@
     objectsPromise = undefined
   }
 
-  function isSelected (value: Doc | undefined | null, values: any[]): boolean {
+  function isSelected(value: Doc | undefined | null, values: any[]): boolean {
     return values.includes(value?._id ?? value)
   }
 
-  function handleFilterToggle (value: any): void {
+  function handleFilterToggle(value: any): void {
     if (isSelected(value, filter.value)) {
       filter.value = filter.value.filter((p) => (value ? p !== value._id : p != null))
     } else {
@@ -121,7 +121,7 @@
     updateFilter()
   }
 
-  function updateFilter () {
+  function updateFilter() {
     clearTimeout(filterUpdateTimeout)
 
     filterUpdateTimeout = setTimeout(() => {

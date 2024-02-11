@@ -79,7 +79,7 @@
     closePopup(category)
   })
 
-  function showActionPopup (action: Action, target: HTMLElement, isPopupHidden?: boolean): void {
+  function showActionPopup(action: Action, target: HTMLElement, isPopupHidden?: boolean): void {
     closePopup(category)
     closePopup(nextCategory)
 
@@ -96,13 +96,13 @@
       )
     }
   }
-  function focusTarget (action: Action, target: HTMLElement, isPopupHidden?: boolean): void {
+  function focusTarget(action: Action, target: HTMLElement, isPopupHidden?: boolean): void {
     if (focusSpeed && target !== activeElement) {
       activeElement = target
       showActionPopup(action, target, isPopupHidden)
     }
   }
-  export function clearFocus (): void {
+  export function clearFocus(): void {
     closePopup(category)
     activeElement = popup
   }

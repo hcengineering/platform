@@ -40,7 +40,7 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  function getTargetClass (): Ref<Class<Doc>> | undefined {
+  function getTargetClass(): Ref<Class<Doc>> | undefined {
     try {
       return (hierarchy.getAttribute(currentFilter.key._class, currentFilter.key.key).type as RefTo<Doc>).to
     } catch (err: any) {
@@ -51,7 +51,7 @@
   $: isState = targetClass === core.class.Status ?? false
   const dispatch = createEventDispatcher()
 
-  async function getCountStates (ids: Array<Ref<Doc>>): Promise<number> {
+  async function getCountStates(ids: Array<Ref<Doc>>): Promise<number> {
     if (targetClass === undefined) {
       return 0
     }
@@ -61,7 +61,7 @@
   }
 
   let countLabel: string = ''
-  async function getLabel (): Promise<void> {
+  async function getLabel(): Promise<void> {
     const count = isState ? await getCountStates(currentFilter.value) : currentFilter.value.length
     countLabel = await translate(view.string.FilterStatesCount, { value: count }, $themeStore.language)
   }
@@ -70,17 +70,17 @@
   $: if (filter) getLabel()
   $: getValueComponent(currentFilter)
 
-  async function getValueComponent (filter: Filter): Promise<void> {
+  async function getValueComponent(filter: Filter): Promise<void> {
     const presenterClass = getAttributePresenterClass(hierarchy, filter.key.attribute)
     const presenterMixin = hierarchy.classHierarchyMixin(presenterClass.attrClass, view.mixin.AttributeFilterPresenter)
     valueComponent = presenterMixin?.presenter
   }
 
-  async function getMode (mode: Ref<FilterMode>): Promise<FilterMode | undefined> {
+  async function getMode(mode: Ref<FilterMode>): Promise<FilterMode | undefined> {
     return await client.findOne(view.class.FilterMode, { _id: mode })
   }
 
-  function onChange (e: Filter) {
+  function onChange(e: Filter) {
     if (filter.nested !== undefined) {
       filter.nested = e
     } else {
@@ -97,7 +97,7 @@
   $: modeValuePromise = getMode(filter.mode)
   $: nestedModeValuePromise = filter.nested ? getMode(filter.nested.mode) : undefined
 
-  function clickHandler (e: MouseEvent, nested: boolean) {
+  function clickHandler(e: MouseEvent, nested: boolean) {
     const curr = nested && filter.nested ? filter.nested : filter
     showPopup(ModeSelector, { filter: curr }, eventToHTMLElement(e), (res) => {
       if (res) {

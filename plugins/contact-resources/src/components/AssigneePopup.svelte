@@ -110,7 +110,7 @@
     }
   }
 
-  async function updateCategories (objects: Contact[], categories: AssigneeCategory[] | undefined) {
+  async function updateCategories(objects: Contact[], categories: AssigneeCategory[] | undefined) {
     const refs = objects.map((e) => e._id)
 
     for (const category of [currentUserCategory, assigned, ...(categories ?? []), otherCategory]) {
@@ -133,13 +133,13 @@
   let selection = 0
   let list: ListView
 
-  async function handleSelection (evt: Event | undefined, selection: number): Promise<void> {
+  async function handleSelection(evt: Event | undefined, selection: number): Promise<void> {
     const person = contacts[selection]
     selected = allowDeselect && person._id === selected ? undefined : person._id
     dispatch('close', selected !== undefined ? person : undefined)
   }
 
-  function onKeydown (key: KeyboardEvent): void {
+  function onKeydown(key: KeyboardEvent): void {
     if (key.code === 'ArrowUp') {
       key.stopPropagation()
       key.preventDefault()
@@ -158,7 +158,7 @@
   }
   const manager = createFocusManager()
 
-  function toAny (obj: any): any {
+  function toAny(obj: any): any {
     return obj
   }
 </script>

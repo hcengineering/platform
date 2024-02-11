@@ -33,7 +33,7 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  function getFilters (_class: Ref<Class<Doc>>, mixin: ClassFilters): KeyFilter[] {
+  function getFilters(_class: Ref<Class<Doc>>, mixin: ClassFilters): KeyFilter[] {
     if (mixin.filters === undefined) return []
     const filters = mixin.filters.map((p) => {
       return typeof p === 'string' ? buildFilterFromKey(mixin._id, p) : buildFilterFromPreset(p)
@@ -50,7 +50,7 @@
     return result
   }
 
-  function buildFilterFromPreset (p: KeyFilterPreset): KeyFilter | undefined {
+  function buildFilterFromPreset(p: KeyFilterPreset): KeyFilter | undefined {
     if (p.key !== '') {
       const attribute = hierarchy.getAttribute(p._class, p.key)
       return {
@@ -61,19 +61,19 @@
     }
   }
 
-  function buildFilterFromKey (_class: Ref<Class<Doc>>, key: string): KeyFilter | undefined {
+  function buildFilterFromKey(_class: Ref<Class<Doc>>, key: string): KeyFilter | undefined {
     const attribute = hierarchy.getAttribute(_class, key)
     return buildFilterKey(hierarchy, _class, key, attribute)
   }
 
-  function getValue (name: string, type: Type<any>): string {
+  function getValue(name: string, type: Type<any>): string {
     if (hierarchy.isDerived(type._class, core.class.ArrOf)) {
       return getValue(name, (type as ArrOf<any>).of)
     }
     return name
   }
 
-  function buildFilterForAttr (_class: Ref<Class<Doc>>, attribute: AnyAttribute, result: KeyFilter[]): void {
+  function buildFilterForAttr(_class: Ref<Class<Doc>>, attribute: AnyAttribute, result: KeyFilter[]): void {
     if (attribute.label === undefined || attribute.hidden) {
       return
     }
@@ -87,7 +87,7 @@
     }
   }
 
-  function buildFilterFor (
+  function buildFilterFor(
     _class: Ref<Class<Doc>>,
     allAttributes: Map<string, AnyAttribute>,
     result: KeyFilter[],
@@ -102,7 +102,7 @@
     }
   }
 
-  async function getTypes (_class: Ref<Class<Doc>>, nestedFrom: KeyFilter | undefined): Promise<KeyFilter[]> {
+  async function getTypes(_class: Ref<Class<Doc>>, nestedFrom: KeyFilter | undefined): Promise<KeyFilter[]> {
     let res: KeyFilter[] = []
     if (nestedFrom !== undefined) {
       res = await getNestedTypes(nestedFrom)
@@ -120,12 +120,12 @@
     return res
   }
 
-  async function getNestedTypes (type: KeyFilter): Promise<KeyFilter[]> {
+  async function getNestedTypes(type: KeyFilter): Promise<KeyFilter[]> {
     const targetClass = (hierarchy.getAttribute(type._class, type.key).type as RefTo<Doc>).to
     return await getOwnTypes(targetClass)
   }
 
-  async function getOwnTypes (_class: Ref<Class<Doc>>): Promise<KeyFilter[]> {
+  async function getOwnTypes(_class: Ref<Class<Doc>>): Promise<KeyFilter[]> {
     const mixin = hierarchy.classHierarchyMixin(_class, view.mixin.ClassFilters)
     if (mixin === undefined) return []
     _class = hierarchy.getBaseClass(_class)
@@ -191,7 +191,7 @@
 
   const dispatch = createEventDispatcher()
 
-  function click (type: KeyFilter): void {
+  function click(type: KeyFilter): void {
     closePopup()
     closeTooltip()
 
@@ -234,7 +234,7 @@
     }
   }
 
-  function hasNested (type: KeyFilter): boolean {
+  function hasNested(type: KeyFilter): boolean {
     if (type.showNested === false) {
       return false
     }
@@ -244,7 +244,7 @@
     return hierarchy.hasMixin(clazz, view.mixin.ClassFilters)
   }
 
-  function setNestedFilter (type: KeyFilter, e: Filter | undefined) {
+  function setNestedFilter(type: KeyFilter, e: Filter | undefined) {
     const filter: Filter = {
       value: [],
       key: type,
@@ -264,7 +264,7 @@
 
   const elements: HTMLElement[] = []
 
-  function nextDiffCat (types: KeyFilter[], i: number): boolean {
+  function nextDiffCat(types: KeyFilter[], i: number): boolean {
     if (types[i + 1] === undefined) return false
     return types[i].group !== types[i + 1].group
   }

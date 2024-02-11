@@ -24,7 +24,7 @@
     setFontSize: (value: number) => void
   }>('fontsize')
 
-  const fontsizes: Array<{ id: string, label: IntlString, size: number }> = [
+  const fontsizes: Array<{ id: string; label: IntlString; size: number }> = [
     { id: 'normal-font', label: ui.string.Spacious, size: 16 },
     { id: 'small-font', label: ui.string.Compact, size: 14 }
   ]
@@ -33,7 +33,7 @@
 
   let current = fontsizes.findIndex((fs) => fs.id === currentFontSize)
 
-  function changeFontSize (ev: MouseEvent) {
+  function changeFontSize(ev: MouseEvent) {
     pressed = true
     showPopup(FontSizePopup, { fontsizes, selected: fontsizes[current].id }, btn, (result) => {
       if (result) {

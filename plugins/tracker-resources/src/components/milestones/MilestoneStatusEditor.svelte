@@ -43,7 +43,7 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
 
-  function handlePopupOpen (event: MouseEvent) {
+  function handlePopupOpen(event: MouseEvent) {
     showPopup(
       SelectPopup,
       { value: itemsInfo, placeholder: tracker.string.SetStatus },
@@ -52,7 +52,7 @@
     )
   }
 
-  async function changeStatus (newStatus: Milestone['status'] | null | undefined) {
+  async function changeStatus(newStatus: Milestone['status'] | null | undefined) {
     if (disabled || newStatus == null || value === newStatus) {
       return
     }

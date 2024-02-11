@@ -65,7 +65,7 @@
   let objectsPromise: Promise<FindResult<TagElement>> | undefined
   let queryId = 0
 
-  async function getValues (search: string): Promise<void> {
+  async function getValues(search: string): Promise<void> {
     const qid = ++queryId
     const resultQuery =
       search !== ''
@@ -112,7 +112,7 @@
     return false
   }
 
-  function handleFilterToggle (element: TagElement): void {
+  function handleFilterToggle(element: TagElement): void {
     if (isSelected(element)) {
       selected = selected.filter((p) => p !== element._id)
     } else {
@@ -124,7 +124,7 @@
     updateFilter(selected, level)
   }
 
-  function updateFilter (newValues: Ref<TagElement>[], newLevel: number) {
+  function updateFilter(newValues: Ref<TagElement>[], newLevel: number) {
     clearTimeout(filterUpdateTimeout)
 
     filterUpdateTimeout = setTimeout(() => {

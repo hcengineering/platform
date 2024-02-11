@@ -25,7 +25,7 @@
 
   $: minLevel = items.reduce((p, v) => Math.min(p, v.level), Infinity)
 
-  function getIndentLevel (level: number): number {
+  function getIndentLevel(level: number): number {
     return 1 * (level - minLevel)
   }
 
