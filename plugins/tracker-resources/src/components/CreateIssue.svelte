@@ -107,6 +107,7 @@
   let project: Project | undefined
   let object = getDefaultObjectFromDraft() ?? getDefaultObject(id)
   let isAssigneeTouched = false
+  let isComponentModified = false
   let kind: Ref<TaskType> | undefined
 
   let templateId: Ref<IssueTemplate> | undefined = draft?.template?.template
@@ -152,13 +153,16 @@
   }
 
   function getDefaultObject (id: Ref<Issue> | undefined = undefined, ignoreOriginal = false): IssueDraft {
+    const currentComponent =
+      parentIssue?.component !== undefined ? parentIssue?.component : component ?? $activeComponent ?? null
+
     const base: IssueDraft = {
       _id: id ?? generateId(),
       title: '',
       description: '',
       priority: priority ?? IssuePriority.NoPriority,
       space: _space as Ref<Project>,
-      component: component ?? $activeComponent ?? null,
+      component: currentComponent,
       dueDate: null,
       attachments: 0,
       estimation: 0,
@@ -201,6 +205,7 @@
 
   $: updateIssueStatusId(object, currentProject)
   $: updateAssigneeId(object, currentProject)
+  $: updateComponentId(object, currentProject)
   $: canSave = getTitle(object.title ?? '').length > 0 && object.status !== undefined && kind !== undefined
 
   $: empty = {
@@ -208,7 +213,10 @@
     status: status ?? currentProject?.defaultIssueStatus,
     parentIssue: parentIssue?._id,
     description: '<p></p>',
-    component: component ?? $activeComponent ?? null,
+    component:
+      parentIssue?.component !== undefined
+        ? parentIssue?.component
+        : component ?? $activeComponent ?? currentProject?.defaultComponent ?? null,
     milestone: milestone ?? $activeMilestone ?? null,
     priority: priority ?? IssuePriority.NoPriority,
     space: _space
@@ -326,6 +334,22 @@
       }
     }
   }
+
+  function updateComponentId (object: IssueDraft, currentProject: Project | undefined): void {
+    if (
+      !isComponentModified &&
+      object.component === null &&
+      parentIssue?.component !== null &&
+      currentProject !== undefined
+    ) {
+      if (currentProject.defaultComponent !== undefined) {
+        object.component = currentProject.defaultComponent
+      } else {
+        object.component = null
+      }
+    }
+  }
+
   function clearParentIssue (): void {
     object.parentIssue = undefined
     parentQuery.unsubscribe()
@@ -449,7 +473,7 @@
       draftController.remove()
       descriptionBox?.removeDraft(false)
       isAssigneeTouched = false
-      console.log('createIssue measure', doneOp())
+      isComponentModified = false
     } catch (err: any) {
       console.error(err)
       await doneOp() // Complete in case of error
@@ -475,6 +499,7 @@
       return
     }
 
+    isComponentModified = true
     object.component = componentId
   }
 
