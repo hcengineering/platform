@@ -151,7 +151,6 @@ export class IssuesDetailsPage extends CommonTrackerPage {
   async addToDescription (description: string): Promise<void> {
     const existDescription = await this.inputDescription.textContent()
     await this.inputDescription.fill(`${existDescription}\n${description}`)
-    // await this.inputComment.click()
   }
 
   async openShowMoreLink (activityHeader: string, position: number = 0): Promise<void> {
