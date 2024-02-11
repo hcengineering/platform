@@ -32,7 +32,6 @@
   class:disabled
   {disabled}
   use:tooltip={showTooltip}
-  tabindex="0"
   on:click|preventDefault|stopPropagation
 >
   <Icon {icon} {size} {iconProps} />

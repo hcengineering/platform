@@ -36,7 +36,6 @@
   {type}
   class="button {size}"
   use:tooltip={{ label, direction, props: labelProps }}
-  tabindex="0"
   on:click|stopPropagation|preventDefault={action}
   {disabled}
 >
