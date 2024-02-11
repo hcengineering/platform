@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { IntlString, Asset } from '@hcengineering/platform'
-  import type { AnySvelteComponent, TooltipAlignment } from '../types'
+  import type { AnySvelteComponent, ButtonType, TooltipAlignment } from '../types'
   import { ComponentType } from 'svelte'
 
   import Icon from './Icon.svelte'
@@ -29,9 +29,11 @@
   export let action: (ev: MouseEvent) => Promise<void> | void = async () => {}
   export let invisible: boolean = false
   export let disabled: boolean = false
+  export let type: ButtonType = 'button'
 </script>
 
 <button
+  {type}
   class="button {size}"
   use:tooltip={{ label, direction, props: labelProps }}
   tabindex="0"
