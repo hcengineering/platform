@@ -137,7 +137,6 @@ class UIClient extends TxOperations implements Client, MeasureClient {
       this.measureOp = undefined
       if (this.afterMeasure.length > 0) {
         const txes = this.afterMeasure
-        console.log('after measture', txes)
         this.afterMeasure = []
         for (const tx of txes) {
           await this.doNotify(tx)

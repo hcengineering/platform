@@ -359,7 +359,11 @@
     try {
       const operations = client.apply(_id)
 
-      const lastOne = await client.findOne<Issue>(tracker.class.Issue, {}, { sort: { rank: SortingOrder.Descending } })
+      const lastOne = await client.findOne<Issue>(
+        tracker.class.Issue,
+        { space: _space },
+        { sort: { rank: SortingOrder.Descending } }
+      )
       const incResult = await client.updateDoc(
         tracker.class.Project,
         core.space.Space,
@@ -449,7 +453,10 @@
       draftController.remove()
       descriptionBox?.removeDraft(false)
       isAssigneeTouched = false
-      console.log('createIssue measure', doneOp())
+      const d1 = Date.now()
+      void doneOp().then((res) => {
+        console.log('createIssue measure', res, Date.now() - d1)
+      })
     } catch (err: any) {
       console.error(err)
       await doneOp() // Complete in case of error
