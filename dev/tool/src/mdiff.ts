@@ -1,4 +1,14 @@
-import core, { Attribute, Data, Doc, DocumentUpdate, Hierarchy, ModelDb, Ref, Tx, Type } from '@hcengineering/core'
+import core, {
+  type Attribute,
+  type Data,
+  type Doc,
+  type DocumentUpdate,
+  Hierarchy,
+  ModelDb,
+  type Ref,
+  type Tx,
+  type Type
+} from '@hcengineering/core'
 import { deepEqual } from 'fast-equals'
 
 /**

@@ -4,7 +4,10 @@
   "license": "EPL-2.0",
   "template": "@hcengineering/webpack-package",
   "scripts": {
-    "build": "rm -rf ./dist && cross-env NODE_ENV=production webpack --stats-error-details && echo 'done'",
+    "_phase:build": "compile ui",
+    "_phase:package": "rushx package",
+    "build": "compile ui",
+    "package": "rm -rf ./dist && cross-env NODE_ENV=production webpack --stats-error-details && echo 'done'",
     "analyze": "cross-env NODE_ENV=production webpack --json > stats.json",
     "show": "webpack-bundle-analyzer stats.json dist",
     "dev-server": "cross-env CLIENT_TYPE=dev-server webpack serve",

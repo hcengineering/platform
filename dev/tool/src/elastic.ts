@@ -14,8 +14,8 @@
 //
 
 import { Client as ElasticClient } from '@elastic/elasticsearch'
-import core, { DOMAIN_DOC_INDEX_STATE, toWorkspaceString, WorkspaceId } from '@hcengineering/core'
-import { MinioService } from '@hcengineering/minio'
+import core, { DOMAIN_DOC_INDEX_STATE, toWorkspaceString, type WorkspaceId } from '@hcengineering/core'
+import { type MinioService } from '@hcengineering/minio'
 import { getWorkspaceDB } from '@hcengineering/mongo'
 import { MongoClient } from 'mongodb'
 

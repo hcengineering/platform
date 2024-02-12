@@ -10,4 +10,4 @@ export SERVER_SECRET=secret
 location="${1:-./sanity-ws}"
 
 # Restore workspace contents in mongo/elastic
-node ../dev/tool/bundle.js backup ${location} sanity-ws
+node ../dev/tool/bundle/bundle.js backup ${location} sanity-ws

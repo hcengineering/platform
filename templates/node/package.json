@@ -2,11 +2,12 @@
   "name": "@hcengineering/node-package",
   "version": "0.6.0",
   "scripts": {
-    "build": "tsc",
+    "_phase:build": "compile",
+    "_phase:test": "jest --passWithNoTests --silent --forceExit",
+    "_phase:format": "format src",
+    "build": "compile",
     "test": "jest --passWithNoTests --silent --forceExit",
-    "build:watch": "tsc",
-    "lint:fix": "eslint --fix src",
-    "lint": "eslint src",
+    "build:watch": "compile",
     "format": "format src"
   },
   "peerDependencies": {

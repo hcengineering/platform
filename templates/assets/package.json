@@ -2,12 +2,15 @@
   "name": "@hcengineering/assets-package",
   "version": "0.6.0",
   "scripts": {
-    "build": "tsc",
-    "build:watch": "tsc",
+    "_phase:build": "compile",
+    "_phase:test": "jest --passWithNoTests --silent",
+    "_phase:format": "format src",
+    "build": "compile",
+    "build:watch": "compile",
     "build:docs": "",
     "test": "jest --passWithNoTests --silent",
-    "lint": "eslint src",
-    "lint:fix": "eslint --fix src",
+    
+    
     "format": "format src"
   },
   "devDependencies": {    

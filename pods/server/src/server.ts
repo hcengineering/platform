@@ -21,9 +21,9 @@ import {
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
   DOMAIN_TX,
-  MeasureContext,
-  ServerStorage,
-  WorkspaceId
+  type MeasureContext,
+  type ServerStorage,
+  type WorkspaceId
 } from '@hcengineering/core'
 import { createElasticAdapter, createElasticBackupDataAdapter } from '@hcengineering/elastic'
 import {
@@ -44,7 +44,7 @@ import {
   createRekoniAdapter,
   createYDocAdapter,
   getMetricsContext,
-  MinioConfig
+  type MinioConfig
 } from '@hcengineering/server'
 import { serverAttachmentId } from '@hcengineering/server-attachment'
 import { serverCalendarId } from '@hcengineering/server-calendar'
@@ -52,18 +52,18 @@ import { serverChunterId } from '@hcengineering/server-chunter'
 import { serverContactId } from '@hcengineering/server-contact'
 import {
   ContentRetrievalStage,
-  ContentTextAdapter,
+  type ContentTextAdapter,
   createInMemoryAdapter,
   createPipeline,
-  DbConfiguration,
+  type DbConfiguration,
   FullSummaryStage,
-  FullTextAdapter,
-  FullTextPipelineStage,
+  type FullTextAdapter,
+  type FullTextPipelineStage,
   FullTextPushStage,
   globalIndexer,
   IndexedFieldStage,
-  MiddlewareCreator,
-  Pipeline
+  type MiddlewareCreator,
+  type Pipeline
 } from '@hcengineering/server-core'
 import { serverGmailId } from '@hcengineering/server-gmail'
 import { serverHrId } from '@hcengineering/server-hr'
@@ -76,16 +76,16 @@ import { serverSettingId } from '@hcengineering/server-setting'
 import { serverTagsId } from '@hcengineering/server-tags'
 import { serverTaskId } from '@hcengineering/server-task'
 import { serverTelegramId } from '@hcengineering/server-telegram'
-import { Token } from '@hcengineering/server-token'
+import { type Token } from '@hcengineering/server-token'
 import { serverTrackerId } from '@hcengineering/server-tracker'
 import { serverViewId } from '@hcengineering/server-view'
 import { serverActivityId } from '@hcengineering/server-activity'
 import {
-  BroadcastCall,
+  type BroadcastCall,
   ClientSession,
-  PipelineFactory,
-  ServerFactory,
-  Session,
+  type PipelineFactory,
+  type ServerFactory,
+  type Session,
   start as startJsonRpc
 } from '@hcengineering/server-ws'
 

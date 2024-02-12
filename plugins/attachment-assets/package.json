@@ -6,13 +6,14 @@
   "template": "@hcengineering/assets-package",
   "license": "EPL-2.0",
   "scripts": {
-    "build": "tsc",
+    "build": "compile",
     "build:docs": "",
     "test": "jest --passWithNoTests --silent",
-    "lint": "eslint src",
-    "lint:fix": "eslint --fix src",
     "format": "format src",
-    "build:watch": "tsc"
+    "build:watch": "compile",
+    "_phase:build": "compile",
+    "_phase:test": "jest --passWithNoTests --silent",
+    "_phase:format": "format src"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.11.0",

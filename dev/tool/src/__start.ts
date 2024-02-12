@@ -15,9 +15,9 @@
 
 import { prepareTools as prepareToolsRaw } from '@hcengineering/server-tool'
 
-import { Data, Tx, Version } from '@hcengineering/core'
-import { MinioService } from '@hcengineering/minio'
-import { MigrateOperation } from '@hcengineering/model'
+import { type Data, type Tx, type Version } from '@hcengineering/core'
+import { type MinioService } from '@hcengineering/minio'
+import { type MigrateOperation } from '@hcengineering/model'
 import builder, { migrateOperations, getModelVersion } from '@hcengineering/model-all'
 import { devTool } from '.'
 

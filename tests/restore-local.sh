@@ -8,13 +8,13 @@ export ELASTIC_URL=http://localhost:9200
 export SERVER_SECRET=secret
 
 # Restore workspace contents in mongo/elastic
-node ../dev/tool/bundle.js backup-restore ./sanity-ws sanity-ws
+node ../dev/tool/bundle/bundle.js backup-restore ./sanity-ws sanity-ws
 
-node ../dev/tool/bundle.js upgrade-workspace sanity-ws
+node ../dev/tool/bundle/bundle.js upgrade-workspace sanity-ws
 
 # Re-assign user to workspace.
-node ../dev/tool/bundle.js assign-workspace user1 sanity-ws
-node ../dev/tool/bundle.js assign-workspace user2 sanity-ws
+node ../dev/tool/bundle/bundle.js assign-workspace user1 sanity-ws
+node ../dev/tool/bundle/bundle.js assign-workspace user2 sanity-ws
 
-node ../dev/tool/bundle.js configure sanity-ws --enable=*
-node ../dev/tool/bundle.js configure sanity-ws --list
+node ../dev/tool/bundle/bundle.js configure sanity-ws --enable=*
+node ../dev/tool/bundle/bundle.js configure sanity-ws --list

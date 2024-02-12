@@ -14,14 +14,14 @@
 // limitations under the License.
 //
 
-import { DOMAIN_TX, Ref, WorkspaceId } from '@hcengineering/core'
-import { MinioService } from '@hcengineering/minio'
+import { DOMAIN_TX, type Ref, type WorkspaceId } from '@hcengineering/core'
+import { type MinioService } from '@hcengineering/minio'
 import { DOMAIN_ATTACHMENT } from '@hcengineering/model-attachment'
 import contact, { DOMAIN_CHANNEL } from '@hcengineering/model-contact'
 import { DOMAIN_TELEGRAM } from '@hcengineering/model-telegram'
 import { getWorkspaceDB } from '@hcengineering/mongo'
-import telegram, { SharedTelegramMessage, SharedTelegramMessages } from '@hcengineering/telegram'
-import { Document, MongoClient, UpdateFilter } from 'mongodb'
+import telegram, { type SharedTelegramMessage, type SharedTelegramMessages } from '@hcengineering/telegram'
+import { type Document, MongoClient, type UpdateFilter } from 'mongodb'
 
 const LastMessages = 'last-msgs'
 

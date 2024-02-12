@@ -14,7 +14,7 @@
 //
 
 import { getMethods } from '@hcengineering/account'
-import { Tx } from '@hcengineering/core'
+import { type Tx } from '@hcengineering/core'
 import builder, { migrateOperations, getModelVersion } from '@hcengineering/model-all'
 import { serveAccount } from '.'
 

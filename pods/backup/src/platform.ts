@@ -19,7 +19,7 @@ import { setMetadata } from '@hcengineering/platform'
 import { backup, createMinioBackupStorage } from '@hcengineering/server-backup'
 import serverToken from '@hcengineering/server-token'
 import got from 'got'
-import { ObjectId } from 'mongodb'
+import { type ObjectId } from 'mongodb'
 import config from './config'
 import toolPlugin from '@hcengineering/server-tool'
 

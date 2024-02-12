@@ -2,10 +2,12 @@
   "name": "@hcengineering/model-package",
   "version": "0.6.0",
   "scripts": {
-    "build": "tsc",
-    "build:watch": "tsc",
-    "lint:fix": "eslint --fix src",
-    "lint": "eslint src",
+    "_phase:build": "compile",
+    "_phase:format": "format src",
+    "build": "compile",
+    "build:watch": "compile",
+    
+    
     "format": "format src"
   },
   "peerDependencies": {

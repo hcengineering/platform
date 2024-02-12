@@ -9,4 +9,4 @@ export MINIO_ENDPOINT=minio
 export MINIO_ACCESS_KEY=minioadmin
 export MINIO_SECRET_KEY=minioadmin 
 
-node ./bundle.js
+node ./bundle/bundle.js

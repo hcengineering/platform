@@ -6,13 +6,14 @@
   "license": "EPL-2.0",
   "template": "@hcengineering/assets-package",
   "scripts": {
-    "build": "tsc",
+    "build": "compile",
     "test": "jest --passWithNoTests --silent",
     "build:docs": "",
-    "lint": "eslint src",
-    "lint:fix": "eslint --fix src",
     "format": "format src",
-    "build:watch": "tsc"
+    "build:watch": "compile",
+    "_phase:build": "compile",
+    "_phase:test": "jest --passWithNoTests --silent",
+    "_phase:format": "format src"
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "^0.6.0",

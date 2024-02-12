@@ -16,11 +16,11 @@
 
 import contact from '@hcengineering/contact'
 import core, {
-  Client as CoreClient,
-  BackupClient,
+  type Client as CoreClient,
+  type BackupClient,
   DOMAIN_TX,
-  Tx,
-  WorkspaceId,
+  type Tx,
+  type WorkspaceId,
   type Ref,
   type Doc
 } from '@hcengineering/core'

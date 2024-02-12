@@ -7,6 +7,8 @@
   },
   "bin": {
     "format": "./bin/format.js",
+    "compile": "./bin/compile.js",
+    "do-svelte-check": "./bin/do-svelte-check.js",
     "bump-package-version": "./bin/bump-package-version.js"
   },
   "devDependencies": {
@@ -18,6 +20,6 @@
     "eslint": "^8.54.0"
   },
   "dependencies": {
-    "typescript": "^5.2.2"
+    "typescript": "^5.3.3"
   }
 }

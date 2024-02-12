@@ -2,10 +2,10 @@
   "name": "@hcengineering/ui-package",
   "version": "0.6.0",
   "scripts": {
-    "build": "tsc  --noEmit --outDir ./dist_cache && echo build",
-    "build:watch": "tsc  --noEmit --outDir ./dist_cache",
-    "lint:fix": "eslint --fix src",
-    "lint": "eslint src",
+    "_phase:build": "compile ui",
+    "_phase:format": "format src",
+    "build": "compile ui",
+    "build:watch": "compile ui",
     "format": "format src"
   },
   "devDependencies": {

@@ -14,14 +14,14 @@
 // limitations under the License.
 //
 
-import account, { ACCOUNT_DB, AccountMethod, accountId } from '@hcengineering/account'
+import account, { ACCOUNT_DB, type AccountMethod, accountId } from '@hcengineering/account'
 import accountEn from '@hcengineering/account/lang/en.json'
 import accountRu from '@hcengineering/account/lang/ru.json'
 import platform, { Severity, Status, addStringsLoader, setMetadata } from '@hcengineering/platform'
 import serverToken from '@hcengineering/server-token'
 import toolPlugin from '@hcengineering/server-tool'
 import cors from '@koa/cors'
-import { IncomingHttpHeaders } from 'http'
+import { type IncomingHttpHeaders } from 'http'
 import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
 import Router from 'koa-router'
