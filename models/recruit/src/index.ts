@@ -1779,7 +1779,8 @@ export function createModel (builder: Builder): void {
       description: recruit.string.ManageVacancyStatuses,
       icon: recruit.icon.RecruitApplication,
       editor: recruit.component.VacancyTemplateEditor,
-      baseClass: recruit.class.Vacancy
+      baseClass: recruit.class.Vacancy,
+      allowedTaskTypeDescriptors: [recruit.descriptors.Application]
     },
     recruit.descriptors.VacancyType
   )
