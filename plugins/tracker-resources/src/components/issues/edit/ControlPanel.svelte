@@ -16,12 +16,12 @@
   import { PersonAccount } from '@hcengineering/contact'
   import { EmployeeBox, personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
   import core, { Class, ClassifierKind, Doc, Mixin, Ref } from '@hcengineering/core'
-  import { AttributeBarEditor, KeyedAttribute, createQuery, getClient } from '@hcengineering/presentation'
+  import { AttributeBarEditor, createQuery, getClient, KeyedAttribute } from '@hcengineering/presentation'
 
   import tags from '@hcengineering/tags'
   import type { Issue } from '@hcengineering/tracker'
   import { Component, Label } from '@hcengineering/ui'
-  import { ObjectBox, getFiltredKeys, isCollectionAttr } from '@hcengineering/view-resources'
+  import { getFiltredKeys, isCollectionAttr, ObjectBox } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
   import ComponentEditor from '../../components/ComponentEditor.svelte'
   import MilestoneEditor from '../../milestones/MilestoneEditor.svelte'
@@ -44,11 +44,25 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
+  const ignoreKeys = [
+    'title',
+    'description',
+    'priority',
+    'status',
+    'number',
+    'assignee',
+    'component',
+    'dueDate',
+    'milestone',
+    'relations',
+    'blockedBy',
+    'identifier'
+  ]
 
   let keys: KeyedAttribute[] = []
 
-  function updateKeys (ignoreKeys: string[]): void {
-    const filtredKeys = getFiltredKeys(hierarchy, issue._class, ignoreKeys)
+  function updateKeys (_class: Ref<Class<Issue>>, ignoreKeys: string[]): void {
+    const filtredKeys = getFiltredKeys(hierarchy, _class, ignoreKeys)
     keys = filtredKeys.filter((key) => !isCollectionAttr(hierarchy, key))
   }
 
@@ -75,24 +89,10 @@
       [],
       hierarchy.isMixin(mixinClass.extends as Ref<Class<Doc>>) ? mixinClass.extends : issue._class
     )
-    const res = filtredKeys.filter((key) => !isCollectionAttr(hierarchy, key))
-    return res
+    return filtredKeys.filter((key) => !isCollectionAttr(hierarchy, key))
   }
 
-  $: updateKeys([
-    'title',
-    'description',
-    'priority',
-    'status',
-    'number',
-    'assignee',
-    'component',
-    'dueDate',
-    'milestone',
-    'relations',
-    'blockedBy',
-    'identifier'
-  ])
+  $: updateKeys(issue._class, ignoreKeys)
 
   let account: PersonAccount | undefined
 
