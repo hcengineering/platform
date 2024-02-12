@@ -2,7 +2,7 @@
   import { Class, Doc, Ref, toIdMap } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import task, { ProjectType, TaskType } from '@hcengineering/task'
-  import { DropdownLabels } from '@hcengineering/ui'
+  import { ButtonKind, DropdownLabels } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { selectedTaskTypeStore, taskTypeStore } from '../..'
 
@@ -10,6 +10,7 @@
   export let projectType: Ref<ProjectType> | undefined
   export let focusIndex: number = -1
   export let baseClass: Ref<Class<Doc>> | undefined = undefined
+  export let kind: ButtonKind = 'regular'
   export let allTypes = false
   const client = getClient()
 
@@ -46,7 +47,7 @@
 {#if projectType !== undefined && items.length > 1}
   <DropdownLabels
     {focusIndex}
-    kind={'regular'}
+    {kind}
     {items}
     bind:selected={value}
     enableSearch={false}

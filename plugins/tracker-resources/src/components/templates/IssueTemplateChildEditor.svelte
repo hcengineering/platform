@@ -16,11 +16,12 @@
   import { generateId, Ref } from '@hcengineering/core'
   import presentation, { createQuery, getClient, KeyedAttribute } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
+  import { TaskKindSelector } from '@hcengineering/task-resources'
   import { StyledTextArea } from '@hcengineering/text-editor'
   import {
+    Component as ComponentType,
     IssuePriority,
     IssueTemplateChild,
-    Component as ComponentType,
     Milestone,
     Project
   } from '@hcengineering/tracker'
@@ -108,6 +109,18 @@
     labels = [...labels, tag]
   }
 
+  const projectQuery = createQuery()
+  $: projectQuery.query(
+    tracker.class.Project,
+    {
+      _id: projectId
+    },
+    (res) => {
+      ;[currentProject] = res
+    }
+  )
+  let currentProject: Project | undefined = undefined
+
   $: thisRef && thisRef.scrollIntoView({ behavior: 'smooth' })
   $: canSave = getTitle(newIssue.title ?? '').length > 0
 
@@ -138,6 +151,12 @@
   </div>
   <div class="mt-4 flex-between items-end">
     <div class="inline-flex flex-wrap xsmall-gap">
+      <TaskKindSelector
+        projectType={currentProject?.type}
+        kind="no-border"
+        bind:value={newIssue.kind}
+        baseClass={tracker.class.Issue}
+      />
       <PriorityEditor
         value={newIssue}
         shouldShowLabel

@@ -17,7 +17,17 @@
   import { AttachmentPresenter, AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import chunter from '@hcengineering/chunter'
   import { Employee } from '@hcengineering/contact'
-  import core, { Account, Class, Doc, DocData, Ref, SortingOrder, fillDefaults, generateId } from '@hcengineering/core'
+  import core, {
+    Account,
+    Class,
+    Doc,
+    DocData,
+    Ref,
+    SortingOrder,
+    fillDefaults,
+    generateId,
+    toIdMap
+  } from '@hcengineering/core'
   import { getResource, translate } from '@hcengineering/platform'
   import preference, { SpacePreference } from '@hcengineering/preference'
   import {
@@ -64,6 +74,7 @@
   import { activeComponent, activeMilestone, generateIssueShortLink, updateIssueRelation } from '../issues'
   import tracker from '../plugin'
   import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
+  import SubIssues from './SubIssues.svelte'
   import ComponentSelector from './components/ComponentSelector.svelte'
   import AssigneeEditor from './issues/AssigneeEditor.svelte'
   import IssueNotification from './issues/IssueNotification.svelte'
@@ -107,7 +118,7 @@
   let project: Project | undefined
   let object = getDefaultObjectFromDraft() ?? getDefaultObject(id)
   let isAssigneeTouched = false
-  let kind: Ref<TaskType> | undefined
+  let kind: Ref<TaskType> | undefined = undefined
 
   let templateId: Ref<IssueTemplate> | undefined = draft?.template?.template
   let appliedTemplateId: Ref<IssueTemplate> | undefined = draft?.template?.template
@@ -156,6 +167,7 @@
       _id: id ?? generateId(),
       title: '',
       description: '',
+      kind: '' as Ref<TaskType>,
       priority: priority ?? IssuePriority.NoPriority,
       space: _space as Ref<Project>,
       component: component ?? $activeComponent ?? null,
@@ -258,14 +270,34 @@
     }
     const { _class, _id, space, children, comments, attachments, labels, description, ...templBase } = template
 
+    const allLabels = new Set<Ref<TagElement>>()
+    for (const label of labels ?? []) {
+      allLabels.add(label)
+    }
+    for (const child of children) {
+      for (const label of child.labels ?? []) {
+        allLabels.add(label)
+      }
+    }
+    const tagElements = toIdMap(await client.findAll(tags.class.TagElement, { _id: { $in: Array.from(allLabels) } }))
+
     object.subIssues = template.children.map((p) => {
       return {
         ...p,
-        _id: p.id,
+        kind: p.kind ?? kind ?? ('' as Ref<TaskType>),
+        _id: generateId(),
         space: _space as Ref<Project>,
         subIssues: [],
         dueDate: null,
-        labels: [],
+        labels:
+          p.labels !== undefined
+            ? (p.labels
+                .map((p) => {
+                  const val = tagElements.get(p)
+                  return val !== undefined ? tagAsRef(val) : undefined
+                })
+                .filter((p) => p !== undefined) as TagReference[])
+            : [],
         status: currentProject?.defaultIssueStatus
       }
     })
@@ -279,8 +311,19 @@
       }
     }
     appliedTemplateId = templateId
-    const tagElements = await client.findAll(tags.class.TagElement, { _id: { $in: labels } })
-    object.labels = tagElements.map(tagAsRef)
+    object.labels =
+      labels !== undefined
+        ? (labels
+            .map((p) => {
+              const val = tagElements.get(p)
+              return val !== undefined ? tagAsRef(val) : undefined
+            })
+            .filter((p) => p !== undefined) as TagReference[])
+        : []
+
+    if (object.kind !== undefined) {
+      kind = object.kind
+    }
     fillDefaults(hierarchy, object, tracker.class.Issue)
   }
 
@@ -335,6 +378,8 @@
   function getTitle (value: string): string {
     return value.trim()
   }
+
+  let subIssuesComponent: SubIssues
 
   export function canClose (): boolean {
     return true
@@ -435,6 +480,15 @@
 
       await operations.commit()
       await descriptionBox.createAttachments(_id)
+
+      const parents = parentIssue
+        ? [
+            { parentId: _id, parentTitle: value.title, space: parentIssue.space },
+            { parentId: parentIssue._id, parentTitle: parentIssue.title, space: parentIssue.space },
+            ...parentIssue.parents
+          ]
+        : [{ parentId: _id, parentTitle: value.title, space: _space }]
+      await subIssuesComponent.save(parents, _id)
       addNotification(
         await translate(tracker.string.IssueCreated, {}, $themeStore.language),
         getTitle(object.title),
@@ -720,6 +774,16 @@
       />
     {/key}
   </div>
+  {#if _space}
+    <SubIssues
+      bind:this={subIssuesComponent}
+      projectId={_space}
+      project={currentProject}
+      milestone={object.milestone}
+      component={object.component}
+      bind:subIssues={object.subIssues}
+    />
+  {/if}
   <DocCreateExtComponent manager={docCreateManager} kind={'body'} space={currentProject} props={extraProps} />
   <svelte:fragment slot="pool">
     <div id="status-editor">
