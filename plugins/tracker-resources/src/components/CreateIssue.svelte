@@ -265,7 +265,7 @@
         space: _space as Ref<Project>,
         subIssues: [],
         dueDate: null,
-        labels: [],
+        labels: p.labels.map(tagAsRef),
         status: currentProject?.defaultIssueStatus
       }
     })
