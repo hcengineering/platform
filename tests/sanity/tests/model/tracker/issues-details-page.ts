@@ -147,4 +147,17 @@ export class IssuesDetailsPage extends CommonTrackerPage {
   async checkCollaboratorsCount (count: string): Promise<void> {
     await expect(this.buttonCollaborators).toHaveText(count)
   }
+
+  async addToDescription (description: string): Promise<void> {
+    const existDescription = await this.inputDescription.textContent()
+    await this.inputDescription.fill(`${existDescription}\n${description}`)
+  }
+
+  async openShowMoreLink (activityHeader: string, position: number = 0): Promise<void> {
+    await this.textActivity.filter({ hasText: activityHeader }).locator('xpath=..').locator('div.showMore').click()
+  }
+
+  async checkComparingTextAdded (text: string): Promise<void> {
+    await expect(this.page.locator('span.text-editor-highlighted-node-add', { hasText: text }).first()).toBeVisible()
+  }
 }
