@@ -633,21 +633,6 @@ export function createModel (builder: Builder, options = { addApplication: true 
   createAction(
     builder,
     {
-      action: chunter.actionImpl.ReplyToThread,
-      label: chunter.string.ReplyToThread,
-      icon: chunter.icon.Thread,
-      input: 'focus',
-      category: chunter.category.Chunter,
-      target: activity.class.ActivityMessage,
-      visibilityTester: chunter.function.CanReplyToThread,
-      context: { mode: 'context', application: notification.app.Notification, group: 'edit' }
-    },
-    chunter.action.ReplyToThread
-  )
-
-  createAction(
-    builder,
-    {
       ...viewTemplates.open,
       target: notification.class.DocNotifyContext,
       context: {
@@ -692,6 +677,21 @@ export function createModel (builder: Builder, options = { addApplication: true 
   builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
     ofMessage: activity.class.ActivityInfoMessage,
     components: [{ kind: 'footer', component: chunter.component.Replies }]
+  })
+
+  builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
+    ofMessage: chunter.class.ChatMessage,
+    components: [{ kind: 'action', component: chunter.component.ReplyToThreadAction }]
+  })
+
+  builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
+    ofMessage: activity.class.DocUpdateMessage,
+    components: [{ kind: 'action', component: chunter.component.ReplyToThreadAction }]
+  })
+
+  builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
+    ofMessage: activity.class.ActivityInfoMessage,
+    components: [{ kind: 'action', component: chunter.component.ReplyToThreadAction }]
   })
 
   builder.mixin(chunter.class.Channel, core.class.Class, chunter.mixin.ObjectChatPanel, {

@@ -68,13 +68,13 @@ import ThreadNotificationPresenter from './components/notification/ThreadNotific
 import ChatMessageNotificationLabel from './components/notification/ChatMessageNotificationLabel.svelte'
 import ChatAside from './components/chat/ChatAside.svelte'
 import Replies from './components/Replies.svelte'
+import ReplyToThreadAction from './components/ReplyToThreadAction.svelte'
 
 import { updateBacklinksList } from './backlinks'
 import {
   ChannelTitleProvider,
   DirectTitleProvider,
   canDeleteMessage,
-  canReplyToThread,
   chunterSpaceLinkFragmentProvider,
   dmIdentifierProvider,
   getDmName,
@@ -284,7 +284,8 @@ export default async (): Promise<Resources> => ({
     ChatMessageNotificationLabel,
     ThreadNotificationPresenter,
     ChatAside,
-    Replies
+    Replies,
+    ReplyToThreadAction
   },
   function: {
     GetDmName: getDmName,
@@ -295,7 +296,6 @@ export default async (): Promise<Resources> => ({
     ChannelTitleProvider,
     DmIdentifierProvider: dmIdentifierProvider,
     CanDeleteMessage: canDeleteMessage,
-    CanReplyToThread: canReplyToThread,
     CanCopyMessageLink: canCopyMessageLink,
     GetChunterSpaceLinkFragment: chunterSpaceLinkFragmentProvider,
     GetUnreadThreadsCount: getUnreadThreadsCount,
@@ -310,8 +310,7 @@ export default async (): Promise<Resources> => ({
     ConvertDmToPrivateChannel,
     DeleteChatMessage: deleteChatMessage,
     OpenChannel,
-    UnpinAllChannels,
-    ReplyToThread: replyToThread
+    UnpinAllChannels
   },
   backreference: {
     Update: update

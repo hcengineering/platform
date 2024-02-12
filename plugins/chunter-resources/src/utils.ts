@@ -119,7 +119,7 @@ export async function canDeleteMessage (doc?: ChatMessage): Promise<boolean> {
   return doc.createdBy === me._id
 }
 
-export async function canReplyToThread (doc?: ActivityMessage): Promise<boolean> {
+export function canReplyToThread (doc?: ActivityMessage): boolean {
   if (doc === undefined) {
     return false
   }
@@ -400,7 +400,6 @@ export function buildThreadLink (loc: Location, contextId: Ref<DocNotifyContext>
   loc.path[3] = contextId
   loc.path[4] = _id
   loc.fragment = undefined
-  loc.query = { message: _id }
 
   return loc
 }
