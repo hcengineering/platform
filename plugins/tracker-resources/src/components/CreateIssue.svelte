@@ -261,7 +261,7 @@
     object.subIssues = template.children.map((p) => {
       return {
         ...p,
-        _id: p.id,
+        _id: generateId(),
         space: _space as Ref<Project>,
         subIssues: [],
         dueDate: null,
