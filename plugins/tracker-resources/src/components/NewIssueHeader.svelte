@@ -15,11 +15,12 @@
 <script lang="ts">
   import { Ref, Space } from '@hcengineering/core'
   import { MultipleDraftController, getClient } from '@hcengineering/presentation'
-  import { Button, IconAdd, showPopup } from '@hcengineering/ui'
+  import { IconAdd, IconDropdown, SelectPopupValueType, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { onDestroy } from 'svelte'
   import tracker from '../plugin'
   import CreateIssue from './CreateIssue.svelte'
+  import ButtonWithDropdown from '@hcengineering/ui/src/components/ButtonWithDropdown.svelte'
 
   export let currentSpace: Ref<Space> | undefined
 
@@ -39,27 +40,42 @@
       closed = true
     })
   }
+  const dropdownItems: SelectPopupValueType[] = [
+    {
+      id: tracker.string.CreateProject,
+      label: tracker.string.CreateProject
+    }
+  ]
 
   $: label = draftExists || !closed ? tracker.string.ResumeDraft : tracker.string.NewIssue
 
   const client = getClient()
 
   let keys: string[] | undefined = undefined
+  function dropdownItemSelected (res?: SelectPopupValueType['id']): void {
+    if (res == null) return
+
+    if (res === tracker.string.CreateProject) {
+      showPopup(tracker.component.CreateProject, {})
+    }
+  }
 
   client.findOne(view.class.Action, { _id: tracker.action.NewIssue }).then((p) => (keys = p?.keyBinding))
 </script>
 
 <div class="antiNav-subheader">
-  <Button
+  <ButtonWithDropdown
     icon={IconAdd}
-    {label}
     justify={'left'}
     kind={'primary'}
-    width={'100%'}
-    gap={'large'}
+    {label}
     on:click={newIssue}
-    id={'new-issue'}
-    showTooltip={{
+    {dropdownItems}
+    dropdownIcon={IconDropdown}
+    on:dropdown-selected={(ev) => {
+      dropdownItemSelected(ev.detail)
+    }}
+    showTooltipMain={{
       direction: 'bottom',
       label,
       keys
@@ -70,12 +86,13 @@
         <div class="draft-circle" />
       {/if}
     </div>
-  </Button>
+  </ButtonWithDropdown>
 </div>
 
 <style lang="scss">
   .draft-circle-container {
     margin-left: auto;
+    padding-right: 12px;
   }
 
   .draft-circle {
