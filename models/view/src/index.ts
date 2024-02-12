@@ -735,6 +735,7 @@ export function createModel (builder: Builder): void {
       category: view.category.GeneralNavigation,
       input: 'none',
       target: core.class.Doc,
+      allowedForEditableContent: true,
       context: {
         mode: ['workbench', 'browser', 'panel', 'editor', 'input']
       }

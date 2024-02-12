@@ -135,13 +135,15 @@ export function canReplyToThread (doc?: ActivityMessage): boolean {
   return true
 }
 
-export async function canCopyMessageLink (doc?: ActivityMessage): Promise<boolean> {
-  if (doc === undefined) {
+export async function canCopyMessageLink (doc?: ActivityMessage | ActivityMessage[]): Promise<boolean> {
+  const message = Array.isArray(doc) ? doc[0] : doc
+
+  if (message === undefined) {
     return false
   }
 
-  if (doc._class === activity.class.DocUpdateMessage) {
-    return (doc as DocUpdateMessage).objectClass !== activity.class.Reaction
+  if (message._class === activity.class.DocUpdateMessage) {
+    return (message as DocUpdateMessage).objectClass !== activity.class.Reaction
   }
 
   return true

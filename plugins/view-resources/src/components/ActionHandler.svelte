@@ -131,9 +131,11 @@
     const targetTagName = (evt.target as any)?.tagName?.toLowerCase()
 
     let elm = evt.target as HTMLElement
+    let isContentEditable = false
+
     while (true) {
-      if (elm.contentEditable === 'true') {
-        return
+      if (elm.isContentEditable) {
+        isContentEditable = true
       }
       const prt = elm.parentElement
       if (prt === null) {
@@ -165,7 +167,13 @@
     }
     clearTimeout(timer)
 
-    currentActions = currentActions.filter((p) => p.keyBinding !== undefined && p.keyBinding.length > 0)
+    currentActions = currentActions.filter(({ keyBinding, allowedForEditableContent }) => {
+      const hasKeyBinding = keyBinding !== undefined && keyBinding.length > 0
+      const allowed = !isContentEditable || allowedForEditableContent
+
+      return hasKeyBinding && allowed
+    })
+
     if (lastKey !== undefined) {
       for (const a of sequences) {
         // TODO: Handle multiple keys here
