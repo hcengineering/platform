@@ -174,7 +174,7 @@
     {
       "summary": "docker:staging",
       "commandKind": "phased",
-      "name": "docker-staging",
+      "name": "docker:staging",
       "phases": ["_phase:build", "_phase:bundle", "_phase:package", "_phase:docker-staging"],
       "enableParallelism": true,
       "incremental": true
