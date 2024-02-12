@@ -54,8 +54,6 @@ export interface QueryWithResult {
   findOne: boolean
 }
 
-export const transactions: TxWitHResult[] = []
-
 class ModelClient implements AccountClient {
   notifyEnabled = true
   constructor (readonly client: AccountClient) {
@@ -92,6 +90,7 @@ class ModelClient implements AccountClient {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<WithLookup<T> | undefined> {
+    const startTime = Date.now()
     const result = await this.client.findOne(_class, query, options)
     if (this.notifyEnabled) {
       console.debug(
@@ -103,7 +102,8 @@ class ModelClient implements AccountClient {
         result,
         ' =>model',
         this.client.getModel(),
-        getMetadata(devmodel.metadata.DevModel)
+        getMetadata(devmodel.metadata.DevModel),
+        Date.now() - startTime
       )
     }
     return result
@@ -114,6 +114,7 @@ class ModelClient implements AccountClient {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
+    const startTime = Date.now()
     const result = await this.client.findAll(_class, query, options)
     if (this.notifyEnabled) {
       console.debug(
@@ -125,7 +126,8 @@ class ModelClient implements AccountClient {
         result,
         ' =>model',
         this.client.getModel(),
-        getMetadata(devmodel.metadata.DevModel)
+        getMetadata(devmodel.metadata.DevModel),
+        Date.now() - startTime
       )
     }
     return result
@@ -140,13 +142,10 @@ class ModelClient implements AccountClient {
   }
 
   async tx (tx: Tx): Promise<TxResult> {
+    const startTime = Date.now()
     const result = await this.client.tx(tx)
     if (this.notifyEnabled) {
-      console.debug('devmodel# tx=>', tx, result, getMetadata(devmodel.metadata.DevModel))
-    }
-    transactions.push({ tx, result })
-    if (transactions.length > 100) {
-      transactions.shift()
+      console.debug('devmodel# tx=>', tx, result, getMetadata(devmodel.metadata.DevModel), Date.now() - startTime)
     }
     return result
   }

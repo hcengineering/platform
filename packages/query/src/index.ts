@@ -34,6 +34,7 @@ import core, {
   SearchQuery,
   SearchResult,
   SortingQuery,
+  Space,
   Tx,
   TxCollectionCUD,
   TxCreateDoc,
@@ -200,6 +201,11 @@ export class LiveQuery extends TxProcessor implements Client {
         modifiedOn: 1
       }
     }
+    if (options === undefined) {
+      options = {}
+    }
+    options.limit = 1
+
     const q = this.findQuery(_class, query, options) ?? this.createDumpQuery(_class, query, options)
     if (q.result instanceof Promise) {
       q.result = await q.result
@@ -393,8 +399,8 @@ export class LiveQuery extends TxProcessor implements Client {
     return false
   }
 
-  private async getCurrentDoc (q: Query, _id: Ref<Doc>): Promise<boolean> {
-    const current = await this.client.findOne(q._class, { _id }, q.options)
+  private async getCurrentDoc (q: Query, _id: Ref<Doc>, space: Ref<Space>): Promise<boolean> {
+    const current = await this.client.findOne(q._class, { _id, space }, q.options)
     if (q.result instanceof Promise) {
       q.result = await q.result
     }
@@ -480,7 +486,7 @@ export class LiveQuery extends TxProcessor implements Client {
                 continue
               }
             } else {
-              const currentRefresh = await this.getCurrentDoc(q, updatedDoc._id)
+              const currentRefresh = await this.getCurrentDoc(q, updatedDoc._id, updatedDoc.space)
               if (currentRefresh) {
                 continue
               }
@@ -568,7 +574,7 @@ export class LiveQuery extends TxProcessor implements Client {
           const updateRefresh = await this.checkUpdatedDocMatch(q, updatedDoc)
           if (updateRefresh) return
         } else {
-          const currentRefresh = await this.getCurrentDoc(q, updatedDoc._id)
+          const currentRefresh = await this.getCurrentDoc(q, updatedDoc._id, updatedDoc.space)
           if (currentRefresh) return
         }
       }

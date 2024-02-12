@@ -304,6 +304,29 @@ export class OptimizeQueryMiddleware extends BasePresentationMiddleware implemen
       console.error('_class must be specified in query', query)
       return toFindResult([], 0)
     }
-    return await this.provideFindAll(_class, query, options)
+    const fQuery = { ...query }
+    const fOptions = { ...options }
+    this.optimizeQuery<T>(fQuery, fOptions)
+    return await this.provideFindAll(_class, fQuery, fOptions)
+  }
+
+  private optimizeQuery<T extends Doc>(fQuery: DocumentQuery<T>, fOptions: FindOptions<T>): void {
+    if (typeof fQuery._id === 'string' && fOptions.sort !== undefined) {
+      delete fOptions.sort
+    }
+    if (fOptions.lookup !== undefined && Object.keys(fOptions.lookup).length === 0) {
+      delete fOptions.lookup
+    }
+  }
+
+  async findOne<T extends Doc>(
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T> | undefined
+  ): Promise<WithLookup<T> | undefined> {
+    const fQuery = { ...query }
+    const fOptions = { ...options }
+    this.optimizeQuery<T>(fQuery, fOptions)
+    return await this.provideFindOne(_class, fQuery, fOptions)
   }
 }
