@@ -28,7 +28,7 @@ export function getCollaboratorClient (): CollaboratorClient {
   const workspaceId = getWorkspaceId(getCurrentLocation().path[1] ?? '')
   const hierarchy = getClient().getHierarchy()
   const token = getMetadata(presentation.metadata.Token) ?? ''
-  const collaboratorURL = getMetadata(presentation.metadata.CollaboratorUrl) ?? ''
+  const collaboratorURL = getMetadata(presentation.metadata.CollaboratorApiUrl) ?? ''
 
   return getCollaborator(hierarchy, workspaceId, token, collaboratorURL)
 }
