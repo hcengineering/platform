@@ -712,7 +712,7 @@
           size={appsMini ? 'small' : 'large'}
           on:click={() => showPopup(AppSwitcher, { apps: getApps(apps) }, popupPosition)}
         />
-        {#await supportClient then client}
+        <!-- {#await supportClient then client}
           {#if client}
             <AppItem
               icon={support.icon.Support}
@@ -726,7 +726,7 @@
               }}
             />
           {/if}
-        {/await}
+        {/await} -->
         <div class="flex-center" class:mt-3={appsDirection === 'vertical'} class:ml-2={appsDirection === 'horizontal'}>
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <!-- svelte-ignore a11y-no-static-element-interactions -->
