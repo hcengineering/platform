@@ -35,7 +35,12 @@
 
   let editor: Promise<AnySvelteComponent | undefined> | undefined
 
-  function onChange (value: any) {
+  $: attribute = typeof key === 'string' ? hierarchy.getAttribute(_class, key) : key.attr
+  $: attributeKey = typeof key === 'string' ? key : key.key
+  $: editor = getAttributeEditor(client, _class, key)
+  $: isReadonly = (attribute.readonly ?? false) || readonly
+
+  function onChange (value: any): void {
     const doc = object as Doc
     if (draft) {
       ;(doc as any)[attributeKey] = value
@@ -44,11 +49,6 @@
       updateAttribute(client, doc, _class, { key: attributeKey, attr: attribute }, value)
     }
   }
-
-  $: attribute = typeof key === 'string' ? hierarchy.getAttribute(_class, key) : key.attr
-  $: attributeKey = typeof key === 'string' ? key : key.key
-  $: editor = getAttributeEditor(client, _class, key)
-  $: isReadonly = (attribute.readonly ?? false) || readonly
 </script>
 
 {#if editor}
