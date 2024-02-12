@@ -236,6 +236,8 @@ export class TProjectTypeDescriptor extends TDoc implements ProjectTypeDescripto
   description!: IntlString
   icon!: Asset
   editor?: AnyComponent
+  allowedClassic?: boolean
+  allowedTaskTypeDescriptors?: Ref<TaskTypeDescriptor>[] // if undefined we allow all possible
   baseClass!: Ref<Class<Task>>
 }
 

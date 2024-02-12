@@ -504,7 +504,8 @@ export function createModel (builder: Builder): void {
       name: board.string.BoardApplication,
       description: board.string.ManageBoardStatuses,
       icon: board.icon.Board,
-      baseClass: board.class.Board
+      baseClass: board.class.Board,
+      allowedTaskTypeDescriptors: [board.descriptors.Card]
     },
     board.descriptors.BoardType
   )

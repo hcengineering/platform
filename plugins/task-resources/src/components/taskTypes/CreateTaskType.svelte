@@ -57,7 +57,12 @@
 
   const taskTypeDescriptors = client
     .getModel()
-    .findAllSync(task.class.TaskTypeDescriptor, { allowCreate: true })
+    .findAllSync(
+      task.class.TaskTypeDescriptor,
+      descriptor.allowedTaskTypeDescriptors
+        ? { allowCreate: true, _id: { $in: descriptor.allowedTaskTypeDescriptors } }
+        : { allowCreate: true }
+    )
     .filter((p) => hasResource(p._id as any as Resource<any>))
 
   let { kind, name, targetClass, statusCategories, statuses, allowedAsChildOf } =
@@ -176,24 +181,26 @@
       </span>
       <TaskTypeKindEditor bind:kind />
     </div>
-    <div class="hulyModal-content__settingsSet-line">
-      <span class="label">
-        <Label label={task.string.Type} />
-      </span>
-      <ButtonMenu
-        selected={taskTypeDescriptor._id}
-        items={descriptorItems}
-        icon={taskTypeDescriptor.icon}
-        label={taskTypeDescriptor.name}
-        kind={'secondary'}
-        size={'large'}
-        on:selected={(evt) => {
-          if (evt.detail != null) {
-            const tt = taskTypeDescriptors.find((tt) => tt._id === evt.detail)
-            if (tt) taskTypeDescriptor = tt
-          }
-        }}
-      />
-    </div>
+    {#if taskTypeDescriptors.length > 1}
+      <div class="hulyModal-content__settingsSet-line">
+        <span class="label">
+          <Label label={task.string.Type} />
+        </span>
+        <ButtonMenu
+          selected={taskTypeDescriptor._id}
+          items={descriptorItems}
+          icon={taskTypeDescriptor.icon}
+          label={taskTypeDescriptor.name}
+          kind={'secondary'}
+          size={'large'}
+          on:selected={(evt) => {
+            if (evt.detail != null) {
+              const tt = taskTypeDescriptors.find((tt) => tt._id === evt.detail)
+              if (tt) taskTypeDescriptor = tt
+            }
+          }}
+        />
+      </div>
+    {/if}
   </div>
 </Modal>

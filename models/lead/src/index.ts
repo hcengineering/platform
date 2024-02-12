@@ -703,7 +703,8 @@ export function createModel (builder: Builder): void {
       name: lead.string.LeadApplication,
       description: lead.string.ManageFunnelStatuses,
       icon: lead.icon.LeadApplication,
-      baseClass: lead.class.Funnel
+      baseClass: lead.class.Funnel,
+      allowedTaskTypeDescriptors: [lead.descriptors.Lead]
     },
     lead.descriptors.FunnelType
   )

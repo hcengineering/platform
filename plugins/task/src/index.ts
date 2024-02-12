@@ -176,6 +176,7 @@ export interface ProjectTypeDescriptor extends Doc {
   icon: Asset
   editor?: AnyComponent
   allowedClassic?: boolean
+  allowedTaskTypeDescriptors?: Ref<TaskTypeDescriptor>[] // if undefined we allow all possible
   baseClass: Ref<Class<Task>>
 }
 
