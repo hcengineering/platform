@@ -17,7 +17,17 @@
   import { AttachmentPresenter, AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import chunter from '@hcengineering/chunter'
   import { Employee } from '@hcengineering/contact'
-  import core, { Account, Class, Doc, DocData, Ref, SortingOrder, fillDefaults, generateId } from '@hcengineering/core'
+  import core, {
+    Account,
+    Class,
+    Doc,
+    DocData,
+    Ref,
+    SortingOrder,
+    fillDefaults,
+    generateId,
+    toIdMap
+  } from '@hcengineering/core'
   import { getResource, translate } from '@hcengineering/platform'
   import preference, { SpacePreference } from '@hcengineering/preference'
   import {
@@ -258,6 +268,17 @@
     }
     const { _class, _id, space, children, comments, attachments, labels, description, ...templBase } = template
 
+    const allLabels = new Set<Ref<TagElement>>()
+    for (const label of labels ?? []) {
+      allLabels.add(label)
+    }
+    for (const child of children) {
+      for (const label of child.labels ?? []) {
+        allLabels.add(label)
+      }
+    }
+    const tagElements = toIdMap(await client.findAll(tags.class.TagElement, { _id: { $in: Array.from(allLabels) } }))
+
     object.subIssues = template.children.map((p) => {
       return {
         ...p,
@@ -265,7 +286,15 @@
         space: _space as Ref<Project>,
         subIssues: [],
         dueDate: null,
-        labels: p.labels.map(tagAsRef),
+        labels:
+          p.labels !== undefined
+            ? (p.labels
+                .map((p) => {
+                  const val = tagElements.get(p)
+                  return val !== undefined ? tagAsRef(val) : undefined
+                })
+                .filter((p) => p !== undefined) as TagReference[])
+            : [],
         status: currentProject?.defaultIssueStatus
       }
     })
@@ -279,8 +308,15 @@
       }
     }
     appliedTemplateId = templateId
-    const tagElements = await client.findAll(tags.class.TagElement, { _id: { $in: labels } })
-    object.labels = tagElements.map(tagAsRef)
+    object.labels =
+      labels !== undefined
+        ? (labels
+            .map((p) => {
+              const val = tagElements.get(p)
+              return val !== undefined ? tagAsRef(val) : undefined
+            })
+            .filter((p) => p !== undefined) as TagReference[])
+        : []
     fillDefaults(hierarchy, object, tracker.class.Issue)
   }
 
