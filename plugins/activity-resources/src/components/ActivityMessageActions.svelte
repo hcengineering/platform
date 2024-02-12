@@ -66,9 +66,9 @@
   <div class="root">
     {#if withFlatActions}
       <AddReactionAction object={message} on:open on:close />
+      <ActivityMessageExtensionComponent kind="action" {extensions} props={{ object: message }} on:close on:open />
       <PinMessageAction object={message} />
       <SaveMessageAction object={message} />
-      <ActivityMessageExtensionComponent kind="action" {extensions} props={{ object: message }} on:close on:open />
     {/if}
     {#if withActionMenu}
       <ActivityMessageAction icon={IconMoreV} action={showMenu} opened={isActionMenuOpened} />

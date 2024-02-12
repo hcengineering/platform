@@ -179,7 +179,8 @@ export default plugin(chunterId, {
     ChatMessagePresenter: '' as AnyComponent,
     ThreadMessagePresenter: '' as AnyComponent,
     ChatAside: '' as AnyComponent,
-    Replies: '' as AnyComponent
+    Replies: '' as AnyComponent,
+    ReplyToThreadAction: '' as AnyComponent
   },
   class: {
     Message: '' as Ref<Class<Message>>,
@@ -251,7 +252,6 @@ export default plugin(chunterId, {
   },
   action: {
     DeleteChatMessage: '' as Ref<Action>,
-    ReplyToThread: '' as Ref<Action>,
     OpenChannel: '' as Ref<Action>
   }
 })

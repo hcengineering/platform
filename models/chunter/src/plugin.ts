@@ -48,8 +48,7 @@ export default mergeIds(chunterId, chunter, {
     ArchiveChannel: '' as ViewAction,
     UnarchiveChannel: '' as ViewAction,
     ConvertDmToPrivateChannel: '' as ViewAction,
-    DeleteChatMessage: '' as ViewAction,
-    ReplyToThread: '' as ViewAction
+    DeleteChatMessage: '' as ViewAction
   },
   category: {
     Chunter: '' as Ref<ActionCategory>
@@ -106,7 +105,6 @@ export default mergeIds(chunterId, chunter, {
     GetFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
     DmIdentifierProvider: '' as Resource<<T extends Doc>(client: Client, ref: Ref<T>, doc?: T) => Promise<string>>,
     CanDeleteMessage: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
-    CanReplyToThread: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     CanCopyMessageLink: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     GetChunterSpaceLinkFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
     GetThreadLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>
