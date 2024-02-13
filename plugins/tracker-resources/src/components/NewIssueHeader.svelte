@@ -44,19 +44,28 @@
     {
       id: tracker.string.CreateProject,
       label: tracker.string.CreateProject
+    },
+    {
+      id: tracker.string.NewIssue,
+      label: tracker.string.NewIssue
     }
   ]
 
   $: label = draftExists || !closed ? tracker.string.ResumeDraft : tracker.string.NewIssue
-
+  $: dropdownItems[1].label = label
   const client = getClient()
 
   let keys: string[] | undefined = undefined
-  function dropdownItemSelected (res?: SelectPopupValueType['id']): void {
+  async function dropdownItemSelected (res?: SelectPopupValueType['id']): Promise<void> {
     if (res == null) return
 
     if (res === tracker.string.CreateProject) {
-      showPopup(tracker.component.CreateProject, {})
+      closed = false
+      showPopup(tracker.component.CreateProject, {}, 'top', () => {
+        closed = true
+      })
+    } else {
+      await newIssue()
     }
   }
 
@@ -75,6 +84,7 @@
     on:dropdown-selected={(ev) => {
       dropdownItemSelected(ev.detail)
     }}
+    mainButtonId={'new-issue'}
     showTooltipMain={{
       direction: 'bottom',
       label,

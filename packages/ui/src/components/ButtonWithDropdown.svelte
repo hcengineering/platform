@@ -35,6 +35,7 @@
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let dropdownIcon: Asset | AnySvelteComponent | undefined = undefined
   export let showTooltipMain: LabelAndProps | undefined = undefined
+  export let mainButtonId: string | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -56,6 +57,7 @@
       borderStyle="none"
       on:click
       showTooltip={showTooltipMain}
+      id={mainButtonId}
     >
       <div class="flex w-full" slot="content">
         <div class="flex-row-center w-full flex-between">
