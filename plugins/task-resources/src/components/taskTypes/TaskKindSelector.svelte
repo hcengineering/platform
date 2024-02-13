@@ -45,12 +45,5 @@
 </script>
 
 {#if projectType !== undefined && items.length > 1}
-  <DropdownLabels
-    {focusIndex}
-    {kind}
-    {items}
-    bind:selected={value}
-    enableSearch={false}
-    on:selected={change}
-  />
+  <DropdownLabels {focusIndex} {kind} {items} bind:selected={value} enableSearch={false} on:selected={change} />
 {/if}
