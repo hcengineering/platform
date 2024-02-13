@@ -78,7 +78,7 @@
 
       const context = $notifyContextsStore.find(({ _id }) => _id === displayData[listSelection]?.[0])
 
-      deleteContextNotifications(context)
+      void deleteContextNotifications(context)
     }
     if (key.code === 'Enter') {
       key.preventDefault()

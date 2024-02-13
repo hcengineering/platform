@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, getCurrentAccount, isOtherDay, Ref, Timestamp } from '@hcengineering/core'
+  import { Class, Doc, generateId, getCurrentAccount, isOtherDay, Ref, Timestamp } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import activity, {
     ActivityExtension,
@@ -239,8 +239,10 @@
         return [message._id, ...(combined ?? [])]
       })
       .flat()
-
-    inboxClient.readMessages(allIds)
+    const ops = getClient().apply(generateId())
+    inboxClient.readMessages(ops, allIds).then(() => {
+      void ops.commit()
+    })
 
     if (notifyContext === undefined) {
       return

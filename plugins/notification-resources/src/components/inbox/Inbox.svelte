@@ -213,13 +213,21 @@
 
     const contextNotifications = $notificationsByContextStore.get(selectedContext._id) ?? []
 
-    await inboxClient.readNotifications(
-      contextNotifications
-        .filter(({ _class, isViewed }) =>
-          isChunterChannel ? _class === notification.class.CommonInboxNotification : !isViewed
-        )
-        .map(({ _id }) => _id)
-    )
+    const doneOp = await getClient().measure('readNotifications')
+    const ops = getClient().apply(selectedContext._id)
+    try {
+      await inboxClient.readNotifications(
+        ops,
+        contextNotifications
+          .filter(({ _class, isViewed }) =>
+            isChunterChannel ? _class === notification.class.CommonInboxNotification : !isViewed
+          )
+          .map(({ _id }) => _id)
+      )
+    } finally {
+      await ops.commit()
+      await doneOp()
+    }
   }
 
   function filterNotifications (

@@ -45,24 +45,24 @@
   let lastId: Ref<Doc> = _id
   let object: Doc
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
+  const pClient = getClient()
+  const hierarchy = pClient.getHierarchy()
   const inboxClient = getResource(notification.function.GetInboxNotificationsClient).then((res) => res())
 
   $: read(_id)
-  function read (_id: Ref<Doc>) {
+  function read (_id: Ref<Doc>): void {
     if (lastId !== _id) {
       const prev = lastId
       lastId = _id
-      inboxClient.then(async (client) => {
-        await client.readDoc(prev)
+      void inboxClient.then(async (client) => {
+        await client.readDoc(pClient, prev)
       })
     }
   }
 
   onDestroy(async () => {
     await inboxClient.then(async (client) => {
-      await client.readDoc(_id)
+      await client.readDoc(pClient, _id)
     })
   })
 
@@ -195,7 +195,7 @@
   let rawTitle: string = ''
 
   $: if (object !== undefined) {
-    getDocLabel(client, object).then((t) => {
+    getDocLabel(pClient, object).then((t) => {
       if (t) {
         rawTitle = t
       }
