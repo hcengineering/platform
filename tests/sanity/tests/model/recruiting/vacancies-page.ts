@@ -79,25 +79,42 @@ export class VacanciesPage extends CommonRecruitingPage {
     }
   }
 
-  async exportVacanciesWithCheck (textToCheck: string): Promise<void> {
-    const downloadPromise = this.page.waitForEvent('download')
-    await this.buttonExport.click()
-    const download = await downloadPromise
+  async exportVacanciesWithCheck (textToCheck: string, timeout: number): Promise<void> {
+    let expired = 2
+    while (true) {
+      let shouldExit = false
+      const downloadPromise = this.page.waitForEvent('download')
+      await this.buttonExport.click()
+      const download = await downloadPromise
+      const readable = await download.createReadStream()
+      await new Promise<void>((resolve) => {
+        const chunks: string[] = []
 
-    const chunks: string[] = []
-    const readable = await download.createReadStream()
+        readable.on('readable', () => {
+          let chunk
+          while ((chunk = readable.read()) !== null) {
+            chunks.push(chunk)
+          }
+        })
 
-    readable.on('readable', () => {
-      let chunk
-      while ((chunk = readable.read()) !== null) {
-        chunks.push(chunk)
+        readable.on('end', () => {
+          const content = chunks.join('')
+          if (content.includes(textToCheck)) {
+            shouldExit = true
+          } else {
+            expired--
+          }
+          resolve()
+        })
+      })
+      if (shouldExit) {
+        return
       }
-    })
-
-    readable.on('end', () => {
-      const content = chunks.join('')
-      expect(content).toContain(textToCheck)
-    })
+      await new Promise((resolve) => setTimeout(resolve, timeout / 2))
+      if (expired === 0) {
+        expect('').toContain(textToCheck)
+      }
+    }
   }
 
   async showArchivedVacancy (): Promise<void> {

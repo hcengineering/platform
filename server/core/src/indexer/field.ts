@@ -23,10 +23,10 @@ import core, {
   IndexStageState,
   MeasureContext,
   Ref,
-  ServerStorage,
-  Storage
+  ServerStorage
 } from '@hcengineering/core'
 import { deepEqual } from 'fast-equals'
+import { DbAdapter } from '../adapter'
 import { IndexedDoc } from '../types'
 import { contentStageId, DocUpdateHandler, fieldStateId, FullTextPipeline, FullTextPipelineStage } from './types'
 import {
@@ -34,11 +34,11 @@ import {
   docKey,
   docUpdKey,
   getContent,
-  getFullTextIndexableAttributes,
+  getCustomAttrKeys,
   getFullTextContext,
+  getFullTextIndexableAttributes,
   isFullTextAttribute,
-  loadIndexStageStage,
-  getCustomAttrKeys
+  loadIndexStageStage
 } from './utils'
 
 /**
@@ -62,7 +62,7 @@ export class IndexedFieldStage implements FullTextPipelineStage {
 
   constructor (private readonly dbStorage: ServerStorage) {}
 
-  async initialize (storage: Storage, pipeline: FullTextPipeline): Promise<void> {
+  async initialize (ctx: MeasureContext, storage: DbAdapter, pipeline: FullTextPipeline): Promise<void> {
     const indexablePropogate = (
       await pipeline.model.findAll(core.class.Class, {
         [core.mixin.FullTextSearchContext]: { $exists: true }
@@ -83,10 +83,17 @@ export class IndexedFieldStage implements FullTextPipelineStage {
     ).map((it) => it._id)
 
     indexablePropogate.sort()
-    ;[this.stageValue, this.indexState] = await loadIndexStageStage(storage, this.indexState, this.stageId, 'config', {
-      classes: indexablePropogate,
-      forceIndex: forceIndexing
-    })
+    ;[this.stageValue, this.indexState] = await loadIndexStageStage(
+      ctx,
+      storage,
+      this.indexState,
+      this.stageId,
+      'config',
+      {
+        classes: indexablePropogate,
+        forceIndex: forceIndexing
+      }
+    )
   }
 
   async search (

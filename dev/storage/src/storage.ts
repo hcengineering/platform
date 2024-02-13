@@ -19,6 +19,7 @@ import type {
   DocumentQuery,
   FindOptions,
   FindResult,
+  MeasureContext,
   Ref,
   Tx,
   TxResult,
@@ -37,6 +38,7 @@ class InMemoryTxAdapter extends DummyDbAdapter implements TxAdapter {
   }
 
   async findAll<T extends Doc>(
+    ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
@@ -44,7 +46,7 @@ class InMemoryTxAdapter extends DummyDbAdapter implements TxAdapter {
     return await this.txdb.findAll(_class, query, options)
   }
 
-  async tx (...tx: Tx[]): Promise<TxResult[]> {
+  async tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {
     const r: TxResult[] = []
     for (const t of tx) {
       r.push(await this.txdb.tx(t))

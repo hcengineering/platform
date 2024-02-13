@@ -16,6 +16,7 @@
 import core, {
   DOMAIN_MODEL,
   DOMAIN_TX,
+  MeasureMetricsContext,
   SortingOrder,
   TxProcessor,
   cutObjectArray,
@@ -36,6 +37,7 @@ import core, {
   type Hierarchy,
   type IndexingConfiguration,
   type Lookup,
+  type MeasureContext,
   type Mixin,
   type ModelDb,
   type Projection,
@@ -110,12 +112,12 @@ abstract class MongoAdapterBase implements DbAdapter {
 
   async init (): Promise<void> {}
 
-  async toArray<T>(cursor: AbstractCursor<T>): Promise<T[]> {
+  async toArray<T>(ctx: MeasureContext, cursor: AbstractCursor<T>, limit?: number): Promise<T[]> {
     const data: T[] = []
     for await (const r of cursor.stream()) {
       data.push(r)
     }
-    await cursor.close()
+    void cursor.close()
     return data
   }
 
@@ -144,7 +146,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     }
   }
 
-  async tx (...tx: Tx[]): Promise<TxResult[]> {
+  async tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {
     return []
   }
 
@@ -176,7 +178,7 @@ abstract class MongoAdapterBase implements DbAdapter {
         translated._class = { $in: classes }
       } else if (typeof translated._class === 'string') {
         if (!classes.includes(translated._class)) {
-          translated._class = { $in: classes }
+          translated._class = { $in: classes.filter((it) => !this.hierarchy.isMixin(it)) }
         }
       } else if (typeof translated._class === 'object' && translated._class !== null) {
         let descendants: Ref<Class<Doc>>[] = classes
@@ -191,7 +193,7 @@ abstract class MongoAdapterBase implements DbAdapter {
           descendants = descendants.filter((c) => !excludedClassesIds.has(c))
         }
 
-        translated._class = { $in: descendants }
+        translated._class = { $in: descendants.filter((it: any) => !this.hierarchy.isMixin(it as Ref<Class<Doc>>)) }
       }
 
       if (baseClass !== clazz) {
@@ -203,6 +205,9 @@ abstract class MongoAdapterBase implements DbAdapter {
       if ('_class' in translated) {
         delete translated._class
       }
+    }
+    if (translated._class?.$in?.length === 1 && translated._class?.$nin === undefined) {
+      translated._class = translated._class.$in[0]
     }
     return translated
   }
@@ -329,6 +334,7 @@ abstract class MongoAdapterBase implements DbAdapter {
   }
 
   private async fillLookupValue<T extends Doc>(
+    ctx: MeasureContext,
     clazz: Ref<Class<T>>,
     lookup: Lookup<T> | undefined,
     object: any,
@@ -348,7 +354,7 @@ abstract class MongoAdapterBase implements DbAdapter {
       if (Array.isArray(value)) {
         const [_class, nested] = value
         await this.fillLookup(_class, object, key, fullKey, targetObject)
-        await this.fillLookupValue(_class, nested, object, fullKey, targetObject.$lookup[key])
+        await this.fillLookupValue(ctx, _class, nested, object, fullKey, targetObject.$lookup[key])
       } else {
         await this.fillLookup(value, object, key, fullKey, targetObject)
       }
@@ -421,6 +427,7 @@ abstract class MongoAdapterBase implements DbAdapter {
   }
 
   private async findWithPipeline<T extends Doc>(
+    ctx: MeasureContext,
     clazz: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T> & {
@@ -472,7 +479,10 @@ abstract class MongoAdapterBase implements DbAdapter {
     const result: WithLookup<T>[] = []
     let total = options?.total === true ? 0 : -1
     try {
-      const rres = await this.toArray(cursor)
+      const rres = await ctx.with('toArray', {}, async (ctx) => await this.toArray(ctx, cursor, options?.limit), {
+        domain,
+        pipeline
+      })
       for (const r of rres) {
         result.push(...r.results)
         total = options?.total === true ? r.totalCount?.shift()?.count ?? 0 : -1
@@ -482,7 +492,9 @@ abstract class MongoAdapterBase implements DbAdapter {
       throw e
     }
     for (const row of result) {
-      await this.fillLookupValue(clazz, options?.lookup, row)
+      await ctx.with('fill-lookup', {}, async (ctx) => {
+        await this.fillLookupValue(ctx, clazz, options?.lookup, row)
+      })
       this.clearExtraLookups(row)
     }
     return toFindResult(this.stripHash(result), total)
@@ -570,44 +582,62 @@ abstract class MongoAdapterBase implements DbAdapter {
   }
 
   async findAll<T extends Doc>(
+    ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T> & {
       domain?: Domain // Allow to find for Doc's in specified domain only.
     }
   ): Promise<FindResult<T>> {
-    // TODO: rework this
     if (options != null && (options?.lookup != null || this.isEnumSort(_class, options) || this.isRulesSort(options))) {
-      return await this.findWithPipeline(_class, query, options)
+      return await ctx.with('pipeline', {}, async (ctx) => await this.findWithPipeline(ctx, _class, query, options))
     }
     const domain = options?.domain ?? this.hierarchy.getDomain(_class)
     const coll = this.db.collection(domain)
     const mongoQuery = this.translateQuery(_class, query)
+
+    // We have limit 1 or _id === exact id
+    if (options?.limit === 1 || typeof query._id === 'string') {
+      const data = await ctx.with(
+        'find-one',
+        { _class },
+        async () =>
+          await coll.findOne<T>(mongoQuery, {
+            checkKeys: false,
+            enableUtf8Validation: false,
+            projection: this.calcProjection(options, _class),
+            sort: this.collectSort<T>(options, _class)
+          }),
+        {
+          _class,
+          mongoQuery,
+          domain
+        }
+      )
+      if (data != null) {
+        return toFindResult(this.stripHash([data]), 1)
+      }
+      return toFindResult([], 0)
+    }
+
     let cursor = coll.find<T>(mongoQuery, {
       checkKeys: false,
       enableUtf8Validation: false
     })
 
     if (options?.projection !== undefined) {
-      const projection: Projection<T> = {}
-      for (const key in options.projection) {
-        const ckey = this.checkMixinKey<T>(key, _class) as keyof T
-        projection[ckey] = options.projection[key]
+      const projection = this.calcProjection<T>(options, _class)
+      if (projection != null) {
+        cursor = cursor.project(projection)
       }
-      cursor = cursor.project(projection)
-    } else {
-      cursor = cursor.project({ '%hash%': 0 })
     }
     let total: number = -1
     if (options !== null && options !== undefined) {
       if (options.sort !== undefined) {
-        const sort: Sort = {}
-        for (const key in options.sort) {
-          const ckey = this.checkMixinKey<T>(key, _class)
-          const order = options.sort[key] === SortingOrder.Ascending ? 1 : -1
-          sort[ckey] = order
+        const sort = this.collectSort<T>(options, _class)
+        if (sort !== undefined) {
+          cursor = cursor.sort(sort)
         }
-        cursor = cursor.sort(sort)
       }
       if (options.limit !== undefined) {
         if (options.total === true) {
@@ -619,7 +649,11 @@ abstract class MongoAdapterBase implements DbAdapter {
 
     // Error in case of timeout
     try {
-      const res: T[] = await this.toArray(cursor)
+      const res: T[] = await ctx.with('toArray', {}, async (ctx) => await this.toArray(ctx, cursor, options?.limit), {
+        mongoQuery,
+        options,
+        domain
+      })
       if (options?.total === true && options?.limit === undefined) {
         total = res.length
       }
@@ -628,6 +662,55 @@ abstract class MongoAdapterBase implements DbAdapter {
       console.error('error during executing cursor in findAll', _class, cutObjectArray(query), options, e)
       throw e
     }
+  }
+
+  private collectSort<T extends Doc>(
+    options:
+    | (FindOptions<T> & {
+      domain?: Domain | undefined // Allow to find for Doc's in specified domain only.
+    })
+    | undefined,
+    _class: Ref<Class<T>>
+  ): Sort | undefined {
+    if (options?.sort === undefined) {
+      return undefined
+    }
+    const sort: Sort = {}
+    let count = 0
+    for (const key in options.sort) {
+      const ckey = this.checkMixinKey<T>(key, _class)
+      const order = options.sort[key] === SortingOrder.Ascending ? 1 : -1
+      sort[ckey] = order
+      count++
+    }
+    if (count === 0) {
+      return undefined
+    }
+    return sort
+  }
+
+  private calcProjection<T extends Doc>(
+    options:
+    | (FindOptions<T> & {
+      domain?: Domain | undefined // Allow to find for Doc's in specified domain only.
+    })
+    | undefined,
+    _class: Ref<Class<T>>
+  ): Projection<T> | undefined {
+    if (options?.projection === undefined) {
+      return undefined
+    }
+    const projection: Projection<T> = {}
+    let count = 0
+    for (const key in options.projection ?? []) {
+      const ckey = this.checkMixinKey<T>(key, _class) as keyof T
+      projection[ckey] = options.projection[key]
+      count++
+    }
+    if (count === 0) {
+      return undefined
+    }
+    return projection
   }
 
   stripHash<T extends Doc>(docs: T[]): T[] {
@@ -735,7 +818,7 @@ abstract class MongoAdapterBase implements DbAdapter {
       return []
     }
     const cursor = this.db.collection<Doc>(domain).find<Doc>({ _id: { $in: docs } })
-    const result = await this.toArray(cursor)
+    const result = await this.toArray(new MeasureMetricsContext('', {}), cursor, docs.length)
     return this.stripHash(this.stripHash(result))
   }
 
@@ -830,7 +913,7 @@ class MongoAdapter extends MongoAdapterBase {
     console.error('Unknown/Unsupported operation:', tx._class, tx)
   }
 
-  async tx (...txes: Tx[]): Promise<TxResult[]> {
+  async tx (ctx: MeasureContext, ...txes: Tx[]): Promise<TxResult[]> {
     const result: TxResult[] = []
 
     const bulkOperations: DomainOperation[] = []
@@ -860,7 +943,14 @@ class MongoAdapter extends MongoAdapterBase {
         }
         if (dop.bulk === undefined) {
           // Execute previous bulk and capture result.
-          await bulkExecute()
+          await ctx.with(
+            'bulkExecute',
+            {},
+            async () => {
+              await bulkExecute()
+            },
+            { txes: cutObjectArray(tx) }
+          )
           try {
             result.push(await dop.raw())
           } catch (err: any) {
@@ -871,9 +961,23 @@ class MongoAdapter extends MongoAdapterBase {
         if (lastDomain === undefined) {
           lastDomain = dop.domain
         }
+        if (lastDomain !== dop.domain) {
+          // If we have domain switch, let's execute previous bulk and start new one.
+          await ctx.with(
+            'bulkExecute',
+            {},
+            async () => {
+              await bulkExecute()
+            },
+            { operations: cutObjectArray(bulkOperations) }
+          )
+          lastDomain = dop.domain
+        }
         bulkOperations.push(dop)
       }
-      await bulkExecute()
+      await ctx.with('bulkExecute', {}, async () => {
+        await bulkExecute()
+      })
     } else {
       const r = await this.getOperations(txes[0])?.raw()
       if (r !== undefined) {
@@ -1160,11 +1264,11 @@ class MongoAdapter extends MongoAdapterBase {
 class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
   txColl: Collection | undefined
 
-  override async tx (...tx: Tx[]): Promise<TxResult[]> {
+  override async tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {
     if (tx.length === 0) {
       return []
     }
-    await this.txCollection().insertMany(tx.map((it) => translateDoc(it)))
+    await ctx.with('insertMany', {}, async () => await this.txCollection().insertMany(tx.map((it) => translateDoc(it))))
     return []
   }
 
@@ -1181,7 +1285,7 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
       .collection(DOMAIN_TX)
       .find<Tx>({ objectSpace: core.space.Model })
       .sort({ _id: 1, modifiedOn: 1 })
-    const model = await this.toArray(cursor)
+    const model = await this.toArray(new MeasureMetricsContext('', {}), cursor)
     // We need to put all core.account.System transactions first
     const systemTx: Tx[] = []
     const userTx: Tx[] = []

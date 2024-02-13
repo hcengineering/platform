@@ -27,9 +27,10 @@ import core, {
   MeasureContext,
   Ref,
   ServerStorage,
-  Storage,
   WorkspaceId
 } from '@hcengineering/core'
+import { DbAdapter } from '../adapter'
+import { updateDocWithPresenter } from '../mapper'
 import { FullTextAdapter, IndexedDoc } from '../types'
 import { summaryStageId } from './summary'
 import {
@@ -48,7 +49,6 @@ import {
   IndexKeyOptions,
   isCustomAttr
 } from './utils'
-import { updateDocWithPresenter } from '../mapper'
 
 /**
  * @public
@@ -75,7 +75,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
     readonly workspace: WorkspaceId
   ) {}
 
-  async initialize (storage: Storage, pipeline: FullTextPipeline): Promise<void> {
+  async initialize (ctx: MeasureContext, storage: DbAdapter, pipeline: FullTextPipeline): Promise<void> {
     // Just do nothing
     try {
       const r = await this.fulltextAdapter.initMapping()

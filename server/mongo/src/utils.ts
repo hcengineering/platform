@@ -42,7 +42,10 @@ export async function getMongoClient (uri: string, options?: MongoClientOptions)
   const client = await MongoClient.connect(uri, {
     ...options,
     enableUtf8Validation: false,
-    maxConnecting: 1024
+    maxConnecting: 1024,
+    minPoolSize: 128,
+    maxPoolSize: 512,
+    zlibCompressionLevel: 0
   })
   connections.push(client)
   return client

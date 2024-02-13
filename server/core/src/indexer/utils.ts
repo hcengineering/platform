@@ -34,13 +34,14 @@ import core, {
   IndexStageState,
   isFullTextAttribute,
   isIndexedAttribute,
+  MeasureContext,
   Obj,
   Ref,
   Space,
-  Storage,
   TxFactory
 } from '@hcengineering/core'
 import { deepEqual } from 'fast-equals'
+import { DbAdapter } from '../adapter'
 import plugin from '../plugin'
 import { FullTextPipeline } from './types'
 /**
@@ -175,14 +176,15 @@ export function createStateDoc (
  * @public
  */
 export async function loadIndexStageStage (
-  storage: Storage,
+  ctx: MeasureContext,
+  storage: DbAdapter,
   state: IndexStageState | undefined,
   stageId: string,
   field: string,
   newValue: any
 ): Promise<[boolean | string, IndexStageState]> {
   if (state === undefined) {
-    ;[state] = await storage.findAll(core.class.IndexStageState, { stageId })
+    ;[state] = await storage.findAll(ctx, core.class.IndexStageState, { stageId })
   }
   const attributes: Record<string, any> = state?.attributes ?? {}
 
@@ -203,7 +205,7 @@ export async function loadIndexStageStage (
     }
     if (state === undefined) {
       const id: Ref<IndexStageState> = generateId()
-      await storage.tx(ops.createTxCreateDoc(core.class.IndexStageState, plugin.space.DocIndexState, data, id))
+      await storage.tx(ctx, ops.createTxCreateDoc(core.class.IndexStageState, plugin.space.DocIndexState, data, id))
       state = {
         ...data,
         _class: core.class.IndexStageState,
@@ -213,7 +215,10 @@ export async function loadIndexStageStage (
         modifiedOn: Date.now()
       }
     } else {
-      await storage.tx(ops.createTxUpdateDoc(core.class.IndexStageState, plugin.space.DocIndexState, state._id, data))
+      await storage.tx(
+        ctx,
+        ops.createTxUpdateDoc(core.class.IndexStageState, plugin.space.DocIndexState, state._id, data)
+      )
       state = { ...state, ...data, modifiedOn: Date.now() }
     }
   }

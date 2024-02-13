@@ -127,7 +127,7 @@
             handleRowFocused(focusDoc)
           }
         },
-        { ...resultOptions, limit: limit ?? 200 }
+        { ...resultOptions, limit: Math.min(limit ?? 200, 200) }
       )
     })
   } else {
@@ -143,7 +143,7 @@
   const dispatch = createEventDispatcher()
 
   function limitGroup (items: Doc[], limit: number | undefined): Doc[] {
-    const res = limit !== undefined ? items.slice(0, limit) : items
+    const res = limit !== undefined ? items.slice(0, Math.min(limit, 200)) : items
     return res
   }
 

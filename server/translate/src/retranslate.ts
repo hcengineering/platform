@@ -22,11 +22,11 @@ import {
   IndexStageState,
   MeasureContext,
   Ref,
-  Storage,
   WorkspaceId
 } from '@hcengineering/core'
 import {
   contentStageId,
+  DbAdapter,
   docKey,
   DocUpdateHandler,
   docUpdKey,
@@ -65,10 +65,10 @@ export class LibRetranslateStage implements TranslationStage {
 
   constructor (readonly workspaceId: WorkspaceId) {}
 
-  async initialize (storage: Storage, pipeline: FullTextPipeline): Promise<void> {
+  async initialize (ctx: MeasureContext, storage: DbAdapter, pipeline: FullTextPipeline): Promise<void> {
     // Just do nothing
     try {
-      const config = await storage.findAll(translatePlugin.class.TranslateConfiguration, {})
+      const config = await storage.findAll(ctx, translatePlugin.class.TranslateConfiguration, {})
       if (config.length > 0) {
         this.enabled = config[0].enabled
         this.token = config[0].token
@@ -81,10 +81,17 @@ export class LibRetranslateStage implements TranslationStage {
       this.enabled = false
     }
 
-    ;[this.stageValue, this.indexState] = await loadIndexStageStage(storage, this.indexState, this.stageId, 'config', {
-      enabled: this.enabled,
-      endpoint: this.endpoint
-    })
+    ;[this.stageValue, this.indexState] = await loadIndexStageStage(
+      ctx,
+      storage,
+      this.indexState,
+      this.stageId,
+      'config',
+      {
+        enabled: this.enabled,
+        endpoint: this.endpoint
+      }
+    )
   }
 
   async search (

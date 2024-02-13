@@ -116,11 +116,12 @@ describe('mongo operations', () => {
       await model.tx(t)
     }
 
+    const mctx = new MeasureMetricsContext('', {})
     const txStorage = await createMongoTxAdapter(hierarchy, mongodbUri, getWorkspaceId(dbId, ''), model)
 
     // Put all transactions to Tx
     for (const t of txes) {
-      await txStorage.tx(t)
+      await txStorage.tx(mctx, t)
     }
 
     const conf: DbConfiguration = {

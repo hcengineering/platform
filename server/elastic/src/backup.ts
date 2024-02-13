@@ -26,6 +26,7 @@ import core, {
   FullTextData,
   Hierarchy,
   IndexingConfiguration,
+  MeasureContext,
   Ref,
   Space,
   StorageIterator,
@@ -45,6 +46,7 @@ class ElasticDataAdapter implements DbAdapter {
   ) {}
 
   async findAll<T extends Doc>(
+    ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
@@ -52,7 +54,7 @@ class ElasticDataAdapter implements DbAdapter {
     return Object.assign([], { total: 0 })
   }
 
-  async tx (...tx: Tx[]): Promise<TxResult[]> {
+  async tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {
     return []
   }
 

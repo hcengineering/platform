@@ -22,9 +22,9 @@ import {
   Hierarchy,
   MeasureContext,
   ModelDb,
-  Ref,
-  Storage
+  Ref
 } from '@hcengineering/core'
+import { DbAdapter } from '../adapter'
 import type { IndexedDoc } from '../types'
 
 /**
@@ -78,7 +78,7 @@ export interface FullTextPipelineStage {
 
   stageValue: boolean | string
 
-  initialize: (storage: Storage, pipeline: FullTextPipeline) => Promise<void>
+  initialize: (ctx: MeasureContext, storage: DbAdapter, pipeline: FullTextPipeline) => Promise<void>
 
   // Collect all changes related to bulk of document states
   collect: (docs: DocIndexState[], pipeline: FullTextPipeline, ctx: MeasureContext) => Promise<void>

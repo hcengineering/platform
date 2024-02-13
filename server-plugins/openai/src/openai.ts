@@ -23,11 +23,11 @@ import core, {
   IndexStageState,
   MeasureContext,
   Ref,
-  Storage,
   WorkspaceId
 } from '@hcengineering/core'
 import {
   contentStageId,
+  DbAdapter,
   docKey,
   DocUpdateHandler,
   fieldStateId,
@@ -40,12 +40,10 @@ import {
   loadIndexStageStage,
   RateLimitter
 } from '@hcengineering/server-core'
-
 import got from 'got'
 
 import { chunks } from './encoder/encoder'
 import openaiPlugin, { openAIRatelimitter } from './plugin'
-
 /**
  * @public
  */
@@ -118,10 +116,10 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
     })
   }
 
-  async initialize (storage: Storage, pipeline: FullTextPipeline): Promise<void> {
+  async initialize (ctx: MeasureContext, storage: DbAdapter, pipeline: FullTextPipeline): Promise<void> {
     try {
       // Just do nothing
-      const config = await storage.findAll(openaiPlugin.class.OpenAIConfiguration, {})
+      const config = await storage.findAll(ctx, openaiPlugin.class.OpenAIConfiguration, {})
       let needCheck = 0
       if (config.length > 0) {
         if (this.enabled !== config[0].embeddings) {
@@ -159,14 +157,21 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
       this.enabled = false
     }
 
-    ;[this.stageValue, this.indexState] = await loadIndexStageStage(storage, this.indexState, this.stageId, 'config', {
-      enabled: this.enabled,
-      endpoint: this.endpoint,
-      field: this.field,
-      mode: this.model,
-      copyToState: this.copyToState,
-      stripNewLines: true
-    })
+    ;[this.stageValue, this.indexState] = await loadIndexStageStage(
+      ctx,
+      storage,
+      this.indexState,
+      this.stageId,
+      'config',
+      {
+        enabled: this.enabled,
+        endpoint: this.endpoint,
+        field: this.field,
+        mode: this.model,
+        copyToState: this.copyToState,
+        stripNewLines: true
+      }
+    )
   }
 
   async getEmbedding (text: string): Promise<OpenAIEmbeddingResponse> {
