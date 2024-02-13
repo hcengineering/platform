@@ -15,12 +15,11 @@
 <script lang="ts">
   import { Ref, Space } from '@hcengineering/core'
   import { MultipleDraftController, getClient } from '@hcengineering/presentation'
-  import { IconAdd, IconDropdown, SelectPopupValueType, showPopup } from '@hcengineering/ui'
+  import { ButtonWithDropdown, IconAdd, IconDropdown, SelectPopupValueType, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { onDestroy } from 'svelte'
   import tracker from '../plugin'
   import CreateIssue from './CreateIssue.svelte'
-  import ButtonWithDropdown from '@hcengineering/ui/src/components/ButtonWithDropdown.svelte'
 
   export let currentSpace: Ref<Space> | undefined
 
@@ -40,19 +39,18 @@
       closed = true
     })
   }
-  const dropdownItems: SelectPopupValueType[] = [
+
+  $: label = draftExists || !closed ? tracker.string.ResumeDraft : tracker.string.NewIssue
+  $: dropdownItems = [
     {
       id: tracker.string.CreateProject,
       label: tracker.string.CreateProject
     },
     {
       id: tracker.string.NewIssue,
-      label: tracker.string.NewIssue
+      label
     }
   ]
-
-  $: label = draftExists || !closed ? tracker.string.ResumeDraft : tracker.string.NewIssue
-  $: dropdownItems[1].label = label
   const client = getClient()
 
   let keys: string[] | undefined = undefined
