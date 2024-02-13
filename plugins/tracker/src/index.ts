@@ -210,7 +210,7 @@ export interface Issue extends Task {
  * @public
  */
 export interface IssueDraft {
-  kind?: Ref<TaskType>
+  kind: Ref<TaskType>
   _id: Ref<Issue>
   title: string
   description: Markup
@@ -253,6 +253,8 @@ export interface IssueTemplateData {
   estimation: number
 
   labels?: Ref<TagElement>[]
+
+  kind?: Ref<TaskType>
 }
 
 /**

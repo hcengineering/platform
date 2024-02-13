@@ -66,6 +66,7 @@ import {
   type TimeSpendReport
 } from '@hcengineering/tracker'
 import tracker from './plugin'
+import { type TaskType } from '@hcengineering/task'
 
 export const DOMAIN_TRACKER = 'tracker' as Domain
 
@@ -270,6 +271,9 @@ export class TIssueTemplate extends TDoc implements IssueTemplate {
 
   @Prop(ArrOf(TypeRef(tags.class.TagElement)), tracker.string.Labels)
     labels?: Ref<TagElement>[]
+
+  @Prop(TypeRef(task.class.TaskType), task.string.TaskType)
+    kind?: Ref<TaskType>
 
   declare space: Ref<Project>
 

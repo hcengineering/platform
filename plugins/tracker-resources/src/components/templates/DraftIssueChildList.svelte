@@ -14,9 +14,10 @@
 -->
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
-  import { createQuery, ActionContext } from '@hcengineering/presentation'
-  import tracker, { Component, IssueDraft, Project, Milestone } from '@hcengineering/tracker'
-  import { eventToHTMLElement, IconCircles, showPopup } from '@hcengineering/ui'
+  import { ActionContext, createQuery } from '@hcengineering/presentation'
+  import { TaskKindSelector } from '@hcengineering/task-resources'
+  import tracker, { Component, IssueDraft, Milestone, Project } from '@hcengineering/tracker'
+  import { IconCircles, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { FixedColumn } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import { flip } from 'svelte/animate'
@@ -137,7 +138,6 @@
         value={{ ...issue, space: project }}
         kind="list"
         size="small"
-        shouldShowLabel={true}
         on:change={({ detail }) => (issue.status = detail)}
       />
       <PriorityEditor
@@ -173,6 +173,12 @@
       </span>
     </div>
     <div class="flex-center flex-no-shrink">
+      <TaskKindSelector
+        projectType={currentProject?.type}
+        kind={'link'}
+        bind:value={issue.kind}
+        baseClass={tracker.class.Issue}
+      />
       <EstimationEditor
         kind={'link'}
         size={'large'}

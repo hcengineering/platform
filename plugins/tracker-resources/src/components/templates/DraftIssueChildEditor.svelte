@@ -17,13 +17,15 @@
   import { Account, Doc, generateId, Ref } from '@hcengineering/core'
   import presentation, { DraftController, getClient, KeyedAttribute } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
+  import { TaskType } from '@hcengineering/task'
+  import { TaskKindSelector } from '@hcengineering/task-resources'
   import {
     Component as ComponentType,
     Issue,
     IssueDraft,
     IssuePriority,
-    Project,
-    Milestone
+    Milestone,
+    Project
   } from '@hcengineering/tracker'
   import { Button, Component, EditBox } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
@@ -65,6 +67,7 @@
       _id: generateId(),
       title: '',
       description: '',
+      kind: '' as Ref<TaskType>,
       assignee: project.defaultAssignee ?? null,
       status: project.defaultIssueStatus,
       space: project._id,
@@ -208,6 +211,12 @@
           on:change={({ detail }) => (object.priority = detail)}
         />
       </div>
+      <TaskKindSelector
+        projectType={project.type}
+        kind="no-border"
+        bind:value={object.kind}
+        baseClass={tracker.class.Issue}
+      />
       <div id="sub-issue-assignee-editor">
         {#key object.assignee}
           <AssigneeEditor

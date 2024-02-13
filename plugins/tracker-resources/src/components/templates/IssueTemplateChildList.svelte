@@ -14,8 +14,9 @@
 -->
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
-  import { createQuery, ActionContext } from '@hcengineering/presentation'
-  import tracker, { Component, Issue, IssueTemplateChild, Project, Milestone } from '@hcengineering/tracker'
+  import { ActionContext, createQuery } from '@hcengineering/presentation'
+  import { TaskKindSelector } from '@hcengineering/task-resources'
+  import tracker, { Component, Issue, IssueTemplateChild, Milestone, Project } from '@hcengineering/tracker'
   import { IconCircles, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { FixedColumn } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
@@ -41,6 +42,7 @@
       IssueTemplateChildEditor,
       {
         showBorder: true,
+        projectId: project,
         milestone,
         component,
         childIssue: target
@@ -168,6 +170,12 @@
       </span>
     </div>
     <div class="flex-center flex-no-shrink">
+      <TaskKindSelector
+        projectType={currentProject?.type}
+        kind={'link'}
+        bind:value={issue.kind}
+        baseClass={tracker.class.Issue}
+      />
       <EstimationEditor
         kind={'link'}
         size={'large'}
