@@ -52,6 +52,7 @@ export { getCurrentLocation, locationToUrl, navigate, location, setLocationStora
 export { default as EditBox } from './components/EditBox.svelte'
 export { default as Label } from './components/Label.svelte'
 export { default as Button } from './components/Button.svelte'
+export { default as ButtonWithDropdown } from './components/ButtonWithDropdown.svelte'
 export { default as ButtonGroup } from './components/ButtonGroup.svelte'
 export { default as Status } from './components/Status.svelte'
 export { default as Component } from './components/Component.svelte'
