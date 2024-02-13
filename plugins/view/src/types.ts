@@ -516,12 +516,6 @@ export interface Action<T extends Doc = Doc, P = Record<string, any>> extends Do
   allowedForEditableContent?: boolean
 }
 
-/** @public */
-export interface ActionWithAvailability<T extends Doc, P = never> {
-  isAvailable: ViewActionAvailabilityFunction<T>
-  action: ViewActionFunction<T, P>
-}
-
 /**
  * @public
  *  context - only for context menu actions.
