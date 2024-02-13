@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref, isOtherDay, Timestamp, getCurrentAccount } from '@hcengineering/core'
+  import { Class, Doc, getCurrentAccount, isOtherDay, Ref, Timestamp } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import activity, {
     ActivityExtension,
@@ -27,8 +27,8 @@
   import { get } from 'svelte/store'
   import { Scroller, ScrollParams } from '@hcengineering/ui'
   import {
-    ActivityMessagePresenter,
-    ActivityExtension as ActivityExtensionComponent
+    ActivityExtension as ActivityExtensionComponent,
+    ActivityMessagePresenter
   } from '@hcengineering/activity-resources'
 
   import ActivityMessagesSeparator from './ChannelMessagesSeparator.svelte'
@@ -293,20 +293,17 @@
       return 0
     }
 
-    const lastViewedMessageIdx = displayMessages.findIndex((message, index) => {
-      const nextMessage = displayMessages[index + 1]
+    const me = getCurrentAccount()._id
 
-      if (message.createdBy === getCurrentAccount()._id) {
+    return displayMessages.findIndex((message) => {
+      if (message.createdBy === me) {
         return false
       }
 
       const createdOn = message.createdOn ?? 0
-      const nextCreatedOn = nextMessage?.createdOn ?? 0
 
-      return lastViewedTimestamp >= createdOn && lastViewedTimestamp < nextCreatedOn
+      return lastViewedTimestamp < createdOn
     })
-
-    return lastViewedMessageIdx !== -1 ? lastViewedMessageIdx + 1 : -1
   }
 
   $: separatorPosition = getNewPosition(displayMessages, lastViewedTimestamp)

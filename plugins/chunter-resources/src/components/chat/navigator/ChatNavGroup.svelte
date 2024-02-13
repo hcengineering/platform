@@ -13,11 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import { Doc, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { getCurrentAccount, Ref } from '@hcengineering/core'
   import notification, { DocNotifyContext } from '@hcengineering/notification'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Action, IconAdd, Scroller, showPopup } from '@hcengineering/ui'
+  import { Action, Scroller } from '@hcengineering/ui'
   import activity from '@hcengineering/activity'
   import view from '@hcengineering/view'
   import { getResource } from '@hcengineering/platform'
@@ -29,8 +28,6 @@
 
   export let selectedContextId: Ref<DocNotifyContext> | undefined = undefined
   export let model: ChatNavGroupModel
-
-  const dispatch = createEventDispatcher()
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
