@@ -26,19 +26,19 @@ import core, {
   isFullTextAttribute,
   MeasureContext,
   Ref,
-  ServerStorage,
-  Storage
+  ServerStorage
 } from '@hcengineering/core'
 import { translate } from '@hcengineering/platform'
 import { convert } from 'html-to-text'
+import { DbAdapter } from '../adapter'
 import { IndexedDoc } from '../types'
 import { contentStageId, DocUpdateHandler, fieldStateId, FullTextPipeline, FullTextPipelineStage } from './types'
 import {
   collectPropagate,
   collectPropagateClasses,
   getFullTextContext,
-  loadIndexStageStage,
-  isCustomAttr
+  isCustomAttr,
+  loadIndexStageStage
 } from './utils'
 
 /**
@@ -73,7 +73,7 @@ export class FullSummaryStage implements FullTextPipelineStage {
 
   constructor (private readonly dbStorage: ServerStorage) {}
 
-  async initialize (storage: Storage, pipeline: FullTextPipeline): Promise<void> {
+  async initialize (ctx: MeasureContext, storage: DbAdapter, pipeline: FullTextPipeline): Promise<void> {
     const indexable = (
       await pipeline.model.findAll(core.class.Class, { [core.mixin.FullTextSearchContext]: { $exists: true } })
     )
@@ -81,10 +81,17 @@ export class FullSummaryStage implements FullTextPipelineStage {
       .filter((it) => it.fullTextSummary)
       .map((it) => it._id + (it.propagateClasses ?? []).join('|'))
     indexable.sort()
-    ;[this.stageValue, this.indexState] = await loadIndexStageStage(storage, this.indexState, this.stageId, 'config', {
-      classes: indexable,
-      matchExtra: this.matchExtra
-    })
+    ;[this.stageValue, this.indexState] = await loadIndexStageStage(
+      ctx,
+      storage,
+      this.indexState,
+      this.stageId,
+      'config',
+      {
+        classes: indexable,
+        matchExtra: this.matchExtra
+      }
+    )
   }
 
   async search (

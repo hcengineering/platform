@@ -23,6 +23,7 @@ import {
   FindResult,
   Hierarchy,
   IndexingConfiguration,
+  MeasureContext,
   ModelDb,
   Ref,
   StorageIterator,
@@ -47,13 +48,14 @@ export interface DbAdapter {
 
   close: () => Promise<void>
   findAll: <T extends Doc>(
+    ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T> & {
       domain?: Domain // Allow to find for Doc's in specified domain only.
     }
   ) => Promise<FindResult<T>>
-  tx: (...tx: Tx[]) => Promise<TxResult[]>
+  tx: (ctx: MeasureContext, ...tx: Tx[]) => Promise<TxResult[]>
 
   find: (domain: Domain) => StorageIterator
 
@@ -97,6 +99,7 @@ export interface DbAdapterConfiguration {
 export class DummyDbAdapter implements DbAdapter {
   async init (model: Tx[]): Promise<void> {}
   async findAll<T extends Doc>(
+    ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T> | undefined
@@ -107,7 +110,7 @@ export class DummyDbAdapter implements DbAdapter {
   async createIndexes (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>): Promise<void> {}
   async removeOldIndex (domain: Domain, deletePattern: RegExp, keepPattern: RegExp): Promise<void> {}
 
-  async tx (...tx: Tx[]): Promise<TxResult[]> {
+  async tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {
     return []
   }
 
@@ -140,6 +143,7 @@ class InMemoryAdapter extends DummyDbAdapter implements DbAdapter {
   }
 
   async findAll<T extends Doc>(
+    ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
@@ -147,7 +151,7 @@ class InMemoryAdapter extends DummyDbAdapter implements DbAdapter {
     return await this.modeldb.findAll(_class, query, options)
   }
 
-  async tx (...tx: Tx[]): Promise<TxResult[]> {
+  async tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {
     return await this.modeldb.tx(...tx)
   }
 

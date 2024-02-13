@@ -21,12 +21,12 @@ import core, {
   DocumentUpdate,
   MeasureContext,
   Ref,
-  Storage,
   WorkspaceId
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
+import { DbAdapter } from '../adapter'
 import { ContentTextAdapter, IndexedDoc } from '../types'
-import { contentStageId, DocUpdateHandler, fieldStateId, FullTextPipeline, FullTextPipelineStage } from './types'
+import { DocUpdateHandler, FullTextPipeline, FullTextPipelineStage, contentStageId, fieldStateId } from './types'
 import { docKey, docUpdKey, getFullTextIndexableAttributes } from './utils'
 
 /**
@@ -57,7 +57,7 @@ export class ContentRetrievalStage implements FullTextPipelineStage {
     private readonly contentAdapter: ContentTextAdapter
   ) {}
 
-  async initialize (storage: Storage, pipeline: FullTextPipeline): Promise<void> {
+  async initialize (ctx: MeasureContext, storage: DbAdapter, pipeline: FullTextPipeline): Promise<void> {
     // Just do nothing
   }
 

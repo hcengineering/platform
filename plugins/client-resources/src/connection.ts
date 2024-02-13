@@ -399,7 +399,6 @@ class Connection implements ClientConnection {
         method: 'measure-done',
         params: [operationName, mid]
       })
-
       return {
         time: Date.now() - dateNow,
         serverTime
@@ -415,12 +414,17 @@ class Connection implements ClientConnection {
     return await this.sendRequest({ method: 'getAccount', params: [] })
   }
 
-  findAll<T extends Doc>(
+  async findAll<T extends Doc>(
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
-    return this.sendRequest({ method: 'findAll', params: [_class, query, options] })
+    const st = Date.now()
+    const result = await this.sendRequest({ method: 'findAll', params: [_class, query, options] })
+    if (Date.now() - st > 1000) {
+      console.error('measure slow findAll', Date.now() - st, _class, query, options, result)
+    }
+    return result
   }
 
   tx (tx: Tx): Promise<TxResult> {

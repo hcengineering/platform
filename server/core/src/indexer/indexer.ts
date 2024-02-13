@@ -108,6 +108,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   async markRemove (doc: DocIndexState): Promise<void> {
     const ops = new TxFactory(core.account.System, true)
     await this.storage.tx(
+      this.metrics,
       ops.createTxUpdateDoc(doc._class, doc.space, doc._id, {
         removed: true
       })
@@ -122,7 +123,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   ): Promise<{ docs: IndexedDoc[], pass: boolean }> {
     const result: IndexedDoc[] = []
     for (const st of this.stages) {
-      await st.initialize(this.storage, this)
+      await st.initialize(this.metrics, this.storage, this)
       const docs = await st.search(_classes, search, size, from)
       result.push(...docs.docs)
       if (!docs.pass) {
@@ -279,7 +280,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
   async initializeStages (): Promise<void> {
     for (const st of this.stages) {
-      await st.initialize(this.storage, this)
+      await st.initialize(this.metrics, this.storage, this)
     }
   }
 
@@ -401,8 +402,9 @@ export class FullTextIndexPipeline implements FullTextPipeline {
           let result = await ctx.with(
             'get-to-index',
             {},
-            async () =>
+            async (ctx) =>
               await this.storage.findAll(
+                ctx,
                 core.class.DocIndexState,
                 {
                   [`stages.${st.stageId}`]: { $ne: st.stageValue },
@@ -509,6 +511,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   private async processRemove (): Promise<void> {
     while (true) {
       const result = await this.storage.findAll(
+        this.metrics,
         core.class.DocIndexState,
         {
           removed: true
@@ -641,6 +644,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
               const states = (
                 await this.storage.findAll(
+                  ctx,
                   core.class.DocIndexState,
                   {
                     objectClass: c,
@@ -697,6 +701,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
           // remove index states for documents that do not exist
           const toRemove = (
             await this.storage.findAll(
+              ctx,
               core.class.DocIndexState,
               { objectClass: c, generationId: { $ne: generationId } },
               { projection: { _id: 1 } }
@@ -713,6 +718,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
         while (true) {
           const docRefs = await this.storage.findAll(
+            ctx,
             core.class.DocIndexState,
             { objectClass: { $nin: allClasses } },
             { projection: { _id: 1, objectClass: 1 }, limit: 10000 }

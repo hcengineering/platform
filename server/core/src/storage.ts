@@ -210,7 +210,7 @@ class TServerStorage implements ServerStorage {
           }
         }
 
-        const r = await ctx.with('adapter-tx', { domain: lastDomain }, async () => await adapter.tx(...part))
+        const r = await ctx.with('adapter-tx', { domain: lastDomain }, async (ctx) => await adapter.tx(ctx, ...part))
 
         // Update server live queries.
         for (const t of part) {
@@ -419,7 +419,9 @@ class TServerStorage implements ServerStorage {
     return await ctx.with(
       p + '-find-all',
       { _class: clazz },
-      () => this.getAdapter(domain).findAll(clazz, query, options),
+      (ctx) => {
+        return this.getAdapter(domain).findAll(ctx, clazz, query, options)
+      },
       { clazz, query, options }
     )
   }
@@ -791,7 +793,7 @@ class TServerStorage implements ServerStorage {
         await this.triggers.tx(tx)
         await this.modelDb.tx(tx)
       }
-      await ctx.with('domain-tx', {}, async () => await this.getAdapter(DOMAIN_TX).tx(...txToStore))
+      await ctx.with('domain-tx', {}, async (ctx) => await this.getAdapter(DOMAIN_TX).tx(ctx, ...txToStore))
       result.push(...(await ctx.with('apply', {}, (ctx) => this.routeTx(ctx, removedMap, ...txToProcess))))
 
       // invoke triggers and store derived objects

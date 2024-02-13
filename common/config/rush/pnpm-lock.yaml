@@ -24,8 +24,8 @@ dependencies:
     specifier: ^3.1.0
     version: 3.4.3
   '@playwright/test':
-    specifier: ^1.40.1
-    version: 1.40.1
+    specifier: ^1.41.2
+    version: 1.41.2
   '@rush-temp/account':
     specifier: file:./projects/account.tgz
     version: file:projects/account.tgz(@types/node@20.11.16)(bufferutil@4.0.7)(esbuild@0.16.17)(svelte@4.2.5)(ts-node@10.9.1)
@@ -3582,12 +3582,12 @@ packages:
     dev: false
     optional: true
 
-  /@playwright/test@1.40.1:
-    resolution: {integrity: sha512-EaaawMTOeEItCRvfmkI9v6rBkF1svM8wjl/YPRrg2N2Wmp+4qJYkWtJsbew1szfKKDm6fPLy4YAanBhIlf9dWw==}
+  /@playwright/test@1.41.2:
+    resolution: {integrity: sha512-qQB9h7KbibJzrDpkXkYvsmiDJK14FULCCZgEcoe2AvFAS64oCirWTwzTlAYEbKaRxWs5TFesE1Na6izMv3HfGg==}
     engines: {node: '>=16'}
     hasBin: true
     dependencies:
-      playwright: 1.40.1
+      playwright: 1.41.2
     dev: false
 
   /@polka/url@1.0.0-next.23:
@@ -12980,18 +12980,18 @@ packages:
       find-up: 6.3.0
     dev: false
 
-  /playwright-core@1.40.1:
-    resolution: {integrity: sha512-+hkOycxPiV534c4HhpfX6yrlawqVUzITRKwHAmYfmsVreltEl6fAZJ3DPfLMOODw0H3s1Itd6MDCWmP1fl/QvQ==}
+  /playwright-core@1.41.2:
+    resolution: {integrity: sha512-VaTvwCA4Y8kxEe+kfm2+uUUw5Lubf38RxF7FpBxLPmGe5sdNkSg5e3ChEigaGrX7qdqT3pt2m/98LiyvU2x6CA==}
     engines: {node: '>=16'}
     hasBin: true
     dev: false
 
-  /playwright@1.40.1:
-    resolution: {integrity: sha512-2eHI7IioIpQ0bS1Ovg/HszsN/XKNwEG1kbzSDDmADpclKc7CyqkHw7Mg2JCz/bbCxg25QUPcjksoMW7JcIFQmw==}
+  /playwright@1.41.2:
+    resolution: {integrity: sha512-v0bOa6H2GJChDL8pAeLa/LZC4feoAMbSQm1/jF/ySsWWoaNItvrMP7GEkvEEFyCTUYKMxjQKaTSg5up7nR6/8A==}
     engines: {node: '>=16'}
     hasBin: true
     dependencies:
-      playwright-core: 1.40.1
+      playwright-core: 1.41.2
     optionalDependencies:
       fsevents: 2.3.2
     dev: false
@@ -22654,12 +22654,12 @@ packages:
     dev: false
 
   file:projects/tests-sanity.tgz(svelte@4.2.5):
-    resolution: {integrity: sha512-kwOYLXjeTn+4Lr7IdpsgiNRrlIEJ0ZzY3DIFLJUTFeoTaVrYR3yZmGJjzS9rJMxSYFL6zKGPkTCwju94g4AXFw==, tarball: file:projects/tests-sanity.tgz}
+    resolution: {integrity: sha512-jRAMJfzX45PJrXgNSbz7okYMeLRbdgqbOjCW71E0dtMthnBVqpVL2+VC/f+R2OdctkScogn1d07cfV7Irkds7A==, tarball: file:projects/tests-sanity.tgz}
     id: file:projects/tests-sanity.tgz
     name: '@rush-temp/tests-sanity'
     version: 0.0.0
     dependencies:
-      '@playwright/test': 1.40.1
+      '@playwright/test': 1.41.2
       '@types/jest': 29.5.5
       '@types/node': 20.11.16
       '@typescript-eslint/eslint-plugin': 6.11.0(@typescript-eslint/parser@6.11.0)(eslint@8.54.0)(typescript@5.3.3)
