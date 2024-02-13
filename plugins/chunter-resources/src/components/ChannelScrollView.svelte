@@ -22,14 +22,12 @@
     DisplayActivityMessage,
     type DisplayDocUpdateMessage
   } from '@hcengineering/activity'
-  import notification, { InboxNotificationsClient } from '@hcengineering/notification'
-  import { getResource } from '@hcengineering/platform'
-  import { get } from 'svelte/store'
   import { Scroller, ScrollParams } from '@hcengineering/ui'
   import {
     ActivityExtension as ActivityExtensionComponent,
     ActivityMessagePresenter
   } from '@hcengineering/activity-resources'
+  import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
 
   import ActivityMessagesSeparator from './ChannelMessagesSeparator.svelte'
   import JumpToDateSelector from './JumpToDateSelector.svelte'
@@ -53,9 +51,11 @@
   const headerHeight = 50
 
   const client = getClient()
+  const inboxClient = InboxNotificationsClientImpl.getClient()
+  const contextByDocStore = inboxClient.docNotifyContextByDoc
+  const filters = client.getModel().findAllSync(activity.class.ActivityMessagesFilter, {})
 
   let displayMessages: DisplayActivityMessage[] = []
-  let filters: ActivityMessagesFilter[] = []
   let extensions: ActivityExtension[] = []
 
   let separatorElement: HTMLDivElement | undefined = undefined
@@ -64,31 +64,31 @@
 
   let autoscroll = false
   let scrollContentBox: HTMLDivElement | undefined = undefined
-  let inboxClient: InboxNotificationsClient | undefined = undefined
   let shouldWaitAndRead = false
 
-  getResource(notification.function.GetInboxNotificationsClient).then((getClientFn) => {
-    inboxClient = getClientFn()
-  })
+  let shouldScrollToNew = false
 
   $: extensions = client.getModel().findAllSync(activity.class.ActivityExtension, { ofClass: objectClass })
 
-  filters = client.getModel().findAllSync(activity.class.ActivityMessagesFilter, {})
+  $: notifyContext = $contextByDocStore.get(objectId)
+
+  $: filterChatMessages(messages, filters, objectClass, selectedFilters).then((filteredMessages) => {
+    displayMessages = filteredMessages
+  })
 
   function scrollToBottom (afterScrollFn?: () => void) {
-    setTimeout(() => {
-      if (scrollElement !== undefined) {
-        scrollElement?.scrollTo(0, scrollElement.scrollHeight)
-        afterScrollFn?.()
-      }
-    }, 100)
+    if (scrollElement !== undefined) {
+      scrollElement?.scrollTo(0, scrollElement.scrollHeight)
+      afterScrollFn?.()
+    }
   }
 
-  function scrollToSeparator (afterScrollFn?: () => void) {
+  function scrollToSeparator () {
     setTimeout(() => {
       if (separatorElement) {
         separatorElement.scrollIntoView()
-        afterScrollFn?.()
+        updateShouldScrollToNew()
+        readViewportMessages()
       }
     }, 100)
   }
@@ -104,6 +104,7 @@
 
     const messagesElements = scrollContentBox?.getElementsByClassName('activityMessage')
     const msgElement = messagesElements?.[selectedMessageId as any]
+
     if (!msgElement) {
       if (messages.some(({ _id }) => _id === selectedMessageId)) {
         setTimeout(scrollToMessage, 50)
@@ -115,22 +116,20 @@
     readViewportMessages()
   }
 
-  function handleJumpToDate (e: CustomEvent) {
+  function jumpToDate (e: CustomEvent) {
     const date = e.detail.date
 
     if (!date || !scrollElement) {
       return
     }
 
-    let closestDate = getClosestDateSelectorDate(date, scrollElement)
+    const closestDate = getClosestDateSelectorDate(date, scrollElement)
 
     if (!closestDate) {
       return
     }
 
-    if (closestDate < date) {
-      closestDate = undefined
-    } else {
+    if (closestDate >= date) {
       scrollToDate(closestDate)
     }
   }
@@ -151,17 +150,23 @@
     scrollElement.scrollTo({ left: 0, top: offset })
   }
 
-  function handleScroll ({ autoScrolling }: ScrollParams) {
-    shouldWaitAndRead = false
-    if (autoScrolling && isLastMessageViewed()) {
-      readViewportMessages()
-      return
-    }
+  function updateShouldScrollToNew () {
+    if (scrollElement) {
+      const { offsetHeight, scrollHeight, scrollTop } = scrollElement
+      const offset = 100
 
+      shouldScrollToNew = scrollHeight <= scrollTop + offsetHeight + offset
+    }
+  }
+
+  function handleScroll ({ autoScrolling }: ScrollParams) {
     if (autoScrolling) {
       return
     }
 
+    shouldWaitAndRead = false
+
+    updateShouldScrollToNew()
     updateSelectedDate()
     readViewportMessages()
   }
@@ -220,7 +225,7 @@
   }
 
   function readMessage (messages: DisplayActivityMessage[]) {
-    if (inboxClient === undefined || messages.length === 0) {
+    if (messages.length === 0) {
       return
     }
 
@@ -237,10 +242,13 @@
 
     inboxClient.readMessages(allIds)
 
-    const notifyContext = get(inboxClient.docNotifyContextByDoc).get(objectId)
+    if (notifyContext === undefined) {
+      return
+    }
+
     const lastTimestamp = messages[messages.length - 1].createdOn ?? 0
 
-    if (notifyContext !== undefined && (notifyContext.lastViewedTimestamp ?? 0) < lastTimestamp) {
+    if ((notifyContext.lastViewedTimestamp ?? 0) < lastTimestamp) {
       client.update(notifyContext, { lastViewedTimestamp: lastTimestamp })
     }
   }
@@ -271,10 +279,6 @@
 
     selectedDate = parseInt(firstVisibleDateElement.id)
   }
-
-  $: filterChatMessages(messages, filters, objectClass, selectedFilters).then((filteredMessages) => {
-    displayMessages = filteredMessages
-  })
 
   function getNewPosition (displayMessages: ActivityMessage[], lastViewedTimestamp?: Timestamp): number | undefined {
     if (displayMessages.length === 0) {
@@ -313,39 +317,39 @@
     if (separatorPosition === undefined) {
       return
     }
+
     if (messages.some(({ _id }) => _id === selectedMessageId)) {
       scrollToMessage()
-      return
-    }
-    if (separatorPosition < 0) {
+    } else if (separatorPosition === -1) {
       shouldWaitAndRead = true
+      waitLastMessageRenderAndRead()
       autoscroll = true
     } else if (separatorElement) {
-      scrollToSeparator(() =>
-        setTimeout(() => {
-          readViewportMessages()
-        }, 100)
-      )
+      scrollToSeparator()
     }
   }
 
   function waitLastMessageRenderAndRead () {
     if (isLastMessageViewed()) {
       readViewportMessages()
+      shouldScrollToNew = true
       shouldWaitAndRead = false
     } else if (shouldWaitAndRead) {
       setTimeout(waitLastMessageRenderAndRead, 50)
     }
   }
 
-  $: if (shouldWaitAndRead) {
+  function scrollToNewMessages (_: DisplayActivityMessage[]) {
+    if (!scrollElement || !shouldScrollToNew) {
+      return
+    }
+
+    scrollToBottom()
+    shouldWaitAndRead = true
     waitLastMessageRenderAndRead()
   }
 
-  function handleMessageSent () {
-    scrollToBottom()
-    shouldWaitAndRead = true
-  }
+  $: scrollToNewMessages(messages)
 </script>
 
 <div class="flex-col h-full">
@@ -354,7 +358,7 @@
   {/if}
   {#if selectedDate}
     <div class="ml-2 pr-2">
-      <JumpToDateSelector {selectedDate} fixed on:jumpToDate={handleJumpToDate} />
+      <JumpToDateSelector {selectedDate} fixed on:jumpToDate={jumpToDate} />
     </div>
   {/if}
   <Scroller
@@ -373,7 +377,7 @@
       {/if}
 
       {#if withDates && (index === 0 || isOtherDay(message.createdOn ?? 0, prevMessage?.createdOn ?? 0))}
-        <JumpToDateSelector selectedDate={message.createdOn} on:jumpToDate={handleJumpToDate} />
+        <JumpToDateSelector selectedDate={message.createdOn} on:jumpToDate={jumpToDate} />
       {/if}
 
       <div style:margin="0 1.5rem">
@@ -389,15 +393,9 @@
     {/each}
   </Scroller>
 </div>
-
 {#if object}
   <div class="ref-input">
-    <ActivityExtensionComponent
-      kind="input"
-      {extensions}
-      props={{ object, boundary: scrollElement, collection }}
-      on:submit={handleMessageSent}
-    />
+    <ActivityExtensionComponent kind="input" {extensions} props={{ object, boundary: scrollElement, collection }} />
   </div>
 {/if}
 
