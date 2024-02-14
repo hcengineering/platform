@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { Asset, IntlString } from '@hcengineering/platform'
-  import { onMount, ComponentType } from 'svelte'
+  import { onMount, ComponentType, createEventDispatcher } from 'svelte'
   import { registerFocus } from '../focus'
   import { tooltip } from '../tooltips'
   import type {
@@ -64,6 +64,7 @@
   export let noFocus: boolean = false
   export let adaptiveShrink: WidthType | null = null
   export let gap: 'medium' | 'large' = 'medium'
+  export let stopPropagation: boolean = true
 
   $: iconSize = iconProps?.size !== undefined ? iconProps.size : size && size === 'inline' ? 'inline' : 'small'
   $: iconRightSize = iconRightProps?.size !== undefined ? iconRightProps.size : 'x-small'
@@ -110,6 +111,13 @@
   $: if (input != null) {
     input.addEventListener('focus', updateFocus, { once: true })
   }
+
+  function preventHandler (e: MouseEvent) {
+    if (stopPropagation) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+  }
 </script>
 
 <!-- {focusIndex} -->
@@ -135,7 +143,8 @@
   style:padding
   {title}
   type={kind === 'primary' ? 'submit' : 'button'}
-  on:click|stopPropagation|preventDefault
+  on:click={preventHandler}
+  on:click
   on:focus
   on:blur
   on:mousemove
