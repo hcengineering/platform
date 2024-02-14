@@ -16,19 +16,19 @@
 import { Doc as YDoc } from 'yjs'
 import * as Y from 'yjs'
 
-import { addVersion, getVersion } from './history'
+import { YDocVersion, addVersion, getVersionData } from './history'
 
 /** @public */
-export function createYdocSnapshot (yContent: YDoc, yHistory: YDoc, versionId: string): void {
+export function createYdocSnapshot (yContent: YDoc, yHistory: YDoc, version: YDocVersion): void {
   const snapshot = Y.snapshot(yContent)
   const update = Y.encodeSnapshot(snapshot)
 
-  addVersion(yHistory, versionId, update)
+  addVersion(yHistory, version, update)
 }
 
 /** @public */
 export function restoreYdocSnapshot (yContent: YDoc, yHistory: YDoc, versionId: string): YDoc | undefined {
-  const update = getVersion(yHistory, versionId)
+  const update = getVersionData(yHistory, versionId)
   if (update !== undefined) {
     const snapshot = Y.decodeSnapshot(update)
     return Y.createDocFromSnapshot(yContent, snapshot)

@@ -13,8 +13,10 @@
 // limitations under the License.
 //
 
-export * from './collaborative'
+export * from './client'
 export * from './history/history'
 export * from './history/snapshot'
+export * from './utils/collaborative-doc'
 export * from './utils/minio'
 export * from './utils/ydoc'
+export * from './uri'

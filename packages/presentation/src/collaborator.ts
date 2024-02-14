@@ -13,13 +13,13 @@
 // limitations under the License.
 //
 
-import { type CollaboratorClient, getClient as getCollaborator } from '@hcengineering/collaborator-client'
+import { type CollaboratorClient, getClient as getCollaborator } from '@hcengineering/collaboration'
 import { getWorkspaceId, type Class, type Doc, type Markup, type Ref } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import { getCurrentLocation } from '@hcengineering/ui'
 
-import { getClient } from '.'
 import presentation from './plugin'
+import { getClient } from './utils'
 
 /**
  * @public

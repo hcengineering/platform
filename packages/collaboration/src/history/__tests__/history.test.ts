@@ -16,7 +16,7 @@
 import { generateId } from '@hcengineering/core'
 import { Doc as YDoc, encodeStateAsUpdate } from 'yjs'
 
-import { addVersion, deleteVersion, getVersion } from '../history'
+import { YDocVersion, addVersion, deleteVersion, getVersion, getVersionData, listVersions } from '../history'
 
 const HISTORY = 'history'
 const UPDATES = 'updates'
@@ -29,10 +29,11 @@ describe('history', () => {
   })
 
   it('addVersion should append new version', async () => {
-    const id = generateId()
+    const versionId = generateId()
+    const version = yDocVersion(versionId)
     const update = encodeStateAsUpdate(ydoc)
 
-    addVersion(ydoc, id, update)
+    addVersion(ydoc, version, update)
 
     const history = ydoc.getArray(HISTORY)
     const updates = ydoc.getMap(UPDATES)
@@ -40,16 +41,17 @@ describe('history', () => {
     expect(history.length).toEqual(1)
     expect(updates.size).toEqual(1)
 
-    expect(history.get(0)).toEqual(id)
-    expect(updates.get(id)).toEqual(update)
+    expect(history.get(0)).toEqual(version)
+    expect(updates.get(versionId)).toBeDefined()
   })
 
   it('addVersion should raise an error when a version already exists', async () => {
-    const id = generateId()
+    const versionId = generateId()
+    const version = yDocVersion(versionId)
     const update = encodeStateAsUpdate(ydoc)
 
-    addVersion(ydoc, id, update)
-    expect(() => { addVersion(ydoc, id, update) }).toThrowError()
+    addVersion(ydoc, version, update)
+    expect(() => { addVersion(ydoc, version, update) }).toThrow()
 
     const history = ydoc.getArray(HISTORY)
     const updates = ydoc.getMap(UPDATES)
@@ -57,17 +59,18 @@ describe('history', () => {
     expect(history.length).toEqual(1)
     expect(updates.size).toEqual(1)
 
-    expect(history.get(0)).toEqual(id)
-    expect(updates.get(id)).toEqual(update)
+    expect(history.get(0)).toEqual(version)
+    expect(updates.get(versionId)).toBeDefined()
   })
 
-  it('getVersion should get existing version', async () => {
-    const id = generateId()
+  it('getVersion should get existing version data', async () => {
+    const versionId = generateId()
+    const version = yDocVersion(versionId)
     const update = encodeStateAsUpdate(ydoc)
 
-    addVersion(ydoc, id, update)
-    addVersion(ydoc, generateId(), encodeStateAsUpdate(ydoc))
-    addVersion(ydoc, generateId(), encodeStateAsUpdate(ydoc))
+    addVersion(ydoc, yDocVersion(generateId()), encodeStateAsUpdate(ydoc))
+    addVersion(ydoc, yDocVersion(generateId()), encodeStateAsUpdate(ydoc))
+    addVersion(ydoc, version, update)
 
     const history = ydoc.getArray(HISTORY)
     const updates = ydoc.getMap(UPDATES)
@@ -75,21 +78,63 @@ describe('history', () => {
     expect(history.length).toEqual(3)
     expect(updates.size).toEqual(3)
 
-    expect(getVersion(ydoc, id)).toEqual(update)
+    expect(getVersion(ydoc, versionId)).toEqual(version)
   })
 
   it('getVersion should return undefined for unknown version', async () => {
-    const id = generateId()
-    addVersion(ydoc, id, encodeStateAsUpdate(ydoc))
+    const versionId = generateId()
+    const version = yDocVersion(versionId)
+    addVersion(ydoc, version, encodeStateAsUpdate(ydoc))
 
     expect(getVersion(ydoc, generateId())).toBeUndefined()
   })
 
-  it('deleteVersion should delete existing version', async () => {
-    const id = generateId()
-    addVersion(ydoc, id, encodeStateAsUpdate(ydoc))
+  it('listVersions should return existing versions', async () => {
+    const version1 = yDocVersion(generateId())
+    const version2 = yDocVersion(generateId())
 
-    deleteVersion(ydoc, id)
+    addVersion(ydoc, version1, encodeStateAsUpdate(ydoc))
+    addVersion(ydoc, version2, encodeStateAsUpdate(ydoc))
+
+    expect(listVersions(ydoc)).toEqual(expect.arrayContaining([version1, version2]))
+  })
+
+  it('listVersions should return empty list when no versions', async () => {
+    expect(listVersions(ydoc)).toEqual([])
+  })
+
+  it('getVersionData should get existing version data', async () => {
+    const versionId = generateId()
+    const version = yDocVersion(versionId)
+    const update = encodeStateAsUpdate(ydoc)
+
+    addVersion(ydoc, version, update)
+    addVersion(ydoc, yDocVersion(generateId()), encodeStateAsUpdate(ydoc))
+    addVersion(ydoc, yDocVersion(generateId()), encodeStateAsUpdate(ydoc))
+
+    const history = ydoc.getArray(HISTORY)
+    const updates = ydoc.getMap(UPDATES)
+
+    expect(history.length).toEqual(3)
+    expect(updates.size).toEqual(3)
+
+    expect(getVersionData(ydoc, versionId)).toEqual(update)
+  })
+
+  it('getVersionData should return undefined for unknown version', async () => {
+    const versionId = generateId()
+    const version = yDocVersion(versionId)
+    addVersion(ydoc, version, encodeStateAsUpdate(ydoc))
+
+    expect(getVersionData(ydoc, generateId())).toBeUndefined()
+  })
+
+  it('deleteVersion should delete existing version', async () => {
+    const versionId = generateId()
+    const version = yDocVersion(versionId)
+    addVersion(ydoc, version, encodeStateAsUpdate(ydoc))
+
+    deleteVersion(ydoc, versionId)
 
     const history = ydoc.getArray(HISTORY)
     const updates = ydoc.getMap(UPDATES)
@@ -97,6 +142,16 @@ describe('history', () => {
     expect(history.length).toEqual(0)
     expect(updates.size).toEqual(0)
 
-    expect(getVersion(ydoc, id)).toEqual(undefined)
+    expect(getVersion(ydoc, versionId)).toEqual(undefined)
+    expect(getVersionData(ydoc, versionId)).toEqual(undefined)
   })
 })
+
+function yDocVersion (versionId: string): YDocVersion {
+  return {
+    versionId,
+    name: versionId,
+    createdBy: 'unit test',
+    createdOn: Date.now()
+  }
+}

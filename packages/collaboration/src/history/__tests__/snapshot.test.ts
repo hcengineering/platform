@@ -17,6 +17,7 @@ import { generateId } from '@hcengineering/core'
 import { Doc as YDoc } from 'yjs'
 
 import { createYdocSnapshot, restoreYdocSnapshot } from '../snapshot'
+import { YDocVersion } from '../history'
 
 const HISTORY = 'history'
 const UPDATES = 'updates'
@@ -32,8 +33,9 @@ describe('snapshot', () => {
 
   it('createYdocSnapshot appends new version', async () => {
     const versionId = generateId()
+    const version = yDocVersion(versionId)
 
-    createYdocSnapshot(yContent, yHistory, versionId)
+    createYdocSnapshot(yContent, yHistory, version)
 
     const history = yHistory.getArray(HISTORY)
     const updates = yHistory.getMap(UPDATES)
@@ -41,18 +43,19 @@ describe('snapshot', () => {
     expect(history.length).toEqual(1)
     expect(updates.size).toEqual(1)
 
-    expect(history.get(0)).toEqual(versionId)
+    expect(history.get(0)).toEqual(version)
     expect(updates.get(versionId)).toBeDefined()
   })
 
   it('restoreYdocSnapshot restores existing version', async () => {
     const versionId = generateId()
+    const version = yDocVersion(versionId)
 
     const data = yContent.getArray('data')
     data.insert(0, [1, 2, 3])
     expect(data.toArray()).toEqual(expect.arrayContaining([1, 2, 3]))
 
-    createYdocSnapshot(yContent, yHistory, versionId)
+    createYdocSnapshot(yContent, yHistory, version)
 
     data.delete(1, 1)
     expect(data.toArray()).toEqual(expect.arrayContaining([1, 3]))
@@ -69,9 +72,10 @@ describe('snapshot', () => {
 
   it('restoreYdocSnapshot throws an error when gc is enabled', async () => {
     const versionId = generateId()
+    const version = yDocVersion(versionId)
 
     yContent = new YDoc({ gc: true })
-    createYdocSnapshot(yContent, yHistory, versionId)
+    createYdocSnapshot(yContent, yHistory, version)
     expect(() => restoreYdocSnapshot(yContent, yHistory, versionId)).toThrow()
   })
 
@@ -84,8 +88,9 @@ describe('snapshot', () => {
 
   it('restoreYdocSnapshot restored document has gc enabled', async () => {
     const versionId = generateId()
+    const version = yDocVersion(versionId)
 
-    createYdocSnapshot(yContent, yHistory, versionId)
+    createYdocSnapshot(yContent, yHistory, version)
     const yRestore = restoreYdocSnapshot(yContent, yHistory, versionId)
 
     // so far we don't care whether gc is enabled or not in the restore
@@ -93,3 +98,12 @@ describe('snapshot', () => {
     expect(yRestore?.gc).toEqual(true)
   })
 })
+
+function yDocVersion (versionId: string): YDocVersion {
+  return {
+    versionId,
+    name: versionId,
+    createdBy: 'unit test',
+    createdOn: Date.now()
+  }
+}
