@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { ListView } from '@hcengineering/ui'
-  import { ActivityNotificationViewlet, DisplayInboxNotification, DocNotifyContext } from '@hcengineering/notification'
+  import { ActivityNotificationViewlet, DisplayInboxNotification } from '@hcengineering/notification'
   import { createEventDispatcher } from 'svelte'
 
   import InboxNotificationPresenter from './InboxNotificationPresenter.svelte'
@@ -66,14 +66,6 @@
   $: if (element) {
     element.focus()
   }
-
-  // async function handleCheck(notification: DisplayInboxNotification, isChecked: boolean) {
-  //   if (!isChecked) {
-  //     return
-  //   }
-  //
-  //   await deleteInboxNotification(notification)
-  // }
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
@@ -83,15 +75,6 @@
     <svelte:fragment slot="item" let:item={itemIndex}>
       {@const notification = notifications[itemIndex]}
       <div class="notification gap-2">
-        <!--        <div class="mt-6">-->
-        <!--          <CheckBox-->
-        <!--            circle-->
-        <!--            kind="primary"-->
-        <!--            on:value={(event) => {-->
-        <!--              handleCheck(notification, event.detail)-->
-        <!--            }}-->
-        <!--          />-->
-        <!--        </div>-->
         <InboxNotificationPresenter
           value={notification}
           {viewlets}

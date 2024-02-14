@@ -103,13 +103,6 @@
       </div>
     {:else}
       <div class="header">
-        <!--      <CheckBox-->
-        <!--        circle-->
-        <!--        kind="primary"-->
-        <!--        on:value={(event) => {-->
-        <!--          dispatch('check', event.detail)-->
-        <!--        }}-->
-        <!--      />-->
         <NotifyContextIcon {value} />
 
         {#if presenterMixin?.labelPresenter}

@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { matchQuery, Ref, SortingOrder } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import { matchQuery, Ref } from '@hcengineering/core'
   import notification, {
     ActivityInboxNotification,
     ActivityNotificationViewlet,
@@ -22,12 +22,12 @@
     InboxNotification
   } from '@hcengineering/notification'
   import { ActivityMessagePresenter, combineActivityMessages } from '@hcengineering/activity-resources'
-  import activity, { ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
+  import { ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
   import { location, Action, Component } from '@hcengineering/ui'
   import { getActions } from '@hcengineering/view-resources'
   import { getResource } from '@hcengineering/platform'
 
-  import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
+  import { inboxMessagesStore, InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
   import { openInboxDoc } from '../../utils'
 
   export let value: DisplayActivityInboxNotification
@@ -40,7 +40,6 @@
   export let onClick: (() => void) | undefined = undefined
 
   const client = getClient()
-  const messagesQuery = createQuery()
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const notificationsStore = inboxClient.inboxNotifications
 
@@ -58,20 +57,15 @@
   ) as ActivityInboxNotification[]
 
   $: messageIds = combinedNotifications.map(({ attachedTo }) => attachedTo)
-  $: messagesQuery.query(
-    activity.class.ActivityMessage,
-    { _id: { $in: messageIds } },
-    (res) => {
-      combineActivityMessages(res).then((m) => {
-        displayMessage = m[0]
-      })
-    },
-    {
-      sort: {
-        createdBy: SortingOrder.Ascending
-      }
-    }
-  )
+
+  $: updateDisplayMessage(messageIds, $inboxMessagesStore)
+
+  async function updateDisplayMessage (ids: Ref<ActivityMessage>[], allMessages: ActivityMessage[]) {
+    const messages = allMessages.filter(({ _id }) => ids.includes(_id))
+    const combinedMessages = await combineActivityMessages(messages)
+
+    displayMessage = combinedMessages[0]
+  }
 
   $: getAllActions(value).then((res) => {
     actions = res

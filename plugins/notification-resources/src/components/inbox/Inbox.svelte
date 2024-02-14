@@ -18,7 +18,7 @@
     DisplayInboxNotification,
     DocNotifyContext
   } from '@hcengineering/notification'
-  import { ActionContext, getClient } from '@hcengineering/presentation'
+  import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import view, { Viewlet } from '@hcengineering/view'
   import {
     AnyComponent,
@@ -39,7 +39,7 @@
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import { isReactionMessage } from '@hcengineering/activity-resources'
 
-  import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
+  import { inboxMessagesStore, InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
   import Filter from '../Filter.svelte'
   import { getDisplayInboxNotifications, openInboxDoc, resolveLocation } from '../../utils'
   import { InboxNotificationsFilter } from '../../types'
@@ -50,9 +50,12 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
+
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const notificationsByContextStore = inboxClient.inboxNotificationsByContext
   const notifyContextsStore = inboxClient.docNotifyContexts
+
+  const messagesQuery = createQuery()
 
   const allTab: TabItem = {
     id: 'all',
@@ -69,6 +72,8 @@
 
   let displayNotifications: DisplayInboxNotification[] = []
   let displayContextsIds = new Set<Ref<DocNotifyContext>>()
+
+  let messagesIds: Ref<ActivityMessage>[] = []
 
   let filteredNotifications: DisplayInboxNotification[] = []
   let filter: InboxNotificationsFilter = 'all'
@@ -99,6 +104,20 @@
   locationStore.subscribe((newLocation) => {
     syncLocation(newLocation)
   })
+
+  inboxClient.activityInboxNotifications.subscribe((notifications) => {
+    messagesIds = notifications.map(({ attachedTo }) => attachedTo)
+  })
+
+  $: messagesQuery.query(
+    activity.class.ActivityMessage,
+    {
+      _id: { $in: messagesIds }
+    },
+    (result) => {
+      inboxMessagesStore.set(result)
+    }
+  )
 
   async function syncLocation (newLocation: Location) {
     const loc = await resolveLocation(newLocation)
