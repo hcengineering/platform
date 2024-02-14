@@ -37,8 +37,8 @@
   }
 </script>
 
-{#if object !== undefined && reactions.length > 0}
-  <div class="footer flex-col p-inline contrast mt-2">
+{#if object?.reactions && object.reactions > 0}
+  <div class="footer flex-col p-inline contrast mt-2 min-h-6">
     <Reactions {reactions} {object} on:click={handleClick} />
   </div>
 {/if}

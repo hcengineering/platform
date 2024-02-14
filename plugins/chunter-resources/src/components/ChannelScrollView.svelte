@@ -387,6 +387,7 @@
           hoverStyles="filledHover"
           isHighlighted={isSelected}
           shouldScroll={isSelected}
+          withShowMore={false}
         />
       </div>
     {/each}

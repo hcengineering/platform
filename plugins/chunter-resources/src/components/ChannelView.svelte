@@ -20,6 +20,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { combineActivityMessages } from '@hcengineering/activity-resources'
   import { Channel } from '@hcengineering/chunter'
+  import attachment from '@hcengineering/attachment'
 
   import ChannelComponent from './Channel.svelte'
   import ChannelHeader from './ChannelHeader.svelte'
@@ -38,8 +39,8 @@
 
   let activityMessages: ActivityMessage[] = []
   let isThreadOpened = false
-  let isAsideShown = true
-  let isLoading = false
+  let isAsideShown = false
+  let isLoading = true
 
   let filters: Ref<ActivityMessagesFilter>[] = []
 
@@ -69,7 +70,12 @@
           })
         }
       },
-      { sort: { createdOn: SortingOrder.Ascending } }
+      {
+        sort: { createdOn: SortingOrder.Ascending },
+        lookup: {
+          _id: { attachments: attachment.class.Attachment }
+        }
+      }
     )
 
     if (!res) {
@@ -112,7 +118,7 @@
         <ChannelComponent {context} {object} {filters} messages={activityMessages} />
       </div>
 
-      {#if withAside && isAsideShown}
+      {#if withAside && isAsideShown && !isLoading}
         <Separator name="aside" float={false} index={0} />
         <div class="popupPanel-body__aside" class:float={false} class:shown={withAside && isAsideShown}>
           <Separator name="aside" float index={0} />

@@ -51,7 +51,7 @@
 <div class="body h-full w-full">
   <Scroller padding="0.75rem 0.5rem">
     {#each threads as thread}
-      <ActivityMessagePresenter value={thread} onClick={() => openMessageFromSpecial(thread)} />
+      <ActivityMessagePresenter value={thread} onClick={() => openMessageFromSpecial(thread)} withShowMore={false} />
     {/each}
   </Scroller>
 </div>
