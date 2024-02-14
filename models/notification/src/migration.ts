@@ -133,6 +133,10 @@ async function getInboxNotifications (
 }
 
 async function getInboxData (client: MigrationClient, docUpdate: DocUpdates): Promise<InboxData | undefined> {
+  if (docUpdate.hidden) {
+    return
+  }
+
   if (!client.hierarchy.hasClass(docUpdate.attachedToClass)) {
     console.log('cannot find class: ', docUpdate.attachedToClass)
     return
@@ -195,12 +199,52 @@ async function migrateInboxNotifications (client: MigrationClient): Promise<void
   }
 }
 
+export async function removeHiddenNotifications (client: MigrationClient): Promise<void> {
+  const processedIds: Ref<DocNotifyContext>[] = []
+
+  while (true) {
+    const contexts = await client.find<DocNotifyContext>(
+      DOMAIN_NOTIFICATION,
+      {
+        _class: notification.class.DocNotifyContext,
+        _id: { $nin: processedIds },
+        hidden: true
+      },
+      { limit: 500 }
+    )
+
+    if (contexts.length === 0) {
+      return
+    }
+
+    const ids = contexts.map(({ _id }) => _id)
+
+    processedIds.push(...ids)
+
+    await client.deleteMany(DOMAIN_NOTIFICATION, {
+      _class: notification.class.CommonInboxNotification,
+      docNotifyContext: { $in: ids }
+    })
+
+    await client.deleteMany(DOMAIN_NOTIFICATION, {
+      _class: notification.class.ActivityInboxNotification,
+      docNotifyContext: { $in: ids }
+    })
+  }
+}
+
 export const notificationOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, notificationId, [
       {
         state: 'inbox-notifications',
         func: migrateInboxNotifications
+      }
+    ])
+    await tryMigrate(client, notificationId, [
+      {
+        state: 'remove-hidden-notifications',
+        func: removeHiddenNotifications
       }
     ])
   },

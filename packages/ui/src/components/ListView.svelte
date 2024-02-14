@@ -15,6 +15,8 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { mouseAttractor, resizeObserver } from '..'
+  import ListViewItem from './ListViewItem.svelte'
+  import Lazy from './Lazy.svelte'
 
   export let selection: number = 0
   export let count: number
@@ -23,6 +25,7 @@
   export let kind: 'default' | 'thin' = 'default'
   export let colorsSchema: 'default' | 'lumia' = 'default'
   export let updateOnMouse = true
+  export let lazy = false
 
   const refs: HTMLElement[] = []
 
@@ -63,37 +66,70 @@
 
 {#if count}
   <div
-    class="list-container {kind} flex-col flex-grow"
+    class="list-container flex-col flex-grow"
     style:overflow={noScroll ? 'visible' : 'auto'}
     use:resizeObserver={() => {
       dispatch('changeContent')
     }}
   >
     {#each Array(count) as _, row}
-      <slot name="category" item={row} />
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div
-        class="list-item{addClass ? ` ${addClass}` : ''}"
-        class:selection={row === selection}
-        class:lumia={colorsSchema === 'lumia'}
-        class:default={colorsSchema === 'default'}
-        on:mouseover={mouseAttractor(() => {
-          if (updateOnMouse) {
-            onRow(row)
-          }
-        })}
-        on:mouseenter={mouseAttractor(() => {
-          if (updateOnMouse) {
-            onRow(row)
-          }
-        })}
-        on:focus={() => {}}
-        bind:this={refs[row]}
-        on:click={() => dispatch('click', row)}
-      >
-        <slot name="item" item={row} />
-      </div>
+      {#if lazy}
+        <Lazy>
+          <ListViewItem
+            bind:element={refs[row]}
+            {colorsSchema}
+            {addClass}
+            {row}
+            {kind}
+            selected={row === selection}
+            on:click={() => dispatch('click', row)}
+            on:mouseover={mouseAttractor(() => {
+              if (updateOnMouse) {
+                onRow(row)
+              }
+            })}
+            on:mouseenter={mouseAttractor(() => {
+              if (updateOnMouse) {
+                onRow(row)
+              }
+            })}
+          >
+            <svelte:fragment slot="category" let:item={itemIndex}>
+              <slot name="category" item={itemIndex} />
+            </svelte:fragment>
+            <svelte:fragment slot="item" let:item={itemIndex}>
+              <slot name="item" item={itemIndex} />
+            </svelte:fragment>
+          </ListViewItem>
+        </Lazy>
+      {:else}
+        <ListViewItem
+          bind:element={refs[row]}
+          {colorsSchema}
+          {addClass}
+          {row}
+          {kind}
+          selected={row === selection}
+          on:click={() => dispatch('click', row)}
+          on:mouseover={mouseAttractor(() => {
+            if (updateOnMouse) {
+              onRow(row)
+            }
+          })}
+          on:mouseenter={mouseAttractor(() => {
+            if (updateOnMouse) {
+              onRow(row)
+            }
+          })}
+        >
+          <svelte:fragment slot="category" let:item={itemIndex}>
+            <slot name="category" item={itemIndex} />
+          </svelte:fragment>
+          <svelte:fragment slot="item" let:item={itemIndex}>
+            <slot name="item" item={itemIndex} />
+          </svelte:fragment>
+        </ListViewItem>
+      {/if}
     {/each}
   </div>
 {/if}
@@ -103,42 +139,5 @@
     min-width: 0;
     // border-radius: 0.25rem;
     user-select: none;
-
-    .list-item {
-      margin: 0 0.5rem;
-      min-width: 0;
-      border-radius: 0.25rem;
-
-      &.default {
-        &:hover {
-          background-color: var(--theme-popup-divider);
-        }
-      }
-
-      &.lumia {
-        &:hover {
-          background-color: var(--global-ui-highlight-BackgroundColor);
-        }
-      }
-    }
-    &.thin {
-      .list-item {
-        margin: 0 0.375rem;
-        border-radius: 0.375rem;
-      }
-      .list-item + .list-item {
-        margin-top: 0.375rem;
-      }
-    }
-
-    .selection {
-      &.default {
-        background-color: var(--theme-popup-hover);
-      }
-
-      &.lumia {
-        background-color: var(--global-ui-highlight-BackgroundColor);
-      }
-    }
   }
 </style>
