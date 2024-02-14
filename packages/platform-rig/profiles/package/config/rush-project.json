@@ -1,4 +1,5 @@
 {
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush-project.schema.json",
   "incrementalBuildIgnoredGlobs": [
     "lib/**", 
     "rush-logs/**",
@@ -35,7 +36,8 @@
     },
     {
       "operationName": "_phase:bundle",
-      "outputFolderNames": ["bundle"]
+      "outputFolderNames": ["bundle"],
+      "disableBuildCacheForOperation": true
     },
     {
       "operationName": "_phase:package",
