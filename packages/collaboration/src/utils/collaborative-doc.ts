@@ -19,6 +19,8 @@ import {
   CollaborativeDocVersionHead,
   MeasureContext,
   WorkspaceId,
+  formatCollaborativeDoc,
+  generateId,
   parseCollaborativeDoc
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
@@ -99,6 +101,13 @@ export async function saveCollaborativeDocVersion (
   } else {
     console.warn('Cannot save non HEAD document version')
   }
+}
+
+/** @public */
+export function touchCollaborativeDoc (collaborativeDoc: CollaborativeDoc, revisionId?: string): CollaborativeDoc {
+  revisionId ??= generateId()
+  const { documentId, versionId } = parseCollaborativeDoc(collaborativeDoc)
+  return formatCollaborativeDoc({ documentId, versionId, revisionId })
 }
 
 /** @public */

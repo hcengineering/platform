@@ -13,15 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc } from '@hcengineering/core'
+  import core, { CollaborativeDoc, Doc, collaborativeDoc } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { KeyedAttribute } from '@hcengineering/presentation'
+  import { KeyedAttribute, getAttribute, getClient } from '@hcengineering/presentation'
   import { registerFocus } from '@hcengineering/ui'
   import CollaborativeTextEditor from './CollaborativeTextEditor.svelte'
   import { FocusExtension } from './extension/focus'
   import { FileAttachFunction } from './extension/imageExt'
   import textEditorPlugin from '../plugin'
-  import { minioDocumentId, mongodbDocumentId, platformDocumentId } from '../provider/utils'
+  import { DocumentId } from '../provider/tiptap'
+  import { collaborativeDocumentId, mongodbDocumentId, platformDocumentId } from '../provider/utils'
   import { RefAction, TextNodeAction } from '../types'
 
   export let object: Doc
@@ -42,9 +43,28 @@
 
   let editor: CollaborativeTextEditor
 
-  $: documentId = minioDocumentId(object._id, key)
-  $: initialContentId = mongodbDocumentId(object._id, key)
-  $: targetContentId = platformDocumentId(object._id, key)
+  $: documentId = getDocumentId(object, key)
+  $: initialContentId = getInitialContentId(object, key)
+  $: targetContentId = platformDocumentId(object._class, object._id, key.key)
+
+  function getDocumentId (object: Doc, key: KeyedAttribute): DocumentId {
+    const value = getAttribute(getClient(), object, key)
+    if (key.attr.type._class === core.class.TypeCollaborativeDoc) {
+      return collaborativeDocumentId(value as CollaborativeDoc)
+    } else if (key.attr.type._class === core.class.TypeCollaborativeDocVersion) {
+      return collaborativeDocumentId(value as CollaborativeDoc)
+    } else {
+      // TODO Remove this when we migrate to minio
+      return collaborativeDocumentId(collaborativeDoc(object._id, key.key))
+    }
+  }
+
+  function getInitialContentId (object: Doc, key: KeyedAttribute): DocumentId | undefined {
+    // TODO Remove this when we migrate all content to minio
+    if (key.attr.type._class === core.class.TypeCollaborativeMarkup) {
+      return mongodbDocumentId(object._id, key)
+    }
+  }
 
   // Focusable control with index
   let canBlur = true

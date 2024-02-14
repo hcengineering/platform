@@ -33,19 +33,17 @@ export type CollaborativeDocVersion = string | typeof CollaborativeDocVersionHea
 export const CollaborativeDocVersionHead = 'HEAD'
 
 /** @public */
-export type CollaborativeDocAttrs<T extends Doc> = {
-  [P in keyof T]: T[P] extends CollaborativeDoc ? P : never
-}
-
-/** @public */
 export function collaborativeDoc<T extends Doc> (
   docId: Ref<T>,
   attribute: string | undefined
-  // attribute: Extract<keyof CollaborativeDocAttrs<T>, string>
 ): CollaborativeDoc {
-  return attribute !== undefined
-    ? `${docId}%${attribute}` as CollaborativeDoc
-    : `${docId}` as CollaborativeDoc
+  const minioDocumentId = attribute !== undefined ? `${docId}%${attribute}` : `${docId}`
+
+  return formatCollaborativeDoc({
+    documentId: minioDocumentId,
+    versionId: CollaborativeDocVersionHead,
+    revisionId: '0'
+  })
 }
 
 /** @public */

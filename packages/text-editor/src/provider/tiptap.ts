@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import { type DocumentURI } from '@hcengineering/collaboration'
 import { Doc as Ydoc } from 'yjs'
 import { HocuspocusProvider, type HocuspocusProviderConfiguration } from '@hocuspocus/provider'
 
-export type DocumentId = string & { __documentId: true }
+export type DocumentId = DocumentURI
 
 export type TiptapCollabProviderConfiguration = HocuspocusProviderConfiguration &
 Required<Pick<HocuspocusProviderConfiguration, 'token'>> &

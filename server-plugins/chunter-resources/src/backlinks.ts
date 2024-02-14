@@ -14,7 +14,7 @@
 //
 
 import chunter, { Backlink } from '@hcengineering/chunter'
-
+import { loadCollaborativeDoc, yDocToBuffer } from '@hcengineering/collaboration'
 import core, {
   AttachedDoc,
   Class,
@@ -30,9 +30,9 @@ import core, {
   TxProcessor,
   Type
 } from '@hcengineering/core'
+import notification from '@hcengineering/notification'
 import { ServerKit, extractReferences, getHTML, parseHTML, yDocContentToNodes } from '@hcengineering/text'
 import { StorageAdapter, TriggerControl } from '@hcengineering/server-core'
-import notification from '@hcengineering/notification'
 
 const extensions = [ServerKit]
 
@@ -63,9 +63,15 @@ export async function getCreateBacklinksTxes (
       backlinks.push(...attrBacklinks)
     } else if (attr.type._class === core.class.TypeCollaborativeDoc) {
       const collaborativeDoc = (doc as any)[attr.name] as CollaborativeDoc
-      const buffer = await storage.read(control.workspace, collaborativeDoc.contentId)
-      const attrBacklinks = getBacklinks(backlinkId, backlinkClass, attachedDocId, Buffer.concat(buffer))
-      backlinks.push(...attrBacklinks)
+      try {
+        const ydoc = await loadCollaborativeDoc(storage, control.workspace, collaborativeDoc, control.ctx)
+        if (ydoc !== undefined) {
+          const attrBacklinks = getBacklinks(backlinkId, backlinkClass, attachedDocId, yDocToBuffer(ydoc))
+          backlinks.push(...attrBacklinks)
+        }
+      } catch {
+        // do nothing, the collaborative doc does not sem to exist yet
+      }
     }
   }
 
@@ -94,10 +100,16 @@ export async function getUpdateBacklinksTxes (
       backlinks.push(...attrBacklinks)
     } else if (attr.type._class === core.class.TypeCollaborativeDoc) {
       hasBacklinkAttrs = true
-      const collaborativeDoc = (doc as any)[attr.name] as CollaborativeDoc
-      const buffer = await storage.read(control.workspace, collaborativeDoc.contentId)
-      const attrBacklinks = getBacklinks(backlinkId, backlinkClass, attachedDocId, Buffer.concat(buffer))
-      backlinks.push(...attrBacklinks)
+      try {
+        const collaborativeDoc = (doc as any)[attr.name] as CollaborativeDoc
+        const ydoc = await loadCollaborativeDoc(storage, control.workspace, collaborativeDoc, control.ctx)
+        if (ydoc !== undefined) {
+          const attrBacklinks = getBacklinks(backlinkId, backlinkClass, attachedDocId, yDocToBuffer(ydoc))
+          backlinks.push(...attrBacklinks)
+        }
+      } catch {
+        // do nothing, the collaborative doc does not sem to exist yet
+      }
     }
   }
 

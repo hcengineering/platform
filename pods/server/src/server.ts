@@ -47,7 +47,7 @@ import {
   type MinioConfig
 } from '@hcengineering/server'
 import { serverAttachmentId } from '@hcengineering/server-attachment'
-import { serverCollaborationId } from '@hcengineering/server-collaboration'
+import { CollaborativeContentRetrievalStage, serverCollaborationId } from '@hcengineering/server-collaboration'
 import { serverCalendarId } from '@hcengineering/server-calendar'
 import { serverChunterId } from '@hcengineering/server-chunter'
 import { serverContactId } from '@hcengineering/server-contact'
@@ -242,6 +242,9 @@ export function start (
 
     // Obtain text content from storage(like minio) and use content adapter to convert files to text content.
     stages.push(new ContentRetrievalStage(storageAdapter, workspace, fullText.newChild('content', {}), contentAdapter))
+
+    // Obtain collaborative content
+    stages.push(new CollaborativeContentRetrievalStage(storageAdapter, workspace, fullText.newChild('collaborative', {}), contentAdapter))
 
     // // Add any => english language translation
     // const retranslateStage = new LibRetranslateStage(fullText.newChild('retranslate', {}), workspace)

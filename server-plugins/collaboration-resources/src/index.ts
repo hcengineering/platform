@@ -14,8 +14,9 @@
 // limitations under the License.
 //
 
-import type { CollaborativeDoc, CollaborativeDocWithHistory, Doc, Tx, TxRemoveDoc } from '@hcengineering/core'
-import core, { TxProcessor } from '@hcengineering/core'
+import type { CollaborativeDoc, Doc, Tx, TxRemoveDoc } from '@hcengineering/core'
+import core, { TxProcessor, parseCollaborativeDoc } from '@hcengineering/core'
+import { collaborativeHistoryDocId } from '@hcengineering/collaboration'
 import type { TriggerControl } from '@hcengineering/server-core'
 
 /**
@@ -27,6 +28,10 @@ export async function OnDelete (
 ): Promise<Tx[]> {
   const rmTx = TxProcessor.extractTx(tx) as TxRemoveDoc<Doc>
 
+  if (rmTx._class !== core.class.TxRemoveDoc) {
+    return []
+  }
+
   // Obtain document being deleted
   const doc = removedMap.get(rmTx.objectId)
 
@@ -35,13 +40,13 @@ export async function OnDelete (
 
   const attributes = hierarchy.getAllAttributes(rmTx.objectClass)
   for (const attribute of attributes.values()) {
-    if (hierarchy.isDerived(attribute.type._class, core.class.TypeCollaborativeDocWithHistory)) {
-      const value = (doc as any)[attribute.name] as CollaborativeDocWithHistory
-      toDelete.push(value.collaborativeId)
-      toDelete.push(value.historyId)
-    } else if (hierarchy.isDerived(attribute.type._class, core.class.TypeCollaborativeDoc)) {
+    if (hierarchy.isDerived(attribute.type._class, core.class.TypeCollaborativeDoc)) {
       const value = (doc as any)[attribute.name] as CollaborativeDoc
-      toDelete.push(value.collaborativeId)
+      if (value !== undefined) {
+        const { documentId } = parseCollaborativeDoc(value)
+        const historyDocumentId = collaborativeHistoryDocId(documentId)
+        toDelete.push(documentId, historyDocumentId)
+      }
     }
   }
 

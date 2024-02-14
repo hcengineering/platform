@@ -1,5 +1,5 @@
-//
-// Copyright © 2024 Hardcore Engineering Inc.
+<!--
+// Copyright © 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -11,15 +11,19 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
+<script lang="ts">
+  import { Doc } from '@hcengineering/core'
 
-import { Hocuspocus } from '@hocuspocus/server'
-import { Doc as YDoc } from 'yjs'
+  import { KeyedAttribute } from '@hcengineering/presentation'
+  import { CollaborativeAttributeSectionBox } from '@hcengineering/text-editor'
 
-export class HistoryManager {
-  constructor (private readonly hocuspocus: Hocuspocus) {}
+  export let object: Doc
+  export let key: KeyedAttribute
+</script>
 
-  createSnapshot (ydoc: YDoc): void {
-    // TODO implement
-  }
-}
+{#key object._id}
+  {#key key.key}
+    <CollaborativeAttributeSectionBox {object} {key} label={key.attr.label} />
+  {/key}
+{/key}

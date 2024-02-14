@@ -13,10 +13,17 @@
 // limitations under the License.
 //
 
+/** @public */
+export interface DocumentId {
+  workspaceUrl: string
+  documentId: string
+  versionId: string
+}
+
+/** @public */
 export type Action = DocumentCopyAction | DocumentFieldCopyAction | DocumentContentAction
 
-export type StorageType = 'minio' | 'platform'
-
+/** @public */
 export interface DocumentContentAction {
   action: 'document.content'
   params: {
@@ -25,6 +32,7 @@ export interface DocumentContentAction {
   }
 }
 
+/** @public */
 export interface DocumentCopyAction {
   action: 'document.copy'
   params: {
@@ -33,6 +41,7 @@ export interface DocumentCopyAction {
   }
 }
 
+/** @public */
 export interface DocumentFieldCopyAction {
   action: 'document.field.copy'
   params: {
@@ -42,8 +51,10 @@ export interface DocumentFieldCopyAction {
   }
 }
 
+/** @public */
 export type ActionStatus = 'completed' | 'failed'
 
+/** @public */
 export interface ActionStatusResponse {
   action: Action
   status: ActionStatus

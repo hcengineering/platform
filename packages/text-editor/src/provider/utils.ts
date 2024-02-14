@@ -13,30 +13,32 @@
 // limitations under the License.
 //
 
-import type { Doc, Ref } from '@hcengineering/core'
+import { type Class, type CollaborativeDoc, type Doc, type Ref, collaborativeDoc } from '@hcengineering/core'
+import { type DocumentURI, collaborativeDocumentUri, mongodbDocumentUri, platformDocumentUri } from '@hcengineering/collaboration'
 import { type KeyedAttribute, getClient } from '@hcengineering/presentation'
 import { getCurrentLocation } from '@hcengineering/ui'
-
-import { type DocumentId } from './tiptap'
 
 function getWorkspace (): string {
   return getCurrentLocation().path[1] ?? ''
 }
 
-export function minioDocumentId (docId: Ref<Doc>, attr?: KeyedAttribute): DocumentId {
+export function collaborativeDocumentId (docId: CollaborativeDoc): DocumentURI {
   const workspace = getWorkspace()
-  return attr !== undefined
-    ? (`minio://${workspace}/${docId}%${attr.key}` as DocumentId)
-    : (`minio://${workspace}/${docId}` as DocumentId)
+  return collaborativeDocumentUri(workspace, docId)
 }
 
-export function platformDocumentId (docId: Ref<Doc>, attr: KeyedAttribute): DocumentId {
-  const workspace = getWorkspace()
-  return `platform://${workspace}/${attr.attr.attributeOf}/${docId}/${attr.key}` as DocumentId
+// TODO remove this when migrated QMS documents to new model
+export function minioDocumentId (docId: Ref<Doc>, attr?: KeyedAttribute): DocumentURI {
+  return collaborativeDocumentId(collaborativeDoc(docId, attr?.key))
 }
 
-export function mongodbDocumentId (docId: Ref<Doc>, attr: KeyedAttribute): DocumentId {
+export function platformDocumentId (objectClass: Ref<Class<Doc>>, objectId: Ref<Doc>, objectAttr: string): DocumentURI {
+  const workspace = getWorkspace()
+  return platformDocumentUri(workspace, objectClass, objectId, objectAttr)
+}
+
+export function mongodbDocumentId (docId: Ref<Doc>, attr: KeyedAttribute): DocumentURI {
   const workspace = getWorkspace()
   const domain = getClient().getHierarchy().getDomain(attr.attr.attributeOf)
-  return `mongodb://${workspace}/${domain}/${docId}/${attr.key}` as DocumentId
+  return mongodbDocumentUri(workspace, domain, docId, attr.key)
 }
