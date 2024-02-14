@@ -71,7 +71,14 @@
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="root" bind:this={element} tabindex="0" on:keydown={onKeydown}>
-  <ListView bind:this={list} bind:selection={listSelection} count={notifications.length} noScroll colorsSchema="lumia">
+  <ListView
+    bind:this={list}
+    bind:selection={listSelection}
+    count={notifications.length}
+    noScroll
+    colorsSchema="lumia"
+    lazy={true}
+  >
     <svelte:fragment slot="item" let:item={itemIndex}>
       {@const notification = notifications[itemIndex]}
       <div class="notification gap-2">
