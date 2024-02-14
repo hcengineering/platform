@@ -15,7 +15,7 @@
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
-  import support from '@hcengineering/support'
+  import support, { supportLink } from '@hcengineering/support'
   import { getSupportClient } from '@hcengineering/support-resources'
   import {
     Button,
@@ -100,10 +100,6 @@
       }
     }
   ]
-
-  async function contactUs () {
-    await getSupportClient()?.showWidget()
-  }
 </script>
 
 <div class="helpAndSupportPopup">
@@ -192,13 +188,15 @@
     </Scroller>
   {/if}
   <div class="footer">
-    <Button
-      id="contact-us"
-      icon={support.icon.Support}
-      kind={'ghost'}
-      on:click={contactUs}
-      label={support.string.ContactUs}
-    />
+    <a href={supportLink}>
+      <Button
+        id="contact-us"
+        icon={support.icon.Support}
+        kind={'ghost'}
+        label={support.string.ContactUs}
+        stopPropagation={false}
+      />
+    </a>
   </div>
 </div>
 

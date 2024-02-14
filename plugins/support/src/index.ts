@@ -21,6 +21,8 @@ import { SupportClientFactory, SupportConversation, SupportSystem } from './type
 export * from './types'
 export { deleteSupportConversation, updateSupportConversation } from './utils'
 
+export const supportLink = 'https://join.slack.com/t/hulycommunity/shared_invite/zt-2cyrevz8g-AGqEDZNsujbn4wHOWd7myg'
+
 /**
  * @public
  */

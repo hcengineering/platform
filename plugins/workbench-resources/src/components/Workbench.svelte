@@ -21,7 +21,7 @@
   import { IntlString, broadcastEvent, getMetadata, getResource } from '@hcengineering/platform'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
-  import support, { SupportStatus } from '@hcengineering/support'
+  import support, { SupportStatus, supportLink } from '@hcengineering/support'
   import {
     AnyComponent,
     Button,
@@ -712,6 +712,16 @@
           size={appsMini ? 'small' : 'large'}
           on:click={() => showPopup(AppSwitcher, { apps: getApps(apps) }, popupPosition)}
         />
+        <a href={supportLink}>
+          <AppItem
+            icon={support.icon.Support}
+            label={support.string.ContactUs}
+            size={appsMini ? 'small' : 'large'}
+            notify={supportStatus?.hasUnreadMessages}
+            selected={supportStatus?.visible}
+            loading={supportWidgetLoading}
+          />
+        </a>
         <!-- {#await supportClient then client}
           {#if client}
             <AppItem
@@ -952,9 +962,6 @@
 
       &-mobile {
         margin-bottom: 1rem;
-      }
-      &:not(.mini) > *:not(:last-child) {
-        margin-bottom: 0.75rem;
       }
       &.mini > *:not(:last-child) {
         margin-bottom: 0.25rem;
