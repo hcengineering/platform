@@ -34,6 +34,7 @@
   export let withFlatActions: boolean = true
   export let hoverable = true
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
+  export let withShowMore: boolean = true
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
 
@@ -62,6 +63,7 @@
       withFlatActions,
       hoverable,
       hoverStyles,
+      withShowMore,
       onClick,
       onReply
     }}

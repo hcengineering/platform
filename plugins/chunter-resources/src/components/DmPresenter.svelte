@@ -22,6 +22,7 @@
 
   export let value: DirectMessage
   export let disabled = false
+  export let shouldShowAvatar = true
 
   const client = getClient()
 </script>
@@ -30,7 +31,9 @@
   {#await getDmName(client, value) then name}
     <NavLink app={chunterId} space={value._id} {disabled}>
       <div class="flex-presenter">
-        <DirectIcon {value} />
+        {#if shouldShowAvatar}
+          <DirectIcon {value} />
+        {/if}
         <span class="label">{name}</span>
       </div>
     </NavLink>

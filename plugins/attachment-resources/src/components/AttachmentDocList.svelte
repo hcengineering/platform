@@ -21,16 +21,22 @@
   import AttachmentList from './AttachmentList.svelte'
 
   export let value: Doc & { attachments?: number }
+  export let attachments: Attachment[] | undefined = []
 
   const query = createQuery()
   const savedAttachmentsQuery = createQuery()
 
   let savedAttachmentsIds: Ref<Attachment>[] = []
-  let attachments: Attachment[] = []
+  let resAttachments: Attachment[] = []
 
-  $: updateQuery(value)
+  $: updateQuery(value, attachments)
 
-  function updateQuery (value: Doc & { attachments?: number }): void {
+  function updateQuery (value: Doc & { attachments?: number }, attachments?: Attachment[]): void {
+    if (attachments !== undefined) {
+      resAttachments = attachments
+      return
+    }
+
     if (value && value.attachments && value.attachments > 0) {
       query.query(
         attachment.class.Attachment,
@@ -38,11 +44,11 @@
           attachedTo: value._id
         },
         (res) => {
-          attachments = res
+          resAttachments = res
         }
       )
     } else {
-      attachments = []
+      resAttachments = []
     }
   }
 
@@ -51,4 +57,4 @@
   })
 </script>
 
-<AttachmentList {attachments} {savedAttachmentsIds} />
+<AttachmentList attachments={resAttachments} {savedAttachmentsIds} />

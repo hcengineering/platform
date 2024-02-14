@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Person, PersonAccount } from '@hcengineering/contact'
   import { personByIdStore } from '@hcengineering/contact-resources'
-  import { Account, Class, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { Account, Class, Doc, getCurrentAccount, Ref, WithLookup } from '@hcengineering/core'
   import { createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
   import core from '@hcengineering/core/lib/component'
   import { AttachmentDocList } from '@hcengineering/attachment-resources'
@@ -25,11 +25,12 @@
   import activity, { DisplayActivityMessage } from '@hcengineering/activity'
   import { ActivityDocLink, ActivityMessageTemplate } from '@hcengineering/activity-resources'
   import chunter, { ChatMessage, ChatMessageViewlet } from '@hcengineering/chunter'
+  import { Attachment } from '@hcengineering/attachment'
 
   import ChatMessageHeader from './ChatMessageHeader.svelte'
   import ChatMessageInput from './ChatMessageInput.svelte'
 
-  export let value: ChatMessage | undefined
+  export let value: WithLookup<ChatMessage> | undefined
   export let showNotify: boolean = false
   export let isHighlighted: boolean = false
   export let isSelected: boolean = false
@@ -45,6 +46,7 @@
   export let hoverable = true
   export let inline = false
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
+  export let withShowMore: boolean = true
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
 
@@ -52,7 +54,6 @@
   const hierarchy = client.getHierarchy()
 
   const userQuery = createQuery()
-
   const currentAccount = getCurrentAccount()
 
   let user: PersonAccount | undefined = undefined
@@ -61,6 +62,8 @@
   let parentMessage: DisplayActivityMessage | undefined = undefined
   let parentObject: Doc | undefined
   let object: Doc | undefined
+
+  let refInput: ChatMessageInput
 
   let viewlet: ChatMessageViewlet | undefined
   ;[viewlet] = value
@@ -145,7 +148,8 @@
     ...actions
   ]
 
-  let refInput: ChatMessageInput
+  let attachments: Attachment[] | undefined = undefined
+  $: attachments = value?.$lookup?.attachments as Attachment[] | undefined
 </script>
 
 {#if inline && object}
@@ -184,15 +188,25 @@
     </svelte:fragment>
     <svelte:fragment slot="content">
       {#if !isEditing}
-        <ShowMore>
+        {#if withShowMore}
+          <ShowMore>
+            <div class="clear-mins">
+              <MessageViewer message={value.message} />
+              <AttachmentDocList {value} {attachments} />
+              {#each links as link}
+                <LinkPresenter {link} />
+              {/each}
+            </div>
+          </ShowMore>
+        {:else}
           <div class="clear-mins">
             <MessageViewer message={value.message} />
-            <AttachmentDocList {value} />
+            <AttachmentDocList {value} {attachments} />
             {#each links as link}
               <LinkPresenter {link} />
             {/each}
           </div>
-        </ShowMore>
+        {/if}
       {:else if object}
         <ChatMessageInput
           bind:this={refInput}

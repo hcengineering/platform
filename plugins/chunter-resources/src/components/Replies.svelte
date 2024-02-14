@@ -139,6 +139,7 @@
     border-radius: 0.5rem;
     padding: 0.25rem 0.5rem;
     width: fit-content;
+    height: 2.125rem;
     margin-left: -0.5rem;
 
     .plus {

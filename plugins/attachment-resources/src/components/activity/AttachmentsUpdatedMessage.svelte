@@ -35,10 +35,10 @@
     })
 </script>
 
-{#if value}
-  {#if message.action === 'remove'}
+{#if message.action === 'remove'}
+  {#if value}
     <RemovedAttachmentPresenter {value} />
-  {:else}
-    <AttachmentPresenter {value} />
   {/if}
+{:else}
+  <AttachmentPresenter {value} />
 {/if}

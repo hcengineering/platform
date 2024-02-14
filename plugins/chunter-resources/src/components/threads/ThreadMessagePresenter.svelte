@@ -36,6 +36,7 @@
   export let excludedActions: string[] = []
   export let hoverable = true
   export let inline = false
+  export let withShowMore: boolean = true
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
@@ -71,6 +72,7 @@
     {actions}
     {hoverable}
     {hoverStyles}
+    {withShowMore}
     {onClick}
     {onReply}
   />
