@@ -30,7 +30,8 @@
     },
     {
       "operationName": "_phase:bundle",
-      "outputFolderNames": ["bundle"]
+      "outputFolderNames": ["bundle"],
+      "disableBuildCacheForOperation": true
     },
     {
       "operationName": "_phase:package",
