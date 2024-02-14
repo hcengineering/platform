@@ -360,6 +360,6 @@ export class TIndexConfiguration<T extends Doc = Doc> extends TClass implements 
 @Model(core.class.TypeCollaborativeDoc, core.class.Type)
 export class TTypeCollaborativeDoc extends TType {}
 
-@UX(core.string.CollaborativeDoc)
-@Model(core.class.TypeCollaborativeDocWithHistory, core.class.Type)
-export class TTypeCollaborativeDocWithHistory extends TType {}
+@UX(core.string.CollaborativeDocVersion)
+@Model(core.class.TypeCollaborativeDocVersion, core.class.Type)
+export class TTypeCollaborativeDocVersion extends TType {}

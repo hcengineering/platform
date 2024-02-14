@@ -13,93 +13,60 @@
 // limitations under the License.
 //
 
-import { Account, Ref, Timestamp } from './classes'
+import { Doc, Ref } from './classes'
 
 /**
- * TODO
- * 1. tiptap field value
- *   1. hardcode like in wiki or use dynamic and store somewhere ?
- *   2. how to deal with multi-field douments ?
- * 2. collaborative doc id
- *   1. Should it be the same for snapshots ?
- * 3. How do we pass history id to the collaborator ? Probably we don't need to
- */
-
-/**
- * Collaborative document structure
+ * Identifier of the collaborative document holding collaborative content.
  *
- * WIKI
- * {
- *   '': Y.XmlFragment( ... prosemirror document content ... )
- * }
+ * Format:
+ * {minioDocumentId}:{versionId}:{revisionId}
+ * {minioDocumentId}:{versionId}
  *
- * QMS
- * {
- *   section1: Y.XmlFragment( ... prosemirror document content ... ),
- *   section2: Y.XmlFragment( ... prosemirror document content ... ),
- *   ...
- * }
- *
- * Other (description name depends on the attribute name)
- * {
- *   description: Y.XmlFragment( ... prosemirror document content ... )
- * }
-*/
-
-/**
- * Collaborative history document structure
- *
- * {
- *   history: Y.Array[
- *     { ... YDoc snapshot ... },
- *     { ... YDoc snapshot ... },
- *     { ... YDoc snapshot ... },
- *     ...
- *   ]
- * }
-*/
-
-// TODO add some descriptor to the original doc hidden section the same as CollaborativeDocWithHistory.history?
-
-/**
- * Identifier of the collaborative document holding collaborative content
  * @public
  * */
-export type CollaborativeDocId = string & { __collaborativeDocId: true }
-
-/**
- * Identifier of the collaborative document holding collaborative document history
- * @public
- * */
-export type CollaborativeDocVersionId = string & { __collaborativeDocVersionId: true }
+export type CollaborativeDoc = string & { __collaborativeDocId: true }
 
 /** @public */
-export enum CollaborativeDocVersionKind {
-  Automatic,
-  Manual
+export type CollaborativeDocVersion = string | typeof CollaborativeDocVersionHead
+
+/** @public */
+export const CollaborativeDocVersionHead = 'HEAD'
+
+/** @public */
+export type CollaborativeDocAttrs<T extends Doc> = {
+  [P in keyof T]: T[P] extends CollaborativeDoc ? P : never
 }
 
 /** @public */
-export interface CollaborativeDoc {
-  collaborativeId: CollaborativeDocId
+export function collaborativeDoc<T extends Doc> (
+  docId: Ref<T>,
+  attribute: string | undefined
+  // attribute: Extract<keyof CollaborativeDocAttrs<T>, string>
+): CollaborativeDoc {
+  return attribute !== undefined
+    ? `${docId}%${attribute}` as CollaborativeDoc
+    : `${docId}` as CollaborativeDoc
 }
 
 /** @public */
-export interface CollaborativeDocVersion {
-  // human readable version name
-  name: string
-
-  version: number
-  versionId: CollaborativeDocVersionId
-  kind: CollaborativeDocVersionKind
-
-  createdBy: Ref<Account>
-  createdOn: Timestamp
+export interface CollaborativeDocData {
+  documentId: string
+  versionId: CollaborativeDocVersion
+  revisionId: string
 }
 
 /** @public */
-export interface CollaborativeDocWithHistory extends CollaborativeDoc {
-  historyId: CollaborativeDocId
-  version: number
-  history: CollaborativeDocVersion[]
+export function parseCollaborativeDoc (id: CollaborativeDoc): CollaborativeDocData {
+  const [documentId, versionId, revisionId] = id.split(':')
+  return { documentId, versionId, revisionId: revisionId ?? versionId }
+}
+
+/** @public */
+export function formatCollaborativeDoc ({ documentId, versionId, revisionId }: CollaborativeDocData): CollaborativeDoc {
+  return `${documentId}:${versionId}:${revisionId}` as CollaborativeDoc
+}
+
+/** @public */
+export function formatCollaborativeDocVersion ({ documentId, versionId }: Omit<CollaborativeDocData, 'revisionId'>): CollaborativeDoc {
+  return `${documentId}:${versionId}` as CollaborativeDoc
 }

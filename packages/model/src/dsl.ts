@@ -21,7 +21,6 @@ import core, {
   Classifier,
   ClassifierKind,
   CollaborativeDoc,
-  CollaborativeDocWithHistory,
   Data,
   DateRangeMode,
   Doc,
@@ -502,6 +501,6 @@ export function TypeCollaborativeDoc (): Type<CollaborativeDoc> {
 /**
  * @public
  */
-export function TypeCollaborativeDocWithHistory (): Type<CollaborativeDocWithHistory> {
-  return { _class: core.class.TypeCollaborativeDocWithHistory, label: core.string.CollaborativeDoc }
+export function TypeCollaborativeDocVersion (): Type<CollaborativeDoc> {
+  return { _class: core.class.TypeCollaborativeDocVersion, label: core.string.CollaborativeDocVersion }
 }
