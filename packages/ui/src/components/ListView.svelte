@@ -94,6 +94,9 @@
               }
             })}
           >
+            <svelte:fragment slot="category" let:item={itemIndex}>
+              <slot name="category" item={itemIndex} />
+            </svelte:fragment>
             <svelte:fragment slot="item" let:item={itemIndex}>
               <slot name="item" item={itemIndex} />
             </svelte:fragment>
@@ -119,6 +122,9 @@
             }
           })}
         >
+          <svelte:fragment slot="category" let:item={itemIndex}>
+            <slot name="category" item={itemIndex} />
+          </svelte:fragment>
           <svelte:fragment slot="item" let:item={itemIndex}>
             <slot name="item" item={itemIndex} />
           </svelte:fragment>
