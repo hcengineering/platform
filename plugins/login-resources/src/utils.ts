@@ -67,6 +67,9 @@ export async function doLogin (email: string, password: string): Promise<[Status
       },
       body: JSON.stringify(request)
     })
+    if (!emailValidator(email)) {
+      throw new Error('Please enter a valid email')
+    }
     const result = await response.json()
     console.log('login result', result)
     return [result.error ?? OK, result.result]
@@ -74,6 +77,11 @@ export async function doLogin (email: string, password: string): Promise<[Status
     console.log('login error', err)
     return [unknownError(err), undefined]
   }
+}
+
+function emailValidator (value: string): boolean {
+  return ((value !== '') && !(value.match(
+    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/) == null))
 }
 
 export async function signUp (
@@ -109,6 +117,10 @@ export async function signUp (
       },
       body: JSON.stringify(request)
     })
+
+    if (!emailValidator(email)) {
+      throw new Error('Please enter a valid email')
+    }
     const result = await response.json()
     return [result.error ?? OK, result.result]
   } catch (err) {
