@@ -170,6 +170,7 @@ async function migrateInboxNotifications (client: MigrationClient): Promise<void
     const docUpdates = await client.find<DocUpdates>(
       DOMAIN_NOTIFICATION,
       {
+        hidden: false,
         _class: notification.class.DocUpdates
       },
       { limit: 500 }
@@ -195,12 +196,34 @@ async function migrateInboxNotifications (client: MigrationClient): Promise<void
   }
 }
 
+export async function removeHiddenNotifications (client: MigrationClient): Promise<void> {
+  const contexts = await client.find<DocNotifyContext>(DOMAIN_NOTIFICATION, {
+    _class: notification.class.DocNotifyContext,
+    hidden: true
+  })
+
+  if (contexts.length === 0) {
+    return
+  }
+
+  await client.deleteMany(DOMAIN_NOTIFICATION, {
+    _class: notification.class.InboxNotification,
+    docNotifyContext: { $in: contexts.map(({ _id }) => _id) }
+  })
+}
+
 export const notificationOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, notificationId, [
       {
         state: 'inbox-notifications',
         func: migrateInboxNotifications
+      }
+    ])
+    await tryMigrate(client, notificationId, [
+      {
+        state: 'remove-hidden-notifications',
+        func: removeHiddenNotifications
       }
     ])
   },

@@ -195,11 +195,12 @@ export async function hasHiddenDocNotifyContext (contexts: DocNotifyContext[]): 
 export async function hideDocNotifyContext (notifyContext: DocNotifyContext): Promise<void> {
   const client = getClient()
   await client.update(notifyContext, { hidden: true })
+  await deleteContextNotifications(notifyContext)
 }
 
 export async function unHideDocNotifyContext (notifyContext: DocNotifyContext): Promise<void> {
   const client = getClient()
-  await client.update(notifyContext, { hidden: false })
+  await client.update(notifyContext, { hidden: false, lastViewedTimestamp: Date.now() })
 }
 
 export async function isDocNotifyContextHidden (notifyContext: DocNotifyContext): Promise<boolean> {
