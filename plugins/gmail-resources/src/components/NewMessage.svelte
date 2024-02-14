@@ -77,7 +77,7 @@
       },
       objectId
     )
-    await inboxClient.forceReadDoc(channel._id, channel._class)
+    await inboxClient.forceReadDoc(getClient(), channel._id, channel._class)
     objectId = generateId()
     dispatch('close')
   }

@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { ActivityMessage } from '@hcengineering/activity'
 import {
   Account,
   AnyAttribute,
@@ -25,16 +26,16 @@ import {
   Space,
   Timestamp,
   Tx,
-  TxCUD
+  TxCUD,
+  TxOperations
 } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
+import { Preference } from '@hcengineering/preference'
 import { IntegrationType } from '@hcengineering/setting'
 import { AnyComponent, Location, ResolvedLocation } from '@hcengineering/ui'
-import { Readable, Writable } from './types'
-import { Preference } from '@hcengineering/preference'
 import { Action, Viewlet, ViewletDescriptor } from '@hcengineering/view'
-import { ActivityMessage } from '@hcengineering/activity'
+import { Readable, Writable } from './types'
 
 export * from './types'
 
@@ -275,12 +276,12 @@ export interface InboxNotificationsClient {
   inboxNotifications: Readable<InboxNotification[]>
   activityInboxNotifications: Writable<ActivityInboxNotification[]>
   inboxNotificationsByContext: Readable<Map<Ref<DocNotifyContext>, InboxNotification[]>>
-  readDoc: (_id: Ref<Doc>) => Promise<void>
-  forceReadDoc: (_id: Ref<Doc>, _class: Ref<Class<Doc>>) => Promise<void>
-  readMessages: (ids: Ref<ActivityMessage>[]) => Promise<void>
-  readNotifications: (ids: Array<Ref<InboxNotification>>) => Promise<void>
-  unreadNotifications: (ids: Array<Ref<InboxNotification>>) => Promise<void>
-  deleteNotifications: (ids: Array<Ref<InboxNotification>>) => Promise<void>
+  readDoc: (client: TxOperations, _id: Ref<Doc>) => Promise<void>
+  forceReadDoc: (client: TxOperations, _id: Ref<Doc>, _class: Ref<Class<Doc>>) => Promise<void>
+  readMessages: (client: TxOperations, ids: Ref<ActivityMessage>[]) => Promise<void>
+  readNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>
+  unreadNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>
+  deleteNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>
 }
 
 /**

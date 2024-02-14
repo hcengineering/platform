@@ -91,7 +91,7 @@
           .map((m) => m.trim())
           .filter((m) => m.length)
       })
-      await inboxClient.forceReadDoc(channel._id, channel._class)
+      await inboxClient.forceReadDoc(getClient(), channel._id, channel._class)
       for (const attachment of attachments) {
         await client.addCollection(
           attachmentP.class.Attachment,

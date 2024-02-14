@@ -62,7 +62,7 @@
       { attachedTo: channelId },
       (res) => {
         plainMessages = res
-        inboxClient.readDoc(channelId)
+        inboxClient.readDoc(getClient(), channelId)
       },
       { sort: { sendOn: SortingOrder.Descending } }
     )
@@ -84,7 +84,7 @@
         messages: convertMessages(object, channel, selectedMessages, $personAccountByIdStore, $employeeByIdStore)
       }
     )
-    await inboxClient.readDoc(channel._id)
+    await inboxClient.readDoc(getClient(), channel._id)
     clear()
   }
 

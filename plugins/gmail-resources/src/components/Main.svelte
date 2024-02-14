@@ -47,7 +47,7 @@
   let integrations: Integration[] = []
   let selectedIntegration: Integration | undefined = undefined
 
-  inboxClient.forceReadDoc(channel._id, channel._class)
+  inboxClient.forceReadDoc(getClient(), channel._id, channel._class)
 
   const dispatch = createEventDispatcher()
 

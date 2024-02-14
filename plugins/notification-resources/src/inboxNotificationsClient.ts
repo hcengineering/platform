@@ -13,7 +13,15 @@
 // limitations under the License.
 //
 import activity, { type ActivityMessage } from '@hcengineering/activity'
-import { SortingOrder, getCurrentAccount, type Class, type Doc, type Ref, type WithLookup } from '@hcengineering/core'
+import {
+  SortingOrder,
+  getCurrentAccount,
+  type Class,
+  type Doc,
+  type Ref,
+  type TxOperations,
+  type WithLookup
+} from '@hcengineering/core'
 import notification, {
   type ActivityInboxNotification,
   type Collaborators,
@@ -21,7 +29,7 @@ import notification, {
   type InboxNotification,
   type InboxNotificationsClient
 } from '@hcengineering/notification'
-import { createQuery, getClient } from '@hcengineering/presentation'
+import { createQuery } from '@hcengineering/presentation'
 import { derived, get, writable } from 'svelte/store'
 
 export const inboxMessagesStore = writable<ActivityMessage[]>([])
@@ -132,30 +140,28 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     return InboxNotificationsClientImpl._instance
   }
 
-  async readDoc (_id: Ref<Doc>): Promise<void> {
-    const client = getClient()
+  async readDoc (client: TxOperations, _id: Ref<Doc>): Promise<void> {
     const docNotifyContext = this._docNotifyContextByDoc.get(_id)
 
     if (docNotifyContext === undefined) {
       return
     }
 
-    const inboxNotifications = get(this.inboxNotifications).filter(
+    const inboxNotifications = (get(this.inboxNotifications) ?? []).filter(
       (notification) => notification.docNotifyContext === docNotifyContext._id && !notification.isViewed
     )
 
-    await Promise.all([
-      ...inboxNotifications.map(async (notification) => await client.update(notification, { isViewed: true })),
-      client.update(docNotifyContext, { lastViewedTimestamp: Date.now() })
-    ])
+    for (const notification of inboxNotifications) {
+      await client.update(notification, { isViewed: true })
+    }
+    await client.update(docNotifyContext, { lastViewedTimestamp: Date.now() })
   }
 
-  async forceReadDoc (_id: Ref<Doc>, _class: Ref<Class<Doc>>): Promise<void> {
-    const client = getClient()
+  async forceReadDoc (client: TxOperations, _id: Ref<Doc>, _class: Ref<Class<Doc>>): Promise<void> {
     const context = this._docNotifyContextByDoc.get(_id)
 
     if (context !== undefined) {
-      await this.readDoc(_id)
+      await this.readDoc(client, _id)
       return
     }
 
@@ -200,40 +206,38 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     })
   }
 
-  async readMessages (ids: Array<Ref<ActivityMessage>>): Promise<void> {
-    const client = getClient()
+  async readMessages (client: TxOperations, ids: Array<Ref<ActivityMessage>>): Promise<void> {
     const notificationsToRead = await client.findAll(notification.class.ActivityInboxNotification, {
       user: getCurrentAccount()._id,
       attachedTo: { $in: ids },
       isViewed: { $ne: true }
     })
 
-    await Promise.all(
-      notificationsToRead.map(async (notification) => await client.update(notification, { isViewed: true }))
-    )
+    for (const notification of notificationsToRead) {
+      await client.update(notification, { isViewed: true })
+    }
   }
 
-  async readNotifications (ids: Array<Ref<InboxNotification>>): Promise<void> {
-    const client = getClient()
-    const notificationsToRead = get(this.inboxNotifications).filter(({ _id }) => ids.includes(_id))
+  async readNotifications (client: TxOperations, ids: Array<Ref<InboxNotification>>): Promise<void> {
+    const notificationsToRead = (get(this.inboxNotifications) ?? []).filter(({ _id }) => ids.includes(_id))
 
-    await Promise.all(
-      notificationsToRead.map(async (notification) => await client.update(notification, { isViewed: true }))
-    )
+    for (const notification of notificationsToRead) {
+      await client.update(notification, { isViewed: true })
+    }
   }
 
-  async unreadNotifications (ids: Array<Ref<InboxNotification>>): Promise<void> {
-    const client = getClient()
-    const notificationsToUnread = get(this.inboxNotifications).filter(({ _id }) => ids.includes(_id))
+  async unreadNotifications (client: TxOperations, ids: Array<Ref<InboxNotification>>): Promise<void> {
+    const notificationsToUnread = (get(this.inboxNotifications) ?? []).filter(({ _id }) => ids.includes(_id))
 
-    await Promise.all(
-      notificationsToUnread.map(async (notification) => await client.update(notification, { isViewed: false }))
-    )
+    for (const notification of notificationsToUnread) {
+      await client.update(notification, { isViewed: false })
+    }
   }
 
-  async deleteNotifications (ids: Array<Ref<InboxNotification>>): Promise<void> {
-    const client = getClient()
-    const inboxNotifications = get(this.inboxNotifications).filter(({ _id }) => ids.includes(_id))
-    await Promise.all(inboxNotifications.map(async (notification) => await client.remove(notification)))
+  async deleteNotifications (client: TxOperations, ids: Array<Ref<InboxNotification>>): Promise<void> {
+    const inboxNotifications = (get(this.inboxNotifications) ?? []).filter(({ _id }) => ids.includes(_id))
+    for (const notification of inboxNotifications) {
+      await client.remove(notification)
+    }
   }
 }
