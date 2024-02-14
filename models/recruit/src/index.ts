@@ -1655,12 +1655,14 @@ export function createModel (builder: Builder): void {
   // Allow to use fuzzy search for mixins
   builder.mixin(recruit.class.Vacancy, core.class.Class, core.mixin.FullTextSearchContext, {
     fullTextSummary: true,
+    childProcessingAllowed: true,
     propagate: []
   })
 
   builder.mixin(recruit.mixin.Candidate, core.class.Class, core.mixin.FullTextSearchContext, {
     fullTextSummary: true,
     propagate: [recruit.class.Applicant],
+    childProcessingAllowed: true,
     propagateClasses: [
       tags.class.TagReference,
       chunter.class.ChatMessage,
@@ -1673,6 +1675,7 @@ export function createModel (builder: Builder): void {
   builder.mixin(recruit.class.Applicant, core.class.Class, core.mixin.FullTextSearchContext, {
     fullTextSummary: true,
     forceIndex: true,
+    childProcessingAllowed: true,
     propagate: []
   })
 

@@ -249,7 +249,8 @@ export function getFullTextContext (
   return {
     fullTextSummary: false,
     forceIndex: false,
-    propagate: []
+    propagate: [],
+    childProcessingAllowed: true
   }
 }
 

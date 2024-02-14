@@ -30,11 +30,11 @@ import core, {
   TxFactory,
   WorkspaceId,
   _getOperator,
+  docKey,
+  generateId,
   setObjectValue,
   toFindResult,
-  versionToString,
-  docKey,
-  generateId
+  versionToString
 } from '@hcengineering/core'
 import { DbAdapter } from '../adapter'
 import { RateLimitter } from '../limitter'
@@ -54,7 +54,7 @@ export * from './utils'
  */
 export const globalIndexer = {
   allowParallel: 2,
-  processingSize: 1000
+  processingSize: 25
 }
 
 const rateLimitter = new RateLimitter(() => ({ rate: globalIndexer.allowParallel }))
@@ -171,19 +171,32 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     return doc
   }
 
-  async queue (docId: Ref<DocIndexState>, create: boolean, removed: boolean, doc?: DocIndexState): Promise<void> {
-    if (doc !== undefined) {
-      await this.storage.upload(DOMAIN_DOC_INDEX_STATE, [doc])
+  async queue (
+    ctx: MeasureContext,
+    updates: Map<Ref<DocIndexState>, { create?: DocIndexState, updated: boolean, removed: boolean }>
+  ): Promise<void> {
+    const entries = Array.from(updates.entries())
+    const uploads = entries.filter((it) => it[1].create !== undefined).map((it) => it[1].create) as DocIndexState[]
+    if (uploads.length > 0) {
+      await ctx.with('upload', {}, async () => {
+        await this.storage.upload(DOMAIN_DOC_INDEX_STATE, uploads)
+      })
     }
 
-    if (!create) {
+    const onlyUpdates = entries.filter((it) => it[1].create === undefined)
+
+    if (onlyUpdates.length > 0) {
       const ops = new Map<Ref<DocIndexState>, DocumentUpdate<DocIndexState>>()
-      const upd: DocumentUpdate<DocIndexState> = { removed }
-      for (const st of this.stages) {
-        ;(upd as any)['stages.' + st.stageId] = false
+      for (const u of onlyUpdates) {
+        const upd: DocumentUpdate<DocIndexState> = { removed: u[1].removed }
+
+        // We need to clear only first state, to prevent multiple index operations to happen.
+        ;(upd as any)['stages.' + this.stages[0].stageId] = false
+        ops.set(u[0], upd)
       }
-      ops.set(docId, upd)
-      await this.storage.update(DOMAIN_DOC_INDEX_STATE, ops)
+      await ctx.with('upload', {}, async () => {
+        await this.storage.update(DOMAIN_DOC_INDEX_STATE, ops)
+      })
     }
     this.triggerIndexing()
   }
@@ -466,7 +479,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
             // Do Indexing
             this.currentStage = st
 
-            await ctx.with('collect', { collector: st.stageId }, async (ctx) => {
+            await ctx.with('collect-' + st.stageId, {}, async (ctx) => {
               await st.collect(toIndex, this, ctx)
             })
             if (this.cancelling) {
@@ -480,7 +493,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
               const toIndex2 = this.matchStates(nst)
               if (toIndex2.length > 0) {
                 this.currentStage = nst
-                await ctx.with('collect', { collector: nst.stageId }, async (ctx) => {
+                await ctx.with('collect-' + nst.stageId, {}, async (ctx) => {
                   await nst.collect(toIndex2, this, ctx)
                 })
               }

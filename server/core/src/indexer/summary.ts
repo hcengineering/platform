@@ -108,12 +108,13 @@ export class FullSummaryStage implements FullTextPipelineStage {
     while (part.length > 0) {
       const toIndexPart = part.splice(0, 1000)
 
+      const kids = toIndexPart.map((it) => it._id)
       const allChildDocs = await metrics.with(
         'find-child',
         {},
         async (ctx) =>
           await this.dbStorage.findAll(ctx, core.class.DocIndexState, {
-            attachedTo: { $in: toIndexPart.map((it) => it._id) }
+            attachedTo: kids.length === 1 ? kids[0] : { $in: kids }
           })
       )
 
@@ -163,25 +164,24 @@ export class FullSummaryStage implements FullTextPipelineStage {
             const [parentDoc] = await this.dbStorage.findAll(
               metrics.newChild('propagate', {}),
               core.class.DocIndexState,
-              { _id: doc.attachedTo as Ref<DocIndexState> }
+              { _id: doc.attachedTo as Ref<DocIndexState> },
+              { limit: 1 }
             )
             if (parentDoc !== undefined) {
               const ctx = collectPropagateClasses(pipeline, parentDoc.objectClass)
               if (ctx.length > 0) {
-                for (const p of ctx) {
-                  const collections = await this.dbStorage.findAll(
-                    metrics.newChild('propagate', {}),
-                    core.class.DocIndexState,
-                    { attachedTo: parentDoc._id, objectClass: p }
-                  )
-                  for (const c of collections) {
-                    embeddingText +=
-                      '\n' +
-                      (await extractIndexedValues(c, pipeline.hierarchy, {
-                        matchExtra: this.matchExtra,
-                        fieldFilter: this.fieldFilter
-                      }))
-                  }
+                const collections = await this.dbStorage.findAll(
+                  metrics.newChild('propagate', {}),
+                  core.class.DocIndexState,
+                  { attachedTo: parentDoc._id, objectClass: ctx.length === 1 ? ctx[0] : { $in: ctx } }
+                )
+                for (const c of collections) {
+                  embeddingText +=
+                    '\n' +
+                    (await extractIndexedValues(c, pipeline.hierarchy, {
+                      matchExtra: this.matchExtra,
+                      fieldFilter: this.fieldFilter
+                    }))
                 }
               }
 

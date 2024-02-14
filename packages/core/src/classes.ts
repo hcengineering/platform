@@ -471,6 +471,8 @@ export interface FullTextSearchContext extends Class<Doc> {
 
   // Do we need to propagate child value to parent one. Default(true)
   parentPropagate?: boolean
+
+  childProcessingAllowed?: boolean
 }
 
 /**

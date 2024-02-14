@@ -251,6 +251,7 @@ export function createModel (builder: Builder): void {
   )
 
   builder.mixin(telegram.class.Message, core.class.Class, core.mixin.FullTextSearchContext, {
-    parentPropagate: false
+    parentPropagate: false,
+    childProcessingAllowed: true
   })
 }

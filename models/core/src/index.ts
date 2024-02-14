@@ -204,4 +204,8 @@ export function createModel (builder: Builder): void {
       ]
     }
   )
+
+  builder.mixin(core.class.Space, core.class.Class, core.mixin.FullTextSearchContext, {
+    childProcessingAllowed: false
+  })
 }

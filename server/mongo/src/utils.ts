@@ -39,13 +39,12 @@ export async function shutdown (): Promise<void> {
  * @public
  */
 export async function getMongoClient (uri: string, options?: MongoClientOptions): Promise<MongoClient> {
+  const extraOptions = JSON.parse(process.env.MONGO_OPTIONS ?? '{}')
   const client = await MongoClient.connect(uri, {
     ...options,
     enableUtf8Validation: false,
     maxConnecting: 1024,
-    minPoolSize: 128,
-    maxPoolSize: 512,
-    zlibCompressionLevel: 0
+    ...extraOptions
   })
   connections.push(client)
   return client

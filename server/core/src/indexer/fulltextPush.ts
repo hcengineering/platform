@@ -125,38 +125,54 @@ export class FullTextPushStage implements FullTextPipelineStage {
       ) {
         const attrStringValue = doc.attributes[attribute]
         if (attrStringValue !== undefined && attrStringValue !== null && attrStringValue !== '') {
-          const refs = attrStringValue.split(',')
-          const refDocs = await metrics.with(
-            'ref-docs',
-            {},
-            async (ctx) =>
-              await this.dbStorage.findAll(ctx, core.class.DocIndexState, {
-                _id: { $in: refs }
-              })
-          )
-          if (refDocs.length > 0) {
-            refDocs.forEach((c) => {
-              updateDoc2Elastic(c.attributes, elasticDoc, c._id, attribute)
-            })
+          const refs: Ref<DocIndexState>[] = attrStringValue.split(',')
+          if (refs.length > 0) {
+            const refDocs = await metrics.with(
+              'ref-docs',
+              {},
+              async (ctx) =>
+                await this.dbStorage.findAll(
+                  ctx,
+                  core.class.DocIndexState,
+                  {
+                    _id: refs.length === 1 ? refs[0] : { $in: refs }
+                  },
+                  { limit: refs.length }
+                )
+            )
+            if (refDocs.length > 0) {
+              for (const ref of refDocs) {
+                await metrics.with('updateDoc2Elastic', {}, async (ctx) => {
+                  updateDoc2Elastic(ref.attributes, elasticDoc, ref._id, attribute)
+                })
+              }
+            }
           }
         }
       }
     }
   }
 
-  async collect (toIndex: DocIndexState[], pipeline: FullTextPipeline, metrics: MeasureContext): Promise<void> {
+  async collect (toIndex: DocIndexState[], pipeline: FullTextPipeline, ctx: MeasureContext): Promise<void> {
     const bulk: IndexedDoc[] = []
 
     const part = [...toIndex]
     while (part.length > 0) {
-      const toIndexPart = part.splice(0, 1000)
+      const toIndexPart = part.splice(0, 50)
 
-      const allChildDocs = await metrics.with(
+      const childIds = toIndexPart
+        .filter((it) => {
+          const fctx = getFullTextContext(pipeline.hierarchy, it.objectClass)
+          return fctx.childProcessingAllowed ?? true
+        })
+        .map((it) => it._id)
+
+      const allChildDocs = await ctx.with(
         'find-child',
         {},
         async (ctx) =>
           await this.dbStorage.findAll(ctx, core.class.DocIndexState, {
-            attachedTo: { $in: toIndexPart.map((it) => it._id) }
+            attachedTo: childIds.length === 1 ? childIds[0] : { $in: childIds }
           })
       )
 
@@ -166,15 +182,19 @@ export class FullTextPushStage implements FullTextPipelineStage {
         }
         const elasticDoc = createElasticDoc(doc)
         try {
-          updateDoc2Elastic(doc.attributes, elasticDoc)
+          await ctx.with('updateDoc2Elastic', {}, async () => {
+            updateDoc2Elastic(doc.attributes, elasticDoc)
+          })
 
           // Include all child attributes
           const childDocs = allChildDocs.filter((it) => it.attachedTo === doc._id)
           if (childDocs.length > 0) {
             for (const c of childDocs) {
-              const ctx = getFullTextContext(pipeline.hierarchy, c.objectClass)
-              if (ctx.parentPropagate ?? true) {
-                updateDoc2Elastic(c.attributes, elasticDoc, c._id)
+              const fctx = getFullTextContext(pipeline.hierarchy, c.objectClass)
+              if (fctx.parentPropagate ?? true) {
+                await ctx.with('updateDoc2Elastic', {}, async () => {
+                  updateDoc2Elastic(c.attributes, elasticDoc, c._id)
+                })
               }
             }
           }
@@ -183,7 +203,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
             const propagate: Ref<Class<Doc>>[] = collectPropagate(pipeline, doc.attachedToClass)
             if (propagate.some((it) => pipeline.hierarchy.isDerived(doc.objectClass, it))) {
               // We need to include all parent content into this one.
-              ;[parentDoc] = await metrics.with(
+              ;[parentDoc] = await ctx.with(
                 'find-parent',
                 {},
                 async (ctx) =>
@@ -192,25 +212,28 @@ export class FullTextPushStage implements FullTextPipelineStage {
                   })
               )
               if (parentDoc !== undefined) {
-                updateDoc2Elastic(parentDoc.attributes, elasticDoc, parentDoc._id)
+                const ppdoc = parentDoc
+                await ctx.with('updateDoc2Elastic', {}, async () => {
+                  updateDoc2Elastic(ppdoc.attributes, elasticDoc, ppdoc._id)
+                })
 
-                const ctx = collectPropagateClasses(pipeline, parentDoc.objectClass)
-                if (ctx.length > 0) {
-                  for (const p of ctx) {
-                    const collections = await this.dbStorage.findAll(
-                      metrics.newChild('propagate', {}),
-                      core.class.DocIndexState,
-                      { attachedTo: parentDoc._id, objectClass: p }
-                    )
-                    for (const c of collections) {
+                const collectClasses = collectPropagateClasses(pipeline, parentDoc.objectClass)
+                if (collectClasses.length > 0) {
+                  const collections = await this.dbStorage.findAll<DocIndexState>(
+                    ctx.newChild('propagate', {}),
+                    core.class.DocIndexState,
+                    { attachedTo: parentDoc._id, objectClass: { $in: collectClasses } }
+                  )
+                  for (const c of collections) {
+                    await ctx.with('updateDoc2Elastic', {}, async () => {
                       updateDoc2Elastic(c.attributes, elasticDoc, c._id)
-                    }
+                    })
                   }
                 }
               }
             }
           }
-          const [spaceDoc] = await metrics.with(
+          const [spaceDoc] = await ctx.with(
             'find-space',
             {},
             async (ctx) =>
@@ -222,7 +245,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
           const allAttributes = pipeline.hierarchy.getAllAttributes(elasticDoc._class)
 
           // Include child ref attributes
-          await this.indexRefAttributes(allAttributes, doc, elasticDoc, metrics)
+          await this.indexRefAttributes(allAttributes, doc, elasticDoc, ctx)
 
           await updateDocWithPresenter(pipeline.hierarchy, doc, elasticDoc, { parentDoc, spaceDoc })
 
