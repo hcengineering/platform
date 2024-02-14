@@ -29,20 +29,23 @@
     locationStorageKeyId
   } from '@hcengineering/ui'
   import { workbenchId } from '@hcengineering/workbench'
-  import { onMount } from 'svelte'
-  import { workspacesStore } from '../utils'
   // import Drag from './icons/Drag.svelte'
+  import { createQuery } from '@tanstack/svelte-query'
 
-  onMount(() => {
-    void getResource(login.function.GetWorkspaces).then(async (f) => {
-      const workspaces = await f()
-      $workspacesStore = workspaces
-    })
+  const workspacesQuery = createQuery({
+    queryKey: ['login.function.GetWorkspaces)'],
+    queryFn: async () => {
+      const f = await getResource(login.function.GetWorkspaces)
+      return await f()
+    },
   })
+  // $workspacesQuery.error
+  // $workspacesQuery.refetch
 
-  $: void doLogin($workspacesStore)
+  $: void doLogin($workspacesQuery.data)
 
-  async function doLogin (ws: Workspace[]): Promise<void> {
+  async function doLogin (ws?: Workspace[]): Promise<void> {
+    if(!ws) return
     const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
     await Promise.all(
       ws.map(async (p) => {
@@ -111,13 +114,13 @@
   }
 </script>
 
-{#if $workspacesStore.length}
+{#if $workspacesQuery.data?.length}
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class="antiPopup" on:keydown={keyDown}>
     <div class="ap-space x2" />
     <div class="ap-scroll">
       <div class="ap-box">
-        {#each $workspacesStore as ws, i}
+        {#each $workspacesQuery.data as ws, i}
           <a
             class="stealth"
             href={getWorkspaceLink(ws)}
@@ -151,6 +154,6 @@
     </div>
     <div class="ap-space x2" />
   </div>
-{:else}
+{:else if $workspacesQuery.isLoading}
   <div class="antiPopup"><Loading /></div>
 {/if}

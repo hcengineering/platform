@@ -19,10 +19,14 @@
 
   import { workbenchId } from '@hcengineering/workbench'
   import workbench from '../plugin'
+  import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query'
+
+  const queryClient = new QueryClient()
 
   const isNeedUpgrade = window.location.host === ''
 </script>
 
+<QueryClientProvider client={queryClient}>
 {#if $location.path[0] === workbenchId || $location.path[0] === workbench.component.WorkbenchApp}
   {#key $location.path[1]}
     {#await connect(getMetadata(workbench.metadata.PlatformTitle) ?? 'Platform')}
@@ -50,6 +54,7 @@
     {/await}
   {/key}
 {/if}
+</QueryClientProvider>
 
 <style lang="scss">
   .version-wrapper {

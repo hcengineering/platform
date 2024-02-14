@@ -148,8 +148,6 @@ export async function showApplication (app: Application): Promise<void> {
   }
 }
 
-export const workspacesStore = writable<Workspace[]>([])
-
 /**
  * @public
  */
