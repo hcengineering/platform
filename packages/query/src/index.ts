@@ -54,6 +54,7 @@ import core, {
   resultSort,
   toFindResult
 } from '@hcengineering/core'
+import { PlatformError } from '@hcengineering/platform'
 import { deepEqual } from 'fast-equals'
 
 const CACHE_SIZE = 100
@@ -105,7 +106,12 @@ export class LiveQuery extends TxProcessor implements Client {
       if (!this.removeFromQueue(q)) {
         try {
           await this.refresh(q)
-        } catch (err) {
+        } catch (err: any) {
+          if (err instanceof PlatformError) {
+            if (err.message === 'connection closed') {
+              continue
+            }
+          }
           console.error(err)
         }
       }
@@ -114,7 +120,12 @@ export class LiveQuery extends TxProcessor implements Client {
       for (const q of v) {
         try {
           await this.refresh(q)
-        } catch (err) {
+        } catch (err: any) {
+          if (err instanceof PlatformError) {
+            if (err.message === 'connection closed') {
+              continue
+            }
+          }
           console.error(err)
         }
       }

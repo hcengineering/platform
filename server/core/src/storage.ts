@@ -416,7 +416,8 @@ class TServerStorage implements ServerStorage {
     if (query?.$search !== undefined) {
       return await ctx.with(p + '-fulltext-find-all', {}, (ctx) => this.fulltext.findAll(ctx, clazz, query, options))
     }
-    return await ctx.with(
+    const st = Date.now()
+    const result = await ctx.with(
       p + '-find-all',
       { _class: clazz },
       (ctx) => {
@@ -424,6 +425,10 @@ class TServerStorage implements ServerStorage {
       },
       { clazz, query, options }
     )
+    if (Date.now() - st > 1000) {
+      console.error('FindAll', Date.now() - st, clazz, query, options)
+    }
+    return result
   }
 
   async searchFulltext (ctx: MeasureContext, query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
@@ -800,14 +805,9 @@ class TServerStorage implements ServerStorage {
       derived = derived.concat(await this.processDerived(ctx, txToProcess, triggerFx, _findAll, removedMap))
 
       // index object
-      for (const _tx of txToProcess) {
-        await ctx.with('fulltext-tx', {}, (ctx) => this.fulltext.tx(ctx, _tx))
-      }
-
-      // index derived objects
-      for (const tx of derived) {
-        await ctx.with('derived-processor', { _class: txClass(tx) }, (ctx) => this.fulltext.tx(ctx, tx))
-      }
+      await ctx.with('fulltext-tx', {}, async (ctx) => {
+        await this.fulltext.tx(ctx, [...txToProcess, ...derived])
+      })
 
       for (const fx of triggerFx.effects) {
         await fx()
@@ -859,11 +859,6 @@ class Effects {
     return [...this._effects]
   }
 }
-
-function txClass (tx: Tx): Ref<Class<Tx>> {
-  return tx._class === core.class.TxCollectionCUD ? (tx as TxCollectionCUD<Doc, AttachedDoc>).tx._class : tx._class
-}
-
 /**
  * @public
  */

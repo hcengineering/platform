@@ -19,33 +19,33 @@ import core, {
   Class,
   Doc,
   DocIndexState,
-  docKey,
   DocumentQuery,
   FindOptions,
   FindResult,
   Hierarchy,
-  isFullTextAttribute,
-  isIndexedAttribute,
   MeasureContext,
   ObjQueryType,
   Ref,
+  SearchOptions,
+  SearchQuery,
+  SearchResult,
   ServerStorage,
-  toFindResult,
   Tx,
-  TxCollectionCUD,
   TxCUD,
+  TxCollectionCUD,
   TxFactory,
   TxResult,
   WorkspaceId,
-  SearchQuery,
-  SearchOptions,
-  SearchResult
+  docKey,
+  isFullTextAttribute,
+  isIndexedAttribute,
+  toFindResult
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { FullTextIndexPipeline } from './indexer'
 import { createStateDoc, isClassIndexable } from './indexer/utils'
-import { mapSearchResultDoc, getScoringConfig } from './mapper'
-import type { FullTextAdapter, WithFind, IndexedDoc } from './types'
+import { getScoringConfig, mapSearchResultDoc } from './mapper'
+import type { FullTextAdapter, IndexedDoc, WithFind } from './types'
 
 /**
  * @public
@@ -79,44 +79,58 @@ export class FullTextIndex implements WithFind {
     await this.consistency
   }
 
-  async tx (ctx: MeasureContext, tx: Tx): Promise<TxResult> {
-    let attachedTo: Ref<DocIndexState> | undefined
-    let attachedToClass: Ref<Class<Doc>> | undefined
-    if (tx._class === core.class.TxCollectionCUD) {
-      const txcol = tx as TxCollectionCUD<Doc, AttachedDoc>
-      attachedTo = txcol.objectId as Ref<DocIndexState>
-      attachedToClass = txcol.objectClass
-      tx = txcol.tx
-    }
-    if (this.hierarchy.isDerived(tx._class, core.class.TxCUD)) {
-      const cud = tx as TxCUD<Doc>
-
-      if (!isClassIndexable(this.hierarchy, cud.objectClass)) {
-        // No need, since no indixable fields or attachments.
-        return {}
+  async tx (ctx: MeasureContext, txes: Tx[]): Promise<TxResult> {
+    const stDocs = new Map<Ref<DocIndexState>, { create?: DocIndexState, updated: boolean, removed: boolean }>()
+    for (let tx of txes) {
+      let attachedTo: Ref<DocIndexState> | undefined
+      let attachedToClass: Ref<Class<Doc>> | undefined
+      if (tx._class === core.class.TxCollectionCUD) {
+        const txcol = tx as TxCollectionCUD<Doc, AttachedDoc>
+        attachedTo = txcol.objectId as Ref<DocIndexState>
+        attachedToClass = txcol.objectClass
+        tx = txcol.tx
       }
+      if (this.hierarchy.isDerived(tx._class, core.class.TxCUD)) {
+        const cud = tx as TxCUD<Doc>
 
-      let stDoc: DocIndexState | undefined
-      if (cud._class === core.class.TxCreateDoc) {
-        // Add doc for indexing
-        stDoc = createStateDoc(cud.objectId, cud.objectClass, {
-          attributes: {},
-          stages: {},
-          attachedTo,
-          attachedToClass,
-          space: tx.objectSpace,
-          removed: false
-        })
+        if (!isClassIndexable(this.hierarchy, cud.objectClass)) {
+          // No need, since no indixable fields or attachments.
+          continue
+        }
+
+        let stDoc: DocIndexState | undefined
+        if (cud._class === core.class.TxCreateDoc) {
+          // Add doc for indexing
+          stDoc = createStateDoc(cud.objectId, cud.objectClass, {
+            attributes: {},
+            stages: {},
+            attachedTo,
+            attachedToClass,
+            space: tx.objectSpace,
+            removed: false
+          })
+          stDocs.set(cud.objectId as Ref<DocIndexState>, { create: stDoc, updated: false, removed: false })
+        } else {
+          const old = stDocs.get(cud.objectId as Ref<DocIndexState>)
+          if (cud._class === core.class.TxRemoveDoc && old?.create !== undefined) {
+            // Object created and deleted, skip index
+            continue
+          } else if (old !== undefined) {
+            // Create and update
+            // Skip update
+            continue
+          }
+          stDocs.set(cud.objectId as Ref<DocIndexState>, {
+            updated: cud._class !== core.class.TxRemoveDoc,
+            removed: cud._class === core.class.TxRemoveDoc
+          })
+        }
       }
-      await this.indexer.queue(
-        cud.objectId as Ref<DocIndexState>,
-        cud._class === core.class.TxCreateDoc,
-        cud._class === core.class.TxRemoveDoc,
-        stDoc
-      )
-
-      this.indexer.triggerIndexing()
     }
+    await ctx.with('queue', {}, async (ctx) => {
+      await this.indexer.queue(ctx, stDocs)
+    })
+    this.indexer.triggerIndexing()
     return {}
   }
 

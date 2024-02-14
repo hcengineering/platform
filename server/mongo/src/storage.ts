@@ -112,12 +112,13 @@ abstract class MongoAdapterBase implements DbAdapter {
 
   async init (): Promise<void> {}
 
-  async toArray<T>(ctx: MeasureContext, cursor: AbstractCursor<T>, limit?: number): Promise<T[]> {
-    const data: T[] = []
-    for await (const r of cursor.stream()) {
-      data.push(r)
+  async toArray<T>(ctx: MeasureContext, cursor: AbstractCursor<T>): Promise<T[]> {
+    const st = Date.now()
+    const data = await cursor.toArray()
+    await cursor.close()
+    if (Date.now() - st > 1000) {
+      console.error('toArray', Date.now() - st, data.length)
     }
-    void cursor.close()
     return data
   }
 
@@ -446,8 +447,8 @@ abstract class MongoAdapterBase implements DbAdapter {
     pipeline.push(match)
     const resultPipeline: any[] = []
     await this.fillSortPipeline(clazz, options, pipeline)
-    if (options?.limit !== undefined) {
-      resultPipeline.push({ $limit: options.limit })
+    if (options?.limit !== undefined || typeof query._id === 'string') {
+      resultPipeline.push({ $limit: options?.limit ?? 1 })
     }
     if (!slowPipeline) {
       for (const step of steps) {
@@ -479,7 +480,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     const result: WithLookup<T>[] = []
     let total = options?.total === true ? 0 : -1
     try {
-      const rres = await ctx.with('toArray', {}, async (ctx) => await this.toArray(ctx, cursor, options?.limit), {
+      const rres = await ctx.with('toArray', {}, async (ctx) => await this.toArray(ctx, cursor), {
         domain,
         pipeline
       })
@@ -596,30 +597,6 @@ abstract class MongoAdapterBase implements DbAdapter {
     const coll = this.db.collection(domain)
     const mongoQuery = this.translateQuery(_class, query)
 
-    // We have limit 1 or _id === exact id
-    if (options?.limit === 1 || typeof query._id === 'string') {
-      const data = await ctx.with(
-        'find-one',
-        { _class },
-        async () =>
-          await coll.findOne<T>(mongoQuery, {
-            checkKeys: false,
-            enableUtf8Validation: false,
-            projection: this.calcProjection(options, _class),
-            sort: this.collectSort<T>(options, _class)
-          }),
-        {
-          _class,
-          mongoQuery,
-          domain
-        }
-      )
-      if (data != null) {
-        return toFindResult(this.stripHash([data]), 1)
-      }
-      return toFindResult([], 0)
-    }
-
     let cursor = coll.find<T>(mongoQuery, {
       checkKeys: false,
       enableUtf8Validation: false
@@ -632,24 +609,24 @@ abstract class MongoAdapterBase implements DbAdapter {
       }
     }
     let total: number = -1
-    if (options !== null && options !== undefined) {
+    if (options != null) {
       if (options.sort !== undefined) {
         const sort = this.collectSort<T>(options, _class)
         if (sort !== undefined) {
           cursor = cursor.sort(sort)
         }
       }
-      if (options.limit !== undefined) {
+      if (options.limit !== undefined || typeof query._id === 'string') {
         if (options.total === true) {
           total = await coll.countDocuments(mongoQuery)
         }
-        cursor = cursor.limit(options.limit)
+        cursor = cursor.limit(options.limit ?? 1)
       }
     }
 
     // Error in case of timeout
     try {
-      const res: T[] = await ctx.with('toArray', {}, async (ctx) => await this.toArray(ctx, cursor, options?.limit), {
+      const res: T[] = await ctx.with('toArray', {}, async (ctx) => await this.toArray(ctx, cursor), {
         mongoQuery,
         options,
         domain
@@ -817,8 +794,8 @@ abstract class MongoAdapterBase implements DbAdapter {
     if (docs.length === 0) {
       return []
     }
-    const cursor = this.db.collection<Doc>(domain).find<Doc>({ _id: { $in: docs } })
-    const result = await this.toArray(new MeasureMetricsContext('', {}), cursor, docs.length)
+    const cursor = this.db.collection<Doc>(domain).find<Doc>({ _id: { $in: docs } }, { limit: docs.length })
+    const result = await this.toArray(new MeasureMetricsContext('', {}), cursor)
     return this.stripHash(this.stripHash(result))
   }
 

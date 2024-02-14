@@ -117,9 +117,15 @@ export class IndexedFieldStage implements FullTextPipelineStage {
       // Obtain real documents
       const valueIds = new Map(values.map((it) => [it._id, it]))
       const objClass = v as Ref<Class<Doc>>
-      const docs = await this.dbStorage.findAll(metrics, objClass, {
-        _id: { $in: Array.from(valueIds.keys()) }
-      })
+      const kids = Array.from(valueIds.keys())
+      const docs = await this.dbStorage.findAll(
+        metrics,
+        objClass,
+        {
+          _id: kids.length === 1 ? kids[0] : { $in: kids }
+        },
+        { limit: kids.length }
+      )
       const attributes = getFullTextIndexableAttributes(pipeline.hierarchy, objClass)
 
       // Child docs.
@@ -197,11 +203,21 @@ export class IndexedFieldStage implements FullTextPipelineStage {
           if (propagate.length > 0) {
             // We need to propagate all changes to all child's of following classes.
             if (allChildDocs === undefined) {
-              const pc = metrics.newChild('propagate', {})
-              allChildDocs = await this.dbStorage.findAll(pc, core.class.DocIndexState, {
-                attachedTo: { $in: docs.map((it) => it._id) }
-              })
-              pc.end()
+              const ids = docs.map((it) => it._id)
+
+              allChildDocs = await metrics.with(
+                'propagate',
+                {},
+                async (ctx) =>
+                  await this.dbStorage.findAll(
+                    ctx,
+                    core.class.DocIndexState,
+                    {
+                      attachedTo: ids.length === 1 ? ids[0] : { $in: ids }
+                    },
+                    { limit: ids.length }
+                  )
+              )
             }
             const childs = allChildDocs.filter((it) => it.attachedTo === docState._id)
             for (const u of childs) {
