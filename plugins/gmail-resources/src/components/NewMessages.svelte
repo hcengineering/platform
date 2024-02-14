@@ -294,7 +294,7 @@
             label={plugin.string.Send}
             size={'small'}
             kind={'primary'}
-            disabled={channels.length === 0}
+            disabled={channels.length === 0 || content === '' || content === '<p></p>'}
             on:click={sendMsg}
           />
         {/if}
