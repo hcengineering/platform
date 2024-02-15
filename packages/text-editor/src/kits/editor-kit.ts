@@ -68,14 +68,7 @@ export const EditorKit = Extension.create<EditorKitOptions>({
       }),
       CodemarkExtension,
       Underline,
-      ListKeymap.configure({
-        listTypes: [
-          {
-            itemName: 'todoItem',
-            wrapperNames: ['todoList']
-          }
-        ]
-      }),
+      ListKeymap,
       NodeUuidExtension,
       ...tableExtensions
       // ...taskListExtensions // Disable since tasks are not working properly now.
