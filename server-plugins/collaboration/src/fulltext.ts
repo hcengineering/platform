@@ -22,12 +22,12 @@ import core, {
   DocumentUpdate,
   MeasureContext,
   Ref,
-  Storage,
   WorkspaceId,
   parseCollaborativeDoc
 } from '@hcengineering/core'
 import {
   ContentTextAdapter,
+  DbAdapter,
   DocUpdateHandler,
   FullTextPipeline,
   FullTextPipelineStage,
@@ -68,7 +68,7 @@ export class CollaborativeContentRetrievalStage implements FullTextPipelineStage
     private readonly contentAdapter: ContentTextAdapter
   ) {}
 
-  async initialize (storage: Storage, pipeline: FullTextPipeline): Promise<void> {
+  async initialize (ctx: MeasureContext, storage: DbAdapter, pipeline: FullTextPipeline): Promise<void> {
     // Just do nothing
   }
 
