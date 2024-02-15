@@ -57,6 +57,8 @@ function generateDailyValues (
   while (true) {
     if (bySetPos == null || bySetPos.includes(getSetPos(currentDate))) {
       const res = currentDate.getTime()
+      if (currentDate.getTime() > to) break
+      if (endDate != null && currentDate.getTime() > endDate) break
       if (res >= from && res <= to) {
         values.push(res)
       }
@@ -65,8 +67,6 @@ function generateDailyValues (
 
     currentDate.setDate(currentDate.getDate() + (interval ?? 1))
     if (count !== undefined && i === count) break
-    if (endDate != null && currentDate.getTime() > endDate) break
-    if (currentDate.getTime() >= to) break
   }
 }
 
@@ -90,6 +90,8 @@ function generateWeeklyValues (
     const end = new Date(new Date(currentDate).setDate(currentDate.getDate() + 7))
     let date = currentDate
     while (date < end) {
+      if (endDate != null && date.getTime() > endDate) return
+      if (date.getTime() > to) return
       if ((byDay == null || matchesByDay(date, byDay)) && (bySetPos == null || bySetPos.includes(getSetPos(date)))) {
         const res = date.getTime()
         if (res >= from && res <= to) {
@@ -99,8 +101,6 @@ function generateWeeklyValues (
       }
       date = new Date(date.setDate(date.getDate() + 1))
       if (count !== undefined && i === count) return
-      if (endDate != null && date.getTime() > endDate) return
-      if (date.getTime() >= to) return
     }
 
     currentDate = new Date(next)
@@ -166,6 +166,8 @@ function generateMonthlyValues (
     const end = new Date(new Date(currentDate).setMonth(currentDate.getMonth() + 1))
     let date = currentDate
     while (date < end) {
+      if (endDate != null && date.getTime() > endDate) return
+      if (date.getTime() >= to) return
       if (
         (byDay == null || matchesByDay(date, byDay)) &&
         (byMonthDay == null || byMonthDay.includes(new Date(currentDate).getDate())) &&
@@ -180,8 +182,6 @@ function generateMonthlyValues (
       date = new Date(date.setDate(date.getDate() + 1))
 
       if (count !== undefined && i === count) return
-      if (endDate != null && date.getTime() > endDate) return
-      if (date.getTime() >= to) return
     }
     currentDate = new Date(next)
   }
@@ -203,6 +203,8 @@ function generateYearlyValues (
     const end = new Date(new Date(currentDate).setFullYear(currentDate.getFullYear() + 1))
     let date = currentDate
     while (date < end) {
+      if (endDate != null && date.getTime() > endDate) return
+      if (date.getTime() > to) return
       if (
         (byDay == null || matchesByDay(date, byDay)) &&
         (byMonthDay == null || byMonthDay.includes(currentDate.getDate())) &&
@@ -219,8 +221,6 @@ function generateYearlyValues (
       }
       date = new Date(date.setDate(date.getDate() + 1))
       if (count !== undefined && i === count) return
-      if (endDate != null && date.getTime() > endDate) return
-      if (date.getTime() >= to) return
     }
     currentDate = new Date(next)
   }
