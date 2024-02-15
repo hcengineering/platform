@@ -86,7 +86,7 @@ class CollaboratorClientImpl implements CollaboratorClient {
       throw new Error(result.error)
     }
 
-    return await res.json()
+    return result
   }
 
   async get (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string): Promise<Markup> {
