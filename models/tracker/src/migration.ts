@@ -185,6 +185,21 @@ async function fixTrackerTaskTypes (client: MigrationClient): Promise<void> {
   })
 }
 
+async function passIdentifierToParentInfo (client: MigrationClient): Promise<void> {
+  const issues = await client.find<Issue>(DOMAIN_TASK, { _class: tracker.class.Issue, 'parents.0': { $exists: true } })
+  for (const issue of issues) {
+    const parents = toIdMap(
+      await client.find<Issue>(DOMAIN_TASK, { _id: { $in: issue.parents.map((p) => p.parentId) } })
+    )
+    for (const parent of issue.parents) {
+      const p = parents.get(parent.parentId)
+      if (p === undefined) continue
+      parent.identifier = p.identifier
+    }
+    await client.update(DOMAIN_TASK, { _id: issue._id }, { $set: { parents: issue.parents } })
+  }
+}
+
 async function tryCreateStatus (client: MigrationClient): Promise<Ref<Status>> {
   const exists = await client.find<Status>(DOMAIN_STATUS, {
     _class: tracker.class.IssueStatus,
@@ -484,6 +499,10 @@ export const trackerOperation: MigrateOperation = {
       {
         state: 'identifier',
         func: migrateIdentifiers
+      },
+      {
+        state: 'passIdentifierToParentInfo',
+        func: passIdentifierToParentInfo
       }
     ])
   },

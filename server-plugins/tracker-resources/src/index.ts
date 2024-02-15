@@ -225,6 +225,7 @@ export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<T
       const parents: IssueParentInfo[] = parentIssue.map((it) => ({
         parentId: it._id,
         parentTitle: it.title,
+        identifier: it.identifier,
         space: it.space
       }))
       updateIssueParentEstimations(
@@ -358,9 +359,17 @@ async function doIssueUpdate (
       { limit: 1 }
     )
 
-    const updatedParents =
+    const updatedParents: IssueParentInfo[] =
       newParent !== undefined
-        ? [{ parentId: newParent._id, parentTitle: newParent.title, space: newParent.space }, ...newParent.parents]
+        ? [
+            {
+              parentId: newParent._id,
+              parentTitle: newParent.title,
+              space: newParent.space,
+              identifier: newParent.identifier
+            },
+            ...newParent.parents
+          ]
         : []
 
     function update (issue: Issue): DocumentUpdate<Issue> {
