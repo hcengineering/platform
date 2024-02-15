@@ -207,9 +207,19 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   }
 
   async readMessages (client: TxOperations, ids: Array<Ref<ActivityMessage>>): Promise<void> {
+    const alreadyReadIds = get(this.activityInboxNotifications)
+      .filter(({ attachedTo, isViewed }) => ids.includes(attachedTo) && isViewed)
+      .map(({ attachedTo }) => attachedTo)
+
+    const toReadIds = ids.filter((id) => !alreadyReadIds.includes(id))
+
+    if (toReadIds.length === 0) {
+      return
+    }
+
     const notificationsToRead = await client.findAll(notification.class.ActivityInboxNotification, {
       user: getCurrentAccount()._id,
-      attachedTo: { $in: ids },
+      attachedTo: { $in: toReadIds },
       isViewed: { $ne: true }
     })
 

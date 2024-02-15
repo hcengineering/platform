@@ -67,6 +67,7 @@
   let shouldWaitAndRead = false
 
   let shouldScrollToNew = false
+  let messagesCount = 0
 
   $: extensions = client.getModel().findAllSync(activity.class.ActivityExtension, { ofClass: objectClass })
 
@@ -341,17 +342,44 @@
     }
   }
 
-  function scrollToNewMessages (_: DisplayActivityMessage[]) {
+  let scrollToLastMessage = false
+
+  function scrollUntilSeeLastMessage () {
+    if (isLastMessageViewed()) {
+      readViewportMessages()
+      shouldScrollToNew = true
+      scrollToLastMessage = false
+    } else if (scrollToLastMessage && shouldScrollToNew) {
+      setTimeout(() => {
+        scrollToBottom(scrollUntilSeeLastMessage)
+      }, 50)
+    } else {
+      scrollToLastMessage = false
+    }
+  }
+
+  function scrollToNewMessages () {
     if (!scrollElement || !shouldScrollToNew) {
       return
     }
 
-    scrollToBottom()
-    shouldWaitAndRead = true
-    waitLastMessageRenderAndRead()
+    scrollToLastMessage = true
+    scrollUntilSeeLastMessage()
   }
 
-  $: scrollToNewMessages(messages)
+  function updateMessagesCount (newCount: number) {
+    if (newCount === messagesCount) {
+      return
+    }
+
+    if (newCount > messagesCount) {
+      scrollToNewMessages()
+    }
+
+    messagesCount = newCount
+  }
+
+  $: updateMessagesCount(displayMessages.length)
 </script>
 
 <div class="flex-col h-full">
