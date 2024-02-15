@@ -589,6 +589,15 @@ export function createModel (builder: Builder): void {
     view.pipeline.PresentationMiddleware
   )
 
+  builder.createDoc(
+    presentation.class.PresentationMiddlewareFactory,
+    core.space.Model,
+    {
+      createPresentationMiddleware: view.function.AnalyticsMiddleware
+    },
+    view.pipeline.AnalyticsMiddleware
+  )
+
   createAction(
     builder,
     {

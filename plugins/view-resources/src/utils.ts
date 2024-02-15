@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import core, {
   AccountRole,
   type FindOptions,
@@ -364,6 +365,7 @@ export async function buildModel (options: BuildModelOptions): Promise<Attribute
           return undefined
         }
         const stringKey = key.label ?? key.key
+        Analytics.handleError(err)
         console.error('Failed to find presenter for', key, err)
         const errorPresenter: AttributeModel = {
           key: '',

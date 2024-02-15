@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import client, { ClientSocket, ClientSocketReadyState } from '@hcengineering/client'
 import core, {
   Account,
@@ -146,6 +147,7 @@ class Connection implements ClientConnection {
         this.pending = undefined
         console.log('failed to connect', err)
         if (err?.code === UNAUTHORIZED.code) {
+          Analytics.handleError(err)
           this.onUnauthorized?.()
           throw err
         }

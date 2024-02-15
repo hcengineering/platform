@@ -16,34 +16,33 @@
 
 import activity from '@hcengineering/activity'
 import {
-  type AvatarProvider,
   AvatarType,
+  contactId,
+  type AvatarProvider,
   type Channel,
   type ChannelProvider,
   type Contact,
   type ContactsTab,
   type Employee,
-  type PersonAccount,
   type GetAvatarUrl,
   type Member,
   type Organization,
   type Organizations,
   type Person,
+  type PersonAccount,
   type Persons,
-  type Status,
-  contactId
+  type Status
 } from '@hcengineering/contact'
 import {
-  type Class,
   DOMAIN_MODEL,
   DateRangeMode,
-  type Domain,
   IndexKind,
+  type Class,
+  type Domain,
   type Ref,
   type Timestamp
 } from '@hcengineering/core'
 import {
-  type Builder,
   Collection,
   Hidden,
   Index,
@@ -51,26 +50,28 @@ import {
   Model,
   Prop,
   ReadOnly,
+  TypeAttachment,
   TypeBoolean,
   TypeDate,
   TypeRef,
   TypeString,
   TypeTimestamp,
-  TypeAttachment,
-  UX
+  UX,
+  type Builder
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
 import core, { TAccount, TAttachedDoc, TDoc, TSpace } from '@hcengineering/model-core'
-import presentation from '@hcengineering/model-presentation'
-import view, { type ViewAction, type Viewlet, createAction } from '@hcengineering/model-view'
-import workbench from '@hcengineering/model-workbench'
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
+import presentation from '@hcengineering/model-presentation'
+import view, { createAction, type Viewlet } from '@hcengineering/model-view'
+import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
 import templates from '@hcengineering/templates'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
+import { type Action } from '@hcengineering/view'
 import contact from './plugin'
 
 export { contactId } from '@hcengineering/contact'
@@ -90,7 +91,7 @@ export class TAvatarProvider extends TDoc implements AvatarProvider {
 export class TChannelProvider extends TDoc implements ChannelProvider {
   label!: IntlString
   icon?: Asset
-  action?: ViewAction
+  action?: Ref<Action>
   placeholder!: IntlString
 }
 
@@ -574,7 +575,7 @@ export function createModel (builder: Builder): void {
       label: contact.string.LinkedIn,
       icon: contact.icon.LinkedIn,
       placeholder: contact.string.LinkedInPlaceholder,
-      action: contact.actionImpl.OpenChannel
+      action: contact.action.OpenChannel
     },
     contact.channelProvider.LinkedIn
   )
@@ -586,7 +587,7 @@ export function createModel (builder: Builder): void {
       label: contact.string.Twitter,
       icon: contact.icon.Twitter,
       placeholder: contact.string.AtPlaceHolder,
-      action: contact.actionImpl.OpenChannel
+      action: contact.action.OpenChannel
     },
     contact.channelProvider.Twitter
   )
@@ -598,7 +599,7 @@ export function createModel (builder: Builder): void {
       label: contact.string.GitHub,
       icon: contact.icon.GitHub,
       placeholder: contact.string.AtPlaceHolder,
-      action: contact.actionImpl.OpenChannel
+      action: contact.action.OpenChannel
     },
     contact.channelProvider.GitHub
   )
@@ -610,7 +611,7 @@ export function createModel (builder: Builder): void {
       label: contact.string.Facebook,
       icon: contact.icon.Facebook,
       placeholder: contact.string.FacebookPlaceholder,
-      action: contact.actionImpl.OpenChannel
+      action: contact.action.OpenChannel
     },
     contact.channelProvider.Facebook
   )
@@ -622,7 +623,7 @@ export function createModel (builder: Builder): void {
       label: contact.string.Homepage,
       icon: contact.icon.Homepage,
       placeholder: contact.string.HomepagePlaceholder,
-      action: contact.actionImpl.OpenChannel
+      action: contact.action.OpenChannel
     },
     contact.channelProvider.Homepage
   )
@@ -656,7 +657,7 @@ export function createModel (builder: Builder): void {
       label: contact.string.Profile,
       icon: contact.icon.Profile,
       placeholder: contact.string.ProfilePlaceholder,
-      action: contact.actionImpl.OpenChannel
+      action: contact.action.OpenChannel
     },
     contact.channelProvider.Profile
   )
@@ -837,6 +838,21 @@ export function createModel (builder: Builder): void {
       secured: true
     },
     contact.action.KickEmployee
+  )
+
+  createAction(
+    builder,
+    {
+      action: contact.actionImpl.OpenChannel,
+      category: contact.category.Channel,
+      label: contact.string.Channel,
+      input: 'none',
+      context: {
+        mode: ['none']
+      },
+      target: contact.class.Channel
+    },
+    contact.action.OpenChannel
   )
 
   createAction(

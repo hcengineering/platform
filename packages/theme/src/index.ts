@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import '@hcengineering/platform-rig/profiles/ui/svelte'
 import { writable } from 'svelte/store'
 
@@ -53,7 +54,11 @@ export const getCurrentFontSize = (): string =>
 /**
  * @public
  */
-export const getCurrentLanguage = (): string => localStorage.getItem('lang') ?? getDefaultProps('lang', 'en')
+export const getCurrentLanguage = (): string => {
+  const lang = localStorage.getItem('lang') ?? getDefaultProps('lang', 'en')
+  Analytics.setTag('language', lang)
+  return lang
+}
 
 export class ThemeOptions {
   constructor (

@@ -100,6 +100,7 @@ export default mergeIds(viewId, view, {
     ToViewCommands: '' as IntlString
   },
   function: {
-    CreateDocMiddleware: '' as Resource<PresentationMiddlewareCreator>
+    CreateDocMiddleware: '' as Resource<PresentationMiddlewareCreator>,
+    AnalyticsMiddleware: '' as Resource<PresentationMiddlewareCreator>
   }
 })

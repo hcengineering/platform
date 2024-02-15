@@ -19,7 +19,7 @@ import type { Asset, Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
 import { TemplateField, TemplateFieldCategory } from '@hcengineering/templates'
 import type { AnyComponent, IconSize, ResolvedLocation } from '@hcengineering/ui'
-import { FilterMode, ViewAction, Viewlet } from '@hcengineering/view'
+import { Action, FilterMode, Viewlet } from '@hcengineering/view'
 
 /**
  * @public
@@ -42,7 +42,7 @@ export interface ChannelProvider extends Doc, UXObject {
   presenter?: AnyComponent
 
   // Action to be performed if there is no presenter defined.
-  action?: ViewAction
+  action?: Ref<Action>
 
   // Integration type
   integrationType?: Ref<Doc>

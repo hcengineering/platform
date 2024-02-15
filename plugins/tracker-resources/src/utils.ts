@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import { type Contact } from '@hcengineering/contact'
 import core, {
   SortingOrder,
@@ -402,13 +403,14 @@ export async function moveIssuesToAnotherMilestone (
     await Promise.all(awaitedUpdates)
 
     return true
-  } catch (error) {
+  } catch (error: any) {
     console.error(
       `Error happened while moving issues between milestones from ${oldMilestone.label} to ${
         newMilestone?.label ?? 'No Milestone'
       }: `,
       error
     )
+    Analytics.handleError(error)
     return false
   }
 }

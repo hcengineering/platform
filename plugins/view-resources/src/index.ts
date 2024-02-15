@@ -113,7 +113,7 @@ import {
 
 import { IndexedDocumentPreview } from '@hcengineering/presentation'
 import { showEmptyGroups } from './viewOptions'
-import { AggregationMiddleware } from './middleware'
+import { AggregationMiddleware, AnalyticsMiddleware } from './middleware'
 export { getActions, invokeAction, getContextActions } from './actions'
 export { default as ActionButton } from './components/ActionButton.svelte'
 export { default as ActionHandler } from './components/ActionHandler.svelte'
@@ -284,6 +284,8 @@ export default async (): Promise<Resources> => ({
     FilterDateNotSpecified: dateNotSpecified,
     FilterDateCustom: dateCustom,
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    CreateDocMiddleware: AggregationMiddleware.create
+    CreateDocMiddleware: AggregationMiddleware.create,
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    AnalyticsMiddleware: AnalyticsMiddleware.create
   }
 })

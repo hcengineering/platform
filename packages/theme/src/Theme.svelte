@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Analytics } from '@hcengineering/analytics'
   import platform, { loadPluginStrings, setMetadata } from '@hcengineering/platform'
   import { onMount, setContext } from 'svelte'
   import {
@@ -52,6 +53,7 @@
     if (set) {
       localStorage.setItem('lang', language)
     }
+    Analytics.setTag('language', language)
     setMetadata(platform.metadata.locale, currentLanguage)
     await loadPluginStrings(currentLanguage, set)
     setOptions(getCurrentFontSize(), getCurrentTheme(), language)

@@ -1,3 +1,4 @@
+import { Analytics } from '@hcengineering/analytics'
 import client from '@hcengineering/client'
 import core, {
   ClientConnectEvent,
@@ -138,6 +139,8 @@ export async function connect (title: string): Promise<Client | undefined> {
 
   const me = await _client?.getAccount()
   if (me !== undefined) {
+    Analytics.setUser(me.email)
+    Analytics.setTag('workspace', ws)
     console.log('login: employee account', me)
     setCurrentAccount(me)
   } else {

@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import core, {
   ClassifierKind,
   DOMAIN_CONFIGURATION,
@@ -318,6 +319,7 @@ async function deleteProject (project: Project | undefined): Promise<void> {
                   }
                 } catch (err: any) {
                   console.error(err)
+                  Analytics.handleError(err)
                 }
               }
             }

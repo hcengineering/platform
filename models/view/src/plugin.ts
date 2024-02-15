@@ -128,6 +128,7 @@ export default mergeIds(viewId, view, {
     ShowEmptyGroups: '' as ViewCategoryAction
   },
   pipeline: {
-    PresentationMiddleware: '' as Ref<PresentationMiddlewareFactory>
+    PresentationMiddleware: '' as Ref<PresentationMiddlewareFactory>,
+    AnalyticsMiddleware: '' as Ref<PresentationMiddlewareFactory>
   }
 })

@@ -36,7 +36,8 @@
   },
   "dependencies": {
     "svelte": "^4.2.5",
-    "@hcengineering/platform": "^0.6.9"
+    "@hcengineering/platform": "^0.6.9",
+    "@hcengineering/analytics": "^0.6.0"
   },
   "repository": "https://github.com/hcenginneing/anticrm",
   "publishConfig": {

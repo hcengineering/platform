@@ -14,15 +14,16 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import core, {
   AccountRole,
+  getCurrentAccount,
+  matchQuery,
   type Class,
   type Client,
   type Doc,
   type Ref,
-  type WithLookup,
-  getCurrentAccount,
-  matchQuery
+  type WithLookup
 } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
@@ -30,7 +31,6 @@ import {
   type Action,
   type ActionGroup,
   type ActionIgnore,
-  type ViewAction,
   type ViewActionInput,
   type ViewContextType
 } from '@hcengineering/view'
@@ -115,11 +115,15 @@ export async function filterAvailableActions (
 export async function invokeAction (
   object: Doc | Doc[],
   evt: Event,
-  action: ViewAction,
+  action: Action,
   props?: Record<string, any>
 ): Promise<void> {
-  const impl = await getResource(action)
-  await impl(Array.isArray(object) && object.length === 1 ? object[0] : object, evt, props)
+  const impl = await getResource(action.action)
+  Analytics.handleEvent(action._id)
+  await impl(Array.isArray(object) && object.length === 1 ? object[0] : object, evt, {
+    ...action.actionProps,
+    ...props
+  })
 }
 
 export async function getContextActions (
