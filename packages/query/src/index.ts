@@ -180,6 +180,7 @@ export class LiveQuery extends TxProcessor implements Client {
       options.projection = {
         ...options.projection,
         _class: 1,
+        space: 1,
         modifiedOn: 1
       }
     }
@@ -209,6 +210,7 @@ export class LiveQuery extends TxProcessor implements Client {
       options.projection = {
         ...options.projection,
         _class: 1,
+        space: 1,
         modifiedOn: 1
       }
     }
@@ -341,6 +343,7 @@ export class LiveQuery extends TxProcessor implements Client {
       options.projection = {
         ...options.projection,
         _class: 1,
+        space: 1,
         modifiedOn: 1
       }
     }
@@ -362,6 +365,14 @@ export class LiveQuery extends TxProcessor implements Client {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
+    if (options?.projection !== undefined) {
+      options.projection = {
+        ...options.projection,
+        _class: 1,
+        space: 1,
+        modifiedOn: 1
+      }
+    }
     const current = this.findQuery(_class, query, options)
     if (current === undefined) {
       const q = this.createQuery(
