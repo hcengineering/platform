@@ -32,7 +32,7 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-n": "^15.4.0",
     "eslint": "^8.54.0",
-    "esbuild": "^0.16.14",
+    "esbuild": "^0.20.0",
     "@types/koa-bodyparser": "^4.3.3",
     "@types/koa-router": "^7.4.4",
     "@types/koa": "^2.13.4",

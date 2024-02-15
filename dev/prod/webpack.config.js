@@ -18,7 +18,6 @@ const Dotenv = require('dotenv-webpack')
 const path = require('path')
 const autoprefixer = require('autoprefixer')
 const CompressionPlugin = require('compression-webpack-plugin')
-const DefinePlugin = require('webpack').DefinePlugin
 const { resolve } = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { Configuration } = require('webpack')
@@ -28,7 +27,8 @@ const prod = mode === 'production'
 const devServer = (process.env.CLIENT_TYPE ?? '') === 'dev-server'
 const devProduction = (process.env.CLIENT_TYPE ?? '') === 'dev-production'
 const dev = (process.env.CLIENT_TYPE ?? '') === 'dev' || devServer || devProduction
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
+const { EsbuildPlugin } = require('esbuild-loader')
 
 /**
  * @type {Configuration}
@@ -68,15 +68,20 @@ module.exports = {
     pathinfo: false
   },
   optimization: {
-    minimize: prod
+    minimize: prod,
+    minimizer: [
+      new EsbuildPlugin({
+        target: 'es2021'  // Syntax to transpile to (see options below for possible values)
+      })
+    ]
   },
   module: {
     rules: [
       {
         test: /\.ts?$/,
-        loader:'ts-loader',
+        loader:'esbuild-loader',
         options: {
-          transpileOnly: true
+          target: 'es2021'
         },
         exclude: /node_modules/,
       },
@@ -203,8 +208,10 @@ module.exports = {
     //   filename: '[name].[id][contenthash].css'
     // }),
     new Dotenv({path: prod ? '.env-prod' : '.env'}),
-    new DefinePlugin({
-      'process.env.CLIENT_TYPE': JSON.stringify(process.env.CLIENT_TYPE)
+    new EsbuildPlugin({
+      define: {
+          'process.env.CLIENT_TYPE': JSON.stringify(process.env.CLIENT_TYPE ?? '')
+      }
     }),
     new ForkTsCheckerWebpackPlugin()
   ],

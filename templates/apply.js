@@ -95,8 +95,12 @@ function updatePackage(packageRoot, templates) {
 
   if( template.package['#clean'] !== undefined ) {
     for( const d of template.package['#clean'] ) {
-      delete currentPackage.devDependencies[d]
-      delete currentPackage.dependencies[d]
+      if(currentPackage.devDependencies) {
+        delete currentPackage.devDependencies[d]
+      }
+      if(currentPackage.dependencies) {
+        delete currentPackage.dependencies[d]
+      }
     }
   }
   currentPackage.scripts = update(currentPackage.scripts, packageJson.scripts, currentPackage['#override'] )

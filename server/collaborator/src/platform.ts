@@ -116,6 +116,8 @@ export class WorkspaceClient {
   }
 
   private async txHandler (tx: Tx): Promise<void> {
-    this.txHandlers.map((handler) => handler(tx))
+    for (const h of this.txHandlers) {
+      await h(tx)
+    }
   }
 }
