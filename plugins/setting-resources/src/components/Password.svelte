@@ -92,7 +92,7 @@
           <EditBox
             format="password"
             placeholder={setting.string.RepeatNewPassword}
-            label={setting.string.NewPassword}
+            label={setting.string.ConfirmPassword}
             bind:value={password2}
           />
         </div>

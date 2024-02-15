@@ -1,6 +1,6 @@
 {
   "string": {
-    "Setting": "Setting",    
+    "Setting": "Setting",
     "Integrations": "Integrations",
     "Support": "Support",
     "Privacy": "Privacy",
@@ -19,6 +19,7 @@
     "EnterCurrentPassword": "Enter current password",
     "EnterNewPassword": "Enter new password",
     "RepeatNewPassword": "Repeat new password",
+    "ConfirmPassword": "Confirm new password",
     "Signout": "Sign out",
     "Settings": "Settings",
     "SelectWorkspace": "Select workspace",
