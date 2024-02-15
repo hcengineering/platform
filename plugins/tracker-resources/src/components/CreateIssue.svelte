@@ -49,6 +49,7 @@
     Component as ComponentType,
     Issue,
     IssueDraft,
+    IssueParentInfo,
     IssuePriority,
     IssueStatus,
     IssueTemplate,
@@ -421,6 +422,8 @@
 
       const number = (incResult as any).object.sequence
 
+      const identifier = `${currentProject?.identifier}-${number}`
+
       const value: DocData<Issue> = {
         title: getTitle(object.title),
         description: object.description,
@@ -437,7 +440,7 @@
         parents:
           parentIssue != null
             ? [
-                { parentId: parentIssue._id, parentTitle: parentIssue.title, space: parentIssue.space },
+                { parentId: parentIssue._id, parentTitle: parentIssue.title, space: parentIssue.space, identifier },
                 ...parentIssue.parents
               ]
             : [],
@@ -448,7 +451,7 @@
         relations: relatedTo !== undefined ? [{ _id: relatedTo._id, _class: relatedTo._class }] : [],
         childInfo: [],
         kind,
-        identifier: `${currentProject?.identifier}-${number}`
+        identifier
       }
 
       await docCreateManager.commit(operations, _id, _space, value)
@@ -485,13 +488,13 @@
       await operations.commit()
       await descriptionBox.createAttachments(_id)
 
-      const parents = parentIssue
+      const parents: IssueParentInfo[] = parentIssue
         ? [
-            { parentId: _id, parentTitle: value.title, space: parentIssue.space },
-            { parentId: parentIssue._id, parentTitle: parentIssue.title, space: parentIssue.space },
+            { parentId: _id, parentTitle: value.title, space: parentIssue.space, identifier },
+            { parentId: parentIssue._id, parentTitle: parentIssue.title, space: parentIssue.space, identifier },
             ...parentIssue.parents
           ]
-        : [{ parentId: _id, parentTitle: value.title, space: _space }]
+        : [{ parentId: _id, parentTitle: value.title, space: _space, identifier }]
       await subIssuesComponent.save(parents, _id)
       addNotification(
         await translate(tracker.string.IssueCreated, {}, $themeStore.language),
