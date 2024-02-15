@@ -51,7 +51,9 @@ describe('history', () => {
     const update = encodeStateAsUpdate(ydoc)
 
     addVersion(ydoc, version, update)
-    expect(() => { addVersion(ydoc, version, update) }).toThrow()
+    expect(() => {
+      addVersion(ydoc, version, update)
+    }).toThrow()
 
     const history = ydoc.getArray(HISTORY)
     const updates = ydoc.getMap(UPDATES)

@@ -13,7 +13,12 @@
 // limitations under the License.
 //
 
-import { CollaborativeDoc, formatCollaborativeDoc, formatCollaborativeDocVersion, parseCollaborativeDoc } from '../collaboration'
+import {
+  CollaborativeDoc,
+  formatCollaborativeDoc,
+  formatCollaborativeDocVersion,
+  parseCollaborativeDoc
+} from '../collaboration'
 
 describe('collaborative-doc', () => {
   describe('parseCollaborativeDoc', () => {
@@ -35,20 +40,24 @@ describe('collaborative-doc', () => {
 
   describe('formatCollaborativeDoc', () => {
     it('returns valid collaborative doc id', async () => {
-      expect(formatCollaborativeDoc({
-        documentId: 'minioDocumentId',
-        versionId: 'HEAD',
-        revisionId: '0'
-      })).toEqual('minioDocumentId:HEAD:0')
+      expect(
+        formatCollaborativeDoc({
+          documentId: 'minioDocumentId',
+          versionId: 'HEAD',
+          revisionId: '0'
+        })
+      ).toEqual('minioDocumentId:HEAD:0')
     })
   })
 
   describe('formatCollaborativeDocVersion', () => {
     it('returns valid collaborative doc id', async () => {
-      expect(formatCollaborativeDocVersion({
-        documentId: 'minioDocumentId',
-        versionId: 'versionId'
-      })).toEqual('minioDocumentId:versionId')
+      expect(
+        formatCollaborativeDocVersion({
+          documentId: 'minioDocumentId',
+          versionId: 'versionId'
+        })
+      ).toEqual('minioDocumentId:versionId')
     })
   })
 })

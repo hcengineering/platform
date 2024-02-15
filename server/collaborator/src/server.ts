@@ -13,7 +13,14 @@
 // limitations under the License.
 //
 
-import { YDocVersion, collaborativeHistoryDocId, createYdocSnapshot, isReadonlyDocVersion, yDocFromMinio, yDocToMinio } from '@hcengineering/collaboration'
+import {
+  YDocVersion,
+  collaborativeHistoryDocId,
+  createYdocSnapshot,
+  isReadonlyDocVersion,
+  yDocFromMinio,
+  yDocToMinio
+} from '@hcengineering/collaboration'
 import { CollaborativeDocVersionHead, MeasureContext, generateId } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { Token, decodeToken } from '@hcengineering/server-token'

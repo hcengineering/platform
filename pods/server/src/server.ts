@@ -244,7 +244,14 @@ export function start (
     stages.push(new ContentRetrievalStage(storageAdapter, workspace, fullText.newChild('content', {}), contentAdapter))
 
     // Obtain collaborative content
-    stages.push(new CollaborativeContentRetrievalStage(storageAdapter, workspace, fullText.newChild('collaborative', {}), contentAdapter))
+    stages.push(
+      new CollaborativeContentRetrievalStage(
+        storageAdapter,
+        workspace,
+        fullText.newChild('collaborative', {}),
+        contentAdapter
+      )
+    )
 
     // // Add any => english language translation
     // const retranslateStage = new LibRetranslateStage(fullText.newChild('retranslate', {}), workspace)

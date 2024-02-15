@@ -94,10 +94,7 @@ class CollaboratorClientImpl implements CollaboratorClient {
     const documentId = encodeURIComponent(collaborativeDocumentUri(workspace, collaborativeDoc))
     const field = encodeURIComponent(attribute)
 
-    const url = concatLink(
-      this.collaboratorUrl,
-      `/api/content/${documentId}/${field}`
-    )
+    const url = concatLink(this.collaboratorUrl, `/api/content/${documentId}/${field}`)
 
     const res = await fetch(url, {
       method: 'GET',
@@ -136,9 +133,7 @@ class CollaboratorClientImpl implements CollaboratorClient {
     params: CollaborativeDocSnapshotParams
   ): Promise<CollaborativeDoc> {
     const workspace = this.workspace.name
-    const encodedDocumentId = encodeURIComponent(
-      collaborativeDocumentUri(workspace, collaborativeDoc)
-    )
+    const encodedDocumentId = encodeURIComponent(collaborativeDocumentUri(workspace, collaborativeDoc))
 
     const url = concatLink(this.collaboratorUrl, `/api/document/${encodedDocumentId}/snapshot`)
 
@@ -161,7 +156,7 @@ class CollaboratorClientImpl implements CollaboratorClient {
       throw new Error('Failed to create snapshot')
     }
 
-    const result = await res.json() as YDocVersion
+    const result = (await res.json()) as YDocVersion
 
     // TODO we should probably return this from API
     const { documentId } = parseCollaborativeDoc(collaborativeDoc)

@@ -265,7 +265,14 @@ async function BacklinksCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> 
 
     const doc = TxProcessor.createDoc2Doc(ctx)
     const targetTx = guessBacklinkTx(control.hierarchy, tx as TxCUD<Doc>)
-    const txes: Tx[] = await getCreateBacklinksTxes(control, adapter, txFactory, doc, targetTx.objectId, targetTx.objectClass)
+    const txes: Tx[] = await getCreateBacklinksTxes(
+      control,
+      adapter,
+      txFactory,
+      doc,
+      targetTx.objectId,
+      targetTx.objectClass
+    )
 
     if (txes.length !== 0) {
       await control.apply(txes, true)
@@ -297,7 +304,14 @@ async function BacklinksUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> 
         const txFactory = new TxFactory(control.txFactory.account)
         const doc = TxProcessor.updateDoc2Doc(rawDoc, ctx)
         const targetTx = guessBacklinkTx(control.hierarchy, tx as TxCUD<Doc>)
-        const txes: Tx[] = await getUpdateBacklinksTxes(control, adapter, txFactory, doc, targetTx.objectId, targetTx.objectClass)
+        const txes: Tx[] = await getUpdateBacklinksTxes(
+          control,
+          adapter,
+          txFactory,
+          doc,
+          targetTx.objectId,
+          targetTx.objectClass
+        )
 
         if (txes.length !== 0) {
           await control.apply(txes, true)

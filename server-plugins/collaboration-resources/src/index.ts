@@ -22,10 +22,7 @@ import type { TriggerControl } from '@hcengineering/server-core'
 /**
  * @public
  */
-export async function OnDelete (
-  tx: Tx,
-  { hierarchy, storageFx, removedMap }: TriggerControl
-): Promise<Tx[]> {
+export async function OnDelete (tx: Tx, { hierarchy, storageFx, removedMap }: TriggerControl): Promise<Tx[]> {
   const rmTx = TxProcessor.extractTx(tx) as TxRemoveDoc<Doc>
 
   if (rmTx._class !== core.class.TxRemoveDoc) {

@@ -14,7 +14,12 @@
 //
 
 import { type Class, type CollaborativeDoc, type Doc, type Ref, collaborativeDoc } from '@hcengineering/core'
-import { type DocumentURI, collaborativeDocumentUri, mongodbDocumentUri, platformDocumentUri } from '@hcengineering/collaboration'
+import {
+  type DocumentURI,
+  collaborativeDocumentUri,
+  mongodbDocumentUri,
+  platformDocumentUri
+} from '@hcengineering/collaboration'
 import { type KeyedAttribute, getClient } from '@hcengineering/presentation'
 import { getCurrentLocation } from '@hcengineering/ui'
 

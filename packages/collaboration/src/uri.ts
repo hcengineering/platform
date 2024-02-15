@@ -22,10 +22,20 @@ export function collaborativeDocumentUri (workspaceUrl: string, docId: Collabora
   return `minio://${workspaceUrl}/${documentId}/${versionId}` as DocumentURI
 }
 
-export function platformDocumentUri (workspaceUrl: string, objectClass: Ref<Class<Doc>>, objectId: Ref<Doc>, objectAttr: string): DocumentURI {
+export function platformDocumentUri (
+  workspaceUrl: string,
+  objectClass: Ref<Class<Doc>>,
+  objectId: Ref<Doc>,
+  objectAttr: string
+): DocumentURI {
   return `platform://${workspaceUrl}/${objectClass}/${objectId}/${objectAttr}` as DocumentURI
 }
 
-export function mongodbDocumentUri (workspaceUrl: string, domain: Domain, docId: Ref<Doc>, objectAttr: string): DocumentURI {
+export function mongodbDocumentUri (
+  workspaceUrl: string,
+  domain: Domain,
+  docId: Ref<Doc>,
+  objectAttr: string
+): DocumentURI {
   return `mongodb://${workspaceUrl}/${domain}/${docId}/${objectAttr}` as DocumentURI
 }
