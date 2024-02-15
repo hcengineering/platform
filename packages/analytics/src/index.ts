@@ -22,22 +22,32 @@ export const Analytics = {
   },
 
   setUser (email: string): void {
-    providers.forEach((provider) => { provider.setUser(email) })
+    providers.forEach((provider) => {
+      provider.setUser(email)
+    })
   },
 
   setTag (key: string, value: string): void {
-    providers.forEach((provider) => { provider.setTag(key, value) })
+    providers.forEach((provider) => {
+      provider.setTag(key, value)
+    })
   },
 
   setWorkspace (ws: string): void {
-    providers.forEach((provider) => { provider.setWorkspace(ws) })
+    providers.forEach((provider) => {
+      provider.setWorkspace(ws)
+    })
   },
 
   handleEvent (event: string): void {
-    providers.forEach((provider) => { provider.handleEvent(event) })
+    providers.forEach((provider) => {
+      provider.handleEvent(event)
+    })
   },
 
   handleError (error: Error): void {
-    providers.forEach((provider) => { provider.handleError(error) })
+    providers.forEach((provider) => {
+      provider.handleError(error)
+    })
   }
 }
