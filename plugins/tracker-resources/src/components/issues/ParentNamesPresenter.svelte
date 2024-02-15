@@ -13,17 +13,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Issue, IssueParentInfo } from '@hcengineering/tracker'
-  import { showPanel } from '@hcengineering/ui'
-  import tracker from '../../plugin'
+  import { NavLink } from '@hcengineering/presentation'
+  import { trackerId, type Issue, type IssueParentInfo } from '@hcengineering/tracker'
+  import { getCurrentLocation, locationToUrl } from '@hcengineering/ui'
 
   export let value: Issue | undefined
 
   export let maxWidth = ''
 
-  function handleIssueEditorOpened (parent: IssueParentInfo) {
-    if (value === undefined) return
-    showPanel(tracker.component.EditIssue, parent.parentId, value._class, 'content')
+  function getHref (parentInfo: IssueParentInfo) {
+    const loc = getCurrentLocation()
+    loc.path[2] = trackerId
+    loc.path[3] = parentInfo.identifier
+    loc.path.length = 4
+    return `${window.location.origin}${locationToUrl(loc)}`
   }
 </script>
 
@@ -33,15 +36,11 @@
       {#each value.parents as parentInfo}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <span
-          class="parent-label overflow-label cursor-pointer"
-          title={parentInfo.parentTitle}
-          on:click={() => {
-            handleIssueEditorOpened(parentInfo)
-          }}
-        >
-          {parentInfo.parentTitle}
-        </span>
+        <NavLink href={getHref(parentInfo)}>
+          <span class="parent-label overflow-label cursor-pointer" title={parentInfo.parentTitle}>
+            {parentInfo.parentTitle}
+          </span>
+        </NavLink>
       {/each}
     </span>
   </div>
@@ -61,6 +60,7 @@
 
     .parent-label {
       flex-shrink: 5;
+      color: var(--theme-dark-color);
 
       &:hover {
         color: var(--theme-caption-color);
