@@ -203,9 +203,7 @@ export async function start (
     } else {
       await rpcCtx.with(request.method, {}, async (ctx) => {
         try {
-          const response: RpcResponse = await method(
-            ctx, context, request.payload, { hocuspocus, minio, transformer }
-          )
+          const response: RpcResponse = await method(ctx, context, request.payload, { hocuspocus, minio, transformer })
           res.status(200).send(response)
         } catch (err: any) {
           res.status(500).send({ error: err.message })

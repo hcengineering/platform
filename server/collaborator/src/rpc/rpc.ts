@@ -28,9 +28,7 @@ export interface RpcErrorResponse {
   error: string
 }
 
-export type RpcResponse =
-  | object
-  | RpcErrorResponse
+export type RpcResponse = object | RpcErrorResponse
 
 export type RpcMethod = (
   ctx: MeasureContext,

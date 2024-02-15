@@ -42,7 +42,10 @@ export interface CollaborativeDocSnapshotInfo {
 export interface CollaboratorClient {
   get: (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string) => Promise<Markup>
   update: (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string, value: Markup) => Promise<void>
-  snapshot: (collaborativeDoc: CollaborativeDoc, snapshotName: CollaborativeDocSnapshotParams) => Promise<CollaborativeDocSnapshotInfo>
+  snapshot: (
+    collaborativeDoc: CollaborativeDoc,
+    snapshotName: CollaborativeDocSnapshotParams
+  ) => Promise<CollaborativeDocSnapshotInfo>
 }
 
 /** @public */
@@ -94,10 +97,7 @@ class CollaboratorClientImpl implements CollaboratorClient {
     const documentId = collaborativeDocumentUri(workspace, collaborativeDoc(docId, attribute))
     const initialContentId = this.initialContentId(workspace, classId, docId, attribute)
 
-    const res = await this.rpc(
-      'getDocumentContent',
-      { documentId, initialContentId, field: attribute }
-    )
+    const res = await this.rpc('getDocumentContent', { documentId, initialContentId, field: attribute })
 
     return res.html ?? '<p></p>'
   }
@@ -107,10 +107,7 @@ class CollaboratorClientImpl implements CollaboratorClient {
     const documentId = collaborativeDocumentUri(workspace, collaborativeDoc(docId, attribute))
     const initialContentId = this.initialContentId(workspace, classId, docId, attribute)
 
-    await this.rpc(
-      'updateDocumentContent',
-      { documentId, initialContentId, field: attribute, html: value }
-    )
+    await this.rpc('updateDocumentContent', { documentId, initialContentId, field: attribute, html: value })
   }
 
   async snapshot (
@@ -120,10 +117,7 @@ class CollaboratorClientImpl implements CollaboratorClient {
     const workspace = this.workspace.name
     const documentId = collaborativeDocumentUri(workspace, collaborativeDoc)
 
-    const res = await this.rpc(
-      'takeSnapshot',
-      { documentId, collaborativeDoc, ...params }
-    ) as YDocVersion
+    const res = (await this.rpc('takeSnapshot', { documentId, collaborativeDoc, ...params })) as YDocVersion
 
     return {
       collaborativeDoc: toCollaborativeDocVersion(collaborativeDoc, res.versionId)

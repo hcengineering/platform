@@ -58,7 +58,10 @@ export async function updateMarkup (
 /**
  * @public
  */
-export async function takeSnapshot (collaborativeDoc: CollaborativeDoc, snapshotName: string): Promise<CollaborativeDoc> {
+export async function takeSnapshot (
+  collaborativeDoc: CollaborativeDoc,
+  snapshotName: string
+): Promise<CollaborativeDoc> {
   const client = getCollaboratorClient()
 
   const snapshot = await client.snapshot(collaborativeDoc, { snapshotName })
