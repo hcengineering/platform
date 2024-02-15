@@ -43,7 +43,7 @@
 
   const setValue = (val: number, date: Date | null, id: TEdits): Date => {
     if (date == null) date = new Date()
-    const value = (timeZone ? fromCurrentToTz(date, timeZone) : date)
+    const value = timeZone ? fromCurrentToTz(date, timeZone) : date
     switch (id) {
       case 'day':
         date = new Date(value.setDate(val))
@@ -81,7 +81,7 @@
   }
 
   const getValue = (date: Date, id: TEdits): number => {
-    const val = (timeZone ? fromCurrentToTz(date, timeZone) : date)
+    const val = timeZone ? fromCurrentToTz(date, timeZone) : date
     switch (id) {
       case 'day':
         return val.getDate()
