@@ -13,16 +13,13 @@
 // limitations under the License.
 //
 
-import { type Builder } from '@hcengineering/model'
+import { getDocumentContent } from './getDocumentContent'
+import { updateDocumentContent } from './updateDocumentContent'
+import { takeSnapshot } from './takeSnapshot'
+import { RpcMethod } from '../rpc'
 
-import core from '@hcengineering/core'
-import serverCollaboration from '@hcengineering/server-collaboration'
-import serverCore from '@hcengineering/server-core'
-
-export { serverCollaborationId } from '@hcengineering/server-collaboration'
-
-export function createModel (builder: Builder): void {
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverCollaboration.trigger.OnDelete
-  })
+export const methods: Record<string, RpcMethod> = {
+  getDocumentContent,
+  updateDocumentContent,
+  takeSnapshot
 }

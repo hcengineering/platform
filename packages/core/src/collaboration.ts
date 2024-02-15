@@ -68,3 +68,9 @@ export function formatCollaborativeDocVersion ({
 }: Omit<CollaborativeDocData, 'revisionId'>): CollaborativeDoc {
   return `${documentId}:${versionId}` as CollaborativeDoc
 }
+
+/** @public */
+export function toCollaborativeDocVersion (collaborativeDoc: CollaborativeDoc, versionId: string): CollaborativeDoc {
+  const { documentId } = parseCollaborativeDoc(collaborativeDoc)
+  return formatCollaborativeDocVersion({ documentId, versionId })
+}

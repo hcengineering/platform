@@ -1,6 +1,5 @@
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021, 2022 Hardcore Engineering Inc.
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -15,14 +14,14 @@
 //
 
 import type { CollaborativeDoc, Doc, Tx, TxRemoveDoc } from '@hcengineering/core'
-import core, { TxProcessor, parseCollaborativeDoc } from '@hcengineering/core'
-import { collaborativeHistoryDocId } from '@hcengineering/collaboration'
+import core, { TxProcessor } from '@hcengineering/core'
+import { removeCollaborativeDoc } from '@hcengineering/collaboration'
 import type { TriggerControl } from '@hcengineering/server-core'
 
 /**
  * @public
  */
-export async function OnDelete (tx: Tx, { hierarchy, storageFx, removedMap }: TriggerControl): Promise<Tx[]> {
+export async function OnDelete (tx: Tx, { hierarchy, storageFx, removedMap, ctx }: TriggerControl): Promise<Tx[]> {
   const rmTx = TxProcessor.extractTx(tx) as TxRemoveDoc<Doc>
 
   if (rmTx._class !== core.class.TxRemoveDoc) {
@@ -33,16 +32,14 @@ export async function OnDelete (tx: Tx, { hierarchy, storageFx, removedMap }: Tr
   const doc = removedMap.get(rmTx.objectId)
 
   // Ids of files to delete from storage
-  const toDelete: string[] = []
+  const toDelete: CollaborativeDoc[] = []
 
   const attributes = hierarchy.getAllAttributes(rmTx.objectClass)
   for (const attribute of attributes.values()) {
     if (hierarchy.isDerived(attribute.type._class, core.class.TypeCollaborativeDoc)) {
       const value = (doc as any)[attribute.name] as CollaborativeDoc
       if (value !== undefined) {
-        const { documentId } = parseCollaborativeDoc(value)
-        const historyDocumentId = collaborativeHistoryDocId(documentId)
-        toDelete.push(documentId, historyDocumentId)
+        toDelete.push(value)
       }
     }
   }
@@ -51,7 +48,7 @@ export async function OnDelete (tx: Tx, { hierarchy, storageFx, removedMap }: Tr
     // TODO This is not accurate way to delete collaborative document
     // Even though we are deleting it here, the document can be currently in use by someone else
     // and when editing session ends, the collborator service will recreate the document again
-    await adapter.remove(bucket, toDelete)
+    await removeCollaborativeDoc(adapter, bucket, toDelete, ctx)
   })
 
   return []

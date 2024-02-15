@@ -28,6 +28,7 @@ import { Doc as YDoc } from 'yjs'
 
 import { restoreYdocSnapshot } from '../history/snapshot'
 import { yDocFromMinio, yDocToMinio } from './minio'
+import { yDocCopy } from './ydoc'
 
 /** @public */
 export function collaborativeHistoryDocId (id: string): string {
@@ -56,21 +57,23 @@ export async function loadCollaborativeDocVersion (
 ): Promise<YDoc | undefined> {
   const historyDocumentId = collaborativeHistoryDocId(documentId)
 
-  const yContent = await ctx.with('yDocFromMinio', { type: 'content' }, async () => {
-    return await yDocFromMinio(minio, workspace, documentId, new YDoc({ gc: false }))
+  return await ctx.with('loadCollaborativeDoc', { type: 'content' }, async (ctx) => {
+    const yContent = await ctx.with('yDocFromMinio', { type: 'content' }, async () => {
+      return await yDocFromMinio(minio, workspace, documentId, new YDoc({ gc: false }))
+    })
+
+    if (versionId === 'HEAD') {
+      return yContent
+    } else {
+      const yHistory = await ctx.with('yDocFromMinio', { type: 'history' }, async () => {
+        return await yDocFromMinio(minio, workspace, historyDocumentId, new YDoc({ gc: false }))
+      })
+
+      return await ctx.with('restoreYdocSnapshot', {}, () => {
+        return restoreYdocSnapshot(yContent, yHistory, versionId)
+      })
+    }
   })
-
-  if (versionId === 'HEAD') {
-    return yContent
-  } else {
-    const yHistory = await ctx.with('yDocFromMinio', { type: 'history' }, async () => {
-      return await yDocFromMinio(minio, workspace, historyDocumentId, new YDoc({ gc: false }))
-    })
-
-    return await ctx.with('restoreYdocSnapshot', {}, () => {
-      return restoreYdocSnapshot(yContent, yHistory, versionId)
-    })
-  }
 }
 
 /** @public */
@@ -94,13 +97,75 @@ export async function saveCollaborativeDocVersion (
   ydoc: YDoc,
   ctx: MeasureContext
 ): Promise<void> {
-  if (versionId === 'HEAD') {
-    await ctx.with('yDocToMinio', { type: 'content' }, async () => {
-      await yDocToMinio(minio, workspace, documentId, ydoc)
-    })
-  } else {
-    console.warn('Cannot save non HEAD document version')
+  await ctx.with('saveCollaborativeDoc', {}, async (ctx) => {
+    if (versionId === 'HEAD') {
+      await ctx.with('yDocToMinio', {}, async () => {
+        await yDocToMinio(minio, workspace, documentId, ydoc)
+      })
+    } else {
+      console.warn('Cannot save non HEAD document version', documentId, versionId)
+    }
+  })
+}
+
+/** @public */
+export async function removeCollaborativeDoc (
+  minio: MinioService,
+  workspace: WorkspaceId,
+  collaborativeDocs: CollaborativeDoc[],
+  ctx: MeasureContext
+): Promise<void> {
+  await ctx.with('removeollaborativeDoc', {}, async (ctx) => {
+    const toRemove: string[] = []
+    for (const collaborativeDoc of collaborativeDocs) {
+      const { documentId, versionId } = parseCollaborativeDoc(collaborativeDoc)
+      if (versionId === CollaborativeDocVersionHead) {
+        toRemove.push(documentId, collaborativeHistoryDocId(documentId))
+      } else {
+        console.warn('Cannot remove non HEAD document version', documentId, versionId)
+      }
+    }
+    if (toRemove.length > 0) {
+      await ctx.with('remove', {}, async () => {
+        await minio.remove(workspace, toRemove)
+      })
+    }
+  })
+}
+
+/** @public */
+export async function copyCollaborativeDoc (
+  minio: MinioService,
+  workspace: WorkspaceId,
+  source: CollaborativeDoc,
+  target: CollaborativeDoc,
+  ctx: MeasureContext
+): Promise<YDoc | undefined> {
+  const { documentId: sourceDocumentId, versionId: sourceVersionId } = parseCollaborativeDoc(source)
+  const { documentId: targetDocumentId, versionId: targetVersionId } = parseCollaborativeDoc(target)
+
+  if (sourceDocumentId === targetDocumentId) {
+    // no need to copy into itself
+    return
   }
+
+  await ctx.with('copyCollaborativeDoc', {}, async (ctx) => {
+    const ySource = await ctx.with('loadCollaborativeDocVersion', {}, async (ctx) => {
+      return await loadCollaborativeDocVersion(minio, workspace, sourceDocumentId, sourceVersionId, ctx)
+    })
+
+    if (ySource === undefined) {
+      return
+    }
+
+    const yTarget = await ctx.with('yDocCopy', {}, () => {
+      return yDocCopy(ySource)
+    })
+
+    await ctx.with('saveCollaborativeDocVersion', {}, async (ctx) => {
+      await saveCollaborativeDocVersion(minio, workspace, targetDocumentId, targetVersionId, yTarget, ctx)
+    })
+  })
 }
 
 /** @public */

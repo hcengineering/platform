@@ -23,25 +23,26 @@ import {
   WorkspaceId,
   collaborativeDoc,
   concatLink,
-  formatCollaborativeDocVersion,
-  getCurrentAccount,
-  parseCollaborativeDoc
+  toCollaborativeDocVersion
 } from '@hcengineering/core'
 import { YDocVersion } from './history/history'
 import { collaborativeDocumentUri, mongodbDocumentUri } from './uri'
 
 /** @public */
 export interface CollaborativeDocSnapshotParams {
-  name: string
+  snapshotName: string
+}
+
+/** @public */
+export interface CollaborativeDocSnapshotInfo {
+  collaborativeDoc: CollaborativeDoc
 }
 
 /** @public */
 export interface CollaboratorClient {
   get: (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string) => Promise<Markup>
   update: (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string, value: Markup) => Promise<void>
-  snapshot: (collaborativeDoc: CollaborativeDoc, params: CollaborativeDocSnapshotParams) => Promise<CollaborativeDoc>
-
-  getDoc: (collaborativeDoc: CollaborativeDoc, attribute: string) => Promise<Markup>
+  snapshot: (collaborativeDoc: CollaborativeDoc, snapshotName: CollaborativeDocSnapshotParams) => Promise<CollaborativeDocSnapshotInfo>
 }
 
 /** @public */
@@ -67,81 +68,8 @@ class CollaboratorClientImpl implements CollaboratorClient {
     return mongodbDocumentUri(workspace, domain, docId, attribute)
   }
 
-  async get (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string): Promise<Markup> {
-    const workspace = this.workspace.name
-    const documentId = encodeURIComponent(collaborativeDocumentUri(workspace, collaborativeDoc(docId, attribute)))
-    const initialContentId = encodeURIComponent(this.initialContentId(workspace, classId, docId, attribute))
-    attribute = encodeURIComponent(attribute)
-
-    const url = concatLink(
-      this.collaboratorUrl,
-      `/api/content/${documentId}/${attribute}?initialContentId=${initialContentId}`
-    )
-
-    const res = await fetch(url, {
-      method: 'GET',
-      headers: {
-        Authorization: 'Bearer ' + this.token,
-        Accept: 'application/json'
-      }
-    })
-    const json = await res.json()
-    return json.html ?? '<p></p>'
-  }
-
-  async getDoc (collaborativeDoc: CollaborativeDoc, attribute: string): Promise<Markup> {
-    const workspace = this.workspace.name
-    const documentId = encodeURIComponent(collaborativeDocumentUri(workspace, collaborativeDoc))
-    const field = encodeURIComponent(attribute)
-
-    const url = concatLink(this.collaboratorUrl, `/api/content/${documentId}/${field}`)
-
-    const res = await fetch(url, {
-      method: 'GET',
-      headers: {
-        Authorization: 'Bearer ' + this.token,
-        Accept: 'application/json'
-      }
-    })
-    const json = await res.json()
-    return json.html ?? '<p></p>'
-  }
-
-  async update (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string, value: Markup): Promise<void> {
-    const workspace = this.workspace.name
-    const documentId = encodeURIComponent(collaborativeDocumentUri(workspace, collaborativeDoc(docId, attribute)))
-    const initialContentId = encodeURIComponent(this.initialContentId(workspace, classId, docId, attribute))
-    attribute = encodeURIComponent(attribute)
-
-    const url = concatLink(
-      this.collaboratorUrl,
-      `/api/content/${documentId}/${attribute}?initialContentId=${initialContentId}`
-    )
-
-    await fetch(url, {
-      method: 'PUT',
-      headers: {
-        Authorization: 'Bearer ' + this.token,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ html: value })
-    })
-  }
-
-  async snapshot (
-    collaborativeDoc: CollaborativeDoc,
-    params: CollaborativeDocSnapshotParams
-  ): Promise<CollaborativeDoc> {
-    const workspace = this.workspace.name
-    const encodedDocumentId = encodeURIComponent(collaborativeDocumentUri(workspace, collaborativeDoc))
-
-    const url = concatLink(this.collaboratorUrl, `/api/document/${encodedDocumentId}/snapshot`)
-
-    const payload = {
-      ...params,
-      createdBy: getCurrentAccount()._id,
-      createdOn: Date.now()
-    }
+  private async rpc (method: string, payload: any): Promise<any> {
+    const url = concatLink(this.collaboratorUrl, '/rpc')
 
     const res = await fetch(url, {
       method: 'POST',
@@ -149,18 +77,56 @@ class CollaboratorClientImpl implements CollaboratorClient {
         Authorization: 'Bearer ' + this.token,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({ method, payload })
     })
 
-    if (res.status !== 200) {
-      throw new Error('Failed to create snapshot')
+    const result = await res.json()
+
+    if (result.error != null) {
+      throw new Error(result.error)
     }
 
-    const result = (await res.json()) as YDocVersion
+    return await res.json()
+  }
 
-    // TODO we should probably return this from API
-    const { documentId } = parseCollaborativeDoc(collaborativeDoc)
+  async get (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string): Promise<Markup> {
+    const workspace = this.workspace.name
+    const documentId = collaborativeDocumentUri(workspace, collaborativeDoc(docId, attribute))
+    const initialContentId = this.initialContentId(workspace, classId, docId, attribute)
 
-    return formatCollaborativeDocVersion({ documentId, versionId: result.versionId })
+    const res = await this.rpc(
+      'getDocumentContent',
+      { documentId, initialContentId, field: attribute }
+    )
+
+    return res.html ?? '<p></p>'
+  }
+
+  async update (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string, value: Markup): Promise<void> {
+    const workspace = this.workspace.name
+    const documentId = collaborativeDocumentUri(workspace, collaborativeDoc(docId, attribute))
+    const initialContentId = this.initialContentId(workspace, classId, docId, attribute)
+
+    await this.rpc(
+      'updateDocumentContent',
+      { documentId, initialContentId, field: attribute, html: value }
+    )
+  }
+
+  async snapshot (
+    collaborativeDoc: CollaborativeDoc,
+    params: CollaborativeDocSnapshotParams
+  ): Promise<CollaborativeDocSnapshotInfo> {
+    const workspace = this.workspace.name
+    const documentId = collaborativeDocumentUri(workspace, collaborativeDoc)
+
+    const res = await this.rpc(
+      'takeSnapshot',
+      { documentId, collaborativeDoc, ...params }
+    ) as YDocVersion
+
+    return {
+      collaborativeDoc: toCollaborativeDocVersion(collaborativeDoc, res.versionId)
+    }
   }
 }

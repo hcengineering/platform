@@ -13,16 +13,5 @@
 // limitations under the License.
 //
 
-import { type Builder } from '@hcengineering/model'
-
-import core from '@hcengineering/core'
-import serverCollaboration from '@hcengineering/server-collaboration'
-import serverCore from '@hcengineering/server-core'
-
-export { serverCollaborationId } from '@hcengineering/server-collaboration'
-
-export function createModel (builder: Builder): void {
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverCollaboration.trigger.OnDelete
-  })
-}
+export * from './methods'
+export * from './rpc'

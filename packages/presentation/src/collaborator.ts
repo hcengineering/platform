@@ -14,7 +14,7 @@
 //
 
 import { type CollaboratorClient, getClient as getCollaborator } from '@hcengineering/collaboration'
-import { getWorkspaceId, type Class, type Doc, type Markup, type Ref } from '@hcengineering/core'
+import { getWorkspaceId, type Class, type CollaborativeDoc, type Doc, type Markup, type Ref } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import { getCurrentLocation } from '@hcengineering/ui'
 
@@ -53,4 +53,14 @@ export async function updateMarkup (
   const client = getCollaboratorClient()
 
   await client.update(classId, docId, attribute, value)
+}
+
+/**
+ * @public
+ */
+export async function takeSnapshot (collaborativeDoc: CollaborativeDoc, snapshotName: string): Promise<CollaborativeDoc> {
+  const client = getCollaboratorClient()
+
+  const snapshot = await client.snapshot(collaborativeDoc, { snapshotName })
+  return snapshot.collaborativeDoc
 }
