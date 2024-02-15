@@ -5,11 +5,13 @@
   "author": "Hardcore Engineering Inc.",
   "license": "EPL-2.0",
   "scripts": {
-    "build": "tsc",
-    "build:watch": "tsc",
-    "lint:fix": "eslint --fix src",
-    "lint": "eslint src",
-    "format": "format src"
+    "build": "compile",
+    "build:watch": "compile",
+    "format": "format src",
+    "test": "jest --passWithNoTests --silent",
+    "_phase:build": "compile",
+    "_phase:test": "jest --passWithNoTests --silent",
+    "_phase:format": "format src"
   },
   "template": "@hcengineering/model-package",
   "devDependencies": {
