@@ -3,7 +3,6 @@ import { generateId, PlatformSetting, PlatformURI } from '../utils'
 import { NavigationMenuPage } from '../model/recruiting/navigation-menu-page'
 import { TalentsPage } from '../model/recruiting/talents-page'
 import { TalentDetailsPage } from '../model/recruiting/talent-details-page'
-import { allure } from 'allure-playwright'
 import { TalentName } from '../model/recruiting/types'
 
 test.use({
@@ -12,7 +11,6 @@ test.use({
 
 test.describe('candidate/talents tests', () => {
   test.beforeEach(async ({ page }) => {
-    await allure.parentSuite('Recruiting tests')
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/recruit`))?.finished()
   })
 

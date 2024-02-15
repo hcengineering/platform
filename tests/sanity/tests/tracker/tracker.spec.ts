@@ -1,5 +1,4 @@
 import { expect, test } from '@playwright/test'
-import { allure } from 'allure-playwright'
 import { IssuesPage } from '../model/tracker/issues-page'
 import { PlatformSetting, fillSearch, generateId } from '../utils'
 import {
@@ -27,10 +26,6 @@ const panelStatusMap = new Map([
 ])
 
 test.describe('Tracker tests', () => {
-  test.beforeEach(async ({ page }) => {
-    await allure.parentSuite('Tracker tests')
-  })
-
   test('issues-status-display', async ({ page }) => {
     const locator = page.locator('.list-container')
     await navigate(page)

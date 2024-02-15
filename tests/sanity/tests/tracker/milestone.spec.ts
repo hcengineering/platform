@@ -1,6 +1,5 @@
 import { test } from '@playwright/test'
 import { generateId, PlatformSetting, PlatformURI } from '../utils'
-import { allure } from 'allure-playwright'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
 import { MilestonesPage } from '../model/tracker/milestones-page'
@@ -13,7 +12,6 @@ test.use({
 
 test.describe('Tracker milestone tests', () => {
   test.beforeEach(async ({ page }) => {
-    await allure.parentSuite('Tracker tests')
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 

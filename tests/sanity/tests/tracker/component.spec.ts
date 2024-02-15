@@ -1,7 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { navigate } from './tracker.utils'
 import { generateId, PlatformSetting, PlatformURI, fillSearch } from '../utils'
-import { allure } from 'allure-playwright'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
 import { ComponentsPage } from '../model/tracker/components-page'
@@ -14,7 +13,6 @@ test.use({
 
 test.describe('Tracker component tests', () => {
   test.beforeEach(async ({ page }) => {
-    await allure.parentSuite('Tracker tests')
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 

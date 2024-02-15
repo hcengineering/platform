@@ -3,7 +3,6 @@ import { generateId, PlatformSetting, PlatformURI } from '../utils'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { IssuesPage } from '../model/tracker/issues-page'
 import { NewIssue } from '../model/tracker/types'
-import { allure } from 'allure-playwright'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
 import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
 
@@ -13,7 +12,6 @@ test.use({
 
 test.describe('Tracker duplicate issue tests', () => {
   test.beforeEach(async ({ page }) => {
-    await allure.parentSuite('Tracker tests')
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 

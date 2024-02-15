@@ -3,7 +3,6 @@ import { generateId, PlatformSetting, PlatformURI } from './utils'
 import { LeftSideMenuPage } from './model/left-side-menu-page'
 import { ChunterPage } from './model/chunter-page'
 import { ChannelPage } from './model/channel-page'
-import { allure } from 'allure-playwright'
 
 test.use({
   storageState: PlatformSetting
@@ -11,7 +10,6 @@ test.use({
 
 test.describe('channel tests', () => {
   test.beforeEach(async ({ page }) => {
-    await allure.parentSuite('Channel tests')
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 

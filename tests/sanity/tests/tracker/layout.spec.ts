@@ -1,5 +1,4 @@
 import { Page, expect, test } from '@playwright/test'
-import { allure } from 'allure-playwright'
 import { IssuesPage } from '../model/tracker/issues-page'
 import { PlatformSetting, expectToContainsOrdered, fillSearch, generateId } from '../utils'
 import {
@@ -96,7 +95,6 @@ test.describe('tracker layout tests', () => {
   let issuesProps: IssueProps[] = []
 
   test.beforeEach(async ({ page }) => {
-    await allure.parentSuite('Tracker tests')
     test.setTimeout(60000)
     await navigate(page)
     if (issuesPropsP === undefined) {

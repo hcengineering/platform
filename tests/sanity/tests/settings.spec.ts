@@ -1,5 +1,4 @@
 import { expect, test } from '@playwright/test'
-import { allure } from 'allure-playwright'
 import { PlatformSetting, PlatformURI } from './utils'
 
 test.use({
@@ -7,7 +6,6 @@ test.use({
 })
 test.describe('contact tests', () => {
   test.beforeEach(async ({ page }) => {
-    await allure.parentSuite('Contact test')
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 

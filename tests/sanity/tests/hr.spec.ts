@@ -1,6 +1,5 @@
 import { Page, test } from '@playwright/test'
 import { PlatformSetting, PlatformURI } from './utils'
-import { allure } from 'allure-playwright'
 
 test.use({
   storageState: PlatformSetting
@@ -17,7 +16,6 @@ export async function createDepartment (page: Page, departmentName: string): Pro
 
 test.describe('hr tests', () => {
   test.beforeEach(async ({ page }) => {
-    await allure.parentSuite('HR test')
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
