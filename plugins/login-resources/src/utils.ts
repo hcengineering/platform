@@ -75,9 +75,7 @@ export async function doLogin (email: string, password: string): Promise<[Status
       Analytics.handleEvent('login')
       Analytics.setUser(email)
     } else {
-      const err = result.error as Status<any>
-      const label = await translate(err.code, err.params, 'en')
-      Analytics.handleError(new Error(`Login error: ${label}`))
+      await handleStatusError('Login error', result.error)
     }
     return [result.error ?? OK, result.result]
   } catch (err: any) {
@@ -125,9 +123,7 @@ export async function signUp (
       Analytics.handleEvent('signup')
       Analytics.setUser(email)
     } else {
-      const err = result.error as Status<any>
-      const label = await translate(err.code, err.params, 'en')
-      Analytics.handleError(new Error(`Sign up error: ${label}`))
+      await handleStatusError('Sign up error', result.error)
     }
     return [result.error ?? OK, result.result]
   } catch (err: any) {
@@ -182,9 +178,7 @@ export async function createWorkspace (
       Analytics.handleEvent('create workspace')
       Analytics.setTag('workspace', workspaceName)
     } else {
-      const err = result.error as Status<any>
-      const label = await translate(err.code, err.params, 'en')
-      Analytics.handleError(new Error(`Create workspace error: ${label}`))
+      await handleStatusError('Create workspace error', result.error)
     }
     return [result.error ?? OK, result.result]
   } catch (err: any) {
@@ -340,9 +334,7 @@ export async function selectWorkspace (workspace: string): Promise<[Status, Work
       Analytics.handleEvent('Select workspace')
       Analytics.setTag('workspace', workspace)
     } else {
-      const err = result.error as Status<any>
-      const label = await translate(err.code, err.params, 'en')
-      Analytics.handleError(new Error(`Select workspace error: ${label}`))
+      await handleStatusError('Select workspace error', result.error)
     }
     return [result.error ?? OK, result.result]
   } catch (err: any) {
@@ -505,9 +497,7 @@ export async function join (
       Analytics.handleEvent('Join')
       Analytics.setUser(email)
     } else {
-      const err = result.error as Status<any>
-      const label = await translate(err.code, err.params, 'en')
-      Analytics.handleError(new Error(`Join error: ${label}`))
+      await handleStatusError('Join error', result.error)
     }
     return [result.error ?? OK, result.result]
   } catch (err: any) {
@@ -555,9 +545,7 @@ export async function signUpJoin (
       Analytics.handleEvent('Signup Join')
       Analytics.setUser(email)
     } else {
-      const err = result.error as Status<any>
-      const label = await translate(err.code, err.params, 'en')
-      Analytics.handleError(new Error(`Sign up join error: ${label}`))
+      await handleStatusError('Sign up join error', result.error)
     }
     return [result.error ?? OK, result.result]
   } catch (err: any) {
@@ -694,9 +682,7 @@ export async function requestPassword (email: string): Promise<Status> {
     })
     const result = await response.json()
     if (result.error != null) {
-      const err = result.error as Status<any>
-      const label = await translate(err.code, err.params, 'en')
-      Analytics.handleError(new Error(`Request password error: ${label}`))
+      await handleStatusError('Request password error', result.error)
     }
     return result.error ?? OK
   } catch (err: any) {
@@ -734,9 +720,7 @@ export async function confirm (email: string): Promise<[Status, LoginInfo | unde
     })
     const result = await response.json()
     if (result.error != null) {
-      const err = result.error as Status<any>
-      const label = await translate(err.code, err.params, 'en')
-      Analytics.handleError(new Error(`Confirm email error: ${label}`))
+      await handleStatusError('Confirm email error', result.error)
     } else {
       Analytics.handleEvent('Confirm email')
     }
@@ -770,9 +754,7 @@ export async function restorePassword (token: string, password: string): Promise
     })
     const result = await response.json()
     if (result.error != null) {
-      const err = result.error as Status<any>
-      const label = await translate(err.code, err.params, 'en')
-      Analytics.handleError(new Error(`Restore password error: ${label}`))
+      await handleStatusError('Restore password error', result.error)
     } else {
       Analytics.handleEvent('Restore password')
     }
@@ -781,4 +763,9 @@ export async function restorePassword (token: string, password: string): Promise
     Analytics.handleError(err)
     return [unknownError(err), undefined]
   }
+}
+
+async function handleStatusError (message: string, err: Status): Promise<void> {
+  const label = await translate(err.code, err.params, 'en')
+  Analytics.handleError(new Error(`${message}: ${label}`))
 }

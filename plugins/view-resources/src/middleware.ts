@@ -283,7 +283,7 @@ export class AnalyticsMiddleware extends BasePresentationMiddleware implements P
       const label = await translate(_class.label, {}, 'en')
       if (cud._class === core.class.TxCreateDoc) {
         Analytics.handleEvent(`Create ${label}`)
-      } else if (cud._class === core.class.TxUpdateDoc) {
+      } else if (cud._class === core.class.TxUpdateDoc || cud._class === core.class.TxMixin) {
         Analytics.handleEvent(`Update ${label}`)
       } else if (cud._class === core.class.TxRemoveDoc) {
         Analytics.handleEvent(`Delete ${label}`)
