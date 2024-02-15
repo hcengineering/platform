@@ -35,7 +35,7 @@ export const CollaborativeDocVersionHead = 'HEAD'
 /** @public */
 export function collaborativeDoc<T extends Doc> (
   docId: Ref<T>,
-  attribute: string | undefined
+  attribute?: string | undefined
 ): CollaborativeDoc {
   const minioDocumentId = attribute !== undefined ? `${docId}%${attribute}` : `${docId}`
 
