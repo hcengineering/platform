@@ -16,6 +16,7 @@
 import { Timestamp } from '@hcengineering/core'
 import { fromByteArray, toByteArray } from 'base64-js'
 import { Doc as YDoc } from 'yjs'
+import { YArray, YMap } from 'yjs/dist/src/internals'
 
 /**
  * This module provides utils for document version storage based on YDoc
@@ -40,22 +41,30 @@ import { Doc as YDoc } from 'yjs'
  * }
  */
 
-const HISTORY = 'history'
-const UPDATES = 'updates'
-
 /** @public */
 export interface YDocVersion {
   versionId: string
   name: string
 
-  createdBy: string // author email obtained from token
+  createdBy: string
   createdOn: Timestamp
+}
+
+const HISTORY = 'history'
+const UPDATES = 'updates'
+
+function getHistory (ydoc: YDoc): YArray<YDocVersion> {
+  return ydoc.getArray<YDocVersion>(HISTORY)
+}
+
+function getUpdates (ydoc: YDoc): YMap<string> {
+  return ydoc.getMap<string>(UPDATES)
 }
 
 /** @public */
 export function addVersion (ydoc: YDoc, version: YDocVersion, update: Uint8Array): void {
-  const history = ydoc.getArray<YDocVersion>(HISTORY)
-  const updates = ydoc.getMap<string>(UPDATES)
+  const history = getHistory(ydoc)
+  const updates = getUpdates(ydoc)
 
   const { versionId } = version
 
@@ -71,27 +80,26 @@ export function addVersion (ydoc: YDoc, version: YDocVersion, update: Uint8Array
 
 /** @public */
 export function getVersion (ydoc: YDoc, versionId: string): YDocVersion | undefined {
-  const history = ydoc.getArray<YDocVersion>(HISTORY)
+  const history = getHistory(ydoc)
   return history.toArray().find((p) => p.versionId === versionId)
 }
 
 /** @public */
 export function listVersions (ydoc: YDoc): YDocVersion[] {
-  const history = ydoc.getArray<YDocVersion>(HISTORY)
-  return history.toArray()
+  return getHistory(ydoc).toArray()
 }
 
 /** @public */
 export function getVersionData (ydoc: YDoc, versionId: string): Uint8Array | undefined {
-  const updates = ydoc.getMap<string>(UPDATES)
+  const updates = getUpdates(ydoc)
   const update = updates.get(versionId)
   return update !== undefined ? toByteArray(update) : undefined
 }
 
 /** @public */
 export function deleteVersion (ydoc: YDoc, versionId: string): void {
-  const history = ydoc.getArray<YDocVersion>(HISTORY)
-  const updates = ydoc.getMap<string>(UPDATES)
+  const history = getHistory(ydoc)
+  const updates = getUpdates(ydoc)
 
   ydoc.transact((tr) => {
     const index = history.toArray().findIndex((p) => p.versionId === versionId)

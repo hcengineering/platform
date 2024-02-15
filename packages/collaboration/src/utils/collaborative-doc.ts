@@ -26,9 +26,9 @@ import {
 import { MinioService } from '@hcengineering/minio'
 import { Doc as YDoc } from 'yjs'
 
+import { yDocBranch } from '../history/branch'
 import { restoreYdocSnapshot } from '../history/snapshot'
 import { yDocFromMinio, yDocToMinio } from './minio'
-import { yDocCopy } from './ydoc'
 
 /** @public */
 export function collaborativeHistoryDocId (id: string): string {
@@ -158,8 +158,8 @@ export async function copyCollaborativeDoc (
       return
     }
 
-    const yTarget = await ctx.with('yDocCopy', {}, () => {
-      return yDocCopy(ySource)
+    const yTarget = await ctx.with('yDocBranch', {}, () => {
+      return yDocBranch(ySource)
     })
 
     await ctx.with('saveCollaborativeDocVersion', {}, async (ctx) => {
