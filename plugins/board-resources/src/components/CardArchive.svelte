@@ -42,7 +42,7 @@
         on:click={(e) => {
           const unarchiveAction = actions.find((a) => a._id === board.action.SendToBoard)
           if (unarchiveAction) {
-            invokeAction(card, e, unarchiveAction.action, unarchiveAction.actionProps)
+            invokeAction(card, e, unarchiveAction)
           }
         }}
       />
@@ -51,7 +51,7 @@
         on:click={async (e) => {
           const deleteAction = actions.find((a) => a._id === board.action.Delete)
           if (deleteAction) {
-            invokeAction(card, e, deleteAction.action, deleteAction.actionProps)
+            invokeAction(card, e, deleteAction)
           }
         }}
       />

@@ -35,6 +35,7 @@
     "svelte-eslint-parser": "^0.33.1"
   },
   "dependencies": {
+    "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/activity": "^0.6.0",
     "@hcengineering/attachment": "^0.6.9",
     "@hcengineering/attachment-resources": "^0.6.0",

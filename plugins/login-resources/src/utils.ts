@@ -13,24 +13,26 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import login, { type LoginInfo, type Workspace, type WorkspaceLoginInfo } from '@hcengineering/login'
 import {
   OK,
   PlatformError,
-  type Status,
   getMetadata,
   setMetadata,
   unknownError,
-  unknownStatus
+  unknownStatus,
+  type Status,
+  translate
 } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
 import {
-  type Location,
   fetchMetadataLocalStorage,
   getCurrentLocation,
+  locationStorageKeyId,
   navigate,
   setMetadataLocalStorage,
-  locationStorageKeyId
+  type Location
 } from '@hcengineering/ui'
 import { workbenchId } from '@hcengineering/workbench'
 
@@ -69,9 +71,16 @@ export async function doLogin (email: string, password: string): Promise<[Status
     })
     const result = await response.json()
     console.log('login result', result)
+    if (result.error == null) {
+      Analytics.handleEvent('login')
+      Analytics.setUser(email)
+    } else {
+      await handleStatusError('Login error', result.error)
+    }
     return [result.error ?? OK, result.result]
-  } catch (err) {
+  } catch (err: any) {
     console.log('login error', err)
+    Analytics.handleError(err)
     return [unknownError(err), undefined]
   }
 }
@@ -110,8 +119,15 @@ export async function signUp (
       body: JSON.stringify(request)
     })
     const result = await response.json()
+    if (result.error == null) {
+      Analytics.handleEvent('signup')
+      Analytics.setUser(email)
+    } else {
+      await handleStatusError('Sign up error', result.error)
+    }
     return [result.error ?? OK, result.result]
-  } catch (err) {
+  } catch (err: any) {
+    Analytics.handleError(err)
     return [unknownError(err), undefined]
   }
 }
@@ -158,8 +174,15 @@ export async function createWorkspace (
       body: JSON.stringify(request)
     })
     const result = await response.json()
+    if (result.error == null) {
+      Analytics.handleEvent('create workspace')
+      Analytics.setTag('workspace', workspaceName)
+    } else {
+      await handleStatusError('Create workspace error', result.error)
+    }
     return [result.error ?? OK, result.result]
-  } catch (err) {
+  } catch (err: any) {
+    Analytics.handleError(err)
     return [unknownError(err), undefined]
   }
 }
@@ -262,7 +285,9 @@ export async function getAccount (doNavigate: boolean = true, token?: string): P
       throw new PlatformError(result.error)
     }
     return result.result
-  } catch (err) {}
+  } catch (err: any) {
+    Analytics.handleError(err)
+  }
 }
 
 export async function selectWorkspace (workspace: string): Promise<[Status, WorkspaceLoginInfo | undefined]> {
@@ -305,8 +330,15 @@ export async function selectWorkspace (workspace: string): Promise<[Status, Work
       body: JSON.stringify(request)
     })
     const result = await response.json()
+    if (result.error == null) {
+      Analytics.handleEvent('Select workspace')
+      Analytics.setTag('workspace', workspace)
+    } else {
+      await handleStatusError('Select workspace error', result.error)
+    }
     return [result.error ?? OK, result.result]
-  } catch (err) {
+  } catch (err: any) {
+    Analytics.handleError(err)
     return [unknownError(err), undefined]
   }
 }
@@ -387,7 +419,8 @@ export async function checkJoined (inviteId: string): Promise<[Status, Workspace
     })
     const result = await response.json()
     return [result.error ?? OK, result.result]
-  } catch (err) {
+  } catch (err: any) {
+    Analytics.handleError(err)
     return [unknownError(err), undefined]
   }
 }
@@ -460,8 +493,15 @@ export async function join (
       body: JSON.stringify(request)
     })
     const result = await response.json()
+    if (result.error == null) {
+      Analytics.handleEvent('Join')
+      Analytics.setUser(email)
+    } else {
+      await handleStatusError('Join error', result.error)
+    }
     return [result.error ?? OK, result.result]
-  } catch (err) {
+  } catch (err: any) {
+    Analytics.handleError(err)
     return [unknownError(err), undefined]
   }
 }
@@ -501,8 +541,15 @@ export async function signUpJoin (
       body: JSON.stringify(request)
     })
     const result = await response.json()
+    if (result.error == null) {
+      Analytics.handleEvent('Signup Join')
+      Analytics.setUser(email)
+    } else {
+      await handleStatusError('Sign up join error', result.error)
+    }
     return [result.error ?? OK, result.result]
-  } catch (err) {
+  } catch (err: any) {
+    Analytics.handleError(err)
     return [unknownError(err), undefined]
   }
 }
@@ -538,7 +585,9 @@ export async function changePassword (oldPassword: string, password: string): Pr
   })
   const resp = await response.json()
   if (resp.error !== undefined) {
-    throw new PlatformError(resp.error)
+    const err = new PlatformError(resp.error)
+    Analytics.handleError(err)
+    throw err
   }
 }
 
@@ -632,8 +681,12 @@ export async function requestPassword (email: string): Promise<Status> {
       body: JSON.stringify(request)
     })
     const result = await response.json()
+    if (result.error != null) {
+      await handleStatusError('Request password error', result.error)
+    }
     return result.error ?? OK
-  } catch (err) {
+  } catch (err: any) {
+    Analytics.handleError(err)
     return unknownError(err)
   }
 }
@@ -666,8 +719,14 @@ export async function confirm (email: string): Promise<[Status, LoginInfo | unde
       body: JSON.stringify(request)
     })
     const result = await response.json()
+    if (result.error != null) {
+      await handleStatusError('Confirm email error', result.error)
+    } else {
+      Analytics.handleEvent('Confirm email')
+    }
     return [result.error ?? OK, result.result]
-  } catch (err) {
+  } catch (err: any) {
+    Analytics.handleError(err)
     return [unknownError(err), undefined]
   }
 }
@@ -694,8 +753,19 @@ export async function restorePassword (token: string, password: string): Promise
       body: JSON.stringify(request)
     })
     const result = await response.json()
+    if (result.error != null) {
+      await handleStatusError('Restore password error', result.error)
+    } else {
+      Analytics.handleEvent('Restore password')
+    }
     return [result.error ?? OK, result.result]
-  } catch (err) {
+  } catch (err: any) {
+    Analytics.handleError(err)
     return [unknownError(err), undefined]
   }
+}
+
+async function handleStatusError (message: string, err: Status): Promise<void> {
+  const label = await translate(err.code, err.params, 'en')
+  Analytics.handleError(new Error(`${message}: ${label}`))
 }

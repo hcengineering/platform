@@ -27,9 +27,9 @@
 </script>
 
 <script lang="ts">
-  import contact, { AvatarProvider, AvatarType, getFirstName, getLastName } from '@hcengineering/contact'
+  import contact, { AvatarProvider, AvatarType, getFirstName, getLastName, getName } from '@hcengineering/contact'
   import { Client, Ref } from '@hcengineering/core'
-  import { Asset, getResource } from '@hcengineering/platform'
+  import { Asset, getMetadata, getResource } from '@hcengineering/platform'
   import { getBlobURL, getClient } from '@hcengineering/presentation'
   import {
     AnySvelteComponent,
@@ -54,10 +54,17 @@
   let avatarProvider: AvatarProvider | undefined
   let color: ColorDefinition | undefined = undefined
 
-  $: fname = getFirstName(name ?? '')
-  $: lname = getLastName(name ?? '')
-  $: displayName =
-    name != null ? (lname.length > 1 ? lname.trim()[0] : lname) + (fname.length > 1 ? fname.trim()[0] : fname) : ''
+  $: displayName = getDisplayName(name)
+
+  function getDisplayName (name: string | null | undefined): string {
+    if (name == null) {
+      return ''
+    }
+    const lastFirst = getMetadata(contact.metadata.LastNameFirst) === true
+    const fname = getFirstName(name ?? '').trim()[0]
+    const lname = getLastName(name ?? '').trim()[0]
+    return lastFirst ? lname + ' ' + fname : fname + ' ' + lname
+  }
 
   async function update (size: IconSize, avatar?: string | null, direct?: Blob, name?: string | null) {
     if (direct !== undefined) {

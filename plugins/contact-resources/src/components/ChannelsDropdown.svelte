@@ -19,7 +19,7 @@
   import { AttachedData, Doc, Ref, toIdMap } from '@hcengineering/core'
   import notification, { DocNotifyContext, InboxNotification } from '@hcengineering/notification'
   import { Asset, IntlString, getResource } from '@hcengineering/platform'
-  import presentation from '@hcengineering/presentation'
+  import presentation, { getClient } from '@hcengineering/presentation'
   import {
     Action,
     AnyComponent,
@@ -32,7 +32,7 @@
     getFocusManager,
     showPopup
   } from '@hcengineering/ui'
-  import { ViewAction } from '@hcengineering/view'
+  import view, { Action as ViewAction } from '@hcengineering/view'
   import { invokeAction } from '@hcengineering/view-resources'
   import { createEventDispatcher, tick } from 'svelte'
   import { readable, Readable, Writable, writable } from 'svelte/store'
@@ -66,7 +66,7 @@
     icon: Asset
     value: string
     presenter?: AnyComponent
-    action?: ViewAction
+    action?: Ref<ViewAction>
     placeholder: IntlString
     channel: AttachedData<Channel> | Channel
     provider: Ref<ChannelProvider>
@@ -211,6 +211,8 @@
     dispatch('remove', removed.channel)
   }
 
+  const client = getClient()
+
   const editChannel = (el: HTMLElement, n: number, item: Item): void => {
     if (opened !== n) {
       opened = n
@@ -230,7 +232,8 @@
           if (result === 'open') {
             if (item.action) {
               const doc = item.channel as Channel
-              invokeAction(doc, result, item.action)
+              const action = client.getModel().findAllSync(view.class.Action, { _id: item.action })[0]
+              invokeAction(doc, result, action)
             } else {
               dispatch('open', item)
             }
@@ -270,7 +273,8 @@
       closeTooltip()
       if (item.action) {
         const doc = item.channel as Channel
-        invokeAction(doc, result, item.action)
+        const action = client.getModel().findAllSync(view.class.Action, { _id: item.action })[0]
+        invokeAction(doc, result, action)
       } else {
         dispatch('open', item)
       }

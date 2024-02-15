@@ -51,6 +51,7 @@
     "@hcengineering/presentation": "^0.6.2",
     "@hcengineering/setting": "^0.6.11",
     "@hcengineering/text-editor": "^0.6.0",
+    "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/query": "^0.6.8",
     "fast-equals": "^2.0.3"
   }

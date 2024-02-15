@@ -1,20 +1,14 @@
 {
-  "name": "@hcengineering/client-resources",
-  "version": "0.6.23",
+  "name": "@hcengineering/analytics",
+  "version": "0.6.0",
   "main": "lib/index.js",
-  "typings": "lib/index.d.ts",
-  "files": [
-    "lib/**/*",
-    "src/**/*",
-    "tsconfig.json"
-  ],
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
   "scripts": {
     "build": "compile",
     "build:watch": "compile",
-    "format": "format src",
     "test": "jest --passWithNoTests --silent",
+    "format": "format src",
     "_phase:build": "compile",
     "_phase:test": "jest --passWithNoTests --silent",
     "_phase:format": "format src"
@@ -26,6 +20,7 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-n": "^15.4.0",
     "eslint": "^8.54.0",
+    "simplytyped": "^3.3.0",
     "@typescript-eslint/parser": "^6.11.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
     "prettier": "^3.1.0",
@@ -34,13 +29,6 @@
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5",
     "prettier-plugin-svelte": "^3.1.0"
-  },
-  "dependencies": {
-    "@hcengineering/analytics": "^0.6.0",
-    "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/core": "^0.6.28",
-    "@hcengineering/client": "^0.6.14",
-    "@hcengineering/rpc": "^0.6.1"
   },
   "repository": "https://github.com/hcengineering/anticrm",
   "publishConfig": {

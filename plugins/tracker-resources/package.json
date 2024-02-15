@@ -39,6 +39,7 @@
   "dependencies": {
     "@hcengineering/activity": "^0.6.0",
     "@hcengineering/activity-resources": "^0.6.1",
+    "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/attachment": "^0.6.9",
     "@hcengineering/attachment-resources": "^0.6.0",
     "@hcengineering/calendar": "^0.6.17",

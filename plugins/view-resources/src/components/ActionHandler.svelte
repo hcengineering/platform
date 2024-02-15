@@ -13,9 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Analytics } from '@hcengineering/analytics'
   import core, { Doc, Hierarchy, Ref, TxRemoveDoc } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
-  import { addTxListener, getClient, contextStore } from '@hcengineering/presentation'
+  import { addTxListener, contextStore, getClient } from '@hcengineering/presentation'
   import { AnyComponent, Component } from '@hcengineering/ui'
   import { Action, ViewContextType } from '@hcengineering/view'
   import { fly } from 'svelte/transition'
@@ -183,6 +184,7 @@
             sequences = []
             lastKey = undefined
             delayedAction = undefined
+            Analytics.handleEvent(a._id)
             await action(selectionDocs, evt, a.actionProps)
             return
           }
@@ -201,10 +203,12 @@
             lastKey = undefined
             sequences = []
             delayedAction = undefined
+            Analytics.handleEvent(a._id)
             await action(selectionDocs, evt, a.actionProps)
             return
           } else {
             delayedAction = async () => {
+              Analytics.handleEvent(a._id)
               await action(selectionDocs, evt, a.actionProps)
             }
             found = true

@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.9",
+    "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/core": "^0.6.28",
     "svelte": "^4.2.5",
     "@hcengineering/setting": "^0.6.11",

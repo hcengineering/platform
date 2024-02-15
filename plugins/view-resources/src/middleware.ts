@@ -1,22 +1,26 @@
+import { Analytics } from '@hcengineering/analytics'
 import core, {
-  type Doc,
-  type Ref,
+  Hierarchy,
+  type TxApplyIf,
+  type TxCUD,
+  TxProcessor,
+  generateId,
   type AnyAttribute,
+  type Attribute,
   type Class,
+  type Client,
+  type Doc,
   type DocumentQuery,
   type FindOptions,
-  type Client,
-  type Tx,
-  type TxResult,
   type FindResult,
-  type Attribute,
-  Hierarchy,
+  type Ref,
   type RefTo,
-  generateId
+  type Tx,
+  type TxResult
 } from '@hcengineering/core'
+import { getResource, translate } from '@hcengineering/platform'
 import { BasePresentationMiddleware, type PresentationMiddleware } from '@hcengineering/presentation'
 import view, { type AggregationManager } from '@hcengineering/view'
-import { getResource } from '@hcengineering/platform'
 
 /**
  * @public
@@ -233,7 +237,56 @@ export class AggregationMiddleware extends BasePresentationMiddleware implements
           }
         }
       } catch (err: any) {
+        Analytics.handleError(err)
         console.error(err)
+      }
+    }
+  }
+}
+
+/**
+ * @public
+ */
+export class AnalyticsMiddleware extends BasePresentationMiddleware implements PresentationMiddleware {
+  private constructor (client: Client, next?: PresentationMiddleware) {
+    super(client, next)
+  }
+
+  async notifyTx (tx: Tx): Promise<void> {
+    await this.provideNotifyTx(tx)
+  }
+
+  async close (): Promise<void> {
+    await this.provideClose()
+  }
+
+  static create (client: Client, next?: PresentationMiddleware): AnalyticsMiddleware {
+    return new AnalyticsMiddleware(client, next)
+  }
+
+  async tx (tx: Tx): Promise<TxResult> {
+    void this.handleTx(tx)
+    return await this.provideTx(tx)
+  }
+
+  private async handleTx (tx: Tx): Promise<void> {
+    const etx = TxProcessor.extractTx(tx)
+    if (etx._class === core.class.TxApplyIf) {
+      const applyIf = etx as TxApplyIf
+      applyIf.txes.forEach((it) => {
+        void this.handleTx(it)
+      })
+    }
+    if (this.client.getHierarchy().isDerived(etx._class, core.class.TxCUD)) {
+      const cud = etx as TxCUD<Doc>
+      const _class = this.client.getHierarchy().getClass(cud.objectClass)
+      const label = await translate(_class.label, {}, 'en')
+      if (cud._class === core.class.TxCreateDoc) {
+        Analytics.handleEvent(`Create ${label}`)
+      } else if (cud._class === core.class.TxUpdateDoc || cud._class === core.class.TxMixin) {
+        Analytics.handleEvent(`Update ${label}`)
+      } else if (cud._class === core.class.TxRemoveDoc) {
+        Analytics.handleEvent(`Delete ${label}`)
       }
     }
   }

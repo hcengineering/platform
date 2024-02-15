@@ -462,6 +462,11 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@hcengineering/analytics",
+      "projectFolder": "packages/analytics",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/server-ws",
       "projectFolder": "server/ws",
       "shouldPublish": false

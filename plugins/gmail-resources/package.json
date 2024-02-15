@@ -54,6 +54,7 @@
     "@hcengineering/login": "^0.6.8",
     "@hcengineering/core": "^0.6.28",
     "@hcengineering/panel": "^0.6.15",
+    "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/templates": "^0.6.7"
   }
 }

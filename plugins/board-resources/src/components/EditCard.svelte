@@ -80,7 +80,7 @@
         if (!object) {
           return
         }
-        invokeAction(object, e, result[0].action, result[0].actionProps)
+        invokeAction(object, e, result[0])
       }
     }
   })

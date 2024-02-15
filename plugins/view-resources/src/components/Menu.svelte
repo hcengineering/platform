@@ -57,7 +57,7 @@
       inline: a.inline,
       group: a.context.group ?? 'other',
       action: async (_: any, evt: Event) => {
-        invokeAction(object, evt, a.action, a.actionProps)
+        invokeAction(object, evt, a)
       },
       component: a.actionPopup,
       props: { ...a.actionProps, value: object }

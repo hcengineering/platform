@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Analytics } from '@hcengineering/analytics'
   import { createEventDispatcher } from 'svelte'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import { Class, Doc, generateId, getCurrentAccount, Ref } from '@hcengineering/core'
@@ -104,7 +105,8 @@
       // Remove draft from Local Storage
       currentMessage = getDefault()
       _id = currentMessage._id
-    } catch (err) {
+    } catch (err: any) {
+      Analytics.handleError(err)
       console.error(err)
     }
     dispatch('submit', false)

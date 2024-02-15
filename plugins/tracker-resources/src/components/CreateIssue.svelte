@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Analytics } from '@hcengineering/analytics'
   import { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter, AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import chunter from '@hcengineering/chunter'
@@ -514,6 +515,7 @@
     } catch (err: any) {
       console.error(err)
       await doneOp() // Complete in case of error
+      Analytics.handleError(err)
     }
   }
 

@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Analytics } from '@hcengineering/analytics'
   import contact, { Employee, PersonAccount } from '@hcengineering/contact'
   import core, { AccountRole, Class, Doc, Ref, Space, getCurrentAccount } from '@hcengineering/core'
   import login from '@hcengineering/login'
@@ -220,6 +221,7 @@
     try {
       return await titleProvider(client, _id as Ref<Doc>)
     } catch (err: any) {
+      Analytics.handleError(err)
       console.error(err)
     }
   }

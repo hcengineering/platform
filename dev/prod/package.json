@@ -16,7 +16,7 @@
     "preformat-svelte": "prettier -w src/**/*.svelte",
     "lint": "",
     "lint:fix": "yarn preformat-svelte && eslint --fix src",
-    "format": "",
+    "format": "format src",
     "deploy": "cp -p public/* dist && aws s3 sync dist s3://anticrm-platform --delete --acl public-read"
   },
   "devDependencies": {

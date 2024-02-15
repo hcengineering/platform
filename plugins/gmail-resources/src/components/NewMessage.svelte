@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Analytics } from '@hcengineering/analytics'
   import attachmentP, { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
   import contact, { Channel, Contact, getName } from '@hcengineering/contact'
@@ -129,6 +130,7 @@
         }
       )
     } catch (err: any) {
+      Analytics.handleError(err)
       setPlatformStatus(unknownError(err))
     }
   }

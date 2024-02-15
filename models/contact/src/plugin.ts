@@ -109,7 +109,8 @@ export default mergeIds(contactId, contact, {
     OrganizationCategory: '' as Ref<ObjectSearchCategory>
   },
   category: {
-    Contact: '' as Ref<ActionCategory>
+    Contact: '' as Ref<ActionCategory>,
+    Channel: '' as Ref<ActionCategory>
   },
   ids: {
     OrganizationNotificationGroup: '' as Ref<NotificationGroup>,
@@ -121,7 +122,8 @@ export default mergeIds(contactId, contact, {
   action: {
     KickEmployee: '' as Ref<Action>,
     DeleteEmployee: '' as Ref<Action>,
-    MergePersons: '' as Ref<Action<Doc, any>>
+    MergePersons: '' as Ref<Action<Doc, any>>,
+    OpenChannel: '' as Ref<Action>
   },
   actionImpl: {
     KickEmployee: '' as ViewAction,

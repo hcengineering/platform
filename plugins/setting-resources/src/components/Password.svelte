@@ -13,14 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import setting from '@hcengineering/setting'
-  import presentation from '@hcengineering/presentation'
-  import { Button, EditBox, Icon, Label, Header, Breadcrumb } from '@hcengineering/ui'
   import login from '@hcengineering/login'
-  import Error from './icons/Error.svelte'
-  import plugin from '../plugin'
   import { getResource } from '@hcengineering/platform'
+  import presentation from '@hcengineering/presentation'
+  import setting from '@hcengineering/setting'
+  import { Breadcrumb, Button, EditBox, Header, Icon, Label } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
+  import plugin from '../plugin'
+  import Error from './icons/Error.svelte'
 
   export let visibleNav: boolean = true
 

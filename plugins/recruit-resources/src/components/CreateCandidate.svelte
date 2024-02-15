@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Analytics } from '@hcengineering/analytics'
   import attachment from '@hcengineering/attachment'
   import { deleteFile } from '@hcengineering/attachment-resources/src/utils'
   import contact, { Channel, ChannelProvider, combineName, findContacts, Person } from '@hcengineering/contact'
@@ -437,6 +438,7 @@
       }
       object.skills = [...object.skills, ...newSkills]
     } catch (err: any) {
+      Analytics.handleError(err)
       console.error(err)
     }
   }
@@ -464,6 +466,7 @@
 
       await recognize(file)
     } catch (err: any) {
+      Analytics.handleError(err)
       setPlatformStatus(unknownError(err))
     } finally {
       loading = false
