@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Icon, IconArrowRight, getUserTimezone } from '@hcengineering/ui'
-  import moment from 'moment-timezone'
+  import { Icon, IconArrowRight, areDatesEqual, getUserTimezone } from '@hcengineering/ui'
+  import { utcToZonedTime } from 'date-fns-tz'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
   import DateEditor from './DateEditor.svelte'
@@ -26,7 +26,7 @@
   export let timeZone: string = getUserTimezone()
   export let focusIndex = -1
 
-  $: sameDate = moment(startDate).tz(timeZone).isSame(moment(dueDate).tz(timeZone), 'date')
+  $: sameDate = areDatesEqual(utcToZonedTime(startDate, timeZone), utcToZonedTime(dueDate, timeZone))
 
   let diff = dueDate - startDate
   const allDayDuration = 24 * 60 * 60 * 1000 - 1

@@ -11,6 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz'
 import { type TimeZone } from '../../../types'
 
 export const DAYS_IN_WEEK = 7
@@ -64,6 +65,14 @@ export function areDatesEqual (firstDate: Date | undefined, secondDate: Date | u
     firstDate.getMonth() === secondDate.getMonth() &&
     firstDate.getDate() === secondDate.getDate()
   )
+}
+
+export function fromCurrentToTz (date: Date | number, tz: string): Date {
+  return utcToZonedTime(zonedTimeToUtc(date, getUserTimezone()), tz)
+}
+
+export function fromTzToCurrent (date: Date | number, tz: string): Date {
+  return utcToZonedTime(zonedTimeToUtc(date, tz), getUserTimezone())
 }
 
 export function isWeekend (date: Date): boolean {

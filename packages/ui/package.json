@@ -45,7 +45,8 @@
     "fast-equals": "^2.0.3",
     "autolinker": "4.0.0",
     "emoji-regex": "^10.1.0",
-    "moment-timezone": "^0.5.43"
+    "date-fns": "^2.30.0",
+    "date-fns-tz": "^2.0.0"
   },
   "repository": "https://github.com/hcenginneing/anticrm",
   "publishConfig": {
