@@ -16,7 +16,6 @@
 import core, {
   DOMAIN_MODEL,
   DOMAIN_TX,
-  MeasureMetricsContext,
   SortingOrder,
   TxProcessor,
   cutObjectArray,
@@ -112,13 +111,9 @@ abstract class MongoAdapterBase implements DbAdapter {
 
   async init (): Promise<void> {}
 
-  async toArray<T>(ctx: MeasureContext, cursor: AbstractCursor<T>): Promise<T[]> {
-    const st = Date.now()
+  async toArray<T>(cursor: AbstractCursor<T>): Promise<T[]> {
     const data = await cursor.toArray()
     await cursor.close()
-    if (Date.now() - st > 1000) {
-      console.error('toArray', Date.now() - st, data.length)
-    }
     return data
   }
 
@@ -480,7 +475,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     const result: WithLookup<T>[] = []
     let total = options?.total === true ? 0 : -1
     try {
-      const rres = await ctx.with('toArray', {}, async (ctx) => await this.toArray(ctx, cursor), {
+      const rres = await ctx.with('toArray', {}, async (ctx) => await this.toArray(cursor), {
         domain,
         pipeline
       })
@@ -626,7 +621,7 @@ abstract class MongoAdapterBase implements DbAdapter {
 
     // Error in case of timeout
     try {
-      const res: T[] = await ctx.with('toArray', {}, async (ctx) => await this.toArray(ctx, cursor), {
+      const res: T[] = await ctx.with('toArray', {}, async (ctx) => await this.toArray(cursor), {
         mongoQuery,
         options,
         domain
@@ -795,7 +790,7 @@ abstract class MongoAdapterBase implements DbAdapter {
       return []
     }
     const cursor = this.db.collection<Doc>(domain).find<Doc>({ _id: { $in: docs } }, { limit: docs.length })
-    const result = await this.toArray(new MeasureMetricsContext('', {}), cursor)
+    const result = await this.toArray(cursor)
     return this.stripHash(this.stripHash(result))
   }
 
@@ -1262,7 +1257,7 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
       .collection(DOMAIN_TX)
       .find<Tx>({ objectSpace: core.space.Model })
       .sort({ _id: 1, modifiedOn: 1 })
-    const model = await this.toArray(new MeasureMetricsContext('', {}), cursor)
+    const model = await this.toArray(cursor)
     // We need to put all core.account.System transactions first
     const systemTx: Tx[] = []
     const userTx: Tx[] = []

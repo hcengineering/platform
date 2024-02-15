@@ -55,7 +55,8 @@ import core, {
   WorkspaceEvent,
   WorkspaceId,
   WorkspaceIdWithUrl,
-  generateId
+  generateId,
+  toFindResult
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { Metadata, getResource } from '@hcengineering/platform'
@@ -143,15 +144,21 @@ class TServerStorage implements ServerStorage {
       },
       close: async () => {},
       findAll: async (_class, query, options) => {
-        return await metrics.with('query', {}, async (ctx) => await this.findAll(ctx, _class, query, options))
+        return await metrics.with('query', {}, async (ctx) => {
+          const results = await this.findAll(ctx, _class, query, options)
+          return toFindResult(
+            results.map((v) => {
+              return this.hierarchy.updateLookupMixin(_class, v, options)
+            }),
+            results.total
+          )
+        })
       },
       findOne: async (_class, query, options) => {
         return (
-          await metrics.with(
-            'query',
-            {},
-            async (ctx) => await this.findAll(ctx, _class, query, { ...options, limit: 1 })
-          )
+          await metrics.with('query', {}, async (ctx) => {
+            return await this.findAll(ctx, _class, query, { ...options, limit: 1 })
+          })
         )[0]
       },
       tx: async (tx) => {
