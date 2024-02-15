@@ -985,7 +985,7 @@ export function createModel (builder: Builder): void {
           label: recruit.string.Applications
         },
         'description',
-        'comemnts',
+        'comments',
         {
           key: '',
           presenter: tracker.component.RelatedIssueSelector,
