@@ -15,9 +15,9 @@
 <script lang="ts">
   import { afterUpdate, createEventDispatcher } from 'svelte'
   import { capitalizeFirstLetter } from '../../utils'
-  import Icon from '../Icon.svelte'
-  import IconChevronRight from '../icons/ChevronRight.svelte'
+  import ButtonIcon from '../ButtonIcon.svelte'
   import IconChevronLeft from '../icons/ChevronLeft.svelte'
+  import IconChevronRight from '../icons/ChevronRight.svelte'
   import {
     ICell,
     TCellStyle,
@@ -25,12 +25,11 @@
     day,
     daysInMonth,
     firstDay,
+    fromCurrentToTz,
     getMonthName,
     getUserTimezone,
     getWeekDayName
   } from './internal/DateUtils'
-  import ButtonIcon from '../ButtonIcon.svelte'
-  import moment from 'moment-timezone'
 
   export let currentDate: Date | null
   export let mondayStart: boolean = true
@@ -52,12 +51,8 @@
   let days: ICell[] = []
   const getDateStyle = (date: Date): TCellStyle => {
     if (currentDate != null) {
-      const zonedTime = moment(currentDate).tz(timeZone)
-      if (
-        zonedTime.date() === date.getDate() &&
-        zonedTime.year() === date.getFullYear() &&
-        zonedTime.month() === date.getMonth()
-      ) {
+      const zonedTime = fromCurrentToTz(currentDate, timeZone)
+      if (areDatesEqual(zonedTime, date)) {
         return 'selected'
       }
     }

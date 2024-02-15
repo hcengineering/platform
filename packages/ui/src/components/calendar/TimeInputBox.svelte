@@ -16,7 +16,7 @@
   import { afterUpdate, createEventDispatcher } from 'svelte'
   import ui from '../../plugin'
   import Label from '../Label.svelte'
-  import moment from 'moment-timezone'
+  import { fromCurrentToTz, fromTzToCurrent } from './internal/DateUtils'
 
   export let currentDate: Date
   export let size: 'small' | 'medium' = 'medium'
@@ -42,14 +42,13 @@
 
   const setValue = (val: number, date: Date | null, id: TEdits, timeZone: string | undefined): Date => {
     if (date == null) date = new Date()
+    const value = timeZone ? fromTzToCurrent(date, timeZone) : new Date(date)
     switch (id) {
       case 'hour':
-        date = new Date(timeZone ? moment(date).tz(timeZone).hours(val).valueOf() : moment(date).hours(val).valueOf())
+        date = new Date(value.setHours(val))
         break
       case 'min':
-        date = new Date(
-          timeZone ? moment(date).tz(timeZone).minutes(val).valueOf() : moment(date).minutes(val).valueOf()
-        )
+        date = new Date(value.setMinutes(val))
         break
     }
     return date
@@ -66,11 +65,12 @@
   }
 
   const getValue = (date: Date, id: TEdits, timeZone: string | undefined): number => {
+    const value = timeZone ? fromCurrentToTz(date, timeZone) : new Date(date)
     switch (id) {
       case 'hour':
-        return timeZone ? moment(date).tz(timeZone).hours() : moment(date).hours()
+        return value.getHours()
       case 'min':
-        return timeZone ? moment(date).tz(timeZone).minutes() : moment(date).minutes()
+        return value.getMinutes()
     }
   }
 

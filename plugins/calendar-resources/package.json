@@ -53,6 +53,7 @@
     "@hcengineering/view": "^0.6.9",
     "@hcengineering/workbench": "^0.6.9",
     "fast-equals": "^2.0.3",
-    "moment-timezone": "^0.5.43"
+    "date-fns": "^2.30.0",
+    "date-fns-tz": "^2.0.0"
   }
 }

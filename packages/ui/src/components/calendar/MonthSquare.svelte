@@ -14,21 +14,21 @@
 -->
 <script lang="ts">
   import { afterUpdate, createEventDispatcher } from 'svelte'
+  import { capitalizeFirstLetter } from '../../utils'
+  import Button from '../Button.svelte'
   import IconArrowLeft from '../icons/ArrowLeft.svelte'
   import IconArrowRight from '../icons/ArrowRight.svelte'
-  import Button from '../Button.svelte'
   import {
-    firstDay,
-    day,
-    getWeekDayName,
     areDatesEqual,
+    day,
+    firstDay,
+    fromCurrentToTz,
     getMonthName,
-    weekday,
+    getUserTimezone,
+    getWeekDayName,
     isWeekend,
-    getUserTimezone
+    weekday
   } from './internal/DateUtils'
-  import { capitalizeFirstLetter } from '../../utils'
-  import moment from 'moment-timezone'
 
   export let currentDate: Date | null
   export let viewDate: Date
@@ -61,22 +61,14 @@
 
   function isSelected (currentDate: Date | null, selectedTo: Date | null | undefined, target: Date): boolean {
     if (currentDate != null) {
-      const zonedTime = moment(currentDate).tz(timeZone)
-      if (
-        zonedTime.date() === target.getDate() &&
-        zonedTime.year() === target.getFullYear() &&
-        zonedTime.month() === target.getMonth()
-      ) {
+      const zonedTime = fromCurrentToTz(currentDate, timeZone)
+      if (areDatesEqual(zonedTime, target)) {
         return true
       }
     }
     if (selectedTo != null) {
-      const zonedTime = moment(selectedTo).tz(timeZone)
-      if (
-        zonedTime.date() === target.getDate() &&
-        zonedTime.year() === target.getFullYear() &&
-        zonedTime.month() === target.getMonth()
-      ) {
+      const zonedTime = fromCurrentToTz(selectedTo, timeZone)
+      if (areDatesEqual(zonedTime, target)) {
         return true
       }
     }
