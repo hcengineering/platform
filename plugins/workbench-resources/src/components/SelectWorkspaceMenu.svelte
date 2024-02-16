@@ -40,26 +40,6 @@
     })
   })
 
-  $: void doLogin($workspacesStore)
-
-  async function doLogin (ws: Workspace[]): Promise<void> {
-    const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
-    await Promise.all(
-      ws.map(async (p) => {
-        const ws = p.workspace
-        const token = tokens[ws]
-        if (!token) {
-          const selectWorkspace = await getResource(login.function.SelectWorkspace)
-          const loginInfo = (await selectWorkspace(ws))[1]
-          if (loginInfo !== undefined) {
-            tokens[ws] = loginInfo?.token
-          }
-        }
-      })
-    )
-    setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
-  }
-
   function getWorkspaceLink (ws: Workspace): string {
     const loc: Location = {
       path: [workbenchId, ws.workspace]
@@ -73,6 +53,15 @@
       closePopup()
       closePopup()
       if (ws !== getCurrentLocation().path[1]) {
+        const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
+        const token = tokens[ws]
+        if (!token) {
+          const selectWorkspace = await getResource(login.function.SelectWorkspace)
+          const loginInfo = (await selectWorkspace(ws))[1]
+          if (loginInfo !== undefined) {
+            tokens[ws] = loginInfo?.token
+          }
+        }
         const last = localStorage.getItem(`${locationStorageKeyId}_${ws}`)
         if (last !== null) {
           navigate(JSON.parse(last))
