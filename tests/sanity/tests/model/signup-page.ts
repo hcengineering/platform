@@ -10,6 +10,7 @@ export class SignUpPage extends CommonPage {
   readonly inputNewPassword: Locator
   readonly inputRepeatPassword: Locator
   readonly buttonSignUp: Locator
+  readonly buttonJoin: Locator
 
   constructor (page: Page) {
     super()
@@ -20,15 +21,23 @@ export class SignUpPage extends CommonPage {
     this.inputNewPassword = page.locator('//div[text()="Password"]/../input')
     this.inputRepeatPassword = page.locator('//div[text()="Repeat password"]/../input')
     this.buttonSignUp = page.locator('button', { hasText: 'Sign Up' })
+    this.buttonJoin = page.locator('button', { hasText: 'Join' })
   }
 
-  async signUp (data: SignUpData): Promise<void> {
+  async signUp (data: SignUpData, mode: 'join' | 'signup' = 'signup'): Promise<void> {
     await this.inputFirstName.fill(data.firstName)
     await this.inputLastName.fill(data.lastName)
     await this.inputEmail.fill(data.email)
     await this.inputNewPassword.fill(data.password)
     await this.inputRepeatPassword.fill(data.password)
-    expect(await this.buttonSignUp.isEnabled()).toBe(true)
-    await this.buttonSignUp.click()
+    switch (mode) {
+      case 'join':
+        expect(await this.buttonJoin.isEnabled()).toBe(true)
+        await this.buttonJoin.click()
+        break
+      case 'signup':
+        expect(await this.buttonSignUp.isEnabled()).toBe(true)
+        await this.buttonSignUp.click()
+    }
   }
 }
