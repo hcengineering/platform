@@ -45,6 +45,9 @@
   const client = getClient()
   const dispatch = createEventDispatcher()
 
+  let matched = false
+  $: matched = values.includes(newValue.trim())
+
   async function save (): Promise<void> {
     if (value === undefined) {
       await client.createDoc(core.class.Enum, core.space.Model, {
@@ -62,8 +65,8 @@
 
   function add () {
     newValue = newValue.trim()
+    if (!newValue.length) return
     if (matched) return
-    if (values.includes(newValue)) return
     values.push(newValue)
     values = values
     newValue = ''
@@ -146,7 +149,6 @@
   const selection: number = 0
 
   // $: filtered = newValue.length > 0 ? values.filter((it) => it.includes(newValue)) : values
-  $: matched = values.includes(newValue.trim())
 
   // function onDelete () {
   //   showPopup(
@@ -273,7 +275,11 @@
             size={'small'}
             tooltip={{ label: setting.string.Add }}
             on:click={() => {
-              newItem = true
+              if (newItem) {
+                add()
+              } else {
+                newItem = true
+              }
             }}
           />
         </div>
