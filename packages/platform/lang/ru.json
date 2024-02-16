@@ -11,6 +11,7 @@
     "InternalServerError": "Внутренняя ошибка сервера",
     "MaintenanceWarning": "Серверные работы запланированы через {time, plural, one {# минуту} few {# минуты} other {# минут}}",
     "AccountNotFound": "Аккаунт не найден",
+    "AccountNotConfirmed": "Аккаунт не подтвержден",
     "WorkspaceNotFound": "Рабочее пространство не найдено",
     "InvalidPassword": "Неверный пароль",
     "AccountAlreadyExists": "Аккаунт уже существует",

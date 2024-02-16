@@ -778,18 +778,19 @@ export async function upgradeWorkspace (
 export const createUserWorkspace =
   (version: Data<Version>, txes: Tx[], migrationOperation: [string, MigrateOperation][]) =>
     async (db: Db, productId: string, token: string, workspaceName: string): Promise<LoginInfo> => {
-      const { email, extra } = decodeToken(token)
-      const nonConfirmed = extra?.confirmed === false
+      const { email } = decodeToken(token)
+
       console.log(
-      `Creating workspace for "${workspaceName}" for ${email} ${nonConfirmed ? 'non confirmed' : 'confirmed'}`
+        `Creating workspace for "${workspaceName}" for ${email}`
       )
 
-      if (nonConfirmed) {
-        throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
-      }
       const info = await getAccount(db, email)
+
       if (info === null) {
         throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
+      }
+      if (info.confirmed !== true) {
+        throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotConfirmed, { account: email }))
       }
 
       if (info.lastWorkspace !== undefined && info.admin === false) {

@@ -19,12 +19,14 @@
   import { checkJoined, join, signUpJoin } from '../utils'
   import Form from './Form.svelte'
 
+  import { Analytics } from '@hcengineering/analytics'
   import presentation from '@hcengineering/presentation'
   import { workbenchId } from '@hcengineering/workbench'
   import { onMount } from 'svelte'
   import login from '../plugin'
 
   const location = getCurrentLocation()
+  Analytics.handleEvent('invite_link_activated')
   let page = 'login'
 
   $: fields =

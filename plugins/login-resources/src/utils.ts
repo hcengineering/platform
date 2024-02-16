@@ -457,6 +457,7 @@ export async function getInviteLink (expHours: number = 1, emailMask: string = '
     body: JSON.stringify(request)
   })
   const result = await response.json()
+  Analytics.handleEvent('Get invite link')
   return result.result
 }
 
