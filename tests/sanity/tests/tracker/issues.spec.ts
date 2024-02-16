@@ -15,7 +15,7 @@ test.describe('Tracker issue tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
-  test.skip('Create an issue with all parameters and attachments', async ({ page }) => {
+  test('Create an issue with all parameters and attachments', async ({ page }) => {
     const newIssue: NewIssue = {
       title: `Issue with all parameters and attachments-${generateId()}`,
       description: 'Created issue with all parameters and attachments description',
@@ -48,7 +48,7 @@ test.describe('Tracker issue tests', () => {
     })
   })
 
-  test.skip('Edit an issue', async ({ page }) => {
+  test('Edit an issue', async ({ page }) => {
     const newIssue: NewIssue = {
       title: `Issue with all parameters and attachments-${generateId()}`,
       description: 'Created issue with all parameters and attachments description'
@@ -111,7 +111,7 @@ test.describe('Tracker issue tests', () => {
     }
   })
 
-  test.skip('Set parent issue', async ({ page }) => {
+  test('Set parent issue', async ({ page }) => {
     const parentIssue: NewIssue = {
       title: `PARENT ISSUE-${generateId(2)}`,
       description: 'Created issue to be parent issue'
@@ -198,7 +198,7 @@ test.describe('Tracker issue tests', () => {
     })
   })
 
-  test.skip('Move to project', async ({ page }) => {
+  test('Move to project', async ({ page }) => {
     const secondProjectName = 'Second Project'
     const moveIssue: NewIssue = {
       title: `Issue to another project-${generateId()}`,
@@ -232,7 +232,7 @@ test.describe('Tracker issue tests', () => {
     // await issuesDetailsPage.checkActivityExist('changed number in')
   })
 
-  test.skip('Comment stored after reload the page', async ({ page }) => {
+  test('Comment stored after reload the page', async ({ page }) => {
     const commentText = `Comment should be stored after reload-${generateId()}`
     const commentIssue: NewIssue = {
       title: `Issue for stored comment-${generateId()}`,
@@ -261,7 +261,7 @@ test.describe('Tracker issue tests', () => {
     await issuesDetailsPage.checkCommentExist(commentText)
   })
 
-  test.skip('Create an Issue from template', async ({ page }) => {
+  test('Create an Issue from template', async ({ page }) => {
     const templateName = 'New Issue'
     const newIssue: NewIssue = {
       title: `New Issue-${generateId(4)}`,
@@ -293,7 +293,7 @@ test.describe('Tracker issue tests', () => {
     await issuesDetailsPage.checkIssue(newIssue)
   })
 
-  test.skip('Delete an issue', async ({ page }) => {
+  test('Delete an issue', async ({ page }) => {
     const deleteIssue: NewIssue = {
       title: 'Issue for deletion',
       description: 'Description Issue for deletion'
@@ -316,7 +316,7 @@ test.describe('Tracker issue tests', () => {
     await issuesPage.checkIssueNotExist(deleteIssue.title)
   })
 
-  test.skip('Check the changed description activity', async ({ page }) => {
+  test('Check the changed description activity', async ({ page }) => {
     const additionalDescription = 'New row for the additional description'
     const changedDescriptionIssue: NewIssue = {
       title: `Check the changed description activity-${generateId()}`,
