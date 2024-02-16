@@ -373,10 +373,10 @@ export async function join (
   const invite = await getInvite(db, inviteId)
   const workspace = await checkInvite(invite, email)
   console.log(`join attempt:${email}, ${workspace.name}`)
-  await assignWorkspace(db, productId, email, workspace.name)
+  const ws = await assignWorkspace(db, productId, email, workspace.name)
 
   const token = (await login(db, productId, email, password)).token
-  const result = await selectWorkspace(db, productId, token, workspace.name)
+  const result = await selectWorkspace(db, productId, token, ws.workspaceUrl ?? ws.workspace)
   await useInvite(db, inviteId)
   return result
 }
@@ -490,10 +490,10 @@ export async function signUpJoin (
     last,
     invite?.emailMask === email || sesURL === undefined || sesURL === ''
   )
-  await assignWorkspace(db, productId, email, workspace.name)
+  const ws = await assignWorkspace(db, productId, email, workspace.name)
 
   const token = (await login(db, productId, email, password)).token
-  const result = await selectWorkspace(db, productId, token, workspace.name)
+  const result = await selectWorkspace(db, productId, token, ws.workspaceUrl ?? ws.workspace)
   await useInvite(db, inviteId)
   return result
 }
@@ -998,7 +998,7 @@ export async function assignWorkspace (
   workspaceId: string,
   shouldReplaceAccount: boolean = false,
   client?: Client
-): Promise<void> {
+): Promise<Workspace> {
   const email = cleanEmail(_email)
   const initWS = getMetadata(toolPlugin.metadata.InitWorkspace)
   if (initWS !== undefined && initWS === workspaceId) {
@@ -1019,6 +1019,7 @@ export async function assignWorkspace (
   await db
     .collection(ACCOUNT_COLLECTION)
     .updateOne({ _id: workspaceInfo.account._id }, { $addToSet: { workspaces: workspaceInfo.workspace._id } })
+  return workspaceInfo.workspace
 }
 
 async function createEmployee (ops: TxOperations, name: string, _email: string): Promise<Ref<Person>> {
@@ -1277,7 +1278,13 @@ export async function checkJoin (
   const { email } = decodeToken(token)
   const invite = await getInvite(db, inviteId)
   const workspace = await checkInvite(invite, email)
-  return await selectWorkspace(db, productId, token, workspace.name, false)
+  const ws = await getWorkspaceById(db, productId, workspace.name)
+  if (ws === null) {
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspace.name })
+    )
+  }
+  return await selectWorkspace(db, productId, token, ws?.workspaceUrl ?? ws.workspace, false)
 }
 
 /**
