@@ -11,6 +11,7 @@
     "InternalServerError": "Internal server error",
     "MaintenanceWarning": "Maintenance Scheduled in {time, plural, =1 {less than a minute} other {# minutes}}",
     "AccountNotFound": "Account not found",
+    "AccountNotConfirmed": "Account not confirmed",
     "WorkspaceNotFound": "Workspace not found",
     "InvalidPassword": "Invalid password",
     "AccountAlreadyExists": "Account already exists",

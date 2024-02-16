@@ -2,6 +2,8 @@
 // Copyright © 2024 Hardcore Engineering Inc
 //
 
+import { addEventListener, PlatformEvent, Severity, Status, translate } from '@hcengineering/platform'
+
 export const providers: AnalyticProvider[] = []
 
 export interface AnalyticProvider {
@@ -51,3 +53,10 @@ export const Analytics = {
     })
   }
 }
+
+addEventListener(PlatformEvent, async (_event, _status: Status) => {
+  if (_status.severity === Severity.ERROR) {
+    const label = await translate(_status.code, _status.params, 'en')
+    Analytics.handleError(new Error(label))
+  }
+})
