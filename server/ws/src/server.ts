@@ -214,6 +214,17 @@ class TSessionManager implements SessionManager {
       let workspace = this.workspaces.get(wsString)
       await workspace?.closing
       workspace = this.workspaces.get(wsString)
+      if (sessionId !== undefined && workspace?.sessions?.has(sessionId) === true) {
+        const helloResponse: HelloResponse = {
+          id: -1,
+          result: 'hello',
+          binary: false,
+          reconnect: false,
+          alreadyConnected: true
+        }
+        await ws.send(ctx, helloResponse, false, false)
+        return { error: new Error('Session already exists') }
+      }
       const workspaceName = workspaceInfo.workspaceName ?? workspaceInfo.workspaceUrl ?? workspaceInfo.workspace
 
       if (workspace === undefined) {
