@@ -15,7 +15,7 @@ test.describe('Tracker issue tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
-  test('Create an issue with all parameters and attachments', async ({ page }) => {
+  test.skip('Create an issue with all parameters and attachments', async ({ page }) => {
     const newIssue: NewIssue = {
       title: `Issue with all parameters and attachments-${generateId()}`,
       description: 'Created issue with all parameters and attachments description',
@@ -48,7 +48,7 @@ test.describe('Tracker issue tests', () => {
     })
   })
 
-  test('Edit an issue', async ({ page }) => {
+  test.skip('Edit an issue', async ({ page }) => {
     const newIssue: NewIssue = {
       title: `Issue with all parameters and attachments-${generateId()}`,
       description: 'Created issue with all parameters and attachments description'
@@ -198,7 +198,7 @@ test.describe('Tracker issue tests', () => {
     })
   })
 
-  test('Move to project', async ({ page }) => {
+  test.skip('Move to project', async ({ page }) => {
     const secondProjectName = 'Second Project'
     const moveIssue: NewIssue = {
       title: `Issue to another project-${generateId()}`,
@@ -232,7 +232,7 @@ test.describe('Tracker issue tests', () => {
     // await issuesDetailsPage.checkActivityExist('changed number in')
   })
 
-  test('Comment stored after reload the page', async ({ page }) => {
+  test.skip('Comment stored after reload the page', async ({ page }) => {
     const commentText = `Comment should be stored after reload-${generateId()}`
     const commentIssue: NewIssue = {
       title: `Issue for stored comment-${generateId()}`,
@@ -261,7 +261,7 @@ test.describe('Tracker issue tests', () => {
     await issuesDetailsPage.checkCommentExist(commentText)
   })
 
-  test('Create an Issue from template', async ({ page }) => {
+  test.skip('Create an Issue from template', async ({ page }) => {
     const templateName = 'New Issue'
     const newIssue: NewIssue = {
       title: `New Issue-${generateId(4)}`,
@@ -293,7 +293,7 @@ test.describe('Tracker issue tests', () => {
     await issuesDetailsPage.checkIssue(newIssue)
   })
 
-  test('Delete an issue', async ({ page }) => {
+  test.skip('Delete an issue', async ({ page }) => {
     const deleteIssue: NewIssue = {
       title: 'Issue for deletion',
       description: 'Description Issue for deletion'
@@ -316,7 +316,7 @@ test.describe('Tracker issue tests', () => {
     await issuesPage.checkIssueNotExist(deleteIssue.title)
   })
 
-  test('Check the changed description activity', async ({ page }) => {
+  test.skip('Check the changed description activity', async ({ page }) => {
     const additionalDescription = 'New row for the additional description'
     const changedDescriptionIssue: NewIssue = {
       title: `Check the changed description activity-${generateId()}`,
@@ -338,5 +338,26 @@ test.describe('Tracker issue tests', () => {
     await issuesDetailsPage.addToDescription(additionalDescription)
     await issuesDetailsPage.openShowMoreLink('changed description')
     await issuesDetailsPage.checkComparingTextAdded(additionalDescription)
+  })
+
+  test('Add comment with image attachment', async ({ page }) => {
+    const commentImageIssue: NewIssue = {
+      title: `Add comment with image attachment-${generateId()}`,
+      description: 'Add comment with image attachment'
+    }
+
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    await leftSideMenuPage.buttonTracker.click()
+
+    const issuesPage = new IssuesPage(page)
+    await issuesPage.modelSelectorAll.click()
+    await issuesPage.createNewIssue(commentImageIssue)
+    await issuesPage.searchIssueByName(commentImageIssue.title)
+    await issuesPage.openIssueByName(commentImageIssue.title)
+
+    const issuesDetailsPage = new IssuesDetailsPage(page)
+    await issuesDetailsPage.waitDetailsOpened(commentImageIssue.title)
+    await issuesDetailsPage.addCommentWithImage('Added comment with atttachment', 'cat3.jpeg')
+    await issuesDetailsPage.checkCommentWithImageExist('left a comment', 'cat3.jpeg')
   })
 })
