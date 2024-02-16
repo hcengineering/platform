@@ -399,7 +399,7 @@ async function buildModel (
 
   const atxes = modelResponse.transactions
   atxes.forEach((tx) =>
-    ([core.account.ConfigUser, core.account.System].includes(tx.modifiedBy) && !isPersonAccount(tx)
+    ((tx.modifiedBy === core.account.ConfigUser || tx.modifiedBy === core.account.System) && !isPersonAccount(tx)
       ? systemTx
       : userTx
     ).push(tx)
