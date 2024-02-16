@@ -21,7 +21,7 @@
   import AttachmentList from './AttachmentList.svelte'
 
   export let value: Doc & { attachments?: number }
-  export let attachments: Attachment[] | undefined = []
+  export let attachments: Attachment[] | undefined = undefined
 
   const query = createQuery()
   const savedAttachmentsQuery = createQuery()
@@ -32,7 +32,7 @@
   $: updateQuery(value, attachments)
 
   function updateQuery (value: Doc & { attachments?: number }, attachments?: Attachment[]): void {
-    if (attachments !== undefined) {
+    if (attachments !== undefined && attachments.length > 0) {
       resAttachments = attachments
       return
     }
