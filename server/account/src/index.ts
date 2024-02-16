@@ -780,9 +780,7 @@ export const createUserWorkspace =
     async (db: Db, productId: string, token: string, workspaceName: string): Promise<LoginInfo> => {
       const { email } = decodeToken(token)
 
-      console.log(
-        `Creating workspace for "${workspaceName}" for ${email}`
-      )
+      console.log(`Creating workspace for "${workspaceName}" for ${email}`)
 
       const info = await getAccount(db, email)
 
