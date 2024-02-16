@@ -63,8 +63,8 @@
     }
 
     const lastFirst = getMetadata(contact.metadata.LastNameFirst) === true
-    const fname = getFirstName(name ?? '').trim()[0]
-    const lname = getLastName(name ?? '').trim()[0]
+    const fname = getFirstName(name ?? '').trim()[0] ?? ''
+    const lname = getLastName(name ?? '').trim()[0] ?? ''
 
     return lastFirst ? lname + fname : fname + lname
   }
