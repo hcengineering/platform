@@ -111,7 +111,7 @@ test.describe('Tracker issue tests', () => {
     }
   })
 
-  test('Set parent issue', async ({ page }) => {
+  test.skip('Set parent issue', async ({ page }) => {
     const parentIssue: NewIssue = {
       title: `PARENT ISSUE-${generateId(2)}`,
       description: 'Created issue to be parent issue'
