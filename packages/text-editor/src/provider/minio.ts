@@ -23,17 +23,26 @@ interface EVENTS {
 }
 
 async function fetchContent (doc: YDoc, name: string): Promise<void> {
-  const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
+  for (let i = 0; i < 5; i++) {
+    try {
+      const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
 
-  try {
-    const res = await fetch(concatLink(frontUrl, `/files?file=${name}`))
+      try {
+        const res = await fetch(concatLink(frontUrl, `/files?file=${name}`))
 
-    if (res.ok) {
-      const blob = await res.blob()
-      const buffer = await blob.arrayBuffer()
-      applyUpdate(doc, new Uint8Array(buffer))
+        if (res.ok) {
+          const blob = await res.blob()
+          const buffer = await blob.arrayBuffer()
+          applyUpdate(doc, new Uint8Array(buffer))
+          return
+        }
+      } catch {}
+    } catch (err: any) {
+      console.error(err)
     }
-  } catch {}
+    // White a while
+    await new Promise((resolve) => setTimeout(resolve, 50))
+  }
 }
 
 export class MinioProvider extends Observable<EVENTS> {

@@ -92,7 +92,7 @@ if (accountsUrl === undefined) {
 const sesUrl = process.env.SES_URL
 const cursorMaxTime = process.env.SERVER_CURSOR_MAXTIMEMS
 
-const lastNameFirst = process.env.LAST_NAME_FIRST === 'true' ?? false
+const lastNameFirst = process.env.LAST_NAME_FIRST === 'true'
 setMetadata(serverCore.metadata.CursorMaxTimeMS, cursorMaxTime)
 setMetadata(serverCore.metadata.FrontUrl, frontUrl)
 setMetadata(serverToken.metadata.Secret, serverSecret)
