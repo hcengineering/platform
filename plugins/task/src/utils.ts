@@ -230,7 +230,7 @@ export async function createProjectType (
   const targetProjectClassId: Ref<Class<Doc>> = generateId()
   const tmpl = await client.createDoc(
     task.class.ProjectType,
-    core.space.Model,
+    core.space.Space,
     {
       description: data.description,
       shortDescription: data.shortDescription,
