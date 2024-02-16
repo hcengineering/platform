@@ -14,6 +14,7 @@
 //
 
 import {
+  Account,
   Class,
   CollaborativeDoc,
   Doc,
@@ -31,6 +32,7 @@ import { collaborativeDocumentUri, mongodbDocumentUri } from './uri'
 /** @public */
 export interface CollaborativeDocSnapshotParams {
   snapshotName: string
+  createdBy: Ref<Account>
 }
 
 /** @public */
@@ -44,7 +46,7 @@ export interface CollaboratorClient {
   update: (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string, value: Markup) => Promise<void>
   snapshot: (
     collaborativeDoc: CollaborativeDoc,
-    snapshotName: CollaborativeDocSnapshotParams
+    params: CollaborativeDocSnapshotParams
   ) => Promise<CollaborativeDocSnapshotInfo>
 }
 

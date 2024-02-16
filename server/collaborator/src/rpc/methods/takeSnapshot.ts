@@ -34,6 +34,7 @@ import { RpcMethodParams } from '../rpc'
 export interface TakeSnapshotRequest {
   documentId: string
   collaborativeDoc: CollaborativeDoc
+  createdBy: string
   snapshotName: string
 }
 
@@ -47,14 +48,14 @@ export async function takeSnapshot (
   payload: TakeSnapshotRequest,
   params: RpcMethodParams
 ): Promise<TakeSnapshotResponse> {
-  const { collaborativeDoc, documentId, snapshotName } = payload
+  const { collaborativeDoc, documentId, snapshotName, createdBy } = payload
   const { hocuspocus, minio } = params
   const { workspaceId } = context
 
   const version: YDocVersion = {
     versionId: generateId(),
     name: snapshotName,
-    createdBy: 'collaborator',
+    createdBy,
     createdOn: Date.now()
   }
 
