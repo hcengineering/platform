@@ -280,13 +280,15 @@ export class AnalyticsMiddleware extends BasePresentationMiddleware implements P
     if (this.client.getHierarchy().isDerived(etx._class, core.class.TxCUD)) {
       const cud = etx as TxCUD<Doc>
       const _class = this.client.getHierarchy().getClass(cud.objectClass)
-      const label = await translate(_class.label, {}, 'en')
-      if (cud._class === core.class.TxCreateDoc) {
-        Analytics.handleEvent(`Create ${label}`)
-      } else if (cud._class === core.class.TxUpdateDoc || cud._class === core.class.TxMixin) {
-        Analytics.handleEvent(`Update ${label}`)
-      } else if (cud._class === core.class.TxRemoveDoc) {
-        Analytics.handleEvent(`Delete ${label}`)
+      if (_class.label !== undefined) {
+        const label = await translate(_class.label, {}, 'en')
+        if (cud._class === core.class.TxCreateDoc) {
+          Analytics.handleEvent(`Create ${label}`)
+        } else if (cud._class === core.class.TxUpdateDoc || cud._class === core.class.TxMixin) {
+          Analytics.handleEvent(`Update ${label}`)
+        } else if (cud._class === core.class.TxRemoveDoc) {
+          Analytics.handleEvent(`Delete ${label}`)
+        }
       }
     }
   }
