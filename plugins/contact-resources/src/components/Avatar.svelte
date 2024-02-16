@@ -13,6 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts" context="module">
+  import { Client, Ref } from '@hcengineering/core'
+
   const providers = new Map<string, AvatarProvider | null>()
 
   async function getProvider (client: Client, providerId: Ref<AvatarProvider>): Promise<AvatarProvider | undefined> {
@@ -27,8 +29,7 @@
 </script>
 
 <script lang="ts">
-  import contact, { AvatarProvider, AvatarType, getFirstName, getLastName, getName } from '@hcengineering/contact'
-  import { Client, Ref } from '@hcengineering/core'
+  import contact, { AvatarProvider, AvatarType, getFirstName, getLastName } from '@hcengineering/contact'
   import { Asset, getMetadata, getResource } from '@hcengineering/platform'
   import { getBlobURL, getClient } from '@hcengineering/presentation'
   import {
@@ -60,10 +61,12 @@
     if (name == null) {
       return ''
     }
+
     const lastFirst = getMetadata(contact.metadata.LastNameFirst) === true
-    const fname = getFirstName(name ?? '').trim()[0]
-    const lname = getLastName(name ?? '').trim()[0]
-    return lastFirst ? lname + ' ' + fname : fname + ' ' + lname
+    const fname = getFirstName(name ?? '').trim()[0] ?? ''
+    const lname = getLastName(name ?? '').trim()[0] ?? ''
+
+    return lastFirst ? lname + fname : fname + lname
   }
 
   async function update (size: IconSize, avatar?: string | null, direct?: Blob, name?: string | null) {
