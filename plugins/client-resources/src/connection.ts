@@ -205,6 +205,13 @@ class Connection implements ClientConnection {
       websocket.onmessage = (event: MessageEvent) => {
         const resp = readResponse<any>(event.data, binaryResponse)
         if (resp.id === -1 && resp.result === 'hello') {
+          if ((resp as HelloResponse).alreadyConnected === true) {
+            this.sessionId = generateId()
+            if (typeof sessionStorage !== 'undefined') {
+              sessionStorage.setItem('session.id.' + this.url, this.sessionId)
+            }
+            reject(new Error('alreadyConnected'))
+          }
           if ((resp as HelloResponse).binary) {
             binaryResponse = true
           }
