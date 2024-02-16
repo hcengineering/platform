@@ -228,25 +228,6 @@ export async function createProjectType (
   const baseClassClass = client.getHierarchy().getClass(categoryObj.baseClass)
 
   const targetProjectClassId: Ref<Class<Doc>> = generateId()
-
-  await client.createDoc(
-    core.class.Mixin,
-    core.space.Model,
-    {
-      extends: categoryObj.baseClass,
-      kind: ClassifierKind.MIXIN,
-      label: getEmbeddedLabel(data.name),
-      icon: baseClassClass.icon
-    },
-    targetProjectClassId,
-    undefined,
-    core.account.ConfigUser
-  )
-
-  await client.createMixin(targetProjectClassId, core.class.Mixin, core.space.Model, task.mixin.ProjectTypeClass, {
-    projectType: _id
-  })
-
   const tmpl = await client.createDoc(
     task.class.ProjectType,
     core.space.Model,
@@ -265,6 +246,22 @@ export async function createProjectType (
     },
     _id
   )
+
+  await client.createDoc(
+    core.class.Mixin,
+    core.space.Model,
+    {
+      extends: categoryObj.baseClass,
+      kind: ClassifierKind.MIXIN,
+      label: getEmbeddedLabel(data.name),
+      icon: baseClassClass.icon
+    },
+    targetProjectClassId
+  )
+
+  await client.createMixin(targetProjectClassId, core.class.Mixin, core.space.Model, task.mixin.ProjectTypeClass, {
+    projectType: _id
+  })
 
   return tmpl
 }
