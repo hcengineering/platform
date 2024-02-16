@@ -1,5 +1,4 @@
 import { test } from '@playwright/test'
-import { allure } from 'allure-playwright'
 import { LoginPage } from '../model/login-page'
 import { generateId } from '../utils'
 import { SelectWorkspacePage } from '../model/select-workspace-page'
@@ -12,10 +11,6 @@ import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
 import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
 
 test.describe('Workspace tests', () => {
-  test.beforeEach(async ({ page }) => {
-    await allure.parentSuite('Workspace tests')
-  })
-
   test('Create a workspace with a custom name', async ({ page }) => {
     const newUser: SignUpData = {
       firstName: `FirstName-${generateId()}`,

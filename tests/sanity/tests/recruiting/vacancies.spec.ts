@@ -3,7 +3,6 @@ import { generateId, PlatformSetting, PlatformURI } from '../utils'
 import { NavigationMenuPage } from '../model/recruiting/navigation-menu-page'
 import { VacanciesPage } from '../model/recruiting/vacancies-page'
 import { VacancyDetailsPage } from '../model/recruiting/vacancy-details-page'
-import { allure } from 'allure-playwright'
 import { CommonPage } from '../model/common-page'
 import { NewVacancy } from '../model/recruiting/types'
 
@@ -13,7 +12,6 @@ test.use({
 
 test.describe('Vacancy tests', () => {
   test.beforeEach(async ({ page }) => {
-    await allure.parentSuite('Recruiting tests')
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/recruit`))?.finished()
   })
 

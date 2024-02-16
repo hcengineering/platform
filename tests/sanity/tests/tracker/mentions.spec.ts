@@ -4,7 +4,6 @@ import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { IssuesPage } from '../model/tracker/issues-page'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
 import { NewIssue } from '../model/tracker/types'
-import { allure } from 'allure-playwright'
 import { ContactsNavigationMenuPage } from '../model/contacts/navigation-menu-page'
 import { EmployeesPage } from '../model/contacts/employees-page'
 import { EmployeeDetailsPage } from '../model/contacts/employee-details-page'
@@ -15,7 +14,6 @@ test.use({
 
 test.describe('Mentions issue tests', () => {
   test.beforeEach(async ({ page }) => {
-    await allure.parentSuite('Tracker tests')
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 

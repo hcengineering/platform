@@ -1,5 +1,4 @@
 import { test } from '@playwright/test'
-import { allure } from 'allure-playwright'
 import { IssuesPage } from '../model/tracker/issues-page'
 import { generateId, PlatformSetting, PlatformURI } from '../utils'
 import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
@@ -13,7 +12,6 @@ test.use({
 
 test.describe('Attachments tests', () => {
   test.beforeEach(async ({ page }) => {
-    await allure.parentSuite('Attachments tests')
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 

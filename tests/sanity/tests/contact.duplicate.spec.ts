@@ -1,6 +1,5 @@
 import { test } from '@playwright/test'
 import { generateId, PlatformSetting, PlatformURI } from './utils'
-import { allure } from 'allure-playwright'
 
 test.use({
   storageState: PlatformSetting
@@ -8,7 +7,6 @@ test.use({
 
 test.describe('duplicate-org-test', () => {
   test.beforeEach(async ({ page }) => {
-    await allure.parentSuite('Duplicate Org test')
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 

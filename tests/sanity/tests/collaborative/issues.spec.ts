@@ -1,6 +1,5 @@
 import { test } from '@playwright/test'
 import { generateId, getSecondPage, PlatformSetting, PlatformURI } from '../utils'
-import { allure } from 'allure-playwright'
 import { NewIssue } from '../model/tracker/types'
 import { IssuesPage } from '../model/tracker/issues-page'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
@@ -12,7 +11,6 @@ test.use({
 
 test.describe('Collaborative test for issue', () => {
   test.beforeEach(async ({ page }) => {
-    await allure.parentSuite('Collaborative tests')
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
   })
 

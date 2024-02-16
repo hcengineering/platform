@@ -3,7 +3,6 @@ import { generateId, iterateLocator, PlatformSetting, PlatformURI } from '../uti
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { IssuesPage } from '../model/tracker/issues-page'
 import { DateDivided, NewIssue } from '../model/tracker/types'
-import { allure } from 'allure-playwright'
 import { DEFAULT_STATUSES, DEFAULT_STATUSES_ID, PRIORITIES } from './tracker.utils'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
 
@@ -13,7 +12,6 @@ test.use({
 
 test.describe('Tracker filters tests', () => {
   test.beforeEach(async ({ page }) => {
-    await allure.parentSuite('Tracker tests')
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 

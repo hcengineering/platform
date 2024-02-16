@@ -1,5 +1,4 @@
 import { test } from '@playwright/test'
-import { allure } from 'allure-playwright'
 import { IssuesPage } from '../model/tracker/issues-page'
 import { generateId, PlatformSetting, PlatformURI } from '../utils'
 import {
@@ -20,7 +19,6 @@ test.use({
 })
 test.describe('Tracker sub-issues tests', () => {
   test.beforeEach(async ({ page }) => {
-    await allure.parentSuite('Tracker tests')
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
