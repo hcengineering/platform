@@ -59,7 +59,8 @@ import {
   TypeBoolean,
   TypeIntlString,
   ArrOf,
-  TypeTimestamp
+  TypeTimestamp,
+  UX
 } from '@hcengineering/model'
 import { TAttachedDoc, TClass, TDoc } from '@hcengineering/model-core'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
@@ -211,6 +212,7 @@ export class TActivityMessagesFilter extends TDoc implements ActivityMessagesFil
 }
 
 @Model(activity.class.Reaction, core.class.AttachedDoc, DOMAIN_ACTIVITY)
+@UX(activity.string.Reactions)
 export class TReaction extends TAttachedDoc implements Reaction {
   @Prop(TypeRef(activity.class.ActivityMessage), core.string.AttachedTo)
   @Index(IndexKind.Indexed)

@@ -37,6 +37,7 @@ export { templatesOperation } from './migration'
 export const DOMAIN_TEMPLATES = 'templates' as Domain
 
 @Model(templates.class.MessageTemplate, core.class.Doc, DOMAIN_TEMPLATES)
+@UX(templates.string.Template)
 export class TMessageTemplate extends TDoc implements MessageTemplate {
   @Prop(TypeString(), templates.string.Title)
   @Index(IndexKind.FullText)

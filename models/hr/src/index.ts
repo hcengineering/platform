@@ -176,6 +176,7 @@ export class TRequest extends TAttachedDoc implements Request {
 }
 
 @Model(hr.class.PublicHoliday, core.class.Doc, DOMAIN_HR)
+@UX(hr.string.PublicHoliday)
 export class TPublicHoliday extends TDoc implements PublicHoliday {
   title!: string
   description!: string
