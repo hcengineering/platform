@@ -41,6 +41,7 @@
   export let fullSize: boolean = false
   export let required: boolean = false
   export let uppercase: boolean = false
+  export let propagateClick: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -147,7 +148,11 @@
   class:flex-grow={fullSize}
   class:w-full={focusable || fullSize}
   class:uppercase
-  on:click|stopPropagation={() => {
+  on:click={(event) => {
+    if (!propagateClick) {
+      event.stopPropagation()
+    }
+
     input.focus()
   }}
   use:resizeObserver={(element) => {
