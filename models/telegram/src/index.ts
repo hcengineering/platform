@@ -26,7 +26,8 @@ import {
   Prop,
   TypeBoolean,
   TypeString,
-  TypeTimestamp
+  TypeTimestamp,
+  UX
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import contact from '@hcengineering/model-contact'
@@ -73,6 +74,7 @@ export class TTelegramMessage extends TAttachedDoc implements TelegramMessage {
 }
 
 @Model(telegram.class.NewMessage, core.class.AttachedDoc, DOMAIN_TELEGRAM)
+@UX(telegram.string.NewMessage)
 export class TNewTelegramMessage extends TAttachedDoc implements NewTelegramMessage {
   @Prop(TypeString(), telegram.string.Content)
   @Index(IndexKind.FullText)
@@ -86,6 +88,7 @@ export class TNewTelegramMessage extends TAttachedDoc implements NewTelegramMess
 }
 
 @Model(telegram.class.SharedMessages, core.class.AttachedDoc, DOMAIN_TELEGRAM)
+@UX(telegram.string.SharedMessages)
 export class TSharedTelegramMessages extends TAttachedDoc implements SharedTelegramMessages {
   @Prop(ArrOf(TypeSharedMessage()), telegram.string.Messages)
     messages!: SharedTelegramMessage[]

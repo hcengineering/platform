@@ -331,6 +331,7 @@ export default plugin(activityId, {
     Update: '' as IntlString,
     For: '' as IntlString,
     AllActivity: '' as IntlString,
+    Reaction: '' as IntlString,
     Reactions: '' as IntlString,
     LastReply: '' as IntlString,
     RepliesCount: '' as IntlString,
