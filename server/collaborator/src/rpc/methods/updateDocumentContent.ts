@@ -14,19 +14,13 @@
 //
 
 import { MeasureContext } from '@hcengineering/core'
+import {
+  type UpdateDocumentContentRequest,
+  type UpdateDocumentContentResponse
+} from '@hcengineering/collaborator-client'
 import { applyUpdate, encodeStateAsUpdate } from 'yjs'
 import { Context } from '../../context'
 import { RpcMethodParams } from '../rpc'
-
-export interface UpdateDocumentContentRequest {
-  documentId: string
-  initialContentId: string
-  field: string
-  html: string
-}
-
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface UpdateDocumentContentResponse {}
 
 export async function updateDocumentContent (
   ctx: MeasureContext,

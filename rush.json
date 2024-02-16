@@ -468,7 +468,7 @@
     },
     {
       "packageName": "@hcengineering/collaboration",
-      "projectFolder": "packages/collaboration",
+      "projectFolder": "server/collaboration",
       "shouldPublish": true
     },
     {
@@ -499,6 +499,11 @@
     {
       "packageName": "@hcengineering/ui",
       "projectFolder": "packages/ui",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/collaborator-client",
+      "projectFolder": "packages/collaborator-client",
       "shouldPublish": true
     },
     {

@@ -97,10 +97,13 @@ dependencies:
     version: file:projects/client-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/collaboration':
     specifier: file:./projects/collaboration.tgz
-    version: file:projects/collaboration.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
+    version: file:projects/collaboration.tgz(esbuild@0.20.0)(prosemirror-model@1.19.4)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/collaborator':
     specifier: file:./projects/collaborator.tgz
     version: file:projects/collaborator.tgz(@tiptap/pm@2.2.3)(bufferutil@4.0.8)(prosemirror-model@1.19.4)(svelte@4.2.11)
+  '@rush-temp/collaborator-client':
+    specifier: file:./projects/collaborator-client.tgz
+    version: file:projects/collaborator-client.tgz(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/contact':
     specifier: file:./projects/contact.tgz
     version: file:projects/contact.tgz(@types/node@20.11.19)(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
@@ -17337,8 +17340,8 @@ packages:
       - ts-node
     dev: false
 
-  file:projects/collaboration.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2):
-    resolution: {integrity: sha512-qXhZcchQGZkBIG7GaLE8aTgiZ3FcaWB4Rssu+J5LnAABCkxTVMIRv5YYe3Qr1o+t4FXay9OxpLyFIlIgQV3kVg==, tarball: file:projects/collaboration.tgz}
+  file:projects/collaboration.tgz(esbuild@0.20.0)(prosemirror-model@1.19.4)(svelte@4.2.11)(ts-node@10.9.2):
+    resolution: {integrity: sha512-wvmKe25bhPDim2qZ39aVkk9iAM3oR8E1vbdaLrPEjBQTN17e2d5KuR/X4zp1su+bQZF5AiAGMofraKU+3EthPg==, tarball: file:projects/collaboration.tgz}
     id: file:projects/collaboration.tgz
     name: '@rush-temp/collaboration'
     version: 0.0.0
@@ -17358,6 +17361,7 @@ packages:
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.0)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
+      y-prosemirror: 1.2.2(prosemirror-model@1.19.4)(yjs@13.6.12)
       yjs: 13.6.12
     transitivePeerDependencies:
       - '@babel/core'
@@ -17365,6 +17369,43 @@ packages:
       - babel-jest
       - babel-plugin-macros
       - esbuild
+      - node-notifier
+      - prosemirror-model
+      - prosemirror-state
+      - prosemirror-view
+      - supports-color
+      - svelte
+      - ts-node
+      - y-protocols
+    dev: false
+
+  file:projects/collaborator-client.tgz(svelte@4.2.11)(ts-node@10.9.2):
+    resolution: {integrity: sha512-WWZ6fF9+N9PK5ivTvV0YI0u0gXQ9afedg7omhmUegEXukx9d49HXgd0WggIRSQGhB44fM5n13qNnArB2HokzYw==, tarball: file:projects/collaborator-client.tgz}
+    id: file:projects/collaborator-client.tgz
+    name: '@rush-temp/collaborator-client'
+    version: 0.0.0
+    dependencies:
+      '@types/jest': 29.5.12
+      '@types/node': 20.11.19
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
+      cross-env: 7.0.3
+      esbuild: 0.20.0
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      ts-jest: 29.1.2(esbuild@0.20.0)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - babel-jest
+      - babel-plugin-macros
       - node-notifier
       - supports-color
       - svelte
@@ -20353,7 +20394,7 @@ packages:
     dev: false
 
   file:projects/presentation.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-yq8xtEmRvkuvVMOBQcm7hjoveN6ITVw35/usEit05ah3i3997MHN8CgTkAljivtuSk/xGxwM94kzZI3LYA8vZg==, tarball: file:projects/presentation.tgz}
+    resolution: {integrity: sha512-aIs1NWqMRjF8+bpEPUJW3nkQFkxnv0GvllOQk4DWbDdfxuAlGkvBKiKaDwlx3cku9hulZqpwr6EyIbkotn1Rsw==, tarball: file:projects/presentation.tgz}
     id: file:projects/presentation.tgz
     name: '@rush-temp/presentation'
     version: 0.0.0
@@ -23008,7 +23049,7 @@ packages:
     dev: false
 
   file:projects/text-editor.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(prosemirror-model@1.19.4)(ts-node@10.9.2):
-    resolution: {integrity: sha512-3jDXwWB9QKAP0y10K87NWY4zCqmUM3hUfiUZTeF8qhdoWb1zm2G2fHJMhwIDFJFuz1+7xEVt5gbvq9mQOPkMDQ==, tarball: file:projects/text-editor.tgz}
+    resolution: {integrity: sha512-/TK8U02uYlCsPKiYVNS7t+UMmDxEPWLwY05soaV+Yuu3nXRGt2m2CkEFnv8I5IAqsEzgogKhqFXAgcQHcjfG+A==, tarball: file:projects/text-editor.tgz}
     id: file:projects/text-editor.tgz
     name: '@rush-temp/text-editor'
     version: 0.0.0

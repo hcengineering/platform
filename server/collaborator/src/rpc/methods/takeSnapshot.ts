@@ -20,27 +20,11 @@ import {
   yDocFromMinio,
   yDocToMinio
 } from '@hcengineering/collaboration'
-import {
-  CollaborativeDoc,
-  CollaborativeDocVersionHead,
-  MeasureContext,
-  generateId,
-  parseCollaborativeDoc
-} from '@hcengineering/core'
+import { type TakeSnapshotRequest, type TakeSnapshotResponse } from '@hcengineering/collaborator-client'
+import { CollaborativeDocVersionHead, MeasureContext, generateId, parseCollaborativeDoc } from '@hcengineering/core'
 import { Doc as YDoc } from 'yjs'
 import { Context } from '../../context'
 import { RpcMethodParams } from '../rpc'
-
-export interface TakeSnapshotRequest {
-  documentId: string
-  collaborativeDoc: CollaborativeDoc
-  createdBy: string
-  snapshotName: string
-}
-
-export interface TakeSnapshotResponse {
-  version: YDocVersion
-}
 
 export async function takeSnapshot (
   ctx: MeasureContext,
@@ -89,7 +73,7 @@ export async function takeSnapshot (
       await yDocToMinio(minio, workspaceId, historyDocumentId, yHistory)
     })
 
-    return { version }
+    return { ...version }
   } finally {
     await connection.disconnect()
   }

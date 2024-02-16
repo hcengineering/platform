@@ -14,18 +14,9 @@
 //
 
 import { MeasureContext } from '@hcengineering/core'
+import { type GetDocumentContentRequest, type GetDocumentContentResponse } from '@hcengineering/collaborator-client'
 import { Context } from '../../context'
 import { RpcMethodParams } from '../rpc'
-
-export interface GetDocumentContentRequest {
-  documentId: string
-  initialContentId: string
-  field: string
-}
-
-export interface GetDocumentContentResponse {
-  html: string
-}
 
 export async function getDocumentContent (
   ctx: MeasureContext,

@@ -33,7 +33,7 @@
   "dependencies": {
     "@hcengineering/core": "^0.6.28",
     "@hcengineering/minio": "^0.6.0",
-    "yjs": "^13.5.52",
-    "base64-js": "^1.5.1"
+    "base64-js": "^1.5.1",
+    "yjs": "^13.5.52"
   }
 }

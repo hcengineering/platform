@@ -57,6 +57,7 @@
     "@hcengineering/client-resources": "^0.6.23",
     "@hcengineering/minio": "^0.6.0",
     "@hcengineering/collaboration": "^0.6.0",
+    "@hcengineering/collaborator-client": "^0.6.0",
     "@hcengineering/text": "^0.6.1",
     "@hocuspocus/server": "^2.9.0",
     "@hocuspocus/transformer": "^2.9.0",

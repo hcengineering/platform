@@ -19,7 +19,7 @@ import {
   collaborativeDocumentUri,
   mongodbDocumentUri,
   platformDocumentUri
-} from '@hcengineering/collaboration'
+} from '@hcengineering/collaborator-client'
 import { type KeyedAttribute, getClient } from '@hcengineering/presentation'
 import { getCurrentLocation } from '@hcengineering/ui'
 

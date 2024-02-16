@@ -21,23 +21,59 @@ import {
   Hierarchy,
   Markup,
   Ref,
+  Timestamp,
   WorkspaceId,
   collaborativeDoc,
   concatLink,
   toCollaborativeDocVersion
 } from '@hcengineering/core'
-import { YDocVersion } from './history/history'
-import { collaborativeDocumentUri, mongodbDocumentUri } from './uri'
+import { DocumentURI, collaborativeDocumentUri, mongodbDocumentUri } from './uri'
+
+/** @public */
+export interface GetDocumentContentRequest {
+  documentId: DocumentURI
+  initialContentId: DocumentURI
+  field: string
+}
+
+/** @public */
+export interface GetDocumentContentResponse {
+  html: string
+}
+
+/** @public */
+export interface UpdateDocumentContentRequest {
+  documentId: DocumentURI
+  initialContentId: DocumentURI
+  field: string
+  html: string
+}
+
+/** @public */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface UpdateDocumentContentResponse {}
+
+/** @public */
+export interface TakeSnapshotRequest {
+  documentId: DocumentURI
+  collaborativeDoc: CollaborativeDoc
+  createdBy: string
+  snapshotName: string
+}
+
+/** @public */
+export interface TakeSnapshotResponse {
+  versionId: string
+  name: string
+
+  createdBy: string
+  createdOn: Timestamp
+}
 
 /** @public */
 export interface CollaborativeDocSnapshotParams {
   snapshotName: string
   createdBy: Ref<Account>
-}
-
-/** @public */
-export interface CollaborativeDocSnapshotInfo {
-  collaborativeDoc: CollaborativeDoc
 }
 
 /** @public */
@@ -47,7 +83,7 @@ export interface CollaboratorClient {
   snapshot: (
     collaborativeDoc: CollaborativeDoc,
     params: CollaborativeDocSnapshotParams
-  ) => Promise<CollaborativeDocSnapshotInfo>
+  ) => Promise<CollaborativeDoc>
 }
 
 /** @public */
@@ -68,7 +104,7 @@ class CollaboratorClientImpl implements CollaboratorClient {
     private readonly collaboratorUrl: string
   ) {}
 
-  initialContentId (workspace: string, classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string): string {
+  initialContentId (workspace: string, classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string): DocumentURI {
     const domain = this.hierarchy.getDomain(classId)
     return mongodbDocumentUri(workspace, domain, docId, attribute)
   }
@@ -99,7 +135,8 @@ class CollaboratorClientImpl implements CollaboratorClient {
     const documentId = collaborativeDocumentUri(workspace, collaborativeDoc(docId, attribute))
     const initialContentId = this.initialContentId(workspace, classId, docId, attribute)
 
-    const res = await this.rpc('getDocumentContent', { documentId, initialContentId, field: attribute })
+    const payload: GetDocumentContentRequest = { documentId, initialContentId, field: attribute }
+    const res = await this.rpc('getDocumentContent', payload) as GetDocumentContentResponse
 
     return res.html ?? '<p></p>'
   }
@@ -109,20 +146,20 @@ class CollaboratorClientImpl implements CollaboratorClient {
     const documentId = collaborativeDocumentUri(workspace, collaborativeDoc(docId, attribute))
     const initialContentId = this.initialContentId(workspace, classId, docId, attribute)
 
-    await this.rpc('updateDocumentContent', { documentId, initialContentId, field: attribute, html: value })
+    const payload: UpdateDocumentContentRequest = { documentId, initialContentId, field: attribute, html: value }
+    await this.rpc('updateDocumentContent', payload)
   }
 
   async snapshot (
     collaborativeDoc: CollaborativeDoc,
     params: CollaborativeDocSnapshotParams
-  ): Promise<CollaborativeDocSnapshotInfo> {
+  ): Promise<CollaborativeDoc> {
     const workspace = this.workspace.name
     const documentId = collaborativeDocumentUri(workspace, collaborativeDoc)
 
-    const res = (await this.rpc('takeSnapshot', { documentId, collaborativeDoc, ...params })) as YDocVersion
+    const payload: TakeSnapshotRequest = { documentId, collaborativeDoc, ...params }
+    const res = (await this.rpc('takeSnapshot', payload)) as TakeSnapshotResponse
 
-    return {
-      collaborativeDoc: toCollaborativeDocVersion(collaborativeDoc, res.versionId)
-    }
+    return toCollaborativeDocVersion(collaborativeDoc, res.versionId)
   }
 }

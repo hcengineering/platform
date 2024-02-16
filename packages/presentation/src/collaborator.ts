@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type CollaboratorClient, getClient as getCollaborator } from '@hcengineering/collaboration'
+import { type CollaboratorClient, getClient as getCollaborator } from '@hcengineering/collaborator-client'
 import {
   type Class,
   type CollaborativeDoc,
@@ -26,8 +26,8 @@ import {
 import { getMetadata } from '@hcengineering/platform'
 import { getCurrentLocation } from '@hcengineering/ui'
 
+import { getClient } from '.'
 import presentation from './plugin'
-import { getClient } from './utils'
 
 /**
  * @public
@@ -73,6 +73,5 @@ export async function takeSnapshot (
   const client = getCollaboratorClient()
   const createdBy = getCurrentAccount()._id
 
-  const snapshot = await client.snapshot(collaborativeDoc, { createdBy, snapshotName })
-  return snapshot.collaborativeDoc
+  return await client.snapshot(collaborativeDoc, { createdBy, snapshotName })
 }

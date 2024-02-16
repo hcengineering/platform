@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { type DocumentURI } from '@hcengineering/collaboration'
-import { Doc as Ydoc } from 'yjs'
+import { type DocumentURI } from '@hcengineering/collaborator-client'
 import { HocuspocusProvider, type HocuspocusProviderConfiguration } from '@hocuspocus/provider'
+import { Doc as Ydoc } from 'yjs'
 
 export type DocumentId = DocumentURI
 
