@@ -165,6 +165,7 @@ export class TDirectMessageInput extends TClass implements DirectMessageInput {
 }
 
 @Model(chunter.class.ChatMessage, activity.class.ActivityMessage)
+@UX(chunter.string.Message)
 export class TChatMessage extends TActivityMessage implements ChatMessage {
   @Prop(TypeMarkup(), chunter.string.Message)
   @Index(IndexKind.FullText)
@@ -180,6 +181,7 @@ export class TChatMessage extends TActivityMessage implements ChatMessage {
 }
 
 @Model(chunter.class.ThreadMessage, chunter.class.ChatMessage)
+@UX(chunter.string.ThreadMessage)
 export class TThreadMessage extends TChatMessage implements ThreadMessage {
   @Prop(TypeRef(activity.class.ActivityMessage), core.string.AttachedTo)
   @Index(IndexKind.Indexed)

@@ -23,6 +23,7 @@
     "Pinned": "Pinned",
     "Reacted": "Reacted",
     "Reactions": "Reactions",
+    "Reaction": "Reaction",
     "Removed": "removed",
     "Replies": "Replies",
     "RepliesCount": "{replies, plural, =1 {# reply} other {# replies}}",

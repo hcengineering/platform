@@ -23,6 +23,7 @@
     "Pinned": "Закрепленные",
     "Reacted": "Отреагировал(а)",
     "Reactions": "Реакции",
+    "Reaction": "Реакция",
     "Removed": "Удалил(а)",
     "Replies": "Ответы",
     "RepliesCount": "{replies, plural, one {# ответ} few {# ответа} other {# ответов}}",

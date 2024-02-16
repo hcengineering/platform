@@ -26,7 +26,8 @@ import {
   Prop,
   TypeBoolean,
   TypeString,
-  TypeTimestamp
+  TypeTimestamp,
+  UX
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import contact from '@hcengineering/model-contact'
@@ -92,6 +93,7 @@ export class TMessage extends TAttachedDoc implements Message {
 }
 
 @Model(gmail.class.NewMessage, core.class.Doc, DOMAIN_GMAIL)
+@UX(gmail.string.NewMessage)
 export class TNewMessage extends TDoc implements NewMessage {
   @Prop(TypeString(), gmail.string.ReplyTo)
   @Index(IndexKind.FullText)

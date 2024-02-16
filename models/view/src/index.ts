@@ -25,7 +25,7 @@ import {
   type Ref,
   type Space
 } from '@hcengineering/core'
-import { type Builder, Mixin, Model } from '@hcengineering/model'
+import { type Builder, Mixin, Model, UX } from '@hcengineering/model'
 import core, { TClass, TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import presentation from '@hcengineering/model-presentation'
@@ -131,6 +131,7 @@ export function classPresenter (
 }
 
 @Model(view.class.FilteredView, core.class.Doc, DOMAIN_VIEW)
+@UX(view.string.FilteredViews)
 export class TFilteredView extends TDoc implements FilteredView {
   name!: string
   location!: Location

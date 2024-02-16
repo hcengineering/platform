@@ -16,7 +16,7 @@
 import activity from '@hcengineering/activity'
 import contact from '@hcengineering/contact'
 import { DOMAIN_MODEL, type Account, type Domain, type Ref } from '@hcengineering/core'
-import { Mixin, Model, type Builder } from '@hcengineering/model'
+import { Mixin, Model, type Builder, UX } from '@hcengineering/model'
 import core, { TClass, TConfiguration, TDoc } from '@hcengineering/model-core'
 import view, { createAction } from '@hcengineering/model-view'
 import notification from '@hcengineering/notification'
@@ -44,6 +44,7 @@ export { default } from './plugin'
 export const DOMAIN_SETTING = 'setting' as Domain
 
 @Model(setting.class.Integration, core.class.Doc, DOMAIN_SETTING)
+@UX(setting.string.Integrations)
 export class TIntegration extends TDoc implements Integration {
   type!: Ref<IntegrationType>
   disabled!: boolean
@@ -90,6 +91,7 @@ export class TEditable extends TClass implements Editable {
 export class TUserMixin extends TClass implements UserMixin {}
 
 @Model(setting.class.InviteSettings, core.class.Configuration, DOMAIN_SETTING)
+@UX(setting.string.InviteSettings)
 export class TInviteSettings extends TConfiguration implements InviteSettings {
   expirationTime!: number
   emailMask!: string
