@@ -143,7 +143,7 @@ export async function initModel (
 
     try {
       for (const op of migrateOperations) {
-        logger.log('Migrage', op[0])
+        logger.log('Migrate', op[0])
         await op[1].upgrade(connection, logger)
       }
 

@@ -398,7 +398,12 @@ async function buildModel (
   const userTx: Tx[] = []
 
   const atxes = modelResponse.transactions
-  atxes.forEach((tx) => (tx.modifiedBy === core.account.System && !isPersonAccount(tx) ? systemTx : userTx).push(tx))
+  atxes.forEach((tx) =>
+    ((tx.modifiedBy === core.account.ConfigUser || tx.modifiedBy === core.account.System) && !isPersonAccount(tx)
+      ? systemTx
+      : userTx
+    ).push(tx)
+  )
 
   if (allowedPlugins != null) {
     fillConfiguration(systemTx, configs)
