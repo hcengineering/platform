@@ -26,6 +26,7 @@
 
   const fields = [
     {
+      id: 'workspace',
       name: 'workspace',
       i18n: login.string.Workspace,
       rules: []
@@ -60,7 +61,7 @@
         setMetadata(presentation.metadata.Token, result.token)
         setMetadataLocalStorage(login.metadata.LastToken, result.token)
         const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
-        tokens[object.workspace] = result.token
+        tokens[result.workspace] = result.token
         setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
         setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
         setMetadataLocalStorage(login.metadata.LoginEmail, result.email)

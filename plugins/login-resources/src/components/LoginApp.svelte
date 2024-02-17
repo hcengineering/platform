@@ -48,7 +48,7 @@
   onDestroy(
     location.subscribe((loc) => {
       const token = getMetadata(presentation.metadata.Token)
-      page = (loc.path[1] as Pages) ?? (token !== undefined ? 'selectWorkspace' : 'login')
+      page = (loc.path[1] as Pages) ?? (token != null ? 'selectWorkspace' : 'login')
       if (!pages.includes(page)) {
         page = 'login'
       }
