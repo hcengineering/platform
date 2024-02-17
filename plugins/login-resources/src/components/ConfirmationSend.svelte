@@ -23,7 +23,7 @@
   async function checkAccountStatus (): Promise<void> {
     const account = await getAccount()
     if (account?.confirmed === true) {
-      await afterConfirm(account)
+      await afterConfirm()
     }
   }
 

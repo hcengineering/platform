@@ -795,33 +795,24 @@ export function getHref (path: Pages): string {
   return host + url
 }
 
-export async function afterConfirm (result: LoginInfo | undefined): Promise<void> {
-  if (result !== undefined) {
-    setMetadata(presentation.metadata.Token, result.token)
-    setMetadataLocalStorage(login.metadata.LastToken, result.token)
-    setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
-    setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
+export async function afterConfirm (): Promise<void> {
+  const joinedWS = await getWorkspaces()
+  if (joinedWS.length === 0) {
+    goTo('createWorkspace')
+  } else if (joinedWS.length === 1) {
+    const result = (await selectWorkspace(joinedWS[0].workspace))[1]
+    if (result !== undefined) {
+      setMetadata(presentation.metadata.Token, result.token)
+      setMetadataLocalStorage(login.metadata.LastToken, result.token)
+      setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
+      setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
+      const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
+      tokens[result.workspace] = result.token
+      setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
 
-    const joinedWS = await getWorkspaces()
-    if (joinedWS.length === 0) {
-      goTo('createWorkspace')
-    } else if (joinedWS.length === 1) {
-      const result = (await selectWorkspace(joinedWS[0].workspace))[1]
-      if (result !== undefined) {
-        setMetadata(presentation.metadata.Token, result.token)
-        setMetadataLocalStorage(login.metadata.LastToken, result.token)
-        setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
-        setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
-        const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
-        tokens[result.workspace] = result.token
-        setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
-
-        navigateToWorkspace(joinedWS[0].workspace, result)
-      }
-    } else {
-      goTo('selectWorkspace')
+      navigateToWorkspace(joinedWS[0].workspace, result)
     }
   } else {
-    goTo('login')
+    goTo('selectWorkspace')
   }
 }
