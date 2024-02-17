@@ -2,8 +2,8 @@
   "name": "@hcengineering/platform-rig",
   "version": "0.6.0",
   "scripts": {
-    "build": "",
-    "format": ""
+    "build": "echo 'Not required'",
+    "format": "echo 'Not required'"
   },
   "bin": {
     "format": "./bin/format.js",

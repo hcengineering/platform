@@ -5,7 +5,7 @@
     "module": "esnext",
     "declaration": true,
     "rootDir": "./src",
-    "outDir": "./lib",
+    "outDir": "./.build/dist",
     "strict": true,
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
