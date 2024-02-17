@@ -16,10 +16,12 @@
   import { OK, Severity, Status } from '@hcengineering/platform'
   import { MessageBox } from '@hcengineering/presentation'
 
-  import { getCurrentLocation, navigate, showPopup } from '@hcengineering/ui'
+  import { showPopup } from '@hcengineering/ui'
   import login from '../plugin'
-  import { requestPassword } from '../utils'
+  import { goTo, requestPassword } from '../utils'
   import Form from './Form.svelte'
+  import { BottomAction } from '..'
+  import { signUpAction } from '../actions'
 
   const fields = [{ id: 'email', name: 'username', i18n: login.string.Email }]
 
@@ -46,35 +48,20 @@
           },
           undefined,
           () => {
-            const loc = getCurrentLocation()
-            loc.path[1] = 'login'
-            navigate(loc)
+            goTo('login')
           }
         )
       }
     }
   }
 
-  const signUpAction = {
-    caption: login.string.DoNotHaveAnAccount,
-    i18n: login.string.SignUp,
-    func: () => {
-      const loc = getCurrentLocation()
-      loc.path[1] = 'signup'
-      loc.path.length = 2
-      navigate(loc)
-    }
-  }
-
-  const bottomActions = [
+  const bottomActions: BottomAction[] = [
     {
       caption: login.string.KnowPassword,
       i18n: login.string.LogIn,
+      page: 'login',
       func: () => {
-        const loc = getCurrentLocation()
-        loc.path[1] = 'login'
-        loc.path.length = 2
-        navigate(loc)
+        goTo('login')
       }
     },
     signUpAction

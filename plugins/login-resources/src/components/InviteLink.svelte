@@ -61,7 +61,7 @@
     }
   })
 
-  function setToDefault () {
+  function setToDefault (): void {
     expHours = defaultValues.expirationTime
     emailMask = defaultValues.emailMask
     limit = defaultValues.limit

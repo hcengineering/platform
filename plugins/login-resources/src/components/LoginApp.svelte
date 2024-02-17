@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Popup, Scroller, deviceOptionsStore as deviceInfo, location, ticker, themeStore } from '@hcengineering/ui'
+  import { Popup, Scroller, deviceOptionsStore as deviceInfo, location, themeStore } from '@hcengineering/ui'
 
   import { getMetadata } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
@@ -37,40 +37,23 @@
   import loginBackAvif from '../../img/login_back.avif'
   import loginBack2xAvif from '../../img/login_back_2x.avif'
 
+  import { Pages, pages } from '..'
   import loginBackWebp from '../../img/login_back.webp'
   import loginBack2xWebp from '../../img/login_back_2x.webp'
 
-  export let page: string = 'login'
+  export let page: Pages = 'login'
 
   let navigateUrl: string | undefined
 
-  function getToken (timer: number): string | undefined {
-    return getMetadata(presentation.metadata.Token)
-  }
-  $: token = getToken($ticker)
-
-  const pages = [
-    'login',
-    'signup',
-    'createWorkspace',
-    'password',
-    'recovery',
-    'selectWorkspace',
-    'join',
-    'confirm',
-    'confirmationSend'
-  ]
   onDestroy(
     location.subscribe((loc) => {
-      void (async (loc) => {
-        token = getMetadata(presentation.metadata.Token)
-        page = loc.path[1] ?? (token ? 'selectWorkspace' : 'login')
-        if (!pages.includes(page)) {
-          page = 'login'
-        }
+      const token = getMetadata(presentation.metadata.Token)
+      page = (loc.path[1] as Pages) ?? (token !== undefined ? 'selectWorkspace' : 'login')
+      if (!pages.includes(page)) {
+        page = 'login'
+      }
 
-        navigateUrl = loc.query?.navigateUrl ?? undefined
-      })(loc)
+      navigateUrl = loc.query?.navigateUrl ?? undefined
     })
   )
 </script>

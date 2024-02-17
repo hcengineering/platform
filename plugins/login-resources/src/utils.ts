@@ -20,21 +20,23 @@ import {
   PlatformError,
   getMetadata,
   setMetadata,
+  translate,
   unknownError,
   unknownStatus,
-  type Status,
-  translate
+  type Status
 } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
 import {
   fetchMetadataLocalStorage,
   getCurrentLocation,
   locationStorageKeyId,
+  locationToUrl,
   navigate,
   setMetadataLocalStorage,
   type Location
 } from '@hcengineering/ui'
 import { workbenchId } from '@hcengineering/workbench'
+import { type Pages } from './index'
 
 const DEV_WORKSPACE = 'DEV WORKSPACE'
 
@@ -239,7 +241,7 @@ export async function getWorkspaces (): Promise<Workspace[]> {
   }
 }
 
-export async function getAccount (doNavigate: boolean = true, token?: string): Promise<LoginInfo | undefined> {
+export async function getAccount (doNavigate: boolean = true): Promise<LoginInfo | undefined> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
@@ -255,7 +257,7 @@ export async function getAccount (doNavigate: boolean = true, token?: string): P
     }
   }
 
-  token = token ?? getMetadata(presentation.metadata.Token)
+  const token = getMetadata(presentation.metadata.Token) ?? fetchMetadataLocalStorage(login.metadata.LastToken)
   if (token === undefined) {
     if (doNavigate) {
       const loc = getCurrentLocation()
@@ -769,4 +771,57 @@ export async function restorePassword (token: string, password: string): Promise
 async function handleStatusError (message: string, err: Status): Promise<void> {
   const label = await translate(err.code, err.params, 'en')
   Analytics.handleError(new Error(`${message}: ${label}`))
+}
+
+export function getLoc (path: Pages): Location {
+  const loc = getCurrentLocation()
+  loc.path[1] = path
+  loc.path.length = 2
+  return loc
+}
+
+export function goTo (path: Pages, clearQuery: boolean = false): void {
+  const loc = getLoc(path)
+  if (clearQuery) {
+    loc.query = undefined
+  }
+  navigate(loc)
+}
+
+export function getHref (path: Pages): string {
+  const url = locationToUrl(getLoc(path))
+  const frontUrl = getMetadata(presentation.metadata.FrontUrl)
+  const host = frontUrl ?? document.location.origin
+  return host + url
+}
+
+export async function afterConfirm (result: LoginInfo | undefined): Promise<void> {
+  if (result !== undefined) {
+    setMetadata(presentation.metadata.Token, result.token)
+    setMetadataLocalStorage(login.metadata.LastToken, result.token)
+    setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
+    setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
+
+    const joinedWS = await getWorkspaces()
+    if (joinedWS.length === 0) {
+      goTo('createWorkspace')
+    } else if (joinedWS.length === 1) {
+      const result = (await selectWorkspace(joinedWS[0].workspace))[1]
+      if (result !== undefined) {
+        setMetadata(presentation.metadata.Token, result.token)
+        setMetadataLocalStorage(login.metadata.LastToken, result.token)
+        setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
+        setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
+        const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
+        tokens[result.workspace] = result.token
+        setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
+
+        navigateToWorkspace(joinedWS[0].workspace, result)
+      }
+    } else {
+      goTo('selectWorkspace')
+    }
+  } else {
+    goTo('login')
+  }
 }
