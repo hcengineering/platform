@@ -13,26 +13,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Label, getCurrentLocation, navigate } from '@hcengineering/ui'
-  import login from '../plugin'
-  import { getAccount } from '../utils'
+  import { Label } from '@hcengineering/ui'
   import { onMount } from 'svelte'
+  import login from '../plugin'
+  import { afterConfirm, getAccount } from '../utils'
 
   const CHECK_INTERVAL = 1000
 
-  async function checkAccountStatus () {
+  async function checkAccountStatus (): Promise<void> {
     const account = await getAccount()
     if (account?.confirmed === true) {
-      const loc = getCurrentLocation()
-      loc.path[1] = 'selectWorkspace'
-      loc.path.length = 2
-      navigate(loc)
+      await afterConfirm()
     }
   }
 
   let weAreHere = false
 
-  async function check () {
+  async function check (): Promise<void> {
     try {
       await checkAccountStatus()
     } catch (e) {
@@ -45,7 +42,7 @@
 
   onMount(() => {
     weAreHere = true
-    check()
+    void check()
     return () => {
       weAreHere = false
     }

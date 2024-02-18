@@ -30,6 +30,7 @@
   import Form from './Form.svelte'
 
   import { LoginInfo } from '@hcengineering/login'
+  import { recoveryAction } from '../actions'
   import login from '../plugin'
 
   export let navigateUrl: string | undefined = undefined
@@ -51,15 +52,11 @@
 
   async function doLoginNavigate (
     result: LoginInfo | undefined,
-    updateStatus: (status: Status<any>) => void,
-    token?: string
+    updateStatus: (status: Status<any>) => void
   ): Promise<boolean> {
     if (result !== undefined) {
-      if (result.token != null && getMetadata(presentation.metadata.Token) === result.token) {
-        return false
-      }
-      setMetadata(presentation.metadata.Token, token ?? result.token)
-      setMetadataLocalStorage(login.metadata.LastToken, token ?? result.token)
+      setMetadata(presentation.metadata.Token, result.token)
+      setMetadataLocalStorage(login.metadata.LastToken, result.token)
       setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
       setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
 
@@ -108,16 +105,6 @@
     }
   }
 
-  const recoveryAction = {
-    caption: login.string.ForgotPassword,
-    i18n: login.string.Recover,
-    func: () => {
-      const loc = getCurrentLocation()
-      loc.path[1] = 'password'
-      loc.path.length = 2
-      navigate(loc)
-    }
-  }
   let loading = true
 
   async function chooseToken (time: number): Promise<void> {
@@ -125,15 +112,11 @@
       const lastToken = fetchMetadataLocalStorage(login.metadata.LastToken)
       if (lastToken != null) {
         try {
-          const info = await getAccount(false, lastToken)
+          const info = await getAccount(false)
           if (info !== undefined) {
-            await doLoginNavigate(
-              info,
-              (st) => {
-                status = st
-              },
-              lastToken
-            )
+            await doLoginNavigate(info, (st) => {
+              status = st
+            })
           }
         } catch (err: any) {
           setMetadataLocalStorage(login.metadata.LastToken, null)

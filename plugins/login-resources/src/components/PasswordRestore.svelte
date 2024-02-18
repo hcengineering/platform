@@ -15,11 +15,11 @@
 <script lang="ts">
   import { OK, setMetadata, Severity, Status } from '@hcengineering/platform'
 
-  import { getCurrentLocation, navigate, setMetadataLocalStorage } from '@hcengineering/ui'
-  import login from '../plugin'
-  import { restorePassword } from '../utils'
-  import Form from './Form.svelte'
   import presentation from '@hcengineering/presentation'
+  import { getCurrentLocation, setMetadataLocalStorage } from '@hcengineering/ui'
+  import login from '../plugin'
+  import { goTo, restorePassword } from '../utils'
+  import Form from './Form.svelte'
 
   const fields = [
     { id: 'new-password', name: 'password', i18n: login.string.Password, password: true },
@@ -48,10 +48,7 @@
         setMetadata(presentation.metadata.Token, result.token)
         setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
         setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
-        const loc = getCurrentLocation()
-        loc.path[1] = 'selectWorkspace'
-        loc.path.length = 2
-        navigate(loc)
+        goTo('selectWorkspace')
       }
     }
   }

@@ -787,7 +787,7 @@ export const createUserWorkspace =
       if (info === null) {
         throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
       }
-      if (info.confirmed !== true) {
+      if (info.confirmed === false) {
         throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotConfirmed, { account: email }))
       }
 
