@@ -339,4 +339,25 @@ test.describe('Tracker issue tests', () => {
     await issuesDetailsPage.openShowMoreLink('changed description')
     await issuesDetailsPage.checkComparingTextAdded(additionalDescription)
   })
+
+  test('Add comment with image attachment', async ({ page }) => {
+    const commentImageIssue: NewIssue = {
+      title: `Add comment with image attachment-${generateId()}`,
+      description: 'Add comment with image attachment'
+    }
+
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    await leftSideMenuPage.buttonTracker.click()
+
+    const issuesPage = new IssuesPage(page)
+    await issuesPage.modelSelectorAll.click()
+    await issuesPage.createNewIssue(commentImageIssue)
+    await issuesPage.searchIssueByName(commentImageIssue.title)
+    await issuesPage.openIssueByName(commentImageIssue.title)
+
+    const issuesDetailsPage = new IssuesDetailsPage(page)
+    await issuesDetailsPage.waitDetailsOpened(commentImageIssue.title)
+    await issuesDetailsPage.addCommentWithImage('Added comment with atttachment', 'cat3.jpeg')
+    await issuesDetailsPage.checkCommentWithImageExist('left a comment', 'cat3.jpeg')
+  })
 })

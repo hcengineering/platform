@@ -1,6 +1,7 @@
 import { expect, Locator, Page } from '@playwright/test'
 import { CalendarPage } from '../calendar-page'
 import { DateDivided } from './types'
+import path from 'path'
 
 export class CommonTrackerPage extends CalendarPage {
   readonly page: Page
@@ -16,6 +17,8 @@ export class CommonTrackerPage extends CalendarPage {
   readonly buttonMoreActions: Locator
   readonly textActivityContent: Locator
   readonly linkInActivity: Locator
+  readonly inputCommentFile: Locator
+  readonly commentImg: Locator
 
   constructor (page: Page) {
     super(page)
@@ -34,6 +37,8 @@ export class CommonTrackerPage extends CalendarPage {
     this.buttonMoreActions = page.locator('div.popupPanel-title div.flex-row-center > button:first-child')
     this.textActivityContent = page.locator('div.activityMessage div.content div.content')
     this.linkInActivity = page.locator('div[id="activity:string:Activity"] a')
+    this.inputCommentFile = page.locator('input#file')
+    this.commentImg = page.locator('div.activityMessage div.content img')
   }
 
   async selectFilter (filter: string, filterSecondLevel?: string): Promise<void> {
@@ -167,5 +172,18 @@ export class CommonTrackerPage extends CalendarPage {
 
   async openLinkFromActivitiesByText (linkText: string): Promise<void> {
     await this.linkInActivity.filter({ hasText: linkText }).click()
+  }
+
+  async addCommentWithImage (comment: string, fileName: string): Promise<void> {
+    await this.inputComment.fill(comment)
+    await this.inputCommentFile.setInputFiles(path.join(__dirname, `../../files/${fileName}`))
+    await expect(this.page.locator('div[slot="header"] div.item div.name', { hasText: fileName })).toBeVisible()
+    await this.buttonSendComment.click()
+  }
+
+  async checkCommentWithImageExist (commentHeader: string, fileName: string): Promise<void> {
+    await this.checkActivityExist(commentHeader)
+    const srcset = await this.commentImg.getAttribute('srcset')
+    expect(srcset).toContain(fileName)
   }
 }
