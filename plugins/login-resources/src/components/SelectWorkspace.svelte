@@ -14,22 +14,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { OK, Severity, Status } from '@hcengineering/platform'
-  import presentation from '@hcengineering/presentation'
-  import {
-    Button,
-    Label,
-    Scroller,
-    deviceOptionsStore as deviceInfo,
-    getCurrentLocation,
-    navigate,
-    setMetadataLocalStorage
-  } from '@hcengineering/ui'
-  import login from '../plugin'
-  import { getAccount, getWorkspaces, navigateToWorkspace, selectWorkspace } from '../utils'
-  import StatusControl from './StatusControl.svelte'
   import { LoginInfo, Workspace } from '@hcengineering/login'
+  import { OK, Severity, Status } from '@hcengineering/platform'
+  import presentation, { NavLink } from '@hcengineering/presentation'
+  import { Button, Label, Scroller, deviceOptionsStore as deviceInfo, setMetadataLocalStorage } from '@hcengineering/ui'
   import { onMount } from 'svelte'
+  import login from '../plugin'
+  import { getAccount, getHref, getWorkspaces, goTo, navigateToWorkspace, selectWorkspace } from '../utils'
+  import StatusControl from './StatusControl.svelte'
 
   const CHECK_INTERVAL = 1000
 
@@ -41,11 +33,11 @@
 
   let account: LoginInfo | undefined = undefined
 
-  async function loadAccount () {
+  async function loadAccount (): Promise<void> {
     account = await getAccount()
   }
 
-  async function updateWorkspaces () {
+  async function updateWorkspaces (): Promise<void> {
     try {
       workspaces = await getWorkspaces()
     } catch (e) {
@@ -57,14 +49,14 @@
   }
 
   onMount(() => {
-    loadAccount()
+    void loadAccount()
 
     return () => {
       flagToUpdateWorkspaces = false
     }
   })
 
-  async function select (workspace: string) {
+  async function select (workspace: string): Promise<void> {
     status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
 
     const [loginStatus, result] = await selectWorkspace(workspace)
@@ -73,41 +65,24 @@
     navigateToWorkspace(workspace, result, navigateUrl)
   }
 
-  async function _getWorkspaces () {
+  async function _getWorkspaces (): Promise<void> {
     try {
       const res = await getWorkspaces()
 
       if (res.length === 0 && account?.confirmed === false) {
-        const loc = getCurrentLocation()
-        loc.path[1] = 'confirmationSend'
-        loc.path.length = 2
-        navigate(loc)
+        goTo('confirmationSend')
       }
 
       workspaces = res
       flagToUpdateWorkspaces = true
-      updateWorkspaces()
+      await updateWorkspaces()
     } catch (err: any) {
       setMetadataLocalStorage(presentation.metadata.Token, null)
       setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
       setMetadataLocalStorage(login.metadata.LoginEmail, null)
-      changeAccount()
+      goTo('login')
       throw err
     }
-  }
-
-  function createWorkspace (): void {
-    const loc = getCurrentLocation()
-    loc.path[1] = 'createWorkspace'
-    loc.path.length = 2
-    navigate(loc)
-  }
-
-  function changeAccount (): void {
-    const loc = getCurrentLocation()
-    loc.path[1] = 'login'
-    loc.path.length = 2
-    navigate(loc)
   }
 </script>
 
@@ -134,7 +109,14 @@
         {/each}
         {#if workspaces.length === 0 && account?.confirmed === true}
           <div class="form-row send">
-            <Button label={login.string.CreateWorkspace} kind={'primary'} width="100%" on:click={createWorkspace} />
+            <Button
+              label={login.string.CreateWorkspace}
+              kind={'primary'}
+              width="100%"
+              on:click={() => {
+                goTo('createWorkspace')
+              }}
+            />
           </div>
         {/if}
       </div>
@@ -144,12 +126,12 @@
       {#if workspaces.length}
         <div>
           <span><Label label={login.string.WantAnotherWorkspace} /></span>
-          <a href="." on:click|preventDefault={createWorkspace}><Label label={login.string.CreateWorkspace} /></a>
+          <NavLink href={getHref('createWorkspace')}><Label label={login.string.CreateWorkspace} /></NavLink>
         </div>
       {/if}
       <div>
         <span><Label label={login.string.NotSeeingWorkspace} /></span>
-        <a href="." on:click|preventDefault={changeAccount}><Label label={login.string.ChangeAccount} /></a>
+        <NavLink href={getHref('login')}><Label label={login.string.ChangeAccount} /></NavLink>
       </div>
     </div>
   {/await}

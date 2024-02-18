@@ -14,21 +14,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import type { IntlString } from '@hcengineering/platform'
+  import { OK, Severity, Status, translate } from '@hcengineering/platform'
   import {
+    Button,
+    Label,
+    StylishEdit,
+    deviceOptionsStore as deviceInfo,
     getCurrentLocation,
     navigate,
-    StylishEdit,
-    Label,
-    Button,
-    deviceOptionsStore as deviceInfo,
     themeStore
   } from '@hcengineering/ui'
   import StatusControl from './StatusControl.svelte'
-  import { OK, Status, Severity, translate } from '@hcengineering/platform'
-  import type { IntlString } from '@hcengineering/platform'
 
-  import login from '../plugin'
+  import { NavLink } from '@hcengineering/presentation'
   import { onMount } from 'svelte'
+  import { BottomAction, getHref } from '..'
+  import login from '../plugin'
 
   interface Field {
     id?: string
@@ -47,12 +49,6 @@
   interface Action {
     i18n: IntlString
     func: () => Promise<void>
-  }
-
-  interface BottomAction {
-    i18n: IntlString
-    func: () => void
-    caption: IntlString
   }
 
   export let caption: IntlString
@@ -107,7 +103,7 @@
 
   let inAction = false
 
-  function performAction (action: Action) {
+  function performAction (action: Action): void {
     for (const field of fields) {
       trim(field.name)
     }
@@ -223,7 +219,11 @@
       {#each bottomActions as action}
         <div>
           <span><Label label={action.caption} /></span>
-          <a href="." on:click|preventDefault={action.func}><Label label={action.i18n} /></a>
+          {#if action.page}
+            <NavLink href={getHref(action.page)}><Label label={action.i18n} /></NavLink>
+          {:else}
+            <a href="." on:click|preventDefault={action.func}><Label label={action.i18n} /></a>
+          {/if}
         </div>
       {/each}
     </div>

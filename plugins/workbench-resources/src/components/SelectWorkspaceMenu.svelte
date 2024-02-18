@@ -61,6 +61,7 @@
           if (loginInfo !== undefined) {
             tokens[ws] = loginInfo?.token
           }
+          setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
         }
         const last = localStorage.getItem(`${locationStorageKeyId}_${ws}`)
         if (last !== null) {

@@ -16,9 +16,9 @@
 <script lang="ts">
   import { OK, Severity, Status, setMetadata } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
-  import { getCurrentLocation, navigate, setMetadataLocalStorage } from '@hcengineering/ui'
+  import { setMetadataLocalStorage } from '@hcengineering/ui'
   import login from '../plugin'
-  import { signUp } from '../utils'
+  import { goTo, signUp } from '../utils'
   import Form from './Form.svelte'
 
   const fields = [
@@ -51,10 +51,7 @@
       if (result !== undefined) {
         setMetadata(presentation.metadata.Token, result.token)
         setMetadataLocalStorage(login.metadata.LastToken, result.token)
-        const loc = getCurrentLocation()
-        loc.path[1] = 'confirmationSend'
-        loc.path.length = 2
-        navigate(loc)
+        goTo('confirmationSend')
       }
     }
   }

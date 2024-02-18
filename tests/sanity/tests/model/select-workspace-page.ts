@@ -22,6 +22,7 @@ export class SelectWorkspacePage extends CommonPage {
   }
 
   async createWorkspace (workspaceName: string): Promise<void> {
+    await this.buttonCreateWorkspace.waitFor({ state: 'visible' })
     await this.buttonWorkspaceName.fill(workspaceName)
     expect(await this.buttonCreateNewWorkspace.isEnabled()).toBe(true)
     await this.buttonCreateNewWorkspace.click()

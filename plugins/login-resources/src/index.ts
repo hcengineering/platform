@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import { type IntlString } from '@hcengineering/platform'
 import InviteLink from './components/InviteLink.svelte'
 import LoginApp from './components/LoginApp.svelte'
 import { changePassword, getWorkspaces, leaveWorkspace, selectWorkspace, sendInvite } from './utils'
@@ -37,5 +38,26 @@ export default async () => ({
     SendInvite: sendInvite
   }
 })
+
+export const pages = [
+  'login',
+  'signup',
+  'createWorkspace',
+  'password',
+  'recovery',
+  'selectWorkspace',
+  'join',
+  'confirm',
+  'confirmationSend'
+] as const
+
+export type Pages = (typeof pages)[number]
+
+export interface BottomAction {
+  i18n: IntlString
+  page?: Pages
+  func: () => void
+  caption: IntlString
+}
 
 export * from './utils'

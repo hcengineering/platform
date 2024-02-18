@@ -23,6 +23,8 @@
   import presentation from '@hcengineering/presentation'
   import { workbenchId } from '@hcengineering/workbench'
   import { onMount } from 'svelte'
+  import { BottomAction } from '..'
+  import { loginAction, recoveryAction } from '../actions'
   import login from '../plugin'
 
   const location = getCurrentLocation()
@@ -88,46 +90,22 @@
     }
   }
 
-  $: bottom = page === 'login' ? [signUpAction] : [loginJoinAction]
-  $: secondaryButtonLabel = page === 'login' ? login.string.SignUp : undefined
-  $: secondaryButtonAction = () => {
-    page = 'signUp'
-  }
-
-  const signUpAction = {
+  const signUpAction: BottomAction = {
     caption: login.string.DoNotHaveAnAccount,
     i18n: login.string.SignUp,
     func: () => (page = 'signUp')
   }
 
-  const loginJoinAction = {
+  const loginJoinAction: BottomAction = {
     caption: login.string.HaveAccount,
     i18n: login.string.LogIn,
     func: () => (page = 'login')
   }
 
-  const loginAction = {
-    caption: login.string.AlreadyJoined,
-    i18n: login.string.LogIn,
-    func: () => {
-      const loc = getCurrentLocation()
-      loc.path[1] = 'login'
-      loc.query = undefined
-      loc.path.length = 2
-      navigate(loc)
-    }
-  }
-
-  const recoveryAction = {
-    caption: login.string.ForgotPassword,
-    i18n: login.string.Recover,
-    func: () => {
-      const loc = getCurrentLocation()
-      loc.path[1] = 'password'
-      loc.query = undefined
-      loc.path.length = 2
-      navigate(loc)
-    }
+  $: bottom = page === 'login' ? [signUpAction] : [loginJoinAction]
+  $: secondaryButtonLabel = page === 'login' ? login.string.SignUp : undefined
+  $: secondaryButtonAction = () => {
+    page = 'signUp'
   }
 
   onMount(() => {

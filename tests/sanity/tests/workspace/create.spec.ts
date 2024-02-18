@@ -29,7 +29,6 @@ test.describe('Workspace tests', () => {
     await signUpPage.signUp(newUser)
 
     const selectWorkspacePage = new SelectWorkspacePage(page)
-    await selectWorkspacePage.buttonCreateWorkspace.click()
     await selectWorkspacePage.createWorkspace(newWorkspaceName)
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
@@ -67,7 +66,6 @@ test.describe('Workspace tests', () => {
     await signUpPage.signUp(newUser)
 
     const selectWorkspacePage = new SelectWorkspacePage(page)
-    await selectWorkspacePage.buttonCreateWorkspace.click()
     await selectWorkspacePage.createWorkspace(newWorkspaceName)
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
@@ -118,7 +116,6 @@ test.describe('Workspace tests', () => {
     await signUpPage.buttonSignUp.click()
 
     const selectWorkspacePage = new SelectWorkspacePage(page)
-    await selectWorkspacePage.buttonCreateWorkspace.click()
     await selectWorkspacePage.checkInfo(page, 'Required field Workspace name')
     await selectWorkspacePage.buttonWorkspaceName.fill(newWorkspaceName)
     await selectWorkspacePage.checkInfoSectionNotExist(page)
@@ -141,7 +138,6 @@ test.describe('Workspace tests', () => {
     await signUpPage.signUp(newUser)
 
     const selectWorkspacePage = new SelectWorkspacePage(page)
-    await selectWorkspacePage.buttonCreateWorkspace.click()
     await selectWorkspacePage.createWorkspace(newWorkspaceName)
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
@@ -191,7 +187,6 @@ test.describe('Workspace tests', () => {
     await signUpPage.signUp(newUser)
 
     const selectWorkspacePage = new SelectWorkspacePage(page)
-    await selectWorkspacePage.buttonCreateWorkspace.click()
     await selectWorkspacePage.createWorkspace(newWorkspaceName)
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
