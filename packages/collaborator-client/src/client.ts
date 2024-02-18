@@ -80,10 +80,7 @@ export interface CollaborativeDocSnapshotParams {
 export interface CollaboratorClient {
   get: (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string) => Promise<Markup>
   update: (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string, value: Markup) => Promise<void>
-  snapshot: (
-    collaborativeDoc: CollaborativeDoc,
-    params: CollaborativeDocSnapshotParams
-  ) => Promise<CollaborativeDoc>
+  snapshot: (collaborativeDoc: CollaborativeDoc, params: CollaborativeDocSnapshotParams) => Promise<CollaborativeDoc>
 }
 
 /** @public */
@@ -136,7 +133,7 @@ class CollaboratorClientImpl implements CollaboratorClient {
     const initialContentId = this.initialContentId(workspace, classId, docId, attribute)
 
     const payload: GetDocumentContentRequest = { documentId, initialContentId, field: attribute }
-    const res = await this.rpc('getDocumentContent', payload) as GetDocumentContentResponse
+    const res = (await this.rpc('getDocumentContent', payload)) as GetDocumentContentResponse
 
     return res.html ?? '<p></p>'
   }
