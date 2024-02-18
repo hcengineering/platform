@@ -26,7 +26,9 @@
 
   let reactions: Reaction[] = []
 
-  $: if (object) {
+  $: hasReactions = object?.reactions && object.reactions > 0
+
+  $: if (object && hasReactions) {
     reactionsQuery.query(activity.class.Reaction, { attachedTo: object._id }, (res?: Reaction[]) => {
       reactions = res || []
     })
@@ -37,7 +39,7 @@
   }
 </script>
 
-{#if object?.reactions && object.reactions > 0}
+{#if object && hasReactions}
   <div class="footer flex-col p-inline contrast mt-2 min-h-6">
     <Reactions {reactions} {object} on:click={handleClick} />
   </div>
