@@ -23,8 +23,9 @@ import {
   Ref,
   Timestamp,
   WorkspaceId,
-  collaborativeDoc,
   concatLink,
+  getCollaborativeDoc,
+  getCollaborativeDocId,
   toCollaborativeDocVersion
 } from '@hcengineering/core'
 import { DocumentURI, collaborativeDocumentUri, mongodbDocumentUri } from './uri'
@@ -129,7 +130,8 @@ class CollaboratorClientImpl implements CollaboratorClient {
 
   async get (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string): Promise<Markup> {
     const workspace = this.workspace.name
-    const documentId = collaborativeDocumentUri(workspace, collaborativeDoc(docId, attribute))
+    const collaborativeDocId = getCollaborativeDocId(docId, attribute)
+    const documentId = collaborativeDocumentUri(workspace, getCollaborativeDoc(collaborativeDocId))
     const initialContentId = this.initialContentId(workspace, classId, docId, attribute)
 
     const payload: GetDocumentContentRequest = { documentId, initialContentId, field: attribute }
@@ -140,7 +142,8 @@ class CollaboratorClientImpl implements CollaboratorClient {
 
   async update (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string, value: Markup): Promise<void> {
     const workspace = this.workspace.name
-    const documentId = collaborativeDocumentUri(workspace, collaborativeDoc(docId, attribute))
+    const collaborativeDocId = getCollaborativeDocId(docId, attribute)
+    const documentId = collaborativeDocumentUri(workspace, getCollaborativeDoc(collaborativeDocId))
     const initialContentId = this.initialContentId(workspace, classId, docId, attribute)
 
     const payload: UpdateDocumentContentRequest = { documentId, initialContentId, field: attribute, html: value }

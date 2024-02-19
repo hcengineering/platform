@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { CollaborativeDoc, Doc, collaborativeDoc } from '@hcengineering/core'
+  import core, { CollaborativeDoc, Doc, getCollaborativeDoc, getCollaborativeDocId } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { KeyedAttribute, getAttribute, getClient } from '@hcengineering/presentation'
   import { registerFocus } from '@hcengineering/ui'
@@ -55,7 +55,9 @@
       return collaborativeDocumentId(value as CollaborativeDoc)
     } else {
       // TODO Remove this when we migrate to minio
-      return collaborativeDocumentId(collaborativeDoc(object._id, key.key))
+      const collaborativeDocId = getCollaborativeDocId(object._id, key.key)
+      const collaborativeDoc = getCollaborativeDoc(collaborativeDocId)
+      return collaborativeDocumentId(collaborativeDoc)
     }
   }
 
@@ -121,4 +123,6 @@
   on:blur
   on:update
   on:open-document
+/>
+
 />
