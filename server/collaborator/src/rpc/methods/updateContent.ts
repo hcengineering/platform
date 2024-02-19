@@ -14,20 +14,17 @@
 //
 
 import { MeasureContext } from '@hcengineering/core'
-import {
-  type UpdateDocumentContentRequest,
-  type UpdateDocumentContentResponse
-} from '@hcengineering/collaborator-client'
+import { type UpdateContentRequest, type UpdateContentResponse } from '@hcengineering/collaborator-client'
 import { applyUpdate, encodeStateAsUpdate } from 'yjs'
 import { Context } from '../../context'
 import { RpcMethodParams } from '../rpc'
 
-export async function updateDocumentContent (
+export async function updateContent (
   ctx: MeasureContext,
   context: Context,
-  payload: UpdateDocumentContentRequest,
+  payload: UpdateContentRequest,
   params: RpcMethodParams
-): Promise<UpdateDocumentContentResponse> {
+): Promise<UpdateContentResponse> {
   const { documentId, field, html } = payload
   const { hocuspocus, transformer } = params
 

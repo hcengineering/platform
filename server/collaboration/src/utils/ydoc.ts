@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Doc as YDoc, applyUpdate, encodeStateAsUpdate } from 'yjs'
+import { AbstractType as YAbstractType, Doc as YDoc, applyUpdate, encodeStateAsUpdate } from 'yjs'
 
 /** @public */
 export function yDocFromBuffer (buffer: Buffer, ydoc: YDoc): YDoc {
@@ -30,4 +30,18 @@ export function yDocFromBuffer (buffer: Buffer, ydoc: YDoc): YDoc {
 export function yDocToBuffer (ydoc: YDoc): Buffer {
   const update = encodeStateAsUpdate(ydoc)
   return Buffer.from(update.buffer)
+}
+
+/** @public */
+export function yDocCopyXmlField (ydoc: YDoc, source: string, target: string): void {
+  const srcField = ydoc.getXmlFragment(source)
+  const dstField = ydoc.getXmlFragment(target)
+
+  ydoc.transact((tr) => {
+    // similar to XmlFragment's clone method
+    dstField.insert(
+      0,
+      srcField.toArray().map((item) => (item instanceof YAbstractType ? item.clone() : item)) as any
+    )
+  })
 }

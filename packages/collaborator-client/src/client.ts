@@ -31,19 +31,19 @@ import {
 import { DocumentURI, collaborativeDocumentUri, mongodbDocumentUri } from './uri'
 
 /** @public */
-export interface GetDocumentContentRequest {
+export interface GetContentRequest {
   documentId: DocumentURI
   initialContentId: DocumentURI
   field: string
 }
 
 /** @public */
-export interface GetDocumentContentResponse {
+export interface GetContentResponse {
   html: string
 }
 
 /** @public */
-export interface UpdateDocumentContentRequest {
+export interface UpdateContentRequest {
   documentId: DocumentURI
   initialContentId: DocumentURI
   field: string
@@ -52,7 +52,38 @@ export interface UpdateDocumentContentRequest {
 
 /** @public */
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface UpdateDocumentContentResponse {}
+export interface UpdateContentResponse {}
+
+/** @public */
+export interface CopyContentRequest {
+  documentId: DocumentURI
+  sourceField: string
+  targetField: string
+}
+
+/** @public */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface CopyContentResponse {}
+
+/** @public */
+export interface BranchDocumentRequest {
+  sourceDocumentId: DocumentURI
+  targetDocumentId: DocumentURI
+}
+
+/** @public */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface BranchDocumentResponse {}
+
+/** @public */
+export interface RemoveDocumentRequest {
+  documentId: DocumentURI
+  collaborativeDoc: CollaborativeDoc
+}
+
+/** @public */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface RemoveDocumentResponse {}
 
 /** @public */
 export interface TakeSnapshotRequest {
@@ -79,8 +110,14 @@ export interface CollaborativeDocSnapshotParams {
 
 /** @public */
 export interface CollaboratorClient {
-  get: (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string) => Promise<Markup>
-  update: (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string, value: Markup) => Promise<void>
+  // field operations
+  getContent: (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string) => Promise<Markup>
+  updateContent: (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string, value: Markup) => Promise<void>
+  copyContent: (collaborativeDoc: CollaborativeDoc, sourceField: string, targetField: string) => Promise<void>
+
+  // document operations
+  branch: (source: CollaborativeDoc, target: CollaborativeDoc) => Promise<void>
+  remove: (collaborativeDoc: CollaborativeDoc) => Promise<void>
   snapshot: (collaborativeDoc: CollaborativeDoc, params: CollaborativeDocSnapshotParams) => Promise<CollaborativeDoc>
 }
 
@@ -128,26 +165,51 @@ class CollaboratorClientImpl implements CollaboratorClient {
     return result
   }
 
-  async get (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string): Promise<Markup> {
+  async getContent (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string): Promise<Markup> {
     const workspace = this.workspace.name
     const collaborativeDocId = getCollaborativeDocId(docId, attribute)
     const documentId = collaborativeDocumentUri(workspace, getCollaborativeDoc(collaborativeDocId))
     const initialContentId = this.initialContentId(workspace, classId, docId, attribute)
 
-    const payload: GetDocumentContentRequest = { documentId, initialContentId, field: attribute }
-    const res = (await this.rpc('getDocumentContent', payload)) as GetDocumentContentResponse
+    const payload: GetContentRequest = { documentId, initialContentId, field: attribute }
+    const res = (await this.rpc('getContent', payload)) as GetContentResponse
 
     return res.html ?? '<p></p>'
   }
 
-  async update (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string, value: Markup): Promise<void> {
+  async updateContent (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string, value: Markup): Promise<void> {
     const workspace = this.workspace.name
     const collaborativeDocId = getCollaborativeDocId(docId, attribute)
     const documentId = collaborativeDocumentUri(workspace, getCollaborativeDoc(collaborativeDocId))
     const initialContentId = this.initialContentId(workspace, classId, docId, attribute)
 
-    const payload: UpdateDocumentContentRequest = { documentId, initialContentId, field: attribute, html: value }
-    await this.rpc('updateDocumentContent', payload)
+    const payload: UpdateContentRequest = { documentId, initialContentId, field: attribute, html: value }
+    await this.rpc('updateContent', payload)
+  }
+
+  async copyContent (collaborativeDoc: CollaborativeDoc, sourceField: string, targetField: string): Promise<void> {
+    const workspace = this.workspace.name
+    const documentId = collaborativeDocumentUri(workspace, collaborativeDoc)
+
+    const payload: CopyContentRequest = { documentId, sourceField, targetField }
+    await this.rpc('copyContent', payload)
+  }
+
+  async branch (source: CollaborativeDoc, target: CollaborativeDoc): Promise<void> {
+    const workspace = this.workspace.name
+    const sourceDocumentId = collaborativeDocumentUri(workspace, source)
+    const targetDocumentId = collaborativeDocumentUri(workspace, target)
+
+    const payload: BranchDocumentRequest = { sourceDocumentId, targetDocumentId }
+    await this.rpc('branchDocument', payload)
+  }
+
+  async remove (collaborativeDoc: CollaborativeDoc): Promise<void> {
+    const workspace = this.workspace.name
+    const documentId = collaborativeDocumentUri(workspace, collaborativeDoc)
+
+    const payload: RemoveDocumentRequest = { documentId, collaborativeDoc }
+    await this.rpc('removeDocument', payload)
   }
 
   async snapshot (

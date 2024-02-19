@@ -29,9 +29,7 @@ import { getCurrentLocation } from '@hcengineering/ui'
 import { getClient } from '.'
 import presentation from './plugin'
 
-/**
- * @public
- */
+/** @public */
 export function getCollaboratorClient (): CollaboratorClient {
   const workspaceId = getWorkspaceId(getCurrentLocation().path[1] ?? '')
   const hierarchy = getClient().getHierarchy()
@@ -41,17 +39,13 @@ export function getCollaboratorClient (): CollaboratorClient {
   return getCollaborator(hierarchy, workspaceId, token, collaboratorURL)
 }
 
-/**
- * @public
- */
+/** @public */
 export async function getMarkup (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string): Promise<Markup> {
   const client = getCollaboratorClient()
-  return await client.get(classId, docId, attribute)
+  return await client.getContent(classId, docId, attribute)
 }
 
-/**
- * @public
- */
+/** @public */
 export async function updateMarkup (
   classId: Ref<Class<Doc>>,
   docId: Ref<Doc>,
@@ -60,12 +54,16 @@ export async function updateMarkup (
 ): Promise<void> {
   const client = getCollaboratorClient()
 
-  await client.update(classId, docId, attribute, value)
+  await client.updateContent(classId, docId, attribute, value)
 }
 
-/**
- * @public
- */
+/** @public */
+export async function copyDocumentContent (collaborativeDoc: CollaborativeDoc, sourceField: string, targetField: string): Promise<void> {
+  const client = getCollaboratorClient()
+  await client.copyContent(collaborativeDoc, sourceField, targetField)
+}
+
+/** @public */
 export async function takeSnapshot (
   collaborativeDoc: CollaborativeDoc,
   snapshotName: string

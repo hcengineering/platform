@@ -14,16 +14,16 @@
 //
 
 import { MeasureContext } from '@hcengineering/core'
-import { type GetDocumentContentRequest, type GetDocumentContentResponse } from '@hcengineering/collaborator-client'
+import { type GetContentRequest, type GetContentResponse } from '@hcengineering/collaborator-client'
 import { Context } from '../../context'
 import { RpcMethodParams } from '../rpc'
 
-export async function getDocumentContent (
+export async function getContent (
   ctx: MeasureContext,
   context: Context,
-  payload: GetDocumentContentRequest,
+  payload: GetContentRequest,
   params: RpcMethodParams
-): Promise<GetDocumentContentResponse> {
+): Promise<GetContentResponse> {
   const { documentId, field } = payload
   const { hocuspocus, transformer } = params
 

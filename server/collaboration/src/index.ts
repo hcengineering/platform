@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+export * from './history/branch'
 export * from './history/history'
 export * from './history/snapshot'
 export * from './utils/collaborative-doc'
