@@ -19,7 +19,8 @@ import {
   NodeView,
   type NodeViewProps,
   type NodeViewRenderer,
-  type NodeViewRendererOptions
+  type NodeViewRendererOptions,
+  type NodeViewRendererProps
 } from '@tiptap/core'
 import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
 import type { ComponentType, SvelteComponent } from 'svelte'
@@ -43,13 +44,18 @@ export type SvelteNodeViewComponent = typeof SvelteComponent | ComponentType
  * https://tiptap.dev/guide/node-views/react/
  */
 class SvelteNodeView extends NodeView<SvelteNodeViewComponent, Editor, SvelteNodeViewRendererOptions> {
-  renderer!: SvelteRenderer
+  private readonly renderer!: SvelteRenderer
 
-  contentDOMElement!: HTMLElement | null
+  private contentDOMElement!: HTMLElement | null
 
-  isEditable!: boolean
+  private isEditable!: boolean
 
-  override mount (): void {
+  constructor (
+    component: SvelteNodeViewComponent,
+    prop: NodeViewRendererProps,
+    options?: Partial<SvelteNodeViewRendererOptions>
+  ) {
+    super(component, prop, options)
     const props: SvelteNodeViewProps = {
       editor: this.editor,
       node: this.node,
@@ -83,7 +89,6 @@ class SvelteNodeView extends NodeView<SvelteNodeViewComponent, Editor, SvelteNod
     })
 
     this.renderer = new SvelteRenderer(this.component, { element: target, props, context })
-
     this.editor.on('update', this.handleEditorUpdate.bind(this))
   }
 
