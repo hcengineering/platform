@@ -469,7 +469,7 @@
     {
       "packageName": "@hcengineering/collaboration",
       "projectFolder": "server/collaboration",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/server-ws",
