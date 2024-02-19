@@ -15,7 +15,7 @@ import {
   TxUpdateDoc
 } from '@hcengineering/core'
 import core from '@hcengineering/core/lib/component'
-import { DocAttributeUpdates, DocUpdateAction } from '@hcengineering/activity'
+import { ActivityMessageControl, DocAttributeUpdates, DocUpdateAction } from '@hcengineering/activity'
 import { ActivityControl, DocObjectCache, getAllObjectTransactions } from '@hcengineering/server-activity'
 import { getDocCollaborators } from '@hcengineering/server-notification-resources'
 import notification from '@hcengineering/notification'
@@ -224,7 +224,8 @@ export async function getTxAttributesUpdates (
   originTx: TxCUD<Doc>,
   tx: TxCUD<Doc>,
   object: Doc,
-  objectCache?: DocObjectCache
+  objectCache?: DocObjectCache,
+  controlRules?: ActivityMessageControl[]
 ): Promise<DocAttributeUpdates[]> {
   if (![core.class.TxMixin, core.class.TxUpdateDoc].includes(tx._class)) {
     return []
@@ -242,7 +243,15 @@ export async function getTxAttributesUpdates (
   }
 
   const hierarchy = control.hierarchy
-  const keys = getAvailableAttributesKeys(tx, hierarchy)
+
+  const filterSet = new Set<string>()
+  for (const c of controlRules ?? []) {
+    for (const f of c.skipFields ?? []) {
+      filterSet.add(f)
+    }
+  }
+
+  const keys = getAvailableAttributesKeys(tx, hierarchy).filter((it) => !filterSet.has(it))
 
   if (keys.length === 0) {
     return []

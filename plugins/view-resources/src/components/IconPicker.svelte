@@ -14,7 +14,15 @@
 -->
 <script lang="ts">
   import { Asset, Metadata } from '@hcengineering/platform'
-  import { Button, EmojiPopup, TabsControl, getPlatformColor, getPlatformColorDef, themeStore } from '@hcengineering/ui'
+  import {
+    Button,
+    EmojiPopup,
+    TabsControl,
+    fromCodePoint,
+    getPlatformColor,
+    getPlatformColorDef,
+    themeStore
+  } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
   import ColorsPopup from './ColorsPopup.svelte'
@@ -75,7 +83,7 @@
         {:else}
           <EmojiPopup
             embedded
-            selected={String.fromCodePoint(color ?? 0)}
+            selected={fromCodePoint(color ?? 0)}
             on:close={(evt) => {
               dispatch('close', { icon: iconWithEmoji, color: evt.detail.codePointAt(0) })
             }}

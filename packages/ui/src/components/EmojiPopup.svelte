@@ -16,6 +16,7 @@
   import { tooltip } from '../tooltips'
   import { AnySvelteComponent, emojiSP } from '../types'
   import plugin from '../plugin'
+  import { fromCodePoint } from '../utils'
 
   export let embedded = false
   export let selected: string | undefined
@@ -108,7 +109,7 @@
 
   function getEmojis (startCode: number, endCode: number, postfix?: number[]): Array<string | undefined> {
     return [...Array(endCode - startCode + 1).keys()].map((v) => {
-      const str = postfix ? String.fromCodePoint(v + startCode, ...postfix) : String.fromCodePoint(v + startCode)
+      const str = postfix ? fromCodePoint(v + startCode, ...postfix) : fromCodePoint(v + startCode)
       if ([...str.matchAll(regex)].length > 0) return str
       return undefined
     })
