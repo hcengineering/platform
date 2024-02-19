@@ -94,6 +94,7 @@
     "Private": "Private",
     "NewDirectChat": "New direct chat",
     "AddMembers": "Add members",
-    "PinnedCount": "{count} pinned"
+    "PinnedCount": "{count} pinned",
+    "LoadingHistory": "Loading history..."
   }
 }

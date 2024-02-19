@@ -44,6 +44,7 @@
   export let stickedScrollBars: boolean = false
   export let thinScrollBars: boolean = false
   export let onScroll: ((params: ScrollParams) => void) | undefined = undefined
+  export let onResize: (() => void) | undefined = undefined
 
   export function scroll (top: number, left?: number, behavior: 'auto' | 'smooth' = 'auto') {
     if (divScroll) {
@@ -538,6 +539,7 @@
       bind:this={divScroll}
       use:resizeObserver={(element) => {
         divHeight = element.clientHeight
+        onResize?.()
       }}
       class="scroll relative flex-shrink"
       style:overflow-x={horizontal ? 'auto' : 'hidden'}

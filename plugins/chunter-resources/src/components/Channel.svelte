@@ -13,46 +13,63 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, Ref } from '@hcengineering/core'
+  import { Class, Doc, Ref, Timestamp } from '@hcengineering/core'
   import { DocNotifyContext } from '@hcengineering/notification'
-  import { location as locationStore } from '@hcengineering/ui'
-  import { onDestroy } from 'svelte'
-  import { ActivityMessage, ActivityMessagesFilter, DisplayActivityMessage } from '@hcengineering/activity'
+  import activity, { ActivityMessage, ActivityMessagesFilter } from '@hcengineering/activity'
   import { getClient } from '@hcengineering/presentation'
   import { getMessageFromLoc } from '@hcengineering/activity-resources'
+  import { location as locationStore } from '@hcengineering/ui'
 
   import chunter from '../plugin'
   import ChannelScrollView from './ChannelScrollView.svelte'
+  import { ChannelDataProvider } from '../channelDataProvider'
 
   export let context: DocNotifyContext
   export let object: Doc | undefined
   export let filters: Ref<ActivityMessagesFilter>[] = []
-  export let messages: DisplayActivityMessage[] = []
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
+  let dataProvider: ChannelDataProvider | undefined
   let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
 
-  const unsubscribe = locationStore.subscribe((newLocation) => {
+  locationStore.subscribe((newLocation) => {
     selectedMessageId = getMessageFromLoc(newLocation)
   })
 
-  onDestroy(unsubscribe)
-
   $: isDocChannel = !hierarchy.isDerived(context.attachedToClass, chunter.class.ChunterSpace)
+  $: _class = isDocChannel ? activity.class.ActivityMessage : chunter.class.ChatMessage
   $: collection = isDocChannel ? 'comments' : 'messages'
+
+  $: updateDataProvider(context.attachedTo, _class, context.lastViewedTimestamp, selectedMessageId)
+
+  function updateDataProvider (
+    attachedTo: Ref<Doc>,
+    _class: Ref<Class<ActivityMessage>>,
+    lastViewedTimestamp?: Timestamp,
+    selectedMessageId?: Ref<ActivityMessage>
+  ) {
+    if (dataProvider === undefined) {
+      // For now loading all messages for documents with activity. Need to correct handle aggregation with pagination.
+      // Perhaps we should load all activity messages once, and keep loading in chunks only for ChatMessages then merge them correctly with activity messages
+      const loadAll = isDocChannel
+      dataProvider = new ChannelDataProvider(attachedTo, _class, lastViewedTimestamp, selectedMessageId, loadAll)
+    }
+  }
 </script>
 
-<ChannelScrollView
-  {messages}
-  objectId={context.attachedTo}
-  objectClass={context.attachedToClass}
-  {object}
-  skipLabels={!isDocChannel}
-  selectedFilters={filters}
-  startFromBottom
-  {selectedMessageId}
-  {collection}
-  lastViewedTimestamp={context.lastViewedTimestamp}
-/>
+{#if dataProvider}
+  <ChannelScrollView
+    objectId={context.attachedTo}
+    objectClass={context.attachedToClass}
+    {object}
+    skipLabels={!isDocChannel}
+    selectedFilters={filters}
+    startFromBottom
+    {selectedMessageId}
+    {collection}
+    provider={dataProvider}
+    loadMoreAllowed={!isDocChannel}
+  />
+{/if}
