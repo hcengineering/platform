@@ -16,7 +16,9 @@ export function isIssueId (shortLink: string): boolean {
 
 export async function issueIdentifierProvider (client: TxOperations, ref: Ref<Doc>): Promise<string> {
   const object = await client.findOne(tracker.class.Issue, { _id: ref as Ref<Issue> })
-  if (object === undefined) throw new Error(`Issue project not found, _id: ${ref}`)
+  if (object === undefined) {
+    return ''
+  }
   return object.identifier
 }
 

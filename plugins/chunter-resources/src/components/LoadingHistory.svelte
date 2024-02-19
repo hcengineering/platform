@@ -33,7 +33,7 @@
     align-items: center;
     justify-content: center;
     color: var(--global-secondary-TextColor);
-    font-weight: 600;
+    font-weight: 500;
     height: 5rem;
     min-height: 5rem;
   }

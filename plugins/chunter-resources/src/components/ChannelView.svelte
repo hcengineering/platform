@@ -13,14 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref, SortingOrder } from '@hcengineering/core'
-  import { defineSeparators, Loading, location as locationStore, panelSeparators, Separator } from '@hcengineering/ui'
+  import { Doc, Ref } from '@hcengineering/core'
+  import { defineSeparators, location as locationStore, panelSeparators, Separator } from '@hcengineering/ui'
   import { DocNotifyContext } from '@hcengineering/notification'
-  import activity, { ActivityMessage, ActivityMessagesFilter } from '@hcengineering/activity'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { combineActivityMessages } from '@hcengineering/activity-resources'
+  import { ActivityMessagesFilter } from '@hcengineering/activity'
+  import { getClient } from '@hcengineering/presentation'
   import { Channel } from '@hcengineering/chunter'
-  import attachment from '@hcengineering/attachment'
 
   import ChannelComponent from './Channel.svelte'
   import ChannelHeader from './ChannelHeader.svelte'
@@ -35,12 +33,9 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const messagesQuery = createQuery()
 
-  let activityMessages: ActivityMessage[] = []
   let isThreadOpened = false
   let isAsideShown = false
-  let isLoading = true
 
   let filters: Ref<ActivityMessagesFilter>[] = []
 
@@ -51,37 +46,6 @@
   $: isDocChat = !hierarchy.isDerived(context.attachedToClass, chunter.class.ChunterSpace)
   $: withAside =
     !embedded && !isThreadOpened && !hierarchy.isDerived(context.attachedToClass, chunter.class.DirectMessage)
-
-  $: updateMessagesQuery(isDocChat ? activity.class.ActivityMessage : chunter.class.ChatMessage, context.attachedTo)
-
-  function updateMessagesQuery (_class: Ref<Class<ActivityMessage>>, attachedTo: Ref<Doc>) {
-    isLoading = true
-    const res = messagesQuery.query(
-      _class,
-      { attachedTo },
-      (res) => {
-        if (_class === chunter.class.ChatMessage) {
-          activityMessages = res
-          isLoading = false
-        } else {
-          combineActivityMessages(res).then((messages) => {
-            activityMessages = messages
-            isLoading = false
-          })
-        }
-      },
-      {
-        sort: { createdOn: SortingOrder.Ascending },
-        lookup: {
-          _id: { attachments: attachment.class.Attachment }
-        }
-      }
-    )
-
-    if (!res) {
-      isLoading = false
-    }
-  }
 
   function toChannel (object?: Doc) {
     return object as Channel | undefined
@@ -110,31 +74,29 @@
     }}
   />
 
-  <div class="popupPanel-body" class:asideShown={withAside && isAsideShown && !isLoading}>
-    {#if isLoading}
-      <Loading />
-    {:else}
-      <div class="popupPanel-body__main">
-        <ChannelComponent {context} {object} {filters} messages={activityMessages} />
-      </div>
+  <div class="popupPanel-body" class:asideShown={withAside && isAsideShown}>
+    <div class="popupPanel-body__main">
+      {#key context._id}
+        <ChannelComponent {context} {object} {filters} />
+      {/key}
+    </div>
 
-      {#if withAside && isAsideShown && !isLoading}
-        <Separator name="aside" float={false} index={0} />
-        <div class="popupPanel-body__aside" class:float={false} class:shown={withAside && isAsideShown}>
-          <Separator name="aside" float index={0} />
-          <div class="antiPanel-wrap__content">
-            {#if hierarchy.isDerived(context.attachedToClass, chunter.class.Channel)}
-              <ChannelAside
-                _id={toChannelRef(context.attachedTo)}
-                _class={context.attachedToClass}
-                object={toChannel(object)}
-              />
-            {:else}
-              <DocAside _id={context.attachedTo} _class={context.attachedToClass} {object} />
-            {/if}
-          </div>
+    {#if withAside && isAsideShown}
+      <Separator name="aside" float={false} index={0} />
+      <div class="popupPanel-body__aside" class:float={false} class:shown={withAside && isAsideShown}>
+        <Separator name="aside" float index={0} />
+        <div class="antiPanel-wrap__content">
+          {#if hierarchy.isDerived(context.attachedToClass, chunter.class.Channel)}
+            <ChannelAside
+              _id={toChannelRef(context.attachedTo)}
+              _class={context.attachedToClass}
+              object={toChannel(object)}
+            />
+          {:else}
+            <DocAside _id={context.attachedTo} _class={context.attachedToClass} {object} />
+          {/if}
         </div>
-      {/if}
+      </div>
     {/if}
   </div>
 </div>

@@ -25,6 +25,7 @@
     Location
   } from '@hcengineering/ui'
   import { DocNotifyContext } from '@hcengineering/notification'
+
   import { NavigatorModel, SpecialNavModel } from '@hcengineering/workbench'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { loadSavedMessages } from '@hcengineering/activity-resources'

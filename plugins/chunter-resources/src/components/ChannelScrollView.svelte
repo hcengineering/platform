@@ -13,27 +13,30 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, generateId, getCurrentAccount, isOtherDay, Ref, Timestamp } from '@hcengineering/core'
+  import { Class, Doc, getDay, Ref, Timestamp } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import activity, {
     ActivityExtension,
     ActivityMessage,
     ActivityMessagesFilter,
-    DisplayActivityMessage,
-    type DisplayDocUpdateMessage
+    DisplayActivityMessage
   } from '@hcengineering/activity'
-  import { Scroller, ScrollParams } from '@hcengineering/ui'
+  import { Loading, Scroller, ScrollParams } from '@hcengineering/ui'
   import {
     ActivityExtension as ActivityExtensionComponent,
     ActivityMessagePresenter
   } from '@hcengineering/activity-resources'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
+  import { get } from 'svelte/store'
+  import { tick } from 'svelte'
 
   import ActivityMessagesSeparator from './ChannelMessagesSeparator.svelte'
+  import { filterChatMessages, getClosestDate, readChannelMessages } from '../utils'
+  import HistoryLoading from './LoadingHistory.svelte'
+  import { ChannelDataProvider } from '../channelDataProvider'
   import JumpToDateSelector from './JumpToDateSelector.svelte'
-  import { filterChatMessages, getClosestDateSelectorDate } from '../utils'
 
-  export let messages: DisplayActivityMessage[] = []
+  export let provider: ChannelDataProvider
   export let object: Doc | undefined
   export let objectClass: Ref<Class<Doc>>
   export let objectId: Ref<Doc>
@@ -45,7 +48,7 @@
   export let collection: string | undefined = undefined
   export let showEmbedded = false
   export let skipLabels = false
-  export let lastViewedTimestamp: Timestamp | undefined = undefined
+  export let loadMoreAllowed = true
 
   const dateSelectorHeight = 30
   const headerHeight = 50
@@ -55,19 +58,32 @@
   const contextByDocStore = inboxClient.docNotifyContextByDoc
   const filters = client.getModel().findAllSync(activity.class.ActivityMessagesFilter, {})
 
+  const messagesStore = provider.messagesStore
+  const isLoadingStore = provider.isLoadingStore
+  const isLoadingMoreStore = provider.isLoadingMoreStore
+  const newTimestampStore = provider.newTimestampStore
+  const datesStore = provider.datesStore
+
+  let messages: ActivityMessage[] = []
   let displayMessages: DisplayActivityMessage[] = []
   let extensions: ActivityExtension[] = []
 
+  let scroller: Scroller | undefined = undefined
   let separatorElement: HTMLDivElement | undefined = undefined
-  let separatorPosition: number | undefined = undefined
-  let selectedDate: Timestamp | undefined = undefined
+  let scrollContentBox: HTMLDivElement | undefined = undefined
 
   let autoscroll = false
-  let scrollContentBox: HTMLDivElement | undefined = undefined
-  let shouldWaitAndRead = false
-
   let shouldScrollToNew = false
+  let shouldWaitAndRead = false
+  let isScrollInitialized = false
+
+  let selectedDate: Timestamp | undefined = undefined
+  let dateToJump: Timestamp | undefined = undefined
+
   let messagesCount = 0
+
+  $: messages = $messagesStore
+  $: isLoading = $isLoadingStore
 
   $: extensions = client.getModel().findAllSync(activity.class.ActivityExtension, { ofClass: objectClass })
 
@@ -78,20 +94,18 @@
   })
 
   function scrollToBottom (afterScrollFn?: () => void) {
-    if (scrollElement !== undefined) {
-      scrollElement?.scrollTo(0, scrollElement.scrollHeight)
+    if (scroller !== undefined && scrollElement !== undefined) {
+      scroller.scrollBy(scrollElement.scrollHeight)
       afterScrollFn?.()
     }
   }
 
   function scrollToSeparator () {
-    setTimeout(() => {
-      if (separatorElement) {
-        separatorElement.scrollIntoView()
-        updateShouldScrollToNew()
-        readViewportMessages()
-      }
-    }, 100)
+    if (separatorElement) {
+      separatorElement.scrollIntoView()
+      updateShouldScrollToNew()
+      readViewportMessages()
+    }
   }
 
   function scrollToMessage () {
@@ -107,7 +121,7 @@
     const msgElement = messagesElements?.[selectedMessageId as any]
 
     if (!msgElement) {
-      if (messages.some(({ _id }) => _id === selectedMessageId)) {
+      if (displayMessages.some(({ _id }) => _id === selectedMessageId)) {
         setTimeout(scrollToMessage, 50)
       }
       return
@@ -117,38 +131,50 @@
     readViewportMessages()
   }
 
-  function jumpToDate (e: CustomEvent) {
+  function isDateRendered (date: Timestamp) {
+    const day = getDay(date)
+
+    return document.getElementById(day.toString()) != null
+  }
+
+  async function jumpToDate (e: CustomEvent) {
     const date = e.detail.date
 
     if (!date || !scrollElement) {
       return
     }
 
-    const closestDate = getClosestDateSelectorDate(date, scrollElement)
+    const closestDate = getClosestDate(date, get(provider.datesStore))
 
-    if (!closestDate) {
+    if (closestDate === undefined) {
       return
     }
 
-    if (closestDate >= date) {
+    if (isDateRendered(closestDate)) {
       scrollToDate(closestDate)
+    } else {
+      void provider.jumpToDate(closestDate)
+      dateToJump = closestDate
     }
   }
 
   function scrollToDate (date: Timestamp) {
     autoscroll = false
+    dateToJump = undefined
+    shouldWaitAndRead = false
 
-    const element = date ? document.getElementById(date.toString()) : undefined
+    const day = getDay(date)
+    const element = document.getElementById(day.toString())
 
     let offset = element?.offsetTop
 
-    if (!offset || !scrollElement) {
+    if (!offset || !scroller) {
       return
     }
 
     offset = offset - headerHeight - dateSelectorHeight / 2
 
-    scrollElement.scrollTo({ left: 0, top: offset })
+    scroller?.scroll(offset)
   }
 
   function updateShouldScrollToNew () {
@@ -160,14 +186,51 @@
     }
   }
 
+  function shouldLoadMoreUp () {
+    if (!scrollElement) {
+      return false
+    }
+
+    return scrollElement.scrollTop === 0
+  }
+
+  function shouldLoadMoreDown () {
+    if (!scrollElement) {
+      return false
+    }
+
+    const { scrollHeight, scrollTop, clientHeight } = scrollElement
+
+    return scrollTop + clientHeight === scrollHeight
+  }
+
+  let scrollToRestore = 0
+
+  function loadMore () {
+    if (!loadMoreAllowed || $isLoadingMoreStore) {
+      return
+    }
+
+    if (shouldLoadMoreUp() && scrollElement && provider.canLoadMore('backward', messages[0]?.createdOn)) {
+      shouldScrollToNew = false
+      scrollToRestore = scrollElement.scrollHeight
+      void provider.loadMore('backward', messages[0]?.createdOn)
+    } else if (shouldLoadMoreDown() && provider.canLoadMore('forward', messages[messages.length - 1]?.createdOn)) {
+      shouldScrollToNew = false
+      void provider.loadMore('forward', messages[messages.length - 1]?.createdOn)
+    }
+  }
+
   function handleScroll ({ autoScrolling }: ScrollParams) {
     if (autoScrolling) {
       return
     }
 
     shouldWaitAndRead = false
+    autoscroll = false
 
     updateShouldScrollToNew()
+    loadMore()
     updateSelectedDate()
     readViewportMessages()
   }
@@ -222,123 +285,86 @@
       }
     }
 
-    readMessage(messagesToRead)
+    void readChannelMessages(messagesToRead, notifyContext)
   }
 
-  function readMessage (messages: DisplayActivityMessage[]) {
-    if (messages.length === 0) {
-      return
-    }
-
-    const allIds = messages
-      .map((message) => {
-        const combined =
-          message._class === activity.class.DocUpdateMessage
-            ? (message as DisplayDocUpdateMessage)?.combinedMessagesIds
-            : undefined
-
-        return [message._id, ...(combined ?? [])]
-      })
-      .flat()
-    const ops = getClient().apply(generateId())
-    inboxClient.readMessages(ops, allIds).then(() => {
-      void ops.commit()
-    })
-
-    if (notifyContext === undefined) {
-      return
-    }
-
-    const lastTimestamp = messages[messages.length - 1].createdOn ?? 0
-
-    if ((notifyContext.lastViewedTimestamp ?? 0) < lastTimestamp) {
-      client.update(notifyContext, { lastViewedTimestamp: lastTimestamp })
-    }
-  }
-
-  function updateSelectedDate () {
+  async function updateSelectedDate () {
     if (scrollContentBox === undefined || scrollElement === undefined) {
       return
     }
 
-    const clientRect = scrollElement.getBoundingClientRect()
-    const dateSelectors = scrollContentBox.getElementsByClassName('dateSelector')
+    const containerRect = scrollElement.getBoundingClientRect()
 
-    const firstVisibleDateElement = Array.from(dateSelectors)
-      .reverse()
-      .find((child) => {
-        if (child?.nodeType === Node.ELEMENT_NODE) {
-          const rect = child?.getBoundingClientRect()
-          if (rect.top - dateSelectorHeight / 2 <= clientRect.top + dateSelectorHeight) {
-            return true
-          }
-        }
-        return false
-      })
+    const messagesElements = scrollContentBox?.getElementsByClassName('activityMessage')
 
-    if (!firstVisibleDateElement) {
+    if (messagesElements === undefined) {
       return
     }
 
-    selectedDate = parseInt(firstVisibleDateElement.id)
-  }
+    const reversedMessages = [...displayMessages].reverse()
+    const reversedDates = [...get(datesStore)].reverse()
 
-  function getNewPosition (displayMessages: ActivityMessage[], lastViewedTimestamp?: Timestamp): number | undefined {
-    if (displayMessages.length === 0) {
-      return undefined
-    }
+    for (const message of reversedMessages) {
+      const msgElement = messagesElements?.[message._id as any]
 
-    if (separatorPosition !== undefined) {
-      return separatorPosition
-    }
-
-    if (lastViewedTimestamp === undefined) {
-      return -1
-    }
-
-    if (lastViewedTimestamp === 0) {
-      return 0
-    }
-
-    const me = getCurrentAccount()._id
-
-    return displayMessages.findIndex((message) => {
-      if (message.createdBy === me) {
-        return false
+      if (!msgElement) {
+        continue
       }
 
-      const createdOn = message.createdOn ?? 0
+      const createdOn = message.createdOn
 
-      return lastViewedTimestamp < createdOn
-    })
+      if (createdOn === undefined) {
+        continue
+      }
+
+      if (messageInView(msgElement, containerRect)) {
+        selectedDate = reversedDates.find((date) => date <= createdOn)
+
+        break
+      }
+    }
   }
 
-  $: separatorPosition = getNewPosition(displayMessages, lastViewedTimestamp)
-  $: initializeScroll(separatorElement, separatorPosition)
+  $: void initializeScroll($isLoadingStore, separatorElement, $newTimestampStore)
 
-  function initializeScroll (separatorElement?: HTMLDivElement, separatorPosition?: number) {
-    if (separatorPosition === undefined) {
+  let isInitialScrolling = true
+  async function initializeScroll (isLoading: boolean, separatorElement?: HTMLDivElement, newTimestamp?: Timestamp) {
+    if (isLoading || isScrollInitialized) {
       return
     }
 
-    if (messages.some(({ _id }) => _id === selectedMessageId)) {
+    if (selectedMessageId !== undefined && messages.some(({ _id }) => _id === selectedMessageId)) {
+      isScrollInitialized = true
+      await wait()
       scrollToMessage()
-    } else if (separatorPosition === -1) {
+      isInitialScrolling = false
+    } else if (newTimestamp === undefined) {
+      isScrollInitialized = true
       shouldWaitAndRead = true
-      waitLastMessageRenderAndRead()
       autoscroll = true
+      waitLastMessageRenderAndRead(() => {
+        isInitialScrolling = false
+      })
     } else if (separatorElement) {
+      isScrollInitialized = true
+      await wait()
       scrollToSeparator()
+      isInitialScrolling = false
     }
   }
 
-  function waitLastMessageRenderAndRead () {
+  function waitLastMessageRenderAndRead (onComplete?: () => void) {
     if (isLastMessageViewed()) {
       readViewportMessages()
       shouldScrollToNew = true
       shouldWaitAndRead = false
-    } else if (shouldWaitAndRead) {
-      setTimeout(waitLastMessageRenderAndRead, 50)
+      onComplete?.()
+    } else if (shouldWaitAndRead && messages.length > 0) {
+      setTimeout(() => {
+        waitLastMessageRenderAndRead(onComplete)
+      }, 50)
+    } else {
+      onComplete?.()
     }
   }
 
@@ -367,70 +393,133 @@
     scrollUntilSeeLastMessage()
   }
 
-  function updateMessagesCount (newCount: number) {
+  async function wait () {
+    // One tick is not enough for messages to be rendered,
+    // I think this is due to the fact that we are using a Component, which takes some time to load,
+    // because after one tick I see spinners from Component
+    await tick() // wait until the DOM is updated
+    await tick() // wait until the DOM is updated
+  }
+
+  async function restoreScroll () {
+    if (!scrollElement || !scroller) {
+      scrollToRestore = 0
+      return
+    }
+
+    await wait()
+
+    const delta = scrollElement.scrollHeight - scrollToRestore
+
+    scroller.scrollBy(delta)
+
+    scrollToRestore = 0
+    dateToJump = 0
+    autoscroll = false
+    shouldWaitAndRead = false
+  }
+
+  async function handleMessagesUpdated (newCount: number) {
     if (newCount === messagesCount) {
       return
     }
 
-    if (newCount > messagesCount) {
+    if (scrollToRestore > 0) {
+      void restoreScroll()
+    } else if (dateToJump !== undefined) {
+      await wait()
+      scrollToDate(dateToJump)
+    } else if (newCount > messagesCount) {
       scrollToNewMessages()
     }
 
     messagesCount = newCount
   }
 
-  $: updateMessagesCount(displayMessages.length)
+  $: handleMessagesUpdated(displayMessages.length)
+  function handleResize () {
+    if (!isInitialScrolling && isScrollInitialized) {
+      loadMore()
+    }
+  }
 </script>
 
-<div class="flex-col h-full">
-  {#if startFromBottom}
-    <div class="grower" />
-  {/if}
-  {#if selectedDate}
-    <div class="ml-2 pr-2">
-      <JumpToDateSelector {selectedDate} fixed on:jumpToDate={jumpToDate} />
+{#if isLoading}
+  <Loading />
+{:else}
+  <div class="flex-col h-full relative">
+    {#if startFromBottom}
+      <div class="grower" />
+    {/if}
+    {#if selectedDate}
+      <div class="ml-2 pr-2">
+        <JumpToDateSelector {selectedDate} fixed on:jumpToDate={jumpToDate} />
+      </div>
+    {/if}
+    {#if isInitialScrolling}
+      <div class="overlay">
+        <Loading />
+      </div>
+    {/if}
+    <Scroller
+      {autoscroll}
+      bottomStart={startFromBottom}
+      bind:this={scroller}
+      bind:divScroll={scrollElement}
+      bind:divBox={scrollContentBox}
+      noStretch={false}
+      onScroll={handleScroll}
+      onResize={handleResize}
+    >
+      {#if loadMoreAllowed && provider.canLoadMore('backward', messages[0]?.createdOn)}
+        <HistoryLoading isLoading={$isLoadingMoreStore} />
+      {/if}
+      <slot name="header" />
+
+      {#each displayMessages as message (message._id)}
+        {@const isSelected = message._id === selectedMessageId}
+
+        {#if message.createdOn === $newTimestampStore}
+          <ActivityMessagesSeparator bind:element={separatorElement} label={activity.string.New} />
+        {/if}
+
+        {#if withDates && message.createdOn && $datesStore.includes(message.createdOn)}
+          <JumpToDateSelector selectedDate={message.createdOn} on:jumpToDate={jumpToDate} />
+        {/if}
+
+        <div class="msg">
+          <ActivityMessagePresenter
+            value={message}
+            skipLabel={skipLabels}
+            {showEmbedded}
+            hoverStyles="filledHover"
+            isHighlighted={isSelected}
+            shouldScroll={isSelected}
+            withShowMore={false}
+          />
+        </div>
+      {/each}
+
+      {#if loadMoreAllowed && provider.canLoadMore('forward', messages[messages.length - 1]?.createdOn)}
+        <HistoryLoading isLoading={$isLoadingMoreStore} />
+      {/if}
+    </Scroller>
+  </div>
+  {#if object}
+    <div class="ref-input">
+      <ActivityExtensionComponent kind="input" {extensions} props={{ object, boundary: scrollElement, collection }} />
     </div>
   {/if}
-  <Scroller
-    {autoscroll}
-    bottomStart={startFromBottom}
-    bind:divScroll={scrollElement}
-    bind:divBox={scrollContentBox}
-    onScroll={handleScroll}
-  >
-    <slot name="header" />
-    {#each displayMessages as message, index}
-      {@const isSelected = message._id === selectedMessageId}
-      {@const prevMessage = displayMessages[index - 1]}
-      {#if index === separatorPosition}
-        <ActivityMessagesSeparator bind:element={separatorElement} label={activity.string.New} />
-      {/if}
-
-      {#if withDates && (index === 0 || isOtherDay(message.createdOn ?? 0, prevMessage?.createdOn ?? 0))}
-        <JumpToDateSelector selectedDate={message.createdOn} on:jumpToDate={jumpToDate} />
-      {/if}
-
-      <div style:margin="0 1.5rem">
-        <ActivityMessagePresenter
-          value={message}
-          skipLabel={skipLabels}
-          {showEmbedded}
-          hoverStyles="filledHover"
-          isHighlighted={isSelected}
-          shouldScroll={isSelected}
-          withShowMore={false}
-        />
-      </div>
-    {/each}
-  </Scroller>
-</div>
-{#if object}
-  <div class="ref-input">
-    <ActivityExtensionComponent kind="input" {extensions} props={{ object, boundary: scrollElement, collection }} />
-  </div>
 {/if}
 
 <style lang="scss">
+  .msg {
+    margin: 0 1.5rem;
+    min-height: 4.375rem;
+    height: auto;
+    display: contents;
+  }
+
   .grower {
     flex-grow: 10;
     flex-shrink: 5;
@@ -438,5 +527,16 @@
 
   .ref-input {
     margin: 1.25rem 1rem;
+  }
+
+  .overlay {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    background: var(--theme-panel-color);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 </style>

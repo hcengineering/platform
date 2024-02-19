@@ -21,7 +21,7 @@
   import { Person } from '@hcengineering/contact'
   import { Avatar, EmployeePresenter, SystemAvatar } from '@hcengineering/contact-resources'
   import core, { getDisplayTime } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { getClient } from '@hcengineering/presentation'
   import { Action, Label } from '@hcengineering/ui'
   import { getActions } from '@hcengineering/view-resources'
 
