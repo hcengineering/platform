@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import activity, { ActivityMessage, DocUpdateMessage, Reaction } from '@hcengineering/activity'
+import activity, { ActivityMessage, ActivityMessageControl, DocUpdateMessage, Reaction } from '@hcengineering/activity'
 import core, {
   Account,
   AttachedDoc,
@@ -150,7 +150,8 @@ async function pushDocUpdateMessages (
   object: Doc | undefined,
   originTx: TxCUD<Doc>,
   modifiedBy?: Ref<Account>,
-  objectCache?: DocObjectCache
+  objectCache?: DocObjectCache,
+  controlRules?: ActivityMessageControl[]
 ): Promise<TxCollectionCUD<Doc, DocUpdateMessage>[]> {
   if (object === undefined) {
     return res
@@ -178,7 +179,7 @@ async function pushDocUpdateMessages (
         : undefined
   }
 
-  const attributesUpdates = await getTxAttributesUpdates(control, originTx, tx, object, objectCache)
+  const attributesUpdates = await getTxAttributesUpdates(control, originTx, tx, object, objectCache, controlRules)
 
   for (const attributeUpdates of attributesUpdates) {
     res.push(
@@ -233,7 +234,7 @@ export async function generateDocUpdateMessages (
   }
 
   // Check if we have override control over transaction => activity mappings
-  const controlRules = control.modelDb.findAllSync(activity.class.ActivityMessageControl, {
+  const controlRules = control.modelDb.findAllSync<ActivityMessageControl>(activity.class.ActivityMessageControl, {
     objectClass: { $in: hierarchy.getAncestors(tx.objectClass) }
   })
   if (controlRules.length > 0) {
@@ -254,7 +255,8 @@ export async function generateDocUpdateMessages (
       return await ctx.with(
         'pushDocUpdateMessages',
         {},
-        async (ctx) => await pushDocUpdateMessages(ctx, control, res, doc, originTx ?? tx, undefined, objectCache)
+        async (ctx) =>
+          await pushDocUpdateMessages(ctx, control, res, doc, originTx ?? tx, undefined, objectCache, controlRules)
       )
     }
     case core.class.TxMixin:
@@ -267,7 +269,16 @@ export async function generateDocUpdateMessages (
         'pushDocUpdateMessages',
         {},
         async (ctx) =>
-          await pushDocUpdateMessages(ctx, control, res, doc ?? undefined, originTx ?? tx, undefined, objectCache)
+          await pushDocUpdateMessages(
+            ctx,
+            control,
+            res,
+            doc ?? undefined,
+            originTx ?? tx,
+            undefined,
+            objectCache,
+            controlRules
+          )
       )
     }
     case core.class.TxCollectionCUD: {
@@ -283,7 +294,16 @@ export async function generateDocUpdateMessages (
             'pushDocUpdateMessages',
             {},
             async (ctx) =>
-              await pushDocUpdateMessages(ctx, control, res, doc ?? undefined, originTx ?? tx, undefined, objectCache)
+              await pushDocUpdateMessages(
+                ctx,
+                control,
+                res,
+                doc ?? undefined,
+                originTx ?? tx,
+                undefined,
+                objectCache,
+                controlRules
+              )
           )
         }
       }
