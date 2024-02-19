@@ -31,6 +31,7 @@
     ModernEditbox,
     TextArea,
     closePopup,
+    fromCodePoint,
     getPlatformColorDef,
     showPopup,
     themeStore
@@ -421,7 +422,7 @@
         {:else}
           <EmojiPopup
             embedded
-            selected={String.fromCodePoint(color ?? 0)}
+            selected={fromCodePoint(color ?? 0)}
             on:close={(evt) => {
               color = evt.detail.codePointAt(0)
               icon = iconWithEmoji

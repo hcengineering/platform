@@ -245,6 +245,10 @@ export function formatKey (key: string): string[][] {
   return result
 }
 
+export function fromCodePoint (...vals: number[]): string {
+  return String.fromCodePoint(...vals.map((p) => Math.abs(p) % 0x10ffff))
+}
+
 /**
  * @public
  */
