@@ -311,7 +311,8 @@ function hashCode (str: string): number {
  * @public
  */
 export function getColorNumberByText (str: string): number {
-  return hashCode(str)
+  const hash = hashCode(str)
+  return Math.abs(hash) % Math.min(darkPalette.length, whitePalette.length)
 }
 
 /**
