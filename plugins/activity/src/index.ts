@@ -130,11 +130,14 @@ export interface DisplayDocUpdateMessage extends DocUpdateMessage {
  * Designed to control and filter some of changes from being to be propagated into activity.
  * @public
  */
-export interface ActivityMessageControl extends Doc {
+export interface ActivityMessageControl<T extends Doc = Doc> extends Doc {
   objectClass: Ref<Class<Doc>>
 
   // A set of rules to be skipped from generate doc update activity messages
   skip: DocumentQuery<Tx>[]
+
+  // Skip field activity operations.
+  skipFields?: (keyof T)[]
 }
 
 /**
@@ -148,6 +151,9 @@ export interface ActivityInfoMessage extends ActivityMessage {
   props?: Record<string, any>
   icon?: Asset
   iconProps?: Record<string, any>
+
+  // A possible set of links to some platform resources.
+  links?: { _class: Ref<Class<Doc>>, _id: Ref<Doc> }[]
 }
 
 export type ActivityMessageExtensionKind = 'action' | 'footer'
