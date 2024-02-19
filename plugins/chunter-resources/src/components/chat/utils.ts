@@ -121,4 +121,3 @@ export function loadSavedAttachments (): void {
     }, 50)
   }
 }
-
