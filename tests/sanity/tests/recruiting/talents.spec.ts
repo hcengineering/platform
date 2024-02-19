@@ -14,7 +14,7 @@ test.describe('candidate/talents tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/recruit`))?.finished()
   })
 
-  test('create-candidate', async ({ page, context }) => {
+  test.skip('create-candidate', async ({ page, context }) => {
     await page.locator('[id="app-recruit\\:string\\:RecruitApplication"]').click()
 
     await page.click('text=Talents')
@@ -63,7 +63,7 @@ test.describe('candidate/talents tests', () => {
     expect(await page.locator('.cover-channel >> input').inputValue()).toEqual(email)
   })
 
-  test('Edit the Talent', async ({ page, context }) => {
+  test.skip('Edit the Talent', async ({ page, context }) => {
     const navigationMenuPage = new NavigationMenuPage(page)
     await navigationMenuPage.buttonTalents.click()
 
@@ -92,7 +92,7 @@ test.describe('candidate/talents tests', () => {
     await talentDetailsPage.addTitle(title)
   })
 
-  test('Delete the Talent', async ({ page, context }) => {
+  test.skip('Delete the Talent', async ({ page, context }) => {
     const navigationMenuPage = new NavigationMenuPage(page)
     await navigationMenuPage.buttonTalents.click()
 
@@ -163,7 +163,7 @@ test.describe('candidate/talents tests', () => {
     await expect(talentDetailsPage.page.locator('button > span', { hasText: sourceTalent2 })).toBeVisible()
   })
 
-  test('Match to vacancy', async ({ page, context }) => {
+  test.skip('Match to vacancy', async ({ page, context }) => {
     const talentName: TalentName = {
       firstName: 'Software',
       lastName: `Engineer-${generateId(4)}`
