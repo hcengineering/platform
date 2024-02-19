@@ -25,6 +25,7 @@
   import ThreadParentMessage from './ThreadParentPresenter.svelte'
   import { getChannelIcon, getChannelName } from '../../utils'
   import ChannelScrollView from '../ChannelScrollView.svelte'
+  import { ChannelDataProvider } from '../../channelDataProvider'
 
   export let _id: Ref<ActivityMessage>
   export let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
@@ -37,13 +38,12 @@
 
   const messageQuery = createQuery()
   const channelQuery = createQuery()
-  const messagesQuery = createQuery()
 
   let channel: Doc | undefined = undefined
   let message: DisplayActivityMessage | undefined = undefined
-  let messages: DisplayActivityMessage[] = []
 
   let channelName: string | undefined = undefined
+  let dataProvider: ChannelDataProvider | undefined = undefined
 
   locationStore.subscribe((newLocation) => {
     selectedMessageId = getMessageFromLoc(newLocation)
@@ -58,10 +58,9 @@
       channel = res[0]
     })
 
-  $: message &&
-    messagesQuery.query(chunter.class.ThreadMessage, { attachedTo: message._id }, (res) => {
-      messages = res
-    })
+  $: if (message !== undefined && dataProvider === undefined) {
+    dataProvider = new ChannelDataProvider(message._id, chunter.class.ThreadMessage, undefined, selectedMessageId, true)
+  }
 
   $: message &&
     getChannelName(message.attachedTo, message.attachedToClass, channel).then((res) => {
@@ -114,15 +113,16 @@
 
   <div class="popupPanel-body">
     <div class="container">
-      {#if message}
+      {#if message && dataProvider !== undefined}
         <ChannelScrollView
           {selectedMessageId}
-          {messages}
           withDates={false}
           skipLabels
           object={message}
           objectId={message._id}
           objectClass={message._class}
+          provider={dataProvider}
+          loadMoreAllowed={false}
         >
           <svelte:fragment slot="header">
             <div class="mt-3 mr-6 ml-6">

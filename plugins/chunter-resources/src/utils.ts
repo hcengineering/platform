@@ -31,7 +31,8 @@ import {
   type Space,
   type Class,
   type Timestamp,
-  type Account
+  type Account,
+  generateId
 } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import {
@@ -48,6 +49,7 @@ import activity, {
   type ActivityMessage,
   type ActivityMessagesFilter,
   type DisplayActivityMessage,
+  type DisplayDocUpdateMessage,
   type DocUpdateMessage
 } from '@hcengineering/activity'
 import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
@@ -337,20 +339,19 @@ export function getUnreadThreadsCount (): number {
   return new Set(threadIds).size
 }
 
-export function getClosestDateSelectorDate (date: Timestamp, scrollElement: HTMLDivElement): Timestamp | undefined {
-  const dateSelectors = scrollElement.getElementsByClassName('dateSelector')
-
-  if (dateSelectors === undefined || dateSelectors.length === 0) {
+export function getClosestDate (selectedDate: Timestamp, dates: Timestamp[]): Timestamp | undefined {
+  if (dates.length === 0) {
     return
   }
 
-  let closestDate: Timestamp | undefined = parseInt(dateSelectors[dateSelectors.length - 1].id)
+  let closestDate: Timestamp | undefined = dates[dates.length - 1]
+  const reversedDates = [...dates].reverse()
 
-  for (const elem of Array.from(dateSelectors).reverse()) {
-    const curDate = parseInt(elem.id)
-    if (curDate < date) break
-    else if (curDate - date < closestDate - date) {
-      closestDate = curDate
+  for (const date of reversedDates) {
+    if (date < selectedDate) {
+      break
+    } else if (date - selectedDate < closestDate - selectedDate) {
+      closestDate = date
     }
   }
 
@@ -451,5 +452,44 @@ export async function leaveChannel (channel: Channel, value: Ref<Account> | Arra
     }
   } else {
     await client.update(channel, { $pull: { members: value } })
+  }
+}
+
+export async function readChannelMessages (
+  messages: DisplayActivityMessage[],
+  context: DocNotifyContext | undefined
+): Promise<void> {
+  if (messages.length === 0) {
+    return
+  }
+
+  const inboxClient = InboxNotificationsClientImpl.getClient()
+  const client = getClient()
+
+  const allIds = messages
+    .map((message) => {
+      const combined =
+        message._class === activity.class.DocUpdateMessage
+          ? (message as DisplayDocUpdateMessage)?.combinedMessagesIds
+          : undefined
+
+      return [message._id, ...(combined ?? [])]
+    })
+    .flat()
+
+  const ops = getClient().apply(generateId())
+
+  void inboxClient.readMessages(ops, allIds).then(() => {
+    void ops.commit()
+  })
+
+  if (context === undefined) {
+    return
+  }
+
+  const lastTimestamp = messages[messages.length - 1].createdOn ?? 0
+
+  if ((context.lastViewedTimestamp ?? 0) < lastTimestamp) {
+    void client.update(context, { lastViewedTimestamp: lastTimestamp })
   }
 }

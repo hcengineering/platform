@@ -94,6 +94,7 @@
     "Private": "Закрытый",
     "NewDirectChat": "Новый личный чат",
     "AddMembers": "Добавить участников",
-    "PinnedCount": "{count} закреплено"
+    "PinnedCount": "{count} закреплено",
+    "LoadingHistory": "Загрузка истории..."
   }
 }

@@ -30,6 +30,7 @@
 
 <div id={fixed ? '' : time?.toString()} class="flex-center clear-mins dateSelector">
   <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     bind:this={div}
     class="border-radius-4 over-underline dateSelectorButton clear-mins"

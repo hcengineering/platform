@@ -104,6 +104,7 @@ export default mergeIds(chunterId, chunter, {
     On: '' as IntlString,
     Mentioned: '' as IntlString,
     SentMessage: '' as IntlString,
-    PinnedCount: '' as IntlString
+    PinnedCount: '' as IntlString,
+    LoadingHistory: '' as IntlString
   }
 })
