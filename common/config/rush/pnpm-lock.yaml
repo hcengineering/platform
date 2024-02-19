@@ -49,7 +49,7 @@ dependencies:
     version: file:projects/attachment.tgz(@types/node@20.11.19)(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/attachment-assets':
     specifier: file:./projects/attachment-assets.tgz
-    version: file:projects/attachment-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3)
+    version: file:projects/attachment-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/attachment-resources':
     specifier: file:./projects/attachment-resources.tgz
     version: file:projects/attachment-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
@@ -58,7 +58,7 @@ dependencies:
     version: file:projects/bitrix.tgz(@types/node@20.11.19)(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/bitrix-assets':
     specifier: file:./projects/bitrix-assets.tgz
-    version: file:projects/bitrix-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3)
+    version: file:projects/bitrix-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/bitrix-resources':
     specifier: file:./projects/bitrix-resources.tgz
     version: file:projects/bitrix-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
@@ -67,7 +67,7 @@ dependencies:
     version: file:projects/board.tgz(@types/node@20.11.19)(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/board-assets':
     specifier: file:./projects/board-assets.tgz
-    version: file:projects/board-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3)
+    version: file:projects/board-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/board-resources':
     specifier: file:./projects/board-resources.tgz
     version: file:projects/board-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
@@ -76,7 +76,7 @@ dependencies:
     version: file:projects/calendar.tgz(@types/node@20.11.19)(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/calendar-assets':
     specifier: file:./projects/calendar-assets.tgz
-    version: file:projects/calendar-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3)
+    version: file:projects/calendar-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/calendar-resources':
     specifier: file:./projects/calendar-resources.tgz
     version: file:projects/calendar-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
@@ -85,7 +85,7 @@ dependencies:
     version: file:projects/chunter.tgz(@types/node@20.11.19)(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/chunter-assets':
     specifier: file:./projects/chunter-assets.tgz
-    version: file:projects/chunter-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3)
+    version: file:projects/chunter-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/chunter-resources':
     specifier: file:./projects/chunter-resources.tgz
     version: file:projects/chunter-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
@@ -106,7 +106,7 @@ dependencies:
     version: file:projects/contact.tgz(@types/node@20.11.19)(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/contact-assets':
     specifier: file:./projects/contact-assets.tgz
-    version: file:projects/contact-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3)
+    version: file:projects/contact-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/contact-resources':
     specifier: file:./projects/contact-resources.tgz
     version: file:projects/contact-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
@@ -127,10 +127,10 @@ dependencies:
     version: file:projects/dev-storage.tgz(@types/node@20.11.19)(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/devmodel':
     specifier: file:./projects/devmodel.tgz
-    version: file:projects/devmodel.tgz(@types/node@20.11.19)(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3)
+    version: file:projects/devmodel.tgz(@types/node@20.11.19)(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/devmodel-resources':
     specifier: file:./projects/devmodel-resources.tgz
-    version: file:projects/devmodel-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)(typescript@5.3.3)
+    version: file:projects/devmodel-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
   '@rush-temp/elastic':
     specifier: file:./projects/elastic.tgz
     version: file:projects/elastic.tgz(@types/node@20.11.19)(esbuild@0.20.0)(svelte@4.2.11)
@@ -154,7 +154,7 @@ dependencies:
     version: file:projects/hr.tgz(@types/node@20.11.19)(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/hr-assets':
     specifier: file:./projects/hr-assets.tgz
-    version: file:projects/hr-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3)
+    version: file:projects/hr-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/hr-resources':
     specifier: file:./projects/hr-resources.tgz
     version: file:projects/hr-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
@@ -181,7 +181,7 @@ dependencies:
     version: file:projects/lead.tgz(@types/node@20.11.19)(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/lead-assets':
     specifier: file:./projects/lead-assets.tgz
-    version: file:projects/lead-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3)
+    version: file:projects/lead-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/lead-resources':
     specifier: file:./projects/lead-resources.tgz
     version: file:projects/lead-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
@@ -190,7 +190,7 @@ dependencies:
     version: file:projects/login.tgz(@types/node@20.11.19)(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/login-assets':
     specifier: file:./projects/login-assets.tgz
-    version: file:projects/login-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3)
+    version: file:projects/login-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/login-resources':
     specifier: file:./projects/login-resources.tgz
     version: file:projects/login-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(file-loader@6.2.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)(webpack@5.90.2)
@@ -205,163 +205,163 @@ dependencies:
     version: file:projects/model.tgz(@types/node@20.11.19)(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/model-activity':
     specifier: file:./projects/model-activity.tgz
-    version: file:projects/model-activity.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-activity.tgz(svelte@4.2.11)
   '@rush-temp/model-all':
     specifier: file:./projects/model-all.tgz
-    version: file:projects/model-all.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-all.tgz(svelte@4.2.11)
   '@rush-temp/model-attachment':
     specifier: file:./projects/model-attachment.tgz
-    version: file:projects/model-attachment.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-attachment.tgz(svelte@4.2.11)
   '@rush-temp/model-bitrix':
     specifier: file:./projects/model-bitrix.tgz
-    version: file:projects/model-bitrix.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-bitrix.tgz(svelte@4.2.11)
   '@rush-temp/model-board':
     specifier: file:./projects/model-board.tgz
-    version: file:projects/model-board.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-board.tgz(svelte@4.2.11)
   '@rush-temp/model-calendar':
     specifier: file:./projects/model-calendar.tgz
-    version: file:projects/model-calendar.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-calendar.tgz(svelte@4.2.11)
   '@rush-temp/model-chunter':
     specifier: file:./projects/model-chunter.tgz
-    version: file:projects/model-chunter.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-chunter.tgz(svelte@4.2.11)
   '@rush-temp/model-contact':
     specifier: file:./projects/model-contact.tgz
-    version: file:projects/model-contact.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-contact.tgz(svelte@4.2.11)
   '@rush-temp/model-core':
     specifier: file:./projects/model-core.tgz
-    version: file:projects/model-core.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-core.tgz(svelte@4.2.11)
   '@rush-temp/model-gmail':
     specifier: file:./projects/model-gmail.tgz
-    version: file:projects/model-gmail.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-gmail.tgz(svelte@4.2.11)
   '@rush-temp/model-hr':
     specifier: file:./projects/model-hr.tgz
-    version: file:projects/model-hr.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-hr.tgz(svelte@4.2.11)
   '@rush-temp/model-inventory':
     specifier: file:./projects/model-inventory.tgz
-    version: file:projects/model-inventory.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-inventory.tgz(svelte@4.2.11)
   '@rush-temp/model-lead':
     specifier: file:./projects/model-lead.tgz
-    version: file:projects/model-lead.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-lead.tgz(svelte@4.2.11)
   '@rush-temp/model-notification':
     specifier: file:./projects/model-notification.tgz
-    version: file:projects/model-notification.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-notification.tgz(svelte@4.2.11)
   '@rush-temp/model-preference':
     specifier: file:./projects/model-preference.tgz
-    version: file:projects/model-preference.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-preference.tgz(svelte@4.2.11)
   '@rush-temp/model-presentation':
     specifier: file:./projects/model-presentation.tgz
-    version: file:projects/model-presentation.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-presentation.tgz(svelte@4.2.11)
   '@rush-temp/model-recruit':
     specifier: file:./projects/model-recruit.tgz
-    version: file:projects/model-recruit.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-recruit.tgz(svelte@4.2.11)
   '@rush-temp/model-request':
     specifier: file:./projects/model-request.tgz
-    version: file:projects/model-request.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-request.tgz(svelte@4.2.11)
   '@rush-temp/model-server-activity':
     specifier: file:./projects/model-server-activity.tgz
-    version: file:projects/model-server-activity.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-server-activity.tgz(svelte@4.2.11)
   '@rush-temp/model-server-attachment':
     specifier: file:./projects/model-server-attachment.tgz
-    version: file:projects/model-server-attachment.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-server-attachment.tgz(svelte@4.2.11)
   '@rush-temp/model-server-calendar':
     specifier: file:./projects/model-server-calendar.tgz
-    version: file:projects/model-server-calendar.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-server-calendar.tgz(svelte@4.2.11)
   '@rush-temp/model-server-chunter':
     specifier: file:./projects/model-server-chunter.tgz
-    version: file:projects/model-server-chunter.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-server-chunter.tgz(svelte@4.2.11)
   '@rush-temp/model-server-contact':
     specifier: file:./projects/model-server-contact.tgz
-    version: file:projects/model-server-contact.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-server-contact.tgz(svelte@4.2.11)
   '@rush-temp/model-server-core':
     specifier: file:./projects/model-server-core.tgz
-    version: file:projects/model-server-core.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-server-core.tgz(svelte@4.2.11)
   '@rush-temp/model-server-gmail':
     specifier: file:./projects/model-server-gmail.tgz
-    version: file:projects/model-server-gmail.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-server-gmail.tgz(svelte@4.2.11)
   '@rush-temp/model-server-hr':
     specifier: file:./projects/model-server-hr.tgz
-    version: file:projects/model-server-hr.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-server-hr.tgz(svelte@4.2.11)
   '@rush-temp/model-server-inventory':
     specifier: file:./projects/model-server-inventory.tgz
-    version: file:projects/model-server-inventory.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-server-inventory.tgz(svelte@4.2.11)
   '@rush-temp/model-server-lead':
     specifier: file:./projects/model-server-lead.tgz
-    version: file:projects/model-server-lead.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-server-lead.tgz(svelte@4.2.11)
   '@rush-temp/model-server-notification':
     specifier: file:./projects/model-server-notification.tgz
-    version: file:projects/model-server-notification.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-server-notification.tgz(svelte@4.2.11)
   '@rush-temp/model-server-openai':
     specifier: file:./projects/model-server-openai.tgz
-    version: file:projects/model-server-openai.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-server-openai.tgz(svelte@4.2.11)
   '@rush-temp/model-server-recruit':
     specifier: file:./projects/model-server-recruit.tgz
-    version: file:projects/model-server-recruit.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-server-recruit.tgz(svelte@4.2.11)
   '@rush-temp/model-server-request':
     specifier: file:./projects/model-server-request.tgz
-    version: file:projects/model-server-request.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-server-request.tgz(svelte@4.2.11)
   '@rush-temp/model-server-setting':
     specifier: file:./projects/model-server-setting.tgz
-    version: file:projects/model-server-setting.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-server-setting.tgz(svelte@4.2.11)
   '@rush-temp/model-server-tags':
     specifier: file:./projects/model-server-tags.tgz
-    version: file:projects/model-server-tags.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-server-tags.tgz(svelte@4.2.11)
   '@rush-temp/model-server-task':
     specifier: file:./projects/model-server-task.tgz
-    version: file:projects/model-server-task.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-server-task.tgz(svelte@4.2.11)
   '@rush-temp/model-server-telegram':
     specifier: file:./projects/model-server-telegram.tgz
-    version: file:projects/model-server-telegram.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-server-telegram.tgz(svelte@4.2.11)
   '@rush-temp/model-server-templates':
     specifier: file:./projects/model-server-templates.tgz
-    version: file:projects/model-server-templates.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-server-templates.tgz(svelte@4.2.11)
   '@rush-temp/model-server-tracker':
     specifier: file:./projects/model-server-tracker.tgz
-    version: file:projects/model-server-tracker.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-server-tracker.tgz(svelte@4.2.11)
   '@rush-temp/model-server-translate':
     specifier: file:./projects/model-server-translate.tgz
-    version: file:projects/model-server-translate.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-server-translate.tgz(svelte@4.2.11)
   '@rush-temp/model-server-view':
     specifier: file:./projects/model-server-view.tgz
-    version: file:projects/model-server-view.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-server-view.tgz(svelte@4.2.11)
   '@rush-temp/model-setting':
     specifier: file:./projects/model-setting.tgz
-    version: file:projects/model-setting.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-setting.tgz(svelte@4.2.11)
   '@rush-temp/model-support':
     specifier: file:./projects/model-support.tgz
-    version: file:projects/model-support.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-support.tgz(svelte@4.2.11)
   '@rush-temp/model-tags':
     specifier: file:./projects/model-tags.tgz
-    version: file:projects/model-tags.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-tags.tgz(svelte@4.2.11)
   '@rush-temp/model-task':
     specifier: file:./projects/model-task.tgz
-    version: file:projects/model-task.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-task.tgz(svelte@4.2.11)
   '@rush-temp/model-telegram':
     specifier: file:./projects/model-telegram.tgz
-    version: file:projects/model-telegram.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-telegram.tgz(svelte@4.2.11)
   '@rush-temp/model-templates':
     specifier: file:./projects/model-templates.tgz
-    version: file:projects/model-templates.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-templates.tgz(svelte@4.2.11)
   '@rush-temp/model-text-editor':
     specifier: file:./projects/model-text-editor.tgz
-    version: file:projects/model-text-editor.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-text-editor.tgz(svelte@4.2.11)
   '@rush-temp/model-tracker':
     specifier: file:./projects/model-tracker.tgz
-    version: file:projects/model-tracker.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-tracker.tgz(svelte@4.2.11)
   '@rush-temp/model-view':
     specifier: file:./projects/model-view.tgz
-    version: file:projects/model-view.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-view.tgz(svelte@4.2.11)
   '@rush-temp/model-workbench':
     specifier: file:./projects/model-workbench.tgz
-    version: file:projects/model-workbench.tgz(svelte@4.2.11)(typescript@5.3.3)
+    version: file:projects/model-workbench.tgz(svelte@4.2.11)
   '@rush-temp/mongo':
     specifier: file:./projects/mongo.tgz
     version: file:projects/mongo.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/notification':
     specifier: file:./projects/notification.tgz
-    version: file:projects/notification.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3)
+    version: file:projects/notification.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/notification-assets':
     specifier: file:./projects/notification-assets.tgz
-    version: file:projects/notification-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3)
+    version: file:projects/notification-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/notification-resources':
     specifier: file:./projects/notification-resources.tgz
     version: file:projects/notification-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
@@ -403,7 +403,7 @@ dependencies:
     version: file:projects/presentation.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
   '@rush-temp/prod':
     specifier: file:./projects/prod.tgz
-    version: file:projects/prod.tgz(bufferutil@4.0.8)(sass@1.70.0)(ts-node@10.9.2)(typescript@5.3.3)
+    version: file:projects/prod.tgz(bufferutil@4.0.8)(sass@1.70.0)(ts-node@10.9.2)
   '@rush-temp/query':
     specifier: file:./projects/query.tgz
     version: file:projects/query.tgz(@types/node@20.11.19)(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
@@ -412,7 +412,7 @@ dependencies:
     version: file:projects/recruit.tgz(@types/node@20.11.19)(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/recruit-assets':
     specifier: file:./projects/recruit-assets.tgz
-    version: file:projects/recruit-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3)
+    version: file:projects/recruit-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/recruit-resources':
     specifier: file:./projects/recruit-resources.tgz
     version: file:projects/recruit-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
@@ -424,7 +424,7 @@ dependencies:
     version: file:projects/request.tgz(@types/node@20.11.19)(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/request-assets':
     specifier: file:./projects/request-assets.tgz
-    version: file:projects/request-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3)
+    version: file:projects/request-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/request-resources':
     specifier: file:./projects/request-resources.tgz
     version: file:projects/request-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
@@ -568,7 +568,7 @@ dependencies:
     version: file:projects/setting.tgz(@types/node@20.11.19)(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/setting-assets':
     specifier: file:./projects/setting-assets.tgz
-    version: file:projects/setting-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3)
+    version: file:projects/setting-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/setting-resources':
     specifier: file:./projects/setting-resources.tgz
     version: file:projects/setting-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
@@ -580,7 +580,7 @@ dependencies:
     version: file:projects/support.tgz(@types/node@20.11.19)(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/support-assets':
     specifier: file:./projects/support-assets.tgz
-    version: file:projects/support-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3)
+    version: file:projects/support-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/support-resources':
     specifier: file:./projects/support-resources.tgz
     version: file:projects/support-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
@@ -598,10 +598,10 @@ dependencies:
     version: file:projects/task.tgz(@types/node@20.11.19)(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/task-assets':
     specifier: file:./projects/task-assets.tgz
-    version: file:projects/task-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3)
+    version: file:projects/task-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/task-resources':
     specifier: file:./projects/task-resources.tgz
-    version: file:projects/task-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)(typescript@5.3.3)
+    version: file:projects/task-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
   '@rush-temp/telegram':
     specifier: file:./projects/telegram.tgz
     version: file:projects/telegram.tgz(@types/node@20.11.19)(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
@@ -640,7 +640,7 @@ dependencies:
     version: file:projects/tracker.tgz(@types/node@20.11.19)(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/tracker-assets':
     specifier: file:./projects/tracker-assets.tgz
-    version: file:projects/tracker-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3)
+    version: file:projects/tracker-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/tracker-resources':
     specifier: file:./projects/tracker-resources.tgz
     version: file:projects/tracker-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
@@ -655,7 +655,7 @@ dependencies:
     version: file:projects/view.tgz(@types/node@20.11.19)(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/view-assets':
     specifier: file:./projects/view-assets.tgz
-    version: file:projects/view-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3)
+    version: file:projects/view-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/view-resources':
     specifier: file:./projects/view-resources.tgz
     version: file:projects/view-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
@@ -16636,7 +16636,7 @@ packages:
     dev: false
 
   file:projects/analytics.tgz(@types/node@20.11.19)(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2):
-    resolution: {integrity: sha512-r95e+k87UztB/3xKS9FYpWY9/plpnuUysgHq3IbpXUQ2trEIbTGTs6YIHEgv7mgPHyW8hNJlsAsIFJxz18HRfw==, tarball: file:projects/analytics.tgz}
+    resolution: {integrity: sha512-HgjL8OXfEdvye1FdLf9G//HWfO1qZLQLLZbWULxoBB/bLnmMcYTiXT2WnawspPbKLUPLqjSkbqcGA9UFGNOhhw==, tarball: file:projects/analytics.tgz}
     id: file:projects/analytics.tgz
     name: '@rush-temp/analytics'
     version: 0.0.0
@@ -16702,8 +16702,8 @@ packages:
       - ts-node
     dev: false
 
-  file:projects/attachment-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3):
-    resolution: {integrity: sha512-F4pfpu7+h5OTbA4v1V3h1xlptglKLoRNI0WmlciciBE7awAsvAnvDRraE1xMqfPTfFxDAkYdMXlFdLf2XnxLOg==, tarball: file:projects/attachment-assets.tgz}
+  file:projects/attachment-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2):
+    resolution: {integrity: sha512-YRmJZ9Bnnde16HI5zAyJ0+nK0Lu9wPpyxR1O5M/pEBQnI2NwbBmMkTMTK9oSxublFylJeUlJ5EWoSeArmZcBSA==, tarball: file:projects/attachment-assets.tgz}
     id: file:projects/attachment-assets.tgz
     name: '@rush-temp/attachment-assets'
     version: 0.0.0
@@ -16721,6 +16721,7 @@ packages:
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.0)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -16731,7 +16732,6 @@ packages:
       - supports-color
       - svelte
       - ts-node
-      - typescript
     dev: false
 
   file:projects/attachment-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
@@ -16812,8 +16812,8 @@ packages:
       - ts-node
     dev: false
 
-  file:projects/bitrix-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3):
-    resolution: {integrity: sha512-vaeVlXGAI+zeidnPpHDuoN14nuqRw3+P27asiNCTHoII5OCqMmf4LNQICfY66QbjsaW+da+kkFf7jVJEHzXcow==, tarball: file:projects/bitrix-assets.tgz}
+  file:projects/bitrix-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2):
+    resolution: {integrity: sha512-ZVkLg48j/r7VwJnImaC9YJsC2drMrNK5uR8Iiyh3LDmlZhKMRuIaK43QPTAHegDNcgc6u/L8d7/Z6Ngy8ey2Yw==, tarball: file:projects/bitrix-assets.tgz}
     id: file:projects/bitrix-assets.tgz
     name: '@rush-temp/bitrix-assets'
     version: 0.0.0
@@ -16831,6 +16831,7 @@ packages:
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.0)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -16841,7 +16842,6 @@ packages:
       - supports-color
       - svelte
       - ts-node
-      - typescript
     dev: false
 
   file:projects/bitrix-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
@@ -16928,8 +16928,8 @@ packages:
       - ts-node
     dev: false
 
-  file:projects/board-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3):
-    resolution: {integrity: sha512-p8zIwBrrZTKcba/C9a5ZZx4MHL0WxFef/IJifKcNVt80NVI6iiYQQGG/7r5uY7G/4sxwlf5UPFjARuSHcbx7bA==, tarball: file:projects/board-assets.tgz}
+  file:projects/board-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2):
+    resolution: {integrity: sha512-wmy+vZEGRBLzWoDUgRGVaGD4US8ycoV0RL6ZC01rTlq8RbdlyfW2/i7H3xtp9mnVuD/qMG7Qa8ClC9bnsSyGLQ==, tarball: file:projects/board-assets.tgz}
     id: file:projects/board-assets.tgz
     name: '@rush-temp/board-assets'
     version: 0.0.0
@@ -16947,6 +16947,7 @@ packages:
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.0)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -16957,7 +16958,6 @@ packages:
       - supports-color
       - svelte
       - ts-node
-      - typescript
     dev: false
 
   file:projects/board-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
@@ -17037,8 +17037,8 @@ packages:
       - ts-node
     dev: false
 
-  file:projects/calendar-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3):
-    resolution: {integrity: sha512-5MVTvSmmLg96sFqk4zVrbHNSx2Nzc76YxmXe19stSevaE0wqyz+0hPSp4lPJQB/1pULqlD5pp77cEzaXYGSGQQ==, tarball: file:projects/calendar-assets.tgz}
+  file:projects/calendar-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2):
+    resolution: {integrity: sha512-Th1HeF8zKa7h3JO/+1oIk6lN9BSHkHimTo8/TA1/3gRl4F73VrMFy5v5hy+yXFZ1zk6/soXGSIyzC5334Szgfw==, tarball: file:projects/calendar-assets.tgz}
     id: file:projects/calendar-assets.tgz
     name: '@rush-temp/calendar-assets'
     version: 0.0.0
@@ -17056,6 +17056,7 @@ packages:
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.0)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -17066,7 +17067,6 @@ packages:
       - supports-color
       - svelte
       - ts-node
-      - typescript
     dev: false
 
   file:projects/calendar-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
@@ -17149,8 +17149,8 @@ packages:
       - ts-node
     dev: false
 
-  file:projects/chunter-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3):
-    resolution: {integrity: sha512-k4WxoHluluK/ah+z90zb83L04mcctnwxazZ6ICmA5l4X4ORsbpjhoipfQtsXwoVhpsEV5eXUMbq61qR9TDP17A==, tarball: file:projects/chunter-assets.tgz}
+  file:projects/chunter-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2):
+    resolution: {integrity: sha512-qHbKq8VgO886bAC+BCL3kmKoG1kd3oaXHwgOglqvC9qwYoT6MfUwEGkpedbzqq5zzstKo1vAj/0CdFcVVEg3tw==, tarball: file:projects/chunter-assets.tgz}
     id: file:projects/chunter-assets.tgz
     name: '@rush-temp/chunter-assets'
     version: 0.0.0
@@ -17168,6 +17168,7 @@ packages:
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.0)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -17178,7 +17179,6 @@ packages:
       - supports-color
       - svelte
       - ts-node
-      - typescript
     dev: false
 
   file:projects/chunter-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
@@ -17423,8 +17423,8 @@ packages:
       - y-protocols
     dev: false
 
-  file:projects/contact-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3):
-    resolution: {integrity: sha512-uAp6PF36IQc36D+4Ayj3VdMbrA+xLgQil6kC4VipY5GXw7aNkv7nGwYM6cnJLDiXLLTlgc01ow1SaRnyttJK1w==, tarball: file:projects/contact-assets.tgz}
+  file:projects/contact-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2):
+    resolution: {integrity: sha512-RduAt+nWAELv4+ghRMlSnNQOvMfWVS0azeWMAatj5Hw/OloS1T6GXFRsEic6DOqYuAa8/KNLjF0RzpBhC9Deyw==, tarball: file:projects/contact-assets.tgz}
     id: file:projects/contact-assets.tgz
     name: '@rush-temp/contact-assets'
     version: 0.0.0
@@ -17442,6 +17442,7 @@ packages:
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.0)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -17452,7 +17453,6 @@ packages:
       - supports-color
       - svelte
       - ts-node
-      - typescript
     dev: false
 
   file:projects/contact-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
@@ -17701,8 +17701,8 @@ packages:
       - ts-node
     dev: false
 
-  file:projects/devmodel-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)(typescript@5.3.3):
-    resolution: {integrity: sha512-MEZEjocPNPB7s+JBZ53jyyTEiTDaMKQphLJ71EKiAVhWv2iIVvQTs9Q5v00YUkEVONHd53mo07nF3Bl0zdDlNA==, tarball: file:projects/devmodel-resources.tgz}
+  file:projects/devmodel-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
+    resolution: {integrity: sha512-Nk8Ta2eUH6fGFkYa4VI9ZMGTmdHS5Mpf18cUxJJiylVt/X2Mf1XOewPDE+QcV1BdSsRm3WZSNy/hvrikW3J/VQ==, tarball: file:projects/devmodel-resources.tgz}
     id: file:projects/devmodel-resources.tgz
     name: '@rush-temp/devmodel-resources'
     version: 0.0.0
@@ -17726,6 +17726,7 @@ packages:
       svelte-loader: 3.1.9(svelte@4.2.11)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.70.0)(svelte@4.2.11)(typescript@5.3.3)
       ts-jest: 29.1.2(esbuild@0.20.0)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -17743,11 +17744,10 @@ packages:
       - sugarss
       - supports-color
       - ts-node
-      - typescript
     dev: false
 
-  file:projects/devmodel.tgz(@types/node@20.11.19)(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3):
-    resolution: {integrity: sha512-AtWJAjThHJ08iEfPTVYogzkJH0SKLzqgYf39azAWtFMEj1+13fjuJxQYvDRent84P+XJoVQXunnBPkBvTMA02A==, tarball: file:projects/devmodel.tgz}
+  file:projects/devmodel.tgz(@types/node@20.11.19)(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2):
+    resolution: {integrity: sha512-h2sg900GD0hd1AlhMY9u9BI9OUPBU/rdsHVQXb2IVxtUkyprIrLu7eRYGEM9fvOIR7Gpe1Il0m8e5fs0+fFdXg==, tarball: file:projects/devmodel.tgz}
     id: file:projects/devmodel.tgz
     name: '@rush-temp/devmodel'
     version: 0.0.0
@@ -17764,6 +17764,7 @@ packages:
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.0)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -17775,7 +17776,6 @@ packages:
       - supports-color
       - svelte
       - ts-node
-      - typescript
     dev: false
 
   file:projects/elastic.tgz(@types/node@20.11.19)(esbuild@0.20.0)(svelte@4.2.11):
@@ -18017,8 +18017,8 @@ packages:
       - ts-node
     dev: false
 
-  file:projects/hr-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3):
-    resolution: {integrity: sha512-WG2RZ7/YZzIRL592OOa+CpMTzfGM5pk7cHcIB0p0cPWxwwDMRNpWz0gGy2jM+7JY9oJzQOEO2r2LmztDOlQqaA==, tarball: file:projects/hr-assets.tgz}
+  file:projects/hr-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2):
+    resolution: {integrity: sha512-iySEToC2UKeQtUhHx21qbzPRz1G4UvCNhUuQtHS4uuzLVJ8CJkLv/l4EHkdXZr7y35lNiLqfkeeb+XO+3n0+Xg==, tarball: file:projects/hr-assets.tgz}
     id: file:projects/hr-assets.tgz
     name: '@rush-temp/hr-assets'
     version: 0.0.0
@@ -18036,6 +18036,7 @@ packages:
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.0)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -18046,7 +18047,6 @@ packages:
       - supports-color
       - svelte
       - ts-node
-      - typescript
     dev: false
 
   file:projects/hr-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
@@ -18360,8 +18360,8 @@ packages:
       - ts-node
     dev: false
 
-  file:projects/lead-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3):
-    resolution: {integrity: sha512-wueCu+ilkrpzqHELiXAaqT6/MSbdkazDtDONto6b0kosrjep3Eb+G3MgG95m0vD1cnc+q+BlaiqdfKn3pJlY5w==, tarball: file:projects/lead-assets.tgz}
+  file:projects/lead-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2):
+    resolution: {integrity: sha512-YTbqlB5nS9c/zzLTVEP80XJP5RvXsOso94F1aPHByjZb+WWpuEx6loB4IWryQVZFJaxnCui6dYjbVUSSpn86Ag==, tarball: file:projects/lead-assets.tgz}
     id: file:projects/lead-assets.tgz
     name: '@rush-temp/lead-assets'
     version: 0.0.0
@@ -18379,6 +18379,7 @@ packages:
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.0)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -18389,7 +18390,6 @@ packages:
       - supports-color
       - svelte
       - ts-node
-      - typescript
     dev: false
 
   file:projects/lead-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
@@ -18469,8 +18469,8 @@ packages:
       - ts-node
     dev: false
 
-  file:projects/login-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3):
-    resolution: {integrity: sha512-EZypHHqf+7RJpVKIAYkDTus4l31mL0KnzQPVsLc14mvoVbDZBOSE9NZB4NAYdkuXTmH+sSjTvSUXBjNjYKSmqw==, tarball: file:projects/login-assets.tgz}
+  file:projects/login-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2):
+    resolution: {integrity: sha512-PGTL12/YnKTy3dt97ctEATL1uRNEi9+AOhgvFJjEmHlJQUHxiivJsBm40c0vKCRcUm1vQU9jLRqiMSFrwRTN4w==, tarball: file:projects/login-assets.tgz}
     id: file:projects/login-assets.tgz
     name: '@rush-temp/login-assets'
     version: 0.0.0
@@ -18488,6 +18488,7 @@ packages:
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.0)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -18498,7 +18499,6 @@ packages:
       - supports-color
       - svelte
       - ts-node
-      - typescript
     dev: false
 
   file:projects/login-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(file-loader@6.2.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)(webpack@5.90.2):
@@ -18648,8 +18648,8 @@ packages:
       - ts-node
     dev: false
 
-  file:projects/model-activity.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-dmPEM6/5p6X1MJ/K8Cf1TsQjiqOW8AGIK11qqTBi5oiNw0z1OcFpbLSo3JbYdFbnmkHMEGZCetuM9wNFoSpVRg==, tarball: file:projects/model-activity.tgz}
+  file:projects/model-activity.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-y4koV4ug2OBdONhHk/ehWPaWf6vuhoc/802cruO0p8sC1eYbE5WbpX+vsUgCLoCPPLbLHcOLt2oQ0j7soXZoBA==, tarball: file:projects/model-activity.tgz}
     id: file:projects/model-activity.tgz
     name: '@rush-temp/model-activity'
     version: 0.0.0
@@ -18663,14 +18663,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-all.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-n4OV/O0BcfeLemQT3jed2CIKrz5kygNwpXJRKPlTB6cE83xSmMJqmJNx4QManA4Kp2kvc9dmla0tDaGv5Ki7Og==, tarball: file:projects/model-all.tgz}
+  file:projects/model-all.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-7ab6irtrhsaaclRaPZXRfJKJNWEAPMm9664ehVmeZEKW4xwU3yPLbQP/tnh84zyl2WiKg3muEA90gPFoXLkjTg==, tarball: file:projects/model-all.tgz}
     id: file:projects/model-all.tgz
     name: '@rush-temp/model-all'
     version: 0.0.0
@@ -18686,16 +18686,16 @@ packages:
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - '@swc/core'
       - '@swc/wasm'
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-attachment.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-SKG13Mz99jTlwRiO1+H9Ky5+q416P1MRvpReM982H31VxTRJMOI+eNIBqs0RXYjN7TvFPJBYpoJdTmnp0IA+sA==, tarball: file:projects/model-attachment.tgz}
+  file:projects/model-attachment.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-Iok1Qi/uqfAQr/B3VT/wNLxy9av1pDDhqHrsDNtaSMb5TTF5168hVV4Y1sktf4QQAbNc06nOP6OLzA9bWx1vHQ==, tarball: file:projects/model-attachment.tgz}
     id: file:projects/model-attachment.tgz
     name: '@rush-temp/model-attachment'
     version: 0.0.0
@@ -18709,14 +18709,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-bitrix.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-p1s71eZbqVICDBgW5LMHZY54TQm8S5cgLUcEJ7MLsSJQXZofo8JU6jhNfKolMqTve3LrgMghRxdSEB+o+CUOHg==, tarball: file:projects/model-bitrix.tgz}
+  file:projects/model-bitrix.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-qG1jmloE7KpAt9EtlPnvqpXz1EpX396Y4ZqOXbKvJDZGo2Y17SqrcIPcHHHoafpjg5WTYjF+Vey8MalU3PpPqw==, tarball: file:projects/model-bitrix.tgz}
     id: file:projects/model-bitrix.tgz
     name: '@rush-temp/model-bitrix'
     version: 0.0.0
@@ -18730,14 +18730,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-board.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-xm9Hs8bdJsrbDEFD1jhShr1DFKaRTwpQlJbWjxTm+6SIqs6jN1JyLsytFdVbPCEPe+8q3tFD2nZFQsLPUBLfuQ==, tarball: file:projects/model-board.tgz}
+  file:projects/model-board.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-HV/P7U/jy1R8KfpMjF9G9WGeqvCzQp7hlMI+aBMQrSAmcXbssSj1HzsJQ+fllRMgPcVS5ctAoMIuUsySCLX3JQ==, tarball: file:projects/model-board.tgz}
     id: file:projects/model-board.tgz
     name: '@rush-temp/model-board'
     version: 0.0.0
@@ -18751,14 +18751,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-calendar.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-avXbkTxl3X2DLdFU3MjGoCUaj5niBpEqbACDmXvNVS6dwQXIteWAGFsZgKJX01UwzbwP0HuiJr7lw3Ouguop/g==, tarball: file:projects/model-calendar.tgz}
+  file:projects/model-calendar.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-bOq6C3HytS2HvUwkm2oYmmKNYt8+uph5oSepchId9UVXAqpGtVYPdymApJAkP7PhavzkLoWsqqJPliBVhnYwXQ==, tarball: file:projects/model-calendar.tgz}
     id: file:projects/model-calendar.tgz
     name: '@rush-temp/model-calendar'
     version: 0.0.0
@@ -18772,14 +18772,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-chunter.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-ZmaufqKzBK0vYNl7SHVujQFOtXrKRjGxgz5iTdnk2I8NBeRY6ltnb1eZlVqka/Gxl3jg+cIiRVHcYaQ6pjRnsA==, tarball: file:projects/model-chunter.tgz}
+  file:projects/model-chunter.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-crSApNfaEMfvzSz4j5jzGZeniJ8ZC5BmrFiS8cDwtrwZVNMdE0YNHNvJIRaSB0pLlyF8w+UxONqR9JT5Er8S2g==, tarball: file:projects/model-chunter.tgz}
     id: file:projects/model-chunter.tgz
     name: '@rush-temp/model-chunter'
     version: 0.0.0
@@ -18793,14 +18793,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-contact.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-kW2K2pOCDviE7LdQ7oOzBovwTtvfZlFmH3dk+keqPzeX7fkMmG0o8+FboInwVjAZISgBoDnGoTeGp3cdwFgrHg==, tarball: file:projects/model-contact.tgz}
+  file:projects/model-contact.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-1KCFugNTofKCnrBf9i+b5/XOflGD7esyG7mzy8YkX1n4AyI9YlFOLUuURGucEol5uKKU797NGRa2BO6iECAWbw==, tarball: file:projects/model-contact.tgz}
     id: file:projects/model-contact.tgz
     name: '@rush-temp/model-contact'
     version: 0.0.0
@@ -18815,15 +18815,15 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - encoding
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-core.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-ntft8NrgaCfe6zHRVeIxBMpM/1vtMMkwU5MlCvC3sFMqPeVm0U/fu0s2LnZ5o9gY0wuP0OCwbUr0rN58bZ6Ztg==, tarball: file:projects/model-core.tgz}
+  file:projects/model-core.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-5ah/NB3IDFzX28WWjS6Bn3ywPvrq2Au7MHLGzfwZjUc9loXz0rQzfWIJRa4STRv+rKFcsLpQLe1afntaMwilog==, tarball: file:projects/model-core.tgz}
     id: file:projects/model-core.tgz
     name: '@rush-temp/model-core'
     version: 0.0.0
@@ -18837,14 +18837,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-gmail.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-4hby/ynYWK6IfD+kjyIjcGeZKy3tucjSnkjDki9vvqPeYKxwlNNLHuD6YMJtkUBvBuTA6GvpY/hK2RF2aU900Q==, tarball: file:projects/model-gmail.tgz}
+  file:projects/model-gmail.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-fCmdls0TPCyCZe/Bk1W2WBgSd5eyKTr/SzKfkHKw+BPquzWkzvGZSVfzHtDKAIzqMIhEOg2KK8fplB790iM1ng==, tarball: file:projects/model-gmail.tgz}
     id: file:projects/model-gmail.tgz
     name: '@rush-temp/model-gmail'
     version: 0.0.0
@@ -18858,14 +18858,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-hr.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-c14ag7Aoi1fOIhKorxTYJ9n5dFmqmJkzvntKUrt3x9vIEGAz+IciirzSKw4oazaoQ43g7ShmpSg/Em2damekgg==, tarball: file:projects/model-hr.tgz}
+  file:projects/model-hr.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-m1fNr1rzBg+FqCPoeWyo1GE0BmA1TRTTgNe3s48jF0b16O0EVtlW6c24vaex1Xaf7rPyrFAYyoVd4XLMGr1Row==, tarball: file:projects/model-hr.tgz}
     id: file:projects/model-hr.tgz
     name: '@rush-temp/model-hr'
     version: 0.0.0
@@ -18879,14 +18879,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-inventory.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-rQZL8uNfBUI1FigsYZ3ywvwg6myAYxppAksfzTG7L4JsBEp4y4M49lWlBzHH/mqKgGNCxt0MpDiv8J0rH5xTxw==, tarball: file:projects/model-inventory.tgz}
+  file:projects/model-inventory.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-ythNABt4xW593ayvK8rGht6ia9ru7RY6LuNNkSFidtfuwv8P8xErWuwFABPAvi+dlm/PpekUCcfDxgLmA+XiXQ==, tarball: file:projects/model-inventory.tgz}
     id: file:projects/model-inventory.tgz
     name: '@rush-temp/model-inventory'
     version: 0.0.0
@@ -18900,14 +18900,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-lead.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-gksLbc8T70pVdFY2oM43wHoSp71KjBp22HPtDprm14hMQhmAbq5jf0NsufpCQX4mWdvoS41nkqISiMJvMFkb3g==, tarball: file:projects/model-lead.tgz}
+  file:projects/model-lead.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-/t+HhcqrtmB7yepjvHgfj8GiOiOYtbLz5dVy2xz0Kc3q4ek0e7JEbubshUH5uLXiRCKuxIRwh/TViUBT2TSzRQ==, tarball: file:projects/model-lead.tgz}
     id: file:projects/model-lead.tgz
     name: '@rush-temp/model-lead'
     version: 0.0.0
@@ -18921,14 +18921,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-notification.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-4LD2Kjbal/IlorgfewIPi/hvnJGXXCnZCj/Sf9ZWPCJrvUtlSZYMFocisW16q/MQ+8LZwWTFa9e8pGsXoRKalA==, tarball: file:projects/model-notification.tgz}
+  file:projects/model-notification.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-9qHAPglvvD6vr4c8XHKhavSD8/mRUUJTGwv/0oYgQ1GkVCfol4yGFkpj2/Me1x6j9siU9VYcHkyxM0xWZaLxsw==, tarball: file:projects/model-notification.tgz}
     id: file:projects/model-notification.tgz
     name: '@rush-temp/model-notification'
     version: 0.0.0
@@ -18942,14 +18942,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-preference.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-pAAls3aoz/aqRZXrWYE9CJsjOmIhW6QEQwjoChBIcsikNgKXv1rFEpqDdSDuJYVdYv5SYi36bwkTg6kPF6DxcA==, tarball: file:projects/model-preference.tgz}
+  file:projects/model-preference.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-DWcrdhmVC0tFBtoQReyqLnQIqt6QTVn5efUMT4Pv0UCtuzLS01PRZvs560yFGmda+exoscfOR6OTpVES1lw4Yg==, tarball: file:projects/model-preference.tgz}
     id: file:projects/model-preference.tgz
     name: '@rush-temp/model-preference'
     version: 0.0.0
@@ -18963,14 +18963,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-presentation.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-Rw2iHhj+q6AJ8nL/qc8TPFD5defFRjGWcajw7EjZXtme2wYh73aOl/jAk3CWOcggQCPkAMEobkiQPjrMLBvJ2w==, tarball: file:projects/model-presentation.tgz}
+  file:projects/model-presentation.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-jKzsXI2tuADBGn5O6WepaJ8UDjYWovLf9ar/sBf0GO9HBvsCfFzfjS+IuOs6wWy+NdGIybOuq96mBiYMIezn/g==, tarball: file:projects/model-presentation.tgz}
     id: file:projects/model-presentation.tgz
     name: '@rush-temp/model-presentation'
     version: 0.0.0
@@ -18984,14 +18984,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-recruit.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-HFvdLxKoof/HpL11eHK/bAWdy84uUZLdVAhQDeBvtcxaNVT765AX/vB0G4zehK6pSO27MOTcErQ1JBkNamf8yQ==, tarball: file:projects/model-recruit.tgz}
+  file:projects/model-recruit.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-lEs7b9MX/tAmxCHTztJGFtrmVpHwhUhlBRX81yWHN/a2HIaxw6n4c7drCaQR6fmABj0DQCBBWlZyTKkbXxBTlg==, tarball: file:projects/model-recruit.tgz}
     id: file:projects/model-recruit.tgz
     name: '@rush-temp/model-recruit'
     version: 0.0.0
@@ -19006,14 +19006,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-request.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-jZix/eFaBkTodzhugzP/MxZLWeZajzigJrenqWzlFqAwo2KZiec2MLVn1zqRqFMcXCceWISx57WE+IexnQUz+A==, tarball: file:projects/model-request.tgz}
+  file:projects/model-request.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-eCxJOTXo5G6c4JbaIbNjbxsU5AIEvESXeyb4TgLbuZNCDVg8xJmID9i6dY7UtVS2osCWZQaNNj1M8sGYMy8m/g==, tarball: file:projects/model-request.tgz}
     id: file:projects/model-request.tgz
     name: '@rush-temp/model-request'
     version: 0.0.0
@@ -19027,14 +19027,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-server-activity.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-842C3YGifHGfmV1IBvY5HwD37c1QRvEmxFf5C+Yzz78UP+z3eCYMgKp9/7UxBk3eIdIyz1KY+iN6+vlDeG9inQ==, tarball: file:projects/model-server-activity.tgz}
+  file:projects/model-server-activity.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-FTf9g3I15x3TDWKYzV3lw9BpQej0a06k543vEl43ViK7y5CFOe5bZptnFPTskmu0m8Iri9L80NauQcpXdU0fTg==, tarball: file:projects/model-server-activity.tgz}
     id: file:projects/model-server-activity.tgz
     name: '@rush-temp/model-server-activity'
     version: 0.0.0
@@ -19048,14 +19048,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-server-attachment.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-KlBrrCLMzpxFkSjdNy9/bUscH4Chu+RZwkOE/RS7v4rQMM6OUEpulQieMtJEKRrJHbFODQMgCqVHfKDMj6UpLg==, tarball: file:projects/model-server-attachment.tgz}
+  file:projects/model-server-attachment.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-zMH0NdBcZtY3S4O7A3IRmeTGWcuxq2j6o8aCuFTGal4fm8aczb3ES/S7E1JJJCsNuqpP6oeohlDax6X7Eas8kQ==, tarball: file:projects/model-server-attachment.tgz}
     id: file:projects/model-server-attachment.tgz
     name: '@rush-temp/model-server-attachment'
     version: 0.0.0
@@ -19069,14 +19069,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-server-calendar.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-B6Fmt2TZziSo0kZ/iR26XatSlNZoNbItoBHg355ZDiCACBIUL46YWjttMsdkyVYlsqYrdRPYGklBNBUQPW5ZRw==, tarball: file:projects/model-server-calendar.tgz}
+  file:projects/model-server-calendar.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-H4fJe2Vuw559XgzxNZWH6JAt35exxjxpKPyh4oK/8ZHf2LetMFz2mhlcf/vM4LGAOUpFAqiMkr11RzS3//2v5Q==, tarball: file:projects/model-server-calendar.tgz}
     id: file:projects/model-server-calendar.tgz
     name: '@rush-temp/model-server-calendar'
     version: 0.0.0
@@ -19090,14 +19090,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-server-chunter.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-r9+pzt9+XWw9H5svfTiHSmhUHIZHSU7m9dtMCX/pjpF5j4Y+yQOLy+dVw+xvdfbGFjDrd7R578a7v2VDkBM9OQ==, tarball: file:projects/model-server-chunter.tgz}
+  file:projects/model-server-chunter.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-QmM7WXhLf5BGazTO5A0hkKgl0ZyHUpQJOdMGTd+3F/9WrJM7pKdcPt/4P3inDrelQBTcwZGjdsXnIYaSNt8E4Q==, tarball: file:projects/model-server-chunter.tgz}
     id: file:projects/model-server-chunter.tgz
     name: '@rush-temp/model-server-chunter'
     version: 0.0.0
@@ -19111,14 +19111,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-server-contact.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-fCyP4Iy/vq9AKazqah34ZVNarA+qNjm8Oj68FbU8VbO63GaUQW+WjCxBJCYWtNlXg3ASCJcIocsISS7Lj31dlw==, tarball: file:projects/model-server-contact.tgz}
+  file:projects/model-server-contact.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-VoPRtOcvPnTkD9vREuWCJnXeBtJB6TKKtZdCm89O6gEwc8TtXSQr0OSvJjqB/YPMn96ltxFqztLdeoD6D82UPQ==, tarball: file:projects/model-server-contact.tgz}
     id: file:projects/model-server-contact.tgz
     name: '@rush-temp/model-server-contact'
     version: 0.0.0
@@ -19132,14 +19132,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-server-core.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-iCcQyR97pY9mqsE2O0c5kDXTiEerCnvCeeWPhpoD1YRoZliGt3+xadd7CbO5S8YlZ1K7dDAQXyy4LGjU+DGYJQ==, tarball: file:projects/model-server-core.tgz}
+  file:projects/model-server-core.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-2Kx4/Bf/YcKhVN+8iw28sWqYSug6zd4bugVCRsFU+6A4vy8U78kUhXd6fnIj4Kwpne0WAi1q0pcgv7jB+hGRyA==, tarball: file:projects/model-server-core.tgz}
     id: file:projects/model-server-core.tgz
     name: '@rush-temp/model-server-core'
     version: 0.0.0
@@ -19153,14 +19153,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-server-gmail.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-wpzLIWTVJBDPB61QVh8Dnh07uveAiaEJQVzWXhbKaXYNVPQcrGIc4C+Q8iiwBFazzV5bE5Z3TIFboOL83A7s6A==, tarball: file:projects/model-server-gmail.tgz}
+  file:projects/model-server-gmail.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-UUdnCHpYm0xpJGa7cnJq04tetZDHHNkzjz/gpMbw2J/KH36ARlIsHBZ62jHFUfTuHf8TVeki+eH+FKPe7x9NZQ==, tarball: file:projects/model-server-gmail.tgz}
     id: file:projects/model-server-gmail.tgz
     name: '@rush-temp/model-server-gmail'
     version: 0.0.0
@@ -19174,14 +19174,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-server-hr.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-aSKy1AYNt2BowmQvgqnmmq6jL+2peSNQgMJkZe4riPrBs26rxqkqVWB16NlJbMl+qJHyfxLdyRc44AoSuuubuA==, tarball: file:projects/model-server-hr.tgz}
+  file:projects/model-server-hr.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-M4L3fW3gYeKBdXk3PaHy4u1tuCq0AAFIe6F/SWSeZioefq0f6GW+nerxFmAO3l/leySffba+rdXNmmOAzXleNw==, tarball: file:projects/model-server-hr.tgz}
     id: file:projects/model-server-hr.tgz
     name: '@rush-temp/model-server-hr'
     version: 0.0.0
@@ -19195,14 +19195,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-server-inventory.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-xd76uGc4eW+UGzTzx/MdULDUu9f7x57YpUdHUNJGdOuKd/13dw1jGzzd5gxBLm/tkw/IrO8duqwEmZqNFZ4wMw==, tarball: file:projects/model-server-inventory.tgz}
+  file:projects/model-server-inventory.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-eO98y5joMctiAqjRCN/oHFl14398QrJ2MOCd3KXOBuEBvquC3Dt5ruuuocwC/OOX7nenOYBBrb1yyWx4BrlTXg==, tarball: file:projects/model-server-inventory.tgz}
     id: file:projects/model-server-inventory.tgz
     name: '@rush-temp/model-server-inventory'
     version: 0.0.0
@@ -19216,14 +19216,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-server-lead.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-tqXPqpgf4P9kX1zNetWOq6khknqfX+TxsD6WkaiJ10lZP0UQUzPw5tqj5yqxdIu8R26pv2Ue1ZCxWRtcNcQQRg==, tarball: file:projects/model-server-lead.tgz}
+  file:projects/model-server-lead.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-hX9RYp8zs4j+UD7340DJaNEkWqUCuMt9B6d8E16Q8u3XcA+ML1516/wORQf7b7HxQnS0SP9CzZBd85YvCWj8kg==, tarball: file:projects/model-server-lead.tgz}
     id: file:projects/model-server-lead.tgz
     name: '@rush-temp/model-server-lead'
     version: 0.0.0
@@ -19237,14 +19237,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-server-notification.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-IPGy/DI5+kHXQuYdrr8MNqsuV0xQ6GYeJl8H2lO8cu4lJIBpUEZ84W47kQm+cj9uxMKl8uOLK0FvGPejS0tHQw==, tarball: file:projects/model-server-notification.tgz}
+  file:projects/model-server-notification.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-ecSl7lozwg/ojLAwxfCLnn60/O1LqX8X+xeA+GOelBvd/YF0+/fDT5ILo1eTapTEAsbovhCv66+aZIzwkD46AA==, tarball: file:projects/model-server-notification.tgz}
     id: file:projects/model-server-notification.tgz
     name: '@rush-temp/model-server-notification'
     version: 0.0.0
@@ -19258,14 +19258,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-server-openai.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-FUtmhJ6jHiYEOJ3Q72h3Oz4sC6BptKUvi0+XH7oEofOgfWqTNvLcWbc5qQ/GE5kJpHjquGSWwzaJpAp8U7bpnA==, tarball: file:projects/model-server-openai.tgz}
+  file:projects/model-server-openai.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-PL9nCejLR6r9xJjLKYSc+d4W6ZkgncIJad1wHBXSy63rcKee+enPpMY6l7V5i/ZwDcAVTMPZgSu9LEbUkUCSag==, tarball: file:projects/model-server-openai.tgz}
     id: file:projects/model-server-openai.tgz
     name: '@rush-temp/model-server-openai'
     version: 0.0.0
@@ -19279,14 +19279,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-server-recruit.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-qRdvv8XB587ru6cL8oLS2FtaqHfi+MZ74AAhokksi5HpH5BgbgGZsY1Vt3LUuxnOXCFTCdk4fowN6xEtbaOHGQ==, tarball: file:projects/model-server-recruit.tgz}
+  file:projects/model-server-recruit.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-ZFrrZwpItzZ4CUFmT0RicO1vagrEPkmrWsnmHMyLlK6hvrhvFod5Q4Dbc0eq674rUhejD5HgccAEudlZ+WaZ0A==, tarball: file:projects/model-server-recruit.tgz}
     id: file:projects/model-server-recruit.tgz
     name: '@rush-temp/model-server-recruit'
     version: 0.0.0
@@ -19300,14 +19300,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-server-request.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-u4MfZsMlubKys0qJOb7yZ8Vo7WFNhs+rj8/0fr0teDjZw44nRpP9i1VNkePOxV1ER03NUzZFZlfoHfQQX4+MBA==, tarball: file:projects/model-server-request.tgz}
+  file:projects/model-server-request.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-D4zVuSkAmGxw0TRlO2pQnmDe/QzLyfJSR85VxRmiNkgN5EeC3JzkD/L76+uIL/a3cdA8hICu3Pu99Fw7n9sPkw==, tarball: file:projects/model-server-request.tgz}
     id: file:projects/model-server-request.tgz
     name: '@rush-temp/model-server-request'
     version: 0.0.0
@@ -19321,14 +19321,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-server-setting.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-tjYpwdhBU7deBGEcM815iHonUjL4BBHi7tdbwsxVKvoP87mvUQEbNv3dLatqZGrxPvUvSsKNoZFKNk1m+om9dQ==, tarball: file:projects/model-server-setting.tgz}
+  file:projects/model-server-setting.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-yTf/+CiZqRgeqRH25NtdiURHM9E3Z/mSqO0BdGvlsCZPNfIdsutZVDi0Q9J+EcViuvcK2MFtbwa3SQ+tRIhCiQ==, tarball: file:projects/model-server-setting.tgz}
     id: file:projects/model-server-setting.tgz
     name: '@rush-temp/model-server-setting'
     version: 0.0.0
@@ -19342,14 +19342,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-server-tags.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-IPZXxXhDsqeCPKgSgnIW1m7NzYx+ZzXMx/aBuc8/iPjut49am8dc+89BMRS0XBgVF4Lzqu4gW7O44dhKwTmrlw==, tarball: file:projects/model-server-tags.tgz}
+  file:projects/model-server-tags.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-ekVsvvkRsgFxNr31MliAictHrPasg/Lkmhwy9Q5em1cHmZH3xRuknAdUn2+PG3qwZpkv34ouyTSDExFkatt8Sg==, tarball: file:projects/model-server-tags.tgz}
     id: file:projects/model-server-tags.tgz
     name: '@rush-temp/model-server-tags'
     version: 0.0.0
@@ -19363,14 +19363,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-server-task.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-7vKnER0vQ63aNN1+LGEum21KlRJjNS7fkoXjue4BlWXpS8eKOGTMM5kddQwY9EjTGwACQtr5nPyYnHR6go/fBg==, tarball: file:projects/model-server-task.tgz}
+  file:projects/model-server-task.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-35otM3K8Ojx7wCImCYLdKBSe7preVk8dJjx50MpiQNlvd7Q99DL7Ux1wo41erAtWONTxh0IhkZtsZmOgj7dGUg==, tarball: file:projects/model-server-task.tgz}
     id: file:projects/model-server-task.tgz
     name: '@rush-temp/model-server-task'
     version: 0.0.0
@@ -19384,14 +19384,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-server-telegram.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-VM/k290fZVLgyFO4bhX1nt/h/HAu+6sqIBcSngqYf/EMSceW2q/U2Vz2/M9CTvMhI5726xW6NYn57dZsp+f0sQ==, tarball: file:projects/model-server-telegram.tgz}
+  file:projects/model-server-telegram.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-8IVDdLr5KDdT4Cam2+oAAaSoNY0JqL6lfvg4Q8dj3rbrj9WnSV4RGlKrr6T7c9WiRmapczFHc+mduaRkB4RVcw==, tarball: file:projects/model-server-telegram.tgz}
     id: file:projects/model-server-telegram.tgz
     name: '@rush-temp/model-server-telegram'
     version: 0.0.0
@@ -19405,14 +19405,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-server-templates.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-cytY/Kk+aWTYgHx0fr/0CfzUvpydfZkhNTPl/wLJalWK/5vZfZ4OurJMNdgbXj3rQKDCbKigKPYSl9RxO0pCwA==, tarball: file:projects/model-server-templates.tgz}
+  file:projects/model-server-templates.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-R+Z79JT0TV5Fy6/2H0vbzqYAbp9nIKmRC6bLUrSDjkUn4elTXWnBu44WCUwYgwIAcAj0mSeeT/ba23YNTt47xQ==, tarball: file:projects/model-server-templates.tgz}
     id: file:projects/model-server-templates.tgz
     name: '@rush-temp/model-server-templates'
     version: 0.0.0
@@ -19426,14 +19426,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-server-tracker.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-UsAh/NiTRaLdii1rn6IjjJIB7ay4tObWMMyZTLC5XL4P7oUuKgnwOicdmDdMK4nDNY0OTRMmOkLH+fv8g/HMTQ==, tarball: file:projects/model-server-tracker.tgz}
+  file:projects/model-server-tracker.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-8TqauIOhrL/TrZIwsKyaixz5G2XlQjulPp9aMFm7gMxRHm7b3bjUiPI7SZ0bC4+kP99o5mxepmyiLsU/XrYSig==, tarball: file:projects/model-server-tracker.tgz}
     id: file:projects/model-server-tracker.tgz
     name: '@rush-temp/model-server-tracker'
     version: 0.0.0
@@ -19447,14 +19447,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-server-translate.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-noEfmypVPnAPGQHb92sSWut9YTrBpotnQ29z0eb+VlUV7QB/JZxJng4GYbABaf/KNNSErwquAF1VJY00xhzJZg==, tarball: file:projects/model-server-translate.tgz}
+  file:projects/model-server-translate.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-9Fmd456K3TZEPO166o14XqerrBMcpz9Bc9DOWvdhT9E6a+uaqBVsGyrNAHAZLJ6LDPYNC+1fzPIS1HpYc42vvA==, tarball: file:projects/model-server-translate.tgz}
     id: file:projects/model-server-translate.tgz
     name: '@rush-temp/model-server-translate'
     version: 0.0.0
@@ -19468,14 +19468,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-server-view.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-FjGStM/Iw69R4cVDai9y22h16JmylauM06hXsfO7aJi/6bgHaAIYB5hAA0jgDCfExssU8ZkX7gou1qb4SFcDCQ==, tarball: file:projects/model-server-view.tgz}
+  file:projects/model-server-view.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-Wujuad+YJVZ9gDpFkVw9plAgbLZK02joO9XOMvFEVcqGiY5Xh1wpBpisV0KMlGGgmnmEDFH+dnRHNVmY8pD28w==, tarball: file:projects/model-server-view.tgz}
     id: file:projects/model-server-view.tgz
     name: '@rush-temp/model-server-view'
     version: 0.0.0
@@ -19489,14 +19489,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-setting.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-i0XZ5rT9laIuSKpZ0Citm73AwPMRCXM306ENfHmSE2EAd+J6ILfuosYofdTs6MqOF4Ka/wLdv74I44M+MlMDcg==, tarball: file:projects/model-setting.tgz}
+  file:projects/model-setting.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-j2+par5fbIk0fQntEm9Yc9+pjkzX1Ixjh/tSmxL/TbTbobmq7S4NkQ0vFIByIh1DRRYETc9Nvl65W1atenp/TQ==, tarball: file:projects/model-setting.tgz}
     id: file:projects/model-setting.tgz
     name: '@rush-temp/model-setting'
     version: 0.0.0
@@ -19510,14 +19510,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-support.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-qu79pJ8brLQnyhrKFXUHXkEVOJexGH37BZG9g1TFsTYetKDBGYZWLsNB8nyVd6e0hQxaM4n1rw7PDpXMY9QNDA==, tarball: file:projects/model-support.tgz}
+  file:projects/model-support.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-J+zBmhcdZfAqwRHh0oUmKO+ga01ikENbktPTCI4Ziz252/YDYcgjJ0NbzNcPfheuyjAW2HFA904j4KQpmWtblw==, tarball: file:projects/model-support.tgz}
     id: file:projects/model-support.tgz
     name: '@rush-temp/model-support'
     version: 0.0.0
@@ -19531,14 +19531,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-tags.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-F6KzlEZ8jlllcK0ZrSv/Ck1XUMHSbzasAD4UBIx0HXlFdzvNVw3Z8BncFs84TCVintgRppN+Heiy1ZNgyWH02A==, tarball: file:projects/model-tags.tgz}
+  file:projects/model-tags.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-N3Ip1RZGFzlSHA+rbVwSewYmoUESiWV3N+xelnSm2MZ4s2Oei/c7EQ7m+2td2wip1gEfhLL4wbEKfvMswkkQCA==, tarball: file:projects/model-tags.tgz}
     id: file:projects/model-tags.tgz
     name: '@rush-temp/model-tags'
     version: 0.0.0
@@ -19552,14 +19552,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-task.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-YFVrliQ5ENQ0ISEqJe7V/haF39qJqodH/DZZsQpeqo0GQ1Kks/SS9PhWignQNtXvlEntgGUF3uGzeiI83qM66w==, tarball: file:projects/model-task.tgz}
+  file:projects/model-task.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-x9V62r2Vhq0crzWctRsKFFXj7hWW01o82UGgFYZMWDKmOK9rH+Ab4EBwjkxJRg1IDJdTlCOh6BaXP50FZ8KUhg==, tarball: file:projects/model-task.tgz}
     id: file:projects/model-task.tgz
     name: '@rush-temp/model-task'
     version: 0.0.0
@@ -19573,14 +19573,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-telegram.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-W/dxKA+/e5coKGZhQMO8wlikybvV8B0ZQuf0tueazWPfEWPJ9ReDzkr2HH5jYu/mJ2T4uDpieu2atwDwC173xQ==, tarball: file:projects/model-telegram.tgz}
+  file:projects/model-telegram.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-BfZyoDjih87tFmpYaLbidbDEWnRVjO7iBGEFJXPfgyISFXdzfr4w6rURZzytRYuNRbP77yQ0OKH4C1LkiZR+PQ==, tarball: file:projects/model-telegram.tgz}
     id: file:projects/model-telegram.tgz
     name: '@rush-temp/model-telegram'
     version: 0.0.0
@@ -19594,14 +19594,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-templates.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-cVP+8EjVoZRbJBmqLOKz/WiAObOThsQG4nLglPSpx0glMJEb/Ig7TveXngRHVryLcqcAGokSEGsDjmVfDIzG6A==, tarball: file:projects/model-templates.tgz}
+  file:projects/model-templates.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-L7DLPKk/Emfs6KfbfSAbLaE1xJ9zaMfx4jSuhIEdJF0Zv26kN4Mqjcq4SkWPMDsO+Y1k7+TdGopqQWige9ntGQ==, tarball: file:projects/model-templates.tgz}
     id: file:projects/model-templates.tgz
     name: '@rush-temp/model-templates'
     version: 0.0.0
@@ -19615,14 +19615,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-text-editor.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-dC2lQ1YtNxI5oYUPAq/VJwBmDD+0welSc8qgLYndpz3SRb6lgtrl4YvVrhDhKQ/2BO1A3y32zsHmMQfd0YfL0w==, tarball: file:projects/model-text-editor.tgz}
+  file:projects/model-text-editor.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-w8BSf28xb84IF5ChM9boPUTB0OzlNIF8sbfZNWzSb0myYQ+4es3H3uJeF3tPfcxMqBPFaswlYjEMRjDrY/xoxA==, tarball: file:projects/model-text-editor.tgz}
     id: file:projects/model-text-editor.tgz
     name: '@rush-temp/model-text-editor'
     version: 0.0.0
@@ -19636,14 +19636,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-tracker.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-yIMlNWQCVUGigO1sbZhmNrX4OYhcQV5VAyhjB103WUpWqUJ1wl/bxSo/Kz+Kk+SDWgCmXd4t0UlgizC+37S6Wg==, tarball: file:projects/model-tracker.tgz}
+  file:projects/model-tracker.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-JekAX6mPwRvA0RvyDDELrdcyCDDGYtSeqseUfklkZZKSj0t3zrAT1KQlmIFTe05x3uqOMCcQXgPRVBvtgsPqUA==, tarball: file:projects/model-tracker.tgz}
     id: file:projects/model-tracker.tgz
     name: '@rush-temp/model-tracker'
     version: 0.0.0
@@ -19657,14 +19657,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-view.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-N84aSHEtvHC8m8pjF8fFREHrGKP/tdfTsdpTtNC1zUjZn65smFsYl10V+XnGXJev6jt6O7Q+ywOZCWO0fyB0gw==, tarball: file:projects/model-view.tgz}
+  file:projects/model-view.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-KYXpt80+P98DL4AbAQuAREiduJ7/1ceAL7iAdpQPR4Spq8VUKlNNyIePhi+PJlBvSKBuwllGXmqv+KbA1VT6dQ==, tarball: file:projects/model-view.tgz}
     id: file:projects/model-view.tgz
     name: '@rush-temp/model-view'
     version: 0.0.0
@@ -19678,14 +19678,14 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
-  file:projects/model-workbench.tgz(svelte@4.2.11)(typescript@5.3.3):
-    resolution: {integrity: sha512-iNW8ujYHuidfDJpYsND5QjPsZnpaAq/unmVkXXMVXlUxcLo0szYTrQOlgp+ER3hlzhe8tJ/vKqcuCeSGH/7i5Q==, tarball: file:projects/model-workbench.tgz}
+  file:projects/model-workbench.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-834ZByWO1BiKDFQSROObFpWIGXT1dYkJbQ+w6HVn3AbZrFlT8nY/pcoZ1vhuoy6lTlGEb/oExdLofODtJrVTJg==, tarball: file:projects/model-workbench.tgz}
     id: file:projects/model-workbench.tgz
     name: '@rush-temp/model-workbench'
     version: 0.0.0
@@ -19699,10 +19699,10 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
       - svelte
-      - typescript
     dev: false
 
   file:projects/model.tgz(@types/node@20.11.19)(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2):
@@ -19781,8 +19781,8 @@ packages:
       - ts-node
     dev: false
 
-  file:projects/notification-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3):
-    resolution: {integrity: sha512-Ka/gvooQ/nuXMf6sp6ZSuupFVc7hqPWsXIAqTciqITfU75o1LB+hlgIXMLjsUhCUX7i2h6fpNbyFRGYBT0DvBw==, tarball: file:projects/notification-assets.tgz}
+  file:projects/notification-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2):
+    resolution: {integrity: sha512-SK5EWhXqFAPY1cQ5K3zWwBeqFAawSt0Mm9NCCtA6dbXeh/Nov37CL20yOVIWI9+VFtLjNHmEMycM9B3XNECgcw==, tarball: file:projects/notification-assets.tgz}
     id: file:projects/notification-assets.tgz
     name: '@rush-temp/notification-assets'
     version: 0.0.0
@@ -19800,6 +19800,7 @@ packages:
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.0)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -19810,7 +19811,6 @@ packages:
       - supports-color
       - svelte
       - ts-node
-      - typescript
     dev: false
 
   file:projects/notification-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
@@ -19858,8 +19858,8 @@ packages:
       - ts-node
     dev: false
 
-  file:projects/notification.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3):
-    resolution: {integrity: sha512-8kG/42Owf1FHXR+X9x3damAdv53PNE0mFOiqQk/Bxd7me3ai4rp7gEOkEnd29BBzpH+EYxxOeVnaVA52h2yCMA==, tarball: file:projects/notification.tgz}
+  file:projects/notification.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(svelte@4.2.11)(ts-node@10.9.2):
+    resolution: {integrity: sha512-sfvn4NX4NnZDUdlgGZZQdv8grb5GY47qH7Z9MUM7Vop6s7CjLeH5YihskwSAVBvdTvq4K7zddy2SwIxg6o/f7Q==, tarball: file:projects/notification.tgz}
     id: file:projects/notification.tgz
     name: '@rush-temp/notification'
     version: 0.0.0
@@ -19881,6 +19881,7 @@ packages:
       svelte-loader: 3.1.9(svelte@4.2.11)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.70.0)(svelte@4.2.11)(typescript@5.3.3)
       ts-jest: 29.1.2(esbuild@0.20.0)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -19899,7 +19900,6 @@ packages:
       - supports-color
       - svelte
       - ts-node
-      - typescript
     dev: false
 
   file:projects/openai.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2):
@@ -20363,8 +20363,8 @@ packages:
       - ts-node
     dev: false
 
-  file:projects/prod.tgz(bufferutil@4.0.8)(sass@1.70.0)(ts-node@10.9.2)(typescript@5.3.3):
-    resolution: {integrity: sha512-y+tc0PoebLZB2wPFteQhhYtXKQfumeYhi/mQK+wr9uuPRujV9VsHRbLNN0zrvaDO6YPSnCY7XbBsH2LMZ/nU6w==, tarball: file:projects/prod.tgz}
+  file:projects/prod.tgz(bufferutil@4.0.8)(sass@1.70.0)(ts-node@10.9.2):
+    resolution: {integrity: sha512-TjeUSPaVhCjzTrSNqMLuwcUK6yYoS5OaNhKS8UD9rb21+XjCarJAcZg+KEADKJHqAP29rZAFF8EmrcJDin+bmw==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
@@ -20391,6 +20391,7 @@ packages:
       svelte-loader: 3.1.9(svelte@4.2.11)
       svgo-loader: 3.0.3
       ts-loader: 9.5.1(typescript@5.3.3)(webpack@5.90.2)
+      typescript: 5.3.3
       update-browserslist-db: 1.0.13(browserslist@4.21.5)
       webpack: 5.90.2(esbuild@0.20.0)(webpack-cli@5.1.4)
       webpack-bundle-analyzer: 4.10.1(bufferutil@4.0.8)
@@ -20408,7 +20409,6 @@ packages:
       - sass-embedded
       - supports-color
       - ts-node
-      - typescript
       - uglify-js
       - utf-8-validate
       - vue-template-compiler
@@ -20448,8 +20448,8 @@ packages:
       - ts-node
     dev: false
 
-  file:projects/recruit-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3):
-    resolution: {integrity: sha512-oT2pVEU6iZo6XW9mjT64XuUg6A8P9/88eN4VBx7QZ8kwpgndKmbv+ncYhdrDU+XX05Ln72RUJiLIXKtE8KYYMA==, tarball: file:projects/recruit-assets.tgz}
+  file:projects/recruit-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2):
+    resolution: {integrity: sha512-MLiSApdxhPWpudufURONVX7Vi5wsUmriAZWXjB+rzUqbPwxcFQoRFX9a8r3QSvMq3OkQjvS/WU6Fk53DA0fhFA==, tarball: file:projects/recruit-assets.tgz}
     id: file:projects/recruit-assets.tgz
     name: '@rush-temp/recruit-assets'
     version: 0.0.0
@@ -20467,6 +20467,7 @@ packages:
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.0)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -20477,7 +20478,6 @@ packages:
       - supports-color
       - svelte
       - ts-node
-      - typescript
     dev: false
 
   file:projects/recruit-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
@@ -20589,8 +20589,8 @@ packages:
       - ts-node
     dev: false
 
-  file:projects/request-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3):
-    resolution: {integrity: sha512-60jyQqgywO/hPFVcD+ohPdru6CgMDRNSs15Xke1Y8lR7gCCsIsE5Jx5ZhNwxWsS4M/Ludyj0ZwSn7PguzkaqxQ==, tarball: file:projects/request-assets.tgz}
+  file:projects/request-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2):
+    resolution: {integrity: sha512-2WFyNo67S7rhVqOp/6wW7eAISi+BCIA6f+sst5B3r6LgTLwO7zp7d1aVvnfLH7ez/f59druHm3flfYZfYqD0kA==, tarball: file:projects/request-assets.tgz}
     id: file:projects/request-assets.tgz
     name: '@rush-temp/request-assets'
     version: 0.0.0
@@ -20608,6 +20608,7 @@ packages:
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.0)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -20618,7 +20619,6 @@ packages:
       - supports-color
       - svelte
       - ts-node
-      - typescript
     dev: false
 
   file:projects/request-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
@@ -22174,8 +22174,8 @@ packages:
       - svelte
     dev: false
 
-  file:projects/setting-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3):
-    resolution: {integrity: sha512-7gELkU+bYHsOt9/fuX1LauxNqeziXmRLG/zez/1vAcf0rzjEGNwc6gFAAANrp17YCO2XsSFKxTGlgF+3Lgad0g==, tarball: file:projects/setting-assets.tgz}
+  file:projects/setting-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2):
+    resolution: {integrity: sha512-VSFDLUiyAdzHLqwcsp29wC5k7PYgcvzlWYV9Fk7o3sLDWmUdtwnvdz+iSgycyvGmubttVAbVkOyTLiw0PPyOAg==, tarball: file:projects/setting-assets.tgz}
     id: file:projects/setting-assets.tgz
     name: '@rush-temp/setting-assets'
     version: 0.0.0
@@ -22193,6 +22193,7 @@ packages:
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.0)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -22203,7 +22204,6 @@ packages:
       - supports-color
       - svelte
       - ts-node
-      - typescript
     dev: false
 
   file:projects/setting-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
@@ -22335,8 +22335,8 @@ packages:
       - webpack-cli
     dev: false
 
-  file:projects/support-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3):
-    resolution: {integrity: sha512-T7U6i0WK04UFzuHO09zMCu49elXIz1sPUx8WrWFNCbfvKZdsTqBJJbobOZRKarbL3cYYB4WqASCCz1pVzRFWww==, tarball: file:projects/support-assets.tgz}
+  file:projects/support-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2):
+    resolution: {integrity: sha512-1fIQ0TFPx+Y+1oqhDwkkBCVEHf2xpye1xcH8ls8wJmVbWpmRYb4pMQUAKTWUQNe4HkK3LUDl1evj5dAAty1wvg==, tarball: file:projects/support-assets.tgz}
     id: file:projects/support-assets.tgz
     name: '@rush-temp/support-assets'
     version: 0.0.0
@@ -22354,6 +22354,7 @@ packages:
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.0)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -22364,7 +22365,6 @@ packages:
       - supports-color
       - svelte
       - ts-node
-      - typescript
     dev: false
 
   file:projects/support-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
@@ -22553,8 +22553,8 @@ packages:
       - ts-node
     dev: false
 
-  file:projects/task-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3):
-    resolution: {integrity: sha512-6ZJXX9YB5BqlVZ8VIiIN9FgNK+QObBAsJeQ91QUgHNNPHe4RmrRkxdvbCvXCcg1sg9y91BidoG+Q9WIBi5cjEA==, tarball: file:projects/task-assets.tgz}
+  file:projects/task-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2):
+    resolution: {integrity: sha512-3PjSTOTiJzCKJxQE/4q1WgGgI6M/c+3ADaZVSosB7wrNlKM+ApaQ2ZBM4e2OTLGxQdrtzpL0ONw1/75mMC4yIQ==, tarball: file:projects/task-assets.tgz}
     id: file:projects/task-assets.tgz
     name: '@rush-temp/task-assets'
     version: 0.0.0
@@ -22572,6 +22572,7 @@ packages:
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.0)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -22582,11 +22583,10 @@ packages:
       - supports-color
       - svelte
       - ts-node
-      - typescript
     dev: false
 
-  file:projects/task-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)(typescript@5.3.3):
-    resolution: {integrity: sha512-qzkNmaruJxf8a69UUgPYA9pRzNWJgWakZfbotc6vhLNem7aguu5Ldw6N5UMLmKeRdC/VRcU7XAjLKhxY+Js9hQ==, tarball: file:projects/task-resources.tgz}
+  file:projects/task-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
+    resolution: {integrity: sha512-yKsnfgrKtK0NFAYMTXgY2JHAwzS1Kf83SzHfksRH3gpc6auQcR7QNrxZV3YXClxYeBsbU/HUr/7q1HzAsqCaMQ==, tarball: file:projects/task-resources.tgz}
     id: file:projects/task-resources.tgz
     name: '@rush-temp/task-resources'
     version: 0.0.0
@@ -22610,6 +22610,7 @@ packages:
       svelte-loader: 3.1.9(svelte@4.2.11)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.70.0)(svelte@4.2.11)(typescript@5.3.3)
       ts-jest: 29.1.2(esbuild@0.20.0)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -22627,7 +22628,6 @@ packages:
       - sugarss
       - supports-color
       - ts-node
-      - typescript
     dev: false
 
   file:projects/task.tgz(@types/node@20.11.19)(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2):
@@ -23158,8 +23158,8 @@ packages:
       - utf-8-validate
     dev: false
 
-  file:projects/tracker-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3):
-    resolution: {integrity: sha512-hLNsuNrIrf2BE7NUeyGN7We+ltse22kVBgrrLYrG7Zu/q6ijN09+z5n5zOD7dVGbPBsEyzkrVMwK4kGRYx+IVw==, tarball: file:projects/tracker-assets.tgz}
+  file:projects/tracker-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2):
+    resolution: {integrity: sha512-jYHDZ+uQUbdpBbAWXL4XH4kvDFiLxV2Lz6E37mlTC4gyV15vagjBcznOLQH0uMlBAps/O3mCiEpKw7am20qG9A==, tarball: file:projects/tracker-assets.tgz}
     id: file:projects/tracker-assets.tgz
     name: '@rush-temp/tracker-assets'
     version: 0.0.0
@@ -23177,6 +23177,7 @@ packages:
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.0)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -23187,7 +23188,6 @@ packages:
       - supports-color
       - svelte
       - ts-node
-      - typescript
     dev: false
 
   file:projects/tracker-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
@@ -23353,8 +23353,8 @@ packages:
       - ts-node
     dev: false
 
-  file:projects/view-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2)(typescript@5.3.3):
-    resolution: {integrity: sha512-QfBQhnTsPuSlHo01bNHWs61Qnd1LdHV8xr6wudk8jOhpvzLp5t4BYjRdcibWXiiMj/pcwZkeRbqfA4P8hSpo3Q==, tarball: file:projects/view-assets.tgz}
+  file:projects/view-assets.tgz(esbuild@0.20.0)(svelte@4.2.11)(ts-node@10.9.2):
+    resolution: {integrity: sha512-i6ue6dEoLnqkQhdAiWN4NOzUdmpBimf9ernMZbnRLpe5xJEGArPvYqLqYfn2B1ccKVRw5MoaqaDEVyhThCEWiA==, tarball: file:projects/view-assets.tgz}
     id: file:projects/view-assets.tgz
     name: '@rush-temp/view-assets'
     version: 0.0.0
@@ -23372,6 +23372,7 @@ packages:
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.0)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -23382,7 +23383,6 @@ packages:
       - supports-color
       - svelte
       - ts-node
-      - typescript
     dev: false
 
   file:projects/view-resources.tgz(@types/node@20.11.19)(esbuild@0.20.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):

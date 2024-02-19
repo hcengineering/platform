@@ -75,6 +75,9 @@ switch (args[0]) {
       'tsc',
       [
         '-pretty',
+        "--noEmit",
+        "--isolatedModules",
+        "--skipLibCheck",
         "--outDir",
         "./.build/dist",
         ...args.splice(1)
@@ -90,6 +93,8 @@ switch (args[0]) {
       'tsc',
       'tsc', [
       '-pretty',
+      "--isolatedModules",
+      "--skipLibCheck",
       ...process.argv.splice(2)
     ])
       .then(() => {
