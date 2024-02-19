@@ -208,12 +208,12 @@
   let scrollToRestore = 0
 
   function loadMore () {
-    if (!loadMoreAllowed || $isLoadingMoreStore) {
+    if (!loadMoreAllowed || $isLoadingMoreStore || !scrollElement) {
       return
     }
 
     const minMsgHeightPx = minMsgHeightRem * parseFloat(getComputedStyle(document.documentElement).fontSize)
-    const maxMsgPerScreen = Math.floor(scrollElement.clientHeight / minMsgHeightPx)
+    const maxMsgPerScreen = Math.ceil(scrollElement.clientHeight / minMsgHeightPx)
     const limit = Math.max(maxMsgPerScreen, provider.limit)
 
     if (shouldLoadMoreUp() && scrollElement && provider.canLoadMore('backward', messages[0]?.createdOn)) {
