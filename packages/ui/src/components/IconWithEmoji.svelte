@@ -14,13 +14,14 @@
 -->
 <script lang="ts">
   import { IconSize } from '../types'
+  import { fromCodePoint } from '../utils'
 
   export let icon: number
   export let size: IconSize
 
   let value: string = ''
   $: try {
-    value = String.fromCodePoint(icon)
+    value = fromCodePoint(icon)
   } catch (err) {}
 </script>
 
