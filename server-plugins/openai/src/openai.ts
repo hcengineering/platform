@@ -96,7 +96,7 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
 
   stageValue: boolean | string = true
 
-  limitter = new RateLimitter(() => ({ rate: this.rate }))
+  limitter = new RateLimitter(this.rate)
 
   indexState?: IndexStageState
 

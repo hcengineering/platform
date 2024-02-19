@@ -55,7 +55,7 @@ export const globalIndexer = {
   processingSize: 1000
 }
 
-const rateLimitter = new RateLimitter(() => ({ rate: globalIndexer.allowParallel }))
+const rateLimitter = new RateLimitter(globalIndexer.allowParallel)
 
 let indexCounter = 0
 /**
@@ -333,9 +333,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         await this.processRemove()
       })
 
-      const _classes = await rateLimitter.exec(() => {
-        return this.metrics.with('init-stages', {}, async () => await this.processIndex())
-      })
+      const _classes = await this.metrics.with('init-stages', {}, async () => await this.processIndex())
 
       // Also update doc index state queries.
       _classes.push(core.class.DocIndexState)
@@ -377,128 +375,130 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     const _classUpdate = new Set<Ref<Class<Doc>>>()
     for (const st of this.stages) {
       idx++
-      while (true) {
-        try {
-          if (this.cancelling) {
-            return Array.from(_classUpdate.values())
-          }
-          if (!st.enabled) {
-            break
-          }
-          await this.metrics.with('flush', {}, async () => {
-            await this.flush(true)
-          })
-          const toSkip = Array.from(this.skipped.entries())
-            .filter((it) => it[1] > 3)
-            .map((it) => it[0])
-
-          let result = await this.metrics.with(
-            'get-to-index',
-            {},
-            async () =>
-              await this.storage.findAll(
-                core.class.DocIndexState,
-                {
-                  [`stages.${st.stageId}`]: { $ne: st.stageValue },
-                  _id: { $nin: toSkip },
-                  removed: false
-                },
-                {
-                  limit: globalIndexer.processingSize,
-                  sort: {
-                    _id: 1
-                  }
-                }
-              )
-          )
-          const toRemove: DocIndexState[] = []
-          // Check and remove missing class documents.
-          result = toFindResult(
-            result.filter((doc) => {
-              const _class = this.model.findObject(doc.objectClass)
-              if (_class === undefined) {
-                // no _class present, remove doc
-                toRemove.push(doc)
-                return false
-              }
-              return true
-            }),
-            result.total
-          )
-
-          if (toRemove.length > 0) {
-            try {
-              await this.storage.clean(
-                DOMAIN_DOC_INDEX_STATE,
-                toRemove.map((it) => it._id)
-              )
-            } catch (err: any) {
-              // QuotaExceededError, ignore
-            }
-          }
-
-          if (result.length > 0) {
-            console.log(
-              this.workspace.name,
-              `Full text: Indexing ${this.indexId} ${st.stageId}`,
-              Object.entries(this.currentStages)
-                .map((it) => `${it[0]}:${it[1]}`)
-                .join(' ')
-            )
-          } else {
-            // Nothing to index, check on next cycle.
-            break
-          }
-
-          this.toIndex = new Map(result.map((it) => [it._id, it]))
-
-          this.extraIndex.clear()
-          this.stageChanged = 0
-          // Find documents matching query
-          const toIndex = this.matchStates(st)
-
-          if (toIndex.length > 0) {
-            // Do Indexing
-            this.currentStage = st
-
-            await this.metrics.with('collect', { collector: st.stageId }, async (ctx) => {
-              await st.collect(toIndex, this, ctx)
-            })
+      await rateLimitter.exec(async () => {
+        while (true) {
+          try {
             if (this.cancelling) {
+              return Array.from(_classUpdate.values())
+            }
+            if (!st.enabled) {
+              break
+            }
+            await this.metrics.with('flush', {}, async () => {
+              await this.flush(true)
+            })
+            const toSkip = Array.from(this.skipped.entries())
+              .filter((it) => it[1] > 3)
+              .map((it) => it[0])
+
+            let result = await this.metrics.with(
+              'get-to-index',
+              {},
+              async () =>
+                await this.storage.findAll(
+                  core.class.DocIndexState,
+                  {
+                    [`stages.${st.stageId}`]: { $ne: st.stageValue },
+                    _id: { $nin: toSkip },
+                    removed: false
+                  },
+                  {
+                    limit: globalIndexer.processingSize,
+                    sort: {
+                      _id: 1
+                    }
+                  }
+                )
+            )
+            const toRemove: DocIndexState[] = []
+            // Check and remove missing class documents.
+            result = toFindResult(
+              result.filter((doc) => {
+                const _class = this.model.findObject(doc.objectClass)
+                if (_class === undefined) {
+                  // no _class present, remove doc
+                  toRemove.push(doc)
+                  return false
+                }
+                return true
+              }),
+              result.total
+            )
+
+            if (toRemove.length > 0) {
+              try {
+                await this.storage.clean(
+                  DOMAIN_DOC_INDEX_STATE,
+                  toRemove.map((it) => it._id)
+                )
+              } catch (err: any) {
+                // QuotaExceededError, ignore
+              }
+            }
+
+            if (result.length > 0) {
+              console.log(
+                this.workspace.name,
+                `Full text: Indexing ${this.indexId} ${st.stageId}`,
+                Object.entries(this.currentStages)
+                  .map((it) => `${it[0]}:${it[1]}`)
+                  .join(' ')
+              )
+            } else {
+              // Nothing to index, check on next cycle.
               break
             }
 
-            toIndex.forEach((it) => _classUpdate.add(it.objectClass))
+            this.toIndex = new Map(result.map((it) => [it._id, it]))
 
-            // go with next stages if they accept it
-            for (const nst of this.stages.slice(idx)) {
-              const toIndex2 = this.matchStates(nst)
-              if (toIndex2.length > 0) {
-                this.currentStage = nst
-                await this.metrics.with('collect', { collector: nst.stageId }, async (ctx) => {
-                  await nst.collect(toIndex2, this, ctx)
-                })
-              }
+            this.extraIndex.clear()
+            this.stageChanged = 0
+            // Find documents matching query
+            const toIndex = this.matchStates(st)
+
+            if (toIndex.length > 0) {
+              // Do Indexing
+              this.currentStage = st
+
+              await this.metrics.with('collect', { collector: st.stageId }, async (ctx) => {
+                await st.collect(toIndex, this, ctx)
+              })
               if (this.cancelling) {
                 break
               }
-            }
-          } else {
-            break
-          }
 
-          // Check items with not updated state.
-          for (const d of toIndex) {
-            if (d.stages?.[st.stageId] === false) {
-              this.skipped.set(d._id, (this.skipped.get(d._id) ?? 0) + 1)
+              toIndex.forEach((it) => _classUpdate.add(it.objectClass))
+
+              // go with next stages if they accept it
+              for (const nst of this.stages.slice(idx)) {
+                const toIndex2 = this.matchStates(nst)
+                if (toIndex2.length > 0) {
+                  this.currentStage = nst
+                  await this.metrics.with('collect', { collector: nst.stageId }, async (ctx) => {
+                    await nst.collect(toIndex2, this, ctx)
+                  })
+                }
+                if (this.cancelling) {
+                  break
+                }
+              }
             } else {
-              this.skipped.delete(d._id)
+              break
             }
+
+            // Check items with not updated state.
+            for (const d of toIndex) {
+              if (d.stages?.[st.stageId] === false) {
+                this.skipped.set(d._id, (this.skipped.get(d._id) ?? 0) + 1)
+              } else {
+                this.skipped.delete(d._id)
+              }
+            }
+          } catch (err: any) {
+            console.error(err)
           }
-        } catch (err: any) {
-          console.error(err)
         }
-      }
+      })
     }
     return Array.from(_classUpdate.values())
   }

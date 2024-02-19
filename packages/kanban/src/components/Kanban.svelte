@@ -57,7 +57,7 @@
 
   const dispatch = createEventDispatcher()
 
-  const limiter = new RateLimitter(() => ({ rate: 10 }))
+  const limiter = new RateLimitter(10)
 
   async function move (state: CategoryType): Promise<void> {
     if (dragCard === undefined) {

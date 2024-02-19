@@ -271,7 +271,7 @@ export function devTool (
         }
         if (cmd.parallel !== '0') {
           const parallel = parseInt(cmd.parallel) ?? 1
-          const rateLimit = new RateLimitter(() => ({ rate: parallel }))
+          const rateLimit = new RateLimitter(parallel)
           console.log('parallel upgrade', parallel, cmd.parallel)
           for (const ws of workspaces) {
             await rateLimit.exec(() => {

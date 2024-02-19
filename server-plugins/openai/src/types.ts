@@ -30,4 +30,4 @@ export const openAIConfigDefaults: {
  * @public
  *
  */
-export const openAIRatelimitter = new RateLimitter(() => ({ rate: 3 }))
+export const openAIRatelimitter = new RateLimitter(3)

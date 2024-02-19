@@ -52,7 +52,7 @@
   export let compactMode: boolean = false
   export let listProvider: SelectionFocusProvider
 
-  const limiter = new RateLimitter(() => ({ rate: 10 }))
+  const limiter = new RateLimitter(10)
 
   let docs: Doc[] = []
   let fastDocs: Doc[] = []
