@@ -5,9 +5,7 @@
     "_phase:build": "compile",
     "_phase:format": "format src",
     "build": "compile",
-    "build:watch": "compile",
-    
-    
+    "build:watch": "compile",      
     "format": "format src"
   },
   "peerDependencies": {
@@ -21,7 +19,8 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint": "^8.54.0",
     "prettier": "^3.1.0",
-    "prettier-plugin-svelte": "^3.1.0"
+    "prettier-plugin-svelte": "^3.1.0",
+    "typescript":"^5.3.3"
   },
   "#replaces": [
     ".eslintrc.js",
