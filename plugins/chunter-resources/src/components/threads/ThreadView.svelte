@@ -16,9 +16,9 @@
   import { Doc, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Breadcrumbs, IconClose, Label, location as locationStore } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
   import activity, { ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
-  import { getMessageFromLoc } from '@hcengineering/activity-resources'
+  import { getMessageFromLoc, loadSavedMessages } from '@hcengineering/activity-resources'
   import contact from '@hcengineering/contact'
 
   import chunter from '../../plugin'
@@ -89,6 +89,10 @@
       { label: chunter.string.Thread }
     ]
   }
+
+  onMount(() => {
+    loadSavedMessages()
+  })
 </script>
 
 <div class="popupPanel panel">

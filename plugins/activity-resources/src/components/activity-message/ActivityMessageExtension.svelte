@@ -24,7 +24,7 @@
 {#each extensions as extension}
   {#each extension.components as component}
     {#if component.kind === kind}
-      <Component is={component.component} {props} on:close on:open />
+      <Component is={component.component} {props} showLoading={false} on:close on:open />
     {/if}
   {/each}
 {/each}
