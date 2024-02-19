@@ -24,15 +24,16 @@
     Separator,
     Location
   } from '@hcengineering/ui'
-  import chunter from '@hcengineering/chunter'
   import { DocNotifyContext } from '@hcengineering/notification'
-  import { NavHeader } from '@hcengineering/workbench-resources'
+
   import { NavigatorModel, SpecialNavModel } from '@hcengineering/workbench'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
+  import { loadSavedMessages } from '@hcengineering/activity-resources'
+  import { onMount } from 'svelte'
 
   import ChatNavigator from './navigator/ChatNavigator.svelte'
   import ChannelView from '../ChannelView.svelte'
-  import { chatSpecials } from './utils'
+  import { chatSpecials, loadSavedAttachments } from './utils'
 
   export let visibleNav: boolean = true
   export let navFloat: boolean = false
@@ -115,6 +116,11 @@
     { minSize: 20, maxSize: 40, size: 30, float: 'navigator' },
     { size: 'auto', minSize: 30, maxSize: 'auto', float: undefined }
   ])
+
+  onMount(() => {
+    loadSavedMessages()
+    loadSavedAttachments()
+  })
 </script>
 
 <div class="flex-row-top h-full">

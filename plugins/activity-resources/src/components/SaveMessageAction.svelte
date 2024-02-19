@@ -20,16 +20,16 @@
   import BookmarkBorder from './icons/BookmarkBorder.svelte'
   import ActivityMessageAction from './ActivityMessageAction.svelte'
   import Bookmark from './icons/Bookmark.svelte'
+  import { savedMessagesStore } from '../activity'
 
   export let object: ActivityMessage
 
   const client = getClient()
-  const query = createQuery()
 
   let savedMessage: SavedMessage | undefined = undefined
 
-  $: query.query(activity.class.SavedMessage, { attachedTo: object._id }, (res) => {
-    savedMessage = res[0]
+  savedMessagesStore.subscribe((saved) => {
+    savedMessage = saved.find(({ attachedTo }) => attachedTo === object._id)
   })
 
   async function toggleSaveMessage (): Promise<void> {
