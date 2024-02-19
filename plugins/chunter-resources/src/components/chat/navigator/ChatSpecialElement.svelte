@@ -20,9 +20,10 @@
   import { Ref } from '@hcengineering/core'
   import { SavedAttachments } from '@hcengineering/attachment'
   import { SavedMessage } from '@hcengineering/activity'
+  import { savedMessagesStore } from '@hcengineering/activity-resources'
 
   import NavItem from './NavItem.svelte'
-  import { savedAttachmentsStore, savedMessagesStore } from '../utils'
+  import { savedAttachmentsStore } from '../utils'
 
   export let special: SpecialNavModel
   export let currentSpecial: SpecialNavModel | undefined = undefined

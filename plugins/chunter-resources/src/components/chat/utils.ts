@@ -19,12 +19,11 @@ import { writable } from 'svelte/store'
 import view from '@hcengineering/view'
 import workbench, { type SpecialNavModel } from '@hcengineering/workbench'
 import attachment, { type SavedAttachments } from '@hcengineering/attachment'
-import activity, { type SavedMessage } from '@hcengineering/activity'
+import activity from '@hcengineering/activity'
 
 import { type ChatNavGroupModel } from './types'
 import chunter from '../../plugin'
 
-export const savedMessagesStore = writable<Array<WithLookup<SavedMessage>>>([])
 export const savedAttachmentsStore = writable<Array<WithLookup<SavedAttachments>>>([])
 
 export const chatSpecials: SpecialNavModel[] = [
@@ -102,11 +101,10 @@ export const chatNavGroupsModel: ChatNavGroupModel[] = [
   }
 ]
 
-function fillSavedItemsStores (): void {
+export function loadSavedAttachments (): void {
   const client = getClient()
 
   if (client !== undefined) {
-    const savedMessagesQuery = createQuery(true)
     const savedAttachmentsQuery = createQuery(true)
 
     savedAttachmentsQuery.query(
@@ -117,20 +115,10 @@ function fillSavedItemsStores (): void {
       },
       { lookup: { attachedTo: attachment.class.Attachment }, sort: { modifiedOn: SortingOrder.Descending } }
     )
-
-    savedMessagesQuery.query(
-      activity.class.SavedMessage,
-      {},
-      (res) => {
-        savedMessagesStore.set(res.filter(({ $lookup }) => $lookup?.attachedTo !== undefined))
-      },
-      { lookup: { attachedTo: activity.class.ActivityMessage }, sort: { modifiedOn: SortingOrder.Descending } }
-    )
   } else {
     setTimeout(() => {
-      fillSavedItemsStores()
+      loadSavedAttachments()
     }, 50)
   }
 }
 
-fillSavedItemsStores()

@@ -31,6 +31,7 @@
   import ActivityMessageActions from '../ActivityMessageActions.svelte'
   import { isReactionMessage } from '../../activityMessagesUtils'
   import Bookmark from '../icons/Bookmark.svelte'
+  import { savedMessagesStore } from '../../activity'
 
   export let message: DisplayActivityMessage
   export let parentMessage: DisplayActivityMessage | undefined = undefined
@@ -55,7 +56,6 @@
   export let onReply: (() => void) | undefined = undefined
 
   const client = getClient()
-  const savedMessageQuery = createQuery()
 
   let allActionIds: string[] = []
 
@@ -65,8 +65,8 @@
 
   let isSaved = false
 
-  savedMessageQuery.query(activity.class.SavedMessage, { attachedTo: message._id }, (res) => {
-    isSaved = res.length > 0
+  savedMessagesStore.subscribe((saved) => {
+    isSaved = saved.some((savedMessage) => savedMessage.attachedTo === message._id)
   })
 
   $: withActions &&

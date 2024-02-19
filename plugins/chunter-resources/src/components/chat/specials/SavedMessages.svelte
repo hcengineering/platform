@@ -21,11 +21,11 @@
   import { getClient } from '@hcengineering/presentation'
   import { Icon, Label, Scroller } from '@hcengineering/ui'
   import activity, { ActivityMessage, SavedMessage } from '@hcengineering/activity'
-  import { ActivityMessagePresenter } from '@hcengineering/activity-resources'
+  import { ActivityMessagePresenter, savedMessagesStore } from '@hcengineering/activity-resources'
 
   import chunter from '../../../plugin'
   import { openMessageFromSpecial } from '../../../utils'
-  import { savedAttachmentsStore, savedMessagesStore } from '../utils'
+  import { savedAttachmentsStore } from '../utils'
   import Header from '../../Header.svelte'
 
   const client = getClient()
