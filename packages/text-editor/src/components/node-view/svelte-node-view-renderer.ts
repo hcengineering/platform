@@ -82,9 +82,9 @@ class SvelteNodeView extends NodeView<SvelteNodeViewComponent, Editor, SvelteNod
       }
     })
 
-    this.editor.on('update', this.handleEditorUpdate.bind(this))
-
     this.renderer = new SvelteRenderer(this.component, { element: target, props, context })
+
+    this.editor.on('update', this.handleEditorUpdate.bind(this))
   }
 
   override get dom (): HTMLElement {
