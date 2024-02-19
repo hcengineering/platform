@@ -52,6 +52,7 @@
 
   const dateSelectorHeight = 30
   const headerHeight = 50
+  const minMsgHeightRem = 4.375
 
   const client = getClient()
   const inboxClient = InboxNotificationsClientImpl.getClient()
@@ -211,13 +212,17 @@
       return
     }
 
+    const minMsgHeightPx = minMsgHeightRem * parseFloat(getComputedStyle(document.documentElement).fontSize)
+    const maxMsgPerScreen = Math.floor(scrollElement.clientHeight / minMsgHeightPx)
+    const limit = Math.max(maxMsgPerScreen, provider.limit)
+
     if (shouldLoadMoreUp() && scrollElement && provider.canLoadMore('backward', messages[0]?.createdOn)) {
       shouldScrollToNew = false
       scrollToRestore = scrollElement.scrollHeight
-      void provider.loadMore('backward', messages[0]?.createdOn)
+      void provider.loadMore('backward', messages[0]?.createdOn, limit)
     } else if (shouldLoadMoreDown() && provider.canLoadMore('forward', messages[messages.length - 1]?.createdOn)) {
       shouldScrollToNew = false
-      void provider.loadMore('forward', messages[messages.length - 1]?.createdOn)
+      void provider.loadMore('forward', messages[messages.length - 1]?.createdOn, limit)
     }
   }
 

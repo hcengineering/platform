@@ -47,6 +47,8 @@ interface Chunk {
 }
 
 interface IChannelDataProvider {
+  limit: number
+
   isLoadingStore: Readable<boolean>
   isLoadingMoreStore: Readable<boolean>
   messagesStore: Readable<ActivityMessage[]>
@@ -59,7 +61,7 @@ interface IChannelDataProvider {
 }
 
 export class ChannelDataProvider implements IChannelDataProvider {
-  private readonly limit = 30
+  public readonly limit = 30
 
   private readonly metadataQuery = createQuery(true)
   private readonly tailQuery = createQuery(true)
