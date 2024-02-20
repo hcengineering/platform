@@ -145,7 +145,7 @@
       {:else}
         <div class="embeddedMarker" />
       {/if}
-      <div class="content ml-2 w-full clear-mins">
+      <div class="flex-col ml-2 w-full clear-mins">
         <div class="header clear-mins">
           {#if person}
             <EmployeePresenter value={person} shouldShowAvatar={false} />
