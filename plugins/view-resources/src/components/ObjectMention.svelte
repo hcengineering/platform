@@ -41,7 +41,7 @@
 
   let docLabel: string = ''
   let docTitle: string | undefined = undefined
-  let docTooltip: LabelAndProps | undefined = undefined
+  let docTooltip: LabelAndProps = {}
   let docComponent: AnyComponent
 
   let displayTitle = ''
@@ -58,9 +58,9 @@
     doc = object
   }
 
-  $: updateDocTitle(doc)
-  $: updateDocTooltip(doc)
-  $: updateDocLabel(doc, _class)
+  $: void updateDocTitle(doc)
+  $: void updateDocTooltip(doc)
+  $: void updateDocLabel(doc, _class)
 
   function getPanelComponent (doc?: Doc, _class?: Ref<Class<Doc>>): AnyComponent {
     if (component !== undefined) {
@@ -78,28 +78,19 @@
     }
   }
 
-  async function updateDocLabel (doc?: Doc, _class?: Ref<Class<Doc>>) {
+  async function updateDocLabel (doc?: Doc, _class?: Ref<Class<Doc>>): Promise<void> {
     const resultClass = doc?._class ?? _class
 
-    if (!resultClass) {
-      docLabel = ''
-      return
-    }
-
-    docLabel = await translate(hierarchy.getClass(resultClass).label, {}, $themeStore.language)
+    docLabel = resultClass ? await translate(hierarchy.getClass(resultClass).label, {}, $themeStore.language) : ''
   }
 
-  async function updateDocTitle (doc: Doc | undefined) {
-    if (doc === undefined) {
-      docTitle = undefined
-    } else {
-      docTitle = await getDocIdentifier(client, doc._id, doc._class, doc)
-    }
+  async function updateDocTitle (doc: Doc | undefined): Promise<void> {
+    docTitle = doc ? await getDocIdentifier(client, doc._id, doc._class, doc) : undefined
   }
 
-  async function updateDocTooltip (doc?: Doc) {
+  async function updateDocTooltip (doc?: Doc): Promise<void> {
     if (doc === undefined) {
-      docTooltip = undefined
+      docTooltip = {}
       return
     }
 
@@ -108,7 +99,7 @@
     if (mixin?.provider !== undefined) {
       const providerFn = await getResource(mixin.provider)
 
-      docTooltip = await providerFn(client, doc)
+      docTooltip = (await providerFn(client, doc)) ?? { label: hierarchy.getClass(doc._class).label }
     } else {
       docTooltip = { label: hierarchy.getClass(doc._class).label }
     }
