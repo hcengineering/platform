@@ -1,7 +1,8 @@
 
-FROM node:20-alpine
+FROM node:20
 
 WORKDIR /usr/src/app
+RUN npm install --ignore-scripts=false --verbose bufferutil --unsafe-perm
 
 COPY bundle/bundle.js ./
 
