@@ -21,7 +21,7 @@
     FindOptions,
     generateId,
     Lookup,
-    RateLimitter,
+    RateLimiter,
     Ref,
     Space
   } from '@hcengineering/core'
@@ -83,7 +83,7 @@
 
   export let resultQuery: DocumentQuery<Doc>
   export let resultOptions: FindOptions<Doc>
-  export let limiter: RateLimitter
+  export let limiter: RateLimiter
   export let listProvider: SelectionFocusProvider
 
   $: groupByKey = viewOptions.groupBy[level] ?? noCategory
