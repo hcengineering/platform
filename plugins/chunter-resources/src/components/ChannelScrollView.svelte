@@ -294,6 +294,10 @@
   }
 
   async function updateSelectedDate () {
+    if (!withDates) {
+      return
+    }
+
     if (scrollContentBox === undefined || scrollElement === undefined) {
       return
     }
