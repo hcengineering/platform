@@ -305,20 +305,22 @@ export class DocManager {
  * @public
  */
 
-export class RateLimitter {
+export class RateLimiter {
   idCounter: number = 0
   processingQueue = new Map<string, Promise<void>>()
   last: number = 0
+  rate: number
 
   queue: (() => Promise<void>)[] = []
 
-  constructor (readonly config: () => { rate: number, perSecond?: number }) {}
+  constructor (rate: number) {
+    this.rate = rate
+  }
 
   async exec<T, B extends Record<string, any> = any>(op: (args?: B) => Promise<T>, args?: B): Promise<T> {
     const processingId = `${this.idCounter++}`
-    const cfg = this.config()
 
-    while (this.processingQueue.size > cfg.rate) {
+    while (this.processingQueue.size > this.rate) {
       await Promise.race(this.processingQueue.values())
     }
     try {
@@ -331,9 +333,7 @@ export class RateLimitter {
   }
 
   async add<T, B extends Record<string, any> = any>(op: (args?: B) => Promise<T>, args?: B): Promise<void> {
-    const cfg = this.config()
-
-    if (this.processingQueue.size < cfg.rate) {
+    if (this.processingQueue.size < this.rate) {
       void this.exec(op, args)
     } else {
       await this.exec(op, args)

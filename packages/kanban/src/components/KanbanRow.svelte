@@ -20,7 +20,7 @@
     DocumentQuery,
     FindOptions,
     IdMap,
-    RateLimitter,
+    RateLimiter,
     Ref,
     Space,
     toIdMap
@@ -44,7 +44,7 @@
   export let query: DocumentQuery<DocWithRank> = {}
   export let options: FindOptions<DocWithRank> | undefined = undefined
   export let groupByKey: any
-  export let limiter: RateLimitter
+  export let limiter: RateLimiter
 
   export let cardDragOver: (evt: CardDragEvent, object: Item) => void
   export let cardDrop: (evt: CardDragEvent, object: Item) => void

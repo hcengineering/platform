@@ -38,7 +38,7 @@ import {
   IndexedDoc,
   isIndexingRequired,
   loadIndexStageStage,
-  RateLimitter
+  RateLimiter
 } from '@hcengineering/server-core'
 import got from 'got'
 
@@ -94,7 +94,7 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
 
   stageValue: boolean | string = true
 
-  limitter = new RateLimitter(() => ({ rate: this.rate }))
+  limiter = new RateLimiter(this.rate)
 
   indexState?: IndexStageState
 
@@ -280,9 +280,9 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
       if (pipeline.cancelling) {
         return
       }
-      await this.limitter.add(() => this.collectDoc(doc, pipeline, metrics))
+      await this.limiter.add(() => this.collectDoc(doc, pipeline, metrics))
     }
-    await this.limitter.waitProcessing()
+    await this.limiter.waitProcessing()
   }
 
   async collectDoc (doc: DocIndexState, pipeline: FullTextPipeline, metrics: MeasureContext): Promise<void> {

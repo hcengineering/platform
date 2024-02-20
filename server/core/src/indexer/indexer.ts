@@ -37,7 +37,7 @@ import core, {
   versionToString
 } from '@hcengineering/core'
 import { DbAdapter } from '../adapter'
-import { RateLimitter } from '../limitter'
+import { RateLimiter } from '../limitter'
 import type { IndexedDoc } from '../types'
 import { FullTextPipeline, FullTextPipelineStage } from './types'
 import { createStateDoc, isClassIndexable } from './utils'
@@ -57,7 +57,7 @@ export const globalIndexer = {
   processingSize: 25
 }
 
-const rateLimitter = new RateLimitter(() => ({ rate: globalIndexer.allowParallel }))
+const rateLimiter = new RateLimiter(globalIndexer.allowParallel)
 
 let indexCounter = 0
 /**
@@ -594,7 +594,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
   // TODO: Move to migration
   async checkIndexConsistency (dbStorage: ServerStorage): Promise<void> {
-    await rateLimitter.exec(async () => {
+    await rateLimiter.exec(async () => {
       await this.metrics.with('check-index-consistency', {}, async (ctx) => {
         if (process.env.MODEL_VERSION !== undefined && process.env.MODEL_VERSION !== '') {
           const modelVersion = (await this.model.findAll(core.class.Version, {}))[0]
