@@ -14,12 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { CheckBox, Component, navigate, parseLocation } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
+  import { CheckBox, navigate, parseLocation } from '@hcengineering/ui'
   import { Class, Doc, Ref } from '@hcengineering/core'
   import { getMetadata } from '@hcengineering/platform'
 
   import presentation from '../../plugin'
+  import ObjectNode from './ObjectNode.svelte'
 
   export let nodes: NodeListOf<any>
 
@@ -130,15 +130,7 @@
       {@const objectClass = node.getAttribute('data-objectclass')}
 
       {#if objectClass !== undefined && objectId !== undefined}
-        <Component
-          is={view.component.ObjectMention}
-          inline
-          props={{
-            _id: objectId,
-            _class: correctClass(objectClass),
-            title: node.getAttribute('data-label')
-          }}
-        />
+        <ObjectNode _id={objectId} _class={correctClass(objectClass)} title={node.getAttribute('data-label')} />
       {:else}
         <svelte:self nodes={node.childNodes} />
       {/if}
