@@ -150,6 +150,11 @@ function cleanEmail (email: string): string {
   return email.toLowerCase().trim()
 }
 
+function emailValidator (value: string): boolean {
+  return ((value !== '') && !(value.match(
+    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/) == null))
+}
+
 /**
  * @public
  */
@@ -161,6 +166,9 @@ export async function getAccount (db: Db, email: string): Promise<Account | null
  * @public
  */
 export async function setAccountAdmin (db: Db, email: string, admin: boolean): Promise<void> {
+  if (!emailValidator(email)) {
+    throw new Error('Please enter a valid email')
+  }
   const account = await getAccount(db, email)
   if (account === null) {
     return
@@ -248,8 +256,10 @@ async function getAccountInfoByToken (db: Db, productId: string, token: string):
  * @returns
  */
 export async function login (db: Db, productId: string, _email: string, password: string): Promise<LoginInfo> {
+  if (!emailValidator(_email)) {
+    throw new Error('Please enter a valid email')
+  }
   const email = cleanEmail(_email)
-  console.log(`login attempt:${email}`)
   const info = await getAccountInfo(db, email, password)
   const result = {
     endpoint: getEndpoint(),
@@ -283,6 +293,9 @@ export async function selectWorkspace (
   allowAdmin: boolean = true
 ): Promise<WorkspaceLoginInfo> {
   let { email } = decodeToken(token)
+  if (!emailValidator(email)) {
+    throw new Error('Please enter a valid email')
+  }
   email = cleanEmail(email)
   const accountInfo = await getAccount(db, email)
   if (accountInfo === null) {
@@ -369,6 +382,9 @@ export async function join (
   password: string,
   inviteId: ObjectId
 ): Promise<WorkspaceLoginInfo> {
+  if (!emailValidator(_email)) {
+    throw new Error('Please enter a valid email')
+  }
   const email = cleanEmail(_email)
   const invite = await getInvite(db, inviteId)
   const workspace = await checkInvite(invite, email)
@@ -385,6 +401,9 @@ export async function join (
  * @public
  */
 export async function confirmEmail (db: Db, _email: string): Promise<Account> {
+  if (!emailValidator(_email)) {
+    throw new Error('Please enter a valid email')
+  }
   const email = cleanEmail(_email)
   const account = await getAccount(db, email)
   console.log(`confirm email:${email}`)
@@ -409,6 +428,9 @@ export async function confirm (db: Db, productId: string, token: string): Promis
   const _email = decode.extra?.confirm
   if (_email === undefined) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: _email }))
+  }
+  if (!emailValidator(_email)) {
+    throw new Error('Please enter a valid email')
   }
   const email = cleanEmail(_email)
   const account = await confirmEmail(db, email)
@@ -476,6 +498,9 @@ export async function signUpJoin (
   last: string,
   inviteId: ObjectId
 ): Promise<WorkspaceLoginInfo> {
+  if (!emailValidator(_email)) {
+    throw new Error('Please enter a valid email')
+  }
   const email = cleanEmail(_email)
   console.log(`signup join:${email} ${first} ${last}`)
   const invite = await getInvite(db, inviteId)
@@ -510,6 +535,9 @@ export async function createAcc (
   last: string,
   confirmed: boolean = false
 ): Promise<Account> {
+  if (!emailValidator(_email)) {
+    throw new Error('Please enter a valid email')
+  }
   const email = cleanEmail(_email)
   const salt = randomBytes(32)
   const hash = hashWithSalt(password, salt)
@@ -561,6 +589,9 @@ export async function createAccount (
   first: string,
   last: string
 ): Promise<LoginInfo> {
+  if (!emailValidator(_email)) {
+    throw new Error('Please enter a valid email')
+  }
   const email = cleanEmail(_email)
   const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
   const account = await createAcc(db, productId, email, password, first, last, sesURL === undefined || sesURL === '')
@@ -946,6 +977,9 @@ async function getWorkspaceAndAccount (
   _email: string,
   workspaceUrl: string
 ): Promise<{ account: Account, workspace: Workspace }> {
+  if (!emailValidator(_email)) {
+    throw new Error('Please enter a valid email')
+  }
   const email = cleanEmail(_email)
   const wsPromise = await getWorkspaceById(db, productId, workspaceUrl)
   if (wsPromise === null) {
@@ -968,6 +1002,9 @@ export async function setRole (
   role: AccountRole,
   client?: Client
 ): Promise<void> {
+  if (!emailValidator(_email)) {
+    throw new Error('Please enter a valid email')
+  }
   const email = cleanEmail(_email)
   const connection = client ?? (await connect(getTransactor(), getWorkspaceId(workspace, productId)))
   try {
@@ -999,6 +1036,9 @@ export async function assignWorkspace (
   shouldReplaceAccount: boolean = false,
   client?: Client
 ): Promise<void> {
+  if (!emailValidator(_email)) {
+    throw new Error('Please enter a valid email')
+  }
   const email = cleanEmail(_email)
   const initWS = getMetadata(toolPlugin.metadata.InitWorkspace)
   if (initWS !== undefined && initWS === workspaceId) {
@@ -1022,6 +1062,9 @@ export async function assignWorkspace (
 }
 
 async function createEmployee (ops: TxOperations, name: string, _email: string): Promise<Ref<Person>> {
+  if (!emailValidator(_email)) {
+    throw new Error('Please enter a valid email')
+  }
   const email = cleanEmail(_email)
   const gravatarId = buildGravatarId(email)
   const hasGravatar = await checkHasGravatar(gravatarId)
@@ -1063,6 +1106,9 @@ async function replaceCurrentAccount (
       person: employeeId
     })
   } else {
+    if (!emailValidator(account.email)) {
+      throw new Error('Please enter a valid email')
+    }
     const email = cleanEmail(account.email)
     const gravatarId = buildGravatarId(email)
     const hasGravatar = await checkHasGravatar(gravatarId)
@@ -1185,6 +1231,9 @@ export async function replacePassword (db: Db, productId: string, email: string,
  * @public
  */
 export async function requestPassword (db: Db, productId: string, _email: string): Promise<void> {
+  if (!emailValidator(_email)) {
+    throw new Error('Please enter a valid email')
+  }
   const email = cleanEmail(_email)
   const account = await getAccount(db, email)
 
