@@ -48,7 +48,7 @@ test.describe('Tracker duplicate issue tests', () => {
     await trackerNavigationMenuPage.openTemplateForProject('Default')
     await trackerNavigationMenuPage.openIssuesForProject('Default')
     await issuesPage.searchIssueByName(secondIssue.title)
-    const secondIssueId = await issuesPage.getIssueId(secondIssue.title, 1)
+    const secondIssueId = await issuesPage.getIssueId(secondIssue.title, 0)
 
     expect(firstIssueId).not.toEqual(secondIssueId)
     await issuesPage.checkIssuesCount(firstIssue.title, 2)

@@ -189,9 +189,6 @@ test.describe('Tracker tests', () => {
     await navigate(page)
 
     await page.click('text="Issues"')
-    await page.click('button:has-text("View")')
-    await page.click('.ordering >> nth=0')
-    await page.click('text="Modified date"')
     await page.keyboard.press('Escape')
 
     const values = [2, 4, 6, 8]

@@ -48,21 +48,23 @@
   }
 
   async function clickHandler (e: MouseEvent, ws: string): Promise<void> {
+    if (ws !== getCurrentLocation().path[1]) {
+      const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
+      const token = tokens[ws]
+      if (!token) {
+        const selectWorkspace = await getResource(login.function.SelectWorkspace)
+        const loginInfo = (await selectWorkspace(ws))[1]
+        if (loginInfo !== undefined) {
+          tokens[ws] = loginInfo?.token
+        }
+        setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
+      }
+    }
     if (!e.metaKey && !e.ctrlKey) {
       e.preventDefault()
       closePopup()
       closePopup()
       if (ws !== getCurrentLocation().path[1]) {
-        const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
-        const token = tokens[ws]
-        if (!token) {
-          const selectWorkspace = await getResource(login.function.SelectWorkspace)
-          const loginInfo = (await selectWorkspace(ws))[1]
-          if (loginInfo !== undefined) {
-            tokens[ws] = loginInfo?.token
-          }
-          setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
-        }
         const last = localStorage.getItem(`${locationStorageKeyId}_${ws}`)
         if (last !== null) {
           navigate(JSON.parse(last))
