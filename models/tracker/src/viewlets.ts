@@ -38,10 +38,10 @@ export const issuesOptions = (kanban: boolean): ViewOptionsModel => ({
     'reportedTime'
   ],
   orderBy: [
+    ['modifiedOn', SortingOrder.Descending],
     ['status', SortingOrder.Ascending],
     ['kind', SortingOrder.Ascending],
     ['priority', SortingOrder.Ascending],
-    ['modifiedOn', SortingOrder.Descending],
     ['createdOn', SortingOrder.Descending],
     ['dueDate', SortingOrder.Ascending],
     ['rank', SortingOrder.Ascending],
