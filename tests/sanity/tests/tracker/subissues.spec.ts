@@ -1,4 +1,4 @@
-import { test } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 import { IssuesPage } from '../model/tracker/issues-page'
 import { generateId, PlatformSetting, PlatformURI } from '../utils'
 import {
@@ -138,5 +138,40 @@ test.describe('Tracker sub-issues tests', () => {
 
     await issuesPage.searchIssueByName(deleteSubIssue.title)
     await issuesPage.checkIssueNotExist(deleteSubIssue.title)
+  })
+
+  test('Create sub-issue from template', async ({ page }) => {
+    const parentIssue: NewIssue = {
+      title: `Parent issue for the Create sub-issue from template-${generateId()}`,
+      description: 'Create sub-issue from template'
+    }
+    const subIssue: NewIssue = {
+      title: `Create sub-issue from template-${generateId()}`,
+      description: 'Create sub-issue from template'
+    }
+    const templateName = 'New Issue'
+
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    await leftSideMenuPage.buttonTracker.click()
+
+    const issuesPage = new IssuesPage(page)
+    await issuesPage.modelSelectorAll.click()
+    await issuesPage.createNewIssue(parentIssue)
+    await issuesPage.searchIssueByName(parentIssue.title)
+    await issuesPage.openIssueByName(parentIssue.title)
+
+    const issuesDetailsPage = new IssuesDetailsPage(page)
+    await issuesDetailsPage.moreActionOnIssue('Add sub-issue...')
+    await issuesPage.selectTemplate(templateName)
+    await expect(issuesPage.buttonPopupCreateNewIssueTemplate).toHaveText(templateName)
+    await issuesPage.fillNewIssueForm(subIssue)
+    await issuesPage.buttonCreateIssue.click()
+
+    await issuesDetailsPage.openSubIssueByName(subIssue.title)
+    await issuesDetailsPage.waitDetailsOpened(subIssue.title)
+    await issuesDetailsPage.checkIssue({
+      ...subIssue,
+      parentIssue: parentIssue.title
+    })
   })
 })

@@ -101,14 +101,14 @@ export class CommonRecruitingPage extends CalendarPage {
   async checkSocialLinks (link: string, value: string): Promise<void> {
     switch (link) {
       case 'Phone':
-        await expect(this.buttonContactPhone).toBeVisible()
+        await expect(this.buttonContactPhone).toBeEnabled()
         await this.buttonContactPhone.click()
         await expect(this.inputSocialValue).toHaveValue(value)
         await this.buttonSocialSave.click()
         break
       case 'Email':
-        await expect(this.buttonContactEmail).toBeVisible()
-        await this.buttonContactEmail.click()
+        await expect(this.buttonContactEmail.first()).toBeEnabled()
+        await this.buttonContactEmail.first().click()
         await expect(this.inputSocialValue).toHaveValue(value)
         await this.buttonSocialSave.click()
         break
