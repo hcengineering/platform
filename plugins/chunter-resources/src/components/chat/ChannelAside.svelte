@@ -31,7 +31,7 @@
 
   const currentAccount = getCurrentAccount()
 
-  let members: Ref<Person>[] = []
+  let members = new Set<Ref<Person>>()
 
   $: creatorPersonRef = object?.createdBy
     ? $personAccountByIdStore.get(object.createdBy as Ref<PersonAccount>)?.person
@@ -42,19 +42,21 @@
 
   function updateMembers (object: Channel | undefined) {
     if (object === undefined) {
-      members = []
+      members = new Set()
       return
     }
 
-    members = object.members
-      .map((accountId) => {
-        const personAccount = $personAccountByIdStore.get(accountId as Ref<PersonAccount>)
-        if (personAccount === undefined) {
-          return undefined
-        }
-        return personAccount.person
-      })
-      .filter((_id): _id is Ref<Person> => !!_id)
+    members = new Set(
+      object.members
+        .map((accountId) => {
+          const personAccount = $personAccountByIdStore.get(accountId as Ref<PersonAccount>)
+          if (personAccount === undefined) {
+            return undefined
+          }
+          return personAccount.person
+        })
+        .filter((_id): _id is Ref<Person> => !!_id)
+    )
   }
 
   async function changeMembers (personRefs: Ref<Person>[], object?: Channel) {
@@ -85,13 +87,15 @@
       return
     }
 
-    const personAccount = Array.from($personAccountByIdStore.values()).find((account) => account.person === personId)
+    const accounts = Array.from($personAccountByIdStore.values())
+      .filter((account) => account.person === personId)
+      .map(({ _id }) => _id)
 
-    if (personAccount === undefined) {
+    if (accounts.length === 0) {
       return
     }
 
-    await leaveChannel(object, personAccount._id)
+    await leaveChannel(object, accounts)
   }
 
   function openSelectUsersPopup () {
@@ -139,7 +143,7 @@
 
   <div class="members">
     <ChannelMembers
-      ids={members}
+      ids={Array.from(members)}
       disableRemoveFor={disabledRemoveFor}
       on:add={openSelectUsersPopup}
       on:remove={removeMember}

@@ -15,7 +15,7 @@ export class EmployeeDetailsPage extends CommonPage {
     this.page = page
     this.pageHeader = page.locator('span[class$="title"]', { hasText: 'Employee' })
     this.textActivity = page.locator('div.header')
-    this.textActivityContent = page.locator('div.activityMessage div.content div[class*="content"]')
+    this.textActivityContent = page.locator('div.activityMessage div[class*="content"]')
     this.textEmployeeFirstName = page.locator('input[placeholder="First name"]')
     this.textEmployeeLastName = page.locator('input[placeholder="Last name"]')
   }

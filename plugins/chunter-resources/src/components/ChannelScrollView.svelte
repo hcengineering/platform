@@ -294,6 +294,10 @@
   }
 
   async function updateSelectedDate () {
+    if (!withDates) {
+      return
+    }
+
     if (scrollContentBox === undefined || scrollElement === undefined) {
       return
     }
@@ -456,7 +460,7 @@
     {#if startFromBottom}
       <div class="grower" />
     {/if}
-    {#if selectedDate}
+    {#if withDates && selectedDate}
       <div class="ml-2 pr-2">
         <JumpToDateSelector {selectedDate} fixed on:jumpToDate={jumpToDate} />
       </div>
@@ -522,7 +526,9 @@
     margin: 0 1.5rem;
     min-height: 4.375rem;
     height: auto;
-    display: contents;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
   }
 
   .grower {
