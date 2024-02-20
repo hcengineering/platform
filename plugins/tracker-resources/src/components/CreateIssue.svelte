@@ -441,7 +441,12 @@
         parents:
           parentIssue != null
             ? [
-                { parentId: parentIssue._id, parentTitle: parentIssue.title, space: parentIssue.space, identifier },
+                {
+                  parentId: parentIssue._id,
+                  parentTitle: parentIssue.title,
+                  space: parentIssue.space,
+                  identifier: parentIssue.identifier
+                },
                 ...parentIssue.parents
               ]
             : [],
@@ -492,7 +497,12 @@
       const parents: IssueParentInfo[] = parentIssue
         ? [
             { parentId: _id, parentTitle: value.title, space: parentIssue.space, identifier },
-            { parentId: parentIssue._id, parentTitle: parentIssue.title, space: parentIssue.space, identifier },
+            {
+              parentId: parentIssue._id,
+              parentTitle: parentIssue.title,
+              space: parentIssue.space,
+              identifier: parentIssue.identifier
+            },
             ...parentIssue.parents
           ]
         : [{ parentId: _id, parentTitle: value.title, space: _space, identifier }]
