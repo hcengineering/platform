@@ -28,7 +28,7 @@
   } from '@hcengineering/activity-resources'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { get } from 'svelte/store'
-  import { tick, beforeUpdate, afterUpdate } from 'svelte'
+  import { tick } from 'svelte'
 
   import ActivityMessagesSeparator from './ChannelMessagesSeparator.svelte'
   import { filterChatMessages, getClosestDate, readChannelMessages } from '../utils'
@@ -49,7 +49,6 @@
   export let showEmbedded = false
   export let skipLabels = false
   export let loadMoreAllowed = true
-  export let isAsideOpened = false
 
   const dateSelectorHeight = 30
   const headerHeight = 50
@@ -84,8 +83,6 @@
 
   let messagesCount = 0
 
-  let wasAsideOpened = isAsideOpened
-
   $: messages = $messagesStore
   $: isLoading = $isLoadingStore
 
@@ -93,14 +90,13 @@
 
   $: notifyContext = $contextByDocStore.get(objectId)
 
-  $: void filterChatMessages(messages, filters, objectClass, selectedFilters).then((filteredMessages) => {
+  $: filterChatMessages(messages, filters, objectClass, selectedFilters).then((filteredMessages) => {
     displayMessages = filteredMessages
   })
 
   function scrollToBottom (afterScrollFn?: () => void) {
     if (scroller !== undefined && scrollElement !== undefined) {
       scroller.scrollBy(scrollElement.scrollHeight)
-      updateSelectedDate()
       afterScrollFn?.()
     }
   }
@@ -212,7 +208,7 @@
   let scrollToRestore = 0
 
   function loadMore () {
-    if (!loadMoreAllowed || $isLoadingMoreStore || !scrollElement || isInitialScrolling) {
+    if (!loadMoreAllowed || $isLoadingMoreStore || !scrollElement) {
       return
     }
 
@@ -227,12 +223,10 @@
     } else if (shouldLoadMoreDown() && provider.canLoadMore('forward', messages[messages.length - 1]?.createdOn)) {
       shouldScrollToNew = false
       void provider.loadMore('forward', messages[messages.length - 1]?.createdOn, limit)
-      isScrollAtBottom = false
     }
   }
 
   function handleScroll ({ autoScrolling }: ScrollParams) {
-    saveScrollPosition()
     if (autoScrolling) {
       return
     }
@@ -299,7 +293,7 @@
     void readChannelMessages(messagesToRead, notifyContext)
   }
 
-  function updateSelectedDate () {
+  async function updateSelectedDate () {
     if (!withDates) {
       return
     }
@@ -348,8 +342,6 @@
       return
     }
 
-    updateSelectedDate()
-
     if (selectedMessageId !== undefined && messages.some(({ _id }) => _id === selectedMessageId)) {
       isScrollInitialized = true
       await wait()
@@ -359,10 +351,8 @@
       isScrollInitialized = true
       shouldWaitAndRead = true
       autoscroll = true
-      shouldScrollToNew = true
       waitLastMessageRenderAndRead(() => {
         isInitialScrolling = false
-        autoscroll = false
       })
     } else if (separatorElement) {
       isScrollInitialized = true
@@ -409,7 +399,6 @@
     }
 
     scrollToLastMessage = true
-    scrollToBottom()
     scrollUntilSeeLastMessage()
   }
 
@@ -450,7 +439,6 @@
       await wait()
       scrollToDate(dateToJump)
     } else if (newCount > messagesCount) {
-      await wait()
       scrollToNewMessages()
     }
 
@@ -463,48 +451,6 @@
       loadMore()
     }
   }
-
-  let prevScrollHeight = 0
-  let isScrollAtBottom = false
-
-  function saveScrollPosition (): void {
-    if (!scrollElement) {
-      return
-    }
-
-    const { offsetHeight, scrollHeight, scrollTop } = scrollElement
-
-    prevScrollHeight = scrollHeight
-    isScrollAtBottom = scrollHeight === scrollTop + offsetHeight
-  }
-
-  beforeUpdate(() => {
-    if (!scrollElement) return
-
-    if (scrollElement.scrollHeight === scrollElement.clientHeight) {
-      isScrollAtBottom = true
-    }
-  })
-
-  afterUpdate(() => {
-    if (!scrollElement) return
-    const { scrollHeight } = scrollElement
-
-    if (!isInitialScrolling && prevScrollHeight < scrollHeight && isScrollAtBottom) {
-      scrollToBottom()
-    }
-  })
-
-  async function compensateAside (isOpened: boolean) {
-    if (!isInitialScrolling && isScrollAtBottom && !wasAsideOpened && isOpened) {
-      await wait()
-      scrollToBottom()
-    }
-
-    wasAsideOpened = isOpened
-  }
-
-  $: void compensateAside(isAsideOpened)
 </script>
 
 {#if isLoading}
@@ -514,7 +460,7 @@
     {#if startFromBottom}
       <div class="grower" />
     {/if}
-    {#if withDates && displayMessages.length > 0}
+    {#if withDates && selectedDate}
       <div class="ml-2 pr-2">
         <JumpToDateSelector {selectedDate} fixed on:jumpToDate={jumpToDate} />
       </div>
@@ -559,8 +505,6 @@
             isHighlighted={isSelected}
             shouldScroll={isSelected}
             withShowMore={false}
-            attachmentImageSize="x-large"
-            showLinksPreview={false}
           />
         </div>
       {/each}

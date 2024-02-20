@@ -22,9 +22,8 @@
   import { Avatar, EmployeePresenter, SystemAvatar } from '@hcengineering/contact-resources'
   import core, { getDisplayTime } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Action, Label, tooltip } from '@hcengineering/ui'
-  import { getActions, restrictionStore } from '@hcengineering/view-resources'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
+  import { Action, Label } from '@hcengineering/ui'
+  import { getActions } from '@hcengineering/view-resources'
 
   import ReactionsPresenter from '../reactions/ReactionsPresenter.svelte'
   import ActivityMessageExtensionComponent from './ActivityMessageExtension.svelte'
@@ -105,17 +104,6 @@
   $: isHidden = !!viewlet?.onlyWithParent && parentMessage === undefined
   $: withActionMenu =
     withActions && !embedded && (actions.length > 0 || allActionIds.some((id) => !excludedActions.includes(id)))
-
-  let readonly: boolean = false
-  $: readonly = $restrictionStore.disableComments
-
-  $: fullDate = new Date(message.createdOn ?? message.modifiedOn).toLocaleString('default', {
-    minute: '2-digit',
-    hour: 'numeric',
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric'
-  })
 </script>
 
 {#if !isHidden}
@@ -157,10 +145,10 @@
       {:else}
         <div class="embeddedMarker" />
       {/if}
-      <div class="flex-col ml-2 w-full clear-mins message-content">
+      <div class="flex-col ml-2 w-full clear-mins">
         <div class="header clear-mins">
           {#if person}
-            <EmployeePresenter value={person} shouldShowAvatar={false} compact />
+            <EmployeePresenter value={person} shouldShowAvatar={false} />
           {:else}
             <div class="strong">
               <Label label={core.string.System} />
@@ -170,14 +158,7 @@
           {#if !skipLabel}
             <slot name="header" />
           {/if}
-          <span
-            class="text-sm"
-            use:tooltip={{
-              label: getEmbeddedLabel(fullDate)
-            }}
-          >
-            {getDisplayTime(message.createdOn ?? 0)}
-          </span>
+          <span class="text-sm">{getDisplayTime(message.createdOn ?? 0)}</span>
         </div>
 
         <slot name="content" />
@@ -189,14 +170,14 @@
             props={{ object: message, embedded, onReply }}
           />
         {/if}
-        <ReactionsPresenter object={message} {readonly} />
+        <ReactionsPresenter object={message} />
         {#if parentMessage && showEmbedded}
           <div class="mt-2" />
           <ActivityMessagePresenter value={parentMessage} embedded hideFooter withActions={false} />
         {/if}
       </div>
 
-      {#if withActions && !readonly}
+      {#if withActions}
         <div class="actions" class:opened={isActionsOpened}>
           <ActivityMessageActions
             message={isReactionMessage(message) ? parentMessage : message}
@@ -259,6 +240,10 @@
       &.opened {
         visibility: visible;
       }
+    }
+
+    .content {
+      padding: 0;
     }
 
     &:hover > .actions {
@@ -336,11 +321,5 @@
     top: -0.5rem;
     left: -0.5rem;
     color: var(--white-color);
-  }
-
-  .message-content {
-    height: max-content;
-    flex-shrink: 1;
-    padding: 0;
   }
 </style>
