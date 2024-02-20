@@ -1,5 +1,5 @@
 import { Configuration } from '@hcengineering/core'
-import { RateLimitter } from '@hcengineering/server-core'
+import { RateLimiter } from '@hcengineering/server-core'
 
 /**
  * @public
@@ -30,4 +30,4 @@ export const openAIConfigDefaults: {
  * @public
  *
  */
-export const openAIRatelimitter = new RateLimitter(() => ({ rate: 3 }))
+export const openAIRatelimitter = new RateLimiter(3)

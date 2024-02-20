@@ -48,7 +48,7 @@ import { type Db, MongoClient } from 'mongodb'
 import { clearTelegramHistory } from './telegram'
 import { diffWorkspace, updateField } from './workspace'
 
-import { type Data, getWorkspaceId, RateLimitter, type Tx, type Version } from '@hcengineering/core'
+import { type Data, getWorkspaceId, RateLimiter, type Tx, type Version } from '@hcengineering/core'
 import { type MinioService } from '@hcengineering/minio'
 import { consoleModelLogger, type MigrateOperation } from '@hcengineering/model'
 import { openAIConfigDefaults } from '@hcengineering/openai'
@@ -306,7 +306,7 @@ export function devTool (
         }
         if (cmd.parallel !== '0') {
           const parallel = parseInt(cmd.parallel) ?? 1
-          const rateLimit = new RateLimitter(() => ({ rate: parallel }))
+          const rateLimit = new RateLimiter(parallel)
           console.log('parallel upgrade', parallel, cmd.parallel)
           for (const ws of workspaces) {
             await rateLimit.exec(() => {
