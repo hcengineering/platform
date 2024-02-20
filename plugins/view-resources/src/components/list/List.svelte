@@ -20,7 +20,7 @@
     FindOptions,
     Ref,
     Space,
-    RateLimitter,
+    RateLimiter,
     mergeQueries
   } from '@hcengineering/core'
   import { IntlString, getResource } from '@hcengineering/platform'
@@ -52,7 +52,7 @@
   export let compactMode: boolean = false
   export let listProvider: SelectionFocusProvider
 
-  const limiter = new RateLimitter(() => ({ rate: 10 }))
+  const limiter = new RateLimiter(10)
 
   let docs: Doc[] = []
   let fastDocs: Doc[] = []

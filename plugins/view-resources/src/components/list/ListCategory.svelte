@@ -23,7 +23,7 @@
     Hierarchy,
     Lookup,
     PrimitiveType,
-    RateLimitter,
+    RateLimiter,
     Ref,
     Space
   } from '@hcengineering/core'
@@ -85,7 +85,7 @@
   export let resultQuery: DocumentQuery<Doc>
   export let resultOptions: FindOptions<Doc>
   export let parentCategories: number = 0
-  export let limiter: RateLimitter
+  export let limiter: RateLimiter
   export let listProvider: SelectionFocusProvider
 
   $: lastLevel = level + 1 >= viewOptions.groupBy.length

@@ -35,7 +35,7 @@ export class CommonTrackerPage extends CalendarPage {
     this.buttonKeepOriginalMoveIssuesModal = page.locator('form[id="tracker:string:MoveIssues"] span.toggle-switch')
     this.inputKeepOriginalMoveIssuesModal = page.locator('form[id="tracker:string:MoveIssues"] input[type="checkbox"]')
     this.buttonMoreActions = page.locator('div.popupPanel-title div.flex-row-center > button:first-child')
-    this.textActivityContent = page.locator('div.activityMessage div.content div.content')
+    this.textActivityContent = page.locator('div.activityMessage div.content')
     this.linkInActivity = page.locator('div[id="activity:string:Activity"] a')
     this.inputCommentFile = page.locator('input#file')
     this.commentImg = page.locator('div.activityMessage div.content img')
