@@ -50,6 +50,7 @@ import {
   ObjectPanel,
   ObjectPresenter,
   ObjectTitle,
+  ObjectTooltip,
   ObjectValidator,
   PreviewPresenter,
   SpaceHeader,
@@ -91,6 +92,7 @@ const view = plugin(viewId, {
     ObjectFactory: '' as Ref<Mixin<ObjectFactory>>,
     ObjectTitle: '' as Ref<Mixin<ObjectTitle>>,
     ObjectIdentifier: '' as Ref<Mixin<ObjectIdentifier>>,
+    ObjectTooltip: '' as Ref<Mixin<ObjectTooltip>>,
     SpaceHeader: '' as Ref<Mixin<SpaceHeader>>,
     SpaceName: '' as Ref<Mixin<SpaceName>>,
     IgnoreActions: '' as Ref<Mixin<IgnoreActions>>,
@@ -153,7 +155,8 @@ const view = plugin(viewId, {
     GrowPresenter: '' as AnyComponent,
     DividerPresenter: '' as AnyComponent,
     IconWithEmoji: '' as AnyComponent,
-    AttachedDocPanel: '' as AnyComponent
+    AttachedDocPanel: '' as AnyComponent,
+    ObjectMention: '' as AnyComponent
   },
   ids: {
     IconWithEmoji: '' as Asset

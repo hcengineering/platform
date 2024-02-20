@@ -119,6 +119,7 @@ import {
   getCurrentEmployeeEmail,
   getCurrentEmployeeName,
   getCurrentEmployeePosition,
+  getPersonTooltip,
   resolveLocation
 } from './utils'
 
@@ -373,7 +374,8 @@ export default async (): Promise<Resources> => ({
     GetContactFirstName: getContactFirstName,
     GetContactLastName: getContactLastName,
     GetContactLink: getContactLink,
-    ContactTitleProvider: contactTitleProvider
+    ContactTitleProvider: contactTitleProvider,
+    PersonTooltipProvider: getPersonTooltip
   },
   resolver: {
     Location: resolveLocation

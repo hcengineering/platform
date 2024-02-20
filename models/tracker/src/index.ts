@@ -209,6 +209,10 @@ function defineFilters (builder: Builder): void {
     titleProvider: tracker.function.MilestoneTitleProvider
   })
 
+  builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.ObjectIdentifier, {
+    provider: tracker.function.MilestoneTitleProvider
+  })
+
   //
   // Project
   //
@@ -232,6 +236,10 @@ function defineFilters (builder: Builder): void {
 
   builder.mixin(tracker.class.Component, core.class.Class, view.mixin.ObjectTitle, {
     titleProvider: tracker.function.ComponentTitleProvider
+  })
+
+  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.ObjectIdentifier, {
+    provider: tracker.function.ComponentTitleProvider
   })
 
   //

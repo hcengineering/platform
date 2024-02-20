@@ -15,6 +15,7 @@
 //
 
 import { type Resources } from '@hcengineering/platform'
+
 import CreateFunnel from './components/CreateFunnel.svelte'
 import CreateLead from './components/CreateLead.svelte'
 import EditLead from './components/EditLead.svelte'
@@ -25,10 +26,11 @@ import LeadsPresenter from './components/LeadsPresenter.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
 import CreateCustomer from './components/CreateCustomer.svelte'
 import NewItemsHeader from './components/NewItemsHeader.svelte'
-import { getLeadTitle } from './utils'
 import EditFunnel from './components/EditFunnel.svelte'
 import MyLeads from './components/MyLeads.svelte'
 import TitlePresenter from './components/TitlePresenter.svelte'
+
+import { getLeadId, getLeadTitle } from './utils'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -47,6 +49,7 @@ export default async (): Promise<Resources> => ({
     TitlePresenter
   },
   function: {
-    LeadTitleProvider: getLeadTitle
+    LeadTitleProvider: getLeadTitle,
+    LeadIdProvider: getLeadId
   }
 })
