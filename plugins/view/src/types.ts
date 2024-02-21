@@ -40,7 +40,13 @@ import {
   UXObject,
   WithLookup
 } from '@hcengineering/core'
-import { AnyComponent, AnySvelteComponent, Location, Location as PlatformLocation } from '@hcengineering/ui'
+import {
+  AnyComponent,
+  AnySvelteComponent,
+  type LabelAndProps,
+  Location,
+  Location as PlatformLocation
+} from '@hcengineering/ui'
 import { Asset, IntlString, Resource, Status } from '@hcengineering/platform'
 import { Preference } from '@hcengineering/preference'
 
@@ -277,6 +283,13 @@ export interface ObjectIcon extends Class<Doc> {
  */
 export interface ObjectIdentifier extends Class<Doc> {
   provider: Resource<<T extends Doc>(client: Client, ref: Ref<T>, doc?: T) => Promise<string>>
+}
+
+/**
+ * @public
+ */
+export interface ObjectTooltip extends Class<Doc> {
+  provider: Resource<(client: Client, doc?: Doc | null) => Promise<LabelAndProps | undefined>>
 }
 
 /**

@@ -15,9 +15,9 @@
 //
 
 import contact, { contactId } from '@hcengineering/contact'
-import { type Doc } from '@hcengineering/core'
+import { type Client, type Doc } from '@hcengineering/core'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
-import { type Location } from '@hcengineering/ui'
+import { type LabelAndProps, type Location } from '@hcengineering/ui'
 import { type FilterFunction, type SortFunc } from '@hcengineering/view'
 
 export default mergeIds(contactId, contact, {
@@ -87,6 +87,7 @@ export default mergeIds(contactId, contact, {
     FilterChannelInResult: '' as FilterFunction,
     FilterChannelNinResult: '' as FilterFunction,
     FilterChannelHasMessagesResult: '' as FilterFunction,
-    FilterChannelHasNewMessagesResult: '' as FilterFunction
+    FilterChannelHasNewMessagesResult: '' as FilterFunction,
+    PersonTooltipProvider: '' as Resource<(client: Client, doc?: Doc | null) => Promise<LabelAndProps | undefined>>
   }
 })

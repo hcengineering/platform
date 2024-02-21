@@ -87,6 +87,7 @@ import ArrayFilter from './components/filter/ArrayFilter.svelte'
 import SpaceHeader from './components/SpaceHeader.svelte'
 import ViewletContentView from './components/ViewletContentView.svelte'
 import AttachedDocPanel from './components/AttachedDocPanel.svelte'
+import ObjectMention from './components/ObjectMention.svelte'
 
 import {
   afterResult,
@@ -193,7 +194,8 @@ export {
   SpaceHeader,
   ViewletContentView,
   HyperlinkEditor,
-  IconPicker
+  IconPicker,
+  ObjectMention
 }
 
 function PositionElementAlignment (e?: Event): PopupAlignment | undefined {
@@ -256,7 +258,8 @@ export default async (): Promise<Resources> => ({
     StatusRefPresenter,
     DateFilterPresenter,
     StringFilterPresenter,
-    AttachedDocPanel
+    AttachedDocPanel,
+    ObjectMention
   },
   popup: {
     PositionElementAlignment

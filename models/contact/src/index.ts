@@ -277,6 +277,14 @@ export function createModel (builder: Builder): void {
     component: contact.component.CreateOrganization
   })
 
+  builder.mixin(contact.class.Contact, core.class.Class, view.mixin.ObjectIdentifier, {
+    provider: contact.function.ContactTitleProvider
+  })
+
+  builder.mixin(contact.class.Person, core.class.Class, view.mixin.ObjectTooltip, {
+    provider: contact.function.PersonTooltipProvider
+  })
+
   builder.createDoc(
     workbench.class.Application,
     core.space.Model,

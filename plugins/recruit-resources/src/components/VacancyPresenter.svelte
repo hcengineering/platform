@@ -15,11 +15,11 @@
 -->
 <script lang="ts">
   import { getEmbeddedLabel } from '@hcengineering/platform'
-
   import { Vacancy } from '@hcengineering/recruit'
   import { Icon, getPlatformAvatarColorForTextDef, themeStore, tooltip } from '@hcengineering/ui'
-  import { DocNavLink } from '@hcengineering/view-resources'
+  import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'
+
   import recruit from '../plugin'
 
   export let value: Vacancy
@@ -38,18 +38,16 @@
 </script>
 
 {#if value}
-  <DocNavLink {disabled} object={value} {inline} {accent} {noUnderline} component={recruit.component.EditVacancy}>
-    {#if inline}
-      <span class="antiMention" use:tooltip={{ label: recruit.string.Vacancy }}>
-        @{value.name}
-      </span>
-    {:else}
+  {#if inline}
+    <ObjectMention object={value} {disabled} {accent} {noUnderline} component={recruit.component.EditVacancy} />
+  {:else}
+    <DocNavLink {disabled} object={value} {accent} {noUnderline} component={recruit.component.EditVacancy}>
       <div class="flex-presenter" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
         <div class="icon"><Icon icon={recruit.icon.Vacancy} size={'small'} /></div>
         <span class="label nowrap" class:no-underline={noUnderline || disabled} class:fs-bold={accent}>
           {value.name}
         </span>
       </div>
-    {/if}
-  </DocNavLink>
+    </DocNavLink>
+  {/if}
 {/if}
