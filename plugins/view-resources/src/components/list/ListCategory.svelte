@@ -115,7 +115,7 @@
   }
 
   $: if (lastLevel) {
-    limiter.add(async () => {
+    void limiter.add(async () => {
       loading = docsQuery.query(
         _class,
         { ...resultQuery, ...docKeys },
@@ -127,7 +127,7 @@
             handleRowFocused(focusDoc)
           }
         },
-        { ...resultOptions, limit: Math.min(limit ?? 200, 200) }
+        { ...resultOptions, limit: limit ?? 200 }
       )
     })
   } else {
@@ -143,7 +143,7 @@
   const dispatch = createEventDispatcher()
 
   function limitGroup (items: Doc[], limit: number | undefined): Doc[] {
-    const res = limit !== undefined ? items.slice(0, Math.min(limit, 200)) : items
+    const res = limit !== undefined ? items.slice(0, limit) : items
     return res
   }
 
@@ -164,6 +164,10 @@
     dispatch('row-focus', object)
   }
 
+  $: limited = limitGroup(items, limit)
+
+  $: selectedObjectIdsSet = new Set<Ref<Doc>>(selectedObjectIds.map((it) => it._id))
+
   const handleMenuOpened = async (event: MouseEvent, object: Doc) => {
     event.preventDefault()
     handleRowFocused(object)
@@ -176,10 +180,6 @@
 
     showPopup(Menu, { object: items, baseMenuClass }, getEventPositionElement(event))
   }
-
-  $: limited = limitGroup(items, limit)
-
-  $: selectedObjectIdsSet = new Set<Ref<Doc>>(selectedObjectIds.map((it) => it._id))
 
   $: _newObjectProps = (doc: Doc | undefined): Record<string, any> | undefined => {
     const groupValue =
@@ -213,7 +213,7 @@
     return false
   }
 
-  function dragOverCat (ev: MouseEvent) {
+  function dragOverCat (ev: MouseEvent): void {
     ev.preventDefault()
     ev.stopPropagation()
   }
@@ -225,7 +225,7 @@
     return Math.abs(ev.clientY - target.getBoundingClientRect()[direction]) < 5
   }
 
-  function dragEnterCat (ev: MouseEvent) {
+  function dragEnterCat (ev: MouseEvent): void {
     ev.preventDefault()
     if (dragItemIndex === undefined && dragItem.doc !== undefined) {
       const index = items.findIndex((p) => p._id === dragItem.doc?._id)
@@ -250,7 +250,7 @@
     }
   }
 
-  function dragLeaveCat (ev: MouseEvent) {
+  function dragLeaveCat (ev: MouseEvent): void {
     ev.stopPropagation()
     if (dragItemIndex !== undefined) {
       items.splice(dragItemIndex, 1)
@@ -259,7 +259,7 @@
     }
   }
 
-  function dragItemLeave (ev: MouseEvent, i: number) {
+  function dragItemLeave (ev: MouseEvent, i: number): void {
     if (dragItemIndex !== undefined) {
       const isLastItem = i === limited.length - 1
       const isFirstItemWithoutHeader = i === 0 && disableHeader
@@ -274,7 +274,7 @@
     }
   }
 
-  function dragover (ev: MouseEvent, i: number) {
+  function dragover (ev: MouseEvent, i: number): void {
     if (dragItemIndex === undefined || !lastLevel) return
     ev.preventDefault()
     ev.stopPropagation()
@@ -287,7 +287,7 @@
     }
   }
 
-  function dropItemHandle (ev: MouseEvent) {
+  function dropItemHandle (ev: MouseEvent): void {
     ev.stopPropagation()
     ev.preventDefault()
     const update: DocumentUpdate<Doc> = {}
@@ -301,10 +301,10 @@
         }
       } catch {}
     }
-    drop(update)
+    void drop(update)
   }
 
-  async function drop (update: DocumentUpdate<Doc> = {}) {
+  async function drop (update: DocumentUpdate<Doc> = {}): Promise<void> {
     if (dragItem.doc !== undefined) {
       const props = _newObjectProps(dragItem.doc)
       if (props !== undefined) {
@@ -341,14 +341,14 @@
     }
   }
 
-  function dragStartHandler (e: CustomEvent<any>) {
+  function dragStartHandler (e: CustomEvent<any>): void {
     const { target, index } = e.detail
     dragItemIndex = index
     ;(target as EventTarget).addEventListener('dragend', (e) => dragEndListener(e, index))
   }
 
-  function dragStart (ev: DragEvent, docObject: Doc, i: number) {
-    if (ev.dataTransfer) {
+  function dragStart (ev: DragEvent, docObject: Doc, i: number): void {
+    if (ev.dataTransfer != null) {
       ev.dataTransfer.effectAllowed = 'move'
       ev.dataTransfer.dropEffect = 'move'
     }
@@ -404,7 +404,7 @@
       for (const ac of client.getHierarchy().getAncestors(docClass)) {
         res = itemModels.get(ac)
 
-        if (res) {
+        if (res !== undefined) {
           return res
         }
       }
@@ -493,7 +493,7 @@
         dragItem
         dragstart={dragStartHandler}
       />
-    {:else if itemModels && itemModels.size > 0 && (!collapsed || wasLoaded || dragItemIndex !== undefined)}
+    {:else if itemModels != null && itemModels.size > 0 && (!collapsed || wasLoaded || dragItemIndex !== undefined)}
       {#if limited}
         {#key configurationsVersion}
           {#each limited as docObject, i (docObject._id)}

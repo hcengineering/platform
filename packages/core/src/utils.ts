@@ -307,7 +307,7 @@ export class DocManager {
 
 export class RateLimiter {
   idCounter: number = 0
-  processingQueue = new Map<string, Promise<void>>()
+  processingQueue = new Map<number, Promise<void>>()
   last: number = 0
   rate: number
 
@@ -318,7 +318,7 @@ export class RateLimiter {
   }
 
   async exec<T, B extends Record<string, any> = any>(op: (args?: B) => Promise<T>, args?: B): Promise<T> {
-    const processingId = `${this.idCounter++}`
+    const processingId = this.idCounter++
 
     while (this.processingQueue.size > this.rate) {
       await Promise.race(this.processingQueue.values())

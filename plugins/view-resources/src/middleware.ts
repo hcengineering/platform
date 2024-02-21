@@ -51,13 +51,13 @@ export class AggregationMiddleware extends BasePresentationMiddleware implements
     return new AggregationMiddleware(client, next)
   }
 
-  async notifyTx (tx: Tx): Promise<void> {
+  async notifyTx (...tx: Tx[]): Promise<void> {
     const promises: Array<Promise<void>> = []
     for (const [, value] of this.mgrs) {
-      promises.push(value.notifyTx(tx))
+      promises.push(value.notifyTx(...tx))
     }
     await Promise.all(promises)
-    await this.provideNotifyTx(tx)
+    await this.provideNotifyTx(...tx)
   }
 
   async close (): Promise<void> {
@@ -252,8 +252,8 @@ export class AnalyticsMiddleware extends BasePresentationMiddleware implements P
     super(client, next)
   }
 
-  async notifyTx (tx: Tx): Promise<void> {
-    await this.provideNotifyTx(tx)
+  async notifyTx (...tx: Tx[]): Promise<void> {
+    await this.provideNotifyTx(...tx)
   }
 
   async close (): Promise<void> {
@@ -269,25 +269,25 @@ export class AnalyticsMiddleware extends BasePresentationMiddleware implements P
     return await this.provideTx(tx)
   }
 
-  private async handleTx (tx: Tx): Promise<void> {
-    const etx = TxProcessor.extractTx(tx)
-    if (etx._class === core.class.TxApplyIf) {
-      const applyIf = etx as TxApplyIf
-      applyIf.txes.forEach((it) => {
-        void this.handleTx(it)
-      })
-    }
-    if (this.client.getHierarchy().isDerived(etx._class, core.class.TxCUD)) {
-      const cud = etx as TxCUD<Doc>
-      const _class = this.client.getHierarchy().getClass(cud.objectClass)
-      if (_class.label !== undefined) {
-        const label = await translate(_class.label, {}, 'en')
-        if (cud._class === core.class.TxCreateDoc) {
-          Analytics.handleEvent(`Create ${label}`)
-        } else if (cud._class === core.class.TxUpdateDoc || cud._class === core.class.TxMixin) {
-          Analytics.handleEvent(`Update ${label}`)
-        } else if (cud._class === core.class.TxRemoveDoc) {
-          Analytics.handleEvent(`Delete ${label}`)
+  private async handleTx (...txes: Tx[]): Promise<void> {
+    for (const tx of txes) {
+      const etx = TxProcessor.extractTx(tx)
+      if (etx._class === core.class.TxApplyIf) {
+        const applyIf = etx as TxApplyIf
+        void this.handleTx(...applyIf.txes)
+      }
+      if (this.client.getHierarchy().isDerived(etx._class, core.class.TxCUD)) {
+        const cud = etx as TxCUD<Doc>
+        const _class = this.client.getHierarchy().getClass(cud.objectClass)
+        if (_class.label !== undefined) {
+          const label = await translate(_class.label, {}, 'en')
+          if (cud._class === core.class.TxCreateDoc) {
+            Analytics.handleEvent(`Create ${label}`)
+          } else if (cud._class === core.class.TxUpdateDoc || cud._class === core.class.TxMixin) {
+            Analytics.handleEvent(`Update ${label}`)
+          } else if (cud._class === core.class.TxRemoveDoc) {
+            Analytics.handleEvent(`Delete ${label}`)
+          }
         }
       }
     }

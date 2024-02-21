@@ -376,7 +376,7 @@ export interface Groupping extends Class<Doc> {
  */
 export interface AggregationManager {
   close: () => void
-  notifyTx: (tx: Tx) => Promise<void>
+  notifyTx: (...tx: Tx[]) => Promise<void>
   updateLookup: (resultDoc: WithLookup<Doc>, attr: Attribute<Doc>) => Promise<void>
   categorize: (target: Array<Ref<Doc>>, attr: AnyAttribute) => Promise<Array<Ref<Doc>>>
   getAttrClass: () => Ref<Class<Doc>>
