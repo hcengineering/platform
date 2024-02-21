@@ -24,7 +24,7 @@ import {
   type Space,
   type TxOperations as Client
 } from '@hcengineering/core'
-import presentation from '@hcengineering/presentation'
+import presentation, { getFileUrl, getImageSize } from '@hcengineering/presentation'
 import { PlatformError, Severity, Status, getMetadata, setPlatformStatus, unknownError } from '@hcengineering/platform'
 
 import attachment from './plugin'
@@ -117,4 +117,39 @@ export function getType (type: string): 'image' | 'video' | 'audio' | 'pdf' | 'o
   }
 
   return 'other'
+}
+
+export async function getAttachmentSize (
+  file: File,
+  uuid: string
+): Promise<{ width: number, height: number } | undefined> {
+  const type = getType(file.type)
+
+  if (type === 'video') {
+    return await getVideoSize(uuid)
+  }
+
+  if (type === 'image') {
+    return await getImageSize(file, getFileUrl(uuid, 'full'))
+  }
+
+  return undefined
+}
+
+async function getVideoSize (uuid: string): Promise<{ width: number, height: number } | undefined> {
+  const promise = new Promise<{ width: number, height: number }>((resolve, reject) => {
+    const element = document.createElement('video')
+
+    element.onloadedmetadata = () => {
+      const height = element.videoHeight
+      const width = element.videoWidth
+
+      resolve({ height, width })
+    }
+
+    element.onerror = reject
+    element.src = getFileUrl(uuid, 'full')
+  })
+
+  return await promise
 }

@@ -505,6 +505,7 @@
             isHighlighted={isSelected}
             shouldScroll={isSelected}
             withShowMore={false}
+            attachmentImageSize="x-large"
           />
         </div>
       {/each}

@@ -23,6 +23,7 @@ import {
   Prop,
   TypeAttachment,
   TypeBoolean,
+  TypeNumber,
   TypeRef,
   TypeString,
   TypeTimestamp,
@@ -64,6 +65,12 @@ export class TAttachment extends TAttachedDoc implements Attachment {
 
   @Prop(TypeBoolean(), attachment.string.Pinned)
     pinned!: boolean
+
+  @Prop(TypeNumber(), attachment.string.Width)
+    originalWidth?: number
+
+  @Prop(TypeNumber(), attachment.string.Height)
+    originalHeight?: number
 }
 
 @Model(attachment.class.Photo, attachment.class.Attachment)

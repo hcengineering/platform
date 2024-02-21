@@ -16,16 +16,23 @@
   import { Attachment } from '@hcengineering/attachment'
   import { Ref } from '@hcengineering/core'
   import { Scroller } from '@hcengineering/ui'
+
   import AttachmentPreview from './AttachmentPreview.svelte'
+  import { AttachmentImageSize } from '../types'
 
   export let attachments: Attachment[] = []
   export let savedAttachmentsIds: Ref<Attachment>[] = []
+  export let imageSize: AttachmentImageSize | undefined = undefined
 </script>
 
 {#if attachments.length}
   <Scroller contentDirection={'horizontal'} horizontal gap={'gap-3'}>
     {#each attachments as attachment}
-      <AttachmentPreview value={attachment} isSaved={savedAttachmentsIds?.includes(attachment._id) ?? false} />
+      <AttachmentPreview
+        value={attachment}
+        isSaved={savedAttachmentsIds?.includes(attachment._id) ?? false}
+        {imageSize}
+      />
     {/each}
   </Scroller>
 {/if}
