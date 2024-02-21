@@ -39,7 +39,7 @@
     TextFormatCategory,
     TextNodeAction
   } from '../types'
-  import { copyDocumentContent, copyDocumentField, getCollaborationUser } from '../utils'
+  import { getCollaborationUser } from '../utils'
 
   import ImageStyleToolbar from './ImageStyleToolbar.svelte'
   import TextEditorStyleToolbar from './TextEditorStyleToolbar.svelte'
@@ -148,14 +148,6 @@
 
   export function commands (): TextEditorCommandHandler | undefined {
     return commandHandler
-  }
-
-  export function takeSnapshot (snapshotId: DocumentId): void {
-    copyDocumentContent(documentId, snapshotId, { provider: remoteProvider }, initialContentId)
-  }
-
-  export function copyField (srcFieldId: string, dstFieldId: string): void {
-    copyDocumentField(documentId, srcFieldId, dstFieldId, { provider: remoteProvider }, initialContentId)
   }
 
   export function isEditable (): boolean {

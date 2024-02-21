@@ -56,14 +56,6 @@
     return collaborativeEditor?.commands()
   }
 
-  export function takeSnapshot (snapshotId: DocumentId): void {
-    collaborativeEditor?.takeSnapshot(snapshotId)
-  }
-
-  export function copyField (srcFieldId: string, dstFieldId: string): void {
-    collaborativeEditor?.copyField(srcFieldId, dstFieldId)
-  }
-
   // TODO Not collaborative
   export function getNodeElement (uuid: string): Element | null {
     if (editor === undefined || uuid === '') {
