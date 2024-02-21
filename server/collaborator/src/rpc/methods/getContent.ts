@@ -27,8 +27,6 @@ export async function getContent (
   const { documentId, field } = payload
   const { hocuspocus, transformer } = params
 
-  context = { ...context, initialContentId: payload.initialContentId ?? '' }
-
   const connection = await ctx.with('connect', {}, async () => {
     return await hocuspocus.openDirectConnection(documentId, context)
   })

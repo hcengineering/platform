@@ -28,8 +28,6 @@ export async function updateContent (
   const { documentId, field, html } = payload
   const { hocuspocus, transformer } = params
 
-  context = { ...context, initialContentId: payload.initialContentId ?? '' }
-
   const update = await ctx.with('transform', {}, () => {
     const ydoc = transformer.toYdoc(html, field)
     return encodeStateAsUpdate(ydoc)
@@ -43,7 +41,7 @@ export async function updateContent (
     await ctx.with('update', {}, async () => {
       await connection.transact((document) => {
         const fragment = document.getXmlFragment(field)
-        document.transact((tr) => {
+        document.transact(() => {
           fragment.delete(0, fragment.length)
           applyUpdate(document, update)
         })

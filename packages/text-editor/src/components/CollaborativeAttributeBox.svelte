@@ -124,5 +124,3 @@
   on:update
   on:open-document
 />
-
-/>

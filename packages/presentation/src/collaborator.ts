@@ -14,15 +14,7 @@
 //
 
 import { type CollaboratorClient, getClient as getCollaborator } from '@hcengineering/collaborator-client'
-import {
-  type Class,
-  type CollaborativeDoc,
-  type Doc,
-  type Markup,
-  type Ref,
-  getCurrentAccount,
-  getWorkspaceId
-} from '@hcengineering/core'
+import { type CollaborativeDoc, type Markup, getCurrentAccount, getWorkspaceId } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import { getCurrentLocation } from '@hcengineering/ui'
 
@@ -40,27 +32,31 @@ export function getCollaboratorClient (): CollaboratorClient {
 }
 
 /** @public */
-export async function getMarkup (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string): Promise<Markup> {
+export async function getMarkup (collaborativeDoc: CollaborativeDoc, field: string): Promise<Markup> {
   const client = getCollaboratorClient()
-  return await client.getContent(classId, docId, attribute)
+  return await client.getContent(collaborativeDoc, field)
 }
 
 /** @public */
-export async function updateMarkup (
-  classId: Ref<Class<Doc>>,
-  docId: Ref<Doc>,
-  attribute: string,
-  value: Markup
+export async function updateMarkup (collaborativeDoc: CollaborativeDoc, field: string, value: Markup): Promise<void> {
+  const client = getCollaboratorClient()
+  await client.updateContent(collaborativeDoc, field, value)
+}
+
+/** @public */
+export async function copyDocumentContent (
+  collaborativeDoc: CollaborativeDoc,
+  sourceField: string,
+  targetField: string
 ): Promise<void> {
   const client = getCollaboratorClient()
-
-  await client.updateContent(classId, docId, attribute, value)
+  await client.copyContent(collaborativeDoc, sourceField, targetField)
 }
 
 /** @public */
-export async function copyDocumentContent (collaborativeDoc: CollaborativeDoc, sourceField: string, targetField: string): Promise<void> {
+export async function copyDocument (source: CollaborativeDoc, target: CollaborativeDoc): Promise<void> {
   const client = getCollaboratorClient()
-  await client.copyContent(collaborativeDoc, sourceField, targetField)
+  await client.branch(source, target)
 }
 
 /** @public */

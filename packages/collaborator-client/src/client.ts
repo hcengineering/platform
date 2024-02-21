@@ -24,8 +24,6 @@ import {
   Timestamp,
   WorkspaceId,
   concatLink,
-  getCollaborativeDoc,
-  getCollaborativeDocId,
   toCollaborativeDocVersion
 } from '@hcengineering/core'
 import { DocumentURI, collaborativeDocumentUri, mongodbDocumentUri } from './uri'
@@ -33,7 +31,6 @@ import { DocumentURI, collaborativeDocumentUri, mongodbDocumentUri } from './uri
 /** @public */
 export interface GetContentRequest {
   documentId: DocumentURI
-  initialContentId: DocumentURI
   field: string
 }
 
@@ -45,7 +42,6 @@ export interface GetContentResponse {
 /** @public */
 export interface UpdateContentRequest {
   documentId: DocumentURI
-  initialContentId: DocumentURI
   field: string
   html: string
 }
@@ -111,8 +107,8 @@ export interface CollaborativeDocSnapshotParams {
 /** @public */
 export interface CollaboratorClient {
   // field operations
-  getContent: (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string) => Promise<Markup>
-  updateContent: (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string, value: Markup) => Promise<void>
+  getContent: (collaborativeDoc: CollaborativeDoc, field: string) => Promise<Markup>
+  updateContent: (collaborativeDoc: CollaborativeDoc, field: string, value: Markup) => Promise<void>
   copyContent: (collaborativeDoc: CollaborativeDoc, sourceField: string, targetField: string) => Promise<void>
 
   // document operations
@@ -165,25 +161,21 @@ class CollaboratorClientImpl implements CollaboratorClient {
     return result
   }
 
-  async getContent (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string): Promise<Markup> {
+  async getContent (collaborativeDoc: CollaborativeDoc, field: string): Promise<Markup> {
     const workspace = this.workspace.name
-    const collaborativeDocId = getCollaborativeDocId(docId, attribute)
-    const documentId = collaborativeDocumentUri(workspace, getCollaborativeDoc(collaborativeDocId))
-    const initialContentId = this.initialContentId(workspace, classId, docId, attribute)
+    const documentId = collaborativeDocumentUri(workspace, collaborativeDoc)
 
-    const payload: GetContentRequest = { documentId, initialContentId, field: attribute }
+    const payload: GetContentRequest = { documentId, field }
     const res = (await this.rpc('getContent', payload)) as GetContentResponse
 
-    return res.html ?? '<p></p>'
+    return res.html ?? ''
   }
 
-  async updateContent (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string, value: Markup): Promise<void> {
+  async updateContent (collaborativeDoc: CollaborativeDoc, field: string, value: Markup): Promise<void> {
     const workspace = this.workspace.name
-    const collaborativeDocId = getCollaborativeDocId(docId, attribute)
-    const documentId = collaborativeDocumentUri(workspace, getCollaborativeDoc(collaborativeDocId))
-    const initialContentId = this.initialContentId(workspace, classId, docId, attribute)
+    const documentId = collaborativeDocumentUri(workspace, collaborativeDoc)
 
-    const payload: UpdateContentRequest = { documentId, initialContentId, field: attribute, html: value }
+    const payload: UpdateContentRequest = { documentId, field, html: value }
     await this.rpc('updateContent', payload)
   }
 

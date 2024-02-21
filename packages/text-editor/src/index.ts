@@ -74,7 +74,7 @@ export {
   type TiptapCollabProviderConfiguration,
   createTiptapCollaborationData
 } from './provider/tiptap'
-export { collaborativeDocumentId, mongodbDocumentId, platformDocumentId } from './provider/utils'
+export { collaborativeDocumentId, minioDocumentId, mongodbDocumentId, platformDocumentId } from './provider/utils'
 export { CollaborationIds } from './types'
 
 export { textEditorId }

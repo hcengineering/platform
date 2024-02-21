@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import { Doc as YDoc, encodeStateVector } from 'yjs'
+import { Doc as YDoc, XmlElement as YXmlElement, XmlText as YXmlText, encodeStateVector } from 'yjs'
 
-import { yDocFromBuffer, yDocToBuffer } from '../ydoc'
+import { yDocCopyXmlField, yDocFromBuffer, yDocToBuffer } from '../ydoc'
 
 describe('ydoc', () => {
   it('yDocFromBuffer converts ydoc to a buffer', async () => {
@@ -34,5 +34,33 @@ describe('ydoc', () => {
     const target = yDocFromBuffer(buffer, new YDoc())
     expect(target).toBeDefined()
     expect(encodeStateVector(target)).toEqual(encodeStateVector(source))
+  })
+
+  describe('yDocCopyXmlField', () => {
+    it('copies into new field', async () => {
+      const ydoc = new YDoc()
+
+      const source = ydoc.getXmlFragment('source')
+      source.insertAfter(null, [new YXmlElement('p'), new YXmlText('foo'), new YXmlElement('p')])
+
+      yDocCopyXmlField(ydoc, 'source', 'target')
+      const target = ydoc.getXmlFragment('target')
+
+      expect(target.toJSON()).toEqual(source.toJSON())
+    })
+
+    it('copies into existing field', async () => {
+      const ydoc = new YDoc()
+
+      const source = ydoc.getXmlFragment('source')
+      const target = ydoc.getXmlFragment('target')
+
+      source.insertAfter(null, [new YXmlElement('p'), new YXmlText('foo'), new YXmlElement('p')])
+      target.insertAfter(null, [new YXmlText('bar')])
+      expect(target.toJSON()).not.toEqual(source.toJSON())
+
+      yDocCopyXmlField(ydoc, 'source', 'target')
+      expect(target.toJSON()).toEqual(source.toJSON())
+    })
   })
 })
