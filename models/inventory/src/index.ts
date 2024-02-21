@@ -102,12 +102,20 @@ export function createModel (builder: Builder): void {
     presenter: inventory.component.CategoryPresenter
   })
 
+  builder.mixin(inventory.class.Category, core.class.Class, view.mixin.ObjectIdentifier, {
+    provider: inventory.function.CategoryIdProvider
+  })
+
   builder.mixin(inventory.class.Category, core.class.Class, view.mixin.AttributePresenter, {
     presenter: inventory.component.CategoryRefPresenter
   })
 
   builder.mixin(inventory.class.Product, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: inventory.component.ProductPresenter
+  })
+
+  builder.mixin(inventory.class.Product, core.class.Class, view.mixin.ObjectIdentifier, {
+    provider: inventory.function.ProductIdProvider
   })
 
   builder.mixin(inventory.class.Variant, core.class.Class, view.mixin.ObjectPresenter, {

@@ -17,7 +17,7 @@
   import { Organization } from '@hcengineering/contact'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { tooltip } from '@hcengineering/ui'
-  import { DocNavLink } from '@hcengineering/view-resources'
+  import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
   import Company from './icons/Company.svelte'
 
   export let value: Organization
@@ -29,18 +29,18 @@
 </script>
 
 {#if value}
-  <DocNavLink {disabled} {inline} object={value} {accent} {noUnderline}>
-    {#if inline}
-      <span class="antiMention" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
-        @{value.name}
-      </span>
-    {:else}
+  {#if inline}
+    <ObjectMention object={value} {disabled} {accent} {noUnderline} />
+  {:else}
+    <DocNavLink {disabled} object={value} {accent} {noUnderline}>
       <div class="flex-presenter" style:max-width={maxWidth} use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
-        <div class="icon circle"><Company size={'small'} /></div>
+        <div class="icon circle">
+          <Company size={'small'} />
+        </div>
         <span class="overflow-label label" class:no-underline={noUnderline || disabled} class:fs-bold={accent}
           >{value.name}</span
         >
       </div>
-    {/if}
-  </DocNavLink>
+    </DocNavLink>
+  {/if}
 {/if}

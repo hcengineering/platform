@@ -14,9 +14,11 @@
 // limitations under the License.
 //
 
-import { type Doc } from '@hcengineering/core'
+import { type Client, type Doc, type Ref } from '@hcengineering/core'
 import { type Resources } from '@hcengineering/platform'
 import { showPopup } from '@hcengineering/ui'
+import { type Category, type Product } from '@hcengineering/inventory'
+
 import Categories from './components/Categories.svelte'
 import CategoryPresenter from './components/CategoryPresenter.svelte'
 import CategoryRefPresenter from './components/CategoryRefPresenter.svelte'
@@ -27,8 +29,21 @@ import VariantPresenter from './components/VariantPresenter.svelte'
 import Variants from './components/Variants.svelte'
 import CreateProduct from './components/CreateProduct.svelte'
 
+import product from './plugin'
+
 async function createSubcategory (object: Doc): Promise<void> {
   showPopup(CreateCategory, { attachedTo: object._id })
+}
+async function getProductId (client: Client, ref: Ref<Product>, doc?: Product): Promise<string> {
+  const object = doc ?? (await client.findOne(product.class.Product, { _id: ref }))
+  if (object === undefined) return ''
+  return object.name
+}
+
+async function getCategoryId (client: Client, ref: Ref<Category>, doc?: Category): Promise<string> {
+  const object = doc ?? (await client.findOne(product.class.Category, { _id: ref }))
+  if (object === undefined) return ''
+  return object.name
 }
 
 export default async (): Promise<Resources> => ({
@@ -44,5 +59,9 @@ export default async (): Promise<Resources> => ({
     Variants,
     VariantPresenter,
     CreateProduct
+  },
+  function: {
+    ProductIdProvider: getProductId,
+    CategoryIdProvider: getCategoryId
   }
 })

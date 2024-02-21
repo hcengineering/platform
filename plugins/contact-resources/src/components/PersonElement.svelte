@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Employee, Person } from '@hcengineering/contact'
   import { IconSize, LabelAndProps, tooltip } from '@hcengineering/ui'
-  import { DocNavLink } from '@hcengineering/view-resources'
+  import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
   import Avatar from './Avatar.svelte'
 
   export let value: Person | Employee | undefined | null
@@ -35,12 +35,10 @@
 </script>
 
 {#if value}
-  <DocNavLink object={value} onClick={onEdit} {disabled} {noUnderline} {inline} {colorInherit} {accent} noOverflow>
-    {#if inline}
-      <span class="antiMention" use:tooltip={disabled ? undefined : showTooltip}>
-        @{name}
-      </span>
-    {:else}
+  {#if inline}
+    <ObjectMention object={value} {disabled} {accent} {noUnderline} {colorInherit} onClick={onEdit} />
+  {:else}
+    <DocNavLink object={value} onClick={onEdit} {disabled} {noUnderline} {colorInherit} {accent} noOverflow>
       <span
         use:tooltip={disabled ? undefined : showTooltip}
         class="antiPresenter"
@@ -62,6 +60,6 @@
           </span>
         {/if}
       </span>
-    {/if}
-  </DocNavLink>
+    </DocNavLink>
+  {/if}
 {/if}

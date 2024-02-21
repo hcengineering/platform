@@ -21,7 +21,8 @@
   import type { Issue } from '@hcengineering/tracker'
   import { AnySvelteComponent, Component, Icon, tooltip } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { DocNavLink } from '@hcengineering/view-resources'
+  import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
+
   import tracker from '../../plugin'
 
   export let value: WithLookup<Issue> | undefined
@@ -41,19 +42,7 @@
 </script>
 
 {#if inline && value}
-  <DocNavLink
-    object={value}
-    {onClick}
-    {disabled}
-    {noUnderline}
-    {inline}
-    component={tracker.component.EditIssue}
-    shrink={0}
-  >
-    {#if inline}
-      <span class="antiMention" use:tooltip={{ label: tracker.string.Issue }}>@{value.identifier}</span>
-    {/if}
-  </DocNavLink>
+  <ObjectMention object={value} {disabled} {noUnderline} {onClick} component={tracker.component.EditIssue} />
   {#if presenters.length > 0}
     <div class="flex-row-center">
       {#each presenters as mixinPresenter}
@@ -63,15 +52,7 @@
   {/if}
 {:else if value}
   <div class="flex-row-center">
-    <DocNavLink
-      object={value}
-      {onClick}
-      {disabled}
-      {noUnderline}
-      {inline}
-      component={tracker.component.EditIssue}
-      shrink={0}
-    >
+    <DocNavLink object={value} {onClick} {disabled} {noUnderline} component={tracker.component.EditIssue} shrink={0}>
       <span class="issuePresenterRoot" class:list={kind === 'list'} class:cursor-pointer={!disabled}>
         {#if shouldShowAvatar}
           <div class="icon" use:tooltip={{ label: tracker.string.Issue }}>
