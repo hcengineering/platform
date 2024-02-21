@@ -35,7 +35,6 @@ import core, {
   SearchResult,
   SortingQuery,
   Space,
-  Timestamp,
   Tx,
   TxCollectionCUD,
   TxCreateDoc,
@@ -63,24 +62,13 @@ const CACHE_SIZE = 100
 
 type Callback = (result: FindResult<Doc>) => void
 
-type QueryId = number
-
 interface Query {
-  id: QueryId // uniq query identifier.
   _class: Ref<Class<Doc>>
   query: DocumentQuery<Doc>
   result: Doc[] | Promise<Doc[]>
   options?: FindOptions<Doc>
   total: number
   callbacks: Map<string, Callback>
-
-  requested?: Promise<void>
-}
-
-interface DocumentRef {
-  doc: Doc
-  queries: QueryId[]
-  lastUsed: Timestamp
 }
 
 /**
@@ -90,11 +78,6 @@ export class LiveQuery implements WithTx, Client {
   private client: Client
   private readonly queries: Map<Ref<Class<Doc>>, Query[]> = new Map<Ref<Class<Doc>>, Query[]>()
   private readonly queue: Query[] = []
-  private queryCounter: number = 0
-  private closed: boolean = false
-
-  // A map of _class to documents.
-  private readonly documentRefs = new Map<string, Map<Ref<Doc>, DocumentRef>>()
 
   constructor (client: Client) {
     this.client = client
@@ -105,12 +88,7 @@ export class LiveQuery implements WithTx, Client {
     await this.refreshConnect()
   }
 
-  public isClosed (): boolean {
-    return this.closed
-  }
-
   async close (): Promise<void> {
-    this.closed = true
     await this.client.close()
   }
 
@@ -127,7 +105,7 @@ export class LiveQuery implements WithTx, Client {
     for (const q of [...this.queue]) {
       if (!this.removeFromQueue(q)) {
         try {
-          void this.refresh(q)
+          await this.refresh(q)
         } catch (err: any) {
           if (err instanceof PlatformError) {
             if (err.message === 'connection closed') {
@@ -141,7 +119,7 @@ export class LiveQuery implements WithTx, Client {
     for (const v of this.queries.values()) {
       for (const q of v) {
         try {
-          void this.refresh(q)
+          await this.refresh(q)
         } catch (err: any) {
           if (err instanceof PlatformError) {
             if (err.message === 'connection closed') {
@@ -190,36 +168,6 @@ export class LiveQuery implements WithTx, Client {
     return q
   }
 
-  findFromDocs<T extends Doc>(
-    _class: Ref<Class<Doc>>,
-    query: DocumentQuery<Doc>,
-    options?: FindOptions<T>
-  ): FindResult<T> | null {
-    const classKey = _class + ':' + JSON.stringify(options?.lookup ?? {})
-    if (typeof query._id === 'string') {
-      // One document query
-      const doc = this.documentRefs.get(classKey)?.get(query._id)?.doc
-      if (doc !== undefined) {
-        const q = matchQuery([doc], query, _class, this.getHierarchy())
-        if (q.length > 0) {
-          return toFindResult(this.clone([doc]), 1) as FindResult<T>
-        }
-      }
-    }
-    if (options?.limit === 1) {
-      const docs = this.documentRefs.get(classKey)
-      if (docs !== undefined) {
-        const _docs = Array.from(docs.values()).map((it) => it.doc)
-
-        const q = matchQuery(_docs, query, _class, this.getHierarchy())
-        if (q.length > 0) {
-          return toFindResult(this.clone([q[0]]), 1) as FindResult<T>
-        }
-      }
-    }
-    return null
-  }
-
   async findAll<T extends Doc>(
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
@@ -236,18 +184,11 @@ export class LiveQuery implements WithTx, Client {
         modifiedOn: 1
       }
     }
-
-    // Perform one document queries if applicable.
-    const d = this.findFromDocs(_class, query, options)
-    if (d !== null) {
-      return d
-    }
-
     const q = this.findQuery(_class, query, options) ?? this.createDumpQuery(_class, query, options)
     if (q.result instanceof Promise) {
       q.result = await q.result
     }
-    if (this.removeFromQueue(q, false)) {
+    if (this.removeFromQueue(q)) {
       this.queue.push(q)
     }
     return toFindResult(this.clone(q.result), q.total) as FindResult<T>
@@ -273,22 +214,16 @@ export class LiveQuery implements WithTx, Client {
         modifiedOn: 1
       }
     }
-
     if (options === undefined) {
       options = {}
     }
     options.limit = 1
 
-    const d = this.findFromDocs(_class, query, options)
-    if (d !== null) {
-      return d[0]
-    }
-
     const q = this.findQuery(_class, query, options) ?? this.createDumpQuery(_class, query, options)
     if (q.result instanceof Promise) {
       q.result = await q.result
     }
-    if (this.removeFromQueue(q, false)) {
+    if (this.removeFromQueue(q)) {
       this.queue.push(q)
     }
     return this.clone(q.result)[0] as WithLookup<T>
@@ -307,16 +242,11 @@ export class LiveQuery implements WithTx, Client {
     }
   }
 
-  private removeFromQueue (q: Query, update = true): boolean {
+  private removeFromQueue (q: Query): boolean {
     if (q.callbacks.size === 0) {
       const queueIndex = this.queue.indexOf(q)
       if (queueIndex !== -1) {
         this.queue.splice(queueIndex, 1)
-        if (update) {
-          if (!(q.result instanceof Promise)) {
-            this.updateDocuments(q, q.result, true)
-          }
-        }
         return true
       }
     }
@@ -352,7 +282,7 @@ export class LiveQuery implements WithTx, Client {
   ): Query | undefined {
     const current = this.findQuery(_class, query, options)
     if (current !== undefined) {
-      this.removeFromQueue(current, false)
+      this.removeFromQueue(current)
       this.pushCallback(current, callback)
 
       return current
@@ -366,10 +296,8 @@ export class LiveQuery implements WithTx, Client {
     options?: FindOptions<T>
   ): Query {
     const queries = this.queries.get(_class) ?? []
-    const localResult = this.findFromDocs(_class, query, options)
-    const result = localResult != null ? Promise.resolve(localResult) : this.client.findAll(_class, query, options)
+    const result = this.client.findAll(_class, query, options)
     const q: Query = {
-      id: ++this.queryCounter,
       _class,
       query,
       result,
@@ -399,13 +327,7 @@ export class LiveQuery implements WithTx, Client {
     const q = this.queue.shift()
     if (q === undefined) return
     const queries = this.queries.get(q._class)
-    const pos = queries?.indexOf(q) ?? -1
-    if (pos >= 0 && queries !== undefined) {
-      queries.splice(pos, 1)
-      if (!(q.result instanceof Promise)) {
-        this.updateDocuments(q, q.result, true)
-      }
-    }
+    queries?.splice(queries.indexOf(q), 1)
     if (queries?.length === 0) {
       this.queries.delete(q._class)
     }
@@ -469,9 +391,6 @@ export class LiveQuery implements WithTx, Client {
       }
       return toFindResult(this.clone(q.result), q.total) as FindResult<T>
     }
-    if (current.result instanceof Promise) {
-      current.result = await current.result
-    }
     return toFindResult(this.clone((current?.result as T[]) ?? []), current.total)
   }
 
@@ -487,8 +406,7 @@ export class LiveQuery implements WithTx, Client {
       } else {
         const pos = q.result.findIndex((p) => p._id === _id)
         if (pos !== -1) {
-          const doc = q.result.splice(pos, 1)
-          this.updateDocuments(q, doc, true)
+          q.result.splice(pos, 1)
           if (q.options?.total === true) {
             q.total--
           }
@@ -498,7 +416,6 @@ export class LiveQuery implements WithTx, Client {
       const pos = q.result.findIndex((p) => p._id === _id)
       if (pos !== -1) {
         q.result[pos] = match
-        this.updateDocuments(q, [match])
       }
     }
     return false
@@ -513,10 +430,9 @@ export class LiveQuery implements WithTx, Client {
   ): Promise<Doc | undefined> {
     const lookup = q.options?.lookup
     const docIdKey = _id + JSON.stringify(lookup ?? {}) + q._class
-
     const current =
       docCache.get(docIdKey) ??
-      (await this.client.findOne<Doc>(q._class, { _id, space }, lookup !== undefined ? { lookup } : undefined))
+      (await this.client.findOne(q._class, { _id, space }, lookup !== undefined ? { lookup } : undefined))
     if (current !== undefined) {
       docCache.set(docIdKey, current)
     } else {
@@ -539,14 +455,12 @@ export class LiveQuery implements WithTx, Client {
     const pos = q.result.findIndex((p) => p._id === _id)
     if (current !== undefined && this.match(q, current)) {
       q.result[pos] = current
-      this.updateDocuments(q, [current])
     } else {
       if (q.options?.limit === q.result.length) {
         await this.refresh(q)
         return true
       } else if (pos !== -1) {
-        const doc = q.result.splice(pos, 1)
-        this.updateDocuments(q, doc, true)
+        q.result.splice(pos, 1)
         if (q.options?.total === true) {
           q.total--
         }
@@ -576,15 +490,13 @@ export class LiveQuery implements WithTx, Client {
         await this.refresh(q)
         return true
       } else {
-        const doc = q.result.splice(pos, 1)
-        this.updateDocuments(q, doc, true)
+        q.result.splice(pos, 1)
         if (q.options?.total === true) {
           q.total--
         }
       }
     } else {
       q.result[pos] = updatedDoc
-      this.updateDocuments(q, [updatedDoc])
     }
     return false
   }
@@ -740,7 +652,7 @@ export class LiveQuery implements WithTx, Client {
       q.result = await q.result
     }
     let needCallback = false
-    needCallback = await this.processLookupUpdateDoc(q.result, lookup, tx)
+    needCallback = await this.proccesLookupUpdateDoc(q.result, lookup, tx)
 
     if (needCallback) {
       if (q.options?.sort !== undefined) {
@@ -750,7 +662,7 @@ export class LiveQuery implements WithTx, Client {
     }
   }
 
-  private async processLookupUpdateDoc (
+  private async proccesLookupUpdateDoc (
     docs: Doc[],
     lookup: Lookup<Doc>,
     tx: TxUpdateDoc<Doc> | TxMixin<Doc, Doc>
@@ -777,11 +689,9 @@ export class LiveQuery implements WithTx, Client {
                 index = -1
                 needCallback = true
               } else if (index === -1 && reverseLookupValue === obj._id) {
-                const doc = await this.findOne(tx.objectClass, { _id: tx.objectId })
-                if (doc !== undefined) {
-                  value.push(doc)
-                  index = value.length - 1
-                }
+                const doc = await this.client.findOne(tx.objectClass, { _id: tx.objectId })
+                value.push(doc)
+                index = value.length - 1
                 needCallback = true
               }
             }
@@ -818,27 +728,25 @@ export class LiveQuery implements WithTx, Client {
     return this.getHierarchy().clone(results) as T[]
   }
 
-  private async refresh (q: Query, reRequest: boolean = false): Promise<void> {
-    if (q.requested !== undefined && !reRequest) {
-      // we already asked for refresh, just wait.
-      await q.requested
-      return
-    }
-    if (reRequest && q.requested !== undefined) {
-      await q.requested
-    }
-    q.requested = this.doRefresh(q)
-    await q.requested
-    q.requested = undefined
-  }
-
-  private async doRefresh (q: Query): Promise<void> {
+  private async refresh (q: Query): Promise<void> {
     const res = await this.client.findAll(q._class, q.query, q.options)
     if (!deepEqual(res, q.result) || (res.total !== q.total && q.options?.total === true)) {
       q.result = res
       q.total = res.total
       await this.callback(q)
     }
+  }
+
+  private triggerRefresh (q: Query): void {
+    const r: Promise<FindResult<Doc>> | FindResult<Doc> = this.client.findAll(q._class, q.query, q.options)
+    q.result = r
+    void r.then(async (qr) => {
+      const oldResult = q.result
+      if (!deepEqual(qr, oldResult) || (qr.total !== q.total && q.options?.total === true)) {
+        q.total = qr.total
+        await this.callback(q)
+      }
+    })
   }
 
   // Check if query is partially matched.
@@ -901,7 +809,6 @@ export class LiveQuery implements WithTx, Client {
         const pos = q.result.findIndex((el) => el._id === doc._id)
         if (pos !== -1) {
           q.result[pos] = doc
-          this.updateDocuments(q, [doc])
         } else {
           q.result.push(doc)
           if (q.options?.total === true) {
@@ -929,7 +836,8 @@ export class LiveQuery implements WithTx, Client {
       const tkey = checkMixinKey(key, _class, this.client.getHierarchy())
       if (Array.isArray(value)) {
         const [_class, nested] = value
-        ;(result as any)[key] = await this.findOne(_class, { _id: getObjectValue(tkey, doc) })
+        const objects = await this.client.findAll(_class, { _id: getObjectValue(tkey, doc) })
+        ;(result as any)[key] = objects[0]
         const nestedResult = {}
         const parent = (result as any)[key]
         if (parent !== undefined) {
@@ -939,7 +847,8 @@ export class LiveQuery implements WithTx, Client {
           })
         }
       } else {
-        ;(result as any)[key] = await this.findOne(value, { _id: getObjectValue(tkey, doc) })
+        const objects = await this.client.findAll(value, { _id: getObjectValue(tkey, doc) })
+        ;(result as any)[key] = objects[0]
       }
     }
   }
@@ -961,7 +870,8 @@ export class LiveQuery implements WithTx, Client {
       } else {
         _class = value
       }
-      ;(result as any)[key] = await this.findAll(_class, { [attr]: doc._id })
+      const objects = await this.client.findAll(_class, { [attr]: doc._id })
+      ;(result as any)[key] = objects
     }
   }
 
@@ -1034,42 +944,10 @@ export class LiveQuery implements WithTx, Client {
     if (q.result instanceof Promise) {
       q.result = await q.result
     }
-
-    this.updateDocuments(q, q.result)
-
     const result = q.result
     Array.from(q.callbacks.values()).forEach((callback) => {
       callback(toFindResult(this.clone(result), q.total))
     })
-  }
-
-  private updateDocuments (q: Query, docs: Doc[], clean: boolean = false): void {
-    if (q.options?.projection !== undefined) {
-      return
-    }
-    for (const d of docs) {
-      const classKey = Hierarchy.mixinOrClass(d) + ':' + JSON.stringify(q.options?.lookup ?? {})
-      let docMap = this.documentRefs.get(classKey)
-      if (docMap === undefined) {
-        if (clean) {
-          continue
-        }
-        docMap = new Map()
-        this.documentRefs.set(classKey, docMap)
-      }
-      const queries = (docMap.get(d._id)?.queries ?? []).filter((it) => it !== q.id)
-      if (!clean) {
-        queries.push(q.id)
-      }
-      if (queries.length === 0) {
-        docMap.delete(d._id)
-      } else {
-        const q = docMap.get(d._id)
-        if ((q?.lastUsed ?? 0) < d.modifiedOn) {
-          docMap.set(d._id, { ...(q ?? {}), doc: d, queries, lastUsed: d.modifiedOn })
-        }
-      }
-    }
   }
 
   private async handleDocAddLookup (q: Query, doc: Doc): Promise<void> {
@@ -1148,9 +1026,7 @@ export class LiveQuery implements WithTx, Client {
     }
     const index = q.result.findIndex((p) => p._id === tx.objectId && h.isDerived(p._class, tx.objectClass))
     if (index > -1) {
-      const doc = q.result.splice(index, 1)
-      this.updateDocuments(q, doc, true)
-
+      q.result.splice(index, 1)
       if (q.options?.total === true) {
         q.total--
       }
@@ -1261,31 +1137,16 @@ export class LiveQuery implements WithTx, Client {
     const docCache = new Map<string, Doc>()
     for (const tx of txes) {
       if (tx._class === core.class.TxWorkspaceEvent) {
-        await this.checkUpdateEvents(tx as TxWorkspaceEvent)
-        await this.changePrivateHandler(tx as TxWorkspaceEvent)
+        await this.checkUpdateEvents(tx)
+        await this.changePrivateHandler(tx)
       }
       result.push(await this._tx(tx, docCache))
     }
     return result
   }
 
-  triggerCounter = 0
-  searchTriggerTimer: any
-
-  private async checkUpdateEvents (evt: TxWorkspaceEvent, trigger = true): Promise<void> {
-    clearTimeout(this.searchTriggerTimer)
-
-    // We need to add trigger once more, since elastic could have a huge lag with document availability.
-    if (trigger || this.triggerCounter > 0) {
-      if (trigger) {
-        this.triggerCounter = 5 // Schedule 5 refreshes on every 5 seconds.
-      }
-      setTimeout(() => {
-        this.triggerCounter--
-        void this.checkUpdateEvents(evt, false)
-      }, 5000)
-    }
-
+  private async checkUpdateEvents (tx: Tx): Promise<void> {
+    const evt = tx as TxWorkspaceEvent
     const h = this.client.getHierarchy()
     function hasClass (q: Query, classes: Ref<Class<Doc>>[]): boolean {
       return classes.includes(q._class) || classes.some((it) => h.isDerived(q._class, it) || h.isDerived(it, q._class))
@@ -1296,7 +1157,7 @@ export class LiveQuery implements WithTx, Client {
         if (hasClass(q, indexingParam._class) && q.query.$search !== undefined) {
           if (!this.removeFromQueue(q)) {
             try {
-              await this.refresh(q, true)
+              this.triggerRefresh(q)
             } catch (err) {
               console.error(err)
             }
@@ -1307,7 +1168,7 @@ export class LiveQuery implements WithTx, Client {
         for (const q of v) {
           if (hasClass(q, indexingParam._class) && q.query.$search !== undefined) {
             try {
-              await this.refresh(q, true)
+              this.triggerRefresh(q)
             } catch (err) {
               console.error(err)
             }
@@ -1321,7 +1182,7 @@ export class LiveQuery implements WithTx, Client {
         if (hasClass(q, params._class)) {
           if (!this.removeFromQueue(q)) {
             try {
-              await this.refresh(q, true)
+              this.triggerRefresh(q)
             } catch (err) {
               console.error(err)
             }
@@ -1332,7 +1193,7 @@ export class LiveQuery implements WithTx, Client {
         for (const q of v) {
           if (hasClass(q, params._class)) {
             try {
-              await this.refresh(q, true)
+              this.triggerRefresh(q)
             } catch (err) {
               console.error(err)
             }
@@ -1342,7 +1203,8 @@ export class LiveQuery implements WithTx, Client {
     }
   }
 
-  private async changePrivateHandler (evt: TxWorkspaceEvent): Promise<void> {
+  private async changePrivateHandler (tx: Tx): Promise<void> {
+    const evt = tx as TxWorkspaceEvent
     if (evt.event === WorkspaceEvent.SecurityChange) {
       for (const q of [...this.queue]) {
         if (typeof q.query.space !== 'string') {
@@ -1378,13 +1240,13 @@ export class LiveQuery implements WithTx, Client {
             const lookupClass = getLookupClass(lookup)
             const nestedLookup = getNestedLookup(lookup)
             if (Array.isArray(ops[key])) {
-              ;(updatedDoc.$lookup as any)[key] = await this.findAll(
+              ;(updatedDoc.$lookup as any)[key] = await this.client.findAll(
                 lookupClass,
                 { _id: { $in: ops[key] } },
                 { lookup: nestedLookup }
               )
             } else {
-              ;(updatedDoc.$lookup as any)[key] = await this.findOne(
+              ;(updatedDoc.$lookup as any)[key] = await this.client.findOne(
                 lookupClass,
                 { _id: ops[key] },
                 { lookup: nestedLookup }
@@ -1406,17 +1268,14 @@ export class LiveQuery implements WithTx, Client {
                   pp[pkey] = []
                 }
                 if (Array.isArray(pops[pkey])) {
-                  const pushData = await this.findAll(
+                  const pushData = await this.client.findAll(
                     lookupClass,
                     { _id: { $in: pops[pkey] } },
                     { lookup: nestedLookup }
                   )
                   pp[pkey].push(...pushData)
                 } else {
-                  const d = await this.findOne(lookupClass, { _id: pops[pkey] }, { lookup: nestedLookup })
-                  if (d !== undefined) {
-                    pp[pkey].push()
-                  }
+                  pp[pkey].push(await this.client.findOne(lookupClass, { _id: pops[pkey] }, { lookup: nestedLookup }))
                 }
               }
             }

@@ -14,8 +14,6 @@
 //
 
 import core, {
-  DOMAIN_MODEL,
-  cutObjectArray,
   type Account,
   type AccountClient,
   type Class,
@@ -25,20 +23,20 @@ import core, {
   type FindOptions,
   type FindResult,
   type Hierarchy,
-  type MeasureDoneOperation,
   type ModelDb,
   type Ref,
-  type SearchOptions,
-  type SearchQuery,
-  type SearchResult,
   type Tx,
   type TxResult,
-  type WithLookup
+  type WithLookup,
+  type SearchQuery,
+  type SearchOptions,
+  type SearchResult,
+  type MeasureDoneOperation,
+  DOMAIN_MODEL
 } from '@hcengineering/core'
 import { devModelId } from '@hcengineering/devmodel'
 import { Builder } from '@hcengineering/model'
-import { getMetadata, type IntlString, type Resources } from '@hcengineering/platform'
-import { testing } from '@hcengineering/ui'
+import { type IntlString, type Resources, getMetadata } from '@hcengineering/platform'
 import view from '@hcengineering/view'
 import workbench from '@hcengineering/workbench'
 import ModelView from './components/ModelView.svelte'
@@ -65,11 +63,7 @@ class ModelClient implements AccountClient {
     client.notify = (...tx) => {
       this.notify?.(...tx)
       if (this.notifyEnabled) {
-        console.debug(
-          'devmodel# notify=>',
-          testing ? JSON.stringify(cutObjectArray(tx)).slice(0, 160) : tx,
-          getMetadata(devmodel.metadata.DevModel)
-        )
+        console.debug('devmodel# notify=>', tx, this.client.getModel(), getMetadata(devmodel.metadata.DevModel))
       }
     }
   }
@@ -103,11 +97,13 @@ class ModelClient implements AccountClient {
     if (this.notifyEnabled && !isModel) {
       console.debug(
         'devmodel# findOne=>',
+        isModel,
+        this.getHierarchy().findDomain(_class),
         _class,
-        testing ? JSON.stringify(cutObjectArray(query)) : query,
+        query,
         options,
         'result => ',
-        testing ? JSON.stringify(cutObjectArray(result)) : result,
+        result,
         ' =>model',
         this.client.getModel(),
         getMetadata(devmodel.metadata.DevModel),
@@ -129,10 +125,10 @@ class ModelClient implements AccountClient {
       console.debug(
         'devmodel# findAll=>',
         _class,
-        testing ? JSON.stringify(cutObjectArray(query)).slice(0, 160) : query,
+        query,
         options,
         'result => ',
-        testing ? JSON.stringify(cutObjectArray(result)).slice(0, 160) : result,
+        result,
         ' =>model',
         this.client.getModel(),
         getMetadata(devmodel.metadata.DevModel),
@@ -145,13 +141,7 @@ class ModelClient implements AccountClient {
   async searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
     const result = await this.client.searchFulltext(query, options)
     if (this.notifyEnabled) {
-      console.debug(
-        'devmodel# searchFulltext=>',
-        testing ? JSON.stringify(cutObjectArray(query)).slice(0, 160) : query,
-        options,
-        'result => ',
-        result
-      )
+      console.debug('devmodel# searchFulltext=>', query, options, 'result => ', result)
     }
     return result
   }
@@ -160,13 +150,7 @@ class ModelClient implements AccountClient {
     const startTime = Date.now()
     const result = await this.client.tx(tx)
     if (this.notifyEnabled) {
-      console.debug(
-        'devmodel# tx=>',
-        testing ? JSON.stringify(cutObjectArray(tx)).slice(0, 160) : tx,
-        result,
-        getMetadata(devmodel.metadata.DevModel),
-        Date.now() - startTime
-      )
+      console.debug('devmodel# tx=>', tx, result, getMetadata(devmodel.metadata.DevModel), Date.now() - startTime)
     }
     return result
   }
