@@ -52,15 +52,7 @@
   {/if}
 {:else if value}
   <div class="flex-row-center">
-    <DocNavLink
-      object={value}
-      {onClick}
-      {disabled}
-      {noUnderline}
-      {inline}
-      component={tracker.component.EditIssue}
-      shrink={0}
-    >
+    <DocNavLink object={value} {onClick} {disabled} {noUnderline} component={tracker.component.EditIssue} shrink={0}>
       <span class="issuePresenterRoot" class:list={kind === 'list'} class:cursor-pointer={!disabled}>
         {#if shouldShowAvatar}
           <div class="icon" use:tooltip={{ label: tracker.string.Issue }}>

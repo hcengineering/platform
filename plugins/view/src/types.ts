@@ -18,6 +18,7 @@ import {
   Account,
   AggregateValue,
   AnyAttribute,
+  Attribute,
   CategoryType,
   Class,
   Client,
@@ -36,17 +37,18 @@ import {
   Tx,
   TxOperations,
   Type,
-  UXObject
+  UXObject,
+  WithLookup
 } from '@hcengineering/core'
-import { Asset, IntlString, Resource, Status } from '@hcengineering/platform'
-import { Preference } from '@hcengineering/preference'
 import {
   AnyComponent,
   AnySvelteComponent,
+  type LabelAndProps,
   Location,
-  Location as PlatformLocation,
-  type LabelAndProps
+  Location as PlatformLocation
 } from '@hcengineering/ui'
+import { Asset, IntlString, Resource, Status } from '@hcengineering/platform'
+import { Preference } from '@hcengineering/preference'
 
 /**
  * @public
@@ -374,7 +376,8 @@ export interface Groupping extends Class<Doc> {
  */
 export interface AggregationManager {
   close: () => void
-  notifyTx: (...tx: Tx[]) => Promise<void>
+  notifyTx: (tx: Tx) => Promise<void>
+  updateLookup: (resultDoc: WithLookup<Doc>, attr: Attribute<Doc>) => Promise<void>
   categorize: (target: Array<Ref<Doc>>, attr: AnyAttribute) => Promise<Array<Ref<Doc>>>
   getAttrClass: () => Ref<Class<Doc>>
   updateSorting?: (finalOptions: FindOptions<Doc>, attr: AnyAttribute) => Promise<void>
@@ -521,7 +524,7 @@ export interface Action<T extends Doc = Doc, P = Record<string, any>> extends Do
   // For example, it could be global action and action for focus class, second one fill override first one.
   override?: Ref<Action>[]
 
-  // Available only for workspace owners
+  // Avaible only for workspace owners
   secured?: boolean
   allowedForEditableContent?: boolean
 }
