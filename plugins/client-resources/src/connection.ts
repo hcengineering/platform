@@ -306,8 +306,8 @@ class Connection implements ClientConnection {
               this.onUpgrade?.()
               return
             }
-            this.handler(tx)
           }
+          this.handler(...txArr)
 
           clearTimeout(this.incomingTimer)
           void broadcastEvent(client.event.NetworkRequests, this.requests.size + 1)
@@ -452,8 +452,9 @@ class Connection implements ClientConnection {
             if (tx._class === core.class.TxApplyIf) {
               // We need to check extra broadcast's and perform them before
               const r = result as TxApplyResult
-              for (const d of r?.derived ?? []) {
-                this.handler(d)
+              const dr = r?.derived ?? []
+              if (dr.length > 0) {
+                this.handler(...dr)
               }
             }
           }

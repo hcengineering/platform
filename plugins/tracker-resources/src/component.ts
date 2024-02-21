@@ -92,8 +92,8 @@ export class ComponentAggregationManager implements AggregationManager {
     this.query?.()
   }
 
-  async notifyTx (tx: Tx): Promise<void> {
-    await this.lq.tx(tx)
+  async notifyTx (...tx: Tx[]): Promise<void> {
+    await this.lq.tx(...tx)
   }
 
   getAttrClass (): Ref<Class<Doc>> {

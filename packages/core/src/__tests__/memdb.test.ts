@@ -34,7 +34,7 @@ import { genMinModel, test, TestMixin } from './minmodel'
 const txes = genMinModel()
 
 class ClientModel extends ModelDb implements Client {
-  notify?: ((tx: Tx) => void) | undefined
+  notify?: ((...tx: Tx[]) => void) | undefined
 
   getHierarchy (): Hierarchy {
     return this.hierarchy
