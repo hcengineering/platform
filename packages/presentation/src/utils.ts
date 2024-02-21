@@ -56,7 +56,7 @@ let liveQuery: LQ
 let client: TxOperations & MeasureClient
 let pipeline: PresentationPipeline
 
-const txListeners: Array<(tx: Tx) => void> = []
+const txListeners: Array<(...tx: Tx[]) => void> = []
 
 /**
  * @public
@@ -86,17 +86,17 @@ class UIClient extends TxOperations implements Client, MeasureClient {
   afterMeasure: Tx[] = []
   measureOp?: MeasureDoneOperation
 
-  async doNotify (tx: Tx): Promise<void> {
+  async doNotify (...tx: Tx[]): Promise<void> {
     if (this.measureOp !== undefined) {
-      this.afterMeasure.push(tx)
+      this.afterMeasure.push(...tx)
     } else {
       try {
-        await pipeline.notifyTx(tx)
+        await pipeline.notifyTx(...tx)
 
-        await liveQuery.tx(tx)
+        await liveQuery.tx(...tx)
 
         txListeners.forEach((it) => {
-          it(tx)
+          it(...tx)
         })
       } catch (err: any) {
         console.log(err)
@@ -175,8 +175,8 @@ export async function setClient (_client: MeasureClient): Promise<void> {
   const uiClient = new UIClient(pipeline, liveQuery)
   client = uiClient
 
-  _client.notify = (tx: Tx) => {
-    void uiClient.doNotify(tx)
+  _client.notify = (...tx: Tx[]) => {
+    void uiClient.doNotify(...tx)
   }
   if (needRefresh || globalQueries.length > 0) {
     await refreshClient()

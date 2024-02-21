@@ -28,7 +28,8 @@ import {
   type SelectionStore,
   focusStore,
   previewDocument,
-  selectionStore
+  selectionStore,
+  selectionLimit
 } from './selection'
 import { deleteObjects, getObjectLinkFragment } from './utils'
 import contact from '@hcengineering/contact'
@@ -185,7 +186,7 @@ function SelectItemAll (doc: Doc | undefined, evt: Event): void {
   const provider = $selectionStore.provider ?? $focusStore.provider
   if (provider !== undefined) {
     const docs = provider.docs() ?? []
-    provider.selection.set(docs)
+    provider.selection.set(docs.slice(0, selectionLimit))
     previewDocument.set(undefined)
     evt.preventDefault()
   }

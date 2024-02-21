@@ -29,13 +29,13 @@ const transactionThreshold = 500
 /**
  * @public
  */
-export type TxHandler = (tx: Tx) => void
+export type TxHandler = (...tx: Tx[]) => void
 
 /**
  * @public
  */
 export interface Client extends Storage, FulltextStorage {
-  notify?: (tx: Tx) => void
+  notify?: (...tx: Tx[]) => void
   getHierarchy: () => Hierarchy
   getModel: () => ModelDb
   findOne: <T extends Doc>(
@@ -98,7 +98,7 @@ export interface ClientConnection extends Storage, FulltextStorage, BackupClient
 }
 
 class ClientImpl implements AccountClient, BackupClient, MeasureClient {
-  notify?: (tx: Tx) => void
+  notify?: (...tx: Tx[]) => void
   hierarchy!: Hierarchy
   model!: ModelDb
   constructor (private readonly conn: ClientConnection) {}
@@ -164,12 +164,14 @@ class ClientImpl implements AccountClient, BackupClient, MeasureClient {
     return await this.conn.measure(operationName)
   }
 
-  async updateFromRemote (tx: Tx): Promise<void> {
-    if (tx.objectSpace === core.space.Model) {
-      this.hierarchy.tx(tx)
-      await this.model.tx(tx)
+  async updateFromRemote (...tx: Tx[]): Promise<void> {
+    for (const t of tx) {
+      if (t.objectSpace === core.space.Model) {
+        this.hierarchy.tx(t)
+        await this.model.tx(t)
+      }
     }
-    this.notify?.(tx)
+    this.notify?.(...tx)
   }
 
   async close (): Promise<void> {
@@ -228,17 +230,17 @@ export async function createClient (
 
   let lastTx: number
 
-  function txHandler (tx: Tx): void {
-    if (tx == null) {
+  function txHandler (...tx: Tx[]): void {
+    if (tx == null || tx.length === 0) {
       return
     }
     if (client === null) {
-      txBuffer?.push(tx)
+      txBuffer?.push(...tx)
     } else {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      client.updateFromRemote(tx)
+      client.updateFromRemote(...tx)
     }
-    lastTx = tx.modifiedOn
+    lastTx = tx.reduce((cur, it) => (it.modifiedOn > cur ? it.modifiedOn : cur), 0)
   }
   const configs = new Map<Ref<PluginConfiguration>, PluginConfiguration>()
 
@@ -251,9 +253,7 @@ export async function createClient (
   client = new ClientImpl(conn)
   client.setModel(hierarchy, model)
 
-  for (const tx of txBuffer) {
-    txHandler(tx)
-  }
+  txHandler(...txBuffer)
   txBuffer = undefined
 
   const oldOnConnect: ((event: ClientConnectEvent) => Promise<void>) | undefined = conn.onConnect
@@ -302,9 +302,7 @@ export async function createClient (
 
     if (atxes.length < transactionThreshold && !needFullRefresh) {
       console.log('applying input transactions', atxes.length)
-      for (const tx of atxes) {
-        txHandler(tx)
-      }
+      txHandler(...atxes)
       await oldOnConnect?.(ClientConnectEvent.Reconnected)
     } else {
       // We need to trigger full refresh on queries, etc.

@@ -9,6 +9,9 @@ import { type Unsubscriber, type Writable, writable } from 'svelte/store'
  */
 export type SelectDirection = 'vertical' | 'horizontal'
 
+// Default selection limit
+export const selectionLimit = 200
+
 export interface SelectionFocusProvider {
   // -1 - previous
   // 0 - selec of as current

@@ -94,14 +94,14 @@ export class Controller {
  * @public
  */
 export class WorkspaceClient {
-  private readonly txHandlers: ((tx: Tx) => Promise<void>)[] = []
+  private readonly txHandlers: ((...tx: Tx[]) => Promise<void>)[] = []
 
   private constructor (
     readonly workspace: WorkspaceId,
     readonly client: Client
   ) {
-    this.client.notify = (tx) => {
-      void this.txHandler(tx)
+    this.client.notify = (...tx: Tx[]) => {
+      void this.txHandler(...tx)
     }
   }
 
@@ -115,9 +115,9 @@ export class WorkspaceClient {
     await this.client.close()
   }
 
-  private async txHandler (tx: Tx): Promise<void> {
+  private async txHandler (...tx: Tx[]): Promise<void> {
     for (const h of this.txHandlers) {
-      await h(tx)
+      await h(...tx)
     }
   }
 }

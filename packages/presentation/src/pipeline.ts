@@ -28,7 +28,7 @@ export interface PresentationMiddleware {
 
   tx: (tx: Tx) => Promise<TxResult>
 
-  notifyTx: (tx: Tx) => Promise<void>
+  notifyTx: (...tx: Tx[]) => Promise<void>
 
   findAll: <T extends Doc>(
     _class: Ref<Class<T>>,
@@ -84,8 +84,8 @@ export class PresentationPipelineImpl implements PresentationPipeline {
     return this.client.getModel()
   }
 
-  async notifyTx (tx: Tx): Promise<void> {
-    await this.head?.notifyTx(tx)
+  async notifyTx (...tx: Tx[]): Promise<void> {
+    await this.head?.notifyTx(...tx)
   }
 
   async measure (operationName: string): Promise<MeasureDoneOperation> {
@@ -168,8 +168,8 @@ export abstract class BasePresentationMiddleware {
     readonly next?: PresentationMiddleware
   ) {}
 
-  async provideNotifyTx (tx: Tx): Promise<void> {
-    await this.next?.notifyTx(tx)
+  async provideNotifyTx (...tx: Tx[]): Promise<void> {
+    await this.next?.notifyTx(...tx)
   }
 
   async provideClose (): Promise<void> {
@@ -270,8 +270,8 @@ export class OptimizeQueryMiddleware extends BasePresentationMiddleware implemen
     return new OptimizeQueryMiddleware(client, next)
   }
 
-  async notifyTx (tx: Tx): Promise<void> {
-    await this.provideNotifyTx(tx)
+  async notifyTx (...tx: Tx[]): Promise<void> {
+    await this.provideNotifyTx(...tx)
   }
 
   async close (): Promise<void> {
