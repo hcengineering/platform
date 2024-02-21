@@ -573,6 +573,10 @@ export function createModel (builder: Builder): void {
     titleProvider: lead.function.LeadTitleProvider
   })
 
+  builder.mixin(lead.class.Lead, core.class.Class, view.mixin.ObjectIdentifier, {
+    provider: lead.function.LeadIdProvider
+  })
+
   builder.mixin(lead.class.Lead, core.class.Class, view.mixin.ClassFilters, {
     filters: ['attachedTo']
   })

@@ -14,11 +14,13 @@ export function isIssueId (shortLink: string): boolean {
   return /^\S+-\d+$/.test(shortLink)
 }
 
-export async function issueIdentifierProvider (client: TxOperations, ref: Ref<Doc>): Promise<string> {
-  const object = await client.findOne(tracker.class.Issue, { _id: ref as Ref<Issue> })
+export async function issueIdentifierProvider (client: TxOperations, ref: Ref<Issue>, doc?: Issue): Promise<string> {
+  const object = doc ?? (await client.findOne(tracker.class.Issue, { _id: ref }))
+
   if (object === undefined) {
     return ''
   }
+
   return object.identifier
 }
 

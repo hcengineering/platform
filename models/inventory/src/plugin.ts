@@ -15,10 +15,10 @@
 //
 
 import { type ChatMessageViewlet } from '@hcengineering/chunter'
-import type { Ref } from '@hcengineering/core'
+import type { Client, Doc, Ref } from '@hcengineering/core'
 import { inventoryId } from '@hcengineering/inventory'
 import inventory from '@hcengineering/inventory-resources/src/plugin'
-import { type IntlString, mergeIds } from '@hcengineering/platform'
+import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
 import { type Action, type ActionCategory, type ViewAction, type Viewlet } from '@hcengineering/view'
 export default mergeIds(inventoryId, inventory, {
@@ -51,5 +51,9 @@ export default mergeIds(inventoryId, inventory, {
   ids: {
     ProductChatMessageViewlet: '' as Ref<ChatMessageViewlet>,
     CategoryChatMessageViewlet: '' as Ref<ChatMessageViewlet>
+  },
+  function: {
+    ProductIdProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
+    CategoryIdProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>
   }
 })

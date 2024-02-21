@@ -30,7 +30,7 @@ import core, { TClass, TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import presentation from '@hcengineering/model-presentation'
 import { type Asset, type IntlString, type Resource, type Status } from '@hcengineering/platform'
-import { type AnyComponent, type Location } from '@hcengineering/ui/src/types'
+import { type AnyComponent, type LabelAndProps, type Location } from '@hcengineering/ui/src/types'
 import {
   type Action,
   type ActionCategory,
@@ -86,7 +86,8 @@ import {
   type ViewletDescriptor,
   type ViewletPreference,
   type ObjectIdentifier,
-  type ObjectIcon
+  type ObjectIcon,
+  type ObjectTooltip
 } from '@hcengineering/view'
 
 import view from './plugin'
@@ -268,6 +269,11 @@ export class TObjectTitle extends TClass implements ObjectTitle {
 @Mixin(view.mixin.ObjectIdentifier, core.class.Class)
 export class TObjectIdentifier extends TClass implements ObjectIdentifier {
   provider!: Resource<<T extends Doc>(client: Client, ref: Ref<T>, doc?: T) => Promise<string>>
+}
+
+@Mixin(view.mixin.ObjectTooltip, core.class.Class)
+export class TObjectTooltip extends TClass implements ObjectTooltip {
+  provider!: Resource<(client: Client, doc?: Doc | null) => Promise<LabelAndProps | undefined>>
 }
 
 @Mixin(view.mixin.ListHeaderExtra, core.class.Class)
@@ -459,6 +465,7 @@ export function createModel (builder: Builder): void {
     TAggregation,
     TGroupping,
     TObjectIdentifier,
+    TObjectTooltip,
     TObjectIcon
   )
 

@@ -7,3 +7,9 @@ export async function getLeadTitle (client: TxOperations, ref: Ref<Doc>, doc?: L
   if (object === undefined) throw new Error(`Lead not found, _id: ${ref}`)
   return `LEAD-${object.number}`
 }
+
+export async function getLeadId (client: TxOperations, ref: Ref<Lead>, doc?: Lead): Promise<string> {
+  const object = doc ?? (await client.findOne(lead.class.Lead, { _id: ref }))
+  if (object === undefined) throw new Error(`Lead not found, _id: ${ref}`)
+  return object.identifier
+}

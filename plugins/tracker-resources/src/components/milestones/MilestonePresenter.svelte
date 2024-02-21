@@ -22,8 +22,9 @@
     themeStore,
     tooltip
   } from '@hcengineering/ui'
-  import { DocNavLink } from '@hcengineering/view-resources'
+  import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'
+
   import tracker from '../../plugin'
 
   export let value: WithLookup<Milestone> | undefined
@@ -47,10 +48,10 @@
 </script>
 
 {#if value}
-  <DocNavLink object={value} {disabled} {inline} {accent} {noUnderline} {onClick}>
-    {#if inline}
-      <span class="antiMention" use:tooltip={{ label: tracker.string.Milestone }}>@{value.label}</span>
-    {:else}
+  {#if inline}
+    <ObjectMention object={value} {disabled} {noUnderline} {accent} {onClick} />
+  {:else}
+    <DocNavLink object={value} {disabled} {accent} {noUnderline} {onClick}>
       <div class="flex-presenter" use:tooltip={{ label: tracker.string.Milestone }}>
         {#if shouldShowAvatar}
           <div class="icon">
@@ -66,6 +67,6 @@
           {value.label}
         </span>
       </div>
-    {/if}
-  </DocNavLink>
+    </DocNavLink>
+  {/if}
 {/if}

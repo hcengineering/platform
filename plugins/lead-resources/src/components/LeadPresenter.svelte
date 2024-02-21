@@ -15,8 +15,8 @@
 -->
 <script lang="ts">
   import type { Lead } from '@hcengineering/lead'
-  import { Icon, tooltip } from '@hcengineering/ui'
-  import { DocNavLink } from '@hcengineering/view-resources'
+  import { Icon } from '@hcengineering/ui'
+  import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
   import lead from '@hcengineering/lead'
 
   export let value: Lead
@@ -24,15 +24,14 @@
   export let disabled: boolean = false
   export let accent: boolean = false
   export let noUnderline: boolean = false
-
   export let shouldShowAvatar: boolean = true
 </script>
 
 {#if value}
-  <DocNavLink object={value} {inline} {disabled} {noUnderline} {accent}>
-    {#if inline}
-      <span class="antiMention" use:tooltip={{ label: lead.string.Lead }}>@{value.identifier}</span>
-    {:else}
+  {#if inline}
+    <ObjectMention object={value} {disabled} {noUnderline} {accent} />
+  {:else}
+    <DocNavLink object={value} {disabled} {noUnderline} {accent}>
       <div class="flex-presenter">
         {#if shouldShowAvatar}
           <div class="icon"><Icon icon={lead.icon.Lead} size={'small'} /></div>
@@ -41,6 +40,6 @@
           >{value.identifier}</span
         >
       </div>
-    {/if}
-  </DocNavLink>
+    </DocNavLink>
+  {/if}
 {/if}

@@ -40,7 +40,7 @@ import {
   toIdMap
 } from '@hcengineering/core'
 import notification, { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
-import { getResource } from '@hcengineering/platform'
+import { getEmbeddedLabel, getResource } from '@hcengineering/platform'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { type TemplateDataProvider } from '@hcengineering/templates'
 import {
@@ -48,11 +48,13 @@ import {
   type ResolvedLocation,
   type TabItem,
   getCurrentResolvedLocation,
-  getPanelURI
+  getPanelURI,
+  type LabelAndProps
 } from '@hcengineering/ui'
 import view, { type Filter } from '@hcengineering/view'
 import { FilterQuery } from '@hcengineering/view-resources'
 import { derived, get, writable } from 'svelte/store'
+
 import contact from './plugin'
 
 export function formatDate (dueDateMs: Timestamp): string {
@@ -376,4 +378,14 @@ export async function contactTitleProvider (client: Client, ref: Ref<Contact>, d
   const object = doc ?? (await client.findOne(contact.class.Contact, { _id: ref }))
   if (object === undefined) return ''
   return getName(client.getHierarchy(), object)
+}
+
+export function getPersonTooltip (client: Client, value: Person | null | undefined): LabelAndProps | undefined {
+  const hierarchy = client.getHierarchy()
+
+  return value == null
+    ? undefined
+    : {
+        label: getEmbeddedLabel(getName(hierarchy, value))
+      }
 }
