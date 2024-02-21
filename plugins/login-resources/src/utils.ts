@@ -71,6 +71,9 @@ export async function doLogin (email: string, password: string): Promise<[Status
       },
       body: JSON.stringify(request)
     })
+    if (!response.ok) {
+      throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`)
+    }
     const result = await response.json()
     console.log('login result', result)
     if (result.error == null) {
