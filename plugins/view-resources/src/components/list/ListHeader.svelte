@@ -37,7 +37,7 @@
   import { AttributeModel, ViewOptions } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import view from '../../plugin'
-  import { SelectionFocusProvider } from '../../selection'
+  import { SelectionFocusProvider, selectionLimit } from '../../selection'
   import { noCategory } from '../../viewOptions'
 
   export let groupByKey: string
@@ -201,7 +201,7 @@
               const smap = new Map(selected.map((it) => [it._id, it]))
               newSelection = newSelection.filter((it) => !smap.has(it._id))
             } else {
-              for (const s of itemsProj) {
+              for (const s of itemsProj.slice(0, selectionLimit)) {
                 if (!selectionIds.has(s._id)) {
                   newSelection.push(s)
                 }

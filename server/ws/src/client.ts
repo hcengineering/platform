@@ -15,12 +15,13 @@
 
 import core, {
   AccountRole,
+  type BulkUpdateEvent,
   TxFactory,
   TxProcessor,
+  type TxWorkspaceEvent,
   WorkspaceEvent,
   generateId,
   type Account,
-  type BulkUpdateEvent,
   type Class,
   type Doc,
   type DocumentQuery,
@@ -37,8 +38,7 @@ import core, {
   type TxApplyIf,
   type TxApplyResult,
   type TxCUD,
-  type TxResult,
-  type TxWorkspaceEvent
+  type TxResult
 } from '@hcengineering/core'
 import { type Pipeline, type SessionContext } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
@@ -188,8 +188,9 @@ export class ClientSession implements Session {
           }
         }
       } else {
-        for (const dtx of derived) {
-          this.broadcast(null, this.token.workspace, { result: dtx }, target)
+        while (derived.length > 0) {
+          const part = derived.splice(0, 250)
+          this.broadcast(null, this.token.workspace, { result: part }, target)
         }
       }
     }

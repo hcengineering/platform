@@ -36,7 +36,7 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const changeStatus = async (newStatus: any) => {
+  const changeValue = async (newStatus: any): Promise<void> => {
     if (newStatus === '#null') {
       newStatus = null
       return
@@ -46,10 +46,14 @@
       return
     }
     progress = true
-    const docs = Array.isArray(value) ? value : [value]
+    const docs = [...(Array.isArray(value) ? value : [value])]
 
     const changed = (d: Doc) => (d as any)[attribute] !== newStatus
     const ops = client.apply('value-selector:' + generateId())
+
+    // We need to sort docs by modified date, to have same modified order impacted.
+    docs.sort((a: Doc, b: Doc) => b._id.localeCompare(a._id))
+
     for (const it of docs.filter(changed)) {
       const cl = Hierarchy.mixinOrClass(it)
       const attr =
@@ -128,7 +132,7 @@
     <SelectPopup
       value={valuesToShow}
       on:close={(evt) => {
-        changeStatus(evt.detail)
+        changeValue(evt.detail)
       }}
       placeholder={placeholder ?? view.string.Filter}
       searchable
@@ -147,7 +151,7 @@
       allowDeselect={true}
       selected={current}
       on:close={(evt) => {
-        changeStatus(evt.detail === null ? null : evt.detail?._id)
+        changeValue(evt.detail === null ? null : evt.detail?._id)
       }}
       placeholder={placeholder ?? view.string.Filter}
       {width}
