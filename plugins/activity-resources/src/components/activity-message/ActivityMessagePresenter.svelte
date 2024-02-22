@@ -35,7 +35,6 @@
   export let hoverable = true
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
   export let withShowMore: boolean = true
-  export let attachmentImageSize: 'x-large' | undefined = undefined
   export let showLinksPreview = true
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
@@ -66,7 +65,6 @@
       hoverable,
       hoverStyles,
       withShowMore,
-      attachmentImageSize,
       showLinksPreview,
       onClick,
       onReply
