@@ -564,6 +564,19 @@ export function createModel (builder: Builder, options = { addApplication: true 
     core.space.Model,
     {
       objectClass: chunter.class.Backlink,
+      action: 'update',
+      component: chunter.component.BacklinkContent,
+      labelComponent: chunter.activity.BacklinkCreatedLabel,
+      hideIfRemoved: true
+    },
+    chunter.ids.BacklinkUpdateActivityViewlet
+  )
+
+  builder.createDoc(
+    activity.class.DocUpdateMessageViewlet,
+    core.space.Model,
+    {
+      objectClass: chunter.class.Backlink,
       action: 'remove',
       hideIfRemoved: true
     },
