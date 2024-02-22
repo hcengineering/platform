@@ -48,7 +48,7 @@ import { type Db, MongoClient } from 'mongodb'
 import { clearTelegramHistory } from './telegram'
 import { diffWorkspace, updateField } from './workspace'
 
-import { type Data, getWorkspaceId, RateLimiter, type Tx, type Version } from '@hcengineering/core'
+import { type Data, getWorkspaceId, RateLimiter, type Tx, type Version, type AccountRole } from '@hcengineering/core'
 import { type MinioService } from '@hcengineering/minio'
 import { consoleModelLogger, type MigrateOperation } from '@hcengineering/model'
 import { openAIConfigDefaults } from '@hcengineering/openai'
@@ -228,7 +228,7 @@ export function devTool (
   program
     .command('set-user-role <email> <workspace> <role>')
     .description('set user role')
-    .action(async (email: string, workspace: string, role: number, cmd) => {
+    .action(async (email: string, workspace: string, role: AccountRole, cmd) => {
       console.log(`set user ${email} role for ${workspace}...`)
       await setRole(email, workspace, productId, role)
     })

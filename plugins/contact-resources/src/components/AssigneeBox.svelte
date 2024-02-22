@@ -35,11 +35,11 @@
   import { openDoc } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import { PersonLabelTooltip, personByIdStore } from '..'
+  import { AssigneeCategory } from '../assignee'
   import AssigneePopup from './AssigneePopup.svelte'
   import EmployeePresenter from './EmployeePresenter.svelte'
   import UserInfo from './UserInfo.svelte'
   import IconPerson from './icons/Person.svelte'
-  import { AssigneeCategory } from '../assignee'
 
   export let _class: Ref<Class<Employee>> = contact.mixin.Employee
   export let excluded: Ref<Contact>[] | undefined = undefined
@@ -156,7 +156,16 @@
       onEmployeeEdit={_click}
     />
   {:else}
-    <Button {focusIndex} width={width ?? 'min-content'} {size} {kind} {justify} {showTooltip} on:click={_click}>
+    <Button
+      {focusIndex}
+      disabled={readonly}
+      width={width ?? 'min-content'}
+      {size}
+      {kind}
+      {justify}
+      {showTooltip}
+      on:click={_click}
+    >
       <span
         slot="content"
         class="overflow-label flex-grow"

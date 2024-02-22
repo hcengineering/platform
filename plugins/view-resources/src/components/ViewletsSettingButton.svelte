@@ -22,6 +22,7 @@
   import { getViewOptions, viewOptionStore } from '../viewOptions'
   import ViewOptionsButton from './ViewOptionsButton.svelte'
   import ViewletSetting from './ViewletSetting.svelte'
+  import { restrictionStore } from '../utils'
 
   export let viewletQuery: DocumentQuery<Viewlet> = {}
   export let kind: ButtonKind = 'regular'
@@ -31,6 +32,7 @@
   export let viewlets: Array<WithLookup<Viewlet>> = []
   export let preference: ViewletPreference | undefined = undefined
   export let loading = true
+  export let disabled: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -76,18 +78,21 @@
   } else {
     preferenceQuery.unsubscribe()
   }
+
+  $: disabled = $restrictionStore.readonly
 </script>
 
 {#if viewlet}
   <div class="flex-row-center gap-2 reverse">
     {#if viewOptions}
-      <ViewOptionsButton {viewlet} {kind} {viewOptions} />
+      <ViewOptionsButton {viewlet} {kind} {viewOptions} {disabled} />
     {/if}
     <Button
       icon={view.icon.Configure}
       label={view.string.Show}
       {kind}
       shrink={1}
+      {disabled}
       adaptiveShrink={'sm'}
       showTooltip={{ label: view.string.CustomizeView, direction: 'bottom' }}
       bind:input={btn}

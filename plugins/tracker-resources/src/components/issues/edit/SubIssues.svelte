@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Issue, trackerId } from '@hcengineering/tracker'
   import { Button, IconScaleFull, Label, closeTooltip, getCurrentResolvedLocation, navigate } from '@hcengineering/ui'
-  import { createFilter, setFilters } from '@hcengineering/view-resources'
+  import { createFilter, restrictionStore, setFilters } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
   import QueryIssuesList from './QueryIssuesList.svelte'
 
@@ -44,24 +44,26 @@
     <Label label={tracker.string.SubIssuesList} params={{ subIssues: size }} />
   </svelte:fragment>
   <svelte:fragment slot="buttons">
-    <Button
-      icon={IconScaleFull}
-      kind={'ghost'}
-      showTooltip={{ label: tracker.string.OpenSubIssues, direction: 'bottom' }}
-      on:click={() => {
-        const filter = createFilter(tracker.class.Issue, 'attachedTo', [issue._id])
-        if (filter !== undefined) {
-          closeTooltip()
-          const loc = getCurrentResolvedLocation()
-          loc.fragment = undefined
-          loc.query = undefined
-          loc.path[2] = trackerId
-          loc.path[3] = issue.space
-          loc.path[4] = 'issues'
-          navigate(loc)
-          setFilters([filter])
-        }
-      }}
-    />
+    {#if !$restrictionStore.disableNavigation}
+      <Button
+        icon={IconScaleFull}
+        kind={'ghost'}
+        showTooltip={{ label: tracker.string.OpenSubIssues, direction: 'bottom' }}
+        on:click={() => {
+          const filter = createFilter(tracker.class.Issue, 'attachedTo', [issue._id])
+          if (filter !== undefined) {
+            closeTooltip()
+            const loc = getCurrentResolvedLocation()
+            loc.fragment = undefined
+            loc.query = undefined
+            loc.path[2] = trackerId
+            loc.path[3] = issue.space
+            loc.path[4] = 'issues'
+            navigate(loc)
+            setFilters([filter])
+          }
+        }}
+      />
+    {/if}
   </svelte:fragment>
 </QueryIssuesList>

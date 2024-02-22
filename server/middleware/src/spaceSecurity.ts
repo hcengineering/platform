@@ -14,6 +14,7 @@
 //
 import core, {
   Account,
+  AccountRole,
   AttachedDoc,
   Class,
   Doc,
@@ -369,6 +370,10 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
   }
 
   async tx (ctx: SessionContext, tx: Tx): Promise<TxMiddlewareResult> {
+    const account = await getUser(this.storage, ctx)
+    if (account.role === AccountRole.Guest) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
     await this.processTx(ctx, tx)
     const targets = await this.getTxTargets(ctx, tx)
     const res = await this.provideTx(ctx, tx)
@@ -476,7 +481,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     const account = await getUser(this.storage, ctx)
     const field = this.getKey(_class)
 
-    if (!isSystem(account)) {
+    if (!isSystem(account) && account.role !== AccountRole.Guest) {
       if (!isOwner(account) || !this.storage.hierarchy.isDerived(_class, core.class.Space)) {
         if (query[field] !== undefined) {
           ;(newQuery as any)[field] = await this.mergeQuery(account, query[field], domain)
@@ -487,7 +492,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       }
     }
     const findResult = await this.provideFindAll(ctx, _class, newQuery, options)
-    if (!isOwner(account)) {
+    if (!isOwner(account) && account.role !== AccountRole.Guest) {
       if (options?.lookup !== undefined) {
         for (const object of findResult) {
           if (object.$lookup !== undefined) {

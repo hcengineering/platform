@@ -98,7 +98,7 @@
         class:is-dragged-over-down={draggingIndex !== null && index > draggingIndex && index === hoveringIndex}
         class:drag-over-highlight={index === dragOverIndex}
         draggable={editable}
-        on:contextmenu|preventDefault={(ev) => checkIsNotDraft(object) && showContextMenu?.(ev, object)}
+        on:contextmenu={(ev) => checkIsNotDraft(object) && showContextMenu?.(ev, object)}
         on:dragstart={(ev) => {
           handleDragStart(ev, index)
         }}

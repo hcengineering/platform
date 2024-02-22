@@ -15,18 +15,18 @@
 -->
 <script lang="ts">
   import { AttachmentsPresenter } from '@hcengineering/attachment-resources'
+  import { ChatMessagesPresenter } from '@hcengineering/chunter-resources'
   import contact from '@hcengineering/contact'
   import { ContactPresenter } from '@hcengineering/contact-resources'
   import type { WithLookup } from '@hcengineering/core'
   import type { Lead } from '@hcengineering/lead'
   import notification from '@hcengineering/notification'
   import { getClient } from '@hcengineering/presentation'
-  import { AssigneePresenter } from '@hcengineering/task-resources'
-  import { ActionIcon, Component, DueDatePresenter, IconMoreH, showPopup } from '@hcengineering/ui'
-  import { BuildModelKey } from '@hcengineering/view'
-  import { ContextMenu, enabledConfig, openDoc, statusStore } from '@hcengineering/view-resources'
-  import { ChatMessagesPresenter } from '@hcengineering/chunter-resources'
   import task from '@hcengineering/task'
+  import { AssigneePresenter } from '@hcengineering/task-resources'
+  import { ActionIcon, Component, DueDatePresenter, IconMoreH } from '@hcengineering/ui'
+  import { BuildModelKey } from '@hcengineering/view'
+  import { enabledConfig, openDoc, showMenu, statusStore } from '@hcengineering/view-resources'
 
   import lead from '../plugin'
   import LeadPresenter from './LeadPresenter.svelte'
@@ -36,10 +36,6 @@
 
   const client = getClient()
   const assigneeAttribute = client.getHierarchy().getAttribute(lead.class.Lead, 'assignee')
-
-  function showMenu (ev?: Event): void {
-    showPopup(ContextMenu, { object }, (ev as MouseEvent).target as HTMLElement)
-  }
 
   function showLead () {
     openDoc(client.getHierarchy(), object)
@@ -61,7 +57,7 @@
       <ActionIcon
         label={lead.string.More}
         action={(evt) => {
-          showMenu(evt)
+          showMenu(evt, { object })
         }}
         icon={IconMoreH}
         size={'small'}

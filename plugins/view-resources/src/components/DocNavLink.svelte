@@ -17,10 +17,10 @@
   import { NavLink, getClient } from '@hcengineering/presentation'
   import { AnyComponent, getPanelURI, locationToUrl } from '@hcengineering/ui'
   import view from '../plugin'
-  import { getObjectLinkFragment } from '../utils'
+  import { getObjectLinkFragment, restrictionStore } from '../utils'
 
   export let object: Doc | undefined
-  export let disabled = false
+  export let disabled: boolean = false
   export let onClick: ((event: MouseEvent) => void) | undefined = undefined
   export let noUnderline = disabled
   export let inline = false
@@ -30,6 +30,8 @@
   export let shrink: number = 1
   export let accent: boolean = false
   export let noOverflow: boolean = false
+
+  $: disabled = $restrictionStore.disableNavigation
 
   const client = getClient()
   const hierarchy = client.getHierarchy()

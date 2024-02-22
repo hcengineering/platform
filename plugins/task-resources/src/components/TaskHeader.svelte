@@ -28,6 +28,7 @@
   export let ignoreKeys: string[]
   export let vertical: boolean = false
   export let allowedCollections: string[] = []
+  export let readonly: boolean = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -70,16 +71,17 @@
         bind:value={object.assignee}
         on:change={change}
         allowDeselect
+        {readonly}
         titleDeselect={task.string.TaskUnAssign}
       />
       <div class="column">
-        <AttributesBar {object} _class={object._class} keys={filtredKeys} />
+        <AttributesBar {object} _class={object._class} keys={filtredKeys} {readonly} />
       </div>
     </div>
-    <AttributesBar {object} _class={object._class} keys={['status']} showHeader={false} />
+    <AttributesBar {object} _class={object._class} keys={['status']} showHeader={false} {readonly} />
   </div>
 {:else}
-  <DocAttributeBar {object} {ignoreKeys} {mixins} {allowedCollections} on:update />
+  <DocAttributeBar {object} {ignoreKeys} {mixins} {allowedCollections} {readonly} on:update />
 {/if}
 
 <style lang="scss">

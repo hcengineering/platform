@@ -22,6 +22,7 @@
   import view from '../../plugin'
   import GrowPresenter from './GrowPresenter.svelte'
   import ListPresenter from './ListPresenter.svelte'
+  import { restrictionStore } from '../../utils'
 
   export let docObject: Doc
   export let model: AttributeModel[]
@@ -63,6 +64,19 @@
     return (value: any) => {
       onChange(value, docObject, attribute.key, attr)
     }
+  }
+
+  function getProps (props: Record<string, any>, readonly: boolean): Record<string, any> {
+    if (readonly) {
+      return {
+        ...props,
+        readonly: true,
+        disabled: true,
+        editable: false,
+        isEditable: false
+      }
+    }
+    return props
   }
 
   $: mobile = $deviceInfo.isMobile
@@ -124,7 +138,7 @@
             <ListPresenter
               {docObject}
               attributeModel={attrModel}
-              {props}
+              props={getProps(props, $restrictionStore.readonly)}
               {compactMode}
               value={getObjectValue(attrModel.key, docObject)}
               onChange={getOnChange(docObject, attrModel)}
@@ -138,7 +152,7 @@
               <ListPresenter
                 {docObject}
                 attributeModel={attrModel}
-                {props}
+                props={getProps(props, $restrictionStore.readonly)}
                 value={getObjectValue(attrModel.key, docObject)}
                 onChange={getOnChange(docObject, attrModel)}
               />
@@ -148,7 +162,7 @@
             <ListPresenter
               {docObject}
               attributeModel={attrModel}
-              {props}
+              props={getProps(props, $restrictionStore.readonly)}
               value={getObjectValue(attrModel.key, docObject)}
               onChange={getOnChange(docObject, attrModel)}
             />
@@ -158,7 +172,7 @@
         <ListPresenter
           {docObject}
           {attributeModel}
-          {props}
+          props={getProps(props, $restrictionStore.readonly)}
           value={getObjectValue(attributeModel.key, docObject)}
           onChange={getOnChange(docObject, attributeModel)}
           hideDivider={i === 0}
@@ -187,7 +201,7 @@
             <ListPresenter
               {docObject}
               attributeModel={attrModel}
-              {props}
+              props={getProps(props, $restrictionStore.readonly)}
               {compactMode}
               value={getObjectValue(attrModel.key, docObject)}
               onChange={getOnChange(docObject, attrModel)}
@@ -202,7 +216,7 @@
               <ListPresenter
                 {docObject}
                 {attributeModel}
-                {props}
+                props={getProps(props, $restrictionStore.readonly)}
                 value={getObjectValue(attributeModel.key, docObject)}
                 onChange={getOnChange(docObject, attributeModel)}
                 hideDivider={j === 0}
@@ -220,7 +234,7 @@
             <ListPresenter
               {docObject}
               {attributeModel}
-              {props}
+              props={getProps(props, $restrictionStore.readonly)}
               value={getObjectValue(attributeModel.key, docObject)}
               onChange={getOnChange(docObject, attributeModel)}
             />

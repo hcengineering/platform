@@ -96,6 +96,8 @@
     "@hcengineering/server-view-resources": "^0.6.0",
     "@hcengineering/server-activity": "^0.6.0",
     "@hcengineering/server-activity-resources": "^0.6.0",
+    "@hcengineering/server-guest": "^0.6.0",
+    "@hcengineering/server-guest-resources": "^0.6.0",
     "@hcengineering/server-token": "^0.6.7",
     "@hcengineering/middleware": "^0.6.0",
     "@hcengineering/minio": "^0.6.0",

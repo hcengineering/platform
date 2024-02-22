@@ -26,6 +26,7 @@
   export let viewlet: Viewlet | undefined
   export let kind: ButtonKind = 'regular'
   export let viewOptions: ViewOptions
+  export let disabled: boolean = false
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -110,6 +111,7 @@
   <Button
     icon={view.icon.ViewButton}
     label={view.string.View}
+    {disabled}
     {kind}
     adaptiveShrink={'sm'}
     showTooltip={{ label: view.string.CustomizeView, direction: 'bottom' }}

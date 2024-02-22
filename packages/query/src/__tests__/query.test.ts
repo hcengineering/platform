@@ -14,6 +14,7 @@
 //
 
 import core, {
+  AccountRole,
   createClient,
   Doc,
   generateId,
@@ -105,7 +106,7 @@ describe('query', () => {
 
     await factory.createDoc(core.class.Account, core.space.Model, {
       email: 'user1@site.com',
-      role: 0
+      role: AccountRole.User
     })
     await factory.createDoc<Channel>(core.class.Space, core.space.Model, {
       private: true,

@@ -15,8 +15,8 @@
 <script lang="ts">
   import hr, { Request, RequestType } from '@hcengineering/hr'
   import { getClient } from '@hcengineering/presentation'
-  import { closeTooltip, Icon, Label, showPopup } from '@hcengineering/ui'
-  import { ContextMenu } from '@hcengineering/view-resources'
+  import { Icon, Label, closeTooltip } from '@hcengineering/ui'
+  import { showMenu } from '@hcengineering/view-resources'
 
   export let request: Request
   export let editable: boolean = false
@@ -36,10 +36,8 @@
 
   function click (e: MouseEvent, request: Request) {
     if (!editable) return
-    e.stopPropagation()
-    e.preventDefault()
     closeTooltip()
-    showPopup(ContextMenu, { object: request }, e.target as HTMLElement)
+    showMenu(e, { object: request })
   }
 
   $: description = shouldShowDescription ? request.description.replace(/<[^>]*>/g, '').trim() : ''

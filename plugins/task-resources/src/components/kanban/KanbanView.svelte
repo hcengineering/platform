@@ -31,14 +31,7 @@
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
   import { Project, Task, TaskOrdering } from '@hcengineering/task'
-  import {
-    ColorDefinition,
-    defaultBackground,
-    getEventPositionElement,
-    Label,
-    showPopup,
-    themeStore
-  } from '@hcengineering/ui'
+  import { ColorDefinition, defaultBackground, Label, themeStore } from '@hcengineering/ui'
   import view, { AttributeModel, BuildModelKey, Viewlet, ViewOptionModel, ViewOptions } from '@hcengineering/view'
   import {
     focusStore,
@@ -49,10 +42,10 @@
     getPresenter,
     groupBy,
     ListSelectionProvider,
-    Menu,
     noCategory,
     SelectDirection,
-    setGroupByValues
+    setGroupByValues,
+    showMenu
   } from '@hcengineering/view-resources'
   import { onMount } from 'svelte'
   import task from '../../plugin'
@@ -110,9 +103,8 @@
     ;(document.activeElement as HTMLElement)?.blur()
   })
 
-  const showMenu = async (ev: MouseEvent, items: Doc[]): Promise<void> => {
-    ev.preventDefault()
-    showPopup(Menu, { object: items, baseMenuClass }, getEventPositionElement(ev))
+  const showContextMenu = async (ev: MouseEvent, items: Doc[]): Promise<void> => {
+    showMenu(ev, { object: items, baseMenuClass })
   }
   // Category information only
   let tasks: DocWithRank[] = []
@@ -267,7 +259,7 @@
     on:check={(evt) => {
       listProvider.updateSelection(evt.detail.docs, evt.detail.value)
     }}
-    on:contextmenu={(evt) => showMenu(evt.detail.evt, evt.detail.objects)}
+    on:contextmenu={(evt) => showContextMenu(evt.detail.evt, evt.detail.objects)}
   >
     <svelte:fragment slot="header" let:state let:count let:index>
       {@const color = accentColors.get(`${index}${$themeStore.dark}${groupByKey}`)}

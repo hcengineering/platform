@@ -116,7 +116,7 @@ import {
 import { IndexedDocumentPreview } from '@hcengineering/presentation'
 import { showEmptyGroups } from './viewOptions'
 import { AggregationMiddleware, AnalyticsMiddleware } from './middleware'
-export { getActions, invokeAction, getContextActions } from './actions'
+export { getActions, invokeAction, getContextActions, showMenu } from './actions'
 export { default as ActionButton } from './components/ActionButton.svelte'
 export { default as ActionHandler } from './components/ActionHandler.svelte'
 export { default as FilterButton } from './components/filter/FilterButton.svelte'

@@ -19,6 +19,7 @@
   import { ButtonKind, ButtonSize, closeTooltip, showPopup } from '@hcengineering/ui'
 
   import { Channel, ChannelProvider } from '@hcengineering/contact'
+  import { restrictionStore } from '@hcengineering/view-resources'
   import contact from '../plugin'
   import ChannelsDropdown from './ChannelsDropdown.svelte'
 
@@ -26,7 +27,7 @@
   export let attachedClass: Ref<Class<Doc>>
   export let integrations: Set<Ref<Doc>> | undefined = undefined
   export let editable: boolean = true
-  export let allowOpen = true
+  export let allowOpen: boolean = !$restrictionStore.disableNavigation
   export let focusIndex = -1
 
   export let kind: ButtonKind = 'link-bordered'
