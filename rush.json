@@ -467,6 +467,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/collaboration",
+      "projectFolder": "server/collaboration",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/server-ws",
       "projectFolder": "server/ws",
       "shouldPublish": false
@@ -744,6 +749,21 @@
     {
       "packageName": "@hcengineering/server-attachment-resources",
       "projectFolder": "server-plugins/attachment-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-collaboration",
+      "projectFolder": "server-plugins/collaboration",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-server-collaboration",
+      "projectFolder": "models/server-collaboration",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-collaboration-resources",
+      "projectFolder": "server-plugins/collaboration-resources",
       "shouldPublish": false
     },
     {

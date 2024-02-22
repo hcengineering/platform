@@ -97,6 +97,7 @@
   function scrollToBottom (afterScrollFn?: () => void) {
     if (scroller !== undefined && scrollElement !== undefined) {
       scroller.scrollBy(scrollElement.scrollHeight)
+      updateSelectedDate()
       afterScrollFn?.()
     }
   }
@@ -208,7 +209,7 @@
   let scrollToRestore = 0
 
   function loadMore () {
-    if (!loadMoreAllowed || $isLoadingMoreStore || !scrollElement) {
+    if (!loadMoreAllowed || $isLoadingMoreStore || !scrollElement || isInitialScrolling) {
       return
     }
 
@@ -293,7 +294,7 @@
     void readChannelMessages(messagesToRead, notifyContext)
   }
 
-  async function updateSelectedDate () {
+  function updateSelectedDate () {
     if (!withDates) {
       return
     }
@@ -351,8 +352,10 @@
       isScrollInitialized = true
       shouldWaitAndRead = true
       autoscroll = true
+      shouldScrollToNew = true
       waitLastMessageRenderAndRead(() => {
         isInitialScrolling = false
+        autoscroll = false
       })
     } else if (separatorElement) {
       isScrollInitialized = true
@@ -399,6 +402,7 @@
     }
 
     scrollToLastMessage = true
+    scrollToBottom()
     scrollUntilSeeLastMessage()
   }
 
@@ -439,6 +443,7 @@
       await wait()
       scrollToDate(dateToJump)
     } else if (newCount > messagesCount) {
+      await wait()
       scrollToNewMessages()
     }
 

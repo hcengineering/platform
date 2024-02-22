@@ -21,6 +21,10 @@ export class IssuesDetailsPage extends CommonTrackerPage {
   readonly buttonAddSubIssue: Locator
   readonly textRelated: Locator
   readonly buttonCollaborators: Locator
+  readonly buttonIssueOnSearchForIssueModal: Locator
+  readonly inputSearchOnSearchForIssueModal: Locator
+  readonly textBlockedBy: Locator
+  readonly textBlocks: Locator
 
   constructor (page: Page) {
     super(page)
@@ -42,6 +46,10 @@ export class IssuesDetailsPage extends CommonTrackerPage {
     this.buttonAddSubIssue = page.locator('#add-sub-issue')
     this.textRelated = page.locator('//span[text()="Related"]/following-sibling::div[1]/div//span')
     this.buttonCollaborators = page.locator('//span[text()="Collaborators"]/following-sibling::div[1]/button')
+    this.buttonIssueOnSearchForIssueModal = page.locator('div.popup div.tabs > div.tab:last-child')
+    this.inputSearchOnSearchForIssueModal = page.locator('div.popup input[type="text"]')
+    this.textBlockedBy = page.locator('//span[text()="Blocked by"]/following-sibling::div[1]/div/div/button/span')
+    this.textBlocks = page.locator('//span[text()="Blocks"]/following-sibling::div[1]/div/div/button/span')
   }
 
   async editIssue (data: Issue): Promise<void> {
@@ -110,6 +118,12 @@ export class IssuesDetailsPage extends CommonTrackerPage {
     if (data.relatedIssue != null) {
       await expect(this.textRelated).toContainText(data.relatedIssue)
     }
+    if (data.blockedBy != null) {
+      await expect(this.textBlockedBy).toContainText(data.blockedBy)
+    }
+    if (data.blocks != null) {
+      await expect(this.textBlocks).toContainText(data.blocks)
+    }
   }
 
   async moreActionOnIssue (action: string): Promise<void> {
@@ -159,5 +173,18 @@ export class IssuesDetailsPage extends CommonTrackerPage {
 
   async checkComparingTextAdded (text: string): Promise<void> {
     await expect(this.page.locator('span.text-editor-highlighted-node-add', { hasText: text }).first()).toBeVisible()
+  }
+
+  async fillSearchForIssueModal (issueTitle: string): Promise<void> {
+    await this.buttonIssueOnSearchForIssueModal.click()
+    await this.inputSearchOnSearchForIssueModal.fill(issueTitle)
+    await this.page.locator('div.popup div.list-item', { hasText: issueTitle }).click()
+  }
+
+  async moreActionOnIssueWithSecondLevel (actionFirst: string, actionSecond: string): Promise<void> {
+    await this.buttonMoreActions.click()
+    await this.page.locator('button.antiPopup-submenu', { hasText: actionFirst }).hover()
+    await this.page.locator('button.antiPopup-submenu', { hasText: actionFirst }).click()
+    await this.selectFromDropdown(this.page, actionSecond)
   }
 }

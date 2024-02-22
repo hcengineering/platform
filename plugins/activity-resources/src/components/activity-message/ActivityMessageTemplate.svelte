@@ -145,7 +145,7 @@
       {:else}
         <div class="embeddedMarker" />
       {/if}
-      <div class="flex-col ml-2 w-full clear-mins">
+      <div class="flex-col ml-2 w-full clear-mins message-content">
         <div class="header clear-mins">
           {#if person}
             <EmployeePresenter value={person} shouldShowAvatar={false} />
@@ -242,10 +242,6 @@
       }
     }
 
-    .content {
-      padding: 0;
-    }
-
     &:hover > .actions {
       visibility: visible;
     }
@@ -321,5 +317,11 @@
     top: -0.5rem;
     left: -0.5rem;
     color: var(--white-color);
+  }
+
+  .message-content {
+    height: max-content;
+    flex-shrink: 1;
+    padding: 0;
   }
 </style>
