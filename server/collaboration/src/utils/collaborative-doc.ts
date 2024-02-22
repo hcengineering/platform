@@ -44,6 +44,17 @@ export async function loadCollaborativeDoc (
   ctx: MeasureContext
 ): Promise<YDoc | undefined> {
   const { documentId, versionId } = parseCollaborativeDoc(collaborativeDoc)
+  return await loadCollaborativeDocVersion(minio, workspace, documentId, versionId, ctx)
+}
+
+/** @public */
+export async function loadCollaborativeDocVersion (
+  minio: MinioService,
+  workspace: WorkspaceId,
+  documentId: string,
+  versionId: CollaborativeDocVersion,
+  ctx: MeasureContext
+): Promise<YDoc | undefined> {
   const historyDocumentId = collaborativeHistoryDocId(documentId)
 
   return await ctx.with('loadCollaborativeDoc', { type: 'content' }, async (ctx) => {
@@ -130,7 +141,7 @@ export async function copyCollaborativeDoc (
   target: CollaborativeDoc,
   ctx: MeasureContext
 ): Promise<YDoc | undefined> {
-  const { documentId: sourceDocumentId } = parseCollaborativeDoc(source)
+  const { documentId: sourceDocumentId, versionId: sourceVersionId } = parseCollaborativeDoc(source)
   const { documentId: targetDocumentId, versionId: targetVersionId } = parseCollaborativeDoc(target)
 
   if (sourceDocumentId === targetDocumentId) {
@@ -140,7 +151,7 @@ export async function copyCollaborativeDoc (
 
   await ctx.with('copyCollaborativeDoc', {}, async (ctx) => {
     const ySource = await ctx.with('loadCollaborativeDocVersion', {}, async (ctx) => {
-      return await loadCollaborativeDoc(minio, workspace, source, ctx)
+      return await loadCollaborativeDocVersion(minio, workspace, sourceDocumentId, sourceVersionId, ctx)
     })
 
     if (ySource === undefined) {

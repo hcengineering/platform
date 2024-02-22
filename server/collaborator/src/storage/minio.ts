@@ -13,13 +13,8 @@
 // limitations under the License.
 //
 
-import { loadCollaborativeDoc, saveCollaborativeDocVersion } from '@hcengineering/collaboration'
-import {
-  CollaborativeDocVersion,
-  CollaborativeDocVersionHead,
-  MeasureContext,
-  formatCollaborativeDocVersion
-} from '@hcengineering/core'
+import { loadCollaborativeDocVersion, saveCollaborativeDocVersion } from '@hcengineering/collaboration'
+import { CollaborativeDocVersion, CollaborativeDocVersionHead, MeasureContext } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { Doc as YDoc } from 'yjs'
 
@@ -64,8 +59,7 @@ export class MinioStorageAdapter implements StorageAdapter {
 
     return await this.ctx.with('load-document', {}, async (ctx) => {
       try {
-        const collaborativeDoc = formatCollaborativeDocVersion({ documentId: minioDocumentId, versionId })
-        return await loadCollaborativeDoc(this.minio, workspaceId, collaborativeDoc, ctx)
+        return await loadCollaborativeDocVersion(this.minio, workspaceId, minioDocumentId, versionId, ctx)
       } catch {
         return undefined
       }
