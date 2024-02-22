@@ -111,6 +111,7 @@
   }
 
   async function updateCategories (objects: Contact[], categories: AssigneeCategory[] | undefined) {
+    objects = objects.filter((element) => element.isOnVacation !== true)
     const refs = objects.map((e) => e._id)
 
     for (const category of [currentUserCategory, assigned, ...(categories ?? []), otherCategory]) {
@@ -126,7 +127,7 @@
       if (c) {
         contacts.push(c)
       }
-      contacts = contacts
+contacts = contacts
     })
   }
 

@@ -108,6 +108,7 @@ export interface Contact extends Doc {
  */
 export interface Person extends Contact {
   birthday?: Timestamp | null
+  isOnVacation?: boolean
 }
 
 /**
