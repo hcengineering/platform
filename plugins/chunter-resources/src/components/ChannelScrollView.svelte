@@ -510,6 +510,7 @@
             isHighlighted={isSelected}
             shouldScroll={isSelected}
             withShowMore={false}
+            showLinksPreview={false}
           />
         </div>
       {/each}
