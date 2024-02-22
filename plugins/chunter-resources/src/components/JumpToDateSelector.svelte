@@ -59,6 +59,7 @@
     position: relative;
     flex-shrink: 0;
     margin: 0.25rem 0;
+    height: 1.875rem;
 
     &:not(:first-child)::after {
       position: absolute;
