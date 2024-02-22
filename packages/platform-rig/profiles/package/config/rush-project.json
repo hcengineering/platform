@@ -12,7 +12,7 @@
   "operationSettings": [
     {
       "operationName": "build",
-      "outputFolderNames": ["dist", ".build"]
+      "outputFolderNames": ["lib", ".build", "types"]
     },
     {
       "operationName": "package",
@@ -32,7 +32,12 @@
     },
     {
       "operationName": "_phase:build",
-      "outputFolderNames": ["lib", ".build"]
+      "outputFolderNames": ["lib", ".build"],
+      "disableBuildCacheForOperation": true
+    },
+    {
+      "operationName": "_phase:validate",
+      "outputFolderNames": ["types", ".validate"]
     },
     {
       "operationName": "_phase:bundle",

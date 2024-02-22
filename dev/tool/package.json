@@ -2,9 +2,11 @@
   "name": "@hcengineering/tool",
   "version": "0.6.0",
   "main": "lib/index.js",
+  "svelte": "src/index.ts",
+  "types": "types/index.d.ts",
   "author": "Anticrm Platform Contributors",
-  "license": "EPL-2.0",
   "template": "@hcengineering/node-package",
+  "license": "EPL-2.0",
   "scripts": {
     "build": "compile",
     "build:watch": "compile",
@@ -21,9 +23,10 @@
     "upgrade": "rushx run-local upgrade",
     "format": "format src",
     "test": "jest --passWithNoTests --silent --forceExit",
-    "_phase:build": "compile",
+    "_phase:build": "compile transpile src",
     "_phase:test": "jest --passWithNoTests --silent --forceExit",
-    "_phase:format": "format src"
+    "_phase:format": "format src",
+    "_phase:validate": "compile validate"
   },
   "devDependencies": {
     "cross-env": "~7.0.3",

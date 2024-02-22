@@ -31,6 +31,8 @@ const dev = (process.env.CLIENT_TYPE ?? '') === 'dev' || devServer || devProduct
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
 const { EsbuildPlugin } = require('esbuild-loader')
 
+const doValidate = !prod || (process.env.DO_VALIDATE === 'true')
+
 /**
  * @type {Configuration}
  */
@@ -38,7 +40,7 @@ module.exports = {
   entry: {
     bundle: [
       '@hcengineering/theme/styles/global.scss',
-      ...(dev ? ['./src/main-dev.ts']: ['./src/main.ts'] ),
+      ...(dev ? ['./src/main-dev.ts'] : ['./src/main.ts']),
     ]
   },
   ignoreWarnings: [
@@ -54,8 +56,8 @@ module.exports = {
       svelte: path.resolve('node_modules', 'svelte/src/runtime'),
       '@hcengineering/platform-rig/profiles/ui/svelte': path.resolve('node_modules', 'svelte/src/runtime')
     },
-    fallback: { 
-      crypto: false 
+    fallback: {
+      crypto: false
     },
     extensions: ['.mjs', '.js', '.svelte', '.ts'],
     mainFields: ['svelte', 'browser', 'module', 'main'],
@@ -80,7 +82,7 @@ module.exports = {
     rules: [
       {
         test: /\.ts?$/,
-        loader:'esbuild-loader',
+        loader: 'esbuild-loader',
         options: {
           target: 'es2021',
           keepNames: true,
@@ -92,14 +94,14 @@ module.exports = {
       {
         test: /\.svelte$/,
         use: {
-          loader: 'svelte-loader',          
-          options: { 
+          loader: 'svelte-loader',
+          options: {
             compilerOptions: {
               dev: !prod
             },
             emitCss: true,
             hotReload: !prod,
-            preprocess: require('svelte-preprocess')({ 
+            preprocess: require('svelte-preprocess')({
               postcss: true,
               sourceMap: !prod,
             }),
@@ -129,7 +131,7 @@ module.exports = {
               acceptAccessors: true,
               acceptNamedExports: true,
             }
-          }         
+          }
         }
       },
 
@@ -211,11 +213,13 @@ module.exports = {
     // new MiniCssExtractPlugin({
     //   filename: '[name].[id][contenthash].css'
     // }),
-    new Dotenv({path: prod ? '.env-prod' : '.env'}),
+    new Dotenv({ path: prod ? '.env-prod' : '.env' }),
     new DefinePlugin({
       'process.env.CLIENT_TYPE': JSON.stringify(process.env.CLIENT_TYPE)
     }),
-    new ForkTsCheckerWebpackPlugin()
+    ...(doValidate ? [
+      new ForkTsCheckerWebpackPlugin()
+    ] : [])
   ],
   watchOptions: {
     // for some systems, watching many files can result in a lot of CPU or memory usage
@@ -235,14 +239,14 @@ module.exports = {
     },
     historyApiFallback: {
       disableDotRule: true
-    },   
+    },
     hot: true,
     client: {
       logging: "info",
       overlay: true,
       progress: false,
     },
-    proxy: (devServer && !devProduction)  ? {
+    proxy: (devServer && !devProduction) ? {
       '/account': {
         target: 'http://localhost:3000',
         changeOrigin: true,

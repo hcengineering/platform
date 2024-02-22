@@ -2,16 +2,19 @@
   "name": "@hcengineering/model-server-tracker",
   "version": "0.6.0",
   "main": "lib/index.js",
+  "svelte": "src/index.ts",
+  "types": "types/index.d.ts",
   "author": "Anticrm Platform Contributors",
+  "template": "@hcengineering/model-package",
   "license": "EPL-2.0",
   "scripts": {
     "build": "compile",
     "build:watch": "compile",
     "format": "format src",
-    "_phase:build": "compile",
-    "_phase:format": "format src"
+    "_phase:build": "compile transpile src",
+    "_phase:format": "format src",
+    "_phase:validate": "compile validate"
   },
-  "template": "@hcengineering/model-package",
   "devDependencies": {
     "@hcengineering/platform-rig": "^0.6.0",
     "@typescript-eslint/eslint-plugin": "^6.11.0",

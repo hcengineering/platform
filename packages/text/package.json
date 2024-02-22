@@ -2,6 +2,8 @@
   "name": "@hcengineering/text",
   "version": "0.6.1",
   "main": "lib/index.js",
+  "svelte": "src/index.ts",
+  "types": "types/index.d.ts",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
   "scripts": {
@@ -9,9 +11,10 @@
     "test": "jest --passWithNoTests --silent",
     "build:watch": "compile",
     "format": "format src",
-    "_phase:build": "compile",
+    "_phase:build": "compile transpile src",
     "_phase:test": "jest --passWithNoTests --silent",
-    "_phase:format": "format src"
+    "_phase:format": "format src",
+    "_phase:validate": "compile validate"
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "^0.6.0",
