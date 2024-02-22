@@ -16,7 +16,7 @@
   import { getName, Person } from '@hcengineering/contact'
   import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
   import type { LabelAndProps, IconSize } from '@hcengineering/ui'
-  import { personByIdStore, PersonLabelTooltip } from '..'
+  import { getPersonTooltip, personByIdStore, PersonLabelTooltip } from '..'
   import PersonContent from './PersonContent.svelte'
   import { getClient } from '@hcengineering/presentation'
   import { Ref } from '@hcengineering/core'
@@ -48,12 +48,9 @@
     value: Person | null | undefined
   ): LabelAndProps | undefined {
     if (!tooltipLabels) {
-      return !value
-        ? undefined
-        : {
-            label: getEmbeddedLabel(getName(client.getHierarchy(), value))
-          }
+      return getPersonTooltip(client, value)
     }
+
     const direction = tooltipLabels?.direction
     const component = value ? tooltipLabels.component : undefined
     const label = value

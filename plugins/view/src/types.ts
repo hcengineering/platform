@@ -40,7 +40,13 @@ import {
   UXObject,
   WithLookup
 } from '@hcengineering/core'
-import { AnyComponent, AnySvelteComponent, Location, Location as PlatformLocation } from '@hcengineering/ui'
+import {
+  AnyComponent,
+  AnySvelteComponent,
+  type LabelAndProps,
+  Location,
+  Location as PlatformLocation
+} from '@hcengineering/ui'
 import { Asset, IntlString, Resource, Status } from '@hcengineering/platform'
 import { Preference } from '@hcengineering/preference'
 
@@ -282,6 +288,13 @@ export interface ObjectIdentifier extends Class<Doc> {
 /**
  * @public
  */
+export interface ObjectTooltip extends Class<Doc> {
+  provider: Resource<(client: Client, doc?: Doc | null) => Promise<LabelAndProps | undefined>>
+}
+
+/**
+ * @public
+ */
 export interface ViewletDescriptor extends Doc, UXObject {
   component: AnyComponent
 }
@@ -363,7 +376,7 @@ export interface Groupping extends Class<Doc> {
  */
 export interface AggregationManager {
   close: () => void
-  notifyTx: (tx: Tx) => Promise<void>
+  notifyTx: (...tx: Tx[]) => Promise<void>
   updateLookup: (resultDoc: WithLookup<Doc>, attr: Attribute<Doc>) => Promise<void>
   categorize: (target: Array<Ref<Doc>>, attr: AnyAttribute) => Promise<Array<Ref<Doc>>>
   getAttrClass: () => Ref<Class<Doc>>

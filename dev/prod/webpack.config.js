@@ -15,6 +15,7 @@
 
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const Dotenv = require('dotenv-webpack')
+const DefinePlugin = require('webpack').DefinePlugin
 const path = require('path')
 const autoprefixer = require('autoprefixer')
 const CompressionPlugin = require('compression-webpack-plugin')
@@ -81,7 +82,10 @@ module.exports = {
         test: /\.ts?$/,
         loader:'esbuild-loader',
         options: {
-          target: 'es2021'
+          target: 'es2021',
+          keepNames: true,
+          minify: !prod,
+          sourcemap: !prod
         },
         exclude: /node_modules/,
       },
@@ -208,10 +212,8 @@ module.exports = {
     //   filename: '[name].[id][contenthash].css'
     // }),
     new Dotenv({path: prod ? '.env-prod' : '.env'}),
-    new EsbuildPlugin({
-      define: {
-          'process.env.CLIENT_TYPE': JSON.stringify(process.env.CLIENT_TYPE ?? '')
-      }
+    new DefinePlugin({
+      'process.env.CLIENT_TYPE': JSON.stringify(process.env.CLIENT_TYPE)
     }),
     new ForkTsCheckerWebpackPlugin()
   ],

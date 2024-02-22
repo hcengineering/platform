@@ -18,6 +18,7 @@ import core, {
   AccountClient,
   ClientConnectEvent,
   LoadModelResponse,
+  Tx,
   TxHandler,
   TxPersistenceStore,
   TxWorkspaceEvent,
@@ -53,18 +54,22 @@ export default async () => {
           (handler: TxHandler) => {
             const url = new URL(`/${token}`, endpoint)
 
-            const upgradeHandler: TxHandler = (tx) => {
-              if (tx?._class === core.class.TxWorkspaceEvent) {
-                const event = tx as TxWorkspaceEvent
-                if (event.event === WorkspaceEvent.Upgrade) {
-                  onUpgrade?.()
-                } else if (event.event === WorkspaceEvent.MaintenanceNotification) {
-                  void setPlatformStatus(
-                    new Status(Severity.WARNING, platform.status.MaintenanceWarning, { time: event.params.timeMinutes })
-                  )
+            const upgradeHandler: TxHandler = (...txes: Tx[]) => {
+              for (const tx of txes) {
+                if (tx?._class === core.class.TxWorkspaceEvent) {
+                  const event = tx as TxWorkspaceEvent
+                  if (event.event === WorkspaceEvent.Upgrade) {
+                    onUpgrade?.()
+                  } else if (event.event === WorkspaceEvent.MaintenanceNotification) {
+                    void setPlatformStatus(
+                      new Status(Severity.WARNING, platform.status.MaintenanceWarning, {
+                        time: event.params.timeMinutes
+                      })
+                    )
+                  }
                 }
               }
-              handler(tx)
+              handler(...txes)
             }
 
             return connect(url.href, upgradeHandler, onUpgrade, onUnauthorized, onConnect)

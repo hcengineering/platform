@@ -17,9 +17,9 @@
   import { translate } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { Component } from '@hcengineering/tracker'
-  import { Icon, Component as UIComponent, themeStore, tooltip } from '@hcengineering/ui'
+  import { Icon, Component as UIComponent, themeStore } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { DocNavLink } from '@hcengineering/view-resources'
+  import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
 
   export let value: WithLookup<Component> | undefined
@@ -53,10 +53,10 @@
 </script>
 
 <div class="flex-row-center">
-  <DocNavLink object={value} {onClick} {disabled} {noUnderline} {inline} {accent} component={view.component.EditDoc}>
-    {#if inline}
-      <span class="antiMention" use:tooltip={{ label: tracker.string.Component }}>@{label}</span>
-    {:else}
+  {#if inline}
+    <ObjectMention object={value} {disabled} {noUnderline} {accent} {onClick} />
+  {:else}
+    <DocNavLink object={value} {onClick} {disabled} {noUnderline} {accent} component={view.component.EditDoc}>
       <span class="flex-presenter flex-row-center" class:list={kind === 'list'}>
         <div class="flex-row-center">
           {#if shouldShowAvatar}
@@ -69,8 +69,8 @@
           </span>
         </div>
       </span>
-    {/if}
-  </DocNavLink>
+    </DocNavLink>
+  {/if}
 
   {#if presenters.length > 0}
     <div class="flex-row-center">

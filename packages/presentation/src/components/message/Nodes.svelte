@@ -14,12 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { CheckBox, Component, navigate, parseLocation } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
-
+  import { CheckBox, navigate, parseLocation } from '@hcengineering/ui'
+  import { Class, Doc, Ref } from '@hcengineering/core'
   import { getMetadata } from '@hcengineering/platform'
 
   import presentation from '../../plugin'
+  import ObjectNode from './ObjectNode.svelte'
 
   export let nodes: NodeListOf<any>
 
@@ -48,11 +48,11 @@
       }
     } catch {}
   }
-  function correctClass (clName: string): string {
+  function correctClass (clName: string): Ref<Class<Doc>> {
     if (clName === 'contact:class:Employee') {
-      return 'contact:mixin:Employee'
+      return 'contact:mixin:Employee' as Ref<Class<Doc>>
     }
-    return clName
+    return clName as Ref<Class<Doc>>
   }
 </script>
 
@@ -126,17 +126,11 @@
         </div>
       {/if}
     {:else if node.nodeName === 'SPAN'}
-      {#if node.getAttribute('data-objectclass') !== undefined && node.getAttribute('data-id') !== undefined}
-        <Component
-          is={view.component.ObjectPresenter}
-          inline
-          props={{
-            objectId: node.getAttribute('data-id'),
-            title: node.getAttribute('data-label'),
-            _class: correctClass(node.getAttribute('data-objectclass')),
-            inline: true
-          }}
-        />
+      {@const objectId = node.getAttribute('data-id')}
+      {@const objectClass = node.getAttribute('data-objectclass')}
+
+      {#if objectClass !== undefined && objectId !== undefined}
+        <ObjectNode _id={objectId} _class={correctClass(objectClass)} title={node.getAttribute('data-label')} />
       {:else}
         <svelte:self nodes={node.childNodes} />
       {/if}

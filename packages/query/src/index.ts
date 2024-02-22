@@ -45,6 +45,7 @@ import core, {
   TxUpdateDoc,
   TxWorkspaceEvent,
   WithLookup,
+  WithTx,
   WorkspaceEvent,
   checkMixinKey,
   findProperty,
@@ -73,13 +74,12 @@ interface Query {
 /**
  * @public
  */
-export class LiveQuery extends TxProcessor implements Client {
+export class LiveQuery implements WithTx, Client {
   private client: Client
   private readonly queries: Map<Ref<Class<Doc>>, Query[]> = new Map<Ref<Class<Doc>>, Query[]>()
   private readonly queue: Query[] = []
 
   constructor (client: Client) {
-    super()
     this.client = client
   }
 
@@ -421,8 +421,33 @@ export class LiveQuery extends TxProcessor implements Client {
     return false
   }
 
-  private async getCurrentDoc (q: Query, _id: Ref<Doc>, space: Ref<Space>): Promise<boolean> {
-    const current = await this.client.findOne(q._class, { _id, space }, q.options)
+  private async getDocFromCache (
+    docCache: Map<string, Doc>,
+    _id: Ref<Doc>,
+    _class: Ref<Class<Doc>>,
+    space: Ref<Space>,
+    q: Query
+  ): Promise<Doc | undefined> {
+    const lookup = q.options?.lookup
+    const docIdKey = _id + JSON.stringify(lookup ?? {}) + q._class
+    const current =
+      docCache.get(docIdKey) ??
+      (await this.client.findOne(q._class, { _id, space }, lookup !== undefined ? { lookup } : undefined))
+    if (current !== undefined) {
+      docCache.set(docIdKey, current)
+    } else {
+      docCache.delete(docIdKey)
+    }
+    return current
+  }
+
+  private async getCurrentDoc (
+    q: Query,
+    _id: Ref<Doc>,
+    space: Ref<Space>,
+    docCache: Map<string, Doc>
+  ): Promise<boolean> {
+    const current = await this.getDocFromCache(docCache, _id, q._class, space, q)
     if (q.result instanceof Promise) {
       q.result = await q.result
     }
@@ -434,7 +459,7 @@ export class LiveQuery extends TxProcessor implements Client {
       if (q.options?.limit === q.result.length) {
         await this.refresh(q)
         return true
-      } else {
+      } else if (pos !== -1) {
         q.result.splice(pos, 1)
         if (q.options?.total === true) {
           q.total--
@@ -476,7 +501,7 @@ export class LiveQuery extends TxProcessor implements Client {
     return false
   }
 
-  protected override async txMixin (tx: TxMixin<Doc, Doc>): Promise<TxResult> {
+  protected async txMixin (tx: TxMixin<Doc, Doc>, docCache: Map<string, Doc>): Promise<TxResult> {
     const hierarchy = this.client.getHierarchy()
 
     for (const queries of this.queries) {
@@ -485,7 +510,7 @@ export class LiveQuery extends TxProcessor implements Client {
       for (const q of queries[1]) {
         if (isTx) {
           // handle add since Txes are immutable
-          await this.handleDocAdd(q, tx)
+          await this.handleDocAdd(q, tx, true, docCache)
           continue
         }
         if (q.result instanceof Promise) {
@@ -508,7 +533,7 @@ export class LiveQuery extends TxProcessor implements Client {
                 continue
               }
             } else {
-              const currentRefresh = await this.getCurrentDoc(q, updatedDoc._id, updatedDoc.space)
+              const currentRefresh = await this.getCurrentDoc(q, updatedDoc._id, updatedDoc.space, docCache)
               if (currentRefresh) {
                 continue
               }
@@ -521,7 +546,7 @@ export class LiveQuery extends TxProcessor implements Client {
           // Mixin potentially added to object we doesn't have in out results
           const doc = await this.client.findOne(q._class, { ...q.query, _id: tx.objectId }, q.options)
           if (doc !== undefined) {
-            await this.handleDocAdd(q, doc, false)
+            await this.handleDocAdd(q, doc, false, docCache)
           }
         }
         await this.handleDocUpdateLookup(q, tx)
@@ -530,14 +555,16 @@ export class LiveQuery extends TxProcessor implements Client {
     return {}
   }
 
-  protected async txCollectionCUD (tx: TxCollectionCUD<Doc, AttachedDoc>): Promise<TxResult> {
-    const docCache = new Map<Ref<Doc>, Doc>()
+  protected async txCollectionCUD (
+    tx: TxCollectionCUD<Doc, AttachedDoc>,
+    docCache: Map<string, Doc>
+  ): Promise<TxResult> {
     for (const queries of this.queries) {
       const isTx = this.client.getHierarchy().isDerived(queries[0], core.class.Tx)
       for (const q of queries[1]) {
         if (isTx) {
           // handle add since Txes are immutable
-          await this.handleDocAdd(q, tx)
+          await this.handleDocAdd(q, tx, true, docCache)
           continue
         }
 
@@ -552,7 +579,7 @@ export class LiveQuery extends TxProcessor implements Client {
               collection: tx.collection
             }
           }
-          await this.handleDocAdd(q, TxProcessor.createDoc2Doc(d))
+          await this.handleDocAdd(q, TxProcessor.createDoc2Doc(d), true, docCache)
         } else if (tx.tx._class === core.class.TxUpdateDoc) {
           await this.handleDocUpdate(q, tx.tx as unknown as TxUpdateDoc<Doc>, docCache)
         } else if (tx.tx._class === core.class.TxRemoveDoc) {
@@ -563,14 +590,13 @@ export class LiveQuery extends TxProcessor implements Client {
     return {}
   }
 
-  protected async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<TxResult> {
-    const docCache = new Map<string, Doc>()
+  async txUpdateDoc (tx: TxUpdateDoc<Doc>, docCache: Map<string, Doc>): Promise<TxResult> {
     for (const queries of this.queries) {
       const isTx = this.client.getHierarchy().isDerived(queries[0], core.class.Tx)
       for (const q of queries[1]) {
         if (isTx) {
           // handle add since Txes are immutable
-          await this.handleDocAdd(q, tx)
+          await this.handleDocAdd(q, tx, true, docCache)
           continue
         }
         await this.handleDocUpdate(q, tx, docCache)
@@ -579,7 +605,7 @@ export class LiveQuery extends TxProcessor implements Client {
     return {}
   }
 
-  private async handleDocUpdate (q: Query, tx: TxUpdateDoc<Doc>, docCache?: Map<string, Doc>): Promise<void> {
+  private async handleDocUpdate (q: Query, tx: TxUpdateDoc<Doc>, docCache: Map<string, Doc>): Promise<void> {
     if (q.result instanceof Promise) {
       q.result = await q.result
     }
@@ -596,7 +622,7 @@ export class LiveQuery extends TxProcessor implements Client {
           const updateRefresh = await this.checkUpdatedDocMatch(q, updatedDoc)
           if (updateRefresh) return
         } else {
-          const currentRefresh = await this.getCurrentDoc(q, updatedDoc._id, updatedDoc.space)
+          const currentRefresh = await this.getCurrentDoc(q, updatedDoc._id, updatedDoc.space, docCache)
           if (currentRefresh) return
         }
       }
@@ -724,7 +750,7 @@ export class LiveQuery extends TxProcessor implements Client {
   }
 
   // Check if query is partially matched.
-  private async matchQuery (q: Query, tx: TxUpdateDoc<Doc>, docCache?: Map<string, Doc>): Promise<boolean> {
+  private async matchQuery (q: Query, tx: TxUpdateDoc<Doc>, docCache: Map<string, Doc>): Promise<boolean> {
     const clazz = this.getHierarchy().isMixin(q._class) ? this.getHierarchy().getBaseClass(q._class) : q._class
     if (!this.client.getHierarchy().isDerived(tx.objectClass, clazz)) {
       return false
@@ -765,22 +791,14 @@ export class LiveQuery extends TxProcessor implements Client {
     }
 
     if (matched) {
-      const docIdKey = doc._id + JSON.stringify(q.options?.lookup) + Hierarchy.mixinClass(doc)
+      const realDoc = await this.getDocFromCache(docCache, doc._id, Hierarchy.mixinOrClass(doc), doc.space, q)
 
-      const lookup = q.options?.lookup
-      const realDoc =
-        docCache?.get(docIdKey) ??
-        (await this.client.findOne(q._class, { _id: doc._id }, lookup !== undefined ? { lookup } : undefined))
       if (realDoc == null) return false
 
       if (this.getHierarchy().isMixin(q._class)) {
         if (!this.getHierarchy().hasMixin(realDoc, q._class)) {
           return false
         }
-      }
-
-      if (docCache != null) {
-        docCache?.set(docIdKey, realDoc)
       }
       const res = matchQuery([realDoc], q.query, q._class, this.client.getHierarchy())
       if (res.length === 1) {
@@ -863,18 +881,18 @@ export class LiveQuery extends TxProcessor implements Client {
     ;(doc as WithLookup<Doc>).$lookup = result
   }
 
-  protected async txCreateDoc (tx: TxCreateDoc<Doc>): Promise<TxResult> {
+  protected async txCreateDoc (tx: TxCreateDoc<Doc>, docCache: Map<string, Doc>): Promise<TxResult> {
     const docTx = TxProcessor.createDoc2Doc(tx)
     for (const queries of this.queries) {
       const doc = this.client.getHierarchy().isDerived(queries[0], core.class.Tx) ? tx : docTx
       for (const q of queries[1]) {
-        await this.handleDocAdd(q, doc)
+        await this.handleDocAdd(q, doc, true, docCache)
       }
     }
     return {}
   }
 
-  private async handleDocAdd (q: Query, doc: Doc, handleLookup = true): Promise<void> {
+  private async handleDocAdd (q: Query, doc: Doc, handleLookup = true, docCache: Map<string, Doc>): Promise<void> {
     if (this.match(q, doc, q.options?.lookup !== undefined)) {
       let needPush = true
       if (q.result instanceof Promise) {
@@ -978,13 +996,13 @@ export class LiveQuery extends TxProcessor implements Client {
     return needCallback
   }
 
-  protected async txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<TxResult> {
+  protected async txRemoveDoc (tx: TxRemoveDoc<Doc>, docCache: Map<string, Doc>): Promise<TxResult> {
     for (const queries of this.queries) {
       const isTx = this.client.getHierarchy().isDerived(queries[0], core.class.Tx)
       for (const q of queries[1]) {
         if (isTx) {
           // handle add since Txes are immutable
-          await this.handleDocAdd(q, tx)
+          await this.handleDocAdd(q, tx, true, docCache)
           continue
         }
         await this.handleDocRemove(q, tx)
@@ -1096,14 +1114,33 @@ export class LiveQuery extends TxProcessor implements Client {
     return result
   }
 
+  async _tx (tx: Tx, docCache: Map<string, Doc>): Promise<TxResult> {
+    switch (tx._class) {
+      case core.class.TxCreateDoc:
+        return await this.txCreateDoc(tx as TxCreateDoc<Doc>, docCache)
+      case core.class.TxCollectionCUD:
+        return await this.txCollectionCUD(tx as TxCollectionCUD<Doc, AttachedDoc>, docCache)
+      case core.class.TxUpdateDoc:
+        return await this.txUpdateDoc(tx as TxUpdateDoc<Doc>, docCache)
+      case core.class.TxRemoveDoc:
+        return await this.txRemoveDoc(tx as TxRemoveDoc<Doc>, docCache)
+      case core.class.TxMixin:
+        return await this.txMixin(tx as TxMixin<Doc, Doc>, docCache)
+      case core.class.TxApplyIf:
+        return await Promise.resolve([])
+    }
+    return {}
+  }
+
   async tx (...txes: Tx[]): Promise<TxResult[]> {
     const result: TxResult[] = []
+    const docCache = new Map<string, Doc>()
     for (const tx of txes) {
       if (tx._class === core.class.TxWorkspaceEvent) {
         await this.checkUpdateEvents(tx)
         await this.changePrivateHandler(tx)
       }
-      result.push(...(await super.tx(tx)))
+      result.push(await this._tx(tx, docCache))
     }
     return result
   }

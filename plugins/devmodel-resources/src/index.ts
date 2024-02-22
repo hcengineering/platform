@@ -31,7 +31,8 @@ import core, {
   type SearchQuery,
   type SearchOptions,
   type SearchResult,
-  type MeasureDoneOperation
+  type MeasureDoneOperation,
+  DOMAIN_MODEL
 } from '@hcengineering/core'
 import { devModelId } from '@hcengineering/devmodel'
 import { Builder } from '@hcengineering/model'
@@ -59,8 +60,8 @@ class ModelClient implements AccountClient {
   constructor (readonly client: AccountClient) {
     this.notifyEnabled = (localStorage.getItem('#platform.notification.logging') ?? 'true') === 'true'
 
-    client.notify = (tx) => {
-      this.notify?.(tx)
+    client.notify = (...tx) => {
+      this.notify?.(...tx)
       if (this.notifyEnabled) {
         console.debug('devmodel# notify=>', tx, this.client.getModel(), getMetadata(devmodel.metadata.DevModel))
       }
@@ -71,7 +72,7 @@ class ModelClient implements AccountClient {
     return await this.client.measure(operationName)
   }
 
-  notify?: (tx: Tx) => void
+  notify?: (...tx: Tx[]) => void
 
   getHierarchy (): Hierarchy {
     return this.client.getHierarchy()
@@ -91,10 +92,13 @@ class ModelClient implements AccountClient {
     options?: FindOptions<T>
   ): Promise<WithLookup<T> | undefined> {
     const startTime = Date.now()
+    const isModel = this.getHierarchy().findDomain(_class) === DOMAIN_MODEL
     const result = await this.client.findOne(_class, query, options)
-    if (this.notifyEnabled) {
+    if (this.notifyEnabled && !isModel) {
       console.debug(
         'devmodel# findOne=>',
+        isModel,
+        this.getHierarchy().findDomain(_class),
         _class,
         query,
         options,
@@ -115,8 +119,9 @@ class ModelClient implements AccountClient {
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
     const startTime = Date.now()
+    const isModel = this.getHierarchy().findDomain(_class) === DOMAIN_MODEL
     const result = await this.client.findAll(_class, query, options)
-    if (this.notifyEnabled) {
+    if (this.notifyEnabled && !isModel) {
       console.debug(
         'devmodel# findAll=>',
         _class,
