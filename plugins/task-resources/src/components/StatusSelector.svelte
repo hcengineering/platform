@@ -61,11 +61,15 @@
   $: updateStatuses($taskTypeStore, $statusStore.byId, kind)
 
   let statuses: Status[] = []
+  let searchQuery: string = ''
+  $: filteredStatuses = !searchQuery
+    ? statuses
+    : statuses.filter((status) => (status.name ?? '').toLowerCase().includes(searchQuery.toLowerCase()))
 </script>
 
 <DocPopup
   {_class}
-  objects={statuses}
+  objects={filteredStatuses}
   allowDeselect={true}
   selected={current}
   on:close={(evt) => {
@@ -76,6 +80,7 @@
   {embedded}
   loading={progress}
   on:changeContent
+  on:search={(e) => (searchQuery = e.detail)}
 >
   <svelte:fragment slot="item" let:item>
     <div class="flex-row-center flex-grow overflow-label">

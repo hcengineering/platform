@@ -76,6 +76,7 @@
     {hoverStyles}
     {withShowMore}
     {attachmentImageSize}
+    showLinksPreview={false}
     {onClick}
     {onReply}
   />

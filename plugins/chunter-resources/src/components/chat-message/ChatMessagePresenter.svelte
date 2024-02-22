@@ -48,6 +48,7 @@
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
   export let withShowMore: boolean = true
   export let attachmentImageSize: AttachmentImageSize = 'auto'
+  export let showLinksPreview = true
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
 
@@ -96,7 +97,7 @@
       parentObject = result
     })
 
-  $: links = getLinks(value?.message)
+  $: links = showLinksPreview ? getLinks(value?.message) : []
 
   function getLinks (content?: string): HTMLLinkElement[] {
     if (!content) {
