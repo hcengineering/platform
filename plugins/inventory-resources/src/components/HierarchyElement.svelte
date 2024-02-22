@@ -71,7 +71,14 @@
             />
             <!-- svelte-ignore a11y-click-events-have-key-events -->
             <!-- svelte-ignore a11y-no-static-element-interactions -->
-            <div class="menuRow" on:click={(ev) => { showMenu(ev, { object }) }}><IconMoreV size={'small'} /></div>
+            <div
+              class="menuRow"
+              on:click={(ev) => {
+                showMenu(ev, { object })
+              }}
+            >
+              <IconMoreV size={'small'} />
+            </div>
           </div>
         </td>
       {:else}

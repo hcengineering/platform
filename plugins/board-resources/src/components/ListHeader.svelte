@@ -16,7 +16,13 @@
     <div class="flex-between h-full font-medium pr-2 pl-4">
       <span class="lines-limit-2">{state.name}</span>
       <div class="flex">
-        <Button icon={IconMoreV} kind="ghost" on:click={(e) => { showMenu(e, { object: state }) }} />
+        <Button
+          icon={IconMoreV}
+          kind="ghost"
+          on:click={(e) => {
+            showMenu(e, { object: state })
+          }}
+        />
       </div>
     </div>
   </div>

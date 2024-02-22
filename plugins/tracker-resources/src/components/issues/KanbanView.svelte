@@ -334,7 +334,9 @@
     on:check={(evt) => {
       listProvider.updateSelection(evt.detail.docs, evt.detail.value)
     }}
-    on:contextmenu={(evt) => { showMenu(evt.detail.evt, { object: evt.detail.objects, baseMenuClass }) }}
+    on:contextmenu={(evt) => {
+      showMenu(evt.detail.evt, { object: evt.detail.objects, baseMenuClass })
+    }}
   >
     <svelte:fragment slot="header" let:state let:count let:index>
       {@const color = accentColors.get(`${index}${$themeStore.dark}${groupByKey}`)}

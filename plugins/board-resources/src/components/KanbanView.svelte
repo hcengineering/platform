@@ -134,7 +134,9 @@
   on:check={(evt) => {
     listProvider.updateSelection(evt.detail.docs, evt.detail.value)
   }}
-  on:contextmenu={(evt) => { showMenu(evt.detail.evt, { object: evt.detail.objects }) }}
+  on:contextmenu={(evt) => {
+    showMenu(evt.detail.evt, { object: evt.detail.objects })
+  }}
   selection={listProvider.current($focusStore)}
 >
   <svelte:fragment slot="card" let:object>

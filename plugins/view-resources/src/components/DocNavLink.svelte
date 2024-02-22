@@ -31,7 +31,8 @@
   export let accent: boolean = false
   export let noOverflow: boolean = false
 
-  $: disabled = $restrictionStore.disableNavigation
+  let _disabled = disabled || $restrictionStore.disableNavigation
+  $: _disabled = disabled || $restrictionStore.disableNavigation
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -42,7 +43,7 @@
       : undefined
 
   async function getHref (object: Doc): Promise<void> {
-    if (disabled) {
+    if (_disabled) {
       href = undefined
       return
     }
@@ -55,6 +56,6 @@
   $: if (object !== undefined) getHref(object)
 </script>
 
-<NavLink {disabled} {onClick} {noUnderline} {inline} {shrink} {href} {colorInherit} {accent} {noOverflow}>
+<NavLink disabled={_disabled} {onClick} {noUnderline} {inline} {shrink} {href} {colorInherit} {accent} {noOverflow}>
   <slot />
 </NavLink>
