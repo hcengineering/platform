@@ -89,6 +89,7 @@ export default mergeIds(chunterId, chunter, {
     TxChatMessageRemove: '' as Ref<TxViewlet>,
     ChunterNotificationGroup: '' as Ref<NotificationGroup>,
     BacklinkCreatedActivityViewlet: '' as Ref<DocUpdateMessageViewlet>,
+    BacklinkUpdateActivityViewlet: '' as Ref<DocUpdateMessageViewlet>,
     BacklinkRemovedActivityViewlet: '' as Ref<DocUpdateMessageViewlet>
   },
   activity: {
