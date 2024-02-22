@@ -152,7 +152,8 @@
         size: file.size,
         lastModified: file.lastModified,
         originalWidth: size?.width,
-        originalHeight: size?.height
+        originalHeight: size?.height,
+        pixelRatio: size?.pixelRatio
       })
       newAttachments.add(_id)
       attachments = attachments

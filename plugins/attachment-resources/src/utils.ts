@@ -122,7 +122,7 @@ export function getType (type: string): 'image' | 'video' | 'audio' | 'pdf' | 'o
 export async function getAttachmentSize (
   file: File,
   uuid: string
-): Promise<{ width: number, height: number } | undefined> {
+): Promise<{ width: number, height: number, pixelRatio?: number } | undefined> {
   const type = getType(file.type)
 
   if (type === 'video') {

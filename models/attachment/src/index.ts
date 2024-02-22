@@ -71,6 +71,9 @@ export class TAttachment extends TAttachedDoc implements Attachment {
 
   @Prop(TypeNumber(), attachment.string.Height)
     originalHeight?: number
+
+  @Prop(TypeNumber(), attachment.string.Ratio)
+    pixelRatio?: number
 }
 
 @Model(attachment.class.Photo, attachment.class.Attachment)

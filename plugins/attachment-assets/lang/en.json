@@ -53,7 +53,8 @@
     "FilterAttachments": "Attachments",
     "RemovedAttachment": "Removed attachment",
     "Width": "Width",
-    "Height": "Height"
+    "Height": "Height",
+    "Ratio": "Ratio"
   }, 
   "status": {
     "FileTooLarge": "File too large"

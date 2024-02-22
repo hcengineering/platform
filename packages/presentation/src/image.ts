@@ -15,16 +15,20 @@
 
 import extract from 'png-chunks-extract'
 
-export async function getImageSize (file: File, src: string): Promise<{ width: number, height: number }> {
+export async function getImageSize (
+  file: File,
+  src: string
+): Promise<{ width: number, height: number, pixelRatio: number }> {
   const size = isPng(file) ? await getPngImageSize(file) : undefined
 
-  const promise = new Promise<{ width: number, height: number }>((resolve, reject) => {
+  const promise = new Promise<{ width: number, height: number, pixelRatio: number }>((resolve, reject) => {
     const img = new Image()
 
     img.onload = () => {
       resolve({
         width: size?.width ?? img.naturalWidth,
-        height: size?.height ?? img.naturalHeight
+        height: size?.height ?? img.naturalHeight,
+        pixelRatio: size?.pixelRatio ?? 1
       })
     }
 
@@ -39,7 +43,7 @@ function isPng (file: File): boolean {
   return file.type === 'image/png'
 }
 
-async function getPngImageSize (file: File): Promise<{ width: number, height: number } | undefined> {
+async function getPngImageSize (file: File): Promise<{ width: number, height: number, pixelRatio: number } | undefined> {
   if (!isPng(file)) {
     return undefined
   }
@@ -64,8 +68,9 @@ async function getPngImageSize (file: File): Promise<{ width: number, height: nu
     if (physData.unit === 0 && physData.ppux === physData.ppuy) {
       const pixelRatio = Math.round(physData.ppux / 2834.5)
       return {
-        width: Math.round(idhrData.width / pixelRatio),
-        height: Math.round(idhrData.height / pixelRatio)
+        width: idhrData.width,
+        height: idhrData.height,
+        pixelRatio
       }
     }
   } catch (err) {

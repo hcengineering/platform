@@ -42,7 +42,8 @@ export default mergeIds(attachmentId, attachment, {
     FilterAttachments: '' as IntlString,
     RemovedAttachment: '' as IntlString,
     Width: '' as IntlString,
-    Height: '' as IntlString
+    Height: '' as IntlString,
+    Ratio: '' as IntlString
   },
   ids: {
     TxAttachmentCreate: '' as Ref<TxViewlet>,

@@ -332,7 +332,7 @@ async function handleImageUpload (
     const size = await getImageSize(file, getFileUrl(attached.file, 'full', uploadUrl))
     const node = view.state.schema.nodes.image.create({
       'file-id': attached.file,
-      width: size.width
+      width: Math.round(size.width / size.pixelRatio)
     })
 
     const transaction = view.state.tr.insert(pos?.pos ?? 0, node)

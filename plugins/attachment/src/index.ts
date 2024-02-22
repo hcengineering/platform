@@ -35,6 +35,7 @@ export interface Attachment extends AttachedDoc {
   readonly?: boolean // If readonly, user will not be able to remove or modify this attachment
   originalWidth?: number
   originalHeight?: number
+  pixelRatio?: number
 }
 
 /**

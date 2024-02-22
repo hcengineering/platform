@@ -64,7 +64,8 @@
         size: file.size,
         lastModified: file.lastModified,
         originalHeight: size?.height,
-        originalWidth: size?.width
+        originalWidth: size?.width,
+        pixelRatio: size?.pixelRatio
       })
     } catch (e) {
       void setPlatformStatus(unknownError(e))

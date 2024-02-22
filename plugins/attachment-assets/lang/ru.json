@@ -53,7 +53,8 @@
     "FilterAttachments": "Вложения",
     "RemovedAttachment": "Удалил(а) вложение",
     "Width": "Ширина",
-    "Height": "Высота"
+    "Height": "Высота",
+    "Ratio": "Соотношение"
   },
   "status": {
     "FileTooLarge": "Файл слишком большой"
