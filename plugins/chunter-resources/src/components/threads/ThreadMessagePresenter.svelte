@@ -73,6 +73,7 @@
     {hoverable}
     {hoverStyles}
     {withShowMore}
+    showLinksPreview={false}
     {onClick}
     {onReply}
   />
