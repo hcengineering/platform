@@ -16,6 +16,8 @@ export interface Issue {
   filePath?: string
   parentIssue?: string
   relatedIssue?: string
+  blockedBy?: string
+  blocks?: string
 }
 
 export interface NewProject {
