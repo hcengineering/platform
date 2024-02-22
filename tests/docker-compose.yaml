@@ -73,6 +73,7 @@ services:
       - REKONI_URL=http://rekoni:4005
       - TELEGRAM_URL=http://localhost:8086
       - COLLABORATOR_URL=ws://localhost:3079
+      - COLLABORATOR_API_URL=http://localhost:3079
       - MINIO_ENDPOINT=minio
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin

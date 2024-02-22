@@ -27,7 +27,6 @@ import core, {
   AttachedDoc,
   Class,
   concatLink,
-  Data,
   Doc,
   DocumentQuery,
   FindOptions,
@@ -41,8 +40,7 @@ import core, {
   TxFactory,
   TxProcessor,
   TxRemoveDoc,
-  TxUpdateDoc,
-  Type
+  TxUpdateDoc
 } from '@hcengineering/core'
 import notification, { NotificationContent } from '@hcengineering/notification'
 import { getMetadata, IntlString } from '@hcengineering/platform'
@@ -57,74 +55,15 @@ import { stripTags } from '@hcengineering/text'
 import { Person, PersonAccount } from '@hcengineering/contact'
 import activity, { ActivityMessage } from '@hcengineering/activity'
 
+import {
+  getCreateBacklinksTxes,
+  getRemoveBacklinksTxes,
+  getUpdateBacklinksTxes,
+  guessBacklinkTx,
+  isMarkupType,
+  isCollaborativeType
+} from './backlinks'
 import { IsChannelMessage, IsDirectMessage, IsMeMentioned, IsThreadMessage } from './utils'
-import { getBacklinks, getBacklinksTxes, getRemoveBacklinksTxes, guessBacklinkTx } from './backlinks'
-
-export { getBacklinksTxes } from './backlinks'
-
-function isMarkupType (type: Ref<Class<Type<any>>>): boolean {
-  return type === core.class.TypeMarkup || type === core.class.TypeCollaborativeMarkup
-}
-
-function getCreateBacklinksTxes (
-  control: TriggerControl,
-  txFactory: TxFactory,
-  doc: Doc,
-  backlinkId: Ref<Doc>,
-  backlinkClass: Ref<Class<Doc>>
-): Tx[] {
-  const attachedDocId = doc._id
-
-  const backlinks: Data<Backlink>[] = []
-  const attributes = control.hierarchy.getAllAttributes(doc._class)
-  for (const attr of attributes.values()) {
-    if (isMarkupType(attr.type._class)) {
-      const content = (doc as any)[attr.name]?.toString() ?? ''
-      const attrBacklinks = getBacklinks(backlinkId, backlinkClass, attachedDocId, content)
-      backlinks.push(...attrBacklinks)
-    }
-  }
-
-  return getBacklinksTxes(txFactory, backlinks, [])
-}
-
-async function getUpdateBacklinksTxes (
-  control: TriggerControl,
-  txFactory: TxFactory,
-  doc: Doc,
-  backlinkId: Ref<Doc>,
-  backlinkClass: Ref<Class<Doc>>
-): Promise<Tx[]> {
-  const attachedDocId = doc._id
-
-  // collect attribute backlinks
-  let hasBacklinkAttrs = false
-  const backlinks: Data<Backlink>[] = []
-  const attributes = control.hierarchy.getAllAttributes(doc._class)
-  for (const attr of attributes.values()) {
-    if (isMarkupType(attr.type._class)) {
-      hasBacklinkAttrs = true
-      const content = (doc as any)[attr.name]?.toString() ?? ''
-      const attrBacklinks = getBacklinks(backlinkId, backlinkClass, attachedDocId, content)
-      backlinks.push(...attrBacklinks)
-    }
-  }
-
-  // There is a chance that backlinks are managed manually
-  // do not update backlinks if there are no backlink sources in the doc
-  if (hasBacklinkAttrs) {
-    const current = await control.findAll(chunter.class.Backlink, {
-      backlinkId,
-      backlinkClass,
-      attachedDocId,
-      collection: 'backlinks'
-    })
-
-    return getBacklinksTxes(txFactory, backlinks, current)
-  }
-
-  return []
-}
 
 /**
  * @public
@@ -321,15 +260,24 @@ async function BacklinksCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> 
   if (ctx._class !== core.class.TxCreateDoc) return []
   if (control.hierarchy.isDerived(ctx.objectClass, chunter.class.Backlink)) return []
 
-  const txFactory = new TxFactory(control.txFactory.account)
+  control.storageFx(async (adapter) => {
+    const txFactory = new TxFactory(control.txFactory.account)
 
-  const doc = TxProcessor.createDoc2Doc(ctx)
-  const targetTx = guessBacklinkTx(control.hierarchy, tx as TxCUD<Doc>)
-  const txes: Tx[] = getCreateBacklinksTxes(control, txFactory, doc, targetTx.objectId, targetTx.objectClass)
+    const doc = TxProcessor.createDoc2Doc(ctx)
+    const targetTx = guessBacklinkTx(control.hierarchy, tx as TxCUD<Doc>)
+    const txes: Tx[] = await getCreateBacklinksTxes(
+      control,
+      adapter,
+      txFactory,
+      doc,
+      targetTx.objectId,
+      targetTx.objectClass
+    )
 
-  if (txes.length !== 0) {
-    await control.apply(txes, true)
-  }
+    if (txes.length !== 0) {
+      await control.apply(txes, true)
+    }
+  })
 
   return []
 }
@@ -340,9 +288,11 @@ async function BacklinksUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> 
   let hasUpdates = false
   const attributes = control.hierarchy.getAllAttributes(ctx.objectClass)
   for (const attr of attributes.values()) {
-    if (isMarkupType(attr.type._class) && attr.name in ctx.operations) {
-      hasUpdates = true
-      break
+    if (isMarkupType(attr.type._class) || isCollaborativeType(attr.type._class)) {
+      if (TxProcessor.txHasUpdate(ctx, attr.name)) {
+        hasUpdates = true
+        break
+      }
     }
   }
 
@@ -350,15 +300,23 @@ async function BacklinksUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> 
     const rawDoc = (await control.findAll(ctx.objectClass, { _id: ctx.objectId }))[0]
 
     if (rawDoc !== undefined) {
-      const txFactory = new TxFactory(control.txFactory.account)
+      control.storageFx(async (adapter) => {
+        const txFactory = new TxFactory(control.txFactory.account)
+        const doc = TxProcessor.updateDoc2Doc(rawDoc, ctx)
+        const targetTx = guessBacklinkTx(control.hierarchy, tx as TxCUD<Doc>)
+        const txes: Tx[] = await getUpdateBacklinksTxes(
+          control,
+          adapter,
+          txFactory,
+          doc,
+          targetTx.objectId,
+          targetTx.objectClass
+        )
 
-      const doc = TxProcessor.updateDoc2Doc(rawDoc, ctx)
-      const targetTx = guessBacklinkTx(control.hierarchy, tx as TxCUD<Doc>)
-      const txes: Tx[] = await getUpdateBacklinksTxes(control, txFactory, doc, targetTx.objectId, targetTx.objectClass)
-
-      if (txes.length !== 0) {
-        await control.apply(txes, true)
-      }
+        if (txes.length !== 0) {
+          await control.apply(txes, true)
+        }
+      })
     }
   }
 

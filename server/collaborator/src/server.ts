@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { isReadonlyDocVersion } from '@hcengineering/collaboration'
 import { MeasureContext, generateId } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { Token, decodeToken } from '@hcengineering/server-token'
@@ -25,7 +26,6 @@ import express from 'express'
 import { IncomingMessage, createServer } from 'http'
 import { MongoClient } from 'mongodb'
 import { WebSocket, WebSocketServer } from 'ws'
-import { applyUpdate, encodeStateAsUpdate } from 'yjs'
 
 import { getWorkspaceInfo } from './account'
 import { Config } from './config'
@@ -34,12 +34,11 @@ import { ActionsExtension } from './extensions/action'
 import { HtmlTransformer } from './transformers/html'
 import { StorageExtension } from './extensions/storage'
 import { Controller, getClientFactory } from './platform'
-import { MinioStorageAdapter } from './storage/minio'
+import { MinioStorageAdapter, parseDocumentId } from './storage/minio'
 import { MongodbStorageAdapter } from './storage/mongodb'
 import { PlatformStorageAdapter } from './storage/platform'
 import { RouterStorageAdapter } from './storage/router'
-
-const gcEnabled = process.env.GC !== 'false' && process.env.GC !== '0'
+import { RpcErrorResponse, RpcRequest, RpcResponse, methods } from './rpc'
 
 /**
  * @public
@@ -112,8 +111,10 @@ export async function start (
      * options to pass to the ydoc document
      */
     yDocOptions: {
-      gc: gcEnabled,
-      gcFilter: () => true
+      // we intentionally disable gc in order to make snapshots working
+      // see https://github.com/yjs/yjs/blob/v13.5.52/src/utils/Snapshot.js#L162
+      gc: false,
+      gcFilter: () => false
     },
     /**
      * If set to false, respects the debounce time of `onStoreDocument` before unloading a document.
@@ -144,29 +145,24 @@ export async function start (
 
     async onAuthenticate (data: onAuthenticatePayload): Promise<Context> {
       ctx.measure('authenticate', 1)
-      const context = buildContext(data, controller)
 
-      // verify workspace can be accessed with the token
-      const workspaceInfo = await getWorkspaceInfo(data.token)
-
-      // verify document name
       let documentName = data.documentName
       if (documentName.includes('://')) {
         documentName = documentName.split('://', 2)[1]
       }
 
-      if (documentName.includes('/')) {
-        const [workspaceUrl] = documentName.split('/', 2)
+      const { workspaceUrl, versionId } = parseDocumentId(documentName)
 
-        // verify workspace url in the document matches the token
-        if (workspaceInfo.workspace !== workspaceUrl) {
-          throw new Error('documentName must include workspace')
-        }
-      } else {
+      // verify workspace can be accessed with the token
+      const workspaceInfo = await getWorkspaceInfo(data.token)
+      // verify workspace url in the document matches the token
+      if (workspaceInfo.workspace !== workspaceUrl) {
         throw new Error('documentName must include workspace')
       }
 
-      return context
+      data.connection.readOnly = isReadonlyDocVersion(versionId)
+
+      return buildContext(data, controller)
     },
 
     async onDestroy (data: onDestroyPayload): Promise<void> {
@@ -174,7 +170,7 @@ export async function start (
     }
   })
 
-  const restCtx = ctx.newChild('REST', {})
+  const rpcCtx = ctx.newChild('rpc', {})
 
   const getContext = (token: Token, initialContentId?: string): Context => {
     return {
@@ -187,117 +183,33 @@ export async function start (
   }
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  app.get('/api/content/:documentId/:field', async (req, res) => {
-    console.log('handle request', req.method, req.url)
-
+  app.post('/rpc', async (req, res) => {
     const authHeader = req.headers.authorization
     if (authHeader === undefined) {
-      res.status(403).send()
+      res.status(403).send({ error: 'Unauthorized' })
       return
     }
 
-    const token = authHeader.split(' ')[1]
-    const decodedToken = decodeToken(token)
+    const token = decodeToken(authHeader.split(' ')[1])
+    const context = getContext(token)
 
-    const documentId = req.params.documentId
-    const field = req.params.field
-    const initialContentId = req.query.initialContentId as string
-
-    if (documentId === undefined || documentId === '') {
-      res.status(400).send({ err: "'documentId' is missing" })
-      return
-    }
-
-    if (field === undefined || field === '') {
-      res.status(400).send({ err: "'field' is missing" })
-      return
-    }
-
-    const context = getContext(decodedToken, initialContentId)
-
-    await restCtx.with(`${req.method} /content`, {}, async (ctx) => {
-      const connection = await ctx.with('connect', {}, async () => {
-        return await hocuspocus.openDirectConnection(documentId, context)
-      })
-
-      try {
-        const html = await ctx.with('transform', {}, async () => {
-          let content = ''
-          await connection.transact((document) => {
-            content = transformer.fromYdoc(document, field)
-          })
-          return content
-        })
-
-        res.writeHead(200, { 'Content-Type': 'application/json' })
-        const json = JSON.stringify({ html })
-        res.end(json)
-      } catch (err: any) {
-        res.status(500).send({ message: err.message })
-      } finally {
-        await connection.disconnect()
+    const request = req.body as RpcRequest
+    const method = methods[request.method]
+    if (method === undefined) {
+      const response: RpcErrorResponse = {
+        error: 'Unknown method'
       }
-    })
-
-    res.end()
-  })
-
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  app.put('/api/content/:documentId/:field', async (req, res) => {
-    console.log('handle request', req.method, req.url)
-
-    const authHeader = req.headers.authorization
-    if (authHeader === undefined) {
-      res.status(403).send()
-      return
-    }
-
-    const token = authHeader.split(' ')[1]
-    const decodedToken = decodeToken(token)
-
-    const documentId = req.params.documentId
-    const field = req.params.field
-    const initialContentId = req.query.initialContentId as string
-    const data = req.body.html ?? '<p></p>'
-
-    if (documentId === undefined || documentId === '') {
-      res.status(400).send({ err: "'documentId' is missing" })
-      return
-    }
-
-    if (field === undefined || field === '') {
-      res.status(400).send({ err: "'field' is missing" })
-      return
-    }
-
-    const context = getContext(decodedToken, initialContentId)
-
-    await restCtx.with(`${req.method} /content`, {}, async (ctx) => {
-      const update = await ctx.with('transform', {}, () => {
-        const ydoc = transformer.toYdoc(data, field)
-        return encodeStateAsUpdate(ydoc)
+      res.status(400).send(response)
+    } else {
+      await rpcCtx.with(request.method, {}, async (ctx) => {
+        try {
+          const response: RpcResponse = await method(ctx, context, request.payload, { hocuspocus, minio, transformer })
+          res.status(200).send(response)
+        } catch (err: any) {
+          res.status(500).send({ error: err.message })
+        }
       })
-
-      const connection = await ctx.with('connect', {}, async () => {
-        return await hocuspocus.openDirectConnection(documentId, context)
-      })
-
-      try {
-        await ctx.with('update', {}, async () => {
-          await connection.transact((document) => {
-            const fragment = document.getXmlFragment(field)
-            document.transact((tr) => {
-              fragment.delete(0, fragment.length)
-              applyUpdate(document, update)
-            })
-          })
-        })
-      } finally {
-        await connection.disconnect()
-      }
-    })
-
-    res.status(200).end()
+    }
   })
 
   const wss = new WebSocketServer({

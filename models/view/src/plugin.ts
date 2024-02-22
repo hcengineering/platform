@@ -70,6 +70,7 @@ export default mergeIds(viewId, view, {
     EnumArrayEditor: '' as AnyComponent,
     HTMLEditor: '' as AnyComponent,
     CollaborativeHTMLEditor: '' as AnyComponent,
+    CollaborativeDocEditor: '' as AnyComponent,
     MarkupEditor: '' as AnyComponent,
     MarkupEditorPopup: '' as AnyComponent,
     ListView: '' as AnyComponent,
