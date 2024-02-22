@@ -88,6 +88,8 @@
     "@hcengineering/image-cropper-resources": "^0.6.0",
     "@hcengineering/server-attachment": "^0.6.1",
     "@hcengineering/server-attachment-resources": "^0.6.0",
+    "@hcengineering/server-collaboration": "^0.6.0",
+    "@hcengineering/server-collaboration-resources": "^0.6.0",
     "@hcengineering/server-contact": "^0.6.1",
     "@hcengineering/server-contact-resources": "^0.6.0",
     "@hcengineering/server-notification": "^0.6.0",

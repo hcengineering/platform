@@ -107,6 +107,10 @@
   export function isFocused (): boolean {
     return descriptionBox.isFocused()
   }
+
+  export function setEditable (editable: boolean): void {
+    descriptionBox.setEditable(editable)
+  }
 </script>
 
 {#key object?._id}

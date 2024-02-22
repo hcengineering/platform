@@ -84,6 +84,7 @@ services:
       - TRANSACTOR_URL=ws://localhost:3333
       - ELASTIC_URL=http://elastic:9200
       - COLLABORATOR_URL=ws://localhost:3078
+      - COLLABORATOR_API_URL=http://localhost:3078
       - MINIO_ENDPOINT=minio
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin

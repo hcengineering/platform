@@ -14,43 +14,58 @@
 //
 
 import { type CollaboratorClient, getClient as getCollaborator } from '@hcengineering/collaborator-client'
-import { getWorkspaceId, type Class, type Doc, type Markup, type Ref } from '@hcengineering/core'
+import { type CollaborativeDoc, type Markup, getCurrentAccount, getWorkspaceId } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import { getCurrentLocation } from '@hcengineering/ui'
 
 import { getClient } from '.'
 import presentation from './plugin'
 
-/**
- * @public
- */
+/** @public */
 export function getCollaboratorClient (): CollaboratorClient {
   const workspaceId = getWorkspaceId(getCurrentLocation().path[1] ?? '')
   const hierarchy = getClient().getHierarchy()
   const token = getMetadata(presentation.metadata.Token) ?? ''
-  const collaboratorURL = getMetadata(presentation.metadata.CollaboratorUrl) ?? ''
+  const collaboratorURL = getMetadata(presentation.metadata.CollaboratorApiUrl) ?? ''
 
   return getCollaborator(hierarchy, workspaceId, token, collaboratorURL)
 }
 
-/**
- * @public
- */
-export async function getMarkup (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string): Promise<Markup> {
+/** @public */
+export async function getMarkup (collaborativeDoc: CollaborativeDoc, field: string): Promise<Markup> {
   const client = getCollaboratorClient()
-  return await client.get(classId, docId, attribute)
+  return await client.getContent(collaborativeDoc, field)
 }
 
-/**
- * @public
- */
-export async function updateMarkup (
-  classId: Ref<Class<Doc>>,
-  docId: Ref<Doc>,
-  attribute: string,
-  value: Markup
+/** @public */
+export async function updateMarkup (collaborativeDoc: CollaborativeDoc, field: string, value: Markup): Promise<void> {
+  const client = getCollaboratorClient()
+  await client.updateContent(collaborativeDoc, field, value)
+}
+
+/** @public */
+export async function copyDocumentContent (
+  collaborativeDoc: CollaborativeDoc,
+  sourceField: string,
+  targetField: string
 ): Promise<void> {
   const client = getCollaboratorClient()
+  await client.copyContent(collaborativeDoc, sourceField, targetField)
+}
 
-  await client.update(classId, docId, attribute, value)
+/** @public */
+export async function copyDocument (source: CollaborativeDoc, target: CollaborativeDoc): Promise<void> {
+  const client = getCollaboratorClient()
+  await client.branch(source, target)
+}
+
+/** @public */
+export async function takeSnapshot (
+  collaborativeDoc: CollaborativeDoc,
+  snapshotName: string
+): Promise<CollaborativeDoc> {
+  const client = getCollaboratorClient()
+  const createdBy = getCurrentAccount()._id
+
+  return await client.snapshot(collaborativeDoc, { createdBy, snapshotName })
 }

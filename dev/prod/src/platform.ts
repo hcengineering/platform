@@ -89,6 +89,7 @@ interface Config {
   GMAIL_URL: string
   CALENDAR_URL: string
   COLLABORATOR_URL: string
+  COLLABORATOR_API_URL: string
   TITLE?: string
   LANGUAGES?: string
   DEFAULT_LANGUAGE?: string
@@ -139,6 +140,7 @@ export async function configurePlatform() {
   setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)
   setMetadata(presentation.metadata.UploadURL, config.UPLOAD_URL)
   setMetadata(presentation.metadata.CollaboratorUrl, config.COLLABORATOR_URL)
+  setMetadata(presentation.metadata.CollaboratorApiUrl, config.COLLABORATOR_API_URL)
 
   if (config.MODEL_VERSION != null) {
     console.log('Minimal Model version requirement', config.MODEL_VERSION)

@@ -104,6 +104,12 @@ export function startFront (extraConfig?: Record<string, string>): void {
     process.exit(1)
   }
 
+  const collaboratorApiUrl = process.env.COLLABORATOR_API_URL
+  if (collaboratorApiUrl === undefined) {
+    console.error('please provide collaborator api url')
+    process.exit(1)
+  }
+
   const modelVersion = process.env.MODEL_VERSION
   if (modelVersion === undefined) {
     console.error('please provide model version requirement')
@@ -135,6 +141,7 @@ export function startFront (extraConfig?: Record<string, string>): void {
     rekoniUrl,
     calendarUrl,
     collaboratorUrl,
+    collaboratorApiUrl,
     title,
     languages,
     defaultLanguage

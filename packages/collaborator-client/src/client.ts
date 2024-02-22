@@ -13,20 +13,111 @@
 // limitations under the License.
 //
 
-import { Class, Doc, Hierarchy, Markup, Ref, WorkspaceId, concatLink } from '@hcengineering/core'
-import { minioDocumentId, mongodbDocumentId } from './utils'
+import {
+  Account,
+  Class,
+  CollaborativeDoc,
+  Doc,
+  Hierarchy,
+  Markup,
+  Ref,
+  Timestamp,
+  WorkspaceId,
+  concatLink,
+  toCollaborativeDocVersion
+} from '@hcengineering/core'
+import { DocumentURI, collaborativeDocumentUri, mongodbDocumentUri } from './uri'
 
-/**
- * @public
- */
-export interface CollaboratorClient {
-  get: (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string) => Promise<Markup>
-  update: (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string, value: Markup) => Promise<void>
+/** @public */
+export interface GetContentRequest {
+  documentId: DocumentURI
+  field: string
 }
 
-/**
- * @public
- */
+/** @public */
+export interface GetContentResponse {
+  html: string
+}
+
+/** @public */
+export interface UpdateContentRequest {
+  documentId: DocumentURI
+  field: string
+  html: string
+}
+
+/** @public */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface UpdateContentResponse {}
+
+/** @public */
+export interface CopyContentRequest {
+  documentId: DocumentURI
+  sourceField: string
+  targetField: string
+}
+
+/** @public */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface CopyContentResponse {}
+
+/** @public */
+export interface BranchDocumentRequest {
+  sourceDocumentId: DocumentURI
+  targetDocumentId: DocumentURI
+}
+
+/** @public */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface BranchDocumentResponse {}
+
+/** @public */
+export interface RemoveDocumentRequest {
+  documentId: DocumentURI
+  collaborativeDoc: CollaborativeDoc
+}
+
+/** @public */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface RemoveDocumentResponse {}
+
+/** @public */
+export interface TakeSnapshotRequest {
+  documentId: DocumentURI
+  collaborativeDoc: CollaborativeDoc
+  createdBy: string
+  snapshotName: string
+}
+
+/** @public */
+export interface TakeSnapshotResponse {
+  versionId: string
+  name: string
+
+  createdBy: string
+  createdOn: Timestamp
+}
+
+/** @public */
+export interface CollaborativeDocSnapshotParams {
+  snapshotName: string
+  createdBy: Ref<Account>
+}
+
+/** @public */
+export interface CollaboratorClient {
+  // field operations
+  getContent: (collaborativeDoc: CollaborativeDoc, field: string) => Promise<Markup>
+  updateContent: (collaborativeDoc: CollaborativeDoc, field: string, value: Markup) => Promise<void>
+  copyContent: (collaborativeDoc: CollaborativeDoc, sourceField: string, targetField: string) => Promise<void>
+
+  // document operations
+  branch: (source: CollaborativeDoc, target: CollaborativeDoc) => Promise<void>
+  remove: (collaborativeDoc: CollaborativeDoc) => Promise<void>
+  snapshot: (collaborativeDoc: CollaborativeDoc, params: CollaborativeDocSnapshotParams) => Promise<CollaborativeDoc>
+}
+
+/** @public */
 export function getClient (
   hierarchy: Hierarchy,
   workspaceId: WorkspaceId,
@@ -44,51 +135,85 @@ class CollaboratorClientImpl implements CollaboratorClient {
     private readonly collaboratorUrl: string
   ) {}
 
-  initialContentId (workspace: string, classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string): string {
+  initialContentId (workspace: string, classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string): DocumentURI {
     const domain = this.hierarchy.getDomain(classId)
-    return mongodbDocumentId(workspace, domain, docId, attribute)
+    return mongodbDocumentUri(workspace, domain, docId, attribute)
   }
 
-  async get (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string): Promise<Markup> {
-    const workspace = this.workspace.name
-    const documentId = encodeURIComponent(minioDocumentId(workspace, docId, attribute))
-    const initialContentId = encodeURIComponent(this.initialContentId(workspace, classId, docId, attribute))
-    attribute = encodeURIComponent(attribute)
-
-    const url = concatLink(
-      this.collaboratorUrl,
-      `/api/content/${documentId}/${attribute}?initialContentId=${initialContentId}`
-    )
+  private async rpc (method: string, payload: any): Promise<any> {
+    const url = concatLink(this.collaboratorUrl, '/rpc')
 
     const res = await fetch(url, {
-      method: 'GET',
-      headers: {
-        Authorization: 'Bearer ' + this.token,
-        Accept: 'application/json'
-      }
-    })
-    const json = await res.json()
-    return json.html ?? '<p></p>'
-  }
-
-  async update (classId: Ref<Class<Doc>>, docId: Ref<Doc>, attribute: string, value: Markup): Promise<void> {
-    const workspace = this.workspace.name
-    const documentId = encodeURIComponent(minioDocumentId(workspace, docId, attribute))
-    const initialContentId = encodeURIComponent(this.initialContentId(workspace, classId, docId, attribute))
-    attribute = encodeURIComponent(attribute)
-
-    const url = concatLink(
-      this.collaboratorUrl,
-      `/api/content/${documentId}/${attribute}?initialContentId=${initialContentId}`
-    )
-
-    await fetch(url, {
-      method: 'PUT',
+      method: 'POST',
       headers: {
         Authorization: 'Bearer ' + this.token,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ html: value })
+      body: JSON.stringify({ method, payload })
     })
+
+    const result = await res.json()
+
+    if (result.error != null) {
+      throw new Error(result.error)
+    }
+
+    return result
+  }
+
+  async getContent (collaborativeDoc: CollaborativeDoc, field: string): Promise<Markup> {
+    const workspace = this.workspace.name
+    const documentId = collaborativeDocumentUri(workspace, collaborativeDoc)
+
+    const payload: GetContentRequest = { documentId, field }
+    const res = (await this.rpc('getContent', payload)) as GetContentResponse
+
+    return res.html ?? ''
+  }
+
+  async updateContent (collaborativeDoc: CollaborativeDoc, field: string, value: Markup): Promise<void> {
+    const workspace = this.workspace.name
+    const documentId = collaborativeDocumentUri(workspace, collaborativeDoc)
+
+    const payload: UpdateContentRequest = { documentId, field, html: value }
+    await this.rpc('updateContent', payload)
+  }
+
+  async copyContent (collaborativeDoc: CollaborativeDoc, sourceField: string, targetField: string): Promise<void> {
+    const workspace = this.workspace.name
+    const documentId = collaborativeDocumentUri(workspace, collaborativeDoc)
+
+    const payload: CopyContentRequest = { documentId, sourceField, targetField }
+    await this.rpc('copyContent', payload)
+  }
+
+  async branch (source: CollaborativeDoc, target: CollaborativeDoc): Promise<void> {
+    const workspace = this.workspace.name
+    const sourceDocumentId = collaborativeDocumentUri(workspace, source)
+    const targetDocumentId = collaborativeDocumentUri(workspace, target)
+
+    const payload: BranchDocumentRequest = { sourceDocumentId, targetDocumentId }
+    await this.rpc('branchDocument', payload)
+  }
+
+  async remove (collaborativeDoc: CollaborativeDoc): Promise<void> {
+    const workspace = this.workspace.name
+    const documentId = collaborativeDocumentUri(workspace, collaborativeDoc)
+
+    const payload: RemoveDocumentRequest = { documentId, collaborativeDoc }
+    await this.rpc('removeDocument', payload)
+  }
+
+  async snapshot (
+    collaborativeDoc: CollaborativeDoc,
+    params: CollaborativeDocSnapshotParams
+  ): Promise<CollaborativeDoc> {
+    const workspace = this.workspace.name
+    const documentId = collaborativeDocumentUri(workspace, collaborativeDoc)
+
+    const payload: TakeSnapshotRequest = { documentId, collaborativeDoc, ...params }
+    const res = (await this.rpc('takeSnapshot', payload)) as TakeSnapshotResponse
+
+    return toCollaborativeDocVersion(collaborativeDoc, res.versionId)
   }
 }
