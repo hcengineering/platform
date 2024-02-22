@@ -35,6 +35,10 @@ import recruit, { recruitId, createModel as recruitModel } from '@hcengineering/
 import { requestId, createModel as requestModel } from '@hcengineering/model-request'
 import { serverActivityId, createModel as serverActivityModel } from '@hcengineering/model-server-activity'
 import { serverAttachmentId, createModel as serverAttachmentModel } from '@hcengineering/model-server-attachment'
+import {
+  serverCollaborationId,
+  createModel as serverCollaborationModel
+} from '@hcengineering/model-server-collaboration'
 import { serverCalendarId, createModel as serverCalendarModel } from '@hcengineering/model-server-calendar'
 import { serverChunterId, createModel as serverChunterModel } from '@hcengineering/model-server-chunter'
 import { serverContactId, createModel as serverContactModel } from '@hcengineering/model-server-contact'
@@ -274,6 +278,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
 
     [serverCoreModel, serverCoreId],
     [serverAttachmentModel, serverAttachmentId],
+    [serverCollaborationModel, serverCollaborationId],
     [serverContactModel, serverContactId],
     [serveSettingModel, serverSettingId],
     [serverChunterModel, serverChunterId],

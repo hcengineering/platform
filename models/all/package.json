@@ -41,6 +41,7 @@
     "@hcengineering/model-telegram": "^0.6.0",
     "@hcengineering/model-server-core": "^0.6.0",
     "@hcengineering/model-server-attachment": "^0.6.0",
+    "@hcengineering/model-server-collaboration": "^0.6.0",
     "@hcengineering/model-server-contact": "^0.6.0",
     "@hcengineering/model-server-notification": "^0.6.0",
     "@hcengineering/model-server-setting": "^0.6.0",

@@ -184,7 +184,8 @@ export function isFullTextAttribute (attr: AnyAttribute): boolean {
   return (
     attr.index === IndexKind.FullText ||
     attr.type._class === core.class.TypeAttachment ||
-    attr.type._class === core.class.EnumOf
+    attr.type._class === core.class.EnumOf ||
+    attr.type._class === core.class.TypeCollaborativeDoc
   )
 }
 

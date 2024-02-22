@@ -14,10 +14,11 @@
 //
 
 import chunter, { Backlink } from '@hcengineering/chunter'
-
+import { loadCollaborativeDoc, yDocToBuffer } from '@hcengineering/collaboration'
 import core, {
   AttachedDoc,
   Class,
+  CollaborativeDoc,
   Data,
   Doc,
   Hierarchy,
@@ -26,25 +27,127 @@ import core, {
   TxCollectionCUD,
   TxCUD,
   TxFactory,
-  TxProcessor
+  TxProcessor,
+  Type
 } from '@hcengineering/core'
-import { ServerKit, extractReferences, getHTML, parseHTML } from '@hcengineering/text'
-import { TriggerControl } from '@hcengineering/server-core'
 import notification from '@hcengineering/notification'
+import { ServerKit, extractReferences, getHTML, parseHTML, yDocContentToNodes } from '@hcengineering/text'
+import { StorageAdapter, TriggerControl } from '@hcengineering/server-core'
 
 const extensions = [ServerKit]
+
+export function isMarkupType (type: Ref<Class<Type<any>>>): boolean {
+  return type === core.class.TypeMarkup || type === core.class.TypeCollaborativeMarkup
+}
+
+export function isCollaborativeType (type: Ref<Class<Type<any>>>): boolean {
+  return type === core.class.TypeCollaborativeDoc
+}
+
+export async function getCreateBacklinksTxes (
+  control: TriggerControl,
+  storage: StorageAdapter,
+  txFactory: TxFactory,
+  doc: Doc,
+  backlinkId: Ref<Doc>,
+  backlinkClass: Ref<Class<Doc>>
+): Promise<Tx[]> {
+  const attachedDocId = doc._id
+
+  const backlinks: Data<Backlink>[] = []
+  const attributes = control.hierarchy.getAllAttributes(doc._class)
+  for (const attr of attributes.values()) {
+    if (isMarkupType(attr.type._class)) {
+      const content = (doc as any)[attr.name]?.toString() ?? ''
+      const attrBacklinks = getBacklinks(backlinkId, backlinkClass, attachedDocId, content)
+      backlinks.push(...attrBacklinks)
+    } else if (attr.type._class === core.class.TypeCollaborativeDoc) {
+      const collaborativeDoc = (doc as any)[attr.name] as CollaborativeDoc
+      try {
+        const ydoc = await loadCollaborativeDoc(storage, control.workspace, collaborativeDoc, control.ctx)
+        if (ydoc !== undefined) {
+          const attrBacklinks = getBacklinks(backlinkId, backlinkClass, attachedDocId, yDocToBuffer(ydoc))
+          backlinks.push(...attrBacklinks)
+        }
+      } catch {
+        // do nothing, the collaborative doc does not sem to exist yet
+      }
+    }
+  }
+
+  return getBacklinksTxes(txFactory, backlinks, [])
+}
+
+export async function getUpdateBacklinksTxes (
+  control: TriggerControl,
+  storage: StorageAdapter,
+  txFactory: TxFactory,
+  doc: Doc,
+  backlinkId: Ref<Doc>,
+  backlinkClass: Ref<Class<Doc>>
+): Promise<Tx[]> {
+  const attachedDocId = doc._id
+
+  // collect attribute backlinks
+  let hasBacklinkAttrs = false
+  const backlinks: Data<Backlink>[] = []
+  const attributes = control.hierarchy.getAllAttributes(doc._class)
+  for (const attr of attributes.values()) {
+    if (isMarkupType(attr.type._class)) {
+      hasBacklinkAttrs = true
+      const content = (doc as any)[attr.name]?.toString() ?? ''
+      const attrBacklinks = getBacklinks(backlinkId, backlinkClass, attachedDocId, content)
+      backlinks.push(...attrBacklinks)
+    } else if (attr.type._class === core.class.TypeCollaborativeDoc) {
+      hasBacklinkAttrs = true
+      try {
+        const collaborativeDoc = (doc as any)[attr.name] as CollaborativeDoc
+        const ydoc = await loadCollaborativeDoc(storage, control.workspace, collaborativeDoc, control.ctx)
+        if (ydoc !== undefined) {
+          const attrBacklinks = getBacklinks(backlinkId, backlinkClass, attachedDocId, yDocToBuffer(ydoc))
+          backlinks.push(...attrBacklinks)
+        }
+      } catch {
+        // do nothing, the collaborative doc does not sem to exist yet
+      }
+    }
+  }
+
+  // There is a chance that backlinks are managed manually
+  // do not update backlinks if there are no backlink sources in the doc
+  if (hasBacklinkAttrs) {
+    const current = await control.findAll(chunter.class.Backlink, {
+      backlinkId,
+      backlinkClass,
+      attachedDocId,
+      collection: 'backlinks'
+    })
+
+    return getBacklinksTxes(txFactory, backlinks, current)
+  }
+
+  return []
+}
 
 export function getBacklinks (
   backlinkId: Ref<Doc>,
   backlinkClass: Ref<Class<Doc>>,
   attachedDocId: Ref<Doc> | undefined,
-  content: string
+  content: string | Buffer
 ): Array<Data<Backlink>> {
-  const doc = parseHTML(content, extensions)
-
   const result: Array<Data<Backlink>> = []
 
-  const references = extractReferences(doc)
+  const references = []
+
+  if (content instanceof Buffer) {
+    const nodes = yDocContentToNodes(extensions, content)
+    for (const node of nodes) {
+      references.push(...extractReferences(node))
+    }
+  } else {
+    const doc = parseHTML(content, extensions)
+    references.push(...extractReferences(doc))
+  }
   for (const ref of references) {
     if (ref.objectId !== attachedDocId && ref.objectId !== backlinkId) {
       result.push({
@@ -115,66 +218,6 @@ export function getBacklinksTxes (txFactory: TxFactory, backlinks: Data<Backlink
   }
 
   return txes
-}
-
-export function getCreateBacklinksTxes (
-  control: TriggerControl,
-  txFactory: TxFactory,
-  doc: Doc,
-  backlinkId: Ref<Doc>,
-  backlinkClass: Ref<Class<Doc>>
-): Tx[] {
-  const attachedDocId = doc._id
-
-  const backlinks: Data<Backlink>[] = []
-  const attributes = control.hierarchy.getAllAttributes(doc._class)
-  for (const attr of attributes.values()) {
-    if (attr.type._class === core.class.TypeMarkup) {
-      const content = (doc as any)[attr.name]?.toString() ?? ''
-      const attrBacklinks = getBacklinks(backlinkId, backlinkClass, attachedDocId, content)
-      backlinks.push(...attrBacklinks)
-    }
-  }
-
-  return getBacklinksTxes(txFactory, backlinks, [])
-}
-
-export async function getUpdateBacklinksTxes (
-  control: TriggerControl,
-  txFactory: TxFactory,
-  doc: Doc,
-  backlinkId: Ref<Doc>,
-  backlinkClass: Ref<Class<Doc>>
-): Promise<Tx[]> {
-  const attachedDocId = doc._id
-
-  // collect attribute backlinks
-  let hasBacklinkAttrs = false
-  const backlinks: Data<Backlink>[] = []
-  const attributes = control.hierarchy.getAllAttributes(doc._class)
-  for (const attr of attributes.values()) {
-    if (attr.type._class === core.class.TypeMarkup) {
-      hasBacklinkAttrs = true
-      const content = (doc as any)[attr.name]?.toString() ?? ''
-      const attrBacklinks = getBacklinks(backlinkId, backlinkClass, attachedDocId, content)
-      backlinks.push(...attrBacklinks)
-    }
-  }
-
-  // There is a chance that backlinks are managed manually
-  // do not update backlinks if there are no backlink sources in the doc
-  if (hasBacklinkAttrs) {
-    const current = await control.findAll(chunter.class.Backlink, {
-      backlinkId,
-      backlinkClass,
-      attachedDocId,
-      collection: 'backlinks'
-    })
-
-    return getBacklinksTxes(txFactory, backlinks, current)
-  }
-
-  return []
 }
 
 export async function getRemoveBacklinksTxes (

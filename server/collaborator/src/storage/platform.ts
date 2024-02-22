@@ -13,7 +13,8 @@
 // limitations under the License.
 //
 
-import { Class, Doc, MeasureContext, Ref } from '@hcengineering/core'
+import { touchCollaborativeDoc } from '@hcengineering/collaboration'
+import core, { Class, CollaborativeDoc, Doc, MeasureContext, Ref } from '@hcengineering/core'
 import { Transformer } from '@hocuspocus/transformer'
 import { Doc as YDoc } from 'yjs'
 
@@ -52,6 +53,8 @@ export class PlatformStorageAdapter implements StorageAdapter {
   ) {}
 
   async loadDocument (documentId: string, context: Context): Promise<YDoc | undefined> {
+    console.warn('loading documents from the platform not supported', documentId)
+
     const { clientFactory } = context
     const { workspaceUrl, objectId, objectClass, objectAttr } = parseDocumentId(documentId)
 
@@ -66,6 +69,18 @@ export class PlatformStorageAdapter implements StorageAdapter {
       const client = await ctx.with('connect', {}, async () => {
         return await clientFactory({ derived: false })
       })
+
+      const hierarchy = client.getHierarchy()
+      const attribute = hierarchy.findAttribute(objectClass, objectAttr)
+      if (attribute === undefined) {
+        console.warn('invalid attribute', objectAttr)
+        return undefined
+      }
+
+      if (hierarchy.isDerived(attribute.type._class, core.class.TypeCollaborativeMarkup)) {
+        console.warn('unsupported attribute type', attribute?.type._class)
+        return undefined
+      }
 
       const doc = await ctx.with('query', {}, async () => {
         return await client.findOne(objectClass, { _id: objectId }, { projection: { [objectAttr]: 1 } })
@@ -94,18 +109,35 @@ export class PlatformStorageAdapter implements StorageAdapter {
         return await clientFactory({ derived: false })
       })
 
+      const attribute = client.getHierarchy().findAttribute(objectClass, objectAttr)
+      if (attribute === undefined) {
+        console.warn('attribute not found', objectClass, objectAttr)
+        return
+      }
+
       const current = await ctx.with('query', {}, async () => {
         return await client.findOne(objectClass, { _id: objectId })
       })
 
-      if (current !== undefined) {
+      if (current === undefined) {
+        return
+      }
+
+      const hierarchy = client.getHierarchy()
+      if (hierarchy.isDerived(attribute.type._class, core.class.TypeCollaborativeDoc)) {
+        const collaborativeDoc = (current as any)[objectAttr] as CollaborativeDoc
+        const newCollaborativeDoc = touchCollaborativeDoc(collaborativeDoc)
+
+        await ctx.with('update', {}, async () => {
+          await client.diffUpdate(current, { [objectAttr]: newCollaborativeDoc })
+        })
+      } else if (hierarchy.isDerived(attribute.type._class, core.class.TypeCollaborativeMarkup)) {
+        // TODO a temporary solution while we are keeping Markup in Mongo
         const content = await ctx.with('transform', {}, () => {
           return this.transformer.fromYdoc(document, objectAttr)
         })
         await ctx.with('update', {}, async () => {
-          if ((current as any)[objectAttr] !== content) {
-            await client.update(current, { [objectAttr]: content })
-          }
+          await client.diffUpdate(current, { [objectAttr]: content })
         })
       }
     })
