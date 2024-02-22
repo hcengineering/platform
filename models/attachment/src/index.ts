@@ -14,7 +14,7 @@
 //
 
 import activity from '@hcengineering/activity'
-import type { Attachment, Photo, SavedAttachments } from '@hcengineering/attachment'
+import type { Attachment, AttachmentMetadata, Photo, SavedAttachments } from '@hcengineering/attachment'
 import { type Domain, IndexKind, type Ref } from '@hcengineering/core'
 import {
   type Builder,
@@ -23,7 +23,6 @@ import {
   Prop,
   TypeAttachment,
   TypeBoolean,
-  TypeNumber,
   TypeRef,
   TypeString,
   TypeTimestamp,
@@ -66,14 +65,7 @@ export class TAttachment extends TAttachedDoc implements Attachment {
   @Prop(TypeBoolean(), attachment.string.Pinned)
     pinned!: boolean
 
-  @Prop(TypeNumber(), attachment.string.Width)
-    originalWidth?: number
-
-  @Prop(TypeNumber(), attachment.string.Height)
-    originalHeight?: number
-
-  @Prop(TypeNumber(), attachment.string.Ratio)
-    pixelRatio?: number
+  metadata?: AttachmentMetadata
 }
 
 @Model(attachment.class.Photo, attachment.class.Attachment)

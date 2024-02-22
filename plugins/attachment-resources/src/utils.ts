@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { type Attachment } from '@hcengineering/attachment'
+import { type Attachment, type AttachmentMetadata } from '@hcengineering/attachment'
 import {
   type Class,
   concatLink,
@@ -119,18 +119,30 @@ export function getType (type: string): 'image' | 'video' | 'audio' | 'pdf' | 'o
   return 'other'
 }
 
-export async function getAttachmentSize (
-  file: File,
-  uuid: string
-): Promise<{ width: number, height: number, pixelRatio?: number } | undefined> {
+export async function getAttachmentMetadata (file: File, uuid: string): Promise<AttachmentMetadata | undefined> {
   const type = getType(file.type)
 
   if (type === 'video') {
-    return await getVideoSize(uuid)
+    const size = await getVideoSize(uuid)
+
+    if (size?.width === undefined || size.height === undefined) {
+      return undefined
+    }
+
+    return {
+      originalHeight: size.height,
+      originalWidth: size.width
+    }
   }
 
   if (type === 'image') {
-    return await getImageSize(file, getFileUrl(uuid, 'full'))
+    const size = await getImageSize(file, getFileUrl(uuid, 'full'))
+
+    return {
+      originalHeight: size.height,
+      originalWidth: size.width,
+      pixelRatio: size.pixelRatio
+    }
   }
 
   return undefined

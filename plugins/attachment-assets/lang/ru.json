@@ -51,10 +51,7 @@
     "PinAttachment": "Пометить как важное",
     "UnPinAttachment": "Убрать пометку важное",
     "FilterAttachments": "Вложения",
-    "RemovedAttachment": "Удалил(а) вложение",
-    "Width": "Ширина",
-    "Height": "Высота",
-    "Ratio": "Соотношение"
+    "RemovedAttachment": "Удалил(а) вложение"
   },
   "status": {
     "FileTooLarge": "Файл слишком большой"

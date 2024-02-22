@@ -40,10 +40,7 @@ export default mergeIds(attachmentId, attachment, {
     PinAttachment: '' as IntlString,
     UnPinAttachment: '' as IntlString,
     FilterAttachments: '' as IntlString,
-    RemovedAttachment: '' as IntlString,
-    Width: '' as IntlString,
-    Height: '' as IntlString,
-    Ratio: '' as IntlString
+    RemovedAttachment: '' as IntlString
   },
   ids: {
     TxAttachmentCreate: '' as Ref<TxViewlet>,

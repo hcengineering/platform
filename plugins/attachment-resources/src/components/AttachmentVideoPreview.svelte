@@ -27,14 +27,14 @@
   $: dimensions = getDimensions(value)
 
   function getDimensions (value: Attachment): { width: number, height: number } {
-    const { originalWidth, originalHeight } = value
     const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize)
 
-    if (originalWidth == null || originalHeight == null) {
+    if (!value.metadata) {
       const baseSize = baseSizeRem * fontSize
       return { width: baseSize, height: baseSize }
     }
 
+    const { originalWidth, originalHeight } = value.metadata
     const maxSize = maxSizeRem * fontSize
 
     // For mp4 audio files, we don't have originalWidth, originalHeight

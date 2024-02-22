@@ -51,10 +51,7 @@
     "PinAttachment": "Mark important",
     "UnPinAttachment": "Mark less important",
     "FilterAttachments": "Attachments",
-    "RemovedAttachment": "Removed attachment",
-    "Width": "Width",
-    "Height": "Height",
-    "Ratio": "Ratio"
+    "RemovedAttachment": "Removed attachment"
   }, 
   "status": {
     "FileTooLarge": "File too large"

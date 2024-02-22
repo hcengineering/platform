@@ -49,18 +49,20 @@
     }
 
     const preferredWidth = preferredWidthMap[size]
+    const { metadata } = value
 
-    if (value.originalWidth == null || value.originalHeight == null) {
+    if (!metadata) {
       return {
         width: preferredWidth,
         height: preferredWidth
       }
     }
 
+    const { originalWidth, originalHeight } = metadata
     const maxSize = maxSizeRem * parseFloat(getComputedStyle(document.documentElement).fontSize)
 
-    const width = Math.min(value.originalWidth, preferredWidth)
-    const ratio = value.originalHeight / value.originalWidth
+    const width = Math.min(originalWidth, preferredWidth)
+    const ratio = originalHeight / originalWidth
     const height = width * ratio
 
     if (height > maxSize) {

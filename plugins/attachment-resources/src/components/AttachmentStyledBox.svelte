@@ -22,7 +22,7 @@
   import { ButtonSize } from '@hcengineering/ui'
 
   import attachment from '../plugin'
-  import { deleteFile, getAttachmentSize, uploadFile } from '../utils'
+  import { deleteFile, getAttachmentMetadata, uploadFile } from '../utils'
   import AttachmentsGrid from './AttachmentsGrid.svelte'
 
   export let objectId: Ref<Doc> | undefined = undefined
@@ -134,7 +134,7 @@
     if (space === undefined || objectId === undefined || _class === undefined) return
     try {
       const uuid = await uploadFile(file)
-      const size = await getAttachmentSize(file, uuid)
+      const metadata = await getAttachmentMetadata(file, uuid)
       const _id: Ref<Attachment> = generateId()
 
       attachments.set(_id, {
@@ -151,9 +151,7 @@
         type: file.type,
         size: file.size,
         lastModified: file.lastModified,
-        originalWidth: size?.width,
-        originalHeight: size?.height,
-        pixelRatio: size?.pixelRatio
+        metadata
       })
       newAttachments.add(_id)
       attachments = attachments

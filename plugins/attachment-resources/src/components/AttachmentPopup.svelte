@@ -22,7 +22,7 @@
 
   import { AttachmentPresenter } from '..'
   import attachment from '../plugin'
-  import { getAttachmentSize, uploadFile } from '../utils'
+  import { getAttachmentMetadata, uploadFile } from '../utils'
 
   // export let attachments: number
   export let object: Doc
@@ -55,7 +55,7 @@
   async function createAttachment (file: File) {
     try {
       const uuid = await uploadFile(file)
-      const size = await getAttachmentSize(file, uuid)
+      const metadata = await getAttachmentMetadata(file, uuid)
 
       await client.addCollection(attachment.class.Attachment, object.space, object._id, object._class, 'attachments', {
         name: file.name,
@@ -63,9 +63,7 @@
         type: file.type,
         size: file.size,
         lastModified: file.lastModified,
-        originalHeight: size?.height,
-        originalWidth: size?.width,
-        pixelRatio: size?.pixelRatio
+        metadata
       })
     } catch (e) {
       void setPlatformStatus(unknownError(e))

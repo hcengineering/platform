@@ -27,7 +27,7 @@
   } from '@hcengineering/presentation'
   import textEditor, { AttachIcon, type RefAction, ReferenceInput } from '@hcengineering/text-editor'
   import { Loading, type AnySvelteComponent } from '@hcengineering/ui'
-  import { deleteFile, getAttachmentSize, uploadFile } from '../utils'
+  import { deleteFile, getAttachmentMetadata, uploadFile } from '../utils'
   import attachment from '../plugin'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
 
@@ -110,7 +110,7 @@
   async function createAttachment (file: File) {
     try {
       const uuid = await uploadFile(file)
-      const size = await getAttachmentSize(file, uuid)
+      const metadata = await getAttachmentMetadata(file, uuid)
 
       const _id: Ref<Attachment> = generateId()
       attachments.set(_id, {
@@ -127,9 +127,7 @@
         type: file.type,
         size: file.size,
         lastModified: file.lastModified,
-        originalWidth: size?.width,
-        originalHeight: size?.height,
-        pixelRatio: size?.pixelRatio
+        metadata
       })
       newAttachments.add(_id)
       attachments = attachments
