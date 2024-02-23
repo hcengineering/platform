@@ -66,7 +66,6 @@
   const hierarchy = client.getHierarchy()
 
   let issue: WithLookup<Issue> | undefined
-  let currentProject: Project | undefined
   let title = ''
   let innerWidth: number
   let descriptionBox: AttachmentStyleBoxCollabEditor
@@ -99,14 +98,15 @@
         ;[issue] = result
         if (issue !== undefined) {
           title = issue.title
-          currentProject = issue.$lookup?.space
         }
       },
-      { lookup: { attachedTo: tracker.class.Issue, space: tracker.class.Project } }
+      {
+        limit: 1
+      }
     )
 
   $: canSave = title.trim().length > 0
-  $: parentIssue = issue?.$lookup?.attachedTo
+  $: parentIssue = issue !== undefined && issue.subIssues > 0
 
   let saved = false
   async function save (): Promise<void> {
@@ -191,7 +191,7 @@
     on:select
   >
     <svelte:fragment slot="title">
-      {#if !embedded}
+      {#if !embedded && issue.attachedTo !== tracker.ids.NoParent}
         <ParentsNavigator element={issue} />
       {/if}
       {#if embedded}
@@ -205,10 +205,7 @@
       {#if (projectType?.tasks.length ?? 0) > 1 && taskType !== undefined}
         ({taskType.name})
       {/if}
-      <ComponentExtensions
-        extension={tracker.extensions.EditIssueTitle}
-        props={{ size: 'medium', value: issue, space: currentProject }}
-      />
+      <ComponentExtensions extension={tracker.extensions.EditIssueTitle} props={{ size: 'medium', value: issue }} />
     </svelte:fragment>
     <svelte:fragment slot="pre-utils">
       <ComponentExtensions
@@ -255,11 +252,7 @@
 
     {#if parentIssue}
       <div class="mb-6">
-        {#if currentProject}
-          <SubIssueSelector {issue} />
-        {:else}
-          <Spinner />
-        {/if}
+        <SubIssueSelector {issue} />
       </div>
     {/if}
     <EditBox
@@ -285,10 +278,8 @@
       />
     </div>
     <div class="mt-6">
-      {#key issue._id !== undefined && currentProject !== undefined}
-        {#if currentProject !== undefined}
-          <SubIssues focusIndex={50} {issue} shouldSaveDraft />
-        {/if}
+      {#key issue._id}
+        <SubIssues focusIndex={50} {issue} shouldSaveDraft />
       {/key}
     </div>
 
@@ -303,7 +294,7 @@
     </span>
 
     <svelte:fragment slot="custom-attributes">
-      {#if issue !== undefined && currentProject}
+      {#if issue !== undefined}
         <div class="space-divider" />
         <ControlPanel {issue} {showAllMixins} {readonly} />
       {/if}
