@@ -19,9 +19,11 @@
 
   import attachment from '../plugin'
   import AttachmentList from './AttachmentList.svelte'
+  import { AttachmentImageSize } from '../types'
 
   export let value: Doc & { attachments?: number }
   export let attachments: Attachment[] | undefined = undefined
+  export let imageSize: AttachmentImageSize = 'auto'
 
   const query = createQuery()
   const savedAttachmentsQuery = createQuery()
@@ -57,4 +59,4 @@
   })
 </script>
 
-<AttachmentList attachments={resAttachments} {savedAttachmentsIds} />
+<AttachmentList attachments={resAttachments} {savedAttachmentsIds} {imageSize} />

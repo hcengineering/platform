@@ -17,10 +17,17 @@
   import { Attachment } from '@hcengineering/attachment'
   import { Account, Class, Doc, generateId, IdMap, Ref, Space, toIdMap } from '@hcengineering/core'
   import { IntlString, setPlatformStatus, unknownError, Asset } from '@hcengineering/platform'
-  import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
+  import {
+    createQuery,
+    DraftController,
+    draftsStore,
+    getClient,
+    getFileUrl,
+    getImageSize
+  } from '@hcengineering/presentation'
   import textEditor, { AttachIcon, type RefAction, ReferenceInput } from '@hcengineering/text-editor'
   import { Loading, type AnySvelteComponent } from '@hcengineering/ui'
-  import { deleteFile, uploadFile } from '../utils'
+  import { deleteFile, getAttachmentMetadata, uploadFile } from '../utils'
   import attachment from '../plugin'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
 
@@ -103,6 +110,8 @@
   async function createAttachment (file: File) {
     try {
       const uuid = await uploadFile(file)
+      const metadata = await getAttachmentMetadata(file, uuid)
+
       const _id: Ref<Attachment> = generateId()
       attachments.set(_id, {
         _id,
@@ -117,7 +126,8 @@
         file: uuid,
         type: file.type,
         size: file.size,
-        lastModified: file.lastModified
+        lastModified: file.lastModified,
+        metadata
       })
       newAttachments.add(_id)
       attachments = attachments
