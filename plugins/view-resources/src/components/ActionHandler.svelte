@@ -22,7 +22,7 @@
   import { fly } from 'svelte/transition'
   import { getContextActions, getSelection } from '../actions'
   import { ListSelectionProvider, SelectionStore, focusStore, previewDocument, selectionStore } from '../selection'
-  import { getObjectPreview } from '../utils'
+  import { getObjectPreview, restrictionStore } from '../utils'
 
   const client = getClient()
 
@@ -128,7 +128,10 @@
     docs: selectionDocs
   })
 
+  $: disableActions = $restrictionStore.disableActions
+
   async function handleKeys (evt: KeyboardEvent): Promise<void> {
+    if (disableActions) return
     const targetTagName = (evt.target as any)?.tagName?.toLowerCase()
 
     let elm = evt.target as HTMLElement

@@ -1,0 +1,42 @@
+{
+  "name": "@hcengineering/model-guest",
+  "version": "0.6.0",
+  "main": "lib/index.js",
+  "author": "Anticrm Platform Contributors",
+  "svelte": "src/index.ts",
+  "types": "types/index.d.ts",
+  "template": "@hcengineering/model-package",
+  "license": "EPL-2.0",
+  "scripts": {
+    "build": "compile",
+    "build:watch": "compile",
+    "format": "format src",
+    "_phase:build": "compile transpile src",
+    "_phase:format": "format src",
+    "_phase:validate": "compile validate"
+  },
+  "devDependencies": {
+    "@hcengineering/platform-rig": "^0.6.0",
+    "@typescript-eslint/eslint-plugin": "^6.11.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-n": "^15.4.0",
+    "eslint": "^8.54.0",
+    "@typescript-eslint/parser": "^6.11.0",
+    "eslint-config-standard-with-typescript": "^40.0.0",
+    "prettier": "^3.1.0",
+    "prettier-plugin-svelte": "^3.1.0",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@hcengineering/core": "^0.6.28",
+    "@hcengineering/model": "^0.6.7",
+    "@hcengineering/model-core": "^0.6.0",
+    "@hcengineering/model-view": "^0.6.0",
+    "@hcengineering/guest": "^0.6.0",
+    "@hcengineering/guest-resources": "^0.6.0",
+    "@hcengineering/platform": "^0.6.9",
+    "@hcengineering/ui": "^0.6.11",
+    "@hcengineering/view": "^0.6.9"
+  }
+}

@@ -18,8 +18,8 @@
   import { EmployeePresenter } from '@hcengineering/contact-resources'
   import { WithLookup } from '@hcengineering/core'
   import { Staff } from '@hcengineering/hr'
-  import { closeTooltip, getEventPositionElement, showPopup } from '@hcengineering/ui'
-  import { ContextMenu } from '@hcengineering/view-resources'
+  import { closeTooltip } from '@hcengineering/ui'
+  import { showMenu } from '@hcengineering/view-resources'
   import hr from '../plugin'
 
   import { flip } from 'svelte/animate'
@@ -33,10 +33,6 @@
   $: persons = Array.isArray(value) ? value : [value]
   function ondrag (p: Employee): void {
     dragPerson = p as WithLookup<Staff>
-  }
-
-  function showContextMenu (ev: MouseEvent, object: Employee) {
-    showPopup(ContextMenu, { object }, getEventPositionElement(ev))
   }
 </script>
 
@@ -54,8 +50,8 @@
           dragPerson = undefined
           closeTooltip()
         }}
-        on:contextmenu|stopPropagation|preventDefault={(evt) => {
-          showContextMenu(evt, p)
+        on:contextmenu={(evt) => {
+          showMenu(evt, { object: p })
         }}
       >
         <EmployeePresenter

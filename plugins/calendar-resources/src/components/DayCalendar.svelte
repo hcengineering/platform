@@ -37,7 +37,7 @@
     ticker,
     isWeekend
   } from '@hcengineering/ui'
-  import { Menu } from '@hcengineering/view-resources'
+  import { Menu, showMenu } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import type {
     CalendarADGrid,
@@ -759,12 +759,6 @@
       dispatch('dragEnter', { date: new Date(new Date(newTime).setMinutes(stickyMinutes, 0, 0)) })
     }
   }
-
-  function showMenu (ev: MouseEvent, event: Event) {
-    ev.preventDefault()
-    closeTooltip()
-    showPopup(Menu, { object: event }, getEventPositionElement(ev))
-  }
 </script>
 
 <Scroller
@@ -1011,7 +1005,7 @@
                 mouseDownElement(e, ev, 'top')
               }}
               on:contextmenu={(e) => {
-                showMenu(e, ev)
+                showMenu(e, { object: ev })
               }}
             />
             <div
@@ -1022,7 +1016,7 @@
                 mouseDownElement(e, ev, 'bottom')
               }}
               on:contextmenu={(e) => {
-                showMenu(e, ev)
+                showMenu(e, { object: ev })
               }}
             />
             <EventElement

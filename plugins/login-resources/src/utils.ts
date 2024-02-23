@@ -816,3 +816,39 @@ export async function afterConfirm (): Promise<void> {
     goTo('selectWorkspace')
   }
 }
+
+export async function getEnpoint (): Promise<string | undefined> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const endpoint = getMetadata(login.metadata.OverrideEndpoint)
+
+  if (endpoint !== undefined) {
+    return endpoint
+  }
+
+  const params: [] = []
+
+  const request = {
+    method: 'getEndpoint',
+    params
+  }
+
+  try {
+    const response = await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request)
+    })
+    const result = await response.json()
+    return result
+  } catch (err: any) {
+    console.log('get endpoint error', err)
+    Analytics.handleError(err)
+  }
+}

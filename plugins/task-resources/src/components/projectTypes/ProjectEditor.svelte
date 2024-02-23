@@ -43,14 +43,12 @@
     Separator,
     TextArea,
     defineSeparators,
-    eventToHTMLElement,
     getCurrentResolvedLocation,
     navigate,
     resolvedLocationStore,
-    secondNavSeparators,
-    showPopup
+    secondNavSeparators
   } from '@hcengineering/ui'
-  import { ContextMenu } from '@hcengineering/view-resources'
+  import { showMenu } from '@hcengineering/view-resources'
   import plugin from '../../plugin'
   import IconLayers from '../icons/Layers.svelte'
   import CreateTaskType from '../taskTypes/CreateTaskType.svelte'
@@ -200,7 +198,7 @@
       size={'small'}
       kind={'secondary'}
       on:click={(ev) => {
-        showPopup(ContextMenu, { object: type }, eventToHTMLElement(ev), () => {})
+        showMenu(ev, { object: type })
       }}
     />
     <Breadcrumbs

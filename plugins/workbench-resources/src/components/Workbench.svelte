@@ -107,9 +107,9 @@
 
   const client = getClient()
 
-  let apps: Application[] | Promise<Application[]> = client
-    .findAll<Application>(workbench.class.Application, { hidden: false, _id: { $nin: excludedApps } })
-    .then((res) => (apps = res))
+  const apps: Application[] = client
+    .getModel()
+    .findAllSync<Application>(workbench.class.Application, { hidden: false, _id: { $nin: excludedApps } })
 
   let panelInstance: PanelInstance
   let popupInstance: Popup
@@ -230,9 +230,6 @@
   async function resolveShortLink (loc: Location): Promise<ResolvedLocation | undefined> {
     let locationResolver = currentApplication?.locationResolver
     if (loc.path[2] !== undefined && loc.path[2].trim().length > 0) {
-      if (apps instanceof Promise) {
-        apps = await apps
-      }
       const app = apps.find((p) => p.alias === loc.path[2])
       if (app?.locationResolver) {
         locationResolver = app?.locationResolver

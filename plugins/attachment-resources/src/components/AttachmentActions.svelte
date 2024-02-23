@@ -16,7 +16,7 @@
   import type { Attachment } from '@hcengineering/attachment'
   import { getResource } from '@hcengineering/platform'
   import { PDFViewer, getFileUrl } from '@hcengineering/presentation'
-  import { ActionIcon, IconMoreH, IconOpen, Menu, closeTooltip, showPopup } from '@hcengineering/ui'
+  import { Action as UIAction, ActionIcon, IconMoreH, IconOpen, Menu, closeTooltip, showPopup } from '@hcengineering/ui'
   import view, { Action } from '@hcengineering/view'
 
   import attachmentPlugin from '../plugin'
@@ -24,6 +24,7 @@
 
   export let attachment: Attachment
   export let isSaved = false
+  export let removable = false
 
   let download: HTMLAnchorElement
 
@@ -56,38 +57,40 @@
         action: attachmentPlugin.actionImpl.AddAttachmentToSaved
       } as unknown as Action)
 
+  const openAction: UIAction = {
+    label: view.string.Open,
+    icon: IconOpen,
+    action: async (props: any, evt: Event) => {
+      showPreview(evt as MouseEvent)
+    }
+  }
+
   const showMenu = (ev: Event) => {
+    const actions: UIAction[] = []
+    if (openable) {
+      actions.push(openAction)
+    }
+    actions.push({
+      label: saveAttachmentAction.label,
+      icon: saveAttachmentAction.icon,
+      action: async (props: any, evt: Event) => {
+        const impl = await getResource(saveAttachmentAction.action)
+        await impl(attachment, evt)
+      }
+    })
+    if (removable) {
+      actions.push({
+        label: attachmentPlugin.string.DeleteFile,
+        action: async (props: any, evt: Event) => {
+          const impl = await getResource(attachmentPlugin.actionImpl.DeleteAttachment)
+          await impl(attachment, evt)
+        }
+      })
+    }
     showPopup(
       Menu,
       {
-        actions: [
-          ...(openable
-            ? [
-                {
-                  label: view.string.Open,
-                  icon: IconOpen,
-                  action: async (props: any, evt: MouseEvent) => {
-                    showPreview(evt)
-                  }
-                }
-              ]
-            : []),
-          {
-            label: saveAttachmentAction.label,
-            icon: saveAttachmentAction.icon,
-            action: async (props: any, evt: MouseEvent) => {
-              const impl = await getResource(saveAttachmentAction.action)
-              await impl(attachment, evt)
-            }
-          },
-          {
-            label: attachmentPlugin.string.DeleteFile,
-            action: async (props: any, evt: MouseEvent) => {
-              const impl = await getResource(attachmentPlugin.actionImpl.DeleteAttachment)
-              await impl(attachment, evt)
-            }
-          }
-        ]
+        actions
       },
       ev.target as HTMLElement
     )

@@ -14,17 +14,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { combineName, PersonAccount, getFirstName, getLastName, Person } from '@hcengineering/contact'
-  import { getCurrentAccount, Ref } from '@hcengineering/core'
+  import { Person, PersonAccount, combineName, getFirstName, getLastName } from '@hcengineering/contact'
+  import { Ref, getCurrentAccount } from '@hcengineering/core'
   import { AttributeEditor, createQuery, getClient } from '@hcengineering/presentation'
   import setting, { IntegrationType } from '@hcengineering/setting'
-  import { createFocusManager, EditBox, FocusHandler, Scroller } from '@hcengineering/ui'
+  import { EditBox, FocusHandler, Scroller, createFocusManager } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import contact from '../plugin'
   import ChannelsEditor from './ChannelsEditor.svelte'
   import EditableAvatar from './EditableAvatar.svelte'
 
   export let object: Person
+  export let readonly: boolean = false
   const client = getClient()
 
   const account = getCurrentAccount() as PersonAccount
@@ -84,6 +85,7 @@
     <div class="flex-no-shrink mr-8">
       {#key object}
         <EditableAvatar
+          disabled={readonly}
           avatar={object.avatar}
           size={'x-large'}
           name={object.name}
@@ -95,6 +97,7 @@
     <div class="flex-grow flex-col">
       <div class="name">
         <EditBox
+          disabled={readonly}
           placeholder={contact.string.PersonFirstNamePlaceholder}
           bind:value={firstName}
           on:change={firstNameChange}
@@ -103,6 +106,7 @@
       </div>
       <div class="name">
         <EditBox
+          disabled={readonly}
           placeholder={contact.string.PersonLastNamePlaceholder}
           bind:value={lastName}
           on:change={lastNameChange}
@@ -110,7 +114,14 @@
         />
       </div>
       <div class="location">
-        <AttributeEditor maxWidth="20rem" _class={contact.class.Person} {object} key="city" focusIndex={3} />
+        <AttributeEditor
+          maxWidth="20rem"
+          _class={contact.class.Person}
+          {object}
+          editable={!readonly}
+          key="city"
+          focusIndex={3}
+        />
       </div>
 
       <div class="separator" />
@@ -124,6 +135,7 @@
         <ChannelsEditor
           attachedTo={object._id}
           attachedClass={object._class}
+          editable={!readonly}
           bind:integrations
           shape={'circle'}
           focusIndex={10}

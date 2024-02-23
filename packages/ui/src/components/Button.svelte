@@ -14,7 +14,8 @@
 -->
 <script lang="ts">
   import type { Asset, IntlString } from '@hcengineering/platform'
-  import { onMount, ComponentType, createEventDispatcher } from 'svelte'
+  import { ComponentType, onMount } from 'svelte'
+  import { checkAdaptiveMatching, deviceOptionsStore as deviceInfo } from '..'
   import { registerFocus } from '../focus'
   import { tooltip } from '../tooltips'
   import type {
@@ -22,11 +23,10 @@
     ButtonKind,
     ButtonShape,
     ButtonSize,
-    LabelAndProps,
     IconProps,
+    LabelAndProps,
     WidthType
   } from '../types'
-  import { checkAdaptiveMatching, deviceOptionsStore as deviceInfo } from '..'
   import Icon from './Icon.svelte'
   import Label from './Label.svelte'
   import Spinner from './Spinner.svelte'
