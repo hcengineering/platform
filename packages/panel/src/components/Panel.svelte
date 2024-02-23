@@ -44,6 +44,7 @@
   export let withoutContentScroll: boolean = false
   export let customAside: ButtonItem[] | undefined = undefined
   export let selectedAside: string | boolean = customAside ? customAside[0].id : isAside
+  export let kind: 'default' | 'modern' = 'default'
 
   export function getAside (): string | boolean {
     return panel.getAside()
@@ -103,6 +104,7 @@
   on:close
   {allowClose}
   {embedded}
+  {kind}
   {floatAside}
   bind:useMaxWidth
   {isFullSize}

@@ -20,6 +20,7 @@
   export let loading: boolean = false
   export let hasMenu: boolean = false
   export let inheritFont: boolean = false
+  export let focusIndex = -1
 </script>
 
 <ButtonBase
@@ -35,6 +36,7 @@
   {disabled}
   {hasMenu}
   {inheritFont}
+  {focusIndex}
   on:click
 >
   <slot />

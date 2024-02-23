@@ -28,6 +28,7 @@
   export let loading: boolean = false
   export let inheritColor: boolean = false
   export let tooltip: LabelAndProps | undefined = undefined
+  export let focusIndex = -1
 </script>
 
 <ButtonBase
@@ -42,5 +43,6 @@
   {pressed}
   {hasMenu}
   {tooltip}
+  {focusIndex}
   on:click
 />

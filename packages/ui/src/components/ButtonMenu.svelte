@@ -36,6 +36,7 @@
   export let params: Record<string, any> = {}
   export let selected: DropdownIntlItem['id'] | undefined = undefined
   export let element: HTMLButtonElement | undefined = undefined
+  export let focusIndex = -1
 
   let opened: boolean = false
 
@@ -81,5 +82,6 @@
   {loading}
   {inheritColor}
   pressed={opened}
+  {focusIndex}
   on:click={openPopup}
 />

@@ -23,14 +23,15 @@
   import ui from '..'
 
   export let type: 'type-aside' | 'type-popup' | 'type-component'
-  export let label: IntlString
+  export let label: IntlString | undefined = undefined
   export let labelProps: any | undefined = undefined
-  export let okAction: () => Promise<void> | void
+  export let okAction: () => Promise<void> | void = () => {}
   export let onCancel: (() => void) | undefined = undefined
   export let canSave: boolean = false
   export let okLabel: IntlString = ui.string.Ok
   export let padding: string | undefined = undefined
-  export let hidden = false
+  export let hidden: boolean = false
+  export let noResize: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -47,18 +48,23 @@
       ? 'var(--spacing-2) var(--spacing-3) var(--spacing-4)'
       : type === 'type-aside'
         ? 'var(--spacing-2) var(--spacing-1_5)'
-        : 'var(--spacing-3)'
+        : 'var(--spacing-4)'
 </script>
 
 <svelte:window on:keydown={onKeyDown} />
 
 <div class="hulyModal-container {type}" class:hidden>
-  <Header {type} on:close={close}>
-    <Label {label} params={labelProps} />
+  <Header {type} {noResize} on:close={close}>
+    <svelte:fragment slot="beforeTitle">
+      <slot name="beforeTitle" />
+    </svelte:fragment>
+    {#if label}<Label {label} params={labelProps} />{/if}
+    <slot name="title" />
     <svelte:fragment slot="actions">
       <slot name="actions" />
     </svelte:fragment>
   </Header>
+  <slot name="beforeContent" />
   <div class="hulyModal-content">
     <Scroller
       padding={padding ?? typePadding}
@@ -66,11 +72,12 @@
         ? undefined
         : type === 'type-aside'
           ? 'var(--spacing-2)'
-          : 'var(--spacing-3)'}
+          : 'var(--spacing-4)'}
     >
       <slot />
     </Scroller>
   </div>
+  <slot name="afterContent" />
   {#if type !== 'type-component'}
     <div class="hulyModal-footer">
       <ButtonBase

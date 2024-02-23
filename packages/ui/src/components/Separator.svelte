@@ -225,7 +225,7 @@
           item.maxSize !== -1 ? item.size + 'px' : item.minSize === -1 ? '0' : item.minSize + 'px'
         };`
         style += item.maxSize === -1 ? '' : `max-${side}:${item.size + 'px'};`
-        style += item.maxSize !== -1 ? `${side}:${item.size}px;` : `${side}:calc(100% - ${sum}px);`
+        style += item.maxSize !== -1 ? `${side}:${item.size}px;` : '' // `${side}:calc(100% - ${sum}px);`
         if (item.styles !== null) {
           item.styles.forEach((value, key) => {
             if (key !== 'pointer-events' || final) style += `${key}:${value};`

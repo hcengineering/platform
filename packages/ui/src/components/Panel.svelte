@@ -44,6 +44,7 @@
   export let useMaxWidth: boolean | undefined = undefined
   export let customAside: ButtonItem[] | undefined = undefined
   export let selectedAside: string | boolean = customAside ? customAside[0].id : isAside
+  export let kind: 'default' | 'modern' = 'default'
 
   export function getAside (): string | boolean {
     if (customAside) return selectedAside
@@ -124,7 +125,7 @@
 </script>
 
 <div
-  class="popupPanel panel"
+  class="popupPanel panel {kind}"
   class:embedded
   use:resizeObserver={(element) => {
     panelWidth = element.clientWidth
