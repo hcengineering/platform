@@ -4,25 +4,27 @@
     ".build/**", 
     "coverage/**",
     "**/*.svelte",
-    ".build/**",
-    ".validate/**",
-    ".format/**",
-    "types"
+    ".build/**"
   ],
   "disableBuildCacheForProject": false,
 
   "operationSettings": [
     {
       "operationName": "build",
-      "outputFolderNames": ["lib", ".build"]
+      "outputFolderNames": ["lib", ".build", "types"]
     },
     {
       "operationName": "test",
       "outputFolderNames": ["coverage"]
     },
     {
-      "operationName": "_phase:build",
+      "operationName": "build:watch",
       "outputFolderNames": ["lib", ".build"]
+    },
+    {
+      "operationName": "_phase:build",
+      "outputFolderNames": ["lib", ".build"],
+      "disableBuildCacheForOperation": true
     },
     {
       "operationName": "_phase:validate",

@@ -86,18 +86,16 @@
   ],
   "commands": [   
     {
-      "commandKind": "phased",
+      "commandKind": "bulk",
       "name": "build:watch",
       "summary": "Build and watch",
-      "phases": ["_phase:build", "_phase:validate"],
       "description": "Perform build with tsc and watch for changes with rush",
       "enableParallelism": true,
       "incremental": true,
+      "ignoreMissingScript": true,
+      "watchForChanges": true,
       "safeForSimultaneousRushProcesses": true,
-      "watchOptions": {
-        "alwaysWatch": true,
-        "watchPhases": ["_phase:build", "_phase:validate"]
-      }
+      "disableBuildCache": false
     },
     {
       "commandKind": "bulk",
@@ -132,7 +130,7 @@
       "phases": ["_phase:validate"],
       "summary": "validate",
       "enableParallelism": true,
-      "incremental": true      
+      "incremental": true
     },
     {
       "commandKind": "phased",
@@ -193,12 +191,12 @@
       "incremental": true
     },
     {
-      "commandKind": "global",
-      "name": "docker:up",
-      "summary": "Up development build",
-      "description": "Up development build",
-      "safeForSimultaneousRushProcesses": true,
-      "shellCommand": "cd ./dev && docker compose up -d --force-recreate"
+      "summary": "docker:rebuild",
+      "commandKind": "phased",
+      "name": "docker:rebuild",
+      "phases": ["_phase:build", "_phase:bundle", "_phase:package", "_phase:docker-build"],
+      "enableParallelism": true,
+      "incremental": false
     },
     {
       "summary": "docker:staging",

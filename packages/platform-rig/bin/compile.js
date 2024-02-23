@@ -5,19 +5,19 @@ const { spawn } = require('child_process')
 const esbuild = require('esbuild')
 const { copy } = require('esbuild-plugin-copy')
 
-async function execProcess(cmd, logFile, args, buildDir= '.build') {
+async function execProcess(cmd, logFile, args) {
   let compileRoot = dirname(dirname(process.argv[1]))
   console.log('Running from',)
   console.log("Compiling...\n", process.cwd(), args)
 
-  if (!existsSync(join(process.cwd(), buildDir))) {
-    mkdirSync(join(process.cwd(), buildDir))
+  if (!existsSync(join(process.cwd(), '.build'))) {
+    mkdirSync(join(process.cwd(), '.build'))
   }
 
   const compileOut = spawn(cmd, args)
 
-  const stdoutFilePath = `${buildDir}/${logFile}.log`
-  const stderrFilePath = `${buildDir}/${logFile}-err.log`
+  const stdoutFilePath = `.build/${logFile}.log`
+  const stderrFilePath = `.build/${logFile}-err.log`
 
 
   const outPromise = new Promise((resolve) => {
@@ -132,7 +132,7 @@ async function performESBuild(filesToTranspile) {
     minify: false,
     outdir: 'lib',
     keepNames: true,
-    sourcemap: 'inline',
+    sourcemap: 'external',
     allowOverwrite: true,
     format: 'cjs',
     plugins: [
@@ -151,15 +151,22 @@ async function performESBuild(filesToTranspile) {
 }
 
 async function validateTSC(st) {
+  if (existsSync(join(process.cwd(), 'types'))) {
+    rmSync(join(process.cwd(), 'types'), { recursive: true })
+  }
+  if (existsSync(join(process.cwd(), '.validate'))) {
+    rmSync(join(process.cwd(), '.validate'), { recursive: true })
+  }
   await execProcess(
     'tsc',
-    'validate',
+    'tsc',
     [
       '-pretty',
       "--emitDeclarationOnly",
       "--incremental",
       "--tsBuildInfoFile", ".validate/tsBuildInfoFile.info",
+      "--declarationDir", "types",
       ...args.splice(1)
-    ], '.validate')
+    ])  
 }
 
