@@ -4,7 +4,10 @@
     ".build/**", 
     "coverage/**",
     "**/*.svelte",
-    ".build/**"
+    ".build/**",
+    ".validate/**",
+    ".format/**",
+    "types"
   ],
   "disableBuildCacheForProject": false,
 
@@ -23,8 +26,7 @@
     },
     {
       "operationName": "_phase:build",
-      "outputFolderNames": ["lib", ".build"],
-      "disableBuildCacheForOperation": true
+      "outputFolderNames": ["lib", ".build"]
     },
     {
       "operationName": "_phase:validate",
