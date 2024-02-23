@@ -86,16 +86,18 @@
   ],
   "commands": [   
     {
-      "commandKind": "bulk",
+      "commandKind": "phased",
       "name": "build:watch",
       "summary": "Build and watch",
+      "phases": ["_phase:build", "_phase:validate"],
       "description": "Perform build with tsc and watch for changes with rush",
       "enableParallelism": true,
       "incremental": true,
-      "ignoreMissingScript": true,
-      "watchForChanges": true,
       "safeForSimultaneousRushProcesses": true,
-      "disableBuildCache": false
+      "watchOptions": {
+        "alwaysWatch": true,
+        "watchPhases": ["_phase:build", "_phase:validate"]
+      }
     },
     {
       "commandKind": "bulk",
@@ -130,7 +132,7 @@
       "phases": ["_phase:validate"],
       "summary": "validate",
       "enableParallelism": true,
-      "incremental": true
+      "incremental": true      
     },
     {
       "commandKind": "phased",

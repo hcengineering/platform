@@ -5,19 +5,19 @@ const { spawn } = require('child_process')
 const esbuild = require('esbuild')
 const { copy } = require('esbuild-plugin-copy')
 
-async function execProcess(cmd, logFile, args) {
+async function execProcess(cmd, logFile, args, buildDir= '.build') {
   let compileRoot = dirname(dirname(process.argv[1]))
   console.log('Running from',)
   console.log("Compiling...\n", process.cwd(), args)
 
-  if (!existsSync(join(process.cwd(), '.build'))) {
-    mkdirSync(join(process.cwd(), '.build'))
+  if (!existsSync(join(process.cwd(), buildDir))) {
+    mkdirSync(join(process.cwd(), buildDir))
   }
 
   const compileOut = spawn(cmd, args)
 
-  const stdoutFilePath = `.build/${logFile}.log`
-  const stderrFilePath = `.build/${logFile}-err.log`
+  const stdoutFilePath = `${buildDir}/${logFile}.log`
+  const stderrFilePath = `${buildDir}/${logFile}-err.log`
 
 
   const outPromise = new Promise((resolve) => {
@@ -159,14 +159,14 @@ async function validateTSC(st) {
   }
   await execProcess(
     'tsc',
-    'tsc',
+    'validate',
     [
       '-pretty',
       "--emitDeclarationOnly",
-      "--incremental",
+      "--incremental",      
       "--tsBuildInfoFile", ".validate/tsBuildInfoFile.info",
       "--declarationDir", "types",
       ...args.splice(1)
-    ])  
+    ], '.validate')
 }
 
