@@ -6,6 +6,7 @@
 
   import { createEventDispatcher, onMount } from 'svelte'
   import { IntlString, translate } from '@hcengineering/platform'
+  import { registerFocus } from '../focus'
   import Label from './Label.svelte'
   import { themeStore } from '..'
 
@@ -39,6 +40,22 @@
       element.focus()
     }
   })
+
+  // Focusable control with index
+  export let focusIndex = -1
+  const { idx, focusManager } = registerFocus(focusIndex, {
+    focus: () => {
+      element?.focus()
+      return element != null
+    },
+    isFocus: () => document.activeElement === element
+  })
+  const updateFocus = () => {
+    focusManager?.setFocus(idx)
+  }
+  $: if (element) {
+    element.addEventListener('focus', updateFocus)
+  }
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->

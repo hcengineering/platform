@@ -61,6 +61,7 @@
   export let type: ProjectType
   export let descriptor: ProjectTypeDescriptor | undefined
   export let visibleNav: boolean = true
+  export let visibleSecondNav: boolean = true
 
   const dispatch = createEventDispatcher()
 
@@ -223,7 +224,7 @@
     </svelte:fragment> -->
   </Header>
   <div class="hulyComponent-content__container columns">
-    {#if selectedTaskTypeId === undefined}
+    {#if selectedTaskTypeId === undefined && visibleSecondNav}
       <div class="hulyComponent-content__column">
         <div class="hulyComponent-content__navHeader">
           <div class="hulyComponent-content__navHeader-menu">

@@ -16,6 +16,7 @@
   import type { Asset, IntlString } from '@hcengineering/platform'
   import { AnySvelteComponent, IconSize, LabelAndProps } from '../types'
   import { tooltip as tp } from '../tooltips'
+  import { registerFocus } from '../focus'
   import { ComponentType } from 'svelte'
   import Spinner from './Spinner.svelte'
   import Icon from './Icon.svelte'
@@ -45,6 +46,29 @@
     actualIconSize = iconSize
   } else if (type === 'type-button' && !hasMenu) {
     actualIconSize = 'medium'
+  }
+
+  // Focusable control with index
+  export let focusIndex = -1
+  const { idx, focusManager } = registerFocus(focusIndex, {
+    focus: () => {
+      if (!disabled) {
+        element?.focus()
+      }
+      return !disabled && element != null
+    },
+    isFocus: () => document.activeElement === element
+  })
+
+  $: if (idx !== -1 && focusManager) {
+    focusManager.updateFocus(idx, focusIndex)
+  }
+
+  const updateFocus = () => {
+    focusManager?.setFocus(idx)
+  }
+  $: if (element != null) {
+    element.addEventListener('focus', updateFocus, { once: true })
   }
 </script>
 

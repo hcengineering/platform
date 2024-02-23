@@ -57,6 +57,7 @@
   export let _id: Ref<Issue>
   export let _class: Ref<Class<Issue>>
   export let embedded: boolean = false
+  export let kind: 'default' | 'modern' = 'default'
 
   let lastId: Ref<Doc> = _id
   const queryClient = createQuery()
@@ -183,6 +184,7 @@
     isAside={true}
     isSub={false}
     {embedded}
+    {kind}
     withoutActivity={false}
     bind:content
     bind:innerWidth

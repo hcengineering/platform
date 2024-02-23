@@ -277,6 +277,11 @@
       color: var(--global-secondary-TextColor);
     }
   }
+  &.type-component {
+    background-color: var(--theme-comp-header-color); // var(--global-surface-02-BackgroundColor);
+    border: 1px solid var(--theme-navpanel-divider); // var(--global-surface-02-BorderColor);
+    border-radius: var(--small-focus-BorderRadius);
+  }
   textarea {
     font-weight: 400 !important;
     color: var(--global-tertiary-TextColor) !important;
@@ -476,7 +481,8 @@
       & + .hulyAccordionItem-content {
         max-height: 100%;
       }
-      &.small.bottomSpace + .hulyAccordionItem-content {
+      &.small.bottomSpace + .hulyAccordionItem-content,
+      &.small.nav + .hulyAccordionItem-content {
         padding-bottom: var(--spacing-1_5);
       }
       &.medium.bottomSpace + .hulyAccordionItem-content {
