@@ -76,6 +76,9 @@ bundle.js
 bundle/*.js
 dist
 .build
+typings
+types
+.validate
 tsconfig.tsbuildinfo
 ingest-attachment-*.zip
 tsdoc-metadata.json

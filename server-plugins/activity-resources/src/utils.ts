@@ -14,7 +14,7 @@ import {
   TxProcessor,
   TxUpdateDoc
 } from '@hcengineering/core'
-import core from '@hcengineering/core/lib/component'
+import core from '@hcengineering/core/src/component'
 import { ActivityMessageControl, DocAttributeUpdates, DocUpdateAction } from '@hcengineering/activity'
 import { ActivityControl, DocObjectCache, getAllObjectTransactions } from '@hcengineering/server-activity'
 import { getDocCollaborators } from '@hcengineering/server-notification-resources'

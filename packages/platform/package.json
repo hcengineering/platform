@@ -2,10 +2,12 @@
   "name": "@hcengineering/platform",
   "version": "0.6.9",
   "main": "lib/index.js",
-  "typings": "lib/index.d.ts",
+  "svelte": "src/index.ts",
+  "types": "types/index.d.ts",
   "files": [
     "lib/**/*",
     "src/**/*",
+    "typings/**/*",
     "tsconfig.json"
   ],
   "author": "Anticrm Platform Contributors",
@@ -15,9 +17,10 @@
     "build:watch": "compile",
     "test": "jest --passWithNoTests --silent",
     "format": "format src",
-    "_phase:build": "compile",
+    "_phase:build": "compile transpile src",
     "_phase:test": "jest --passWithNoTests --silent",
-    "_phase:format": "format src"
+    "_phase:format": "format src",
+    "_phase:validate": "compile validate"
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "^0.6.0",

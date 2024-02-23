@@ -16,9 +16,19 @@
       "allowWarningsOnSuccess": false
     },
     {
+      "name": "_phase:validate",
+      "dependencies": {
+        "self": ["_phase:build"],
+        "upstream": ["_phase:validate"]
+      },
+      "ignoreMissingScript": true,
+      "allowWarningsOnSuccess": false
+    },
+    {
       "name": "_phase:test",
       "dependencies": {
-        "self": ["_phase:build"]
+        "self": ["_phase:build"],
+        "upstream": ["_phase:validate"]
       },
       "ignoreMissingScript": true,
       "allowWarningsOnSuccess": true
@@ -109,7 +119,16 @@
     {
       "commandKind": "phased",
       "name": "build",
+      "summary": "build",
       "phases": ["_phase:build"],
+      "enableParallelism": true,
+      "incremental": true
+    },
+    {
+      "commandKind": "phased",
+      "name": "validate",
+      "phases": ["_phase:validate"],
+      "summary": "validate",
       "enableParallelism": true,
       "incremental": true
     },
@@ -118,6 +137,14 @@
       "name": "rebuild",
       "summary": "ReBuild and test all projects.",
       "phases": ["_phase:build"],
+      "enableParallelism": true,
+      "incremental": false
+    },
+    {
+      "commandKind": "phased",
+      "name": "revalidate",
+      "phases": ["_phase:validate"],
+      "summary": "revalidate",
       "enableParallelism": true,
       "incremental": false
     },

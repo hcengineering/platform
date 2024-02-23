@@ -1,8 +1,11 @@
 {
   "name": "@hcengineering/ui-package",
   "version": "0.6.0",
+  "main": "src/index.ts",
+  "#overrideKeys": ["main"],
   "scripts": {
     "_phase:build": "compile ui",
+    "_phase:validate": "compile validate",
     "_phase:format": "format src",
     "build": "compile ui",
     "build:watch": "compile ui",
