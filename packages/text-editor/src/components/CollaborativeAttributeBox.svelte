@@ -27,7 +27,7 @@
 
   export let object: Doc
   export let key: KeyedAttribute
-
+  export let readonly = false
   export let textNodeActions: TextNodeAction[] = []
   export let refActions: RefAction[] = []
 
@@ -118,6 +118,7 @@
   {attachFile}
   {placeholder}
   {boundary}
+  {readonly}
   field={key.key}
   on:focus
   on:blur

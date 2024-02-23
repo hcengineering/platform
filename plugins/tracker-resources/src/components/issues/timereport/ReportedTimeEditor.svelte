@@ -29,6 +29,7 @@
   export let kind: 'no-border' | 'link' = 'no-border'
   export let size: 'small' | 'medium' | 'large' = 'large'
   export let currentProject: Project | undefined
+  export let readonly: boolean = false
 
   $: if (currentProject === undefined) {
     currentProject = $activeProjects.get(object.space)
@@ -37,6 +38,7 @@
   $: defaultTimeReportDay = currentProject?.defaultTimeReportDay
 
   function addTimeReport (event: MouseEvent): void {
+    if (readonly) return
     showPopup(
       TimeSpendReportPopup,
       {
@@ -52,6 +54,7 @@
     )
   }
   function showReports (event: MouseEvent): void {
+    if (readonly) return
     showPopup(ReportsPopup, { issue: object }, eventToHTMLElement(event))
   }
   $: childTime = floorFractionDigits(
@@ -66,6 +69,7 @@
   <div
     id="ReportedTimeEditor"
     class="link-container antiButton link {size} flex-grow flex-between"
+    class:readonly
     on:click={showReports}
   >
     {#if value !== undefined}
@@ -78,9 +82,11 @@
     {:else}
       <span class="content-dark-color"><Label label={placeholder} /></span>
     {/if}
-    <div class="add-action">
-      <ActionIcon icon={IconAdd} size={'small'} action={addTimeReport} />
-    </div>
+    {#if !readonly}
+      <div class="add-action">
+        <ActionIcon icon={IconAdd} size={'small'} action={addTimeReport} />
+      </div>
+    {/if}
   </div>
 {:else if value !== undefined}
   <span class="flex-row-center">
@@ -101,9 +107,6 @@
     }
 
     &:hover {
-      background-color: var(--theme-bg-color);
-      border-color: var(--theme-divider-color);
-
       .add-action {
         visibility: visible;
       }

@@ -27,6 +27,7 @@
   export let value: Attachment
   export let isSaved: boolean = false
   export let listProvider: ListSelectionProvider | undefined = undefined
+  export let removable: boolean = false
   const dispatch = createEventDispatcher()
 
   $: type = getType(value.type)
@@ -58,14 +59,14 @@
       alt={value.name}
     />
     <div class="actions conner">
-      <AttachmentActions attachment={value} {isSaved} />
+      <AttachmentActions attachment={value} {isSaved} {removable} />
     </div>
   </div>
 {:else if type === 'audio'}
   <div class="buttonContainer">
     <AudioPlayer {value} />
     <div class="actions conner" style:padding={'0.125rem 0.25rem'}>
-      <AttachmentActions attachment={value} {isSaved} />
+      <AttachmentActions attachment={value} {isSaved} {removable} />
     </div>
   </div>
 {:else if type === 'video'}
@@ -78,14 +79,14 @@
       </div>
     </video>
     <div class="actions conner">
-      <AttachmentActions attachment={value} {isSaved} />
+      <AttachmentActions attachment={value} {isSaved} {removable} />
     </div>
   </div>
 {:else}
   <div class="flex buttonContainer extraWidth">
     <AttachmentPresenter {value} />
     <div class="actions conner">
-      <AttachmentActions attachment={value} {isSaved} />
+      <AttachmentActions attachment={value} {isSaved} {removable} />
     </div>
   </div>
 {/if}

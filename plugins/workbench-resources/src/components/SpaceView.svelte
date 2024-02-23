@@ -32,8 +32,8 @@
 
   export let currentSpace: Ref<Space> | undefined
   export let currentView: ViewConfiguration | undefined
-  export let createItemDialog: AnyComponent | undefined
-  export let createItemLabel: IntlString | undefined
+  export let createItemDialog: AnyComponent | undefined = undefined
+  export let createItemLabel: IntlString | undefined = undefined
 
   let search: string = ''
   let viewlet: WithLookup<Viewlet> | undefined = undefined

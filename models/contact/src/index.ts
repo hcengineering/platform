@@ -73,6 +73,7 @@ import templates from '@hcengineering/templates'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type Action } from '@hcengineering/view'
 import contact from './plugin'
+import { createPublicLinkAction } from '@hcengineering/model-guest'
 
 export { contactId } from '@hcengineering/contact'
 export { contactOperation } from './migration'
@@ -1088,4 +1089,6 @@ export function createModel (builder: Builder): void {
     [],
     ['comments', 'attachments']
   )
+
+  createPublicLinkAction(builder, contact.class.Contact, contact.action.PublicLink)
 }

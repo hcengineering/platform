@@ -22,9 +22,9 @@
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import { Vacancy } from '@hcengineering/recruit'
   import tracker from '@hcengineering/tracker'
+  import { Button, Component, EditBox, IconMixin, IconMoreH, Label } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { Button, Component, EditBox, IconMixin, IconMoreH, Label, showPopup } from '@hcengineering/ui'
-  import { ContextMenu, DocAttributeBar, DocNavLink } from '@hcengineering/view-resources'
+  import { DocAttributeBar, DocNavLink, showMenu } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import recruit from '../plugin'
   import VacancyApplications from './VacancyApplications.svelte'
@@ -69,12 +69,6 @@
   }
 
   $: updateObject(_id)
-
-  function showMenu (ev?: Event): void {
-    if (object !== undefined) {
-      showPopup(ContextMenu, { object, excludedActions: [view.action.Open] }, (ev as MouseEvent).target as HTMLElement)
-    }
-  }
 
   const ignoreMixins: Set<Ref<Mixin<Doc>>> = new Set<Ref<Mixin<Doc>>>()
   const hierarchy = client.getHierarchy()
@@ -164,7 +158,14 @@
       {/if}
     </svelte:fragment>
     <svelte:fragment slot="utils">
-      <Button icon={IconMoreH} iconProps={{ size: 'medium' }} kind={'icon'} on:click={showMenu} />
+      <Button
+        icon={IconMoreH}
+        iconProps={{ size: 'medium' }}
+        kind={'icon'}
+        on:click={(e) => {
+          showMenu(e, { object, excludedActions: [view.action.Open] })
+        }}
+      />
       <Button
         icon={IconMixin}
         kind={'icon'}

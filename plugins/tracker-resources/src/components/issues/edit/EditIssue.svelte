@@ -40,11 +40,10 @@
     Spinner,
     createFocusManager,
     getCurrentResolvedLocation,
-    navigate,
-    showPopup
+    navigate
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { ContextMenu, DocNavLink, ParentsNavigator } from '@hcengineering/view-resources'
+  import { DocNavLink, ParentsNavigator, showMenu } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { generateIssueShortLink } from '../../../issues'
   import tracker from '../../../plugin'
@@ -58,6 +57,7 @@
   export let _class: Ref<Class<Issue>>
   export let embedded: boolean = false
   export let kind: 'default' | 'modern' = 'default'
+  export let readonly: boolean = false
 
   let lastId: Ref<Doc> = _id
   const queryClient = createQuery()
@@ -121,13 +121,9 @@
     }
   }
 
-  function showMenu (ev?: Event): void {
+  function showContextMenu (ev: MouseEvent): void {
     if (issue !== undefined) {
-      showPopup(
-        ContextMenu,
-        { object: issue, excludedActions: [view.action.Open] },
-        (ev as MouseEvent).target as HTMLElement
-      )
+      showMenu(ev, { object: issue, excludedActions: [view.action.Open] })
     }
   }
 
@@ -181,6 +177,8 @@
   <Panel
     object={issue}
     isHeader={false}
+    withoutInput={readonly}
+    allowClose={!embedded}
     isAside={true}
     isSub={false}
     {embedded}
@@ -223,25 +221,27 @@
     </svelte:fragment>
 
     <svelte:fragment slot="utils">
-      <Button icon={IconMoreH} iconProps={{ size: 'medium' }} kind={'icon'} on:click={showMenu} />
-      <CopyToClipboard issueUrl={generateIssueShortLink(issue.identifier)} />
-      <Button
-        icon={setting.icon.Setting}
-        kind={'icon'}
-        iconProps={{ size: 'medium' }}
-        showTooltip={{ label: setting.string.ClassSetting }}
-        on:click={(ev) => {
-          ev.stopPropagation()
-          const loc = getCurrentResolvedLocation()
-          loc.path[2] = settingId
-          loc.path[3] = 'setting'
-          loc.path[4] = 'classes'
-          loc.path.length = 5
-          loc.query = { _class }
-          loc.fragment = undefined
-          navigate(loc)
-        }}
-      />
+      {#if !readonly}
+        <Button icon={IconMoreH} iconProps={{ size: 'medium' }} kind={'icon'} on:click={showContextMenu} />
+        <CopyToClipboard issueUrl={generateIssueShortLink(issue.identifier)} />
+        <Button
+          icon={setting.icon.Setting}
+          kind={'icon'}
+          iconProps={{ size: 'medium' }}
+          showTooltip={{ label: setting.string.ClassSetting }}
+          on:click={(ev) => {
+            ev.stopPropagation()
+            const loc = getCurrentResolvedLocation()
+            loc.path[2] = settingId
+            loc.path[3] = 'setting'
+            loc.path[4] = 'classes'
+            loc.path.length = 5
+            loc.query = { _class }
+            loc.fragment = undefined
+            navigate(loc)
+          }}
+        />
+      {/if}
       <Button
         icon={IconMixin}
         iconProps={{ size: 'medium' }}
@@ -265,6 +265,7 @@
     <EditBox
       focusIndex={1}
       bind:value={title}
+      disabled={readonly}
       placeholder={tracker.string.IssueTitlePlaceholder}
       kind="large-style"
       on:blur={save}
@@ -273,6 +274,7 @@
       <AttachmentStyleBoxCollabEditor
         focusIndex={30}
         object={issue}
+        {readonly}
         key={{ key: 'description', attr: descriptionKey }}
         bind:this={descriptionBox}
         placeholder={tracker.string.IssueDescriptionPlaceholder}
@@ -292,7 +294,7 @@
 
     {#if editorFooter}
       <div class="step-tb-6">
-        <Component is={editorFooter.footer} props={{ object: issue, _class, ...editorFooter.props }} />
+        <Component is={editorFooter.footer} props={{ object: issue, _class, ...editorFooter.props, readonly }} />
       </div>
     {/if}
 
@@ -303,7 +305,7 @@
     <svelte:fragment slot="custom-attributes">
       {#if issue !== undefined && currentProject}
         <div class="space-divider" />
-        <ControlPanel {issue} {showAllMixins} />
+        <ControlPanel {issue} {showAllMixins} {readonly} />
       {/if}
 
       <div class="popupPanel-body__aside-grid">

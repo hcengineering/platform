@@ -913,12 +913,21 @@ export async function getUserWorkspaces (db: Db, productId: string, token: strin
  * @public
  */
 export async function getWorkspaceInfo (db: Db, productId: string, token: string): Promise<ClientWorkspaceInfo> {
-  const { email, workspace } = decodeToken(token)
+  const { email, workspace, extra } = decodeToken(token)
+  const guest = extra?.guest === 'true'
   let account: Pick<Account, 'admin' | 'workspaces'> | null = null
-  if (email !== systemAccountEmail) {
+  const query: Filter<Workspace> = {
+    workspace: workspace.name
+  }
+  if (email !== systemAccountEmail && !guest) {
     account = await getAccount(db, email)
     if (account === null) {
       throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+  } else if (guest) {
+    account = {
+      admin: false,
+      workspaces: []
     }
   } else {
     account = {
@@ -927,12 +936,13 @@ export async function getWorkspaceInfo (db: Db, productId: string, token: string
     }
   }
 
+  if (account.admin !== true && !guest) {
+    query._id = { $in: account.workspaces }
+  }
+
   const [ws] = (
-    await db
-      .collection<Workspace>(WORKSPACE_COLLECTION)
-      .find(withProductId(productId, account.admin === true ? {} : { _id: { $in: account.workspaces } }))
-      .toArray()
-  ).filter((it) => it.disabled !== true && it.workspace === workspace.name)
+    await db.collection<Workspace>(WORKSPACE_COLLECTION).find(withProductId(productId, query)).toArray()
+  ).filter((it) => it.disabled !== true)
   if (ws == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
@@ -967,6 +977,7 @@ export async function setRole (
   role: AccountRole,
   client?: Client
 ): Promise<void> {
+  if (!Object.values(AccountRole).includes(role)) return
   const email = cleanEmail(_email)
   const connection = client ?? (await connect(getTransactor(), getWorkspaceId(workspace, productId)))
   try {
@@ -975,9 +986,8 @@ export async function setRole (
     const existingAccount = await ops.findOne(contact.class.PersonAccount, { email })
 
     if (existingAccount !== undefined) {
-      const value = isNaN(Number(role)) ? 0 : Number(role)
       await ops.update(existingAccount, {
-        role: value
+        role
       })
     }
   } finally {
@@ -1123,7 +1133,7 @@ async function createPersonAccount (
       await ops.createDoc(contact.class.PersonAccount, core.space.Model, {
         email: account.email,
         person: employee,
-        role: 0
+        role: AccountRole.User
       })
     } else {
       const employee = await ops.findOne(contact.mixin.Employee, { _id: existingAccount.person as Ref<Employee> })
@@ -1468,6 +1478,7 @@ export function getMethods (
   migrateOperations: [string, MigrateOperation][]
 ): Record<string, AccountMethod> {
   return {
+    getEndpoint: wrap(async () => getEndpoint()),
     login: wrap(login),
     join: wrap(join),
     checkJoin: wrap(checkJoin),

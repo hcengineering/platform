@@ -59,6 +59,7 @@
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <span
     class:cursor-pointer={!disabled}
+    class:cursor-default={disabled}
     class:noUnderline={noUnderline || disabled}
     class:noOverflow
     class:inline

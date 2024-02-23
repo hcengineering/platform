@@ -83,6 +83,8 @@
     "@hcengineering/model-server-activity": "^0.6.0",
     "@hcengineering/model-server-openai": "^0.6.0",
     "@hcengineering/model-server-translate": "^0.6.0",
-    "@hcengineering/model-support": "^0.6.0"
+    "@hcengineering/model-support": "^0.6.0",
+    "@hcengineering/model-guest": "^0.6.0",
+    "@hcengineering/model-server-guest": "^0.6.0"
   }
 }

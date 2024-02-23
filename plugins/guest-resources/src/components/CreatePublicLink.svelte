@@ -1,0 +1,119 @@
+<!--
+// Copyright © 2024 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
+<script lang="ts">
+  import { Doc } from '@hcengineering/core'
+  import presentaion, {
+    Card,
+    MessageBox,
+    copyTextToClipboard,
+    createQuery,
+    getClient
+  } from '@hcengineering/presentation'
+  import guest from '../plugin'
+  import { Button, Loading, Location, showPopup } from '@hcengineering/ui'
+  import { getObjectLinkFragment } from '@hcengineering/view-resources'
+  import view from '@hcengineering/view'
+  import { PublicLink } from '@hcengineering/guest'
+  import { createEventDispatcher } from 'svelte'
+
+  export let value: Doc
+
+  const client = getClient()
+  const query = createQuery()
+  let loading = true
+  let link: PublicLink | undefined
+
+  const dispatch = createEventDispatcher()
+
+  async function createLink (location: Location, revokable: boolean = true): Promise<void> {
+    await client.createDoc(guest.class.PublicLink, guest.space.Links, {
+      attachedTo: value._id,
+      location,
+      revokable,
+      restrictions: {
+        readonly: true,
+        disableNavigation: true,
+        disableActions: true,
+        disableComments: true
+      },
+      url: ''
+    })
+  }
+
+  async function generate (object: Doc): Promise<void> {
+    const panelComponent = client.getHierarchy().classHierarchyMixin(object._class, view.mixin.ObjectPanel)
+    const comp = panelComponent?.component ?? view.component.EditDoc
+    const loc = await getObjectLinkFragment(client.getHierarchy(), object, {}, comp)
+    await createLink(loc)
+  }
+
+  async function checkNeedGenerate (value: Doc, loading: boolean, link: PublicLink | undefined): Promise<void> {
+    if (!loading || link !== undefined) return
+    await generate(value)
+  }
+
+  query.query(
+    guest.class.PublicLink,
+    { attachedTo: value._id },
+    (res) => {
+      link = res[0]
+      void checkNeedGenerate(value, loading, link)
+      loading = false
+    },
+    { limit: 1 }
+  )
+
+  function close () {
+    dispatch('close')
+  }
+
+  function copy (): void {
+    if (link?.url === undefined || link.url === '') return
+    copyTextToClipboard(link.url)
+  }
+
+  async function revoke (): Promise<void> {
+    if (!revokable || link === undefined) return
+    showPopup(
+      MessageBox,
+      {
+        label: guest.string.Revoke,
+        message: guest.string.RevokeConfirmation
+      },
+      'top',
+      (res) => {
+        if (res === true && link !== undefined) {
+          client.remove(link)
+        }
+        dispatch('close')
+      }
+    )
+  }
+
+  $: revokable = link?.revokable ?? false
+</script>
+
+<Card label={guest.string.PublicLink} canSave={true} okLabel={presentaion.string.Close} on:close okAction={close}>
+  {#if link?.url === undefined || link.url === ''}
+    <Loading />
+  {:else}
+    <div class="over-underline link w-full overflow-label" on:click={copy}>{link.url}</div>
+  {/if}
+  <svelte:fragment slot="buttons">
+    {#if revokable}
+      <Button label={guest.string.Revoke} kind={'dangerous'} size={'large'} on:click={revoke} />
+    {/if}
+  </svelte:fragment>
+</Card>

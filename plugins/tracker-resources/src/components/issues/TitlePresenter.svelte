@@ -53,16 +53,6 @@
     align-items: center;
     flex-shrink: 1;
     min-width: 1rem;
-
-    &.list {
-      color: var(--theme-caption-color);
-    }
-    &:hover {
-      text-decoration: underline;
-    }
-    &:active {
-      color: var(--theme-content-color);
-    }
   }
 
   .with-margin {

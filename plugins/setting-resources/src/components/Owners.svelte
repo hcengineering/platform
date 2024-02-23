@@ -16,7 +16,7 @@
   import { createEventDispatcher } from 'svelte'
   import contact, { PersonAccount } from '@hcengineering/contact'
   import { EmployeePresenter, personByIdStore } from '@hcengineering/contact-resources'
-  import { AccountRole, SortingOrder, getCurrentAccount } from '@hcengineering/core'
+  import { AccountRole, SortingOrder, getCurrentAccount, roleOrder } from '@hcengineering/core'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import { DropdownIntlItem, DropdownLabelsIntl, EditBox, Header, Breadcrumb, Scroller } from '@hcengineering/ui'
   import setting from '../plugin'
@@ -32,24 +32,17 @@
   const currentRole = getCurrentAccount().role
 
   const items: DropdownIntlItem[] = [
-    { id: AccountRole.User.toString(), label: setting.string.User },
-    { id: AccountRole.Maintainer.toString(), label: setting.string.Maintainer },
-    { id: AccountRole.Owner.toString(), label: setting.string.Owner }
+    { id: AccountRole.User, label: setting.string.User },
+    { id: AccountRole.Maintainer, label: setting.string.Maintainer },
+    { id: AccountRole.Owner, label: setting.string.Owner }
   ]
 
   let accounts: PersonAccount[] = []
   $: owners = accounts.filter((p) => p.role === AccountRole.Owner)
 
-  query.query(
-    contact.class.PersonAccount,
-    {},
-    (res) => {
-      accounts = res
-    },
-    {
-      sort: { name: SortingOrder.Descending }
-    }
-  )
+  query.query(contact.class.PersonAccount, {}, (res) => {
+    accounts = res
+  })
 
   async function change (account: PersonAccount, value: AccountRole): Promise<void> {
     await client.update(account, {
@@ -80,13 +73,14 @@
               </div>
               <DropdownLabelsIntl
                 label={setting.string.Role}
-                disabled={account.role > currentRole || (account.role === AccountRole.Owner && owners.length === 1)}
+                disabled={roleOrder[account.role] > roleOrder[currentRole] ||
+                  (account.role === AccountRole.Owner && owners.length === 1)}
                 kind={'primary'}
                 size={'medium'}
                 {items}
-                selected={account.role?.toString()}
+                selected={account.role}
                 on:selected={(e) => {
-                  void change(account, Number(e.detail))
+                  void change(account, e.detail)
                 }}
               />
             </div>

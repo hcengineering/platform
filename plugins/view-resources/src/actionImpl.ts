@@ -31,9 +31,10 @@ import {
   selectionStore,
   selectionLimit
 } from './selection'
-import { deleteObjects, getObjectLinkFragment } from './utils'
+import { deleteObjects, getObjectLinkFragment, restrictionStore } from './utils'
 import contact from '@hcengineering/contact'
 import { locationToUrl } from '@hcengineering/ui'
+import { get } from 'svelte/store'
 
 /**
  * Action to be used for copying text to clipboard.
@@ -206,6 +207,7 @@ const MoveRight = (doc: Doc | undefined, evt: Event): void => {
 }
 
 function ShowActions (doc: Doc | Doc[] | undefined, evt: Event): void {
+  if (get(restrictionStore).disableActions) return
   evt.preventDefault()
 
   showPopup(view.component.ActionsPopup, { viewContext: $contextStore.getLastContext() }, 'top')

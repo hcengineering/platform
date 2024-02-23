@@ -17,10 +17,10 @@
   import { NavLink, getClient } from '@hcengineering/presentation'
   import { AnyComponent, getPanelURI, locationToUrl } from '@hcengineering/ui'
   import view from '../plugin'
-  import { getObjectLinkFragment } from '../utils'
+  import { getObjectLinkFragment, restrictionStore } from '../utils'
 
   export let object: Doc | undefined
-  export let disabled = false
+  export let disabled: boolean = false
   export let onClick: ((event: MouseEvent) => void) | undefined = undefined
   export let noUnderline = disabled
   export let inline = false
@@ -31,6 +31,9 @@
   export let accent: boolean = false
   export let noOverflow: boolean = false
 
+  let _disabled = disabled || $restrictionStore.disableNavigation
+  $: _disabled = disabled || $restrictionStore.disableNavigation
+
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
@@ -40,7 +43,7 @@
       : undefined
 
   async function getHref (object: Doc): Promise<void> {
-    if (disabled) {
+    if (_disabled) {
       href = undefined
       return
     }
@@ -53,6 +56,6 @@
   $: if (object !== undefined) getHref(object)
 </script>
 
-<NavLink {disabled} {onClick} {noUnderline} {inline} {shrink} {href} {colorInherit} {accent} {noOverflow}>
+<NavLink disabled={_disabled} {onClick} {noUnderline} {inline} {shrink} {href} {colorInherit} {accent} {noOverflow}>
   <slot />
 </NavLink>

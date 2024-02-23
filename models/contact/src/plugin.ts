@@ -123,7 +123,8 @@ export default mergeIds(contactId, contact, {
     KickEmployee: '' as Ref<Action>,
     DeleteEmployee: '' as Ref<Action>,
     MergePersons: '' as Ref<Action<Doc, any>>,
-    OpenChannel: '' as Ref<Action>
+    OpenChannel: '' as Ref<Action>,
+    PublicLink: '' as Ref<Action<Doc, any>>
   },
   actionImpl: {
     KickEmployee: '' as ViewAction,

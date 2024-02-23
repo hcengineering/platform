@@ -18,7 +18,7 @@
   import { AttributesBar, KeyedAttribute, getAttribute, getClient } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
   import { Button, Label, getCurrentResolvedLocation, navigate } from '@hcengineering/ui'
-  import { getFiltredKeys, isCollectionAttr } from '../utils'
+  import { getFiltredKeys, isCollectionAttr, restrictionStore } from '../utils'
 
   export let object: Doc | Record<string, any>
   export let _class: Ref<Class<Doc>>
@@ -75,23 +75,25 @@
         </div>
       </div>
       <div class="tool">
-        <Button
-          icon={setting.icon.Setting}
-          kind={'link'}
-          size={'medium'}
-          showTooltip={{ label: setting.string.ClassSetting }}
-          on:click={(ev) => {
-            ev.stopPropagation()
-            const loc = getCurrentResolvedLocation()
-            loc.path[2] = settingId
-            loc.path[3] = 'setting'
-            loc.path[4] = 'classes'
-            loc.path.length = 5
-            loc.query = { _class }
-            loc.fragment = undefined
-            navigate(loc)
-          }}
-        />
+        {#if !$restrictionStore.disableNavigation}
+          <Button
+            icon={setting.icon.Setting}
+            kind={'link'}
+            size={'medium'}
+            showTooltip={{ label: setting.string.ClassSetting }}
+            on:click={(ev) => {
+              ev.stopPropagation()
+              const loc = getCurrentResolvedLocation()
+              loc.path[2] = settingId
+              loc.path[3] = 'setting'
+              loc.path[4] = 'classes'
+              loc.path.length = 5
+              loc.query = { _class }
+              loc.fragment = undefined
+              navigate(loc)
+            }}
+          />
+        {/if}
       </div>
     </div>
   {/if}

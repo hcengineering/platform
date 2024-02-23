@@ -34,6 +34,7 @@
 
   export let enableAttachments: boolean = true
   export let useAttachmentPreview: boolean = false
+  export let readonly: boolean = false
 
   const client = getClient()
 
@@ -43,7 +44,7 @@
   let extraActions: RefAction[] = []
   let modelRefActions: RefAction[] = []
 
-  $: if (enableAttachments) {
+  $: if (enableAttachments && !readonly) {
     extraActions = [
       {
         label: textEditor.string.Attach,
@@ -59,10 +60,12 @@
   void getModelRefActions().then((actions) => {
     modelRefActions = actions
   })
-  $: refActions = defaultRefActions
-    .concat(extraActions)
-    .concat(modelRefActions)
-    .sort((a, b) => a.order - b.order)
+  $: refActions = readonly
+    ? []
+    : defaultRefActions
+      .concat(extraActions)
+      .concat(modelRefActions)
+      .sort((a, b) => a.order - b.order)
 
   let progress = false
   let attachments: Attachment[] = []
@@ -89,6 +92,7 @@
   }
 
   async function fileSelected (): Promise<void> {
+    if (readonly) return
     progress = true
     const list = inputFile.files
     if (list === null || list.length === 0) return
@@ -155,6 +159,7 @@
   }
 
   export async function pasteAction (evt: ClipboardEvent): Promise<void> {
+    if (readonly) return
     if (!isAllowedPaste(evt)) {
       return
     }
@@ -172,6 +177,7 @@
   }
 
   export async function fileDrop (e: DragEvent): Promise<void> {
+    if (readonly) return
     progress = true
     const list = e.dataTransfer?.files
     if (list !== undefined && list.length !== 0) {
@@ -231,6 +237,7 @@
       {placeholder}
       {boundary}
       {refActions}
+      {readonly}
       attachFile={async (file) => {
         return await createAttachment(file)
       }}
@@ -248,6 +255,7 @@
     {#if (attachments.length > 0 && enableAttachments) || progress}
       <AttachmentsGrid
         {attachments}
+        {readonly}
         {progress}
         {progressItems}
         {useAttachmentPreview}

@@ -26,6 +26,7 @@
   export let objectId: Ref<Doc>
   export let space: Ref<Space>
   export let _class: Ref<Class<Doc>>
+  export let readonly: boolean = false
 
   export let members: number
 
@@ -40,6 +41,7 @@
   let loading = true
 
   const createApp = async (ev: MouseEvent): Promise<void> => {
+    if (readonly) return
     showPopup(
       UsersPopup,
       {
@@ -77,7 +79,9 @@
         viewletQuery={{ _id: contact.viewlet.TableMember }}
       />
       <ViewletSettingButton kind={'ghost'} bind:viewlet />
-      <Button id={contact.string.AddMember} icon={IconAdd} kind={'ghost'} on:click={createApp} />
+      {#if !readonly}
+        <Button id={contact.string.AddMember} icon={IconAdd} kind={'ghost'} on:click={createApp} />
+      {/if}
     </div>
   </svelte:fragment>
 
@@ -89,6 +93,7 @@
         options={viewlet.options}
         query={{ attachedTo: objectId }}
         loadingProps={{ length: members }}
+        {readonly}
       />
     {:else}
       <div class="antiSection-empty solid flex-col mt-3">
@@ -97,9 +102,11 @@
         </span>
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <span class="over-underline content-color" on:click={createApp}>
-          <Label label={contact.string.AddMember} />
-        </span>
+        {#if !readonly}
+          <span class="over-underline content-color" on:click={createApp}>
+            <Label label={contact.string.AddMember} />
+          </span>
+        {/if}
       </div>
     {/if}
   </svelte:fragment>

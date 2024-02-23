@@ -21,8 +21,10 @@
   import contact from '@hcengineering/contact'
   import { createEventDispatcher, onMount } from 'svelte'
   import lead from '../plugin'
+  import { restrictionStore } from '@hcengineering/view-resources'
 
   export let object: Lead
+  export let readonly: boolean = false
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -49,6 +51,7 @@
       bind:value={rawTitle}
       placeholder={lead.string.LeadPlaceholder}
       kind={'large-style'}
+      disabled={readonly}
       focusable
       on:blur={() => {
         if (rawTitle !== object.title) change('title', rawTitle)
@@ -58,6 +61,8 @@
       _class={contact.class.Contact}
       label={lead.string.Customer}
       placeholder={lead.string.SelectCustomer}
+      showNavigate={!$restrictionStore.disableNavigation}
+      {readonly}
       kind={'link'}
       size={'x-large'}
       justify={'left'}

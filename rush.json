@@ -1541,6 +1541,41 @@
       "packageName": "@hcengineering/support-resources",
       "projectFolder": "plugins/support-resources",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/guest",
+      "projectFolder": "plugins/guest",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/guest-assets",
+      "projectFolder": "plugins/guest-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/guest-resources",
+      "projectFolder": "plugins/guest-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-guest",
+      "projectFolder": "models/guest",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-guest",
+      "projectFolder": "server-plugins/guest",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-server-guest",
+      "projectFolder": "models/server-guest",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-guest-resources",
+      "projectFolder": "server-plugins/guest-resources",
+      "shouldPublish": false
     }
   ]
 }

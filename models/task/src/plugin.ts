@@ -15,7 +15,7 @@
 //
 
 import {} from '@hcengineering/notification'
-import type { Ref, Space } from '@hcengineering/core'
+import type { Doc, Ref, Space } from '@hcengineering/core'
 import { mergeIds, type IntlString } from '@hcengineering/platform'
 import { type TagCategory } from '@hcengineering/tags'
 import { taskId } from '@hcengineering/task'
@@ -28,7 +28,8 @@ export default mergeIds(taskId, task, {
     EditStatuses: '' as Ref<Action>,
     ArchiveSpace: '' as Ref<Action>,
     UnarchiveSpace: '' as Ref<Action>,
-    ArchiveState: '' as Ref<Action>
+    ArchiveState: '' as Ref<Action>,
+    PublicLink: '' as Ref<Action<Doc, any>>
   },
   actionImpl: {
     EditStatuses: '' as ViewAction,

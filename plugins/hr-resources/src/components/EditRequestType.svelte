@@ -50,7 +50,7 @@
   }
 </script>
 
-{#if object && type && type.label}
+{#if object && type?.label}
   <Card
     label={hr.string.EditRequestType}
     labelProps={{ type: type.label }}

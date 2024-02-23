@@ -233,7 +233,6 @@ export class TIssue extends TTask implements Issue {
     estimation!: number
 
   @Prop(TypeReportedTime(), tracker.string.ReportedTime)
-  @ReadOnly()
     reportedTime!: number
 
   @Prop(TypeRemainingTime(), tracker.string.RemainingTime)
