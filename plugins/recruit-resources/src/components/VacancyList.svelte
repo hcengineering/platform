@@ -25,8 +25,10 @@
 
   export let objectId: Ref<Doc>
   export let vacancies: number | undefined
+  export let readonly: boolean = false
 
   const createApp = (ev: MouseEvent): void => {
+    if (readonly) return
     showPopup(CreateVacancy, { company: objectId, preserveCompany: true }, ev.target as HTMLElement)
   }
   const config: (BuildModelKey | string)[] = [
@@ -54,7 +56,9 @@
     <span class="antiSection-header__title">
       <Label label={recruit.string.Vacancies} />
     </span>
-    <Button id="appls.add" icon={IconAdd} kind={'ghost'} on:click={createApp} />
+    {#if !readonly}
+      <Button id="appls.add" icon={IconAdd} kind={'ghost'} on:click={createApp} />
+    {/if}
   </div>
   {#if (vacancies ?? 0) > 0}
     <Scroller horizontal>
@@ -62,6 +66,7 @@
         _class={recruit.class.Vacancy}
         {config}
         query={{ company: objectId }}
+        {readonly}
         loadingProps={{ length: vacancies ?? 0 }}
       />
     </Scroller>
@@ -73,9 +78,11 @@
       <span class="content-dark-color">
         <Label label={getEmbeddedLabel('No Vacancies')} />
       </span>
-      <span class="over-underline content-color" on:click={createApp}>
-        <Label label={recruit.string.CreateVacancy} />
-      </span>
+      {#if !readonly}
+        <span class="over-underline content-color" on:click={createApp}>
+          <Label label={recruit.string.CreateVacancy} />
+        </span>
+      {/if}
     </div>
   {/if}
 </div>

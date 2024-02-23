@@ -21,6 +21,7 @@
 
   export let value: WithLookup<Issue>
   export let width: string | undefined = undefined
+  export let editable: boolean = true
 
   const client = getClient()
   $: shouldIgnoreOverdue =
@@ -49,7 +50,7 @@
     kind={'link'}
     value={value.dueDate}
     {width}
-    editable
+    {editable}
     onChange={(e) => handleDueDateChanged(e)}
     {shouldIgnoreOverdue}
   />

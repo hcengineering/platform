@@ -25,6 +25,7 @@
   import Company from './icons/Company.svelte'
 
   export let object: Organization
+  export let readonly: boolean = false
 
   const client = getClient()
 
@@ -58,6 +59,7 @@
     <div class="flex-grow flex-col">
       <div class="name">
         <EditBox
+          disabled={readonly}
           placeholder={contact.string.PersonFirstNamePlaceholder}
           bind:value={object.name}
           on:change={nameChange}
@@ -66,7 +68,14 @@
       </div>
       <div class="separator" />
       <Scroller contentDirection={'horizontal'} padding={'.125rem .125rem .5rem'} stickedScrollBars thinScrollBars>
-        <ChannelsEditor attachedTo={object._id} attachedClass={object._class} {integrations} focusIndex={10} on:click />
+        <ChannelsEditor
+          editable={!readonly}
+          attachedTo={object._id}
+          attachedClass={object._class}
+          {integrations}
+          focusIndex={10}
+          on:click
+        />
       </Scroller>
     </div>
   </div>

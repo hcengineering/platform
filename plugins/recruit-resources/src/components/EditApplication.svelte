@@ -26,6 +26,7 @@
   import Reviews from './review/Reviews.svelte'
 
   export let object: Applicant
+  export let readonly: boolean = false
   let candidate: Candidate
   let vacancy: Vacancy
 
@@ -63,9 +64,9 @@
 {#if object !== undefined && candidate !== undefined}
   <Scroller horizontal stickedScrollBars>
     <div class="flex-between min-w-min">
-      <div class="card"><CandidateCard {candidate} on:click /></div>
+      <div class="card"><CandidateCard {candidate} disabled={readonly} on:click /></div>
       <div class="flex-center arrows"><ExpandRightDouble /></div>
-      <div class="card"><VacancyCard {vacancy} /></div>
+      <div class="card"><VacancyCard {vacancy} disabled={readonly} /></div>
     </div>
   </Scroller>
   <div class="mt-6">
@@ -75,6 +76,7 @@
       label={recruit.string.TalentReviews}
       application={object?._id}
       company={vacancy?.company}
+      {readonly}
     />
   </div>
 {/if}

@@ -14,8 +14,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { deepEqual } from 'fast-equals'
-  import { createEventDispatcher } from 'svelte'
   import core, {
     AnyAttribute,
     Class,
@@ -24,9 +22,9 @@
     FindOptions,
     Lookup,
     Ref,
+    SortingOrder,
     TxOperations,
-    getObjectValue,
-    SortingOrder
+    getObjectValue
   } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { createQuery, getClient, updateAttribute } from '@hcengineering/presentation'
@@ -34,19 +32,19 @@
     Button,
     CheckBox,
     Component,
-    getEventPositionElement,
     Label,
     Loading,
-    mouseAttractor,
-    resizeObserver,
-    showPopup,
     Spinner,
-    lazyObserver
+    lazyObserver,
+    mouseAttractor,
+    resizeObserver
   } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey, BuildModelOptions } from '@hcengineering/view'
+  import { deepEqual } from 'fast-equals'
+  import { createEventDispatcher } from 'svelte'
+  import { showMenu } from '../actions'
   import view from '../plugin'
-  import { buildConfigLookup, buildModel, LoadingProps } from '../utils'
-  import Menu from './Menu.svelte'
+  import { LoadingProps, buildConfigLookup, buildModel, restrictionStore } from '../utils'
   import IconUpDown from './icons/UpDown.svelte'
 
   export let _class: Ref<Class<Doc>>
@@ -160,14 +158,14 @@
     { sort: getSort(_sortKey), limit: 1, ...options, lookup, total: true }
   )
 
-  const showMenu = async (ev: MouseEvent, object: Doc, row: number): Promise<void> => {
+  const showContextMenu = async (ev: MouseEvent, object: Doc, row: number): Promise<void> => {
     selection = row
     if (!checkedSet.has(object._id)) {
       check(objects, false)
       checked = []
     }
     const items = checked.length > 0 ? checked : object
-    showPopup(Menu, { object: items, baseMenuClass }, getEventPositionElement(ev))
+    showMenu(ev, { object: items, baseMenuClass })
   }
 
   function changeSorting (key: string | string[]): void {
@@ -217,14 +215,21 @@
     }
   }
 
-  const joinProps = (attribute: AttributeModel, object: Doc) => {
+  const joinProps = (attribute: AttributeModel, object: Doc, readonly: boolean) => {
+    const readonlyParams = readonly
+      ? {
+          readonly: true,
+          editable: false,
+          disabled: true
+        }
+      : {}
     if (attribute.collectionAttr) {
-      return { object, ...attribute.props }
+      return { object, ...attribute.props, ...readonlyParams }
     }
     if (attribute.attribute?.type._class === core.class.EnumOf) {
-      return { ...attribute.props, type: attribute.attribute.type }
+      return { ...attribute.props, type: attribute.attribute.type, ...readonlyParams }
     }
-    return { ...attribute.props, space: object.space }
+    return { ...attribute.props, space: object.space, ...readonlyParams }
   }
   function getValue (attribute: AttributeModel, object: Doc): any {
     if (attribute.castRequest) {
@@ -300,7 +305,7 @@
   function contextHandler (object: Doc, row: number): (ev: MouseEvent) => void {
     return (ev) => {
       if (!readonly) {
-        showMenu(ev, object, row)
+        showContextMenu(ev, object, row)
       }
     }
   }
@@ -379,7 +384,7 @@
             })}
             on:focus={() => {}}
             bind:this={refs[row]}
-            on:contextmenu|preventDefault={contextHandler(object, row)}
+            on:contextmenu={contextHandler(object, row)}
             use:lazyObserver={(val) => {
               if (val && row >= rowLimit) {
                 rowLimit = row + 10
@@ -430,7 +435,7 @@
                       this={attribute.presenter}
                       value={getValue(attribute, object)}
                       onChange={getOnChange(object, attribute)}
-                      {...joinProps(attribute, object)}
+                      {...joinProps(attribute, object, $restrictionStore.readonly)}
                     />
                   </div>
                 </td>

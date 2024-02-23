@@ -81,6 +81,7 @@ import { type Token } from '@hcengineering/server-token'
 import { serverTrackerId } from '@hcengineering/server-tracker'
 import { serverViewId } from '@hcengineering/server-view'
 import { serverActivityId } from '@hcengineering/server-activity'
+import { serverGuestId } from '@hcengineering/server-guest'
 import {
   type BroadcastCall,
   ClientSession,
@@ -212,6 +213,7 @@ export function start (
   addLocation(serverViewId, () => import('@hcengineering/server-view-resources'))
   addLocation(serverHrId, () => import('@hcengineering/server-hr-resources'))
   addLocation(serverActivityId, () => import('@hcengineering/server-activity-resources'))
+  addLocation(serverGuestId, () => import('@hcengineering/server-guest-resources'))
   addLocation(openAIId, () => Promise.resolve({ default: openAIPluginImpl }))
 
   const middlewares: MiddlewareCreator[] = [

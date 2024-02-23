@@ -83,6 +83,7 @@ import {
 import type { AnyComponent } from '@hcengineering/ui'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 import { type ViewAction } from '@hcengineering/view'
+import { createPublicLinkAction } from '@hcengineering/model-guest'
 
 import task from './plugin'
 
@@ -557,6 +558,8 @@ export function createModel (builder: Builder): void {
     },
     task.ids.ManageProjects
   )
+
+  createPublicLinkAction(builder, task.class.Task, task.action.PublicLink)
 }
 
 /**

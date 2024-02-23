@@ -155,7 +155,8 @@ export default plugin(workbenchId, {
     Joined: '' as IntlString,
     Leave: '' as IntlString,
     View: '' as IntlString,
-    Join: '' as IntlString
+    Join: '' as IntlString,
+    ServerUnderMaintenance: '' as IntlString
   },
   icon: {
     Search: '' as Asset

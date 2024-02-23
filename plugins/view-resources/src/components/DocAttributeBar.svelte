@@ -24,6 +24,7 @@
   export let ignoreKeys: string[]
   export let allowedCollections: string[] = []
   export let showHeader: boolean = true
+  export let readonly: boolean = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -36,6 +37,7 @@
   to={undefined}
   {allowedCollections}
   {showHeader}
+  {readonly}
   on:update
 />
 {#each mixins as mixin}
@@ -47,6 +49,7 @@
         object={hierarchy.as(object, mixin._id)}
         {ignoreKeys}
         {to}
+        {readonly}
         {allowedCollections}
         {showHeader}
         on:update

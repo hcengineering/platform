@@ -57,6 +57,7 @@ import {
   hasResource,
   type KeyedAttribute
 } from '@hcengineering/presentation'
+import { type Restrictions } from '@hcengineering/guest'
 import {
   type AnyComponent,
   type AnySvelteComponent,
@@ -1223,3 +1224,10 @@ export function getDocMixins (
 export function classIcon (client: Client, _class: Ref<Class<Obj>>): Asset | undefined {
   return client.getHierarchy().getClass(_class).icon
 }
+
+export const restrictionStore = writable<Restrictions>({
+  readonly: false,
+  disableComments: false,
+  disableNavigation: false,
+  disableActions: false
+})

@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import board, { Card } from '@hcengineering/board'
+  import { Card } from '@hcengineering/board'
   import {
     CategoryType,
     Class,
@@ -30,10 +30,8 @@
   import { ActionContext, createQuery } from '@hcengineering/presentation'
   import type { DocWithRank, Project } from '@hcengineering/task'
   import task, { getStates } from '@hcengineering/task'
-  import { getEventPositionElement, showPopup } from '@hcengineering/ui'
   import { typeStore } from '@hcengineering/task-resources'
   import {
-    ContextMenu,
     ListSelectionProvider,
     SelectDirection,
     focusStore,
@@ -41,6 +39,7 @@
     getGroupByValues,
     groupBy,
     setGroupByValues,
+    showMenu,
     statusStore
   } from '@hcengineering/view-resources'
   import { onMount } from 'svelte'
@@ -76,15 +75,6 @@
   })
 
   const selection = listProvider.selection
-
-  const showMenu = async (ev: MouseEvent, object: Doc): Promise<void> => {
-    ev.preventDefault()
-    if (object._class !== board.class.Card) {
-      return
-    }
-
-    showPopup(ContextMenu, { object }, getEventPositionElement(ev))
-  }
 
   let resultQuery: DocumentQuery<DocWithRank>
 
@@ -144,7 +134,9 @@
   on:check={(evt) => {
     listProvider.updateSelection(evt.detail.docs, evt.detail.value)
   }}
-  on:contextmenu={(evt) => showMenu(evt.detail.evt, evt.detail.objects)}
+  on:contextmenu={(evt) => {
+    showMenu(evt.detail.evt, { object: evt.detail.objects })
+  }}
   selection={listProvider.current($focusStore)}
 >
   <svelte:fragment slot="card" let:object>

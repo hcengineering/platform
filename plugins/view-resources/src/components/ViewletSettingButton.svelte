@@ -19,10 +19,12 @@
   import { getViewOptions, viewOptionStore } from '../viewOptions'
   import ViewOptionsButton from './ViewOptionsButton.svelte'
   import ViewletSetting from './ViewletSetting.svelte'
+  import { restrictionStore } from '../utils'
 
   export let kind: ButtonKind = 'regular'
   export let viewOptions: ViewOptions | undefined = undefined
   export let viewlet: Viewlet | undefined = undefined
+  export let disabled: boolean = false
 
   let btn: HTMLButtonElement
 
@@ -31,6 +33,8 @@
   }
 
   $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
+
+  $: disabled = $restrictionStore.readonly
 </script>
 
 {#if viewlet}
@@ -41,6 +45,7 @@
     <Button
       icon={view.icon.Configure}
       label={view.string.Show}
+      {disabled}
       {kind}
       shrink={1}
       adaptiveShrink={'sm'}

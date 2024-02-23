@@ -13,13 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery, getClient } from '@hcengineering/presentation'
   import activity, { ActivityMessage, Reaction } from '@hcengineering/activity'
+  import { createQuery, getClient } from '@hcengineering/presentation'
 
-  import Reactions from './Reactions.svelte'
   import { updateDocReactions } from '../../utils'
+  import Reactions from './Reactions.svelte'
 
   export let object: ActivityMessage | undefined
+  export let readonly = false
 
   const client = getClient()
   const reactionsQuery = createQuery()
@@ -35,12 +36,13 @@
   }
 
   const handleClick = (ev: CustomEvent) => {
+    if (readonly) return
     updateDocReactions(client, reactions, object, ev.detail)
   }
 </script>
 
 {#if object && hasReactions}
   <div class="footer flex-col p-inline contrast mt-2 min-h-6">
-    <Reactions {reactions} {object} on:click={handleClick} />
+    <Reactions {reactions} {object} {readonly} on:click={handleClick} />
   </div>
 {/if}

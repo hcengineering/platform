@@ -63,7 +63,7 @@
     projectType={$selectedTypeStore}
   />
 {:else}
-  <Button {kind} {size} {width} {justify} {shrink} on:click={handleClick}>
+  <Button {kind} {size} {width} {justify} {shrink} {disabled} on:click={handleClick}>
     <svelte:fragment slot="content">
       {#if state}
         <div class="pointer-events-none clear-mins">

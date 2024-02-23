@@ -21,7 +21,7 @@
   import tags from '@hcengineering/tags'
   import type { Issue } from '@hcengineering/tracker'
   import { Component, Label } from '@hcengineering/ui'
-  import { getFiltredKeys, isCollectionAttr, ObjectBox } from '@hcengineering/view-resources'
+  import { getFiltredKeys, isCollectionAttr, ObjectBox, restrictionStore } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
   import ComponentEditor from '../../components/ComponentEditor.svelte'
   import MilestoneEditor from '../../milestones/MilestoneEditor.svelte'
@@ -33,6 +33,7 @@
 
   export let issue: Issue
   export let showAllMixins: boolean = false
+  export let readonly = false
 
   const query = createQuery()
   let showIsBlocking = false
@@ -125,31 +126,37 @@
     <Label label={tracker.string.Status} />
   </span>
 
-  <StatusEditor value={issue} size={'medium'} iconSize={'small'} shouldShowLabel />
+  <StatusEditor value={issue} size={'medium'} iconSize={'small'} shouldShowLabel isEditable={!readonly} />
 
   {#if issue.blockedBy?.length}
     <span class="labelTop">
       <Label label={tracker.string.BlockedBy} />
     </span>
-    <RelationEditor value={issue} type="blockedBy" />
+    <RelationEditor value={issue} type="blockedBy" {readonly} disabled={$restrictionStore.disableNavigation} />
   {/if}
   {#if showIsBlocking}
     <span class="labelTop">
       <Label label={tracker.string.Blocks} />
     </span>
-    <RelationEditor value={issue} type="isBlocking" {blockedBy} />
+    <RelationEditor
+      value={issue}
+      type="isBlocking"
+      {blockedBy}
+      {readonly}
+      disabled={$restrictionStore.disableNavigation}
+    />
   {/if}
   {#if issue.relations?.length}
     <span class="labelTop">
       <Label label={tracker.string.Related} />
     </span>
-    <RelationEditor value={issue} type="relations" />
+    <RelationEditor value={issue} type="relations" {readonly} disabled={$restrictionStore.disableNavigation} />
   {/if}
 
   <span class="labelOnPanel">
     <Label label={tracker.string.Priority} />
   </span>
-  <PriorityEditor value={issue} size={'medium'} shouldShowLabel />
+  <PriorityEditor value={issue} size={'medium'} shouldShowLabel isEditable={!readonly} />
 
   <span class="labelOnPanel">
     <Label label={core.string.CreatedBy} />
@@ -168,24 +175,27 @@
   <span class="labelOnPanel">
     <Label label={tracker.string.Assignee} />
   </span>
-  <AssigneeEditor object={issue} size={'medium'} avatarSize={'card'} width="100%" />
+  <AssigneeEditor object={issue} size={'medium'} avatarSize={'card'} width="100%" {readonly} />
 
   <span class="labelTop">
     <Label label={tracker.string.Labels} />
   </span>
-  <Component is={tags.component.TagsAttributeEditor} props={{ object: issue, label: tracker.string.AddLabel }} />
+  <Component
+    is={tags.component.TagsAttributeEditor}
+    props={{ object: issue, label: tracker.string.AddLabel, readonly }}
+  />
 
   <div class="divider" />
 
   <span class="labelOnPanel">
     <Label label={tracker.string.Component} />
   </span>
-  <ComponentEditor value={issue} space={issue.space} size={'medium'} />
+  <ComponentEditor value={issue} space={issue.space} size={'medium'} isEditable={!readonly} />
 
   <span class="labelOnPanel">
     <Label label={tracker.string.Milestone} />
   </span>
-  <MilestoneEditor value={issue} space={issue.space} size={'medium'} />
+  <MilestoneEditor value={issue} space={issue.space} size={'medium'} isEditable={!readonly} />
 
   {#if issue.dueDate !== null}
     <div class="divider" />
@@ -193,13 +203,13 @@
     <span class="labelOnPanel">
       <Label label={tracker.string.DueDate} />
     </span>
-    <DueDateEditor value={issue} width={'100%'} />
+    <DueDateEditor value={issue} width={'100%'} editable={!readonly} />
   {/if}
 
   {#if keys.length > 0}
     <div class="divider" />
     {#each keys as key (typeof key === 'string' ? key : key.key)}
-      <AttributeBarEditor {key} _class={issue._class} object={issue} showHeader={true} size={'medium'} />
+      <AttributeBarEditor {readonly} {key} _class={issue._class} object={issue} showHeader={true} size={'medium'} />
     {/each}
   {/if}
 
@@ -211,6 +221,7 @@
         <AttributeBarEditor
           {key}
           _class={mixin._id}
+          {readonly}
           object={hierarchy.as(issue, mixin._id)}
           showHeader={true}
           size={'medium'}

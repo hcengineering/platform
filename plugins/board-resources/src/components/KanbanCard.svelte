@@ -22,19 +22,9 @@
   import { ChatMessagesPresenter } from '@hcengineering/notification-resources'
   import { getClient } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
-  import {
-    Button,
-    Component,
-    EditBox,
-    Icon,
-    IconMoreV,
-    Label,
-    getPopupPositionElement,
-    numberToHexColor,
-    showPopup
-  } from '@hcengineering/ui'
+  import { Button, Component, EditBox, Icon, IconMoreV, Label, numberToHexColor } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { ContextMenu } from '@hcengineering/view-resources'
+  import { showMenu } from '@hcengineering/view-resources'
   import board from '../plugin'
   import { hasDate, openCardPanel, updateCard, updateCardMembers } from '../utils/CardUtils'
   import DatePresenter from './presenters/DatePresenter.svelte'
@@ -53,9 +43,9 @@
     isEditMode = false
   }
 
-  function enterEditMode (): void {
+  function enterEditMode (e: MouseEvent): void {
     isEditMode = true
-    showPopup(ContextMenu, { object }, getPopupPositionElement(ref, { h: 'right', v: 'top' }), exitEditMode)
+    showMenu(e, { object }, exitEditMode)
   }
 
   function showCard () {

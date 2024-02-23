@@ -20,17 +20,8 @@
   import { Panel } from '@hcengineering/panel'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor'
-  import {
-    Button,
-    CircleButton,
-    EditBox,
-    IconAdd,
-    IconMoreH,
-    Label,
-    getEventPopupPositionElement,
-    showPopup
-  } from '@hcengineering/ui'
-  import { ContextMenu, DocAttributeBar, ParentsNavigator, invokeAction } from '@hcengineering/view-resources'
+  import { Button, EditBox, IconMoreH } from '@hcengineering/ui'
+  import { DocAttributeBar, ParentsNavigator, invokeAction, showMenu } from '@hcengineering/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'
   import board from '../plugin'
   import { getCardActions } from '../utils/CardActionUtils'
@@ -113,11 +104,7 @@
         kind="ghost"
         size="medium"
         on:click={(e) => {
-          showPopup(
-            ContextMenu,
-            { object, baseMenuClass: board.class.Card, mode: 'editor' },
-            getEventPopupPositionElement(e)
-          )
+          showMenu(e, { object, baseMenuClass: board.class.Card, mode: 'editor' })
         }}
       />
     </svelte:fragment>

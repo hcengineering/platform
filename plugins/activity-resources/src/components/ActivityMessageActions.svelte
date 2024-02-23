@@ -13,17 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
+  import activity, { ActivityMessage, ActivityMessageExtension } from '@hcengineering/activity'
   import { Action, IconMoreV, showPopup } from '@hcengineering/ui'
   import { Menu } from '@hcengineering/view-resources'
-  import activity, { ActivityMessage, ActivityMessageExtension } from '@hcengineering/activity'
+  import { createEventDispatcher } from 'svelte'
 
-  import AddReactionAction from './reactions/AddReactionAction.svelte'
-  import SaveMessageAction from './SaveMessageAction.svelte'
-  import PinMessageAction from './PinMessageAction.svelte'
-  import ActivityMessageExtensionComponent from './activity-message/ActivityMessageExtension.svelte'
   import ActivityMessageAction from './ActivityMessageAction.svelte'
-  import { isReactionMessage } from '../activityMessagesUtils'
+  import PinMessageAction from './PinMessageAction.svelte'
+  import SaveMessageAction from './SaveMessageAction.svelte'
+  import ActivityMessageExtensionComponent from './activity-message/ActivityMessageExtension.svelte'
+  import AddReactionAction from './reactions/AddReactionAction.svelte'
 
   export let message: ActivityMessage | undefined
   export let extensions: ActivityMessageExtension[] = []

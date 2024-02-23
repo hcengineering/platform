@@ -30,6 +30,9 @@
   export let compactMode: boolean = false
   export let configurations: Record<Ref<Class<Doc>>, Viewlet['config']> = {}
   export let preference: ViewletPreference[] = []
+  export let createItemDialog: AnySvelteComponent | AnyComponent | undefined = undefined
+  export let createItemLabel: IntlString | undefined = undefined
+  export let createItemDialogProps: Record<string, any> | undefined = undefined
 
   let list: List
 
@@ -61,10 +64,6 @@
     },
     isFocus: () => focused
   })
-
-  export let createItemDialog: AnySvelteComponent | AnyComponent | undefined = undefined
-  export let createItemLabel: IntlString | undefined = undefined
-  export let createItemDialogProps: Record<string, any> | undefined = undefined
 
   const dispatch = createEventDispatcher()
 </script>
