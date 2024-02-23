@@ -105,7 +105,35 @@ function updatePackage(packageRoot, templates) {
   }
   currentPackage.scripts = update(currentPackage.scripts, packageJson.scripts, currentPackage['#override'] )
 
-  const newPackage = JSON.stringify(currentPackage, undefined, 2)
+  if( template.package['#overrideKeys'] !== undefined) {
+    for( const k of template.package['#overrideKeys'] ) {
+      const v = packageJson[k]
+      console.log(k, v)
+      if(v) {
+        currentPackage[k] = v
+      }
+    }
+  }
+
+  const preferedOrder = ['name', 'version', 'main', 'svelte', 'types', 'files', 'author', 'template', 'license', 'scripts', 'devDependencies', 'dependencies', 'repository', 'publishConfig']
+
+  Object.keys(currentPackage).forEach(it => {
+    if( !preferedOrder.includes(it)) [
+      preferedOrder.push(it)
+    ]
+  })
+
+  const ordered = preferedOrder.reduce(
+    (obj, key) => { 
+      if( currentPackage[key] !== undefined) {
+        obj[key] = currentPackage[key] 
+      }
+      return obj
+    }, 
+    {}
+  )
+
+  const newPackage = JSON.stringify(ordered, undefined, 2)
 
   if (packageSource !== newPackage) {
     writeFileSync(pkgFile, newPackage.trim() + '\n')

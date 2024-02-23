@@ -36,19 +36,17 @@ env:
     rush.json
     .prettierrc
     tools
-
+    
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0        
+          filter: tree:0
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
@@ -71,12 +69,15 @@ jobs:
 
       - name: Model version from git tags
         run: node common/scripts/install-run-rush.js model-version
-
+      
       - name: Building...
-        run: node common/scripts/install-run-rush.js build
+        run: node common/scripts/install-run-rush.js build -p 20
 
-      - name: Building...
-        run: node common/scripts/install-run-rush.js bundle
+      - name: Bundle...
+        run: node common/scripts/install-run-rush.js bundle -p 20
+
+      - name: Validate...
+        run: node common/scripts/install-run-rush.js validate -p 20
 
       - name: Cache build results
         uses: actions/cache@v4
@@ -93,6 +94,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          filter: tree:0
 
       - uses: actions/setup-node@v4
         with:
@@ -106,7 +108,6 @@ jobs:
           path: ${{ env.CacheFolders}}
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-
       - name: Checking svelte sources...
         run: node common/scripts/install-run-rush.js svelte-check
   formatting:
@@ -145,6 +146,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          filter: tree:0
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
@@ -156,6 +158,7 @@ jobs:
           path: ${{ env.CacheFolders}}
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+
       - name: Prepare server
         run: |
           cd ./tests
@@ -166,25 +169,34 @@ jobs:
           ELASTIC_URL: 'http://localhost:9201'
           MONGO_URL: 'mongodb://localhost:27018'
   uitest:
-    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          filter: tree:0
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-      - name: Cache build results
+      - name: Cache node modules
         uses: actions/cache@v4
         env:
-          cache-name: cache-build-results
+          cache-name: cache-node-platform
         with:
-          path: ${{ env.CacheFolders}}
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-      - name: Docker build
-        run: node common/scripts/install-run-rush.js docker:build
+          path: |
+            common/temp
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+  
+      - name: Checking for mis-matching dependencies...
+        run: node common/scripts/install-run-rush.js check
+    
+      - name: Installing...
+        run: node common/scripts/install-run-rush.js install
+  
+      - name: Docker Build
+        run: node common/scripts/install-run-rush.js docker:build  -p 20
         env:
           DOCKER_CLI_HINTS: false
       - name: Prepare server
@@ -255,24 +267,27 @@ jobs:
       #     name: db-snapshot
       #     path: ./tests/db_dump
   docker-build:    
-    needs: [build, uitest, test, svelte-check]
+    needs: [build, test, svelte-check, uitest]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          filter: tree:0
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-      - name: Cache build results
+      - name: Cache node modules
         uses: actions/cache@v4
         env:
-          cache-name: cache-build-results
+          cache-name: cache-node-platform
         with:
-          path: ${{ env.CacheFolders}}
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-
+          path: |
+            common/temp
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+  
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
@@ -280,7 +295,7 @@ jobs:
         run: node common/scripts/install-run-rush.js model-version
   
       - name: Docker build
-        run: node common/scripts/install-run-rush.js docker:build
+        run: node common/scripts/install-run-rush.js docker:build -p 20
         env:
           DOCKER_CLI_HINTS: false
       - name: Login to Docker Hub

@@ -11,7 +11,8 @@
     "_phase:svelte-check": "do-svelte-check",
     "build:watch": "compile ui",
     "_phase:build": "compile ui",
-    "_phase:format": "format src"
+    "_phase:format": "format src",
+    "_phase:validate": "compile validate"
   },
   "devDependencies": {
     "svelte-loader": "^3.1.9",

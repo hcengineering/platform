@@ -17,7 +17,7 @@
   import { personByIdStore } from '@hcengineering/contact-resources'
   import { Account, Class, Doc, getCurrentAccount, Ref, WithLookup } from '@hcengineering/core'
   import { createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
-  import core from '@hcengineering/core/lib/component'
+  import core from '@hcengineering/core/src/component'
   import { AttachmentDocList } from '@hcengineering/attachment-resources'
   import { getDocLinkTitle, LinkPresenter } from '@hcengineering/view-resources'
   import { Action, Button, IconEdit, ShowMore } from '@hcengineering/ui'

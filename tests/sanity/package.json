@@ -1,8 +1,8 @@
 {
   "name": "@hcengineering/tests-sanity",
   "version": "0.6.1",
-  "template": "@hcengineering/default-package",
   "author": "Anticrm Platform Contributors",
+  "template": "@hcengineering/default-package",
   "license": "EPL-2.0",
   "scripts": {
     "build": "",

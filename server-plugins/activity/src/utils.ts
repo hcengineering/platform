@@ -11,7 +11,7 @@ import {
   TxMixin,
   TxUpdateDoc
 } from '@hcengineering/core'
-import core from '@hcengineering/core/lib/component'
+import core from '@hcengineering/core/src/component'
 import { DocObjectCache } from './types'
 
 export async function getAllObjectTransactions (

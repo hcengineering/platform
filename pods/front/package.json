@@ -2,9 +2,11 @@
   "name": "@hcengineering/pod-front",
   "version": "0.6.0",
   "main": "lib/index.js",
+  "svelte": "src/index.ts",
+  "types": "types/index.d.ts",
   "author": "Anticrm Platform Contributors",
-  "license": "EPL-2.0",
   "template": "@hcengineering/node-package",
+  "license": "EPL-2.0",
   "scripts": {
     "build": "compile",
     "build:watch": "compile",
@@ -21,9 +23,10 @@
     "format": "format src",
     "run-local": "cross-env MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin MINIO_ENDPOINT=localhost TRANSACTOR_URL=ws://localhost:3333 SERVER_SECRET='secret' ACCOUNTS_URL=http://localhost:3000 UPLOAD_URL=/files ELASTIC_URL=http://localhost:9200 MODEL_VERSION=$(node ../../common/scripts/show_version.js) PUBLIC_DIR='.' ts-node ./src/__start.ts",
     "test": "jest --passWithNoTests --silent --forceExit",
-    "_phase:build": "compile",
+    "_phase:build": "compile transpile src",
     "_phase:test": "jest --passWithNoTests --silent --forceExit",
-    "_phase:format": "format src"
+    "_phase:format": "format src",
+    "_phase:validate": "compile validate"
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "^0.6.0",
