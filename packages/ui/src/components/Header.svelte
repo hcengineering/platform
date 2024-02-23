@@ -18,6 +18,7 @@
 
   export let type: 'type-aside' | 'type-popup' | 'type-component' | 'type-panel' = 'type-component'
   export let minimize: boolean = false
+  export let noResize: boolean = false
   export let hideSeparator: boolean = false
 
   const dispatch = createEventDispatcher()
@@ -25,13 +26,16 @@
 
 <div class="hulyHeader-container" class:topIndent={type === 'type-panel'} class:hideSeparator>
   {#if type === 'type-component'}
-    <button class="hulyHeader-button" on:click={() => dispatch('resize', minimize)}>
-      {#if minimize}
-        <IconMinimize size={'small'} />
-      {:else}
-        <IconMaximize size={'small'} />
-      {/if}
-    </button>
+    {#if !noResize}
+      <button class="hulyHeader-button" on:click={() => dispatch('resize', minimize)}>
+        {#if minimize}
+          <IconMinimize size={'small'} />
+        {:else}
+          <IconMaximize size={'small'} />
+        {/if}
+      </button>
+    {/if}
+    <slot name="beforeTitle" />
     <div class="hulyHeader-divider" />
   {/if}
   <div class="hulyHeader-titleGroup">

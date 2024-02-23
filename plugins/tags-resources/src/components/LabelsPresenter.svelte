@@ -9,15 +9,17 @@
   import TagsReferencePresenter from './TagsReferencePresenter.svelte'
   import TagsEditorPopup from './TagsEditorPopup.svelte'
   import TagsItemPresenter from './TagsItemPresenter.svelte'
+  import LabelsPresenter from './LabelsPresenter.svelte'
 
   export let value: number
   export let object: WithLookup<Doc>
   export let full: boolean
   export let ckeckFilled: boolean = false
-  export let kind: 'short' | 'full' | 'list' | 'link' | 'todo' = 'short'
+  export let kind: 'short' | 'full' | 'list' | 'link' | 'todo' | 'todo-compact' = 'short'
   export let isEditable: boolean = false
   export let action: (evt: MouseEvent) => Promise<void> | void = async () => {}
   export let compression: boolean = false
+  export let ignoreFirst: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -29,7 +31,7 @@
   function update (object: WithLookup<Doc>, value: number) {
     if (value > 0) {
       query.query(tags.class.TagReference, { attachedTo: object._id }, (result) => {
-        items = result
+        items = result.slice(ignoreFirst ? 1 : 0)
       })
     } else {
       query.unsubscribe()
@@ -52,7 +54,7 @@
   })
 </script>
 
-{#if kind === 'list' || kind === 'link' || kind === 'todo'}
+{#if kind === 'list' || kind === 'link'}
   {#if items.length > 4}
     <div
       class="label-box no-shrink"
@@ -69,6 +71,29 @@
         <TagReferencePresenter attr={undefined} {value} {kind} />
       </div>
     {/each}
+  {/if}
+{:else if kind === 'todo'}
+  <div class="flex-row-top flex-wrap flex-gap-0-5">
+    {#each items as value}
+      <TagReferencePresenter attr={undefined} {value} {kind} />
+    {/each}
+  </div>
+{:else if kind === 'todo-compact'}
+  {#if items.length > 1}
+    <div class="flex-row-top flex-wrap flex-gap-0-5">
+      <TagReferencePresenter attr={undefined} value={items[0]} kind={'todo'} />
+      <div
+        class="todoLabel-plus-container font-medium-11"
+        use:tooltip={{
+          component: LabelsPresenter,
+          props: { value, object, isEditable, kind: 'todo', ignoreFirst: true }
+        }}
+      >
+        +{items.length - 1}
+      </div>
+    </div>
+  {:else if items.length === 1}
+    <TagReferencePresenter attr={undefined} value={items[0]} kind={'todo'} />
   {/if}
 {:else}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -96,6 +121,12 @@
 {/if}
 
 <style lang="scss">
+  .todoLabel-plus-container {
+    padding: var(--spacing-0_25) var(--spacing-0_75);
+    color: var(--tag-on-subtle-PorpoiseText);
+    background-color: var(--tag-subtle-PorpoiseBackground);
+    border-radius: var(--extra-small-BorderRadius);
+  }
   .labels-container {
     overflow: hidden;
     display: flex;
