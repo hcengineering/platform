@@ -23,7 +23,7 @@
   import core, { getDisplayTime } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Action, Label } from '@hcengineering/ui'
-  import { getActions } from '@hcengineering/view-resources'
+  import { getActions, restrictionStore } from '@hcengineering/view-resources'
 
   import ReactionsPresenter from '../reactions/ReactionsPresenter.svelte'
   import ActivityMessageExtensionComponent from './ActivityMessageExtension.svelte'
@@ -104,6 +104,9 @@
   $: isHidden = !!viewlet?.onlyWithParent && parentMessage === undefined
   $: withActionMenu =
     withActions && !embedded && (actions.length > 0 || allActionIds.some((id) => !excludedActions.includes(id)))
+
+  let readonly: boolean = false
+  $: readonly = $restrictionStore.disableComments
 </script>
 
 {#if !isHidden}
@@ -170,14 +173,14 @@
             props={{ object: message, embedded, onReply }}
           />
         {/if}
-        <ReactionsPresenter object={message} />
+        <ReactionsPresenter object={message} {readonly} />
         {#if parentMessage && showEmbedded}
           <div class="mt-2" />
           <ActivityMessagePresenter value={parentMessage} embedded hideFooter withActions={false} />
         {/if}
       </div>
 
-      {#if withActions}
+      {#if withActions && !readonly}
         <div class="actions" class:opened={isActionsOpened}>
           <ActivityMessageActions
             message={isReactionMessage(message) ? parentMessage : message}
