@@ -97,7 +97,9 @@ if( filesToCheck.length > 0 ) {
   }
 
   console.log(`running eslint ${filesToCheck.length}`)
-  const eslint = spawnSync(join(process.cwd(), 'node_modules/.bin/eslint'), ["--color", "--fix", ...filesToCheck])
+  const eslint = spawnSync(join(process.cwd(), 'node_modules/.bin/eslint'), ["--color", "--fix", ...filesToCheck], {
+    env: {...process.env, NODE_ENV: '--max-old-space-size=4096' },
+  })
   if(eslint.stdout != null) {
     writeFileSync('.format/eslint.log', eslint.stdout)
     if( prettier.status === null || prettier.status === 0) {
