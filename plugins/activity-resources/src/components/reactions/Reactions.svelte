@@ -24,6 +24,7 @@
 
   export let reactions: Reaction[] = []
   export let object: Doc | undefined = undefined
+  export let readonly: boolean = false
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -39,6 +40,7 @@
     reactionsAccounts = reactionsAccounts
   }
   function getClickHandler (emoji: string) {
+    if (readonly) return
     return (e: CustomEvent) => {
       e.stopPropagation()
       e.preventDefault()
@@ -47,6 +49,7 @@
   }
 
   function openEmojiPalette (ev: Event) {
+    if (readonly) return
     ev.preventDefault()
     ev.stopPropagation()
     showPopup(EmojiPopup, {}, ev.target as HTMLElement, (emoji: string) => {
@@ -61,6 +64,7 @@
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div
       class="item border-radius-1"
+      class:cursor-pointer={!readonly}
       use:tooltip={{ component: ReactionsTooltip, props: { reactionAccounts: accounts } }}
       on:click={getClickHandler(emoji)}
     >
@@ -70,7 +74,7 @@
       </div>
     </div>
   {/each}
-  {#if object && reactionsAccounts.size > 0}
+  {#if object && reactionsAccounts.size > 0 && !readonly}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div class="item flex-row-center border-radius-1" class:withoutBackground={true} on:click={openEmojiPalette}>
@@ -102,7 +106,6 @@
     height: 1.5rem;
     background: var(--secondary-button-disabled);
     border: none;
-    cursor: pointer;
 
     &:hover {
       border: 1px solid var(--theme-darker-color);

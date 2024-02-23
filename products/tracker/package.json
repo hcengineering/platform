@@ -14,7 +14,6 @@
     "show": "webpack-bundle-analyzer stats.json dist",
     "dev-server": "cross-env CLIENT_TYPE=dev-server webpack serve",
     "start": "cross-env NODE_ENV=production webpack serve",
-    "preformat-svelte": "prettier -w src/**/*.svelte",
     "format": "echo 'Not required'",
     "lint": "echo 'Not required'",
     "lint:fix": "echo 'Not required'",

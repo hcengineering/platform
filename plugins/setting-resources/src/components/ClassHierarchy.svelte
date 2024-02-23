@@ -15,8 +15,8 @@
 <script lang="ts">
   import { Class, ClassifierKind, Doc, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { getEventPositionElement, showPopup, NavItem } from '@hcengineering/ui'
-  import { ContextMenu } from '@hcengineering/view-resources'
+  import { NavItem } from '@hcengineering/ui'
+  import { showMenu } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import settings from '../plugin'
 
@@ -50,9 +50,6 @@
     }
     return result
   }
-  function showContextMenu (evt: MouseEvent, clazz: Class<Doc>): void {
-    showPopup(ContextMenu, { object: clazz }, getEventPositionElement(evt))
-  }
 </script>
 
 {#each classes as cl}
@@ -68,7 +65,7 @@
       dispatch('select', cl)
     }}
     on:contextmenu={(evt) => {
-      showContextMenu(evt, clazz)
+      showMenu(evt, { object: clazz })
     }}
   />
   {#if desc.length}

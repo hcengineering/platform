@@ -163,7 +163,6 @@
       void showMenu(event, attr, i)
     }}
     on:contextmenu={async (event) => {
-      event.preventDefault()
       void showMenu(event, attr, i)
     }}
     on:click={async () => {

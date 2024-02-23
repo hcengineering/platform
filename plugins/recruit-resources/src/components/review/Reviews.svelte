@@ -18,7 +18,7 @@
   import { DateRangeMode, Doc, FindOptions, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { Applicant, Review } from '@hcengineering/recruit'
-  import { Button, DatePresenter, IconAdd, Label, showPopup, Scroller } from '@hcengineering/ui'
+  import { Button, DatePresenter, IconAdd, Label, Scroller, showPopup } from '@hcengineering/ui'
   import { Table } from '@hcengineering/view-resources'
   import recruit from '../../plugin'
   import FileDuo from '../icons/FileDuo.svelte'
@@ -29,8 +29,10 @@
   export let label: IntlString = recruit.string.Reviews
   export let application: Ref<Applicant> | undefined
   export let company: Ref<Organization> | undefined
+  export let readonly: boolean = false
 
   const createApp = (): void => {
+    if (readonly) return
     showPopup(
       CreateReview,
       {
@@ -54,7 +56,9 @@
     <span class="antiSection-header__title">
       <Label {label} />
     </span>
-    <Button icon={IconAdd} kind={'ghost'} on:click={createApp} />
+    {#if !readonly}
+      <Button icon={IconAdd} kind={'ghost'} on:click={createApp} />
+    {/if}
   </div>
   {#if reviews > 0}
     <Scroller horizontal>
@@ -83,6 +87,7 @@
           }
         ]}
         {options}
+        {readonly}
         query={{ attachedTo: objectId }}
         loadingProps={{ length: reviews }}
       />
@@ -95,10 +100,12 @@
       <span class="content-dark-color mt-2">
         <Label label={recruit.string.NoReviewForCandidate} />
       </span>
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <span class="over-underline content-color" on:click={createApp}>
-        <Label label={recruit.string.CreateAnReview} />
-      </span>
+      {#if !readonly}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <span class="over-underline content-color" on:click={createApp}>
+          <Label label={recruit.string.CreateAnReview} />
+        </span>
+      {/if}
     </div>
   {/if}
 </div>

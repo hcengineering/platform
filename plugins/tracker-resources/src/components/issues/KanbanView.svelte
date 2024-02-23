@@ -62,6 +62,7 @@
     openDoc,
     SelectDirection,
     setGroupByValues,
+    showMenu,
     statusStore
   } from '@hcengineering/view-resources'
   import { ChatMessagesPresenter } from '@hcengineering/chunter-resources'
@@ -138,10 +139,6 @@
     ;(document.activeElement as HTMLElement)?.blur()
   })
 
-  const showMenu = async (ev: MouseEvent, items: Doc[]): Promise<void> => {
-    ev.preventDefault()
-    showPopup(Menu, { object: items, baseMenuClass }, getEventPositionElement(ev))
-  }
   // Category information only
   let tasks: DocWithRank[] = []
 
@@ -337,7 +334,9 @@
     on:check={(evt) => {
       listProvider.updateSelection(evt.detail.docs, evt.detail.value)
     }}
-    on:contextmenu={(evt) => showMenu(evt.detail.evt, evt.detail.objects)}
+    on:contextmenu={(evt) => {
+      showMenu(evt.detail.evt, { object: evt.detail.objects, baseMenuClass })
+    }}
   >
     <svelte:fragment slot="header" let:state let:count let:index>
       {@const color = accentColors.get(`${index}${$themeStore.dark}${groupByKey}`)}

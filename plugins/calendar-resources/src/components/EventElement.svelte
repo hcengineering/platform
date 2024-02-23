@@ -16,16 +16,9 @@
   import calendar, { CalendarEventPresenter, Event } from '@hcengineering/calendar'
   import { Doc } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import {
-    Component,
-    MILLISECONDS_IN_MINUTE,
-    closeTooltip,
-    getEventPositionElement,
-    showPopup,
-    tooltip
-  } from '@hcengineering/ui'
+  import { Component, MILLISECONDS_IN_MINUTE, showPopup, tooltip } from '@hcengineering/ui'
   import view, { ObjectEditor } from '@hcengineering/view'
-  import { Menu } from '@hcengineering/view-resources'
+  import { showMenu } from '@hcengineering/view-resources'
   import { calendarStore, isVisible } from '../utils'
   import EventPresenter from './EventPresenter.svelte'
 
@@ -55,13 +48,11 @@
 
   let div: HTMLDivElement
 
-  function showMenu (ev: MouseEvent) {
-    ev.preventDefault()
-    closeTooltip()
-    showPopup(Menu, { object: event }, getEventPositionElement(ev))
-  }
-
   $: visible = isVisible(event, $calendarStore)
+
+  function contextMenu (e: MouseEvent): void {
+    showMenu(e, { object: event })
+  }
 </script>
 
 {#if event}
@@ -74,7 +65,7 @@
     class:empty
     use:tooltip={{ component: EventPresenter, props: { value: event, hideDetails: !visible } }}
     on:click|stopPropagation={click}
-    on:contextmenu={showMenu}
+    on:contextmenu={contextMenu}
   >
     {#if !empty && presenter?.presenter}
       <Component is={presenter.presenter} props={{ event, narrow, oneRow, hideDetails: !visible }} />

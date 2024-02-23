@@ -364,6 +364,15 @@
     //   border-radius: 0 0 .5rem .5rem;
     // }
   }
+
+  &.modern {
+    border: 1px solid transparent;
+    border-radius: var(--small-focus-BorderRadius);
+
+    .popupPanel-title {
+      min-height: 3.5rem;
+    }
+  }
 }
 
 // Full size state

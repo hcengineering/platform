@@ -27,6 +27,7 @@ import core, {
 } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
+import { getEventPositionElement, showPopup } from '@hcengineering/ui'
 import {
   type Action,
   type ActionGroup,
@@ -34,8 +35,10 @@ import {
   type ViewActionInput,
   type ViewContextType
 } from '@hcengineering/view'
+import Menu from './components/Menu.svelte'
 import view from './plugin'
 import { type FocusSelection, type SelectionStore } from './selection'
+import { restrictionStore } from './utils'
 
 /**
  * @public
@@ -225,4 +228,17 @@ export function filterActions (
     result = result.filter((it) => !overrideRemove.includes(it._id))
   }
   return result
+}
+
+let disableActions: boolean = false
+
+restrictionStore.subscribe((v) => {
+  disableActions = v.disableActions
+})
+
+export function showMenu (ev: MouseEvent, props: any, onClose?: (result: any) => void | Promise<void>): void {
+  ev.stopPropagation()
+  ev.preventDefault()
+  if (disableActions) return
+  showPopup(Menu, props, getEventPositionElement(ev), onClose)
 }

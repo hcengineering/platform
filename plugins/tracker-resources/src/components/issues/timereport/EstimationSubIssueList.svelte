@@ -16,17 +16,12 @@
   import contact from '@hcengineering/contact'
   import { AssigneeBox } from '@hcengineering/contact-resources'
   import { Issue } from '@hcengineering/tracker'
-  import { ListView, deviceOptionsStore as deviceInfo, getEventPositionElement, showPopup } from '@hcengineering/ui'
-  import { ContextMenu, FixedColumn, ListSelectionProvider } from '@hcengineering/view-resources'
+  import { ListView, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
+  import { FixedColumn, ListSelectionProvider, showMenu } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
-  import { activeProjects } from '../../../utils'
   import EstimationEditor from './EstimationEditor.svelte'
 
   export let issues: Issue[]
-
-  function showContextMenu (ev: MouseEvent, object: Issue) {
-    showPopup(ContextMenu, { object }, $deviceInfo.isMobile ? 'top' : getEventPositionElement(ev))
-  }
 
   const listProvider = new ListSelectionProvider(() => {})
   $: twoRows = $deviceInfo.twoRows
@@ -36,11 +31,10 @@
 <ListView count={issues.length} addClass={'step-tb-2-accent'}>
   <svelte:fragment slot="item" let:item>
     {@const issue = issues[item]}
-    {@const currentProject = $activeProjects.get(issue.space)}
     <div
       class="{twoRows ? 'flex-col' : 'flex-between'} p-text-2 clear-mins"
-      on:contextmenu|preventDefault={(ev) => {
-        showContextMenu(ev, issue)
+      on:contextmenu={(ev) => {
+        showMenu(ev, { object: issue })
       }}
       on:mouseover={() => {
         listProvider.updateFocus(issue)

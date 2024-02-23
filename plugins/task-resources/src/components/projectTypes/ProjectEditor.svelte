@@ -43,14 +43,12 @@
     Separator,
     TextArea,
     defineSeparators,
-    eventToHTMLElement,
     getCurrentResolvedLocation,
     navigate,
     resolvedLocationStore,
-    secondNavSeparators,
-    showPopup
+    secondNavSeparators
   } from '@hcengineering/ui'
-  import { ContextMenu } from '@hcengineering/view-resources'
+  import { showMenu } from '@hcengineering/view-resources'
   import plugin from '../../plugin'
   import IconLayers from '../icons/Layers.svelte'
   import CreateTaskType from '../taskTypes/CreateTaskType.svelte'
@@ -61,6 +59,7 @@
   export let type: ProjectType
   export let descriptor: ProjectTypeDescriptor | undefined
   export let visibleNav: boolean = true
+  export let visibleSecondNav: boolean = true
 
   const dispatch = createEventDispatcher()
 
@@ -199,7 +198,7 @@
       size={'small'}
       kind={'secondary'}
       on:click={(ev) => {
-        showPopup(ContextMenu, { object: type }, eventToHTMLElement(ev), () => {})
+        showMenu(ev, { object: type })
       }}
     />
     <Breadcrumbs
@@ -223,7 +222,7 @@
     </svelte:fragment> -->
   </Header>
   <div class="hulyComponent-content__container columns">
-    {#if selectedTaskTypeId === undefined}
+    {#if selectedTaskTypeId === undefined && visibleSecondNav}
       <div class="hulyComponent-content__column">
         <div class="hulyComponent-content__navHeader">
           <div class="hulyComponent-content__navHeader-menu">

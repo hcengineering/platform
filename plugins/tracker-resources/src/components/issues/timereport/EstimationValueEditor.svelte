@@ -48,6 +48,7 @@
     {size}
     {justify}
     {width}
+    disabled={readonly}
     on:click={(ev) => {
       if (!shown && !readonly) {
         showPopup(EditBoxPopup, { value, format: 'number' }, eventToHTMLElement(ev), (res) => {

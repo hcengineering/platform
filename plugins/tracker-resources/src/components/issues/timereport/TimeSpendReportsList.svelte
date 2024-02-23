@@ -22,20 +22,15 @@
     ListView,
     deviceOptionsStore as deviceInfo,
     eventToHTMLElement,
-    getEventPositionElement,
     showPopup
   } from '@hcengineering/ui'
-  import { ContextMenu, FixedColumn, ListSelectionProvider } from '@hcengineering/view-resources'
+  import { FixedColumn, ListSelectionProvider, showMenu } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
   import { activeProjects } from '../../../utils'
   import TimePresenter from './TimePresenter.svelte'
   import TimeSpendReportPopup from './TimeSpendReportPopup.svelte'
 
   export let reports: WithLookup<TimeSpendReport>[]
-
-  function showContextMenu (ev: MouseEvent, object: TimeSpendReport) {
-    showPopup(ContextMenu, { object }, getEventPositionElement(ev))
-  }
 
   const listProvider = new ListSelectionProvider(() => {})
 
@@ -70,8 +65,8 @@
     {@const currentProject = $activeProjects.get(toProjectId(report.space))}
     <div
       class="{twoRows ? 'flex-col' : 'flex-between'} p-text-2 clear-mins"
-      on:contextmenu|preventDefault={(ev) => {
-        showContextMenu(ev, report)
+      on:contextmenu={(ev) => {
+        showMenu(ev, { object: report })
       }}
       on:mouseenter={() => {
         listProvider.updateFocus(report)

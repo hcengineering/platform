@@ -66,13 +66,19 @@
     </div>
   {:else if kind === 'todo'}
     <div
-      class="todoLabel-container font-medium-12 overflow-label max-w-40"
+      class="todoLabel-container font-medium-11 overflow-label max-w-40"
+      class:isEditable
       style:background-color={color.color}
       use:resizeObserver={(element) => {
         realWidth = element.clientWidth
       }}
     >
       {value.title}
+      {#if isEditable}
+        <button class="btn-close" on:click|stopPropagation={() => dispatch('remove', value)}>
+          <Icon icon={IconClose} size={'x-small'} />
+        </button>
+      {/if}
     </div>
   {/if}
 {/if}
@@ -82,6 +88,28 @@
     padding: var(--spacing-0_25) var(--spacing-0_5);
     color: var(--global-on-accent-TextColor);
     border-radius: var(--extra-small-BorderRadius);
+
+    &.isEditable {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-0_5);
+      padding: var(--spacing-0_25) var(--spacing-0_25) var(--spacing-0_25) var(--spacing-0_75);
+    }
+    .btn-close {
+      flex-shrink: 0;
+      margin: 0;
+      padding: 0;
+      width: var(--global-min-Size);
+      height: var(--global-min-Size);
+      color: var(--global-on-accent-TextColor);
+      border: none;
+      border-radius: var(--min-BorderRadius);
+      outline: none;
+
+      &:hover {
+        background-color: var(--button-tertiary-hover-BackgroundColor);
+      }
+    }
   }
   .listitems-container {
     overflow: hidden;
@@ -117,7 +145,6 @@
       }
     }
   }
-
   .link-container {
     display: flex;
     justify-content: center;

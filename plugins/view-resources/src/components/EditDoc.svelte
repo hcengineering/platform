@@ -14,32 +14,33 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, onDestroy } from 'svelte'
   import { Class, Doc, Mixin, Ref } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource } from '@hcengineering/platform'
   import {
+    ActionContext,
     AttributeCategory,
     AttributeCategoryOrder,
     AttributesBar,
     KeyedAttribute,
-    ActionContext,
     createQuery,
     getAttributePresenterClass,
     getClient,
     hasResource
   } from '@hcengineering/presentation'
-  import { AnyComponent, Button, Component, IconMixin, IconMoreH, showPopup } from '@hcengineering/ui'
+  import { AnyComponent, Button, Component, IconMixin, IconMoreH } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import { createEventDispatcher, onDestroy } from 'svelte'
 
-  import { ContextMenu, ParentsNavigator, DocNavLink, getDocLabel, getDocMixins } from '..'
+  import { DocNavLink, ParentsNavigator, getDocLabel, getDocMixins, showMenu } from '..'
   import { categorizeFields, getCollectionCounter, getFiltredKeys } from '../utils'
   import DocAttributeBar from './DocAttributeBar.svelte'
 
   export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
   export let embedded: boolean = false
+  export let readonly: boolean = false
 
   let realObjectClass: Ref<Class<Doc>> = _class
   let lastId: Ref<Doc> = _id
@@ -227,11 +228,6 @@
   let panelWidth: number = 0
   let innerWidth: number = 0
 
-  function showMenu (ev?: Event): void {
-    if (object !== undefined) {
-      showPopup(ContextMenu, { object, excludedActions: [view.action.Open] }, (ev as MouseEvent).target as HTMLElement)
-    }
-  }
   function handleOpen (ev: CustomEvent): void {
     ignoreKeys = ev.detail.ignoreKeys
     activityOptions = ev.detail.activityOptions ?? activityOptions
@@ -259,6 +255,7 @@
   <Panel
     {object}
     isHeader={mainEditor?.pinned ?? false}
+    allowClose={!embedded}
     isAside={true}
     {embedded}
     bind:content
@@ -272,7 +269,7 @@
       dispatch('close')
     }}
     withoutActivity={!activityOptions.enabled}
-    withoutInput={!activityOptions.showInput}
+    withoutInput={!activityOptions.showInput || readonly}
   >
     <svelte:fragment slot="title">
       {#if !embedded}<ParentsNavigator element={object} />{/if}
@@ -284,7 +281,16 @@
     </svelte:fragment>
 
     <svelte:fragment slot="utils">
-      <Button icon={IconMoreH} iconProps={{ size: 'medium' }} kind={'icon'} on:click={showMenu} />
+      {#if !readonly}
+        <Button
+          icon={IconMoreH}
+          iconProps={{ size: 'medium' }}
+          kind={'icon'}
+          on:click={(e) => {
+            showMenu(e, { object, excludedActions: [view.action.Open] })
+          }}
+        />
+      {/if}
       <Button
         icon={IconMixin}
         iconProps={{ size: 'medium' }}
@@ -301,19 +307,29 @@
         {#if headerEditor !== undefined}
           <Component
             is={headerEditor}
-            props={{ object, keys, mixins, ignoreKeys, vertical: dir === 'column', allowedCollections, embedded }}
+            props={{
+              object,
+              keys,
+              mixins,
+              ignoreKeys,
+              vertical: dir === 'column',
+              allowedCollections,
+              embedded,
+              readonly
+            }}
             on:update={updateKeys}
           />
         {:else if dir === 'column'}
           <DocAttributeBar
             {object}
             {mixins}
+            {readonly}
             ignoreKeys={[...ignoreKeys, ...collectionArrays, ...inplaceAttributes]}
             {allowedCollections}
             on:update={updateKeys}
           />
         {:else}
-          <AttributesBar {object} _class={realObjectClass} {keys} />
+          <AttributesBar {object} _class={realObjectClass} {keys} {readonly} />
         {/if}
       {/if}
     </svelte:fragment>
@@ -321,14 +337,14 @@
     <svelte:fragment slot="header">
       {#if mainEditor && mainEditor.editor && mainEditor.pinned}
         <div class="flex-col flex-grow my-4">
-          <Component is={mainEditor.editor} props={{ object }} on:open={handleOpen} />
+          <Component is={mainEditor.editor} props={{ object, readonly }} on:open={handleOpen} />
         </div>
       {/if}
     </svelte:fragment>
 
     {#if mainEditor && mainEditor.editor && !mainEditor.pinned}
       <div class="flex-col flex-grow flex-no-shrink step-tb-6">
-        <Component is={mainEditor.editor} props={{ object }} on:open={handleOpen} />
+        <Component is={mainEditor.editor} props={{ object, readonly }} on:open={handleOpen} />
       </div>
     {/if}
 
@@ -343,6 +359,7 @@
               object,
               space: object.space,
               key: collection.key,
+              readonly,
               [collection.key.key]: getCollectionCounter(hierarchy, object, collection.key)
             }}
           />
@@ -352,7 +369,7 @@
 
     {#if editorFooter}
       <div class="step-tb-6">
-        <Component is={editorFooter.footer} props={{ object, _class, ...editorFooter.props }} />
+        <Component is={editorFooter.footer} props={{ object, _class, ...editorFooter.props, readonly }} />
       </div>
     {/if}
   </Panel>

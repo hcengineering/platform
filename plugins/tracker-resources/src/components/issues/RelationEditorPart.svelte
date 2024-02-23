@@ -13,6 +13,8 @@
   export let _class: Ref<Class<Doc>>
   export let documentIds: Ref<Doc>[]
   export let type: 'isBlocking' | 'blockedBy' | 'relations'
+  export let disabled: boolean = false
+  export let readonly: boolean = false
 
   const client = getClient()
   const issuesQuery = createQuery()
@@ -29,6 +31,7 @@
   })
 
   async function handleClick (issue: RelatedDocument) {
+    if (readonly || disabled) return
     const prop = type === 'isBlocking' ? 'blockedBy' : type
     const isBlockingValue = await client.findAll(value._class, { 'blockedBy._id': value._id })
 
@@ -67,6 +70,7 @@
   }
 
   async function handleRedirect (issue: Issue) {
+    if (disabled) return
     const loc = await issueLinkFragmentProvider(issue)
     navigate(loc)
   }
@@ -80,13 +84,15 @@
     <div class="tag-container">
       <Icon {icon} size={'small'} />
       <div class="flex-grow">
-        <button on:click|stopPropagation={() => handleRedirect(issue)}>
+        <button {disabled} on:click|stopPropagation={() => handleRedirect(issue)}>
           <span class="overflow-label ml-1-5 content-color">{issue.identifier}</span>
         </button>
       </div>
-      <button class="btn-close" on:click|stopPropagation={() => handleClick(issue)}>
-        <Icon icon={IconClose} size={'x-small'} />
-      </button>
+      {#if !readonly}
+        <button class="btn-close" on:click|stopPropagation={() => handleClick(issue)}>
+          <Icon icon={IconClose} size={'x-small'} />
+        </button>
+      {/if}
     </div>
   {:else}
     <div class="tag-container between">
@@ -94,9 +100,11 @@
         is={view.component.ObjectPresenter}
         props={{ objectId: doc._id, _class: doc._class, value: doc, noUnderline: true, props: { avatarSize: 'card' } }}
       />
-      <button class="btn-close" on:click|stopPropagation={() => handleClick(doc)}>
-        <Icon icon={IconClose} size={'x-small'} />
-      </button>
+      {#if !readonly}
+        <button class="btn-close" on:click|stopPropagation={() => handleClick(doc)}>
+          <Icon icon={IconClose} size={'x-small'} />
+        </button>
+      {/if}
     </div>
   {/if}
 {/each}

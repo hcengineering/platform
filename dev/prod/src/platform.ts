@@ -23,6 +23,7 @@ import { chunterId } from '@hcengineering/chunter'
 import client, { clientId } from '@hcengineering/client'
 import contactPlugin, { contactId } from '@hcengineering/contact'
 import gmail, { gmailId } from '@hcengineering/gmail'
+import guest, { guestId } from '@hcengineering/guest'
 import { hrId } from '@hcengineering/hr'
 import { imageCropperId } from '@hcengineering/image-cropper'
 import { inventoryId } from '@hcengineering/inventory'
@@ -53,6 +54,7 @@ import '@hcengineering/calendar-assets'
 import '@hcengineering/chunter-assets'
 import '@hcengineering/contact-assets'
 import '@hcengineering/gmail-assets'
+import '@hcengineering/guest-assets'
 import '@hcengineering/hr-assets'
 import '@hcengineering/inventory-assets'
 import '@hcengineering/lead-assets'
@@ -76,9 +78,9 @@ import presentation, { presentationId } from '@hcengineering/presentation'
 import textEditor, { textEditorId } from '@hcengineering/text-editor'
 
 import { setMetadata } from '@hcengineering/platform'
+import { preferenceId } from '@hcengineering/preference'
 import { setDefaultLanguage } from '@hcengineering/theme'
 import { uiId } from '@hcengineering/ui/src/plugin'
-import { preferenceId } from '@hcengineering/preference'
 
 interface Config {
   ACCOUNTS_URL: string
@@ -130,6 +132,7 @@ function configureI18n(): void {
    addStringsLoader(trackerId, async (lang: string) => await import(`@hcengineering/tracker-assets/lang/${lang}.json`))
    addStringsLoader(viewId, async (lang: string) => await import(`@hcengineering/view-assets/lang/${lang}.json`))
    addStringsLoader(workbenchId, async (lang: string) => await import(`@hcengineering/workbench-assets/lang/${lang}.json`))
+   addStringsLoader(guestId, async (lang: string) => await import(`@hcengineering/guest-assets/lang/${lang}.json`))
 }
 
 export async function configurePlatform() {
@@ -169,7 +172,8 @@ export async function configurePlatform() {
     new Map([
       [workbenchId, workbench.component.WorkbenchApp],
       [loginId, login.component.LoginApp],
-      [calendarId, calendar.component.ConnectApp]
+      [calendarId, calendar.component.ConnectApp],
+      [guestId, guest.component.GuestApp]
     ])
   )
 
@@ -204,6 +208,7 @@ export async function configurePlatform() {
   addLocation(bitrixId, () => import(/* webpackChunkName: "bitrix" */ '@hcengineering/bitrix-resources'))
   addLocation(requestId, () => import(/* webpackChunkName: "request" */ '@hcengineering/request-resources'))
   addLocation(supportId, () => import(/* webpackChunkName: "support" */ '@hcengineering/support-resources'))
+  addLocation(guestId, () => import(/* webpackChunkName: "guest" */ '@hcengineering/guest-resources'))
 
   setMetadata(client.metadata.FilterModel, true)
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])

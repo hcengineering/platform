@@ -32,6 +32,7 @@
   export let isSaved: boolean = false
   export let listProvider: ListSelectionProvider | undefined = undefined
   export let imageSize: AttachmentImageSize = 'auto'
+  export let removable: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -56,28 +57,28 @@
   >
     <AttachmentImagePreview {value} size={imageSize} />
     <div class="actions conner">
-      <AttachmentActions attachment={value} {isSaved} />
+      <AttachmentActions attachment={value} {isSaved} {removable} />
     </div>
   </div>
 {:else if type === 'audio'}
   <div class="buttonContainer">
     <AudioPlayer {value} />
     <div class="actions conner" style:padding={'0.125rem 0.25rem'}>
-      <AttachmentActions attachment={value} {isSaved} />
+      <AttachmentActions attachment={value} {isSaved} {removable} />
     </div>
   </div>
 {:else if type === 'video'}
   <div class="content buttonContainer flex-center">
     <AttachmentVideoPreview {value} />
     <div class="actions conner">
-      <AttachmentActions attachment={value} {isSaved} />
+      <AttachmentActions attachment={value} {isSaved} {removable} />
     </div>
   </div>
 {:else}
   <div class="flex buttonContainer extraWidth">
     <AttachmentPresenter {value} />
     <div class="actions conner">
-      <AttachmentActions attachment={value} {isSaved} />
+      <AttachmentActions attachment={value} {isSaved} {removable} />
     </div>
   </div>
 {/if}

@@ -18,6 +18,7 @@
   import { Button, ButtonKind, ButtonSize, IconThread } from '@hcengineering/ui'
 
   import ChatMessagePopup from './ChatMessagePopup.svelte'
+  import { restrictionStore } from '@hcengineering/view-resources'
 
   export let value: number | undefined
   export let object: Doc
@@ -26,6 +27,8 @@
   export let showCounter: boolean = true
   export let compactMode: boolean = false
   export let withInput: boolean = true
+
+  $: disabled = $restrictionStore.disableComments
 </script>
 
 {#if value && value > 0}
@@ -34,7 +37,7 @@
     {size}
     showTooltip={{
       component: ChatMessagePopup,
-      props: { objectId: object._id, object, withInput }
+      props: { objectId: object._id, object, withInput: withInput && !disabled }
     }}
   >
     <div slot="icon">

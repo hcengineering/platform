@@ -13,10 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import { Class, Doc, Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import tags, { TagReference } from '@hcengineering/tags'
-  import { Button, ButtonKind, Icon, Label, getEventPopupPositionElement, showPopup } from '@hcengineering/ui'
+  import { ButtonBase, ButtonKind, Icon, Label, getEventPopupPositionElement, showPopup } from '@hcengineering/ui'
   import tagsPlugin from '../plugin'
   import TagReferencePresenter from './TagReferencePresenter.svelte'
   import TagsEditorPopup from './TagsEditorPopup.svelte'
@@ -24,9 +25,14 @@
 
   export let object: Doc
   export let targetClass: Ref<Class<Doc>>
-  export let kind: ButtonKind = 'ghost'
+  export let type: 'type-button-only' | 'type-content-only' = 'type-content-only'
+  export let buttonParams: Record<string, any> = {}
+  export let contentParams: Record<string, any> = {}
+
+  const dispatch = createEventDispatcher()
 
   let items: TagReference[] = []
+  let pressed: boolean = false
   const query = createQuery()
   const client = getClient()
 
@@ -35,37 +41,54 @@
   })
 
   async function click (evt: MouseEvent): Promise<void> {
-    showPopup(TagsEditorPopup, { object, targetClass }, getEventPopupPositionElement(evt))
+    pressed = true
+    showPopup(TagsEditorPopup, { object, targetClass }, getEventPopupPositionElement(evt), () => {
+      pressed = false
+    })
   }
 
   async function removeTag (tag: TagReference): Promise<void> {
     if (tag !== undefined) await client.remove(tag)
   }
+
+  let count: number = 0
+  $: updated(items)
+
+  const updated = (its: TagReference[]): void => {
+    if (count === its.length) return
+    count = its.length
+    dispatch('change', count)
+  }
 </script>
 
-<div>
-  <Button {kind} padding={'0rem;'} on:click={click}>
-    <div slot="content" class="flex-row-center flex-gap-1">
-      <Icon icon={TagIcon} size={'medium'} />
-      <span class="overflow-label label"><Label label={tagsPlugin.string.AddLabel} /></span>
-    </div>
-  </Button>
+{#if type === 'type-button-only'}
+  <ButtonBase
+    icon={TagIcon}
+    type={'type-button-icon'}
+    kind={'secondary'}
+    size={'small'}
+    {pressed}
+    hasMenu
+    {...buttonParams}
+    on:click={click}
+  />
+{/if}
+{#if type === 'type-content-only'}
   {#if items.length}
-    <div class="flex-row-center flex-wrap">
+    <div class="flex-row-center flex-wrap flex-gap-1-5">
       {#each items as value}
-        <div class="step-container clear-mins">
-          <TagReferencePresenter
-            attr={undefined}
-            isEditable
-            {value}
-            kind={'list'}
-            on:remove={(res) => removeTag(res.detail)}
-          />
-        </div>
+        <TagReferencePresenter
+          attr={undefined}
+          isEditable
+          {value}
+          kind={'todo'}
+          {...contentParams}
+          on:remove={(res) => removeTag(res.detail)}
+        />
       {/each}
     </div>
   {/if}
-</div>
+{/if}
 
 <style lang="scss">
   .step-container {

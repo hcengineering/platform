@@ -14,44 +14,38 @@
 -->
 <script lang="ts">
   import { Visibility } from '@hcengineering/calendar'
-  import { translate } from '@hcengineering/platform'
-  import { ButtonKind, Dropdown, ListItem, themeStore } from '@hcengineering/ui'
+  import { ButtonMenu, DropdownIntlItem, themeStore } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
 
   export let value: Visibility | undefined
   export let disabled: boolean = false
-  export let kind: ButtonKind = 'regular'
+  export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
+  export let size: 'small' | 'medium' | 'large' = 'medium'
   export let withoutIcon: boolean = false
   export let focusIndex = -1
 
-  let items: ListItem[] = []
-
-  $: fill($themeStore.language)
-
-  async function fill (lang: string) {
-    items = [
-      {
-        _id: 'public',
-        label: await translate(calendar.string.Public, {}, lang),
-        icon: calendar.icon.Public
-      },
-      {
-        _id: 'freeBusy',
-        label: await translate(calendar.string.FreeBusy, {}, lang),
-        icon: calendar.icon.Private
-      },
-      {
-        _id: 'private',
-        label: await translate(calendar.string.Private, {}, lang),
-        icon: calendar.icon.Hidden
-      }
-    ]
-  }
-
-  $: selected = value !== undefined ? items.find((item) => item._id === value) : undefined
-
   const dispatch = createEventDispatcher()
+
+  const items: DropdownIntlItem[] = [
+    {
+      id: 'public',
+      label: calendar.string.Public,
+      icon: calendar.icon.Public
+    },
+    {
+      id: 'freeBusy',
+      label: calendar.string.FreeBusy,
+      icon: calendar.icon.Private
+    },
+    {
+      id: 'private',
+      label: calendar.string.Private,
+      icon: calendar.icon.Hidden
+    }
+  ]
+
+  $: selected = value !== undefined ? items.find((item) => item.id === value) : undefined
 
   function change (val: Visibility) {
     if (value !== val) {
@@ -61,17 +55,16 @@
   }
 </script>
 
-<Dropdown
-  {disabled}
+<ButtonMenu
   icon={withoutIcon ? undefined : calendar.icon.Hidden}
-  {kind}
-  size={'medium'}
-  placeholder={calendar.string.DefaultVisibility}
+  label={selected?.label}
+  selected={selected?.id}
   {items}
-  withSearch={false}
+  {kind}
+  {size}
+  {disabled}
   {focusIndex}
-  {selected}
-  on:selected={(e) => {
-    change(e.detail._id)
+  on:selected={(event) => {
+    if (event.detail) change(event.detail)
   }}
 />

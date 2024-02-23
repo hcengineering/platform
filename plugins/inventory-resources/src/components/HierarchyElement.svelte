@@ -15,23 +15,19 @@
 -->
 <script lang="ts">
   import { Doc, Ref, getObjectValue } from '@hcengineering/core'
-  import { IconMoreV, showPopup } from '@hcengineering/ui'
-  import { AttributeModel } from '@hcengineering/view'
   import inventory, { Category } from '@hcengineering/inventory'
+  import { IconMoreV } from '@hcengineering/ui'
+  import { AttributeModel } from '@hcengineering/view'
+  import { showMenu } from '@hcengineering/view-resources'
   import HierarchyElement from './HierarchyElement.svelte'
-  import { ContextMenu } from '@hcengineering/view-resources'
-  import Expand from './icons/Expand.svelte'
   import Collapse from './icons/Collapse.svelte'
+  import Expand from './icons/Expand.svelte'
 
   export let descendants: Map<Ref<Doc>, Category[]>
   export let level: number = 1
   export let model: AttributeModel[]
   export let parent: Ref<Doc> = inventory.global.Category
   let expanded: Set<Ref<Category>> = new Set<Ref<Category>>()
-
-  const showMenu = async (ev: MouseEvent, object: Category): Promise<void> => {
-    showPopup(ContextMenu, { object }, ev.target as HTMLElement)
-  }
 
   function click (id: Ref<Category>): void {
     if (!descendants.has(id)) return
@@ -75,7 +71,14 @@
             />
             <!-- svelte-ignore a11y-click-events-have-key-events -->
             <!-- svelte-ignore a11y-no-static-element-interactions -->
-            <div class="menuRow" on:click={(ev) => showMenu(ev, object)}><IconMoreV size={'small'} /></div>
+            <div
+              class="menuRow"
+              on:click={(ev) => {
+                showMenu(ev, { object })
+              }}
+            >
+              <IconMoreV size={'small'} />
+            </div>
           </div>
         </td>
       {:else}
