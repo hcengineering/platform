@@ -20,8 +20,9 @@
   import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
   import textEditor, { AttachIcon, type RefAction, StyledTextBox } from '@hcengineering/text-editor'
   import { ButtonSize } from '@hcengineering/ui'
+
   import attachment from '../plugin'
-  import { deleteFile, uploadFile } from '../utils'
+  import { deleteFile, getAttachmentMetadata, uploadFile } from '../utils'
   import AttachmentsGrid from './AttachmentsGrid.svelte'
 
   export let objectId: Ref<Doc> | undefined = undefined
@@ -133,7 +134,9 @@
     if (space === undefined || objectId === undefined || _class === undefined) return
     try {
       const uuid = await uploadFile(file)
+      const metadata = await getAttachmentMetadata(file, uuid)
       const _id: Ref<Attachment> = generateId()
+
       attachments.set(_id, {
         _id,
         _class: attachment.class.Attachment,
@@ -147,7 +150,8 @@
         file: uuid,
         type: file.type,
         size: file.size,
-        lastModified: file.lastModified
+        lastModified: file.lastModified,
+        metadata
       })
       newAttachments.add(_id)
       attachments = attachments

@@ -18,6 +18,7 @@
   import { getDocLinkTitle } from '@hcengineering/view-resources'
   import { getClient } from '@hcengineering/presentation'
   import activity from '@hcengineering/activity'
+  import { AttachmentImageSize } from '@hcengineering/attachment-resources'
 
   import chunter from '../../plugin'
   import ChatMessagePresenter from '../chat-message/ChatMessagePresenter.svelte'
@@ -38,6 +39,7 @@
   export let inline = false
   export let withShowMore: boolean = true
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
+  export let attachmentImageSize: AttachmentImageSize = 'x-large'
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
 
@@ -73,6 +75,7 @@
     {hoverable}
     {hoverStyles}
     {withShowMore}
+    {attachmentImageSize}
     showLinksPreview={false}
     {onClick}
     {onReply}

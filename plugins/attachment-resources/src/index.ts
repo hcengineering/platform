@@ -43,6 +43,8 @@ import AttachmentPreview from './components/AttachmentPreview.svelte'
 import AttachmentsUpdatedMessage from './components/activity/AttachmentsUpdatedMessage.svelte'
 import { deleteFile, uploadFile } from './utils'
 
+export * from './types'
+
 export {
   AddAttachment,
   AttachmentDroppable,
