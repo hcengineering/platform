@@ -17,7 +17,14 @@
   import { Attachment } from '@hcengineering/attachment'
   import { Account, Class, Doc, generateId, IdMap, Ref, Space, toIdMap } from '@hcengineering/core'
   import { IntlString, setPlatformStatus, unknownError, Asset } from '@hcengineering/platform'
-  import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
+  import {
+    createQuery,
+    DraftController,
+    draftsStore,
+    getClient,
+    getFileUrl,
+    getImageSize
+  } from '@hcengineering/presentation'
   import textEditor, { AttachIcon, type RefAction, ReferenceInput } from '@hcengineering/text-editor'
   import { Loading, type AnySvelteComponent } from '@hcengineering/ui'
   import { deleteFile, getAttachmentMetadata, uploadFile } from '../utils'
