@@ -15,9 +15,8 @@
 <script lang="ts">
   import { Person, PersonAccount } from '@hcengineering/contact'
   import { personByIdStore } from '@hcengineering/contact-resources'
-  import { Account, Class, Doc, getCurrentAccount, Ref, WithLookup } from '@hcengineering/core'
+  import core, { Account, Class, Doc, getCurrentAccount, Ref, WithLookup } from '@hcengineering/core'
   import { createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
-  import core from '@hcengineering/core/lib/component'
   import { AttachmentDocList, AttachmentImageSize } from '@hcengineering/attachment-resources'
   import { getDocLinkTitle, LinkPresenter } from '@hcengineering/view-resources'
   import { Action, Button, IconEdit, ShowMore } from '@hcengineering/ui'

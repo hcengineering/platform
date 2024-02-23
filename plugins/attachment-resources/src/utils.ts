@@ -87,13 +87,16 @@ export async function createAttachments (
       const file = list.item(index)
       if (file !== null) {
         const uuid = await uploadFile(file)
+        const metadata = await getAttachmentMetadata(file, uuid)
+
         await client.addCollection(attachmentClass, space, objectId, objectClass, 'attachments', {
           ...extraData,
           name: file.name,
           file: uuid,
           type: file.type,
           size: file.size,
-          lastModified: file.lastModified
+          lastModified: file.lastModified,
+          metadata
         })
       }
     }
@@ -125,7 +128,7 @@ export async function getAttachmentMetadata (file: File, uuid: string): Promise<
   if (type === 'video') {
     const size = await getVideoSize(uuid)
 
-    if (size?.width === undefined || size.height === undefined) {
+    if (size === undefined) {
       return undefined
     }
 
