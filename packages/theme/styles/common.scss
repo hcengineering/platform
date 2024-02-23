@@ -14,6 +14,7 @@
 //
 
 /* Typography */
+.font-medium-11,
 .font-regular-12,
 .font-medium-12,
 .font-bold-12,
@@ -28,6 +29,9 @@
   font-style: normal;
   line-height: 1rem;
   color: var(--global-primary-TextColor);
+}
+.font-medium-11 {
+  font-size: 0.6875rem;
 }
 .font-regular-12,
 .font-medium-12,
@@ -45,18 +49,17 @@
 .paragraph-regular-14 {
   font-weight: 400;
 }
+.font-medium-11,
 .font-medium-12,
-.font-medium-14 {
+.font-medium-14,
+.heading-medium-16,
+.heading-medium-20 {
   font-weight: 500;
 }
 .font-bold-12,
 .font-bold-14,
 .heading-bold-20 {
   font-weight: 700;
-}
-.heading-medium-16,
-.heading-medium-20 {
-  font-weight: 500;
 }
 .heading-medium-16 {
   font-size: 1rem;

@@ -212,7 +212,7 @@
       <CalendarSelector bind:value={space} focusIndex={10101} />
       <div class="flex-row-center flex-gap-1">
         <Icon icon={calendar.icon.Hidden} size={'small'} />
-        <VisibilityEditor bind:value={visibility} kind={'ghost'} focusIndex={10102} withoutIcon />
+        <VisibilityEditor bind:value={visibility} kind={'tertiary'} focusIndex={10102} withoutIcon />
       </div>
       <EventReminders bind:reminders focusIndex={10103} />
     </div>
