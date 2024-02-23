@@ -29,7 +29,7 @@
   export let iconSize: IconSize | undefined = undefined
   export let iconProps: any | undefined = undefined
   export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative'
-  export let size: 'large' | 'medium' | 'small' | 'extra-small' | 'min'
+  export let size: 'large' | 'medium' | 'small' | 'extra-small'
   export let disabled: boolean = false
   export let loading: boolean = false
   export let pressed: boolean = false
@@ -46,10 +46,6 @@
     actualIconSize = iconSize
   } else if (type === 'type-button' && !hasMenu) {
     actualIconSize = 'medium'
-  }
-
-  export function focus () {
-    element?.focus()
   }
 
   // Focusable control with index
@@ -87,7 +83,6 @@
   disabled={loading || disabled}
   use:tp={tooltip}
   on:click
-  on:keydown
 >
   {#if loading}
     <div class="icon animate"><Spinner size={type === 'type-button' && !hasMenu ? 'medium' : 'small'} /></div>
@@ -176,11 +171,6 @@
       &.type-button-icon {
         width: var(--global-extra-small-Size);
       }
-    }
-    &.min {
-      height: var(--global-min-Size);
-      border: 0;
-      border-radius: var(--min-BorderRadius);
     }
     &.type-button-icon .icon,
     &.menu .icon {

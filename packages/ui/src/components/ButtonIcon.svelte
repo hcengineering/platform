@@ -19,7 +19,7 @@
   import ButtonBase from './ButtonBase.svelte'
 
   export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
-  export let size: 'large' | 'medium' | 'small' | 'extra-small' | 'min' = 'large'
+  export let size: 'large' | 'medium' | 'small' | 'extra-small' = 'large'
   export let icon: Asset | AnySvelteComponent | ComponentType
   export let iconProps: any | undefined = undefined
   export let disabled: boolean = false
@@ -29,16 +29,9 @@
   export let inheritColor: boolean = false
   export let tooltip: LabelAndProps | undefined = undefined
   export let focusIndex = -1
-
-  let element: ButtonBase | undefined
-
-  export function focus () {
-    element?.focus()
-  }
 </script>
 
 <ButtonBase
-  bind:this={element}
   type={'type-button-icon'}
   {kind}
   {size}
@@ -52,5 +45,4 @@
   {tooltip}
   {focusIndex}
   on:click
-  on:keydown
 />
