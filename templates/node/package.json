@@ -1,8 +1,13 @@
 {
   "name": "@hcengineering/node-package",
   "version": "0.6.0",
+  "main": "lib/index.js",
+  "svelte": "src/index.ts",
+  "types": "types/index.d.ts",
+  "#overrideKeys": ["main", "types", "svelte"],
   "scripts": {
-    "_phase:build": "compile",
+    "_phase:build": "compile transpile src",
+    "_phase:validate": "compile validate",
     "_phase:test": "jest --passWithNoTests --silent --forceExit",
     "_phase:format": "format src",
     "build": "compile",
