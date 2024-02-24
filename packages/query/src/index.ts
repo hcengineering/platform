@@ -69,6 +69,8 @@ interface Query {
   options?: FindOptions<Doc>
   total: number
   callbacks: Map<string, Callback>
+
+  requested?: Promise<void>
 }
 
 /**
@@ -105,7 +107,7 @@ export class LiveQuery implements WithTx, Client {
     for (const q of [...this.queue]) {
       if (!this.removeFromQueue(q)) {
         try {
-          await this.refresh(q)
+          void this.refresh(q)
         } catch (err: any) {
           if (err instanceof PlatformError) {
             if (err.message === 'connection closed') {
@@ -119,7 +121,7 @@ export class LiveQuery implements WithTx, Client {
     for (const v of this.queries.values()) {
       for (const q of v) {
         try {
-          await this.refresh(q)
+          void this.refresh(q)
         } catch (err: any) {
           if (err instanceof PlatformError) {
             if (err.message === 'connection closed') {
@@ -728,25 +730,27 @@ export class LiveQuery implements WithTx, Client {
     return this.getHierarchy().clone(results) as T[]
   }
 
-  private async refresh (q: Query): Promise<void> {
+  private async refresh (q: Query, reRequest: boolean = false): Promise<void> {
+    if (q.requested !== undefined && !reRequest) {
+      // we already asked for refresh, just wait.
+      await q.requested
+      return
+    }
+    if (reRequest && q.requested !== undefined) {
+      await q.requested
+    }
+    q.requested = this.doRefresh(q)
+    await q.requested
+    q.requested = undefined
+  }
+
+  private async doRefresh (q: Query): Promise<void> {
     const res = await this.client.findAll(q._class, q.query, q.options)
     if (!deepEqual(res, q.result) || (res.total !== q.total && q.options?.total === true)) {
       q.result = res
       q.total = res.total
       await this.callback(q)
     }
-  }
-
-  private triggerRefresh (q: Query): void {
-    const r: Promise<FindResult<Doc>> | FindResult<Doc> = this.client.findAll(q._class, q.query, q.options)
-    q.result = r
-    void r.then(async (qr) => {
-      const oldResult = q.result
-      if (!deepEqual(qr, oldResult) || (qr.total !== q.total && q.options?.total === true)) {
-        q.total = qr.total
-        await this.callback(q)
-      }
-    })
   }
 
   // Check if query is partially matched.
@@ -1137,16 +1141,31 @@ export class LiveQuery implements WithTx, Client {
     const docCache = new Map<string, Doc>()
     for (const tx of txes) {
       if (tx._class === core.class.TxWorkspaceEvent) {
-        await this.checkUpdateEvents(tx)
-        await this.changePrivateHandler(tx)
+        await this.checkUpdateEvents(tx as TxWorkspaceEvent)
+        await this.changePrivateHandler(tx as TxWorkspaceEvent)
       }
       result.push(await this._tx(tx, docCache))
     }
     return result
   }
 
-  private async checkUpdateEvents (tx: Tx): Promise<void> {
-    const evt = tx as TxWorkspaceEvent
+  triggerCounter = 0
+  searchTriggerTimer: any
+
+  private async checkUpdateEvents (evt: TxWorkspaceEvent, trigger = true): Promise<void> {
+    clearTimeout(this.searchTriggerTimer)
+
+    // We need to add trigger once more, since elastic could have a huge lag with document availability.
+    if (trigger || this.triggerCounter > 0) {
+      if (trigger) {
+        this.triggerCounter = 5 // Schedule 5 refreshes on every 5 seconds.
+      }
+      setTimeout(() => {
+        this.triggerCounter--
+        void this.checkUpdateEvents(evt, false)
+      }, 5000)
+    }
+
     const h = this.client.getHierarchy()
     function hasClass (q: Query, classes: Ref<Class<Doc>>[]): boolean {
       return classes.includes(q._class) || classes.some((it) => h.isDerived(q._class, it) || h.isDerived(it, q._class))
@@ -1157,7 +1176,7 @@ export class LiveQuery implements WithTx, Client {
         if (hasClass(q, indexingParam._class) && q.query.$search !== undefined) {
           if (!this.removeFromQueue(q)) {
             try {
-              this.triggerRefresh(q)
+              await this.refresh(q, true)
             } catch (err) {
               console.error(err)
             }
@@ -1167,11 +1186,14 @@ export class LiveQuery implements WithTx, Client {
       for (const v of this.queries.values()) {
         for (const q of v) {
           if (hasClass(q, indexingParam._class) && q.query.$search !== undefined) {
+            console.log('Query update call', q)
             try {
-              this.triggerRefresh(q)
+              await this.refresh(q, true)
             } catch (err) {
               console.error(err)
             }
+          } else if (q.query.$search !== undefined) {
+            console.log('Query update mismatch class', q._class, indexingParam._class)
           }
         }
       }
@@ -1182,7 +1204,7 @@ export class LiveQuery implements WithTx, Client {
         if (hasClass(q, params._class)) {
           if (!this.removeFromQueue(q)) {
             try {
-              this.triggerRefresh(q)
+              await this.refresh(q, true)
             } catch (err) {
               console.error(err)
             }
@@ -1193,7 +1215,7 @@ export class LiveQuery implements WithTx, Client {
         for (const q of v) {
           if (hasClass(q, params._class)) {
             try {
-              this.triggerRefresh(q)
+              await this.refresh(q, true)
             } catch (err) {
               console.error(err)
             }
@@ -1203,8 +1225,7 @@ export class LiveQuery implements WithTx, Client {
     }
   }
 
-  private async changePrivateHandler (tx: Tx): Promise<void> {
-    const evt = tx as TxWorkspaceEvent
+  private async changePrivateHandler (evt: TxWorkspaceEvent): Promise<void> {
     if (evt.event === WorkspaceEvent.SecurityChange) {
       for (const q of [...this.queue]) {
         if (typeof q.query.space !== 'string') {

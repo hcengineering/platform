@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import EditWithIcon from './EditWithIcon.svelte'
   import IconSearch from './icons/Search.svelte'
   import plugin from '../plugin'
@@ -11,13 +11,16 @@
   const dispatch = createEventDispatcher()
   let timer: any
 
-  function restartTimer () {
+  function restartTimer (): void {
     clearTimeout(timer)
     timer = setTimeout(() => {
       value = _search
       dispatch('change', _search)
     }, 500)
   }
+  onDestroy(() => {
+    clearTimeout(timer)
+  })
 </script>
 
 <EditWithIcon
@@ -26,20 +29,14 @@
   placeholder={plugin.string.Search}
   bind:value={_search}
   on:change={() => {
-    if (_search === '') {
-      value = ''
-      dispatch('change', '')
-    }
+    restartTimer()
   }}
   on:input={() => {
     restartTimer()
-    if (_search === '') {
-      value = ''
-      dispatch('change', '')
-    }
   }}
   on:keydown={(evt) => {
     if (evt.key === 'Enter') {
+      clearTimeout(timer)
       value = _search
       dispatch('change', _search)
     }

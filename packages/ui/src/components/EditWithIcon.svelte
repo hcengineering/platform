@@ -25,7 +25,7 @@
 
   export let icon: Asset | AnySvelteComponent | ComponentType
   export let width: string | undefined = undefined
-  export let value: string | undefined = undefined
+  export let value: string | undefined = ''
   export let placeholder: IntlString = plugin.string.EditBoxPlaceholder
   export let placeholderParam: any | undefined = undefined
   export let autoFocus: boolean = false
@@ -34,15 +34,15 @@
 
   const dispatch = createEventDispatcher()
   let textHTML: HTMLInputElement
-  let phTraslate: string = ''
+  let phTranslate: string = ''
 
-  export function focus () {
+  export function focus (): void {
     textHTML.focus()
     autoFocus = false
   }
 
-  $: translate(placeholder, placeholderParam ?? {}).then((res) => {
-    phTraslate = res
+  $: void translate(placeholder, placeholderParam ?? {}).then((res) => {
+    phTranslate = res
   })
   $: if (textHTML !== undefined) {
     if (autoFocus) focus()
@@ -53,13 +53,13 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   class="flex-between editbox {size}"
-  style={width ? 'width: ' + width : ''}
+  style={width != null ? 'width: ' + width : ''}
   on:click={() => {
     textHTML.focus()
   }}
 >
   <div class="mr-2 content-dark-color"><Icon {icon} size={'small'} /></div>
-  <input bind:this={textHTML} type="text" bind:value placeholder={phTraslate} on:change on:input on:keydown />
+  <input bind:this={textHTML} type="text" bind:value placeholder={phTranslate} on:change on:input on:keydown />
   <slot name="extra" />
   <div class="flex-row-center flex-no-shrink">
     {#if value}

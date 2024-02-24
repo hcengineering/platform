@@ -132,7 +132,7 @@ async function performESBuild(filesToTranspile) {
     minify: false,
     outdir: 'lib',
     keepNames: true,
-    sourcemap: 'external',
+    sourcemap: 'inline',
     allowOverwrite: true,
     format: 'cjs',
     plugins: [
@@ -163,7 +163,7 @@ async function validateTSC(st) {
     [
       '-pretty',
       "--emitDeclarationOnly",
-      "--incremental",      
+      "--incremental",
       "--tsBuildInfoFile", ".validate/tsBuildInfoFile.info",
       "--declarationDir", "types",
       ...args.splice(1)
