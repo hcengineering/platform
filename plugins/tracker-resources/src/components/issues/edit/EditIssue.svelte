@@ -106,7 +106,7 @@
     )
 
   $: canSave = title.trim().length > 0
-  $: parentIssue = issue !== undefined && issue.subIssues > 0
+  $: hasParentIssue = issue?.attachedTo !== tracker.ids.NoParent
 
   let saved = false
   async function save (): Promise<void> {
@@ -250,7 +250,7 @@
       />
     </svelte:fragment>
 
-    {#if parentIssue}
+    {#if hasParentIssue}
       <div class="mb-6">
         <SubIssueSelector {issue} />
       </div>
