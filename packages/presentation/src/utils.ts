@@ -524,3 +524,51 @@ export function getFiltredKeys (
 export function isCollectionAttr (hierarchy: Hierarchy, key: KeyedAttribute): boolean {
   return hierarchy.isDerived(key.attr.type._class, core.class.Collection)
 }
+
+/**
+ * @public
+ */
+export async function parseVCard (file: File): Promise<any> {
+  return await new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = function (event: ProgressEvent<FileReader>) {
+      const text = event.target?.result as string
+      if (text === undefined) {
+        reject(new Error('No result from file reader'))
+        return
+      }
+      const contacts: any[] = []
+      const vCards = text.split(/END:VCARD\r\nBEGIN:VCARD/i)
+        .map((vCard, index, array) =>
+          index === 0
+            ? vCard + 'END:VCARD'
+            : index === array.length - 1 ? 'BEGIN:VCARD' + vCard : 'BEGIN:VCARD' + vCard + 'END:VCARD'
+        )
+      vCards.forEach((vCardText: string) => {
+        const vCard: Record<string, string[]> = {}
+        const lines: string[] = vCardText.split(/\r\n|\n|\r/)
+
+        lines.forEach((line: string) => {
+          if (!line.startsWith('BEGIN:VCARD') && !line.startsWith('END:VCARD')) {
+            const [key, value] = line.includes(':') ? line.split(':') : [line, '']
+            if (key in vCard) {
+              if (Array.isArray(vCard[key])) {
+                vCard[key].push(value)
+              } else {
+                vCard[key] = [key, value]
+              }
+            } else {
+              vCard[key] = [value]
+            }
+          }
+        })
+        contacts.push(vCard)
+      })
+      resolve(contacts)
+    }
+    reader.onerror = function (error) {
+      reject(error)
+    }
+    reader.readAsText(file)
+  })
+}

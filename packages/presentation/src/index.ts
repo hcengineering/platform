@@ -44,6 +44,8 @@ export { default as BreadcrumbsElement } from './components/breadcrumbs/Breadcru
 export { default as ComponentExtensions } from './components/extensions/ComponentExtensions.svelte'
 export { default as DocCreateExtComponent } from './components/extensions/DocCreateExtComponent.svelte'
 export { default as SearchResult } from './components/SearchResult.svelte'
+export { default as PhoneContactViewer } from './components/PhoneContactViewer.svelte'
+export { default as PhoneContactCard } from './components/PhoneContactCard.svelte'
 export { default } from './plugin'
 export * from './types'
 export * from './utils'
