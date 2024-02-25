@@ -221,13 +221,13 @@ jobs:
           docker logs $(docker ps | grep front | cut -f 1 -d ' ') > logs/front.log
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: playwright-results
           path: ./tests/sanity/playwright-report/
       - name: Get Allure history
         uses: actions/checkout@v4
-        if: ${{ github.ref == 'refs/heads/main' }} && (success() || failure())
+        if: ${{ github.ref == 'refs/heads/main' }} && always()
         continue-on-error: true
         with:
           ref: gh-pages
@@ -243,12 +243,12 @@ jobs:
           allure_history: allure-history
       - name: Upload allure test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: allure-report
           path: ./allure-report/
       - name: Deploy report to Github Pages
-        if: ${{ github.ref == 'refs/heads/main' }} && (success() || failure())
+        if: ${{ github.ref == 'refs/heads/main' }} && always()
         uses: peaceiris/actions-gh-pages@v3
         with:
           PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -256,7 +256,7 @@ jobs:
           PUBLISH_DIR: allure-history
       - name: Upload Logs
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: docker-logs
           path: ./tests/sanity/logs
