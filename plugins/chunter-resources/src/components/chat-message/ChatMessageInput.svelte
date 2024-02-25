@@ -56,14 +56,22 @@
   let _id = currentMessage._id
   let inputContent = currentMessage.message
 
-  $: createdMessageQuery.query(_class, { _id }, (result: ChatMessage[]) => {
-    if (result.length > 0 && _id !== chatMessage?._id) {
-      // Ouch we have got comment with same id created already.
-      currentMessage = getDefault()
-      _id = currentMessage._id
-      inputRef.removeDraft(false)
-    }
-  })
+  $: if (currentDraft != null) {
+    createdMessageQuery.query(_class, { _id }, (result: ChatMessage[]) => {
+      if (result.length > 0 && _id !== chatMessage?._id) {
+        // Ouch we have got comment with same id created already.
+        clear()
+      }
+    })
+  } else {
+    createdMessageQuery.unsubscribe()
+  }
+
+  function clear (): void {
+    currentMessage = getDefault()
+    _id = currentMessage._id
+    inputRef.removeDraft(false)
+  }
 
   function objectChange (draft: MessageDraft, empty: Partial<MessageDraft>) {
     if (shouldSaveDraft) {
@@ -131,10 +139,10 @@
           objectClass: parentMessage.attachedToClass,
           objectId: parentMessage.attachedTo
         },
-        _id as Ref<ThreadMessage>,
-        Date.now(),
-        account._id
+        _id as Ref<ThreadMessage>
       )
+
+      clear()
 
       await client.update(parentMessage, { lastReply: Date.now() })
 
@@ -151,10 +159,9 @@
         object._class,
         collection,
         { message, attachments },
-        _id,
-        Date.now(),
-        account._id
+        _id
       )
+      clear()
     }
   }
 
