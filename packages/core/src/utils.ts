@@ -512,6 +512,9 @@ function getInNiN (query1: any, query2: any): any {
 }
 
 export function cutObjectArray (obj: any): any {
+  if (obj == null) {
+    return obj
+  }
   const r = {}
   for (const key of Object.keys(obj)) {
     if (Array.isArray(obj[key])) {
