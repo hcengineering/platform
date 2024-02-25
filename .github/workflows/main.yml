@@ -227,7 +227,7 @@ jobs:
           path: ./tests/sanity/playwright-report/
       - name: Get Allure history
         uses: actions/checkout@v4
-        if: ${{ github.ref == 'refs/heads/main' }}
+        if: ${{ github.ref == 'refs/heads/main' }} && (success() || failure())
         continue-on-error: true
         with:
           ref: gh-pages
