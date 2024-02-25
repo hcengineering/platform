@@ -1,0 +1,36 @@
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  src: local('IBM Plex Mono'),
+    local('IBMPlexMono'),
+    url('../fonts/complete/woff2/mono/IBMPlexMono-Regular.woff2') format('woff2'),
+    url('../fonts/complete/woff/mono/IBMPlexMono-Regular.woff') format('woff');
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  src: local('IBM Plex Mono Medium'),
+    local('IBMPlexMono-Medium'),
+    url('../fonts/complete/woff2/mono/IBMPlexMono-Medium.woff2') format('woff2'),
+    url('../fonts/complete/woff/mono/IBMPlexMono-Medium.woff') format('woff');
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 600;
+  src: local('IBM Plex Mono SemiBold'),
+    local('IBMPlexMono-SemiBold'),
+    url('../fonts/complete/woff2/mono/IBMPlexMono-SemiBold.woff2') format('woff2'),
+    url('../fonts/complete/woff/mono/IBMPlexMono-SemiBold.woff') format('woff');
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 700;
+  src: local('IBM Plex Mono Bold'),
+    local('IBMPlexMono-Bold'),
+    url('../fonts/complete/woff2/mono/IBMPlexMono-Bold.woff2') format('woff2'),
+    url('../fonts/complete/woff/mono/IBMPlexMono-Bold.woff') format('woff');
+}

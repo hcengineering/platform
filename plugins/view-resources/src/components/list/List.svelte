@@ -54,6 +54,9 @@
 
   const limiter = new RateLimiter(10)
 
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
   let docs: Doc[] = []
   let fastDocs: Doc[] = []
   let slowDocs: Doc[] = []
@@ -146,12 +149,9 @@
     return resultOptions
   }
 
-  $: dispatch('content', docs)
-
   const dispatch = createEventDispatcher()
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
+  $: dispatch('content', docs)
 
   async function getResultQuery (
     query: DocumentQuery<Doc>,
@@ -174,7 +174,7 @@
     return result
   }
 
-  function uncheckAll () {
+  function uncheckAll (): void {
     dispatch('check', { docs, value: false })
     selectedObjectIds = []
   }
@@ -197,7 +197,7 @@
 <div class="list-container" bind:this={listDiv}>
   <ListCategories
     bind:this={listCategories}
-    newObjectProps={() => (space ? { space } : {})}
+    newObjectProps={() => (space != null ? { space } : {})}
     {docs}
     {_class}
     {space}
