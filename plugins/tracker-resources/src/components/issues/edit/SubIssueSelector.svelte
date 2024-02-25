@@ -36,8 +36,11 @@
   import IssueStatusIcon from '../IssueStatusIcon.svelte'
 
   export let issue: WithLookup<Issue>
+  $: parentIssueId = issue.attachedTo !== tracker.ids.NoParent ? issue.attachedTo : undefined
+  let parentIssue: Issue | undefined = undefined
+  const parentQuery = createQuery()
 
-  const subIssuesQeury = createQuery()
+  const subIssuesQuery = createQuery()
 
   let subIssues: WithLookup<Issue>[] | undefined
   let subIssuesElement: Element
@@ -64,11 +67,10 @@
   }
 
   $: areSubIssuesLoading = !subIssues
-  $: parentIssue = issue.$lookup?.attachedTo ? issue.$lookup?.attachedTo : null
-  $: if (parentIssue && parentIssue.subIssues > 0) {
-    subIssuesQeury.query(
+  $: if (parentIssueId) {
+    subIssuesQuery.query(
       tracker.class.Issue,
-      { space: issue.space, attachedTo: parentIssue._id },
+      { attachedTo: parentIssueId },
       (res) => {
         subIssues = res
       },
@@ -79,8 +81,21 @@
         }
       }
     )
+    parentQuery.query(
+      tracker.class.Issue,
+      { _id: parentIssueId },
+      (res) => {
+        parentIssue = res[0]
+      },
+      {
+        limit: 1
+      }
+    )
   } else {
-    subIssuesQeury.unsubscribe()
+    subIssuesQuery.unsubscribe()
+    parentQuery.unsubscribe()
+    parentIssue = undefined
+    subIssues = []
   }
 
   $: parentStatus = parentIssue ? $statusStore.byId.get(parentIssue.status) : undefined
