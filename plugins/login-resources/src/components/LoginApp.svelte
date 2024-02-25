@@ -14,10 +14,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Popup, Scroller, deviceOptionsStore as deviceInfo, location, themeStore } from '@hcengineering/ui'
-
   import { getMetadata } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
+  import {
+    Popup,
+    Scroller,
+    deviceOptionsStore as deviceInfo,
+    fetchMetadataLocalStorage,
+    location,
+    themeStore
+  } from '@hcengineering/ui'
   import workbench from '@hcengineering/workbench'
   import { onDestroy } from 'svelte'
   import Confirmation from './Confirmation.svelte'
@@ -40,8 +46,9 @@
   import { Pages, pages } from '..'
   import loginBackWebp from '../../img/login_back.webp'
   import loginBack2xWebp from '../../img/login_back_2x.webp'
+  import login from '../plugin'
 
-  export let page: Pages = 'login'
+  export let page: Pages = 'signup'
 
   let navigateUrl: string | undefined
 
@@ -50,7 +57,8 @@
       const token = getMetadata(presentation.metadata.Token)
       page = (loc.path[1] as Pages) ?? (token != null ? 'selectWorkspace' : 'login')
       if (!pages.includes(page)) {
-        page = 'login'
+        const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokens)
+        page = tokens != null ? 'login' : 'signup'
       }
 
       navigateUrl = loc.query?.navigateUrl ?? undefined
