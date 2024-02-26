@@ -193,12 +193,12 @@
       "incremental": true
     },
     {
-      "summary": "docker:rebuild",
-      "commandKind": "phased",
-      "name": "docker:rebuild",
-      "phases": ["_phase:build", "_phase:bundle", "_phase:package", "_phase:docker-build"],
-      "enableParallelism": true,
-      "incremental": false
+      "commandKind": "global",
+      "name": "docker:up",
+      "summary": "Up development build",
+      "description": "Up development build",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "cd ./dev && docker compose up -d --force-recreate"
     },
     {
       "summary": "docker:staging",
