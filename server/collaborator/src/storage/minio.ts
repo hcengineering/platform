@@ -14,7 +14,12 @@
 //
 
 import { loadCollaborativeDoc, saveCollaborativeDocVersion } from '@hcengineering/collaboration'
-import { CollaborativeDocVersion, CollaborativeDocVersionHead, MeasureContext, formatCollaborativeDocVersion } from '@hcengineering/core'
+import {
+  CollaborativeDocVersion,
+  CollaborativeDocVersionHead,
+  MeasureContext,
+  formatCollaborativeDocVersion
+} from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { Doc as YDoc } from 'yjs'
 
