@@ -138,12 +138,16 @@ cd ./dev/tool
 rushx upgrade -f
 ```
 
-In cases where the project fails to build for any logical reason, try the following steps:
+## Troubleshooting
+
+If a build fails, but the code is correct, try to delete the [build cache](https://rushjs.io/pages/maintainer/build_cache/)
 
 ```bash
-rush update
-rush build --clean
+# from the project root
+rm -rf common/temp/build-cache
 ```
+
+and retry. 
 
 ## Tests
 
