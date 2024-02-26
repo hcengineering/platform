@@ -846,7 +846,7 @@ export async function getEnpoint (): Promise<string | undefined> {
       body: JSON.stringify(request)
     })
     const result = await response.json()
-    return result
+    return result.result
   } catch (err: any) {
     console.log('get endpoint error', err)
     Analytics.handleError(err)
