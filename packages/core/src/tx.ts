@@ -452,6 +452,22 @@ export abstract class TxProcessor implements WithTx {
     return tx
   }
 
+  static txHasUpdate<T extends Doc>(tx: TxUpdateDoc<T>, attribute: string): boolean {
+    const ops = tx.operations
+    if ((ops as any)[attribute] !== undefined) return true
+    for (const op in ops) {
+      if (op.startsWith('$')) {
+        const opValue = (ops as any)[op]
+        for (const key in opValue) {
+          if (key === attribute || key.startsWith(attribute + '.')) {
+            return true
+          }
+        }
+      }
+    }
+    return false
+  }
+
   protected abstract txCreateDoc (tx: TxCreateDoc<Doc>): Promise<TxResult>
   protected abstract txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<TxResult>
   protected abstract txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<TxResult>

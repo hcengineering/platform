@@ -18,7 +18,7 @@
   import { Issue } from '@hcengineering/tracker'
   import { Button, Chevron, ExpandCollapse, IconAdd, closeTooltip, resizeObserver, showPopup } from '@hcengineering/ui'
   import view, { ViewOptions, Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { ViewletsSettingButton } from '@hcengineering/view-resources'
+  import { ViewletsSettingButton, restrictionStore } from '@hcengineering/view-resources'
   import { afterUpdate } from 'svelte'
   import tracker from '../../../plugin'
   import CreateIssue from '../../CreateIssue.svelte'
@@ -139,19 +139,21 @@
     {#if hasSubIssues}
       <slot name="buttons" />
     {/if}
-    <Button
-      id="add-sub-issue"
-      icon={IconAdd}
-      label={hasSubIssues ? undefined : createLabel}
-      labelParams={{ subIssues: 0 }}
-      kind={'ghost'}
-      showTooltip={{ label: createLabel, direction: 'bottom' }}
-      on:click={() => {
-        isCollapsed = false
-        closeTooltip()
-        openNewIssueDialog()
-      }}
-    />
+    {#if !$restrictionStore.readonly}
+      <Button
+        id="add-sub-issue"
+        icon={IconAdd}
+        label={hasSubIssues ? undefined : createLabel}
+        labelParams={{ subIssues: 0 }}
+        kind={'ghost'}
+        showTooltip={{ label: createLabel, direction: 'bottom' }}
+        on:click={() => {
+          isCollapsed = false
+          closeTooltip()
+          openNewIssueDialog()
+        }}
+      />
+    {/if}
   </div>
 </div>
 {#if hasSubIssues && viewOptions && viewlet}
@@ -165,7 +167,7 @@
         }}
       >
         <SubIssueList
-          createItemDialog={CreateIssue}
+          createItemDialog={!$restrictionStore.readonly ? CreateIssue : undefined}
           createItemLabel={tracker.string.AddIssueTooltip}
           createItemDialogProps={{ space: object.space, ...createParams, shouldSaveDraft }}
           focusIndex={focusIndex === -1 ? -1 : focusIndex + 1}

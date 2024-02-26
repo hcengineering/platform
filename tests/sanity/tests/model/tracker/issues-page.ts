@@ -1,8 +1,8 @@
 import { expect, type Locator, type Page } from '@playwright/test'
-import { NewIssue } from './types'
 import path from 'path'
-import { CommonTrackerPage } from './common-tracker-page'
 import { attachScreenshot, iterateLocator } from '../../utils'
+import { CommonTrackerPage } from './common-tracker-page'
+import { NewIssue } from './types'
 
 export class IssuesPage extends CommonTrackerPage {
   readonly page: Page
@@ -142,8 +142,14 @@ export class IssuesPage extends CommonTrackerPage {
   }
 
   async searchIssueByName (issueName: string): Promise<void> {
-    await this.inputSearch.fill(issueName)
-    await this.page.waitForTimeout(3000)
+    for (let i = 0; i < 5; i++) {
+      await this.inputSearch.fill(issueName)
+      const v = await this.inputSearch.inputValue()
+      if (v === issueName) {
+        await this.inputSearch.press('Enter')
+        break
+      }
+    }
   }
 
   async openIssueByName (issueName: string): Promise<void> {

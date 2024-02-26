@@ -22,9 +22,9 @@
   import setting, { settingId } from '@hcengineering/setting'
   import tags from '@hcengineering/tags'
   import { IssueTemplate, IssueTemplateChild, Project } from '@hcengineering/tracker'
-  import { Button, EditBox, IconMoreH, Label, getCurrentResolvedLocation, navigate, showPopup } from '@hcengineering/ui'
-  import { ContextMenu } from '@hcengineering/view-resources'
+  import { Button, EditBox, IconMoreH, Label, getCurrentResolvedLocation, navigate } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import { showMenu } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import tracker from '../../plugin'
 
@@ -91,13 +91,9 @@
     }
   }
 
-  function showMenu (ev?: Event): void {
+  function showContextMenu (ev: MouseEvent): void {
     if (template !== undefined) {
-      showPopup(
-        ContextMenu,
-        { object: template, excludedActions: [view.action.Open] },
-        (ev as MouseEvent).target as HTMLElement
-      )
+      showMenu(ev, { object: template, excludedActions: [view.action.Open] })
     }
   }
 
@@ -183,7 +179,7 @@
       {/if}
     </svelte:fragment>
     <svelte:fragment slot="utils">
-      <Button icon={IconMoreH} iconProps={{ size: 'medium' }} kind={'icon'} on:click={showMenu} />
+      <Button icon={IconMoreH} iconProps={{ size: 'medium' }} kind={'icon'} on:click={showContextMenu} />
       <Button
         icon={setting.icon.Setting}
         iconProps={{ size: 'medium' }}

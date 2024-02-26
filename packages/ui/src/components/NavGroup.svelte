@@ -27,8 +27,8 @@
   $: id = `navGroup-${categoryName}`
 </script>
 
-<div class="hulyAccordionItem-container" class:isOpen class:second>
-  <button class="hulyAccordionItem-header small" class:isOpen class:selected on:click={() => (isOpen = !isOpen)}>
+<div class="hulyAccordionItem-container" class:second>
+  <button class="hulyAccordionItem-header nav small" class:isOpen class:selected on:click={() => (isOpen = !isOpen)}>
     <div class="hulyAccordionItem-header__label-wrapper font-medium-12">
       <span class="hulyAccordionItem-header__label">
         <Label {label} />
@@ -46,7 +46,7 @@
       </div>
     {/if}
   </button>
-  <div {id} class="hulyAccordionItem-content" class:isOpen>
+  <div {id} class="hulyAccordionItem-content">
     <slot />
   </div>
 </div>

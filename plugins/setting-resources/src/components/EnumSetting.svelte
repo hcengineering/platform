@@ -13,26 +13,25 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
   import core, { Enum } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import {
-    eventToHTMLElement,
+    Breadcrumb,
+    ButtonIcon,
+    Header,
     IconAdd,
     IconMoreH,
+    IconTableOfContents,
     Label,
-    showPopup,
-    Header,
-    Breadcrumb,
+    ModernButton,
+    Scroller,
+    Separator,
     defineSeparators,
     settingsSeparators,
-    Separator,
-    Scroller,
-    ButtonIcon,
-    IconTableOfContents,
-    ModernButton
+    showPopup
   } from '@hcengineering/ui'
-  import { ContextMenu } from '@hcengineering/view-resources'
+  import { showMenu } from '@hcengineering/view-resources'
+  import { createEventDispatcher } from 'svelte'
   import setting from '../plugin'
   import EnumValues from './EnumValues.svelte'
 
@@ -106,7 +105,7 @@
               pressed={hovered === i}
               on:click={(ev) => {
                 hovered = i
-                showPopup(ContextMenu, { object: value }, eventToHTMLElement(ev), () => {
+                showMenu(ev, { object: value }, () => {
                   hovered = null
                 })
               }}

@@ -20,6 +20,7 @@
   import { hasComponent } from './utils'
 
   export let models: readonly BreadcrumbsModel[]
+  export let disabled: boolean = false
 
   $: trimmed = models.length > 3
   $: narrowModel = trimmed ? [models[0], models[models.length - 1]] : models
@@ -51,7 +52,7 @@
     </div>
   {:else}
     {@const { title, href, onClick } = model}
-    <NavLink {href} noUnderline {onClick}>
+    <NavLink {href} noUnderline {onClick} {disabled}>
       <div class="title">{title}</div>
     </NavLink>
   {/if}

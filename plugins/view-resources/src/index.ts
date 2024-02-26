@@ -43,6 +43,7 @@ import StringFilter from './components/filter/StringFilter.svelte'
 import StringFilterPresenter from './components/filter/StringFilterPresenter.svelte'
 import TimestampFilter from './components/filter/TimestampFilter.svelte'
 import ValueFilter from './components/filter/ValueFilter.svelte'
+import CollaborativeDocEditor from './components/CollaborativeDocEditor.svelte'
 import CollaborativeHTMLEditor from './components/CollaborativeHTMLEditor.svelte'
 import HTMLEditor from './components/HTMLEditor.svelte'
 import HTMLPresenter from './components/HTMLPresenter.svelte'
@@ -115,7 +116,7 @@ import {
 import { IndexedDocumentPreview } from '@hcengineering/presentation'
 import { showEmptyGroups } from './viewOptions'
 import { AggregationMiddleware, AnalyticsMiddleware } from './middleware'
-export { getActions, invokeAction, getContextActions } from './actions'
+export { getActions, invokeAction, getContextActions, showMenu } from './actions'
 export { default as ActionButton } from './components/ActionButton.svelte'
 export { default as ActionHandler } from './components/ActionHandler.svelte'
 export { default as FilterButton } from './components/filter/FilterButton.svelte'
@@ -246,6 +247,7 @@ export default async (): Promise<Resources> => ({
     FilterTypePopup,
     ValueSelector,
     HTMLEditor,
+    CollaborativeDocEditor,
     CollaborativeHTMLEditor,
     ListView,
     GrowPresenter,

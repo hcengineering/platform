@@ -184,7 +184,8 @@ export function isFullTextAttribute (attr: AnyAttribute): boolean {
   return (
     attr.index === IndexKind.FullText ||
     attr.type._class === core.class.TypeAttachment ||
-    attr.type._class === core.class.EnumOf
+    attr.type._class === core.class.EnumOf ||
+    attr.type._class === core.class.TypeCollaborativeDoc
   )
 }
 
@@ -511,6 +512,9 @@ function getInNiN (query1: any, query2: any): any {
 }
 
 export function cutObjectArray (obj: any): any {
+  if (obj == null) {
+    return obj
+  }
   const r = {}
   for (const key of Object.keys(obj)) {
     if (Array.isArray(obj[key])) {

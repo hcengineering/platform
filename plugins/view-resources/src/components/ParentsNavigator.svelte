@@ -15,7 +15,7 @@
 <script lang="ts">
   import { AttachedDoc, Doc } from '@hcengineering/core'
   import { Breadcrumbs, BreadcrumbsModel, getClient } from '@hcengineering/presentation'
-  import { getObjectPresenter, isAttachedDoc } from '../utils'
+  import { getObjectPresenter, isAttachedDoc, restrictionStore } from '../utils'
   import { AttributeModel } from '@hcengineering/view'
 
   export let element: Doc | AttachedDoc
@@ -77,6 +77,6 @@
 
 {#await getBreadcrumbsModels(element) then models}
   {#if models.length > 0}
-    <Breadcrumbs {models} />
+    <Breadcrumbs {models} disabled={$restrictionStore.disableNavigation} />
   {/if}
 {/await}

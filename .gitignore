@@ -9,6 +9,7 @@ temp/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+tests/sanity/screenshots
 
 # Runtime data
 *.pid
@@ -76,6 +77,9 @@ bundle.js
 bundle/*.js
 dist
 .build
+typings
+types
+.validate
 tsconfig.tsbuildinfo
 ingest-attachment-*.zip
 tsdoc-metadata.json

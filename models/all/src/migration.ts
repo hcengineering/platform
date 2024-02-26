@@ -18,6 +18,7 @@ import { type MigrateOperation } from '@hcengineering/model'
 import { attachmentOperation } from '@hcengineering/model-attachment'
 import { chunterOperation } from '@hcengineering/model-chunter'
 import { contactOperation } from '@hcengineering/model-contact'
+import { guestOperation } from '@hcengineering/model-guest'
 import { coreOperation } from '@hcengineering/model-core'
 import { gmailOperation } from '@hcengineering/model-gmail'
 import { leadOperation } from '@hcengineering/model-lead'
@@ -54,6 +55,7 @@ export const migrateOperations: [string, MigrateOperation][] = [
   ['recruit', recruitOperation],
   ['view', viewOperation],
   ['contact', contactOperation],
+  ['guest', guestOperation],
   ['tags', tagsOperation],
   ['setting', settingOperation],
   ['tracker', trackerOperation],

@@ -16,7 +16,7 @@
 <script lang="ts">
   import { Ref, WithLookup } from '@hcengineering/core'
   import { ProjectType } from '@hcengineering/task'
-  import { Location, resolvedLocationStore } from '@hcengineering/ui'
+  import { Location, resolvedLocationStore, resizeObserver } from '@hcengineering/ui'
 
   import { onDestroy } from 'svelte'
   import { typeStore } from '../../'
@@ -24,6 +24,7 @@
 
   export let visibleNav: boolean = true
 
+  let visibleSecondNav: boolean = true
   let type: WithLookup<ProjectType> | undefined
   let typeId: Ref<ProjectType> | undefined
 
@@ -38,8 +39,13 @@
   $: type = typeId !== undefined ? $typeStore.get(typeId) : undefined
 </script>
 
-<div class="hulyComponent">
+<div
+  class="hulyComponent"
+  use:resizeObserver={(element) => {
+    visibleSecondNav = element.clientWidth > 720
+  }}
+>
   {#if type !== undefined}
-    <ProjectEditor {type} descriptor={type.$lookup?.descriptor} {visibleNav} on:change />
+    <ProjectEditor {type} descriptor={type.$lookup?.descriptor} {visibleNav} {visibleSecondNav} on:change />
   {/if}
 </div>

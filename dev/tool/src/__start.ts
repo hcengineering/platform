@@ -24,6 +24,7 @@ import { devTool } from '.'
 import { addLocation } from '@hcengineering/platform'
 import { serverActivityId } from '@hcengineering/server-activity'
 import { serverAttachmentId } from '@hcengineering/server-attachment'
+import { serverCollaborationId } from '@hcengineering/server-collaboration'
 import { serverCalendarId } from '@hcengineering/server-calendar'
 import { serverChunterId } from '@hcengineering/server-chunter'
 import { serverContactId } from '@hcengineering/server-contact'
@@ -40,9 +41,11 @@ import { serverTaskId } from '@hcengineering/server-task'
 import { serverTelegramId } from '@hcengineering/server-telegram'
 import { serverTrackerId } from '@hcengineering/server-tracker'
 import { serverViewId } from '@hcengineering/server-view'
+import { serverGuestId } from '@hcengineering/server-guest'
 
 addLocation(serverActivityId, () => import('@hcengineering/server-activity-resources'))
 addLocation(serverAttachmentId, () => import('@hcengineering/server-attachment-resources'))
+addLocation(serverCollaborationId, () => import('@hcengineering/server-collaboration-resources'))
 addLocation(serverContactId, () => import('@hcengineering/server-contact-resources'))
 addLocation(serverNotificationId, () => import('@hcengineering/server-notification-resources'))
 addLocation(serverChunterId, () => import('@hcengineering/server-chunter-resources'))
@@ -59,6 +62,7 @@ addLocation(serverTelegramId, () => import('@hcengineering/server-telegram-resou
 addLocation(serverHrId, () => import('@hcengineering/server-hr-resources'))
 addLocation(serverRequestId, () => import('@hcengineering/server-request-resources'))
 addLocation(serverViewId, () => import('@hcengineering/server-view-resources'))
+addLocation(serverGuestId, () => import('@hcengineering/server-guest-resources'))
 
 function prepareTools (): {
   mongodbUri: string

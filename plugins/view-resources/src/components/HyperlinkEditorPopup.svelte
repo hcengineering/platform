@@ -20,7 +20,7 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import view from '../plugin'
 
-  export let value: string = ''
+  export let value: string | undefined = ''
   export let editable: boolean | undefined = true
 
   const placeholder: IntlString = view.string.HyperlinkPlaceholder
@@ -33,7 +33,9 @@
     if (input) input.focus()
   })
   const copyLink = (): void => {
-    copyTextToClipboard(value)
+    if (value !== undefined) {
+      copyTextToClipboard(value)
+    }
   }
 </script>
 
@@ -92,6 +94,7 @@
     kind={'ghost'}
     size={'small'}
     icon={IconCopy}
+    disabled={value === undefined || value === ''}
     showTooltip={{ label: view.string.CopyToClipboard }}
     on:click={() => {
       copyLink()
@@ -102,6 +105,7 @@
     kind={'ghost'}
     size={'small'}
     icon={IconArrowRight}
+    disabled={value === undefined || value === ''}
     showTooltip={{ label: view.string.Open }}
     on:click={() => {
       dispatch('update', value)

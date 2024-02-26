@@ -24,6 +24,7 @@
   export let useAttachmentPreview = false
   export let progress = false
   export let progressItems: Ref<Doc>[] = []
+  export let readonly: boolean = false
 
   let element: HTMLElement
   let attachmentPopupId: string = ''
@@ -46,11 +47,16 @@
     <div class="attachment-grid">
       {#each attachments as attachment (attachment._id)}
         {#if useAttachmentPreview}
-          <AttachmentPreview value={attachment} {listProvider} on:open={(res) => (attachmentPopupId = res.detail)} />
+          <AttachmentPreview
+            value={attachment}
+            removable={!readonly}
+            {listProvider}
+            on:open={(res) => (attachmentPopupId = res.detail)}
+          />
         {:else}
           <AttachmentPresenter
             value={attachment}
-            removable
+            removable={!readonly}
             showPreview
             progress={progressItems.includes(attachment._id)}
             on:remove

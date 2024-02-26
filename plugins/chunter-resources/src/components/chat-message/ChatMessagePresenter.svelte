@@ -15,10 +15,9 @@
 <script lang="ts">
   import { Person, PersonAccount } from '@hcengineering/contact'
   import { personByIdStore } from '@hcengineering/contact-resources'
-  import { Account, Class, Doc, getCurrentAccount, Ref, WithLookup } from '@hcengineering/core'
+  import core, { Account, Class, Doc, getCurrentAccount, Ref, WithLookup } from '@hcengineering/core'
   import { createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
-  import core from '@hcengineering/core/lib/component'
-  import { AttachmentDocList } from '@hcengineering/attachment-resources'
+  import { AttachmentDocList, AttachmentImageSize } from '@hcengineering/attachment-resources'
   import { getDocLinkTitle, LinkPresenter } from '@hcengineering/view-resources'
   import { Action, Button, IconEdit, ShowMore } from '@hcengineering/ui'
   import view from '@hcengineering/view'
@@ -47,6 +46,8 @@
   export let inline = false
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
   export let withShowMore: boolean = true
+  export let attachmentImageSize: AttachmentImageSize = 'auto'
+  export let showLinksPreview = true
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
 
@@ -95,7 +96,7 @@
       parentObject = result
     })
 
-  $: links = getLinks(value?.message)
+  $: links = showLinksPreview ? getLinks(value?.message) : []
 
   function getLinks (content?: string): HTMLLinkElement[] {
     if (!content) {
@@ -192,7 +193,7 @@
           <ShowMore>
             <div class="clear-mins">
               <MessageViewer message={value.message} />
-              <AttachmentDocList {value} {attachments} />
+              <AttachmentDocList {value} {attachments} imageSize={attachmentImageSize} />
               {#each links as link}
                 <LinkPresenter {link} />
               {/each}
@@ -201,7 +202,7 @@
         {:else}
           <div class="clear-mins">
             <MessageViewer message={value.message} />
-            <AttachmentDocList {value} {attachments} />
+            <AttachmentDocList {value} {attachments} imageSize={attachmentImageSize} />
             {#each links as link}
               <LinkPresenter {link} />
             {/each}

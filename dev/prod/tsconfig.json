@@ -5,6 +5,7 @@
     "module": "esnext",
     "target": "es2021",
     "allowJs": true,
+    "declaration": true,
     "sourceMap": true,
     "skipLibCheck": true,
     "moduleResolution": "node",

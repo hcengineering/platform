@@ -83,6 +83,7 @@
   import TopMenu from './icons/TopMenu.svelte'
 
   let contentPanel: HTMLElement
+  let replacedPanel: HTMLElement
 
   const { setTheme } = getContext<{ setTheme: (theme: string) => void }>('theme')
 
@@ -106,9 +107,9 @@
 
   const client = getClient()
 
-  let apps: Application[] | Promise<Application[]> = client
-    .findAll<Application>(workbench.class.Application, { hidden: false, _id: { $nin: excludedApps } })
-    .then((res) => (apps = res))
+  const apps: Application[] = client
+    .getModel()
+    .findAllSync<Application>(workbench.class.Application, { hidden: false, _id: { $nin: excludedApps } })
 
   let panelInstance: PanelInstance
   let popupInstance: Popup
@@ -229,9 +230,6 @@
   async function resolveShortLink (loc: Location): Promise<ResolvedLocation | undefined> {
     let locationResolver = currentApplication?.locationResolver
     if (loc.path[2] !== undefined && loc.path[2].trim().length > 0) {
-      if (apps instanceof Promise) {
-        apps = await apps
-      }
       const app = apps.find((p) => p.alias === loc.path[2])
       if (app?.locationResolver) {
         locationResolver = app?.locationResolver
@@ -617,6 +615,9 @@
   let lastLoc: Location | undefined = undefined
 
   defineSeparators('workbench', workbenchSeparators)
+
+  let modern: boolean
+  $: modern = ['setting', 'time'].some((app) => currentApplication?.alias === app)
 </script>
 
 {#if employee && !employee.active}
@@ -656,7 +657,7 @@
   </svg>
   <div
     class="workbench-container"
-    class:modern-app={['setting', 'time'].some((app) => currentApplication?.alias === app)}
+    class:modern-app={modern}
     style:flex-direction={appsDirection === 'horizontal' ? 'column-reverse' : 'row'}
   >
     <div class="antiPanel-application {appsDirection}" class:lastDivider={!visibleNav}>
@@ -811,7 +812,15 @@
       {/if}
       <div class="antiPanel-component antiComponent" bind:this={contentPanel}>
         {#if currentApplication && currentApplication.component}
-          <Component is={currentApplication.component} props={{ currentSpace, visibleNav, navFloat, appsDirection }} />
+          <Component
+            is={currentApplication.component}
+            props={{ currentSpace, visibleNav, navFloat, appsDirection }}
+            on:change={(e) => {
+              if (e.detail?.type === 'replacedPanel' && e.detail?.replacedPanel !== undefined) {
+                replacedPanel = e.detail.replacedPanel
+              }
+            }}
+          />
         {:else if specialComponent}
           <Component
             is={specialComponent.component}
@@ -853,12 +862,16 @@
   </div>
   <div bind:this={cover} class="cover" />
   <TooltipInstance />
-  <PanelInstance bind:this={panelInstance} {contentPanel}>
+  <PanelInstance
+    bind:this={panelInstance}
+    contentPanel={modern ? replacedPanel : contentPanel}
+    kind={modern ? 'modern' : 'default'}
+  >
     <svelte:fragment slot="panel-header">
       <ActionContext context={{ mode: 'panel' }} />
     </svelte:fragment>
   </PanelInstance>
-  <Popup bind:this={popupInstance} {contentPanel}>
+  <Popup bind:this={popupInstance} contentPanel={modern ? replacedPanel : contentPanel}>
     <svelte:fragment slot="popup-header">
       <ActionContext context={{ mode: 'popup' }} />
     </svelte:fragment>

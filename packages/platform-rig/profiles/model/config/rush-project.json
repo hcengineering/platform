@@ -3,14 +3,17 @@
     "temp/**", 
     "lib/**", 
     "coverage/**",
-    ".build/**"
+    ".build/**",
+    ".validate/**",
+    ".format/**",
+    "types"
   ],
   "disableBuildCacheForProject": false,
 
   "operationSettings": [
     {
       "operationName": "build",
-      "outputFolderNames": ["lib", ".build"]
+      "outputFolderNames": ["lib", ".build", "types"]
     },
     {
       "operationName": "build:watch",
@@ -23,6 +26,10 @@
     {
       "operationName": "_phase:build",
       "outputFolderNames": ["lib", ".build"]
+    },
+    {
+      "operationName": "_phase:validate",
+      "outputFolderNames": ["types", ".validate"]
     },
     {
       "operationName": "_phase:bundle",

@@ -6,6 +6,8 @@
   export let value: Issue
   export let type: 'isBlocking' | 'blockedBy' | 'relations'
   export let blockedBy: Doc[] | undefined = undefined
+  export let disabled: boolean = false
+  export let readonly: boolean = false
 
   $: valueGroup = (type === 'isBlocking' ? blockedBy ?? [] : value[type] ?? []).reduce<
   Map<Ref<Class<Doc>>, Ref<Doc>[]>
@@ -25,7 +27,7 @@
   {#each classes as classCategory}
     {@const vals = valueGroup.get(classCategory)}
     {#if vals}
-      <RelationEditorPart {value} _class={classCategory} documentIds={vals} {type} />
+      <RelationEditorPart {value} _class={classCategory} documentIds={vals} {type} {disabled} {readonly} />
     {/if}
   {/each}
 </div>

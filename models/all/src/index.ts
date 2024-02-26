@@ -35,6 +35,10 @@ import recruit, { recruitId, createModel as recruitModel } from '@hcengineering/
 import { requestId, createModel as requestModel } from '@hcengineering/model-request'
 import { serverActivityId, createModel as serverActivityModel } from '@hcengineering/model-server-activity'
 import { serverAttachmentId, createModel as serverAttachmentModel } from '@hcengineering/model-server-attachment'
+import {
+  serverCollaborationId,
+  createModel as serverCollaborationModel
+} from '@hcengineering/model-server-collaboration'
 import { serverCalendarId, createModel as serverCalendarModel } from '@hcengineering/model-server-calendar'
 import { serverChunterId, createModel as serverChunterModel } from '@hcengineering/model-server-chunter'
 import { serverContactId, createModel as serverContactModel } from '@hcengineering/model-server-contact'
@@ -63,6 +67,8 @@ import { textEditorId, createModel as textEditorModel } from '@hcengineering/mod
 import tracker, { trackerId, createModel as trackerModel } from '@hcengineering/model-tracker'
 import view, { viewId, createModel as viewModel } from '@hcengineering/model-view'
 import workbench, { workbenchId, createModel as workbenchModel } from '@hcengineering/model-workbench'
+import { guestId, createModel as guestModel } from '@hcengineering/model-guest'
+import { serverGuestId, createModel as serverGuestModel } from '@hcengineering/model-server-guest'
 
 import { openAIId, createModel as serverOpenAI } from '@hcengineering/model-server-openai'
 import { createModel as serverTranslate, translateId } from '@hcengineering/model-server-translate'
@@ -107,6 +113,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [coreModel, coreId],
     [activityModel, activityId],
     [attachmentModel, attachmentId],
+    [guestModel, guestId],
     [tagsModel, tagsId],
     [viewModel, viewId],
     [workbenchModel, workbenchId],
@@ -274,6 +281,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
 
     [serverCoreModel, serverCoreId],
     [serverAttachmentModel, serverAttachmentId],
+    [serverCollaborationModel, serverCollaborationId],
     [serverContactModel, serverContactId],
     [serveSettingModel, serverSettingId],
     [serverChunterModel, serverChunterId],
@@ -293,7 +301,8 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [serverViewModel, serverViewId],
     [serverActivityModel, serverActivityId],
     [serverTranslate, translateId],
-    [serverOpenAI, openAIId]
+    [serverOpenAI, openAIId],
+    [serverGuestModel, serverGuestId]
   ]
 
   for (const [b, id, config] of builders) {

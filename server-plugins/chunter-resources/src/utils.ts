@@ -17,7 +17,7 @@ import { NotificationType } from '@hcengineering/notification'
 import { TriggerControl } from '@hcengineering/server-core'
 import chunter, { Backlink, DirectMessage } from '@hcengineering/chunter'
 import contact, { Person } from '@hcengineering/contact'
-import core from '@hcengineering/core/lib/component'
+import core from '@hcengineering/core/src/component'
 import activity from '@hcengineering/activity'
 
 /**

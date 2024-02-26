@@ -366,9 +366,20 @@ export interface Account extends Doc {
  * @public
  */
 export enum AccountRole {
-  User,
-  Maintainer,
-  Owner
+  Guest = 'GUEST',
+  User = 'USER',
+  Maintainer = 'MAINTAINER',
+  Owner = 'OWNER'
+}
+
+/**
+ * @public
+ */
+export const roleOrder: Record<AccountRole, number> = {
+  [AccountRole.Guest]: 1,
+  [AccountRole.User]: 2,
+  [AccountRole.Maintainer]: 3,
+  [AccountRole.Owner]: 4
 }
 
 /**

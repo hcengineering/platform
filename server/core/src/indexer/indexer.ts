@@ -267,6 +267,8 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     await this.flush(flush ?? false)
   }
 
+  triggerCounts = 0
+
   triggerIndexing = (): void => {}
   skippedReiterationTimeout: any
   currentStages: Record<string, number> = {}
@@ -341,6 +343,9 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     })
 
     while (!this.cancelling) {
+      // Clear triggers
+      this.triggerCounts = 0
+      this.stageChanged = 0
       await this.metrics.with('initialize-stages', { workspace: this.workspace.name }, async () => {
         await this.initializeStages()
       })
@@ -360,7 +365,11 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
       _classes.forEach((it) => this.broadcastClasses.add(it))
 
-      if (this.toIndex.size === 0 || this.stageChanged === 0) {
+      if (this.triggerCounts > 0) {
+        console.log('No wait, trigger counts', this.triggerCounts)
+      }
+
+      if (this.toIndex.size === 0 && this.stageChanged === 0 && this.triggerCounts === 0) {
         if (this.toIndex.size === 0) {
           console.log(this.workspace.name, 'Indexing complete', this.indexId)
         }
@@ -374,6 +383,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
           await new Promise((resolve) => {
             this.triggerIndexing = () => {
+              this.triggerCounts++
               resolve(null)
               clearTimeout(this.skippedReiterationTimeout)
             }

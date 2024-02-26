@@ -148,6 +148,7 @@ export function start (
     gmailUrl: string
     calendarUrl: string
     collaboratorUrl: string
+    collaboratorApiUrl: string
     title?: string
     languages: string
     defaultLanguage: string
@@ -192,6 +193,7 @@ export function start (
       GMAIL_URL: config.gmailUrl,
       CALENDAR_URL: config.calendarUrl,
       COLLABORATOR_URL: config.collaboratorUrl,
+      COLLABORATOR_API_URL: config.collaboratorApiUrl,
       TITLE: config.title,
       LANGUAGES: config.languages,
       DEFAULT_LANGUAGE: config.defaultLanguage,

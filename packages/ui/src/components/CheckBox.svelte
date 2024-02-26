@@ -19,7 +19,7 @@
   export let symbol: 'check' | 'minus' = 'check'
   export let size: 'small' | 'medium' | 'large' = 'small'
   export let circle: boolean = false
-  export let kind: 'default' | 'primary' | 'positive' | 'negative' = 'default'
+  export let kind: 'default' | 'primary' | 'positive' | 'negative' | 'todo' = 'default'
   export let readonly = false
 
   const dispatch = createEventDispatcher()
@@ -42,16 +42,7 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-<label
-  class="checkbox {size}"
-  class:circle
-  class:primary={kind === 'primary'}
-  class:positive={kind === 'positive'}
-  class:negative={kind === 'negative'}
-  class:readonly
-  class:checked
-  on:click|stopPropagation
->
+<label class="checkbox {size} {kind}" class:circle class:readonly class:checked on:click|stopPropagation>
   <input class="chBox" disabled={readonly} type="checkbox" bind:checked on:change|capture={handleValueChanged} />
   <svg class="checkSVG" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
     {#if checked}
@@ -131,6 +122,9 @@
       &:not(.readonly).checked {
         background-color: var(--negative-button-default);
       }
+    }
+    &.todo {
+      border-color: var(--theme-divider-color);
     }
 
     .chBox {

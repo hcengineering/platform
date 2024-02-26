@@ -1,7 +1,7 @@
 {
   "name": "@hcengineering/attachment-assets",
   "version": "0.6.7",
-  "main": "lib/index.js",
+  "main": "src/index.ts",
   "author": "Anticrm Platform Contributors",
   "template": "@hcengineering/assets-package",
   "license": "EPL-2.0",
@@ -11,9 +11,10 @@
     "test": "jest --passWithNoTests --silent",
     "format": "format src",
     "build:watch": "compile",
-    "_phase:build": "compile",
+    "_phase:build": "compile transpile src",
     "_phase:test": "jest --passWithNoTests --silent",
-    "_phase:format": "format src"
+    "_phase:format": "format src",
+    "_phase:validate": "compile validate"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.11.0",

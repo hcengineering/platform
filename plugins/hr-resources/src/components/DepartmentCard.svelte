@@ -27,7 +27,7 @@
     getEventPositionElement,
     showPopup
   } from '@hcengineering/ui'
-  import { Menu, openDoc } from '@hcengineering/view-resources'
+  import { Menu, openDoc, showMenu } from '@hcengineering/view-resources'
   import hr from '../plugin'
   import { addMember } from '../utils'
   import CreateDepartment from './CreateDepartment.svelte'
@@ -76,10 +76,6 @@
     showPopup(CreateDepartment, { space: value._id }, eventToHTMLElement(e))
   }
 
-  function showMenu (e: MouseEvent) {
-    showPopup(Menu, { object: value, baseMenuClass: value._class }, getEventPositionElement(e))
-  }
-
   function edit (e: MouseEvent): void {
     openDoc(client.getHierarchy(), value)
   }
@@ -92,6 +88,10 @@
   $: values = allEmployees.filter((it) => it.department === value._id && it._id !== dragPersonId)
 
   $: dragging = value._id === dragOver?._id && dragPersonId !== undefined
+
+  function onContext (e: MouseEvent): void {
+    showMenu(e, { object: value, baseMenuClass: value._class })
+  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -99,7 +99,7 @@
   class="w-full mt-2 mb-4 container flex clear-mins flex-no-shrink"
   class:cursor-pointer={currentDescendants.length}
   on:click|stopPropagation={edit}
-  on:contextmenu|preventDefault={showMenu}
+  on:contextmenu={onContext}
   class:dragging
 >
   <div

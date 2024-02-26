@@ -10,7 +10,8 @@
     "format": "format src",
     "build:watch": "compile ui",
     "_phase:build": "compile ui",
-    "_phase:format": "format src"
+    "_phase:format": "format src",
+    "_phase:validate": "compile validate"
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "^0.6.0",

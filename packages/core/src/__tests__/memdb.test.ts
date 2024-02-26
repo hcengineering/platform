@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Client } from '..'
+import { AccountRole, Client } from '..'
 import type { Class, Doc, Obj, Ref } from '../classes'
 import core from '../component'
 import { Hierarchy } from '../hierarchy'
@@ -250,7 +250,7 @@ describe('memdb', () => {
     })
     const account = await model.createDoc(core.class.Account, core.space.Model, {
       email: 'email',
-      role: 0
+      role: AccountRole.User
     })
     await model.updateDoc(core.class.Space, core.space.Model, space, { $push: { members: account } })
     const txSpace = await model.findAll(core.class.Space, { _id: space })

@@ -16,9 +16,19 @@
       "allowWarningsOnSuccess": false
     },
     {
+      "name": "_phase:validate",
+      "dependencies": {
+        "self": ["_phase:build"],
+        "upstream": ["_phase:validate"]
+      },
+      "ignoreMissingScript": true,
+      "allowWarningsOnSuccess": false
+    },
+    {
       "name": "_phase:test",
       "dependencies": {
-        "self": ["_phase:build"]
+        "self": ["_phase:build"],
+        "upstream": ["_phase:validate"]
       },
       "ignoreMissingScript": true,
       "allowWarningsOnSuccess": true
@@ -76,16 +86,18 @@
   ],
   "commands": [   
     {
-      "commandKind": "bulk",
+      "commandKind": "phased",
       "name": "build:watch",
       "summary": "Build and watch",
+      "phases": ["_phase:build", "_phase:validate"],
       "description": "Perform build with tsc and watch for changes with rush",
       "enableParallelism": true,
       "incremental": true,
-      "ignoreMissingScript": true,
-      "watchForChanges": true,
       "safeForSimultaneousRushProcesses": true,
-      "disableBuildCache": false
+      "watchOptions": {
+        "alwaysWatch": true,
+        "watchPhases": ["_phase:build", "_phase:validate"]
+      }
     },
     {
       "commandKind": "bulk",
@@ -109,15 +121,32 @@
     {
       "commandKind": "phased",
       "name": "build",
+      "summary": "build",
       "phases": ["_phase:build"],
       "enableParallelism": true,
       "incremental": true
     },
     {
       "commandKind": "phased",
+      "name": "validate",
+      "phases": ["_phase:validate"],
+      "summary": "validate",
+      "enableParallelism": true,
+      "incremental": true      
+    },
+    {
+      "commandKind": "phased",
       "name": "rebuild",
       "summary": "ReBuild and test all projects.",
       "phases": ["_phase:build"],
+      "enableParallelism": true,
+      "incremental": false
+    },
+    {
+      "commandKind": "phased",
+      "name": "revalidate",
+      "phases": ["_phase:validate"],
+      "summary": "revalidate",
       "enableParallelism": true,
       "incremental": false
     },
@@ -164,12 +193,12 @@
       "incremental": true
     },
     {
-      "summary": "docker:rebuild",
-      "commandKind": "phased",
-      "name": "docker:rebuild",
-      "phases": ["_phase:build", "_phase:bundle", "_phase:package", "_phase:docker-build"],
-      "enableParallelism": true,
-      "incremental": false
+      "commandKind": "global",
+      "name": "docker:up",
+      "summary": "Up development build",
+      "description": "Up development build",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "cd ./dev && docker compose up -d --force-recreate"
     },
     {
       "summary": "docker:staging",

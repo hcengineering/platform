@@ -30,21 +30,14 @@
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { DocWithRank, calcRank } from '@hcengineering/task'
-  import {
-    AnyComponent,
-    AnySvelteComponent,
-    ExpandCollapse,
-    getEventPositionElement,
-    mouseAttractor,
-    showPopup
-  } from '@hcengineering/ui'
+  import { AnyComponent, AnySvelteComponent, ExpandCollapse, mouseAttractor } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey, ViewOptionModel, ViewOptions, Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { fade } from 'svelte/transition'
   import { FocusSelection, SelectionFocusProvider, focusStore } from '../../selection'
-  import Menu from '../Menu.svelte'
   import ListHeader from './ListHeader.svelte'
   import ListItem from './ListItem.svelte'
+  import { showMenu } from '../../actions'
 
   export let category: PrimitiveType | AggregateValue
   export let headerComponent: AttributeModel | undefined
@@ -169,7 +162,6 @@
   $: selectedObjectIdsSet = new Set<Ref<Doc>>(selectedObjectIds.map((it) => it._id))
 
   const handleMenuOpened = async (event: MouseEvent, object: Doc) => {
-    event.preventDefault()
     handleRowFocused(object)
 
     if (!selectedObjectIdsSet.has(object._id)) {
@@ -177,8 +169,7 @@
     }
 
     const items = selectedObjectIds.length > 0 ? selectedObjectIds : object
-
-    showPopup(Menu, { object: items, baseMenuClass }, getEventPositionElement(event))
+    showMenu(event, { object: items, baseMenuClass })
   }
 
   $: _newObjectProps = (doc: Doc | undefined): Record<string, any> | undefined => {

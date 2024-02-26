@@ -343,6 +343,8 @@
       return
     }
 
+    updateSelectedDate()
+
     if (selectedMessageId !== undefined && messages.some(({ _id }) => _id === selectedMessageId)) {
       isScrollInitialized = true
       await wait()
@@ -465,7 +467,7 @@
     {#if startFromBottom}
       <div class="grower" />
     {/if}
-    {#if withDates && selectedDate}
+    {#if withDates && displayMessages.length > 0}
       <div class="ml-2 pr-2">
         <JumpToDateSelector {selectedDate} fixed on:jumpToDate={jumpToDate} />
       </div>
@@ -510,6 +512,8 @@
             isHighlighted={isSelected}
             shouldScroll={isSelected}
             withShowMore={false}
+            attachmentImageSize="x-large"
+            showLinksPreview={false}
           />
         </div>
       {/each}

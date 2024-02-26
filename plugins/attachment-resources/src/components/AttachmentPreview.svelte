@@ -15,18 +15,25 @@
 -->
 <script lang="ts">
   import type { Attachment } from '@hcengineering/attachment'
-  import { getFileUrl, PDFViewer } from '@hcengineering/presentation'
-  import { showPopup, closeTooltip, getIconSize2x } from '@hcengineering/ui'
+  import { PDFViewer } from '@hcengineering/presentation'
+  import { showPopup, closeTooltip } from '@hcengineering/ui'
+  import { ListSelectionProvider } from '@hcengineering/view-resources'
+  import { createEventDispatcher } from 'svelte'
+
   import { getType } from '../utils'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
   import AttachmentActions from './AttachmentActions.svelte'
   import AudioPlayer from './AudioPlayer.svelte'
-  import { ListSelectionProvider } from '@hcengineering/view-resources'
-  import { createEventDispatcher } from 'svelte'
+  import { AttachmentImageSize } from '../types'
+  import AttachmentImagePreview from './AttachmentImagePreview.svelte'
+  import AttachmentVideoPreview from './AttachmentVideoPreview.svelte'
 
   export let value: Attachment
   export let isSaved: boolean = false
   export let listProvider: ListSelectionProvider | undefined = undefined
+  export let imageSize: AttachmentImageSize = 'auto'
+  export let removable: boolean = false
+
   const dispatch = createEventDispatcher()
 
   $: type = getType(value.type)
@@ -48,44 +55,30 @@
       dispatch('open', popupInfo.id)
     }}
   >
-    <img
-      src={getFileUrl(value.file, 'large')}
-      srcset={`${getFileUrl(value.file, 'large', value.name)} 1x, ${getFileUrl(
-        value.file,
-        getIconSize2x('large'),
-        value.name
-      )} 2x`}
-      alt={value.name}
-    />
+    <AttachmentImagePreview {value} size={imageSize} />
     <div class="actions conner">
-      <AttachmentActions attachment={value} {isSaved} />
+      <AttachmentActions attachment={value} {isSaved} {removable} />
     </div>
   </div>
 {:else if type === 'audio'}
   <div class="buttonContainer">
     <AudioPlayer {value} />
     <div class="actions conner" style:padding={'0.125rem 0.25rem'}>
-      <AttachmentActions attachment={value} {isSaved} />
+      <AttachmentActions attachment={value} {isSaved} {removable} />
     </div>
   </div>
 {:else if type === 'video'}
   <div class="content buttonContainer flex-center">
-    <video controls>
-      <source src={getFileUrl(value.file, 'full', value.name)} />
-      <track kind="captions" label={value.name} />
-      <div class="container">
-        <AttachmentPresenter {value} />
-      </div>
-    </video>
+    <AttachmentVideoPreview {value} />
     <div class="actions conner">
-      <AttachmentActions attachment={value} {isSaved} />
+      <AttachmentActions attachment={value} {isSaved} {removable} />
     </div>
   </div>
 {:else}
   <div class="flex buttonContainer extraWidth">
     <AttachmentPresenter {value} />
     <div class="actions conner">
-      <AttachmentActions attachment={value} {isSaved} />
+      <AttachmentActions attachment={value} {isSaved} {removable} />
     </div>
   </div>
 {/if}
@@ -128,17 +121,5 @@
   .content {
     max-width: 20rem;
     max-height: 20rem;
-
-    img,
-    video {
-      max-width: 20rem;
-      max-height: 20rem;
-      border-radius: 0.75rem;
-      width: auto;
-      height: auto;
-    }
-    img {
-      object-fit: contain;
-    }
   }
 </style>

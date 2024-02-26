@@ -39,6 +39,7 @@
   export let shouldShowName = true
   export let shrink: number = 0
   export let isAction: boolean = false
+  export let readonly: boolean = false
 
   $: _object =
     (typeof object !== 'string' ? object : undefined) ?? (typeof value !== 'string' ? value : undefined) ?? []
@@ -186,6 +187,7 @@
       {width}
       {short}
       {shrink}
+      {readonly}
       {shouldShowName}
       showNavigate={false}
       justify={'left'}

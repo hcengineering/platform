@@ -35,7 +35,7 @@ Various teams are building products on top of the Platform, including [Huly](htt
 ## Pre-requisites
 
 - Make sure you have the following installed on your system:
-  - [Node.js](https://nodejs.org/en/download/)
+  - [Node.js](https://nodejs.org/en/download/) (v20 is required)
   - [Docker](https://docs.docker.com/get-docker/)
   - [Docker Compose](https://docs.docker.com/compose/install/)
 - Make sure what docker and `docker compose` commands are available in your terminal (e.g. `docker --version` and `docker compose --version`).
@@ -61,15 +61,21 @@ sh ./scripts/presetup-rush.sh
 
 Development environment setup requires Docker to be installed on system.
 
-Support is available for both amd64 and armv8 (arm64) containers on Linux and macOS.
+Support is available for both amd64 and arm64 containers on Linux and macOS.
 
 ```bash
 cd ./dev/
-rush build    # Will build all the required packages.
+rush build    # Will build all the required packages. 
+# rush rebuild  # could be used to omit build cache.
 rush bundle   # Will prepare bundles.
+rush package  # Will build all webpack packages.
+rush validate # Will validate all sources with typescript and generate d.ts files required for ts-node execution.
+rush svelte-check # Optional. svelte files validation using svelte-check.
 rush docker:build   # Will build Docker containers for all applications in the local Docker environment.
-docker compose up -d --force-recreate # Will set up all the containers
+rush docker:up # Will set up all the containers
 ```
+
+Be aware `rush docker:build` will automatically execute all required phases like build, bundle, package.
 
 or just:
 
@@ -116,7 +122,8 @@ rushx dev-server
 Then go to http://localhost:8080
 
 Use the following login credentials:
-```
+
+```plain
 Email: user1
 Password: 1234
 Workspace: ws1
@@ -138,12 +145,22 @@ cd ./dev/tool
 rushx upgrade -f
 ```
 
-In cases where the project fails to build for any logical reason, try the following steps:
+## Troubleshooting
+
+If a build fails, but the code is correct, try to delete the [build cache](https://rushjs.io/pages/maintainer/build_cache/)
 
 ```bash
-rush update
-rush build --clean
+# from the project root
+rm -rf common/temp/build-cache
 ```
+
+and retry.
+
+## Build & Watch
+
+For development purpose `rush build:watch` action could be used.
+
+It includes build and validate phases in watch mode.
 
 ## Tests
 

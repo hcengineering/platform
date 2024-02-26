@@ -16,7 +16,7 @@
    * path segment in the "$schema" field for all your Rush config files.  This will ensure
    * correct error-underlining and tab-completion for editors such as VS Code.
    */
-  "rushVersion": "5.113.4",
+  "rushVersion": "5.115.0",
 
   /**
    * The next field selects which package manager should be installed and determines its version.
@@ -467,6 +467,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/collaboration",
+      "projectFolder": "server/collaboration",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/server-ws",
       "projectFolder": "server/ws",
       "shouldPublish": false
@@ -744,6 +749,21 @@
     {
       "packageName": "@hcengineering/server-attachment-resources",
       "projectFolder": "server-plugins/attachment-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-collaboration",
+      "projectFolder": "server-plugins/collaboration",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-server-collaboration",
+      "projectFolder": "models/server-collaboration",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-collaboration-resources",
+      "projectFolder": "server-plugins/collaboration-resources",
       "shouldPublish": false
     },
     {
@@ -1520,6 +1540,41 @@
     {
       "packageName": "@hcengineering/support-resources",
       "projectFolder": "plugins/support-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/guest",
+      "projectFolder": "plugins/guest",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/guest-assets",
+      "projectFolder": "plugins/guest-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/guest-resources",
+      "projectFolder": "plugins/guest-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-guest",
+      "projectFolder": "models/guest",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-guest",
+      "projectFolder": "server-plugins/guest",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-server-guest",
+      "projectFolder": "models/server-guest",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-guest-resources",
+      "projectFolder": "server-plugins/guest-resources",
       "shouldPublish": false
     }
   ]

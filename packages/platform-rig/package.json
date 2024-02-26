@@ -5,21 +5,24 @@
     "build": "echo 'Not required'",
     "format": "echo 'Not required'"
   },
+  "devDependencies": {
+    "eslint-config-standard-with-typescript": "^40.0.0",
+    "svelte-eslint-parser": "^0.33.1",
+    "esbuild": "^0.20.0",
+    "esbuild-svelte": "^0.8.0",
+    "esbuild-plugin-copy": "~2.1.1"
+  },
+  "dependencies": {
+    "typescript": "^5.3.3"
+  },
   "bin": {
     "format": "./bin/format.js",
     "compile": "./bin/compile.js",
     "do-svelte-check": "./bin/do-svelte-check.js",
     "bump-package-version": "./bin/bump-package-version.js"
   },
-  "devDependencies": {
-    "eslint-config-standard-with-typescript": "^40.0.0",
-    "svelte-eslint-parser": "^0.33.1"
-  },
   "peerDependencies": {
     "@typescript-eslint/parser": "^6.11.0",
     "eslint": "^8.54.0"
-  },
-  "dependencies": {
-    "typescript": "^5.3.3"
   }
 }

@@ -5,14 +5,18 @@
     "rush-logs/**",
     "coverage/**",
     ".rush/**",
-    ".build/**"
+    ".build/**",
+    ".validate/**",
+    ".format/**",
+    "types",
+    "dist"
   ],
   "disableBuildCacheForProject": false,
 
   "operationSettings": [
     {
       "operationName": "build",
-      "outputFolderNames": ["dist", ".build"]
+      "outputFolderNames": ["lib", ".build", "types"]
     },
     {
       "operationName": "package",
@@ -33,6 +37,10 @@
     {
       "operationName": "_phase:build",
       "outputFolderNames": ["lib", ".build"]
+    },
+    {
+      "operationName": "_phase:validate",
+      "outputFolderNames": ["types", ".validate"]
     },
     {
       "operationName": "_phase:bundle",

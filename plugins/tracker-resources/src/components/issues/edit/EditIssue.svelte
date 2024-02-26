@@ -40,11 +40,10 @@
     Spinner,
     createFocusManager,
     getCurrentResolvedLocation,
-    navigate,
-    showPopup
+    navigate
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { ContextMenu, DocNavLink, ParentsNavigator } from '@hcengineering/view-resources'
+  import { DocNavLink, ParentsNavigator, showMenu } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { generateIssueShortLink } from '../../../issues'
   import tracker from '../../../plugin'
@@ -57,6 +56,8 @@
   export let _id: Ref<Issue>
   export let _class: Ref<Class<Issue>>
   export let embedded: boolean = false
+  export let kind: 'default' | 'modern' = 'default'
+  export let readonly: boolean = false
 
   let lastId: Ref<Doc> = _id
   const queryClient = createQuery()
@@ -65,7 +66,6 @@
   const hierarchy = client.getHierarchy()
 
   let issue: WithLookup<Issue> | undefined
-  let currentProject: Project | undefined
   let title = ''
   let innerWidth: number
   let descriptionBox: AttachmentStyleBoxCollabEditor
@@ -98,14 +98,15 @@
         ;[issue] = result
         if (issue !== undefined) {
           title = issue.title
-          currentProject = issue.$lookup?.space
         }
       },
-      { lookup: { attachedTo: tracker.class.Issue, space: tracker.class.Project } }
+      {
+        limit: 1
+      }
     )
 
   $: canSave = title.trim().length > 0
-  $: parentIssue = issue?.$lookup?.attachedTo
+  $: hasParentIssue = issue?.attachedTo !== tracker.ids.NoParent
 
   let saved = false
   async function save (): Promise<void> {
@@ -120,13 +121,9 @@
     }
   }
 
-  function showMenu (ev?: Event): void {
+  function showContextMenu (ev: MouseEvent): void {
     if (issue !== undefined) {
-      showPopup(
-        ContextMenu,
-        { object: issue, excludedActions: [view.action.Open] },
-        (ev as MouseEvent).target as HTMLElement
-      )
+      showMenu(ev, { object: issue, excludedActions: [view.action.Open] })
     }
   }
 
@@ -180,9 +177,12 @@
   <Panel
     object={issue}
     isHeader={false}
+    withoutInput={readonly}
+    allowClose={!embedded}
     isAside={true}
     isSub={false}
     {embedded}
+    {kind}
     withoutActivity={false}
     bind:content
     bind:innerWidth
@@ -191,7 +191,7 @@
     on:select
   >
     <svelte:fragment slot="title">
-      {#if !embedded}
+      {#if !embedded && issue.attachedTo !== tracker.ids.NoParent}
         <ParentsNavigator element={issue} />
       {/if}
       {#if embedded}
@@ -205,10 +205,7 @@
       {#if (projectType?.tasks.length ?? 0) > 1 && taskType !== undefined}
         ({taskType.name})
       {/if}
-      <ComponentExtensions
-        extension={tracker.extensions.EditIssueTitle}
-        props={{ size: 'medium', value: issue, space: currentProject }}
-      />
+      <ComponentExtensions extension={tracker.extensions.EditIssueTitle} props={{ size: 'medium', value: issue }} />
     </svelte:fragment>
     <svelte:fragment slot="pre-utils">
       <ComponentExtensions
@@ -221,25 +218,27 @@
     </svelte:fragment>
 
     <svelte:fragment slot="utils">
-      <Button icon={IconMoreH} iconProps={{ size: 'medium' }} kind={'icon'} on:click={showMenu} />
-      <CopyToClipboard issueUrl={generateIssueShortLink(issue.identifier)} />
-      <Button
-        icon={setting.icon.Setting}
-        kind={'icon'}
-        iconProps={{ size: 'medium' }}
-        showTooltip={{ label: setting.string.ClassSetting }}
-        on:click={(ev) => {
-          ev.stopPropagation()
-          const loc = getCurrentResolvedLocation()
-          loc.path[2] = settingId
-          loc.path[3] = 'setting'
-          loc.path[4] = 'classes'
-          loc.path.length = 5
-          loc.query = { _class }
-          loc.fragment = undefined
-          navigate(loc)
-        }}
-      />
+      {#if !readonly}
+        <Button icon={IconMoreH} iconProps={{ size: 'medium' }} kind={'icon'} on:click={showContextMenu} />
+        <CopyToClipboard issueUrl={generateIssueShortLink(issue.identifier)} />
+        <Button
+          icon={setting.icon.Setting}
+          kind={'icon'}
+          iconProps={{ size: 'medium' }}
+          showTooltip={{ label: setting.string.ClassSetting }}
+          on:click={(ev) => {
+            ev.stopPropagation()
+            const loc = getCurrentResolvedLocation()
+            loc.path[2] = settingId
+            loc.path[3] = 'setting'
+            loc.path[4] = 'classes'
+            loc.path.length = 5
+            loc.query = { _class }
+            loc.fragment = undefined
+            navigate(loc)
+          }}
+        />
+      {/if}
       <Button
         icon={IconMixin}
         iconProps={{ size: 'medium' }}
@@ -251,18 +250,15 @@
       />
     </svelte:fragment>
 
-    {#if parentIssue}
+    {#if hasParentIssue}
       <div class="mb-6">
-        {#if currentProject}
-          <SubIssueSelector {issue} />
-        {:else}
-          <Spinner />
-        {/if}
+        <SubIssueSelector {issue} />
       </div>
     {/if}
     <EditBox
       focusIndex={1}
       bind:value={title}
+      disabled={readonly}
       placeholder={tracker.string.IssueTitlePlaceholder}
       kind="large-style"
       on:blur={save}
@@ -271,6 +267,7 @@
       <AttachmentStyleBoxCollabEditor
         focusIndex={30}
         object={issue}
+        {readonly}
         key={{ key: 'description', attr: descriptionKey }}
         bind:this={descriptionBox}
         placeholder={tracker.string.IssueDescriptionPlaceholder}
@@ -281,16 +278,14 @@
       />
     </div>
     <div class="mt-6">
-      {#key issue._id !== undefined && currentProject !== undefined}
-        {#if currentProject !== undefined}
-          <SubIssues focusIndex={50} {issue} shouldSaveDraft />
-        {/if}
+      {#key issue._id}
+        <SubIssues focusIndex={50} {issue} shouldSaveDraft />
       {/key}
     </div>
 
     {#if editorFooter}
       <div class="step-tb-6">
-        <Component is={editorFooter.footer} props={{ object: issue, _class, ...editorFooter.props }} />
+        <Component is={editorFooter.footer} props={{ object: issue, _class, ...editorFooter.props, readonly }} />
       </div>
     {/if}
 
@@ -299,9 +294,9 @@
     </span>
 
     <svelte:fragment slot="custom-attributes">
-      {#if issue !== undefined && currentProject}
+      {#if issue !== undefined}
         <div class="space-divider" />
-        <ControlPanel {issue} {showAllMixins} />
+        <ControlPanel {issue} {showAllMixins} {readonly} />
       {/if}
 
       <div class="popupPanel-body__aside-grid">

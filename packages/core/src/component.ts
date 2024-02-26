@@ -48,6 +48,7 @@ import type {
   TypeAny,
   UserStatus
 } from './classes'
+import { CollaborativeDoc } from './collaboration'
 import { Status, StatusCategory } from './status'
 import type {
   Tx,
@@ -104,6 +105,8 @@ export default plugin(coreId, {
     TypeBoolean: '' as Ref<Class<Type<boolean>>>,
     TypeTimestamp: '' as Ref<Class<Type<Timestamp>>>,
     TypeDate: '' as Ref<Class<Type<Timestamp | Date>>>,
+    TypeCollaborativeDoc: '' as Ref<Class<Type<CollaborativeDoc>>>,
+    TypeCollaborativeDocVersion: '' as Ref<Class<Type<CollaborativeDoc>>>,
     TypeCollaborativeMarkup: '' as Ref<Class<Type<Markup>>>,
     RefTo: '' as Ref<Class<RefTo<Doc>>>,
     ArrOf: '' as Ref<Class<ArrOf<Doc>>>,
@@ -163,6 +166,8 @@ export default plugin(coreId, {
     Record: '' as IntlString,
     Markup: '' as IntlString,
     Collaborative: '' as IntlString,
+    CollaborativeDoc: '' as IntlString,
+    CollaborativeDocVersion: '' as IntlString,
     Number: '' as IntlString,
     Boolean: '' as IntlString,
     Timestamp: '' as IntlString,

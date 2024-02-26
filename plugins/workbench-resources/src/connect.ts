@@ -51,7 +51,16 @@ export async function connect (title: string): Promise<Client | undefined> {
     }
   }
   const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
-  const token = tokens[ws]
+  let token = tokens[ws]
+  if (token === undefined) {
+    const selectWorkspace = await getResource(login.function.SelectWorkspace)
+    const loginInfo = (await selectWorkspace(ws))[1]
+    if (loginInfo !== undefined) {
+      tokens[ws] = loginInfo.token
+      token = loginInfo.token
+      setMetadataLocalStorage(login.metadata.LoginTokens, tokens)
+    }
+  }
   setMetadata(presentation.metadata.Token, token)
   document.cookie =
     encodeURIComponent(presentation.metadata.Token.replaceAll(':', '-')) + '=' + encodeURIComponent(token) + '; path=/'
