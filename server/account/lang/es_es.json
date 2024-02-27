@@ -1,0 +1,13 @@
+{
+  "string": {
+    "ConfirmationText": "Gracias por tu interés en {name}. Para completar el proceso de registro, copia el siguiente enlace en la barra de URL de tu navegador: {link}. Saludos, equipo de {name}.",
+    "ConfirmationHTML": "<p>Hola,</p><p>Gracias por tu interés en {name}. Para completar el proceso de registro, sigue <a href={link}>este enlace</a> o copia el siguiente enlace en la barra de URL de tu navegador.</p><p>{link}</p><p>Saludos,</p><p>Equipo de {name}.</p>",
+    "ConfirmationSubject": "Confirma tu dirección de correo electrónico para registrarte en {name}",
+    "RecoveryText": "Recibimos una solicitud para restablecer la contraseña de tu cuenta. Para restablecer tu contraseña, pega el siguiente enlace en la barra de direcciones de tu navegador web: {link}. Si no solicitaste la recuperación de la contraseña, ignora este mensaje.",
+    "RecoveryHTML": "<p>Recibimos una solicitud para restablecer la contraseña de tu cuenta. Para restablecer tu contraseña, haz clic en el enlace a continuación: <a href={link}>Restablecer contraseña</a></p><p>Si el enlace anterior Restablecer contraseña no funciona, pega el siguiente enlace en la barra de direcciones de tu navegador web: {link}</p><p>Si no solicitaste la recuperación de la contraseña, ignora este mensaje.</p>",
+    "RecoverySubject": "Recuperación de Contraseña",
+    "InviteText": "Te invitaron a {ws}. Para unirte, pega el siguiente enlace en la barra de URL de tu navegador web: {link}. Enlace válido por {expHours} horas.",
+    "InviteHTML": "<p>Te invitaron a ${ws}. Para unirte, haz clic en el enlace a continuación: <a href={link}>Unirse</a></p><p>Si el enlace de invitación anterior no funciona, pega el siguiente enlace en la barra de URL de tu navegador web: {link}</p><p>Enlace válido por {expHours} horas.</p>",
+    "InviteSubject": "Invitación a {ws}"
+  }
+}
