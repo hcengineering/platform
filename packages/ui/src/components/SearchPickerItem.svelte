@@ -17,7 +17,7 @@
 </script>
 
 <button
-  class="flex font-medium-14 search-picker-item "
+  class="flex font-medium-14 max-w-60 search-picker-item"
   on:click
 >
   <span>
@@ -57,6 +57,9 @@
 
     span {
       padding: 0 var(--spacing-1);
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
     }
   }
 
