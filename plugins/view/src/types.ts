@@ -18,7 +18,6 @@ import {
   Account,
   AggregateValue,
   AnyAttribute,
-  Attribute,
   CategoryType,
   Class,
   Client,
@@ -37,18 +36,17 @@ import {
   Tx,
   TxOperations,
   Type,
-  UXObject,
-  WithLookup
+  UXObject
 } from '@hcengineering/core'
+import { Asset, IntlString, Resource, Status } from '@hcengineering/platform'
+import { Preference } from '@hcengineering/preference'
 import {
   AnyComponent,
   AnySvelteComponent,
-  type LabelAndProps,
   Location,
-  Location as PlatformLocation
+  Location as PlatformLocation,
+  type LabelAndProps
 } from '@hcengineering/ui'
-import { Asset, IntlString, Resource, Status } from '@hcengineering/platform'
-import { Preference } from '@hcengineering/preference'
 
 /**
  * @public
@@ -377,7 +375,6 @@ export interface Groupping extends Class<Doc> {
 export interface AggregationManager {
   close: () => void
   notifyTx: (...tx: Tx[]) => Promise<void>
-  updateLookup: (resultDoc: WithLookup<Doc>, attr: Attribute<Doc>) => Promise<void>
   categorize: (target: Array<Ref<Doc>>, attr: AnyAttribute) => Promise<Array<Ref<Doc>>>
   getAttrClass: () => Ref<Class<Doc>>
   updateSorting?: (finalOptions: FindOptions<Doc>, attr: AnyAttribute) => Promise<void>
