@@ -13,10 +13,8 @@
 // limitations under the License.
 //
 
-import { type onStatelessParameters } from '@hocuspocus/provider'
 import { type Attribute } from '@tiptap/core'
 import { get } from 'svelte/store'
-import * as Y from 'yjs'
 
 import contact, { type PersonAccount, formatName, AvatarType } from '@hcengineering/contact'
 import { getCurrentAccount } from '@hcengineering/core'
@@ -28,73 +26,7 @@ import {
   themeStore
 } from '@hcengineering/ui'
 
-import { type DocumentId, TiptapCollabProvider } from './provider/tiptap'
 import { type CollaborationUser } from './types'
-
-type ProviderData = (
-  | {
-    provider: TiptapCollabProvider
-  }
-  | {
-    collaboratorURL: string
-    token: string
-  }
-) & { ydoc?: Y.Doc }
-
-function getProvider (
-  documentId: DocumentId,
-  providerData: ProviderData,
-  initialContentId?: DocumentId,
-  targetContentId?: DocumentId
-): TiptapCollabProvider {
-  if (!('provider' in providerData)) {
-    const provider = new TiptapCollabProvider({
-      url: providerData.collaboratorURL,
-      name: documentId,
-      document: providerData.ydoc ?? new Y.Doc(),
-      token: providerData.token,
-      parameters: {
-        initialContentId,
-        targetContentId
-      },
-      onStateless (data: onStatelessParameters) {
-        try {
-          const payload = JSON.parse(data.payload)
-          if ('status' in payload && payload.status === 'completed') {
-            provider.destroy()
-          }
-        } catch (e) {
-          console.error('Failed to check provider operation status', e)
-        }
-      }
-    })
-
-    return provider
-  } else {
-    return providerData.provider
-  }
-}
-
-export function copyDocumentField (
-  documentId: DocumentId,
-  srcFieldId: string,
-  dstFieldId: string,
-  providerData: ProviderData,
-  initialContentId?: DocumentId
-): void {
-  const provider = getProvider(documentId, providerData, initialContentId)
-  provider.copyField(documentId, srcFieldId, dstFieldId)
-}
-
-export function copyDocumentContent (
-  documentId: DocumentId,
-  snapshotId: DocumentId,
-  providerData: ProviderData,
-  initialContentId?: DocumentId
-): void {
-  const provider = getProvider(documentId, providerData, initialContentId)
-  provider.copyContent(documentId, snapshotId)
-}
 
 export function getDataAttribute (
   name: string,
