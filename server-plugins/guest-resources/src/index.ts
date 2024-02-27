@@ -54,14 +54,18 @@ export async function OnPublicLinkCreate (tx: Tx, control: TriggerControl): Prom
   return res
 }
 
-function generateUrl (linkId: Ref<PublicLink>, workspace: WorkspaceId): string {
+export function getPublicLinkUrl (workspace: WorkspaceId): string {
   const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const token = generateToken(guestAccountEmail, workspace, { linkId, guest: 'true' })
-  const path = `${guestId}/${workspace.name}?token=${token}`
+  const path = `${guestId}/${workspace.name}`
   return concatLink(front, path)
 }
 
-export async function GetPublicLink (
+function generateUrl (linkId: Ref<PublicLink>, workspace: WorkspaceId): string {
+  const token = generateToken(guestAccountEmail, workspace, { linkId, guest: 'true' })
+  return `${getPublicLinkUrl(workspace)}?token=${token}`
+}
+
+export async function getPublicLink (
   doc: Doc,
   client: TxOperations,
   workspace: WorkspaceId,
