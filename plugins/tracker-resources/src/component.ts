@@ -17,7 +17,6 @@ import {
   AggregateValue,
   AggregateValueData,
   type AnyAttribute,
-  type Attribute,
   type Class,
   type Client,
   type Doc,
