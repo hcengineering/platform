@@ -13,15 +13,11 @@
   "operationSettings": [
     {
       "operationName": "build",
-      "outputFolderNames": ["lib", ".build", "types"]
+      "outputFolderNames": ["lib", ".build"]
     },
     {
       "operationName": "test",
       "outputFolderNames": ["coverage"]
-    },
-    {
-      "operationName": "build:watch",
-      "outputFolderNames": ["lib", ".build"]
     },
     {
       "operationName": "format",

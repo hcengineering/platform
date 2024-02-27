@@ -14,15 +14,11 @@
   "operationSettings": [
     {
       "operationName": "build",
-      "outputFolderNames": ["lib", ".build", "types"]
+      "outputFolderNames": ["lib", ".build"]
     },
     {
       "operationName": "test",
       "outputFolderNames": ["coverage"]
-    },
-    {
-      "operationName": "build:watch",
-      "outputFolderNames": ["lib", ".build"]
     },
     {
       "operationName": "format",
@@ -40,6 +36,10 @@
       "operationName": "_phase:bundle",
       "outputFolderNames": ["bundle"],
       "disableBuildCacheForOperation": true
+    },
+    {
+      "operationName": "_phase:package",
+      "outputFolderNames": ["dist"]
     },
     {
       "operationName": "_phase:test",
