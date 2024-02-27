@@ -25,6 +25,7 @@ export class IssuesDetailsPage extends CommonTrackerPage {
   readonly inputSearchOnSearchForIssueModal: Locator
   readonly textBlockedBy: Locator
   readonly textBlocks: Locator
+  readonly buttonRemoveBlockedBy: Locator
 
   constructor (page: Page) {
     super(page)
@@ -50,6 +51,7 @@ export class IssuesDetailsPage extends CommonTrackerPage {
     this.inputSearchOnSearchForIssueModal = page.locator('div.popup input[type="text"]')
     this.textBlockedBy = page.locator('//span[text()="Blocked by"]/following-sibling::div[1]/div/div/button/span')
     this.textBlocks = page.locator('//span[text()="Blocks"]/following-sibling::div[1]/div/div/button/span')
+    this.buttonRemoveBlockedBy = page.locator('//span[text()="Blocked by"]/following-sibling::div[1]/div/button')
   }
 
   async editIssue (data: Issue): Promise<void> {
