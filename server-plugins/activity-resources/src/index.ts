@@ -17,6 +17,7 @@ import activity, { ActivityMessage, ActivityMessageControl, DocUpdateMessage, Re
 import core, {
   Account,
   AttachedDoc,
+  Class,
   Data,
   Doc,
   MeasureContext,
@@ -26,7 +27,8 @@ import core, {
   TxCollectionCUD,
   TxCreateDoc,
   TxProcessor,
-  matchQuery
+  matchQuery,
+  Hierarchy
 } from '@hcengineering/core'
 import { ActivityControl, DocObjectCache } from '@hcengineering/server-activity'
 import type { TriggerControl } from '@hcengineering/server-core'
@@ -116,6 +118,12 @@ export async function createReactionNotifications (
   return res
 }
 
+function isActivityDoc (_class: Ref<Class<Doc>>, hierarchy: Hierarchy): boolean {
+  const mixin = hierarchy.classHierarchyMixin(_class, activity.mixin.ActivityDoc)
+
+  return mixin !== undefined
+}
+
 function getDocUpdateMessageTx (
   control: ActivityControl,
   originTx: TxCUD<Doc>,
@@ -156,9 +164,8 @@ async function pushDocUpdateMessages (
   if (object === undefined) {
     return res
   }
-  const activityDoc = await control.modelDb.findOne(activity.mixin.ActivityDoc, { _id: object._class })
 
-  if (activityDoc === undefined) {
+  if (!isActivityDoc(object._class, control.hierarchy)) {
     return res
   }
 
@@ -261,6 +268,10 @@ export async function generateDocUpdateMessages (
     }
     case core.class.TxMixin:
     case core.class.TxUpdateDoc: {
+      if (!isActivityDoc(tx.objectClass, control.hierarchy)) {
+        return res
+      }
+
       let doc = objectCache?.docs?.get(tx.objectId)
       if (doc === undefined) {
         doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
@@ -285,6 +296,10 @@ export async function generateDocUpdateMessages (
       const actualTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
       res = await generateDocUpdateMessages(ctx, actualTx, control, res, tx, objectCache)
       if ([core.class.TxCreateDoc, core.class.TxRemoveDoc, core.class.TxUpdateDoc].includes(actualTx._class)) {
+        if (!isActivityDoc(tx.objectClass, control.hierarchy)) {
+          return res
+        }
+
         let doc = objectCache?.docs?.get(tx.objectId)
         if (doc === undefined) {
           doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
@@ -315,6 +330,10 @@ export async function generateDocUpdateMessages (
 }
 
 async function ActivityMessagesHandler (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
+  if (tx.space === core.space.DerivedTx) {
+    return []
+  }
+
   if (control.hierarchy.isDerived(tx.objectClass, activity.class.ActivityMessage)) {
     return []
   }
@@ -324,6 +343,11 @@ async function ActivityMessagesHandler (tx: TxCUD<Doc>, control: TriggerControl)
     {},
     async (ctx) => await generateDocUpdateMessages(ctx, tx, control)
   )
+
+  if (txes.length === 0) {
+    return []
+  }
+
   const messages = txes.map((messageTx) => TxProcessor.createDoc2Doc(messageTx.tx as TxCreateDoc<DocUpdateMessage>))
 
   const notificationTxes = await control.ctx.with(
