@@ -174,7 +174,7 @@
     {isSelected}
     {shouldScroll}
     {embedded}
-    {withActions}
+    withActions={withActions && !isEditing}
     actions={additionalActions}
     {showEmbedded}
     {hideFooter}
@@ -213,6 +213,8 @@
           bind:this={refInput}
           chatMessage={value}
           shouldSaveDraft={false}
+          focusIndex={1000}
+          autofocus
           {object}
           on:submit={() => {
             isEditing = false
