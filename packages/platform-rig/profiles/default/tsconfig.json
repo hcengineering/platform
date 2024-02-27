@@ -10,6 +10,8 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "declarationMap": true,
+    "disableReferencedProjectLoad": true,
+    "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "esModuleInterop": true,
     "rootDir": "./src",

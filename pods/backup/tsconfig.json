@@ -4,6 +4,7 @@
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./lib",
+    "declarationDir": "./types",
     "tsBuildInfoFile": ".build/build.tsbuildinfo"
   }
 }
