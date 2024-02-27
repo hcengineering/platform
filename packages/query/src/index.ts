@@ -463,6 +463,9 @@ export class LiveQuery implements WithTx, Client {
       }
       return toFindResult(this.clone(q.result), q.total) as FindResult<T>
     }
+    if (current.result instanceof Promise) {
+      current.result = await current.result
+    }
     return toFindResult(this.clone((current?.result as T[]) ?? []), current.total)
   }
 
