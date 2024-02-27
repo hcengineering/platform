@@ -137,8 +137,7 @@
             //  you're trying to use TextEditor in long-living components that
             //  get updated, e.g. in QuestionCollectionItemEditor in Surveys
             element: textToolbarElement,
-            isSupported: () => true,
-            isSelectionOnly: () => false
+            isSupported: () => true
           }),
           InlinePopupExtension.configure({
             pluginKey: 'show-image-actions-popup',
