@@ -25,8 +25,8 @@
     autoFocus = false
   }
 
-  $: if (inputRef !== undefined) {
-    if (autoFocus) focus()
+  $: if (inputRef !== undefined && autoFocus) {
+    focus()
   }
 </script>
 
