@@ -39,6 +39,7 @@
   export let colorInherit: boolean = false
   export let accent: boolean = false
   export let maxWidth = ''
+  export let compact = false
 
   const client = getClient()
   $: personValue = typeof value === 'string' ? $personByIdStore.get(value) : value
@@ -92,6 +93,7 @@
     {colorInherit}
     {accent}
     {maxWidth}
+    {compact}
     on:accent-color
   />
 {/if}
