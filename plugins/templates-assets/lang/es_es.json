@@ -1,0 +1,21 @@
+{
+  "string": {
+    "Cancel": "Cancelar",
+    "Templates": "Plantillas de texto",
+    "TemplatesHeader": "PLANTILLAS DE TEXTO",
+    "CreateTemplate": "CREAR PLANTILLA",
+    "SaveTemplate": "Guardar plantilla",
+    "EditTemplate": "Editar plantilla",
+    "ViewTemplate": "Ver plantilla",
+    "Suggested": "SUGERIDAS",
+    "SearchTemplate": "buscar plantilla",
+    "TemplatePlaceholder": "Nueva plantilla",
+    "Title": "Título",
+    "Message": "Mensaje",
+    "Field": "Campo",
+    "TemplateCategory": "Grupo de plantillas",
+    "CreateTemplateCategory": "Crear grupo",
+    "Copy": "Copiar",
+    "Template": "Plantilla"
+  }
+}
