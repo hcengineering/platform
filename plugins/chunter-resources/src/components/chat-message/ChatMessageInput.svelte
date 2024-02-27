@@ -29,6 +29,7 @@
   export let boundary: HTMLElement | undefined = undefined
   export let loading = false
   export let collection: string = 'comments'
+  export let autofocus = false
 
   type MessageDraft = Pick<ChatMessage, '_id' | 'message' | 'attachments'>
 
@@ -186,6 +187,7 @@
   bind:objectId={_id}
   {shouldSaveDraft}
   {boundary}
+  {autofocus}
   on:message={onMessage}
   on:update={onUpdate}
   on:focus

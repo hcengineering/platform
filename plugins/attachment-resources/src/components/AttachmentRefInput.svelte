@@ -17,14 +17,7 @@
   import { Attachment } from '@hcengineering/attachment'
   import { Account, Class, Doc, generateId, IdMap, Ref, Space, toIdMap } from '@hcengineering/core'
   import { IntlString, setPlatformStatus, unknownError, Asset } from '@hcengineering/platform'
-  import {
-    createQuery,
-    DraftController,
-    draftsStore,
-    getClient,
-    getFileUrl,
-    getImageSize
-  } from '@hcengineering/presentation'
+  import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
   import textEditor, { AttachIcon, type RefAction, ReferenceInput } from '@hcengineering/text-editor'
   import { Loading, type AnySvelteComponent } from '@hcengineering/ui'
   import { deleteFile, getAttachmentMetadata, uploadFile } from '../utils'
@@ -43,6 +36,7 @@
   export let attachments: IdMap<Attachment> = new Map()
   export let loading = false
   export let focusIndex: number = -1
+  export let autofocus = false
   export function submit (): void {
     refInput.submit()
   }
@@ -296,6 +290,7 @@
       {labelSend}
       {showSend}
       {showActions}
+      autofocus={autofocus ? 'end' : false}
       loading={loading || progress}
       {boundary}
       extraActions={[
