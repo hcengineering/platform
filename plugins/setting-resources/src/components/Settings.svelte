@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { PersonAccount } from '@hcengineering/contact'
-  import { AccountRole, getCurrentAccount } from '@hcengineering/core'
+  import { AccountRole, getCurrentAccount, roleOrder } from '@hcengineering/core'
   import login, { loginId } from '@hcengineering/login'
   import { setMetadata } from '@hcengineering/platform'
   import presentation, { closeClient, createQuery } from '@hcengineering/presentation'
@@ -57,7 +57,7 @@
     setting.class.SettingsCategory,
     {},
     (res) => {
-      categories = account.role > AccountRole.User ? res : res.filter((p) => !p.secured)
+      categories = roleOrder[account.role] > roleOrder[AccountRole.User] ? res : res.filter((p) => !p.secured)
       category = findCategory(categoryId)
     },
     { sort: { order: 1 } }
