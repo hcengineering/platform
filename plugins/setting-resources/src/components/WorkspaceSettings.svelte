@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { PersonAccount } from '@hcengineering/contact'
-  import { AccountRole, getCurrentAccount } from '@hcengineering/core'
+  import { AccountRole, getCurrentAccount, roleOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import setting, { SettingsCategory } from '@hcengineering/setting'
   import {
@@ -43,7 +43,7 @@
     setting.class.WorkspaceSettingCategory,
     {},
     (res) => {
-      categories = account.role > AccountRole.User ? res : res.filter((p) => !p.secured)
+      categories = roleOrder[account.role] > roleOrder[AccountRole.User] ? res : res.filter((p) => !p.secured)
       category = findCategory(categoryId)
     },
     { sort: { order: 1 } }
