@@ -70,10 +70,14 @@ async function loadTranslationsForComponent (plugin: Plugin, locale: string): Pr
   try {
     return (await loader(locale)) as Record<string, IntlString> | Status
   } catch (err) {
-    console.error(err)
-    const status = unknownError(err)
-    await setPlatformStatus(status)
-    return status
+    console.error('No translations found for plugin', plugin, err)
+    try {
+      return (await loader('en')) as Record<string, IntlString> | Status
+    } catch (err: any) {
+      const status = unknownError(err)
+      await setPlatformStatus(status)
+      return status
+    }
   }
 }
 
