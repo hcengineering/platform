@@ -22,8 +22,9 @@
   import { Avatar, EmployeePresenter, SystemAvatar } from '@hcengineering/contact-resources'
   import core, { getDisplayTime } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Action, Label } from '@hcengineering/ui'
+  import { Action, Label, tooltip } from '@hcengineering/ui'
   import { getActions, restrictionStore } from '@hcengineering/view-resources'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
 
   import ReactionsPresenter from '../reactions/ReactionsPresenter.svelte'
   import ActivityMessageExtensionComponent from './ActivityMessageExtension.svelte'
@@ -107,6 +108,14 @@
 
   let readonly: boolean = false
   $: readonly = $restrictionStore.disableComments
+
+  $: fullDate = new Date(message.createdOn ?? message.modifiedOn).toLocaleString('default', {
+    minute: '2-digit',
+    hour: 'numeric',
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  })
 </script>
 
 {#if !isHidden}
@@ -161,7 +170,14 @@
           {#if !skipLabel}
             <slot name="header" />
           {/if}
-          <span class="text-sm">{getDisplayTime(message.createdOn ?? 0)}</span>
+          <span
+            class="text-sm"
+            use:tooltip={{
+              label: getEmbeddedLabel(fullDate)
+            }}
+          >
+            {getDisplayTime(message.createdOn ?? 0)}
+          </span>
         </div>
 
         <slot name="content" />
