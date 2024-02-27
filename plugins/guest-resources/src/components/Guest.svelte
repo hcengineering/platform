@@ -265,8 +265,8 @@
 
 {#await load() then res}
   {#if res}
-    <div class="workbench-container" style:flex-direction={'row'}>
-      <div class="workbench-container inner">
+    <div class="workbench-container h-full" style:flex-direction={'row'}>
+      <div class="workbench-container inner h-full">
         <div class="antiPanel-component antiComponent" bind:this={contentPanel}>
           {#if currentApplication && currentApplication.component}
             <Component is={currentApplication.component} props={{ currentSpace, visibleNav: false }} />
