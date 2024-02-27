@@ -151,7 +151,7 @@
       <div class="flex-col ml-2 w-full clear-mins message-content">
         <div class="header clear-mins">
           {#if person}
-            <EmployeePresenter value={person} shouldShowAvatar={false} />
+            <EmployeePresenter value={person} shouldShowAvatar={false} compact />
           {:else}
             <div class="strong">
               <Label label={core.string.System} />

@@ -46,6 +46,7 @@
   export let colorInherit: boolean = false
   export let accent: boolean = false
   export let maxWidth = ''
+  export let compact = false
 
   const client = getClient()
 
@@ -71,7 +72,7 @@
 
 {#if value}
   {#if statusLabel}
-    <div class="inline-flex items-center clear-mins w-full">
+    <div class="inline-flex items-center clear-mins" class:w-full={!compact}>
       <PersonElement
         {value}
         {name}
