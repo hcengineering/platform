@@ -13,7 +13,7 @@
   "operationSettings": [
     {
       "operationName": "build",
-      "outputFolderNames": ["lib", ".build", "types"]
+      "outputFolderNames": ["lib", ".build"]
     },
     {
       "operationName": "format",
@@ -22,10 +22,6 @@
     {
       "operationName": "_phase:build",
       "outputFolderNames": ["lib", ".build"]
-    },
-    {
-      "operationName": "_phase:validate",
-      "outputFolderNames": ["types", ".validate"]
     },
     {
       "operationName": "_phase:validate",

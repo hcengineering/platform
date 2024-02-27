@@ -14,7 +14,7 @@
   "operationSettings": [
     {
       "operationName": "build",
-      "outputFolderNames": ["lib", ".build", "types"]
+      "outputFolderNames": ["lib", ".build"]
     },
     {
       "operationName": "test",
