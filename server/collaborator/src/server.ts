@@ -30,7 +30,6 @@ import { WebSocket, WebSocketServer } from 'ws'
 import { getWorkspaceInfo } from './account'
 import { Config } from './config'
 import { Context, buildContext } from './context'
-import { ActionsExtension } from './extensions/action'
 import { HtmlTransformer } from './transformers/html'
 import { StorageExtension } from './extensions/storage'
 import { Controller, getClientFactory } from './platform'
@@ -126,10 +125,6 @@ export async function start (
     unloadImmediately: false,
 
     extensions: [
-      new ActionsExtension({
-        ctx: extensionsCtx.newChild('actions', {}),
-        transformer
-      }),
       new StorageExtension({
         ctx: extensionsCtx.newChild('storage', {}),
         adapter: new RouterStorageAdapter(

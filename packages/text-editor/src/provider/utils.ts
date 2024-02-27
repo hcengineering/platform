@@ -13,14 +13,7 @@
 // limitations under the License.
 //
 
-import {
-  type Class,
-  type CollaborativeDoc,
-  type Doc,
-  type Ref,
-  getCollaborativeDoc,
-  getCollaborativeDocId
-} from '@hcengineering/core'
+import { type Class, type CollaborativeDoc, type Doc, type Ref } from '@hcengineering/core'
 import {
   type DocumentURI,
   collaborativeDocumentUri,
@@ -37,12 +30,6 @@ function getWorkspace (): string {
 export function collaborativeDocumentId (docId: CollaborativeDoc): DocumentURI {
   const workspace = getWorkspace()
   return collaborativeDocumentUri(workspace, docId)
-}
-
-// TODO remove this when migrated QMS documents to new model
-export function minioDocumentId (docId: Ref<Doc>, attr?: KeyedAttribute): DocumentURI {
-  const collaborativeDoc = getCollaborativeDoc(getCollaborativeDocId(docId, attr?.key))
-  return collaborativeDocumentId(collaborativeDoc)
 }
 
 export function platformDocumentId (objectClass: Ref<Class<Doc>>, objectId: Ref<Doc>, objectAttr: string): DocumentURI {
