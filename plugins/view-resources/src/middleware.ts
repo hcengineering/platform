@@ -1,6 +1,6 @@
 import { Analytics } from '@hcengineering/analytics'
 import core, {
-  Hierarchy,
+  type Hierarchy,
   type TxApplyIf,
   type TxCUD,
   TxProcessor,
@@ -153,25 +153,7 @@ export class AggregationMiddleware extends BasePresentationMiddleware implements
 
     await this.updateQueryOptions<T>(allAttrs, h, docFields, fquery, finalOptions)
 
-    const result = await this.provideFindAll(_class, fquery, finalOptions)
-    // We need to add $
-    if (docFields.length > 0) {
-      // We need to update $lookup for doc fields and provide $doc group fields.
-      for (const attr of docFields) {
-        for (const r of result) {
-          const resultDoc = Hierarchy.toDoc(r)
-          if (resultDoc.$lookup === undefined) {
-            resultDoc.$lookup = {}
-          }
-
-          const mgr = await this.getAggregationManager((attr.type as RefTo<Doc>).to)
-          if (mgr !== undefined) {
-            await mgr.updateLookup(resultDoc, attr)
-          }
-        }
-      }
-    }
-    return result
+    return await this.provideFindAll(_class, fquery, finalOptions)
   }
 
   private async updateQueryOptions<T extends Doc>(
