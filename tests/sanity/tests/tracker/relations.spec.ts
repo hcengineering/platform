@@ -1,4 +1,4 @@
-import { test } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 import { IssuesPage } from '../model/tracker/issues-page'
 import { generateId, PlatformSetting, PlatformURI } from '../utils'
 import { NewIssue } from '../model/tracker/types'
@@ -152,6 +152,52 @@ test.describe('Relations', () => {
         ...secondIssue,
         relatedIssue: firstIssueId
       })
+    })
+  })
+
+  test('Remove relation be editing issue details', async ({ page }) => {
+    const firstIssue: NewIssue = {
+      title: `First. Remove relation be editing issue details-${generateId()}`,
+      description: 'First. Remove relation be editing issue details'
+    }
+    const secondIssue: NewIssue = {
+      title: `Second. Remove relation be editing issue details-${generateId()}`,
+      description: 'Second. Remove relation be editing issue details'
+    }
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    await leftSideMenuPage.buttonTracker.click()
+
+    const secondIssueId = await prepareNewIssueStep(page, secondIssue)
+    await prepareNewIssueStep(page, firstIssue)
+
+    const issuesPage = new IssuesPage(page)
+    await issuesPage.openIssueByName(firstIssue.title)
+
+    const issuesDetailsPage = new IssuesDetailsPage(page)
+    await test.step('Reference another issue... and check issue description', async () => {
+      await issuesDetailsPage.waitDetailsOpened(firstIssue.title)
+      await issuesDetailsPage.moreActionOnIssueWithSecondLevel('Relations', 'Mark as blocked by...')
+      await issuesDetailsPage.fillSearchForIssueModal(secondIssue.title)
+
+      await issuesDetailsPage.waitDetailsOpened(firstIssue.title)
+      await issuesDetailsPage.checkIssue({
+        ...firstIssue,
+        blockedBy: secondIssueId
+      })
+
+      // delete here
+      await issuesDetailsPage.buttonRemoveBlockedBy.click()
+      await expect(issuesDetailsPage.textBlockedBy).toBeVisible({ visible: false })
+    })
+
+    await test.step('Check the second issue description', async () => {
+      const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
+      await trackerNavigationMenuPage.openIssuesForProject('Default')
+
+      await issuesPage.searchIssueByName(secondIssue.title)
+      await issuesPage.openIssueByName(secondIssue.title)
+      await issuesDetailsPage.waitDetailsOpened(secondIssue.title)
+      await expect(issuesDetailsPage.textBlocks).toBeVisible({ visible: false })
     })
   })
 })
