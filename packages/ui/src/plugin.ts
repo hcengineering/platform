@@ -69,6 +69,8 @@ export const uis = plugin(uiId, {
     NeedsToBeCompletedByThisDate: '' as IntlString,
     English: '' as IntlString,
     Russian: '' as IntlString,
+    Spanish: '' as IntlString,
+    Portuguese: '' as IntlString,
     MinutesBefore: '' as IntlString,
     HoursBefore: '' as IntlString,
     DaysBefore: '' as IntlString,
