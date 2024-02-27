@@ -40,6 +40,7 @@
   export let supportSubmit = true
   export let editorAttributes: Record<string, string> = {}
   export let boundary: HTMLElement | undefined = undefined
+  export let autofocus: FocusPosition = false
 
   let element: HTMLElement
   let editor: Editor
@@ -123,6 +124,7 @@
         element,
         editorProps: { attributes: mergeAttributes(defaultEditorAttributes, editorAttributes) },
         content,
+        autofocus,
         extensions: [
           EditorKit,
           ...(supportSubmit ? [Handle] : []), // order important

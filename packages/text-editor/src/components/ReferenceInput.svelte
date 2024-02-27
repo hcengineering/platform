@@ -24,6 +24,8 @@
     checkAdaptiveMatching
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import { FocusPosition } from '@tiptap/core'
+
   import { Completion } from '../Completion'
   import textEditorPlugin from '../plugin'
   import { RefAction, TextEditorHandler, TextFormatCategory } from '../types'
@@ -47,6 +49,7 @@
   export let loading: boolean = false
   export let focusable: boolean = false
   export let boundary: HTMLElement | undefined = undefined
+  export let autofocus: FocusPosition = false
 
   const dispatch = createEventDispatcher()
   const buttonSize = 'medium'
@@ -126,6 +129,7 @@
     <TextEditor
       bind:content
       bind:this={textEditor}
+      {autofocus}
       {boundary}
       on:content={(ev) => {
         if (!isEmpty || haveAttachment) {
