@@ -16,7 +16,7 @@
   "operationSettings": [
     {
       "operationName": "build",
-      "outputFolderNames": ["lib", ".build", "types"]
+      "outputFolderNames": ["lib", ".build"]
     },
     {
       "operationName": "package",
@@ -25,10 +25,6 @@
     {
       "operationName": "test",
       "outputFolderNames": ["coverage"]
-    },
-    {
-      "operationName": "build:watch",
-      "outputFolderNames": ["dist", ".build"]
     },
     {
       "operationName": "format",
