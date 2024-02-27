@@ -3,6 +3,7 @@
 
   "compilerOptions": {
     "rootDir": "./src",
-    "outDir": "./lib"
+    "outDir": "./lib",
+    "declarationDir": "./types"
   }
 }
