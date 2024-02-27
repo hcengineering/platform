@@ -56,30 +56,6 @@ export class TiptapCollabProvider extends HocuspocusProvider {
     })
   }
 
-  setContent (field: string, content: string): void {
-    const payload = {
-      action: 'document.content',
-      params: { field, content }
-    }
-    this.sendStateless(JSON.stringify(payload))
-  }
-
-  copyContent (sourceId: DocumentId, targetId: DocumentId): void {
-    const payload = {
-      action: 'document.copy',
-      params: { sourceId, targetId }
-    }
-    this.sendStateless(JSON.stringify(payload))
-  }
-
-  copyField (documentId: DocumentId, srcFieldId: string, dstFieldId: string): void {
-    const payload = {
-      action: 'document.field.copy',
-      params: { documentId, srcFieldId, dstFieldId }
-    }
-    this.sendStateless(JSON.stringify(payload))
-  }
-
   destroy (): void {
     this.configuration.websocketProvider.disconnect()
     super.destroy()

@@ -24,13 +24,22 @@ import { Doc, applyUpdate } from 'yjs'
  * @public
  */
 export function yDocContentToNode (extensions: Extensions, content: ArrayBuffer, field?: string): Node {
+  const ydoc = new Doc()
+  const uint8arr = new Uint8Array(content)
+  applyUpdate(ydoc, uint8arr)
+
+  return yDocToNode(extensions, ydoc, field)
+}
+
+/**
+ * Get ProseMirror node from Y.Doc
+ *
+ * @public
+ */
+export function yDocToNode (extensions: Extensions, ydoc: Doc, field?: string): Node {
   const schema = getSchema(extensions)
 
   try {
-    const ydoc = new Doc()
-    const uint8arr = new Uint8Array(content)
-    applyUpdate(ydoc, uint8arr)
-
     const body = yDocToProsemirrorJSON(ydoc, field)
     return schema.nodeFromJSON(body)
   } catch (err: any) {
