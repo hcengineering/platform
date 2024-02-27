@@ -151,12 +151,6 @@ async function performESBuild(filesToTranspile) {
 }
 
 async function validateTSC(st) {
-  if (existsSync(join(process.cwd(), 'types'))) {
-    rmSync(join(process.cwd(), 'types'), { recursive: true })
-  }
-  if (existsSync(join(process.cwd(), '.validate'))) {
-    rmSync(join(process.cwd(), '.validate'), { recursive: true })
-  }
   await execProcess(
     'tsc',
     'validate',
@@ -165,7 +159,6 @@ async function validateTSC(st) {
       "--emitDeclarationOnly",
       "--incremental",
       "--tsBuildInfoFile", ".validate/tsBuildInfoFile.info",
-      "--declarationDir", "types",
       ...args.splice(1)
     ], '.validate')
 }
