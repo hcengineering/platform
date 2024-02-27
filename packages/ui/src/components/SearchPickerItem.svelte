@@ -34,6 +34,7 @@
     height: var(--global-small-Size);
     border: none;
     padding: var(--spacing-0_5);
+    color: var(--tag-on-accent-PorpoiseText);
     background-color: var(--global-accent-BackgroundColor);
     border-radius: var(--small-BorderRadius);
     

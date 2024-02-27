@@ -58,10 +58,13 @@
     width: 100%;
     padding: var(--spacing-0_5);
     border-radius: var(--small-focus-BorderRadius);
-    box-shadow: 0 0 0 1px var(--input-BorderColor);
+    box-shadow: inset 0 0 0 1px var(--input-BorderColor);
     cursor: text;
 
     &:focus-within {
+      box-shadow:
+        inset 0 0 0 1px var(--input-BorderColor),
+        0 0 0 2px var(--global-focus-inset-BorderColor);
       outline: 2px solid var(--global-focus-BorderColor);
       outline-offset: 2px;
     }
@@ -70,7 +73,7 @@
       height: var(--global-small-Size);
       padding: 0;
       border: none;
-      caret-color: var(--theme-caret-color);
+      caret-color: var(--input-search-IconColor);
 
       &::placeholder {
         color: var(--global-disabled-TextColor);
