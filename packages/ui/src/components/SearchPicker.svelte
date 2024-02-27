@@ -13,7 +13,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  export let width: string | undefined = undefined
   export let autoFocus: boolean = false
   export let placeholder = ''
   export let value = ''
@@ -34,7 +33,6 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   class="flex flex-gap-1 flex-wrap search-picker"
-  style={width ? 'width: ' + width : undefined}
   on:click={() => {
     inputRef.focus()
   }}
@@ -57,6 +55,7 @@
 <style lang="scss">
   .search-picker {
     position: relative;
+    width: 100%;
     padding: var(--spacing-0_5);
     border-radius: var(--small-focus-BorderRadius);
     box-shadow: 0 0 0 1px var(--input-BorderColor);
