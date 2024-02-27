@@ -138,8 +138,10 @@ export function getFormattedDate (value: number | null, options?: Intl.DateTimeF
   return value === null ? '' : new Date(value).toLocaleString('default', options ?? { month: 'short', day: 'numeric' })
 }
 
-export const getTimeZoneName = (val: string = Intl.DateTimeFormat().resolvedOptions().timeZone): string => {
-  return val.split('/')[1] ?? ''
+export const getTimeZoneName = (
+  val: string = Intl.DateTimeFormat().resolvedOptions().timeZoneName ?? Intl.DateTimeFormat().resolvedOptions().timeZone
+): string => {
+  return val.replace('_', ' ').split('/')[1] ?? ''
 }
 
 export const convertTimeZone = (tz: string): TimeZone => {
