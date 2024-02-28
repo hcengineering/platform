@@ -23,7 +23,7 @@
     getFirstName,
     getLastName
   } from '@hcengineering/contact'
-  import { AccountRole, Ref, getCurrentAccount } from '@hcengineering/core'
+  import { AccountRole, Ref, getCurrentAccount, roleOrder } from '@hcengineering/core'
   import { AttributeEditor, createQuery, getClient } from '@hcengineering/presentation'
   import setting, { IntegrationType } from '@hcengineering/setting'
   import { EditBox, FocusHandler, Scroller, createFocusManager } from '@hcengineering/ui'
@@ -46,7 +46,7 @@
   let avatarEditor: EditableAvatar
 
   $: owner = account.person === object._id
-  $: editable = !readonly && (account.role >= AccountRole.Maintainer || owner)
+  $: editable = !readonly && (roleOrder[account.role] >= roleOrder[AccountRole.Maintainer] || owner)
   let firstName = getFirstName(object.name)
   let lastName = getLastName(object.name)
 

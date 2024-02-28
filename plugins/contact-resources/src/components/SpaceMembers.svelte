@@ -14,7 +14,16 @@
 -->
 <script lang="ts">
   import contact, { Person, PersonAccount, Employee } from '@hcengineering/contact'
-  import { Account, AccountRole, DocumentQuery, getCurrentAccount, Ref, SortingOrder, Space } from '@hcengineering/core'
+  import {
+    Account,
+    AccountRole,
+    DocumentQuery,
+    getCurrentAccount,
+    Ref,
+    roleOrder,
+    SortingOrder,
+    Space
+  } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
   import { ActionIcon, IconAdd, IconClose, Label, SearchEdit, showPopup, themeStore } from '@hcengineering/ui'
@@ -77,7 +86,7 @@
   }
 
   const account = getCurrentAccount()
-  $: canRemove = account.role >= AccountRole.Maintainer && space.createdBy === account._id
+  $: canRemove = roleOrder[account.role] >= roleOrder[AccountRole.Maintainer] && space.createdBy === account._id
 </script>
 
 <div class="flex-row-reverse mb-3 mt-3"><SearchEdit bind:value={search} /></div>
