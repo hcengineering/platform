@@ -1,9 +1,0 @@
-{
-  "string": {
-    "CreatePublicLink": "Crear enlace público",
-    "PublicLink": "Enlace público",
-    "Revoke": "Revocar",
-    "RevokeConfirmation": "¿Está seguro de que desea revocar este enlace público? Esto hará que el enlace compartido anteriormente deje de funcionar.",
-    "LinkWasRevoked": "Enlace público revocado"
-  }
-}
