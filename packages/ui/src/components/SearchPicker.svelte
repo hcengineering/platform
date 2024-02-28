@@ -58,15 +58,15 @@
     width: 100%;
     padding: var(--spacing-0_5);
     border-radius: var(--small-focus-BorderRadius);
-    box-shadow: inset 0 0 0 1px var(--input-BorderColor);
+    box-shadow: inset 0 0 0 0.0625rem var(--input-BorderColor);
     cursor: text;
 
     &:focus-within {
       box-shadow:
-        inset 0 0 0 1px var(--input-BorderColor),
-        0 0 0 2px var(--global-focus-inset-BorderColor);
-      outline: 2px solid var(--global-focus-BorderColor);
-      outline-offset: 2px;
+        inset 0 0 0 0.0625rem var(--input-BorderColor),
+        0 0 0 0.125rem var(--global-focus-inset-BorderColor);
+      outline: 0.125rem solid var(--global-focus-BorderColor);
+      outline-offset: 0.125rem;
     }
 
     input {
