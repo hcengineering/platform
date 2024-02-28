@@ -6,7 +6,6 @@ import presentation from '@hcengineering/presentation'
 import { fetchMetadataLocalStorage, getCurrentLocation, navigate } from '@hcengineering/ui'
 import view from '@hcengineering/view'
 import { getObjectLinkFragment } from '@hcengineering/view-resources'
-import { workbenchId } from '@hcengineering/workbench'
 
 export async function checkAccess (doc: Doc): Promise<void> {
   const loc = getCurrentLocation()
@@ -19,15 +18,13 @@ export async function checkAccess (doc: Doc): Promise<void> {
   const clientFactory = await getResource(client.function.GetClient)
   const _client = await clientFactory(token, endpoint)
 
-  const res = await _client.findOne(doc._class, { _id: doc._id })
+  const res = _client.findOne(doc._class, { _id: doc._id })
   const hierarchy = _client.getHierarchy()
   await _client.close()
   if (res !== undefined) {
     const panelComponent = hierarchy.classHierarchyMixin(doc._class, view.mixin.ObjectPanel)
     const comp = panelComponent?.component ?? view.component.EditDoc
     const loc = await getObjectLinkFragment(hierarchy, doc, {}, comp)
-    loc.path[0] = workbenchId
-    loc.path[1] = ws
     // We have access, let's set correct tokens and redirect)
     setMetadata(presentation.metadata.Token, token)
     navigate(loc)
