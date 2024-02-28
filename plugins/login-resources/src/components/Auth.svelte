@@ -2,7 +2,7 @@
   import { LoginInfo, WorkspaceLoginInfo } from '@hcengineering/login'
   import { setMetadata } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
-  import { Loading, setMetadataLocalStorage } from '@hcengineering/ui'
+  import { setMetadataLocalStorage } from '@hcengineering/ui'
   import { onMount } from 'svelte'
   import login from '../plugin'
   import { afterConfirm, getSessionLoginInfo, navigateToWorkspace } from '../utils'
@@ -26,5 +26,3 @@
     return (info as WorkspaceLoginInfo).workspace !== undefined
   }
 </script>
-
-<Loading />
