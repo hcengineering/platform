@@ -15,7 +15,7 @@
 <script lang="ts">
   import { PersonAccount } from '@hcengineering/contact'
   import { AccountRole, getCurrentAccount, roleOrder } from '@hcengineering/core'
-  import { createQuery, isAdminUser } from '@hcengineering/presentation'
+  import presentation, { createQuery, decodeTokenPayload } from '@hcengineering/presentation'
   import setting, { SettingsCategory } from '@hcengineering/setting'
   import {
     Component,
@@ -27,6 +27,7 @@
   } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import { clearSettingsStore } from '../store'
+  import { getMetadata } from '@hcengineering/platform'
 
   export let kind: 'navigation' | 'content' | undefined
   export let categoryName: string
@@ -38,7 +39,7 @@
   let categories: SettingsCategory[] = []
   const account = getCurrentAccount() as PersonAccount
 
-  const admin = isAdminUser()
+  const admin = decodeTokenPayload(getMetadata(presentation.metadata.Token) ?? '').admin === 'true'
 
   const settingsQuery = createQuery()
   settingsQuery.query(
@@ -47,7 +48,7 @@
     (res) => {
       categories = roleOrder[account.role] > roleOrder[AccountRole.User] ? res : res.filter((p) => !p.secured)
       if (!admin) {
-        categories = categories.filter((p) => !(p.adminOnly ?? false))
+        categories = categories.filter((p) => !p.adminOnly)
       }
       category = findCategory(categoryId)
     },

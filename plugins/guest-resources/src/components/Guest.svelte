@@ -39,9 +39,8 @@
   import view from '@hcengineering/view'
   import { ListSelectionProvider, restrictionStore, updateFocus } from '@hcengineering/view-resources'
   import workbench, { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@hcengineering/workbench'
-  import { SpaceView, buildNavModel } from '@hcengineering/workbench-resources'
+  import { buildNavModel, SpaceView } from '@hcengineering/workbench-resources'
   import guest from '../plugin'
-  import { checkAccess } from '../utils'
 
   const excludedApps = getMetadata(workbench.metadata.ExcludedApplications) ?? []
 
@@ -56,9 +55,6 @@
     const link = await client.findOne(guest.class.PublicLink, { _id: decoded.linkId })
     if (link == null) return false
     restrictionStore.set(link.restrictions)
-    const mergedLoc = link.location
-    mergedLoc.path[0] = loc.path[0]
-    mergedLoc.path[1] = loc.path[1]
     await doSyncLoc(link.location)
     return true
   }
@@ -191,7 +187,6 @@
     if (props.length >= 3) {
       const doc = await client.findOne<Doc>(props[2] as Ref<Class<Doc>>, { _id: props[1] as Ref<Doc> })
       if (doc !== undefined) {
-        await checkAccess(doc)
         const provider = ListSelectionProvider.Find(doc._id)
         updateFocus({
           provider,
