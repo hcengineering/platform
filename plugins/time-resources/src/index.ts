@@ -20,7 +20,6 @@ import IssuePresenter from './components/presenters/IssuePresenter.svelte'
 import CardPresenter from './components/presenters/CardPresenter.svelte'
 import LeadPresenter from './components/presenters/LeadPresenter.svelte'
 import ApplicantPresenter from './components/presenters/ApplicantPresenter.svelte'
-import DocumentPresenter from './components/presenters/DocumentPresenter.svelte'
 import WorkSlotElement from './components/WorkSlotElement.svelte'
 import EditWorkSlot from './components/EditWorkSlot.svelte'
 import EditToDo from './components/EditToDo.svelte'
@@ -39,7 +38,6 @@ export default async (): Promise<Resources> => ({
     CardPresenter,
     LeadPresenter,
     ApplicantPresenter,
-    DocumentPresenter,
     EditWorkSlot,
     WorkSlotElement,
     CreateToDoPopup,
