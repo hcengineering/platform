@@ -60,11 +60,7 @@ export {
   type NodeUuidStorage
 } from './components/extension/nodeUuid'
 export { InlinePopupExtension } from './components/extension/inlinePopup'
-export {
-  InlineStyleToolbarExtension,
-  type InlineStyleToolbarOptions,
-  type InlineStyleToolbarStorage
-} from './components/extension/inlineStyleToolbar'
+export { InlineStyleToolbarExtension, type InlineStyleToolbarOptions } from './components/extension/inlineStyleToolbar'
 export { ImageExtension, type ImageOptions } from './components/extension/imageExt'
 export { TodoItemExtension, TodoListExtension } from './components/extension/todo'
 

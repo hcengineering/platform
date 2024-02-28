@@ -95,6 +95,7 @@
       textEditor?.focus()
     }
   }
+
   let actions: RefAction[] = defaultRefActions.concat(...extraActions).sort((a, b) => a.order - b.order)
 
   void getModelRefActions().then((modelActions) => {

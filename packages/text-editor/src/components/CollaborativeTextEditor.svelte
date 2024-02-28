@@ -229,8 +229,7 @@
         InlineStyleToolbarExtension.configure({
           tippyOptions,
           element: textToolbarElement,
-          isSupported: () => showTextStyleToolbar,
-          isSelectionOnly: () => false
+          isSupported: () => showTextStyleToolbar
         }),
         InlinePopupExtension.configure({
           pluginKey: 'show-image-actions-popup',
