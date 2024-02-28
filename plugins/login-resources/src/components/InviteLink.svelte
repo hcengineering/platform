@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AccountRole, getCurrentAccount, Timestamp } from '@hcengineering/core'
+  import { AccountRole, getCurrentAccount, roleOrder, Timestamp } from '@hcengineering/core'
   import { loginId } from '@hcengineering/login'
   import { getMetadata } from '@hcengineering/platform'
   import presentation, { copyTextToClipboard, createQuery } from '@hcengineering/presentation'
@@ -108,7 +108,7 @@
   let limit: number | undefined = undefined
   let useDefault: boolean | undefined = true
   let noLimit: boolean = false
-  const isOwnerOrMaintainer: boolean = getCurrentAccount().role > AccountRole.Maintainer
+  const isOwnerOrMaintainer: boolean = roleOrder[getCurrentAccount().role] > roleOrder[AccountRole.Maintainer]
   let defaultValues: InviteParams = {
     expirationTime: 1,
     emailMask: '',
