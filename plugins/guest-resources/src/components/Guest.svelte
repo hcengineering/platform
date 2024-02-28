@@ -16,7 +16,7 @@
   import { Analytics } from '@hcengineering/analytics'
   import core, { Class, Doc, Ref, Space } from '@hcengineering/core'
   import { getMetadata, getResource } from '@hcengineering/platform'
-  import { ActionContext, getClient } from '@hcengineering/presentation'
+  import { ActionContext, decodeTokenPayload, getClient } from '@hcengineering/presentation'
   import {
     AnyComponent,
     Component,
@@ -41,7 +41,6 @@
   import workbench, { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@hcengineering/workbench'
   import { buildNavModel, SpaceView } from '@hcengineering/workbench-resources'
   import guest from '../plugin'
-  import { decodeTokenPayload } from '../utils'
 
   const excludedApps = getMetadata(workbench.metadata.ExcludedApplications) ?? []
 
