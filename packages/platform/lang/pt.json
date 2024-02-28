@@ -1,0 +1,23 @@
+{
+  "status": {
+    "LoadingPlugin": "Carregando plugin {plugin}...",
+    "UnknownError": "Erro desconhecido: {message}",
+    "InvalidId": "Id inválido: {id}",
+    "BadRequest": "Pedido inválido",
+    "Forbidden": "Proibido",
+    "ExpiredLink": "Este link de convite expirou",
+    "Unauthorized": "Não autorizado",
+    "UnknownMethod": "Método desconhecido: {method}",
+    "InternalServerError": "Erro interno do servidor",
+    "MaintenanceWarning": "Manutenção programada dentro de {time, plural, =1 {menos de um minuto} other {# minutos}}",
+    "AccountNotFound": "Conta não encontrada",
+    "AccountNotConfirmed": "Conta não confirmada",
+    "WorkspaceNotFound": "Espaço de trabalho não encontrado",
+    "InvalidPassword": "Senha inválida",
+    "AccountAlreadyExists": "Conta já existe",
+    "WorkspaceRateLimit": "O servidor está ocupado. Por favor, espere um pouco e tente novamente",
+    "AccountAlreadyConfirmed": "Conta já confirmada",
+    "WorkspaceAlreadyExists": "Espaço de trabalho já existe",
+    "ProductIdMismatch": "Discrepância de produto"
+  }
+}
