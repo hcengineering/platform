@@ -1581,6 +1581,41 @@
       "packageName": "@hcengineering/auth-providers",
       "projectFolder": "pods/authProviders",
       "shouldPublish": false
-    }
+    },
+    {
+      "packageName": "@hcengineering/time",
+      "projectFolder": "plugins/time",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/time-assets",
+      "projectFolder": "plugins/time-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/time-resources",
+      "projectFolder": "plugins/time-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-time",
+      "projectFolder": "models/time",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-time",
+      "projectFolder": "server-plugins/time",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-time-resources",
+      "projectFolder": "server-plugins/time-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-server-time",
+      "projectFolder": "models/server-time",
+      "shouldPublish": false
+    },
   ]
 }
