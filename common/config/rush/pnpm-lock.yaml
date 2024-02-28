@@ -338,6 +338,9 @@ dependencies:
   '@rush-temp/model-server-templates':
     specifier: file:./projects/model-server-templates.tgz
     version: file:projects/model-server-templates.tgz(svelte@4.2.11)
+  '@rush-temp/model-server-time':
+    specifier: file:./projects/model-server-time.tgz
+    version: file:projects/model-server-time.tgz(svelte@4.2.11)
   '@rush-temp/model-server-tracker':
     specifier: file:./projects/model-server-tracker.tgz
     version: file:projects/model-server-tracker.tgz(svelte@4.2.11)
@@ -368,6 +371,9 @@ dependencies:
   '@rush-temp/model-text-editor':
     specifier: file:./projects/model-text-editor.tgz
     version: file:projects/model-text-editor.tgz(svelte@4.2.11)
+  '@rush-temp/model-time':
+    specifier: file:./projects/model-time.tgz
+    version: file:projects/model-time.tgz(svelte@4.2.11)
   '@rush-temp/model-tracker':
     specifier: file:./projects/model-tracker.tgz
     version: file:projects/model-tracker.tgz(svelte@4.2.11)
@@ -578,6 +584,12 @@ dependencies:
   '@rush-temp/server-templates':
     specifier: file:./projects/server-templates.tgz
     version: file:projects/server-templates.tgz(esbuild@0.20.1)(svelte@4.2.11)(ts-node@10.9.2)
+  '@rush-temp/server-time':
+    specifier: file:./projects/server-time.tgz
+    version: file:projects/server-time.tgz(esbuild@0.20.1)(svelte@4.2.11)(ts-node@10.9.2)
+  '@rush-temp/server-time-resources':
+    specifier: file:./projects/server-time-resources.tgz
+    version: file:projects/server-time-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/server-token':
     specifier: file:./projects/server-token.tgz
     version: file:projects/server-token.tgz(esbuild@0.20.1)(svelte@4.2.11)(ts-node@10.9.2)
@@ -668,6 +680,15 @@ dependencies:
   '@rush-temp/theme':
     specifier: file:./projects/theme.tgz
     version: file:projects/theme.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
+  '@rush-temp/time':
+    specifier: file:./projects/time.tgz
+    version: file:projects/time.tgz(@types/node@20.11.19)(esbuild@0.20.1)(svelte@4.2.11)(ts-node@10.9.2)
+  '@rush-temp/time-assets':
+    specifier: file:./projects/time-assets.tgz
+    version: file:projects/time-assets.tgz(esbuild@0.20.1)(svelte@4.2.11)(ts-node@10.9.2)
+  '@rush-temp/time-resources':
+    specifier: file:./projects/time-resources.tgz
+    version: file:projects/time-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
   '@rush-temp/tool':
     specifier: file:./projects/tool.tgz
     version: file:projects/tool.tgz(bufferutil@4.0.8)(svelte@4.2.11)
@@ -19942,6 +19963,27 @@ packages:
       - svelte
     dev: false
 
+  file:projects/model-server-time.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-u27Dbh9sMM9RQznVDnMB5Tzj+FKN98E16dNoWVTz9G1YzhnPXxi2ZDD1hYtlYH//G/Cc9qfls+ggB8OKrm4cMQ==, tarball: file:projects/model-server-time.tgz}
+    id: file:projects/model-server-time.tgz
+    name: '@rush-temp/model-server-time'
+    version: 0.0.0
+    dependencies:
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
+    transitivePeerDependencies:
+      - supports-color
+      - svelte
+    dev: false
+
   file:projects/model-server-tracker.tgz(svelte@4.2.11):
     resolution: {integrity: sha512-8TqauIOhrL/TrZIwsKyaixz5G2XlQjulPp9aMFm7gMxRHm7b3bjUiPI7SZ0bC4+kP99o5mxepmyiLsU/XrYSig==, tarball: file:projects/model-server-tracker.tgz}
     id: file:projects/model-server-tracker.tgz
@@ -20135,6 +20177,27 @@ packages:
     resolution: {integrity: sha512-w8BSf28xb84IF5ChM9boPUTB0OzlNIF8sbfZNWzSb0myYQ+4es3H3uJeF3tPfcxMqBPFaswlYjEMRjDrY/xoxA==, tarball: file:projects/model-text-editor.tgz}
     id: file:projects/model-text-editor.tgz
     name: '@rush-temp/model-text-editor'
+    version: 0.0.0
+    dependencies:
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
+    transitivePeerDependencies:
+      - supports-color
+      - svelte
+    dev: false
+
+  file:projects/model-time.tgz(svelte@4.2.11):
+    resolution: {integrity: sha512-XCIFtZCPReL043R2aEMcHhdSvq2w7h+GsMsXAb1mKMfjMPLDbRoF5631UKaNve3s4hnFHajVkKqZmP+ERL0LPQ==, tarball: file:projects/model-time.tgz}
+    id: file:projects/model-time.tgz
+    name: '@rush-temp/model-time'
     version: 0.0.0
     dependencies:
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
@@ -22537,6 +22600,70 @@ packages:
       - ts-node
     dev: false
 
+  file:projects/server-time-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(svelte@4.2.11)(ts-node@10.9.2):
+    resolution: {integrity: sha512-KLlFROUBWJhmETbztTgHNZYtWRTcuHOndKlim9XA1mSduJH3cHdlboqUEttVIA8ed1X9QeJ6X4Ct/HM4gigPUw==, tarball: file:projects/server-time-resources.tgz}
+    id: file:projects/server-time-resources.tgz
+    name: '@rush-temp/server-time-resources'
+    version: 0.0.0
+    dependencies:
+      '@types/jest': 29.5.12
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@types/node'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - svelte
+      - ts-node
+    dev: false
+
+  file:projects/server-time.tgz(esbuild@0.20.1)(svelte@4.2.11)(ts-node@10.9.2):
+    resolution: {integrity: sha512-bq1MSajRmqHhjS/q5aSewETO75Yy9w/fi8MHU5ZpWcV2MNTyR3Do4oi7ei1KRyEq6NRncwRAH6R5inlvkaGeIQ==, tarball: file:projects/server-time.tgz}
+    id: file:projects/server-time.tgz
+    name: '@rush-temp/server-time'
+    version: 0.0.0
+    dependencies:
+      '@types/jest': 29.5.12
+      '@types/node': 20.11.19
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - svelte
+      - ts-node
+    dev: false
+
   file:projects/server-token.tgz(esbuild@0.20.1)(svelte@4.2.11)(ts-node@10.9.2):
     resolution: {integrity: sha512-njkCF8ZsS1x6rIwZPjyN368EONN8FrN9R+6f3yYoMR+2luiJt/GknPNNopZwuvEIcorJ43fUC79ECsJFMzHfMg==, tarball: file:projects/server-token.tgz}
     id: file:projects/server-token.tgz
@@ -23743,6 +23870,116 @@ packages:
       - stylus
       - sugarss
       - supports-color
+      - ts-node
+    dev: false
+
+  file:projects/time-assets.tgz(esbuild@0.20.1)(svelte@4.2.11)(ts-node@10.9.2):
+    resolution: {integrity: sha512-GdLQ03f2nfzZmXBSyNztwmlmUv3yJe4fDz93b8MuOJIX4Ajd+4ylmwz454yb6Pc8w1PnWRLexFg0/mmjqWlc3w==, tarball: file:projects/time-assets.tgz}
+    id: file:projects/time-assets.tgz
+    name: '@rush-temp/time-assets'
+    version: 0.0.0
+    dependencies:
+      '@types/jest': 29.5.12
+      '@types/node': 20.11.19
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - svelte
+      - ts-node
+    dev: false
+
+  file:projects/time-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
+    resolution: {integrity: sha512-Qeyao7d/LxS2q9N19l1zoSB76fYbicJwz6zhE3tQDOUfR061XG9n3YlTxgoaBA4GNtKDJc9EI7smbVybGYH1Yw==, tarball: file:projects/time-resources.tgz}
+    id: file:projects/time-resources.tgz
+    name: '@rush-temp/time-resources'
+    version: 0.0.0
+    dependencies:
+      '@types/jest': 29.5.12
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      eslint-plugin-svelte: 2.35.1(eslint@8.56.0)(svelte@4.2.11)(ts-node@10.9.2)
+      fast-equals: 2.0.4
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      sass: 1.71.1
+      svelte: 4.2.11
+      svelte-check: 3.6.4(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.11)
+      svelte-eslint-parser: 0.33.1(svelte@4.2.11)
+      svelte-loader: 3.1.9(svelte@4.2.11)
+      svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.11)(typescript@5.3.3)
+      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@types/node'
+      - babel-jest
+      - babel-plugin-macros
+      - coffeescript
+      - esbuild
+      - less
+      - node-notifier
+      - postcss
+      - postcss-load-config
+      - pug
+      - stylus
+      - sugarss
+      - supports-color
+      - ts-node
+    dev: false
+
+  file:projects/time.tgz(@types/node@20.11.19)(esbuild@0.20.1)(svelte@4.2.11)(ts-node@10.9.2):
+    resolution: {integrity: sha512-yneBtaqzPc7z4BLY6cwk+dinYNBWnH6+hsN82ELJW3PQLH7zlZxXEIvUOVeTlz0CyAj9WFHIk/x/mDmyduITvQ==, tarball: file:projects/time.tgz}
+    id: file:projects/time.tgz
+    name: '@rush-temp/time'
+    version: 0.0.0
+    dependencies:
+      '@types/jest': 29.5.12
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@types/node'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - svelte
       - ts-node
     dev: false
 

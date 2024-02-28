@@ -104,7 +104,7 @@
       <button class="hulyToDoLine-dragbox" class:isNew on:contextmenu={onMenuClick}>
         <Icon icon={IconMoreV2} size={'small'} />
       </button>
-      <div class="hulyToDoLine-checkbox" class:updating>
+      <div class="hulyToDoLine-checkbox">
         {#if updating !== undefined}
           <Spinner size={'small'} />
         {:else}
