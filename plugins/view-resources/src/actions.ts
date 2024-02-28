@@ -23,7 +23,8 @@ import core, {
   type Client,
   type Doc,
   type Ref,
-  type WithLookup
+  type WithLookup,
+  roleOrder
 } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
@@ -198,7 +199,7 @@ export function filterActions (
     if (ignore.includes(action._id)) {
       continue
     }
-    if (role < AccountRole.Maintainer && action.secured === true) {
+    if (roleOrder[role] < roleOrder[AccountRole.Maintainer] && action.secured === true) {
       continue
     }
     if (
