@@ -58,7 +58,6 @@ services:
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
       - FRONT_URL=http://front:8080
-      - SES_URL=http://localhost:8091
       - INIT_WORKSPACE=demo-tracker
       - MODEL_ENABLED=*
     restart: unless-stopped
