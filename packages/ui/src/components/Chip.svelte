@@ -14,13 +14,13 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { IconClose } from '..'
+  import { IconClose, ButtonIcon } from '..'
 
   export let label: string
 
   const dispatch = createEventDispatcher()
 
-  let buttonRef: HTMLButtonElement
+  let buttonRef: ButtonIcon | undefined
 
   function handleBackspace (event: KeyboardEvent) {
     if (event.key === 'Backspace') {
@@ -29,19 +29,21 @@
   }
 
   export function focus () {
-    buttonRef.focus()
+    buttonRef?.focus()
   }
 </script>
 
 <div class="flex items-center font-medium-14 max-w-60 p-1 chip">
   <span class="px-2 overflow-label">{label}</span>
-  <button
+  <ButtonIcon
     bind:this={buttonRef}
+    kind="tertiary"
+    size="min"
+    icon={IconClose}
+    inheritColor={true}
     on:click={() => dispatch('remove')}
     on:keydown={handleBackspace}
-  >
-    <IconClose size="small"/>
-  </button>
+  />
 </div>
 
 <style lang="scss">
@@ -71,20 +73,8 @@
       background-color: var(--global-ui-active-OverlayColor);
     }
 
-    button {
+    & :global(button.type-button-icon) {
       margin-right: var(--spacing-0_25);
-      color: inherit;
-      border: 0;
-      border-radius: var(--min-BorderRadius);
-
-      &:hover,
-      &:focus-within {
-        background-color: var(--global-ui-hover-BackgroundColor);
-      }
-
-      &:active {
-        background-color: var(--global-ui-active-BackgroundColor);
-      }
     }
   }
 </style>

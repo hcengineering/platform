@@ -28,7 +28,7 @@
 
   const dispatch = createEventDispatcher()
 
-  let inputRef: HTMLInputElement
+  let inputRef: HTMLInputElement | undefined
   let itemsRef: Chip[] = []
 
   function handleBackspace (event: KeyboardEvent) {
@@ -44,11 +44,11 @@
 
   function handleItemRemove (id: string) {
     dispatch('item-remove', id)
-    inputRef.focus()
+    inputRef?.focus()
   }
 
   export function focus () {
-    inputRef.focus()
+    inputRef?.focus()
     autoFocus = false
   }
 
@@ -61,7 +61,7 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   class="flex flex-gap-1 flex-wrap search-picker"
-  on:click={() => inputRef.focus()}
+  on:click={() => inputRef?.focus()}
 >
   {#each items as item, i}
     <Chip
