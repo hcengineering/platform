@@ -59,6 +59,7 @@ export class TSettingsCategory extends TDoc implements SettingsCategory {
   icon!: Asset
   component!: AnyComponent
   secured!: boolean
+  adminOnly?: boolean
 }
 
 @Model(setting.class.WorkspaceSettingCategory, core.class.Doc, DOMAIN_MODEL)
@@ -199,7 +200,8 @@ export function createModel (builder: Builder): void {
       icon: setting.icon.Setting,
       component: setting.component.Configure,
       order: 1001,
-      secured: true
+      secured: true,
+      adminOnly: true
     },
     setting.ids.Configure
   )
