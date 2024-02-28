@@ -16,13 +16,15 @@
   import { createEventDispatcher } from 'svelte'
   import { IconClose } from '..'
 
+  export let label: string
+
   const dispatch = createEventDispatcher()
 
   let buttonRef: HTMLButtonElement
 
   function handleBackspace (event: KeyboardEvent) {
     if (event.key === 'Backspace') {
-      dispatch('click')
+      dispatch('remove')
     }
   }
 
@@ -31,13 +33,11 @@
   }
 </script>
 
-<div class="flex items-center font-medium-14 max-w-60 chip">
-  <span>
-    <slot/>
-  </span>
+<div class="flex items-center font-medium-14 max-w-60 p-1 chip">
+  <span class="px-2 overflow-label">{label}</span>
   <button
     bind:this={buttonRef}
-    on:click
+    on:click={() => dispatch('remove')}
     on:keydown={handleBackspace}
   >
     <IconClose size="small"/>
@@ -49,7 +49,6 @@
     position: relative;
     height: var(--global-small-Size);
     border: none;
-    padding: var(--spacing-0_5);
     color: var(--tag-on-accent-PorpoiseText);
     background-color: var(--global-accent-BackgroundColor);
     border-radius: var(--small-BorderRadius);
@@ -70,14 +69,6 @@
 
     &:active:after {
       background-color: var(--global-ui-active-OverlayColor);
-    }
-
-    span {
-      padding: 0 var(--spacing-1);
-      line-height: 2rem;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      overflow: hidden;
     }
 
     button {

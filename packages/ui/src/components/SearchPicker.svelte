@@ -16,7 +16,7 @@
   import { createEventDispatcher } from 'svelte'
   import Chip from './Chip.svelte'
 
-  interface Items {
+  interface Item {
     id: string
     label: string
   }
@@ -24,7 +24,7 @@
   export let autoFocus: boolean = false
   export let placeholder = ''
   export let value = ''
-  export let items: Items[] = []
+  export let items: Item[] = []
 
   const dispatch = createEventDispatcher()
 
@@ -66,12 +66,11 @@
   {#each items as item, i}
     <Chip
       bind:this={itemsRef[i]}
-      on:click={() => {
+      label={item.label}
+      on:remove={() => {
         handleItemRemove(item.id)
       }}
-    >
-      {item.label}
-    </Chip>
+    />
   {/each}
   <input
     bind:this={inputRef}
