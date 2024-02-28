@@ -37,11 +37,13 @@ export class APMMeasureContext implements MeasureContext {
     this.parent = parent
     this.logger = {
       info: (msg, args) => {
-        agent.logger.info(msg, args)
+        agent.logger.info({ message: msg, ...args })
       },
       error: (msg, args) => {
-        agent.logger.error(msg, args)
-      }
+        agent.logger.error({ message: msg, ...args })
+      },
+      logOperation (operation, time, params) {},
+      close: async () => {}
     }
     if (!(noTransaction ?? false)) {
       if (this.parent === undefined) {
