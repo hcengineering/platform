@@ -140,4 +140,5 @@
   {secondaryButtonLabel}
   {secondaryButtonAction}
   bottomActions={[...bottom, loginAction, recoveryAction]}
+  withProviders
 />

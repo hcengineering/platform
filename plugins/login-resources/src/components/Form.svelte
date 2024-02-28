@@ -31,6 +31,7 @@
   import { onMount } from 'svelte'
   import { BottomAction, getHref } from '..'
   import login from '../plugin'
+  import Providers from './Providers.svelte'
 
   interface Field {
     id?: string
@@ -60,6 +61,7 @@
   export let bottomActions: BottomAction[] = []
   export let object: any
   export let ignoreInitialValidation: boolean = false
+  export let withProviders: boolean = false
 
   $: $themeStore.language && validate($themeStore.language)
 
@@ -214,6 +216,9 @@
       </div>
     {/if}
   </div>
+  {#if withProviders}
+    <Providers />
+  {/if}
   {#if bottomActions.length}
     <div class="footer">
       {#each bottomActions as action}

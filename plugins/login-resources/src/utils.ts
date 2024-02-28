@@ -14,6 +14,7 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
+import { concatLink } from '@hcengineering/core'
 import login, { type LoginInfo, type Workspace, type WorkspaceLoginInfo } from '@hcengineering/login'
 import {
   OK,
@@ -849,6 +850,63 @@ export async function getEnpoint (): Promise<string | undefined> {
     return result.result
   } catch (err: any) {
     console.log('get endpoint error', err)
+    Analytics.handleError(err)
+  }
+}
+
+export async function getSessionLoginInfo (): Promise<LoginInfo | WorkspaceLoginInfo | undefined> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  try {
+    const response = await fetch(concatLink(accountsUrl, '/auth'))
+    const result = await response.json()
+    return result
+  } catch (err: any) {
+    console.log('login error', err)
+    Analytics.handleError(err)
+  }
+}
+
+export async function getProviders (): Promise<string[]> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  try {
+    const response = await fetch(concatLink(accountsUrl, '/providers'))
+    const result = await response.json()
+    return result
+  } catch (err: any) {
+    Analytics.handleError(err)
+    return []
+  }
+}
+
+export async function loginWithProvider (provider: string, inviteId?: string | null): Promise<void> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  let path = `/auth/${provider}`
+
+  if (inviteId != null) {
+    path += `?inviteId=${inviteId}`
+  }
+
+  try {
+    const response = await fetch(concatLink(accountsUrl, path))
+    Analytics.handleEvent(`Login with ${provider}`)
+    const result = await response.json()
+    return result
+  } catch (err: any) {
     Analytics.handleError(err)
   }
 }
