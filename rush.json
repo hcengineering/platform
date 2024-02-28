@@ -1576,6 +1576,11 @@
       "packageName": "@hcengineering/server-guest-resources",
       "projectFolder": "server-plugins/guest-resources",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/auth-providers",
+      "projectFolder": "pods/authProviders",
+      "shouldPublish": false
     }
   ]
 }
