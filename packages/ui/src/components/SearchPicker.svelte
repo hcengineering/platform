@@ -13,11 +13,39 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
+  import Chip from './Chip.svelte'
+
+  interface Items {
+    id: string
+    label: string
+  }
+
   export let autoFocus: boolean = false
   export let placeholder = ''
   export let value = ''
+  export let items: Items[] = []
+
+  const dispatch = createEventDispatcher()
 
   let inputRef: HTMLInputElement
+  let itemsRef: Chip[] = []
+
+  function handleBackspace (event: KeyboardEvent) {
+    if (
+      event.key === 'Backspace' &&
+      value === '' &&
+      items.length > 0
+    ) {
+      itemsRef[items.length - 1].focus()
+    }
+    dispatch('keydown', event)
+  }
+
+  function handleItemRemove (id: string) {
+    dispatch('item-remove', id)
+    inputRef.focus()
+  }
 
   export function focus () {
     inputRef.focus()
@@ -33,11 +61,18 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   class="flex flex-gap-1 flex-wrap search-picker"
-  on:click={() => {
-    inputRef.focus()
-  }}
+  on:click={() => inputRef.focus()}
 >
-  <slot />
+  {#each items as item, i}
+    <Chip
+      bind:this={itemsRef[i]}
+      on:click={() => {
+        handleItemRemove(item.id)
+      }}
+    >
+      {item.label}
+    </Chip>
+  {/each}
   <input
     bind:this={inputRef}
     class="flex-grow font-regular-14"
@@ -48,7 +83,7 @@
     bind:value
     on:change
     on:input
-    on:keydown
+    on:keydown={handleBackspace}
   />
 </div>
 

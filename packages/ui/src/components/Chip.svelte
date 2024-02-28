@@ -13,23 +13,39 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import { IconClose } from '..'
+
+  const dispatch = createEventDispatcher()
+
+  let buttonRef: HTMLButtonElement
+
+  function handleBackspace (event: KeyboardEvent) {
+    if (event.key === 'Backspace') {
+      dispatch('click')
+    }
+  }
+
+  export function focus () {
+    buttonRef.focus()
+  }
 </script>
 
-<button
-  class="flex font-medium-14 max-w-60 search-picker-item"
-  on:click
->
+<div class="flex items-center font-medium-14 max-w-60 chip">
   <span>
     <slot/>
   </span>
-  <div class="search-picker-item-icon">
-    <IconClose size="small" />
-  </div>
-</button>
+  <button
+    bind:this={buttonRef}
+    on:click
+    on:keydown={handleBackspace}
+  >
+    <IconClose size="small"/>
+  </button>
+</div>
 
 <style lang="scss">
-  .search-picker-item {
+  .chip {
     position: relative;
     height: var(--global-small-Size);
     border: none;
@@ -58,13 +74,26 @@
 
     span {
       padding: 0 var(--spacing-1);
+      line-height: 2rem;
       text-overflow: ellipsis;
       white-space: nowrap;
       overflow: hidden;
     }
-  }
 
-  .search-picker-item-icon {
-    padding-right: var(--spacing-0_25);
+    button {
+      margin-right: var(--spacing-0_25);
+      color: inherit;
+      border: 0;
+      border-radius: var(--min-BorderRadius);
+
+      &:hover,
+      &:focus-within {
+        background-color: var(--global-ui-hover-BackgroundColor);
+      }
+
+      &:active {
+        background-color: var(--global-ui-active-BackgroundColor);
+      }
+    }
   }
 </style>
