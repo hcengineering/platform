@@ -49,7 +49,8 @@ export const pages = [
   'selectWorkspace',
   'join',
   'confirm',
-  'confirmationSend'
+  'confirmationSend',
+  'auth'
 ] as const
 
 export type Pages = (typeof pages)[number]

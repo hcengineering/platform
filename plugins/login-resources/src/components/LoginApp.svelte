@@ -34,6 +34,7 @@
   import PasswordRequest from './PasswordRequest.svelte'
   import PasswordRestore from './PasswordRestore.svelte'
   import SelectWorkspace from './SelectWorkspace.svelte'
+  import Auth from './Auth.svelte'
   import SignupForm from './SignupForm.svelte'
   import LoginIcon from './icons/LoginIcon.svelte'
 
@@ -111,6 +112,8 @@
             <Confirmation />
           {:else if page === 'confirmationSend'}
             <ConfirmationSend />
+          {:else if page === 'auth'}
+            <Auth />
           {/if}
         </div>
       </Scroller>

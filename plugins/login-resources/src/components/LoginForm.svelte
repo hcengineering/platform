@@ -142,5 +142,6 @@
     {action}
     bottomActions={[recoveryAction]}
     ignoreInitialValidation
+    withProviders
   />
 {/if}
