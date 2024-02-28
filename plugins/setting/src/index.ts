@@ -85,6 +85,7 @@ export interface SettingsCategory extends Doc {
   secured: boolean
 
   expandable?: boolean
+  adminOnly?: boolean
 }
 
 /**
