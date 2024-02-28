@@ -5,6 +5,8 @@ import { IssuesPage } from '../model/tracker/issues-page'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
 import { Issue, NewIssue } from '../model/tracker/types'
 import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
+import { prepareNewIssueWithOpenStep } from './common-steps'
+import { IssueCommentPopup } from '../model/tracker/issue-comment-popup'
 
 test.use({
   storageState: PlatformSetting
@@ -13,6 +15,9 @@ test.use({
 test.describe('Tracker issue tests', () => {
   test.beforeEach(async ({ page }) => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
+
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    await leftSideMenuPage.buttonTracker.click()
   })
 
   test('Create an issue with all parameters and attachments', async ({ page }) => {
@@ -31,15 +36,7 @@ test.describe('Tracker issue tests', () => {
       filePath: 'cat.jpeg'
     }
 
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
-
-    const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
-    await issuesPage.createNewIssue(newIssue)
-    await issuesPage.searchIssueByName(newIssue.title)
-    await issuesPage.openIssueByName(newIssue.title)
-
+    await prepareNewIssueWithOpenStep(page, newIssue)
     const issuesDetailsPage = new IssuesDetailsPage(page)
     await issuesDetailsPage.checkIssue({
       ...newIssue,
@@ -53,7 +50,6 @@ test.describe('Tracker issue tests', () => {
       title: `Issue with all parameters and attachments-${generateId()}`,
       description: 'Created issue with all parameters and attachments description'
     }
-
     const editIssue: Issue = {
       status: 'Done',
       priority: 'High',
@@ -64,15 +60,7 @@ test.describe('Tracker issue tests', () => {
       milestone: 'Milestone',
       duedate: 'today'
     }
-
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
-
-    const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
-    await issuesPage.createNewIssue(newIssue)
-    await issuesPage.searchIssueByName(newIssue.title)
-    await issuesPage.openIssueByName(newIssue.title)
+    await prepareNewIssueWithOpenStep(page, newIssue)
 
     const issuesDetailsPage = new IssuesDetailsPage(page)
     await issuesDetailsPage.editIssue(editIssue)
@@ -111,14 +99,11 @@ test.describe('Tracker issue tests', () => {
     }
   })
 
-  test.skip('Set parent issue', async ({ page }) => {
+  test('Set parent issue', async ({ page }) => {
     const parentIssue: NewIssue = {
       title: `PARENT ISSUE-${generateId(2)}`,
       description: 'Created issue to be parent issue'
     }
-
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
 
     const issuesPage = new IssuesPage(page)
     await issuesPage.modelSelectorAll.click()
@@ -204,25 +189,15 @@ test.describe('Tracker issue tests', () => {
       title: `Issue to another project-${generateId()}`,
       description: 'Issue to move to another project'
     }
-
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
-
-    const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
-    await trackerNavigationMenuPage.openIssuesForProject('Default')
-
-    const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
-    await issuesPage.createNewIssue(moveIssue)
-    await issuesPage.searchIssueByName(moveIssue.title)
-    await issuesPage.openIssueByName(moveIssue.title)
-
+    await prepareNewIssueWithOpenStep(page, moveIssue)
     const issuesDetailsPage = new IssuesDetailsPage(page)
     await issuesDetailsPage.moreActionOnIssue('Move to project')
     await issuesDetailsPage.fillMoveIssuesModal(secondProjectName, true)
 
+    const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
     await trackerNavigationMenuPage.openIssuesForProject(secondProjectName)
 
+    const issuesPage = new IssuesPage(page)
     await issuesPage.openIssueByName(moveIssue.title)
     await issuesDetailsPage.checkIssue({
       ...moveIssue
@@ -238,18 +213,7 @@ test.describe('Tracker issue tests', () => {
       title: `Issue for stored comment-${generateId()}`,
       description: 'Issue for comment stored after reload the page'
     }
-
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
-
-    const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
-    await trackerNavigationMenuPage.openIssuesForProject('Default')
-
-    const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
-    await issuesPage.createNewIssue(commentIssue)
-    await issuesPage.searchIssueByName(commentIssue.title)
-    await issuesPage.openIssueByName(commentIssue.title)
+    await prepareNewIssueWithOpenStep(page, commentIssue)
 
     const issuesDetailsPage = new IssuesDetailsPage(page)
     await issuesDetailsPage.waitDetailsOpened(commentIssue.title)
@@ -271,13 +235,6 @@ test.describe('Tracker issue tests', () => {
       component: 'Default component',
       milestone: 'Edit Milestone'
     }
-
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
-
-    const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
-    await trackerNavigationMenuPage.openIssuesForProject('Default')
-
     const issuesPage = new IssuesPage(page)
     await issuesPage.modelSelectorAll.click()
     await issuesPage.buttonCreateNewIssue.click()
@@ -298,10 +255,6 @@ test.describe('Tracker issue tests', () => {
       title: 'Issue for deletion',
       description: 'Description Issue for deletion'
     }
-
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
-
     const issuesPage = new IssuesPage(page)
     await issuesPage.modelSelectorAll.click()
     await issuesPage.searchIssueByName(deleteIssue.title)
@@ -322,15 +275,7 @@ test.describe('Tracker issue tests', () => {
       title: `Check the changed description activity-${generateId()}`,
       description: 'Check the changed description activity description'
     }
-
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
-
-    const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
-    await issuesPage.createNewIssue(changedDescriptionIssue)
-    await issuesPage.searchIssueByName(changedDescriptionIssue.title)
-    await issuesPage.openIssueByName(changedDescriptionIssue.title)
+    await prepareNewIssueWithOpenStep(page, changedDescriptionIssue)
 
     const issuesDetailsPage = new IssuesDetailsPage(page)
     await issuesDetailsPage.waitDetailsOpened(changedDescriptionIssue.title)
@@ -345,19 +290,42 @@ test.describe('Tracker issue tests', () => {
       title: `Add comment with image attachment-${generateId()}`,
       description: 'Add comment with image attachment'
     }
-
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
-
-    const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
-    await issuesPage.createNewIssue(commentImageIssue)
-    await issuesPage.searchIssueByName(commentImageIssue.title)
-    await issuesPage.openIssueByName(commentImageIssue.title)
+    await prepareNewIssueWithOpenStep(page, commentImageIssue)
 
     const issuesDetailsPage = new IssuesDetailsPage(page)
     await issuesDetailsPage.waitDetailsOpened(commentImageIssue.title)
     await issuesDetailsPage.addCommentWithImage('Added comment with atttachment', 'cat3.jpeg')
     await issuesDetailsPage.checkCommentWithImageExist('left a comment', 'cat3.jpeg')
+  })
+
+  test('Add comment by popup', async ({ page }) => {
+    const commentInside = `Comment for the inside issue-${generateId()}`
+    const commentPopup = `Comment for the popup-${generateId()}`
+    const commentIssue: NewIssue = {
+      title: `Issue for add comment by popup-${generateId()}`,
+      description: 'Issue for add comment by popup'
+    }
+    await prepareNewIssueWithOpenStep(page, commentIssue)
+
+    const issuesDetailsPage = new IssuesDetailsPage(page)
+    await issuesDetailsPage.waitDetailsOpened(commentIssue.title)
+    await issuesDetailsPage.addComment(commentInside)
+    await issuesDetailsPage.checkCommentExist(commentInside)
+
+    const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
+    await trackerNavigationMenuPage.openIssuesForProject('Default')
+
+    const issuesPage = new IssuesPage(page)
+    await issuesPage.checkCommentsCount(commentIssue.title, '1')
+    await issuesPage.openCommentPopupForIssueByName(commentIssue.title)
+
+    const issueCommentPopup = new IssueCommentPopup(page)
+    await issueCommentPopup.addCommentInPopup(commentPopup, 'cat2.jpeg')
+    await issueCommentPopup.checkCommentWithImageExist('left a comment', 'cat2.jpeg')
+    await issueCommentPopup.checkCommentExist(commentPopup)
+
+    await issuesPage.modelSelectorAll.click()
+
+    await issuesPage.checkCommentsCount(commentIssue.title, '2')
   })
 })
