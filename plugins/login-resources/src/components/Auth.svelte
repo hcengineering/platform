@@ -8,7 +8,6 @@
   import { afterConfirm, getSessionLoginInfo, navigateToWorkspace } from '../utils'
 
   onMount(async () => {
-    debugger
     const result = await getSessionLoginInfo()
     if (result !== undefined) {
       if (isWorkspaceLoginInfo(result)) {
