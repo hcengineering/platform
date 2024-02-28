@@ -26,6 +26,7 @@ import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
 import Router from 'koa-router'
 import { MongoClient } from 'mongodb'
+import { registerProviders } from '@hcengineering/auth-providers'
 
 /**
  * @public
@@ -83,10 +84,15 @@ export function serveAccount (methods: Record<string, AccountMethod>, productId 
   setMetadata(toolPlugin.metadata.Transactor, transactorUri)
   setMetadata(toolPlugin.metadata.UserAgent, 'AccountService')
 
-  let client: MongoClient
+  let client: MongoClient | Promise<MongoClient> = MongoClient.connect(dbUri)
 
   const app = new Koa()
   const router = new Router()
+
+  void client.then((p) => {
+    const db = p.db(ACCOUNT_DB)
+    registerProviders(app, router, db, productId, serverSecret, frontURL)
+  })
 
   const extractToken = (header: IncomingHttpHeaders): string | undefined => {
     try {
@@ -110,8 +116,8 @@ export function serveAccount (methods: Record<string, AccountMethod>, productId 
       ctx.body = JSON.stringify(response)
     }
 
-    if (client === undefined) {
-      client = await MongoClient.connect(dbUri)
+    if (client instanceof Promise) {
+      client = await client
     }
     const db = client.db(ACCOUNT_DB)
     const result = await method(db, productId, request, token)
@@ -127,7 +133,11 @@ export function serveAccount (methods: Record<string, AccountMethod>, productId 
   })
 
   const close = (): void => {
-    void client.close()
+    if (client instanceof Promise) {
+      void client.then((c) => c.close())
+    } else {
+      void client.close()
+    }
     server.close()
   }
 

@@ -79,12 +79,13 @@ const getTransactor = (): string => {
 export interface Account {
   _id: ObjectId
   email: string
-  hash: Binary
+  // null if auth provider was used
+  hash: Binary | null
   salt: Binary
   workspaces: ObjectId[]
-  // Defined for server admins only
   first: string
   last: string
+  // Defined for server admins only
   admin?: boolean
   confirmed?: boolean
   lastWorkspace?: number
@@ -148,6 +149,12 @@ function verifyPassword (password: string, hash: Buffer, salt: Buffer): boolean 
 
 function cleanEmail (email: string): string {
   return email.toLowerCase().trim()
+}
+
+function isEmail (email: string): boolean {
+  const EMAIL_REGEX =
+    /(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/
+  return EMAIL_REGEX.test(email)
 }
 
 /**
@@ -216,6 +223,9 @@ async function getAccountInfo (db: Db, email: string, password: string): Promise
   const account = await getAccount(db, email)
   if (account === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
+  }
+  if (account.hash === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.InvalidPassword, { account: email }))
   }
   if (!verifyPassword(password, Buffer.from(account.hash.buffer), Buffer.from(account.salt.buffer))) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InvalidPassword, { account: email }))
@@ -505,14 +515,14 @@ export async function createAcc (
   db: Db,
   productId: string,
   _email: string,
-  password: string,
+  password: string | null,
   first: string,
   last: string,
   confirmed: boolean = false
 ): Promise<Account> {
   const email = cleanEmail(_email)
   const salt = randomBytes(32)
-  const hash = hashWithSalt(password, salt)
+  const hash = password !== null ? hashWithSalt(password, salt) : null
 
   const systemEmails = [systemAccountEmail]
   if (systemEmails.includes(email)) {
@@ -1032,27 +1042,36 @@ export async function assignWorkspace (
 }
 
 async function createEmployee (ops: TxOperations, name: string, _email: string): Promise<Ref<Person>> {
+  const id = generateId<Person>()
+  let avatar = `${AvatarType.COLOR}://${getAvatarColorForId(id)}`
   const email = cleanEmail(_email)
-  const gravatarId = buildGravatarId(email)
-  const hasGravatar = await checkHasGravatar(gravatarId)
+  if (isEmail(email)) {
+    const gravatarId = buildGravatarId(email)
+    const hasGravatar = await checkHasGravatar(gravatarId)
+    if (hasGravatar) {
+      avatar = `${AvatarType.GRAVATAR}://${gravatarId}`
+    }
+  }
 
-  const id = await ops.createDoc(contact.class.Person, contact.space.Employee, {
-    name,
-    city: '',
-    ...(hasGravatar ? { avatar: `${AvatarType.GRAVATAR}://${gravatarId}` } : {})
-  })
+  await ops.createDoc(
+    contact.class.Person,
+    contact.space.Employee,
+    {
+      name,
+      city: '',
+      avatar
+    },
+    id
+  )
   await ops.createMixin(id, contact.class.Person, contact.space.Contacts, contact.mixin.Employee, {
     active: true
   })
-  if (!hasGravatar) {
-    await ops.updateDoc(contact.mixin.Employee, contact.space.Employee, id, {
-      avatar: `${AvatarType.COLOR}://${getAvatarColorForId(id)}`
+  if (isEmail(email)) {
+    await ops.addCollection(contact.class.Channel, contact.space.Contacts, id, contact.mixin.Employee, 'channels', {
+      provider: contact.channelProvider.Email,
+      value: email
     })
   }
-  await ops.addCollection(contact.class.Channel, contact.space.Contacts, id, contact.mixin.Employee, 'channels', {
-    provider: contact.channelProvider.Email,
-    value: email.trim()
-  })
 
   return id
 }
@@ -1254,12 +1273,17 @@ export async function restorePassword (db: Db, productId: string, token: string,
   if (account === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
   }
-  const salt = randomBytes(32)
-  const hash = hashWithSalt(password, salt)
 
-  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { salt, hash } })
+  await updatePassword(db, account, password)
 
   return await login(db, productId, email, password)
+}
+
+async function updatePassword (db: Db, account: Account, password: string | null): Promise<void> {
+  const salt = randomBytes(32)
+  const hash = password !== null ? hashWithSalt(password, salt) : null
+
+  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { salt, hash } })
 }
 
 /**
@@ -1467,6 +1491,85 @@ function wrap (f: (db: Db, productId: string, ...args: any[]) => Promise<any>): 
         }
       })
   }
+}
+
+export async function joinWithProvider (
+  db: Db,
+  productId: string,
+  _email: string,
+  first: string,
+  last: string,
+  inviteId: ObjectId
+): Promise<WorkspaceLoginInfo | LoginInfo> {
+  const email = cleanEmail(_email)
+  const invite = await getInvite(db, inviteId)
+  const workspace = await checkInvite(invite, email)
+  const account = await getAccount(db, email)
+  if (account !== null) {
+    // we should clean password if account is not confirmed
+    if (account.confirmed === false) {
+      await updatePassword(db, account, null)
+    }
+
+    const token = generateToken(email, getWorkspaceId('', productId), getExtra(account))
+    const ws = await getWorkspaceById(db, productId, workspace.name)
+
+    if (ws?.accounts.includes(account._id) ?? false) {
+      const result = {
+        endpoint: getEndpoint(),
+        email,
+        token
+      }
+      return result
+    }
+
+    const wsRes = await assignWorkspace(db, productId, email, workspace.name, false)
+    const result = await selectWorkspace(db, productId, token, wsRes.workspaceUrl ?? wsRes.workspace, false)
+
+    await useInvite(db, inviteId)
+    return result
+  }
+
+  const newAccount = await createAcc(db, productId, email, null, first, last, true)
+  const token = generateToken(email, getWorkspaceId('', productId), getExtra(newAccount))
+  const ws = await assignWorkspace(db, productId, email, workspace.name, false)
+  const result = await selectWorkspace(db, productId, token, ws.workspaceUrl ?? ws.workspace, false)
+
+  await useInvite(db, inviteId)
+
+  return result
+}
+
+export async function loginWithProvider (
+  db: Db,
+  productId: string,
+  _email: string,
+  first: string,
+  last: string
+): Promise<LoginInfo> {
+  const email = cleanEmail(_email)
+  const account = await getAccount(db, email)
+  if (account !== null) {
+    // we should clean password if account is not confirmed
+    if (account.confirmed === false) {
+      await updatePassword(db, account, null)
+    }
+    const result = {
+      endpoint: getEndpoint(),
+      email,
+      token: generateToken(email, getWorkspaceId('', productId), getExtra(account))
+    }
+    return result
+  }
+
+  const newAccount = await createAcc(db, productId, email, null, first, last, true)
+
+  const result = {
+    endpoint: getEndpoint(),
+    email,
+    token: generateToken(email, getWorkspaceId('', productId), getExtra(newAccount))
+  }
+  return result
 }
 
 /**
