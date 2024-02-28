@@ -97,6 +97,7 @@
       result.push({
         icon: act.icon ?? IconEdit,
         label: act.label,
+        inline: act.inline,
         action: async (ctx: any, evt: Event) => {
           const impl = await getResource(act.action)
           await impl(space, evt, act.actionProps)
