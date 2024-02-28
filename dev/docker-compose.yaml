@@ -60,6 +60,7 @@ services:
       - FRONT_URL=http://front:8080
       - INIT_WORKSPACE=demo-tracker
       - MODEL_ENABLED=*
+      - ACCOUNTS_URL=http://localhost:3000
     restart: unless-stopped
   front:
     image: hardcoreeng/front

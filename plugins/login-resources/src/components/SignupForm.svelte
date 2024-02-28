@@ -57,4 +57,4 @@
   }
 </script>
 
-<Form caption={login.string.SignUp} {status} {fields} {object} {action} />
+<Form caption={login.string.SignUp} {status} {fields} {object} {action} withProviders />
