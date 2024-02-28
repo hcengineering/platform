@@ -26,8 +26,7 @@
     Menu,
     showPopup,
     getTreeCollapsed,
-    setTreeCollapsed,
-    IconActivity
+    setTreeCollapsed
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
@@ -58,14 +57,14 @@
     popupMenuActions = result.filter((action) => action.inline !== true)
   })
 
-  async function onMenuClick (ev: MouseEvent) {
+  async function onMenuClick (ev: MouseEvent): Promise<void> {
     showPopup(Menu, { actions: popupMenuActions, ctx: _id }, ev.target as HTMLElement, () => {
       hovered = false
     })
     hovered = true
   }
 
-  async function onInlineClick (ev: MouseEvent, action: Action) {
+  async function onInlineClick (ev: MouseEvent, action: Action): Promise<void> {
     action.action([], ev)
   }
 
@@ -108,39 +107,30 @@
 
   <div class="an-element__grow" />
 
-  {#if !parent}
+  {#if inlineActions.length > 0}
     {#each inlineActions as action}
-      <div
-        class="an-element__tool"
-        class:pressed={hovered}
-        on:click|preventDefault|stopPropagation={(ev) => onInlineClick(ev, action)}
-      >
+      <div class="an-element__tool" on:click|preventDefault|stopPropagation={(ev) => onInlineClick(ev, action)}>
         <Icon icon={action.icon ?? ActionIcon} size={'small'} />
       </div>
     {/each}
+  {/if}
+  {#if popupMenuActions.length === 1 && popupMenuActions[0].icon}
+    <div id={_id} class="an-element__tool">
+      <ActionIcon
+        label={popupMenuActions[0].label}
+        icon={popupMenuActions[0].icon}
+        size={'small'}
+        action={async (ev) => {
+          void popupMenuActions[0].action(_id, ev)
+        }}
+      />
+    </div>
+  {:else if popupMenuActions.length > 0}
     <div class="an-element__tool" class:pressed={hovered} on:click|preventDefault|stopPropagation={onMenuClick}>
       <IconMoreH size={'small'} />
     </div>
-  {:else}
-    {#await actions() then actionItems}
-      {#if actionItems.length === 1 && actionItems[0].icon}
-        <div id={_id} class="an-element__tool">
-          <ActionIcon
-            label={actionItems[0].label}
-            icon={actionItems[0].icon}
-            size={'small'}
-            action={async (ev) => {
-              actionItems[0].action(_id, ev)
-            }}
-          />
-        </div>
-      {:else if actionItems.length > 1}
-        <div class="an-element__tool" class:pressed={hovered} on:click|preventDefault|stopPropagation={onMenuClick}>
-          <IconMoreH size={'small'} />
-        </div>
-      {/if}
-    {/await}
   {/if}
+
   {#if notifications > 0 && collapsed}
     <div class="an-element__counter">{notifications}</div>
   {/if}
