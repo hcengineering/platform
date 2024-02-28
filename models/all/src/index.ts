@@ -19,7 +19,6 @@ import { Builder } from '@hcengineering/model'
 import { activityId, createModel as activityModel } from '@hcengineering/model-activity'
 import { attachmentId, createModel as attachmentModel } from '@hcengineering/model-attachment'
 import bitrix, { bitrixId, createModel as bitrixModel } from '@hcengineering/model-bitrix'
-import board, { boardId, createModel as boardModel } from '@hcengineering/model-board'
 import calendar, { calendarId, createModel as calendarModel } from '@hcengineering/model-calendar'
 import chunter, { chunterId, createModel as chunterModel } from '@hcengineering/model-chunter'
 import contact, { contactId, createModel as contactModel } from '@hcengineering/model-contact'
@@ -239,18 +238,6 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         enabled: true,
         beta: false,
         icon: tracker.icon.TrackerApplication,
-        classFilter: defaultFilter
-      }
-    ],
-    [
-      boardModel,
-      boardId,
-      {
-        label: board.string.ConfigLabel,
-        description: board.string.ConfigDescription,
-        enabled: false,
-        beta: true,
-        icon: board.icon.Board,
         classFilter: defaultFilter
       }
     ],

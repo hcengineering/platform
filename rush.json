@@ -1311,27 +1311,6 @@
       "projectFolder": "models/tracker",
       "shouldPublish": false
     },
-
-    {
-      "packageName": "@hcengineering/board",
-      "projectFolder": "plugins/board",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/board-assets",
-      "projectFolder": "plugins/board-assets",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/board-resources",
-      "projectFolder": "plugins/board-resources",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/model-board",
-      "projectFolder": "models/board",
-      "shouldPublish": false
-    },
     {
       "packageName": "@hcengineering/kanban",
       "projectFolder": "packages/kanban",

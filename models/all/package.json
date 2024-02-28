@@ -72,7 +72,6 @@
     "@hcengineering/model-server-gmail": "^0.6.0",
     "@hcengineering/model-server-telegram": "^0.6.0",
     "@hcengineering/model-tracker": "^0.6.0",
-    "@hcengineering/model-board": "^0.6.0",
     "@hcengineering/model-preference": "^0.6.0",
     "@hcengineering/model-hr": "^0.6.0",
     "@hcengineering/model-server-hr": "^0.6.0",

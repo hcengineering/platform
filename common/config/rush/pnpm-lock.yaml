@@ -65,15 +65,6 @@ dependencies:
   '@rush-temp/bitrix-resources':
     specifier: file:./projects/bitrix-resources.tgz
     version: file:projects/bitrix-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
-  '@rush-temp/board':
-    specifier: file:./projects/board.tgz
-    version: file:projects/board.tgz(@types/node@20.11.19)(esbuild@0.20.1)(svelte@4.2.11)(ts-node@10.9.2)
-  '@rush-temp/board-assets':
-    specifier: file:./projects/board-assets.tgz
-    version: file:projects/board-assets.tgz(esbuild@0.20.1)(svelte@4.2.11)(ts-node@10.9.2)
-  '@rush-temp/board-resources':
-    specifier: file:./projects/board-resources.tgz
-    version: file:projects/board-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
   '@rush-temp/calendar':
     specifier: file:./projects/calendar.tgz
     version: file:projects/calendar.tgz(@types/node@20.11.19)(esbuild@0.20.1)(svelte@4.2.11)(ts-node@10.9.2)
@@ -230,9 +221,6 @@ dependencies:
   '@rush-temp/model-bitrix':
     specifier: file:./projects/model-bitrix.tgz
     version: file:projects/model-bitrix.tgz(svelte@4.2.11)
-  '@rush-temp/model-board':
-    specifier: file:./projects/model-board.tgz
-    version: file:projects/model-board.tgz(svelte@4.2.11)
   '@rush-temp/model-calendar':
     specifier: file:./projects/model-calendar.tgz
     version: file:projects/model-calendar.tgz(svelte@4.2.11)
@@ -17231,115 +17219,6 @@ packages:
       - ts-node
     dev: false
 
-  file:projects/board-assets.tgz(esbuild@0.20.1)(svelte@4.2.11)(ts-node@10.9.2):
-    resolution: {integrity: sha512-wmy+vZEGRBLzWoDUgRGVaGD4US8ycoV0RL6ZC01rTlq8RbdlyfW2/i7H3xtp9mnVuD/qMG7Qa8ClC9bnsSyGLQ==, tarball: file:projects/board-assets.tgz}
-    id: file:projects/board-assets.tgz
-    name: '@rush-temp/board-assets'
-    version: 0.0.0
-    dependencies:
-      '@types/jest': 29.5.12
-      '@types/node': 20.11.19
-      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
-      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
-      eslint: 8.56.0
-      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
-      eslint-plugin-import: 2.29.1(eslint@8.56.0)
-      eslint-plugin-n: 15.7.0(eslint@8.56.0)
-      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
-      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      prettier: 3.2.5
-      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
-      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
-      typescript: 5.3.3
-    transitivePeerDependencies:
-      - '@babel/core'
-      - '@jest/types'
-      - babel-jest
-      - babel-plugin-macros
-      - esbuild
-      - node-notifier
-      - supports-color
-      - svelte
-      - ts-node
-    dev: false
-
-  file:projects/board-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-llaz4JZHhqlDqVe0JiuRD5kCjyDdOcVhqgKeI02MqT1a0rO0NBmv6HMipWBihj5hAx64+cOPP5opcCeyHChdOw==, tarball: file:projects/board-resources.tgz}
-    id: file:projects/board-resources.tgz
-    name: '@rush-temp/board-resources'
-    version: 0.0.0
-    dependencies:
-      '@types/jest': 29.5.12
-      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
-      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
-      eslint: 8.56.0
-      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
-      eslint-plugin-import: 2.29.1(eslint@8.56.0)
-      eslint-plugin-n: 15.7.0(eslint@8.56.0)
-      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
-      eslint-plugin-svelte: 2.35.1(eslint@8.56.0)(svelte@4.2.11)(ts-node@10.9.2)
-      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      prettier: 3.2.5
-      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
-      sass: 1.71.1
-      svelte: 4.2.11
-      svelte-check: 3.6.4(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.11)
-      svelte-eslint-parser: 0.33.1(svelte@4.2.11)
-      svelte-loader: 3.1.9(svelte@4.2.11)
-      svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.11)(typescript@5.3.3)
-      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
-      typescript: 5.3.3
-    transitivePeerDependencies:
-      - '@babel/core'
-      - '@jest/types'
-      - '@types/node'
-      - babel-jest
-      - babel-plugin-macros
-      - coffeescript
-      - esbuild
-      - less
-      - node-notifier
-      - postcss
-      - postcss-load-config
-      - pug
-      - stylus
-      - sugarss
-      - supports-color
-      - ts-node
-    dev: false
-
-  file:projects/board.tgz(@types/node@20.11.19)(esbuild@0.20.1)(svelte@4.2.11)(ts-node@10.9.2):
-    resolution: {integrity: sha512-W0EgjRfEzCDFayWX0zvIg4r6ZiWNYSnjtgDV8ndeOHPRiN6l1uBFkqrmJdE+6OWokYVaxmW8M3jqWg1uoqHAkg==, tarball: file:projects/board.tgz}
-    id: file:projects/board.tgz
-    name: '@rush-temp/board'
-    version: 0.0.0
-    dependencies:
-      '@types/jest': 29.5.12
-      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
-      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
-      eslint: 8.56.0
-      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
-      eslint-plugin-import: 2.29.1(eslint@8.56.0)
-      eslint-plugin-n: 15.7.0(eslint@8.56.0)
-      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
-      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      prettier: 3.2.5
-      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
-      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
-      typescript: 5.3.3
-    transitivePeerDependencies:
-      - '@babel/core'
-      - '@jest/types'
-      - '@types/node'
-      - babel-jest
-      - babel-plugin-macros
-      - esbuild
-      - node-notifier
-      - supports-color
-      - svelte
-      - ts-node
-    dev: false
-
   file:projects/calendar-assets.tgz(esbuild@0.20.1)(svelte@4.2.11)(ts-node@10.9.2):
     resolution: {integrity: sha512-Th1HeF8zKa7h3JO/+1oIk6lN9BSHkHimTo8/TA1/3gRl4F73VrMFy5v5hy+yXFZ1zk6/soXGSIyzC5334Szgfw==, tarball: file:projects/calendar-assets.tgz}
     id: file:projects/calendar-assets.tgz
@@ -19117,7 +18996,7 @@ packages:
     dev: false
 
   file:projects/model-all.tgz(svelte@4.2.11):
-    resolution: {integrity: sha512-dHsSkXsC7WkS9h8RlqjpSVF9TlqTA2UTiK5ehmxM3gJxpPFtrHrH8qD48u08TSh/nZJ2GlzinE5z6AvEuIHVsQ==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-pUrauAYsvS8R7BBmOJgl62+/2z7Fufu1xeAgHsrVfoIgA+afqKFSz6agsrhyW9YV+09Ur0EzRCgfN1ETWO5RAw==, tarball: file:projects/model-all.tgz}
     id: file:projects/model-all.tgz
     name: '@rush-temp/model-all'
     version: 0.0.0
@@ -19166,27 +19045,6 @@ packages:
     resolution: {integrity: sha512-qG1jmloE7KpAt9EtlPnvqpXz1EpX396Y4ZqOXbKvJDZGo2Y17SqrcIPcHHHoafpjg5WTYjF+Vey8MalU3PpPqw==, tarball: file:projects/model-bitrix.tgz}
     id: file:projects/model-bitrix.tgz
     name: '@rush-temp/model-bitrix'
-    version: 0.0.0
-    dependencies:
-      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
-      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
-      eslint: 8.56.0
-      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
-      eslint-plugin-import: 2.29.1(eslint@8.56.0)
-      eslint-plugin-n: 15.7.0(eslint@8.56.0)
-      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
-      prettier: 3.2.5
-      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
-      typescript: 5.3.3
-    transitivePeerDependencies:
-      - supports-color
-      - svelte
-    dev: false
-
-  file:projects/model-board.tgz(svelte@4.2.11):
-    resolution: {integrity: sha512-HV/P7U/jy1R8KfpMjF9G9WGeqvCzQp7hlMI+aBMQrSAmcXbssSj1HzsJQ+fllRMgPcVS5ctAoMIuUsySCLX3JQ==, tarball: file:projects/model-board.tgz}
-    id: file:projects/model-board.tgz
-    name: '@rush-temp/model-board'
     version: 0.0.0
     dependencies:
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
@@ -20735,7 +20593,7 @@ packages:
     dev: false
 
   file:projects/pod-server.tgz(svelte@4.2.11):
-    resolution: {integrity: sha512-t0dTTvzR0GNGvvEi8f/KAk65SeP43eYlOH5Bh1ObHU0zb7NAH8idybiYypKKkpRrZHydTDL/C1iFrjXTrqqVKQ==, tarball: file:projects/pod-server.tgz}
+    resolution: {integrity: sha512-VpNpRf8lSgr0YJthp23BewqcVS1XWB8na2fzdDbjX1bWwg4HGwwOuvknILICI/oI/EXMG50cQyVttRB9+oUnEw==, tarball: file:projects/pod-server.tgz}
     id: file:projects/pod-server.tgz
     name: '@rush-temp/pod-server'
     version: 0.0.0
@@ -20884,7 +20742,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz(bufferutil@4.0.8)(sass@1.71.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-sz8Xw/l82dtTDjeUD5fIOHpy9rjyTrbw1H7gh31h8nZxztMjPRZw9kRs9bzs9KidAPLnWEA/jL5T9j8QfaU01w==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-4l9QeChuNvjgUulgQTcOIud6ENhCbYwllHqWoJiHCKYr2CVlGr3pmMJShs/la/EL8dp5Wn1H2Y4ZIDFtKaF8+Q==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0

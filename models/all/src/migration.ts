@@ -33,7 +33,6 @@ import { telegramOperation } from '@hcengineering/model-telegram'
 import { templatesOperation } from '@hcengineering/model-templates'
 import { viewOperation } from '@hcengineering/model-view'
 import { trackerOperation } from '@hcengineering/model-tracker'
-import { boardOperation } from '@hcengineering/model-board'
 import { hrOperation } from '@hcengineering/model-hr'
 import { bitrixOperation } from '@hcengineering/model-bitrix'
 import { calendarOperation } from '@hcengineering/model-calendar'
@@ -59,7 +58,6 @@ export const migrateOperations: [string, MigrateOperation][] = [
   ['tags', tagsOperation],
   ['setting', settingOperation],
   ['tracker', trackerOperation],
-  ['board', boardOperation],
   ['hr', hrOperation],
   ['bitrix', bitrixOperation],
   ['inventiry', inventoryOperation],
