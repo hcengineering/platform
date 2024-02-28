@@ -862,10 +862,7 @@ export async function getSessionLoginInfo (): Promise<LoginInfo | WorkspaceLogin
   }
 
   try {
-    const response = await fetch(concatLink(accountsUrl, '/auth'), {
-      method: 'GET',
-      credentials: 'include'
-    })
+    const response = await fetch(concatLink(accountsUrl, '/auth'))
     const result = await response.json()
     return result
   } catch (err: any) {
@@ -888,5 +885,28 @@ export async function getProviders (): Promise<string[]> {
   } catch (err: any) {
     Analytics.handleError(err)
     return []
+  }
+}
+
+export async function loginWithProvider (provider: string, inviteId?: string | null): Promise<void> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  let path = `/auth/${provider}`
+
+  if (inviteId != null) {
+    path += `?inviteId=${inviteId}`
+  }
+
+  try {
+    const response = await fetch(concatLink(accountsUrl, path))
+    Analytics.handleEvent(`Login with ${provider}`)
+    const result = await response.json()
+    return result
+  } catch (err: any) {
+    Analytics.handleError(err)
   }
 }

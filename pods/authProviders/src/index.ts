@@ -1,10 +1,11 @@
 import Koa from 'koa'
 import passport from 'koa-passport'
 import Router from 'koa-router'
-import session from 'koa-session'
 import { Db } from 'mongodb'
-import { registerGithub } from './github'
 import { registerGoogle } from './google'
+import session from 'koa-session'
+import { concatLink } from '@hcengineering/core'
+import { registerGithub } from './github'
 
 export type Passport = typeof passport
 
@@ -63,8 +64,10 @@ export function registerProviders (
 
   router.get('auth', '/auth', (ctx) => {
     if (ctx.session?.loginInfo != null) {
-      ctx.body = JSON.stringify(ctx.session.loginInfo)
+      ctx.body = JSON.stringify(ctx.session?.loginInfo)
+      return
     }
+    ctx.redirect(concatLink(frontUrl, '/login'))
   })
 
   router.get('providers', '/providers', (ctx) => {
