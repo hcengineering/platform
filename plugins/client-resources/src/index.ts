@@ -75,7 +75,7 @@ export default async () => {
             return connect(url.href, upgradeHandler, onUpgrade, onUnauthorized, onConnect)
           },
           filterModel ? [...getPlugins(), ...(getMetadata(clientPlugin.metadata.ExtraPlugins) ?? [])] : undefined,
-          createModelPersistence(token)
+          createModelPersistence(getWSFromToken(token))
         )
         // Check if we had dev hook for client.
         client = hookClient(client)
@@ -84,7 +84,7 @@ export default async () => {
     }
   }
 }
-function createModelPersistence (token: string): TxPersistenceStore | undefined {
+function createModelPersistence (workspace: string): TxPersistenceStore | undefined {
   let dbRequest: IDBOpenDBRequest | undefined
   let dbPromise: Promise<IDBDatabase | undefined> = Promise.resolve(undefined)
 
@@ -111,7 +111,7 @@ function createModelPersistence (token: string): TxPersistenceStore | undefined 
         const transaction = db.transaction('model', 'readwrite') // (1)
         const models = transaction.objectStore('model') // (2)
         const model = await new Promise<{ id: string, model: LoadModelResponse } | undefined>((resolve) => {
-          const storedValue: IDBRequest<{ id: string, model: LoadModelResponse }> = models.get(token)
+          const storedValue: IDBRequest<{ id: string, model: LoadModelResponse }> = models.get(workspace)
           storedValue.onsuccess = function () {
             resolve(storedValue.result)
           }
@@ -140,7 +140,7 @@ function createModelPersistence (token: string): TxPersistenceStore | undefined 
       if (db !== undefined) {
         const transaction = db.transaction('model', 'readwrite') // (1)
         const models = transaction.objectStore('model') // (2)
-        models.put({ id: token, model })
+        models.put({ id: workspace, model })
       }
     }
   }
@@ -162,4 +162,16 @@ async function hookClient (client: Promise<AccountClient>): Promise<AccountClien
     })
   }
   return await client
+}
+
+function getWSFromToken (token: string): string {
+  const parts = token.split('.')
+
+  const payload = parts[1]
+
+  const decodedPayload = atob(payload)
+
+  const parsedPayload = JSON.parse(decodedPayload)
+
+  return parsedPayload.workspace
 }

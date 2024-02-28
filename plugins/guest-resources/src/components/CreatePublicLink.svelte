@@ -13,7 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc } from '@hcengineering/core'
+  import { Doc, Timestamp } from '@hcengineering/core'
+  import { PublicLink } from '@hcengineering/guest'
   import presentaion, {
     Card,
     MessageBox,
@@ -21,12 +22,11 @@
     createQuery,
     getClient
   } from '@hcengineering/presentation'
-  import guest from '../plugin'
-  import { Button, Loading, Location, showPopup } from '@hcengineering/ui'
-  import { getObjectLinkFragment } from '@hcengineering/view-resources'
+  import { Button, Loading, Location, showPopup, ticker } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { PublicLink } from '@hcengineering/guest'
+  import { getObjectLinkFragment } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
+  import guest from '../plugin'
 
   export let value: Doc
 
@@ -82,6 +82,8 @@
   function copy (): void {
     if (link?.url === undefined || link.url === '') return
     copyTextToClipboard(link.url)
+    copied = true
+    copiedTime = Date.now()
   }
 
   async function revoke (): Promise<void> {
@@ -103,6 +105,19 @@
   }
 
   $: revokable = link?.revokable ?? false
+
+  let copiedTime: Timestamp | undefined
+  let copied = false
+  $: checkLabel($ticker)
+
+  function checkLabel (now: number) {
+    if (copiedTime) {
+      if (copied && now - copiedTime > 1000) {
+        copied = false
+        copiedTime = undefined
+      }
+    }
+  }
 </script>
 
 <Card label={guest.string.PublicLink} canSave={true} okLabel={presentaion.string.Close} on:close okAction={close}>
@@ -114,6 +129,9 @@
   <svelte:fragment slot="buttons">
     {#if revokable}
       <Button label={guest.string.Revoke} kind={'dangerous'} size={'large'} on:click={revoke} />
+    {/if}
+    {#if link?.url !== undefined && link.url !== ''}
+      <Button label={copied ? guest.string.Copied : guest.string.Copy} size={'medium'} on:click={copy} />
     {/if}
   </svelte:fragment>
 </Card>
