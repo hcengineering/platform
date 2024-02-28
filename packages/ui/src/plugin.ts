@@ -71,6 +71,7 @@ export const uis = plugin(uiId, {
     Russian: '' as IntlString,
     Spanish: '' as IntlString,
     Portuguese: '' as IntlString,
+    Korean: '' as IntlString,
     MinutesBefore: '' as IntlString,
     HoursBefore: '' as IntlString,
     DaysBefore: '' as IntlString,

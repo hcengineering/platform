@@ -28,7 +28,8 @@
     { id: 'en', label: ui.string.English, logo: '&#x1F1FA;&#x1F1F8;' },
     { id: 'pt', label: ui.string.Portuguese, logo: '&#x1F1F5;&#x1F1F9;' },
     { id: 'es', label: ui.string.Spanish, logo: '&#x1F1EA;&#x1F1F8;' },
-    { id: 'ru', label: ui.string.Russian, logo: '&#x1F1F7;&#x1F1FA;' }
+    { id: 'ru', label: ui.string.Russian, logo: '&#x1F1F7;&#x1F1FA;' },
+    { id: 'ko', label: ui.string.Korean, logo: '&#x1F1F0;&#x1F1F7;' }
   ].filter((lang) => uiLangs.has(lang.id))
   if (langs.findIndex((l) => l.id === currentLanguage) < 0 && langs.length !== 0) {
     setLanguage(langs[0].id)

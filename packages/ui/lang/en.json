@@ -48,6 +48,7 @@
     "DueDatePopupOverdueDescription": "{value, plural, =1 {1 day overdue} other {# days overdue}}",
     "English": "English",
     "Russian": "Russian",
+    "Korean": "Korean",
     "MinutesBefore": "{minutes, plural, =1 {a minute before} other {# minutes before}}",
     "HoursBefore": "{hours, plural, =1 {an hour before} other {# hours before}}",
     "DaysBefore": "{days, plural, =1 {a day before} other {# days before}}",

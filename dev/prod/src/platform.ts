@@ -164,7 +164,7 @@ export async function configurePlatform() {
   setMetadata(uiPlugin.metadata.SearchPopup, view.component.ActionsPopup)
 
   setMetadata(contactPlugin.metadata.LastNameFirst, config.LAST_NAME_FIRST === 'true' ?? false)
-  const languages = config.LANGUAGES ? (config.LANGUAGES as string).split(',').map((l) => l.trim()) : ['en', 'ru', 'es', 'pt']
+  const languages = config.LANGUAGES ? (config.LANGUAGES as string).split(',').map((l) => l.trim()) : ['en', 'ru', 'es', 'pt', 'ko']
 
   setMetadata(uiPlugin.metadata.Languages, languages)
   setMetadata(

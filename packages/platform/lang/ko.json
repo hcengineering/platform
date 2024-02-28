@@ -1,0 +1,23 @@
+{
+  "status": {
+    "LoadingPlugin": "플러그인 {plugin}을(를) 로드 중...",
+    "UnknownError": "에러: {message}",
+    "InvalidId": "유효하지 않은 아이디 {id}",
+    "BadRequest": "잘못된 요청",
+    "Forbidden": "제한됨",
+    "ExpiredLink": "이 초대 링크는 만료되었습니다.",
+    "Unauthorized": "허가되지 않음",
+    "UnknownMethod": "알려지지 않은 요청: {method}",
+    "InternalServerError": "서버 내부 장애",
+    "MaintenanceWarning": "{time, plural, =1 {1분} other {# 분}} 내로 서버 점검이 예정되어 있습니다.",
+    "AccountNotFound": "계정 없음",
+    "AccountNotConfirmed": "계정이 확인되지 않았습니다",
+    "WorkspaceNotFound": "작업 공간을 찾을 수 없습니다",
+    "InvalidPassword": "비밀번호가 틀렸습니다",
+    "AccountAlreadyExists": "계정이 이미 존재합니다",
+    "WorkspaceRateLimit": "잠시 후에 다시 시도해 주세요",
+    "AccountAlreadyConfirmed": "계정이 이미 확인되었습니다",
+    "WorkspaceAlreadyExists": "작업 공간이 이미 존재합니다",
+    "ProductIdMismatch": "제품 아이디가 일치하지 않습니다"
+  }
+}
