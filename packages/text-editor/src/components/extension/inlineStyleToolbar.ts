@@ -1,43 +1,15 @@
 import { Extension, isTextSelection } from '@tiptap/core'
 import { type BubbleMenuOptions } from '@tiptap/extension-bubble-menu'
-import { Plugin, PluginKey } from '@tiptap/pm/state'
+import { PluginKey } from '@tiptap/pm/state'
 import { InlinePopupExtension } from './inlinePopup'
 
 export type InlineStyleToolbarOptions = BubbleMenuOptions & {
   isSupported: () => boolean
-  isSelectionOnly?: () => boolean
+  canShowWithoutSelection?: boolean
 }
 
-export interface InlineStyleToolbarStorage {
-  canShowWithoutSelection: boolean
-}
-
-export const InlineStyleToolbarExtension = Extension.create<InlineStyleToolbarOptions, InlineStyleToolbarStorage>({
+export const InlineStyleToolbarExtension = Extension.create<InlineStyleToolbarOptions>({
   pluginKey: new PluginKey('inline-style-toolbar'),
-  addProseMirrorPlugins () {
-    const storage = this.storage
-
-    const plugins = [
-      ...(this.parent?.() ?? []),
-      new Plugin({
-        key: new PluginKey('inline-style-toolbar-click-plugin'),
-        props: {
-          handleClickOn (view, pos, node, nodePos, event, direct) {
-            if (direct) {
-              storage.canShowWithoutSelection = node.type.name !== 'image'
-            }
-          }
-        }
-      })
-    ]
-
-    return plugins
-  },
-  addStorage () {
-    return {
-      canShowWithoutSelection: false
-    }
-  },
   addExtensions () {
     const options: InlineStyleToolbarOptions = this.options
 
@@ -80,18 +52,12 @@ export const InlineStyleToolbarExtension = Extension.create<InlineStyleToolbarOp
           // So we check also for an empty text size.
           const isEmptyTextBlock = doc.textBetween(from, to).length === 0 && textSelection
           if (empty || isEmptyTextBlock) {
-            return this.storage.canShowWithoutSelection
+            return this.options.canShowWithoutSelection ?? false
           }
 
           return textSelection
         }
       })
     ]
-  },
-  onSelectionUpdate () {
-    this.storage.canShowWithoutSelection = false
-  },
-  onUpdate () {
-    this.storage.canShowWithoutSelection = false
   }
 })
