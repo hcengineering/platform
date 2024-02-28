@@ -27,7 +27,7 @@
   } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
   import { taskTypeStore, typeStore } from '@hcengineering/task-resources'
-  import { Issue, Project } from '@hcengineering/tracker'
+  import { Issue } from '@hcengineering/tracker'
   import {
     AnyComponent,
     Button,
@@ -37,7 +37,6 @@
     IconMixin,
     IconMoreH,
     Label,
-    Spinner,
     createFocusManager,
     getCurrentResolvedLocation,
     navigate
@@ -205,12 +204,15 @@
       {#if (projectType?.tasks.length ?? 0) > 1 && taskType !== undefined}
         ({taskType.name})
       {/if}
-      <ComponentExtensions extension={tracker.extensions.EditIssueTitle} props={{ size: 'medium', value: issue }} />
+      <ComponentExtensions
+        extension={tracker.extensions.EditIssueTitle}
+        props={{ size: 'medium', value: issue, readonly }}
+      />
     </svelte:fragment>
     <svelte:fragment slot="pre-utils">
       <ComponentExtensions
         extension={tracker.extensions.EditIssueHeader}
-        props={{ size: 'medium', kind: 'ghost', space: issue.space }}
+        props={{ size: 'medium', kind: 'ghost', space: issue.space, readonly }}
       />
       {#if saved}
         <Label label={presentation.string.Saved} />
