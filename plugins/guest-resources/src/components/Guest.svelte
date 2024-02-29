@@ -56,6 +56,9 @@
     const link = await client.findOne(guest.class.PublicLink, { _id: decoded.linkId })
     if (link == null) return false
     restrictionStore.set(link.restrictions)
+    const mergedLoc = link.location
+    mergedLoc.path[0] = loc.path[0]
+    mergedLoc.path[1] = loc.path[1]
     await doSyncLoc(link.location)
     return true
   }
