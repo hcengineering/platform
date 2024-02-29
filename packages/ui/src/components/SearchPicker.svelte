@@ -29,14 +29,10 @@
   const dispatch = createEventDispatcher()
 
   let inputRef: HTMLInputElement | undefined
-  let itemsRef: Chip[] = []
+  const itemsRef: Chip[] = []
 
   function handleBackspace (event: KeyboardEvent) {
-    if (
-      event.key === 'Backspace' &&
-      value === '' &&
-      items.length > 0
-    ) {
+    if (event.key === 'Backspace' && value === '' && items.length > 0) {
       itemsRef[items.length - 1].focus()
     }
     dispatch('keydown', event)
@@ -59,10 +55,7 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<div
-  class="flex flex-gap-1 flex-wrap search-picker"
-  on:click={() => inputRef?.focus()}
->
+<div class="flex flex-gap-1 flex-wrap search-picker" on:click={() => inputRef?.focus()}>
   {#each items as item, i}
     <Chip
       bind:this={itemsRef[i]}

@@ -54,9 +54,9 @@
     color: var(--tag-on-accent-PorpoiseText);
     background-color: var(--global-accent-BackgroundColor);
     border-radius: var(--small-BorderRadius);
-    
+
     &:after {
-      content: "";
+      content: '';
       position: absolute;
       inset: 0;
       border-radius: var(--small-BorderRadius);
