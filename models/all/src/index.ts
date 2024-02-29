@@ -24,6 +24,7 @@ import calendar, { calendarId, createModel as calendarModel } from '@hcengineeri
 import chunter, { chunterId, createModel as chunterModel } from '@hcengineering/model-chunter'
 import contact, { contactId, createModel as contactModel } from '@hcengineering/model-contact'
 import { createModel as coreModel } from '@hcengineering/model-core'
+import document, { documentId, createModel as documentModel } from '@hcengineering/model-document'
 import gmail, { gmailId, createModel as gmailModel } from '@hcengineering/model-gmail'
 import hr, { hrId, createModel as hrModel } from '@hcengineering/model-hr'
 import inventory, { inventoryId, createModel as inventoryModel } from '@hcengineering/model-inventory'
@@ -43,6 +44,7 @@ import { serverCalendarId, createModel as serverCalendarModel } from '@hcenginee
 import { serverChunterId, createModel as serverChunterModel } from '@hcengineering/model-server-chunter'
 import { serverContactId, createModel as serverContactModel } from '@hcengineering/model-server-contact'
 import { serverCoreId, createModel as serverCoreModel } from '@hcengineering/model-server-core'
+import { serverDocumentId, createModel as serverDocumentModel } from '@hcengineering/model-server-document'
 import { serverGmailId, createModel as serverGmailModel } from '@hcengineering/model-server-gmail'
 import { serverHrId, createModel as serverHrModel } from '@hcengineering/model-server-hr'
 import { serverInventoryId, createModel as serverInventoryModel } from '@hcengineering/model-server-inventory'
@@ -243,6 +245,18 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       }
     ],
     [
+      documentModel,
+      documentId,
+      {
+        label: document.string.ConfigLabel,
+        description: document.string.ConfigDescription,
+        enabled: true,
+        beta: true,
+        icon: document.icon.DocumentApplication,
+        classFilter: defaultFilter
+      }
+    ],
+    [
       boardModel,
       boardId,
       {
@@ -302,6 +316,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [serverActivityModel, serverActivityId],
     [serverTranslate, translateId],
     [serverOpenAI, openAIId],
+    [serverDocumentModel, serverDocumentId],
     [serverGuestModel, serverGuestId]
   ]
 
