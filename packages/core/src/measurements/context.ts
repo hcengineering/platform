@@ -23,25 +23,35 @@ export class MeasureMetricsContext implements MeasureContext {
     this.name = name
     this.params = params
     this.metrics = metrics
-    this.done = measure(metrics, params, fullParams)
+    this.done = measure(metrics, params, fullParams, (spend) => {
+      this.logger.logOperation(this.name, spend, { ...params, ...fullParams })
+    })
 
     this.logger = logger ?? {
       info: (msg, args) => {
-        console.info(msg, ...args)
+        console.info(msg, ...Object.entries(args ?? {}).map((it) => `${it[0]}=${JSON.stringify(it[1])}`))
       },
       error: (msg, args) => {
-        console.error(msg, ...args)
-      }
+        console.error(msg, ...Object.entries(args ?? {}).map((it) => `${it[0]}=${JSON.stringify(it[1])}`))
+      },
+      close: async () => {},
+      logOperation: (operation, time, params) => {}
     }
   }
 
   measure (name: string, value: number): void {
-    const c = new MeasureMetricsContext('#' + name, {}, {}, childMetrics(this.metrics, ['#' + name]))
+    const c = new MeasureMetricsContext('#' + name, {}, {}, childMetrics(this.metrics, ['#' + name]), this.logger)
     c.done(value)
   }
 
   newChild (name: string, params: ParamsType, fullParams?: FullParamsType, logger?: MeasureLogger): MeasureContext {
-    return new MeasureMetricsContext(name, params, fullParams ?? {}, childMetrics(this.metrics, [name]), logger)
+    return new MeasureMetricsContext(
+      name,
+      params,
+      fullParams ?? {},
+      childMetrics(this.metrics, [name]),
+      logger ?? this.logger
+    )
   }
 
   async with<T>(
@@ -50,7 +60,7 @@ export class MeasureMetricsContext implements MeasureContext {
     op: (ctx: MeasureContext) => T | Promise<T>,
     fullParams?: ParamsType
   ): Promise<T> {
-    const c = this.newChild(name, params, fullParams)
+    const c = this.newChild(name, params, fullParams, this.logger)
     try {
       let value = op(c)
       if (value instanceof Promise) {
@@ -64,12 +74,24 @@ export class MeasureMetricsContext implements MeasureContext {
     }
   }
 
-  async error (message: string, ...args: any[]): Promise<void> {
-    this.logger.error(message, args)
+  async withLog<T>(
+    name: string,
+    params: ParamsType,
+    op: (ctx: MeasureContext) => T | Promise<T>,
+    fullParams?: ParamsType
+  ): Promise<T> {
+    const st = Date.now()
+    const r = await this.with(name, params, op, fullParams)
+    this.logger.logOperation(name, Date.now() - st, { ...params, ...fullParams })
+    return r
   }
 
-  async info (message: string, ...args: any[]): Promise<void> {
-    this.logger.info(message, args)
+  async error (message: string, args?: Record<string, any>): Promise<void> {
+    this.logger.error(message, { ...this.params, ...args })
+  }
+
+  async info (message: string, args?: Record<string, any>): Promise<void> {
+    this.logger.info(message, { ...this.params, ...args })
   }
 
   end (): void {
