@@ -22,6 +22,7 @@ import calendar, { calendarId } from '@hcengineering/calendar'
 import { chunterId } from '@hcengineering/chunter'
 import client, { clientId } from '@hcengineering/client'
 import contactPlugin, { contactId } from '@hcengineering/contact'
+import { documentId } from '@hcengineering/document'
 import gmail, { gmailId } from '@hcengineering/gmail'
 import guest, { guestId } from '@hcengineering/guest'
 import { hrId } from '@hcengineering/hr'
@@ -53,6 +54,7 @@ import '@hcengineering/board-assets'
 import '@hcengineering/calendar-assets'
 import '@hcengineering/chunter-assets'
 import '@hcengineering/contact-assets'
+import '@hcengineering/document-assets'
 import '@hcengineering/gmail-assets'
 import '@hcengineering/guest-assets'
 import '@hcengineering/hr-assets'
@@ -132,6 +134,7 @@ function configureI18n(): void {
    addStringsLoader(trackerId, async (lang: string) => await import(`@hcengineering/tracker-assets/lang/${lang}.json`))
    addStringsLoader(viewId, async (lang: string) => await import(`@hcengineering/view-assets/lang/${lang}.json`))
    addStringsLoader(workbenchId, async (lang: string) => await import(`@hcengineering/workbench-assets/lang/${lang}.json`))
+   addStringsLoader(documentId, async (lang: string) => await import(`@hcengineering/document-assets/lang/${lang}.json`))
    addStringsLoader(guestId, async (lang: string) => await import(`@hcengineering/guest-assets/lang/${lang}.json`))
 }
 
@@ -208,6 +211,7 @@ export async function configurePlatform() {
   addLocation(bitrixId, () => import(/* webpackChunkName: "bitrix" */ '@hcengineering/bitrix-resources'))
   addLocation(requestId, () => import(/* webpackChunkName: "request" */ '@hcengineering/request-resources'))
   addLocation(supportId, () => import(/* webpackChunkName: "support" */ '@hcengineering/support-resources'))
+  addLocation(documentId, () => import(/* webpackChunkName: "document" */ '@hcengineering/document-resources'))
   addLocation(guestId, () => import(/* webpackChunkName: "guest" */ '@hcengineering/guest-resources'))
 
   setMetadata(client.metadata.FilterModel, true)
