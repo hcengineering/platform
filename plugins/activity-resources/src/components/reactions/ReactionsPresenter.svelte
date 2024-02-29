@@ -30,14 +30,16 @@
   $: hasReactions = object?.reactions && object.reactions > 0
 
   $: if (object && hasReactions) {
-    reactionsQuery.query(activity.class.Reaction, { attachedTo: object._id }, (res?: Reaction[]) => {
-      reactions = res || []
+    reactionsQuery.query(activity.class.Reaction, { attachedTo: object._id }, (res: Reaction[]) => {
+      reactions = res
     })
+  } else {
+    reactionsQuery.unsubscribe()
   }
 
   const handleClick = (ev: CustomEvent) => {
     if (readonly) return
-    updateDocReactions(client, reactions, object, ev.detail)
+    void updateDocReactions(client, reactions, object, ev.detail)
   }
 </script>
 
