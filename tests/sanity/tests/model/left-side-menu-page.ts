@@ -7,6 +7,7 @@ export class LeftSideMenuPage extends CommonPage {
   readonly buttonContacts: Locator
   readonly buttonTracker: Locator
   readonly buttonNotification: Locator
+  readonly buttonDocuments: Locator
 
   constructor (page: Page) {
     super()
@@ -15,5 +16,6 @@ export class LeftSideMenuPage extends CommonPage {
     this.buttonContacts = page.locator('button[id$="Contacts"]')
     this.buttonTracker = page.locator('button[id$="TrackerApplication"]')
     this.buttonNotification = page.locator('button[id$="Inbox"]')
+    this.buttonDocuments = page.locator('button[id$="DocumentApplication"]')
   }
 }
