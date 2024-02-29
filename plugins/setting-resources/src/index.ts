@@ -40,6 +40,7 @@ import NumberTypeEditor from './components/typeEditors/NumberTypeEditor.svelte'
 import ArrayEditor from './components/typeEditors/ArrayEditor.svelte'
 import RefEditor from './components/typeEditors/RefEditor.svelte'
 import StringTypeEditor from './components/typeEditors/StringTypeEditor.svelte'
+import WorkspaceSetting from './components/WorkspaceSetting.svelte'
 import WorkspaceSettings from './components/WorkspaceSettings.svelte'
 import InviteSetting from './components/InviteSetting.svelte'
 import Configure from './components/Configure.svelte'
@@ -84,6 +85,7 @@ export default async (): Promise<Resources> => ({
     Settings,
     Profile,
     Password,
+    WorkspaceSetting,
     WorkspaceSettings,
     Integrations,
     Support,
