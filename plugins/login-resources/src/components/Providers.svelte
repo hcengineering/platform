@@ -1,7 +1,10 @@
 <script lang="ts">
+  import { concatLink } from '@hcengineering/core'
+  import { getMetadata } from '@hcengineering/platform'
   import { AnySvelteComponent, Button, Grid, getCurrentLocation } from '@hcengineering/ui'
   import { onMount } from 'svelte'
-  import { getProviders, loginWithProvider } from '../utils'
+  import login from '../plugin'
+  import { getProviders } from '../utils'
   import Github from './providers/Github.svelte'
   import Google from './providers/Google.svelte'
 
@@ -34,22 +37,28 @@
   }
 
   const location = getCurrentLocation()
+
+  function getLink (provider: Provider): string {
+    const inviteId = location.query?.inviteId
+    const accountsUrl = getMetadata(login.metadata.AccountsUrl) ?? ''
+    let path = `/auth/${provider.name}`
+    if (inviteId != null) {
+      path += `?inviteId=${inviteId}`
+    }
+    return concatLink(accountsUrl, path)
+  }
 </script>
 
 <div class="container">
   <Grid column={getColumnsCount(enabledProviders.length)} columnGap={1} rowGap={1} alignItems={'center'}>
     {#each enabledProviders as provider}
-      <Button
-        kind={'contrast'}
-        shape={'round2'}
-        size={'x-large'}
-        width="100%"
-        on:click={() => loginWithProvider(provider.name, location.query?.inviteId)}
-      >
-        <svelte:fragment slot="content">
-          <svelte:component this={provider.component} />
-        </svelte:fragment>
-      </Button>
+      <a href={getLink(provider)} target="_blank" rel="noopener noreferrer">
+        <Button kind={'contrast'} shape={'round2'} size={'x-large'} width="100%" stopPropagation={false}>
+          <svelte:fragment slot="content">
+            <svelte:component this={provider.component} />
+          </svelte:fragment>
+        </Button>
+      </a>
     {/each}
   </Grid>
 </div>
