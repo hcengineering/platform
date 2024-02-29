@@ -87,6 +87,8 @@ export class TRequestPresenter extends TClass implements RequestPresenter {
 export function createModel (builder: Builder): void {
   builder.createModel(TRequest, TRequestDecisionComment, TRequestPresenter)
 
+  builder.mixin(request.class.Request, core.class.Class, activity.mixin.IgnoreActivity, {})
+
   builder.mixin(request.class.Request, core.class.Class, view.mixin.ObjectEditor, {
     editor: request.component.EditRequest
   })

@@ -23,6 +23,6 @@ export { serverRequestId } from '@hcengineering/server-request'
 
 export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverRequest.trigger.OnRequestUpdate
+    trigger: serverRequest.trigger.OnRequest
   })
 }

@@ -540,7 +540,7 @@ export async function pushActivityInboxNotifications (
   }
 }
 
-async function getNotificationTxes (
+export async function getNotificationTxes (
   control: TriggerControl,
   object: Doc,
   tx: TxCUD<Doc>,
@@ -608,6 +608,12 @@ export async function createCollabDocInfo (
     return res
   }
 
+  const docMessages = activityMessage.filter((message) => message.attachedTo === object._id)
+
+  if (docMessages.length === 0) {
+    return res
+  }
+
   const targets = new Set(collaborators)
 
   // user is not collaborator of himself, but we should notify user of changes related to users account (mentions, comments etc)
@@ -619,7 +625,7 @@ export async function createCollabDocInfo (
   }
 
   const notifyContexts = await control.findAll(notification.class.DocNotifyContext, {
-    attachedTo: { $in: activityMessage.map(({ attachedTo }) => attachedTo) }
+    attachedTo: object._id
   })
 
   for (const target of targets) {
@@ -633,7 +639,7 @@ export async function createCollabDocInfo (
         isOwn,
         isSpace,
         notifyContexts,
-        activityMessage,
+        docMessages,
         shouldUpdateTimestamp
       )
     )
@@ -800,15 +806,6 @@ async function collectionCollabDoc (
     return res
   }
 
-  const isNotificationPushed = (res as TxCUD<Doc>[]).some(
-    ({ _class, objectClass }) =>
-      _class === core.class.TxCreateDoc && objectClass === notification.class.ActivityInboxNotification
-  )
-
-  if (isNotificationPushed) {
-    return res
-  }
-
   const mixin = control.hierarchy.classHierarchyMixin(tx.objectClass, notification.mixin.ClassCollaborators)
 
   if (mixin === undefined) {
@@ -821,18 +818,10 @@ async function collectionCollabDoc (
     return res
   }
 
-  if (control.hierarchy.hasMixin(doc, notification.mixin.Collaborators)) {
-    const collaborators = control.hierarchy.as(doc, notification.mixin.Collaborators)
+  const collaborators = await getCollaborators(doc, control, tx, res)
 
-    res = res.concat(
-      await createCollabDocInfo(collaborators.collaborators, control, actualTx, tx, doc, activityMessages, false)
-    )
-  } else {
-    const collaborators = await getDocCollaborators(doc, mixin, control)
+  res = res.concat(await createCollabDocInfo(collaborators, control, actualTx, tx, doc, activityMessages, false))
 
-    res.push(getMixinTx(tx, control, collaborators))
-    res = res.concat(await createCollabDocInfo(collaborators, control, actualTx, tx, doc, activityMessages, false))
-  }
   return res
 }
 
@@ -1105,6 +1094,28 @@ async function OnActivityNotificationViewed (
   return reactionNotifications.map(({ _id, _class, space }) =>
     control.txFactory.createTxUpdateDoc(_class, space, _id, { isViewed: true })
   )
+}
+
+export async function getCollaborators (
+  doc: Doc,
+  control: TriggerControl,
+  tx: TxCUD<Doc>,
+  res: Tx[]
+): Promise<Ref<Account>[]> {
+  const mixin = control.hierarchy.classHierarchyMixin(doc._class, notification.mixin.ClassCollaborators)
+
+  if (mixin === undefined) {
+    return []
+  }
+
+  if (control.hierarchy.hasMixin(doc, notification.mixin.Collaborators)) {
+    return control.hierarchy.as(doc, notification.mixin.Collaborators).collaborators
+  } else {
+    const collaborators = await getDocCollaborators(doc, mixin, control)
+
+    res.push(getMixinTx(tx, control, collaborators))
+    return collaborators
+  }
 }
 
 export * from './types'
