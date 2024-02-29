@@ -584,6 +584,15 @@ export async function createCollabDocInfo (
   }
 
   const targets = new Set(collaborators)
+
+  // user is not collaborator of himself, but we should notify user of changes related to users account (mentions, comments etc)
+  if (control.hierarchy.isDerived(object._class, contact.class.Person)) {
+    const acc = await getPersonAccount(object._id as Ref<Person>, control)
+    if (acc !== undefined) {
+      targets.add(acc._id)
+    }
+  }
+
   const notifyContexts = await control.findAll(notification.class.DocNotifyContext, {
     attachedTo: { $in: activityMessage.map(({ attachedTo }) => attachedTo) }
   })
