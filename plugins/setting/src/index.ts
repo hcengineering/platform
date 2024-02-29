@@ -100,6 +100,13 @@ export interface InviteSettings extends Configuration {
 /**
  * @public
  */
+export interface WorkspaceSetting extends Doc {
+  icon?: string
+}
+
+/**
+ * @public
+ */
 export const settingId = 'setting' as Plugin
 
 export default plugin(settingId, {
@@ -114,7 +121,8 @@ export default plugin(settingId, {
     Terms: '' as Ref<Doc>,
     ClassSetting: '' as Ref<Doc>,
     Owners: '' as Ref<Doc>,
-    InviteSettings: '' as Ref<Doc>
+    InviteSettings: '' as Ref<Doc>,
+    WorkspaceSetting: '' as Ref<Doc>
   },
   mixin: {
     Editable: '' as Ref<Mixin<Editable>>,
@@ -128,12 +136,14 @@ export default plugin(settingId, {
     WorkspaceSettingCategory: '' as Ref<Class<SettingsCategory>>,
     Integration: '' as Ref<Class<Integration>>,
     IntegrationType: '' as Ref<Class<IntegrationType>>,
-    InviteSettings: '' as Ref<Class<InviteSettings>>
+    InviteSettings: '' as Ref<Class<InviteSettings>>,
+    WorkspaceSetting: '' as Ref<Class<WorkspaceSetting>>
   },
   component: {
     Settings: '' as AnyComponent,
     Profile: '' as AnyComponent,
     Password: '' as AnyComponent,
+    WorkspaceSetting: '' as AnyComponent,
     WorkspaceSettings: '' as AnyComponent,
     Integrations: '' as AnyComponent,
     Support: '' as AnyComponent,
@@ -145,6 +155,7 @@ export default plugin(settingId, {
     Settings: '' as IntlString,
     Setting: '' as IntlString,
     WorkspaceSettings: '' as IntlString,
+    Branding: '' as IntlString,
     Integrations: '' as IntlString,
     Support: '' as IntlString,
     Privacy: '' as IntlString,

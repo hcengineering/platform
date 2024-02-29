@@ -35,6 +35,8 @@
   export let direct: Blob | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let disabled: boolean = false
+  export let imageOnly: boolean = false
+  export let lessCrop: boolean = false
 
   $: [schema, uri] = avatar?.split('://') || []
 
@@ -91,6 +93,8 @@
         name,
         file: direct,
         icon,
+        imageOnly,
+        lessCrop,
         onSubmit: handlePopupSubmit
       })
     }
