@@ -1,0 +1,63 @@
+{
+  "string": {
+    "CreateDocument": "Создать документ",
+    "Documents": "Документы",
+    "CreateAnVersion": "Создать новую версию",
+    "Document": "Документ",
+    "DocumentNamePlaceholder": "Без имени",
+    "Name": "Имя",
+    "Cancel": "Отмена",
+    "Version": "Версия",
+    "SearchDocument": "Найти документ...",
+    "Snapshot": "Снимок",
+    "ParentDocument": "Родительский документ",
+    "ChildDocument": "Дочерний документ",
+    "NoVersions": "Версии не определены",
+    "DocumentApplication": "Документы",
+    "MyDocuments": "Мои документы",
+    "Library": "Библиотека",
+    "Teamspace": "Пространство",
+    "Teamspaces": "Пространства",
+    "Labels": "Метки",
+    "AddLabel": "Добавить метку",
+    "Authors": "Авторы",
+    "Backlinks": "Упоминания",
+    "History": "История изменений",
+    "DescriptionPlaceholder": "введите для деталей...",
+    "CreateTeamspace": "Создать пространство",
+    "EditTeamspace": "Редактировать пространство",
+    "NewTeamspace": "Новое пространство",
+    "TeamspaceTitle": "Название пространства",
+    "TeamspaceTitlePlaceholder": "Новое пространство",
+    "TeamspaceDescriptionPlaceholder": "Добавьте описание ...",
+    "ChooseIcon": "Выбрать иконку",
+    "TeamspaceMembers": "Участники",
+    "NoParentDocument": "Нет родительского документа",
+    "NoBacklinks": "Нет упоминаний",
+    "NoHistory": "Нет истории изменений",
+    "Untitled": "Без имени",
+
+    "Description": "Описание",
+
+    "CopyDocumentUrl": "Копировать URL-адрес документа в буфер обмена",
+
+    "ViewMode": "Просмотр",
+    "EditMode": "Редактирование",
+    "SuggestMode": "Комментирование",
+
+    "CompareTo": "Сравнить с...",
+    "Star": "Добавить в закладки",
+    "Unstar": "Удалить из закладок",
+
+    "ConfigLabel": "Документы",
+    "ConfigDescription": "Расширение по работе с текстовыми документами",
+
+    "UnassignToDo": "Отменить назначение Todo",
+    "UnassignToDoConfirm": "Вы хотите отменить назначение Todo? Todo будет удалена из планирования исполнителя.",
+    "ReassignToDo": "Изменить исполнителя Todo",
+    "ReassignToDoConfirm": "Вы хотите изменить исполнителя Todo? Todo будет удалена из планирования текущего исполнителя.",
+    "Docs": "Документы",
+    "Icon": "Иконка",
+    "Color": "Цвет"
+  }
+}

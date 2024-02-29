@@ -96,6 +96,8 @@
     "@hcengineering/server-view-resources": "^0.6.0",
     "@hcengineering/server-activity": "^0.6.0",
     "@hcengineering/server-activity-resources": "^0.6.0",
+    "@hcengineering/server-document": "^0.6.0",
+    "@hcengineering/server-document-resources": "^0.6.0",
     "@hcengineering/server-guest": "^0.6.0",
     "@hcengineering/server-guest-resources": "^0.6.0",
     "@hcengineering/server-token": "^0.6.7",
@@ -128,6 +130,7 @@
     "@hcengineering/hr-assets": "^0.6.12",
     "@hcengineering/bitrix-assets": "^0.6.0",
     "@hcengineering/request-assets": "^0.6.0",
+    "@hcengineering/document-assets": "^0.6.0",
     "@hcengineering/login": "^0.6.8",
     "@hcengineering/view": "^0.6.9",
     "@hcengineering/task": "^0.6.13",
@@ -152,6 +155,7 @@
     "@hcengineering/hr": "^0.6.12",
     "@hcengineering/bitrix": "^0.6.44",
     "@hcengineering/request": "^0.6.6",
-    "@hcengineering/support": "^0.6.1"
+    "@hcengineering/support": "^0.6.1",
+    "@hcengineering/document": "^0.6.0"
   }
 }

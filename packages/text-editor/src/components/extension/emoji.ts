@@ -67,7 +67,7 @@ export const EmojiExtension = Extension.create({
   addInputRules () {
     return Object.keys(emojiReplaceDict).map((pattern) => {
       return {
-        find: new RegExp(`(?:^|\\s)(${escapeRegExp(pattern)})`),
+        find: new RegExp(`(?:^|\\s)(${escapeRegExp(pattern)})$`),
         handler: ({ state, range, match, commands }) => {
           const $from = state.doc.resolve(range.from)
           if (!isValidEmojiPosition($from)) {

@@ -39,7 +39,7 @@
   let listSelection = 0
   let list: ListView
 
-  let selectedItems = new Set<Ref<Employee>>(selected)
+  $: selectedItems = new Set<Ref<Employee>>(selected)
 
   let persons: Employee[] = []
 

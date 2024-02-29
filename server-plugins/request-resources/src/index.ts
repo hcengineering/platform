@@ -13,18 +13,42 @@
 // limitations under the License.
 //
 
-import core, { Doc, Hierarchy, Tx, TxCollectionCUD, TxUpdateDoc } from '@hcengineering/core'
+import core, { Doc, Tx, TxCUD, TxCollectionCUD, TxCreateDoc, TxUpdateDoc, TxProcessor } from '@hcengineering/core'
 import request, { Request, RequestStatus } from '@hcengineering/request'
 import type { TriggerControl } from '@hcengineering/server-core'
+import { pushDocUpdateMessages } from '@hcengineering/server-activity-resources'
+import { DocUpdateMessage } from '@hcengineering/activity'
+import notification from '@hcengineering/notification'
+import { getNotificationTxes, getCollaborators } from '@hcengineering/server-notification-resources'
 
 /**
  * @public
  */
-export async function OnRequestUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+export async function OnRequest (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  if (tx._class !== core.class.TxCollectionCUD) {
+    return []
+  }
+
   const hierarchy = control.hierarchy
   const ptx = tx as TxCollectionCUD<Doc, Request>
-  if (!checkTx(ptx, hierarchy)) return []
-  const ctx = ptx.tx as TxUpdateDoc<Request>
+
+  if (!hierarchy.isDerived(ptx.tx.objectClass, request.class.Request)) {
+    return []
+  }
+
+  let res: Tx[] = []
+
+  res = res.concat(await getRequestNotificationTx(ptx, control))
+
+  if (ptx.tx._class === core.class.TxUpdateDoc) {
+    res = res.concat(await OnRequestUpdate(ptx, control))
+  }
+
+  return res
+}
+
+async function OnRequestUpdate (tx: TxCollectionCUD<Doc, Request>, control: TriggerControl): Promise<Tx[]> {
+  const ctx = tx.tx as TxUpdateDoc<Request>
   if (ctx.operations.$push?.approved === undefined) return []
   const request = (await control.findAll(ctx.objectClass, { _id: ctx.objectId }))[0]
   if (request.approved.length === request.requiredApprovesCount) {
@@ -33,9 +57,9 @@ export async function OnRequestUpdate (tx: Tx, control: TriggerControl): Promise
     })
     collectionTx.space = core.space.Tx
     const resTx = control.txFactory.createTxCollectionCUD(
-      ptx.objectClass,
-      ptx.objectId,
-      ptx.objectSpace,
+      tx.objectClass,
+      tx.objectId,
+      tx.objectSpace,
       'requests',
       collectionTx
     )
@@ -46,20 +70,59 @@ export async function OnRequestUpdate (tx: Tx, control: TriggerControl): Promise
   return []
 }
 
-function checkTx (ptx: TxCollectionCUD<Doc, Request>, hierarchy: Hierarchy): boolean {
-  if (ptx._class !== core.class.TxCollectionCUD) {
-    return false
+async function getRequest (tx: TxCUD<Request>, control: TriggerControl): Promise<Request | undefined> {
+  if (tx._class === core.class.TxCreateDoc) {
+    return TxProcessor.createDoc2Doc(tx as TxCreateDoc<Request>)
+  }
+  if (tx._class === core.class.TxRemoveDoc) {
+    return control.removedMap.get(tx.objectId) as Request
+  }
+  if (tx._class === core.class.TxUpdateDoc) {
+    return (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
   }
 
-  if (ptx.tx._class !== core.class.TxUpdateDoc || !hierarchy.isDerived(ptx.tx.objectClass, request.class.Request)) {
-    return false
+  return undefined
+}
+
+// We need request-specific logic to attach a activity message on request create/update to parent, but use request collaborators for notifications
+async function getRequestNotificationTx (tx: TxCollectionCUD<Doc, Request>, control: TriggerControl): Promise<Tx[]> {
+  const request = await getRequest(tx.tx, control)
+
+  if (request === undefined) return []
+
+  const doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0]
+
+  if (doc === undefined) return []
+
+  const res: Tx[] = []
+  const messagesTxes = await pushDocUpdateMessages(undefined, control, [], doc, tx)
+
+  if (messagesTxes.length === 0) return []
+
+  res.push(...messagesTxes)
+
+  const messages = messagesTxes.map((messageTx) =>
+    TxProcessor.createDoc2Doc(messageTx.tx as TxCreateDoc<DocUpdateMessage>)
+  )
+  const collaborators = await getCollaborators(request, control, tx.tx, res)
+
+  if (collaborators.length === 0) return res
+
+  const notifyContexts = await control.findAll(notification.class.DocNotifyContext, {
+    attachedTo: doc._id
+  })
+
+  for (const target of collaborators) {
+    const txes = await getNotificationTxes(control, request, tx.tx, tx, target, true, false, notifyContexts, messages)
+    res.push(...txes)
   }
-  return true
+
+  return res
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
-    OnRequestUpdate
+    OnRequest
   }
 })

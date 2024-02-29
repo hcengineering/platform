@@ -1,4 +1,4 @@
-import { MeasureContext, MeasureLogger, ParamType } from '@hcengineering/core'
+import { MeasureContext, MeasureLogger, ParamType, ParamsType } from '@hcengineering/core'
 import apm, { Agent, Span, Transaction } from 'elastic-apm-node'
 
 /**
@@ -37,11 +37,13 @@ export class APMMeasureContext implements MeasureContext {
     this.parent = parent
     this.logger = {
       info: (msg, args) => {
-        agent.logger.info(msg, args)
+        agent.logger.info({ message: msg, ...args })
       },
       error: (msg, args) => {
-        agent.logger.error(msg, args)
-      }
+        agent.logger.error({ message: msg, ...args })
+      },
+      logOperation (operation, time, params) {},
+      close: async () => {}
     }
     if (!(noTransaction ?? false)) {
       if (this.parent === undefined) {
@@ -63,8 +65,9 @@ export class APMMeasureContext implements MeasureContext {
 
   async with<T>(
     name: string,
-    params: Record<string, ParamType>,
-    op: (ctx: MeasureContext) => T | Promise<T>
+    params: ParamsType,
+    op: (ctx: MeasureContext) => T | Promise<T>,
+    fullParams?: ParamsType
   ): Promise<T> {
     const c = this.newChild(name, params)
     try {
@@ -78,6 +81,18 @@ export class APMMeasureContext implements MeasureContext {
       await c.error(err)
       throw err
     }
+  }
+
+  async withLog<T>(
+    name: string,
+    params: ParamsType,
+    op: (ctx: MeasureContext) => T | Promise<T>,
+    fullParams?: ParamsType
+  ): Promise<T> {
+    const st = Date.now()
+    const r = await this.with(name, params, op, fullParams)
+    this.logger.logOperation(name, Date.now() - st, { ...params, ...fullParams })
+    return r
   }
 
   async error (message: string, ...args: any[]): Promise<void> {
