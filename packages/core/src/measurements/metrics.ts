@@ -45,7 +45,12 @@ function getUpdatedTopResult (
  * Measure with tree expansion. Operation counter will be added only to leaf's.
  * @public
  */
-export function measure (metrics: Metrics, params: ParamsType, fullParams: FullParamsType = {}): () => void {
+export function measure (
+  metrics: Metrics,
+  params: ParamsType,
+  fullParams: FullParamsType = {},
+  endOp?: (spend: number) => void
+): () => void {
   const st = Date.now()
   return (value?: number) => {
     const ed = Date.now()
@@ -75,6 +80,7 @@ export function measure (metrics: Metrics, params: ParamsType, fullParams: FullP
     metrics.operations++
 
     metrics.topResult = getUpdatedTopResult(metrics.topResult, ed - st, fullParams)
+    endOp?.(ed - st)
   }
 }
 
