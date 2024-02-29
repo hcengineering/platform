@@ -27,6 +27,7 @@
   export let context: DocNotifyContext
   export let object: Doc | undefined
   export let filters: Ref<ActivityMessagesFilter>[] = []
+  export let isAsideOpened = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -70,6 +71,7 @@
     {selectedMessageId}
     {collection}
     provider={dataProvider}
+    {isAsideOpened}
     loadMoreAllowed={!isDocChannel}
   />
 {/if}

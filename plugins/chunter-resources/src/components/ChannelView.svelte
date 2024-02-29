@@ -77,7 +77,7 @@
   <div class="popupPanel-body" class:asideShown={withAside && isAsideShown}>
     <div class="popupPanel-body__main">
       {#key context._id}
-        <ChannelComponent {context} {object} {filters} />
+        <ChannelComponent {context} {object} {filters} isAsideOpened={(withAside && isAsideShown) || isThreadOpened} />
       {/key}
     </div>
 
