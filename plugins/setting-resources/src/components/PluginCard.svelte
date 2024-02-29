@@ -14,11 +14,12 @@
 -->
 <script lang="ts">
   import { getCurrentAccount } from '@hcengineering/core'
-  import { getResource } from '@hcengineering/platform'
+  import { getResource, translate } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import type { Integration, IntegrationType } from '@hcengineering/setting'
   import { AnyComponent, Button, Component, Label, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import setting from '../plugin'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let integrationType: IntegrationType
   export let integration: Integration | undefined
@@ -41,6 +42,7 @@
         type: integrationType._id
       })
       if (current === undefined) return
+      Analytics.handleEvent(`Reconnect integration: ${await translate(integrationType.label, {}, 'en')}`)
       await client.update(current, {
         disabled: false,
         value: res.value
@@ -50,6 +52,7 @@
 
   async function disconnect (): Promise<void> {
     if (integration !== undefined && integrationType.onDisconnect !== undefined) {
+      Analytics.handleEvent(`Disconnect integration: ${await translate(integrationType.label, {}, 'en')}`)
       const disconnect = await getResource(integrationType.onDisconnect)
       await disconnect(integration.value)
     }
@@ -66,6 +69,7 @@
       })
       integration = await client.findOne(setting.class.Integration, { _id: id })
     }
+    Analytics.handleEvent(`Configure/create integration: ${await translate(integrationType.label, {}, 'en')}`)
     showPopup(component, { integration }, 'top', close)
   }
   const handleReconnect = (e: any) => {
