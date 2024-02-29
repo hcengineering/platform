@@ -98,6 +98,10 @@ export async function OnBacklinkCreate (
     return []
   }
 
+  if (sender === receiver) {
+    return []
+  }
+
   const backlink = TxProcessor.createDoc2Doc(tx.tx as TxCreateDoc<Backlink>)
 
   if (!hierarchy.isDerived(backlink.backlinkClass, activity.class.ActivityMessage)) {
@@ -118,15 +122,9 @@ export async function OnBacklinkCreate (
     return []
   }
 
-  const doc = (await control.findAll(message.attachedToClass, { _id: message.attachedTo }))[0]
-
-  if (doc === undefined) {
-    return []
-  }
-
-  let res: Tx[] = []
-
+  const res: Tx[] = []
   const collabMixin = hierarchy.as(message as Doc, notification.mixin.Collaborators)
+
   if (collabMixin.collaborators === undefined || !collabMixin.collaborators.includes(receiver._id)) {
     const collabTx = control.txFactory.createTxMixin(
       message._id,
@@ -142,18 +140,45 @@ export async function OnBacklinkCreate (
     res.push(collabTx)
   }
 
-  const messageTx = (
-    await control.findAll(core.class.TxCollectionCUD, {
-      'tx.objectId': message._id,
-      'tx._class': core.class.TxCreateDoc
-    })
-  )[0]
+  return res
+}
 
-  res = res.concat(
-    await createCollabDocInfo([receiver._id], control, messageTx.tx, messageTx, doc, [message as ActivityMessage], true)
+async function isBacklinkNotified (tx: TxCollectionCUD<Doc, Backlink>, control: TriggerControl): Promise<boolean> {
+  const receiver = await getPersonAccount(tx.objectId as Ref<Employee>, control)
+
+  if (receiver === undefined) {
+    return false
+  }
+
+  const { hierarchy } = control
+  const backlink = TxProcessor.createDoc2Doc(tx.tx as TxCreateDoc<Backlink>)
+
+  if (!hierarchy.isDerived(backlink.backlinkClass, activity.class.ActivityMessage)) {
+    return false
+  }
+
+  const exists = await control.findAll(
+    notification.class.ActivityInboxNotification,
+    { attachedTo: backlink.backlinkId as Ref<ActivityMessage>, user: receiver._id },
+    { limit: 1 }
   )
 
-  return res
+  return exists.length > 0
+}
+
+async function isAlreadyNotified (originTx: TxCUD<Doc>, control: TriggerControl): Promise<boolean> {
+  if (originTx._class !== core.class.TxCollectionCUD) {
+    return false
+  }
+
+  const hierarchy = control.hierarchy
+  const isBacklink = await isBacklinkCreated(originTx as TxCollectionCUD<Doc, AttachedDoc>, hierarchy, control)
+
+  if (!isBacklink) {
+    return false
+  }
+
+  return await isBacklinkNotified(originTx as TxCollectionCUD<Doc, Backlink>, control)
 }
 
 async function isBacklinkCreated (
@@ -980,6 +1005,14 @@ export async function createCollaboratorNotifications (
   originTx?: TxCUD<Doc>
 ): Promise<Tx[]> {
   if (tx.space === core.space.DerivedTx) {
+    return []
+  }
+
+  if (activityMessages.length === 0) {
+    return []
+  }
+
+  if (await isAlreadyNotified(originTx ?? tx, control)) {
     return []
   }
 
