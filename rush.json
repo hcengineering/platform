@@ -1617,5 +1617,40 @@
       "projectFolder": "models/server-time",
       "shouldPublish": false
     },
+    {
+      "packageName": "@hcengineering/document",
+      "projectFolder": "plugins/document",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/document-assets",
+      "projectFolder": "plugins/document-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/document-resources",
+      "projectFolder": "plugins/document-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-document",
+      "projectFolder": "models/document",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-document",
+      "projectFolder": "server-plugins/document",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-document-resources",
+      "projectFolder": "server-plugins/document-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-server-document",
+      "projectFolder": "models/server-document",
+      "shouldPublish": false
+    }
   ]
 }
