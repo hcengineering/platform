@@ -85,6 +85,8 @@
     "@hcengineering/model-server-translate": "^0.6.0",
     "@hcengineering/model-support": "^0.6.0",
     "@hcengineering/model-guest": "^0.6.0",
-    "@hcengineering/model-server-guest": "^0.6.0"
+    "@hcengineering/model-server-guest": "^0.6.0",
+    "@hcengineering/model-document": "^0.6.0",
+    "@hcengineering/model-server-document": "^0.6.0"
   }
 }

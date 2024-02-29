@@ -81,6 +81,7 @@ import { type Token } from '@hcengineering/server-token'
 import { serverTrackerId } from '@hcengineering/server-tracker'
 import { serverViewId } from '@hcengineering/server-view'
 import { serverActivityId } from '@hcengineering/server-activity'
+import { serverDocumentId } from '@hcengineering/server-document'
 import { serverGuestId } from '@hcengineering/server-guest'
 import {
   type BroadcastCall,
@@ -98,6 +99,7 @@ import { boardId } from '@hcengineering/board'
 import { calendarId } from '@hcengineering/calendar'
 import { chunterId } from '@hcengineering/chunter'
 import { contactId } from '@hcengineering/contact'
+import { documentId } from '@hcengineering/document'
 import { gmailId } from '@hcengineering/gmail'
 import { hrId } from '@hcengineering/hr'
 import { inventoryId } from '@hcengineering/inventory'
@@ -128,6 +130,7 @@ import boardEn from '@hcengineering/board-assets/lang/en.json'
 import calendarEn from '@hcengineering/calendar-assets/lang/en.json'
 import chunterEn from '@hcengineering/chunter-assets/lang/en.json'
 import contactEn from '@hcengineering/contact-assets/lang/en.json'
+import documentEn from '@hcengineering/document-assets/lang/en.json'
 import gmailEn from '@hcengineering/gmail-assets/lang/en.json'
 import hrEn from '@hcengineering/hr-assets/lang/en.json'
 import inventoryEn from '@hcengineering/inventory-assets/lang/en.json'
@@ -173,6 +176,8 @@ addStringsLoader(preferenceId, async (lang: string) => preferenceEn)
 addStringsLoader(hrId, async (lang: string) => hrEn)
 addStringsLoader(bitrixId, async (lang: string) => bitrixEn)
 addStringsLoader(requestId, async (lang: string) => requestEn)
+addStringsLoader(documentId, async (lang: string) => documentEn)
+
 /**
  * @public
  */
@@ -215,6 +220,7 @@ export function start (
   addLocation(serverActivityId, () => import('@hcengineering/server-activity-resources'))
   addLocation(serverGuestId, () => import('@hcengineering/server-guest-resources'))
   addLocation(openAIId, () => Promise.resolve({ default: openAIPluginImpl }))
+  addLocation(serverDocumentId, () => import('@hcengineering/server-document-resources'))
 
   const middlewares: MiddlewareCreator[] = [
     ModifiedMiddleware.create,
