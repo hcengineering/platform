@@ -28,7 +28,7 @@
   } from '@hcengineering/activity-resources'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { get } from 'svelte/store'
-  import { tick } from 'svelte'
+  import { tick, beforeUpdate, afterUpdate } from 'svelte'
 
   import ActivityMessagesSeparator from './ChannelMessagesSeparator.svelte'
   import { filterChatMessages, getClosestDate, readChannelMessages } from '../utils'
@@ -49,6 +49,7 @@
   export let showEmbedded = false
   export let skipLabels = false
   export let loadMoreAllowed = true
+  export let isAsideOpened = false
 
   const dateSelectorHeight = 30
   const headerHeight = 50
@@ -83,6 +84,8 @@
 
   let messagesCount = 0
 
+  let wasAsideOpened = isAsideOpened
+
   $: messages = $messagesStore
   $: isLoading = $isLoadingStore
 
@@ -90,7 +93,7 @@
 
   $: notifyContext = $contextByDocStore.get(objectId)
 
-  $: filterChatMessages(messages, filters, objectClass, selectedFilters).then((filteredMessages) => {
+  $: void filterChatMessages(messages, filters, objectClass, selectedFilters).then((filteredMessages) => {
     displayMessages = filteredMessages
   })
 
@@ -224,10 +227,12 @@
     } else if (shouldLoadMoreDown() && provider.canLoadMore('forward', messages[messages.length - 1]?.createdOn)) {
       shouldScrollToNew = false
       void provider.loadMore('forward', messages[messages.length - 1]?.createdOn, limit)
+      isScrollAtBottom = false
     }
   }
 
   function handleScroll ({ autoScrolling }: ScrollParams) {
+    saveScrollPosition()
     if (autoScrolling) {
       return
     }
@@ -458,6 +463,48 @@
       loadMore()
     }
   }
+
+  let prevScrollHeight = 0
+  let isScrollAtBottom = false
+
+  function saveScrollPosition (): void {
+    if (!scrollElement) {
+      return
+    }
+
+    const { offsetHeight, scrollHeight, scrollTop } = scrollElement
+
+    prevScrollHeight = scrollHeight
+    isScrollAtBottom = scrollHeight === scrollTop + offsetHeight
+  }
+
+  beforeUpdate(() => {
+    if (!scrollElement) return
+
+    if (scrollElement.scrollHeight === scrollElement.clientHeight) {
+      isScrollAtBottom = true
+    }
+  })
+
+  afterUpdate(() => {
+    if (!scrollElement) return
+    const { scrollHeight } = scrollElement
+
+    if (!isInitialScrolling && prevScrollHeight < scrollHeight && isScrollAtBottom) {
+      scrollToBottom()
+    }
+  })
+
+  async function compensateAside (isOpened: boolean) {
+    if (!isInitialScrolling && isScrollAtBottom && !wasAsideOpened && isOpened) {
+      await wait()
+      scrollToBottom()
+    }
+
+    wasAsideOpened = isOpened
+  }
+
+  $: void compensateAside(isAsideOpened)
 </script>
 
 {#if isLoading}
