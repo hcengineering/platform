@@ -7,7 +7,9 @@
 * {
   --global-accent-IconColor: #6796FF;
   --global-on-accent-TextColor: #FFFFFF;
-  --global-focus-inset-BorderColor: #0D121C;
+
+  --global-ui-hover-OverlayColor: #15307226;
+  --global-ui-active-OverlayColor: #15307233;
 
   --button-accent-LabelColor: #fff;
   --button-disabled-LabelColor: #8b97ad;
@@ -22,6 +24,8 @@
   --button-negative-BorderColor: #d1d5de26;
   --button-negative-hover-BackgroundColor: #e34748;
   --button-negative-active-BackgroundColor: #c42a32;
+
+  --tag-on-accent-PorpoiseText: #FFFFFF;
 }
 
 /* Dark Theme */
@@ -29,6 +33,7 @@
   --global-ui-BackgroundColor: #A5BDFF0D;
   --global-ui-BorderColor: #A5BDFF1A;
   --global-ui-hover-BackgroundColor: #A5BDFF1A;
+  --global-ui-active-BackgroundColor: #A5BDFF26;
   --global-ui-highlight-BackgroundColor: #A5BDFF0D;
   --global-ui-hover-highlight-BackgroundColor: #A5BDFF26;
   --global-surface-01-BackgroundColor: #131925;
@@ -49,10 +54,12 @@
   --global-accent-TextColor: #4D7FF5;
   --global-error-TextColor: #FF6359;
   --global-focus-BorderColor: #2A59D6;
+  --global-focus-inset-BorderColor: #0D121C;
   --global-popover-ShadowColor: #0E131E59;
   --global-modal-ShadowColor: #0E131E73;
   --global-higlight-Color: #F76E53;
   --global-accent-SkyText: #B9D1F5;
+  --global-accent-BackgroundColor: #204DC8;
 
   --tag-on-subtle-PorpoiseText: #F2F4F6;
   --tag-subtle-PorpoiseBackground: #343F49;
@@ -91,6 +98,7 @@
   --global-ui-BackgroundColor: #1530720D;
   --global-ui-BorderColor: #1530721A;
   --global-ui-hover-BackgroundColor: #1530721A;
+  --global-ui-active-BackgroundColor: #A5BDFF40;
   --global-ui-highlight-BackgroundColor: #A5BDFF26;
   --global-ui-hover-highlight-BackgroundColor: #A5BDFF40;
   --global-surface-01-BackgroundColor: #F8F9FA;
@@ -111,10 +119,12 @@
   --global-accent-TextColor: #3566E2;
   --global-error-TextColor: #A40A1B;
   --global-focus-BorderColor: #204DC8;
+  --global-focus-inset-BorderColor: #FFFFFF;
   --global-popover-ShadowColor: #0E131E1F;
   --global-modal-ShadowColor: #0E131E14;
   --global-higlight-Color: #F76E53;
   --global-accent-SkyText:#B9D1F5;
+  --global-accent-BackgroundColor: #3566E2;
 
   --tag-on-subtle-PorpoiseText: #293139;
   --tag-subtle-PorpoiseBackground: #C8D1D9;
