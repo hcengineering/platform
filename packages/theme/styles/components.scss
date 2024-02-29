@@ -562,9 +562,12 @@
     }
   }
   .hulyToDoLine-checkbox {
-    padding-top: var(--spacing-0_5);
     width: var(--global-extra-small-Size);
     height: var(--global-extra-small-Size);
+
+    &.updating {
+      padding-top: var(--spacing-0_5);
+    }
   }
   .hulyToDoLine-top-align {
     color: var(--global-secondary-TextColor);
