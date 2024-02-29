@@ -38,7 +38,14 @@ export function registerProviders (
   }
 
   app.keys = [serverSecret]
-  app.use(session({}, app))
+  app.use(
+    session(
+      {
+        domain: accountsUrl.split('.', 2)[1]
+      },
+      app
+    )
+  )
 
   app.use(passport.initialize())
   app.use(passport.session())
@@ -64,10 +71,8 @@ export function registerProviders (
 
   router.get('auth', '/auth', (ctx) => {
     if (ctx.session?.loginInfo != null) {
-      ctx.body = JSON.stringify(ctx.session?.loginInfo)
-      return
+      ctx.body = JSON.stringify(ctx.session.loginInfo)
     }
-    ctx.redirect(concatLink(frontUrl, '/login'))
   })
 
   router.get('providers', '/providers', (ctx) => {
