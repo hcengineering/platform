@@ -33,6 +33,11 @@
   $: weekMonday = startFromWeekStart
     ? getMonday(currentDate, mondayStart)
     : new Date(new Date(currentDate).setHours(0, 0, 0, 0))
+
+  function getDate (startDate: Date, dayIndex: number, minutes: number): Date {
+    const date = getDay(startDate, dayIndex)
+    return new Date(date.setMinutes(date.getMinutes() + minutes))
+  }
 </script>
 
 <Scroller fade={{ multipler: { top: 3, bottom: 0 } }}>
@@ -70,7 +75,7 @@
           {#each [...Array(displayedDaysCount).keys()] as dayIndex}
             <td class="calendar-td cell" style:height={cellHeight}>
               {#if $$slots.cell}
-                <slot name="cell" date={getDay(weekMonday, dayIndex, hourOfDay * 60)} />
+                <slot name="cell" date={getDate(weekMonday, dayIndex, hourOfDay * 60)} />
               {/if}
             </td>
           {/each}

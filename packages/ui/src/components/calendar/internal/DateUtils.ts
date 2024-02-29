@@ -48,8 +48,8 @@ export function getWeekDayName (weekDay: Date, weekFormat: 'narrow' | 'short' | 
   }).format(weekDay)
 }
 
-export function day (firstDay: Date, offset: number, minutes?: number): Date {
-  return new Date(firstDay.getTime() + offset * MILLISECONDS_IN_DAY + (minutes ?? 0) * MILLISECONDS_IN_MINUTE)
+export function day (firstDay: Date, offset: number): Date {
+  return new Date(new Date(firstDay).setDate(firstDay.getDate() + offset))
 }
 
 export function weekday (firstDay: Date, w: number, d: number): Date {
