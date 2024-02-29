@@ -17,7 +17,6 @@ import {
   AggregateValue,
   AggregateValueData,
   type AnyAttribute,
-  type Attribute,
   type Class,
   type Client,
   type Doc,
@@ -113,14 +112,6 @@ export class ComponentAggregationManager implements AggregationManager {
       }
     }
     return target.filter((it, idx, arr) => arr.indexOf(it) === idx)
-  }
-
-  async updateLookup (resultDoc: WithLookup<Doc>, attr: Attribute<Doc>): Promise<void> {
-    const value = (resultDoc as any)[attr.name]
-    const doc = (await this.getManager()).getIdMap().get(value)
-    if (doc !== undefined) {
-      ;(resultDoc.$lookup as any)[attr.name] = doc
-    }
   }
 }
 

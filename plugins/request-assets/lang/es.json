@@ -1,0 +1,23 @@
+{
+  "string": {
+    "Requests": "Solicitudes",
+    "Request": "Solicitud",
+    "Approve": "Aprobar",
+    "Approved": "Aprobado",
+    "CreatedRequest": "Se ha creado una ",
+    "For": "Para",
+    "Change": "Cambio",
+    "Add": "Añadir",
+    "Remove": "Eliminar",
+    "Status": "Estado",
+    "Requested": "Solicitado",
+    "Completed": "Completado",
+    "Reject": "Rechazar",
+    "Rejected": "Rechazado",
+    "Comment": "Comentario",
+    "PleaseTypeMessage": "Escriba un mensaje de comentario para continuar...",
+    "NoRequests": "No hay solicitudes",
+    "Cancel": "Cancelar",
+    "Cancelled": "Cancelado"
+  }
+}

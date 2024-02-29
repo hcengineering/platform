@@ -25,13 +25,15 @@
 </script>
 
 {#if typeof personName === 'string'}
-  <span class="mr-1">
-    <Icon icon={contact.icon.Person} size="small" />
-  </span>
-  <Label label={contact.string.Name} />
-  <span class="lower"><Label label={activity.string.Set} /></span>
-  <span class="lower"><Label label={activity.string.To} /></span>
-  <span class="fs-bold overflow-label">
-    {formatName(personName)}
+  <span class="flex-presenter flex-gap-1">
+    <span class="mr-1">
+      <Icon icon={contact.icon.Person} size="small" />
+    </span>
+    <Label label={contact.string.Name} />
+    <span class="lower"><Label label={activity.string.Set} /></span>
+    <span class="lower"><Label label={activity.string.To} /></span>
+    <span class="fs-bold overflow-label">
+      {formatName(personName)}
+    </span>
   </span>
 {/if}
