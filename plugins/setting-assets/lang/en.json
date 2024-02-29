@@ -1,6 +1,6 @@
 {
   "string": {
-    "Setting": "Setting",
+    "Setting": "Setting",    
     "Integrations": "Integrations",
     "Support": "Support",
     "Privacy": "Privacy",
@@ -100,7 +100,6 @@
     "Automations": "Automations",
     "Collections": "Collections",
     "ClassColon": "Class:",
-    "Branding": "Branding",
-    "WorkspaceLogo": "Workspace Logo"
+    "Branding": "Branding"
   }
 }
