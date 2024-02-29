@@ -335,7 +335,15 @@ function fillStores (): void {
 
 fillStores()
 
-export function getAvatarTypeDropdownItems (hasGravatar: boolean): TabItem[] {
+export function getAvatarTypeDropdownItems (hasGravatar: boolean, imageOnly?: boolean): TabItem[] {
+  if (imageOnly === true) {
+    return [
+      {
+        id: AvatarType.IMAGE,
+        labelIntl: contact.string.UseImage
+      }
+    ]
+  }
   return [
     {
       id: AvatarType.COLOR,

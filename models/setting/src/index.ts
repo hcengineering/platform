@@ -28,6 +28,7 @@ import {
   type Integration,
   type IntegrationType,
   type InviteSettings,
+  type WorkspaceSetting,
   type SettingsCategory,
   type UserMixin
 } from '@hcengineering/setting'
@@ -99,6 +100,11 @@ export class TInviteSettings extends TConfiguration implements InviteSettings {
   limit!: number
 }
 
+@Model(setting.class.WorkspaceSetting, core.class.Doc, DOMAIN_SETTING)
+export class TWorkspaceSetting extends TDoc implements WorkspaceSetting {
+  icon?: string
+}
+
 export function createModel (builder: Builder): void {
   builder.createModel(
     TIntegration,
@@ -107,7 +113,8 @@ export function createModel (builder: Builder): void {
     TWorkspaceSettingCategory,
     TEditable,
     TUserMixin,
-    TInviteSettings
+    TInviteSettings,
+    TWorkspaceSetting
   )
 
   builder.mixin(setting.class.Integration, core.class.Class, notification.mixin.ClassCollaborators, {
@@ -204,6 +211,19 @@ export function createModel (builder: Builder): void {
       adminOnly: true
     },
     setting.ids.Configure
+  )
+  builder.createDoc(
+    setting.class.WorkspaceSettingCategory,
+    core.space.Model,
+    {
+      name: 'workspaceSettings',
+      label: setting.string.Branding,
+      icon: setting.icon.AccountSettings,
+      component: setting.component.WorkspaceSetting,
+      order: 1002,
+      secured: true
+    },
+    setting.ids.WorkspaceSetting
   )
   builder.createDoc(
     setting.class.WorkspaceSettingCategory,

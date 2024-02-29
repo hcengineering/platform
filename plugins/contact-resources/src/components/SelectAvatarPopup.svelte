@@ -41,6 +41,8 @@
   export let email: string | undefined
   export let file: Blob | undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
+  export let imageOnly: boolean = false
+  export let lessCrop: boolean = false
   export let onSubmit: (avatarType?: AvatarType, avatar?: string, file?: Blob) => void
 
   const [schema, uri] = avatar?.split('://') || []
@@ -110,18 +112,18 @@
 
     if (selectedFile !== undefined) {
       editableFile = selectedFile
-    } else if (selectedAvatar) {
+    } else if (selectedAvatar && !(imageOnly && selectedAvatar === initialSelectedAvatar)) {
       const url = getFileUrl(selectedAvatar, 'full')
       editableFile = await (await fetch(url)).blob()
     } else {
       inputRef.click()
       return
     }
-    showCropper(editableFile)
+    if (editableFile.size > 0) showCropper(editableFile)
   }
 
   function showCropper (editableFile: Blob) {
-    showPopup(EditAvatarPopup, { file: editableFile }, undefined, (blob) => {
+    showPopup(EditAvatarPopup, { file: editableFile, lessCrop }, undefined, (blob) => {
       if (blob === undefined) {
         if (!selectedFile && (!avatar || avatar.includes('://'))) {
           selectedAvatarType = AvatarType.COLOR
@@ -131,7 +133,7 @@
       }
       if (blob === null) {
         selectedAvatarType = AvatarType.COLOR
-        selectedAvatar = getPlatformAvatarColorForTextDef(name ?? '', $themeStore.dark).name
+        selectedAvatar = imageOnly ? '' : getPlatformAvatarColorForTextDef(name ?? '', $themeStore.dark).name
         selectedFile = undefined
       } else {
         selectedFile = blob
@@ -203,8 +205,12 @@
     <div
       class="cursor-pointer"
       on:click|self={(e) => {
-        if (selectedAvatarType === AvatarType.IMAGE) handleImageAvatarClick()
-        else if (selectedAvatarType === AvatarType.COLOR) showColorPopup(e)
+        if (imageOnly) {
+          handleImageAvatarClick()
+        } else {
+          if (selectedAvatarType === AvatarType.IMAGE) handleImageAvatarClick()
+          else if (selectedAvatarType === AvatarType.COLOR) showColorPopup(e)
+        }
       }}
     >
       <AvatarComponent
@@ -220,7 +226,7 @@
       />
     </div>
     <TabList
-      items={getAvatarTypeDropdownItems(hasGravatar)}
+      items={getAvatarTypeDropdownItems(hasGravatar, imageOnly)}
       kind={'separated-free'}
       bind:selected={selectedAvatarType}
       on:select={handleDropdownSelection}

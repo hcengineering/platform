@@ -18,6 +18,7 @@
 
   export let image: Blob
   export let cropSize = 1200
+  export let lessCrop: boolean = false
 
   let imgRef: HTMLImageElement
   let cropper: Cropper | undefined
@@ -86,7 +87,7 @@
   }
 </script>
 
-<div class="w-full h-full flex">
+<div class="w-full h-full flex" class:less-crop={lessCrop}>
   <img class="image" bind:this={imgRef} alt="img" />
   {#await init(image)}
     Waiting...
@@ -98,6 +99,9 @@
 
   :global(.cropper-view-box, .cropper-face) {
     border-radius: 50%;
+  }
+  :global(.less-crop .cropper-view-box, .less-crop .cropper-face) {
+    border-radius: 10%;
   }
 
   .image {

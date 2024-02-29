@@ -20,6 +20,7 @@
   import presentation from '@hcengineering/presentation'
 
   export let file: Blob
+  export let lessCrop: boolean = false
   let inputRef: HTMLInputElement
   const targetMimes = ['image/png', 'image/jpg', 'image/jpeg']
 
@@ -64,7 +65,7 @@
 <div class="editavatar-container">
   {#await CropperP then Cropper}
     <div class="cropper">
-      <Cropper bind:this={cropper} image={file} />
+      <Cropper bind:this={cropper} image={file} {lessCrop} />
     </div>
     <div class="footer">
       <Button label={presentation.string.Save} kind={'primary'} size={'large'} on:click={onCrop} />
