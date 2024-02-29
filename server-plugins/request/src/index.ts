@@ -26,6 +26,6 @@ export const serverRequestId = 'server-request' as Plugin
  */
 export default plugin(serverRequestId, {
   trigger: {
-    OnRequestUpdate: '' as Resource<TriggerFunc>
+    OnRequest: '' as Resource<TriggerFunc>
   }
 })

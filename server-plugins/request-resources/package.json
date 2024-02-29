@@ -38,8 +38,11 @@
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/server-request": "^0.6.0",
     "@hcengineering/request": "^0.6.6",
-    "@hcengineering/chunter": "^0.6.12",
     "@hcengineering/view": "^0.6.9",
-    "@hcengineering/contact": "^0.6.20"
+    "@hcengineering/contact": "^0.6.20",
+    "@hcengineering/server-activity-resources": "^0.6.0",
+    "@hcengineering/server-notification-resources": "^0.6.0",
+    "@hcengineering/notification": "^0.6.16",
+    "@hcengineering/activity": "^0.6.0"
   }
 }
