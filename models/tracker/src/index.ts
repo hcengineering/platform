@@ -326,7 +326,7 @@ function defineApplication (
             spaceClass: tracker.class.Project,
             componentProps: {
               _class: tracker.class.Project,
-              label: tracker.string.AllIssues,
+              label: tracker.string.AllProjects,
               icon: tracker.icon.Issues
             }
           }

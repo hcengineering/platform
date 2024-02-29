@@ -24,6 +24,7 @@ import WorkbenchApp from './components/WorkbenchApp.svelte'
 import { doNavigate } from './utils'
 import Workbench from './components/Workbench.svelte'
 import ServerManager from './components/ServerManager.svelte'
+import { isAdminUser } from '@hcengineering/presentation'
 
 async function hasArchiveSpaces (spaces: Space[]): Promise<boolean> {
   return spaces.find((sp) => sp.archived) !== undefined
@@ -51,7 +52,7 @@ export default async (): Promise<Resources> => ({
   },
   function: {
     HasArchiveSpaces: hasArchiveSpaces,
-    IsOwner: async (docs: Space[]) => getCurrentAccount().role === AccountRole.Owner
+    IsOwner: async (docs: Space[]) => getCurrentAccount().role === AccountRole.Owner || isAdminUser()
   },
   actionImpl: {
     Navigate: doNavigate

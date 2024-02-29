@@ -521,7 +521,7 @@ export interface Action<T extends Doc = Doc, P = Record<string, any>> extends Do
   // For example, it could be global action and action for focus class, second one fill override first one.
   override?: Ref<Action>[]
 
-  // Avaible only for workspace owners
+  // Available only for workspace owners
   secured?: boolean
   allowedForEditableContent?: boolean
 }
