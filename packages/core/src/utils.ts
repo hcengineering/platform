@@ -14,11 +14,12 @@
 //
 
 import { deepEqual } from 'fast-equals'
-import { Account, AnyAttribute, Class, Doc, DocData, DocIndexState, IndexKind, Obj, Ref, Space } from './classes'
+import { Account, AnyAttribute, Class, Doc, DocData, DocIndexState, IndexKind, Obj, Rank, Ref, Space } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
 import { isPredicate } from './predicate'
 import { DocumentQuery, FindResult } from './storage'
+import { LexoRank } from 'lexorank'
 
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
@@ -530,4 +531,12 @@ export function cutObjectArray (obj: any): any {
     Object.assign(r, { [key]: obj[key] })
   }
   return r
+}
+
+export function calcRank (prev: Rank | null, next: Rank | null): Rank {
+  const prevLexoRank = prev === null ? LexoRank.min() : LexoRank.parse(prev)
+  const nextLexoRank = next === null ? LexoRank.max() : LexoRank.parse(next)
+  return prevLexoRank.equals(nextLexoRank)
+    ? prevLexoRank.genNext().toString()
+    : prevLexoRank.between(nextLexoRank).toString()
 }

@@ -205,6 +205,10 @@ export class TTypeMarkup extends TType {}
 @Model(core.class.TypeCollaborativeMarkup, core.class.Type)
 export class TTypeCollaborativeMarkup extends TType {}
 
+@UX(core.string.Rank)
+@Model(core.class.TypeRank, core.class.Type)
+export class TRank extends TType {}
+
 @UX(core.string.Ref)
 @Model(core.class.RefTo, core.class.Type)
 export class TRefTo extends TType implements RefTo<Doc> {
