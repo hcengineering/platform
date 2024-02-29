@@ -151,8 +151,8 @@ function getDocUpdateMessageTx (
   )
 }
 
-async function pushDocUpdateMessages (
-  ctx: MeasureContext,
+export async function pushDocUpdateMessages (
+  ctx: MeasureContext | undefined,
   control: ActivityControl,
   res: TxCollectionCUD<Doc, DocUpdateMessage>[],
   object: Doc | undefined,
@@ -295,7 +295,7 @@ export async function generateDocUpdateMessages (
     case core.class.TxCollectionCUD: {
       const actualTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
       res = await generateDocUpdateMessages(ctx, actualTx, control, res, tx, objectCache)
-      if ([core.class.TxCreateDoc, core.class.TxRemoveDoc, core.class.TxUpdateDoc].includes(actualTx._class)) {
+      if ([core.class.TxCreateDoc, core.class.TxRemoveDoc].includes(actualTx._class)) {
         if (!isActivityDoc(tx.objectClass, control.hierarchy)) {
           return res
         }
