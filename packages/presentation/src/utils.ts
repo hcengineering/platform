@@ -187,10 +187,20 @@ export async function setClient (_client: MeasureClient): Promise<void> {
  * @public
  */
 export async function refreshClient (): Promise<void> {
-  await liveQuery?.refreshConnect()
-  for (const q of globalQueries) {
-    q.refreshClient()
+  if (!(liveQuery?.isClosed() ?? true)) {
+    await liveQuery?.refreshConnect()
+    for (const q of globalQueries) {
+      q.refreshClient()
+    }
   }
+}
+
+/**
+ * @public
+ */
+export async function purgeClient (): Promise<void> {
+  await liveQuery?.close()
+  await pipeline?.close()
 }
 
 /**
@@ -529,13 +539,9 @@ export function isCollectionAttr (hierarchy: Hierarchy, key: KeyedAttribute): bo
  * @public
  */
 export function decodeTokenPayload (token: string): any {
-  const parts = token.split('.')
+  return JSON.parse(atob(token.split('.')[1]))
+}
 
-  const payload = parts[1]
-
-  const decodedPayload = atob(payload)
-
-  const parsedPayload = JSON.parse(decodedPayload)
-
-  return parsedPayload
+export function isAdminUser (): boolean {
+  return decodeTokenPayload(getMetadata(plugin.metadata.Token) ?? '').admin === 'true'
 }
