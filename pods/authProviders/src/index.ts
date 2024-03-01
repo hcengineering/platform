@@ -1,11 +1,10 @@
 import Koa from 'koa'
 import passport from 'koa-passport'
 import Router from 'koa-router'
-import { Db } from 'mongodb'
-import { registerGoogle } from './google'
 import session from 'koa-session'
-import { concatLink } from '@hcengineering/core'
+import { Db } from 'mongodb'
 import { registerGithub } from './github'
+import { registerGoogle } from './google'
 
 export type Passport = typeof passport
 
