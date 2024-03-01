@@ -250,4 +250,23 @@ export class IssuesPage extends CommonTrackerPage {
     await this.page.locator('div.row span', { hasText: issueName }).locator('xpath=..').locator('a > button').click()
     await expect(this.textPopupAddAttachmentsFile.filter({ hasText: filePath })).toBeVisible()
   }
+
+  async checkCommentsCount (issueName: string, count: string): Promise<void> {
+    await expect(
+      this.page
+        .locator('div.row span', { hasText: issueName })
+        .locator('xpath=..')
+        .locator('button > div[slot="content"]')
+        .first()
+    ).toHaveText(count)
+  }
+
+  async openCommentPopupForIssueByName (issueName: string): Promise<void> {
+    await this.page
+      .locator('div.row span', { hasText: issueName })
+      .locator('xpath=..')
+      .locator('button')
+      .first()
+      .click()
+  }
 }
