@@ -71,6 +71,9 @@
   }
   .default, .ghost { padding: 0.3125rem 0.5rem; }
   .default-large, .ghost-large { padding: 0.4375rem 0.5rem; }
+  .ghost-large {
+    color: var(--theme-caption-color);
+  }
   .default, .ghost, .default-large, .ghost-large {
     box-sizing: border-box;
     line-height: 1.25rem;
