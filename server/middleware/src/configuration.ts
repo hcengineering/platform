@@ -59,7 +59,7 @@ export class ConfigurationMiddleware extends BaseMiddleware implements Middlewar
       if (this.targetDomains.includes(domain)) {
         if (ctx.userEmail !== configurationAccountEmail) {
           const account = await this.getUser(ctx)
-          if (account.role !== AccountRole.Owner) {
+          if (account.role !== AccountRole.Owner && ctx.admin !== true) {
             throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
           }
         }
@@ -82,7 +82,7 @@ export class ConfigurationMiddleware extends BaseMiddleware implements Middlewar
     if (this.targetDomains.includes(domain)) {
       if (ctx.userEmail !== configurationAccountEmail) {
         const account = await this.getUser(ctx)
-        if (account.role !== AccountRole.Owner && account._id !== core.account.System) {
+        if (account.role !== AccountRole.Owner && account._id !== core.account.System && ctx.admin !== true) {
           throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
         }
       }

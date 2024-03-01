@@ -14,9 +14,17 @@
 -->
 <script lang="ts">
   import { Project } from '@hcengineering/tracker'
-  import { Icon, IconWithEmoji, getPlatformColorDef, getPlatformColorForTextDef, themeStore } from '@hcengineering/ui'
+  import {
+    Icon,
+    IconWithEmoji,
+    getPlatformColorDef,
+    getPlatformColorForTextDef,
+    themeStore,
+    Label
+  } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import view from '@hcengineering/view'
+  import presentation from '@hcengineering/presentation'
 
   export let value: Project | undefined
   export let inline: boolean = false
@@ -41,6 +49,9 @@
     </div>
     <span class="label no-underline nowrap" class:fs-bold={accent}>
       {value.name}
+      {#if value.archived}
+        <Label label={presentation.string.Archived} />
+      {/if}
     </span>
   </div>
 {/if}

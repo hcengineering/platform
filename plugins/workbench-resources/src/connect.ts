@@ -11,7 +11,7 @@ import core, {
 } from '@hcengineering/core'
 import login, { loginId } from '@hcengineering/login'
 import { addEventListener, broadcastEvent, getMetadata, getResource, setMetadata } from '@hcengineering/platform'
-import presentation, { closeClient, refreshClient, setClient } from '@hcengineering/presentation'
+import presentation, { closeClient, purgeClient, refreshClient, setClient } from '@hcengineering/presentation'
 import {
   fetchMetadataLocalStorage,
   getCurrentLocation,
@@ -77,6 +77,8 @@ export async function connect (title: string): Promise<Client | undefined> {
   }
 
   if (_token !== token && _client !== undefined) {
+    // We need to flush all data from memory
+    await purgeClient()
     await _client.close()
     _client = undefined
   }
