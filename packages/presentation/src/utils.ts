@@ -539,12 +539,7 @@ export function isCollectionAttr (hierarchy: Hierarchy, key: KeyedAttribute): bo
  * @public
  */
 export function decodeTokenPayload (token: string): any {
-  try {
-    return JSON.parse(atob(token.split('.')[1]))
-  } catch (err: any) {
-    console.error(err)
-    return {}
-  }
+  return JSON.parse(atob(token.split('.')[1]))
 }
 
 export function isAdminUser (): boolean {

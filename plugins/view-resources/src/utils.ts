@@ -62,7 +62,6 @@ import {
   getFiltredKeys,
   isAdminUser
 } from '@hcengineering/presentation'
-import { type Restrictions } from '@hcengineering/guest'
 import {
   ErrorPresenter,
   getCurrentResolvedLocation,
