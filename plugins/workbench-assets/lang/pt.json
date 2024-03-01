@@ -28,6 +28,7 @@
     "OpenInNewTab": "Abrir num novo separador",
     "NewVersionAvailable": "Nova versão disponível",
     "PleaseUpdate": "Atualize",
-    "ServerUnderMaintenance": "Servidor em manutenção"
+    "ServerUnderMaintenance": "Servidor em manutenção",
+    "MobileNotSupported": "Desculpe, o suporte para dispositivos móveis estará disponível em breve. Enquanto isso, por favor, use o Desktop."
   }
 }
