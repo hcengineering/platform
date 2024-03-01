@@ -44,8 +44,21 @@
 <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 <label class="checkbox {size} {kind}" class:circle class:readonly class:checked on:click|stopPropagation>
   <input class="chBox" disabled={readonly} type="checkbox" bind:checked on:change|capture={handleValueChanged} />
-  <svg class="checkSVG" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-    {#if checked}
+  <svg class="checkSVG" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none">
+    {#if kind === 'todo'}
+      {#if readonly}
+        <path
+          class="todo-readonly"
+          d="M15.735 10.049A8 8 0 0 0 16 8a8 8 0 0 0-.408-2.528 1 1 0 0 0-.725 1.16 7 7 0 0 1 0 2.735 1 1 0 0 0 .725 1.161q.079-.237.143-.48m-.58 1.532a1 1 0 0 0-1.333.308 7.05 7.05 0 0 1-1.933 1.933 1 1 0 0 0-.308 1.334 8.03 8.03 0 0 0 3.575-3.575m-4.627 4.011a1 1 0 0 0-1.16-.725 7 7 0 0 1-2.735 0 1 1 0 0 0-1.161.725A8 8 0 0 0 8 16a8 8 0 0 0 2.528-.408m-6.109-.436a1 1 0 0 0-.308-1.334 7.05 7.05 0 0 1-1.933-1.933 1 1 0 0 0-1.334-.308 8.03 8.03 0 0 0 3.575 3.575M.408 10.528a1 1 0 0 0 .725-1.16 7 7 0 0 1 0-2.735 1 1 0 0 0-.725-1.161A8 8 0 0 0 0 8a8 8 0 0 0 .408 2.528M.844 4.42a1 1 0 0 0 1.334-.308 7 7 0 0 1 1.933-1.933A1 1 0 0 0 4.42.844a8 8 0 0 0-.864.503A8.04 8.04 0 0 0 .845 4.42M5.472.408a1 1 0 0 0 1.16.725 7 7 0 0 1 2.735 0 1 1 0 0 0 1.161-.725A8 8 0 0 0 8 0a8 8 0 0 0-2.528.408m6.109.436a1 1 0 0 0 .308 1.334 7.05 7.05 0 0 1 1.933 1.933 1 1 0 0 0 1.334.308 8 8 0 0 0-.504-.864 8.04 8.04 0 0 0-3.071-2.71"
+        />
+      {:else}
+        <circle class="todo-circle" cx="8" cy="8" r="7.5" />
+        <path
+          class="todo-check"
+          d="M11.585 5.54c.22.22.22.576 0 .795l-4.312 4.313a.56.56 0 0 1-.796 0L4.415 8.585a.563.563 0 0 1 .795-.795l1.665 1.664L10.79 5.54c.22-.22.576-.22.795 0"
+        />
+      {/if}
+    {:else if checked}
       {#if symbol === 'minus'}
         <rect
           class="check"
@@ -79,6 +92,10 @@
     background-color: var(--theme-button-hovered);
     border: 1px solid var(--theme-checkbox-border);
     border-radius: 0.25rem;
+
+    &:not(.readonly):hover {
+      cursor: pointer;
+    }
 
     &.small {
       width: 0.875rem;
@@ -124,7 +141,69 @@
       }
     }
     &.todo {
-      border-color: var(--theme-divider-color);
+      width: var(--global-extra-small-Size);
+      height: var(--global-extra-small-Size);
+      border: none;
+      border-radius: 50%;
+      background-color: transparent;
+
+      &:focus-within {
+        background-color: var(--button-secondary-hover-BackgroundColor);
+        box-shadow: 0 0 0 0.125rem var(--global-focus-inset-BorderColor);
+        outline: 0.125rem solid var(--global-focus-BorderColor);
+        outline-offset: 0.125rem;
+
+        .checkSVG {
+          .todo-check {
+            visibility: visible;
+          }
+        }
+      }
+
+      &:not(.readonly):hover {
+        background-color: var(--button-secondary-hover-BackgroundColor);
+
+        .checkSVG {
+          .todo-check {
+            visibility: visible;
+          }
+        }
+      }
+
+      &.checked {
+        .checkSVG {
+          color: var(--global-accent-TextColor);
+
+          .todo-circle {
+            fill: currentColor;
+          }
+
+          .todo-check {
+            visibility: visible;
+            fill: var(--global-subtle-BackgroundColor);
+          }
+        }
+      }
+
+      .checkSVG {
+        height: var(--global-min-Size);
+        width: var(--global-min-Size);
+        border-radius: 50%;
+        color: var(--global-tertiary-TextColor);
+
+        .todo-readonly {
+          fill: currentColor;
+        }
+
+        .todo-circle {
+          stroke: currentColor;
+        }
+
+        .todo-check {
+          visibility: hidden;
+          fill: currentColor;
+        }
+      }
     }
 
     .chBox {
@@ -156,6 +235,7 @@
         fill: var(--primary-button-color);
       }
     }
+
     .checkSVG {
       width: 0.875rem;
       height: 0.875rem;
