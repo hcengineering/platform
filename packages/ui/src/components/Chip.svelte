@@ -14,9 +14,13 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { IconClose, ButtonIcon } from '..'
+  import { IconClose, ButtonIcon, LabelAndProps, tooltip } from '..'
 
   export let label: string
+  export let size: 'small' | 'min' = 'small'
+  export let isRemovable: boolean = false
+  export let backgroundColor: string | undefined = undefined
+  export let showTooltip: LabelAndProps | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -33,44 +37,69 @@
   }
 </script>
 
-<div class="flex items-center font-medium-14 max-w-60 p-1 chip">
-  <span class="px-2 overflow-label">{label}</span>
-  <ButtonIcon
-    bind:this={buttonRef}
-    kind="tertiary"
-    size="min"
-    icon={IconClose}
-    inheritColor={true}
-    on:click={() => dispatch('remove')}
-    on:keydown={handleBackspace}
-  />
+<div
+  class="flex items-center font-medium-14 max-w-60 chip {size}"
+  class:removable={isRemovable}
+  style:background-color={backgroundColor}
+  use:tooltip={showTooltip}
+>
+  <span class="px-2 overflow-label chip-label">{label}</span>
+  {#if isRemovable}
+    <ButtonIcon
+      bind:this={buttonRef}
+      kind="tertiary"
+      size="min"
+      icon={IconClose}
+      inheritColor={true}
+      on:click={() => dispatch('remove')}
+      on:keydown={handleBackspace}
+    />
+  {/if}
 </div>
 
 <style lang="scss">
   .chip {
     position: relative;
     height: var(--global-small-Size);
+    padding: var(--spacing-0_5);
     border: none;
     color: var(--tag-on-accent-PorpoiseText);
     background-color: var(--global-accent-BackgroundColor);
     border-radius: var(--small-BorderRadius);
 
-    &:after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: var(--small-BorderRadius);
-      overflow: hidden;
-      background-color: transparent;
-      pointer-events: none;
+    &.removable {
+      &:after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: var(--small-BorderRadius);
+        overflow: hidden;
+        background-color: transparent;
+        pointer-events: none;
+      }
+
+      &:hover:after {
+        background-color: var(--global-ui-hover-OverlayColor);
+      }
+
+      &:active:after {
+        background-color: var(--global-ui-active-OverlayColor);
+      }
     }
 
-    &:hover:after {
-      background-color: var(--global-ui-hover-OverlayColor);
+    &.min {
+      height: auto;
+      padding: var(--spacing-0_25);
+      border-radius: var(--extra-small-BorderRadius);
+      font-size: 0.6875rem;
+
+      .chip-label {
+        padding: 0 var(--spacing-0_5);
+      }
     }
 
-    &:active:after {
-      background-color: var(--global-ui-active-OverlayColor);
+    .chip-label {
+      padding: 0 var(--spacing-1);
     }
 
     & :global(button.type-button-icon) {
