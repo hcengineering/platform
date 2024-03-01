@@ -204,7 +204,7 @@
       const arr = getGroupByValues(groupByDocs, state) ?? []
       const s = arr.findIndex((p) => p._id === dragCard?._id)
       if (s !== -1) {
-        dragCard.rank = makeRank(arr[s - 1].rank, arr[s + 1].rank)
+        dragCard.rank = makeRank(arr[s - 1]?.rank, arr[s + 1]?.rank)
       }
     }
     isDragging = false
