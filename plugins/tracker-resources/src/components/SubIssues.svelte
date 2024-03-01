@@ -18,7 +18,7 @@
   import core, { AttachedData, Doc, Ref, SortingOrder } from '@hcengineering/core'
   import { DraftController, draftsStore, getClient } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
-  import { calcRank } from '@hcengineering/task'
+  import { makeRank } from '@hcengineering/task'
   import { Component, Issue, IssueDraft, IssueParentInfo, Milestone, Project } from '@hcengineering/tracker'
   import { Button, ExpandCollapse, Scroller } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
@@ -79,7 +79,7 @@
         number,
         status: subIssue.status ?? project.defaultIssueStatus,
         priority: subIssue.priority,
-        rank: calcRank(lastOne, undefined),
+        rank: makeRank(lastOne?.rank, undefined),
         comments: 0,
         subIssues: 0,
         dueDate: null,

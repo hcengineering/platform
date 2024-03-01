@@ -48,8 +48,7 @@ import core, {
   ArrOf as TypeArrOf,
   Collection as TypeCollection,
   TypeDate as TypeDateType,
-  generateId,
-  Rank
+  generateId
 } from '@hcengineering/core'
 import type { Asset, IntlString } from '@hcengineering/platform'
 import toposort from 'toposort'
@@ -444,13 +443,6 @@ export function TypeTimestamp (): Type<Timestamp> {
  */
 export function TypeDate (mode: DateRangeMode = DateRangeMode.DATE, withShift: boolean = true): TypeDateType {
   return { _class: core.class.TypeDate, label: core.string.Date, mode, withShift }
-}
-
-/**
- * @public
- */
-export function TypeRank (): Type<Rank> {
-  return { _class: core.class.TypeRank, label: core.string.Rank }
 }
 
 /**

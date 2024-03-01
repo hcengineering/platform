@@ -25,10 +25,10 @@
     Space
   } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
+  import { makeRank } from '@hcengineering/rank'
   import { ScrollBox, Scroller } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { CardDragEvent, DocWithRank, Item } from '../types'
-  import { calcRank } from '../utils'
   import KanbanRow from './KanbanRow.svelte'
 
   export let categories: CategoryType[] = []
@@ -204,8 +204,7 @@
       const arr = getGroupByValues(groupByDocs, state) ?? []
       const s = arr.findIndex((p) => p._id === dragCard?._id)
       if (s !== -1) {
-        const newRank = calcRank(arr[s - 1], arr[s + 1])
-        dragCard.rank = newRank
+        dragCard.rank = makeRank(arr[s - 1].rank, arr[s + 1].rank)
       }
     }
     isDragging = false

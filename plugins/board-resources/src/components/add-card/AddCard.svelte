@@ -15,7 +15,7 @@
 <script lang="ts">
   import type { Card as BoardCard } from '@hcengineering/board'
   import board from '../../plugin'
-  import task, { calcRank } from '@hcengineering/task'
+  import task, { makeRank } from '@hcengineering/task'
   import { AttachedData, generateId, Ref, SortingOrder, Space } from '@hcengineering/core'
   import { IconAdd, Button, showPopup } from '@hcengineering/ui'
   import { getClient } from '@hcengineering/presentation'
@@ -43,7 +43,7 @@
       status: state._id,
       number: (incResult as any).object.sequence,
       title,
-      rank: calcRank(lastOne, undefined),
+      rank: makeRank(lastOne?.rank, undefined),
       assignee: null,
       description: '',
       members: [],

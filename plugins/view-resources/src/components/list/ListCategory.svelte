@@ -29,7 +29,7 @@
   } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { DocWithRank, calcRank } from '@hcengineering/task'
+  import { DocWithRank, makeRank } from '@hcengineering/task'
   import { AnyComponent, AnySvelteComponent, ExpandCollapse, mouseAttractor } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey, ViewOptionModel, ViewOptions, Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
@@ -286,7 +286,7 @@
       const prev = limited[dragItemIndex - 1] as DocWithRank
       const next = limited[dragItemIndex + 1] as DocWithRank
       try {
-        const newRank = calcRank(prev, next)
+        const newRank = makeRank(prev?.rank, next?.rank)
         if ((dragItem.doc as DocWithRank)?.rank !== newRank) {
           ;(update as any).rank = newRank
         }

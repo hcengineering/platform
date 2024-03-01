@@ -452,6 +452,9 @@ dependencies:
   '@rush-temp/query':
     specifier: file:./projects/query.tgz
     version: file:projects/query.tgz(@types/node@20.11.19)(esbuild@0.20.1)(svelte@4.2.11)(ts-node@10.9.2)
+  '@rush-temp/rank':
+    specifier: file:./projects/rank.tgz
+    version: file:projects/rank.tgz(@types/node@20.11.19)(esbuild@0.20.1)(svelte@4.2.11)(ts-node@10.9.2)
   '@rush-temp/recruit':
     specifier: file:./projects/recruit.tgz
     version: file:projects/recruit.tgz(@types/node@20.11.19)(esbuild@0.20.1)(svelte@4.2.11)(ts-node@10.9.2)
@@ -1127,6 +1130,9 @@ dependencies:
   koa-session:
     specifier: ^6.4.0
     version: 6.4.0
+  lexorank:
+    specifier: ~1.0.4
+    version: 1.0.5
   lib0:
     specifier: ^0.2.88
     version: 0.2.89
@@ -17882,7 +17888,7 @@ packages:
     dev: false
 
   file:projects/core.tgz(@types/node@20.11.19)(esbuild@0.20.1)(svelte@4.2.11)(ts-node@10.9.2):
-    resolution: {integrity: sha512-bn0393Ac8kJFlPbPBW42DuVtM/F+n7fbh0Qy9MxW5vR4RxdAnxdyaXKrZ1OgQbB/K3LaVrmcqpg/MvNjfrLGKw==, tarball: file:projects/core.tgz}
+    resolution: {integrity: sha512-EDhBQR0A+GHcrxd9e/JOJhcAu6RrAMtaMdNQ6Hsjc04UuvjFC5bXbQv3tdKZ6xUGvhwGBd+D7PhjiHucI6DHhg==, tarball: file:projects/core.tgz}
     id: file:projects/core.tgz
     name: '@rush-temp/core'
     version: 0.0.0
@@ -21161,6 +21167,39 @@ packages:
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       simplytyped: 3.3.0(typescript@5.3.3)
+      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@types/node'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - svelte
+      - ts-node
+    dev: false
+
+  file:projects/rank.tgz(@types/node@20.11.19)(esbuild@0.20.1)(svelte@4.2.11)(ts-node@10.9.2):
+    resolution: {integrity: sha512-4wKrvTCSEl+F3B4q8HKloGSLUA8JeTDmnAKL+GUuZ71OAaF6DIwlFvq2f1X8gm75jE1dFIRXIxJA8NfEyudb+A==, tarball: file:projects/rank.tgz}
+    id: file:projects/rank.tgz
+    name: '@rush-temp/rank'
+    version: 0.0.0
+    dependencies:
+      '@types/jest': 29.5.12
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      lexorank: 1.0.5
+      prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:

@@ -14,7 +14,7 @@ import core, {
 import tracker, { Issue, IssuePriority, IssueStatus, Project } from '@hcengineering/tracker'
 
 import { connect } from './connect'
-import { calcRank } from '@hcengineering/task'
+import { makeRank } from '@hcengineering/task'
 
 let objectId: Ref<Issue> = generateId()
 const space = tracker.project.DefaultProject
@@ -94,7 +94,7 @@ async function genIssue (client: TxOperations, statuses: Ref<IssueStatus>[]): Pr
     number,
     status: faker.random.arrayElement(statuses),
     priority: faker.random.arrayElement(Object.values(IssuePriority)) as IssuePriority,
-    rank: calcRank(lastOne, undefined),
+    rank: makeRank(lastOne?.rank, undefined),
     comments: 0,
     subIssues: 0,
     dueDate: object.dueDate,

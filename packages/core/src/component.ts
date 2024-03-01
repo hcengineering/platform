@@ -14,7 +14,7 @@
 //
 import type { IntlString, Plugin, StatusCode } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import { Mixin, Rank, Version } from '.'
+import { Mixin, Version } from '.'
 import type {
   Account,
   AnyAttribute,
@@ -101,7 +101,6 @@ export default plugin(coreId, {
     TypeHyperlink: '' as Ref<Class<Type<Hyperlink>>>,
     TypeNumber: '' as Ref<Class<Type<number>>>,
     TypeMarkup: '' as Ref<Class<Type<string>>>,
-    TypeRank: '' as Ref<Class<Type<Rank>>>,
     TypeRecord: '' as Ref<Class<Type<Record<any, any>>>>,
     TypeBoolean: '' as Ref<Class<Type<boolean>>>,
     TypeTimestamp: '' as Ref<Class<Type<Timestamp>>>,
@@ -174,7 +173,6 @@ export default plugin(coreId, {
     Timestamp: '' as IntlString,
     Date: '' as IntlString,
     IntlString: '' as IntlString,
-    Rank: '' as IntlString,
     Ref: '' as IntlString,
     Collection: '' as IntlString,
     Array: '' as IntlString,

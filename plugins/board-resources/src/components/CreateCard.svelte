@@ -18,7 +18,7 @@
   import core, { AttachedData, Ref, SortingOrder, Space, generateId } from '@hcengineering/core'
   import { OK, Status } from '@hcengineering/platform'
   import { Card, SpaceSelector, createQuery, getClient } from '@hcengineering/presentation'
-  import task, { TaskType, calcRank } from '@hcengineering/task'
+  import task, { TaskType, makeRank } from '@hcengineering/task'
   import { EditBox, Grid, Status as StatusControl } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import board from '../plugin'
@@ -73,7 +73,7 @@
       title,
       kind,
       identifier: `CARD-${number}`,
-      rank: calcRank(lastOne, undefined),
+      rank: makeRank(lastOne?.rank, undefined),
       assignee: null,
       description: '',
       members: [],

@@ -48,13 +48,6 @@ export type CollectionSize<T> = T[]['length']
 
 /**
  * @public
- *
- * String representation of {@link https://www.npmjs.com/package/lexorank LexoRank} type`
- */
-export type Rank = string
-
-/**
- * @public
  */
 export interface Obj {
   _class: Ref<Class<this>>
