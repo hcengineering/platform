@@ -53,7 +53,7 @@
   <div class="container">
     <Grid column={getColumnsCount(enabledProviders.length)} columnGap={1} rowGap={1} alignItems={'center'}>
       {#each enabledProviders as provider}
-        <a href={getLink(provider)} target="_blank" rel="noopener noreferrer">
+        <a href={getLink(provider)}>
           <Button kind={'contrast'} shape={'round2'} size={'x-large'} width="100%" stopPropagation={false}>
             <svelte:fragment slot="content">
               <svelte:component this={provider.component} />
