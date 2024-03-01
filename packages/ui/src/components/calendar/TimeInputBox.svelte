@@ -35,7 +35,7 @@
   let edits: IEdits[] = editsType.map((edit) => {
     return { id: edit, value: -1 }
   })
-  let selected: TEdits | null = 'hour'
+  let selected: TEdits | null = null
   let startTyping: boolean = false
 
   const dispatch = createEventDispatcher()
