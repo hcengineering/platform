@@ -313,7 +313,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
         const space = this.privateSpaces[tx.objectSpace]
         if (space !== undefined) {
           targets = await this.getTargets(space.members)
-          if (!isOwner(account)) {
+          if (!isOwner(account, ctx)) {
             const cudTx = tx as TxCUD<Doc>
             const isSpace = h.isDerived(cudTx.objectClass, core.class.Space)
             const allowed = this.allowedSpaces[account._id]
@@ -482,7 +482,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     const field = this.getKey(_class)
 
     if (!isSystem(account) && account.role !== AccountRole.Guest) {
-      if (!isOwner(account) || !this.storage.hierarchy.isDerived(_class, core.class.Space)) {
+      if (!isOwner(account, ctx) || !this.storage.hierarchy.isDerived(_class, core.class.Space)) {
         if (query[field] !== undefined) {
           ;(newQuery as any)[field] = await this.mergeQuery(account, query[field], domain)
         } else {
@@ -492,7 +492,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       }
     }
     const findResult = await this.provideFindAll(ctx, _class, newQuery, options)
-    if (!isOwner(account) && account.role !== AccountRole.Guest) {
+    if (!isOwner(account, ctx) && account.role !== AccountRole.Guest) {
       if (options?.lookup !== undefined) {
         for (const object of findResult) {
           if (object.$lookup !== undefined) {
@@ -521,7 +521,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
   async isUnavailable (ctx: SessionContext, space: Ref<Space>): Promise<boolean> {
     if (this.privateSpaces[space] === undefined) return false
     const account = await getUser(this.storage, ctx)
-    if (isOwner(account)) return false
+    if (isOwner(account, ctx)) return false
     return !this.allowedSpaces[account._id]?.includes(space)
   }
 

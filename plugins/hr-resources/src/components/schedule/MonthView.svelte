@@ -16,20 +16,21 @@
   import contact, { Employee } from '@hcengineering/contact'
   import { AccountRole, getCurrentAccount, Ref } from '@hcengineering/core'
   import { tzDateCompare, type Department, type Request, type RequestType, type Staff } from '@hcengineering/hr'
+  import { isAdminUser } from '@hcengineering/presentation'
   import {
     areDatesEqual,
-    day as getDay,
     daysInMonth,
+    deviceOptionsStore as deviceInfo,
     eventToHTMLElement,
+    day as getDay,
     getWeekDayName,
     isWeekend,
     Label,
     LabelAndProps,
+    resizeObserver,
     Scroller,
     showPopup,
-    tooltip,
-    deviceOptionsStore as deviceInfo,
-    resizeObserver
+    tooltip
   } from '@hcengineering/ui'
   import hr from '../../plugin'
   import { getHolidayDatesForEmployee, getRequests, isHoliday } from '../../utils'
@@ -183,7 +184,7 @@
   }
 
   function isEditable (employee: Staff): boolean {
-    return editableList.includes(employee._id) && (isFutureDate() || me.role === AccountRole.Owner)
+    return editableList.includes(employee._id) && (isFutureDate() || me.role === AccountRole.Owner || isAdminUser())
   }
 
   function getTooltip (requests: Request[], day: Date, staff: Staff): LabelAndProps | undefined {
@@ -306,7 +307,7 @@
                 class="timeline-cell timeline-day-header flex-col-center justify-center"
                 style={getCellStyle()}
                 on:click={() => {
-                  if (isFutureDate() || me.role === AccountRole.Owner) {
+                  if (isFutureDate() || me.role === AccountRole.Owner || isAdminUser()) {
                     setPublicHoliday(day)
                   }
                 }}

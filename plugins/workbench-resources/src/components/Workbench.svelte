@@ -20,7 +20,7 @@
   import notification, { DocNotifyContext, InboxNotification, inboxId } from '@hcengineering/notification'
   import { BrowserNotificatator, InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { IntlString, broadcastEvent, getMetadata, getResource } from '@hcengineering/platform'
-  import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
+  import { ActionContext, createQuery, getClient, isAdminUser } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
   import support, { SupportStatus, supportLink } from '@hcengineering/support'
   import {
@@ -633,7 +633,7 @@
       }}
     />
   </div>
-{:else if employee?.active || account.role === AccountRole.Owner}
+{:else if employee?.active || account.role === AccountRole.Owner || isAdminUser()}
   <ActionHandler />
   <svg class="svg-mask">
     <clipPath id="notify-normal">

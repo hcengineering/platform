@@ -13,16 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Card } from '@hcengineering/presentation'
-  import { AccountRole, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { PersonAccount } from '@hcengineering/contact'
+  import { AccountRole, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
+  import { Card, isAdminUser } from '@hcengineering/presentation'
+  import ui, { Button, Label } from '@hcengineering/ui'
+  import { ObjectPresenter } from '@hcengineering/view-resources'
   import view from '@hcengineering/view-resources/src/plugin'
   import { createEventDispatcher } from 'svelte'
-  import { PersonAccount } from '@hcengineering/contact'
   import { personAccountByIdStore } from '../utils'
-  import ui, { Button, Label } from '@hcengineering/ui'
-  import PersonAccountRefPresenter from './PersonAccountRefPresenter.svelte'
   import PersonAccountPresenter from './PersonAccountPresenter.svelte'
-  import { ObjectPresenter } from '@hcengineering/view-resources'
+  import PersonAccountRefPresenter from './PersonAccountRefPresenter.svelte'
 
   export let object: Doc | Doc[]
   export let deleteAction: () => void | Promise<void>
@@ -37,7 +37,8 @@
   $: canDelete =
     (skipCheck ||
       (creators.length === 1 && creators.includes(getCurrentAccount()._id as Ref<PersonAccount>)) ||
-      getCurrentAccount().role === AccountRole.Owner) &&
+      getCurrentAccount().role === AccountRole.Owner ||
+      isAdminUser()) &&
     canDeleteExtra
   $: label = canDelete ? view.string.DeleteObject : view.string.DeletePopupNoPermissionTitle
 </script>
