@@ -14,7 +14,7 @@
     "_phase:bundle": "rushx bundle",
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
-    "bundle": "mkdir -p bundle && esbuild src/index.ts --bundle --sourcemap=inline --minify --platform=node > bundle/bundle.js",
+    "bundle": "(node ../../common/scripts/mkdir.js bundle) && esbuild src/index.ts --bundle --sourcemap=inline --minify --platform=node > bundle/bundle.js",
     "docker:build": "docker build -t hardcoreeng/backup .",
     "docker:staging": "../../common/scripts/docker_tag.sh hardcoreeng/backup staging",
     "docker:push": "../../common/scripts/docker_tag.sh hardcoreeng/backup",

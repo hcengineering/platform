@@ -10,7 +10,7 @@
     "build": "compile",
     "build:watch": "compile",
     "start": "ts-node src/index.ts",
-    "bundle": "mkdir -p bundle && esbuild src/index.ts --bundle --minify --platform=node > bundle/bundle.js",
+    "bundle": "(node ../../common/scripts/mkdir.js bundle) && esbuild src/index.ts --bundle --minify --platform=node > bundle/bundle.js",
     "_phase:bundle": "rushx bundle",
     "run-local": "TRANSACTOR_URL=ws://localhost:3333 MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin MINIO_ENDPOINT=localhost ts-node ./src/index.ts",
     "format": "format src",

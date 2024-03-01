@@ -11,7 +11,7 @@
     "build": "compile",
     "build:watch": "compile",
     "_phase:bundle": "rushx bundle",
-    "bundle": "mkdir -p bundle && esbuild src/index.ts --bundle --minify --platform=node > apm.js",
+    "bundle": "(node ../../common/scripts/mkdir.js bundle) && esbuild src/index.ts --bundle --minify --platform=node > apm.js",
     "format": "format src",
     "test": "jest --passWithNoTests --silent --forceExit",
     "_phase:build": "compile transpile src",
