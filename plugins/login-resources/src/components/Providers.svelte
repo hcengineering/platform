@@ -1,7 +1,7 @@
 <script lang="ts">
   import { concatLink } from '@hcengineering/core'
   import { getMetadata } from '@hcengineering/platform'
-  import { AnySvelteComponent, Button, Grid, getCurrentLocation } from '@hcengineering/ui'
+  import { AnySvelteComponent, Button, Grid, deviceOptionsStore, getCurrentLocation } from '@hcengineering/ui'
   import { onMount } from 'svelte'
   import login from '../plugin'
   import { getProviders } from '../utils'
@@ -49,19 +49,21 @@
   }
 </script>
 
-<div class="container">
-  <Grid column={getColumnsCount(enabledProviders.length)} columnGap={1} rowGap={1} alignItems={'center'}>
-    {#each enabledProviders as provider}
-      <a href={getLink(provider)} target="_blank" rel="noopener noreferrer">
-        <Button kind={'contrast'} shape={'round2'} size={'x-large'} width="100%" stopPropagation={false}>
-          <svelte:fragment slot="content">
-            <svelte:component this={provider.component} />
-          </svelte:fragment>
-        </Button>
-      </a>
-    {/each}
-  </Grid>
-</div>
+{#if !$deviceOptionsStore.isMobile}
+  <div class="container">
+    <Grid column={getColumnsCount(enabledProviders.length)} columnGap={1} rowGap={1} alignItems={'center'}>
+      {#each enabledProviders as provider}
+        <a href={getLink(provider)}>
+          <Button kind={'contrast'} shape={'round2'} size={'x-large'} width="100%" stopPropagation={false}>
+            <svelte:fragment slot="content">
+              <svelte:component this={provider.component} />
+            </svelte:fragment>
+          </Button>
+        </a>
+      {/each}
+    </Grid>
+  </div>
+{/if}
 
 <style lang="scss">
   .container {

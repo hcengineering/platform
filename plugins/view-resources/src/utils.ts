@@ -17,7 +17,12 @@
 import { Analytics } from '@hcengineering/analytics'
 import core, {
   AccountRole,
-  type FindOptions,
+  ClassifierKind,
+  Hierarchy,
+  TxProcessor,
+  getCurrentAccount,
+  getObjectValue,
+  type Account,
   type AggregateValue,
   type AttachedDoc,
   type CategoryType,
@@ -27,9 +32,7 @@ import core, {
   type Doc,
   type DocumentQuery,
   type DocumentUpdate,
-  getCurrentAccount,
-  getObjectValue,
-  Hierarchy,
+  type FindOptions,
   type Lookup,
   type Mixin,
   type Obj,
@@ -38,16 +41,15 @@ import core, {
   type ReverseLookup,
   type ReverseLookups,
   type Space,
-  type TxOperations,
   type TxCUD,
   type TxCollectionCUD,
-  TxProcessor,
   type TxCreateDoc,
-  type TxUpdateDoc,
   type TxMixin,
-  ClassifierKind,
+  type TxOperations,
+  type TxUpdateDoc,
   type TypeAny
 } from '@hcengineering/core'
+import { type Restrictions } from '@hcengineering/guest'
 import type { Asset, IntlString } from '@hcengineering/platform'
 import { getResource, translate } from '@hcengineering/platform'
 import {
@@ -57,21 +59,21 @@ import {
   getClient,
   hasResource,
   type KeyedAttribute,
-  getFiltredKeys
+  getFiltredKeys,
+  isAdminUser
 } from '@hcengineering/presentation'
-import { type Restrictions } from '@hcengineering/guest'
 import {
-  type AnyComponent,
-  type AnySvelteComponent,
   ErrorPresenter,
   getCurrentResolvedLocation,
   getPanelURI,
   getPlatformColorForText,
-  type Location,
   locationToUrl,
   navigate,
   resolvedLocationStore,
-  themeStore
+  themeStore,
+  type AnyComponent,
+  type AnySvelteComponent,
+  type Location
 } from '@hcengineering/ui'
 import view, {
   type AttributeModel,
@@ -82,10 +84,10 @@ import view, {
   type ViewletDescriptor
 } from '@hcengineering/view'
 
+import contact, { getName, type Contact, type PersonAccount } from '@hcengineering/contact'
 import { get, writable } from 'svelte/store'
 import plugin from './plugin'
 import { noCategory } from './viewOptions'
-import contact, { type Contact, getName } from '@hcengineering/contact'
 
 export { getFiltredKeys, isCollectionAttr } from '@hcengineering/presentation'
 
@@ -388,7 +390,8 @@ export async function buildModel (options: BuildModelOptions): Promise<Attribute
 
 export async function deleteObject (client: TxOperations, object: Doc): Promise<void> {
   const currentAcc = getCurrentAccount()
-  if (currentAcc.role !== AccountRole.Owner && object.createdBy !== currentAcc._id) return
+  const accounts = await getCurrentPersonAccounts()
+  if (currentAcc.role !== AccountRole.Owner && !accounts.has(object.createdBy)) return
   if (client.getHierarchy().isDerived(object._class, core.class.AttachedDoc)) {
     const adoc = object as AttachedDoc
     await client
@@ -403,13 +406,45 @@ export async function deleteObject (client: TxOperations, object: Doc): Promise<
   }
 }
 
+export async function getCurrentPersonAccounts (): Promise<Set<Ref<Account> | undefined>> {
+  return new Set(
+    (
+      await getClient().findAll(contact.class.PersonAccount, { person: (getCurrentAccount() as PersonAccount).person })
+    ).map((it) => it._id)
+  )
+}
+
 export async function deleteObjects (client: TxOperations, objects: Doc[], skipCheck: boolean = false): Promise<void> {
+  let realObjects: Doc[] = []
   if (!skipCheck) {
     const currentAcc = getCurrentAccount()
-    if (currentAcc.role !== AccountRole.Owner && objects.some((p) => p.createdBy !== currentAcc._id)) return
+
+    // We need to find all person current accounts
+    const allPersonAccounts = await getCurrentPersonAccounts()
+
+    const byClass = new Map<Ref<Class<Doc>>, Doc[]>()
+    for (const d of objects) {
+      byClass.set(d._class, [...(byClass.get(d._class) ?? []), d])
+    }
+    const adminUser = isAdminUser()
+    for (const [cl, docs] of byClass.entries()) {
+      const realDocs = await client.findAll(cl, { _id: { $in: docs.map((it: Doc) => it._id) } })
+      const notAllowed = realDocs.filter((p) => !allPersonAccounts.has(p.createdBy))
+
+      if (notAllowed.length > 0) {
+        console.error('You are not allowed to delete this object', notAllowed)
+      }
+      if (currentAcc.role === AccountRole.Owner || adminUser) {
+        realObjects.push(...realDocs)
+      } else {
+        realObjects.push(...realDocs.filter((p) => allPersonAccounts.has(p.createdBy)))
+      }
+    }
+  } else {
+    realObjects = objects
   }
   const ops = client.apply('delete')
-  for (const object of objects) {
+  for (const object of realObjects) {
     if (client.getHierarchy().isDerived(object._class, core.class.AttachedDoc)) {
       const adoc = object as AttachedDoc
       await ops

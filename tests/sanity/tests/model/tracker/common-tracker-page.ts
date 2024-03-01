@@ -146,7 +146,7 @@ export class CommonTrackerPage extends CalendarPage {
   }
 
   async checkActivityExist (activity: string): Promise<void> {
-    await expect(this.textActivity.filter({ hasText: activity })).toBeVisible()
+    await expect(this.textActivity.filter({ hasText: activity }).first()).toBeVisible()
   }
 
   async fillMoveIssuesModal (newProjectName: string, keepOriginalAttributes: boolean = false): Promise<void> {

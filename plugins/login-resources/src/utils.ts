@@ -862,7 +862,10 @@ export async function getSessionLoginInfo (): Promise<LoginInfo | WorkspaceLogin
   }
 
   try {
-    const response = await fetch(concatLink(accountsUrl, '/auth'))
+    const response = await fetch(concatLink(accountsUrl, '/auth'), {
+      method: 'GET',
+      credentials: 'include'
+    })
     const result = await response.json()
     return result
   } catch (err: any) {
