@@ -124,7 +124,9 @@ export function serveAccount (methods: Record<string, AccountMethod>, productId 
     ctx.body = result
   })
 
-  app.use(cors())
+  app.use(cors({
+    credentials: true
+  }))
   app.use(bodyParser())
   app.use(router.routes()).use(router.allowedMethods())
 
