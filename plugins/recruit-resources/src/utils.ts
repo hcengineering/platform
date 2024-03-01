@@ -72,7 +72,7 @@ async function generateIdLocation (loc: Location, shortLink: string): Promise<Re
   }
   const appComponent = loc.path[0] ?? ''
   const workspace = loc.path[1] ?? ''
-  const objectPanel = hierarchy.classHierarchyMixin(recruit.mixin.Candidate as Ref<Class<Doc>>, view.mixin.ObjectPanel)
+  const objectPanel = hierarchy.classHierarchyMixin(doc._class, view.mixin.ObjectPanel)
   const component = objectPanel?.component ?? view.component.EditDoc
   const special = _class === recruit.mixin.Candidate ? 'talents' : 'organizations'
   const defaultPath = [appComponent, workspace, recruitId, special]

@@ -37,7 +37,8 @@ import {
   type Timestamp,
   type TxOperations,
   getCurrentAccount,
-  toIdMap
+  toIdMap,
+  type Class
 } from '@hcengineering/core'
 import notification, { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
 import { getEmbeddedLabel, getResource } from '@hcengineering/platform'
@@ -268,14 +269,18 @@ async function generateLocation (loc: Location, id: Ref<Contact>): Promise<Resol
     : client.getHierarchy().isDerived(doc._class, contact.mixin.Employee)
       ? 'employees'
       : 'persons'
+
+  const objectPanel = client.getHierarchy().classHierarchyMixin(doc._class as Ref<Class<Doc>>, view.mixin.ObjectPanel)
+  const component = objectPanel?.component ?? view.component.EditDoc
+
   return {
     loc: {
       path: [appComponent, workspace],
-      fragment: getPanelURI(view.component.EditDoc, doc._id, doc._class, 'content')
+      fragment: getPanelURI(component, doc._id, doc._class, 'content')
     },
     defaultLocation: {
       path: [appComponent, workspace, contactId, special],
-      fragment: getPanelURI(view.component.EditDoc, doc._id, doc._class, 'content')
+      fragment: getPanelURI(component, doc._id, doc._class, 'content')
     }
   }
 }

@@ -52,10 +52,12 @@ import type { Asset, IntlString } from '@hcengineering/platform'
 import { getResource, translate } from '@hcengineering/platform'
 import {
   type AttributeCategory,
+  AttributeCategoryOrder,
   getAttributePresenterClass,
   getClient,
   hasResource,
-  type KeyedAttribute
+  type KeyedAttribute,
+  getFiltredKeys
 } from '@hcengineering/presentation'
 import { type Restrictions } from '@hcengineering/guest'
 import {
@@ -1231,3 +1233,67 @@ export const restrictionStore = writable<Restrictions>({
   disableNavigation: false,
   disableActions: false
 })
+
+export async function getDocAttrsInfo (
+  mixins: Array<Mixin<Doc>>,
+  ignoreKeys: string[],
+  _class: Ref<Class<Doc>>,
+  allowedCollections: string[] = [],
+  collectionArrays: string[] = []
+): Promise<{
+    keys: KeyedAttribute[]
+    inplaceAttributes: string[]
+    editors: Array<{ key: KeyedAttribute, editor: AnyComponent, category: AttributeCategory }>
+  }> {
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  const keysMap = new Map(getFiltredKeys(hierarchy, _class, ignoreKeys).map((p) => [p.attr._id, p]))
+  for (const m of mixins) {
+    const mkeys = getFiltredKeys(hierarchy, m._id, ignoreKeys)
+    for (const key of mkeys) {
+      keysMap.set(key.attr._id, key)
+    }
+  }
+  const filteredKeys = Array.from(keysMap.values())
+  const { attributes, collections } = categorizeFields(hierarchy, filteredKeys, collectionArrays, allowedCollections)
+
+  const keys = attributes.map((it) => it.key)
+  const editors: Array<{ key: KeyedAttribute, editor: AnyComponent, category: AttributeCategory }> = []
+  const inplaceAttributes: string[] = []
+
+  for (const k of collections) {
+    if (allowedCollections.includes(k.key.key)) continue
+    const editor = await getAttrEditor(k.key, hierarchy)
+    if (editor === undefined) continue
+    if (k.category === 'inplace') {
+      inplaceAttributes.push(k.key.key)
+    }
+    editors.push({ key: k.key, editor, category: k.category })
+  }
+
+  return {
+    keys,
+    inplaceAttributes,
+    editors: editors.sort((a, b) => AttributeCategoryOrder[a.category] - AttributeCategoryOrder[b.category])
+  }
+}
+
+async function getAttrEditor (key: KeyedAttribute, hierarchy: Hierarchy): Promise<AnyComponent | undefined> {
+  const attrClass = getAttributePresenterClass(hierarchy, key.attr)
+  const clazz = hierarchy.getClass(attrClass.attrClass)
+  const mix = {
+    array: view.mixin.ArrayEditor,
+    collection: view.mixin.CollectionEditor,
+    inplace: view.mixin.InlineAttributEditor,
+    attribute: view.mixin.AttributeEditor,
+    object: undefined as any
+  }
+  const mixinRef = mix[attrClass.category]
+  if (mixinRef !== undefined) {
+    const editorMixin = hierarchy.as(clazz, mixinRef)
+    return (editorMixin as any).editor
+  } else {
+    return undefined
+  }
+}

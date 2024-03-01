@@ -40,7 +40,8 @@ import {
   type Class,
   type Domain,
   type Ref,
-  type Timestamp
+  type Timestamp,
+  type Markup
 } from '@hcengineering/core'
 import {
   Collection,
@@ -57,7 +58,8 @@ import {
   TypeString,
   TypeTimestamp,
   UX,
-  type Builder
+  type Builder,
+  TypeCollaborativeMarkup
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
@@ -156,6 +158,10 @@ export class TMember extends TAttachedDoc implements Member {
 @Model(contact.class.Organization, contact.class.Contact)
 @UX(contact.string.Organization, contact.icon.Company, 'ORG', 'name')
 export class TOrganization extends TContact implements Organization {
+  @Prop(TypeCollaborativeMarkup(), core.string.Description)
+  @Index(IndexKind.FullText)
+    description?: Markup
+
   @Prop(Collection(contact.class.Member), contact.string.Members)
     members!: number
 }
@@ -769,6 +775,29 @@ export function createModel (builder: Builder): void {
   })
   builder.mixin(contact.class.Organization, core.class.Class, view.mixin.ClassFilters, {
     filters: []
+  })
+
+  builder.mixin(contact.class.Organization, core.class.Class, view.mixin.ObjectPanel, {
+    component: contact.component.EditOrganizationPanel
+  })
+
+  createAction(builder, {
+    label: view.string.Open,
+    icon: view.icon.Open,
+    action: view.actionImpl.ShowPanel,
+    actionProps: {
+      component: contact.component.EditOrganizationPanel,
+      element: 'content'
+    },
+    input: 'focus',
+    category: contact.category.Contact,
+    override: [view.action.Open],
+    keyBinding: ['keyE'],
+    target: contact.class.Organization,
+    context: {
+      mode: ['context', 'browser'],
+      group: 'create'
+    }
   })
 
   builder.mixin(contact.class.Channel, core.class.Class, view.mixin.AttributeFilter, {
