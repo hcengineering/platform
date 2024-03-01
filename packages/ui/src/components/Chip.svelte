@@ -88,7 +88,7 @@
     }
 
     &.min {
-      height: auto;
+      height: 1.25rem;
       padding: var(--spacing-0_25);
       border-radius: var(--extra-small-BorderRadius);
       font-size: 0.6875rem;
