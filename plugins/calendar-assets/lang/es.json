@@ -52,7 +52,7 @@
     "ThisEvent": "Este evento",
     "ThisAndNext": "Este y los siguientes eventos",
     "AllEvents": "Todos los eventos",
-    "NewEvent": "Nuevo evento",
+    "EventTitlePlaceholder": "Título del evento",
     "TimeZone": "Zona horaria",
     "Repeat": "Repetir",
     "On": "En",
