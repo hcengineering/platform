@@ -164,6 +164,10 @@ export async function getAccount (db: Db, email: string): Promise<Account | null
   return await db.collection(ACCOUNT_COLLECTION).findOne<Account>({ email: cleanEmail(email) })
 }
 
+async function getAccountByQuery (db: Db, query: Record<string, string>): Promise<Account | null> {
+  return await db.collection(ACCOUNT_COLLECTION).findOne<Account>(query)
+}
+
 /**
  * @public
  */
@@ -518,7 +522,8 @@ export async function createAcc (
   password: string | null,
   first: string,
   last: string,
-  confirmed: boolean = false
+  confirmed: boolean = false,
+  extra?: Record<string, string>
 ): Promise<Account> {
   const email = cleanEmail(_email)
   const salt = randomBytes(32)
@@ -541,7 +546,8 @@ export async function createAcc (
     first,
     last,
     confirmed,
-    workspaces: []
+    workspaces: [],
+    ...(extra ?? {})
   })
 
   const newAccount = await getAccount(db, email)
@@ -1499,12 +1505,16 @@ export async function joinWithProvider (
   _email: string,
   first: string,
   last: string,
-  inviteId: ObjectId
+  inviteId: ObjectId,
+  extra?: Record<string, string>
 ): Promise<WorkspaceLoginInfo | LoginInfo> {
   const email = cleanEmail(_email)
   const invite = await getInvite(db, inviteId)
   const workspace = await checkInvite(invite, email)
-  const account = await getAccount(db, email)
+  let account = await getAccount(db, email)
+  if (account == null && extra !== undefined) {
+    account = await getAccountByQuery(db, extra)
+  }
   if (account !== null) {
     // we should clean password if account is not confirmed
     if (account.confirmed === false) {
@@ -1530,7 +1540,7 @@ export async function joinWithProvider (
     return result
   }
 
-  const newAccount = await createAcc(db, productId, email, null, first, last, true)
+  const newAccount = await createAcc(db, productId, email, null, first, last, true, extra)
   const token = generateToken(email, getWorkspaceId('', productId), getExtra(newAccount))
   const ws = await assignWorkspace(db, productId, email, workspace.name, false)
   const result = await selectWorkspace(db, productId, token, ws.workspaceUrl ?? ws.workspace, false)
@@ -1545,10 +1555,14 @@ export async function loginWithProvider (
   productId: string,
   _email: string,
   first: string,
-  last: string
+  last: string,
+  extra?: Record<string, string>
 ): Promise<LoginInfo> {
   const email = cleanEmail(_email)
-  const account = await getAccount(db, email)
+  let account = await getAccount(db, email)
+  if (account == null && extra !== undefined) {
+    account = await getAccountByQuery(db, extra)
+  }
   if (account !== null) {
     // we should clean password if account is not confirmed
     if (account.confirmed === false) {
@@ -1562,7 +1576,7 @@ export async function loginWithProvider (
     return result
   }
 
-  const newAccount = await createAcc(db, productId, email, null, first, last, true)
+  const newAccount = await createAcc(db, productId, email, null, first, last, true, extra)
 
   const result = {
     endpoint: getEndpoint(),
