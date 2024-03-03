@@ -112,6 +112,7 @@ test.describe('Tracker filters tests', () => {
   })
 
   test('Created date', async ({ page }) => {
+    const yesterdayIssueTitle = 'Issue for the Check Filter Yesterday'
     const newIssue: NewIssue = {
       title: `Issue for the Created filter-${generateId()}`,
       description: 'Issue for the Created filter',
@@ -138,12 +139,14 @@ test.describe('Tracker filters tests', () => {
       await issuesPage.checkFilter('Created date', 'Today')
 
       await issuesPage.checkFilteredIssueExist(newIssue.title)
+      await issuesPage.checkFilteredIssueNotExist(yesterdayIssueTitle)
     })
 
     await test.step('Check Filter Yesterday', async () => {
       await issuesPage.updateFilterDimension('Yesterday')
       await issuesPage.checkFilter('Created date', 'Yesterday')
 
+      await issuesPage.checkFilteredIssueExist(yesterdayIssueTitle)
       await issuesPage.checkFilteredIssueNotExist(newIssue.title)
     })
 
@@ -152,6 +155,7 @@ test.describe('Tracker filters tests', () => {
       await issuesPage.checkFilter('Created date', 'This week')
 
       await issuesPage.checkFilteredIssueExist(newIssue.title)
+      await issuesPage.checkFilteredIssueExist(yesterdayIssueTitle)
     })
 
     await test.step('Check Filter This month', async () => {
@@ -159,13 +163,25 @@ test.describe('Tracker filters tests', () => {
       await issuesPage.checkFilter('Created date', 'This month')
 
       await issuesPage.checkFilteredIssueExist(newIssue.title)
+      await issuesPage.checkFilteredIssueExist(yesterdayIssueTitle)
+    })
+
+    await test.step('Check Filter Exact date - Yesterday', async () => {
+      const dateYesterday = new Date()
+      dateYesterday.setDate(dateYesterday.getDate() - 1)
+      await issuesPage.updateFilterDimension('Exact date', dateYesterday.getDate().toString())
+      await issuesPage.checkFilter('Created date', 'is', dateYesterday.getDate().toString())
+
+      await issuesPage.checkFilteredIssueExist(yesterdayIssueTitle)
+      await issuesPage.checkFilteredIssueNotExist(newIssue.title)
     })
 
     await test.step('Check Filter Exact date - Today', async () => {
-      await issuesPage.updateFilterDimension('Exact date', 'Today')
+      await issuesPage.updateFilterDimension('Exact date', 'Today', true)
       await issuesPage.checkFilter('Created date', 'is', 'Today')
 
       await issuesPage.checkFilteredIssueExist(newIssue.title)
+      await issuesPage.checkFilteredIssueNotExist(yesterdayIssueTitle)
     })
 
     await test.step('Check Filter Before date - Today', async () => {
