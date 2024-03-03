@@ -390,6 +390,7 @@ export default mergeIds(trackerId, tracker, {
     GetAllPriority: '' as GetAllValuesFunc,
     GetAllComponents: '' as GetAllValuesFunc,
     GetAllMilestones: '' as GetAllValuesFunc,
+    GetAllStates: '' as GetAllValuesFunc,
     GetVisibleFilters: '' as Resource<(filters: KeyFilter[], space?: Ref<Space>) => Promise<KeyFilter[]>>,
     IsProjectJoined: '' as Resource<(space: Space) => Promise<boolean>>,
     IssueChatTitleProvider: '' as Resource<(object: Doc) => string>,
