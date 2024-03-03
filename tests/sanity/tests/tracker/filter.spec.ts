@@ -303,4 +303,33 @@ test.describe('Tracker filters tests', () => {
       await issuesDetailsPage.buttonCloseIssue.click()
     }
   })
+
+  test('Title filter', async ({ page }) => {
+    const firstSearch = 'issue'
+    const secondSearch = 'done'
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    await leftSideMenuPage.buttonTracker.click()
+
+    const issuesPage = new IssuesPage(page)
+    await issuesPage.modelSelectorAll.click()
+
+    await test.step(`Check Title filter for ${firstSearch}`, async () => {
+      await issuesPage.selectFilter('Title', firstSearch)
+      await issuesPage.checkFilter('Title', 'contains', firstSearch)
+
+      for await (const issue of iterateLocator(issuesPage.issuesList)) {
+        await expect(issue.locator('span.presenter-label > a')).toContainText(firstSearch, { ignoreCase: true })
+      }
+    })
+
+    await test.step(`Check Title filter for ${secondSearch}`, async () => {
+      await issuesPage.buttonClearFilters.click()
+      await issuesPage.selectFilter('Title', secondSearch)
+      await issuesPage.checkFilter('Title', 'contains', secondSearch)
+
+      for await (const issue of iterateLocator(issuesPage.issuesList)) {
+        await expect(issue.locator('span.presenter-label > a')).toContainText(secondSearch, { ignoreCase: true })
+      }
+    })
+  })
 })
