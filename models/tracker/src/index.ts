@@ -81,6 +81,10 @@ function defineSortAndGrouping (builder: Builder): void {
   builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.AllValuesFunc, {
     func: tracker.function.GetAllMilestones
   })
+
+  builder.mixin(tracker.class.IssueStatus, core.class.Class, view.mixin.AllValuesFunc, {
+    func: tracker.function.GetAllStates
+  })
 }
 
 function defineNotifications (builder: Builder): void {

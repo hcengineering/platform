@@ -14,7 +14,6 @@
 // limitations under the License.
 //
 
-import { get, writable } from 'svelte/store'
 import {
   toIdMap,
   type Attribute,
@@ -39,9 +38,9 @@ import task, {
 import { getCurrentLocation, navigate, showPopup } from '@hcengineering/ui'
 import { type ViewletDescriptor } from '@hcengineering/view'
 import { CategoryQuery, statusStore } from '@hcengineering/view-resources'
+import { get, writable } from 'svelte/store'
 
 import AssignedTasks from './components/AssignedTasks.svelte'
-import CreateStatePopup from './components/state/CreateStatePopup.svelte'
 import Dashboard from './components/Dashboard.svelte'
 import DueDateEditor from './components/DueDateEditor.svelte'
 import KanbanTemplatePresenter from './components/KanbanTemplatePresenter.svelte'
@@ -54,26 +53,27 @@ import TemplatesIcon from './components/TemplatesIcon.svelte'
 import TypesView from './components/TypesView.svelte'
 import KanbanView from './components/kanban/KanbanView.svelte'
 import ProjectEditor from './components/projectTypes/ProjectEditor.svelte'
+import ProjectTypePresenter from './components/projectTypes/ProjectTypePresenter.svelte'
 import ProjectTypeSelector from './components/projectTypes/ProjectTypeSelector.svelte'
+import CreateStatePopup from './components/state/CreateStatePopup.svelte'
 import StateEditor from './components/state/StateEditor.svelte'
+import StateIconPresenter from './components/state/StateIconPresenter.svelte'
 import StatePresenter from './components/state/StatePresenter.svelte'
 import StateRefPresenter from './components/state/StateRefPresenter.svelte'
 import TypeStatesPopup from './components/state/TypeStatesPopup.svelte'
-import TaskTypeClassPresenter from './components/taskTypes/TaskTypeClassPresenter.svelte'
 import ProjectTypeClassPresenter from './components/taskTypes/ProjectTypeClassPresenter.svelte'
-import TaskTypePresenter from './components/taskTypes/TaskTypePresenter.svelte'
-import ProjectTypePresenter from './components/projectTypes/ProjectTypePresenter.svelte'
-import StateIconPresenter from './components/state/StateIconPresenter.svelte'
 import TaskKindSelector from './components/taskTypes/TaskKindSelector.svelte'
+import TaskTypeClassPresenter from './components/taskTypes/TaskTypeClassPresenter.svelte'
+import TaskTypePresenter from './components/taskTypes/TaskTypePresenter.svelte'
 
 import ManageProjects from './components/projectTypes/ManageProjects.svelte'
-import ManageProjectsTools from './components/projectTypes/ManageProjectsTools.svelte'
 import ManageProjectsContent from './components/projectTypes/ManageProjectsContent.svelte'
+import ManageProjectsTools from './components/projectTypes/ManageProjectsTools.svelte'
 
 export { default as AssigneePresenter } from './components/AssigneePresenter.svelte'
 export { default as TypeSelector } from './components/TypeSelector.svelte'
 export * from './utils'
-export { StatePresenter, StateRefPresenter, TypeStatesPopup, TaskKindSelector }
+export { StatePresenter, StateRefPresenter, TaskKindSelector, TypeStatesPopup }
 
 async function editStatuses (object: Project, ev: Event): Promise<void> {
   const loc = getCurrentLocation()
@@ -140,57 +140,78 @@ export default async (): Promise<Resources> => ({
   }
 })
 
-async function getAllStates (
+export async function getAllStates (
   query: DocumentQuery<Doc> | undefined,
   onUpdate: () => void,
   queryId: Ref<Doc>,
-  attr: Attribute<Status>
+  attr: Attribute<Status>,
+  filterDone: boolean = true
 ): Promise<any[]> {
   const typeId = get(selectedTypeStore)
-  const taskTypeId = get(selectedTaskTypeStore)
-  if (taskTypeId === undefined) {
-    return []
-  }
   const type = typeId !== undefined ? get(typeStore).get(typeId) : undefined
-  const taskType = get(taskTypeStore).get(taskTypeId)
-  if (taskType === undefined) {
-    return []
-  }
-  if (type !== undefined) {
-    const statusMap = get(statusStore).byId
-    const statuses = (taskType.statuses.map((p) => statusMap.get(p)) as Status[]) ?? []
-    return statuses
-      .filter((p) => p?.category !== task.statusCategory.Lost && p?.category !== task.statusCategory.Won)
-      .map((p) => p?._id)
-  }
-  const _space = query?.space
-  if (_space !== undefined) {
-    const promise = new Promise<Array<Ref<Doc>>>((resolve, reject) => {
-      let refresh: boolean = false
-      const lq = CategoryQuery.getLiveQuery(queryId)
-      refresh = lq.query(task.class.Project, { _id: _space as Ref<Project> }, (res) => {
-        const statusMap = get(statusStore).byId
-        const statuses = (taskType.statuses.map((p) => statusMap.get(p)) as Status[]) ?? []
-        const result = statuses
+  const taskTypeId = get(selectedTaskTypeStore)
+  if (taskTypeId !== undefined) {
+    const taskType = get(taskTypeStore).get(taskTypeId)
+    if (taskType === undefined) {
+      return []
+    }
+    if (type !== undefined) {
+      const statusMap = get(statusStore).byId
+      const statuses = (taskType.statuses.map((p) => statusMap.get(p)) as Status[]) ?? []
+      if (filterDone) {
+        return statuses
           .filter((p) => p?.category !== task.statusCategory.Lost && p?.category !== task.statusCategory.Won)
           .map((p) => p?._id)
-        CategoryQuery.results.set(queryId, result)
-        resolve(result)
-        onUpdate()
-      })
-
-      if (!refresh) {
-        resolve(CategoryQuery.results.get(queryId) ?? [])
+      } else {
+        return statuses.map((p) => p?._id)
       }
-    })
-    return await promise
+    }
+    const _space = query?.space
+    if (_space !== undefined) {
+      const promise = new Promise<Array<Ref<Doc>>>((resolve, reject) => {
+        let refresh: boolean = false
+        const lq = CategoryQuery.getLiveQuery(queryId)
+        refresh = lq.query(task.class.Project, { _id: _space as Ref<Project> }, (res) => {
+          const statusMap = get(statusStore).byId
+          const statuses = (taskType.statuses.map((p) => statusMap.get(p)) as Status[]) ?? []
+          let result: Array<Ref<Status>> = []
+          if (filterDone) {
+            result = statuses
+              .filter((p) => p?.category !== task.statusCategory.Lost && p?.category !== task.statusCategory.Won)
+              .map((p) => p?._id)
+          } else {
+            result = statuses.map((p) => p?._id)
+          }
+          CategoryQuery.results.set(queryId, result)
+          resolve(result)
+          onUpdate()
+        })
+
+        if (!refresh) {
+          resolve(CategoryQuery.results.get(queryId) ?? [])
+        }
+      })
+      return await promise
+    }
+  } else if (type !== undefined) {
+    const statusMap = get(statusStore).byId
+    const statuses = (type.statuses.map((p) => statusMap.get(p._id)) as Status[]) ?? []
+    if (filterDone) {
+      return statuses
+        .filter((p) => p?.category !== task.statusCategory.Lost && p?.category !== task.statusCategory.Won)
+        .map((p) => p?._id)
+    } else {
+      return statuses.map((p) => p?._id)
+    }
   }
-  return get(statusStore)
-    .array.filter(
-      (p) =>
-        p.ofAttribute === attr._id && p.category !== task.statusCategory.Lost && p.category !== task.statusCategory.Won
-    )
-    .map((p) => p._id)
+  const allStates = get(statusStore).array.filter((p) => p.ofAttribute === attr._id)
+  if (filterDone) {
+    return allStates
+      .filter((p) => p?.category !== task.statusCategory.Lost && p?.category !== task.statusCategory.Won)
+      .map((p) => p?._id)
+  } else {
+    return allStates.map((p) => p?._id)
+  }
 }
 
 async function statusSort (
