@@ -387,6 +387,7 @@ export default mergeIds(trackerId, tracker, {
     IssuePrioritySort: '' as SortFunc,
     MilestoneSort: '' as SortFunc,
     SubIssueQuery: '' as ViewQueryAction,
+    GetAllIssueStatus: '' as GetAllValuesFunc,
     GetAllPriority: '' as GetAllValuesFunc,
     GetAllComponents: '' as GetAllValuesFunc,
     GetAllMilestones: '' as GetAllValuesFunc,

@@ -70,6 +70,10 @@ function defineSortAndGrouping (builder: Builder): void {
     createAggregationManager: tracker.aggregation.CreateComponentAggregationManager
   })
 
+  builder.mixin(tracker.class.IssueStatus, core.class.Class, view.mixin.AllValuesFunc, {
+    func: tracker.function.GetAllIssueStatus
+  })
+
   builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.AllValuesFunc, {
     func: tracker.function.GetAllPriority
   })
@@ -189,6 +193,9 @@ function defineFilters (builder: Builder): void {
   builder.mixin(tracker.class.IssueStatus, core.class.Class, view.mixin.AttributeFilterPresenter, {
     presenter: tracker.component.StatusFilterValuePresenter
   })
+
+
+  console.log('presenter: tracker.component.StatusFilterValuePresenter')
 
   //
   // Issue Template

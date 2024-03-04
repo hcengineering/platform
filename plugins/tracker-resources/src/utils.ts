@@ -469,6 +469,16 @@ async function getAllSomething (
   return await promise
 }
 
+export async function getAllIssueStatus (
+  query: DocumentQuery<Doc> | undefined,
+  onUpdate: () => void,
+  queryId: Ref<Doc>
+): Promise<any[] | undefined> {
+  return await getAllSomething(core.class.Status, {
+    ofAttribute: tracker.attribute.IssueStatus
+  }, onUpdate, queryId)
+}
+
 export async function getAllPriority (
   query: DocumentQuery<Doc> | undefined,
   onUpdate: () => void,
