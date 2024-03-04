@@ -22,14 +22,14 @@
     Loading,
     Location,
     navigate,
-    setMetadataLocalStorage,
-    ticker
+    setMetadataLocalStorage
   } from '@hcengineering/ui'
 
   import { doLogin, getAccount, getWorkspaces, navigateToWorkspace, selectWorkspace } from '../utils'
   import Form from './Form.svelte'
 
   import { LoginInfo } from '@hcengineering/login'
+  import { onMount } from 'svelte'
   import { recoveryAction } from '../actions'
   import login from '../plugin'
 
@@ -53,7 +53,7 @@
   async function doLoginNavigate (
     result: LoginInfo | undefined,
     updateStatus: (status: Status<any>) => void
-  ): Promise<boolean> {
+  ): Promise<void> {
     if (result !== undefined) {
       setMetadata(presentation.metadata.Token, result.token)
       setMetadataLocalStorage(login.metadata.LastToken, result.token)
@@ -72,7 +72,7 @@
               const [loginStatus, result] = await selectWorkspace(workspace)
               updateStatus(loginStatus)
               navigateToWorkspace(workspace, result, navigateUrl)
-              return true
+              return
             }
           }
         } catch (err: any) {
@@ -86,9 +86,7 @@
         loc.query = { ...loc.query, navigateUrl }
       }
       navigate(loc)
-      return true
     }
-    return false
   }
 
   let status = OK
@@ -107,7 +105,7 @@
 
   let loading = true
 
-  async function chooseToken (time: number): Promise<void> {
+  async function chooseToken (): Promise<void> {
     if (getMetadata(presentation.metadata.Token) == null) {
       const lastToken = fetchMetadataLocalStorage(login.metadata.LastToken)
       if (lastToken != null) {
@@ -122,13 +120,16 @@
           setMetadataLocalStorage(login.metadata.LastToken, null)
         }
       }
-      loading = false
-    } else {
+      if (loading) {
+        loading = false
+      }
+    } else if (loading) {
       loading = false
     }
+    setTimeout(chooseToken, 1000)
   }
 
-  $: chooseToken($ticker)
+  onMount(() => chooseToken())
 </script>
 
 {#if loading}
