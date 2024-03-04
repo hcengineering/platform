@@ -16,8 +16,15 @@
 <script lang="ts">
   import { LoginInfo, Workspace } from '@hcengineering/login'
   import { OK, Severity, Status } from '@hcengineering/platform'
-  import presentation, { NavLink } from '@hcengineering/presentation'
-  import { Button, Label, Scroller, deviceOptionsStore as deviceInfo, setMetadataLocalStorage } from '@hcengineering/ui'
+  import presentation, { NavLink, isAdminUser } from '@hcengineering/presentation'
+  import {
+    Button,
+    Label,
+    Scroller,
+    SearchEdit,
+    deviceOptionsStore as deviceInfo,
+    setMetadataLocalStorage
+  } from '@hcengineering/ui'
   import { onMount } from 'svelte'
   import login from '../plugin'
   import { getAccount, getHref, getWorkspaces, goTo, navigateToWorkspace, selectWorkspace } from '../utils'
@@ -84,6 +91,9 @@
       throw err
     }
   }
+  $: isAdmin = isAdminUser()
+
+  let search: string = ''
 </script>
 
 <form class="container" style:padding={$deviceInfo.docWidth <= 480 ? '1.25rem' : '5rem'}>
@@ -95,16 +105,32 @@
   <div class="status">
     <StatusControl {status} />
   </div>
+  {#if isAdmin}
+    <div class="ml-2 mr-2 mb-2 flex-grow">
+      <SearchEdit bind:value={search} width={'100%'} />
+    </div>
+  {/if}
   {#await _getWorkspaces() then}
     <Scroller padding={'.125rem 0'}>
       <div class="form">
-        {#each workspaces as workspace}
+        {#each workspaces.filter((it) => search === '' || (it.workspaceName?.includes(search) ?? false) || it.workspace.includes(search)) as workspace}
+          {@const wsName = workspace.workspaceName ?? workspace.workspace}
           <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <!-- svelte-ignore a11y-no-static-element-interactions -->
           <div
             class="workspace flex-center fs-title cursor-pointer focused-button bordered form-row"
             on:click={() => select(workspace.workspace)}
           >
-            {workspace.workspaceName ?? workspace.workspace}
+            <div class="flex flex-col flex-grow">
+              <span class="label overflow-label flex-center">
+                {wsName}
+              </span>
+              {#if isAdmin && wsName !== workspace.workspace}
+                <span class="text-xs flex-center">
+                  {workspace.workspace}
+                </span>
+              {/if}
+            </div>
           </div>
         {/each}
         {#if workspaces.length === 0 && account?.confirmed === true}
