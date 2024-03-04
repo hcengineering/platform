@@ -20,7 +20,8 @@ import {
   type Doc,
   type Ref,
   type TxOperations,
-  type WithLookup
+  type WithLookup,
+  generateId
 } from '@hcengineering/core'
 import notification, {
   type ActivityInboxNotification,
@@ -29,7 +30,7 @@ import notification, {
   type InboxNotification,
   type InboxNotificationsClient
 } from '@hcengineering/notification'
-import { createQuery } from '@hcengineering/presentation'
+import { createQuery, getClient } from '@hcengineering/presentation'
 import { derived, get, writable } from 'svelte/store'
 
 export const inboxMessagesStore = writable<ActivityMessage[]>([])
@@ -248,6 +249,21 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     const inboxNotifications = (get(this.inboxNotifications) ?? []).filter(({ _id }) => ids.includes(_id))
     for (const notification of inboxNotifications) {
       await client.remove(notification)
+    }
+  }
+
+  async deleteAllNotifications (): Promise<void> {
+    const doneOp = await getClient().measure('deleteAllNotifications')
+    const ops = getClient().apply(generateId())
+
+    try {
+      const inboxNotifications = get(this.inboxNotifications) ?? []
+      for (const notification of inboxNotifications) {
+        await ops.remove(notification)
+      }
+    } finally {
+      await ops.commit()
+      await doneOp()
     }
   }
 }

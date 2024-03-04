@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, IconFilter, SelectPopup, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import { IconFilter, SelectPopup, eventToHTMLElement, showPopup, ButtonIcon } from '@hcengineering/ui'
   import notification from '../plugin'
 
   export let filter: 'all' | 'read' | 'unread' = 'all'
@@ -45,4 +45,4 @@
   }
 </script>
 
-<Button icon={IconFilter} on:click={click} />
+<ButtonIcon icon={IconFilter} size="small" on:click={click} />
