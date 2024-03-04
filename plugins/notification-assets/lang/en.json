@@ -36,9 +36,6 @@
     "Message": "Message",
     "FlatList": "Flat list",
     "GroupedList": "Grouped list",
-    "ArchiveAll": "Archive all",
-    "ReadAll": "Read all",
-    "ArchiveAllConfirmationTitle": "Archive all notifications?",
-    "ArchiveAllConfirmationMessage": "Are you sure you want to archive all notifications? This operation cannot be undone."
+    "ArchiveAll": "Archive all"
   }
 }

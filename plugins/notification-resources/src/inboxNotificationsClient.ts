@@ -266,21 +266,4 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       await doneOp()
     }
   }
-
-  async readAllNotifications (): Promise<void> {
-    const doneOp = await getClient().measure('readAllNotifications')
-    const ops = getClient().apply(generateId())
-
-    try {
-      const inboxNotifications = get(this.inboxNotifications) ?? []
-      for (const notification of inboxNotifications) {
-        if (!notification.isViewed) {
-          await ops.update(notification, { isViewed: true })
-        }
-      }
-    } finally {
-      await ops.commit()
-      await doneOp()
-    }
-  }
 }

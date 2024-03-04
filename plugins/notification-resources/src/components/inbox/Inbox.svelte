@@ -18,7 +18,7 @@
     DisplayInboxNotification,
     DocNotifyContext
   } from '@hcengineering/notification'
-  import { ActionContext, createQuery, getClient, MessageBox } from '@hcengineering/presentation'
+  import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import view, { Viewlet } from '@hcengineering/view'
   import {
     AnyComponent,
@@ -32,10 +32,7 @@
     TabItem,
     TabList,
     Location,
-    IconDropdown,
-    ButtonWithDropdown,
-    IconCheckAll,
-    showPopup
+    ModernButton
   } from '@hcengineering/ui'
   import chunter, { ThreadMessage } from '@hcengineering/chunter'
   import { Ref, WithLookup } from '@hcengineering/core'
@@ -95,11 +92,11 @@
   let viewlet: WithLookup<Viewlet> | undefined
   let loading = true
 
-  void client.findAll(notification.class.ActivityNotificationViewlet, {}).then((res) => {
+  client.findAll(notification.class.ActivityNotificationViewlet, {}).then((res) => {
     viewlets = res
   })
 
-  $: void getDisplayInboxNotifications($notificationsByContextStore, filter).then((res) => {
+  $: getDisplayInboxNotifications($notificationsByContextStore, filter).then((res) => {
     displayNotifications = res
   })
   $: displayContextsIds = new Set(displayNotifications.map(({ docNotifyContext }) => docNotifyContext))
@@ -107,7 +104,7 @@
   $: filteredNotifications = filterNotifications(selectedTabId, displayNotifications, $notifyContextsStore)
 
   locationStore.subscribe((newLocation) => {
-    void syncLocation(newLocation)
+    syncLocation(newLocation)
   })
 
   inboxClient.activityInboxNotifications.subscribe((notifications) => {
@@ -124,7 +121,7 @@
     }
   )
 
-  async function syncLocation (newLocation: Location): Promise<void> {
+  async function syncLocation (newLocation: Location) {
     const loc = await resolveLocation(newLocation)
 
     selectedContextId = loc?.loc.path[3] as Ref<DocNotifyContext> | undefined
@@ -168,13 +165,13 @@
     )
   }
 
-  function selectTab (event: CustomEvent): void {
+  function selectTab (event: CustomEvent) {
     if (event.detail !== undefined) {
       selectedTabId = event.detail.id
     }
   }
 
-  async function selectContext (event?: CustomEvent): Promise<void> {
+  async function selectContext (event?: CustomEvent) {
     selectedContext = event?.detail?.context
     selectedContextId = selectedContext?._id
 
@@ -205,7 +202,7 @@
     }
   }
 
-  async function updateSelectedPanel (selectedContext?: DocNotifyContext): Promise<void> {
+  async function updateSelectedPanel (selectedContext?: DocNotifyContext) {
     if (selectedContext === undefined) {
       selectedComponent = undefined
       return
@@ -239,7 +236,7 @@
     selectedTabId: string,
     displayNotifications: DisplayInboxNotification[],
     notifyContexts: DocNotifyContext[]
-  ): DisplayInboxNotification[] {
+  ) {
     if (selectedTabId === allTab.id) {
       return displayNotifications
     }
@@ -261,35 +258,7 @@
   })
 
   function archiveAll (): void {
-    showPopup(
-      MessageBox,
-      {
-        label: notification.string.ArchiveAllConfirmationTitle,
-        message: notification.string.ArchiveAllConfirmationMessage
-      },
-      'top',
-      (result?: boolean) => {
-        if (result === true) {
-          void inboxClient.deleteAllNotifications()
-        }
-      }
-    )
-  }
-
-  function readAll (): void {
-    void inboxClient.readAllNotifications()
-  }
-
-  async function dropdownItemSelected (id: 'archive' | 'read'): Promise<void> {
-    if (id == null) return
-
-    if (id === 'archive') {
-      archiveAll()
-    }
-
-    if (id === 'read') {
-      readAll()
-    }
+    void inboxClient.deleteAllNotifications()
   }
 </script>
 
@@ -319,29 +288,12 @@
             />
           </div>
           <div class="flex flex-gap-2">
-            {#if displayNotifications.length > 0}
-              <ButtonWithDropdown
-                justify="left"
-                kind="regular"
-                label={notification.string.ReadAll}
-                icon={IconCheckAll}
-                on:click={readAll}
-                dropdownItems={[
-                  {
-                    id: 'read',
-                    icon: IconCheckAll,
-                    label: notification.string.ReadAll
-                  },
-                  {
-                    id: 'archive',
-                    icon: view.icon.Archive,
-                    label: notification.string.ArchiveAll
-                  }
-                ]}
-                dropdownIcon={IconDropdown}
-                on:dropdown-selected={(ev) => dropdownItemSelected(ev.detail)}
-              />
-            {/if}
+            <ModernButton
+              label={notification.string.ArchiveAll}
+              icon={view.icon.Archive}
+              size="small"
+              on:click={archiveAll}
+            />
             <Filter bind:filter />
           </div>
         </div>
