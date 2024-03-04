@@ -37,7 +37,7 @@
   const dispatch = createEventDispatcher()
   const inboxClient = getResource(notification.function.GetInboxNotificationsClient).then((res) => res())
 
-  const ignoreKeys = ['comments', 'name', 'channels', 'description']
+  const ignoreKeys = ['comments', 'name', 'channels', 'description', 'attachments']
 
   let object: Organization | undefined = undefined
   let lastId: Ref<Organization> | undefined = undefined
