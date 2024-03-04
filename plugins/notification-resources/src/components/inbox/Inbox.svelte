@@ -31,7 +31,8 @@
     Separator,
     TabItem,
     TabList,
-    Location
+    Location,
+    ModernButton
   } from '@hcengineering/ui'
   import chunter, { ThreadMessage } from '@hcengineering/chunter'
   import { Ref, WithLookup } from '@hcengineering/core'
@@ -255,6 +256,10 @@
   onMount(() => {
     loadSavedMessages()
   })
+
+  function archiveAll (): void {
+    void inboxClient.deleteAllNotifications()
+  }
 </script>
 
 <ActionContext
@@ -283,6 +288,12 @@
             />
           </div>
           <div class="flex flex-gap-2">
+            <ModernButton
+              label={notification.string.ArchiveAll}
+              icon={view.icon.Archive}
+              size="small"
+              on:click={archiveAll}
+            />
             <Filter bind:filter />
           </div>
         </div>
