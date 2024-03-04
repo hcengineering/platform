@@ -59,17 +59,25 @@ export class CommonTrackerPage extends CalendarPage {
     }
   }
 
-  async updateFilterDimension (filterSecondLevel: string, dateStart?: string): Promise<void> {
+  async updateFilterDimension (
+    filterSecondLevel: string,
+    dateStart?: string,
+    needToOpenCalendar: boolean = false
+  ): Promise<void> {
     await this.page.locator('div.filter-section button:nth-child(2)').click()
     await this.page.locator('div.selectPopup [class*="menu"]', { hasText: filterSecondLevel }).click()
 
     if (dateStart !== undefined) {
+      if (needToOpenCalendar) {
+        await this.page.locator('div.filter-section button:nth-child(3)').click()
+      }
+
       switch (dateStart) {
         case 'Today':
           await this.page.locator('div.popup div.calendar button.day.today').click()
           break
         default:
-          await this.page.locator('div.popup div.calendar button.day', { hasText: dateStart }).click()
+          await this.page.locator('div.popup div.calendar button.day').locator(`text="${dateStart}"`).click()
           break
       }
     }
@@ -146,7 +154,7 @@ export class CommonTrackerPage extends CalendarPage {
   }
 
   async checkActivityExist (activity: string): Promise<void> {
-    await expect(this.textActivity.filter({ hasText: activity })).toBeVisible()
+    await expect(this.textActivity.filter({ hasText: activity }).first()).toBeVisible()
   }
 
   async fillMoveIssuesModal (newProjectName: string, keepOriginalAttributes: boolean = false): Promise<void> {

@@ -52,7 +52,7 @@
     "ThisEvent": "Только это событие",
     "ThisAndNext": "Это и последующие события",
     "AllEvents": "Все события",
-    "NewEvent": "Новое событие",
+    "EventTitlePlaceholder": "Название события",
     "TimeZone": "Часовой пояс",
     "Repeat": "Повтор",
     "On": "В",

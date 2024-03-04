@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { getMetadata } from '@hcengineering/platform'
-  import { Component, Label, Loading, Notifications, location } from '@hcengineering/ui'
+  import { Component, Label, Loading, Notifications, deviceOptionsStore, location } from '@hcengineering/ui'
   import { connect, versionError } from '../connect'
 
   import { workbenchId } from '@hcengineering/workbench'
@@ -24,31 +24,39 @@
 </script>
 
 {#if $location.path[0] === workbenchId || $location.path[0] === workbench.component.WorkbenchApp}
-  {#key $location.path[1]}
-    {#await connect(getMetadata(workbench.metadata.PlatformTitle) ?? 'Platform')}
-      <Loading />
-    {:then client}
-      {#if !client && versionError}
-        <div class="version-wrapper">
-          <div class="antiPopup version-popup">
-            {#if isNeedUpgrade}
-              <h1><Label label={workbench.string.NewVersionAvailable} /></h1>
-              <span class="please-update"><Label label={workbench.string.PleaseUpdate} /></span>
-            {:else}
-              <h1><Label label={workbench.string.ServerUnderMaintenance} /></h1>
-            {/if}
-            {versionError}
+  {#if $deviceOptionsStore.isMobile}
+    <div class="version-wrapper">
+      <div class="antiPopup version-popup">
+        <h1><Label label={workbench.string.MobileNotSupported} /></h1>
+      </div>
+    </div>
+  {:else}
+    {#key $location.path[1]}
+      {#await connect(getMetadata(workbench.metadata.PlatformTitle) ?? 'Platform')}
+        <Loading />
+      {:then client}
+        {#if !client && versionError}
+          <div class="version-wrapper">
+            <div class="antiPopup version-popup">
+              {#if isNeedUpgrade}
+                <h1><Label label={workbench.string.NewVersionAvailable} /></h1>
+                <span class="please-update"><Label label={workbench.string.PleaseUpdate} /></span>
+              {:else}
+                <h1><Label label={workbench.string.ServerUnderMaintenance} /></h1>
+              {/if}
+              {versionError}
+            </div>
           </div>
-        </div>
-      {:else if client}
-        <Notifications>
-          <Component is={workbench.component.Workbench} />
-        </Notifications>
-      {/if}
-    {:catch error}
-      <div>{error} -- {error.stack}</div>
-    {/await}
-  {/key}
+        {:else if client}
+          <Notifications>
+            <Component is={workbench.component.Workbench} />
+          </Notifications>
+        {/if}
+      {:catch error}
+        <div>{error} -- {error.stack}</div>
+      {/await}
+    {/key}
+  {/if}
 {/if}
 
 <style lang="scss">

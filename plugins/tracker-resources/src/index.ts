@@ -15,10 +15,12 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import core, {
+  type Attribute,
   ClassifierKind,
   DOMAIN_CONFIGURATION,
   DOMAIN_MODEL,
   getCurrentAccount,
+  type Space,
   toIdMap,
   type AttachedDoc,
   type Class,
@@ -29,7 +31,7 @@ import core, {
   type RelatedDocument,
   type TxOperations
 } from '@hcengineering/core'
-import { translate, type Resources } from '@hcengineering/platform'
+import { type Status, translate, type Resources } from '@hcengineering/platform'
 import { getClient, MessageBox, type ObjectSearchResult } from '@hcengineering/presentation'
 import { type Issue, type Milestone, type Project } from '@hcengineering/tracker'
 import { getCurrentLocation, navigate, showPopup, themeStore } from '@hcengineering/ui'
@@ -156,6 +158,7 @@ import ProjectSpacePresenter from './components/projects/ProjectSpacePresenter.s
 import { get } from 'svelte/store'
 
 import { settingId } from '@hcengineering/setting'
+import { getAllStates } from '@hcengineering/task-resources'
 import EstimationValueEditor from './components/issues/timereport/EstimationValueEditor.svelte'
 import TimePresenter from './components/issues/timereport/TimePresenter.svelte'
 
@@ -527,6 +530,12 @@ export default async (): Promise<Resources> => ({
     GetAllPriority: getAllPriority,
     GetAllComponents: getAllComponents,
     GetAllMilestones: getAllMilestones,
+    GetAllStates: async (
+      query: DocumentQuery<Doc<Space>> | undefined,
+      onUpdate: () => void,
+      queryId: Ref<Doc<Space>>,
+      attr: Attribute<Status>
+    ) => await getAllStates(query, onUpdate, queryId, attr, false),
     GetVisibleFilters: getVisibleFilters,
     IssueChatTitleProvider: getIssueChatTitle,
     IsProjectJoined: async (project: Project) => !project.private || project.members.includes(getCurrentAccount()._id),

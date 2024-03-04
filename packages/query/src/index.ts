@@ -91,6 +91,7 @@ export class LiveQuery implements WithTx, Client {
   private readonly queries: Map<Ref<Class<Doc>>, Query[]> = new Map<Ref<Class<Doc>>, Query[]>()
   private readonly queue: Query[] = []
   private queryCounter: number = 0
+  private closed: boolean = false
 
   // A map of _class to documents.
   private readonly documentRefs = new Map<string, Map<Ref<Doc>, DocumentRef>>()
@@ -104,7 +105,12 @@ export class LiveQuery implements WithTx, Client {
     await this.refreshConnect()
   }
 
+  public isClosed (): boolean {
+    return this.closed
+  }
+
   async close (): Promise<void> {
+    this.closed = true
     await this.client.close()
   }
 

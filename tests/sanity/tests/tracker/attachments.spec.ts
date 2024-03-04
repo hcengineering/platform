@@ -63,5 +63,6 @@ test.describe('Attachments tests', () => {
     const issuesDetailsPage = new IssuesDetailsPage(page)
     await issuesDetailsPage.checkIssueContainsAttachment('cat.jpeg')
     await issuesDetailsPage.checkIssueContainsAttachment('cat3.jpeg')
+    await issuesDetailsPage.checkActivityExist('uploaded an attachment')
   })
 })

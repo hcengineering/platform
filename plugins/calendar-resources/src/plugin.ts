@@ -50,7 +50,7 @@ export default mergeIds(calendarId, calendar, {
     ThisEvent: '' as IntlString,
     ThisAndNext: '' as IntlString,
     AllEvents: '' as IntlString,
-    NewEvent: '' as IntlString,
+    EventTitlePlaceholder: '' as IntlString,
     TimeZone: '' as IntlString,
     Repeat: '' as IntlString,
     Every: '' as IntlString,

@@ -162,11 +162,12 @@
   <div class="header flex-between">
     <EditBox
       bind:value={title}
-      placeholder={calendar.string.NewEvent}
+      placeholder={calendar.string.EventTitlePlaceholder}
       disabled={readOnly}
       kind={'ghost-large'}
       fullSize
       focusable
+      autoFocus
       focusIndex={10001}
     />
     <div class="flex-row-center gap-1 flex-no-shrink ml-3">
