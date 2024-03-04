@@ -19,6 +19,7 @@
   import { ObjectPresenter } from '@hcengineering/view-resources'
   import { onDestroy } from 'svelte'
   import MetricsInfo from './statistics/MetricsInfo.svelte'
+  import { workspacesStore } from '../utils'
 
   const _endpoint: string = fetchMetadataLocalStorage(login.metadata.LoginEndpoint) ?? ''
   const token: string = getMetadata(presentation.metadata.Token) ?? ''
@@ -166,6 +167,7 @@
     {:else if selectedTab === 'users'}
       <div class="flex-column p-3 h-full" style:overflow="auto">
         {#each Object.entries(activeSessions) as act}
+          {@const wsInstance = $workspacesStore.find((it) => it.workspaceId === act[0])}
           {@const totalFind = act[1].reduce((it, itm) => itm.current.find + it, 0)}
           {@const totalTx = act[1].reduce((it, itm) => itm.current.tx + it, 0)}
           {@const employeeGroups = Array.from(new Set(act[1].map((it) => it.userId)))}
@@ -173,7 +175,7 @@
             <Expandable contentColor expanded={false} expandable={true} bordered>
               <svelte:fragment slot="title">
                 <div class="fs-title">
-                  Workspace: {act[0]}: {act[1].length} current 5 mins => {totalFind}/{totalTx}
+                  Workspace: {wsInstance?.workspaceName ?? act[0]}: {act[1].length} current 5 mins => {totalFind}/{totalTx}
                 </div>
               </svelte:fragment>
               <div class="flex-col">

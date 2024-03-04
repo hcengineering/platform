@@ -26,8 +26,9 @@ export const loginId = 'login' as Plugin
  * @public
  */
 export interface Workspace {
-  workspace: string //
+  workspace: string // workspace Url
   workspaceName?: string // A company name
+  workspaceId: string // A unique identifier for the workspace
 }
 
 /**

@@ -885,7 +885,7 @@ export async function getInviteLink (
 /**
  * @public
  */
-export type ClientWorkspaceInfo = Omit<Workspace, '_id' | 'accounts' | 'workspaceUrl'>
+export type ClientWorkspaceInfo = Omit<Workspace, '_id' | 'accounts' | 'workspaceUrl'> & { workspaceId: string }
 
 /**
  * @public
@@ -894,7 +894,7 @@ export type WorkspaceInfo = Omit<Workspace, '_id' | 'accounts'>
 
 function mapToClientWorkspace (ws: Workspace): ClientWorkspaceInfo {
   const { _id, accounts, ...data } = ws
-  return { ...data, workspace: ws.workspaceUrl ?? ws.workspace }
+  return { ...data, workspace: ws.workspaceUrl ?? ws.workspace, workspaceId: ws.workspace }
 }
 
 function trimWorkspaceInfo (ws: Workspace): WorkspaceInfo {
