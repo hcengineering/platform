@@ -237,7 +237,7 @@ async function getAccountInfo (db: Db, email: string, password: string): Promise
   return toAccountInfo(account)
 }
 
-async function getAccountInfoByToken (db: Db, productId: string, token: string): Promise<AccountInfo> {
+async function getAccountInfoByToken (db: Db, productId: string, token: string): Promise<LoginInfo> {
   let email: string = ''
   try {
     email = decodeToken(token)?.email
@@ -248,9 +248,14 @@ async function getAccountInfoByToken (db: Db, productId: string, token: string):
   if (account === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
   }
-  const res = toAccountInfo(account)
-  res.confirmed = res.confirmed ?? true
-  return res
+  const info = toAccountInfo(account)
+  const result = {
+    endpoint: getEndpoint(),
+    email,
+    confirmed: info.confirmed ?? true,
+    token: generateToken(email, getWorkspaceId('', productId), getExtra(info))
+  }
+  return result
 }
 
 /**
