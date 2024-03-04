@@ -237,7 +237,7 @@ async function getAccountInfo (db: Db, email: string, password: string): Promise
   return toAccountInfo(account)
 }
 
-async function getAccountInfoByToken (db: Db, productId: string, token: string): Promise<AccountInfo> {
+async function getAccountInfoByToken (db: Db, productId: string, token: string): Promise<LoginInfo> {
   let email: string = ''
   try {
     email = decodeToken(token)?.email
@@ -248,9 +248,14 @@ async function getAccountInfoByToken (db: Db, productId: string, token: string):
   if (account === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
   }
-  const res = toAccountInfo(account)
-  res.confirmed = res.confirmed ?? true
-  return res
+  const info = toAccountInfo(account)
+  const result = {
+    endpoint: getEndpoint(),
+    email,
+    confirmed: info.confirmed ?? true,
+    token: generateToken(email, getWorkspaceId('', productId), getExtra(info))
+  }
+  return result
 }
 
 /**
@@ -891,7 +896,7 @@ export async function getInviteLink (
 /**
  * @public
  */
-export type ClientWorkspaceInfo = Omit<Workspace, '_id' | 'accounts' | 'workspaceUrl'>
+export type ClientWorkspaceInfo = Omit<Workspace, '_id' | 'accounts' | 'workspaceUrl'> & { workspaceId: string }
 
 /**
  * @public
@@ -900,7 +905,7 @@ export type WorkspaceInfo = Omit<Workspace, '_id' | 'accounts'>
 
 function mapToClientWorkspace (ws: Workspace): ClientWorkspaceInfo {
   const { _id, accounts, ...data } = ws
-  return { ...data, workspace: ws.workspaceUrl ?? ws.workspace }
+  return { ...data, workspace: ws.workspaceUrl ?? ws.workspace, workspaceId: ws.workspace }
 }
 
 function trimWorkspaceInfo (ws: Workspace): WorkspaceInfo {

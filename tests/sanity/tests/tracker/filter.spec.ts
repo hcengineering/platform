@@ -156,6 +156,13 @@ test.describe('Tracker filters tests', () => {
 
       await issuesPage.checkFilteredIssueExist(newIssue.title)
       await issuesPage.checkFilteredIssueExist(yesterdayIssueTitle)
+
+      // this week filter started on Monday, the yesterday created issue on Sunday
+      if (new Date().getDay() !== 1) {
+        await issuesPage.checkFilteredIssueExist(yesterdayIssueTitle)
+      } else {
+        await issuesPage.checkFilteredIssueNotExist(yesterdayIssueTitle)
+      }
     })
 
     await test.step('Check Filter This month', async () => {
