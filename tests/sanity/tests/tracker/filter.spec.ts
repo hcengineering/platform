@@ -337,4 +337,26 @@ test.describe('Tracker filters tests', () => {
       }
     })
   })
+
+  test('Modified by filter', async ({ page }) => {
+    const modifierName = 'Appleseed John'
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    await leftSideMenuPage.buttonTracker.click()
+
+    const issuesPage = new IssuesPage(page)
+    await issuesPage.modelSelectorAll.click()
+
+    await issuesPage.selectFilter('Modified by', modifierName)
+    await issuesPage.inputSearch.press('Escape')
+    await issuesPage.checkFilter('Modified by', 'is')
+
+    for await (const issue of iterateLocator(issuesPage.issuesList)) {
+      await issue.locator('span.list > a').click()
+
+      const issuesDetailsPage = new IssuesDetailsPage(page)
+      await expect(issuesDetailsPage.buttonCreatedBy).toHaveText(modifierName)
+
+      await issuesDetailsPage.buttonCloseIssue.click()
+    }
+  })
 })
