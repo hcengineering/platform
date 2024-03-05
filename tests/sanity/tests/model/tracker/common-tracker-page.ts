@@ -19,6 +19,9 @@ export class CommonTrackerPage extends CalendarPage {
   readonly linkInActivity: Locator
   readonly inputCommentFile: Locator
   readonly commentImg: Locator
+  readonly inputFilterTitle: Locator
+  readonly buttonFilterApply: Locator
+  readonly buttonClearFilters: Locator
 
   constructor (page: Page) {
     super(page)
@@ -39,13 +42,22 @@ export class CommonTrackerPage extends CalendarPage {
     this.linkInActivity = page.locator('div[id="activity:string:Activity"] a')
     this.inputCommentFile = page.locator('input#file')
     this.commentImg = page.locator('div.activityMessage div.content img')
+    this.inputFilterTitle = page.locator('div.selectPopup input[placeholder="Title"]')
+    this.buttonFilterApply = page.locator('div.selectPopup button[type="button"]', { hasText: 'Apply' })
+    this.buttonClearFilters = page.locator('button > span', { hasText: 'Clear filters' })
   }
 
   async selectFilter (filter: string, filterSecondLevel?: string): Promise<void> {
     await this.buttonFilter.click()
     await this.page.locator('div.selectPopup [class*="menu"]', { hasText: filter }).click()
+
     if (filterSecondLevel !== null) {
-      await this.page.locator('div.selectPopup [class*="menu"]', { hasText: filterSecondLevel }).click()
+      if (filter === 'Title') {
+        await this.inputFilterTitle.fill(filterSecondLevel)
+        await this.buttonFilterApply.click()
+      } else {
+        await this.page.locator('div.selectPopup [class*="menu"]', { hasText: filterSecondLevel }).click()
+      }
     }
   }
 
