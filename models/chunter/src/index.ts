@@ -15,12 +15,10 @@
 
 import activity, { type ActivityMessage } from '@hcengineering/activity'
 import {
-  type Backlink,
   type Channel,
   chunterId,
   type ChunterMessage,
   type ChunterMessageExtension,
-  type Comment,
   type DirectMessage,
   type Message,
   type DirectMessageInput,
@@ -63,17 +61,16 @@ import core, { TAttachedDoc, TClass, TDoc, TSpace } from '@hcengineering/model-c
 import notification from '@hcengineering/model-notification'
 import view, { createAction, actionTemplates as viewTemplates } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
-import chunter from './plugin'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
-import { TypeBoolean } from '@hcengineering/model'
 import type { IntlString, Resource } from '@hcengineering/platform'
 import { TActivityMessage } from '@hcengineering/model-activity'
+
+import chunter from './plugin'
 
 export { chunterId } from '@hcengineering/chunter'
 export { chunterOperation } from './migration'
 
 export const DOMAIN_CHUNTER = 'chunter' as Domain
-export const DOMAIN_COMMENT = 'comment' as Domain
 
 @Model(chunter.class.ChunterSpace, core.class.Space)
 export class TChunterSpace extends TSpace implements ChunterSpace {
@@ -133,30 +130,6 @@ export class TMessage extends TChunterMessage implements Message {
 
   @Prop(TypeTimestamp(), activity.string.LastReply)
     lastReply?: Timestamp
-}
-
-@Model(chunter.class.Comment, core.class.AttachedDoc, DOMAIN_COMMENT)
-@UX(chunter.string.Comment, undefined, 'COM')
-export class TComment extends TAttachedDoc implements Comment {
-  @Prop(TypeMarkup(), chunter.string.Message)
-  @Index(IndexKind.FullText)
-    message!: string
-
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
-    attachments?: number
-
-  @Prop(Collection(activity.class.Reaction), activity.string.Reactions)
-    reactions?: number
-
-  @Prop(TypeBoolean(), chunter.string.PinMessage)
-    pinned?: boolean
-}
-
-@Model(chunter.class.Backlink, chunter.class.Comment)
-@UX(chunter.string.Reference, chunter.icon.Chunter)
-export class TBacklink extends TComment implements Backlink {
-  backlinkId!: Ref<Doc>
-  backlinkClass!: Ref<Class<Doc>>
 }
 
 @Mixin(chunter.mixin.DirectMessageInput, core.class.Class)
@@ -227,8 +200,6 @@ export function createModel (builder: Builder, options = { addApplication: true 
     TMessage,
     TChunterMessage,
     TChunterMessageExtension,
-    TComment,
-    TBacklink,
     TDirectMessage,
     TDirectMessageInput,
     TChatMessage,

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { type Class, type Doc, type Ref, TxOperations } from '@hcengineering/core'
+import core, { type Class, type Doc, type Domain, type Ref, TxOperations } from '@hcengineering/core'
 import {
   type MigrateOperation,
   type MigrationClient,
@@ -21,11 +21,12 @@ import {
   tryMigrate
 } from '@hcengineering/model'
 import { chunterId } from '@hcengineering/chunter'
-import { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
+import activity, { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 import notification from '@hcengineering/notification'
 
-import { DOMAIN_COMMENT } from './index'
 import chunter from './plugin'
+
+const DOMAIN_COMMENT = 'comment' as Domain
 
 export async function createDocNotifyContexts (
   client: MigrationUpgradeClient,
@@ -104,8 +105,20 @@ export async function createRandom (client: MigrationUpgradeClient, tx: TxOperat
 }
 
 async function convertCommentsToChatMessages (client: MigrationClient): Promise<void> {
-  await client.update(DOMAIN_COMMENT, { _class: chunter.class.Comment }, { _class: chunter.class.ChatMessage })
+  await client.update(
+    DOMAIN_COMMENT,
+    { _class: 'chunter:class:Comment' as Ref<Class<Doc>> },
+    { _class: chunter.class.ChatMessage }
+  )
   await client.move(DOMAIN_COMMENT, { _class: chunter.class.ChatMessage }, DOMAIN_ACTIVITY)
+}
+
+async function removeBacklinks (client: MigrationClient): Promise<void> {
+  await client.deleteMany(DOMAIN_COMMENT, { _class: 'chunter:class:Backlink' as Ref<Class<Doc>> })
+  await client.deleteMany(DOMAIN_ACTIVITY, {
+    _class: activity.class.DocUpdateMessage,
+    objectClass: 'chunter:class:Backlink' as Ref<Class<Doc>>
+  })
 }
 
 export const chunterOperation: MigrateOperation = {
@@ -114,6 +127,12 @@ export const chunterOperation: MigrateOperation = {
       {
         state: 'create-chat-messages',
         func: convertCommentsToChatMessages
+      }
+    ])
+    await tryMigrate(client, chunterId, [
+      {
+        state: 'remove-backlinks',
+        func: removeBacklinks
       }
     ])
   },
