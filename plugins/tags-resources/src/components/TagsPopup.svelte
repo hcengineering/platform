@@ -57,7 +57,7 @@
   const query = createQuery()
 
   const client = getClient()
-  client.findAll(tags.class.TagCategory, { targetClass }).then((res) => {
+  void client.findAll(tags.class.TagCategory, { targetClass }).then((res) => {
     categories = res
     isSingleCategory = categories.length <= 1
   })
@@ -67,8 +67,22 @@
     objects = newElements.concat(result)
   })
 
-  async function createTagElement (): Promise<void> {
-    showPopup(CreateTagElement, { targetClass }, 'top')
+  async function onCreateTagElement (res: any) {
+    if (res === null) return
+    setTimeout(() => {
+      const tag = objects.findLast(e => e._id === res)
+      if (tag === undefined) return
+      selected = [...selected, tag._id]
+      dispatch('update', { action: 'add', tag })
+    }, 1)
+  }
+
+  async function createTagElementPopup (): Promise<void> {
+    showPopup(CreateTagElement, { targetClass, prefillTitle: search }, 'top', onCreateTagElement)
+  }
+
+  async function createTagElementQuick (): Promise<void> {
+    showPopup(CreateTagElement, { targetClass, prefillTitle: search, quick: true }, 'top', onCreateTagElement)
   }
 
   const isSelected = (selected: Ref<TagElement>[], element: TagElement): boolean => {
@@ -101,6 +115,16 @@
     }
     return r
   }
+
+  async function onSearchKeydown (ev: KeyboardEvent): Promise<void> {
+    if (ev.code !== 'Enter') return
+    if (objects.length < 1) {
+      await createTagElementQuick()
+      ev.preventDefault()
+      return
+    }
+    // TODO add first element or group?
+  }
 </script>
 
 <div class="selectPopup maxHeight" use:resizeObserver={() => dispatch('changeContent')}>
@@ -114,6 +138,7 @@
       {placeholder}
       {placeholderParam}
       on:change
+      on:keydown={onSearchKeydown}
     />
     {#if !isSingleCategory}
       <Button
@@ -125,7 +150,7 @@
         }}
       />
     {/if}
-    {#if !hideAdd}<Button kind={'ghost'} size={'large'} icon={IconAdd} on:click={createTagElement} />{/if}
+    {#if !hideAdd}<Button kind={'ghost'} size={'large'} icon={IconAdd} on:click={createTagElementPopup} />{/if}
   </div>
   <div class="scroll">
     <div class="box">
@@ -190,6 +215,14 @@
         {/if}
       {/each}
       {#if objects.length === 0}
+        {#if !hideAdd}
+          <button
+            class="menu-item focus flex-row-center"
+            on:click={createTagElementQuick}
+          >
+            <Label label={tags.string.QuickAddItems} params={{ word: keyLabel, title: search }} />
+          </button>
+        {/if}
         <div class="empty">
           <Label label={tags.string.NoItems} params={{ word: keyLabel }} />
         </div>

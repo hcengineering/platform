@@ -16,6 +16,7 @@
     "TagCreateLabel": "Тег",
     "CancelLabel": "Отмена",
     "SearchCreate": "Название...",
+    "QuickAddItems": "Быстрое добавление {word} \"{title}\"",
     "NoItems": "Отсутствует добавленный {word}",
     "TagDescriptionLabel": "Описание",
     "TagDescriptionPlaceholder": "Пожалуйста, введите описание",

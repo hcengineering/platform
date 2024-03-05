@@ -35,8 +35,10 @@
 
   export let targetClass: Ref<Class<Doc>>
   export let keyTitle: string = ''
+  export let prefillTitle: string = ''
+  export let quick: boolean = false
 
-  let title = ''
+  let title: string = prefillTitle
   let description = ''
   let color: number = 0
 
@@ -52,8 +54,13 @@
     color = getColorNumberByText(title)
   }
 
-  $: if (!categoryWasSet && categories.length > 0) {
-    category = findTagCategory(title, categories)
+  $: {
+    if (!categoryWasSet && categories.length > 0) {
+      category = findTagCategory(title, categories)
+      if (quick) { // TODO dirty solution, move all logic to separate class
+        void createTagElement()
+      }
+    }
   }
 
   export function canClose (): boolean {
@@ -78,7 +85,7 @@
     categoryItems = newItems
   })
 
-  async function createTagElenent () {
+  async function createTagElement () {
     const tagElement: Data<TagElement> = {
       title,
       description,
@@ -87,8 +94,8 @@
       category: category ?? tags.category.NoCategory
     }
 
-    await client.createDoc(tags.class.TagElement, tags.space.Tags, tagElement, tagElementId)
-    dispatch('close')
+    const res = await client.createDoc(tags.class.TagElement, tags.space.Tags, tagElement, tagElementId)
+    dispatch('close', res)
   }
   const showColorPopup = (evt: MouseEvent) => {
     showPopup(
@@ -108,7 +115,7 @@
 <Card
   label={tags.string.AddTag}
   labelProps={{ word: keyTitle }}
-  okAction={createTagElenent}
+  okAction={createTagElement}
   canSave={title.length > 0}
   on:close={() => {
     dispatch('close')
