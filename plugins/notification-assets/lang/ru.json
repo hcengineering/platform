@@ -35,6 +35,10 @@
     "Pinned": "Закреплено",
     "Message": "Сообщение",
     "FlatList": "Flat list",
-    "GroupedList": "Grouped list"
+    "GroupedList": "Grouped list",
+    "ArchiveAll": "Архивировать все",
+    "ReadAll": "Прочитать все",
+    "ArchiveAllConfirmationTitle": "Архивировать все уведомления?",
+    "ArchiveAllConfirmationMessage": "Вы уверены, что хотите заархивировать все уведомления? Эту операцию невозможно отменить."
   }
 }

@@ -1,5 +1,5 @@
-<!--
-// Copyright © 2022 Hardcore Engineering Inc.
+//
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -11,27 +11,11 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
--->
+//
 
-<div class="card-container">
-  <slot />
-</div>
-
-<style lang="scss">
-  .card-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 0.75rem 1.5rem;
-    color: var(--dark-color);
-    background-color: var(--theme-kanban-card-bg-color);
-    border: 1px dotted var(--theme-kanban-card-border);
-    border-radius: 0.75rem;
-    cursor: pointer;
-
-    &:hover {
-      color: var(--theme-caption-color);
-    }
-  }
-</style>
+/**
+ * @public
+ *
+ * String representation of {@link https://www.npmjs.com/package/lexorank LexoRank} type
+ */
+export type Rank = string
