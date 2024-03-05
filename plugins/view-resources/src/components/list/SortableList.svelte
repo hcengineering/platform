@@ -16,7 +16,7 @@
   import { Class, Doc, DocumentQuery, FindOptions, FindResult, Ref, SortingOrder } from '@hcengineering/core'
   import { Asset, getResource, IntlString } from '@hcengineering/platform'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
-  import { calcRank, DocWithRank } from '@hcengineering/task'
+  import { DocWithRank, makeRank } from '@hcengineering/task'
   import { Button, Component, Icon, IconAdd, IconSize, Label, Loading } from '@hcengineering/ui'
   import view, { ObjectFactory } from '@hcengineering/view'
   import { flip } from 'svelte/animate'
@@ -123,7 +123,8 @@
       ]
 
       const sortingOrder = queryOptions?.sort?.rank ?? SORTING_ORDER
-      const rank = sortingOrder === SortingOrder.Ascending ? calcRank(prev, next) : calcRank(next, prev)
+      const rank =
+        sortingOrder === SortingOrder.Ascending ? makeRank(prev?.rank, next?.rank) : makeRank(next?.rank, prev?.rank)
 
       try {
         areItemsSorting = true

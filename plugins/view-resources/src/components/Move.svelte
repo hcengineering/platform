@@ -19,7 +19,7 @@
 
   import core, { Class, Client, Doc, Ref, SortingOrder, Space } from '@hcengineering/core'
   import { OK, Resource, Status, getResource, translate } from '@hcengineering/platform'
-  import task, { Project, Task, calcRank } from '@hcengineering/task'
+  import task, { Project, Task, makeRank } from '@hcengineering/task'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
   import { moveToSpace } from '../utils'
@@ -51,7 +51,7 @@
     if (needRank) {
       const lastOne = await client.findOne((doc as Task)._class, { space }, { sort: { rank: SortingOrder.Descending } })
       await moveToSpace(client, doc, space, {
-        rank: calcRank(lastOne, undefined)
+        rank: makeRank(lastOne?.rank, undefined)
       })
     } else {
       await moveToSpace(client, doc, space)

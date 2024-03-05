@@ -15,7 +15,7 @@ import core, {
 import { MinioService } from '@hcengineering/minio'
 import recruit from '@hcengineering/model-recruit'
 import { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
-import task, { ProjectType, TaskType, genRanks } from '@hcengineering/task'
+import task, { ProjectType, TaskType, genRanks, type Rank } from '@hcengineering/task'
 import faker from 'faker'
 import jpeg, { BufferRet } from 'jpeg-js'
 import { AttachmentOptions, addAttachments } from './attachments'
@@ -174,7 +174,7 @@ async function genApplicant (
   options: RecruitOptions,
   minio: MinioService,
   workspaceId: WorkspaceId,
-  rank: string
+  rank: Rank
 ): Promise<void> {
   const applicantId = `vacancy-${vacancyId}-${candidateId}` as Ref<Applicant>
 
