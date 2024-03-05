@@ -17,7 +17,7 @@
   import { getClient } from '@hcengineering/presentation'
   import { Component } from '@hcengineering/ui'
   import { Class, Doc, Ref } from '@hcengineering/core'
-  import { ActivityNotificationViewlet, DisplayInboxNotification, DocNotifyContext } from '@hcengineering/notification'
+  import { ActivityNotificationViewlet, DisplayInboxNotification } from '@hcengineering/notification'
 
   export let value: DisplayInboxNotification
   export let embedded = false
