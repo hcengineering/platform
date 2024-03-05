@@ -15,7 +15,7 @@
 <script lang="ts">
   import core, { AttachedData, FindOptions, Ref, SortingOrder } from '@hcengineering/core'
   import { ObjectPopup, getClient } from '@hcengineering/presentation'
-  import { calcRank } from '@hcengineering/task'
+  import { makeRank } from '@hcengineering/task'
   import { Issue, IssueDraft } from '@hcengineering/tracker'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../plugin'
@@ -51,7 +51,7 @@
             { sort: { rank: SortingOrder.Descending } }
           )
 
-          rank = calcRank(lastAttachedIssue, undefined)
+          rank = makeRank(lastAttachedIssue?.rank, undefined)
         }
 
         await client.update(docValue, {

@@ -20,7 +20,7 @@
   import { Card, createQuery, getClient, InlineAttributeBar, MessageBox } from '@hcengineering/presentation'
   import { Vacancy as VacancyClass } from '@hcengineering/recruit'
   import tags from '@hcengineering/tags'
-  import task, { calcRank, ProjectType } from '@hcengineering/task'
+  import task, { makeRank, ProjectType } from '@hcengineering/task'
   import tracker, { Issue, IssueStatus, IssueTemplate, IssueTemplateData, Project } from '@hcengineering/tracker'
   import {
     Button,
@@ -113,7 +113,7 @@
       true
     )
     const project = await client.findOne(tracker.class.Project, { _id: space })
-    const rank = calcRank(lastOne, undefined)
+    const rank = makeRank(lastOne?.rank, undefined)
     const taskType = await client.findOne(task.class.TaskType, { ofClass: tracker.class.Issue })
     if (taskType === undefined) {
       return

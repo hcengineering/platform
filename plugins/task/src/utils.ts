@@ -29,37 +29,18 @@ import core, {
   type RefTo
 } from '@hcengineering/core'
 import { PlatformError, getEmbeddedLabel, unknownStatus } from '@hcengineering/platform'
-import { LexoDecimal, LexoNumeralSystem36, LexoRank } from 'lexorank'
-import LexoRankBucket from 'lexorank/lib/lexoRank/lexoRankBucket'
 import task, { Project, ProjectStatus, ProjectType, Task, TaskType } from '.'
+import { makeRank, type Rank } from '@hcengineering/rank'
+
+export { genRanks, makeRank } from '@hcengineering/rank'
 
 /**
  * @public
+ *
+ * TODO: Drop after everything migrates to {@link makeRank}
  */
-export function genRanks (count: number): string[] {
-  const sys = new LexoNumeralSystem36()
-  const base = 36
-  const max = base ** 6
-  const gap = LexoDecimal.parse(Math.trunc(max / (count + 2)).toString(base), sys)
-  let cur = LexoDecimal.parse('0', sys)
-  const res: string[] = []
-  for (let i = 0; i < count; i++) {
-    cur = cur.add(gap)
-    res.push(new LexoRank(LexoRankBucket.BUCKET_0, cur).toString())
-  }
-  return res
-}
-
-/**
- * @public
- */
-export const calcRank = (prev?: { rank: string }, next?: { rank: string }): string => {
-  const a = prev?.rank !== undefined ? LexoRank.parse(prev.rank) : LexoRank.min()
-  const b = next?.rank !== undefined ? LexoRank.parse(next.rank) : LexoRank.max()
-  if (a.equals(b)) {
-    return a.genNext().toString()
-  }
-  return a.between(b).toString()
+export const calcRank = (prev?: { rank: Rank }, next?: { rank: Rank }): string => {
+  return makeRank(prev?.rank, next?.rank)
 }
 
 /**

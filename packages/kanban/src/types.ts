@@ -1,11 +1,12 @@
 import { type Doc } from '@hcengineering/core'
 import { type Asset } from '@hcengineering/platform'
+import type { Rank } from '@hcengineering/rank'
 
 /**
  * @public
  */
 export interface DocWithRank extends Doc {
-  rank: string
+  rank: Rank
 }
 
 export type StateType = any

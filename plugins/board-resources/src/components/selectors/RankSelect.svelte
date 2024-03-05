@@ -3,7 +3,7 @@
   import { Ref, SortingOrder } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
-  import { calcRank, State } from '@hcengineering/task'
+  import { makeRank, State } from '@hcengineering/task'
   import { DropdownLabels, DropdownTextItem, themeStore } from '@hcengineering/ui'
   import board from '../../plugin'
 
@@ -22,7 +22,7 @@
       const filteredResult = isCopying ? result : result.filter((t) => t._id !== object._id)
 
       ;[ranks] = [...filteredResult, undefined].reduce<[DropdownTextItem[], Card | undefined]>(
-        ([arr, prev], next) => [[...arr, { id: calcRank(prev, next), label: `${arr.length + 1}` }], next],
+        ([arr, prev], next) => [[...arr, { id: makeRank(prev?.rank, next?.rank), label: `${arr.length + 1}` }], next],
         [[], undefined]
       )
 
