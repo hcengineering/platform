@@ -37,7 +37,7 @@ import core, {
 } from '@hcengineering/core'
 import { type Asset, type IntlString } from '@hcengineering/platform'
 import { createQuery, getClient } from '@hcengineering/presentation'
-import task, { calcRank, getStatusIndex, type ProjectType } from '@hcengineering/task'
+import task, { getStatusIndex, makeRank, type ProjectType } from '@hcengineering/task'
 import { activeProjects as taskActiveProjects, taskTypeStore } from '@hcengineering/task-resources'
 import {
   IssuePriority,
@@ -576,7 +576,7 @@ async function updateIssuesOnMove (
             space,
             {
               ...updates.get(attached._id as Ref<Issue>),
-              rank: calcRank(lastOne, undefined),
+              rank: makeRank(lastOne?.rank, undefined),
               number: (incResult as any).object.sequence
             },
             updates
@@ -622,7 +622,7 @@ export async function moveIssueToSpace (
       space,
       {
         ...updates.get(doc._id),
-        rank: calcRank(lastOne, undefined),
+        rank: makeRank(lastOne?.rank, undefined),
         number,
         identifier: `${space.identifier}-${number}`
       },

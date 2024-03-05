@@ -11,7 +11,7 @@ import {
   type Status
 } from '@hcengineering/core'
 import { showPanel } from '@hcengineering/ui'
-import task, { calcRank } from '@hcengineering/task'
+import task, { makeRank } from '@hcengineering/task'
 import board from '../plugin'
 
 export async function createCard (
@@ -35,7 +35,7 @@ export async function createCard (
     startDate: null,
     dueDate: null,
     number,
-    rank: calcRank(lastOne, undefined),
+    rank: makeRank(lastOne?.rank, undefined),
     assignee: null,
     identifier: `CARD-${number}`,
     description: '',

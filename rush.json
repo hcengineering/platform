@@ -587,6 +587,11 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@hcengineering/rank",
+      "projectFolder": "packages/rank",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@hcengineering/view",
       "projectFolder": "plugins/view",
       "shouldPublish": true

@@ -41,7 +41,7 @@
     getClient
   } from '@hcengineering/presentation'
   import type { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
-  import task, { TaskType, calcRank, getStates } from '@hcengineering/task'
+  import task, { TaskType, getStates, makeRank } from '@hcengineering/task'
   import ui, {
     Button,
     ColorPopup,
@@ -152,7 +152,7 @@
         number,
         identifier: `APP-${number}`,
         assignee: doc.assignee,
-        rank: calcRank(lastOne, undefined),
+        rank: makeRank(lastOne?.rank, undefined),
         startDate: null,
         dueDate: null,
         kind

@@ -20,7 +20,7 @@
   import type { Customer, Funnel, Lead } from '@hcengineering/lead'
   import { OK, Status } from '@hcengineering/platform'
   import { Card, createQuery, getClient, InlineAttributeBar, SpaceSelector } from '@hcengineering/presentation'
-  import task, { calcRank, getStates, TaskType } from '@hcengineering/task'
+  import task, { getStates, makeRank, TaskType } from '@hcengineering/task'
   import { TaskKindSelector, typeStore } from '@hcengineering/task-resources'
   import { Button, createFocusManager, EditBox, FocusHandler, Label, Status as StatusControl } from '@hcengineering/ui'
   import { statusStore } from '@hcengineering/view-resources'
@@ -92,7 +92,7 @@
       identifier: `LEAD-${number}`,
       title,
       kind,
-      rank: calcRank(lastOne, undefined),
+      rank: makeRank(lastOne?.rank, undefined),
       assignee: null,
       startDate: null,
       dueDate: null,
