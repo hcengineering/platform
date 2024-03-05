@@ -28,10 +28,11 @@ import {
 import { type IntlString, type Resources } from '@hcengineering/platform'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import task, {
-  calcRank,
   getStatusIndex,
+  makeRank,
   type Project,
   type ProjectType,
+  type Rank,
   type Task,
   type TaskType
 } from '@hcengineering/task'
@@ -238,8 +239,8 @@ async function statusSort (
       }
     })
   } else {
-    const res = new Map<Ref<Status>, string>()
-    let prevRank: string | undefined
+    const res = new Map<Ref<Status>, Rank>()
+    let prevRank: Rank | undefined
     const types = await client.findAll(task.class.ProjectType, {})
     for (const state of value) {
       if (res.has(state)) continue
@@ -254,17 +255,14 @@ async function statusSort (
         const st = statuses[index]
         const prev = index > 0 ? res.get(statuses[index - 1]) : prevRank
         const next = index < statuses.length - 1 ? res.get(statuses[index + 1]) : undefined
-        const rank = calcRank(
-          prev !== undefined ? { rank: prev } : undefined,
-          next !== undefined ? { rank: next } : undefined
-        )
+        const rank = makeRank(prev, next)
         res.set(st, rank)
         prevRank = rank
       }
     }
     const result: Array<{
       _id: Ref<Status>
-      rank: string
+      rank: Rank
     }> = []
     for (const [key, value] of res.entries()) {
       result.push({ _id: key, rank: value })
