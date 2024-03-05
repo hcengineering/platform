@@ -105,9 +105,9 @@ export class TDocument extends TAttachedDoc implements Document {
   @Prop(Collection(tags.class.TagReference), document.string.Labels)
     labels?: number
 
-  @Prop(Collection(chunter.class.Backlink), document.string.Backlinks)
+  @Prop(Collection(activity.class.ActivityReference), document.string.Backlinks)
   @Hidden()
-    backlinks!: number
+    references!: number
 
   @Prop(TypeString(), document.string.Icon)
   @Hidden()

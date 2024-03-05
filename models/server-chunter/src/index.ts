@@ -51,10 +51,6 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverChunter.trigger.BacklinkTrigger
-  })
-
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverChunter.trigger.ChunterTrigger
   })
 
@@ -85,15 +81,6 @@ export function createModel (builder: Builder): void {
       'tx.objectClass': chunter.class.ChatMessage
     }
   })
-
-  builder.mixin(
-    chunter.ids.MentionNotification,
-    notification.class.NotificationType,
-    serverNotification.mixin.TypeMatch,
-    {
-      func: serverChunter.function.IsMeMentioned
-    }
-  )
 
   builder.mixin(chunter.ids.DMNotification, notification.class.NotificationType, serverNotification.mixin.TypeMatch, {
     func: serverChunter.function.IsDirectMessage

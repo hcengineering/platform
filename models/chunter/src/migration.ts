@@ -103,26 +103,6 @@ export async function createRandom (client: MigrationUpgradeClient, tx: TxOperat
   await createDocNotifyContexts(client, tx, chunter.space.Random, chunter.class.Channel)
 }
 
-async function createBacklink (tx: TxOperations): Promise<void> {
-  const current = await tx.findOne(core.class.Space, {
-    _id: chunter.space.Backlinks
-  })
-  if (current === undefined) {
-    await tx.createDoc(
-      core.class.Space,
-      core.space.Space,
-      {
-        name: 'Backlinks',
-        description: 'Backlinks',
-        private: false,
-        archived: false,
-        members: []
-      },
-      chunter.space.Backlinks
-    )
-  }
-}
-
 async function convertCommentsToChatMessages (client: MigrationClient): Promise<void> {
   await client.update(DOMAIN_COMMENT, { _class: chunter.class.Comment }, { _class: chunter.class.ChatMessage })
   await client.move(DOMAIN_COMMENT, { _class: chunter.class.ChatMessage }, DOMAIN_ACTIVITY)
@@ -141,6 +121,5 @@ export const chunterOperation: MigrateOperation = {
     const tx = new TxOperations(client, core.account.System)
     await createGeneral(client, tx)
     await createRandom(client, tx)
-    await createBacklink(tx)
   }
 }

@@ -22,8 +22,16 @@ import ActivityInfoMessagePresenter from './components/activity-message/Activity
 import ReactionPresenter from './components/reactions/ReactionPresenter.svelte'
 import ReactionNotificationPresenter from './components/reactions/ReactionNotificationPresenter.svelte'
 import ActivityMessageNotificationLabel from './components/activity-message/ActivityMessageNotificationLabel.svelte'
+import ActivityReferencePresenter from './components/activity-reference/ActivityReferencePresenter.svelte'
 
-import { getMessageFragment, attributesFilter, pinnedFilter, allFilter } from './activityMessagesUtils'
+import {
+  getMessageFragment,
+  attributesFilter,
+  pinnedFilter,
+  allFilter,
+  referencesFilter
+} from './activityMessagesUtils'
+import { updateReferences } from './references'
 
 export * from './activity'
 export * from './utils'
@@ -49,14 +57,19 @@ export default async (): Promise<Resources> => ({
     ReactionPresenter,
     ActivityInfoMessagePresenter,
     ReactionNotificationPresenter,
-    ActivityMessageNotificationLabel
+    ActivityMessageNotificationLabel,
+    ActivityReferencePresenter
   },
   filter: {
     AttributesFilter: attributesFilter,
     PinnedFilter: pinnedFilter,
-    AllFilter: allFilter
+    AllFilter: allFilter,
+    ReferencesFilter: referencesFilter
   },
   function: {
     GetFragment: getMessageFragment
+  },
+  backreference: {
+    Update: updateReferences
   }
 })

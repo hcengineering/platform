@@ -50,9 +50,9 @@
 
     const res = activityMessagesQuery.query(
       activity.class.ActivityMessage,
-      { attachedTo: objectId },
+      { attachedTo: objectId, hidden: { $ne: true } },
       (result: ActivityMessage[]) => {
-        combineActivityMessages(result, order).then((messages) => {
+        void combineActivityMessages(result, order).then((messages) => {
           activityMessages = messages
           isLoading = false
         })

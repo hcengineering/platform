@@ -49,7 +49,7 @@
     attachments: 0,
     labels: 0,
     comments: 0,
-    backlinks: 0
+    references: 0
   }
 
   const dispatch = createEventDispatcher()

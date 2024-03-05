@@ -33,6 +33,9 @@
     "Update": "Обновить",
     "Updated": "Обновил(а)",
     "UpdatedCollection": "Обновленные",
-    "Message": "Сообщение"
+    "Message": "Сообщение",
+    "Mentioned": "Упомянул(а)",
+    "You": "Вы",
+    "Mentions": "Упомянания"
   }
 }

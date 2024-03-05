@@ -15,28 +15,28 @@
 //
 -->
 <script lang="ts">
-  import chunter, { Backlink } from '@hcengineering/chunter'
   import { Ref } from '@hcengineering/core'
   import { Document } from '@hcengineering/document'
   import { createQuery } from '@hcengineering/presentation'
   import { Label, Lazy, Scroller } from '@hcengineering/ui'
+  import activity, { ActivityReference } from '@hcengineering/activity'
 
   import document from '../../plugin'
-  import BacklinkView from './BacklinkView.svelte'
+  import ReferenceView from './ReferenceView.svelte'
 
   export let doc: Ref<Document>
 
   const query = createQuery()
 
-  let backlinks: Backlink[] = []
+  let references: ActivityReference[] = []
 
   $: query.query(
-    chunter.class.Backlink,
+    activity.class.ActivityReference,
     {
       attachedTo: doc
     },
     (res) => {
-      backlinks = res
+      references = res
     }
   )
 </script>
@@ -48,11 +48,11 @@
 
   <div class="divider" />
 
-  {#if backlinks.length > 0}
+  {#if references.length > 0}
     <Scroller>
-      {#each backlinks as backlink}
+      {#each references as reference}
         <Lazy>
-          <BacklinkView value={backlink} />
+          <ReferenceView value={reference} />
         </Lazy>
       {/each}
     </Scroller>

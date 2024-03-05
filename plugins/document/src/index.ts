@@ -43,7 +43,7 @@ export interface Document extends AttachedDoc<Document, 'children', Teamspace>, 
   comments?: number
   embeddings?: number
   labels?: number
-  backlinks?: number
+  references?: number
 }
 
 /**
@@ -105,7 +105,7 @@ const documentPlugin = plugin(documentId, {
     Videofile: '' as Asset,
     Library: '' as Asset,
     Teamspace: '' as Asset,
-    Backlinks: '' as Asset,
+    References: '' as Asset,
     History: '' as Asset,
     Star: '' as Asset,
     Starred: '' as Asset

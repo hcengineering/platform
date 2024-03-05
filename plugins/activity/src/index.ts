@@ -24,6 +24,7 @@ import {
   DocumentQuery,
   Mixin,
   Ref,
+  type RelatedDocument,
   Timestamp,
   Tx,
   TxCreateDoc,
@@ -115,6 +116,8 @@ export interface ActivityMessage extends AttachedDoc {
   repliedPersons?: Ref<Person>[]
   lastReply?: Timestamp
 
+  hidden?: boolean
+
   replies?: number
   reactions?: number
 }
@@ -178,6 +181,22 @@ export interface DocUpdateMessage extends ActivityMessage {
   action: DocUpdateAction
   updateCollection?: string
   attributeUpdates?: DocAttributeUpdates
+}
+
+export interface ActivityReference extends ActivityMessage {
+  // A mentioned document
+  // attachedTo: Ref<Doc>
+  // attachedToClass: Ref<Class<Doc>>
+
+  // Source document we have reference from, it should be parent document for Comment/Message.
+  srcDocId: Ref<Doc>
+  srcDocClass: Ref<Class<Doc>>
+
+  // Reference to comment/message in source doc
+  attachedDocId?: Ref<Doc>
+  attachedDocClass?: Ref<Class<Doc>>
+
+  message: string
 }
 
 /**
@@ -310,7 +329,8 @@ export default plugin(activityId, {
     ActivityMessagesFilter: '' as Ref<Class<ActivityMessagesFilter>>,
     ActivityExtension: '' as Ref<Class<ActivityExtension>>,
     Reaction: '' as Ref<Class<Reaction>>,
-    SavedMessage: '' as Ref<Class<SavedMessage>>
+    SavedMessage: '' as Ref<Class<SavedMessage>>,
+    ActivityReference: '' as Ref<Class<ActivityReference>>
   },
   icon: {
     Activity: '' as Asset,
@@ -342,7 +362,10 @@ export default plugin(activityId, {
     LastReply: '' as IntlString,
     RepliesCount: '' as IntlString,
     Reacted: '' as IntlString,
-    Message: '' as IntlString
+    Message: '' as IntlString,
+    Mentioned: '' as IntlString,
+    You: '' as IntlString,
+    Mentions: '' as IntlString
   },
   component: {
     Activity: '' as AnyComponent,
@@ -351,9 +374,15 @@ export default plugin(activityId, {
     ActivityInfoMessagePresenter: '' as AnyComponent,
     ReactionPresenter: '' as AnyComponent,
     ReactionNotificationPresenter: '' as AnyComponent,
-    ActivityMessageNotificationLabel: '' as AnyComponent
+    ActivityMessageNotificationLabel: '' as AnyComponent,
+    ActivityReferencePresenter: '' as AnyComponent
   },
   ids: {
-    AllFilter: '' as Ref<ActivityMessagesFilter>
+    AllFilter: '' as Ref<ActivityMessagesFilter>,
+    MentionNotification: '' as Ref<Doc>
+  },
+  backreference: {
+    // Update list of back references
+    Update: '' as Resource<(source: Doc, key: string, target: RelatedDocument[], label: IntlString) => Promise<void>>
   }
 })

@@ -15,17 +15,7 @@
 
 import { ActivityMessage, ActivityMessageViewlet } from '@hcengineering/activity'
 import type { Person } from '@hcengineering/contact'
-import type {
-  Account,
-  AttachedDoc,
-  Class,
-  Doc,
-  Mixin,
-  Ref,
-  RelatedDocument,
-  Space,
-  Timestamp
-} from '@hcengineering/core'
+import type { Account, AttachedDoc, Class, Doc, Mixin, Ref, Space, Timestamp } from '@hcengineering/core'
 import { NotificationType } from '@hcengineering/notification'
 import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
@@ -95,6 +85,7 @@ export interface Comment extends AttachedDoc {
 
 /**
  * @public
+ * @deprecated
  */
 export interface Backlink extends Comment {
   // A target document
@@ -199,9 +190,6 @@ export default plugin(chunterId, {
     ChunterMessageExtension: '' as Ref<Mixin<ChunterMessageExtension>>,
     ObjectChatPanel: '' as Ref<Mixin<ObjectChatPanel>>
   },
-  space: {
-    Backlinks: '' as Ref<Space>
-  },
   string: {
     Reactions: '' as IntlString,
     EditUpdate: '' as IntlString,
@@ -238,17 +226,12 @@ export default plugin(chunterId, {
   },
   ids: {
     DMNotification: '' as Ref<NotificationType>,
-    MentionNotification: '' as Ref<NotificationType>,
     ThreadNotification: '' as Ref<NotificationType>,
     ChannelNotification: '' as Ref<NotificationType>,
     ThreadMessageViewlet: '' as Ref<ChatMessageViewlet>
   },
   app: {
     Chunter: '' as Ref<Doc>
-  },
-  backreference: {
-    // Update list of back references
-    Update: '' as Resource<(source: Doc, key: string, target: RelatedDocument[], label: IntlString) => Promise<void>>
   },
   action: {
     DeleteChatMessage: '' as Ref<Action>,

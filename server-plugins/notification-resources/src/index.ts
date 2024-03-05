@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import chunter, { Backlink, ChatMessage } from '@hcengineering/chunter'
+import chunter, { ChatMessage } from '@hcengineering/chunter'
 import contact, { Employee, formatName, Person, PersonAccount } from '@hcengineering/contact'
 import core, {
   Account,
@@ -61,7 +61,7 @@ import serverNotification, {
   HTMLPresenter,
   TextPresenter
 } from '@hcengineering/server-notification'
-import activity, { ActivityMessage } from '@hcengineering/activity'
+import activity, { ActivityMessage, ActivityReference } from '@hcengineering/activity'
 
 import { Content } from './types'
 import {
@@ -74,18 +74,17 @@ import {
   updateNotifyContextsSpace
 } from './utils'
 
-export async function OnBacklinkCreate (
-  originTx: TxCollectionCUD<Doc, AttachedDoc>,
+export async function OnReferenceCreate (
+  tx: TxCollectionCUD<Doc, ActivityReference>,
   control: TriggerControl
 ): Promise<Tx[]> {
   const hierarchy = control.hierarchy
-  const isTxCorrect = await isBacklinkCreated(originTx, hierarchy, control)
+  const isTxCorrect = await isEmployeeReferenceCreated(tx, hierarchy, control)
 
   if (!isTxCorrect) {
     return []
   }
 
-  const tx = originTx as TxCollectionCUD<Doc, Backlink>
   const receiver = await getPersonAccount(tx.objectId as Ref<Employee>, control)
 
   if (receiver === undefined) {
@@ -102,17 +101,50 @@ export async function OnBacklinkCreate (
     return []
   }
 
-  const backlink = TxProcessor.createDoc2Doc(tx.tx as TxCreateDoc<Backlink>)
+  const res: Tx[] = []
 
-  if (!hierarchy.isDerived(backlink.backlinkClass, activity.class.ActivityMessage)) {
+  const reference = TxProcessor.createDoc2Doc(tx.tx as TxCreateDoc<ActivityReference>)
+  const collaboratorsTxes = await getCollaboratorsTxes(reference, control, receiver)
+
+  res.push(...collaboratorsTxes)
+
+  if (await isReferenceAlreadyNotified(reference, receiver._id, control)) {
+    return res
+  }
+
+  const doc = (await control.findAll(reference.attachedToClass, { _id: reference.attachedTo }))[0]
+
+  if (doc === undefined) {
+    return res
+  }
+
+  const notificationTxes = await createCollabDocInfo([receiver._id], control, tx.tx, tx, doc, [reference], true)
+
+  res.push(...notificationTxes)
+
+  return res
+}
+
+async function getCollaboratorsTxes (
+  reference: ActivityReference,
+  control: TriggerControl,
+  receiver: Account
+): Promise<Tx[]> {
+  const { hierarchy } = control
+
+  if (reference.attachedDocClass === undefined || reference.attachedDocId === undefined) {
+    return []
+  }
+
+  if (!hierarchy.isDerived(reference.attachedDocClass, activity.class.ActivityMessage)) {
     return []
   }
 
   const message = (
     await control.findAll<ActivityMessage>(
-      backlink.backlinkClass,
+      reference.attachedDocClass,
       {
-        _id: backlink.backlinkId as Ref<ActivityMessage>
+        _id: reference.attachedDocId as Ref<ActivityMessage>
       },
       { limit: 1 }
     )
@@ -143,50 +175,39 @@ export async function OnBacklinkCreate (
   return res
 }
 
-async function isBacklinkNotified (tx: TxCollectionCUD<Doc, Backlink>, control: TriggerControl): Promise<boolean> {
-  const receiver = await getPersonAccount(tx.objectId as Ref<Employee>, control)
+async function isReferenceAlreadyNotified (
+  reference: ActivityReference,
+  receiver: Ref<Account>,
+  control: TriggerControl
+): Promise<boolean> {
+  const { hierarchy } = control
 
-  if (receiver === undefined) {
+  if (reference.attachedDocClass === undefined || reference.attachedDocId === undefined) {
     return false
   }
 
-  const { hierarchy } = control
-  const backlink = TxProcessor.createDoc2Doc(tx.tx as TxCreateDoc<Backlink>)
-
-  if (!hierarchy.isDerived(backlink.backlinkClass, activity.class.ActivityMessage)) {
+  if (!hierarchy.isDerived(reference.attachedDocClass, activity.class.ActivityMessage)) {
     return false
   }
 
   const exists = await control.findAll(
     notification.class.ActivityInboxNotification,
-    { attachedTo: backlink.backlinkId as Ref<ActivityMessage>, user: receiver._id },
+    { attachedTo: reference.attachedDocId as Ref<ActivityMessage>, user: receiver },
     { limit: 1 }
   )
 
   return exists.length > 0
 }
 
-async function isAlreadyNotified (originTx: TxCUD<Doc>, control: TriggerControl): Promise<boolean> {
-  if (originTx._class !== core.class.TxCollectionCUD) {
-    return false
-  }
-
-  const hierarchy = control.hierarchy
-  const isBacklink = await isBacklinkCreated(originTx as TxCollectionCUD<Doc, AttachedDoc>, hierarchy, control)
-
-  if (!isBacklink) {
-    return false
-  }
-
-  return await isBacklinkNotified(originTx as TxCollectionCUD<Doc, Backlink>, control)
-}
-
-async function isBacklinkCreated (
+async function isEmployeeReferenceCreated (
   ptx: TxCollectionCUD<Doc, AttachedDoc>,
   hierarchy: Hierarchy,
   control: TriggerControl
 ): Promise<boolean> {
-  if (ptx.tx._class !== core.class.TxCreateDoc || !hierarchy.isDerived(ptx.tx.objectClass, chunter.class.Backlink)) {
+  if (
+    ptx.tx._class !== core.class.TxCreateDoc ||
+    !hierarchy.isDerived(ptx.tx.objectClass, activity.class.ActivityReference)
+  ) {
     return false
   }
   if (ptx.objectClass === contact.class.Person) {
@@ -834,11 +855,37 @@ async function removeCollaboratorDoc (tx: TxRemoveDoc<Doc>, control: TriggerCont
   }
 
   const res: Tx[] = []
-  const notifyContexts = await control.findAll(notification.class.DocNotifyContext, { attachedTo: tx.objectId })
+  const notifyContexts = await control.findAll(
+    notification.class.DocNotifyContext,
+    { attachedTo: tx.objectId },
+    {
+      projection: {
+        _id: 1,
+        _class: 1,
+        space: 1
+      }
+    }
+  )
+
+  if (notifyContexts.length === 0) {
+    return []
+  }
+
   const notifyContextRefs = notifyContexts.map(({ _id }) => _id)
-  const inboxNotifications = await control.findAll(notification.class.InboxNotification, {
-    docNotifyContext: { $in: notifyContextRefs }
-  })
+
+  const inboxNotifications = await control.findAll(
+    notification.class.InboxNotification,
+    {
+      docNotifyContext: { $in: notifyContextRefs }
+    },
+    {
+      projection: {
+        _id: 1,
+        _class: 1,
+        space: 1
+      }
+    }
+  )
 
   inboxNotifications.forEach((notification) => {
     res.push(control.txFactory.createTxRemoveDoc(notification._class, notification.space, notification._id))
@@ -1010,10 +1057,6 @@ export async function createCollaboratorNotifications (
     return []
   }
 
-  if (await isAlreadyNotified(originTx ?? tx, control)) {
-    return []
-  }
-
   switch (tx._class) {
     case core.class.TxCreateDoc:
       return await createCollaboratorDoc(tx as TxCreateDoc<Doc>, control, activityMessages, originTx ?? tx)
@@ -1025,8 +1068,6 @@ export async function createCollaboratorNotifications (
       )
       return res
     }
-    case core.class.TxRemoveDoc:
-      return await removeCollaboratorDoc(tx as TxRemoveDoc<Doc>, control)
     case core.class.TxCollectionCUD:
       return await collectionCollabDoc(tx as TxCollectionCUD<Doc, AttachedDoc>, control, activityMessages)
   }
@@ -1118,6 +1159,14 @@ export async function getCollaborators (
   }
 }
 
+async function OnDocRemove (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
+  const etx = TxProcessor.extractTx(tx)
+
+  if (etx._class !== core.class.TxRemoveDoc) return []
+
+  return await removeCollaboratorDoc(tx as TxRemoveDoc<Doc>, control)
+}
+
 export * from './types'
 export * from './utils'
 
@@ -1127,8 +1176,9 @@ export default async () => ({
     OnChatMessageCreate,
     OnAttributeCreate,
     OnAttributeUpdate,
-    OnBacklinkCreate,
-    OnActivityNotificationViewed
+    OnReferenceCreate,
+    OnActivityNotificationViewed,
+    OnDocRemove
   },
   function: {
     IsUserInFieldValue: isUserInFieldValue,

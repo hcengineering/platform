@@ -31,6 +31,7 @@ import serverNotification, {
   type NotificationContentProvider
 } from '@hcengineering/server-notification'
 import chunter from '@hcengineering/model-chunter'
+import activity from '@hcengineering/activity'
 
 export { serverNotificationId } from '@hcengineering/server-notification'
 
@@ -77,10 +78,11 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverNotification.trigger.OnBacklinkCreate,
+    trigger: serverNotification.trigger.OnReferenceCreate,
     txMatch: {
       _class: core.class.TxCollectionCUD,
-      'tx._class': core.class.TxCreateDoc
+      'tx._class': core.class.TxCreateDoc,
+      'tx.objectClass': activity.class.ActivityReference
     }
   })
 
@@ -98,5 +100,9 @@ export function createModel (builder: Builder): void {
       objectClass: core.class.Attribute,
       _class: core.class.TxUpdateDoc
     }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverNotification.trigger.OnDocRemove
   })
 }

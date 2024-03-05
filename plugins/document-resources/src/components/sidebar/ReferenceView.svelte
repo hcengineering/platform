@@ -15,18 +15,18 @@
 //
 -->
 <script lang="ts">
-  import { Backlink } from '@hcengineering/chunter'
   import { MessageViewer } from '@hcengineering/presentation'
   import { TimeSince } from '@hcengineering/ui'
   import { ObjectPresenter } from '@hcengineering/view-resources'
+  import { ActivityReference } from '@hcengineering/activity'
 
-  export let value: Backlink
+  export let value: ActivityReference
 </script>
 
 <div class="container flex-col flex-gap-2 flex-no-shrink">
   <div class="flex-between h-8">
     <div class="fs-bold overflow-label">
-      <ObjectPresenter _class={value.backlinkClass} objectId={value.backlinkId} accent />
+      <ObjectPresenter _class={value.srcDocClass} objectId={value.srcDocId} accent />
     </div>
     <div class="time">
       <TimeSince value={value.createdOn ?? value.modifiedOn} />

@@ -39,6 +39,7 @@ import {
 } from '@hcengineering/server-notification-resources'
 
 import { getDocUpdateAction, getTxAttributesUpdates } from './utils'
+import { IsMeMentioned, ReferenceTrigger } from './references'
 
 export async function OnReactionChanged (originTx: Tx, control: TriggerControl): Promise<Tx[]> {
   const tx = originTx as TxCollectionCUD<ActivityMessage, Reaction>
@@ -60,14 +61,26 @@ export async function removeReactionNotifications (
   control: TriggerControl
 ): Promise<Tx[]> {
   const message = (
-    await control.findAll(activity.class.ActivityMessage, { objectId: tx.tx.objectId }, { projection: { _id: 1 } })
+    await control.findAll(
+      activity.class.ActivityMessage,
+      { objectId: tx.tx.objectId },
+      { projection: { _id: 1, _class: 1, space: 1 } }
+    )
   )[0]
 
   if (message === undefined) {
     return []
   }
 
-  return await removeDocInboxNotifications(message._id, control)
+  const res: Tx[] = []
+  const txes = await removeDocInboxNotifications(message._id, control)
+
+  const removeTx = control.txFactory.createTxRemoveDoc(message._class, message.space, message._id)
+
+  res.push(removeTx)
+  res.push(...txes)
+
+  return res
 }
 
 export async function createReactionNotifications (
@@ -384,8 +397,12 @@ async function OnDocRemoved (originTx: TxCUD<Doc>, control: TriggerControl): Pro
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
+    ReferenceTrigger,
     ActivityMessagesHandler,
     OnDocRemoved,
     OnReactionChanged
+  },
+  function: {
+    IsMeMentioned
   }
 })

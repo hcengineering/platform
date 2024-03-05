@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2021 Anticrm Platform Contributors.
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,35 +13,34 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Backlink } from '@hcengineering/chunter'
   import type { Doc } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { AttributeModel } from '@hcengineering/view'
   import { getObjectPresenter } from '@hcengineering/view-resources'
+  import { ActivityReference } from '@hcengineering/activity'
 
-  export let value: Backlink
+  export let value: ActivityReference
   export let inline = true
 
   const client = getClient()
+  const srcDocQuery = createQuery()
+
+  let srcDoc: Doc | undefined
   let presenter: AttributeModel | undefined
 
-  const docQuery = createQuery()
-  let doc: Doc | undefined
+  $: srcDocQuery.query(value.srcDocClass, { _id: value.srcDocId }, (r) => {
+    srcDoc = r.shift()
+  })
 
-  $: value.backlinkClass != null &&
-    docQuery.query(value.backlinkClass, { _id: value.backlinkId }, (r) => {
-      doc = r.shift()
-    })
-
-  $: if (doc !== undefined) {
-    getObjectPresenter(client, doc._class, { key: '' }).then((p) => {
-      presenter = p
+  $: if (srcDoc !== undefined) {
+    void getObjectPresenter(client, srcDoc._class, { key: '' }).then((result) => {
+      presenter = result
     })
   }
 </script>
 
 {#if presenter}
   <span class="labels-row">
-    <svelte:component this={presenter.presenter} value={doc} {inline} embedded shouldShowAvatar={false} />
+    <svelte:component this={presenter.presenter} value={srcDoc} {inline} embedded shouldShowAvatar={false} />
   </span>
 {/if}

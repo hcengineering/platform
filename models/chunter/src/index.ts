@@ -442,12 +442,6 @@ export function createModel (builder: Builder, options = { addApplication: true 
     chunter.action.CopyChatMessageLink
   )
 
-  builder.createDoc(activity.class.ActivityMessagesFilter, core.space.Model, {
-    label: chunter.string.FilterBacklinks,
-    position: 60,
-    filter: chunter.filter.BacklinksFilter
-  })
-
   builder.mixin(chunter.class.ChunterMessage, core.class.Class, view.mixin.ClassFilters, {
     filters: ['space', '_class']
   })
@@ -464,29 +458,6 @@ export function createModel (builder: Builder, options = { addApplication: true 
       icon: chunter.icon.Chunter
     },
     chunter.ids.ChunterNotificationGroup
-  )
-
-  builder.createDoc(
-    notification.class.NotificationType,
-    core.space.Model,
-    {
-      label: chunter.string.MentionNotification,
-      generated: false,
-      hidden: false,
-      txClasses: [core.class.TxCreateDoc],
-      objectClass: chunter.class.Backlink,
-      group: chunter.ids.ChunterNotificationGroup,
-      providers: {
-        [notification.providers.EmailNotification]: true,
-        [notification.providers.PlatformNotification]: true
-      },
-      templates: {
-        textTemplate: '{sender} mentioned you in {doc} {data}',
-        htmlTemplate: '<p>{sender}</b> mentioned you in {doc}</p> {data}',
-        subjectTemplate: 'You were mentioned in {doc}'
-      }
-    },
-    chunter.ids.MentionNotification
   )
 
   builder.createDoc(
@@ -544,43 +515,6 @@ export function createModel (builder: Builder, options = { addApplication: true 
       group: chunter.ids.ChunterNotificationGroup
     },
     chunter.ids.ThreadNotification
-  )
-
-  builder.createDoc(
-    activity.class.DocUpdateMessageViewlet,
-    core.space.Model,
-    {
-      objectClass: chunter.class.Backlink,
-      action: 'create',
-      component: chunter.component.BacklinkContent,
-      labelComponent: chunter.activity.BacklinkCreatedLabel,
-      hideIfRemoved: true
-    },
-    chunter.ids.BacklinkCreatedActivityViewlet
-  )
-
-  builder.createDoc(
-    activity.class.DocUpdateMessageViewlet,
-    core.space.Model,
-    {
-      objectClass: chunter.class.Backlink,
-      action: 'update',
-      component: chunter.component.BacklinkContent,
-      labelComponent: chunter.activity.BacklinkCreatedLabel,
-      hideIfRemoved: true
-    },
-    chunter.ids.BacklinkUpdateActivityViewlet
-  )
-
-  builder.createDoc(
-    activity.class.DocUpdateMessageViewlet,
-    core.space.Model,
-    {
-      objectClass: chunter.class.Backlink,
-      action: 'remove',
-      hideIfRemoved: true
-    },
-    chunter.ids.BacklinkRemovedActivityViewlet
   )
 
   createAction(builder, {
@@ -679,6 +613,11 @@ export function createModel (builder: Builder, options = { addApplication: true 
     components: { input: chunter.component.ChatMessageInput }
   })
 
+  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
+    ofClass: activity.class.ActivityReference,
+    components: { input: chunter.component.ChatMessageInput }
+  })
+
   builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
     ofMessage: chunter.class.ChatMessage,
     components: [{ kind: 'footer', component: chunter.component.Replies }]
@@ -695,6 +634,11 @@ export function createModel (builder: Builder, options = { addApplication: true 
   })
 
   builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
+    ofMessage: activity.class.ActivityReference,
+    components: [{ kind: 'footer', component: chunter.component.Replies }]
+  })
+
+  builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
     ofMessage: chunter.class.ChatMessage,
     components: [{ kind: 'action', component: chunter.component.ReplyToThreadAction }]
   })
@@ -706,6 +650,11 @@ export function createModel (builder: Builder, options = { addApplication: true 
 
   builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
     ofMessage: activity.class.ActivityInfoMessage,
+    components: [{ kind: 'action', component: chunter.component.ReplyToThreadAction }]
+  })
+
+  builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
+    ofMessage: activity.class.ActivityReference,
     components: [{ kind: 'action', component: chunter.component.ReplyToThreadAction }]
   })
 

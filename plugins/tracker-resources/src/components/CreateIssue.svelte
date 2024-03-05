@@ -73,6 +73,8 @@
   import view from '@hcengineering/view'
   import { ObjectBox } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy } from 'svelte'
+  import activity from '@hcengineering/activity'
+
   import { activeComponent, activeMilestone, generateIssueShortLink, updateIssueRelation } from '../issues'
   import tracker from '../plugin'
   import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
@@ -485,7 +487,7 @@
           if (client.getHierarchy().isDerived(relatedTo._class, tracker.class.Issue)) {
             await updateIssueRelation(operations, relatedTo as Issue, doc, 'relations', '$push')
           } else {
-            const update = await getResource(chunter.backreference.Update)
+            const update = await getResource(activity.backreference.Update)
             await update(doc, 'relations', [relatedTo], tracker.string.AddedReference)
           }
         }
