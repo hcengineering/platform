@@ -72,7 +72,7 @@
     const ops = client.apply('todo')
 
     if (todo !== undefined) {
-      await ops.removeDoc(todo._class, todo.space, todo._id)
+      await ops.remove(todo)
     }
 
     const id = await ops.addCollection(time.class.ProjectToDo, time.space.ToDos, object._id, object._class, 'todos', {
@@ -101,7 +101,7 @@
     })
 
     if (todo !== undefined) {
-      await client.removeDoc(todo._class, todo.space, todo._id)
+      await client.remove(todo)
     }
   }
 
