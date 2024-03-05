@@ -119,10 +119,6 @@ function getAttrs (target: any, prop: string): Record<string, any> {
 
 /**
  * @public
- * @param type -
- * @param label -
- * @param icon -
- * @returns
  */
 export function Prop (type: Type<PropertyType>, label: IntlString, extra: Partial<Attribute<PropertyType>> = {}) {
   return function (target: any, propertyKey: string): void {
@@ -225,9 +221,6 @@ export function Mixin<T extends Obj> (_class: Ref<Class<T>>, _extends: Ref<Class
 
 /**
  * @public
- * @param label -
- * @param icon -
- * @returns
  */
 export function UX<T extends Obj> (
   label: IntlString,

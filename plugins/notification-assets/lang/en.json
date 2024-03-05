@@ -35,6 +35,7 @@
     "Pinned": "Pinned",
     "Message": "Message",
     "FlatList": "Flat list",
-    "GroupedList": "Grouped list"
+    "GroupedList": "Grouped list",
+    "ArchiveAll": "Archive all"
   }
 }
