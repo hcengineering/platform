@@ -197,6 +197,10 @@
 
 <style lang="scss">
   .todo-item {
+    .assignee {
+      cursor: pointer;
+    }
+
     &.unassigned {
       .assignee {
         opacity: 0;
