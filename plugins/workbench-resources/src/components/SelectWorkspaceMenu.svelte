@@ -14,23 +14,27 @@
 -->
 <script lang="ts">
   import login, { Workspace } from '@hcengineering/login'
-  import { getResource } from '@hcengineering/platform'
+  import { getMetadata, getResource } from '@hcengineering/platform'
+  import contact from '@hcengineering/contact'
   import {
+    Icon,
+    IconCheck,
+    Loading,
+    Location,
+    SearchEdit,
     closePopup,
     fetchMetadataLocalStorage,
     getCurrentLocation,
-    Loading,
-    Location,
+    locationStorageKeyId,
     locationToUrl,
     navigate,
     resolvedLocationStore,
-    setMetadataLocalStorage,
-    IconCheck,
-    locationStorageKeyId
+    ticker
   } from '@hcengineering/ui'
   import { workbenchId } from '@hcengineering/workbench'
-  import { onMount } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
   import { workspacesStore } from '../utils'
+  import presentation, { isAdminUser } from '@hcengineering/presentation'
   // import Drag from './icons/Drag.svelte'
 
   onMount(() => {
@@ -89,15 +93,56 @@
       ev.stopPropagation()
     }
   }
+
+  $: isAdmin = isAdminUser()
+
+  let search: string = ''
+
+  const _endpoint: string = fetchMetadataLocalStorage(login.metadata.LoginEndpoint) ?? ''
+  const token: string = getMetadata(presentation.metadata.Token) ?? ''
+
+  let endpoint = _endpoint.replace(/^ws/g, 'http')
+  if (endpoint.endsWith('/')) {
+    endpoint = endpoint.substring(0, endpoint.length - 1)
+  }
+
+  let data: any
+  onDestroy(
+    ticker.subscribe(() => {
+      void fetch(endpoint + `/api/v1/statistics?token=${token}`, {})
+        .then(async (json) => {
+          data = await json.json()
+        })
+        .catch((err) => {
+          console.error(err)
+        })
+    })
+  )
+
+  $: activeSessions =
+    (data?.statistics?.activeSessions as Record<
+    string,
+    Array<{
+      userId: string
+      data?: Record<string, any>
+    }>
+    >) ?? {}
 </script>
 
 {#if $workspacesStore.length}
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class="antiPopup" on:keydown={keyDown}>
     <div class="ap-space x2" />
+    {#if isAdmin}
+      <div class="ml-2 mr-2 mb-2 flex-grow">
+        <SearchEdit bind:value={search} width={'100%'} />
+      </div>
+    {/if}
     <div class="ap-scroll">
       <div class="ap-box">
-        {#each $workspacesStore as ws, i}
+        {#each $workspacesStore.filter((it) => search === '' || (it.workspaceName?.includes(search) ?? false) || it.workspace.includes(search)) as ws, i}
+          {@const wsName = ws.workspaceName ?? ws.workspace}
+          {@const _activeSession = activeSessions[ws.workspaceId]}
           <a
             class="stealth"
             href={getWorkspaceLink(ws)}
@@ -108,6 +153,7 @@
             <button
               bind:this={btns[i]}
               class="ap-menuItem flex-row-center flex-grow"
+              class:active={isAdmin && (_activeSession?.length ?? 0) > 0}
               class:hover={btns[i] === activeElement}
               on:mousemove={() => {
                 focusTarget(btns[i])
@@ -116,7 +162,24 @@
               <!-- <div class="drag"><Drag size={'small'} /></div> -->
               <!-- <div class="logo empty" /> -->
               <!-- <div class="flex-col flex-grow"> -->
-              <span class="label overflow-label flex-grow">{ws.workspaceName ?? ws.workspace}</span>
+              <div class="flex-col flex-grow">
+                <span class="label overflow-label flex-grow">
+                  {wsName}
+                </span>
+                {#if isAdmin && wsName !== ws.workspace}
+                  <span class="text-xs">
+                    ({ws.workspace})
+                  </span>
+                {/if}
+                {#if isAdmin && (_activeSession?.length ?? 0) > 0}
+                  <span class="text-xs flex-row-center">
+                    <div class="mr-1">
+                      <Icon icon={contact.icon.Person} size={'x-small'} />
+                    </div>
+                    {_activeSession?.length ?? 0}
+                  </span>
+                {/if}
+              </div>
               <!-- <span class="description overflow-label">Description</span> -->
               <!-- </div> -->
               <div class="ap-check">
@@ -134,3 +197,9 @@
 {:else}
   <div class="antiPopup"><Loading /></div>
 {/if}
+
+<style lang="scss">
+  .active {
+    background-color: var(--theme-inbox-people-counter-bgcolor);
+  }
+</style>

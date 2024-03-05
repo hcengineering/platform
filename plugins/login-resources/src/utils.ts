@@ -203,7 +203,8 @@ export async function getWorkspaces (): Promise<Workspace[]> {
     if (endpoint !== undefined) {
       return [
         {
-          workspace: DEV_WORKSPACE
+          workspace: DEV_WORKSPACE,
+          workspaceId: DEV_WORKSPACE
         }
       ]
     }

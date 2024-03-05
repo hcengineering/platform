@@ -23,10 +23,15 @@ import cors from 'cors'
 import express, { Response } from 'express'
 import fileUpload, { UploadedFile } from 'express-fileupload'
 import https from 'https'
+import morgan from 'morgan'
 import { join, resolve } from 'path'
+import { cwd } from 'process'
 import sharp from 'sharp'
 import { v4 as uuid } from 'uuid'
-import morgan from 'morgan'
+import { preConditions } from './utils'
+
+const cacheControlValue = 'public, max-age=365d'
+const cacheControlMaxAge = '365d'
 
 async function minioUpload (minio: MinioService, workspace: WorkspaceId, file: UploadedFile): Promise<string> {
   const id = uuid()
@@ -103,15 +108,41 @@ async function getFileRange (
   }
 }
 
-async function getFile (client: MinioService, workspace: WorkspaceId, uuid: string, res: Response): Promise<void> {
+async function getFile (
+  client: MinioService,
+  workspace: WorkspaceId,
+  uuid: string,
+  req: Request,
+  res: Response
+): Promise<void> {
   const stat = await client.stat(workspace, uuid)
+
+  const etag = stat.etag
+
+  if (
+    preConditions.IfNoneMatch(req.headers, { etag }) === 'notModified' ||
+    preConditions.IfMatch(req.headers, { etag }) === 'notModified' ||
+    preConditions.IfModifiedSince(req.headers, { lastModified: stat.lastModified }) === 'notModified'
+  ) {
+    // Matched, return not modified
+    res.statusCode = 304
+    res.end()
+    return
+  }
+  if (preConditions.IfUnmodifiedSince(req.headers, { lastModified: stat.lastModified }) === 'failed') {
+    // Send 412 (Precondition Failed)
+    res.statusCode = 412
+    res.end()
+    return
+  }
 
   try {
     const dataStream = await client.get(workspace, uuid)
     res.writeHead(200, {
       'Content-Type': stat.metaData['content-type'],
       Etag: stat.etag,
-      'Last-Modified': stat.lastModified.toISOString()
+      'Last-Modified': stat.lastModified.toISOString(),
+      'Cache-Control': cacheControlValue
     })
 
     dataStream.on('data', function (chunk) {
@@ -182,9 +213,7 @@ export function start (
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   app.get('/config.json', async (req, res) => {
-    res.status(200)
-    res.set('Cache-Control', 'no-cache')
-    res.json({
+    const data = {
       ACCOUNTS_URL: config.accountsUrl,
       UPLOAD_URL: config.uploadUrl,
       MODEL_VERSION: config.modelVersion,
@@ -199,19 +228,19 @@ export function start (
       DEFAULT_LANGUAGE: config.defaultLanguage,
       LAST_NAME_FIRST: config.lastNameFirst,
       ...(extraConfig ?? {})
-    })
+    }
+    res.set('Cache-Control', cacheControlValue)
+    res.status(200)
+    res.json(data)
   })
 
-  const dist = resolve(process.env.PUBLIC_DIR ?? __dirname, 'dist')
+  const dist = resolve(process.env.PUBLIC_DIR ?? cwd(), 'dist')
   console.log('serving static files from', dist)
   app.use(
     express.static(dist, {
-      maxAge: '7d',
-      setHeaders (res, path) {
-        if (path.includes('index.html')) {
-          res.setHeader('Cache-Control', 'public, max-age=0')
-        }
-      }
+      maxAge: '365d',
+      etag: true,
+      lastModified: true
     })
   )
 
@@ -275,7 +304,7 @@ export function start (
       if (range !== undefined) {
         await getFileRange(range, config.minio, payload.workspace, uuid, res)
       } else {
-        await getFile(config.minio, payload.workspace, uuid, res)
+        await getFile(config.minio, payload.workspace, uuid, req, res)
       }
     } catch (error: any) {
       if (error?.code === 'NoSuchKey' || error?.code === 'NotFound') {
@@ -527,8 +556,11 @@ export function start (
   })
 
   app.get('*', function (request, response) {
-    response.setHeader('Cache-Control', 'max-age=0')
-    response.sendFile(join(dist, 'index.html'))
+    response.sendFile(join(dist, 'index.html'), {
+      maxAge: cacheControlMaxAge,
+      etag: true,
+      lastModified: true
+    })
   })
 
   const server = app.listen(port)
