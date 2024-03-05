@@ -35,7 +35,7 @@ export class CommonPage {
   }
 
   async checkFromDropdown (page: Page, point: string): Promise<void> {
-    await page.locator('div.selectPopup span[class^="lines"]', { hasText: point }).click()
+    await page.locator('div.selectPopup span[class^="lines"]', { hasText: point }).first().click()
   }
 
   async pressYesDeletePopup (page: Page): Promise<void> {
