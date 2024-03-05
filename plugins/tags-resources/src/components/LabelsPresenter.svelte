@@ -86,7 +86,7 @@
         label={`+${items.length - 1}`}
         size={'min'}
         backgroundColor={'var(--tag-subtle-PorpoiseBackground)'}
-        showTooltip={{
+        tooltip={{
           component: LabelsPresenter,
           props: { value, object, isEditable, kind: 'todo', ignoreFirst: true }
         }}

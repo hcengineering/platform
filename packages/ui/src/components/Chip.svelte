@@ -14,13 +14,13 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { IconClose, ButtonIcon, LabelAndProps, tooltip } from '..'
+  import { IconClose, ButtonIcon, LabelAndProps, tooltip as tp } from '..'
 
   export let label: string
   export let size: 'small' | 'min' = 'small'
   export let isRemovable: boolean = false
   export let backgroundColor: string | undefined = undefined
-  export let showTooltip: LabelAndProps | undefined = undefined
+  export let tooltip: LabelAndProps | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -41,7 +41,7 @@
   class="flex items-center font-medium-14 max-w-60 chip {size}"
   class:removable={isRemovable}
   style:background-color={backgroundColor}
-  use:tooltip={showTooltip}
+  use:tp={tooltip}
 >
   <span class="px-2 overflow-label chip-label">{label}</span>
   {#if isRemovable}
