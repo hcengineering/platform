@@ -260,8 +260,8 @@ export class TCommonInboxNotification extends TInboxNotification implements Comm
   @Prop(TypeIntlString(), notification.string.Message)
     message?: IntlString
 
-  @Prop(TypeIntlString(), notification.string.Message)
-    messageHtml?: IntlString
+  @Prop(TypeString(), notification.string.Message)
+    messageHtml?: string
 
   props?: Record<string, any>
   icon?: Asset
