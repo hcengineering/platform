@@ -103,6 +103,7 @@ import UsersList from './components/UsersList.svelte'
 import SelectUsersPopup from './components/SelectUsersPopup.svelte'
 import IconAddMember from './components/icons/AddMember.svelte'
 import UserDetails from './components/UserDetails.svelte'
+import EditOrganizationPanel from './components/EditOrganizationPanel.svelte'
 
 import contact from './plugin'
 import {
@@ -332,7 +333,8 @@ export default async (): Promise<Resources> => ({
     PersonAccountFilterValuePresenter,
     DeleteConfirmationPopup,
     PersonAccountRefPresenter,
-    PersonIcon
+    PersonIcon,
+    EditOrganizationPanel
   },
   completion: {
     EmployeeQuery: async (

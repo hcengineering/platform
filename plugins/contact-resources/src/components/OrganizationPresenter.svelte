@@ -18,6 +18,8 @@
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { tooltip } from '@hcengineering/ui'
   import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
+
+  import contact from '../plugin'
   import Company from './icons/Company.svelte'
 
   export let value: Organization
@@ -30,9 +32,15 @@
 
 {#if value}
   {#if inline}
-    <ObjectMention object={value} {disabled} {accent} {noUnderline} />
+    <ObjectMention
+      object={value}
+      {disabled}
+      {accent}
+      {noUnderline}
+      component={contact.component.EditOrganizationPanel}
+    />
   {:else}
-    <DocNavLink {disabled} object={value} {accent} {noUnderline}>
+    <DocNavLink {disabled} object={value} {accent} {noUnderline} component={contact.component.EditOrganizationPanel}>
       <div class="flex-presenter" style:max-width={maxWidth} use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
         <div class="icon circle">
           <Company size={'small'} />

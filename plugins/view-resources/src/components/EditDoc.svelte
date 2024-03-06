@@ -21,11 +21,9 @@
   import {
     ActionContext,
     AttributeCategory,
-    AttributeCategoryOrder,
     AttributesBar,
     KeyedAttribute,
     createQuery,
-    getAttributePresenterClass,
     getClient,
     hasResource
   } from '@hcengineering/presentation'
@@ -33,8 +31,8 @@
   import view from '@hcengineering/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
 
-  import { DocNavLink, ParentsNavigator, getDocLabel, getDocMixins, showMenu } from '..'
-  import { categorizeFields, getCollectionCounter, getFiltredKeys } from '../utils'
+  import { DocNavLink, ParentsNavigator, getDocLabel, getDocMixins, showMenu, getDocAttrsInfo } from '..'
+  import { getCollectionCounter } from '../utils'
   import DocAttributeBar from './DocAttributeBar.svelte'
 
   export let _id: Ref<Doc>
@@ -96,8 +94,6 @@
   let mixins: Array<Mixin<Doc>> = []
   let showAllMixins = false
 
-  $: mixins = getDocMixins(object, showAllMixins, ignoreMixins, realObjectClass)
-
   const dispatch = createEventDispatcher()
 
   let ignoreKeys: string[] = []
@@ -107,33 +103,14 @@
   let inplaceAttributes: string[] = []
   let ignoreMixins: Set<Ref<Mixin<Doc>>> = new Set<Ref<Mixin<Doc>>>()
 
+  $: mixins = getDocMixins(object, showAllMixins, ignoreMixins, realObjectClass)
+
   async function updateKeys (): Promise<void> {
-    const keysMap = new Map(getFiltredKeys(hierarchy, realObjectClass, ignoreKeys).map((p) => [p.attr._id, p]))
-    for (const m of mixins) {
-      const mkeys = getFiltredKeys(hierarchy, m._id, ignoreKeys)
-      for (const key of mkeys) {
-        keysMap.set(key.attr._id, key)
-      }
-    }
-    const filtredKeys = Array.from(keysMap.values())
-    const { attributes, collections } = categorizeFields(hierarchy, filtredKeys, collectionArrays, allowedCollections)
+    const info = await getDocAttrsInfo(mixins, ignoreKeys, realObjectClass, allowedCollections, collectionArrays)
 
-    keys = attributes.map((it) => it.key)
-
-    const editors: Array<{ key: KeyedAttribute, editor: AnyComponent, category: AttributeCategory }> = []
-    const newInplaceAttributes: string[] = []
-
-    for (const k of collections) {
-      if (allowedCollections.includes(k.key.key)) continue
-      const editor = await getFieldEditor(k.key)
-      if (editor === undefined) continue
-      if (k.category === 'inplace') {
-        newInplaceAttributes.push(k.key.key)
-      }
-      editors.push({ key: k.key, editor, category: k.category })
-    }
-    inplaceAttributes = newInplaceAttributes
-    fieldEditors = editors.sort((a, b) => AttributeCategoryOrder[a.category] - AttributeCategoryOrder[b.category])
+    keys = info.keys
+    inplaceAttributes = info.inplaceAttributes
+    fieldEditors = info.editors
   }
 
   interface MixinEditor {
@@ -166,37 +143,18 @@
 
   $: editorFooter = getEditorFooter(_class, object)
 
-  $: getEditorOrDefault(realObjectClass, _id)
+  $: void getEditorOrDefault(realObjectClass, _id)
 
   async function getEditorOrDefault (_class: Ref<Class<Doc>>, _id: Ref<Doc>): Promise<void> {
     await updateKeys()
     mainEditor = getEditor(_class)
   }
 
-  async function getFieldEditor (key: KeyedAttribute): Promise<AnyComponent | undefined> {
-    const attrClass = getAttributePresenterClass(hierarchy, key.attr)
-    const clazz = hierarchy.getClass(attrClass.attrClass)
-    const mix = {
-      array: view.mixin.ArrayEditor,
-      collection: view.mixin.CollectionEditor,
-      inplace: view.mixin.InlineAttributEditor,
-      attribute: view.mixin.AttributeEditor,
-      object: undefined
-    }
-    const mixinRef = mix[attrClass.category]
-    if (mixinRef) {
-      const editorMixin = hierarchy.as(clazz, mixinRef)
-      return (editorMixin as any).editor
-    } else {
-      return undefined
-    }
-  }
-
   let title: string | undefined = undefined
   let rawTitle: string = ''
 
   $: if (object !== undefined) {
-    getDocLabel(pClient, object).then((t) => {
+    void getDocLabel(pClient, object).then((t) => {
       if (t) {
         rawTitle = t
       }
@@ -216,7 +174,7 @@
   let headerLoading = false
   $: {
     headerLoading = true
-    getHeaderEditor(realObjectClass).then((r) => {
+    void getHeaderEditor(realObjectClass).then((r) => {
       headerEditor = r
       headerLoading = false
     })
@@ -236,7 +194,7 @@
     collectionArrays = ev.detail.collectionArrays ?? []
     title = ev.detail.title
     mixins = getDocMixins(object, showAllMixins, ignoreMixins, realObjectClass)
-    updateKeys()
+    void updateKeys()
   }
 
   $: finalTitle = title ?? rawTitle
