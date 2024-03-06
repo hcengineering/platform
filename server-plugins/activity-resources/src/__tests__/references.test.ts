@@ -13,57 +13,68 @@
 // limitations under the License.
 //
 
-// TODO: adjust tests
+import { Class, Doc, Ref } from '@hcengineering/core'
+
+import { getReferencesData } from '../references'
+
 describe('extractBacklinks', () => {
   it('should return no references for empty document', () => {
-    // const content = '<p></p>'
-    // const references = getBacklinks(
-    //   'backlinkId' as Ref<Doc>,
-    //   'backlinkClass' as Ref<Class<Doc>>,
-    //   'attachedDocId' as Ref<Doc>,
-    //   content
-    // )
-    //
-    // expect(references).toEqual([])
+    const content = '<p></p>'
+    const references = getReferencesData(
+      { isDerived: () => false } as any,
+      'srcDocId' as Ref<Doc>,
+      'srcDocClass' as Ref<Class<Doc>>,
+      'attachedDocId' as Ref<Doc>,
+      'attachedDocClass' as Ref<Class<Doc>>,
+      content
+    )
+
+    expect(references).toEqual([])
   })
 
-  // it('should parse single backlink', () => {
-  //   const content =
-  //     '<p>hello <span class="reference" data-type="reference" data-id="id" data-objectclass="contact:class:Person" data-label="Appleseed John">@Appleseed John</span> </p>'
-  //
-  //   const references = getBacklinks(
-  //     'backlinkId' as Ref<Doc>,
-  //     'backlinkClass' as Ref<Class<Doc>>,
-  //     'attachedDocId' as Ref<Doc>,
-  //     content
-  //   )
-  //
-  //   expect(references.length).toBe(1)
-  //   expect(references).toEqual([
-  //     {
-  //       attachedTo: 'id',
-  //       attachedToClass: 'contact:class:Person',
-  //       collection: 'references',
-  //       backlinkId: 'backlinkId',
-  //       backlinkClass: 'backlinkClass',
-  //       message:
-  //         'hello <span data-type="reference" data-id="id" data-objectclass="contact:class:Person" data-label="Appleseed John" class="reference">@Appleseed John</span>',
-  //       attachedDocId: 'attachedDocId'
-  //     }
-  //   ])
-  // })
-  //
-  // it('should parse single backlink for multiple references', () => {
-  //   const content =
-  //     '<p><span class="reference" data-type="reference" data-id="id" data-label="Appleseed John" data-objectclass="contact:class:Person">@Appleseed John</span> <span data-type="reference" class="reference" data-id="id" data-label="Appleseed John" data-objectclass="contact:class:Person">@Appleseed John</span> </p>'
-  //
-  //   const references = getBacklinks(
-  //     'backlinkId' as Ref<Doc>,
-  //     'backlinkClass' as Ref<Class<Doc>>,
-  //     'attachedDocId' as Ref<Doc>,
-  //     content
-  //   )
-  //
-  //   expect(references.length).toBe(1)
-  // })
+  it('should parse single backlink', () => {
+    const content =
+      '<p>hello <span class="reference" data-type="reference" data-id="id" data-objectclass="contact:class:Person" data-label="Appleseed John">@Appleseed John</span> </p>'
+
+    const references = getReferencesData(
+      { isDerived: () => false } as any,
+      'srcDocId' as Ref<Doc>,
+      'srcDocClass' as Ref<Class<Doc>>,
+      'attachedDocId' as Ref<Doc>,
+      'attachedDocClass' as Ref<Class<Doc>>,
+      content
+    )
+
+    expect(references.length).toBe(1)
+    expect(references).toEqual([
+      {
+        attachedTo: 'id',
+        attachedToClass: 'contact:class:Person',
+        collection: 'references',
+        srcDocId: 'srcDocId',
+        srcDocClass: 'srcDocClass',
+        message:
+          'hello <span data-type="reference" data-id="id" data-objectclass="contact:class:Person" data-label="Appleseed John" class="reference">@Appleseed John</span>',
+        attachedDocId: 'attachedDocId',
+        attachedDocClass: 'attachedDocClass',
+        hidden: false
+      }
+    ])
+  })
+
+  it('should parse single backlink for multiple references', () => {
+    const content =
+      '<p><span class="reference" data-type="reference" data-id="id" data-label="Appleseed John" data-objectclass="contact:class:Person">@Appleseed John</span> <span data-type="reference" class="reference" data-id="id" data-label="Appleseed John" data-objectclass="contact:class:Person">@Appleseed John</span> </p>'
+
+    const references = getReferencesData(
+      { isDerived: () => false } as any,
+      'srcDocId' as Ref<Doc>,
+      'srcDocClass' as Ref<Class<Doc>>,
+      'attachedDocId' as Ref<Doc>,
+      'attachedDocClass' as Ref<Class<Doc>>,
+      content
+    )
+
+    expect(references.length).toBe(1)
+  })
 })

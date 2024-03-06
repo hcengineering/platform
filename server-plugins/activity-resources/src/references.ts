@@ -68,7 +68,7 @@ async function getCreateReferencesTxes (
   for (const attr of attributes.values()) {
     if (isMarkupType(attr.type._class)) {
       const content = (createdDoc as any)[attr.name]?.toString() ?? ''
-      const attrReferences = getReferenceData(
+      const attrReferences = getReferencesData(
         control.hierarchy,
         srcDocId,
         srcDocClass,
@@ -83,7 +83,7 @@ async function getCreateReferencesTxes (
       try {
         const ydoc = await loadCollaborativeDoc(storage, control.workspace, collaborativeDoc, control.ctx)
         if (ydoc !== undefined) {
-          const attrReferences = getReferenceData(
+          const attrReferences = getReferencesData(
             control.hierarchy,
             srcDocId,
             srcDocClass,
@@ -126,7 +126,7 @@ async function getUpdateReferencesTxes (
     if (isMarkupType(attr.type._class)) {
       hasReferenceAttrs = true
       const content = (updatedDoc as any)[attr.name]?.toString() ?? ''
-      const attrReferences = getReferenceData(
+      const attrReferences = getReferencesData(
         control.hierarchy,
         srcDocId,
         srcDocClass,
@@ -141,7 +141,7 @@ async function getUpdateReferencesTxes (
         const collaborativeDoc = (updatedDoc as any)[attr.name] as CollaborativeDoc
         const ydoc = await loadCollaborativeDoc(storage, control.workspace, collaborativeDoc, control.ctx)
         if (ydoc !== undefined) {
-          const attrReferences = getReferenceData(
+          const attrReferences = getReferencesData(
             control.hierarchy,
             srcDocId,
             srcDocClass,
@@ -177,7 +177,7 @@ async function getUpdateReferencesTxes (
   return []
 }
 
-export function getReferenceData (
+export function getReferencesData (
   hierarchy: Hierarchy,
   srcDocId: Ref<Doc>,
   srcDocClass: Ref<Class<Doc>>,
