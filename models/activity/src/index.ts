@@ -119,9 +119,6 @@ export class TActivityMessage extends TAttachedDoc implements ActivityMessage {
   @Index(IndexKind.Indexed)
     lastReply?: Timestamp
 
-  @Prop(TypeBoolean(), core.string.Boolean)
-    hidden?: boolean
-
   @Prop(Collection(activity.class.Reaction), activity.string.Reactions)
     reactions?: number
 

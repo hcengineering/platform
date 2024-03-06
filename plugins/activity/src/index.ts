@@ -116,8 +116,6 @@ export interface ActivityMessage extends AttachedDoc {
   repliedPersons?: Ref<Person>[]
   lastReply?: Timestamp
 
-  hidden?: boolean
-
   replies?: number
   reactions?: number
 }

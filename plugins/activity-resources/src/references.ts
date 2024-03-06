@@ -11,7 +11,6 @@ import core, {
 import activity, { type ActivityReference } from '@hcengineering/activity'
 import { type IntlString, translate } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
-import contact from '@hcengineering/contact'
 
 async function updateReferencesList (
   client: TxOperations,
@@ -64,7 +63,6 @@ export async function updateReferences (
     attachedTo: it._id,
     attachedToClass: it._class,
     message,
-    hidden: hierarchy.isDerived(it._class, contact.class.Person),
     collection: key
   }))
 
@@ -83,9 +81,6 @@ function extractReferences (
   attachedDocClass: Ref<Class<Doc>> | undefined,
   kids: NodeListOf<ChildNode>
 ): Array<Data<ActivityReference>> {
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-
   const result: Array<Data<ActivityReference>> = []
 
   const nodes: Array<NodeListOf<ChildNode>> = [kids]
@@ -113,8 +108,7 @@ function extractReferences (
             srcDocClass,
             message: el.parentElement?.innerHTML ?? '',
             attachedDocId,
-            attachedDocClass,
-            hidden: hierarchy.isDerived(atoClass, contact.class.Person)
+            attachedDocClass
           })
         }
       }

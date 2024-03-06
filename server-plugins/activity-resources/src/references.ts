@@ -68,14 +68,7 @@ async function getCreateReferencesTxes (
   for (const attr of attributes.values()) {
     if (isMarkupType(attr.type._class)) {
       const content = (createdDoc as any)[attr.name]?.toString() ?? ''
-      const attrReferences = getReferencesData(
-        control.hierarchy,
-        srcDocId,
-        srcDocClass,
-        attachedDocId,
-        attachedDocClass,
-        content
-      )
+      const attrReferences = getReferencesData(srcDocId, srcDocClass, attachedDocId, attachedDocClass, content)
 
       refs.push(...attrReferences)
     } else if (attr.type._class === core.class.TypeCollaborativeDoc) {
@@ -84,7 +77,6 @@ async function getCreateReferencesTxes (
         const ydoc = await loadCollaborativeDoc(storage, control.workspace, collaborativeDoc, control.ctx)
         if (ydoc !== undefined) {
           const attrReferences = getReferencesData(
-            control.hierarchy,
             srcDocId,
             srcDocClass,
             attachedDocId,
@@ -126,14 +118,7 @@ async function getUpdateReferencesTxes (
     if (isMarkupType(attr.type._class)) {
       hasReferenceAttrs = true
       const content = (updatedDoc as any)[attr.name]?.toString() ?? ''
-      const attrReferences = getReferencesData(
-        control.hierarchy,
-        srcDocId,
-        srcDocClass,
-        attachedDocId,
-        attachedDocClass,
-        content
-      )
+      const attrReferences = getReferencesData(srcDocId, srcDocClass, attachedDocId, attachedDocClass, content)
       references.push(...attrReferences)
     } else if (attr.type._class === core.class.TypeCollaborativeDoc) {
       hasReferenceAttrs = true
@@ -142,7 +127,6 @@ async function getUpdateReferencesTxes (
         const ydoc = await loadCollaborativeDoc(storage, control.workspace, collaborativeDoc, control.ctx)
         if (ydoc !== undefined) {
           const attrReferences = getReferencesData(
-            control.hierarchy,
             srcDocId,
             srcDocClass,
             attachedDocId,
@@ -178,7 +162,6 @@ async function getUpdateReferencesTxes (
 }
 
 export function getReferencesData (
-  hierarchy: Hierarchy,
   srcDocId: Ref<Doc>,
   srcDocClass: Ref<Class<Doc>>,
   attachedDocId: Ref<Doc> | undefined,
@@ -208,8 +191,7 @@ export function getReferencesData (
         srcDocClass,
         message: ref.parentNode !== null ? getHTML(ref.parentNode, extensions) : '',
         attachedDocId,
-        attachedDocClass,
-        hidden: hierarchy.isDerived(ref.objectClass, contact.class.Person)
+        attachedDocClass
       })
     }
   }

@@ -21,7 +21,6 @@ describe('extractBacklinks', () => {
   it('should return no references for empty document', () => {
     const content = '<p></p>'
     const references = getReferencesData(
-      { isDerived: () => false } as any,
       'srcDocId' as Ref<Doc>,
       'srcDocClass' as Ref<Class<Doc>>,
       'attachedDocId' as Ref<Doc>,
@@ -37,7 +36,6 @@ describe('extractBacklinks', () => {
       '<p>hello <span class="reference" data-type="reference" data-id="id" data-objectclass="contact:class:Person" data-label="Appleseed John">@Appleseed John</span> </p>'
 
     const references = getReferencesData(
-      { isDerived: () => false } as any,
       'srcDocId' as Ref<Doc>,
       'srcDocClass' as Ref<Class<Doc>>,
       'attachedDocId' as Ref<Doc>,
@@ -56,8 +54,7 @@ describe('extractBacklinks', () => {
         message:
           'hello <span data-type="reference" data-id="id" data-objectclass="contact:class:Person" data-label="Appleseed John" class="reference">@Appleseed John</span>',
         attachedDocId: 'attachedDocId',
-        attachedDocClass: 'attachedDocClass',
-        hidden: false
+        attachedDocClass: 'attachedDocClass'
       }
     ])
   })
@@ -67,7 +64,6 @@ describe('extractBacklinks', () => {
       '<p><span class="reference" data-type="reference" data-id="id" data-label="Appleseed John" data-objectclass="contact:class:Person">@Appleseed John</span> <span data-type="reference" class="reference" data-id="id" data-label="Appleseed John" data-objectclass="contact:class:Person">@Appleseed John</span> </p>'
 
     const references = getReferencesData(
-      { isDerived: () => false } as any,
       'srcDocId' as Ref<Doc>,
       'srcDocClass' as Ref<Class<Doc>>,
       'attachedDocId' as Ref<Doc>,
