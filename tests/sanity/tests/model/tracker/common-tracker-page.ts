@@ -103,14 +103,14 @@ export class CommonTrackerPage extends CalendarPage {
   }
 
   async fillBetweenDate (dateStart: DateDivided, dateEnd: DateDivided): Promise<void> {
-    // TODO removed after bug fixed
-    if (dateStart.day === '30' || dateEnd.day === '30') {
-      await this.page.locator('div.date-popup-container div.day:not(.wrongMonth)', { hasText: '30' }).first().click()
-    }
-
-    if (dateStart.day === '31' || dateEnd.day === '31') {
-      await this.page.locator('div.date-popup-container div.day:not(.wrongMonth)', { hasText: '31' }).first().click()
-    }
+    // // TODO removed after bug fixed
+    // if (dateStart.day === '30' || dateEnd.day === '30') {
+    //   await this.page.locator('div.date-popup-container div.day:not(.wrongMonth)', { hasText: '30' }).first().click()
+    // }
+    //
+    // if (dateStart.day === '31' || dateEnd.day === '31') {
+    //   await this.page.locator('div.date-popup-container div.day:not(.wrongMonth)', { hasText: '31' }).first().click()
+    // }
 
     // dateStart - day
     await this.page

@@ -21,9 +21,9 @@ export class CalendarPage extends CommonPage {
 
   async fillDatePopup (day: string, month: string, year: string): Promise<void> {
     await expect(this.inputTargetDateDay).toBeVisible()
-    await this.inputTargetDateDay.fill(day)
-    await this.inputTargetDateMonth.fill(month)
-    await this.inputTargetDateDay.fill(year)
+    await this.inputTargetDateDay.pressSequentially(day)
+    await this.inputTargetDateMonth.pressSequentially(month)
+    await this.inputTargetDateYear.pressSequentially(year)
     await this.buttonTargetDateSave.click()
   }
 
