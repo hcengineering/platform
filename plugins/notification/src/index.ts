@@ -129,9 +129,7 @@ export interface NotificationType extends BaseNotificationType {
   allowedForAuthor?: boolean
 }
 
-export interface CommonNotificationType extends BaseNotificationType {
-  objectClass: Ref<Class<Doc>>
-}
+export interface CommonNotificationType extends BaseNotificationType {}
 
 /**
  * @public
@@ -334,7 +332,8 @@ const notification = plugin(notificationId, {
   ids: {
     NotificationSettings: '' as Ref<Doc>,
     NotificationGroup: '' as Ref<NotificationGroup>,
-    CollaboratoAddNotification: '' as Ref<NotificationType>
+    CollaboratoAddNotification: '' as Ref<NotificationType>,
+    MentionCommonNotificationType: '' as Ref<CommonNotificationType>
   },
   providers: {
     PlatformNotification: '' as Ref<NotificationProvider>,

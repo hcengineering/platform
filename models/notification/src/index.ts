@@ -119,9 +119,7 @@ export class TNotificationType extends TBaseNotificationType implements Notifica
 }
 
 @Model(notification.class.CommonNotificationType, notification.class.BaseNotificationType)
-export class TCommonNotificationType extends TBaseNotificationType implements CommonNotificationType {
-  objectClass!: Ref<Class<Doc>>
-}
+export class TCommonNotificationType extends TBaseNotificationType implements CommonNotificationType {}
 
 @Model(notification.class.NotificationGroup, core.class.Doc, DOMAIN_MODEL)
 export class TNotificationGroup extends TDoc implements NotificationGroup {
@@ -617,6 +615,27 @@ export function createModel (builder: Builder): void {
   })
 
   defineViewlets(builder)
+
+  builder.createDoc(
+    notification.class.CommonNotificationType,
+    core.space.Model,
+    {
+      label: activity.string.Mentions,
+      generated: false,
+      hidden: false,
+      group: notification.ids.NotificationGroup,
+      providers: {
+        [notification.providers.EmailNotification]: true,
+        [notification.providers.PlatformNotification]: true
+      },
+      templates: {
+        textTemplate: '{sender} mentioned you in {doc} {data}',
+        htmlTemplate: '<p>{sender}</b> mentioned you in {doc}</p> {data}',
+        subjectTemplate: 'You were mentioned in {doc}'
+      }
+    },
+    notification.ids.MentionCommonNotificationType
+  )
 }
 
 export function generateClassNotificationTypes (

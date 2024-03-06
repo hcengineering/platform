@@ -35,7 +35,7 @@ import core, {
   TxUpdateDoc,
   Type
 } from '@hcengineering/core'
-import notification, { CommonInboxNotification, CommonNotificationType } from '@hcengineering/notification'
+import notification, { CommonInboxNotification } from '@hcengineering/notification'
 import { ServerKit, extractReferences, getHTML, parseHTML, yDocContentToNodes } from '@hcengineering/text'
 import { StorageAdapter, TriggerControl } from '@hcengineering/server-core'
 import activity, { ActivityMessage, ActivityReference } from '@hcengineering/activity'
@@ -91,7 +91,7 @@ export async function getPersonNotificationTxes (
     return res
   }
 
-  const doc = (await control.findAll(reference.attachedToClass, { _id: reference.attachedTo }))[0]
+  const doc = (await control.findAll(reference.srcDocClass, { _id: reference.srcDocId }))[0]
 
   if (doc === undefined) {
     return res
@@ -102,11 +102,7 @@ export async function getPersonNotificationTxes (
     messageHtml: reference.message
   }
 
-  const notifyResult = await shouldNotifyCommon(
-    control,
-    receiver._id,
-    contact.ids.MentionCommonNotificationType as Ref<CommonNotificationType>
-  )
+  const notifyResult = await shouldNotifyCommon(control, receiver._id, notification.ids.MentionCommonNotificationType)
   const texes = await getCommonNotificationTxes(
     control,
     doc,
