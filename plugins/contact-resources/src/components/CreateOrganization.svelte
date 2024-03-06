@@ -14,10 +14,13 @@
 -->
 <script lang="ts">
   import { Channel, findContacts, Organization } from '@hcengineering/contact'
-  import { AttachedData, fillDefaults, generateId, Ref, TxOperations, WithLookup } from '@hcengineering/core'
+  import core, { AttachedData, fillDefaults, generateId, Ref, TxOperations, WithLookup } from '@hcengineering/core'
   import { Card, getClient, InlineAttributeBar } from '@hcengineering/presentation'
-  import { Button, createFocusManager, EditBox, FocusHandler, IconInfo, Label } from '@hcengineering/ui'
+  import { Button, createFocusManager, EditBox, FocusHandler, IconAttachment, IconInfo, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import { AttachmentPresenter, AttachmentStyledBox } from '@hcengineering/attachment-resources'
+  import { Attachment } from '@hcengineering/attachment'
+
   import contact from '../plugin'
   import ChannelsDropdown from './ChannelsDropdown.svelte'
   import Company from './icons/Company.svelte'
@@ -32,7 +35,9 @@
   const id: Ref<Organization> = generateId()
 
   const object: Organization = {
-    name: ''
+    name: '',
+    description: '',
+    attachments: 0
   } as unknown as Organization
 
   const dispatch = createEventDispatcher()
@@ -41,8 +46,10 @@
 
   fillDefaults(hierarchy, object, contact.class.Organization)
 
-  async function createOrganization () {
+  async function createOrganization (): Promise<void> {
     await client.createDoc(contact.class.Organization, contact.space.Contacts, object, id)
+    await descriptionBox.createAttachments(id)
+
     for (const channel of channels) {
       await client.addCollection(
         contact.class.Channel,
@@ -69,10 +76,14 @@
 
   let matches: WithLookup<Organization>[] = []
   let matchedChannels: AttachedData<Channel>[] = []
-  $: findContacts(client, contact.class.Organization, object.name, channels).then((p) => {
+
+  $: void findContacts(client, contact.class.Organization, object.name, channels).then((p) => {
     matches = p.contacts as Organization[]
     matchedChannels = p.channels
   })
+
+  let descriptionBox: AttachmentStyledBox
+  let attachments: Map<Ref<Attachment>, Attachment> = new Map<Ref<Attachment>, Attachment>()
 </script>
 
 <FocusHandler {manager} />
@@ -80,13 +91,14 @@
 <Card
   label={contact.string.CreateOrganization}
   okAction={createOrganization}
+  hideAttachments={attachments.size === 0}
   canSave={object.name.length > 0}
   on:close={() => {
     dispatch('close')
   }}
   on:changeContent
 >
-  <div class="flex-row-center clear-mins">
+  <div class="flex-row-center clear-mins mb-3">
     <div class="mr-3">
       <Button icon={Company} size={'medium'} kind={'link-bordered'} noFocus />
     </div>
@@ -98,6 +110,29 @@
       focusIndex={1}
     />
   </div>
+
+  <AttachmentStyledBox
+    bind:this={descriptionBox}
+    objectId={id}
+    _class={contact.class.Organization}
+    space={contact.space.Contacts}
+    alwaysEdit
+    showButtons={false}
+    bind:content={object.description}
+    placeholder={core.string.Description}
+    kind="indented"
+    isScrollable={false}
+    enableBackReferences={true}
+    enableAttachments={false}
+    on:attachments={(ev) => {
+      if (ev.detail.size > 0) attachments = ev.detail.values
+      else if (ev.detail.size === 0 && ev.detail.values != null) {
+        attachments.clear()
+        attachments = attachments
+      }
+    }}
+  />
+
   <svelte:fragment slot="pool">
     <ChannelsDropdown
       bind:value={channels}
@@ -116,7 +151,30 @@
       extraProps={{ showNavigate: false }}
     />
   </svelte:fragment>
+
+  <svelte:fragment slot="attachments">
+    {#if attachments.size > 0}
+      {#each Array.from(attachments.values()) as attachment}
+        <AttachmentPresenter
+          value={attachment}
+          showPreview
+          removable
+          on:remove={(result) => {
+            if (result.detail !== undefined) descriptionBox.removeAttachmentById(result.detail._id)
+          }}
+        />
+      {/each}
+    {/if}
+  </svelte:fragment>
+
   <svelte:fragment slot="footer">
+    <Button
+      icon={IconAttachment}
+      size="large"
+      on:click={() => {
+        descriptionBox.handleAttach()
+      }}
+    />
     {#if matches.length > 0}
       <div class="flex-row-center error-color">
         <IconInfo size={'small'} />

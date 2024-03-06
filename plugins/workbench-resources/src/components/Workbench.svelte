@@ -83,7 +83,7 @@
   import TopMenu from './icons/TopMenu.svelte'
 
   let contentPanel: HTMLElement
-  let replacedPanel: HTMLElement
+  let replacedPanel: HTMLElement | undefined
 
   const { setTheme } = getContext<{ setTheme: (theme: string) => void }>('theme')
 
