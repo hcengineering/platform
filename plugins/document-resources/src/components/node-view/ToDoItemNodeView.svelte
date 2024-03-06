@@ -18,6 +18,11 @@
   const client = getClient()
   const query = createQuery()
 
+  $: todoId = node.attrs.todoid as Ref<ToDo>
+  $: userId = node.attrs.userid as Ref<Person>
+  $: checked = node.attrs.checked ?? false
+  $: readonly = !editor.isEditable || object === undefined
+
   let todo: ToDo | undefined = undefined
   $: query.query(
     time.class.ToDo,
@@ -26,14 +31,9 @@
     },
     (res) => {
       ;[todo] = res
-      syncTodo(todo)
+      void syncTodo(todo)
     }
   )
-
-  $: todoId = node.attrs.todoid as Ref<ToDo>
-  $: userId = node.attrs.userid as Ref<Person>
-  $: checked = node.attrs.checked ?? false
-  $: readonly = !editor.isEditable || object === undefined
 
   async function syncTodo (todo: ToDo | undefined): Promise<void> {
     if (todo !== undefined) {
@@ -59,7 +59,7 @@
     if (todo !== undefined) {
       await client.update(todo, { doneOn: todo.doneOn == null ? Date.now() : null })
     } else {
-      updateAttributes({ checked: !node.attrs.checked })
+      updateAttributes({ checked: node.attrs.checked !== true })
     }
   }
 
@@ -72,7 +72,7 @@
     const ops = client.apply('todo')
 
     if (todo !== undefined) {
-      await ops.removeDoc(todo._class, todo.space, todo._id)
+      await ops.remove(todo)
     }
 
     const id = await ops.addCollection(time.class.ProjectToDo, time.space.ToDos, object._id, object._class, 'todos', {
@@ -101,7 +101,7 @@
     })
 
     if (todo !== undefined) {
-      await client.removeDoc(todo._class, todo.space, todo._id)
+      await client.remove(todo)
     }
   }
 
@@ -164,12 +164,13 @@
           await changeAssignee(result?._id)
         }
         hovered = false
+        editor.commands.focus()
       }
     )
   }
 </script>
 
-<NodeViewWrapper data-drag-handle="">
+<NodeViewWrapper data-drag-handle="" data-type="todoItem">
   <div
     class="todo-item flex-row-top flex-gap-3"
     class:empty={node.textContent.length === 0}
@@ -197,6 +198,10 @@
 
 <style lang="scss">
   .todo-item {
+    .assignee {
+      cursor: pointer;
+    }
+
     &.unassigned {
       .assignee {
         opacity: 0;

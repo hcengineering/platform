@@ -89,7 +89,9 @@ class SvelteNodeView extends NodeView<SvelteNodeViewComponent, Editor, SvelteNod
     })
 
     this.renderer = new SvelteRenderer(this.component, { element: target, props, context })
+
     this.editor.on('update', this.handleEditorUpdate.bind(this))
+    this.editor.on('selectionUpdate', this.handleSelectionUpdate.bind(this))
   }
 
   override get dom (): HTMLElement {
@@ -131,10 +133,12 @@ class SvelteNodeView extends NodeView<SvelteNodeViewComponent, Editor, SvelteNod
 
   selectNode (): void {
     this.renderer.updateProps({ selected: true })
+    this.renderer.element.classList.add('ProseMirror-selectednode')
   }
 
   deselectNode (): void {
     this.renderer.updateProps({ selected: false })
+    this.renderer.element.classList.remove('ProseMirror-selectednode')
   }
 
   handleEditorUpdate (): void {
@@ -144,10 +148,29 @@ class SvelteNodeView extends NodeView<SvelteNodeViewComponent, Editor, SvelteNod
     }
   }
 
+  handleSelectionUpdate (): void {
+    const { from, to } = this.editor.state.selection
+
+    if (from <= this.getPos() && to >= this.getPos() + this.node.nodeSize) {
+      if (this.renderer.props.selected === true) {
+        return
+      }
+
+      this.selectNode()
+    } else {
+      if (this.renderer.props.selected !== true) {
+        return
+      }
+
+      this.deselectNode()
+    }
+  }
+
   destroy (): void {
     this.renderer.destroy()
-    this.contentDOMElement = null
     this.editor.off('update', this.handleEditorUpdate.bind(this))
+    this.editor.off('selectionUpdate', this.handleSelectionUpdate.bind(this))
+    this.contentDOMElement = null
   }
 }
 
