@@ -99,7 +99,11 @@ async function getCreateReferencesTxes (
     }
   }
 
-  return getReferencesTxes(txFactory, refs, srcDocSpace, [])
+  const refSpace: Ref<Space> = control.hierarchy.isDerived(srcDocClass, core.class.Space)
+    ? (srcDocId as Ref<Space>)
+    : srcDocSpace
+
+  return getReferencesTxes(txFactory, refs, refSpace, [])
 }
 
 async function getUpdateReferencesTxes (
@@ -163,7 +167,11 @@ async function getUpdateReferencesTxes (
       collection: 'references'
     })
 
-    return getReferencesTxes(txFactory, references, srcDocSpace, current)
+    const refSpace: Ref<Space> = control.hierarchy.isDerived(srcDocClass, core.class.Space)
+      ? (srcDocId as Ref<Space>)
+      : srcDocSpace
+
+    return getReferencesTxes(txFactory, references, refSpace, current)
   }
 
   return []

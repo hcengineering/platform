@@ -101,9 +101,14 @@ export async function OnReferenceCreate (
     return []
   }
 
-  const res: Tx[] = []
-
   const reference = TxProcessor.createDoc2Doc(tx.tx as TxCreateDoc<ActivityReference>)
+  const isAvailable = await isSpaceAvailable(receiver, reference.space, control)
+
+  if (!isAvailable) {
+    return []
+  }
+
+  const res: Tx[] = []
   const collaboratorsTxes = await getCollaboratorsTxes(reference, control, receiver)
 
   res.push(...collaboratorsTxes)
@@ -123,6 +128,16 @@ export async function OnReferenceCreate (
   res.push(...notificationTxes)
 
   return res
+}
+
+async function isSpaceAvailable (user: PersonAccount, spaceId: Ref<Space>, control: TriggerControl): Promise<boolean> {
+  const space = (await control.findAll<Space>(core.class.Space, { _id: spaceId }))[0]
+
+  if (!space?.private) {
+    return true
+  }
+
+  return space.members.includes(user._id)
 }
 
 async function getCollaboratorsTxes (

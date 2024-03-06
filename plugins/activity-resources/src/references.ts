@@ -1,4 +1,4 @@
-import {
+import core, {
   type Class,
   type Data,
   type Doc,
@@ -69,8 +69,11 @@ export async function updateReferences (
   }))
 
   const query: DocumentQuery<ActivityReference> = { srcDocId: source._id, srcDocClass: source._class, collection: key }
+  const space: Ref<Space> = hierarchy.isDerived(source._class, core.class.Space)
+    ? (source._id as Ref<Space>)
+    : source.space
 
-  await updateReferencesList(client, query, references, source.space)
+  await updateReferencesList(client, query, references, space)
 }
 
 function extractReferences (
