@@ -44,7 +44,7 @@
     getClient
   } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
-  import { TaskType, calcRank } from '@hcengineering/task'
+  import { TaskType, makeRank } from '@hcengineering/task'
   import { TaskKindSelector } from '@hcengineering/task-resources'
   import {
     Component as ComponentType,
@@ -436,7 +436,7 @@
         number,
         status: object.status,
         priority: object.priority,
-        rank: calcRank(lastOne, undefined),
+        rank: makeRank(lastOne?.rank, undefined),
         comments: 0,
         subIssues: 0,
         dueDate: object.dueDate,

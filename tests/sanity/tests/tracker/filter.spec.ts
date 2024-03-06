@@ -155,7 +155,12 @@ test.describe('Tracker filters tests', () => {
       await issuesPage.checkFilter('Created date', 'This week')
 
       await issuesPage.checkFilteredIssueExist(newIssue.title)
-      await issuesPage.checkFilteredIssueExist(yesterdayIssueTitle)
+      // this week filter started on Monday, the yesterday created issue on Sunday
+      if (new Date().getDay() !== 1) {
+        await issuesPage.checkFilteredIssueExist(yesterdayIssueTitle)
+      } else {
+        await issuesPage.checkFilteredIssueNotExist(yesterdayIssueTitle)
+      }
     })
 
     await test.step('Check Filter This month', async () => {
@@ -299,6 +304,57 @@ test.describe('Tracker filters tests', () => {
 
       const issuesDetailsPage = new IssuesDetailsPage(page)
       await expect(issuesDetailsPage.buttonComponent).toHaveText(defaultComponent)
+
+      await issuesDetailsPage.buttonCloseIssue.click()
+    }
+  })
+
+  test('Title filter', async ({ page }) => {
+    const firstSearch = 'issue'
+    const secondSearch = 'done'
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    await leftSideMenuPage.buttonTracker.click()
+
+    const issuesPage = new IssuesPage(page)
+    await issuesPage.modelSelectorAll.click()
+
+    await test.step(`Check Title filter for ${firstSearch}`, async () => {
+      await issuesPage.selectFilter('Title', firstSearch)
+      await issuesPage.checkFilter('Title', 'contains', firstSearch)
+
+      for await (const issue of iterateLocator(issuesPage.issuesList)) {
+        await expect(issue.locator('span.presenter-label > a')).toContainText(firstSearch, { ignoreCase: true })
+      }
+    })
+
+    await test.step(`Check Title filter for ${secondSearch}`, async () => {
+      await issuesPage.buttonClearFilters.click()
+      await issuesPage.selectFilter('Title', secondSearch)
+      await issuesPage.checkFilter('Title', 'contains', secondSearch)
+
+      for await (const issue of iterateLocator(issuesPage.issuesList)) {
+        await expect(issue.locator('span.presenter-label > a')).toContainText(secondSearch, { ignoreCase: true })
+      }
+    })
+  })
+
+  test('Modified by filter', async ({ page }) => {
+    const modifierName = 'Appleseed John'
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    await leftSideMenuPage.buttonTracker.click()
+
+    const issuesPage = new IssuesPage(page)
+    await issuesPage.modelSelectorAll.click()
+
+    await issuesPage.selectFilter('Modified by', modifierName)
+    await issuesPage.inputSearch.press('Escape')
+    await issuesPage.checkFilter('Modified by', 'is')
+
+    for await (const issue of iterateLocator(issuesPage.issuesList)) {
+      await issue.locator('span.list > a').click()
+
+      const issuesDetailsPage = new IssuesDetailsPage(page)
+      await expect(issuesDetailsPage.buttonCreatedBy).toHaveText(modifierName)
 
       await issuesDetailsPage.buttonCloseIssue.click()
     }

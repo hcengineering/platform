@@ -121,6 +121,7 @@ export interface Member extends AttachedDoc {
  */
 export interface Organization extends Contact {
   members: number
+  description?: string
 }
 
 /**
@@ -196,7 +197,8 @@ export const contactPlugin = plugin(contactId, {
     SpaceMembers: '' as AnyComponent,
     DeleteConfirmationPopup: '' as AnyComponent,
     AccountArrayEditor: '' as AnyComponent,
-    PersonIcon: '' as AnyComponent
+    PersonIcon: '' as AnyComponent,
+    EditOrganizationPanel: '' as AnyComponent
   },
   channelProvider: {
     Email: '' as Ref<ChannelProvider>,

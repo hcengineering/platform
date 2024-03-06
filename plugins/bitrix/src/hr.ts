@@ -1,7 +1,7 @@
 import { Organization } from '@hcengineering/contact'
 import core, { Account, Client, Data, Doc, Ref, SortingOrder, Status, TxOperations } from '@hcengineering/core'
 import recruit, { Applicant, Vacancy } from '@hcengineering/recruit'
-import task, { ProjectType, calcRank } from '@hcengineering/task'
+import task, { ProjectType, makeRank } from '@hcengineering/task'
 
 export async function createVacancy (
   rawClient: Client,
@@ -60,6 +60,6 @@ export async function createApplication (
     ...data,
     status: selectedState._id,
     number: (incResult as any).object.sequence,
-    rank: calcRank(lastOne, undefined)
+    rank: makeRank(lastOne?.rank, undefined)
   })
 }

@@ -287,6 +287,8 @@ export interface InboxNotificationsClient {
   readNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>
   unreadNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>
   deleteNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>
+  deleteAllNotifications: () => Promise<void>
+  readAllNotifications: () => Promise<void>
 }
 
 /**
@@ -396,7 +398,11 @@ const notification = plugin(notificationId, {
     Pinned: '' as IntlString,
     FlatList: '' as IntlString,
     GroupedList: '' as IntlString,
-    All: '' as IntlString
+    All: '' as IntlString,
+    ArchiveAll: '' as IntlString,
+    ReadAll: '' as IntlString,
+    ArchiveAllConfirmationTitle: '' as IntlString,
+    ArchiveAllConfirmationMessage: '' as IntlString
   },
   function: {
     GetInboxNotificationsClient: '' as Resource<InboxNotificationsClientFactory>,

@@ -29,14 +29,16 @@ import {
 import { NotificationType } from '@hcengineering/notification'
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
+import type { Rank } from '@hcengineering/rank'
 import type { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
 import { Action, IconProps, ViewletDescriptor } from '@hcengineering/view'
 
-/**
- * @public
- */
+export * from './utils'
+export type { Rank } from '@hcengineering/rank'
+
+/** @public */
 export interface DocWithRank extends Doc {
-  rank: string
+  rank: Rank
 }
 
 export interface Project extends Space {
@@ -303,4 +305,3 @@ const task = plugin(taskId, {
 })
 
 export default task
-export * from './utils'

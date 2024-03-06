@@ -70,10 +70,6 @@ export function createReviewModel (builder: Builder): void {
     presenter: recruit.component.OpinionPresenter
   })
 
-  builder.mixin(recruit.class.Review, core.class.Class, view.mixin.ObjectEditor, {
-    editor: recruit.component.EditReview
-  })
-
   createAction(builder, {
     action: view.actionImpl.ShowPopup,
     actionProps: {

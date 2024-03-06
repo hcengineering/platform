@@ -60,7 +60,7 @@
       id={mainButtonId}
     >
       <div class="flex w-full" slot="content">
-        <div class="flex-row-center w-full flex-between">
+        <div class="flex-row-center w-full flex-between relative">
           {#if label}
             <Label {label} />
             <slot name="content" />
@@ -81,10 +81,11 @@
 
 <style lang="scss">
   .vertical-divider {
+    position: absolute;
     background-color: var(--theme-content-color);
     min-width: 1px;
     opacity: 0.25;
-    margin-right: -0.75rem;
+    right: -0.75rem;
 
     &.primary,
     &.secondary,

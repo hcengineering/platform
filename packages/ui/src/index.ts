@@ -140,6 +140,7 @@ export { default as NavItem } from './components/NavItem.svelte'
 export { default as NavGroup } from './components/NavGroup.svelte'
 export { default as Modal } from './components/Modal.svelte'
 export { default as AccordionItem } from './components/AccordionItem.svelte'
+export { default as NotificationToast } from './components/NotificationToast.svelte'
 
 export { default as IconAdd } from './components/icons/Add.svelte'
 export { default as IconCircleAdd } from './components/icons/CircleAdd.svelte'

@@ -20,17 +20,19 @@ export type SvelteRendererComponent = typeof SvelteComponent | ComponentType
 
 export interface SvelteRendererOptions {
   element: HTMLElement
-  props?: any
+  props?: Record<string, any>
   context?: any
 }
 
 export class SvelteRenderer {
   private readonly component: SvelteComponent
   element: HTMLElement
+  props: Record<string, any>
 
   constructor (component: SvelteRendererComponent, { element, props, context }: SvelteRendererOptions) {
     this.element = element
     this.element.classList.add('svelte-renderer')
+    this.props = props ?? {}
 
     const options = { target: element, props, context }
     const Component = component

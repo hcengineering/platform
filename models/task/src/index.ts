@@ -72,6 +72,7 @@ import {
   type ProjectType,
   type ProjectTypeClass,
   type ProjectTypeDescriptor,
+  type Rank,
   type Sequence,
   type Task,
   type TaskStatusFactory,
@@ -123,7 +124,7 @@ export class TTask extends TAttachedDoc implements Task {
   @Prop(TypeString(), task.string.Rank)
   @Index(IndexKind.IndexedDsc)
   @Hidden()
-    rank!: string
+    rank!: Rank
 
   @Prop(Collection(tags.class.TagReference, task.string.TaskLabels), task.string.TaskLabels)
     labels?: number
