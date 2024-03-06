@@ -29,7 +29,8 @@
   } from '@hcengineering/text-editor'
   import { createEventDispatcher } from 'svelte'
 
-  import ToDoNodeView from './node-view/ToDoNodeView.svelte'
+  import ToDoItemNodeView from './node-view/ToDoItemNodeView.svelte'
+  import ToDoListNodeView from './node-view/ToDoListNodeView.svelte'
 
   export let object: Document
   export let readonly = false
@@ -55,14 +56,23 @@
     }),
     TodoItemExtension.extend({
       addNodeView () {
-        return SvelteNodeViewRenderer(ToDoNodeView, { contentAs: 'li', componentProps: { object } })
+        return SvelteNodeViewRenderer(ToDoItemNodeView, {
+          contentAs: 'li',
+          contentClass: 'todo-item',
+          componentProps: { object },
+          ignoreMutation: () => true
+        })
       }
     }).configure({
       HTMLAttributes: {
         class: 'todo-item'
       }
     }),
-    TodoListExtension.configure({
+    TodoListExtension.extend({
+      addNodeView () {
+        return SvelteNodeViewRenderer(ToDoListNodeView, { ignoreMutation: () => true })
+      }
+    }).configure({
       HTMLAttributes: {
         class: 'todo-list'
       }

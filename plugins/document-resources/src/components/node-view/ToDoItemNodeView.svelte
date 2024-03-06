@@ -18,6 +18,11 @@
   const client = getClient()
   const query = createQuery()
 
+  $: todoId = node.attrs.todoid as Ref<ToDo>
+  $: userId = node.attrs.userid as Ref<Person>
+  $: checked = node.attrs.checked ?? false
+  $: readonly = !editor.isEditable || object === undefined
+
   let todo: ToDo | undefined = undefined
   $: query.query(
     time.class.ToDo,
@@ -26,14 +31,9 @@
     },
     (res) => {
       ;[todo] = res
-      syncTodo(todo)
+      void syncTodo(todo)
     }
   )
-
-  $: todoId = node.attrs.todoid as Ref<ToDo>
-  $: userId = node.attrs.userid as Ref<Person>
-  $: checked = node.attrs.checked ?? false
-  $: readonly = !editor.isEditable || object === undefined
 
   async function syncTodo (todo: ToDo | undefined): Promise<void> {
     if (todo !== undefined) {
@@ -59,7 +59,7 @@
     if (todo !== undefined) {
       await client.update(todo, { doneOn: todo.doneOn == null ? Date.now() : null })
     } else {
-      updateAttributes({ checked: !node.attrs.checked })
+      updateAttributes({ checked: node.attrs.checked !== true })
     }
   }
 
@@ -164,12 +164,13 @@
           await changeAssignee(result?._id)
         }
         hovered = false
+        editor.commands.focus()
       }
     )
   }
 </script>
 
-<NodeViewWrapper data-drag-handle="">
+<NodeViewWrapper data-drag-handle="" data-type="todoItem">
   <div
     class="todo-item flex-row-top flex-gap-3"
     class:empty={node.textContent.length === 0}
