@@ -113,7 +113,7 @@
       {#if object}
         <CheckBox on:value={markDone} checked={object.doneOn != null} kind={'todo'} />
       {:else}
-        <Spinner size={'medium'} />
+        <Spinner size={'small'} />
       {/if}
     </div>
   </svelte:fragment>
