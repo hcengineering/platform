@@ -15,6 +15,7 @@
 <script lang="ts">
   import { IdMap, Ref, toIdMap } from '@hcengineering/core'
   import type {
+    BaseNotificationType,
     NotificationGroup,
     NotificationProvider,
     NotificationSetting,
@@ -26,18 +27,18 @@
   import notification from '../plugin'
 
   export let group: Ref<NotificationGroup>
-  export let settings: Map<Ref<NotificationType>, NotificationSetting[]>
+  export let settings: Map<Ref<BaseNotificationType>, NotificationSetting[]>
 
   const client = getClient()
-  let types: NotificationType[] = []
-  let typesMap: IdMap<NotificationType> = new Map()
+  let types: BaseNotificationType[] = []
+  let typesMap: IdMap<BaseNotificationType> = new Map()
   let providers: NotificationProvider[] = []
   let providersMap: IdMap<NotificationProvider> = new Map()
 
-  load()
+  void load()
 
   const query = createQuery()
-  $: query.query(notification.class.NotificationType, { group }, (res) => {
+  $: query.query(notification.class.BaseNotificationType, { group }, (res) => {
     types = res
     typesMap = toIdMap(types)
   })
@@ -50,8 +51,8 @@
   $: column = providers.length + 1
 
   function getStatus (
-    settings: Map<Ref<NotificationType>, NotificationSetting[]>,
-    type: Ref<NotificationType>,
+    settings: Map<Ref<BaseNotificationType>, NotificationSetting[]>,
+    type: Ref<BaseNotificationType>,
     provider: Ref<NotificationProvider>
   ): boolean {
     const setting = getSetting(settings, type, provider)
@@ -63,14 +64,14 @@
     return typeValue?.providers?.[provider] ?? false
   }
 
-  function createHandler (type: Ref<NotificationType>, provider: Ref<NotificationProvider>): (evt: any) => void {
+  function createHandler (type: Ref<BaseNotificationType>, provider: Ref<NotificationProvider>): (evt: any) => void {
     return (evt: any) => {
       void change(type, provider, evt.detail)
     }
   }
 
   async function change (
-    type: Ref<NotificationType>,
+    type: Ref<BaseNotificationType>,
     provider: Ref<NotificationProvider>,
     value: boolean
   ): Promise<void> {
@@ -89,8 +90,8 @@
   }
 
   function getSetting (
-    map: Map<Ref<NotificationType>, NotificationSetting[]>,
-    type: Ref<NotificationType>,
+    map: Map<Ref<BaseNotificationType>, NotificationSetting[]>,
+    type: Ref<BaseNotificationType>,
     provider: Ref<NotificationProvider>
   ): NotificationSetting | undefined {
     const typeMap = map.get(type)
@@ -98,10 +99,15 @@
     return typeMap.find((p) => p.attachedTo === provider)
   }
 
-  function getLabel (type: NotificationType): IntlString {
-    if (type.attachedToClass !== undefined) {
+  const isNotificationType = (type: BaseNotificationType): type is NotificationType => {
+    return type._class === notification.class.NotificationType
+  }
+
+  function getLabel (type: BaseNotificationType): IntlString {
+    if (isNotificationType(type) && type.attachedToClass !== undefined) {
       return notification.string.AddedRemoved
     }
+
     return notification.string.Change
   }
 </script>

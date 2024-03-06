@@ -143,7 +143,6 @@ export default plugin(serverNotificationId, {
     NotificationPresenter: '' as Ref<Mixin<NotificationPresenter>>
   },
   trigger: {
-    OnReferenceCreate: '' as Resource<TriggerFunc>,
     OnAttributeCreate: '' as Resource<TriggerFunc>,
     OnAttributeUpdate: '' as Resource<TriggerFunc>,
     OnReactionChanged: '' as Resource<TriggerFunc>,

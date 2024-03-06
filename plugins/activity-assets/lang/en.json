@@ -36,6 +36,7 @@
     "Message": "Message",
     "Mentioned": "Mentioned",
     "You": "You",
-    "Mentions": "Mentions"
+    "Mentions": "Mentions",
+    "MentionedYouIn": "Mentioned you in"
   }
 }

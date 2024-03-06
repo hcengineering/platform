@@ -31,7 +31,6 @@ import serverNotification, {
   type NotificationContentProvider
 } from '@hcengineering/server-notification'
 import chunter from '@hcengineering/model-chunter'
-import activity from '@hcengineering/activity'
 
 export { serverNotificationId } from '@hcengineering/server-notification'
 
@@ -74,15 +73,6 @@ export function createModel (builder: Builder): void {
       _class: core.class.TxCollectionCUD,
       'tx._class': core.class.TxCreateDoc,
       'tx.objectClass': chunter.class.ChatMessage
-    }
-  })
-
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverNotification.trigger.OnReferenceCreate,
-    txMatch: {
-      _class: core.class.TxCollectionCUD,
-      'tx._class': core.class.TxCreateDoc,
-      'tx.objectClass': activity.class.ActivityReference
     }
   })
 

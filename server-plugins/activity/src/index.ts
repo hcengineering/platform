@@ -15,7 +15,6 @@
 
 import { Plugin, Resource, plugin } from '@hcengineering/platform'
 import type { TriggerFunc } from '@hcengineering/server-core'
-import { TypeMatchFunc } from '@hcengineering/server-notification'
 
 export * from './types'
 export * from './utils'
@@ -34,8 +33,5 @@ export default plugin(serverActivityId, {
     OnDocRemoved: '' as Resource<TriggerFunc>,
     OnReactionChanged: '' as Resource<TriggerFunc>,
     ReferenceTrigger: '' as Resource<TriggerFunc>
-  },
-  function: {
-    IsMeMentioned: '' as TypeMatchFunc
   }
 })

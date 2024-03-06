@@ -11,6 +11,7 @@ import core, {
 import activity, { type ActivityReference } from '@hcengineering/activity'
 import { type IntlString, translate } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
+import contact from '@hcengineering/contact'
 
 async function updateReferencesList (
   client: TxOperations,
@@ -57,14 +58,16 @@ export async function updateReferences (
   const hierarchy = client.getHierarchy()
 
   const message = await translate(msg, {})
-  const references: Array<Data<ActivityReference>> = target.map((it) => ({
-    srcDocId: source._id,
-    srcDocClass: source._class,
-    attachedTo: it._id,
-    attachedToClass: it._class,
-    message,
-    collection: key
-  }))
+  const references: Array<Data<ActivityReference>> = target
+    .filter((it) => !hierarchy.isDerived(it._class, contact.class.Person))
+    .map((it) => ({
+      srcDocId: source._id,
+      srcDocClass: source._class,
+      attachedTo: it._id,
+      attachedToClass: it._class,
+      message,
+      collection: key
+    }))
 
   const query: DocumentQuery<ActivityReference> = { srcDocId: source._id, srcDocClass: source._class, collection: key }
   const space: Ref<Space> = hierarchy.isDerived(source._class, core.class.Space)
@@ -152,8 +155,14 @@ export async function createReferences (
   content: string,
   space: Ref<Space>
 ): Promise<void> {
+  const hierarchy = client.getHierarchy()
+
   const references = getReferences(srcDocId, srcDocClass, attachedDocId, attachedDocClass, content)
   for (const ref of references) {
+    if (hierarchy.isDerived(ref.attachedToClass, contact.class.Person)) {
+      continue
+    }
+
     const { attachedTo, attachedToClass, collection, ...adata } = ref
     await client.addCollection(activity.class.ActivityReference, space, attachedTo, attachedToClass, collection, adata)
   }

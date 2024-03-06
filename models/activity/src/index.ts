@@ -375,29 +375,6 @@ export function createModel (builder: Builder): void {
     },
     activity.ids.AddReactionNotification
   )
-
-  builder.createDoc(
-    notification.class.NotificationType,
-    core.space.Model,
-    {
-      label: activity.string.Mentioned,
-      generated: false,
-      hidden: false,
-      txClasses: [core.class.TxCreateDoc],
-      objectClass: activity.class.ActivityReference,
-      group: activity.ids.ActivityNotificationGroup,
-      providers: {
-        [notification.providers.EmailNotification]: true,
-        [notification.providers.PlatformNotification]: true
-      },
-      templates: {
-        textTemplate: '{sender} mentioned you in {doc} {data}',
-        htmlTemplate: '<p>{sender}</b> mentioned you in {doc}</p> {data}',
-        subjectTemplate: 'You were mentioned in {doc}'
-      }
-    },
-    activity.ids.MentionNotification
-  )
 }
 
 export default activity

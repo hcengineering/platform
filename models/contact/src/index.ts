@@ -1091,4 +1091,26 @@ export function createModel (builder: Builder): void {
   )
 
   createPublicLinkAction(builder, contact.class.Contact, contact.action.PublicLink)
+
+  builder.createDoc(
+    notification.class.CommonNotificationType,
+    core.space.Model,
+    {
+      label: activity.string.Mentioned,
+      generated: false,
+      hidden: false,
+      objectClass: contact.class.Person,
+      group: contact.ids.PersonNotificationGroup,
+      providers: {
+        [notification.providers.EmailNotification]: true,
+        [notification.providers.PlatformNotification]: true
+      },
+      templates: {
+        textTemplate: '{sender} mentioned you in {doc} {data}',
+        htmlTemplate: '<p>{sender}</b> mentioned you in {doc}</p> {data}',
+        subjectTemplate: 'You were mentioned in {doc}'
+      }
+    },
+    contact.ids.MentionCommonNotificationType
+  )
 }

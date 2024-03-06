@@ -17,9 +17,6 @@ import { type Builder } from '@hcengineering/model'
 import serverCore from '@hcengineering/server-core'
 import core from '@hcengineering/core/src/component'
 import serverActivity from '@hcengineering/server-activity'
-import activity from '@hcengineering/activity'
-import notification from '@hcengineering/notification'
-import serverNotification from '@hcengineering/server-notification'
 
 export { activityServerOperation } from './migration'
 export { serverActivityId } from '@hcengineering/server-activity'
@@ -44,13 +41,4 @@ export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverActivity.trigger.ReferenceTrigger
   })
-
-  builder.mixin(
-    activity.ids.MentionNotification,
-    notification.class.NotificationType,
-    serverNotification.mixin.TypeMatch,
-    {
-      func: serverActivity.function.IsMeMentioned
-    }
-  )
 }

@@ -27,7 +27,6 @@ import core, {
   Data,
   Doc,
   DocumentUpdate,
-  Hierarchy,
   MeasureContext,
   MixinUpdate,
   Ref,
@@ -45,11 +44,12 @@ import core, {
 } from '@hcengineering/core'
 import notification, {
   ActivityInboxNotification,
+  BaseNotificationType,
   ClassCollaborators,
   Collaborators,
+  CommonInboxNotification,
   DocNotifyContext,
   InboxNotification,
-  NotificationProvider,
   NotificationType
 } from '@hcengineering/notification'
 import { getMetadata, getResource } from '@hcengineering/platform'
@@ -57,213 +57,103 @@ import type { TriggerControl } from '@hcengineering/server-core'
 import serverNotification, {
   getEmployee,
   getPersonAccount,
-  getPersonAccountById,
-  HTMLPresenter,
-  TextPresenter
+  getPersonAccountById
 } from '@hcengineering/server-notification'
-import activity, { ActivityMessage, ActivityReference } from '@hcengineering/activity'
+import activity, { ActivityMessage } from '@hcengineering/activity'
 
-import { Content } from './types'
+import { Content, NotifyResult } from './types'
 import {
+  getHTMLPresenter,
   getNotificationContent,
+  getTextPresenter,
+  isAllowed,
   isMixinTx,
-  isShouldNotify,
+  isShouldNotifyTx,
   isUserEmployeeInFieldValue,
   isUserInFieldValue,
   replaceAll,
   updateNotifyContextsSpace
 } from './utils'
 
-export async function OnReferenceCreate (
-  tx: TxCollectionCUD<Doc, ActivityReference>,
-  control: TriggerControl
-): Promise<Tx[]> {
-  const hierarchy = control.hierarchy
-  const isTxCorrect = await isEmployeeReferenceCreated(tx, hierarchy, control)
-
-  if (!isTxCorrect) {
-    return []
-  }
-
-  const receiver = await getPersonAccount(tx.objectId as Ref<Employee>, control)
-
-  if (receiver === undefined) {
-    return []
-  }
-
-  const sender = await getPersonAccountById(tx.modifiedBy, control)
-
-  if (sender === undefined) {
-    return []
-  }
-
-  if (sender === receiver) {
-    return []
-  }
-
-  const reference = TxProcessor.createDoc2Doc(tx.tx as TxCreateDoc<ActivityReference>)
-  const isAvailable = await isSpaceAvailable(receiver, reference.space, control)
-
-  if (!isAvailable) {
-    return []
-  }
-
-  const res: Tx[] = []
-  const collaboratorsTxes = await getCollaboratorsTxes(reference, control, receiver)
-
-  res.push(...collaboratorsTxes)
-
-  if (await isReferenceAlreadyNotified(reference, receiver._id, control)) {
-    return res
-  }
-
-  const doc = (await control.findAll(reference.attachedToClass, { _id: reference.attachedTo }))[0]
-
-  if (doc === undefined) {
-    return res
-  }
-
-  const notificationTxes = await createCollabDocInfo([receiver._id], control, tx.tx, tx, doc, [reference], true)
-
-  res.push(...notificationTxes)
-
-  return res
-}
-
-async function isSpaceAvailable (user: PersonAccount, spaceId: Ref<Space>, control: TriggerControl): Promise<boolean> {
-  const space = (await control.findAll<Space>(core.class.Space, { _id: spaceId }))[0]
-
-  if (!space?.private) {
-    return true
-  }
-
-  return space.members.includes(user._id)
-}
-
-async function getCollaboratorsTxes (
-  reference: ActivityReference,
+export function getPushCollaboratorTx (
   control: TriggerControl,
-  receiver: Account
-): Promise<Tx[]> {
-  const { hierarchy } = control
+  user: Ref<Account>,
+  doc: Doc
+): TxMixin<Doc, Doc> | undefined {
+  const mixin = control.hierarchy.as(doc, notification.mixin.Collaborators)
 
-  if (reference.attachedDocClass === undefined || reference.attachedDocId === undefined) {
-    return []
-  }
-
-  if (!hierarchy.isDerived(reference.attachedDocClass, activity.class.ActivityMessage)) {
-    return []
-  }
-
-  const message = (
-    await control.findAll<ActivityMessage>(
-      reference.attachedDocClass,
-      {
-        _id: reference.attachedDocId as Ref<ActivityMessage>
-      },
-      { limit: 1 }
-    )
-  )[0]
-
-  if (message === undefined) {
-    return []
-  }
-
-  const res: Tx[] = []
-  const collabMixin = hierarchy.as(message as Doc, notification.mixin.Collaborators)
-
-  if (collabMixin.collaborators === undefined || !collabMixin.collaborators.includes(receiver._id)) {
-    const collabTx = control.txFactory.createTxMixin(
-      message._id,
-      message._class,
-      message.space,
-      notification.mixin.Collaborators,
-      {
-        $push: {
-          collaborators: receiver._id
-        }
+  if (mixin.collaborators === undefined || !mixin.collaborators.includes(user)) {
+    return control.txFactory.createTxMixin(doc._id, doc._class, doc.space, notification.mixin.Collaborators, {
+      $push: {
+        collaborators: user
       }
-    )
-    res.push(collabTx)
+    })
   }
 
-  return res
+  return undefined
 }
 
-async function isReferenceAlreadyNotified (
-  reference: ActivityReference,
-  receiver: Ref<Account>,
+export async function isMessageAlreadyNotified (
+  _id: Ref<ActivityMessage>,
+  user: Ref<Account>,
   control: TriggerControl
 ): Promise<boolean> {
-  const { hierarchy } = control
-
-  if (reference.attachedDocClass === undefined || reference.attachedDocId === undefined) {
-    return false
-  }
-
-  if (!hierarchy.isDerived(reference.attachedDocClass, activity.class.ActivityMessage)) {
-    return false
-  }
-
   const exists = await control.findAll(
     notification.class.ActivityInboxNotification,
-    { attachedTo: reference.attachedDocId as Ref<ActivityMessage>, user: receiver },
-    { limit: 1 }
+    { attachedTo: _id, user },
+    { limit: 1, projection: { _id: 1 } }
   )
 
   return exists.length > 0
 }
 
-async function isEmployeeReferenceCreated (
-  ptx: TxCollectionCUD<Doc, AttachedDoc>,
-  hierarchy: Hierarchy,
-  control: TriggerControl
-): Promise<boolean> {
-  if (
-    ptx.tx._class !== core.class.TxCreateDoc ||
-    !hierarchy.isDerived(ptx.tx.objectClass, activity.class.ActivityReference)
-  ) {
-    return false
-  }
-  if (ptx.objectClass === contact.class.Person) {
-    // We need to check if person is employee.
-    const [person] = await control.findAll(contact.class.Person, { _id: ptx.objectId as Ref<Person> })
-    return person !== undefined ? hierarchy.hasMixin(person, contact.mixin.Employee) : false
-  }
-
-  return true
-}
-
-/**
- * @public
- */
-export async function isAllowed (
+export async function getCommonNotificationTxes (
   control: TriggerControl,
-  receiver: Ref<PersonAccount>,
-  typeId: Ref<NotificationType>,
-  providerId: Ref<NotificationProvider>
-): Promise<boolean> {
-  const setting = (
-    await control.findAll(
-      notification.class.NotificationSetting,
-      {
-        attachedTo: providerId,
-        type: typeId,
-        modifiedBy: receiver
-      },
-      { limit: 1 }
+  doc: Doc,
+  data: Partial<Data<CommonInboxNotification>>,
+  receiver: Ref<Account>,
+  sender: Ref<Account>,
+  attachedTo: Ref<Doc>,
+  attachedToClass: Ref<Class<Doc>>,
+  space: Ref<Space>,
+  modifiedOn: Timestamp,
+  notifyResult: NotifyResult
+): Promise<Tx[]> {
+  const res: Tx[] = []
+
+  if (notifyResult.allowed) {
+    const notifyContexts = await control.findAll(notification.class.DocNotifyContext, { attachedTo })
+
+    await pushInboxNotifications(
+      control,
+      res,
+      receiver,
+      attachedTo,
+      attachedToClass,
+      space,
+      notifyContexts,
+      data,
+      notification.class.CommonInboxNotification,
+      modifiedOn
     )
-  )[0]
-  if (setting !== undefined) {
-    return setting.enabled
   }
-  const type = (
-    await control.modelDb.findAll(notification.class.NotificationType, {
-      _id: typeId
-    })
-  )[0]
-  if (type === undefined) return false
-  return type.providers[providerId] ?? false
+
+  if (notifyResult.emails.length === 0) {
+    return res
+  }
+
+  const receiverAccount = await getPersonAccountById(receiver, control)
+  if (receiverAccount === undefined) {
+    return res
+  }
+  const emp = await getEmployee(receiverAccount.person as Ref<Employee>, control)
+  if (emp?.active === true) {
+    for (const type of notifyResult.emails) {
+      await notifyByEmail(control, type._id, doc, sender as Ref<PersonAccount>, receiverAccount._id)
+    }
+  }
+
+  return res
 }
 
 async function getTextPart (doc: Doc, control: TriggerControl): Promise<string | undefined> {
@@ -279,20 +169,6 @@ async function getHtmlPart (doc: Doc, control: TriggerControl): Promise<string |
   return HTMLPresenter != null ? await (await getResource(HTMLPresenter.presenter))(doc, control) : undefined
 }
 
-/**
- * @public
- */
-export function getHTMLPresenter (_class: Ref<Class<Doc>>, hierarchy: Hierarchy): HTMLPresenter | undefined {
-  return hierarchy.classHierarchyMixin(_class, serverNotification.mixin.HTMLPresenter)
-}
-
-/**
- * @public
- */
-export function getTextPresenter (_class: Ref<Class<Doc>>, hierarchy: Hierarchy): TextPresenter | undefined {
-  return hierarchy.classHierarchyMixin(_class, serverNotification.mixin.TextPresenter)
-}
-
 function fillTemplate (template: string, sender: string, doc: string, data: string): string {
   let res = replaceAll(template, '{sender}', sender)
   res = replaceAll(res, '{doc}', doc)
@@ -306,7 +182,7 @@ function fillTemplate (template: string, sender: string, doc: string, data: stri
 export async function getContent (
   doc: Doc | undefined,
   sender: string,
-  type: Ref<NotificationType>,
+  type: Ref<BaseNotificationType>,
   control: TriggerControl,
   data: string
 ): Promise<Content | undefined> {
@@ -329,7 +205,7 @@ export async function getContent (
 
 async function notifyByEmail (
   control: TriggerControl,
-  type: Ref<NotificationType>,
+  type: Ref<BaseNotificationType>,
   doc: Doc | undefined,
   senderId: Ref<PersonAccount>,
   receiverId: Ref<PersonAccount>,
@@ -589,7 +465,7 @@ export async function getNotificationTxes (
   shouldUpdateTimestamp = true
 ): Promise<Tx[]> {
   const res: Tx[] = []
-  const notifyResult = await isShouldNotify(control, tx, originTx, object, target, isOwn, isSpace)
+  const notifyResult = await isShouldNotifyTx(control, tx, originTx, object, target, isOwn, isSpace)
 
   if (notifyResult.allowed) {
     await pushActivityInboxNotifications(
@@ -1191,7 +1067,6 @@ export default async () => ({
     OnChatMessageCreate,
     OnAttributeCreate,
     OnAttributeUpdate,
-    OnReferenceCreate,
     OnActivityNotificationViewed,
     OnDocRemove
   },

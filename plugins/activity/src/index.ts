@@ -363,7 +363,8 @@ export default plugin(activityId, {
     Message: '' as IntlString,
     Mentioned: '' as IntlString,
     You: '' as IntlString,
-    Mentions: '' as IntlString
+    Mentions: '' as IntlString,
+    MentionedYouIn: '' as IntlString
   },
   component: {
     Activity: '' as AnyComponent,

@@ -39,7 +39,7 @@ import {
 } from '@hcengineering/server-notification-resources'
 
 import { getDocUpdateAction, getTxAttributesUpdates } from './utils'
-import { IsMeMentioned, ReferenceTrigger } from './references'
+import { ReferenceTrigger } from './references'
 
 export async function OnReactionChanged (originTx: Tx, control: TriggerControl): Promise<Tx[]> {
   const tx = originTx as TxCollectionCUD<ActivityMessage, Reaction>
@@ -401,8 +401,5 @@ export default async () => ({
     ActivityMessagesHandler,
     OnDocRemoved,
     OnReactionChanged
-  },
-  function: {
-    IsMeMentioned
   }
 })

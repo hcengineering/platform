@@ -34,9 +34,9 @@ import notification, { CommonInboxNotification } from '@hcengineering/notificati
 import { getResource } from '@hcengineering/platform'
 import type { TriggerControl } from '@hcengineering/server-core'
 import {
+  getCommonNotificationTxes,
   getNotificationContent,
-  isShouldNotify,
-  pushInboxNotifications
+  isShouldNotifyTx
 } from '@hcengineering/server-notification-resources'
 import task from '@hcengineering/task'
 import tracker, { Issue, IssueStatus, Project, TimeSpendReport } from '@hcengineering/tracker'
@@ -182,32 +182,31 @@ export async function OnToDoCreate (tx: TxCUD<Doc>, control: TriggerControl): Pr
     return []
   }
 
-  const notifyContexts = await control.findAll(notification.class.DocNotifyContext, { attachedTo: todo._id })
   const res: Tx[] = []
+  const notifyResult = await isShouldNotifyTx(control, createTx, tx, todo, account._id, true, false)
+  const content = await getNotificationContent(tx, account._id, todo, control)
+  const details = todo.description != null && todo.description.length > 0 ? todo.description : todo.title
+  const data: Partial<Data<CommonInboxNotification>> = {
+    ...content,
+    header: time.string.CreatedToDo,
+    message: time.string.NewToDoDetails,
+    props: { details }
+  }
 
-  const notifyResult = await isShouldNotify(control, createTx, tx, todo, account._id, true, false)
-  if (notifyResult.allowed) {
-    const content = await getNotificationContent(tx, account._id, todo, control)
-    const details = todo.description != null && todo.description.length > 0 ? todo.description : todo.title
-    const data: Partial<Data<CommonInboxNotification>> = {
-      ...content,
-      header: time.string.CreatedToDo,
-      message: time.string.NewToDoDetails,
-      props: { details }
-    }
-    await pushInboxNotifications(
+  res.push(
+    ...(await getCommonNotificationTxes(
       control,
-      res,
+      todo,
+      data,
       account._id,
+      tx.modifiedBy,
       todo._id,
       todo._class,
       todo.space,
-      notifyContexts,
-      data,
-      notification.class.CommonInboxNotification,
-      createTx.modifiedOn
-    )
-  }
+      createTx.modifiedOn,
+      notifyResult
+    ))
+  )
 
   return res
 }

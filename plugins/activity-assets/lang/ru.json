@@ -36,6 +36,7 @@
     "Message": "Сообщение",
     "Mentioned": "Упомянул(а)",
     "You": "Вы",
-    "Mentions": "Упомянания"
+    "Mentions": "Упомянания",
+    "MentionedYouIn": "Упомянул(а) вас в"
   }
 }

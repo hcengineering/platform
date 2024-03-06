@@ -29,18 +29,160 @@ import core, {
   TxCreateDoc,
   TxCUD,
   TxFactory,
+  TxMixin,
   TxProcessor,
   TxRemoveDoc,
   TxUpdateDoc,
   Type
 } from '@hcengineering/core'
-import notification, { NotificationType } from '@hcengineering/notification'
+import notification, { CommonInboxNotification, CommonNotificationType } from '@hcengineering/notification'
 import { ServerKit, extractReferences, getHTML, parseHTML, yDocContentToNodes } from '@hcengineering/text'
 import { StorageAdapter, TriggerControl } from '@hcengineering/server-core'
-import activity, { ActivityReference } from '@hcengineering/activity'
-import contact, { Person } from '@hcengineering/contact'
+import activity, { ActivityMessage, ActivityReference } from '@hcengineering/activity'
+import contact, { Person, PersonAccount } from '@hcengineering/contact'
+import {
+  getPushCollaboratorTx,
+  getCommonNotificationTxes,
+  isMessageAlreadyNotified,
+  shouldNotifyCommon
+} from '@hcengineering/server-notification-resources'
 
 const extensions = [ServerKit]
+
+export async function getPersonNotificationTxes (
+  reference: Data<ActivityReference>,
+  control: TriggerControl,
+  senderId: Ref<Account>,
+  space: Ref<Space>,
+  originTx: TxCUD<Doc>
+): Promise<Tx[]> {
+  if (reference.attachedTo === senderId) {
+    return []
+  }
+
+  const receiver = (
+    await control.modelDb.findAll(
+      contact.class.PersonAccount,
+      {
+        person: reference.attachedTo as Ref<Person>
+      },
+      { limit: 1 }
+    )
+  )[0]
+
+  if (receiver === undefined) {
+    return []
+  }
+
+  const isAvailable = await isSpaceAvailable(receiver, space, control)
+
+  if (!isAvailable) {
+    return []
+  }
+
+  const res: Tx[] = []
+  const collaboratorsTx = await getCollaboratorsTxes(reference, control, receiver)
+
+  if (collaboratorsTx !== undefined) {
+    res.push(collaboratorsTx)
+  }
+
+  if (await isReferenceAlreadyNotified(reference, receiver._id, control)) {
+    return res
+  }
+
+  const doc = (await control.findAll(reference.attachedToClass, { _id: reference.attachedTo }))[0]
+
+  if (doc === undefined) {
+    return res
+  }
+
+  const data: Partial<Data<CommonInboxNotification>> = {
+    header: activity.string.MentionedYouIn,
+    messageHtml: reference.message
+  }
+
+  const notifyResult = await shouldNotifyCommon(
+    control,
+    receiver._id,
+    contact.ids.MentionCommonNotificationType as Ref<CommonNotificationType>
+  )
+  const texes = await getCommonNotificationTxes(
+    control,
+    doc,
+    data,
+    receiver._id,
+    senderId,
+    reference.srcDocId,
+    reference.srcDocClass,
+    space,
+    originTx.modifiedOn,
+    notifyResult
+  )
+
+  res.push(...texes)
+  return res
+}
+
+async function isSpaceAvailable (user: PersonAccount, spaceId: Ref<Space>, control: TriggerControl): Promise<boolean> {
+  const space = (await control.findAll<Space>(core.class.Space, { _id: spaceId }))[0]
+
+  if (!space?.private) {
+    return true
+  }
+
+  return space.members.includes(user._id)
+}
+
+async function getCollaboratorsTxes (
+  reference: Data<ActivityReference>,
+  control: TriggerControl,
+  receiver: Account
+): Promise<TxMixin<Doc, Doc> | undefined> {
+  const { hierarchy } = control
+
+  if (reference.attachedDocClass === undefined || reference.attachedDocId === undefined) {
+    return undefined
+  }
+
+  if (!hierarchy.isDerived(reference.attachedDocClass, activity.class.ActivityMessage)) {
+    return undefined
+  }
+
+  const message = (
+    await control.findAll<ActivityMessage>(
+      reference.attachedDocClass,
+      {
+        _id: reference.attachedDocId as Ref<ActivityMessage>
+      },
+      { limit: 1 }
+    )
+  )[0]
+
+  if (message === undefined) {
+    return undefined
+  }
+
+  return getPushCollaboratorTx(control, receiver._id, message)
+}
+
+async function isReferenceAlreadyNotified (
+  reference: Data<ActivityReference>,
+  receiver: Ref<Account>,
+  control: TriggerControl
+): Promise<boolean> {
+  const { hierarchy } = control
+
+  if (reference.attachedDocClass === undefined || reference.attachedDocId === undefined) {
+    return false
+  }
+
+  if (!hierarchy.isDerived(reference.attachedDocClass, activity.class.ActivityMessage)) {
+    return false
+  }
+
+  return await isMessageAlreadyNotified(reference.attachedDocId as Ref<ActivityMessage>, receiver, control)
+}
 
 function isMarkupType (type: Ref<Class<Type<any>>>): boolean {
   return type === core.class.TypeMarkup || type === core.class.TypeCollaborativeMarkup
@@ -57,7 +199,8 @@ async function getCreateReferencesTxes (
   createdDoc: Doc,
   srcDocId: Ref<Doc>,
   srcDocClass: Ref<Class<Doc>>,
-  srcDocSpace: Ref<Space>
+  srcDocSpace: Ref<Space>,
+  originTx: TxCUD<Doc>
 ): Promise<Tx[]> {
   const attachedDocId = createdDoc._id
   const attachedDocClass = createdDoc._class
@@ -95,7 +238,7 @@ async function getCreateReferencesTxes (
     ? (srcDocId as Ref<Space>)
     : srcDocSpace
 
-  return getReferencesTxes(txFactory, refs, refSpace, [])
+  return await getReferencesTxes(control, txFactory, refs, refSpace, [], originTx)
 }
 
 async function getUpdateReferencesTxes (
@@ -105,7 +248,8 @@ async function getUpdateReferencesTxes (
   updatedDoc: Doc,
   srcDocId: Ref<Doc>,
   srcDocClass: Ref<Class<Doc>>,
-  srcDocSpace: Ref<Space>
+  srcDocSpace: Ref<Space>,
+  originTx: TxCUD<Doc>
 ): Promise<Tx[]> {
   const attachedDocId = updatedDoc._id
   const attachedDocClass = updatedDoc._class
@@ -155,7 +299,7 @@ async function getUpdateReferencesTxes (
       ? (srcDocId as Ref<Space>)
       : srcDocSpace
 
-    return getReferencesTxes(txFactory, references, refSpace, current)
+    return await getReferencesTxes(control, txFactory, references, refSpace, current, originTx)
   }
 
   return []
@@ -199,15 +343,31 @@ export function getReferencesData (
   return result
 }
 
-/**
- * @public
- */
-function getReferencesTxes (
+async function createReferenceTxes (
+  control: TriggerControl,
+  txFactory: TxFactory,
+  ref: Data<ActivityReference>,
+  space: Ref<Space>,
+  originTx: TxCUD<Doc>
+): Promise<Tx[]> {
+  if (control.hierarchy.isDerived(ref.attachedToClass, contact.class.Person)) {
+    return await getPersonNotificationTxes(ref, control, txFactory.account, space, originTx)
+  }
+
+  const refTx = control.txFactory.createTxCreateDoc(activity.class.ActivityReference, space, ref)
+  const tx = control.txFactory.createTxCollectionCUD(ref.attachedToClass, ref.attachedTo, space, ref.collection, refTx)
+
+  return [tx]
+}
+
+async function getReferencesTxes (
+  control: TriggerControl,
   txFactory: TxFactory,
   references: Data<ActivityReference>[],
   space: Ref<Space>,
-  current: ActivityReference[]
-): Tx[] {
+  current: ActivityReference[],
+  originTx: TxCUD<Doc>
+): Promise<Tx[]> {
   const txes: Tx[] = []
 
   for (const c of current) {
@@ -234,8 +394,7 @@ function getReferencesTxes (
 
   // Add missing references
   for (const ref of references) {
-    const refTx = txFactory.createTxCreateDoc(activity.class.ActivityReference, space, ref)
-    txes.push(txFactory.createTxCollectionCUD(ref.attachedToClass, ref.attachedTo, space, ref.collection, refTx))
+    txes.push(...(await createReferenceTxes(control, txFactory, ref, space, originTx)))
   }
 
   return txes
@@ -276,7 +435,7 @@ function guessReferenceTx (hierarchy: Hierarchy, tx: TxCUD<Doc>): TxCUD<Doc> {
   return tx
 }
 
-async function ActivityReferenceCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+async function ActivityReferenceCreate (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
   const ctx = TxProcessor.extractTx(tx) as TxCreateDoc<Doc>
 
   if (ctx._class !== core.class.TxCreateDoc) return []
@@ -286,7 +445,7 @@ async function ActivityReferenceCreate (tx: Tx, control: TriggerControl): Promis
     const txFactory = new TxFactory(control.txFactory.account)
 
     const doc = TxProcessor.createDoc2Doc(ctx)
-    const targetTx = guessReferenceTx(control.hierarchy, tx as TxCUD<Doc>)
+    const targetTx = guessReferenceTx(control.hierarchy, tx)
 
     const txes: Tx[] = await getCreateReferencesTxes(
       control,
@@ -295,7 +454,8 @@ async function ActivityReferenceCreate (tx: Tx, control: TriggerControl): Promis
       doc,
       targetTx.objectId,
       targetTx.objectClass,
-      targetTx.objectSpace
+      targetTx.objectSpace,
+      tx
     )
 
     if (txes.length !== 0) {
@@ -306,7 +466,7 @@ async function ActivityReferenceCreate (tx: Tx, control: TriggerControl): Promis
   return []
 }
 
-async function ActivityReferenceUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+async function ActivityReferenceUpdate (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
   const ctx = TxProcessor.extractTx(tx) as TxUpdateDoc<Doc>
   const attributes = control.hierarchy.getAllAttributes(ctx.objectClass)
 
@@ -334,7 +494,7 @@ async function ActivityReferenceUpdate (tx: Tx, control: TriggerControl): Promis
   control.storageFx(async (adapter) => {
     const txFactory = new TxFactory(control.txFactory.account)
     const doc = TxProcessor.updateDoc2Doc(rawDoc, ctx)
-    const targetTx = guessReferenceTx(control.hierarchy, tx as TxCUD<Doc>)
+    const targetTx = guessReferenceTx(control.hierarchy, tx)
 
     const txes: Tx[] = await getUpdateReferencesTxes(
       control,
@@ -343,7 +503,8 @@ async function ActivityReferenceUpdate (tx: Tx, control: TriggerControl): Promis
       doc,
       targetTx.objectId,
       targetTx.objectClass,
-      targetTx.objectSpace
+      targetTx.objectSpace,
+      tx
     )
 
     if (txes.length !== 0) {
@@ -382,7 +543,7 @@ async function ActivityReferenceRemove (tx: Tx, control: TriggerControl): Promis
 /**
  * @public
  */
-export async function ReferenceTrigger (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+export async function ReferenceTrigger (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
 
   const etx = TxProcessor.extractTx(tx) as TxCreateDoc<Doc>
@@ -398,34 +559,4 @@ export async function ReferenceTrigger (tx: Tx, control: TriggerControl): Promis
     result.push(...(await ActivityReferenceRemove(tx, control)))
   }
   return result
-}
-
-function isReference (tx: TxCUD<Doc>, hierarchy: Hierarchy): boolean {
-  if (tx._class !== core.class.TxCreateDoc) {
-    return false
-  }
-
-  return hierarchy.isDerived(tx.objectClass, activity.class.ActivityReference)
-}
-
-export async function IsMeMentioned (
-  originTx: Tx,
-  doc: Doc,
-  user: Ref<Account>,
-  type: NotificationType,
-  control: TriggerControl
-): Promise<boolean> {
-  const tx = TxProcessor.extractTx(originTx) as TxCUD<ActivityReference>
-  if (!isReference(tx, control.hierarchy)) {
-    return false
-  }
-  const reference = TxProcessor.createDoc2Doc(tx as TxCreateDoc<ActivityReference>)
-
-  if (!control.hierarchy.isDerived(reference.attachedToClass, contact.class.Person)) {
-    return false
-  }
-  const acc = (
-    await control.modelDb.findAll(contact.class.PersonAccount, { person: reference.attachedTo as Ref<Person> })
-  )[0]
-  return acc._id === user
 }

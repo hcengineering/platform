@@ -71,7 +71,9 @@ import {
   type ActivityInboxNotification,
   type CommonInboxNotification,
   type NotificationContextPresenter,
-  type ActivityNotificationViewlet
+  type ActivityNotificationViewlet,
+  type BaseNotificationType,
+  type CommonNotificationType
 } from '@hcengineering/notification'
 import { type Asset, type IntlString } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
@@ -99,17 +101,26 @@ export class TNotification extends TAttachedDoc implements Notification {
   type!: Ref<NotificationType>
 }
 
-@Model(notification.class.NotificationType, core.class.Doc, DOMAIN_MODEL)
-export class TNotificationType extends TDoc implements NotificationType {
+@Model(notification.class.BaseNotificationType, core.class.Doc, DOMAIN_MODEL)
+export class TBaseNotificationType extends TDoc implements BaseNotificationType {
   generated!: boolean
   label!: IntlString
   group!: Ref<NotificationGroup>
-  txClasses!: Ref<Class<Tx>>[]
   providers!: Record<Ref<NotificationProvider>, boolean>
-  objectClass!: Ref<Class<Doc>>
   hidden!: boolean
   templates?: NotificationTemplate
+}
+
+@Model(notification.class.NotificationType, notification.class.BaseNotificationType)
+export class TNotificationType extends TBaseNotificationType implements NotificationType {
+  txClasses!: Ref<Class<Tx>>[]
+  objectClass!: Ref<Class<Doc>>
   onlyOwn?: boolean
+}
+
+@Model(notification.class.CommonNotificationType, notification.class.BaseNotificationType)
+export class TCommonNotificationType extends TBaseNotificationType implements CommonNotificationType {
+  objectClass!: Ref<Class<Doc>>
 }
 
 @Model(notification.class.NotificationGroup, core.class.Doc, DOMAIN_MODEL)
@@ -136,7 +147,7 @@ export class TNotificationProvider extends TDoc implements NotificationProvider 
 @Model(notification.class.NotificationSetting, preference.class.Preference)
 export class TNotificationSetting extends TPreference implements NotificationSetting {
   declare attachedTo: Ref<TNotificationProvider>
-  type!: Ref<TNotificationType>
+  type!: Ref<BaseNotificationType>
   enabled!: boolean
 }
 
@@ -245,13 +256,18 @@ export class TActivityInboxNotification extends TInboxNotification implements Ac
 
 @Model(notification.class.CommonInboxNotification, notification.class.InboxNotification)
 export class TCommonInboxNotification extends TInboxNotification implements CommonInboxNotification {
-  header?: IntlString
-  @Prop(TypeIntlString(), notification.string.Message)
-    message!: IntlString
+  @Prop(TypeIntlString(), core.string.String)
+    header?: IntlString
 
-  props!: Record<string, any>
-  icon!: Asset
-  iconProps!: Record<string, any>
+  @Prop(TypeIntlString(), notification.string.Message)
+    message?: IntlString
+
+  @Prop(TypeIntlString(), notification.string.Message)
+    messageHtml?: IntlString
+
+  props?: Record<string, any>
+  icon?: Asset
+  iconProps?: Record<string, any>
 }
 
 @Model(notification.class.ActivityNotificationViewlet, core.class.Doc, DOMAIN_MODEL)
@@ -279,7 +295,9 @@ export function createModel (builder: Builder): void {
     TActivityInboxNotification,
     TCommonInboxNotification,
     TNotificationContextPresenter,
-    TActivityNotificationViewlet
+    TActivityNotificationViewlet,
+    TBaseNotificationType,
+    TCommonNotificationType
   )
 
   // Temporarily disabled, we should think about it
