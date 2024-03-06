@@ -22,7 +22,6 @@
   import ActivityExtensionComponent from './ActivityExtension.svelte'
   import ActivityFilter from './ActivityFilter.svelte'
   import { combineActivityMessages } from '../activityMessagesUtils'
-  import { loadSavedMessages } from '../activity'
 
   export let object: Doc
   export let showCommenInput: boolean = true
@@ -69,10 +68,6 @@
   }
 
   $: void updateActivityMessages(object._id, isNewestFirst ? SortingOrder.Descending : SortingOrder.Ascending)
-
-  onMount(() => {
-    loadSavedMessages()
-  })
 </script>
 
 <div class="antiSection-header high mt-9" class:invisible={transparent}>

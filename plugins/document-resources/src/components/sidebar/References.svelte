@@ -20,9 +20,9 @@
   import { createQuery } from '@hcengineering/presentation'
   import { Label, Lazy, Scroller } from '@hcengineering/ui'
   import activity, { ActivityReference } from '@hcengineering/activity'
+  import { ActivityReferencePresenter } from '@hcengineering/activity-resources'
 
   import document from '../../plugin'
-  import ReferenceView from './ReferenceView.svelte'
 
   export let doc: Ref<Document>
 
@@ -49,10 +49,10 @@
   <div class="divider" />
 
   {#if references.length > 0}
-    <Scroller>
+    <Scroller padding="0.75rem 0.25rem">
       {#each references as reference}
         <Lazy>
-          <ReferenceView value={reference} />
+          <ActivityReferencePresenter value={reference} hoverStyles="filledHover" />
         </Lazy>
       {/each}
     </Scroller>

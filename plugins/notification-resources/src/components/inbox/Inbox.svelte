@@ -37,7 +37,7 @@
   import { Ref, WithLookup } from '@hcengineering/core'
   import { ViewletSelector } from '@hcengineering/view-resources'
   import activity, { ActivityMessage } from '@hcengineering/activity'
-  import { isReactionMessage, loadSavedMessages } from '@hcengineering/activity-resources'
+  import { isReactionMessage } from '@hcengineering/activity-resources'
   import { onMount } from 'svelte'
 
   import { inboxMessagesStore, InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
@@ -251,10 +251,6 @@
     { minSize: 30, maxSize: 50, size: 40, float: 'navigator' },
     { size: 'auto', minSize: 30, maxSize: 'auto', float: undefined }
   ])
-
-  onMount(() => {
-    loadSavedMessages()
-  })
 </script>
 
 <ActionContext

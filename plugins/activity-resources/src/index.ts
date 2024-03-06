@@ -49,6 +49,7 @@ export { default as ActivityMessageHeader } from './components/activity-message/
 export { default as AddReactionAction } from './components/reactions/AddReactionAction.svelte'
 export { default as ActivityMessageAction } from './components/ActivityMessageAction.svelte'
 export { default as ActivityMessagesFilterPopup } from './components/FilterPopup.svelte'
+export { default as ActivityReferencePresenter } from './components/activity-reference/ActivityReferencePresenter.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
