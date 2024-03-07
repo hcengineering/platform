@@ -101,8 +101,9 @@ export async function generateLocation (loc: Location, id: Ref<Document>): Promi
   }
 }
 
-export function getDocumentIdFromFragment (fragment: string): Ref<Document> {
-  return fragment as Ref<Document>
+export function getDocumentIdFromFragment (fragment: string): Ref<Document> | undefined {
+  const [, _id] = decodeURIComponent(fragment).split('|')
+  return _id as Ref<Document>
 }
 
 export function getDocumentUrl (doc: Document): string {
