@@ -19,6 +19,7 @@
   import presentation from '@hcengineering/presentation'
   import { Button, IconSize, Loading, themeStore } from '@hcengineering/ui'
   import { AnyExtension, Editor, FocusPosition, mergeAttributes } from '@tiptap/core'
+  import { Node as ProseMirrorNode } from '@tiptap/pm/model'
   import Collaboration, { isChangeOrigin } from '@tiptap/extension-collaboration'
   import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
   import Placeholder from '@tiptap/extension-placeholder'
@@ -84,6 +85,8 @@
 
   export let attachFile: FileAttachFunction | undefined = undefined
   export let canShowPopups = true
+  export let canEmbedFiles = true
+  export let canEmbedImages = true
 
   const dispatch = createEventDispatcher()
 
@@ -116,6 +119,8 @@
 
   void localProvider?.loaded.then(() => (localSynced = true))
   void remoteProvider.loaded.then(() => (remoteSynced = true))
+
+  const attachments = new Map<string, ProseMirrorNode>()
 
   let editor: Editor
   let element: HTMLElement
@@ -150,6 +155,19 @@
 
   export function commands (): TextEditorCommandHandler | undefined {
     return commandHandler
+  }
+
+  export function removeAttachment (id: string): void {
+    const node = attachments.get(id)
+    if (node !== undefined) {
+      editor.view.state.doc.descendants((n: ProseMirrorNode, pos: number): boolean => {
+        if (node === n) {
+          editor.view.dispatch(editor.view.state.tr.delete(pos, pos + 1))
+          return false
+        }
+        return true
+      })
+    }
   }
 
   export function isEditable (): boolean {
@@ -208,19 +226,29 @@
   const optionalExtensions: AnyExtension[] = []
 
   if (attachFile !== undefined) {
-    optionalExtensions.push(
-      FileExtension.configure({
-        inline: true,
-        attachFile
-      })
-    )
-    optionalExtensions.push(
-      ImageExtension.configure({
-        inline: true,
-        attachFile,
-        uploadUrl: getMetadata(presentation.metadata.UploadURL)
-      })
-    )
+    if (canEmbedFiles) {
+      optionalExtensions.push(
+        FileExtension.configure({
+          inline: true,
+          attachFile,
+          reportNode: (id, node) => {
+            attachments.set(id, node)
+          }
+        })
+      )
+    }
+    if (canEmbedImages) {
+      optionalExtensions.push(
+        ImageExtension.configure({
+          inline: true,
+          attachFile,
+          uploadUrl: getMetadata(presentation.metadata.UploadURL),
+          reportNode: (id, node) => {
+            attachments.set(id, node)
+          }
+        })
+      )
+    }
   }
 
   onMount(async () => {

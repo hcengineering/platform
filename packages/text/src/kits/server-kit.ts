@@ -55,14 +55,22 @@ const taskListExtensions = [
 ]
 
 export interface ServerKitOptions extends DefaultKitOptions {
-  file: Partial<FileOptions>
-  image: Partial<ImageOptions>
+  file: Partial<FileOptions> | false
+  image: Partial<ImageOptions> | false
 }
 
 export const ServerKit = Extension.create<ServerKitOptions>({
   name: 'serverKit',
 
   addExtensions () {
+    const fileExtensions = this.options.file !== false
+      ? [FileNode.configure(this.options.file)]
+      : []
+
+    const imageExtensions = this.options.image !== false
+      ? [ImageNode.configure(this.options.image)]
+      : []
+
     return [
       DefaultKit.configure({
         ...this.options,
@@ -72,12 +80,22 @@ export const ServerKit = Extension.create<ServerKitOptions>({
       }),
       ...tableExtensions,
       ...taskListExtensions,
-      FileNode.configure(this.options.file),
-      ImageNode.configure(this.options.image),
+      ...fileExtensions,
+      ...imageExtensions,
       TodoItemNode,
       TodoListNode,
       ReferenceNode,
       NodeUuid
     ]
+
+    if (this.options.file !== false) {
+      extensions.push(FileNode.configure(this.options.file))
+    }
+
+    if (this.options.image !== false) {
+      extensions.push(ImageNode.configure(this.options.image))
+    }
+
+    return extensions
   }
 })

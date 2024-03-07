@@ -41,6 +41,10 @@
     return editor?.isFocused() ?? false
   }
 
+  export function removeAttachment (id: string): void {
+    return editor?.removeAttachment(id)
+  }
+
   let editor: CollaborativeTextEditor
 
   $: documentId = getDocumentId(object, key)
@@ -120,6 +124,7 @@
   {boundary}
   {readonly}
   field={key.key}
+  canEmbedFiles={false}
   on:focus
   on:blur
   on:update
