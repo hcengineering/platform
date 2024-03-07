@@ -32,6 +32,7 @@ export class IssuesPage extends CommonTrackerPage {
   readonly buttonPopupCreateNewIssueTemplate: Locator
   readonly inputPopupAddAttachmentsFile: Locator
   readonly textPopupAddAttachmentsFile: Locator
+  readonly buttonCollapsedCategories: Locator
 
   constructor (page: Page) {
     super(page)
@@ -76,6 +77,7 @@ export class IssuesPage extends CommonTrackerPage {
     )
     this.inputPopupAddAttachmentsFile = page.locator('div.popup-tooltip input#file')
     this.textPopupAddAttachmentsFile = page.locator('div.popup-tooltip div.item div.name')
+    this.buttonCollapsedCategories = page.locator('div.categoryHeader.collapsed')
   }
 
   async createNewIssue (data: NewIssue, closeNotification: boolean = false): Promise<void> {
@@ -284,5 +286,11 @@ export class IssuesPage extends CommonTrackerPage {
       .locator('button')
       .first()
       .click()
+  }
+
+  async openAllCategories (): Promise<void> {
+    for await (const category of iterateLocator(this.buttonCollapsedCategories)) {
+      await category.click()
+    }
   }
 }

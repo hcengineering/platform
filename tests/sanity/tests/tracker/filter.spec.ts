@@ -460,6 +460,7 @@ test.describe('Tracker filters tests', () => {
     await issuesPage.createNewIssue(dueDateTodayIssue)
     await issuesPage.createNewIssue(dueDateNextWeekIssue)
     await issuesPage.createNewIssue(dueDateNextMonthIssue)
+    await issuesPage.openAllCategories()
 
     await test.step('Check Filter Overdue', async () => {
       await issuesPage.selectFilter('Due date', 'Overdue')
