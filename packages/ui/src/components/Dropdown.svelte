@@ -13,65 +13,70 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import type {
+    AnySvelteComponent,
+    ButtonBaseKind,
+    ButtonBaseSize,
+    ButtonBaseType,
+    LabelAndProps,
+    ListItem,
+  } from '../types'
   import type { Asset, IntlString } from '@hcengineering/platform'
   import { createEventDispatcher } from 'svelte'
   import { getFocusManager } from '../focus'
   import { showPopup } from '../popups'
-  import type { AnySvelteComponent, ButtonKind, ButtonSize, ListItem, TooltipAlignment } from '../types'
-  import Button from './Button.svelte'
   import DropdownPopup from './DropdownPopup.svelte'
-  import Label from './Label.svelte'
+  import ButtonBase from './ButtonBase.svelte'
 
-  export let icon: Asset | AnySvelteComponent | undefined = undefined
-  export let label: IntlString | undefined = undefined
-  export let placeholder: IntlString
   export let items: ListItem[] = []
   export let selected: ListItem | undefined = undefined
-  export let disabled: boolean = false
-
-  export let kind: ButtonKind = 'no-border'
-  export let size: ButtonSize = 'small'
-  export let justify: 'left' | 'center' = 'center'
-  export let width: string | undefined = undefined
-  export let labelDirection: TooltipAlignment | undefined = undefined
-  export let focusIndex = -1
-
+  export let placeholder: IntlString | undefined = undefined
   export let withSearch: boolean = true
 
-  let container: HTMLElement
-  let opened: boolean = false
+  export let icon: Asset | AnySvelteComponent | undefined = undefined
+  export let type: ButtonBaseType = 'type-button'
+  export let kind: ButtonBaseKind = 'secondary'
+  export let size: ButtonBaseSize = 'small'
+  export let disabled: boolean = false
+  export let focusIndex = -1
+  export let tooltip: LabelAndProps | undefined = undefined
 
   const dispatch = createEventDispatcher()
   const mgr = getFocusManager()
+
+  let container: HTMLElement | undefined
+  let opened: boolean = false
+
+  $: buttonTitle = placeholder === undefined ? undefined : selected?.label
+  $: buttonLabel = selected?.label === undefined ? placeholder : undefined
+
+  function handleClick () {
+    if (!opened) {
+      opened = true
+      showPopup(DropdownPopup, { items, icon, withSearch }, container, (result) => {
+        if (result) {
+          selected = result
+          dispatch('selected', result)
+        }
+        opened = false
+        mgr?.setFocusPos(focusIndex)
+      })
+    }
+  }
 </script>
 
 <div bind:this={container} class="min-w-0">
-  <Button
-    {focusIndex}
-    icon={icon !== undefined ? selected?.icon ?? icon : undefined}
+  <ButtonBase
+    {icon}
     iconProps={selected?.iconProps}
-    width={width ?? 'min-content'}
-    {size}
+    title={buttonTitle}
+    label={buttonLabel}
+    {type}
     {kind}
-    {justify}
+    {size}
     {disabled}
-    showTooltip={{ label, direction: labelDirection }}
-    on:click={() => {
-      if (!opened) {
-        opened = true
-        showPopup(DropdownPopup, { title: label, items, icon, withSearch }, container, (result) => {
-          if (result) {
-            selected = result
-            dispatch('selected', result)
-          }
-          opened = false
-          mgr?.setFocusPos(focusIndex)
-        })
-      }
-    }}
-  >
-    <span slot="content" class="overflow-label disabled">
-      {#if selected}{selected.label}{:else}<Label label={placeholder} />{/if}
-    </span>
-  </Button>
+    {focusIndex}
+    {tooltip}
+    on:click={handleClick}
+  />
 </div>

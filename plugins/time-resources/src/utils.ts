@@ -1,6 +1,9 @@
-import { type Client, type Ref } from '@hcengineering/core'
-import { type DefSeparators } from '@hcengineering/ui'
-import time, { type WorkSlot, type ToDo } from '@hcengineering/time'
+import type { Client, Ref } from '@hcengineering/core'
+import type { DefSeparators } from '@hcengineering/ui'
+import type { WorkSlot, ToDo } from '@hcengineering/time'
+import time from '@hcengineering/time'
+
+export * from './types'
 
 export function getNearest (events: WorkSlot[]): WorkSlot | undefined {
   const now = Date.now()

@@ -518,19 +518,25 @@
   align-items: flex-start;
   gap: var(--spacing-1);
   margin: 0;
-  padding: var(--spacing-1) var(--spacing-1_5) var(--spacing-1) var(--spacing-0_75);
+  padding: var(--spacing-0_75) var(--spacing-1) var(--spacing-0_75) var(--spacing-0_75);
   width: 100%;
   min-width: 0;
-  min-height: var(--global-medium-Size);
   color: var(--global-secondary-TextColor);
   border: none;
   border-radius: var(--medium-BorderRadius);
   outline: none;
-  
-  &.small {
-    max-height: var(--global-max-Size);
+
+  &.isDone {
+    .hulyToDoLine-top-align {
+      color: var(--global-tertiary-TextColor);
+      text-decoration: line-through;
+    }
   }
 
+  .hulyToDoLine-statusPriority {
+    display: flex;
+    gap: var(--spacing-0_25);
+  }
   .hulyToDoLine-dragbox,
   .hulyToDoLine-checkbox {
     display: flex;
@@ -570,7 +576,7 @@
     }
   }
   .hulyToDoLine-top-align {
-    color: var(--global-secondary-TextColor);
+    color: var(--global-primary-TextColor);
 
     &.top-12 {
       padding-top: 0.25rem;

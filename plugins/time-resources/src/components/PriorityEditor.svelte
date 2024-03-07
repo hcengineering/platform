@@ -13,59 +13,79 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { translate } from '@hcengineering/platform'
-  import { ButtonKind, Dropdown, ListItem, themeStore } from '@hcengineering/ui'
-  import { ToDoPriority } from '@hcengineering/time'
+  import { ButtonBaseKind, Dropdown, ListItem, themeStore } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import { ToDoPriority } from '@hcengineering/time'
+  import { translate } from '@hcengineering/platform'
+  import { todoPriorities } from '../utils'
+  import Priority from './icons/Priority.svelte'
   import time from '../plugin'
 
   export let value: ToDoPriority = ToDoPriority.NoPriority
-  export let kind: ButtonKind | undefined = 'regular'
+  export let kind: ButtonBaseKind | undefined = 'secondary'
   export let onChange: (value: ToDoPriority) => void = () => {}
+
+  const dispatch = createEventDispatcher()
 
   let items: ListItem[] = []
 
-  $: fill($themeStore.language)
-
-  async function fill (lang: string) {
+  async function fillItems (lang: string) {
     items = [
       {
         _id: ToDoPriority.NoPriority.toString(),
         label: await translate(time.string.NoPriority, {}, lang),
-        icon: time.icon.Flag
+        icon: Priority,
+        iconProps: {
+          size: 'small',
+          value: ToDoPriority.NoPriority
+        }
+      },
+      {
+        _id: ToDoPriority.Urgent.toString(),
+        label: await translate(time.string.UrgentPriority, {}, lang),
+        icon: Priority,
+        iconProps: {
+          size: 'small',
+          value: ToDoPriority.Urgent
+        }
       },
       {
         _id: ToDoPriority.High.toString(),
         label: await translate(time.string.HighPriority, {}, lang),
-        icon: time.icon.FilledFlag,
+        icon: Priority,
         iconProps: {
-          fill: '#F96E50'
+          size: 'small',
+          value: ToDoPriority.High
         }
       },
       {
         _id: ToDoPriority.Medium.toString(),
         label: await translate(time.string.MediumPriority, {}, lang),
-        icon: time.icon.FilledFlag,
+        icon: Priority,
         iconProps: {
-          fill: '#FFCD6B'
+          size: 'small',
+          value: ToDoPriority.Medium
         }
       },
       {
         _id: ToDoPriority.Low.toString(),
         label: await translate(time.string.LowPriority, {}, lang),
-        icon: time.icon.FilledFlag,
+        icon: Priority,
         iconProps: {
-          fill: '#0084FF'
+          size: 'small',
+          value: ToDoPriority.Low
         }
       }
     ]
   }
 
+  $: fillItems($themeStore.language)
   $: selected = items.find((item) => item._id === value.toString())
+  $: selectedLabel = selected ? todoPriorities[Number(selected?._id)].label : time.string.NoPriority
 
-  const dispatch = createEventDispatcher()
+  $: icon = selected?._id === ToDoPriority.NoPriority.toString() ? time.icon.Flag : selected?.icon
 
-  function change (val: string) {
+  function handleSelected (val: string) {
     const priority = parseInt(val)
     if (priority !== value) {
       dispatch('change', priority)
@@ -76,14 +96,15 @@
 </script>
 
 <Dropdown
-  icon={time.icon.Flag}
+  type={'type-button-icon'}
+  size={'small'}
+  {icon}
   {kind}
-  size={'medium'}
-  placeholder={time.string.NoPriority}
   {items}
   {selected}
   withSearch={false}
+  tooltip={{ label: selectedLabel, direction: 'bottom' }}
   on:selected={(e) => {
-    change(e.detail._id)
+    handleSelected(e.detail._id)
   }}
 />

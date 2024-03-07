@@ -58,7 +58,8 @@ export enum ToDoPriority {
   High,
   Medium,
   Low,
-  NoPriority
+  NoPriority,
+  Urgent
 }
 
 /**

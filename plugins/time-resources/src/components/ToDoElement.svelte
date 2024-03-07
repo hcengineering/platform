@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { SortingOrder } from '@hcengineering/core'
+  import { SortingOrder, WithLookup } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
   import {
@@ -19,11 +19,12 @@
   import { createEventDispatcher } from 'svelte'
   import plugin from '../plugin'
   import EditToDo from './EditToDo.svelte'
-  import PriorityPresenter from './PriorityPresenter.svelte'
   import ToDoDuration from './ToDoDuration.svelte'
   import WorkItemPresenter from './WorkItemPresenter.svelte'
+  import ToDoCheckbox from './ToDoCheckbox.svelte'
+  import ToDoPriority from './ToDoPriority.svelte'
 
-  export let todo: ToDo
+  export let todo: WithLookup<ToDo>
   export let size: 'small' | 'large' = 'small'
   export let planned: boolean = true
   export let draggable: boolean = true
@@ -79,11 +80,13 @@
   }
 
   $: isTodo = todo.attachedTo === time.ids.NotAttached
+  $: isDone = todo.doneOn != null
 </script>
 
 <button
   class="hulyToDoLine-container {size}"
   class:hovered
+  class:isDone
   class:isDrag
   on:click|stopPropagation={open}
   on:contextmenu={(e) => {
@@ -104,27 +107,32 @@
       <button class="hulyToDoLine-dragbox" class:isNew on:contextmenu={onMenuClick}>
         <Icon icon={IconMoreV2} size={'small'} />
       </button>
-      <div class="hulyToDoLine-checkbox" class:updating>
-        {#if updating !== undefined}
-          <Spinner size={'small'} />
-        {:else}
-          <CheckBox on:value={markDone} checked={todo.doneOn != null} kind={'todo'} size={'medium'} />
+      <div class="hulyToDoLine-statusPriority">
+        <div class="hulyToDoLine-checkbox" class:updating>
+          {#if updating !== undefined}
+            <Spinner size={'small'} />
+          {:else}
+            <ToDoCheckbox checked={isDone} priority={todo.priority} on:value={markDone} />
+          {/if}
+        </div>
+        {#if size === 'small'}
+          <ToDoPriority value={todo.priority} muted={isDone} />
         {/if}
       </div>
     </div>
     {#if isTodo}
       {#if size === 'small'}
-        <div class="hulyToDoLine-top-align top-12 text-left font-regular-14 secondary-textColor overflow-label">
+        <div class="hulyToDoLine-top-align top-12 text-left font-regular-14 overflow-label">
           {todo.title}
         </div>
       {:else}
         <div class="flex-col flex-gap-1 flex-grow text-left">
-          <div class="hulyToDoLine-top-align top-12 text-left font-regular-14 secondary-textColor">
+          <div class="hulyToDoLine-top-align top-12 text-left font-regular-14">
             {todo.title}
           </div>
           <div class="flex-row-center flex-grow flex-gap-2">
             <Component is={tags.component.LabelsPresenter} props={{ object: todo, value: todo.labels, kind: 'todo' }} />
-            <PriorityPresenter value={todo.priority} />
+            <ToDoPriority value={todo.priority} muted={isDone} showLabel />
           </div>
         </div>
       {/if}
@@ -143,7 +151,7 @@
                 is={tags.component.LabelsPresenter}
                 props={{ object: todo, value: todo.labels, kind: 'todo' }}
               />
-              <PriorityPresenter value={todo.priority} />
+              <ToDoPriority value={todo.priority} muted={isDone} showLabel />
             </div>
           {/if}
         </WorkItemPresenter>
@@ -157,12 +165,18 @@
           is={tags.component.LabelsPresenter}
           props={{ object: todo, value: todo.labels, kind: 'todo-compact' }}
         />
-        <PriorityPresenter value={todo.priority} />
       </div>
     {/if}
+  </div>
+  <div class="flex flex-no-shrink flex-gap-3 pl-2">
     {#if events.length > 0}
       <span class="hulyToDoLine-top-align top-12 font-regular-12 secondary-textColor">
         <ToDoDuration {events} />
+      </span>
+    {/if}
+    {#if todo.dueDate}
+      <span class="hulyToDoLine-top-align top-12 font-regular-12 secondary-textColor">
+        {new Date(todo.dueDate).toLocaleDateString('default', { month: 'short', day: 'numeric' })}
       </span>
     {/if}
   </div>
