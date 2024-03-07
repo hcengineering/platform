@@ -15,7 +15,7 @@
 
 import { type Attachment } from '@hcengineering/attachment'
 import { type Class, type Doc, type Ref, TxOperations, DOMAIN_TX, getCollaborativeDoc } from '@hcengineering/core'
-import { type Document } from '@hcengineering/document'
+import { type Document, type Teamspace } from '@hcengineering/document'
 import {
   type MigrateOperation,
   type MigrationClient,
@@ -23,7 +23,8 @@ import {
   tryMigrate
 } from '@hcengineering/model'
 import { DOMAIN_ATTACHMENT } from '@hcengineering/model-attachment'
-import core from '@hcengineering/model-core'
+import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
+import { type Asset } from '@hcengineering/platform'
 import document, { documentId, DOMAIN_DOCUMENT } from './index'
 
 async function createSpace (tx: TxOperations): Promise<void> {
@@ -159,6 +160,30 @@ async function migrateDeleteCollaboratorDocument (client: MigrationClient): Prom
   })
 }
 
+async function migrateDocumentIcons (client: MigrationClient): Promise<void> {
+  await client.update<Teamspace>(
+    DOMAIN_SPACE,
+    {
+      _class: document.class.Teamspace,
+      icon: 'document:icon:Library' as Asset
+    },
+    {
+      icon: 'document:icon:Teamspace' as Asset
+    }
+  )
+
+  await client.update<Document>(
+    DOMAIN_DOCUMENT,
+    {
+      _class: document.class.Document,
+      icon: 'document:icon:Library' as Asset
+    },
+    {
+      icon: 'document:icon:Teamspace' as Asset
+    }
+  )
+}
+
 async function setNoParent (client: MigrationClient): Promise<void> {
   await client.update(
     DOMAIN_DOCUMENT,
@@ -232,6 +257,10 @@ export const documentOperation: MigrateOperation = {
       {
         state: 'deleteCollaboratorDocument',
         func: migrateDeleteCollaboratorDocument
+      },
+      {
+        state: 'updateDocumentIcons',
+        func: migrateDocumentIcons
       }
     ])
   },
