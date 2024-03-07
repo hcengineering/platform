@@ -149,7 +149,7 @@
       background-color: transparent;
 
       &:focus-within {
-        background-color: var(--button-secondary-hover-BackgroundColor);
+        border-radius: 0.25rem;
         box-shadow: 0 0 0 0.125rem var(--global-focus-inset-BorderColor);
         outline: 0.125rem solid var(--global-focus-BorderColor);
         outline-offset: 0.125rem;

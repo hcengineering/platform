@@ -163,7 +163,7 @@
     await descriptionBox.createAttachments()
 
     if (_comment.trim().length > 0) {
-      await client.addCollection(chunter.class.Comment, _space, doc._id, recruit.class.Applicant, 'comments', {
+      await client.addCollection(chunter.class.ChatMessage, _space, doc._id, recruit.class.Applicant, 'comments', {
         message: _comment
       })
     }

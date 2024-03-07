@@ -337,4 +337,68 @@ test.describe('Tracker filters tests', () => {
       }
     })
   })
+
+  test('Modified by filter', async ({ page }) => {
+    const modifierName = 'Appleseed John'
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    await leftSideMenuPage.buttonTracker.click()
+
+    const issuesPage = new IssuesPage(page)
+    await issuesPage.modelSelectorAll.click()
+
+    await issuesPage.selectFilter('Modified by', modifierName)
+    await issuesPage.inputSearch.press('Escape')
+    await issuesPage.checkFilter('Modified by', 'is')
+
+    for await (const issue of iterateLocator(issuesPage.issuesList)) {
+      await issue.locator('span.list > a').click()
+
+      const issuesDetailsPage = new IssuesDetailsPage(page)
+      await expect(issuesDetailsPage.buttonCreatedBy).toHaveText(modifierName)
+
+      await issuesDetailsPage.buttonCloseIssue.click()
+    }
+  })
+
+  test('Milestone filter', async ({ page }) => {
+    const filterMilestoneName = 'Filter Milestone'
+    const milestoneIssue: NewIssue = {
+      title: `Issue for the Milestone filter-${generateId()}`,
+      description: 'Issue for the Milestone filter',
+      milestone: filterMilestoneName
+    }
+
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    await leftSideMenuPage.buttonTracker.click()
+
+    const issuesPage = new IssuesPage(page)
+    await issuesPage.modelSelectorAll.click()
+    await issuesPage.createNewIssue(milestoneIssue)
+
+    await test.step('Check Milestone filter for Filter Milestone', async () => {
+      await issuesPage.selectFilter('Milestone', filterMilestoneName)
+      await issuesPage.inputSearch.press('Escape')
+      await issuesPage.checkFilter('Milestone', 'is', '1 state')
+
+      for await (const issue of iterateLocator(issuesPage.issuesList)) {
+        await expect(issue.locator('div.compression-bar button span.label')).toContainText(filterMilestoneName)
+      }
+    })
+
+    await test.step('Check Milestone filter for Not selected', async () => {
+      await issuesPage.buttonClearFilters.click()
+      await issuesPage.selectFilter('Milestone', 'Not selected')
+      await issuesPage.inputSearch.press('Escape')
+      await issuesPage.checkFilter('Milestone', 'is', '1 state')
+
+      for await (const issue of iterateLocator(issuesPage.issuesList)) {
+        await issue.locator('span.list > a').click()
+
+        const issuesDetailsPage = new IssuesDetailsPage(page)
+        await expect(issuesDetailsPage.buttonMilestone).toHaveText('Milestone')
+
+        await issuesDetailsPage.buttonCloseIssue.click()
+      }
+    })
+  })
 })

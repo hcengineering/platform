@@ -52,7 +52,7 @@ export async function connect (title: string): Promise<Client | undefined> {
   }
   const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
   let token = tokens[ws]
-  if (token === undefined) {
+  if (token === undefined && getMetadata(presentation.metadata.Token) !== undefined) {
     const selectWorkspace = await getResource(login.function.SelectWorkspace)
     const loginInfo = (await selectWorkspace(ws))[1]
     if (loginInfo !== undefined) {
@@ -67,11 +67,11 @@ export async function connect (title: string): Promise<Client | undefined> {
 
   const endpoint = fetchMetadataLocalStorage(login.metadata.LoginEndpoint)
   const email = fetchMetadataLocalStorage(login.metadata.LoginEmail)
-
   if (token === undefined || endpoint === null || email === null) {
+    const navigateUrl = encodeURIComponent(JSON.stringify(loc))
     navigate({
       path: [loginId],
-      query: { navigateUrl: encodeURIComponent(JSON.stringify(loc)) }
+      query: { navigateUrl }
     })
     return
   }

@@ -22,12 +22,21 @@ import ActivityInfoMessagePresenter from './components/activity-message/Activity
 import ReactionPresenter from './components/reactions/ReactionPresenter.svelte'
 import ReactionNotificationPresenter from './components/reactions/ReactionNotificationPresenter.svelte'
 import ActivityMessageNotificationLabel from './components/activity-message/ActivityMessageNotificationLabel.svelte'
+import ActivityReferencePresenter from './components/activity-reference/ActivityReferencePresenter.svelte'
 
-import { getMessageFragment, attributesFilter, pinnedFilter, allFilter } from './activityMessagesUtils'
+import {
+  getMessageFragment,
+  attributesFilter,
+  pinnedFilter,
+  allFilter,
+  referencesFilter
+} from './activityMessagesUtils'
+import { updateReferences } from './references'
 
 export * from './activity'
 export * from './utils'
 export * from './activityMessagesUtils'
+export * from './references'
 
 export { default as Reactions } from './components/reactions/Reactions.svelte'
 export { default as ActivityMessageTemplate } from './components/activity-message/ActivityMessageTemplate.svelte'
@@ -40,6 +49,7 @@ export { default as ActivityMessageHeader } from './components/activity-message/
 export { default as AddReactionAction } from './components/reactions/AddReactionAction.svelte'
 export { default as ActivityMessageAction } from './components/ActivityMessageAction.svelte'
 export { default as ActivityMessagesFilterPopup } from './components/FilterPopup.svelte'
+export { default as ActivityReferencePresenter } from './components/activity-reference/ActivityReferencePresenter.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -49,14 +59,19 @@ export default async (): Promise<Resources> => ({
     ReactionPresenter,
     ActivityInfoMessagePresenter,
     ReactionNotificationPresenter,
-    ActivityMessageNotificationLabel
+    ActivityMessageNotificationLabel,
+    ActivityReferencePresenter
   },
   filter: {
     AttributesFilter: attributesFilter,
     PinnedFilter: pinnedFilter,
-    AllFilter: allFilter
+    AllFilter: allFilter,
+    ReferencesFilter: referencesFilter
   },
   function: {
     GetFragment: getMessageFragment
+  },
+  backreference: {
+    Update: updateReferences
   }
 })

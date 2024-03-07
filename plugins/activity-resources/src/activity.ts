@@ -75,3 +75,5 @@ export function loadSavedMessages (): void {
     }, 50)
   }
 }
+
+loadSavedMessages()

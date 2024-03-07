@@ -15,12 +15,10 @@
 
 import activity, { type ActivityMessage } from '@hcengineering/activity'
 import {
-  type Backlink,
   type Channel,
   chunterId,
   type ChunterMessage,
   type ChunterMessageExtension,
-  type Comment,
   type DirectMessage,
   type Message,
   type DirectMessageInput,
@@ -63,17 +61,16 @@ import core, { TAttachedDoc, TClass, TDoc, TSpace } from '@hcengineering/model-c
 import notification from '@hcengineering/model-notification'
 import view, { createAction, actionTemplates as viewTemplates } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
-import chunter from './plugin'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
-import { TypeBoolean } from '@hcengineering/model'
 import type { IntlString, Resource } from '@hcengineering/platform'
 import { TActivityMessage } from '@hcengineering/model-activity'
+
+import chunter from './plugin'
 
 export { chunterId } from '@hcengineering/chunter'
 export { chunterOperation } from './migration'
 
 export const DOMAIN_CHUNTER = 'chunter' as Domain
-export const DOMAIN_COMMENT = 'comment' as Domain
 
 @Model(chunter.class.ChunterSpace, core.class.Space)
 export class TChunterSpace extends TSpace implements ChunterSpace {
@@ -133,30 +130,6 @@ export class TMessage extends TChunterMessage implements Message {
 
   @Prop(TypeTimestamp(), activity.string.LastReply)
     lastReply?: Timestamp
-}
-
-@Model(chunter.class.Comment, core.class.AttachedDoc, DOMAIN_COMMENT)
-@UX(chunter.string.Comment, undefined, 'COM')
-export class TComment extends TAttachedDoc implements Comment {
-  @Prop(TypeMarkup(), chunter.string.Message)
-  @Index(IndexKind.FullText)
-    message!: string
-
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
-    attachments?: number
-
-  @Prop(Collection(activity.class.Reaction), activity.string.Reactions)
-    reactions?: number
-
-  @Prop(TypeBoolean(), chunter.string.PinMessage)
-    pinned?: boolean
-}
-
-@Model(chunter.class.Backlink, chunter.class.Comment)
-@UX(chunter.string.Reference, chunter.icon.Chunter)
-export class TBacklink extends TComment implements Backlink {
-  backlinkId!: Ref<Doc>
-  backlinkClass!: Ref<Class<Doc>>
 }
 
 @Mixin(chunter.mixin.DirectMessageInput, core.class.Class)
@@ -227,8 +200,6 @@ export function createModel (builder: Builder, options = { addApplication: true 
     TMessage,
     TChunterMessage,
     TChunterMessageExtension,
-    TComment,
-    TBacklink,
     TDirectMessage,
     TDirectMessageInput,
     TChatMessage,
@@ -442,12 +413,6 @@ export function createModel (builder: Builder, options = { addApplication: true 
     chunter.action.CopyChatMessageLink
   )
 
-  builder.createDoc(activity.class.ActivityMessagesFilter, core.space.Model, {
-    label: chunter.string.FilterBacklinks,
-    position: 60,
-    filter: chunter.filter.BacklinksFilter
-  })
-
   builder.mixin(chunter.class.ChunterMessage, core.class.Class, view.mixin.ClassFilters, {
     filters: ['space', '_class']
   })
@@ -464,29 +429,6 @@ export function createModel (builder: Builder, options = { addApplication: true 
       icon: chunter.icon.Chunter
     },
     chunter.ids.ChunterNotificationGroup
-  )
-
-  builder.createDoc(
-    notification.class.NotificationType,
-    core.space.Model,
-    {
-      label: chunter.string.MentionNotification,
-      generated: false,
-      hidden: false,
-      txClasses: [core.class.TxCreateDoc],
-      objectClass: chunter.class.Backlink,
-      group: chunter.ids.ChunterNotificationGroup,
-      providers: {
-        [notification.providers.EmailNotification]: true,
-        [notification.providers.PlatformNotification]: true
-      },
-      templates: {
-        textTemplate: '{sender} mentioned you in {doc} {data}',
-        htmlTemplate: '<p>{sender}</b> mentioned you in {doc}</p> {data}',
-        subjectTemplate: 'You were mentioned in {doc}'
-      }
-    },
-    chunter.ids.MentionNotification
   )
 
   builder.createDoc(
@@ -544,43 +486,6 @@ export function createModel (builder: Builder, options = { addApplication: true 
       group: chunter.ids.ChunterNotificationGroup
     },
     chunter.ids.ThreadNotification
-  )
-
-  builder.createDoc(
-    activity.class.DocUpdateMessageViewlet,
-    core.space.Model,
-    {
-      objectClass: chunter.class.Backlink,
-      action: 'create',
-      component: chunter.component.BacklinkContent,
-      labelComponent: chunter.activity.BacklinkCreatedLabel,
-      hideIfRemoved: true
-    },
-    chunter.ids.BacklinkCreatedActivityViewlet
-  )
-
-  builder.createDoc(
-    activity.class.DocUpdateMessageViewlet,
-    core.space.Model,
-    {
-      objectClass: chunter.class.Backlink,
-      action: 'update',
-      component: chunter.component.BacklinkContent,
-      labelComponent: chunter.activity.BacklinkCreatedLabel,
-      hideIfRemoved: true
-    },
-    chunter.ids.BacklinkUpdateActivityViewlet
-  )
-
-  builder.createDoc(
-    activity.class.DocUpdateMessageViewlet,
-    core.space.Model,
-    {
-      objectClass: chunter.class.Backlink,
-      action: 'remove',
-      hideIfRemoved: true
-    },
-    chunter.ids.BacklinkRemovedActivityViewlet
   )
 
   createAction(builder, {
@@ -679,6 +584,11 @@ export function createModel (builder: Builder, options = { addApplication: true 
     components: { input: chunter.component.ChatMessageInput }
   })
 
+  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
+    ofClass: activity.class.ActivityReference,
+    components: { input: chunter.component.ChatMessageInput }
+  })
+
   builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
     ofMessage: chunter.class.ChatMessage,
     components: [{ kind: 'footer', component: chunter.component.Replies }]
@@ -695,6 +605,11 @@ export function createModel (builder: Builder, options = { addApplication: true 
   })
 
   builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
+    ofMessage: activity.class.ActivityReference,
+    components: [{ kind: 'footer', component: chunter.component.Replies }]
+  })
+
+  builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
     ofMessage: chunter.class.ChatMessage,
     components: [{ kind: 'action', component: chunter.component.ReplyToThreadAction }]
   })
@@ -706,6 +621,11 @@ export function createModel (builder: Builder, options = { addApplication: true 
 
   builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
     ofMessage: activity.class.ActivityInfoMessage,
+    components: [{ kind: 'action', component: chunter.component.ReplyToThreadAction }]
+  })
+
+  builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
+    ofMessage: activity.class.ActivityReference,
     components: [{ kind: 'action', component: chunter.component.ReplyToThreadAction }]
   })
 

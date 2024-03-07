@@ -28,7 +28,6 @@
 
   import { NavigatorModel, SpecialNavModel } from '@hcengineering/workbench'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
-  import { loadSavedMessages } from '@hcengineering/activity-resources'
   import { onMount } from 'svelte'
 
   import ChatNavigator from './navigator/ChatNavigator.svelte'
@@ -118,7 +117,6 @@
   ])
 
   onMount(() => {
-    loadSavedMessages()
     loadSavedAttachments()
   })
 </script>
