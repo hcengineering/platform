@@ -16,7 +16,7 @@
   import { Class, Doc, Ref } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
-  import { TagCategory, TagElement } from '@hcengineering/tags'
+  import { findTagCategory, TagCategory, TagElement } from '@hcengineering/tags'
   import {
     Button,
     EditWithIcon,
@@ -36,6 +36,7 @@
   import CreateTagElement from './CreateTagElement.svelte'
   import IconView from './icons/View.svelte'
   import IconViewHide from './icons/ViewHide.svelte'
+  import { createTagElement } from '../utils'
 
   export let newElements: TagElement[] = []
   export let targetClass: Ref<Class<Doc>>
@@ -52,6 +53,7 @@
   let objects: TagElement[] = []
   let categories: TagCategory[] = []
   let isSingleCategory = true
+  let inProcess = false
 
   const dispatch = createEventDispatcher()
   const query = createQuery()
@@ -67,22 +69,24 @@
     objects = newElements.concat(result)
   })
 
-  async function onCreateTagElement (res: any) {
+  async function onCreateTagElement (res: any): Promise<void> {
     if (res === null) return
     setTimeout(() => {
       const tag = objects.findLast(e => e._id === res)
       if (tag === undefined) return
       selected = [...selected, tag._id]
       dispatch('update', { action: 'add', tag })
+      inProcess = false
     }, 1)
   }
 
   async function createTagElementPopup (): Promise<void> {
-    showPopup(CreateTagElement, { targetClass, prefillTitle: search }, 'top', onCreateTagElement)
+    showPopup(CreateTagElement, { targetClass, title: search }, 'top', onCreateTagElement)
   }
 
   async function createTagElementQuick (): Promise<void> {
-    showPopup(CreateTagElement, { targetClass, prefillTitle: search, quick: true }, 'top', onCreateTagElement)
+    const res = await createTagElement(search, targetClass, findTagCategory(search, categories))
+    await onCreateTagElement(res)
   }
 
   const isSelected = (selected: Ref<TagElement>[], element: TagElement): boolean => {
@@ -108,7 +112,7 @@
     if (count > 0) return count.toString()
     return ''
   }
-  const tagSort = (a: TagElement, b: TagElement) => {
+  const tagSort = (a: TagElement, b: TagElement): number => {
     const r = (b.refCount ?? 0) - (a.refCount ?? 0)
     if (r === 0) {
       return b.title.localeCompare(a.title)
@@ -118,10 +122,10 @@
 
   async function onSearchKeydown (ev: KeyboardEvent): Promise<void> {
     if (ev.code !== 'Enter') return
-    if (objects.length < 1) {
+    if (!inProcess && objects.length < 1) {
+      inProcess = true
       await createTagElementQuick()
       ev.preventDefault()
-      return
     }
     // TODO add first element or group?
   }

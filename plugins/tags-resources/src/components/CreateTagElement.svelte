@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Data, Doc, generateId, Ref } from '@hcengineering/core'
-  import { Card, createQuery, getClient } from '@hcengineering/presentation'
-  import { findTagCategory, TagCategory, TagElement } from '@hcengineering/tags'
+  import { Class, Doc, Ref } from '@hcengineering/core'
+  import { Card, createQuery } from '@hcengineering/presentation'
+  import { findTagCategory, TagCategory } from '@hcengineering/tags'
   import {
     Button,
     DropdownLabels,
@@ -31,16 +31,14 @@
   import { ColorsPopup } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tags from '../plugin'
-  import { getTagStyle } from '../utils'
+  import { createTagElement, getTagStyle } from '../utils'
 
   export let targetClass: Ref<Class<Doc>>
   export let keyTitle: string = ''
-  export let prefillTitle: string = ''
-  export let quick: boolean = false
+  export let title: string = ''
 
-  let title: string = prefillTitle
   let description = ''
-  let color: number = 0
+  let color: number = getColorNumberByText(title)
 
   let categoryWasSet = false
   let category: Ref<TagCategory> | undefined
@@ -54,13 +52,8 @@
     color = getColorNumberByText(title)
   }
 
-  $: {
-    if (!categoryWasSet && categories.length > 0) {
-      category = findTagCategory(title, categories)
-      if (quick) { // TODO dirty solution, move all logic to separate class
-        void createTagElement()
-      }
-    }
+  $: if (!categoryWasSet && categories.length > 0) {
+    category = findTagCategory(title, categories)
   }
 
   export function canClose (): boolean {
@@ -68,8 +61,6 @@
   }
 
   const dispatch = createEventDispatcher()
-  const client = getClient()
-  const tagElementId = generateId()
 
   const query = createQuery()
 
@@ -85,19 +76,12 @@
     categoryItems = newItems
   })
 
-  async function createTagElement () {
-    const tagElement: Data<TagElement> = {
-      title,
-      description,
-      targetClass,
-      color,
-      category: category ?? tags.category.NoCategory
-    }
-
-    const res = await client.createDoc(tags.class.TagElement, tags.space.Tags, tagElement, tagElementId)
+  async function createTagElementFnc (): Promise<void> {
+    const res = await createTagElement(title, targetClass, category, description, color)
     dispatch('close', res)
   }
-  const showColorPopup = (evt: MouseEvent) => {
+
+  const showColorPopup = (evt: MouseEvent): void => {
     showPopup(
       ColorsPopup,
       { selected: getPlatformColorDef(color, $themeStore.dark).name },
@@ -115,7 +99,7 @@
 <Card
   label={tags.string.AddTag}
   labelProps={{ word: keyTitle }}
-  okAction={createTagElement}
+  okAction={createTagElementFnc}
   canSave={title.length > 0}
   on:close={() => {
     dispatch('close')
