@@ -21,10 +21,7 @@ import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { type EditorView } from '@tiptap/pm/view'
 import { setPlatformStatus, unknownError } from '@hcengineering/platform'
 
-/**
- * @public
- */
-export type FileAttachFunction = (file: File) => Promise<{ file: string, type: string } | undefined>
+import { type FileAttachFunction } from './types'
 
 /**
  * @public

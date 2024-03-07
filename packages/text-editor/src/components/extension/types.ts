@@ -13,8 +13,7 @@
 // limitations under the License.
 //
 
-export * from './image'
-export * from './reference'
-export * from './todo'
-export * from './file'
-export { getDataAttribute } from './utils'
+/**
+ * @public
+ */
+export type FileAttachFunction = (file: File) => Promise<{ file: string, type: string } | undefined>

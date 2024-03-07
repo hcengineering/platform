@@ -14,7 +14,6 @@
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import type { AnyExtension } from '@tiptap/core'
-  import { Node as ProseMirrorNode } from '@tiptap/pm/model'
 
   import { Completion } from '../Completion'
   import textEditorPlugin from '../plugin'
@@ -23,7 +22,8 @@
   import { completionConfig } from './extensions'
   import { EmojiExtension } from './extension/emoji'
   import { FocusExtension } from './extension/focus'
-  import { ImageExtension, FileAttachFunction } from './extension/imageExt'
+  import { ImageExtension } from './extension/imageExt'
+  import { type FileAttachFunction } from './extension/types'
   import { RefAction } from '../types'
 
   export let label: IntlString | undefined = undefined
@@ -156,16 +156,11 @@
     }
   }
 
-  const attachments = new Map<string, ProseMirrorNode>()
-
   /**
    * @public
    */
   export function removeAttachment (id: string): void {
-    const nde = attachments.get(id)
-    if (nde !== undefined) {
-      textEditor.removeNode(nde)
-    }
+    textEditor.removeAttachment(id)
   }
 
   function configureExtensions (): AnyExtension[] {
@@ -173,9 +168,6 @@
       inline: true,
       HTMLAttributes: {},
       attachFile,
-      reportNode: (id, node) => {
-        attachments.set(id, node)
-      },
       uploadUrl: getMetadata(presentation.metadata.UploadURL)
     })
 

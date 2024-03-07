@@ -19,7 +19,7 @@
   import { registerFocus } from '@hcengineering/ui'
   import CollaborativeTextEditor from './CollaborativeTextEditor.svelte'
   import { FocusExtension } from './extension/focus'
-  import { FileAttachFunction } from './extension/imageExt'
+  import { type FileAttachFunction } from './extension/types'
   import textEditorPlugin from '../plugin'
   import { DocumentId } from '../provider/tiptap'
   import { collaborativeDocumentId, mongodbDocumentId, platformDocumentId } from '../provider/utils'
@@ -39,6 +39,10 @@
 
   export function isFocused (): boolean {
     return editor?.isFocused() ?? false
+  }
+
+  export function removeAttachment (id: string): void {
+    return editor?.removeAttachment(id)
   }
 
   let editor: CollaborativeTextEditor
@@ -120,6 +124,7 @@
   {boundary}
   {readonly}
   field={key.key}
+  canEmbedFiles={false}
   on:focus
   on:blur
   on:update

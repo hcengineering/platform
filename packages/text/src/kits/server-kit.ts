@@ -23,6 +23,7 @@ import TaskItem from '@tiptap/extension-task-item'
 import TaskList from '@tiptap/extension-task-list'
 
 import { NodeUuid } from '../marks/nodeUuid'
+import { FileNode, FileOptions } from '../nodes/file'
 import { ImageNode, ImageOptions } from '../nodes/image'
 import { ReferenceNode } from '../nodes/reference'
 import { TodoItemNode, TodoListNode } from '../nodes/todo'
@@ -54,13 +55,18 @@ const taskListExtensions = [
 ]
 
 export interface ServerKitOptions extends DefaultKitOptions {
-  image: Partial<ImageOptions>
+  file: Partial<FileOptions> | false
+  image: Partial<ImageOptions> | false
 }
 
 export const ServerKit = Extension.create<ServerKitOptions>({
   name: 'serverKit',
 
   addExtensions () {
+    const fileExtensions = this.options.file !== false ? [FileNode.configure(this.options.file)] : []
+
+    const imageExtensions = this.options.image !== false ? [ImageNode.configure(this.options.image)] : []
+
     return [
       DefaultKit.configure({
         ...this.options,
@@ -70,7 +76,8 @@ export const ServerKit = Extension.create<ServerKitOptions>({
       }),
       ...tableExtensions,
       ...taskListExtensions,
-      ImageNode.configure(this.options.image),
+      ...fileExtensions,
+      ...imageExtensions,
       TodoItemNode,
       TodoListNode,
       ReferenceNode,
