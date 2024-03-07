@@ -79,7 +79,7 @@
     lessCrop
   />
   <div class="heading-medium-20 p-4">
-    <Label label={getEmbeddedLabel('Workspace Logo')} />
+    <Label label={setting.string.WorkspaceLogo} />
   </div>
 </div>
 

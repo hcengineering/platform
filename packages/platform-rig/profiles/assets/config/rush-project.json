@@ -32,6 +32,10 @@
         "outputFolderNames": ["types", ".validate"]
       },
       {
+        "operationName": "_phase:validate",
+        "outputFolderNames": ["types", ".validate"]
+      },
+      {
         "operationName": "_phase:bundle",
         "outputFolderNames": ["bundle"],
         "disableBuildCacheForOperation": true

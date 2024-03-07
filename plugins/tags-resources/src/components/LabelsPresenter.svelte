@@ -3,7 +3,7 @@
   import { createQuery } from '@hcengineering/presentation'
   import type { TagReference } from '@hcengineering/tags'
   import tags from '@hcengineering/tags'
-  import { Chip, getEventPopupPositionElement, resizeObserver, showPopup, tooltip } from '@hcengineering/ui'
+  import { getEventPopupPositionElement, resizeObserver, showPopup, tooltip } from '@hcengineering/ui'
   import { afterUpdate, createEventDispatcher } from 'svelte'
   import TagReferencePresenter from './TagReferencePresenter.svelte'
   import TagsReferencePresenter from './TagsReferencePresenter.svelte'
@@ -82,15 +82,15 @@
   {#if items.length > 1}
     <div class="flex-row-top flex-wrap flex-gap-0-5">
       <TagReferencePresenter attr={undefined} value={items[0]} kind={'todo'} />
-      <Chip
-        label={`+${items.length - 1}`}
-        size={'min'}
-        backgroundColor={'var(--tag-subtle-PorpoiseBackground)'}
-        tooltip={{
+      <div
+        class="todoLabel-plus-container font-medium-11"
+        use:tooltip={{
           component: LabelsPresenter,
           props: { value, object, isEditable, kind: 'todo', ignoreFirst: true }
         }}
-      />
+      >
+        +{items.length - 1}
+      </div>
     </div>
   {:else if items.length === 1}
     <TagReferencePresenter attr={undefined} value={items[0]} kind={'todo'} />
@@ -121,6 +121,12 @@
 {/if}
 
 <style lang="scss">
+  .todoLabel-plus-container {
+    padding: var(--spacing-0_25) var(--spacing-0_75);
+    color: var(--tag-on-subtle-PorpoiseText);
+    background-color: var(--tag-subtle-PorpoiseBackground);
+    border-radius: var(--extra-small-BorderRadius);
+  }
   .labels-container {
     overflow: hidden;
     display: flex;

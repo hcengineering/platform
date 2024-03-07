@@ -37,7 +37,14 @@ export function registerProviders (
   }
 
   app.keys = [serverSecret]
-  app.use(session({}, app))
+  app.use(
+    session(
+      {
+        domain: accountsUrl.split('.', 2)[1]
+      },
+      app
+    )
+  )
 
   app.use(passport.initialize())
   app.use(passport.session())
