@@ -23,7 +23,7 @@
     EmployeePresenter
   } from '@hcengineering/contact-resources'
   import core, { Doc, getDisplayTime, Ref } from '@hcengineering/core'
-  import { translate } from '@hcengineering/platform'
+  import { IntlString, translate } from '@hcengineering/platform'
   import { createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
   import notification, { CommonInboxNotification } from '@hcengineering/notification'
   import { ActionIcon, IconMoreH, Label, showPopup } from '@hcengineering/ui'
@@ -61,13 +61,15 @@
       object = result[0]
     })
 
-  $: void translate(value.message, value.props)
-    .then((message) => {
-      content = message
-    })
-    .catch((err) => {
-      content = JSON.stringify(err, null, 2)
-    })
+  $: void updateContent(value.message, value.messageHtml)
+
+  async function updateContent (message?: IntlString, messageHtml?: string): Promise<void> {
+    if (messageHtml !== undefined) {
+      content = messageHtml
+    } else if (message !== undefined) {
+      content = await translate(message, value.props)
+    }
+  }
 
   function handleActionMenuOpened (): void {
     isActionMenuOpened = true

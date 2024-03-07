@@ -12,7 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import notification, { NotificationContent, NotificationType } from '@hcengineering/notification'
+import notification, {
+  BaseNotificationType,
+  CommonNotificationType,
+  NotificationContent,
+  NotificationProvider,
+  NotificationType
+} from '@hcengineering/notification'
 import type { TriggerControl } from '@hcengineering/server-core'
 import core, {
   Account,
@@ -28,11 +34,16 @@ import core, {
   TxMixin,
   TxUpdateDoc
 } from '@hcengineering/core'
-import serverNotification, { getPersonAccountById, NotificationPresenter } from '@hcengineering/server-notification'
+import serverNotification, {
+  getPersonAccountById,
+  HTMLPresenter,
+  NotificationPresenter,
+  TextPresenter
+} from '@hcengineering/server-notification'
 import { getResource, IntlString } from '@hcengineering/platform'
 import contact, { formatName, Person, PersonAccount } from '@hcengineering/contact'
-import { getTextPresenter, isAllowed, NotifyResult } from './index'
 import { DocUpdateMessage } from '@hcengineering/activity'
+import { NotifyResult } from './types'
 
 /**
  * @public
@@ -94,7 +105,60 @@ async function findPersonForAccount (control: TriggerControl, personId: Ref<Pers
   return undefined
 }
 
-export async function isShouldNotify (
+export async function shouldNotifyCommon (
+  control: TriggerControl,
+  user: Ref<Account>,
+  typeId: Ref<CommonNotificationType>
+): Promise<NotifyResult> {
+  const type = (await control.modelDb.findAll(notification.class.CommonNotificationType, { _id: typeId }))[0]
+
+  const emailTypes: BaseNotificationType[] = []
+  let allowed = false
+
+  if (type === undefined) {
+    return { allowed, emails: emailTypes }
+  }
+
+  if (await isAllowed(control, user as Ref<PersonAccount>, type._id, notification.providers.PlatformNotification)) {
+    allowed = true
+  }
+  if (await isAllowed(control, user as Ref<PersonAccount>, type._id, notification.providers.EmailNotification)) {
+    emailTypes.push(type)
+  }
+
+  return { allowed, emails: emailTypes }
+}
+
+export async function isAllowed (
+  control: TriggerControl,
+  receiver: Ref<PersonAccount>,
+  typeId: Ref<BaseNotificationType>,
+  providerId: Ref<NotificationProvider>
+): Promise<boolean> {
+  const setting = (
+    await control.findAll(
+      notification.class.NotificationSetting,
+      {
+        attachedTo: providerId,
+        type: typeId,
+        modifiedBy: receiver
+      },
+      { limit: 1 }
+    )
+  )[0]
+  if (setting !== undefined) {
+    return setting.enabled
+  }
+  const type = (
+    await control.modelDb.findAll(notification.class.BaseNotificationType, {
+      _id: typeId
+    })
+  )[0]
+  if (type === undefined) return false
+  return type.providers[providerId] ?? false
+}
+
+export async function isShouldNotifyTx (
   control: TriggerControl,
   tx: TxCUD<Doc>,
   originTx: TxCUD<Doc>,
@@ -231,6 +295,14 @@ export async function updateNotifyContextsSpace (
 
 export function isMixinTx (tx: TxCUD<Doc>): tx is TxMixin<Doc, Doc> {
   return tx._class === core.class.TxMixin
+}
+
+export function getHTMLPresenter (_class: Ref<Class<Doc>>, hierarchy: Hierarchy): HTMLPresenter | undefined {
+  return hierarchy.classHierarchyMixin(_class, serverNotification.mixin.HTMLPresenter)
+}
+
+export function getTextPresenter (_class: Ref<Class<Doc>>, hierarchy: Hierarchy): TextPresenter | undefined {
+  return hierarchy.classHierarchyMixin(_class, serverNotification.mixin.TextPresenter)
 }
 
 async function getFallbackNotificationFullfillment (

@@ -30,7 +30,7 @@ import {
   TypeString,
   UX
 } from '@hcengineering/model'
-import chunter, { TComment } from '@hcengineering/model-chunter'
+import chunter, { TChatMessage } from '@hcengineering/model-chunter'
 import core, { TAttachedDoc, TClass } from '@hcengineering/model-core'
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 import view from '@hcengineering/model-view'
@@ -77,7 +77,7 @@ export class TRequest extends TAttachedDoc implements Request {
 }
 
 @Mixin(request.mixin.RequestDecisionComment, chunter.class.ChatMessage)
-export class TRequestDecisionComment extends TComment implements RequestDecisionComment {}
+export class TRequestDecisionComment extends TChatMessage implements RequestDecisionComment {}
 
 @Mixin(request.mixin.RequestPresenter, core.class.Class)
 export class TRequestPresenter extends TClass implements RequestPresenter {

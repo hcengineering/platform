@@ -227,9 +227,7 @@ export async function combineActivityMessages (
   const client = getClient()
   const uncombinedMessages = messages.filter((message) => message._class !== activity.class.DocUpdateMessage)
 
-  const docUpdateMessages = combineByCreateThreshold(
-    messages.filter((message): message is DocUpdateMessage => message._class === activity.class.DocUpdateMessage)
-  )
+  const docUpdateMessages = combineByCreateThreshold(messages.filter(isDocUpdateMessage))
 
   if (docUpdateMessages.length === 0) {
     return sortActivityMessages(uncombinedMessages, sortingOrder)
@@ -472,6 +470,10 @@ function getAttributeUpdatesKey (message: DocUpdateMessage): string {
   return [attrKey, attrClass, isMixin].join('-')
 }
 
+export function referencesFilter (message: ActivityMessage, _class?: Ref<Doc>): boolean {
+  return message._class === activity.class.ActivityReference
+}
+
 export function attributesFilter (message: ActivityMessage, _class?: Ref<Doc>): boolean {
   if (message._class === activity.class.DocUpdateMessage) {
     return (message as DocUpdateMessage).objectClass === _class
@@ -548,14 +550,22 @@ export async function getMessageFragment (doc: Doc): Promise<string> {
   return `${label}-${doc._id}`
 }
 
-export function isReactionMessage (message?: ActivityMessage): message is DocUpdateMessage {
+function isDocUpdateMessage (message?: ActivityMessage): message is DocUpdateMessage {
   if (message === undefined) {
     return false
   }
 
-  if (message._class !== activity.class.DocUpdateMessage) {
+  return message._class === activity.class.DocUpdateMessage
+}
+
+export function isReactionMessage (message?: ActivityMessage): boolean {
+  if (message === undefined) {
     return false
   }
 
-  return (message as DocUpdateMessage).objectClass === activity.class.Reaction
+  if (!isDocUpdateMessage(message)) {
+    return false
+  }
+
+  return message.objectClass === activity.class.Reaction
 }

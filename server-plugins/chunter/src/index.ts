@@ -28,7 +28,6 @@ export const serverChunterId = 'server-chunter' as Plugin
  */
 export default plugin(serverChunterId, {
   trigger: {
-    BacklinkTrigger: '' as Resource<TriggerFunc>,
     ChunterTrigger: '' as Resource<TriggerFunc>,
     OnDirectMessageSent: '' as Resource<TriggerFunc>,
     OnChatMessageRemoved: '' as Resource<TriggerFunc>,
@@ -41,7 +40,6 @@ export default plugin(serverChunterId, {
     IsDirectMessage: '' as TypeMatchFunc,
     IsChannelMessage: '' as TypeMatchFunc,
     IsThreadMessage: '' as TypeMatchFunc,
-    IsMeMentioned: '' as TypeMatchFunc,
     ChunterNotificationContentProvider: '' as Resource<NotificationContentProvider>
   }
 })

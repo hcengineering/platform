@@ -16,10 +16,10 @@
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { Ref } from '@hcengineering/core'
   import type {
+    BaseNotificationType,
     NotificationGroup,
     NotificationPreferencesGroup,
-    NotificationSetting,
-    NotificationType
+    NotificationSetting
   } from '@hcengineering/notification'
   import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -51,7 +51,7 @@
     groups = res
   })
 
-  let settings = new Map<Ref<NotificationType>, NotificationSetting[]>()
+  let settings = new Map<Ref<BaseNotificationType>, NotificationSetting[]>()
 
   const query = createQuery()
 

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { NotificationType } from '@hcengineering/notification'
+import { BaseNotificationType } from '@hcengineering/notification'
 
 /**
  * @public
@@ -28,5 +28,5 @@ export interface Content {
  */
 export interface NotifyResult {
   allowed: boolean
-  emails: NotificationType[]
+  emails: BaseNotificationType[]
 }
