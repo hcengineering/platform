@@ -412,6 +412,24 @@ export async function unpinDocNotifyContext (object: DocNotifyContext): Promise<
   })
 }
 
+export async function archiveAll (): Promise<void> {
+  const client = InboxNotificationsClientImpl.getClient()
+
+  await client.deleteAllNotifications()
+}
+
+export async function readAll (): Promise<void> {
+  const client = InboxNotificationsClientImpl.getClient()
+
+  await client.readAllNotifications()
+}
+
+export async function unreadAll (): Promise<void> {
+  const client = InboxNotificationsClientImpl.getClient()
+
+  await client.unreadAllNotifications()
+}
+
 export async function getDisplayInboxNotifications (
   notificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>,
   filter: InboxNotificationsFilter = 'all',

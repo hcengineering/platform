@@ -34,7 +34,6 @@
     Location,
     IconDropdown,
     ButtonWithDropdown,
-    IconCheckAll,
     showPopup
   } from '@hcengineering/ui'
   import chunter, { ThreadMessage } from '@hcengineering/chunter'
@@ -275,7 +274,11 @@
     void inboxClient.readAllNotifications()
   }
 
-  async function dropdownItemSelected (id: 'archive' | 'read'): Promise<void> {
+  function unreadAll (): void {
+    void inboxClient.unreadAllNotifications()
+  }
+
+  async function dropdownItemSelected (id: 'archive' | 'read' | 'unread'): Promise<void> {
     if (id == null) return
 
     if (id === 'archive') {
@@ -284,6 +287,10 @@
 
     if (id === 'read') {
       readAll()
+    }
+
+    if (id === 'unread') {
+      unreadAll()
     }
   }
 </script>
@@ -318,14 +325,19 @@
               <ButtonWithDropdown
                 justify="left"
                 kind="regular"
-                label={notification.string.ReadAll}
-                icon={IconCheckAll}
+                label={notification.string.MarkReadAll}
+                icon={notification.icon.ReadAll}
                 on:click={readAll}
                 dropdownItems={[
                   {
                     id: 'read',
-                    icon: IconCheckAll,
-                    label: notification.string.ReadAll
+                    icon: notification.icon.ReadAll,
+                    label: notification.string.MarkReadAll
+                  },
+                  {
+                    id: 'unread',
+                    icon: notification.icon.UnreadAll,
+                    label: notification.string.MarkUnreadAll
                   },
                   {
                     id: 'archive',
