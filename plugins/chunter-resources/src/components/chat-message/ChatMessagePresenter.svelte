@@ -48,6 +48,7 @@
   export let withShowMore: boolean = true
   export let attachmentImageSize: AttachmentImageSize = 'auto'
   export let showLinksPreview = true
+  export let videoPreload = true
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
 
@@ -193,7 +194,7 @@
           <ShowMore>
             <div class="clear-mins">
               <MessageViewer message={value.message} />
-              <AttachmentDocList {value} {attachments} imageSize={attachmentImageSize} />
+              <AttachmentDocList {value} {attachments} imageSize={attachmentImageSize} {videoPreload} />
               {#each links as link}
                 <LinkPresenter {link} />
               {/each}
@@ -202,7 +203,7 @@
         {:else}
           <div class="clear-mins">
             <MessageViewer message={value.message} />
-            <AttachmentDocList {value} {attachments} imageSize={attachmentImageSize} />
+            <AttachmentDocList {value} {attachments} imageSize={attachmentImageSize} {videoPreload} />
             {#each links as link}
               <LinkPresenter {link} />
             {/each}

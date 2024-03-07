@@ -19,6 +19,7 @@
   import AttachmentPresenter from './AttachmentPresenter.svelte'
 
   export let value: Attachment
+  export let preload = true
 
   const maxSizeRem = 20
   const baseSizeRem = 12
@@ -55,7 +56,7 @@
   }
 </script>
 
-<video controls width={dimensions.width} height={dimensions.height}>
+<video controls width={dimensions.width} height={dimensions.height} preload={preload ? 'auto' : 'none'}>
   <source src={getFileUrl(value.file, 'full', value.name)} />
   <track kind="captions" label={value.name} />
   <div class="container">

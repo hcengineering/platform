@@ -37,6 +37,7 @@
   export let withShowMore: boolean = true
   export let attachmentImageSize: 'x-large' | undefined = undefined
   export let showLinksPreview = true
+  export let videoPreload = true
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
 
@@ -68,6 +69,7 @@
       withShowMore,
       attachmentImageSize,
       showLinksPreview,
+      videoPreload,
       onClick,
       onReply
     }}
