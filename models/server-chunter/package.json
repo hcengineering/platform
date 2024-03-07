@@ -36,6 +36,7 @@
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/chunter": "^0.6.12",
     "@hcengineering/notification": "^0.6.16",
-    "@hcengineering/server-notification": "^0.6.1"
+    "@hcengineering/server-notification": "^0.6.1",
+    "@hcengineering/activity": "^0.6.0"
   }
 }

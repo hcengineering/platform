@@ -14,44 +14,47 @@
 //
 
 import { Class, Doc, Ref } from '@hcengineering/core'
-import { getBacklinks } from '../backlinks'
+
+import { getReferencesData } from '../references'
 
 describe('extractBacklinks', () => {
-  it('should return no backlinks for empty document', () => {
+  it('should return no references for empty document', () => {
     const content = '<p></p>'
-
-    const backlinks = getBacklinks(
-      'backlinkId' as Ref<Doc>,
-      'backlinkClass' as Ref<Class<Doc>>,
+    const references = getReferencesData(
+      'srcDocId' as Ref<Doc>,
+      'srcDocClass' as Ref<Class<Doc>>,
       'attachedDocId' as Ref<Doc>,
+      'attachedDocClass' as Ref<Class<Doc>>,
       content
     )
 
-    expect(backlinks).toEqual([])
+    expect(references).toEqual([])
   })
 
   it('should parse single backlink', () => {
     const content =
       '<p>hello <span class="reference" data-type="reference" data-id="id" data-objectclass="contact:class:Person" data-label="Appleseed John">@Appleseed John</span> </p>'
 
-    const backlinks = getBacklinks(
-      'backlinkId' as Ref<Doc>,
-      'backlinkClass' as Ref<Class<Doc>>,
+    const references = getReferencesData(
+      'srcDocId' as Ref<Doc>,
+      'srcDocClass' as Ref<Class<Doc>>,
       'attachedDocId' as Ref<Doc>,
+      'attachedDocClass' as Ref<Class<Doc>>,
       content
     )
 
-    expect(backlinks.length).toBe(1)
-    expect(backlinks).toEqual([
+    expect(references.length).toBe(1)
+    expect(references).toEqual([
       {
         attachedTo: 'id',
         attachedToClass: 'contact:class:Person',
-        collection: 'backlinks',
-        backlinkId: 'backlinkId',
-        backlinkClass: 'backlinkClass',
+        collection: 'references',
+        srcDocId: 'srcDocId',
+        srcDocClass: 'srcDocClass',
         message:
           'hello <span data-type="reference" data-id="id" data-objectclass="contact:class:Person" data-label="Appleseed John" class="reference">@Appleseed John</span>',
-        attachedDocId: 'attachedDocId'
+        attachedDocId: 'attachedDocId',
+        attachedDocClass: 'attachedDocClass'
       }
     ])
   })
@@ -60,13 +63,14 @@ describe('extractBacklinks', () => {
     const content =
       '<p><span class="reference" data-type="reference" data-id="id" data-label="Appleseed John" data-objectclass="contact:class:Person">@Appleseed John</span> <span data-type="reference" class="reference" data-id="id" data-label="Appleseed John" data-objectclass="contact:class:Person">@Appleseed John</span> </p>'
 
-    const backlinks = getBacklinks(
-      'backlinkId' as Ref<Doc>,
-      'backlinkClass' as Ref<Class<Doc>>,
+    const references = getReferencesData(
+      'srcDocId' as Ref<Doc>,
+      'srcDocClass' as Ref<Class<Doc>>,
       'attachedDocId' as Ref<Doc>,
+      'attachedDocClass' as Ref<Class<Doc>>,
       content
     )
 
-    expect(backlinks.length).toBe(1)
+    expect(references.length).toBe(1)
   })
 })

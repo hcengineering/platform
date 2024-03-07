@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2021 Anticrm Platform Contributors.
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,22 +13,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Backlink } from '@hcengineering/chunter'
   import { createQuery, MessageViewer } from '@hcengineering/presentation'
   import { Ref } from '@hcengineering/core'
+  import activity, { ActivityReference } from '@hcengineering/activity'
 
-  import chunter from '../plugin'
-
-  export let _id: Ref<Backlink> | undefined = undefined
-  export let value: Backlink | undefined = undefined
+  export let _id: Ref<ActivityReference> | undefined = undefined
+  export let value: ActivityReference | undefined = undefined
 
   const query = createQuery()
 
-  $: value === undefined &&
-    _id &&
-    query.query(chunter.class.Backlink, { _id }, (res) => {
-      value = res[0]
+  $: if (value === undefined && _id !== undefined) {
+    query.query(activity.class.ActivityReference, { _id }, (res) => {
+      value = res.shift()
     })
+  } else {
+    query.unsubscribe()
+  }
 </script>
 
 {#if value}

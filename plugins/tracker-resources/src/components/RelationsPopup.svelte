@@ -1,10 +1,11 @@
 <script lang="ts">
-  import chunter from '@hcengineering/chunter'
   import { Class, Doc, Ref, RelatedDocument } from '@hcengineering/core'
   import { getResource, IntlString } from '@hcengineering/platform'
   import { createQuery, getClient, ObjectSearchPopup, ObjectSearchResult } from '@hcengineering/presentation'
   import { Issue } from '@hcengineering/tracker'
   import { Action, closePopup, Menu, showPopup } from '@hcengineering/ui'
+  import activity from '@hcengineering/activity'
+
   import { updateIssueRelation } from '../issues'
   import tracker from '../plugin'
 
@@ -40,7 +41,7 @@
 
       return
     }
-    const update = await getResource(chunter.backreference.Update)
+    const update = await getResource(activity.backreference.Update)
 
     let docs: RelatedDocument[] = []
     let label: IntlString = tracker.string.RemoveRelation

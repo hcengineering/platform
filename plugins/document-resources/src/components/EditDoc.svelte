@@ -56,7 +56,7 @@
   import DocumentEditor from './DocumentEditor.svelte'
   import DocumentPresenter from './DocumentPresenter.svelte'
   import DocumentTitle from './DocumentTitle.svelte'
-  import Backlinks from './sidebar/Backlinks.svelte'
+  import References from './sidebar/References.svelte'
   import History from './sidebar/History.svelte'
 
   export let _id: Ref<Document>
@@ -182,8 +182,8 @@
 
   const aside: ButtonItem[] = [
     {
-      id: 'backlinks',
-      icon: document.icon.Backlinks
+      id: 'references',
+      icon: document.icon.References
     },
     {
       id: 'history',
@@ -339,8 +339,8 @@
     </div>
 
     <svelte:fragment slot="aside">
-      {#if selectedAside === 'backlinks'}
-        <Backlinks doc={doc._id} />
+      {#if selectedAside === 'references'}
+        <References doc={doc._id} />
       {:else if selectedAside === 'history'}
         <History value={doc} {readonly} />
       {/if}
