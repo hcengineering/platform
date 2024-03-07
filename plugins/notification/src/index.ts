@@ -204,11 +204,6 @@ export const notificationId = 'notification' as Plugin
 /**
  * @public
  */
-export const inboxId = 'inbox' as Plugin
-
-/**
- * @public
- */
 export interface NotificationPreview extends Class<Doc> {
   presenter: AnyComponent
 }

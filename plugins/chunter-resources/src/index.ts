@@ -20,7 +20,7 @@ import { type Resources } from '@hcengineering/platform'
 import { MessageBox, getClient } from '@hcengineering/presentation'
 import { closePanel, getCurrentLocation, getLocation, navigate, showPopup } from '@hcengineering/ui'
 import { type ActivityMessage } from '@hcengineering/activity'
-import notification, { type DocNotifyContext, inboxId } from '@hcengineering/notification'
+import notification, { type DocNotifyContext, notificationId } from '@hcengineering/notification'
 
 import ChannelPresenter from './components/ChannelPresenter.svelte'
 import ChannelView from './components/ChannelView.svelte'
@@ -201,7 +201,7 @@ export async function replyToThread (message: ActivityMessage): Promise<void> {
     return
   }
 
-  if (loc.path[2] !== inboxId) {
+  if (loc.path[2] !== notificationId) {
     loc.path[2] = chunterId
   }
 
