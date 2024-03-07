@@ -122,7 +122,7 @@ export class IssuesPage extends CommonTrackerPage {
     }
     if (data.milestone != null) {
       await this.buttonPopupCreateNewIssueMilestone.click()
-      await this.selectMenuItem(this.page, data.milestone)
+      await this.selectAssignee(this.page, data.milestone)
     }
     if (data.duedate != null) {
       await this.buttonPopupCreateNewIssueDuedate.click()
