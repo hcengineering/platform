@@ -14,7 +14,6 @@
 //
 
 import chunter, {
-  Backlink,
   Channel,
   ChatMessage,
   chunterId,
@@ -37,7 +36,6 @@ import core, {
   TxCollectionCUD,
   TxCreateDoc,
   TxCUD,
-  TxFactory,
   TxProcessor,
   TxRemoveDoc,
   TxUpdateDoc
@@ -53,17 +51,9 @@ import {
 import { workbenchId } from '@hcengineering/workbench'
 import { stripTags } from '@hcengineering/text'
 import { Person, PersonAccount } from '@hcengineering/contact'
-import activity, { ActivityMessage } from '@hcengineering/activity'
+import activity, { ActivityMessage, ActivityReference } from '@hcengineering/activity'
 
-import {
-  getCreateBacklinksTxes,
-  getRemoveBacklinksTxes,
-  getUpdateBacklinksTxes,
-  guessBacklinkTx,
-  isMarkupType,
-  isCollaborativeType
-} from './backlinks'
-import { IsChannelMessage, IsDirectMessage, IsMeMentioned, IsThreadMessage } from './utils'
+import { IsChannelMessage, IsDirectMessage, IsThreadMessage } from './utils'
 
 /**
  * @public
@@ -101,9 +91,10 @@ export async function CommentRemove (
   }
 
   const chatMessage = doc as ChatMessage
-  return await findAll(chunter.class.Backlink, {
-    backlinkId: chatMessage.attachedTo,
-    backlinkClass: chatMessage.attachedToClass,
+
+  return await findAll(activity.class.ActivityReference, {
+    srcDocId: chatMessage.attachedTo,
+    srcDocClass: chatMessage.attachedToClass,
     attachedDocId: chatMessage._id
   })
 }
@@ -254,99 +245,6 @@ async function OnThreadMessageDeleted (tx: Tx, control: TriggerControl): Promise
   return [updateTx]
 }
 
-async function BacklinksCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const ctx = TxProcessor.extractTx(tx) as TxCreateDoc<Doc>
-
-  if (ctx._class !== core.class.TxCreateDoc) return []
-  if (control.hierarchy.isDerived(ctx.objectClass, chunter.class.Backlink)) return []
-
-  control.storageFx(async (adapter) => {
-    const txFactory = new TxFactory(control.txFactory.account)
-
-    const doc = TxProcessor.createDoc2Doc(ctx)
-    const targetTx = guessBacklinkTx(control.hierarchy, tx as TxCUD<Doc>)
-    const txes: Tx[] = await getCreateBacklinksTxes(
-      control,
-      adapter,
-      txFactory,
-      doc,
-      targetTx.objectId,
-      targetTx.objectClass
-    )
-
-    if (txes.length !== 0) {
-      await control.apply(txes, true)
-    }
-  })
-
-  return []
-}
-
-async function BacklinksUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const ctx = TxProcessor.extractTx(tx) as TxUpdateDoc<Doc>
-
-  let hasUpdates = false
-  const attributes = control.hierarchy.getAllAttributes(ctx.objectClass)
-  for (const attr of attributes.values()) {
-    if (isMarkupType(attr.type._class) || isCollaborativeType(attr.type._class)) {
-      if (TxProcessor.txHasUpdate(ctx, attr.name)) {
-        hasUpdates = true
-        break
-      }
-    }
-  }
-
-  if (hasUpdates) {
-    const rawDoc = (await control.findAll(ctx.objectClass, { _id: ctx.objectId }))[0]
-
-    if (rawDoc !== undefined) {
-      control.storageFx(async (adapter) => {
-        const txFactory = new TxFactory(control.txFactory.account)
-        const doc = TxProcessor.updateDoc2Doc(rawDoc, ctx)
-        const targetTx = guessBacklinkTx(control.hierarchy, tx as TxCUD<Doc>)
-        const txes: Tx[] = await getUpdateBacklinksTxes(
-          control,
-          adapter,
-          txFactory,
-          doc,
-          targetTx.objectId,
-          targetTx.objectClass
-        )
-
-        if (txes.length !== 0) {
-          await control.apply(txes, true)
-        }
-      })
-    }
-  }
-
-  return []
-}
-
-async function BacklinksRemove (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const ctx = TxProcessor.extractTx(tx) as TxRemoveDoc<Doc>
-
-  let hasMarkdown = false
-  const attributes = control.hierarchy.getAllAttributes(ctx.objectClass)
-  for (const attr of attributes.values()) {
-    if (isMarkupType(attr.type._class)) {
-      hasMarkdown = true
-      break
-    }
-  }
-
-  if (hasMarkdown) {
-    const txFactory = new TxFactory(control.txFactory.account)
-
-    const txes: Tx[] = await getRemoveBacklinksTxes(control, txFactory, ctx.objectId)
-    if (txes.length !== 0) {
-      await control.apply(txes, true)
-    }
-  }
-
-  return []
-}
-
 /**
  * @public
  */
@@ -429,27 +327,6 @@ export async function OnDirectMessageSent (originTx: Tx, control: TriggerControl
   return res
 }
 
-/**
- * @public
- */
-export async function BacklinkTrigger (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const result: Tx[] = []
-
-  const ctx = TxProcessor.extractTx(tx) as TxCreateDoc<Doc>
-  if (control.hierarchy.isDerived(ctx.objectClass, chunter.class.Backlink)) return []
-
-  if (ctx._class === core.class.TxCreateDoc) {
-    result.push(...(await BacklinksCreate(tx, control)))
-  }
-  if (ctx._class === core.class.TxUpdateDoc) {
-    result.push(...(await BacklinksUpdate(tx, control)))
-  }
-  if (ctx._class === core.class.TxRemoveDoc) {
-    result.push(...(await BacklinksRemove(tx, control)))
-  }
-  return result
-}
-
 const NOTIFICATION_BODY_SIZE = 50
 
 /**
@@ -468,8 +345,8 @@ export async function getChunterNotificationContent (_: Doc, tx: TxCUD<Doc>): Pr
       if (ptx.tx.objectClass === chunter.class.ChatMessage) {
         const createTx = ptx.tx as TxCreateDoc<ChatMessage>
         message = createTx.attributes.message
-      } else if (ptx.tx.objectClass === chunter.class.Backlink) {
-        const createTx = ptx.tx as TxCreateDoc<Backlink>
+      } else if (ptx.tx.objectClass === activity.class.ActivityReference) {
+        const createTx = ptx.tx as TxCreateDoc<ActivityReference>
         message = createTx.attributes.message
       }
     }
@@ -580,7 +457,6 @@ async function OnChannelMembersChanged (tx: TxUpdateDoc<Channel>, control: Trigg
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
-    BacklinkTrigger,
     ChunterTrigger,
     OnDirectMessageSent,
     OnChatMessageRemoved,
@@ -593,7 +469,6 @@ export default async () => ({
     ChunterNotificationContentProvider: getChunterNotificationContent,
     IsDirectMessage,
     IsThreadMessage,
-    IsMeMentioned,
     IsChannelMessage
   }
 })

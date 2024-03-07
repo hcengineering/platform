@@ -26,7 +26,7 @@ loadMetadata(document.icon, {
   Videofile: `${icons}#videofile`,
   Library: `${icons}#library`,
   Teamspace: `${icons}#teamspace`,
-  Backlinks: `${icons}#backlinks`,
+  References: `${icons}#references`,
   History: `${icons}#history`,
   Star: `${icons}#star`,
   Starred: `${icons}#starred`

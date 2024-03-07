@@ -6,6 +6,8 @@
   import { Issue } from '@hcengineering/tracker'
   import { Component, Icon, IconClose, navigate } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import activity from '@hcengineering/activity'
+
   import { issueLinkFragmentProvider, updateIssueRelation } from '../../issues'
   import tracker from '../../plugin'
 
@@ -43,7 +45,7 @@
       await updateIssueRelation(client, issueDoc, value, prop, '$pull')
     }
 
-    const update = await getResource(chunter.backreference.Update)
+    const update = await getResource(activity.backreference.Update)
 
     let docs: RelatedDocument[] = []
     let label: IntlString = tracker.string.RemoveRelation

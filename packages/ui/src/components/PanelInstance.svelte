@@ -23,7 +23,7 @@
   import type { AnySvelteComponent, PopupOptions, DeviceOptions } from '../types'
   import Spinner from './Spinner.svelte'
 
-  export let contentPanel: HTMLElement
+  export let contentPanel: HTMLElement | undefined
   export let kind: 'default' | 'modern' = 'default'
   export let embedded: boolean = false
   export let readonly: boolean = false
@@ -106,34 +106,39 @@
   }
 
   const _update = (): void => {
-    if (props) {
+    if (props && contentPanel) {
       fitPopup(props, contentPanel)
     }
   }
 
   const checkResize = (el: Element) => {
-    if (props) fitPopup(props, contentPanel)
-  }
-
-  afterUpdate(() => {
-    if (props) fitPopup(props, contentPanel)
-    if (!keepSize && props?.element === 'content' && contentPanel !== undefined) {
-      keepSize = true
-      resizeObserver(contentPanel, checkResize)
-    }
-  })
-  export function fitPopupInstance (): void {
-    if (props) fitPopup(props, contentPanel)
+    if (props && contentPanel) fitPopup(props, contentPanel)
   }
 
   onMount(() => {
-    if (props) fitPopup(props, contentPanel)
+    if (props && contentPanel) fitPopup(props, contentPanel)
   })
+
+  afterUpdate(() => {
+    if (props && contentPanel) fitPopup(props, contentPanel)
+  })
+
+  $: if (props && contentPanel !== undefined) {
+    fitPopup(props, contentPanel)
+    if (!keepSize && props?.element === 'content') {
+      keepSize = true
+      resizeObserver(contentPanel, checkResize)
+    }
+  }
+
+  export function fitPopupInstance (): void {
+    if (props && contentPanel) fitPopup(props, contentPanel)
+  }
 </script>
 
 <svelte:window
   on:resize={() => {
-    if (props) fitPopup(props, contentPanel)
+    if (props && contentPanel) fitPopup(props, contentPanel)
   }}
   on:keydown={(evt) => {
     if (props) handleKeydown(evt)

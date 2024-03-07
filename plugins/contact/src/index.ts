@@ -300,6 +300,9 @@ export const contactPlugin = plugin(contactId, {
     ContactName: '' as Ref<TemplateField>,
     ContactFirstName: '' as Ref<TemplateField>,
     ContactLastName: '' as Ref<TemplateField>
+  },
+  ids: {
+    MentionCommonNotificationType: '' as Ref<Doc>
   }
 })
 

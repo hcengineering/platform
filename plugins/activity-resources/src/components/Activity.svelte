@@ -22,7 +22,6 @@
   import ActivityExtensionComponent from './ActivityExtension.svelte'
   import ActivityFilter from './ActivityFilter.svelte'
   import { combineActivityMessages } from '../activityMessagesUtils'
-  import { loadSavedMessages } from '../activity'
 
   export let object: Doc
   export let showCommenInput: boolean = true
@@ -50,9 +49,9 @@
 
     const res = activityMessagesQuery.query(
       activity.class.ActivityMessage,
-      { attachedTo: objectId },
+      { attachedTo: objectId, hidden: { $ne: true } },
       (result: ActivityMessage[]) => {
-        combineActivityMessages(result, order).then((messages) => {
+        void combineActivityMessages(result, order).then((messages) => {
           activityMessages = messages
           isLoading = false
         })
@@ -69,10 +68,6 @@
   }
 
   $: void updateActivityMessages(object._id, isNewestFirst ? SortingOrder.Descending : SortingOrder.Ascending)
-
-  onMount(() => {
-    loadSavedMessages()
-  })
 </script>
 
 <div class="antiSection-header high mt-9" class:invisible={transparent}>

@@ -30,11 +30,11 @@ export default mergeIds(activityId, activity, {
   filter: {
     AttributesFilter: '' as Resource<(message: ActivityMessage, _class?: Ref<Doc>) => boolean>,
     PinnedFilter: '' as Resource<(message: ActivityMessage, _class?: Ref<Doc>) => boolean>,
-    AllFilter: '' as Resource<(message: ActivityMessage, _class?: Ref<Doc>) => boolean>
+    AllFilter: '' as Resource<(message: ActivityMessage, _class?: Ref<Doc>) => boolean>,
+    ReferencesFilter: '' as Resource<(message: ActivityMessage, _class?: Ref<Doc>) => boolean>
   },
   ids: {
     ReactionAddedActivityViewlet: '' as Ref<DocUpdateMessageViewlet>,
-    ReactionRemovedActivityViewlet: '' as Ref<DocUpdateMessageViewlet>,
     ActivityNotificationGroup: '' as Ref<NotificationGroup>,
     AddReactionNotification: '' as Ref<NotificationType>
   },

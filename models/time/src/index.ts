@@ -158,6 +158,10 @@ export function createModel (builder: Builder): void {
     titleProvider: time.function.ToDoTitleProvider
   })
 
+  builder.mixin(time.class.ToDo, core.class.Class, view.mixin.ObjectPanel, {
+    component: time.component.EditToDo
+  })
+
   builder.createDoc(
     workbench.class.Application,
     core.space.Model,
@@ -269,14 +273,10 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
-      action: view.actionImpl.ShowPopup,
+      action: view.actionImpl.ShowPanel,
       actionProps: {
         component: time.component.EditToDo,
-        element: 'top',
-        fillProps: {
-          _object: 'object',
-          space: 'space'
-        }
+        element: 'content'
       },
       label: time.string.EditToDo,
       icon: view.icon.Edit,

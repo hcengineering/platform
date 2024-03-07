@@ -29,7 +29,7 @@ test.describe('Tracker related issue tests', () => {
       labels: `RELATED-ISSUE-${generateId()}`,
       component: 'No component',
       estimation: '12',
-      milestone: 'Milestone',
+      milestone: 'No Milestone',
       duedate: 'today'
     }
 
@@ -57,6 +57,7 @@ test.describe('Tracker related issue tests', () => {
     await issuesDetailsPage.checkIssue({
       ...newIssue,
       ...relatedIssue,
+      milestone: 'Milestone',
       estimation: '1d 4h',
       relatedIssue: 'TSK'
     })
