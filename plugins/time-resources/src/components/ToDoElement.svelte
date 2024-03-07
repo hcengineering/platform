@@ -122,12 +122,12 @@
     </div>
     {#if isTodo}
       {#if size === 'small'}
-        <div class="hulyToDoLine-top-align top-12 text-left font-regular-14 overflow-label">
+        <div class="hulyToDoLine-title hulyToDoLine-top-align top-12 text-left font-regular-14 overflow-label">
           {todo.title}
         </div>
       {:else}
         <div class="flex-col flex-gap-1 flex-grow text-left">
-          <div class="hulyToDoLine-top-align top-12 text-left font-regular-14">
+          <div class="hulyToDoLine-title hulyToDoLine-top-align top-12 text-left font-regular-14">
             {todo.title}
           </div>
           <div class="flex-row-center flex-grow flex-gap-2">
@@ -139,7 +139,7 @@
     {:else}
       <div class="flex-col flex-gap-1 flex-grow text-left">
         <div
-          class="hulyToDoLine-top-align text-left top-12 font-bold-12 secondary-textColor"
+          class="hulyToDoLine-title hulyToDoLine-top-align text-left top-12 font-bold-12 secondary-textColor"
           class:overflow-label={size === 'small'}
         >
           {todo.title}

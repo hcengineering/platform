@@ -527,7 +527,7 @@
   outline: none;
 
   &.isDone {
-    .hulyToDoLine-top-align {
+    .hulyToDoLine-title {
       color: var(--global-tertiary-TextColor);
       text-decoration: line-through;
     }
