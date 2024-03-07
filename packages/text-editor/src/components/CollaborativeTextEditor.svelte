@@ -19,13 +19,13 @@
   import presentation from '@hcengineering/presentation'
   import { Button, IconSize, Loading, themeStore } from '@hcengineering/ui'
   import { AnyExtension, Editor, FocusPosition, mergeAttributes } from '@tiptap/core'
-  import { Node as ProseMirrorNode } from '@tiptap/pm/model'
   import Collaboration, { isChangeOrigin } from '@tiptap/extension-collaboration'
   import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
   import Placeholder from '@tiptap/extension-placeholder'
   import { createEventDispatcher, getContext, onDestroy, onMount } from 'svelte'
   import { Doc as YDoc } from 'yjs'
 
+  import { deleteAttachment } from '../command/deleteAttachment'
   import { Completion } from '../Completion'
   import { textEditorCommandHandler } from '../commands'
   import { EditorKit } from '../kits/editor-kit'
@@ -120,8 +120,6 @@
   void localProvider?.loaded.then(() => (localSynced = true))
   void remoteProvider.loaded.then(() => (remoteSynced = true))
 
-  const attachments = new Map<string, ProseMirrorNode>()
-
   let editor: Editor
   let element: HTMLElement
   let textToolbarElement: HTMLElement
@@ -158,16 +156,7 @@
   }
 
   export function removeAttachment (id: string): void {
-    const node = attachments.get(id)
-    if (node !== undefined) {
-      editor.view.state.doc.descendants((n: ProseMirrorNode, pos: number): boolean => {
-        if (node === n) {
-          editor.view.dispatch(editor.view.state.tr.delete(pos, pos + 1))
-          return false
-        }
-        return true
-      })
-    }
+    editor.commands.command(deleteAttachment(id))
   }
 
   export function isEditable (): boolean {
@@ -230,10 +219,7 @@
       optionalExtensions.push(
         FileExtension.configure({
           inline: true,
-          attachFile,
-          reportNode: (id, node) => {
-            attachments.set(id, node)
-          }
+          attachFile
         })
       )
     }
@@ -242,10 +228,7 @@
         ImageExtension.configure({
           inline: true,
           attachFile,
-          uploadUrl: getMetadata(presentation.metadata.UploadURL),
-          reportNode: (id, node) => {
-            attachments.set(id, node)
-          }
+          uploadUrl: getMetadata(presentation.metadata.UploadURL)
         })
       )
     }

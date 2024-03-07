@@ -63,13 +63,9 @@ export const ServerKit = Extension.create<ServerKitOptions>({
   name: 'serverKit',
 
   addExtensions () {
-    const fileExtensions = this.options.file !== false
-      ? [FileNode.configure(this.options.file)]
-      : []
+    const fileExtensions = this.options.file !== false ? [FileNode.configure(this.options.file)] : []
 
-    const imageExtensions = this.options.image !== false
-      ? [ImageNode.configure(this.options.image)]
-      : []
+    const imageExtensions = this.options.image !== false ? [ImageNode.configure(this.options.image)] : []
 
     return [
       DefaultKit.configure({
@@ -87,15 +83,5 @@ export const ServerKit = Extension.create<ServerKitOptions>({
       ReferenceNode,
       NodeUuid
     ]
-
-    if (this.options.file !== false) {
-      extensions.push(FileNode.configure(this.options.file))
-    }
-
-    if (this.options.image !== false) {
-      extensions.push(ImageNode.configure(this.options.image))
-    }
-
-    return extensions
   }
 })

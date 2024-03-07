@@ -64,6 +64,7 @@ export { InlineStyleToolbarExtension, type InlineStyleToolbarOptions } from './c
 export { ImageExtension, type ImageOptions } from './components/extension/imageExt'
 export { TodoItemExtension, TodoListExtension } from './components/extension/todo'
 
+export * from './command/deleteAttachment'
 export {
   type DocumentId,
   TiptapCollabProvider,
