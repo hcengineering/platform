@@ -19,7 +19,7 @@
     ButtonBaseSize,
     ButtonBaseType,
     LabelAndProps,
-    ListItem,
+    ListItem
   } from '../types'
   import type { Asset, IntlString } from '@hcengineering/platform'
   import { createEventDispatcher } from 'svelte'
