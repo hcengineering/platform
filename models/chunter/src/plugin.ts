@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { ActivityMessage, DocUpdateMessageViewlet, TxViewlet } from '@hcengineering/activity'
+import type { ActivityMessage, TxViewlet } from '@hcengineering/activity'
 import { chunterId, type Channel } from '@hcengineering/chunter'
 import chunter from '@hcengineering/chunter-resources/src/plugin'
 import { type Client, type Doc, type Ref } from '@hcengineering/core'
@@ -29,8 +29,6 @@ export default mergeIds(chunterId, chunter, {
     DirectMessagePresenter: '' as AnyComponent,
     MessagePresenter: '' as AnyComponent,
     DmPresenter: '' as AnyComponent,
-    BacklinkContent: '' as AnyComponent,
-    BacklinkReference: '' as AnyComponent,
     ChannelsPanel: '' as AnyComponent,
     Chat: '' as AnyComponent,
     ChatMessageNotificationLabel: '' as AnyComponent,
@@ -68,7 +66,6 @@ export default mergeIds(chunterId, chunter, {
     PinnedMessages: '' as IntlString,
     SavedMessages: '' as IntlString,
     Emoji: '' as IntlString,
-    FilterBacklinks: '' as IntlString,
     DM: '' as IntlString,
     DMNotification: '' as IntlString,
     ConfigLabel: '' as IntlString,
@@ -81,21 +78,15 @@ export default mergeIds(chunterId, chunter, {
   },
   ids: {
     TxCommentCreate: '' as Ref<TxViewlet>,
-    TxBacklinkCreate: '' as Ref<TxViewlet>,
     TxCommentRemove: '' as Ref<TxViewlet>,
-    TxBacklinkRemove: '' as Ref<TxViewlet>,
     TxMessageCreate: '' as Ref<TxViewlet>,
     TxChatMessageCreate: '' as Ref<TxViewlet>,
     TxChatMessageRemove: '' as Ref<TxViewlet>,
-    ChunterNotificationGroup: '' as Ref<NotificationGroup>,
-    BacklinkCreatedActivityViewlet: '' as Ref<DocUpdateMessageViewlet>,
-    BacklinkUpdateActivityViewlet: '' as Ref<DocUpdateMessageViewlet>,
-    BacklinkRemovedActivityViewlet: '' as Ref<DocUpdateMessageViewlet>
+    ChunterNotificationGroup: '' as Ref<NotificationGroup>
   },
   activity: {
     TxCommentCreate: '' as AnyComponent,
-    TxMessageCreate: '' as AnyComponent,
-    BacklinkCreatedLabel: '' as AnyComponent
+    TxMessageCreate: '' as AnyComponent
   },
   space: {
     General: '' as Ref<Channel>,
@@ -111,7 +102,6 @@ export default mergeIds(chunterId, chunter, {
     GetThreadLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>
   },
   filter: {
-    BacklinksFilter: '' as Resource<(message: ActivityMessage, _class?: Ref<Doc>) => boolean>,
     ChatMessagesFilter: '' as Resource<(message: ActivityMessage, _class?: Ref<Doc>) => boolean>
   }
 })

@@ -14,13 +14,14 @@
 -->
 <script lang="ts">
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
-  import chunter, { Comment } from '@hcengineering/chunter'
+  import chunter, { ChatMessage } from '@hcengineering/chunter'
   import { PersonAccount } from '@hcengineering/contact'
   import { AttachedData, getCurrentAccount, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Request, RequestStatus } from '@hcengineering/request'
   import type { RefAction } from '@hcengineering/text-editor'
   import { Button } from '@hcengineering/ui'
+
   import request from '../plugin'
   import Comments from './icons/Comments.svelte'
   import DocFail from './icons/DocFail.svelte'
@@ -55,25 +56,32 @@
   let message: string = ''
   let attachments: number | undefined = 0
 
-  async function onUpdate (event: CustomEvent<AttachedData<Comment>>) {
+  async function onUpdate (event: CustomEvent<AttachedData<ChatMessage>>) {
     message = event.detail.message
     attachments = event.detail.attachments
   }
 
   async function saveComment (): Promise<void> {
-    const _id = await client.addCollection(chunter.class.Comment, value.space, value._id, value._class, 'comments', {
-      message,
-      attachments
-    })
+    const _id = await client.addCollection(
+      chunter.class.ChatMessage,
+      value.space,
+      value._id,
+      value._class,
+      'comments',
+      {
+        message,
+        attachments
+      }
+    )
 
-    await client.createMixin(_id, chunter.class.Comment, value.space, request.mixin.RequestDecisionComment, {})
+    await client.createMixin(_id, chunter.class.ChatMessage, value.space, request.mixin.RequestDecisionComment, {})
 
     refInput.createAttachments()
     loading = false
   }
 
   async function comment (): Promise<void> {
-    await client.addCollection(chunter.class.Comment, value.space, value._id, value._class, 'comments', {
+    await client.addCollection(chunter.class.ChatMessage, value.space, value._id, value._class, 'comments', {
       message,
       attachments
     })

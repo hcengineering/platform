@@ -14,25 +14,12 @@
 //
 
 import { get, writable } from 'svelte/store'
-import chunter, {
-  type Backlink,
-  type Channel,
-  type ChatMessage,
-  chunterId,
-  type DirectMessage
-} from '@hcengineering/chunter'
-import {
-  type Data,
-  type Doc,
-  type DocumentQuery,
-  getCurrentAccount,
-  type Ref,
-  type RelatedDocument
-} from '@hcengineering/core'
-import { type IntlString, type Resources, translate } from '@hcengineering/platform'
+import chunter, { type Channel, type ChatMessage, chunterId, type DirectMessage } from '@hcengineering/chunter'
+import { getCurrentAccount, type Ref } from '@hcengineering/core'
+import { type Resources } from '@hcengineering/platform'
 import { MessageBox, getClient } from '@hcengineering/presentation'
 import { closePanel, getCurrentLocation, getLocation, navigate, showPopup } from '@hcengineering/ui'
-import activity, { type ActivityMessage, type DocUpdateMessage } from '@hcengineering/activity'
+import { type ActivityMessage } from '@hcengineering/activity'
 import notification, { type DocNotifyContext, inboxId } from '@hcengineering/notification'
 
 import ChannelPresenter from './components/ChannelPresenter.svelte'
@@ -50,9 +37,6 @@ import EditChannel from './components/EditChannel.svelte'
 import ChannelPreview from './components/ChannelPreview.svelte'
 import ThreadView from './components/threads/ThreadView.svelte'
 import ThreadViewPanel from './components/threads/ThreadViewPanel.svelte'
-import BacklinkContent from './components/BacklinkContent.svelte'
-import BacklinkReference from './components/BacklinkReference.svelte'
-import BacklinkCreatedLabel from './components/activity/BacklinkCreatedLabel.svelte'
 import ChatMessagePresenter from './components/chat-message/ChatMessagePresenter.svelte'
 import ChatMessageInput from './components/chat-message/ChatMessageInput.svelte'
 import ChatMessagesPresenter from './components/chat-message/ChatMessagesPresenter.svelte'
@@ -70,7 +54,6 @@ import ChatAside from './components/chat/ChatAside.svelte'
 import Replies from './components/Replies.svelte'
 import ReplyToThreadAction from './components/ReplyToThreadAction.svelte'
 
-import { updateBacklinksList } from './backlinks'
 import {
   ChannelTitleProvider,
   DirectTitleProvider,
@@ -186,29 +169,6 @@ export async function chunterBrowserVisible (): Promise<boolean> {
   return false
 }
 
-async function update (source: Doc, key: string, target: RelatedDocument[], msg: IntlString): Promise<void> {
-  const message = await translate(msg, {})
-  const backlinks: Array<Data<Backlink>> = target.map((it) => ({
-    backlinkId: source._id,
-    backlinkClass: source._class,
-    attachedTo: it._id,
-    attachedToClass: it._class,
-    message,
-    collection: key
-  }))
-
-  const q: DocumentQuery<Backlink> = { backlinkId: source._id, backlinkClass: source._class, collection: key }
-
-  await updateBacklinksList(getClient(), q, backlinks)
-}
-
-export function backlinksFilter (message: ActivityMessage, _class?: Ref<Doc>): boolean {
-  if (message._class === activity.class.DocUpdateMessage) {
-    return (message as DocUpdateMessage).objectClass === chunter.class.Backlink
-  }
-  return false
-}
-
 export function chatMessagesFilter (message: ActivityMessage): boolean {
   return message._class === chunter.class.ChatMessage
 }
@@ -250,7 +210,6 @@ export async function replyToThread (message: ActivityMessage): Promise<void> {
 
 export default async (): Promise<Resources> => ({
   filter: {
-    BacklinksFilter: backlinksFilter,
     ChatMessagesFilter: chatMessagesFilter
   },
   component: {
@@ -271,8 +230,6 @@ export default async (): Promise<Resources> => ({
     EditChannel,
     ThreadView,
     SavedMessages,
-    BacklinkContent,
-    BacklinkReference,
     ChatMessagePresenter,
     ChatMessageInput,
     ChatMessagesPresenter,
@@ -301,9 +258,6 @@ export default async (): Promise<Resources> => ({
     GetUnreadThreadsCount: getUnreadThreadsCount,
     GetThreadLink: getThreadLink
   },
-  activity: {
-    BacklinkCreatedLabel
-  },
   actionImpl: {
     ArchiveChannel,
     UnarchiveChannel,
@@ -311,8 +265,5 @@ export default async (): Promise<Resources> => ({
     DeleteChatMessage: deleteChatMessage,
     OpenChannel,
     UnpinAllChannels
-  },
-  backreference: {
-    Update: update
   }
 })

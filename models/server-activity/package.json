@@ -36,6 +36,8 @@
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/server-activity": "^0.6.0",
     "@hcengineering/server-activity-resources": "^0.6.0",
-    "@hcengineering/server-core": "^0.6.1"
+    "@hcengineering/server-core": "^0.6.1",
+    "@hcengineering/notification": "^0.6.16",
+    "@hcengineering/server-notification": "^0.6.1"
   }
 }

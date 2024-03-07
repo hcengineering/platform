@@ -15,17 +15,7 @@
 
 import { ActivityMessage, ActivityMessageViewlet } from '@hcengineering/activity'
 import type { Person } from '@hcengineering/contact'
-import type {
-  Account,
-  AttachedDoc,
-  Class,
-  Doc,
-  Mixin,
-  Ref,
-  RelatedDocument,
-  Space,
-  Timestamp
-} from '@hcengineering/core'
+import type { Account, AttachedDoc, Class, Doc, Mixin, Ref, Space, Timestamp } from '@hcengineering/core'
 import { NotificationType } from '@hcengineering/notification'
 import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
@@ -79,35 +69,6 @@ export interface Message extends ChunterMessage {
   replies?: Ref<Person>[]
   repliesCount?: number
   lastReply?: Timestamp
-}
-
-/**
- * @public
- * @deprecated use ChatMessage instead
- */
-// TODO: remove comment
-export interface Comment extends AttachedDoc {
-  message: string
-  attachments?: number
-  reactions?: number
-  pinned?: boolean
-}
-
-/**
- * @public
- */
-export interface Backlink extends Comment {
-  // A target document
-  // attachedTo <- target document we point to
-  // A target document class
-  // attachedToClass
-
-  // Source document we have reference from, it should be parent document for Comment/Message.
-  backlinkId: Ref<Doc>
-  // Source document class
-  backlinkClass: Ref<Class<Doc>>
-  // Reference to comment documentId
-  attachedDocId?: Ref<Doc>
 }
 
 /**
@@ -186,8 +147,6 @@ export default plugin(chunterId, {
     Message: '' as Ref<Class<Message>>,
     ChunterMessage: '' as Ref<Class<ChunterMessage>>,
     ThreadMessage: '' as Ref<Class<ThreadMessage>>,
-    Backlink: '' as Ref<Class<Backlink>>,
-    Comment: '' as Ref<Class<Comment>>,
     ChunterSpace: '' as Ref<Class<ChunterSpace>>,
     Channel: '' as Ref<Class<Channel>>,
     DirectMessage: '' as Ref<Class<DirectMessage>>,
@@ -198,9 +157,6 @@ export default plugin(chunterId, {
     DirectMessageInput: '' as Ref<Mixin<DirectMessageInput>>,
     ChunterMessageExtension: '' as Ref<Mixin<ChunterMessageExtension>>,
     ObjectChatPanel: '' as Ref<Mixin<ObjectChatPanel>>
-  },
-  space: {
-    Backlinks: '' as Ref<Space>
   },
   string: {
     Reactions: '' as IntlString,
@@ -238,17 +194,12 @@ export default plugin(chunterId, {
   },
   ids: {
     DMNotification: '' as Ref<NotificationType>,
-    MentionNotification: '' as Ref<NotificationType>,
     ThreadNotification: '' as Ref<NotificationType>,
     ChannelNotification: '' as Ref<NotificationType>,
     ThreadMessageViewlet: '' as Ref<ChatMessageViewlet>
   },
   app: {
     Chunter: '' as Ref<Doc>
-  },
-  backreference: {
-    // Update list of back references
-    Update: '' as Resource<(source: Doc, key: string, target: RelatedDocument[], label: IntlString) => Promise<void>>
   },
   action: {
     DeleteChatMessage: '' as Ref<Action>,

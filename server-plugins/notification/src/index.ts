@@ -143,12 +143,12 @@ export default plugin(serverNotificationId, {
     NotificationPresenter: '' as Ref<Mixin<NotificationPresenter>>
   },
   trigger: {
-    OnBacklinkCreate: '' as Resource<TriggerFunc>,
     OnAttributeCreate: '' as Resource<TriggerFunc>,
     OnAttributeUpdate: '' as Resource<TriggerFunc>,
     OnReactionChanged: '' as Resource<TriggerFunc>,
     OnChatMessageCreate: '' as Resource<TriggerFunc>,
-    OnActivityNotificationViewed: '' as Resource<TriggerFunc>
+    OnActivityNotificationViewed: '' as Resource<TriggerFunc>,
+    OnDocRemove: '' as Resource<TriggerFunc>
   },
   function: {
     IsUserInFieldValue: '' as TypeMatchFunc,

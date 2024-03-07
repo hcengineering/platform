@@ -8,9 +8,10 @@ import {
   type ModelLogger,
   tryMigrate
 } from '@hcengineering/model'
-import { DOMAIN_COMMENT } from '@hcengineering/model-chunter'
 import core from '@hcengineering/model-core'
 import { DOMAIN_VIEW } from '@hcengineering/model-view'
+import activity, { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
+
 import contact, { DOMAIN_CONTACT, contactId } from './index'
 
 async function createSpace (tx: TxOperations): Promise<void> {
@@ -111,20 +112,20 @@ export const contactOperation: MigrateOperation = {
           await client.update(
             DOMAIN_TX,
             {
-              'tx.attributes.backlinkClass': 'contact:class:Employee'
+              'tx.attributes.srcDocClass': 'contact:class:Employee'
             },
             {
-              $set: { 'tx.attributes.backlinkClass': contact.mixin.Employee }
+              $set: { 'tx.attributes.srcDocClass': contact.mixin.Employee }
             }
           )
 
           await client.update(
             DOMAIN_TX,
             {
-              'tx.attributes.backlinkClass': 'contact:class:Employee'
+              'tx.attributes.srcDocClass': 'contact:class:Employee'
             },
             {
-              $set: { 'tx.attributes.backlinkClass': contact.mixin.Employee }
+              $set: { 'tx.attributes.srcDocClass': contact.mixin.Employee }
             }
           )
 
@@ -167,9 +168,12 @@ export const contactOperation: MigrateOperation = {
             )
           }
           await client.update(
-            DOMAIN_COMMENT,
-            { backlinkClass: 'contact:class:Employee' },
-            { $set: { backlinkClass: contact.mixin.Employee } }
+            DOMAIN_ACTIVITY,
+            {
+              _class: activity.class.ActivityReference,
+              srcDocClass: 'contact:class:Employee'
+            },
+            { $set: { srcDocClass: contact.mixin.Employee } }
           )
           await client.update(
             'tags' as Domain,

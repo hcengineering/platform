@@ -32,7 +32,8 @@ import {
   type TxViewlet,
   type ActivityMessageControl,
   type SavedMessage,
-  type IgnoreActivity
+  type IgnoreActivity,
+  type ActivityReference
 } from '@hcengineering/activity'
 import core, {
   DOMAIN_MODEL,
@@ -60,7 +61,8 @@ import {
   TypeIntlString,
   ArrOf,
   TypeTimestamp,
-  UX
+  UX,
+  TypeMarkup
 } from '@hcengineering/model'
 import { TAttachedDoc, TClass, TDoc } from '@hcengineering/model-core'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
@@ -144,6 +146,26 @@ export class TDocUpdateMessage extends TActivityMessage implements DocUpdateMess
 
   updateCollection?: string
   attributeUpdates?: DocAttributeUpdates
+}
+
+@Model(activity.class.ActivityReference, activity.class.ActivityMessage)
+export class TActivityReference extends TActivityMessage implements ActivityReference {
+  // Source document we have reference from, it should be parent document for Comment/Message.
+  @Prop(TypeRef(core.class.Doc), core.string.Object)
+  @Index(IndexKind.Indexed)
+    srcDocId!: Ref<Doc>
+
+  @Prop(TypeRef(core.class.Class), core.string.Class)
+  @Index(IndexKind.Indexed)
+    srcDocClass!: Ref<Class<Doc>>
+
+  // Reference to comment/message in source doc
+  attachedDocId?: Ref<Doc>
+  attachedDocClass?: Ref<Class<Doc>>
+
+  @Prop(TypeMarkup(), activity.string.Message)
+  @Index(IndexKind.FullText)
+    message!: string
 }
 
 @Model(activity.class.ActivityInfoMessage, activity.class.ActivityMessage)
@@ -251,7 +273,8 @@ export function createModel (builder: Builder): void {
     TActivityInfoMessage,
     TActivityMessageControl,
     TSavedMessage,
-    TIgnoreActivity
+    TIgnoreActivity,
+    TActivityReference
   )
 
   builder.mixin(activity.class.DocUpdateMessage, core.class.Class, view.mixin.ObjectPresenter, {
@@ -260,6 +283,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(activity.class.ActivityInfoMessage, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: activity.component.ActivityInfoMessagePresenter
+  })
+
+  builder.mixin(activity.class.ActivityReference, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: activity.component.ActivityReferencePresenter
   })
 
   builder.mixin(activity.class.DocUpdateMessage, core.class.Class, view.mixin.LinkProvider, {
@@ -289,6 +316,12 @@ export function createModel (builder: Builder): void {
     filter: activity.filter.PinnedFilter
   })
 
+  builder.createDoc(activity.class.ActivityMessagesFilter, core.space.Model, {
+    label: activity.string.Mentions,
+    position: 60,
+    filter: activity.filter.ReferencesFilter
+  })
+
   builder.createDoc(
     activity.class.DocUpdateMessageViewlet,
     core.space.Model,
@@ -297,21 +330,9 @@ export function createModel (builder: Builder): void {
       action: 'create',
       component: activity.component.ReactionPresenter,
       label: activity.string.Reacted,
-      onlyWithParent: true,
-      hideIfRemoved: true
+      onlyWithParent: true
     },
     activity.ids.ReactionAddedActivityViewlet
-  )
-
-  builder.createDoc(
-    activity.class.DocUpdateMessageViewlet,
-    core.space.Model,
-    {
-      objectClass: activity.class.Reaction,
-      action: 'remove',
-      hideIfRemoved: true
-    },
-    activity.ids.ReactionRemovedActivityViewlet
   )
 
   builder.mixin(activity.class.ActivityMessage, core.class.Class, notification.mixin.ClassCollaborators, {
@@ -330,6 +351,14 @@ export function createModel (builder: Builder): void {
     labelPresenter: activity.component.ActivityMessageNotificationLabel
   })
 
+  builder.createDoc(notification.class.ActivityNotificationViewlet, core.space.Model, {
+    messageMatch: {
+      _class: activity.class.DocUpdateMessage,
+      objectClass: activity.class.Reaction
+    },
+    presenter: activity.component.ReactionNotificationPresenter
+  })
+
   builder.createDoc(
     notification.class.NotificationType,
     core.space.Model,
@@ -346,14 +375,6 @@ export function createModel (builder: Builder): void {
     },
     activity.ids.AddReactionNotification
   )
-
-  builder.createDoc(notification.class.ActivityNotificationViewlet, core.space.Model, {
-    messageMatch: {
-      _class: activity.class.DocUpdateMessage,
-      objectClass: activity.class.Reaction
-    },
-    presenter: activity.component.ReactionNotificationPresenter
-  })
 }
 
 export default activity

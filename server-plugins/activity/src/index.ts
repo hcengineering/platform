@@ -31,6 +31,7 @@ export default plugin(serverActivityId, {
   trigger: {
     ActivityMessagesHandler: '' as Resource<TriggerFunc>,
     OnDocRemoved: '' as Resource<TriggerFunc>,
-    OnReactionChanged: '' as Resource<TriggerFunc>
+    OnReactionChanged: '' as Resource<TriggerFunc>,
+    ReferenceTrigger: '' as Resource<TriggerFunc>
   }
 })

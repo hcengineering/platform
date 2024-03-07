@@ -77,14 +77,6 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverNotification.trigger.OnBacklinkCreate,
-    txMatch: {
-      _class: core.class.TxCollectionCUD,
-      'tx._class': core.class.TxCreateDoc
-    }
-  })
-
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverNotification.trigger.OnAttributeCreate,
     txMatch: {
       objectClass: core.class.Attribute,
@@ -98,5 +90,9 @@ export function createModel (builder: Builder): void {
       objectClass: core.class.Attribute,
       _class: core.class.TxUpdateDoc
     }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverNotification.trigger.OnDocRemove
   })
 }

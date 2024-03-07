@@ -19,8 +19,8 @@
     NotificationProvider,
     NotificationSetting,
     NotificationStatus,
-    NotificationType,
-    Notification as PlatformNotification
+    Notification as PlatformNotification,
+    BaseNotificationType
   } from '@hcengineering/notification'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { getCurrentLocation, showPanel } from '@hcengineering/ui'
@@ -32,7 +32,10 @@
   const providersQuery = createQuery()
 
   let settingsReceived = false
-  let settings: Map<Ref<NotificationType>, NotificationSetting> = new Map<Ref<NotificationType>, NotificationSetting>()
+  let settings: Map<Ref<BaseNotificationType>, NotificationSetting> = new Map<
+  Ref<BaseNotificationType>,
+  NotificationSetting
+  >()
   let provider: NotificationProvider | undefined
 
   $: enabled = 'Notification' in window && Notification?.permission !== 'denied'

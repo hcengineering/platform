@@ -95,7 +95,7 @@ export const chatNavGroupsModel: ChatNavGroupModel[] = [
     label: activity.string.Activity,
     query: {
       attachedToClass: {
-        $nin: [chunter.class.DirectMessage, chunter.class.Channel, chunter.class.Backlink]
+        $nin: [chunter.class.DirectMessage, chunter.class.Channel]
       }
     }
   }

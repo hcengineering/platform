@@ -313,6 +313,7 @@ export async function selectWorkspace (workspace: string): Promise<[Status, Work
   const token = getMetadata(presentation.metadata.Token)
   if (token === undefined) {
     const loc = getCurrentLocation()
+    loc.path[0] = 'login'
     loc.path[1] = 'login'
     loc.path.length = 2
     navigate(loc)
