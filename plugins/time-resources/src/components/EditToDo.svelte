@@ -101,10 +101,12 @@
     object.visibility = visibility
   }
 
-  async function spaceChange (space: Space | undefined) {
-    if (space?._id != object.attachedSpace) {
-      await client.update(object, { attachedSpace: space?._id })
-      object.attachedSpace = space?._id
+  async function spaceChange (space: Space | null) {
+    const oldSpace = object.attachedSpace ?? undefined
+    const newSpace = space?._id ?? undefined
+    if (newSpace !== oldSpace) {
+      await client.update(object, { attachedSpace: newSpace })
+      object.attachedSpace = newSpace
     }
   }
 </script>
