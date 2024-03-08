@@ -24,6 +24,7 @@
   export let value: Doc & { attachments?: number }
   export let attachments: Attachment[] | undefined = undefined
   export let imageSize: AttachmentImageSize = 'auto'
+  export let videoPreload = true
 
   const query = createQuery()
   const savedAttachmentsQuery = createQuery()
@@ -59,4 +60,4 @@
   })
 </script>
 
-<AttachmentList attachments={resAttachments} {savedAttachmentsIds} {imageSize} />
+<AttachmentList attachments={resAttachments} {savedAttachmentsIds} {imageSize} {videoPreload} />
