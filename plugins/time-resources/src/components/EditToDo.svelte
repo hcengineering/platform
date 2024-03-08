@@ -173,7 +173,7 @@
             autoSelect={false}
             readonly={object._class === time.class.ProjectToDo}
             space={object.attachedSpace}
-            on:object={e => spaceChange(e.detail)}
+            on:object={(e) => spaceChange(e.detail)}
           />
         </div>
       </div>
