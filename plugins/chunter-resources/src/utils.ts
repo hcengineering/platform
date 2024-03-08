@@ -53,7 +53,7 @@ import activity, {
   type DocUpdateMessage
 } from '@hcengineering/activity'
 import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
-import notification, { type DocNotifyContext, inboxId } from '@hcengineering/notification'
+import notification, { type DocNotifyContext, notificationId } from '@hcengineering/notification'
 import { get, type Unsubscriber } from 'svelte/store'
 
 import chunter from './plugin'
@@ -396,7 +396,7 @@ export function buildThreadLink (loc: Location, contextId: Ref<DocNotifyContext>
     return loc
   }
 
-  if (loc.path[2] !== inboxId) {
+  if (loc.path[2] !== notificationId) {
     loc.path[2] = chunterId
   }
 
