@@ -102,7 +102,7 @@
   }
 
   async function spaceChange (space: Space | undefined) {
-    if (space?._id !== object.attachedSpace) {
+    if (space?._id != object.attachedSpace) {
       await client.update(object, { attachedSpace: space?._id })
       object.attachedSpace = space?._id
     }
