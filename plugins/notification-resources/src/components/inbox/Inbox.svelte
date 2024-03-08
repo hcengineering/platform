@@ -18,7 +18,7 @@
     DisplayInboxNotification,
     DocNotifyContext
   } from '@hcengineering/notification'
-  import { ActionContext, createQuery, getClient, MessageBox } from '@hcengineering/presentation'
+  import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import view, { Viewlet } from '@hcengineering/view'
   import {
     AnyComponent,
@@ -33,8 +33,7 @@
     TabList,
     Location,
     IconDropdown,
-    ButtonWithDropdown,
-    showPopup
+    ButtonWithDropdown
   } from '@hcengineering/ui'
   import chunter, { ThreadMessage } from '@hcengineering/chunter'
   import { Ref, WithLookup } from '@hcengineering/core'
@@ -44,7 +43,14 @@
 
   import { inboxMessagesStore, InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
   import Filter from '../Filter.svelte'
-  import { getDisplayInboxNotifications, openInboxDoc, resolveLocation } from '../../utils'
+  import {
+    archiveAll,
+    getDisplayInboxNotifications,
+    openInboxDoc,
+    readAll,
+    resolveLocation,
+    unreadAll
+  } from '../../utils'
   import { InboxNotificationsFilter } from '../../types'
 
   export let visibleNav: boolean = true
@@ -254,43 +260,19 @@
     { size: 'auto', minSize: 30, maxSize: 'auto', float: undefined }
   ])
 
-  function archiveAll (): void {
-    showPopup(
-      MessageBox,
-      {
-        label: notification.string.ArchiveAllConfirmationTitle,
-        message: notification.string.ArchiveAllConfirmationMessage
-      },
-      'top',
-      (result?: boolean) => {
-        if (result === true) {
-          void inboxClient.deleteAllNotifications()
-        }
-      }
-    )
-  }
-
-  function readAll (): void {
-    void inboxClient.readAllNotifications()
-  }
-
-  function unreadAll (): void {
-    void inboxClient.unreadAllNotifications()
-  }
-
   async function dropdownItemSelected (id: 'archive' | 'read' | 'unread'): Promise<void> {
     if (id == null) return
 
     if (id === 'archive') {
-      archiveAll()
+      void archiveAll()
     }
 
     if (id === 'read') {
-      readAll()
+      void readAll()
     }
 
     if (id === 'unread') {
-      unreadAll()
+      void unreadAll()
     }
   }
 </script>
