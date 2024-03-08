@@ -53,12 +53,17 @@ export class CommonTrackerPage extends CalendarPage {
     await this.buttonFilter.click()
     await this.page.locator('div.selectPopup [class*="menu"]', { hasText: filter }).click()
 
-    if (filterSecondLevel !== null) {
-      if (filter === 'Title') {
-        await this.inputFilterTitle.fill(filterSecondLevel)
-        await this.buttonFilterApply.click()
-      } else {
-        await this.page.locator('div.selectPopup [class*="menu"]', { hasText: filterSecondLevel }).click()
+    if (filterSecondLevel !== null && typeof filterSecondLevel === 'string') {
+      switch (filter) {
+        case 'Title':
+          await this.inputFilterTitle.fill(filterSecondLevel)
+          await this.buttonFilterApply.click()
+          break
+        case 'Labels':
+          await this.selectFromDropdown(this.page, filterSecondLevel)
+          break
+        default:
+          await this.page.locator('div.selectPopup [class*="menu"]', { hasText: filterSecondLevel }).click()
       }
     }
   }

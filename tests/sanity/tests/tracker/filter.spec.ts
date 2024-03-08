@@ -401,4 +401,31 @@ test.describe('Tracker filters tests', () => {
       }
     })
   })
+
+  test('Label filter', async ({ page }) => {
+    const filterLabel = 'Filter Label'
+    const labelIssue: NewIssue = {
+      title: `Issue for the Label filter-${generateId()}`,
+      description: 'Issue for the Label filter',
+      labels: filterLabel,
+      createLabel: true
+    }
+
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    await leftSideMenuPage.buttonTracker.click()
+
+    const issuesPage = new IssuesPage(page)
+    await issuesPage.modelSelectorAll.click()
+    await issuesPage.createNewIssue(labelIssue)
+
+    await test.step('Check Label filter for exist Label', async () => {
+      await issuesPage.selectFilter('Labels', filterLabel)
+      await issuesPage.inputSearch.press('Escape')
+      await issuesPage.checkFilter('Labels', 'is', filterLabel)
+
+      for await (const issue of iterateLocator(issuesPage.issuesList)) {
+        await expect(issue.locator('div.compression-bar > div.label-box span.label')).toContainText(filterLabel)
+      }
+    })
+  })
 })
