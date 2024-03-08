@@ -37,7 +37,8 @@
     "FlatList": "Flat list",
     "GroupedList": "Grouped list",
     "ArchiveAll": "Archive all",
-    "ReadAll": "Read all",
+    "MarkReadAll": "Mark all as read",
+    "MarkUnreadAll": "Mark all as unread",
     "ArchiveAllConfirmationTitle": "Archive all notifications?",
     "ArchiveAllConfirmationMessage": "Are you sure you want to archive all notifications? This operation cannot be undone."
   }

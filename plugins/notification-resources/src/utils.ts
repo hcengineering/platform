@@ -38,8 +38,8 @@ import notification, {
   type DocNotifyContext,
   type InboxNotification
 } from '@hcengineering/notification'
-import { getClient } from '@hcengineering/presentation'
-import { getLocation, navigate, type Location, type ResolvedLocation } from '@hcengineering/ui'
+import { getClient, MessageBox } from '@hcengineering/presentation'
+import { getLocation, navigate, type Location, type ResolvedLocation, showPopup } from '@hcengineering/ui'
 import { get } from 'svelte/store'
 
 import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
@@ -410,6 +410,36 @@ export async function unpinDocNotifyContext (object: DocNotifyContext): Promise<
   await client.updateDoc(object._class, object.space, object._id, {
     isPinned: false
   })
+}
+
+export async function archiveAll (): Promise<void> {
+  const client = InboxNotificationsClientImpl.getClient()
+
+  showPopup(
+    MessageBox,
+    {
+      label: notification.string.ArchiveAllConfirmationTitle,
+      message: notification.string.ArchiveAllConfirmationMessage
+    },
+    'top',
+    (result?: boolean) => {
+      if (result === true) {
+        void client.deleteAllNotifications()
+      }
+    }
+  )
+}
+
+export async function readAll (): Promise<void> {
+  const client = InboxNotificationsClientImpl.getClient()
+
+  await client.readAllNotifications()
+}
+
+export async function unreadAll (): Promise<void> {
+  const client = InboxNotificationsClientImpl.getClient()
+
+  await client.unreadAllNotifications()
 }
 
 export async function getDisplayInboxNotifications (

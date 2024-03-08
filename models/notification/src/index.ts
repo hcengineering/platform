@@ -634,6 +634,67 @@ export function createModel (builder: Builder): void {
     },
     notification.ids.MentionCommonNotificationType
   )
+
+  createAction(
+    builder,
+    {
+      action: notification.actionImpl.ArchiveAll,
+      label: notification.string.ArchiveAll,
+      icon: view.icon.Archive,
+      keyBinding: [],
+      input: 'none',
+      category: notification.category.Notification,
+      target: core.class.Doc,
+      context: {
+        mode: ['browser'],
+        group: 'edit'
+      }
+    },
+    notification.action.ArchiveAll
+  )
+
+  createAction(
+    builder,
+    {
+      action: notification.actionImpl.ReadAll,
+      label: notification.string.MarkReadAll,
+      icon: notification.icon.ReadAll,
+      keyBinding: [],
+      input: 'none',
+      category: notification.category.Notification,
+      target: core.class.Doc,
+      context: {
+        mode: ['browser'],
+        group: 'edit'
+      }
+    },
+    notification.action.ReadAll
+  )
+
+  createAction(
+    builder,
+    {
+      action: notification.actionImpl.UnreadAll,
+      label: notification.string.MarkUnreadAll,
+      icon: notification.icon.UnreadAll,
+      keyBinding: [],
+      input: 'none',
+      category: notification.category.Notification,
+      target: core.class.Doc,
+      context: {
+        mode: ['browser'],
+        group: 'edit'
+      }
+    },
+    notification.action.UnreadAll
+  )
+
+  builder.createDoc(
+    view.class.ActionCategory,
+    core.space.Model,
+    { label: notification.string.Inbox, visible: true },
+    notification.category.Notification
+  )
 }
 
 export function generateClassNotificationTypes (

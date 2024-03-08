@@ -49,7 +49,10 @@ import {
   readNotifyContext,
   unReadNotifyContext,
   deleteContextNotifications,
-  hasInboxNotifications
+  hasInboxNotifications,
+  archiveAll,
+  readAll,
+  unreadAll
 } from './utils'
 
 import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
@@ -101,7 +104,10 @@ export default async (): Promise<Resources> => ({
     UnHideDocNotifyContext: unHideDocNotifyContext,
     ReadNotifyContext: readNotifyContext,
     UnReadNotifyContext: unReadNotifyContext,
-    DeleteContextNotifications: deleteContextNotifications
+    DeleteContextNotifications: deleteContextNotifications,
+    ArchiveAll: archiveAll,
+    ReadAll: readAll,
+    UnreadAll: unreadAll
   },
   resolver: {
     Location: resolveLocation

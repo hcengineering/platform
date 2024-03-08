@@ -22,5 +22,7 @@ loadMetadata(notification.icon, {
   Inbox: `${icons}#inbox`,
   Track: `${icons}#track`,
   Hide: `${icons}#hide`,
-  DontTrack: `${icons}#donttrack`
+  DontTrack: `${icons}#donttrack`,
+  ReadAll: `${icons}#readAll`,
+  UnreadAll: `${icons}#unreadAll`
 })
