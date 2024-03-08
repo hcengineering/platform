@@ -16,6 +16,8 @@
       "esnext",
       "dom"
     ],
-    "incremental": true
+    "incremental": true,
+    "types": ["jest"],
+    "isolatedModules": true
   }
 }
