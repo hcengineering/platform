@@ -30,7 +30,7 @@ import {
   type WithLookup
 } from '@hcengineering/core'
 import notification, {
-  inboxId,
+  notificationId,
   type ActivityInboxNotification,
   type Collaborators,
   type DisplayActivityInboxNotification,
@@ -38,8 +38,8 @@ import notification, {
   type DocNotifyContext,
   type InboxNotification
 } from '@hcengineering/notification'
-import { getClient } from '@hcengineering/presentation'
-import { getLocation, navigate, type Location, type ResolvedLocation } from '@hcengineering/ui'
+import { getClient, MessageBox } from '@hcengineering/presentation'
+import { getLocation, navigate, type Location, type ResolvedLocation, showPopup } from '@hcengineering/ui'
 import { get } from 'svelte/store'
 
 import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
@@ -412,6 +412,36 @@ export async function unpinDocNotifyContext (object: DocNotifyContext): Promise<
   })
 }
 
+export async function archiveAll (): Promise<void> {
+  const client = InboxNotificationsClientImpl.getClient()
+
+  showPopup(
+    MessageBox,
+    {
+      label: notification.string.ArchiveAllConfirmationTitle,
+      message: notification.string.ArchiveAllConfirmationMessage
+    },
+    'top',
+    (result?: boolean) => {
+      if (result === true) {
+        void client.deleteAllNotifications()
+      }
+    }
+  )
+}
+
+export async function readAll (): Promise<void> {
+  const client = InboxNotificationsClientImpl.getClient()
+
+  await client.readAllNotifications()
+}
+
+export async function unreadAll (): Promise<void> {
+  const client = InboxNotificationsClientImpl.getClient()
+
+  await client.unreadAllNotifications()
+}
+
 export async function getDisplayInboxNotifications (
   notificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>,
   filter: InboxNotificationsFilter = 'all',
@@ -515,7 +545,7 @@ export async function getNotificationsCount (
 }
 
 export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {
-  if (loc.path[2] !== inboxId) {
+  if (loc.path[2] !== notificationId) {
     return undefined
   }
 
@@ -524,11 +554,11 @@ export async function resolveLocation (loc: Location): Promise<ResolvedLocation 
   if (contextId === undefined) {
     return {
       loc: {
-        path: [loc.path[0], loc.path[1], inboxId],
+        path: [loc.path[0], loc.path[1], notificationId],
         fragment: undefined
       },
       defaultLocation: {
-        path: [loc.path[0], loc.path[1], inboxId],
+        path: [loc.path[0], loc.path[1], notificationId],
         fragment: undefined
       }
     }
@@ -555,11 +585,11 @@ async function generateLocation (
   if (contextNotification === undefined) {
     return {
       loc: {
-        path: [loc.path[0], loc.path[1], inboxId],
+        path: [loc.path[0], loc.path[1], notificationId],
         fragment: undefined
       },
       defaultLocation: {
-        path: [loc.path[0], loc.path[1], inboxId],
+        path: [loc.path[0], loc.path[1], notificationId],
         fragment: undefined
       }
     }
@@ -573,12 +603,12 @@ async function generateLocation (
   if (thread === undefined) {
     return {
       loc: {
-        path: [appComponent, workspace, inboxId, contextId],
+        path: [appComponent, workspace, notificationId, contextId],
         fragment: undefined,
         query: { ...loc.query, message: message !== undefined ? (messageId as string) : null }
       },
       defaultLocation: {
-        path: [appComponent, workspace, inboxId, contextId],
+        path: [appComponent, workspace, notificationId, contextId],
         fragment: undefined,
         query: { ...loc.query, message: message !== undefined ? (messageId as string) : null }
       }
@@ -587,12 +617,12 @@ async function generateLocation (
 
   return {
     loc: {
-      path: [appComponent, workspace, inboxId, contextId, threadId as string],
+      path: [appComponent, workspace, notificationId, contextId, threadId as string],
       fragment: undefined,
       query: { ...loc.query, message: message !== undefined ? (messageId as string) : null }
     },
     defaultLocation: {
-      path: [appComponent, workspace, inboxId, contextId, threadId as string],
+      path: [appComponent, workspace, notificationId, contextId, threadId as string],
       fragment: undefined,
       query: { ...loc.query, message: message !== undefined ? (messageId as string) : null }
     }
@@ -606,7 +636,7 @@ export function openInboxDoc (
 ): void {
   const loc = getLocation()
 
-  if (loc.path[2] !== inboxId) {
+  if (loc.path[2] !== notificationId) {
     return
   }
 

@@ -17,7 +17,7 @@
   import contact, { Employee, PersonAccount } from '@hcengineering/contact'
   import core, { AccountRole, Class, Doc, Ref, Space, getCurrentAccount } from '@hcengineering/core'
   import login from '@hcengineering/login'
-  import notification, { DocNotifyContext, InboxNotification, inboxId } from '@hcengineering/notification'
+  import notification, { DocNotifyContext, InboxNotification, notificationId } from '@hcengineering/notification'
   import { BrowserNotificatator, InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { IntlString, broadcastEvent, getMetadata, getResource } from '@hcengineering/platform'
   import { ActionContext, createQuery, getClient, isAdminUser } from '@hcengineering/presentation'
@@ -687,14 +687,14 @@
           />
         </div>
         <!-- <ActivityStatus status="active" /> -->
-        <NavLink app={inboxId} shrink={0}>
+        <NavLink app={notificationId} shrink={0}>
           <AppItem
             icon={notification.icon.Notifications}
             label={notification.string.Inbox}
-            selected={currentAppAlias === inboxId || inboxPopup !== undefined}
+            selected={currentAppAlias === notificationId || inboxPopup !== undefined}
             on:click={(e) => {
               if (e.metaKey || e.ctrlKey) return
-              if (currentAppAlias === inboxId && lastLoc !== undefined) {
+              if (currentAppAlias === notificationId && lastLoc !== undefined) {
                 e.preventDefault()
                 e.stopPropagation()
                 navigate(lastLoc)

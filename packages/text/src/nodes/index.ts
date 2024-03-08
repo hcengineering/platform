@@ -16,4 +16,5 @@
 export * from './image'
 export * from './reference'
 export * from './todo'
+export * from './file'
 export { getDataAttribute } from './utils'

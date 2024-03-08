@@ -53,7 +53,6 @@
   }
 
   let selected: Ref<Document> | undefined
-  // TODO find a better way than parsing current fragment
   $: selected = getDocumentIdFromFragment(currentFragment ?? '')
 
   // TODO expand tree until the selected document ?

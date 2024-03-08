@@ -15,7 +15,6 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { AnyExtension, mergeAttributes } from '@tiptap/core'
-  import { Node as ProseMirrorNode } from '@tiptap/pm/model'
   import { IntlString } from '@hcengineering/platform'
   import { Button, ButtonSize, Scroller } from '@hcengineering/ui'
   import textEditorPlugin from '../plugin'
@@ -131,8 +130,8 @@
   /**
    * @public
    */
-  export function removeNode (nde: ProseMirrorNode): void {
-    textEditor?.removeNode(nde)
+  export function removeAttachment (id: string): void {
+    textEditor?.removeAttachment(id)
   }
 </script>
 

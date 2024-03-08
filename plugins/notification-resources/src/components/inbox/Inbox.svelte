@@ -18,7 +18,7 @@
     DisplayInboxNotification,
     DocNotifyContext
   } from '@hcengineering/notification'
-  import { ActionContext, createQuery, getClient, MessageBox } from '@hcengineering/presentation'
+  import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import view, { Viewlet } from '@hcengineering/view'
   import {
     AnyComponent,
@@ -33,9 +33,7 @@
     TabList,
     Location,
     IconDropdown,
-    ButtonWithDropdown,
-    IconCheckAll,
-    showPopup
+    ButtonWithDropdown
   } from '@hcengineering/ui'
   import chunter, { ThreadMessage } from '@hcengineering/chunter'
   import { Ref, WithLookup } from '@hcengineering/core'
@@ -45,7 +43,14 @@
 
   import { inboxMessagesStore, InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
   import Filter from '../Filter.svelte'
-  import { getDisplayInboxNotifications, openInboxDoc, resolveLocation } from '../../utils'
+  import {
+    archiveAll,
+    getDisplayInboxNotifications,
+    openInboxDoc,
+    readAll,
+    resolveLocation,
+    unreadAll
+  } from '../../utils'
   import { InboxNotificationsFilter } from '../../types'
 
   export let visibleNav: boolean = true
@@ -255,35 +260,19 @@
     { size: 'auto', minSize: 30, maxSize: 'auto', float: undefined }
   ])
 
-  function archiveAll (): void {
-    showPopup(
-      MessageBox,
-      {
-        label: notification.string.ArchiveAllConfirmationTitle,
-        message: notification.string.ArchiveAllConfirmationMessage
-      },
-      'top',
-      (result?: boolean) => {
-        if (result === true) {
-          void inboxClient.deleteAllNotifications()
-        }
-      }
-    )
-  }
-
-  function readAll (): void {
-    void inboxClient.readAllNotifications()
-  }
-
-  async function dropdownItemSelected (id: 'archive' | 'read'): Promise<void> {
+  async function dropdownItemSelected (id: 'archive' | 'read' | 'unread'): Promise<void> {
     if (id == null) return
 
     if (id === 'archive') {
-      archiveAll()
+      void archiveAll()
     }
 
     if (id === 'read') {
-      readAll()
+      void readAll()
+    }
+
+    if (id === 'unread') {
+      void unreadAll()
     }
   }
 </script>
@@ -318,14 +307,19 @@
               <ButtonWithDropdown
                 justify="left"
                 kind="regular"
-                label={notification.string.ReadAll}
-                icon={IconCheckAll}
+                label={notification.string.MarkReadAll}
+                icon={notification.icon.ReadAll}
                 on:click={readAll}
                 dropdownItems={[
                   {
                     id: 'read',
-                    icon: IconCheckAll,
-                    label: notification.string.ReadAll
+                    icon: notification.icon.ReadAll,
+                    label: notification.string.MarkReadAll
+                  },
+                  {
+                    id: 'unread',
+                    icon: notification.icon.UnreadAll,
+                    label: notification.string.MarkUnreadAll
                   },
                   {
                     id: 'archive',

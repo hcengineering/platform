@@ -1,5 +1,5 @@
 //
-// Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,16 +13,7 @@
 // limitations under the License.
 //
 
-import notification from '@hcengineering/notification'
-import { loadMetadata } from '@hcengineering/platform'
-
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
-loadMetadata(notification.icon, {
-  Notifications: `${icons}#notifications`,
-  Inbox: `${icons}#inbox`,
-  Track: `${icons}#track`,
-  Hide: `${icons}#hide`,
-  DontTrack: `${icons}#donttrack`,
-  ReadAll: `${icons}#readAll`,
-  UnreadAll: `${icons}#unreadAll`
-})
+/**
+ * @public
+ */
+export type FileAttachFunction = (file: File) => Promise<{ file: string, type: string } | undefined>

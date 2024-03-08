@@ -204,11 +204,6 @@ export const notificationId = 'notification' as Plugin
 /**
  * @public
  */
-export const inboxId = 'inbox' as Plugin
-
-/**
- * @public
- */
 export interface NotificationPreview extends Class<Doc> {
   presenter: AnyComponent
 }
@@ -289,6 +284,7 @@ export interface InboxNotificationsClient {
   deleteNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>
   deleteAllNotifications: () => Promise<void>
   readAllNotifications: () => Promise<void>
+  unreadAllNotifications: () => Promise<void>
 }
 
 /**
@@ -379,7 +375,9 @@ const notification = plugin(notificationId, {
     Inbox: '' as Asset,
     Track: '' as Asset,
     DontTrack: '' as Asset,
-    Hide: '' as Asset
+    Hide: '' as Asset,
+    ReadAll: '' as Asset,
+    UnreadAll: '' as Asset
   },
   space: {
     Notifications: '' as Ref<Space>
@@ -400,7 +398,8 @@ const notification = plugin(notificationId, {
     GroupedList: '' as IntlString,
     All: '' as IntlString,
     ArchiveAll: '' as IntlString,
-    ReadAll: '' as IntlString,
+    MarkReadAll: '' as IntlString,
+    MarkUnreadAll: '' as IntlString,
     ArchiveAllConfirmationTitle: '' as IntlString,
     ArchiveAllConfirmationMessage: '' as IntlString
   },

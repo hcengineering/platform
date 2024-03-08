@@ -19,9 +19,9 @@
 
   import { AnyExtension, Editor, FocusPosition, mergeAttributes } from '@tiptap/core'
   import Placeholder from '@tiptap/extension-placeholder'
-  import { Node as ProseMirrorNode } from '@tiptap/pm/model'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
 
+  import { deleteAttachment } from '../command/deleteAttachment'
   import textEditorPlugin from '../plugin'
   import { TextFormatCategory } from '../types'
 
@@ -184,17 +184,8 @@
   /**
    * @public
    */
-  export function removeNode (nde: ProseMirrorNode): void {
-    const deleteOp = (n: ProseMirrorNode, pos: number): void => {
-      if (nde === n) {
-        // const pos = editor.view.posAtDOM(nde, 0)
-        editor.view.dispatch(editor.view.state.tr.delete(pos, pos + 1))
-      }
-      n.descendants(deleteOp)
-    }
-    editor.view.state.doc.descendants((n, pos) => {
-      deleteOp(n, pos)
-    })
+  export function removeAttachment (id: string): void {
+    editor.commands.command(deleteAttachment(id))
   }
 
   function handleFocus (): void {

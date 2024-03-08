@@ -23,6 +23,7 @@
   export let attachments: Attachment[] = []
   export let savedAttachmentsIds: Ref<Attachment>[] = []
   export let imageSize: AttachmentImageSize | undefined = undefined
+  export let videoPreload = true
 </script>
 
 {#if attachments.length}
@@ -32,6 +33,7 @@
         value={attachment}
         isSaved={savedAttachmentsIds?.includes(attachment._id) ?? false}
         {imageSize}
+        {videoPreload}
       />
     {/each}
   </Scroller>

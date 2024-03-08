@@ -1055,7 +1055,7 @@ async function OnDocRemove (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx
 
   if (etx._class !== core.class.TxRemoveDoc) return []
 
-  return await removeCollaboratorDoc(tx as TxRemoveDoc<Doc>, control)
+  return await removeCollaboratorDoc(etx as TxRemoveDoc<Doc>, control)
 }
 
 export * from './types'

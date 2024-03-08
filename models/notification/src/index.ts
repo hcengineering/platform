@@ -54,7 +54,6 @@ import workbench from '@hcengineering/model-workbench'
 import {
   type DocUpdates,
   type DocUpdateTx,
-  inboxId,
   type InboxNotification,
   type DocNotifyContext,
   type Notification,
@@ -66,14 +65,14 @@ import {
   type NotificationStatus,
   type NotificationTemplate,
   type NotificationType,
-  notificationId,
   type NotificationObjectPresenter,
   type ActivityInboxNotification,
   type CommonInboxNotification,
   type NotificationContextPresenter,
   type ActivityNotificationViewlet,
   type BaseNotificationType,
-  type CommonNotificationType
+  type CommonNotificationType,
+  notificationId
 } from '@hcengineering/notification'
 import { type Asset, type IntlString } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
@@ -348,7 +347,7 @@ export function createModel (builder: Builder): void {
     {
       label: notification.string.Inbox,
       icon: notification.icon.Inbox,
-      alias: inboxId,
+      alias: notificationId,
       hidden: true,
       locationResolver: notification.resolver.Location,
       component: notification.component.Inbox,
@@ -361,8 +360,7 @@ export function createModel (builder: Builder): void {
     action: workbench.actionImpl.Navigate,
     actionProps: {
       mode: 'app',
-      application: notificationId,
-      special: notificationId
+      application: notificationId
     },
     label: notification.string.Inbox,
     icon: view.icon.ArrowRight,
@@ -635,6 +633,67 @@ export function createModel (builder: Builder): void {
       }
     },
     notification.ids.MentionCommonNotificationType
+  )
+
+  createAction(
+    builder,
+    {
+      action: notification.actionImpl.ArchiveAll,
+      label: notification.string.ArchiveAll,
+      icon: view.icon.Archive,
+      keyBinding: [],
+      input: 'none',
+      category: notification.category.Notification,
+      target: core.class.Doc,
+      context: {
+        mode: ['browser'],
+        group: 'edit'
+      }
+    },
+    notification.action.ArchiveAll
+  )
+
+  createAction(
+    builder,
+    {
+      action: notification.actionImpl.ReadAll,
+      label: notification.string.MarkReadAll,
+      icon: notification.icon.ReadAll,
+      keyBinding: [],
+      input: 'none',
+      category: notification.category.Notification,
+      target: core.class.Doc,
+      context: {
+        mode: ['browser'],
+        group: 'edit'
+      }
+    },
+    notification.action.ReadAll
+  )
+
+  createAction(
+    builder,
+    {
+      action: notification.actionImpl.UnreadAll,
+      label: notification.string.MarkUnreadAll,
+      icon: notification.icon.UnreadAll,
+      keyBinding: [],
+      input: 'none',
+      category: notification.category.Notification,
+      target: core.class.Doc,
+      context: {
+        mode: ['browser'],
+        group: 'edit'
+      }
+    },
+    notification.action.UnreadAll
+  )
+
+  builder.createDoc(
+    view.class.ActionCategory,
+    core.space.Model,
+    { label: notification.string.Inbox, visible: true },
+    notification.category.Notification
   )
 }
 

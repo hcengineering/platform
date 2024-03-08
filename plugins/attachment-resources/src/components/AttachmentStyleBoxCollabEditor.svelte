@@ -203,6 +203,8 @@
       attachment.attachedToClass,
       'attachments'
     )
+
+    await editor.removeAttachment(attachment.file)
   }
 
   let progressItems: Ref<Doc>[] = []

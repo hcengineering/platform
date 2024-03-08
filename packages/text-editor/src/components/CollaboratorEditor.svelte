@@ -25,7 +25,7 @@
   import { TextEditorCommandHandler, TextFormatCategory, TextNodeAction } from '../types'
 
   import CollaborativeTextEditor from './CollaborativeTextEditor.svelte'
-  import { FileAttachFunction } from './extension/imageExt'
+  import { FileAttachFunction } from './extension/types'
   import { NodeUuidExtension, nodeElementQuerySelector } from './extension/nodeUuid'
 
   export let documentId: DocumentId

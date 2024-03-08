@@ -25,6 +25,7 @@
   import { createEventDispatcher, getContext, onDestroy, onMount } from 'svelte'
   import { Doc as YDoc } from 'yjs'
 
+  import { deleteAttachment } from '../command/deleteAttachment'
   import { Completion } from '../Completion'
   import { textEditorCommandHandler } from '../commands'
   import { EditorKit } from '../kits/editor-kit'
@@ -46,7 +47,9 @@
   import { noSelectionRender, renderCursor } from './editor/collaboration'
   import { defaultEditorAttributes } from './editor/editorProps'
   import { EmojiExtension } from './extension/emoji'
-  import { FileAttachFunction, ImageExtension } from './extension/imageExt'
+  import { ImageExtension } from './extension/imageExt'
+  import { type FileAttachFunction } from './extension/types'
+  import { FileExtension } from './extension/fileExt'
   import { InlinePopupExtension } from './extension/inlinePopup'
   import { InlineStyleToolbarExtension } from './extension/inlineStyleToolbar'
   import { completionConfig } from './extensions'
@@ -82,6 +85,8 @@
 
   export let attachFile: FileAttachFunction | undefined = undefined
   export let canShowPopups = true
+  export let canEmbedFiles = true
+  export let canEmbedImages = true
 
   const dispatch = createEventDispatcher()
 
@@ -150,6 +155,10 @@
     return commandHandler
   }
 
+  export function removeAttachment (id: string): void {
+    editor.commands.command(deleteAttachment(id))
+  }
+
   export function isEditable (): boolean {
     return editor?.isEditable ?? false
   }
@@ -206,13 +215,23 @@
   const optionalExtensions: AnyExtension[] = []
 
   if (attachFile !== undefined) {
-    optionalExtensions.push(
-      ImageExtension.configure({
-        inline: true,
-        attachFile,
-        uploadUrl: getMetadata(presentation.metadata.UploadURL)
-      })
-    )
+    if (canEmbedFiles) {
+      optionalExtensions.push(
+        FileExtension.configure({
+          inline: true,
+          attachFile
+        })
+      )
+    }
+    if (canEmbedImages) {
+      optionalExtensions.push(
+        ImageExtension.configure({
+          inline: true,
+          attachFile,
+          uploadUrl: getMetadata(presentation.metadata.UploadURL)
+        })
+      )
+    }
   }
 
   onMount(async () => {

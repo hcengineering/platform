@@ -33,6 +33,7 @@
   export let listProvider: ListSelectionProvider | undefined = undefined
   export let imageSize: AttachmentImageSize = 'auto'
   export let removable: boolean = false
+  export let videoPreload = true
 
   const dispatch = createEventDispatcher()
 
@@ -69,7 +70,7 @@
   </div>
 {:else if type === 'video'}
   <div class="content buttonContainer flex-center">
-    <AttachmentVideoPreview {value} />
+    <AttachmentVideoPreview {value} preload={videoPreload} />
     <div class="actions conner">
       <AttachmentActions attachment={value} {isSaved} {removable} />
     </div>
