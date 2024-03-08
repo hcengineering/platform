@@ -101,9 +101,11 @@
     object.visibility = visibility
   }
 
-  async function spaceChange (space: Ref<Space>) {
-    await client.update(object, { attachedSpace: space })
-    object.attachedSpace = space
+  async function spaceChange (space: Space | undefined) {
+    if (space?._id !== object.attachedSpace) {
+      await client.update(object, { attachedSpace: space?._id })
+      object.attachedSpace = space?._id
+    }
   }
 </script>
 
@@ -171,7 +173,7 @@
             autoSelect={false}
             readonly={object._class === time.class.ProjectToDo}
             space={object.attachedSpace}
-            on:change={(e) => spaceChange(e.detail)}
+            on:object={e => spaceChange(e.detail)}
           />
         </div>
       </div>

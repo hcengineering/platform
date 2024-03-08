@@ -42,7 +42,7 @@
 
   export let create: ObjectCreate | undefined = undefined
   const dispatch = createEventDispatcher()
-  $: oldSpace = space
+  let oldSpace = space
   $: if (oldSpace !== space) {
     oldSpace = space
     dispatch('change', space)
