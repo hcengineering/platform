@@ -771,18 +771,17 @@ export async function upgradeWorkspace (
   }
   const versionStr = versionToString(version)
 
-  const currentVersion = await db.collection<Workspace>(WORKSPACE_COLLECTION).findOne({ workspace: ws.workspace })
   console.log(
     `${forceUpdate ? 'force-' : ''}upgrade from "${
-      currentVersion?.version !== undefined ? versionToString(currentVersion.version) : ''
+      ws?.version !== undefined ? versionToString(ws.version) : ''
     }" to "${versionStr}"`
   )
 
-  if (currentVersion?.version !== undefined && !forceUpdate && versionStr === versionToString(currentVersion.version)) {
+  if (ws?.version !== undefined && !forceUpdate && versionStr === versionToString(ws.version)) {
     return versionStr
   }
   await db.collection(WORKSPACE_COLLECTION).updateOne(
-    { workspace: ws.workspace },
+    { _id: ws._id },
     {
       $set: { version }
     }
