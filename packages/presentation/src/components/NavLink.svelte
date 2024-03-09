@@ -25,10 +25,10 @@
   export let accent: boolean = false
   export let noOverflow: boolean = false
 
-  function clickHandler (e: MouseEvent) {
+  function clickHandler (e: MouseEvent): void {
     if (disabled) return
 
-    if (onClick) {
+    if (onClick !== undefined) {
       e.preventDefault()
       e.stopPropagation()
       onClick(e)

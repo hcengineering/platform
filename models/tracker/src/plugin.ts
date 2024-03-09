@@ -44,7 +44,8 @@ export default mergeIds(trackerId, tracker, {
     Unarchive: '' as IntlString,
     UnarchiveConfirm: '' as IntlString,
     AllProjects: '' as IntlString,
-    MapRelatedIssues: '' as IntlString
+    MapRelatedIssues: '' as IntlString,
+    Extensions: '' as IntlString
   },
   activity: {
     TxIssueCreated: '' as AnyComponent,
@@ -61,7 +62,8 @@ export default mergeIds(trackerId, tracker, {
     EditRelatedTargetsPopup: '' as AnyComponent,
     SettingsRelatedTargets: '' as AnyComponent,
     IssueSearchIcon: '' as AnyComponent,
-    MembersArrayEditor: '' as AnyComponent
+    MembersArrayEditor: '' as AnyComponent,
+    IssueExtra: '' as AnyComponent
   },
   app: {
     Tracker: '' as Ref<Application>

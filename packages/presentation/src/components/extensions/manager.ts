@@ -1,18 +1,18 @@
 import {
+  SortingOrder,
   type Class,
   type Doc,
   type DocData,
   type Ref,
-  SortingOrder,
   type Space,
   type TxOperations
 } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import { onDestroy } from 'svelte'
-import { type Writable, writable } from 'svelte/store'
+import { writable, type Writable } from 'svelte/store'
 import { type LiveQuery } from '../..'
 import presentation from '../../plugin'
-import { type DocCreateExtension } from '../../types'
+import { type DocCreatePhase, type DocCreateExtension } from '../../types'
 import { createQuery } from '../../utils'
 
 export class DocCreateExtensionManager {
@@ -51,10 +51,16 @@ export class DocCreateExtensionManager {
     )
   }
 
-  async commit (ops: TxOperations, docId: Ref<Doc>, space: Ref<Space>, data: DocData<Doc>): Promise<void> {
+  async commit (
+    ops: TxOperations,
+    docId: Ref<Doc>,
+    space: Space,
+    data: DocData<Doc>,
+    phase: DocCreatePhase
+  ): Promise<void> {
     for (const e of this._extensions) {
       const applyOp = await getResource(e.apply)
-      await applyOp?.(ops, docId, space, data, this.getState(e._id))
+      await applyOp?.(ops, docId, space, data, this.getState(e._id), phase)
     }
   }
 

@@ -615,7 +615,7 @@ class TServerStorage implements ServerStorage {
     )
     const moves = await ctx.with('process-move', {}, (ctx) => this.processMove(ctx, txes, findAll))
 
-    const triggerControl: Omit<TriggerControl, 'txFactory' | 'ctx'> = {
+    const triggerControl: Omit<TriggerControl, 'txFactory' | 'ctx' | 'result'> = {
       removedMap,
       workspace: this.workspace,
       fx: triggerFx.fx,
@@ -651,7 +651,8 @@ class TServerStorage implements ServerStorage {
         ...(await this.triggers.apply(ctx, txes, {
           ...triggerControl,
           ctx,
-          findAll: fAll(ctx)
+          findAll: fAll(ctx),
+          result
         }))
       )
       return result

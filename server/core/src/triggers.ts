@@ -78,7 +78,8 @@ export class Triggers {
                 findAll: async (clazz, query, options) => await ctrl.findAllCtx(ctx, clazz, query, options),
                 apply: async (tx, broadcast, target) => {
                   return await ctrl.applyCtx(ctx, tx, broadcast, target)
-                }
+                },
+                result
               }))
             )
           }

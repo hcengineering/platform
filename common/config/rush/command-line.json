@@ -19,7 +19,7 @@
       "name": "_phase:validate",
       "dependencies": {
         "self": ["_phase:build"],
-        "upstream": ["_phase:validate"]
+        "upstream": ["_phase:validate", "_phase:build"]
       },
       "ignoreMissingScript": true,
       "allowWarningsOnSuccess": false

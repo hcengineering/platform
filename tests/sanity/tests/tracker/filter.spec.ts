@@ -381,7 +381,7 @@ test.describe('Tracker filters tests', () => {
       await issuesPage.checkFilter('Milestone', 'is', '1 state')
 
       for await (const issue of iterateLocator(issuesPage.issuesList)) {
-        await expect(issue.locator('div.compression-bar button span.label')).toContainText(filterMilestoneName)
+        await expect(issue.locator('div.compression-bar #milestone span.label')).toContainText(filterMilestoneName)
       }
     })
 

@@ -24,18 +24,24 @@
     SelectPopupValueType,
     eventToHTMLElement,
     showPopup,
-    LabelAndProps
+    LabelAndProps,
+    ButtonSize
   } from '../index'
   import { createEventDispatcher } from 'svelte'
 
   export let dropdownItems: SelectPopupValueType[]
   export let label: IntlString | undefined = undefined
+  export let labelParams: Record<string, any> = {}
   export let kind: ButtonKind = 'primary'
+  export let size: ButtonSize = 'medium'
   export let justify: 'left' | 'center' = 'center'
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let dropdownIcon: Asset | AnySvelteComponent | undefined = undefined
   export let showTooltipMain: LabelAndProps | undefined = undefined
   export let mainButtonId: string | undefined = undefined
+  export let disabled: boolean = false
+  export let loading: boolean = false
+  export let focusIndex: number | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -49,9 +55,12 @@
 <div class="w-full flex-row-center">
   <div class="flex-grow">
     <Button
+      {focusIndex}
       width="100%"
       {icon}
+      {size}
       {kind}
+      disabled={disabled || loading}
       shape="rectangle-right"
       {justify}
       borderStyle="none"
@@ -62,7 +71,7 @@
       <div class="flex w-full" slot="content">
         <div class="flex-row-center w-full flex-between relative">
           {#if label}
-            <Label {label} />
+            <Label {label} params={labelParams} />
             <slot name="content" />
             <div class="{kind} vertical-divider max-h-5 h-5" />
           {/if}
@@ -70,7 +79,17 @@
       </div>
     </Button>
   </div>
-  <Button width="1.75rem" {kind} shape="rectangle-left" justify="center" borderStyle="none" on:click={openDropdown}>
+  <Button
+    width="1.75rem"
+    {kind}
+    shape="rectangle-left"
+    justify="center"
+    borderStyle="none"
+    on:click={openDropdown}
+    {size}
+    {disabled}
+    {loading}
+  >
     <div slot="icon">
       {#if dropdownIcon}
         <Icon icon={dropdownIcon} size="small" />

@@ -67,8 +67,7 @@ class ModelClient implements AccountClient {
       if (this.notifyEnabled) {
         console.debug(
           'devmodel# notify=>',
-          testing ? JSON.stringify(cutObjectArray(tx)).slice(0, 160) : tx,
-          getMetadata(devmodel.metadata.DevModel)
+          testing ? JSON.stringify(cutObjectArray(tx)).slice(0, 160) : tx.length === 1 ? tx[0] : tx
         )
       }
     }
