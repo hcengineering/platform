@@ -6,11 +6,10 @@ import { NewIssue } from '../model/tracker/types'
 import { prepareNewIssueWithOpenStep } from './common-steps'
 import { PublicLinkPopup } from '../model/tracker/public-link-popup'
 
-
 test.describe('Tracker public link issues tests', () => {
   test('Public link generate', async ({ browser }) => {
     const publicLinkIssue: NewIssue = {
-      title: `Public link generate issue-${ generateId() }`,
+      title: `Public link generate issue-${generateId()}`,
       description: 'Public link generate issue'
     }
 
@@ -18,7 +17,7 @@ test.describe('Tracker public link issues tests', () => {
     await test.step('Get public link from popup', async () => {
       const newContext = await browser.newContext({ storageState: PlatformSetting })
       const page = await newContext.newPage()
-      await (await page.goto(`${ PlatformURI }/workbench/sanity-ws`))?.finished()
+      await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
 
       const leftSideMenuPage = new LeftSideMenuPage(page)
       await leftSideMenuPage.buttonTracker.click()
