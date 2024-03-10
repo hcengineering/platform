@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Class, Ref, Doc, SearchResultDoc, TxOperations } from '@hcengineering/core'
+import type { Class, Ref, Doc, SearchResultDoc, TxOperations, SearchResult } from '@hcengineering/core'
 import { type ObjectSearchCategory } from './types'
 import plugin from './plugin'
 import { getClient } from './utils'
@@ -67,18 +67,27 @@ async function doFulltextSearch (
   query: string,
   categories: ObjectSearchCategory[]
 ): Promise<SearchSection[]> {
-  const result = await client.searchFulltext(
-    {
-      query: `${query}*`,
-      classes
-    },
-    {
-      limit: 10
+  let result: SearchResult | undefined
+  for (const cl of classes) {
+    const r = await client.searchFulltext(
+      {
+        query: `${query}*`,
+        classes: [cl]
+      },
+      {
+        limit: 5
+      }
+    )
+    if (result === undefined) {
+      result = r
+    } else {
+      result.docs.push(...r.docs)
+      result.total = (result?.total ?? 0) + (r.total ?? 0)
     }
-  )
+  }
 
   const itemsByClass = new Map<Ref<Class<Doc>>, SearchResultDoc[]>()
-  for (const item of result.docs) {
+  for (const item of result?.docs ?? []) {
     const list = itemsByClass.get(item.doc._class)
     if (list === undefined) {
       itemsByClass.set(item.doc._class, [item])
@@ -94,8 +103,11 @@ async function doFulltextSearch (
       sections.push({ category, items })
     }
   }
-
-  return sections
+  return sections.sort((a, b) => {
+    const maxScoreA = Math.max(...(a?.items ?? []).map((obj) => obj?.score ?? 0))
+    const maxScoreB = Math.max(...(b?.items ?? []).map((obj) => obj?.score ?? 0))
+    return maxScoreB - maxScoreA
+  })
 }
 
 const categoriesByContext = new Map<string, ObjectSearchCategory[]>()
