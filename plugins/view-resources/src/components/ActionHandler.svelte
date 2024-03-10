@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import core, { Doc, Hierarchy, Ref, TxRemoveDoc } from '@hcengineering/core'
+  import core, { Doc, Hierarchy, Ref, Space, TxRemoveDoc } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import { addTxListener, contextStore, getClient } from '@hcengineering/presentation'
   import { AnyComponent, Component } from '@hcengineering/ui'
@@ -23,6 +23,8 @@
   import { getContextActions, getSelection } from '../actions'
   import { ListSelectionProvider, SelectionStore, focusStore, previewDocument, selectionStore } from '../selection'
   import { getObjectPreview, restrictionStore } from '../utils'
+
+  export let currentSpace: Ref<Space> | undefined
 
   const client = getClient()
 
@@ -131,7 +133,8 @@
   $: disableActions = $restrictionStore.disableActions
 
   async function handleKeys (evt: KeyboardEvent): Promise<void> {
-    if (disableActions) return
+    // For none we ignore all actions.
+    if (disableActions || ctx?.mode === 'none') return
     const targetTagName = (evt.target as any)?.tagName?.toLowerCase()
 
     let elm = evt.target as HTMLElement
@@ -165,10 +168,6 @@
       }
     }
 
-    // For none we ignore all actions.
-    if (ctx?.mode === 'none') {
-      return
-    }
     clearTimeout(timer)
 
     currentActions = currentActions.filter(({ keyBinding, allowedForEditableContent }) => {
@@ -199,25 +198,25 @@
     let found = false
     for (const a of currentActions) {
       // TODO: Handle multiple keys here
-      if (a.keyBinding?.find((it) => matchKey(evt, it)) !== undefined) {
-        const action = await getResource(a.action)
-        if (action !== undefined) {
-          if (sequences.length === 0) {
-            lastKey = undefined
-            sequences = []
-            delayedAction = undefined
-            Analytics.handleEvent(a._id)
-            await action(selectionDocs, evt, a.actionProps)
-            return
-          } else {
-            delayedAction = async () => {
-              Analytics.handleEvent(a._id)
-              await action(selectionDocs, evt, a.actionProps)
-            }
-            found = true
-          }
-        }
+      if (a.keyBinding?.find((it) => matchKey(evt, it)) === undefined) continue
+      const action = await getResource(a.action)
+      if (action === undefined) continue
+      if (sequences.length === 0) {
+        lastKey = undefined
+        sequences = []
+        delayedAction = undefined
+        Analytics.handleEvent(a._id)
+        const actionProps = { ...a.actionProps }
+        if (!Object.prototype.hasOwnProperty.call(actionProps, 'props')) actionProps.props = {}
+        actionProps.props.space = currentSpace
+        await action(selectionDocs, evt, actionProps)
+        return
       }
+      delayedAction = async () => {
+        Analytics.handleEvent(a._id)
+        await action(selectionDocs, evt, a.actionProps)
+      }
+      found = true
     }
     if (!found && delayedAction) {
       delayedAction()

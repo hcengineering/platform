@@ -634,7 +634,7 @@
     />
   </div>
 {:else if employee?.active || account.role === AccountRole.Owner || isAdminUser()}
-  <ActionHandler />
+  <ActionHandler currentSpace={currentSpace}/>
   <svg class="svg-mask">
     <clipPath id="notify-normal">
       <path d="M12,14c0-3.3,2.7-6,6-6c0.7,0,1.4,0.1,2,0.4V0H0v20h18C14.7,20,12,17.3,12,14z" />
