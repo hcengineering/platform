@@ -177,19 +177,27 @@
       return hasKeyBinding && allowed
     })
 
+    async function activateAction (a: Action): Promise<boolean> {
+      const action = await getResource(a.action)
+      if (action === undefined) return false
+
+      sequences = []
+      lastKey = undefined
+      delayedAction = undefined
+      Analytics.handleEvent(a._id)
+      const actionProps = { ...a.actionProps }
+      if (!Object.prototype.hasOwnProperty.call(actionProps, 'props')) actionProps.props = {}
+      actionProps.props.space = currentSpace
+      await action(selectionDocs, evt, actionProps)
+      return true
+    }
+
     if (lastKey !== undefined) {
       for (const a of sequences) {
         // TODO: Handle multiple keys here
-        if (a.keyBinding?.find((it) => (lastKey ? matchKeySequence(evt, it, lastKey) : false)) !== undefined) {
-          const action = await getResource(a.action)
-          if (action !== undefined) {
-            sequences = []
-            lastKey = undefined
-            delayedAction = undefined
-            Analytics.handleEvent(a._id)
-            await action(selectionDocs, evt, a.actionProps)
-            return
-          }
+        if (a.keyBinding?.find((it) => (lastKey ? matchKeySequence(evt, it, lastKey) : false)) !== undefined &&
+          await activateAction(a)) {
+          return
         }
       }
     }
@@ -199,28 +207,14 @@
     for (const a of currentActions) {
       // TODO: Handle multiple keys here
       if (a.keyBinding?.find((it) => matchKey(evt, it)) === undefined) continue
-      const action = await getResource(a.action)
-      if (action === undefined) continue
-      if (sequences.length === 0) {
-        lastKey = undefined
-        sequences = []
-        delayedAction = undefined
-        Analytics.handleEvent(a._id)
-        const actionProps = { ...a.actionProps }
-        if (!Object.prototype.hasOwnProperty.call(actionProps, 'props')) actionProps.props = {}
-        actionProps.props.space = currentSpace
-        await action(selectionDocs, evt, actionProps)
-        return
-      }
+      if (sequences.length === 0 && await activateAction(a)) return
       delayedAction = async () => {
-        Analytics.handleEvent(a._id)
-        await action(selectionDocs, evt, a.actionProps)
+        await activateAction(a)
       }
       found = true
     }
-    if (!found && delayedAction) {
-      delayedAction()
-      delayedAction = undefined
+    if (!found && delayedAction !== undefined) {
+      await delayedAction()
     }
 
     lastKey = evt
@@ -229,8 +223,7 @@
       lastKey = undefined
       sequences = []
       if (delayedAction !== undefined) {
-        delayedAction()
-        delayedAction = undefined
+        void delayedAction()
       }
     }, 300)
   }
