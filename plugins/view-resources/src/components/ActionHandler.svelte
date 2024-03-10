@@ -170,18 +170,10 @@
 
     clearTimeout(timer)
 
-    currentActions = currentActions.filter(({ keyBinding, allowedForEditableContent }) => {
-      const hasKeyBinding = keyBinding !== undefined && keyBinding.length > 0
-      const allowed = !isContentEditable || allowedForEditableContent
-
-      return hasKeyBinding && allowed
-    })
-
     async function activateAction (a: Action): Promise<boolean> {
       const action = await getResource(a.action)
       if (action === undefined) return false
 
-      sequences = []
       lastKey = undefined
       delayedAction = undefined
       Analytics.handleEvent(a._id)
@@ -192,29 +184,47 @@
       return true
     }
 
-    if (lastKey !== undefined) {
-      for (const a of sequences) {
-        // TODO: Handle multiple keys here
-        if (a.keyBinding?.find((it) => (lastKey ? matchKeySequence(evt, it, lastKey) : false)) !== undefined &&
-          await activateAction(a)) {
-          return
-        }
+    // 3 cases for keyBinding
+    //  matches the sequence - immediately action
+    //  start sequence - postpone other action
+    //  matches the key - execute if there is no start sequence actions
+
+    let postpone = false
+    let nonSequenceAction: Action | undefined
+
+    for (const a of currentActions) {
+      if (a.keyBinding === undefined || a.keyBinding.length < 1) continue
+      if (isContentEditable && (a.allowedForEditableContent === true)) continue
+      const t = lastKey
+      if (t !== undefined &&
+        a.keyBinding.find((it) => matchKeySequence(evt, it, t)) !== undefined &&
+        await activateAction(a)) {
+        return
+      }
+      if (!postpone && a.keyBinding.find((p) => findKeySequence(p, evt)) !== undefined) {
+        postpone = true
+        continue
+      }
+      if (nonSequenceAction === undefined && (a.keyBinding.find((it) => matchKey(evt, it)) !== undefined)) {
+        nonSequenceAction = a
       }
     }
 
-    sequences = getSequences(evt, currentActions)
-    let found = false
-    for (const a of currentActions) {
-      // TODO: Handle multiple keys here
-      if (a.keyBinding?.find((it) => matchKey(evt, it)) === undefined) continue
-      if (sequences.length === 0 && await activateAction(a)) return
-      delayedAction = async () => {
-        await activateAction(a)
-      }
-      found = true
-    }
-    if (!found && delayedAction !== undefined) {
+    if (delayedAction !== undefined) {
       await delayedAction()
+      delayedAction = undefined
+    }
+
+    const t = nonSequenceAction
+    if (t !== undefined) {
+      if (!postpone) {
+        await activateAction(t)
+        return
+      }
+
+      delayedAction = async () => {
+        await activateAction(t)
+      }
     }
 
     lastKey = evt
