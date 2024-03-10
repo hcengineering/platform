@@ -230,6 +230,7 @@ export interface SearchResultDoc {
   iconProps?: Record<string, string>
   shortTitle?: string
   title?: string
+  score?: number
   doc: Pick<Doc, '_id' | '_class'>
 }
 

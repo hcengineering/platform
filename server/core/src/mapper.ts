@@ -172,7 +172,8 @@ export function mapSearchResultDoc (hierarchy: Hierarchy, raw: IndexedDoc): Sear
     doc: {
       _id: raw.id,
       _class: raw._class
-    }
+    },
+    score: raw._score
   }
 
   const searchPresenter = findSearchPresenter(hierarchy, doc.doc._class)
