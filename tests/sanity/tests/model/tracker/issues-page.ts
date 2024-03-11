@@ -32,6 +32,7 @@ export class IssuesPage extends CommonTrackerPage {
   readonly buttonPopupCreateNewIssueTemplate: Locator
   readonly inputPopupAddAttachmentsFile: Locator
   readonly textPopupAddAttachmentsFile: Locator
+  readonly buttonCollapsedCategories: Locator
 
   constructor (page: Page) {
     super(page)
@@ -76,6 +77,7 @@ export class IssuesPage extends CommonTrackerPage {
     )
     this.inputPopupAddAttachmentsFile = page.locator('div.popup-tooltip input#file')
     this.textPopupAddAttachmentsFile = page.locator('div.popup-tooltip div.item div.name')
+    this.buttonCollapsedCategories = page.locator('div.categoryHeader.collapsed')
   }
 
   async createNewIssue (data: NewIssue, closeNotification: boolean = false): Promise<void> {
@@ -126,11 +128,27 @@ export class IssuesPage extends CommonTrackerPage {
     }
     if (data.duedate != null) {
       await this.buttonPopupCreateNewIssueDuedate.click()
-      if (data.duedate === 'today') {
-        await this.buttonDatePopupToday.click()
-      } else {
-        await this.fillToSelectPopup(this.page, data.duedate)
+      let date = new Date()
+      switch (data.duedate) {
+        case 'yesterday':
+          date.setDate(date.getDate() - 1)
+          break
+        case 'nextWeek':
+          date.setDate(date.getDate() + 7)
+          break
+        case 'nextMonth':
+          if (date.getMonth() === 11) {
+            date = new Date(date.getFullYear() + 1, 0, date.getDate())
+          } else {
+            date = new Date(date.getFullYear(), date.getMonth() + 1, date.getDate())
+          }
+          break
       }
+      await this.fillDatePopup(
+        date.getDate().toString(),
+        (date.getMonth() + 1).toString(),
+        date.getFullYear().toString()
+      )
     }
     if (data.filePath != null) {
       await this.attachFileToNewIssueForm(data.filePath)
@@ -268,5 +286,11 @@ export class IssuesPage extends CommonTrackerPage {
       .locator('button')
       .first()
       .click()
+  }
+
+  async openAllCategories (): Promise<void> {
+    for await (const category of iterateLocator(this.buttonCollapsedCategories)) {
+      await category.click()
+    }
   }
 }

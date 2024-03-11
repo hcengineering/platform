@@ -428,4 +428,180 @@ test.describe('Tracker filters tests', () => {
       }
     })
   })
+
+  test('Due date filter', async ({ page }) => {
+    const dueDateOverdueIssue: NewIssue = {
+      title: `Issue for the Due date yesterday filter-${generateId()}`,
+      description: 'Issue for the Due date yesterday filter',
+      duedate: 'yesterday'
+    }
+    const dueDateTodayIssue: NewIssue = {
+      title: `Issue for the Due date today filter-${generateId()}`,
+      description: 'Issue for the Due date today filter',
+      duedate: 'today'
+    }
+    const dueDateNextWeekIssue: NewIssue = {
+      title: `Issue for the Due date next week filter-${generateId()}`,
+      description: 'Issue for the Due date next week filter',
+      duedate: 'nextWeek'
+    }
+    const dueDateNextMonthIssue: NewIssue = {
+      title: `Issue for the Due date next month filter-${generateId()}`,
+      description: 'Issue for the Due date next month filter',
+      duedate: 'nextMonth'
+    }
+
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    await leftSideMenuPage.buttonTracker.click()
+
+    const issuesPage = new IssuesPage(page)
+    await issuesPage.modelSelectorAll.click()
+    await issuesPage.createNewIssue(dueDateOverdueIssue)
+    await issuesPage.createNewIssue(dueDateTodayIssue)
+    await issuesPage.createNewIssue(dueDateNextWeekIssue)
+    await issuesPage.createNewIssue(dueDateNextMonthIssue)
+    await issuesPage.openAllCategories()
+
+    await test.step('Check Filter Overdue', async () => {
+      await issuesPage.selectFilter('Due date', 'Overdue')
+      await issuesPage.checkFilter('Due date', 'Overdue')
+
+      await issuesPage.checkFilteredIssueExist(dueDateOverdueIssue.title)
+      await issuesPage.checkFilteredIssueExist(dueDateTodayIssue.title)
+      await issuesPage.checkFilteredIssueNotExist(dueDateNextWeekIssue.title)
+      await issuesPage.checkFilteredIssueNotExist(dueDateNextMonthIssue.title)
+    })
+
+    await test.step('Check Filter Today', async () => {
+      await issuesPage.updateFilterDimension('Today')
+      await issuesPage.checkFilter('Due date', 'Today')
+
+      await issuesPage.checkFilteredIssueNotExist(dueDateOverdueIssue.title)
+      await issuesPage.checkFilteredIssueExist(dueDateTodayIssue.title)
+      await issuesPage.checkFilteredIssueNotExist(dueDateNextWeekIssue.title)
+      await issuesPage.checkFilteredIssueNotExist(dueDateNextMonthIssue.title)
+    })
+
+    await test.step('Check Filter Yesterday', async () => {
+      await issuesPage.updateFilterDimension('Yesterday')
+      await issuesPage.checkFilter('Due date', 'Yesterday')
+
+      await issuesPage.checkFilteredIssueExist(dueDateOverdueIssue.title)
+      await issuesPage.checkFilteredIssueNotExist(dueDateTodayIssue.title)
+      await issuesPage.checkFilteredIssueNotExist(dueDateNextWeekIssue.title)
+      await issuesPage.checkFilteredIssueNotExist(dueDateNextMonthIssue.title)
+    })
+
+    await test.step('Check Filter This week', async () => {
+      await issuesPage.updateFilterDimension('This week')
+      await issuesPage.checkFilter('Due date', 'This week')
+
+      if (new Date().getDay() !== 1) {
+        await issuesPage.checkFilteredIssueExist(dueDateOverdueIssue.title)
+      } else {
+        await issuesPage.checkFilteredIssueNotExist(dueDateOverdueIssue.title)
+      }
+
+      await issuesPage.checkFilteredIssueExist(dueDateTodayIssue.title)
+      await issuesPage.checkFilteredIssueNotExist(dueDateNextWeekIssue.title)
+      await issuesPage.checkFilteredIssueNotExist(dueDateNextMonthIssue.title)
+    })
+
+    await test.step('Check Filter Next week', async () => {
+      await issuesPage.updateFilterDimension('Next week')
+      await issuesPage.checkFilter('Due date', 'Next week')
+
+      await issuesPage.checkFilteredIssueNotExist(dueDateOverdueIssue.title)
+      await issuesPage.checkFilteredIssueNotExist(dueDateTodayIssue.title)
+      await issuesPage.checkFilteredIssueExist(dueDateNextWeekIssue.title)
+      await issuesPage.checkFilteredIssueNotExist(dueDateNextMonthIssue.title)
+    })
+
+    await test.step('Check Filter This month', async () => {
+      await issuesPage.updateFilterDimension('This month')
+      await issuesPage.checkFilter('Due date', 'This month')
+
+      await issuesPage.checkFilteredIssueExist(dueDateOverdueIssue.title)
+      await issuesPage.checkFilteredIssueExist(dueDateTodayIssue.title)
+      await issuesPage.checkFilteredIssueExist(dueDateNextWeekIssue.title)
+      await issuesPage.checkFilteredIssueNotExist(dueDateNextMonthIssue.title)
+    })
+
+    await test.step('Check Filter Next month', async () => {
+      await issuesPage.updateFilterDimension('Next month')
+      await issuesPage.checkFilter('Due date', 'Next month')
+
+      await issuesPage.checkFilteredIssueNotExist(dueDateOverdueIssue.title)
+      await issuesPage.checkFilteredIssueNotExist(dueDateTodayIssue.title)
+      await issuesPage.checkFilteredIssueNotExist(dueDateNextWeekIssue.title)
+      await issuesPage.checkFilteredIssueExist(dueDateNextMonthIssue.title)
+    })
+
+    await test.step('Check Filter Exact date - Today', async () => {
+      await issuesPage.updateFilterDimension('Exact date', 'Today')
+      await issuesPage.checkFilter('Due date', 'is', 'Today')
+
+      await issuesPage.checkFilteredIssueNotExist(dueDateOverdueIssue.title)
+      await issuesPage.checkFilteredIssueExist(dueDateTodayIssue.title)
+      await issuesPage.checkFilteredIssueNotExist(dueDateNextWeekIssue.title)
+      await issuesPage.checkFilteredIssueNotExist(dueDateNextMonthIssue.title)
+    })
+
+    await test.step('Check Filter Before date - Today', async () => {
+      await issuesPage.updateFilterDimension('Before date')
+      await issuesPage.checkFilter('Due date', 'Before', 'Today')
+
+      await issuesPage.checkFilteredIssueExist(dueDateOverdueIssue.title)
+      await issuesPage.checkFilteredIssueExist(dueDateTodayIssue.title)
+      await issuesPage.checkFilteredIssueNotExist(dueDateNextWeekIssue.title)
+      await issuesPage.checkFilteredIssueNotExist(dueDateNextMonthIssue.title)
+    })
+
+    await test.step('Check Filter After date - Today', async () => {
+      await issuesPage.updateFilterDimension('After date')
+      await issuesPage.checkFilter('Due date', 'After', 'Today')
+
+      await issuesPage.checkFilteredIssueNotExist(dueDateOverdueIssue.title)
+      await issuesPage.checkFilteredIssueExist(dueDateTodayIssue.title)
+      await issuesPage.checkFilteredIssueExist(dueDateNextWeekIssue.title)
+      await issuesPage.checkFilteredIssueExist(dueDateNextMonthIssue.title)
+    })
+
+    await test.step('Check Filter Between Dates', async () => {
+      await issuesPage.updateFilterDimension('Between dates')
+      const dateYesterday = new Date()
+      dateYesterday.setDate(dateYesterday.getDate() - 1)
+      const dateTomorrow = new Date()
+      dateTomorrow.setDate(dateTomorrow.getDate() + 1)
+      const dateYesterdayDivided: DateDivided = {
+        day: dateYesterday.getDate().toString(),
+        month: (dateYesterday.getMonth() + 1).toString(),
+        year: dateYesterday.getFullYear().toString()
+      }
+      const dateTomorrowDivided: DateDivided = {
+        day: dateTomorrow.getDate().toString(),
+        month: (dateTomorrow.getMonth() + 1).toString(),
+        year: dateTomorrow.getFullYear().toString()
+      }
+
+      await issuesPage.fillBetweenDate(dateYesterdayDivided, dateTomorrowDivided)
+      await issuesPage.checkFilter('Due date', 'is between', dateYesterday.getDate().toString())
+      await issuesPage.checkFilter('Due date', 'is between', dateTomorrow.getDate().toString())
+
+      await issuesPage.checkFilteredIssueExist(dueDateOverdueIssue.title)
+      await issuesPage.checkFilteredIssueExist(dueDateTodayIssue.title)
+      await issuesPage.checkFilteredIssueNotExist(dueDateNextWeekIssue.title)
+      await issuesPage.checkFilteredIssueNotExist(dueDateNextMonthIssue.title)
+    })
+
+    await test.step('Check Filter Not specified', async () => {
+      await issuesPage.updateFilterDimension('Not specified')
+      await issuesPage.checkFilter('Due date', 'Not specified')
+
+      await issuesPage.checkFilteredIssueNotExist(dueDateOverdueIssue.title)
+      await issuesPage.checkFilteredIssueNotExist(dueDateTodayIssue.title)
+      await issuesPage.checkFilteredIssueNotExist(dueDateNextWeekIssue.title)
+      await issuesPage.checkFilteredIssueNotExist(dueDateNextMonthIssue.title)
+    })
+  })
 })
