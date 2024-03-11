@@ -194,7 +194,7 @@
 
     for (const a of currentActions) {
       if (a.keyBinding === undefined || a.keyBinding.length < 1) continue
-      if (isContentEditable && (a.allowedForEditableContent === true)) continue
+      if (isContentEditable && (a.allowedForEditableContent !== true)) continue
       const t = lastKey
       if (t !== undefined &&
         a.keyBinding.find((it) => matchKeySequence(evt, it, t)) !== undefined &&
