@@ -12,14 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import notification from '@hcengineering/notification'
-import { SortingOrder, type WithLookup } from '@hcengineering/core'
+import notification, { type DocNotifyContext } from '@hcengineering/notification'
+import { generateId, SortingOrder, type WithLookup } from '@hcengineering/core'
 import { createQuery, getClient } from '@hcengineering/presentation'
-import { writable } from 'svelte/store'
+import { get, writable } from 'svelte/store'
 import view from '@hcengineering/view'
 import workbench, { type SpecialNavModel } from '@hcengineering/workbench'
 import attachment, { type SavedAttachments } from '@hcengineering/attachment'
 import activity from '@hcengineering/activity'
+import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
 
 import { type ChatNavGroupModel } from './types'
 import chunter from '../../plugin'
@@ -119,5 +120,49 @@ export function loadSavedAttachments (): void {
     setTimeout(() => {
       loadSavedAttachments()
     }, 50)
+  }
+}
+
+export async function removeActivityChannels (contexts: DocNotifyContext[]): Promise<void> {
+  const client = InboxNotificationsClientImpl.getClient()
+  const notificationsByContext = get(client.inboxNotificationsByContext)
+  const doneOp = await getClient().measure('removeActivityChannels')
+  const ops = getClient().apply(generateId())
+
+  try {
+    for (const context of contexts) {
+      const notifications = notificationsByContext.get(context._id) ?? []
+      await client.deleteNotifications(
+        ops,
+        notifications.map(({ _id }) => _id)
+      )
+      await ops.remove(context)
+    }
+  } finally {
+    await ops.commit()
+    await doneOp()
+  }
+}
+
+export async function readActivityChannels (contexts: DocNotifyContext[]): Promise<void> {
+  const client = InboxNotificationsClientImpl.getClient()
+  const notificationsByContext = get(client.inboxNotificationsByContext)
+  const doneOp = await getClient().measure('readActivityChannels')
+  const ops = getClient().apply(generateId())
+
+  try {
+    for (const context of contexts) {
+      const notifications = notificationsByContext.get(context._id) ?? []
+      await client.deleteNotifications(
+        ops,
+        notifications
+          .filter(({ _class }) => _class === notification.class.ActivityInboxNotification)
+          .map(({ _id }) => _id)
+      )
+      await ops.update(context, { lastViewedTimestamp: Date.now() })
+    }
+  } finally {
+    await ops.commit()
+    await doneOp()
   }
 }
