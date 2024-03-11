@@ -41,7 +41,7 @@
   <div class="flex-row-center flex-gap-1">
     <Icon icon={calendar.icon.Calendar} size={'small'} />
     <Dropdown
-      kind={'tertiary'}
+      kind={'ghost'}
       size={'medium'}
       placeholder={calendar.string.Calendar}
       {items}

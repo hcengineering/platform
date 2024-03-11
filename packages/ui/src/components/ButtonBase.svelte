@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { Asset, IntlString } from '@hcengineering/platform'
-  import { AnySvelteComponent, ButtonBaseKind, ButtonBaseSize, ButtonBaseType, IconSize, LabelAndProps } from '../types'
+  import { AnySvelteComponent, IconSize, LabelAndProps } from '../types'
   import { tooltip as tp } from '../tooltips'
   import { registerFocus } from '../focus'
   import { ComponentType } from 'svelte'
@@ -28,13 +28,13 @@
   export let icon: Asset | AnySvelteComponent | ComponentType | undefined = undefined
   export let iconSize: IconSize | undefined = undefined
   export let iconProps: any | undefined = undefined
-  export let kind: ButtonBaseKind
-  export let size: ButtonBaseSize
+  export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative'
+  export let size: 'large' | 'medium' | 'small' | 'extra-small' | 'min'
   export let disabled: boolean = false
   export let loading: boolean = false
   export let pressed: boolean = false
   export let hasMenu: boolean = false
-  export let type: ButtonBaseType
+  export let type: 'type-button' | 'type-button-icon'
   export let inheritColor: boolean = false
   export let inheritFont: boolean = false
   export let tooltip: LabelAndProps | undefined = undefined
