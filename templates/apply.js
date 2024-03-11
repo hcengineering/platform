@@ -66,7 +66,7 @@ function updatePackage(packageRoot, templates) {
 
   let template
   for (const t of templates) {
-    if( t.isDefault) {
+    if( t.isDefault && currentPackage.template === undefined) {
       template = t
     }
 
@@ -76,7 +76,7 @@ function updatePackage(packageRoot, templates) {
       break
     }
 
-    if (t.package.peerDependencies !== undefined) {
+    if (t.package.peerDependencies !== undefined && currentPackage.template === undefined) {
       const peers = Object.keys(t.package.peerDependencies)
       const deps = Object.keys(currentPackage.dependencies ?? {})
       const devDeps = Object.keys(currentPackage.devDependencies ?? {})
@@ -86,6 +86,11 @@ function updatePackage(packageRoot, templates) {
       }
     }
   }
+  if( template === undefined) {
+    console.warn('No template found for package', currentPackage.template)
+    return
+  }
+
   console.log('updating => ', currentPackage.name, ' with template', template.package.name)
   
   const packageJson = template.package

@@ -11,6 +11,8 @@
     "skipDefaultLibCheck": true,
     "declarationMap": true,
     "esModuleInterop": true,
-    "incremental": true
+    "incremental": true,
+    "types" : [],
+    "isolatedModules": true
   }
 }

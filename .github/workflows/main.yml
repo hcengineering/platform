@@ -129,6 +129,17 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
 
+      - name: Apply templates...
+        run: node common/scripts/install-run-rush.js apply-templates
+
+      - name: Check templates
+        run: |
+          echo '================================================================'
+          echo 'Checking for diff files'
+          echo '================================================================'
+          git diff '*.js' '*.ts' '*.svelte' '*.json' | cat
+          [ -z "$(git diff --name-only '*.js' '*.ts' '*.svelte' '*.json' | cat)" ]
+          echo '================================================================'
       - name: Formatting...
         run: node common/scripts/install-run-rush.js fast-format
       - name: Check files formatting
@@ -136,8 +147,8 @@ jobs:
           echo '================================================================'
           echo 'Checking for diff files'
           echo '================================================================'
-          git diff '*.ts' '*.svelte' | cat
-          [ -z "$(git diff --name-only '*.ts' '*.svelte' | cat)" ]
+          git diff '*.js' '*.ts' '*.svelte' '*.json' | cat
+          [ -z "$(git diff --name-only '*.js' '*.ts' '*.svelte' '*.json' | cat)" ]
           echo '================================================================'
   test:
     needs: build

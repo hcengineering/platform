@@ -16,6 +16,7 @@
     "esModuleInterop": true,
     "rootDir": "./src",
     "outDir": "./lib",
-    "incremental": true    
+    "incremental": true,
+    "isolatedModules": true
   }
 }
