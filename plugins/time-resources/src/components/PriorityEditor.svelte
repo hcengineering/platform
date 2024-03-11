@@ -13,7 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ButtonBase, ButtonBaseKind, SelectPopup, SelectPopupValueType, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import {
+    ButtonBase,
+    ButtonBaseKind,
+    SelectPopup,
+    SelectPopupValueType,
+    eventToHTMLElement,
+    showPopup
+  } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { ToDoPriority } from '@hcengineering/time'
   import { defaultToDoPriorities, todoPriorities } from '../utils'
