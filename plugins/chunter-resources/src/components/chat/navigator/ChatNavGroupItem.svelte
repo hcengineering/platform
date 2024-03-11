@@ -28,11 +28,11 @@
   import Item from './NavItem.svelte'
 
   export let context: DocNotifyContext
+  export let doc: Doc | undefined = undefined
   export let isSelected = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const docQuery = createQuery()
   const dispatch = createEventDispatcher()
   const notificationClient = InboxNotificationsClientImpl.getClient()
 
@@ -40,14 +40,9 @@
 
   let channelName: string | undefined = undefined
   let description: string | undefined = undefined
-  let doc: Doc | undefined = undefined
   let iconSize: IconSize = 'x-small'
   let notificationsCount = 0
   let actions: Action[] = []
-
-  $: docQuery.query(context.attachedToClass, { _id: context.attachedTo }, (res) => {
-    doc = res[0]
-  })
 
   $: doc &&
     getChannelName(context.attachedTo, context.attachedToClass, doc).then((res) => {
@@ -76,11 +71,11 @@
     iconSize = 'x-small'
   }
 
-  $: getNotificationsCount(context, notifications).then((res) => {
+  $: void getNotificationsCount(context, notifications).then((res) => {
     notificationsCount = res
   })
 
-  $: getChannelActions(context).then((res) => {
+  $: void getChannelActions(context).then((res) => {
     actions = res
   })
 
