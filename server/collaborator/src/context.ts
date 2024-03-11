@@ -35,18 +35,18 @@ export type withContext<T extends WithContext> = Omit<T, 'context'> & {
 }
 
 export function buildContext (data: onAuthenticatePayload, controller: Controller): Context {
-  const connectionId = generateId()
+  const context = data.context as Partial<Context>
+
+  const connectionId = context.connectionId ?? generateId()
   const decodedToken = decodeToken(data.token)
   const initialContentId = data.requestParameters.get('initialContentId') as string
   const targetContentId = data.requestParameters.get('targetContentId') as string
 
-  const context: Context = {
+  return {
     connectionId,
     workspaceId: decodedToken.workspace,
     clientFactory: getClientFactory(decodedToken, controller),
     initialContentId: initialContentId ?? '',
     targetContentId: targetContentId ?? ''
   }
-
-  return context
 }

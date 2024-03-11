@@ -13,12 +13,11 @@
 // limitations under the License.
 //
 
-import { isReadonlyDocVersion } from '@hcengineering/collaboration'
 import { MeasureContext, generateId } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { Token, decodeToken } from '@hcengineering/server-token'
 import { ServerKit } from '@hcengineering/text'
-import { Hocuspocus, onAuthenticatePayload, onDestroyPayload } from '@hocuspocus/server'
+import { Hocuspocus, onDestroyPayload } from '@hocuspocus/server'
 import bp from 'body-parser'
 import compression from 'compression'
 import cors from 'cors'
@@ -27,17 +26,17 @@ import { IncomingMessage, createServer } from 'http'
 import { MongoClient } from 'mongodb'
 import { WebSocket, WebSocketServer } from 'ws'
 
-import { getWorkspaceInfo } from './account'
 import { Config } from './config'
-import { Context, buildContext } from './context'
-import { HtmlTransformer } from './transformers/html'
+import { Context } from './context'
+import { AuthenticationExtension } from './extensions/authentication'
 import { StorageExtension } from './extensions/storage'
 import { Controller, getClientFactory } from './platform'
-import { MinioStorageAdapter, parseDocumentId } from './storage/minio'
+import { RpcErrorResponse, RpcRequest, RpcResponse, methods } from './rpc'
+import { MinioStorageAdapter } from './storage/minio'
 import { MongodbStorageAdapter } from './storage/mongodb'
 import { PlatformStorageAdapter } from './storage/platform'
 import { RouterStorageAdapter } from './storage/router'
-import { RpcErrorResponse, RpcRequest, RpcResponse, methods } from './rpc'
+import { HtmlTransformer } from './transformers/html'
 
 /**
  * @public
@@ -54,7 +53,8 @@ export async function start (
   mongo: MongoClient
 ): Promise<Shutdown> {
   const port = config.Port
-  console.log(`starting server on :${port} ...`)
+
+  await ctx.info('Starting collaborator server', { port })
 
   const app = express()
   app.use(cors())
@@ -125,6 +125,10 @@ export async function start (
     unloadImmediately: false,
 
     extensions: [
+      new AuthenticationExtension({
+        ctx: extensionsCtx.newChild('authenticate', {}),
+        controller
+      }),
       new StorageExtension({
         ctx: extensionsCtx.newChild('storage', {}),
         adapter: new RouterStorageAdapter(
@@ -137,28 +141,6 @@ export async function start (
         )
       })
     ],
-
-    async onAuthenticate (data: onAuthenticatePayload): Promise<Context> {
-      ctx.measure('authenticate', 1)
-
-      let documentName = data.documentName
-      if (documentName.includes('://')) {
-        documentName = documentName.split('://', 2)[1]
-      }
-
-      const { workspaceUrl, versionId } = parseDocumentId(documentName)
-
-      // verify workspace can be accessed with the token
-      const workspaceInfo = await getWorkspaceInfo(data.token)
-      // verify workspace url in the document matches the token
-      if (workspaceInfo.workspace !== workspaceUrl) {
-        throw new Error('documentName must include workspace')
-      }
-
-      data.connection.readOnly = isReadonlyDocVersion(versionId)
-
-      return buildContext(data, controller)
-    },
 
     async onDestroy (data: onDestroyPayload): Promise<void> {
       await controller.close()
@@ -196,7 +178,7 @@ export async function start (
       }
       res.status(400).send(response)
     } else {
-      await rpcCtx.with(request.method, {}, async (ctx) => {
+      await rpcCtx.withLog('/rpc', { method: request.method }, async (ctx) => {
         try {
           const response: RpcResponse = await method(ctx, context, request.payload, { hocuspocus, minio, transformer })
           res.status(200).send(response)
@@ -227,7 +209,8 @@ export async function start (
   })
 
   wss.on('connection', (incoming: WebSocket, request: IncomingMessage) => {
-    hocuspocus.handleConnection(incoming, request)
+    const context: Partial<Context> = { connectionId: generateId() }
+    hocuspocus.handleConnection(incoming, request, context)
   })
 
   const server = createServer(app)
@@ -239,7 +222,8 @@ export async function start (
   })
 
   server.listen(port)
-  console.log(`started server on :${port}`)
+
+  await ctx.info('Running collaborator server', { port })
 
   return async () => {
     server.close()
