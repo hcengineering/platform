@@ -138,6 +138,12 @@ export interface RadioItem {
   action?: () => void
 }
 
+export type ButtonBaseType = 'type-button' | 'type-button-icon'
+
+export type ButtonBaseKind = 'primary' | 'secondary' | 'tertiary' | 'negative'
+
+export type ButtonBaseSize = 'large' | 'medium' | 'small' | 'extra-small' | 'min'
+
 export type ButtonKind =
   | 'primary'
   | 'secondary'
