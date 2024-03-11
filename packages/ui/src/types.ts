@@ -177,6 +177,8 @@ export type EditStyle =
   | 'ghost-large'
   | 'modern-ghost-large'
 
+export type ButtonType = 'button' | 'submit' | 'reset'
+
 export interface ButtonItem {
   id: string
   icon?: Asset | AnySvelteComponent | ComponentType

@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { Asset } from '@hcengineering/platform'
-  import { AnySvelteComponent, Icon, IconSize, LabelAndProps, tooltip } from '@hcengineering/ui'
+  import { AnySvelteComponent, ButtonType, Icon, IconSize, LabelAndProps, tooltip } from '@hcengineering/ui'
 
   export let icon: Asset | AnySvelteComponent
   export let iconProps: any = undefined
@@ -22,15 +22,16 @@
   export let selected: boolean = false
   export let showTooltip: LabelAndProps | undefined = undefined
   export let disabled: boolean = false
+  export let type: ButtonType = 'button'
 </script>
 
 <button
+  {type}
   class="button {size}"
   class:selected
   class:disabled
   {disabled}
   use:tooltip={showTooltip}
-  tabindex="0"
   on:click|preventDefault|stopPropagation
 >
   <Icon {icon} {size} {iconProps} />

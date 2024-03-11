@@ -81,7 +81,7 @@
   {#if type !== 'type-component'}
     <div class="hulyModal-footer">
       <ButtonBase
-        type={'type-button'}
+        mode={'default'}
         kind={'primary'}
         size={type === 'type-aside' ? 'large' : 'medium'}
         label={okLabel}
@@ -89,7 +89,7 @@
         disabled={!canSave}
       />
       <ButtonBase
-        type={'type-button'}
+        mode={'default'}
         kind={'secondary'}
         size={type === 'type-aside' ? 'large' : 'medium'}
         label={ui.string.Cancel}

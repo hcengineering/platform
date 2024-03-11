@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { Asset } from '@hcengineering/platform'
-  import { AnySvelteComponent, LabelAndProps } from '../types'
+  import { AnySvelteComponent, ButtonType, LabelAndProps } from '../types'
   import { ComponentType } from 'svelte'
   import ButtonBase from './ButtonBase.svelte'
 
@@ -28,6 +28,7 @@
   export let loading: boolean = false
   export let inheritColor: boolean = false
   export let tooltip: LabelAndProps | undefined = undefined
+  export let type: ButtonType = 'button'
   export let focusIndex = -1
 
   let element: ButtonBase | undefined
@@ -39,7 +40,8 @@
 
 <ButtonBase
   bind:this={element}
-  type={'type-button-icon'}
+  mode={'icon'}
+  {type}
   {kind}
   {size}
   {icon}
