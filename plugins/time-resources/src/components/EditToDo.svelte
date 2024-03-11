@@ -123,18 +123,19 @@
   </svelte:fragment>
   <svelte:fragment slot="title">
     {#if object}
-      <VisibilityEditor
-        value={object.visibility}
-        size={'small'}
-        disabled={object._class === time.class.ProjectToDo}
-        on:change={(e) => visibilityChange(e.detail)}
-      />
+      <PriorityEditor value={object.priority} on:change={(e) => priorityChange(e.detail)} />
       <Component
         is={tags.component.DocTagsEditor}
         props={{ object, targetClass: time.class.ToDo, type: 'type-button-only' }}
         on:change={(event) => {
           if (event.detail !== undefined) countTag = event.detail
         }}
+      />
+      <VisibilityEditor
+        value={object.visibility}
+        size={'small'}
+        disabled={object._class === time.class.ProjectToDo}
+        on:change={(e) => visibilityChange(e.detail)}
       />
     {/if}
   </svelte:fragment>
@@ -195,7 +196,6 @@
         </span>
         <div class="flex-row-center gap-2">
           <DueDateEditor value={object.dueDate} on:change={(e) => dueDateChange(e.detail)} />
-          <PriorityEditor value={object.priority} on:change={(e) => priorityChange(e.detail)} />
         </div>
       </div>
       <TodoWorkslots todo={object} />

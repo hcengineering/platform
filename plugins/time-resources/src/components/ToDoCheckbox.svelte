@@ -13,26 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Icon } from '@hcengineering/ui'
   import { ToDoPriority } from '@hcengineering/time'
-  import time from '../plugin'
+  import { CheckBox } from '@hcengineering/ui'
+  import { getToDoPriorityColor } from '../utils'
 
-  export let value: ToDoPriority
+  export let checked: boolean = false
+  export let priority: ToDoPriority = ToDoPriority.NoPriority
 
-  function getIconProps (value: ToDoPriority): string {
-    switch (value) {
-      case ToDoPriority.High:
-        return '#F96E50'
-      case ToDoPriority.Medium:
-        return '#FFCD6B'
-      case ToDoPriority.Low:
-        return '#0084FF'
-      case ToDoPriority.NoPriority:
-        return '#FFFFFF'
-    }
-  }
+  $: color = checked ? undefined : getToDoPriorityColor(priority)
 </script>
 
-{#if value !== ToDoPriority.NoPriority}
-  <Icon icon={time.icon.FilledFlag} size={'medium'} iconProps={{ fill: getIconProps(value) }} />
-{/if}
+<CheckBox kind={'todo'} size={'medium'} {checked} {color} on:value />

@@ -62,8 +62,16 @@
   --global-accent-SkyText: #B9D1F5;
   --global-accent-BackgroundColor: #204DC8;
 
+  --global-low-PriorityColor: #6493FF;
+  --global-medium-PriorityColor: #FFBD2E;
+  --global-high-PriorityColor: #F6684B;
+  --global-urgent-PriorityColor: #F6684B;
+  --global-disabled-PriorityColor: #5A667E;
+
   --tag-on-subtle-PorpoiseText: #F2F4F6;
   --tag-subtle-PorpoiseBackground: #343F49;
+
+  --icon-disabled-IconColor: #394358;
 
   /** Buttons **/
   --button-subtle-LabelColor: #fff;
@@ -128,8 +136,16 @@
   --global-accent-SkyText:#B9D1F5;
   --global-accent-BackgroundColor: #3566E2;
 
+  --global-low-PriorityColor: #3566E2;
+  --global-medium-PriorityColor: #FF9838;
+  --global-high-PriorityColor: #E9403D;
+  --global-urgent-PriorityColor: #E9403D;
+  --global-disabled-PriorityColor: #A1ABBF;
+
   --tag-on-subtle-PorpoiseText: #293139;
   --tag-subtle-PorpoiseBackground: #C8D1D9;
+
+  --icon-disabled-IconColor: #B3BCCC;
 
   /** Buttons **/
   --button-subtle-LabelColor: #000;
