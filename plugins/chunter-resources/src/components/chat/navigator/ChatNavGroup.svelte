@@ -15,8 +15,8 @@
 <script lang="ts">
   import { Class, Doc, getCurrentAccount, groupByArray, Ref } from '@hcengineering/core'
   import notification, { DocNotifyContext } from '@hcengineering/notification'
-  import { createQuery, getClient, LiveQuery } from '@hcengineering/presentation'
-  import { Action, Scroller } from '@hcengineering/ui'
+  import { createQuery, getClient, LiveQuery, MessageBox } from '@hcengineering/presentation'
+  import { Action, Scroller, showPopup } from '@hcengineering/ui'
   import activity from '@hcengineering/activity'
   import view from '@hcengineering/view'
   import { getResource } from '@hcengineering/platform'
@@ -25,6 +25,7 @@
   import ChatGroupHeader from './ChatGroupHeader.svelte'
   import chunter from '../../../plugin'
   import { ChatNavGroupModel } from '../types'
+  import { readActivityChannels, removeActivityChannels } from '../utils'
 
   export let selectedContextId: Ref<DocNotifyContext> | undefined = undefined
   export let model: ChatNavGroupModel
@@ -88,11 +89,47 @@
     }
   }
 
-  function getPinnedActions (): Action[] {
+  function archiveActivityChannels (contexts: DocNotifyContext[]): void {
+    showPopup(
+      MessageBox,
+      {
+        label: chunter.string.ArchiveActivityConfirmationTitle,
+        message: chunter.string.ArchiveActivityConfirmationMessage
+      },
+      'top',
+      (result?: boolean) => {
+        if (result === true) {
+          void removeActivityChannels(contexts)
+        }
+      }
+    )
+  }
+
+  function getActions (contexts: DocNotifyContext[]): Action[] {
+    if (model.id !== 'activity') return []
+
     return [
       {
+        icon: notification.icon.ReadAll,
+        label: notification.string.MarkReadAll,
+        action: () => readActivityChannels(contexts)
+      },
+      {
+        icon: view.icon.Archive,
+        label: notification.string.ArchiveAll,
+        action: async () => {
+          archiveActivityChannels(contexts)
+        }
+      }
+    ]
+  }
+
+  function getPinnedActions (pinnedContexts: DocNotifyContext[]): Action[] {
+    const baseActions = getActions(pinnedContexts)
+    const actions: Action[] = [
+      {
         icon: view.icon.Delete,
-        label: view.string.Delete,
+        label: chunter.string.UnpinChannels,
         action: chunter.actionImpl.UnpinAllChannels
       }
     ].map(({ icon, label, action }) => ({
@@ -103,6 +140,8 @@
         await actionFn(pinnedContexts, evt)
       }
     }))
+
+    return actions.concat(baseActions)
   }
 
   function sortContexts (contexts: DocNotifyContext[]): DocNotifyContext[] {
@@ -133,7 +172,7 @@
 <Scroller padding="0 0.5rem">
   {#if pinnedContexts.length}
     <div class="block">
-      <ChatGroupHeader header={chunter.string.Pinned} actions={getPinnedActions()} />
+      <ChatGroupHeader header={chunter.string.Pinned} actions={getPinnedActions(pinnedContexts)} />
       {#each pinnedContexts as context (context._id)}
         {@const _class = context.attachedToClass}
         {@const object = objectsByClass.get(_class)?.find(({ _id }) => _id === context.attachedTo)}
@@ -148,7 +187,7 @@
 
   {#if contexts.length}
     <div class="block">
-      <ChatGroupHeader header={model.label} />
+      <ChatGroupHeader header={model.label} actions={getActions(contexts)} />
       {#each contexts as context (context._id)}
         {@const _class = context.attachedToClass}
         {@const object = objectsByClass.get(_class)?.find(({ _id }) => _id === context.attachedTo)}

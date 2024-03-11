@@ -95,6 +95,9 @@
     "NewDirectChat": "New direct chat",
     "AddMembers": "Add members",
     "PinnedCount": "{count} pinned",
-    "LoadingHistory": "Loading history..."
+    "LoadingHistory": "Loading history...",
+    "UnpinChannels": "Unpin all channels",
+    "ArchiveActivityConfirmationTitle": "Archive all activity channels?",
+    "ArchiveActivityConfirmationMessage": "Are you sure you want to archive all activity channels? This operation cannot be undone."
   }
 }

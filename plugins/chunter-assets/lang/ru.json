@@ -95,6 +95,9 @@
     "NewDirectChat": "Новый личный чат",
     "AddMembers": "Добавить участников",
     "PinnedCount": "{count} закреплено",
-    "LoadingHistory": "Загрузка истории..."
+    "LoadingHistory": "Загрузка истории...",
+    "UnpinChannels": "Открепить все каналы",
+    "ArchiveActivityConfirmationTitle": "Архивировать все каналы активности?",
+    "ArchiveActivityConfirmationMessage": "Вы уверены, что хотите заархивировать все каналы активности? Эту операцию невозможно отменить."
   }
 }

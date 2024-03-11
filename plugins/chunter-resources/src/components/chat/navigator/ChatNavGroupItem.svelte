@@ -56,7 +56,9 @@
     })
 
   notificationClient.inboxNotificationsByContext.subscribe((res) => {
-    notifications = res.get(context._id) ?? []
+    notifications = (res.get(context._id) ?? []).filter(
+      ({ _class }) => _class === notification.class.ActivityInboxNotification
+    )
   })
 
   $: isDirect = hierarchy.isDerived(context.attachedToClass, chunter.class.DirectMessage)
