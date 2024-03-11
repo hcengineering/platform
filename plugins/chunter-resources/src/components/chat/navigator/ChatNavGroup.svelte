@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getCurrentAccount, Ref } from '@hcengineering/core'
+  import { Class, Doc, getCurrentAccount, groupByArray, Ref } from '@hcengineering/core'
   import notification, { DocNotifyContext } from '@hcengineering/notification'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient, LiveQuery } from '@hcengineering/presentation'
   import { Action, Scroller } from '@hcengineering/ui'
   import activity from '@hcengineering/activity'
   import view from '@hcengineering/view'
@@ -32,22 +32,24 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  const contextsQuery = createQuery()
-  const pinnedQuery = createQuery()
+  const allContextsQuery = createQuery()
+  const objectsQueryByClass = new Map<Ref<Class<Doc>>, LiveQuery>()
 
+  let objectsByClass = new Map<Ref<Class<Doc>>, Doc[]>()
+
+  let allContexts: DocNotifyContext[] = []
   let contexts: DocNotifyContext[] = []
   let pinnedContexts: DocNotifyContext[] = []
 
-  $: contextsQuery.query(
+  $: allContextsQuery.query(
     notification.class.DocNotifyContext,
     {
       ...model.query,
       hidden: false,
-      isPinned: { $ne: true },
       user: getCurrentAccount()._id
     },
     (res: DocNotifyContext[]) => {
-      contexts = sortContexts(
+      allContexts = sortContexts(
         res.filter(
           ({ attachedToClass }) =>
             hierarchy.classHierarchyMixin(attachedToClass, activity.mixin.ActivityDoc) !== undefined
@@ -56,18 +58,35 @@
     }
   )
 
-  $: pinnedQuery.query(
-    notification.class.DocNotifyContext,
-    {
-      ...model.query,
-      hidden: false,
-      isPinned: true,
-      user: getCurrentAccount()._id
-    },
-    (res: DocNotifyContext[]) => {
-      pinnedContexts = res
+  $: contexts = allContexts.filter(({ isPinned }) => !isPinned)
+  $: pinnedContexts = allContexts.filter(({ isPinned }) => isPinned)
+
+  $: loadObjects(allContexts)
+
+  function loadObjects (allContexts: DocNotifyContext[]): void {
+    const contextsByClass = groupByArray(allContexts, ({ attachedToClass }) => attachedToClass)
+
+    for (const [_class, contexts] of contextsByClass.entries()) {
+      const ids = contexts.map(({ attachedTo }) => attachedTo)
+      const query = objectsQueryByClass.get(_class) ?? createQuery()
+
+      objectsQueryByClass.set(_class, query)
+
+      query.query(_class, { _id: { $in: ids } }, (res: Doc[]) => {
+        objectsByClass = objectsByClass.set(_class, res)
+      })
     }
-  )
+
+    for (const [classRef, query] of objectsQueryByClass.entries()) {
+      if (!contextsByClass.has(classRef)) {
+        query.unsubscribe()
+        objectsQueryByClass.delete(classRef)
+        objectsByClass.delete(classRef)
+
+        objectsByClass = objectsByClass
+      }
+    }
+  }
 
   function getPinnedActions (): Action[] {
     return [
@@ -116,7 +135,9 @@
     <div class="block">
       <ChatGroupHeader header={chunter.string.Pinned} actions={getPinnedActions()} />
       {#each pinnedContexts as context (context._id)}
-        <ChatNavItem {context} isSelected={selectedContextId === context._id} on:select />
+        {@const _class = context.attachedToClass}
+        {@const object = objectsByClass.get(_class)?.find(({ _id }) => _id === context.attachedTo)}
+        <ChatNavItem {context} isSelected={selectedContextId === context._id} doc={object} on:select />
       {/each}
     </div>
   {/if}
@@ -125,12 +146,16 @@
     <div class="separator" />
   {/if}
 
-  <div class="block">
-    <ChatGroupHeader header={model.label} />
-    {#each contexts as context (context._id)}
-      <ChatNavItem {context} isSelected={selectedContextId === context._id} on:select />
-    {/each}
-  </div>
+  {#if contexts.length}
+    <div class="block">
+      <ChatGroupHeader header={model.label} />
+      {#each contexts as context (context._id)}
+        {@const _class = context.attachedToClass}
+        {@const object = objectsByClass.get(_class)?.find(({ _id }) => _id === context.attachedTo)}
+        <ChatNavItem {context} isSelected={selectedContextId === context._id} doc={object} on:select />
+      {/each}
+    </div>
+  {/if}
 </Scroller>
 
 <style lang="scss">
