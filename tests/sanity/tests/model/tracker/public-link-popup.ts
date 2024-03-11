@@ -7,6 +7,7 @@ export class PublicLinkPopup extends IssuesPage {
   readonly buttonRevoke: Locator
   readonly buttonCopy: Locator
   readonly buttonClose: Locator
+  readonly buttonOk: Locator
 
   constructor (page: Page) {
     super(page)
@@ -15,11 +16,17 @@ export class PublicLinkPopup extends IssuesPage {
     this.buttonRevoke = page.locator('form[id="guest:string:PublicLink"] button', { hasText: 'Revoke' })
     this.buttonCopy = page.locator('form[id="guest:string:PublicLink"] button', { hasText: 'Copy' })
     this.buttonClose = page.locator('form[id="guest:string:PublicLink"] button', { hasText: 'Close' })
+    this.buttonOk = page.locator('div.popup button[type="submit"]', { hasText: 'Ok' })
   }
 
   async getPublicLink (): Promise<string> {
     const link = await this.textPublicLink.textContent()
     expect(link).toContain('http')
     return link ?? ''
+  }
+
+  async revokePublicLink (): Promise<void> {
+    await this.buttonRevoke.click()
+    await this.buttonOk.click()
   }
 }
