@@ -46,7 +46,7 @@
 
 <ActivityMessageAction
   icon={savedMessage ? Bookmark : BookmarkBorder}
-  size={savedMessage ? 'x-small' : 'small'}
+  size={savedMessage ? 'small' : 'x-small'}
   iconProps={{ fill: savedMessage ? 'var(--global-accent-TextColor)' : 'currentColor' }}
   action={toggleSaveMessage}
 />
