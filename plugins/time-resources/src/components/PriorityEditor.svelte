@@ -13,98 +13,69 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ButtonBaseKind, Dropdown, ListItem, themeStore } from '@hcengineering/ui'
+  import { ButtonBase, ButtonBaseKind, SelectPopup, SelectPopupValueType, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { ToDoPriority } from '@hcengineering/time'
-  import { translate } from '@hcengineering/platform'
-  import { todoPriorities } from '../utils'
+  import { defaultToDoPriorities, todoPriorities } from '../utils'
   import Priority from './icons/Priority.svelte'
   import time from '../plugin'
 
   export let value: ToDoPriority = ToDoPriority.NoPriority
-  export let kind: ButtonBaseKind | undefined = 'secondary'
+  export let kind: ButtonBaseKind = 'secondary'
   export let onChange: (value: ToDoPriority) => void = () => {}
 
   const dispatch = createEventDispatcher()
 
-  let items: ListItem[] = []
+  let selectPopupPriorities: SelectPopupValueType[]
+  $: selectPopupPriorities = defaultToDoPriorities.map((priority) => {
+    return {
+      id: priority,
+      label: todoPriorities[priority].label,
+      icon: Priority,
+      iconProps: {
+        value: priority
+      },
+      isSelected: value === priority
+    }
+  })
+  $: selected = selectPopupPriorities.find((item) => item.id === value)
+  $: selectedLabel = selected?.label ?? time.string.NoPriority
 
-  async function fillItems (lang: string) {
-    items = [
-      {
-        _id: ToDoPriority.NoPriority.toString(),
-        label: await translate(time.string.NoPriority, {}, lang),
-        icon: Priority,
-        iconProps: {
-          size: 'small',
-          value: ToDoPriority.NoPriority
-        }
-      },
-      {
-        _id: ToDoPriority.Urgent.toString(),
-        label: await translate(time.string.UrgentPriority, {}, lang),
-        icon: Priority,
-        iconProps: {
-          size: 'small',
-          value: ToDoPriority.Urgent
-        }
-      },
-      {
-        _id: ToDoPriority.High.toString(),
-        label: await translate(time.string.HighPriority, {}, lang),
-        icon: Priority,
-        iconProps: {
-          size: 'small',
-          value: ToDoPriority.High
-        }
-      },
-      {
-        _id: ToDoPriority.Medium.toString(),
-        label: await translate(time.string.MediumPriority, {}, lang),
-        icon: Priority,
-        iconProps: {
-          size: 'small',
-          value: ToDoPriority.Medium
-        }
-      },
-      {
-        _id: ToDoPriority.Low.toString(),
-        label: await translate(time.string.LowPriority, {}, lang),
-        icon: Priority,
-        iconProps: {
-          size: 'small',
-          value: ToDoPriority.Low
-        }
-      }
-    ]
+  $: icon = selected?.id === ToDoPriority.NoPriority ? time.icon.Flag : selected?.icon
+  $: iconProps = selected?.iconProps
+
+  const handlePriorityUpdate = async (newPriority: ToDoPriority) => {
+    if (newPriority == null || value === newPriority) {
+      return
+    }
+
+    value = newPriority
+    dispatch('change', newPriority)
+    onChange(newPriority)
   }
 
-  $: fillItems($themeStore.language)
-  $: selected = items.find((item) => item._id === value.toString())
-  $: selectedLabel = selected ? todoPriorities[Number(selected?._id)].label : time.string.NoPriority
+  function handleClick (event: MouseEvent) {
+    event.stopPropagation()
 
-  $: icon = selected?._id === ToDoPriority.NoPriority.toString() ? time.icon.Flag : selected?.icon
-
-  function handleSelected (val: string) {
-    const priority = parseInt(val)
-    if (priority !== value) {
-      dispatch('change', priority)
-      value = priority
-      onChange(priority)
-    }
+    showPopup(
+      SelectPopup,
+      {
+        value: selectPopupPriorities,
+        placeholder: time.string.SetPriority,
+        searchable: true
+      },
+      eventToHTMLElement(event),
+      handlePriorityUpdate
+    )
   }
 </script>
 
-<Dropdown
+<ButtonBase
   type={'type-button-icon'}
   size={'small'}
-  {icon}
   {kind}
-  {items}
-  {selected}
-  withSearch={false}
+  {icon}
+  {iconProps}
   tooltip={{ label: selectedLabel, direction: 'bottom' }}
-  on:selected={(e) => {
-    handleSelected(e.detail._id)
-  }}
+  on:click={handleClick}
 />

@@ -35,34 +35,39 @@ interface ToDoPrioritiesItem {
   name: string
 }
 
-/**
- * @public
- */
+export const defaultToDoPriorities = [
+  ToDoPriority.NoPriority,
+  ToDoPriority.Low,
+  ToDoPriority.Medium,
+  ToDoPriority.High,
+  ToDoPriority.Urgent
+]
+
 export const todoPriorities: Record<number, ToDoPrioritiesItem> = {
   [ToDoPriority.NoPriority]: {
     label: time.string.NoPriority,
-    shortLabel: time.string.NoPriorityShort,
+    shortLabel: time.string.NoPriority,
     name: 'no-priority'
-  },
-  [ToDoPriority.Urgent]: {
-    label: time.string.UrgentPriority,
-    shortLabel: time.string.UrgentPriorityShort,
-    name: 'urgent'
-  },
-  [ToDoPriority.High]: {
-    label: time.string.HighPriority,
-    shortLabel: time.string.HighPriorityShort,
-    name: 'high'
-  },
-  [ToDoPriority.Medium]: {
-    label: time.string.MediumPriority,
-    shortLabel: time.string.MediumPriorityShort,
-    name: 'medium'
   },
   [ToDoPriority.Low]: {
     label: time.string.LowPriority,
-    shortLabel: time.string.LowPriorityShort,
+    shortLabel: time.string.Low,
     name: 'low'
+  },
+  [ToDoPriority.Medium]: {
+    label: time.string.MediumPriority,
+    shortLabel: time.string.Medium,
+    name: 'medium'
+  },
+  [ToDoPriority.High]: {
+    label: time.string.HighPriority,
+    shortLabel: time.string.High,
+    name: 'high'
+  },
+  [ToDoPriority.Urgent]: {
+    label: time.string.UrgentPriority,
+    shortLabel: time.string.Urgent,
+    name: 'urgent'
   }
 }
 
