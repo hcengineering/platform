@@ -123,7 +123,6 @@
   iconProps={{ value: doc }}
   {notificationsCount}
   title={channelName}
-  intlTitle={isDocChat ? hierarchy.getClass(context.attachedToClass).label : chunter.string.Channel}
   {description}
   {actions}
   on:click={() => {
