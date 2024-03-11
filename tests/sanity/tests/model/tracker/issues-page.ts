@@ -134,7 +134,7 @@ export class IssuesPage extends CommonTrackerPage {
           date.setDate(date.getDate() - 1)
           break
         case 'nextWeek':
-          date.setDate(date.getDate() + 7)
+          date.setDate(date.getDate() + 8)
           break
         case 'nextMonth':
           if (date.getMonth() === 11) {
