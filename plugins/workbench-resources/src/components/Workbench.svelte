@@ -150,7 +150,7 @@
     )
 
   const workspaceId = $location.path[1]
-  const inboxClient = InboxNotificationsClientImpl.getClient()
+  const inboxClient = InboxNotificationsClientImpl.createClient()
   const inboxNotificationsByContextStore = inboxClient.inboxNotificationsByContext
 
   let hasNotificationsFn: ((data: Map<Ref<DocNotifyContext>, InboxNotification[]>) => Promise<boolean>) | undefined =
