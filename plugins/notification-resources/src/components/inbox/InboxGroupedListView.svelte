@@ -91,6 +91,16 @@
   $: if (element) {
     element.focus()
   }
+
+  function getContextKey (index: number): string {
+    const contextId = displayData[index][0]
+
+    if (contextId === undefined) {
+      return index.toString()
+    }
+
+    return contextId
+  }
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
@@ -103,6 +113,7 @@
     noScroll
     colorsSchema="lumia"
     lazy={true}
+    getKey={getContextKey}
   >
     <svelte:fragment slot="item" let:item={itemIndex}>
       {@const contextId = displayData[itemIndex][0]}
@@ -111,7 +122,9 @@
       {#if context}
         <DocNotifyContextCard
           value={context}
-          notifications={contextNotifications}
+          visibleNotification={contextNotifications[0]}
+          isCompact={contextNotifications.length === 1}
+          unreadCount={contextNotifications.filter(({ isViewed }) => !isViewed).length}
           {viewlets}
           on:click={(event) => {
             dispatch('click', event.detail)

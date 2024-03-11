@@ -30,8 +30,10 @@
   import NotifyMarker from './NotifyMarker.svelte'
 
   export let value: DocNotifyContext
-  export let notifications: WithLookup<DisplayInboxNotification>[] = []
+  export let visibleNotification: WithLookup<DisplayInboxNotification>
   export let viewlets: ActivityNotificationViewlet[] = []
+  export let isCompact = true
+  export let unreadCount = 0
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -39,9 +41,6 @@
 
   let idTitle: string | undefined
   let title: string | undefined
-
-  $: visibleNotification = notifications[0]
-
   function showMenu (ev: MouseEvent): void {
     showPopup(
       Menu,
@@ -64,10 +63,8 @@
     value.attachedToClass,
     notification.mixin.NotificationContextPresenter
   )
-  $: isCompact = notifications.length === 1
 
   let isActionMenuOpened = false
-
   function handleActionMenuOpened (): void {
     isActionMenuOpened = true
   }
@@ -86,7 +83,6 @@
 </script>
 
 {#if visibleNotification}
-  {@const unreadCount = notifications.filter(({ isViewed }) => !isViewed).length}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div

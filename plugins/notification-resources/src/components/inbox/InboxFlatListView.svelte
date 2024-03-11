@@ -66,6 +66,10 @@
   $: if (element) {
     element.focus()
   }
+
+  function getNotificationKey (index: number): string {
+    return notifications[index]?._id ?? index.toString()
+  }
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
@@ -78,6 +82,7 @@
     noScroll
     colorsSchema="lumia"
     lazy={true}
+    getKey={getNotificationKey}
   >
     <svelte:fragment slot="item" let:item={itemIndex}>
       {@const notification = notifications[itemIndex]}

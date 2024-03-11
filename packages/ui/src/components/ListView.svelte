@@ -26,6 +26,7 @@
   export let colorsSchema: 'default' | 'lumia' = 'default'
   export let updateOnMouse = true
   export let lazy = false
+  export let getKey: (index: number) => string = (index) => index.toString()
 
   const refs: HTMLElement[] = []
 
@@ -72,7 +73,7 @@
       dispatch('changeContent')
     }}
   >
-    {#each Array(count) as _, row}
+    {#each Array(count) as _, row (getKey(row))}
       {#if lazy}
         <Lazy>
           <ListViewItem
