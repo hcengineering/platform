@@ -17,6 +17,11 @@ Various teams are building products on top of the Platform, including [Huly](htt
 
 ![Alt](https://repobeats.axiom.co/api/embed/c42c99e21691fa60ea61b5cdf11c2e0647621534.svg "Repobeats analytics image")
 
+## Self-Hosting
+
+If you're primarily interested in self-hosting Huly without the intention to modify or contribute to its development, please use [huly-selfhost](https://github.com/hcengineering/huly-selfhost). 
+This project offers a convenient method to host Huly using `docker`, designed for ease of use and quick setup. Explore this option to effortlessly enjoy Huly on your own server.
+
 ## Table of Content
 
 - [Pre-requisites](#pre-requisites)
