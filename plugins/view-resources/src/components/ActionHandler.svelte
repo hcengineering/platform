@@ -197,15 +197,15 @@
       if (isContentEditable && (a.allowedForEditableContent === true)) continue
       const t = lastKey
       if (t !== undefined &&
-        a.keyBinding.find((it) => matchKeySequence(evt, it, t)) !== undefined &&
+        a.keyBinding.some((it) => matchKeySequence(evt, it, t)) &&
         await activateAction(a)) {
         return
       }
-      if (!postpone && a.keyBinding.find((p) => findKeySequence(p, evt)) !== undefined) {
+      if (!postpone && a.keyBinding.some((p) => findKeySequence(p, evt))) {
         postpone = true
         continue
       }
-      if (nonSequenceAction === undefined && (a.keyBinding.find((it) => matchKey(evt, it)) !== undefined)) {
+      if (nonSequenceAction === undefined && (a.keyBinding.some((it) => matchKey(evt, it)))) {
         nonSequenceAction = a
       }
     }
