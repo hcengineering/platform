@@ -11,7 +11,7 @@ The Huly Platform is a robust framework designed to accelerate the development o
 This repository includes several applications, such as Chat, Project Management, CRM, HRM, and ATS. 
 Various teams are building products on top of the Platform, including [Huly](https://huly.io) and [TraceX](https://tracex.co).
 
-![Huly](https://huly.io/_astro/dark-kanban.51390fd6_vIfr7.webp)
+![Huly](https://huly.io/_astro/dark-kanban.D2kAOX88_q4nnu.webp)
 
 ## Activity
 
