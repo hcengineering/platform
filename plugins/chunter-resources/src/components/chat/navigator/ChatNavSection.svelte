@@ -128,7 +128,7 @@
   }
 </script>
 
-{#if items.length}
+{#if items.length > 0 && contexts.length > 0}
   <div class="section">
     <ChatSectionHeader
       {header}
@@ -163,6 +163,7 @@
 <style lang="scss">
   .section {
     display: flex;
+    gap: 0.125rem;
     flex-direction: column;
     padding: 0 var(--spacing-1) var(--spacing-1_5) var(--spacing-1);
     border-bottom: 1px solid var(--global-surface-02-BorderColor);

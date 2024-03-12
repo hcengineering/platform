@@ -77,8 +77,8 @@ export const chatSpecials: SpecialNavModel[] = [
 
 export const chatNavGroupModels: ChatNavGroupModel[] = [
   {
-    id: 'pinned',
-    label: chunter.string.Pinned,
+    id: 'starred',
+    label: chunter.string.Starred,
     sortFn: sortAlphabetically,
     wrap: false,
     getActionsFn: getPinnedActions,
@@ -159,7 +159,7 @@ function getPinnedActions (contexts: DocNotifyContext[]): Action[] {
   return [
     {
       icon: view.icon.Delete,
-      label: chunter.string.UnpinChannels,
+      label: chunter.string.DeleteStarred,
       action: async () => {
         await unpinAllChannels(contexts)
       }

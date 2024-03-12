@@ -49,7 +49,7 @@ import {
 } from '@hcengineering/model'
 import core, { TAttachedDoc, TClass, TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
-import view, { createAction } from '@hcengineering/model-view'
+import view, { createAction, template } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import {
   type DocUpdates,
@@ -273,6 +273,29 @@ export class TActivityNotificationViewlet extends TDoc implements ActivityNotifi
 
   presenter!: AnyComponent
 }
+
+export const notificationActionTemplates = template({
+  pinContext: {
+    action: notification.actionImpl.PinDocNotifyContext,
+    label: notification.string.StarDocument,
+    icon: view.icon.Star,
+    input: 'focus',
+    category: notification.category.Notification,
+    target: notification.class.DocNotifyContext,
+    visibilityTester: notification.function.HasDocNotifyContextPinAction,
+    context: { mode: ['context', 'browser'], group: 'edit' }
+  },
+  unpinContext: {
+    action: notification.actionImpl.UnpinDocNotifyContext,
+    label: notification.string.UnstarDocument,
+    icon: view.icon.Star,
+    input: 'focus',
+    category: notification.category.Notification,
+    target: notification.class.DocNotifyContext,
+    visibilityTester: notification.function.HasDocNotifyContextUnpinAction,
+    context: { mode: ['context', 'browser'], group: 'edit' }
+  }
+})
 
 export function createModel (builder: Builder): void {
   builder.createModel(
@@ -568,36 +591,6 @@ export function createModel (builder: Builder): void {
       visibilityTester: notification.function.IsDocNotifyContextHidden
     },
     notification.action.UnHideDocNotifyContext
-  )
-
-  createAction(
-    builder,
-    {
-      action: notification.actionImpl.PinDocNotifyContext,
-      label: view.string.Pin,
-      icon: notification.icon.Track,
-      input: 'focus',
-      category: notification.category.Notification,
-      target: notification.class.DocNotifyContext,
-      visibilityTester: notification.function.HasDocNotifyContextPinAction,
-      context: { mode: ['context', 'browser'], group: 'edit' }
-    },
-    notification.action.PinDocNotifyContext
-  )
-
-  createAction(
-    builder,
-    {
-      action: notification.actionImpl.UnpinDocNotifyContext,
-      label: view.string.Unpin,
-      icon: notification.icon.Track,
-      input: 'focus',
-      category: notification.category.Notification,
-      target: notification.class.DocNotifyContext,
-      visibilityTester: notification.function.HasDocNotifyContextUnpinAction,
-      context: { mode: ['context', 'browser'], group: 'edit' }
-    },
-    notification.action.UnpinDocNotifyContext
   )
 
   builder.mixin(notification.class.DocNotifyContext, core.class.Class, view.mixin.ObjectPresenter, {

@@ -40,5 +40,6 @@ loadMetadata(view.icon, {
   ViewButton: `${icons}#viewButton`,
   Filter: `${icons}#filter`,
   Configure: `${icons}#configure`,
-  Database: `${icons}#database`
+  Database: `${icons}#database`,
+  Star: `${icons}#star`
 })

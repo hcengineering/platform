@@ -191,7 +191,13 @@ export default plugin(chunterId, {
     Private: '' as IntlString,
     NewDirectChat: '' as IntlString,
     AddMembers: '' as IntlString,
-    CloseConversation: '' as IntlString
+    CloseConversation: '' as IntlString,
+    Starred: '' as IntlString,
+    DeleteStarred: '' as IntlString,
+    StarChannel: '' as IntlString,
+    StarConversation: '' as IntlString,
+    UnstarChannel: '' as IntlString,
+    UnstarConversation: '' as IntlString
   },
   ids: {
     DMNotification: '' as Ref<NotificationType>,

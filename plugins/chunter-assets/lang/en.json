@@ -99,6 +99,12 @@
     "UnpinChannels": "Unpin all channels",
     "ArchiveActivityConfirmationTitle": "Archive all activity channels?",
     "ArchiveActivityConfirmationMessage": "Are you sure you want to archive all activity channels? This operation cannot be undone.",
-    "CloseConversation": "Close conversation"
+    "CloseConversation": "Close conversation",
+    "Starred": "Starred",
+    "DeleteStarred": "Delete starred",
+    "StarChannel": "Star channel",
+    "StarConversation": "Star conversation",
+    "UnstarChannel": "Unstar channel",
+    "UnstarConversation": "Unstar conversation"
   }
 }

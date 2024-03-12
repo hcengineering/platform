@@ -28,6 +28,7 @@
   export let model: ChatNavGroupModel
 
   interface Section {
+    id: string
     _class?: Ref<Class<Doc>>
     label: string
     objects: Doc[]
@@ -54,7 +55,6 @@
     (res: DocNotifyContext[]) => {
       contexts = res.filter(
         ({ attachedToClass }) =>
-          hierarchy.hasClass(attachedToClass) &&
           hierarchy.classHierarchyMixin(attachedToClass, activity.mixin.ActivityDoc) !== undefined
       )
     },
@@ -100,6 +100,7 @@
 
     if (!model.wrap) {
       result.push({
+        id: model.id,
         objects: Array.from(objectsByClass.values()).flat(),
         label: await translate(model.label ?? chunter.string.Channels, {})
       })
@@ -111,6 +112,7 @@
       const clazz = hierarchy.getClass(_class)
 
       result.push({
+        id: _class,
         _class,
         objects,
         label: await translate(clazz.pluralLabel ?? clazz.label, {})
@@ -135,7 +137,7 @@
   }
 </script>
 
-{#each sections as section}
+{#each sections as section (section.id)}
   <ChatNavSection
     objects={section.objects}
     {contexts}
