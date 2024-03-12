@@ -53,6 +53,7 @@
     value={parentMessage}
     skipLabel
     embedded
+    {showNotify}
     {withActions}
     {actions}
     {excludedActions}
@@ -65,7 +66,7 @@
     value={message}
     skipLabel
     showEmbedded
-    showNotify={showNotify && !notification.isViewed}
+    {showNotify}
     {withActions}
     {actions}
     {excludedActions}

@@ -124,7 +124,7 @@
         notification: value,
         embedded,
         withActions,
-        showNotify,
+        showNotify: showNotify ? !value.isViewed && !embedded : false,
         actions,
         onClick
       }}
