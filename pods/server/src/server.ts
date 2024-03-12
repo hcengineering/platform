@@ -46,27 +46,30 @@ import {
   getMetricsContext,
   type MinioConfig
 } from '@hcengineering/server'
+import { serverActivityId } from '@hcengineering/server-activity'
 import { serverAttachmentId } from '@hcengineering/server-attachment'
-import { CollaborativeContentRetrievalStage, serverCollaborationId } from '@hcengineering/server-collaboration'
 import { serverCalendarId } from '@hcengineering/server-calendar'
 import { serverChunterId } from '@hcengineering/server-chunter'
+import { CollaborativeContentRetrievalStage, serverCollaborationId } from '@hcengineering/server-collaboration'
 import { serverContactId } from '@hcengineering/server-contact'
 import {
   ContentRetrievalStage,
-  type ContentTextAdapter,
   createInMemoryAdapter,
   createPipeline,
-  type DbConfiguration,
   FullSummaryStage,
-  type FullTextAdapter,
-  type FullTextPipelineStage,
   FullTextPushStage,
   globalIndexer,
   IndexedFieldStage,
+  type ContentTextAdapter,
+  type DbConfiguration,
+  type FullTextAdapter,
+  type FullTextPipelineStage,
   type MiddlewareCreator,
   type Pipeline
 } from '@hcengineering/server-core'
+import { serverDocumentId } from '@hcengineering/server-document'
 import { serverGmailId } from '@hcengineering/server-gmail'
+import { serverGuestId } from '@hcengineering/server-guest'
 import { serverHrId } from '@hcengineering/server-hr'
 import { serverInventoryId } from '@hcengineering/server-inventory'
 import { serverLeadId } from '@hcengineering/server-lead'
@@ -77,19 +80,17 @@ import { serverSettingId } from '@hcengineering/server-setting'
 import { serverTagsId } from '@hcengineering/server-tags'
 import { serverTaskId } from '@hcengineering/server-task'
 import { serverTelegramId } from '@hcengineering/server-telegram'
+import { serverTimeId } from '@hcengineering/server-time'
 import { type Token } from '@hcengineering/server-token'
 import { serverTrackerId } from '@hcengineering/server-tracker'
 import { serverViewId } from '@hcengineering/server-view'
-import { serverActivityId } from '@hcengineering/server-activity'
-import { serverDocumentId } from '@hcengineering/server-document'
-import { serverGuestId } from '@hcengineering/server-guest'
 import {
-  type BroadcastCall,
   ClientSession,
+  start as startJsonRpc,
+  type BroadcastCall,
   type PipelineFactory,
   type ServerFactory,
-  type Session,
-  start as startJsonRpc
+  type Session
 } from '@hcengineering/server-ws'
 
 import { activityId } from '@hcengineering/activity'
@@ -221,6 +222,7 @@ export function start (
   addLocation(serverGuestId, () => import('@hcengineering/server-guest-resources'))
   addLocation(openAIId, () => Promise.resolve({ default: openAIPluginImpl }))
   addLocation(serverDocumentId, () => import('@hcengineering/server-document-resources'))
+  addLocation(serverTimeId, () => import('@hcengineering/server-time-resources'))
 
   const middlewares: MiddlewareCreator[] = [
     ModifiedMiddleware.create,

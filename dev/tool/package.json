@@ -122,6 +122,8 @@
     "@hcengineering/server-activity-resources": "^0.6.0",
     "@hcengineering/server-guest": "^0.6.0",
     "@hcengineering/server-guest-resources": "^0.6.0",
+    "@hcengineering/server-time": "^0.6.0",
+    "@hcengineering/server-time-resources": "^0.6.0",
     "@hcengineering/setting": "^0.6.11",
     "@hcengineering/tags": "^0.6.12",
     "@hcengineering/task": "^0.6.13",
