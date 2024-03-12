@@ -16,12 +16,12 @@
   import { createEventDispatcher } from 'svelte'
   import { ModernEditbox, ButtonMenu, Label, Modal, TextArea } from '@hcengineering/ui'
   import presentation, { getClient } from '@hcengineering/presentation'
-  import { getResource } from '@hcengineering/platform'
   import core, { getCurrentAccount } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
 
   import Lock from '../../icons/Lock.svelte'
   import chunter from '../../../plugin'
+  import { openChannel } from '../../../index'
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -50,7 +50,7 @@
 
   $: canSave = !!channelName
 
-  async function save () {
+  async function save (): Promise<void> {
     const accountId = getCurrentAccount()._id
     const channelId = await client.createDoc(chunter.class.Channel, core.space.Space, {
       name: channelName,
@@ -67,12 +67,10 @@
       hidden: false
     })
 
-    const openChannelFn = await getResource(chunter.actionImpl.OpenChannel)
-
-    await openChannelFn(undefined, undefined, { _id: notifyContextId, mode: 'channels' })
+    await openChannel(undefined, undefined, { _id: notifyContextId })
   }
 
-  function handleCancel () {
+  function handleCancel (): void {
     dispatch('close')
   }
 </script>

@@ -211,6 +211,8 @@ export { default as IconSend } from './components/icons/Send.svelte'
 export { default as IconSquareExpand } from './components/icons/SquareExpand.svelte'
 export { default as IconTableOfContents } from './components/icons/TableOfContents.svelte'
 export { default as IconRight } from './components/icons/Right.svelte'
+export { default as IconDropdownDown } from './components/icons/DropdownDown.svelte'
+export { default as IconDropdownRight } from './components/icons/DropdownRight.svelte'
 
 export { default as PanelInstance } from './components/PanelInstance.svelte'
 export { default as Panel } from './components/Panel.svelte'

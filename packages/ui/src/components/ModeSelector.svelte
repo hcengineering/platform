@@ -6,14 +6,12 @@
   export let kind: 'separated' | 'separated-free' = 'separated'
   export let expansion: 'stretch' | 'default' = 'default'
   export let padding: string | undefined = undefined
-  export let notifyFor: IModeSelector['mode'][] = []
 
   $: modeList = props.config.map((c) => {
     return {
       id: c[0],
       labelIntl: c[1],
       labelParams: c[2],
-      showNotify: notifyFor.includes(c[0]),
       action: () => {
         props.onChange(c[0])
       }

@@ -99,7 +99,7 @@ export class TChannelProvider extends TDoc implements ChannelProvider {
 }
 
 @Model(contact.class.Contact, core.class.Doc, DOMAIN_CONTACT)
-@UX(contact.string.Contact, contact.icon.Person, 'CONT', 'name')
+@UX(contact.string.Contact, contact.icon.Person, 'CONT', 'name', undefined, contact.string.Persons)
 export class TContact extends TDoc implements Contact {
   @Prop(TypeString(), contact.string.Name)
   @Index(IndexKind.FullText)
@@ -142,7 +142,7 @@ export class TChannel extends TAttachedDoc implements Channel {
 }
 
 @Model(contact.class.Person, contact.class.Contact)
-@UX(contact.string.Person, contact.icon.Person, 'PRSN', 'name')
+@UX(contact.string.Person, contact.icon.Person, 'PRSN', 'name', undefined, contact.string.Persons)
 export class TPerson extends TContact implements Person {
   @Prop(TypeDate(DateRangeMode.DATE, false), contact.string.Birthday)
     birthday?: Timestamp
@@ -156,7 +156,7 @@ export class TMember extends TAttachedDoc implements Member {
 }
 
 @Model(contact.class.Organization, contact.class.Contact)
-@UX(contact.string.Organization, contact.icon.Company, 'ORG', 'name')
+@UX(contact.string.Organization, contact.icon.Company, 'ORG', 'name', undefined, contact.string.Organizations)
 export class TOrganization extends TContact implements Organization {
   @Prop(TypeCollaborativeMarkup(), core.string.Description)
   @Index(IndexKind.FullText)

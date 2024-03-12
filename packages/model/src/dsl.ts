@@ -80,6 +80,7 @@ interface ClassTxes {
   shortLabel?: string | IntlString
   sortingKey?: string
   filteringKey?: string
+  pluralLabel?: IntlString
 }
 
 const transactions = new Map<any, ClassTxes>()
@@ -227,7 +228,8 @@ export function UX<T extends Obj> (
   icon?: Asset,
   shortLabel?: string,
   sortingKey?: string,
-  filteringKey?: string
+  filteringKey?: string,
+  pluralLabel?: IntlString
 ) {
   return function classDecorator<C extends new () => T> (constructor: C): void {
     const txes = getTxes(constructor.prototype)
@@ -236,6 +238,7 @@ export function UX<T extends Obj> (
     txes.shortLabel = shortLabel
     txes.sortingKey = sortingKey
     txes.filteringKey = filteringKey ?? sortingKey
+    txes.pluralLabel = pluralLabel
   }
 }
 
@@ -273,7 +276,8 @@ function _generateTx (tx: ClassTxes): Tx[] {
       icon: tx.icon,
       shortLabel: tx.shortLabel,
       sortingKey: tx.sortingKey,
-      filteringKey: tx.filteringKey
+      filteringKey: tx.filteringKey,
+      pluralLabel: tx.pluralLabel
     },
     objectId
   )

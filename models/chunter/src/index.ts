@@ -82,7 +82,7 @@ export class TChunterSpace extends TSpace implements ChunterSpace {
 }
 
 @Model(chunter.class.Channel, chunter.class.ChunterSpace)
-@UX(chunter.string.Channel, chunter.icon.Hashtag)
+@UX(chunter.string.Channel, chunter.icon.Hashtag, undefined, undefined, undefined, chunter.string.Channels)
 export class TChannel extends TChunterSpace implements Channel {
   @Prop(TypeString(), chunter.string.Topic)
   @Index(IndexKind.FullText)
@@ -90,7 +90,7 @@ export class TChannel extends TChunterSpace implements Channel {
 }
 
 @Model(chunter.class.DirectMessage, chunter.class.ChunterSpace)
-@UX(chunter.string.DirectMessage, contact.icon.Person)
+@UX(chunter.string.DirectMessage, contact.icon.Person, undefined, undefined, undefined, chunter.string.DirectMessages)
 export class TDirectMessage extends TChunterSpace implements DirectMessage {}
 
 @Model(chunter.class.ChunterMessage, core.class.AttachedDoc, DOMAIN_CHUNTER)
@@ -548,6 +548,59 @@ export function createModel (builder: Builder, options = { addApplication: true 
       context: { mode: ['context', 'browser'], group: 'remove' }
     },
     chunter.action.DeleteChatMessage
+  )
+
+  createAction(
+    builder,
+    {
+      action: chunter.actionImpl.RemoveChannel,
+      label: view.string.Delete,
+      icon: view.icon.Delete,
+      input: 'focus',
+      keyBinding: ['Backspace'],
+      category: chunter.category.Chunter,
+      target: notification.class.DocNotifyContext,
+      context: { mode: ['context', 'browser'], group: 'remove' }
+    },
+    chunter.action.RemoveChannel
+  )
+
+  createAction(
+    builder,
+    {
+      action: chunter.actionImpl.RemoveChannel,
+      label: chunter.string.CloseConversation,
+      icon: view.icon.Delete,
+      input: 'focus',
+      keyBinding: ['Backspace'],
+      category: chunter.category.Chunter,
+      target: notification.class.DocNotifyContext,
+      override: [chunter.action.RemoveChannel],
+      query: {
+        attachedToClass: chunter.class.DirectMessage
+      },
+      context: { mode: ['context', 'browser'], group: 'remove' }
+    },
+    chunter.action.CloseConversation
+  )
+
+  createAction(
+    builder,
+    {
+      action: chunter.actionImpl.LeaveChannel,
+      label: chunter.string.LeaveChannel,
+      icon: view.icon.Delete,
+      input: 'focus',
+      keyBinding: ['Backspace'],
+      category: chunter.category.Chunter,
+      target: notification.class.DocNotifyContext,
+      override: [chunter.action.RemoveChannel],
+      query: {
+        attachedToClass: chunter.class.Channel
+      },
+      context: { mode: ['context', 'browser'], group: 'remove' }
+    },
+    chunter.action.LeaveChannel
   )
 
   createAction(

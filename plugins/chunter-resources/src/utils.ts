@@ -52,7 +52,7 @@ import activity, {
   type DisplayDocUpdateMessage,
   type DocUpdateMessage
 } from '@hcengineering/activity'
-import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
+import { deleteContextNotifications, InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
 import notification, { type DocNotifyContext, notificationId } from '@hcengineering/notification'
 import { get, type Unsubscriber } from 'svelte/store'
 
@@ -451,7 +451,10 @@ export async function leaveChannel (channel: Channel, value: Ref<Account> | Arra
       await client.update(channel, { $pull: { members: { $in: value } } })
     }
   } else {
+    const context = await client.findOne(notification.class.DocNotifyContext, { attachedTo: channel._id })
+
     await client.update(channel, { $pull: { members: value } })
+    await removeChannelAction(context)
   }
 }
 
@@ -492,4 +495,29 @@ export async function readChannelMessages (
   if ((context.lastViewedTimestamp ?? 0) < lastTimestamp) {
     void client.update(context, { lastViewedTimestamp: lastTimestamp })
   }
+}
+
+export async function leaveChannelAction (context?: DocNotifyContext): Promise<void> {
+  if (context === undefined) {
+    return
+  }
+  const client = getClient()
+  const channel = await client.findOne(chunter.class.Channel, { _id: context.attachedTo as Ref<Channel> })
+
+  if (channel === undefined) {
+    return
+  }
+
+  await leaveChannel(channel, getCurrentAccount()._id)
+}
+
+export async function removeChannelAction (context?: DocNotifyContext): Promise<void> {
+  if (context === undefined) {
+    return
+  }
+
+  const client = getClient()
+
+  await deleteContextNotifications(context)
+  await client.remove(context)
 }

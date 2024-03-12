@@ -124,17 +124,10 @@
 <div class="flex-row-top h-full">
   {#if visibleNav}
     <div
-      class="antiPanel-navigator {appsDirection === 'horizontal'
-        ? 'portrait'
-        : 'landscape'} background-comp-header-color"
+      class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'} background-surface-color"
     >
       <div class="antiPanel-wrap__content">
-        <ChatNavigator
-          {selectedContextId}
-          selectedObjectClass={selectedContext?.attachedToClass}
-          {currentSpecial}
-          on:select={handleChannelSelected}
-        />
+        <ChatNavigator {selectedContextId} {currentSpecial} on:select={handleChannelSelected} />
       </div>
       <Separator name="chat" float={navFloat ? 'navigator' : true} index={0} />
     </div>

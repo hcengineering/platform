@@ -34,7 +34,7 @@
   let notificationsCount = 0
   let elementsCount = 0
 
-  $: getNotificationsCount(special, $notificationsByContextStore).then((res) => {
+  $: void getNotificationsCount(special, $notificationsByContextStore).then((res) => {
     notificationsCount = res
   })
   $: elementsCount = getElementsCount(special, $savedMessagesStore, $savedAttachmentsStore)
@@ -42,7 +42,7 @@
   async function getNotificationsCount (
     special: SpecialNavModel,
     notificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>
-  ) {
+  ): Promise<number> {
     if (!special.notificationsCountProvider) {
       return 0
     }
@@ -71,6 +71,7 @@
     icon={special.icon}
     iconPadding="0 0 0 0.375rem"
     iconSize="small"
+    padding="var(--spacing-1) var(--spacing-0_5)"
     intlTitle={special.label}
     withIconBackground={false}
     {notificationsCount}

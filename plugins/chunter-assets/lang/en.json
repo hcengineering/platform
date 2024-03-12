@@ -98,6 +98,7 @@
     "LoadingHistory": "Loading history...",
     "UnpinChannels": "Unpin all channels",
     "ArchiveActivityConfirmationTitle": "Archive all activity channels?",
-    "ArchiveActivityConfirmationMessage": "Are you sure you want to archive all activity channels? This operation cannot be undone."
+    "ArchiveActivityConfirmationMessage": "Are you sure you want to archive all activity channels? This operation cannot be undone.",
+    "CloseConversation": "Close conversation"
   }
 }
