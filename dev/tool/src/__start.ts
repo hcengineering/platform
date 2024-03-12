@@ -18,15 +18,15 @@ import { prepareTools as prepareToolsRaw } from '@hcengineering/server-tool'
 import { type Data, type Tx, type Version } from '@hcengineering/core'
 import { type MinioService } from '@hcengineering/minio'
 import { type MigrateOperation } from '@hcengineering/model'
-import builder, { migrateOperations, getModelVersion } from '@hcengineering/model-all'
+import builder, { getModelVersion, migrateOperations } from '@hcengineering/model-all'
 import { devTool } from '.'
 
 import { addLocation } from '@hcengineering/platform'
 import { serverActivityId } from '@hcengineering/server-activity'
 import { serverAttachmentId } from '@hcengineering/server-attachment'
-import { serverCollaborationId } from '@hcengineering/server-collaboration'
 import { serverCalendarId } from '@hcengineering/server-calendar'
 import { serverChunterId } from '@hcengineering/server-chunter'
+import { serverCollaborationId } from '@hcengineering/server-collaboration'
 import { serverContactId } from '@hcengineering/server-contact'
 import { serverDocumentId } from '@hcengineering/server-document'
 import { serverGmailId } from '@hcengineering/server-gmail'
@@ -41,6 +41,7 @@ import { serverSettingId } from '@hcengineering/server-setting'
 import { serverTagsId } from '@hcengineering/server-tags'
 import { serverTaskId } from '@hcengineering/server-task'
 import { serverTelegramId } from '@hcengineering/server-telegram'
+import { serverTimeId } from '@hcengineering/server-time'
 import { serverTrackerId } from '@hcengineering/server-tracker'
 import { serverViewId } from '@hcengineering/server-view'
 
@@ -64,6 +65,7 @@ addLocation(serverHrId, () => import('@hcengineering/server-hr-resources'))
 addLocation(serverRequestId, () => import('@hcengineering/server-request-resources'))
 addLocation(serverViewId, () => import('@hcengineering/server-view-resources'))
 addLocation(serverDocumentId, () => import('@hcengineering/server-document-resources'))
+addLocation(serverTimeId, () => import('@hcengineering/server-time-resources'))
 addLocation(serverGuestId, () => import('@hcengineering/server-guest-resources'))
 
 function prepareTools (): {
