@@ -1,15 +1,13 @@
 import { expect, test } from '@playwright/test'
-import { generateId, getSecondPage, PlatformSetting, PlatformURI } from '../utils'
-import { NewDocument, NewTeamspace } from '../model/documents/types'
+import { generateId, PlatformSetting, PlatformURI } from '../utils'
+import { NewDocument } from '../model/documents/types'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { DocumentsPage } from '../model/documents/documents-page'
 import { DocumentContentPage } from '../model/documents/document-content-page'
 import { PublicLinkPopup } from '../model/tracker/public-link-popup'
-import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
 
 test.describe('Documents link tests', () => {
   test('Document public link revoke', async ({ browser }) => {
-    let link: string
     const publicLinkDocument: NewDocument = {
       title: `Document Public link revoke-${generateId()}`,
       space: 'Default'
@@ -32,7 +30,7 @@ test.describe('Documents link tests', () => {
     await documentContentPage.executeMoreAction('Public link')
 
     const publicLinkPopup = new PublicLinkPopup(page)
-    link = await publicLinkPopup.getPublicLink()
+    const link = await publicLinkPopup.getPublicLink()
 
     const clearSession = await browser.newContext()
     const clearPage = await clearSession.newPage()
