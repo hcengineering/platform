@@ -149,6 +149,16 @@ async function migrateWrongDomainContent (client: MigrationClient): Promise<void
   )
 }
 
+async function migrateDeleteCollaboratorDocument (client: MigrationClient): Promise<void> {
+  await client.deleteMany(DOMAIN_ATTACHMENT, { _class: 'document:class:CollaboratorDocument' as Ref<Class<Doc>> })
+  await client.deleteMany(DOMAIN_DOCUMENT, { _class: 'document:class:CollaboratorDocument' as Ref<Class<Doc>> })
+  await client.deleteMany(DOMAIN_TX, {
+    _class: core.class.TxCollectionCUD,
+    collection: 'attachments',
+    'tx.objectClass': 'document:class:CollaboratorDocument' as Ref<Class<Doc>>
+  })
+}
+
 async function setNoParent (client: MigrationClient): Promise<void> {
   await client.update(
     DOMAIN_DOCUMENT,
@@ -218,6 +228,10 @@ export const documentOperation: MigrateOperation = {
       {
         state: 'wrongDomainContent',
         func: migrateWrongDomainContent
+      },
+      {
+        state: 'deleteCollaboratorDocument',
+        func: migrateDeleteCollaboratorDocument
       }
     ])
   },
