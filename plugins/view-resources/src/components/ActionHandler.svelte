@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import core, { Doc, Hierarchy, Ref, TxRemoveDoc } from '@hcengineering/core'
+  import core, { Doc, Hierarchy, Ref, Space, TxRemoveDoc } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import { addTxListener, contextStore, getClient } from '@hcengineering/presentation'
   import { AnyComponent, Component } from '@hcengineering/ui'
@@ -23,6 +23,8 @@
   import { getContextActions, getSelection } from '../actions'
   import { ListSelectionProvider, SelectionStore, focusStore, previewDocument, selectionStore } from '../selection'
   import { getObjectPreview, restrictionStore } from '../utils'
+
+  export let currentSpace: Ref<Space> | undefined
 
   const client = getClient()
 
@@ -131,7 +133,8 @@
   $: disableActions = $restrictionStore.disableActions
 
   async function handleKeys (evt: KeyboardEvent): Promise<void> {
-    if (disableActions) return
+    // For none we ignore all actions.
+    if (disableActions || ctx?.mode === 'none') return
     const targetTagName = (evt.target as any)?.tagName?.toLowerCase()
 
     let elm = evt.target as HTMLElement
@@ -165,63 +168,61 @@
       }
     }
 
-    // For none we ignore all actions.
-    if (ctx?.mode === 'none') {
-      return
-    }
     clearTimeout(timer)
 
-    currentActions = currentActions.filter(({ keyBinding, allowedForEditableContent }) => {
-      const hasKeyBinding = keyBinding !== undefined && keyBinding.length > 0
-      const allowed = !isContentEditable || allowedForEditableContent
+    async function activateAction (a: Action): Promise<boolean> {
+      const action = await getResource(a.action)
+      if (action === undefined) return false
 
-      return hasKeyBinding && allowed
-    })
-
-    if (lastKey !== undefined) {
-      for (const a of sequences) {
-        // TODO: Handle multiple keys here
-        if (a.keyBinding?.find((it) => (lastKey ? matchKeySequence(evt, it, lastKey) : false)) !== undefined) {
-          const action = await getResource(a.action)
-          if (action !== undefined) {
-            sequences = []
-            lastKey = undefined
-            delayedAction = undefined
-            Analytics.handleEvent(a._id)
-            await action(selectionDocs, evt, a.actionProps)
-            return
-          }
-        }
-      }
-    }
-
-    sequences = getSequences(evt, currentActions)
-    let found = false
-    for (const a of currentActions) {
-      // TODO: Handle multiple keys here
-      if (a.keyBinding?.find((it) => matchKey(evt, it)) !== undefined) {
-        const action = await getResource(a.action)
-        if (action !== undefined) {
-          if (sequences.length === 0) {
-            lastKey = undefined
-            sequences = []
-            delayedAction = undefined
-            Analytics.handleEvent(a._id)
-            await action(selectionDocs, evt, a.actionProps)
-            return
-          } else {
-            delayedAction = async () => {
-              Analytics.handleEvent(a._id)
-              await action(selectionDocs, evt, a.actionProps)
-            }
-            found = true
-          }
-        }
-      }
-    }
-    if (!found && delayedAction) {
-      delayedAction()
+      lastKey = undefined
       delayedAction = undefined
+      Analytics.handleEvent(a._id)
+      const actionProps = { ...a.actionProps }
+      if (!Object.prototype.hasOwnProperty.call(actionProps, 'props')) actionProps.props = {}
+      actionProps.props.space = currentSpace
+      await action(selectionDocs, evt, actionProps)
+      return true
+    }
+
+    // 3 cases for keyBinding
+    //  matches the sequence - immediately action
+    //  start sequence - postpone other action
+    //  matches the key - execute if there is no start sequence actions
+
+    let postpone = false
+    let nonSequenceAction: Action | undefined
+
+    for (const a of currentActions) {
+      if (a.keyBinding === undefined || a.keyBinding.length < 1) continue
+      if (isContentEditable && a.allowedForEditableContent !== true) continue
+      const t = lastKey
+      if (t !== undefined && a.keyBinding.some((it) => matchKeySequence(evt, it, t)) && (await activateAction(a))) {
+        return
+      }
+      if (!postpone && a.keyBinding.some((p) => findKeySequence(p, evt))) {
+        postpone = true
+        continue
+      }
+      if (nonSequenceAction === undefined && a.keyBinding.some((it) => matchKey(evt, it))) {
+        nonSequenceAction = a
+      }
+    }
+
+    if (delayedAction !== undefined) {
+      await delayedAction()
+      delayedAction = undefined
+    }
+
+    const t = nonSequenceAction
+    if (t !== undefined) {
+      if (!postpone) {
+        await activateAction(t)
+        return
+      }
+
+      delayedAction = async () => {
+        await activateAction(t)
+      }
     }
 
     lastKey = evt
@@ -230,8 +231,7 @@
       lastKey = undefined
       sequences = []
       if (delayedAction !== undefined) {
-        delayedAction()
-        delayedAction = undefined
+        void delayedAction()
       }
     }, 300)
   }
