@@ -40,6 +40,7 @@ import { tagsId } from '@hcengineering/tags'
 import { taskId } from '@hcengineering/task'
 import telegram, { telegramId } from '@hcengineering/telegram'
 import { templatesId } from '@hcengineering/templates'
+import { timeId } from '@hcengineering/time'
 import tracker, { trackerId } from '@hcengineering/tracker'
 import uiPlugin from '@hcengineering/ui'
 import view, { viewId } from '@hcengineering/view'
@@ -71,6 +72,7 @@ import '@hcengineering/tags-assets'
 import '@hcengineering/task-assets'
 import '@hcengineering/telegram-assets'
 import '@hcengineering/templates-assets'
+import '@hcengineering/time-assets'
 import '@hcengineering/tracker-assets'
 import '@hcengineering/view-assets'
 import '@hcengineering/workbench-assets'
@@ -134,6 +136,7 @@ function configureI18n(): void {
    addStringsLoader(trackerId, async (lang: string) => await import(`@hcengineering/tracker-assets/lang/${lang}.json`))
    addStringsLoader(viewId, async (lang: string) => await import(`@hcengineering/view-assets/lang/${lang}.json`))
    addStringsLoader(workbenchId, async (lang: string) => await import(`@hcengineering/workbench-assets/lang/${lang}.json`))
+   addStringsLoader(timeId, async (lang: string) => await import(`@hcengineering/time-assets/lang/${lang}.json`))
    addStringsLoader(documentId, async (lang: string) => await import(`@hcengineering/document-assets/lang/${lang}.json`))
    addStringsLoader(guestId, async (lang: string) => await import(`@hcengineering/guest-assets/lang/${lang}.json`))
 }
@@ -213,6 +216,7 @@ export async function configurePlatform() {
   addLocation(supportId, () => import(/* webpackChunkName: "support" */ '@hcengineering/support-resources'))
   addLocation(documentId, () => import(/* webpackChunkName: "document" */ '@hcengineering/document-resources'))
   addLocation(guestId, () => import(/* webpackChunkName: "guest" */ '@hcengineering/guest-resources'))
+  addLocation(timeId, () => import(/* webpackChunkName: "time" */ '@hcengineering/time-resources'))
 
   setMetadata(client.metadata.FilterModel, true)
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])

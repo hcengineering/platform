@@ -36,6 +36,6 @@
   {actions}
   {excludedActions}
   hoverable={false}
-  showNotify={showNotify && !notification.isViewed}
+  {showNotify}
   {onClick}
 />

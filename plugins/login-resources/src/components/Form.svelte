@@ -62,6 +62,7 @@
   export let object: any
   export let ignoreInitialValidation: boolean = false
   export let withProviders: boolean = false
+  export let subtitle: string | undefined = undefined
 
   $: $themeStore.language && validate($themeStore.language)
 
@@ -167,6 +168,11 @@
       </a>
     </div>
   {:else}
+    {#if subtitle !== undefined}
+      <div class="fs-title">
+        {subtitle}
+      </div>
+    {/if}
     <div class="title"><Label label={caption} /></div>
   {/if}
   <div class="status">

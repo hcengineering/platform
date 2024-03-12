@@ -88,6 +88,8 @@
     "@hcengineering/server-preference": "^0.6.0",
     "@hcengineering/server-telegram": "^0.6.0",
     "@hcengineering/server-telegram-resources": "^0.6.0",
+    "@hcengineering/server-time": "^0.6.0",
+    "@hcengineering/server-time-resources": "^0.6.0",
     "@hcengineering/server-hr": "^0.6.0",
     "@hcengineering/server-hr-resources": "^0.6.0",
     "@hcengineering/server-request": "^0.6.0",

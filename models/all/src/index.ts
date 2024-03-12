@@ -27,6 +27,7 @@ import { createModel as coreModel } from '@hcengineering/model-core'
 import document, { documentId, createModel as documentModel } from '@hcengineering/model-document'
 import gmail, { gmailId, createModel as gmailModel } from '@hcengineering/model-gmail'
 import hr, { hrId, createModel as hrModel } from '@hcengineering/model-hr'
+import { timeId, createModel as timeModel } from '@hcengineering/model-time'
 import inventory, { inventoryId, createModel as inventoryModel } from '@hcengineering/model-inventory'
 import lead, { leadId, createModel as leadModel } from '@hcengineering/model-lead'
 import notification, { notificationId, createModel as notificationModel } from '@hcengineering/model-notification'
@@ -71,6 +72,7 @@ import view, { viewId, createModel as viewModel } from '@hcengineering/model-vie
 import workbench, { workbenchId, createModel as workbenchModel } from '@hcengineering/model-workbench'
 import { guestId, createModel as guestModel } from '@hcengineering/model-guest'
 import { serverGuestId, createModel as serverGuestModel } from '@hcengineering/model-server-guest'
+import { serverTimeId, createModel as serverTimeModel } from '@hcengineering/model-server-time'
 
 import { openAIId, createModel as serverOpenAI } from '@hcengineering/model-server-openai'
 import { createModel as serverTranslate, translateId } from '@hcengineering/model-server-translate'
@@ -291,6 +293,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         classFilter: defaultFilter
       }
     ],
+    [timeModel, timeId],
     [supportModel, supportId],
 
     [serverCoreModel, serverCoreId],
@@ -317,6 +320,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [serverTranslate, translateId],
     [serverOpenAI, openAIId],
     [serverDocumentModel, serverDocumentId],
+    [serverTimeModel, serverTimeId],
     [serverGuestModel, serverGuestId]
   ]
 

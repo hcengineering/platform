@@ -14,18 +14,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getMetadata } from '@hcengineering/platform'
+  import { getMetadata, setMetadata } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
   import {
+    Location,
     Popup,
     Scroller,
     deviceOptionsStore as deviceInfo,
     fetchMetadataLocalStorage,
+    getCurrentLocation,
     location,
+    setMetadataLocalStorage,
     themeStore
   } from '@hcengineering/ui'
   import workbench from '@hcengineering/workbench'
-  import { onDestroy } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
+  import Auth from './Auth.svelte'
   import Confirmation from './Confirmation.svelte'
   import ConfirmationSend from './ConfirmationSend.svelte'
   import CreateWorkspaceForm from './CreateWorkspaceForm.svelte'
@@ -34,7 +38,6 @@
   import PasswordRequest from './PasswordRequest.svelte'
   import PasswordRestore from './PasswordRestore.svelte'
   import SelectWorkspace from './SelectWorkspace.svelte'
-  import Auth from './Auth.svelte'
   import SignupForm from './SignupForm.svelte'
   import LoginIcon from './icons/LoginIcon.svelte'
 
@@ -44,7 +47,7 @@
   import loginBackAvif from '../../img/login_back.avif'
   import loginBack2xAvif from '../../img/login_back_2x.avif'
 
-  import { Pages, pages } from '..'
+  import { Pages, getAccount, pages } from '..'
   import loginBackWebp from '../../img/login_back.webp'
   import loginBack2xWebp from '../../img/login_back_2x.webp'
   import login from '../plugin'
@@ -53,18 +56,50 @@
 
   let navigateUrl: string | undefined
 
-  onDestroy(
-    location.subscribe((loc) => {
-      const token = getMetadata(presentation.metadata.Token)
-      page = (loc.path[1] as Pages) ?? (token != null ? 'selectWorkspace' : 'login')
-      if (!pages.includes(page)) {
-        const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokens)
-        page = tokens != null ? 'login' : 'signup'
-      }
+  onDestroy(location.subscribe(updatePageLoc))
 
-      navigateUrl = loc.query?.navigateUrl ?? undefined
-    })
-  )
+  function updatePageLoc (loc: Location): void {
+    const token = getMetadata(presentation.metadata.Token)
+    page = (loc.path[1] as Pages) ?? (token != null ? 'selectWorkspace' : 'login')
+    const allowedUnauthPages: Pages[] = [
+      'login',
+      'signup',
+      'password',
+      'recovery',
+      'join',
+      'confirm',
+      'confirmationSend',
+      'auth'
+    ]
+    if (token === undefined ? !allowedUnauthPages.includes(page) : !pages.includes(page)) {
+      const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokens)
+      page = tokens != null ? 'login' : 'signup'
+    }
+
+    navigateUrl = loc.query?.navigateUrl ?? undefined
+  }
+
+  async function chooseToken (): Promise<void> {
+    if (getMetadata(presentation.metadata.Token) == null) {
+      const lastToken = fetchMetadataLocalStorage(login.metadata.LastToken)
+      if (lastToken != null) {
+        try {
+          const info = await getAccount(false)
+          if (info !== undefined) {
+            setMetadata(presentation.metadata.Token, info.token)
+            setMetadataLocalStorage(login.metadata.LastToken, info.token)
+            setMetadataLocalStorage(login.metadata.LoginEndpoint, info.endpoint)
+            setMetadataLocalStorage(login.metadata.LoginEmail, info.email)
+            updatePageLoc(getCurrentLocation())
+          }
+        } catch (err: any) {
+          setMetadataLocalStorage(login.metadata.LastToken, null)
+        }
+      }
+    }
+  }
+
+  onMount(chooseToken)
 </script>
 
 <div class="theme-dark w-full h-full backd" class:paneld={$deviceInfo.docWidth <= 768} class:white={!$themeStore.dark}>
