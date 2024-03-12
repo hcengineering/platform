@@ -72,9 +72,6 @@ test.describe('Tracker public link issues tests', () => {
     })
 
     const clearSession = await browser.newContext()
-    await clearSession.clearCookies()
-    await clearSession.clearPermissions()
-
     const clearPage = await clearSession.newPage()
     await test.step('Check guest access to the issue', async () => {
       await clearPage.goto(link)
