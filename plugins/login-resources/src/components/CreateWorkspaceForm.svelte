@@ -23,6 +23,7 @@
   import { workbenchId } from '@hcengineering/workbench'
   import presentation from '@hcengineering/presentation'
   import { onMount } from 'svelte'
+  import { LoginInfo } from '@hcengineering/login'
 
   const fields = [
     {
@@ -39,8 +40,10 @@
 
   let status: Status<any> = OK
 
+  let account: LoginInfo | undefined = undefined
+
   onMount(async () => {
-    const account = await getAccount()
+    account = await getAccount()
     if (account?.confirmed === false) {
       const loc = getCurrentLocation()
       loc.path[1] = 'confirmationSend'
@@ -77,6 +80,7 @@
   {fields}
   {object}
   {action}
+  subtitle={account?.email}
   bottomActions={[
     {
       caption: login.string.HaveWorkspace,
