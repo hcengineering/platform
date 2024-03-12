@@ -246,7 +246,9 @@ test.describe('Workspace tests', () => {
       const pageSecond = await browser.newPage()
 
       await (await pageSecond.goto(`${PlatformURI}/login/login`))?.finished()
-      await pageSecond.evaluate((lastToken) => { localStorage.setItem('login:metadata:LastToken', lastToken) }, lastToken)
+      await pageSecond.evaluate((lastToken) => {
+        localStorage.setItem('login:metadata:LastToken', lastToken)
+      }, lastToken)
       await (await pageSecond.goto(`${PlatformURI}/login/createWorkspace`))?.finished()
 
       const selectWorkspacePageSecond = new SelectWorkspacePage(pageSecond)
