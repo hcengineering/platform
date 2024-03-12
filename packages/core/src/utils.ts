@@ -49,6 +49,11 @@ export function generateId<T extends Doc> (join: string = ''): Ref<T> {
   return (timestamp() + join + random + join + count()) as Ref<T>
 }
 
+/** @public */
+export function isId (value: any): value is Ref<any> {
+  return typeof value === 'string' && /^[0-9a-f]{24,24}$/.test(value)
+}
+
 let currentAccount: Account
 
 /**
@@ -531,3 +536,9 @@ export function cutObjectArray (obj: any): any {
   }
   return r
 }
+
+export const isEnum =
+  <T>(e: T) =>
+    (token: any): token is T[keyof T] => {
+      return typeof token === 'string' && Object.values(e as Record<string, any>).includes(token)
+    }
