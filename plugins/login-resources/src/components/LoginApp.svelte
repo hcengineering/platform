@@ -66,6 +66,7 @@
       'signup',
       'password',
       'recovery',
+      'join',
       'confirm',
       'confirmationSend',
       'auth'
