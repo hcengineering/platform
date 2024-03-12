@@ -14,22 +14,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getMetadata, OK, setMetadata, Severity, Status } from '@hcengineering/platform'
+  import { OK, setMetadata, Severity, Status } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
-  import {
-    fetchMetadataLocalStorage,
-    getCurrentLocation,
-    Loading,
-    Location,
-    navigate,
-    setMetadataLocalStorage
-  } from '@hcengineering/ui'
+  import { getCurrentLocation, Location, navigate, setMetadataLocalStorage } from '@hcengineering/ui'
 
-  import { doLogin, getAccount, getWorkspaces, navigateToWorkspace, selectWorkspace } from '../utils'
+  import { doLogin, getWorkspaces, navigateToWorkspace, selectWorkspace } from '../utils'
   import Form from './Form.svelte'
 
   import { LoginInfo } from '@hcengineering/login'
-  import { onMount } from 'svelte'
   import { recoveryAction } from '../actions'
   import login from '../plugin'
 
@@ -102,47 +94,15 @@
       })
     }
   }
-
-  let loading = true
-
-  async function chooseToken (): Promise<void> {
-    if (getMetadata(presentation.metadata.Token) == null) {
-      const lastToken = fetchMetadataLocalStorage(login.metadata.LastToken)
-      if (lastToken != null) {
-        try {
-          const info = await getAccount(false)
-          if (info !== undefined) {
-            await doLoginNavigate(info, (st) => {
-              status = st
-            })
-          }
-        } catch (err: any) {
-          setMetadataLocalStorage(login.metadata.LastToken, null)
-        }
-      }
-      if (loading) {
-        loading = false
-      }
-    } else if (loading) {
-      loading = false
-    }
-    setTimeout(chooseToken, 1000)
-  }
-
-  onMount(() => chooseToken())
 </script>
 
-{#if loading}
-  <Loading />
-{:else}
-  <Form
-    caption={login.string.LogIn}
-    {status}
-    {fields}
-    {object}
-    {action}
-    bottomActions={[recoveryAction]}
-    ignoreInitialValidation
-    withProviders
-  />
-{/if}
+<Form
+  caption={login.string.LogIn}
+  {status}
+  {fields}
+  {object}
+  {action}
+  bottomActions={[recoveryAction]}
+  ignoreInitialValidation
+  withProviders
+/>
