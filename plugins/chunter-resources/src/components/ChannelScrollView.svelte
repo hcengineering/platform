@@ -403,9 +403,10 @@
       shouldWaitAndRead = false
       onComplete?.()
     } else if (shouldWaitAndRead && messages.length > 0) {
+      shouldWaitAndRead = false
       setTimeout(() => {
         waitLastMessageRenderAndRead(onComplete)
-      }, 50)
+      }, 500)
     } else {
       onComplete?.()
     }
