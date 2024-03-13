@@ -42,8 +42,8 @@ export function parseDocumentId (documentId: string): MinioDocumentId {
   }
 }
 
-function isValidDocumentId (documentId: MinioDocumentId): boolean {
-  return documentId.workspaceUrl !== '' && documentId.minioDocumentId !== '' && documentId.versionId !== ''
+function isValidDocumentId (documentId: Omit<MinioDocumentId, 'workspaceUrl'>): boolean {
+  return documentId.minioDocumentId !== '' && documentId.versionId !== ''
 }
 
 export class MinioStorageAdapter implements StorageAdapter {
@@ -55,10 +55,10 @@ export class MinioStorageAdapter implements StorageAdapter {
   async loadDocument (documentId: string, context: Context): Promise<YDoc | undefined> {
     const { workspaceId } = context
 
-    const { workspaceUrl, minioDocumentId, versionId } = parseDocumentId(documentId)
+    const { minioDocumentId, versionId } = parseDocumentId(documentId)
 
-    if (!isValidDocumentId({ workspaceUrl, minioDocumentId, versionId })) {
-      console.warn('malformed document id', documentId)
+    if (!isValidDocumentId({ minioDocumentId, versionId })) {
+      await this.ctx.error('malformed document id', { documentId })
       return undefined
     }
 
@@ -75,10 +75,10 @@ export class MinioStorageAdapter implements StorageAdapter {
   async saveDocument (documentId: string, document: YDoc, context: Context): Promise<void> {
     const { workspaceId } = context
 
-    const { workspaceUrl, minioDocumentId, versionId } = parseDocumentId(documentId)
+    const { minioDocumentId, versionId } = parseDocumentId(documentId)
 
-    if (!isValidDocumentId({ workspaceUrl, minioDocumentId, versionId })) {
-      console.warn('malformed document id', documentId)
+    if (!isValidDocumentId({ minioDocumentId, versionId })) {
+      await this.ctx.error('malformed document id', { documentId })
       return undefined
     }
 
