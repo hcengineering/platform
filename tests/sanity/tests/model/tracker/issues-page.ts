@@ -108,8 +108,10 @@ export class IssuesPage extends CommonTrackerPage {
       if (data.createLabel) {
         await this.pressCreateButtonSelectPopup(this.page)
         await this.addNewTagPopup(this.page, data.labels, 'Tag from createNewIssue')
+      } else {
+        await this.checkFromDropdown(this.page, data.labels)
       }
-      await this.checkFromDropdown(this.page, data.labels)
+      await this.inputPopupCreateNewIssueTitle.press('Escape')
       await this.inputPopupCreateNewIssueTitle.click({ force: true })
     }
     if (data.component != null) {
