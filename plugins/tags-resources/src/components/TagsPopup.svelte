@@ -72,7 +72,7 @@
   async function onCreateTagElement (res: any): Promise<void> {
     if (res === null) return
     setTimeout(() => {
-      const tag = objects.findLast(e => e._id === res)
+      const tag = objects.findLast((e) => e._id === res)
       if (tag === undefined) return
       selected = [...selected, tag._id]
       dispatch('update', { action: 'add', tag })
@@ -220,10 +220,7 @@
       {/each}
       {#if objects.length === 0}
         {#if !hideAdd}
-          <button
-            class="menu-item focus flex-row-center"
-            on:click={createTagElementQuick}
-          >
+          <button class="menu-item focus flex-row-center" on:click={createTagElementQuick}>
             <Label label={tags.string.QuickAddItems} params={{ word: keyLabel, title: search }} />
           </button>
         {/if}

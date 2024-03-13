@@ -73,8 +73,13 @@ export const selectedTagElements = writable<Array<Ref<TagElement>>>([])
 /**
  * @public
  */
-export async function createTagElement (title: string, targetClass: Ref<Class<Doc>>,
-  category?: Ref<TagCategory> | null, description?: string | null, color?: number | null): Promise<any> {
+export async function createTagElement (
+  title: string,
+  targetClass: Ref<Class<Doc>>,
+  category?: Ref<TagCategory> | null,
+  description?: string | null,
+  color?: number | null
+): Promise<any> {
   const tagElement: Data<TagElement> = {
     title,
     description: description ?? '',
