@@ -38,6 +38,7 @@ import {
   TypeDate,
   TypeMarkup,
   TypeNumber,
+  TypeRecord,
   TypeRef,
   TypeString,
   UX
@@ -45,9 +46,10 @@ import {
 import attachment from '@hcengineering/model-attachment'
 import core, { TAttachedDoc, TDoc, TStatus, TType } from '@hcengineering/model-core'
 import task, { TTask, TProject as TTaskProject } from '@hcengineering/model-task'
-import { type IntlString } from '@hcengineering/platform'
+import { getEmbeddedLabel, type IntlString } from '@hcengineering/platform'
 import tags, { type TagElement } from '@hcengineering/tags'
 import {
+  type ProjectTargetPreference,
   type Component,
   type Issue,
   type IssueChildInfo,
@@ -67,6 +69,8 @@ import {
 } from '@hcengineering/tracker'
 import tracker from './plugin'
 import { type TaskType } from '@hcengineering/task'
+
+import preference, { TPreference } from '@hcengineering/model-preference'
 
 export const DOMAIN_TRACKER = 'tracker' as Domain
 
@@ -392,3 +396,15 @@ export class TTypeEstimation extends TType {}
 @UX(core.string.Number)
 @Model(tracker.class.TypeRemainingTime, core.class.Type)
 export class TTypeRemainingTime extends TType {}
+
+@Model(tracker.class.ProjectTargetPreference, preference.class.Preference)
+export class TProjectTargetPreference extends TPreference implements ProjectTargetPreference {
+  @Prop(TypeRef(core.class.Space), core.string.Space)
+  declare attachedTo: Ref<Project>
+
+  @Prop(TypeDate(), tracker.string.LastUpdated)
+    usedOn!: Timestamp
+
+  @Prop(TypeRecord(), getEmbeddedLabel('Properties'))
+    props?: { key: string, value: any }[]
+}

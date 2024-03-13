@@ -33,6 +33,7 @@ import {
   WithLookup
 } from '@hcengineering/core'
 import { Asset, IntlString, Plugin, Resource, plugin } from '@hcengineering/platform'
+import { Preference } from '@hcengineering/preference'
 import { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
 import task, {
   ProjectTypeDescriptor,
@@ -60,6 +61,17 @@ export interface Project extends TaskProject, IconProps {
   defaultIssueStatus: Ref<IssueStatus>
   defaultAssignee?: Ref<Employee>
   defaultTimeReportDay: TimeReportDayType
+}
+
+/**
+ * @public
+ */
+export interface ProjectTargetPreference extends Preference {
+  attachedTo: Ref<Project> // tracker.ids.ProjectPreferences
+
+  usedOn: Timestamp
+
+  props?: { key: string, value: any }[]
 }
 
 export type RelatedIssueKind = 'classRule' | 'spaceRule'
@@ -411,7 +423,8 @@ const pluginState = plugin(trackerId, {
     TypeReportedTime: '' as Ref<Class<Type<number>>>,
     TypeEstimation: '' as Ref<Class<Type<number>>>,
     TypeRemainingTime: '' as Ref<Class<Type<number>>>,
-    RelatedIssueTarget: '' as Ref<Class<RelatedIssueTarget>>
+    RelatedIssueTarget: '' as Ref<Class<RelatedIssueTarget>>,
+    ProjectTargetPreference: '' as Ref<Class<ProjectTargetPreference>>
   },
   ids: {
     NoParent: '' as Ref<Issue>,
@@ -428,7 +441,8 @@ const pluginState = plugin(trackerId, {
     EditIssue: '' as AnyComponent,
     CreateIssue: '' as AnyComponent,
     ProjectPresenter: '' as AnyComponent,
-    CreateIssueTemplate: '' as AnyComponent
+    CreateIssueTemplate: '' as AnyComponent,
+    CreateProject: '' as AnyComponent
   },
   attribute: {
     IssueStatus: '' as Ref<Attribute<Status>>
@@ -531,7 +545,9 @@ const pluginState = plugin(trackerId, {
     IssueNotificationMessage: '' as IntlString,
     IssueAssigneedToYou: '' as IntlString,
     Project: '' as IntlString,
-    RelatedIssues: '' as IntlString
+    RelatedIssues: '' as IntlString,
+    Issue: '' as IntlString,
+    NewProject: '' as IntlString
   },
   extensions: {
     IssueListHeader: '' as ComponentExtensionId,

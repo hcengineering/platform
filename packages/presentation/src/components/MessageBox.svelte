@@ -13,14 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { IntlString } from '@hcengineering/platform'
+  import { translate, type IntlString } from '@hcengineering/platform'
   import { Button, FocusHandler, Label, createFocusManager } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
+  import MessageViewer from './MessageViewer.svelte'
 
   export let label: IntlString
   export let labelProps: IntlString
   export let message: IntlString
+  export let richMessage: boolean = false
   export let params: Record<string, any> = {}
   export let okLabel: IntlString | undefined = undefined
   export let canSubmit = true
@@ -36,7 +38,15 @@
 
 <div class="msgbox-container">
   <div class="overflow-label fs-title mb-4"><Label {label} params={labelProps ?? {}} /></div>
-  <div class="message"><Label label={message} {params} /></div>
+  <div class="message">
+    {#if richMessage}
+      {#await translate(message, params) then msg}
+        <MessageViewer message={msg} />
+      {/await}
+    {:else}
+      <Label label={message} {params} />
+    {/if}
+  </div>
   <div class="footer">
     <Button
       focus
@@ -48,7 +58,7 @@
       on:click={() => {
         processing = true
         if (action !== undefined) {
-          action().then(() => {
+          void action().then(() => {
             processing = false
             dispatch('close', true)
           })

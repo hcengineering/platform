@@ -56,6 +56,17 @@ export class Hierarchy {
     return new Proxy(doc, this.getMixinProxyHandler(mixin)) as M
   }
 
+  asIf<D extends Doc, M extends D>(doc: D | undefined, mixin: Ref<Mixin<M>>): M | undefined {
+    if (doc === undefined) {
+      return undefined
+    }
+    return this.hasMixin(doc, mixin) ? this.as(doc, mixin) : undefined
+  }
+
+  asIfArray<D extends Doc, M extends D>(docs: D[], mixin: Ref<Mixin<M>>): M[] {
+    return docs.map((it) => this.asIf(it, mixin)).filter((it) => it !== undefined) as M[]
+  }
+
   static toDoc<D extends Doc>(doc: D): D {
     return _toDoc(doc)
   }

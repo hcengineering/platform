@@ -39,6 +39,7 @@
   export let inheritFont: boolean = false
   export let tooltip: LabelAndProps | undefined = undefined
   export let element: HTMLButtonElement | undefined = undefined
+  export let id: string | undefined = undefined
 
   let actualIconSize: IconSize = 'small'
 
@@ -77,6 +78,7 @@
 </script>
 
 <button
+  {id}
   bind:this={element}
   class="font-medium-14 {kind} {size} {type}"
   class:loading

@@ -122,6 +122,7 @@
   />
 {:else if onlyIcon || milestoneText === undefined}
   <Button
+    id="milestone"
     {focusIndex}
     {kind}
     {size}
@@ -136,6 +137,7 @@
   />
 {:else}
   <Button
+    id="milestone"
     {focusIndex}
     {kind}
     {size}

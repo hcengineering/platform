@@ -88,22 +88,26 @@ export interface ComponentPointExtension extends Doc, ComponentExt {
   extension: ComponentExtensionId
 }
 
+export type DocCreatePhase = 'pre' | 'post'
+
 /**
  * @public
  */
 export type DocCreateFunction = (
   client: TxOperations,
   id: Ref<Doc>,
-  space: Ref<Space>,
+  space: Space,
   document: DocData<Doc>,
 
-  extraData: Record<string, any>
+  extraData: Record<string, any>,
+
+  phase: DocCreatePhase
 ) => Promise<void>
 
 /**
  * @public
  */
-export type CreateExtensionKind = 'header' | 'title' | 'body' | 'footer' | 'pool' | 'buttons'
+export type CreateExtensionKind = 'header' | 'title' | 'body' | 'footer' | 'pool' | 'buttons' | 'createButton'
 
 /**
  * @public

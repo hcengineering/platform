@@ -36,6 +36,7 @@ import {
   TIssueTemplate,
   TMilestone,
   TProject,
+  TProjectTargetPreference,
   TRelatedIssueTarget,
   TTimeSpendReport,
   TTypeEstimation,
@@ -401,7 +402,8 @@ export function createModel (builder: Builder): void {
     TTypeReportedTime,
     TRelatedIssueTarget,
     TTypeEstimation,
-    TTypeRemainingTime
+    TTypeRemainingTime,
+    TProjectTargetPreference
   )
 
   builder.mixin(tracker.class.Project, core.class.Class, activity.mixin.ActivityDoc, {})

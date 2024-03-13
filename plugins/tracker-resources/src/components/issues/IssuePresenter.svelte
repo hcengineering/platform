@@ -15,12 +15,10 @@
 <script lang="ts">
   import { WithLookup } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
-  import { getClient } from '@hcengineering/presentation'
   import { taskTypeStore } from '@hcengineering/task-resources'
   import TaskTypeIcon from '@hcengineering/task-resources/src/components/taskTypes/TaskTypeIcon.svelte'
   import type { Issue } from '@hcengineering/tracker'
-  import { AnySvelteComponent, Component, Icon, tooltip } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
+  import { AnySvelteComponent, Icon, tooltip } from '@hcengineering/ui'
   import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
 
   import tracker from '../../plugin'
@@ -35,21 +33,11 @@
   export let kind: 'list' | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
 
-  $: presenters =
-    value !== undefined ? getClient().getHierarchy().findMixinMixins(value, view.mixin.ObjectPresenter) : []
-
   $: taskType = value !== undefined ? $taskTypeStore.get(value.kind) : undefined
 </script>
 
 {#if inline && value}
   <ObjectMention object={value} {disabled} {noUnderline} {onClick} component={tracker.component.EditIssue} />
-  {#if presenters.length > 0}
-    <div class="flex-row-center">
-      {#each presenters as mixinPresenter}
-        <Component is={mixinPresenter.presenter} props={{ value }} />
-      {/each}
-    </div>
-  {/if}
 {:else if value}
   <div class="flex-row-center">
     <DocNavLink
@@ -77,13 +65,6 @@
         </span>
       </span>
     </DocNavLink>
-    {#if presenters.length > 0}
-      <div class="flex-row-center">
-        {#each presenters as mixinPresenter}
-          <Component is={mixinPresenter.presenter} props={{ value }} />
-        {/each}
-      </div>
-    {/if}
   </div>
 {/if}
 

@@ -144,6 +144,9 @@ export interface TriggerControl {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
+
+  // Current set of transactions to being processed for apply/bulks
+  result: Tx[]
 }
 
 /**
