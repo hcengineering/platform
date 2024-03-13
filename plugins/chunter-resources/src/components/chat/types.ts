@@ -12,15 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { type IntlString } from '@hcengineering/platform'
-import { type DocumentQuery } from '@hcengineering/core'
+import { type Asset, type IntlString } from '@hcengineering/platform'
+import { type Doc, type DocumentQuery, type Ref } from '@hcengineering/core'
 import { type DocNotifyContext } from '@hcengineering/notification'
-
-export type Mode = 'channels' | 'direct' | 'activity'
+import { type AnySvelteComponent, type IconSize, type Action } from '@hcengineering/ui'
 
 export interface ChatNavGroupModel {
-  id: Mode
-  label: IntlString
-  tabLabel: IntlString
+  id: string
+  label?: IntlString
   query: DocumentQuery<DocNotifyContext>
+  sortFn: (items: ChatNavItemModel[], contexts: DocNotifyContext[]) => ChatNavItemModel[]
+  wrap: boolean
+  getActionsFn?: (contexts: DocNotifyContext[]) => Action[]
+  maxSectionItems?: number
+}
+
+export interface ChatNavItemModel {
+  id: Ref<Doc>
+  object: Doc
+  title: string
+  description?: string
+  icon: Asset | AnySvelteComponent | undefined
+  iconSize?: IconSize
+  isSecondary: boolean
+  withIconBackground: boolean
 }

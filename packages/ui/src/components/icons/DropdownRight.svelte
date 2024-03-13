@@ -13,14 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Person } from '@hcengineering/contact'
-  import { IconSize } from '@hcengineering/ui'
-  import Avatar from './Avatar.svelte'
+  import { IconSize } from '../../types'
 
-  export let value: Person | undefined
-  export let size: IconSize = 'small'
+  export let size: IconSize
+  export let fill: string = 'currentColor'
 </script>
 
-{#if value}
-  <Avatar avatar={value.avatar} {size} name={value.name} />
-{/if}
+<svg class="svg-{size}" viewBox="0 0 32 32" {fill} xmlns="http://www.w3.org/2000/svg">
+  <path d="M12 8L22 16L12 24V8Z" />
+</svg>

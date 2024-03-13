@@ -98,6 +98,13 @@
     "LoadingHistory": "Загрузка истории...",
     "UnpinChannels": "Открепить все каналы",
     "ArchiveActivityConfirmationTitle": "Архивировать все каналы активности?",
-    "ArchiveActivityConfirmationMessage": "Вы уверены, что хотите заархивировать все каналы активности? Эту операцию невозможно отменить."
+    "ArchiveActivityConfirmationMessage": "Вы уверены, что хотите заархивировать все каналы активности? Эту операцию невозможно отменить.",
+    "CloseConversation": "Закрыть диалог",
+    "Starred": "Избранное",
+    "DeleteStarred": "Удалить избранное",
+    "StarChannel": "Добавить в избранное",
+    "StarConversation": "Добавить в избранное",
+    "UnstarChannel": "Удалить из избранного",
+    "UnstarConversation": "Удалить из избранного"
   }
 }

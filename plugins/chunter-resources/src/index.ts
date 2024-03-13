@@ -66,10 +66,11 @@ import {
   getUnreadThreadsCount,
   canCopyMessageLink,
   buildThreadLink,
-  getThreadLink
+  getThreadLink,
+  leaveChannelAction,
+  removeChannelAction
 } from './utils'
 import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
-import { type Mode } from './components/chat/types'
 
 export { default as ChatMessagesPresenter } from './components/chat-message/ChatMessagesPresenter.svelte'
 export { default as ChatMessagePopup } from './components/chat-message/ChatMessagePopup.svelte'
@@ -129,10 +130,10 @@ async function ConvertDmToPrivateChannel (dm: DirectMessage): Promise<void> {
   })
 }
 
-async function OpenChannel (
+export async function openChannel (
   notifyContext?: DocNotifyContext,
   evt?: Event,
-  props?: { mode?: Mode, _id: Ref<DocNotifyContext> }
+  props?: { _id: Ref<DocNotifyContext> }
 ): Promise<void> {
   evt?.preventDefault()
 
@@ -151,18 +152,12 @@ async function OpenChannel (
 
   loc.path[3] = id
   loc.path.length = 4
-  loc.query = { mode: props?.mode ?? loc.query?.mode ?? null, message: null }
+  loc.query = { message: null }
 
   loc.fragment = undefined
 
   navigate(loc)
 }
-
-async function UnpinAllChannels (contexts: DocNotifyContext[]): Promise<void> {
-  const client = getClient()
-  await Promise.all(contexts.map(async (context) => await client.update(context, { isPinned: false })))
-}
-
 export const userSearch = writable('')
 
 export async function chunterBrowserVisible (): Promise<boolean> {
@@ -263,7 +258,8 @@ export default async (): Promise<Resources> => ({
     UnarchiveChannel,
     ConvertDmToPrivateChannel,
     DeleteChatMessage: deleteChatMessage,
-    OpenChannel,
-    UnpinAllChannels
+    OpenChannel: openChannel,
+    LeaveChannel: leaveChannelAction,
+    RemoveChannel: removeChannelAction
   }
 })

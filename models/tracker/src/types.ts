@@ -163,7 +163,7 @@ export function TypeEstimation (): Type<number> {
  * @public
  */
 @Model(tracker.class.Issue, task.class.Task)
-@UX(tracker.string.Issue, tracker.icon.Issue, 'TSK', 'title')
+@UX(tracker.string.Issue, tracker.icon.Issue, 'TSK', 'title', undefined, tracker.string.Issues)
 export class TIssue extends TTask implements Issue {
   @Prop(TypeRef(tracker.class.Issue), tracker.string.Parent)
   declare attachedTo: Ref<Issue>
@@ -249,7 +249,14 @@ export class TIssue extends TTask implements Issue {
  */
 
 @Model(tracker.class.IssueTemplate, core.class.Doc, DOMAIN_TRACKER)
-@UX(tracker.string.IssueTemplate, tracker.icon.IssueTemplates, 'PROCESS')
+@UX(
+  tracker.string.IssueTemplate,
+  tracker.icon.IssueTemplates,
+  'PROCESS',
+  undefined,
+  undefined,
+  tracker.string.IssueTemplates
+)
 export class TIssueTemplate extends TDoc implements IssueTemplate {
   @Prop(TypeString(), tracker.string.Title)
   @Index(IndexKind.FullText)
@@ -324,7 +331,7 @@ export class TTimeSpendReport extends TAttachedDoc implements TimeSpendReport {
  */
 
 @Model(tracker.class.Component, core.class.Doc, DOMAIN_TRACKER)
-@UX(tracker.string.Component, tracker.icon.Component, 'COMPONENT', 'label')
+@UX(tracker.string.Component, tracker.icon.Component, 'COMPONENT', 'label', undefined, tracker.string.Components)
 export class TComponent extends TDoc implements Component {
   @Prop(TypeString(), tracker.string.Title)
   @Index(IndexKind.FullText)
@@ -349,7 +356,7 @@ export class TComponent extends TDoc implements Component {
  * @public
  */
 @Model(tracker.class.Milestone, core.class.Doc, DOMAIN_TRACKER)
-@UX(tracker.string.Milestone, tracker.icon.Milestone, '', 'label')
+@UX(tracker.string.Milestone, tracker.icon.Milestone, '', 'label', undefined, tracker.string.Milestones)
 export class TMilestone extends TDoc implements Milestone {
   @Prop(TypeString(), tracker.string.Title)
   // @Index(IndexKind.FullText)

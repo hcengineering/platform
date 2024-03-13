@@ -12,7 +12,7 @@ import chunter from '@hcengineering/model-chunter'
 import recruit from './plugin'
 
 @Model(recruit.class.Review, calendar.class.Event)
-@UX(recruit.string.Review, recruit.icon.Review, 'RVE', 'number')
+@UX(recruit.string.Review, recruit.icon.Review, 'RVE', 'number', undefined, recruit.string.Reviews)
 export class TReview extends TEvent implements Review {
   // We need to declare, to provide property with label
   @Prop(TypeRef(recruit.mixin.Candidate), recruit.string.Talent)
