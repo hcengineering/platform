@@ -107,6 +107,7 @@ async function createDocUpdateMessages (client: MigrationClient): Promise<void> 
   let processed = 0
 
   async function generateFor (_class: Ref<Class<Doc>>, documents: MigrationIterator<Doc>): Promise<void> {
+    const classNotFound = new Set<string>()
     while (true) {
       const docs = await documents.next(50)
 
@@ -129,7 +130,11 @@ async function createDocUpdateMessages (client: MigrationClient): Promise<void> 
             s.add(v.objectId)
             byClass.set(_cl, s)
           } catch {
-            console.log('class not found:', v.objectClass)
+            const has = classNotFound.has(v.objectClass)
+            if (!has) {
+              classNotFound.add(v.objectClass)
+              console.log('class not found:', v.objectClass)
+            }
             continue
           }
 
@@ -141,7 +146,12 @@ async function createDocUpdateMessages (client: MigrationClient): Promise<void> 
               s.add(vcol.tx.objectId)
               byClass.set(_cl, s)
             } catch {
-              console.log('class not found:', (v as TxCollectionCUD<Doc, AttachedDoc>).tx.objectClass)
+              const objClass = (v as TxCollectionCUD<Doc, AttachedDoc>).tx.objectClass
+              const has = classNotFound.has(objClass)
+              if (!has) {
+                classNotFound.add(objClass)
+                console.log('class not found:', objClass)
+              }
             }
           }
         }
@@ -172,7 +182,12 @@ async function createDocUpdateMessages (client: MigrationClient): Promise<void> 
           const innerTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
 
           if (!client.hierarchy.hasClass(innerTx.objectClass)) {
-            console.log('class not found:', innerTx.objectClass)
+            const objClass = innerTx.objectClass
+            const has = classNotFound.has(objClass)
+            if (!has) {
+              classNotFound.add(objClass)
+              console.log('class not found:', objClass)
+            }
             continue
           }
 
