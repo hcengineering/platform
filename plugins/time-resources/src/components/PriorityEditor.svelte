@@ -78,6 +78,7 @@
 </script>
 
 <ButtonBase
+  id="priorityButton"
   type={'type-button-icon'}
   size={'small'}
   {kind}
