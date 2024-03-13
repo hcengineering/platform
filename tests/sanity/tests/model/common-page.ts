@@ -95,4 +95,12 @@ export class CommonPage {
   async selectMention (page: Page, mentionName: string): Promise<void> {
     await page.locator('form.mentionPoup div.list-item span.name', { hasText: mentionName }).click()
   }
+
+  async selectListItem (page: Page, name: string): Promise<void> {
+    await page.locator('div.selectPopup div.list-item', { hasText: name }).click({ delay: 100 })
+  }
+
+  async selectPopupItem (page: Page, name: string): Promise<void> {
+    await page.locator('div.hulyPopup-container button.hulyPopup-row', { hasText: name }).click({ delay: 100 })
+  }
 }
