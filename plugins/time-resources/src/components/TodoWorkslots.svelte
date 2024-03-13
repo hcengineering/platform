@@ -34,7 +34,6 @@
     slots = res
   })
 
-
   async function change (e: CustomEvent<{ startDate: number, dueDate: number, slot: Ref<WorkSlot> }>): Promise<void> {
     const { startDate, dueDate, slot } = e.detail
     const workslot = slots.find((s) => s._id === slot)
