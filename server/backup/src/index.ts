@@ -24,6 +24,7 @@ import core, {
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
   Ref,
+  SortingOrder,
   TxCollectionCUD,
   WorkspaceId
 } from '@hcengineering/core'
@@ -88,6 +89,7 @@ export interface BackupInfo {
   version: string
   productId: string
   snapshots: BackupSnapshot[]
+  lastTxId?: string
 }
 
 async function loadDigest (
@@ -343,21 +345,36 @@ export async function backup (
     let backupInfo: BackupInfo = {
       workspace: workspaceId.name,
       productId: workspaceId.productId,
-      version: '0.6.1',
+      version: '0.6.2',
       snapshots: []
     }
 
-    // Version 0.6.1, format of digest file is changed to
+    // Version 0.6.2, format of digest file is changed to
 
     const infoFile = 'backup.json.gz'
 
     if (await storage.exists(infoFile)) {
       backupInfo = JSON.parse(gunzipSync(await storage.loadFile(infoFile)).toString())
     }
-    backupInfo.version = '0.6.1'
+    backupInfo.version = '0.6.2'
 
     backupInfo.workspace = workspaceId.name
     backupInfo.productId = workspaceId.productId
+
+    // Skip backup if there is no transaction changes.
+    const lastTx = await connection.findOne(
+      core.class.Tx,
+      {},
+      { limit: 1, sort: { modifiedOn: SortingOrder.Descending } }
+    )
+    if (lastTx !== undefined) {
+      if (lastTx._id === backupInfo.lastTxId) {
+        console.log('No transaction changes. Skipping backup.')
+        return
+      } else {
+        backupInfo.lastTxId = lastTx._id
+      }
+    }
 
     const snapshot: BackupSnapshot = {
       date: Date.now(),

@@ -201,7 +201,7 @@
               const smap = new Map(selected.map((it) => [it._id, it]))
               newSelection = newSelection.filter((it) => !smap.has(it._id))
             } else {
-              for (const s of itemsProj.slice(0, selectionLimit)) {
+              for (const s of items.slice(0, selectionLimit)) {
                 if (!selectionIds.has(s._id)) {
                   newSelection.push(s)
                 }
