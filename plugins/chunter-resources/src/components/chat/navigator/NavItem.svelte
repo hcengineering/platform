@@ -33,9 +33,10 @@
   export let iconProps: any | undefined = undefined
   export let iconSize: IconSize = 'x-small'
   export let iconPadding: string | null = null
+  export let padding: string | null = null
   export let withIconBackground = true
   export let isSelected = false
-  export let isBold = false
+  export let isSecondary = false
   export let notificationsCount = 0
   export let title: string | undefined = undefined
   export let intlTitle: IntlString | undefined = undefined
@@ -50,21 +51,21 @@
   $: inlineActions = actions.filter(({ inline }) => inline === true)
   $: menuActions = actions.filter(({ inline }) => inline !== true)
 
-  async function handleMenuClicked (ev: MouseEvent) {
+  function handleMenuClicked (ev: MouseEvent): void {
     showPopup(Menu, { actions: menuActions, ctx: id }, ev.target as HTMLElement, () => {
       menuOpened = false
     })
     menuOpened = true
   }
 
-  async function handleInlineActionClicked (ev: MouseEvent, action: Action) {
+  async function handleInlineActionClicked (ev: MouseEvent, action: Action): Promise<void> {
     await action.action([], ev)
   }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<div class="root" class:pressed={menuOpened || isSelected} on:click>
+<div class="root" class:pressed={menuOpened || isSelected} style:padding on:click>
   {#if icon}
     <div class="icon" class:withBackground={withIconBackground} style:padding={iconPadding}>
       <Icon
@@ -79,8 +80,8 @@
   <div class="content">
     <span
       class="label overflow-label"
-      class:bold={isBold}
-      class:extraBold={notificationsCount > 0 || isSelected}
+      class:secondary={isSecondary}
+      class:extraBold={notificationsCount > 0}
       class:selected={isSelected}
       style="flex-shrink: 0"
     >
@@ -89,13 +90,12 @@
       {:else if intlTitle}
         <Label label={intlTitle} />
       {/if}
+      {#if description}
+        <span class="label overflow-label ml-1-5" title={description}>
+          {description}
+        </span>
+      {/if}
     </span>
-
-    {#if description}
-      <span class="label secondary overflow-label withWrap mt-0-5" title={description}>
-        {description}
-      </span>
-    {/if}
   </div>
 
   <div class="grower" />
@@ -137,8 +137,8 @@
     display: flex;
     align-items: center;
     flex-shrink: 0;
-    padding: 0.5rem 0.25rem 0.5rem 0.25rem;
-    border-radius: 0.375rem;
+    padding: var(--spacing-0_5) var(--spacing-0_5);
+    border-radius: var(--small-BorderRadius);
     cursor: pointer;
     position: relative;
 
@@ -187,10 +187,10 @@
     color: var(--global-primary-TextColor);
 
     &.withBackground {
-      background: linear-gradient(0deg, var(--global-subtle-ui-BorderColor), var(--global-subtle-ui-BorderColor)),
-        linear-gradient(0deg, var(--global-ui-BackgroundColor), var(--global-ui-BackgroundColor));
-      padding: 0.375rem;
-      border-radius: 0.25rem;
+      background: var(--global-ui-BackgroundColor);
+      width: 1.5rem;
+      height: 1.5rem;
+      border-radius: var(--extra-small-BorderRadius);
       border: 1px solid var(--global-subtle-ui-BorderColor);
     }
   }
@@ -201,10 +201,7 @@
     font-weight: 400;
 
     &.secondary {
-      color: var(--global-secondary-TextColor);
-    }
-
-    &.bold {
+      font-size: 0.75rem;
       font-weight: 500;
     }
 
@@ -212,18 +209,9 @@
       font-weight: 700;
     }
 
-    &.withWrap {
-      display: -webkit-box;
-      /* autoprefixer: ignore next */
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 2;
-      line-clamp: 2;
-      white-space: break-spaces;
-      word-break: break-word;
-    }
-
     &.selected {
-      color: var(--global-primary-LinkColor);
+      color: var(--global-accent-TextColor);
+      font-weight: 500;
     }
   }
 

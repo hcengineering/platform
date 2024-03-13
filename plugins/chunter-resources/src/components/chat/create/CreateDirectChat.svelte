@@ -19,15 +19,15 @@
   import { DirectMessage } from '@hcengineering/chunter'
   import contact, { Employee, PersonAccount } from '@hcengineering/contact'
   import core, { getCurrentAccount, Ref } from '@hcengineering/core'
-  import { getResource } from '@hcengineering/platform'
   import { SelectUsersPopup } from '@hcengineering/contact-resources'
-  import notification, { DocNotifyContext } from '@hcengineering/notification'
+  import notification from '@hcengineering/notification'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import { Modal, showPopup } from '@hcengineering/ui'
 
   import chunter from '../../../plugin'
   import { buildDmName } from '../../../utils'
   import ChannelMembers from '../../ChannelMembers.svelte'
+  import { openChannel } from '../../../index'
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -39,50 +39,55 @@
   let accounts: PersonAccount[] = []
   let hidden = true
 
-  $: loadDmName(accounts).then((r) => {
+  $: void loadDmName(accounts).then((r) => {
     dmName = r
   })
   $: query.query(contact.class.PersonAccount, { person: { $in: employeeIds } }, (res) => {
     accounts = res
   })
 
-  async function loadDmName (employeeAccounts: PersonAccount[]) {
+  async function loadDmName (employeeAccounts: PersonAccount[]): Promise<string> {
     return await buildDmName(client, employeeAccounts)
   }
 
-  async function createDirectMessage () {
+  async function createDirectMessage (): Promise<void> {
     const employeeAccounts = await client.findAll(contact.class.PersonAccount, { person: { $in: employeeIds } })
     const accIds = [myAccId, ...employeeAccounts.filter(({ _id }) => _id !== myAccId).map(({ _id }) => _id)].sort()
 
-    const existingContexts = await client.findAll<DocNotifyContext>(
-      notification.class.DocNotifyContext,
-      {
-        user: myAccId,
-        attachedToClass: chunter.class.DirectMessage
-      },
-      { lookup: { attachedTo: chunter.class.DirectMessage } }
-    )
+    const existingDms = await client.findAll(chunter.class.DirectMessage, {})
 
-    const navigate = await getResource(chunter.actionImpl.OpenChannel)
-
-    for (const context of existingContexts) {
-      if (deepEqual((context.$lookup?.attachedTo as DirectMessage)?.members.sort(), accIds)) {
-        if (context.hidden) {
-          await client.update(context, { hidden: false })
-        }
-        await navigate(context)
-
-        return
+    let direct: DirectMessage | undefined
+    for (const dm of existingDms) {
+      if (deepEqual(dm.members.sort(), accIds)) {
+        direct = dm
+        break
       }
     }
 
-    const dmId = await client.createDoc(chunter.class.DirectMessage, core.space.Space, {
-      name: '',
-      description: '',
-      private: true,
-      archived: false,
-      members: accIds
-    })
+    const context = direct
+      ? await client.findOne(notification.class.DocNotifyContext, {
+        user: myAccId,
+        attachedTo: direct._id,
+        attachedToClass: chunter.class.DirectMessage
+      })
+      : undefined
+
+    if (context !== undefined) {
+      await client.diffUpdate(context, { hidden: false })
+      await openChannel(context)
+
+      return
+    }
+
+    const dmId =
+      direct?._id ??
+      (await client.createDoc(chunter.class.DirectMessage, core.space.Space, {
+        name: '',
+        description: '',
+        private: true,
+        archived: false,
+        members: accIds
+      }))
 
     const notifyContextId = await client.createDoc(notification.class.DocNotifyContext, core.space.Space, {
       user: myAccId,
@@ -91,10 +96,10 @@
       hidden: false
     })
 
-    await navigate(undefined, undefined, { _id: notifyContextId, mode: 'direct' })
+    await openChannel(undefined, undefined, { _id: notifyContextId })
   }
 
-  function handleCancel () {
+  function handleCancel (): void {
     dispatch('close')
   }
 
@@ -102,11 +107,11 @@
     openSelectUsersPopup(true)
   })
 
-  function addMembersClicked () {
+  function addMembersClicked (): void {
     openSelectUsersPopup(false)
   }
 
-  function openSelectUsersPopup (closeOnClose: boolean) {
+  function openSelectUsersPopup (closeOnClose: boolean): void {
     showPopup(
       SelectUsersPopup,
       {

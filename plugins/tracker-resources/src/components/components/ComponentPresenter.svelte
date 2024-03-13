@@ -15,9 +15,8 @@
 <script lang="ts">
   import { WithLookup } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
-  import { getClient } from '@hcengineering/presentation'
   import { Component } from '@hcengineering/tracker'
-  import { Icon, Component as UIComponent, themeStore } from '@hcengineering/ui'
+  import { Icon, themeStore } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
@@ -45,11 +44,6 @@
       })
   }
   $: disabled = disabled || value === undefined
-
-  $: presenters =
-    value !== undefined ? getClient().getHierarchy().findMixinMixins(value, view.mixin.ObjectPresenter) : []
-
-  $: icon = tracker.icon.Component
 </script>
 
 <div class="flex-row-center">
@@ -61,7 +55,7 @@
         <div class="flex-row-center">
           {#if shouldShowAvatar}
             <div class="icon">
-              <Icon icon={presenters.length === 0 ? tracker.icon.Component : icon} size={'small'} />
+              <Icon icon={tracker.icon.Component} size={'small'} />
             </div>
           {/if}
           <span title={label} class="label nowrap" class:no-underline={disabled || noUnderline} class:fs-bold={accent}>
@@ -70,21 +64,5 @@
         </div>
       </span>
     </DocNavLink>
-  {/if}
-
-  {#if presenters.length > 0}
-    <div class="flex-row-center">
-      {#each presenters as mixinPresenter}
-        <UIComponent
-          is={mixinPresenter.presenter}
-          props={{ value }}
-          on:open={(evt) => {
-            if (evt.detail.icon !== undefined) {
-              icon = evt.detail.icon
-            }
-          }}
-        />
-      {/each}
-    </div>
   {/if}
 </div>

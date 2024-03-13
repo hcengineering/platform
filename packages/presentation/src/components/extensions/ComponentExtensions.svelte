@@ -9,7 +9,7 @@
 
   let extensions: ComponentPointExtension[] = []
 
-  getClient()
+  void getClient()
     .findAll<ComponentPointExtension>(plugin.class.ComponentPointExtension, {
     extension
   })

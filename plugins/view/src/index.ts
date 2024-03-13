@@ -217,7 +217,8 @@ const view = plugin(viewId, {
     ViewButton: '' as Asset,
     Filter: '' as Asset,
     Configure: '' as Asset,
-    Database: '' as Asset
+    Database: '' as Asset,
+    Star: '' as Asset
   },
   category: {
     General: '' as Ref<ActionCategory>,

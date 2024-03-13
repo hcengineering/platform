@@ -69,7 +69,7 @@ export class TDocumentEmbedding extends TAttachment implements DocumentEmbedding
 }
 
 @Model(document.class.Document, core.class.AttachedDoc, DOMAIN_DOCUMENT)
-@UX(document.string.Document, document.icon.Document, undefined, 'name')
+@UX(document.string.Document, document.icon.Document, undefined, 'name', undefined, document.string.Documents)
 export class TDocument extends TAttachedDoc implements Document {
   @Prop(TypeRef(document.class.Document), document.string.ParentDocument)
   declare attachedTo: Ref<Document>

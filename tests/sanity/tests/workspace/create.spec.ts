@@ -1,6 +1,6 @@
-import { test } from '@playwright/test'
+import { test, expect } from '@playwright/test'
 import { LoginPage } from '../model/login-page'
-import { generateId } from '../utils'
+import { DefaultWorkspace, generateId, PlatformURI, PlatformUser } from '../utils'
 import { SelectWorkspacePage } from '../model/select-workspace-page'
 import { SignUpPage } from '../model/signup-page'
 import { SignUpData } from '../model/common-types'
@@ -225,5 +225,37 @@ test.describe('Workspace tests', () => {
 
     const leftSideMenuPage2 = new LeftSideMenuPage(page2)
     await leftSideMenuPage2.buttonTracker.click()
+  })
+
+  test('Create workspace with LastToken in the localStorage', async ({ page, browser }) => {
+    const loginPage = new LoginPage(page)
+    await loginPage.goto()
+    await loginPage.login(PlatformUser, '1234')
+
+    const selectWorkspacePage = new SelectWorkspacePage(page)
+    await selectWorkspacePage.selectWorkspace(DefaultWorkspace)
+
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    await leftSideMenuPage.buttonTracker.click()
+
+    const lastToken = await page.evaluate(() => localStorage.getItem('login:metadata:LastToken') ?? '')
+    expect(lastToken).not.toEqual('')
+
+    await test.step('Check create workspace action', async () => {
+      const newWorkspaceName = `Some HULY #@$ WS - ${generateId(12)}`
+      const pageSecond = await browser.newPage()
+
+      await (await pageSecond.goto(`${PlatformURI}/login/login`))?.finished()
+      await pageSecond.evaluate((lastToken) => {
+        localStorage.setItem('login:metadata:LastToken', lastToken)
+      }, lastToken)
+      await (await pageSecond.goto(`${PlatformURI}/login/createWorkspace`))?.finished()
+
+      const selectWorkspacePageSecond = new SelectWorkspacePage(pageSecond)
+      await selectWorkspacePageSecond.createWorkspace(newWorkspaceName)
+
+      const leftSideMenuPageSecond = new LeftSideMenuPage(pageSecond)
+      await leftSideMenuPageSecond.buttonTracker.click()
+    })
   })
 })

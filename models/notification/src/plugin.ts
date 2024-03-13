@@ -32,7 +32,9 @@ export default mergeIds(notificationId, notification, {
     MarkAsUnread: '' as IntlString,
     MarkAsRead: '' as IntlString,
     ChangeCollaborators: '' as IntlString,
-    Message: '' as IntlString
+    Message: '' as IntlString,
+    StarDocument: '' as IntlString,
+    UnstarDocument: '' as IntlString
   },
   app: {
     Notification: '' as Ref<Application>,

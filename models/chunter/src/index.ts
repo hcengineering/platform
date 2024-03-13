@@ -58,8 +58,8 @@ import {
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import core, { TAttachedDoc, TClass, TDoc, TSpace } from '@hcengineering/model-core'
-import notification from '@hcengineering/model-notification'
-import view, { createAction, actionTemplates as viewTemplates } from '@hcengineering/model-view'
+import notification, { notificationActionTemplates } from '@hcengineering/model-notification'
+import view, { createAction, template, actionTemplates as viewTemplates } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import type { IntlString, Resource } from '@hcengineering/platform'
@@ -82,7 +82,7 @@ export class TChunterSpace extends TSpace implements ChunterSpace {
 }
 
 @Model(chunter.class.Channel, chunter.class.ChunterSpace)
-@UX(chunter.string.Channel, chunter.icon.Hashtag)
+@UX(chunter.string.Channel, chunter.icon.Hashtag, undefined, undefined, undefined, chunter.string.Channels)
 export class TChannel extends TChunterSpace implements Channel {
   @Prop(TypeString(), chunter.string.Topic)
   @Index(IndexKind.FullText)
@@ -90,7 +90,7 @@ export class TChannel extends TChunterSpace implements Channel {
 }
 
 @Model(chunter.class.DirectMessage, chunter.class.ChunterSpace)
-@UX(chunter.string.DirectMessage, contact.icon.Person)
+@UX(chunter.string.DirectMessage, contact.icon.Person, undefined, undefined, undefined, chunter.string.DirectMessages)
 export class TDirectMessage extends TChunterSpace implements DirectMessage {}
 
 @Model(chunter.class.ChunterMessage, core.class.AttachedDoc, DOMAIN_CHUNTER)
@@ -192,6 +192,19 @@ export class TObjectChatPanel extends TClass implements ObjectChatPanel {
   ignoreKeys!: string[]
   titleProvider!: Resource<(object: Doc) => string>
 }
+
+const actionTemplates = template({
+  removeChannel: {
+    action: chunter.actionImpl.RemoveChannel,
+    label: view.string.Archive,
+    icon: view.icon.Delete,
+    input: 'focus',
+    keyBinding: ['Backspace'],
+    category: chunter.category.Chunter,
+    target: notification.class.DocNotifyContext,
+    context: { mode: ['context', 'browser'], group: 'remove' }
+  }
+})
 
 export function createModel (builder: Builder, options = { addApplication: true }): void {
   builder.createModel(
@@ -553,6 +566,42 @@ export function createModel (builder: Builder, options = { addApplication: true 
   createAction(
     builder,
     {
+      ...actionTemplates.removeChannel,
+      query: {
+        attachedToClass: { $nin: [chunter.class.DirectMessage, chunter.class.Channel] }
+      }
+    },
+    chunter.action.RemoveChannel
+  )
+
+  createAction(
+    builder,
+    {
+      ...actionTemplates.removeChannel,
+      label: chunter.string.CloseConversation,
+      query: {
+        attachedToClass: chunter.class.DirectMessage
+      }
+    },
+    chunter.action.CloseConversation
+  )
+
+  createAction(
+    builder,
+    {
+      ...actionTemplates.removeChannel,
+      action: chunter.actionImpl.LeaveChannel,
+      label: chunter.string.LeaveChannel,
+      query: {
+        attachedToClass: chunter.class.Channel
+      }
+    },
+    chunter.action.LeaveChannel
+  )
+
+  createAction(
+    builder,
+    {
       ...viewTemplates.open,
       target: notification.class.DocNotifyContext,
       context: {
@@ -563,6 +612,53 @@ export function createModel (builder: Builder, options = { addApplication: true 
     },
     chunter.action.OpenChannel
   )
+
+  createAction(builder, {
+    ...notificationActionTemplates.pinContext,
+    label: chunter.string.StarChannel,
+    query: {
+      attachedToClass: chunter.class.Channel
+    },
+    override: [notification.action.PinDocNotifyContext]
+  })
+
+  createAction(builder, {
+    ...notificationActionTemplates.unpinContext,
+    label: chunter.string.UnstarChannel,
+    query: {
+      attachedToClass: chunter.class.Channel
+    }
+  })
+
+  createAction(builder, {
+    ...notificationActionTemplates.pinContext,
+    label: chunter.string.StarConversation,
+    query: {
+      attachedToClass: chunter.class.DirectMessage
+    }
+  })
+
+  createAction(builder, {
+    ...notificationActionTemplates.unpinContext,
+    label: chunter.string.UnstarConversation,
+    query: {
+      attachedToClass: chunter.class.DirectMessage
+    }
+  })
+
+  createAction(builder, {
+    ...notificationActionTemplates.pinContext,
+    query: {
+      attachedToClass: { $nin: [chunter.class.DirectMessage, chunter.class.Channel] }
+    }
+  })
+
+  createAction(builder, {
+    ...notificationActionTemplates.unpinContext,
+    query: {
+      attachedToClass: { $nin: [chunter.class.DirectMessage, chunter.class.Channel] }
+    }
+  })
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: chunter.class.Channel,

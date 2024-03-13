@@ -108,10 +108,6 @@
                 {:else if item.labelIntl}
                   <Label label={item.labelIntl} params={item.labelParams} />
                 {/if}
-
-                {#if item.showNotify}
-                  <div class="notifyMarker" />
-                {/if}
               </span>
             {/if}
           </div>
@@ -288,13 +284,5 @@
         }
       }
     }
-  }
-
-  .notifyMarker {
-    width: 4px;
-    height: 4px;
-    border-radius: 1px;
-    background: var(--global-higlight-Color);
-    margin-left: 0.5rem;
   }
 </style>

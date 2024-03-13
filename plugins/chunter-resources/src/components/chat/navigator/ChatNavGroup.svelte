@@ -13,36 +13,39 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, getCurrentAccount, groupByArray, Ref } from '@hcengineering/core'
+  import { Class, Doc, getCurrentAccount, groupByArray, Ref, SortingOrder } from '@hcengineering/core'
   import notification, { DocNotifyContext } from '@hcengineering/notification'
-  import { createQuery, getClient, LiveQuery, MessageBox } from '@hcengineering/presentation'
-  import { Action, Scroller, showPopup } from '@hcengineering/ui'
+  import { createQuery, getClient, LiveQuery } from '@hcengineering/presentation'
   import activity from '@hcengineering/activity'
-  import view from '@hcengineering/view'
-  import { getResource } from '@hcengineering/platform'
+  import { translate } from '@hcengineering/platform'
+  import { Action } from '@hcengineering/ui'
 
-  import ChatNavItem from './ChatNavGroupItem.svelte'
-  import ChatGroupHeader from './ChatGroupHeader.svelte'
-  import chunter from '../../../plugin'
   import { ChatNavGroupModel } from '../types'
-  import { readActivityChannels, removeActivityChannels } from '../utils'
+  import ChatNavSection from './ChatNavSection.svelte'
+  import chunter from '../../../plugin'
 
   export let selectedContextId: Ref<DocNotifyContext> | undefined = undefined
   export let model: ChatNavGroupModel
 
+  interface Section {
+    id: string
+    _class?: Ref<Class<Doc>>
+    label: string
+    objects: Doc[]
+  }
+
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  const allContextsQuery = createQuery()
+  const contextsQuery = createQuery()
   const objectsQueryByClass = new Map<Ref<Class<Doc>>, LiveQuery>()
 
   let objectsByClass = new Map<Ref<Class<Doc>>, Doc[]>()
-
-  let allContexts: DocNotifyContext[] = []
   let contexts: DocNotifyContext[] = []
-  let pinnedContexts: DocNotifyContext[] = []
 
-  $: allContextsQuery.query(
+  let sections: Section[] = []
+
+  $: contextsQuery.query(
     notification.class.DocNotifyContext,
     {
       ...model.query,
@@ -50,25 +53,25 @@
       user: getCurrentAccount()._id
     },
     (res: DocNotifyContext[]) => {
-      allContexts = sortContexts(
-        res.filter(
-          ({ attachedToClass }) =>
-            hierarchy.classHierarchyMixin(attachedToClass, activity.mixin.ActivityDoc) !== undefined
-        )
+      contexts = res.filter(
+        ({ attachedToClass }) =>
+          hierarchy.classHierarchyMixin(attachedToClass, activity.mixin.ActivityDoc) !== undefined
       )
-    }
+    },
+    { sort: { createdOn: SortingOrder.Ascending } }
   )
 
-  $: contexts = allContexts.filter(({ isPinned }) => !isPinned)
-  $: pinnedContexts = allContexts.filter(({ isPinned }) => isPinned)
+  $: loadObjects(contexts)
 
-  $: loadObjects(allContexts)
+  $: void getSections(objectsByClass, model).then((res) => {
+    sections = res
+  })
 
-  function loadObjects (allContexts: DocNotifyContext[]): void {
-    const contextsByClass = groupByArray(allContexts, ({ attachedToClass }) => attachedToClass)
+  function loadObjects (contexts: DocNotifyContext[]): void {
+    const contextsByClass = groupByArray(contexts, ({ attachedToClass }) => attachedToClass)
 
-    for (const [_class, contexts] of contextsByClass.entries()) {
-      const ids = contexts.map(({ attachedTo }) => attachedTo)
+    for (const [_class, ctx] of contextsByClass.entries()) {
+      const ids = ctx.map(({ attachedTo }) => attachedTo)
       const query = objectsQueryByClass.get(_class) ?? createQuery()
 
       objectsQueryByClass.set(_class, query)
@@ -89,124 +92,60 @@
     }
   }
 
-  function archiveActivityChannels (contexts: DocNotifyContext[]): void {
-    showPopup(
-      MessageBox,
-      {
-        label: chunter.string.ArchiveActivityConfirmationTitle,
-        message: chunter.string.ArchiveActivityConfirmationMessage
-      },
-      'top',
-      (result?: boolean) => {
-        if (result === true) {
-          void removeActivityChannels(contexts)
-        }
-      }
-    )
-  }
+  async function getSections (
+    objectsByClass: Map<Ref<Class<Doc>>, Doc[]>,
+    model: ChatNavGroupModel
+  ): Promise<Section[]> {
+    const result: Section[] = []
 
-  function getActions (contexts: DocNotifyContext[]): Action[] {
-    if (model.id !== 'activity') return []
+    if (!model.wrap) {
+      result.push({
+        id: model.id,
+        objects: Array.from(objectsByClass.values()).flat(),
+        label: await translate(model.label ?? chunter.string.Channels, {})
+      })
 
-    return [
-      {
-        icon: notification.icon.ReadAll,
-        label: notification.string.MarkReadAll,
-        action: () => readActivityChannels(contexts)
-      },
-      {
-        icon: view.icon.Archive,
-        label: notification.string.ArchiveAll,
-        action: async () => {
-          archiveActivityChannels(contexts)
-        }
-      }
-    ]
-  }
-
-  function getPinnedActions (pinnedContexts: DocNotifyContext[]): Action[] {
-    const baseActions = getActions(pinnedContexts)
-    const actions: Action[] = [
-      {
-        icon: view.icon.Delete,
-        label: chunter.string.UnpinChannels,
-        action: chunter.actionImpl.UnpinAllChannels
-      }
-    ].map(({ icon, label, action }) => ({
-      icon,
-      label,
-      action: async (_: any, evt: Event) => {
-        const actionFn = await getResource(action)
-        await actionFn(pinnedContexts, evt)
-      }
-    }))
-
-    return actions.concat(baseActions)
-  }
-
-  function sortContexts (contexts: DocNotifyContext[]): DocNotifyContext[] {
-    if (model.id !== 'activity') {
-      return contexts
+      return result
     }
-    return contexts.sort((context1, context2) => {
-      const hasNewMessages1 = (context1.lastUpdateTimestamp ?? 0) > (context1.lastViewedTimestamp ?? 0)
-      const hasNewMessages2 = (context2.lastUpdateTimestamp ?? 0) > (context2.lastViewedTimestamp ?? 0)
 
-      if (hasNewMessages1 && hasNewMessages2) {
-        return (context2.lastUpdateTimestamp ?? 0) - (context1.lastUpdateTimestamp ?? 0)
-      }
+    for (const [_class, objects] of objectsByClass.entries()) {
+      const clazz = hierarchy.getClass(_class)
 
-      if (hasNewMessages1 && !hasNewMessages2) {
-        return -1
-      }
+      result.push({
+        id: _class,
+        _class,
+        objects,
+        label: await translate(clazz.pluralLabel ?? clazz.label, {})
+      })
+    }
 
-      if (hasNewMessages2 && !hasNewMessages1) {
-        return 1
-      }
+    return result.sort((s1, s2) => s1.label.localeCompare(s2.label))
+  }
 
-      return (context2.lastUpdateTimestamp ?? 0) - (context1.lastUpdateTimestamp ?? 0)
-    })
+  function getSectionActions (section: Section, contexts: DocNotifyContext[]): Action[] {
+    if (model.getActionsFn === undefined) {
+      return []
+    }
+
+    const { _class } = section
+
+    if (_class === undefined) {
+      return model.getActionsFn(contexts)
+    } else {
+      return model.getActionsFn(contexts.filter(({ attachedToClass }) => attachedToClass === _class))
+    }
   }
 </script>
 
-<Scroller padding="0 0.5rem">
-  {#if pinnedContexts.length}
-    <div class="block">
-      <ChatGroupHeader header={chunter.string.Pinned} actions={getPinnedActions(pinnedContexts)} />
-      {#each pinnedContexts as context (context._id)}
-        {@const _class = context.attachedToClass}
-        {@const object = objectsByClass.get(_class)?.find(({ _id }) => _id === context.attachedTo)}
-        <ChatNavItem {context} isSelected={selectedContextId === context._id} doc={object} on:select />
-      {/each}
-    </div>
-  {/if}
-
-  {#if pinnedContexts.length > 0 && contexts.length}
-    <div class="separator" />
-  {/if}
-
-  {#if contexts.length}
-    <div class="block">
-      <ChatGroupHeader header={model.label} actions={getActions(contexts)} />
-      {#each contexts as context (context._id)}
-        {@const _class = context.attachedToClass}
-        {@const object = objectsByClass.get(_class)?.find(({ _id }) => _id === context.attachedTo)}
-        <ChatNavItem {context} isSelected={selectedContextId === context._id} doc={object} on:select />
-      {/each}
-    </div>
-  {/if}
-</Scroller>
-
-<style lang="scss">
-  .block {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .separator {
-    width: 100%;
-    height: 1px;
-    background: var(--theme-navpanel-border);
-    margin-top: 0.75rem;
-  }
-</style>
+{#each sections as section (section.id)}
+  <ChatNavSection
+    objects={section.objects}
+    {contexts}
+    {selectedContextId}
+    header={section.label}
+    actions={getSectionActions(section, contexts)}
+    sortFn={model.sortFn}
+    maxItems={model.maxSectionItems}
+    on:select
+  />
+{/each}

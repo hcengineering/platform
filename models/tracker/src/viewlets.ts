@@ -19,9 +19,9 @@ import { type Builder } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import task from '@hcengineering/model-task'
 import view, { showColorsViewOption } from '@hcengineering/model-view'
+import tags from '@hcengineering/tags'
 import { type BuildModelKey, type ViewOptionsModel } from '@hcengineering/view'
 import tracker from './plugin'
-import tags from '@hcengineering/tags'
 
 export const issuesOptions = (kanban: boolean): ViewOptionsModel => ({
   groupBy: [
@@ -123,6 +123,13 @@ export function issueConfig (
     {
       key: 'labels',
       presenter: tags.component.LabelsPresenter,
+      displayProps: { compression: true },
+      props: { kind: 'list', full: false }
+    },
+    {
+      key: '',
+      label: tracker.string.Extensions,
+      presenter: tracker.component.IssueExtra,
       displayProps: { compression: true },
       props: { kind: 'list', full: false }
     },

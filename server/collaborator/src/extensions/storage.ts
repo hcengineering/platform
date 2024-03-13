@@ -19,6 +19,7 @@ import {
   Extension,
   afterUnloadDocumentPayload,
   onChangePayload,
+  onConnectPayload,
   onDisconnectPayload,
   onLoadDocumentPayload,
   onStoreDocumentPayload
@@ -47,16 +48,18 @@ export class StorageExtension implements Extension {
   }
 
   async onLoadDocument ({ context, documentName }: withContext<onLoadDocumentPayload>): Promise<any> {
+    await this.configuration.ctx.info('load document', { documentId: documentName })
     return await this.configuration.ctx.with('load-document', {}, async () => {
       return await this.loadDocument(documentName, context)
     })
   }
 
   async onStoreDocument ({ context, documentName, document }: withContext<onStoreDocumentPayload>): Promise<void> {
-    const collaborators = this.collaborators.get(documentName)
+    await this.configuration.ctx.info('store document', { documentId: documentName })
 
+    const collaborators = this.collaborators.get(documentName)
     if (collaborators === undefined || collaborators.size === 0) {
-      console.log('no changes for document', documentName)
+      await this.configuration.ctx.info('no changes for document', { documentId: documentName })
       return
     }
 
@@ -66,12 +69,21 @@ export class StorageExtension implements Extension {
     })
   }
 
+  async onConnect ({ context, documentName, instance }: withContext<onConnectPayload>): Promise<any> {
+    const connections = instance.documents.get(documentName)?.getConnectionsCount() ?? 0
+    const params = { documentId: documentName, connectionId: context.connectionId, connections }
+    await this.configuration.ctx.info('connect to document', params)
+  }
+
   async onDisconnect ({ context, documentName, document }: withContext<onDisconnectPayload>): Promise<any> {
     const { connectionId } = context
-    const collaborators = this.collaborators.get(documentName)
 
+    const params = { documentId: documentName, connectionId, connections: document.getConnectionsCount() }
+    await this.configuration.ctx.info('disconnect from document', params)
+
+    const collaborators = this.collaborators.get(documentName)
     if (collaborators === undefined || !collaborators.has(connectionId)) {
-      console.log('no changes for document', documentName)
+      await this.configuration.ctx.info('no changes for document', { documentId: documentName })
       return
     }
 
@@ -82,25 +94,25 @@ export class StorageExtension implements Extension {
   }
 
   async afterUnloadDocument ({ documentName }: afterUnloadDocumentPayload): Promise<any> {
+    await this.configuration.ctx.info('unload document', { documentId: documentName })
     this.collaborators.delete(documentName)
   }
 
   async loadDocument (documentId: string, context: Context): Promise<YDoc | undefined> {
     const { adapter } = this.configuration
 
-    console.log('load document', documentId)
     try {
       const ydoc = await adapter.loadDocument(documentId, context)
       if (ydoc !== undefined) {
         return ydoc
       }
     } catch (err) {
-      console.error('failed to load document', documentId, err)
+      await this.configuration.ctx.error('failed to load document', { documentId, error: err })
     }
 
     const { initialContentId } = context
     if (initialContentId !== undefined && initialContentId.length > 0) {
-      console.log('load document initial content', initialContentId)
+      await this.configuration.ctx.info('load document initial content', { documentId, initialContentId })
       try {
         const ydoc = await adapter.loadDocument(initialContentId, context)
 
@@ -112,7 +124,11 @@ export class StorageExtension implements Extension {
 
         return ydoc
       } catch (err) {
-        console.error('failed to load document', initialContentId, err)
+        await this.configuration.ctx.error('failed to load document initial content', {
+          documentId,
+          initialContentId,
+          error: err
+        })
       }
     }
   }
@@ -120,20 +136,23 @@ export class StorageExtension implements Extension {
   async storeDocument (documentId: string, document: Document, context: Context): Promise<void> {
     const { adapter } = this.configuration
 
-    console.log('store document', documentId)
     try {
       await adapter.saveDocument(documentId, document, context)
     } catch (err) {
-      console.error('failed to save document', documentId, err)
+      await this.configuration.ctx.error('failed to save document', { documentId, error: err })
     }
 
     const { targetContentId } = context
     if (targetContentId !== undefined && targetContentId.length > 0) {
-      console.log('store document target content', targetContentId)
+      await this.configuration.ctx.info('store document target content', { documentId, targetContentId })
       try {
         await adapter.saveDocument(targetContentId, document, context)
       } catch (err) {
-        console.error('failed to save document', targetContentId, err)
+        await this.configuration.ctx.error('failed to save document target content', {
+          documentId,
+          targetContentId,
+          error: err
+        })
       }
     }
   }

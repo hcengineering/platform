@@ -68,7 +68,7 @@ export { recruitOperation } from './migration'
 export { default } from './plugin'
 
 @Model(recruit.class.Vacancy, task.class.Project)
-@UX(recruit.string.Vacancy, recruit.icon.Vacancy, 'VCN', 'name')
+@UX(recruit.string.Vacancy, recruit.icon.Vacancy, 'VCN', 'name', undefined, recruit.string.Vacancies)
 export class TVacancy extends TProject implements Vacancy {
   @Prop(TypeCollaborativeMarkup(), recruit.string.FullDescription)
   @Index(IndexKind.FullText)
@@ -101,7 +101,7 @@ export class TVacancy extends TProject implements Vacancy {
 export class TCandidates extends TSpace implements Candidates {}
 
 @Mixin(recruit.mixin.Candidate, contact.class.Person)
-@UX(recruit.string.Talent, recruit.icon.RecruitApplication, 'TLNT', 'name')
+@UX(recruit.string.Talent, recruit.icon.RecruitApplication, 'TLNT', 'name', undefined, recruit.string.Talents)
 export class TCandidate extends TPerson implements Candidate {
   @Prop(TypeString(), recruit.string.Title)
   @Index(IndexKind.FullText)
@@ -146,7 +146,7 @@ export class TVacancyList extends TOrganization implements VacancyList {
 }
 
 @Model(recruit.class.Applicant, task.class.Task)
-@UX(recruit.string.Application, recruit.icon.Application, 'APP', 'number')
+@UX(recruit.string.Application, recruit.icon.Application, 'APP', 'number', undefined, recruit.string.Applications)
 export class TApplicant extends TTask implements Applicant {
   // We need to declare, to provide property with label
   @Prop(TypeRef(recruit.mixin.Candidate), recruit.string.Talent)

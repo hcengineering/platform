@@ -13,61 +13,40 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref } from '@hcengineering/core'
-  import {
-    getCurrentLocation,
-    IModeSelector,
-    ModeSelector,
-    navigate,
-    location as locationStore,
-    Scroller,
-    SearchEdit,
-    Label,
-    Button,
-    IconAdd,
-    showPopup,
-    Menu,
-    Action
-  } from '@hcengineering/ui'
-  import { DocNotifyContext, InboxNotification } from '@hcengineering/notification'
+  import { Ref } from '@hcengineering/core'
+  import { Scroller, SearchEdit, Label, Button, IconAdd, showPopup, Menu } from '@hcengineering/ui'
+  import { DocNotifyContext } from '@hcengineering/notification'
   import { SpecialNavModel } from '@hcengineering/workbench'
   import { NavLink } from '@hcengineering/view-resources'
   import { TreeSeparator } from '@hcengineering/workbench-resources'
-  import { getResource, type IntlString } from '@hcengineering/platform'
-  import { getNotificationsCount, InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
-  import { getClient } from '@hcengineering/presentation'
-  import activity from '@hcengineering/activity'
+  import { getResource } from '@hcengineering/platform'
+  import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
 
   import chunter from '../../../plugin'
   import ChatNavGroup from './ChatNavGroup.svelte'
-  import { Mode } from '../types'
-  import { chatNavGroupsModel, chatSpecials } from '../utils'
+  import { chatNavGroupModels, chatSpecials } from '../utils'
   import ChatSpecialElement from './ChatSpecialElement.svelte'
   import { userSearch } from '../../../index'
   import { navigateToSpecial } from '../../../utils'
 
   export let selectedContextId: Ref<DocNotifyContext> | undefined
-  export let selectedObjectClass: Ref<Class<DocNotifyContext>> | undefined
   export let currentSpecial: SpecialNavModel | undefined
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
   const notificationClient = InboxNotificationsClientImpl.getClient()
   const contextsStore = notificationClient.docNotifyContexts
-  const notificationsByContextStore = notificationClient.inboxNotificationsByContext
 
-  const actions = [
+  const globalActions = [
     {
       label: chunter.string.NewChannel,
       icon: chunter.icon.Hashtag,
-      action: async (_id: Ref<Doc>): Promise<void> => {
+      action: async (): Promise<void> => {
         showPopup(chunter.component.CreateChannel, {}, 'top')
       }
     },
     {
       label: chunter.string.NewDirectChat,
       icon: chunter.icon.Thread,
-      action: async (_id: Ref<Doc>): Promise<void> => {
+      action: async (): Promise<void> => {
         showPopup(chunter.component.CreateDirectChat, {}, 'top')
       }
     }
@@ -75,68 +54,7 @@
 
   const searchValue: string = ''
 
-  const modesConfig: Array<[Mode, IntlString, object]> = chatNavGroupsModel.map(({ id, tabLabel }) => [
-    id,
-    tabLabel,
-    {}
-  ])
-
-  let modeSelectorProps: IModeSelector
-  let mode: Mode | undefined
-  let notifyModes: Mode[] = []
-
-  $: mode = ($locationStore.query?.mode ?? undefined) as Mode | undefined
-
-  $: if (mode === undefined) {
-    ;[[mode]] = modesConfig
-  }
-
-  $: modeSelectorProps = {
-    mode: (mode ?? modesConfig[0][0]) as string,
-    config: modesConfig,
-    onChange: (mode: string) => {
-      handleModeChanged(mode as Mode)
-    }
-  }
-
-  $: getModesWithNotifications($contextsStore, $notificationsByContextStore).then((res) => {
-    notifyModes = res
-  })
-
-  $: updateSelectedContextMode(selectedObjectClass)
-
-  $: model = chatNavGroupsModel.find(({ id }) => id === mode) ?? chatNavGroupsModel[0]
-
-  function updateSelectedContextMode (objectClass?: Ref<Class<Doc>>) {
-    if (objectClass === undefined) {
-      return
-    }
-
-    if (hierarchy.isDerived(objectClass, chunter.class.Channel)) {
-      if (mode !== 'channels') {
-        handleModeChanged('channels')
-        modeSelectorProps.mode = 'channels'
-      }
-    } else if (hierarchy.isDerived(objectClass, chunter.class.DirectMessage)) {
-      if (mode !== 'direct') {
-        handleModeChanged('direct')
-        modeSelectorProps.mode = 'direct'
-      }
-    } else if (mode !== 'activity') {
-      handleModeChanged('activity')
-      modeSelectorProps.mode = 'activity'
-    }
-  }
-
-  function handleModeChanged (newMode: Mode) {
-    const loc = getCurrentLocation()
-
-    mode = newMode
-    loc.query = { ...loc.query, mode }
-    navigate(loc)
-  }
-
-  async function isSpecialVisible (special: SpecialNavModel, docNotifyContexts: DocNotifyContext[]) {
+  async function isSpecialVisible (special: SpecialNavModel, docNotifyContexts: DocNotifyContext[]): Promise<boolean> {
     if (special.visibleIf === undefined) {
       return true
     }
@@ -146,51 +64,8 @@
     return await getIsVisible(docNotifyContexts as any)
   }
 
-  async function addButtonClicked (ev: MouseEvent) {
-    showPopup(Menu, { actions }, ev.target as HTMLElement)
-  }
-
-  async function getModesWithNotifications (
-    contexts: DocNotifyContext[],
-    inboxNotificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>
-  ) {
-    const contextIds = Array.from(inboxNotificationsByContext.keys())
-    const modes: Mode[] = []
-
-    for (const contextId of contextIds) {
-      if (modes.length === 3) {
-        break
-      }
-
-      const context = contexts.find(({ _id }) => _id === contextId)
-
-      if (
-        context === undefined ||
-        hierarchy.classHierarchyMixin(context.attachedToClass, activity.mixin.ActivityDoc) === undefined
-      ) {
-        continue
-      }
-
-      let tmpMode: Mode = 'activity'
-
-      if (hierarchy.isDerived(context.attachedToClass, chunter.class.Channel)) {
-        tmpMode = 'channels'
-      } else if (hierarchy.isDerived(context.attachedToClass, chunter.class.DirectMessage)) {
-        tmpMode = 'direct'
-      }
-
-      if (modes.includes(tmpMode)) {
-        continue
-      }
-
-      const notificationsCount = await getNotificationsCount(context, inboxNotificationsByContext.get(contextId))
-
-      if (notificationsCount > 0) {
-        modes.push(tmpMode)
-      }
-    }
-
-    return modes
+  function addButtonClicked (ev: MouseEvent): void {
+    showPopup(Menu, { actions: globalActions }, ev.target as HTMLElement)
   }
 </script>
 
@@ -228,16 +103,12 @@
       }}
     />
   </div>
-
-  <ModeSelector
-    props={modeSelectorProps}
-    kind="separated-free"
-    padding="0"
-    expansion="stretch"
-    notifyFor={notifyModes}
-  />
-  <ChatNavGroup {selectedContextId} {model} on:select />
-  <div class="antiNav-space" />
+  <Scroller>
+    {#each chatNavGroupModels as model}
+      <ChatNavGroup {selectedContextId} {model} on:select />
+    {/each}
+    <div class="antiNav-space" />
+  </Scroller>
 </Scroller>
 
 <style lang="scss">
@@ -249,9 +120,10 @@
     margin-left: 1.25rem;
     font-weight: 700;
     font-size: 1.25rem;
-    color: var(--theme-content-color);
+    color: var(--global-primary-TextColor);
   }
   .search {
-    padding: 12px;
+    padding: var(--spacing-1_5);
+    border-bottom: 1px solid var(--global-surface-02-BorderColor);
   }
 </style>

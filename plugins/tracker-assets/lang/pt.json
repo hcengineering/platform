@@ -268,7 +268,8 @@
     "RelatedIssueTargetDescription": "Projeto alvo de problemas relacionados para Classe ou Espaço",
     "MapRelatedIssues": "Configurar projetos padrão de problemas relacionados",
     "DefaultIssueStatus": "Estado padrão do problema",
-    "IssueStatus": "Estado"
+    "IssueStatus": "Estado",
+    "Extensions": "Extensions"
   },
   "status": {}
 }

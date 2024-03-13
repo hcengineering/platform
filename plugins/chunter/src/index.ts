@@ -190,7 +190,14 @@ export default plugin(chunterId, {
     Public: '' as IntlString,
     Private: '' as IntlString,
     NewDirectChat: '' as IntlString,
-    AddMembers: '' as IntlString
+    AddMembers: '' as IntlString,
+    CloseConversation: '' as IntlString,
+    Starred: '' as IntlString,
+    DeleteStarred: '' as IntlString,
+    StarChannel: '' as IntlString,
+    StarConversation: '' as IntlString,
+    UnstarChannel: '' as IntlString,
+    UnstarConversation: '' as IntlString
   },
   ids: {
     DMNotification: '' as Ref<NotificationType>,
@@ -203,6 +210,9 @@ export default plugin(chunterId, {
   },
   action: {
     DeleteChatMessage: '' as Ref<Action>,
-    OpenChannel: '' as Ref<Action>
+    OpenChannel: '' as Ref<Action>,
+    LeaveChannel: '' as Ref<Action>,
+    RemoveChannel: '' as Ref<Action>,
+    CloseConversation: '' as Ref<Action>
   }
 })

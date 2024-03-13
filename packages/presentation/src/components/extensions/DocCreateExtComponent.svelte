@@ -14,10 +14,14 @@
   $: filteredExtensions = $extensions.filter((it) => it.components[kind] !== undefined)
 </script>
 
-{#each filteredExtensions as extension}
-  {@const state = manager.getState(extension._id)}
-  {@const component = extension.components[kind]}
-  {#if component}
-    <Component is={component} props={{ kind, state, space, ...props }} />
-  {/if}
-{/each}
+{#if filteredExtensions.length > 0}
+  {#each filteredExtensions as extension}
+    {@const state = manager.getState(extension._id)}
+    {@const component = extension.components[kind]}
+    {#if component}
+      <Component is={component} props={{ kind, state, space, ...props }} />
+    {/if}
+  {/each}
+{:else}
+  <slot />
+{/if}

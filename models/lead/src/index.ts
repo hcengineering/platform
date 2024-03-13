@@ -67,7 +67,7 @@ export class TFunnel extends TProject implements Funnel {
 }
 
 @Model(lead.class.Lead, task.class.Task)
-@UX(lead.string.Lead, lead.icon.Lead, 'LEAD', 'title')
+@UX(lead.string.Lead, lead.icon.Lead, 'LEAD', 'title', undefined, lead.string.Leads)
 export class TLead extends TTask implements Lead {
   @Prop(TypeRef(contact.class.Contact), lead.string.Customer)
   @ReadOnly()
@@ -90,7 +90,7 @@ export class TLead extends TTask implements Lead {
 }
 
 @Mixin(lead.mixin.Customer, contact.class.Contact)
-@UX(lead.string.Customer, lead.icon.LeadApplication)
+@UX(lead.string.Customer, lead.icon.LeadApplication, undefined, undefined, undefined, lead.string.Customers)
 export class TCustomer extends TContact implements Customer {
   @Prop(Collection(lead.class.Lead), lead.string.Leads)
     leads?: number

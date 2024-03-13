@@ -32,7 +32,7 @@ export { default } from './plugin'
 
 export const DOMAIN_INVENTORY = 'inventory' as Domain
 @Model(inventory.class.Category, core.class.AttachedDoc, DOMAIN_INVENTORY)
-@UX(inventory.string.Category, inventory.icon.Categories, undefined, 'name')
+@UX(inventory.string.Category, inventory.icon.Categories, undefined, 'name', undefined, inventory.string.Categories)
 export class TCategory extends TAttachedDoc implements Category {
   @Prop(TypeString(), core.string.Name)
   @Index(IndexKind.FullText)
@@ -40,7 +40,7 @@ export class TCategory extends TAttachedDoc implements Category {
 }
 
 @Model(inventory.class.Product, core.class.AttachedDoc, DOMAIN_INVENTORY)
-@UX(inventory.string.Product, inventory.icon.Products, undefined, 'name')
+@UX(inventory.string.Product, inventory.icon.Products, undefined, 'name', undefined, inventory.string.Products)
 export class TProduct extends TAttachedDoc implements Product {
   // We need to declare, to provide property with label
   @Prop(TypeRef(inventory.class.Category), inventory.string.Category)
@@ -61,7 +61,7 @@ export class TProduct extends TAttachedDoc implements Product {
 }
 
 @Model(inventory.class.Variant, core.class.AttachedDoc, DOMAIN_INVENTORY)
-@UX(inventory.string.Variant, inventory.icon.Variant, undefined, 'name')
+@UX(inventory.string.Variant, inventory.icon.Variant, undefined, 'name', undefined, inventory.string.Variants)
 export class TVariant extends TAttachedDoc implements Variant {
   // We need to declare, to provide property with label
   @Prop(TypeRef(inventory.class.Product), inventory.string.Product)

@@ -122,7 +122,6 @@ export interface TabItem {
   icon?: Asset | AnySvelteComponent
   color?: string
   tooltip?: IntlString
-  showNotify?: boolean
   action?: () => void
 }
 

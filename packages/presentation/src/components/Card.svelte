@@ -73,7 +73,7 @@
     }
   }
 
-  function handleOkClick () {
+  function handleOkClick (): void {
     if (canSave) {
       if (okProcessing) {
         return
@@ -191,15 +191,19 @@
         {#if $$slots.buttons}
           <slot name="buttons" />
         {/if}
-        <Button
-          loading={okProcessing}
-          focusIndex={10001}
-          disabled={!canSave}
-          label={okLabel}
-          kind={'primary'}
-          size={'large'}
-          on:click={handleOkClick}
-        />
+        {#if $$slots['after-buttons']}
+          <slot name="after-buttons" {handleOkClick} {okProcessing} focusIndex={10001} {canSave} {okLabel} />
+        {:else}
+          <Button
+            loading={okProcessing}
+            focusIndex={10001}
+            disabled={!canSave}
+            label={okLabel}
+            kind={'primary'}
+            size={'large'}
+            on:click={handleOkClick}
+          />
+        {/if}
       </div>
       <div class="buttons-group small-gap text-sm">
         <slot name="footer" />

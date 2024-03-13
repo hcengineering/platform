@@ -285,7 +285,8 @@
     "RelatedIssueTargetDescription": "Related issue project target for Class or Space",
     "MapRelatedIssues": "Configure Related issue default projects",
     "DefaultIssueStatus": "Default issue status",
-    "IssueStatus": "Status"
+    "IssueStatus": "Status",
+    "Extensions": "Extensions"
   },
   "status": {}
 }

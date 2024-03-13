@@ -55,7 +55,8 @@
     IssueStatus,
     IssueTemplate,
     Milestone,
-    Project
+    Project,
+    ProjectTargetPreference
   } from '@hcengineering/tracker'
   import {
     Button,
@@ -119,7 +120,7 @@
   const parentQuery = createQuery()
 
   let _space = draft?.space ?? space
-  let project: Project | undefined
+  // let project: Project | undefined
   let object = getDefaultObjectFromDraft() ?? getDefaultObject(id)
   let isAssigneeTouched = false
   let kind: Ref<TaskType> | undefined = undefined
@@ -217,7 +218,11 @@
 
   $: updateIssueStatusId(object, currentProject)
   $: updateAssigneeId(object, currentProject)
-  $: canSave = getTitle(object.title ?? '').length > 0 && object.status !== undefined && kind !== undefined
+  $: canSave =
+    getTitle(object.title ?? '').length > 0 &&
+    object.status !== undefined &&
+    kind !== undefined &&
+    currentProject !== undefined
 
   $: empty = {
     assignee: assignee ?? currentProject?.defaultAssignee,
@@ -395,9 +400,22 @@
     }
   }
 
+  const projectPreferences = createQuery()
+  let preferences: ProjectTargetPreference[] = []
+  $: projectPreferences.query(tracker.class.ProjectTargetPreference, {}, (res) => {
+    preferences = res
+  })
+  $: spacePreferences = preferences.find((it) => it.attachedTo === _space)
+
   async function createIssue (): Promise<void> {
     const _id: Ref<Issue> = generateId()
-    if (!canSave || object.status === undefined || _space === undefined || kind === undefined) {
+    if (
+      !canSave ||
+      object.status === undefined ||
+      _space === undefined ||
+      kind === undefined ||
+      currentProject === undefined
+    ) {
       return
     }
 
@@ -462,7 +480,7 @@
         identifier
       }
 
-      await docCreateManager.commit(operations, _id, _space, value)
+      await docCreateManager.commit(operations, _id, currentProject, value, 'pre')
 
       await operations.addCollection(
         tracker.class.Issue,
@@ -473,6 +491,7 @@
         value,
         _id
       )
+      await docCreateManager.commit(operations, _id, currentProject, value, 'post')
       for (const label of object.labels) {
         await operations.addCollection(label._class, label.space, _id, tracker.class.Issue, 'labels', {
           title: label.title,
@@ -496,18 +515,19 @@
       await operations.commit()
       await descriptionBox.createAttachments(_id)
 
-      const parents: IssueParentInfo[] = parentIssue
-        ? [
-            { parentId: _id, parentTitle: value.title, space: parentIssue.space, identifier },
-            {
-              parentId: parentIssue._id,
-              parentTitle: parentIssue.title,
-              space: parentIssue.space,
-              identifier: parentIssue.identifier
-            },
-            ...parentIssue.parents
-          ]
-        : [{ parentId: _id, parentTitle: value.title, space: _space, identifier }]
+      const parents: IssueParentInfo[] =
+        parentIssue != null
+          ? [
+              { parentId: _id, parentTitle: value.title, space: parentIssue.space, identifier },
+              {
+                parentId: parentIssue._id,
+                parentTitle: parentIssue.title,
+                space: parentIssue.space,
+                identifier: parentIssue.identifier
+              },
+              ...parentIssue.parents
+            ]
+          : [{ parentId: _id, parentTitle: value.title, space: _space, identifier }]
       await subIssuesComponent.save(parents, _id)
       addNotification(
         await translate(tracker.string.IssueCreated, {}, $themeStore.language),
@@ -528,6 +548,9 @@
         console.log('createIssue measure', res, Date.now() - d1)
       })
     } catch (err: any) {
+      resetObject()
+      draftController.remove()
+      descriptionBox?.removeDraft(false)
       console.error(err)
       await doneOp() // Complete in case of error
       Analytics.handleError(err)
@@ -644,6 +667,18 @@
         undefined
     }
 
+    if (targetRef === undefined) {
+      // Use last created issue in first.
+      const projects = await client.findAll(
+        tracker.class.ProjectTargetPreference,
+        {},
+        { sort: { usedOn: SortingOrder.Descending } }
+      )
+      if (projects.length > 0) {
+        targetRef = projects[0]?.attachedTo
+      }
+    }
+
     // Find first starred project
     if (targetRef === undefined) {
       const prefs = await client.findAll<SpacePreference>(
@@ -674,7 +709,26 @@
     milestone: object.milestone,
     relatedTo,
     parentIssue,
-    originalIssue
+    originalIssue,
+    preferences
+  }
+
+  function updateCurrentProjectPref (currentProject: Ref<Project>): void {
+    if (spacePreferences === undefined) {
+      void client.createDoc(tracker.class.ProjectTargetPreference, currentProject, {
+        attachedTo: currentProject,
+        props: [],
+        usedOn: Date.now()
+      })
+    } else {
+      void client.update(spacePreferences, {
+        usedOn: Date.now()
+      })
+    }
+  }
+
+  $: if (_space !== undefined) {
+    updateCurrentProjectPref(_space)
   }
 </script>
 
@@ -698,7 +752,7 @@
       label={tracker.string.Project}
       bind:space={_space}
       on:object={(evt) => {
-        project = evt.detail
+        currentProject = evt.detail
       }}
       kind={'regular'}
       size={'small'}
@@ -727,10 +781,10 @@
   </svelte:fragment>
   <svelte:fragment slot="title" let:label>
     <div class="flex-row-center gap-2">
-      <div class="mr-2">
+      <div>
         <Label {label} />
       </div>
-      <TaskKindSelector projectType={project?.type} bind:value={kind} baseClass={tracker.class.Issue} />
+      <TaskKindSelector projectType={currentProject?.type} bind:value={kind} baseClass={tracker.class.Issue} />
       {#if relatedTo}
         <div class="lower mr-2">
           <Label label={tracker.string.RelatedTo} />
@@ -951,5 +1005,30 @@
   </svelte:fragment>
   <svelte:fragment slot="buttons">
     <DocCreateExtComponent manager={docCreateManager} kind={'buttons'} space={currentProject} props={extraProps} />
+  </svelte:fragment>
+  <svelte:fragment slot="after-buttons" let:handleOkClick let:okProcessing let:focusIndex let:canSave let:okLabel>
+    <DocCreateExtComponent
+      manager={docCreateManager}
+      kind={'createButton'}
+      space={currentProject}
+      props={{
+        ...extraProps,
+        handleOkClick,
+        okProcessing,
+        focusIndex,
+        canSave,
+        okLabel
+      }}
+    >
+      <Button
+        loading={okProcessing}
+        focusIndex={10001}
+        disabled={!canSave}
+        label={okLabel}
+        kind={'primary'}
+        size={'large'}
+        on:click={handleOkClick}
+      />
+    </DocCreateExtComponent>
   </svelte:fragment>
 </Card>

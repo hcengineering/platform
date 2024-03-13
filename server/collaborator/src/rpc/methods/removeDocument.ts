@@ -41,7 +41,7 @@ export async function removeDocument (
   try {
     await minio.remove(workspaceId, [minioDocumentId, historyDocumentId])
   } catch (err) {
-    console.error(err)
+    await ctx.error('failed to remove document', { documentId, error: err })
   }
 
   return {}

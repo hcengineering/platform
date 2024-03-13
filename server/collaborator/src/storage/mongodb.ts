@@ -39,11 +39,8 @@ function parseDocumentId (documentId: string): MongodbDocumentId {
   }
 }
 
-function isValidDocumentId (documentId: MongodbDocumentId, context: Context): boolean {
-  return (
-    documentId.objectDomain !== '' && documentId.objectId !== '' && documentId.objectAttr !== ''
-    // && documentId.workspace === context.workspaceId.name
-  )
+function isValidDocumentId (documentId: Omit<MongodbDocumentId, 'workspaceUrl'>, context: Context): boolean {
+  return documentId.objectDomain !== '' && documentId.objectId !== '' && documentId.objectAttr !== ''
 }
 
 export class MongodbStorageAdapter implements StorageAdapter {
@@ -54,10 +51,10 @@ export class MongodbStorageAdapter implements StorageAdapter {
   ) {}
 
   async loadDocument (documentId: string, context: Context): Promise<YDoc | undefined> {
-    const { workspaceUrl, objectId, objectDomain, objectAttr } = parseDocumentId(documentId)
+    const { objectId, objectDomain, objectAttr } = parseDocumentId(documentId)
 
-    if (!isValidDocumentId({ workspaceUrl, objectId, objectDomain, objectAttr }, context)) {
-      console.warn('malformed document id', documentId)
+    if (!isValidDocumentId({ objectId, objectDomain, objectAttr }, context)) {
+      await this.ctx.error('malformed document id', { documentId })
       return undefined
     }
 
@@ -77,7 +74,7 @@ export class MongodbStorageAdapter implements StorageAdapter {
     })
   }
 
-  async saveDocument (_documentId: string, _document: YDoc, _context: Context): Promise<void> {
-    // do nothing, not supported
+  async saveDocument (documentId: string, _document: YDoc, _context: Context): Promise<void> {
+    await this.ctx.error('saving documents into mongodb not supported', { documentId })
   }
 }

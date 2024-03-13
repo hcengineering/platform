@@ -13,65 +13,35 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Doc } from '@hcengineering/core'
   import notification, { DocNotifyContext, InboxNotification } from '@hcengineering/notification'
   import { getResource } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import contact from '@hcengineering/contact'
-  import { Action, IconEdit, IconSize } from '@hcengineering/ui'
-  import { getActions, getDocTitle } from '@hcengineering/view-resources'
+  import { getClient } from '@hcengineering/presentation'
+  import { Action, IconEdit } from '@hcengineering/ui'
+  import { getActions } from '@hcengineering/view-resources'
   import { getNotificationsCount, InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { createEventDispatcher } from 'svelte'
 
-  import chunter from '../../../plugin'
-  import { getChannelIcon, getChannelName } from '../../../utils'
-  import Item from './NavItem.svelte'
+  import NavItem from './NavItem.svelte'
+  import { ChatNavItemModel } from '../types'
 
   export let context: DocNotifyContext
-  export let doc: Doc | undefined = undefined
+  export let item: ChatNavItemModel
   export let isSelected = false
 
   const client = getClient()
-  const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
   const notificationClient = InboxNotificationsClientImpl.getClient()
 
   let notifications: InboxNotification[] = []
 
-  let channelName: string | undefined = undefined
-  let description: string | undefined = undefined
-  let iconSize: IconSize = 'x-small'
   let notificationsCount = 0
   let actions: Action[] = []
-
-  $: doc &&
-    getChannelName(context.attachedTo, context.attachedToClass, doc).then((res) => {
-      channelName = res
-    })
-
-  $: doc &&
-    !hierarchy.isDerived(context.attachedToClass, chunter.class.ChunterSpace) &&
-    getDocTitle(client, context.attachedTo, context.attachedToClass, doc).then((res) => {
-      description = res
-    })
 
   notificationClient.inboxNotificationsByContext.subscribe((res) => {
     notifications = (res.get(context._id) ?? []).filter(
       ({ _class }) => _class === notification.class.ActivityInboxNotification
     )
   })
-
-  $: isDirect = hierarchy.isDerived(context.attachedToClass, chunter.class.DirectMessage)
-  $: isPerson = hierarchy.isDerived(context.attachedToClass, contact.class.Person)
-  $: isDocChat = !hierarchy.isDerived(context.attachedToClass, chunter.class.ChunterSpace)
-
-  $: if (isPerson) {
-    iconSize = 'medium'
-  } else if (isDocChat) {
-    iconSize = 'x-large'
-  } else {
-    iconSize = 'x-small'
-  }
 
   $: void getNotificationsCount(context, notifications).then((res) => {
     notificationsCount = res
@@ -83,7 +53,11 @@
 
   async function getChannelActions (context: DocNotifyContext): Promise<Action[]> {
     const result = []
-    const excludedActions = [notification.action.DeleteContextNotifications, notification.action.UnReadNotifyContext]
+    const excludedActions = [
+      notification.action.DeleteContextNotifications,
+      notification.action.UnReadNotifyContext,
+      notification.action.ReadNotifyContext
+    ]
     const actions = (await getActions(client, context, notification.class.DocNotifyContext)).filter(
       ({ _id }) => !excludedActions.includes(_id)
     )
@@ -110,19 +84,19 @@
   }
 </script>
 
-<Item
-  id={context._id}
-  icon={getChannelIcon(context.attachedToClass)}
-  withIconBackground={!isDirect && !isPerson}
-  {iconSize}
-  isBold={isDocChat}
+<NavItem
+  id={item.id}
+  icon={item.icon}
+  withIconBackground={item.withIconBackground}
+  isSecondary={item.isSecondary}
+  iconSize={item.iconSize}
   {isSelected}
-  iconProps={{ value: doc }}
+  iconProps={{ value: item.object }}
   {notificationsCount}
-  title={channelName}
-  {description}
+  title={item.title}
+  description={item.description}
   {actions}
   on:click={() => {
-    dispatch('select', { doc, context })
+    dispatch('select', { doc: item.object, context })
   }}
 />
