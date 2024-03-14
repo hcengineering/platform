@@ -183,7 +183,9 @@ export class MigrateClientImpl implements MigrationClient {
 
   async create<T extends Doc>(domain: Domain, doc: T | T[]): Promise<void> {
     if (Array.isArray(doc)) {
-      await this.db.collection(domain).insertMany(doc as Document[])
+      if (doc.length > 0) {
+        await this.db.collection(domain).insertMany(doc as Document[])
+      }
     } else {
       await this.db.collection(domain).insertOne(doc as Document)
     }

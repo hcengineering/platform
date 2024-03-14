@@ -607,6 +607,27 @@ export async function listWorkspaces (db: Db, productId: string): Promise<Worksp
 /**
  * @public
  */
+export async function listWorkspacesRaw (db: Db, productId: string): Promise<Workspace[]> {
+  return (await db.collection<Workspace>(WORKSPACE_COLLECTION).find(withProductId(productId, {})).toArray()).map(
+    (it) => ({ ...it, productId })
+  )
+}
+
+/**
+ * @public
+ */
+export async function updateWorkspace (
+  db: Db,
+  productId: string,
+  info: Workspace,
+  ops: Partial<Workspace>
+): Promise<void> {
+  await db.collection<Workspace>(WORKSPACE_COLLECTION).updateOne({ _id: info._id }, { $set: { ...info, ...ops } })
+}
+
+/**
+ * @public
+ */
 export async function listAccounts (db: Db): Promise<Account[]> {
   return await db.collection<Account>(ACCOUNT_COLLECTION).find({}).toArray()
 }
@@ -772,7 +793,7 @@ export async function upgradeWorkspace (
   const versionStr = versionToString(version)
 
   console.log(
-    `${forceUpdate ? 'force-' : ''}upgrade from "${
+    `${workspaceUrl} - ${forceUpdate ? 'force-' : ''}upgrade from "${
       ws?.version !== undefined ? versionToString(ws.version) : ''
     }" to "${versionStr}"`
   )

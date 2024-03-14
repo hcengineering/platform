@@ -26,10 +26,13 @@ import {
   getWorkspaceById,
   listAccounts,
   listWorkspaces,
+  listWorkspacesRaw,
   replacePassword,
   setAccountAdmin,
   setRole,
+  updateWorkspace,
   upgradeWorkspace,
+  type Workspace,
   type WorkspaceInfo
 } from '@hcengineering/account'
 import { setMetadata } from '@hcengineering/platform'
@@ -43,12 +46,12 @@ import {
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
 import toolPlugin, { FileModelLogger } from '@hcengineering/server-tool'
 
-import { type Command, program } from 'commander'
-import { type Db, MongoClient } from 'mongodb'
+import { program, type Command } from 'commander'
+import { MongoClient, type Db } from 'mongodb'
 import { clearTelegramHistory } from './telegram'
 import { diffWorkspace, updateField } from './workspace'
 
-import { type Data, getWorkspaceId, RateLimiter, type Tx, type Version, type AccountRole } from '@hcengineering/core'
+import { RateLimiter, getWorkspaceId, type AccountRole, type Data, type Tx, type Version } from '@hcengineering/core'
 import { type MinioService } from '@hcengineering/minio'
 import { consoleModelLogger, type MigrateOperation } from '@hcengineering/model'
 import { openAIConfigDefaults } from '@hcengineering/openai'
@@ -273,10 +276,27 @@ export function devTool (
     .action(async (cmd: { parallel: string, logs: string, retry: string, force: boolean, console: boolean }) => {
       const { mongodbUri, version, txes, migrateOperations } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
-        const workspaces = await listWorkspaces(db, productId)
+        const workspaces = await listWorkspacesRaw(db, productId)
+
+        // We need to update workspaces with missing workspaceUrl
+        for (const ws of workspaces) {
+          if (ws.workspaceUrl == null) {
+            const upd: Partial<Workspace> = {
+              workspaceUrl: ws.workspace
+            }
+            if (ws.workspaceName == null) {
+              upd.workspaceName = ws.workspace
+            }
+            await updateWorkspace(db, productId, ws, upd)
+          }
+        }
+
         const withError: string[] = []
 
         async function _upgradeWorkspace (ws: WorkspaceInfo): Promise<void> {
+          if (ws.disabled === true) {
+            return
+          }
           const t = Date.now()
           const logger = cmd.console
             ? consoleModelLogger
@@ -308,11 +328,13 @@ export function devTool (
           const parallel = parseInt(cmd.parallel) ?? 1
           const rateLimit = new RateLimiter(parallel)
           console.log('parallel upgrade', parallel, cmd.parallel)
-          for (const ws of workspaces) {
-            await rateLimit.exec(() => {
-              return _upgradeWorkspace(ws)
-            })
-          }
+          await Promise.all(
+            workspaces.map((it) =>
+              rateLimit.add(() => {
+                return _upgradeWorkspace(it)
+              })
+            )
+          )
         } else {
           console.log('UPGRADE write logs at:', cmd.logs)
           for (const ws of workspaces) {
