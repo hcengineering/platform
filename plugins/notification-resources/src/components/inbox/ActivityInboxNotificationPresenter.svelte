@@ -142,6 +142,7 @@
       hoverable={false}
       {withFlatActions}
       videoPreload={false}
+      compact
       onReply={() => {
         handleReply(displayMessage)
       }}

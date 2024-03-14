@@ -49,6 +49,7 @@
   export let attachmentImageSize: AttachmentImageSize = 'auto'
   export let showLinksPreview = true
   export let videoPreload = true
+  export let compact = false
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
 
@@ -191,7 +192,7 @@
     <svelte:fragment slot="content">
       {#if !isEditing}
         {#if withShowMore}
-          <ShowMore>
+          <ShowMore limit={compact ? 80 : undefined}>
             <div class="clear-mins">
               <MessageViewer message={value.message} />
               <AttachmentDocList {value} {attachments} imageSize={attachmentImageSize} {videoPreload} />
