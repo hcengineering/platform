@@ -124,7 +124,8 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
         },
         lookup: {
           attachedTo: activity.class.ActivityMessage
-        }
+        },
+        limit: 1000
       }
     )
   }
