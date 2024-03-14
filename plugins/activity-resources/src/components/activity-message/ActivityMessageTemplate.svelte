@@ -53,6 +53,7 @@
   export let skipLabel = false
   export let hoverable = true
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
+  export let showDatePreposition = false
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
 
@@ -170,6 +171,13 @@
           {#if !skipLabel}
             <slot name="header" />
           {/if}
+
+          {#if !skipLabel && showDatePreposition}
+            <span class="text-sm lower">
+              <Label label={activity.string.At} />
+            </span>
+          {/if}
+
           <span
             class="text-sm"
             use:tooltip={{

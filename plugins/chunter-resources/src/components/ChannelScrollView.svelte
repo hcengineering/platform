@@ -561,6 +561,7 @@
             withShowMore={false}
             attachmentImageSize="x-large"
             showLinksPreview={false}
+            hideLink
           />
         </div>
       {/each}

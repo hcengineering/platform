@@ -102,6 +102,7 @@
             is={activity.component.ActivityMessagePresenter}
             props={{
               value: message,
+              hideLink: true,
               boundary
             }}
           />

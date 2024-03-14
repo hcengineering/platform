@@ -42,6 +42,7 @@
   export let actions: Action[] = []
   export let hoverable = true
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
+  export let hideLink = false
   export let onClick: (() => void) | undefined = undefined
 
   $: personAccount = $personAccountByIdStore.get((value.createdBy ?? value.modifiedBy) as Ref<PersonAccount>)
@@ -95,6 +96,7 @@
       object={undefined}
       parentObject={undefined}
       isEdited={false}
+      {hideLink}
       label={value.title}
     />
   </svelte:fragment>
