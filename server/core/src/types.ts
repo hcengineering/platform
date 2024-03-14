@@ -191,6 +191,7 @@ export interface IndexedDoc {
   searchTitle?: string
   searchShortTitle?: string
   searchIcon?: any
+  fulltextSummary?: string
   [key: string]: any
 }
 

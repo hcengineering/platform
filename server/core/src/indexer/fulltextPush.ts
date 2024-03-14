@@ -22,6 +22,7 @@ import core, {
   DocumentQuery,
   DocumentUpdate,
   extractDocKey,
+  Hierarchy,
   isFullTextAttribute,
   isIndexedAttribute,
   MeasureContext,
@@ -119,7 +120,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
       if (
         attrObj !== null &&
         attrObj !== undefined &&
-        (isFullTextAttribute(attrObj) || isIndexedAttribute(attrObj)) &&
+        isIndexedAttribute(attrObj) &&
         (attrObj.type._class === core.class.RefTo ||
           (attrObj.type._class === core.class.ArrOf && (attrObj.type as ArrOf<any>).of._class === core.class.RefTo))
       ) {
@@ -183,7 +184,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
         const elasticDoc = createElasticDoc(doc)
         try {
           await ctx.with('updateDoc2Elastic', {}, async () => {
-            updateDoc2Elastic(doc.attributes, elasticDoc)
+            updateDoc2Elastic(doc.attributes, elasticDoc, undefined, undefined, pipeline.hierarchy)
           })
 
           // Include all child attributes
@@ -193,7 +194,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
               const fctx = getFullTextContext(pipeline.hierarchy, c.objectClass)
               if (fctx.parentPropagate ?? true) {
                 await ctx.with('updateDoc2Elastic', {}, async () => {
-                  updateDoc2Elastic(c.attributes, elasticDoc, c._id)
+                  updateDoc2Elastic(c.attributes, elasticDoc, c._id, undefined, pipeline.hierarchy, true)
                 })
               }
             }
@@ -214,7 +215,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
               if (parentDoc !== undefined) {
                 const ppdoc = parentDoc
                 await ctx.with('updateDoc2Elastic', {}, async () => {
-                  updateDoc2Elastic(ppdoc.attributes, elasticDoc, ppdoc._id)
+                  updateDoc2Elastic(ppdoc.attributes, elasticDoc, ppdoc._id, undefined, pipeline.hierarchy, true)
                 })
 
                 const collectClasses = collectPropagateClasses(pipeline, parentDoc.objectClass)
@@ -226,7 +227,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
                   )
                   for (const c of collections) {
                     await ctx.with('updateDoc2Elastic', {}, async () => {
-                      updateDoc2Elastic(c.attributes, elasticDoc, c._id)
+                      updateDoc2Elastic(c.attributes, elasticDoc, c._id, undefined, pipeline.hierarchy, true)
                     })
                   }
                 }
@@ -303,7 +304,9 @@ function updateDoc2Elastic (
   attributes: Record<string, any>,
   doc: IndexedDoc,
   docIdOverride?: Ref<DocIndexState>,
-  refAttribute?: string
+  refAttribute?: string,
+  hierarchy?: Hierarchy,
+  isChildOrParentDoc?: boolean
 ): void {
   for (const [k, v] of Object.entries(attributes)) {
     if (v == null) {
@@ -315,6 +318,26 @@ function updateDoc2Elastic (
     }
 
     let vv: any = v
+    try {
+      const attribute = hierarchy?.getAttribute(_class ?? doc._class, attr)
+      if (attribute !== undefined && vv != null) {
+        if (
+          isFullTextAttribute(attribute) ||
+          (isChildOrParentDoc === true &&
+            !(
+              attribute.type._class === core.class.RefTo ||
+              (attribute.type._class === core.class.ArrOf &&
+                (attribute.type as ArrOf<any>).of._class === core.class.RefTo)
+            ))
+        ) {
+          if (!(doc.fulltextSummary ?? '').includes(vv)) {
+            doc.fulltextSummary = (doc.fulltextSummary ?? '') + vv + '\n'
+            continue
+          }
+        }
+      }
+    } catch (e) {}
+
     if (vv != null && extra.includes('base64')) {
       vv = Buffer.from(v, 'base64').toString()
     }

@@ -81,14 +81,20 @@ class ElasticDataAdapter implements DbAdapter {
         try {
           if (!listRecieved) {
             const q = {
-              index: toWorkspaceString(this.workspaceId),
+              index: 'storage_index',
               type: '_doc',
               scroll: '23h',
               // search_type: 'scan', //if I use search_type then it requires size otherwise it shows 0 result
               size: 100,
               body: {
                 query: {
-                  match_all: {}
+                  bool: {
+                    must: {
+                      match: {
+                        workspaceId: toWorkspaceString(this.workspaceId)
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -163,13 +169,20 @@ class ElasticDataAdapter implements DbAdapter {
     const result: Doc[] = []
 
     const resp = await this.client.search({
-      index: toWorkspaceString(this.workspaceId),
+      index: 'storage_index',
       type: '_doc',
       body: {
         query: {
           terms: {
             _id: docs,
             boost: 1.0
+          },
+          bool: {
+            must: {
+              match: {
+                workspaceId: toWorkspaceString(this.workspaceId)
+              }
+            }
           }
         },
         size: docs.length
@@ -198,12 +211,19 @@ class ElasticDataAdapter implements DbAdapter {
         await this.client.deleteByQuery(
           {
             type: '_doc',
-            index: toWorkspaceString(this.workspaceId),
+            index: 'storage_index',
             body: {
               query: {
                 terms: {
                   _id: Array.from(part.map((it) => it._id)),
                   boost: 1.0
+                },
+                bool: {
+                  must: {
+                    match: {
+                      workspaceId: toWorkspaceString(this.workspaceId)
+                    }
+                  }
                 }
               },
               size: part.length
@@ -234,12 +254,19 @@ class ElasticDataAdapter implements DbAdapter {
       await this.client.deleteByQuery(
         {
           type: '_doc',
-          index: toWorkspaceString(this.workspaceId),
+          index: 'storage_index',
           body: {
             query: {
               terms: {
                 _id: part,
                 boost: 1.0
+              },
+              bool: {
+                must: {
+                  match: {
+                    workspaceId: toWorkspaceString(this.workspaceId)
+                  }
+                }
               }
             },
             size: part.length
