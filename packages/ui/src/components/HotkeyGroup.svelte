@@ -18,7 +18,7 @@
   export let keys: string[]
 </script>
 
-<div class="hotkey-group flex flex-gap-0-5">
+<div class="flex flex-gap-0-5">
   {#each keys as key}
     <Hotkey {key} />
   {/each}
