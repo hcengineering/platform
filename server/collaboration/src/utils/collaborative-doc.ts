@@ -50,17 +50,27 @@ export async function loadCollaborativeDoc (
       return await yDocFromMinio(minio, workspace, documentId, new YDoc({ gc: false }))
     })
 
+    // the document does not exist
+    if (yContent === undefined) {
+      return undefined
+    }
+
     if (versionId === 'HEAD') {
       return yContent
-    } else {
-      const yHistory = await ctx.with('yDocFromMinio', { type: 'history' }, async () => {
-        return await yDocFromMinio(minio, workspace, historyDocumentId, new YDoc({ gc: false }))
-      })
-
-      return await ctx.with('restoreYdocSnapshot', {}, () => {
-        return restoreYdocSnapshot(yContent, yHistory, versionId)
-      })
     }
+
+    const yHistory = await ctx.with('yDocFromMinio', { type: 'history' }, async () => {
+      return await yDocFromMinio(minio, workspace, historyDocumentId, new YDoc())
+    })
+
+    // the history document does not exist
+    if (yHistory === undefined) {
+      return undefined
+    }
+
+    return await ctx.with('restoreYdocSnapshot', {}, () => {
+      return restoreYdocSnapshot(yContent, yHistory, versionId)
+    })
   })
 }
 
@@ -169,9 +179,10 @@ export async function takeCollaborativeDocSnapshot (
   const historyDocumentId = collaborativeHistoryDocId(documentId)
 
   await ctx.with('takeCollaborativeDocSnapshot', {}, async (ctx) => {
-    const yHistory = await ctx.with('yDocFromMinio', { type: 'history' }, async () => {
-      return await yDocFromMinio(minio, workspace, historyDocumentId, new YDoc({ gc: false }))
-    })
+    const yHistory =
+      (await ctx.with('yDocFromMinio', { type: 'history' }, async () => {
+        return await yDocFromMinio(minio, workspace, historyDocumentId, new YDoc({ gc: false }))
+      })) ?? new YDoc()
 
     await ctx.with('createYdocSnapshot', {}, async () => {
       createYdocSnapshot(ydoc, yHistory, version)

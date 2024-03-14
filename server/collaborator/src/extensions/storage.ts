@@ -106,6 +106,7 @@ export class StorageExtension implements Extension {
     const { adapter, ctx } = this.configuration
 
     try {
+      await ctx.info('load document content', { documentId })
       const ydoc = await adapter.loadDocument(documentId, context)
       if (ydoc !== undefined) {
         return ydoc
@@ -142,6 +143,7 @@ export class StorageExtension implements Extension {
 
     let snapshot: YDocVersion | undefined
     try {
+      await ctx.info('take document snapshot', { documentId })
       snapshot = await ctx.with('take-snapshot', {}, async () => {
         return await adapter.takeSnapshot(documentId, document, context)
       })
@@ -150,6 +152,7 @@ export class StorageExtension implements Extension {
     }
 
     try {
+      await ctx.info('save document content', { documentId })
       await ctx.with('save-document', {}, async () => {
         await adapter.saveDocument(documentId, document, snapshot, context)
       })
