@@ -258,12 +258,16 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     const ops = getClient().apply(generateId())
 
     try {
-      const inboxNotifications = await ops.findAll(notification.class.InboxNotification, {
-        user: getCurrentAccount()._id
-      })
+      const inboxNotifications = await ops.findAll(
+        notification.class.InboxNotification,
+        {
+          user: getCurrentAccount()._id
+        },
+        { projection: { _id: 1, _class: 1, space: 1 } }
+      )
       const contexts = get(this.docNotifyContexts) ?? []
       for (const notification of inboxNotifications) {
-        await ops.remove(notification)
+        await ops.removeDoc(notification._class, notification.space, notification._id)
       }
 
       for (const context of contexts) {
@@ -280,14 +284,17 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     const ops = getClient().apply(generateId())
 
     try {
-      const inboxNotifications = await ops.findAll(notification.class.InboxNotification, {
-        user: getCurrentAccount()._id
-      })
+      const inboxNotifications = await ops.findAll(
+        notification.class.InboxNotification,
+        {
+          user: getCurrentAccount()._id,
+          isViewed: { $ne: true }
+        },
+        { projection: { _id: 1, _class: 1, space: 1 } }
+      )
       const contexts = get(this.docNotifyContexts) ?? []
       for (const notification of inboxNotifications) {
-        if (!notification.isViewed) {
-          await ops.update(notification, { isViewed: true })
-        }
+        await ops.updateDoc(notification._class, notification.space, notification._id, { isViewed: true })
       }
       for (const context of contexts) {
         await ops.update(context, { lastViewedTimestamp: Date.now() })
@@ -303,15 +310,18 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     const ops = getClient().apply(generateId())
 
     try {
-      const inboxNotifications = await ops.findAll(notification.class.InboxNotification, {
-        user: getCurrentAccount()._id
-      })
+      const inboxNotifications = await ops.findAll(
+        notification.class.InboxNotification,
+        {
+          user: getCurrentAccount()._id,
+          isViewed: true
+        },
+        { projection: { _id: 1, _class: 1, space: 1 } }
+      )
       const contexts = get(this.docNotifyContexts) ?? []
 
       for (const notification of inboxNotifications) {
-        if (notification.isViewed) {
-          await ops.update(notification, { isViewed: false })
-        }
+        await ops.updateDoc(notification._class, notification.space, notification._id, { isViewed: false })
       }
       for (const context of contexts) {
         await ops.update(context, { lastViewedTimestamp: 0 })
