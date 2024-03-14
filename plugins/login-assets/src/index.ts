@@ -13,11 +13,3 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-
-import login from '@hcengineering/login'
-import { loadMetadata } from '@hcengineering/platform'
-
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
-loadMetadata(login.icon, {
-  InviteWorkspace: `${icons}#inviteWorkspace`
-})
