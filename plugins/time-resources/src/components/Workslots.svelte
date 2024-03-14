@@ -19,6 +19,7 @@
   import { createEventDispatcher } from 'svelte'
   import time from '../plugin'
   import { calculateEventsDuration, formatEventsDuration } from '../utils'
+  import Label from '@hcengineering/ui/src/components/Label.svelte'
 
   export let slots: WorkSlot[] = []
   export let shortcuts: boolean = true
@@ -88,7 +89,7 @@
   </ButtonBase>
   {#if duration}
     <div class="font-regular-14">
-      Summary:
+      <Label label={time.string.SummaryDuration} />:
       <br />
       <span class="duration">{duration}</span>
     </div>

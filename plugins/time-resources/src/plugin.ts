@@ -61,6 +61,7 @@ export default mergeIds(timeId, time, {
     AddTo: '' as IntlString,
     AddTitle: '' as IntlString,
     MyWork: '' as IntlString,
-    WorkSchedule: '' as IntlString
+    WorkSchedule: '' as IntlString,
+    SummaryDuration: '' as IntlString
   }
 })
