@@ -42,8 +42,10 @@
   }
   function getArrayName (type: Type<any>): IntlString | undefined {
     const ref = (type as ArrOf<any>).of
-    const res = client.getHierarchy().getClass((ref as RefTo<Doc>).to)
-    return res?.label
+    if (client.getHierarchy().hasClass((ref as RefTo<Doc>).to)) {
+      const res = client.getHierarchy().getClass((ref as RefTo<Doc>).to)
+      return res?.label
+    }
   }
 </script>
 
