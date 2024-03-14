@@ -19,15 +19,14 @@ import {
   CollaborativeDocVersionHead,
   MeasureContext,
   WorkspaceId,
-  formatCollaborativeDoc,
-  generateId,
   parseCollaborativeDoc
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { Doc as YDoc } from 'yjs'
 
 import { yDocBranch } from '../history/branch'
-import { restoreYdocSnapshot } from '../history/snapshot'
+import { YDocVersion } from '../history/history'
+import { createYdocSnapshot, restoreYdocSnapshot } from '../history/snapshot'
 import { yDocFromMinio, yDocToMinio } from './minio'
 
 /** @public */
@@ -158,10 +157,30 @@ export async function copyCollaborativeDoc (
 }
 
 /** @public */
-export function touchCollaborativeDoc (collaborativeDoc: CollaborativeDoc, revisionId?: string): CollaborativeDoc {
-  revisionId ??= generateId()
-  const { documentId, versionId } = parseCollaborativeDoc(collaborativeDoc)
-  return formatCollaborativeDoc({ documentId, versionId, revisionId })
+export async function takeCollaborativeDocSnapshot (
+  minio: MinioService,
+  workspace: WorkspaceId,
+  collaborativeDoc: CollaborativeDoc,
+  ydoc: YDoc,
+  version: YDocVersion,
+  ctx: MeasureContext
+): Promise<void> {
+  const { documentId } = parseCollaborativeDoc(collaborativeDoc)
+  const historyDocumentId = collaborativeHistoryDocId(documentId)
+
+  await ctx.with('takeCollaborativeDocSnapshot', {}, async (ctx) => {
+    const yHistory = await ctx.with('yDocFromMinio', { type: 'history' }, async () => {
+      return await yDocFromMinio(minio, workspace, historyDocumentId, new YDoc({ gc: false }))
+    })
+
+    await ctx.with('createYdocSnapshot', {}, async () => {
+      createYdocSnapshot(ydoc, yHistory, version)
+    })
+
+    await ctx.with('yDocToMinio', { type: 'history' }, async () => {
+      await yDocToMinio(minio, workspace, historyDocumentId, yHistory)
+    })
+  })
 }
 
 /** @public */

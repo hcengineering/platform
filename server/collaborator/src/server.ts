@@ -105,7 +105,7 @@ export async function start (
     /**
      * Makes sure to call `onStoreDocument` at least in the given amount of time (ms).
      */
-    maxDebounce: 30000,
+    maxDebounce: 60000,
     /**
      * options to pass to the ydoc document
      */

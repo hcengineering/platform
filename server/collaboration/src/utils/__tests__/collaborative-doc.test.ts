@@ -32,7 +32,7 @@ describe('collaborative-doc', () => {
       const doc = formatCollaborativeDoc({
         documentId: 'example',
         versionId: 'HEAD',
-        revisionId: '0'
+        lastVersionId: '0'
       })
       expect(isEditableDoc(doc)).toBeTruthy()
     })
@@ -41,7 +41,7 @@ describe('collaborative-doc', () => {
       const doc = formatCollaborativeDoc({
         documentId: 'example',
         versionId: 'main',
-        revisionId: '0'
+        lastVersionId: '0'
       })
       expect(isEditableDoc(doc)).toBeFalsy()
     })

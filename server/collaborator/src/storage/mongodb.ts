@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { YDocVersion } from '@hcengineering/collaboration'
 import { Doc, MeasureContext, Ref, toWorkspaceString } from '@hcengineering/core'
 import { Transformer } from '@hocuspocus/transformer'
 import { MongoClient } from 'mongodb'
@@ -74,7 +75,17 @@ export class MongodbStorageAdapter implements StorageAdapter {
     })
   }
 
-  async saveDocument (documentId: string, _document: YDoc, _context: Context): Promise<void> {
+  async saveDocument (
+    documentId: string,
+    _document: YDoc,
+    snapshot: YDocVersion | undefined,
+    _context: Context
+  ): Promise<void> {
     await this.ctx.error('saving documents into mongodb not supported', { documentId })
+  }
+
+  async takeSnapshot (documentId: string, document: YDoc, context: Context): Promise<YDocVersion | undefined> {
+    await this.ctx.error('taking snapshotsin mongodb not supported', { documentId })
+    return undefined
   }
 }
