@@ -258,7 +258,9 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     const ops = getClient().apply(generateId())
 
     try {
-      const inboxNotifications = get(this.inboxNotifications) ?? []
+      const inboxNotifications = await ops.findAll(notification.class.InboxNotification, {
+        user: getCurrentAccount()._id
+      })
       const contexts = get(this.docNotifyContexts) ?? []
       for (const notification of inboxNotifications) {
         await ops.remove(notification)
@@ -278,7 +280,9 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     const ops = getClient().apply(generateId())
 
     try {
-      const inboxNotifications = get(this.inboxNotifications) ?? []
+      const inboxNotifications = await ops.findAll(notification.class.InboxNotification, {
+        user: getCurrentAccount()._id
+      })
       const contexts = get(this.docNotifyContexts) ?? []
       for (const notification of inboxNotifications) {
         if (!notification.isViewed) {
@@ -299,7 +303,9 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     const ops = getClient().apply(generateId())
 
     try {
-      const inboxNotifications = get(this.inboxNotifications) ?? []
+      const inboxNotifications = await ops.findAll(notification.class.InboxNotification, {
+        user: getCurrentAccount()._id
+      })
       const contexts = get(this.docNotifyContexts) ?? []
 
       for (const notification of inboxNotifications) {
