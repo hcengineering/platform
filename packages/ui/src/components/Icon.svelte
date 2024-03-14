@@ -34,6 +34,9 @@
   $: url = isAsset(icon) ? getMetadata(toAsset(icon)) ?? 'https://anticrm.org/logo.svg' : ''
 
   $: _fill = iconProps?.fill ?? fill
+
+  // workaround to prevent sveltejs bug in `svelte:component`: https://github.com/sveltejs/svelte/issues/9177
+  $: _iconProps = { size, fill: _fill, ...iconProps }
 </script>
 
 {#if isAsset(icon)}
@@ -41,5 +44,5 @@
     <use href={url} />
   </svg>
 {:else if typeof icon !== 'string'}
-  <svelte:component this={icon} {size} fill={_fill} {...iconProps} />
+  <svelte:component this={icon} {..._iconProps} />
 {/if}
