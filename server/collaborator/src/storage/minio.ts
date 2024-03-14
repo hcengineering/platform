@@ -19,7 +19,7 @@ import {
   saveCollaborativeDocVersion,
   takeCollaborativeDocSnapshot
 } from '@hcengineering/collaboration'
-import core, {
+import {
   CollaborativeDocVersion,
   CollaborativeDocVersionHead,
   MeasureContext,
@@ -98,14 +98,15 @@ export class MinioStorageAdapter implements StorageAdapter {
   }
 
   async takeSnapshot (documentId: string, document: YDoc, context: Context): Promise<YDocVersion | undefined> {
-    const { workspaceId } = context
+    const { clientFactory, workspaceId } = context
 
+    const client = await clientFactory({ derived: false })
     const timestamp = Date.now()
 
     const yDocVersion: YDocVersion = {
       versionId: `${timestamp}`,
       name: 'Automatic snapshot',
-      createdBy: core.account.System,
+      createdBy: client.user,
       createdOn: timestamp
     }
 
