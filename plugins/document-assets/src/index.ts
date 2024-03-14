@@ -19,12 +19,8 @@ import { loadMetadata } from '@hcengineering/platform'
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(document.icon, {
   DocumentApplication: `${icons}#documentapplication`,
-  NewDocument: `${icons}#newdocument`,
   Document: `${icons}#document`,
   Add: `${icons}#add`,
-  Blank: `${icons}#blank`,
-  Videofile: `${icons}#videofile`,
-  Library: `${icons}#library`,
   Teamspace: `${icons}#teamspace`,
   References: `${icons}#references`,
   History: `${icons}#history`,

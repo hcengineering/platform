@@ -1,21 +1,20 @@
 {
   "string": {
+    "Document": "Документ",
+    "ParentDocument": "Родительский документ",
+    "ChildDocument": "Дочерний документ",
     "CreateDocument": "Создать документ",
     "Documents": "Документы",
     "CreateAnVersion": "Создать новую версию",
-    "Document": "Документ",
     "DocumentNamePlaceholder": "Без имени",
     "Name": "Имя",
     "Cancel": "Отмена",
     "Version": "Версия",
     "SearchDocument": "Найти документ...",
     "Snapshot": "Снимок",
-    "ParentDocument": "Родительский документ",
-    "ChildDocument": "Дочерний документ",
     "NoVersions": "Версии не определены",
     "DocumentApplication": "Документы",
     "MyDocuments": "Мои документы",
-    "Library": "Библиотека",
     "Teamspace": "Пространство",
     "Teamspaces": "Пространства",
     "Labels": "Метки",
@@ -56,7 +55,6 @@
     "UnassignToDoConfirm": "Вы хотите отменить назначение Todo? Todo будет удалена из планирования исполнителя.",
     "ReassignToDo": "Изменить исполнителя Todo",
     "ReassignToDoConfirm": "Вы хотите изменить исполнителя Todo? Todo будет удалена из планирования текущего исполнителя.",
-    "Docs": "Документы",
     "Icon": "Иконка",
     "Color": "Цвет"
   }
