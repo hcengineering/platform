@@ -26,7 +26,7 @@
   import { IntlString, translate } from '@hcengineering/platform'
   import { createQuery, getClient, MessageViewer } from '@hcengineering/presentation'
   import notification, { CommonInboxNotification } from '@hcengineering/notification'
-  import { ActionIcon, IconMoreH, Label, showPopup } from '@hcengineering/ui'
+  import { ActionIcon, IconMoreH, Label, ShowMore, showPopup } from '@hcengineering/ui'
   import { getDocLinkTitle, Menu } from '@hcengineering/view-resources'
   import { ActivityDocLink } from '@hcengineering/activity-resources'
   import view from '@hcengineering/view'
@@ -139,7 +139,9 @@
 
     <div class="flex-row-center">
       <div class="customContent">
-        <MessageViewer message={content} />
+        <ShowMore limit={80}>
+          <MessageViewer message={content} />
+        </ShowMore>
       </div>
     </div>
   </div>
