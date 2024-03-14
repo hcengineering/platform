@@ -26,7 +26,8 @@ import {
   formatName,
   getFirstName,
   getLastName,
-  getName
+  getName,
+  type Channel
 } from '@hcengineering/contact'
 import {
   type Client,
@@ -41,7 +42,7 @@ import {
   type Class
 } from '@hcengineering/core'
 import notification, { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
-import { getEmbeddedLabel, getResource } from '@hcengineering/platform'
+import { getEmbeddedLabel, getResource, translate } from '@hcengineering/platform'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { type TemplateDataProvider } from '@hcengineering/templates'
 import {
@@ -401,4 +402,23 @@ export function getPersonTooltip (client: Client, value: Person | null | undefin
     : {
         label: getEmbeddedLabel(getName(hierarchy, value))
       }
+}
+
+export async function channelIdentifierProvider (client: Client, ref: Ref<Channel>, doc?: Channel): Promise<string> {
+  const channel = doc ?? (await client.findOne(contact.class.Channel, { _id: ref }))
+  if (channel === undefined) return ''
+
+  const provider = await client.findOne(contact.class.ChannelProvider, { _id: channel.provider })
+
+  if (provider === undefined) return channel.value
+
+  return await translate(provider.label, {})
+}
+
+export async function channelTitleProvider (client: Client, ref: Ref<Channel>, doc?: Channel): Promise<string> {
+  const channel = doc ?? (await client.findOne(contact.class.Channel, { _id: ref }))
+
+  if (channel === undefined) return ''
+
+  return channel.value
 }

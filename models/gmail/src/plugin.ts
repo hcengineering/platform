@@ -19,7 +19,7 @@ import { type IntlString, mergeIds, type Resource } from '@hcengineering/platfor
 import { gmailId } from '@hcengineering/gmail'
 import gmail from '@hcengineering/gmail-resources/src/plugin'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
-import type { TxViewlet } from '@hcengineering/activity'
+import type { DocUpdateMessageViewlet, TxViewlet } from '@hcengineering/activity'
 import { type Action } from '@hcengineering/view'
 import { type NotificationGroup } from '@hcengineering/notification'
 
@@ -45,11 +45,15 @@ export default mergeIds(gmailId, gmail, {
   ids: {
     TxSharedCreate: '' as Ref<TxViewlet>,
     NewMessageNotification: '' as Ref<TxViewlet>,
-    EmailNotificationGroup: '' as Ref<NotificationGroup>
+    EmailNotificationGroup: '' as Ref<NotificationGroup>,
+    GmailSharedMessageActivityViewlet: '' as Ref<DocUpdateMessageViewlet>,
+    GmailWriteMessageActivityViewlet: '' as Ref<DocUpdateMessageViewlet>
   },
   activity: {
     TxSharedCreate: '' as AnyComponent,
-    TxWriteMessage: '' as AnyComponent
+    TxWriteMessage: '' as AnyComponent,
+    GmailSharedMessage: '' as AnyComponent,
+    GmailWriteMessage: '' as AnyComponent
   },
   function: {
     HasEmail: '' as Resource<(doc?: Doc | Doc[] | undefined) => Promise<boolean>>

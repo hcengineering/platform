@@ -177,6 +177,19 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
+    activity.class.DocUpdateMessageViewlet,
+    core.space.Model,
+    {
+      objectClass: gmail.class.Message,
+      icon: contact.icon.Email,
+      action: 'create',
+      component: gmail.activity.GmailWriteMessage,
+      label: gmail.string.HaveWrittenEmail
+    },
+    gmail.ids.GmailWriteMessageActivityViewlet
+  )
+
+  builder.createDoc(
     activity.class.TxViewlet,
     core.space.Model,
     {
@@ -190,6 +203,20 @@ export function createModel (builder: Builder): void {
       hideOnRemove: true
     },
     gmail.ids.TxSharedCreate
+  )
+
+  builder.createDoc(
+    activity.class.DocUpdateMessageViewlet,
+    core.space.Model,
+    {
+      objectClass: gmail.class.SharedMessages,
+      icon: contact.icon.Email,
+      action: 'create',
+      component: gmail.activity.GmailSharedMessage,
+      label: gmail.string.SharedMessages,
+      hideIfRemoved: true
+    },
+    gmail.ids.GmailSharedMessageActivityViewlet
   )
 
   createAction(

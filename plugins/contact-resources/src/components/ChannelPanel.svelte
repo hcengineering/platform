@@ -18,10 +18,12 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { AnyComponent, Component } from '@hcengineering/ui'
   import { channelProviders } from '../utils'
+  import { DocUpdateMessage } from '@hcengineering/activity'
 
   export let _id: Ref<Channel>
   export let _class: Ref<Class<Channel>>
   export let embedded: boolean = false
+  export let activityMessage: DocUpdateMessage | undefined = undefined
 
   const client = getClient()
 
@@ -45,7 +47,14 @@
   {#if presenter}
     <Component
       is={presenter}
-      props={{ embedded, _id: channel?.attachedTo, _class: channel?.attachedToClass, channel }}
+      props={{
+        embedded,
+        _id: channel?.attachedTo,
+        _class: channel?.attachedToClass,
+        channel,
+        messageId: activityMessage?.objectId
+      }}
+      on:close
     />
   {/if}
 {/await}

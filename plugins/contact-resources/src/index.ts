@@ -104,9 +104,12 @@ import SelectUsersPopup from './components/SelectUsersPopup.svelte'
 import IconAddMember from './components/icons/AddMember.svelte'
 import UserDetails from './components/UserDetails.svelte'
 import EditOrganizationPanel from './components/EditOrganizationPanel.svelte'
+import ChannelIcon from './components/ChannelIcon.svelte'
 
 import contact from './plugin'
 import {
+  channelIdentifierProvider,
+  channelTitleProvider,
   contactTitleProvider,
   employeeSort,
   filterChannelHasMessagesResult,
@@ -334,7 +337,8 @@ export default async (): Promise<Resources> => ({
     DeleteConfirmationPopup,
     PersonAccountRefPresenter,
     PersonIcon,
-    EditOrganizationPanel
+    EditOrganizationPanel,
+    ChannelIcon
   },
   completion: {
     EmployeeQuery: async (
@@ -377,7 +381,9 @@ export default async (): Promise<Resources> => ({
     GetContactLastName: getContactLastName,
     GetContactLink: getContactLink,
     ContactTitleProvider: contactTitleProvider,
-    PersonTooltipProvider: getPersonTooltip
+    PersonTooltipProvider: getPersonTooltip,
+    ChannelTitleProvider: channelTitleProvider,
+    ChannelIdentifierProvider: channelIdentifierProvider
   },
   resolver: {
     Location: resolveLocation
