@@ -21,6 +21,7 @@
   import { calculateEventsDuration, formatEventsDuration } from '../utils'
 
   export let slots: WorkSlot[] = []
+  export let shortcuts: boolean = true
 
   const dispatch = createEventDispatcher()
 
@@ -30,6 +31,7 @@
   })
 
   function handleKeyDown (event: KeyboardEvent): void {
+    if (!shortcuts) return
     if (event.shiftKey && event.key === 'Enter') {
       dispatch('create')
     }
@@ -80,7 +82,9 @@
     label={time.string.AddSlot}
     on:click={() => dispatch('create')}
   >
-    <HotkeyGroup keys={['shift', 'Enter']} />
+    {#if shortcuts}
+      <HotkeyGroup keys={['shift', 'Enter']} />
+    {/if}
   </ButtonBase>
   {#if duration}
     <div class="font-regular-14">

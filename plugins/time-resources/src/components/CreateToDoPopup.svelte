@@ -234,6 +234,7 @@
     <div class="block flex-gap-4 flex-no-shrink end">
       <Workslots
         bind:slots
+        shortcuts={false}
         on:remove={removeSlot}
         on:create={createSlot}
         on:change={changeSlot}
