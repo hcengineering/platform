@@ -127,7 +127,7 @@
   }
 
   function chooseIcon (ev: MouseEvent): void {
-    const icons = [document.icon.Document, document.icon.Library]
+    const icons = [document.icon.Document, document.icon.Teamspace]
     const update = (result: any): void => {
       if (result !== undefined && result !== null) {
         icon = result.icon

@@ -25,6 +25,7 @@ import core, {
   type Class,
   type Doc,
   type Ref,
+  type Tx,
   type TxCUD,
   type TxCollectionCUD,
   type TxCreateDoc
@@ -55,15 +56,18 @@ async function generateDocUpdateMessageByTx (
   tx: TxCUD<Doc>,
   control: ActivityControl,
   client: MigrationClient,
-  objectCache?: DocObjectCache
+  objectCache?: DocObjectCache,
+  existsMap?: Set<Ref<Tx>>
 ): Promise<void> {
-  const existsMessages = await client.find<DocUpdateMessage>(
-    DOMAIN_ACTIVITY,
-    { _class: activity.class.DocUpdateMessage, txId: tx._id },
-    { projection: { _id: 1 } }
-  )
+  const existsMessages =
+    existsMap?.has(tx._id) ??
+    (await client.find<DocUpdateMessage>(
+      DOMAIN_ACTIVITY,
+      { _class: activity.class.DocUpdateMessage, txId: tx._id },
+      { projection: { _id: 1 } }
+    ))
 
-  if (existsMessages.length > 0) {
+  if (existsMessages === true || (Array.isArray(existsMessages) && existsMessages.length > 0)) {
     return
   }
 
@@ -109,7 +113,7 @@ async function createDocUpdateMessages (client: MigrationClient): Promise<void> 
   async function generateFor (_class: Ref<Class<Doc>>, documents: MigrationIterator<Doc>): Promise<void> {
     const classNotFound = new Set<string>()
     while (true) {
-      const docs = await documents.next(50)
+      const docs = await documents.next(100)
 
       if (docs == null || docs.length === 0) {
         break
@@ -172,6 +176,33 @@ async function createDocUpdateMessages (client: MigrationClient): Promise<void> 
         }
       }
 
+      const docCache = {
+        docs: docIds,
+        transactions: allTransactions
+      }
+      const txIds = new Set<Ref<Tx>>()
+      for (const d of docs) {
+        processed += 1
+        if (processed % 1000 === 0) {
+          console.log('processed', processed)
+        }
+        const transactions = allTransactions.get(d._id) ?? []
+        for (const tx of transactions) {
+          const innerTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
+          txIds.add(innerTx._id)
+        }
+      }
+
+      const ids = (
+        await client.find<DocUpdateMessage>(
+          DOMAIN_ACTIVITY,
+          { _class: activity.class.DocUpdateMessage, txId: { $in: Array.from(txIds) as Ref<TxCUD<Doc>>[] } },
+          { projection: { _id: 1, txId: 1 } }
+        )
+      ).map((p) => p.txId as Ref<Tx>)
+
+      const existsMessages = new Set(ids)
+
       for (const d of docs) {
         processed += 1
         if (processed % 1000 === 0) {
@@ -192,10 +223,7 @@ async function createDocUpdateMessages (client: MigrationClient): Promise<void> 
           }
 
           try {
-            await generateDocUpdateMessageByTx(tx, notificationControl, client, {
-              docs: docIds,
-              transactions: allTransactions
-            })
+            await generateDocUpdateMessageByTx(tx, notificationControl, client, docCache, existsMessages)
           } catch (e: any) {
             console.error('error processing:', d._id, e.stack)
           }

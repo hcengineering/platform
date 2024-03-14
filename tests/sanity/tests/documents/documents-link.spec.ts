@@ -29,6 +29,11 @@ test.describe('Documents link tests', () => {
     const documentContentPage = new DocumentContentPage(page)
     await documentContentPage.executeMoreAction('Public link')
 
+    // remove after UBERF-5994 fixed
+    await documentContentPage.closePopup(page)
+    await page.reload({ waitUntil: 'commit' })
+    await documentContentPage.executeMoreAction('Public link')
+
     const publicLinkPopup = new PublicLinkPopup(page)
     const link = await publicLinkPopup.getPublicLink()
 

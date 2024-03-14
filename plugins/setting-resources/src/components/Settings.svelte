@@ -168,7 +168,7 @@
             on:click={selectWorkspace}
           />
           <NavItem
-            icon={login.icon.InviteWorkspace}
+            icon={setting.icon.InviteWorkspace}
             label={setting.string.InviteWorkspace}
             on:click={inviteWorkspace}
           />

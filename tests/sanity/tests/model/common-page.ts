@@ -103,4 +103,8 @@ export class CommonPage {
   async selectPopupItem (page: Page, name: string): Promise<void> {
     await page.locator('div.hulyPopup-container button.hulyPopup-row', { hasText: name }).click({ delay: 100 })
   }
+
+  async closePopup (page: Page): Promise<void> {
+    await page.locator('div.popup button[id="card-close"]').click()
+  }
 }

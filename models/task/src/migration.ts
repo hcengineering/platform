@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { TxOperations, type Class, type Doc, type Ref, toIdMap } from '@hcengineering/core'
+import { ClassifierKind, TxOperations, toIdMap, type Class, type Doc, type Ref } from '@hcengineering/core'
 import {
   createOrUpdate,
   tryMigrate,
@@ -24,9 +24,10 @@ import {
 } from '@hcengineering/model'
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 import tags from '@hcengineering/model-tags'
-import { type TaskType, taskId } from '@hcengineering/task'
-import task from './plugin'
+import { getEmbeddedLabel } from '@hcengineering/platform'
+import { taskId, type TaskType } from '@hcengineering/task'
 import { DOMAIN_TASK } from '.'
+import task from './plugin'
 
 /**
  * @public
@@ -110,6 +111,62 @@ async function createDefaults (tx: TxOperations): Promise<void> {
   await createDefaultStatesSpace(tx)
 }
 
+async function fixProjectTypeMissingClass (client: MigrationUpgradeClient): Promise<void> {
+  const projectTypes = await client.findAll(task.class.ProjectType, {})
+  const ops = new TxOperations(client, core.account.ConfigUser)
+
+  const h = ops.getHierarchy()
+  for (const pt of projectTypes) {
+    console.log('Checking:', pt.name)
+    try {
+      if (!h.hasClass(pt.targetClass)) {
+        const categoryObj = ops.getModel().findObject(pt.descriptor)
+        if (categoryObj === undefined) {
+          throw new Error('category is not found in model')
+        }
+        const baseClassClass = h.getClass(categoryObj.baseClass)
+        await ops.createDoc(
+          core.class.Class,
+          core.space.Model,
+          {
+            extends: categoryObj.baseClass,
+            kind: ClassifierKind.MIXIN,
+            label: baseClassClass.label,
+            icon: baseClassClass.icon
+          },
+          pt.targetClass,
+          Date.now(),
+          core.account.ConfigUser
+        )
+      }
+
+      const taskTypes = await ops.findAll(task.class.TaskType, { parent: pt._id })
+
+      for (const tt of taskTypes) {
+        if (!h.hasClass(tt.targetClass)) {
+          const ofClassClass = h.getClass(tt.ofClass)
+          await ops.createDoc(
+            core.class.Class,
+            core.space.Model,
+            {
+              extends: tt.ofClass,
+              kind: ClassifierKind.MIXIN,
+              label: getEmbeddedLabel(tt.name),
+              icon: ofClassClass.icon
+            },
+            pt.targetClass,
+            Date.now(),
+            core.account.ConfigUser
+          )
+        }
+      }
+    } catch (err: any) {
+      //
+      console.error(err)
+    }
+  }
+}
+
 export const taskOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, taskId, [
@@ -167,6 +224,10 @@ export const taskOperation: MigrateOperation = {
       {
         state: 'reorderStates',
         func: reorderStates
+      },
+      {
+        state: 'fix-project-type-missing-class',
+        func: fixProjectTypeMissingClass
       }
     ])
   }

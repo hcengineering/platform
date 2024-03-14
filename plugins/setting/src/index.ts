@@ -200,7 +200,8 @@ export default plugin(settingId, {
     SelectWorkspace: '' as Asset,
     Clazz: '' as Asset,
     Enums: '' as Asset,
-    InviteSettings: '' as Asset
+    InviteSettings: '' as Asset,
+    InviteWorkspace: '' as Asset
   },
   templateFieldCategory: {
     Integration: '' as Ref<TemplateFieldCategory>

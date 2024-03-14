@@ -29,6 +29,7 @@ export default mergeIds(tagsId, tags, {
     AddNowTooltip: '' as IntlString,
     CancelLabel: '' as IntlString,
     SearchCreate: '' as IntlString,
+    QuickAddItems: '' as IntlString,
     NoItems: '' as IntlString,
     TagDescriptionLabel: '' as IntlString,
     TagDescriptionPlaceholder: '' as IntlString,

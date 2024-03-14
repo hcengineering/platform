@@ -63,7 +63,7 @@
 
   function chooseIcon (): void {
     const { icon, color } = object
-    const icons = [document.icon.Document, document.icon.Library]
+    const icons = [document.icon.Document, document.icon.Teamspace]
     showPopup(IconPicker, { icon, color, icons }, 'top', (result) => {
       if (result !== undefined && result !== null) {
         object.icon = result.icon
