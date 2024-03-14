@@ -113,7 +113,7 @@ async function createDocUpdateMessages (client: MigrationClient): Promise<void> 
   async function generateFor (_class: Ref<Class<Doc>>, documents: MigrationIterator<Doc>): Promise<void> {
     const classNotFound = new Set<string>()
     while (true) {
-      const docs = await documents.next(50)
+      const docs = await documents.next(100)
 
       if (docs == null || docs.length === 0) {
         break
