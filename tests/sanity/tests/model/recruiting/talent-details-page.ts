@@ -39,7 +39,6 @@ export class TalentDetailsPage extends CommonRecruitingPage {
     await this.addNewTagPopup(this.page, skillTag, skillDescription)
 
     await this.pressShowAllButtonSelectPopup(this.page)
-    await this.checkFromDropdown(this.page, skillTag)
 
     await this.page.keyboard.press('Escape')
   }

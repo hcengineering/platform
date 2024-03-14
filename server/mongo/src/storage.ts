@@ -430,7 +430,7 @@ abstract class MongoAdapterBase implements DbAdapter {
       domain?: Domain // Allow to find for Doc's in specified domain only.
     }
   ): Promise<FindResult<T>> {
-    const pipeline = []
+    const pipeline: any[] = []
     const match = { $match: this.translateQuery(clazz, query) }
     const slowPipeline = isLookupQuery(query) || isLookupSort(options?.sort)
     const steps = await this.getLookups(clazz, options?.lookup)
@@ -440,14 +440,14 @@ abstract class MongoAdapterBase implements DbAdapter {
       }
     }
     pipeline.push(match)
-    const resultPipeline: any[] = []
+    const totalPipeline: any[] = [...pipeline]
     await this.fillSortPipeline(clazz, options, pipeline)
     if (options?.limit !== undefined || typeof query._id === 'string') {
-      resultPipeline.push({ $limit: options?.limit ?? 1 })
+      pipeline.push({ $limit: options?.limit ?? 1 })
     }
     if (!slowPipeline) {
       for (const step of steps) {
-        resultPipeline.push({ $lookup: step })
+        pipeline.push({ $lookup: step })
       }
     }
     if (options?.projection !== undefined) {
@@ -456,33 +456,24 @@ abstract class MongoAdapterBase implements DbAdapter {
         const ckey = this.checkMixinKey<T>(key, clazz) as keyof T
         projection[ckey] = options.projection[key]
       }
-      resultPipeline.push({ $project: projection })
+      pipeline.push({ $project: projection })
     } else {
-      resultPipeline.push({ $project: { '%hash%': 0 } })
+      pipeline.push({ $project: { '%hash%': 0 } })
     }
-    pipeline.push({
-      $facet: {
-        results: resultPipeline,
-        ...(options?.total === true ? { totalCount: [{ $count: 'count' }] } : {})
-      }
-    })
+
     // const domain = this.hierarchy.getDomain(clazz)
     const domain = options?.domain ?? this.hierarchy.getDomain(clazz)
     const cursor = this.db.collection(domain).aggregate(pipeline, {
       checkKeys: false,
       enableUtf8Validation: false
     })
-    const result: WithLookup<T>[] = []
+    let result: WithLookup<T>[] = []
     let total = options?.total === true ? 0 : -1
     try {
-      const rres = await ctx.with('toArray', {}, async (ctx) => await this.toArray(cursor), {
+      result = (await ctx.with('toArray', {}, async (ctx) => await this.toArray(cursor), {
         domain,
         pipeline
-      })
-      for (const r of rres) {
-        result.push(...r.results)
-        total = options?.total === true ? r.totalCount?.shift()?.count ?? 0 : -1
-      }
+      })) as any[]
     } catch (e) {
       console.error('error during executing cursor in findWithPipeline', clazz, cutObjectArray(query), options, e)
       throw e
@@ -492,6 +483,15 @@ abstract class MongoAdapterBase implements DbAdapter {
         await this.fillLookupValue(ctx, clazz, options?.lookup, row)
       })
       this.clearExtraLookups(row)
+    }
+    if (options?.total === true) {
+      totalPipeline.push({ $count: 'total' })
+      const totalCursor = this.db.collection(domain).aggregate(totalPipeline, {
+        checkKeys: false,
+        enableUtf8Validation: false
+      })
+      const arr = await this.toArray(totalCursor)
+      total = arr?.[0]?.total ?? 0
     }
     return toFindResult(this.stripHash(result), total)
   }

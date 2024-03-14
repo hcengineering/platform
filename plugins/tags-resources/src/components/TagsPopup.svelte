@@ -16,7 +16,7 @@
   import { Class, Doc, Ref } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
-  import { TagCategory, TagElement } from '@hcengineering/tags'
+  import { findTagCategory, TagCategory, TagElement } from '@hcengineering/tags'
   import {
     Button,
     EditWithIcon,
@@ -36,6 +36,7 @@
   import CreateTagElement from './CreateTagElement.svelte'
   import IconView from './icons/View.svelte'
   import IconViewHide from './icons/ViewHide.svelte'
+  import { createTagElement } from '../utils'
 
   export let newElements: TagElement[] = []
   export let targetClass: Ref<Class<Doc>>
@@ -52,12 +53,13 @@
   let objects: TagElement[] = []
   let categories: TagCategory[] = []
   let isSingleCategory = true
+  let inProcess = false
 
   const dispatch = createEventDispatcher()
   const query = createQuery()
 
   const client = getClient()
-  client.findAll(tags.class.TagCategory, { targetClass }).then((res) => {
+  void client.findAll(tags.class.TagCategory, { targetClass }).then((res) => {
     categories = res
     isSingleCategory = categories.length <= 1
   })
@@ -67,8 +69,24 @@
     objects = newElements.concat(result)
   })
 
-  async function createTagElement (): Promise<void> {
-    showPopup(CreateTagElement, { targetClass }, 'top')
+  async function onCreateTagElement (res: any): Promise<void> {
+    if (res === null) return
+    setTimeout(() => {
+      const tag = objects.findLast((e) => e._id === res)
+      if (tag === undefined) return
+      selected = [...selected, tag._id]
+      dispatch('update', { action: 'add', tag })
+      inProcess = false
+    }, 1)
+  }
+
+  async function createTagElementPopup (): Promise<void> {
+    showPopup(CreateTagElement, { targetClass, title: search }, 'top', onCreateTagElement)
+  }
+
+  async function createTagElementQuick (): Promise<void> {
+    const res = await createTagElement(search, targetClass, findTagCategory(search, categories))
+    await onCreateTagElement(res)
   }
 
   const isSelected = (selected: Ref<TagElement>[], element: TagElement): boolean => {
@@ -94,12 +112,22 @@
     if (count > 0) return count.toString()
     return ''
   }
-  const tagSort = (a: TagElement, b: TagElement) => {
+  const tagSort = (a: TagElement, b: TagElement): number => {
     const r = (b.refCount ?? 0) - (a.refCount ?? 0)
     if (r === 0) {
       return b.title.localeCompare(a.title)
     }
     return r
+  }
+
+  async function onSearchKeydown (ev: KeyboardEvent): Promise<void> {
+    if (ev.code !== 'Enter') return
+    if (!inProcess && objects.length < 1) {
+      inProcess = true
+      await createTagElementQuick()
+      ev.preventDefault()
+    }
+    // TODO add first element or group?
   }
 </script>
 
@@ -114,6 +142,7 @@
       {placeholder}
       {placeholderParam}
       on:change
+      on:keydown={onSearchKeydown}
     />
     {#if !isSingleCategory}
       <Button
@@ -125,7 +154,7 @@
         }}
       />
     {/if}
-    {#if !hideAdd}<Button kind={'ghost'} size={'large'} icon={IconAdd} on:click={createTagElement} />{/if}
+    {#if !hideAdd}<Button kind={'ghost'} size={'large'} icon={IconAdd} on:click={createTagElementPopup} />{/if}
   </div>
   <div class="scroll">
     <div class="box">
@@ -190,6 +219,11 @@
         {/if}
       {/each}
       {#if objects.length === 0}
+        {#if !hideAdd}
+          <button class="menu-item focus flex-row-center" on:click={createTagElementQuick}>
+            <Label label={tags.string.QuickAddItems} params={{ word: keyLabel, title: search }} />
+          </button>
+        {/if}
         <div class="empty">
           <Label label={tags.string.NoItems} params={{ word: keyLabel }} />
         </div>

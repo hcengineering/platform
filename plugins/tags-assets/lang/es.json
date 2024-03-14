@@ -16,6 +16,7 @@
     "TagCreateLabel": "Etiqueta",
     "CancelLabel": "Cancelar",
     "SearchCreate": "Buscar/Nombre...",
+    "QuickAddItems": "Agregar {word} rápidamente \"{title}\"",
     "NoItems": "No hay ninguna {word} añadida...",
     "TagDescriptionLabel": "Descripción",
     "TagDescriptionPlaceholder": "Escriba la descripción aquí",

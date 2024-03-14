@@ -95,4 +95,8 @@ export class CommonPage {
   async selectMention (page: Page, mentionName: string): Promise<void> {
     await page.locator('form.mentionPoup div.list-item span.name', { hasText: mentionName }).click()
   }
+
+  async closePopup (page: Page): Promise<void> {
+    await page.locator('div.popup button[id="card-close"]').click()
+  }
 }

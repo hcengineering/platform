@@ -24,14 +24,15 @@
   import Workslots from './Workslots.svelte'
 
   export let todo: ToDo
-  let slots: WorkSlot[] = []
-
-  const q = createQuery()
-  q.query(time.class.WorkSlot, { attachedTo: todo._id }, (res) => {
-    slots = res
-  })
 
   const client = getClient()
+  const query = createQuery()
+
+  let slots: WorkSlot[] = []
+
+  $: query.query(time.class.WorkSlot, { attachedTo: todo._id }, (res) => {
+    slots = res
+  })
 
   async function change (e: CustomEvent<{ startDate: number, dueDate: number, slot: Ref<WorkSlot> }>): Promise<void> {
     const { startDate, dueDate, slot } = e.detail

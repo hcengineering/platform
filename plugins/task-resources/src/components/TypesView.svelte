@@ -107,7 +107,7 @@
     <SearchEdit bind:value={search} />
     <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
     <div class="buttons-divider" />
-    <FilterButton {_class} />
+    <FilterButton {_class} {space} />
   </div>
   <div class="ac-header-full medium-gap">
     <ViewletSettingButton bind:viewOptions bind:viewlet />

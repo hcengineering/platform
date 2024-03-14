@@ -15,7 +15,7 @@
 <script lang="ts">
   import activity, { ActivityReference } from '@hcengineering/activity'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Action, Label } from '@hcengineering/ui'
+  import { Action, Label, ShowMore } from '@hcengineering/ui'
   import { personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
   import { Account, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
   import { Person, type PersonAccount } from '@hcengineering/contact'
@@ -43,6 +43,7 @@
   export let hoverable = true
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
   export let hideLink = false
+  export let compact = false
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
 
@@ -146,7 +147,9 @@
     </span>
   </svelte:fragment>
   <svelte:fragment slot="content">
-    <ReferenceContent {value} />
+    <ShowMore limit={compact ? 80 : undefined}>
+      <ReferenceContent {value} />
+    </ShowMore>
   </svelte:fragment>
 </ActivityMessageTemplate>
 

@@ -124,7 +124,8 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
         },
         lookup: {
           attachedTo: activity.class.ActivityMessage
-        }
+        },
+        limit: 1000
       }
     )
   }
@@ -258,8 +259,13 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
 
     try {
       const inboxNotifications = get(this.inboxNotifications) ?? []
+      const contexts = get(this.docNotifyContexts) ?? []
       for (const notification of inboxNotifications) {
         await ops.remove(notification)
+      }
+
+      for (const context of contexts) {
+        await ops.update(context, { lastViewedTimestamp: Date.now() })
       }
     } finally {
       await ops.commit()
@@ -273,10 +279,14 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
 
     try {
       const inboxNotifications = get(this.inboxNotifications) ?? []
+      const contexts = get(this.docNotifyContexts) ?? []
       for (const notification of inboxNotifications) {
         if (!notification.isViewed) {
           await ops.update(notification, { isViewed: true })
         }
+      }
+      for (const context of contexts) {
+        await ops.update(context, { lastViewedTimestamp: Date.now() })
       }
     } finally {
       await ops.commit()
@@ -290,10 +300,15 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
 
     try {
       const inboxNotifications = get(this.inboxNotifications) ?? []
+      const contexts = get(this.docNotifyContexts) ?? []
+
       for (const notification of inboxNotifications) {
         if (notification.isViewed) {
           await ops.update(notification, { isViewed: false })
         }
+      }
+      for (const context of contexts) {
+        await ops.update(context, { lastViewedTimestamp: 0 })
       }
     } finally {
       await ops.commit()

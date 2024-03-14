@@ -366,7 +366,7 @@ function defineDocument (builder: Builder): void {
     presentation.class.ObjectSearchCategory,
     core.space.Model,
     {
-      title: document.string.Docs,
+      title: document.string.Documents,
       icon: document.icon.Document,
       label: document.string.SearchDocument,
       query: document.completion.DocumentQuery,
@@ -397,7 +397,7 @@ function defineApplication (builder: Builder): void {
             addSpaceLabel: document.string.CreateTeamspace,
             createComponent: document.component.CreateTeamspace,
             visibleIf: document.function.IsTeamspaceVisible,
-            icon: document.icon.Library,
+            icon: document.icon.Teamspace,
             // intentionally left empty in order to make space presenter working
             specials: []
           }
