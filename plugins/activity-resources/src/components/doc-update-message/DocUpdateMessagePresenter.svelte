@@ -167,17 +167,17 @@
   {onReply}
 >
   <svelte:fragment slot="header">
-      <DocUpdateMessageHeader
-        message={value}
-        {object}
-        {parentObject}
-        {viewlet}
-        {person}
-        {objectName}
-        {collectionName}
-        {attributeModel}
-        {hideLink}
-      />
+    <DocUpdateMessageHeader
+      message={value}
+      {object}
+      {parentObject}
+      {viewlet}
+      {person}
+      {objectName}
+      {collectionName}
+      {attributeModel}
+      {hideLink}
+    />
   </svelte:fragment>
   <svelte:fragment slot="content">
     {#if viewlet?.component && object}
