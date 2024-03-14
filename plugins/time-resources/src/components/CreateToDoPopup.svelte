@@ -13,22 +13,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Calendar, generateEventId } from '@hcengineering/calendar'
-  import calendar from '@hcengineering/calendar-resources/src/plugin'
-  import { PersonAccount } from '@hcengineering/contact'
   import core, { AttachedData, Doc, Ref, generateId, getCurrentAccount } from '@hcengineering/core'
+  import { Button, Component, EditBox, IconClose, Label, Scroller } from '@hcengineering/ui'
   import { SpaceSelector, createQuery, getClient } from '@hcengineering/presentation'
-  import tagsPlugin, { TagReference } from '@hcengineering/tags'
-  import task from '@hcengineering/task'
-  import { StyledTextBox } from '@hcengineering/text-editor'
-  import { Button, Component, EditBox, IconClose, Label } from '@hcengineering/ui'
   import { ToDo, ToDoPriority, WorkSlot } from '@hcengineering/time'
+  import { Calendar, generateEventId } from '@hcengineering/calendar'
+  import tagsPlugin, { TagReference } from '@hcengineering/tags'
   import { createEventDispatcher } from 'svelte'
-  import time from '../plugin'
-  import DueDateEditor from './DueDateEditor.svelte'
-  import PriorityEditor from './PriorityEditor.svelte'
-  import Workslots from './Workslots.svelte'
   import { VisibilityEditor } from '@hcengineering/calendar-resources'
+  import { StyledTextBox } from '@hcengineering/text-editor'
+  import { PersonAccount } from '@hcengineering/contact'
+  import calendar from '@hcengineering/calendar-resources/src/plugin'
+  import task from '@hcengineering/task'
+  import PriorityEditor from './PriorityEditor.svelte'
+  import DueDateEditor from './DueDateEditor.svelte'
+  import Workslots from './Workslots.svelte'
+  import time from '../plugin'
 
   export let object: Doc | undefined
 
@@ -185,53 +185,53 @@
       />
     </div>
   </div>
-  <div class="block flex-no-shrink">
-    <div class="pb-4">
-      <StyledTextBox
-        alwaysEdit={true}
-        maxHeight="limited"
-        showButtons={false}
-        placeholder={calendar.string.Description}
-        bind:content={todo.description}
-      />
-    </div>
-    <div class="flex-row-center gap-1-5 mb-1">
-      <DueDateEditor bind:value={todo.dueDate} />
-      <PriorityEditor bind:value={todo.priority} />
-    </div>
-  </div>
-  <div class="block flex-no-shrink">
-    <div class="flex-row-center gap-1-5 mb-1">
-      <div>
-        <Label label={time.string.AddTo} />
+  <Scroller>
+    <div class="block flex-no-shrink">
+      <div class="pb-4">
+        <StyledTextBox
+          alwaysEdit={true}
+          maxHeight="limited"
+          showButtons={false}
+          placeholder={calendar.string.Description}
+          bind:content={todo.description}
+        />
       </div>
-      <SpaceSelector
-        _class={task.class.Project}
-        query={{ archived: false, members: getCurrentAccount()._id }}
-        label={core.string.Space}
-        autoSelect={false}
-        allowDeselect
-        kind={'regular'}
-        size={'medium'}
-        focus={false}
-        bind:space={todo.attachedSpace}
-      />
-      <VisibilityEditor bind:value={todo.visibility} />
+      <div class="flex-row-center gap-1-5 mb-1">
+        <PriorityEditor bind:value={todo.priority} />
+        <VisibilityEditor size="small" bind:value={todo.visibility} />
+        <DueDateEditor bind:value={todo.dueDate} />
+      </div>
     </div>
-  </div>
-  <div class="block flex-no-shrink">
-    <div class="flex-row-center gap-1-5 mb-1">
-      <Component
-        is={tagsPlugin.component.DraftTagsEditor}
-        props={{ tags, targetClass: time.class.ToDo }}
-        on:change={(e) => {
-          tags = e.detail
-        }}
-      />
+    <div class="block flex-no-shrink">
+      <div class="flex-row-center gap-1-5 mb-1">
+        <div>
+          <Label label={time.string.AddTo} />
+        </div>
+        <SpaceSelector
+          _class={task.class.Project}
+          query={{ archived: false, members: getCurrentAccount()._id }}
+          label={core.string.Space}
+          autoSelect={false}
+          allowDeselect
+          kind={'regular'}
+          size={'medium'}
+          focus={false}
+          bind:space={todo.attachedSpace}
+        />
+      </div>
     </div>
-  </div>
-  <div class="block flex-no-shrink end">
-    <div class="flex-row-center gap-1-5">
+    <div class="block flex-no-shrink">
+      <div class="flex-row-center gap-1-5 mb-1">
+        <Component
+          is={tagsPlugin.component.DraftTagsEditor}
+          props={{ tags, targetClass: time.class.ToDo }}
+          on:change={(e) => {
+            tags = e.detail
+          }}
+        />
+      </div>
+    </div>
+    <div class="block flex-gap-4 flex-no-shrink end">
       <Workslots
         bind:slots
         on:remove={removeSlot}
@@ -240,16 +240,16 @@
         on:dueChange={changeDueSlot}
       />
     </div>
-  </div>
-  <div class="flex-row-reverse btn flex-no-shrink">
-    <Button
-      kind="primary"
-      {loading}
-      label={time.string.AddToDo}
-      on:click={saveToDo}
-      disabled={todo?.title === undefined || todo?.title === ''}
-    />
-  </div>
+    <div class="flex-row-reverse btn flex-no-shrink">
+      <Button
+        kind="primary"
+        {loading}
+        label={time.string.AddToDo}
+        on:click={saveToDo}
+        disabled={todo?.title === undefined || todo?.title === ''}
+      />
+    </div>
+  </Scroller>
 </div>
 
 <style lang="scss">

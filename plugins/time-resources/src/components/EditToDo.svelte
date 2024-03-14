@@ -190,8 +190,8 @@
       </div>
     {/if}
     <div class="slots-content">
-      <div class="flex-row-top justify-between flex-gap-2">
-        <span class="font-medium-14 secondary-textColor">
+      <div class="flex-row-top justify-between items-center flex-gap-2">
+        <span class="font-caps-medium-12 slots-content-title">
           <Label label={time.string.WorkSchedule} />
         </span>
         <div class="flex-row-center gap-2">
@@ -235,9 +235,8 @@
   }
   .slots-content {
     gap: var(--spacing-2);
-    padding: var(--spacing-3) var(--spacing-4);
+    padding: var(--spacing-2) var(--spacing-4);
     border-top: 1px solid var(--theme-divider-color);
-    border-bottom: 1px solid var(--theme-divider-color);
   }
   .eventPopup-container {
     display: flex;

@@ -13,10 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Icon, IconArrowRight, areDatesEqual, getUserTimezone } from '@hcengineering/ui'
-  import { utcToZonedTime } from 'date-fns-tz'
+  import { areDatesEqual, getUserTimezone } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import calendar from '../plugin'
+  import { utcToZonedTime } from 'date-fns-tz'
   import DateEditor from './DateEditor.svelte'
 
   export let startDate: number
@@ -50,10 +49,7 @@
   }
 </script>
 
-<div class="flex-row-center">
-  <div class="self-start flex-no-shrink mt-2 mr-1-5 content-dark-color">
-    <Icon icon={calendar.icon.Watch} size={'small'} />
-  </div>
+<div class="flex-row-center flex-gap-2">
   <DateEditor
     bind:date={startDate}
     direction={sameDate ? 'horizontal' : 'vertical'}
@@ -63,9 +59,7 @@
     {disabled}
     {focusIndex}
   />
-  <div class="self-end flex-no-shrink mb-2 ml-1-5 mr-1-5 content-darker-color">
-    <IconArrowRight size={'small'} />
-  </div>
+  <div class="flex-no-shrink content-darker-color">—</div>
   <DateEditor
     bind:date={dueDate}
     direction={sameDate ? 'horizontal' : 'vertical'}

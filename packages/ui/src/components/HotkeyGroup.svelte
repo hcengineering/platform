@@ -1,5 +1,5 @@
-//
-// Copyright © 2022 Hardcore Engineering Inc.
+<!--
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -11,19 +11,15 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
+<script lang="ts">
+  import Hotkey from './Hotkey.svelte'
 
-import { loadMetadata } from '@hcengineering/platform'
-import time from '@hcengineering/time'
+  export let keys: string[]
+</script>
 
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
-loadMetadata(time.icon, {
-  Team: `${icons}#team`,
-  Hashtag: `${icons}#hashtag`,
-  Inbox: `${icons}#inbox`,
-  Calendar: `${icons}#calendar`,
-  Flag: `${icons}#flag`,
-  FilledFlag: `${icons}#filledFlag`,
-  Planned: `${icons}#planned`,
-  All: `${icons}#all`
-})
+<div class="hotkey-group flex flex-gap-0-5">
+  {#each keys as key}
+    <Hotkey {key} />
+  {/each}
+</div>

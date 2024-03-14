@@ -141,6 +141,8 @@ export { default as NavGroup } from './components/NavGroup.svelte'
 export { default as Modal } from './components/Modal.svelte'
 export { default as AccordionItem } from './components/AccordionItem.svelte'
 export { default as NotificationToast } from './components/NotificationToast.svelte'
+export { default as Hotkey } from './components/Hotkey.svelte'
+export { default as HotkeyGroup } from './components/HotkeyGroup.svelte'
 
 export { default as IconAdd } from './components/icons/Add.svelte'
 export { default as IconCircleAdd } from './components/icons/CircleAdd.svelte'
@@ -213,6 +215,9 @@ export { default as IconTableOfContents } from './components/icons/TableOfConten
 export { default as IconRight } from './components/icons/Right.svelte'
 export { default as IconDropdownDown } from './components/icons/DropdownDown.svelte'
 export { default as IconDropdownRight } from './components/icons/DropdownRight.svelte'
+export { default as IconKeyCommand } from './components/icons/KeyCommand.svelte'
+export { default as IconKeyOption } from './components/icons/KeyOption.svelte'
+export { default as IconKeyShift } from './components/icons/KeyShift.svelte'
 
 export { default as PanelInstance } from './components/PanelInstance.svelte'
 export { default as Panel } from './components/Panel.svelte'
