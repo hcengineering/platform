@@ -56,7 +56,7 @@
   let name: string = project?.name ?? namePlaceholder
   let description: string = project?.description ?? descriptionPlaceholder
   let isPrivate: boolean = project?.private ?? false
-  let icon: Asset | undefined = project?.icon ?? undefined
+  let icon: Asset | undefined = project?.icon ?? tracker.icon.Home
   let color = project?.color ?? getColorNumberByText(name)
   let isColorSelected = false
   let defaultAssignee: Ref<Employee> | null | undefined = project?.defaultAssignee ?? null
