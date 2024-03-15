@@ -14,7 +14,7 @@
     themeStore
   } from '@hcengineering/ui'
   import { ToDosMode } from '..'
-  import { Project } from '@hcengineering/tracker'
+  import tracker, { Project } from '@hcengineering/tracker'
   import view from '@hcengineering/view'
 
   export let mode: ToDosMode
@@ -78,7 +78,7 @@
     {#if groups}
       {#each groups as group}
         <AccordionItem
-          icon={group.icon === view.ids.IconWithEmoji ? IconWithEmoji : group.icon}
+          icon={group.icon === view.ids.IconWithEmoji ? IconWithEmoji : group.icon ?? tracker.icon.Home}
           iconProps={group.icon === view.ids.IconWithEmoji
             ? { icon: group.color }
             : {
