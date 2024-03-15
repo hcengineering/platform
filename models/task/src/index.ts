@@ -53,7 +53,15 @@ import {
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
-import core, { DOMAIN_SPACE, TAttachedDoc, TClass, TDoc, TSpaceType, TTypedSpace } from '@hcengineering/model-core'
+import core, {
+  DOMAIN_SPACE,
+  TAttachedDoc,
+  TClass,
+  TDoc,
+  TSpaceType,
+  TSpaceTypeDescriptor,
+  TTypedSpace
+} from '@hcengineering/model-core'
 import view, {
   classPresenter,
   createAction,
@@ -230,11 +238,8 @@ export class TTaskType extends TDoc implements TaskType {
     statusCategories!: Ref<StatusCategory>[]
 }
 
-@Model(task.class.ProjectTypeDescriptor, core.class.Doc, DOMAIN_MODEL)
-export class TProjectTypeDescriptor extends TDoc implements ProjectTypeDescriptor {
-  name!: IntlString
-  description!: IntlString
-  icon!: Asset
+@Model(task.class.ProjectTypeDescriptor, core.class.SpaceTypeDescriptor, DOMAIN_MODEL)
+export class TProjectTypeDescriptor extends TSpaceTypeDescriptor implements ProjectTypeDescriptor {
   editor?: AnyComponent
   allowedClassic?: boolean
   allowedTaskTypeDescriptors?: Ref<TaskTypeDescriptor>[] // if undefined we allow all possible
