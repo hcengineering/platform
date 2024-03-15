@@ -14,14 +14,14 @@
 // limitations under the License.
 //
 
-import { WorkspaceId } from '@hcengineering/core'
+import { MeasureContext, WorkspaceId, metricsAggregate } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
-import { decodeToken, Token } from '@hcengineering/server-token'
+import { Token, decodeToken } from '@hcengineering/server-token'
 import bp from 'body-parser'
-import compression from 'compression'
 import cors from 'cors'
 import express, { Response } from 'express'
 import fileUpload, { UploadedFile } from 'express-fileupload'
+import expressStaticGzip from 'express-static-gzip'
 import https from 'https'
 import morgan from 'morgan'
 import { extname, join, resolve } from 'path'
@@ -33,15 +33,24 @@ import { preConditions } from './utils'
 const cacheControlValue = 'public, max-age=365d'
 const cacheControlMaxAge = '365d'
 
-async function minioUpload (minio: MinioService, workspace: WorkspaceId, file: UploadedFile): Promise<string> {
+async function minioUpload (
+  ctx: MeasureContext,
+  minio: MinioService,
+  workspace: WorkspaceId,
+  file: UploadedFile
+): Promise<string> {
   const id = uuid()
   const meta: any = {
     'Content-Type': file.mimetype
   }
 
-  const resp = await minio.put(workspace, id, file.data, file.size, meta)
+  const resp = await ctx.with(
+    'storage upload',
+    { file: file.name, contentType: file.mimetype },
+    async () => await minio.put(workspace, id, file.data, file.size, meta)
+  )
 
-  console.log(resp)
+  await ctx.info('minio upload', resp)
   return id
 }
 
@@ -64,13 +73,14 @@ function getRange (range: string, size: number): [number, number] {
 }
 
 async function getFileRange (
+  ctx: MeasureContext,
   range: string,
   client: MinioService,
   workspace: WorkspaceId,
   uuid: string,
   res: Response
 ): Promise<void> {
-  const stat = await client.stat(workspace, uuid)
+  const stat = await ctx.with('stats', {}, async () => await client.stat(workspace, uuid))
 
   const size: number = stat.size
 
@@ -84,38 +94,68 @@ async function getFileRange (
     return
   }
 
-  try {
-    const dataStream = await client.partial(workspace, uuid, start, end - start + 1)
-    res.writeHead(206, {
-      Connection: 'keep-alive',
-      'Content-Range': `bytes ${start}-${end}/${size}`,
-      'Accept-Ranges': 'bytes',
-      'Content-Length': end - start + 1,
-      'Content-Type': stat.metaData['content-type'],
-      Etag: stat.etag,
-      'Last-Modified': stat.lastModified.toISOString()
-    })
+  await ctx.with(
+    'write',
+    { contentType: stat.metaData['content-type'] },
+    async (ctx) => {
+      try {
+        const dataStream = await ctx.with(
+          'partial',
+          {},
+          async () => await client.partial(workspace, uuid, start, end - start + 1),
+          {}
+        )
+        res.writeHead(206, {
+          Connection: 'keep-alive',
+          'Content-Range': `bytes ${start}-${end}/${size}`,
+          'Accept-Ranges': 'bytes',
+          'Content-Length': end - start + 1,
+          'Content-Type': stat.metaData['content-type'],
+          Etag: stat.etag,
+          'Last-Modified': stat.lastModified.toISOString()
+        })
 
-    dataStream.on('end', () => {
-      dataStream.destroy()
-      res.end()
-    })
+        dataStream.pipe(res)
 
-    dataStream.pipe(res)
-  } catch (err: any) {
-    console.log(err)
-    res.status(500).send()
-  }
+        await new Promise<void>((resolve, reject) => {
+          dataStream.on('end', () => {
+            dataStream.destroy()
+            res.end()
+            resolve()
+          })
+          dataStream.on('error', (err) => {
+            console.error(err)
+            res.end()
+            reject(err)
+          })
+          dataStream.on('close', () => {
+            res.end()
+          })
+        })
+      } catch (err: any) {
+        if (err?.code === 'NoSuchKey' || err?.code === 'NotFound') {
+          console.log('No such key', workspace.name, uuid)
+          res.status(404).send()
+          return
+        } else {
+          console.log(err)
+        }
+        res.status(500).send()
+      }
+    },
+    { ...stat.metaData, uuid, start, end: end - start + 1, ...stat.metaData }
+  )
 }
 
 async function getFile (
+  ctx: MeasureContext,
   client: MinioService,
   workspace: WorkspaceId,
   uuid: string,
   req: Request,
   res: Response
 ): Promise<void> {
-  const stat = await client.stat(workspace, uuid)
+  const stat = await ctx.with('stat', {}, async () => await client.stat(workspace, uuid))
 
   const etag = stat.etag
 
@@ -136,30 +176,41 @@ async function getFile (
     return
   }
 
-  try {
-    const dataStream = await client.get(workspace, uuid)
-    res.writeHead(200, {
-      'Content-Type': stat.metaData['content-type'],
-      Etag: stat.etag,
-      'Last-Modified': stat.lastModified.toISOString(),
-      'Cache-Control': cacheControlValue
-    })
+  await ctx.with(
+    'write',
+    { contentType: stat.metaData['content-type'] },
+    async (ctx) => {
+      try {
+        const dataStream = await ctx.with('readable', {}, async () => await client.get(workspace, uuid))
+        res.writeHead(200, {
+          'Content-Type': stat.metaData['content-type'],
+          Etag: stat.etag,
+          'Last-Modified': stat.lastModified.toISOString(),
+          'Cache-Control': cacheControlValue
+        })
 
-    dataStream.on('data', function (chunk) {
-      res.write(chunk)
-    })
-    dataStream.on('end', function () {
-      res.end()
-      dataStream.destroy()
-    })
-    dataStream.on('error', function (err) {
-      console.log(err)
-      res.status(500).send()
-    })
-  } catch (err: any) {
-    console.log(err)
-    res.status(500).send()
-  }
+        dataStream.on('data', function (chunk) {
+          res.write(chunk)
+        })
+        await new Promise<void>((resolve, reject) => {
+          dataStream.on('end', function () {
+            res.end()
+            dataStream.destroy()
+            resolve()
+          })
+          dataStream.on('error', function (err) {
+            res.status(500).send()
+            console.log(err)
+            reject(err)
+          })
+        })
+      } catch (err: any) {
+        console.log(err)
+        res.status(500).send()
+      }
+    },
+    { ...stat.metaData }
+  )
 }
 
 /**
@@ -167,6 +218,7 @@ async function getFile (
  * @param port -
  */
 export function start (
+  ctx: MeasureContext,
   config: {
     transactorEndpoint: string
     elasticUrl: string
@@ -190,26 +242,20 @@ export function start (
 ): () => void {
   const app = express()
 
-  app.use(
-    compression({
-      filter: (req, res) => {
-        if (req.headers['x-no-compression'] != null) {
-          // don't compress responses with this request header
-          return false
-        }
-
-        // fallback to standard filter function
-        return compression.filter(req, res)
-      },
-      level: 6
-    })
-  )
   app.use(cors())
   app.use(fileUpload())
   app.use(bp.json())
   app.use(bp.urlencoded({ extended: true }))
 
-  app.use(morgan('combined'))
+  class MyStream {
+    write (text: string): void {
+      void ctx.info(text)
+    }
+  }
+
+  const myStream = new MyStream()
+
+  app.use(morgan('short', { stream: myStream }))
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   app.get('/config.json', async (req, res) => {
@@ -234,18 +280,41 @@ export function start (
     res.json(data)
   })
 
+  app.get('/api/v1/statistics', (req, res) => {
+    try {
+      const token = req.query.token as string
+      const payload = decodeToken(token)
+      const admin = payload.extra?.admin === 'true'
+      res.writeHead(200, { 'Content-Type': 'application/json' })
+
+      const json = JSON.stringify({
+        metrics: metricsAggregate((ctx as any).metrics),
+        statistics: {
+          activeSessions: {}
+        },
+        admin
+      })
+      res.end(json)
+    } catch (err) {
+      console.error(err)
+      res.writeHead(404, {})
+      res.end()
+    }
+  })
+
   const dist = resolve(process.env.PUBLIC_DIR ?? cwd(), 'dist')
   console.log('serving static files from', dist)
   app.use(
-    express.static(dist, {
-      maxAge: '365d',
-      etag: true,
-      lastModified: true
+    expressStaticGzip(dist, {
+      serveStatic: {
+        maxAge: '365d',
+        etag: true,
+        lastModified: true
+      }
     })
   )
 
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  app.head('/files', async (req, res: Response) => {
+  async function handleHead (ctx: MeasureContext, req: any, res: Response): Promise<void> {
     try {
       const token = req.query.token as string
       const payload = decodeToken(token)
@@ -266,13 +335,42 @@ export function start (
       res.status(200)
 
       res.end()
-    } catch (error) {
-      console.log(error)
+    } catch (error: any) {
+      if (error?.code === 'NoSuchKey' || error?.code === 'NotFound') {
+        console.log('No such key', req.query.file)
+        res.status(404).send()
+        return
+      } else {
+        await ctx.error('error-handle-files', error)
+      }
       res.status(500).send()
     }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  app.head('/files', (req, res) => {
+    void ctx.with(
+      'head-handle-file',
+      {},
+      async (ctx) => {
+        await handleHead(ctx, req, res)
+      },
+      { url: req.path, query: req.query }
+    )
+  })
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  app.head('/files/*', (req, res) => {
+    void ctx.with(
+      'head-handle-file',
+      {},
+      async (ctx) => {
+        await handleHead(ctx, req, res)
+      },
+      { url: req.path, query: req.query }
+    )
   })
 
-  const filesHandler = async (req: any, res: Response): Promise<void> => {
+  const filesHandler = async (ctx: MeasureContext, req: any, res: Response): Promise<void> => {
     try {
       const cookies = ((req?.headers?.cookie as string) ?? '').split(';').map((it) => it.trim().split('='))
 
@@ -285,7 +383,11 @@ export function start (
       let uuid = req.query.file as string
       if (token === undefined) {
         try {
-          const d = await config.minio.stat(payload.workspace, uuid)
+          const d = await ctx.with(
+            'notoken-stat',
+            { workspace: payload.workspace.name },
+            async () => await config.minio.stat(payload.workspace, uuid)
+          )
           if (!((d.metaData['content-type'] as string) ?? '').includes('image')) {
             // Do not allow to return non images with no token.
             if (token === undefined) {
@@ -298,55 +400,91 @@ export function start (
 
       const size = req.query.size as 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' | 'full'
 
-      uuid = await getResizeID(size, uuid, config, payload)
+      uuid = await ctx.with('resize', {}, async () => await getResizeID(size, uuid, config, payload))
 
       const range = req.headers.range
       if (range !== undefined) {
-        await getFileRange(range, config.minio, payload.workspace, uuid, res)
+        await ctx.with('file-range', { workspace: payload.workspace.name }, async (ctx) => {
+          await getFileRange(ctx, range, config.minio, payload.workspace, uuid, res)
+        })
       } else {
-        await getFile(config.minio, payload.workspace, uuid, req, res)
+        await ctx.with(
+          'file',
+          { workspace: payload.workspace.name },
+          async (ctx) => {
+            await getFile(ctx, config.minio, payload.workspace, uuid, req, res)
+          },
+          { uuid }
+        )
       }
     } catch (error: any) {
       if (error?.code === 'NoSuchKey' || error?.code === 'NotFound') {
         console.log('No such key', req.query.file)
+        res.status(404).send()
+        return
       } else {
-        console.log(error)
+        await ctx.error('error-handle-files', error)
       }
       res.status(500).send()
     }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  app.get('/files/', filesHandler)
+  app.get('/files', (req, res) => {
+    void ctx.with(
+      'handle-file',
+      {},
+      async (ctx) => {
+        await filesHandler(ctx, req, res)
+      },
+      { url: req.path, query: req.query }
+    )
+  })
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  app.get('/files/*', filesHandler)
+  app.get('/files/*', (req, res) => {
+    void ctx.with(
+      'handle-file*',
+      {},
+      async (ctx) => {
+        await filesHandler(ctx, req, res)
+      },
+      { url: req.path, query: req.query }
+    )
+  })
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   app.post('/files', async (req, res) => {
-    const file = req.files?.file as UploadedFile
+    await ctx.with(
+      'post-file',
+      {},
+      async (ctx) => {
+        const file = req.files?.file as UploadedFile
 
-    if (file === undefined) {
-      res.status(400).send()
-      return
-    }
+        if (file === undefined) {
+          res.status(400).send()
+          return
+        }
 
-    const authHeader = req.headers.authorization
-    if (authHeader === undefined) {
-      res.status(403).send()
-      return
-    }
+        const authHeader = req.headers.authorization
+        if (authHeader === undefined) {
+          res.status(403).send()
+          return
+        }
 
-    try {
-      const token = authHeader.split(' ')[1]
-      const payload = decodeToken(token)
-      const uuid = await minioUpload(config.minio, payload.workspace, file)
+        try {
+          const token = authHeader.split(' ')[1]
+          const payload = decodeToken(token)
+          const uuid = await minioUpload(ctx, config.minio, payload.workspace, file)
 
-      res.status(200).send(uuid)
-    } catch (error) {
-      console.log(error)
-      res.status(500).send()
-    }
+          res.status(200).send(uuid)
+        } catch (error: any) {
+          await ctx.error('error-post-files', error)
+          res.status(500).send()
+        }
+      },
+      { url: req.path, query: req.query }
+    )
   })
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises

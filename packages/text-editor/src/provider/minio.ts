@@ -23,7 +23,7 @@ interface EVENTS {
 }
 
 async function fetchContent (doc: YDoc, name: string): Promise<void> {
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 2; i++) {
     try {
       const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
 
@@ -41,7 +41,7 @@ async function fetchContent (doc: YDoc, name: string): Promise<void> {
       console.error(err)
     }
     // White a while
-    await new Promise((resolve) => setTimeout(resolve, 50))
+    await new Promise((resolve) => setTimeout(resolve, 10))
   }
 }
 
