@@ -170,21 +170,21 @@ export function setLocationStorageKey (storageKey: string): void {
   locationStorageKeyId = storageKey
 }
 
-export function navigate (location: PlatformLocation, store = true): boolean {
+export function navigate (location: PlatformLocation, replace = false): boolean {
   closePopup()
   const cur = locationToUrl(getCurrentLocation())
   const url = locationToUrl(location)
   if (cur !== url) {
-    if (store) {
-      if (!embeddedPlatform) {
-        history.pushState(null, '', url)
-      } else {
-        history.pushState({ location }, '')
-      }
-      localStorage.setItem(locationStorageKeyId, JSON.stringify(location))
-      if (location.path[1] !== undefined) {
-        localStorage.setItem(`${locationStorageKeyId}_${location.path[1]}`, JSON.stringify(location))
-      }
+    const data = !embeddedPlatform ? null : { location }
+    const _url = !embeddedPlatform ? url : undefined
+    if (replace) {
+      history.replaceState(data, '', _url)
+    } else {
+      history.pushState(data, '', _url)
+    }
+    localStorage.setItem(locationStorageKeyId, JSON.stringify(location))
+    if (location.path[1] !== undefined) {
+      localStorage.setItem(`${locationStorageKeyId}_${location.path[1]}`, JSON.stringify(location))
     }
     locationWritable.set(location)
     return true
