@@ -34,7 +34,7 @@ import {
   getDocLinkTitle,
   hasAttributePresenter
 } from '@hcengineering/view-resources'
-import { type Person } from '@hcengineering/contact'
+import contact, { type Person } from '@hcengineering/contact'
 import { type IntlString } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui'
 import { get } from 'svelte/store'
@@ -220,20 +220,42 @@ function combineByCreateThreshold (docUpdateMessages: DocUpdateMessage[]): DocUp
   })
 }
 
+function wrapMessages (
+  hierarchy: Hierarchy,
+  messages: ActivityMessage[]
+): { toCombine: DocUpdateMessage[], uncombined: ActivityMessage[] } {
+  const toCombine: DocUpdateMessage[] = []
+  const uncombined: ActivityMessage[] = []
+
+  for (const message of messages) {
+    if (isDocUpdateMessage(message)) {
+      if (hierarchy.isDerived(message.attachedToClass, contact.class.Channel)) {
+        uncombined.push(message)
+      } else {
+        toCombine.push(message)
+      }
+    } else {
+      uncombined.push(message)
+    }
+  }
+
+  return { toCombine, uncombined }
+}
+
 export async function combineActivityMessages (
   messages: ActivityMessage[],
   sortingOrder: SortingOrder = SortingOrder.Ascending
 ): Promise<DisplayActivityMessage[]> {
   const client = getClient()
-  const uncombinedMessages = messages.filter((message) => message._class !== activity.class.DocUpdateMessage)
 
-  const docUpdateMessages = combineByCreateThreshold(messages.filter(isDocUpdateMessage))
+  const { uncombined, toCombine } = wrapMessages(client.getHierarchy(), messages)
+  const docUpdateMessages = combineByCreateThreshold(toCombine)
 
   if (docUpdateMessages.length === 0) {
-    return sortActivityMessages(uncombinedMessages, sortingOrder)
+    return sortActivityMessages(uncombined, sortingOrder)
   }
 
-  const result: Array<DisplayActivityMessage | undefined> = [...uncombinedMessages]
+  const result: Array<DisplayActivityMessage | undefined> = [...uncombined]
 
   const groupedByType: Map<string, DocUpdateMessage[]> = groupByArray(docUpdateMessages, getDocUpdateMessageKey)
 

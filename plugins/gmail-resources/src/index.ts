@@ -19,6 +19,8 @@ import { getMetadata, type Resources } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
 import TxSharedCreate from './components/activity/TxSharedCreate.svelte'
 import TxWriteMessage from './components/activity/TxWriteMessage.svelte'
+import GmailWriteMessage from './components/activity/GmailWriteMessage.svelte'
+import GmailSharedMessage from './components/activity/GmailSharedMessage.svelte'
 import Configure from './components/Configure.svelte'
 import Connect from './components/Connect.svelte'
 import IconGmail from './components/icons/GmailColor.svelte'
@@ -37,7 +39,9 @@ export default async (): Promise<Resources> => ({
   },
   activity: {
     TxSharedCreate,
-    TxWriteMessage
+    TxWriteMessage,
+    GmailWriteMessage,
+    GmailSharedMessage
   },
   function: {
     HasEmail: checkHasEmail

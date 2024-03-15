@@ -185,11 +185,14 @@
       <ShowMore>
         <div class="customContent">
           {#each value?.previousMessages ?? [] as msg}
-            <Component is={viewlet.component} props={{ message: msg, _id: msg.objectId, _class: msg.objectClass }} />
+            <Component
+              is={viewlet.component}
+              props={{ message: msg, _id: msg.objectId, _class: msg.objectClass, onClick }}
+            />
           {/each}
           <Component
             is={viewlet.component}
-            props={{ message: value, _id: value.objectId, _class: value.objectClass, value: object }}
+            props={{ message: value, _id: value.objectId, _class: value.objectClass, value: object, onClick }}
           />
         </div>
       </ShowMore>

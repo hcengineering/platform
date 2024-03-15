@@ -25,6 +25,7 @@ import TxMessage from './components/activity/TxMessage.svelte'
 import IconTelegram from './components/icons/TelegramColor.svelte'
 import TxSharedCreate from './components/activity/TxSharedCreate.svelte'
 import TelegramMessageCreated from './components/activity/TelegramMessageCreated.svelte'
+import MessagePresenter from './components/MessagePresenter.svelte'
 
 import telegram from './plugin'
 import { getCurrentEmployeeTG, getIntegrationOwnerTG } from './utils'
@@ -36,7 +37,8 @@ export default async (): Promise<Resources> => ({
     Connect,
     Reconnect,
     IconTelegram,
-    SharedMessages
+    SharedMessages,
+    MessagePresenter
   },
   activity: {
     TxSharedCreate,
