@@ -172,7 +172,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     console.log('Model version', version)
 
     const requiredVersion = getMetadata(presentation.metadata.RequiredVersion)
-    if (requiredVersion !== undefined && version !== undefined) {
+    if (requiredVersion !== undefined && version !== undefined && requiredVersion !== '') {
       console.log('checking min model version', requiredVersion)
       const versionStr = versionToString(version)
 

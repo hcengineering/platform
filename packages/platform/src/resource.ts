@@ -79,40 +79,21 @@ async function loadPlugin (id: Plugin): Promise<Resources> {
       plugin: id
     })
     pluginLoader = monitor(status, getLocation(id)()).then(async (plugin) => {
-      return await retryLoading(async () => {
-        try {
-          // In case of ts-node, we have a bit different import structure, so let's check for it.
-          if (typeof plugin.default === 'object') {
-            // eslint-disable-next-line @typescript-eslint/return-await
-            return await (plugin as any).default.default()
-          }
-          return await plugin.default()
-        } catch (err: any) {
-          console.error(err)
-          throw err
+      try {
+        // In case of ts-node, we have a bit different import structure, so let's check for it.
+        if (typeof plugin.default === 'object') {
+          // eslint-disable-next-line @typescript-eslint/return-await
+          return await (plugin as any).default.default()
         }
-      })
+        return await plugin.default()
+      } catch (err: any) {
+        console.error(err)
+        throw err
+      }
     })
     loading.set(id, pluginLoader)
   }
   return await pluginLoader
-}
-
-async function retryLoading (op: () => Promise<Resources>): Promise<Resources> {
-  let lastErr: any
-  for (let i = 0; i < 3; i++) {
-    try {
-      return await op()
-    } catch (err: any) {
-      if (/Loading chunk [\d]+ failed/.test(err.message)) {
-        // Do not report on console and try to load again.
-        // After a short delay
-        await new Promise((resolve) => setTimeout(resolve, 50))
-      }
-      lastErr = err
-    }
-  }
-  throw lastErr
 }
 
 const cachedResource = new Map<string, any>()
