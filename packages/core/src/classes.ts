@@ -392,18 +392,17 @@ export interface SpaceType extends Doc {
   description: string // TODO: Is it needed?
   shortDescription?: string
   descriptor: Ref<SpaceTypeDescriptor>
-  // targetClass: Ref<Class<Space>> // Where is it needed?
+  // targetClass: Ref<Class<Space>> // TODO: A mixin for space
   roles: Ref<Role>[]
 }
 
 /**
  * @public
  * Role defines permissions for employees assigned to this role within the space
- * Is it in the model? How do we create it dynamically witin a space type then?
  */
 export interface Role extends Doc {
   name: string
-  // permissions: Ref<Permission>[]
+  // permissions: Ref<Permission>[] // TODO
 }
 
 // export interface Permission extends Doc {

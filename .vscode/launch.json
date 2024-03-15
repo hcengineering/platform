@@ -154,7 +154,7 @@
       "name": "Debug tool upgrade",
       "type": "node",
       "request": "launch",
-      "args": ["src/__start.ts", "upgrade-workspace", "w-user1-new-roles4-65f35230-573b2bdc12-edab80"],
+      "args": ["src/__start.ts", "upgrade"],
       "env": {
         "SERVER_SECRET": "secret",
         "MINIO_ACCESS_KEY": "minioadmin",
@@ -167,7 +167,6 @@
         "REKONI_URL": "http://localhost:4004"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
-      "runtimeVersion": "18",
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/dev/tool"
     },
