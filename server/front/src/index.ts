@@ -19,7 +19,7 @@ import { MinioService } from '@hcengineering/minio'
 import { Token, decodeToken } from '@hcengineering/server-token'
 import bp from 'body-parser'
 import cors from 'cors'
-import express, { Response } from 'express'
+import express, { Request, Response } from 'express'
 import fileUpload, { UploadedFile } from 'express-fileupload'
 import expressStaticGzip from 'express-static-gzip'
 import https from 'https'
@@ -314,7 +314,7 @@ export function start (
     })
   )
 
-  async function handleHead (ctx: MeasureContext, req: any, res: Response): Promise<void> {
+  async function handleHead (ctx: MeasureContext, req: Request, res: Response): Promise<void> {
     try {
       const token = req.query.token as string
       const payload = decodeToken(token)
@@ -370,7 +370,7 @@ export function start (
     )
   })
 
-  const filesHandler = async (ctx: MeasureContext, req: any, res: Response): Promise<void> => {
+  const filesHandler = async (ctx: MeasureContext, req: Request, res: Response): Promise<void> => {
     try {
       const cookies = ((req?.headers?.cookie as string) ?? '').split(';').map((it) => it.trim().split('='))
 
@@ -487,8 +487,7 @@ export function start (
     )
   })
 
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  app.delete('/files', async (req, res) => {
+  const handleDelete = async (req: Request, res: Response): Promise<void> => {
     try {
       const authHeader = req.headers.authorization
       if (authHeader === undefined) {
@@ -520,7 +519,13 @@ export function start (
       console.log(error)
       res.status(500).send()
     }
-  })
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  app.delete('/files', handleDelete)
+
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  app.delete('/files/*', handleDelete)
 
   // todo remove it after update all customers chrome extensions
   app.get('/import', (req, res) => {
