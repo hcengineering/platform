@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
   import { Doc, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import activity from '@hcengineering/activity'
@@ -87,7 +87,7 @@
       {#each messages as message}
         <div class="item">
           <Lazy>
-            <ChatMessagePresenter value={message} />
+            <ChatMessagePresenter value={message} hideLink />
           </Lazy>
         </div>
       {/each}
@@ -125,7 +125,7 @@
     .messages {
       overflow: auto;
       flex: 1;
-      padding: 0 1rem;
+      padding: 0.75rem 0.25rem;
       min-width: 0;
       min-height: 0;
 

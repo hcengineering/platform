@@ -38,6 +38,7 @@
   export let attachmentImageSize: 'x-large' | undefined = undefined
   export let showLinksPreview = true
   export let videoPreload = true
+  export let hideLink = false
   export let compact = false
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
@@ -71,6 +72,7 @@
       attachmentImageSize,
       showLinksPreview,
       videoPreload,
+      hideLink,
       compact,
       onClick,
       onReply

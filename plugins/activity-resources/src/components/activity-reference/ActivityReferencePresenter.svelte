@@ -42,6 +42,7 @@
   export let excludedActions: string[] = []
   export let hoverable = true
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
+  export let hideLink = false
   export let compact = false
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
@@ -121,7 +122,7 @@
       <span class="text-sm lower ml-1">
         <Label label={activity.string.Mentioned} />
       </span>
-      {#if targetDoc}
+      {#if !hideLink && targetDoc}
         <DocNavLink object={targetDoc} component={targetPanel?.component ?? view.component.EditDoc} shrink={0}>
           <span class="text-sm">
             {#if currentAccount.person === targetDoc._id}

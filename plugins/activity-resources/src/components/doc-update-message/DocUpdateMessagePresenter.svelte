@@ -51,6 +51,7 @@
   export let excludedActions: string[] = []
   export let hoverable = true
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
+  export let hideLink = false
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
 
@@ -161,24 +162,22 @@
   {withFlatActions}
   {hoverable}
   {hoverStyles}
+  showDatePreposition={hideLink}
   {onClick}
   {onReply}
 >
   <svelte:fragment slot="header">
-    {#if viewlet?.labelComponent && object}
-      <Component is={viewlet.labelComponent} props={{ value: object }} />
-    {:else if object}
-      <DocUpdateMessageHeader
-        message={value}
-        {object}
-        {parentObject}
-        {viewlet}
-        {person}
-        {objectName}
-        {collectionName}
-        {attributeModel}
-      />
-    {/if}
+    <DocUpdateMessageHeader
+      message={value}
+      {object}
+      {parentObject}
+      {viewlet}
+      {person}
+      {objectName}
+      {collectionName}
+      {attributeModel}
+      {hideLink}
+    />
   </svelte:fragment>
   <svelte:fragment slot="content">
     {#if viewlet?.component && object}

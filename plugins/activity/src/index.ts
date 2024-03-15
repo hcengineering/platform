@@ -237,7 +237,6 @@ export interface DocUpdateMessageViewlet extends ActivityMessageViewlet {
   valueAttr?: string
 
   label?: IntlString
-  labelComponent?: AnyComponent
 
   icon?: Asset
   component?: AnyComponent
@@ -345,6 +344,7 @@ export default plugin(activityId, {
     To: '' as IntlString,
     Unset: '' as IntlString,
     In: '' as IntlString,
+    At: '' as IntlString,
     NewestFirst: '' as IntlString,
     Edit: '' as IntlString,
     Updated: '' as IntlString,

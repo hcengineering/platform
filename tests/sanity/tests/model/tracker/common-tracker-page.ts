@@ -160,7 +160,7 @@ export class CommonTrackerPage extends CalendarPage {
   }
 
   async checkCommentExist (comment: string): Promise<void> {
-    await expect(this.textComment.filter({ hasText: comment })).toBeVisible()
+    await expect(this.textComment.filter({ hasText: comment }).first()).toBeVisible()
   }
 
   async checkActivityExist (activity: string): Promise<void> {
