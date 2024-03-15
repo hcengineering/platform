@@ -70,7 +70,7 @@
 </script>
 
 {#if kind === 'todo-line'}
-  <button class="flex-row-top flex-grow relative" on:click>
+  <button class="hulyToDoLine-reference flex-row-top flex-no-shrink flex-gap-2 relative" on:click>
     {#if st}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -82,12 +82,12 @@
         <IssueStatusIcon value={st} size={'small'} space={value.space} />
       </div>
     {/if}
-    <span class="hulyToDoLine-label overflow-label font-regular-14 text-left secondary-textColor ml-2">
-      {value.title}
+    <span class="hulyToDoLine-label overflow-label font-medium-12 text-left secondary-textColor">
+      {value.identifier}
     </span>
   </button>
 {:else if kind === 'todo-line-large'}
-  <button class="flex-row-top flex-grow relative" on:click>
+  <button class="hulyToDoLine-reference flex-row-top flex-no-shrink flex-gap-2 relative" on:click>
     {#if st}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -99,9 +99,9 @@
         <IssueStatusIcon value={st} size={'small'} space={value.space} />
       </div>
     {/if}
-    <div class="flex-col flex-gap-1 flex-grow text-left ml-2">
-      <div class="hulyToDoLine-label large font-regular-14 secondary-textColor">
-        {value.title}
+    <div class="flex-col flex-gap-2 flex-grow text-left">
+      <div class="hulyToDoLine-label large font-medium-12 secondary-textColor">
+        {value.identifier}
       </div>
       <slot />
     </div>

@@ -229,7 +229,7 @@
   <Panel
     object={doc}
     withoutActivity
-    allowClose={false}
+    allowClose={!embedded}
     isAside={true}
     customAside={aside}
     bind:selectedAside
@@ -251,7 +251,13 @@
 
     <svelte:fragment slot="utils">
       {#if !$restrictionStore.disableActions}
-        <Button icon={IconMoreH} iconProps={{ size: 'medium' }} kind={'icon'} on:click={showContextMenu} />
+        <Button
+          id="btn-doc-title-open-more"
+          icon={IconMoreH}
+          iconProps={{ size: 'medium' }}
+          kind={'icon'}
+          on:click={showContextMenu}
+        />
         {#each actions as action}
           <Button
             icon={action.icon}

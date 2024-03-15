@@ -18,7 +18,7 @@ export class DocumentContentPage extends CommonPage {
     this.buttonToolbarLink = page.locator('div.text-editor-toolbar button:nth-child(10)')
     this.inputFormLink = page.locator('form[id="text-editor:string:Link"] input')
     this.buttonFormLinkSave = page.locator('form[id="text-editor:string:Link"] button[type="submit"]')
-    this.buttonMoreActions = page.locator('div.popupPanel-title button:first-child')
+    this.buttonMoreActions = page.locator('div.popupPanel-title button#btn-doc-title-open-more')
   }
 
   async checkDocumentTitle (title: string): Promise<void> {

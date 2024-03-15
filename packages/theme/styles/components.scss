@@ -603,6 +603,16 @@
       height: var(--global-extra-small-Size);
     }
   }
+  .hulyToDoLine-reference {
+    padding: 0 var(--spacing-1) 0 var(--spacing-0_75);
+    box-shadow: inset 0 0 0 1px var(--global-subtle-ui-BorderColor);
+    border-radius: var(--extra-small-BorderRadius);
+    background-color: var(--tag-nuance-SkyBackground);
+
+    &:hover {
+      box-shadow: inset 0 0 0 1px var(--global-ui-BorderColor);
+    }
+  }
 
   &.hovered,
   &:hover {
