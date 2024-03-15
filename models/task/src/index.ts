@@ -53,7 +53,7 @@ import {
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
-import core, { DOMAIN_SPACE, TAttachedDoc, TClass, TDoc, TSpace } from '@hcengineering/model-core'
+import core, { DOMAIN_SPACE, TAttachedDoc, TClass, TDoc, TSpaceType, TTypedSpace } from '@hcengineering/model-core'
 import view, {
   classPresenter,
   createAction,
@@ -173,18 +173,16 @@ export class TProjectTypeClass extends TClass implements ProjectTypeClass {
   projectType!: Ref<ProjectType>
 }
 
-@Model(task.class.Project, core.class.Space)
-export class TProject extends TSpace implements Project {
+@Model(task.class.Project, core.class.TypedSpace)
+export class TProject extends TTypedSpace implements Project {
   @Prop(TypeRef(task.class.ProjectType), task.string.ProjectType)
-    type!: Ref<ProjectType>
+  declare type: Ref<ProjectType>
 }
 
-@Model(task.class.ProjectType, core.class.Space)
-export class TProjectType extends TSpace implements ProjectType {
-  shortDescription?: string
-
+@Model(task.class.ProjectType, core.class.SpaceType)
+export class TProjectType extends TSpaceType implements ProjectType {
   @Prop(TypeRef(task.class.ProjectTypeDescriptor), getEmbeddedLabel('Descriptor'))
-    descriptor!: Ref<ProjectTypeDescriptor>
+  declare descriptor: Ref<ProjectTypeDescriptor>
 
   @Prop(ArrOf(TypeRef(task.class.TaskType)), getEmbeddedLabel('Tasks'))
     tasks!: Ref<TaskType>[]
@@ -199,7 +197,7 @@ export class TProjectType extends TSpace implements ProjectType {
     classic!: boolean
 }
 
-@Model(task.class.TaskType, core.class.Doc, DOMAIN_TASK)
+@Model(task.class.TaskType, core.class.Doc, DOMAIN_MODEL)
 export class TTaskType extends TDoc implements TaskType {
   @Prop(TypeString(), getEmbeddedLabel('Name'))
     name!: string
@@ -589,8 +587,7 @@ export async function fixTaskTypes (
     throw new Error('category is not found in model')
   }
 
-  const projectTypes = await client.find<ProjectType>(DOMAIN_SPACE, {
-    _class: task.class.ProjectType,
+  const projectTypes = await client.model.findAll(task.class.ProjectType, {
     descriptor
   })
   const baseClassClass = client.hierarchy.getClass(categoryObj.baseClass)
@@ -751,7 +748,7 @@ export async function fixTaskTypes (
         parent: t._id,
         _id: taskTypeId,
         _class: task.class.TaskType,
-        space: t._id,
+        space: core.space.Model,
         statuses: dStatuses,
         modifiedBy: core.account.System,
         modifiedOn: Date.now(),

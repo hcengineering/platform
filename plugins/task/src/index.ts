@@ -25,7 +25,10 @@ import {
   Space,
   Status,
   StatusCategory,
-  Timestamp
+  Timestamp,
+  SpaceType,
+  SpaceTypeDescriptor,
+  TypedSpace
 } from '@hcengineering/core'
 import { NotificationType } from '@hcengineering/notification'
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
@@ -41,7 +44,7 @@ export interface DocWithRank extends Doc {
   rank: Rank
 }
 
-export interface Project extends Space {
+export interface Project extends TypedSpace {
   type: Ref<ProjectType>
 }
 
@@ -149,13 +152,13 @@ export interface TaskTypeClass extends Class<TaskType> {
 export interface ProjectTypeClass extends Class<ProjectType> {
   projectType: Ref<ProjectType>
 }
+
 /**
  * @public
  *
  * Define a user customized project type.
  */
-export interface ProjectType extends Space {
-  shortDescription?: string
+export interface ProjectType extends SpaceType {
   descriptor: Ref<ProjectTypeDescriptor>
   tasks: Ref<TaskType>[]
 
@@ -173,14 +176,11 @@ export interface ProjectType extends Space {
 /**
  * @public
  */
-export interface ProjectTypeDescriptor extends Doc {
-  name: IntlString
-  description: IntlString
-  icon: Asset
-  editor?: AnyComponent
+export interface ProjectTypeDescriptor extends SpaceTypeDescriptor {
   allowedClassic?: boolean
   allowedTaskTypeDescriptors?: Ref<TaskTypeDescriptor>[] // if undefined we allow all possible
   baseClass: Ref<Class<Task>>
+  editor?: AnyComponent
 }
 
 /**

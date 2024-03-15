@@ -364,6 +364,54 @@ export interface Space extends Doc {
 
 /**
  * @public
+ *
+ * Space with custom configured type
+ */
+export interface TypedSpace extends Space {
+  type: Ref<SpaceType>
+}
+
+/**
+ * @public
+ *
+ * Is used to describe "types" for space type
+ */
+export interface SpaceTypeDescriptor extends Doc {
+  name: IntlString
+  description: IntlString
+  icon: Asset
+}
+
+/**
+ * @public
+ *
+ * Customisable space type allowing to configure space roles and permissions within them
+ */
+export interface SpaceType extends Doc {
+  name: string
+  description: string // TODO: Is it needed?
+  shortDescription?: string
+  descriptor: Ref<SpaceTypeDescriptor>
+  // targetClass: Ref<Class<Space>> // Where is it needed?
+  roles: Ref<Role>[]
+}
+
+/**
+ * @public
+ * Role defines permissions for employees assigned to this role within the space
+ * Is it in the model? How do we create it dynamically witin a space type then?
+ */
+export interface Role extends Doc {
+  name: string
+  // permissions: Ref<Permission>[]
+}
+
+// export interface Permission extends Doc {
+// TODO: define a permission for some operation in the system
+// }
+
+/**
+ * @public
  */
 export interface Account extends Doc {
   email: string

@@ -42,6 +42,7 @@
         descriptor: descriptor._id,
         description: '',
         tasks: [],
+        roles: [],
         classic: descriptor.allowedClassic === true ? classic : false
       },
       [],

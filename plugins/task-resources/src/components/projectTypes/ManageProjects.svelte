@@ -51,7 +51,7 @@
   const query = createQuery()
   $: query.query(
     task.class.ProjectType,
-    { archived: false },
+    {},
     (result) => {
       types = result.filter((p) => hasResource(p.descriptor as any as Resource<any>))
     },

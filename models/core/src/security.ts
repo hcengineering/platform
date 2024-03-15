@@ -21,9 +21,14 @@ import {
   DOMAIN_MODEL,
   IndexKind,
   type Ref,
-  type Space
+  type Space,
+  type TypedSpace,
+  type SpaceType,
+  type SpaceTypeDescriptor,
+  type Role
 } from '@hcengineering/core'
 import { ArrOf, Hidden, Index, Model, Prop, TypeBoolean, TypeRef, TypeString, UX } from '@hcengineering/model'
+import type { Asset, IntlString } from '@hcengineering/platform'
 import core from './component'
 import { TDoc } from './core'
 
@@ -51,6 +56,49 @@ export class TSpace extends TDoc implements Space {
   @Prop(ArrOf(TypeRef(core.class.Account)), core.string.Members)
   @Hidden()
     members!: Arr<Ref<Account>>
+}
+
+@Model(core.class.TypedSpace, core.class.Space)
+@UX(core.string.TypedSpace, undefined, undefined, 'name')
+export class TTypedSpace extends TSpace implements TypedSpace {
+  @Prop(TypeRef(core.class.SpaceType), core.string.SpaceType)
+    type!: Ref<SpaceType>
+}
+
+@Model(core.class.SpaceTypeDescriptor, core.class.Doc, DOMAIN_MODEL)
+export class TSpaceTypeDescriptor extends TDoc implements SpaceTypeDescriptor {
+  name!: IntlString
+  description!: IntlString
+  icon!: Asset
+}
+
+@Model(core.class.SpaceType, core.class.Doc, DOMAIN_MODEL)
+@UX(core.string.SpaceType, undefined, undefined, 'name')
+export class TSpaceType extends TDoc implements SpaceType {
+  @Prop(TypeString(), core.string.Name)
+  @Index(IndexKind.FullText)
+    name!: string
+
+  @Prop(TypeString(), core.string.Description)
+  @Index(IndexKind.FullText)
+    description!: string
+
+  @Prop(TypeString(), core.string.ShortDescription)
+    shortDescription?: string
+
+  @Prop(TypeRef(core.class.SpaceTypeDescriptor), core.string.Descriptor)
+    descriptor!: Ref<SpaceTypeDescriptor>
+
+  @Prop(ArrOf(TypeRef(core.class.Role)), core.string.Roles)
+    roles!: Ref<Role>[]
+}
+
+@Model(core.class.Role, core.class.Doc, DOMAIN_MODEL)
+@UX(core.string.Role, undefined, undefined, 'name')
+export class TRole extends TDoc implements Role {
+  @Prop(TypeString(), core.string.Name)
+  @Index(IndexKind.FullText)
+    name!: string
 }
 
 @Model(core.class.Account, core.class.Doc, DOMAIN_MODEL)

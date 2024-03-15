@@ -36,8 +36,7 @@
         descriptor: { $in: descriptors }
       }
     : {
-        descriptor: { $in: descriptors },
-        archived: false
+        descriptor: { $in: descriptors }
       }
   $: typesQ.query(task.class.ProjectType, query, (result) => {
     types = result

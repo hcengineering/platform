@@ -67,7 +67,7 @@ import {
   TTypeTimestamp,
   TVersion
 } from './core'
-import { TAccount, TSpace } from './security'
+import { TAccount, TSpace, TSpaceType, TSpaceTypeDescriptor, TTypedSpace, TRole } from './security'
 import { TStatus, TStatusCategory } from './status'
 import { TUserStatus } from './transient'
 import {
@@ -108,6 +108,10 @@ export function createModel (builder: Builder): void {
     TTxApplyIf,
     TTxWorkspaceEvent,
     TSpace,
+    TTypedSpace,
+    TSpaceType,
+    TSpaceTypeDescriptor,
+    TRole,
     TAccount,
     TAttribute,
     TType,
