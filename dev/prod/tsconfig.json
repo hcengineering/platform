@@ -9,6 +9,7 @@
     "sourceMap": true,
     "skipLibCheck": true,
     "moduleResolution": "node",
+    "declarationDir": "./types",
     "allowSyntheticDefaultImports": true,
     "lib": [
       "es2016",
