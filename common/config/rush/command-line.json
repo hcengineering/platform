@@ -226,7 +226,7 @@
       "summary": "Update all package.json according to templates matched from templates folder",
       "description": "Use to update all projects to templates",
       "safeForSimultaneousRushProcesses": true,
-      "shellCommand": "node templates/apply.js",
+      "shellCommand": "node templates/apply.js"
     },
     {
       "commandKind": "global",
