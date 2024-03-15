@@ -17,7 +17,8 @@ import {
   CollaborativeDoc,
   formatCollaborativeDoc,
   formatCollaborativeDocVersion,
-  parseCollaborativeDoc
+  parseCollaborativeDoc,
+  updateCollaborativeDoc
 } from '../collaboration'
 
 describe('collaborative-doc', () => {
@@ -26,14 +27,14 @@ describe('collaborative-doc', () => {
       expect(parseCollaborativeDoc('minioDocumentId:HEAD:0' as CollaborativeDoc)).toEqual({
         documentId: 'minioDocumentId',
         versionId: 'HEAD',
-        revisionId: '0'
+        lastVersionId: '0'
       })
     })
     it('parses collaborative doc version id', async () => {
       expect(parseCollaborativeDoc('minioDocumentId:main' as CollaborativeDoc)).toEqual({
         documentId: 'minioDocumentId',
         versionId: 'main',
-        revisionId: 'main'
+        lastVersionId: 'main'
       })
     })
   })
@@ -44,7 +45,7 @@ describe('collaborative-doc', () => {
         formatCollaborativeDoc({
           documentId: 'minioDocumentId',
           versionId: 'HEAD',
-          revisionId: '0'
+          lastVersionId: '0'
         })
       ).toEqual('minioDocumentId:HEAD:0')
     })
@@ -58,6 +59,14 @@ describe('collaborative-doc', () => {
           versionId: 'versionId'
         })
       ).toEqual('minioDocumentId:versionId')
+    })
+  })
+
+  describe('updateCollaborativeDoc', () => {
+    it('returns valid collaborative doc id', async () => {
+      expect(updateCollaborativeDoc('minioDocumentId:HEAD:0' as CollaborativeDoc, '1')).toEqual(
+        'minioDocumentId:HEAD:1'
+      )
     })
   })
 })

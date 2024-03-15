@@ -42,7 +42,7 @@ export function getCollaborativeDoc (documentId: string): CollaborativeDoc {
   return formatCollaborativeDoc({
     documentId,
     versionId: CollaborativeDocVersionHead,
-    revisionId: '0'
+    lastVersionId: '0'
   })
 }
 
@@ -50,25 +50,35 @@ export function getCollaborativeDoc (documentId: string): CollaborativeDoc {
 export interface CollaborativeDocData {
   documentId: string
   versionId: CollaborativeDocVersion
-  revisionId: string
+  lastVersionId: string
 }
 
 /** @public */
 export function parseCollaborativeDoc (id: CollaborativeDoc): CollaborativeDocData {
-  const [documentId, versionId, revisionId] = id.split(':')
-  return { documentId, versionId, revisionId: revisionId ?? versionId }
+  const [documentId, versionId, lastVersionId] = id.split(':')
+  return { documentId, versionId, lastVersionId: lastVersionId ?? versionId }
 }
 
 /** @public */
-export function formatCollaborativeDoc ({ documentId, versionId, revisionId }: CollaborativeDocData): CollaborativeDoc {
-  return `${documentId}:${versionId}:${revisionId}` as CollaborativeDoc
+export function formatCollaborativeDoc ({
+  documentId,
+  versionId,
+  lastVersionId
+}: CollaborativeDocData): CollaborativeDoc {
+  return `${documentId}:${versionId}:${lastVersionId}` as CollaborativeDoc
+}
+
+/** @public */
+export function updateCollaborativeDoc (collaborativeDoc: CollaborativeDoc, lastVersionId: string): CollaborativeDoc {
+  const { documentId, versionId } = parseCollaborativeDoc(collaborativeDoc)
+  return formatCollaborativeDoc({ documentId, versionId, lastVersionId })
 }
 
 /** @public */
 export function formatCollaborativeDocVersion ({
   documentId,
   versionId
-}: Omit<CollaborativeDocData, 'revisionId'>): CollaborativeDoc {
+}: Omit<CollaborativeDocData, 'lastVersionId'>): CollaborativeDoc {
   return `${documentId}:${versionId}` as CollaborativeDoc
 }
 

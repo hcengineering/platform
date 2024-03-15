@@ -25,7 +25,7 @@ export async function yDocFromMinio (
   workspace: WorkspaceId,
   minioDocumentId: string,
   ydoc?: YDoc
-): Promise<YDoc> {
+): Promise<YDoc | undefined> {
   // no need to apply gc because we load existing document
   // it is either already gc-ed, or gc not needed and it is disabled
   ydoc ??= new YDoc({ gc: false })
@@ -33,8 +33,11 @@ export async function yDocFromMinio (
   try {
     const buffer = await minio.read(workspace, minioDocumentId)
     return yDocFromBuffer(Buffer.concat(buffer), ydoc)
-  } catch (err) {
-    throw new Error('Failed to load ydoc from minio', { cause: err })
+  } catch (err: any) {
+    if (err?.code === 'NoSuchKey' || err?.code === 'NotFound') {
+      return undefined
+    }
+    throw err
   }
 }
 
