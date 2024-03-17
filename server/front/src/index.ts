@@ -17,6 +17,7 @@
 import { MeasureContext, WorkspaceId, metricsAggregate } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { Token, decodeToken } from '@hcengineering/server-token'
+import apicache from 'apicache'
 import bp from 'body-parser'
 import cors from 'cors'
 import express, { Request, Response } from 'express'
@@ -242,6 +243,10 @@ export function start (
 ): () => void {
   const app = express()
 
+  const cache = apicache.options({
+    respectCacheControl: true
+  }).middleware
+
   app.use(cors())
   app.use(fileUpload())
   app.use(bp.json())
@@ -275,7 +280,7 @@ export function start (
       LAST_NAME_FIRST: config.lastNameFirst,
       ...(extraConfig ?? {})
     }
-    res.set('Cache-Control', cacheControlValue)
+    res.set('Cache-Control', `${cacheControlValue}, must-revalidate`)
     res.status(200)
     res.json(data)
   })
@@ -294,6 +299,7 @@ export function start (
         },
         admin
       })
+      res.set('Cache-Control', 'private, no-cache')
       res.end(json)
     } catch (err) {
       console.error(err)
@@ -304,7 +310,9 @@ export function start (
 
   const dist = resolve(process.env.PUBLIC_DIR ?? cwd(), 'dist')
   console.log('serving static files from', dist)
+
   app.use(
+    cache('1 day'),
     expressStaticGzip(dist, {
       serveStatic: {
         maxAge: '365d',
@@ -723,7 +731,11 @@ export function start (
     response.sendFile(join(dist, 'index.html'), {
       maxAge: cacheControlMaxAge,
       etag: true,
-      lastModified: true
+      lastModified: true,
+      cacheControl: false,
+      headers: {
+        'Cache-Control': `${cacheControlValue}, must-revalidate`
+      }
     })
   })
 

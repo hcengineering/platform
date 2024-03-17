@@ -851,6 +851,9 @@ dependencies:
   '@tiptap/suggestion':
     specifier: ^2.1.12
     version: 2.2.3(@tiptap/core@2.2.3)(@tiptap/pm@2.2.3)
+  '@types/apicache':
+    specifier: ^1.6.6
+    version: 1.6.6
   '@types/body-parser':
     specifier: ~1.19.2
     version: 1.19.5
@@ -956,6 +959,9 @@ dependencies:
   allure-playwright:
     specifier: ^2.9.2
     version: 2.12.2
+  apicache:
+    specifier: ^1.6.3
+    version: 1.6.3
   autolinker:
     specifier: 4.0.0
     version: 4.0.0
@@ -1070,9 +1076,6 @@ dependencies:
   express:
     specifier: ^4.18.3
     version: 4.18.3
-  express-fileupload:
-    specifier: ^1.4.3
-    version: 1.4.3
   express-static-gzip:
     specifier: ^2.1.7
     version: 2.1.7
@@ -6002,6 +6005,13 @@ packages:
       '@types/node': 20.11.19
     dev: false
 
+  /@types/apicache@1.6.6:
+    resolution: {integrity: sha512-RLeWpWG8QmXS2DshAMIm3HAtmUivFTSzdppppQgvNvbPYfi4871Ec4cXGySAlC9qqmciAZSVCWZPKAwNKwGATA==}
+    dependencies:
+      '@types/express': 4.17.21
+      '@types/redis': 2.8.32
+    dev: false
+
   /@types/aria-query@5.0.4:
     resolution: {integrity: sha512-rfT93uj5s0PRL7EzccGMs3brplhcrghnDoV26NqKhCAS1hVo+WdNsPvE/yb6ilfr5hi2MEk6d5EWJTKdxg8jVw==}
     dev: false
@@ -6459,6 +6469,12 @@ packages:
       '@types/prop-types': 15.7.11
       '@types/scheduler': 0.16.8
       csstype: 3.1.3
+    dev: false
+
+  /@types/redis@2.8.32:
+    resolution: {integrity: sha512-7jkMKxcGq9p242exlbsVzuJb57KqHRhNl4dHoQu2Y5v9bCAbtIXXH0R3HleSQW4CTOqpHIYUW3t6tpUj4BVQ+w==}
+    dependencies:
+      '@types/node': 20.11.19
     dev: false
 
   /@types/request@2.48.12:
@@ -7131,6 +7147,11 @@ packages:
     dependencies:
       normalize-path: 3.0.0
       picomatch: 2.3.1
+    dev: false
+
+  /apicache@1.6.3:
+    resolution: {integrity: sha512-jS3VfUFpQ9BesFQZcdd1vVYg3ZsO2kGPmTJHqycIYPAQs54r74CRiyj8DuzJpwzLwIfCBYzh4dy9Jt8xYbo27w==}
+    engines: {node: '>=8'}
     dev: false
 
   /app-root-dir@1.0.2:
@@ -9735,6 +9756,13 @@ packages:
 
   /express-fileupload@1.4.3:
     resolution: {integrity: sha512-vRzZo2YELm68DfR/CX8RMXgeK9BTAANxigrKACPjCXFGEzkCt/QWbqaIXP3W61uaX/hLj0CAo3/EVelpSQXkqA==}
+    engines: {node: '>=12.0.0'}
+    dependencies:
+      busboy: 1.6.0
+    dev: false
+
+  /express-fileupload@1.5.0:
+    resolution: {integrity: sha512-jSW3w9evqM37VWkEPkL2Ck5wUo2a8qa03MH+Ou/0ZSTpNlQFBvSLjU12k2nYcHhaMPv4JVvv6+Ac1OuLgUZb7w==}
     engines: {node: '>=12.0.0'}
     dependencies:
       busboy: 1.6.0
@@ -18271,11 +18299,12 @@ packages:
     dev: false
 
   file:projects/front.tgz(esbuild@0.20.1):
-    resolution: {integrity: sha512-45U9B+tClmwLaS//3A6OZ8G/qz3bZgupz+KUmPB53c7XuJ/+cs5piBgif7d67N/2mUJ6cRlY8Kd8UGRwX4EI6Q==, tarball: file:projects/front.tgz}
+    resolution: {integrity: sha512-JFdC8n6d9GwIhrZ/XYnaoTZsqNetJ7udjL85tuXg3Cayq6j2hDa1L2LXN0NcBwrt3kCzGLpnPZRVJepMjJsCAA==, tarball: file:projects/front.tgz}
     id: file:projects/front.tgz
     name: '@rush-temp/front'
     version: 0.0.0
     dependencies:
+      '@types/apicache': 1.6.6
       '@types/body-parser': 1.19.5
       '@types/compression': 1.7.5
       '@types/cors': 2.8.17
@@ -18288,6 +18317,7 @@ packages:
       '@types/uuid': 8.3.4
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
+      apicache: 1.6.3
       body-parser: 1.20.2
       compression: 1.7.4
       cors: 2.8.5
@@ -18298,7 +18328,7 @@ packages:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       express: 4.18.3
-      express-fileupload: 1.4.3
+      express-fileupload: 1.5.0
       express-static-gzip: 2.1.7
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       morgan: 1.10.0
