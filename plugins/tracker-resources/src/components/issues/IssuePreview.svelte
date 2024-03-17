@@ -15,25 +15,23 @@
 <script lang="ts">
   import attachment from '@hcengineering/attachment'
   import { AttachmentDocList } from '@hcengineering/attachment-resources'
-  import chunter from '@hcengineering/chunter'
   import { Ref } from '@hcengineering/core'
   import { IconForward, MessageViewer, createQuery, getClient } from '@hcengineering/presentation'
-  import { Issue, Project } from '@hcengineering/tracker'
+  import { Issue } from '@hcengineering/tracker'
   import { Label, Scroller, resizeObserver } from '@hcengineering/ui'
   import { ChatMessagePopup } from '@hcengineering/chunter-resources'
 
   import tracker from '../../plugin'
-  import { activeProjects } from '../../utils'
   import AssigneeEditor from './AssigneeEditor.svelte'
   import IssueStatusActivity from './IssueStatusActivity.svelte'
   import PriorityEditor from './PriorityEditor.svelte'
   import StatusEditor from './StatusEditor.svelte'
 
   export let object: Issue
+
   let issue: Issue | undefined
 
   const client = getClient()
-  $: space = object.space
   const issueQuery = createQuery()
 
   $: issueQuery.query(
@@ -58,7 +56,7 @@
     }
   }
 
-  $: getParent(issue?.attachedTo as Ref<Issue>)
+  $: void getParent(issue?.attachedTo as Ref<Issue>)
 </script>
 
 {#if issue}
@@ -108,10 +106,9 @@
       <AttachmentDocList value={issue} />
     {/if}
     {#if issue.comments}
-      <div class="mt-6 mb-2 overflow-label fs-bold content-dark-color">
-        <Label label={chunter.string.Comments} />:
+      <div class="mt-6">
+        <ChatMessagePopup objectId={issue._id} object={issue} />
       </div>
-      <ChatMessagePopup objectId={issue._id} object={issue} />
     {/if}
     <div class="h-3 flex-no-shrink" />
   </Scroller>
