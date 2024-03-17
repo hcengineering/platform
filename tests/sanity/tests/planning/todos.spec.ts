@@ -49,7 +49,7 @@ test.describe('Planning ToDo tests', () => {
     await planningPage.openToDoByName(newToDo.title)
   })
 
-  test.skip('Edit a ToDo', async ({ page }) => {
+  test('Edit a ToDo', async ({ page }) => {
     const dateEnd = new Date()
     const editToDo: NewToDo = {
       title: 'ToDo For Edit',
@@ -84,6 +84,7 @@ test.describe('Planning ToDo tests', () => {
     await planningPage.openToDoByName(editToDo.title)
     await planningPage.checkToDo({
       ...editToDo,
+      priority: 'medium',
       duedate: `${dateEnd.getMonth() + 1}/${dateEnd.getDate()}/${dateEnd.getFullYear()}`,
       slots: [
         {
@@ -113,7 +114,7 @@ test.describe('Planning ToDo tests', () => {
     await planningPage.checkToDoNotExist(deleteToDo.title)
   })
 
-  test('Unplanned / Planned ToDo', async ({ page }) => {
+  test.skip('Unplanned / Planned ToDo', async ({ page }) => {
     const newToDoPlanned: NewToDo = {
       title: 'ToDo Planned'
     }

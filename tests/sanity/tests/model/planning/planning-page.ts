@@ -28,7 +28,7 @@ export class PlanningPage extends CalendarPage {
   readonly textPanelDueDate: Locator
   readonly textPanelPriority: Locator
   readonly textPanelVisible: Locator
-  readonly textPanelLabelFirst: Locator
+  readonly buttonPanelLabelFirst: Locator
   readonly buttonMenuDelete: Locator
   readonly buttonPopupSelectDateNextMonth: Locator
 
@@ -65,11 +65,11 @@ export class PlanningPage extends CalendarPage {
     this.textPanelDueDate = page.locator(
       'div.hulyModal-container div.slots-content div.flex-row-top.justify-between div.flex-row-center button.antiButton:first-child div[slot="content"]'
     )
-    this.textPanelPriority = page.locator(
-      'div.hulyModal-container div.slots-content div.flex-row-top.justify-between div.flex-row-center button.antiButton:last-child span[slot="content"]'
+    this.textPanelPriority = page.locator('div.hulyModal-container button#priorityButton svg')
+    this.textPanelVisible = page.locator(
+      'div.hulyModal-container div.hulyHeader-titleGroup > button:nth-child(3) > span'
     )
-    this.textPanelVisible = page.locator('div.hulyModal-container div.hulyHeader-titleGroup > button:nth-child(1)')
-    this.textPanelLabelFirst = page.locator('div.hulyModal-container div.labels-content span[class*="label"]')
+    this.buttonPanelLabelFirst = page.locator('div.hulyModal-container div.hulyHeader-titleGroup > button:nth-child(2)')
     this.buttonMenuDelete = page.locator('button.ap-menuItem span', { hasText: 'Delete' })
     this.buttonPopupSelectDateNextMonth = page.locator('div.popup div.header > div:last-child > button:last-child')
   }
@@ -116,7 +116,7 @@ export class PlanningPage extends CalendarPage {
         await this.pressCreateButtonSelectPopup(this.page)
         await this.addNewTagPopup(this.page, data.labels, 'Tag from createNewIssue')
       }
-      await this.selectMenuItem(this.page, data.labels)
+      await this.checkFromDropdownWithSearch(this.page, data.labels)
       await (popup ? this.buttonPopupCreateAddLabel.press('Escape') : this.buttonPanelCreateAddLabel.press('Escape'))
     }
     if (data.slots != null) {
@@ -209,13 +209,16 @@ export class PlanningPage extends CalendarPage {
       await expect(this.textPanelDueDate).toHaveText(data.duedate)
     }
     if (data.priority != null) {
-      await expect(this.textPanelPriority).toHaveText(data.priority)
+      const classAttribute = await this.textPanelPriority.getAttribute('class')
+      expect(classAttribute).toContain(data.priority)
     }
     if (data.visible != null) {
       await expect(this.textPanelVisible).toHaveText(data.visible)
     }
     if (data.labels != null) {
-      await expect(this.textPanelLabelFirst).toHaveText(data.labels)
+      await this.buttonPanelLabelFirst.click()
+      await this.checkPopupItem(this.page, data.labels)
+      await this.buttonPanelLabelFirst.click({ force: true })
     }
     if (data.slots != null) {
       let index = 0

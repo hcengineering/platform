@@ -13,7 +13,7 @@ test.describe('Planning ToDo tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/time`))?.finished()
   })
 
-  test.skip('Add several slots for the same day', async ({ browser, page }) => {
+  test('Add several slots for the same day', async ({ browser, page }) => {
     const dateEnd = new Date()
     const toDoSeveralSlots: NewToDo = {
       title: 'Add several slots for the same day',
@@ -59,7 +59,7 @@ test.describe('Planning ToDo tests', () => {
     await planningPage.checkToDoExistInCalendar(toDoSeveralSlots.title, 2)
   })
 
-  test.skip('Delete and add a new time slot', async ({ page }) => {
+  test('Delete and add a new time slot', async ({ page }) => {
     const dateEnd = new Date()
     const deleteTimeSlot: NewToDo = {
       title: 'Delete and add a new time slot',

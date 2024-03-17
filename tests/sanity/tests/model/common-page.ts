@@ -107,4 +107,8 @@ export class CommonPage {
   async closePopup (page: Page): Promise<void> {
     await page.locator('div.popup button[id="card-close"]').click()
   }
+
+  async checkPopupItem (page: Page, itemText: string): Promise<void> {
+    await expect(page.locator('div.selectPopup button.menu-item', { hasText: itemText })).toBeVisible()
+  }
 }
