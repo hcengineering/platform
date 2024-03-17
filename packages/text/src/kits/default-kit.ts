@@ -19,9 +19,10 @@ import { Level } from '@tiptap/extension-heading'
 import Highlight from '@tiptap/extension-highlight'
 import Link from '@tiptap/extension-link'
 import Typography from '@tiptap/extension-typography'
-import StarterKit from '@tiptap/starter-kit'
+import StarterKit, { StarterKitOptions } from '@tiptap/starter-kit'
 
 export interface DefaultKitOptions {
+  codeBlock?: false
   heading?: {
     levels?: Level[]
   }
@@ -32,6 +33,15 @@ export const DefaultKit = Extension.create<DefaultKitOptions>({
   name: 'defaultKit',
 
   addExtensions () {
+    const codeBlock: StarterKitOptions['codeBlock'] = this.options.codeBlock ?? {
+      languageClassPrefix: 'language-',
+      exitOnArrowDown: true,
+      exitOnTripleEnter: true,
+      HTMLAttributes: {
+        class: 'proseCodeBlock'
+      }
+    }
+
     return [
       StarterKit.configure({
         code: {
@@ -39,14 +49,7 @@ export const DefaultKit = Extension.create<DefaultKitOptions>({
             class: 'proseCode'
           }
         },
-        codeBlock: {
-          languageClassPrefix: 'language-',
-          exitOnArrowDown: true,
-          exitOnTripleEnter: true,
-          HTMLAttributes: {
-            class: 'proseCodeBlock'
-          }
-        },
+        codeBlock,
         heading: this.options.heading,
         history: this.options.history
       }),
