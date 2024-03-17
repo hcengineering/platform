@@ -1,3 +1,5 @@
+import { Request } from 'express'
+
 export const ETagSupport = {
   isWeak (etag: string): boolean {
     return etag.startsWith('W/"')

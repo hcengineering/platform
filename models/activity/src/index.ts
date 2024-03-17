@@ -197,7 +197,6 @@ export class TDocUpdateMessageViewlet extends TDoc implements DocUpdateMessageVi
     action!: DocUpdateAction
 
   label?: IntlString
-  labelComponent?: AnyComponent
 
   valueAttr?: string
 

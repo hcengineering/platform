@@ -618,7 +618,7 @@ export function makeViewletKey (loc?: Location): string {
   loc.query = undefined
 
   // TODO: make better fix. Just temporary fix for correct inbox viewlets.
-  if (loc.path[2] === 'inbox') {
+  if (loc.path[2] === 'notification') {
     loc.path = loc.path.slice(0, 3)
   }
 

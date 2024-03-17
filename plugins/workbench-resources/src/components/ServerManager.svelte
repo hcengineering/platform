@@ -18,8 +18,8 @@
   import Expandable from '@hcengineering/ui/src/components/Expandable.svelte'
   import { ObjectPresenter } from '@hcengineering/view-resources'
   import { onDestroy } from 'svelte'
-  import MetricsInfo from './statistics/MetricsInfo.svelte'
   import { workspacesStore } from '../utils'
+  import MetricsInfo from './statistics/MetricsInfo.svelte'
 
   const _endpoint: string = fetchMetadataLocalStorage(login.metadata.LoginEndpoint) ?? ''
   const token: string = getMetadata(presentation.metadata.Token) ?? ''
@@ -30,6 +30,7 @@
   }
 
   let data: any
+  let dataFront: any
   let admin = false
   onDestroy(
     ticker.subscribe(() => {
@@ -37,6 +38,14 @@
         .then(async (json) => {
           data = await json.json()
           admin = data?.admin ?? false
+        })
+        .catch((err) => {
+          console.error(err)
+        })
+
+      void fetch(`/api/v1/statistics?token=${token}`, {})
+        .then(async (json) => {
+          dataFront = await json.json()
         })
         .catch((err) => {
           console.error(err)
@@ -50,7 +59,11 @@
     },
     {
       id: 'statistics',
-      labelIntl: getEmbeddedLabel('Statistics')
+      labelIntl: getEmbeddedLabel('Server')
+    },
+    {
+      id: 'statistics-front',
+      labelIntl: getEmbeddedLabel('Front')
     },
     {
       id: 'users',
@@ -90,6 +103,8 @@
   let warningTimeout = 15
 
   $: metricsData = data?.metrics as Metrics | undefined
+
+  $: metricsDataFront = dataFront?.metrics as Metrics | undefined
 
   $: totalStats = Array.from(Object.entries(activeSessions).values()).reduce(
     (cur, it) => {
@@ -238,6 +253,12 @@
       <div class="flex-column p-3 h-full" style:overflow="auto">
         {#if metricsData !== undefined}
           <MetricsInfo metrics={metricsData} />
+        {/if}
+      </div>
+    {:else if selectedTab === 'statistics-front'}
+      <div class="flex-column p-3 h-full" style:overflow="auto">
+        {#if metricsDataFront !== undefined}
+          <MetricsInfo metrics={metricsDataFront} />
         {/if}
       </div>
     {/if}

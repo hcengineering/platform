@@ -14,5 +14,9 @@
 // limitations under the License.
 //
 
+import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
 import { startFront } from './starter'
-startFront()
+
+const metricsContext = new MeasureMetricsContext('front', {}, {}, newMetrics())
+
+startFront(metricsContext)

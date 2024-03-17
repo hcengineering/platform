@@ -28,12 +28,14 @@
   export let object: Doc | undefined
   export let parentObject: Doc | undefined
   export let skipLabel = false
+  export let hideLink = false
 
   let linkData: LinkData | undefined = undefined
 
-  $: getLinkData(message, object, parentObject, person).then((data) => {
-    linkData = data
-  })
+  $: !hideLink &&
+    getLinkData(message, object, parentObject, person).then((data) => {
+      linkData = data
+    })
 </script>
 
 {#if !skipLabel}

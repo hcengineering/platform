@@ -1,6 +1,6 @@
 <script lang="ts">
   import { AttachmentStyleBoxCollabEditor } from '@hcengineering/attachment-resources'
-  import core, { Doc, Mixin, Ref } from '@hcengineering/core'
+  import core, { Class, Doc, Mixin, Ref } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource } from '@hcengineering/platform'
@@ -56,6 +56,21 @@
     editors = res.editors
   })
 
+  function getEditorFooter (
+    _class: Ref<Class<Doc>>,
+    object?: Doc
+  ): { footer: AnyComponent, props?: Record<string, any> } | undefined {
+    if (object !== undefined) {
+      const footer = hierarchy.findClassOrMixinMixin(object, view.mixin.ObjectEditorFooter)
+      if (footer !== undefined) {
+        return { footer: footer.editor, props: footer.props }
+      }
+    }
+
+    return undefined
+  }
+
+  $: editorFooter = getEditorFooter(contact.class.Organization, object)
   $: updateObject(_id)
 
   function updateObject (_id: Ref<Organization>): void {
@@ -159,5 +174,13 @@
         </div>
       {/if}
     {/each}
+    {#if editorFooter}
+      <div class="step-tb-6">
+        <Component
+          is={editorFooter.footer}
+          props={{ object, _class: contact.class.Organization, ...editorFooter.props, readonly }}
+        />
+      </div>
+    {/if}
   </Panel>
 {/if}

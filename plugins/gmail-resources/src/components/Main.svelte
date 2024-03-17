@@ -16,7 +16,7 @@
 <script lang="ts">
   import contact, { Channel, Contact, getName } from '@hcengineering/contact'
   import { employeeByIdStore } from '@hcengineering/contact-resources'
-  import { getCurrentAccount } from '@hcengineering/core'
+  import { getCurrentAccount, Ref } from '@hcengineering/core'
   import { Message, SharedMessage } from '@hcengineering/gmail'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { getResource } from '@hcengineering/platform'
@@ -33,28 +33,41 @@
   import IntegrationSelector from './IntegrationSelector.svelte'
   import NewMessage from './NewMessage.svelte'
 
-  export let channel: Channel
+  export let channel: Channel | undefined
   // export let embedded = false
   export let message: Message | undefined = undefined
+  export let messageId: Ref<Message> | undefined = undefined
 
   const client = getClient()
   const inboxClient = InboxNotificationsClientImpl.getClient()
 
+  const messageQuery = createQuery()
+
   let object: Contact
+  let gmailMessage: Message | undefined = message
   let currentMessage: SharedMessage | undefined = undefined
 
   let newMessage: boolean = false
   let integrations: Integration[] = []
   let selectedIntegration: Integration | undefined = undefined
 
-  inboxClient.forceReadDoc(getClient(), channel._id, channel._class)
+  channel && inboxClient.forceReadDoc(getClient(), channel._id, channel._class)
 
   const dispatch = createEventDispatcher()
 
   const query = createQuery()
-  $: query.query(channel.attachedToClass, { _id: channel.attachedTo }, (result) => {
-    object = result[0] as Contact
-  })
+  $: channel &&
+    query.query(channel.attachedToClass, { _id: channel.attachedTo }, (result) => {
+      object = result[0] as Contact
+    })
+
+  $: if (message === undefined && messageId !== undefined) {
+    messageQuery.query(gmail.class.Message, { _id: messageId }, (result) => {
+      gmailMessage = result[0] as Message
+    })
+  } else {
+    gmailMessage = message
+  }
 
   function back () {
     if (newMessage) {
@@ -87,10 +100,10 @@
     selectedIntegration = integrations.find((p) => p.createdBy === me) ?? integrations[0]
   })
 
-  $: message &&
+  $: gmailMessage &&
     channel &&
     object &&
-    convertMessage(object, channel, message, $employeeByIdStore).then((p) => (currentMessage = p))
+    convertMessage(object, channel, gmailMessage, $employeeByIdStore).then((p) => (currentMessage = p))
 </script>
 
 {#if channel && object}

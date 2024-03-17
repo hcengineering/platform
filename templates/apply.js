@@ -146,7 +146,14 @@ function updatePackage(packageRoot, templates) {
 
   // Copy missing files.
 
-  copyFiles(template.root, packageRoot, (template.package['#replaces'] ?? []).map(f => join(packageRoot, f)) )
+  let replaces = [...(template.package['#replaces'] ?? [])]
+  // We need to remove #ignores from replaces
+
+  if( currentPackage['#ignore']!== undefined ) {
+    replaces = replaces.filter(f =>!currentPackage['#ignore'].includes(f))
+  }
+
+  copyFiles(template.root, packageRoot, replaces.map(f => join(packageRoot, f)) )
 
   // Clean some folders
   for( const p of template.package['#removes'] ?? []) {

@@ -28,13 +28,15 @@
   export let object: Doc | undefined
   export let parentObject: Doc | undefined
   export let label: IntlString | undefined = undefined
+  export let hideLink = false
   export let isEdited: boolean = false
 
   let linkData: LinkData | undefined = undefined
 
-  $: void getLinkData(message, object, parentObject, person).then((data) => {
-    linkData = data
-  })
+  $: !hideLink &&
+    getLinkData(message, object, parentObject, person).then((data) => {
+      linkData = data
+    })
 </script>
 
 <span class="text-sm lower">

@@ -292,6 +292,18 @@ export function createModel (builder: Builder): void {
     provider: contact.function.PersonTooltipProvider
   })
 
+  builder.mixin(contact.class.Channel, core.class.Class, view.mixin.ObjectIdentifier, {
+    provider: contact.function.ChannelIdentifierProvider
+  })
+
+  builder.mixin(contact.class.Channel, core.class.Class, view.mixin.ObjectTitle, {
+    titleProvider: contact.function.ChannelTitleProvider
+  })
+
+  builder.mixin(contact.class.Channel, core.class.Class, view.mixin.ObjectIcon, {
+    component: contact.component.ChannelIcon
+  })
+
   builder.createDoc(
     workbench.class.Application,
     core.space.Model,

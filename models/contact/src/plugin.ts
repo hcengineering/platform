@@ -60,7 +60,8 @@ export default mergeIds(contactId, contact, {
     ActivityChannelPresenter: '' as AnyComponent,
     EmployeeFilter: '' as AnyComponent,
     EmployeeFilterValuePresenter: '' as AnyComponent,
-    PersonAccountFilterValuePresenter: '' as AnyComponent
+    PersonAccountFilterValuePresenter: '' as AnyComponent,
+    ChannelIcon: '' as AnyComponent
   },
   string: {
     Persons: '' as IntlString,
@@ -137,6 +138,8 @@ export default mergeIds(contactId, contact, {
     GetContactName: '' as Resource<TemplateFieldFunc>,
     GetContactFirstName: '' as Resource<TemplateFieldFunc>,
     GetContactLastName: '' as Resource<TemplateFieldFunc>,
-    ContactTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>
+    ContactTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
+    ChannelTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
+    ChannelIdentifierProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>
   }
 })

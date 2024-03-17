@@ -289,7 +289,12 @@ export class Hierarchy {
     let cl: Ref<Class<T>> | undefined = _class
     while (cl !== undefined) {
       if (cl === from) return true
-      cl = this.getClass(cl).extends
+
+      const cll = this.classifiers.get(cl)
+      if (cll === undefined || this.isInterface(cll)) {
+        return false
+      }
+      cl = (cll as Class<T>).extends
     }
     return false
   }

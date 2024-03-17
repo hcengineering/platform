@@ -62,9 +62,9 @@ test.describe('Tracker milestone tests', () => {
     await milestonesDetailsPage.addComment(commentText)
     await milestonesDetailsPage.checkCommentExist(commentText)
     await milestonesDetailsPage.checkActivityExist('created milestone')
-    await milestonesDetailsPage.checkActivityExist('changed target date in')
-    await milestonesDetailsPage.checkActivityExist('changed status in')
-    await milestonesDetailsPage.checkActivityExist('changed description in')
+    await milestonesDetailsPage.checkActivityExist('changed target date at')
+    await milestonesDetailsPage.checkActivityExist('changed status at')
+    await milestonesDetailsPage.checkActivityExist('changed description at')
   })
 
   test('Delete a Milestone', async ({ page }) => {

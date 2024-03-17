@@ -85,7 +85,7 @@ export interface RemoveDocumentResponse {}
 export interface TakeSnapshotRequest {
   documentId: DocumentURI
   collaborativeDoc: CollaborativeDoc
-  createdBy: string
+  createdBy: Ref<Account>
   snapshotName: string
 }
 
@@ -94,7 +94,7 @@ export interface TakeSnapshotResponse {
   versionId: string
   name: string
 
-  createdBy: string
+  createdBy: Ref<Account>
   createdOn: Timestamp
 }
 
