@@ -145,7 +145,7 @@ test.describe('Vacancy tests', () => {
 
     const vacanciesPage = new VacanciesPage(page)
     await vacanciesPage.selectAll()
-    await vacanciesPage.exportVacanciesWithCheck('Software Engineer')
+    await vacanciesPage.exportVacanciesWithCheck('Software Engineer', 2000)
   })
 
   test('Archive a Vacancy', async ({ page }) => {
