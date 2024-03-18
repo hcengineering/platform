@@ -364,10 +364,15 @@
     }
   }
 
-  $: void initializeScroll($isLoadingStore, separatorElement, $newTimestampStore)
+  $: newTimestamp = $newTimestampStore
+  $: separatorIndex =
+    newTimestamp !== undefined
+      ? displayMessages.findIndex((message) => (message.createdOn ?? 0) >= (newTimestamp ?? 0))
+      : -1
+  $: void initializeScroll($isLoadingStore, separatorElement, separatorIndex)
 
   let isInitialScrolling = true
-  async function initializeScroll (isLoading: boolean, separatorElement?: HTMLDivElement, newTimestamp?: Timestamp) {
+  async function initializeScroll (isLoading: boolean, separatorElement?: HTMLDivElement, separatorIndex?: number) {
     if (isLoading || isScrollInitialized) {
       return
     }
@@ -379,7 +384,7 @@
       await wait()
       scrollToMessage()
       isInitialScrolling = false
-    } else if (newTimestamp === undefined) {
+    } else if (separatorIndex === -1) {
       isScrollInitialized = true
       shouldWaitAndRead = true
       autoscroll = true
@@ -564,10 +569,10 @@
       {/if}
       <slot name="header" />
 
-      {#each displayMessages as message (message._id)}
+      {#each displayMessages as message, index (message._id)}
         {@const isSelected = message._id === selectedMessageId}
 
-        {#if message.createdOn === $newTimestampStore}
+        {#if separatorIndex === index}
           <ActivityMessagesSeparator bind:element={separatorElement} label={activity.string.New} />
         {/if}
 

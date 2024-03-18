@@ -25,7 +25,6 @@
   import DocAside from './DocAside.svelte'
   import { joinChannel, leaveChannel } from '../../utils'
 
-  export let _id: Ref<ChunterSpace>
   export let _class: Ref<Class<ChunterSpace>>
   export let object: ChunterSpace | undefined
 
@@ -116,7 +115,7 @@
   }
 </script>
 
-<DocAside {_id} {_class} {object}>
+<DocAside {_class} {object}>
   {#if object && creatorPersonRef}
     <div class="popupPanel-body__aside-grid" style:margin-top="0">
       <span
