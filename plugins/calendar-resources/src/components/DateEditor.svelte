@@ -77,12 +77,14 @@
 <div
   class="dateEditor-container {direction}"
   class:difference={difference > 0}
-  class:gap-1-5={direction === 'horizontal'}
+  class:flex-gap-2={direction === 'horizontal'}
 >
   {#if showDate || withoutTime}
-    <ButtonBase type="type-button" {kind} {size} {disabled} {focusIndex} on:click={dateClick}>
-      <DateLocalePresenter date={currentDate.getTime()} {timeZone} />
-    </ButtonBase>
+    <div class="min-w-28">
+      <ButtonBase type="type-button" {kind} {size} {disabled} {focusIndex} on:click={dateClick}>
+        <DateLocalePresenter date={currentDate.getTime()} {timeZone} />
+      </ButtonBase>
+    </div>
   {/if}
 
   {#if showDate && !withoutTime && direction === 'horizontal'}
