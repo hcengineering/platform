@@ -21,8 +21,9 @@ import TaskItem from '@tiptap/extension-task-item'
 import TaskList from '@tiptap/extension-task-list'
 import Underline from '@tiptap/extension-underline'
 
-import { DefaultKit, type DefaultKitOptions } from './default-kit'
+import { DefaultKit, type DefaultKitOptions, codeBlockOptions } from './default-kit'
 
+import { CodeBlockExtension } from '../components/extension/codeblock'
 import { CodemarkExtension } from '../components/extension/codemark'
 import { NodeUuidExtension } from '../components/extension/nodeUuid'
 import { Table, TableCell, TableRow } from '../components/extension/table'
@@ -62,10 +63,12 @@ export const EditorKit = Extension.create<EditorKitOptions>({
     return [
       DefaultKit.configure({
         ...this.options,
+        codeBlock: false,
         heading: {
           levels: headingLevels
         }
       }),
+      CodeBlockExtension.configure(codeBlockOptions),
       CodemarkExtension,
       Underline,
       ListKeymap.configure({

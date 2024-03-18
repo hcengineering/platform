@@ -14,13 +14,18 @@
 -->
 <script lang="ts">
   import { Class, Doc, Mixin, Ref } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
-  import { Label, Scroller } from '@hcengineering/ui'
-  import { DocAttributeBar, DocNavLink, getDocLinkTitle, getDocMixins } from '@hcengineering/view-resources'
+  import {
+    AttributeBarEditor,
+    getClient,
+    getFiltredKeys,
+    isCollectionAttr,
+    KeyedAttribute
+  } from '@hcengineering/presentation'
+  import { Scroller } from '@hcengineering/ui'
+  import { ClassAttributeBar, getDocMixins } from '@hcengineering/view-resources'
 
   import chunter from '../../plugin'
 
-  export let _id: Ref<Doc>
   export let _class: Ref<Class<Doc>>
   export let object: Doc | undefined
 
@@ -28,41 +33,53 @@
   const hierarchy = client.getHierarchy()
 
   let mixins: Array<Mixin<Doc>> = []
-  let objectLinkTitle: string | undefined = undefined
 
-  $: clazz = hierarchy.getClass(_class)
   $: objectChatPanel = hierarchy.classHierarchyMixin(_class, chunter.mixin.ObjectChatPanel)
 
   $: mixins = object ? getDocMixins(object) : []
 
-  $: getDocLinkTitle(client, _id, _class, object).then((res) => {
-    objectLinkTitle = res
-  })
+  function getMixinKeys (mixin: Ref<Mixin<Doc>>): KeyedAttribute[] {
+    if (object === undefined) return []
+
+    const mixinClass = hierarchy.getClass(mixin)
+    const filtredKeys = getFiltredKeys(
+      hierarchy,
+      mixin,
+      objectChatPanel?.ignoreKeys ?? [],
+      hierarchy.isMixin(mixinClass.extends as Ref<Class<Doc>>) ? mixinClass.extends : object._class
+    )
+    return filtredKeys.filter((key) => !isCollectionAttr(hierarchy, key))
+  }
 </script>
 
 <Scroller>
   {#if object}
-    <DocAttributeBar {object} {mixins} ignoreKeys={objectChatPanel?.ignoreKeys ?? []} showHeader={false} />
+    <ClassAttributeBar
+      _class={object._class}
+      {object}
+      ignoreKeys={objectChatPanel?.ignoreKeys ?? []}
+      showHeader={false}
+      readonly={false}
+      on:update
+    />
+    <div class="popupPanel-body__aside-grid">
+      {#each mixins as mixin}
+        {@const mixinKeys = getMixinKeys(mixin._id)}
+        {#if mixinKeys.length}
+          <div class="divider" />
+          {#each mixinKeys as key (typeof key === 'string' ? key : key.key)}
+            <AttributeBarEditor
+              {key}
+              _class={mixin._id}
+              readonly={false}
+              object={hierarchy.as(object, mixin._id)}
+              showHeader={true}
+              size={'medium'}
+            />
+          {/each}
+        {/if}
+      {/each}
+    </div>
   {/if}
   <slot />
 </Scroller>
-
-<style lang="scss">
-  .header {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    flex-shrink: 0;
-    margin: 0.75rem;
-    padding: 0 0.75rem;
-    color: var(--theme-content-color);
-    margin-bottom: 0;
-  }
-
-  .identifier {
-    display: flex;
-    gap: 0.25rem;
-    color: var(--theme-halfcontent-color);
-    font-size: 0.75rem;
-  }
-</style>

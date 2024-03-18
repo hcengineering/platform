@@ -14,12 +14,13 @@
 // limitations under the License.
 //
 
+import { MeasureContext } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { setMetadata } from '@hcengineering/platform'
 import serverToken from '@hcengineering/server-token'
 import { start } from '.'
 
-export function startFront (extraConfig?: Record<string, string>): void {
+export function startFront (ctx: MeasureContext, extraConfig?: Record<string, string>): void {
   const defaultLanguage = process.env.DEFAULT_LANGUAGE ?? 'en'
   const languages = process.env.LANGUAGES ?? 'en,ru'
   const SERVER_PORT = parseInt(process.env.SERVER_PORT ?? '8080')
@@ -147,7 +148,7 @@ export function startFront (extraConfig?: Record<string, string>): void {
     defaultLanguage
   }
   console.log('Starting Front service with', config)
-  const shutdown = start(config, SERVER_PORT, extraConfig)
+  const shutdown = start(ctx, config, SERVER_PORT, extraConfig)
 
   const close = (): void => {
     console.trace('Exiting from server')

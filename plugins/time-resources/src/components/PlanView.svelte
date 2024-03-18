@@ -22,6 +22,7 @@
 
   const defaultDuration = 30 * 60 * 1000
   let replacedPanel: HTMLElement
+  let isVisiblePlannerNav: boolean = true
 
   let currentDate: Date = new Date()
 
@@ -67,18 +68,21 @@
 </script>
 
 {#if visibleNav}
-  <ToDosNavigator bind:mode bind:tag bind:currentDate {navFloat} {appsDirection} />
-  <Separator
-    name={'time'}
-    float={navFloat}
-    index={0}
-    disabledWhen={['panel-aside']}
-    color={'var(--theme-navpanel-border)'}
-  />
+  {#if isVisiblePlannerNav}
+    <ToDosNavigator bind:mode bind:tag bind:currentDate {navFloat} {appsDirection} />
+    <Separator
+      name={'time'}
+      float={navFloat}
+      index={0}
+      disabledWhen={['panel-aside']}
+      color={'var(--theme-navpanel-border)'}
+    />
+  {/if}
   <div class="flex-col clear-mins">
     <ToDos
       {mode}
       {tag}
+      bind:isVisiblePlannerNav
       bind:currentDate
       on:dragstart={(e) => (dragItem = e.detail)}
       on:dragend={() => (dragItem = undefined)}
