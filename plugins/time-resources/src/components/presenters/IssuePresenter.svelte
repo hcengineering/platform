@@ -14,7 +14,7 @@
 
 <ToDoReference label={value.identifier} on:click>
   <svelte:fragment slot="icon">
-    <IssueStatusIcon size='small' value={status} space={value.space} />
+    <IssueStatusIcon size="small" value={status} space={value.space} />
   </svelte:fragment>
   <slot />
 </ToDoReference>

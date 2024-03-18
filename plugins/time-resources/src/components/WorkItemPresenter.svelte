@@ -52,11 +52,7 @@
       <Component is={presenter.presenter} props={{ value: doc, withoutSpace }} />
     </div>
   {:else}
-    <Component
-      is={presenter.presenter}
-      props={{ value: doc, withoutSpace }}
-      on:click={click}
-    >
+    <Component is={presenter.presenter} props={{ value: doc, withoutSpace }} on:click={click}>
       <slot />
     </Component>
   {/if}
