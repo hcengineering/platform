@@ -20,7 +20,10 @@ import { type AnyComponent } from '@hcengineering/ui'
 
 export default mergeIds(settingId, setting, {
   component: {
-    EditEnum: '' as AnyComponent
+    EditEnum: '' as AnyComponent,
+    ManageSpaceTypes: '' as AnyComponent,
+    ManageSpaceTypesTools: '' as AnyComponent,
+    ManageSpaceTypeContent: '' as AnyComponent
   },
   string: {
     IntegrationDisabled: '' as IntlString,
@@ -88,6 +91,10 @@ export default mergeIds(settingId, setting, {
     ConfigBeta: '' as IntlString,
     ClassSettingHint: '' as IntlString,
     ClassProperties: '' as IntlString,
-    ClassColon: '' as IntlString
+    ClassColon: '' as IntlString,
+    NewSpaceType: '' as IntlString,
+    SpaceTypeTitle: '' as IntlString,
+    Description: '' as IntlString,
+    CountSpaces: '' as IntlString
   }
 })

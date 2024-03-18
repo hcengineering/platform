@@ -161,6 +161,7 @@ export interface ProjectTypeClass extends Class<ProjectType> {
 export interface ProjectType extends SpaceType {
   descriptor: Ref<ProjectTypeDescriptor>
   tasks: Ref<TaskType>[]
+  description: string
 
   // Color and extra options per project type.
   // All statuses per project has same color.
@@ -179,7 +180,7 @@ export interface ProjectType extends SpaceType {
 export interface ProjectTypeDescriptor extends SpaceTypeDescriptor {
   allowedClassic?: boolean
   allowedTaskTypeDescriptors?: Ref<TaskTypeDescriptor>[] // if undefined we allow all possible
-  baseClass: Ref<Class<Task>>
+  baseClass: Ref<Class<Project>>
   editor?: AnyComponent
 }
 

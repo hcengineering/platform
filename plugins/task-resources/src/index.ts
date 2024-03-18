@@ -67,9 +67,15 @@ import TaskKindSelector from './components/taskTypes/TaskKindSelector.svelte'
 import TaskTypeClassPresenter from './components/taskTypes/TaskTypeClassPresenter.svelte'
 import TaskTypePresenter from './components/taskTypes/TaskTypePresenter.svelte'
 
+import CreateProjectType from './components/projectTypes/CreateProjectType.svelte'
 import ManageProjects from './components/projectTypes/ManageProjects.svelte'
 import ManageProjectsContent from './components/projectTypes/ManageProjectsContent.svelte'
 import ManageProjectsTools from './components/projectTypes/ManageProjectsTools.svelte'
+import ProjectTypeGeneralSectionEditor from './components/projectTypes/ProjectTypeGeneralSectionEditor.svelte'
+import ProjectTypeTasksTypeSectionEditor from './components/projectTypes/ProjectTypeTasksTypeSectionEditor.svelte'
+import ProjectTypeAutomationsSectionEditor from './components/projectTypes/ProjectTypeAutomationsSectionEditor.svelte'
+import ProjectTypeCollectionsSectionEditor from './components/projectTypes/ProjectTypeCollectionsSectionEditor.svelte'
+import TaskTypeEditor from './components/taskTypes/TaskTypeEditor.svelte'
 
 export { default as AssigneePresenter } from './components/AssigneePresenter.svelte'
 export { default as TypeSelector } from './components/TypeSelector.svelte'
@@ -129,7 +135,13 @@ export default async (): Promise<Resources> => ({
     ManageProjects,
     ManageProjectsTools,
     ManageProjectsContent,
-    ProjectTypePresenter
+    ProjectTypePresenter,
+    CreateProjectType,
+    ProjectTypeGeneralSectionEditor,
+    ProjectTypeTasksTypeSectionEditor,
+    ProjectTypeAutomationsSectionEditor,
+    ProjectTypeCollectionsSectionEditor,
+    TaskTypeEditor
   },
   actionImpl: {
     EditStatuses: editStatuses,

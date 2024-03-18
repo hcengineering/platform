@@ -100,6 +100,12 @@
     "Automations": "Automations",
     "Collections": "Collections",
     "ClassColon": "Class:",
-    "Branding": "Branding"
+    "Branding": "Branding",
+    "SpaceTypes": "Space types",
+    "NewSpaceType": "New space type",
+    "SpaceTypeTitle": "Space type title",
+    "General": "General",
+    "Description": "Description",
+    "CountSpaces": "{count, plural, =0 {No spaces} =1 {# space} other {# spaces}}"
   }
 }

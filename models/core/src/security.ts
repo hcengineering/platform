@@ -25,7 +25,8 @@ import {
   type TypedSpace,
   type SpaceType,
   type SpaceTypeDescriptor,
-  type Role
+  type Role,
+  type Class
 } from '@hcengineering/core'
 import { ArrOf, Hidden, Index, Model, Prop, TypeBoolean, TypeRef, TypeString, UX } from '@hcengineering/model'
 import type { Asset, IntlString } from '@hcengineering/platform'
@@ -70,6 +71,7 @@ export class TSpaceTypeDescriptor extends TDoc implements SpaceTypeDescriptor {
   name!: IntlString
   description!: IntlString
   icon!: Asset
+  baseClass!: Ref<Class<Space>>
 }
 
 @Model(core.class.SpaceType, core.class.Doc, DOMAIN_MODEL)
@@ -79,15 +81,14 @@ export class TSpaceType extends TDoc implements SpaceType {
   @Index(IndexKind.FullText)
     name!: string
 
-  @Prop(TypeString(), core.string.Description)
-  @Index(IndexKind.FullText)
-    description!: string
-
   @Prop(TypeString(), core.string.ShortDescription)
     shortDescription?: string
 
   @Prop(TypeRef(core.class.SpaceTypeDescriptor), core.string.Descriptor)
     descriptor!: Ref<SpaceTypeDescriptor>
+
+  @Prop(TypeRef(core.class.Class), core.string.TargetClass)
+    targetClass!: Ref<Class<Space>>
 
   @Prop(ArrOf(TypeRef(core.class.Role)), core.string.Roles)
     roles!: Ref<Role>[]

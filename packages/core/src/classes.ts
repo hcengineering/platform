@@ -380,6 +380,7 @@ export interface SpaceTypeDescriptor extends Doc {
   name: IntlString
   description: IntlString
   icon: Asset
+  baseClass: Ref<Class<Space>> // Child class of Space for which the space type can be defined
 }
 
 /**
@@ -389,10 +390,9 @@ export interface SpaceTypeDescriptor extends Doc {
  */
 export interface SpaceType extends Doc {
   name: string
-  description: string // TODO: Is it needed?
   shortDescription?: string
   descriptor: Ref<SpaceTypeDescriptor>
-  // targetClass: Ref<Class<Space>> // TODO: A mixin for space
+  targetClass: Ref<Class<Space>> // A dynamic mixin for Spaces to hold custom attributes of the space type
   roles: Ref<Role>[]
 }
 

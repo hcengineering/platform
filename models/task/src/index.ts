@@ -192,6 +192,10 @@ export class TProjectType extends TSpaceType implements ProjectType {
   @Prop(TypeRef(task.class.ProjectTypeDescriptor), getEmbeddedLabel('Descriptor'))
   declare descriptor: Ref<ProjectTypeDescriptor>
 
+  @Prop(TypeString(), task.string.Description)
+  @Index(IndexKind.FullText)
+    description!: string
+
   @Prop(ArrOf(TypeRef(task.class.TaskType)), getEmbeddedLabel('Tasks'))
     tasks!: Ref<TaskType>[]
 
@@ -199,7 +203,7 @@ export class TProjectType extends TSpaceType implements ProjectType {
     statuses!: ProjectStatus[]
 
   @Prop(TypeRef(core.class.Class), getEmbeddedLabel('Target Class'))
-    targetClass!: Ref<Class<Project>>
+  declare targetClass: Ref<Class<Project>>
 
   @Prop(TypeBoolean(), getEmbeddedLabel('Classic'))
     classic!: boolean
@@ -243,7 +247,7 @@ export class TProjectTypeDescriptor extends TSpaceTypeDescriptor implements Proj
   editor?: AnyComponent
   allowedClassic?: boolean
   allowedTaskTypeDescriptors?: Ref<TaskTypeDescriptor>[] // if undefined we allow all possible
-  baseClass!: Ref<Class<Task>>
+  declare baseClass: Ref<Class<Project>>
 }
 
 @Model(task.class.Sequence, core.class.Doc, DOMAIN_KANBAN)
@@ -562,6 +566,44 @@ export function createModel (builder: Builder): void {
     },
     task.ids.ManageProjects
   )
+
+  builder.mixin(task.class.ProjectTypeDescriptor, core.class.Class, setting.mixin.SpaceTypeCreator, {
+    extraComponent: task.component.CreateProjectType
+  })
+
+  builder.mixin(task.class.ProjectType, core.class.Class, setting.mixin.SpaceTypeEditor, {
+    sections: [
+      {
+        id: 'general',
+        label: setting.string.General,
+        component: task.component.ProjectTypeGeneralSectionEditor,
+        withoutContainer: true
+      },
+      {
+        id: 'properties',
+        label: setting.string.Properties,
+        component: setting.component.SpaceTypePropertiesSectionEditor
+      },
+      {
+        id: 'taskTypes',
+        label: setting.string.TaskTypes,
+        component: task.component.ProjectTypeTasksTypeSectionEditor
+      },
+      {
+        id: 'automations',
+        label: setting.string.Automations,
+        component: task.component.ProjectTypeAutomationsSectionEditor
+      },
+      {
+        id: 'collections',
+        label: setting.string.Collections,
+        component: task.component.ProjectTypeCollectionsSectionEditor
+      }
+    ],
+    subEditors: {
+      taskTypes: task.component.TaskTypeEditor
+    }
+  })
 
   createPublicLinkAction(builder, task.class.Task, task.action.PublicLink)
 }

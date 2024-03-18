@@ -49,8 +49,14 @@ import IntegrationPanel from './components/IntegrationPanel.svelte'
 import { getOwnerFirstName, getOwnerLastName, getOwnerPosition, getValue, filterDescendants } from './utils'
 import ClassAttributes from './components/ClassAttributes.svelte'
 import ClassAttributesList from './components/ClassAttributesList.svelte'
+import ManageSpaceTypes from './components/spaceTypes/ManageSpaceTypes.svelte'
+import ManageSpaceTypesTools from './components/spaceTypes/ManageSpaceTypesTools.svelte'
+import ManageSpaceTypeContent from './components/spaceTypes/ManageSpaceTypeContent.svelte'
+import SpaceTypeDescriptorPresenter from './components/presenters/SpaceTypeDescriptorPresenter.svelte'
+import SpaceTypeGeneralSectionEditor from './components/spaceTypes/editor/SpaceTypeGeneralSectionEditor.svelte'
+import SpaceTypePropertiesSectionEditor from './components/spaceTypes/editor/SpaceTypePropertiesSectionEditor.svelte'
 
-export { ClassSetting, filterDescendants, ClassAttributes, ClassAttributesList }
+export { ClassSetting, filterDescendants, ClassAttributes, ClassAttributesList, SpaceTypeGeneralSectionEditor }
 export * from './store'
 
 async function DeleteMixin (object: Mixin<Class<Doc>>): Promise<void> {
@@ -106,7 +112,13 @@ export default async (): Promise<Resources> => ({
     CreateMixin,
     InviteSetting,
     IntegrationPanel,
-    Configure
+    Configure,
+    ManageSpaceTypes,
+    ManageSpaceTypesTools,
+    ManageSpaceTypeContent,
+    SpaceTypeDescriptorPresenter,
+    SpaceTypeGeneralSectionEditor,
+    SpaceTypePropertiesSectionEditor
   },
   actionImpl: {
     DeleteMixin

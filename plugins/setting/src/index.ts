@@ -19,6 +19,10 @@ import { Asset, IntlString, plugin, Resource } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
 import { TemplateFieldCategory, TemplateField } from '@hcengineering/templates'
 
+import { SpaceTypeEditor, SpaceTypeCreator } from './spaceTypeEditor'
+
+export * from './spaceTypeEditor'
+
 /**
  * @public
  */
@@ -122,11 +126,14 @@ export default plugin(settingId, {
     ClassSetting: '' as Ref<Doc>,
     Owners: '' as Ref<Doc>,
     InviteSettings: '' as Ref<Doc>,
-    WorkspaceSetting: '' as Ref<Doc>
+    WorkspaceSetting: '' as Ref<Doc>,
+    ManageSpaces: '' as Ref<Doc>
   },
   mixin: {
     Editable: '' as Ref<Mixin<Editable>>,
-    UserMixin: '' as Ref<Mixin<UserMixin>>
+    UserMixin: '' as Ref<Mixin<UserMixin>>,
+    SpaceTypeEditor: '' as Ref<Mixin<SpaceTypeEditor>>,
+    SpaceTypeCreator: '' as Ref<Mixin<SpaceTypeCreator>>
   },
   space: {
     Setting: '' as Ref<Space>
@@ -149,7 +156,10 @@ export default plugin(settingId, {
     Support: '' as AnyComponent,
     Privacy: '' as AnyComponent,
     Terms: '' as AnyComponent,
-    ClassSetting: '' as AnyComponent
+    ClassSetting: '' as AnyComponent,
+    SpaceTypeDescriptorPresenter: '' as AnyComponent,
+    SpaceTypeGeneralSectionEditor: '' as AnyComponent,
+    SpaceTypePropertiesSectionEditor: '' as AnyComponent
   },
   string: {
     Settings: '' as IntlString,
@@ -182,10 +192,12 @@ export default plugin(settingId, {
     Owners: '' as IntlString,
     Configure: '' as IntlString,
     InviteSettings: '' as IntlString,
+    General: '' as IntlString,
     Properties: '' as IntlString,
     TaskTypes: '' as IntlString,
     Automations: '' as IntlString,
-    Collections: '' as IntlString
+    Collections: '' as IntlString,
+    SpaceTypes: '' as IntlString
   },
   icon: {
     AccountSettings: '' as Asset,
