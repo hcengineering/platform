@@ -40,7 +40,9 @@ export class PlanningPage extends CalendarPage {
     this.inputPopupCreateTitle = page.locator('div.popup input')
     this.inputPopupCreateDescription = page.locator('div.popup div.tiptap')
     this.inputPanelCreateDescription = page.locator('div.hulyModal-container div.tiptap')
-    this.buttonPopupCreateDueDate = page.locator('div.popup div.block:first-child div.flex-row-center button:nth-child(3)')
+    this.buttonPopupCreateDueDate = page.locator(
+      'div.popup div.block:first-child div.flex-row-center button:nth-child(3)'
+    )
     this.buttonPanelCreateDueDate = page.locator(
       'div.hulyModal-container div.slots-content div.flex-row-top.justify-between div.flex-row-center button:first-child'
     )
@@ -257,16 +259,16 @@ export class PlanningPage extends CalendarPage {
   }
 
   public async deleteTimeSlot (rowNumber: number): Promise<void> {
-    const row = this.page.locator('div.hulyModal-container div.slots-content div.flex-col div.flex div.tool').nth(rowNumber)
+    const row = this.page
+      .locator('div.hulyModal-container div.slots-content div.flex-col div.flex div.tool')
+      .nth(rowNumber)
     await row.locator('xpath=..').hover()
     await row.locator('button').click()
     await this.pressYesDeletePopup(this.page)
   }
 
   public async checkTimeSlotEndDate (rowNumber: number, dateEnd: string): Promise<void> {
-    const row = this.page
-      .locator('div.hulyModal-container div.slots-content div.flex-col div.flex')
-      .nth(rowNumber)
+    const row = this.page.locator('div.hulyModal-container div.slots-content div.flex-col div.flex').nth(rowNumber)
     // dateEnd
     await expect(row.locator('div.dateEditor-container:nth-child(1) button:first-child')).toContainText(dateEnd)
   }
