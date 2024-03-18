@@ -56,10 +56,6 @@ export async function getPersonNotificationTxes (
   space: Ref<Space>,
   originTx: TxCUD<Doc>
 ): Promise<Tx[]> {
-  if (reference.attachedTo === senderId) {
-    return []
-  }
-
   const receiver = (
     await control.modelDb.findAll(
       contact.class.PersonAccount,
@@ -71,6 +67,10 @@ export async function getPersonNotificationTxes (
   )[0]
 
   if (receiver === undefined) {
+    return []
+  }
+
+  if (receiver._id === senderId) {
     return []
   }
 
@@ -87,10 +87,6 @@ export async function getPersonNotificationTxes (
     res.push(collaboratorsTx)
   }
 
-  if (await isReferenceAlreadyNotified(reference, receiver._id, control)) {
-    return res
-  }
-
   const doc = (await control.findAll(reference.srcDocClass, { _id: reference.srcDocId }))[0]
 
   if (doc === undefined) {
@@ -103,6 +99,11 @@ export async function getPersonNotificationTxes (
   }
 
   const notifyResult = await shouldNotifyCommon(control, receiver._id, notification.ids.MentionCommonNotificationType)
+
+  if (await isReferenceAlreadyNotified(reference, receiver._id, control)) {
+    notifyResult.allowed = false
+  }
+
   const texes = await getCommonNotificationTxes(
     control,
     doc,
