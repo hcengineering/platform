@@ -13,12 +13,13 @@
 // limitations under the License.
 //
 
-import { type Resources } from '@hcengineering/platform'
+import type { Resources } from '@hcengineering/platform'
 import Me from './components/Me.svelte'
 import Team from './components/team/Team.svelte'
 import IssuePresenter from './components/presenters/IssuePresenter.svelte'
 import CardPresenter from './components/presenters/CardPresenter.svelte'
 import LeadPresenter from './components/presenters/LeadPresenter.svelte'
+import DocumentPresenter from './components/presenters/DocumentPresenter.svelte'
 import ApplicantPresenter from './components/presenters/ApplicantPresenter.svelte'
 import WorkSlotElement from './components/WorkSlotElement.svelte'
 import EditWorkSlot from './components/EditWorkSlot.svelte'
@@ -37,6 +38,7 @@ export default async (): Promise<Resources> => ({
     IssuePresenter,
     CardPresenter,
     LeadPresenter,
+    DocumentPresenter,
     ApplicantPresenter,
     EditWorkSlot,
     WorkSlotElement,

@@ -62,6 +62,7 @@
   export let _id: Ref<Document>
   export let readonly: boolean = false
   export let embedded: boolean = false
+  export let kind: 'default' | 'modern' = 'default'
 
   $: readonly = $restrictionStore.readonly
 
@@ -229,7 +230,7 @@
   <Panel
     object={doc}
     withoutActivity
-    allowClose={false}
+    allowClose={!embedded}
     isAside={true}
     customAside={aside}
     bind:selectedAside
@@ -237,6 +238,7 @@
     isCustomAttr={false}
     isSub={false}
     {embedded}
+    {kind}
     bind:content
     bind:innerWidth
     bind:useMaxWidth
@@ -251,7 +253,13 @@
 
     <svelte:fragment slot="utils">
       {#if !$restrictionStore.disableActions}
-        <Button icon={IconMoreH} iconProps={{ size: 'medium' }} kind={'icon'} on:click={showContextMenu} />
+        <Button
+          id="btn-doc-title-open-more"
+          icon={IconMoreH}
+          iconProps={{ size: 'medium' }}
+          kind={'icon'}
+          on:click={showContextMenu}
+        />
         {#each actions as action}
           <Button
             icon={action.icon}
