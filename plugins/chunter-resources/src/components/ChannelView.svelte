@@ -47,12 +47,8 @@
   $: withAside =
     !embedded && !isThreadOpened && !hierarchy.isDerived(context.attachedToClass, chunter.class.DirectMessage)
 
-  function toChannel (object?: Doc) {
+  function toChannel (object?: Doc): Channel | undefined {
     return object as Channel | undefined
-  }
-
-  function toChannelRef (ref: Ref<Doc>) {
-    return ref as Ref<Channel>
   }
 
   defineSeparators('aside', panelSeparators)
@@ -87,13 +83,9 @@
         <Separator name="aside" float index={0} />
         <div class="antiPanel-wrap__content">
           {#if hierarchy.isDerived(context.attachedToClass, chunter.class.Channel)}
-            <ChannelAside
-              _id={toChannelRef(context.attachedTo)}
-              _class={context.attachedToClass}
-              object={toChannel(object)}
-            />
+            <ChannelAside _class={context.attachedToClass} object={toChannel(object)} />
           {:else}
-            <DocAside _id={context.attachedTo} _class={context.attachedToClass} {object} />
+            <DocAside _class={context.attachedToClass} {object} />
           {/if}
         </div>
       </div>
