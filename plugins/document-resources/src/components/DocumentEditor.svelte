@@ -89,6 +89,7 @@
   {boundary}
   {overflow}
   {editorAttributes}
+  showCollaborators={true}
   onExtensions={handleExtensions}
   on:update
   on:open-document

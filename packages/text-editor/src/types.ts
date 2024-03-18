@@ -2,6 +2,7 @@ import { type Asset, type IntlString, type Resource } from '@hcengineering/platf
 import { type Account, type Doc, type Markup, type Ref } from '@hcengineering/core'
 import type { AnySvelteComponent } from '@hcengineering/ui'
 import { type Editor, type SingleCommands } from '@tiptap/core'
+import { type RelativePosition } from 'yjs'
 
 /**
  * @public
@@ -104,5 +105,21 @@ export interface CollaborationUser {
   id: Ref<Account>
   name: string
   email: string
-  color: string
+  color: number
+}
+
+/** @public */
+export interface CollaborationUserState {
+  clientId: number
+  user: CollaborationUser
+  cursor?: {
+    anchor: RelativePosition
+    head: RelativePosition
+  } | null
+  lastUpdate?: number
+}
+
+/** @public */
+export interface AwarenessChangeEvent {
+  states: CollaborationUserState[]
 }

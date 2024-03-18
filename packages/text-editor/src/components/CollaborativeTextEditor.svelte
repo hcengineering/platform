@@ -44,8 +44,9 @@
     TextFormatCategory,
     TextNodeAction
   } from '../types'
-  import { getCollaborationUser } from '../utils'
+  import { getCollaborationUser, throttle } from '../utils'
 
+  import CollaborationUsers from './CollaborationUsers.svelte'
   import ImageStyleToolbar from './ImageStyleToolbar.svelte'
   import TextEditorStyleToolbar from './TextEditorStyleToolbar.svelte'
   import { noSelectionRender, renderCursor } from './editor/collaboration'
@@ -94,6 +95,8 @@
   export let canShowPopups = true
   export let canEmbedFiles = true
   export let canEmbedImages = true
+
+  export let showCollaborators = true
 
   const dispatch = createEventDispatcher()
 
@@ -256,6 +259,10 @@
     }
   }
 
+  const updateLastUpdateTime = throttle(() => {
+    remoteProvider.awareness?.setLocalStateField('lastUpdate', Date.now())
+  }, 100)
+
   onMount(async () => {
     await ph
     const user = await getCollaborationUser()
@@ -326,6 +333,7 @@
         // ignore non-local changes
         if (isChangeOrigin(transaction)) return
 
+        updateLastUpdateTime()
         dispatch('update')
       }
     })
@@ -384,6 +392,9 @@
 
   <div class="textInput">
     <div class="select-text" class:hidden={loading} style="width: 100%;" bind:this={element} />
+    {#if showCollaborators && remoteProvider && editor}
+      <CollaborationUsers provider={remoteProvider} {editor} />
+    {/if}
   </div>
 
   {#if refActions.length > 0}
@@ -430,7 +441,7 @@
     flex-grow: 1;
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
+    align-items: flex-start;
     min-height: 1.25rem;
     background-color: transparent;
   }

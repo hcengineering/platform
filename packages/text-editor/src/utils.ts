@@ -14,17 +14,11 @@
 //
 
 import { type Attribute } from '@tiptap/core'
-import { get } from 'svelte/store'
 
-import contact, { type PersonAccount, formatName, AvatarType } from '@hcengineering/contact'
+import contact, { type PersonAccount, formatName } from '@hcengineering/contact'
 import { getCurrentAccount } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
-import {
-  type ColorDefinition,
-  getPlatformAvatarColorByName,
-  getPlatformAvatarColorForTextDef,
-  themeStore
-} from '@hcengineering/ui'
+import { getColorNumberByText } from '@hcengineering/ui'
 
 import { type CollaborationUser } from './types'
 
@@ -51,26 +45,46 @@ export function getDataAttribute (
   }
 }
 
-function getAvatarColor (name: string, avatar: string, darkTheme: boolean): ColorDefinition {
-  const [type, color] = avatar.split('://')
-  if (type === AvatarType.COLOR) {
-    return getPlatformAvatarColorByName(color, darkTheme)
-  }
-  return getPlatformAvatarColorForTextDef(name, darkTheme)
-}
-
 export async function getCollaborationUser (): Promise<CollaborationUser> {
   const client = getClient()
 
   const me = getCurrentAccount() as PersonAccount
   const person = await client.findOne(contact.class.Person, { _id: me.person })
   const name = person !== undefined ? formatName(person.name) : me.email
-  const color = getAvatarColor(name, person?.avatar ?? '', get(themeStore).dark)
+  const color = getColorNumberByText(name)
 
   return {
     id: me._id,
     name,
     email: me.email,
-    color: color.icon ?? 'var(--theme-button-default)'
+    color
+  }
+}
+
+export function throttle (fn: (...args: any[]) => any, delay: number): any {
+  let timeout: any | undefined
+
+  return (...args: any[]) => {
+    if (timeout === undefined) {
+      fn(...args)
+
+      timeout = setTimeout(() => {
+        timeout = undefined
+      }, delay)
+    }
+  }
+}
+
+export function debounce (fn: (...args: any[]) => any, delay: number): any {
+  let timeout: any | undefined
+
+  return (...args: any[]) => {
+    if (timeout !== undefined) {
+      clearTimeout(timeout)
+    }
+
+    timeout = setTimeout(() => {
+      fn(...args)
+    }, delay)
   }
 }

@@ -49,6 +49,7 @@
 
   export let attachFile: FileAttachFunction | undefined = undefined
   export let canShowPopups = true
+  export let showCollaborators = false
 
   let element: HTMLElement
 
@@ -182,6 +183,7 @@
     extensions={[...onExtensions()]}
     {textNodeActions}
     {canShowPopups}
+    {showCollaborators}
     {editorAttributes}
     on:update
     on:open-document
