@@ -111,13 +111,11 @@
   {/if}
 </div>
 
-{#if !withoutTime}
-  {#if difference > 0}
-    <div class="divider" />
-    <div class="duration font-regular-14">
-      <TimeShiftPresenter value={date - difference} exact />
-    </div>
-  {/if}
+{#if !withoutTime && difference > 0}
+  <div class="divider" />
+  <div class="duration font-regular-14">
+    <TimeShiftPresenter value={date - difference} exact />
+  </div>
 {/if}
 
 <style lang="scss">
