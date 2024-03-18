@@ -6,19 +6,21 @@
   import { Scroller, areDatesEqual, todosSP, defaultSP, Header, ButtonIcon, Label } from '@hcengineering/ui'
   import { ToDo, WorkSlot } from '@hcengineering/time'
   import { ToDosMode } from '..'
-  import time from '../plugin'
   import { getNearest } from '../utils'
+  import MenuClose from './icons/MenuClose.svelte'
+  import MenuOpen from './icons/MenuOpen.svelte'
   import CreateToDo from './CreateToDo.svelte'
   import ToDoGroup from './ToDoGroup.svelte'
   import IconDiff from './icons/Diff.svelte'
+  import time from '../plugin'
   import tags, { TagElement } from '@hcengineering/tags'
-  import IconMenu from './icons/Menu.svelte'
   import tracker, { Project } from '@hcengineering/tracker'
   import view from '@hcengineering/view-resources/src/plugin'
 
   export let mode: ToDosMode
   export let tag: Ref<TagElement> | undefined
   export let currentDate: Date
+  export let isVisiblePlannerNav: boolean = true
 
   const acc = getCurrentAccount() as PersonAccount
   const user = acc.person
@@ -39,6 +41,10 @@
   let ids: Ref<ToDo>[] = []
 
   $: updateTags(mode, tag)
+
+  function togglePlannerNav (): void {
+    isVisiblePlannerNav = !isVisiblePlannerNav
+  }
 
   function updateTags (mode: ToDosMode, tag: Ref<TagElement> | undefined): void {
     if (mode !== 'tag' || tag === undefined) {
@@ -258,7 +264,13 @@
 
 <div class="toDos-container">
   <Header type={'type-panel'} hideSeparator>
-    <ButtonIcon icon={IconMenu} kind={'tertiary'} size={'small'} />
+    <ButtonIcon
+      icon={isVisiblePlannerNav ? MenuClose : MenuOpen}
+      kind={'tertiary'}
+      size={'small'}
+      pressed={!isVisiblePlannerNav}
+      on:click={togglePlannerNav}
+    />
     <div class="heading-bold-20 ml-4">
       <Label label={time.string.ToDoColon} />
       {#if mode === 'date'}
