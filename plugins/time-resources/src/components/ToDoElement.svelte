@@ -106,7 +106,7 @@
         {/if}
       </div>
     </div>
-    <WorkItemPresenter {todo} kind={'todo-line'} {size} withoutSpace />
+    <WorkItemPresenter {todo} kind={'todo-line'} withoutSpace />
     {#if size === 'small'}
       <div class="hulyToDoLine-title hulyToDoLine-top-align top-12 text-left font-regular-14 overflow-label">
         {todo.title}

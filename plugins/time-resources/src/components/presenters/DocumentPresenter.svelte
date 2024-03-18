@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -17,8 +17,12 @@
   import { Icon, IconWithEmoji, getPlatformColorDef, themeStore } from '@hcengineering/ui'
   import document from '@hcengineering/document'
   import view from '@hcengineering/view'
+  import ToDoReference from '../ToDoReference.svelte'
 
   export let value: Document
+  export let inline: boolean = false
+  export let disabled: boolean = false
+  export let withoutSpace: boolean = true
 
   $: icon = value.icon === view.ids.IconWithEmoji ? IconWithEmoji : value.icon ?? document.icon.Document
   $: iconProps =
@@ -29,21 +33,9 @@
         }
 </script>
 
-<button class="hulyToDoLine-reference flex-row-top flex-no-shrink flex-gap-2" on:click>
-  <div class="hulyToDoLine-icon">
+<ToDoReference label={value.name} on:click>
+  <svelte:fragment slot="icon">
     <Icon size="small" {icon} {iconProps} />
-  </div>
-  <span class="hulyToDoLine-label overflow-label font-medium-12 text-left max-w-20 secondary-textColor">
-    {value.name}
-  </span>
-</button>
-
-<style lang="scss">
-  button {
-    margin: 0;
-    padding: 0;
-    text-align: left;
-    border: none;
-    outline: none;
-  }
-</style>
+  </svelte:fragment>
+  <slot />
+</ToDoReference>

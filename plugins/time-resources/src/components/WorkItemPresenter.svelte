@@ -23,10 +23,7 @@
 
   export let todo: ToDo
   export let kind: 'default' | 'todo-line' = 'default'
-  export let size: 'small' | 'large' = 'small'
   export let withoutSpace: boolean = false
-  export let isEditable: boolean = false
-  export let shouldShowAvatar: boolean = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -38,8 +35,8 @@
     doc = res[0]
   })
 
-  async function click (ev: MouseEvent) {
-    ev.stopPropagation()
+  async function click (event: MouseEvent) {
+    event.stopPropagation()
     if (!doc) return
     const panelComponent = hierarchy.classHierarchyMixin<Class<Doc>, ObjectPanel>(doc._class, view.mixin.ObjectPanel)
     const component = panelComponent?.component ?? view.component.EditDoc
@@ -51,13 +48,13 @@
   {#if kind === 'default'}
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div class="cursor-pointer clear-mins" on:click|stopPropagation={click}>
-      <Component is={presenter.presenter} props={{ value: doc, withoutSpace, isEditable, shouldShowAvatar }} />
+    <div class="cursor-pointer clear-mins" on:click={click}>
+      <Component is={presenter.presenter} props={{ value: doc, withoutSpace }} />
     </div>
   {:else}
     <Component
       is={presenter.presenter}
-      props={{ value: doc, withoutSpace, isEditable, kind: size === 'large' ? 'todo-line-large' : 'todo-line' }}
+      props={{ value: doc, withoutSpace }}
       on:click={click}
     >
       <slot />
