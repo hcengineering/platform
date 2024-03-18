@@ -33,6 +33,10 @@
     "Update": "Atualizar",
     "Updated": "Atualizado",
     "UpdatedCollection": "Atualizado",
-    "Message": "Mensagem"
+    "Message": "Mensagem",
+    "Mentioned": "Mencionado",
+    "You": "Tu",
+    "Mentions": "Menções",
+    "MentionedYouIn": "Foste Mencionado em"
   }
 }
