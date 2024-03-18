@@ -62,6 +62,7 @@
   export let _id: Ref<Document>
   export let readonly: boolean = false
   export let embedded: boolean = false
+  export let kind: 'default' | 'modern' = 'default'
 
   $: readonly = $restrictionStore.readonly
 
@@ -237,6 +238,7 @@
     isCustomAttr={false}
     isSub={false}
     {embedded}
+    {kind}
     bind:content
     bind:innerWidth
     bind:useMaxWidth
