@@ -30,7 +30,7 @@
   import view from '@hcengineering/view'
   import { statusStore } from '@hcengineering/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'
-  import { typeStore } from '../..'
+  import { selectedTypeStore, typeStore } from '../..'
   import IconBacklog from '../icons/IconBacklog.svelte'
   import IconCanceled from '../icons/IconCanceled.svelte'
   import IconCompleted from '../icons/IconCompleted.svelte'
@@ -48,7 +48,7 @@
   export let accent: boolean = false
   export let shrink: number = 0
   export let space: Ref<Project> | undefined = undefined
-  export let projectType: Ref<ProjectType> | undefined = undefined
+  export let projectType: Ref<ProjectType> | undefined = $selectedTypeStore
   export let taskType: Ref<TaskType> | undefined = undefined
   export let size: IconSize = 'small'
   export let kind: 'table-attrs' | undefined = undefined
@@ -69,6 +69,10 @@
   ): Promise<ProjectType | undefined> {
     if (projectType !== undefined) {
       type = types.get(projectType)
+      return
+    }
+    if (space === undefined) {
+      type = undefined
       return
     }
     const _space = await client.findOne(task.class.Project, { _id: space })

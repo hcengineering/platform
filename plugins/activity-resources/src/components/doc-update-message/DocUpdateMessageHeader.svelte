@@ -31,14 +31,16 @@
   export let parentObject: Doc | undefined
   export let attributeModel: AttributeModel | undefined = undefined
   export let collectionName: IntlString | undefined = undefined
+  export let hideLink = false
 
   const isOwn = message.objectId === message.attachedTo
 
   let linkData: LinkData | undefined = undefined
 
-  $: void getLinkData(message, object, parentObject, person).then((data) => {
-    linkData = data
-  })
+  $: !hideLink &&
+    getLinkData(message, object, parentObject, person).then((data) => {
+      linkData = data
+    })
 
   function getTitle (): IntlString {
     const { attributeUpdates } = message

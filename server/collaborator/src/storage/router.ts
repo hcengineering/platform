@@ -13,10 +13,9 @@
 // limitations under the License.
 //
 
+import { YDocVersion } from '@hcengineering/collaboration'
 import { Doc as YDoc } from 'yjs'
-
 import { Context } from '../context'
-
 import { StorageAdapter, StorageAdapters } from './adapter'
 
 function parseDocumentName (documentId: string): { schema: string, documentName: string } {
@@ -44,9 +43,20 @@ export class RouterStorageAdapter implements StorageAdapter {
     return await adapter?.loadDocument?.(documentName, context)
   }
 
-  async saveDocument (documentId: string, document: YDoc, context: Context): Promise<void> {
+  async saveDocument (
+    documentId: string,
+    document: YDoc,
+    snapshot: YDocVersion | undefined,
+    context: Context
+  ): Promise<void> {
     const { schema, documentName } = parseDocumentName(documentId)
     const adapter = this.getStorageAdapter(schema)
-    await adapter?.saveDocument?.(documentName, document, context)
+    await adapter?.saveDocument?.(documentName, document, snapshot, context)
+  }
+
+  async takeSnapshot (documentId: string, document: YDoc, context: Context): Promise<YDocVersion | undefined> {
+    const { schema, documentName } = parseDocumentName(documentId)
+    const adapter = this.getStorageAdapter(schema)
+    return await adapter?.takeSnapshot?.(documentName, document, context)
   }
 }

@@ -133,7 +133,7 @@
     actions.push(
       ...getMenu(items, ['main']),
       {
-        icon: login.icon.InviteWorkspace,
+        icon: setting.icon.InviteWorkspace,
         label: setting.string.InviteWorkspace,
         action: async () => {
           inviteWorkspace()

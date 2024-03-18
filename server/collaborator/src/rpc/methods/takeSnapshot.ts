@@ -55,13 +55,10 @@ export async function takeSnapshot (
   try {
     // load history document directly from minio
     const historyDocumentId = collaborativeHistoryDocId(minioDocumentId)
-    const yHistory = await ctx.with('yDocFromMinio', {}, async () => {
-      try {
+    const yHistory =
+      (await ctx.with('yDocFromMinio', {}, async () => {
         return await yDocFromMinio(minio, workspaceId, historyDocumentId)
-      } catch {
-        return new YDoc()
-      }
-    })
+      })) ?? new YDoc()
 
     await ctx.with('createYdocSnapshot', {}, async () => {
       await connection.transact((yContent) => {

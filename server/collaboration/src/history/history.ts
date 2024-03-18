@@ -13,10 +13,9 @@
 // limitations under the License.
 //
 
-import { Timestamp } from '@hcengineering/core'
+import { Account, Ref, Timestamp } from '@hcengineering/core'
 import { fromByteArray, toByteArray } from 'base64-js'
-import { Doc as YDoc } from 'yjs'
-import { YArray, YMap } from 'yjs/dist/src/internals'
+import { Array as YArray, Doc as YDoc, Map as YMap } from 'yjs'
 
 /**
  * This module provides utils for document version storage based on YDoc
@@ -46,7 +45,7 @@ export interface YDocVersion {
   versionId: string
   name: string
 
-  createdBy: string
+  createdBy: Ref<Account>
   createdOn: Timestamp
 }
 

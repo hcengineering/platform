@@ -211,7 +211,6 @@
 
     &.selected {
       color: var(--global-accent-TextColor);
-      font-weight: 500;
     }
   }
 

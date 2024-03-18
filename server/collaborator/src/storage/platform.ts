@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { touchCollaborativeDoc } from '@hcengineering/collaboration'
-import core, { Class, CollaborativeDoc, Doc, MeasureContext, Ref } from '@hcengineering/core'
+import { YDocVersion } from '@hcengineering/collaboration'
+import core, { Class, CollaborativeDoc, Doc, MeasureContext, Ref, updateCollaborativeDoc } from '@hcengineering/core'
 import { Transformer } from '@hocuspocus/transformer'
 import { Doc as YDoc } from 'yjs'
 
@@ -54,7 +54,12 @@ export class PlatformStorageAdapter implements StorageAdapter {
     return undefined
   }
 
-  async saveDocument (documentId: string, document: YDoc, context: Context): Promise<void> {
+  async saveDocument (
+    documentId: string,
+    document: YDoc,
+    snapshot: YDocVersion | undefined,
+    context: Context
+  ): Promise<void> {
     const { clientFactory } = context
     const { objectId, objectClass, objectAttr } = parseDocumentId(documentId)
 
@@ -85,7 +90,8 @@ export class PlatformStorageAdapter implements StorageAdapter {
       const hierarchy = client.getHierarchy()
       if (hierarchy.isDerived(attribute.type._class, core.class.TypeCollaborativeDoc)) {
         const collaborativeDoc = (current as any)[objectAttr] as CollaborativeDoc
-        const newCollaborativeDoc = touchCollaborativeDoc(collaborativeDoc)
+        const newCollaborativeDoc =
+          snapshot !== undefined ? updateCollaborativeDoc(collaborativeDoc, snapshot.versionId) : collaborativeDoc
 
         await ctx.with('update', {}, async () => {
           await client.diffUpdate(current, { [objectAttr]: newCollaborativeDoc })
@@ -100,5 +106,10 @@ export class PlatformStorageAdapter implements StorageAdapter {
         })
       }
     })
+  }
+
+  async takeSnapshot (documentId: string, document: YDoc, context: Context): Promise<YDocVersion | undefined> {
+    await this.ctx.error('taking snapshotsin mongodb not supported', { documentId })
+    return undefined
   }
 }

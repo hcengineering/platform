@@ -44,7 +44,6 @@ export default mergeIds(documentId, document, {
     NoBaseVersion: '' as IntlString,
     DocumentApplication: '' as IntlString,
     MyDocuments: '' as IntlString,
-    Library: '' as IntlString,
     Teamspace: '' as IntlString,
     Teamspaces: '' as IntlString,
     Labels: '' as IntlString,
@@ -88,7 +87,6 @@ export default mergeIds(documentId, document, {
     ReassignToDo: '' as IntlString,
     ReassignToDoConfirm: '' as IntlString,
 
-    Docs: '' as IntlString,
     Color: '' as IntlString,
     Icon: '' as IntlString
   }

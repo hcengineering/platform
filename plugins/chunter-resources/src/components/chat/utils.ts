@@ -22,6 +22,7 @@ import attachment, { type SavedAttachments } from '@hcengineering/attachment'
 import activity from '@hcengineering/activity'
 import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
 import { type Action, showPopup } from '@hcengineering/ui'
+import contact from '@hcengineering/contact'
 
 import { type ChatNavGroupModel, type ChatNavItemModel } from './types'
 import chunter from '../../plugin'
@@ -115,7 +116,8 @@ export const chatNavGroupModels: ChatNavGroupModel[] = [
     query: {
       isPinned: { $ne: true },
       attachedToClass: {
-        $nin: [chunter.class.DirectMessage, chunter.class.Channel]
+        // Ignore external channels until support is provided for them
+        $nin: [chunter.class.DirectMessage, chunter.class.Channel, contact.class.Channel]
       }
     }
   }

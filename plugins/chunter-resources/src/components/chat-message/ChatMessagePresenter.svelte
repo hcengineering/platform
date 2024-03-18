@@ -49,6 +49,8 @@
   export let attachmentImageSize: AttachmentImageSize = 'auto'
   export let showLinksPreview = true
   export let videoPreload = true
+  export let hideLink = false
+  export let compact = false
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
 
@@ -182,16 +184,18 @@
     {withFlatActions}
     {hoverable}
     {hoverStyles}
+    {skipLabel}
+    showDatePreposition={hideLink}
     {onClick}
     {onReply}
   >
     <svelte:fragment slot="header">
-      <ChatMessageHeader {object} {parentObject} message={value} {viewlet} {person} {skipLabel} />
+      <ChatMessageHeader {object} {parentObject} message={value} {viewlet} {person} {skipLabel} {hideLink} />
     </svelte:fragment>
     <svelte:fragment slot="content">
       {#if !isEditing}
         {#if withShowMore}
-          <ShowMore>
+          <ShowMore limit={compact ? 80 : undefined}>
             <div class="clear-mins">
               <MessageViewer message={value.message} />
               <AttachmentDocList {value} {attachments} imageSize={attachmentImageSize} {videoPreload} />

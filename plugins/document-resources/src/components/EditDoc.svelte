@@ -160,7 +160,7 @@
   async function chooseIcon (): Promise<void> {
     if (doc !== undefined) {
       const { icon, color } = doc
-      const icons = [document.icon.Document, document.icon.Library]
+      const icons = [document.icon.Document, document.icon.Teamspace]
       const update = async (result: any): Promise<void> => {
         if (result !== undefined && result !== null && doc !== undefined) {
           await client.update(doc, { icon: result.icon, color: result.color })

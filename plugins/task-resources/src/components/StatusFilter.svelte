@@ -94,12 +94,19 @@
         ).map((p) => [p._id, p])
       )
       for (const status of statusStore.values()) {
-        if (hierarchy.isDerived(status._class, targetClass) && status.ofAttribute === filter.key.attribute._id) {
-          if (prjStatuses.size > 0 && !prjStatuses.has(status._id)) {
-            continue
+        if (prjStatuses.size > 0 && !prjStatuses.has(status._id)) {
+          continue
+        }
+        if (hierarchy.isDerived(status._class, targetClass)) {
+          if (selectedProjectType === undefined) {
+            if (status.ofAttribute === filter.key.attribute._id) {
+              statuses.push(status)
+              targets.add(status._id)
+            }
+          } else {
+            statuses.push(status)
+            targets.add(status._id)
           }
-          statuses.push(status)
-          targets.add(status._id)
         }
       }
       statuses = statuses.filter((it, idx, arr) => arr.findIndex((q) => q._id === it._id) === idx)

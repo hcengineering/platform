@@ -15,7 +15,7 @@
 <script lang="ts">
   import activity, { ActivityReference } from '@hcengineering/activity'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Action, Label } from '@hcengineering/ui'
+  import { Action, Label, ShowMore } from '@hcengineering/ui'
   import { personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
   import { Account, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
   import { Person, type PersonAccount } from '@hcengineering/contact'
@@ -42,6 +42,8 @@
   export let excludedActions: string[] = []
   export let hoverable = true
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
+  export let hideLink = false
+  export let compact = false
   export let onClick: (() => void) | undefined = undefined
   export let onReply: (() => void) | undefined = undefined
 
@@ -120,7 +122,7 @@
       <span class="text-sm lower ml-1">
         <Label label={activity.string.Mentioned} />
       </span>
-      {#if targetDoc}
+      {#if !hideLink && targetDoc}
         <DocNavLink object={targetDoc} component={targetPanel?.component ?? view.component.EditDoc} shrink={0}>
           <span class="text-sm">
             {#if currentAccount.person === targetDoc._id}
@@ -145,7 +147,9 @@
     </span>
   </svelte:fragment>
   <svelte:fragment slot="content">
-    <ReferenceContent {value} />
+    <ShowMore limit={compact ? 80 : undefined}>
+      <ReferenceContent {value} />
+    </ShowMore>
   </svelte:fragment>
 </ActivityMessageTemplate>
 

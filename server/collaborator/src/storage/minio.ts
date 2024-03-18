@@ -13,7 +13,12 @@
 // limitations under the License.
 //
 
-import { loadCollaborativeDoc, saveCollaborativeDocVersion } from '@hcengineering/collaboration'
+import {
+  YDocVersion,
+  loadCollaborativeDoc,
+  saveCollaborativeDocVersion,
+  takeCollaborativeDocSnapshot
+} from '@hcengineering/collaboration'
 import {
   CollaborativeDocVersion,
   CollaborativeDocVersionHead,
@@ -72,7 +77,12 @@ export class MinioStorageAdapter implements StorageAdapter {
     })
   }
 
-  async saveDocument (documentId: string, document: YDoc, context: Context): Promise<void> {
+  async saveDocument (
+    documentId: string,
+    document: YDoc,
+    snapshot: YDocVersion | undefined,
+    context: Context
+  ): Promise<void> {
     const { workspaceId } = context
 
     const { minioDocumentId, versionId } = parseDocumentId(documentId)
@@ -85,5 +95,28 @@ export class MinioStorageAdapter implements StorageAdapter {
     await this.ctx.with('save-document', {}, async (ctx) => {
       await saveCollaborativeDocVersion(this.minio, workspaceId, minioDocumentId, versionId, document, ctx)
     })
+  }
+
+  async takeSnapshot (documentId: string, document: YDoc, context: Context): Promise<YDocVersion | undefined> {
+    const { clientFactory, workspaceId } = context
+
+    const client = await clientFactory({ derived: false })
+    const timestamp = Date.now()
+
+    const yDocVersion: YDocVersion = {
+      versionId: `${timestamp}`,
+      name: 'Automatic snapshot',
+      createdBy: client.user,
+      createdOn: timestamp
+    }
+
+    const { minioDocumentId, versionId } = parseDocumentId(documentId)
+    const collaborativeDoc = formatCollaborativeDocVersion({ documentId: minioDocumentId, versionId })
+
+    await this.ctx.with('take-snapshot', {}, async (ctx) => {
+      await takeCollaborativeDocSnapshot(this.minio, workspaceId, collaborativeDoc, document, yDocVersion, ctx)
+    })
+
+    return yDocVersion
   }
 }

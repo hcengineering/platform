@@ -37,6 +37,7 @@ import { boardOperation } from '@hcengineering/model-board'
 import { hrOperation } from '@hcengineering/model-hr'
 import { bitrixOperation } from '@hcengineering/model-bitrix'
 import { calendarOperation } from '@hcengineering/model-calendar'
+import { timeOperation } from '@hcengineering/model-time'
 import { activityOperation } from '@hcengineering/model-activity'
 import { activityServerOperation } from '@hcengineering/model-server-activity'
 
@@ -63,6 +64,7 @@ export const migrateOperations: [string, MigrateOperation][] = [
   ['hr', hrOperation],
   ['bitrix', bitrixOperation],
   ['inventiry', inventoryOperation],
+  ['time', timeOperation],
   ['activityServer', activityServerOperation],
   // We should call it after activityServer and chunter
   ['notification', notificationOperation]

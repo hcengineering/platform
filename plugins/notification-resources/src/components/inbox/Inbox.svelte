@@ -22,24 +22,25 @@
   import view, { Viewlet } from '@hcengineering/view'
   import {
     AnyComponent,
+    ButtonWithDropdown,
     Component,
     defineSeparators,
+    IconDropdown,
     Label,
     Loading,
     location as locationStore,
+    Location,
     Scroller,
     Separator,
     TabItem,
-    TabList,
-    Location,
-    IconDropdown,
-    ButtonWithDropdown
+    TabList
   } from '@hcengineering/ui'
   import chunter, { ThreadMessage } from '@hcengineering/chunter'
   import { Ref, WithLookup } from '@hcengineering/core'
   import { ViewletSelector } from '@hcengineering/view-resources'
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import { isReactionMessage } from '@hcengineering/activity-resources'
+  import { get } from 'svelte/store'
 
   import { inboxMessagesStore, InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
   import Filter from '../Filter.svelte'
@@ -99,6 +100,8 @@
   let viewlet: WithLookup<Viewlet> | undefined
   let loading = true
 
+  let selectedMessage: ActivityMessage | undefined = undefined
+
   void client.findAll(notification.class.ActivityNotificationViewlet, {}).then((res) => {
     viewlets = res
   })
@@ -135,6 +138,17 @@
 
     if (selectedContextId !== selectedContext?._id) {
       selectedContext = undefined
+    }
+
+    const selectedMessageId = loc?.loc.query?.message as Ref<ActivityMessage> | undefined
+
+    if (selectedMessageId !== undefined) {
+      selectedMessage = get(inboxClient.activityInboxNotifications).find(
+        ({ attachedTo }) => attachedTo === selectedMessageId
+      )?.$lookup?.attachedTo
+      if (selectedMessage === undefined) {
+        selectedMessage = await client.findOne(activity.class.ActivityMessage, { _id: selectedMessageId })
+      }
     }
   }
 
@@ -368,6 +382,7 @@
           _class: selectedContext.attachedToClass,
           embedded: true,
           context: selectedContext,
+          activityMessage: selectedMessage,
           props: { context: selectedContext }
         }}
         on:close={() => selectContext(undefined)}

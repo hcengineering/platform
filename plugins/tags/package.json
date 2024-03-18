@@ -30,15 +30,13 @@
     "typescript": "^5.3.3",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
-    "@types/jest": "^29.5.5",
-    "prettier-plugin-svelte": "^3.1.0"
+    "@types/jest": "^29.5.5"
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/core": "^0.6.28",
     "@hcengineering/view": "^0.6.9",
-    "@hcengineering/ui": "^0.6.11",
-    "svelte": "^4.2.5"
+    "@hcengineering/ui": "^0.6.11"
   },
   "repository": "https://github.com/hcengineering/anticrm",
   "publishConfig": {

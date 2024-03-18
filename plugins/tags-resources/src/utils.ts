@@ -1,13 +1,22 @@
 // Copyright © 2022 Hardcore Engineering Inc.
 
-import { type Doc, type DocumentQuery, type FindResult, type Ref } from '@hcengineering/core'
+import {
+  type Class,
+  type Data,
+  type Doc,
+  type DocumentQuery,
+  type FindResult,
+  generateId,
+  type Ref
+} from '@hcengineering/core'
 import { type Asset } from '@hcengineering/platform'
-import { type TagElement, type InitialKnowledge, type TagReference } from '@hcengineering/tags'
-import { type ColorDefinition } from '@hcengineering/ui'
+import { type TagElement, type InitialKnowledge, type TagReference, type TagCategory } from '@hcengineering/tags'
+import { type ColorDefinition, getColorNumberByText } from '@hcengineering/ui'
 import { type Filter } from '@hcengineering/view'
 import { FilterQuery } from '@hcengineering/view-resources'
 import tags from './plugin'
 import { writable } from 'svelte/store'
+import { getClient } from '@hcengineering/presentation'
 
 export function getTagStyle (color: ColorDefinition, selected = false): string {
   return `
@@ -60,3 +69,26 @@ export interface TagElementInfo {
  * @public
  */
 export const selectedTagElements = writable<Array<Ref<TagElement>>>([])
+
+/**
+ * @public
+ */
+export async function createTagElement (
+  title: string,
+  targetClass: Ref<Class<Doc>>,
+  category?: Ref<TagCategory> | null,
+  description?: string | null,
+  color?: number | null
+): Promise<any> {
+  const tagElement: Data<TagElement> = {
+    title,
+    description: description ?? '',
+    targetClass,
+    color: color ?? getColorNumberByText(title),
+    category: category ?? tags.category.NoCategory
+  }
+
+  const client = getClient()
+  const tagElementId = generateId()
+  return await client.createDoc(tags.class.TagElement, tags.space.Tags, tagElement, tagElementId)
+}

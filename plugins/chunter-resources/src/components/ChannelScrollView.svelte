@@ -52,7 +52,7 @@
   export let isAsideOpened = false
 
   const dateSelectorHeight = 30
-  const headerHeight = 50
+  const headerHeight = 52
   const minMsgHeightRem = 4.375
 
   const client = getClient()
@@ -316,10 +316,9 @@
       return
     }
 
-    const reversedMessages = [...displayMessages].reverse()
     const reversedDates = [...get(datesStore)].reverse()
 
-    for (const message of reversedMessages) {
+    for (const message of displayMessages) {
       const msgElement = messagesElements?.[message._id as any]
 
       if (!msgElement) {
@@ -332,10 +331,35 @@
         continue
       }
 
-      if (messageInView(msgElement, containerRect)) {
+      const messageRect = msgElement.getBoundingClientRect()
+
+      const isInView =
+        messageRect.top > 0 &&
+        messageRect.top < containerRect.bottom &&
+        messageRect.bottom - headerHeight - 2 * dateSelectorHeight > 0 &&
+        messageRect.bottom <= containerRect.bottom
+
+      if (isInView) {
         selectedDate = reversedDates.find((date) => date <= createdOn)
 
         break
+      }
+    }
+
+    if (selectedDate) {
+      const day = getDay(selectedDate)
+      const dateElement = document.getElementById(day.toString())
+
+      let isElementVisible = false
+
+      if (dateElement) {
+        const elementRect = dateElement.getBoundingClientRect()
+        isElementVisible =
+          elementRect.top + dateSelectorHeight / 2 >= containerRect.top && elementRect.bottom <= containerRect.bottom
+      }
+
+      if (isElementVisible) {
+        selectedDate = undefined
       }
     }
   }
@@ -379,9 +403,10 @@
       shouldWaitAndRead = false
       onComplete?.()
     } else if (shouldWaitAndRead && messages.length > 0) {
+      shouldWaitAndRead = false
       setTimeout(() => {
         waitLastMessageRenderAndRead(onComplete)
-      }, 50)
+      }, 500)
     } else {
       onComplete?.()
     }
@@ -514,8 +539,8 @@
     {#if startFromBottom}
       <div class="grower" />
     {/if}
-    {#if withDates && displayMessages.length > 0}
-      <div class="ml-2 pr-2">
+    {#if withDates && displayMessages.length > 0 && selectedDate}
+      <div class="selectedDate">
         <JumpToDateSelector {selectedDate} fixed on:jumpToDate={jumpToDate} />
       </div>
     {/if}
@@ -561,6 +586,7 @@
             withShowMore={false}
             attachmentImageSize="x-large"
             showLinksPreview={false}
+            hideLink
           />
         </div>
       {/each}
@@ -605,5 +631,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+
+  .selectedDate {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
   }
 </style>

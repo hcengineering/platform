@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { generateId } from '@hcengineering/core'
+import { Account, Ref, generateId } from '@hcengineering/core'
 import { Doc as YDoc } from 'yjs'
 
 import { createYdocSnapshot, restoreYdocSnapshot } from '../snapshot'
@@ -103,7 +103,7 @@ function yDocVersion (versionId: string): YDocVersion {
   return {
     versionId,
     name: versionId,
-    createdBy: 'unit test',
+    createdBy: 'unit test' as Ref<Account>,
     createdOn: Date.now()
   }
 }
