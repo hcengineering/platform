@@ -33,6 +33,7 @@ import { Collection, Mixin, Model, Prop, TypeRef, TypeString, UX, type Builder, 
 import { TEvent } from '@hcengineering/model-calendar'
 import core, { TAttachedDoc, TClass, TDoc, TType } from '@hcengineering/model-core'
 import tracker from '@hcengineering/model-tracker'
+import document from '@hcengineering/model-document'
 import view, { createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
@@ -136,6 +137,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(tracker.class.Issue, core.class.Class, time.mixin.ItemPresenter, {
     presenter: time.component.IssuePresenter
+  })
+
+  builder.mixin(document.class.Document, core.class.Class, time.mixin.ItemPresenter, {
+    presenter: time.component.DocumentPresenter
   })
 
   builder.mixin(lead.class.Lead, core.class.Class, time.mixin.ItemPresenter, {

@@ -447,10 +447,10 @@ async function getIssueToDoData (
   const data: AttachedData<ProjectToDo> = {
     attachedSpace: issue.space,
     workslots: 0,
-    description: issue.title,
+    description: '',
     priority: ToDoPriority.NoPriority,
     visibility: 'public',
-    title: issue.identifier,
+    title: issue.title,
     user: acc.person
   }
   return data

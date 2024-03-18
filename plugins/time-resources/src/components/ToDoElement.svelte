@@ -2,27 +2,15 @@
   import { SortingOrder, WithLookup } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
-  import {
-    CheckBox,
-    Component,
-    IconMoreH,
-    IconMoreV2,
-    Spinner,
-    eventToHTMLElement,
-    getEventPositionElement,
-    showPopup,
-    showPanel,
-    Icon
-  } from '@hcengineering/ui'
-  import { showMenu, Menu, FixedColumn } from '@hcengineering/view-resources'
-  import time, { ToDo, WorkSlot } from '@hcengineering/time'
+  import { Component, IconMoreV2, Spinner, showPanel, Icon } from '@hcengineering/ui'
+  import { showMenu } from '@hcengineering/view-resources'
+  import time, { ToDo, ToDoPriority, WorkSlot } from '@hcengineering/time'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../plugin'
-  import EditToDo from './EditToDo.svelte'
   import ToDoDuration from './ToDoDuration.svelte'
   import WorkItemPresenter from './WorkItemPresenter.svelte'
   import ToDoCheckbox from './ToDoCheckbox.svelte'
-  import ToDoPriority from './ToDoPriority.svelte'
+  import ToDoPriorityPresenter from './ToDoPriorityPresenter.svelte'
 
   export let todo: WithLookup<ToDo>
   export let size: 'small' | 'large' = 'small'
@@ -75,11 +63,9 @@
   }
 
   function open (e: MouseEvent): void {
-    // hovered = true
     showPanel(time.component.EditToDo, todo._id, todo._class, 'content')
   }
 
-  $: isTodo = todo.attachedTo === time.ids.NotAttached
   $: isDone = todo.doneOn != null
 </script>
 
@@ -116,45 +102,31 @@
           {/if}
         </div>
         {#if size === 'small'}
-          <ToDoPriority value={todo.priority} muted={isDone} />
+          <ToDoPriorityPresenter value={todo.priority} muted={isDone} />
         {/if}
       </div>
     </div>
-    {#if isTodo}
-      {#if size === 'small'}
-        <div class="hulyToDoLine-title hulyToDoLine-top-align top-12 text-left font-regular-14 overflow-label">
-          {todo.title}
-        </div>
-      {:else}
-        <div class="flex-col flex-gap-1 flex-grow text-left">
-          <div class="hulyToDoLine-title hulyToDoLine-top-align top-12 text-left font-regular-14">
-            {todo.title}
-          </div>
-          <div class="flex-row-center flex-grow flex-gap-2">
-            <Component is={tags.component.LabelsPresenter} props={{ object: todo, value: todo.labels, kind: 'todo' }} />
-            <ToDoPriority value={todo.priority} muted={isDone} showLabel />
-          </div>
-        </div>
-      {/if}
+    <WorkItemPresenter {todo} kind={'todo-line'} withoutSpace />
+    {#if size === 'small'}
+      <div class="hulyToDoLine-title hulyToDoLine-top-align top-12 text-left font-regular-14 overflow-label">
+        {todo.title}
+      </div>
     {:else}
-      <div class="flex-col flex-gap-1 flex-grow text-left">
-        <div
-          class="hulyToDoLine-title hulyToDoLine-top-align text-left top-12 font-bold-12 secondary-textColor"
-          class:overflow-label={size === 'small'}
-        >
+      <div class="flex-col flex-gap-2 flex-grow text-left">
+        <div class="hulyToDoLine-title hulyToDoLine-top-align top-12 text-left font-regular-14">
           {todo.title}
         </div>
-        <WorkItemPresenter {todo} kind={'todo-line'} {size} withoutSpace>
-          {#if size === 'large'}
-            <div class="flex-row-top flex-grow flex-gap-2">
+        {#if todo.labels && todo.labels > 0 && todo.priority !== ToDoPriority.NoPriority}
+          <div class="flex-row-center flex-grow flex-gap-2">
+            {#if todo.labels && todo.labels > 0}
               <Component
                 is={tags.component.LabelsPresenter}
                 props={{ object: todo, value: todo.labels, kind: 'todo' }}
               />
-              <ToDoPriority value={todo.priority} muted={isDone} showLabel />
-            </div>
-          {/if}
-        </WorkItemPresenter>
+            {/if}
+            <ToDoPriorityPresenter value={todo.priority} muted={isDone} showLabel />
+          </div>
+        {/if}
       </div>
     {/if}
   </div>

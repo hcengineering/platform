@@ -44,6 +44,7 @@ export default mergeIds(timeId, time, {
   },
   component: {
     IssuePresenter: '' as AnyComponent,
+    DocumentPresenter: '' as AnyComponent,
     ApplicantPresenter: '' as AnyComponent,
     CardPresenter: '' as AnyComponent,
     LeadPresenter: '' as AnyComponent,
