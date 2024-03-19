@@ -14,7 +14,7 @@
 //
 
 import { mergeIds } from '@hcengineering/platform'
-import type { IntlString } from '@hcengineering/platform'
+import type { IntlString, Metadata } from '@hcengineering/platform'
 
 import workbench, { workbenchId } from '@hcengineering/workbench'
 import { type AnyComponent } from '@hcengineering/ui'
@@ -42,7 +42,11 @@ export default mergeIds(workbenchId, workbench, {
     OpenInNewTab: '' as IntlString,
     NewVersionAvailable: '' as IntlString,
     PleaseUpdate: '' as IntlString,
-    MobileNotSupported: '' as IntlString
+    MobileNotSupported: '' as IntlString,
+    LogInAnyway: '' as IntlString
+  },
+  metadata: {
+    MobileAllowed: '' as Metadata<boolean>
   },
   component: {
     SpacePanel: '' as AnyComponent,
