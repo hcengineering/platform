@@ -15,7 +15,7 @@
 <script lang="ts">
   import core, { AttachedData, FindOptions, Ref, SortingOrder } from '@hcengineering/core'
   import { ObjectPopup, getClient } from '@hcengineering/presentation'
-  import { makeRank } from '@hcengineering/task'
+  import { type Rank, makeRank } from '@hcengineering/task'
   import { Issue, IssueDraft } from '@hcengineering/tracker'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../plugin'
@@ -42,7 +42,7 @@
         parentIssue?._id !== docValue.attachedTo &&
         parentIssue?._id !== docValue._id
       ) {
-        let rank: string | null = null
+        let rank: Rank | null = null
 
         if (parentIssue) {
           const lastAttachedIssue = await client.findOne<Issue>(

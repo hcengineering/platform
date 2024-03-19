@@ -34,6 +34,7 @@
     "CreatedDate": "Created date",
     "Status": "Status",
     "StatusCategory": "Status category",
-    "Account": "Account"
+    "Account": "Account",
+    "Rank": "Rank"
   }
 }
