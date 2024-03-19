@@ -547,26 +547,6 @@ export function createModel (builder: Builder): void {
     value: true
   })
 
-  builder.createDoc(
-    setting.class.SettingsCategory,
-    core.space.Model,
-    {
-      name: 'statuses',
-      label: task.string.ManageProjects,
-      icon: task.icon.ManageTemplates,
-      component: task.component.ManageProjectsContent,
-      extraComponents: {
-        navigation: task.component.ManageProjects,
-        tools: task.component.ManageProjectsTools
-      },
-      group: 'settings-editor',
-      secured: false,
-      order: 6000,
-      expandable: true
-    },
-    task.ids.ManageProjects
-  )
-
   builder.mixin(task.class.ProjectTypeDescriptor, core.class.Class, setting.mixin.SpaceTypeCreator, {
     extraComponent: task.component.CreateProjectType
   })

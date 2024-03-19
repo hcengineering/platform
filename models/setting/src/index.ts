@@ -591,7 +591,7 @@ export function createModel (builder: Builder): void {
       },
       group: 'settings-editor',
       secured: false,
-      order: 5500,
+      order: 6000,
       expandable: true
     },
     setting.ids.ManageSpaces

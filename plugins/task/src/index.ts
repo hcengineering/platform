@@ -293,7 +293,6 @@ const task = plugin(taskId, {
     Lost: '' as Ref<StatusCategory>
   },
   component: {
-    ProjectEditor: '' as AnyComponent,
     ProjectTypeSelector: '' as AnyComponent,
     CreateStatePopup: '' as AnyComponent
   },
