@@ -17,7 +17,7 @@
   import { Ref } from '@hcengineering/core'
   import { getClient, SpaceCreateCard } from '@hcengineering/presentation'
   import task, { ProjectType } from '@hcengineering/task'
-  import { Component, EditBox, Grid, IconFolder } from '@hcengineering/ui'
+  import { Component, EditBox, Grid } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import board from '../plugin'
   import { createBoard } from '../utils/BoardUtils'
@@ -51,13 +51,7 @@
   }}
 >
   <Grid column={1} rowGap={1.5}>
-    <EditBox
-      label={board.string.BoardName}
-      icon={IconFolder}
-      bind:value={name}
-      placeholder={board.string.Board}
-      autoFocus
-    />
+    <EditBox label={board.string.BoardName} bind:value={name} placeholder={board.string.Board} autoFocus />
     <!-- <ToggleWithLabel label={board.string.MakePrivate} description={board.string.MakePrivateDescription} /> -->
 
     <Component

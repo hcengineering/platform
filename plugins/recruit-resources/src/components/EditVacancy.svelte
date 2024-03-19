@@ -141,16 +141,14 @@
       {/if}
     </svelte:fragment>
 
-    <span class="fs-title flex-grow">
-      <EditBox
-        bind:value={rawName}
-        placeholder={recruit.string.VacancyPlaceholder}
-        kind={'large-style'}
-        focusable
-        autoFocus={!embedded}
-        on:blur={save}
-      />
-    </span>
+    <EditBox
+      bind:value={rawName}
+      placeholder={recruit.string.VacancyPlaceholder}
+      kind={'large-style'}
+      focusable
+      autoFocus={!embedded}
+      on:blur={save}
+    />
 
     <svelte:fragment slot="pre-utils">
       {#if saved}

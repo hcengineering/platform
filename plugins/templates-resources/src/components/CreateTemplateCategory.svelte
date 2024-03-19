@@ -54,7 +54,6 @@
   <Grid column={1} rowGap={1.5}>
     <EditBox
       label={templates.string.TemplateCategory}
-      icon={IconFolder}
       bind:value={name}
       placeholder={templates.string.TemplateCategory}
       autoFocus

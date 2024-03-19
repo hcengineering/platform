@@ -19,7 +19,7 @@
   import { DirectMessage } from '@hcengineering/chunter'
   import workbench from '@hcengineering/workbench'
   import { getResource } from '@hcengineering/platform'
-  import { EditBox, IconFolder } from '@hcengineering/ui'
+  import { EditBox } from '@hcengineering/ui'
 
   import chunter from '../plugin'
 
@@ -63,7 +63,6 @@
 >
   <EditBox
     label={chunter.string.ChannelName}
-    icon={IconFolder}
     bind:value={name}
     placeholder={chunter.string.ChannelNamePlaceholder}
     autoFocus
