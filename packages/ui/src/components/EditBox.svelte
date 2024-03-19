@@ -125,7 +125,13 @@
       <Label {label} />
     </div>
   {/if}
-  <div class="{kind} flex-row-center clear-mins" class:focusable class:disabled class:w-full={fullSize} style:width={maxWidth}>
+  <div
+    class="{kind} flex-row-center clear-mins"
+    class:focusable
+    class:disabled
+    class:w-full={fullSize}
+    style:width={maxWidth}
+  >
     {#if format === 'password'}
       <input
         {disabled}

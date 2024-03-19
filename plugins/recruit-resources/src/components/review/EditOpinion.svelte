@@ -69,11 +69,6 @@
   okLabel={recruit.string.OpinionSave}
   on:changeContent
 >
-  <EditBox
-    label={recruit.string.OpinionValue}
-    bind:value
-    placeholder={recruit.string.OpinionValue}
-    autoFocus
-  />
+  <EditBox label={recruit.string.OpinionValue} bind:value placeholder={recruit.string.OpinionValue} autoFocus />
   <StyledTextArea placeholder={recruit.string.Description} bind:content={description} kind={'emphasized'} />
 </Card>

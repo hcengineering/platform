@@ -51,12 +51,7 @@
   }}
 >
   <Grid column={1} rowGap={1.5}>
-    <EditBox
-      label={board.string.BoardName}
-      bind:value={name}
-      placeholder={board.string.Board}
-      autoFocus
-    />
+    <EditBox label={board.string.BoardName} bind:value={name} placeholder={board.string.Board} autoFocus />
     <!-- <ToggleWithLabel label={board.string.MakePrivate} description={board.string.MakePrivateDescription} /> -->
 
     <Component

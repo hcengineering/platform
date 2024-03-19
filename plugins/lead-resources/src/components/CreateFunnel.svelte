@@ -73,12 +73,7 @@
   }}
 >
   <Grid column={1} rowGap={1.5}>
-    <EditBox
-      label={lead.string.FunnelName}
-      bind:value={name}
-      placeholder={lead.string.FunnelName}
-      autoFocus
-    />
+    <EditBox label={lead.string.FunnelName} bind:value={name} placeholder={lead.string.FunnelName} autoFocus />
     <ToggleWithLabel
       label={presentation.string.MakePrivate}
       description={presentation.string.MakePrivateDescription}

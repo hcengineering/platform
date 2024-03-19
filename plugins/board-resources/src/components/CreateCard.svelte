@@ -110,11 +110,6 @@
   </svelte:fragment>
   <StatusControl slot="error" {status} />
   <Grid column={1} rowGap={1.5}>
-    <EditBox
-      label={board.string.CardName}
-      bind:value={title}
-      placeholder={board.string.CardPlaceholder}
-      autoFocus
-    />
+    <EditBox label={board.string.CardName} bind:value={title} placeholder={board.string.CardPlaceholder} autoFocus />
   </Grid>
 </Card>
