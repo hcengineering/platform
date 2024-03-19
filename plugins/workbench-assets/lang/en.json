@@ -29,6 +29,7 @@
     "NewVersionAvailable": "New version is available",
     "PleaseUpdate": "Please update",
     "ServerUnderMaintenance": "Server is under maintenance",
-    "MobileNotSupported": "Sorry, mobile devices support coming soon. In the meantime, please use Desktop"
+    "MobileNotSupported": "Sorry, mobile devices support coming soon. In the meantime, please use Desktop",
+    "LogInAnyway": "Log in anyway"
   }
 }

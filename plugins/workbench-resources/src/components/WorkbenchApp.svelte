@@ -14,20 +14,28 @@
 -->
 <script lang="ts">
   import { getMetadata } from '@hcengineering/platform'
-  import { Component, Label, Loading, Notifications, deviceOptionsStore, location } from '@hcengineering/ui'
+  import { Button, Component, Label, Loading, Notifications, deviceOptionsStore, fetchMetadataLocalStorage, location, setMetadataLocalStorage } from '@hcengineering/ui'
   import { connect, versionError } from '../connect'
 
   import { workbenchId } from '@hcengineering/workbench'
   import workbench from '../plugin'
 
   const isNeedUpgrade = window.location.host === ''
+
+  let mobileAllowed = fetchMetadataLocalStorage(workbench.metadata.MobileAllowed)
+
+  function allowMobile () {
+    setMetadataLocalStorage(workbench.metadata.MobileAllowed, true)
+    mobileAllowed = true
+  }
 </script>
 
 {#if $location.path[0] === workbenchId || $location.path[0] === workbench.component.WorkbenchApp}
-  {#if $deviceOptionsStore.isMobile}
+  {#if $deviceOptionsStore.isMobile && mobileAllowed !== true}
     <div class="version-wrapper">
       <div class="antiPopup version-popup">
         <h1><Label label={workbench.string.MobileNotSupported} /></h1>
+        <Button label={workbench.string.LogInAnyway} on:click={allowMobile} />
       </div>
     </div>
   {:else}
