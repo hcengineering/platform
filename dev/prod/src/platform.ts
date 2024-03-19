@@ -166,8 +166,6 @@ export async function configurePlatform() {
   setMetadata(textEditor.metadata.CollaboratorUrl, config.COLLABORATOR_URL ?? 'ws://locahost:3078')
 
   setMetadata(uiPlugin.metadata.DefaultApplication, login.component.LoginApp)
-  
-  setMetadata(uiPlugin.metadata.SearchPopup, view.component.ActionsPopup)
 
   setMetadata(contactPlugin.metadata.LastNameFirst, config.LAST_NAME_FIRST === 'true' ?? false)
   const languages = config.LANGUAGES ? (config.LANGUAGES as string).split(',').map((l) => l.trim()) : ['en', 'ru', 'es', 'pt']

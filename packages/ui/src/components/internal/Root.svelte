@@ -1,21 +1,21 @@
 <script lang="ts">
-  import platform, { addEventListener, getMetadata, OK, PlatformEvent, Status, Severity } from '@hcengineering/platform'
+  import platform, { OK, PlatformEvent, Severity, Status, addEventListener, getMetadata } from '@hcengineering/platform'
   import { onDestroy } from 'svelte'
   import type { AnyComponent, WidthType } from '../../types'
   import { deviceSizes, deviceWidths } from '../../types'
   // import { applicationShortcutKey } from '../../utils'
-  import { getCurrentLocation, location, navigate, locationStorageKeyId } from '../../location'
   import { Theme } from '@hcengineering/theme'
+  import { IconArrowLeft, IconArrowRight, checkMobile, deviceOptionsStore as deviceInfo } from '../../'
+  import { embeddedPlatform, getCurrentLocation, location, locationStorageKeyId, navigate } from '../../location'
+  import uiPlugin from '../../plugin'
   import Component from '../Component.svelte'
+  import Label from '../Label.svelte'
   import StatusComponent from '../Status.svelte'
   import Clock from './Clock.svelte'
-  import { IconArrowLeft, IconArrowRight, checkMobile, deviceOptionsStore as deviceInfo } from '../../'
-  import uiPlugin from '../../plugin'
-  import Label from '../Label.svelte'
   import FontSizeSelector from './FontSizeSelector.svelte'
   import LangSelector from './LangSelector.svelte'
+  import RootBarExtension from './RootBarExtension.svelte'
   import ThemeSelector from './ThemeSelector.svelte'
-  import SearchSelector from './SearchSelector.svelte'
 
   let application: AnyComponent | undefined
 
@@ -136,8 +136,8 @@
 <Theme>
   <div id="ui-root">
     <div class="antiStatusBar">
-      <div class="flex-row-center h-full content-color">
-        <div class="history-box flex-row-center gap-3">
+      <div class="flex-row-center h-full content-color gap-3">
+        <div class="history-box flex-row-center gap-3" class:embedded={embeddedPlatform}>
           <button
             class="antiButton ghost jf-center bs-none no-focus resetIconSize statusButton square"
             style:color={'var(--theme-dark-color)'}
@@ -157,6 +157,7 @@
             <IconArrowRight size={'small'} />
           </button>
         </div>
+        <RootBarExtension position="left" />
         <div
           class="flex-row-center justify-center status-info"
           style:margin-left={(isPortrait && docWidth <= 480) || (!isPortrait && docHeight <= 480) ? '1.5rem' : '0'}
@@ -174,7 +175,7 @@
             <Clock />
           </div>
           <div class="flex-row-center gap-statusbar">
-            <SearchSelector />
+            <RootBarExtension position="right" />
             <FontSizeSelector />
             <ThemeSelector />
             <LangSelector />
@@ -216,7 +217,11 @@
 
       .history-box {
         -webkit-app-region: no-drag;
-        margin-left: 5.625rem;
+        margin-left: 1rem;
+
+        &.embedded {
+          margin-left: 5.625rem;
+        }
       }
       .maintenanceScheduled {
         padding: 0 0.5rem;

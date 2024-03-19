@@ -378,8 +378,7 @@ class TSessionManager implements SessionManager {
   private async setStatus (ctx: MeasureContext, session: Session, online: boolean): Promise<void> {
     try {
       const user = (
-        await session.findAll(
-          ctx,
+        await session.pipeline().modelDb.findAll(
           core.class.Account,
           {
             email: session.getUser()
@@ -388,11 +387,12 @@ class TSessionManager implements SessionManager {
         )
       )[0]
       if (user === undefined) return
-      const status = (await session.findAll(ctx, core.class.UserStatus, { modifiedBy: user._id }, { limit: 1 }))[0]
+      const status = (await session.findAll(ctx, core.class.UserStatus, { user: user._id }, { limit: 1 }))[0]
       const txFactory = new TxFactory(user._id, true)
       if (status === undefined) {
         const tx = txFactory.createTxCreateDoc(core.class.UserStatus, user._id as string as Ref<Space>, {
-          online
+          online,
+          user: user._id
         })
         await session.tx(ctx, tx)
       } else if (status.online !== online) {

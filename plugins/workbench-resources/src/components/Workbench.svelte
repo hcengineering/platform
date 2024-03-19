@@ -20,7 +20,7 @@
   import notification, { DocNotifyContext, InboxNotification, notificationId } from '@hcengineering/notification'
   import { BrowserNotificatator, InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { IntlString, broadcastEvent, getMetadata, getResource } from '@hcengineering/platform'
-  import { ActionContext, createQuery, getClient, isAdminUser } from '@hcengineering/presentation'
+  import { ActionContext, ComponentExtensions, createQuery, getClient, isAdminUser } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
   import support, { SupportStatus, supportLink } from '@hcengineering/support'
   import {
@@ -53,6 +53,7 @@
     openPanel,
     popupstore,
     resolvedLocationStore,
+    rootBarExtensions,
     setResolvedLocation,
     showPopup,
     workbenchSeparators
@@ -126,6 +127,12 @@
   }
 
   onMount(() => {
+    rootBarExtensions.update((cur) => {
+      if (!cur.find((p) => p[1] === view.component.SearchSelector)) {
+        cur.push(['right', view.component.SearchSelector])
+      }
+      return cur
+    })
     void getResource(login.function.GetWorkspaces).then(async (getWorkspaceFn) => {
       $workspacesStore = await getWorkspaceFn()
       await updateWindowTitle(getLocation())
@@ -562,14 +569,6 @@
     )
   }
 
-  function getApps (apps: Application[] | Promise<Application[]>): Application[] {
-    if (apps instanceof Promise) {
-      return []
-    } else {
-      return apps
-    }
-  }
-
   function checkInbox (popups: CompAndProps[]) {
     if (inboxPopup !== undefined) {
       const exists = popups.find((p) => p.id === inboxPopup?.id)
@@ -706,14 +705,14 @@
             notify={hasInboxNotifications}
           />
         </NavLink>
-        <Applications apps={getApps(apps)} active={currentApplication?._id} direction={appsDirection} />
+        <Applications {apps} active={currentApplication?._id} direction={appsDirection} />
       </div>
       <div class="info-box {appsDirection}" class:vertical-mobile={appsDirection === 'vertical'} class:mini={appsMini}>
         <AppItem
           icon={IconSettings}
           label={setting.string.Settings}
           size={appsMini ? 'small' : 'large'}
-          on:click={() => showPopup(AppSwitcher, { apps: getApps(apps) }, popupPosition)}
+          on:click={() => showPopup(AppSwitcher, { apps }, popupPosition)}
         />
         <a href={supportLink}>
           <AppItem
@@ -876,6 +875,7 @@
       <ActionContext context={{ mode: 'popup' }} />
     </svelte:fragment>
   </Popup>
+  <ComponentExtensions extension={workbench.extensions.WorkbenchExtensions} />
   <BrowserNotificatator />
 {/if}
 

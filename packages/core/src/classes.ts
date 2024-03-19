@@ -388,6 +388,7 @@ export const roleOrder: Record<AccountRole, number> = {
  */
 export interface UserStatus extends Doc {
   online: boolean
+  user: Ref<Account>
 }
 
 /**

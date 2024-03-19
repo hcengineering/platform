@@ -1780,7 +1780,11 @@
   flex-wrap: nowrap;
   min-width: 0;
 
-  .ap-icon { color: var(--theme-dark-color); }
+  .ap-icon { 
+    color: var(--theme-dark-color);
+    height: 100%;
+    aspect-ratio: 1;
+  }
   .ap-label {
     min-width: 0;
     text-align: left;
