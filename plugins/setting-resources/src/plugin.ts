@@ -95,6 +95,8 @@ export default mergeIds(settingId, setting, {
     NewSpaceType: '' as IntlString,
     SpaceTypeTitle: '' as IntlString,
     Description: '' as IntlString,
-    CountSpaces: '' as IntlString
+    CountSpaces: '' as IntlString,
+    RoleName: '' as IntlString,
+    Permissions: '' as IntlString
   }
 })

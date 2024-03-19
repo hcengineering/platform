@@ -106,6 +106,9 @@
     "SpaceTypeTitle": "Space type title",
     "General": "General",
     "Description": "Description",
-    "CountSpaces": "{count, plural, =0 {No spaces} =1 {# space} other {# spaces}}"
+    "CountSpaces": "{count, plural, =0 {No spaces} =1 {# space} other {# spaces}}",
+    "Roles": "Roles",
+    "RoleName": "Role name",
+    "Permissions": "Permissions"
   }
 }

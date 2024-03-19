@@ -55,6 +55,8 @@ import ManageSpaceTypeContent from './components/spaceTypes/ManageSpaceTypeConte
 import SpaceTypeDescriptorPresenter from './components/presenters/SpaceTypeDescriptorPresenter.svelte'
 import SpaceTypeGeneralSectionEditor from './components/spaceTypes/editor/SpaceTypeGeneralSectionEditor.svelte'
 import SpaceTypePropertiesSectionEditor from './components/spaceTypes/editor/SpaceTypePropertiesSectionEditor.svelte'
+import SpaceTypeRolesSectionEditor from './components/spaceTypes/editor/SpaceTypeRolesSectionEditor.svelte'
+import RoleEditor from './components/spaceTypes/RoleEditor.svelte'
 
 export { ClassSetting, filterDescendants, ClassAttributes, ClassAttributesList, SpaceTypeGeneralSectionEditor }
 export * from './store'
@@ -118,7 +120,9 @@ export default async (): Promise<Resources> => ({
     ManageSpaceTypeContent,
     SpaceTypeDescriptorPresenter,
     SpaceTypeGeneralSectionEditor,
-    SpaceTypePropertiesSectionEditor
+    SpaceTypePropertiesSectionEditor,
+    SpaceTypeRolesSectionEditor,
+    RoleEditor
   },
   actionImpl: {
     DeleteMixin

@@ -198,7 +198,7 @@ async function migrateProjectTypes (client: MigrationClient): Promise<void> {
         name: pt.name,
         description: pt.description,
         shortDescription: pt.shortDescription,
-        roles: pt.roles
+        roles: pt.roles ?? []
       },
       modifiedOn: pt.modifiedOn,
       createdBy: pt.createdBy,

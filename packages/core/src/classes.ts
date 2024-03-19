@@ -369,6 +369,7 @@ export interface Space extends Doc {
  */
 export interface TypedSpace extends Space {
   type: Ref<SpaceType>
+  rolesAssignment?: Record<Ref<Role>, Arr<Ref<Account>>>
 }
 
 /**

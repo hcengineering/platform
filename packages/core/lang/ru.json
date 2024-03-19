@@ -42,6 +42,7 @@
     "Status": "Статус",
     "StatusCategory": "Категория статуса",
     "Account": "Аккаунт",
-    "Rank": "Ранг"
+    "Rank": "Ранг",
+    "RolesAssignment": "Присвоение ролей"
   }
 }

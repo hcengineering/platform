@@ -204,6 +204,7 @@ export default plugin(coreId, {
     Status: '' as IntlString,
     Account: '' as IntlString,
     StatusCategory: '' as IntlString,
-    Rank: '' as IntlString
+    Rank: '' as IntlString,
+    RolesAssignment: '' as IntlString
   }
 })

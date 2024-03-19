@@ -43,21 +43,18 @@
     descriptor = await client.findOne(core.class.SpaceTypeDescriptor, { _id: type.descriptor })
   }
 
-  let navigator: {
+  const navigator: {
     id: string
     label: IntlString
-    element?: HTMLElement
-  }[] = editorDescriptor.sections.map(({ id, label }) => ({
-    id,
-    label
-  }))
+  }[] =
+    editorDescriptor !== undefined
+      ? editorDescriptor.sections.map(({ id, label }) => ({
+        id,
+        label
+      }))
+      : []
 
-  $: if (editorDescriptor !== undefined) {
-    navigator = editorDescriptor.sections.map(({ id, label }) => ({
-      id,
-      label
-    }))
-  }
+  const sectionRefs: Record<string, HTMLElement | undefined> = {}
 
   defineSeparators('spaceTypeEditor', secondNavSeparators)
 </script>
@@ -76,7 +73,7 @@
             type="type-anchor-link"
             label={navItem.label}
             on:click={() => {
-              navItem.element?.scrollIntoView()
+              sectionRefs[navItem.id]?.scrollIntoView()
             }}
           />
         {/each}
@@ -87,8 +84,8 @@
       <div class="hulyComponent-content__column content">
         <Scroller align="center" padding="var(--spacing-3)" bottomPadding="var(--spacing-3)">
           <div class="hulyComponent-content gap">
-            {#each editorDescriptor.sections as section, si}
-              <div bind:this={navigator[si].element} class:hulyTableAttr-container={!section.withoutContainer}>
+            {#each editorDescriptor.sections as section}
+              <div bind:this={sectionRefs[section.id]} class:hulyTableAttr-container={!section.withoutContainer}>
                 <Component
                   is={section.component}
                   props={{

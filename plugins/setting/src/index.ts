@@ -159,7 +159,9 @@ export default plugin(settingId, {
     ClassSetting: '' as AnyComponent,
     SpaceTypeDescriptorPresenter: '' as AnyComponent,
     SpaceTypeGeneralSectionEditor: '' as AnyComponent,
-    SpaceTypePropertiesSectionEditor: '' as AnyComponent
+    SpaceTypePropertiesSectionEditor: '' as AnyComponent,
+    SpaceTypeRolesSectionEditor: '' as AnyComponent,
+    RoleEditor: '' as AnyComponent
   },
   string: {
     Settings: '' as IntlString,
@@ -197,7 +199,8 @@ export default plugin(settingId, {
     TaskTypes: '' as IntlString,
     Automations: '' as IntlString,
     Collections: '' as IntlString,
-    SpaceTypes: '' as IntlString
+    SpaceTypes: '' as IntlString,
+    Roles: '' as IntlString
   },
   icon: {
     AccountSettings: '' as Asset,

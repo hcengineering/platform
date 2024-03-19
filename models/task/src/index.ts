@@ -565,6 +565,11 @@ export function createModel (builder: Builder): void {
         component: setting.component.SpaceTypePropertiesSectionEditor
       },
       {
+        id: 'roles',
+        label: setting.string.Roles,
+        component: setting.component.SpaceTypeRolesSectionEditor
+      },
+      {
         id: 'taskTypes',
         label: setting.string.TaskTypes,
         component: task.component.ProjectTypeTasksTypeSectionEditor
@@ -581,7 +586,8 @@ export function createModel (builder: Builder): void {
       }
     ],
     subEditors: {
-      taskTypes: task.component.TaskTypeEditor
+      taskTypes: task.component.TaskTypeEditor,
+      roles: setting.component.RoleEditor
     }
   })
 

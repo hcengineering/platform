@@ -29,6 +29,7 @@
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
   export let width: string | undefined = undefined
+  export let includeItems: Ref<Account>[] | undefined = undefined
   export let excludeItems: Ref<Account>[] | undefined = undefined
 
   let timer: any = null
@@ -56,9 +57,7 @@
   })
 
   const excludedQuery = createQuery()
-
   let excluded: Account[] = []
-
   $: if (excludeItems !== undefined && excludeItems.length > 0) {
     excludedQuery.query(core.class.Account, { _id: { $in: excludeItems } }, (res) => {
       excluded = res
@@ -68,16 +67,38 @@
     excluded = []
   }
 
+  const includedQuery = createQuery()
+  let included: Account[] = []
+  $: if (includeItems !== undefined && includeItems.length > 0) {
+    includedQuery.query(core.class.Account, { _id: { $in: includeItems } }, (res) => {
+      included = res
+    })
+  } else {
+    includedQuery.unsubscribe()
+    included = []
+  }
+
   $: employees = Array.from(
     (value ?? []).map((it) => $personAccountByIdStore.get(it as Ref<PersonAccount>)?.person)
   ).filter((it) => it !== undefined) as Ref<Employee>[]
 
   $: docQuery =
-    excluded.length > 0
-      ? {
-          _id: { $nin: excluded.map((p) => (p as PersonAccount).person as Ref<Employee>) }
+    excluded.length === 0 && included.length === 0
+      ? {}
+      : {
+          _id: {
+            ...(included.length > 0
+              ? {
+                  $in: included.map((p) => (p as PersonAccount).person as Ref<Employee>)
+                }
+              : {}),
+            ...(excluded.length > 0
+              ? {
+                  $nin: excluded.map((p) => (p as PersonAccount).person as Ref<Employee>)
+                }
+              : {})
+          }
         }
-      : {}
 </script>
 
 <UserBoxList

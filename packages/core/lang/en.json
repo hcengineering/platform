@@ -42,6 +42,7 @@
     "Status": "Status",
     "StatusCategory": "Status category",
     "Account": "Account",
-    "Rank": "Rank"
+    "Rank": "Rank",
+    "RolesAssignment": "RolesAssignment"
   }
 }

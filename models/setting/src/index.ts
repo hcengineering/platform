@@ -609,8 +609,16 @@ export function createModel (builder: Builder): void {
         id: 'properties',
         label: setting.string.Properties,
         component: setting.component.SpaceTypePropertiesSectionEditor
+      },
+      {
+        id: 'roles',
+        label: setting.string.Roles,
+        component: setting.component.SpaceTypeRolesSectionEditor
       }
-    ]
+    ],
+    subEditors: {
+      roles: setting.component.RoleEditor
+    }
   })
 
   builder.mixin(core.class.SpaceTypeDescriptor, core.class.Class, view.mixin.ObjectPresenter, {
