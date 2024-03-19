@@ -32,8 +32,8 @@ import {
   ClassSortFuncs,
   CollectionEditor,
   CollectionPresenter,
-  FilteredView,
   FilterMode,
+  FilteredView,
   Groupping,
   IgnoreActions,
   InlineAttributEditor,
@@ -156,7 +156,8 @@ const view = plugin(viewId, {
     DividerPresenter: '' as AnyComponent,
     IconWithEmoji: '' as AnyComponent,
     AttachedDocPanel: '' as AnyComponent,
-    ObjectMention: '' as AnyComponent
+    ObjectMention: '' as AnyComponent,
+    SearchSelector: '' as AnyComponent
   },
   ids: {
     IconWithEmoji: '' as Asset

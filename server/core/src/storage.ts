@@ -22,6 +22,7 @@ import core, {
   Collection,
   DOMAIN_DOC_INDEX_STATE,
   DOMAIN_MODEL,
+  DOMAIN_TRANSIENT,
   DOMAIN_TX,
   Doc,
   DocumentQuery,
@@ -745,7 +746,13 @@ class TServerStorage implements ServerStorage {
     for (const tx of txes) {
       if (!this.hierarchy.isDerived(tx._class, core.class.TxApplyIf)) {
         if (tx.space !== core.space.DerivedTx) {
-          txToStore.push(tx)
+          if (this.hierarchy.isDerived(tx._class, core.class.TxCUD)) {
+            if (this.hierarchy.findDomain((tx as TxCUD<Doc>).objectClass) !== DOMAIN_TRANSIENT) {
+              txToStore.push(tx)
+            }
+          } else {
+            txToStore.push(tx)
+          }
         }
         if (tx.objectSpace === core.space.Model) {
           modelTx.push(tx)

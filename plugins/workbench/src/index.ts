@@ -14,12 +14,12 @@
 //
 
 import type { Class, Doc, Mixin, Obj, Ref, Space } from '@hcengineering/core'
+import { DocNotifyContext, InboxNotification } from '@hcengineering/notification'
 import type { Asset, IntlString, Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { Preference } from '@hcengineering/preference'
-import { AnyComponent, Location, ResolvedLocation } from '@hcengineering/ui'
+import { AnyComponent, ComponentExtensionId, Location, ResolvedLocation } from '@hcengineering/ui'
 import { ViewAction } from '@hcengineering/view'
-import { DocNotifyContext, InboxNotification } from '@hcengineering/notification'
 
 /**
  * @public
@@ -173,6 +173,9 @@ export default plugin(workbenchId, {
     DefaultSpecial: '' as Metadata<string>,
     // Default for navigation expanded state
     NavigationExpandedDefault: '' as Metadata<boolean>
+  },
+  extensions: {
+    WorkbenchExtensions: '' as ComponentExtensionId
   },
   actionImpl: {
     Navigate: '' as ViewAction<{
