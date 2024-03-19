@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
+import { codeBlockOptions } from '@hcengineering/text'
 import { Extension } from '@tiptap/core'
 import { type CodeOptions } from '@tiptap/extension-code'
-import { type CodeBlockOptions } from '@tiptap/extension-code-block'
 import type { Level } from '@tiptap/extension-heading'
 import Highlight from '@tiptap/extension-highlight'
 import Link from '@tiptap/extension-link'
@@ -35,16 +35,6 @@ export const codeOptions: CodeOptions = {
     class: 'proseCode'
   }
 }
-
-export const codeBlockOptions: CodeBlockOptions = {
-  languageClassPrefix: 'language-',
-  exitOnArrowDown: true,
-  exitOnTripleEnter: true,
-  HTMLAttributes: {
-    class: 'proseCodeBlock'
-  }
-}
-
 export const DefaultKit = Extension.create<DefaultKitOptions>({
   name: 'defaultKit',
 
