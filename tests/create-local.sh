@@ -1,5 +1,5 @@
 # Create workspace record in accounts
-./tool-local.sh create-workspace sanity-ws -o SanityTest
+./tool-local.sh create-workspace sanity-ws -w SanityTest
 # Create user record in accounts
 ./tool-local.sh create-account user1 -f John -l Appleseed -p 1234
 ./tool-local.sh confirm-email user1

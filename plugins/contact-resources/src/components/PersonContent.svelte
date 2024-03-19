@@ -15,6 +15,7 @@
 <script lang="ts">
   import { Employee, getName, Person } from '@hcengineering/contact'
   import { IntlString } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
   import {
     getPlatformAvatarColorDef,
     getPlatformAvatarColorForTextDef,
@@ -26,7 +27,6 @@
   } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import Avatar from './Avatar.svelte'
-  import { getClient } from '@hcengineering/presentation'
   import PersonElement from './PersonElement.svelte'
 
   export let value: Person | Employee | undefined | null
@@ -115,7 +115,7 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <span
-    class="antiPresenter"
+    class="antiPresenter h-full"
     class:text-base={enlargedText}
     use:tooltip={disabled ? undefined : showTooltip}
     on:click={onEditClick}

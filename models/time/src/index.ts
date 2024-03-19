@@ -236,7 +236,7 @@ export function createModel (builder: Builder): void {
         }
       },
       label: time.string.CreateToDo,
-      icon: time.icon.Target,
+      icon: time.icon.Calendar,
       keyBinding: [],
       input: 'none',
       category: time.category.Time,
@@ -262,7 +262,7 @@ export function createModel (builder: Builder): void {
         }
       },
       label: time.string.CreateToDo,
-      icon: time.icon.Target,
+      icon: time.icon.Calendar,
       keyBinding: [],
       input: 'none',
       category: time.category.Time,

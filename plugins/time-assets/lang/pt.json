@@ -55,6 +55,7 @@
     "CreatedToDo": "Tarefa criada",
     "NewToDoDetails": "Nova tarefa pendente: {details}",
     "MarkedAsDone": "Concluído",
-    "WorkSchedule": "Horário de trabalho"
+    "WorkSchedule": "Horário de trabalho",
+    "SummaryDuration": "Sumário"
   }
 }

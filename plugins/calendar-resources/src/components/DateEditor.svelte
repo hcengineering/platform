@@ -14,9 +14,9 @@
 -->
 <script lang="ts">
   import ui, {
-    Button,
-    ButtonKind,
-    ButtonSize,
+    ButtonBase,
+    ButtonBaseKind,
+    ButtonBaseSize,
     DatePopup,
     SimpleDatePopup,
     TimeInputBox,
@@ -33,8 +33,8 @@
   export let direction: 'vertical' | 'horizontal' = 'vertical'
   export let showDate: boolean = true
   export let withoutTime: boolean
-  export let kind: ButtonKind = 'ghost'
-  export let size: ButtonSize = 'medium'
+  export let kind: ButtonBaseKind = 'tertiary'
+  export let size: ButtonBaseSize = 'small'
   export let disabled: boolean = false
   export let focusIndex = -1
   export let timeZone: string = getUserTimezone()
@@ -77,44 +77,48 @@
 <div
   class="dateEditor-container {direction}"
   class:difference={difference > 0}
-  class:gap-1-5={direction === 'horizontal'}
+  class:flex-gap-2={direction === 'horizontal'}
 >
   {#if showDate || withoutTime}
-    <Button {kind} {size} padding={'0 .5rem'} {focusIndex} on:click={dateClick} {disabled}>
-      <svelte:fragment slot="content">
+    <div class="min-w-28">
+      <ButtonBase type="type-button" {kind} {size} {disabled} {focusIndex} on:click={dateClick}>
         <DateLocalePresenter date={currentDate.getTime()} {timeZone} />
-      </svelte:fragment>
-    </Button>
+      </ButtonBase>
+    </div>
+  {/if}
+
+  {#if showDate && !withoutTime && direction === 'horizontal'}
+    <div class="divider" />
   {/if}
 
   {#if !withoutTime}
-    <Button
+    <ButtonBase
+      type="type-button"
       {kind}
       {size}
-      padding={'0 .5rem'}
+      {disabled}
       focusIndex={focusIndex !== -1 ? focusIndex + 1 : focusIndex}
       on:click={timeClick}
-      {disabled}
     >
-      <svelte:fragment slot="content">
-        <TimeInputBox
-          bind:currentDate
-          {timeZone}
-          noBorder
-          size={'small'}
-          on:update={(date) => {
-            updateTime(date.detail)
-          }}
-        />
-        {#if difference > 0}
-          <div class="ml-2 flex-no-shrink content-darker-color overflow-label">
-            <TimeShiftPresenter value={date - difference} exact />
-          </div>
-        {/if}
-      </svelte:fragment>
-    </Button>
+      <TimeInputBox
+        bind:currentDate
+        {timeZone}
+        noBorder
+        size={'small'}
+        on:update={(date) => {
+          updateTime(date.detail)
+        }}
+      />
+    </ButtonBase>
   {/if}
 </div>
+
+{#if !withoutTime && difference > 0}
+  <div class="divider" />
+  <div class="duration font-regular-14">
+    <TimeShiftPresenter value={date - difference} exact />
+  </div>
+{/if}
 
 <style lang="scss">
   .dateEditor-container {
@@ -131,8 +135,19 @@
         align-items: start;
       }
       &:not(.difference) {
-        align-items: stretch;
+        align-items: start;
       }
     }
+  }
+
+  .duration {
+    padding: var(--spacing-1);
+    color: var(--tag-accent-SunshineText);
+  }
+
+  .divider {
+    width: 0;
+    height: 1.25rem;
+    border-left: 1px solid var(--global-ui-BorderColor);
   }
 </style>

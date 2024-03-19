@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-import { Event, Visibility } from '@hcengineering/calendar'
-import { Person } from '@hcengineering/contact'
-import { AttachedDoc, Class, Doc, Hierarchy, Markup, Mixin, Ref, Space, Timestamp, Type } from '@hcengineering/core'
 import type { Asset, Plugin, Resource } from '@hcengineering/platform'
+import { AttachedDoc, Class, Doc, Hierarchy, Markup, Mixin, Ref, Space, Timestamp, Type } from '@hcengineering/core'
 import { IntlString, plugin } from '@hcengineering/platform'
+import { Event, Visibility } from '@hcengineering/calendar'
 import { AnyComponent } from '@hcengineering/ui'
+import { Person } from '@hcengineering/contact'
 
 /**
  * @public
@@ -120,7 +120,7 @@ export default plugin(timeId, {
     Team: '' as Asset,
     Hashtag: '' as Asset,
     Inbox: '' as Asset,
-    Target: '' as Asset,
+    Calendar: '' as Asset,
     Flag: '' as Asset,
     FilledFlag: '' as Asset,
     Planned: '' as Asset,

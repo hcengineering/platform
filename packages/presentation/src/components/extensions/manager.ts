@@ -9,7 +9,7 @@ import {
 } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import { onDestroy } from 'svelte'
-import { writable, type Writable } from 'svelte/store'
+import { get, writable, type Writable } from 'svelte/store'
 import { type LiveQuery } from '../..'
 import presentation from '../../plugin'
 import { type DocCreatePhase, type DocCreateExtension } from '../../types'
@@ -59,8 +59,9 @@ export class DocCreateExtensionManager {
     phase: DocCreatePhase
   ): Promise<void> {
     for (const e of this._extensions) {
+      const state = get(this.getState(e._id))
       const applyOp = await getResource(e.apply)
-      await applyOp?.(ops, docId, space, data, this.getState(e._id), phase)
+      await applyOp?.(ops, docId, space, data, state, phase)
     }
   }
 

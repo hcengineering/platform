@@ -14,9 +14,11 @@
 //
 
 /* Typography */
+.font-regular-11,
 .font-medium-11,
 .font-regular-12,
 .font-medium-12,
+.font-caps-medium-12,
 .font-bold-12,
 .font-regular-14,
 .font-medium-14,
@@ -30,11 +32,13 @@
   line-height: 1rem;
   color: var(--global-primary-TextColor);
 }
+.font-regular-11,
 .font-medium-11 {
   font-size: 0.6875rem;
 }
 .font-regular-12,
 .font-medium-12,
+.font-caps-medium-12,
 .font-bold-12 {
   font-size: 0.75rem;
 }
@@ -44,6 +48,7 @@
 .paragraph-regular-14 {
   font-size: 0.875rem;
 }
+.font-regular-11,
 .font-regular-12,
 .font-regular-14,
 .paragraph-regular-14 {
@@ -51,6 +56,7 @@
 }
 .font-medium-11,
 .font-medium-12,
+.font-caps-medium-12,
 .font-medium-14,
 .heading-medium-16,
 .heading-medium-20 {
@@ -73,6 +79,9 @@
 .paragraph-regular-14 {
   line-height: 1.25rem;
   color: var(--global-tertiary-TextColor);
+}
+.font-caps-medium-12 {
+  text-transform: uppercase;
 }
 
 /* Panels */

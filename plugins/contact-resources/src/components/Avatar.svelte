@@ -34,12 +34,12 @@
   import { getBlobURL, getClient } from '@hcengineering/presentation'
   import {
     AnySvelteComponent,
+    ColorDefinition,
     Icon,
     IconSize,
-    getPlatformAvatarColorForTextDef,
     getPlatformAvatarColorByName,
-    themeStore,
-    ColorDefinition
+    getPlatformAvatarColorForTextDef,
+    themeStore
   } from '@hcengineering/ui'
   import { getAvatarProviderId } from '../utils'
   import AvatarIcon from './icons/Avatar.svelte'
@@ -293,6 +293,20 @@
     }
   }
 
+  .ava-full {
+    width: 100%;
+    height: 100%;
+
+    .ava-text {
+      font-weight: 500;
+      font-size: 2rem;
+    }
+
+    &.roundedRect {
+      border-radius: 0px;
+    }
+  }
+
   .ava-blur {
     position: absolute;
     filter: blur(32px);
@@ -318,6 +332,10 @@
       &.ava-x-large,
       &.ava-2x-large {
         border-radius: 1rem;
+      }
+
+      &.ava-full {
+        border-radius: 0px;
       }
     }
   }

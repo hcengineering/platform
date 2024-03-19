@@ -86,7 +86,7 @@ export class ApplicationsPage extends CommonRecruitingPage {
       this.page
         .locator('tr', { hasText: `${talentName.lastName} ${talentName.firstName}` })
         .locator('td')
-        .nth(5)
+        .nth(4)
     ).toHaveText(done)
   }
 
@@ -98,7 +98,7 @@ export class ApplicationsPage extends CommonRecruitingPage {
     await this.page
       .locator('tr', { hasText: `${talentName.lastName} ${talentName.firstName}` })
       .locator('td')
-      .nth(5)
+      .nth(4)
       .click()
     await this.selectFromDropdown(this.page, status)
   }
