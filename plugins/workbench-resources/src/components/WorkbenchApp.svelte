@@ -14,7 +14,17 @@
 -->
 <script lang="ts">
   import { getMetadata } from '@hcengineering/platform'
-  import { Button, Component, Label, Loading, Notifications, deviceOptionsStore, fetchMetadataLocalStorage, location, setMetadataLocalStorage } from '@hcengineering/ui'
+  import {
+    Button,
+    Component,
+    Label,
+    Loading,
+    Notifications,
+    deviceOptionsStore,
+    fetchMetadataLocalStorage,
+    location,
+    setMetadataLocalStorage
+  } from '@hcengineering/ui'
   import { connect, versionError } from '../connect'
 
   import { workbenchId } from '@hcengineering/workbench'
