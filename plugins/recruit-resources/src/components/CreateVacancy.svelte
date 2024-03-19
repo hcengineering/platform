@@ -241,20 +241,18 @@
   }}
   on:changeContent
 >
-  {typeType?.name}
+  <span>{typeType?.name}</span>
   <div class="flex-row-center clear-mins">
     <div class="mr-3">
       <Button focusIndex={1} icon={Vacancy} size={'medium'} kind={'link-bordered'} noFocus />
     </div>
-    <div class="clear-mins flex-grow">
-      <EditBox
-        focusIndex={2}
-        bind:value={name}
-        placeholder={recruit.string.VacancyPlaceholder}
-        kind={'large-style'}
-        autoFocus
-      />
-    </div>
+    <EditBox
+      focusIndex={2}
+      bind:value={name}
+      placeholder={recruit.string.VacancyPlaceholder}
+      kind={'large-style'}
+      autoFocus
+    />
   </div>
   {#key appliedTemplateId}
     <AttachmentStyledBox

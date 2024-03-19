@@ -27,14 +27,20 @@
       &:focus { box-shadow: 0 0 0 1px var(--theme-editbox-focus-border); }
     }
   }
-  .focusable:not(.default, .default-large, .ghost, .ghost-large, .modern-ghost-large) {
-    margin: 0 -0.75rem;
-    padding: 0.625rem 0.75rem;
-    width: calc(100% + 1.5rem);
-    border-radius: 0.25rem;
-    transition: border-color 0.15s ease-in-out;
+  .focusable:not(.underline, .default, .default-large, .ghost, .ghost-large, .modern-ghost-large) {
+    position: relative;
+    padding: 0.625rem 0;
 
-    &:focus-within { box-shadow: 0 0 0 1px var(--theme-editbox-focus-border); }
+    &::after {
+      position: absolute;
+      top: 0;
+      left: -0.75rem;
+      width: calc(100% + 1.5rem);
+      height: 100%;
+      border: 1px solid var(--theme-editbox-focus-border);
+      border-radius: 0.25rem;
+    }
+    &:focus-within::after { content: ''; }
   }
 
   input {
@@ -127,5 +133,10 @@
         color: var(--input-PlaceholderColor);
       }
     }
+  }
+
+  .required::after {
+    content: ' *';
+    color: var(--theme-error-color);
   }
 }

@@ -113,7 +113,6 @@
     <EditBox
       label={board.string.CardName}
       bind:value={title}
-      icon={board.icon.Card}
       placeholder={board.string.CardPlaceholder}
       autoFocus
     />

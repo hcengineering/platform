@@ -72,7 +72,6 @@
   <EditBox
     label={recruit.string.OpinionValue}
     bind:value
-    icon={recruit.icon.Application}
     placeholder={recruit.string.OpinionValue}
     autoFocus
   />

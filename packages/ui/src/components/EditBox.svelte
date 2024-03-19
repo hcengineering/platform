@@ -13,21 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Asset, IntlString } from '@hcengineering/platform'
+  import type { IntlString } from '@hcengineering/platform'
   import { translate } from '@hcengineering/platform'
-  import { afterUpdate, createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
   import { registerFocus } from '../focus'
   import plugin from '../plugin'
-  import type { AnySvelteComponent, EditStyle } from '../types'
-  import Icon from './Icon.svelte'
+  import type { EditStyle } from '../types'
   import Label from './Label.svelte'
-  import { resizeObserver } from '../resize'
   import { floorFractionDigits } from '../utils'
   import { themeStore } from '@hcengineering/theme'
 
   export let label: IntlString | undefined = undefined
-  export let icon: Asset | AnySvelteComponent | undefined = undefined
-  export let maxWidth: string | undefined = undefined
+  export let maxWidth: string = '100%'
   export let value: string | number | undefined = undefined
   export let placeholder: IntlString = plugin.string.EditBoxPlaceholder
   export let placeholderParam: any | undefined = undefined
@@ -45,11 +42,8 @@
 
   const dispatch = createEventDispatcher()
 
-  let text: HTMLElement
   let input: HTMLInputElement
-  let style: string
   let phTraslate: string = ''
-  let parentWidth: number | undefined
 
   $: {
     if (
@@ -61,38 +55,11 @@
       value = floorFractionDigits(Number(value), maxDigitsAfterPoint)
     }
   }
-  $: style = `max-width: ${
-    maxWidth || (parentWidth ? (icon ? `calc(${parentWidth}px - 1.25rem)` : `${parentWidth}px`) : 'max-content')
-  };`
   $: void translate(placeholder, placeholderParam ?? {}, $themeStore.language).then((res) => {
     phTraslate = res
   })
 
-  function computeSize (t: HTMLInputElement | EventTarget | null): void {
-    if (t == null) {
-      return
-    }
-    const target = t as HTMLInputElement
-    const value = target.value
-    text.innerHTML = (value === '' ? phTraslate : value)
-      .replaceAll(' ', '&nbsp;')
-      .replaceAll('<', '&lt;')
-      .replaceAll('>', '&gt;')
-    if (format === 'number') {
-      target.style.width = maxWidth ?? '5rem'
-    } else if (kind === 'underline') {
-      target.style.width = `calc(${text.clientWidth}px + 1.125rem)`
-    } else {
-      target.style.width = Math.max(text.clientWidth, 50) + 'px'
-    }
-  }
-
-  function handleInput (ev: Event): void {
-    const t: HTMLInputElement | EventTarget | null = ev.target
-    if (t !== null && t !== undefined) {
-      computeSize(t)
-    }
-
+  function handleInput (): void {
     dispatch('input')
     dispatch('value', value)
   }
@@ -106,11 +73,6 @@
       input.select()
       select = false
     }
-    computeSize(input)
-  })
-
-  afterUpdate(() => {
-    computeSize(input)
   })
 
   export function focusInput (): void {
@@ -148,6 +110,7 @@
   class:flex-grow={fullSize}
   class:w-full={focusable || fullSize}
   class:uppercase
+  style:width={maxWidth}
   on:click={(event) => {
     if (!propagateClick) {
       event.stopPropagation()
@@ -155,33 +118,23 @@
 
     input.focus()
   }}
-  use:resizeObserver={(element) => {
-    parentWidth = element.parentElement?.getBoundingClientRect().width
-  }}
 >
   <!-- {focusIndex} -->
-  <div class="hidden-text {kind}" bind:this={text} />
   {#if label}
-    <div class="mb-1 text-sm font-medium caption-color select-text">
+    <div class="mb-1 text-sm font-medium caption-color select-text" class:required>
       <Label {label} />
-      {#if required}<span class="error-color">&ast;</span>{/if}
     </div>
   {/if}
-  <div class="{kind} flex-row-center clear-mins" class:focusable class:disabled class:w-full={fullSize}>
-    {#if icon}
-      <div class="dark-color mr-1">
-        <Icon {icon} size={'small'} />
-      </div>
-    {/if}
+  <div class="{kind} flex-row-center clear-mins" class:focusable class:disabled class:w-full={fullSize} style:width={maxWidth}>
     {#if format === 'password'}
       <input
         {disabled}
+        style:width={maxWidth}
         id="userPassword"
         bind:this={input}
         type="Password"
         bind:value
         placeholder={phTraslate}
-        {style}
         on:input={handleInput}
         on:change
         on:keydown
@@ -193,12 +146,12 @@
     {:else if format === 'number'}
       <input
         {disabled}
+        style:width={maxWidth}
         bind:this={input}
         type="number"
         class="number"
         bind:value
         placeholder={phTraslate}
-        {style}
         on:input={handleInput}
         on:change
         on:keydown
@@ -210,11 +163,11 @@
     {:else}
       <input
         {disabled}
+        style:width={maxWidth}
         bind:this={input}
         type="text"
         bind:value
         placeholder={phTraslate}
-        {style}
         on:input={handleInput}
         on:change
         on:keydown
