@@ -89,7 +89,7 @@
     <Component
       is={task.component.ProjectTypeSelector}
       props={{
-        categories: [lead.category.FunnelTypeCategory],
+        categories: [lead.descriptors.FunnelType],
         type,
         disabled: funnel !== undefined
       }}
