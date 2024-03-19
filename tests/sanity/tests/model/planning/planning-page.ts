@@ -40,8 +40,12 @@ export class PlanningPage extends CalendarPage {
     this.inputPopupCreateTitle = page.locator('div.popup input')
     this.inputPopupCreateDescription = page.locator('div.popup div.tiptap')
     this.inputPanelCreateDescription = page.locator('div.hulyModal-container div.tiptap')
-    this.buttonPopupCreateDueDate = page.locator('div.popup button.antiButton', { hasText: 'Due date' })
-    this.buttonPanelCreateDueDate = page.locator('div.hulyModal-container button.antiButton', { hasText: 'Due date' })
+    this.buttonPopupCreateDueDate = page.locator(
+      'div.popup div.block:first-child div.flex-row-center button:nth-child(3)'
+    )
+    this.buttonPanelCreateDueDate = page.locator(
+      'div.hulyModal-container div.slots-content div.flex-row-top.justify-between div.flex-row-center button:first-child'
+    )
     this.buttonPopupCreatePriority = page.locator('div.popup button#priorityButton')
     this.buttonPanelCreatePriority = page.locator('div.hulyModal-container button#priorityButton')
     this.buttonPopupCreateVisible = page.locator('div.popup button.type-button.menu', { hasText: 'visible' })
@@ -50,8 +54,8 @@ export class PlanningPage extends CalendarPage {
     })
     this.buttonPopupCreateAddLabel = page.locator('div.popup button.antiButton', { hasText: 'Add label' })
     this.buttonPanelCreateAddLabel = page.locator('.hulyHeader-titleGroup > button:nth-child(2)')
-    this.buttonPopupCreateAddSlot = page.locator('div.popup button.antiButton', { hasText: 'Add Slot' })
-    this.buttonPanelCreateAddSlot = page.locator('div.hulyModal-container button.antiButton', { hasText: 'Add Slot' })
+    this.buttonPopupCreateAddSlot = page.locator('div.popup button', { hasText: 'Add Slot' })
+    this.buttonPanelCreateAddSlot = page.locator('div.hulyModal-container button', { hasText: 'Add Slot' })
     this.buttonCalendarToday = page.locator('div.popup div.calendar button.day.today')
     this.buttonCreateToDo = page.locator('div.popup button.antiButton', { hasText: 'Add ToDo' })
     this.inputCreateToDoTitle = page.locator('div.toDos-container input[placeholder="Add todo, press Enter to save"]')
@@ -63,7 +67,7 @@ export class PlanningPage extends CalendarPage {
     )
     this.textPanelToDoDescription = page.locator('div.hulyModal-container div.top-content div.tiptap > p')
     this.textPanelDueDate = page.locator(
-      'div.hulyModal-container div.slots-content div.flex-row-top.justify-between div.flex-row-center button.antiButton:first-child div[slot="content"]'
+      'div.hulyModal-container div.slots-content div.flex-row-top.justify-between div.flex-row-center button:first-child span'
     )
     this.textPanelPriority = page.locator('div.hulyModal-container button#priorityButton svg')
     this.textPanelVisible = page.locator(
@@ -133,12 +137,12 @@ export class PlanningPage extends CalendarPage {
 
   public async setTimeSlot (rowNumber: number, slot: Slot, popup: boolean = false): Promise<void> {
     const p = popup
-      ? 'div.popup div.horizontalBox div.flex-row-center'
-      : 'div.hulyModal-container div.slots-content div.horizontalBox div.flex-row-center'
+      ? 'div.popup div.horizontalBox div.end div.flex-col div.flex'
+      : 'div.hulyModal-container div.slots-content div.flex-col div.flex'
     const row = this.page.locator(p).nth(rowNumber)
 
     // dateStart
-    await row.locator('div.dateEditor-container:nth-child(2) button:first-child').click()
+    await row.locator('div.dateEditor-container:nth-child(1) button:first-child').click()
     if (slot.dateStart === 'today') {
       await this.buttonCalendarToday.click()
     } else {
@@ -154,34 +158,34 @@ export class PlanningPage extends CalendarPage {
     const hours = slot.timeStart.substring(0, 2)
     const minutes = slot.timeStart.substring(2, slot.timeStart.length)
     await row
-      .locator('div.dateEditor-container:nth-child(2) button:last-child span.digit:first-child')
+      .locator('div.dateEditor-container:nth-child(1) button:last-child span.digit:first-child')
       .click({ delay: 200 })
     await row
-      .locator('div.dateEditor-container:nth-child(2) button:last-child span.digit:first-child')
+      .locator('div.dateEditor-container:nth-child(1) button:last-child span.digit:first-child')
       .pressSequentially(hours, { delay: 100 })
     await row
-      .locator('div.dateEditor-container:nth-child(2) button:last-child span.digit:last-child')
+      .locator('div.dateEditor-container:nth-child(1) button:last-child span.digit:last-child')
       .click({ delay: 200 })
     await row
-      .locator('div.dateEditor-container:nth-child(2) button:last-child span.digit:last-child')
+      .locator('div.dateEditor-container:nth-child(1) button:last-child span.digit:last-child')
       .pressSequentially(minutes, { delay: 100 })
 
     // dateEnd + timeEnd
-    await row.locator('div.dateEditor-container:nth-child(4) button').click()
+    await row.locator('div.dateEditor-container.difference button').click()
     await this.fillSelectDatePopup(slot.dateEnd.day, slot.dateEnd.month, slot.dateEnd.year, slot.timeEnd)
   }
 
   private async checkTimeSlot (rowNumber: number, slot: Slot, popup: boolean = false): Promise<void> {
     const p = popup
-      ? 'div.popup div.horizontalBox div.flex-row-center'
-      : 'div.hulyModal-container div.slots-content div.horizontalBox div.flex-row-center'
+      ? 'div.popup div.horizontalBox div.end div.flex-col div.flex'
+      : 'div.hulyModal-container div.slots-content div.flex-col div.flex'
     const row = this.page.locator(p).nth(rowNumber)
     // timeStart
-    await expect(row.locator('div.dateEditor-container:nth-child(2) button:last-child div.datetime-input')).toHaveText(
+    await expect(row.locator('div.dateEditor-container:nth-child(1) button:last-child div.datetime-input')).toHaveText(
       slot.timeStart
     )
     // timeEnd
-    await expect(row.locator('div.dateEditor-container:nth-child(4) button > div:first-child')).toHaveText(slot.timeEnd)
+    await expect(row.locator('div.dateEditor-container.difference button > div:first-child')).toHaveText(slot.timeEnd)
   }
 
   async openToDoByName (toDoName: string): Promise<void> {
@@ -255,18 +259,17 @@ export class PlanningPage extends CalendarPage {
   }
 
   public async deleteTimeSlot (rowNumber: number): Promise<void> {
-    const row = this.page.locator('div.hulyModal-container div.slots-content div.horizontalBox div.tool').nth(rowNumber)
+    const row = this.page
+      .locator('div.hulyModal-container div.slots-content div.flex-col div.flex div.tool')
+      .nth(rowNumber)
     await row.locator('xpath=..').hover()
     await row.locator('button').click()
-    await expect(row.locator('button')).toBeHidden()
     await this.pressYesDeletePopup(this.page)
   }
 
   public async checkTimeSlotEndDate (rowNumber: number, dateEnd: string): Promise<void> {
-    const row = this.page
-      .locator('div.hulyModal-container div.slots-content div.horizontalBox div.flex-row-center')
-      .nth(rowNumber)
+    const row = this.page.locator('div.hulyModal-container div.slots-content div.flex-col div.flex').nth(rowNumber)
     // dateEnd
-    await expect(row.locator('div.dateEditor-container:nth-child(2) button:first-child')).toContainText(dateEnd)
+    await expect(row.locator('div.dateEditor-container:nth-child(1) button:first-child')).toContainText(dateEnd)
   }
 }

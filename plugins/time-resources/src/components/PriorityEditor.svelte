@@ -46,7 +46,7 @@
     }
   })
   $: selected = selectPopupPriorities.find((item) => item.id === value)
-  $: selectedLabel = selected?.label ?? time.string.NoPriority
+  $: selectedLabel = selected?.label === time.string.NoPriority ? time.string.SetPriority : selected?.label
 
   $: icon = selected?.id === ToDoPriority.NoPriority ? time.icon.Flag : selected?.icon
   $: iconProps = selected?.iconProps

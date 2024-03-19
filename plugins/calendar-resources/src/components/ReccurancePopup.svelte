@@ -164,7 +164,7 @@
         }}
       />
       <div class="flex-row-center">
-        <DateEditor bind:date={until} withoutTime kind="regular" disabled={selected !== 'on'} />
+        <DateEditor bind:date={until} withoutTime kind="secondary" disabled={selected !== 'on'} />
       </div>
       <RadioButton
         labelIntl={calendar.string.After}

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import ui, { Button, DatePopup, Icon, Label, showPopup } from '@hcengineering/ui'
+  import ui, { ButtonBase, DatePopup, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import time from '../plugin'
 
@@ -22,16 +22,20 @@
   const dispatch = createEventDispatcher()
 
   let opened: boolean = false
-</script>
 
-<Button
-  kind={'regular'}
-  on:click={(e) => {
+  $: buttonTitle = value ? new Date(value).toLocaleDateString() : undefined
+  $: buttonLabel = buttonTitle === undefined ? ui.string.DueDate : undefined
+
+  function handleClick (e: MouseEvent) {
     if (!opened) {
       opened = true
       showPopup(
         DatePopup,
-        { noShift: true, currentDate: value ? new Date(value) : null, label: ui.string.SetDueDate },
+        {
+          noShift: true,
+          currentDate: value ? new Date(value) : null,
+          label: ui.string.SetDueDate
+        },
         'top',
         (result) => {
           if (result != null && result.value !== undefined) {
@@ -42,14 +46,17 @@
         }
       )
     }
-  }}
->
-  <div slot="content" class="flex-row-center flex-gap-1">
-    <Icon icon={time.icon.Target} size="medium" />
-    {#if value}
-      {new Date(value).toLocaleDateString()}
-    {:else}
-      <Label label={ui.string.DueDate} />
-    {/if}
-  </div>
-</Button>
+  }
+</script>
+
+<ButtonBase
+  kind="secondary"
+  size="small"
+  type="type-button"
+  icon={time.icon.Calendar}
+  iconSize="small"
+  title={buttonTitle}
+  label={buttonLabel}
+  pressed={opened}
+  on:click={handleClick}
+/>
