@@ -22,6 +22,7 @@ import { TemplateFieldCategory, TemplateField } from '@hcengineering/templates'
 import { SpaceTypeEditor, SpaceTypeCreator } from './spaceTypeEditor'
 
 export * from './spaceTypeEditor'
+export * from './utils'
 
 /**
  * @public

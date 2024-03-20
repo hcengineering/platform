@@ -13,11 +13,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { deepEqual } from 'fast-equals'
   import { AccountArrayEditor } from '@hcengineering/contact-resources'
-  import core, { Account, Data, DocumentUpdate, Ref, generateId, getCurrentAccount } from '@hcengineering/core'
-  import { Teamspace } from '@hcengineering/document'
+  import core, {
+    Account,
+    Data,
+    DocumentUpdate,
+    Ref,
+    Role,
+    SortingOrder,
+    SpaceType,
+    generateId,
+    getCurrentAccount
+  } from '@hcengineering/core'
+  import document, { Teamspace } from '@hcengineering/document'
   import { Asset } from '@hcengineering/platform'
-  import presentation, { Card, getClient } from '@hcengineering/presentation'
+  import presentation, { Card, createQuery, getClient } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor'
   import {
     Button,
@@ -32,15 +43,17 @@
     themeStore
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { IconPicker } from '@hcengineering/view-resources'
+  import { IconPicker, SpaceTypeSelector } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import document from '../../plugin'
+
+  import documentRes from '../../plugin'
 
   export let teamspace: Teamspace | undefined = undefined
 
   export let namePlaceholder: string = ''
   export let descriptionPlaceholder: string = ''
 
+  const dispatch = createEventDispatcher()
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
@@ -52,10 +65,18 @@
   let isColorSelected = false
   let members: Ref<Account>[] =
     teamspace?.members !== undefined ? hierarchy.clone(teamspace.members) : [getCurrentAccount()._id]
-
-  const dispatch = createEventDispatcher()
+  let rolesAssignment: Teamspace['rolesAssignment'] =
+    teamspace?.rolesAssignment !== undefined ? hierarchy.clone(teamspace.rolesAssignment) : {}
 
   $: isNew = teamspace === undefined
+
+  let typeId: Ref<SpaceType> | undefined = teamspace?.type
+  let spaceType: SpaceType | undefined
+
+  $: void loadSpaceType(typeId)
+  async function loadSpaceType (id: typeof typeId): Promise<void> {
+    spaceType = id !== undefined ? await client.getModel().findOne(core.class.SpaceType, { _id: id }) : undefined
+  }
 
   async function handleSave (): Promise<void> {
     if (isNew) {
@@ -65,7 +86,7 @@
     }
   }
 
-  function getTeamspaceData (): Data<Teamspace> {
+  function getTeamspaceData (): Omit<Data<Teamspace>, 'type'> {
     return {
       name,
       description,
@@ -73,7 +94,8 @@
       members,
       archived: false,
       icon,
-      color
+      color,
+      rolesAssignment
     }
   }
 
@@ -109,6 +131,9 @@
         }
       }
     }
+    if (!deepEqual(teamspaceData.rolesAssignment, teamspace?.rolesAssignment)) {
+      update.rolesAssignment = teamspaceData.rolesAssignment
+    }
 
     if (Object.keys(update).length > 0) {
       await client.update(teamspace, update)
@@ -118,10 +143,14 @@
   }
 
   async function createTeamspace (): Promise<void> {
+    if (typeId === undefined) {
+      return
+    }
+
     const teamspaceId = generateId<Teamspace>()
     const teamspaceData = getTeamspaceData()
 
-    await client.createDoc(document.class.Teamspace, core.space.Space, { ...teamspaceData }, teamspaceId)
+    await client.createDoc(document.class.Teamspace, core.space.Space, { ...teamspaceData, type: typeId }, teamspaceId)
 
     close(teamspaceId)
   }
@@ -141,10 +170,55 @@
   function close (id?: Ref<Teamspace>): void {
     dispatch('close', id)
   }
+
+  function handleTypeChange (evt: CustomEvent<Ref<SpaceType>>): void {
+    typeId = evt.detail
+  }
+
+  let roles: Role[] = []
+  const rolesQuery = createQuery()
+  $: if (spaceType !== undefined) {
+    rolesQuery.query(
+      core.class.Role,
+      { _id: { $in: spaceType.roles } },
+      (res) => {
+        roles = res
+      },
+      {
+        sort: {
+          name: SortingOrder.Ascending
+        }
+      }
+    )
+  } else {
+    rolesQuery.unsubscribe()
+  }
+
+  function handleMembersChanged (newMembers: Ref<Account>[]): void {
+    // If a member was removed we need to remove it from any roles assignments as well
+    const newMembersSet = new Set(newMembers)
+    const removedMembersSet = new Set(members.filter((m) => !newMembersSet.has(m)))
+
+    if (rolesAssignment !== undefined) {
+      for (const [key, value] of Object.entries(rolesAssignment)) {
+        rolesAssignment[key as Ref<Role>] = value.filter((m) => !removedMembersSet.has(m))
+      }
+    }
+
+    members = newMembers
+  }
+
+  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: Ref<Account>[]): void {
+    if (rolesAssignment === undefined) {
+      rolesAssignment = {}
+    }
+
+    rolesAssignment[roleId] = newMembers
+  }
 </script>
 
 <Card
-  label={isNew ? document.string.NewTeamspace : document.string.EditTeamspace}
+  label={isNew ? documentRes.string.NewTeamspace : documentRes.string.EditTeamspace}
   okLabel={isNew ? presentation.string.Create : presentation.string.Save}
   okAction={handleSave}
   canSave={name.length > 0 && !(members.length === 0 && isPrivate)}
@@ -157,12 +231,28 @@
   <div class="antiGrid">
     <div class="antiGrid-row">
       <div class="antiGrid-row__header">
-        <Label label={document.string.TeamspaceTitle} />
+        <Label label={core.string.SpaceType} />
+      </div>
+
+      <SpaceTypeSelector
+        disabled={!isNew}
+        descriptors={[document.descriptor.TeamspaceType]}
+        type={typeId}
+        focusIndex={4}
+        kind="regular"
+        size="large"
+        on:change={handleTypeChange}
+      />
+    </div>
+
+    <div class="antiGrid-row">
+      <div class="antiGrid-row__header">
+        <Label label={documentRes.string.TeamspaceTitle} />
       </div>
       <div class="padding">
         <EditBox
           bind:value={name}
-          placeholder={document.string.TeamspaceTitlePlaceholder}
+          placeholder={documentRes.string.TeamspaceTitlePlaceholder}
           kind={'large-style'}
           autoFocus
           on:input={() => {
@@ -176,14 +266,14 @@
 
     <div class="antiGrid-row">
       <div class="antiGrid-row__header topAlign">
-        <Label label={document.string.Description} />
+        <Label label={documentRes.string.Description} />
       </div>
       <div class="padding clear-mins">
         <StyledTextBox
           alwaysEdit
           showButtons={false}
           bind:content={description}
-          placeholder={document.string.TeamspaceDescriptionPlaceholder}
+          placeholder={documentRes.string.TeamspaceDescriptionPlaceholder}
         />
       </div>
     </div>
@@ -192,7 +282,7 @@
   <div class="antiGrid">
     <div class="antiGrid-row">
       <div class="antiGrid-row__header">
-        <Label label={document.string.ChooseIcon} />
+        <Label label={documentRes.string.ChooseIcon} />
       </div>
       <Button
         icon={icon === view.ids.IconWithEmoji ? IconWithEmoji : icon ?? document.icon.Teamspace}
@@ -219,15 +309,34 @@
 
     <div class="antiGrid-row">
       <div class="antiGrid-row__header">
-        <Label label={document.string.TeamspaceMembers} />
+        <Label label={documentRes.string.TeamspaceMembers} />
       </div>
       <AccountArrayEditor
         value={members}
-        label={document.string.TeamspaceMembers}
-        onChange={(refs) => (members = refs)}
+        label={documentRes.string.TeamspaceMembers}
+        onChange={handleMembersChanged}
         kind={'regular'}
         size={'large'}
       />
     </div>
+
+    {#each roles as role}
+      <div class="antiGrid-row">
+        <div class="antiGrid-row__header">
+          <Label label={documentRes.string.RoleLabel} params={{ role: role.name }} />
+        </div>
+        <AccountArrayEditor
+          value={rolesAssignment?.[role._id] ?? []}
+          label={documentRes.string.TeamspaceMembers}
+          includeItems={members}
+          readonly={members.length === 0}
+          onChange={(refs) => {
+            handleRoleAssignmentChanged(role._id, refs)
+          }}
+          kind={'regular'}
+          size={'large'}
+        />
+      </div>
+    {/each}
   </div>
 </Card>

@@ -79,6 +79,7 @@ import SearchSelector from './components/SearchSelector.svelte'
 import SpaceHeader from './components/SpaceHeader.svelte'
 import SpacePresenter from './components/SpacePresenter.svelte'
 import SpaceRefPresenter from './components/SpaceRefPresenter.svelte'
+import SpaceTypeSelector from './components/SpaceTypeSelector.svelte'
 import StatusPresenter from './components/status/StatusPresenter.svelte'
 import StatusRefPresenter from './components/status/StatusRefPresenter.svelte'
 import StringEditor from './components/StringEditor.svelte'
@@ -138,6 +139,7 @@ export { default as ObjectSearchBox } from './components/ObjectSearchBox.svelte'
 export { default as ParentsNavigator } from './components/ParentsNavigator.svelte'
 export { default as StatusPresenter } from './components/status/StatusPresenter.svelte'
 export { default as StatusRefPresenter } from './components/status/StatusRefPresenter.svelte'
+export { default as SpaceTypeSelector } from './components/SpaceTypeSelector.svelte'
 export { default as TableBrowser } from './components/TableBrowser.svelte'
 export { default as ValueSelector } from './components/ValueSelector.svelte'
 export { default as ViewletSelector } from './components/ViewletSelector.svelte'
@@ -255,6 +257,7 @@ export default async (): Promise<Resources> => ({
     DividerPresenter,
     IndexedDocumentPreview,
     SpaceRefPresenter,
+    SpaceTypeSelector,
     EnumArrayEditor,
     EnumPresenter,
     StatusPresenter,

@@ -14,12 +14,12 @@
 //
 
 import { Attachment } from '@hcengineering/attachment'
-import { AttachedDoc, Class, CollaborativeDoc, Ref, Space } from '@hcengineering/core'
+import { AttachedDoc, Class, CollaborativeDoc, Ref, TypedSpace } from '@hcengineering/core'
 import { Preference } from '@hcengineering/preference'
 import { IconProps } from '@hcengineering/view'
 
 /** @public */
-export interface Teamspace extends Space, IconProps {}
+export interface Teamspace extends TypedSpace, IconProps {}
 
 /** @public */
 export interface Document extends AttachedDoc<Document, 'children', Teamspace>, IconProps {

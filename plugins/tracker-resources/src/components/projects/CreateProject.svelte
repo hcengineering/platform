@@ -163,7 +163,6 @@
   }
 
   let typeId: Ref<ProjectType> | undefined = project?.type
-
   $: typeType = typeId !== undefined ? $typeStore.get(typeId) : undefined
 
   $: if (defaultStatus === undefined && typeType !== undefined) {

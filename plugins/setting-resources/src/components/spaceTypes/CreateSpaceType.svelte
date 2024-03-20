@@ -15,12 +15,12 @@
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import core, { Class, ClassifierKind, Doc, Ref, SpaceTypeDescriptor, generateId } from '@hcengineering/core'
+  import core, { Class, Ref, SpaceTypeDescriptor, generateId, SpaceType, Data } from '@hcengineering/core'
   import { Card, getClient, hasResource } from '@hcengineering/presentation'
   import { AnySvelteComponent, EditBox } from '@hcengineering/ui'
-  import { Resource, getEmbeddedLabel, getResource } from '@hcengineering/platform'
+  import { Resource, getResource } from '@hcengineering/platform'
   import { ObjectBox } from '@hcengineering/view-resources'
-  import setting, { SpaceTypeCreator } from '@hcengineering/setting'
+  import setting, { SpaceTypeCreator, createSpaceType } from '@hcengineering/setting'
 
   import settingRes from '../../plugin'
 
@@ -40,27 +40,13 @@
     if (handleTypeCreated !== undefined) {
       await handleTypeCreated()
     } else {
-      const baseClassClazz = client.getHierarchy().getClass(descriptor.baseClass)
-      const spaceTypeMixinId: Ref<Class<Doc>> = generateId()
-      await client.createDoc(
-        core.class.Mixin,
-        core.space.Model,
-        {
-          extends: descriptor.baseClass,
-          kind: ClassifierKind.MIXIN,
-          label: getEmbeddedLabel(name),
-          icon: baseClassClazz.icon
-        },
-        spaceTypeMixinId
-      )
-
-      await client.createDoc(core.class.SpaceType, core.space.Model, {
-        shortDescription: '',
-        descriptor: descriptor._id,
-        roles: [],
+      const data: Omit<Data<SpaceType>, 'targetClass'> = {
         name,
-        targetClass: spaceTypeMixinId
-      })
+        descriptor: descriptor._id,
+        roles: []
+      }
+
+      await createSpaceType(client, data, generateId())
     }
 
     dispatch('close')

@@ -25,6 +25,8 @@ import {
 import { DOMAIN_ATTACHMENT } from '@hcengineering/model-attachment'
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 import { type Asset } from '@hcengineering/platform'
+import { createSpaceType } from '@hcengineering/setting'
+
 import document, { documentId, DOMAIN_DOCUMENT } from './index'
 
 async function createSpace (tx: TxOperations): Promise<void> {
@@ -238,6 +240,40 @@ async function setNoParent (client: MigrationClient): Promise<void> {
   )
 }
 
+async function createDefaultTeamspaceType (tx: TxOperations): Promise<void> {
+  const exist = await tx.findOne(core.class.SpaceType, { _id: document.spaceType.DefaultTeamspaceType })
+  const deleted = await tx.findOne(core.class.TxRemoveDoc, {
+    objectId: document.spaceType.DefaultTeamspaceType
+  })
+
+  if (exist === undefined && deleted === undefined) {
+    await createSpaceType(
+      tx,
+      {
+        name: 'Default teamspace type',
+        descriptor: document.descriptor.TeamspaceType,
+        roles: []
+      },
+      document.spaceType.DefaultTeamspaceType
+    )
+  }
+}
+
+async function migrateTeamspaces (client: MigrationClient): Promise<void> {
+  await client.update(
+    DOMAIN_SPACE,
+    {
+      _class: document.class.Teamspace,
+      type: { $exists: false }
+    },
+    {
+      $set: {
+        type: document.spaceType.DefaultTeamspaceType
+      }
+    }
+  )
+}
+
 export const documentOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await setNoParent(client)
@@ -263,10 +299,12 @@ export const documentOperation: MigrateOperation = {
         func: migrateDocumentIcons
       }
     ])
+    await migrateTeamspaces(client)
   },
 
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
     await createSpace(tx)
+    await createDefaultTeamspaceType(tx)
   }
 }
