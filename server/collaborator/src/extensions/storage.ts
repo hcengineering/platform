@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 
-import { YDocVersion } from '@hcengineering/collaboration'
 import { MeasureContext } from '@hcengineering/core'
 import {
   Document,
@@ -49,7 +48,7 @@ export class StorageExtension implements Extension {
   }
 
   async onLoadDocument ({ context, documentName }: withContext<onLoadDocumentPayload>): Promise<any> {
-    await this.configuration.ctx.info('load document', { documentId: documentName })
+    await this.configuration.ctx.info('load document', { documentName })
     return await this.configuration.ctx.with('load-document', {}, async () => {
       return await this.loadDocument(documentName, context)
     })
@@ -58,11 +57,11 @@ export class StorageExtension implements Extension {
   async onStoreDocument ({ context, documentName, document }: withContext<onStoreDocumentPayload>): Promise<void> {
     const { ctx } = this.configuration
 
-    await ctx.info('store document', { documentId: documentName })
+    await ctx.info('store document', { documentName })
 
     const collaborators = this.collaborators.get(documentName)
     if (collaborators === undefined || collaborators.size === 0) {
-      await ctx.info('no changes for document', { documentId: documentName })
+      await ctx.info('no changes for document', { documentName })
       return
     }
 
@@ -74,7 +73,7 @@ export class StorageExtension implements Extension {
 
   async onConnect ({ context, documentName, instance }: withContext<onConnectPayload>): Promise<any> {
     const connections = instance.documents.get(documentName)?.getConnectionsCount() ?? 0
-    const params = { documentId: documentName, connectionId: context.connectionId, connections }
+    const params = { documentName, connectionId: context.connectionId, connections }
     await this.configuration.ctx.info('connect to document', params)
   }
 
@@ -82,12 +81,12 @@ export class StorageExtension implements Extension {
     const { ctx } = this.configuration
     const { connectionId } = context
 
-    const params = { documentId: documentName, connectionId, connections: document.getConnectionsCount() }
+    const params = { documentName, connectionId, connections: document.getConnectionsCount() }
     await ctx.info('disconnect from document', params)
 
     const collaborators = this.collaborators.get(documentName)
     if (collaborators === undefined || !collaborators.has(connectionId)) {
-      await ctx.info('no changes for document', { documentId: documentName })
+      await ctx.info('no changes for document', { documentName })
       return
     }
 
@@ -98,82 +97,34 @@ export class StorageExtension implements Extension {
   }
 
   async afterUnloadDocument ({ documentName }: afterUnloadDocumentPayload): Promise<any> {
-    await this.configuration.ctx.info('unload document', { documentId: documentName })
+    await this.configuration.ctx.info('unload document', { documentName })
     this.collaborators.delete(documentName)
   }
 
-  async loadDocument (documentId: string, context: Context): Promise<YDoc | undefined> {
+  async loadDocument (documentName: string, context: Context): Promise<YDoc | undefined> {
     const { adapter, ctx } = this.configuration
 
     try {
-      await ctx.info('load document content', { documentId })
-      const ydoc = await adapter.loadDocument(documentId, context)
+      await ctx.info('load document content', { documentId: documentName })
+      const ydoc = await adapter.loadDocument(documentName, context)
       if (ydoc !== undefined) {
         return ydoc
       }
     } catch (err) {
-      await ctx.error('failed to load document', { documentId, error: err })
-    }
-
-    const { initialContentId } = context
-    if (initialContentId !== undefined && initialContentId.length > 0) {
-      await ctx.info('load document initial content', { documentId, initialContentId })
-      try {
-        const ydoc = await adapter.loadDocument(initialContentId, context)
-
-        // if document was loaded from the initial content we need to save
-        // it to ensure the next time we load ydoc document
-        if (ydoc !== undefined) {
-          await adapter.saveDocument(documentId, ydoc, undefined, context)
-        }
-
-        return ydoc
-      } catch (err) {
-        await ctx.error('failed to load document initial content', {
-          documentId,
-          initialContentId,
-          error: err
-        })
-      }
+      await ctx.error('failed to load document', { documentName, error: err })
     }
   }
 
-  async storeDocument (documentId: string, document: Document, context: Context): Promise<void> {
+  async storeDocument (documentName: string, document: Document, context: Context): Promise<void> {
     const { adapter, ctx } = this.configuration
 
-    let snapshot: YDocVersion | undefined
     try {
-      await ctx.info('take document snapshot', { documentId })
-      snapshot = await ctx.with('take-snapshot', {}, async () => {
-        return await adapter.takeSnapshot(documentId, document, context)
-      })
-    } catch (err) {
-      await ctx.error('failed to take document snapshot', { documentId, error: err })
-    }
-
-    try {
-      await ctx.info('save document content', { documentId })
+      await ctx.info('save document content', { documentName })
       await ctx.with('save-document', {}, async () => {
-        await adapter.saveDocument(documentId, document, snapshot, context)
+        await adapter.saveDocument(documentName, document, context)
       })
     } catch (err) {
-      await ctx.error('failed to save document', { documentId, error: err })
-    }
-
-    const { targetContentId } = context
-    if (targetContentId !== undefined && targetContentId.length > 0) {
-      await ctx.info('store document target content', { documentId, targetContentId })
-      try {
-        await ctx.with('save-target-document', {}, async () => {
-          await adapter.saveDocument(targetContentId, document, snapshot, context)
-        })
-      } catch (err) {
-        await ctx.error('failed to save document target content', {
-          documentId,
-          targetContentId,
-          error: err
-        })
-      }
+      await ctx.error('failed to save document', { documentName, error: err })
     }
   }
 }

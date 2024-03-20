@@ -32,10 +32,7 @@ import { AuthenticationExtension } from './extensions/authentication'
 import { StorageExtension } from './extensions/storage'
 import { Controller, getClientFactory } from './platform'
 import { RpcErrorResponse, RpcRequest, RpcResponse, methods } from './rpc'
-import { MinioStorageAdapter } from './storage/minio'
-import { MongodbStorageAdapter } from './storage/mongodb'
-import { PlatformStorageAdapter } from './storage/platform'
-import { RouterStorageAdapter } from './storage/router'
+import { PlatformStorageAdapter } from './storage/storage'
 import { HtmlTransformer } from './transformers/html'
 
 /**
@@ -131,14 +128,7 @@ export async function start (
       }),
       new StorageExtension({
         ctx: extensionsCtx.newChild('storage', {}),
-        adapter: new RouterStorageAdapter(
-          {
-            minio: new MinioStorageAdapter(storageCtx.newChild('minio', {}), minio),
-            mongodb: new MongodbStorageAdapter(storageCtx.newChild('mongodb', {}), mongo, transformer),
-            platform: new PlatformStorageAdapter(storageCtx.newChild('platform', {}), transformer)
-          },
-          'minio'
-        )
+        adapter: new PlatformStorageAdapter(storageCtx.newChild('platform', {}), minio, mongo, transformer)
       })
     ],
 
@@ -149,13 +139,11 @@ export async function start (
 
   const rpcCtx = ctx.newChild('rpc', {})
 
-  const getContext = (token: Token, initialContentId?: string): Context => {
+  const getContext = (token: Token): Context => {
     return {
       connectionId: generateId(),
       workspaceId: token.workspace,
-      clientFactory: getClientFactory(token, controller),
-      initialContentId: initialContentId ?? '',
-      targetContentId: ''
+      clientFactory: getClientFactory(token, controller)
     }
   }
 

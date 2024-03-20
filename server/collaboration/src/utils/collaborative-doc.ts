@@ -19,7 +19,8 @@ import {
   CollaborativeDocVersionHead,
   MeasureContext,
   WorkspaceId,
-  collaborativeDocParse
+  collaborativeDocParse,
+  collaborativeDocUnchain
 } from '@hcengineering/core'
 import { Doc as YDoc } from 'yjs'
 
@@ -35,6 +36,41 @@ export function collaborativeHistoryDocId (id: string): string {
   return id.endsWith(suffix) ? id : id + suffix
 }
 
+async function loadCollaborativeDocVersion (
+  ctx: MeasureContext,
+  storageAdapter: StorageAdapter,
+  workspace: WorkspaceId,
+  documentId: string,
+  versionId: string
+): Promise<YDoc | undefined> {
+  const yContent = await ctx.with('yDocFromStorage', { type: 'content' }, async (ctx) => {
+    return await yDocFromStorage(ctx, storageAdapter, workspace, documentId, new YDoc({ gc: false }))
+  })
+
+  // the document does not exist
+  if (yContent === undefined) {
+    return undefined
+  }
+
+  if (versionId === 'HEAD') {
+    return yContent
+  }
+
+  const historyDocumentId = collaborativeHistoryDocId(documentId)
+  const yHistory = await ctx.with('yDocFromStorage', { type: 'history' }, async (ctx) => {
+    return await yDocFromStorage(ctx, storageAdapter, workspace, historyDocumentId, new YDoc())
+  })
+
+  // the history document does not exist
+  if (yHistory === undefined) {
+    return undefined
+  }
+
+  return await ctx.with('restoreYdocSnapshot', {}, () => {
+    return restoreYdocSnapshot(yContent, yHistory, versionId)
+  })
+}
+
 /** @public */
 export async function loadCollaborativeDoc (
   storageAdapter: StorageAdapter,
@@ -42,35 +78,20 @@ export async function loadCollaborativeDoc (
   collaborativeDoc: CollaborativeDoc,
   ctx: MeasureContext
 ): Promise<YDoc | undefined> {
-  const { documentId, versionId } = collaborativeDocParse(collaborativeDoc)
-  const historyDocumentId = collaborativeHistoryDocId(documentId)
+  const sources = collaborativeDocUnchain(collaborativeDoc)
 
   return await ctx.with('loadCollaborativeDoc', { type: 'content' }, async (ctx) => {
-    const yContent = await ctx.with('yDocFromMinio', { type: 'content' }, async () => {
-      return await yDocFromStorage(ctx, storageAdapter, workspace, documentId, new YDoc({ gc: false }))
-    })
+    for (const source of sources) {
+      const { documentId, versionId } = collaborativeDocParse(source)
 
-    // the document does not exist
-    if (yContent === undefined) {
-      return undefined
+      await ctx.info('loading collaborative document', { source })
+      const ydoc = await loadCollaborativeDocVersion(ctx, storageAdapter, workspace, documentId, versionId)
+
+      if (ydoc !== undefined) {
+        return ydoc
+      }
     }
-
-    if (versionId === 'HEAD') {
-      return yContent
-    }
-
-    const yHistory = await ctx.with('yDocFromMinio', { type: 'history' }, async () => {
-      return await yDocFromStorage(ctx, storageAdapter, workspace, historyDocumentId, new YDoc())
-    })
-
-    // the history document does not exist
-    if (yHistory === undefined) {
-      return undefined
-    }
-
-    return await ctx.with('restoreYdocSnapshot', {}, () => {
-      return restoreYdocSnapshot(yContent, yHistory, versionId)
-    })
+    return undefined
   })
 }
 
@@ -97,7 +118,7 @@ export async function saveCollaborativeDocVersion (
 ): Promise<void> {
   await ctx.with('saveCollaborativeDoc', {}, async (ctx) => {
     if (versionId === 'HEAD') {
-      await ctx.with('yDocToMinio', {}, async () => {
+      await ctx.with('yDocToStorage', {}, async () => {
         await yDocToStorage(ctx, storageAdapter, workspace, documentId, ydoc)
       })
     } else {
@@ -180,7 +201,7 @@ export async function takeCollaborativeDocSnapshot (
 
   await ctx.with('takeCollaborativeDocSnapshot', {}, async (ctx) => {
     const yHistory =
-      (await ctx.with('yDocFromMinio', { type: 'history' }, async () => {
+      (await ctx.with('yDocFromStorage', { type: 'history' }, async (ctx) => {
         return await yDocFromStorage(ctx, storageAdapter, workspace, historyDocumentId, new YDoc({ gc: false }))
       })) ?? new YDoc()
 
@@ -188,7 +209,7 @@ export async function takeCollaborativeDocSnapshot (
       createYdocSnapshot(ydoc, yHistory, version)
     })
 
-    await ctx.with('yDocToMinio', { type: 'history' }, async () => {
+    await ctx.with('yDocToStorage', { type: 'history' }, async (ctx) => {
       await yDocToStorage(ctx, storageAdapter, workspace, historyDocumentId, yHistory)
     })
   })
@@ -196,8 +217,8 @@ export async function takeCollaborativeDocSnapshot (
 
 /** @public */
 export function isEditableDoc (id: CollaborativeDoc): boolean {
-  const data = collaborativeDocParse(id)
-  return isEditableDocVersion(data.versionId)
+  const { versionId } = collaborativeDocParse(id)
+  return isEditableDocVersion(versionId)
 }
 
 /** @public */
