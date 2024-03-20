@@ -188,6 +188,7 @@ export const contactPlugin = plugin(contactId, {
   component: {
     SocialEditor: '' as AnyComponent,
     CreateOrganization: '' as AnyComponent,
+    BulkCreatePerson: '' as AnyComponent,
     CreatePerson: '' as AnyComponent,
     ChannelsPresenter: '' as AnyComponent,
     MembersPresenter: '' as AnyComponent,

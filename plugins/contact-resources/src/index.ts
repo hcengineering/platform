@@ -56,6 +56,7 @@ import Contacts from './components/Contacts.svelte'
 import ContactsTabs from './components/ContactsTabs.svelte'
 import CreateEmployee from './components/CreateEmployee.svelte'
 import CreateOrganization from './components/CreateOrganization.svelte'
+import BulkCreatePerson from './components/BulkCreatePerson.svelte'
 import CreatePerson from './components/CreatePerson.svelte'
 import DeleteConfirmationPopup from './components/DeleteConfirmationPopup.svelte'
 import EditEmployee from './components/EditEmployee.svelte'
@@ -302,6 +303,7 @@ export default async (): Promise<Resources> => ({
     PersonPresenter,
     OrganizationPresenter,
     ChannelsPresenter,
+    BulkCreatePerson,
     CreatePerson,
     CreateOrganization,
     EditPerson,

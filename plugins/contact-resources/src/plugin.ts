@@ -24,6 +24,10 @@ export default mergeIds(contactId, contact, {
   string: {
     Apply: '' as IntlString,
     Contacts: '' as IntlString,
+    IncompleteData: '' as IntlString,
+    BulkCreatePerson: '' as IntlString,
+    BulkCreateTemplateDownload: '' as IntlString,
+    BulkCreateTemplateUpload: '' as IntlString,
     CreatePerson: '' as IntlString,
     OrganizationNamePlaceholder: '' as IntlString,
     OrganizationsNamePlaceholder: '' as IntlString,

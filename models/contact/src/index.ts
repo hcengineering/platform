@@ -277,6 +277,10 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.ObjectFactory, {
+    component: contact.component.BulkCreatePerson
+  })
+
+  builder.mixin(contact.class.Person, core.class.Class, view.mixin.ObjectFactory, {
     component: contact.component.CreatePerson
   })
 
@@ -342,6 +346,8 @@ export function createModel (builder: Builder): void {
               },
               icon: contact.icon.Person,
               label: contact.string.Person,
+              bulkCreateLabel: contact.string.BulkCreatePerson,
+              bulkCreateComponent: contact.component.BulkCreatePerson,
               createLabel: contact.string.CreatePerson,
               createComponent: contact.component.CreatePerson
             }

@@ -34,6 +34,9 @@
   export let space: Ref<Space> | undefined = undefined
   // export let icon: Asset
   export let label: IntlString
+  export let bulkCreateLabel: IntlString | undefined
+  export let bulkCreateComponent: AnyComponent | undefined
+  export let bulkCreateComponentProps: Record<string, any> = {}
   export let createLabel: IntlString | undefined
   export let createComponent: AnyComponent | undefined
   export let createComponentProps: Record<string, any> = {}
@@ -52,6 +55,11 @@
   $: query = { ...(baseQuery ?? {}), ...(viewlet?.baseQuery ?? {}) }
   $: searchQuery = search === '' ? query : { ...query, $search: search }
   $: resultQuery = searchQuery
+
+  function showBulkCreateDialog (): void {
+    if (bulkCreateComponent === undefined) return
+    showPopup(bulkCreateComponent, bulkCreateComponentProps, 'top')
+  }
 
   function showCreateDialog (): void {
     if (createComponent === undefined) return
@@ -78,6 +86,17 @@
         ...(descriptors !== undefined ? { descriptor: { $in: descriptors } } : {})
       }}
     />
+    {#if bulkCreateLabel && bulkCreateComponent}
+      <Button
+        icon={IconAdd}
+        label={bulkCreateLabel}
+        kind={'primary'}
+        disabled={isCreationDisabled}
+        on:click={() => {
+          showBulkCreateDialog()
+        }}
+      />
+    {/if}
     {#if createLabel && createComponent}
       <Button
         icon={IconAdd}
