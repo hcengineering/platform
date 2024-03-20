@@ -782,6 +782,20 @@ export function createModel (builder: Builder): void {
     view.action.ShowPreview
   )
 
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ExportToPdf,
+      label: view.string.ExportToPdf,
+      // icon: view.icon.Delete,
+      category: view.category.General,
+      input: 'any',
+      target: core.class.Doc,
+      context: { mode: ['context', 'browser'], group: 'edit' }
+    },
+    view.action.ExportToPdf
+  )
+
   builder.createDoc(view.class.LinkPresenter, core.space.Model, {
     pattern: '(www.)?youtube.(com|ru)',
     component: view.component.YoutubePresenter

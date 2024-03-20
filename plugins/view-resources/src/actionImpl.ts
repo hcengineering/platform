@@ -501,6 +501,32 @@ async function getPopupAlignment (
   }
 }
 
+function ExportToPdf (
+  object: Doc | Doc[],
+  evt: Event,
+  props: {
+    skipCheck: boolean
+  }
+): void {
+  const skipCheck = false
+  showPopup(
+    contact.component.DeleteConfirmationPopup,
+    {
+      object,
+      skipCheck,
+      deleteAction: async () => {
+        console.log('worked ExportToPdf')
+        console.log(`props: ${JSON.stringify(props)}`)
+        // const objs = Array.isArray(object) ? object : [object]
+        // await deleteObjects(getClient(), objs, skipCheck).catch((err) => {
+        //   console.error(err)
+        // })
+      }
+    },
+    undefined
+  )
+}
+
 /**
  * @public
  */
@@ -525,5 +551,6 @@ export const actionImpl = {
   ShowPopup,
   ShowEditor,
   ValueSelector,
-  AttributeSelector
+  AttributeSelector,
+  ExportToPdf
 }

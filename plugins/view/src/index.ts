@@ -139,7 +139,8 @@ const view = plugin(viewId, {
 
     // Edit document
     Open: '' as Ref<Action>,
-    OpenInNewTab: '' as Ref<Action>
+    OpenInNewTab: '' as Ref<Action>,
+    ExportToPdf: '' as Ref<Action>
   },
   viewlet: {
     Table: '' as Ref<ViewletDescriptor>,
@@ -192,7 +193,8 @@ const view = plugin(viewId, {
     Type: '' as IntlString,
     UnArchive: '' as IntlString,
     Save: '' as IntlString,
-    PublicView: '' as IntlString
+    PublicView: '' as IntlString,
+    ExportToPdf: '' as IntlString
   },
   icon: {
     Table: '' as Asset,
@@ -218,7 +220,8 @@ const view = plugin(viewId, {
     Filter: '' as Asset,
     Configure: '' as Asset,
     Database: '' as Asset,
-    Star: '' as Asset
+    Star: '' as Asset,
+    ExportToPdf: '' as Asset
   },
   category: {
     General: '' as Ref<ActionCategory>,

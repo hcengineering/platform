@@ -41,7 +41,8 @@ export default mergeIds(viewId, view, {
     Preview: '' as ViewAction,
 
     Open: '' as ViewAction,
-    OpenInNewTab: '' as ViewAction
+    OpenInNewTab: '' as ViewAction,
+    ExportToPdf: '' as ViewAction
   },
   component: {
     StringEditor: '' as AnyComponent,
