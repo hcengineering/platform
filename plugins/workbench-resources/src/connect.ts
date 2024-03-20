@@ -32,6 +32,14 @@ addEventListener(client.event.NetworkRequests, async (event: string, val: number
   networkStatus.set(val)
 })
 
+export async function disconnect (): Promise<void> {
+  if (_client !== undefined) {
+    await _client.close()
+    _client = undefined
+    _clientSet = false
+  }
+}
+
 export async function connect (title: string): Promise<Client | undefined> {
   const loc = getCurrentLocation()
   const ws = loc.path[1]
