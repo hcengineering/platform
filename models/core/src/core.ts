@@ -363,3 +363,7 @@ export class TTypeCollaborativeDoc extends TType {}
 @UX(core.string.CollaborativeDocVersion)
 @Model(core.class.TypeCollaborativeDocVersion, core.class.Type)
 export class TTypeCollaborativeDocVersion extends TType {}
+
+@UX(core.string.Rank)
+@Model(core.class.TypeRank, core.class.Type)
+export class TTypeRank extends TType {}

@@ -26,16 +26,17 @@ import core, {
   TxOperations,
   generateId,
   type AnyAttribute,
+  type Rank,
   type RefTo
 } from '@hcengineering/core'
 import { PlatformError, getEmbeddedLabel, unknownStatus } from '@hcengineering/platform'
 import task, { Project, ProjectStatus, ProjectType, Task, TaskType } from '.'
-import { makeRank, type Rank } from '@hcengineering/rank'
+import { makeRank } from '@hcengineering/rank'
 
 export { genRanks, makeRank } from '@hcengineering/rank'
 
 /**
- * @public
+ * @deprecated Prefer {@link makeRank}
  *
  * TODO: Drop after everything migrates to {@link makeRank}
  */
