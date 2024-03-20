@@ -14,7 +14,14 @@
 //
 
 import { YDocVersion } from '@hcengineering/collaboration'
-import core, { Class, CollaborativeDoc, Doc, MeasureContext, Ref, updateCollaborativeDoc } from '@hcengineering/core'
+import core, {
+  Class,
+  CollaborativeDoc,
+  Doc,
+  MeasureContext,
+  Ref,
+  collaborativeDocWithLastVersion
+} from '@hcengineering/core'
 import { Transformer } from '@hocuspocus/transformer'
 import { Doc as YDoc } from 'yjs'
 
@@ -91,7 +98,9 @@ export class PlatformStorageAdapter implements StorageAdapter {
       if (hierarchy.isDerived(attribute.type._class, core.class.TypeCollaborativeDoc)) {
         const collaborativeDoc = (current as any)[objectAttr] as CollaborativeDoc
         const newCollaborativeDoc =
-          snapshot !== undefined ? updateCollaborativeDoc(collaborativeDoc, snapshot.versionId) : collaborativeDoc
+          snapshot !== undefined
+            ? collaborativeDocWithLastVersion(collaborativeDoc, snapshot.versionId)
+            : collaborativeDoc
 
         await ctx.with('update', {}, async () => {
           await client.diffUpdate(current, { [objectAttr]: newCollaborativeDoc })

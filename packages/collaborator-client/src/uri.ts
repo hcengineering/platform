@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-import { Class, CollaborativeDoc, Doc, Domain, Ref, parseCollaborativeDoc } from '@hcengineering/core'
+import { Class, CollaborativeDoc, Doc, Domain, Ref, collaborativeDocParse } from '@hcengineering/core'
 
 export type DocumentURI = string & { __documentUri: true }
 
 export function collaborativeDocumentUri (workspaceUrl: string, docId: CollaborativeDoc): DocumentURI {
-  const { documentId, versionId } = parseCollaborativeDoc(docId)
+  const { documentId, versionId } = collaborativeDocParse(docId)
   return `minio://${workspaceUrl}/${documentId}/${versionId}` as DocumentURI
 }
 

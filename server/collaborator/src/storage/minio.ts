@@ -23,7 +23,7 @@ import {
   CollaborativeDocVersion,
   CollaborativeDocVersionHead,
   MeasureContext,
-  formatCollaborativeDocVersion
+  collaborativeDocFormat
 } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { Doc as YDoc } from 'yjs'
@@ -69,7 +69,11 @@ export class MinioStorageAdapter implements StorageAdapter {
 
     return await this.ctx.with('load-document', {}, async (ctx) => {
       try {
-        const collaborativeDoc = formatCollaborativeDocVersion({ documentId: minioDocumentId, versionId })
+        const collaborativeDoc = collaborativeDocFormat({
+          documentId: minioDocumentId,
+          versionId,
+          lastVersionId: versionId
+        })
         return await loadCollaborativeDoc(this.minio, workspaceId, collaborativeDoc, ctx)
       } catch {
         return undefined
@@ -111,7 +115,11 @@ export class MinioStorageAdapter implements StorageAdapter {
     }
 
     const { minioDocumentId, versionId } = parseDocumentId(documentId)
-    const collaborativeDoc = formatCollaborativeDocVersion({ documentId: minioDocumentId, versionId })
+    const collaborativeDoc = collaborativeDocFormat({
+      documentId: minioDocumentId,
+      versionId,
+      lastVersionId: versionId
+    })
 
     await this.ctx.with('take-snapshot', {}, async (ctx) => {
       await takeCollaborativeDocSnapshot(this.minio, workspaceId, collaborativeDoc, document, yDocVersion, ctx)

@@ -23,8 +23,8 @@ import {
   Ref,
   Timestamp,
   WorkspaceId,
-  concatLink,
-  toCollaborativeDocVersion
+  collaborativeDocWithVersion,
+  concatLink
 } from '@hcengineering/core'
 import { DocumentURI, collaborativeDocumentUri, mongodbDocumentUri } from './uri'
 
@@ -214,6 +214,6 @@ class CollaboratorClientImpl implements CollaboratorClient {
     const payload: TakeSnapshotRequest = { documentId, collaborativeDoc, ...params }
     const res = (await this.rpc('takeSnapshot', payload)) as TakeSnapshotResponse
 
-    return toCollaborativeDocVersion(collaborativeDoc, res.versionId)
+    return collaborativeDocWithVersion(collaborativeDoc, res.versionId)
   }
 }

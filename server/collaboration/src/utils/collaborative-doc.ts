@@ -19,7 +19,7 @@ import {
   CollaborativeDocVersionHead,
   MeasureContext,
   WorkspaceId,
-  parseCollaborativeDoc
+  collaborativeDocParse
 } from '@hcengineering/core'
 import { Doc as YDoc } from 'yjs'
 
@@ -42,7 +42,7 @@ export async function loadCollaborativeDoc (
   collaborativeDoc: CollaborativeDoc,
   ctx: MeasureContext
 ): Promise<YDoc | undefined> {
-  const { documentId, versionId } = parseCollaborativeDoc(collaborativeDoc)
+  const { documentId, versionId } = collaborativeDocParse(collaborativeDoc)
   const historyDocumentId = collaborativeHistoryDocId(documentId)
 
   return await ctx.with('loadCollaborativeDoc', { type: 'content' }, async (ctx) => {
@@ -82,7 +82,7 @@ export async function saveCollaborativeDoc (
   ydoc: YDoc,
   ctx: MeasureContext
 ): Promise<void> {
-  const { documentId, versionId } = parseCollaborativeDoc(collaborativeDoc)
+  const { documentId, versionId } = collaborativeDocParse(collaborativeDoc)
   await saveCollaborativeDocVersion(storageAdapter, workspace, documentId, versionId, ydoc, ctx)
 }
 
@@ -116,7 +116,7 @@ export async function removeCollaborativeDoc (
   await ctx.with('removeollaborativeDoc', {}, async (ctx) => {
     const toRemove: string[] = []
     for (const collaborativeDoc of collaborativeDocs) {
-      const { documentId, versionId } = parseCollaborativeDoc(collaborativeDoc)
+      const { documentId, versionId } = collaborativeDocParse(collaborativeDoc)
       if (versionId === CollaborativeDocVersionHead) {
         toRemove.push(documentId, collaborativeHistoryDocId(documentId))
       } else {
@@ -139,8 +139,8 @@ export async function copyCollaborativeDoc (
   target: CollaborativeDoc,
   ctx: MeasureContext
 ): Promise<YDoc | undefined> {
-  const { documentId: sourceDocumentId } = parseCollaborativeDoc(source)
-  const { documentId: targetDocumentId, versionId: targetVersionId } = parseCollaborativeDoc(target)
+  const { documentId: sourceDocumentId } = collaborativeDocParse(source)
+  const { documentId: targetDocumentId, versionId: targetVersionId } = collaborativeDocParse(target)
 
   if (sourceDocumentId === targetDocumentId) {
     // no need to copy into itself
@@ -175,7 +175,7 @@ export async function takeCollaborativeDocSnapshot (
   version: YDocVersion,
   ctx: MeasureContext
 ): Promise<void> {
-  const { documentId } = parseCollaborativeDoc(collaborativeDoc)
+  const { documentId } = collaborativeDocParse(collaborativeDoc)
   const historyDocumentId = collaborativeHistoryDocId(documentId)
 
   await ctx.with('takeCollaborativeDocSnapshot', {}, async (ctx) => {
@@ -196,7 +196,7 @@ export async function takeCollaborativeDocSnapshot (
 
 /** @public */
 export function isEditableDoc (id: CollaborativeDoc): boolean {
-  const data = parseCollaborativeDoc(id)
+  const data = collaborativeDocParse(id)
   return isEditableDocVersion(data.versionId)
 }
 
