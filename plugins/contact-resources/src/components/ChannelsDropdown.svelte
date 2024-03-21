@@ -50,12 +50,12 @@
   export let focusIndex = -1
   export let restricted: Ref<ChannelProvider>[] = []
 
-  let notifyContextByDocStore: Writable<Map<Ref<Doc>, DocNotifyContext>> = writable(new Map())
+  let contextByDocStore: Writable<Map<Ref<Doc>, DocNotifyContext>> = writable(new Map())
   let inboxNotificationsByContextStore: Readable<Map<Ref<DocNotifyContext>, InboxNotification[]>> = readable(new Map())
 
   getResource(notification.function.GetInboxNotificationsClient).then((res) => {
     const inboxClient = res()
-    notifyContextByDocStore = inboxClient.docNotifyContextByDoc
+    contextByDocStore = inboxClient.contextByDoc
     inboxNotificationsByContextStore = inboxClient.inboxNotificationsByContext
   })
 
@@ -149,7 +149,7 @@
     updateMenu(displayItems, channelProviders)
   }
 
-  $: if (value) update(value, $notifyContextByDocStore, $inboxNotificationsByContextStore, $channelProviders)
+  $: if (value) update(value, $contextByDocStore, $inboxNotificationsByContextStore, $channelProviders)
 
   let displayItems: Item[] = []
   let actions: Action[] = []
@@ -171,7 +171,7 @@
           const provider = getProvider(
             { provider: pr._id, value: '' },
             toIdMap(providers),
-            $notifyContextByDocStore,
+            $contextByDocStore,
             $inboxNotificationsByContextStore
           )
           if (provider !== undefined) {

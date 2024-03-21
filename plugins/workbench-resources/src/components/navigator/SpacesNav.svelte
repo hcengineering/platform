@@ -108,7 +108,7 @@
   }
 
   const inboxClient = InboxNotificationsClientImpl.getClient()
-  const notifyContextByDocStore = inboxClient.docNotifyContextByDoc
+  const notifyContextByDocStore = inboxClient.contextByDoc
   const inboxNotificationsByContextStore = inboxClient.inboxNotificationsByContext
 
   function isChanged (

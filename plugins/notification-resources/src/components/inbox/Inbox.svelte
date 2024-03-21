@@ -13,11 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import notification, {
-    ActivityNotificationViewlet,
-    DisplayInboxNotification,
-    DocNotifyContext
-  } from '@hcengineering/notification'
+  import notification, { DocNotifyContext } from '@hcengineering/notification'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import view from '@hcengineering/view'
   import {
@@ -35,22 +31,15 @@
     TabList
   } from '@hcengineering/ui'
   import chunter, { ThreadMessage } from '@hcengineering/chunter'
-  import { Ref } from '@hcengineering/core'
+  import { IdMap, Ref } from '@hcengineering/core'
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import { isReactionMessage } from '@hcengineering/activity-resources'
   import { get } from 'svelte/store'
 
   import { inboxMessagesStore, InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
   import Filter from '../Filter.svelte'
-  import {
-    archiveAll,
-    getDisplayInboxNotifications,
-    openInboxDoc,
-    readAll,
-    resolveLocation,
-    unreadAll
-  } from '../../utils'
-  import { InboxNotificationsFilter } from '../../types'
+  import { archiveAll, getDisplayInboxData, openInboxDoc, readAll, resolveLocation, unreadAll } from '../../utils'
+  import { InboxData, InboxNotificationsFilter } from '../../types'
 
   export let visibleNav: boolean = true
   export let navFloat: boolean = false
@@ -61,7 +50,8 @@
 
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const notificationsByContextStore = inboxClient.inboxNotificationsByContext
-  const notifyContextsStore = inboxClient.docNotifyContexts
+  const contextByIdStore = inboxClient.contextById
+  const contextsStore = inboxClient.contexts
 
   const messagesQuery = createQuery()
 
@@ -78,12 +68,11 @@
     labelIntl: chunter.string.Direct
   }
 
-  let displayNotifications: DisplayInboxNotification[] = []
-  let displayContextsIds = new Set<Ref<DocNotifyContext>>()
+  let inboxData: InboxData = new Map()
 
   let messagesIds: Ref<ActivityMessage>[] = []
 
-  let filteredNotifications: DisplayInboxNotification[] = []
+  let filteredData: InboxData = new Map()
   let filter: InboxNotificationsFilter = 'all'
 
   let tabItems: TabItem[] = []
@@ -93,20 +82,13 @@
   let selectedContext: DocNotifyContext | undefined = undefined
   let selectedComponent: AnyComponent | undefined = undefined
 
-  let viewlets: ActivityNotificationViewlet[] = []
-
   let selectedMessage: ActivityMessage | undefined = undefined
 
-  void client.findAll(notification.class.ActivityNotificationViewlet, {}).then((res) => {
-    viewlets = res
+  $: void getDisplayInboxData($notificationsByContextStore, filter).then((res) => {
+    inboxData = res
   })
 
-  $: void getDisplayInboxNotifications($notificationsByContextStore, filter).then((res) => {
-    displayNotifications = res
-  })
-  $: displayContextsIds = new Set(displayNotifications.map(({ docNotifyContext }) => docNotifyContext))
-
-  $: filteredNotifications = filterNotifications(selectedTabId, displayNotifications, $notifyContextsStore)
+  $: filteredData = filterNotifications(selectedTabId, inboxData, $contextByIdStore)
 
   locationStore.subscribe((newLocation) => {
     void syncLocation(newLocation)
@@ -116,6 +98,7 @@
     messagesIds = notifications.map(({ attachedTo }) => attachedTo)
   })
 
+  // CAN GET FROM LOOKUP ???
   $: messagesQuery.query(
     activity.class.ActivityMessage,
     {
@@ -147,19 +130,17 @@
     }
   }
 
-  $: selectedContext = selectedContextId
-    ? selectedContext ?? $notifyContextsStore.find(({ _id }) => _id === selectedContextId)
-    : undefined
+  $: selectedContext = selectedContextId ? selectedContext ?? $contextByIdStore.get(selectedContextId) : undefined
 
   $: updateSelectedPanel(selectedContext)
-  $: updateTabItems(displayContextsIds, $notifyContextsStore)
+  $: updateTabItems(inboxData, $contextsStore)
 
-  function updateTabItems (displayContextsIds: Set<Ref<DocNotifyContext>>, notifyContexts: DocNotifyContext[]): void {
+  function updateTabItems (inboxData: InboxData, notifyContexts: DocNotifyContext[]): void {
     const displayClasses = new Set(
       notifyContexts
         .filter(
           ({ _id, attachedToClass }) =>
-            displayContextsIds.has(_id) && !hierarchy.isDerived(attachedToClass, activity.class.ActivityMessage)
+            inboxData.has(_id) && !hierarchy.isDerived(attachedToClass, activity.class.ActivityMessage)
         )
         .map(({ attachedToClass }) => attachedToClass)
     )
@@ -176,7 +157,7 @@
         .map((_class) => ({
           id: _class,
           // TODO: need to get plural form
-          labelIntl: hierarchy.getClass(_class).label
+          labelIntl: hierarchy.getClass(_class).pluralLabel ?? hierarchy.getClass(_class).label
         }))
     )
   }
@@ -250,18 +231,24 @@
 
   function filterNotifications (
     selectedTabId: string,
-    displayNotifications: DisplayInboxNotification[],
-    notifyContexts: DocNotifyContext[]
-  ): DisplayInboxNotification[] {
+    inboxData: InboxData,
+    contextById: IdMap<DocNotifyContext>
+  ): InboxData {
     if (selectedTabId === allTab.id) {
-      return displayNotifications
+      return inboxData
     }
 
-    return displayNotifications.filter(({ docNotifyContext }) => {
-      const context = notifyContexts.find(({ _id }) => _id === docNotifyContext)
+    const result = new Map()
 
-      return context !== undefined && context.attachedToClass === selectedTabId
-    })
+    for (const [key] of inboxData) {
+      const context = contextById.get(key)
+
+      if (context !== undefined && context.attachedToClass === selectedTabId) {
+        result.set(key, inboxData.get(key))
+      }
+    }
+
+    return result
   }
 
   defineSeparators('inbox', [
@@ -305,7 +292,7 @@
             <span class="ac-header__title"><Label label={notification.string.Inbox} /></span>
           </div>
           <div class="flex flex-gap-2">
-            {#if displayNotifications.length > 0}
+            {#if inboxData.size > 0}
               <ButtonWithDropdown
                 justify="left"
                 kind="regular"
@@ -342,15 +329,7 @@
         </div>
 
         <Scroller padding="1rem 0">
-          <!--            <Component-->
-          <!--              is={viewlet.$lookup.descriptor.component}-->
-          <!--              props={{-->
-          <!--                notifications: filteredNotifications,-->
-          <!--                viewlets,-->
-          <!--                selectedContext-->
-          <!--              }}-->
-          <!--              on:click={selectContext}-->
-          <!--            />-->
+          <!--          <InboxGroupedListView notifications={filteredData} {selectedContext} on:click={selectedContext}/>-->
         </Scroller>
       </div>
       <Separator name="inbox" float={navFloat ? 'navigator' : true} index={0} />

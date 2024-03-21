@@ -180,7 +180,7 @@ export async function replyToThread (message: ActivityMessage): Promise<void> {
 
   const inboxClient = InboxNotificationsClientImpl.getClient()
 
-  let contextId: Ref<DocNotifyContext> | undefined = get(inboxClient.docNotifyContextByDoc).get(message.attachedTo)?._id
+  let contextId: Ref<DocNotifyContext> | undefined = get(inboxClient.contextByDoc).get(message.attachedTo)?._id
 
   if (contextId === undefined) {
     contextId = await client.createDoc(notification.class.DocNotifyContext, message.space, {

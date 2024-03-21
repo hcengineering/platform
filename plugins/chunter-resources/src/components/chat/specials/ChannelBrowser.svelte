@@ -115,7 +115,7 @@
 
   async function view (channel: Channel): Promise<void> {
     const loc = getCurrentResolvedLocation()
-    const context = get(notificationClient.docNotifyContextByDoc).get(channel._id)
+    const context = get(notificationClient.contextByDoc).get(channel._id)
 
     let contextId = context?._id
 

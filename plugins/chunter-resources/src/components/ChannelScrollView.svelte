@@ -57,7 +57,7 @@
 
   const client = getClient()
   const inboxClient = InboxNotificationsClientImpl.getClient()
-  const contextByDocStore = inboxClient.docNotifyContextByDoc
+  const contextByDocStore = inboxClient.contextByDoc
   const filters = client.getModel().findAllSync(activity.class.ActivityMessagesFilter, {})
 
   const messagesStore = provider.messagesStore

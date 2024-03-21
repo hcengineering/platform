@@ -21,10 +21,10 @@
   export let kind: 'table' | 'block' = 'block'
 
   const inboxClient = InboxNotificationsClientImpl.getClient()
-  const notifyContextByDocStore = inboxClient.docNotifyContextByDoc
+  const contextByDocStore = inboxClient.contextByDoc
   const inboxNotificationsByContextStore = inboxClient.inboxNotificationsByContext
 
-  $: notifyContext = $notifyContextByDocStore.get(value._id)
+  $: notifyContext = $contextByDocStore.get(value._id)
   $: inboxNotifications = notifyContext ? $inboxNotificationsByContextStore.get(notifyContext._id) ?? [] : []
 
   $: hasNotification = !notifyContext?.hidden && inboxNotifications.some(({ isViewed }) => !isViewed)

@@ -214,7 +214,7 @@ export async function openMessageFromSpecial (message?: ActivityMessage): Promis
 
     loc.path[4] = threadMessage.attachedTo
   } else {
-    const context = get(inboxClient.docNotifyContextByDoc).get(message.attachedTo)
+    const context = get(inboxClient.contextByDoc).get(message.attachedTo)
 
     if (context === undefined) {
       return
@@ -252,9 +252,9 @@ export async function getMessageLink (message: ActivityMessage): Promise<string>
   if (message._class === chunter.class.ThreadMessage) {
     const threadMessage = message as ThreadMessage
     threadParent = `/${threadMessage.attachedTo}`
-    context = get(inboxClient.docNotifyContextByDoc).get(threadMessage.objectId)
+    context = get(inboxClient.contextByDoc).get(threadMessage.objectId)
   } else {
-    context = get(inboxClient.docNotifyContextByDoc).get(message.attachedTo)
+    context = get(inboxClient.contextByDoc).get(message.attachedTo)
   }
 
   if (context === undefined) {
@@ -279,7 +279,7 @@ export async function getTitle (doc: Doc): Promise<string> {
 
 export async function chunterSpaceLinkFragmentProvider (doc: ChunterSpace): Promise<Location> {
   const inboxClient = InboxNotificationsClientImpl.getClient()
-  const context = get(inboxClient.docNotifyContextByDoc).get(doc._id)
+  const context = get(inboxClient.contextByDoc).get(doc._id)
   const loc = getCurrentResolvedLocation()
 
   if (context === undefined) {
@@ -412,7 +412,7 @@ export async function getThreadLink (doc: ThreadMessage): Promise<Location> {
   const client = getClient()
   const inboxClient = InboxNotificationsClientImpl.getClient()
 
-  let contextId: Ref<DocNotifyContext> | undefined = get(inboxClient.docNotifyContextByDoc).get(doc.objectId)?._id
+  let contextId: Ref<DocNotifyContext> | undefined = get(inboxClient.contextByDoc).get(doc.objectId)?._id
 
   if (contextId === undefined) {
     contextId = await client.createDoc(notification.class.DocNotifyContext, doc.space, {

@@ -43,7 +43,7 @@ import { getLocation, navigate, type Location, type ResolvedLocation, showPopup 
 import { get } from 'svelte/store'
 
 import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
-import { type InboxNotificationsFilter } from './types'
+import { type InboxData, type InboxNotificationsFilter } from './types'
 
 /**
  * @public
@@ -100,7 +100,7 @@ async function updateLastViewedTimestampOnRead (
   const notificationsClient = InboxNotificationsClientImpl.getClient()
   const client = getClient()
 
-  const context = get(notificationsClient.docNotifyContexts).find(({ _id }) => _id === doc.docNotifyContext)
+  const context = get(notificationsClient.contextById).get(doc.docNotifyContext)
 
   if (context === undefined) {
     return
@@ -133,7 +133,7 @@ async function updateLastViewedOnUnread (doc: WithLookup<ActivityInboxNotificati
   const notificationsClient = InboxNotificationsClientImpl.getClient()
   const client = getClient()
 
-  const context = get(notificationsClient.docNotifyContexts).find(({ _id }) => _id === doc.docNotifyContext)
+  const context = get(notificationsClient.contextById).get(doc.docNotifyContext)
 
   if (context === undefined) {
     return
@@ -442,32 +442,33 @@ export async function unreadAll (): Promise<void> {
   await client.unreadAllNotifications()
 }
 
+export function isActivityNotification (doc: InboxNotification): doc is ActivityInboxNotification {
+  return doc._class === notification.class.ActivityInboxNotification
+}
+
 export async function getDisplayInboxNotifications (
-  notificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>,
+  notifications: Array<WithLookup<InboxNotification>>,
   filter: InboxNotificationsFilter = 'all',
   objectClass?: Ref<Class<Doc>>
 ): Promise<DisplayInboxNotification[]> {
-  const filteredNotifications = Array.from(notificationsByContext.values())
-    .flat()
-    .filter(({ isViewed }) => {
-      switch (filter) {
-        case 'all':
-          return true
-        case 'unread':
-          return !isViewed
-        case 'read':
-          return !!isViewed
-        default:
-          return false
-      }
-    })
+  const result: DisplayInboxNotification[] = []
+  const activityNotifications: Array<WithLookup<ActivityInboxNotification>> = []
 
-  const activityNotifications = filteredNotifications.filter(
-    (n): n is WithLookup<ActivityInboxNotification> => n._class === notification.class.ActivityInboxNotification
-  )
-  const displayNotifications: DisplayInboxNotification[] = filteredNotifications.filter(
-    ({ _class }) => _class !== notification.class.ActivityInboxNotification
-  )
+  for (const notification of notifications) {
+    if (filter === 'unread' && notification.isViewed) {
+      continue
+    }
+
+    if (filter === 'read' && !notification.isViewed) {
+      continue
+    }
+
+    if (isActivityNotification(notification)) {
+      activityNotifications.push(notification)
+    } else {
+      result.push(notification)
+    }
+  }
 
   const messages: ActivityMessage[] = activityNotifications
     .map((activityNotification) => activityNotification.$lookup?.attachedTo)
@@ -486,6 +487,7 @@ export async function getDisplayInboxNotifications (
     })
 
   const combinedMessages = await combineActivityMessages(
+    // TODO: can omit sort ????
     messages.sort(activityMessagesComparator),
     SortingOrder.Descending
   )
@@ -505,11 +507,11 @@ export async function getDisplayInboxNotifications (
         combinedIds: activityNotifications.filter(({ attachedTo }) => ids.includes(attachedTo)).map(({ _id }) => _id)
       }
 
-      displayNotifications.push(displayNotification)
+      result.push(displayNotification)
     } else {
       const activityNotification = activityNotifications.find(({ attachedTo }) => attachedTo === message._id)
       if (activityNotification !== undefined) {
-        displayNotifications.push({
+        result.push({
           ...activityNotification,
           combinedIds: [activityNotification._id]
         })
@@ -517,18 +519,38 @@ export async function getDisplayInboxNotifications (
     }
   }
 
-  return displayNotifications.sort(
+  return result.sort(
     (notification1, notification2) =>
       (notification2.createdOn ?? notification2.modifiedOn) - (notification1.createdOn ?? notification1.modifiedOn)
   )
 }
 
+export async function getDisplayInboxData (
+  notificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>,
+  filter: InboxNotificationsFilter = 'all',
+  objectClass?: Ref<Class<Doc>>
+): Promise<InboxData> {
+  const result: InboxData = new Map()
+
+  for (const key of notificationsByContext.keys()) {
+    const notifications = notificationsByContext.get(key) ?? []
+
+    const displayNotifications = await getDisplayInboxNotifications(notifications, filter, objectClass)
+
+    if (displayNotifications.length > 0) {
+      result.set(key, displayNotifications)
+    }
+  }
+
+  return result
+}
+
 export async function hasInboxNotifications (
   notificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>
 ): Promise<boolean> {
-  const displayNotifications = await getDisplayInboxNotifications(notificationsByContext)
+  const unreadInboxData = await getDisplayInboxData(notificationsByContext, 'unread')
 
-  return displayNotifications.some(({ isViewed }) => !isViewed)
+  return unreadInboxData.size > 0
 }
 
 export async function getNotificationsCount (
@@ -539,9 +561,9 @@ export async function getNotificationsCount (
     return 0
   }
 
-  const displayNotifications = await getDisplayInboxNotifications(new Map([[context._id, notifications]]))
+  const unreadNotifications = await getDisplayInboxNotifications(notifications, 'unread')
 
-  return displayNotifications.filter(({ isViewed }) => !isViewed).length
+  return unreadNotifications.length
 }
 
 export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {

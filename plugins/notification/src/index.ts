@@ -21,6 +21,7 @@ import {
   Class,
   Doc,
   DocumentQuery,
+  IdMap,
   Mixin,
   Ref,
   Space,
@@ -271,11 +272,14 @@ export interface DocNotifyContext extends Doc {
  * @public
  */
 export interface InboxNotificationsClient {
-  docNotifyContextByDoc: Writable<Map<Ref<Doc>, DocNotifyContext>>
-  docNotifyContexts: Writable<DocNotifyContext[]>
+  contextByDoc: Writable<Map<Ref<Doc>, DocNotifyContext>>
+  contexts: Writable<DocNotifyContext[]>
+  contextById: Readable<IdMap<DocNotifyContext>>
+
   inboxNotifications: Readable<InboxNotification[]>
   activityInboxNotifications: Writable<ActivityInboxNotification[]>
   inboxNotificationsByContext: Readable<Map<Ref<DocNotifyContext>, InboxNotification[]>>
+
   readDoc: (client: TxOperations, _id: Ref<Doc>) => Promise<void>
   forceReadDoc: (client: TxOperations, _id: Ref<Doc>, _class: Ref<Class<Doc>>) => Promise<void>
   readMessages: (client: TxOperations, ids: Ref<ActivityMessage>[]) => Promise<void>

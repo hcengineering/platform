@@ -44,7 +44,7 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const inboxClient = InboxNotificationsClientImpl.getClient()
-  const docNotifyContextsStore = inboxClient.docNotifyContexts
+  const contextByIdStore = inboxClient.contextById
 
   let isActionMenuOpened = false
   let content = ''
@@ -55,7 +55,7 @@
     personAccount?.person !== undefined
       ? $employeeByIdStore.get(personAccount.person as Ref<Employee>) ?? $personByIdStore.get(personAccount.person)
       : undefined
-  $: context = $docNotifyContextsStore.find(({ _id }) => _id === value.docNotifyContext)
+  $: context = $contextByIdStore.get(value.docNotifyContext)
   $: context &&
     objectQuery.query(context.attachedToClass, { _id: context.attachedTo }, (result) => {
       object = result[0]
