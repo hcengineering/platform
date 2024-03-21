@@ -13,12 +13,27 @@
 // limitations under the License.
 //
 
+import { YDocVersion } from '@hcengineering/collaboration'
 import { Doc as YDoc } from 'yjs'
 import { Context } from '../context'
+import { CollaborativeDoc } from '@hcengineering/core'
 
 export interface StorageAdapter {
-  loadDocument: (documentName: string, context: Context) => Promise<YDoc | undefined>
-  saveDocument: (documentName: string, document: YDoc, context: Context) => Promise<void>
+  loadDocument: (documentId: string, collaborativeDoc: CollaborativeDoc, context: Context) => Promise<YDoc | undefined>
+
+  saveDocument: (
+    documentId: string,
+    collaborativeDoc: CollaborativeDoc,
+    document: YDoc,
+    context: Context
+  ) => Promise<void>
+
+  takeSnapshot: (
+    documentId: string,
+    collaborativeDoc: CollaborativeDoc,
+    document: YDoc,
+    context: Context
+  ) => Promise<YDocVersion | undefined>
 }
 
 export type StorageAdapters = Record<string, StorageAdapter>

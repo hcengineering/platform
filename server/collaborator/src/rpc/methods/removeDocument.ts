@@ -14,7 +14,11 @@
 //
 
 import { collaborativeHistoryDocId } from '@hcengineering/collaboration'
-import { type RemoveDocumentRequest, type RemoveDocumentResponse } from '@hcengineering/collaborator-client'
+import {
+  parseDocumentId,
+  type RemoveDocumentRequest,
+  type RemoveDocumentResponse
+} from '@hcengineering/collaborator-client'
 import { MeasureContext, collaborativeDocParse } from '@hcengineering/core'
 import { Context } from '../../context'
 import { RpcMethodParams } from '../rpc'
@@ -25,7 +29,7 @@ export async function removeDocument (
   payload: RemoveDocumentRequest,
   params: RpcMethodParams
 ): Promise<RemoveDocumentResponse> {
-  const { documentId, collaborativeDoc } = payload
+  const { documentId } = payload
   const { hocuspocus, minio } = params
   const { workspaceId } = context
 
@@ -35,6 +39,7 @@ export async function removeDocument (
     hocuspocus.unloadDocument(document)
   }
 
+  const { collaborativeDoc } = parseDocumentId(documentId)
   const { documentId: minioDocumentId } = collaborativeDocParse(collaborativeDoc)
   const historyDocumentId = collaborativeHistoryDocId(minioDocumentId)
 

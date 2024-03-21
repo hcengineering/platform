@@ -13,20 +13,19 @@
 // limitations under the License.
 //
 
-import { CollaborativeDoc, WorkspaceId, collaborativeDocFormat, generateId } from '@hcengineering/core'
+import { type DocumentId, type PlatformDocumentId } from '@hcengineering/collaborator-client'
+import { WorkspaceId, generateId } from '@hcengineering/core'
 import { decodeToken } from '@hcengineering/server-token'
 import { onAuthenticatePayload } from '@hocuspocus/server'
 import { ClientFactory, Controller, getClientFactory } from './platform'
-import { PlatformDocumentId } from './types'
-import { parseCollaborativeDocId, parseDocumentName, parsePlatformDocumentId } from './utils'
 
 export interface Context {
   connectionId: string
   workspaceId: WorkspaceId
   clientFactory: ClientFactory
 
-  collaborativeDocId?: CollaborativeDoc
-  platformDocId?: PlatformDocumentId
+  initialContentId?: DocumentId
+  platformDocumentId?: PlatformDocumentId
 }
 
 interface WithContext {
@@ -43,18 +42,14 @@ export function buildContext (data: onAuthenticatePayload, controller: Controlle
   const connectionId = context.connectionId ?? generateId()
   const decodedToken = decodeToken(data.token)
 
-  const { documentId, versionId } = parseDocumentName(data.documentName)
-
-  const collaborativeDocId =
-    parseCollaborativeDocId(data.requestParameters.get('collaborativeDocId')) ??
-    collaborativeDocFormat({ documentId, versionId, lastVersionId: versionId })
-  const platformDocId = parsePlatformDocumentId(data.requestParameters.get('platformDocId'))
+  const initialContentId = data.requestParameters.get('initialContentId') as DocumentId ?? undefined
+  const platformDocumentId = data.requestParameters.get('platformDocumentId') as PlatformDocumentId ?? undefined
 
   return {
     connectionId,
     workspaceId: decodedToken.workspace,
     clientFactory: getClientFactory(decodedToken, controller),
-    collaborativeDocId,
-    platformDocId
+    initialContentId,
+    platformDocumentId
   }
 }

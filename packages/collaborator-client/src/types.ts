@@ -13,6 +13,8 @@
 // limitations under the License.
 //
 
-export * from './client'
-export * from './types'
-export * from './utils'
+/** @public */
+export type DocumentId = string & { __documentId: true }
+
+/** @public */
+export type PlatformDocumentId = string & { __platformDocId: true }
