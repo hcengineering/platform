@@ -38,6 +38,7 @@ import type {
   Markup,
   MigrationState,
   Obj,
+  Permission,
   PluginConfiguration,
   Ref,
   RefTo,
@@ -101,6 +102,7 @@ export default plugin(coreId, {
     SpaceTypeDescriptor: '' as Ref<Class<SpaceTypeDescriptor>>,
     SpaceType: '' as Ref<Class<SpaceType>>,
     Role: '' as Ref<Class<Role>>,
+    Permission: '' as Ref<Class<Permission>>,
     Account: '' as Ref<Class<Account>>,
     Type: '' as Ref<Class<Type<any>>>,
     TypeString: '' as Ref<Class<Type<string>>>,
@@ -205,6 +207,15 @@ export default plugin(coreId, {
     Account: '' as IntlString,
     StatusCategory: '' as IntlString,
     Rank: '' as IntlString,
-    RolesAssignment: '' as IntlString
+    RolesAssignment: '' as IntlString,
+    Permission: '' as IntlString,
+    CreateObject: '' as IntlString,
+    UpdateObject: '' as IntlString,
+    DeleteObject: '' as IntlString
+  },
+  permission: {
+    CreateObject: '' as Ref<Permission>,
+    UpdateObject: '' as Ref<Permission>,
+    DeleteObject: '' as Ref<Permission>
   }
 })

@@ -118,6 +118,7 @@ import {
 import { IndexedDocumentPreview } from '@hcengineering/presentation'
 import { AggregationMiddleware, AnalyticsMiddleware } from './middleware'
 import { showEmptyGroups } from './viewOptions'
+import { canDeleteObject } from './visibilityTester'
 export { getActions, getContextActions, invokeAction, showMenu } from './actions'
 export { default as ActionButton } from './components/ActionButton.svelte'
 export { default as ActionHandler } from './components/ActionHandler.svelte'
@@ -296,6 +297,7 @@ export default async (): Promise<Resources> => ({
     // eslint-disable-next-line @typescript-eslint/unbound-method
     CreateDocMiddleware: AggregationMiddleware.create,
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    AnalyticsMiddleware: AnalyticsMiddleware.create
+    AnalyticsMiddleware: AnalyticsMiddleware.create,
+    CanDeleteObject: canDeleteObject
   }
 })

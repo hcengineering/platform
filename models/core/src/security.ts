@@ -26,7 +26,8 @@ import {
   type SpaceType,
   type SpaceTypeDescriptor,
   type Role,
-  type Class
+  type Class,
+  type Permission
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -114,6 +115,19 @@ export class TRole extends TDoc implements Role {
   @Prop(TypeString(), core.string.Name)
   @Index(IndexKind.FullText)
     name!: string
+
+  @Prop(ArrOf(TypeRef(core.class.Permission)), core.string.Permission)
+    permissions!: Ref<Permission>[]
+}
+
+@Model(core.class.Permission, core.class.Doc, DOMAIN_MODEL)
+@UX(core.string.Permission, undefined, undefined, 'name')
+export class TPermission extends TDoc implements Permission {
+  label!: IntlString
+
+  @Prop(TypeString(), core.string.Description)
+  @Index(IndexKind.FullText)
+    description?: string
 }
 
 @Model(core.class.Account, core.class.Doc, DOMAIN_MODEL)

@@ -43,6 +43,10 @@
     "StatusCategory": "Категория статуса",
     "Account": "Аккаунт",
     "Rank": "Ранг",
-    "RolesAssignment": "Присвоение ролей"
+    "RolesAssignment": "Присвоение ролей",
+    "Permission": "Разрешение",
+    "CreateObject": "Создавать объект",
+    "UpdateObject": "Обновлять объект",
+    "DeleteObject": "Удалять объект"
   }
 }

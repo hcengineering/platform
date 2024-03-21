@@ -14,11 +14,26 @@
 //
 
 import { deepEqual } from 'fast-equals'
-import { Account, AnyAttribute, Class, Doc, DocData, DocIndexState, IndexKind, Obj, Ref, Space } from './classes'
+import {
+  Account,
+  AnyAttribute,
+  Class,
+  Doc,
+  DocData,
+  DocIndexState,
+  IndexKind,
+  Obj,
+  Permission,
+  Ref,
+  Role,
+  Space,
+  TypedSpace
+} from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
 import { isPredicate } from './predicate'
 import { DocumentQuery, FindResult } from './storage'
+import { TxOperations } from './operations'
 
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
@@ -542,3 +557,26 @@ export const isEnum =
     (token: any): token is T[keyof T] => {
       return typeof token === 'string' && Object.values(e as Record<string, any>).includes(token)
     }
+
+export async function checkPermission (
+  client: TxOperations,
+  _id: Ref<Permission>,
+  _space: Ref<TypedSpace>
+): Promise<boolean> {
+  const space = await client.findOne(core.class.TypedSpace, { _id: _space })
+
+  if (space?.rolesAssignment === undefined) {
+    return false
+  }
+
+  const me = getCurrentAccount()
+  const myRolesIds = Object.entries(space.rolesAssignment)
+    .filter(([, accs]) => accs.includes(me._id))
+    .map(([roleId]) => {
+      return roleId as Ref<Role>
+    })
+  const myRoles = client.getModel().findAllSync(core.class.Role, { _id: { $in: myRolesIds } })
+  const myPermissions = new Set(myRoles.flatMap((role) => role.permissions))
+
+  return myPermissions.has(_id)
+}

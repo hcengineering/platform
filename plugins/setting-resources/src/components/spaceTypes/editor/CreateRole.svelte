@@ -24,7 +24,8 @@
   export let type: SpaceType
 
   const roleData: Data<Role> = {
-    name: ''
+    name: '',
+    permissions: []
   }
 
   async function handleRoleCreated (): Promise<void> {

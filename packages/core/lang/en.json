@@ -43,6 +43,10 @@
     "StatusCategory": "Status category",
     "Account": "Account",
     "Rank": "Rank",
-    "RolesAssignment": "RolesAssignment"
+    "RolesAssignment": "Roles assignment",
+    "Permission": "Permission",
+    "CreateObject": "Create object",
+    "UpdateObject": "Update object",
+    "DeleteObject": "Delete object"
   }
 }

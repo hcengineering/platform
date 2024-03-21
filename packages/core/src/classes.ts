@@ -403,12 +403,17 @@ export interface SpaceType extends Doc {
  */
 export interface Role extends Doc {
   name: string
-  // permissions: Ref<Permission>[] // TODO
+  permissions: Ref<Permission>[]
 }
 
-// export interface Permission extends Doc {
-// TODO: define a permission for some operation in the system
-// }
+/**
+ * @public
+ * Permission is a basic access control item in the system
+ */
+export interface Permission extends Doc {
+  label: IntlString
+  description?: string
+}
 
 /**
  * @public
