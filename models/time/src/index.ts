@@ -207,7 +207,6 @@ export function createModel (builder: Builder): void {
       icon: time.icon.Team,
       alias: 'team',
       hidden: false,
-      position: 'top',
       component: time.component.Team
     },
     time.app.Team

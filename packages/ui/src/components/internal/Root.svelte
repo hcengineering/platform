@@ -157,7 +157,9 @@
             <IconArrowRight size={'small'} />
           </button>
         </div>
-        <RootBarExtension position="left" />
+        <div class="flex-row-center" style:-webkit-app-region={'no-drag'}>
+          <RootBarExtension position="left" />
+        </div>
         <div
           class="flex-row-center justify-center status-info"
           style:margin-left={(isPortrait && docWidth <= 480) || (!isPortrait && docHeight <= 480) ? '1.5rem' : '0'}

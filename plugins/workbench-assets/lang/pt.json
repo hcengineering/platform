@@ -29,6 +29,7 @@
     "NewVersionAvailable": "Nova versão disponível",
     "PleaseUpdate": "Atualize",
     "ServerUnderMaintenance": "Servidor em manutenção",
-    "MobileNotSupported": "Desculpe, o suporte para dispositivos móveis estará disponível em breve. Enquanto isso, por favor, use o Desktop."
+    "MobileNotSupported": "Desculpe, o suporte para dispositivos móveis estará disponível em breve. Enquanto isso, por favor, use o Desktop.",
+    "LogInAnyway": "Entrar de qualquer maneira"
   }
 }

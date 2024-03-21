@@ -175,7 +175,7 @@ class TSessionManager implements SessionManager {
         },
         body: JSON.stringify({
           method: 'getWorkspaceInfo',
-          params: []
+          params: [true]
         })
       })
     ).json()

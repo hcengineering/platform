@@ -36,7 +36,6 @@ export { default as SpacesMultiPopup } from './components/SpacesMultiPopup.svelt
 export { default as ObjectSearchPopup } from './components/ObjectSearchPopup.svelte'
 export { default as IndexedDocumentPreview } from './components/IndexedDocumentPreview.svelte'
 export { default as IndexedDocumentCompare } from './components/IndexedDocumentCompare.svelte'
-export { default as DraggableList } from './components/DraggableList.svelte'
 export { default as NavLink } from './components/NavLink.svelte'
 export { default as IconForward } from './components/icons/Forward.svelte'
 export { default as Breadcrumbs } from './components/breadcrumbs/Breadcrumbs.svelte'

@@ -19,7 +19,7 @@
   import { Funnel } from '@hcengineering/lead'
   import presentation, { getClient, SpaceCreateCard } from '@hcengineering/presentation'
   import task, { ProjectType } from '@hcengineering/task'
-  import ui, { Component, EditBox, Grid, IconFolder, Label, ToggleWithLabel } from '@hcengineering/ui'
+  import ui, { Component, EditBox, Grid, Label, ToggleWithLabel } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import lead from '../plugin'
 
@@ -73,13 +73,7 @@
   }}
 >
   <Grid column={1} rowGap={1.5}>
-    <EditBox
-      label={lead.string.FunnelName}
-      icon={IconFolder}
-      bind:value={name}
-      placeholder={lead.string.FunnelName}
-      autoFocus
-    />
+    <EditBox label={lead.string.FunnelName} bind:value={name} placeholder={lead.string.FunnelName} autoFocus />
     <ToggleWithLabel
       label={presentation.string.MakePrivate}
       description={presentation.string.MakePrivateDescription}

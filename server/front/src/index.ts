@@ -17,7 +17,6 @@
 import { MeasureContext, WorkspaceId, metricsAggregate } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { Token, decodeToken } from '@hcengineering/server-token'
-import apicache from 'apicache'
 import bp from 'body-parser'
 import cors from 'cors'
 import express, { Request, Response } from 'express'
@@ -25,14 +24,14 @@ import fileUpload, { UploadedFile } from 'express-fileupload'
 import expressStaticGzip from 'express-static-gzip'
 import https from 'https'
 import morgan from 'morgan'
-import { extname, join, resolve } from 'path'
+import { join, resolve } from 'path'
 import { cwd } from 'process'
 import sharp from 'sharp'
 import { v4 as uuid } from 'uuid'
 import { preConditions } from './utils'
 
 const cacheControlValue = 'public, max-age=365d'
-const cacheControlMaxAge = '365d'
+const cacheControlNoCache = 'max-age=1d, no-cache, must-revalidate'
 
 async function minioUpload (
   ctx: MeasureContext,
@@ -47,8 +46,9 @@ async function minioUpload (
 
   const resp = await ctx.with(
     'storage upload',
-    { file: file.name, contentType: file.mimetype },
-    async () => await minio.put(workspace, id, file.data, file.size, meta)
+    { workspace: workspace.name },
+    async () => await minio.put(workspace, id, file.data, file.size, meta),
+    { file: file.name, contentType: file.mimetype }
   )
 
   await ctx.info('minio upload', resp)
@@ -243,10 +243,6 @@ export function start (
 ): () => void {
   const app = express()
 
-  const cache = apicache.options({
-    respectCacheControl: true
-  }).middleware
-
   app.use(cors())
   app.use(fileUpload())
   app.use(bp.json())
@@ -280,7 +276,7 @@ export function start (
       LAST_NAME_FIRST: config.lastNameFirst,
       ...(extraConfig ?? {})
     }
-    res.set('Cache-Control', `${cacheControlValue}, must-revalidate`)
+    res.set('Cache-Control', cacheControlNoCache)
     res.status(200)
     res.json(data)
   })
@@ -312,12 +308,12 @@ export function start (
   console.log('serving static files from', dist)
 
   app.use(
-    cache('1 day'),
     expressStaticGzip(dist, {
       serveStatic: {
         maxAge: '365d',
         etag: true,
-        lastModified: true
+        lastModified: true,
+        index: false
       }
     })
   )
@@ -706,35 +702,34 @@ export function start (
     }
   })
 
+  const filesPatterns = [
+    '.js',
+    '.js.gz',
+    'js.map',
+    'js.map.gz',
+    '.woff',
+    '.woff2',
+    '.svg.gz',
+    '.css',
+    '.css.gz',
+    '.ico',
+    '.svg',
+    '.webp',
+    '.png',
+    '.avif'
+  ]
+
   app.get('*', function (request, response) {
-    const url = request.path.split('/').filter((it) => it !== '')
-    if (url.length === 1) {
-      const ext = extname(url[0])
-      const notFoundResource = [
-        '.js',
-        '.js.gz',
-        '.svg',
-        '.webp',
-        '.woff',
-        '.woff2',
-        '.svg.gz',
-        '.css',
-        '.css.gz',
-        '.png',
-        '.avif'
-      ]
-      if (notFoundResource.includes(ext)) {
-        response.sendStatus(404)
-        return
-      }
+    if (filesPatterns.some((it) => request.path.endsWith(it))) {
+      response.sendStatus(404)
+      return
     }
     response.sendFile(join(dist, 'index.html'), {
-      maxAge: cacheControlMaxAge,
       etag: true,
       lastModified: true,
       cacheControl: false,
       headers: {
-        'Cache-Control': `${cacheControlValue}, must-revalidate`
+        'Cache-Control': cacheControlNoCache
       }
     })
   })

@@ -1,6 +1,5 @@
-import { type Doc } from '@hcengineering/core'
+import { type Doc, type Rank } from '@hcengineering/core'
 import { type Asset } from '@hcengineering/platform'
-import type { Rank } from '@hcengineering/rank'
 
 /**
  * @public

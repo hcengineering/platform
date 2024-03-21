@@ -71,7 +71,6 @@
       {#if space}
         <EditBox
           label={clazz.label}
-          icon={clazz.icon}
           bind:value={space.name}
           placeholder={clazz.label}
           autoFocus

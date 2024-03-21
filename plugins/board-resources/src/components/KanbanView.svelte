@@ -76,14 +76,14 @@
 
   const selection = listProvider.selection
 
-  let resultQuery: DocumentQuery<DocWithRank>
+  let resultQuery: DocumentQuery<Card>
 
   $: resultQuery = { ...query, isArchived: { $nin: [true] }, space }
 
   const cardQuery = createQuery()
-  let cards: DocWithRank[] = []
+  let cards: Card[] = []
 
-  $: cardQuery.query<DocWithRank>(
+  $: cardQuery.query<Card>(
     _class,
     getCategoryQueryNoLookup(resultQuery),
     (result) => {

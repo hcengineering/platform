@@ -178,7 +178,7 @@ export async function checkIssue (page: Page, props: IssueProps): Promise<void> 
 }
 
 export async function checkIssueDraft (page: Page, props: IssueProps): Promise<void> {
-  await expect(page.locator('#issue-name')).toHaveText(props.name)
+  await expect(page.locator('#issue-name input')).toHaveValue(props.name)
 
   if (props.description !== undefined) {
     await expect(page.locator('#issue-description')).toHaveText(props.description)

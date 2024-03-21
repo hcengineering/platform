@@ -20,6 +20,7 @@
     DocumentQuery,
     DocumentUpdate,
     FindOptions,
+    type Rank,
     RateLimiter,
     Ref,
     Space
@@ -99,7 +100,7 @@
   const client = getClient()
 
   let dragCard: Item | undefined
-  let dragCardInitialRank: string | undefined
+  let dragCardInitialRank: Rank | undefined
   let dragCardInitialState: CategoryType
   let dragCardInitialPosition: number | undefined
   let dragCardState: CategoryType | undefined
