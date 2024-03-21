@@ -79,7 +79,6 @@ import setting from '@hcengineering/setting'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 
 import notification from './plugin'
-import { defineViewlets } from './viewlets'
 
 export { notificationId } from '@hcengineering/notification'
 export { notificationOperation } from './migration'
@@ -604,8 +603,6 @@ export function createModel (builder: Builder): void {
   builder.mixin(notification.class.CommonInboxNotification, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: notification.component.CommonInboxNotificationPresenter
   })
-
-  defineViewlets(builder)
 
   builder.createDoc(
     notification.class.CommonNotificationType,

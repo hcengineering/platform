@@ -34,7 +34,7 @@ import { plugin } from '@hcengineering/platform'
 import { Preference } from '@hcengineering/preference'
 import { IntegrationType } from '@hcengineering/setting'
 import { AnyComponent, Location, ResolvedLocation } from '@hcengineering/ui'
-import { Action, Viewlet, ViewletDescriptor } from '@hcengineering/view'
+import { Action } from '@hcengineering/view'
 import { Readable, Writable } from './types'
 
 export * from './types'
@@ -345,18 +345,10 @@ const notification = plugin(notificationId, {
     Inbox: '' as AnyComponent,
     NotificationPresenter: '' as AnyComponent,
     NotificationCollaboratorsChanged: '' as AnyComponent,
-    DocNotifyContextPresenter: '' as AnyComponent,
-    InboxFlatListView: '' as AnyComponent,
-    InboxGroupedListView: '' as AnyComponent
+    DocNotifyContextPresenter: '' as AnyComponent
   },
   activity: {
     TxCollaboratorsChange: '' as AnyComponent
-  },
-  viewlet: {
-    FlatList: '' as Ref<ViewletDescriptor>,
-    InboxFlatList: '' as Ref<Viewlet>,
-    GroupedList: '' as Ref<ViewletDescriptor>,
-    InboxGroupedList: '' as Ref<Viewlet>
   },
   action: {
     MarkAsUnreadInboxNotification: '' as Ref<Action>,
@@ -394,8 +386,6 @@ const notification = plugin(notificationId, {
     RemovedCollaborators: '' as IntlString,
     Edited: '' as IntlString,
     Pinned: '' as IntlString,
-    FlatList: '' as IntlString,
-    GroupedList: '' as IntlString,
     All: '' as IntlString,
     ArchiveAll: '' as IntlString,
     MarkReadAll: '' as IntlString,

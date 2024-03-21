@@ -25,8 +25,6 @@ import DocNotifyContextPresenter from './components/DocNotifyContextPresenter.sv
 import NotificationCollaboratorsChanged from './components/NotificationCollaboratorsChanged.svelte'
 import ActivityInboxNotificationPresenter from './components/inbox/ActivityInboxNotificationPresenter.svelte'
 import CommonInboxNotificationPresenter from './components/inbox/CommonInboxNotificationPresenter.svelte'
-import InboxFlatListView from './components/inbox/InboxFlatListView.svelte'
-import InboxGroupedListView from './components/inbox/InboxGroupedListView.svelte'
 import {
   unsubscribe,
   resolveLocation,
@@ -71,9 +69,7 @@ export default async (): Promise<Resources> => ({
     NotificationCollaboratorsChanged,
     DocNotifyContextPresenter,
     ActivityInboxNotificationPresenter,
-    CommonInboxNotificationPresenter,
-    InboxFlatListView,
-    InboxGroupedListView
+    CommonInboxNotificationPresenter
   },
   activity: {
     TxCollaboratorsChange,

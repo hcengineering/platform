@@ -19,7 +19,7 @@
     DocNotifyContext
   } from '@hcengineering/notification'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
-  import view, { Viewlet } from '@hcengineering/view'
+  import view from '@hcengineering/view'
   import {
     AnyComponent,
     ButtonWithDropdown,
@@ -27,7 +27,6 @@
     defineSeparators,
     IconDropdown,
     Label,
-    Loading,
     location as locationStore,
     Location,
     Scroller,
@@ -36,8 +35,7 @@
     TabList
   } from '@hcengineering/ui'
   import chunter, { ThreadMessage } from '@hcengineering/chunter'
-  import { Ref, WithLookup } from '@hcengineering/core'
-  import { ViewletSelector } from '@hcengineering/view-resources'
+  import { Ref } from '@hcengineering/core'
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import { isReactionMessage } from '@hcengineering/activity-resources'
   import { get } from 'svelte/store'
@@ -96,9 +94,6 @@
   let selectedComponent: AnyComponent | undefined = undefined
 
   let viewlets: ActivityNotificationViewlet[] = []
-
-  let viewlet: WithLookup<Viewlet> | undefined
-  let loading = true
 
   let selectedMessage: ActivityMessage | undefined = undefined
 
@@ -309,13 +304,6 @@
           <div class="ac-header__wrap-title mr-3">
             <span class="ac-header__title"><Label label={notification.string.Inbox} /></span>
           </div>
-          <div class="flex-grow">
-            <ViewletSelector
-              bind:viewlet
-              bind:loading
-              viewletQuery={{ attachTo: notification.class.DocNotifyContext }}
-            />
-          </div>
           <div class="flex flex-gap-2">
             {#if displayNotifications.length > 0}
               <ButtonWithDropdown
@@ -353,21 +341,17 @@
           <TabList items={tabItems} selected={selectedTabId} on:select={selectTab} />
         </div>
 
-        {#if loading || !viewlet?.$lookup?.descriptor}
-          <Loading />
-        {:else if viewlet}
-          <Scroller padding="1rem 0">
-            <Component
-              is={viewlet.$lookup.descriptor.component}
-              props={{
-                notifications: filteredNotifications,
-                viewlets,
-                selectedContext
-              }}
-              on:click={selectContext}
-            />
-          </Scroller>
-        {/if}
+        <Scroller padding="1rem 0">
+          <!--            <Component-->
+          <!--              is={viewlet.$lookup.descriptor.component}-->
+          <!--              props={{-->
+          <!--                notifications: filteredNotifications,-->
+          <!--                viewlets,-->
+          <!--                selectedContext-->
+          <!--              }}-->
+          <!--              on:click={selectContext}-->
+          <!--            />-->
+        </Scroller>
       </div>
       <Separator name="inbox" float={navFloat ? 'navigator' : true} index={0} />
     </div>
