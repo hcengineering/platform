@@ -1,11 +1,12 @@
 <script lang="ts">
+  import { ActionIcon, IconAdd, showPopup, ModernEditbox } from '@hcengineering/ui'
+  import { SortingOrder, getCurrentAccount } from '@hcengineering/core'
   import { PersonAccount } from '@hcengineering/contact'
-  import { getCurrentAccount } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
-  import { ActionIcon, EditBox, IconAdd, showPopup, ModernEditbox } from '@hcengineering/ui'
   import { ToDoPriority } from '@hcengineering/time'
-  import time from '../plugin'
+  import { getClient } from '@hcengineering/presentation'
   import CreateToDoPopup from './CreateToDoPopup.svelte'
+  import time from '../plugin'
+  import { makeRank } from '@hcengineering/task'
 
   export let fullSize: boolean = false
   let value: string = ''
@@ -17,13 +18,27 @@
     description = description?.trim() ?? ''
     const client = getClient()
     const acc = getCurrentAccount() as PersonAccount
+    const latestTodo = (
+      await client.findAll(
+        time.class.ToDo,
+        {
+          user: acc.person,
+          doneOn: null
+        },
+        {
+          limit: 1,
+          sort: { rank: SortingOrder.Ascending }
+        }
+      )
+    )[0]
     await client.addCollection(time.class.ToDo, time.space.ToDos, time.ids.NotAttached, time.class.ToDo, 'todos', {
       title: name,
       description,
       user: acc.person,
       workslots: 0,
       priority: ToDoPriority.NoPriority,
-      visibility: 'private'
+      visibility: 'private',
+      rank: makeRank(undefined, latestTodo?.rank)
     })
     clear()
   }

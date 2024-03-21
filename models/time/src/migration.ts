@@ -14,13 +14,14 @@
 //
 
 import { type PersonAccount } from '@hcengineering/contact'
-import { type Account, type Doc, type Ref, TxOperations } from '@hcengineering/core'
+import { type Account, type Doc, type Ref, SortingOrder, TxOperations } from '@hcengineering/core'
 import {
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient,
   createOrUpdate
 } from '@hcengineering/model'
+import { makeRank } from '@hcengineering/rank'
 import core from '@hcengineering/model-core'
 import task from '@hcengineering/task'
 import tags from '@hcengineering/tags'
@@ -57,7 +58,8 @@ export async function migrateWorkSlots (client: TxOperations): Promise<void> {
             workslots: 0,
             priority: ToDoPriority.NoPriority,
             user: account.person,
-            visibility: 'public'
+            visibility: 'public',
+            rank: '' // TODO
           }
         )
         await client.update(oldWorkSlot, {
@@ -102,6 +104,44 @@ async function migrateTodosSpace (client: TxOperations): Promise<void> {
       user: account.person,
       space: time.space.ToDos
     })
+  }
+}
+
+async function migrateTodosRanks (client: TxOperations): Promise<void> {
+  const doneTodos = await client.findAll(
+    time.class.ToDo,
+    {
+      rank: { $exists: false },
+      doneOn: null
+    },
+    {
+      sort: { modifiedOn: SortingOrder.Ascending }
+    }
+  )
+  let doneTodoRank = makeRank(undefined, undefined)
+  for (const todo of doneTodos) {
+    await client.update(todo, {
+      rank: doneTodoRank
+    })
+    doneTodoRank = makeRank(undefined, doneTodoRank)
+  }
+
+  const undoneTodos = await client.findAll(
+    time.class.ToDo,
+    {
+      rank: { $exists: false },
+      doneOn: { $ne: null }
+    },
+    {
+      sort: { doneOn: SortingOrder.Ascending }
+    }
+  )
+  let undoneTodoRank = makeRank(undefined, undefined)
+  for (const todo of undoneTodos) {
+    await client.update(todo, {
+      rank: undoneTodoRank
+    })
+    undoneTodoRank = makeRank(undefined, undoneTodoRank)
   }
 }
 
@@ -161,5 +201,6 @@ export const timeOperation: MigrateOperation = {
     )
     await migrateWorkSlots(tx)
     await migrateTodosSpace(tx)
+    await migrateTodosRanks(tx)
   }
 }

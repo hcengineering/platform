@@ -1,3 +1,17 @@
+<!--
+// Copyright © 2024 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
 <script lang="ts">
   import { SortingOrder, WithLookup } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -5,7 +19,6 @@
   import { Component, IconMoreV2, Spinner, showPanel, Icon } from '@hcengineering/ui'
   import { showMenu } from '@hcengineering/view-resources'
   import time, { ToDo, ToDoPriority, WorkSlot } from '@hcengineering/time'
-  import { createEventDispatcher } from 'svelte'
   import plugin from '../plugin'
   import ToDoDuration from './ToDoDuration.svelte'
   import WorkItemPresenter from './WorkItemPresenter.svelte'
@@ -15,13 +28,10 @@
   export let todo: WithLookup<ToDo>
   export let size: 'small' | 'large' = 'small'
   export let planned: boolean = true
-  export let draggable: boolean = true
   export let isNew: boolean = false
 
-  const dispatch = createEventDispatcher()
   const client = getClient()
   let updating: Promise<any> | undefined = undefined
-  let isDrag: boolean = false
 
   async function markDone (): Promise<void> {
     await updating
@@ -51,17 +61,6 @@
     })
   }
 
-  function dragStart (todo: ToDo, event: DragEvent & { currentTarget: EventTarget & HTMLButtonElement }): void {
-    event.currentTarget.classList.add('dragged')
-    if (event.dataTransfer) event.dataTransfer.effectAllowed = 'all'
-    dispatch('dragstart', todo)
-  }
-
-  function dragEnd (event: DragEvent & { currentTarget: EventTarget & HTMLButtonElement }): void {
-    event.currentTarget.classList.remove('dragged')
-    dispatch('dragend')
-  }
-
   function open (e: MouseEvent): void {
     showPanel(time.component.EditToDo, todo._id, todo._class, 'content')
   }
@@ -73,19 +72,9 @@
   class="hulyToDoLine-container {size}"
   class:hovered
   class:isDone
-  class:isDrag
   on:click|stopPropagation={open}
   on:contextmenu={(e) => {
     showMenu(e, { object: todo })
-  }}
-  {draggable}
-  on:dragstart={(e) => {
-    isDrag = true
-    dragStart(todo, e)
-  }}
-  on:dragend={(e) => {
-    isDrag = false
-    dragEnd(e)
   }}
 >
   <div class="flex-row-top flex-grow flex-gap-2">

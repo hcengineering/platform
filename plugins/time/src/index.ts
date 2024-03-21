@@ -19,6 +19,7 @@ import { IntlString, plugin } from '@hcengineering/platform'
 import { Event, Visibility } from '@hcengineering/calendar'
 import { AnyComponent } from '@hcengineering/ui'
 import { Person } from '@hcengineering/contact'
+import type { Rank } from '@hcengineering/rank'
 
 /**
  * @public
@@ -36,7 +37,14 @@ export interface WorkSlot extends Event {
 /**
  * @public
  */
-export interface ToDo extends AttachedDoc {
+export interface DocWithRank extends Doc {
+  rank: Rank
+}
+
+/**
+ * @public
+ */
+export interface ToDo extends AttachedDoc, DocWithRank {
   attachedTo: Ref<Doc>
   attachedToClass: Ref<Class<Doc>>
   workslots: number
@@ -49,6 +57,7 @@ export interface ToDo extends AttachedDoc {
   user: Ref<Person>
   attachedSpace?: Ref<Space>
   labels?: number
+  rank: Rank
 }
 
 /**
