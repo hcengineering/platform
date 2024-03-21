@@ -11,27 +11,26 @@
   export let fullSize: boolean = false
   let value: string = ''
 
-  async function save () {
+  const client = getClient()
+  const acc = getCurrentAccount() as PersonAccount
+
+  async function save (): Promise<void> {
     let [name, description] = value.split('//')
     name = name.trim()
     if (name.length === 0) return
     description = description?.trim() ?? ''
-    const client = getClient()
-    const acc = getCurrentAccount() as PersonAccount
-    const latestTodo = (
-      await client.findAll(
-        time.class.ToDo,
-        {
-          user: acc.person,
-          doneOn: null
-        },
-        {
-          limit: 1,
-          sort: { rank: SortingOrder.Ascending }
-        }
-      )
-    )[0]
-    await client.addCollection(time.class.ToDo, time.space.ToDos, time.ids.NotAttached, time.class.ToDo, 'todos', {
+    const ops = client.apply('todo')
+    const latestTodo = await ops.findOne(
+      time.class.ToDo,
+      {
+        user: acc.person,
+        doneOn: null
+      },
+      {
+        sort: { rank: SortingOrder.Ascending }
+      }
+    )
+    await ops.addCollection(time.class.ToDo, time.space.ToDos, time.ids.NotAttached, time.class.ToDo, 'todos', {
       title: name,
       description,
       user: acc.person,
@@ -40,6 +39,7 @@
       visibility: 'private',
       rank: makeRank(undefined, latestTodo?.rank)
     })
+    await ops.commit()
     clear()
   }
 

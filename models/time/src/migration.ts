@@ -38,12 +38,14 @@ export async function migrateWorkSlots (client: TxOperations): Promise<void> {
   const now = Date.now()
   const todos = new Map<Ref<Doc>, Ref<ToDo>>()
   const count = new Map<Ref<ToDo>, number>()
+  let rank = makeRank(undefined, undefined)
   for (const oldWorkSlot of oldWorkSlots) {
     const todo = todos.get(oldWorkSlot.attachedTo)
     if (todo === undefined) {
       const acc = oldWorkSlot.space.replace('_calendar', '') as Ref<Account>
       const account = (await client.findOne(core.class.Account, { _id: acc })) as PersonAccount
       if (account.person !== undefined) {
+        rank = makeRank(undefined, rank)
         const todo = await client.addCollection(
           time.class.ProjectToDo,
           time.space.ToDos,
@@ -59,7 +61,7 @@ export async function migrateWorkSlots (client: TxOperations): Promise<void> {
             priority: ToDoPriority.NoPriority,
             user: account.person,
             visibility: 'public',
-            rank: '' // TODO
+            rank
           }
         )
         await client.update(oldWorkSlot, {

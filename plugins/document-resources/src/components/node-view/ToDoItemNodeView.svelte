@@ -78,19 +78,16 @@
 
     const doneOn = node.attrs.checked === true ? Date.now() : null
 
-    const latestTodoItem = (
-      await ops.findAll(
-        time.class.ToDo,
-        {
-          user,
-          doneOn: doneOn === null ? null : { $ne: null }
-        },
-        {
-          limit: 1,
-          sort: { rank: SortingOrder.Ascending }
-        }
-      )
-    )[0]
+    const latestTodoItem = await ops.findOne(
+      time.class.ToDo,
+      {
+        user,
+        doneOn: doneOn === null ? null : { $ne: null }
+      },
+      {
+        sort: { rank: SortingOrder.Ascending }
+      }
+    )
     const rank = makeRank(undefined, latestTodoItem?.rank)
 
     const id = await ops.addCollection(time.class.ProjectToDo, time.space.ToDos, object._id, object._class, 'todos', {

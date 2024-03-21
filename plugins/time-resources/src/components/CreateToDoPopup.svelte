@@ -55,20 +55,18 @@
 
   async function saveToDo (): Promise<void> {
     loading = true
-    const latestTodo = (
-      await client.findAll(
-        time.class.ToDo,
-        {
-          user: acc.person,
-          doneOn: null
-        },
-        {
-          limit: 1,
-          sort: { rank: SortingOrder.Ascending }
-        }
-      )
-    )[0]
-    const id = await client.addCollection(
+    const ops = client.apply('todo')
+    const latestTodo = await ops.findOne(
+      time.class.ToDo,
+      {
+        user: acc.person,
+        doneOn: null
+      },
+      {
+        sort: { rank: SortingOrder.Ascending }
+      }
+    )
+    const id = await ops.addCollection(
       time.class.ToDo,
       time.space.ToDos,
       object?._id ?? time.ids.NotAttached,
@@ -88,7 +86,7 @@
     )
     const space = `${acc._id}_calendar` as Ref<Calendar>
     for (const slot of slots) {
-      await client.addCollection(time.class.WorkSlot, space, id, time.class.ToDo, 'workslots', {
+      await ops.addCollection(time.class.WorkSlot, space, id, time.class.ToDo, 'workslots', {
         eventId: generateEventId(),
         date: slot.date,
         dueDate: slot.dueDate,
@@ -102,8 +100,9 @@
       })
     }
     for (const tag of tags) {
-      await client.addCollection(tagsPlugin.class.TagReference, time.space.ToDos, id, time.class.ToDo, 'labels', tag)
+      await ops.addCollection(tagsPlugin.class.TagReference, time.space.ToDos, id, time.class.ToDo, 'labels', tag)
     }
+    await ops.commit()
     dispatch('close', true)
   }
 

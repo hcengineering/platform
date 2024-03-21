@@ -37,14 +37,7 @@ export interface WorkSlot extends Event {
 /**
  * @public
  */
-export interface DocWithRank extends Doc {
-  rank: Rank
-}
-
-/**
- * @public
- */
-export interface ToDo extends AttachedDoc, DocWithRank {
+export interface ToDo extends AttachedDoc {
   attachedTo: Ref<Doc>
   attachedToClass: Ref<Class<Doc>>
   workslots: number
