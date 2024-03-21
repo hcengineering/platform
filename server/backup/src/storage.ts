@@ -1,5 +1,5 @@
 import { WorkspaceId } from '@hcengineering/core'
-import { MinioService } from '@hcengineering/minio'
+import { StorageAdapter } from '@hcengineering/server-core'
 import { createReadStream, createWriteStream, existsSync } from 'fs'
 import { mkdir, readFile, writeFile } from 'fs/promises'
 import { dirname, join } from 'path'
@@ -51,9 +51,9 @@ class FileStorage implements BackupStorage {
   }
 }
 
-class MinioStorage implements BackupStorage {
+class AdapterStorage implements BackupStorage {
   constructor (
-    readonly client: MinioService,
+    readonly client: StorageAdapter,
     readonly workspaceId: WorkspaceId,
     readonly root: string
   ) {}
@@ -100,13 +100,13 @@ export async function createFileBackupStorage (fileName: string): Promise<Backup
 /**
  * @public
  */
-export async function createMinioBackupStorage (
-  client: MinioService,
+export async function createStorageBackupStorage (
+  client: StorageAdapter,
   workspaceId: WorkspaceId,
   root: string
 ): Promise<BackupStorage> {
   if (!(await client.exists(workspaceId))) {
     await client.make(workspaceId)
   }
-  return new MinioStorage(client, workspaceId, root)
+  return new AdapterStorage(client, workspaceId, root)
 }

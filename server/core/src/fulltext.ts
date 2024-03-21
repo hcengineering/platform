@@ -15,36 +15,36 @@
 //
 
 import core, {
-  AttachedDoc,
-  Class,
-  Doc,
-  DocIndexState,
-  DocumentQuery,
-  FindOptions,
-  FindResult,
-  Hierarchy,
-  MeasureContext,
-  ObjQueryType,
-  Ref,
-  SearchOptions,
-  SearchQuery,
-  SearchResult,
-  ServerStorage,
-  Tx,
-  TxCUD,
-  TxCollectionCUD,
+  type AttachedDoc,
+  type Class,
+  type Doc,
+  type DocIndexState,
+  type DocumentQuery,
+  type FindOptions,
+  type FindResult,
+  type Hierarchy,
+  type MeasureContext,
+  type ObjQueryType,
+  type Ref,
+  type SearchOptions,
+  type SearchQuery,
+  type SearchResult,
+  type ServerStorage,
+  type Tx,
+  type TxCUD,
+  type TxCollectionCUD,
   TxFactory,
-  TxResult,
-  WorkspaceId,
+  type TxResult,
+  type WorkspaceId,
   docKey,
   isFullTextAttribute,
   isIndexedAttribute,
   toFindResult
 } from '@hcengineering/core'
-import { MinioService } from '@hcengineering/minio'
-import { FullTextIndexPipeline } from './indexer'
+import { type FullTextIndexPipeline } from './indexer'
 import { createStateDoc, isClassIndexable } from './indexer/utils'
 import { getScoringConfig, mapSearchResultDoc } from './mapper'
+import { type StorageAdapter } from './storage'
 import type { FullTextAdapter, IndexedDoc, WithFind } from './types'
 
 /**
@@ -58,7 +58,7 @@ export class FullTextIndex implements WithFind {
     private readonly hierarchy: Hierarchy,
     private readonly adapter: FullTextAdapter,
     private readonly dbStorage: ServerStorage,
-    readonly storageAdapter: MinioService | undefined,
+    readonly storageAdapter: StorageAdapter | undefined,
     readonly workspace: WorkspaceId,
     readonly indexer: FullTextIndexPipeline,
     private readonly upgrade: boolean

@@ -14,36 +14,36 @@
 //
 
 import core, {
-  AnyAttribute,
-  AttachedDoc,
-  Class,
+  type AnyAttribute,
+  type AttachedDoc,
+  type Class,
   ClassifierKind,
-  Collection,
-  Data,
-  Doc,
-  DocIndexState,
+  type Collection,
+  type Data,
+  type Doc,
+  type DocIndexState,
   DOMAIN_BLOB,
   DOMAIN_DOC_INDEX_STATE,
   DOMAIN_FULLTEXT_BLOB,
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
   DOMAIN_TX,
-  FullTextSearchContext,
+  type FullTextSearchContext,
   generateId,
-  Hierarchy,
-  IndexStageState,
+  type Hierarchy,
+  type IndexStageState,
   isFullTextAttribute,
   isIndexedAttribute,
-  MeasureContext,
-  Obj,
-  Ref,
-  Space,
+  type MeasureContext,
+  type Obj,
+  type Ref,
+  type Space,
   TxFactory
 } from '@hcengineering/core'
 import { deepEqual } from 'fast-equals'
-import { DbAdapter } from '../adapter'
+import { type DbAdapter } from '../adapter'
 import plugin from '../plugin'
-import { FullTextPipeline } from './types'
+import { type FullTextPipeline } from './types'
 /**
  * @public
  */

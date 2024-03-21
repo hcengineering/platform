@@ -14,25 +14,31 @@
 //
 
 import core, {
-  AnyAttribute,
-  Class,
-  Doc,
-  DocIndexState,
-  DocumentQuery,
-  DocumentUpdate,
+  type AnyAttribute,
+  type Class,
+  type Doc,
+  type DocIndexState,
+  type DocumentQuery,
+  type DocumentUpdate,
   extractDocKey,
-  Hierarchy,
-  IndexStageState,
+  type Hierarchy,
+  type IndexStageState,
   isFullTextAttribute,
-  MeasureContext,
-  Ref,
-  ServerStorage
+  type MeasureContext,
+  type Ref,
+  type ServerStorage
 } from '@hcengineering/core'
 import { translate } from '@hcengineering/platform'
 import { convert } from 'html-to-text'
-import { DbAdapter } from '../adapter'
-import { IndexedDoc } from '../types'
-import { contentStageId, DocUpdateHandler, fieldStateId, FullTextPipeline, FullTextPipelineStage } from './types'
+import { type DbAdapter } from '../adapter'
+import { type IndexedDoc } from '../types'
+import {
+  contentStageId,
+  type DocUpdateHandler,
+  fieldStateId,
+  type FullTextPipeline,
+  type FullTextPipelineStage
+} from './types'
 import {
   collectPropagate,
   collectPropagateClasses,

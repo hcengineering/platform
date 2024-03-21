@@ -14,19 +14,25 @@
 //
 
 import core, {
-  Class,
-  Doc,
-  DocIndexState,
-  DocumentQuery,
-  DocumentUpdate,
-  MeasureContext,
-  Ref,
-  WorkspaceId
+  type Class,
+  type Doc,
+  type DocIndexState,
+  type DocumentQuery,
+  type DocumentUpdate,
+  type MeasureContext,
+  type Ref,
+  type WorkspaceId
 } from '@hcengineering/core'
-import { MinioService } from '@hcengineering/minio'
-import { DbAdapter } from '../adapter'
-import { ContentTextAdapter, IndexedDoc } from '../types'
-import { DocUpdateHandler, FullTextPipeline, FullTextPipelineStage, contentStageId, fieldStateId } from './types'
+import { type DbAdapter } from '../adapter'
+import { type StorageAdapter } from '../storage'
+import { type ContentTextAdapter, type IndexedDoc } from '../types'
+import {
+  type DocUpdateHandler,
+  type FullTextPipeline,
+  type FullTextPipelineStage,
+  contentStageId,
+  fieldStateId
+} from './types'
 import { docKey, docUpdKey, getFullTextIndexableAttributes } from './utils'
 
 /**
@@ -51,7 +57,7 @@ export class ContentRetrievalStage implements FullTextPipelineStage {
   stageValue: boolean | string = true
 
   constructor (
-    readonly storageAdapter: MinioService | undefined,
+    readonly storageAdapter: StorageAdapter | undefined,
     readonly workspace: WorkspaceId,
     readonly metrics: MeasureContext,
     private readonly contentAdapter: ContentTextAdapter

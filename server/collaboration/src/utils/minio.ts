@@ -14,14 +14,14 @@
 //
 
 import { WorkspaceId } from '@hcengineering/core'
-import { MinioService } from '@hcengineering/minio'
+import { StorageAdapter } from '@hcengineering/server-core'
 import { Doc as YDoc } from 'yjs'
 
 import { yDocFromBuffer, yDocToBuffer } from './ydoc'
 
 /** @public */
-export async function yDocFromMinio (
-  minio: MinioService,
+export async function yDocFromStorage (
+  storageAdapter: StorageAdapter,
   workspace: WorkspaceId,
   minioDocumentId: string,
   ydoc?: YDoc
@@ -31,7 +31,7 @@ export async function yDocFromMinio (
   ydoc ??= new YDoc({ gc: false })
 
   try {
-    const buffer = await minio.read(workspace, minioDocumentId)
+    const buffer = await storageAdapter.read(workspace, minioDocumentId)
     return yDocFromBuffer(Buffer.concat(buffer), ydoc)
   } catch (err: any) {
     if (err?.code === 'NoSuchKey' || err?.code === 'NotFound') {
@@ -42,13 +42,13 @@ export async function yDocFromMinio (
 }
 
 /** @public */
-export async function yDocToMinio (
-  minio: MinioService,
+export async function yDocToStorage (
+  storageAdapter: StorageAdapter,
   workspace: WorkspaceId,
   minioDocumentId: string,
   ydoc: YDoc
 ): Promise<void> {
   const buffer = yDocToBuffer(ydoc)
   const metadata = { 'content-type': 'application/ydoc' }
-  await minio.put(workspace, minioDocumentId, buffer, buffer.length, metadata)
+  await storageAdapter.put(workspace, minioDocumentId, buffer, buffer.length, metadata)
 }

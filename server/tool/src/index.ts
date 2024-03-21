@@ -32,6 +32,7 @@ import core, {
 import { MinioService } from '@hcengineering/minio'
 import { consoleModelLogger, MigrateOperation, ModelLogger } from '@hcengineering/model'
 import { getWorkspaceDB } from '@hcengineering/mongo'
+import { StorageAdapter } from '@hcengineering/server-core'
 import { Db, Document, MongoClient } from 'mongodb'
 import { connect } from './connect'
 import toolPlugin from './plugin'
@@ -64,7 +65,7 @@ export class FileModelLogger implements ModelLogger {
 /**
  * @public
  */
-export function prepareTools (rawTxes: Tx[]): { mongodbUri: string, minio: MinioService, txes: Tx[] } {
+export function prepareTools (rawTxes: Tx[]): { mongodbUri: string, storageAdapter: StorageAdapter, txes: Tx[] } {
   let minioEndpoint = process.env.MINIO_ENDPOINT
   if (minioEndpoint === undefined) {
     console.error('please provide minio endpoint')
@@ -104,7 +105,7 @@ export function prepareTools (rawTxes: Tx[]): { mongodbUri: string, minio: Minio
     secretKey: minioSecretKey
   })
 
-  return { mongodbUri, minio, txes: JSON.parse(JSON.stringify(rawTxes)) as Tx[] }
+  return { mongodbUri, storageAdapter: minio, txes: JSON.parse(JSON.stringify(rawTxes)) as Tx[] }
 }
 
 /**
@@ -117,7 +118,7 @@ export async function initModel (
   migrateOperations: [string, MigrateOperation][],
   logger: ModelLogger = consoleModelLogger
 ): Promise<CoreClient> {
-  const { mongodbUri, minio, txes } = prepareTools(rawTxes)
+  const { mongodbUri, storageAdapter: minio, txes } = prepareTools(rawTxes)
   if (txes.some((tx) => tx.objectSpace !== core.space.Model)) {
     throw Error('Model txes must target only core.space.Model')
   }

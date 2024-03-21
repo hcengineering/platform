@@ -15,7 +15,7 @@
 //
 
 import { DOMAIN_TX, type Ref, type WorkspaceId } from '@hcengineering/core'
-import { type MinioService } from '@hcengineering/minio'
+import { type StorageAdapter } from '@hcengineering/server-core'
 import { DOMAIN_ATTACHMENT } from '@hcengineering/model-attachment'
 import contact, { DOMAIN_CHANNEL } from '@hcengineering/model-contact'
 import { DOMAIN_TELEGRAM } from '@hcengineering/model-telegram'
@@ -32,7 +32,7 @@ export async function clearTelegramHistory (
   mongoUrl: string,
   workspaceId: WorkspaceId,
   tgDb: string,
-  minio: MinioService
+  storageAdapter: StorageAdapter
 ): Promise<void> {
   const client = new MongoClient(mongoUrl)
   try {
@@ -90,7 +90,7 @@ export async function clearTelegramHistory (
       workspaceDB.collection(DOMAIN_ATTACHMENT).deleteMany({
         attachedToClass: telegram.class.Message
       }),
-      minio.remove(workspaceId, Array.from(attachments))
+      storageAdapter.remove(workspaceId, Array.from(attachments))
     ])
 
     console.log('clearing telegram service data...')

@@ -42,6 +42,7 @@
     "ws": "^8.10.0",
     "@hcengineering/model": "^0.6.7",
     "@hcengineering/server-token": "^0.6.7",
+    "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/mongo": "^0.6.1",
     "@hcengineering/minio": "^0.6.0"
   }

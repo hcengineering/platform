@@ -16,7 +16,6 @@
 import { prepareTools as prepareToolsRaw } from '@hcengineering/server-tool'
 
 import { type Data, type Tx, type Version } from '@hcengineering/core'
-import { type MinioService } from '@hcengineering/minio'
 import { type MigrateOperation } from '@hcengineering/model'
 import builder, { getModelVersion, migrateOperations } from '@hcengineering/model-all'
 import { devTool } from '.'
@@ -28,6 +27,7 @@ import { serverCalendarId } from '@hcengineering/server-calendar'
 import { serverChunterId } from '@hcengineering/server-chunter'
 import { serverCollaborationId } from '@hcengineering/server-collaboration'
 import { serverContactId } from '@hcengineering/server-contact'
+import { type StorageAdapter } from '@hcengineering/server-core'
 import { serverDocumentId } from '@hcengineering/server-document'
 import { serverGmailId } from '@hcengineering/server-gmail'
 import { serverGuestId } from '@hcengineering/server-guest'
@@ -70,7 +70,7 @@ addLocation(serverGuestId, () => import('@hcengineering/server-guest-resources')
 
 function prepareTools (): {
   mongodbUri: string
-  minio: MinioService
+  storageAdapter: StorageAdapter
   txes: Tx[]
   version: Data<Version>
   migrateOperations: [string, MigrateOperation][]

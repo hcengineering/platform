@@ -16,12 +16,13 @@
 import { getWorkspaceId } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { setMetadata } from '@hcengineering/platform'
-import { backup, createMinioBackupStorage } from '@hcengineering/server-backup'
+import { backup, createStorageBackupStorage } from '@hcengineering/server-backup'
+import { type StorageAdapter } from '@hcengineering/server-core'
 import serverToken from '@hcengineering/server-token'
+import toolPlugin from '@hcengineering/server-tool'
 import got from 'got'
 import { type ObjectId } from 'mongodb'
 import config from './config'
-import toolPlugin from '@hcengineering/server-tool'
 
 /**
  * @public
@@ -51,7 +52,7 @@ async function getWorkspaces (): Promise<Workspace[]> {
 }
 
 export class PlatformWorker {
-  minio!: MinioService
+  storageAdapter!: StorageAdapter
 
   async close (): Promise<void> {}
 
@@ -65,7 +66,7 @@ export class PlatformWorker {
       minioPort = parseInt(sp[1])
     }
 
-    this.minio = new MinioService({
+    this.storageAdapter = new MinioService({
       endPoint: minioEndpoint,
       port: minioPort,
       useSSL: false,
@@ -94,8 +95,8 @@ export class PlatformWorker {
     for (const ws of workspaces) {
       console.log('\n\nBACKUP WORKSPACE ', ws.workspace, ws.productId)
       try {
-        const storage = await createMinioBackupStorage(
-          this.minio,
+        const storage = await createStorageBackupStorage(
+          this.storageAdapter,
           getWorkspaceId('backups', ws.productId),
           ws.workspace
         )

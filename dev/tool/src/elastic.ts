@@ -15,14 +15,14 @@
 
 import { Client as ElasticClient } from '@elastic/elasticsearch'
 import core, { DOMAIN_DOC_INDEX_STATE, toWorkspaceString, type WorkspaceId } from '@hcengineering/core'
-import { type MinioService } from '@hcengineering/minio'
 import { getWorkspaceDB } from '@hcengineering/mongo'
+import { type StorageAdapter } from '@hcengineering/server-core'
 import { MongoClient } from 'mongodb'
 
 export async function rebuildElastic (
   mongoUrl: string,
   workspaceId: WorkspaceId,
-  minio: MinioService,
+  storageAdapter: StorageAdapter,
   elasticUrl: string
 ): Promise<void> {
   const client = new MongoClient(mongoUrl)
