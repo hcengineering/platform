@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Doc, Ref, SpaceType } from '@hcengineering/core'
+import type { Doc, Ref } from '@hcengineering/core'
 import {} from '@hcengineering/core'
 import { documentId } from '@hcengineering/document'
 import document from '@hcengineering/document-resources/src/plugin'
@@ -52,8 +52,5 @@ export default mergeIds(documentId, document, {
     ConfigDescription: '' as IntlString,
     ParentDocument: '' as IntlString,
     ChildDocument: '' as IntlString
-  },
-  spaceType: {
-    DefaultTeamspaceType: '' as Ref<SpaceType>
   }
 })

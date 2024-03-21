@@ -70,7 +70,7 @@
 
   $: isNew = teamspace === undefined
 
-  let typeId: Ref<SpaceType> | undefined = teamspace?.type
+  let typeId: Ref<SpaceType> | undefined = teamspace?.type || document.spaceType.DefaultTeamspaceType
   let spaceType: SpaceType | undefined
 
   $: void loadSpaceType(typeId)
@@ -221,7 +221,7 @@
   label={isNew ? documentRes.string.NewTeamspace : documentRes.string.EditTeamspace}
   okLabel={isNew ? presentation.string.Create : presentation.string.Save}
   okAction={handleSave}
-  canSave={name.length > 0 && !(members.length === 0 && isPrivate)}
+  canSave={name.length > 0 && !(members.length === 0 && isPrivate) && typeId !== undefined}
   accentHeader
   width={'medium'}
   gap={'gapV-6'}
