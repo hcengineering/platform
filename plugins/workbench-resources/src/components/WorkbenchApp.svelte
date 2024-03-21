@@ -25,10 +25,11 @@
     location,
     setMetadataLocalStorage
   } from '@hcengineering/ui'
-  import { connect, versionError } from '../connect'
+  import { connect, disconnect, versionError } from '../connect'
 
   import { workbenchId } from '@hcengineering/workbench'
   import workbench from '../plugin'
+  import { onDestroy } from 'svelte'
 
   const isNeedUpgrade = window.location.host === ''
 
@@ -38,6 +39,8 @@
     setMetadataLocalStorage(workbench.metadata.MobileAllowed, true)
     mobileAllowed = true
   }
+
+  onDestroy(disconnect)
 </script>
 
 {#if $location.path[0] === workbenchId || $location.path[0] === workbench.component.WorkbenchApp}
