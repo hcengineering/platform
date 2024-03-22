@@ -17,7 +17,7 @@
   import { createQuery } from '@hcengineering/presentation'
   import { ChatMessage } from '@hcengineering/chunter'
   import { BaseMessagePreview } from '@hcengineering/activity-resources'
-  import { Icon, tooltip } from '@hcengineering/ui'
+  import { Action, Icon, tooltip } from '@hcengineering/ui'
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { AttachmentsTooltip } from '@hcengineering/attachment-resources'
   import { ActivityMessagePreviewType } from '@hcengineering/activity'
@@ -25,6 +25,7 @@
   export let value: ChatMessage
   export let readonly = false
   export let type: ActivityMessagePreviewType = 'full'
+  export let actions: Action[] = []
 
   const attachmentsQuery = createQuery()
 
@@ -45,7 +46,7 @@
   }
 </script>
 
-<BaseMessagePreview text={value.message} message={value} {type} {readonly} on:click>
+<BaseMessagePreview text={value.message} message={value} {type} {readonly} {actions} on:click>
   {#if value.attachments}
     <div class="attachments" use:tooltip={{ component: AttachmentsTooltip, props: { attachments } }}>
       {value.attachments}

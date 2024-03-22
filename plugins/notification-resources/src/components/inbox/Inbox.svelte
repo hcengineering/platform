@@ -300,9 +300,9 @@
         : 'landscape'} background-comp-header-color"
     >
       <div class="antiPanel-wrap__content">
-        <div class="ac-header full divide caption-height">
+        <div class="ac-header full divide caption-height" style:padding="0.5rem 1.25rem">
           <div class="ac-header__wrap-title mr-3">
-            <span class="ac-header__title"><Label label={notification.string.Inbox} /></span>
+            <span class="title"><Label label={notification.string.Inbox} /></span>
           </div>
           <div class="flex flex-gap-2">
             {#if inboxData.size > 0}
@@ -369,9 +369,16 @@
 <style lang="scss">
   .tabs {
     display: flex;
-    margin: 0.5rem;
+    margin-top: 0.5rem;
     margin-bottom: 0;
+    padding: 0 1.25rem;
     padding-bottom: 0.5rem;
     border-bottom: 1px solid var(--theme-navpanel-border);
+  }
+
+  .title {
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--global-primary-TextColor);
   }
 </style>

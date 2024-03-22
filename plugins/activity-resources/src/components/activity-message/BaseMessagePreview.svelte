@@ -21,12 +21,14 @@
   import ActivityMessageActions from '../ActivityMessageActions.svelte'
   import ReactionsPreview from '../reactions/ReactionsPreview.svelte'
   import BasePreview from '../BasePreview.svelte'
+  import { Action } from '@hcengineering/ui'
 
   export let text: string | undefined = undefined
   export let intlLabel: IntlString | undefined = undefined
   export let readonly = false
   export let type: ActivityMessagePreviewType = 'full'
   export let message: ActivityMessage
+  export let actions: Action[] = []
 
   const client = getClient()
 
@@ -60,6 +62,7 @@
     <ActivityMessageActions
       {message}
       {extensions}
+      {actions}
       on:open={previewElement.onActionsOpened}
       on:close={previewElement.onActionsClosed}
     />

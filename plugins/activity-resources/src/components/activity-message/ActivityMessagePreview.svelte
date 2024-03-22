@@ -16,7 +16,7 @@
 <script lang="ts">
   import { DisplayActivityMessage, ActivityMessagePreviewType } from '@hcengineering/activity'
   import { getClient } from '@hcengineering/presentation'
-  import { Component } from '@hcengineering/ui'
+  import { Action, Component } from '@hcengineering/ui'
   import { Class, Doc, Ref } from '@hcengineering/core'
 
   import activity from '../../plugin'
@@ -24,6 +24,7 @@
   export let value: DisplayActivityMessage
   export let readonly = false
   export let type: ActivityMessagePreviewType = 'full'
+  export let actions: Action[] = []
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -40,7 +41,8 @@
     props={{
       value,
       type,
-      readonly
+      readonly,
+      actions
     }}
     on:click
   />

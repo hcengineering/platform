@@ -33,7 +33,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 0.25rem;
+    border-radius: var(--extra-small-BorderRadius);
     width: 1.5rem;
     height: 1.5rem;
     padding: 0.25rem;

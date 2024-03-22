@@ -17,10 +17,12 @@
   import { ActivityMessagePreviewType, ActivityReference } from '@hcengineering/activity'
 
   import BaseMessagePreview from '../activity-message/BaseMessagePreview.svelte'
+  import { Action } from '@hcengineering/ui'
 
   export let value: ActivityReference
   export let readonly = false
   export let type: ActivityMessagePreviewType = 'full'
+  export let actions: Action[] = []
 </script>
 
-<BaseMessagePreview text={value.message} message={value} {type} {readonly} on:click />
+<BaseMessagePreview text={value.message} message={value} {type} {readonly} {actions} on:click />

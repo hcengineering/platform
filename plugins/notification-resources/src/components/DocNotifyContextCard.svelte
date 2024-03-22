@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ActionIcon, Component, IconMoreH, Label, showPopup } from '@hcengineering/ui'
+  import { ActionIcon, Component, IconMoreV, Label, showPopup } from '@hcengineering/ui'
   import notification, {
     ActivityNotificationViewlet,
     DisplayInboxNotification,
@@ -114,7 +114,7 @@
   </div>
 
   <div class="actions clear-mins flex flex-gap-2 items-center" class:opened={isActionMenuOpened}>
-    <ActionIcon icon={IconMoreH} size="small" action={showMenu} />
+    <ActionIcon icon={IconMoreV} size="small" action={showMenu} />
   </div>
 
   <div class="content">
@@ -166,12 +166,26 @@
     .actions {
       position: absolute;
       visibility: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--extra-small-BorderRadius);
       top: 0.75rem;
       right: 0.75rem;
-      color: var(--theme-halfcontent-color);
+      width: 1.5rem;
+      height: 1.5rem;
+      color: var(--global-secondary-TextColor);
 
       &.opened {
         visibility: visible;
+        color: var(--accent-color);
+        background: var(--global-ui-hover-BackgroundColor);
+      }
+
+      &:hover {
+        visibility: visible;
+        color: var(--accent-color);
+        background: var(--global-ui-hover-BackgroundColor);
       }
     }
 

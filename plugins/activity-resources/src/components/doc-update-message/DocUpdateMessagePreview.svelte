@@ -19,7 +19,7 @@
     DisplayDocUpdateMessage,
     DocUpdateMessageViewlet
   } from '@hcengineering/activity'
-  import { Component } from '@hcengineering/ui'
+  import { Action, Component } from '@hcengineering/ui'
   import { getClient } from '@hcengineering/presentation'
   import { IntlString } from '@hcengineering/platform'
   import { AttachedDoc, Collection, Doc } from '@hcengineering/core'
@@ -29,14 +29,16 @@
   import BaseMessagePreview from '../activity-message/BaseMessagePreview.svelte'
   import DocUpdateMessageContent from './DocUpdateMessageContent.svelte'
   import DocUpdateMessageAttributes from './DocUpdateMessageAttributes.svelte'
+  import { createEventDispatcher } from 'svelte'
 
   export let value: DisplayDocUpdateMessage
   export let readonly = false
   export let type: ActivityMessagePreviewType = 'full'
-  export let onClick: (() => void) | undefined = undefined
+  export let actions: Action[] = []
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
+  const dispatch = createEventDispatcher()
 
   let viewlet: DocUpdateMessageViewlet | undefined
   let objectName: IntlString | undefined = undefined
@@ -58,9 +60,15 @@
   $: void getAttributeModel(client, value.attributeUpdates, value.objectClass).then((model) => {
     attributeModel = model
   })
+
+  function onClick (event: MouseEvent): void {
+    event.stopPropagation()
+    event.preventDefault()
+    dispatch('click')
+  }
 </script>
 
-<BaseMessagePreview message={value} {type} {readonly} on:click>
+<BaseMessagePreview message={value} {type} {readonly} {actions} on:click>
   <span class="textContent overflow-label" class:contentOnly={type === 'content-only'}>
     {#if viewlet?.component && object}
       <div class="customContent">

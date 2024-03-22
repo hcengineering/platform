@@ -19,8 +19,10 @@
   import { DisplayDocUpdateMessage, DocAttributeUpdates } from '@hcengineering/activity'
   import notification from '@hcengineering/notification'
   import { BaseMessagePreview } from '@hcengineering/activity-resources'
+  import { Action } from '@hcengineering/ui'
 
   export let message: DisplayDocUpdateMessage
+  export let actions: Action[] = []
 
   const me = getCurrentAccount()._id
 
@@ -39,5 +41,6 @@
 
 <BaseMessagePreview
   intlLabel={isMeAdded ? notification.string.YouAddedCollaborators : notification.string.YouRemovedCollaborators}
+  {actions}
   {message}
 />
