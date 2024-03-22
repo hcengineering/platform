@@ -26,7 +26,6 @@
 
   import InboxNotificationPresenter from './inbox/InboxNotificationPresenter.svelte'
   import NotifyContextIcon from './NotifyContextIcon.svelte'
-  import NotifyMarker from './NotifyMarker.svelte'
 
   export let value: DocNotifyContext
   export let notifications: WithLookup<DisplayInboxNotification>[]
@@ -91,7 +90,7 @@
   }}
 >
   <div class="header">
-    <NotifyContextIcon {value} />
+    <NotifyContextIcon {value} notifyCount={unreadCount} />
 
     {#if presenterMixin?.labelPresenter}
       <Component is={presenterMixin.labelPresenter} props={{ context: value }} />
@@ -107,21 +106,17 @@
         </span>
       </div>
     {/if}
-  </div>
 
-  <div class="notifyMarker">
-    <NotifyMarker count={unreadCount} />
-  </div>
-
-  <div class="actions clear-mins flex flex-gap-2 items-center" class:opened={isActionMenuOpened}>
-    <ActionIcon icon={IconMoreV} size="small" action={showMenu} />
+    <div class="actions clear-mins flex flex-gap-2 items-center" class:opened={isActionMenuOpened}>
+      <ActionIcon icon={IconMoreV} size="small" action={showMenu} />
+    </div>
   </div>
 
   <div class="content">
-    <div class="embeddedMarker" />
     <div class="notifications">
       {#each notifications.slice(0, maxNotifications) as notification}
         <div class="notification">
+          <div class="embeddedMarker" />
           <InboxNotificationPresenter
             value={notification}
             {viewlets}
@@ -143,8 +138,8 @@
     position: relative;
     flex-direction: column;
     cursor: pointer;
-    border-radius: var(--medium-BorderRadius);
-    padding: var(--spacing-1) var(--spacing-0_5);
+    padding: var(--spacing-1_5) var(--spacing-1);
+    border-bottom: 1px solid var(--global-ui-BorderColor);
 
     .header {
       position: relative;
@@ -152,86 +147,100 @@
       align-items: center;
       gap: 0.75rem;
       margin-left: var(--spacing-0_5);
-      overflow: hidden;
+
+      .actions {
+        position: absolute;
+        visibility: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--extra-small-BorderRadius);
+        top: -0.375rem;
+        right: 0;
+        width: 1.5rem;
+        height: 1.5rem;
+        color: var(--global-secondary-TextColor);
+
+        &.opened {
+          visibility: visible;
+          color: var(--accent-color);
+          background: var(--global-ui-hover-BackgroundColor);
+        }
+
+        &:hover {
+          visibility: visible;
+          color: var(--accent-color);
+          background: var(--global-ui-hover-BackgroundColor);
+        }
+      }
+
+      &:hover > .actions {
+        visibility: visible;
+      }
     }
 
     .title {
-      font-weight: 500;
-      max-width: 20.5rem;
+      font-weight: 400;
       color: var(--global-primary-TextColor);
-      font-size: 1rem;
       min-width: 0;
+      margin-right: 1rem;
     }
+  }
 
-    .actions {
+  .notifications {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    flex-direction: column;
+    margin-top: var(--spacing-1);
+    margin-left: var(--spacing-0_5);
+  }
+
+  .notification {
+    position: relative;
+
+    .embeddedMarker {
       position: absolute;
-      visibility: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: var(--extra-small-BorderRadius);
-      top: 0.75rem;
-      right: 0.75rem;
-      width: 1.5rem;
-      height: 1.5rem;
-      color: var(--global-secondary-TextColor);
+      min-width: 0.25rem;
+      border-radius: 0;
+      height: 2.375rem;
+      background: var(--global-ui-highlight-BackgroundColor);
+    }
 
-      &.opened {
-        visibility: visible;
-        color: var(--accent-color);
-        background: var(--global-ui-hover-BackgroundColor);
-      }
-
-      &:hover {
-        visibility: visible;
-        color: var(--accent-color);
-        background: var(--global-ui-hover-BackgroundColor);
+    &:first-child {
+      .embeddedMarker {
+        border-top-left-radius: 0.5rem;
+        border-top-right-radius: 0.5rem;
       }
     }
 
-    &:hover > .actions {
-      visibility: visible;
+    &:hover {
+      .embeddedMarker {
+        border-radius: 0.5rem;
+        background: var(--global-primary-LinkColor);
+      }
+    }
+
+    &:last-child {
+      .embeddedMarker {
+        border-bottom-left-radius: 0.5rem;
+        border-bottom-right-radius: 0.5rem;
+      }
     }
   }
 
   .labels {
     display: flex;
     flex-direction: column;
-    color: var(--global-secondary-TextColor);
-    font-weight: 500;
+    color: var(--global-primary-TextColor);
+    font-weight: 600;
     font-size: 0.875rem;
     min-width: 0;
-  }
-
-  .notification {
-    margin-top: var(--spacing-0_5);
-  }
-
-  .notifications {
-    display: flex;
-    width: calc(100% - var(--spacing-4));
-    flex-direction: column;
-    gap: var(--spacing-0_5);
-    margin-top: var(--spacing-0_5);
-    margin-left: var(--spacing-0_5);
+    overflow: hidden;
   }
 
   .content {
     display: flex;
     width: 100%;
-  }
-
-  .notifyMarker {
-    position: absolute;
-    right: 0;
-    top: -0.375rem;
-  }
-
-  .embeddedMarker {
-    min-width: 0.25rem;
-    border-radius: 0.5rem;
-    background: var(--global-ui-highlight-BackgroundColor);
-    margin-top: var(--spacing-1);
-    margin-left: var(--spacing-2_5);
   }
 </style>

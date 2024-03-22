@@ -300,7 +300,7 @@
         : 'landscape'} background-comp-header-color"
     >
       <div class="antiPanel-wrap__content">
-        <div class="ac-header full divide caption-height" style:padding="0.5rem 1.25rem">
+        <div class="ac-header full divide caption-height" style:padding="0.5rem var(--spacing-1_5)">
           <div class="ac-header__wrap-title mr-3">
             <span class="title"><Label label={notification.string.Inbox} /></span>
           </div>
@@ -341,7 +341,7 @@
           <TabList items={tabItems} selected={selectedTabId} on:select={selectTab} />
         </div>
 
-        <Scroller padding="1rem 0">
+        <Scroller padding="0">
           <InboxGroupedListView data={filteredData} on:click={selectContext} />
         </Scroller>
       </div>
@@ -371,13 +371,13 @@
     display: flex;
     margin-top: 0.5rem;
     margin-bottom: 0;
-    padding: 0 1.25rem;
+    padding: 0 var(--spacing-1_5);
     padding-bottom: 0.5rem;
     border-bottom: 1px solid var(--theme-navpanel-border);
   }
 
   .title {
-    font-weight: 700;
+    font-weight: 600;
     font-size: 1.25rem;
     color: var(--global-primary-TextColor);
   }

@@ -234,7 +234,7 @@
     }
 
     &.selected {
-      background-color: var(--highlight-select);
+      background-color: var(--global-ui-highlight-BackgroundColor);
     }
 
     &.embedded {
@@ -260,7 +260,7 @@
 
     &.actionsOpened {
       &.borderedHover {
-        border: 1px solid var(--highlight-hover);
+        border: 1px solid var(--global-ui-BackgroundColor);
       }
 
       &.filledHover {
@@ -271,7 +271,7 @@
     &.hoverable {
       &:hover:not(.embedded) {
         &.borderedHover {
-          border: 1px solid var(--highlight-hover);
+          border: 1px solid var(--global-ui-BackgroundColor);
         }
 
         &.filledHover {
@@ -285,7 +285,7 @@
     display: flex;
     align-items: baseline;
     font-size: 0.875rem;
-    color: var(--theme-halfcontent-color);
+    color: var(--global-secondary-TextColor);
     margin-bottom: 0.25rem;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -304,7 +304,7 @@
     left: 0.25rem;
     height: 0.5rem;
     width: 0.5rem;
-    background-color: var(--theme-inbox-notify);
+    background-color: var(--global-higlight-Color);
     border-radius: 50%;
   }
 

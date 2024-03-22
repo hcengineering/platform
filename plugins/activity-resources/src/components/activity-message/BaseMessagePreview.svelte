@@ -51,11 +51,10 @@
 >
   <svelte:fragment slot="content">
     <slot />
-
+  </svelte:fragment>
+  <svelte:fragment slot="right">
     {#if type === 'full' && !isCompact}
-      <span class="reactions">
-        <ReactionsPreview {message} {readonly} />
-      </span>
+      <ReactionsPreview {message} {readonly} />
     {/if}
   </svelte:fragment>
   <svelte:fragment slot="actions">
@@ -68,9 +67,3 @@
     />
   </svelte:fragment>
 </BasePreview>
-
-<style lang="scss">
-  .reactions {
-    margin-left: auto;
-  }
-</style>

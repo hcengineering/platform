@@ -18,7 +18,7 @@
   export let addClass: string | undefined = undefined
   export let selected = false
   export let element: HTMLElement | undefined = undefined
-  export let kind: 'default' | 'thin' = 'default'
+  export let kind: 'default' | 'thin' | 'full-size' = 'default'
 </script>
 
 <slot name="category" item={row} />
@@ -51,6 +51,10 @@
       &:not(:first-child) {
         margin-top: 0.375rem;
       }
+    }
+
+    &.full-size {
+      margin: 0;
     }
 
     &.default {

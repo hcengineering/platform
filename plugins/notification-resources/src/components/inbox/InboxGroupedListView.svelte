@@ -113,6 +113,7 @@
     bind:selection={listSelection}
     count={displayData.length}
     noScroll
+    kind="full-size"
     colorsSchema="lumia"
     lazy={true}
     getKey={getContextKey}
@@ -133,10 +134,6 @@
         />
       {/if}
     </svelte:fragment>
-
-    <svelte:fragment slot="separator">
-      <div class="separator" />
-    </svelte:fragment>
   </ListView>
 </div>
 
@@ -145,12 +142,5 @@
     &:focus {
       outline: 0;
     }
-  }
-
-  .separator {
-    width: 100%;
-    height: 1px;
-    margin: 0.5rem 0;
-    background-color: var(--theme-navpanel-border);
   }
 </style>

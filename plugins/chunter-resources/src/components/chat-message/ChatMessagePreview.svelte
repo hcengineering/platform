@@ -17,10 +17,11 @@
   import { createQuery } from '@hcengineering/presentation'
   import { ChatMessage } from '@hcengineering/chunter'
   import { BaseMessagePreview } from '@hcengineering/activity-resources'
-  import { Action, Icon, tooltip } from '@hcengineering/ui'
+  import { Action, Icon, Label, tooltip } from '@hcengineering/ui'
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { AttachmentsTooltip } from '@hcengineering/attachment-resources'
   import { ActivityMessagePreviewType } from '@hcengineering/activity'
+  import { convert } from 'html-to-text'
 
   export let value: ChatMessage
   export let readonly = false
@@ -44,14 +45,28 @@
   } else {
     attachmentsQuery.unsubscribe()
   }
+
+  $: text = value.message
+    ? convert(value.message, {
+      preserveNewlines: false,
+      selectors: [{ selector: 'img', format: 'skip' }]
+    })
+    : undefined
 </script>
 
-<BaseMessagePreview text={value.message} message={value} {type} {readonly} {actions} on:click>
-  {#if value.attachments}
+<BaseMessagePreview text={text ? value.message : undefined} message={value} {type} {readonly} {actions} on:click>
+  {#if value.attachments && type === 'full' && text}
     <div class="attachments" use:tooltip={{ component: AttachmentsTooltip, props: { attachments } }}>
       {value.attachments}
       <Icon icon={attachment.icon.Attachment} size="small" />
     </div>
+  {:else if attachments.length > 0 && !text}
+    <span class="font-normal">
+      <Label label={attachment.string.Attachments} />:
+      <span class="ml-1">
+        {attachments.map(({ name }) => name).join(', ')}
+      </span>
+    </span>
   {/if}
 </BaseMessagePreview>
 

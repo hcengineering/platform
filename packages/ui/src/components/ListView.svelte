@@ -22,7 +22,7 @@
   export let count: number
   export let addClass: string | undefined = undefined
   export let noScroll: boolean = false
-  export let kind: 'default' | 'thin' = 'default'
+  export let kind: 'default' | 'thin' | 'full-size' = 'default'
   export let colorsSchema: 'default' | 'lumia' = 'default'
   export let updateOnMouse = true
   export let lazy = false
@@ -102,7 +102,6 @@
               <slot name="item" item={itemIndex} />
             </svelte:fragment>
           </ListViewItem>
-          <slot name="separator" item={row} />
         </Lazy>
       {:else}
         <ListViewItem
@@ -131,7 +130,6 @@
             <slot name="item" item={itemIndex} />
           </svelte:fragment>
         </ListViewItem>
-        <slot name="separator" item={row} />
       {/if}
     {/each}
   </div>

@@ -70,8 +70,8 @@
 </script>
 
 {#if parentMessage}
-  <div class="labels font-medium-14">
-    <span class="flex-presenter flex-gap-1">
+  <div class="labels font-medium-14 font-normal">
+    <span class="flex-presenter flex-gap-1 font-semi-bold">
       {#if isThread || (parentMessage.replies ?? 0) > 0}
         <Label label={chunter.string.Thread} />
       {:else}
@@ -102,7 +102,10 @@
   .labels {
     display: flex;
     flex-direction: column;
+    height: 100%;
+    justify-content: space-between;
     min-width: 0;
-    color: var(--global-secondary-TextColor);
+    margin-right: 1rem;
+    color: var(--global-primary-TextColor);
   }
 </style>

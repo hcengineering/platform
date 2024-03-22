@@ -195,8 +195,7 @@ export async function OnToDoCreate (tx: TxCUD<Doc>, control: TriggerControl): Pr
     headerIcon: time.icon.Planned,
     headerObjectId: object._id,
     headerObjectClass: object._class,
-    message: time.string.NewToDoDetails,
-    props: { details: todo.title }
+    messageHtml: todo.title
   }
 
   res.push(

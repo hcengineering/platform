@@ -16,7 +16,7 @@
   import { buildRemovedDoc, checkIsObjectRemoved, DocNavLink, getDocLinkTitle } from '@hcengineering/view-resources'
   import { Component, Icon, IconAdd, IconDelete } from '@hcengineering/ui'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import view, { ObjectPanel, ObjectPresenter } from '@hcengineering/view'
+  import view from '@hcengineering/view'
   import { Class, Doc, Ref } from '@hcengineering/core'
   import { DisplayDocUpdateMessage, DocUpdateMessageViewlet } from '@hcengineering/activity'
 
@@ -97,12 +97,12 @@
 <style lang="scss">
   .valueLink {
     font-weight: 500;
-    color: var(--theme-link-color);
+    color: var(--global-primary-LinkColor);
   }
 
   .separator {
     font-weight: 500;
-    color: var(--theme-link-color);
+    color: var(--global-primary-LinkColor);
     margin-left: -0.25rem;
   }
 </style>

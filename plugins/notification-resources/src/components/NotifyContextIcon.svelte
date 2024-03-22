@@ -20,7 +20,11 @@
   import view from '@hcengineering/view'
   import { Doc } from '@hcengineering/core'
 
+  import NotifyMarker from './NotifyMarker.svelte'
+
   export let value: DocNotifyContext
+  export let notifyCount: number = 0
+
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const query = createQuery()
@@ -40,6 +44,10 @@
   {:else}
     <Icon icon={classIcon(client, value.attachedToClass) ?? notification.icon.Notifications} size="medium" />
   {/if}
+
+  <div class="notifyMarker">
+    <NotifyMarker count={notifyCount} size="medium" />
+  </div>
 </div>
 
 <style lang="scss">
@@ -55,5 +63,12 @@
     height: 2.5rem;
     min-width: 2.5rem;
     min-height: 2.5rem;
+    position: relative;
+
+    .notifyMarker {
+      position: absolute;
+      top: -0.375rem;
+      right: -0.375rem;
+    }
   }
 </style>

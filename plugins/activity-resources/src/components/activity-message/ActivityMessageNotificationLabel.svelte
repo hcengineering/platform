@@ -48,7 +48,7 @@
 
 {#if parentMessage}
   <div class="labels">
-    <span class="flex-presenter flex-gap-1">
+    <span class="flex-presenter flex-gap-1 font-semi-bold">
       <Label label={(parentMessage?.replies ?? 0) > 0 ? activity.string.Thread : activity.string.Message} />
       {#if title}
         <span class="lower">
@@ -73,6 +73,9 @@
   .labels {
     display: flex;
     flex-direction: column;
+    height: 100%;
+    justify-content: space-between;
+    margin-right: 1rem;
     min-width: 0;
   }
 </style>

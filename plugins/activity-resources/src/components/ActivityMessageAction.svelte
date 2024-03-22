@@ -39,12 +39,12 @@
     padding: 0.25rem;
 
     &:hover {
-      color: var(--accent-color);
+      color: var(--global-primary-TextColor);
       background: var(--global-ui-hover-BackgroundColor);
     }
 
     &.opened {
-      color: var(--accent-color);
+      color: var(--global-primary-TextColor);
       background: var(--global-ui-hover-BackgroundColor);
     }
   }

@@ -24,12 +24,10 @@
     SystemAvatar
   } from '@hcengineering/contact-resources'
   import core, { Account, Doc, Ref, Timestamp } from '@hcengineering/core'
-  import { Icon, Label, resizeObserver } from '@hcengineering/ui'
+  import { Icon, Label, resizeObserver, TimeSince } from '@hcengineering/ui'
   import { Asset, IntlString } from '@hcengineering/platform'
   import activity, { ActivityMessagePreviewType } from '@hcengineering/activity'
   import { classIcon, DocNavLink } from '@hcengineering/view-resources'
-
-  import MessageTimestamp from './MessageTimestamp.svelte'
 
   export let text: string | undefined = undefined
   export let intlLabel: IntlString | undefined = undefined
@@ -93,65 +91,72 @@
   }}
   on:click
 >
-  {#if type === 'full'}
-    {#if headerObject}
-      <Icon icon={headerIcon ?? classIcon(client, headerObject._class) ?? activity.icon.Activity} size="small" />
-    {:else if person}
-      <Avatar size="card" avatar={person.avatar} name={person.name} />
-    {:else}
-      <SystemAvatar size="card" />
-    {/if}
+  <span class="left overflow-label">
+    {#if type === 'full'}
+      <span class="icon">
+        {#if headerObject}
+          <Icon icon={headerIcon ?? classIcon(client, headerObject._class) ?? activity.icon.Activity} size="small" />
+        {:else if person}
+          <Avatar size="card" avatar={person.avatar} name={person.name} />
+        {:else}
+          <SystemAvatar size="card" />
+        {/if}
+      </span>
 
-    <div class="person strong">
-      {#if headerObject}
-        <DocNavLink object={headerObject} colorInherit>
-          <Label label={header ?? client.getHierarchy().getClass(headerObject._class).label} />
-        </DocNavLink>
-      {:else if person}
-        <EmployeePresenter value={person} shouldShowAvatar={false} compact />
-      {:else}
-        <Label label={core.string.System} />
-      {/if}
-    </div>
-
-    {#if !isCompact}
-      <div class="time">
-        <MessageTimestamp date={timestamp} type="secondary" />
+      <div class="header">
+        {#if headerObject}
+          <DocNavLink object={headerObject} colorInherit>
+            <Label label={header ?? client.getHierarchy().getClass(headerObject._class).label} />
+          </DocNavLink>
+        {:else if person}
+          <EmployeePresenter value={person} shouldShowAvatar={false} compact />
+        {:else}
+          <Label label={core.string.System} />
+        {/if}
       </div>
     {/if}
-  {/if}
 
-  {#if text || intlLabel}
-    <div class="textContent overflow-label" class:contentOnly={type === 'content-only'}>
-      {#if intlLabel}
-        <Label label={intlLabel} />
-      {/if}
-      {#if text}
-        <MessageViewer message={text} preview />
-      {/if}
-    </div>
-  {/if}
+    {#if text || intlLabel}
+      <span class="textContent overflow-label font-normal" class:contentOnly={type === 'content-only'}>
+        {#if intlLabel}
+          <Label label={intlLabel} />
+        {/if}
+        {#if text}
+          <MessageViewer message={text} preview />
+        {/if}
+      </span>
+    {/if}
 
-  <slot name="content" />
+    <slot name="content" />
+  </span>
 
   {#if !readonly}
     <div class="actions" class:opened={isActionsOpened}>
       <slot name="actions" />
     </div>
   {/if}
+
+  <div class="right">
+    <slot name="right" />
+    {#if type === 'full' && !isCompact}
+      <div class="time">
+        <TimeSince value={timestamp} />
+      </div>
+    {/if}
+  </div>
 </div>
 
 <style lang="scss">
   .root {
     display: flex;
     align-items: center;
-    gap: var(--spacing-1);
+    justify-content: space-between;
     height: 2.375rem;
     color: var(--global-primary-TextColor);
-    border: 1px solid transparent;
-    border-radius: var(--extra-small-BorderRadius);
     width: 100%;
-    padding: var(--spacing-0_75) var(--spacing-0_5);
+    padding: 0 var(--spacing-0_5);
+    padding-right: var(--spacing-0_75);
+    padding-left: 0;
     position: relative;
 
     &.contentOnly {
@@ -163,19 +168,29 @@
       cursor: default;
     }
 
-    &:hover:not(.readonly) {
-      background-color: var(--global-ui-BackgroundColor);
-    }
-
     .actions {
       position: absolute;
       visibility: hidden;
-      top: -1.5rem;
-      right: 0.75rem;
+      top: -1.75rem;
+      right: 0;
 
       &.opened {
         visibility: visible;
       }
+    }
+
+    .left {
+      position: relative;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-1);
+    }
+
+    .right {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-1);
     }
 
     &:hover:not(.readonly) > .actions {
@@ -187,8 +202,19 @@
     }
   }
 
-  .person {
+  .header {
+    margin-left: var(--spacing-0_5);
+    font-weight: 500;
     color: var(--global-primary-TextColor);
+  }
+
+  .icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    max-width: 2.5rem;
+    min-width: 2.5rem;
   }
 
   .time {
