@@ -32,7 +32,7 @@ import { AuthenticationExtension } from './extensions/authentication'
 import { StorageExtension } from './extensions/storage'
 import { Controller, getClientFactory } from './platform'
 import { RpcErrorResponse, RpcRequest, RpcResponse, methods } from './rpc'
-import { MinioStorageAdapter } from './storage/minio'
+import { PlatformStorageAdapter } from './storage/platform'
 import { HtmlTransformer } from './transformers/html'
 
 /**
@@ -80,7 +80,6 @@ export async function start (
   ]
 
   const extensionsCtx = ctx.newChild('extensions', {})
-  const storageCtx = ctx.newChild('storage', {})
 
   const controller = new Controller()
 
@@ -128,11 +127,7 @@ export async function start (
       }),
       new StorageExtension({
         ctx: extensionsCtx.newChild('storage', {}),
-        adapters: {
-          minio: new MinioStorageAdapter(storageCtx.newChild('platform', {}), minio)
-        },
-        mongodb: mongo,
-        transformer
+        adapter: new PlatformStorageAdapter({ minio }, mongo, transformer)
       })
     ],
 

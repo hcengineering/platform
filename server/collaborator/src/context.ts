@@ -42,8 +42,8 @@ export function buildContext (data: onAuthenticatePayload, controller: Controlle
   const connectionId = context.connectionId ?? generateId()
   const decodedToken = decodeToken(data.token)
 
-  const initialContentId = data.requestParameters.get('initialContentId') as DocumentId ?? undefined
-  const platformDocumentId = data.requestParameters.get('platformDocumentId') as PlatformDocumentId ?? undefined
+  const initialContentId = (data.requestParameters.get('initialContentId') as DocumentId) ?? undefined
+  const platformDocumentId = (data.requestParameters.get('platformDocumentId') as PlatformDocumentId) ?? undefined
 
   return {
     connectionId,
