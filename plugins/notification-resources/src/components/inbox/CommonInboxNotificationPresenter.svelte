@@ -71,6 +71,7 @@
   text={content}
   account={value.createdBy ?? value.modifiedBy}
   timestamp={value.createdOn ?? value.modifiedOn}
+  on:click
 >
   <svelte:fragment slot="actions">
     <div class="actionsContainer">

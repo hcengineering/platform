@@ -45,6 +45,7 @@
   {type}
   timestamp={message.createdOn ?? message.modifiedOn}
   account={message.createdBy ?? message.modifiedBy}
+  on:click
 >
   <svelte:fragment slot="content">
     <slot />
