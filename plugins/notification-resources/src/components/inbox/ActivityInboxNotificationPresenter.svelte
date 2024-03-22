@@ -14,12 +14,11 @@
 -->
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
-  import { matchQuery, Ref } from '@hcengineering/core'
+  import { matchQuery } from '@hcengineering/core'
   import notification, {
     ActivityInboxNotification,
     ActivityNotificationViewlet,
-    DisplayActivityInboxNotification,
-    InboxNotification
+    DisplayActivityInboxNotification
   } from '@hcengineering/notification'
   import {
     ActivityMessagePreview,
@@ -31,30 +30,27 @@
   import { getActions } from '@hcengineering/view-resources'
   import { getResource } from '@hcengineering/platform'
 
-  import { inboxMessagesStore, InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
+  import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
 
   export let value: DisplayActivityInboxNotification
   export let viewlets: ActivityNotificationViewlet[] = []
 
   const client = getClient()
   const inboxClient = InboxNotificationsClientImpl.getClient()
-  const notificationsStore = inboxClient.inboxNotifications
+  const activityNotificationsStore = inboxClient.activityInboxNotifications
 
   let viewlet: ActivityNotificationViewlet | undefined = undefined
   let displayMessage: DisplayActivityMessage | undefined = undefined
   let actions: Action[] = []
 
-  $: combinedNotifications = $notificationsStore.filter(({ _id }) =>
-    (value.combinedIds as Ref<InboxNotification>[]).includes(_id)
-  ) as ActivityInboxNotification[]
+  $: combinedNotifications = $activityNotificationsStore.filter(({ _id }) => value.combinedIds.includes(_id))
+  $: messages = combinedNotifications
+    .map((it) => it.$lookup?.attachedTo)
+    .filter((it): it is ActivityMessage => it !== undefined)
 
-  $: messageIds = combinedNotifications.map(({ attachedTo }) => attachedTo)
+  $: void updateDisplayMessage(messages)
 
-  $: void updateDisplayMessage(messageIds, $inboxMessagesStore)
-
-  async function updateDisplayMessage (ids: Ref<ActivityMessage>[], allMessages: ActivityMessage[]): Promise<void> {
-    const messages = allMessages.filter(({ _id }) => ids.includes(_id))
-
+  async function updateDisplayMessage (messages: ActivityMessage[]): Promise<void> {
     const combinedMessages = await combineActivityMessages(sortActivityMessages(messages))
 
     displayMessage = combinedMessages[0]

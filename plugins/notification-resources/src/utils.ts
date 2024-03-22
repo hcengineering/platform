@@ -490,7 +490,6 @@ export async function getDisplayInboxNotifications (
     })
 
   const combinedMessages = await combineActivityMessages(
-    // TODO: can omit sort ????
     messages.sort(activityMessagesComparator),
     SortingOrder.Descending
   )

@@ -14,12 +14,12 @@
 -->
 <script lang="ts">
   import { personAccountByIdStore } from '@hcengineering/contact-resources'
-  import { PersonAccount } from '@hcengineering/contact'
+  import contact, { PersonAccount } from '@hcengineering/contact'
   import { getCurrentAccount, Ref } from '@hcengineering/core'
   import { DisplayDocUpdateMessage, DocAttributeUpdates } from '@hcengineering/activity'
   import notification from '@hcengineering/notification'
   import { BaseMessagePreview } from '@hcengineering/activity-resources'
-  import { Action } from '@hcengineering/ui'
+  import { Action, Icon, Label } from '@hcengineering/ui'
 
   export let message: DisplayDocUpdateMessage
   export let actions: Action[] = []
@@ -39,8 +39,11 @@
   }
 </script>
 
-<BaseMessagePreview
-  intlLabel={isMeAdded ? notification.string.YouAddedCollaborators : notification.string.YouRemovedCollaborators}
-  {actions}
-  {message}
-/>
+<BaseMessagePreview {actions} {message}>
+  <span class="overflow-label flex-presenter flex-gap-1-5">
+    <Icon icon={contact.icon.Person} size="small" />
+    <Label
+      label={isMeAdded ? notification.string.YouAddedCollaborators : notification.string.YouRemovedCollaborators}
+    />
+  </span>
+</BaseMessagePreview>

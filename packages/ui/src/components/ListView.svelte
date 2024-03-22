@@ -26,6 +26,7 @@
   export let colorsSchema: 'default' | 'lumia' = 'default'
   export let updateOnMouse = true
   export let lazy = false
+  export let highlightIndex: number | undefined = undefined
   export let getKey: (index: number) => string = (index) => index.toString()
 
   const refs: HTMLElement[] = []
@@ -82,6 +83,7 @@
             {addClass}
             {row}
             {kind}
+            isHighlighted={row === highlightIndex}
             selected={row === selection}
             on:click={() => dispatch('click', row)}
             on:mouseover={mouseAttractor(() => {
@@ -111,6 +113,7 @@
           {row}
           {kind}
           selected={row === selection}
+          isHighlighted={row === highlightIndex}
           on:click={() => dispatch('click', row)}
           on:mouseover={mouseAttractor(() => {
             if (updateOnMouse) {

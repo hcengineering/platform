@@ -35,8 +35,6 @@ import notification, {
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { derived, get, writable } from 'svelte/store'
 
-export const inboxMessagesStore = writable<ActivityMessage[]>([])
-
 /**
  * @public
  */

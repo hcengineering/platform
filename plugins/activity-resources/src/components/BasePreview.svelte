@@ -24,8 +24,8 @@
     SystemAvatar
   } from '@hcengineering/contact-resources'
   import core, { Account, Doc, Ref, Timestamp } from '@hcengineering/core'
-  import { Icon, Label, resizeObserver, TimeSince } from '@hcengineering/ui'
-  import { Asset, IntlString } from '@hcengineering/platform'
+  import { Icon, Label, resizeObserver, TimeSince, tooltip } from '@hcengineering/ui'
+  import { Asset, getEmbeddedLabel, IntlString } from '@hcengineering/platform'
   import activity, { ActivityMessagePreviewType } from '@hcengineering/activity'
   import { classIcon, DocNavLink } from '@hcengineering/view-resources'
 
@@ -77,6 +77,15 @@
   export function onActionsClosed (): void {
     isActionsOpened = false
   }
+  let tooltipLabel: IntlString | undefined = undefined
+
+  $: if (headerObject !== undefined) {
+    tooltipLabel = header ?? client.getHierarchy().getClass(headerObject._class).label
+  } else if (person !== undefined) {
+    tooltipLabel = getEmbeddedLabel(person.name)
+  } else {
+    tooltipLabel = core.string.System
+  }
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -93,27 +102,30 @@
 >
   <span class="left overflow-label">
     {#if type === 'full'}
-      <span class="icon">
-        {#if headerObject}
-          <Icon icon={headerIcon ?? classIcon(client, headerObject._class) ?? activity.icon.Activity} size="small" />
-        {:else if person}
-          <Avatar size="card" avatar={person.avatar} name={person.name} />
-        {:else}
-          <SystemAvatar size="card" />
-        {/if}
-      </span>
-
       <div class="header">
-        {#if headerObject}
-          <DocNavLink object={headerObject} colorInherit>
-            <Label label={header ?? client.getHierarchy().getClass(headerObject._class).label} />
-          </DocNavLink>
-        {:else if person}
-          <EmployeePresenter value={person} shouldShowAvatar={false} compact />
-        {:else}
-          <Label label={core.string.System} />
+        <span class="icon" use:tooltip={{ label: tooltipLabel }}>
+          {#if headerObject}
+            <Icon icon={headerIcon ?? classIcon(client, headerObject._class) ?? activity.icon.Activity} size="small" />
+          {:else if person}
+            <Avatar size="card" avatar={person.avatar} name={person.name} />
+          {:else}
+            <SystemAvatar size="card" />
+          {/if}
+        </span>
+
+        {#if !isCompact}
+          {#if headerObject}
+            <DocNavLink object={headerObject} colorInherit>
+              <Label label={header ?? client.getHierarchy().getClass(headerObject._class).label} />
+            </DocNavLink>
+          {:else if person}
+            <EmployeePresenter value={person} shouldShowAvatar={false} compact />
+          {:else}
+            <Label label={core.string.System} />
+          {/if}
         {/if}
       </div>
+      •
     {/if}
 
     {#if text || intlLabel}
@@ -138,7 +150,7 @@
 
   <div class="right">
     <slot name="right" />
-    {#if type === 'full' && !isCompact}
+    {#if type === 'full'}
       <div class="time">
         <TimeSince value={timestamp} />
       </div>
@@ -156,7 +168,7 @@
     width: 100%;
     padding: 0 var(--spacing-0_5);
     padding-right: var(--spacing-0_75);
-    padding-left: 0;
+    padding-left: var(--spacing-1_25);
     position: relative;
 
     &.contentOnly {
@@ -191,6 +203,7 @@
       display: flex;
       align-items: center;
       gap: var(--spacing-1);
+      margin-left: var(--spacing-0_5);
     }
 
     &:hover:not(.readonly) > .actions {
@@ -203,7 +216,9 @@
   }
 
   .header {
-    margin-left: var(--spacing-0_5);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-0_5);
     font-weight: 500;
     color: var(--global-primary-TextColor);
   }
@@ -212,9 +227,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 2.5rem;
-    max-width: 2.5rem;
-    min-width: 2.5rem;
+    width: 1.325rem;
+    max-width: 1.325rem;
+    min-width: 1.325rem;
   }
 
   .time {

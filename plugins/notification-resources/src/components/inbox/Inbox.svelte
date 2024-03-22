@@ -36,7 +36,7 @@
   import { isReactionMessage } from '@hcengineering/activity-resources'
   import { get } from 'svelte/store'
 
-  import { inboxMessagesStore, InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
+  import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
   import Filter from '../Filter.svelte'
   import { archiveAll, getDisplayInboxData, openInboxDoc, readAll, resolveLocation, unreadAll } from '../../utils'
   import { InboxData, InboxNotificationsFilter } from '../../types'
@@ -89,14 +89,6 @@
 
   locationStore.subscribe((newLocation) => {
     void syncLocation(newLocation)
-  })
-
-  inboxClient.activityInboxNotifications.subscribe((notifications) => {
-    const messages: ActivityMessage[] = notifications
-      .map((it) => it.$lookup?.attachedTo)
-      .filter((it): it is ActivityMessage => it !== undefined)
-
-    inboxMessagesStore.set(messages)
   })
 
   async function syncLocation (newLocation: Location): Promise<void> {
@@ -342,7 +334,7 @@
         </div>
 
         <Scroller padding="0">
-          <InboxGroupedListView data={filteredData} on:click={selectContext} />
+          <InboxGroupedListView data={filteredData} selectedContext={selectedContextId} on:click={selectContext} />
         </Scroller>
       </div>
       <Separator name="inbox" float={navFloat ? 'navigator' : true} index={0} />

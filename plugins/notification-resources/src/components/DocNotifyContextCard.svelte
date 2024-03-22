@@ -114,7 +114,7 @@
 
   <div class="content">
     <div class="notifications">
-      {#each notifications.slice(0, maxNotifications) as notification}
+      {#each notifications.slice(0, maxNotifications).reverse() as notification}
         <div class="notification">
           <div class="embeddedMarker" />
           <InboxNotificationPresenter
@@ -193,7 +193,7 @@
     min-width: 0;
     flex-direction: column;
     margin-top: var(--spacing-1);
-    margin-left: var(--spacing-0_5);
+    margin-left: var(--spacing-2_5);
   }
 
   .notification {

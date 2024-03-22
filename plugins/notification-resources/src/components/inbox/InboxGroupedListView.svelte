@@ -29,6 +29,7 @@
   import { InboxData } from '../../types'
 
   export let data: InboxData
+  export let selectedContext: Ref<DocNotifyContext> | undefined
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -112,6 +113,7 @@
     bind:this={list}
     bind:selection={listSelection}
     count={displayData.length}
+    highlightIndex={displayData.findIndex(([context]) => context === selectedContext)}
     noScroll
     kind="full-size"
     colorsSchema="lumia"
