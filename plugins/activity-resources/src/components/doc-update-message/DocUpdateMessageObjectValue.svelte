@@ -24,6 +24,7 @@
   export let viewlet: DocUpdateMessageViewlet | undefined
   export let withIcon: boolean = false
   export let hasSeparator: boolean = false
+  export let preview = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -66,7 +67,13 @@
   {/if}
 
   {#if objectPresenter && !viewlet?.valueAttr}
-    <Component is={objectPresenter.presenter} props={{ value: object, accent: true, shouldShowAvatar: false }} />
+    <Component
+      is={objectPresenter.presenter}
+      props={{ value: object, accent: true, shouldShowAvatar: false, preview }}
+    />
+    {#if hasSeparator}
+      <span class="ml-1" />
+    {/if}
   {:else}
     {#await getValue(object) then value}
       <span class="valueLink">

@@ -20,11 +20,12 @@ export function getDay (time: Timestamp): Timestamp {
   return date.getTime()
 }
 
-export function getDisplayTime (time: number): string {
+export function getDisplayTime (time: number, type: 'primary' | 'secondary' | 'time' = 'primary'): string {
   let options: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: 'numeric' }
-  if (!isToday(time)) {
+
+  if (!isToday(time) && type !== 'time') {
     options = {
-      month: 'numeric',
+      month: type === 'primary' ? 'numeric' : 'short',
       day: 'numeric',
       ...options
     }

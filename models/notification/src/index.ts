@@ -255,8 +255,16 @@ export class TCommonInboxNotification extends TInboxNotification implements Comm
   @Prop(TypeIntlString(), core.string.String)
     header?: IntlString
 
+  @Prop(TypeRef(core.class.Doc), core.string.Object)
+    headerObjectId?: Ref<Doc>
+
+  @Prop(TypeRef(core.class.Doc), core.string.Class)
+    headerObjectClass?: Ref<Class<Doc>>
+
   @Prop(TypeIntlString(), notification.string.Message)
     message?: IntlString
+
+  headerIcon?: Asset
 
   @Prop(TypeString(), notification.string.Message)
     messageHtml?: string
@@ -451,6 +459,14 @@ export function createModel (builder: Builder): void {
     notification.ids.TxDmCreation
   )
 
+  builder.createDoc(notification.class.ActivityNotificationViewlet, core.space.Model, {
+    presenter: notification.component.NotificationCollaboratorsChanged,
+    messageMatch: {
+      _class: activity.class.DocUpdateMessage,
+      'attributeUpdates.attrClass': notification.mixin.Collaborators
+    }
+  })
+
   builder.createDoc(
     activity.class.DocUpdateMessageViewlet,
     core.space.Model,
@@ -460,11 +476,11 @@ export function createModel (builder: Builder): void {
       icon: notification.icon.Notifications,
       label: notification.string.ChangeCollaborators
     },
-    notification.ids.NotificationCollaboratorsChanged
+    notification.ids.CollaboratorsChangedMessage
   )
 
   builder.mixin(notification.mixin.Collaborators, core.class.Class, activity.mixin.ActivityAttributeUpdatesPresenter, {
-    presenter: notification.component.NotificationCollaboratorsChanged
+    presenter: notification.component.CollaboratorsChanged
   })
 
   createAction(
@@ -522,7 +538,7 @@ export function createModel (builder: Builder): void {
       visibilityTester: notification.function.CanReadNotifyContext,
       category: notification.category.Notification,
       target: notification.class.DocNotifyContext,
-      context: { mode: 'context', application: notification.app.Notification, group: 'edit' }
+      context: { mode: ['context', 'panel'], application: notification.app.Notification, group: 'edit' }
     },
     notification.action.ReadNotifyContext
   )
@@ -537,7 +553,7 @@ export function createModel (builder: Builder): void {
       visibilityTester: notification.function.CanUnReadNotifyContext,
       category: notification.category.Notification,
       target: notification.class.DocNotifyContext,
-      context: { mode: 'context', application: notification.app.Notification, group: 'edit' }
+      context: { mode: ['context', 'panel'], application: notification.app.Notification, group: 'edit' }
     },
     notification.action.UnReadNotifyContext
   )
@@ -551,7 +567,7 @@ export function createModel (builder: Builder): void {
       input: 'focus',
       category: notification.category.Notification,
       target: notification.class.DocNotifyContext,
-      context: { mode: 'context', application: notification.app.Notification, group: 'edit' }
+      context: { mode: ['panel'], application: notification.app.Notification, group: 'edit' }
     },
     notification.action.DeleteContextNotifications
   )
@@ -566,7 +582,7 @@ export function createModel (builder: Builder): void {
       category: notification.category.Notification,
       target: notification.class.DocNotifyContext,
       context: {
-        mode: ['browser', 'context'],
+        mode: ['panel'],
         group: 'remove'
       },
       visibilityTester: notification.function.IsDocNotifyContextTracked
@@ -584,7 +600,7 @@ export function createModel (builder: Builder): void {
       category: view.category.General,
       target: notification.class.DocNotifyContext,
       context: {
-        mode: ['browser', 'context'],
+        mode: ['panel'],
         group: 'remove'
       },
       visibilityTester: notification.function.IsDocNotifyContextHidden
@@ -685,6 +701,14 @@ export function createModel (builder: Builder): void {
     { label: notification.string.Inbox, visible: true },
     notification.category.Notification
   )
+
+  builder.createDoc(notification.class.ActivityNotificationViewlet, core.space.Model, {
+    messageMatch: {
+      _class: activity.class.DocUpdateMessage,
+      objectClass: activity.class.Reaction
+    },
+    presenter: notification.component.ReactionNotificationPresenter
+  })
 }
 
 export function generateClassNotificationTypes (

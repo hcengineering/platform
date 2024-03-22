@@ -102,6 +102,7 @@
               <slot name="item" item={itemIndex} />
             </svelte:fragment>
           </ListViewItem>
+          <slot name="separator" item={row} />
         </Lazy>
       {:else}
         <ListViewItem
@@ -130,6 +131,7 @@
             <slot name="item" item={itemIndex} />
           </svelte:fragment>
         </ListViewItem>
+        <slot name="separator" item={row} />
       {/if}
     {/each}
   </div>

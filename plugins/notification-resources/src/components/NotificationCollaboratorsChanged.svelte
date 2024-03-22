@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,90 +13,31 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { IconAdd, IconDelete, Label } from '@hcengineering/ui'
-  import { personAccountByIdStore, PersonAccountRefPresenter } from '@hcengineering/contact-resources'
-  import { Person, PersonAccount } from '@hcengineering/contact'
-  import { Ref } from '@hcengineering/core'
-  import { DocAttributeUpdates } from '@hcengineering/activity'
+  import { personAccountByIdStore } from '@hcengineering/contact-resources'
+  import { PersonAccount } from '@hcengineering/contact'
+  import { getCurrentAccount, Ref } from '@hcengineering/core'
+  import { DisplayDocUpdateMessage, DocAttributeUpdates } from '@hcengineering/activity'
   import notification from '@hcengineering/notification'
+  import { BaseMessagePreview } from '@hcengineering/activity-resources'
 
-  export let value: DocAttributeUpdates
+  export let message: DisplayDocUpdateMessage
 
-  $: removed = getAccountRefs(value.removed)
-  $: added = getAccountRefs(value.added.length > 0 ? value.added : value.set)
+  const me = getCurrentAccount()._id
 
-  function getAccountRefs (values: DocAttributeUpdates['removed' | 'added' | 'set']): Ref<PersonAccount>[] {
-    const persons = new Set<Ref<Person>>()
+  $: attributeUpdates = message.attributeUpdates ?? { added: [], removed: [], set: [] }
 
-    return values.filter((value) => {
+  $: isMeAdded = includeMe(attributeUpdates.added.length > 0 ? attributeUpdates.added : attributeUpdates.set)
+
+  function includeMe (values: DocAttributeUpdates['removed' | 'added' | 'set']): boolean {
+    return values.some((value) => {
       const account = $personAccountByIdStore.get(value as Ref<PersonAccount>)
 
-      if (account === undefined) {
-        return false
-      }
-
-      if (persons.has(account.person)) {
-        return false
-      }
-
-      persons.add(account.person)
-      return true
-    }) as Ref<PersonAccount>[]
+      return account?._id === me
+    })
   }
-
-  $: hasDifferentChanges = added.length > 0 && removed.length > 0
 </script>
 
-<div class="root">
-  <div class="label">
-    {#if hasDifferentChanges}
-      <Label label={notification.string.ChangedCollaborators} />:
-    {:else if added.length > 0}
-      <Label label={notification.string.NewCollaborators} />:
-    {:else if removed.length > 0}
-      <Label label={notification.string.RemovedCollaborators} />:
-    {/if}
-  </div>
-
-  {#if added.length > 0}
-    <div class="row">
-      {#if hasDifferentChanges}
-        <IconAdd size={'x-small'} fill={'var(--theme-trans-color)'} />
-      {/if}
-      {#each added as add}
-        <PersonAccountRefPresenter inline value={add} />
-      {/each}
-    </div>
-  {/if}
-  <div class="antiHSpacer"></div>
-  {#if removed.length > 0}
-    <div class="row">
-      {#if hasDifferentChanges}
-        <IconDelete size={'x-small'} fill={'var(--theme-trans-color)'} />
-      {/if}
-      {#each removed as remove}
-        <PersonAccountRefPresenter inline value={remove} />
-      {/each}
-    </div>
-  {/if}
-</div>
-
-<style lang="scss">
-  .root {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .label {
-    white-space: nowrap;
-  }
-
-  .row {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-</style>
+<BaseMessagePreview
+  intlLabel={isMeAdded ? notification.string.YouAddedCollaborators : notification.string.YouRemovedCollaborators}
+  {message}
+/>

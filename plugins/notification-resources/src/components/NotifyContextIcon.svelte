@@ -47,10 +47,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid transparent;
-    border-radius: 0.5rem;
-    background-color: var(--theme-button-hovered);
+    color: var(--global-secondary-TextColor);
+    border-radius: var(--medium-BorderRadius);
+    border: 1px solid var(--global-subtle-ui-BorderColor);
+    background-color: var(--global-ui-BackgroundColor);
     width: 2.5rem;
     height: 2.5rem;
+    min-width: 2.5rem;
+    min-height: 2.5rem;
   }
 </style>

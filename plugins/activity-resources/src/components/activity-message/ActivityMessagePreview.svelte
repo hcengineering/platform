@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -12,22 +12,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+
 <script lang="ts">
-  import view from '@hcengineering/view'
+  import { DisplayActivityMessage, ActivityMessagePreviewType } from '@hcengineering/activity'
   import { getClient } from '@hcengineering/presentation'
   import { Component } from '@hcengineering/ui'
   import { Class, Doc, Ref } from '@hcengineering/core'
-  import { ActivityNotificationViewlet, DisplayInboxNotification } from '@hcengineering/notification'
 
-  export let value: DisplayInboxNotification
-  export let viewlets: ActivityNotificationViewlet[] = []
+  import activity from '../../plugin'
+
+  export let value: DisplayActivityMessage
+  export let readonly = false
+  export let type: ActivityMessagePreviewType = 'full'
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  $: objectPresenter = hierarchy.classHierarchyMixin(value._class as Ref<Class<Doc>>, view.mixin.ObjectPresenter)
+  $: previewMixin = hierarchy.classHierarchyMixin(
+    value._class as Ref<Class<Doc>>,
+    activity.mixin.ActivityMessagePreview
+  )
 </script>
 
-{#if objectPresenter}
-  <Component is={objectPresenter.presenter} props={{ value, viewlets }} on:click />
+{#if previewMixin}
+  <Component
+    is={previewMixin.presenter}
+    props={{
+      value,
+      type,
+      readonly
+    }}
+    on:click
+  />
 {/if}

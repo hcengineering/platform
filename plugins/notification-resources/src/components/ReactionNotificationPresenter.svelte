@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,21 +13,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import view from '@hcengineering/view'
+  import activity, { DisplayDocUpdateMessage, Reaction } from '@hcengineering/activity'
   import { getClient } from '@hcengineering/presentation'
-  import { Component } from '@hcengineering/ui'
-  import { Class, Doc, Ref } from '@hcengineering/core'
-  import { ActivityNotificationViewlet, DisplayInboxNotification } from '@hcengineering/notification'
+  import { Ref } from '@hcengineering/core'
+  import { BaseMessagePreview } from '@hcengineering/activity-resources'
 
-  export let value: DisplayInboxNotification
-  export let viewlets: ActivityNotificationViewlet[] = []
+  export let message: DisplayDocUpdateMessage
 
   const client = getClient()
-  const hierarchy = client.getHierarchy()
 
-  $: objectPresenter = hierarchy.classHierarchyMixin(value._class as Ref<Class<Doc>>, view.mixin.ObjectPresenter)
+  let reactions: Reaction[] = []
+
+  $: void client
+    .findAll(activity.class.Reaction, {
+      _id: { $in: [message.objectId, ...(message?.previousMessages?.map((a) => a.objectId) ?? [])] as Ref<Reaction>[] }
+    })
+    .then((res) => {
+      reactions = res
+    })
 </script>
 
-{#if objectPresenter}
-  <Component is={objectPresenter.presenter} props={{ value, viewlets }} on:click />
-{/if}
+<BaseMessagePreview text={reactions.map((r) => r.emoji).join('')} {message} on:click />

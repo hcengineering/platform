@@ -15,15 +15,17 @@
 <script lang="ts">
   import { Label } from '@hcengineering/ui'
   import { AttributeModel } from '@hcengineering/view'
-  import ChangeAttributesTemplate from './ChangeAttributesTemplate.svelte'
   import activity, { DocAttributeUpdates, DocUpdateMessageViewlet } from '@hcengineering/activity'
+
+  import ChangeAttributesTemplate from './ChangeAttributesTemplate.svelte'
 
   export let viewlet: DocUpdateMessageViewlet | undefined
   export let attributeModel: AttributeModel
   export let values: DocAttributeUpdates['added']
+  export let preview = false
 </script>
 
-<ChangeAttributesTemplate {viewlet} {attributeModel} {values}>
+<ChangeAttributesTemplate {viewlet} {attributeModel} {values} {preview}>
   <svelte:fragment slot="text">
     <Label label={activity.string.New} />
     <span class="lower"><Label label={attributeModel.label} />:</span>

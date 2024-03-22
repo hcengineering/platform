@@ -24,6 +24,7 @@
   export let attributeModel: AttributeModel
   export let values: DocAttributeUpdates['set']
   export let prevValue: any
+  export let preview = false
 
   $: attrViewletConfig = viewlet?.config?.[attributeModel.key]
   $: attributeIcon = attrViewletConfig?.icon ?? attributeModel.icon ?? IconEdit
@@ -46,7 +47,7 @@
 </script>
 
 {#if isUnset}
-  <div class="unset">
+  <div class="unset overflow-label">
     <span class="mr-1"><Icon icon={attributeIcon} size="small" /></span>
     <Label label={activity.string.Unset} />
     <span class="lower"><Label label={attributeModel.label} /></span>
@@ -62,7 +63,7 @@
     <svelte:component this={attributeModel.presenter} value={values[0]} {prevValue} showOnlyDiff />
   {/if}
 {:else}
-  <ChangeAttributesTemplate {viewlet} {attributeModel} {values}>
+  <ChangeAttributesTemplate {viewlet} {attributeModel} {values} {preview}>
     <svelte:fragment slot="text">
       <Label label={attributeModel.label} />
       <span class="lower"><Label label={activity.string.Set} /></span>

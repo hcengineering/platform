@@ -24,6 +24,7 @@
   export let objectName: IntlString | undefined
   export let collectionName: IntlString | undefined
   export let objectIcon: Asset | undefined
+  export let preview = false
 
   const isOwn = message.objectId === message.attachedTo
 
@@ -33,7 +34,7 @@
   $: hasDifferentActions = message.previousMessages?.some(({ action }) => action !== message.action)
 </script>
 
-<div class="content">
+<div class="content overflow-label" class:preview>
   <span class="mr-1">
     <Icon icon={viewlet?.icon ?? objectIcon ?? activity.icon.Activity} size="small" />
   </span>
@@ -52,35 +53,40 @@
     {/if}
   </span>
 
-  {#if hasDifferentActions}
-    {@const removeMessages = valueMessages.filter(({ action }) => action === 'remove')}
-    {@const createMessages = valueMessages.filter(({ action }) => action === 'create')}
+  <span class="overflow-label">
+    {#if hasDifferentActions}
+      {@const removeMessages = valueMessages.filter(({ action }) => action === 'remove')}
+      {@const createMessages = valueMessages.filter(({ action }) => action === 'create')}
 
-    {#each createMessages as valueMessage, index}
-      <DocUpdateMessageObjectValue
-        message={valueMessage}
-        {viewlet}
-        withIcon={index === 0}
-        hasSeparator={createMessages.length > 1 && index !== createMessages.length - 1}
-      />
-    {/each}
-    {#each removeMessages as valueMessage, index}
-      <DocUpdateMessageObjectValue
-        message={valueMessage}
-        {viewlet}
-        withIcon={index === 0}
-        hasSeparator={removeMessages.length > 1 && index !== removeMessages.length - 1}
-      />
-    {/each}
-  {:else}
-    {#each valueMessages as valueMessage, index}
-      <DocUpdateMessageObjectValue
-        message={valueMessage}
-        {viewlet}
-        hasSeparator={valueMessages.length > 1 && index !== valueMessages.length - 1}
-      />
-    {/each}
-  {/if}
+      {#each createMessages as valueMessage, index}
+        <DocUpdateMessageObjectValue
+          message={valueMessage}
+          {viewlet}
+          withIcon={index === 0}
+          hasSeparator={createMessages.length > 1 && index !== createMessages.length - 1}
+          {preview}
+        />
+      {/each}
+      {#each removeMessages as valueMessage, index}
+        <DocUpdateMessageObjectValue
+          message={valueMessage}
+          {viewlet}
+          withIcon={index === 0}
+          hasSeparator={removeMessages.length > 1 && index !== removeMessages.length - 1}
+          {preview}
+        />
+      {/each}
+    {:else}
+      {#each valueMessages as valueMessage, index}
+        <DocUpdateMessageObjectValue
+          message={valueMessage}
+          {viewlet}
+          hasSeparator={valueMessages.length > 1 && index !== valueMessages.length - 1}
+          {preview}
+        />
+      {/each}
+    {/if}
+  </span>
 </div>
 
 <style lang="scss">
@@ -89,5 +95,9 @@
     gap: 0.25rem;
     align-items: center;
     flex-wrap: wrap;
+
+    &.preview {
+      flex-wrap: nowrap;
+    }
   }
 </style>

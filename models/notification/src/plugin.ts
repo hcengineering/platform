@@ -46,7 +46,7 @@ export default mergeIds(notificationId, notification, {
   ids: {
     TxCollaboratorsChange: '' as Ref<TxViewlet>,
     TxDmCreation: '' as Ref<TxViewlet>,
-    NotificationCollaboratorsChanged: '' as Ref<DocUpdateMessageViewlet>
+    CollaboratorsChangedMessage: '' as Ref<DocUpdateMessageViewlet>
   },
   component: {
     NotificationSettings: '' as AnyComponent,

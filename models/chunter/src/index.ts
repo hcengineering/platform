@@ -138,7 +138,7 @@ export class TDirectMessageInput extends TClass implements DirectMessageInput {
 }
 
 @Model(chunter.class.ChatMessage, activity.class.ActivityMessage)
-@UX(chunter.string.Message)
+@UX(chunter.string.Message, chunter.icon.Thread, undefined, undefined, undefined, chunter.string.Threads)
 export class TChatMessage extends TActivityMessage implements ChatMessage {
   @Prop(TypeMarkup(), chunter.string.Message)
   @Index(IndexKind.FullText)
@@ -154,7 +154,7 @@ export class TChatMessage extends TActivityMessage implements ChatMessage {
 }
 
 @Model(chunter.class.ThreadMessage, chunter.class.ChatMessage)
-@UX(chunter.string.ThreadMessage)
+@UX(chunter.string.ThreadMessage, chunter.icon.Thread, undefined, undefined, undefined, chunter.string.Threads)
 export class TThreadMessage extends TChatMessage implements ThreadMessage {
   @Prop(TypeRef(activity.class.ActivityMessage), core.string.AttachedTo)
   @Index(IndexKind.Indexed)
@@ -731,6 +731,14 @@ export function createModel (builder: Builder, options = { addApplication: true 
 
   builder.mixin(chunter.class.DirectMessage, core.class.Class, chunter.mixin.ObjectChatPanel, {
     ignoreKeys: ['archived', 'collaborators', 'lastMessage', 'pinned', 'topic', 'description']
+  })
+
+  builder.mixin(chunter.class.ChatMessage, core.class.Class, activity.mixin.ActivityMessagePreview, {
+    presenter: chunter.component.ChatMessagePreview
+  })
+
+  builder.mixin(chunter.class.ThreadMessage, core.class.Class, activity.mixin.ActivityMessagePreview, {
+    presenter: chunter.component.ThreadMessagePreview
   })
 }
 

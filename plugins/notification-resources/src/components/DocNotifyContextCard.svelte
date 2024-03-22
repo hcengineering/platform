@@ -21,7 +21,6 @@
   } from '@hcengineering/notification'
   import { getClient } from '@hcengineering/presentation'
   import { getDocTitle, getDocIdentifier, Menu } from '@hcengineering/view-resources'
-  import chunter from '@hcengineering/chunter'
   import { createEventDispatcher } from 'svelte'
   import { WithLookup } from '@hcengineering/core'
 
@@ -30,28 +29,43 @@
   import NotifyMarker from './NotifyMarker.svelte'
 
   export let value: DocNotifyContext
-  export let visibleNotification: WithLookup<DisplayInboxNotification>
+  export let notifications: WithLookup<DisplayInboxNotification>[]
   export let viewlets: ActivityNotificationViewlet[] = []
-  export let isCompact = true
-  export let unreadCount = 0
+
+  const maxNotifications = 3
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
 
+  let isActionMenuOpened = false
+  let unreadCount = 0
+
+  $: unreadCount = notifications.filter(({ isViewed }) => !isViewed).length
+
   let idTitle: string | undefined
   let title: string | undefined
+
+  $: void getDocIdentifier(client, value.attachedTo, value.attachedToClass).then((res) => {
+    idTitle = res
+  })
+
+  $: void getDocTitle(client, value.attachedTo, value.attachedToClass).then((res) => {
+    title = res
+  })
+
+  $: presenterMixin = hierarchy.classHierarchyMixin(
+    value.attachedToClass,
+    notification.mixin.NotificationContextPresenter
+  )
+
   function showMenu (ev: MouseEvent): void {
     showPopup(
       Menu,
       {
         object: value,
         baseMenuClass: notification.class.DocNotifyContext,
-        excludedActions: [
-          notification.action.PinDocNotifyContext,
-          notification.action.UnpinDocNotifyContext,
-          chunter.action.OpenChannel
-        ]
+        mode: 'panel'
       },
       ev.target as HTMLElement,
       handleActionMenuClosed
@@ -59,12 +73,6 @@
     handleActionMenuOpened()
   }
 
-  $: presenterMixin = hierarchy.classHierarchyMixin(
-    value.attachedToClass,
-    notification.mixin.NotificationContextPresenter
-  )
-
-  let isActionMenuOpened = false
   function handleActionMenuOpened (): void {
     isActionMenuOpened = true
   }
@@ -72,62 +80,62 @@
   function handleActionMenuClosed (): void {
     isActionMenuOpened = false
   }
-
-  $: getDocIdentifier(client, value.attachedTo, value.attachedToClass).then((res) => {
-    idTitle = res
-  })
-
-  $: getDocTitle(client, value.attachedTo, value.attachedToClass).then((res) => {
-    title = res
-  })
 </script>
 
-{#if visibleNotification}
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div
-    class="card"
-    class:compact={isCompact}
-    on:click={() => {
-      dispatch('click', { context: value, notification: visibleNotification })
-    }}
-  >
-    {#if isCompact}
-      <InboxNotificationPresenter value={visibleNotification} {viewlets} showNotify={false} withFlatActions />
-      <div class="notifyMarker compact">
-        <NotifyMarker count={unreadCount} />
-      </div>
-    {:else}
-      <div class="header">
-        <NotifyContextIcon {value} />
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div
+  class="card"
+  on:click={() => {
+    dispatch('click', { context: value })
+  }}
+>
+  <div class="header">
+    <NotifyContextIcon {value} />
 
-        {#if presenterMixin?.labelPresenter}
-          <Component is={presenterMixin.labelPresenter} props={{ notification: visibleNotification, context: value }} />
+    {#if presenterMixin?.labelPresenter}
+      <Component is={presenterMixin.labelPresenter} props={{ context: value }} />
+    {:else}
+      <div class="labels">
+        {#if idTitle}
+          {idTitle}
         {:else}
-          <div class="labels">
-            {#if idTitle}
-              {idTitle}
-            {:else}
-              <Label label={hierarchy.getClass(value.attachedToClass).label} />
-            {/if}
-            <div class="title overflow-label" {title}>
-              {title ?? hierarchy.getClass(value.attachedToClass).label}
-            </div>
-          </div>
+          <Label label={hierarchy.getClass(value.attachedToClass).label} />
         {/if}
-      </div>
-      <div class="actions clear-mins flex flex-gap-2 items-center" class:opened={isActionMenuOpened}>
-        <ActionIcon icon={IconMoreH} size="small" action={showMenu} />
-      </div>
-      <div class="notifyMarker">
-        <NotifyMarker count={unreadCount} />
-      </div>
-      <div class="notification">
-        <InboxNotificationPresenter value={visibleNotification} {viewlets} embedded skipLabel />
+        <span class="title overflow-label clear-mins" {title}>
+          {title ?? hierarchy.getClass(value.attachedToClass).label}
+        </span>
       </div>
     {/if}
   </div>
-{/if}
+
+  <div class="notifyMarker">
+    <NotifyMarker count={unreadCount} />
+  </div>
+
+  <div class="actions clear-mins flex flex-gap-2 items-center" class:opened={isActionMenuOpened}>
+    <ActionIcon icon={IconMoreH} size="small" action={showMenu} />
+  </div>
+
+  <div class="content">
+    <div class="embeddedMarker" />
+    <div class="notifications">
+      {#each notifications.slice(0, maxNotifications) as notification}
+        <div class="notification">
+          <InboxNotificationPresenter
+            value={notification}
+            {viewlets}
+            on:click={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              dispatch('click', { context: value, notification })
+            }}
+          />
+        </div>
+      {/each}
+    </div>
+  </div>
+</div>
 
 <style lang="scss">
   .card {
@@ -135,28 +143,24 @@
     position: relative;
     flex-direction: column;
     cursor: pointer;
-    border: 1px solid transparent;
-    border-radius: 0.5rem;
-    padding: 0.5rem 1rem;
-    padding-right: 0;
-    margin: 0.5rem 0;
-
-    &.compact {
-      padding: 0;
-      margin: 0;
-    }
+    border-radius: var(--medium-BorderRadius);
+    padding: var(--spacing-1) var(--spacing-0_5);
 
     .header {
       position: relative;
       display: flex;
       align-items: center;
-      gap: 1.25rem;
-      margin-left: 0.25rem;
+      gap: 0.75rem;
+      margin-left: var(--spacing-0_5);
+      overflow: hidden;
     }
 
     .title {
       font-weight: 500;
       max-width: 20.5rem;
+      color: var(--global-primary-TextColor);
+      font-size: 1rem;
+      min-width: 0;
     }
 
     .actions {
@@ -179,21 +183,41 @@
   .labels {
     display: flex;
     flex-direction: column;
+    color: var(--global-secondary-TextColor);
+    font-weight: 500;
+    font-size: 0.875rem;
+    min-width: 0;
   }
 
   .notification {
-    margin-top: 0.25rem;
-    margin-left: 4rem;
+    margin-top: var(--spacing-0_5);
+  }
+
+  .notifications {
+    display: flex;
+    width: calc(100% - var(--spacing-4));
+    flex-direction: column;
+    gap: var(--spacing-0_5);
+    margin-top: var(--spacing-0_5);
+    margin-left: var(--spacing-0_5);
+  }
+
+  .content {
+    display: flex;
+    width: 100%;
   }
 
   .notifyMarker {
     position: absolute;
-    left: 0.25rem;
-    top: 0;
+    right: 0;
+    top: -0.375rem;
+  }
 
-    &.compact {
-      left: 0.25rem;
-      top: 0.5rem;
-    }
+  .embeddedMarker {
+    min-width: 0.25rem;
+    border-radius: 0.5rem;
+    background: var(--global-ui-highlight-BackgroundColor);
+    margin-top: var(--spacing-1);
+    margin-left: var(--spacing-2_5);
   }
 </style>

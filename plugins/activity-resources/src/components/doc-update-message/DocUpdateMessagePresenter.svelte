@@ -68,7 +68,7 @@
   $: collectionAttribute = getCollectionAttribute(hierarchy, value.attachedToClass, value.updateCollection)
   $: clazz = hierarchy.getClass(value.objectClass)
 
-  $: objectName = (collectionAttribute?.type as Collection<AttachedDoc>)?.itemLabel || clazz.label
+  $: objectName = (collectionAttribute?.type as Collection<AttachedDoc>)?.itemLabel ?? clazz.label
   $: collectionName = collectionAttribute?.label
 
   let user: PersonAccount | undefined = undefined

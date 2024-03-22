@@ -12,11 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-<script lang="ts">
-  import { ThreadMessage } from '@hcengineering/chunter'
-  import ThreadMessagePreview from '../threads/ThreadMessagePreview.svelte'
 
-  export let message: ThreadMessage
+<script lang="ts">
+  import { ActivityMessagePreviewType, ActivityReference } from '@hcengineering/activity'
+
+  import BaseMessagePreview from '../activity-message/BaseMessagePreview.svelte'
+
+  export let value: ActivityReference
+  export let readonly = false
+  export let type: ActivityMessagePreviewType = 'full'
 </script>
 
-<ThreadMessagePreview value={message} on:click />
+<BaseMessagePreview text={value.message} message={value} {type} {readonly} on:click />

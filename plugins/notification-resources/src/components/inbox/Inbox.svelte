@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import notification, { DocNotifyContext } from '@hcengineering/notification'
-  import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
+  import { ActionContext, getClient } from '@hcengineering/presentation'
   import view from '@hcengineering/view'
   import {
     AnyComponent,
@@ -40,6 +40,7 @@
   import Filter from '../Filter.svelte'
   import { archiveAll, getDisplayInboxData, openInboxDoc, readAll, resolveLocation, unreadAll } from '../../utils'
   import { InboxData, InboxNotificationsFilter } from '../../types'
+  import InboxGroupedListView from './InboxGroupedListView.svelte'
 
   export let visibleNav: boolean = true
   export let navFloat: boolean = false
@@ -52,8 +53,6 @@
   const notificationsByContextStore = inboxClient.inboxNotificationsByContext
   const contextByIdStore = inboxClient.contextById
   const contextsStore = inboxClient.contexts
-
-  const messagesQuery = createQuery()
 
   const allTab: TabItem = {
     id: 'all',
@@ -69,8 +68,6 @@
   }
 
   let inboxData: InboxData = new Map()
-
-  let messagesIds: Ref<ActivityMessage>[] = []
 
   let filteredData: InboxData = new Map()
   let filter: InboxNotificationsFilter = 'all'
@@ -88,26 +85,19 @@
     inboxData = res
   })
 
-  $: filteredData = filterNotifications(selectedTabId, inboxData, $contextByIdStore)
+  $: filteredData = filterDataByTab(selectedTabId, inboxData, $contextByIdStore)
 
   locationStore.subscribe((newLocation) => {
     void syncLocation(newLocation)
   })
 
   inboxClient.activityInboxNotifications.subscribe((notifications) => {
-    messagesIds = notifications.map(({ attachedTo }) => attachedTo)
-  })
+    const messages: ActivityMessage[] = notifications
+      .map((it) => it.$lookup?.attachedTo)
+      .filter((it): it is ActivityMessage => it !== undefined)
 
-  // CAN GET FROM LOOKUP ???
-  $: messagesQuery.query(
-    activity.class.ActivityMessage,
-    {
-      _id: { $in: messagesIds }
-    },
-    (result) => {
-      inboxMessagesStore.set(result)
-    }
-  )
+    inboxMessagesStore.set(messages)
+  })
 
   async function syncLocation (newLocation: Location): Promise<void> {
     const loc = await resolveLocation(newLocation)
@@ -137,29 +127,43 @@
 
   function updateTabItems (inboxData: InboxData, notifyContexts: DocNotifyContext[]): void {
     const displayClasses = new Set(
-      notifyContexts
-        .filter(
-          ({ _id, attachedToClass }) =>
-            inboxData.has(_id) && !hierarchy.isDerived(attachedToClass, activity.class.ActivityMessage)
-        )
-        .map(({ attachedToClass }) => attachedToClass)
+      notifyContexts.filter(({ _id }) => inboxData.has(_id)).map(({ attachedToClass }) => attachedToClass)
     )
 
-    const fixedTabs = [
+    const classes = Array.from(displayClasses)
+    const startTabs = [
       allTab,
       displayClasses.has(chunter.class.Channel) ? channelTab : undefined,
       displayClasses.has(chunter.class.DirectMessage) ? directTab : undefined
     ].filter((tab): tab is TabItem => tab !== undefined)
 
-    tabItems = fixedTabs.concat(
-      Array.from(displayClasses.values())
-        .filter((_class) => ![chunter.class.Channel, chunter.class.DirectMessage].includes(_class))
-        .map((_class) => ({
-          id: _class,
-          // TODO: need to get plural form
-          labelIntl: hierarchy.getClass(_class).pluralLabel ?? hierarchy.getClass(_class).label
-        }))
-    )
+    const endTabs = [
+      classes.some((clazz) => hierarchy.isDerived(clazz, activity.class.ActivityMessage))
+        ? {
+            id: activity.class.ActivityMessage as string,
+            labelIntl: activity.string.Messages
+          }
+        : undefined
+    ].filter((tab): tab is any => tab !== undefined)
+
+    tabItems = startTabs
+      .concat(
+        classes
+          .filter(
+            (_class) =>
+              !hierarchy.isDerived(_class, chunter.class.ChunterSpace) &&
+              !hierarchy.isDerived(_class, activity.class.ActivityMessage)
+          )
+          .map((_class) => {
+            const clazz = hierarchy.getClass(_class)
+
+            return {
+              id: _class,
+              labelIntl: clazz.pluralLabel ?? clazz.label ?? _class
+            }
+          })
+      )
+      .concat(endTabs)
   }
 
   function selectTab (event: CustomEvent): void {
@@ -229,7 +233,7 @@
     }
   }
 
-  function filterNotifications (
+  function filterDataByTab (
     selectedTabId: string,
     inboxData: InboxData,
     contextById: IdMap<DocNotifyContext>
@@ -243,7 +247,16 @@
     for (const [key] of inboxData) {
       const context = contextById.get(key)
 
-      if (context !== undefined && context.attachedToClass === selectedTabId) {
+      if (context === undefined) {
+        continue
+      }
+
+      if (
+        selectedTabId === activity.class.ActivityMessage &&
+        hierarchy.isDerived(context.attachedToClass, activity.class.ActivityMessage)
+      ) {
+        result.set(key, inboxData.get(key))
+      } else if (context.attachedToClass === selectedTabId) {
         result.set(key, inboxData.get(key))
       }
     }
@@ -252,7 +265,7 @@
   }
 
   defineSeparators('inbox', [
-    { minSize: 30, maxSize: 50, size: 40, float: 'navigator' },
+    { minSize: 20, maxSize: 50, size: 40, float: 'navigator' },
     { size: 'auto', minSize: 30, maxSize: 'auto', float: undefined }
   ])
 
@@ -329,7 +342,7 @@
         </div>
 
         <Scroller padding="1rem 0">
-          <!--          <InboxGroupedListView notifications={filteredData} {selectedContext} on:click={selectedContext}/>-->
+          <InboxGroupedListView data={filteredData} on:click={selectContext} />
         </Scroller>
       </div>
       <Separator name="inbox" float={navFloat ? 'navigator' : true} index={0} />
@@ -343,7 +356,6 @@
         props={{
           _id: selectedContext.attachedTo,
           _class: selectedContext.attachedToClass,
-          embedded: true,
           context: selectedContext,
           activityMessage: selectedMessage,
           props: { context: selectedContext }

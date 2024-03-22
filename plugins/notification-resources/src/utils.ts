@@ -280,9 +280,9 @@ export async function readNotifyContext (doc: DocNotifyContext): Promise<void> {
 export async function unReadNotifyContext (doc: DocNotifyContext): Promise<void> {
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const inboxNotifications = get(inboxClient.inboxNotificationsByContext).get(doc._id) ?? []
-  const notificationToUnread = inboxNotifications[0]
+  const notificationsToUnread = inboxNotifications.filter(({ isViewed }) => isViewed)
 
-  if (notificationToUnread === undefined) {
+  if (notificationsToUnread.length === 0) {
     return
   }
 
@@ -290,11 +290,14 @@ export async function unReadNotifyContext (doc: DocNotifyContext): Promise<void>
   const ops = getClient().apply(doc._id)
 
   try {
-    await inboxClient.unreadNotifications(ops, [notificationToUnread._id])
+    await inboxClient.unreadNotifications(
+      ops,
+      notificationsToUnread.map(({ _id }) => _id)
+    )
+    const toUnread = inboxNotifications.find(isActivityNotification)
 
-    if (notificationToUnread._class === notification.class.ActivityInboxNotification) {
-      const activityNotification = notificationToUnread as WithLookup<ActivityInboxNotification>
-      const createdOn = activityNotification?.$lookup?.attachedTo?.createdOn
+    if (toUnread !== undefined) {
+      const createdOn = (toUnread as WithLookup<ActivityInboxNotification>)?.$lookup?.attachedTo?.createdOn
 
       if (createdOn === undefined || createdOn === 0) {
         return
@@ -598,7 +601,6 @@ async function generateLocation (
   const appComponent = loc.path[0] ?? ''
   const workspace = loc.path[1] ?? ''
   const threadId = loc.path[4] as Ref<ActivityMessage> | undefined
-  const messageId = loc.query?.message as Ref<ActivityMessage> | undefined
 
   const contextNotification = await client.findOne(notification.class.InboxNotification, {
     docNotifyContext: contextId
@@ -618,21 +620,19 @@ async function generateLocation (
   }
 
   const thread =
-    threadId !== undefined ? await client.findOne(activity.class.ActivityMessage, { _id: messageId }) : undefined
-  const message =
-    messageId !== undefined ? await client.findOne(activity.class.ActivityMessage, { _id: messageId }) : undefined
+    threadId !== undefined ? await client.findOne(activity.class.ActivityMessage, { _id: threadId }) : undefined
 
   if (thread === undefined) {
     return {
       loc: {
         path: [appComponent, workspace, notificationId, contextId],
         fragment: undefined,
-        query: { ...loc.query, message: message !== undefined ? (messageId as string) : null }
+        query: { ...loc.query }
       },
       defaultLocation: {
         path: [appComponent, workspace, notificationId, contextId],
         fragment: undefined,
-        query: { ...loc.query, message: message !== undefined ? (messageId as string) : null }
+        query: { ...loc.query }
       }
     }
   }
@@ -641,12 +641,12 @@ async function generateLocation (
     loc: {
       path: [appComponent, workspace, notificationId, contextId, threadId as string],
       fragment: undefined,
-      query: { ...loc.query, message: message !== undefined ? (messageId as string) : null }
+      query: { ...loc.query }
     },
     defaultLocation: {
       path: [appComponent, workspace, notificationId, contextId, threadId as string],
       fragment: undefined,
-      query: { ...loc.query, message: message !== undefined ? (messageId as string) : null }
+      query: { ...loc.query }
     }
   }
 }
@@ -673,6 +673,7 @@ export function openInboxDoc (
 
   if (thread !== undefined) {
     loc.path[4] = thread
+    loc.path.length = 5
   } else {
     loc.path[4] = ''
     loc.path.length = 4

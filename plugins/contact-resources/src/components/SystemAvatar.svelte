@@ -55,6 +55,21 @@
       border-radius: 0.5rem;
     }
 
+    &.card {
+      width: 1.25rem;
+      height: 1.25rem;
+
+      .text {
+        font-weight: 500;
+        font-size: 0.625rem;
+        letter-spacing: -0.05em;
+      }
+
+      &.roundedRect {
+        border-radius: 0.25rem;
+      }
+    }
+
     &.x-small {
       width: 1.5rem;
       height: 1.5rem;

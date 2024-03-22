@@ -1,0 +1,72 @@
+<!--
+// Copyright © 2024 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
+
+<script lang="ts">
+  import { getClient } from '@hcengineering/presentation'
+  import { IntlString } from '@hcengineering/platform'
+  import activity, { ActivityMessage, ActivityMessagePreviewType } from '@hcengineering/activity'
+
+  import ActivityMessageActions from '../ActivityMessageActions.svelte'
+  import ReactionsPreview from '../reactions/ReactionsPreview.svelte'
+  import BasePreview from '../BasePreview.svelte'
+
+  export let text: string | undefined = undefined
+  export let intlLabel: IntlString | undefined = undefined
+  export let readonly = false
+  export let type: ActivityMessagePreviewType = 'full'
+  export let message: ActivityMessage
+
+  const client = getClient()
+
+  let previewElement: BasePreview
+  let isCompact = false
+
+  $: extensions = client.getModel().findAllSync(activity.class.ActivityMessageExtension, { ofMessage: message._class })
+</script>
+
+<BasePreview
+  bind:this={previewElement}
+  bind:isCompact
+  {text}
+  {intlLabel}
+  {readonly}
+  {type}
+  timestamp={message.createdOn ?? message.modifiedOn}
+  account={message.createdBy ?? message.modifiedBy}
+>
+  <svelte:fragment slot="content">
+    <slot />
+
+    {#if type === 'full' && !isCompact}
+      <span class="reactions">
+        <ReactionsPreview {message} {readonly} />
+      </span>
+    {/if}
+  </svelte:fragment>
+  <svelte:fragment slot="actions">
+    <ActivityMessageActions
+      {message}
+      {extensions}
+      on:open={previewElement.onActionsOpened}
+      on:close={previewElement.onActionsClosed}
+    />
+  </svelte:fragment>
+</BasePreview>
+
+<style lang="scss">
+  .reactions {
+    margin-left: auto;
+  }
+</style>

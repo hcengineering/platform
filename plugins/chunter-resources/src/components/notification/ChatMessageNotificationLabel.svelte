@@ -13,62 +13,96 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Label } from '@hcengineering/ui'
-  import { ActivityInboxNotification, DocNotifyContext } from '@hcengineering/notification'
-  import { ActivityDocLink, ActivityMessageNotificationLabel } from '@hcengineering/activity-resources'
-  import activity, { ActivityMessage } from '@hcengineering/activity'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Doc, Ref } from '@hcengineering/core'
+  import { Icon, Label } from '@hcengineering/ui'
+  import { DocNotifyContext } from '@hcengineering/notification'
+  import { getClient } from '@hcengineering/presentation'
+  import { Class, Doc, Ref } from '@hcengineering/core'
   import { getDocLinkTitle } from '@hcengineering/view-resources'
-  import view from '@hcengineering/view'
+  import { ChatMessage, ThreadMessage } from '@hcengineering/chunter'
 
   import chunter from '../../plugin'
+  import ChatMessagePreview from '../chat-message/ChatMessagePreview.svelte'
+  import ThreadMessagePreview from '../threads/ThreadMessagePreview.svelte'
+  import { getObjectIcon } from '../../utils'
 
   export let context: DocNotifyContext
-  export let notification: ActivityInboxNotification
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const parentQuery = createQuery()
 
-  let parentMessage: ActivityMessage | undefined = undefined
   let title: string | undefined = undefined
+  let parentMessage: ChatMessage | undefined = undefined
   let object: Doc | undefined = undefined
 
-  $: isThread = hierarchy.isDerived(notification.attachedToClass, chunter.class.ThreadMessage)
-  $: isThread &&
-    parentQuery.query(activity.class.ActivityMessage, { _id: context.attachedTo as Ref<ActivityMessage> }, (res) => {
-      parentMessage = res[0]
+  $: isThread = hierarchy.isDerived(context.attachedToClass, chunter.class.ThreadMessage)
+
+  $: void client
+    .findOne(context.attachedToClass as Ref<Class<ChatMessage>>, { _id: context.attachedTo as Ref<ChatMessage> })
+    .then((res) => {
+      parentMessage = res
     })
 
-  $: parentMessage &&
-    getDocLinkTitle(client, parentMessage.attachedTo, parentMessage.attachedToClass).then((res) => {
+  $: loadObject(parentMessage, isThread)
+  $: object &&
+    getDocLinkTitle(client, object._id, object._class, object).then((res) => {
       title = res
     })
 
-  $: parentMessage &&
-    client.findOne(parentMessage.attachedToClass, { _id: parentMessage.attachedTo }).then((res) => {
+  function loadObject (parentMessage: ChatMessage | undefined, isThread: boolean): void {
+    if (parentMessage === undefined) {
+      object = undefined
+      return
+    }
+
+    const _class = isThread ? (parentMessage as ThreadMessage).objectClass : parentMessage.attachedToClass
+    const _id = isThread ? (parentMessage as ThreadMessage).objectId : parentMessage.attachedTo
+
+    void client.findOne(_class, { _id }).then((res) => {
       object = res
     })
+  }
 
-  $: panelMixin = parentMessage
-    ? hierarchy.classHierarchyMixin(parentMessage.attachedToClass, view.mixin.ObjectPanel)
-    : undefined
-  $: panelComponent = panelMixin?.component ?? view.component.EditDoc
+  function toThread (message: ChatMessage): ThreadMessage {
+    return message as ThreadMessage
+  }
+
+  $: icon = object ? getObjectIcon(object._class) : undefined
 </script>
 
-{#if isThread && object}
-  <div class="label overflow-label">
-    <Label label={chunter.string.Thread} />
-    <ActivityDocLink {title} preposition={activity.string.In} {object} {panelComponent} />
+{#if parentMessage}
+  <div class="labels font-medium-14">
+    <span class="flex-presenter flex-gap-1">
+      {#if isThread || (parentMessage.replies ?? 0) > 0}
+        <Label label={chunter.string.Thread} />
+      {:else}
+        <Label label={chunter.string.Message} />
+      {/if}
+      {#if title}
+        <span class="lower">
+          <Label label={chunter.string.In} />
+        </span>
+        <span class="flex-presenter flex-gap-0-5">
+          {#if icon}
+            <Icon {icon} size="x-small" iconProps={{ value: object }} />
+          {/if}
+          {title}
+        </span>
+      {/if}
+    </span>
+
+    {#if isThread}
+      <ThreadMessagePreview value={toThread(parentMessage)} readonly type="content-only" />
+    {:else}
+      <ChatMessagePreview value={parentMessage} readonly type="content-only" />
+    {/if}
   </div>
-{:else if !isThread}
-  <ActivityMessageNotificationLabel {context} {notification} />
 {/if}
 
 <style lang="scss">
-  .label {
-    width: 20rem;
-    max-width: 20rem;
+  .labels {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    color: var(--global-secondary-TextColor);
   }
 </style>

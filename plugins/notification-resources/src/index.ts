@@ -22,9 +22,11 @@ import NotificationPresenter from './components/NotificationPresenter.svelte'
 import TxCollaboratorsChange from './components/activity/TxCollaboratorsChange.svelte'
 import TxDmCreation from './components/activity/TxDmCreation.svelte'
 import DocNotifyContextPresenter from './components/DocNotifyContextPresenter.svelte'
-import NotificationCollaboratorsChanged from './components/NotificationCollaboratorsChanged.svelte'
+import CollaboratorsChanged from './components/actiivity/CollaboratorsChanged.svelte'
 import ActivityInboxNotificationPresenter from './components/inbox/ActivityInboxNotificationPresenter.svelte'
 import CommonInboxNotificationPresenter from './components/inbox/CommonInboxNotificationPresenter.svelte'
+import NotificationCollaboratorsChanged from './components/NotificationCollaboratorsChanged.svelte'
+import ReactionNotificationPresenter from './components/ReactionNotificationPresenter.svelte'
 import {
   unsubscribe,
   resolveLocation,
@@ -66,10 +68,12 @@ export default async (): Promise<Resources> => ({
     Inbox,
     NotificationPresenter,
     NotificationSettings,
-    NotificationCollaboratorsChanged,
+    CollaboratorsChanged,
     DocNotifyContextPresenter,
     ActivityInboxNotificationPresenter,
-    CommonInboxNotificationPresenter
+    CommonInboxNotificationPresenter,
+    NotificationCollaboratorsChanged,
+    ReactionNotificationPresenter
   },
   activity: {
     TxCollaboratorsChange,

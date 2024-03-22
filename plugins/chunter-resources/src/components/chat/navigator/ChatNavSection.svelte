@@ -24,7 +24,7 @@
   import ChatNavItem from './ChatNavItem.svelte'
   import chunter from '../../../plugin'
   import { ChatNavItemModel } from '../types'
-  import { getChannelIcon, getChannelName } from '../../../utils'
+  import { getObjectIcon, getChannelName } from '../../../utils'
   import ChatSectionHeader from './ChatSectionHeader.svelte'
 
   export let header: string
@@ -58,7 +58,7 @@
 
     for (const object of objects) {
       const { _class } = object
-      const icon = getChannelIcon(_class)
+      const icon = getObjectIcon(_class)
       const titleIntl = client.getHierarchy().getClass(_class).label
 
       const isPerson = hierarchy.isDerived(_class, contact.class.Person)

@@ -12,11 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-<script lang="ts">
-  import { ThreadMessage } from '@hcengineering/chunter'
-  import ThreadMessagePreview from '../threads/ThreadMessagePreview.svelte'
 
-  export let message: ThreadMessage
+<script lang="ts">
+  import { tooltip } from '@hcengineering/ui'
+  import { getDisplayTime, Timestamp } from '@hcengineering/core'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
+
+  export let date: Timestamp
+  export let type: 'primary' | 'secondary' | 'time' = 'primary'
+
+  $: fullDate = new Date(date).toLocaleString('default', {
+    minute: '2-digit',
+    hour: 'numeric',
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  })
 </script>
 
-<ThreadMessagePreview value={message} on:click />
+<span class="text-sm" use:tooltip={{ label: getEmbeddedLabel(fullDate) }}>
+  {getDisplayTime(date, type)}
+</span>

@@ -295,7 +295,7 @@ export async function chunterSpaceLinkFragmentProvider (doc: ChunterSpace): Prom
   return loc
 }
 
-export function getChannelIcon (_class: Ref<Class<Doc>>): Asset | AnySvelteComponent | undefined {
+export function getObjectIcon (_class: Ref<Class<Doc>>): Asset | AnySvelteComponent | undefined {
   const client = getClient()
   const hierarchy = client.getHierarchy()
 

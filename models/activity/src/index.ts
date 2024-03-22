@@ -33,7 +33,8 @@ import {
   type ActivityMessageControl,
   type SavedMessage,
   type IgnoreActivity,
-  type ActivityReference
+  type ActivityReference,
+  type ActivityMessagePreview
 } from '@hcengineering/activity'
 import core, {
   DOMAIN_MODEL,
@@ -257,6 +258,11 @@ export class TSavedMessage extends TPreference implements SavedMessage {
   declare attachedTo: Ref<ActivityMessage>
 }
 
+@Mixin(activity.mixin.ActivityMessagePreview, core.class.Class)
+export class TActivityMessagePreview extends TClass implements ActivityMessagePreview {
+  presenter!: AnyComponent
+}
+
 export function createModel (builder: Builder): void {
   builder.createModel(
     TTxViewlet,
@@ -273,7 +279,8 @@ export function createModel (builder: Builder): void {
     TActivityMessageControl,
     TSavedMessage,
     TIgnoreActivity,
-    TActivityReference
+    TActivityReference,
+    TActivityMessagePreview
   )
 
   builder.mixin(activity.class.DocUpdateMessage, core.class.Class, view.mixin.ObjectPresenter, {
@@ -286,6 +293,18 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(activity.class.ActivityReference, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: activity.component.ActivityReferencePresenter
+  })
+
+  builder.mixin(activity.class.DocUpdateMessage, core.class.Class, activity.mixin.ActivityMessagePreview, {
+    presenter: activity.component.DocUpdateMessagePreview
+  })
+
+  builder.mixin(activity.class.ActivityInfoMessage, core.class.Class, activity.mixin.ActivityMessagePreview, {
+    presenter: activity.component.ActivityInfoMessagePreview
+  })
+
+  builder.mixin(activity.class.ActivityReference, core.class.Class, activity.mixin.ActivityMessagePreview, {
+    presenter: activity.component.ActivityReferencePreview
   })
 
   builder.mixin(activity.class.DocUpdateMessage, core.class.Class, view.mixin.LinkProvider, {
@@ -348,14 +367,6 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(activity.class.ActivityMessage, core.class.Class, notification.mixin.NotificationContextPresenter, {
     labelPresenter: activity.component.ActivityMessageNotificationLabel
-  })
-
-  builder.createDoc(notification.class.ActivityNotificationViewlet, core.space.Model, {
-    messageMatch: {
-      _class: activity.class.DocUpdateMessage,
-      objectClass: activity.class.Reaction
-    },
-    presenter: activity.component.ReactionNotificationPresenter
   })
 
   builder.createDoc(

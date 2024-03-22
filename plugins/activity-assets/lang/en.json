@@ -38,6 +38,8 @@
     "Mentioned": "Mentioned",
     "You": "You",
     "Mentions": "Mentions",
-    "MentionedYouIn": "Mentioned you in"
+    "MentionedYouIn": "Mentioned you in",
+    "Messages": "Messages",
+    "Thread": "Thread"
   }
 }

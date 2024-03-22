@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,10 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ThreadMessage } from '@hcengineering/chunter'
-  import ThreadMessagePreview from '../threads/ThreadMessagePreview.svelte'
+  import type { Attachment } from '@hcengineering/attachment'
 
-  export let message: ThreadMessage
+  export let value: Attachment | undefined
 </script>
 
-<ThreadMessagePreview value={message} on:click />
+{#if value}
+  {value.name}
+{/if}

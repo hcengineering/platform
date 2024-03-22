@@ -53,6 +53,8 @@ import ChatMessageNotificationLabel from './components/notification/ChatMessageN
 import ChatAside from './components/chat/ChatAside.svelte'
 import Replies from './components/Replies.svelte'
 import ReplyToThreadAction from './components/ReplyToThreadAction.svelte'
+import ThreadMessagePreview from './components/threads/ThreadMessagePreview.svelte'
+import ChatMessagePreview from './components/chat-message/ChatMessagePreview.svelte'
 
 import {
   ChannelTitleProvider,
@@ -237,7 +239,9 @@ export default async (): Promise<Resources> => ({
     ThreadNotificationPresenter,
     ChatAside,
     Replies,
-    ReplyToThreadAction
+    ReplyToThreadAction,
+    ThreadMessagePreview,
+    ChatMessagePreview
   },
   function: {
     GetDmName: getDmName,

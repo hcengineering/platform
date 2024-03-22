@@ -239,6 +239,9 @@ export interface ActivityInboxNotification extends InboxNotification {
 
 export interface CommonInboxNotification extends InboxNotification {
   header?: IntlString
+  headerIcon?: Asset
+  headerObjectId?: Ref<Doc>
+  headerObjectClass?: Ref<Class<Doc>>
   message?: IntlString
   messageHtml?: string
   props?: Record<string, any>
@@ -348,8 +351,10 @@ const notification = plugin(notificationId, {
   component: {
     Inbox: '' as AnyComponent,
     NotificationPresenter: '' as AnyComponent,
+    CollaboratorsChanged: '' as AnyComponent,
+    DocNotifyContextPresenter: '' as AnyComponent,
     NotificationCollaboratorsChanged: '' as AnyComponent,
-    DocNotifyContextPresenter: '' as AnyComponent
+    ReactionNotificationPresenter: '' as AnyComponent
   },
   activity: {
     TxCollaboratorsChange: '' as AnyComponent
@@ -395,7 +400,9 @@ const notification = plugin(notificationId, {
     MarkReadAll: '' as IntlString,
     MarkUnreadAll: '' as IntlString,
     ArchiveAllConfirmationTitle: '' as IntlString,
-    ArchiveAllConfirmationMessage: '' as IntlString
+    ArchiveAllConfirmationMessage: '' as IntlString,
+    YouAddedCollaborators: '' as IntlString,
+    YouRemovedCollaborators: '' as IntlString
   },
   function: {
     GetInboxNotificationsClient: '' as Resource<InboxNotificationsClientFactory>,

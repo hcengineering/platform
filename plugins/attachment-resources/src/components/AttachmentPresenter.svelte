@@ -20,9 +20,12 @@
   import presentation, { PDFViewer, getFileUrl } from '@hcengineering/presentation'
   import filesize from 'filesize'
 
+  import AttachmentName from './AttachmentName.svelte'
+
   export let value: Attachment | undefined
   export let removable: boolean = false
   export let showPreview = false
+  export let preview = false
 
   export let progress: boolean = false
 
@@ -97,79 +100,83 @@
   }
 </script>
 
-<div class="flex-row-center attachment-container">
-  {#if value}
-    <a
-      class="no-line"
-      style:flex-shrink={0}
-      href={getFileUrl(value.file, 'full', value.name)}
-      download={value.name}
-      on:click={clickHandler}
-      on:mousedown={middleClickHandler}
-      on:dragstart={dragStart}
-    >
-      {#if showPreview}
-        <div
-          class="flex-center icon"
-          class:svg={value.type === 'image/svg+xml'}
-          class:image={isImage(value.type)}
-          style={imgStyle}
-        >
-          {#if progress}
-            <div class="flex p-3">
-              <Loading />
-            </div>
-          {:else if !isImage(value.type)}{iconLabel(value.name)}{/if}
-        </div>
-      {:else}
-        <div class="flex-center icon">
-          {iconLabel(value.name)}
-        </div>
-      {/if}
-    </a>
-    <div class="flex-col info-container">
-      <div class="name">
-        <a
-          href={getFileUrl(value.file, 'full', value.name)}
-          download={value.name}
-          on:click={clickHandler}
-          on:mousedown={middleClickHandler}
-        >
-          {trimFilename(value.name)}
-        </a>
-      </div>
-      <div class="info-content flex-row-center">
-        {filesize(value.size, { spacer: '' })}
-        <span class="actions inline-flex clear-mins ml-1 gap-1">
-          <span>•</span>
+{#if preview}
+  <AttachmentName {value} />
+{:else}
+  <div class="flex-row-center attachment-container">
+    {#if value}
+      <a
+        class="no-line"
+        style:flex-shrink={0}
+        href={getFileUrl(value.file, 'full', value.name)}
+        download={value.name}
+        on:click={clickHandler}
+        on:mousedown={middleClickHandler}
+        on:dragstart={dragStart}
+      >
+        {#if showPreview}
+          <div
+            class="flex-center icon"
+            class:svg={value.type === 'image/svg+xml'}
+            class:image={isImage(value.type)}
+            style={imgStyle}
+          >
+            {#if progress}
+              <div class="flex p-3">
+                <Loading />
+              </div>
+            {:else if !isImage(value.type)}{iconLabel(value.name)}{/if}
+          </div>
+        {:else}
+          <div class="flex-center icon">
+            {iconLabel(value.name)}
+          </div>
+        {/if}
+      </a>
+      <div class="flex-col info-container">
+        <div class="name">
           <a
-            class="no-line colorInherit"
             href={getFileUrl(value.file, 'full', value.name)}
             download={value.name}
-            bind:this={download}
+            on:click={clickHandler}
+            on:mousedown={middleClickHandler}
           >
-            <Label label={presentation.string.Download} />
+            {trimFilename(value.name)}
           </a>
-          {#if removable && value.readonly !== true}
+        </div>
+        <div class="info-content flex-row-center">
+          {filesize(value.size, { spacer: '' })}
+          <span class="actions inline-flex clear-mins ml-1 gap-1">
             <span>•</span>
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <!-- svelte-ignore a11y-no-static-element-interactions -->
-            <span
-              class="remove-link"
-              on:click={(ev) => {
-                ev.stopPropagation()
-                ev.preventDefault()
-                dispatch('remove', value)
-              }}
+            <a
+              class="no-line colorInherit"
+              href={getFileUrl(value.file, 'full', value.name)}
+              download={value.name}
+              bind:this={download}
             >
-              <Label label={presentation.string.Delete} />
-            </span>
-          {/if}
-        </span>
+              <Label label={presentation.string.Download} />
+            </a>
+            {#if removable && value.readonly !== true}
+              <span>•</span>
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <!-- svelte-ignore a11y-no-static-element-interactions -->
+              <span
+                class="remove-link"
+                on:click={(ev) => {
+                  ev.stopPropagation()
+                  ev.preventDefault()
+                  dispatch('remove', value)
+                }}
+              >
+                <Label label={presentation.string.Delete} />
+              </span>
+            {/if}
+          </span>
+        </div>
       </div>
-    </div>
-  {/if}
-</div>
+    {/if}
+  </div>
+{/if}
 
 <style lang="scss">
   .attachment-container {
