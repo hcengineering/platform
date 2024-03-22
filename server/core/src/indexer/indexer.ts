@@ -295,6 +295,9 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
   async initializeStages (): Promise<void> {
     for (const st of this.stages) {
+      if (this.cancelling) {
+        return
+      }
       await st.initialize(this.metrics, this.storage, this)
     }
   }
@@ -312,6 +315,9 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       // We need to be sure we have individual indexes per stage.
       const oldStagesRegex = [/fld-v.*/, /cnt-v.*/, /fts-v.*/, /sum-v.*/]
       for (const st of this.stages) {
+        if (this.cancelling) {
+          return
+        }
         const regexp = oldStagesRegex.find((r) => r.test(st.stageId))
         if (regexp !== undefined) {
           await this.storage.removeOldIndex(DOMAIN_DOC_INDEX_STATE, regexp, new RegExp(st.stageId))
@@ -404,6 +410,9 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     let idx = 0
     const _classUpdate = new Set<Ref<Class<Doc>>>()
     for (const st of this.stages) {
+      if (this.cancelling) {
+        return []
+      }
       idx++
       await rateLimiter.exec(async () => {
         while (true) {

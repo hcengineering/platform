@@ -212,17 +212,13 @@ class TSessionManager implements SessionManager {
     return await baseCtx.with('📲 add-session', {}, async (ctx) => {
       const wsString = toWorkspaceString(token.workspace, '@')
 
-      const workspaceInfo =
-        accountsUrl !== ''
-          ? await this.getWorkspaceInfo(accountsUrl, rawToken)
-          : {
-              workspace: token.workspace.name,
-              workspaceUrl: token.workspace.name,
-              workspaceName: token.workspace.name
-            }
-      if (workspaceInfo === undefined) {
+      let workspaceInfo =
+        accountsUrl !== '' ? await this.getWorkspaceInfo(accountsUrl, rawToken) : this.wsFromToken(token)
+      if (workspaceInfo === undefined && token.extra?.admin !== 'true') {
         // No access to workspace for token.
         return { error: new Error(`No access to workspace for token ${token.email} ${token.workspace.name}`) }
+      } else {
+        workspaceInfo = this.wsFromToken(token)
       }
 
       let workspace = this.workspaces.get(wsString)
@@ -294,6 +290,18 @@ class TSessionManager implements SessionManager {
       }
       return { session, context: workspace.context, workspaceName }
     })
+  }
+
+  private wsFromToken (token: Token): {
+    workspace: string
+    workspaceUrl?: string | null
+    workspaceName?: string
+  } {
+    return {
+      workspace: token.workspace.name,
+      workspaceUrl: token.workspace.name,
+      workspaceName: token.workspace.name
+    }
   }
 
   private async createUpgradeSession (
