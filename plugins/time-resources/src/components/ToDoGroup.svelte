@@ -23,7 +23,6 @@
   import ToDoDraggable from './ToDoDraggable.svelte'
   import ToDoDuration from './ToDoDuration.svelte'
   import ToDoElement from './ToDoElement.svelte'
-  import time from '../plugin'
   import { dragging } from '../dragging'
   import ToDoProjectGroup from './ToDoProjectGroup.svelte'
   import { getClient } from '@hcengineering/presentation'
@@ -34,7 +33,6 @@
   export let todos: WithLookup<ToDo>[]
   export let showTitle: boolean
   export let showDuration: boolean
-  export let largeSize: boolean = false
   export let projects: IdMap<Project>
 
   function getAllWorkslots (todos: WithLookup<ToDo>[]): WorkSlot[] {
@@ -49,6 +47,8 @@
 
   let groups: Project[] | undefined = undefined
   let withoutProject: boolean = false
+
+  $: id = `group:${title}`
   $: groups = updateGroups(todos, projects)
 
   const updateGroups = (_todos: WithLookup<ToDo>[], _projects: IdMap<Project>): Project[] | undefined => {
@@ -92,12 +92,12 @@
 
 {#if showTitle}
   <AccordionItem
+    {id}
     label={title}
     size={'large'}
     bottomSpace={false}
     counter={todos.length}
     duration={showDuration}
-    isOpen={title !== time.string.Done}
     fixHeader
     background={'var(--theme-navpanel-color)'}
   >
