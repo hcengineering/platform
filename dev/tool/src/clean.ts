@@ -14,38 +14,38 @@
 //
 
 import attachment from '@hcengineering/attachment'
+import chunter, { type ChatMessage } from '@hcengineering/chunter'
 import contact from '@hcengineering/contact'
-import { deepEqual } from 'fast-equals'
 import core, {
+  DOMAIN_TX,
+  SortingOrder,
+  TxOperations,
+  TxProcessor,
+  generateId,
+  getObjectValue,
   type BackupClient,
   type Client as CoreClient,
-  DOMAIN_TX,
   type Doc,
   type Domain,
   type Ref,
-  SortingOrder,
   type TxCreateDoc,
-  TxOperations,
-  TxProcessor,
-  type WorkspaceId,
-  generateId,
-  getObjectValue
+  type WorkspaceId
 } from '@hcengineering/core'
-import { type MinioService } from '@hcengineering/minio'
 import { getWorkspaceDB } from '@hcengineering/mongo'
 import recruit from '@hcengineering/recruit'
+import { type StorageAdapter } from '@hcengineering/server-core'
 import { connect } from '@hcengineering/server-tool'
-import tracker from '@hcengineering/tracker'
 import tags, { type TagCategory, type TagElement, type TagReference } from '@hcengineering/tags'
+import tracker from '@hcengineering/tracker'
+import { deepEqual } from 'fast-equals'
 import { MongoClient } from 'mongodb'
-import chunter, { type ChatMessage } from '@hcengineering/chunter'
 
 export const DOMAIN_ACTIVITY = 'activity' as Domain
 
 export async function cleanWorkspace (
   mongoUrl: string,
   workspaceId: WorkspaceId,
-  minio: MinioService,
+  storageAdapter: StorageAdapter,
   elasticUrl: string,
   transactorUrl: string,
   opt: { recruit: boolean, tracker: boolean, removedTx: boolean }
@@ -67,14 +67,14 @@ export async function cleanWorkspace (
       attachments.map((it) => it.file).concat(contacts.map((it) => it.avatar).filter((it) => it) as string[])
     )
 
-    const minioList = await minio.list(workspaceId)
+    const minioList = await storageAdapter.list(workspaceId)
     const toClean: string[] = []
     for (const mv of minioList) {
       if (!files.has(mv.name)) {
         toClean.push(mv.name)
       }
     }
-    await minio.remove(workspaceId, toClean)
+    await storageAdapter.remove(workspaceId, toClean)
     // connection.loadChunk(DOMAIN_BLOB, idx = )
 
     if (opt.recruit) {
@@ -145,16 +145,16 @@ export async function cleanWorkspace (
   }
 }
 
-export async function fixMinioBW (workspaceId: WorkspaceId, minio: MinioService): Promise<void> {
+export async function fixMinioBW (workspaceId: WorkspaceId, storageService: StorageAdapter): Promise<void> {
   console.log('try clean bw miniature for ', workspaceId.name)
   const from = new Date(new Date().setDate(new Date().getDate() - 7))
-  const list = await minio.list(workspaceId)
+  const list = await storageService.list(workspaceId)
   console.log('found', list.length)
   let removed = 0
   for (const obj of list) {
     if (obj.lastModified < from) continue
     if (obj.name.includes('%size%')) {
-      await minio.remove(workspaceId, [obj.name])
+      await storageService.remove(workspaceId, [obj.name])
       removed++
       if (removed % 100 === 0) {
         console.log('removed: ', removed)

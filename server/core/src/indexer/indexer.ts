@@ -14,21 +14,21 @@
 //
 
 import core, {
-  AttachedDoc,
-  Class,
+  type AttachedDoc,
+  type Class,
   DOMAIN_DOC_INDEX_STATE,
   DOMAIN_FULLTEXT_BLOB,
-  Doc,
-  DocIndexState,
-  DocumentQuery,
-  DocumentUpdate,
-  Hierarchy,
-  MeasureContext,
-  ModelDb,
-  Ref,
-  ServerStorage,
+  type Doc,
+  type DocIndexState,
+  type DocumentQuery,
+  type DocumentUpdate,
+  type Hierarchy,
+  type MeasureContext,
+  type ModelDb,
+  type Ref,
+  type ServerStorage,
   TxFactory,
-  WorkspaceId,
+  type WorkspaceId,
   _getOperator,
   docKey,
   generateId,
@@ -36,10 +36,10 @@ import core, {
   toFindResult,
   versionToString
 } from '@hcengineering/core'
-import { DbAdapter } from '../adapter'
+import { type DbAdapter } from '../adapter'
 import { RateLimiter } from '../limitter'
 import type { IndexedDoc } from '../types'
-import { FullTextPipeline, FullTextPipelineStage } from './types'
+import { type FullTextPipeline, type FullTextPipelineStage } from './types'
 import { createStateDoc, isClassIndexable } from './utils'
 
 export * from './content'

@@ -17,8 +17,8 @@ import {
   YDocVersion,
   collaborativeHistoryDocId,
   createYdocSnapshot,
-  yDocFromMinio,
-  yDocToMinio
+  yDocFromStorage,
+  yDocToStorage
 } from '@hcengineering/collaboration'
 import { type TakeSnapshotRequest, type TakeSnapshotResponse } from '@hcengineering/collaborator-client'
 import { CollaborativeDocVersionHead, MeasureContext, generateId, parseCollaborativeDoc } from '@hcengineering/core'
@@ -57,7 +57,7 @@ export async function takeSnapshot (
     const historyDocumentId = collaborativeHistoryDocId(minioDocumentId)
     const yHistory =
       (await ctx.with('yDocFromMinio', {}, async () => {
-        return await yDocFromMinio(minio, workspaceId, historyDocumentId)
+        return await yDocFromStorage(minio, workspaceId, historyDocumentId)
       })) ?? new YDoc()
 
     await ctx.with('createYdocSnapshot', {}, async () => {
@@ -67,7 +67,7 @@ export async function takeSnapshot (
     })
 
     await ctx.with('yDocToMinio', {}, async () => {
-      await yDocToMinio(minio, workspaceId, historyDocumentId, yHistory)
+      await yDocToStorage(minio, workspaceId, historyDocumentId, yHistory)
     })
 
     return { ...version }

@@ -14,31 +14,31 @@
 //
 
 import core, {
-  AnyAttribute,
-  ArrOf,
-  Class,
-  Doc,
-  DocIndexState,
-  DocumentQuery,
-  DocumentUpdate,
+  type AnyAttribute,
+  type ArrOf,
+  type Class,
+  type Doc,
+  type DocIndexState,
+  type DocumentQuery,
+  type DocumentUpdate,
   extractDocKey,
   isFullTextAttribute,
   isIndexedAttribute,
-  MeasureContext,
-  Ref,
-  ServerStorage,
-  WorkspaceId
+  type MeasureContext,
+  type Ref,
+  type ServerStorage,
+  type WorkspaceId
 } from '@hcengineering/core'
-import { DbAdapter } from '../adapter'
+import { type DbAdapter } from '../adapter'
 import { updateDocWithPresenter } from '../mapper'
-import { FullTextAdapter, IndexedDoc } from '../types'
+import { type FullTextAdapter, type IndexedDoc } from '../types'
 import { summaryStageId } from './summary'
 import {
   contentStageId,
-  DocUpdateHandler,
+  type DocUpdateHandler,
   fieldStateId,
-  FullTextPipeline,
-  FullTextPipelineStage,
+  type FullTextPipeline,
+  type FullTextPipelineStage,
   fullTextPushStageId
 } from './types'
 import {
@@ -46,7 +46,7 @@ import {
   collectPropagateClasses,
   docKey,
   getFullTextContext,
-  IndexKeyOptions,
+  type IndexKeyOptions,
   isCustomAttr
 } from './utils'
 

@@ -40,7 +40,7 @@ import {
   backup,
   backupList,
   createFileBackupStorage,
-  createMinioBackupStorage,
+  createStorageBackupStorage,
   restore
 } from '@hcengineering/server-backup'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
@@ -52,9 +52,9 @@ import { clearTelegramHistory } from './telegram'
 import { diffWorkspace, updateField } from './workspace'
 
 import { RateLimiter, getWorkspaceId, type AccountRole, type Data, type Tx, type Version } from '@hcengineering/core'
-import { type MinioService } from '@hcengineering/minio'
 import { consoleModelLogger, type MigrateOperation } from '@hcengineering/model'
 import { openAIConfigDefaults } from '@hcengineering/openai'
+import { type StorageAdapter } from '@hcengineering/server-core'
 import path from 'path'
 import { benchmark } from './benchmark'
 import {
@@ -76,7 +76,7 @@ import { openAIConfig } from './openai'
 export function devTool (
   prepareTools: () => {
     mongodbUri: string
-    minio: MinioService
+    storageAdapter: StorageAdapter
     txes: Tx[]
     version: Data<Version>
     migrateOperations: [string, MigrateOperation][]
@@ -431,27 +431,27 @@ export function devTool (
     .command('backup-s3 <bucketName> <dirName> <workspace>')
     .description('dump workspace transactions and minio resources')
     .action(async (bucketName: string, dirName: string, workspace: string, cmd) => {
-      const { minio } = prepareTools()
+      const { storageAdapter } = prepareTools()
       const wsId = getWorkspaceId(workspace, productId)
-      const storage = await createMinioBackupStorage(minio, wsId, dirName)
+      const storage = await createStorageBackupStorage(storageAdapter, wsId, dirName)
       await backup(transactorUrl, wsId, storage)
     })
   program
     .command('backup-s3-restore <bucketName>, <dirName> <workspace> [date]')
     .description('dump workspace transactions and minio resources')
     .action(async (bucketName: string, dirName: string, workspace: string, date, cmd) => {
-      const { minio } = prepareTools()
+      const { storageAdapter } = prepareTools()
       const wsId = getWorkspaceId(bucketName, productId)
-      const storage = await createMinioBackupStorage(minio, wsId, dirName)
+      const storage = await createStorageBackupStorage(storageAdapter, wsId, dirName)
       await restore(transactorUrl, wsId, storage, parseInt(date ?? '-1'))
     })
   program
     .command('backup-s3-list <bucketName> <dirName>')
     .description('list snaphost ids for backup')
     .action(async (bucketName: string, dirName: string, cmd) => {
-      const { minio } = prepareTools()
+      const { storageAdapter } = prepareTools()
       const wsId = getWorkspaceId(bucketName, productId)
-      const storage = await createMinioBackupStorage(minio, wsId, dirName)
+      const storage = await createStorageBackupStorage(storageAdapter, wsId, dirName)
       await backupList(storage)
     })
 
@@ -483,7 +483,7 @@ export function devTool (
     .description('clear telegram history')
     .option('-w, --workspace <workspace>', 'target workspace')
     .action(async (workspace: string, cmd) => {
-      const { mongodbUri, minio } = prepareTools()
+      const { mongodbUri, storageAdapter: minio } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
         const telegramDB = process.env.TELEGRAM_DATABASE
         if (telegramDB === undefined) {
@@ -500,7 +500,7 @@ export function devTool (
     .command('clear-telegram-all-history')
     .description('clear telegram history')
     .action(async (cmd) => {
-      const { mongodbUri, minio } = prepareTools()
+      const { mongodbUri, storageAdapter: minio } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
         const telegramDB = process.env.TELEGRAM_DATABASE
         if (telegramDB === undefined) {
@@ -537,7 +537,7 @@ export function devTool (
     .option('--tracker', 'Clean tracker', false)
     .option('--removedTx', 'Clean removed transactions', false)
     .action(async (workspace: string, cmd: { recruit: boolean, tracker: boolean, removedTx: boolean }) => {
-      const { mongodbUri, minio } = prepareTools()
+      const { mongodbUri, storageAdapter: minio } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
         await cleanWorkspace(
           mongodbUri,
@@ -551,7 +551,7 @@ export function devTool (
     })
 
   program.command('fix-bw-workspace <workspace>').action(async (workspace: string) => {
-    const { minio } = prepareTools()
+    const { storageAdapter: minio } = prepareTools()
     await fixMinioBW(getWorkspaceId(workspace, productId), minio)
   })
 

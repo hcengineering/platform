@@ -5,14 +5,15 @@
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
   "author": "Anticrm Platform Contributors",
+  "template": "@hcengineering/node-package",
   "license": "EPL-2.0",
   "scripts": {
     "build": "compile",
     "build:watch": "compile",
     "format": "format src",
-    "test": "jest --passWithNoTests --silent",
+    "test": "jest --passWithNoTests --silent --forceExit",
     "_phase:build": "compile transpile src",
-    "_phase:test": "jest --passWithNoTests --silent",
+    "_phase:test": "jest --passWithNoTests --silent --forceExit",
     "_phase:format": "format src",
     "_phase:validate": "compile validate"
   },
@@ -36,7 +37,6 @@
   "dependencies": {
     "@hcengineering/core": "^0.6.28",
     "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/minio": "^0.6.0",
     "@hcengineering/query": "^0.6.8",
     "fast-equals": "^2.0.3",
     "html-to-text": "^9.0.3"
