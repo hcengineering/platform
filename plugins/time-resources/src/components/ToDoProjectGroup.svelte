@@ -38,7 +38,6 @@
   export let project: Project | false | undefined = undefined
   export let mode: ToDosMode
   export let groupName: IntlString
-  export let largeSize: boolean = false
 
   const client = getClient()
 
@@ -84,7 +83,7 @@
 <AccordionItem {icon} {iconProps} {title} {label} size={'medium'} isOpen nested>
   {#each todos as todo, index}
     <ToDoDraggable {todo} {index} {groupName} {projectId} on:drop={handleDrop}>
-      <ToDoElement {todo} size={largeSize ? 'large' : 'small'} planned={mode !== 'unplanned'} />
+      <ToDoElement {todo} planned={mode !== 'unplanned'} />
     </ToDoDraggable>
   {/each}
 </AccordionItem>
