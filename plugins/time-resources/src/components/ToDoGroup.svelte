@@ -1,21 +1,33 @@
+<!--
+// Copyright © 2024 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
+
 <script lang="ts">
-  import { WithLookup, IdMap, Ref, Space } from '@hcengineering/core'
-  import { IntlString } from '@hcengineering/platform'
-  import { ToDo, WorkSlot } from '@hcengineering/time'
-  import time from '../plugin'
-  import { createEventDispatcher } from 'svelte'
+  import type { WithLookup, IdMap, Ref, Space } from '@hcengineering/core'
+  import type { ToDo, WorkSlot } from '@hcengineering/time'
+  import type { IntlString } from '@hcengineering/platform'
+  import type { Project } from '@hcengineering/tracker'
+  import type { ToDosMode } from '..'
+  import { AccordionItem } from '@hcengineering/ui'
+  import ToDoDraggable from './ToDoDraggable.svelte'
   import ToDoDuration from './ToDoDuration.svelte'
   import ToDoElement from './ToDoElement.svelte'
-  import {
-    AccordionItem,
-    IconWithEmoji,
-    getPlatformColorDef,
-    getPlatformColorForTextDef,
-    themeStore
-  } from '@hcengineering/ui'
-  import { ToDosMode } from '..'
-  import tracker, { Project } from '@hcengineering/tracker'
-  import view from '@hcengineering/view'
+  import time from '../plugin'
+  import { dragging } from '../dragging'
+  import ToDoProjectGroup from './ToDoProjectGroup.svelte'
+  import { getClient } from '@hcengineering/presentation'
+  import { makeRank } from '@hcengineering/task'
 
   export let mode: ToDosMode
   export let title: IntlString
@@ -24,8 +36,6 @@
   export let showDuration: boolean
   export let largeSize: boolean = false
   export let projects: IdMap<Project>
-
-  const dispatch = createEventDispatcher()
 
   function getAllWorkslots (todos: WithLookup<ToDo>[]): WorkSlot[] {
     const workslots: WorkSlot[] = []
@@ -56,8 +66,27 @@
     withoutProject = wp
     return _groups
   }
+
   const hasProject = (proj: Ref<Space> | undefined): boolean => {
     return (proj && projects.has(proj as Ref<Project>)) ?? false
+  }
+
+  const client = getClient()
+
+  $: draggingItem = $dragging.item
+  $: draggingItemIndex = $dragging.itemIndex
+
+  async function handleDrop (event: CustomEvent<{ event: DragEvent, index: number }>): Promise<void> {
+    if (draggingItem === null || draggingItemIndex === null) return
+
+    const droppingIndex = event.detail.index
+    const [previousItem, nextItem] = [
+      todos[draggingItemIndex < droppingIndex ? droppingIndex : droppingIndex - 1],
+      todos[draggingItemIndex < droppingIndex ? droppingIndex + 1 : droppingIndex]
+    ]
+
+    const newRank = makeRank(previousItem?.rank, nextItem?.rank)
+    await client.update(draggingItem, { rank: newRank })
   }
 </script>
 
@@ -68,7 +97,7 @@
     bottomSpace={false}
     counter={todos.length}
     duration={showDuration}
-    isOpen
+    isOpen={title !== time.string.Done}
     fixHeader
     background={'var(--theme-navpanel-color)'}
   >
@@ -77,48 +106,31 @@
     </svelte:fragment>
     {#if groups}
       {#each groups as group}
-        <AccordionItem
-          icon={group.icon === view.ids.IconWithEmoji ? IconWithEmoji : group.icon ?? tracker.icon.Home}
-          iconProps={group.icon === view.ids.IconWithEmoji
-            ? { icon: group.color }
-            : {
-                fill:
-                  group.color !== undefined
-                    ? getPlatformColorDef(group.color, $themeStore.dark).icon
-                    : getPlatformColorForTextDef(group.name, $themeStore.dark).icon
-              }}
-          title={group.name}
-          size={'medium'}
-          isOpen
-          nested
-        >
-          {#each todos.filter((td) => td.attachedSpace === group._id) as todo}
-            <!-- svelte-ignore a11y-no-static-element-interactions -->
-            <div class="step-tb125" draggable={true} on:dragend on:dragstart={() => dispatch('dragstart', todo)}>
-              <ToDoElement {todo} size={largeSize ? 'large' : 'small'} planned={mode !== 'unplanned'} />
-            </div>
-          {/each}
-        </AccordionItem>
+        <ToDoProjectGroup
+          todos={todos.filter((td) => td.attachedSpace === group._id)}
+          project={group}
+          groupName={title}
+          {largeSize}
+          {mode}
+        />
       {/each}
     {/if}
     {#if withoutProject}
-      <AccordionItem label={time.string.WithoutProject} size={'medium'} isOpen nested>
-        {#each todos.filter((td) => !hasProject(td.attachedSpace)) as todo}
-          <!-- svelte-ignore a11y-no-static-element-interactions -->
-          <div class="step-tb125" draggable={true} on:dragend on:dragstart={() => dispatch('dragstart', todo)}>
-            <ToDoElement {todo} size={largeSize ? 'large' : 'small'} planned={mode !== 'unplanned'} />
-          </div>
-        {/each}
-      </AccordionItem>
+      <ToDoProjectGroup
+        todos={todos.filter((td) => !hasProject(td.attachedSpace))}
+        project={false}
+        groupName={title}
+        {largeSize}
+        {mode}
+      />
     {/if}
   </AccordionItem>
 {:else}
   <div class="flex-col p-4 w-full">
-    {#each todos as todo}
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div class="step-tb125" draggable={true} on:dragend on:dragstart={() => dispatch('dragstart', todo)}>
+    {#each todos as todo, index}
+      <ToDoDraggable {todo} {index} groupName={title} projectId={false} on:drop={handleDrop}>
         <ToDoElement {todo} size={largeSize ? 'large' : 'small'} planned={mode !== 'unplanned'} />
-      </div>
+      </ToDoDraggable>
     {/each}
   </div>
 {/if}

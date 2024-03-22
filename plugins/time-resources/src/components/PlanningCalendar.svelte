@@ -25,7 +25,7 @@
   import time from '../plugin'
   import IconSun from './icons/Sun.svelte'
 
-  export let dragItem: ToDo | undefined = undefined
+  export let dragItem: ToDo | null = null
   export let currentDate: Date = new Date()
   export let displayedDaysCount = 1
   export let createComponent: AnyComponent | undefined = calendar.component.CreateEvent
@@ -151,8 +151,8 @@
     }
   }
 
-  function clear (dragItem: ToDo | undefined) {
-    if (dragItem === undefined) {
+  function clear (dragItem: ToDo | null) {
+    if (dragItem === null) {
       raw = raw.filter((p) => p._id !== dragItemId)
       all = getAllEvents(raw, from, to)
       objects = hidePrivateEvents(all, $calendarStore)
@@ -216,7 +216,7 @@
       events={objects}
       {displayedDaysCount}
       startFromWeekStart={false}
-      clearCells={dragItem !== undefined}
+      clearCells={dragItem !== null}
       {dragItemId}
       on:dragEnter={dragEnter}
       on:dragleave={dragLeave}
