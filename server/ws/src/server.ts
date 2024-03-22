@@ -159,7 +159,6 @@ class TSessionManager implements SessionManager {
         }
 
         for (const r of s[1].session.requests.values()) {
-          const now = Date.now()
           if (now - r.start > 30000) {
             console.log(h[0], 'request hang found, 30sec', h[0], s[1].session.getUser(), r.params)
           }
