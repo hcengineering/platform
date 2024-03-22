@@ -400,13 +400,15 @@ export function devTool (
     .command('backup <dirName> <workspace>')
     .description('dump workspace transactions and minio resources')
     .option('-s, --skip <skip>', 'A list of ; separated domain names to skip during backup', '')
-    .action(async (dirName: string, workspace: string, cmd: { skip: string }) => {
+    .option('-f, --force', 'Force backup', false)
+    .action(async (dirName: string, workspace: string, cmd: { skip: string, force: boolean }) => {
       const storage = await createFileBackupStorage(dirName)
       await backup(
         transactorUrl,
         getWorkspaceId(workspace, productId),
         storage,
-        (cmd.skip ?? '').split(';').map((it) => it.trim())
+        (cmd.skip ?? '').split(';').map((it) => it.trim()),
+        cmd.force
       )
     })
 

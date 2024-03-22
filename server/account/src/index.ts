@@ -614,9 +614,9 @@ export async function listWorkspaces (db: Db, productId: string): Promise<Worksp
  * @public
  */
 export async function listWorkspacesRaw (db: Db, productId: string): Promise<Workspace[]> {
-  return (await db.collection<Workspace>(WORKSPACE_COLLECTION).find(withProductId(productId, {})).toArray()).map(
-    (it) => ({ ...it, productId })
-  )
+  return (await db.collection<Workspace>(WORKSPACE_COLLECTION).find(withProductId(productId, {})).toArray())
+    .map((it) => ({ ...it, productId }))
+    .filter((it) => it.disabled !== true)
 }
 
 /**
@@ -967,7 +967,7 @@ export async function getWorkspaceInfo (
   db: Db,
   productId: string,
   token: string,
-  updateLatsVisit: boolean = false
+  _updateLastVisit: boolean = false
 ): Promise<ClientWorkspaceInfo> {
   const { email, workspace, extra } = decodeToken(token)
   const guest = extra?.guest === 'true'
@@ -1002,7 +1002,7 @@ export async function getWorkspaceInfo (
   if (ws == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
-  if (updateLatsVisit && isAccount(account)) {
+  if (_updateLastVisit && isAccount(account)) {
     await updateLastVisit(db, ws, account)
   }
   return mapToClientWorkspace(ws)

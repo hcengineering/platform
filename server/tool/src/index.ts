@@ -221,7 +221,11 @@ export async function upgradeModel (
 
     logger.log(`${workspaceId.name}: Apply upgrade operations`)
 
-    const connection = await connect(transactorUrl, workspaceId, undefined, { mode: 'backup', model: 'upgrade' })
+    const connection = await connect(transactorUrl, workspaceId, undefined, {
+      mode: 'backup',
+      model: 'upgrade',
+      admin: 'true'
+    })
 
     // Create update indexes
     await createUpdateIndexes(connection, db, logger)

@@ -20,6 +20,7 @@ import core, {
   TxProcessor,
   cutObjectArray,
   escapeLikeForRegexp,
+  generateId,
   getTypeOf,
   isOperator,
   toFindResult,
@@ -70,7 +71,6 @@ import {
   type Sort,
   type UpdateFilter
 } from 'mongodb'
-import { createHash } from 'node:crypto'
 import { getMongoClient, getWorkspaceDB } from './utils'
 
 function translateDoc (doc: Doc): Document {
@@ -699,6 +699,8 @@ abstract class MongoAdapterBase implements DbAdapter {
     const coll = this.db.collection<Doc>(domain)
     const iterator = coll.find({}, {})
 
+    const hashID = generateId() // We just need a different value
+
     const bulkUpdate = new Map<Ref<Doc>, string>()
     const flush = async (flush = false): Promise<void> => {
       if (bulkUpdate.size > 1000 || flush) {
@@ -728,11 +730,8 @@ abstract class MongoAdapterBase implements DbAdapter {
         }
         const pos = (digest ?? '').indexOf('|')
         if (digest == null || digest === '' || pos === -1) {
-          const doc = JSON.stringify(d)
-          const hash = createHash('sha256')
-          hash.update(doc)
-          const size = doc.length
-          digest = hash.digest('base64')
+          const size = this.calcSize(d)
+          digest = hashID // we just need some random value
 
           bulkUpdate.set(d._id, `${digest}|${size.toString(16)}`)
 
@@ -757,6 +756,9 @@ abstract class MongoAdapterBase implements DbAdapter {
     }
   }
 
+  /**
+   * Return some estimation for object size
+   */
   calcSize (obj: any): number {
     if (typeof obj === 'undefined') {
       return 0
@@ -769,17 +771,41 @@ abstract class MongoAdapterBase implements DbAdapter {
       // include prototype properties
       const value = obj[key]
       const type = getTypeOf(value)
-      if (type === 'Array') {
-        result += this.calcSize(value)
-      } else if (type === 'Object') {
-        result += this.calcSize(value)
-      } else if (type === 'Date') {
-        result += new Date(value.getTime()).toString().length
-      }
-      if (type === 'string') {
-        result += (value as string).length
-      } else {
-        result += JSON.stringify(value).length
+      result += key.length
+
+      switch (type) {
+        case 'Array':
+          result += 4 + this.calcSize(value)
+          break
+        case 'Object':
+          result += this.calcSize(value)
+          break
+        case 'Date':
+          result += 24 // Some value
+          break
+        case 'string':
+          result += (value as string).length
+          break
+        case 'number':
+          result += 8
+          break
+        case 'boolean':
+          result += 1
+          break
+        case 'symbol':
+          result += (value as symbol).toString().length
+          break
+        case 'bigint':
+          result += (value as bigint).toString().length
+          break
+        case 'undefined':
+          result += 1
+          break
+        case 'null':
+          result += 1
+          break
+        default:
+          result += value.toString().length
       }
     }
     return result
@@ -802,13 +828,21 @@ abstract class MongoAdapterBase implements DbAdapter {
     while (ops.length > 0) {
       const part = ops.splice(0, 500)
       await coll.bulkWrite(
-        part.map((it) => ({
-          replaceOne: {
-            filter: { _id: it._id },
-            replacement: { ...it, '%hash%': null },
-            upsert: true
+        part.map((it) => {
+          const digest: string | null = (it as any)['%hash%']
+          if ('%hash%' in it) {
+            delete it['%hash%']
           }
-        }))
+          const size = this.calcSize(it)
+
+          return {
+            replaceOne: {
+              filter: { _id: it._id },
+              replacement: { ...it, '%hash%': digest == null ? null : `${digest}|${size.toString(16)}` },
+              upsert: true
+            }
+          }
+        })
       )
     }
   }

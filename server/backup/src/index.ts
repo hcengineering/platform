@@ -327,7 +327,8 @@ export async function backup (
   transactorUrl: string,
   workspaceId: WorkspaceId,
   storage: BackupStorage,
-  skipDomains: string[] = []
+  skipDomains: string[] = [],
+  force: boolean = false
 ): Promise<void> {
   const connection = (await connect(transactorUrl, workspaceId, undefined, {
     mode: 'backup'
@@ -368,7 +369,7 @@ export async function backup (
       { limit: 1, sort: { modifiedOn: SortingOrder.Descending } }
     )
     if (lastTx !== undefined) {
-      if (lastTx._id === backupInfo.lastTxId) {
+      if (lastTx._id === backupInfo.lastTxId && !force) {
         console.log('No transaction changes. Skipping backup.')
         return
       } else {
@@ -787,12 +788,14 @@ export async function restore (
                       const d = blobs.get(bname)
                       blobs.delete(bname)
                       ;(doc as BlobData).base64Data = d?.buffer?.toString('base64') ?? ''
+                      ;(doc as any)['%hash%'] = changeset.get(doc._id)
                       void sendChunk(doc, bf.length).finally(() => {
                         requiredDocs.delete(doc._id)
                         next()
                       })
                     }
                   } else {
+                    ;(doc as any)['%hash%'] = changeset.get(doc._id)
                     void sendChunk(doc, bf.length).finally(() => {
                       requiredDocs.delete(doc._id)
                       next()
