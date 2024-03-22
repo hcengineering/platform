@@ -14,11 +14,11 @@
 -->
 
 <script lang="ts">
-  import { IconAdd, IconDelete, Label } from '@hcengineering/ui'
+  import { Icon, IconAdd, IconDelete, Label } from '@hcengineering/ui'
   import { personAccountByIdStore, PersonAccountRefPresenter } from '@hcengineering/contact-resources'
   import { Person, PersonAccount } from '@hcengineering/contact'
   import { Ref } from '@hcengineering/core'
-  import { DocAttributeUpdates } from '@hcengineering/activity'
+  import activity, { DocAttributeUpdates } from '@hcengineering/activity'
   import notification from '@hcengineering/notification'
 
   export let value: DocAttributeUpdates
@@ -49,6 +49,7 @@
 </script>
 
 <div class="root">
+  <Icon icon={activity.icon.Activity} size="small" />
   <div class="label">
     {#if hasDifferentChanges}
       <Label label={notification.string.ChangedCollaborators} />:
@@ -65,7 +66,7 @@
         <IconAdd size={'x-small'} fill={'var(--theme-trans-color)'} />
       {/if}
       {#each added as add}
-        <PersonAccountRefPresenter inline value={add} />
+        <PersonAccountRefPresenter value={add} avatarSize="card" />
       {/each}
     </div>
   {/if}
@@ -76,7 +77,7 @@
         <IconDelete size={'x-small'} fill={'var(--theme-trans-color)'} />
       {/if}
       {#each removed as remove}
-        <PersonAccountRefPresenter inline value={remove} />
+        <PersonAccountRefPresenter value={remove} avatarSize="card" />
       {/each}
     </div>
   {/if}

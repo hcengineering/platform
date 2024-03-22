@@ -53,7 +53,7 @@
     {/if}
   </span>
 
-  <span class="overflow-label">
+  <span class="overflow-label values" class:preview>
     {#if hasDifferentActions}
       {@const removeMessages = valueMessages.filter(({ action }) => action === 'remove')}
       {@const createMessages = valueMessages.filter(({ action }) => action === 'create')}
@@ -93,6 +93,16 @@
   .content {
     display: flex;
     gap: 0.25rem;
+    align-items: center;
+    flex-wrap: wrap;
+
+    &.preview {
+      flex-wrap: nowrap;
+    }
+  }
+
+  .values {
+    display: flex;
     align-items: center;
     flex-wrap: wrap;
 
