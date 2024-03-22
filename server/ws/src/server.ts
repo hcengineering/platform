@@ -142,10 +142,24 @@ class TSessionManager implements SessionManager {
 
           s[1].session.current = { find: 0, tx: 0 }
         }
-        for (const r of s[1].session.requests.values()) {
-          const ed = Date.now()
+        const now = Date.now()
+        const diff = now - s[1].session.lastRequest
+        if (diff > 60000) {
+          console.log('session hang, closing...', h[0], s[1].session.getUser())
+          void this.close(s[1].socket, h[1].workspaceId, 1001, 'CLIENT_HANGOUT')
+          continue
+        }
+        if (diff > 20000 && this.ticks % 10 === 0) {
+          void s[1].socket.send(
+            h[1].context,
+            { result: 'ping' },
+            s[1].session.binaryResponseMode,
+            s[1].session.useCompression
+          )
+        }
 
-          if (ed - r.start > 30000) {
+        for (const r of s[1].session.requests.values()) {
+          if (now - r.start > 30000) {
             console.log(h[0], 'request hang found, 30sec', h[0], s[1].session.getUser(), r.params)
           }
         }
@@ -262,6 +276,7 @@ class TSessionManager implements SessionManager {
       }
 
       const session = this.createSession(token, pipeline)
+
       session.sessionId = sessionId !== undefined && (sessionId ?? '').trim().length > 0 ? sessionId : generateId()
       session.sessionInstanceId = generateId()
       this.sessions.set(ws.id, { session, socket: ws })
@@ -367,6 +382,7 @@ class TSessionManager implements SessionManager {
       ),
       sessions: new Map(),
       upgrade,
+      workspaceId: token.workspace,
       workspaceName
     }
     if (LOGGING_ENABLED) console.time(workspaceName)
