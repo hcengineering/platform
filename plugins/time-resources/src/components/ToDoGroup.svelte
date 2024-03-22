@@ -33,6 +33,7 @@
   export let todos: WithLookup<ToDo>[]
   export let showTitle: boolean
   export let showDuration: boolean
+  export let largeSize: boolean = false
   export let projects: IdMap<Project>
 
   function getAllWorkslots (todos: WithLookup<ToDo>[]): WorkSlot[] {
