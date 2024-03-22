@@ -44,9 +44,7 @@
 
   let projectId: string | false
 
-  $: id = project === undefined
-    ? groupName
-    : `group:${groupName}_project:${project === false ? 'none' : project?._id}`
+  $: id = project === undefined ? groupName : `group:${groupName}_project:${project === false ? 'none' : project?._id}`
   $: icon = project
     ? project.icon === view.ids.IconWithEmoji
       ? IconWithEmoji
