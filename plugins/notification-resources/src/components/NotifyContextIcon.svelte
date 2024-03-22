@@ -23,6 +23,7 @@
   import NotifyMarker from './NotifyMarker.svelte'
 
   export let value: DocNotifyContext
+  export let size: IconSize = 'medium'
   export let notifyCount: number = 0
 
   const client = getClient()
@@ -40,9 +41,9 @@
 
 <div class="container">
   {#if iconMixin && object}
-    <Component is={iconMixin.component} props={{ value: object, size: 'medium' }} />
-  {:else}
-    <Icon icon={classIcon(client, value.attachedToClass) ?? notification.icon.Notifications} size="medium" />
+    <Component is={iconMixin.component} props={{ value: object, size }} />
+  {:else if !iconMixin}
+    <Icon icon={classIcon(client, value.attachedToClass) ?? notification.icon.Notifications} {size} />
   {/if}
 
   <div class="notifyMarker">

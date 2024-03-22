@@ -16,10 +16,11 @@
   import { Doc, Ref } from '@hcengineering/core'
   import { DocNotifyContext } from '@hcengineering/notification'
   import { getClient } from '@hcengineering/presentation'
-  import ui, { Action, IconSize, ModernButton } from '@hcengineering/ui'
+  import ui, { Action, AnySvelteComponent, IconSize, ModernButton } from '@hcengineering/ui'
   import { getDocTitle } from '@hcengineering/view-resources'
   import contact from '@hcengineering/contact'
-  import { translate } from '@hcengineering/platform'
+  import { getResource, translate } from '@hcengineering/platform'
+  import view from '@hcengineering/view'
 
   import ChatNavItem from './ChatNavItem.svelte'
   import chunter from '../../../plugin'
@@ -58,7 +59,7 @@
 
     for (const object of objects) {
       const { _class } = object
-      const icon = getObjectIcon(_class)
+      const iconMixin = hierarchy.classHierarchyMixin(_class, view.mixin.ObjectIcon)
       const titleIntl = client.getHierarchy().getClass(_class).label
 
       const isPerson = hierarchy.isDerived(_class, contact.class.Person)
@@ -67,12 +68,18 @@
 
       const iconSize: IconSize = isDirect || isPerson ? 'x-small' : 'small'
 
+      let icon: AnySvelteComponent | undefined = undefined
+
+      if (iconMixin?.component) {
+        icon = await getResource(iconMixin.component)
+      }
+
       items.push({
         id: object._id,
         object,
         title: (await getChannelName(object._id, object._class, object)) ?? (await translate(titleIntl, {})),
         description: isDocChat && !isPerson ? await getDocTitle(client, object._id, object._class, object) : undefined,
-        icon,
+        icon: icon ?? getObjectIcon(_class),
         iconSize,
         withIconBackground: !isDirect && !isPerson,
         isSecondary: isDocChat && !isPerson

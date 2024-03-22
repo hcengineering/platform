@@ -610,7 +610,7 @@
 
 <style lang="scss">
   .msg {
-    margin: 0 1.5rem;
+    margin: 0;
     min-height: 4.375rem;
     height: auto;
     display: flex;

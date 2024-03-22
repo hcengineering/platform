@@ -706,4 +706,8 @@ export function createModel (builder: Builder): void {
     },
     tracker.descriptors.Issue
   )
+
+  builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ObjectIcon, {
+    component: tracker.component.IssueStatusPresenter
+  })
 }

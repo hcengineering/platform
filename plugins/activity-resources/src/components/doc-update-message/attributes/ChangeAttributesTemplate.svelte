@@ -19,8 +19,6 @@
   import { Doc } from '@hcengineering/core'
   import { AttributeModel } from '@hcengineering/view'
   import { DocAttributeUpdates, DocUpdateMessageViewlet } from '@hcengineering/activity'
-  import contact, { Person } from '@hcengineering/contact'
-  import { PersonIcon } from '@hcengineering/contact-resources'
 
   import { getAttributeValues } from '../../../activityMessagesUtils'
 
@@ -31,7 +29,6 @@
   export let preview = false
 
   const client = getClient()
-  const hierarchy = client.getHierarchy()
 
   let attributeValues: Values | Doc[] = []
 
@@ -42,18 +39,12 @@
   $: attrViewletConfig = viewlet?.config?.[attributeModel.key]
   $: attributeIcon = attrViewletConfig?.icon ?? attributeModel.icon ?? IconEdit
   $: space = typeof attributeValues[0] === 'object' ? attributeValues[0]?.space : undefined
-
-  function toPerson (value: any): Person {
-    return value as Person
-  }
 </script>
 
 <div class="content overflow-label" class:preview>
   <span class="mr-1">
     {#if attrViewletConfig?.iconPresenter}
       <Component is={attrViewletConfig?.iconPresenter} props={{ value: attributeValues[0], space, size: 'small' }} />
-    {:else if hierarchy.isDerived(attributeModel._class, contact.class.Person)}
-      <PersonIcon value={toPerson(attributeValues[0])} size="card" />
     {:else}
       <Icon icon={attributeIcon} size="small" />
     {/if}
