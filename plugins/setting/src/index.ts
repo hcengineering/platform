@@ -158,6 +158,7 @@ export default plugin(settingId, {
     Privacy: '' as AnyComponent,
     Terms: '' as AnyComponent,
     ClassSetting: '' as AnyComponent,
+    PermissionPresenter: '' as AnyComponent,
     SpaceTypeDescriptorPresenter: '' as AnyComponent,
     SpaceTypeGeneralSectionEditor: '' as AnyComponent,
     SpaceTypePropertiesSectionEditor: '' as AnyComponent,

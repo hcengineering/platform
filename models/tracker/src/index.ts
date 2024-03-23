@@ -687,6 +687,9 @@ export function createModel (builder: Builder): void {
       description: tracker.string.ManageWorkflowStatuses,
       icon: task.icon.Task,
       baseClass: tracker.class.Project,
+      availablePermissions: [
+        core.permission.DeleteObject
+      ],
       allowedClassic: true,
       allowedTaskTypeDescriptors: [tracker.descriptors.Issue]
     },

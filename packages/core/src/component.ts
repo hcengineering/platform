@@ -211,7 +211,8 @@ export default plugin(coreId, {
     Permission: '' as IntlString,
     CreateObject: '' as IntlString,
     UpdateObject: '' as IntlString,
-    DeleteObject: '' as IntlString
+    DeleteObject: '' as IntlString,
+    DeleteObjectDescription: '' as IntlString
   },
   permission: {
     CreateObject: '' as Ref<Permission>,

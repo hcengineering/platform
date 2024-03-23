@@ -73,6 +73,10 @@
   const typesQuery = createQuery()
   typesQuery.query(core.class.SpaceType, {}, (res) => {
     typesMap = toIdMap(res)
+  }, {
+    lookup: {
+      descriptor: core.class.SpaceTypeDescriptor
+    }
   })
 
   $: type = selectedTypeId !== undefined && typesMap !== undefined ? typesMap.get(selectedTypeId) : undefined
@@ -123,7 +127,7 @@
     visibleSecondNav = element.clientWidth > 720
   }}
 >
-  {#if type !== undefined}
+  {#if type !== undefined && descriptor !== undefined}
     <Header minimize={!visibleNav} on:resize={(event) => dispatch('change', event.detail)}>
       <ButtonIcon
         icon={IconCopy}
@@ -169,6 +173,7 @@
           bind:name={subItemName}
           bind:icon={subItemIcon}
           spaceType={type}
+          {descriptor}
           objectId={selectedSubObjectId}
         />
       {/if}

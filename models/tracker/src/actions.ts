@@ -182,6 +182,7 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
         mode: ['context', 'browser'],
         group: 'remove'
       },
+      visibilityTester: view.function.CanDeleteObject,
       override: [view.action.Delete]
     },
     tracker.action.DeleteIssue

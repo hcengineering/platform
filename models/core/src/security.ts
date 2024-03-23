@@ -87,6 +87,7 @@ export class TSpaceTypeDescriptor extends TDoc implements SpaceTypeDescriptor {
   description!: IntlString
   icon!: Asset
   baseClass!: Ref<Class<Space>>
+  availablePermissions!: Ref<Permission>[]
 }
 
 @Model(core.class.SpaceType, core.class.Doc, DOMAIN_MODEL)
@@ -121,13 +122,11 @@ export class TRole extends TDoc implements Role {
 }
 
 @Model(core.class.Permission, core.class.Doc, DOMAIN_MODEL)
-@UX(core.string.Permission, undefined, undefined, 'name')
+@UX(core.string.Permission)
 export class TPermission extends TDoc implements Permission {
   label!: IntlString
-
-  @Prop(TypeString(), core.string.Description)
-  @Index(IndexKind.FullText)
-    description?: string
+  description?: IntlString
+  icon?: Asset
 }
 
 @Model(core.class.Account, core.class.Doc, DOMAIN_MODEL)

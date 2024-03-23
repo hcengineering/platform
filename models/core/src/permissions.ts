@@ -16,6 +16,7 @@
 import { type Builder } from '@hcengineering/model'
 
 import core from './component'
+import { Asset } from '@hcengineering/platform'
 
 export function definePermissions (builder: Builder): void {
   builder.createDoc(
@@ -40,7 +41,8 @@ export function definePermissions (builder: Builder): void {
     core.class.Permission,
     core.space.Model,
     {
-      label: core.string.DeleteObject
+      label: core.string.DeleteObject,
+      description: core.string.DeleteObjectDescription
     },
     core.permission.DeleteObject
   )

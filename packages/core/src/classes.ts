@@ -382,6 +382,7 @@ export interface SpaceTypeDescriptor extends Doc {
   description: IntlString
   icon: Asset
   baseClass: Ref<Class<Space>> // Child class of Space for which the space type can be defined
+  availablePermissions: Ref<Permission>[]
 }
 
 /**
@@ -412,7 +413,8 @@ export interface Role extends Doc {
  */
 export interface Permission extends Doc {
   label: IntlString
-  description?: string
+  description?: IntlString
+  icon?: Asset
 }
 
 /**

@@ -52,6 +52,7 @@ import ClassAttributesList from './components/ClassAttributesList.svelte'
 import ManageSpaceTypes from './components/spaceTypes/ManageSpaceTypes.svelte'
 import ManageSpaceTypesTools from './components/spaceTypes/ManageSpaceTypesTools.svelte'
 import ManageSpaceTypeContent from './components/spaceTypes/ManageSpaceTypeContent.svelte'
+import PermissionPresenter from './components/presenters/PermissionPresenter.svelte'
 import SpaceTypeDescriptorPresenter from './components/presenters/SpaceTypeDescriptorPresenter.svelte'
 import SpaceTypeGeneralSectionEditor from './components/spaceTypes/editor/SpaceTypeGeneralSectionEditor.svelte'
 import SpaceTypePropertiesSectionEditor from './components/spaceTypes/editor/SpaceTypePropertiesSectionEditor.svelte'
@@ -118,6 +119,7 @@ export default async (): Promise<Resources> => ({
     ManageSpaceTypes,
     ManageSpaceTypesTools,
     ManageSpaceTypeContent,
+    PermissionPresenter,
     SpaceTypeDescriptorPresenter,
     SpaceTypeGeneralSectionEditor,
     SpaceTypePropertiesSectionEditor,

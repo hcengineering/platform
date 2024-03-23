@@ -505,6 +505,9 @@ export function createModel (builder: Builder): void {
       description: board.string.ManageBoardStatuses,
       icon: board.icon.Board,
       baseClass: board.class.Board,
+      availablePermissions: [
+        core.permission.DeleteObject
+      ],
       allowedTaskTypeDescriptors: [board.descriptors.Card]
     },
     board.descriptors.BoardType

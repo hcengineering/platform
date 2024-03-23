@@ -624,4 +624,8 @@ export function createModel (builder: Builder): void {
   builder.mixin(core.class.SpaceTypeDescriptor, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: setting.component.SpaceTypeDescriptorPresenter
   })
+
+  builder.mixin(core.class.Permission, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: setting.component.PermissionPresenter
+  })
 }

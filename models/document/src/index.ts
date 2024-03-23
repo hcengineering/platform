@@ -172,7 +172,10 @@ function defineTeamspace (builder: Builder): void {
       name: document.string.DocumentApplication,
       description: document.string.Description,
       icon: document.icon.Document,
-      baseClass: document.class.Teamspace
+      baseClass: document.class.Teamspace,
+      availablePermissions: [
+        core.permission.DeleteObject
+      ]
     },
     document.descriptor.TeamspaceType
   )

@@ -14,12 +14,15 @@
 -->
 <script lang="ts">
   import { AttributeEditor, createQuery, getClient } from '@hcengineering/presentation'
-  import core, { Ref, Role } from '@hcengineering/core'
-  import { ButtonIcon, IconSettings, IconAdd, Label, Scroller } from '@hcengineering/ui'
+  import core, { Permission, Ref, Role, SpaceTypeDescriptor, WithLookup } from '@hcengineering/core'
+  import { ButtonIcon, Component, Icon, IconEdit, IconSettings, Label, Scroller, showPopup } from '@hcengineering/ui'
+  import { ObjectBoxPopup } from '@hcengineering/view-resources'
 
+  import PersonIcon from '../icons/Person.svelte'
   import settingRes from '../../plugin'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
 
-  // export let spaceType: SpaceType
+  export let descriptor: SpaceTypeDescriptor
   export let objectId: Ref<Role>
   export let name: string | undefined
 
@@ -32,8 +35,38 @@
   })
   $: name = role?.name
 
-  function handleAddPermission (): void {
-    // TODO
+  let permissions: Permission[] = []
+  const permissionsQuery = createQuery()
+  $: if (role !== undefined) {
+    permissionsQuery.query(core.class.Permission, { _id: { $in: role.permissions } }, (res) => {
+      permissions = res
+    })
+  }
+
+  function handleEditPermissions (evt: Event): void {
+    if (role === undefined || descriptor === undefined) {
+      return
+    }
+
+    showPopup(
+      ObjectBoxPopup,
+      {
+        _class: core.class.Permission,
+        docQuery: { _id: { $in: descriptor.availablePermissions } },
+        multiSelect: true,
+        allowDeselect: true,
+        selectedObjects: role.permissions
+      },
+      evt.target as HTMLElement,
+      undefined,
+      async (result) => {
+        if (role === undefined) {
+          return
+        }
+
+        await client.update(role, { permissions: result })
+      }
+    )
   }
 </script>
 
@@ -44,6 +77,12 @@
         <div class="hulyComponent-content gap">
           <div class="hulyComponent-content__column-group mt-4">
             <div class="hulyComponent-content__header mb-6">
+              <ButtonIcon
+                  icon={PersonIcon}
+                  size="large"
+                  iconProps={{ size: 'small' }}
+                  kind="secondary"
+                />
               <AttributeEditor _class={core.class.Role} object={role} key="name" editKind="modern-ghost-large" />
             </div>
 
@@ -51,8 +90,32 @@
               <div class="hulyTableAttr-header font-medium-12">
                 <IconSettings size="small" />
                 <span><Label label={settingRes.string.Permissions} /></span>
-                <ButtonIcon kind="primary" icon={IconAdd} size="small" on:click={handleAddPermission} />
+                <ButtonIcon kind="primary" icon={IconEdit} size="small" on:click={handleEditPermissions} />
               </div>
+
+              {#if permissions.length > 0}
+                <div class="hulyTableAttr-content task">
+                  {#each permissions as permission}
+                    <div class="hulyTableAttr-content__row">
+                      {#if permission.icon !== undefined}
+                        <div class="hulyTableAttr-content__row-icon-wrapper">
+                          <Icon icon={permission.icon} size="small" />
+                        </div>
+                      {/if}
+
+                      <div class="hulyTableAttr-content__row-label font-medium-14">
+                        <Label label={permission.label} />
+                      </div>
+
+                      {#if permission.description !== undefined}
+                        <div class="hulyTableAttr-content__row-label grow dark font-regular-14">
+                          <Label label={permission.description} />
+                        </div>
+                      {/if}
+                    </div>
+                  {/each}
+                </div>
+              {/if}
             </div>
           </div>
         </div>

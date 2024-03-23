@@ -135,6 +135,7 @@ export { default as MarkupPreviewPopup } from './components/MarkupPreviewPopup.s
 export { default as ContextMenu } from './components/Menu.svelte'
 export { default as NavLink } from './components/navigator/NavLink.svelte'
 export { default as ObjectBox } from './components/ObjectBox.svelte'
+export { default as ObjectBoxPopup } from './components/ObjectBoxPopup.svelte'
 export { default as ObjectPresenter } from './components/ObjectPresenter.svelte'
 export { default as ObjectSearchBox } from './components/ObjectSearchBox.svelte'
 export { default as ParentsNavigator } from './components/ParentsNavigator.svelte'
