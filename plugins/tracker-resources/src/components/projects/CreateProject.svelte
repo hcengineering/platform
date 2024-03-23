@@ -20,6 +20,7 @@
     Account,
     Data,
     DocumentUpdate,
+    RolesAssignment,
     Ref,
     Role,
     SortingOrder,
@@ -71,8 +72,7 @@
   let projectsIdentifiers = new Set<string>()
   let isSaving = false
   let defaultStatus: Ref<IssueStatus> | undefined = project?.defaultIssueStatus
-  let rolesAssignment: Project['rolesAssignment'] =
-    project?.rolesAssignment !== undefined ? hierarchy.clone(project.rolesAssignment) : {}
+  let rolesAssignment: RolesAssignment | undefined
 
   let changeIdentityRef: HTMLElement
 
@@ -103,13 +103,26 @@
       icon,
       color,
       defaultIssueStatus: defaultStatus ?? ('' as Ref<IssueStatus>),
-      defaultTimeReportDay: project?.defaultTimeReportDay ?? TimeReportDayType.PreviousWorkDay,
-      rolesAssignment
+      defaultTimeReportDay: project?.defaultTimeReportDay ?? TimeReportDayType.PreviousWorkDay
     }
   }
 
+  function getRolesAssignment (): RolesAssignment {
+    if (project === undefined || typeType?.targetClass === undefined || typeType?.roles === undefined) {
+      return {}
+    }
+
+    const asMixin = hierarchy.as(project, typeType?.targetClass)
+
+    return typeType.roles.reduce<RolesAssignment>((prev, curr) => {
+      prev[curr] = (asMixin as any)[curr]
+
+      return prev
+    }, {})
+  }
+
   async function updateProject (): Promise<void> {
-    if (!project) {
+    if (!project || typeType?.targetClass === undefined) {
       return
     }
 
@@ -149,14 +162,21 @@
         }
       }
     }
-    if (!deepEqual(projectData.rolesAssignment, project?.rolesAssignment)) {
-      update.rolesAssignment = projectData.rolesAssignment
-    }
 
     if (Object.keys(update).length > 0) {
       isSaving = true
       await client.update(project, update)
       isSaving = false
+    }
+
+    if (rolesAssignment && !deepEqual(rolesAssignment, getRolesAssignment())) {
+      await client.updateMixin(
+        project._id,
+        tracker.class.Project,
+        core.space.Space,
+        typeType.targetClass,
+        rolesAssignment
+      )
     }
 
     close()
@@ -167,6 +187,10 @@
 
   $: if (defaultStatus === undefined && typeType !== undefined) {
     defaultStatus = typeType.statuses[0]?._id
+  }
+
+  $: if (rolesAssignment === undefined && typeType !== undefined) {
+    rolesAssignment = getRolesAssignment()
   }
 
   async function createProject (): Promise<void> {
@@ -182,8 +206,14 @@
       const succeeded = await ops.commit()
 
       if (succeeded) {
-        // Add vacancy mixin
-        await client.createMixin(projectId, tracker.class.Project, core.space.Space, typeType.targetClass, {})
+        // Add space type's mixin with roles assignments
+        await client.createMixin(
+          projectId,
+          tracker.class.Project,
+          core.space.Space,
+          typeType.targetClass,
+          rolesAssignment ?? {}
+        )
 
         close(projectId)
       } else {

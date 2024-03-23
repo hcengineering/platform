@@ -19,6 +19,7 @@
     Account,
     Data,
     DocumentUpdate,
+    RolesAssignment,
     Ref,
     Role,
     SortingOrder,
@@ -49,7 +50,6 @@
   import documentRes from '../../plugin'
 
   export let teamspace: Teamspace | undefined = undefined
-
   export let namePlaceholder: string = ''
   export let descriptionPlaceholder: string = ''
 
@@ -65,8 +65,7 @@
   let isColorSelected = false
   let members: Ref<Account>[] =
     teamspace?.members !== undefined ? hierarchy.clone(teamspace.members) : [getCurrentAccount()._id]
-  let rolesAssignment: Teamspace['rolesAssignment'] =
-    teamspace?.rolesAssignment !== undefined ? hierarchy.clone(teamspace.rolesAssignment) : {}
+  let rolesAssignment: RolesAssignment = {}
 
   $: isNew = teamspace === undefined
 
@@ -76,6 +75,26 @@
   $: void loadSpaceType(typeId)
   async function loadSpaceType (id: typeof typeId): Promise<void> {
     spaceType = id !== undefined ? await client.getModel().findOne(core.class.SpaceType, { _id: id }) : undefined
+
+    if (teamspace === undefined || spaceType?.targetClass === undefined || spaceType?.roles === undefined) {
+      return
+    }
+
+    rolesAssignment = getRolesAssignment()
+  }
+
+  function getRolesAssignment (): RolesAssignment {
+    if (teamspace === undefined || spaceType?.targetClass === undefined || spaceType?.roles === undefined) {
+      return {}
+    }
+
+    const asMixin = hierarchy.as(teamspace, spaceType?.targetClass)
+
+    return spaceType.roles.reduce<RolesAssignment>((prev, curr) => {
+      prev[curr] = (asMixin as any)[curr]
+
+      return prev
+    }, {})
   }
 
   async function handleSave (): Promise<void> {
@@ -94,13 +113,12 @@
       members,
       archived: false,
       icon,
-      color,
-      rolesAssignment
+      color
     }
   }
 
   async function updateTeamspace (): Promise<void> {
-    if (teamspace === undefined) {
+    if (teamspace === undefined || spaceType?.targetClass === undefined) {
       return
     }
 
@@ -131,19 +149,26 @@
         }
       }
     }
-    if (!deepEqual(teamspaceData.rolesAssignment, teamspace?.rolesAssignment)) {
-      update.rolesAssignment = teamspaceData.rolesAssignment
-    }
 
     if (Object.keys(update).length > 0) {
       await client.update(teamspace, update)
+    }
+
+    if (!deepEqual(rolesAssignment, getRolesAssignment())) {
+      await client.updateMixin(
+        teamspace._id,
+        document.class.Teamspace,
+        core.space.Space,
+        spaceType.targetClass,
+        rolesAssignment
+      )
     }
 
     close()
   }
 
   async function createTeamspace (): Promise<void> {
-    if (typeId === undefined) {
+    if (typeId === undefined || spaceType?.targetClass === undefined) {
       return
     }
 
@@ -151,6 +176,15 @@
     const teamspaceData = getTeamspaceData()
 
     await client.createDoc(document.class.Teamspace, core.space.Space, { ...teamspaceData, type: typeId }, teamspaceId)
+
+    // Create space type's mixin with roles assignments
+    await client.createMixin(
+      teamspaceId,
+      document.class.Teamspace,
+      core.space.Space,
+      spaceType.targetClass,
+      rolesAssignment
+    )
 
     close(teamspaceId)
   }

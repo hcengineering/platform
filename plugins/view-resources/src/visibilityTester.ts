@@ -34,8 +34,8 @@ export async function canDeleteObject (doc?: Doc | Doc[]): Promise<boolean> {
 
   return (
     await Promise.all(
-      Array.from(new Set(targetSpaces.map((t) => t._id))).map(async (s) =>
-        await checkPermission(client, core.permission.DeleteObject, s)
+      Array.from(new Set(targetSpaces.map((t) => t._id))).map(
+        async (s) => await checkPermission(client, core.permission.DeleteObject, s)
       )
     )
   ).every((r) => r)

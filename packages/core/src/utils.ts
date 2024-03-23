@@ -25,7 +25,6 @@ import {
   Obj,
   Permission,
   Ref,
-  Role,
   Space,
   TypedSpace
 } from './classes'
@@ -563,18 +562,16 @@ export async function checkPermission (
   _id: Ref<Permission>,
   _space: Ref<TypedSpace>
 ): Promise<boolean> {
-  const space = await client.findOne(core.class.TypedSpace, { _id: _space })
-
-  if (space?.rolesAssignment === undefined) {
+  const space = await client.findOne(core.class.TypedSpace, { _id: _space }, { lookup: { type: core.class.SpaceType } })
+  const type = space?.$lookup?.type
+  const mixin = type?.targetClass
+  if (space === undefined || type === undefined || mixin === undefined) {
     return false
   }
 
   const me = getCurrentAccount()
-  const myRolesIds = Object.entries(space.rolesAssignment)
-    .filter(([, accs]) => accs.includes(me._id))
-    .map(([roleId]) => {
-      return roleId as Ref<Role>
-    })
+  const asMixin = client.getHierarchy().as(space, mixin)
+  const myRolesIds = type.roles.filter((roleId) => (asMixin as any)[roleId]?.includes(me._id))
   const myRoles = client.getModel().findAllSync(core.class.Role, { _id: { $in: myRolesIds } })
   const myPermissions = new Set(myRoles.flatMap((role) => role.permissions))
 

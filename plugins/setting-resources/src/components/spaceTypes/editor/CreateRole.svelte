@@ -14,8 +14,11 @@
 -->
 <script lang="ts">
   import presentation, { getClient } from '@hcengineering/presentation'
+  import setting from '@hcengineering/setting'
   import { Modal, ModernEditbox } from '@hcengineering/ui'
-  import core, { Data, Role, SpaceType } from '@hcengineering/core'
+  import core, { Attribute, Data, PropertyType, Ref, Role, SpaceType } from '@hcengineering/core'
+  import { ArrOf, TypeRef } from '@hcengineering/model'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
 
   import settingRes from '../../../plugin'
   import { clearSettingsStore } from '../../../store'
@@ -36,6 +39,20 @@
 
     const roleId = await client.createDoc(core.class.Role, core.space.Model, roleData)
     await client.update(type, { $push: { roles: roleId } })
+
+    // Create role as an attribute of space type's mixin
+    await client.createDoc(
+      core.class.Attribute,
+      core.space.Model,
+      {
+        name: roleId,
+        attributeOf: type.targetClass,
+        type: ArrOf(TypeRef(core.class.Account)),
+        label: getEmbeddedLabel(`Role: ${name}`),
+        editor: setting.component.RoleAssignmentEditor
+      },
+      `role-${roleId}` as Ref<Attribute<PropertyType>>
+    )
   }
 
   $: canSave = roleData.name.trim() !== ''

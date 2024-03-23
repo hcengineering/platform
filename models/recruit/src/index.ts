@@ -1709,9 +1709,7 @@ export function createModel (builder: Builder): void {
       icon: recruit.icon.RecruitApplication,
       editor: recruit.component.VacancyTemplateEditor,
       baseClass: recruit.class.Vacancy,
-      availablePermissions: [
-        core.permission.DeleteObject
-      ],
+      availablePermissions: [core.permission.DeleteObject],
       allowedTaskTypeDescriptors: [recruit.descriptors.Application]
     },
     recruit.descriptors.VacancyType

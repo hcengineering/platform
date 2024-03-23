@@ -672,9 +672,7 @@ export function createModel (builder: Builder): void {
       description: lead.string.ManageFunnelStatuses,
       icon: lead.icon.LeadApplication,
       baseClass: lead.class.Funnel,
-      availablePermissions: [
-        core.permission.DeleteObject
-      ],
+      availablePermissions: [core.permission.DeleteObject],
       allowedTaskTypeDescriptors: [lead.descriptors.Lead]
     },
     lead.descriptors.FunnelType

@@ -15,12 +15,11 @@
 <script lang="ts">
   import { AttributeEditor, createQuery, getClient } from '@hcengineering/presentation'
   import core, { Permission, Ref, Role, SpaceTypeDescriptor, WithLookup } from '@hcengineering/core'
-  import { ButtonIcon, Component, Icon, IconEdit, IconSettings, Label, Scroller, showPopup } from '@hcengineering/ui'
+  import { ButtonIcon, Icon, IconEdit, IconSettings, Label, Scroller, showPopup } from '@hcengineering/ui'
   import { ObjectBoxPopup } from '@hcengineering/view-resources'
 
   import PersonIcon from '../icons/Person.svelte'
   import settingRes from '../../plugin'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
 
   export let descriptor: SpaceTypeDescriptor
   export let objectId: Ref<Role>
@@ -77,12 +76,7 @@
         <div class="hulyComponent-content gap">
           <div class="hulyComponent-content__column-group mt-4">
             <div class="hulyComponent-content__header mb-6">
-              <ButtonIcon
-                  icon={PersonIcon}
-                  size="large"
-                  iconProps={{ size: 'small' }}
-                  kind="secondary"
-                />
+              <ButtonIcon icon={PersonIcon} size="large" iconProps={{ size: 'small' }} kind="secondary" />
               <AttributeEditor _class={core.class.Role} object={role} key="name" editKind="modern-ghost-large" />
             </div>
 

@@ -58,6 +58,7 @@ import SpaceTypeGeneralSectionEditor from './components/spaceTypes/editor/SpaceT
 import SpaceTypePropertiesSectionEditor from './components/spaceTypes/editor/SpaceTypePropertiesSectionEditor.svelte'
 import SpaceTypeRolesSectionEditor from './components/spaceTypes/editor/SpaceTypeRolesSectionEditor.svelte'
 import RoleEditor from './components/spaceTypes/RoleEditor.svelte'
+import RoleAssignmentEditor from './components/typeEditors/RoleAssignmentEditor.svelte'
 
 export { ClassSetting, filterDescendants, ClassAttributes, ClassAttributesList, SpaceTypeGeneralSectionEditor }
 export * from './store'
@@ -124,7 +125,8 @@ export default async (): Promise<Resources> => ({
     SpaceTypeGeneralSectionEditor,
     SpaceTypePropertiesSectionEditor,
     SpaceTypeRolesSectionEditor,
-    RoleEditor
+    RoleEditor,
+    RoleAssignmentEditor
   },
   actionImpl: {
     DeleteMixin

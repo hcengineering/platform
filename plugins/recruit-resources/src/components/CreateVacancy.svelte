@@ -15,8 +15,19 @@
 <script lang="ts">
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import contact, { Organization } from '@hcengineering/contact'
-  import { UserBox } from '@hcengineering/contact-resources'
-  import core, { Data, fillDefaults, FindResult, generateId, Ref, SortingOrder } from '@hcengineering/core'
+  import { AccountArrayEditor, UserBox } from '@hcengineering/contact-resources'
+  import core, {
+    Account,
+    Class,
+    Data,
+    fillDefaults,
+    FindResult,
+    generateId,
+    Ref,
+    Role,
+    RolesAssignment,
+    SortingOrder
+  } from '@hcengineering/core'
   import { Card, createQuery, getClient, InlineAttributeBar, MessageBox } from '@hcengineering/presentation'
   import { Vacancy as VacancyClass } from '@hcengineering/recruit'
   import tags from '@hcengineering/tags'
@@ -36,6 +47,7 @@
   import Company from './icons/Company.svelte'
   import Vacancy from './icons/Vacancy.svelte'
   import { selectedTypeStore, typeStore } from '@hcengineering/task-resources'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
 
   const dispatch = createEventDispatcher()
 
@@ -48,7 +60,6 @@
   let appliedTemplateId: Ref<ProjectType> | undefined
   let objectId: Ref<VacancyClass> = generateId()
   let issueTemplates: FindResult<IssueTemplate> = []
-
   let fullDescription: string = ''
 
   export let company: Ref<Organization> | undefined
@@ -78,7 +89,7 @@
   fillDefaults(hierarchy, vacancyData, recruit.class.Vacancy)
   $: typeId &&
     templateQ.query(task.class.ProjectType, { _id: typeId }, (result) => {
-      const { _class, _id, description, ...templateData } = result[0]
+      const { _class, _id, description, targetClass, ...templateData } = result[0]
       vacancyData = { ...(templateData as unknown as Data<VacancyClass>), fullDescription: description }
       if (appliedTemplateId !== typeId) {
         fullDescription = description ?? ''
@@ -91,6 +102,34 @@
   $: issueTemplatesQ.query(tracker.class.IssueTemplate, { 'relations._id': typeId }, async (result) => {
     issueTemplates = result
   })
+
+  let roles: Role[] = []
+  const rolesQuery = createQuery()
+  $: if (typeType !== undefined) {
+    rolesQuery.query(
+      core.class.Role,
+      { _id: { $in: typeType.roles } },
+      (res) => {
+        roles = res
+      },
+      {
+        sort: {
+          name: SortingOrder.Ascending
+        }
+      }
+    )
+  } else {
+    rolesQuery.unsubscribe()
+  }
+
+  let rolesAssignment: RolesAssignment | undefined
+  $: if (rolesAssignment === undefined && typeType !== undefined) {
+    rolesAssignment = typeType.roles.reduce<RolesAssignment>((prev, curr) => {
+      prev[curr] = []
+
+      return prev
+    }, {})
+  }
 
   async function saveIssue (
     id: Ref<VacancyClass>,
@@ -196,8 +235,14 @@
 
     await descriptionBox.createAttachments()
 
-    // Add vacancy mixin
-    await client.createMixin(objectId, recruit.class.Vacancy, core.space.Space, typeType.targetClass, {})
+    // Add vacancy mixin with roles assignment
+    await client.createMixin(
+      objectId,
+      recruit.class.Vacancy,
+      core.space.Space,
+      typeType.targetClass,
+      rolesAssignment ?? {}
+    )
 
     objectId = generateId()
 
@@ -227,6 +272,14 @@
         }
       }
     )
+  }
+
+  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: Ref<Account>[]): void {
+    if (rolesAssignment === undefined) {
+      rolesAssignment = {}
+    }
+
+    rolesAssignment[roleId] = newMembers
   }
 </script>
 
@@ -304,9 +357,22 @@
       _class={recruit.class.Vacancy}
       object={vacancyData}
       toClass={core.class.Space}
-      ignoreKeys={['fullDescription', 'company']}
+      ignoreKeys={['fullDescription', 'company', 'type']}
       extraProps={{ showNavigate: false }}
     />
+
+    {#each roles as role}
+      <AccountArrayEditor
+        value={rolesAssignment?.[role._id] ?? []}
+        label={getEmbeddedLabel(role.name)}
+        emptyLabel={getEmbeddedLabel(role.name)}
+        onChange={(refs) => {
+          handleRoleAssignmentChanged(role._id, refs)
+        }}
+        kind={'regular'}
+        size={'large'}
+      />
+    {/each}
   </svelte:fragment>
   <svelte:fragment slot="footer">
     <Button

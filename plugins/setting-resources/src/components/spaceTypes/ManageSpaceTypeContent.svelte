@@ -71,13 +71,18 @@
   }
 
   const typesQuery = createQuery()
-  typesQuery.query(core.class.SpaceType, {}, (res) => {
-    typesMap = toIdMap(res)
-  }, {
-    lookup: {
-      descriptor: core.class.SpaceTypeDescriptor
+  typesQuery.query(
+    core.class.SpaceType,
+    {},
+    (res) => {
+      typesMap = toIdMap(res)
+    },
+    {
+      lookup: {
+        descriptor: core.class.SpaceTypeDescriptor
+      }
     }
-  })
+  )
 
   $: type = selectedTypeId !== undefined && typesMap !== undefined ? typesMap.get(selectedTypeId) : undefined
   $: descriptor = type?.$lookup?.descriptor

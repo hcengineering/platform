@@ -163,7 +163,8 @@ export default plugin(settingId, {
     SpaceTypeGeneralSectionEditor: '' as AnyComponent,
     SpaceTypePropertiesSectionEditor: '' as AnyComponent,
     SpaceTypeRolesSectionEditor: '' as AnyComponent,
-    RoleEditor: '' as AnyComponent
+    RoleEditor: '' as AnyComponent,
+    RoleAssignmentEditor: '' as AnyComponent
   },
   string: {
     Settings: '' as IntlString,

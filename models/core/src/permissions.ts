@@ -16,7 +16,6 @@
 import { type Builder } from '@hcengineering/model'
 
 import core from './component'
-import { Asset } from '@hcengineering/platform'
 
 export function definePermissions (builder: Builder): void {
   builder.createDoc(

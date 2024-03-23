@@ -31,6 +31,7 @@
   export let width: string | undefined = undefined
   export let includeItems: Ref<Account>[] | undefined = undefined
   export let excludeItems: Ref<Account>[] | undefined = undefined
+  export let emptyLabel: IntlString | undefined = undefined
 
   let timer: any = null
   const client = getClient()
@@ -104,6 +105,7 @@
 <UserBoxList
   items={employees}
   {label}
+  {emptyLabel}
   {readonly}
   {docQuery}
   on:update={onUpdate}

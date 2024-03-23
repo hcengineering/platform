@@ -29,18 +29,7 @@ import {
   type Class,
   type Permission
 } from '@hcengineering/core'
-import {
-  ArrOf,
-  Hidden,
-  Index,
-  Model,
-  Prop,
-  TypeBoolean,
-  TypeRecord,
-  TypeRef,
-  TypeString,
-  UX
-} from '@hcengineering/model'
+import { ArrOf, Hidden, Index, Model, Prop, TypeBoolean, TypeRef, TypeString, UX } from '@hcengineering/model'
 import type { Asset, IntlString } from '@hcengineering/platform'
 import core from './component'
 import { TDoc } from './core'
@@ -76,9 +65,6 @@ export class TSpace extends TDoc implements Space {
 export class TTypedSpace extends TSpace implements TypedSpace {
   @Prop(TypeRef(core.class.SpaceType), core.string.SpaceType)
     type!: Ref<SpaceType>
-
-  @Prop(TypeRecord(), core.string.RolesAssignment)
-    rolesAssignment?: Record<Ref<Role>, Arr<Ref<Account>>>
 }
 
 @Model(core.class.SpaceTypeDescriptor, core.class.Doc, DOMAIN_MODEL)
