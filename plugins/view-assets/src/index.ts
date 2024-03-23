@@ -41,5 +41,6 @@ loadMetadata(view.icon, {
   Filter: `${icons}#filter`,
   Configure: `${icons}#configure`,
   Database: `${icons}#database`,
-  Star: `${icons}#star`
+  Star: `${icons}#star`,
+  ExportToPdf: `${icons}#delete`
 })
