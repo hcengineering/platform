@@ -95,6 +95,7 @@
     gap: 0.25rem;
     align-items: center;
     flex-wrap: wrap;
+    color: var(--global-primary-TextColor);
 
     &.preview {
       flex-wrap: nowrap;

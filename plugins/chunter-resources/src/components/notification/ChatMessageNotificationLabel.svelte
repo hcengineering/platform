@@ -70,42 +70,29 @@
 </script>
 
 {#if parentMessage}
-  <div class="labels font-medium-14 font-normal">
-    <span class="flex-presenter flex-gap-1 font-semi-bold">
-      {#if isThread || (parentMessage.replies ?? 0) > 0}
-        <Label label={chunter.string.Thread} />
-      {:else}
-        <Label label={chunter.string.Message} />
-      {/if}
-      {#if title}
-        <span class="lower">
-          <Label label={chunter.string.In} />
-        </span>
-        <span class="flex-presenter flex-gap-0-5">
-          {#if icon}
-            <Icon {icon} size="x-small" iconProps={{ value: object }} />
-          {/if}
-          {title}
-        </span>
-      {/if}
-    </span>
-
+  <span class="flex-presenter flex-gap-1 font-semi-bold">
+    {#if isThread || (parentMessage.replies ?? 0) > 0}
+      <Label label={chunter.string.Thread} />
+    {:else}
+      <Label label={chunter.string.Message} />
+    {/if}
+    {#if title}
+      <span class="lower">
+        <Label label={chunter.string.In} />
+      </span>
+      <span class="flex-presenter flex-gap-0-5">
+        {#if icon}
+          <Icon {icon} size="x-small" iconProps={{ value: object }} />
+        {/if}
+        {title}
+      </span>
+    {/if}
+  </span>
+  <span class="font-normal">
     {#if isThread}
       <ThreadMessagePreview value={toThread(parentMessage)} readonly type="content-only" />
     {:else}
       <ChatMessagePreview value={parentMessage} readonly type="content-only" />
     {/if}
-  </div>
+  </span>
 {/if}
-
-<style lang="scss">
-  .labels {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    justify-content: space-between;
-    min-width: 0;
-    margin-right: 1rem;
-    color: var(--global-primary-TextColor);
-  }
-</style>

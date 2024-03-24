@@ -104,10 +104,10 @@
   <div class="header">
     <NotifyContextIcon {value} notifyCount={unreadCount} />
 
-    {#if presenterMixin?.labelPresenter}
-      <Component is={presenterMixin.labelPresenter} props={{ context: value }} />
-    {:else}
-      <div class="labels">
+    <div class="labels">
+      {#if presenterMixin?.labelPresenter}
+        <Component is={presenterMixin.labelPresenter} props={{ context: value }} />
+      {:else}
         {#if idTitle}
           {idTitle}
         {:else}
@@ -116,8 +116,8 @@
         <span class="title overflow-label clear-mins" {title}>
           {title ?? hierarchy.getClass(value.attachedToClass).label}
         </span>
-      </div>
-    {/if}
+      {/if}
+    </div>
 
     <div class="actions clear-mins">
       <div class="flex-center">
@@ -239,12 +239,14 @@
   .labels {
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
     color: var(--global-primary-TextColor);
     font-weight: 600;
     font-size: 0.875rem;
     gap: 0.25rem;
     min-width: 0;
     overflow: hidden;
+    margin-right: 4rem;
   }
 
   .content {

@@ -47,35 +47,24 @@
 </script>
 
 {#if parentMessage}
-  <div class="labels">
-    <span class="flex-presenter flex-gap-1 font-semi-bold">
-      <Label label={(parentMessage?.replies ?? 0) > 0 ? activity.string.Thread : activity.string.Message} />
-      {#if title}
-        <span class="lower">
-          <Label label={activity.string.In} />
+  <span class="flex-presenter flex-gap-1 font-semi-bold">
+    <Label label={(parentMessage?.replies ?? 0) > 0 ? activity.string.Thread : activity.string.Message} />
+    {#if title}
+      <span class="lower">
+        <Label label={activity.string.In} />
+      </span>
+      {#if object}
+        {@const icon = classIcon(client, object._class)}
+        <span class="flex-presenter flex-gap-0-5">
+          {#if icon}
+            <Icon {icon} size="x-small" iconProps={{ value: object }} />
+          {/if}
+          {title}
         </span>
-        {#if object}
-          {@const icon = classIcon(client, object._class)}
-          <span class="flex-presenter flex-gap-0-5">
-            {#if icon}
-              <Icon {icon} size="x-small" iconProps={{ value: object }} />
-            {/if}
-            {title}
-          </span>
-        {/if}
       {/if}
-    </span>
+    {/if}
+  </span>
+  <span class="font-normal">
     <ActivityMessagePreview value={parentMessage} readonly type="content-only" />
-  </div>
+  </span>
 {/if}
-
-<style lang="scss">
-  .labels {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    justify-content: space-between;
-    margin-right: 1rem;
-    min-width: 0;
-  }
-</style>

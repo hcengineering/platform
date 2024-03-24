@@ -19,7 +19,6 @@
   import { getEmbeddedLabel } from '@hcengineering/platform'
 
   export let date: Timestamp
-  export let type: 'primary' | 'secondary' | 'time' = 'primary'
 
   $: fullDate = new Date(date).toLocaleString('default', {
     minute: '2-digit',
@@ -31,5 +30,5 @@
 </script>
 
 <span class="text-sm" use:tooltip={{ label: getEmbeddedLabel(fullDate) }}>
-  {getDisplayTime(date, type)}
+  {getDisplayTime(date)}
 </span>
