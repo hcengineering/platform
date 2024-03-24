@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import notification, { DocNotifyContext } from '@hcengineering/notification'
+  import notification, { DocNotifyContext, InboxNotification } from '@hcengineering/notification'
   import { ActionContext, getClient } from '@hcengineering/presentation'
   import view from '@hcengineering/view'
   import {
@@ -31,10 +31,11 @@
     TabList
   } from '@hcengineering/ui'
   import chunter, { ThreadMessage } from '@hcengineering/chunter'
-  import { IdMap, Ref } from '@hcengineering/core'
+  import { Account, getCurrentAccount, IdMap, Ref } from '@hcengineering/core'
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import { isReactionMessage } from '@hcengineering/activity-resources'
   import { get } from 'svelte/store'
+  import { translate } from '@hcengineering/platform'
 
   import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
   import Filter from '../Filter.svelte'
@@ -58,14 +59,6 @@
     id: 'all',
     labelIntl: notification.string.All
   }
-  const channelTab: TabItem = {
-    id: chunter.class.Channel,
-    labelIntl: chunter.string.Channels
-  }
-  const directTab: TabItem = {
-    id: chunter.class.DirectMessage,
-    labelIntl: chunter.string.Direct
-  }
 
   let inboxData: InboxData = new Map()
 
@@ -81,11 +74,11 @@
 
   let selectedMessage: ActivityMessage | undefined = undefined
 
-  $: void getDisplayInboxData($notificationsByContextStore, filter).then((res) => {
+  $: void getDisplayInboxData($notificationsByContextStore).then((res) => {
     inboxData = res
   })
 
-  $: filteredData = filterDataByTab(selectedTabId, inboxData, $contextByIdStore)
+  $: filteredData = filterData(filter, selectedTabId, inboxData, $contextByIdStore)
 
   locationStore.subscribe((newLocation) => {
     void syncLocation(newLocation)
@@ -114,48 +107,43 @@
 
   $: selectedContext = selectedContextId ? selectedContext ?? $contextByIdStore.get(selectedContextId) : undefined
 
-  $: updateSelectedPanel(selectedContext)
-  $: updateTabItems(inboxData, $contextsStore)
+  $: void updateSelectedPanel(selectedContext)
+  $: void updateTabItems(inboxData, $contextsStore)
 
-  function updateTabItems (inboxData: InboxData, notifyContexts: DocNotifyContext[]): void {
+  async function updateTabItems (inboxData: InboxData, notifyContexts: DocNotifyContext[]): Promise<void> {
     const displayClasses = new Set(
       notifyContexts.filter(({ _id }) => inboxData.has(_id)).map(({ attachedToClass }) => attachedToClass)
     )
 
     const classes = Array.from(displayClasses)
-    const startTabs = [
-      allTab,
-      displayClasses.has(chunter.class.Channel) ? channelTab : undefined,
-      displayClasses.has(chunter.class.DirectMessage) ? directTab : undefined
-    ].filter((tab): tab is TabItem => tab !== undefined)
+    const tabs: TabItem[] = []
 
-    const endTabs = [
-      classes.some((clazz) => hierarchy.isDerived(clazz, activity.class.ActivityMessage))
-        ? {
+    let messagesTab: TabItem | undefined = undefined
+
+    for (const _class of classes) {
+      if (hierarchy.isDerived(_class, activity.class.ActivityMessage)) {
+        if (messagesTab === undefined) {
+          messagesTab = {
             id: activity.class.ActivityMessage as string,
-            labelIntl: activity.string.Messages
+            label: await translate(activity.string.Messages, {})
           }
-        : undefined
-    ].filter((tab): tab is any => tab !== undefined)
+        }
+        continue
+      }
 
-    tabItems = startTabs
-      .concat(
-        classes
-          .filter(
-            (_class) =>
-              !hierarchy.isDerived(_class, chunter.class.ChunterSpace) &&
-              !hierarchy.isDerived(_class, activity.class.ActivityMessage)
-          )
-          .map((_class) => {
-            const clazz = hierarchy.getClass(_class)
+      const clazz = hierarchy.getClass(_class)
+      const intlLabel = clazz.pluralLabel ?? clazz.label ?? _class
+      tabs.push({
+        id: _class,
+        label: await translate(intlLabel, {})
+      })
+    }
 
-            return {
-              id: _class,
-              labelIntl: clazz.pluralLabel ?? clazz.label ?? _class
-            }
-          })
-      )
-      .concat(endTabs)
+    if (messagesTab !== undefined) {
+      tabs.push(messagesTab)
+    }
+
+    tabItems = [allTab].concat(tabs.sort((a, b) => (a.label ?? '').localeCompare(b.label ?? '')))
   }
 
   function selectTab (event: CustomEvent): void {
@@ -184,10 +172,12 @@
       } else if (isReactionMessage(message)) {
         openInboxDoc(selectedContext._id, undefined, selectedContext.attachedTo as Ref<ActivityMessage>)
       } else {
+        const selectedMsg = event?.detail?.notification?.attachedTo
+
         openInboxDoc(
           selectedContext._id,
-          selectedContext.attachedTo as Ref<ActivityMessage>,
-          event?.detail?.notification?.attachedTo
+          selectedMsg ? (selectedContext.attachedTo as Ref<ActivityMessage>) : undefined,
+          selectedMsg ?? (selectedContext.attachedTo as Ref<ActivityMessage>)
         )
       }
     } else {
@@ -225,18 +215,44 @@
     }
   }
 
-  function filterDataByTab (
+  function filterNotifications (
+    filter: InboxNotificationsFilter,
+    notifications: InboxNotification[]
+  ): InboxNotification[] {
+    switch (filter) {
+      case 'unread':
+        return notifications.filter(({ isViewed }) => !isViewed)
+      case 'read':
+        return notifications.filter(({ isViewed }) => isViewed)
+      case 'all':
+        return notifications
+    }
+  }
+
+  function filterData (
+    filter: InboxNotificationsFilter,
     selectedTabId: string,
     inboxData: InboxData,
     contextById: IdMap<DocNotifyContext>
   ): InboxData {
-    if (selectedTabId === allTab.id) {
+    if (selectedTabId === allTab.id && filter === 'all') {
       return inboxData
     }
 
     const result = new Map()
 
-    for (const [key] of inboxData) {
+    for (const [key, notifications] of inboxData) {
+      const resNotifications = filterNotifications(filter, notifications)
+
+      if (resNotifications.length === 0) {
+        continue
+      }
+
+      if (selectedTabId === allTab.id) {
+        result.set(key, resNotifications)
+        continue
+      }
+
       const context = contextById.get(key)
 
       if (context === undefined) {
@@ -247,9 +263,9 @@
         selectedTabId === activity.class.ActivityMessage &&
         hierarchy.isDerived(context.attachedToClass, activity.class.ActivityMessage)
       ) {
-        result.set(key, inboxData.get(key))
+        result.set(key, resNotifications)
       } else if (context.attachedToClass === selectedTabId) {
-        result.set(key, inboxData.get(key))
+        result.set(key, resNotifications)
       }
     }
 

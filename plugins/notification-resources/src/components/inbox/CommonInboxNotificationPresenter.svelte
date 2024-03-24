@@ -16,16 +16,13 @@
   import { Doc } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import notification, { CommonInboxNotification } from '@hcengineering/notification'
-  import { IconMoreV, showPopup } from '@hcengineering/ui'
-  import { Menu } from '@hcengineering/view-resources'
-  import { ActivityMessageAction, BasePreview } from '@hcengineering/activity-resources'
+  import { CommonInboxNotification } from '@hcengineering/notification'
+  import { BasePreview } from '@hcengineering/activity-resources'
 
   export let value: CommonInboxNotification
 
   const client = getClient()
 
-  let previewElement: BasePreview
   let content = ''
 
   $: void updateContent(value.message, value.messageHtml)
@@ -38,22 +35,6 @@
     }
   }
 
-  function showMenu (ev: MouseEvent): void {
-    ev.stopPropagation()
-    ev.preventDefault()
-
-    showPopup(
-      Menu,
-      {
-        object: value,
-        baseMenuClass: notification.class.InboxNotification
-      },
-      ev.target as HTMLElement,
-      previewElement.onActionsClosed
-    )
-    previewElement.onActionsOpened()
-  }
-
   let headerObject: Doc | undefined = undefined
 
   $: value.headerObjectId &&
@@ -64,7 +45,6 @@
 </script>
 
 <BasePreview
-  bind:this={previewElement}
   headerIcon={value.headerIcon}
   header={value.header}
   {headerObject}
@@ -72,23 +52,4 @@
   account={value.createdBy ?? value.modifiedBy}
   timestamp={value.createdOn ?? value.modifiedOn}
   on:click
->
-  <svelte:fragment slot="actions">
-    <div class="actionsContainer">
-      <ActivityMessageAction icon={IconMoreV} action={showMenu} />
-    </div>
-  </svelte:fragment>
-</BasePreview>
-
-<style lang="scss">
-  .actionsContainer {
-    display: flex;
-    align-items: center;
-    border-radius: 0.375rem;
-    border: 1px solid var(--global-subtle-ui-BorderColor);
-    padding: 0.125rem;
-    background: var(--global-surface-01-BackgroundColor);
-    box-shadow: 0.5rem 0.75rem 1rem 0.25rem var(--global-popover-ShadowColor);
-    height: fit-content;
-  }
-</style>
+/>

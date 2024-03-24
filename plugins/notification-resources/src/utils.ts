@@ -33,7 +33,6 @@ import notification, {
   notificationId,
   type ActivityInboxNotification,
   type Collaborators,
-  type DisplayActivityInboxNotification,
   type DisplayInboxNotification,
   type DocNotifyContext,
   type InboxNotification
@@ -44,156 +43,6 @@ import { get } from 'svelte/store'
 
 import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
 import { type InboxData, type InboxNotificationsFilter } from './types'
-
-/**
- * @public
- */
-export async function hasMarkAsReadAction (doc: DisplayInboxNotification): Promise<boolean> {
-  const inboxNotificationsClient = InboxNotificationsClientImpl.getClient()
-
-  const combinedIds =
-    doc._class === notification.class.ActivityInboxNotification
-      ? (doc as DisplayActivityInboxNotification).combinedIds
-      : [doc._id]
-
-  return get(inboxNotificationsClient.inboxNotifications).some(
-    ({ _id, isViewed }) => combinedIds.includes(_id) && !isViewed
-  )
-}
-
-/**
- * @public
- */
-export async function hasMarkAsUnreadAction (doc: DisplayInboxNotification): Promise<boolean> {
-  const canRead = await hasMarkAsReadAction(doc)
-
-  return !canRead
-}
-
-/**
- * @public
- */
-export async function markAsReadInboxNotification (doc: DisplayInboxNotification): Promise<void> {
-  const notificationsClient = InboxNotificationsClientImpl.getClient()
-  const isActivityNotification = doc._class === notification.class.ActivityInboxNotification
-
-  const ids = (isActivityNotification ? (doc as DisplayActivityInboxNotification).combinedIds : [doc._id]) ?? []
-
-  if (isActivityNotification) {
-    await updateLastViewedTimestampOnRead(doc as WithLookup<ActivityInboxNotification>, ids)
-  }
-
-  const doneOp = await getClient().measure('markAsRead')
-  const ops = getClient().apply(doc._id)
-  try {
-    await notificationsClient.readNotifications(ops, ids)
-  } finally {
-    await ops.commit()
-    await doneOp()
-  }
-}
-
-async function updateLastViewedTimestampOnRead (
-  doc: WithLookup<ActivityInboxNotification>,
-  viewedIds: Array<Ref<InboxNotification>>
-): Promise<void> {
-  const notificationsClient = InboxNotificationsClientImpl.getClient()
-  const client = getClient()
-
-  const context = get(notificationsClient.contextById).get(doc.docNotifyContext)
-
-  if (context === undefined) {
-    return
-  }
-
-  const unViewed = get(notificationsClient.activityInboxNotifications).filter(
-    ({ _id, isViewed, docNotifyContext }) => context._id === docNotifyContext && !isViewed && !viewedIds.includes(_id)
-  )
-
-  let lastViewedTimestamp = context?.lastViewedTimestamp
-
-  if (unViewed.length === 0) {
-    lastViewedTimestamp = doc?.$lookup?.attachedTo?.createdOn ?? context.lastViewedTimestamp
-  } else {
-    const firstUnViewed = unViewed[unViewed.length - 1]
-
-    const hasNotificationsBefore = (firstUnViewed.createdOn ?? 0) < (doc.createdOn ?? 0)
-
-    if (!hasNotificationsBefore) {
-      lastViewedTimestamp = doc?.$lookup?.attachedTo?.createdOn ?? context.lastViewedTimestamp
-    }
-  }
-
-  if (lastViewedTimestamp !== undefined && lastViewedTimestamp > (context.lastViewedTimestamp ?? 0)) {
-    await client.update(context, { lastViewedTimestamp })
-  }
-}
-
-async function updateLastViewedOnUnread (doc: WithLookup<ActivityInboxNotification>): Promise<void> {
-  const notificationsClient = InboxNotificationsClientImpl.getClient()
-  const client = getClient()
-
-  const context = get(notificationsClient.contextById).get(doc.docNotifyContext)
-
-  if (context === undefined) {
-    return
-  }
-
-  const messageTimestamp = doc?.$lookup?.attachedTo?.createdOn
-
-  if (messageTimestamp === undefined || messageTimestamp === 0) {
-    return
-  }
-
-  const lastViewedTimestamp = messageTimestamp - 1
-
-  if (lastViewedTimestamp < (context.lastViewedTimestamp ?? 0)) {
-    await client.update(context, { lastViewedTimestamp })
-  }
-}
-
-/**
- * @public
- */
-export async function markAsUnreadInboxNotification (doc: DisplayInboxNotification): Promise<void> {
-  const inboxNotificationsClient = InboxNotificationsClientImpl.getClient()
-  const isActivityNotification = doc._class === notification.class.ActivityInboxNotification
-
-  const ids = isActivityNotification ? (doc as DisplayActivityInboxNotification).combinedIds : [doc._id]
-
-  if (isActivityNotification) {
-    await updateLastViewedOnUnread(doc as WithLookup<ActivityInboxNotification>)
-  }
-
-  const doneOp = await getClient().measure('unreadNotifications')
-  const ops = getClient().apply(doc._id)
-  try {
-    await inboxNotificationsClient.unreadNotifications(ops, ids)
-  } finally {
-    await ops.commit()
-    await doneOp()
-  }
-}
-
-export async function deleteInboxNotification (doc: DisplayInboxNotification): Promise<void> {
-  const inboxNotificationsClient = InboxNotificationsClientImpl.getClient()
-  const isActivityNotification = doc._class === notification.class.ActivityInboxNotification
-
-  const ids = isActivityNotification ? (doc as DisplayActivityInboxNotification).combinedIds : [doc._id]
-
-  if (isActivityNotification) {
-    await updateLastViewedTimestampOnRead(doc as WithLookup<ActivityInboxNotification>, ids)
-  }
-
-  const doneOp = await getClient().measure('deleteNotifications')
-  const ops = getClient().apply(doc._id)
-  try {
-    await inboxNotificationsClient.deleteNotifications(ops, ids)
-  } finally {
-    await ops.commit()
-    await doneOp()
-  }
-}
 
 export async function hasDocNotifyContextPinAction (docNotifyContext: DocNotifyContext): Promise<boolean> {
   if (docNotifyContext.hidden) {
@@ -207,29 +56,6 @@ export async function hasDocNotifyContextUnpinAction (docNotifyContext: DocNotif
     return false
   }
   return docNotifyContext.isPinned === true
-}
-
-export async function hasHiddenDocNotifyContext (contexts: DocNotifyContext[]): Promise<boolean> {
-  return contexts.some(({ hidden }) => hidden)
-}
-
-export async function hideDocNotifyContext (notifyContext: DocNotifyContext): Promise<void> {
-  const client = getClient()
-  await client.update(notifyContext, { hidden: true })
-  await deleteContextNotifications(notifyContext)
-}
-
-export async function unHideDocNotifyContext (notifyContext: DocNotifyContext): Promise<void> {
-  const client = getClient()
-  await client.update(notifyContext, { hidden: false, lastViewedTimestamp: Date.now() })
-}
-
-export async function isDocNotifyContextHidden (notifyContext: DocNotifyContext): Promise<boolean> {
-  return notifyContext.hidden
-}
-
-export async function isDocNotifyContextVisible (notifyContext: DocNotifyContext): Promise<boolean> {
-  return !notifyContext.hidden
 }
 
 /**
@@ -319,16 +145,19 @@ export async function deleteContextNotifications (doc?: DocNotifyContext): Promi
     return
   }
 
-  const inboxClient = InboxNotificationsClientImpl.getClient()
-  const inboxNotifications = get(inboxClient.inboxNotificationsByContext).get(doc._id) ?? []
-
   const doneOp = await getClient().measure('deleteContextNotifications')
   const ops = getClient().apply(doc._id)
+
   try {
-    await inboxClient.deleteNotifications(
-      ops,
-      inboxNotifications.map(({ _id }) => _id)
+    const notifications = await ops.findAll(
+      notification.class.InboxNotification,
+      { docNotifyContext: doc._id },
+      { projection: { _id: 1, _class: 1, space: 1 } }
     )
+
+    for (const notification of notifications) {
+      await ops.removeDoc(notification._class, notification.space, notification._id)
+    }
     await ops.update(doc, { lastViewedTimestamp: Date.now() })
   } finally {
     await ops.commit()

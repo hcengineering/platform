@@ -102,7 +102,7 @@
   .labels {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    gap: 0.25rem;
     justify-content: space-between;
     min-width: 0;
     margin-right: 1rem;

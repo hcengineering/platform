@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ActionIcon, Component, IconMoreV, Label, showPopup } from '@hcengineering/ui'
+  import { ButtonIcon, CheckBox, Component, IconMoreV, Label, showPopup, Spinner } from '@hcengineering/ui'
   import notification, {
     ActivityNotificationViewlet,
     DisplayInboxNotification,
@@ -26,6 +26,7 @@
 
   import InboxNotificationPresenter from './inbox/InboxNotificationPresenter.svelte'
   import NotifyContextIcon from './NotifyContextIcon.svelte'
+  import { deleteContextNotifications } from '../utils'
 
   export let value: DocNotifyContext
   export let notifications: WithLookup<DisplayInboxNotification>[]
@@ -59,6 +60,8 @@
   )
 
   function showMenu (ev: MouseEvent): void {
+    ev.stopPropagation()
+    ev.preventDefault()
     showPopup(
       Menu,
       {
@@ -78,6 +81,15 @@
 
   function handleActionMenuClosed (): void {
     isActionMenuOpened = false
+  }
+
+  let deletingPromise: Promise<any> | undefined = undefined
+
+  async function checkContext (): Promise<void> {
+    await deletingPromise
+    deletingPromise = deleteContextNotifications(value)
+    await deletingPromise
+    deletingPromise = undefined
   }
 </script>
 
@@ -107,8 +119,22 @@
       </div>
     {/if}
 
-    <div class="actions clear-mins flex flex-gap-2 items-center" class:opened={isActionMenuOpened}>
-      <ActionIcon icon={IconMoreV} size="small" action={showMenu} />
+    <div class="actions clear-mins">
+      <div class="flex-center">
+        {#if deletingPromise !== undefined}
+          <Spinner size="small" />
+        {:else}
+          <CheckBox checked={false} kind="todo" size="medium" on:value={checkContext} />
+        {/if}
+      </div>
+      <ButtonIcon
+        icon={IconMoreV}
+        size="small"
+        kind="tertiary"
+        inheritColor
+        pressed={isActionMenuOpened}
+        on:click={showMenu}
+      />
     </div>
   </div>
 
@@ -150,32 +176,13 @@
 
       .actions {
         position: absolute;
-        visibility: hidden;
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: var(--extra-small-BorderRadius);
-        top: -0.375rem;
-        right: 0;
-        width: 1.5rem;
-        height: 1.5rem;
+        top: -0.5rem;
+        right: 0.25rem;
+        gap: 0.25rem;
         color: var(--global-secondary-TextColor);
-
-        &.opened {
-          visibility: visible;
-          color: var(--accent-color);
-          background: var(--global-ui-hover-BackgroundColor);
-        }
-
-        &:hover {
-          visibility: visible;
-          color: var(--accent-color);
-          background: var(--global-ui-hover-BackgroundColor);
-        }
-      }
-
-      &:hover > .actions {
-        visibility: visible;
       }
     }
 
@@ -235,6 +242,7 @@
     color: var(--global-primary-TextColor);
     font-weight: 600;
     font-size: 0.875rem;
+    gap: 0.25rem;
     min-width: 0;
     overflow: hidden;
   }

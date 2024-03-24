@@ -34,7 +34,8 @@ export default mergeIds(notificationId, notification, {
     ChangeCollaborators: '' as IntlString,
     Message: '' as IntlString,
     StarDocument: '' as IntlString,
-    UnstarDocument: '' as IntlString
+    UnstarDocument: '' as IntlString,
+    Unsubscribe: '' as IntlString
   },
   app: {
     Notification: '' as Ref<Application>,
@@ -54,8 +55,6 @@ export default mergeIds(notificationId, notification, {
     CommonInboxNotificationPresenter: '' as AnyComponent
   },
   function: {
-    HasMarkAsUnreadAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
-    HasMarkAsReadAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     HasDocNotifyContextPinAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     HasDocNotifyContextUnpinAction: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     CanReadNotifyContext: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
@@ -73,13 +72,8 @@ export default mergeIds(notificationId, notification, {
   },
   actionImpl: {
     Unsubscribe: '' as ViewAction,
-    MarkAsUnreadInboxNotification: '' as ViewAction,
-    MarkAsReadInboxNotification: '' as ViewAction,
-    DeleteInboxNotification: '' as ViewAction,
     UnpinDocNotifyContext: '' as ViewAction,
     PinDocNotifyContext: '' as ViewAction,
-    HideDocNotifyContext: '' as ViewAction,
-    UnHideDocNotifyContext: '' as ViewAction,
     UnReadNotifyContext: '' as ViewAction,
     ReadNotifyContext: '' as ViewAction,
     DeleteContextNotifications: '' as ViewAction,

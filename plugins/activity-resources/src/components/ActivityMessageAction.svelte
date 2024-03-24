@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ActionIcon, type AnySvelteComponent } from '@hcengineering/ui'
+  import { type AnySvelteComponent, ButtonIcon } from '@hcengineering/ui'
   import { Asset } from '@hcengineering/platform'
   import { ComponentType } from 'svelte'
 
@@ -22,30 +22,12 @@
   export let size: 'x-small' | 'small' = 'small'
   export let action: (ev: MouseEvent) => Promise<void> | void = async () => {}
   export let opened = false
+
+  function onClick (ev: MouseEvent): void {
+    ev.stopPropagation()
+    ev.preventDefault()
+    void action(ev)
+  }
 </script>
 
-<div class="action" class:opened>
-  <ActionIcon {icon} {size} {action} {iconProps} />
-</div>
-
-<style lang="scss">
-  .action {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: var(--extra-small-BorderRadius);
-    width: 1.5rem;
-    height: 1.5rem;
-    padding: 0.25rem;
-
-    &:hover {
-      color: var(--global-primary-TextColor);
-      background: var(--global-ui-hover-BackgroundColor);
-    }
-
-    &.opened {
-      color: var(--global-primary-TextColor);
-      background: var(--global-ui-hover-BackgroundColor);
-    }
-  }
-</style>
+<ButtonIcon {icon} {iconProps} iconSize={size} size="small" kind="tertiary" pressed={opened} on:click={onClick} />

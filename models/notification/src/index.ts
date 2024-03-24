@@ -486,51 +486,6 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
-      action: notification.actionImpl.MarkAsReadInboxNotification,
-      label: notification.string.MarkAsRead,
-      icon: notification.icon.Notifications,
-      input: 'focus',
-      visibilityTester: notification.function.HasMarkAsReadAction,
-      category: notification.category.Notification,
-      target: notification.class.InboxNotification,
-      context: { mode: 'context', application: notification.app.Notification, group: 'edit' }
-    },
-    notification.action.MarkAsReadInboxNotification
-  )
-
-  createAction(
-    builder,
-    {
-      action: notification.actionImpl.MarkAsUnreadInboxNotification,
-      label: notification.string.MarkAsUnread,
-      icon: notification.icon.Track,
-      input: 'focus',
-      visibilityTester: notification.function.HasMarkAsUnreadAction,
-      category: notification.category.Notification,
-      target: notification.class.InboxNotification,
-      context: { mode: 'context', application: notification.app.Notification, group: 'edit' }
-    },
-    notification.action.MarkAsUnreadInboxNotification
-  )
-
-  createAction(
-    builder,
-    {
-      action: notification.actionImpl.DeleteInboxNotification,
-      label: notification.string.Archive,
-      icon: view.icon.Archive,
-      input: 'focus',
-      keyBinding: ['Backspace'],
-      category: notification.category.Notification,
-      target: notification.class.InboxNotification,
-      context: { mode: ['context', 'browser'], group: 'edit' }
-    },
-    notification.action.DeleteInboxNotification
-  )
-
-  createAction(
-    builder,
-    {
       action: notification.actionImpl.ReadNotifyContext,
       label: notification.string.MarkAsRead,
       icon: notification.icon.Notifications,
@@ -567,7 +522,7 @@ export function createModel (builder: Builder): void {
       input: 'focus',
       category: notification.category.Notification,
       target: notification.class.DocNotifyContext,
-      context: { mode: ['panel'], application: notification.app.Notification, group: 'edit' }
+      context: { mode: ['panel'], application: notification.app.Notification, group: 'remove' }
     },
     notification.action.DeleteContextNotifications
   )
@@ -575,37 +530,18 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
-      action: notification.actionImpl.HideDocNotifyContext,
-      label: notification.string.DontTrack,
-      icon: notification.icon.DontTrack,
+      action: notification.actionImpl.Unsubscribe,
+      label: notification.string.Unsubscribe,
+      icon: view.icon.EyeCrossed,
       input: 'focus',
       category: notification.category.Notification,
       target: notification.class.DocNotifyContext,
       context: {
         mode: ['panel'],
         group: 'remove'
-      },
-      visibilityTester: notification.function.IsDocNotifyContextTracked
+      }
     },
-    notification.action.HideDocNotifyContext
-  )
-
-  createAction(
-    builder,
-    {
-      action: notification.actionImpl.UnHideDocNotifyContext,
-      label: view.string.UnArchive,
-      icon: view.icon.Archive,
-      input: 'focus',
-      category: view.category.General,
-      target: notification.class.DocNotifyContext,
-      context: {
-        mode: ['panel'],
-        group: 'remove'
-      },
-      visibilityTester: notification.function.IsDocNotifyContextHidden
-    },
-    notification.action.UnHideDocNotifyContext
+    notification.action.Unsubscribe
   )
 
   builder.mixin(notification.class.DocNotifyContext, core.class.Class, view.mixin.ObjectPresenter, {
@@ -653,7 +589,7 @@ export function createModel (builder: Builder): void {
       target: core.class.Doc,
       context: {
         mode: ['browser'],
-        group: 'edit'
+        group: 'remove'
       }
     },
     notification.action.ArchiveAll

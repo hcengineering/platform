@@ -360,13 +360,8 @@ const notification = plugin(notificationId, {
     TxCollaboratorsChange: '' as AnyComponent
   },
   action: {
-    MarkAsUnreadInboxNotification: '' as Ref<Action>,
-    MarkAsReadInboxNotification: '' as Ref<Action>,
-    DeleteInboxNotification: '' as Ref<Action>,
     PinDocNotifyContext: '' as Ref<Action>,
     UnpinDocNotifyContext: '' as Ref<Action>,
-    HideDocNotifyContext: '' as Ref<Action>,
-    UnHideDocNotifyContext: '' as Ref<Action>,
     UnReadNotifyContext: '' as Ref<Action>,
     ReadNotifyContext: '' as Ref<Action>,
     DeleteContextNotifications: '' as Ref<Action>
@@ -406,9 +401,6 @@ const notification = plugin(notificationId, {
   },
   function: {
     GetInboxNotificationsClient: '' as Resource<InboxNotificationsClientFactory>,
-    HasHiddenDocNotifyContext: '' as Resource<(doc: Doc[]) => Promise<boolean>>,
-    IsDocNotifyContextHidden: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
-    IsDocNotifyContextTracked: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     HasInboxNotifications: '' as Resource<
     (notificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>) => Promise<boolean>
     >
