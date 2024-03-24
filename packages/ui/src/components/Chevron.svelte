@@ -46,6 +46,7 @@
   .chevron {
     flex-shrink: 0;
     transition: transform 0.15s var(--timing-main);
+    margin-right: .5rem;
 
     &.outline {
       transform-origin: center;
