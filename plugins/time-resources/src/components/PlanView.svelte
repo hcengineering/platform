@@ -1,3 +1,18 @@
+<!--
+// Copyright © 2024 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
+
 <script lang="ts">
   import { createEventDispatcher, afterUpdate } from 'svelte'
   import calendar, { Calendar, generateEventId } from '@hcengineering/calendar'
@@ -6,13 +21,13 @@
   import { getClient } from '@hcengineering/presentation'
   import { TagElement } from '@hcengineering/tags'
   import { Separator, defineSeparators } from '@hcengineering/ui'
-  import { ToDo } from '@hcengineering/time'
   import { ToDosMode } from '..'
-  import time from '../plugin'
-  import { timeSeparators } from '../utils'
   import PlanningCalendar from './PlanningCalendar.svelte'
-  import ToDos from './ToDos.svelte'
   import ToDosNavigator from './ToDosNavigator.svelte'
+  import ToDos from './ToDos.svelte'
+  import { timeSeparators } from '../utils'
+  import { dragging } from '../dragging'
+  import time from '../plugin'
 
   export let visibleNav: boolean = true
   export let navFloat: boolean = false
@@ -26,12 +41,12 @@
 
   let currentDate: Date = new Date()
 
-  let dragItem: ToDo | undefined = undefined
+  $: dragItem = $dragging.item
 
   const client = getClient()
 
   async function drop (e: CustomEvent<any>) {
-    if (dragItem === undefined) return
+    if (dragItem === null) return
     const doc = dragItem
     const date = e.detail.date.getTime()
     const currentUser = getCurrentAccount() as PersonAccount
@@ -79,14 +94,7 @@
     />
   {/if}
   <div class="flex-col clear-mins">
-    <ToDos
-      {mode}
-      {tag}
-      bind:isVisiblePlannerNav
-      bind:currentDate
-      on:dragstart={(e) => (dragItem = e.detail)}
-      on:dragend={() => (dragItem = undefined)}
-    />
+    <ToDos {mode} {tag} bind:isVisiblePlannerNav bind:currentDate />
   </div>
   <Separator name={'time'} float={navFloat} index={1} color={'transparent'} separatorSize={0} short />
 {/if}

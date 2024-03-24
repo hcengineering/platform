@@ -14,21 +14,27 @@
 //
 
 import core, {
-  Class,
-  Doc,
-  DocIndexState,
-  DocumentQuery,
-  DocumentUpdate,
+  type Class,
+  type Doc,
+  type DocIndexState,
+  type DocumentQuery,
+  type DocumentUpdate,
   extractDocKey,
-  IndexStageState,
-  MeasureContext,
-  Ref,
-  ServerStorage
+  type IndexStageState,
+  type MeasureContext,
+  type Ref,
+  type ServerStorage
 } from '@hcengineering/core'
 import { deepEqual } from 'fast-equals'
-import { DbAdapter } from '../adapter'
-import { IndexedDoc } from '../types'
-import { contentStageId, DocUpdateHandler, fieldStateId, FullTextPipeline, FullTextPipelineStage } from './types'
+import { type DbAdapter } from '../adapter'
+import { type IndexedDoc } from '../types'
+import {
+  contentStageId,
+  type DocUpdateHandler,
+  fieldStateId,
+  type FullTextPipeline,
+  type FullTextPipelineStage
+} from './types'
 import {
   collectPropagate,
   docKey,

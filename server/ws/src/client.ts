@@ -53,6 +53,7 @@ export class ClientSession implements Session {
   useCompression: boolean = true
   useBroadcast: boolean = false
   sessionId = ''
+  lastRequest = 0
 
   total: StatisticsElement = { find: 0, tx: 0 }
   current: StatisticsElement = { find: 0, tx: 0 }
@@ -75,6 +76,7 @@ export class ClientSession implements Session {
 
   async ping (): Promise<string> {
     // console.log('ping')
+    this.lastRequest = Date.now()
     return 'pong!'
   }
 
@@ -120,6 +122,7 @@ export class ClientSession implements Session {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
+    this.lastRequest = Date.now()
     this.total.find++
     this.current.find++
     const context = ctx as SessionContext
@@ -129,6 +132,7 @@ export class ClientSession implements Session {
   }
 
   async searchFulltext (ctx: MeasureContext, query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
+    this.lastRequest = Date.now()
     const context = ctx as SessionContext
     context.userEmail = this.token.email
     context.admin = this.token.extra?.admin === 'true'
@@ -136,6 +140,7 @@ export class ClientSession implements Session {
   }
 
   async tx (ctx: MeasureContext, tx: Tx): Promise<TxResult> {
+    this.lastRequest = Date.now()
     this.total.tx++
     this.current.tx++
     const context = ctx as SessionContext

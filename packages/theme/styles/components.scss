@@ -457,7 +457,7 @@
       }
     }
     &.large {
-      padding: var(--spacing-2) var(--spacing-1_5) var(--spacing-1) var(--spacing-2);
+      padding: var(--spacing-2) var(--spacing-1_5) var(--spacing-2) var(--spacing-2);
       min-height: var(--global-extra-large-Size);
       
       .hulyAccordionItem-header__label-wrapper {
@@ -526,6 +526,23 @@
   }
 }
 
+.hulyToDoLine-draggable {
+  position: relative;
+
+  &.is-dragging-over-up::before {
+    position: absolute;
+    content: '';
+    inset: 0;
+    border-top: 1px solid var(--global-focus-BorderColor);
+  }
+  &.is-dragging-over-down::before {
+    position: absolute;
+    content: '';
+    inset: 0;
+    border-bottom: 1px solid var(--global-focus-BorderColor);
+  }
+}
+
 /* ToDo Line */
 .hulyToDoLine-container {
   display: flex;
@@ -567,6 +584,7 @@
     color: inherit;
     border: none;
     outline: none;
+    cursor: grab;
 
     &.isNew::after {
       position: absolute;
@@ -1780,7 +1798,11 @@
   flex-wrap: nowrap;
   min-width: 0;
 
-  .ap-icon { color: var(--theme-dark-color); }
+  .ap-icon { 
+    color: var(--theme-dark-color);
+    height: 100%;
+    aspect-ratio: 1;
+  }
   .ap-label {
     min-width: 0;
     text-align: left;

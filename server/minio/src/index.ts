@@ -13,16 +13,12 @@
 // limitations under the License.
 //
 
-import { BucketItem, BucketItemStat, Client, ItemBucketMetadata, UploadedObjectInfo } from 'minio'
+import { Client, type BucketItemStat, type ItemBucketMetadata, type UploadedObjectInfo } from 'minio'
 
-import { Readable as ReadableStream } from 'stream'
+import { toWorkspaceString, type WorkspaceId } from '@hcengineering/core'
 
-import { toWorkspaceString, WorkspaceId } from '@hcengineering/core'
-
-/**
- * @public
- */
-export type MinioWorkspaceItem = Required<BucketItem> & { metaData: ItemBucketMetadata }
+import { type StorageAdapter, type WorkspaceItem } from '@hcengineering/server-core'
+import { type Readable } from 'stream'
 
 /**
  * @public
@@ -34,7 +30,7 @@ export function getBucketId (workspaceId: WorkspaceId): string {
 /**
  * @public
  */
-export class MinioService {
+export class MinioService implements StorageAdapter {
   client: Client
   constructor (opt: { endPoint: string, port: number, accessKey: string, secretKey: string, useSSL: boolean }) {
     this.client = new Client(opt)
@@ -56,9 +52,9 @@ export class MinioService {
     await this.client.removeBucket(getBucketId(workspaceId))
   }
 
-  async list (workspaceId: WorkspaceId, prefix?: string): Promise<MinioWorkspaceItem[]> {
+  async list (workspaceId: WorkspaceId, prefix?: string): Promise<WorkspaceItem[]> {
     try {
-      const items = new Map<string, MinioWorkspaceItem>()
+      const items = new Map<string, WorkspaceItem>()
       const list = this.client.listObjects(getBucketId(workspaceId), prefix, true)
       await new Promise((resolve) => {
         list.on('data', (data) => {
@@ -84,14 +80,14 @@ export class MinioService {
     return await this.client.statObject(getBucketId(workspaceId), objectName)
   }
 
-  async get (workspaceId: WorkspaceId, objectName: string): Promise<ReadableStream> {
+  async get (workspaceId: WorkspaceId, objectName: string): Promise<Readable> {
     return await this.client.getObject(getBucketId(workspaceId), objectName)
   }
 
   async put (
     workspaceId: WorkspaceId,
     objectName: string,
-    stream: ReadableStream | Buffer | string,
+    stream: Readable | Buffer | string,
     size?: number,
     metaData?: ItemBucketMetadata
   ): Promise<UploadedObjectInfo> {
@@ -119,12 +115,7 @@ export class MinioService {
     return chunks
   }
 
-  async partial (
-    workspaceId: WorkspaceId,
-    objectName: string,
-    offset: number,
-    length?: number
-  ): Promise<ReadableStream> {
+  async partial (workspaceId: WorkspaceId, objectName: string, offset: number, length?: number): Promise<Readable> {
     return await this.client.getPartialObject(getBucketId(workspaceId), objectName, offset, length)
   }
 }

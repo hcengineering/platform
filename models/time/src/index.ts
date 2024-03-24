@@ -26,10 +26,23 @@ import {
   type Space,
   type Timestamp,
   type Type,
-  DateRangeMode
+  DateRangeMode,
+  IndexKind
 } from '@hcengineering/core'
 import lead from '@hcengineering/lead'
-import { Collection, Mixin, Model, Prop, TypeRef, TypeString, UX, type Builder, TypeDate } from '@hcengineering/model'
+import {
+  Collection,
+  Mixin,
+  Model,
+  Prop,
+  TypeRef,
+  TypeString,
+  UX,
+  type Builder,
+  TypeDate,
+  Hidden,
+  Index
+} from '@hcengineering/model'
 import { TEvent } from '@hcengineering/model-calendar'
 import core, { TAttachedDoc, TClass, TDoc, TType } from '@hcengineering/model-core'
 import tracker from '@hcengineering/model-tracker'
@@ -51,7 +64,8 @@ import {
   type WorkSlot
 } from '@hcengineering/time'
 
-import { type Resource } from '@hcengineering/platform'
+import type { Resource } from '@hcengineering/platform'
+import type { Rank } from '@hcengineering/task'
 import time from './plugin'
 import task from '@hcengineering/task'
 
@@ -107,6 +121,10 @@ export class TToDO extends TAttachedDoc implements ToDo {
 
   @Prop(Collection(tags.class.TagReference, tags.string.TagLabel), tags.string.Tags)
     labels?: number | undefined
+
+  @Index(IndexKind.Indexed)
+  @Hidden()
+    rank!: Rank
 }
 
 @Model(time.class.ProjectToDo, time.class.ToDo)
@@ -189,7 +207,6 @@ export function createModel (builder: Builder): void {
       icon: time.icon.Team,
       alias: 'team',
       hidden: false,
-      position: 'top',
       component: time.component.Team
     },
     time.app.Team
@@ -236,7 +253,7 @@ export function createModel (builder: Builder): void {
         }
       },
       label: time.string.CreateToDo,
-      icon: time.icon.Target,
+      icon: time.icon.Calendar,
       keyBinding: [],
       input: 'none',
       category: time.category.Time,
@@ -262,7 +279,7 @@ export function createModel (builder: Builder): void {
         }
       },
       label: time.string.CreateToDo,
-      icon: time.icon.Target,
+      icon: time.icon.Calendar,
       keyBinding: [],
       input: 'none',
       category: time.category.Time,

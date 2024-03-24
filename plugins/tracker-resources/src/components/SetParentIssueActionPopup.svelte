@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AttachedData, FindOptions, Ref, SortingOrder } from '@hcengineering/core'
+  import core, { AttachedData, FindOptions, type Rank, Ref, SortingOrder } from '@hcengineering/core'
   import { ObjectPopup, getClient } from '@hcengineering/presentation'
   import { makeRank } from '@hcengineering/task'
   import { Issue, IssueDraft } from '@hcengineering/tracker'
@@ -42,7 +42,7 @@
         parentIssue?._id !== docValue.attachedTo &&
         parentIssue?._id !== docValue._id
       ) {
-        let rank: string | null = null
+        let rank: Rank | null = null
 
         if (parentIssue) {
           const lastAttachedIssue = await client.findOne<Issue>(

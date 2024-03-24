@@ -64,13 +64,19 @@
 
   const dispatch = createEventDispatcher()
 
+  let el: HTMLElement
   let asideFloat: boolean = false
   let asideShown: boolean = selectedAside !== false
   let hideAside: boolean = !asideShown
   let fullSize: boolean = false
   let oldAside: string | boolean = selectedAside
+
   $: if (typeof selectedAside === 'string' && oldAside !== selectedAside) oldAside = selectedAside
   $: setAside(selectedAside)
+  $: if (el !== undefined) {
+    panelWidth = el.clientWidth
+    checkPanel()
+  }
 
   let oldWidth = ''
   let hideTimer: any | undefined
@@ -97,6 +103,7 @@
       }
     }
   }
+
   afterUpdate(() => {
     if (hideTimer) {
       clearTimeout(hideTimer)
@@ -114,6 +121,7 @@
     asideShown = !asideShown
     hideAside = !asideShown
   }
+
   const handleSelectAside = (result: { detail: any }, sw: boolean = true): void => {
     selectedAside = result.detail
     if (sw) {
@@ -125,6 +133,7 @@
 </script>
 
 <div
+  bind:this={el}
   class="popupPanel panel {kind}"
   class:embedded
   use:resizeObserver={(element) => {

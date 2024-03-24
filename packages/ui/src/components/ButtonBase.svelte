@@ -120,6 +120,9 @@
     }
 
     .icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
       width: var(--spacing-2_5);
       height: var(--spacing-2_5);
 
@@ -159,10 +162,11 @@
     }
     &.small {
       height: var(--global-small-Size);
+      gap: var(--spacing-0_25);
       border-radius: var(--small-BorderRadius);
 
       &.type-button {
-        padding: 0 var(--spacing-1_5);
+        padding: 0 var(--spacing-1);
       }
       &.type-button-icon {
         width: var(--global-small-Size);
@@ -363,6 +367,7 @@
         }
       }
     }
+
     & > * {
       pointer-events: none;
     }

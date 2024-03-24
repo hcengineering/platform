@@ -1,30 +1,45 @@
 <script lang="ts">
+  import { ActionIcon, IconAdd, showPopup, ModernEditbox } from '@hcengineering/ui'
+  import { SortingOrder, getCurrentAccount } from '@hcengineering/core'
   import { PersonAccount } from '@hcengineering/contact'
-  import { getCurrentAccount } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
-  import { ActionIcon, EditBox, IconAdd, showPopup, ModernEditbox } from '@hcengineering/ui'
   import { ToDoPriority } from '@hcengineering/time'
-  import time from '../plugin'
+  import { getClient } from '@hcengineering/presentation'
   import CreateToDoPopup from './CreateToDoPopup.svelte'
+  import time from '../plugin'
+  import { makeRank } from '@hcengineering/task'
 
   export let fullSize: boolean = false
   let value: string = ''
 
-  async function save () {
+  const client = getClient()
+  const acc = getCurrentAccount() as PersonAccount
+
+  async function save (): Promise<void> {
     let [name, description] = value.split('//')
     name = name.trim()
     if (name.length === 0) return
     description = description?.trim() ?? ''
-    const client = getClient()
-    const acc = getCurrentAccount() as PersonAccount
-    await client.addCollection(time.class.ToDo, time.space.ToDos, time.ids.NotAttached, time.class.ToDo, 'todos', {
+    const ops = client.apply('todo')
+    const latestTodo = await ops.findOne(
+      time.class.ToDo,
+      {
+        user: acc.person,
+        doneOn: null
+      },
+      {
+        sort: { rank: SortingOrder.Ascending }
+      }
+    )
+    await ops.addCollection(time.class.ToDo, time.space.ToDos, time.ids.NotAttached, time.class.ToDo, 'todos', {
       title: name,
       description,
       user: acc.person,
       workslots: 0,
       priority: ToDoPriority.NoPriority,
-      visibility: 'private'
+      visibility: 'private',
+      rank: makeRank(undefined, latestTodo?.rank)
     })
+    await ops.commit()
     clear()
   }
 

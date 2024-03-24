@@ -34,6 +34,7 @@
     "CreatedDate": "Data de criação",
     "Status": "Estado",
     "StatusCategory": "Categoria de estado",
-    "Account": "Conta"
+    "Account": "Conta",
+    "Rank": "Ranking"
   }
 }

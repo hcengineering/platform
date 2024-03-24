@@ -1,8 +1,23 @@
-import { Class, Doc, DocIndexState, docKey, Hierarchy, Ref, RefTo, SearchResultDoc } from '@hcengineering/core'
-import { getResource, Resource } from '@hcengineering/platform'
+import {
+  type Class,
+  type Doc,
+  type DocIndexState,
+  docKey,
+  type Hierarchy,
+  type Ref,
+  type RefTo,
+  type SearchResultDoc
+} from '@hcengineering/core'
+import { getResource, type Resource } from '@hcengineering/platform'
 
 import plugin from './plugin'
-import { ClassSearchConfigProps, IndexedDoc, SearchPresenter, SearchPresenterFunc, SearchScoring } from './types'
+import {
+  type ClassSearchConfigProps,
+  type IndexedDoc,
+  type SearchPresenter,
+  type SearchPresenterFunc,
+  type SearchScoring
+} from './types'
 
 interface IndexedReader {
   get: (attribute: string) => any

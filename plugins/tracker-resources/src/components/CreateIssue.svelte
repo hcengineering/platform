@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import activity from '@hcengineering/activity'
   import { Analytics } from '@hcengineering/analytics'
   import { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter, AttachmentStyledBox } from '@hcengineering/attachment-resources'
-  import chunter from '@hcengineering/chunter'
   import { Employee } from '@hcengineering/contact'
   import core, {
     Account,
@@ -74,7 +74,6 @@
   import view from '@hcengineering/view'
   import { ObjectBox } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy } from 'svelte'
-  import activity from '@hcengineering/activity'
 
   import { activeComponent, activeMilestone, generateIssueShortLink, updateIssueRelation } from '../issues'
   import tracker from '../plugin'

@@ -55,6 +55,7 @@
     "CreatedToDo": "Created Todo",
     "NewToDoDetails": "New Todo: {details}",
     "MarkedAsDone": "Completed",
-    "WorkSchedule": "Work schedule"
+    "WorkSchedule": "Work schedule",
+    "SummaryDuration": "Summary"
   }
 }

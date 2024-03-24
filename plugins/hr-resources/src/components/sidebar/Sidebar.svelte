@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
   import { Department } from '@hcengineering/hr'
-  import { Scroller, Separator } from '@hcengineering/ui'
+  import { Scroller, Separator, EditBox } from '@hcengineering/ui'
   import { TreeNode } from '@hcengineering/view-resources'
   import { NavFooter, NavHeader } from '@hcengineering/workbench-resources'
 

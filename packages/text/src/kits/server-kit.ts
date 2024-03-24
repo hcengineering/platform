@@ -28,6 +28,7 @@ import { ImageNode, ImageOptions } from '../nodes/image'
 import { ReferenceNode } from '../nodes/reference'
 import { TodoItemNode, TodoListNode } from '../nodes/todo'
 
+import { CodeBlockExtension, codeBlockOptions } from '../nodes'
 import { DefaultKit, DefaultKitOptions } from './default-kit'
 
 const headingLevels: Level[] = [1, 2, 3, 4, 5, 6]
@@ -70,10 +71,12 @@ export const ServerKit = Extension.create<ServerKitOptions>({
     return [
       DefaultKit.configure({
         ...this.options,
+        codeBlock: false,
         heading: {
           levels: headingLevels
         }
       }),
+      CodeBlockExtension.configure(codeBlockOptions),
       ...tableExtensions,
       ...taskListExtensions,
       ...fileExtensions,

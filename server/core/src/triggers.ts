@@ -15,22 +15,22 @@
 //
 
 import core, {
-  AttachedDoc,
-  Class,
-  Doc,
-  DocumentQuery,
-  Hierarchy,
-  MeasureContext,
-  Obj,
-  Ref,
-  Tx,
-  TxCollectionCUD,
-  TxCreateDoc,
+  type AttachedDoc,
+  type Class,
+  type Doc,
+  type DocumentQuery,
+  type Hierarchy,
+  type MeasureContext,
+  type Obj,
+  type Ref,
+  type Tx,
+  type TxCollectionCUD,
+  type TxCreateDoc,
   TxFactory,
   matchQuery
 } from '@hcengineering/core'
 
-import { Resource, getResource } from '@hcengineering/platform'
+import { type Resource, getResource } from '@hcengineering/platform'
 import type { Trigger, TriggerControl, TriggerFunc } from './types'
 
 import serverCore from './plugin'
