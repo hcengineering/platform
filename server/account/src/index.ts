@@ -89,6 +89,8 @@ export interface Account {
   admin?: boolean
   confirmed?: boolean
   lastWorkspace?: number
+  createdOn: number
+  lastVisit: number
 }
 
 /**
@@ -104,6 +106,8 @@ export interface Workspace {
 
   workspaceUrl?: string | null // An optional url to the workspace, if not set workspace will be used
   workspaceName?: string // An displayed workspace name
+  createdOn: number
+  lastVisit: number
 }
 
 /**
@@ -552,6 +556,8 @@ export async function createAcc (
     last,
     confirmed,
     workspaces: [],
+    createdOn: Date.now(),
+    lastVisit: Date.now(),
     ...(extra ?? {})
   })
 
@@ -608,9 +614,9 @@ export async function listWorkspaces (db: Db, productId: string): Promise<Worksp
  * @public
  */
 export async function listWorkspacesRaw (db: Db, productId: string): Promise<Workspace[]> {
-  return (await db.collection<Workspace>(WORKSPACE_COLLECTION).find(withProductId(productId, {})).toArray()).map(
-    (it) => ({ ...it, productId })
-  )
+  return (await db.collection<Workspace>(WORKSPACE_COLLECTION).find(withProductId(productId, {})).toArray())
+    .map((it) => ({ ...it, productId }))
+    .filter((it) => it.disabled !== true)
 }
 
 /**
@@ -674,7 +680,9 @@ async function generateWorkspaceRecord (
       version,
       workspaceName,
       accounts: [],
-      disabled: false
+      disabled: false,
+      createdOn: Date.now(),
+      lastVisit: Date.now()
     }
     // Add fixed workspace
     const id = await coll.insertOne(data)
@@ -701,7 +709,9 @@ async function generateWorkspaceRecord (
         version,
         workspaceName,
         accounts: [],
-        disabled: false
+        disabled: false,
+        createdOn: Date.now(),
+        lastVisit: Date.now()
       }
       // Nice we do not have a workspace or workspaceUrl duplicated.
       const id = await coll.insertOne(data)
@@ -953,10 +963,15 @@ export async function getUserWorkspaces (db: Db, productId: string, token: strin
 /**
  * @public
  */
-export async function getWorkspaceInfo (db: Db, productId: string, token: string): Promise<ClientWorkspaceInfo> {
+export async function getWorkspaceInfo (
+  db: Db,
+  productId: string,
+  token: string,
+  _updateLastVisit: boolean = false
+): Promise<ClientWorkspaceInfo> {
   const { email, workspace, extra } = decodeToken(token)
   const guest = extra?.guest === 'true'
-  let account: Pick<Account, 'admin' | 'workspaces'> | null = null
+  let account: Pick<Account, 'admin' | 'workspaces'> | Account | null = null
   const query: Filter<Workspace> = {
     workspace: workspace.name
   }
@@ -987,7 +1002,22 @@ export async function getWorkspaceInfo (db: Db, productId: string, token: string
   if (ws == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
+  if (_updateLastVisit && isAccount(account)) {
+    await updateLastVisit(db, ws, account)
+  }
   return mapToClientWorkspace(ws)
+}
+
+function isAccount (data: Pick<Account, 'admin' | 'workspaces'> | Account | null): data is Account {
+  return (data as Account)._id !== undefined
+}
+
+async function updateLastVisit (db: Db, ws: Workspace, account: Account): Promise<void> {
+  const now = Date.now()
+  await db.collection(WORKSPACE_COLLECTION).updateOne({ _id: ws._id }, { $set: { lastVisit: now } })
+
+  // Add workspace to account
+  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { lastVisit: now } })
 }
 
 async function getWorkspaceAndAccount (

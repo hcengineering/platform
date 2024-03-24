@@ -35,6 +35,7 @@ import core, {
   MixinUpdate,
   Obj,
   PropertyType,
+  Rank,
   Ref,
   RefTo,
   Space,
@@ -500,4 +501,11 @@ export function TypeCollaborativeDoc (): Type<CollaborativeDoc> {
  */
 export function TypeCollaborativeDocVersion (): Type<CollaborativeDoc> {
   return { _class: core.class.TypeCollaborativeDocVersion, label: core.string.CollaborativeDocVersion }
+}
+
+/**
+ * @public
+ */
+export function TypeRank (): Type<Rank> {
+  return { _class: core.class.TypeRank, label: core.string.Rank }
 }

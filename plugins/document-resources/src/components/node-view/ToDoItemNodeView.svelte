@@ -1,11 +1,12 @@
 <script lang="ts">
   import { Person } from '@hcengineering/contact'
   import { AssigneePopup, EmployeePresenter } from '@hcengineering/contact-resources'
-  import { Doc, Ref } from '@hcengineering/core'
+  import { Doc, Ref, SortingOrder } from '@hcengineering/core'
   import { MessageBox, createQuery, getClient } from '@hcengineering/presentation'
   import { NodeViewContent, NodeViewProps, NodeViewWrapper } from '@hcengineering/text-editor'
   import { CheckBox, getEventPositionElement, showPopup } from '@hcengineering/ui'
   import time, { ToDo, ToDoPriority } from '@hcengineering/time'
+  import { makeRank } from '@hcengineering/rank'
 
   import document from '../../plugin'
 
@@ -75,6 +76,20 @@
       await ops.remove(todo)
     }
 
+    const doneOn = node.attrs.checked === true ? Date.now() : null
+
+    const latestTodoItem = await ops.findOne(
+      time.class.ToDo,
+      {
+        user,
+        doneOn: doneOn === null ? null : { $ne: null }
+      },
+      {
+        sort: { rank: SortingOrder.Ascending }
+      }
+    )
+    const rank = makeRank(undefined, latestTodoItem?.rank)
+
     const id = await ops.addCollection(time.class.ProjectToDo, time.space.ToDos, object._id, object._class, 'todos', {
       attachedSpace: object.space,
       title,
@@ -83,7 +98,8 @@
       workslots: 0,
       priority: ToDoPriority.NoPriority,
       visibility: 'public',
-      doneOn: node.attrs.checked === true ? Date.now() : null
+      doneOn,
+      rank
     })
 
     await ops.commit()

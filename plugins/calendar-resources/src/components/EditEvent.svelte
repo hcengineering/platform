@@ -241,7 +241,7 @@
   .eventPopup-container {
     display: flex;
     flex-direction: column;
-    max-width: 25rem;
+    max-width: 40rem;
     min-width: 25rem;
     min-height: 0;
     background: var(--theme-popup-color);

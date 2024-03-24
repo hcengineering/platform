@@ -14,7 +14,16 @@
 //
 
 import { isActive } from '@tiptap/core'
-import CodeBlock from '@tiptap/extension-code-block'
+import CodeBlock, { CodeBlockOptions } from '@tiptap/extension-code-block'
+
+export const codeBlockOptions: CodeBlockOptions = {
+  languageClassPrefix: 'language-',
+  exitOnArrowDown: true,
+  exitOnTripleEnter: true,
+  HTMLAttributes: {
+    class: 'proseCodeBlock'
+  }
+}
 
 export const CodeBlockExtension = CodeBlock.extend({
   addCommands () {
@@ -66,6 +75,40 @@ export const CodeBlockExtension = CodeBlock.extend({
             }
             return commands.toggleNode(this.name, 'paragraph', attributes)
           }
+    }
+  },
+  addAttributes () {
+    return {
+      language: {
+        default: null,
+        parseHTML: (element) => {
+          const { languageClassPrefix } = this.options
+          let fchild = element.firstElementChild
+          if (fchild == null) {
+            for (const c of element.childNodes) {
+              if (c.nodeType === 1) {
+                // According to https://developer.mozilla.org/en-US/docs/Web/API/Node
+                fchild = c as Element
+              }
+            }
+          }
+          const classNames = [...Array.from(fchild?.classList ?? [])]
+          if (classNames.length === 0 && fchild?.className !== undefined) {
+            classNames.push(fchild?.className)
+          }
+          const languages = classNames
+            .filter((className) => className.startsWith(languageClassPrefix))
+            .map((className) => className.replace(languageClassPrefix, ''))
+          const language = languages[0]
+
+          if (language == null) {
+            return null
+          }
+
+          return language
+        },
+        rendered: false
+      }
     }
   }
 })

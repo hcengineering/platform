@@ -62,6 +62,8 @@ export interface Session {
   mins5: StatisticsElement
 
   measureCtx?: { ctx: MeasureContext, time: number }
+
+  lastRequest: number
 }
 
 /**
@@ -117,6 +119,7 @@ export interface Workspace {
   upgrade: boolean
   closing?: Promise<void>
 
+  workspaceId: WorkspaceId
   workspaceName: string
 }
 

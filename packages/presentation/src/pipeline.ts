@@ -1,3 +1,4 @@
+import { Analytics } from '@hcengineering/analytics'
 import {
   toFindResult,
   type Class,
@@ -18,7 +19,7 @@ import {
   type TxResult,
   type WithLookup
 } from '@hcengineering/core'
-import { type Resource } from '@hcengineering/platform'
+import { setPlatformStatus, unknownError, type Resource } from '@hcengineering/platform'
 
 /**
  * @public
@@ -112,9 +113,16 @@ export class PresentationPipelineImpl implements PresentationPipeline {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
-    return this.head !== undefined
-      ? await this.head.findAll(_class, query, options)
-      : await this.client.findAll(_class, query, options)
+    try {
+      return this.head !== undefined
+        ? await this.head.findAll(_class, query, options)
+        : await this.client.findAll(_class, query, options)
+    } catch (err) {
+      Analytics.handleError(err as Error)
+      const status = unknownError(err)
+      await setPlatformStatus(status)
+      return toFindResult([], -1)
+    }
   }
 
   async searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
@@ -126,9 +134,15 @@ export class PresentationPipelineImpl implements PresentationPipeline {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<WithLookup<T> | undefined> {
-    return this.head !== undefined
-      ? await this.head.findOne(_class, query, options)
-      : await this.client.findOne(_class, query, options)
+    try {
+      return this.head !== undefined
+        ? await this.head.findOne(_class, query, options)
+        : await this.client.findOne(_class, query, options)
+    } catch (err) {
+      Analytics.handleError(err as Error)
+      const status = unknownError(err)
+      await setPlatformStatus(status)
+    }
   }
 
   async subscribe<T extends Doc>(
@@ -147,15 +161,26 @@ export class PresentationPipelineImpl implements PresentationPipeline {
   }
 
   async tx (tx: Tx): Promise<TxResult> {
-    if (this.head === undefined) {
-      return await this.client.tx(tx)
-    } else {
-      return await this.head.tx(tx)
+    try {
+      if (this.head === undefined) {
+        return await this.client.tx(tx)
+      } else {
+        return await this.head.tx(tx)
+      }
+    } catch (err) {
+      Analytics.handleError(err as Error)
+      const status = unknownError(err)
+      await setPlatformStatus(status)
+      return {}
     }
   }
 
   async close (): Promise<void> {
-    await this.head?.close()
+    if (this.head !== undefined) {
+      await this.head.close()
+      return
+    }
+    await this.client.close()
   }
 }
 
@@ -173,7 +198,11 @@ export abstract class BasePresentationMiddleware {
   }
 
   async provideClose (): Promise<void> {
-    await this.next?.close()
+    if (this.next !== undefined) {
+      await this.next.close()
+      return
+    }
+    await this.client.close()
   }
 
   async findAll<T extends Doc>(

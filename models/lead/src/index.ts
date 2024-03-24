@@ -238,14 +238,6 @@ export function createModel (builder: Builder): void {
         '_class',
         'leads',
         'attachments',
-        {
-          key: '',
-          presenter: tracker.component.RelatedIssueSelector,
-          props: {
-            kind: 'link'
-          },
-          label: tracker.string.Relations
-        },
         'comments',
         'modifiedOn',
         {
@@ -257,13 +249,6 @@ export function createModel (builder: Builder): void {
       configOptions: {
         hiddenKeys: ['name'],
         sortable: true
-      },
-      options: {
-        lookup: {
-          _id: {
-            related: [tracker.class.Issue, 'relations._id']
-          }
-        }
       }
     },
     lead.viewlet.TableCustomer
@@ -280,14 +265,6 @@ export function createModel (builder: Builder): void {
         'title',
         'attachedTo',
         'assignee',
-        {
-          key: '',
-          presenter: tracker.component.RelatedIssueSelector,
-          props: {
-            kind: 'link'
-          },
-          label: tracker.string.Issues
-        },
         'status',
         'attachments',
         'comments',
@@ -299,13 +276,6 @@ export function createModel (builder: Builder): void {
       ],
       configOptions: {
         sortable: true
-      },
-      options: {
-        lookup: {
-          _id: {
-            related: [tracker.class.Issue, 'relations._id']
-          }
-        }
       }
     },
     lead.viewlet.TableLead
@@ -362,12 +332,6 @@ export function createModel (builder: Builder): void {
             _class: lead.mixin.Customer,
             maxWidth: '10rem'
           }
-        },
-        {
-          key: '',
-          presenter: tracker.component.RelatedIssueSelector,
-          label: tracker.string.Relations,
-          props: { size: 'small' }
         },
         { key: 'attachments', displayProps: { key: 'attachments', suffix: true } },
         { key: 'comments', displayProps: { key: 'comments', suffix: true } },

@@ -142,10 +142,24 @@ class TSessionManager implements SessionManager {
 
           s[1].session.current = { find: 0, tx: 0 }
         }
-        for (const r of s[1].session.requests.values()) {
-          const ed = Date.now()
+        const now = Date.now()
+        const diff = now - s[1].session.lastRequest
+        if (diff > 60000) {
+          console.log('session hang, closing...', h[0], s[1].session.getUser())
+          void this.close(s[1].socket, h[1].workspaceId, 1001, 'CLIENT_HANGOUT')
+          continue
+        }
+        if (diff > 20000 && this.ticks % 10 === 0) {
+          void s[1].socket.send(
+            h[1].context,
+            { result: 'ping' },
+            s[1].session.binaryResponseMode,
+            s[1].session.useCompression
+          )
+        }
 
-          if (ed - r.start > 30000) {
+        for (const r of s[1].session.requests.values()) {
+          if (now - r.start > 30000) {
             console.log(h[0], 'request hang found, 30sec', h[0], s[1].session.getUser(), r.params)
           }
         }
@@ -175,7 +189,7 @@ class TSessionManager implements SessionManager {
         },
         body: JSON.stringify({
           method: 'getWorkspaceInfo',
-          params: []
+          params: [true]
         })
       })
     ).json()
@@ -198,17 +212,13 @@ class TSessionManager implements SessionManager {
     return await baseCtx.with('📲 add-session', {}, async (ctx) => {
       const wsString = toWorkspaceString(token.workspace, '@')
 
-      const workspaceInfo =
-        accountsUrl !== ''
-          ? await this.getWorkspaceInfo(accountsUrl, rawToken)
-          : {
-              workspace: token.workspace.name,
-              workspaceUrl: token.workspace.name,
-              workspaceName: token.workspace.name
-            }
-      if (workspaceInfo === undefined) {
+      let workspaceInfo =
+        accountsUrl !== '' ? await this.getWorkspaceInfo(accountsUrl, rawToken) : this.wsFromToken(token)
+      if (workspaceInfo === undefined && token.extra?.admin !== 'true') {
         // No access to workspace for token.
         return { error: new Error(`No access to workspace for token ${token.email} ${token.workspace.name}`) }
+      } else {
+        workspaceInfo = this.wsFromToken(token)
       }
 
       let workspace = this.workspaces.get(wsString)
@@ -262,6 +272,7 @@ class TSessionManager implements SessionManager {
       }
 
       const session = this.createSession(token, pipeline)
+
       session.sessionId = sessionId !== undefined && (sessionId ?? '').trim().length > 0 ? sessionId : generateId()
       session.sessionInstanceId = generateId()
       this.sessions.set(ws.id, { session, socket: ws })
@@ -279,6 +290,18 @@ class TSessionManager implements SessionManager {
       }
       return { session, context: workspace.context, workspaceName }
     })
+  }
+
+  private wsFromToken (token: Token): {
+    workspace: string
+    workspaceUrl?: string | null
+    workspaceName?: string
+  } {
+    return {
+      workspace: token.workspace.name,
+      workspaceUrl: token.workspace.name,
+      workspaceName: token.workspace.name
+    }
   }
 
   private async createUpgradeSession (
@@ -367,6 +390,7 @@ class TSessionManager implements SessionManager {
       ),
       sessions: new Map(),
       upgrade,
+      workspaceId: token.workspace,
       workspaceName
     }
     if (LOGGING_ENABLED) console.time(workspaceName)
@@ -378,8 +402,7 @@ class TSessionManager implements SessionManager {
   private async setStatus (ctx: MeasureContext, session: Session, online: boolean): Promise<void> {
     try {
       const user = (
-        await session.findAll(
-          ctx,
+        await session.pipeline().modelDb.findAll(
           core.class.Account,
           {
             email: session.getUser()
@@ -388,11 +411,12 @@ class TSessionManager implements SessionManager {
         )
       )[0]
       if (user === undefined) return
-      const status = (await session.findAll(ctx, core.class.UserStatus, { modifiedBy: user._id }, { limit: 1 }))[0]
+      const status = (await session.findAll(ctx, core.class.UserStatus, { user: user._id }, { limit: 1 }))[0]
       const txFactory = new TxFactory(user._id, true)
       if (status === undefined) {
         const tx = txFactory.createTxCreateDoc(core.class.UserStatus, user._id as string as Ref<Space>, {
-          online
+          online,
+          user: user._id
         })
         await session.tx(ctx, tx)
       } else if (status.online !== online) {

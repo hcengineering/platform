@@ -1,21 +1,39 @@
+<!--
+// Copyright © 2024 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+-->
+
 <script lang="ts">
-  import { PersonAccount } from '@hcengineering/contact'
-  import { DocumentQuery, Ref, SortingOrder, WithLookup, getCurrentAccount, IdMap, toIdMap } from '@hcengineering/core'
-  import { IntlString } from '@hcengineering/platform'
-  import { createQuery } from '@hcengineering/presentation'
+  import type { DocumentQuery, Ref, WithLookup, IdMap } from '@hcengineering/core'
+  import type { ToDo, WorkSlot } from '@hcengineering/time'
+  import type { PersonAccount } from '@hcengineering/contact'
+  import type { IntlString } from '@hcengineering/platform'
+  import type { TagElement } from '@hcengineering/tags'
+  import type { Project } from '@hcengineering/tracker'
+  import type { ToDosMode } from '..'
   import { Scroller, areDatesEqual, todosSP, defaultSP, Header, ButtonIcon, Label } from '@hcengineering/ui'
-  import { ToDo, WorkSlot } from '@hcengineering/time'
-  import { ToDosMode } from '..'
+  import { getCurrentAccount, toIdMap, SortingOrder } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import tracker from '@hcengineering/tracker'
+  import tags from '@hcengineering/tags'
+  import view from '@hcengineering/view-resources/src/plugin'
   import { getNearest } from '../utils'
-  import MenuClose from './icons/MenuClose.svelte'
-  import MenuOpen from './icons/MenuOpen.svelte'
   import CreateToDo from './CreateToDo.svelte'
   import ToDoGroup from './ToDoGroup.svelte'
+  import MenuClose from './icons/MenuClose.svelte'
+  import MenuOpen from './icons/MenuOpen.svelte'
   import IconDiff from './icons/Diff.svelte'
   import time from '../plugin'
-  import tags, { TagElement } from '@hcengineering/tags'
-  import tracker, { Project } from '@hcengineering/tracker'
-  import view from '@hcengineering/view-resources/src/plugin'
 
   export let mode: ToDosMode
   export let tag: Ref<TagElement> | undefined
@@ -29,7 +47,6 @@
   const doneQuery = createQuery()
   const inboxQuery = createQuery()
   const activeQuery = createQuery()
-
   const tagsQuery = createQuery()
   const projectsQuery = createQuery()
 
@@ -129,7 +146,7 @@
         },
         {
           limit: 200,
-          sort: { modifiedOn: SortingOrder.Ascending },
+          sort: { rank: SortingOrder.Ascending },
           lookup: { _id: { workslots: time.class.WorkSlot } }
         }
       )
@@ -147,7 +164,7 @@
         },
         {
           limit: 200,
-          sort: { modifiedOn: SortingOrder.Ascending }
+          sort: { rank: SortingOrder.Ascending }
         }
       )
     } else {
@@ -245,8 +262,6 @@
         })
       }
     }
-    todos.sort((a, b) => (a.nearest?.date ?? 0) - (b.nearest?.date ?? 0))
-    scheduled.sort((a, b) => (a.nearest?.date ?? 0) - (b.nearest?.date ?? 0))
     groups.set(
       time.string.ToDos,
       todos.map((p) => p.todo)
@@ -309,8 +324,6 @@
         {mode}
         {projects}
         {largeSize}
-        on:dragstart
-        on:dragend
       />
     {/each}
   </Scroller>
@@ -322,7 +335,6 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    // height: 100%;
     min-width: 0;
     min-height: 0;
   }

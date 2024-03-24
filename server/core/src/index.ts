@@ -15,10 +15,13 @@
 //
 
 export * from './adapter'
-export * from './types'
+export * from './configuration'
 export * from './fulltext'
-export * from './storage'
-export * from './pipeline'
 export * from './indexer'
 export * from './limitter'
+export * from './mem'
+export * from './pipeline'
 export { default, serverCoreId } from './plugin'
+export * from './server'
+export * from './storage'
+export * from './types'

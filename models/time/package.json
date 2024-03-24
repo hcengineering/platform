@@ -50,6 +50,7 @@
     "@hcengineering/notification": "^0.6.16",
     "@hcengineering/model-tracker": "^0.6.0",
     "@hcengineering/time": "^0.6.0",
-    "@hcengineering/time-resources": "^0.6.0"
+    "@hcengineering/time-resources": "^0.6.0",
+    "@hcengineering/rank": "^0.6.0"
   }
 }

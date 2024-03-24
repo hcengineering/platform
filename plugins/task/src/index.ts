@@ -20,6 +20,7 @@ import {
   Class,
   Doc,
   Mixin,
+  type Rank,
   Ref,
   Space,
   Status,
@@ -29,7 +30,6 @@ import {
 import { NotificationType } from '@hcengineering/notification'
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import type { Rank } from '@hcengineering/rank'
 import type { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
 import { Action, IconProps, ViewletDescriptor } from '@hcengineering/view'
 
@@ -48,7 +48,7 @@ export interface Project extends Space {
 /**
  * @public
  */
-export interface Task extends AttachedDoc, DocWithRank {
+export interface Task extends AttachedDoc {
   kind: Ref<TaskType>
   status: Ref<Status>
   isDone?: boolean
@@ -59,6 +59,7 @@ export interface Task extends AttachedDoc, DocWithRank {
   attachments?: number
   labels?: number
   identifier: string
+  rank: Rank
 }
 
 /**

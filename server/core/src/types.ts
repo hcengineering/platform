@@ -14,35 +14,35 @@
 //
 
 import {
-  Account,
-  Class,
-  Doc,
-  DocumentQuery,
-  FindOptions,
-  FindResult,
-  Hierarchy,
-  LowLevelStorage,
-  MeasureContext,
+  type Account,
+  type Class,
+  type Doc,
+  type DocumentQuery,
+  type FindOptions,
+  type FindResult,
+  type Hierarchy,
+  type LowLevelStorage,
+  type MeasureContext,
   MeasureMetricsContext,
-  ModelDb,
-  Obj,
-  Ref,
-  SearchOptions,
-  SearchQuery,
-  SearchResult,
-  ServerStorage,
-  Space,
-  Storage,
-  Timestamp,
-  Tx,
-  TxFactory,
-  TxResult,
-  WorkspaceId,
-  WorkspaceIdWithUrl
+  type ModelDb,
+  type Obj,
+  type Ref,
+  type SearchOptions,
+  type SearchQuery,
+  type SearchResult,
+  type ServerStorage,
+  type Space,
+  type Storage,
+  type Timestamp,
+  type Tx,
+  type TxFactory,
+  type TxResult,
+  type WorkspaceId,
+  type WorkspaceIdWithUrl
 } from '@hcengineering/core'
-import { MinioService } from '@hcengineering/minio'
 import type { Asset, Resource } from '@hcengineering/platform'
-import { Readable } from 'stream'
+import { type StorageAdapter } from './storage'
+import { type Readable } from 'stream'
 
 /**
  * @public
@@ -205,11 +205,6 @@ export interface SearchStringResult {
 /**
  * @public
  */
-export type StorageAdapter = MinioService
-
-/**
- * @public
- */
 export interface FullTextAdapter {
   index: (doc: IndexedDoc) => Promise<TxResult>
   update: (id: Ref<Doc>, update: Record<string, any>) => Promise<TxResult>
@@ -302,15 +297,6 @@ export type FullTextAdapterFactory = (
   workspace: WorkspaceId,
   context: MeasureContext
 ) => Promise<FullTextAdapter>
-
-/**
- * @public
- */
-export interface ContentTextAdapterConfiguration {
-  factory: ContentTextAdapterFactory
-  contentType: string
-  url: string
-}
 
 /**
  * @public
@@ -411,4 +397,17 @@ export interface SearchPresenter extends Class<Doc> {
   searchConfig: ClassSearchConfig
   getSearchShortTitle?: SearchPresenterFunc
   getSearchTitle?: SearchPresenterFunc
+}
+
+/**
+ * @public
+ */
+export interface ServerStorageOptions {
+  // If defined, will skip update of attached documents on document update.
+  skipUpdateAttached?: boolean
+
+  // Indexing is not required to be started for upgrade mode.
+  upgrade: boolean
+
+  broadcast?: BroadcastFunc
 }

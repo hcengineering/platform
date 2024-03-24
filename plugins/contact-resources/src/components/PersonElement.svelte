@@ -41,7 +41,7 @@
     <DocNavLink object={value} onClick={onEdit} {disabled} {noUnderline} {colorInherit} {accent} noOverflow>
       <span
         use:tooltip={disabled ? undefined : showTooltip}
-        class="antiPresenter"
+        class="antiPresenter h-full"
         class:text-base={enlargedText}
         style:max-width={maxWidth}
       >

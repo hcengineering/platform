@@ -434,14 +434,6 @@ export function createModel (builder: Builder): void {
         'city',
         'applications',
         'attachments',
-        {
-          key: '',
-          presenter: tracker.component.RelatedIssueSelector,
-          props: {
-            kind: 'link'
-          },
-          label: tracker.string.Relations
-        },
         'comments',
         {
           // key: '$lookup.skills', // Required, since presenter require list of tag references or '' and TagsPopupPresenter
@@ -465,13 +457,6 @@ export function createModel (builder: Builder): void {
       configOptions: {
         hiddenKeys: ['name'],
         sortable: true
-      },
-      options: {
-        lookup: {
-          _id: {
-            related: [tracker.class.Issue, 'relations._id']
-          }
-        }
       }
     },
     recruit.viewlet.TableCandidate
@@ -528,14 +513,6 @@ export function createModel (builder: Builder): void {
           label: recruit.string.Applications
         },
         'comments',
-        {
-          key: '',
-          presenter: tracker.component.RelatedIssueSelector,
-          props: {
-            kind: 'link'
-          },
-          label: tracker.string.Issues
-        },
         '$lookup.company',
         '$lookup.company.$lookup.channels',
         'location',
@@ -577,12 +554,6 @@ export function createModel (builder: Builder): void {
           label: recruit.string.Applications
         },
         'comments',
-        {
-          key: '',
-          presenter: tracker.component.RelatedIssueSelector,
-          label: tracker.string.Issues,
-          props: { size: 'small', kind: 'link' }
-        },
         '$lookup.channels',
         {
           key: '@applications.modifiedOn',
@@ -615,14 +586,6 @@ export function createModel (builder: Builder): void {
           }
         },
         'assignee',
-        {
-          key: '',
-          presenter: tracker.component.RelatedIssueSelector,
-          props: {
-            kind: 'link'
-          },
-          label: tracker.string.Issues
-        },
         'status',
         'attachments',
         'comments',
@@ -636,13 +599,6 @@ export function createModel (builder: Builder): void {
       configOptions: {
         hiddenKeys: ['name', 'attachedTo'],
         sortable: true
-      },
-      options: {
-        lookup: {
-          _id: {
-            related: [tracker.class.Issue, 'relations._id']
-          }
-        }
       }
     },
     recruit.viewlet.TableApplicant
@@ -665,14 +621,6 @@ export function createModel (builder: Builder): void {
           }
         },
         'assignee',
-        {
-          key: '',
-          presenter: tracker.component.RelatedIssueSelector,
-          props: {
-            kind: 'link'
-          },
-          label: tracker.string.Issues
-        },
         'status',
         'attachments',
         'comments',
@@ -686,9 +634,6 @@ export function createModel (builder: Builder): void {
       ],
       options: {
         lookup: {
-          _id: {
-            related: [tracker.class.Issue, 'relations._id']
-          },
           space: recruit.class.Vacancy
         }
       },
@@ -733,10 +678,7 @@ export function createModel (builder: Builder): void {
         },
         space: recruit.class.Vacancy
       }
-    ],
-    _id: {
-      related: [tracker.class.Issue, 'relations._id']
-    }
+    ]
   }
 
   const applicationDoneOption: ViewOptionModel = {
@@ -811,12 +753,6 @@ export function createModel (builder: Builder): void {
         },
         { key: 'attachments', displayProps: { key: 'attachments', suffix: true } },
         { key: 'comments', displayProps: { key: 'comments', suffix: true } },
-        {
-          key: '',
-          presenter: tracker.component.RelatedIssueSelector,
-          label: tracker.string.Issues,
-          props: { size: 'small' }
-        },
         { key: '', displayProps: { grow: true } },
         {
           key: '$lookup.space.company',
@@ -852,9 +788,6 @@ export function createModel (builder: Builder): void {
       ],
       options: {
         lookup: {
-          _id: {
-            related: [tracker.class.Issue, 'relations._id']
-          },
           space: recruit.class.Vacancy
         }
       },
@@ -931,12 +864,6 @@ export function createModel (builder: Builder): void {
         },
         'comments',
         {
-          key: '',
-          presenter: tracker.component.RelatedIssueSelector,
-          label: tracker.string.Issues,
-          props: { size: 'small' }
-        },
-        {
           key: '$lookup.channels',
           label: contact.string.ContactInfo,
           sortingKey: ['$lookup.channels.lastMessage', '$lookup.attachedTo.channels'],
@@ -986,11 +913,6 @@ export function createModel (builder: Builder): void {
         },
         'description',
         'comments',
-        {
-          key: '',
-          presenter: tracker.component.RelatedIssueSelector,
-          label: tracker.string.Issues
-        },
         { key: '', displayProps: { grow: true } },
         {
           key: '$lookup.company',

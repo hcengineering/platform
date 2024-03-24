@@ -93,5 +93,8 @@ export function unknownStatus (message: string): Status<any> {
  * @public
  */
 export function unknownError (err: unknown): Status {
-  return err instanceof PlatformError ? err.status : err instanceof Error ? unknownStatus(err.message) : ERROR
+  if (err instanceof PlatformError) return err.status
+  if (err instanceof Error) return unknownStatus(err.message)
+  if (typeof err === 'string') return unknownStatus(err)
+  return ERROR
 }

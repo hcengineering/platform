@@ -21,7 +21,7 @@ loadMetadata(time.icon, {
   Team: `${icons}#team`,
   Hashtag: `${icons}#hashtag`,
   Inbox: `${icons}#inbox`,
-  Target: `${icons}#target`,
+  Calendar: `${icons}#calendar`,
   Flag: `${icons}#flag`,
   FilledFlag: `${icons}#filledFlag`,
   Planned: `${icons}#planned`,

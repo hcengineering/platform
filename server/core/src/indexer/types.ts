@@ -14,17 +14,17 @@
 //
 
 import {
-  Class,
-  Doc,
-  DocIndexState,
-  DocumentQuery,
-  DocumentUpdate,
-  Hierarchy,
-  MeasureContext,
-  ModelDb,
-  Ref
+  type Class,
+  type Doc,
+  type DocIndexState,
+  type DocumentQuery,
+  type DocumentUpdate,
+  type Hierarchy,
+  type MeasureContext,
+  type ModelDb,
+  type Ref
 } from '@hcengineering/core'
-import { DbAdapter } from '../adapter'
+import { type DbAdapter } from '../adapter'
 import type { IndexedDoc } from '../types'
 
 /**

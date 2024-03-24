@@ -33,13 +33,12 @@ import core, {
   TxResult,
   WorkspaceId
 } from '@hcengineering/core'
-import { MinioService, MinioWorkspaceItem } from '@hcengineering/minio'
-import { DbAdapter } from '@hcengineering/server-core'
+import { DbAdapter, StorageAdapter, WorkspaceItem } from '@hcengineering/server-core'
 
-class MinioBlobAdapter implements DbAdapter {
+class StorageBlobAdapter implements DbAdapter {
   constructor (
     readonly workspaceId: WorkspaceId,
-    readonly client: MinioService
+    readonly client: StorageAdapter
   ) {}
 
   async findAll<T extends Doc>(
@@ -63,14 +62,14 @@ class MinioBlobAdapter implements DbAdapter {
   async close (): Promise<void> {}
 
   find (domain: Domain): StorageIterator {
-    let listRecieved = false
-    let items: MinioWorkspaceItem[] = []
+    let listReceived = false
+    let items: WorkspaceItem[] = []
     let pos = 0
     return {
       next: async () => {
-        if (!listRecieved) {
+        if (!listReceived) {
           items = await this.client.list(this.workspaceId)
-          listRecieved = true
+          listReceived = true
         }
         if (pos < items?.length) {
           const item = items[pos]
@@ -143,15 +142,15 @@ class MinioBlobAdapter implements DbAdapter {
 /**
  * @public
  */
-export async function createMinioDataAdapter (
+export async function createStorageDataAdapter (
   hierarchy: Hierarchy,
   url: string,
   workspaceId: WorkspaceId,
   modelDb: ModelDb,
-  storage?: MinioService
+  storage?: StorageAdapter
 ): Promise<DbAdapter> {
   if (storage === undefined) {
     throw new Error('minio storage adapter require minio')
   }
-  return new MinioBlobAdapter(workspaceId, storage)
+  return new StorageBlobAdapter(workspaceId, storage)
 }

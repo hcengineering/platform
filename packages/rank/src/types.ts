@@ -13,9 +13,4 @@
 // limitations under the License.
 //
 
-/**
- * @public
- *
- * String representation of {@link https://www.npmjs.com/package/lexorank LexoRank} type
- */
-export type Rank = string
+export { type Rank } from '@hcengineering/core'

@@ -55,6 +55,7 @@
     "CreatedToDo": "Создал(а) Todo",
     "NewToDoDetails": "Новое Todo: {details}",
     "MarkedAsDone": "Выполнено",
-    "WorkSchedule": "Расписание работы"
+    "WorkSchedule": "Расписание работы",
+    "SummaryDuration": "Всего"
   }
 }

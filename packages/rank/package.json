@@ -32,6 +32,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "@hcengineering/core": "^0.6.28",
     "lexorank": "~1.0.4"
   }
 }

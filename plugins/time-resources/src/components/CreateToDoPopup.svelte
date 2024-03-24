@@ -13,22 +13,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Calendar, generateEventId } from '@hcengineering/calendar'
-  import calendar from '@hcengineering/calendar-resources/src/plugin'
-  import { PersonAccount } from '@hcengineering/contact'
-  import core, { AttachedData, Doc, Ref, generateId, getCurrentAccount } from '@hcengineering/core'
+  import core, { AttachedData, Doc, Ref, SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
+  import { Button, Component, EditBox, IconClose, Label, Scroller } from '@hcengineering/ui'
   import { SpaceSelector, createQuery, getClient } from '@hcengineering/presentation'
-  import tagsPlugin, { TagReference } from '@hcengineering/tags'
-  import task from '@hcengineering/task'
-  import { StyledTextBox } from '@hcengineering/text-editor'
-  import { Button, Component, EditBox, IconClose, Label } from '@hcengineering/ui'
   import { ToDo, ToDoPriority, WorkSlot } from '@hcengineering/time'
+  import { Calendar, generateEventId } from '@hcengineering/calendar'
+  import tagsPlugin, { TagReference } from '@hcengineering/tags'
   import { createEventDispatcher } from 'svelte'
-  import time from '../plugin'
-  import DueDateEditor from './DueDateEditor.svelte'
-  import PriorityEditor from './PriorityEditor.svelte'
-  import Workslots from './Workslots.svelte'
   import { VisibilityEditor } from '@hcengineering/calendar-resources'
+  import { StyledTextBox } from '@hcengineering/text-editor'
+  import { PersonAccount } from '@hcengineering/contact'
+  import calendar from '@hcengineering/calendar-resources/src/plugin'
+  import task, { makeRank } from '@hcengineering/task'
+  import PriorityEditor from './PriorityEditor.svelte'
+  import DueDateEditor from './DueDateEditor.svelte'
+  import Workslots from './Workslots.svelte'
+  import time from '../plugin'
 
   export let object: Doc | undefined
 
@@ -40,7 +40,8 @@
     priority: ToDoPriority.NoPriority,
     attachedSpace: object?.space,
     visibility: 'private',
-    user: acc.person
+    user: acc.person,
+    rank: ''
   }
 
   const dispatch = createEventDispatcher()
@@ -54,7 +55,18 @@
 
   async function saveToDo (): Promise<void> {
     loading = true
-    const id = await client.addCollection(
+    const ops = client.apply('todo')
+    const latestTodo = await ops.findOne(
+      time.class.ToDo,
+      {
+        user: acc.person,
+        doneOn: null
+      },
+      {
+        sort: { rank: SortingOrder.Ascending }
+      }
+    )
+    const id = await ops.addCollection(
       time.class.ToDo,
       time.space.ToDos,
       object?._id ?? time.ids.NotAttached,
@@ -68,12 +80,13 @@
         visibility: todo.visibility,
         user: acc.person,
         dueDate: todo.dueDate,
-        attachedSpace: todo.attachedSpace
+        attachedSpace: todo.attachedSpace,
+        rank: makeRank(undefined, latestTodo?.rank)
       }
     )
     const space = `${acc._id}_calendar` as Ref<Calendar>
     for (const slot of slots) {
-      await client.addCollection(time.class.WorkSlot, space, id, time.class.ToDo, 'workslots', {
+      await ops.addCollection(time.class.WorkSlot, space, id, time.class.ToDo, 'workslots', {
         eventId: generateEventId(),
         date: slot.date,
         dueDate: slot.dueDate,
@@ -87,8 +100,9 @@
       })
     }
     for (const tag of tags) {
-      await client.addCollection(tagsPlugin.class.TagReference, time.space.ToDos, id, time.class.ToDo, 'labels', tag)
+      await ops.addCollection(tagsPlugin.class.TagReference, time.space.ToDos, id, time.class.ToDo, 'labels', tag)
     }
+    await ops.commit()
     dispatch('close', true)
   }
 
@@ -185,71 +199,72 @@
       />
     </div>
   </div>
-  <div class="block flex-no-shrink">
-    <div class="pb-4">
-      <StyledTextBox
-        alwaysEdit={true}
-        maxHeight="limited"
-        showButtons={false}
-        placeholder={calendar.string.Description}
-        bind:content={todo.description}
-      />
-    </div>
-    <div class="flex-row-center gap-1-5 mb-1">
-      <DueDateEditor bind:value={todo.dueDate} />
-      <PriorityEditor bind:value={todo.priority} />
-    </div>
-  </div>
-  <div class="block flex-no-shrink">
-    <div class="flex-row-center gap-1-5 mb-1">
-      <div>
-        <Label label={time.string.AddTo} />
+  <Scroller>
+    <div class="block flex-no-shrink">
+      <div class="pb-4">
+        <StyledTextBox
+          alwaysEdit={true}
+          maxHeight="limited"
+          showButtons={false}
+          placeholder={calendar.string.Description}
+          bind:content={todo.description}
+        />
       </div>
-      <SpaceSelector
-        _class={task.class.Project}
-        query={{ archived: false, members: getCurrentAccount()._id }}
-        label={core.string.Space}
-        autoSelect={false}
-        allowDeselect
-        kind={'regular'}
-        size={'medium'}
-        focus={false}
-        bind:space={todo.attachedSpace}
-      />
-      <VisibilityEditor bind:value={todo.visibility} />
+      <div class="flex-row-center gap-1-5 mb-1">
+        <PriorityEditor bind:value={todo.priority} />
+        <VisibilityEditor size="small" bind:value={todo.visibility} />
+        <DueDateEditor bind:value={todo.dueDate} />
+      </div>
     </div>
-  </div>
-  <div class="block flex-no-shrink">
-    <div class="flex-row-center gap-1-5 mb-1">
-      <Component
-        is={tagsPlugin.component.DraftTagsEditor}
-        props={{ tags, targetClass: time.class.ToDo }}
-        on:change={(e) => {
-          tags = e.detail
-        }}
-      />
+    <div class="block flex-no-shrink">
+      <div class="flex-row-center gap-1-5 mb-1">
+        <div>
+          <Label label={time.string.AddTo} />
+        </div>
+        <SpaceSelector
+          _class={task.class.Project}
+          query={{ archived: false, members: getCurrentAccount()._id }}
+          label={core.string.Space}
+          autoSelect={false}
+          allowDeselect
+          kind={'regular'}
+          size={'medium'}
+          focus={false}
+          bind:space={todo.attachedSpace}
+        />
+      </div>
     </div>
-  </div>
-  <div class="block flex-no-shrink end">
-    <div class="flex-row-center gap-1-5">
+    <div class="block flex-no-shrink">
+      <div class="flex-row-center gap-1-5 mb-1">
+        <Component
+          is={tagsPlugin.component.DraftTagsEditor}
+          props={{ tags, targetClass: time.class.ToDo }}
+          on:change={(e) => {
+            tags = e.detail
+          }}
+        />
+      </div>
+    </div>
+    <div class="block flex-gap-4 flex-no-shrink end">
       <Workslots
         bind:slots
+        shortcuts={false}
         on:remove={removeSlot}
         on:create={createSlot}
         on:change={changeSlot}
         on:dueChange={changeDueSlot}
       />
     </div>
-  </div>
-  <div class="flex-row-reverse btn flex-no-shrink">
-    <Button
-      kind="primary"
-      {loading}
-      label={time.string.AddToDo}
-      on:click={saveToDo}
-      disabled={todo?.title === undefined || todo?.title === ''}
-    />
-  </div>
+    <div class="flex-row-reverse btn flex-no-shrink">
+      <Button
+        kind="primary"
+        {loading}
+        label={time.string.AddToDo}
+        on:click={saveToDo}
+        disabled={todo?.title === undefined || todo?.title === ''}
+      />
+    </div>
+  </Scroller>
 </div>
 
 <style lang="scss">
