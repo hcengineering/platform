@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AttachedData, Doc, Ref, generateId, getCurrentAccount } from '@hcengineering/core'
+  import core, { AttachedData, Doc, Ref, SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
   import { Button, Component, EditBox, IconClose, Label, Scroller } from '@hcengineering/ui'
   import { SpaceSelector, createQuery, getClient } from '@hcengineering/presentation'
   import { ToDo, ToDoPriority, WorkSlot } from '@hcengineering/time'
@@ -24,7 +24,7 @@
   import { StyledTextBox } from '@hcengineering/text-editor'
   import { PersonAccount } from '@hcengineering/contact'
   import calendar from '@hcengineering/calendar-resources/src/plugin'
-  import task from '@hcengineering/task'
+  import task, { makeRank } from '@hcengineering/task'
   import PriorityEditor from './PriorityEditor.svelte'
   import DueDateEditor from './DueDateEditor.svelte'
   import Workslots from './Workslots.svelte'
@@ -40,7 +40,8 @@
     priority: ToDoPriority.NoPriority,
     attachedSpace: object?.space,
     visibility: 'private',
-    user: acc.person
+    user: acc.person,
+    rank: ''
   }
 
   const dispatch = createEventDispatcher()
@@ -54,7 +55,18 @@
 
   async function saveToDo (): Promise<void> {
     loading = true
-    const id = await client.addCollection(
+    const ops = client.apply('todo')
+    const latestTodo = await ops.findOne(
+      time.class.ToDo,
+      {
+        user: acc.person,
+        doneOn: null
+      },
+      {
+        sort: { rank: SortingOrder.Ascending }
+      }
+    )
+    const id = await ops.addCollection(
       time.class.ToDo,
       time.space.ToDos,
       object?._id ?? time.ids.NotAttached,
@@ -68,12 +80,13 @@
         visibility: todo.visibility,
         user: acc.person,
         dueDate: todo.dueDate,
-        attachedSpace: todo.attachedSpace
+        attachedSpace: todo.attachedSpace,
+        rank: makeRank(undefined, latestTodo?.rank)
       }
     )
     const space = `${acc._id}_calendar` as Ref<Calendar>
     for (const slot of slots) {
-      await client.addCollection(time.class.WorkSlot, space, id, time.class.ToDo, 'workslots', {
+      await ops.addCollection(time.class.WorkSlot, space, id, time.class.ToDo, 'workslots', {
         eventId: generateEventId(),
         date: slot.date,
         dueDate: slot.dueDate,
@@ -87,8 +100,9 @@
       })
     }
     for (const tag of tags) {
-      await client.addCollection(tagsPlugin.class.TagReference, time.space.ToDos, id, time.class.ToDo, 'labels', tag)
+      await ops.addCollection(tagsPlugin.class.TagReference, time.space.ToDos, id, time.class.ToDo, 'labels', tag)
     }
+    await ops.commit()
     dispatch('close', true)
   }
 

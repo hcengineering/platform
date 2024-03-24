@@ -25,6 +25,7 @@ import {
   type ServerStorage,
   type WorkspaceId
 } from '@hcengineering/core'
+import { MinioService } from '@hcengineering/minio'
 import { createElasticAdapter, createElasticBackupDataAdapter } from '@hcengineering/elastic'
 import {
   ConfigurationMiddleware,
@@ -33,15 +34,14 @@ import {
   QueryJoinMiddleware,
   SpaceSecurityMiddleware
 } from '@hcengineering/middleware'
-import { MinioService } from '@hcengineering/minio'
 import { createMongoAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
 import { OpenAIEmbeddingsStage, openAIId, openAIPluginImpl } from '@hcengineering/openai'
 import { addLocation, addStringsLoader } from '@hcengineering/platform'
 import {
   BackupClientSession,
-  createMinioDataAdapter,
   createNullAdapter,
   createRekoniAdapter,
+  createStorageDataAdapter,
   createYDocAdapter,
   getMetricsContext,
   type MinioConfig
@@ -60,6 +60,7 @@ import {
   FullTextPushStage,
   globalIndexer,
   IndexedFieldStage,
+  type StorageAdapter,
   type ContentTextAdapter,
   type DbConfiguration,
   type FullTextAdapter,
@@ -238,7 +239,7 @@ export function start (
     workspace: WorkspaceId,
     adapter: FullTextAdapter,
     storage: ServerStorage,
-    storageAdapter: MinioService,
+    storageAdapter: StorageAdapter,
     contentAdapter: ContentTextAdapter
   ): FullTextPipelineStage[] {
     // Allow 2 workspaces to be indexed in parallel
@@ -323,7 +324,7 @@ export function start (
           url: ''
         },
         MinioData: {
-          factory: createMinioDataAdapter,
+          factory: createStorageDataAdapter,
           url: ''
         },
         FullTextBlob: {

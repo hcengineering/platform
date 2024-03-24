@@ -13,9 +13,10 @@
 // limitations under the License.
 //
 
-import { MeasureContext, WorkspaceId } from '@hcengineering/core'
-import { ContentTextAdapter, ContentTextAdapterConfiguration } from './types'
-import { Readable } from 'stream'
+import { type MeasureContext, type WorkspaceId } from '@hcengineering/core'
+import { type Readable } from 'stream'
+import { type ContentTextAdapterConfiguration } from './configuration'
+import { type ContentTextAdapter } from './types'
 
 class ContentAdapter implements ContentTextAdapter {
   constructor (

@@ -89,8 +89,6 @@ class Connection implements ClientConnection {
     readonly onConnect?: (event: ClientConnectEvent) => Promise<void>
   ) {
     this.interval = setInterval(() => {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-
       if (this.pingResponse !== 0 && Date.now() - this.pingResponse > hangTimeout) {
         // No ping response from server.
         const s = this.websocket
@@ -108,6 +106,7 @@ class Connection implements ClientConnection {
         this.websocket = null
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       void this.sendRequest({ method: 'ping', params: [] }).then(() => {
         this.pingResponse = Date.now()
       })
@@ -227,6 +226,10 @@ class Connection implements ClientConnection {
           void this.onConnect?.(
             (resp as HelloResponse).reconnect === true ? ClientConnectEvent.Reconnected : ClientConnectEvent.Connected
           )
+          return
+        }
+        if (resp.result === 'ping') {
+          void this.sendRequest({ method: 'ping', params: [] })
           return
         }
         if (resp.id !== undefined) {

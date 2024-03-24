@@ -21,6 +21,7 @@ import core, {
   Doc,
   DocumentUpdate,
   Ref,
+  SortingOrder,
   Status,
   Tx,
   TxCUD,
@@ -38,7 +39,7 @@ import {
   getNotificationContent,
   isShouldNotifyTx
 } from '@hcengineering/server-notification-resources'
-import task from '@hcengineering/task'
+import task, { makeRank } from '@hcengineering/task'
 import tracker, { Issue, IssueStatus, Project, TimeSpendReport } from '@hcengineering/tracker'
 import serverTime, { OnToDo, ToDoFactory } from '@hcengineering/server-time'
 import time, { ProjectToDo, ToDo, ToDoPriority, TodoAutomationHelper, WorkSlot } from '@hcengineering/time'
@@ -449,6 +450,20 @@ async function getIssueToDoData (
 ): Promise<AttachedData<ProjectToDo> | undefined> {
   const acc = await getPersonAccount(user, control)
   if (acc === undefined) return
+  const firstTodoItem = (
+    await control.findAll(
+      time.class.ToDo,
+      {
+        user: acc.person,
+        doneOn: null
+      },
+      {
+        limit: 1,
+        sort: { rank: SortingOrder.Ascending }
+      }
+    )
+  )[0]
+  const rank = makeRank(undefined, firstTodoItem?.rank)
   const data: AttachedData<ProjectToDo> = {
     attachedSpace: issue.space,
     workslots: 0,
@@ -456,7 +471,8 @@ async function getIssueToDoData (
     priority: ToDoPriority.NoPriority,
     visibility: 'public',
     title: issue.title,
-    user: acc.person
+    user: acc.person,
+    rank
   }
   return data
 }
