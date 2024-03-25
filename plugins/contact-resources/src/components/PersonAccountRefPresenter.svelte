@@ -25,10 +25,11 @@
   export let disabled: boolean = false
   export let inline: boolean = false
   export let accent: boolean = false
+  export let compact = false
 
   $: account = $personAccountByIdStore.get(value)
 </script>
 
 {#if account}
-  <PersonAccountPresenter value={account} {disabled} {inline} {avatarSize} {accent} on:accent-color />
+  <PersonAccountPresenter value={account} {disabled} {inline} {avatarSize} {accent} {compact} on:accent-color />
 {/if}

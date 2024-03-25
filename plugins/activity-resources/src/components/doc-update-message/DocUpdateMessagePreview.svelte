@@ -20,9 +20,9 @@
     DocUpdateMessageViewlet
   } from '@hcengineering/activity'
   import { Action, Component } from '@hcengineering/ui'
-  import { getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { IntlString } from '@hcengineering/platform'
-  import { AttachedDoc, Collection, Doc } from '@hcengineering/core'
+  import { AttachedDoc, Class, Collection, Doc, Ref } from '@hcengineering/core'
   import { AttributeModel } from '@hcengineering/view'
 
   import { getAttributeModel, getCollectionAttribute } from '../../activityMessagesUtils'
@@ -30,6 +30,7 @@
   import DocUpdateMessageContent from './DocUpdateMessageContent.svelte'
   import DocUpdateMessageAttributes from './DocUpdateMessageAttributes.svelte'
   import { createEventDispatcher } from 'svelte'
+  import { buildRemovedDoc, checkIsObjectRemoved } from '@hcengineering/view-resources'
 
   export let value: DisplayDocUpdateMessage
   export let readonly = false
@@ -39,6 +40,8 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
+
+  const objectQuery = createQuery()
 
   let viewlet: DocUpdateMessageViewlet | undefined
   let objectName: IntlString | undefined = undefined
@@ -61,6 +64,19 @@
     attributeModel = model
   })
 
+  $: viewlet?.component && loadObject(value.objectId, value.objectClass)
+
+  async function loadObject (_id: Ref<Doc>, _class: Ref<Class<Doc>>): Promise<void> {
+    const isObjectRemoved = await checkIsObjectRemoved(client, _id, _class)
+
+    if (isObjectRemoved) {
+      object = await buildRemovedDoc(client, _id, _class)
+    } else {
+      objectQuery.query(_class, { _id }, (res) => {
+        object = res[0]
+      })
+    }
+  }
   function onClick (event: MouseEvent): void {
     event.stopPropagation()
     event.preventDefault()
@@ -71,7 +87,7 @@
 <BaseMessagePreview message={value} {type} {readonly} {actions} on:click>
   <span class="textContent overflow-label" class:contentOnly={type === 'content-only'}>
     {#if viewlet?.component && object}
-      <div class="customContent">
+      <span class="customContent">
         {#each value?.previousMessages ?? [] as msg}
           <Component
             is={viewlet.component}
@@ -89,7 +105,7 @@
             onClick
           }}
         />
-      </div>
+      </span>
     {:else if value.action === 'create' || value.action === 'remove'}
       <DocUpdateMessageContent
         message={value}
