@@ -19,18 +19,18 @@
     DisplayDocUpdateMessage,
     DocUpdateMessageViewlet
   } from '@hcengineering/activity'
-  import { Action, Component } from '@hcengineering/ui'
+  import { Action, Component, Icon } from '@hcengineering/ui'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { IntlString } from '@hcengineering/platform'
   import { AttachedDoc, Class, Collection, Doc, Ref } from '@hcengineering/core'
   import { AttributeModel } from '@hcengineering/view'
+  import { createEventDispatcher } from 'svelte'
+  import { buildRemovedDoc, checkIsObjectRemoved } from '@hcengineering/view-resources'
 
   import { getAttributeModel, getCollectionAttribute } from '../../activityMessagesUtils'
   import BaseMessagePreview from '../activity-message/BaseMessagePreview.svelte'
   import DocUpdateMessageContent from './DocUpdateMessageContent.svelte'
   import DocUpdateMessageAttributes from './DocUpdateMessageAttributes.svelte'
-  import { createEventDispatcher } from 'svelte'
-  import { buildRemovedDoc, checkIsObjectRemoved } from '@hcengineering/view-resources'
 
   export let value: DisplayDocUpdateMessage
   export let readonly = false
@@ -85,9 +85,11 @@
 </script>
 
 <BaseMessagePreview message={value} {type} {readonly} {actions} on:click>
-  <span class="textContent overflow-label" class:contentOnly={type === 'content-only'}>
+  <span class="textContent overflow-label flex-presenter" class:contentOnly={type === 'content-only'}>
     {#if viewlet?.component && object}
-      <span class="customContent">
+      <span class="customContent flex-presenter">
+        <Icon size="small" icon={viewlet.icon ?? activity.icon.Activity} />
+        <span class="ml-2" />
         {#each value?.previousMessages ?? [] as msg}
           <Component
             is={viewlet.component}
