@@ -49,6 +49,28 @@ import {
 
 const extensions = [ServerKit]
 
+export function isDocMentioned (doc: Ref<Doc>, content: string | Buffer): boolean {
+  const references = []
+
+  if (content instanceof Buffer) {
+    const nodes = yDocContentToNodes(extensions, content)
+    for (const node of nodes) {
+      references.push(...extractReferences(node))
+    }
+  } else {
+    const doc = parseHTML(content, extensions)
+    references.push(...extractReferences(doc))
+  }
+
+  for (const ref of references) {
+    if (ref.objectId === doc) {
+      return true
+    }
+  }
+
+  return false
+}
+
 export async function getPersonNotificationTxes (
   reference: Data<ActivityReference>,
   control: TriggerControl,
