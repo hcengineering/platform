@@ -14,8 +14,7 @@
 // limitations under the License.
 //
 
-import { Analytics } from '@hcengineering/analytics'
-import client, { ClientSocket, ClientSocketReadyState } from '@hcengineering/client'
+import { ClientSocket } from '@hcengineering/client'
 import core, {
   Account,
   Class,
@@ -39,47 +38,34 @@ import core, {
   TxApplyResult,
   TxHandler,
   TxResult,
-  TxWorkspaceEvent,
-  WorkspaceEvent,
-  generateId
 } from '@hcengineering/core'
-import { PlatformError, UNAUTHORIZED, broadcastEvent, getMetadata, unknownError } from '@hcengineering/platform'
 
-import { HelloRequest, HelloResponse, ReqId, readResponse, serialize } from '@hcengineering/rpc'
+import { ReqId } from '@hcengineering/rpc'
+import OpenConnectionComposite from './openConnection'
+import SendRequestComposite from './sendRequest'
+import RequestPromise from './RequestPromise'
 
 const SECOND = 1000
 const pingTimeout = 10 * SECOND
 const hangTimeout = 5 * 60 * SECOND
-const dialTimeout = 60 * SECOND
-
-class RequestPromise {
-  readonly promise: Promise<any>
-  resolve!: (value?: any) => void
-  reject!: (reason?: any) => void
-  reconnect?: () => void
-  constructor (
-    readonly method: string,
-    readonly params: any[],
-    readonly handleResult?: (result: any) => Promise<void>
-  ) {
-    this.promise = new Promise((resolve, reject) => {
-      this.resolve = resolve
-      this.reject = reject
-    })
-  }
-
-  chunks?: { index: number, data: any[] }[]
-}
 
 class Connection implements ClientConnection {
   private websocket: ClientSocket | Promise<ClientSocket> | null = null
   private readonly requests = new Map<ReqId, RequestPromise>()
   private lastId = 0
-  private readonly interval: number
+  private interval: number
   private sessionId: string | undefined
   private closed = false
-
   private pingResponse: number = Date.now()
+
+  private readonly waitOpenConnection: () => Promise<ClientSocket>
+  private sendRequest (data: {
+    method: string
+    params: any[]
+    // If not defined, on reconnect with timeout, will retry automatically.
+    retry?: () => Promise<boolean>
+    handleResult?: (result: any) => Promise<void>
+  }) : Promise<any> {}
 
   constructor (
     private readonly url: string,
@@ -88,18 +74,25 @@ class Connection implements ClientConnection {
     private readonly onUnauthorized?: () => void,
     readonly onConnect?: (event: ClientConnectEvent) => Promise<void>
   ) {
+    this.waitOpenConnection = OpenConnectionComposite.prototype.waitOpenConnection.bind(this)
+    this.sendRequest = SendRequestComposite.prototype.sendRequest.bind(this)
+
+    this.setupPingInterval()
+  }
+
+  private setupPingInterval () : void {
     this.interval = setInterval(() => {
       if (this.pingResponse !== 0 && Date.now() - this.pingResponse > hangTimeout) {
         // No ping response from server.
-        const s = this.websocket
+        const ws = this.websocket
 
-        if (!(s instanceof Promise)) {
-          console.log('no ping response from server. Closing socket.', s, (s as any)?.readyState)
+        if (!(ws instanceof Promise)) {
+          console.log('no ping response from server. Closing socket.', ws, (ws as any)?.readyState)
           // Trying to close connection and re-establish it.
-          s?.close()
+          ws?.close()
         } else {
-          console.log('no ping response from server. Closing socket.', s)
-          void s.then((s) => {
+          console.log('no ping response from server. Closing socket.', ws)
+          void ws.then((s) => {
             s.close()
           })
         }
@@ -114,288 +107,19 @@ class Connection implements ClientConnection {
   }
 
   async close (): Promise<void> {
+    if (this.closed) return
     this.closed = true
+
     clearInterval(this.interval)
-    if (this.websocket !== null) {
-      if (this.websocket instanceof Promise) {
-        await this.websocket.then((ws) => {
-          ws.close()
-        })
-      } else {
-        this.websocket.close(1000)
-      }
-      this.websocket = null
-    }
-  }
+    if (this.websocket === null) return
 
-  delay = 1
-  pending: Promise<ClientSocket> | undefined
-
-  private async waitOpenConnection (): Promise<ClientSocket> {
-    while (true) {
-      try {
-        const socket = await this.pending
-        if (socket != null && socket.readyState === ClientSocketReadyState.OPEN) {
-          return socket
-        }
-        this.pending = this.openConnection()
-        await this.pending
-        this.delay = 5
-        return await this.pending
-      } catch (err: any) {
-        this.pending = undefined
-        console.log('failed to connect', err)
-        if (err?.code === UNAUTHORIZED.code) {
-          Analytics.handleError(err)
-          this.onUnauthorized?.()
-          throw err
-        }
-        await new Promise((resolve) => {
-          setTimeout(() => {
-            console.log(`delay ${this.delay} second`)
-            resolve(null)
-            if (this.delay !== 15) {
-              this.delay++
-            }
-          }, this.delay * SECOND)
-        })
-      }
-    }
-  }
-
-  sockets = 0
-
-  incomingTimer: any
-
-  private openConnection (): Promise<ClientSocket> {
-    return new Promise((resolve, reject) => {
-      // Use defined factory or browser default one.
-      const clientSocketFactory =
-        getMetadata(client.metadata.ClientSocketFactory) ??
-        ((url: string) => {
-          const s = new WebSocket(url)
-          s.binaryType = 'arraybuffer'
-          return s as ClientSocket
-        })
-
-      if (this.sessionId === undefined) {
-        // Find local session id in session storage.
-        this.sessionId =
-          typeof sessionStorage !== 'undefined'
-            ? sessionStorage.getItem('session.id.' + this.url) ?? undefined
-            : undefined
-        this.sessionId = this.sessionId ?? generateId()
-        if (typeof sessionStorage !== 'undefined') {
-          sessionStorage.setItem('session.id.' + this.url, this.sessionId)
-        }
-      }
-      const websocket = clientSocketFactory(this.url + `?sessionId=${this.sessionId}`)
-      const opened = false
-      const socketId = this.sockets++
-      let binaryResponse = false
-
-      const dialTimer = setTimeout(() => {
-        if (!opened) {
-          websocket.close()
-          reject(new PlatformError(unknownError('timeout')))
-        }
-      }, dialTimeout)
-
-      websocket.onmessage = (event: MessageEvent) => {
-        const resp = readResponse<any>(event.data, binaryResponse)
-        if (resp.id === -1 && resp.result === 'hello') {
-          if ((resp as HelloResponse).alreadyConnected === true) {
-            this.sessionId = generateId()
-            if (typeof sessionStorage !== 'undefined') {
-              sessionStorage.setItem('session.id.' + this.url, this.sessionId)
-            }
-            reject(new Error('alreadyConnected'))
-          }
-          if ((resp as HelloResponse).binary) {
-            binaryResponse = true
-          }
-          if (resp.error !== undefined) {
-            reject(resp.error)
-            return
-          }
-          for (const [, v] of this.requests.entries()) {
-            v.reconnect?.()
-          }
-          resolve(websocket)
-
-          void this.onConnect?.(
-            (resp as HelloResponse).reconnect === true ? ClientConnectEvent.Reconnected : ClientConnectEvent.Connected
-          )
-          return
-        }
-        if (resp.result === 'ping') {
-          void this.sendRequest({ method: 'ping', params: [] })
-          return
-        }
-        if (resp.id !== undefined) {
-          const promise = this.requests.get(resp.id)
-          if (promise === undefined) {
-            throw new Error(`unknown response id: ${resp.id as string}`)
-          }
-
-          if (resp.chunk !== undefined) {
-            promise.chunks = [
-              ...(promise.chunks ?? []),
-              {
-                index: resp.chunk.index,
-                data: resp.result as []
-              }
-            ]
-            // console.log(socketId, 'chunk', promise.chunks.length, resp.chunk.total)
-            if (resp.chunk.final) {
-              promise.chunks.sort((a, b) => a.index - b.index)
-              let result: any[] = []
-              for (const c of promise.chunks) {
-                result = result.concat(c.data)
-              }
-              resp.result = result
-              resp.chunk = undefined
-            } else {
-              // Not all chunks are available yet.
-              return
-            }
-          }
-
-          const request = this.requests.get(resp.id)
-          this.requests.delete(resp.id)
-          if (resp.error !== undefined) {
-            console.log(
-              'ERROR',
-              'request:',
-              request?.method,
-              'response-id:',
-              resp.id,
-              'error: ',
-              resp.error,
-              'result: ',
-              resp.result
-            )
-            promise.reject(new PlatformError(resp.error))
-          } else {
-            if (request?.handleResult !== undefined) {
-              void request.handleResult(resp.result).then(() => {
-                promise.resolve(resp.result)
-              })
-            } else {
-              promise.resolve(resp.result)
-            }
-          }
-          void broadcastEvent(client.event.NetworkRequests, this.requests.size)
-        } else {
-          const txArr = Array.isArray(resp.result) ? (resp.result as Tx[]) : [resp.result as Tx]
-
-          for (const tx of txArr) {
-            if (
-              (tx?._class === core.class.TxWorkspaceEvent &&
-                (tx as TxWorkspaceEvent).event === WorkspaceEvent.Upgrade) ||
-              tx?._class === core.class.TxModelUpgrade
-            ) {
-              console.log('Processing upgrade')
-              websocket.send(
-                serialize(
-                  {
-                    method: '#upgrading',
-                    params: [],
-                    id: -1
-                  },
-                  false
-                )
-              )
-              this.onUpgrade?.()
-              return
-            }
-          }
-          this.handler(...txArr)
-
-          clearTimeout(this.incomingTimer)
-          void broadcastEvent(client.event.NetworkRequests, this.requests.size + 1)
-
-          this.incomingTimer = setTimeout(() => {
-            void broadcastEvent(client.event.NetworkRequests, this.requests.size)
-          }, 500)
-        }
-      }
-      websocket.onclose = (ev) => {
-        // console.log('client websocket closed', socketId, ev?.reason)
-
-        if (!(this.websocket instanceof Promise)) {
-          this.websocket = null
-        }
-        void broadcastEvent(client.event.NetworkRequests, -1)
-        reject(new Error('websocket error'))
-      }
-      websocket.onopen = () => {
-        const useBinary = getMetadata(client.metadata.UseBinaryProtocol) ?? true
-        const useCompression = getMetadata(client.metadata.UseProtocolCompression) ?? false
-        clearTimeout(dialTimer)
-        const helloRequest: HelloRequest = {
-          method: 'hello',
-          params: [],
-          id: -1,
-          binary: useBinary,
-          compression: useCompression,
-          broadcast: true
-        }
-        websocket.send(serialize(helloRequest, false))
-      }
-      websocket.onerror = (event: any) => {
-        console.error('client websocket error:', socketId, event)
-        void broadcastEvent(client.event.NetworkRequests, -1)
-        reject(new Error(`websocket error:${socketId}`))
-      }
-    })
-  }
-
-  private async sendRequest (data: {
-    method: string
-    params: any[]
-    // If not defined, on reconnect with timeout, will retry automatically.
-    retry?: () => Promise<boolean>
-    handleResult?: (result: any) => Promise<void>
-  }): Promise<any> {
-    if (this.closed) {
-      throw new PlatformError(unknownError('connection closed'))
+    if (this.websocket instanceof Promise) {
+      await this.websocket.then((ws) => ws.close())
+    } else {
+      this.websocket.close(1000)
     }
 
-    const id = this.lastId++
-    const promise = new RequestPromise(data.method, data.params, data.handleResult)
-
-    const sendData = async (): Promise<void> => {
-      if (this.websocket instanceof Promise) {
-        this.websocket = await this.websocket
-      }
-      if (this.websocket === null) {
-        this.websocket = this.waitOpenConnection()
-        this.websocket = await this.websocket
-      }
-      this.requests.set(id, promise)
-      this.websocket.send(
-        serialize(
-          {
-            method: data.method,
-            params: data.params,
-            id
-          },
-          false
-        )
-      )
-    }
-    promise.reconnect = () => {
-      setTimeout(async () => {
-        // In case we don't have response yet.
-        if (this.requests.has(id) && ((await data.retry?.()) ?? true)) {
-          await sendData()
-        }
-      }, 500)
-    }
-    await sendData()
-    void broadcastEvent(client.event.NetworkRequests, this.requests.size)
-    return await promise.promise
+    this.websocket = null
   }
 
   async measure (operationName: string): Promise<MeasureDoneOperation> {
