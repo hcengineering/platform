@@ -12,14 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+
 <script lang="ts">
   import type { Asset, IntlString } from '@hcengineering/platform'
-  import { AnySvelteComponent } from '../types'
-  import { ComponentType } from 'svelte'
-  import Icon from './Icon.svelte'
-  import Label from './Label.svelte'
+  import type { ComponentType } from 'svelte'
+  import type { AnySvelteComponent } from '../types'
+  import { getTreeCollapsed, setTreeCollapsed } from '../location'
   import IconChevronRight from './icons/ChevronRight.svelte'
+  import Label from './Label.svelte'
+  import Icon from './Icon.svelte'
 
+  export let id: string
   export let label: IntlString | undefined = undefined
   export let title: string | undefined = undefined
   export let icon: Asset | AnySvelteComponent | ComponentType | undefined = undefined
@@ -27,13 +30,19 @@
   export let size: 'small' | 'medium' | 'large'
   export let kind: 'default' | 'second' = 'default'
   export let nested: boolean = false
-  export let isOpen: boolean = false
   export let selected: boolean = false
   export let bottomSpace: boolean = true
   export let counter: number | boolean = false
   export let duration: number | boolean = false
   export let fixHeader: boolean = false
   export let background: string | undefined = undefined
+
+  let collapsed: boolean = getTreeCollapsed(id)
+  $: setTreeCollapsed(id, collapsed)
+
+  function handleClick (): void {
+    collapsed = !collapsed
+  }
 </script>
 
 <div class="hulyAccordionItem-container {kind}" class:nested>
@@ -41,13 +50,11 @@
     class="hulyAccordionItem-header {kind} {size}"
     class:bottomSpace
     class:nested
-    class:isOpen
+    class:isOpen={!collapsed}
     class:selected
     class:scroller-header={fixHeader}
     style:background-color={background ?? 'transparent'}
-    on:click={() => {
-      isOpen = !isOpen
-    }}
+    on:click={handleClick}
   >
     <div
       class="hulyAccordionItem-header__label-wrapper {size === 'large' ? 'heading-medium-16' : 'font-medium-12'}"

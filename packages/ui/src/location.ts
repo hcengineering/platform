@@ -202,5 +202,6 @@ export const getTreeCollapsed = (_id: any): boolean => {
 
 export const setTreeCollapsed = (_id: any, collapsed: boolean): void => {
   if (_id === undefined || _id === 'undefined') return
-  localStorage.setItem(getCollapsedKey(_id), collapsed ? COLLAPSED : '')
+  const key = getCollapsedKey(_id)
+  collapsed ? localStorage.setItem(key, COLLAPSED) : localStorage.removeItem(key)
 }
