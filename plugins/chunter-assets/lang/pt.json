@@ -95,6 +95,16 @@
     "NewDirectChat": "Novo chat direto",
     "AddMembers": "Adicionar membros",
     "PinnedCount": "{count} fixados",
-    "LoadingHistory": "Carregando histórico..."
+    "LoadingHistory": "Carregando histórico...",
+    "UnpinChannels": "Desafixar todos os canais",
+    "ArchiveActivityConfirmationTitle": "Arquivar todos os canais de atividade?",
+    "ArchiveActivityConfirmationMessage": "Tem a certeza de que deseja arquivar todos os canais de atividade? Esta operação não pode ser desfeita.",
+    "CloseConversation": "Fechar conversa",
+    "Starred": "Em destaque",
+    "DeleteStarred": "Eliminar em destaque",
+    "StarChannel": "Colocar em destaque o canal",
+    "StarConversation": "Colocar em destaque a conversa",
+    "UnstarChannel": "Remover destaque do canal",
+    "UnstarConversation": "Remover destaque da conversa"
   }
 }
