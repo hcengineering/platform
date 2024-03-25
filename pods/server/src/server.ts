@@ -357,6 +357,7 @@ export function start (
           url: ''
         }
       },
+      serviceAdapters: {},
       defaultContentAdapter: 'Rekoni',
       storageFactory: () =>
         new MinioService({

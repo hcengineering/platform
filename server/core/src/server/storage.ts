@@ -63,6 +63,7 @@ import serverCore from '../plugin'
 import { type Triggers } from '../triggers'
 import type { FullTextAdapter, ObjectDDParticipant, ServerStorageOptions, TriggerControl } from '../types'
 import { type StorageAdapter } from '../storage'
+import { type ServiceAdaptersManager } from '../service'
 
 export class TServerStorage implements ServerStorage {
   private readonly fulltext: FullTextIndex
@@ -84,6 +85,7 @@ export class TServerStorage implements ServerStorage {
     private readonly triggers: Triggers,
     private readonly fulltextAdapter: FullTextAdapter,
     readonly storageAdapter: StorageAdapter | undefined,
+    private readonly serviceAdaptersManager: ServiceAdaptersManager,
     readonly modelDb: ModelDb,
     private readonly workspace: WorkspaceIdWithUrl,
     readonly indexFactory: (storage: ServerStorage) => FullTextIndex,
@@ -143,6 +145,8 @@ export class TServerStorage implements ServerStorage {
     }
     console.timeLog(this.workspace.name, 'closing fulltext')
     await this.fulltextAdapter.close()
+    console.timeLog(this.workspace.name, 'closing service adapters')
+    await this.serviceAdaptersManager.close()
   }
 
   private getAdapter (domain: Domain): DbAdapter {
@@ -589,6 +593,9 @@ export class TServerStorage implements ServerStorage {
         }
 
         triggerFx.fx(() => f(adapter, this.workspace))
+      },
+      serviceFx: (f) => {
+        triggerFx.fx(() => f(this.serviceAdaptersManager))
       },
       findAll: fAll(ctx),
       findAllCtx: findAll,

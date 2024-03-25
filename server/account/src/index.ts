@@ -1077,7 +1077,8 @@ export async function assignWorkspace (
   _email: string,
   workspaceId: string,
   shouldReplaceAccount: boolean = false,
-  client?: Client
+  client?: Client,
+  personAccountId?: Ref<PersonAccount>
 ): Promise<Workspace> {
   const email = cleanEmail(_email)
   const initWS = getMetadata(toolPlugin.metadata.InitWorkspace)
@@ -1087,7 +1088,14 @@ export async function assignWorkspace (
   const workspaceInfo = await getWorkspaceAndAccount(db, productId, email, workspaceId)
 
   if (workspaceInfo.account !== null) {
-    await createPersonAccount(workspaceInfo.account, productId, workspaceId, shouldReplaceAccount, client)
+    await createPersonAccount(
+      workspaceInfo.account,
+      productId,
+      workspaceId,
+      shouldReplaceAccount,
+      client,
+      personAccountId
+    )
   }
 
   // Add account into workspace.
@@ -1191,7 +1199,8 @@ async function createPersonAccount (
   productId: string,
   workspace: string,
   shouldReplaceCurrent: boolean = false,
-  client?: Client
+  client?: Client,
+  personAccountId?: Ref<PersonAccount>
 ): Promise<void> {
   const connection = client ?? (await connect(getTransactor(), getWorkspaceId(workspace, productId)))
   try {
@@ -1210,11 +1219,16 @@ async function createPersonAccount (
     if (existingAccount === undefined) {
       const employee = await createEmployee(ops, name, account.email)
 
-      await ops.createDoc(contact.class.PersonAccount, core.space.Model, {
-        email: account.email,
-        person: employee,
-        role: AccountRole.User
-      })
+      await ops.createDoc(
+        contact.class.PersonAccount,
+        core.space.Model,
+        {
+          email: account.email,
+          person: employee,
+          role: AccountRole.User
+        },
+        personAccountId
+      )
     } else {
       const employee = await ops.findOne(contact.mixin.Employee, { _id: existingAccount.person as Ref<Employee> })
       if (employee === undefined) {

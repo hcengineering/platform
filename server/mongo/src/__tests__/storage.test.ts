@@ -157,6 +157,7 @@ describe('mongo operations', () => {
           url: ''
         }
       },
+      serviceAdapters: {},
       defaultContentAdapter: 'default',
       workspace: { ...getWorkspaceId(dbId, ''), workspaceName: '', workspaceUrl: '' },
       storageFactory: () => createNullStorageFactory()

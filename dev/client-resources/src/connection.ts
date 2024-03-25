@@ -154,6 +154,7 @@ export async function connect (handler: (tx: Tx) => void): Promise<ClientConnect
         url: ''
       }
     },
+    serviceAdapters: {},
     defaultContentAdapter: 'default',
     workspace: { ...getWorkspaceId(''), workspaceUrl: '', workspaceName: '' }
   }
