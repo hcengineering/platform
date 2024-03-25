@@ -429,7 +429,11 @@ test.describe('Tracker filters tests', () => {
     })
   })
 
-  test.skip('Due date filter', async ({ page }) => {
+  test('Due date filter', async ({ page }) => {
+    const plusSevenDate = new Date()
+    const currentMonth = plusSevenDate.getMonth()
+    plusSevenDate.setDate(plusSevenDate.getDate() + 7)
+    const afterWeekMonth = plusSevenDate.getMonth()
     const dueDateOverdueIssue: NewIssue = {
       title: `Issue for the Due date yesterday filter-${generateId()}`,
       description: 'Issue for the Due date yesterday filter',
@@ -523,7 +527,11 @@ test.describe('Tracker filters tests', () => {
 
       await issuesPage.checkFilteredIssueExist(dueDateOverdueIssue.title)
       await issuesPage.checkFilteredIssueExist(dueDateTodayIssue.title)
-      await issuesPage.checkFilteredIssueExist(dueDateNextWeekIssue.title)
+      if (currentMonth === afterWeekMonth) {
+        await issuesPage.checkFilteredIssueExist(dueDateNextWeekIssue.title)
+      } else {
+        await issuesPage.checkFilteredIssueNotExist(dueDateNextWeekIssue.title)
+      }
       await issuesPage.checkFilteredIssueNotExist(dueDateNextMonthIssue.title)
     })
 
@@ -533,7 +541,11 @@ test.describe('Tracker filters tests', () => {
 
       await issuesPage.checkFilteredIssueNotExist(dueDateOverdueIssue.title)
       await issuesPage.checkFilteredIssueNotExist(dueDateTodayIssue.title)
-      await issuesPage.checkFilteredIssueNotExist(dueDateNextWeekIssue.title)
+      if (currentMonth === afterWeekMonth) {
+        await issuesPage.checkFilteredIssueNotExist(dueDateNextWeekIssue.title)
+      } else {
+        await issuesPage.checkFilteredIssueExist(dueDateNextWeekIssue.title)
+      }
       await issuesPage.checkFilteredIssueExist(dueDateNextMonthIssue.title)
     })
 
