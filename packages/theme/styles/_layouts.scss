@@ -810,6 +810,10 @@ input.search {
   &:active { color: var(--theme-caption-color); }
 }
 
+.will-change-opacity {
+  will-change: opacity;
+}
+
 /* Link */
 a.no-line {
   text-decoration: none;

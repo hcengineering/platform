@@ -14,6 +14,7 @@
 -->
 
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import type { Asset, IntlString } from '@hcengineering/platform'
   import type { ComponentType } from 'svelte'
   import type { AnySvelteComponent } from '../types'
@@ -30,17 +31,25 @@
   export let size: 'small' | 'medium' | 'large'
   export let kind: 'default' | 'second' = 'default'
   export let nested: boolean = false
+  export let isOpen: boolean = false
+  export let disabled: boolean = false
   export let selected: boolean = false
+  export let selectable: boolean = false
   export let bottomSpace: boolean = true
   export let counter: number | boolean = false
   export let duration: number | boolean = false
   export let fixHeader: boolean = false
+  export let categoryHeader: boolean = false
   export let background: string | undefined = undefined
 
+  const dispatch = createEventDispatcher()
+
   let collapsed: boolean = getTreeCollapsed(id)
+  if (isOpen) collapsed = false
   $: setTreeCollapsed(id, collapsed)
 
   function handleClick (): void {
+    if (disabled) return
     collapsed = !collapsed
   }
 </script>
@@ -50,11 +59,14 @@
     class="hulyAccordionItem-header {kind} {size}"
     class:bottomSpace
     class:nested
+    class:disabled
     class:isOpen={!collapsed}
     class:selected
+    class:selectable
     class:scroller-header={fixHeader}
+    class:categoryHeader
     style:background-color={background ?? 'transparent'}
-    on:click={handleClick}
+    on:click|stopPropagation={handleClick}
   >
     <div
       class="hulyAccordionItem-header__label-wrapper {size === 'large' ? 'heading-medium-16' : 'font-medium-12'}"
@@ -70,11 +82,19 @@
           <Icon {icon} size={size === 'medium' ? 'small' : 'medium'} {iconProps} />
         </div>
       {/if}
-      <span class="hulyAccordionItem-header__label">
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <div
+        class="hulyAccordionItem-header__label"
+        on:click|stopPropagation={() => {
+          if (selectable) dispatch('select')
+          else handleClick()
+        }}
+      >
         {#if label}<Label {label} />{/if}
         {#if title}{title}{/if}
         <slot name="title" />
-      </span>
+      </div>
       {#if counter !== false}
         <span class="hulyAccordionItem-header__separator">•</span>
         <span class="hulyAccordionItem-header__counter">
