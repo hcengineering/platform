@@ -162,12 +162,14 @@
           {/if}
 
           {#if !skipLabel && showDatePreposition}
-            <span class="text-sm lower mr-1">
+            <span class="text-sm lower">
               <Label label={activity.string.At} />
             </span>
           {/if}
 
-          <MessageTimestamp date={message.createdOn ?? message.modifiedOn} />
+          <span class="text-sm lower">
+            <MessageTimestamp date={message.createdOn ?? message.modifiedOn} />
+          </span>
         </div>
 
         <slot name="content" />
