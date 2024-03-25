@@ -140,7 +140,7 @@
 
   <div class="content">
     <div class="notifications">
-      {#each notifications.slice(0, maxNotifications).reverse() as notification}
+      {#each notifications.slice(0, maxNotifications) as notification}
         <div class="notification">
           <div class="embeddedMarker" />
           <InboxNotificationPresenter
