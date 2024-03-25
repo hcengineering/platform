@@ -117,7 +117,8 @@ export async function getCommonNotificationTxes (
   attachedToClass: Ref<Class<Doc>>,
   space: Ref<Space>,
   modifiedOn: Timestamp,
-  notifyResult: NotifyResult
+  notifyResult: NotifyResult,
+  _class = notification.class.CommonInboxNotification
 ): Promise<Tx[]> {
   const res: Tx[] = []
 
@@ -133,7 +134,7 @@ export async function getCommonNotificationTxes (
       space,
       notifyContexts,
       data,
-      notification.class.CommonInboxNotification,
+      _class,
       modifiedOn
     )
   }

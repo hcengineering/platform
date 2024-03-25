@@ -39,6 +39,7 @@ import { type StorageAdapter } from '../storage'
 import { Triggers } from '../triggers'
 import { type ServerStorageOptions } from '../types'
 import { TServerStorage } from './storage'
+import { createServiceAdaptersManager } from '../service'
 
 /**
  * @public
@@ -118,6 +119,11 @@ export async function createServerStorage (
     throw new Error(`No Adapter for ${DOMAIN_DOC_INDEX_STATE}`)
   }
 
+  const serviceAdaptersManager = await createServiceAdaptersManager(
+    conf.serviceAdapters,
+    conf.metrics.newChild('🔌 service adapters', {})
+  )
+
   const indexFactory = (storage: ServerStorage): FullTextIndex => {
     if (storageAdapter === undefined) {
       throw new Error('No storage adapter')
@@ -166,6 +172,7 @@ export async function createServerStorage (
     triggers,
     fulltextAdapter,
     storageAdapter,
+    serviceAdaptersManager,
     modelDb,
     conf.workspace,
     indexFactory,

@@ -394,6 +394,8 @@ async function OnDocRemoved (originTx: TxCUD<Doc>, control: TriggerControl): Pro
   return messages.map((message) => control.txFactory.createTxRemoveDoc(message._class, message.space, message._id))
 }
 
+export * from './references'
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {

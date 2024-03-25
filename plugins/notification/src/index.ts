@@ -249,6 +249,11 @@ export interface CommonInboxNotification extends InboxNotification {
   iconProps?: Record<string, any>
 }
 
+export interface MentionInboxNotification extends CommonInboxNotification {
+  mentionedIn: Ref<Doc>
+  mentionedInClass: Ref<Class<Doc>>
+}
+
 export interface DisplayActivityInboxNotification extends ActivityInboxNotification {
   combinedIds: Ref<ActivityInboxNotification>[]
 }
@@ -332,7 +337,8 @@ const notification = plugin(notificationId, {
     InboxNotification: '' as Ref<Class<InboxNotification>>,
     ActivityInboxNotification: '' as Ref<Class<ActivityInboxNotification>>,
     CommonInboxNotification: '' as Ref<Class<CommonInboxNotification>>,
-    ActivityNotificationViewlet: '' as Ref<Class<ActivityNotificationViewlet>>
+    ActivityNotificationViewlet: '' as Ref<Class<ActivityNotificationViewlet>>,
+    MentionInboxNotification: '' as Ref<Class<MentionInboxNotification>>
   },
   ids: {
     NotificationSettings: '' as Ref<Doc>,

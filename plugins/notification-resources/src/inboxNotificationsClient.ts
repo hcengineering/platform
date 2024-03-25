@@ -224,11 +224,9 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       return
     }
 
-    const notificationsToRead = await client.findAll(notification.class.ActivityInboxNotification, {
-      user: getCurrentAccount()._id,
-      attachedTo: { $in: toReadIds },
-      isViewed: { $ne: true }
-    })
+    const notificationsToRead = get(this.activityInboxNotifications).filter(({ attachedTo }) =>
+      toReadIds.includes(attachedTo)
+    )
 
     for (const notification of notificationsToRead) {
       await client.update(notification, { isViewed: true })
