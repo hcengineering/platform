@@ -298,6 +298,7 @@ class ElasticDataAdapter implements DbAdapter {
  * @public
  */
 export async function createElasticBackupDataAdapter (
+  ctx: MeasureContext,
   hierarchy: Hierarchy,
   url: string,
   workspaceId: WorkspaceId

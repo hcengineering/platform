@@ -54,6 +54,7 @@ const txes = genMinModel()
 createTaskModel(txes)
 
 async function createNullAdapter (
+  ctx: MeasureContext,
   hierarchy: Hierarchy,
   url: string,
   db: WorkspaceId,
@@ -116,7 +117,13 @@ describe('mongo operations', () => {
     }
 
     const mctx = new MeasureMetricsContext('', {})
-    const txStorage = await createMongoTxAdapter(hierarchy, mongodbUri, getWorkspaceId(dbId, ''), model)
+    const txStorage = await createMongoTxAdapter(
+      new MeasureMetricsContext('', {}),
+      hierarchy,
+      mongodbUri,
+      getWorkspaceId(dbId, ''),
+      model
+    )
 
     // Put all transactions to Tx
     for (const t of txes) {

@@ -25,14 +25,15 @@ import core, {
   Hierarchy,
   IndexKind,
   IndexOrder,
+  MeasureContext,
   ModelDb,
   Tx,
   WorkspaceId
 } from '@hcengineering/core'
-import { MinioService } from '@hcengineering/minio'
 import { consoleModelLogger, MigrateOperation, ModelLogger } from '@hcengineering/model'
 import { getWorkspaceDB } from '@hcengineering/mongo'
-import { StorageAdapter } from '@hcengineering/server-core'
+import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server'
+import { StorageAdapter, StorageConfiguration } from '@hcengineering/server-core'
 import { Db, Document, MongoClient } from 'mongodb'
 import { connect } from './connect'
 import toolPlugin from './plugin'
@@ -70,7 +71,7 @@ export class FileModelLogger implements ModelLogger {
  * @public
  */
 export function prepareTools (rawTxes: Tx[]): { mongodbUri: string, storageAdapter: StorageAdapter, txes: Tx[] } {
-  let minioEndpoint = process.env.MINIO_ENDPOINT
+  const minioEndpoint = process.env.MINIO_ENDPOINT
   if (minioEndpoint === undefined) {
     console.error('please provide minio endpoint')
     process.exit(1)
@@ -94,28 +95,18 @@ export function prepareTools (rawTxes: Tx[]): { mongodbUri: string, storageAdapt
     process.exit(1)
   }
 
-  let minioPort = 9000
-  const sp = minioEndpoint.split(':')
-  if (sp.length > 1) {
-    minioEndpoint = sp[0]
-    minioPort = parseInt(sp[1])
-  }
+  const storageConfig: StorageConfiguration = storageConfigFromEnv()
 
-  const minio = new MinioService({
-    endPoint: minioEndpoint,
-    port: minioPort,
-    useSSL: false,
-    accessKey: minioAccessKey,
-    secretKey: minioSecretKey
-  })
+  const storageAdapter = buildStorageFromConfig(storageConfig, mongodbUri)
 
-  return { mongodbUri, storageAdapter: minio, txes: JSON.parse(JSON.stringify(rawTxes)) as Tx[] }
+  return { mongodbUri, storageAdapter, txes: JSON.parse(JSON.stringify(rawTxes)) as Tx[] }
 }
 
 /**
  * @public
  */
 export async function initModel (
+  ctx: MeasureContext,
   transactorUrl: string,
   workspaceId: WorkspaceId,
   rawTxes: Tx[],
@@ -154,8 +145,8 @@ export async function initModel (
       await createUpdateIndexes(connection, db, logger)
 
       logger.log('create minio bucket', { workspaceId })
-      if (!(await minio.exists(workspaceId))) {
-        await minio.make(workspaceId)
+      if (!(await minio.exists(ctx, workspaceId))) {
+        await minio.make(ctx, workspaceId)
       }
     } catch (e: any) {
       logger.error('error', { error: e })

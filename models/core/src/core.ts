@@ -14,7 +14,9 @@
 //
 
 import {
+  type Blob,
   DOMAIN_BLOB,
+  DOMAIN_BLOB_DATA,
   DOMAIN_CONFIGURATION,
   DOMAIN_DOC_INDEX_STATE,
   DOMAIN_FULLTEXT_BLOB,
@@ -63,6 +65,7 @@ import {
   ReadOnly,
   TypeBoolean,
   TypeIntlString,
+  TypeNumber,
   TypeRecord,
   TypeRef,
   TypeString,
@@ -127,6 +130,34 @@ export class TAttachedDoc extends TDoc implements AttachedDoc {
   @Prop(TypeString(), core.string.Collection)
   @Hidden()
     collection!: string
+}
+
+@Model(core.class.Blob, core.class.Doc, DOMAIN_BLOB_DATA)
+@UX(core.string.Object)
+export class TBlob extends TDoc implements Blob {
+  @Prop(TypeString(), core.string.Blob)
+  @ReadOnly()
+    provider!: string
+
+  @Prop(TypeString(), core.string.BlobContentType)
+  @ReadOnly()
+    contentType!: string
+
+  @Prop(TypeString(), core.string.BlobStorageId)
+  @ReadOnly()
+    storageId!: string
+
+  @Prop(TypeString(), core.string.BlobEtag)
+  @ReadOnly()
+    etag!: string
+
+  @Prop(TypeString(), core.string.BlobVersion)
+  @ReadOnly()
+    version!: string
+
+  @Prop(TypeNumber(), core.string.BlobSize)
+  @ReadOnly()
+    size!: number
 }
 
 @UX(core.string.ClassLabel)

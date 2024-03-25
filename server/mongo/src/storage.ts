@@ -100,6 +100,67 @@ interface LookupStep {
   pipeline?: any
 }
 
+export async function toArray<T> (cursor: AbstractCursor<T>): Promise<T[]> {
+  const data = await cursor.toArray()
+  await cursor.close()
+  return data
+}
+
+/**
+ * Return some estimation for object size
+ */
+function calcSize (obj: any): number {
+  if (typeof obj === 'undefined') {
+    return 0
+  }
+  if (typeof obj === 'function') {
+    return 0
+  }
+  let result = 0
+  for (const key in obj) {
+    // include prototype properties
+    const value = obj[key]
+    const type = getTypeOf(value)
+    result += key.length
+
+    switch (type) {
+      case 'Array':
+        result += 4 + calcSize(value)
+        break
+      case 'Object':
+        result += calcSize(value)
+        break
+      case 'Date':
+        result += 24 // Some value
+        break
+      case 'string':
+        result += (value as string).length
+        break
+      case 'number':
+        result += 8
+        break
+      case 'boolean':
+        result += 1
+        break
+      case 'symbol':
+        result += (value as symbol).toString().length
+        break
+      case 'bigint':
+        result += (value as bigint).toString().length
+        break
+      case 'undefined':
+        result += 1
+        break
+      case 'null':
+        result += 1
+        break
+      default:
+        result += value.toString().length
+    }
+  }
+  return result
+}
+
 abstract class MongoAdapterBase implements DbAdapter {
   constructor (
     protected readonly db: Db,
@@ -109,12 +170,6 @@ abstract class MongoAdapterBase implements DbAdapter {
   ) {}
 
   async init (): Promise<void> {}
-
-  async toArray<T>(cursor: AbstractCursor<T>): Promise<T[]> {
-    const data = await cursor.toArray()
-    await cursor.close()
-    return data
-  }
 
   async createIndexes (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>): Promise<void> {
     for (const vv of config.indexes) {
@@ -469,7 +524,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     let result: WithLookup<T>[] = []
     let total = options?.total === true ? 0 : -1
     try {
-      result = (await ctx.with('toArray', {}, async (ctx) => await this.toArray(cursor), {
+      result = (await ctx.with('toArray', {}, async (ctx) => await toArray(cursor), {
         domain,
         pipeline
       })) as any[]
@@ -489,7 +544,7 @@ abstract class MongoAdapterBase implements DbAdapter {
         checkKeys: false,
         enableUtf8Validation: false
       })
-      const arr = await this.toArray(totalCursor)
+      const arr = await toArray(totalCursor)
       total = arr?.[0]?.total ?? 0
     }
     return toFindResult(this.stripHash(result), total)
@@ -620,7 +675,7 @@ abstract class MongoAdapterBase implements DbAdapter {
 
     // Error in case of timeout
     try {
-      const res: T[] = await ctx.with('toArray', {}, async (ctx) => await this.toArray(cursor), {
+      const res: T[] = await ctx.with('toArray', {}, async (ctx) => await toArray(cursor), {
         mongoQuery,
         options,
         domain
@@ -729,7 +784,7 @@ abstract class MongoAdapterBase implements DbAdapter {
         }
         const pos = (digest ?? '').indexOf('|')
         if (digest == null || digest === '' || pos === -1) {
-          const size = this.calcSize(d)
+          const size = calcSize(d)
           digest = hashID // we just need some random value
 
           bulkUpdate.set(d._id, `${digest}|${size.toString(16)}`)
@@ -755,95 +810,19 @@ abstract class MongoAdapterBase implements DbAdapter {
     }
   }
 
-  /**
-   * Return some estimation for object size
-   */
-  calcSize (obj: any): number {
-    if (typeof obj === 'undefined') {
-      return 0
-    }
-    if (typeof obj === 'function') {
-      return 0
-    }
-    let result = 0
-    for (const key in obj) {
-      // include prototype properties
-      const value = obj[key]
-      const type = getTypeOf(value)
-      result += key.length
-
-      switch (type) {
-        case 'Array':
-          result += 4 + this.calcSize(value)
-          break
-        case 'Object':
-          result += this.calcSize(value)
-          break
-        case 'Date':
-          result += 24 // Some value
-          break
-        case 'string':
-          result += (value as string).length
-          break
-        case 'number':
-          result += 8
-          break
-        case 'boolean':
-          result += 1
-          break
-        case 'symbol':
-          result += (value as symbol).toString().length
-          break
-        case 'bigint':
-          result += (value as bigint).toString().length
-          break
-        case 'undefined':
-          result += 1
-          break
-        case 'null':
-          result += 1
-          break
-        default:
-          result += value.toString().length
-      }
-    }
-    return result
-  }
-
   async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
     if (docs.length === 0) {
       return []
     }
     const cursor = this.db.collection<Doc>(domain).find<Doc>({ _id: { $in: docs } }, { limit: docs.length })
-    const result = await this.toArray(cursor)
+    const result = await toArray(cursor)
     return this.stripHash(this.stripHash(result))
   }
 
   async upload (domain: Domain, docs: Doc[]): Promise<void> {
     const coll = this.db.collection(domain)
 
-    const ops = Array.from(docs)
-
-    while (ops.length > 0) {
-      const part = ops.splice(0, 500)
-      await coll.bulkWrite(
-        part.map((it) => {
-          const digest: string | null = (it as any)['%hash%']
-          if ('%hash%' in it) {
-            delete it['%hash%']
-          }
-          const size = this.calcSize(it)
-
-          return {
-            replaceOne: {
-              filter: { _id: it._id },
-              replacement: { ...it, '%hash%': digest == null ? null : `${digest}|${size.toString(16)}` },
-              upsert: true
-            }
-          }
-        })
-      )
-    }
+    await uploadDocuments(docs, coll)
   }
 
   async update (domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {
@@ -1290,7 +1269,7 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
       .collection(DOMAIN_TX)
       .find<Tx>({ objectSpace: core.space.Model })
       .sort({ _id: 1, modifiedOn: 1 })
-    const model = await this.toArray(cursor)
+    const model = await toArray(cursor)
     // We need to put all core.account.System transactions first
     const systemTx: Tx[] = []
     const userTx: Tx[] = []
@@ -1308,6 +1287,31 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
 
     model.forEach((tx) => (tx.modifiedBy === core.account.System && !isPersonAccount(tx) ? systemTx : userTx).push(tx))
     return systemTx.concat(userTx)
+  }
+}
+
+export async function uploadDocuments (docs: Doc[], coll: Collection<Document>): Promise<void> {
+  const ops = Array.from(docs)
+
+  while (ops.length > 0) {
+    const part = ops.splice(0, 500)
+    await coll.bulkWrite(
+      part.map((it) => {
+        const digest: string | null = (it as any)['%hash%']
+        if ('%hash%' in it) {
+          delete it['%hash%']
+        }
+        const size = calcSize(it)
+
+        return {
+          replaceOne: {
+            filter: { _id: it._id },
+            replacement: { ...it, '%hash%': digest == null ? null : `${digest}|${size.toString(16)}` },
+            upsert: true
+          }
+        }
+      })
+    )
   }
 }
 
@@ -1402,6 +1406,7 @@ function translateLikeQuery (pattern: string): { $regex: string, $options: strin
  * @public
  */
 export async function createMongoAdapter (
+  ctx: MeasureContext,
   hierarchy: Hierarchy,
   url: string,
   workspaceId: WorkspaceId,
@@ -1417,6 +1422,7 @@ export async function createMongoAdapter (
  * @public
  */
 export async function createMongoTxAdapter (
+  ctx: MeasureContext,
   hierarchy: Hierarchy,
   url: string,
   workspaceId: WorkspaceId,

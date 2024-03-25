@@ -15,87 +15,29 @@
 //
 
 // Add this to the VERY top of the first file loaded in your app
-import { setMetadata } from '@hcengineering/platform'
-import serverCore from '@hcengineering/server-core'
-import serverToken from '@hcengineering/server-token'
-import { serverFactories } from '@hcengineering/server-ws'
-import { start } from '.'
-import serverNotification from '@hcengineering/server-notification'
 import contactPlugin from '@hcengineering/contact'
+import { setMetadata } from '@hcengineering/platform'
+import { serverConfigFromEnv, storageConfigFromEnv } from '@hcengineering/server'
+import serverCore, { type StorageConfiguration } from '@hcengineering/server-core'
+import serverNotification from '@hcengineering/server-notification'
+import serverToken from '@hcengineering/server-token'
+import { start } from '.'
 
-const serverPort = parseInt(process.env.SERVER_PORT ?? '3333')
+const {
+  url,
+  frontUrl,
+  serverSecret,
+  sesUrl,
+  elasticUrl,
+  elasticIndexName,
+  accountsUrl,
+  rekoniUrl,
+  serverFactory,
+  serverPort,
+  enableCompression
+} = serverConfigFromEnv()
+const storageConfig: StorageConfiguration = storageConfigFromEnv()
 
-const serverFactory = serverFactories[(process.env.SERVER_PROVIDER as string) ?? 'ws'] ?? serverFactories.ws
-
-const enableCompression = (process.env.ENABLE_COMPRESSION ?? 'true') === 'true'
-
-const url = process.env.MONGO_URL
-if (url === undefined) {
-  console.error('please provide mongodb url')
-  process.exit(1)
-}
-
-const elasticUrl = process.env.ELASTIC_URL
-if (elasticUrl === undefined) {
-  console.error('please provide elastic url')
-  process.exit(1)
-}
-
-const minioEndpoint = process.env.MINIO_ENDPOINT
-if (minioEndpoint === undefined) {
-  console.error('MINIO_ENDPOINT is required')
-  process.exit(1)
-}
-
-const minioAccessKey = process.env.MINIO_ACCESS_KEY
-if (minioAccessKey === undefined) {
-  console.error('MINIO_ACCESS_KEY is required')
-  process.exit(1)
-}
-
-const minioSecretKey = process.env.MINIO_SECRET_KEY
-if (minioSecretKey === undefined) {
-  console.error('MINIO_SECRET_KEY is required')
-  process.exit(1)
-}
-
-const minioConf = {
-  endPoint: minioEndpoint,
-  accessKey: minioAccessKey,
-  secretKey: minioSecretKey
-}
-
-const serverSecret = process.env.SERVER_SECRET
-if (serverSecret === undefined) {
-  console.log('Please provide server secret')
-  process.exit(1)
-}
-
-const rekoniUrl = process.env.REKONI_URL
-if (rekoniUrl === undefined) {
-  console.log('Please provide REKONI_URL url')
-  process.exit(1)
-}
-
-const frontUrl = process.env.FRONT_URL
-if (frontUrl === undefined) {
-  console.log('Please provide FRONT_URL url')
-  process.exit(1)
-}
-
-const accountsUrl = process.env.ACCOUNTS_URL
-if (accountsUrl === undefined) {
-  console.log('Please provide ACCOUNTS_URL url')
-  process.exit(1)
-}
-
-const elasticIndexName = process.env.ELASTIC_INDEX_NAME
-if (elasticIndexName === undefined) {
-  console.log('Please provide ELASTIC_INDEX_NAME')
-  process.exit(1)
-}
-
-const sesUrl = process.env.SES_URL
 const cursorMaxTime = process.env.SERVER_CURSOR_MAXTIMEMS
 
 const lastNameFirst = process.env.LAST_NAME_FIRST === 'true'
@@ -114,7 +56,7 @@ console.log(
 )
 const shutdown = start(url, {
   fullTextUrl: elasticUrl,
-  minioConf,
+  storageConfig,
   rekoniUrl,
   port: serverPort,
   serverFactory,

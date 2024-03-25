@@ -115,6 +115,7 @@ class InMemoryAdapter extends DummyDbAdapter implements DbAdapter {
  * @public
  */
 export async function createInMemoryAdapter (
+  ctx: MeasureContext,
   hierarchy: Hierarchy,
   url: string,
   workspaceId: WorkspaceId

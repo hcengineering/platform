@@ -15,8 +15,9 @@
 //
 
 import { MeasureContext } from '@hcengineering/core'
-import { MinioService } from '@hcengineering/minio'
 import { setMetadata } from '@hcengineering/platform'
+import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server'
+import { StorageConfiguration } from '@hcengineering/server-core'
 import serverToken from '@hcengineering/server-token'
 import { start } from '.'
 
@@ -31,37 +32,20 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     process.exit(1)
   }
 
+  const url = process.env.MONGO_URL
+  if (url === undefined) {
+    console.error('please provide mongodb url')
+    process.exit(1)
+  }
+
   const elasticUrl = process.env.ELASTIC_URL
   if (elasticUrl === undefined) {
     console.error('please provide elastic url')
     process.exit(1)
   }
 
-  const minioEndpoint = process.env.MINIO_ENDPOINT
-  if (minioEndpoint === undefined) {
-    console.error('please provide minio endpoint')
-    process.exit(1)
-  }
-
-  const minioAccessKey = process.env.MINIO_ACCESS_KEY
-  if (minioAccessKey === undefined) {
-    console.error('please provide minio access key')
-    process.exit(1)
-  }
-
-  const minioSecretKey = process.env.MINIO_SECRET_KEY
-  if (minioSecretKey === undefined) {
-    console.error('please provide minio secret key')
-    process.exit(1)
-  }
-
-  const minio = new MinioService({
-    endPoint: minioEndpoint,
-    port: 9000,
-    useSSL: false,
-    accessKey: minioAccessKey,
-    secretKey: minioSecretKey
-  })
+  const storageConfig: StorageConfiguration = storageConfigFromEnv()
+  const storageAdapter = buildStorageFromConfig(storageConfig, url)
 
   const accountsUrl = process.env.ACCOUNTS_URL
   if (accountsUrl === undefined) {
@@ -132,7 +116,7 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
   const config = {
     transactorEndpoint,
     elasticUrl,
-    minio,
+    storageAdapter,
     accountsUrl,
     uploadUrl,
     modelVersion,
