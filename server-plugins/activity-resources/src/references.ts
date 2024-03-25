@@ -35,7 +35,7 @@ import core, {
   TxUpdateDoc,
   Type
 } from '@hcengineering/core'
-import notification, { CommonInboxNotification } from '@hcengineering/notification'
+import notification, { MentionInboxNotification } from '@hcengineering/notification'
 import { ServerKit, extractReferences, getHTML, parseHTML, yDocContentToNodes } from '@hcengineering/text'
 import { StorageAdapter, TriggerControl } from '@hcengineering/server-core'
 import activity, { ActivityMessage, ActivityReference } from '@hcengineering/activity'
@@ -93,9 +93,11 @@ export async function getPersonNotificationTxes (
     return res
   }
 
-  const data: Partial<Data<CommonInboxNotification>> = {
+  const data: Partial<Data<MentionInboxNotification>> = {
     header: activity.string.MentionedYouIn,
-    messageHtml: reference.message
+    messageHtml: reference.message,
+    mentionedIn: reference.attachedDocId,
+    mentionedInClass: reference.attachedToClass
   }
 
   const notifyResult = await shouldNotifyCommon(control, receiver._id, notification.ids.MentionCommonNotificationType)
