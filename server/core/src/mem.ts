@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import {
+import core, {
   type Class,
   type Doc,
   type DocumentQuery,
@@ -90,6 +90,10 @@ class InMemoryAdapter extends DummyDbAdapter implements DbAdapter {
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
     return await this.modeldb.findAll(_class, query, options)
+  }
+
+  async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+    return await this.modeldb.findAll(core.class.Doc, { _id: { $in: docs } })
   }
 
   async tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {

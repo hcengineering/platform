@@ -26,7 +26,7 @@
   export let labelSize: 'medium' | 'large' = 'medium'
   export let labelIntl: IntlString | undefined = undefined
   export let labelParams: Record<string, any> | undefined = undefined
-  export let action: () => void = () => {}
+  export let action: (() => void) | (() => Promise<void>) = () => {}
   export let gap: 'large' | 'small' | 'medium' | 'none' = 'none'
   export let labelGap: 'large' | 'medium' = 'medium'
   export let kind: 'primary' | 'positive' | 'negative' | 'default' = 'default'
