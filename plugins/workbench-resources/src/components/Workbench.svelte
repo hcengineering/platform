@@ -616,7 +616,7 @@
   defineSeparators('workbench', workbenchSeparators)
 
   let modern: boolean
-  $: modern = ['setting', 'time', 'love'].some((app) => currentApplication?.alias === app)
+  $: modern = currentApplication?.modern ?? false
 </script>
 
 {#if employee && !employee.active}
