@@ -32,9 +32,7 @@
   export let withActions: boolean = true
   export let showEmbedded = false
   export let skipLabel = false
-  export let withFlatActions: boolean = true
   export let actions: Action[] = []
-  export let excludedActions: string[] = []
   export let hoverable = true
   export let inline = false
   export let withShowMore: boolean = true
@@ -70,8 +68,6 @@
     {showEmbedded}
     {embedded}
     {skipLabel}
-    {withFlatActions}
-    {excludedActions}
     {actions}
     {hoverable}
     {hoverStyles}

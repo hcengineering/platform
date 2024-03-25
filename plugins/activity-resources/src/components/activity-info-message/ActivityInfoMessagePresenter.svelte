@@ -37,8 +37,6 @@
   export let shouldScroll: boolean = false
   export let embedded: boolean = false
   export let withActions: boolean = true
-  export let withFlatActions: boolean = true
-  export let excludedActions: string[] = []
   export let actions: Action[] = []
   export let hoverable = true
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
@@ -73,8 +71,6 @@
   {embedded}
   {withActions}
   {actions}
-  {excludedActions}
-  {withFlatActions}
   {hoverable}
   {hoverStyles}
   viewlet={undefined}

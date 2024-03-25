@@ -26,10 +26,8 @@
 
   export let message: ActivityMessage | undefined
   export let extensions: ActivityMessageExtension[] = []
-  export let excludedActions: string[] = []
   export let actions: Action[] = []
   export let withActionMenu = true
-  export let withFlatActions = true
 
   const dispatch = createEventDispatcher()
 
@@ -50,9 +48,8 @@
       Menu,
       {
         object: message,
-        baseMenuClass: activity.class.ActivityMessage,
-        excludedActions,
-        actions
+        actions,
+        baseMenuClass: activity.class.ActivityMessage
       },
       ev.target as HTMLElement,
       handleActionMenuClosed
@@ -61,13 +58,15 @@
   }
 </script>
 
-{#if message && (withFlatActions || withActionMenu)}
+{#if message}
   <div class="root">
-    {#if withFlatActions}
-      <AddReactionAction object={message} on:open on:close />
-      <ActivityMessageExtensionComponent kind="action" {extensions} props={{ object: message }} on:close on:open />
-      <PinMessageAction object={message} />
-      <SaveMessageAction object={message} />
+    <AddReactionAction object={message} on:open on:close />
+    <ActivityMessageExtensionComponent kind="action" {extensions} props={{ object: message }} on:close on:open />
+    <PinMessageAction object={message} />
+    <SaveMessageAction object={message} />
+
+    {#if withActionMenu}
+      <ActivityMessageAction size="small" icon={IconMoreV} opened={isActionMenuOpened} action={showMenu} />
     {/if}
   </div>
 {/if}

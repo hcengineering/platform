@@ -30,8 +30,6 @@
   export let hideFooter = false
   export let skipLabel = false
   export let actions: Action[] = []
-  export let excludedActions: string[] = []
-  export let withFlatActions: boolean = true
   export let hoverable = true
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
   export let withShowMore: boolean = true
@@ -64,8 +62,6 @@
       showEmbedded,
       hideFooter,
       actions,
-      excludedActions,
-      withFlatActions,
       hoverable,
       hoverStyles,
       withShowMore,
