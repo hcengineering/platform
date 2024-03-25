@@ -163,7 +163,6 @@ export const settingsSeparators: DefSeparators = [
   null,
   { minSize: 19, size: 30, maxSize: 32, float: 'aside' }
 ]
-export const loveSeparators: DefSeparators = [{ minSize: 26, size: 27, maxSize: 28, float: 'navigator' }, null]
 
 export const secondNavSeparators: DefSeparators = [{ minSize: 7, size: 7.5, maxSize: 15, float: 'navigator' }, null]
 

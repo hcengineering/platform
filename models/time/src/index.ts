@@ -194,6 +194,7 @@ export function createModel (builder: Builder): void {
       alias: timeId,
       hidden: false,
       position: 'top',
+      modern: true,
       component: time.component.Me
     },
     time.app.Me

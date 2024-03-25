@@ -320,7 +320,8 @@ export function createModel (builder: Builder): void {
       icon: setting.icon.Setting,
       alias: settingId,
       hidden: true,
-      component: setting.component.Settings
+      component: setting.component.Settings,
+      modern: true
     },
     setting.ids.SettingApp
   )

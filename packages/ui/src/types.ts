@@ -134,7 +134,7 @@ export interface RadioItem {
   labelParams?: Record<string, any>
   value: any
   disabled?: boolean
-  action?: () => void
+  action?: (() => void) | (() => Promise<void>)
 }
 
 export type ButtonBaseType = 'type-button' | 'type-button-icon'
