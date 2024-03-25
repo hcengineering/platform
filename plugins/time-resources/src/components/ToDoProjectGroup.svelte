@@ -38,12 +38,12 @@
   export let project: Project | false | undefined = undefined
   export let mode: ToDosMode
   export let groupName: IntlString
-  export let largeSize: boolean = false
 
   const client = getClient()
 
   let projectId: string | false
 
+  $: id = project === undefined ? groupName : `group:${groupName}_project:${project === false ? 'none' : project?._id}`
   $: icon = project
     ? project.icon === view.ids.IconWithEmoji
       ? IconWithEmoji
@@ -81,10 +81,10 @@
   }
 </script>
 
-<AccordionItem {icon} {iconProps} {title} {label} size={'medium'} isOpen nested>
+<AccordionItem {id} {icon} {iconProps} {title} {label} size={'medium'} nested>
   {#each todos as todo, index}
     <ToDoDraggable {todo} {index} {groupName} {projectId} on:drop={handleDrop}>
-      <ToDoElement {todo} size={largeSize ? 'large' : 'small'} planned={mode !== 'unplanned'} />
+      <ToDoElement {todo} planned={mode !== 'unplanned'} />
     </ToDoDraggable>
   {/each}
 </AccordionItem>

@@ -442,7 +442,8 @@ const pluginState = plugin(trackerId, {
     CreateIssue: '' as AnyComponent,
     ProjectPresenter: '' as AnyComponent,
     CreateIssueTemplate: '' as AnyComponent,
-    CreateProject: '' as AnyComponent
+    CreateProject: '' as AnyComponent,
+    IssueStatusPresenter: '' as AnyComponent
   },
   attribute: {
     IssueStatus: '' as Ref<Attribute<Status>>

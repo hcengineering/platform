@@ -23,7 +23,7 @@
 
   import chunter from '../../plugin'
   import ThreadParentMessage from './ThreadParentPresenter.svelte'
-  import { getChannelIcon, getChannelName } from '../../utils'
+  import { getObjectIcon, getChannelName } from '../../utils'
   import ChannelScrollView from '../ChannelScrollView.svelte'
   import { ChannelDataProvider } from '../../channelDataProvider'
 
@@ -78,7 +78,7 @@
 
     return [
       {
-        icon: getChannelIcon(message.attachedToClass),
+        icon: getObjectIcon(message.attachedToClass),
         iconProps: { value: channel },
         iconWidth: isPersonAvatar ? 'auto' : undefined,
         withoutIconBackground: isPersonAvatar,

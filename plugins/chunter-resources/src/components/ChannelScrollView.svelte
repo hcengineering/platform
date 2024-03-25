@@ -57,7 +57,7 @@
 
   const client = getClient()
   const inboxClient = InboxNotificationsClientImpl.getClient()
-  const contextByDocStore = inboxClient.docNotifyContextByDoc
+  const contextByDocStore = inboxClient.contextByDoc
   const filters = client.getModel().findAllSync(activity.class.ActivityMessagesFilter, {})
 
   const messagesStore = provider.messagesStore
@@ -610,7 +610,7 @@
 
 <style lang="scss">
   .msg {
-    margin: 0 1.5rem;
+    margin: 0;
     min-height: 4.375rem;
     height: auto;
     display: flex;

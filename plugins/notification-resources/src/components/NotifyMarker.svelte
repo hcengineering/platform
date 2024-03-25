@@ -14,12 +14,13 @@
 -->
 <script lang="ts">
   export let count: number = 0
+  export let size: 'small' | 'medium' = 'small'
 
   const maxNumber = 9
 </script>
 
 {#if count > 0}
-  <div class="notifyMarker">
+  <div class="notifyMarker {size}">
     {#if count > maxNumber}
       {maxNumber}+
     {:else}
@@ -33,12 +34,21 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 1rem;
-    height: 1rem;
     border-radius: 50%;
-    background-color: var(--highlight-red);
-    font-size: 0.5rem;
+    background-color: var(--global-higlight-Color);
+    color: var(--global-on-accent-TextColor);
     font-weight: 700;
-    color: var(--white-color);
+
+    &.small {
+      width: 1rem;
+      height: 1rem;
+      font-size: 0.5rem;
+    }
+
+    &.medium {
+      width: 1.25rem;
+      height: 1.25rem;
+      font-size: 0.625rem;
+    }
   }
 </style>

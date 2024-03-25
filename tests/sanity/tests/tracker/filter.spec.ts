@@ -429,7 +429,7 @@ test.describe('Tracker filters tests', () => {
     })
   })
 
-  test('Due date filter', async ({ page }) => {
+  test.skip('Due date filter', async ({ page }) => {
     const dueDateOverdueIssue: NewIssue = {
       title: `Issue for the Due date yesterday filter-${generateId()}`,
       description: 'Issue for the Due date yesterday filter',

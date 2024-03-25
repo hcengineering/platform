@@ -42,7 +42,6 @@
 
   const acc = getCurrentAccount() as PersonAccount
   const user = acc.person
-  let largeSize: boolean = false
 
   const doneQuery = createQuery()
   const inboxQuery = createQuery()
@@ -302,15 +301,6 @@
         />
       {/if}
     </div>
-    <svelte:fragment slot="actions">
-      <ButtonIcon
-        icon={IconDiff}
-        size={'small'}
-        kind={'tertiary'}
-        pressed={largeSize}
-        on:click={() => (largeSize = !largeSize)}
-      />
-    </svelte:fragment>
   </Header>
   <CreateToDo fullSize />
 
@@ -323,7 +313,6 @@
         showDuration={group[0] !== time.string.Unplanned}
         {mode}
         {projects}
-        {largeSize}
       />
     {/each}
   </Scroller>

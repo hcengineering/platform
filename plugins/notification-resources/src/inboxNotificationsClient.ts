@@ -21,7 +21,9 @@ import {
   type Ref,
   type TxOperations,
   type WithLookup,
-  generateId
+  generateId,
+  toIdMap,
+  type IdMap
 } from '@hcengineering/core'
 import notification, {
   type ActivityInboxNotification,
@@ -33,16 +35,19 @@ import notification, {
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { derived, get, writable } from 'svelte/store'
 
-export const inboxMessagesStore = writable<ActivityMessage[]>([])
-
 /**
  * @public
  */
 export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   protected static _instance: InboxNotificationsClientImpl | undefined = undefined
 
-  readonly docNotifyContexts = writable<DocNotifyContext[]>([])
-  readonly docNotifyContextByDoc = writable<Map<Ref<Doc>, DocNotifyContext>>(new Map())
+  readonly contexts = writable<DocNotifyContext[]>([])
+  readonly contextByDoc = writable<Map<Ref<Doc>, DocNotifyContext>>(new Map())
+  readonly contextById = derived(
+    [this.contexts],
+    ([contexts]) => toIdMap(contexts),
+    new Map() as IdMap<DocNotifyContext>
+  )
 
   readonly activityInboxNotifications = writable<Array<WithLookup<ActivityInboxNotification>>>([])
   readonly otherInboxNotifications = writable<InboxNotification[]>([])
@@ -58,7 +63,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   )
 
   readonly inboxNotificationsByContext = derived(
-    [this.docNotifyContexts, this.inboxNotifications],
+    [this.contexts, this.inboxNotifications],
     ([notifyContexts, inboxNotifications]) => {
       if (inboxNotifications.length === 0 || notifyContexts.length === 0) {
         return new Map<Ref<DocNotifyContext>, InboxNotification[]>()
@@ -76,22 +81,22 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     }
   )
 
-  private readonly docNotifyContextsQuery = createQuery(true)
+  private readonly contextsQuery = createQuery(true)
   private readonly otherInboxNotificationsQuery = createQuery(true)
   private readonly activityInboxNotificationsQuery = createQuery(true)
 
-  private _docNotifyContextByDoc = new Map<Ref<Doc>, DocNotifyContext>()
+  private _contextByDoc = new Map<Ref<Doc>, DocNotifyContext>()
 
   private constructor () {
-    this.docNotifyContextsQuery.query(
+    this.contextsQuery.query(
       notification.class.DocNotifyContext,
       {
         user: getCurrentAccount()._id
       },
       (result: DocNotifyContext[]) => {
-        this.docNotifyContexts.set(result)
-        this._docNotifyContextByDoc = new Map(result.map((updates) => [updates.attachedTo, updates]))
-        this.docNotifyContextByDoc.set(this._docNotifyContextByDoc)
+        this.contexts.set(result)
+        this._contextByDoc = new Map(result.map((updates) => [updates.attachedTo, updates]))
+        this.contextByDoc.set(this._contextByDoc)
       }
     )
     this.otherInboxNotificationsQuery.query(
@@ -143,7 +148,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   }
 
   async readDoc (client: TxOperations, _id: Ref<Doc>): Promise<void> {
-    const docNotifyContext = this._docNotifyContextByDoc.get(_id)
+    const docNotifyContext = this._contextByDoc.get(_id)
 
     if (docNotifyContext === undefined) {
       return
@@ -160,7 +165,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   }
 
   async forceReadDoc (client: TxOperations, _id: Ref<Doc>, _class: Ref<Class<Doc>>): Promise<void> {
-    const context = this._docNotifyContextByDoc.get(_id)
+    const context = this._contextByDoc.get(_id)
 
     if (context !== undefined) {
       await this.readDoc(client, _id)
@@ -265,7 +270,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
         },
         { projection: { _id: 1, _class: 1, space: 1 } }
       )
-      const contexts = get(this.docNotifyContexts) ?? []
+      const contexts = get(this.contexts) ?? []
       for (const notification of inboxNotifications) {
         await ops.removeDoc(notification._class, notification.space, notification._id)
       }
@@ -292,7 +297,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
         },
         { projection: { _id: 1, _class: 1, space: 1 } }
       )
-      const contexts = get(this.docNotifyContexts) ?? []
+      const contexts = get(this.contexts) ?? []
       for (const notification of inboxNotifications) {
         await ops.updateDoc(notification._class, notification.space, notification._id, { isViewed: true })
       }
@@ -318,7 +323,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
         },
         { projection: { _id: 1, _class: 1, space: 1 } }
       )
-      const contexts = get(this.docNotifyContexts) ?? []
+      const contexts = get(this.contexts) ?? []
 
       for (const notification of inboxNotifications) {
         await ops.updateDoc(notification._class, notification.space, notification._id, { isViewed: false })

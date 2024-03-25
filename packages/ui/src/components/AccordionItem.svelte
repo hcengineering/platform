@@ -12,14 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-<script lang="ts">
-  import type { Asset, IntlString } from '@hcengineering/platform'
-  import { AnySvelteComponent } from '../types'
-  import { ComponentType } from 'svelte'
-  import Icon from './Icon.svelte'
-  import Label from './Label.svelte'
-  import IconChevronRight from './icons/ChevronRight.svelte'
 
+<script lang="ts">
+  import { createEventDispatcher } from 'svelte'
+  import type { Asset, IntlString } from '@hcengineering/platform'
+  import type { ComponentType } from 'svelte'
+  import type { AnySvelteComponent } from '../types'
+  import { getTreeCollapsed, setTreeCollapsed } from '../location'
+  import IconChevronRight from './icons/ChevronRight.svelte'
+  import Label from './Label.svelte'
+  import Icon from './Icon.svelte'
+
+  export let id: string
   export let label: IntlString | undefined = undefined
   export let title: string | undefined = undefined
   export let icon: Asset | AnySvelteComponent | ComponentType | undefined = undefined
@@ -28,12 +32,26 @@
   export let kind: 'default' | 'second' = 'default'
   export let nested: boolean = false
   export let isOpen: boolean = false
+  export let disabled: boolean = false
   export let selected: boolean = false
+  export let selectable: boolean = false
   export let bottomSpace: boolean = true
   export let counter: number | boolean = false
   export let duration: number | boolean = false
   export let fixHeader: boolean = false
+  export let categoryHeader: boolean = false
   export let background: string | undefined = undefined
+
+  const dispatch = createEventDispatcher()
+
+  let collapsed: boolean = getTreeCollapsed(id)
+  if (isOpen) collapsed = false
+  $: setTreeCollapsed(id, collapsed)
+
+  function handleClick (): void {
+    if (disabled) return
+    collapsed = !collapsed
+  }
 </script>
 
 <div class="hulyAccordionItem-container {kind}" class:nested>
@@ -41,13 +59,14 @@
     class="hulyAccordionItem-header {kind} {size}"
     class:bottomSpace
     class:nested
-    class:isOpen
+    class:disabled
+    class:isOpen={!collapsed}
     class:selected
+    class:selectable
     class:scroller-header={fixHeader}
+    class:categoryHeader
     style:background-color={background ?? 'transparent'}
-    on:click={() => {
-      isOpen = !isOpen
-    }}
+    on:click|stopPropagation={handleClick}
   >
     <div
       class="hulyAccordionItem-header__label-wrapper {size === 'large' ? 'heading-medium-16' : 'font-medium-12'}"
@@ -63,11 +82,19 @@
           <Icon {icon} size={size === 'medium' ? 'small' : 'medium'} {iconProps} />
         </div>
       {/if}
-      <span class="hulyAccordionItem-header__label">
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <div
+        class="hulyAccordionItem-header__label"
+        on:click|stopPropagation={() => {
+          if (selectable) dispatch('select')
+          else handleClick()
+        }}
+      >
         {#if label}<Label {label} />{/if}
         {#if title}{title}{/if}
         <slot name="title" />
-      </span>
+      </div>
       {#if counter !== false}
         <span class="hulyAccordionItem-header__separator">•</span>
         <span class="hulyAccordionItem-header__counter">

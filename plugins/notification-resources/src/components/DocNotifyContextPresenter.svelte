@@ -16,9 +16,9 @@
   import { DocNotifyContext } from '@hcengineering/notification'
   import { Doc } from '@hcengineering/core'
   import { getDocLinkTitle, getDocTitle } from '@hcengineering/view-resources'
-  import { Icon } from '@hcengineering/ui'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import chunter from '@hcengineering/chunter'
+  import NotifyContextIcon from './NotifyContextIcon.svelte'
 
   export let value: DocNotifyContext
 
@@ -31,8 +31,6 @@
     object = res[0]
   })
 
-  $: icon = object && client.getHierarchy().getClass(object._class).icon
-
   async function getTitle (object: Doc) {
     if (object._class === chunter.class.DirectMessage) {
       return await getDocTitle(client, object._id, object._class, object)
@@ -43,9 +41,7 @@
 
 {#if object}
   <div class="flex-presenter">
-    {#if icon}
-      <Icon {icon} size="small" />
-    {/if}
+    <NotifyContextIcon {value} size="small" />
     <div class="mr-4" />
 
     {#await getTitle(object) then title}

@@ -88,7 +88,7 @@
   class:menu={hasMenu}
   disabled={loading || disabled}
   use:tp={tooltip}
-  on:click
+  on:click|stopPropagation
   on:keydown
 >
   {#if loading}

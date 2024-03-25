@@ -17,7 +17,8 @@
   import type { AnyComponent } from '..'
   import { Label, Component } from '..'
 
-  export let label: IntlString
+  export let label: IntlString | undefined = undefined
+  export let title: string | undefined = undefined
   export let categoryName: string
   export let tools: AnyComponent | undefined = undefined
   export let isOpen: boolean = true
@@ -31,18 +32,22 @@
   <button class="hulyAccordionItem-header nav small" class:isOpen class:selected on:click={() => (isOpen = !isOpen)}>
     <div class="hulyAccordionItem-header__label-wrapper font-medium-12">
       <span class="hulyAccordionItem-header__label">
-        <Label {label} />
+        {#if label}<Label {label} />{/if}
+        {#if title}{title}{/if}
       </span>
     </div>
-    {#if tools}
+    {#if tools || $$slots.tools}
       <div class="hulyAccordionItem-header__tools">
-        <Component
-          is={tools}
-          props={{
-            kind: 'tools',
-            categoryName
-          }}
-        />
+        {#if tools}
+          <Component
+            is={tools}
+            props={{
+              kind: 'tools',
+              categoryName
+            }}
+          />
+        {/if}
+        <slot name="tools" />
       </div>
     {/if}
   </button>

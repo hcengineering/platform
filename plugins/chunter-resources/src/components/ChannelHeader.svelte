@@ -23,7 +23,7 @@
 
   import Header from './Header.svelte'
   import chunter from '../plugin'
-  import { getChannelIcon, getChannelName } from '../utils'
+  import { getObjectIcon, getChannelName } from '../utils'
   import PinnedMessages from './PinnedMessages.svelte'
 
   export let _id: Ref<Doc>
@@ -65,7 +65,7 @@
   <Header
     bind:filters
     {object}
-    icon={getChannelIcon(_class)}
+    icon={getObjectIcon(_class)}
     iconProps={{ value: object }}
     label={title}
     intlLabel={chunter.string.Channel}

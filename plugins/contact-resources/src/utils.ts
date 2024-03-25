@@ -109,7 +109,7 @@ export async function filterChannelHasNewMessagesResult (
     filter,
     onUpdate,
     undefined,
-    get(inboxClient.docNotifyContextByDoc),
+    get(inboxClient.contextByDoc),
     get(inboxClient.inboxNotificationsByContext)
   )
   return { $in: result }

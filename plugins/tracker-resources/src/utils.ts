@@ -324,8 +324,8 @@ export async function issueStatusSort (
 
   if (viewletDescriptorId === tracker.viewlet.Kanban) {
     value.sort((a, b) => {
-      const aVal = statuses.get(a) as IssueStatus
-      const bVal = statuses.get(b) as IssueStatus
+      const aVal = statuses.get(a)
+      const bVal = statuses.get(b)
       const res =
         listIssueKanbanStatusOrder.indexOf(aVal?.category as Ref<StatusCategory>) -
         listIssueKanbanStatusOrder.indexOf(bVal?.category as Ref<StatusCategory>)
@@ -335,7 +335,7 @@ export async function issueStatusSort (
           const bIndex = getStatusIndex(type, taskTypes, b)
           return aIndex - bIndex
         } else {
-          return aVal.name.localeCompare(bVal.name)
+          return (aVal?.name ?? '').localeCompare(bVal?.name ?? '')
         }
       }
       return res
