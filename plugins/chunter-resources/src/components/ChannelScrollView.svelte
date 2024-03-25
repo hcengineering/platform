@@ -279,7 +279,7 @@
   }
 
   function readViewportMessages () {
-    if (scrollElement === undefined || scrollContentBox === undefined) {
+    if (!scrollElement || !scrollContentBox) {
       return
     }
 
@@ -308,7 +308,7 @@
       return
     }
 
-    if (scrollContentBox === undefined || scrollElement === undefined) {
+    if (!scrollContentBox || !scrollElement) {
       return
     }
 
