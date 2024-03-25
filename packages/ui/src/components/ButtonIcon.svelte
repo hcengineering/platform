@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { Asset } from '@hcengineering/platform'
-  import { AnySvelteComponent, LabelAndProps } from '../types'
+  import { AnySvelteComponent, IconSize, LabelAndProps } from '../types'
   import { ComponentType } from 'svelte'
   import ButtonBase from './ButtonBase.svelte'
 
@@ -22,6 +22,7 @@
   export let size: 'large' | 'medium' | 'small' | 'extra-small' | 'min' = 'large'
   export let icon: Asset | AnySvelteComponent | ComponentType
   export let iconProps: any | undefined = undefined
+  export let iconSize: IconSize | undefined = undefined
   export let disabled: boolean = false
   export let pressed: boolean = false
   export let hasMenu: boolean = false
@@ -41,6 +42,7 @@
   bind:this={element}
   type={'type-button-icon'}
   {kind}
+  {iconSize}
   {size}
   {icon}
   {iconProps}

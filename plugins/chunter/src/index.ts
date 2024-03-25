@@ -141,7 +141,9 @@ export default plugin(chunterId, {
     ThreadMessagePresenter: '' as AnyComponent,
     ChatAside: '' as AnyComponent,
     Replies: '' as AnyComponent,
-    ReplyToThreadAction: '' as AnyComponent
+    ReplyToThreadAction: '' as AnyComponent,
+    ChatMessagePreview: '' as AnyComponent,
+    ThreadMessagePreview: '' as AnyComponent
   },
   class: {
     Message: '' as Ref<Class<Message>>,

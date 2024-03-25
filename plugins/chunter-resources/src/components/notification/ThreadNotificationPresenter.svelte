@@ -14,28 +14,9 @@
 -->
 <script lang="ts">
   import { ThreadMessage } from '@hcengineering/chunter'
-  import ThreadMessagePresenter from '../threads/ThreadMessagePresenter.svelte'
-  import { Action } from '@hcengineering/ui'
-  import { ActivityInboxNotification } from '@hcengineering/notification'
+  import ThreadMessagePreview from '../threads/ThreadMessagePreview.svelte'
 
   export let message: ThreadMessage
-  export let notification: ActivityInboxNotification
-  export let embedded = false
-  export let showNotify = true
-  export let withActions = true
-  export let actions: Action[] = []
-  export let excludedActions: string[] = []
-  export let onClick: (() => void) | undefined = undefined
 </script>
 
-<ThreadMessagePresenter
-  value={message}
-  {embedded}
-  showEmbedded={!embedded}
-  {withActions}
-  {actions}
-  {excludedActions}
-  hoverable={false}
-  {showNotify}
-  {onClick}
-/>
+<ThreadMessagePreview value={message} on:click />

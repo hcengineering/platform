@@ -69,9 +69,6 @@
       <PinMessageAction object={message} />
       <SaveMessageAction object={message} />
     {/if}
-    {#if withActionMenu}
-      <ActivityMessageAction icon={IconMoreV} action={showMenu} opened={isActionMenuOpened} />
-    {/if}
   </div>
 {/if}
 

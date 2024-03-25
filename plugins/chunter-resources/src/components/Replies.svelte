@@ -46,10 +46,10 @@
 
   let displayPersons: Person[] = []
 
-  $: docNotifyContextByDocStore = inboxClient?.docNotifyContextByDoc
+  $: contextByDocStore = inboxClient?.contextByDoc
   $: notificationsByContextStore = inboxClient?.inboxNotificationsByContext
 
-  $: hasNew = hasNewReplies(object, $docNotifyContextByDocStore, $notificationsByContextStore)
+  $: hasNew = hasNewReplies(object, $contextByDocStore, $notificationsByContextStore)
   $: updateQuery(persons, $personByIdStore)
 
   function hasNewReplies (
@@ -91,7 +91,7 @@
       return
     }
 
-    const context = get(inboxClient.docNotifyContextByDoc).get(object.attachedTo)
+    const context = get(inboxClient.contextByDoc).get(object.attachedTo)
 
     if (context === undefined) {
       return

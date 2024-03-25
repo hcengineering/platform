@@ -22,6 +22,7 @@
 
   export let _id: Ref<TelegramMessage> | undefined = undefined
   export let value: TelegramMessage | undefined = undefined
+  export let preview = false
 
   const query = createQuery()
   const client = getClient()
@@ -42,8 +43,8 @@
 </script>
 
 {#if value}
-  <div class="content lines-limit-2">
-    <MessageViewer message={value.content} />
+  <div class="content lines-limit-2 overflow-label">
+    <MessageViewer message={value.content} {preview} />
   </div>
 {/if}
 

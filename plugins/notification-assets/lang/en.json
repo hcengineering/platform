@@ -19,6 +19,7 @@
     "Change": "Change",
     "AddedRemoved": "Added/removed",
     "YouAddedCollaborators": "You have been added to collaborators",
+    "YouRemovedCollaborators": "You have been removed from collaborators",
     "YouHaveJoinedTheConversation": "You have joined the conversation",
     "ChangeCollaborators": "changed collaborators",
     "Activity": "Activity",
@@ -34,14 +35,13 @@
     "Edited": "edited",
     "Pinned": "Pinned",
     "Message": "Message",
-    "FlatList": "Flat list",
-    "GroupedList": "Grouped list",
     "ArchiveAll": "Archive all",
     "MarkReadAll": "Mark all as read",
     "MarkUnreadAll": "Mark all as unread",
     "ArchiveAllConfirmationTitle": "Archive all notifications?",
     "ArchiveAllConfirmationMessage": "Are you sure you want to archive all notifications? This operation cannot be undone.",
     "StarDocument": "Star document",
-    "UnstarDocument": "Unstar document"
+    "UnstarDocument": "Unstar document",
+    "Unsubscribe": "Unsubscribe"
   }
 }

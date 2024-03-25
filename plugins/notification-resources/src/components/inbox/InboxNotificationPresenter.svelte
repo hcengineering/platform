@@ -20,14 +20,7 @@
   import { ActivityNotificationViewlet, DisplayInboxNotification } from '@hcengineering/notification'
 
   export let value: DisplayInboxNotification
-  export let embedded = false
-  export let skipLabel = false
-  export let showNotify = true
-  export let withActions = true
   export let viewlets: ActivityNotificationViewlet[] = []
-  export let withFlatActions = false
-  export let onClick: (() => void) | undefined = undefined
-  export let onCheck: ((isChecked: boolean) => void) | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -36,8 +29,5 @@
 </script>
 
 {#if objectPresenter}
-  <Component
-    is={objectPresenter.presenter}
-    props={{ value, embedded, skipLabel, viewlets, showNotify, withActions, withFlatActions, onClick, onCheck }}
-  />
+  <Component is={objectPresenter.presenter} props={{ value, viewlets }} on:click />
 {/if}

@@ -274,6 +274,10 @@ export interface ActivityAttributeUpdatesPresenter extends Class<Doc> {
   presenter: AnyComponent
 }
 
+export interface ActivityMessagePreview extends Class<Doc> {
+  presenter: AnyComponent
+}
+
 /**
  * @public
  */
@@ -309,10 +313,13 @@ export interface SavedMessage extends Preference {
  */
 export interface IgnoreActivity extends Class<Doc> {}
 
+export type ActivityMessagePreviewType = 'full' | 'content-only'
+
 export default plugin(activityId, {
   mixin: {
     ActivityDoc: '' as Ref<Mixin<ActivityDoc>>,
     ActivityAttributeUpdatesPresenter: '' as Ref<Mixin<ActivityAttributeUpdatesPresenter>>,
+    ActivityMessagePreview: '' as Ref<Mixin<ActivityMessagePreview>>,
     IgnoreActivity: '' as Ref<Mixin<IgnoreActivity>>
   },
   class: {
@@ -364,7 +371,9 @@ export default plugin(activityId, {
     Mentioned: '' as IntlString,
     You: '' as IntlString,
     Mentions: '' as IntlString,
-    MentionedYouIn: '' as IntlString
+    MentionedYouIn: '' as IntlString,
+    Messages: '' as IntlString,
+    Thread: '' as IntlString
   },
   component: {
     Activity: '' as AnyComponent,
@@ -372,9 +381,11 @@ export default plugin(activityId, {
     DocUpdateMessagePresenter: '' as AnyComponent,
     ActivityInfoMessagePresenter: '' as AnyComponent,
     ReactionPresenter: '' as AnyComponent,
-    ReactionNotificationPresenter: '' as AnyComponent,
     ActivityMessageNotificationLabel: '' as AnyComponent,
-    ActivityReferencePresenter: '' as AnyComponent
+    ActivityReferencePresenter: '' as AnyComponent,
+    DocUpdateMessagePreview: '' as AnyComponent,
+    ActivityReferencePreview: '' as AnyComponent,
+    ActivityInfoMessagePreview: '' as AnyComponent
   },
   ids: {
     AllFilter: '' as Ref<ActivityMessagesFilter>,

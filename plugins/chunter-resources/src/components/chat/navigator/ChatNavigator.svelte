@@ -33,7 +33,7 @@
   export let currentSpecial: SpecialNavModel | undefined
 
   const notificationClient = InboxNotificationsClientImpl.getClient()
-  const contextsStore = notificationClient.docNotifyContexts
+  const contextsStore = notificationClient.contexts
 
   const globalActions = [
     {
@@ -54,14 +54,14 @@
 
   const searchValue: string = ''
 
-  async function isSpecialVisible (special: SpecialNavModel, docNotifyContexts: DocNotifyContext[]): Promise<boolean> {
+  async function isSpecialVisible (special: SpecialNavModel, contexts: DocNotifyContext[]): Promise<boolean> {
     if (special.visibleIf === undefined) {
       return true
     }
 
     const getIsVisible = await getResource(special.visibleIf)
 
-    return await getIsVisible(docNotifyContexts as any)
+    return await getIsVisible(contexts as any)
   }
 
   function addButtonClicked (ev: MouseEvent): void {

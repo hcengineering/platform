@@ -21,11 +21,12 @@
 
   import attachment from '../../plugin'
   import AttachmentPresenter from '../AttachmentPresenter.svelte'
-  import RemovedAttachmentPresenter from '../RemovedAttachmentPresenter.svelte'
+  import AttachmentName from '../AttachmentName.svelte'
 
   export let message: DocUpdateMessage
   export let _id: Ref<Attachment>
   export let value: Attachment | undefined = undefined
+  export let preview = false
 
   const client = getClient()
 
@@ -35,10 +36,8 @@
     })
 </script>
 
-{#if message.action === 'remove'}
-  {#if value}
-    <RemovedAttachmentPresenter {value} />
-  {/if}
+{#if preview || message.action === 'remove'}
+  <AttachmentName {value} />
 {:else}
   <AttachmentPresenter {value} />
 {/if}

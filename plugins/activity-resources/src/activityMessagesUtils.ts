@@ -318,7 +318,10 @@ export async function combineActivityMessages (
   )
 }
 
-export function sortActivityMessages<T extends ActivityMessage> (messages: T[], order: SortingOrder): T[] {
+export function sortActivityMessages<T extends ActivityMessage> (
+  messages: T[],
+  order: SortingOrder = SortingOrder.Ascending
+): T[] {
   return messages.sort((message1, message2) =>
     order === SortingOrder.Ascending
       ? activityMessagesComparator(message1, message2)

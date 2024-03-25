@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -12,12 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-<script lang="ts">
-  import type { Attachment } from '@hcengineering/attachment'
 
-  export let value: Attachment
+<script lang="ts">
+  import { ThreadMessage } from '@hcengineering/chunter'
+  import { ActivityMessagePreviewType } from '@hcengineering/activity'
+
+  import ChatMessagePreview from '../chat-message/ChatMessagePreview.svelte'
+  import { Action } from '@hcengineering/ui'
+
+  export let value: ThreadMessage
+  export let readonly = false
+  export let type: ActivityMessagePreviewType = 'full'
+  export let actions: Action[] = []
 </script>
 
-<div class="flex-row-center">
-  {value.name}
-</div>
+<ChatMessagePreview {value} {readonly} {type} {actions} on:click />

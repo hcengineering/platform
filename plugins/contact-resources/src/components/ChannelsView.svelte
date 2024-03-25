@@ -32,12 +32,12 @@
   export let reverse: boolean = false
   export let integrations: Set<Ref<Doc>> = new Set<Ref<Doc>>()
 
-  let notifyContextByDocStore: Writable<Map<Ref<Doc>, DocNotifyContext>> = writable(new Map())
+  let contextByDocStore: Writable<Map<Ref<Doc>, DocNotifyContext>> = writable(new Map())
   let inboxNotificationsByContextStore: Readable<Map<Ref<DocNotifyContext>, InboxNotification[]>> = readable(new Map())
 
   getResource(notification.function.GetInboxNotificationsClient).then((res) => {
     const inboxClient = res()
-    notifyContextByDocStore = inboxClient.docNotifyContextByDoc
+    contextByDocStore = inboxClient.contextByDoc
     inboxNotificationsByContextStore = inboxClient.inboxNotificationsByContext
   })
 
@@ -121,7 +121,7 @@
     displayItems = result
   }
 
-  $: if (value) update(value, $notifyContextByDocStore, $inboxNotificationsByContextStore, $channelProviders)
+  $: if (value) update(value, $contextByDocStore, $inboxNotificationsByContextStore, $channelProviders)
 
   let displayItems: Item[] = []
   let divHTML: HTMLElement

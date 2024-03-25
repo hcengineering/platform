@@ -138,7 +138,7 @@ export class TDirectMessageInput extends TClass implements DirectMessageInput {
 }
 
 @Model(chunter.class.ChatMessage, activity.class.ActivityMessage)
-@UX(chunter.string.Message)
+@UX(chunter.string.Message, chunter.icon.Thread, undefined, undefined, undefined, chunter.string.Threads)
 export class TChatMessage extends TActivityMessage implements ChatMessage {
   @Prop(TypeMarkup(), chunter.string.Message)
   @Index(IndexKind.FullText)
@@ -154,7 +154,7 @@ export class TChatMessage extends TActivityMessage implements ChatMessage {
 }
 
 @Model(chunter.class.ThreadMessage, chunter.class.ChatMessage)
-@UX(chunter.string.ThreadMessage)
+@UX(chunter.string.ThreadMessage, chunter.icon.Thread, undefined, undefined, undefined, chunter.string.Threads)
 export class TThreadMessage extends TChatMessage implements ThreadMessage {
   @Prop(TypeRef(activity.class.ActivityMessage), core.string.AttachedTo)
   @Index(IndexKind.Indexed)
@@ -403,28 +403,29 @@ export function createModel (builder: Builder, options = { addApplication: true 
     encode: chunter.function.GetThreadLink
   })
 
-  createAction(
-    builder,
-    {
-      action: view.actionImpl.CopyTextToClipboard,
-      actionProps: {
-        textProvider: chunter.function.GetLink
-      },
-      label: chunter.string.CopyLink,
-      icon: chunter.icon.Copy,
-      keyBinding: [],
-      input: 'none',
-      category: chunter.category.Chunter,
-      target: activity.class.ActivityMessage,
-      visibilityTester: chunter.function.CanCopyMessageLink,
-      context: {
-        mode: ['context', 'browser'],
-        application: chunter.app.Chunter,
-        group: 'copy'
-      }
-    },
-    chunter.action.CopyChatMessageLink
-  )
+  // Note: it is not working now, need to fix navigation by url UBERF-5686
+  // createAction(
+  //   builder,
+  //   {
+  //     action: view.actionImpl.CopyTextToClipboard,
+  //     actionProps: {
+  //       textProvider: chunter.function.GetLink
+  //     },
+  //     label: chunter.string.CopyLink,
+  //     icon: chunter.icon.Copy,
+  //     keyBinding: [],
+  //     input: 'none',
+  //     category: chunter.category.Chunter,
+  //     target: activity.class.ActivityMessage,
+  //     visibilityTester: chunter.function.CanCopyMessageLink,
+  //     context: {
+  //       mode: ['context', 'browser'],
+  //       application: chunter.app.Chunter,
+  //       group: 'copy'
+  //     }
+  //   },
+  //   chunter.action.CopyChatMessageLink
+  // )
 
   builder.mixin(chunter.class.ChunterMessage, core.class.Class, view.mixin.ClassFilters, {
     filters: ['space', '_class']
@@ -731,6 +732,14 @@ export function createModel (builder: Builder, options = { addApplication: true 
 
   builder.mixin(chunter.class.DirectMessage, core.class.Class, chunter.mixin.ObjectChatPanel, {
     ignoreKeys: ['archived', 'collaborators', 'lastMessage', 'pinned', 'topic', 'description']
+  })
+
+  builder.mixin(chunter.class.ChatMessage, core.class.Class, activity.mixin.ActivityMessagePreview, {
+    presenter: chunter.component.ChatMessagePreview
+  })
+
+  builder.mixin(chunter.class.ThreadMessage, core.class.Class, activity.mixin.ActivityMessagePreview, {
+    presenter: chunter.component.ThreadMessagePreview
   })
 }
 

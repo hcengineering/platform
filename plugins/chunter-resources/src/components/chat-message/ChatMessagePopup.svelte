@@ -62,7 +62,6 @@
       dispatch('changeContent')
     }}
     on:keydown={(evt) => {
-      console.log(evt)
       if (isTextMode) {
         evt.preventDefault()
         evt.stopImmediatePropagation()

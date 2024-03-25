@@ -617,11 +617,6 @@ export function makeViewletKey (loc?: Location): string {
   loc.fragment = undefined
   loc.query = undefined
 
-  // TODO: make better fix. Just temporary fix for correct inbox viewlets.
-  if (loc.path[2] === 'notification') {
-    loc.path = loc.path.slice(0, 3)
-  }
-
   return 'viewlet' + locationToUrl(loc)
 }
 
@@ -1224,7 +1219,7 @@ export async function checkIsObjectRemoved (
   objectId: Ref<Doc>,
   objectClass: Ref<Class<Doc>>
 ): Promise<boolean> {
-  const object = await client.findOne(objectClass, { _id: objectId })
+  const object = await client.findOne(objectClass, { _id: objectId }, { projection: { _id: 1 } })
 
   return object === undefined
 }

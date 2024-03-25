@@ -27,8 +27,8 @@
   import { translate } from '@hcengineering/platform'
   import { MessageViewer } from '@hcengineering/presentation'
 
-  import ActivityMessageTemplate from './ActivityMessageTemplate.svelte'
-  import ActivityMessageHeader from './ActivityMessageHeader.svelte'
+  import ActivityMessageTemplate from '../activity-message/ActivityMessageTemplate.svelte'
+  import ActivityMessageHeader from '../activity-message/ActivityMessageHeader.svelte'
 
   export let value: ActivityInfoMessage
   export let showNotify: boolean = false

@@ -16,7 +16,7 @@
   import { buildRemovedDoc, checkIsObjectRemoved, DocNavLink, getDocLinkTitle } from '@hcengineering/view-resources'
   import { Component, Icon, IconAdd, IconDelete } from '@hcengineering/ui'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import view, { ObjectPanel, ObjectPresenter } from '@hcengineering/view'
+  import view from '@hcengineering/view'
   import { Class, Doc, Ref } from '@hcengineering/core'
   import { DisplayDocUpdateMessage, DocUpdateMessageViewlet } from '@hcengineering/activity'
 
@@ -24,6 +24,7 @@
   export let viewlet: DocUpdateMessageViewlet | undefined
   export let withIcon: boolean = false
   export let hasSeparator: boolean = false
+  export let preview = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -66,7 +67,13 @@
   {/if}
 
   {#if objectPresenter && !viewlet?.valueAttr}
-    <Component is={objectPresenter.presenter} props={{ value: object, accent: true, shouldShowAvatar: false }} />
+    <Component
+      is={objectPresenter.presenter}
+      props={{ value: object, accent: true, shouldShowAvatar: false, preview }}
+    />
+    {#if hasSeparator}
+      <span class="ml-1" />
+    {/if}
   {:else}
     {#await getValue(object) then value}
       <span class="valueLink">
@@ -90,12 +97,12 @@
 <style lang="scss">
   .valueLink {
     font-weight: 500;
-    color: var(--theme-link-color);
+    color: var(--global-primary-LinkColor);
   }
 
   .separator {
     font-weight: 500;
-    color: var(--theme-link-color);
+    color: var(--global-primary-LinkColor);
     margin-left: -0.25rem;
   }
 </style>

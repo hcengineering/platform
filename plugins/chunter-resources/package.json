@@ -20,6 +20,7 @@
     "@types/jest": "^29.5.5",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
+    "@types/html-to-text": "^8.1.1",
     "eslint": "^8.54.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
     "eslint-plugin-import": "^2.26.0",
@@ -60,6 +61,7 @@
     "@hcengineering/workbench": "^0.6.9",
     "@hcengineering/workbench-resources": "^0.6.1",
     "fast-equals": "^2.0.3",
-    "svelte": "^4.2.12"
+    "svelte": "^4.2.12",
+    "html-to-text": "^9.0.3"
   }
 }

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ActionIcon, Component, IconMoreH, Label, showPopup } from '@hcengineering/ui'
+  import { ButtonIcon, CheckBox, Component, IconMoreV, Label, showPopup, Spinner } from '@hcengineering/ui'
   import notification, {
     ActivityNotificationViewlet,
     DisplayInboxNotification,
@@ -21,37 +21,53 @@
   } from '@hcengineering/notification'
   import { getClient } from '@hcengineering/presentation'
   import { getDocTitle, getDocIdentifier, Menu } from '@hcengineering/view-resources'
-  import chunter from '@hcengineering/chunter'
   import { createEventDispatcher } from 'svelte'
   import { WithLookup } from '@hcengineering/core'
 
   import InboxNotificationPresenter from './inbox/InboxNotificationPresenter.svelte'
   import NotifyContextIcon from './NotifyContextIcon.svelte'
-  import NotifyMarker from './NotifyMarker.svelte'
+  import { deleteContextNotifications } from '../utils'
 
   export let value: DocNotifyContext
-  export let visibleNotification: WithLookup<DisplayInboxNotification>
+  export let notifications: WithLookup<DisplayInboxNotification>[]
   export let viewlets: ActivityNotificationViewlet[] = []
-  export let isCompact = true
-  export let unreadCount = 0
+
+  const maxNotifications = 3
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
 
+  let isActionMenuOpened = false
+  let unreadCount = 0
+
+  $: unreadCount = notifications.filter(({ isViewed }) => !isViewed).length
+
   let idTitle: string | undefined
   let title: string | undefined
+
+  $: void getDocIdentifier(client, value.attachedTo, value.attachedToClass).then((res) => {
+    idTitle = res
+  })
+
+  $: void getDocTitle(client, value.attachedTo, value.attachedToClass).then((res) => {
+    title = res
+  })
+
+  $: presenterMixin = hierarchy.classHierarchyMixin(
+    value.attachedToClass,
+    notification.mixin.NotificationContextPresenter
+  )
+
   function showMenu (ev: MouseEvent): void {
+    ev.stopPropagation()
+    ev.preventDefault()
     showPopup(
       Menu,
       {
         object: value,
         baseMenuClass: notification.class.DocNotifyContext,
-        excludedActions: [
-          notification.action.PinDocNotifyContext,
-          notification.action.UnpinDocNotifyContext,
-          chunter.action.OpenChannel
-        ]
+        mode: 'panel'
       },
       ev.target as HTMLElement,
       handleActionMenuClosed
@@ -59,12 +75,6 @@
     handleActionMenuOpened()
   }
 
-  $: presenterMixin = hierarchy.classHierarchyMixin(
-    value.attachedToClass,
-    notification.mixin.NotificationContextPresenter
-  )
-
-  let isActionMenuOpened = false
   function handleActionMenuOpened (): void {
     isActionMenuOpened = true
   }
@@ -73,61 +83,80 @@
     isActionMenuOpened = false
   }
 
-  $: getDocIdentifier(client, value.attachedTo, value.attachedToClass).then((res) => {
-    idTitle = res
-  })
+  let deletingPromise: Promise<any> | undefined = undefined
 
-  $: getDocTitle(client, value.attachedTo, value.attachedToClass).then((res) => {
-    title = res
-  })
+  async function checkContext (): Promise<void> {
+    await deletingPromise
+    deletingPromise = deleteContextNotifications(value)
+    await deletingPromise
+    deletingPromise = undefined
+  }
 </script>
 
-{#if visibleNotification}
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div
-    class="card"
-    class:compact={isCompact}
-    on:click={() => {
-      dispatch('click', { context: value, notification: visibleNotification })
-    }}
-  >
-    {#if isCompact}
-      <InboxNotificationPresenter value={visibleNotification} {viewlets} showNotify={false} withFlatActions />
-      <div class="notifyMarker compact">
-        <NotifyMarker count={unreadCount} />
-      </div>
-    {:else}
-      <div class="header">
-        <NotifyContextIcon {value} />
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div
+  class="card"
+  on:click={() => {
+    dispatch('click', { context: value })
+  }}
+>
+  <div class="header">
+    <NotifyContextIcon {value} notifyCount={unreadCount} />
 
-        {#if presenterMixin?.labelPresenter}
-          <Component is={presenterMixin.labelPresenter} props={{ notification: visibleNotification, context: value }} />
+    <div class="labels">
+      {#if presenterMixin?.labelPresenter}
+        <Component is={presenterMixin.labelPresenter} props={{ context: value }} />
+      {:else}
+        {#if idTitle}
+          {idTitle}
         {:else}
-          <div class="labels">
-            {#if idTitle}
-              {idTitle}
-            {:else}
-              <Label label={hierarchy.getClass(value.attachedToClass).label} />
-            {/if}
-            <div class="title overflow-label" {title}>
-              {title ?? hierarchy.getClass(value.attachedToClass).label}
-            </div>
-          </div>
+          <Label label={hierarchy.getClass(value.attachedToClass).label} />
+        {/if}
+        <span class="title overflow-label clear-mins" {title}>
+          {title ?? hierarchy.getClass(value.attachedToClass).label}
+        </span>
+      {/if}
+    </div>
+
+    <div class="actions clear-mins">
+      <div class="flex-center">
+        {#if deletingPromise !== undefined}
+          <Spinner size="small" />
+        {:else}
+          <CheckBox checked={false} kind="todo" size="medium" on:value={checkContext} />
         {/if}
       </div>
-      <div class="actions clear-mins flex flex-gap-2 items-center" class:opened={isActionMenuOpened}>
-        <ActionIcon icon={IconMoreH} size="small" action={showMenu} />
-      </div>
-      <div class="notifyMarker">
-        <NotifyMarker count={unreadCount} />
-      </div>
-      <div class="notification">
-        <InboxNotificationPresenter value={visibleNotification} {viewlets} embedded skipLabel />
-      </div>
-    {/if}
+      <ButtonIcon
+        icon={IconMoreV}
+        size="small"
+        kind="tertiary"
+        inheritColor
+        pressed={isActionMenuOpened}
+        on:click={showMenu}
+      />
+    </div>
   </div>
-{/if}
+
+  <div class="content">
+    <div class="notifications">
+      {#each notifications.slice(0, maxNotifications).reverse() as notification}
+        <div class="notification">
+          <div class="embeddedMarker" />
+          <InboxNotificationPresenter
+            value={notification}
+            {viewlets}
+            on:click={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              dispatch('click', { context: value, notification })
+            }}
+          />
+        </div>
+      {/each}
+    </div>
+  </div>
+</div>
 
 <style lang="scss">
   .card {
@@ -135,65 +164,93 @@
     position: relative;
     flex-direction: column;
     cursor: pointer;
-    border: 1px solid transparent;
-    border-radius: 0.5rem;
-    padding: 0.5rem 1rem;
-    padding-right: 0;
-    margin: 0.5rem 0;
-
-    &.compact {
-      padding: 0;
-      margin: 0;
-    }
+    padding: var(--spacing-1_5) var(--spacing-1);
+    border-bottom: 1px solid var(--global-ui-BorderColor);
 
     .header {
       position: relative;
       display: flex;
       align-items: center;
-      gap: 1.25rem;
-      margin-left: 0.25rem;
-    }
+      gap: 0.75rem;
+      margin-left: var(--spacing-0_5);
 
-    .title {
-      font-weight: 500;
-      max-width: 20.5rem;
-    }
-
-    .actions {
-      position: absolute;
-      visibility: hidden;
-      top: 0.75rem;
-      right: 0.75rem;
-      color: var(--theme-halfcontent-color);
-
-      &.opened {
-        visibility: visible;
+      .actions {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        top: -0.5rem;
+        right: 0.25rem;
+        gap: 0.25rem;
+        color: var(--global-secondary-TextColor);
       }
     }
 
-    &:hover > .actions {
-      visibility: visible;
+    .title {
+      font-weight: 400;
+      color: var(--global-primary-TextColor);
+      min-width: 0;
+      margin-right: 1rem;
+    }
+  }
+
+  .notifications {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    flex-direction: column;
+    margin-top: var(--spacing-1);
+    margin-left: var(--spacing-2_5);
+  }
+
+  .notification {
+    position: relative;
+
+    .embeddedMarker {
+      position: absolute;
+      min-width: 0.25rem;
+      border-radius: 0;
+      height: 2.375rem;
+      background: var(--global-ui-highlight-BackgroundColor);
+    }
+
+    &:first-child {
+      .embeddedMarker {
+        border-top-left-radius: 0.5rem;
+        border-top-right-radius: 0.5rem;
+      }
+    }
+
+    &:hover {
+      .embeddedMarker {
+        border-radius: 0.5rem;
+        background: var(--global-primary-LinkColor);
+      }
+    }
+
+    &:last-child {
+      .embeddedMarker {
+        border-bottom-left-radius: 0.5rem;
+        border-bottom-right-radius: 0.5rem;
+      }
     }
   }
 
   .labels {
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
+    color: var(--global-primary-TextColor);
+    font-weight: 600;
+    font-size: 0.875rem;
+    gap: 0.25rem;
+    min-width: 0;
+    overflow: hidden;
+    margin-right: 4rem;
   }
 
-  .notification {
-    margin-top: 0.25rem;
-    margin-left: 4rem;
-  }
-
-  .notifyMarker {
-    position: absolute;
-    left: 0.25rem;
-    top: 0;
-
-    &.compact {
-      left: 0.25rem;
-      top: 0.5rem;
-    }
+  .content {
+    display: flex;
+    width: 100%;
   }
 </style>

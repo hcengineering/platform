@@ -183,27 +183,32 @@ export async function OnToDoCreate (tx: TxCUD<Doc>, control: TriggerControl): Pr
     return []
   }
 
+  const object = (await control.findAll(todo.attachedToClass, { _id: todo.attachedTo }))[0]
+
+  if (object === undefined) return []
+
   const res: Tx[] = []
   const notifyResult = await isShouldNotifyTx(control, createTx, tx, todo, account._id, true, false)
   const content = await getNotificationContent(tx, account._id, todo, control)
-  const details = todo.description != null && todo.description.length > 0 ? todo.description : todo.title
   const data: Partial<Data<CommonInboxNotification>> = {
     ...content,
-    header: time.string.CreatedToDo,
-    message: time.string.NewToDoDetails,
-    props: { details }
+    header: time.string.ToDo,
+    headerIcon: time.icon.Planned,
+    headerObjectId: object._id,
+    headerObjectClass: object._class,
+    messageHtml: todo.title
   }
 
   res.push(
     ...(await getCommonNotificationTxes(
       control,
-      todo,
+      object,
       data,
       account._id,
       tx.modifiedBy,
-      todo._id,
-      todo._class,
-      todo.space,
+      object._id,
+      object._class,
+      object.space,
       createTx.modifiedOn,
       notifyResult
     ))
