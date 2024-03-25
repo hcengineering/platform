@@ -116,7 +116,8 @@ export async function getPersonNotificationTxes (
     reference.srcDocClass,
     space,
     originTx.modifiedOn,
-    notifyResult
+    notifyResult,
+    notification.class.MentionInboxNotification
   )
 
   res.push(...texes)
