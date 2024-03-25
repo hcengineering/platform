@@ -25,14 +25,14 @@
   export let _id: Ref<Doc>
 
   const notificationsClient = InboxNotificationsClientImpl.getClient()
-  const contextsStore = notificationsClient.docNotifyContexts
+  const contextByIdStore = notificationsClient.contextById
   const objectQuery = createQuery()
 
   let threadId: Ref<ActivityMessage> | undefined = undefined
   let context: DocNotifyContext | undefined = undefined
   let object: Doc | undefined = undefined
 
-  $: context = $contextsStore.find((context) => context._id === _id)
+  $: context = $contextByIdStore.get(_id as Ref<DocNotifyContext>)
   $: threadId = context ? undefined : (_id as Ref<ActivityMessage>)
 
   $: context &&

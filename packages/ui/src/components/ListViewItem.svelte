@@ -18,7 +18,8 @@
   export let addClass: string | undefined = undefined
   export let selected = false
   export let element: HTMLElement | undefined = undefined
-  export let kind: 'default' | 'thin' = 'default'
+  export let kind: 'default' | 'thin' | 'full-size' = 'default'
+  export let isHighlighted = false
 </script>
 
 <slot name="category" item={row} />
@@ -29,6 +30,7 @@
   class:selection={selected}
   class:lumia={colorsSchema === 'lumia'}
   class:default={colorsSchema === 'default'}
+  class:highlighted={isHighlighted}
   on:mouseover
   on:mouseenter
   on:focus={() => {}}
@@ -53,19 +55,23 @@
       }
     }
 
+    &.full-size {
+      margin: 0;
+    }
+
     &.default {
-      &:hover {
+      &:hover:not(.highlighted) {
         background-color: var(--theme-popup-divider);
       }
     }
 
     &.lumia {
-      &:hover {
+      &:hover:not(.highlighted) {
         background-color: var(--global-ui-highlight-BackgroundColor);
       }
     }
 
-    &.selection {
+    &.selection:not(.highlighted) {
       &.default {
         background-color: var(--theme-popup-hover);
       }
@@ -73,6 +79,10 @@
       &.lumia {
         background-color: var(--global-ui-highlight-BackgroundColor);
       }
+    }
+
+    &.highlighted {
+      background-color: var(--global-ui-hover-highlight-BackgroundColor);
     }
   }
 </style>

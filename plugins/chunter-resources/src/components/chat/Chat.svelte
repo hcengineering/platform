@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, Ref } from '@hcengineering/core'
+  import { Doc, IdMap, Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import {
     Component,
@@ -39,7 +39,7 @@
   export let appsDirection: 'vertical' | 'horizontal' = 'horizontal'
 
   const notificationsClient = InboxNotificationsClientImpl.getClient()
-  const contextsStore = notificationsClient.docNotifyContexts
+  const contextByIdStore = notificationsClient.contextById
   const objectQuery = createQuery()
 
   const navigatorModel: NavigatorModel = {
@@ -58,7 +58,7 @@
     syncLocation(loc)
   })
 
-  $: updateSelectedContext($contextsStore, selectedContextId)
+  $: updateSelectedContext($contextByIdStore, selectedContextId)
 
   $: selectedContext &&
     objectQuery.query(
@@ -83,11 +83,11 @@
     }
   }
 
-  function updateSelectedContext (contexts: DocNotifyContext[], _id?: Ref<DocNotifyContext>) {
+  function updateSelectedContext (contexts: IdMap<DocNotifyContext>, _id?: Ref<DocNotifyContext>) {
     if (selectedContextId === undefined) {
       selectedContext = undefined
     } else {
-      selectedContext = contexts.find(({ _id }) => _id === selectedContextId)
+      selectedContext = contexts.get(selectedContextId)
     }
   }
 

@@ -53,6 +53,8 @@ import ChatMessageNotificationLabel from './components/notification/ChatMessageN
 import ChatAside from './components/chat/ChatAside.svelte'
 import Replies from './components/Replies.svelte'
 import ReplyToThreadAction from './components/ReplyToThreadAction.svelte'
+import ThreadMessagePreview from './components/threads/ThreadMessagePreview.svelte'
+import ChatMessagePreview from './components/chat-message/ChatMessagePreview.svelte'
 
 import {
   ChannelTitleProvider,
@@ -180,7 +182,7 @@ export async function replyToThread (message: ActivityMessage): Promise<void> {
 
   const inboxClient = InboxNotificationsClientImpl.getClient()
 
-  let contextId: Ref<DocNotifyContext> | undefined = get(inboxClient.docNotifyContextByDoc).get(message.attachedTo)?._id
+  let contextId: Ref<DocNotifyContext> | undefined = get(inboxClient.contextByDoc).get(message.attachedTo)?._id
 
   if (contextId === undefined) {
     contextId = await client.createDoc(notification.class.DocNotifyContext, message.space, {
@@ -237,7 +239,9 @@ export default async (): Promise<Resources> => ({
     ThreadNotificationPresenter,
     ChatAside,
     Replies,
-    ReplyToThreadAction
+    ReplyToThreadAction,
+    ThreadMessagePreview,
+    ChatMessagePreview
   },
   function: {
     GetDmName: getDmName,

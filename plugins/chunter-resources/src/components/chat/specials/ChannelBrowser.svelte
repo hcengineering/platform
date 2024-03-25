@@ -43,7 +43,7 @@
   import { get } from 'svelte/store'
   import notification from '@hcengineering/notification'
 
-  import { getChannelIcon, joinChannel, leaveChannel } from '../../../utils'
+  import { getObjectIcon, joinChannel, leaveChannel } from '../../../utils'
   import chunter from './../../../plugin'
 
   export let _class: Ref<Class<Channel>> = chunter.class.Channel
@@ -115,7 +115,7 @@
 
   async function view (channel: Channel): Promise<void> {
     const loc = getCurrentResolvedLocation()
-    const context = get(notificationClient.docNotifyContextByDoc).get(channel._id)
+    const context = get(notificationClient.contextByDoc).get(channel._id)
 
     let contextId = context?._id
 
@@ -185,7 +185,7 @@
 <Scroller padding={'2.5rem'}>
   <div class="spaces-container">
     {#each channels as channel (channel._id)}
-      {@const icon = getChannelIcon(channel._class)}
+      {@const icon = getObjectIcon(channel._class)}
       {@const joined = channel.members.includes(me)}
       <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
       <div class="item flex-between" tabindex="0">

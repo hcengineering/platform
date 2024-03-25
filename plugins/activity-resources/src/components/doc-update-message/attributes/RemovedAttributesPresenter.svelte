@@ -22,9 +22,10 @@
   export let viewlet: DocUpdateMessageViewlet | undefined
   export let attributeModel: AttributeModel
   export let values: DocAttributeUpdates['removed']
+  export let preview = false
 </script>
 
-<ChangeAttributesTemplate {viewlet} {attributeModel} {values}>
+<ChangeAttributesTemplate {viewlet} {attributeModel} {values} {preview}>
   <svelte:fragment slot="text">
     <Label label={activity.string.Removed} />
     <span class="lower"> <Label label={attributeModel.label} />:</span>

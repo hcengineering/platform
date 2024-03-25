@@ -87,7 +87,7 @@
   }
 
   const inboxClient = InboxNotificationsClientImpl.getClient()
-  const docNotifyContextByDocStore = inboxClient.docNotifyContextByDoc
+  const notifyContextByDocStore = inboxClient.contextByDoc
   const inboxNotificationsByContextStore = inboxClient.inboxNotificationsByContext
 
   function isChanged (
@@ -125,7 +125,7 @@
               icon={classIcon(client, space._class)}
               selected={currentSpace === space._id}
               actions={async () => await getActions(space)}
-              bold={isChanged(space, $docNotifyContextByDocStore, $inboxNotificationsByContextStore)}
+              bold={isChanged(space, $notifyContextByDocStore, $inboxNotificationsByContextStore)}
             />
           </NavLink>
         {/await}

@@ -13,13 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import notification, {
-    ActivityNotificationViewlet,
-    DisplayInboxNotification,
-    DocNotifyContext
-  } from '@hcengineering/notification'
-  import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
-  import view, { Viewlet } from '@hcengineering/view'
+  import notification, { DocNotifyContext, InboxNotification } from '@hcengineering/notification'
+  import { ActionContext, getClient } from '@hcengineering/presentation'
+  import view from '@hcengineering/view'
   import {
     AnyComponent,
     ButtonWithDropdown,
@@ -27,7 +23,6 @@
     defineSeparators,
     IconDropdown,
     Label,
-    Loading,
     location as locationStore,
     Location,
     Scroller,
@@ -36,23 +31,17 @@
     TabList
   } from '@hcengineering/ui'
   import chunter, { ThreadMessage } from '@hcengineering/chunter'
-  import { Ref, WithLookup } from '@hcengineering/core'
-  import { ViewletSelector } from '@hcengineering/view-resources'
+  import { Account, getCurrentAccount, IdMap, Ref } from '@hcengineering/core'
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import { isReactionMessage } from '@hcengineering/activity-resources'
   import { get } from 'svelte/store'
+  import { translate } from '@hcengineering/platform'
 
-  import { inboxMessagesStore, InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
+  import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
   import Filter from '../Filter.svelte'
-  import {
-    archiveAll,
-    getDisplayInboxNotifications,
-    openInboxDoc,
-    readAll,
-    resolveLocation,
-    unreadAll
-  } from '../../utils'
-  import { InboxNotificationsFilter } from '../../types'
+  import { archiveAll, getDisplayInboxData, openInboxDoc, readAll, resolveLocation, unreadAll } from '../../utils'
+  import { InboxData, InboxNotificationsFilter } from '../../types'
+  import InboxGroupedListView from './InboxGroupedListView.svelte'
 
   export let visibleNav: boolean = true
   export let navFloat: boolean = false
@@ -63,29 +52,17 @@
 
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const notificationsByContextStore = inboxClient.inboxNotificationsByContext
-  const notifyContextsStore = inboxClient.docNotifyContexts
-
-  const messagesQuery = createQuery()
+  const contextByIdStore = inboxClient.contextById
+  const contextsStore = inboxClient.contexts
 
   const allTab: TabItem = {
     id: 'all',
     labelIntl: notification.string.All
   }
-  const channelTab: TabItem = {
-    id: chunter.class.Channel,
-    labelIntl: chunter.string.Channels
-  }
-  const directTab: TabItem = {
-    id: chunter.class.DirectMessage,
-    labelIntl: chunter.string.Direct
-  }
 
-  let displayNotifications: DisplayInboxNotification[] = []
-  let displayContextsIds = new Set<Ref<DocNotifyContext>>()
+  let inboxData: InboxData = new Map()
 
-  let messagesIds: Ref<ActivityMessage>[] = []
-
-  let filteredNotifications: DisplayInboxNotification[] = []
+  let filteredData: InboxData = new Map()
   let filter: InboxNotificationsFilter = 'all'
 
   let tabItems: TabItem[] = []
@@ -95,41 +72,17 @@
   let selectedContext: DocNotifyContext | undefined = undefined
   let selectedComponent: AnyComponent | undefined = undefined
 
-  let viewlets: ActivityNotificationViewlet[] = []
-
-  let viewlet: WithLookup<Viewlet> | undefined
-  let loading = true
-
   let selectedMessage: ActivityMessage | undefined = undefined
 
-  void client.findAll(notification.class.ActivityNotificationViewlet, {}).then((res) => {
-    viewlets = res
+  $: void getDisplayInboxData($notificationsByContextStore).then((res) => {
+    inboxData = res
   })
 
-  $: void getDisplayInboxNotifications($notificationsByContextStore, filter).then((res) => {
-    displayNotifications = res
-  })
-  $: displayContextsIds = new Set(displayNotifications.map(({ docNotifyContext }) => docNotifyContext))
-
-  $: filteredNotifications = filterNotifications(selectedTabId, displayNotifications, $notifyContextsStore)
+  $: filteredData = filterData(filter, selectedTabId, inboxData, $contextByIdStore)
 
   locationStore.subscribe((newLocation) => {
     void syncLocation(newLocation)
   })
-
-  inboxClient.activityInboxNotifications.subscribe((notifications) => {
-    messagesIds = notifications.map(({ attachedTo }) => attachedTo)
-  })
-
-  $: messagesQuery.query(
-    activity.class.ActivityMessage,
-    {
-      _id: { $in: messagesIds }
-    },
-    (result) => {
-      inboxMessagesStore.set(result)
-    }
-  )
 
   async function syncLocation (newLocation: Location): Promise<void> {
     const loc = await resolveLocation(newLocation)
@@ -152,38 +105,45 @@
     }
   }
 
-  $: selectedContext = selectedContextId
-    ? selectedContext ?? $notifyContextsStore.find(({ _id }) => _id === selectedContextId)
-    : undefined
+  $: selectedContext = selectedContextId ? selectedContext ?? $contextByIdStore.get(selectedContextId) : undefined
 
-  $: updateSelectedPanel(selectedContext)
-  $: updateTabItems(displayContextsIds, $notifyContextsStore)
+  $: void updateSelectedPanel(selectedContext)
+  $: void updateTabItems(inboxData, $contextsStore)
 
-  function updateTabItems (displayContextsIds: Set<Ref<DocNotifyContext>>, notifyContexts: DocNotifyContext[]): void {
+  async function updateTabItems (inboxData: InboxData, notifyContexts: DocNotifyContext[]): Promise<void> {
     const displayClasses = new Set(
-      notifyContexts
-        .filter(
-          ({ _id, attachedToClass }) =>
-            displayContextsIds.has(_id) && !hierarchy.isDerived(attachedToClass, activity.class.ActivityMessage)
-        )
-        .map(({ attachedToClass }) => attachedToClass)
+      notifyContexts.filter(({ _id }) => inboxData.has(_id)).map(({ attachedToClass }) => attachedToClass)
     )
 
-    const fixedTabs = [
-      allTab,
-      displayClasses.has(chunter.class.Channel) ? channelTab : undefined,
-      displayClasses.has(chunter.class.DirectMessage) ? directTab : undefined
-    ].filter((tab): tab is TabItem => tab !== undefined)
+    const classes = Array.from(displayClasses)
+    const tabs: TabItem[] = []
 
-    tabItems = fixedTabs.concat(
-      Array.from(displayClasses.values())
-        .filter((_class) => ![chunter.class.Channel, chunter.class.DirectMessage].includes(_class))
-        .map((_class) => ({
-          id: _class,
-          // TODO: need to get plural form
-          labelIntl: hierarchy.getClass(_class).label
-        }))
-    )
+    let messagesTab: TabItem | undefined = undefined
+
+    for (const _class of classes) {
+      if (hierarchy.isDerived(_class, activity.class.ActivityMessage)) {
+        if (messagesTab === undefined) {
+          messagesTab = {
+            id: activity.class.ActivityMessage as string,
+            label: await translate(activity.string.Messages, {})
+          }
+        }
+        continue
+      }
+
+      const clazz = hierarchy.getClass(_class)
+      const intlLabel = clazz.pluralLabel ?? clazz.label ?? _class
+      tabs.push({
+        id: _class,
+        label: await translate(intlLabel, {})
+      })
+    }
+
+    if (messagesTab !== undefined) {
+      tabs.push(messagesTab)
+    }
+
+    tabItems = [allTab].concat(tabs.sort((a, b) => (a.label ?? '').localeCompare(b.label ?? '')))
   }
 
   function selectTab (event: CustomEvent): void {
@@ -212,10 +172,12 @@
       } else if (isReactionMessage(message)) {
         openInboxDoc(selectedContext._id, undefined, selectedContext.attachedTo as Ref<ActivityMessage>)
       } else {
+        const selectedMsg = event?.detail?.notification?.attachedTo
+
         openInboxDoc(
           selectedContext._id,
-          selectedContext.attachedTo as Ref<ActivityMessage>,
-          event?.detail?.notification?.attachedTo
+          selectedMsg ? (selectedContext.attachedTo as Ref<ActivityMessage>) : undefined,
+          selectedMsg ?? (selectedContext.attachedTo as Ref<ActivityMessage>)
         )
       }
     } else {
@@ -254,23 +216,64 @@
   }
 
   function filterNotifications (
+    filter: InboxNotificationsFilter,
+    notifications: InboxNotification[]
+  ): InboxNotification[] {
+    switch (filter) {
+      case 'unread':
+        return notifications.filter(({ isViewed }) => !isViewed)
+      case 'read':
+        return notifications.filter(({ isViewed }) => isViewed)
+      case 'all':
+        return notifications
+    }
+  }
+
+  function filterData (
+    filter: InboxNotificationsFilter,
     selectedTabId: string,
-    displayNotifications: DisplayInboxNotification[],
-    notifyContexts: DocNotifyContext[]
-  ): DisplayInboxNotification[] {
-    if (selectedTabId === allTab.id) {
-      return displayNotifications
+    inboxData: InboxData,
+    contextById: IdMap<DocNotifyContext>
+  ): InboxData {
+    if (selectedTabId === allTab.id && filter === 'all') {
+      return inboxData
     }
 
-    return displayNotifications.filter(({ docNotifyContext }) => {
-      const context = notifyContexts.find(({ _id }) => _id === docNotifyContext)
+    const result = new Map()
 
-      return context !== undefined && context.attachedToClass === selectedTabId
-    })
+    for (const [key, notifications] of inboxData) {
+      const resNotifications = filterNotifications(filter, notifications)
+
+      if (resNotifications.length === 0) {
+        continue
+      }
+
+      if (selectedTabId === allTab.id) {
+        result.set(key, resNotifications)
+        continue
+      }
+
+      const context = contextById.get(key)
+
+      if (context === undefined) {
+        continue
+      }
+
+      if (
+        selectedTabId === activity.class.ActivityMessage &&
+        hierarchy.isDerived(context.attachedToClass, activity.class.ActivityMessage)
+      ) {
+        result.set(key, resNotifications)
+      } else if (context.attachedToClass === selectedTabId) {
+        result.set(key, resNotifications)
+      }
+    }
+
+    return result
   }
 
   defineSeparators('inbox', [
-    { minSize: 30, maxSize: 50, size: 40, float: 'navigator' },
+    { minSize: 20, maxSize: 50, size: 40, float: 'navigator' },
     { size: 'auto', minSize: 30, maxSize: 'auto', float: undefined }
   ])
 
@@ -305,19 +308,12 @@
         : 'landscape'} background-comp-header-color"
     >
       <div class="antiPanel-wrap__content">
-        <div class="ac-header full divide caption-height">
+        <div class="ac-header full divide caption-height" style:padding="0.5rem var(--spacing-1_5)">
           <div class="ac-header__wrap-title mr-3">
-            <span class="ac-header__title"><Label label={notification.string.Inbox} /></span>
-          </div>
-          <div class="flex-grow">
-            <ViewletSelector
-              bind:viewlet
-              bind:loading
-              viewletQuery={{ attachTo: notification.class.DocNotifyContext }}
-            />
+            <span class="title"><Label label={notification.string.Inbox} /></span>
           </div>
           <div class="flex flex-gap-2">
-            {#if displayNotifications.length > 0}
+            {#if inboxData.size > 0}
               <ButtonWithDropdown
                 justify="left"
                 kind="regular"
@@ -353,21 +349,9 @@
           <TabList items={tabItems} selected={selectedTabId} on:select={selectTab} />
         </div>
 
-        {#if loading || !viewlet?.$lookup?.descriptor}
-          <Loading />
-        {:else if viewlet}
-          <Scroller padding="1rem 0">
-            <Component
-              is={viewlet.$lookup.descriptor.component}
-              props={{
-                notifications: filteredNotifications,
-                viewlets,
-                selectedContext
-              }}
-              on:click={selectContext}
-            />
-          </Scroller>
-        {/if}
+        <Scroller padding="0">
+          <InboxGroupedListView data={filteredData} selectedContext={selectedContextId} on:click={selectContext} />
+        </Scroller>
       </div>
       <Separator name="inbox" float={navFloat ? 'navigator' : true} index={0} />
     </div>
@@ -380,7 +364,6 @@
         props={{
           _id: selectedContext.attachedTo,
           _class: selectedContext.attachedToClass,
-          embedded: true,
           context: selectedContext,
           activityMessage: selectedMessage,
           props: { context: selectedContext }
@@ -394,9 +377,16 @@
 <style lang="scss">
   .tabs {
     display: flex;
-    margin: 0.5rem;
+    margin-top: 0.5rem;
     margin-bottom: 0;
+    padding: 0 var(--spacing-1_5);
     padding-bottom: 0.5rem;
     border-bottom: 1px solid var(--theme-navpanel-border);
+  }
+
+  .title {
+    font-weight: 600;
+    font-size: 1.25rem;
+    color: var(--global-primary-TextColor);
   }
 </style>

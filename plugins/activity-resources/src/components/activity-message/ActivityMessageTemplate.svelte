@@ -20,11 +20,10 @@
   } from '@hcengineering/activity'
   import { Person } from '@hcengineering/contact'
   import { Avatar, EmployeePresenter, SystemAvatar } from '@hcengineering/contact-resources'
-  import core, { getDisplayTime } from '@hcengineering/core'
+  import core from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Action, Label, tooltip } from '@hcengineering/ui'
+  import { Action, Label } from '@hcengineering/ui'
   import { getActions, restrictionStore } from '@hcengineering/view-resources'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
 
   import ReactionsPresenter from '../reactions/ReactionsPresenter.svelte'
   import ActivityMessageExtensionComponent from './ActivityMessageExtension.svelte'
@@ -33,6 +32,7 @@
   import { isReactionMessage } from '../../activityMessagesUtils'
   import Bookmark from '../icons/Bookmark.svelte'
   import { savedMessagesStore } from '../../activity'
+  import MessageTimestamp from '../MessageTimestamp.svelte'
 
   export let message: DisplayActivityMessage
   export let parentMessage: DisplayActivityMessage | undefined = undefined
@@ -109,14 +109,6 @@
 
   let readonly: boolean = false
   $: readonly = $restrictionStore.disableComments
-
-  $: fullDate = new Date(message.createdOn ?? message.modifiedOn).toLocaleString('default', {
-    minute: '2-digit',
-    hour: 'numeric',
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric'
-  })
 </script>
 
 {#if !isHidden}
@@ -173,19 +165,12 @@
           {/if}
 
           {#if !skipLabel && showDatePreposition}
-            <span class="text-sm lower">
+            <span class="text-sm lower mr-1">
               <Label label={activity.string.At} />
             </span>
           {/if}
 
-          <span
-            class="text-sm"
-            use:tooltip={{
-              label: getEmbeddedLabel(fullDate)
-            }}
-          >
-            {getDisplayTime(message.createdOn ?? 0)}
-          </span>
+          <MessageTimestamp date={message.createdOn ?? message.modifiedOn} />
         </div>
 
         <slot name="content" />
@@ -249,7 +234,7 @@
     }
 
     &.selected {
-      background-color: var(--highlight-select);
+      background-color: var(--global-ui-highlight-BackgroundColor);
     }
 
     &.embedded {
@@ -275,7 +260,7 @@
 
     &.actionsOpened {
       &.borderedHover {
-        border: 1px solid var(--highlight-hover);
+        border: 1px solid var(--global-ui-BackgroundColor);
       }
 
       &.filledHover {
@@ -286,7 +271,7 @@
     &.hoverable {
       &:hover:not(.embedded) {
         &.borderedHover {
-          border: 1px solid var(--highlight-hover);
+          border: 1px solid var(--global-ui-BackgroundColor);
         }
 
         &.filledHover {
@@ -300,7 +285,7 @@
     display: flex;
     align-items: baseline;
     font-size: 0.875rem;
-    color: var(--theme-halfcontent-color);
+    color: var(--global-secondary-TextColor);
     margin-bottom: 0.25rem;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -319,14 +304,14 @@
     left: 0.25rem;
     height: 0.5rem;
     width: 0.5rem;
-    background-color: var(--theme-inbox-notify);
+    background-color: var(--global-higlight-Color);
     border-radius: 50%;
   }
 
   .embeddedMarker {
     width: 0.25rem;
     border-radius: 0.5rem;
-    background: var(--secondary-button-default);
+    background: var(--global-ui-highlight-BackgroundColor);
   }
 
   .saveMarker {

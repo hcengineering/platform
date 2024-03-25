@@ -26,12 +26,13 @@
   export let viewlet: DocUpdateMessageViewlet | undefined
   export let attributeModel: AttributeModel
   export let values: Values
+  export let preview = false
 
   const client = getClient()
 
   let attributeValues: Values | Doc[] = []
 
-  $: getAttributeValues(client, values, attributeModel._class).then((result) => {
+  $: void getAttributeValues(client, values, attributeModel._class).then((result) => {
     attributeValues = result
   })
 
@@ -40,7 +41,7 @@
   $: space = typeof attributeValues[0] === 'object' ? attributeValues[0]?.space : undefined
 </script>
 
-<div class="content">
+<div class="content overflow-label" class:preview>
   <span class="mr-1">
     {#if attrViewletConfig?.iconPresenter}
       <Component is={attrViewletConfig?.iconPresenter} props={{ value: attributeValues[0], space, size: 'small' }} />
@@ -52,7 +53,7 @@
   <slot name="text" />
 
   {#each attributeValues as value}
-    <span class="strong">
+    <span class="strong overflow-label">
       {#if value !== null && typeof value === 'object'}
         <ObjectPresenter {value} shouldShowAvatar={false} accent />
       {:else}
@@ -68,5 +69,10 @@
     align-items: center;
     flex-wrap: wrap;
     gap: 0.25rem;
+    color: var(--global-primary-TextColor);
+
+    &.preview {
+      flex-wrap: nowrap;
+    }
   }
 </style>

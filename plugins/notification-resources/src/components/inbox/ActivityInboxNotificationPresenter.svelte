@@ -14,66 +14,55 @@
 -->
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
-  import { matchQuery, Ref } from '@hcengineering/core'
+  import { matchQuery } from '@hcengineering/core'
   import notification, {
     ActivityInboxNotification,
     ActivityNotificationViewlet,
-    DisplayActivityInboxNotification,
-    InboxNotification
+    DisplayActivityInboxNotification
   } from '@hcengineering/notification'
-  import { ActivityMessagePresenter, combineActivityMessages } from '@hcengineering/activity-resources'
+  import {
+    ActivityMessagePreview,
+    combineActivityMessages,
+    sortActivityMessages
+  } from '@hcengineering/activity-resources'
   import { ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
-  import { location, Action, Component } from '@hcengineering/ui'
+  import { Action, Component } from '@hcengineering/ui'
   import { getActions } from '@hcengineering/view-resources'
   import { getResource } from '@hcengineering/platform'
 
-  import { inboxMessagesStore, InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
-  import { openInboxDoc } from '../../utils'
+  import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
 
   export let value: DisplayActivityInboxNotification
-  export let embedded = false
-  export let skipLabel = false
-  export let showNotify = true
-  export let withActions = true
   export let viewlets: ActivityNotificationViewlet[] = []
-  export let withFlatActions = false
-  export let onClick: (() => void) | undefined = undefined
 
   const client = getClient()
   const inboxClient = InboxNotificationsClientImpl.getClient()
-  const notificationsStore = inboxClient.inboxNotifications
+  const activityNotificationsStore = inboxClient.activityInboxNotifications
 
   let viewlet: ActivityNotificationViewlet | undefined = undefined
-  let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
   let displayMessage: DisplayActivityMessage | undefined = undefined
   let actions: Action[] = []
 
-  location.subscribe((loc) => {
-    selectedMessageId = loc.path[4] as Ref<ActivityMessage> | undefined
-  })
+  $: combinedNotifications = $activityNotificationsStore.filter(({ _id }) => value.combinedIds.includes(_id))
+  $: messages = combinedNotifications
+    .map((it) => it.$lookup?.attachedTo)
+    .filter((it): it is ActivityMessage => it !== undefined)
 
-  $: combinedNotifications = $notificationsStore.filter(({ _id }) =>
-    (value.combinedIds as Ref<InboxNotification>[]).includes(_id)
-  ) as ActivityInboxNotification[]
+  $: void updateDisplayMessage(messages)
 
-  $: messageIds = combinedNotifications.map(({ attachedTo }) => attachedTo)
-
-  $: updateDisplayMessage(messageIds, $inboxMessagesStore)
-
-  async function updateDisplayMessage (ids: Ref<ActivityMessage>[], allMessages: ActivityMessage[]) {
-    const messages = allMessages.filter(({ _id }) => ids.includes(_id))
-    const combinedMessages = await combineActivityMessages(messages)
+  async function updateDisplayMessage (messages: ActivityMessage[]): Promise<void> {
+    const combinedMessages = await combineActivityMessages(sortActivityMessages(messages))
 
     displayMessage = combinedMessages[0]
   }
 
-  $: getAllActions(value).then((res) => {
+  $: void getAllActions(value).then((res) => {
     actions = res
   })
 
   $: updateViewlet(viewlets, displayMessage)
 
-  function updateViewlet (viewlets: ActivityNotificationViewlet[], message?: DisplayActivityMessage) {
+  function updateViewlet (viewlets: ActivityNotificationViewlet[], message?: DisplayActivityMessage): void {
     if (viewlets.length === 0 || message === undefined) {
       viewlet = undefined
       return
@@ -88,14 +77,6 @@
     }
 
     viewlet = undefined
-  }
-
-  function handleReply (message?: DisplayActivityMessage): void {
-    if (message === undefined) {
-      return
-    }
-
-    openInboxDoc(value.docNotifyContext, message._id, message._id)
   }
 
   async function getAllActions (value: ActivityInboxNotification): Promise<Action[]> {
@@ -122,31 +103,11 @@
       props={{
         message: displayMessage,
         notification: value,
-        embedded,
-        withActions,
-        showNotify: showNotify ? !value.isViewed && !embedded : false,
-        actions,
-        onClick
+        actions
       }}
+      on:click
     />
   {:else}
-    <ActivityMessagePresenter
-      value={displayMessage}
-      showNotify={showNotify ? !value.isViewed && !embedded : false}
-      isSelected={displayMessage._id === selectedMessageId}
-      showEmbedded
-      {withActions}
-      {embedded}
-      {skipLabel}
-      {actions}
-      hoverable={false}
-      {withFlatActions}
-      videoPreload={false}
-      compact
-      onReply={() => {
-        handleReply(displayMessage)
-      }}
-      {onClick}
-    />
+    <ActivityMessagePreview value={displayMessage} {actions} on:click />
   {/if}
 {/if}

@@ -18,11 +18,13 @@ import { type Resources } from '@hcengineering/platform'
 import Activity from './components/Activity.svelte'
 import ActivityMessagePresenter from './components/activity-message/ActivityMessagePresenter.svelte'
 import DocUpdateMessagePresenter from './components/doc-update-message/DocUpdateMessagePresenter.svelte'
-import ActivityInfoMessagePresenter from './components/activity-message/ActivityInfoMessagePresenter.svelte'
+import ActivityInfoMessagePresenter from './components/activity-info-message/ActivityInfoMessagePresenter.svelte'
 import ReactionPresenter from './components/reactions/ReactionPresenter.svelte'
-import ReactionNotificationPresenter from './components/reactions/ReactionNotificationPresenter.svelte'
 import ActivityMessageNotificationLabel from './components/activity-message/ActivityMessageNotificationLabel.svelte'
 import ActivityReferencePresenter from './components/activity-reference/ActivityReferencePresenter.svelte'
+import DocUpdateMessagePreview from './components/doc-update-message/DocUpdateMessagePreview.svelte'
+import ActivityReferencePreview from './components/activity-reference/ActivityReferencePreview.svelte'
+import ActivityInfoMessagePreview from './components/activity-info-message/ActivityInfoMessagePreview.svelte'
 
 import {
   getMessageFragment,
@@ -50,6 +52,10 @@ export { default as AddReactionAction } from './components/reactions/AddReaction
 export { default as ActivityMessageAction } from './components/ActivityMessageAction.svelte'
 export { default as ActivityMessagesFilterPopup } from './components/FilterPopup.svelte'
 export { default as ActivityReferencePresenter } from './components/activity-reference/ActivityReferencePresenter.svelte'
+export { default as ActivityMessagePreview } from './components/activity-message/ActivityMessagePreview.svelte'
+export { default as MessageTimestamp } from './components/MessageTimestamp.svelte'
+export { default as BaseMessagePreview } from './components/activity-message/BaseMessagePreview.svelte'
+export { default as BasePreview } from './components/BasePreview.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
@@ -58,9 +64,11 @@ export default async (): Promise<Resources> => ({
     DocUpdateMessagePresenter,
     ReactionPresenter,
     ActivityInfoMessagePresenter,
-    ReactionNotificationPresenter,
     ActivityMessageNotificationLabel,
-    ActivityReferencePresenter
+    ActivityReferencePresenter,
+    DocUpdateMessagePreview,
+    ActivityReferencePreview,
+    ActivityInfoMessagePreview
   },
   filter: {
     AttributesFilter: attributesFilter,

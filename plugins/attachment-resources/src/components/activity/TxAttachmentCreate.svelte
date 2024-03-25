@@ -16,7 +16,7 @@
   import type { Attachment } from '@hcengineering/attachment'
   import core, { TxCUD, TxCreateDoc, TxProcessor } from '@hcengineering/core'
   import AttachmentPresenter from '../AttachmentPresenter.svelte'
-  import RemovedAttachmentPresenter from '../RemovedAttachmentPresenter.svelte'
+  import AttachmentName from '../AttachmentName.svelte'
 
   export let tx: TxCUD<Attachment>
   export let value: any
@@ -25,7 +25,7 @@
 </script>
 
 {#if tx._class === core.class.TxRemoveDoc}
-  <RemovedAttachmentPresenter value={doc} />
+  <AttachmentName value={doc} />
 {:else}
   <AttachmentPresenter value={doc} />
 {/if}
