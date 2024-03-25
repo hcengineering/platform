@@ -40,14 +40,12 @@
   export let viewlet: ActivityMessageViewlet | undefined = undefined
   export let person: Person | undefined = undefined
   export let actions: Action[] = []
-  export let excludedActions: string[] = []
   export let showNotify: boolean = false
   export let isHighlighted: boolean = false
   export let isSelected: boolean = false
   export let shouldScroll: boolean = false
   export let embedded: boolean = false
   export let withActions: boolean = true
-  export let withFlatActions: boolean = true
   export let showEmbedded = false
   export let hideFooter = false
   export let skipLabel = false
@@ -59,7 +57,7 @@
 
   const client = getClient()
 
-  let allActionIds: string[] = []
+  let menuActionIds: string[] = []
 
   let element: HTMLDivElement | undefined = undefined
   let extensions: ActivityMessageExtension[] = []
@@ -73,7 +71,7 @@
 
   $: withActions &&
     getActions(client, message, activity.class.ActivityMessage).then((res) => {
-      allActionIds = res.map(({ _id }) => _id)
+      menuActionIds = res.map(({ _id }) => _id)
     })
 
   function scrollToMessage (): void {
@@ -104,8 +102,7 @@
   $: key = parentMessage != null ? `${message._id}_${parentMessage._id}` : message._id
 
   $: isHidden = !!viewlet?.onlyWithParent && parentMessage === undefined
-  $: withActionMenu =
-    withActions && !embedded && (actions.length > 0 || allActionIds.some((id) => !excludedActions.includes(id)))
+  $: withActionMenu = withActions && !embedded && (actions.length > 0 || menuActionIds.length > 0)
 
   let readonly: boolean = false
   $: readonly = $restrictionStore.disableComments
@@ -196,8 +193,6 @@
             {extensions}
             {actions}
             {withActionMenu}
-            {withFlatActions}
-            {excludedActions}
             on:open={handleActionsOpened}
             on:close={handleActionsClosed}
           />

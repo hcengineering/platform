@@ -62,6 +62,7 @@
       {message}
       {extensions}
       {actions}
+      withActionMenu={false}
       on:open={previewElement.onActionsOpened}
       on:close={previewElement.onActionsClosed}
     />

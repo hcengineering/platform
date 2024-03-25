@@ -40,8 +40,6 @@
   export let hideFooter = false
   export let skipLabel = false
   export let actions: Action[] = []
-  export let excludedActions: string[] = []
-  export let withFlatActions: boolean = true
   export let hoverable = true
   export let inline = false
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
@@ -171,7 +169,6 @@
     {viewlet}
     {parentMessage}
     {person}
-    {excludedActions}
     {showNotify}
     {isHighlighted}
     {isSelected}
@@ -181,7 +178,6 @@
     actions={additionalActions}
     {showEmbedded}
     {hideFooter}
-    {withFlatActions}
     {hoverable}
     {hoverStyles}
     {skipLabel}
