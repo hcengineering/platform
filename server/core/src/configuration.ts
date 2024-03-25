@@ -18,7 +18,13 @@ import { type MeasureContext, type ServerStorage, type WorkspaceIdWithUrl } from
 import { type DbAdapterFactory } from './adapter'
 import { type FullTextPipelineStage } from './indexer/types'
 import { type StorageAdapter } from './storage'
-import type { ContentTextAdapter, ContentTextAdapterFactory, FullTextAdapter, FullTextAdapterFactory } from './types'
+import type {
+  ContentTextAdapter,
+  ContentTextAdapterFactory,
+  FullTextAdapter,
+  FullTextAdapterFactory,
+  ServiceAdapterConfig
+} from './types'
 
 /**
  * @public
@@ -61,6 +67,7 @@ export interface DbConfiguration {
     stages: FullTextPipelineStageFactory
   }
   contentAdapters: Record<string, ContentTextAdapterConfiguration>
+  serviceAdapters: Record<string, ServiceAdapterConfig>
   defaultContentAdapter: string
   storageFactory?: () => StorageAdapter
 }
