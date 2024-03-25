@@ -97,6 +97,10 @@
     displayMessages = filteredMessages
   })
 
+  inboxClient.inboxNotificationsByContext.subscribe(() => {
+    readViewportMessages()
+  })
+
   function scrollToBottom (afterScrollFn?: () => void) {
     if (scroller !== undefined && scrollElement !== undefined) {
       scroller.scrollBy(scrollElement.scrollHeight)
