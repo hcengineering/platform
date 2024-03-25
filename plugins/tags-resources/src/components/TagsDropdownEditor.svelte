@@ -43,7 +43,7 @@
 
   $: itemLabel = (key.attr.type as Collection<AttachedDoc>).itemLabel
 
-  $: translate(itemLabel ?? key.attr.label, {}, $themeStore.language).then((v) => {
+  $: void translate(itemLabel ?? key.attr.label, {}, $themeStore.language).then((v) => {
     keyLabel = v
   })
 
@@ -63,8 +63,14 @@
       () => {},
       (result) => {
         if (result !== undefined) {
-          if (result.action === 'add') addRef(result.tag)
-          else if (result.action === 'remove') removeTag(items.filter((it) => it.tag === result.tag._id)[0]._id)
+          if (result.action === 'add') {
+            void addRef(result.tag)
+          } else if (result.action === 'remove') {
+            const filtered = items.filter((it) => it.tag === result.tag._id)
+            if (filtered.length > 0) {
+              void removeTag(filtered[0]._id)
+            }
+          }
         }
       }
     )
