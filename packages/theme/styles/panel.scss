@@ -38,11 +38,21 @@
   margin-top: 0.75rem;
 }
 .hulyNavPanel-header {
-  padding: 1rem 1.25rem 1.5rem;
+  flex-shrink: 0;
   font-weight: 700;
   font-size: 1.25rem;
   line-height: 1.5rem;
   color: var(--global-primary-TextColor);
+
+  &:not(.withButton) { padding: 1rem 1.25rem 1.5rem; }
+  &.withButton {
+    display: flex;
+    justify-content: space-between;
+    padding: .75rem .75rem 1.5rem 1.25rem;
+    min-width: 0;
+    min-height: 0;
+  }
+  &.small { padding-bottom: .75rem; }
 }
 .hulySidePanel-container {
   display: flex;
