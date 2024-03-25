@@ -20,20 +20,20 @@
   import type { Project } from '@hcengineering/tracker'
   import type { ToDosMode } from '..'
   import { AccordionItem } from '@hcengineering/ui'
+  import { getClient } from '@hcengineering/presentation'
+  import { makeRank } from '@hcengineering/task'
+  import ToDoProjectGroup from './ToDoProjectGroup.svelte'
   import ToDoDraggable from './ToDoDraggable.svelte'
   import ToDoDuration from './ToDoDuration.svelte'
   import ToDoElement from './ToDoElement.svelte'
   import { dragging } from '../dragging'
-  import ToDoProjectGroup from './ToDoProjectGroup.svelte'
-  import { getClient } from '@hcengineering/presentation'
-  import { makeRank } from '@hcengineering/task'
+  import time from '../plugin'
 
   export let mode: ToDosMode
   export let title: IntlString
   export let todos: WithLookup<ToDo>[]
   export let showTitle: boolean
   export let showDuration: boolean
-  export let largeSize: boolean = false
   export let projects: IdMap<Project>
 
   function getAllWorkslots (todos: WithLookup<ToDo>[]): WorkSlot[] {
@@ -111,7 +111,6 @@
           todos={todos.filter((td) => td.attachedSpace === group._id)}
           project={group}
           groupName={title}
-          {largeSize}
           {mode}
         />
       {/each}
@@ -121,7 +120,6 @@
         todos={todos.filter((td) => !hasProject(td.attachedSpace))}
         project={false}
         groupName={title}
-        {largeSize}
         {mode}
       />
     {/if}
@@ -130,7 +128,7 @@
   <div class="flex-col p-4 w-full">
     {#each todos as todo, index}
       <ToDoDraggable {todo} {index} groupName={title} projectId={false} on:drop={handleDrop}>
-        <ToDoElement {todo} size={largeSize ? 'large' : 'small'} planned={mode !== 'unplanned'} />
+        <ToDoElement {todo} planned={mode !== 'unplanned'} />
       </ToDoDraggable>
     {/each}
   </div>
