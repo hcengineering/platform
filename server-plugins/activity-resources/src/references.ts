@@ -97,7 +97,7 @@ export async function getPersonNotificationTxes (
     header: activity.string.MentionedYouIn,
     messageHtml: reference.message,
     mentionedIn: reference.attachedDocId,
-    mentionedInClass: reference.attachedToClass
+    mentionedInClass: reference.attachedDocClass
   }
 
   const notifyResult = await shouldNotifyCommon(control, receiver._id, notification.ids.MentionCommonNotificationType)
