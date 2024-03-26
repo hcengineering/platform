@@ -710,7 +710,8 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
       category: tracker.category.Tracker,
       input: 'any',
       target: tracker.class.Milestone,
-      context: { mode: ['context', 'browser'], group: 'remove' }
+      context: { mode: ['context', 'browser'], group: 'remove' },
+      visibilityTester: view.function.CanDeleteObject
     },
     tracker.action.DeleteMilestone
   )

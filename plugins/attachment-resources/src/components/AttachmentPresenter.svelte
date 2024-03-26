@@ -19,6 +19,8 @@
   import { showPopup, closeTooltip, Label, getIconSize2x, Loading } from '@hcengineering/ui'
   import presentation, { PDFViewer, getFileUrl } from '@hcengineering/presentation'
   import filesize from 'filesize'
+  import core from '@hcengineering/core'
+  import { permissionsStore } from '@hcengineering/view-resources'
 
   import AttachmentName from './AttachmentName.svelte'
 
@@ -34,6 +36,13 @@
   const maxLenght: number = 30
   const trimFilename = (fname: string): string =>
     fname.length > maxLenght ? fname.substr(0, (maxLenght - 1) / 2) + '...' + fname.substr(-(maxLenght - 1) / 2) : fname
+
+  $: canRemove =
+    removable &&
+    value !== undefined &&
+    value.readonly !== true &&
+    ($permissionsStore.whitelist.has(value.space) ||
+      $permissionsStore.ps[value.space]?.has(core.permission.DeleteObject))
 
   function iconLabel (name: string): string {
     const parts = `${name}`.split('.')
@@ -156,7 +165,7 @@
             >
               <Label label={presentation.string.Download} />
             </a>
-            {#if removable && value.readonly !== true}
+            {#if canRemove}
               <span>•</span>
               <!-- svelte-ignore a11y-click-events-have-key-events -->
               <!-- svelte-ignore a11y-no-static-element-interactions -->

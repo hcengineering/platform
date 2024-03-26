@@ -47,7 +47,9 @@ import core, {
   type TxMixin,
   type TxOperations,
   type TxUpdateDoc,
-  type TypeAny
+  type TypeAny,
+  type TypedSpace,
+  type Permission
 } from '@hcengineering/core'
 import { type Restrictions } from '@hcengineering/guest'
 import type { Asset, IntlString } from '@hcengineering/platform'
@@ -60,7 +62,8 @@ import {
   hasResource,
   type KeyedAttribute,
   getFiltredKeys,
-  isAdminUser
+  isAdminUser,
+  createQuery
 } from '@hcengineering/presentation'
 import {
   ErrorPresenter,
@@ -1327,3 +1330,47 @@ async function getAttrEditor (key: KeyedAttribute, hierarchy: Hierarchy): Promis
     return undefined
   }
 }
+
+type PermissionsBySpace = Record<Ref<Space>, Set<Ref<Permission>>>
+interface PermissionsStore {
+  ps: PermissionsBySpace
+  whitelist: Set<Ref<Space>>
+}
+
+export const permissionsStore = writable<PermissionsStore>({
+  ps: {},
+  whitelist: new Set()
+})
+const permissionsQuery = createQuery(true)
+
+permissionsQuery.query(core.class.Space, {}, (res) => {
+  const whitelistedSpaces = new Set<Ref<Space>>()
+  const permissionsBySpace: PermissionsBySpace = {}
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const me = getCurrentAccount()
+
+  for (const s of res) {
+    if (hierarchy.isDerived(s._class, core.class.TypedSpace)) {
+      const type = client.getModel().findAllSync(core.class.SpaceType, { _id: (s as TypedSpace).type })[0]
+      const mixin = type?.targetClass
+
+      if (mixin === undefined) {
+        permissionsBySpace[s._id] = new Set()
+        continue
+      }
+
+      const asMixin = hierarchy.as(s, mixin)
+      const roles = client.getModel().findAllSync(core.class.Role, { attachedTo: type._id })
+      const myRoles = roles.filter((r) => (asMixin as any)[r._id].includes(me._id))
+      permissionsBySpace[s._id] = new Set(myRoles.flatMap((r) => r.permissions))
+    } else {
+      whitelistedSpaces.add(s._id)
+    }
+  }
+
+  permissionsStore.set({
+    ps: permissionsBySpace,
+    whitelist: whitelistedSpaces
+  })
+})
