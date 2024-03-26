@@ -48,9 +48,9 @@
   $: hasDifferentChanges = added.length > 0 && removed.length > 0
 </script>
 
-<div class="root">
+<span class="root">
   <Icon icon={activity.icon.Activity} size="small" />
-  <div class="label">
+  <span class="label">
     {#if hasDifferentChanges}
       <Label label={notification.string.ChangedCollaborators} />:
     {:else if added.length > 0}
@@ -58,30 +58,30 @@
     {:else if removed.length > 0}
       <Label label={notification.string.RemovedCollaborators} />:
     {/if}
-  </div>
+  </span>
 
   {#if added.length > 0}
-    <div class="row">
+    <span class="row">
       {#if hasDifferentChanges}
         <IconAdd size={'x-small'} fill={'var(--theme-trans-color)'} />
       {/if}
       {#each added as add}
-        <PersonAccountRefPresenter value={add} avatarSize="card" />
+        <PersonAccountRefPresenter value={add} avatarSize="card" compact />
       {/each}
-    </div>
+    </span>
   {/if}
-  <div class="antiHSpacer"></div>
+  <span class="antiHSpacer"></span>
   {#if removed.length > 0}
-    <div class="row">
+    <span class="row">
       {#if hasDifferentChanges}
         <IconDelete size={'x-small'} fill={'var(--theme-trans-color)'} />
       {/if}
       {#each removed as remove}
-        <PersonAccountRefPresenter value={remove} avatarSize="card" />
+        <PersonAccountRefPresenter value={remove} avatarSize="card" compact />
       {/each}
-    </div>
+    </span>
   {/if}
-</div>
+</span>
 
 <style lang="scss">
   .root {
