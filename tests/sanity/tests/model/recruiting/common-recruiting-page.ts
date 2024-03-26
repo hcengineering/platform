@@ -131,4 +131,10 @@ export class CommonRecruitingPage extends CalendarPage {
   async checkActivityExist (activity: string): Promise<void> {
     await expect(this.textActivity.filter({ hasText: activity })).toBeVisible()
   }
+
+  async checkCannotDelete (): Promise<void> {
+    await this.buttonMoreActions.click()
+
+    await expect(this.buttonDelete).not.toBeVisible()
+  }
 }

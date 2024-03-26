@@ -250,7 +250,7 @@ test.describe('Tracker issue tests', () => {
     await issuesDetailsPage.checkIssue(newIssue)
   })
 
-  test('Delete an issue', async ({ page }) => {
+  test('Cannot delete an issue w/o permissions', async ({ page }) => {
     const deleteIssue: NewIssue = {
       title: 'Issue for deletion',
       description: 'Description Issue for deletion'
@@ -262,11 +262,14 @@ test.describe('Tracker issue tests', () => {
 
     const issuesDetailsPage = new IssuesDetailsPage(page)
     await issuesDetailsPage.waitDetailsOpened(deleteIssue.title)
-    await issuesDetailsPage.moreActionOnIssue('Delete')
-    await issuesDetailsPage.pressYesForPopup(page)
 
-    await issuesPage.searchIssueByName(deleteIssue.title)
-    await issuesPage.checkIssueNotExist(deleteIssue.title)
+    await issuesDetailsPage.checkActionMissing('Delete')
+
+    // await issuesDetailsPage.moreActionOnIssue('Delete')
+    // await issuesDetailsPage.pressYesForPopup(page)
+
+    // await issuesPage.searchIssueByName(deleteIssue.title)
+    // await issuesPage.checkIssueNotExist(deleteIssue.title)
   })
 
   test('Check the changed description activity', async ({ page }) => {
