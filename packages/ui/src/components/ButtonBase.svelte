@@ -162,7 +162,7 @@
     }
     &.small {
       height: var(--global-small-Size);
-      gap: var(--spacing-0_25);
+      gap: var(--spacing-0_5);
       border-radius: var(--small-BorderRadius);
 
       &.type-button {
