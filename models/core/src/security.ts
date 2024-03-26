@@ -30,7 +30,18 @@ import {
   type Permission,
   type CollectionSize
 } from '@hcengineering/core'
-import { ArrOf, Collection, Hidden, Index, Model, Prop, TypeBoolean, TypeRef, TypeString, UX } from '@hcengineering/model'
+import {
+  ArrOf,
+  Collection,
+  Hidden,
+  Index,
+  Model,
+  Prop,
+  TypeBoolean,
+  TypeRef,
+  TypeString,
+  UX
+} from '@hcengineering/model'
 import type { Asset, IntlString } from '@hcengineering/platform'
 import core from './component'
 import { TDoc, TAttachedDoc } from './core'

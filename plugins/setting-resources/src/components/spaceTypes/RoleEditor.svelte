@@ -64,9 +64,17 @@
           return
         }
 
-        await client.updateCollection(core.class.Role, core.space.Model, role._id, spaceType._id, spaceType._class, 'roles', {
-          permissions: result
-        })
+        await client.updateCollection(
+          core.class.Role,
+          core.space.Model,
+          role._id,
+          spaceType._id,
+          spaceType._class,
+          'roles',
+          {
+            permissions: result
+          }
+        )
       }
     )
   }

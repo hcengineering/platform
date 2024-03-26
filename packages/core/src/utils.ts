@@ -564,7 +564,9 @@ export async function checkPermission (
   _space: Ref<TypedSpace>
 ): Promise<boolean> {
   const space = await client.findOne(core.class.TypedSpace, { _id: _space })
-  const type = await client.getModel().findOne(core.class.SpaceType, { _id: space?.type }, { lookup: { _id: { roles: core.class.Role } } })
+  const type = await client
+    .getModel()
+    .findOne(core.class.SpaceType, { _id: space?.type }, { lookup: { _id: { roles: core.class.Role } } })
   const mixin = type?.targetClass
   if (space === undefined || type === undefined || mixin === undefined) {
     return false

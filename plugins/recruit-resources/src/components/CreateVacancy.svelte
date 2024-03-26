@@ -114,7 +114,7 @@
         roles = res
 
         if (rolesAssignment === undefined) {
-          rolesAssignment = roles.reduce<RolesAssignment>((prev, {_id}) => {
+          rolesAssignment = roles.reduce<RolesAssignment>((prev, { _id }) => {
             prev[_id] = []
 
             return prev

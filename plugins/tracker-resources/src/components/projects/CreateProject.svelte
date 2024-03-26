@@ -114,7 +114,7 @@
 
     const asMixin = hierarchy.as(project, typeType?.targetClass)
 
-    return roles.reduce<RolesAssignment>((prev, {_id}) => {
+    return roles.reduce<RolesAssignment>((prev, { _id }) => {
       prev[_id] = (asMixin as any)[_id]
 
       return prev
@@ -275,7 +275,8 @@
 
     if (removedMembersSet.size > 0 && rolesAssignment !== undefined) {
       for (const [key, value] of Object.entries(rolesAssignment)) {
-        rolesAssignment[key as Ref<Role>] = value !== undefined ? value.filter((m) => !removedMembersSet.has(m)) : undefined
+        rolesAssignment[key as Ref<Role>] =
+          value !== undefined ? value.filter((m) => !removedMembersSet.has(m)) : undefined
       }
     }
 

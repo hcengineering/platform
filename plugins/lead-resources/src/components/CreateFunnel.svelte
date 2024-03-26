@@ -24,9 +24,7 @@
     RolesAssignment,
     SortingOrder,
     SpaceType,
-
     WithLookup
-
   } from '@hcengineering/core'
   import lead, { Funnel } from '@hcengineering/lead'
   import presentation, { createQuery, getClient, SpaceCreateCard } from '@hcengineering/presentation'
@@ -56,7 +54,12 @@
 
   $: void loadSpaceType(typeId)
   async function loadSpaceType (id: typeof typeId): Promise<void> {
-    spaceType = id !== undefined ? await client.getModel().findOne(core.class.SpaceType, { _id: id }, { lookup: { _id: { roles: core.class.Role } }}) : undefined
+    spaceType =
+      id !== undefined
+        ? await client
+          .getModel()
+          .findOne(core.class.SpaceType, { _id: id }, { lookup: { _id: { roles: core.class.Role } } })
+        : undefined
 
     if (spaceType?.targetClass === undefined || spaceType?.$lookup?.roles === undefined) {
       return
@@ -74,7 +77,7 @@
 
     const asMixin = hierarchy.as(funnel, spaceType?.targetClass)
 
-    return spaceType.$lookup.roles.reduce<RolesAssignment>((prev, {_id}) => {
+    return spaceType.$lookup.roles.reduce<RolesAssignment>((prev, { _id }) => {
       prev[_id as Ref<Role>] = (asMixin as any)[_id]
 
       return prev
@@ -128,7 +131,8 @@
 
     if (removedMembersSet.size > 0 && rolesAssignment !== undefined) {
       for (const [key, value] of Object.entries(rolesAssignment)) {
-        rolesAssignment[key as Ref<Role>] = value !== undefined ? value.filter((m) => !removedMembersSet.has(m)) : undefined
+        rolesAssignment[key as Ref<Role>] =
+          value !== undefined ? value.filter((m) => !removedMembersSet.has(m)) : undefined
       }
     }
 
