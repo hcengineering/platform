@@ -14,13 +14,14 @@
 -->
 <script lang="ts">
   import { AttributeEditor, createQuery, getClient } from '@hcengineering/presentation'
-  import core, { Permission, Ref, Role, SpaceTypeDescriptor, WithLookup } from '@hcengineering/core'
+  import core, { Permission, Ref, Role, SpaceType, SpaceTypeDescriptor, WithLookup } from '@hcengineering/core'
   import { ButtonIcon, Icon, IconEdit, IconSettings, Label, Scroller, showPopup } from '@hcengineering/ui'
   import { ObjectBoxPopup } from '@hcengineering/view-resources'
 
   import PersonIcon from '../icons/Person.svelte'
   import settingRes from '../../plugin'
 
+  export let spaceType: SpaceType
   export let descriptor: SpaceTypeDescriptor
   export let objectId: Ref<Role>
   export let name: string | undefined
@@ -63,7 +64,9 @@
           return
         }
 
-        await client.update(role, { permissions: result })
+        await client.updateCollection(core.class.Role, core.space.Model, role._id, spaceType._id, spaceType._class, 'roles', {
+          permissions: result
+        })
       }
     )
   }

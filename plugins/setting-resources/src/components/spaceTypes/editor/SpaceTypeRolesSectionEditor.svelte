@@ -28,14 +28,16 @@
 
   let roles: Role[] = []
   const rolesQuery = createQuery()
-  $: rolesQuery.query(
-    core.class.Role,
-    { _id: { $in: type?.roles ?? [] } },
-    (res) => {
-      roles = res
-    },
-    { sort: { _id: SortingOrder.Ascending } }
-  )
+  $: if (type !== undefined) {
+    rolesQuery.query(
+      core.class.Role,
+      { attachedTo: type._id },
+      (res) => {
+        roles = res
+      },
+      { sort: { _id: SortingOrder.Ascending } }
+    )
+  }
 
   function handleRoleSelected (id: string | undefined): void {
     const loc = getCurrentResolvedLocation()

@@ -43,7 +43,7 @@
         descriptor: projDescriptor._id,
         description: '',
         tasks: [],
-        roles: [],
+        roles: 0,
         classic: projDescriptor.allowedClassic === true ? classic : false
       },
       [],

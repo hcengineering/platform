@@ -66,7 +66,7 @@ async function createDefaultProject (tx: TxOperations): Promise<void> {
         descriptor: tracker.descriptors.ProjectType,
         description: '',
         tasks: [],
-        roles: [],
+        roles: 0,
         classic: true
       },
       [

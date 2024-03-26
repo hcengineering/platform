@@ -217,7 +217,7 @@ export async function createProjectType (
       description: data.description,
       shortDescription: data.shortDescription,
       descriptor: data.descriptor,
-      roles: [],
+      roles: 0,
       tasks: _tasks,
       name: data.name,
       statuses: calculateStatuses({ tasks: _tasks, statuses: [] }, tasksData, []),

@@ -22,14 +22,14 @@
     RolesAssignment,
     Ref,
     Role,
-    SortingOrder,
     SpaceType,
     generateId,
-    getCurrentAccount
+    getCurrentAccount,
+    WithLookup
   } from '@hcengineering/core'
   import document, { Teamspace } from '@hcengineering/document'
   import { Asset } from '@hcengineering/platform'
-  import presentation, { Card, createQuery, getClient } from '@hcengineering/presentation'
+  import presentation, { Card, getClient } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor'
   import {
     Button,
@@ -70,13 +70,13 @@
   $: isNew = teamspace === undefined
 
   let typeId: Ref<SpaceType> | undefined = teamspace?.type || document.spaceType.DefaultTeamspaceType
-  let spaceType: SpaceType | undefined
+  let spaceType: WithLookup<SpaceType> | undefined
 
   $: void loadSpaceType(typeId)
   async function loadSpaceType (id: typeof typeId): Promise<void> {
-    spaceType = id !== undefined ? await client.getModel().findOne(core.class.SpaceType, { _id: id }) : undefined
+    spaceType = id !== undefined ? await client.getModel().findOne(core.class.SpaceType, { _id: id }, { lookup: { _id: { roles: core.class.Role } } }) : undefined
 
-    if (teamspace === undefined || spaceType?.targetClass === undefined || spaceType?.roles === undefined) {
+    if (teamspace === undefined || spaceType?.targetClass === undefined || spaceType?.$lookup?.roles === undefined) {
       return
     }
 
@@ -84,14 +84,14 @@
   }
 
   function getRolesAssignment (): RolesAssignment {
-    if (teamspace === undefined || spaceType?.targetClass === undefined || spaceType?.roles === undefined) {
+    if (teamspace === undefined || spaceType?.targetClass === undefined || spaceType?.$lookup?.roles === undefined) {
       return {}
     }
 
     const asMixin = hierarchy.as(teamspace, spaceType?.targetClass)
 
-    return spaceType.roles.reduce<RolesAssignment>((prev, curr) => {
-      prev[curr] = (asMixin as any)[curr]
+    return spaceType.$lookup.roles.reduce<RolesAssignment>((prev, {_id}) => {
+      prev[_id as Ref<Role>] = (asMixin as any)[_id]
 
       return prev
     }, {})
@@ -209,33 +209,16 @@
     typeId = evt.detail
   }
 
-  let roles: Role[] = []
-  const rolesQuery = createQuery()
-  $: if (spaceType !== undefined) {
-    rolesQuery.query(
-      core.class.Role,
-      { _id: { $in: spaceType.roles } },
-      (res) => {
-        roles = res
-      },
-      {
-        sort: {
-          name: SortingOrder.Ascending
-        }
-      }
-    )
-  } else {
-    rolesQuery.unsubscribe()
-  }
+  $: roles = (spaceType?.$lookup?.roles ?? []) as Role[]
 
   function handleMembersChanged (newMembers: Ref<Account>[]): void {
     // If a member was removed we need to remove it from any roles assignments as well
     const newMembersSet = new Set(newMembers)
     const removedMembersSet = new Set(members.filter((m) => !newMembersSet.has(m)))
 
-    if (rolesAssignment !== undefined) {
+    if (removedMembersSet.size > 0 && rolesAssignment !== undefined) {
       for (const [key, value] of Object.entries(rolesAssignment)) {
-        rolesAssignment[key as Ref<Role>] = value.filter((m) => !removedMembersSet.has(m))
+        rolesAssignment[key as Ref<Role>] = value !== undefined ? value.filter((m) => !removedMembersSet.has(m)) : undefined
       }
     }
 

@@ -43,7 +43,7 @@
       const data: Omit<Data<SpaceType>, 'targetClass'> = {
         name,
         descriptor: descriptor._id,
-        roles: []
+        roles: 0
       }
 
       await createSpaceType(client, data, generateId())

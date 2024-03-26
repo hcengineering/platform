@@ -103,14 +103,23 @@
     issueTemplates = result
   })
 
+  let rolesAssignment: RolesAssignment | undefined
   let roles: Role[] = []
   const rolesQuery = createQuery()
   $: if (typeType !== undefined) {
     rolesQuery.query(
       core.class.Role,
-      { _id: { $in: typeType.roles } },
+      { attachedTo: typeType._id },
       (res) => {
         roles = res
+
+        if (rolesAssignment === undefined) {
+          rolesAssignment = roles.reduce<RolesAssignment>((prev, {_id}) => {
+            prev[_id] = []
+
+            return prev
+          }, {})
+        }
       },
       {
         sort: {
@@ -120,15 +129,6 @@
     )
   } else {
     rolesQuery.unsubscribe()
-  }
-
-  let rolesAssignment: RolesAssignment | undefined
-  $: if (rolesAssignment === undefined && typeType !== undefined) {
-    rolesAssignment = typeType.roles.reduce<RolesAssignment>((prev, curr) => {
-      prev[curr] = []
-
-      return prev
-    }, {})
   }
 
   async function saveIssue (

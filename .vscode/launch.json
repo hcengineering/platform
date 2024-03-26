@@ -57,6 +57,7 @@
         // "RETRANSLATE_TOKEN": ""
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "runtimeVersion": "20",
       "showAsyncStacks": true,
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/pods/server",

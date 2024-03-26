@@ -27,12 +27,13 @@ import {
   type SpaceTypeDescriptor,
   type Role,
   type Class,
-  type Permission
+  type Permission,
+  type CollectionSize
 } from '@hcengineering/core'
-import { ArrOf, Hidden, Index, Model, Prop, TypeBoolean, TypeRef, TypeString, UX } from '@hcengineering/model'
+import { ArrOf, Collection, Hidden, Index, Model, Prop, TypeBoolean, TypeRef, TypeString, UX } from '@hcengineering/model'
 import type { Asset, IntlString } from '@hcengineering/platform'
 import core from './component'
-import { TDoc } from './core'
+import { TDoc, TAttachedDoc } from './core'
 
 export const DOMAIN_SPACE = 'space' as Domain
 
@@ -92,13 +93,27 @@ export class TSpaceType extends TDoc implements SpaceType {
   @Prop(TypeRef(core.class.Class), core.string.TargetClass)
     targetClass!: Ref<Class<Space>>
 
-  @Prop(ArrOf(TypeRef(core.class.Role)), core.string.Roles)
-    roles!: Ref<Role>[]
+  @Prop(Collection(core.class.Role), core.string.Roles)
+    roles!: CollectionSize<Role>
 }
 
-@Model(core.class.Role, core.class.Doc, DOMAIN_MODEL)
+@Model(core.class.Role, core.class.AttachedDoc, DOMAIN_MODEL)
 @UX(core.string.Role, undefined, undefined, 'name')
-export class TRole extends TDoc implements Role {
+export class TRole extends TAttachedDoc implements Role {
+  @Prop(TypeRef(core.class.SpaceType), core.string.AttachedTo)
+  @Index(IndexKind.Indexed)
+  @Hidden()
+  declare attachedTo: Ref<SpaceType>
+
+  @Prop(TypeRef(core.class.SpaceType), core.string.AttachedToClass)
+  @Index(IndexKind.Indexed)
+  @Hidden()
+  declare attachedToClass: Ref<Class<SpaceType>>
+
+  @Prop(TypeString(), core.string.Collection)
+  @Hidden()
+  override collection: 'roles' = 'roles'
+
   @Prop(TypeString(), core.string.Name)
   @Index(IndexKind.FullText)
     name!: string

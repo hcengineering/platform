@@ -23,7 +23,10 @@
     Role,
     RolesAssignment,
     SortingOrder,
-    SpaceType
+    SpaceType,
+
+    WithLookup
+
   } from '@hcengineering/core'
   import lead, { Funnel } from '@hcengineering/lead'
   import presentation, { createQuery, getClient, SpaceCreateCard } from '@hcengineering/presentation'
@@ -44,7 +47,7 @@
   let name: string = funnel?.name ?? ''
   const description: string = funnel?.description ?? ''
   let typeId: Ref<ProjectType> | undefined = funnel?.type ?? lead.template.DefaultFunnel
-  let spaceType: SpaceType | undefined
+  let spaceType: WithLookup<SpaceType> | undefined
   let rolesAssignment: RolesAssignment = {}
   let isPrivate: boolean = funnel?.private ?? false
 
@@ -53,43 +56,26 @@
 
   $: void loadSpaceType(typeId)
   async function loadSpaceType (id: typeof typeId): Promise<void> {
-    spaceType = id !== undefined ? await client.getModel().findOne(core.class.SpaceType, { _id: id }) : undefined
+    spaceType = id !== undefined ? await client.getModel().findOne(core.class.SpaceType, { _id: id }, { lookup: { _id: { roles: core.class.Role } }}) : undefined
 
-    if (spaceType?.targetClass === undefined || spaceType?.roles === undefined) {
+    if (spaceType?.targetClass === undefined || spaceType?.$lookup?.roles === undefined) {
       return
     }
 
     rolesAssignment = getRolesAssignment()
   }
 
-  let roles: Role[] = []
-  const rolesQuery = createQuery()
-  $: if (spaceType !== undefined) {
-    rolesQuery.query(
-      core.class.Role,
-      { _id: { $in: spaceType.roles } },
-      (res) => {
-        roles = res
-      },
-      {
-        sort: {
-          name: SortingOrder.Ascending
-        }
-      }
-    )
-  } else {
-    rolesQuery.unsubscribe()
-  }
+  $: roles = (spaceType?.$lookup?.roles ?? []) as Role[]
 
   function getRolesAssignment (): RolesAssignment {
-    if (funnel === undefined || spaceType?.targetClass === undefined || spaceType?.roles === undefined) {
+    if (funnel === undefined || spaceType?.targetClass === undefined || spaceType?.$lookup?.roles === undefined) {
       return {}
     }
 
     const asMixin = hierarchy.as(funnel, spaceType?.targetClass)
 
-    return spaceType.roles.reduce<RolesAssignment>((prev, curr) => {
-      prev[curr] = (asMixin as any)[curr]
+    return spaceType.$lookup.roles.reduce<RolesAssignment>((prev, {_id}) => {
+      prev[_id as Ref<Role>] = (asMixin as any)[_id]
 
       return prev
     }, {})
@@ -140,9 +126,9 @@
     const newMembersSet = new Set(newMembers)
     const removedMembersSet = new Set(members.filter((m) => !newMembersSet.has(m)))
 
-    if (rolesAssignment !== undefined) {
+    if (removedMembersSet.size > 0 && rolesAssignment !== undefined) {
       for (const [key, value] of Object.entries(rolesAssignment)) {
-        rolesAssignment[key as Ref<Role>] = value.filter((m) => !removedMembersSet.has(m))
+        rolesAssignment[key as Ref<Role>] = value !== undefined ? value.filter((m) => !removedMembersSet.has(m)) : undefined
       }
     }
 

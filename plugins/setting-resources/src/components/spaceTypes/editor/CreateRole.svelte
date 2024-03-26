@@ -16,7 +16,7 @@
   import presentation, { getClient } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
   import { Modal, ModernEditbox } from '@hcengineering/ui'
-  import core, { Attribute, Data, PropertyType, Ref, Role, SpaceType } from '@hcengineering/core'
+  import core, { AttachedData, Attribute, PropertyType, Ref, Role, SpaceType } from '@hcengineering/core'
   import { ArrOf, TypeRef } from '@hcengineering/model'
   import { getEmbeddedLabel } from '@hcengineering/platform'
 
@@ -26,7 +26,7 @@
   const client = getClient()
   export let type: SpaceType
 
-  const roleData: Data<Role> = {
+  const roleData: AttachedData<Role> = {
     name: '',
     permissions: []
   }
@@ -37,8 +37,14 @@
       return
     }
 
-    const roleId = await client.createDoc(core.class.Role, core.space.Model, roleData)
-    await client.update(type, { $push: { roles: roleId } })
+    const roleId = await client.addCollection(
+      core.class.Role,
+      core.space.Model,
+      type._id,
+      type._class,
+      'roles',
+      roleData
+    )
 
     // Create role as an attribute of space type's mixin
     await client.createDoc(

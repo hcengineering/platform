@@ -252,7 +252,7 @@ async function createDefaultTeamspaceType (tx: TxOperations): Promise<void> {
       {
         name: 'Default teamspace type',
         descriptor: document.descriptor.TeamspaceType,
-        roles: []
+        roles: 0
       },
       document.spaceType.DefaultTeamspaceType
     )

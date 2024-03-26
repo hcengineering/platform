@@ -108,14 +108,14 @@
   }
 
   function getRolesAssignment (): RolesAssignment {
-    if (project === undefined || typeType?.targetClass === undefined || typeType?.roles === undefined) {
+    if (project === undefined || typeType?.targetClass === undefined || roles === undefined) {
       return {}
     }
 
     const asMixin = hierarchy.as(project, typeType?.targetClass)
 
-    return typeType.roles.reduce<RolesAssignment>((prev, curr) => {
-      prev[curr] = (asMixin as any)[curr]
+    return roles.reduce<RolesAssignment>((prev, {_id}) => {
+      prev[_id] = (asMixin as any)[_id]
 
       return prev
     }, {})
@@ -189,10 +189,6 @@
     defaultStatus = typeType.statuses[0]?._id
   }
 
-  $: if (rolesAssignment === undefined && typeType !== undefined) {
-    rolesAssignment = getRolesAssignment()
-  }
-
   async function createProject (): Promise<void> {
     const projectId = generateId<Project>()
     const projectData = getProjectData()
@@ -254,9 +250,13 @@
   $: if (typeType !== undefined) {
     rolesQuery.query(
       core.class.Role,
-      { _id: { $in: typeType.roles } },
+      { attachedTo: typeType._id },
       (res) => {
         roles = res
+
+        if (rolesAssignment === undefined && typeType !== undefined) {
+          rolesAssignment = getRolesAssignment()
+        }
       },
       {
         sort: {
@@ -273,9 +273,9 @@
     const newMembersSet = new Set(newMembers)
     const removedMembersSet = new Set(members.filter((m) => !newMembersSet.has(m)))
 
-    if (rolesAssignment !== undefined) {
+    if (removedMembersSet.size > 0 && rolesAssignment !== undefined) {
       for (const [key, value] of Object.entries(rolesAssignment)) {
-        rolesAssignment[key as Ref<Role>] = value.filter((m) => !removedMembersSet.has(m))
+        rolesAssignment[key as Ref<Role>] = value !== undefined ? value.filter((m) => !removedMembersSet.has(m)) : undefined
       }
     }
 

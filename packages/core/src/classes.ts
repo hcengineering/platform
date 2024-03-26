@@ -394,14 +394,14 @@ export interface SpaceType extends Doc {
   shortDescription?: string
   descriptor: Ref<SpaceTypeDescriptor>
   targetClass: Ref<Class<Space>> // A dynamic mixin for Spaces to hold custom attributes and roles assignment of the space type
-  roles: Ref<Role>[]
+  roles: CollectionSize<Role>
 }
 
 /**
  * @public
  * Role defines permissions for employees assigned to this role within the space
  */
-export interface Role extends Doc {
+export interface Role extends AttachedDoc<SpaceType, 'roles'> {
   name: string
   permissions: Ref<Permission>[]
 }
@@ -410,7 +410,7 @@ export interface Role extends Doc {
  * @public
  * Defines assignment of employees to a role within a space
  */
-export type RolesAssignment = Record<Ref<Role>, Ref<Account>[]>
+export type RolesAssignment = Record<Ref<Role>, Ref<Account>[] | undefined>
 
 /**
  * @public
