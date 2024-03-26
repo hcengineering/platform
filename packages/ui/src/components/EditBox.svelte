@@ -111,6 +111,7 @@
   class:w-full={focusable || fullSize}
   class:uppercase
   style:width={maxWidth}
+  on:mousedown|stopPropagation={() => {}}
   on:click={(event) => {
     if (!propagateClick) {
       event.stopPropagation()

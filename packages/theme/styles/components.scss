@@ -142,6 +142,10 @@
     width: 1px;
     height: var(--spacing-4);
     background-color: var(--theme-divider-color); // var(--global-surface-02-BorderColor);
+    
+    &.short {
+      margin: 0 var(--spacing-1);
+    }
   }
   .hulyHeader-titleGroup,
   .hulyHeader-buttonsGroup {
@@ -355,9 +359,6 @@
       word-break: break-all;
       text-overflow: ellipsis;
       overflow: hidden;
-      display: flex;
-      align-items: center;
-      min-width: 0;
     }
     &__tools {
       display: flex;
