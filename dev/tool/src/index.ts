@@ -26,6 +26,7 @@ import {
   getWorkspaceById,
   listAccounts,
   listWorkspaces,
+  listWorkspacesPure,
   listWorkspacesRaw,
   replacePassword,
   setAccountAdmin,
@@ -51,7 +52,15 @@ import { MongoClient, type Db } from 'mongodb'
 import { clearTelegramHistory } from './telegram'
 import { diffWorkspace, updateField } from './workspace'
 
-import { RateLimiter, getWorkspaceId, type AccountRole, type Data, type Tx, type Version } from '@hcengineering/core'
+import {
+  getWorkspaceId,
+  MeasureMetricsContext,
+  RateLimiter,
+  type AccountRole,
+  type Data,
+  type Tx,
+  type Version
+} from '@hcengineering/core'
 import { consoleModelLogger, type MigrateOperation } from '@hcengineering/model'
 import { openAIConfigDefaults } from '@hcengineering/openai'
 import { type StorageAdapter } from '@hcengineering/server-core'
@@ -66,6 +75,7 @@ import {
   fixSkills,
   optimizeModel
 } from './clean'
+import { checkOrphanWorkspaces } from './cleanOrphan'
 import { changeConfiguration } from './configuration'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { openAIConfig } from './openai'
@@ -84,6 +94,7 @@ export function devTool (
   productId: string,
   extendProgram?: (prog: Command) => void
 ): void {
+  const toolCtx = new MeasureMetricsContext('tool', {})
   const serverSecret = process.env.SERVER_SECRET
   if (serverSecret === undefined) {
     console.error('please provide server secret')
@@ -135,7 +146,7 @@ export function devTool (
       const { mongodbUri } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
         console.log(`creating account ${cmd.first as string} ${cmd.last as string} (${email})...`)
-        await createAcc(db, productId, email, cmd.password, cmd.first, cmd.last, true)
+        await createAcc(toolCtx, db, productId, email, cmd.password, cmd.first, cmd.last, true)
       })
     })
 
@@ -164,7 +175,7 @@ export function devTool (
         }
         console.log('assigning to workspace', workspaceInfo)
         try {
-          await assignWorkspace(db, productId, email, workspaceInfo.workspace)
+          await assignWorkspace(toolCtx, db, productId, email, workspaceInfo.workspace)
         } catch (err: any) {
           console.error(err)
         }
@@ -215,6 +226,7 @@ export function devTool (
       const { mongodbUri, txes, version, migrateOperations } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
         const { client } = await createWorkspace(
+          toolCtx,
           version,
           txes,
           migrateOperations,
@@ -292,6 +304,8 @@ export function devTool (
         }
 
         const withError: string[] = []
+        let toProcess = workspaces.length
+        const st = Date.now()
 
         async function _upgradeWorkspace (ws: WorkspaceInfo): Promise<void> {
           if (ws.disabled === true) {
@@ -301,7 +315,18 @@ export function devTool (
           const logger = cmd.console
             ? consoleModelLogger
             : new FileModelLogger(path.join(cmd.logs, `${ws.workspace}.log`))
-          console.log('---UPGRADING----', ws.workspace, !cmd.console ? (logger as FileModelLogger).file : '')
+
+          const avgTime = (Date.now() - st) / (workspaces.length - toProcess + 1)
+          console.log(
+            '---UPGRADING----',
+            ws.workspace,
+            !cmd.console ? (logger as FileModelLogger).file : '',
+            'pending: ',
+            toProcess,
+            'ETA:',
+            avgTime * toProcess
+          )
+          toProcess--
           try {
             await upgradeWorkspace(
               version,
@@ -348,6 +373,33 @@ export function devTool (
     })
 
   program
+    .command('remove-unused-workspaces')
+    .description(
+      'remove unused workspaces, please pass --remove to really delete them. Without it will only mark them disabled'
+    )
+    .option('-r|--remove [remove]', 'Force remove', false)
+    .option('-d|--disable [disable]', 'Force disable', false)
+    .option('-e|--exclude [exclude]', 'A comma separated list of workspaces to exclude', '')
+    .action(async (cmd: { remove: boolean, disable: boolean, exclude: string }) => {
+      const { mongodbUri, storageAdapter } = prepareTools()
+      await withDatabase(mongodbUri, async (db, client) => {
+        const workspaces = await listWorkspacesPure(db, productId)
+
+        // We need to update workspaces with missing workspaceUrl
+        await checkOrphanWorkspaces(
+          workspaces,
+          transactorUrl,
+          productId,
+          cmd,
+          db,
+          client,
+          storageAdapter,
+          cmd.exclude.split(',')
+        )
+      })
+    })
+
+  program
     .command('drop-workspace <name>')
     .description('drop workspace')
     .action(async (workspace, cmd) => {
@@ -358,7 +410,7 @@ export function devTool (
           console.log('no workspace exists')
           return
         }
-        await dropWorkspace(db, productId, workspace)
+        await dropWorkspace(toolCtx, db, productId, workspace)
       })
     })
 
@@ -368,7 +420,7 @@ export function devTool (
     .action(async () => {
       const { mongodbUri, version } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
-        const workspacesJSON = JSON.stringify(await listWorkspaces(db, productId), null, 2)
+        const workspacesJSON = JSON.stringify(await listWorkspaces(toolCtx, db, productId), null, 2)
         console.info(workspacesJSON)
 
         console.log('latest model version:', JSON.stringify(version))
@@ -392,7 +444,7 @@ export function devTool (
     .action(async (email: string, cmd) => {
       const { mongodbUri } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
-        await dropAccount(db, productId, email)
+        await dropAccount(toolCtx, db, productId, email)
       })
     })
 
@@ -434,26 +486,24 @@ export function devTool (
     .description('dump workspace transactions and minio resources')
     .action(async (bucketName: string, dirName: string, workspace: string, cmd) => {
       const { storageAdapter } = prepareTools()
-      const wsId = getWorkspaceId(workspace, productId)
-      const storage = await createStorageBackupStorage(storageAdapter, wsId, dirName)
-      await backup(transactorUrl, wsId, storage)
+      const storage = await createStorageBackupStorage(storageAdapter, getWorkspaceId(bucketName, productId), dirName)
+      await backup(transactorUrl, getWorkspaceId(workspace, productId), storage)
     })
   program
-    .command('backup-s3-restore <bucketName>, <dirName> <workspace> [date]')
+    .command('backup-s3-restore <bucketName> <dirName> <workspace> [date]')
     .description('dump workspace transactions and minio resources')
     .action(async (bucketName: string, dirName: string, workspace: string, date, cmd) => {
       const { storageAdapter } = prepareTools()
-      const wsId = getWorkspaceId(bucketName, productId)
-      const storage = await createStorageBackupStorage(storageAdapter, wsId, dirName)
-      await restore(transactorUrl, wsId, storage, parseInt(date ?? '-1'))
+      const storage = await createStorageBackupStorage(storageAdapter, getWorkspaceId(bucketName), dirName)
+      await restore(transactorUrl, getWorkspaceId(workspace, productId), storage, parseInt(date ?? '-1'))
     })
   program
     .command('backup-s3-list <bucketName> <dirName>')
     .description('list snaphost ids for backup')
     .action(async (bucketName: string, dirName: string, cmd) => {
       const { storageAdapter } = prepareTools()
-      const wsId = getWorkspaceId(bucketName, productId)
-      const storage = await createStorageBackupStorage(storageAdapter, wsId, dirName)
+
+      const storage = await createStorageBackupStorage(storageAdapter, getWorkspaceId(bucketName, productId), dirName)
       await backupList(storage)
     })
 
@@ -510,7 +560,7 @@ export function devTool (
           process.exit(1)
         }
 
-        const workspaces = await listWorkspaces(db, productId)
+        const workspaces = await listWorkspaces(toolCtx, db, productId)
 
         for (const w of workspaces) {
           console.log(`clearing ${w.workspace} history:`)

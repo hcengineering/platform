@@ -30,8 +30,11 @@ export default async () => {
           for (const op of migrateOperations) {
             console.log('Migrate', op[0])
             await op[1].upgrade(client, {
-              log (...data) {
-                console.log(...data)
+              log (msg, data) {
+                console.log(msg, data)
+              },
+              error (msg, data) {
+                console.error(msg, data)
               }
             })
           }

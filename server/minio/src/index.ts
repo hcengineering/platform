@@ -56,7 +56,7 @@ export class MinioService implements StorageAdapter {
     try {
       const items = new Map<string, WorkspaceItem>()
       const list = this.client.listObjects(getBucketId(workspaceId), prefix, true)
-      await new Promise((resolve) => {
+      await new Promise((resolve, reject) => {
         list.on('data', (data) => {
           if (data.name !== undefined) {
             items.set(data.name, { metaData: {}, ...data } as any)
@@ -66,10 +66,14 @@ export class MinioService implements StorageAdapter {
           list.destroy()
           resolve(null)
         })
+        list.on('error', (err) => {
+          reject(err)
+        })
       })
       return Array.from(items.values())
     } catch (err: any) {
-      if (((err?.message as string) ?? '').includes('Invalid bucket name')) {
+      const msg = (err?.message as string) ?? ''
+      if (msg.includes('Invalid bucket name') || msg.includes('The specified bucket does not exist')) {
         return []
       }
       throw err
@@ -98,7 +102,7 @@ export class MinioService implements StorageAdapter {
     const data = await this.client.getObject(getBucketId(workspaceId), name)
     const chunks: Buffer[] = []
 
-    await new Promise((resolve) => {
+    await new Promise((resolve, reject) => {
       data.on('readable', () => {
         let chunk
         while ((chunk = data.read()) !== null) {
@@ -110,6 +114,9 @@ export class MinioService implements StorageAdapter {
       data.on('end', () => {
         data.destroy()
         resolve(null)
+      })
+      data.on('error', (err) => {
+        reject(err)
       })
     })
     return chunks

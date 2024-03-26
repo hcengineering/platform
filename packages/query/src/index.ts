@@ -206,7 +206,12 @@ export class LiveQuery implements WithTx, Client {
         }
       }
     }
-    if (options?.limit === 1 && options.total !== true) {
+    if (
+      options?.limit === 1 &&
+      options.total !== true &&
+      options?.sort === undefined &&
+      options?.projection === undefined
+    ) {
       const docs = this.documentRefs.get(classKey)
       if (docs !== undefined) {
         const _docs = Array.from(docs.values()).map((it) => it.doc)
