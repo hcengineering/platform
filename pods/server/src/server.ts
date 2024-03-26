@@ -32,7 +32,8 @@ import {
   ModifiedMiddleware,
   PrivateMiddleware,
   QueryJoinMiddleware,
-  SpaceSecurityMiddleware
+  SpaceSecurityMiddleware,
+  SpacePermissionsMiddleware
 } from '@hcengineering/middleware'
 import { createMongoAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
 import { OpenAIEmbeddingsStage, openAIId, openAIPluginImpl } from '@hcengineering/openai'
@@ -229,6 +230,7 @@ export function start (
     ModifiedMiddleware.create,
     PrivateMiddleware.create,
     SpaceSecurityMiddleware.create,
+    SpacePermissionsMiddleware.create,
     ConfigurationMiddleware.create,
     QueryJoinMiddleware.create // Should be last one
   ]
