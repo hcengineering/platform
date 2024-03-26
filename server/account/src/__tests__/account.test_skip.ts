@@ -19,10 +19,13 @@ import { randomBytes } from 'crypto'
 import { Db, MongoClient } from 'mongodb'
 import accountPlugin, { getAccount, getMethods, getWorkspaceByUrl } from '..'
 import { setMetadata } from '@hcengineering/platform'
+import { MeasureMetricsContext } from '@hcengineering/core'
 
 const DB_NAME = 'test_accounts'
 
 const methods = getMethods(getModelVersion(), builder().getTxes(), migrateOperations)
+
+const metricsContext = new MeasureMetricsContext('account', {})
 
 describe('server', () => {
   const dbUri = process.env.MONGO_URL ?? 'mongodb://localhost:27017'
@@ -48,7 +51,7 @@ describe('server', () => {
       params: [workspace, 'ООО Рога и Копыта']
     }
 
-    const result = await methods.createWorkspace(db, '', request)
+    const result = await methods.createWorkspace(metricsContext, db, '', request)
     expect(result.result).toBeDefined()
     workspace = result.result as string
   })
@@ -59,12 +62,12 @@ describe('server', () => {
       params: ['andrey2', '123']
     }
 
-    const result = await methods.createAccount(db, '', request)
+    const result = await methods.createAccount(metricsContext, db, '', request)
     expect(result.result).toBeDefined()
   })
 
   it('should not create, duplicate account', async () => {
-    await methods.createAccount(db, '', {
+    await methods.createAccount(metricsContext, db, '', {
       method: 'createAccount',
       params: ['andrey', '123']
     })
@@ -74,20 +77,20 @@ describe('server', () => {
       params: ['andrey', '123']
     }
 
-    const result = await methods.createAccount(db, '', request)
+    const result = await methods.createAccount(metricsContext, db, '', request)
     expect(result.error).toBeDefined()
   })
 
   it('should login', async () => {
-    await methods.createAccount(db, '', {
+    await methods.createAccount(metricsContext, db, '', {
       method: 'createAccount',
       params: ['andrey', '123']
     })
-    await methods.createWorkspace(db, '', {
+    await methods.createWorkspace(metricsContext, db, '', {
       method: 'createWorkspace',
       params: [workspace, 'ООО Рога и Копыта']
     })
-    await methods.assignWorkspace(db, '', {
+    await methods.assignWorkspace(metricsContext, db, '', {
       method: 'assignWorkspace',
       params: ['andrey', workspace]
     })
@@ -97,7 +100,7 @@ describe('server', () => {
       params: ['andrey', '123', workspace]
     }
 
-    const result = await methods.login(db, '', request)
+    const result = await methods.login(metricsContext, db, '', request)
     expect(result.result).toBeDefined()
   })
 
@@ -107,7 +110,7 @@ describe('server', () => {
       params: ['andrey', '123555', workspace]
     }
 
-    const result = await methods.login(db, '', request)
+    const result = await methods.login(metricsContext, db, '', request)
     expect(result.error).toBeDefined()
   })
 
@@ -117,7 +120,7 @@ describe('server', () => {
       params: ['andrey1', '123555', workspace]
     }
 
-    const result = await methods.login(db, '', request)
+    const result = await methods.login(metricsContext, db, '', request)
     expect(result.error).toBeDefined()
   })
 
@@ -127,20 +130,20 @@ describe('server', () => {
       params: ['andrey', '123', 'non-existent-workspace']
     }
 
-    const result = await methods.login(db, '', request)
+    const result = await methods.login(metricsContext, db, '', request)
     expect(result.error).toBeDefined()
   })
 
   it('do remove workspace', async () => {
-    await methods.createAccount(db, '', {
+    await methods.createAccount(metricsContext, db, '', {
       method: 'createAccount',
       params: ['andrey', '123']
     })
-    await methods.createWorkspace(db, '', {
+    await methods.createWorkspace(metricsContext, db, '', {
       method: 'createWorkspace',
       params: [workspace, 'ООО Рога и Копыта']
     })
-    await methods.assignWorkspace(db, '', {
+    await methods.assignWorkspace(metricsContext, db, '', {
       method: 'assignWorkspace',
       params: ['andrey', workspace]
     })
@@ -149,7 +152,7 @@ describe('server', () => {
     expect((await getAccount(db, 'andrey'))?.workspaces.length).toEqual(1)
     expect((await getWorkspaceByUrl(db, '', workspace))?.accounts.length).toEqual(1)
 
-    await methods.removeWorkspace(db, '', {
+    await methods.removeWorkspace(metricsContext, db, '', {
       method: 'removeWorkspace',
       params: ['andrey', workspace]
     })

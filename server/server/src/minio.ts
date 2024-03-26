@@ -152,5 +152,11 @@ export async function createStorageDataAdapter (
   if (storage === undefined) {
     throw new Error('minio storage adapter require minio')
   }
+  // We need to create bucket if it doesn't exist
+  if (storage !== undefined) {
+    if (!(await storage.exists(workspaceId))) {
+      await storage.make(workspaceId)
+    }
+  }
   return new StorageBlobAdapter(workspaceId, storage)
 }

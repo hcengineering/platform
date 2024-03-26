@@ -53,8 +53,12 @@ export class FileModelLogger implements ModelLogger {
     this.handle = fs.createWriteStream(this.file, { flags: 'a' })
   }
 
-  log (...data: any[]): void {
-    this.handle.write(data.map((it: any) => JSON.stringify(it)).join(' ') + '\n')
+  log (msg: string, data: any): void {
+    this.handle.write(msg + ' : ' + JSON.stringify(data) + '\n')
+  }
+
+  error (msg: string, data: any): void {
+    this.handle.write(msg + ': ' + JSON.stringify(data) + '\n')
   }
 
   close (): void {
@@ -129,34 +133,32 @@ export async function initModel (
     await client.connect()
     const db = getWorkspaceDB(client, workspaceId)
 
-    logger.log('dropping database...', workspaceId)
-    await db.dropDatabase()
-
     logger.log('creating model...', workspaceId)
     const model = txes
     const result = await db.collection(DOMAIN_TX).insertMany(model as Document[])
-    logger.log(`${result.insertedCount} model transactions inserted.`)
+    logger.log('model transactions inserted.', { count: result.insertedCount })
 
-    logger.log('creating data...', transactorUrl)
+    logger.log('creating data...', { transactorUrl })
     connection = (await connect(transactorUrl, workspaceId, undefined, {
-      model: 'upgrade'
+      model: 'upgrade',
+      admin: 'true'
     })) as unknown as CoreClient & BackupClient
 
     try {
       for (const op of migrateOperations) {
-        logger.log('Migrate', op[0])
+        logger.log('Migrate', { name: op[0] })
         await op[1].upgrade(connection, logger)
       }
 
       // Create update indexes
       await createUpdateIndexes(connection, db, logger)
 
-      logger.log('create minio bucket')
+      logger.log('create minio bucket', { workspaceId })
       if (!(await minio.exists(workspaceId))) {
         await minio.make(workspaceId)
       }
-    } catch (e) {
-      logger.log(e)
+    } catch (e: any) {
+      logger.error('error', { error: e })
     }
   } finally {
     await client.close()
@@ -185,19 +187,19 @@ export async function upgradeModel (
     await client.connect()
     const db = getWorkspaceDB(client, workspaceId)
 
-    logger.log(`${workspaceId.name}: removing model...`)
+    logger.log('removing model...', { workspaceId: workspaceId.name })
     // we're preserving accounts (created by core.account.System).
     const result = await db.collection(DOMAIN_TX).deleteMany({
       objectSpace: core.space.Model,
       modifiedBy: core.account.System,
       objectClass: { $nin: [contact.class.PersonAccount, 'contact:class:EmployeeAccount'] }
     })
-    logger.log(`${workspaceId.name}: ${result.deletedCount} transactions deleted.`)
+    logger.log('transactions deleted.', { workspaceId: workspaceId.name, count: result.deletedCount })
 
-    logger.log(`${workspaceId.name}: creating model...`)
+    logger.log('creating model...', { workspaceId: workspaceId.name })
     const model = txes
     const insert = await db.collection(DOMAIN_TX).insertMany(model as Document[])
-    logger.log(`${workspaceId.name}: ${insert.insertedCount} model transactions inserted.`)
+    logger.log('model transactions inserted.', { workspaceId: workspaceId.name, count: insert.insertedCount })
 
     const hierarchy = new Hierarchy()
     const modelDb = new ModelDb(hierarchy)
@@ -216,10 +218,10 @@ export async function upgradeModel (
     for (const op of migrateOperations) {
       const t = Date.now()
       await op[1].migrate(migrateClient, logger)
-      logger.log(`${workspaceId.name}: migrate:`, op[0], Date.now() - t)
+      logger.log('migrate:', { workspaceId: workspaceId.name, operation: op[0], time: Date.now() - t })
     }
 
-    logger.log(`${workspaceId.name}: Apply upgrade operations`)
+    logger.log('Apply upgrade operations', { workspaceId: workspaceId.name })
 
     const connection = await connect(transactorUrl, workspaceId, undefined, {
       mode: 'backup',
@@ -233,7 +235,7 @@ export async function upgradeModel (
     for (const op of migrateOperations) {
       const t = Date.now()
       await op[1].upgrade(connection, logger)
-      logger.log(`${workspaceId.name}: upgrade:`, op[0], Date.now() - t)
+      logger.log('upgrade:', { operation: op[0], time: Date.now() - t, workspaceId: workspaceId.name })
     }
 
     return connection
@@ -296,12 +298,12 @@ async function createUpdateIndexes (connection: CoreClient, db: Db, logger: Mode
           await collection.createIndex(vv)
         }
       } catch (err: any) {
-        logger.log('error: failed to create index', d, vv, JSON.stringify(err))
+        logger.error('error: failed to create index', { d, vv, err })
       }
       bb.push(vv)
     }
     if (bb.length > 0) {
-      logger.log('created indexes', d, JSON.stringify(bb))
+      logger.log('created indexes', { d, bb })
     }
   }
 }

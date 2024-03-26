@@ -1,11 +1,12 @@
-import { concatLink } from '@hcengineering/core'
-import Router from 'koa-router'
-import { Strategy as GitHubStrategy } from 'passport-github2'
 import { joinWithProvider, loginWithProvider } from '@hcengineering/account'
+import { concatLink, MeasureContext } from '@hcengineering/core'
+import Router from 'koa-router'
 import { Db } from 'mongodb'
+import { Strategy as GitHubStrategy } from 'passport-github2'
 import { Passport } from '.'
 
 export function registerGithub (
+  ctx: MeasureContext,
   passport: Passport,
   router: Router<any, any>,
   accountsUrl: string,
@@ -45,14 +46,16 @@ export function registerGithub (
       const [first, last] = ctx.state.user.displayName.split(' ')
       if (email !== undefined) {
         if (ctx.query?.state != null) {
-          const loginInfo = await joinWithProvider(db, productId, email, first, last, ctx.query.state, {
+          const loginInfo = await joinWithProvider(ctx, db, productId, email, first, last, ctx.query.state, {
             githubId: ctx.state.user.id
           })
           if (ctx.session != null) {
             ctx.session.loginInfo = loginInfo
           }
         } else {
-          const loginInfo = await loginWithProvider(db, productId, email, first, last, { githubId: ctx.state.user.id })
+          const loginInfo = await loginWithProvider(ctx, db, productId, email, first, last, {
+            githubId: ctx.state.user.id
+          })
           if (ctx.session != null) {
             ctx.session.loginInfo = loginInfo
           }

@@ -56,14 +56,18 @@ export async function createOrUpdate<T extends Doc> (
  * @public
  */
 export interface ModelLogger {
-  log: (...data: any[]) => void
+  log: (msg: string, data: any) => void
+  error: (msg: string, err: any) => void
 }
 
 /**
  * @public
  */
 export const consoleModelLogger: ModelLogger = {
-  log (...data: any[]): void {
-    console.log(...data)
+  log (msg: string, data: any): void {
+    console.log(msg, data)
+  },
+  error (msg: string, data: any): void {
+    console.error(msg, data)
   }
 }
