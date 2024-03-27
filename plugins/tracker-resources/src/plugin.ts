@@ -299,7 +299,8 @@ export default mergeIds(trackerId, tracker, {
     UnsetParent: '' as IntlString,
     PreviousAssigned: '' as IntlString,
     EditRelatedTargets: '' as IntlString,
-    RelatedIssueTargetDescription: '' as IntlString
+    RelatedIssueTargetDescription: '' as IntlString,
+    RoleLabel: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,

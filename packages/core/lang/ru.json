@@ -2,6 +2,8 @@
   "string": {
     "Id": "Id",
     "Space": "Пространство",
+    "TypedSpace": "Типизированное пространство",
+    "SpaceType": "Тип пространства",
     "Modified": "Изменено",
     "ModifiedDate": "Дата изменения",
     "ModifiedBy": "Изменен",
@@ -10,6 +12,11 @@
     "AttachedToClass": "Прикреплен к классу",
     "Name": "Название",
     "Description": "Описание",
+    "ShortDescription": "Короткое описание",
+    "Descriptor": "Дескриптор",
+    "TargetClass": "Целевой класс",
+    "Role": "Роль",
+    "Roles": "Роли",
     "Private": "Личный",
     "Archived": "Архивный",
     "ClassLabel": "Тип",
@@ -35,6 +42,11 @@
     "Status": "Статус",
     "StatusCategory": "Категория статуса",
     "Account": "Аккаунт",
-    "Rank": "Ранг"
+    "Rank": "Ранг",
+    "Permission": "Разрешение",
+    "CreateObject": "Создавать объект",
+    "UpdateObject": "Обновлять объект",
+    "DeleteObject": "Удалять объект",
+    "DeleteObjectDescription": "Дает пользователям разрешение удалять объекты в пространстве"
   }
 }

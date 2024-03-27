@@ -88,6 +88,8 @@ export default mergeIds(documentId, document, {
     ReassignToDoConfirm: '' as IntlString,
 
     Color: '' as IntlString,
-    Icon: '' as IntlString
+    Icon: '' as IntlString,
+
+    RoleLabel: '' as IntlString
   }
 })

@@ -53,9 +53,7 @@ import TaskPresenter from './components/TaskPresenter.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
 import TypesView from './components/TypesView.svelte'
 import KanbanView from './components/kanban/KanbanView.svelte'
-import ProjectEditor from './components/projectTypes/ProjectEditor.svelte'
 import ProjectTypePresenter from './components/projectTypes/ProjectTypePresenter.svelte'
-import ProjectTypeSelector from './components/projectTypes/ProjectTypeSelector.svelte'
 import CreateStatePopup from './components/state/CreateStatePopup.svelte'
 import StateEditor from './components/state/StateEditor.svelte'
 import StateIconPresenter from './components/state/StateIconPresenter.svelte'
@@ -67,9 +65,13 @@ import TaskKindSelector from './components/taskTypes/TaskKindSelector.svelte'
 import TaskTypeClassPresenter from './components/taskTypes/TaskTypeClassPresenter.svelte'
 import TaskTypePresenter from './components/taskTypes/TaskTypePresenter.svelte'
 
-import ManageProjects from './components/projectTypes/ManageProjects.svelte'
-import ManageProjectsContent from './components/projectTypes/ManageProjectsContent.svelte'
-import ManageProjectsTools from './components/projectTypes/ManageProjectsTools.svelte'
+import ProjectTypeSelector from './components/projectTypes/ProjectTypeSelector.svelte'
+import CreateProjectType from './components/projectTypes/CreateProjectType.svelte'
+import ProjectTypeGeneralSectionEditor from './components/projectTypes/ProjectTypeGeneralSectionEditor.svelte'
+import ProjectTypeTasksTypeSectionEditor from './components/projectTypes/ProjectTypeTasksTypeSectionEditor.svelte'
+import ProjectTypeAutomationsSectionEditor from './components/projectTypes/ProjectTypeAutomationsSectionEditor.svelte'
+import ProjectTypeCollectionsSectionEditor from './components/projectTypes/ProjectTypeCollectionsSectionEditor.svelte'
+import TaskTypeEditor from './components/taskTypes/TaskTypeEditor.svelte'
 
 export { default as AssigneePresenter } from './components/AssigneePresenter.svelte'
 export { default as TypeSelector } from './components/TypeSelector.svelte'
@@ -112,8 +114,6 @@ export default async (): Promise<Resources> => ({
     StateEditor,
     StatusTableView,
     TaskHeader,
-    ProjectEditor,
-    ProjectTypeSelector,
     AssignedTasks,
     StateRefPresenter,
     DueDateEditor,
@@ -126,10 +126,14 @@ export default async (): Promise<Resources> => ({
     TaskTypePresenter,
     TaskTypeClassPresenter,
     ProjectTypeClassPresenter,
-    ManageProjects,
-    ManageProjectsTools,
-    ManageProjectsContent,
-    ProjectTypePresenter
+    ProjectTypePresenter,
+    ProjectTypeSelector,
+    CreateProjectType,
+    ProjectTypeGeneralSectionEditor,
+    ProjectTypeTasksTypeSectionEditor,
+    ProjectTypeAutomationsSectionEditor,
+    ProjectTypeCollectionsSectionEditor,
+    TaskTypeEditor
   },
   actionImpl: {
     EditStatuses: editStatuses,

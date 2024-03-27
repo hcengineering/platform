@@ -364,6 +364,66 @@ export interface Space extends Doc {
 
 /**
  * @public
+ *
+ * Space with custom configured type
+ */
+export interface TypedSpace extends Space {
+  type: Ref<SpaceType>
+}
+
+/**
+ * @public
+ *
+ * Is used to describe "types" for space type
+ */
+export interface SpaceTypeDescriptor extends Doc {
+  name: IntlString
+  description: IntlString
+  icon: Asset
+  baseClass: Ref<Class<Space>> // Child class of Space for which the space type can be defined
+  availablePermissions: Ref<Permission>[]
+}
+
+/**
+ * @public
+ *
+ * Customisable space type allowing to configure space roles and permissions within them
+ */
+export interface SpaceType extends Doc {
+  name: string
+  shortDescription?: string
+  descriptor: Ref<SpaceTypeDescriptor>
+  targetClass: Ref<Class<Space>> // A dynamic mixin for Spaces to hold custom attributes and roles assignment of the space type
+  roles: CollectionSize<Role>
+}
+
+/**
+ * @public
+ * Role defines permissions for employees assigned to this role within the space
+ */
+export interface Role extends AttachedDoc<SpaceType, 'roles'> {
+  name: string
+  permissions: Ref<Permission>[]
+}
+
+/**
+ * @public
+ * Defines assignment of employees to a role within a space
+ */
+export type RolesAssignment = Record<Ref<Role>, Ref<Account>[] | undefined>
+
+/**
+ * @public
+ * Permission is a basic access control item in the system
+ */
+export interface Permission extends Doc {
+  label: IntlString
+  description?: IntlString
+  icon?: Asset
+}
+
+/**
+ * @public
  */
 export interface Account extends Doc {
   email: string

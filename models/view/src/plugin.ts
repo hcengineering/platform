@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { type Ref } from '@hcengineering/core'
-import { type IntlString, mergeIds } from '@hcengineering/platform'
+import { type Doc, type Ref } from '@hcengineering/core'
+import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type FilterFunction, type ViewAction, type ViewCategoryAction, viewId } from '@hcengineering/view'
 import { type PresentationMiddlewareFactory } from '@hcengineering/presentation/src/pipeline'
@@ -126,7 +126,8 @@ export default mergeIds(viewId, view, {
     FilterDateNextMonth: '' as FilterFunction,
     FilterDateNotSpecified: '' as FilterFunction,
     FilterDateCustom: '' as FilterFunction,
-    ShowEmptyGroups: '' as ViewCategoryAction
+    ShowEmptyGroups: '' as ViewCategoryAction,
+    CanDeleteObject: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
   },
   pipeline: {
     PresentationMiddleware: '' as Ref<PresentationMiddlewareFactory>,

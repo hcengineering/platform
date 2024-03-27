@@ -1,6 +1,5 @@
 <!--
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021, 2022, 2023 Hardcore Engineering Inc.
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,12 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, IconAdd, showPopup } from '@hcengineering/ui'
-  import CreateProjectType from './CreateProjectType.svelte'
+  import { type SpaceType, type SpaceTypeDescriptor } from '@hcengineering/core'
 
-  function open () {
-    showPopup(CreateProjectType, {}, 'top')
-  }
+  import ClassAttributes from '../../ClassAttributes.svelte'
+
+  export let type: SpaceType | undefined
+  export let descriptor: SpaceTypeDescriptor | undefined
 </script>
 
-<Button id="new-project-type" icon={IconAdd} kind={'link'} size="small" on:click={open} />
+{#if type !== undefined && descriptor !== undefined}
+  <ClassAttributes ofClass={descriptor.baseClass} _class={type.targetClass} showHierarchy />
+{/if}

@@ -19,7 +19,6 @@ import {
   type DocumentQuery,
   type Ref,
   type RelatedDocument,
-  type Space,
   type WithLookup,
   generateId,
   getCurrentAccount
@@ -89,7 +88,7 @@ async function createDocument (space: Teamspace): Promise<void> {
   await _createDocument(id, space._id, parent)
 }
 
-async function _createDocument (id: Ref<Document>, space: Ref<Space>, parent: Ref<Document>): Promise<void> {
+async function _createDocument (id: Ref<Document>, space: Ref<Teamspace>, parent: Ref<Document>): Promise<void> {
   const client = getClient()
 
   await createEmptyDocument(client, id, space, parent, {})

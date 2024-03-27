@@ -2,6 +2,8 @@
   "string": {
     "Id": "Id",
     "Space": "Space",
+    "TypedSpace": "Typed space",
+    "SpaceType": "Space type",
     "Modified": "Modified",
     "ModifiedDate": "Modified date",
     "ModifiedBy": "Modified by",
@@ -10,6 +12,11 @@
     "AttachedToClass": "Attached to class",
     "Name": "Name",
     "Description": "Description",
+    "ShortDescription": "Short description",
+    "Descriptor": "Descriptor",
+    "TargetClass": "Target class",
+    "Role": "Role",
+    "Roles": "Roles",
     "Private": "Private",
     "Archived": "Archived",
     "ClassLabel": "Type",
@@ -35,6 +42,11 @@
     "Status": "Status",
     "StatusCategory": "Status category",
     "Account": "Account",
-    "Rank": "Rank"
+    "Rank": "Rank",
+    "Permission": "Permission",
+    "CreateObject": "Create object",
+    "UpdateObject": "Update object",
+    "DeleteObject": "Delete object",
+    "DeleteObjectDescription": "Grants users ability to delete objects in the space"
   }
 }

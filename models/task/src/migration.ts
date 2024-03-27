@@ -13,7 +13,17 @@
 // limitations under the License.
 //
 
-import { ClassifierKind, TxOperations, toIdMap, type Class, type Doc, type Ref } from '@hcengineering/core'
+import {
+  ClassifierKind,
+  TxOperations,
+  toIdMap,
+  type Class,
+  type Doc,
+  type Ref,
+  type TxCreateDoc,
+  generateId,
+  DOMAIN_TX
+} from '@hcengineering/core'
 import {
   createOrUpdate,
   tryMigrate,
@@ -25,7 +35,7 @@ import {
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 import tags from '@hcengineering/model-tags'
 import { getEmbeddedLabel } from '@hcengineering/platform'
-import { taskId, type TaskType } from '@hcengineering/task'
+import { type ProjectType, taskId, type TaskType } from '@hcengineering/task'
 import { DOMAIN_TASK } from '.'
 import task from './plugin'
 
@@ -167,6 +177,79 @@ async function fixProjectTypeMissingClass (client: MigrationUpgradeClient): Prom
   }
 }
 
+async function migrateProjectTypes (client: MigrationClient): Promise<void> {
+  const oldProjectTypes = await client.find<ProjectType>(DOMAIN_SPACE, { _class: task.class.ProjectType })
+
+  for (const pt of oldProjectTypes) {
+    // Create the project type in model instead
+    const tx: TxCreateDoc<ProjectType> = {
+      _id: generateId(),
+      _class: core.class.TxCreateDoc,
+      space: core.space.Tx,
+      objectClass: pt._class,
+      objectSpace: core.space.Model,
+      objectId: pt._id,
+      attributes: {
+        descriptor: pt.descriptor,
+        tasks: pt.tasks,
+        statuses: pt.statuses,
+        targetClass: pt.targetClass,
+        classic: pt.classic,
+        name: pt.name,
+        description: pt.description,
+        shortDescription: pt.shortDescription,
+        roles: pt.roles ?? []
+      },
+      modifiedOn: pt.modifiedOn,
+      createdBy: pt.createdBy,
+      createdOn: pt.createdOn,
+      modifiedBy: pt.modifiedBy
+    }
+    await client.create(DOMAIN_TX, tx)
+
+    // Remove old project type from spaces
+    await client.delete(DOMAIN_SPACE, pt._id)
+  }
+}
+
+async function migrateTaskTypes (client: MigrationClient): Promise<void> {
+  const oldTaskTypes = await client.find<TaskType>(DOMAIN_TASK, { _class: task.class.TaskType })
+
+  for (const tt of oldTaskTypes) {
+    // Create the task type in model instead
+    const tx: TxCreateDoc<TaskType> = {
+      _id: generateId(),
+      _class: core.class.TxCreateDoc,
+      space: core.space.Tx,
+      objectClass: tt._class,
+      objectSpace: core.space.Model,
+      objectId: tt._id,
+      attributes: {
+        parent: tt.parent,
+        descriptor: tt.descriptor,
+        name: tt.name,
+        kind: tt.kind,
+        ofClass: tt.ofClass,
+        targetClass: tt.targetClass,
+        statuses: tt.statuses,
+        statusClass: tt.statusClass,
+        statusCategories: tt.statusCategories,
+        allowedAsChildOf: tt.allowedAsChildOf,
+        icon: tt.icon,
+        color: tt.color
+      },
+      modifiedOn: tt.modifiedOn,
+      createdBy: tt.createdBy,
+      createdOn: tt.createdOn,
+      modifiedBy: tt.modifiedBy
+    }
+    await client.create(DOMAIN_TX, tx)
+
+    // Remove old task type from task
+    await client.delete(DOMAIN_TASK, tt._id)
+  }
+}
+
 export const taskOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, taskId, [
@@ -201,6 +284,8 @@ export const taskOperation: MigrateOperation = {
         }
       }
     ])
+    await migrateTaskTypes(client)
+    await migrateProjectTypes(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)

@@ -97,6 +97,8 @@
     "Color": "Color",
     "Identifier": "Identifier",
     "RenameStatus": "Rename a status to new name",
-    "UpdateTasksStatusRequest": "Status is used with {total} tasks, it will require update of all of them. Please approve."
+    "UpdateTasksStatusRequest": "Status is used with {total} tasks, it will require update of all of them. Please approve.",
+    "TaskTypes": "Task types",
+    "Collections": "Collections"
   }
 }

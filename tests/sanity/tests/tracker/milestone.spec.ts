@@ -67,7 +67,7 @@ test.describe('Tracker milestone tests', () => {
     await milestonesDetailsPage.checkActivityExist('changed description at')
   })
 
-  test('Delete a Milestone', async ({ page }) => {
+  test('Cannot delete a Milestone w/o permissions', async ({ page }) => {
     const deleteMilestone: NewMilestone = {
       name: 'Delete Milestone',
       description: 'Delete Milestone Description',
@@ -85,8 +85,9 @@ test.describe('Tracker milestone tests', () => {
 
     const milestonesDetailsPage = new MilestonesDetailsPage(page)
     await milestonesDetailsPage.checkIssue(deleteMilestone)
-    await milestonesDetailsPage.deleteMilestone()
+    await milestonesDetailsPage.checkActionMissing('Delete')
+    // await milestonesDetailsPage.deleteMilestone()
 
-    await milestonesPage.checkMilestoneNotExist(deleteMilestone.name)
+    // await milestonesPage.checkMilestoneNotExist(deleteMilestone.name)
   })
 })

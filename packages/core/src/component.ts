@@ -38,14 +38,19 @@ import type {
   Markup,
   MigrationState,
   Obj,
+  Permission,
   PluginConfiguration,
   Ref,
   RefTo,
   RelatedDocument,
+  Role,
   Space,
+  SpaceType,
+  SpaceTypeDescriptor,
   Timestamp,
   Type,
   TypeAny,
+  TypedSpace,
   UserStatus
 } from './classes'
 import { CollaborativeDoc } from './collaboration'
@@ -93,6 +98,11 @@ export default plugin(coreId, {
     TxUpdateDoc: '' as Ref<Class<TxUpdateDoc<Doc>>>,
     TxRemoveDoc: '' as Ref<Class<TxRemoveDoc<Doc>>>,
     Space: '' as Ref<Class<Space>>,
+    TypedSpace: '' as Ref<Class<TypedSpace>>,
+    SpaceTypeDescriptor: '' as Ref<Class<SpaceTypeDescriptor>>,
+    SpaceType: '' as Ref<Class<SpaceType>>,
+    Role: '' as Ref<Class<Role>>,
+    Permission: '' as Ref<Class<Permission>>,
     Account: '' as Ref<Class<Account>>,
     Type: '' as Ref<Class<Type<any>>>,
     TypeString: '' as Ref<Class<Type<string>>>,
@@ -157,6 +167,8 @@ export default plugin(coreId, {
   string: {
     Id: '' as IntlString,
     Space: '' as IntlString,
+    TypedSpace: '' as IntlString,
+    SpaceType: '' as IntlString,
     Modified: '' as IntlString,
     ModifiedDate: '' as IntlString,
     ModifiedBy: '' as IntlString,
@@ -180,6 +192,11 @@ export default plugin(coreId, {
     Name: '' as IntlString,
     Enum: '' as IntlString,
     Description: '' as IntlString,
+    ShortDescription: '' as IntlString,
+    Descriptor: '' as IntlString,
+    TargetClass: '' as IntlString,
+    Role: '' as IntlString,
+    Roles: '' as IntlString,
     Hyperlink: '' as IntlString,
     Private: '' as IntlString,
     Object: '' as IntlString,
@@ -189,6 +206,16 @@ export default plugin(coreId, {
     Status: '' as IntlString,
     Account: '' as IntlString,
     StatusCategory: '' as IntlString,
-    Rank: '' as IntlString
+    Rank: '' as IntlString,
+    Permission: '' as IntlString,
+    CreateObject: '' as IntlString,
+    UpdateObject: '' as IntlString,
+    DeleteObject: '' as IntlString,
+    DeleteObjectDescription: '' as IntlString
+  },
+  permission: {
+    CreateObject: '' as Ref<Permission>,
+    UpdateObject: '' as Ref<Permission>,
+    DeleteObject: '' as Ref<Permission>
   }
 })
