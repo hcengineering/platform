@@ -81,7 +81,7 @@
   }
 
   $: if (showOnlyDiff) {
-    [content, comparedVersion] = cleanup(content, comparedVersion)
+    ;[content, comparedVersion] = cleanup(content, comparedVersion)
   }
 </script>
 

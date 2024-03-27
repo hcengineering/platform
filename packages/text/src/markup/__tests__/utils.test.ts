@@ -1,3 +1,7 @@
+/**
+ * @jest-environment jsdom
+ */
+
 //
 // Copyright © 2024 Hardcore Engineering Inc.
 //
