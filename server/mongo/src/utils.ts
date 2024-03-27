@@ -16,7 +16,7 @@
 import { toWorkspaceString, type WorkspaceId } from '@hcengineering/core'
 import { type Db, MongoClient, type MongoClientOptions } from 'mongodb'
 
-let connections: MongoClient[] = []
+const connections = new Map<string, MongoClientReference>()
 
 // Register mongo close on process exit.
 process.on('exit', () => {
@@ -30,24 +30,66 @@ process.on('exit', () => {
  */
 export async function shutdown (): Promise<void> {
   for (const c of connections.values()) {
-    await c.close()
+    await c.close(true)
   }
-  connections = []
+  connections.clear()
 }
+
+export class MongoClientReference {
+  count: number
+  client: MongoClient | Promise<MongoClient>
+
+  constructor (client: MongoClient | Promise<MongoClient>) {
+    this.count = 1
+    this.client = client
+  }
+
+  async getClient (): Promise<MongoClient> {
+    if (this.client instanceof Promise) {
+      this.client = await this.client
+    }
+    return this.client
+  }
+
+  async close (force: boolean = false): Promise<void> {
+    this.count--
+    if (this.count === 0 || force) {
+      if (force) {
+        this.count = 0
+      }
+      await (await this.client).close()
+    }
+  }
+
+  addRef (): void {
+    this.count++
+  }
+}
+
 /**
  * Initialize a workspace connection to DB
  * @public
  */
-export async function getMongoClient (uri: string, options?: MongoClientOptions): Promise<MongoClient> {
+export function getMongoClient (uri: string, options?: MongoClientOptions): MongoClientReference {
   const extraOptions = JSON.parse(process.env.MONGO_OPTIONS ?? '{}')
-  const client = await MongoClient.connect(uri, {
-    ...options,
-    enableUtf8Validation: false,
-    maxConnecting: 1024,
-    ...extraOptions
-  })
-  connections.push(client)
-  return client
+  const key = `${uri}${process.env.MONGO_OPTIONS}`
+  let existing = connections.get(key)
+
+  // If not created or closed
+  if (existing === undefined || existing.count === 0) {
+    existing = new MongoClientReference(
+      MongoClient.connect(uri, {
+        ...options,
+        enableUtf8Validation: false,
+        maxConnecting: 1024,
+        ...extraOptions
+      })
+    )
+    connections.set(key, existing)
+  } else {
+    existing.addRef()
+  }
+  return existing
 }
 
 /**

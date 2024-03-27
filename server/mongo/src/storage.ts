@@ -67,11 +67,10 @@ import {
   type Db,
   type Document,
   type Filter,
-  type MongoClient,
   type Sort,
   type UpdateFilter
 } from 'mongodb'
-import { getMongoClient, getWorkspaceDB } from './utils'
+import { getMongoClient, getWorkspaceDB, type MongoClientReference } from './utils'
 
 function translateDoc (doc: Doc): Document {
   return { ...doc, '%hash%': null }
@@ -106,7 +105,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     protected readonly db: Db,
     protected readonly hierarchy: Hierarchy,
     protected readonly modelDb: ModelDb,
-    protected readonly client: MongoClient
+    protected readonly client: MongoClientReference
   ) {}
 
   async init (): Promise<void> {}
@@ -1408,8 +1407,8 @@ export async function createMongoAdapter (
   workspaceId: WorkspaceId,
   modelDb: ModelDb
 ): Promise<DbAdapter> {
-  const client = await getMongoClient(url)
-  const db = getWorkspaceDB(client, workspaceId)
+  const client = getMongoClient(url)
+  const db = getWorkspaceDB(await client.getClient(), workspaceId)
 
   return new MongoAdapter(db, hierarchy, modelDb, client)
 }
@@ -1423,7 +1422,7 @@ export async function createMongoTxAdapter (
   workspaceId: WorkspaceId,
   modelDb: ModelDb
 ): Promise<TxAdapter> {
-  const client = await getMongoClient(url)
-  const db = getWorkspaceDB(client, workspaceId)
+  const client = getMongoClient(url)
+  const db = getWorkspaceDB(await client.getClient(), workspaceId)
   return new MongoTxAdapter(db, hierarchy, modelDb, client)
 }
