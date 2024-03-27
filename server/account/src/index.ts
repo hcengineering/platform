@@ -668,7 +668,6 @@ export async function listWorkspacesPure (db: Db, productId: string): Promise<Wo
     (it) => ({ ...it, productId })
   )
 }
-
 /**
  * @public
  */
@@ -1370,6 +1369,14 @@ export async function changePassword (
 
   await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { salt, hash } })
   await ctx.info('change-password success', { email })
+}
+
+/**
+ * @public
+ */
+export async function changeEmail (ctx: MeasureContext, db: Db, account: Account, newEmail: string): Promise<void> {
+  await db.collection<Account>(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { email: newEmail } })
+  await ctx.info('change-email success', { email: newEmail })
 }
 
 /**

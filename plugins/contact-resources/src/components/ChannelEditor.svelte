@@ -13,29 +13,36 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Channel } from '@hcengineering/contact'
+  import { Data } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import { translate } from '@hcengineering/platform'
   import { copyTextToClipboard } from '@hcengineering/presentation'
   import {
-    PopupOptions,
-    themeStore,
     Button,
-    createFocusManager,
     FocusHandler,
     IconArrowRight,
     IconBlueCheck,
     IconClose,
-    registerFocus
+    IconMoreV,
+    PopupOptions,
+    createFocusManager,
+    getEventPopupPositionElement,
+    registerFocus,
+    showPopup,
+    themeStore
   } from '@hcengineering/ui'
+  import { ContextMenu } from '@hcengineering/view-resources'
+  import view from '@hcengineering/view'
   import { afterUpdate, createEventDispatcher, onMount } from 'svelte'
   import plugin from '../plugin'
   import IconCopy from './icons/Copy.svelte'
-
   export let value: string = ''
   export let placeholder: IntlString
   export let editable: boolean | undefined = undefined
   export let openable: boolean = false
   export let popupOptions: PopupOptions
+  export let channel: Data<Channel> | Channel
 
   const dispatch = createEventDispatcher()
   let input: HTMLInputElement
@@ -141,6 +148,26 @@
         on:click={() => {
           dispatch('update', value)
           dispatch('close', 'open')
+        }}
+      />
+    {/if}
+    {#if '_id' in channel}
+      <Button
+        kind={'ghost'}
+        size={'small'}
+        icon={IconMoreV}
+        on:click={(evt) => {
+          showPopup(
+            ContextMenu,
+            {
+              object: channel,
+              includedActions: [view.action.Delete]
+            },
+            getEventPopupPositionElement(evt),
+            () => {
+              dispatch('close')
+            }
+          )
         }}
       />
     {/if}
