@@ -43,8 +43,8 @@ This project offers a convenient method to host Huly using `docker`, designed fo
   - [Node.js](https://nodejs.org/en/download/) (v20 is required)
   - [Docker](https://docs.docker.com/get-docker/)
   - [Docker Compose](https://docs.docker.com/compose/install/)
-- Make sure what docker and `docker compose` commands are available in your terminal (e.g. `docker --version` and `docker compose --version`).
-- Make sure what docker and `docker compose` commands can be executed without sudo (e.g. `docker run hello-world` and `docker compose --version`).
+- Make sure that docker and `docker-compose` commands are available in your terminal (e.g. `docker --version` and `docker-compose --version`).
+- Make sure that docker and `docker-compose` commands can be executed without sudo (e.g. `docker run hello-world` and `docker-compose --version`).
 
 ## Fast start
 
@@ -54,7 +54,7 @@ sh ./scripts/fast-start.sh
 
 ## Installation
 
-You need Microsoft's [rush](https://rushjs.io) to install application.
+You need Microsoft's [rush](https://rushjs.io) to install the application.
 
 Install [rush](https://rushjs.io) with `$ npm install -g @microsoft/rush` command and run `$ rush install` from the repository root, followed by `$ rush build` or just:
 
