@@ -691,6 +691,25 @@ export function devTool (
     })
 
   program
+    .command('configure-all')
+    .description('configure all spaces')
+    .option('--enable <enable>', 'Enable plugin configuration', '')
+    .option('--disable <disable>', 'Disable plugin configuration', '')
+    .option('--list', 'List plugin states', false)
+    .action(async (cmd: { enable: string, disable: string, list: boolean }) => {
+      const { mongodbUri } = prepareTools()
+      await withDatabase(mongodbUri, async (db) => {
+        console.log('configure all workspaces')
+        console.log(JSON.stringify(cmd))
+        const workspaces = await listWorkspacesRaw(db, productId)
+        for (const ws of workspaces) {
+          console.log('configure', ws.workspaceName ?? ws.workspace)
+          await changeConfiguration(getWorkspaceId(ws.workspaceUrl ?? ws.workspace, productId), transactorUrl, cmd)
+        }
+      })
+    })
+
+  program
     .command('optimize-model <workspace>')
     .description('optimize model')
     .action(async (workspace: string, cmd: { enable: string, disable: string, list: boolean }) => {
