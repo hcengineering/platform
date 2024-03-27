@@ -40,7 +40,7 @@
   export let embedded: boolean = false
   export let readonly: boolean = false
 
-  $: realObjectClass = _class
+  let realObjectClass = _class
   let lastId: Ref<Doc> = _id
   let object: Doc
 
@@ -104,10 +104,13 @@
   let ignoreMixins: Set<Ref<Mixin<Doc>>> = new Set<Ref<Mixin<Doc>>>()
 
   $: mixins = getDocMixins(object, showAllMixins, ignoreMixins, realObjectClass)
-
+  let attr: Promise<any> | undefined
   async function updateKeys (): Promise<void> {
-    const info = await getDocAttrsInfo(mixins, ignoreKeys, realObjectClass, allowedCollections, collectionArrays)
-
+    if (attr instanceof Promise) {
+      await attr
+    }
+    attr = getDocAttrsInfo(mixins, ignoreKeys, realObjectClass, allowedCollections, collectionArrays)
+    const info = await attr
     keys = info.keys
     inplaceAttributes = info.inplaceAttributes
     fieldEditors = info.editors
@@ -161,7 +164,7 @@
     })
   }
 
-  async function getHeaderEditor (_class: Ref<Class<Doc>>): Promise<AnyComponent | undefined> {
+  function getHeaderEditor (_class: Ref<Class<Doc>>): AnyComponent | undefined {
     const editorMixin = hierarchy.classHierarchyMixin(
       _class,
       view.mixin.ObjectEditorHeader,
@@ -171,14 +174,7 @@
   }
 
   let headerEditor: AnyComponent | undefined = undefined
-  let headerLoading = false
-  $: {
-    headerLoading = true
-    void getHeaderEditor(realObjectClass).then((r) => {
-      headerEditor = r
-      headerLoading = false
-    })
-  }
+  $: headerEditor = getHeaderEditor(realObjectClass)
 
   const _update = (result: any): void => {
     dispatch('update', result)
@@ -261,34 +257,32 @@
     </svelte:fragment>
 
     <svelte:fragment slot="attributes" let:direction={dir}>
-      {#if !headerLoading}
-        {#if headerEditor !== undefined}
-          <Component
-            is={headerEditor}
-            props={{
-              object,
-              keys,
-              mixins,
-              ignoreKeys,
-              vertical: dir === 'column',
-              allowedCollections,
-              embedded,
-              readonly
-            }}
-            on:update={updateKeys}
-          />
-        {:else if dir === 'column'}
-          <DocAttributeBar
-            {object}
-            {mixins}
-            {readonly}
-            ignoreKeys={[...ignoreKeys, ...collectionArrays, ...inplaceAttributes]}
-            {allowedCollections}
-            on:update={updateKeys}
-          />
-        {:else}
-          <AttributesBar {object} _class={realObjectClass} {keys} {readonly} />
-        {/if}
+      {#if headerEditor !== undefined}
+        <Component
+          is={headerEditor}
+          props={{
+            object,
+            keys,
+            mixins,
+            ignoreKeys,
+            vertical: dir === 'column',
+            allowedCollections,
+            embedded,
+            readonly
+          }}
+          on:update={updateKeys}
+        />
+      {:else if dir === 'column'}
+        <DocAttributeBar
+          {object}
+          {mixins}
+          {readonly}
+          ignoreKeys={[...ignoreKeys, ...collectionArrays, ...inplaceAttributes]}
+          {allowedCollections}
+          on:update={updateKeys}
+        />
+      {:else}
+        <AttributesBar {object} _class={realObjectClass} {keys} {readonly} />
       {/if}
     </svelte:fragment>
 
