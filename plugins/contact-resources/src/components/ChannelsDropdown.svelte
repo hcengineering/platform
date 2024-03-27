@@ -29,11 +29,13 @@
     Menu,
     closeTooltip,
     eventToHTMLElement,
+    getEventPopupPositionElement,
     getFocusManager,
+    getPopupPositionElement,
     showPopup
   } from '@hcengineering/ui'
   import view, { Action as ViewAction } from '@hcengineering/view'
-  import { invokeAction } from '@hcengineering/view-resources'
+  import { ContextMenu, invokeAction } from '@hcengineering/view-resources'
   import { createEventDispatcher, tick } from 'svelte'
   import { readable, Readable, Writable, writable } from 'svelte/store'
   import { channelProviders } from '../utils'
@@ -222,7 +224,8 @@
           value: item.value,
           placeholder: item.placeholder,
           editable,
-          openable: item.presenter ?? item.action ?? false
+          openable: item.presenter ?? item.action ?? false,
+          channel: item.channel
         },
         el,
         (result) => {

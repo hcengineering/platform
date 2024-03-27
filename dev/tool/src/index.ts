@@ -79,6 +79,7 @@ import { checkOrphanWorkspaces } from './cleanOrphan'
 import { changeConfiguration } from './configuration'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { openAIConfig } from './openai'
+import { fixAccountEmails, renameAccount } from './renameAccount'
 
 /**
  * @public
@@ -159,6 +160,28 @@ export function devTool (
       await withDatabase(mongodbUri, async (db) => {
         console.log(`update account ${email} ${cmd.first as string} ${cmd.last as string}...`)
         await replacePassword(db, productId, email, cmd.password)
+      })
+    })
+
+  program
+    .command('reset-email <email> <newEmail>')
+    .description('rename account in accounts and all workspaces')
+    .action(async (email: string, newEmail: string, cmd) => {
+      const { mongodbUri } = prepareTools()
+      await withDatabase(mongodbUri, async (db) => {
+        console.log(`update account ${email} to ${newEmail}`)
+        await renameAccount(toolCtx, db, productId, transactorUrl, email, newEmail)
+      })
+    })
+
+  program
+    .command('fix-email <email> <newEmail>')
+    .description('fix email in all workspaces to be proper one')
+    .action(async (email: string, newEmail: string, cmd) => {
+      const { mongodbUri } = prepareTools()
+      await withDatabase(mongodbUri, async (db) => {
+        console.log(`update account ${email} to ${newEmail}`)
+        await fixAccountEmails(toolCtx, db, productId, transactorUrl, email, newEmail)
       })
     })
 
@@ -433,8 +456,16 @@ export function devTool (
     .action(async () => {
       const { mongodbUri } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
-        const accountsJSON = JSON.stringify(await listAccounts(db), null, 2)
-        console.info(accountsJSON)
+        const workspaces = await listWorkspacesPure(db, productId)
+        const accounts = await listAccounts(db)
+        for (const a of accounts) {
+          const wss = a.workspaces.map((it) => it.toString())
+          console.info(
+            a.email,
+            a.confirmed,
+            workspaces.filter((it) => wss.includes(it._id.toString())).map((it) => it.workspaceUrl ?? it.workspace)
+          )
+        }
       })
     })
 
