@@ -114,7 +114,11 @@
           <Label label={hierarchy.getClass(value.attachedToClass).label} />
         {/if}
         <span class="title overflow-label clear-mins" {title}>
-          {title ?? hierarchy.getClass(value.attachedToClass).label}
+          {#if title}
+            {title}
+          {:else}
+            <Label label={hierarchy.getClass(value.attachedToClass).label} />
+          {/if}
         </span>
       {/if}
     </div>
