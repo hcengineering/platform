@@ -40,6 +40,15 @@ export { default } from './plugin'
 export * from './types'
 export * from './utils'
 
+export {
+  EmptyMarkup,
+  areEqualMarkups,
+  getMarkup,
+  isEmptyMarkup,
+  pmNodeToMarkup,
+  markupToPmNode
+} from '@hcengineering/text'
+
 export { FocusExtension, type FocusOptions, type FocusStorage } from './components/extension/focus'
 export { HeadingsExtension, type HeadingsOptions, type HeadingsStorage } from './components/extension/headings'
 export {

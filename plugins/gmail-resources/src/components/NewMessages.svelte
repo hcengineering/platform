@@ -23,7 +23,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { Integration } from '@hcengineering/setting'
   import templates, { TemplateDataProvider } from '@hcengineering/templates'
-  import { StyledTextEditor } from '@hcengineering/text-editor'
+  import { StyledTextEditor, isEmptyMarkup } from '@hcengineering/text-editor'
   import {
     Button,
     EditBox,
@@ -296,7 +296,7 @@
             label={plugin.string.Send}
             size={'small'}
             kind={'primary'}
-            disabled={channels.length === 0 || content === '' || content === '<p></p>'}
+            disabled={channels.length === 0 || isEmptyMarkup(content)}
             on:click={sendMsg}
           />
         {/if}

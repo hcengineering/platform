@@ -14,6 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { getHTML, markupToPmNode } from '@hcengineering/text'
   import Nodes from './message/Nodes.svelte'
 
   export let message: string
@@ -23,12 +24,13 @@
 
   const parser = new DOMParser()
 
-  export function isEmpty () {
+  $: html = getHTML(markupToPmNode(message))
+  $: doc = parser.parseFromString(html, 'text/html')
+  $: dom = doc.firstChild?.childNodes[1] as HTMLElement
+
+  export function isEmpty (): boolean {
     return doc.documentElement.innerText.length === 0
   }
-
-  $: doc = parser.parseFromString(message, 'text/html')
-  $: dom = doc.firstChild?.childNodes[1] as HTMLElement
 </script>
 
 <Nodes nodes={dom.childNodes} {preview} />

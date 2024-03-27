@@ -15,6 +15,7 @@
 -->
 <script lang="ts">
   import { IntlString, translate } from '@hcengineering/platform'
+  import { EmptyMarkup, getMarkup } from '@hcengineering/text'
   import { themeStore } from '@hcengineering/ui'
 
   import { AnyExtension, Editor, FocusPosition, mergeAttributes } from '@tiptap/core'
@@ -62,8 +63,11 @@
     }
   }
   export function submit (): void {
-    content = editor.getHTML()
+    content = getContent()
     dispatch('content', content)
+  }
+  export function getContent (): string {
+    return getMarkup(editor)
   }
   export function setContent (newContent: string): void {
     if (content !== newContent) {
@@ -72,7 +76,7 @@
     }
   }
   export function clear (): void {
-    content = ''
+    content = EmptyMarkup
 
     editor.commands.clearContent(true)
   }
@@ -169,7 +173,7 @@
           dispatch('focus')
         },
         onUpdate: () => {
-          content = editor.getHTML()
+          content = getContent()
           dispatch('value', content)
           dispatch('update', content)
         }

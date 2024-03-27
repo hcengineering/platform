@@ -14,9 +14,11 @@
 //
 
 export * from './html'
-export * from './node'
+export * from './markup/model'
+export * from './markup/utils'
 export * from './nodes'
 export * from './text'
+export * from './ydoc'
 
 export * from './kits/default-kit'
 export * from './kits/server-kit'

@@ -21,16 +21,13 @@ import { ServerKit } from './kits/server-kit'
 
 const defaultExtensions = [ServerKit]
 
-/**
- * @public
- */
-export function getHTML (node: ProseMirrorNode, extensions: Extensions): string {
+/** @public */
+export function getHTML (node: ProseMirrorNode, extensions?: Extensions): string {
+  extensions = extensions ?? defaultExtensions
   return generateHTML(node.toJSON(), extensions)
 }
 
-/**
- * @public
- */
+/** @public */
 export function parseHTML (content: string, extensions?: Extensions): ProseMirrorNode {
   extensions = extensions ?? defaultExtensions
 
@@ -38,49 +35,4 @@ export function parseHTML (content: string, extensions?: Extensions): ProseMirro
   const json = generateJSON(content, extensions)
 
   return ProseMirrorNode.fromJSON(schema, json)
-}
-
-const ELLIPSIS_CHAR = '…'
-const WHITESPACE = ' '
-
-/**
- * @public
- */
-export function stripTags (htmlString: string, textLimit = 0, extensions: Extensions | undefined = undefined): string {
-  const effectiveExtensions = extensions ?? defaultExtensions
-  const parsed = parseHTML(htmlString, effectiveExtensions)
-
-  const textParts: string[] = []
-  let charCount = 0
-  let isHardStop = false
-
-  parsed.descendants((node, _pos, parent): boolean => {
-    if (isHardStop) {
-      return false
-    }
-
-    if (node.type.isText) {
-      const text = node.text ?? ''
-      if (textLimit > 0 && charCount + text.length > textLimit) {
-        const toAddCount = textLimit - charCount
-        const textPart = text.substring(0, toAddCount)
-        textParts.push(textPart)
-        textParts.push(ELLIPSIS_CHAR)
-        isHardStop = true
-      } else {
-        textParts.push(text)
-        charCount += text.length
-      }
-      return false
-    } else if (node.type.isBlock) {
-      if (textParts.length > 0 && textParts[textParts.length - 1] !== WHITESPACE) {
-        textParts.push(WHITESPACE)
-        charCount++
-      }
-    }
-    return true
-  })
-
-  const result = textParts.join('')
-  return result
 }

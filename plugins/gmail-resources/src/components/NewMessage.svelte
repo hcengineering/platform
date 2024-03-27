@@ -24,7 +24,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Integration } from '@hcengineering/setting'
   import templates, { TemplateDataProvider } from '@hcengineering/templates'
-  import { StyledTextEditor } from '@hcengineering/text-editor'
+  import { StyledTextEditor, isEmptyMarkup } from '@hcengineering/text-editor'
   import { Button, EditBox, IconArrowLeft, IconAttachment, Label, Scroller } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import plugin from '../plugin'
@@ -207,7 +207,7 @@
     <Button
       label={plugin.string.Send}
       kind={'primary'}
-      disabled={progress || obj.content === '' || obj.content === '<p></p>'}
+      disabled={progress || isEmptyMarkup(obj.content)}
       on:click={sendMsg}
     />
   </div>

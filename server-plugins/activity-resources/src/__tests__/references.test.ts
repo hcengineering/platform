@@ -14,12 +14,13 @@
 //
 
 import { Class, Doc, Ref } from '@hcengineering/core'
+import { EmptyMarkup, MarkupNodeType, jsonToMarkup } from '@hcengineering/text'
 
 import { getReferencesData } from '../references'
 
 describe('extractBacklinks', () => {
   it('should return no references for empty document', () => {
-    const content = '<p></p>'
+    const content = EmptyMarkup
     const references = getReferencesData(
       'srcDocId' as Ref<Doc>,
       'srcDocClass' as Ref<Class<Doc>>,
@@ -32,8 +33,28 @@ describe('extractBacklinks', () => {
   })
 
   it('should parse single backlink', () => {
-    const content =
-      '<p>hello <span class="reference" data-type="reference" data-id="id" data-objectclass="contact:class:Person" data-label="Appleseed John">@Appleseed John</span> </p>'
+    const content = jsonToMarkup({
+      type: MarkupNodeType.doc,
+      content: [
+        {
+          type: MarkupNodeType.paragraph,
+          content: [
+            {
+              type: MarkupNodeType.reference,
+              attrs: {
+                id: 'id',
+                objectclass: 'contact:class:Person',
+                label: 'Appleseed John',
+              }
+            },
+            {
+              type: MarkupNodeType.text,
+              text: ' hello'
+            }
+          ]
+        }
+      ]
+    })
 
     const references = getReferencesData(
       'srcDocId' as Ref<Doc>,
@@ -51,8 +72,7 @@ describe('extractBacklinks', () => {
         collection: 'references',
         srcDocId: 'srcDocId',
         srcDocClass: 'srcDocClass',
-        message:
-          'hello <span data-type="reference" data-id="id" data-objectclass="contact:class:Person" data-label="Appleseed John" class="reference">@Appleseed John</span>',
+        message: '{"type":"paragraph","content":[{"type":"reference","attrs":{"id":"id","objectclass":"contact:class:Person","label":"Appleseed John","class":null}},{"type":"text","text":" hello"}]}',
         attachedDocId: 'attachedDocId',
         attachedDocClass: 'attachedDocClass'
       }
@@ -60,8 +80,36 @@ describe('extractBacklinks', () => {
   })
 
   it('should parse single backlink for multiple references', () => {
-    const content =
-      '<p><span class="reference" data-type="reference" data-id="id" data-label="Appleseed John" data-objectclass="contact:class:Person">@Appleseed John</span> <span data-type="reference" class="reference" data-id="id" data-label="Appleseed John" data-objectclass="contact:class:Person">@Appleseed John</span> </p>'
+    const content = jsonToMarkup({
+      type: MarkupNodeType.doc,
+      content: [
+        {
+          type: MarkupNodeType.paragraph,
+          content: [
+            {
+              type: MarkupNodeType.reference,
+              attrs: {
+                id: 'id',
+                objectclass: 'contact:class:Person',
+                label: 'Appleseed John'
+              }
+            },
+            {
+              type: MarkupNodeType.text,
+              text: ' '
+            },
+            {
+              type: MarkupNodeType.reference,
+              attrs: {
+                id: 'id',
+                objectclass: 'contact:class:Person',
+                label: 'Appleseed John'
+              }
+            }
+          ]
+        }
+      ]
+    })
 
     const references = getReferencesData(
       'srcDocId' as Ref<Doc>,

@@ -36,7 +36,7 @@ import core, {
   Type
 } from '@hcengineering/core'
 import notification, { MentionInboxNotification } from '@hcengineering/notification'
-import { ServerKit, extractReferences, getHTML, parseHTML, yDocContentToNodes } from '@hcengineering/text'
+import { ServerKit, extractReferences, markupToPmNode, pmNodeToMarkup, yDocContentToNodes } from '@hcengineering/text'
 import { StorageAdapter, TriggerControl } from '@hcengineering/server-core'
 import activity, { ActivityMessage, ActivityReference } from '@hcengineering/activity'
 import contact, { Person, PersonAccount } from '@hcengineering/contact'
@@ -58,7 +58,7 @@ export function isDocMentioned (doc: Ref<Doc>, content: string | Buffer): boolea
       references.push(...extractReferences(node))
     }
   } else {
-    const doc = parseHTML(content, extensions)
+    const doc = markupToPmNode(content, extensions)
     references.push(...extractReferences(doc))
   }
 
@@ -343,7 +343,7 @@ export function getReferencesData (
       references.push(...extractReferences(node))
     }
   } else {
-    const doc = parseHTML(content, extensions)
+    const doc = markupToPmNode(content, extensions)
     references.push(...extractReferences(doc))
   }
 
@@ -355,7 +355,7 @@ export function getReferencesData (
         collection: 'references',
         srcDocId,
         srcDocClass,
-        message: ref.parentNode !== null ? getHTML(ref.parentNode, extensions) : '',
+        message: ref.parentNode !== null ? pmNodeToMarkup(ref.parentNode, extensions) : '',
         attachedDocId,
         attachedDocClass
       })
