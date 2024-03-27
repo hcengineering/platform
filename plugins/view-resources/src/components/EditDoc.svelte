@@ -40,7 +40,7 @@
   export let embedded: boolean = false
   export let readonly: boolean = false
 
-  let realObjectClass: Ref<Class<Doc>> = _class
+  $: realObjectClass = _class
   let lastId: Ref<Doc> = _id
   let object: Doc
 
