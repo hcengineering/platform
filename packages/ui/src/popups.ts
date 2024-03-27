@@ -23,6 +23,7 @@ export interface CompAndProps {
   options: {
     category: string
     overlay: boolean
+    fixed?: boolean
   }
 }
 
@@ -59,6 +60,7 @@ export function showPopup (
   options: {
     category: string
     overlay: boolean
+    fixed?: boolean
   } = { category: 'popup', overlay: true }
 ): PopupResult {
   const id = `${popupId++}`
@@ -94,7 +96,12 @@ export function closePopup (category?: string): void {
     if (category !== undefined) {
       popups = popups.filter((p) => p.options.category !== category)
     } else {
-      popups.pop()
+      for (let i = popups.length - 1; i >= 0; i--) {
+        if (popups[i].options.fixed !== true) {
+          popups.splice(i, 1)
+          break
+        }
+      }
     }
     return popups
   })
