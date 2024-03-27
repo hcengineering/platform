@@ -18,6 +18,7 @@
   import { utcToZonedTime } from 'date-fns-tz'
   import DateEditor from './DateEditor.svelte'
 
+  export let className: string = ''
   export let startDate: number
   export let dueDate: number
   export let allDay: boolean
@@ -49,7 +50,7 @@
   }
 </script>
 
-<div class="flex-row-center flex-gap-2">
+<div class={`flex-row-center flex-gap-2 ${className}`}>
   <DateEditor
     bind:date={startDate}
     direction={sameDate ? 'horizontal' : 'vertical'}
