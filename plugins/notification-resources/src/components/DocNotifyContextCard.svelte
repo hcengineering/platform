@@ -210,7 +210,7 @@
       position: absolute;
       min-width: 0.25rem;
       border-radius: 0;
-      height: 2.375rem;
+      height: 100%;
       background: var(--global-ui-highlight-BackgroundColor);
     }
 
