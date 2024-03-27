@@ -30,20 +30,18 @@
 {#if $modal.length > 0}
   <slot name="popup-header" />
 {/if}
-{#each $modal as popup, i}
-  {#key popup.id}
-    <PopupInstance
-      bind:this={instances[i]}
-      is={popup.is}
-      props={popup.props}
-      element={popup.element}
-      onClose={popup.onClose}
-      onUpdate={popup.onUpdate}
-      zIndex={(i + 1) * 500}
-      top={$modal.length - 1 === i}
-      close={popup.close}
-      {contentPanel}
-      overlay={popup.options.overlay}
-    />
-  {/key}
+{#each $modal as popup, i (popup.id)}
+  <PopupInstance
+    bind:this={instances[i]}
+    is={popup.is}
+    props={popup.props}
+    element={popup.element}
+    onClose={popup.onClose}
+    onUpdate={popup.onUpdate}
+    zIndex={(i + 1) * 500}
+    top={$modal.length - 1 === i}
+    close={popup.close}
+    {contentPanel}
+    overlay={popup.options.overlay}
+  />
 {/each}
