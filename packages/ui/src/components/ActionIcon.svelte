@@ -36,6 +36,7 @@
   use:tooltip={{ label, direction, props: labelProps }}
   tabindex="0"
   on:click|stopPropagation|preventDefault={action}
+  on:contextmenu
   {disabled}
 >
   <div class="icon {size}" class:invisible>
