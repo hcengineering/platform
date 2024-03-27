@@ -14,21 +14,29 @@
 //
 
 import { Extensions, getSchema } from '@tiptap/core'
-import { Node } from 'prosemirror-model'
+import { Node, Schema } from 'prosemirror-model'
 import { yDocToProsemirrorJSON } from 'y-prosemirror'
 import { Doc, applyUpdate } from 'yjs'
+import { ServerKit } from './kits/server-kit'
+
+const defaultExtensions = [ServerKit]
 
 /**
  * Get ProseMirror node from Y.Doc content
  *
  * @public
  */
-export function yDocContentToNode (extensions: Extensions, content: ArrayBuffer, field?: string): Node {
+export function yDocContentToNode (
+  content: ArrayBuffer,
+  field?: string,
+  schema?: Schema,
+  extensions?: Extensions
+): Node {
   const ydoc = new Doc()
   const uint8arr = new Uint8Array(content)
   applyUpdate(ydoc, uint8arr)
 
-  return yDocToNode(extensions, ydoc, field)
+  return yDocToNode(ydoc, field, schema, extensions)
 }
 
 /**
@@ -36,8 +44,8 @@ export function yDocContentToNode (extensions: Extensions, content: ArrayBuffer,
  *
  * @public
  */
-export function yDocToNode (extensions: Extensions, ydoc: Doc, field?: string): Node {
-  const schema = getSchema(extensions)
+export function yDocToNode (ydoc: Doc, field?: string, schema?: Schema, extensions?: Extensions): Node {
+  schema ??= getSchema(extensions ?? defaultExtensions)
 
   try {
     const body = yDocToProsemirrorJSON(ydoc, field)
@@ -53,8 +61,8 @@ export function yDocToNode (extensions: Extensions, ydoc: Doc, field?: string): 
  *
  * @public
  */
-export function yDocContentToNodes (extensions: Extensions, content: ArrayBuffer): Node[] {
-  const schema = getSchema(extensions)
+export function yDocContentToNodes (content: ArrayBuffer, schema?: Schema, extensions?: Extensions): Node[] {
+  schema ??= getSchema(extensions ?? defaultExtensions)
 
   const nodes: Node[] = []
 

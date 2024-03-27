@@ -72,6 +72,10 @@ describe('markup', () => {
     })
   })
   describe('isEmptyMarkup', () => {
+    it('returns true for undefined content', async () => {
+      expect(isEmptyMarkup(undefined)).toBeTruthy()
+      expect(isEmptyMarkup('')).toBeTruthy()
+    })
     it('returns true for empty content', async () => {
       const editor = new Editor({ extensions })
       expect(isEmptyMarkup(getMarkup(editor))).toBeTruthy()

@@ -1,9 +1,7 @@
 import { MeasureContext, WorkspaceId } from '@hcengineering/core'
 import { ContentTextAdapter } from '@hcengineering/server-core'
-import { ServerKit, getText, yDocContentToNodes } from '@hcengineering/text'
+import { getText, yDocContentToNodes } from '@hcengineering/text'
 import { Readable } from 'stream'
-
-const extensions = [ServerKit]
 
 /**
  * @public
@@ -38,7 +36,7 @@ export async function createYDocAdapter (
       }
 
       if (chunks.length > 0) {
-        const nodes = yDocContentToNodes(extensions, Buffer.concat(chunks))
+        const nodes = yDocContentToNodes(Buffer.concat(chunks))
         return nodes.map(getText).join('\n')
       }
 

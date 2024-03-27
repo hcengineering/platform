@@ -15,7 +15,7 @@
 
 import { Markup } from '@hcengineering/core'
 import { Editor, Extensions, getSchema } from '@tiptap/core'
-import { Node as ProseMirrorNode } from '@tiptap/pm/model'
+import { Node as ProseMirrorNode, Schema } from '@tiptap/pm/model'
 
 import { ServerKit } from '../kits/server-kit'
 import { MarkupNode, emptyMarkupNode } from './model'
@@ -45,7 +45,7 @@ export function jsonToMarkup (json: MarkupNode): Markup {
 }
 
 /** @public */
-export function isEmptyMarkup (markup: Markup): boolean {
+export function isEmptyMarkup (markup: Markup | undefined): boolean {
   if (markup === undefined || markup === null || markup === '') {
     return true
   }
@@ -65,14 +65,24 @@ export function areEqualMarkups (markup1: Markup, markup2: Markup): boolean {
 }
 
 /** @public */
-export function pmNodeToMarkup (node: ProseMirrorNode, extensions?: Extensions): Markup {
-  return jsonToMarkup(node.toJSON())
+export function pmNodeToMarkup (node: ProseMirrorNode): Markup {
+  return jsonToMarkup(pmNodeToJSON(node))
 }
 
 /** @public */
-export function markupToPmNode (markup: Markup, extensions?: Extensions): ProseMirrorNode {
+export function pmNodeToJSON (node: ProseMirrorNode): MarkupNode {
+  return node.toJSON()
+}
+
+/** @public */
+export function markupToPmNode (markup: Markup, schema?: Schema, extensions?: Extensions): ProseMirrorNode {
   const json = markupToJSON(markup)
-  const schema = getSchema(extensions ?? defaultExtensions)
+  return jsonToPmNode(json, schema, extensions)
+}
+
+/** @public */
+export function jsonToPmNode (json: MarkupNode, schema?: Schema, extensions?: Extensions): ProseMirrorNode {
+  schema ??= getSchema(extensions ?? defaultExtensions)
   return ProseMirrorNode.fromJSON(schema, json)
 }
 
@@ -81,8 +91,8 @@ const WHITESPACE = ' '
 
 /** @public */
 export function stripTags (markup: Markup, textLimit = 0, extensions: Extensions | undefined = undefined): string {
-  const effectiveExtensions = extensions ?? defaultExtensions
-  const parsed = markupToPmNode(markup, effectiveExtensions)
+  const schema = getSchema(extensions ?? defaultExtensions)
+  const parsed = markupToPmNode(markup, schema)
 
   const textParts: string[] = []
   let charCount = 0

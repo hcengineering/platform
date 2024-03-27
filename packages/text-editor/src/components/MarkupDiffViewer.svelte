@@ -19,30 +19,31 @@
   import { Plugin, PluginKey } from '@tiptap/pm/state'
   import { DecorationSet } from '@tiptap/pm/view'
   import { onDestroy, onMount } from 'svelte'
-  import { Markup } from '@hcengineering/core'
   import { getMetadata } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
+  import { MarkupNode, jsonToPmNode } from '@hcengineering/text'
 
-  import { calculateDecorations, createMarkupDocument } from './diff/decorations'
+  import { calculateDecorations } from './diff/decorations'
   import { defaultEditorAttributes } from './editor/editorProps'
   import { ImageExtension } from './extension/imageExt'
   import { EditorKit } from '../kits/editor-kit'
 
-  export let content: Markup
-  export let comparedVersion: Markup | undefined = undefined
+  export let content: MarkupNode
+  export let comparedVersion: MarkupNode | undefined = undefined
 
   let element: HTMLElement
   let editor: Editor
 
   let _decoration = DecorationSet.empty
-  let oldContent = ''
+  let oldContent: MarkupNode | undefined
 
-  function updateEditor (editor: Editor, comparedVersion?: Markup): void {
+  function updateEditor (editor: Editor, comparedVersion?: MarkupNode): void {
     if (comparedVersion === undefined) {
       return
     }
 
-    const r = calculateDecorations(editor, oldContent, createMarkupDocument(editor.schema, comparedVersion))
+    const node = jsonToPmNode(comparedVersion, editor.schema)
+    const r = calculateDecorations(editor, oldContent, node)
     if (r !== undefined) {
       oldContent = r.oldContent
       _decoration = r.decorations

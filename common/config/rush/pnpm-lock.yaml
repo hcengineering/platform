@@ -23367,7 +23367,7 @@ packages:
     dev: false
 
   file:projects/text-editor.tgz(@types/node@20.11.30)(bufferutil@4.0.8)(esbuild@0.20.2)(postcss-load-config@4.0.2)(postcss@8.4.38)(prosemirror-model@1.19.4)(ts-node@10.9.2):
-    resolution: {integrity: sha512-SWw74/B8rNuhs6/s0Kptd7FDl4wcyZtutsOpVGvwzFK0uSQPFmYgOUUo4MuGAoIFCYcf4eub69OlOeja7nbygg==, tarball: file:projects/text-editor.tgz}
+    resolution: {integrity: sha512-ZS4/UhxcE1r6KFI6C/p7Y132OFSVNSSdqOKK4YaJbAe36ULW/Ktp/1/L0oUlInsGPXfkiwpRoxrehXdFeSzHtg==, tarball: file:projects/text-editor.tgz}
     id: file:projects/text-editor.tgz
     name: '@rush-temp/text-editor'
     version: 0.0.0
@@ -23409,6 +23409,7 @@ packages:
       eslint-plugin-n: 15.7.0(eslint@8.57.0)
       eslint-plugin-promise: 6.1.1(eslint@8.57.0)
       eslint-plugin-svelte: 2.35.1(eslint@8.57.0)(svelte@4.2.12)(ts-node@10.9.2)
+      fast-equals: 2.0.4
       filesize: 8.0.7
       jest: 29.7.0(@types/node@20.11.30)(ts-node@10.9.2)
       lib0: 0.2.93
@@ -23941,7 +23942,7 @@ packages:
     dev: false
 
   file:projects/view-resources.tgz(@types/node@20.11.30)(esbuild@0.20.2)(postcss-load-config@4.0.2)(postcss@8.4.38)(ts-node@10.9.2):
-    resolution: {integrity: sha512-uoTXLEhHw78OygxtyHNixFj0CcSJ0cFH4Nf0Sjw0OtltnKZgeEV2HjyMU1Ums4e1AvdPf1jtzCFTcc05kEiWqA==, tarball: file:projects/view-resources.tgz}
+    resolution: {integrity: sha512-My4rMrLqRvuEvyeud09gfeY/ils1zFNhnsaZo5R4x9Smgf3BxQcisgc8vNychKmIPw1aOQOidARG16UpZW7z9A==, tarball: file:projects/view-resources.tgz}
     id: file:projects/view-resources.tgz
     name: '@rush-temp/view-resources'
     version: 0.0.0

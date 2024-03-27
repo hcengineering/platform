@@ -1,6 +1,6 @@
 <!--
 // Copyright © 2023 Anticrm Platform Contributors.
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2023, 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,35 +14,79 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Markup } from '@hcengineering/core'
+  import { EmptyMarkup, MarkupNode, MarkupNodeType, markupToJSON } from '@hcengineering/text'
   import { MarkupDiffViewer } from '@hcengineering/text-editor'
   import { ShowMore } from '@hcengineering/ui'
+  import { deepEqual } from 'fast-equals'
 
-  export let value: string | undefined
-  export let prevValue: string | undefined = undefined
+  export let value: Markup | undefined
+  export let prevValue: Markup | undefined = undefined
+
   export let showOnlyDiff: boolean = false
 
-  function removeSimilarLines (str1: string | undefined, str2: string | undefined) {
-    str1 = str1 ?? ''
-    str2 = str2 ?? ''
-    const lines1 = str1.split('</p>')
-    const lines2 = str2.split('</p>')
-    let result1 = ''
-    let result2 = ''
-    for (let i = 0; i < Math.max(lines1.length, lines2.length); i++) {
-      if (lines1[i] !== lines2[i]) {
-        if (lines1[i]) result1 += lines1[i] + '</p>'
-        if (lines2[i]) result2 += lines2[i] + '</p>'
+  $: content = markupToJSON(value ?? EmptyMarkup)
+  $: comparedVersion = markupToJSON(prevValue ?? EmptyMarkup)
+
+  function cleanup (node1: MarkupNode, node2: MarkupNode): MarkupNode[] {
+    if (node1.type !== MarkupNodeType.doc || node2.type !== MarkupNodeType.doc) {
+      return [node1, node2]
+    }
+
+    const content1 = node1.content ?? []
+    const content2 = node2.content ?? []
+
+    const newContent1: MarkupNode[] = []
+    const newContent2: MarkupNode[] = []
+    for (let i = 0; i < Math.max(content1.length, content2.length); i++) {
+      if (!same(content1[i], content2[i])) {
+        console.log('diff', content1[i], content2[i])
+        if (content1[i] !== undefined) {
+          newContent1.push(content1[i])
+        }
+        if (content2[i] !== undefined) {
+          newContent2.push(content2[i])
+        }
       }
     }
-    value = result1
-    prevValue = result2
+
+    return [
+      { ...node1, content: newContent1 },
+      { ...node2, content: newContent2 }
+    ]
   }
 
-  $: showOnlyDiff && removeSimilarLines(value, prevValue)
+  function same (node1: MarkupNode | undefined, node2: MarkupNode | undefined): boolean {
+    if (node1 === undefined && node2 === undefined) return true
+    if (node1 === undefined || node2 === undefined) return false
+
+    if (
+      node1.type !== node2.type ||
+      node1.text !== node2.text ||
+      !deepEqual(node1.marks ?? [], node2.marks ?? []) ||
+      !deepEqual(node1.attrs ?? {}, node2.attrs ?? {})
+    ) {
+      return false
+    }
+
+    const content1 = node1.content ?? []
+    const content2 = node2.content ?? []
+    if (content1.length !== content2.length) return false
+
+    for (let i = 0; i < content1.length; i++) {
+      if (!same(content1[i], content2[i])) return false
+    }
+
+    return true
+  }
+
+  $: if (showOnlyDiff) {
+    [content, comparedVersion] = cleanup(content, comparedVersion)
+  }
 </script>
 
 <ShowMore>
   {#key [value, prevValue]}
-    <MarkupDiffViewer content={value ?? ''} comparedVersion={prevValue ?? ''} />
+    <MarkupDiffViewer {content} {comparedVersion} />
   {/key}
 </ShowMore>

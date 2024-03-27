@@ -36,7 +36,7 @@ import core, {
   Type
 } from '@hcengineering/core'
 import notification, { MentionInboxNotification } from '@hcengineering/notification'
-import { ServerKit, extractReferences, markupToPmNode, pmNodeToMarkup, yDocContentToNodes } from '@hcengineering/text'
+import { extractReferences, markupToPmNode, pmNodeToMarkup, yDocContentToNodes } from '@hcengineering/text'
 import { StorageAdapter, TriggerControl } from '@hcengineering/server-core'
 import activity, { ActivityMessage, ActivityReference } from '@hcengineering/activity'
 import contact, { Person, PersonAccount } from '@hcengineering/contact'
@@ -47,18 +47,16 @@ import {
   shouldNotifyCommon
 } from '@hcengineering/server-notification-resources'
 
-const extensions = [ServerKit]
-
 export function isDocMentioned (doc: Ref<Doc>, content: string | Buffer): boolean {
   const references = []
 
   if (content instanceof Buffer) {
-    const nodes = yDocContentToNodes(extensions, content)
+    const nodes = yDocContentToNodes(content)
     for (const node of nodes) {
       references.push(...extractReferences(node))
     }
   } else {
-    const doc = markupToPmNode(content, extensions)
+    const doc = markupToPmNode(content)
     references.push(...extractReferences(doc))
   }
 
@@ -338,12 +336,12 @@ export function getReferencesData (
   const references = []
 
   if (content instanceof Buffer) {
-    const nodes = yDocContentToNodes(extensions, content)
+    const nodes = yDocContentToNodes(content)
     for (const node of nodes) {
       references.push(...extractReferences(node))
     }
   } else {
-    const doc = markupToPmNode(content, extensions)
+    const doc = markupToPmNode(content)
     references.push(...extractReferences(doc))
   }
 
@@ -355,7 +353,7 @@ export function getReferencesData (
         collection: 'references',
         srcDocId,
         srcDocClass,
-        message: ref.parentNode !== null ? pmNodeToMarkup(ref.parentNode, extensions) : '',
+        message: ref.parentNode !== null ? pmNodeToMarkup(ref.parentNode) : '',
         attachedDocId,
         attachedDocClass
       })

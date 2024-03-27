@@ -44,7 +44,7 @@ describe('extractBacklinks', () => {
               attrs: {
                 id: 'id',
                 objectclass: 'contact:class:Person',
-                label: 'Appleseed John',
+                label: 'Appleseed John'
               }
             },
             {
@@ -72,7 +72,8 @@ describe('extractBacklinks', () => {
         collection: 'references',
         srcDocId: 'srcDocId',
         srcDocClass: 'srcDocClass',
-        message: '{"type":"paragraph","content":[{"type":"reference","attrs":{"id":"id","objectclass":"contact:class:Person","label":"Appleseed John","class":null}},{"type":"text","text":" hello"}]}',
+        message:
+          '{"type":"paragraph","content":[{"type":"reference","attrs":{"id":"id","objectclass":"contact:class:Person","label":"Appleseed John","class":null}},{"type":"text","text":" hello"}]}',
         attachedDocId: 'attachedDocId',
         attachedDocClass: 'attachedDocClass'
       }
