@@ -134,8 +134,13 @@
   <div class="antiPopup" on:keydown={keyDown}>
     <div class="ap-space x2" />
     {#if isAdmin}
-      <div class="ml-2 mr-2 mb-2 flex-grow">
+      <div class="ml-2 mr-2 mb-2 flex-grow flex-row-center">
         <SearchEdit bind:value={search} width={'100%'} />
+        {#if isAdminUser()}
+          <div class="p-1">
+            {$workspacesStore.length}
+          </div>
+        {/if}
       </div>
     {/if}
     <div class="ap-scroll">
