@@ -83,7 +83,9 @@
       options.props.maxHeight = '100vh'
       if (!modalHTML.classList.contains('fullsize')) modalHTML.classList.add('fullsize')
     } else {
-      options = fitPopupElement(modalHTML, device, element, contentPanel, clientWidth, clientHeight)
+      if (element !== 'float' || options?.props?.top === undefined || options?.props?.top === '') {
+        options = fitPopupElement(modalHTML, device, element, contentPanel, clientWidth, clientHeight)
+      }
       if (modalHTML.classList.contains('fullsize')) modalHTML.classList.remove('fullsize')
     }
     options.fullSize = fullSize
@@ -126,6 +128,16 @@
     )
   }
 
+  let drag: boolean = false
+
+  const dragParams: {
+    x: number
+    y: number
+  } = {
+    x: 0,
+    y: 0
+  }
+
   export function fitPopupInstance (): void {
     if (modalHTML) {
       fitPopup(modalHTML, element, contentPanel)
@@ -148,7 +160,7 @@
 <div
   class="popup {testing ? 'endShow' : showing === undefined ? 'endShow' : !showing ? 'preShow' : 'startShow'}"
   class:testing
-  class:anim={(element === 'float' || element === 'centered') && !testing}
+  class:anim={(element === 'float' || element === 'centered') && !testing && !drag}
   bind:this={modalHTML}
   style={`z-index: ${zIndex + 1};`}
   style:top={options?.props?.top}
@@ -166,6 +178,22 @@
     clientWidth = element.clientWidth
     clientHeight = element.clientHeight
     fitPopupInstance()
+  }}
+  on:mousedown={(e) => {
+    if (element === 'float') {
+      dragParams.x = e.offsetX
+      dragParams.y = e.offsetY
+      drag = true
+    }
+  }}
+  on:mouseup={() => {
+    drag = false
+  }}
+  on:mousemove={(e) => {
+    if (element === 'float' && drag) {
+      options.props.top = `${e.clientY - dragParams.y}px`
+      options.props.left = `${e.clientX - dragParams.x}px`
+    }
   }}
 >
   <svelte:component
@@ -189,15 +217,24 @@
   />
 </div>
 
-{#if overlay}
+{#if overlay || drag}
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     class="modal-overlay"
     class:testing
-    class:antiOverlay={options?.showOverlay}
+    class:antiOverlay={options?.showOverlay && !drag}
     style={`z-index: ${zIndex};`}
     on:click={handleOverlayClick}
     on:keydown|stopPropagation|preventDefault={() => {}}
+    on:mouseup={() => {
+      drag = false
+    }}
+    on:mousemove={(e) => {
+      if (element === 'float' && drag) {
+        options.props.top = `${e.clientY - dragParams.y}px`
+        options.props.left = `${e.clientX - dragParams.x}px`
+      }
+    }}
   />
 {/if}
 
