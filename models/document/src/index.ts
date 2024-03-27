@@ -360,6 +360,12 @@ function defineDocument (builder: Builder): void {
     ['attachments', 'children', 'comments']
   )
 
+  // Activity & Inbox
+
+  builder.mixin(document.class.Document, core.class.Class, view.mixin.ObjectTitle, {
+    titleProvider: document.function.DocumentTitleProvider
+  })
+
   // Search
 
   builder.createDoc(

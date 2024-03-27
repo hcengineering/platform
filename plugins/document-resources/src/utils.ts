@@ -15,6 +15,7 @@
 
 import {
   type AttachedData,
+  type Client,
   type Ref,
   type TxOperations,
   getCollaborativeDoc,
@@ -137,4 +138,9 @@ function parseDocumentId (shortLink: string): Ref<Document> | undefined {
     return parts[parts.length - 1] as Ref<Document>
   }
   return undefined
+}
+
+export async function documentTitleProvider (client: Client, ref: Ref<Document>, doc?: Document): Promise<string> {
+  const object = doc ?? (await client.findOne(document.class.Document, { _id: ref }))
+  return object?.name ?? ''
 }

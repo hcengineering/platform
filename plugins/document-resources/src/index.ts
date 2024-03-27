@@ -46,7 +46,7 @@ import Move from './components/Move.svelte'
 import DocumentToDoPresenter from './components/DocumentToDoPresenter.svelte'
 
 import document from './plugin'
-import { createEmptyDocument, getDocumentLink, getDocumentUrl, resolveLocation } from './utils'
+import { createEmptyDocument, documentTitleProvider, getDocumentLink, getDocumentUrl, resolveLocation } from './utils'
 
 const toObjectSearchResult = (e: WithLookup<Document>): ObjectSearchResult => ({
   doc: e,
@@ -153,7 +153,8 @@ export default async (): Promise<Resources> => ({
   function: {
     GetDocumentLink: getDocumentUrl,
     GetObjectLinkFragment: getDocumentLink,
-    IsTeamspaceVisible: async (space: Teamspace) => !space.private || space.members.includes(getCurrentAccount()._id)
+    IsTeamspaceVisible: async (space: Teamspace) => !space.private || space.members.includes(getCurrentAccount()._id),
+    DocumentTitleProvider: documentTitleProvider
   },
   resolver: {
     Location: resolveLocation
