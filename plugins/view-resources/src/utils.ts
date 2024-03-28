@@ -1332,13 +1332,16 @@ async function getAttrEditor (key: KeyedAttribute, hierarchy: Hierarchy): Promis
 }
 
 type PermissionsBySpace = Record<Ref<Space>, Set<Ref<Permission>>>
+type AccountsByPermission = Record<Ref<Space>, Record<Ref<Permission>, Set<Ref<Account>>>>
 interface PermissionsStore {
   ps: PermissionsBySpace
+  ap: AccountsByPermission
   whitelist: Set<Ref<Space>>
 }
 
 export const permissionsStore = writable<PermissionsStore>({
   ps: {},
+  ap: {},
   whitelist: new Set()
 })
 const permissionsQuery = createQuery(true)
@@ -1346,6 +1349,7 @@ const permissionsQuery = createQuery(true)
 permissionsQuery.query(core.class.Space, {}, (res) => {
   const whitelistedSpaces = new Set<Ref<Space>>()
   const permissionsBySpace: PermissionsBySpace = {}
+  const accountsByPermission: AccountsByPermission = {}
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const me = getCurrentAccount()
@@ -1364,6 +1368,24 @@ permissionsQuery.query(core.class.Space, {}, (res) => {
       const roles = client.getModel().findAllSync(core.class.Role, { attachedTo: type._id })
       const myRoles = roles.filter((r) => ((asMixin as any)[r._id] ?? []).includes(me._id))
       permissionsBySpace[s._id] = new Set(myRoles.flatMap((r) => r.permissions))
+
+      accountsByPermission[s._id] = {}
+
+      for (const role of roles) {
+        const assignment: Array<Ref<Account>> = (asMixin as any)[role._id] ?? []
+
+        if (assignment.length === 0) {
+          continue
+        }
+
+        for (const permissionId of role.permissions) {
+          if (accountsByPermission[s._id][permissionId] === undefined) {
+            accountsByPermission[s._id][permissionId] = new Set()
+          }
+
+          assignment.forEach((acc) => accountsByPermission[s._id][permissionId].add(acc))
+        }
+      }
     } else {
       whitelistedSpaces.add(s._id)
     }
@@ -1371,6 +1393,7 @@ permissionsQuery.query(core.class.Space, {}, (res) => {
 
   permissionsStore.set({
     ps: permissionsBySpace,
+    ap: accountsByPermission,
     whitelist: whitelistedSpaces
   })
 })

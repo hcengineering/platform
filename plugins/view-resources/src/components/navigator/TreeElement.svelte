@@ -58,6 +58,8 @@
   })
 
   async function onMenuClick (ev: MouseEvent): Promise<void> {
+    // Read actual popup actions on open as visibility might have been changed
+    popupMenuActions = await actions().then((res) => res.filter((action) => action.inline !== true))
     showPopup(Menu, { actions: popupMenuActions, ctx: _id }, ev.target as HTMLElement, () => {
       hovered = false
     })
