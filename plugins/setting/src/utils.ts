@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { Class, ClassifierKind, Data, Doc, Ref, SpaceType, TxOperations, generateId } from '@hcengineering/core'
+import core, { Class, ClassifierKind, Data, Doc, Ref, SpaceType, TxOperations } from '@hcengineering/core'
 import { getEmbeddedLabel } from '@hcengineering/platform'
 
 export async function createSpaceType (
@@ -27,7 +27,9 @@ export async function createSpaceType (
   }
 
   const baseClassClazz = client.getHierarchy().getClass(descriptorObj.baseClass)
-  const spaceTypeMixinId: Ref<Class<Doc>> = generateId()
+  // NOTE: it is important for this id to be consistent when re-creating the same
+  // space type with the same id as it will happen during every migration if type is created by the system
+  const spaceTypeMixinId = `${_id}:type:mixin` as Ref<Class<Doc>>
   await client.createDoc(
     core.class.Mixin,
     core.space.Model,
