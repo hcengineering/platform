@@ -83,7 +83,7 @@
       options.props.maxHeight = '100vh'
       if (!modalHTML.classList.contains('fullsize')) modalHTML.classList.add('fullsize')
     } else {
-      if (element !== 'float' || options?.props?.top === undefined || options?.props?.top === '') {
+      if (element !== 'movable' || options?.props?.top === undefined || options?.props?.top === '') {
         options = fitPopupElement(modalHTML, device, element, contentPanel, clientWidth, clientHeight)
       }
       if (modalHTML.classList.contains('fullsize')) modalHTML.classList.remove('fullsize')
@@ -180,9 +180,10 @@
     fitPopupInstance()
   }}
   on:mousedown={(e) => {
-    if (element === 'float') {
-      dragParams.x = e.offsetX
-      dragParams.y = e.offsetY
+    if (element === 'movable') {
+      const rect = e.currentTarget.getBoundingClientRect()
+      dragParams.x = e.clientX - rect.left
+      dragParams.y = e.clientY - rect.top
       drag = true
     }
   }}
@@ -190,9 +191,16 @@
     drag = false
   }}
   on:mousemove={(e) => {
-    if (element === 'float' && drag) {
-      options.props.top = `${e.clientY - dragParams.y}px`
-      options.props.left = `${e.clientX - dragParams.x}px`
+    if (element === 'movable' && drag) {
+      const newTop = e.clientY - dragParams.y
+      const newLeft = e.clientX - dragParams.x
+      if (newTop > 0) {
+        options.props.top = `${newTop}px`
+      }
+      if (newLeft > 0) {
+        options.props.left = `${newLeft}px`
+      }
+      options.props.right = ''
     }
   }}
 >
@@ -230,9 +238,16 @@
       drag = false
     }}
     on:mousemove={(e) => {
-      if (element === 'float' && drag) {
-        options.props.top = `${e.clientY - dragParams.y}px`
-        options.props.left = `${e.clientX - dragParams.x}px`
+      if (element === 'movable' && drag) {
+        const newTop = e.clientY - dragParams.y
+        const newLeft = e.clientX - dragParams.x
+        if (newTop > 0) {
+          options.props.top = `${newTop}px`
+        }
+        if (newLeft > 0) {
+          options.props.left = `${newLeft}px`
+        }
+        options.props.right = ''
       }
     }}
   />

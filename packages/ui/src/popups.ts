@@ -228,14 +228,10 @@ export function fitPopupElement (
       newProps.maxHeight = fullHeight ? 'calc(100vh - 2rem)' : '75vh'
       show = true
     } else if (element === 'float') {
-      if (clientWidth !== undefined && clientHeight !== undefined) {
-        newProps.top = `calc(50% - ${clientHeight / 2}px`
-        newProps.left = `calc(50% - ${clientWidth / 2}px`
-      } else {
-        newProps.top = '50%'
-        newProps.left = '50%'
-        newProps.transform = 'translate(-50%, -50%)'
-      }
+      newProps.top = 'calc(var(--status-bar-height) + 4px)'
+      newProps.bottom = '4px'
+      newProps.left = '60%'
+      newProps.right = '4px'
       show = true
     } else if (element === 'center') {
       if (clientWidth !== undefined && clientHeight !== undefined) {
@@ -345,6 +341,9 @@ export function fitPopupElement (
     } else if (element === 'status') {
       newProps.top = 'calc(var(--status-bar-height) + 7.5px)'
       newProps.right = '12px'
+    } else if (element === 'movable') {
+      newProps.top = 'calc(var(--status-bar-height) + 4px)'
+      newProps.right = '1rem'
     }
   } else {
     if (clientWidth !== undefined && clientHeight !== undefined) {
