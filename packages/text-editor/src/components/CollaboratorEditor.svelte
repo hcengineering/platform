@@ -15,23 +15,26 @@
 //
 -->
 <script lang="ts">
+  import { type Class, type CollaborativeDoc, type Doc, type Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { IconSize, registerFocus } from '@hcengineering/ui'
   import { AnyExtension, Editor, FocusPosition, getMarkRange } from '@tiptap/core'
   import { TextSelection } from '@tiptap/pm/state'
 
   import textEditorPlugin from '../plugin'
-  import { DocumentId } from '../provider/tiptap'
   import { TextEditorCommandHandler, TextFormatCategory, TextNodeAction } from '../types'
 
   import CollaborativeTextEditor from './CollaborativeTextEditor.svelte'
   import { FileAttachFunction } from './extension/types'
   import { NodeUuidExtension, nodeElementQuerySelector } from './extension/nodeUuid'
 
-  export let documentId: DocumentId
+  export let collaborativeDoc: CollaborativeDoc
+  export let initialCollaborativeDoc: CollaborativeDoc | undefined = undefined
   export let field: string | undefined = undefined
-  export let initialContentId: DocumentId | undefined = undefined
-  export let targetContentId: DocumentId | undefined = undefined
+
+  export let objectClass: Ref<Class<Doc>> | undefined = undefined
+  export let objectId: Ref<Doc> | undefined = undefined
+  export let objectAttr: string | undefined = undefined
 
   export let readonly = false
 
@@ -153,10 +156,12 @@
 <div class="root">
   <CollaborativeTextEditor
     bind:this={collaborativeEditor}
-    {documentId}
+    {collaborativeDoc}
+    {initialCollaborativeDoc}
     {field}
-    {initialContentId}
-    {targetContentId}
+    {objectClass}
+    {objectId}
+    {objectAttr}
     {readonly}
     {buttonSize}
     {placeholder}

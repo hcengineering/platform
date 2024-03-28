@@ -20,8 +20,12 @@ import {
   yDocFromStorage,
   yDocToStorage
 } from '@hcengineering/collaboration'
-import { type TakeSnapshotRequest, type TakeSnapshotResponse } from '@hcengineering/collaborator-client'
-import { CollaborativeDocVersionHead, MeasureContext, generateId, parseCollaborativeDoc } from '@hcengineering/core'
+import {
+  parseDocumentId,
+  type TakeSnapshotRequest,
+  type TakeSnapshotResponse
+} from '@hcengineering/collaborator-client'
+import { CollaborativeDocVersionHead, MeasureContext, collaborativeDocParse, generateId } from '@hcengineering/core'
 import { Doc as YDoc } from 'yjs'
 import { Context } from '../../context'
 import { RpcMethodParams } from '../rpc'
@@ -32,7 +36,7 @@ export async function takeSnapshot (
   payload: TakeSnapshotRequest,
   params: RpcMethodParams
 ): Promise<TakeSnapshotResponse> {
-  const { collaborativeDoc, documentId, snapshotName, createdBy } = payload
+  const { documentId, snapshotName, createdBy } = payload
   const { hocuspocus, minio } = params
   const { workspaceId } = context
 
@@ -43,7 +47,8 @@ export async function takeSnapshot (
     createdOn: Date.now()
   }
 
-  const { documentId: minioDocumentId, versionId } = parseCollaborativeDoc(collaborativeDoc)
+  const { collaborativeDoc } = parseDocumentId(documentId)
+  const { documentId: minioDocumentId, versionId } = collaborativeDocParse(collaborativeDoc)
   if (versionId !== CollaborativeDocVersionHead) {
     throw new Error('invalid document version')
   }

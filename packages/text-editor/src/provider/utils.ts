@@ -1,5 +1,5 @@
 //
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,32 +13,30 @@
 // limitations under the License.
 //
 
-import { type Class, type CollaborativeDoc, type Doc, type Ref } from '@hcengineering/core'
+import { type Ref, type CollaborativeDoc, type Doc, type Class } from '@hcengineering/core'
 import {
-  type DocumentURI,
-  collaborativeDocumentUri,
-  mongodbDocumentUri,
-  platformDocumentUri
+  type DocumentId,
+  type PlatformDocumentId,
+  formatMinioDocumentId,
+  formatPlatformDocumentId as origFormatPlatformDocumentId
 } from '@hcengineering/collaborator-client'
-import { type KeyedAttribute, getClient } from '@hcengineering/presentation'
 import { getCurrentLocation } from '@hcengineering/ui'
+import { getClient } from '@hcengineering/presentation'
 
 function getWorkspace (): string {
   return getCurrentLocation().path[1] ?? ''
 }
 
-export function collaborativeDocumentId (docId: CollaborativeDoc): DocumentURI {
+export function formatCollaborativeDocumentId (collaborativeDoc: CollaborativeDoc): DocumentId {
   const workspace = getWorkspace()
-  return collaborativeDocumentUri(workspace, docId)
+  return formatMinioDocumentId(workspace, collaborativeDoc)
 }
 
-export function platformDocumentId (objectClass: Ref<Class<Doc>>, objectId: Ref<Doc>, objectAttr: string): DocumentURI {
-  const workspace = getWorkspace()
-  return platformDocumentUri(workspace, objectClass, objectId, objectAttr)
-}
-
-export function mongodbDocumentId (docId: Ref<Doc>, attr: KeyedAttribute): DocumentURI {
-  const workspace = getWorkspace()
-  const domain = getClient().getHierarchy().getDomain(attr.attr.attributeOf)
-  return mongodbDocumentUri(workspace, domain, docId, attr.key)
+export function formatPlatformDocumentId (
+  objectClass: Ref<Class<Doc>>,
+  objectId: Ref<Doc>,
+  objectAttr: string
+): PlatformDocumentId {
+  const objectDomain = getClient().getHierarchy().getDomain(objectClass)
+  return origFormatPlatformDocumentId(objectDomain, objectClass, objectId, objectAttr)
 }

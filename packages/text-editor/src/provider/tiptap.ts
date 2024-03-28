@@ -12,11 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { type DocumentURI } from '@hcengineering/collaborator-client'
+import { type DocumentId, type PlatformDocumentId } from '@hcengineering/collaborator-client'
 import { HocuspocusProvider, type HocuspocusProviderConfiguration } from '@hocuspocus/provider'
 import { Doc as Ydoc } from 'yjs'
-
-export type DocumentId = DocumentURI
 
 export type TiptapCollabProviderConfiguration = HocuspocusProviderConfiguration &
 Required<Pick<HocuspocusProviderConfiguration, 'token'>> &
@@ -26,7 +24,7 @@ Omit<HocuspocusProviderConfiguration, 'parameters'> & {
 
 export interface TiptapCollabProviderURLParameters {
   initialContentId?: DocumentId
-  targetContentId?: DocumentId
+  platformDocumentId?: PlatformDocumentId
 }
 
 export class TiptapCollabProvider extends HocuspocusProvider {
@@ -40,9 +38,9 @@ export class TiptapCollabProvider extends HocuspocusProvider {
       parameters.initialContentId = initialContentId
     }
 
-    const targetContentId = configuration.parameters?.targetContentId
-    if (targetContentId !== undefined && targetContentId !== '') {
-      parameters.targetContentId = targetContentId
+    const platformDocumentId = configuration.parameters?.platformDocumentId
+    if (platformDocumentId !== undefined && platformDocumentId !== '') {
+      parameters.platformDocumentId = platformDocumentId
     }
 
     const hocuspocusConfig: HocuspocusProviderConfiguration = {
@@ -63,10 +61,10 @@ export class TiptapCollabProvider extends HocuspocusProvider {
 }
 
 export const createTiptapCollaborationData = (params: {
+  documentId: string
+  initialContentId?: DocumentId
+  platformDocumentId?: PlatformDocumentId
   collaboratorURL: string
-  documentId: DocumentId
-  initialContentId: DocumentId | undefined
-  targetContentId: DocumentId | undefined
   token: string
 }): { provider: TiptapCollabProvider, ydoc: Ydoc } => {
   const ydoc: Ydoc = new Ydoc()
@@ -79,7 +77,7 @@ export const createTiptapCollaborationData = (params: {
       token: params.token,
       parameters: {
         initialContentId: params.initialContentId,
-        targetContentId: params.targetContentId
+        platformDocumentId: params.platformDocumentId
       }
     })
   }

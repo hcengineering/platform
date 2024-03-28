@@ -13,14 +13,14 @@
 // limitations under the License.
 //
 
-import { isReadonlyDocVersion } from '@hcengineering/collaboration'
+import { DocumentId, parseDocumentId } from '@hcengineering/collaborator-client'
+import { isReadonlyDoc } from '@hcengineering/collaboration'
 import { MeasureContext } from '@hcengineering/core'
 import { Extension, onAuthenticatePayload } from '@hocuspocus/server'
 
 import { getWorkspaceInfo } from '../account'
 import { Context, buildContext } from '../context'
 import { Controller } from '../platform'
-import { parseDocumentId } from '../storage/minio'
 
 export interface AuthenticationConfiguration {
   ctx: MeasureContext
@@ -37,21 +37,17 @@ export class AuthenticationExtension implements Extension {
   async onAuthenticate (data: onAuthenticatePayload): Promise<Context> {
     this.configuration.ctx.measure('authenticate', 1)
 
-    let documentName = data.documentName
-    if (documentName.includes('://')) {
-      documentName = documentName.split('://', 2)[1]
-    }
-
-    const { workspaceUrl, versionId } = parseDocumentId(documentName)
+    const { workspaceUrl, collaborativeDoc } = parseDocumentId(data.documentName as DocumentId)
 
     // verify workspace can be accessed with the token
     const workspaceInfo = await getWorkspaceInfo(data.token)
+
     // verify workspace url in the document matches the token
     if (workspaceInfo.workspace !== workspaceUrl) {
       throw new Error('documentName must include workspace')
     }
 
-    data.connection.readOnly = isReadonlyDocVersion(versionId)
+    data.connection.readOnly = isReadonlyDoc(collaborativeDoc)
 
     return buildContext(data, this.configuration.controller)
   }

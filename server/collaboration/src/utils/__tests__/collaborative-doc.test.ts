@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { formatCollaborativeDoc } from '@hcengineering/core'
+import { collaborativeDocFormat } from '@hcengineering/core'
 import { collaborativeHistoryDocId, isEditableDoc, isEditableDocVersion } from '../collaborative-doc'
 
 describe('collaborative-doc', () => {
@@ -29,7 +29,7 @@ describe('collaborative-doc', () => {
 
   describe('isEditableDoc', () => {
     it('returns true for HEAD version', async () => {
-      const doc = formatCollaborativeDoc({
+      const doc = collaborativeDocFormat({
         documentId: 'example',
         versionId: 'HEAD',
         lastVersionId: '0'
@@ -38,7 +38,7 @@ describe('collaborative-doc', () => {
     })
 
     it('returns false for other versions', async () => {
-      const doc = formatCollaborativeDoc({
+      const doc = collaborativeDocFormat({
         documentId: 'example',
         versionId: 'main',
         lastVersionId: '0'

@@ -14,9 +14,10 @@
 //
 import { getMetadata } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
-import { concatLink } from '@hcengineering/core'
+import { collaborativeDocParse, concatLink } from '@hcengineering/core'
 import { ObservableV2 as Observable } from 'lib0/observable'
 import { type Doc as YDoc, applyUpdate } from 'yjs'
+import { type DocumentId, parseDocumentId } from '@hcengineering/collaborator-client'
 
 interface EVENTS {
   synced: (...args: any[]) => void
@@ -48,23 +49,20 @@ async function fetchContent (doc: YDoc, name: string): Promise<void> {
 export class MinioProvider extends Observable<EVENTS> {
   loaded: Promise<void>
 
-  constructor (name: string, doc: YDoc) {
+  constructor (documentId: DocumentId, doc: YDoc) {
     super()
-
-    if (name.startsWith('minio://')) {
-      name = name.split('://', 2)[1]
-      if (name.includes('/')) {
-        // drop workspace part
-        name = name.split('/', 2)[1]
-      }
-    }
-
-    void fetchContent(doc, name).then(() => {
-      this.emit('synced', [this])
-    })
 
     this.loaded = new Promise((resolve) => {
       this.on('synced', resolve)
     })
+
+    const { collaborativeDoc } = parseDocumentId(documentId)
+    const { documentId: minioDocumentId, versionId } = collaborativeDocParse(collaborativeDoc)
+
+    if (versionId === 'HEAD' && minioDocumentId !== undefined) {
+      void fetchContent(doc, minioDocumentId).then(() => {
+        this.emit('synced', [this])
+      })
+    }
   }
 }
