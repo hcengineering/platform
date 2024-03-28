@@ -18,7 +18,7 @@ import { Editor, Extensions, getSchema } from '@tiptap/core'
 import { Node as ProseMirrorNode, Schema } from '@tiptap/pm/model'
 
 import { ServerKit } from '../kits/server-kit'
-import { MarkupNode, emptyMarkupNode } from './model'
+import { MarkupNode, MarkupNodeType, emptyMarkupNode } from './model'
 
 const defaultExtensions = [ServerKit]
 
@@ -84,6 +84,24 @@ export function markupToPmNode (markup: Markup, schema?: Schema, extensions?: Ex
 export function jsonToPmNode (json: MarkupNode, schema?: Schema, extensions?: Extensions): ProseMirrorNode {
   schema ??= getSchema(extensions ?? defaultExtensions)
   return ProseMirrorNode.fromJSON(schema, json)
+}
+
+/** @public */
+export function makeSingleParagraphDoc (value: string): MarkupNode {
+  return {
+    type: MarkupNodeType.doc,
+    content: [
+      {
+        type: MarkupNodeType.paragraph,
+        content: [
+          {
+            type: MarkupNodeType.text,
+            text: value
+          }
+        ]
+      }
+    ]
+  }
 }
 
 const ELLIPSIS_CHAR = '…'

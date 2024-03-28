@@ -19,7 +19,7 @@
 
 import { Editor } from '@tiptap/core'
 import { MarkupNode, MarkupNodeType } from '../model'
-import { EmptyMarkup, getMarkup, isEmptyMarkup, jsonToMarkup, markupToJSON } from '../utils'
+import { EmptyMarkup, areEqualMarkups, getMarkup, isEmptyMarkup, jsonToMarkup, makeSingleParagraphDoc, markupToJSON } from '../utils'
 import { ServerKit } from '../../kits/server-kit'
 
 const extensions = [ServerKit]
@@ -95,6 +95,29 @@ describe('markup', () => {
     it('returns false for not empty content', async () => {
       const editor = new Editor({ extensions, content: '<p>hello</p>' })
       expect(isEmptyMarkup(getMarkup(editor))).toBeFalsy()
+    })
+  })
+  describe('areEqualMarkups', () => {
+    it('returns true for the same content', async () => {
+      const markup = '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
+      expect(areEqualMarkups(markup, markup)).toBeTruthy()
+    })
+    it('returns true for the same content with different spaces', async () => {
+      const markup1 = '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
+      const markup2 = '{"type":"doc","content":[{"type":"hardBreak"},{"type":"paragraph","content":[{"type":"text","text":"hello"}]},{"type":"hardBreak"}]}'
+      expect(areEqualMarkups(markup1, markup2)).toBeTruthy()
+    })
+    it('returns false for different content', async () => {
+      const markup1 = '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
+      const markup2 = '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"world"}]}]}'
+      expect(areEqualMarkups(markup1, markup2)).toBeFalsy()
+    })
+  })
+  describe('makeSingleParagraphDoc', () => {
+    it('returns a single paragraph doc', async () => {
+      expect(jsonToMarkup(makeSingleParagraphDoc('hello'))).toEqual(
+        '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
+      )
     })
   })
 })

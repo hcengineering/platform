@@ -21,5 +21,5 @@
 </script>
 
 <ShowMore>
-  <!-- <MessageViewer message={value ?? ''} /> -->
+  <MessageViewer message={value ?? ''} />
 </ShowMore>
