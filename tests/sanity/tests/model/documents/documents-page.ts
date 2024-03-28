@@ -27,7 +27,7 @@ export class DocumentsPage extends CommonPage {
     this.popupCreateDocument = new DocumentCreatePopup(page)
     this.popupMoveDocument = new DocumentMovePopup(page)
 
-    this.buttonCreateDocument = page.locator('div[data-float="navigator"] button[type="submit"]')
+    this.buttonCreateDocument = page.locator('div[data-float="navigator"] button[id="new-document"]')
     this.divTeamspacesParent = page.locator('div#tree-teamspaces').locator('xpath=..')
     this.buttonCreateTeamspace = page.locator('div#tree-teamspaces > button')
     this.inputModalNewTeamspaceTitle = page.locator(
