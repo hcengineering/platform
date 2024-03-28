@@ -40,7 +40,6 @@
     const newContent2: MarkupNode[] = []
     for (let i = 0; i < Math.max(content1.length, content2.length); i++) {
       if (!same(content1[i], content2[i])) {
-        console.log('diff', content1[i], content2[i])
         if (content1[i] !== undefined) {
           newContent1.push(content1[i])
         }
