@@ -14,17 +14,29 @@
 -->
 <script lang="ts">
   import { Ref, Space } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
-  import { Button, showPopup, IconAdd } from '@hcengineering/ui'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Button, showPopup, IconAdd, ButtonWithDropdown, SelectPopupValueType, IconDropdown } from '@hcengineering/ui'
   import { openDoc } from '@hcengineering/view-resources'
   import document from '../plugin'
   import { getDocumentIdFromFragment } from '../utils'
   import CreateDocument from './CreateDocument.svelte'
+  import CreateTeamspace from './teamspace/CreateTeamspace.svelte'
 
   export let currentSpace: Ref<Space> | undefined
   export let currentFragment: string | undefined
 
   const client = getClient()
+  const query = createQuery()
+
+  let hasTeamspace = false
+  query.query(
+    document.class.Teamspace,
+    { archived: false },
+    (res) => {
+      hasTeamspace = res.length > 0
+    },
+    { limit: 1, projection: { _id: 1 } }
+  )
 
   $: parent = getDocumentIdFromFragment(currentFragment ?? '')
 
@@ -38,16 +50,48 @@
       }
     })
   }
+
+  async function newTeamspace (): Promise<void> {
+    showPopup(CreateTeamspace, {}, 'top')
+  }
+
+  async function dropdownItemSelected (res?: SelectPopupValueType['id']): Promise<void> {
+    if (res === document.string.CreateDocument) {
+      await newDocument()
+    } else if (res === document.string.CreateTeamspace) {
+      await newTeamspace()
+    }
+  }
 </script>
 
 <div class="antiNav-subheader">
-  <Button
-    icon={IconAdd}
-    label={document.string.CreateDocument}
-    justify={'left'}
-    width={'100%'}
-    kind={'primary'}
-    gap={'large'}
-    on:click={newDocument}
-  />
+  {#if hasTeamspace}
+    <ButtonWithDropdown
+      icon={IconAdd}
+      justify={'left'}
+      kind={'primary'}
+      label={document.string.CreateDocument}
+      on:click={newDocument}
+      mainButtonId={'new-document'}
+      dropdownIcon={IconDropdown}
+      dropdownItems={[
+        { id: document.string.CreateDocument, label: document.string.CreateDocument },
+        { id: document.string.CreateTeamspace, label: document.string.CreateTeamspace }
+      ]}
+      on:dropdown-selected={(ev) => {
+        void dropdownItemSelected(ev.detail)
+      }}
+    />
+  {:else}
+    <Button
+      id={'new-document'}
+      icon={IconAdd}
+      label={document.string.CreateTeamspace}
+      justify={'left'}
+      width={'100%'}
+      kind={'primary'}
+      gap={'large'}
+      on:click={newTeamspace}
+    />
+  {/if}
 </div>
