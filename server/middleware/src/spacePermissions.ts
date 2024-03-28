@@ -129,15 +129,30 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
   /**
    * @private
    *
-   * Throws if the required permission is missing in the space for the given context
+   * Checks if the required permission is present in the space for the given context
    */
-  private async needPermission (ctx: SessionContext, space: Ref<TypedSpace>, id: Ref<Permission>): Promise<void> {
+  private async checkPermission (ctx: SessionContext, space: Ref<TypedSpace>, id: Ref<Permission>): Promise<boolean> {
     const account = await getUser(this.storage, ctx)
     const permissions = this.permissionsBySpace[space]?.[account._id] ?? new Set()
 
-    if (!permissions.has(id)) {
-      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    return permissions.has(id)
+  }
+
+  private throwForbidden (): void {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  /**
+   * @private
+   *
+   * Throws if the required permission is missing in the space for the given context
+   */
+  private async needPermission (ctx: SessionContext, space: Ref<TypedSpace>, id: Ref<Permission>): Promise<void> {
+    if (await this.checkPermission(ctx, space, id)) {
+      return
     }
+
+    this.throwForbidden()
   }
 
   private async handleCreate (tx: TxCUD<Space>): Promise<void> {
@@ -340,7 +355,9 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
     // NOTE: move this checking logic later to be defined in some server plugins?
     // so they can contribute checks into the middleware for their custom permissions?
     if (tx._class === core.class.TxRemoveDoc) {
-      await this.needPermission(ctx, targetSpaceId as Ref<TypedSpace>, core.permission.DeleteObject)
+      if (await this.checkPermission(ctx, targetSpaceId as Ref<TypedSpace>, core.permission.ForbidDeleteObject)) {
+        this.throwForbidden()
+      }
     }
   }
 }

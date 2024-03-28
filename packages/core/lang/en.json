@@ -47,6 +47,8 @@
     "CreateObject": "Create object",
     "UpdateObject": "Update object",
     "DeleteObject": "Delete object",
-    "DeleteObjectDescription": "Grants users ability to delete objects in the space"
+    "DeleteObjectDescription": "Grants users ability to delete objects in the space",
+    "ForbidDeleteObject": "Forbid delete object",
+    "ForbidDeleteObjectDescription": "Forbid users deleting objects in the space"
   }
 }

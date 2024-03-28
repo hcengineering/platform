@@ -45,4 +45,14 @@ export function definePermissions (builder: Builder): void {
     },
     core.permission.DeleteObject
   )
+
+  builder.createDoc(
+    core.class.Permission,
+    core.space.Model,
+    {
+      label: core.string.ForbidDeleteObject,
+      description: core.string.ForbidDeleteObjectDescription
+    },
+    core.permission.ForbidDeleteObject
+  )
 }

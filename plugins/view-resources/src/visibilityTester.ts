@@ -32,11 +32,11 @@ export async function canDeleteObject (doc?: Doc | Doc[]): Promise<boolean> {
     isTypedSpace
   )
 
-  return (
+  return !(
     await Promise.all(
       Array.from(new Set(targetSpaces.map((t) => t._id))).map(
-        async (s) => await checkPermission(client, core.permission.DeleteObject, s)
+        async (s) => await checkPermission(client, core.permission.ForbidDeleteObject, s)
       )
     )
-  ).every((r) => r)
+  ).some((r) => r)
 }
