@@ -56,7 +56,7 @@
     <div class="flex justify-start items-center flex-gap-2 w-full pr-4 slot">
       <Hotkey key={(i + 1).toString()} />
       <EventTimeEditor
-        className="overflow-x-auto"
+        overflowX={true}
         allDay={false}
         startDate={slot.date}
         dueDate={slot.dueDate}
