@@ -30,7 +30,11 @@ export enum MarkupNodeType {
   list_item = 'listItem',
   taskList = 'taskList',
   taskItem = 'taskItem',
-  sub = 'sub'
+  sub = 'sub',
+  table = 'table',
+  table_row = 'tableRow',
+  table_cell = 'tableCell',
+  table_header = 'tableHeader'
 }
 
 /** @public */
@@ -38,7 +42,9 @@ export enum MarkupMarkType {
   link = 'link',
   em = 'italic',
   bold = 'bold',
-  code = 'code'
+  code = 'code',
+  strike = 'strike',
+  underline = 'underline'
 }
 
 /** @public */
@@ -72,5 +78,5 @@ export interface LinkMark extends MarkupMark {
 
 /** @public */
 export interface ReferenceMark extends MarkupMark {
-  attrs: { id: string, class: string }
+  attrs: { id: string, label: string, objectclass: string }
 }

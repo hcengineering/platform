@@ -21,7 +21,7 @@
   import { onDestroy, onMount } from 'svelte'
   import { getMetadata } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
-  import { MarkupNode, jsonToPmNode } from '@hcengineering/text'
+  import { MarkupNode, ReferenceNode, jsonToPmNode } from '@hcengineering/text'
 
   import { calculateDecorations } from './diff/decorations'
   import { defaultEditorAttributes } from './editor/editorProps'
@@ -84,6 +84,7 @@
       editable: false,
       extensions: [
         EditorKit,
+        ReferenceNode,
         ImageExtension.configure({
           uploadUrl: getMetadata(presentation.metadata.UploadURL)
         }),

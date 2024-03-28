@@ -19,7 +19,6 @@ import ListKeymap from '@tiptap/extension-list-keymap'
 import TableHeader from '@tiptap/extension-table-header'
 import TaskItem from '@tiptap/extension-task-item'
 import TaskList from '@tiptap/extension-task-list'
-import Underline from '@tiptap/extension-underline'
 
 import { DefaultKit, type DefaultKitOptions } from './default-kit'
 
@@ -70,7 +69,6 @@ export const EditorKit = Extension.create<EditorKitOptions>({
       }),
       CodeBlockExtension.configure(codeBlockOptions),
       CodemarkExtension,
-      Underline,
       ListKeymap.configure({
         listTypes: [
           {

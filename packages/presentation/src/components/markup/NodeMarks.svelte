@@ -1,6 +1,5 @@
 <!--
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,12 +13,27 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { MessageViewer } from '@hcengineering/presentation'
-  import { ShowMore } from '@hcengineering/ui'
+  import { MarkupMark } from '@hcengineering/text'
+  import Mark from './Mark.svelte'
 
-  export let value: string | undefined
+  export let marks: MarkupMark[]
 </script>
 
-<ShowMore>
-  <!-- <MessageViewer message={value ?? ''} /> -->
-</ShowMore>
+{#if marks.length > 0}
+  {@const mark = marks[0]}
+  {@const others = marks.slice(1)}
+
+  {#if others.length > 0}
+    <Mark {mark}>
+      <svelte:self marks={others}>
+        <slot />
+      </svelte:self>
+    </Mark>
+  {:else}
+    <Mark {mark}>
+      <slot />
+    </Mark>
+  {/if}
+{:else}
+  <slot />
+{/if}
