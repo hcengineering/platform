@@ -14,7 +14,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Markup } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
+  import { EmptyMarkup, getMarkup, markupToJSON } from '@hcengineering/text'
   import { themeStore } from '@hcengineering/ui'
 
   import { AnyExtension, Editor, FocusPosition, mergeAttributes } from '@tiptap/core'
@@ -33,7 +35,7 @@
   import { SubmitExtension } from './extension/submit'
   import { EditorKit } from '../kits/editor-kit'
 
-  export let content: string = ''
+  export let content: Markup = ''
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
   export let extensions: AnyExtension[] = []
   export let textFormatCategories: TextFormatCategory[] = []
@@ -62,17 +64,20 @@
     }
   }
   export function submit (): void {
-    content = editor.getHTML()
+    content = getContent()
     dispatch('content', content)
   }
-  export function setContent (newContent: string): void {
+  export function getContent (): Markup {
+    return getMarkup(editor)
+  }
+  export function setContent (newContent: Markup): void {
     if (content !== newContent) {
       content = newContent
-      editor.commands.setContent(content)
+      editor.commands.setContent(markupToJSON(content))
     }
   }
   export function clear (): void {
-    content = ''
+    content = EmptyMarkup
 
     editor.commands.clearContent(true)
   }
@@ -123,7 +128,7 @@
       editor = new Editor({
         element,
         editorProps: { attributes: mergeAttributes(defaultEditorAttributes, editorAttributes) },
-        content,
+        content: markupToJSON(content),
         autofocus,
         extensions: [
           EditorKit,
@@ -169,7 +174,7 @@
           dispatch('focus')
         },
         onUpdate: () => {
-          content = editor.getHTML()
+          content = getContent()
           dispatch('value', content)
           dispatch('update', content)
         }

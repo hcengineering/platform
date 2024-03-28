@@ -1,5 +1,5 @@
-//
-// Copyright © 2023 Hardcore Engineering Inc.
+<!--
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -11,14 +11,17 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
+<script lang="ts">
+  import { MarkupNode } from '@hcengineering/text'
+  import Node from './Node.svelte'
 
-export * from './html'
-export * from './markup/model'
-export * from './markup/utils'
-export * from './nodes'
-export * from './text'
-export * from './ydoc'
+  export let nodes: MarkupNode[]
+  export let preview = false
+</script>
 
-export * from './kits/default-kit'
-export * from './kits/server-kit'
+{#if nodes}
+  {#each nodes as node}
+    <Node {node} {preview} />
+  {/each}
+{/if}

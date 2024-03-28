@@ -48,6 +48,7 @@
     "@hcengineering/view": "^0.6.9",
     "@hcengineering/ui": "^0.6.11",
     "@hcengineering/task": "^0.6.13",
+    "@hcengineering/text": "^0.6.1",
     "@hcengineering/preference": "^0.6.9",
     "@hcengineering/notification": "^0.6.16",
     "@hcengineering/presentation": "^0.6.2",

@@ -1,6 +1,6 @@
 <!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2021, 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,21 +14,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import Nodes from './message/Nodes.svelte'
+  import { isEmptyMarkup, markupToJSON } from '@hcengineering/text'
+  import Node from './markup/Node.svelte'
 
   export let message: string
   export let preview = false
 
-  let dom: HTMLElement
+  $: node = markupToJSON(message)
+  $: empty = isEmptyMarkup(message)
 
-  const parser = new DOMParser()
-
-  export function isEmpty () {
-    return doc.documentElement.innerText.length === 0
+  export function isEmpty (): boolean {
+    return empty
   }
-
-  $: doc = parser.parseFromString(message, 'text/html')
-  $: dom = doc.firstChild?.childNodes[1] as HTMLElement
 </script>
 
-<Nodes nodes={dom.childNodes} {preview} />
+<Node {node} {preview} />

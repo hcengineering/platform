@@ -46,6 +46,7 @@
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import { TaskType, makeRank } from '@hcengineering/task'
   import { TaskKindSelector } from '@hcengineering/task-resources'
+  import { EmptyMarkup } from '@hcengineering/text-editor'
   import {
     Component as ComponentType,
     Issue,
@@ -227,7 +228,7 @@
     assignee: assignee ?? currentProject?.defaultAssignee,
     status: status ?? currentProject?.defaultIssueStatus,
     parentIssue: parentIssue?._id,
-    description: '<p></p>',
+    description: EmptyMarkup,
     component: component ?? $activeComponent ?? null,
     milestone: milestone ?? $activeMilestone ?? null,
     priority: priority ?? IssuePriority.NoPriority,

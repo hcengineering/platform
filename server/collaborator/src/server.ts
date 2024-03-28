@@ -36,7 +36,7 @@ import { MinioStorageAdapter } from './storage/minio'
 import { MongodbStorageAdapter } from './storage/mongodb'
 import { PlatformStorageAdapter } from './storage/platform'
 import { RouterStorageAdapter } from './storage/router'
-import { HtmlTransformer } from './transformers/html'
+import { MarkupTransformer } from './transformers/markup'
 
 /**
  * @public
@@ -87,7 +87,7 @@ export async function start (
 
   const controller = new Controller()
 
-  const transformer = new HtmlTransformer(extensions)
+  const transformer = new MarkupTransformer(extensions)
 
   const hocuspocus = new Hocuspocus({
     address: '0.0.0.0',

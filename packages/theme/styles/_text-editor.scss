@@ -104,16 +104,6 @@
   ol ol ol ol ol ol { list-style: lower-roman; }
   ol ol ol ol ol ol ol { list-style: decimal; }
 
-  blockquote {
-    margin-inline: 1px 0;
-    padding-left: 1.5em;
-    padding-right: 1.5em;
-    font-style: italic;
-    position: relative;
-
-    border-left: 3px solid var(--theme-text-primary-color);
-  }
-
   /* Placeholder (at the top) */
   p.is-editor-empty:first-child::before {
     content: attr(data-placeholder);

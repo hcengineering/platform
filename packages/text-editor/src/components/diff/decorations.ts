@@ -13,19 +13,20 @@
 // limitations under the License.
 //
 
-import { type Markup } from '@hcengineering/core'
+import { type MarkupNode } from '@hcengineering/text'
 import { type Editor } from '@tiptap/core'
 import { ChangeSet } from '@tiptap/pm/changeset'
-import { DOMParser, type Node, type Schema } from '@tiptap/pm/model'
+import { type Node as ProseMirrorNode, type Schema } from '@tiptap/pm/model'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
+import { deepEqual } from 'fast-equals'
 import { yDocToProsemirrorJSON } from 'y-prosemirror'
-import { Doc as Ydoc, applyUpdate } from 'yjs'
+import { type Doc as Ydoc } from 'yjs'
 import { recreateTransform } from './recreate'
 
 /**
  * @public
  */
-export function createYdocDocument (schema: Schema, ydoc: Ydoc, field?: string): Node {
+export function createYdocDocument (schema: Schema, ydoc: Ydoc, field?: string): ProseMirrorNode {
   try {
     const body = yDocToProsemirrorJSON(ydoc, field)
     return schema.nodeFromJSON(body)
@@ -38,39 +39,14 @@ export function createYdocDocument (schema: Schema, ydoc: Ydoc, field?: string):
 /**
  * @public
  */
-export function createMarkupDocument (schema: Schema, content: Markup | ArrayBuffer, field?: string): Node {
-  if (typeof content === 'string') {
-    const wrappedValue = `<body>${content}</body>`
-
-    const body = new window.DOMParser().parseFromString(wrappedValue, 'text/html').body
-
-    return DOMParser.fromSchema(schema).parse(body)
-  } else {
-    try {
-      const ydoc = new Ydoc()
-      const uint8arr = new Uint8Array(content)
-      applyUpdate(ydoc, uint8arr)
-
-      const body = yDocToProsemirrorJSON(ydoc, field)
-      return schema.nodeFromJSON(body)
-    } catch (err: any) {
-      console.error(err)
-      return schema.node(schema.topNodeType)
-    }
-  }
-}
-
-/**
- * @public
- */
 export function calculateDecorations (
   editor?: Editor,
-  oldContent?: string,
-  comparedDoc?: Node
+  oldContent?: MarkupNode,
+  comparedDoc?: ProseMirrorNode
 ):
   | {
     decorations: DecorationSet
-    oldContent: string
+    oldContent: MarkupNode
   }
   | undefined {
   try {
@@ -82,8 +58,8 @@ export function calculateDecorations (
     }
     const docNew = editor.state.doc
 
-    const c = editor.getHTML()
-    if (c === oldContent) {
+    const c = editor.getJSON() as MarkupNode
+    if (deepEqual(c, oldContent)) {
       return
     }
 

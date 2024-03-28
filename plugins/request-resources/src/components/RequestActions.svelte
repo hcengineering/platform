@@ -19,7 +19,7 @@
   import { AttachedData, getCurrentAccount, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Request, RequestStatus } from '@hcengineering/request'
-  import type { RefAction } from '@hcengineering/text-editor'
+  import { type RefAction, isEmptyMarkup } from '@hcengineering/text-editor'
   import { Button } from '@hcengineering/ui'
 
   import request from '../plugin'
@@ -90,7 +90,7 @@
   }
 
   function commentIsEmpty (message: string, attachments: number | undefined): boolean {
-    return (message === '<p></p>' || message.trim().length === 0) && !((attachments ?? 0) > 0)
+    return isEmptyMarkup(message) && !((attachments ?? 0) > 0)
   }
 
   let refInput: AttachmentRefInput
