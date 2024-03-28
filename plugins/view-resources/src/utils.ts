@@ -1362,7 +1362,7 @@ permissionsQuery.query(core.class.Space, {}, (res) => {
 
       const asMixin = hierarchy.as(s, mixin)
       const roles = client.getModel().findAllSync(core.class.Role, { attachedTo: type._id })
-      const myRoles = roles.filter((r) => (asMixin as any)[r._id].includes(me._id))
+      const myRoles = roles.filter((r) => ((asMixin as any)[r._id] ?? []).includes(me._id))
       permissionsBySpace[s._id] = new Set(myRoles.flatMap((r) => r.permissions))
     } else {
       whitelistedSpaces.add(s._id)
