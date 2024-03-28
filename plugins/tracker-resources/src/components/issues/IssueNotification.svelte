@@ -47,7 +47,7 @@
   }
 
   function handleCopyUrl (): void {
-    if (issue === undefined) {
+    if (issue !== undefined) {
       void copyTextToClipboard(params?.issueUrl)
     }
   }
