@@ -110,7 +110,7 @@ test.describe('Tracker template tests', () => {
     }
   })
 
-  test('Cannot delete a Template w/o permissions', async ({ page }) => {
+  test('Delete a Template', async ({ page }) => {
     const deleteTemplate: NewIssue = {
       title: `Template for delete-${generateId()}`,
       description: 'Created template for delete'
@@ -122,16 +122,15 @@ test.describe('Tracker template tests', () => {
     const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
     await trackerNavigationMenuPage.openTemplateForProject('Default')
 
-    const templatePage = new TemplatePage(page)
+    let templatePage = new TemplatePage(page)
     await templatePage.createNewTemplate(deleteTemplate)
     await templatePage.openTemplate(deleteTemplate.title)
 
     const templateDetailsPage = new TemplateDetailsPage(page)
-    await templateDetailsPage.checkActionMissing('Delete')
 
-    // await templateDetailsPage.deleteTemplate()
+    await templateDetailsPage.deleteTemplate()
 
-    // templatePage = new TemplatePage(page)
-    // await templatePage.checkTemplateNotExist(deleteTemplate.title)
+    templatePage = new TemplatePage(page)
+    await templatePage.checkTemplateNotExist(deleteTemplate.title)
   })
 })

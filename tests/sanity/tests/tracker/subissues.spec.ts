@@ -101,7 +101,7 @@ test.describe('Tracker sub-issues tests', () => {
     })
   })
 
-  test('Cannot delete a sub-issue w/o permissions', async ({ page }) => {
+  test('Delete a sub-issue', async ({ page }) => {
     const deleteIssue: NewIssue = {
       title: `Issue for the delete sub-issue-${generateId()}`,
       description: 'Description Issue for the delete sub-issue'
@@ -133,13 +133,11 @@ test.describe('Tracker sub-issues tests', () => {
       parentIssue: deleteIssue.title
     })
 
-    await issuesDetailsPage.checkActionMissing('Delete')
+    await issuesDetailsPage.moreActionOnIssue('Delete')
+    await issuesDetailsPage.pressYesForPopup(page)
 
-    // await issuesDetailsPage.moreActionOnIssue('Delete')
-    // await issuesDetailsPage.pressYesForPopup(page)
-
-    // await issuesPage.searchIssueByName(deleteSubIssue.title)
-    // await issuesPage.checkIssueNotExist(deleteSubIssue.title)
+    await issuesPage.searchIssueByName(deleteSubIssue.title)
+    await issuesPage.checkIssueNotExist(deleteSubIssue.title)
   })
 
   test('Create sub-issue from template', async ({ page }) => {

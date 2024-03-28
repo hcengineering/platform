@@ -211,11 +211,14 @@ export default plugin(coreId, {
     CreateObject: '' as IntlString,
     UpdateObject: '' as IntlString,
     DeleteObject: '' as IntlString,
-    DeleteObjectDescription: '' as IntlString
+    DeleteObjectDescription: '' as IntlString,
+    ForbidDeleteObject: '' as IntlString,
+    ForbidDeleteObjectDescription: '' as IntlString
   },
   permission: {
     CreateObject: '' as Ref<Permission>,
     UpdateObject: '' as Ref<Permission>,
-    DeleteObject: '' as Ref<Permission>
+    DeleteObject: '' as Ref<Permission>,
+    ForbidDeleteObject: '' as Ref<Permission>
   }
 })

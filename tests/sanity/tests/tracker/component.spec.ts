@@ -74,7 +74,7 @@ test.describe('Tracker component tests', () => {
     await componentsDetailsPage.checkComponent(editComponent)
   })
 
-  test('Cannot delete a component w/o permissions', async ({ page }) => {
+  test('Delete a component', async ({ page }) => {
     const newComponent: NewComponent = {
       name: 'Delete component test',
       description: 'Delete component test description'
@@ -90,11 +90,10 @@ test.describe('Tracker component tests', () => {
     await componentsPage.openComponentByName(newComponent.name)
 
     const componentsDetailsPage = new ComponentsDetailsPage(page)
-    await componentsDetailsPage.checkActionMissing('Delete')
 
-    // await componentsDetailsPage.checkComponent(newComponent)
-    // await componentsDetailsPage.deleteComponent()
+    await componentsDetailsPage.checkComponent(newComponent)
+    await componentsDetailsPage.deleteComponent()
 
-    // await componentsPage.checkComponentNotExist(newComponent.name)
+    await componentsPage.checkComponentNotExist(newComponent.name)
   })
 })

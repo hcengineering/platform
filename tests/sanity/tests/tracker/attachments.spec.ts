@@ -50,16 +50,13 @@ test.describe('Attachments tests', () => {
       await issuesPage.checkAttachmentsCount(newIssue.title, '3')
     })
 
-    // Cannot delete attachments in the popup w/o permissions
-    await issuesPage.checkCannotDeleteAttachmentToIssue(newIssue.title, 'cat2.jpeg')
+    await test.step('Delete attachments in the popup', async () => {
+      await issuesPage.deleteAttachmentToIssue(newIssue.title, 'cat2.jpeg')
+      await issuesPage.checkAddAttachmentPopupContainsFile(newIssue.title, 'cat.jpeg')
+      await issuesPage.checkAddAttachmentPopupContainsFile(newIssue.title, 'cat3.jpeg')
 
-    // await test.step('Delete attachments in the popup', async () => {
-    //   await issuesPage.deleteAttachmentToIssue(newIssue.title, 'cat2.jpeg')
-    //   await issuesPage.checkAddAttachmentPopupContainsFile(newIssue.title, 'cat.jpeg')
-    //   await issuesPage.checkAddAttachmentPopupContainsFile(newIssue.title, 'cat3.jpeg')
-
-    //   await issuesPage.checkAttachmentsCount(newIssue.title, '2')
-    // })
+      await issuesPage.checkAttachmentsCount(newIssue.title, '2')
+    })
 
     await issuesPage.openIssueByName(newIssue.title)
 

@@ -120,7 +120,7 @@ test.describe('Application tests', () => {
     await applicationsPage.checkApplicationState(talentName, 'Won')
   })
 
-  test('Cannot delete an Application w/o permissions', async ({ page }) => {
+  test('Delete an Application', async ({ page }) => {
     const navigationMenuPage = new NavigationMenuPage(page)
     await navigationMenuPage.buttonApplications.click()
 
@@ -132,16 +132,13 @@ test.describe('Application tests', () => {
     await applicationsPage.openApplicationByTalentName(talentName)
 
     const applicationsDetailsPage = new ApplicationsDetailsPage(page)
+    const applicationId = await applicationsDetailsPage.getApplicationId()
 
-    await applicationsDetailsPage.checkCannotDelete()
+    await applicationsDetailsPage.deleteEntity()
+    expect(page.url()).toContain(applicationId)
 
-    // const applicationId = await applicationsDetailsPage.getApplicationId()
-
-    // await applicationsDetailsPage.deleteEntity()
-    // expect(page.url()).toContain(applicationId)
-
-    // await navigationMenuPage.buttonApplications.click()
-    // await applicationsPage.checkApplicationNotExist(applicationId)
+    await navigationMenuPage.buttonApplications.click()
+    await applicationsPage.checkApplicationNotExist(applicationId)
   })
 
   test('Change & Save all States', async ({ page }) => {

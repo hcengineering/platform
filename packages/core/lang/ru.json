@@ -47,6 +47,8 @@
     "CreateObject": "Создавать объект",
     "UpdateObject": "Обновлять объект",
     "DeleteObject": "Удалять объект",
-    "DeleteObjectDescription": "Дает пользователям разрешение удалять объекты в пространстве"
+    "DeleteObjectDescription": "Дает пользователям разрешение удалять объекты в пространстве",
+    "ForbidDeleteObject": "Запретить удалять объект",
+    "ForbidDeleteObjectDescription": "Запрещает пользователям удалять объекты в пространстве"
   }
 }
