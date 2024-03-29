@@ -1,29 +1,32 @@
 import { test } from '@playwright/test'
 import { generateId, PlatformSetting, PlatformURI } from './utils'
+import { ContractPage } from './model/contacts/contract-page'
 
 test.use({
   storageState: PlatformSetting
 })
 
 test.describe('recruit tests', () => {
+  let contractPage: ContractPage
+
   test.beforeEach(async ({ page }) => {
+    contractPage = new ContractPage(page)
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
-  test('org-add-member', async ({ page }) => {
-    await page.click('[id="app-contact\\:string\\:Contacts"]')
-    await page.click('.antiNav-element:has-text("Company")')
-    await page.click('button:has-text("Company")')
-    await page.click('[placeholder="Company name"]')
+  test('org-add-member', async () => {
     const orgId = 'Company-' + generateId()
-    await page.fill('[placeholder="Company name"]', orgId)
-    await page.click('[id="contact\\:string\\:CreateOrganization"] button:has-text("Create")')
-    await page.waitForSelector('form.antiCard', { state: 'detached' })
-    await page.click(`text=${orgId}`)
-
-    await page.click('[id="contact:string:AddMember"]')
-    await page.click('button:has-text("Chen Rosamund")')
-    await page.click('text=Chen Rosamund less than a minute ago >> span')
-    await page.click(`.card a:has-text("${orgId}")`)
+    await contractPage.clickAppContact()
+    await contractPage.clickEmployeeNavElement('Company')
+    await contractPage.clickAddCompany()
+    await contractPage.fillCompanyInput(orgId)
+    await contractPage.clickCreateCompany()
+    await contractPage.waitForFormAntiCardDetached()
+    await contractPage.clickCompanyByName(orgId)
+    await contractPage.clickAddMember()
+    await contractPage.clickEmployeeButton('Chen Rosamund')
+    await contractPage.clickSelectMember()
+    await contractPage.clickOpenNewMember(orgId)
+    await contractPage.checkIfNewMemberIsAdded()
   })
 })
