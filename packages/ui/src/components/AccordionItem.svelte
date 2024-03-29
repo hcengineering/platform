@@ -29,7 +29,7 @@
   export let icon: Asset | AnySvelteComponent | ComponentType | undefined = undefined
   export let iconProps: any | undefined = undefined
   export let size: 'small' | 'medium' | 'large'
-  export let kind: 'default' | 'second' = 'default'
+  export let kind: 'default' | 'second' | 'no-border' = 'default'
   export let nested: boolean = false
   export let isOpen: boolean = false
   export let disabled: boolean = false

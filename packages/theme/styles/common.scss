@@ -324,6 +324,10 @@
 .antiNav-space {
   flex-shrink: 0;
   height: .5rem;
+
+  &.x2 {
+    height: 1rem;
+  }
 }
 .antiNav-footer-line {
   flex-shrink: 0;
