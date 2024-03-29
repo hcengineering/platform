@@ -81,8 +81,13 @@
 
     editor.commands.clearContent(true)
   }
+
   export function insertText (text: string): void {
     editor.commands.insertContent(text)
+  }
+
+  export function insertMarkup (markup: Markup): void {
+    editor.commands.insertContent(markupToJSON(markup))
   }
 
   let needFocus = false

@@ -15,7 +15,7 @@
 //
 
 import { type Domain, DOMAIN_MODEL, IndexKind, type Ref } from '@hcengineering/core'
-import { type Builder, Index, Model, Prop, TypeString, UX } from '@hcengineering/model'
+import { type Builder, Index, Model, Prop, TypeString, UX, TypeMarkup } from '@hcengineering/model'
 import core, { TDoc, TSpace } from '@hcengineering/model-core'
 import textEditor from '@hcengineering/model-text-editor'
 import tracker from '@hcengineering/model-tracker'
@@ -43,7 +43,7 @@ export class TMessageTemplate extends TDoc implements MessageTemplate {
   @Index(IndexKind.FullText)
     title!: string
 
-  @Prop(TypeString(), templates.string.Message)
+  @Prop(TypeMarkup(), templates.string.Message)
   @Index(IndexKind.FullText)
     message!: string
 }

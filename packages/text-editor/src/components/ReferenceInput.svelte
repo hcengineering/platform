@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Markup } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
   import {
     AnySvelteComponent,
@@ -36,7 +37,7 @@
   import { IsEmptyContentExtension } from './extension/isEmptyContent'
   import Send from './icons/Send.svelte'
 
-  export let content: string = ''
+  export let content: Markup = ''
   export let showHeader = false
   export let showActions = true
   export let showSend = true
@@ -62,7 +63,7 @@
   $: devSize = $deviceInfo.size
   $: shrinkButtons = checkAdaptiveMatching(devSize, 'sm')
 
-  function setContent (content: string): void {
+  function setContent (content: Markup): void {
     textEditor?.setContent(content)
   }
 
@@ -70,8 +71,11 @@
     insertText: (text) => {
       textEditor?.insertText(text)
     },
-    insertTemplate: (name, text) => {
-      textEditor?.insertText(text)
+    insertMarkup: (markup) => {
+      textEditor?.insertMarkup(markup)
+    },
+    insertTemplate: (name, markup) => {
+      textEditor?.insertMarkup(markup)
     },
     focus: () => {
       textEditor?.focus()

@@ -86,8 +86,11 @@
     insertText: (text) => {
       textEditor?.insertText(text)
     },
-    insertTemplate: (name, text) => {
-      textEditor?.insertText(text)
+    insertMarkup: (markup) => {
+      textEditor?.insertMarkup(markup)
+    },
+    insertTemplate: (name, markup) => {
+      textEditor?.insertMarkup(markup)
       dispatch('template', name)
     },
     focus: () => {
