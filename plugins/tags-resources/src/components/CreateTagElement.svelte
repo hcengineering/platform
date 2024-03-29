@@ -35,11 +35,11 @@
 
   export let targetClass: Ref<Class<Doc>>
   export let keyTitle: string = ''
-  export let tagTitle: string = ''
+  export let title: string = ''
 
-  let title = tagTitle
+  let tagTitle = title
   let description = ''
-  let color: number = getColorNumberByText(title)
+  let color: number = getColorNumberByText(tagTitle)
 
   let categoryWasSet = false
   let category: Ref<TagCategory> | undefined
@@ -50,15 +50,15 @@
   let colorSet = false
 
   $: if (!colorSet) {
-    color = getColorNumberByText(title)
+    color = getColorNumberByText(tagTitle)
   }
 
   $: if (!categoryWasSet && categories.length > 0) {
-    category = findTagCategory(title, categories)
+    category = findTagCategory(tagTitle, categories)
   }
 
   export function canClose (): boolean {
-    return title === ''
+    return tagTitle === ''
   }
 
   const dispatch = createEventDispatcher()
@@ -78,7 +78,7 @@
   })
 
   async function createTagElementFnc (): Promise<void> {
-    const res = await createTagElement(title, targetClass, category, description, color)
+    const res = await createTagElement(tagTitle, targetClass, category, description, color)
     dispatch('close', res)
   }
 
@@ -101,7 +101,7 @@
   label={tags.string.AddTag}
   labelProps={{ word: keyTitle }}
   okAction={createTagElementFnc}
-  canSave={title.length > 0}
+  canSave={tagTitle.length > 0}
   on:close={() => {
     dispatch('close')
   }}
@@ -117,7 +117,7 @@
     </div>
     <div class="flex-col mt-0-5 w-full">
       <EditBox
-        bind:value={title}
+        bind:value={tagTitle}
         placeholder={tags.string.TagName}
         placeholderParam={{ word: keyTitle }}
         kind={'large-style'}
