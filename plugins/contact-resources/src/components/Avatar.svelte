@@ -39,21 +39,25 @@
     IconSize,
     getPlatformAvatarColorByName,
     getPlatformAvatarColorForTextDef,
-    themeStore
+    themeStore,
+    resizeObserver
   } from '@hcengineering/ui'
   import { getAvatarProviderId } from '../utils'
   import AvatarIcon from './icons/Avatar.svelte'
+  import { onMount } from 'svelte'
 
   export let avatar: string | null | undefined = undefined
   export let name: string | null | undefined = undefined
   export let direct: Blob | undefined = undefined
   export let size: IconSize
   export let icon: Asset | AnySvelteComponent | undefined = undefined
-  export let variant: 'circle' | 'roundedRect' = 'roundedRect'
+  export let variant: 'circle' | 'roundedRect' | 'none' = 'roundedRect'
 
   let url: string[] | undefined
   let avatarProvider: AvatarProvider | undefined
   let color: ColorDefinition | undefined = undefined
+  let fontSize: number = 16
+  let element: HTMLElement
 
   $: displayName = getDisplayName(name)
 
@@ -102,31 +106,55 @@
   let imageElement: HTMLImageElement | undefined = undefined
 
   $: srcset = url?.slice(1)?.join(', ')
+
+  onMount(() => {
+    if (size === 'full' && !url && name && displayName && displayName !== '' && element) { fontSize = element.clientWidth * 0.6 }
+  })
 </script>
 
-<div
-  class="ava-{size} flex-center avatar-container {variant}"
-  class:no-img={!url && color}
-  class:bordered={!url && color === undefined}
-  style:background-color={color && !url ? color.icon : 'var(--theme-button-default)'}
->
-  {#if url}
-    {#if size === 'large' || size === 'x-large' || size === '2x-large'}
-      <img class="ava-{size} ava-blur" src={url[0]} {srcset} alt={''} bind:this={imageElement} />
-    {/if}
-    <img class="ava-{size} ava-mask" src={url[0]} {srcset} alt={''} bind:this={imageElement} />
-  {:else if name && displayName && displayName !== ''}
+{#if size === 'full' && !url && name && displayName && displayName !== ''}
+  <div
+    bind:this={element}
+    class="ava-{size} flex-center avatar-container {variant}"
+    class:no-img={!url && color}
+    class:bordered={!url && color === undefined}
+    style:background-color={color && !url ? color.icon : 'var(--theme-button-default)'}
+    use:resizeObserver={(element) => {
+      fontSize = element.clientWidth * 0.6
+    }}
+  >
     <div
       class="ava-text"
       style:color={color ? color.iconText : 'var(--primary-button-color)'}
+      style:font-size={`${fontSize}px`}
       data-name={displayName.toLocaleUpperCase()}
     />
-  {:else}
-    <div class="icon">
-      <Icon icon={icon ?? AvatarIcon} size={'full'} />
-    </div>
-  {/if}
-</div>
+  </div>
+{:else}
+  <div
+    class="ava-{size} flex-center avatar-container {variant}"
+    class:no-img={!url && color}
+    class:bordered={!url && color === undefined}
+    style:background-color={color && !url ? color.icon : 'var(--theme-button-default)'}
+  >
+    {#if url}
+      {#if size === 'large' || size === 'x-large' || size === '2x-large'}
+        <img class="ava-{size} ava-blur {variant}" src={url[0]} {srcset} alt={''} bind:this={imageElement} />
+      {/if}
+      <img class="ava-{size} ava-mask {variant}" src={url[0]} {srcset} alt={''} bind:this={imageElement} />
+    {:else if name && displayName && displayName !== ''}
+      <div
+        class="ava-text"
+        style:color={color ? color.iconText : 'var(--primary-button-color)'}
+        data-name={displayName.toLocaleUpperCase()}
+      />
+    {:else}
+      <div class="icon">
+        <Icon icon={icon ?? AvatarIcon} size={'full'} />
+      </div>
+    {/if}
+  </div>
+{/if}
 
 <style lang="scss">
   .avatar-container {
@@ -141,7 +169,7 @@
     }
 
     &.roundedRect {
-      border-radius: 0.5rem;
+      border-radius: 20%;
     }
 
     &.no-img {
@@ -154,7 +182,10 @@
     }
     img {
       object-fit: cover;
-      border: 1px solid var(--avatar-border-color);
+
+      &.circle {
+        border: 1px solid var(--avatar-border-color);
+      }
     }
     .icon,
     .ava-text::after {
@@ -169,9 +200,14 @@
       transform-origin: center;
       transform: translate(-50%, -50%) scale(0.6);
     }
-    .ava-text::after {
-      content: attr(data-name);
-      transform: translate(-50%, -50%);
+    .ava-text {
+      font-weight: 500;
+      letter-spacing: -0.05em;
+
+      &::after {
+        content: attr(data-name);
+        transform: translate(-50%, -50%);
+      }
     }
   }
 
@@ -180,9 +216,7 @@
     height: 0.875rem;
 
     .ava-text {
-      font-weight: 500;
       font-size: 0.525rem;
-      letter-spacing: -0.05em;
     }
   }
 
@@ -191,9 +225,7 @@
     height: 1.13rem;
 
     .ava-text {
-      font-weight: 500;
       font-size: 0.625rem;
-      letter-spacing: -0.05em;
     }
   }
 
@@ -202,16 +234,7 @@
     height: 1.25rem;
 
     .ava-text {
-      font-weight: 500;
-      font-size: 0.625rem;
-      letter-spacing: -0.05em;
-    }
-  }
-  .ava-inline,
-  .ava-tiny,
-  .ava-card {
-    &.roundedRect {
-      border-radius: 0.25rem;
+      font-size: 0.75rem;
     }
   }
 
@@ -220,9 +243,7 @@
     height: 1.5rem;
 
     .ava-text {
-      font-weight: 500;
-      font-size: 0.75rem;
-      letter-spacing: -0.05em;
+      font-size: 0.875rem;
     }
   }
   .ava-smaller {
@@ -230,9 +251,7 @@
     height: 1.75rem;
 
     .ava-text {
-      font-weight: 500;
-      font-size: 0.8125rem;
-      letter-spacing: -0.05em;
+      font-size: 1rem;
     }
   }
   .ava-small {
@@ -240,9 +259,7 @@
     height: 2rem;
 
     .ava-text {
-      font-weight: 500;
-      font-size: 0.875rem;
-      letter-spacing: -0.05em;
+      font-size: 1.125rem;
     }
   }
   .ava-medium {
@@ -250,9 +267,7 @@
     height: 2.5rem;
 
     .ava-text {
-      font-weight: 500;
-      font-size: 0.875rem;
-      letter-spacing: -0.05em;
+      font-size: 1.375rem;
     }
   }
   .ava-large {
@@ -260,8 +275,7 @@
     height: 4.5rem;
 
     .ava-text {
-      font-weight: 500;
-      font-size: 2rem;
+      font-size: 2.75rem;
     }
   }
 
@@ -270,12 +284,7 @@
     height: 7.5rem;
 
     .ava-text {
-      font-weight: 500;
-      font-size: 3.5rem;
-    }
-
-    &.roundedRect {
-      border-radius: 1rem;
+      font-size: 4.5rem;
     }
   }
 
@@ -284,26 +293,17 @@
     height: 10rem;
 
     .ava-text {
-      font-weight: 500;
-      font-size: 4.75rem;
-    }
-
-    &.roundedRect {
-      border-radius: 1rem;
+      font-size: 6rem;
     }
   }
 
   .ava-full {
     width: 100%;
     height: 100%;
+    aspect-ratio: 1;
 
     .ava-text {
-      font-weight: 500;
-      font-size: 2rem;
-    }
-
-    &.roundedRect {
-      border-radius: 0px;
+      font-size: inherit;
     }
   }
 
@@ -314,36 +314,23 @@
 
   .ava-mask {
     position: absolute;
-    border: 1px solid var(--avatar-border-color);
 
     &.circle {
+      border: 1px solid var(--avatar-border-color);
       border-radius: 50%;
     }
 
-    .roundedRect & {
-      border-radius: 0.5rem;
-
-      &.ava-inline,
-      &.ava-tiny,
-      &.ava-card {
-        border-radius: 0.25rem;
-      }
-
-      &.ava-x-large,
-      &.ava-2x-large {
-        border-radius: 1rem;
-      }
-
-      &.ava-full {
-        border-radius: 0px;
-      }
+    .roundedRect {
+      border-radius: 20%;
     }
   }
 
   .ava-large .ava-mask,
   .ava-x-large .ava-mask,
   .ava-2x-large .ava-mask {
-    border-width: 2px;
+    &.circle {
+      border-width: 2px;
+    }
   }
 
   .ava-inline .ava-mask,

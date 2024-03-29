@@ -303,7 +303,7 @@
   min-width: 0;
   min-height: 0;
 
-  &:not(.second, .default),
+  &:not(.second, .default, .no-border),
   &.border {
     border-top: 1px solid var(--theme-navpanel-divider);
   }
