@@ -81,7 +81,7 @@
   }
 
   async function createTagElementPopup (): Promise<void> {
-    showPopup(CreateTagElement, { targetClass, title: search }, 'top', onCreateTagElement)
+    showPopup(CreateTagElement, { targetClass, tagTitle: search }, 'top', onCreateTagElement)
   }
 
   async function createTagElementQuick (): Promise<void> {

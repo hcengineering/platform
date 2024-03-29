@@ -35,8 +35,9 @@
 
   export let targetClass: Ref<Class<Doc>>
   export let keyTitle: string = ''
-  export let title: string = ''
+  export let tagTitle: string = ''
 
+  let title = tagTitle
   let description = ''
   let color: number = getColorNumberByText(title)
 
