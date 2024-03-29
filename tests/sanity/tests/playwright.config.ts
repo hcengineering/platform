@@ -1,6 +1,7 @@
 import { devices, PlaywrightTestConfig } from '@playwright/test'
-import { config as dotenvConfig } from 'dotenv'
-dotenvConfig()
+import dotenv from 'dotenv';
+import path from 'path';
+dotenv.config({ path: path.resolve('../.env') });
 
 const config: PlaywrightTestConfig = {
   projects: [
@@ -18,7 +19,8 @@ const config: PlaywrightTestConfig = {
           snapshots: true,
           screenshots: true,
           sources: true
-        }
+        },
+        headless: false
       }
     }
   ],
