@@ -35,10 +35,11 @@ import core, {
   WorkspaceId,
   toWorkspaceString
 } from '@hcengineering/core'
-import { PlatformError, unknownStatus } from '@hcengineering/platform'
-import { DbAdapter, IndexedDoc } from '@hcengineering/server-core'
+import { getMetadata, PlatformError, unknownStatus } from '@hcengineering/platform'
+import serverCore, { DbAdapter, IndexedDoc } from '@hcengineering/server-core'
 import { createHash } from 'node:crypto'
 
+const indexName = getMetadata(serverCore.metadata.ElasticIndexName) ?? 'storage_index'
 class ElasticDataAdapter implements DbAdapter {
   constructor (
     readonly workspaceId: WorkspaceId,
@@ -81,14 +82,20 @@ class ElasticDataAdapter implements DbAdapter {
         try {
           if (!listRecieved) {
             const q = {
-              index: toWorkspaceString(this.workspaceId),
+              index: indexName,
               type: '_doc',
               scroll: '23h',
               // search_type: 'scan', //if I use search_type then it requires size otherwise it shows 0 result
               size: 100,
               body: {
                 query: {
-                  match_all: {}
+                  bool: {
+                    must: {
+                      match: {
+                        workspaceId: toWorkspaceString(this.workspaceId)
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -163,13 +170,24 @@ class ElasticDataAdapter implements DbAdapter {
     const result: Doc[] = []
 
     const resp = await this.client.search({
-      index: toWorkspaceString(this.workspaceId),
+      index: indexName,
       type: '_doc',
       body: {
         query: {
-          terms: {
-            _id: docs,
-            boost: 1.0
+          bool: {
+            must: [
+              {
+                terms: {
+                  _id: docs,
+                  boost: 1.0
+                }
+              },
+              {
+                match: {
+                  workspaceId: toWorkspaceString(this.workspaceId)
+                }
+              }
+            ]
           }
         },
         size: docs.length
@@ -198,12 +216,23 @@ class ElasticDataAdapter implements DbAdapter {
         await this.client.deleteByQuery(
           {
             type: '_doc',
-            index: toWorkspaceString(this.workspaceId),
+            index: indexName,
             body: {
               query: {
-                terms: {
-                  _id: Array.from(part.map((it) => it._id)),
-                  boost: 1.0
+                bool: {
+                  must: [
+                    {
+                      terms: {
+                        _id: Array.from(part.map((it) => it._id)),
+                        boost: 1.0
+                      }
+                    },
+                    {
+                      match: {
+                        workspaceId: toWorkspaceString(this.workspaceId)
+                      }
+                    }
+                  ]
                 }
               },
               size: part.length
@@ -216,8 +245,11 @@ class ElasticDataAdapter implements DbAdapter {
       }
 
       const operations = part.flatMap((doc) => [
-        { index: { _index: toWorkspaceString(this.workspaceId), _id: doc._id } },
-        (doc as FullTextData).data
+        { index: { _index: indexName, _id: doc._id } },
+        {
+          workspaceId: toWorkspaceString(this.workspaceId),
+          ...(doc as FullTextData).data
+        }
       ])
 
       await this.client.bulk({ refresh: true, body: operations })
@@ -234,12 +266,23 @@ class ElasticDataAdapter implements DbAdapter {
       await this.client.deleteByQuery(
         {
           type: '_doc',
-          index: toWorkspaceString(this.workspaceId),
+          index: indexName,
           body: {
             query: {
-              terms: {
-                _id: part,
-                boost: 1.0
+              bool: {
+                must: [
+                  {
+                    terms: {
+                      _id: part,
+                      boost: 1.0
+                    }
+                  },
+                  {
+                    match: {
+                      workspaceId: toWorkspaceString(this.workspaceId)
+                    }
+                  }
+                ]
               }
             },
             size: part.length
