@@ -18,8 +18,19 @@
 //
 
 import { Editor } from '@tiptap/core'
-import { MarkupNode, MarkupNodeType } from '../model'
-import { EmptyMarkup, areEqualMarkups, getMarkup, isEmptyMarkup, jsonToMarkup, makeSingleParagraphDoc, markupToJSON } from '../utils'
+import { MarkupMarkType, MarkupNode, MarkupNodeType } from '../model'
+import {
+  EmptyMarkup,
+  areEqualMarkups,
+  getMarkup,
+  htmlToMarkup,
+  isEmptyMarkup,
+  jsonToMarkup,
+  jsonToText,
+  makeSingleParagraphDoc,
+  markupToHTML,
+  markupToJSON
+} from '../utils'
 import { ServerKit } from '../../kits/server-kit'
 
 const extensions = [ServerKit]
@@ -78,6 +89,105 @@ describe('markup', () => {
       )
     })
   })
+  describe('htmlToMarkup', () => {
+    it('converts HTML to Markup', () => {
+      const html = '<p>Hello, world!</p>'
+      const expectedMarkup =
+        '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Hello, world!"}]}]}'
+      expect(htmlToMarkup(html)).toEqual(expectedMarkup)
+    })
+  })
+  describe('markupToHTML', () => {
+    it('converts markup to HTML', () => {
+      const markup =
+        '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Hello, world!"}]}]}'
+      const expectedHtml = '<p>Hello, World!</p>'
+      expect(markupToHTML(markup)).toEqual(expectedHtml)
+    })
+  })
+  describe('jsonToText', () => {
+    it('returns empty string for text node with no text', () => {
+      const node: MarkupNode = {
+        type: MarkupNodeType.text,
+        text: undefined
+      }
+      expect(jsonToText(node)).toEqual('')
+    })
+    it('returns text for text node', () => {
+      const node: MarkupNode = {
+        type: MarkupNodeType.text,
+        text: 'Hello, world!'
+      }
+      expect(jsonToText(node)).toEqual('Hello, world!')
+    })
+    it('returns concatenated text for block node with multiple children', () => {
+      const node: MarkupNode = {
+        type: MarkupNodeType.paragraph,
+        content: [
+          {
+            type: MarkupNodeType.text,
+            text: 'Hello '
+          },
+          {
+            type: MarkupNodeType.text,
+            text: 'world!'
+          }
+        ]
+      }
+      expect(jsonToText(node)).toEqual('Hello world!')
+    })
+    it('returns text for node with link', () => {
+      const node: MarkupNode = {
+        type: MarkupNodeType.paragraph,
+        content: [
+          {
+            type: MarkupNodeType.text,
+            text: 'Hello! Check out '
+          },
+          {
+            type: MarkupNodeType.text,
+            text: 'this page',
+            marks: [
+              {
+                type: MarkupMarkType.link,
+                attrs: {
+                  href: 'http://example.com/'
+                }
+              }
+            ]
+          },
+          {
+            type: MarkupNodeType.text,
+            text: '!'
+          }
+        ]
+      }
+      expect(jsonToText(node)).toEqual('Hello! Check out this page!')
+    })
+    it('returns empty string for block node with no children', () => {
+      const node: MarkupNode = {
+        type: MarkupNodeType.paragraph,
+        content: []
+      }
+      expect(jsonToText(node)).toEqual('')
+    })
+    it('returns empty string for block node with empty children', () => {
+      const node: MarkupNode = {
+        type: MarkupNodeType.paragraph,
+        content: [
+          {
+            type: MarkupNodeType.text,
+            text: ''
+          },
+          {
+            type: MarkupNodeType.text,
+            text: ''
+          }
+        ]
+      }
+      expect(jsonToText(node)).toEqual('')
+    })
+  })
   describe('isEmptyMarkup', () => {
     it('returns true for undefined content', async () => {
       expect(isEmptyMarkup(undefined)).toBeTruthy()
@@ -107,7 +217,8 @@ describe('markup', () => {
     })
     it('returns true for the same content with different spaces', async () => {
       const markup1 = '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
-      const markup2 = '{"type":"doc","content":[{"type":"hardBreak"},{"type":"paragraph","content":[{"type":"text","text":"hello"}]},{"type":"hardBreak"}]}'
+      const markup2 =
+        '{"type":"doc","content":[{"type":"hardBreak"},{"type":"paragraph","content":[{"type":"text","text":"hello"}]},{"type":"hardBreak"}]}'
       expect(areEqualMarkups(markup1, markup2)).toBeTruthy()
     })
     it('returns false for different content', async () => {

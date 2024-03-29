@@ -15,13 +15,11 @@
 
 import { Markup } from '@hcengineering/core'
 import { Editor, Extensions, getSchema } from '@tiptap/core'
-import { generateJSON } from '@tiptap/html'
+import { generateHTML, generateJSON } from '@tiptap/html'
 import { Node as ProseMirrorNode, Schema } from '@tiptap/pm/model'
 
-import { ServerKit } from '../kits/server-kit'
+import { defaultExtensions } from '../extensions'
 import { MarkupNode, MarkupNodeType, emptyMarkupNode } from './model'
-
-const defaultExtensions = [ServerKit]
 
 /** @public */
 export const EmptyMarkup: Markup = jsonToMarkup(emptyMarkupNode())
@@ -29,33 +27,6 @@ export const EmptyMarkup: Markup = jsonToMarkup(emptyMarkupNode())
 /** @public */
 export function getMarkup (editor: Editor): Markup {
   return jsonToMarkup(editor.getJSON() as MarkupNode)
-}
-
-/** @public */
-export function markupToJSON (markup: Markup): MarkupNode {
-  if (markup == null || markup === '') {
-    return emptyMarkupNode()
-  }
-
-  try {
-    // Ideally Markup should contain only serialized JSON
-    // But there seem to be some cases when it contains HTML or plain text
-    // So we need to handle those cases and produce valid MarkupNode
-    if (markup.startsWith('{')) {
-      return JSON.parse(markup) as MarkupNode
-    } else if (markup.startsWith('<')) {
-      return generateJSON(markup, defaultExtensions) as MarkupNode
-    } else {
-      return makeSingleParagraphDoc(markup)
-    }
-  } catch (error) {
-    return emptyMarkupNode()
-  }
-}
-
-/** @public */
-export function jsonToMarkup (json: MarkupNode): Markup {
-  return JSON.stringify(json)
 }
 
 /** @public */
@@ -78,14 +49,11 @@ export function areEqualMarkups (markup1: Markup, markup2: Markup): boolean {
   return node1.textContent.trim() === node2.textContent.trim()
 }
 
+// Markup
+
 /** @public */
 export function pmNodeToMarkup (node: ProseMirrorNode): Markup {
   return jsonToMarkup(pmNodeToJSON(node))
-}
-
-/** @public */
-export function pmNodeToJSON (node: ProseMirrorNode): MarkupNode {
-  return node.toJSON()
 }
 
 /** @public */
@@ -94,11 +62,97 @@ export function markupToPmNode (markup: Markup, schema?: Schema, extensions?: Ex
   return jsonToPmNode(json, schema, extensions)
 }
 
+// JSON
+
+/** @public */
+export function jsonToMarkup (json: MarkupNode): Markup {
+  return JSON.stringify(json)
+}
+
+/** @public */
+export function markupToJSON (markup: Markup): MarkupNode {
+  if (markup == null || markup === '') {
+    return emptyMarkupNode()
+  }
+
+  try {
+    // Ideally Markup should contain only serialized JSON
+    // But there seem to be some cases when it contains HTML or plain text
+    // So we need to handle those cases and produce valid MarkupNode
+    if (markup.startsWith('{')) {
+      return JSON.parse(markup) as MarkupNode
+    } else if (markup.startsWith('<')) {
+      return htmlToJSON(markup, defaultExtensions)
+    } else {
+      return makeSingleParagraphDoc(markup)
+    }
+  } catch (error) {
+    return emptyMarkupNode()
+  }
+}
+
 /** @public */
 export function jsonToPmNode (json: MarkupNode, schema?: Schema, extensions?: Extensions): ProseMirrorNode {
   schema ??= getSchema(extensions ?? defaultExtensions)
   return ProseMirrorNode.fromJSON(schema, json)
 }
+
+/** @public */
+export function pmNodeToJSON (node: ProseMirrorNode): MarkupNode {
+  return node.toJSON()
+}
+
+/** @public */
+export function jsonToText (node: MarkupNode, schema?: Schema, extensions?: Extensions): string {
+  const pmNode = jsonToPmNode(node, schema, extensions)
+  return pmNode.textBetween(0, pmNode.content.size, '\n', '')
+}
+
+/** @public */
+export function pmNodeToText (node: ProseMirrorNode): string {
+  return jsonToText(node.toJSON())
+}
+
+// HTML
+
+/** @public */
+export function htmlToMarkup (html: string, extensions?: Extensions): Markup {
+  const json = htmlToJSON(html, extensions)
+  return jsonToMarkup(json)
+}
+
+/** @public */
+export function markupToHTML (markup: Markup, extensions?: Extensions): string {
+  const json = markupToJSON(markup)
+  return jsonToHTML(json, extensions)
+}
+
+/** @public */
+export function htmlToJSON (html: string, extensions?: Extensions): MarkupNode {
+  extensions = extensions ?? defaultExtensions
+  return generateJSON(html, extensions) as MarkupNode
+}
+
+/** @public */
+export function jsonToHTML (json: MarkupNode, extensions?: Extensions): string {
+  extensions = extensions ?? defaultExtensions
+  return generateHTML(json, extensions)
+}
+
+/** @public */
+export function htmlToPmNode (html: string, schema?: Schema, extensions?: Extensions): ProseMirrorNode {
+  schema ??= getSchema(extensions ?? defaultExtensions)
+  const json = htmlToJSON(html, extensions)
+  return ProseMirrorNode.fromJSON(schema, json)
+}
+
+/** @public */
+export function pmNodeToHTML (node: ProseMirrorNode, extensions?: Extensions): string {
+  extensions ??= defaultExtensions
+  return generateHTML(node.toJSON(), extensions)
+}
+
+// UTILS
 
 /** @public */
 export function makeSingleParagraphDoc (value: string): MarkupNode {

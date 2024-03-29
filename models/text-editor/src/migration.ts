@@ -23,7 +23,7 @@ import {
   type MigrationUpgradeClient,
   tryMigrate
 } from '@hcengineering/model'
-import { parseHTML, pmNodeToMarkup } from '@hcengineering/text'
+import { htmlToMarkup } from '@hcengineering/text'
 
 async function migrateMarkup (client: MigrationClient): Promise<void> {
   const hierarchy = client.hierarchy
@@ -73,7 +73,7 @@ async function processMigrateMarkupFor (
       for (const attribute of attributes) {
         const value = (doc as any)[attribute.name]
         if (value != null) {
-          update[attribute.name] = pmNodeToMarkup(parseHTML(value))
+          update[attribute.name] = htmlToMarkup(value)
         }
       }
 

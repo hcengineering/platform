@@ -1,6 +1,6 @@
 import { MeasureContext, WorkspaceId } from '@hcengineering/core'
 import { ContentTextAdapter } from '@hcengineering/server-core'
-import { getText, yDocContentToNodes } from '@hcengineering/text'
+import { pmNodeToText, yDocContentToNodes } from '@hcengineering/text'
 import { Readable } from 'stream'
 
 /**
@@ -37,7 +37,7 @@ export async function createYDocAdapter (
 
       if (chunks.length > 0) {
         const nodes = yDocContentToNodes(Buffer.concat(chunks))
-        return nodes.map(getText).join('\n')
+        return nodes.map(pmNodeToText).join('\n')
       }
 
       return ''

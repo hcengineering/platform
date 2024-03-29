@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-export * from './html'
+export * from './extensions'
 export * from './markup/model'
+export * from './markup/traverse'
 export * from './markup/utils'
 export * from './nodes'
-export * from './text'
 export * from './ydoc'
 
 export * from './kits/default-kit'

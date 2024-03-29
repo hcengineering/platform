@@ -17,9 +17,7 @@ import { Extensions, getSchema } from '@tiptap/core'
 import { Node, Schema } from 'prosemirror-model'
 import { yDocToProsemirrorJSON } from 'y-prosemirror'
 import { Doc, applyUpdate } from 'yjs'
-import { ServerKit } from './kits/server-kit'
-
-const defaultExtensions = [ServerKit]
+import { defaultExtensions } from './extensions'
 
 /**
  * Get ProseMirror node from Y.Doc content

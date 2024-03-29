@@ -18224,7 +18224,7 @@ packages:
     dev: false
 
   file:projects/gmail-resources.tgz(@types/node@20.11.30)(esbuild@0.20.2)(postcss-load-config@4.0.2)(postcss@8.4.38)(ts-node@10.9.2):
-    resolution: {integrity: sha512-s4LTgK1VHUY4SrEGa3jNbHPRaGQLrZAJ3A+8IdH/v/DGRbtIDsMbQouigUFZW7Ove9Jmfps9K1zPydHnv+W/Qw==, tarball: file:projects/gmail-resources.tgz}
+    resolution: {integrity: sha512-7sWVrlH+dMj54nZkK0MvfrO+LMd2TD+78F0IOYdWjJ9KaVNRE7OZ9pTqs3RwNZlf6WOZRDQSNJeVTAMYz3cw5g==, tarball: file:projects/gmail-resources.tgz}
     id: file:projects/gmail-resources.tgz
     name: '@rush-temp/gmail-resources'
     version: 0.0.0
@@ -19015,7 +19015,7 @@ packages:
     dev: false
 
   file:projects/model-activity.tgz:
-    resolution: {integrity: sha512-irleyu4Y8HIoLvUG/W70u+Bjcm+xKnnWcp5SMZ/BASF0pO+LMjaJYWyrV3AOsue9b5r+KnuIKrNaGldhpj4CBQ==, tarball: file:projects/model-activity.tgz}
+    resolution: {integrity: sha512-G7UdqC01OLBcYU0l+9nHNv2Td++MPo7IDKpcqg1EPTnJ4SsKsdSvYBpoJZE3hFlqRe0IzB6ooFXzHZ+S6bC22Q==, tarball: file:projects/model-activity.tgz}
     name: '@rush-temp/model-activity'
     version: 0.0.0
     dependencies:
@@ -21455,7 +21455,7 @@ packages:
     dev: false
 
   file:projects/server-core.tgz(esbuild@0.20.2)(ts-node@10.9.2):
-    resolution: {integrity: sha512-nhZN2ATtfznRmIYTsQBnPKfqUFf4eLw2Fac0LYjw8+3x68u2FSsIrd94fs41abUdrtySrXYykPCVfDIjrPvGwg==, tarball: file:projects/server-core.tgz}
+    resolution: {integrity: sha512-kLlgw/b8BhUayPhuPtnldGHyrrIQ6/G805PSxIm0n5pp32gjwcQvjPGcNGLysu+PPotheYvKYmqx8SiiKmONmw==, tarball: file:projects/server-core.tgz}
     id: file:projects/server-core.tgz
     name: '@rush-temp/server-core'
     version: 0.0.0
@@ -22332,7 +22332,7 @@ packages:
     dev: false
 
   file:projects/server-time-resources.tgz(@types/node@20.11.30)(esbuild@0.20.2)(ts-node@10.9.2):
-    resolution: {integrity: sha512-Ocp0as2JRoVMctply5lzRma3qVVUlomJ3MDkoLzECbvCMO0RCEuGRp7PYoew5wY88aSjttksUC4hflcX9OrLGQ==, tarball: file:projects/server-time-resources.tgz}
+    resolution: {integrity: sha512-loDjWGEyW9CVIRDbYC77WT0YcLzvLfE71Pz1oaETOAINh3ee+t/B0T5uaASmHBLZHO40RDADK+i9kDjS4mmhAg==, tarball: file:projects/server-time-resources.tgz}
     id: file:projects/server-time-resources.tgz
     name: '@rush-temp/server-time-resources'
     version: 0.0.0
