@@ -112,12 +112,12 @@ export async function updateDocWithPresenter (
     spaceDoc: DocIndexState | undefined
   }
 ): Promise<void> {
-  const searchPresenter = findSearchPresenter(hierarchy, elasticDoc._class)
+  const searchPresenter = findSearchPresenter(hierarchy, doc.objectClass)
   if (searchPresenter === undefined) {
     return
   }
 
-  const reader = createIndexedReader(elasticDoc._class, hierarchy, doc, {
+  const reader = createIndexedReader(doc.objectClass, hierarchy, doc, {
     space: refDocs.spaceDoc,
     attachedTo: refDocs.parentDoc
   })
@@ -156,7 +156,7 @@ export async function updateDocWithPresenter (
     } else if (prop.provider !== undefined) {
       const func = await getResource(Object.values(prop.provider)[0] as Resource<any>)
       const renderProps = await readAndMapProps(reader, prop.config.props)
-      value = func(hierarchy, { _class: elasticDoc._class, ...renderProps })
+      value = func(hierarchy, { _class: doc.objectClass, ...renderProps })
     } else if (prop.name === 'searchIcon') {
       value = await readAndMapProps(reader, prop.config.props)
     }
@@ -186,7 +186,7 @@ export function mapSearchResultDoc (hierarchy: Hierarchy, raw: IndexedDoc): Sear
     iconProps: raw.searchIcon,
     doc: {
       _id: raw.id,
-      _class: raw._class
+      _class: raw._class[0]
     },
     score: raw._score
   }

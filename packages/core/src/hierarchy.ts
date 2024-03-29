@@ -141,6 +141,21 @@ export class Hierarchy {
     return result
   }
 
+  findAllMixins<D extends Doc, M extends D>(doc: Doc): Ref<Class<M>>[] {
+    const _doc = _toDoc(doc)
+    const resultSet = new Set<Ref<Class<M>>>()
+    for (const [k, v] of Object.entries(_doc)) {
+      if (typeof v === 'object' && this.classifiers.has(k as Ref<Classifier>)) {
+        if (this.isMixin(k as Ref<Classifier>)) {
+          if (!resultSet.has(k as Ref<Classifier>)) {
+            resultSet.add(k as Ref<Classifier>)
+          }
+        }
+      }
+    }
+    return Array.from(resultSet)
+  }
+
   isMixin (_class: Ref<Class<Doc>>): boolean {
     const data = this.classifiers.get(_class)
     return data !== undefined && this._isMixin(data)
