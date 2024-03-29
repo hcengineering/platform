@@ -242,7 +242,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
               })
           )
 
-          const allAttributes = pipeline.hierarchy.getAllAttributes(elasticDoc._class)
+          const allAttributes = pipeline.hierarchy.getAllAttributes(doc.objectClass)
 
           // Include child ref attributes
           await this.indexRefAttributes(allAttributes, doc, elasticDoc, ctx)
@@ -290,7 +290,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
 export function createElasticDoc (upd: DocIndexState): IndexedDoc {
   const doc = {
     id: upd._id,
-    _class: upd.objectClass,
+    _class: [upd.objectClass, ...(upd.mixins ?? [])],
     modifiedBy: upd.modifiedBy,
     modifiedOn: upd.modifiedOn,
     space: upd.space,

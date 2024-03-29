@@ -836,7 +836,8 @@ export function createModel (builder: Builder): void {
       label: contact.string.SearchEmployee,
       title: contact.string.Employees,
       query: contact.completion.EmployeeQuery,
-      context: ['search']
+      context: ['search', 'mention'],
+      classToSearch: contact.mixin.Employee
     },
     contact.completion.EmployeeCategory
   )
@@ -849,7 +850,7 @@ export function createModel (builder: Builder): void {
       label: contact.string.SearchPerson,
       title: contact.string.People,
       query: contact.completion.PersonQuery,
-      context: ['search', 'mention', 'spotlight'],
+      context: ['search', 'spotlight'],
       classToSearch: contact.class.Person
     },
     contact.completion.PersonCategory

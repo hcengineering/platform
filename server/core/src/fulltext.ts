@@ -114,16 +114,19 @@ export class FullTextIndex implements WithFind {
           const old = stDocs.get(cud.objectId as Ref<DocIndexState>)
           if (cud._class === core.class.TxRemoveDoc && old?.create !== undefined) {
             // Object created and deleted, skip index
+            stDocs.delete(cud.objectId as Ref<DocIndexState>)
             continue
           } else if (old !== undefined) {
             // Create and update
-            // Skip update
-            continue
+            if (old.removed) continue
+            else {
+              stDocs.set(cud.objectId as Ref<DocIndexState>, {
+                ...old,
+                updated: cud._class !== core.class.TxRemoveDoc,
+                removed: cud._class === core.class.TxRemoveDoc
+              })
+            }
           }
-          stDocs.set(cud.objectId as Ref<DocIndexState>, {
-            updated: cud._class !== core.class.TxRemoveDoc,
-            removed: cud._class === core.class.TxRemoveDoc
-          })
         }
       }
     }
@@ -207,7 +210,7 @@ export class FullTextIndex implements WithFind {
     const indexedDocMap = new Map<Ref<Doc>, IndexedDoc>()
 
     for (const doc of docs) {
-      if (this.hierarchy.isDerived(doc._class, baseClass)) {
+      if (doc._class.some((cl) => this.hierarchy.isDerived(cl, baseClass))) {
         ids.add(doc.id)
         indexedDocMap.set(doc.id, doc)
       }

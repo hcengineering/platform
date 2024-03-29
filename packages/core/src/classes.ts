@@ -521,7 +521,7 @@ export interface DocIndexState extends Doc {
 
   // Indexable attributes, including child ones.
   attributes: Record<string, any>
-
+  mixins?: Ref<Class<Doc>>[]
   // Full Summary
   fullSummary?: Markup | null
   shortSummary?: Markup | null
