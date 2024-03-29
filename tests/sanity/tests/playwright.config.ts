@@ -20,7 +20,6 @@ const config: PlaywrightTestConfig = {
           screenshots: true,
           sources: true
         },
-        headless: false
       }
     }
   ],
