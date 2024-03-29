@@ -13,12 +13,13 @@
 // limitations under the License.
 //
 
-import core, { type Doc } from '@hcengineering/core'
+import core, { type AnyAttribute, type Doc, type Domain } from '@hcengineering/core'
 import {
   type MigrateOperation,
   type MigrateUpdate,
   type MigrationClient,
   type MigrationDocumentQuery,
+  type MigrationIterator,
   type MigrationUpgradeClient,
   tryMigrate
 } from '@hcengineering/model'
@@ -40,17 +41,40 @@ async function migrateMarkup (client: MigrationClient): Promise<void> {
     })
     if (filtered.length === 0) continue
 
+    console.log('processing', _class, filtered.length, 'attributes')
+    const iterator = await client.traverse(domain, { _class })
+    try {
+      await processMigrateMarkupFor(domain, filtered, client, iterator)
+      console.log('processing finished', _class)
+    } finally {
+      await iterator.close()
+    }
+  }
+}
+
+async function processMigrateMarkupFor (
+  domain: Domain,
+  attributes: AnyAttribute[],
+  client: MigrationClient,
+  iterator: MigrationIterator<Doc>
+): Promise<void> {
+  let processed = 0
+  while (true) {
+    const docs = await iterator.next(1000)
+    if (docs === null || docs.length === 0) {
+      break
+    }
+
     const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
 
-    const docs = await client.find(domain, { _class })
     for (const doc of docs) {
       const update: MigrateUpdate<Doc> = {}
 
-      for (const attribute of filtered) {
+      for (const attribute of attributes) {
         const value = (doc as any)[attribute.name]
-        if (value == null) continue
-
-        update[attribute.name] = pmNodeToMarkup(parseHTML(value))
+        if (value != null) {
+          update[attribute.name] = pmNodeToMarkup(parseHTML(value))
+        }
       }
 
       if (Object.keys(update).length > 0) {
@@ -61,6 +85,9 @@ async function migrateMarkup (client: MigrationClient): Promise<void> {
     if (operations.length > 0) {
       await client.bulk(domain, operations)
     }
+
+    processed += docs.length
+    console.log('...processed', processed)
   }
 }
 

@@ -15,6 +15,7 @@
 
 import { Markup } from '@hcengineering/core'
 import { Editor, Extensions, getSchema } from '@tiptap/core'
+import { generateJSON } from '@tiptap/html'
 import { Node as ProseMirrorNode, Schema } from '@tiptap/pm/model'
 
 import { ServerKit } from '../kits/server-kit'
@@ -32,8 +33,21 @@ export function getMarkup (editor: Editor): Markup {
 
 /** @public */
 export function markupToJSON (markup: Markup): MarkupNode {
+  if (markup == null || markup === '') {
+    return emptyMarkupNode()
+  }
+
   try {
-    return JSON.parse(markup) as MarkupNode
+    // Ideally Markup should contain only serialized JSON
+    // But there seem to be some cases when it contains HTML or plain text
+    // So we need to handle those cases and produce valid MarkupNode
+    if (markup.startsWith('{')) {
+      return JSON.parse(markup) as MarkupNode
+    } else if (markup.startsWith('<')) {
+      return generateJSON(markup, defaultExtensions) as MarkupNode
+    } else {
+      return makeSingleParagraphDoc(markup)
+    }
   } catch (error) {
     return emptyMarkupNode()
   }

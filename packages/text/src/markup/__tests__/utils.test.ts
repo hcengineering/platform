@@ -46,6 +46,9 @@ describe('markup', () => {
     })
   })
   describe('markupToJSON', () => {
+    it('with empty content', async () => {
+      expect(markupToJSON('')).toEqual({ type: 'doc', content: [{ type: 'paragraph' }] })
+    })
     it('with some content', async () => {
       const markup = '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
       expect(markupToJSON(markup)).toEqual({
