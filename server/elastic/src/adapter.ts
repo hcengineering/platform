@@ -34,11 +34,11 @@ import type {
   SearchScoring,
   IndexedDoc
 } from '@hcengineering/server-core'
+import serverCore from '@hcengineering/server-core'
 
 import { Client, errors as esErr } from '@elastic/elasticsearch'
 import { Domain } from 'node:domain'
 import { getMetadata } from '@hcengineering/platform'
-import serverCore from '@hcengineering/server-core/types/plugin'
 
 const DEFAULT_LIMIT = 200
 const indexName = getMetadata(serverCore.metadata.ElasticIndexName) ?? 'storage_index'
