@@ -203,7 +203,7 @@ async function migrateProjectTypes (client: MigrationClient): Promise<void> {
       modifiedOn: pt.modifiedOn,
       createdBy: pt.createdBy,
       createdOn: pt.createdOn,
-      modifiedBy: pt.modifiedBy
+      modifiedBy: pt.modifiedBy !== core.account.System ? pt.modifiedBy : core.account.ConfigUser
     }
     await client.create(DOMAIN_TX, tx)
 
@@ -241,7 +241,7 @@ async function migrateTaskTypes (client: MigrationClient): Promise<void> {
       modifiedOn: tt.modifiedOn,
       createdBy: tt.createdBy,
       createdOn: tt.createdOn,
-      modifiedBy: tt.modifiedBy
+      modifiedBy: tt.modifiedBy !== core.account.System ? tt.modifiedBy : core.account.ConfigUser
     }
     await client.create(DOMAIN_TX, tx)
 
