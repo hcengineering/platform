@@ -108,7 +108,9 @@
   $: srcset = url?.slice(1)?.join(', ')
 
   onMount(() => {
-    if (size === 'full' && !url && name && displayName && displayName !== '' && element) { fontSize = element.clientWidth * 0.6 }
+    if (size === 'full' && !url && name && displayName && displayName !== '' && element) {
+      fontSize = element.clientWidth * 0.6
+    }
   })
 </script>
 
