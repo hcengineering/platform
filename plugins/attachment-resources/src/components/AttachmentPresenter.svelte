@@ -21,6 +21,8 @@
   import filesize from 'filesize'
   import core from '@hcengineering/core'
   import { permissionsStore } from '@hcengineering/view-resources'
+  import MediaViewer from './MediaViewer.svelte'
+  import { getType } from '../utils'
 
   import AttachmentName from './AttachmentName.svelte'
 
@@ -50,11 +52,15 @@
     return ext.substring(0, 4).toUpperCase()
   }
   function isImage (contentType: string): boolean {
-    return contentType.startsWith('image/')
+    return getType(contentType) === 'image'
+  }
+  function isPlayable (contentType: string) {
+    const type = getType(contentType)
+    return type === 'video' || type === 'audio'
   }
   function openEmbedded (contentType: string): boolean {
     return (
-      contentType.includes('application/pdf') || contentType.startsWith('image/') || contentType.startsWith('video/')
+      getType(contentType) !== 'other'
     )
   }
 
@@ -70,7 +76,7 @@
     }
     closeTooltip()
     showPopup(
-      PDFViewer,
+      isPlayable(value.type) ? MediaViewer : PDFViewer,
       { file: value.file, name: value.name, contentType: value.type, value },
       isImage(value.type) ? 'centered' : 'float'
     )

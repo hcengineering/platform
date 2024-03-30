@@ -20,6 +20,7 @@
   import Pause from './icons/Pause.svelte'
 
   export let value: Attachment
+  export let fullSize = false
 
   let time = 0
   let duration = Number.POSITIVE_INFINITY
@@ -32,7 +33,9 @@
   $: icon = !paused ? Pause : Play
 </script>
 
-<div class="container flex-between">
+<div class="container flex-between"
+    class:fullSize={fullSize}
+>
   <div>
     <CircleButton size="x-large" on:click={buttonClick} {icon} />
   </div>
@@ -51,5 +54,9 @@
     background-color: var(--accent-bg-color);
     border: 1px solid var(--divider-color);
     border-radius: 0.75rem;
+
+    &.fullSize {
+      width: 100%;
+    }
   }
 </style>

@@ -15,17 +15,13 @@
 <script lang="ts">
   // import { Doc } from '@hcengineering/core'
   import { Button, Dialog } from '@hcengineering/ui'
+  import type { Attachment } from '@hcengineering/attachment'
+  import AudioPlayer from './AudioPlayer.svelte'
   import { createEventDispatcher, onMount } from 'svelte'
-  import presentation from '..'
-  import { getFileUrl } from '../utils'
-  import Download from './icons/Download.svelte'
-  import ActionContext from './ActionContext.svelte'
+  import presentation, { ActionContext, PDFViewer, IconDownload, getFileUrl } from '@hcengineering/presentation'
+  import { getType } from '../utils'
 
-  export let file: string
-  export let name: string
-  export let contentType: string | undefined
-  // export let popupOptions: PopupOptions
-  // export let value: Doc
+  export let value: Attachment
   export let showIcon = true
   export let fullSize = false
 
@@ -42,14 +38,18 @@
     }
   })
   let download: HTMLAnchorElement
-  $: src = getFileUrl(file, 'full', name)
+  $: type = getType(value.type)
+  $: src = getFileUrl(value.file, 'full', value.name)
 </script>
+
+
 
 <ActionContext context={{ mode: 'browser' }} />
 <Dialog
   isFullSize
   on:fullsize
   on:close={() => {
+    console.log('close')
     dispatch('close')
   }}
 >
@@ -58,18 +58,18 @@
       {#if showIcon}
         <div class="wrapped-icon">
           <div class="flex-center icon">
-            {iconLabel(name)}
+            {iconLabel(value.name)}
           </div>
         </div>
       {/if}
-      <span class="wrapped-title">{name}</span>
+      <span class="wrapped-title">{value.name}</span>
     </div>
   </svelte:fragment>
 
   <svelte:fragment slot="utils">
-    <a class="no-line" href={src} download={name} bind:this={download}>
+    <a class="no-line" href={src} download={value.name} bind:this={download}>
       <Button
-        icon={Download}
+        icon={IconDownload}
         kind={'ghost'}
         on:click={() => {
           download.click()
@@ -79,10 +79,14 @@
     </a>
   </svelte:fragment>
 
-  {#if contentType && contentType.startsWith('image/')}
-    <div class="pdfviewer-content img">
-      <img class="img-fit" src={src} alt="" />
-    </div>
+
+  {#if type === 'video'}
+    <video controls preload={'auto'}>
+      <source src={src} />
+      <track kind="captions" label={value.name} />
+    </video>
+  {:else if type === 'audio'}
+    <AudioPlayer {value} fullSize={true} />
   {:else}
     <iframe class="pdfviewer-content" src={src + '#view=FitH&navpanes=0'} title="" />
   {/if}
@@ -102,26 +106,11 @@
     border-radius: 0.5rem;
     cursor: pointer;
   }
-  .pdfviewer-content {
-    flex-grow: 1;
-    overflow: auto;
-    border-style: none;
-    border-radius: 0.5rem;
-    background-color: var(--theme-bg-color);
 
-    &.img {
-      display: flex;
-      align-items: center;
-      min-width: 0;
-      min-height: 0;
-    }
-  }
-  .img-fit {
-    margin: 0 auto;
-    width: fit-content;
-    height: fit-content;
+  video {
     max-width: 100%;
     max-height: 100%;
-    object-fit: contain;
+    border-radius: 0.75rem;
   }
+
 </style>
