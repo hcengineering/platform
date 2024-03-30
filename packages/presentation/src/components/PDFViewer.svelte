@@ -81,7 +81,7 @@
 
   {#if contentType && contentType.startsWith('image/')}
     <div class="pdfviewer-content img">
-      <img class="img-fit" src={src} alt="" />
+      <img class="img-fit" {src} alt="" />
     </div>
   {:else}
     <iframe class="pdfviewer-content" src={src + '#view=FitH&navpanes=0'} title="" />

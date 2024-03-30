@@ -59,9 +59,7 @@
     return type === 'video' || type === 'audio'
   }
   function openEmbedded (contentType: string): boolean {
-    return (
-      getType(contentType) !== 'other'
-    )
+    return getType(contentType) !== 'other'
   }
 
   function clickHandler (e: MouseEvent): void {

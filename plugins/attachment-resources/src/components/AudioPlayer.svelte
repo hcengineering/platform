@@ -33,9 +33,7 @@
   $: icon = !paused ? Pause : Play
 </script>
 
-<div class="container flex-between"
-    class:fullSize={fullSize}
->
+<div class="container flex-between" class:fullSize>
   <div>
     <CircleButton size="x-large" on:click={buttonClick} {icon} />
   </div>

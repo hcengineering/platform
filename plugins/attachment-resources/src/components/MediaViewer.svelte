@@ -42,8 +42,6 @@
   $: src = getFileUrl(value.file, 'full', value.name)
 </script>
 
-
-
 <ActionContext context={{ mode: 'browser' }} />
 <Dialog
   isFullSize
@@ -79,10 +77,9 @@
     </a>
   </svelte:fragment>
 
-
   {#if type === 'video'}
     <video controls preload={'auto'}>
-      <source src={src} />
+      <source {src} />
       <track kind="captions" label={value.name} />
     </video>
   {:else if type === 'audio'}
@@ -112,5 +109,4 @@
     max-height: 100%;
     border-radius: 0.75rem;
   }
-
 </style>
