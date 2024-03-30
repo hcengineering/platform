@@ -103,6 +103,7 @@ services:
       - FRONT_URL=http://localhost:8083
       - ACCOUNTS_URL=http://account:3003
       - LAST_NAME_FIRST=true
+      - ELASTIC_INDEX_NAME=local_storage_index
   collaborator:
     image: hardcoreeng/collaborator
     links:

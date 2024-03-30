@@ -102,9 +102,9 @@ export const contentStageId = 'cnt-v2b'
 /**
  * @public
  */
-export const fieldStateId = 'fld-v13a'
+export const fieldStateId = 'fld-v13b'
 
 /**
  * @public
  */
-export const fullTextPushStageId = 'fts-v11a'
+export const fullTextPushStageId = 'fts-v11b'

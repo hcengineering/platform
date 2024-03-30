@@ -159,6 +159,7 @@ services:
       - SERVER_PROVIDER=ws
       - ACCOUNTS_URL=http://account:3000
       - LAST_NAME_FIRST=true
+      - ELASTIC_INDEX_NAME=local_storage_index
     restart: unless-stopped
   rekoni:
     image: hardcoreeng/rekoni-service

@@ -89,6 +89,12 @@ if (accountsUrl === undefined) {
   process.exit(1)
 }
 
+const elasticIndexName = process.env.ELASTIC_INDEX_NAME
+if (elasticIndexName === undefined) {
+  console.log('Please provide ELASTIC_INDEX_NAME')
+  process.exit(1)
+}
+
 const sesUrl = process.env.SES_URL
 const cursorMaxTime = process.env.SERVER_CURSOR_MAXTIMEMS
 
@@ -98,6 +104,7 @@ setMetadata(serverCore.metadata.FrontUrl, frontUrl)
 setMetadata(serverToken.metadata.Secret, serverSecret)
 setMetadata(serverNotification.metadata.SesUrl, sesUrl ?? '')
 setMetadata(contactPlugin.metadata.LastNameFirst, lastNameFirst)
+setMetadata(serverCore.metadata.ElasticIndexName, elasticIndexName)
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 console.log(

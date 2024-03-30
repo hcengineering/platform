@@ -482,6 +482,7 @@ export function devTool (
   program
     .command('backup <dirName> <workspace>')
     .description('dump workspace transactions and minio resources')
+    .requiredOption('-i --index <index>', 'Index name for elastic')
     .option('-s, --skip <skip>', 'A list of ; separated domain names to skip during backup', '')
     .option('-f, --force', 'Force backup', false)
     .action(async (dirName: string, workspace: string, cmd: { skip: string, force: boolean }) => {
