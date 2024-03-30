@@ -127,6 +127,9 @@ export class LiveQuery implements WithTx, Client {
     for (const q of [...this.queue]) {
       if (!this.removeFromQueue(q)) {
         try {
+          q.callbacks.forEach((callback) => {
+            callback(toFindResult([], 0))
+          })
           void this.refresh(q)
         } catch (err: any) {
           if (err instanceof PlatformError) {
@@ -141,6 +144,9 @@ export class LiveQuery implements WithTx, Client {
     for (const v of this.queries.values()) {
       for (const q of v) {
         try {
+          q.callbacks.forEach((callback) => {
+            callback(toFindResult([], 0))
+          })
           void this.refresh(q)
         } catch (err: any) {
           if (err instanceof PlatformError) {
