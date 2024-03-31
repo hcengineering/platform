@@ -38,13 +38,6 @@ export class ContactsPage extends CommonPage {
     this.buttonAddEmployee = page.getByRole('button', { name: /Employee/ })
     this.buttonAddPerson = page.getByRole('button', { name: /Person/ })
     this.buttonAddCompany = page.getByRole('button', { name: /Company/ })
-    this.formCreate = page.locator('form.antiCard')
-    this.inputFirstName = page.getByPlaceholder(/First name/)
-    this.inputLastName = page.getByPlaceholder(/Last name/)
-    this.inputEmail = page.getByPlaceholder(/Email/)
-    this.inputCompanyName = page.getByPlaceholder(/Company name/)
-    this.buttonCreate = page.getByRole('button', { name: /Create/ })
-    this.inputMergeContact = page.getByPlaceholder(/Search.../)
     this.buttonMergeContacts = page.getByRole('button', { name: /Merge contacts/ })
     this.buttonFinalContact = page.getByRole('button', { name: /Final contact/ })
     this.buttonShow = page.getByRole('button', { name: /Show/ })
@@ -56,7 +49,14 @@ export class ContactsPage extends CommonPage {
     this.textPublicLink = page.locator('[id="guest:string:PublicLink"] > .antiCard-content')
     this.buttonDeleteOk = page.locator('form[id="view:string:DeleteObject"] button[type="submit"]')
     this.buttonKickEmployee = page.getByRole('button', { name: /Kick employee/ })
+    this.buttonCreate = page.getByRole('button', { name: /Create/ })
     this.buttonOk = page.getByRole('button', { name: /Ok/ })
+    this.formCreate = page.locator('form.antiCard')
+    this.inputFirstName = page.getByPlaceholder(/First name/)
+    this.inputLastName = page.getByPlaceholder(/Last name/)
+    this.inputEmail = page.getByPlaceholder(/Email/)
+    this.inputCompanyName = page.getByPlaceholder(/Company name/)
+    this.inputMergeContact = page.getByPlaceholder(/Search.../)
   }
 
   getDataName(...name: string[]): Locator {
@@ -82,22 +82,22 @@ export class ContactsPage extends CommonPage {
   async checkDefaultToggleState (contactType: ContactType | string): Promise<void> {
     await this.buttonRestoreDefaults.click()
     let columnsToggleOn = [
-      Columns.Location, 
-      Columns.Attachments, 
-      Columns.ModifiedDate, 
-      Columns.Role, 
+      Columns.Location,
+      Columns.Attachments,
+      Columns.ModifiedDate,
+      Columns.Role,
       Columns.ContactInfo
     ]
     let columnsToggleOff = [
-      Columns.ModifiedBy, 
-      Columns.CreatedBy, 
-      Columns.CreatedDate, 
-      Columns.Birthday, 
-      Columns.Department, 
-      Columns.Title, 
-      Columns.Onsite, 
-      Columns.Remote, 
-      Columns.Source, 
+      Columns.ModifiedBy,
+      Columns.CreatedBy,
+      Columns.CreatedDate,
+      Columns.Birthday,
+      Columns.Department,
+      Columns.Title,
+      Columns.Onsite,
+      Columns.Remote,
+      Columns.Source,
       Columns.Description
     ]
 
