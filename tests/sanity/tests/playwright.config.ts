@@ -18,7 +18,8 @@ const config: PlaywrightTestConfig = {
           snapshots: true,
           screenshots: true,
           sources: true
-        }
+        },
+        permissions: ['clipboard-read', 'clipboard-write']
       }
     }
   ],

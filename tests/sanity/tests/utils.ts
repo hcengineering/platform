@@ -83,3 +83,7 @@ export async function attachScreenshot (name: string, page: Page): Promise<void>
   })
   await page.screenshot({ path: `screenshots/${name}` })
 }
+
+export async function getColorAttribute (locator: Locator): Promise<string> {
+  return await locator.evaluate(loc => window.getComputedStyle(loc).getPropertyValue('background-color'))
+}
