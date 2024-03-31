@@ -62,8 +62,11 @@
     }
   }
   export function submit (): void {
-    content = editor.getHTML()
-    dispatch('content', content)
+    const content = editor.getHTML().replace(/<[^>]*>/g, '');
+    if (!content.trim()) {
+      return;
+    }
+    dispatch('content', content);
   }
   export function setContent (newContent: string): void {
     if (content !== newContent) {
