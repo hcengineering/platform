@@ -20,7 +20,7 @@
   import { createQuery, getClient, getFileUrl, PDFViewer } from '@hcengineering/presentation'
   import { Button, IconAdd, Label, showPopup, Spinner } from '@hcengineering/ui'
   import attachment from '../plugin'
-  import { uploadFile } from '../utils'
+  import { uploadFile, deleteFile } from '../utils'
   import UploadDuo from './icons/UploadDuo.svelte'
 
   export let objectId: Ref<Doc>
@@ -59,6 +59,15 @@
       setPlatformStatus(unknownError(err))
     } finally {
       loading--
+    }
+  }
+
+  async function deleteImage (id: string) {
+    try {
+      const deletedImage = await deleteFile(id)
+      console.log('Deleted Image: ', deletedImage)
+    } catch (err: any) {
+      setPlatformStatus(unknownError(err))
     }
   }
 
