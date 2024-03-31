@@ -45,12 +45,6 @@
 
     onRemove()
   }
-
-  function handleCopyUrl (): void {
-    if (issue !== undefined) {
-      void copyTextToClipboard(params?.issueUrl)
-    }
-  }
 </script>
 
 <NotificationToast title={notification.title} severity={notification.severity} onClose={onRemove}>
@@ -73,6 +67,6 @@
 
   <svelte:fragment slot="buttons">
     <Button label={tracker.string.ViewIssue} on:click={handleIssueOpened} />
-    <Button icon={view.icon.CopyLink} label={tracker.string.CopyIssueUrl} on:click={handleCopyUrl} />
+    <Button icon={view.icon.CopyLink} label={tracker.string.CopyIssueUrl} on:click={() => copyTextToClipboard(params?.issueUrl)} />
   </svelte:fragment>
 </NotificationToast>
