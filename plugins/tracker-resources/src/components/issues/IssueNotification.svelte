@@ -17,6 +17,7 @@
 
   let issue: Issue | undefined = undefined
   let status: IssueStatus | undefined = undefined
+  let copiedSuccessfully : boolean = false
 
   const { subTitle, params } = notification
 
@@ -47,8 +48,21 @@
   }
 
   function handleCopyUrl (): void {
+    copiedSuccessfully=true
+
+  
+    
     if (issue !== undefined) {
       void copyTextToClipboard(params?.issueUrl)
+      .then(() => {
+        copiedSuccessfully=true
+      })
+      .catch((error) => {
+          console.error('Failed to copy URL to clipboard:', error);
+          copiedSuccessfully = false;
+        });
+       
+   
     }
   }
 </script>
@@ -74,5 +88,10 @@
   <svelte:fragment slot="buttons">
     <Button label={tracker.string.ViewIssue} on:click={handleIssueOpened} />
     <Button icon={view.icon.CopyLink} label={tracker.string.CopyIssueUrl} on:click={handleCopyUrl} />
+
+    {#if copiedSuccessfully}
+    <div class="alert alert-success">Copied to clipboard successfully!</div>
+  {/if}
+   
   </svelte:fragment>
 </NotificationToast>
