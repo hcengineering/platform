@@ -1,0 +1,25 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Install Huly CLI",
+            "type": "shell",
+            "command": "cd dev/CLI/huly && poetry install",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Print Installation Message",
+            "type": "shell",
+            "command": "echo 'Huly CLI installed. Run: `huly --help` to see options.'",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        }
+    ]
+}
