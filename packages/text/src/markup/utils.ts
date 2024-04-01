@@ -19,7 +19,8 @@ import { generateHTML, generateJSON } from '@tiptap/html'
 import { Node as ProseMirrorNode, Schema } from '@tiptap/pm/model'
 
 import { defaultExtensions } from '../extensions'
-import { MarkupNode, MarkupNodeType, emptyMarkupNode } from './model'
+import { MarkupNode, emptyMarkupNode } from './model'
+import { nodeDoc, nodeParagraph, nodeText } from './dsl'
 
 /** @public */
 export const EmptyMarkup: Markup = jsonToMarkup(emptyMarkupNode())
@@ -84,7 +85,7 @@ export function markupToJSON (markup: Markup): MarkupNode {
     } else if (markup.startsWith('<')) {
       return htmlToJSON(markup, defaultExtensions)
     } else {
-      return makeSingleParagraphDoc(markup)
+      return nodeDoc(nodeParagraph(nodeText(markup)))
     }
   } catch (error) {
     return emptyMarkupNode()
@@ -153,24 +154,6 @@ export function pmNodeToHTML (node: ProseMirrorNode, extensions?: Extensions): s
 }
 
 // UTILS
-
-/** @public */
-export function makeSingleParagraphDoc (value: string): MarkupNode {
-  return {
-    type: MarkupNodeType.doc,
-    content: [
-      {
-        type: MarkupNodeType.paragraph,
-        content: [
-          {
-            type: MarkupNodeType.text,
-            text: value
-          }
-        ]
-      }
-    ]
-  }
-}
 
 const ELLIPSIS_CHAR = '…'
 const WHITESPACE = ' '

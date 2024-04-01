@@ -40,7 +40,7 @@ import {
   isShouldNotifyTx
 } from '@hcengineering/server-notification-resources'
 import task, { makeRank } from '@hcengineering/task'
-import { jsonToMarkup, makeSingleParagraphDoc } from '@hcengineering/text'
+import { jsonToMarkup, nodeDoc, nodeParagraph, nodeText } from '@hcengineering/text'
 import tracker, { Issue, IssueStatus, Project, TimeSpendReport } from '@hcengineering/tracker'
 import serverTime, { OnToDo, ToDoFactory } from '@hcengineering/server-time'
 import time, { ProjectToDo, ToDo, ToDoPriority, TodoAutomationHelper, WorkSlot } from '@hcengineering/time'
@@ -197,7 +197,7 @@ export async function OnToDoCreate (tx: TxCUD<Doc>, control: TriggerControl): Pr
     headerIcon: time.icon.Planned,
     headerObjectId: object._id,
     headerObjectClass: object._class,
-    messageHtml: jsonToMarkup(makeSingleParagraphDoc(todo.title))
+    messageHtml: jsonToMarkup(nodeDoc(nodeParagraph(nodeText(todo.title))))
   }
 
   res.push(

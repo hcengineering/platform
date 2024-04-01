@@ -17,221 +17,328 @@
 // limitations under the License.
 //
 
-import { Editor } from '@tiptap/core'
+import { Editor, getSchema } from '@tiptap/core'
 import { MarkupMarkType, MarkupNode, MarkupNodeType } from '../model'
 import {
   EmptyMarkup,
   areEqualMarkups,
   getMarkup,
+  htmlToJSON,
   htmlToMarkup,
+  htmlToPmNode,
   isEmptyMarkup,
+  jsonToHTML,
   jsonToMarkup,
   jsonToText,
-  makeSingleParagraphDoc,
   markupToHTML,
-  markupToJSON
+  markupToJSON,
+  markupToPmNode,
+  pmNodeToHTML,
+  pmNodeToJSON,
+  pmNodeToMarkup
 } from '../utils'
 import { ServerKit } from '../../kits/server-kit'
+import { nodeDoc, nodeParagraph, nodeText } from '../dsl'
+
+// mock tiptap functions
+jest.mock('@tiptap/html', () => ({
+  generateHTML: jest.fn(() => '<p>hello</p>'),
+  generateJSON: jest.fn(() => (
+    {
+      type: 'doc',
+      content: [
+        { type: 'paragraph', content: [{ type: 'text', text: 'hello' }] }
+      ]
+    }
+  ))
+}))
 
 const extensions = [ServerKit]
 
-describe('markup', () => {
-  it('EmptyMarkup', async () => {
+describe('EmptyMarkup', () => {
+  it('is empty markup', async () => {
     const editor = new Editor({ extensions })
     expect(getMarkup(editor)).toEqual(EmptyMarkup)
   })
-  describe('getMarkup', () => {
-    it('with empty content', async () => {
-      const editor = new Editor({ extensions })
-      expect(getMarkup(editor)).toEqual('{"type":"doc","content":[{"type":"paragraph"}]}')
-    })
-    it('with some content', async () => {
-      const editor = new Editor({ extensions, content: '<p>hello</p>' })
-      expect(getMarkup(editor)).toEqual(
-        '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
-      )
-    })
-    it('with empty paragraphs as content', async () => {
-      const editor = new Editor({ extensions, content: '<p></p><p></p>' })
-      expect(getMarkup(editor)).toEqual('{"type":"doc","content":[{"type":"paragraph"},{"type":"paragraph"}]}')
+})
+
+describe('getMarkup', () => {
+  it('with empty content', async () => {
+    const editor = new Editor({ extensions })
+    expect(getMarkup(editor)).toEqual('{"type":"doc","content":[{"type":"paragraph"}]}')
+  })
+  it('with some content', async () => {
+    const editor = new Editor({ extensions, content: '<p>hello</p>' })
+    expect(getMarkup(editor)).toEqual(
+      '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
+    )
+  })
+  it('with empty paragraphs as content', async () => {
+    const editor = new Editor({ extensions, content: '<p></p><p></p>' })
+    expect(getMarkup(editor)).toEqual('{"type":"doc","content":[{"type":"paragraph"},{"type":"paragraph"}]}')
+  })
+})
+
+describe('isEmptyMarkup', () => {
+  it('returns true for undefined content', async () => {
+    expect(isEmptyMarkup(undefined)).toBeTruthy()
+    expect(isEmptyMarkup('')).toBeTruthy()
+  })
+  it('returns true for empty content', async () => {
+    const editor = new Editor({ extensions })
+    expect(isEmptyMarkup(getMarkup(editor))).toBeTruthy()
+  })
+  it('returns true for empty paragraphs content', async () => {
+    const editor = new Editor({ extensions, content: '<p></p><p></p><p></p>' })
+    expect(isEmptyMarkup(getMarkup(editor))).toBeTruthy()
+  })
+  it('returns true for empty paragraphs content with spaces', async () => {
+    const editor = new Editor({ extensions, content: '<p> </p><p> </p><p> </p>' })
+    expect(isEmptyMarkup(getMarkup(editor))).toBeTruthy()
+  })
+  it('returns false for not empty content', async () => {
+    const editor = new Editor({ extensions, content: '<p>hello</p>' })
+    expect(isEmptyMarkup(getMarkup(editor))).toBeFalsy()
+  })
+})
+
+describe('areEqualMarkups', () => {
+  it('returns true for the same content', async () => {
+    const markup = '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
+    expect(areEqualMarkups(markup, markup)).toBeTruthy()
+  })
+  it('returns true for the same content with different spaces', async () => {
+    const markup1 = '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
+    const markup2 =
+      '{"type":"doc","content":[{"type":"hardBreak"},{"type":"paragraph","content":[{"type":"text","text":"hello"}]},{"type":"hardBreak"}]}'
+    expect(areEqualMarkups(markup1, markup2)).toBeTruthy()
+  })
+  it('returns false for different content', async () => {
+    const markup1 = '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
+    const markup2 = '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"world"}]}]}'
+    expect(areEqualMarkups(markup1, markup2)).toBeFalsy()
+  })
+})
+
+describe('pmNodeToMarkup', () => {
+  it('converts ProseMirrorNode to Markup', () => {
+    const schema = getSchema(extensions)
+    const node = schema.node('paragraph', {}, [schema.text('Hello, world!')])
+
+    expect(pmNodeToMarkup(node)).toEqual('{"type":"paragraph","content":[{"type":"text","text":"Hello, world!"}]}')
+  })
+})
+
+describe('markupToPmNode', () => {
+  it('converts markup to ProseMirrorNode', () => {
+    const markup = '{"type":"paragraph","content":[{"type":"text","text":"Hello, world!"}]}'
+    const node = markupToPmNode(markup)
+
+    expect(node.type.name).toEqual('paragraph')
+    expect(node.content.childCount).toEqual(1)
+    expect(node.content.child(0).type.name).toEqual('text')
+    expect(node.content.child(0).text).toEqual('Hello, world!')
+  })
+})
+
+describe('markupToJSON', () => {
+  it('with empty content', async () => {
+    expect(markupToJSON('')).toEqual({ type: 'doc', content: [{ type: 'paragraph' }] })
+  })
+  it('with some content', async () => {
+    const markup = '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
+    expect(markupToJSON(markup)).toEqual({
+      type: 'doc',
+      content: [{ type: 'paragraph', content: [{ type: 'text', text: 'hello' }] }]
     })
   })
-  describe('markupToJSON', () => {
-    it('with empty content', async () => {
-      expect(markupToJSON('')).toEqual({ type: 'doc', content: [{ type: 'paragraph' }] })
-    })
-    it('with some content', async () => {
-      const markup = '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
-      expect(markupToJSON(markup)).toEqual({
-        type: 'doc',
-        content: [{ type: 'paragraph', content: [{ type: 'text', text: 'hello' }] }]
-      })
-    })
+})
+
+describe('jsonToMarkup', () => {
+  it('with some content', async () => {
+    const json: MarkupNode = {
+      type: MarkupNodeType.doc,
+      content: [
+        {
+          type: MarkupNodeType.paragraph,
+          content: [
+            {
+              type: MarkupNodeType.text,
+              text: 'hello'
+            }
+          ]
+        }
+      ]
+    }
+    expect(jsonToMarkup(json)).toEqual(
+      '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
+    )
   })
-  describe('jsonToMarkup', () => {
-    it('with some content', async () => {
-      const json: MarkupNode = {
-        type: MarkupNodeType.doc,
-        content: [
-          {
-            type: MarkupNodeType.paragraph,
-            content: [
-              {
-                type: MarkupNodeType.text,
-                text: 'hello'
+})
+
+describe('pmNodeToJSON', () => {
+  it('converts ProseMirrorNode to Markup', () => {
+    const schema = getSchema(extensions)
+    const node = schema.node('paragraph', {}, [schema.text('Hello, world!')])
+
+    const json = nodeParagraph(nodeText('Hello, world!'))
+    expect(pmNodeToJSON(node)).toEqual(json)
+  })
+})
+
+describe('jsonToPmNode', () => {
+  it('converts json to ProseMirrorNode', () => {
+    const markup = '{"type":"paragraph","content":[{"type":"text","text":"Hello, world!"}]}'
+    const node = markupToPmNode(markup)
+
+    expect(node.type.name).toEqual('paragraph')
+    expect(node.content.childCount).toEqual(1)
+    expect(node.content.child(0).type.name).toEqual('text')
+    expect(node.content.child(0).text).toEqual('Hello, world!')
+  })
+})
+
+describe('htmlToMarkup', () => {
+  it('converts HTML to Markup', () => {
+    const html = '<p>hello</p>'
+    const expectedMarkup =
+      '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
+    expect(htmlToMarkup(html)).toEqual(expectedMarkup)
+  })
+})
+
+describe('markupToHTML', () => {
+  it('converts markup to HTML', () => {
+    const markup =
+    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
+    const expectedHtml = '<p>hello</p>'
+    expect(markupToHTML(markup)).toEqual(expectedHtml)
+  })
+})
+
+describe('htmlToJSON', () => {
+  it('converts HTML to JSON', () => {
+    const html = '<p>hello</p>'
+    const json = nodeDoc(nodeParagraph(nodeText('hello')))
+    expect(htmlToJSON(html)).toEqual(json)
+  })
+})
+
+describe('jsonToHTML', () => {
+  it('converts JSON to HTML', () => {
+    const json = nodeDoc(nodeParagraph(nodeText('hello')))
+    const html = '<p>hello</p>'
+    expect(jsonToHTML(json)).toEqual(html)
+  })
+})
+
+describe('pmNodeToHTML', () => {
+  it('converts ProseMirrorNode to HTML', () => {
+    const schema = getSchema(extensions)
+    const node = schema.node('paragraph', {}, [schema.text('hello')])
+
+    expect(pmNodeToHTML(node)).toEqual('<p>hello</p>')
+  })
+})
+
+describe('htmlToPmNode', () => {
+  it('converts html to ProseMirrorNode', () => {
+    const node = htmlToPmNode('<p>hello</p>')
+
+    expect(node.type.name).toEqual('doc')
+    expect(node.content.childCount).toEqual(1)
+    expect(node.content.child(0).type.name).toEqual('paragraph')
+    expect(node.content.child(0).childCount).toEqual(1)
+    expect(node.content.child(0).child(0).type.name).toEqual('text')
+    expect(node.content.child(0).child(0).text).toEqual('hello')
+  })
+})
+
+describe('jsonToText', () => {
+  it('returns text for text node', () => {
+    const node: MarkupNode = {
+      type: MarkupNodeType.paragraph,
+      content: [
+        {
+          type: MarkupNodeType.text,
+          text: 'Hello, world!'
+        }
+      ]
+    }
+    expect(jsonToText(node)).toEqual('Hello, world!')
+  })
+  it('returns concatenated text for block node with multiple children', () => {
+    const node: MarkupNode = {
+      type: MarkupNodeType.paragraph,
+      content: [
+        {
+          type: MarkupNodeType.text,
+          text: 'Hello '
+        },
+        {
+          type: MarkupNodeType.text,
+          text: 'world!'
+        }
+      ]
+    }
+    expect(jsonToText(node)).toEqual('Hello world!')
+  })
+  it('returns text for node with link', () => {
+    const node: MarkupNode = {
+      type: MarkupNodeType.paragraph,
+      content: [
+        {
+          type: MarkupNodeType.text,
+          text: 'Hello! Check out '
+        },
+        {
+          type: MarkupNodeType.text,
+          text: 'this page',
+          marks: [
+            {
+              type: MarkupMarkType.link,
+              attrs: {
+                href: 'http://example.com/'
               }
-            ]
-          }
-        ]
-      }
-      expect(jsonToMarkup(json)).toEqual(
-        '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
-      )
-    })
+            }
+          ]
+        },
+        {
+          type: MarkupNodeType.text,
+          text: '!'
+        }
+      ]
+    }
+    expect(jsonToText(node)).toEqual('Hello! Check out this page!')
   })
-  describe('htmlToMarkup', () => {
-    it('converts HTML to Markup', () => {
-      const html = '<p>Hello, world!</p>'
-      const expectedMarkup =
-        '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Hello, world!"}]}]}'
-      expect(htmlToMarkup(html)).toEqual(expectedMarkup)
-    })
+  it('returns empty string for block node with no children', () => {
+    const node: MarkupNode = {
+      type: MarkupNodeType.paragraph,
+      content: []
+    }
+    expect(jsonToText(node)).toEqual('')
   })
-  describe('markupToHTML', () => {
-    it('converts markup to HTML', () => {
-      const markup =
-        '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Hello, world!"}]}]}'
-      const expectedHtml = '<p>Hello, World!</p>'
-      expect(markupToHTML(markup)).toEqual(expectedHtml)
-    })
+  it('returns error for text node with no text', () => {
+    const node: MarkupNode = {
+      type: MarkupNodeType.text,
+      text: ''
+    }
+    expect(() => jsonToText(node)).toThrow('Empty text nodes are not allowed')
   })
-  describe('jsonToText', () => {
-    it('returns empty string for text node with no text', () => {
-      const node: MarkupNode = {
-        type: MarkupNodeType.text,
-        text: undefined
-      }
-      expect(jsonToText(node)).toEqual('')
-    })
-    it('returns text for text node', () => {
-      const node: MarkupNode = {
-        type: MarkupNodeType.text,
-        text: 'Hello, world!'
-      }
-      expect(jsonToText(node)).toEqual('Hello, world!')
-    })
-    it('returns concatenated text for block node with multiple children', () => {
-      const node: MarkupNode = {
-        type: MarkupNodeType.paragraph,
-        content: [
-          {
-            type: MarkupNodeType.text,
-            text: 'Hello '
-          },
-          {
-            type: MarkupNodeType.text,
-            text: 'world!'
-          }
-        ]
-      }
-      expect(jsonToText(node)).toEqual('Hello world!')
-    })
-    it('returns text for node with link', () => {
-      const node: MarkupNode = {
-        type: MarkupNodeType.paragraph,
-        content: [
-          {
-            type: MarkupNodeType.text,
-            text: 'Hello! Check out '
-          },
-          {
-            type: MarkupNodeType.text,
-            text: 'this page',
-            marks: [
-              {
-                type: MarkupMarkType.link,
-                attrs: {
-                  href: 'http://example.com/'
-                }
-              }
-            ]
-          },
-          {
-            type: MarkupNodeType.text,
-            text: '!'
-          }
-        ]
-      }
-      expect(jsonToText(node)).toEqual('Hello! Check out this page!')
-    })
-    it('returns empty string for block node with no children', () => {
-      const node: MarkupNode = {
-        type: MarkupNodeType.paragraph,
-        content: []
-      }
-      expect(jsonToText(node)).toEqual('')
-    })
-    it('returns empty string for block node with empty children', () => {
-      const node: MarkupNode = {
-        type: MarkupNodeType.paragraph,
-        content: [
-          {
-            type: MarkupNodeType.text,
-            text: ''
-          },
-          {
-            type: MarkupNodeType.text,
-            text: ''
-          }
-        ]
-      }
-      expect(jsonToText(node)).toEqual('')
-    })
-  })
-  describe('isEmptyMarkup', () => {
-    it('returns true for undefined content', async () => {
-      expect(isEmptyMarkup(undefined)).toBeTruthy()
-      expect(isEmptyMarkup('')).toBeTruthy()
-    })
-    it('returns true for empty content', async () => {
-      const editor = new Editor({ extensions })
-      expect(isEmptyMarkup(getMarkup(editor))).toBeTruthy()
-    })
-    it('returns true for empty paragraphs content', async () => {
-      const editor = new Editor({ extensions, content: '<p></p><p></p><p></p>' })
-      expect(isEmptyMarkup(getMarkup(editor))).toBeTruthy()
-    })
-    it('returns true for empty paragraphs content with spaces', async () => {
-      const editor = new Editor({ extensions, content: '<p> </p><p> </p><p> </p>' })
-      expect(isEmptyMarkup(getMarkup(editor))).toBeTruthy()
-    })
-    it('returns false for not empty content', async () => {
-      const editor = new Editor({ extensions, content: '<p>hello</p>' })
-      expect(isEmptyMarkup(getMarkup(editor))).toBeFalsy()
-    })
-  })
-  describe('areEqualMarkups', () => {
-    it('returns true for the same content', async () => {
-      const markup = '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
-      expect(areEqualMarkups(markup, markup)).toBeTruthy()
-    })
-    it('returns true for the same content with different spaces', async () => {
-      const markup1 = '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
-      const markup2 =
-        '{"type":"doc","content":[{"type":"hardBreak"},{"type":"paragraph","content":[{"type":"text","text":"hello"}]},{"type":"hardBreak"}]}'
-      expect(areEqualMarkups(markup1, markup2)).toBeTruthy()
-    })
-    it('returns false for different content', async () => {
-      const markup1 = '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
-      const markup2 = '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"world"}]}]}'
-      expect(areEqualMarkups(markup1, markup2)).toBeFalsy()
-    })
-  })
-  describe('makeSingleParagraphDoc', () => {
-    it('returns a single paragraph doc', async () => {
-      expect(jsonToMarkup(makeSingleParagraphDoc('hello'))).toEqual(
-        '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
-      )
-    })
+  it('returns error for block node with empty children', () => {
+    const node: MarkupNode = {
+      type: MarkupNodeType.paragraph,
+      content: [
+        {
+          type: MarkupNodeType.text,
+          text: ''
+        },
+        {
+          type: MarkupNodeType.text,
+          text: ''
+        }
+      ]
+    }
+    expect(() => jsonToText(node)).toThrow('Empty text nodes are not allowed')
   })
 })

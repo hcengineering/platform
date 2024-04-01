@@ -14,6 +14,7 @@
 //
 
 export * from './extensions'
+export * from './markup/dsl'
 export * from './markup/model'
 export * from './markup/traverse'
 export * from './markup/utils'
