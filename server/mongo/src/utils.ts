@@ -30,7 +30,7 @@ process.on('exit', () => {
  */
 export async function shutdown (): Promise<void> {
   for (const c of connections.values()) {
-    await c.close(true)
+    c.close(true)
   }
   connections.clear()
 }
@@ -39,7 +39,10 @@ export class MongoClientReference {
   count: number
   client: MongoClient | Promise<MongoClient>
 
-  constructor (client: MongoClient | Promise<MongoClient>) {
+  constructor (
+    client: MongoClient | Promise<MongoClient>,
+    readonly onclose: () => void
+  ) {
     this.count = 1
     this.client = client
   }
@@ -51,13 +54,16 @@ export class MongoClientReference {
     return this.client
   }
 
-  async close (force: boolean = false): Promise<void> {
+  close (force: boolean = false): void {
     this.count--
     if (this.count === 0 || force) {
       if (force) {
         this.count = 0
       }
-      await (await this.client).close()
+      this.onclose()
+      void (async () => {
+        await (await this.client).close()
+      })()
     }
   }
 
@@ -76,14 +82,17 @@ export function getMongoClient (uri: string, options?: MongoClientOptions): Mong
   let existing = connections.get(key)
 
   // If not created or closed
-  if (existing === undefined || existing.count === 0) {
+  if (existing === undefined) {
     existing = new MongoClientReference(
       MongoClient.connect(uri, {
         ...options,
         enableUtf8Validation: false,
         maxConnecting: 1024,
         ...extraOptions
-      })
+      }),
+      () => {
+        connections.delete(key)
+      }
     )
     connections.set(key, existing)
   } else {

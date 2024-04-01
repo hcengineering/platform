@@ -146,7 +146,7 @@ abstract class MongoAdapterBase implements DbAdapter {
   }
 
   async close (): Promise<void> {
-    await this.client.close()
+    this.client.close()
   }
 
   private translateQuery<T extends Doc>(clazz: Ref<Class<T>>, query: DocumentQuery<T>): Filter<Document> {
