@@ -315,12 +315,9 @@ test.describe('contact tests', () => {
     await email.fill(mail)
     await page.locator('.antiCard button:has-text("Create")').click()
     await page.waitForSelector('form.antiCard', { state: 'detached' })
-    // Kick employee
-    // Click #context-menu svg
     await page.hover(`td:has-text("${last} ${first}")`)
     await page.click(`td:has-text("${last} ${first}")`, { button: 'right' })
     await page.click('text="Kick employee"')
-    // Click text=Ok
     await page.click('text=Ok')
     await expect(page.locator(`td:has-text("${last} ${first}")`)).toHaveCount(1)
   })
