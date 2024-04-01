@@ -1,4 +1,5 @@
 import typer
+import subprocess
 
 app = typer.Typer()
 
@@ -18,8 +19,13 @@ def shoot():
 
 
 @app.command()
-def load():
+def fast_start():
     """
-    Load the portal gun
+    Run the fast start script
     """
-    typer.echo("Loading portal gun")
+    typer.echo("Running fast start script...")
+    try:
+        subprocess.run(["sh", "./scripts/fast-start.sh"], check=True)
+        typer.echo("Fast start completed successfully!")
+    except subprocess.CalledProcessError as e:
+        typer.echo(f"Error running fast start script: {e}")
