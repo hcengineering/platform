@@ -45,6 +45,61 @@ This project offers a convenient method to host Huly using `docker`, designed fo
   - [Docker Compose](https://docs.docker.com/compose/install/)
 - Make sure what docker and `docker compose` commands are available in your terminal (e.g. `docker --version` and `docker compose --version`).
 - Make sure what docker and `docker compose` commands can be executed without sudo (e.g. `docker run hello-world` and `docker compose --version`).
+## Installing Node.js:
+Node.js is a JavaScript runtime that allows you to run JavaScript code outside of a web browser.
+
+
+### Via Package Manager:
+
+- On Linux (using apt):
+  ```bash
+  sudo apt update
+  sudo apt install nodejs npm
+  ```
+  - On macOS using Homebrew:
+    ```bash
+  brew install node
+  ```
+- On Windows (using Chocolatey):
+```bash
+choco install nodejs
+```
+## Manual Installation:
+ 1. Download the latest version from the official website [here](https://nodejs.org/en/download/).
+ 2. Run the installer and follow the instructions.
+
+After installing, open your terminal or command prompt and type `node` to verify if it was installed correctly. 
+
+## Installing Docker:
+Docker is a platform for developing, shipping, and running applications in containers.
+
+## On Linux:
+Follow the instructions provided in the [Docker documentation](https://docs.docker.com/engine/install/) for installing Docker Engine on your Linux distribution.
+
+## On macOS:
+Download and install Docker Desktop for Mac from the [Docker Hub](https://hub.docker.com/editions/community/docker-ce-desktop-mac).
+
+## On Windows:
+Download and install Docker Desktop for Windows from the [Docker Hub](https://hub.docker.com/editions/community/docker-ce-desktop-windows).
+
+## Installing Docker Compose:
+Docker Compose is a tool for defining and running multi-container Docker applications.
+
+### Using Python Package Manager (pip):
+```bash
+sudo pip install docker-compose
+```
+## Direct Download:
+You can download the Docker Compose binary from the [official GitHub repository](https://github.com/docker/compose/releases) and place it in your system's PATH.
+
+## Verifying Installations:
+After installation, you can verify if Node.js, Docker, and Docker Compose were installed successfully by running the following commands:
+
+### Node.js and npm:
+```bash
+node -v
+npm -v
+```
 
 ## Fast start
 
