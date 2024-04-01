@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { fillSearch, generateId, PlatformSetting, PlatformURI } from './utils'
+import { fillSearch, generateId, PlatformSetting, PlatformURI, getRandomNumber } from './utils'
 import { LeftSideMenuPage } from './model/left-side-menu-page'
 import { ContactsPage } from './model/contacts/contacts-page'
 import { Columns, ContactType } from './enums'
@@ -36,18 +36,21 @@ test.describe('contact tests', () => {
   })
   test('contact-search', async ({ page }) => {
     await contactsPage.menuPerson.click()
+    // check if there are contacts
+    await expect(contactsPage.getContactRow(0)).toBeVisible()
 
-    await expect(page.locator('text=M. Marina')).toBeVisible()
-    expect(await page.locator('.antiTable-body__row').count()).toBeGreaterThanOrEqual(5)
+    // select random contact to search
+    const totalRows = await contactsPage.getContactRow().count()
+    const rowToSearch = getRandomNumber(0, totalRows - 1)
+    const searchValue = await contactsPage.getContactRow(rowToSearch).textContent() as string
 
-    await fillSearch(page, 'Marina')
+    // search for contact
+    await fillSearch(page, searchValue)
+    await expect(contactsPage.getContactName(searchValue)).toHaveCount(1)
 
-    await expect(page.locator('.antiTable-body__row')).toHaveCount(1, { timeout: 15000})
-
+    // clear search
     await fillSearch(page, '')
-
-    await expect(page.locator('text=P. Andrey')).toBeVisible()
-    expect(await page.locator('.antiTable-body__row').count()).toBeGreaterThan(3)
+    await expect(contactsPage.getContactRow()).toHaveCount(totalRows)
   })
 
   test('delete-contact', async () => {
@@ -120,7 +123,7 @@ test.describe('contact tests', () => {
     await contactsPage.checkDefaultToggleState(ContactType.Company)
   })
 
-  test('merge employee contact', async () => {
+  test('merge employee contact to final contact from search', async () => {
     await contactsPage.menuEmployee.click()
 
     // create first employee
@@ -141,7 +144,28 @@ test.describe('contact tests', () => {
     await contactsPage.mergeContacts(lname1, fname1, lname2, fname2)
   })
 
-  test('merge person contact', async () => {
+  test('merge employee contact to current selected contact', async () => {
+    await contactsPage.menuEmployee.click()
+
+    // create first employee
+    const fname1 = 'fname-' + generateId(5)
+    const lname1 = 'lname-' + generateId(5)
+    const email1 = 'email@' + generateId(5)
+
+    await contactsPage.addEmployee(fname1, lname1, email1)
+
+    // create second employee
+    const fname2 = 'fname-' + generateId(5)
+    const lname2 = 'lname-' + generateId(5)
+    const email2 = 'email@' + generateId(5)
+
+    await contactsPage.addEmployee(fname2, lname2, email2)
+
+    // merge contacts from first employee to second employee
+    await contactsPage.mergeContacts(lname1, fname1, lname2, fname2, false)
+  })
+
+  test('merge person contact to final contact from search', async () => {
     await contactsPage.menuPerson.click()
 
     // create first person
@@ -152,7 +176,7 @@ test.describe('contact tests', () => {
 
     // create second person
     const fname2 = 'fname-' + generateId(5)
-    const lname2 = 'last-' + generateId(5)
+    const lname2 = 'lname-' + generateId(5)
 
     await contactsPage.addPerson(fname2, lname2)
 
@@ -161,5 +185,27 @@ test.describe('contact tests', () => {
 
     // delete merged contact
     await contactsPage.deleteContact(lname1, fname1)
+  })
+
+  test('merge person contact to current selected contact', async () => {
+    await contactsPage.menuPerson.click()
+
+    // create first person
+    const fname1 = 'fname-' + generateId(5)
+    const lname1 = 'lname-' + generateId(5)
+
+    await contactsPage.addPerson(fname1, lname1)
+
+    // create second person
+    const fname2 = 'fname-' + generateId(5)
+    const lname2 = 'lname-' + generateId(5)
+
+    await contactsPage.addPerson(fname2, lname2)
+
+    // merge contacts from first person to second person
+    await contactsPage.mergeContacts(lname1, fname1, lname2, fname2, false)
+
+    // delete merged contact
+    await contactsPage.deleteContact(lname2, fname2)
   })
 })

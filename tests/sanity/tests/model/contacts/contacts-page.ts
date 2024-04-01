@@ -29,6 +29,7 @@ export class ContactsPage extends CommonPage {
   readonly buttonDeleteOk: Locator
   readonly buttonKickEmployee: Locator
   readonly buttonOk: Locator
+  readonly textSelectedMergeContact: Locator
 
   constructor (readonly page: Page) {
     super()
@@ -38,6 +39,13 @@ export class ContactsPage extends CommonPage {
     this.buttonAddEmployee = page.getByRole('button', { name: /Employee/ })
     this.buttonAddPerson = page.getByRole('button', { name: /Person/ })
     this.buttonAddCompany = page.getByRole('button', { name: /Company/ })
+    this.formCreate = page.locator('form.antiCard')
+    this.inputFirstName = page.getByPlaceholder(/First name/)
+    this.inputLastName = page.getByPlaceholder(/Last name/)
+    this.inputEmail = page.getByPlaceholder(/Email/)
+    this.inputCompanyName = page.getByPlaceholder(/Company name/)
+    this.buttonCreate = page.getByRole('button', { name: /Create/ })
+    this.inputMergeContact = page.getByPlaceholder(/Search.../)
     this.buttonMergeContacts = page.getByRole('button', { name: /Merge contacts/ })
     this.buttonFinalContact = page.getByRole('button', { name: /Final contact/ })
     this.buttonShow = page.getByRole('button', { name: /Show/ })
@@ -49,22 +57,17 @@ export class ContactsPage extends CommonPage {
     this.textPublicLink = page.locator('[id="guest:string:PublicLink"] > .antiCard-content')
     this.buttonDeleteOk = page.locator('form[id="view:string:DeleteObject"] button[type="submit"]')
     this.buttonKickEmployee = page.getByRole('button', { name: /Kick employee/ })
-    this.buttonCreate = page.getByRole('button', { name: /Create/ })
     this.buttonOk = page.getByRole('button', { name: /Ok/ })
-    this.formCreate = page.locator('form.antiCard')
-    this.inputFirstName = page.getByPlaceholder(/First name/)
-    this.inputLastName = page.getByPlaceholder(/Last name/)
-    this.inputEmail = page.getByPlaceholder(/Email/)
-    this.inputCompanyName = page.getByPlaceholder(/Company name/)
-    this.inputMergeContact = page.getByPlaceholder(/Search.../)
+    this.textSelectedMergeContact = page.locator('.antiPopup')
   }
 
-  getDataName(...name: string[]): Locator {
+  getContactName (...name: string[]): Locator {
     return this.page.locator(`td:has-text("${name.join(' ')}")`)
   }
 
-  getContactRow (rowPosition: number): Locator {
-    return this.page.locator('td a[href*="contact"]').nth(rowPosition)
+  getContactRow (rowPosition?: number): Locator {
+    const locator = this.page.locator('td a[href*="contact"]')
+    return rowPosition === undefined ? locator : locator.nth(rowPosition)
   }
 
   getMergeContact (...name: string[]): Locator {
@@ -79,35 +82,39 @@ export class ContactsPage extends CommonPage {
     return this.page.locator(`[class="antiTable-cells"] >> text="${columnName}"`)
   }
 
+  getMergeContactCheckbox (...name: string[]): Locator {
+    return this.page.locator('[id="contact:string:MergePersons"]').getByText(/Name/).locator(` ~ :has-text("${name.join(' ')}") label`)
+  }
+
   async checkDefaultToggleState (contactType: ContactType | string): Promise<void> {
     await this.buttonRestoreDefaults.click()
     let columnsToggleOn = [
-      Columns.Location,
-      Columns.Attachments,
-      Columns.ModifiedDate,
-      Columns.Role,
+      Columns.Location, 
+      Columns.Attachments, 
+      Columns.ModifiedDate, 
+      Columns.Role, 
       Columns.ContactInfo
     ]
     let columnsToggleOff = [
-      Columns.ModifiedBy,
-      Columns.CreatedBy,
-      Columns.CreatedDate,
-      Columns.Birthday,
-      Columns.Department,
-      Columns.Title,
-      Columns.Onsite,
-      Columns.Remote,
-      Columns.Source,
+      Columns.ModifiedBy, 
+      Columns.CreatedBy, 
+      Columns.CreatedDate, 
+      Columns.Birthday, 
+      Columns.Department, 
+      Columns.Title, 
+      Columns.Onsite, 
+      Columns.Remote, 
+      Columns.Source, 
       Columns.Description
     ]
 
-    if (contactType === 'Employees') {
+    if (contactType === ContactType.Employee) {
       columnsToggleOn = [Columns.Employee, ...columnsToggleOn]
     }
-    if (contactType === 'Person') {
+    if (contactType === ContactType.Person) {
       columnsToggleOn = [Columns.Person, ...columnsToggleOn]
     }
-    if (contactType === 'Company') {
+    if (contactType === ContactType.Company) {
       columnsToggleOn = [Columns.Company, ...columnsToggleOn]
       columnsToggleOff = [Columns.ModifiedBy, Columns.CreatedBy, Columns.CreatedDate, Columns.Description]
     }
@@ -126,7 +133,7 @@ export class ContactsPage extends CommonPage {
     await this.inputEmail.fill(email)
     await this.buttonCreate.click()
     await this.formCreate.waitFor({ state: 'detached', timeout: 3000 })
-    await expect(this.getDataName(lastName, firstName)).toHaveCount(1)
+    await expect(this.getContactName(lastName, firstName)).toHaveCount(1)
   }
 
   async addPerson (firstName: string, lastName: string): Promise<void> {
@@ -135,7 +142,7 @@ export class ContactsPage extends CommonPage {
     await this.inputLastName.fill(lastName)
     await this.buttonCreate.click()
     await this.formCreate.waitFor({ state: 'detached', timeout: 3000 })
-    await expect(this.getDataName(lastName, firstName)).toHaveCount(1)
+    await expect(this.getContactName(lastName, firstName)).toHaveCount(1)
   }
 
   async addCompany (companyName: string): Promise<void> {
@@ -143,46 +150,51 @@ export class ContactsPage extends CommonPage {
     await this.inputCompanyName.fill(companyName)
     await this.buttonCreate.click()
     await this.formCreate.waitFor({ state: 'detached', timeout: 3000 })
-    await expect(this.getDataName(companyName)).toHaveCount(1)
+    await expect(this.getContactName(companyName)).toHaveCount(1)
   }
 
   async deleteContact (lastName: string, firstName: string): Promise<void> {
-    await this.getDataName(lastName, firstName).hover()
-    await this.getDataName(lastName, firstName).click({ button: 'right' })
+    await this.getContactName(lastName, firstName).hover()
+    await this.getContactName(lastName, firstName).click({ button: 'right' })
     await this.buttonDelete.click()
     await this.buttonDeleteOk.click()
-    await expect(this.getDataName(lastName, firstName)).toHaveCount(0)
+    await expect(this.getContactName(lastName, firstName)).toHaveCount(0)
   }
 
   async kickEmployee (lastName: string, firstName: string): Promise<void> {
-    await this.getDataName(lastName, firstName).hover()
-    await this.getDataName(lastName, firstName).click({ button: 'right' })
+    await this.getContactName(lastName, firstName).hover()
+    await this.getContactName(lastName, firstName).click({ button: 'right' })
     await this.buttonKickEmployee.click()
     await this.buttonOk.click()
-    await expect(this.getDataName(lastName, firstName)).toContainText('Inactive')
+    await expect(this.getContactName(lastName, firstName)).toContainText('Inactive')
   }
 
-  async mergeContacts (lastName1: string, firstName1: string, lastName2: string, firstName2: string): Promise<void> {
-    await this.getDataName(lastName2, firstName2).hover()
-    await this.getDataName(lastName2, firstName2).click({ button: 'right' })
+  async mergeContacts (lastName1: string, firstName1: string, lastName2: string, firstName2: string, mergeFinalContact = true): Promise<void> {
+    await this.getContactName(lastName2, firstName2).hover()
+    await this.getContactName(lastName2, firstName2).click({ button: 'right' })
     await this.buttonMergeContacts.click()
     await this.buttonFinalContact.click()
     await this.inputMergeContact.fill(lastName1)
     await this.getMergeContact(lastName1, firstName1).click()
+    await expect(this.textSelectedMergeContact).toContainText(`${firstName1} ${lastName1}`)
+    // if mergeFinalContact is false, merge to the current selected contact
+    if (!mergeFinalContact) {
+      await this.getMergeContactCheckbox(lastName2, firstName2).click()
+      await expect(this.textSelectedMergeContact).toContainText(`${firstName2} ${lastName2}`)
+    }
     await this.buttonMergeContacts.click()
     await this.formCreate.waitFor({ state: 'detached', timeout: 3000 })
-    await expect(this.getDataName(lastName1, firstName1)).toHaveCount(1)
-    await expect(this.getDataName(lastName2, firstName2)).toHaveCount(0)
+    await expect(this.getContactName(lastName1, firstName1)).toHaveCount(mergeFinalContact ? 1 : 0)
+    await expect(this.getContactName(lastName2, firstName2)).toHaveCount(mergeFinalContact ? 0 : 1)
   }
 
   async copyPublicLink (): Promise<void> {
     await expect(this.textPublicLink).not.toHaveText('')
-    const displayedLink = await this.textPublicLink.textContent() as string
     await this.buttonCopy.click()
     await this.buttonCopied.waitFor({ timeout: 3000})
     // check copied link
     const copiedLink = await this.page.evaluate(() => navigator.clipboard.readText())
-    expect(copiedLink.trim()).toBe(displayedLink.trim())
+    await expect(this.textPublicLink).toHaveText(copiedLink.trim())
   }
 
   async toggleColumn (columnName: Columns | string): Promise<void> {

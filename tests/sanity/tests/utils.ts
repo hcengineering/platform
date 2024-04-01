@@ -87,3 +87,7 @@ export async function attachScreenshot (name: string, page: Page): Promise<void>
 export async function getColorAttribute (locator: Locator): Promise<string> {
   return await locator.evaluate(loc => window.getComputedStyle(loc).getPropertyValue('background-color'))
 }
+
+export function getRandomNumber (min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min
+}
