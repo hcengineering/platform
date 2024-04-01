@@ -21,6 +21,7 @@
   import { RefAction, TextEditorHandler, TextFormatCategory } from '../types'
   import { defaultRefActions, getModelRefActions } from './editor/actions'
   import TextEditor from './TextEditor.svelte'
+  import { Markup } from '@hcengineering/core'
 
   const dispatch = createEventDispatcher()
 
@@ -63,10 +64,10 @@
   export function setEditable (editable: boolean): void {
     textEditor?.setEditable(editable)
   }
-  export function getContent (): string {
+  export function getContent (): Markup {
     return content
   }
-  export function setContent (data: string): void {
+  export function setContent (data: Markup): void {
     textEditor?.setContent(data)
   }
   export function insertText (text: string): void {

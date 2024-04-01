@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { type Domain, DOMAIN_MODEL, IndexKind, type Ref } from '@hcengineering/core'
+import { type Domain, DOMAIN_MODEL, IndexKind, type Ref, type Markup } from '@hcengineering/core'
 import { type Builder, Index, Model, Prop, TypeString, UX, TypeMarkup } from '@hcengineering/model'
 import core, { TDoc, TSpace } from '@hcengineering/model-core'
 import textEditor from '@hcengineering/model-text-editor'
@@ -45,7 +45,7 @@ export class TMessageTemplate extends TDoc implements MessageTemplate {
 
   @Prop(TypeMarkup(), templates.string.Message)
   @Index(IndexKind.FullText)
-    message!: string
+    message!: Markup
 }
 
 @Model(templates.class.TemplateCategory, core.class.Space)

@@ -379,12 +379,7 @@
         <Label label={tracker.string.Description} />
       </div>
       <div class="padding clear-mins">
-        <StyledTextBox
-          alwaysEdit
-          showButtons={false}
-          bind:content={description}
-          placeholder={tracker.string.IssueDescriptionPlaceholder}
-        />
+        <EditBox bind:value={description} placeholder={tracker.string.IssueDescriptionPlaceholder} />
       </div>
     </div>
   </div>

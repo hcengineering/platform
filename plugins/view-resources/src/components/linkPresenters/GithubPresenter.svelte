@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { MessageViewer } from '@hcengineering/presentation'
+  import { HTMLViewer } from '@hcengineering/presentation'
   import { getPlatformColor, Label as LabelComponent, themeStore } from '@hcengineering/ui'
   import view from '../../plugin'
 
@@ -71,7 +71,7 @@
         <a class="fs-title mb-1" {href}>#{data.number} {data.title}</a>
         {#if data.body}
           <div>
-            <MessageViewer message={data.body} />
+            <HTMLViewer value={data.body} />
           </div>
         {/if}
         <div class="flex-between">

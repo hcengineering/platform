@@ -16,7 +16,7 @@
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import chunter, { ChatMessage } from '@hcengineering/chunter'
   import { PersonAccount } from '@hcengineering/contact'
-  import { AttachedData, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { AttachedData, getCurrentAccount, Markup, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Request, RequestStatus } from '@hcengineering/request'
   import { type RefAction, isEmptyMarkup } from '@hcengineering/text-editor'
@@ -53,7 +53,7 @@
     })
   }
 
-  let message: string = ''
+  let message: Markup = ''
   let attachments: number | undefined = 0
 
   async function onUpdate (event: CustomEvent<AttachedData<ChatMessage>>) {

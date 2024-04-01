@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,19 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { HTMLViewer } from '@hcengineering/presentation'
-  import { TelegramMessage } from '@hcengineering/telegram'
-  export let value: TelegramMessage
+  import { htmlToJSON } from '@hcengineering/text'
+  import Node from './markup/Node.svelte'
+
+  export let value: string
+  export let preview = false
+
+  $: node = htmlToJSON(value)
 </script>
 
-<div class="content lines-limit-2">
-  <HTMLViewer value={value.content} />
-</div>
-
-<style lang="scss">
-  .content {
-    min-width: 0;
-    min-height: 1rem;
-    max-height: 2.125rem;
-  }
-</style>
+<Node {node} {preview} />

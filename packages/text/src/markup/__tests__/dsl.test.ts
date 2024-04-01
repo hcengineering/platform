@@ -5,16 +5,10 @@ import { jsonToHTML } from '../utils'
 describe('dsl', () => {
   it('returns a MarkupNode for complex doc', () => {
     const doc = nodeDoc(
-      nodeParagraph(
-        nodeText('Hello, '),
-        nodeReference({ id: '123', label: 'World', objectclass: 'world' })
-      ),
+      nodeParagraph(nodeText('Hello, '), nodeReference({ id: '123', label: 'World', objectclass: 'world' })),
       nodeParagraph(
         nodeText('Check out '),
-        markLink(
-          { href: 'https://example.com', title: 'this link' },
-          markUnderline(nodeText('this link'))
-        ),
+        markLink({ href: 'https://example.com', title: 'this link' }, markUnderline(nodeText('this link'))),
         nodeText('.')
       )
     )

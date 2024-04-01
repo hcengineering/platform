@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc } from '@hcengineering/core'
+  import { Doc, Markup } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { CommonInboxNotification } from '@hcengineering/notification'
@@ -23,11 +23,11 @@
 
   const client = getClient()
 
-  let content = ''
+  let content: Markup = ''
 
   $: void updateContent(value.message, value.messageHtml)
 
-  async function updateContent (message?: IntlString, messageHtml?: string): Promise<void> {
+  async function updateContent (message?: IntlString, messageHtml?: Markup): Promise<void> {
     if (messageHtml !== undefined) {
       content = messageHtml
     } else if (message !== undefined) {

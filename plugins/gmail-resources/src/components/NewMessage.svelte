@@ -17,14 +17,15 @@
   import attachmentP, { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
   import contact, { Channel, Contact, getName } from '@hcengineering/contact'
-  import { Data, generateId } from '@hcengineering/core'
+  import { Data, Markup, generateId } from '@hcengineering/core'
   import { NewMessage, SharedMessage } from '@hcengineering/gmail'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Integration } from '@hcengineering/setting'
   import templates, { TemplateDataProvider } from '@hcengineering/templates'
-  import { StyledTextEditor, isEmptyMarkup } from '@hcengineering/text-editor'
+  import { emptyMarkup, htmlToMarkup, isEmptyMarkup } from '@hcengineering/text'
+  import { StyledTextEditor } from '@hcengineering/text-editor'
   import { Button, EditBox, IconArrowLeft, IconAttachment, Label, Scroller } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import plugin from '../plugin'
@@ -43,9 +44,10 @@
 
   let copy: string = ''
 
-  const obj: Data<NewMessage> = {
+  let content: Markup = emptyMarkup()
+
+  const obj: Omit<Data<NewMessage>, 'content'> = {
     subject: currentMessage ? 'RE: ' + currentMessage.subject : '',
-    content: '',
     to: channel.value,
     replyTo: currentMessage?.messageId,
     status: 'new'
@@ -53,7 +55,7 @@
 
   let templateProvider: TemplateDataProvider | undefined
 
-  getResource(templates.function.GetTemplateDataProvider).then((p) => {
+  void getResource(templates.function.GetTemplateDataProvider).then((p) => {
     templateProvider = p()
   })
 
@@ -61,14 +63,15 @@
     templateProvider?.destroy()
   })
 
-  $: templateProvider && templateProvider.set(contact.class.Contact, object)
+  $: templateProvider !== undefined && templateProvider.set(contact.class.Contact, object)
 
-  async function sendMsg () {
+  async function sendMsg (): Promise<void> {
     await client.createDoc(
       plugin.class.NewMessage,
       plugin.space.Gmail,
       {
         ...obj,
+        content: htmlToMarkup(content),
         attachments: attachments.length,
         from: selectedIntegration.createdBy,
         copy: copy
@@ -86,7 +89,7 @@
   const dispatch = createEventDispatcher()
   let inputFile: HTMLInputElement
 
-  function fileSelected () {
+  function fileSelected (): void {
     progress = true
     const list = inputFile.files
     if (list === null || list.length === 0) return
@@ -98,7 +101,7 @@
     progress = false
   }
 
-  function fileDrop (e: DragEvent) {
+  function fileDrop (e: DragEvent): void {
     e.preventDefault()
     e.stopPropagation()
     progress = true
@@ -207,7 +210,7 @@
     <Button
       label={plugin.string.Send}
       kind={'primary'}
-      disabled={progress || isEmptyMarkup(obj.content)}
+      disabled={progress || isEmptyMarkup(content)}
       on:click={sendMsg}
     />
   </div>
@@ -239,7 +242,7 @@
     <EditBox label={plugin.string.Copy} bind:value={copy} placeholder={plugin.string.CopyPlaceholder} />
   </div>
   <div class="input clear-mins">
-    <StyledTextEditor full bind:content={obj.content} maxHeight={'max'} on:template={onTemplate} />
+    <StyledTextEditor full bind:content maxHeight={'max'} on:template={onTemplate} />
   </div>
 </Scroller>
 <div class="antiVSpacer x2" />

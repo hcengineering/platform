@@ -30,7 +30,6 @@
   import document, { Teamspace } from '@hcengineering/document'
   import { Asset } from '@hcengineering/platform'
   import presentation, { Card, getClient } from '@hcengineering/presentation'
-  import { StyledTextBox } from '@hcengineering/text-editor'
   import {
     Button,
     EditBox,
@@ -291,13 +290,8 @@
       <div class="antiGrid-row__header topAlign">
         <Label label={documentRes.string.Description} />
       </div>
-      <div class="padding clear-mins">
-        <StyledTextBox
-          alwaysEdit
-          showButtons={false}
-          bind:content={description}
-          placeholder={documentRes.string.TeamspaceDescriptionPlaceholder}
-        />
+      <div class="padding">
+        <EditBox bind:value={description} placeholder={documentRes.string.TeamspaceDescriptionPlaceholder} />
       </div>
     </div>
   </div>

@@ -14,12 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { MessageViewer } from '@hcengineering/presentation'
+  import { HTMLViewer } from '@hcengineering/presentation'
   import { ShowMore } from '@hcengineering/ui'
 
   export let value: string
 </script>
 
 <ShowMore>
-  <MessageViewer message={value} />
+  <HTMLViewer {value} />
 </ShowMore>

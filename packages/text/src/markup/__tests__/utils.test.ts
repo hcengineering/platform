@@ -43,14 +43,10 @@ import { nodeDoc, nodeParagraph, nodeText } from '../dsl'
 // mock tiptap functions
 jest.mock('@tiptap/html', () => ({
   generateHTML: jest.fn(() => '<p>hello</p>'),
-  generateJSON: jest.fn(() => (
-    {
-      type: 'doc',
-      content: [
-        { type: 'paragraph', content: [{ type: 'text', text: 'hello' }] }
-      ]
-    }
-  ))
+  generateJSON: jest.fn(() => ({
+    type: 'doc',
+    content: [{ type: 'paragraph', content: [{ type: 'text', text: 'hello' }] }]
+  }))
 }))
 
 const extensions = [ServerKit]
@@ -201,16 +197,14 @@ describe('jsonToPmNode', () => {
 describe('htmlToMarkup', () => {
   it('converts HTML to Markup', () => {
     const html = '<p>hello</p>'
-    const expectedMarkup =
-      '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
+    const expectedMarkup = '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
     expect(htmlToMarkup(html)).toEqual(expectedMarkup)
   })
 })
 
 describe('markupToHTML', () => {
   it('converts markup to HTML', () => {
-    const markup =
-    '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
+    const markup = '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
     const expectedHtml = '<p>hello</p>'
     expect(markupToHTML(markup)).toEqual(expectedHtml)
   })
