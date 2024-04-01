@@ -7,7 +7,6 @@ import { SignUpData } from './model/common-types'
 import { SelectWorkspacePage } from './model/select-workspace-page'
 import { LeftSideMenuPage } from './model/left-side-menu-page'
 
-
 test.use({
 
   storageState: PlatformSetting
