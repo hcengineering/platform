@@ -92,3 +92,10 @@ tests/db_dump
 .build
 .format
 tools/apm/apm.js
+
+# Python temporary files
+__pycache__
+venv
+env
+.venv
+.env
