@@ -32,7 +32,7 @@
     modifiedOn: Date.now(),
     modifiedBy: '' as Ref<Account>
   }
-
+  export let newCategory = false;
   const dispatch = createEventDispatcher()
   const client = getClient()
 
@@ -41,11 +41,23 @@
   }
 
   async function create () {
-    const categoryInstance = await client.findOne(inventory.class.Category, { _id: doc.attachedTo as Ref<Category> })
+    let id = doc.attachedTo;
+   
+    if(newCategory) {
+      id = await client.addCollection(
+        inventory.class.Category,
+        inventory.space.Category,
+        inventory.global.Category,
+        inventory.class.Category,
+        'categories',
+        { name: doc.attachedTo },
+        generateId()
+      )
+    }
+    const categoryInstance = await client.findOne(inventory.class.Category, { _id: id as Ref<Category> })
     if (categoryInstance === undefined) {
       throw new Error('category not found')
     }
-
     await client.addCollection(
       inventory.class.Product,
       doc.space,
@@ -87,6 +99,8 @@
       items={categories}
       kind={'regular'}
       size={'large'}
+      creatable={true}
+      bind:newoption={newCategory}
       bind:selected={doc.attachedTo}
       placeholder={inventory.string.Categories}
       label={inventory.string.Category}

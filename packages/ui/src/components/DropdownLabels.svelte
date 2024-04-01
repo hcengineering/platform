@@ -29,6 +29,7 @@
   export let placeholder: IntlString | undefined = ui.string.SearchDots
   export let items: DropdownTextItem[]
   export let multiselect = false
+  export let creatable = false
   export let selected: DropdownTextItem['id'] | Array<DropdownTextItem['id']> | undefined = multiselect ? [] : undefined
   export let allowDeselect: boolean = false
   export let showDropdownIcon: boolean = false
@@ -46,15 +47,25 @@
 
   export let enableSearch: boolean = true
 
+  export let newoption: boolean = false
+
   let container: HTMLElement
   let opened: boolean = false
+  const dispatch = createEventDispatcher()
+  function getSelectedItem(items: DropdownTextItem[],creatable: boolean,selected?: string | string[]) {
+    if(creatable && selected && !items.some(item => item.id === selected)) {
+      dispatch('newoption', selected)
+      newoption = true
+      return { id: selected, label: selected }
+    }
+    return multiselect ? items.filter((p) => selected?.includes(p.id)) : items.find((x) => x.id === selected)
+  }
 
-  $: selectedItem = multiselect ? items.filter((p) => selected?.includes(p.id)) : items.find((x) => x.id === selected)
+  $: selectedItem = getSelectedItem(items, creatable, selected)
   $: if (autoSelect && selected === undefined && items[0] !== undefined) {
     selected = multiselect ? [items[0].id] : items[0].id
   }
 
-  const dispatch = createEventDispatcher()
   const mgr = getFocusManager()
 </script>
 
@@ -73,7 +84,7 @@
         opened = true
         showPopup(
           DropdownLabelsPopup,
-          { placeholder, items, multiselect, selected, enableSearch },
+          { placeholder, items, multiselect,creatable, selected, enableSearch },
           container,
           (result) => {
             if (result != null) {

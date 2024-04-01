@@ -27,6 +27,7 @@
   export let placeholder: IntlString = plugin.string.SearchDots
   export let placeholderParam: any | undefined = undefined
   export let items: DropdownTextItem[]
+  export let creatable: boolean = false
   export let selected: DropdownTextItem['id'] | Array<DropdownTextItem['id']> | undefined = undefined
   export let multiselect: boolean = false
   export let enableSearch = true
@@ -37,7 +38,17 @@
   let selection = 0
   let list: ListView
 
-  $: objects = items.filter((x) => x.label.toLowerCase().includes(search.toLowerCase()))
+  function getFilteredObjects(items:DropdownTextItem[] , search: string, creatable: boolean) {
+    const filteredItems = items.filter((x) => x.label.toLowerCase().includes(search.toLowerCase()));
+    const isNewObject = creatable && search && !filteredItems.some(item => item.label.toLowerCase() === search.toLowerCase());
+
+    return [
+        ...filteredItems,
+        ...(isNewObject ? [{ id: search, label: `Create "${search}"` }] : [])
+    ];
+}
+
+  $: objects = getFilteredObjects(items, search, creatable)
 
   async function handleSelection (evt: Event | undefined, selection: number): Promise<void> {
     const item = objects[selection]
