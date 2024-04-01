@@ -18,6 +18,7 @@
   import { PDFViewer, getFileUrl } from '@hcengineering/presentation'
   import { Action as UIAction, ActionIcon, IconMoreH, IconOpen, Menu, closeTooltip, showPopup } from '@hcengineering/ui'
   import view, { Action } from '@hcengineering/view'
+  import MediaViewer from './MediaViewer.svelte'
 
   import attachmentPlugin from '../plugin'
   import FileDownload from './icons/FileDownload.svelte'
@@ -41,7 +42,7 @@
     }
     closeTooltip()
     showPopup(
-      PDFViewer,
+      contentType.startsWith('video/') ? MediaViewer : PDFViewer,
       { file: attachment.file, name: attachment.name, contentType, value: attachment },
       contentType.startsWith('image/') ? 'centered' : 'float'
     )
