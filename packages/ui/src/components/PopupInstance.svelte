@@ -30,6 +30,10 @@
   export let close: () => void
   export let contentPanel: HTMLElement | undefined
 
+  // We should not update props after popup is created,
+  // since they could be used, and any show will update them
+  const initialProps = props
+
   const WINDOW_PADDING = 16
 
   interface PopupParams {
@@ -276,7 +280,7 @@
   <svelte:component
     this={is}
     bind:this={componentInstance}
-    {...props}
+    {...initialProps}
     bind:popupOptions={options}
     on:update={(ev) => {
       _update(ev.detail)
