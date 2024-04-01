@@ -61,6 +61,25 @@ function packSearchResultsForListView (sections: SearchSection[]): SearchItem[] 
   return results
 }
 
+async function searchCategory (
+  client: TxOperations,
+  cl: Ref<Class<Doc>>,
+  query: string,
+  categories: ObjectSearchCategory[]
+): Promise<SearchSection | undefined> {
+  const r = await client.searchFulltext(
+    {
+      query: `${query}*`,
+      classes: [cl]
+    },
+    {
+      limit: 5
+    }
+  )
+  const category = findCategoryByClass(categories, cl)
+  return category !== undefined ? { category, items: r.docs } : undefined
+}
+
 async function doFulltextSearch (
   client: TxOperations,
   classes: Array<Ref<Class<Doc>>>,
@@ -68,18 +87,14 @@ async function doFulltextSearch (
   categories: ObjectSearchCategory[]
 ): Promise<SearchSection[]> {
   const sections: SearchSection[] = []
+  const promises: Array<Promise<SearchSection | undefined>> = []
   for (const cl of classes) {
-    const r = await client.searchFulltext(
-      {
-        query: `${query}*`,
-        classes: [cl]
-      },
-      {
-        limit: 5
-      }
-    )
-    const category = findCategoryByClass(categories, cl)
-    if (category !== undefined) sections.push({ category, items: r.docs })
+    promises.push(searchCategory(client, cl, query, categories))
+  }
+
+  const resolvedSections = await Promise.all(promises)
+  for (const s of resolvedSections) {
+    if (s !== undefined) sections.push(s)
   }
 
   return sections.sort((a, b) => {
