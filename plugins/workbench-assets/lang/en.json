@@ -30,6 +30,7 @@
     "PleaseUpdate": "Please update",
     "ServerUnderMaintenance": "Server is under maintenance",
     "MobileNotSupported": "Sorry, mobile devices support coming soon. In the meantime, please use Desktop",
-    "LogInAnyway": "Log in anyway"
+    "LogInAnyway": "Log in anyway",
+    "IssueNotFound": "We couldn't find the issue. The issue may be deleted or you don't have sufficient permissions to view it"
   }
 }

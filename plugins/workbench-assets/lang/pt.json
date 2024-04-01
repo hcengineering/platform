@@ -30,6 +30,7 @@
     "PleaseUpdate": "Atualize",
     "ServerUnderMaintenance": "Servidor em manutenção",
     "MobileNotSupported": "Desculpe, o suporte para dispositivos móveis estará disponível em breve. Enquanto isso, por favor, use o Desktop.",
-    "LogInAnyway": "Entrar de qualquer maneira"
+    "LogInAnyway": "Entrar de qualquer maneira",
+    "IssueNotFound": "Não foi possível encontrar esse problema. O problema pode ter sido excluído ou você não tem permissões suficientes para visualizá-lo"
   }
 }

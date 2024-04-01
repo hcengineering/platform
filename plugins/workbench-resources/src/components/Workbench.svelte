@@ -101,7 +101,9 @@
   let currentView: ViewConfiguration | undefined
   let createItemDialog: AnyComponent | undefined
   let createItemLabel: IntlString | undefined
-
+  let locationResolver: string | undefined
+  $: errorVisible = false;
+  
   migrateViewOpttions()
 
   const excludedApps = getMetadata(workbench.metadata.ExcludedApplications) ?? []
@@ -235,7 +237,7 @@
   }
 
   async function resolveShortLink (loc: Location): Promise<ResolvedLocation | undefined> {
-    let locationResolver = currentApplication?.locationResolver
+    locationResolver = currentApplication?.locationResolver
     if (loc.path[2] !== undefined && loc.path[2].trim().length > 0) {
       const app = apps.find((p) => p.alias === loc.path[2])
       if (app?.locationResolver) {
@@ -300,6 +302,9 @@
     if (loc.path.length > 3 && getSpecialComponent(loc.path[3]) === undefined) {
       // resolve short links
       const resolvedLoc = await resolveShortLink(loc)
+      if(locationResolver === "tracker:resolver:Location" && resolvedLoc === undefined) {
+        errorVisible = true 
+      } 
       if (locUpdate !== iteration) {
         return
       }
@@ -810,6 +815,11 @@
         <Separator name={'workbench'} float={navFloat} index={0} color={'var(--theme-navpanel-border)'} />
       {/if}
       <div class="antiPanel-component antiComponent" bind:this={contentPanel}>
+        {#if errorVisible}
+          <div class="error_container">
+            {workbench.string.IssueNotFound} <br>
+          </div>
+        {/if}
         {#if currentApplication && currentApplication.component}
           <Component
             is={currentApplication.component}
@@ -1039,5 +1049,12 @@
         border-left: 2px solid var(--primary-bg-color);
       }
     }
+  }
+  .error_container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 10px; 
   }
 </style>
