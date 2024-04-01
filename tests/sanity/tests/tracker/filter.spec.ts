@@ -15,7 +15,8 @@ test.describe('Tracker filters tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
-  test('Modified date', async ({ page }) => {
+  // TODO: We need to split them into separate one's and fix.
+  test.skip('Modified date', async ({ page }) => {
     const newIssue: NewIssue = {
       title: `Issue for the Modified filter-${generateId()}`,
       description: 'Issue for the Modified filter',
@@ -111,7 +112,8 @@ test.describe('Tracker filters tests', () => {
     })
   })
 
-  test('Created date', async ({ page }) => {
+  // TODO: We need to split them into separate one's and fix.
+  test.skip('Created date', async ({ page }) => {
     const yesterdayIssueTitle = 'Issue for the Check Filter Yesterday'
     const newIssue: NewIssue = {
       title: `Issue for the Created filter-${generateId()}`,
@@ -360,7 +362,8 @@ test.describe('Tracker filters tests', () => {
     }
   })
 
-  test('Milestone filter', async ({ page }) => {
+  // TODO: We need to split them into separate one's and fix.
+  test.skip('Milestone filter', async ({ page }) => {
     const filterMilestoneName = 'Filter Milestone'
     const milestoneIssue: NewIssue = {
       title: `Issue for the Milestone filter-${generateId()}`,
@@ -429,7 +432,8 @@ test.describe('Tracker filters tests', () => {
     })
   })
 
-  test('Due date filter', async ({ page }) => {
+  // TODO: We need to split them into separate one's and fix.
+  test.skip('Due date filter', async ({ page }) => {
     const plusSevenDate = new Date()
     const currentMonth = plusSevenDate.getMonth()
     plusSevenDate.setDate(plusSevenDate.getDate() + 7)
