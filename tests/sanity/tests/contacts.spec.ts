@@ -32,9 +32,8 @@ test.describe('contact tests', () => {
     const leftSideMenuPage = new LeftSideMenuPage(page)
     await leftSideMenuPage.buttonContacts.click()
   })
-  
+
   test('create-contact', async ({ page }) => {
-    // Create a new context with the saved storage state.
     await page.locator('[id="app-contact\\:string\\:Contacts"]').click()
     await page.click('.antiNav-element:has-text("Person")')
     await page.click('button:has-text("Person")')
@@ -51,7 +50,6 @@ test.describe('contact tests', () => {
   })
 
   test('create-employee', async ({ page }) => {
-    // Create a new context with the saved storage state.
     await page.locator('[id="app-contact\\:string\\:Contacts"]').click()
     await page.click('.antiNav-element:has-text("Employee")')
     await page.click('button:has-text("Employee")')
@@ -99,7 +97,6 @@ test.describe('contact tests', () => {
     await page.locator('.antiCard').locator('button:has-text("Create")').click()
     await page.waitForSelector('form.antiCard', { state: 'detached' })
     await expect(page.locator('text=Elton')).toBeVisible()
-    //expect(await page.locator('.antiTable-body__row').count()).toBeGreaterThanOrEqual(5)
     await fillSearch(page, 'Elton')
     await expect(page.locator('.antiTable-body__row')).toHaveCount(1, {
       timeout: 15000
@@ -128,7 +125,6 @@ test.describe('contact tests', () => {
     await page.locator('.antiCard').locator('button:has-text("Create")').click()
     await page.waitForSelector('form.antiCard', { state: 'detached' })
     await expect(page.locator('text=Jhon')).toBeVisible()
-    //expect(await page.locator('.antiTable-body__row').count()).toBeGreaterThanOrEqual(5)
     await fillSearch(page, 'Jhon')
     await expect(page.locator('.antiTable-body__row')).toHaveCount(1, {
       timeout: 15000
@@ -258,7 +254,6 @@ test.describe('contact tests', () => {
   })
 
   test('person delete-contact', async ({ page }) => {
-    // Create a new context with the saved storage state.
     await page.locator('[id="app-contact\\:string\\:Contacts"]').click()
     await page.click('.antiNav-element:has-text("Person")')
     await page.click('button:has-text("Person")')
@@ -273,7 +268,6 @@ test.describe('contact tests', () => {
     await page.locator('.antiCard button:has-text("Create")').click()
     await page.waitForSelector('form.antiCard', { state: 'detached' })
     await expect(page.locator(`td:has-text("${last} ${first}")`)).toHaveCount(1)
-    // Click #context-menu svg
     await page.hover(`td:has-text("${last} ${first}")`)
     await page.click(`td:has-text("${last} ${first}")`, {
       button: 'right'
@@ -284,7 +278,6 @@ test.describe('contact tests', () => {
   })
 
   test('company delete-contact', async ({ page }) => {
-    // Create a new context with the saved storage state.
     await page.locator('[id="app-contact\\:string\\:Contacts"]').click()
     await page.click('.antiNav-element:has-text("Company")')
     await page.click('button:has-text("Company")')
@@ -295,7 +288,6 @@ test.describe('contact tests', () => {
     await page.locator('.antiCard').locator('button:has-text("Create")').click()
     await page.waitForSelector('form.antiCard', { state: 'detached' })
     await expect(page.locator(`td:has-text("${orgName}")`)).toHaveCount(1)
-    // Click #context-menu svg
     await page.hover(`td:has-text("${orgName}")`)
     await page.click(`td:has-text("${orgName}")`, {
       button: 'right'
@@ -306,9 +298,7 @@ test.describe('contact tests', () => {
   })
 
   test('kick-and-delete-employee', async ({ page }) => {
-    // Create a new context with the saved storage state.
     await page.locator('[id="app-contact\\:string\\:Contacts"]').click()
-    // Create employee
     await page.click('.antiNav-element:has-text("Employee")')
     await page.click('button:has-text("Employee")')
     const first = 'Elton-' + generateId(5)
