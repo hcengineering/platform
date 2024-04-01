@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "huly"
+version = "0.1.0"
+description = "The Huly Platform is a robust framework designed to accelerate the development of business applications, such as CRM systems. This repository includes several applications, such as Chat, Project Management, CRM, HRM, and ATS. Various teams are building products on top of the Platform, including Huly and TraceX."
+authors = ["Your Name <you@example.com>"]
+license = "EPL-2.0 license"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+typer = {extras = ["all"], version = "^0.12.0"}
+
+[tool.poetry.group.dev.dependencies]
+typer = "^0.12.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

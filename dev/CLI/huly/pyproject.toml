@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "huly"
+version = "0.1.0"
+description = ""
+authors = ["Andres <garcicon45@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.scripts]
+huly = "huly.main:app"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
