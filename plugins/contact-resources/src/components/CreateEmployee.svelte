@@ -115,6 +115,14 @@
     }
     channels = channels
   }
+  function emailValidator (email: string): boolean {
+    return (
+      email.length > 0 &&
+      !!email.match(
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+      )
+    )
+  }
 </script>
 
 <FocusHandler {manager} />
@@ -124,7 +132,7 @@
   okAction={createPerson}
   canSave={firstName.trim().length > 0 &&
     lastName.trim().length > 0 &&
-    email.trim().length > 0 &&
+    emailValidator(email.trim()) &&
     exists === undefined &&
     canSave}
   on:close={() => {
