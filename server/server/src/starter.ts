@@ -136,7 +136,7 @@ export function buildStorageFromConfig (config: StorageConfiguration, dbUrl: str
 
     return new MinioService({
       accessKey: minioConfig.accessKeyId,
-      secretKey: minioConfig.accessKeyId,
+      secretKey: minioConfig.secretAccessKey,
       endPoint: minioConfig.endpoint,
       port: minioConfig.port,
       useSSL: minioConfig.useSSL
@@ -147,7 +147,7 @@ export function buildStorageFromConfig (config: StorageConfiguration, dbUrl: str
       const c = config as MinioConfig
       return new MinioService({
         accessKey: c.accessKeyId,
-        secretKey: c.accessKeyId,
+        secretKey: c.secretAccessKey,
         endPoint: c.endpoint,
         port: c.port,
         useSSL: c.useSSL
