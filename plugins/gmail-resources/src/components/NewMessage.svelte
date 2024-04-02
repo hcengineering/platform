@@ -24,7 +24,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Integration } from '@hcengineering/setting'
   import templates, { TemplateDataProvider } from '@hcengineering/templates'
-  import { emptyMarkup, htmlToMarkup, isEmptyMarkup } from '@hcengineering/text'
+  import { EmptyMarkup, htmlToMarkup, isEmptyMarkup } from '@hcengineering/text'
   import { StyledTextEditor } from '@hcengineering/text-editor'
   import { Button, EditBox, IconArrowLeft, IconAttachment, Label, Scroller } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
@@ -44,7 +44,7 @@
 
   let copy: string = ''
 
-  let content: Markup = emptyMarkup()
+  let content: Markup = EmptyMarkup
 
   const obj: Omit<Data<NewMessage>, 'content'> = {
     subject: currentMessage ? 'RE: ' + currentMessage.subject : '',
