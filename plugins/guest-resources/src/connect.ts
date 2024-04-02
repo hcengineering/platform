@@ -75,7 +75,7 @@ export async function connect (title: string): Promise<Client | undefined> {
       console.log('WorkbenchClient: onConnect', event)
       try {
         if ((_clientSet && event === ClientConnectEvent.Connected) || event === ClientConnectEvent.Refresh) {
-          void refreshClient()
+          void refreshClient(true)
         }
 
         if (event === ClientConnectEvent.Upgraded) {
