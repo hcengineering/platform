@@ -929,6 +929,20 @@ export const createUserWorkspace =
         }
       }
 
+      let workSpaceRes = (
+        await db
+          .collection<Workspace>(WORKSPACE_COLLECTION)
+          .find(withProductId(productId, {
+            _id: { $in: info.workspaces },
+            workspaceName: workspaceName
+          }))
+          .toArray()).filter((it) => it.disabled !== true)
+        .map(mapToClientWorkspace)
+      if (workSpaceRes.length > 0) {
+        await ctx.error('failed to create workspace : duplicate workspace name')
+        throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceAlreadyExists, { workspace: workspaceName }))
+      }
+
       const { workspaceInfo, err, client } = await createWorkspace(
         ctx,
         version,
