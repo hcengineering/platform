@@ -157,7 +157,7 @@
 
   async function handleSelection (evt: Event, selection: number): Promise<void> {
     const item = items[selection]
-    if (item == null) {
+    if (item == null || item.actionCategory == undefined) {
       return
     }
     if (item.item !== undefined) {
@@ -376,9 +376,9 @@
               </div>
             {/if}
             {#if item.action !== undefined}
-              {@const action = item.action}
-              <div class="flex-row-center flex-between flex-grow ml-2 text-base cursor-pointer actionsitem">
-                <div class="mr-4 {selection === num ? 'caption-color' : 'content-dark-color'}">
+            {@const action = item.action}
+            <div class="flex-row-center flex-between flex-grow ml-2 text-base cursor-pointer actionsitem">
+              <div class="mr-4 {selection === num ? 'caption-color' : 'content-dark-color'}">
                   <Icon icon={action.icon ?? IconArrowLeft} size={'small'} />
                 </div>
                 <div class="flex-grow {selection === num ? 'caption-color' : 'content-color'}">
