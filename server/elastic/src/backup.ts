@@ -39,7 +39,7 @@ import { getMetadata, PlatformError, unknownStatus } from '@hcengineering/platfo
 import serverCore, { DbAdapter, IndexedDoc } from '@hcengineering/server-core'
 import { createHash } from 'node:crypto'
 
-const indexName = getMetadata(serverCore.metadata.ElasticIndexName) ?? 'storage_index'
+const indexName = getMetadata(serverCore.metadata.ElasticIndexName) ?? 'local_storage_index'
 class ElasticDataAdapter implements DbAdapter {
   constructor (
     readonly workspaceId: WorkspaceId,

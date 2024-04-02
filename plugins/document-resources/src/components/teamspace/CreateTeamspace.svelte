@@ -273,6 +273,7 @@
       </div>
       <div class="padding">
         <EditBox
+          id="teamspace-title"
           bind:value={name}
           placeholder={documentRes.string.TeamspaceTitlePlaceholder}
           kind={'large-style'}
@@ -291,7 +292,11 @@
         <Label label={documentRes.string.Description} />
       </div>
       <div class="padding">
-        <EditBox bind:value={description} placeholder={documentRes.string.TeamspaceDescriptionPlaceholder} />
+        <EditBox
+          id="teamspace-description"
+          bind:value={description}
+          placeholder={documentRes.string.TeamspaceDescriptionPlaceholder}
+        />
       </div>
     </div>
   </div>
