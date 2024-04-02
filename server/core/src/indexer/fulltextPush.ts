@@ -275,7 +275,10 @@ function updateDoc2Elastic (
             ))
         ) {
           let vvv = vv
-          if (attribute.type._class === core.class.TypeMarkup || attribute.type._class === core.class.TypeCollaborativeMarkup) {
+          if (
+            attribute.type._class === core.class.TypeMarkup ||
+            attribute.type._class === core.class.TypeCollaborativeMarkup
+          ) {
             vvv = jsonToText(markupToJSON(vv))
           }
           if (!(doc.fulltextSummary ?? '').includes(vvv)) {
