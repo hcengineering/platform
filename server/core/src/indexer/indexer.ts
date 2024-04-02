@@ -27,6 +27,7 @@ import core, {
   type ModelDb,
   type Ref,
   type ServerStorage,
+  SortingOrder,
   TxFactory,
   type WorkspaceId,
   _getOperator,
@@ -443,6 +444,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
                     removed: false
                   },
                   {
+                    sort: { modifiedOn: SortingOrder.Descending },
                     limit: globalIndexer.processingSize
                   }
                 )
