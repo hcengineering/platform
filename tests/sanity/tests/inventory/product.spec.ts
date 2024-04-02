@@ -3,7 +3,6 @@ import { generateId, PlatformSetting, PlatformURI, PlatformUser } from '../utils
 import { InventoryCatagoriesPage } from '../model/inventory/categories-page'
 import { InventoryProductsPage } from '../model/inventory/products-page'
 import { InventoryNavigationPage } from '../model/inventory/inventory-navigation-page'
-import { LoginPage } from '../model/login-page'
 
 test.use({
   storageState: PlatformSetting
@@ -12,8 +11,6 @@ test.use({
 test.describe('Inventory Product Tests', () => {
   test.beforeEach(async ({ page }) => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
-    const login = new LoginPage(page)
-    login.login(PlatformUser, '1234')
   })
 
   test('Create product', async ({ page }) => {
