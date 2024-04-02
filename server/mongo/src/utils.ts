@@ -14,9 +14,10 @@
 //
 
 import { toWorkspaceString, type WorkspaceId } from '@hcengineering/core'
+import { PlatformError, unknownStatus } from '@hcengineering/platform'
 import { type Db, MongoClient, type MongoClientOptions } from 'mongodb'
 
-const connections = new Map<string, MongoClientReference>()
+const connections = new Map<string, MongoClientReferenceImpl>()
 
 // Register mongo close on process exit.
 process.on('exit', () => {
@@ -35,7 +36,12 @@ export async function shutdown (): Promise<void> {
   connections.clear()
 }
 
-export class MongoClientReference {
+export interface MongoClientReference {
+  getClient: () => Promise<MongoClient>
+  close: () => void
+}
+
+class MongoClientReferenceImpl {
   count: number
   client: MongoClient | Promise<MongoClient>
 
@@ -43,7 +49,7 @@ export class MongoClientReference {
     client: MongoClient | Promise<MongoClient>,
     readonly onclose: () => void
   ) {
-    this.count = 1
+    this.count = 0
     this.client = client
   }
 
@@ -72,22 +78,42 @@ export class MongoClientReference {
   }
 }
 
+export class ClientRef implements MongoClientReference {
+  constructor (readonly client: MongoClientReferenceImpl) {}
+
+  closed = false
+  async getClient (): Promise<MongoClient> {
+    if (!this.closed) {
+      return await this.client.getClient()
+    } else {
+      throw new PlatformError(unknownStatus('Mongo client is already closed'))
+    }
+  }
+
+  close (): void {
+    // Do not allow double close of mongo connection client
+    if (!this.closed) {
+      this.closed = true
+      this.client.close()
+    }
+  }
+}
+
 /**
  * Initialize a workspace connection to DB
  * @public
  */
 export function getMongoClient (uri: string, options?: MongoClientOptions): MongoClientReference {
   const extraOptions = JSON.parse(process.env.MONGO_OPTIONS ?? '{}')
-  const key = `${uri}${process.env.MONGO_OPTIONS}`
+  const key = `${uri}${process.env.MONGO_OPTIONS}_${JSON.stringify(options)}`
   let existing = connections.get(key)
 
   // If not created or closed
   if (existing === undefined) {
-    existing = new MongoClientReference(
+    existing = new MongoClientReferenceImpl(
       MongoClient.connect(uri, {
         ...options,
         enableUtf8Validation: false,
-        maxConnecting: 1024,
         ...extraOptions
       }),
       () => {
@@ -95,10 +121,10 @@ export function getMongoClient (uri: string, options?: MongoClientOptions): Mong
       }
     )
     connections.set(key, existing)
-  } else {
-    existing.addRef()
   }
-  return existing
+  // Add reference and return once closable
+  existing.addRef()
+  return new ClientRef(existing)
 }
 
 /**

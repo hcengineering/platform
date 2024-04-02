@@ -161,7 +161,7 @@ module.exports = {
         use: {
           loader: 'file-loader',
           options: {
-            name: 'fonts/[hash:base64:8].[ext]',
+            name: 'fonts/[contenthash].[ext]',
             esModule: false
           }
         }
@@ -171,7 +171,7 @@ module.exports = {
         use: {
           loader: 'file-loader',
           options: {
-            name: 'img/[hash:base64:8].[ext]',
+            name: 'img/[contenthash].[ext]',
             esModule: false
           }
         }
@@ -182,7 +182,7 @@ module.exports = {
           {
             loader: 'file-loader',
             options: {
-              name: 'img/[hash:base64:8].[ext]',
+              name: 'img/[contenthash].[ext]',
               esModule: false
             }
           },
