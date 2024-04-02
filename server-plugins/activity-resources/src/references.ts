@@ -459,6 +459,7 @@ async function ActivityReferenceCreate (tx: TxCUD<Doc>, control: TriggerControl)
   const ctx = TxProcessor.extractTx(tx) as TxCreateDoc<Doc>
 
   if (ctx._class !== core.class.TxCreateDoc) return []
+  if (control.hierarchy.isDerived(ctx.objectClass, notification.class.InboxNotification)) return []
   if (control.hierarchy.isDerived(ctx.objectClass, activity.class.ActivityReference)) return []
 
   control.storageFx(async (adapter) => {
@@ -566,8 +567,9 @@ async function ActivityReferenceRemove (tx: Tx, control: TriggerControl): Promis
 export async function ReferenceTrigger (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
 
-  const etx = TxProcessor.extractTx(tx) as TxCreateDoc<Doc>
+  const etx = TxProcessor.extractTx(tx) as TxCUD<Doc>
   if (control.hierarchy.isDerived(etx.objectClass, activity.class.ActivityReference)) return []
+  if (control.hierarchy.isDerived(etx.objectClass, notification.class.InboxNotification)) return []
 
   if (etx._class === core.class.TxCreateDoc) {
     result.push(...(await ActivityReferenceCreate(tx, control)))
