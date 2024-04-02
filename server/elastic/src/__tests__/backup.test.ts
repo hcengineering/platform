@@ -1,5 +1,5 @@
 import { DbAdapter } from '@hcengineering/server-core'
-import { Domain, getWorkspaceId, Hierarchy } from '@hcengineering/core'
+import { Domain, getWorkspaceId, Hierarchy, MeasureMetricsContext } from '@hcengineering/core'
 import { createElasticBackupDataAdapter } from '../backup'
 
 import { Client } from '@elastic/elasticsearch'
@@ -11,7 +11,12 @@ describe('Elastic Data Adapter', () => {
   let adapter: DbAdapter
 
   beforeEach(async () => {
-    adapter = await createElasticBackupDataAdapter(new Hierarchy(), url, getWorkspaceId('ws1', ''))
+    adapter = await createElasticBackupDataAdapter(
+      new MeasureMetricsContext('test', {}),
+      new Hierarchy(),
+      url,
+      getWorkspaceId('ws1', '')
+    )
   })
 
   afterEach(async () => {

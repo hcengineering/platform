@@ -36,6 +36,19 @@ import { type StorageAdapter } from './storage'
 /**
  * @public
  */
+export interface RawDBAdapter {
+  find: <T extends Doc>(
+    workspace: WorkspaceId,
+    domain: Domain,
+    query: DocumentQuery<T>,
+    options?: Omit<FindOptions<T>, 'projection' | 'lookup'>
+  ) => Promise<FindResult<T>>
+  upload: <T extends Doc>(workspace: WorkspaceId, domain: Domain, docs: T[]) => Promise<void>
+}
+
+/**
+ * @public
+ */
 export interface DbAdapter {
   /**
    * Method called after hierarchy is ready to use.
@@ -77,6 +90,7 @@ export interface TxAdapter extends DbAdapter {
  * @public
  */
 export type DbAdapterFactory = (
+  ctx: MeasureContext,
   hierarchy: Hierarchy,
   url: string,
   workspaceId: WorkspaceId,

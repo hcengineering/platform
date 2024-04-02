@@ -410,6 +410,7 @@ export function devTool (
 
         // We need to update workspaces with missing workspaceUrl
         await checkOrphanWorkspaces(
+          toolCtx,
           workspaces,
           transactorUrl,
           productId,
@@ -482,7 +483,6 @@ export function devTool (
   program
     .command('backup <dirName> <workspace>')
     .description('dump workspace transactions and minio resources')
-    .requiredOption('-i --index <index>', 'Index name for elastic')
     .option('-s, --skip <skip>', 'A list of ; separated domain names to skip during backup', '')
     .option('-f, --force', 'Force backup', false)
     .action(async (dirName: string, workspace: string, cmd: { skip: string, force: boolean }) => {
@@ -518,7 +518,12 @@ export function devTool (
     .description('dump workspace transactions and minio resources')
     .action(async (bucketName: string, dirName: string, workspace: string, cmd) => {
       const { storageAdapter } = prepareTools()
-      const storage = await createStorageBackupStorage(storageAdapter, getWorkspaceId(bucketName, productId), dirName)
+      const storage = await createStorageBackupStorage(
+        toolCtx,
+        storageAdapter,
+        getWorkspaceId(bucketName, productId),
+        dirName
+      )
       await backup(transactorUrl, getWorkspaceId(workspace, productId), storage)
     })
   program
@@ -526,7 +531,7 @@ export function devTool (
     .description('dump workspace transactions and minio resources')
     .action(async (bucketName: string, dirName: string, workspace: string, date, cmd) => {
       const { storageAdapter } = prepareTools()
-      const storage = await createStorageBackupStorage(storageAdapter, getWorkspaceId(bucketName), dirName)
+      const storage = await createStorageBackupStorage(toolCtx, storageAdapter, getWorkspaceId(bucketName), dirName)
       await restore(transactorUrl, getWorkspaceId(workspace, productId), storage, parseInt(date ?? '-1'))
     })
   program
@@ -535,7 +540,12 @@ export function devTool (
     .action(async (bucketName: string, dirName: string, cmd) => {
       const { storageAdapter } = prepareTools()
 
-      const storage = await createStorageBackupStorage(storageAdapter, getWorkspaceId(bucketName, productId), dirName)
+      const storage = await createStorageBackupStorage(
+        toolCtx,
+        storageAdapter,
+        getWorkspaceId(bucketName, productId),
+        dirName
+      )
       await backupList(storage)
     })
 
@@ -576,7 +586,7 @@ export function devTool (
         }
 
         console.log(`clearing ${workspace} history:`)
-        await clearTelegramHistory(mongodbUri, getWorkspaceId(workspace, productId), telegramDB, minio)
+        await clearTelegramHistory(toolCtx, mongodbUri, getWorkspaceId(workspace, productId), telegramDB, minio)
       })
     })
 
@@ -596,7 +606,7 @@ export function devTool (
 
         for (const w of workspaces) {
           console.log(`clearing ${w.workspace} history:`)
-          await clearTelegramHistory(mongodbUri, getWorkspaceId(w.workspace, productId), telegramDB, minio)
+          await clearTelegramHistory(toolCtx, mongodbUri, getWorkspaceId(w.workspace, productId), telegramDB, minio)
         }
       })
     })
@@ -624,6 +634,7 @@ export function devTool (
       const { mongodbUri, storageAdapter: minio } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
         await cleanWorkspace(
+          toolCtx,
           mongodbUri,
           getWorkspaceId(workspace, productId),
           minio,
@@ -636,7 +647,7 @@ export function devTool (
 
   program.command('fix-bw-workspace <workspace>').action(async (workspace: string) => {
     const { storageAdapter: minio } = prepareTools()
-    await fixMinioBW(getWorkspaceId(workspace, productId), minio)
+    await fixMinioBW(toolCtx, getWorkspaceId(workspace, productId), minio)
   })
 
   program

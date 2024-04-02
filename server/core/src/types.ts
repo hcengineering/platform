@@ -41,9 +41,9 @@ import {
   type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 import type { Asset, Resource } from '@hcengineering/platform'
-import { type StorageAdapter } from './storage'
 import { type Readable } from 'stream'
 import { type ServiceAdaptersManager } from './service'
+import { type StorageAdapter } from './storage'
 
 /**
  * @public
@@ -425,4 +425,14 @@ export interface ServiceAdapterConfig {
   factory: ServiceAdapterFactory
   db: string
   url: string
+}
+
+export interface StorageConfig {
+  name: string
+  kind: string
+}
+
+export interface StorageConfiguration {
+  default: string
+  storages: StorageConfig[]
 }

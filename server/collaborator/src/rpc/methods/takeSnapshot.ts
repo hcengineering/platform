@@ -57,7 +57,7 @@ export async function takeSnapshot (
     const historyDocumentId = collaborativeHistoryDocId(minioDocumentId)
     const yHistory =
       (await ctx.with('yDocFromMinio', {}, async () => {
-        return await yDocFromStorage(minio, workspaceId, historyDocumentId)
+        return await yDocFromStorage(ctx, minio, workspaceId, historyDocumentId)
       })) ?? new YDoc()
 
     await ctx.with('createYdocSnapshot', {}, async () => {
@@ -67,7 +67,7 @@ export async function takeSnapshot (
     })
 
     await ctx.with('yDocToMinio', {}, async () => {
-      await yDocToStorage(minio, workspaceId, historyDocumentId, yHistory)
+      await yDocToStorage(ctx, minio, workspaceId, historyDocumentId, yHistory)
     })
 
     return { ...version }

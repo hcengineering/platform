@@ -69,6 +69,7 @@ class InMemoryTxAdapter extends DummyDbAdapter implements TxAdapter {
  * @public
  */
 export async function createInMemoryTxAdapter (
+  ctx: MeasureContext,
   hierarchy: Hierarchy,
   url: string,
   workspace: WorkspaceId
