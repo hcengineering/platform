@@ -84,11 +84,14 @@ export async function connect (title: string): Promise<Client | undefined> {
     return
   }
 
+  let tokenChanged = false
+
   if (_token !== token && _client !== undefined) {
     // We need to flush all data from memory
     await purgeClient()
     await _client.close()
     _client = undefined
+    tokenChanged = true
   }
   if (_client !== undefined) {
     return _client
@@ -119,7 +122,8 @@ export async function connect (title: string): Promise<Client | undefined> {
       console.log('WorkbenchClient: onConnect', event)
       try {
         if ((_clientSet && event === ClientConnectEvent.Connected) || event === ClientConnectEvent.Refresh) {
-          void refreshClient()
+          void refreshClient(tokenChanged)
+          tokenChanged = false
         }
 
         if (event === ClientConnectEvent.Upgraded) {

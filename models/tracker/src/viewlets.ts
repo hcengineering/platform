@@ -525,7 +525,7 @@ export function defineViewlets (builder: Builder): void {
       attachTo: tracker.class.Project,
       descriptor: view.viewlet.List,
       viewOptions: {
-        groupBy: ['type', 'createdBy'],
+        groupBy: ['createdBy'],
         orderBy: [
           ['type', SortingOrder.Descending],
           ['modifiedOn', SortingOrder.Descending],
@@ -549,10 +549,11 @@ export function defineViewlets (builder: Builder): void {
           sortingKey: 'members',
           props: { readonly: true, kind: 'list' }
         },
-        {
-          key: 'type',
-          props: { kind: 'list' }
-        },
+        // TODO: Need return type in future
+        // {
+        //   key: 'type',
+        //   props: { kind: 'list' }
+        // },
         {
           key: 'defaultAssignee',
           props: { kind: 'list' }

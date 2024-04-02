@@ -420,7 +420,8 @@ async function restoreTaskTypes (client: MigrationClient): Promise<void> {
       )[0] as TxMixin<any, any>
 
       if (typeMixin === undefined) {
-        throw new Error('No type mixin found for the task type being restored')
+        console.error(new Error('No type mixin found for the task type being restored'))
+        continue
       }
 
       // Get statuses and categories
