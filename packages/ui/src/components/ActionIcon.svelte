@@ -47,6 +47,7 @@
 <style lang="scss">
   .button {
     color: inherit;
+    border: none;
     border-radius: 0.125rem;
     cursor: pointer;
 
