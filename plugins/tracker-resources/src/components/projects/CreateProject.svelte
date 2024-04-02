@@ -13,23 +13,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { deepEqual } from 'fast-equals'
   import { Employee } from '@hcengineering/contact'
   import { AccountArrayEditor, AssigneeBox } from '@hcengineering/contact-resources'
   import core, {
     Account,
     Data,
     DocumentUpdate,
-    RolesAssignment,
     Ref,
     Role,
+    RolesAssignment,
     SortingOrder,
+    SpaceType,
     generateId,
     getCurrentAccount
   } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import presentation, { Card, createQuery, getClient } from '@hcengineering/presentation'
-  import task, { ProjectType } from '@hcengineering/task'
+  import task, { ProjectType, TaskType } from '@hcengineering/task'
+  import { taskTypeStore, typeStore } from '@hcengineering/task-resources'
   import { StyledTextBox } from '@hcengineering/text-editor'
   import { IssueStatus, Project, TimeReportDayType } from '@hcengineering/tracker'
   import {
@@ -47,7 +48,7 @@
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { IconPicker } from '@hcengineering/view-resources'
-  import { typeStore, taskTypeStore } from '@hcengineering/task-resources'
+  import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import StatusSelector from '../issues/StatusSelector.svelte'
@@ -185,8 +186,15 @@
   let typeId: Ref<ProjectType> | undefined = project?.type
   $: typeType = typeId !== undefined ? $typeStore.get(typeId) : undefined
 
-  $: if (defaultStatus === undefined && typeType !== undefined) {
-    defaultStatus = typeType.statuses[0]?._id
+  function findTaskTypes (typeId: Ref<SpaceType>): TaskType[] {
+    return Array.from($taskTypeStore.values()).filter(
+      (it) => it.parent === typeId && it.ofClass === tracker.class.Issue
+    )
+  }
+
+  $: if (defaultStatus === undefined && typeId !== undefined) {
+    const sts = findTaskTypes(typeId)?.[0]?.statuses
+    defaultStatus = sts?.[0]
   }
 
   async function createProject (): Promise<void> {
@@ -429,15 +437,15 @@
       <div class="antiGrid-row__header">
         <Label label={tracker.string.DefaultIssueStatus} />
       </div>
-      <StatusSelector
-        taskType={Array.from($taskTypeStore.values()).filter(
-          (it) => it.parent === typeId && it.ofClass === tracker.class.Issue
-        )[0]?._id}
-        bind:value={defaultStatus}
-        type={typeId}
-        kind={'regular'}
-        size={'large'}
-      />
+      {#if typeId !== undefined}
+        <StatusSelector
+          taskType={findTaskTypes(typeId)[0]?._id}
+          bind:value={defaultStatus}
+          type={typeId}
+          kind={'regular'}
+          size={'large'}
+        />
+      {/if}
     </div>
 
     <div class="antiGrid-row">
