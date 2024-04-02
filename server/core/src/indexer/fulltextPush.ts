@@ -40,14 +40,7 @@ import {
   type FullTextPipelineStage,
   fullTextPushStageId
 } from './types'
-import {
-  collectPropagate,
-  collectPropagateClasses,
-  docKey,
-  getFullTextContext,
-  type IndexKeyOptions,
-  isCustomAttr
-} from './utils'
+import { collectPropagate, collectPropagateClasses, docKey, getFullTextContext, isCustomAttr } from './utils'
 
 /**
  * @public
