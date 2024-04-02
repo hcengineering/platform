@@ -932,7 +932,7 @@
       }}
     />
     <ComponentSelector
-      focusIndex={8}
+      focusIndex={7}
       value={object.component}
       space={_space}
       onChange={handleComponentIdChanged}
@@ -941,7 +941,7 @@
       size={'large'}
     />
     <div id="estimation-editor" class="new-line">
-      <EstimationEditor focusIndex={7} kind={'regular'} size={'large'} value={object} />
+      <EstimationEditor focusIndex={8} kind={'regular'} size={'large'} value={object} />
     </div>
     <div id="milestone-editor" class="new-line">
       <MilestoneSelector
