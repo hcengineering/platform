@@ -367,7 +367,9 @@ export async function buildModel (options: BuildModelOptions): Promise<Attribute
             }
           }
         }
-        return await getPresenter(options.client, options._class, key, key, options.lookup)
+        if (key.presenter){
+          return await getPresenter(options.client, options._class, key, key, options.lookup)
+        }
       } catch (err: any) {
         if (options.ignoreMissing ?? false) {
           return undefined
