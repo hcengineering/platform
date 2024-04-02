@@ -145,8 +145,6 @@ export interface IndexKeyOptions {
   _class?: Ref<Class<Obj>>
   docId?: Ref<DocIndexState>
   extra?: string[]
-  relative?: boolean
-  refAttribute?: string
 }
 /**
  * @public

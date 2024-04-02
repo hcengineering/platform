@@ -36,7 +36,7 @@ function createIndexedReader (
     get: (attr: string) => {
       const realAttr = hierarchy.findAttribute(_class, attr)
       if (realAttr !== undefined) {
-        return doc.attributes[docKey(attr, { refAttribute, _class: realAttr.attributeOf })]
+        return doc.attributes[docKey(attr, { _class: realAttr.attributeOf })]
       }
       return undefined
     },
