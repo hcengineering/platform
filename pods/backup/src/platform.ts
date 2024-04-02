@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { getWorkspaceId } from '@hcengineering/core'
+import { getWorkspaceId, MeasureMetricsContext } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { setMetadata } from '@hcengineering/platform'
 import { backup, createStorageBackupStorage } from '@hcengineering/server-backup'
@@ -92,10 +92,12 @@ export class PlatformWorker {
 
   async backup (): Promise<void> {
     const workspaces = await getWorkspaces()
+    const ctx = new MeasureMetricsContext('backup', {})
     for (const ws of workspaces) {
       console.log('\n\nBACKUP WORKSPACE ', ws.workspace, ws.productId)
       try {
         const storage = await createStorageBackupStorage(
+          ctx,
           this.storageAdapter,
           getWorkspaceId('backups', ws.productId),
           ws.workspace

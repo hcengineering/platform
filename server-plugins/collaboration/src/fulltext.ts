@@ -106,12 +106,7 @@ export class CollaborativeContentRetrievalStage implements FullTextPipelineStage
           if (collaborativeDoc !== undefined && collaborativeDoc !== '') {
             const { documentId } = parseCollaborativeDoc(collaborativeDoc)
 
-            let docInfo: any | undefined
-            try {
-              docInfo = await this.storageAdapter?.stat(this.workspace, documentId)
-            } catch (err: any) {
-              // not found.
-            }
+            const docInfo: any | undefined = await this.storageAdapter?.stat(this.metrics, this.workspace, documentId)
 
             if (docInfo !== undefined) {
               const digest = docInfo.etag
@@ -120,7 +115,7 @@ export class CollaborativeContentRetrievalStage implements FullTextPipelineStage
                 ;(update as any)[docUpdKey(digestKey)] = digest
 
                 const contentType = ((docInfo.metaData['content-type'] as string) ?? '').split(';')[0]
-                const readable = await this.storageAdapter?.get(this.workspace, documentId)
+                const readable = await this.storageAdapter?.get(this.metrics, this.workspace, documentId)
 
                 if (readable !== undefined) {
                   let textContent = await this.metrics.with(

@@ -65,6 +65,7 @@ services:
       - SERVER_PORT=8083
       - SERVER_SECRET=secret
       - ACCOUNTS_URL=http://localhost:3003
+      - MONGO_URL=mongodb://mongodb:27018
       - UPLOAD_URL=/files
       - TRANSACTOR_URL=ws://localhost:3334
       - ELASTIC_URL=http://elastic:9200

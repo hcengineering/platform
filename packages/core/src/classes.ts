@@ -341,6 +341,12 @@ export const DOMAIN_BLOB = 'blob' as Domain
  * Special domain to access s3 blob data.
  * @public
  */
+export const DOMAIN_BLOB_DATA = 'blob-data' as Domain
+
+/**
+ * Special domain to access s3 blob data.
+ * @public
+ */
 export const DOMAIN_FULLTEXT_BLOB = 'fulltext-blob' as Domain
 
 /**
@@ -533,6 +539,29 @@ export interface DocIndexState extends Doc {
 export interface IndexStageState extends Doc {
   stageId: string
   attributes: Record<string, any>
+}
+
+/**
+ * @public
+ *
+ * A blob document to manage blob attached documents.
+ *
+ * _id: is a platform ID and it created using our regular generateId(),
+ * and storageId is a provider specified storage id.
+ */
+export interface Blob extends Doc {
+  // Provider
+  provider: string
+  // A provider specific id
+  storageId: string
+  // A content type for blob
+  contentType: string
+  // A etag for blob
+  etag: string
+  // Document version if supported by provider
+  version: string | null
+  // A document size
+  size: number
 }
 
 /**

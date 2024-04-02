@@ -35,11 +35,11 @@ import { type DbConfiguration } from '../configuration'
 import { createContentAdapter } from '../content'
 import { FullTextIndex } from '../fulltext'
 import { FullTextIndexPipeline } from '../indexer'
+import { createServiceAdaptersManager } from '../service'
 import { type StorageAdapter } from '../storage'
 import { Triggers } from '../triggers'
 import { type ServerStorageOptions } from '../types'
 import { TServerStorage } from './storage'
-import { createServiceAdaptersManager } from '../service'
 
 /**
  * @public
@@ -58,7 +58,10 @@ export async function createServerStorage (
 
   for (const key in conf.adapters) {
     const adapterConf = conf.adapters[key]
-    adapters.set(key, await adapterConf.factory(hierarchy, adapterConf.url, conf.workspace, modelDb, storageAdapter))
+    adapters.set(
+      key,
+      await adapterConf.factory(ctx, hierarchy, adapterConf.url, conf.workspace, modelDb, storageAdapter)
+    )
   }
 
   const txAdapter = adapters.get(conf.domains[DOMAIN_TX]) as TxAdapter
@@ -187,17 +190,21 @@ export async function createServerStorage (
  */
 export function createNullStorageFactory (): StorageAdapter {
   return {
-    exists: async (workspaceId: WorkspaceId) => {
+    initialize: async (ctx, workspaceId) => {},
+    exists: async (ctx, workspaceId: WorkspaceId) => {
       return false
     },
-    make: async (workspaceId: WorkspaceId) => {},
-    remove: async (workspaceId: WorkspaceId, objectNames: string[]) => {},
-    delete: async (workspaceId: WorkspaceId) => {},
-    list: async (workspaceId: WorkspaceId, prefix?: string) => [],
-    stat: async (workspaceId: WorkspaceId, objectName: string) => ({}) as any,
-    get: async (workspaceId: WorkspaceId, objectName: string) => ({}) as any,
-    put: async (workspaceId: WorkspaceId, objectName: string, stream: any, size?: number, qwe?: any) => ({}) as any,
-    read: async (workspaceId: WorkspaceId, name: string) => ({}) as any,
-    partial: async (workspaceId: WorkspaceId, objectName: string, offset: number, length?: number) => ({}) as any
+    make: async (ctx, workspaceId: WorkspaceId) => {},
+    remove: async (ctx, workspaceId: WorkspaceId, objectNames: string[]) => {},
+    delete: async (ctx, workspaceId: WorkspaceId) => {},
+    list: async (ctx, workspaceId: WorkspaceId, prefix?: string) => [],
+    stat: async (ctx, workspaceId: WorkspaceId, objectName: string) => ({}) as any,
+    get: async (ctx, workspaceId: WorkspaceId, objectName: string) => ({}) as any,
+    put: async (ctx, workspaceId: WorkspaceId, objectName: string, stream: any, contentType: string, size?: number) =>
+      ({}) as any,
+    read: async (ctx, workspaceId: WorkspaceId, name: string) => ({}) as any,
+    partial: async (ctx, workspaceId: WorkspaceId, objectName: string, offset: number, length?: number) => ({}) as any
   }
 }
+
+export { AggregatorStorageAdapter, buildStorage } from './aggregator'

@@ -75,6 +75,7 @@ services:
     environment:
       - SERVER_PORT=8080
       - SERVER_SECRET=secret
+      - MONGO_URL=mongodb://mongodb:27017
       - ACCOUNTS_URL=http://localhost:3000
       - REKONI_URL=http://localhost:4004
       - CALENDAR_URL=http://localhost:8095

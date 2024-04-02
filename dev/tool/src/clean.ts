@@ -18,6 +18,7 @@ import chunter, { type ChatMessage } from '@hcengineering/chunter'
 import contact from '@hcengineering/contact'
 import core, {
   DOMAIN_TX,
+  type MeasureContext,
   SortingOrder,
   TxOperations,
   TxProcessor,
@@ -43,6 +44,7 @@ import { MongoClient } from 'mongodb'
 export const DOMAIN_ACTIVITY = 'activity' as Domain
 
 export async function cleanWorkspace (
+  ctx: MeasureContext,
   mongoUrl: string,
   workspaceId: WorkspaceId,
   storageAdapter: StorageAdapter,
@@ -67,14 +69,14 @@ export async function cleanWorkspace (
       attachments.map((it) => it.file).concat(contacts.map((it) => it.avatar).filter((it) => it) as string[])
     )
 
-    const minioList = await storageAdapter.list(workspaceId)
+    const minioList = await storageAdapter.list(ctx, workspaceId)
     const toClean: string[] = []
     for (const mv of minioList) {
-      if (!files.has(mv.name)) {
-        toClean.push(mv.name)
+      if (!files.has(mv._id)) {
+        toClean.push(mv._id)
       }
     }
-    await storageAdapter.remove(workspaceId, toClean)
+    await storageAdapter.remove(ctx, workspaceId, toClean)
     // connection.loadChunk(DOMAIN_BLOB, idx = )
 
     if (opt.recruit) {
@@ -145,16 +147,20 @@ export async function cleanWorkspace (
   }
 }
 
-export async function fixMinioBW (workspaceId: WorkspaceId, storageService: StorageAdapter): Promise<void> {
+export async function fixMinioBW (
+  ctx: MeasureContext,
+  workspaceId: WorkspaceId,
+  storageService: StorageAdapter
+): Promise<void> {
   console.log('try clean bw miniature for ', workspaceId.name)
-  const from = new Date(new Date().setDate(new Date().getDate() - 7))
-  const list = await storageService.list(workspaceId)
+  const from = new Date(new Date().setDate(new Date().getDate() - 7)).getTime()
+  const list = await storageService.list(ctx, workspaceId)
   console.log('found', list.length)
   let removed = 0
   for (const obj of list) {
-    if (obj.lastModified < from) continue
-    if (obj.name.includes('%size%')) {
-      await storageService.remove(workspaceId, [obj.name])
+    if (obj.modifiedOn < from) continue
+    if ((obj._id as string).includes('%size%')) {
+      await storageService.remove(ctx, workspaceId, [obj._id])
       removed++
       if (removed % 100 === 0) {
         console.log('removed: ', removed)

@@ -15,7 +15,7 @@
 //
 
 import { MeasureContext, WorkspaceId, metricsAggregate } from '@hcengineering/core'
-import { MinioService } from '@hcengineering/minio'
+import { StorageAdapter } from '@hcengineering/server-core'
 import { Token, decodeToken } from '@hcengineering/server-token'
 import bp from 'body-parser'
 import cors from 'cors'
@@ -35,19 +35,16 @@ const cacheControlNoCache = 'max-age=1d, no-cache, must-revalidate'
 
 async function minioUpload (
   ctx: MeasureContext,
-  minio: MinioService,
+  storageAdapter: StorageAdapter,
   workspace: WorkspaceId,
   file: UploadedFile
 ): Promise<string> {
   const id = uuid()
-  const meta: any = {
-    'Content-Type': file.mimetype
-  }
 
   const resp = await ctx.with(
     'storage upload',
     { workspace: workspace.name },
-    async () => await minio.put(workspace, id, file.data, file.size, meta),
+    async () => await storageAdapter.put(ctx, workspace, id, file.data, file.mimetype, file.size),
     { file: file.name, contentType: file.mimetype }
   )
 
@@ -76,13 +73,17 @@ function getRange (range: string, size: number): [number, number] {
 async function getFileRange (
   ctx: MeasureContext,
   range: string,
-  client: MinioService,
+  client: StorageAdapter,
   workspace: WorkspaceId,
   uuid: string,
   res: Response
 ): Promise<void> {
-  const stat = await ctx.with('stats', {}, async () => await client.stat(workspace, uuid))
-
+  const stat = await ctx.with('stats', {}, async () => await client.stat(ctx, workspace, uuid))
+  if (stat === undefined) {
+    await ctx.error('No such key', { file: uuid })
+    res.status(404).send()
+    return
+  }
   const size: number = stat.size
 
   const [start, end] = getRange(range, size)
@@ -97,13 +98,13 @@ async function getFileRange (
 
   await ctx.with(
     'write',
-    { contentType: stat.metaData['content-type'] },
+    { contentType: stat.contentType },
     async (ctx) => {
       try {
         const dataStream = await ctx.with(
           'partial',
           {},
-          async () => await client.partial(workspace, uuid, start, end - start + 1),
+          async () => await client.partial(ctx, workspace, uuid, start, end - start + 1),
           {}
         )
         res.writeHead(206, {
@@ -111,9 +112,9 @@ async function getFileRange (
           'Content-Range': `bytes ${start}-${end}/${size}`,
           'Accept-Ranges': 'bytes',
           'Content-Length': end - start + 1,
-          'Content-Type': stat.metaData['content-type'],
+          'Content-Type': stat.contentType,
           Etag: stat.etag,
-          'Last-Modified': stat.lastModified.toISOString()
+          'Last-Modified': new Date(stat.modifiedOn).toISOString()
         })
 
         dataStream.pipe(res)
@@ -144,33 +145,38 @@ async function getFileRange (
         res.status(500).send()
       }
     },
-    { ...stat.metaData, uuid, start, end: end - start + 1, ...stat.metaData }
+    { uuid, start, end: end - start + 1 }
   )
 }
 
 async function getFile (
   ctx: MeasureContext,
-  client: MinioService,
+  client: StorageAdapter,
   workspace: WorkspaceId,
   uuid: string,
   req: Request,
   res: Response
 ): Promise<void> {
-  const stat = await ctx.with('stat', {}, async () => await client.stat(workspace, uuid))
+  const stat = await ctx.with('stat', {}, async () => await client.stat(ctx, workspace, uuid))
+  if (stat === undefined) {
+    await ctx.error('No such key', { file: req.query.file })
+    res.status(404).send()
+    return
+  }
 
   const etag = stat.etag
 
   if (
     preConditions.IfNoneMatch(req.headers, { etag }) === 'notModified' ||
     preConditions.IfMatch(req.headers, { etag }) === 'notModified' ||
-    preConditions.IfModifiedSince(req.headers, { lastModified: stat.lastModified }) === 'notModified'
+    preConditions.IfModifiedSince(req.headers, { lastModified: new Date(stat.modifiedOn) }) === 'notModified'
   ) {
     // Matched, return not modified
     res.statusCode = 304
     res.end()
     return
   }
-  if (preConditions.IfUnmodifiedSince(req.headers, { lastModified: stat.lastModified }) === 'failed') {
+  if (preConditions.IfUnmodifiedSince(req.headers, { lastModified: new Date(stat.modifiedOn) }) === 'failed') {
     // Send 412 (Precondition Failed)
     res.statusCode = 412
     res.end()
@@ -179,14 +185,14 @@ async function getFile (
 
   await ctx.with(
     'write',
-    { contentType: stat.metaData['content-type'] },
+    { contentType: stat.contentType },
     async (ctx) => {
       try {
-        const dataStream = await ctx.with('readable', {}, async () => await client.get(workspace, uuid))
+        const dataStream = await ctx.with('readable', {}, async () => await client.get(ctx, workspace, uuid))
         res.writeHead(200, {
-          'Content-Type': stat.metaData['content-type'],
+          'Content-Type': stat.contentType,
           Etag: stat.etag,
-          'Last-Modified': stat.lastModified.toISOString(),
+          'Last-Modified': new Date(stat.modifiedOn).toISOString(),
           'Cache-Control': cacheControlValue
         })
 
@@ -210,7 +216,7 @@ async function getFile (
         res.status(500).send()
       }
     },
-    { ...stat.metaData }
+    {}
   )
 }
 
@@ -223,7 +229,7 @@ export function start (
   config: {
     transactorEndpoint: string
     elasticUrl: string
-    minio: MinioService
+    storageAdapter: StorageAdapter
     accountsUrl: string
     uploadUrl: string
     modelVersion: string
@@ -325,8 +331,13 @@ export function start (
       let uuid = req.query.file as string
       const size = req.query.size as 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' | 'full'
 
-      uuid = await getResizeID(size, uuid, config, payload)
-      const stat = await config.minio.stat(payload.workspace, uuid)
+      uuid = await getResizeID(ctx, size, uuid, config, payload)
+      const stat = await config.storageAdapter.stat(ctx, payload.workspace, uuid)
+      if (stat === undefined) {
+        await ctx.error('No such key', { file: req.query.file })
+        res.status(404).send()
+        return
+      }
 
       const fileSize = stat.size
 
@@ -334,14 +345,14 @@ export function start (
         'accept-ranges': 'bytes',
         'content-length': fileSize,
         Etag: stat.etag,
-        'Last-Modified': stat.lastModified.toISOString()
+        'Last-Modified': new Date(stat.modifiedOn).toISOString()
       })
       res.status(200)
 
       res.end()
     } catch (error: any) {
       if (error?.code === 'NoSuchKey' || error?.code === 'NotFound') {
-        console.log('No such key', req.query.file)
+        await ctx.error('No such key', { file: req.query.file })
         res.status(404).send()
         return
       } else {
@@ -390,9 +401,9 @@ export function start (
           const d = await ctx.with(
             'notoken-stat',
             { workspace: payload.workspace.name },
-            async () => await config.minio.stat(payload.workspace, uuid)
+            async () => await config.storageAdapter.stat(ctx, payload.workspace, uuid)
           )
-          if (!((d.metaData['content-type'] as string) ?? '').includes('image')) {
+          if (d !== undefined && !(d.contentType ?? '').includes('image')) {
             // Do not allow to return non images with no token.
             if (token === undefined) {
               res.status(403).send()
@@ -404,19 +415,19 @@ export function start (
 
       const size = req.query.size as 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' | 'full'
 
-      uuid = await ctx.with('resize', {}, async () => await getResizeID(size, uuid, config, payload))
+      uuid = await ctx.with('resize', {}, async () => await getResizeID(ctx, size, uuid, config, payload))
 
       const range = req.headers.range
       if (range !== undefined) {
         await ctx.with('file-range', { workspace: payload.workspace.name }, async (ctx) => {
-          await getFileRange(ctx, range, config.minio, payload.workspace, uuid, res)
+          await getFileRange(ctx, range, config.storageAdapter, payload.workspace, uuid, res)
         })
       } else {
         await ctx.with(
           'file',
           { workspace: payload.workspace.name },
           async (ctx) => {
-            await getFile(ctx, config.minio, payload.workspace, uuid, req, res)
+            await getFile(ctx, config.storageAdapter, payload.workspace, uuid, req, res)
           },
           { uuid }
         )
@@ -479,7 +490,7 @@ export function start (
         try {
           const token = authHeader.split(' ')[1]
           const payload = decodeToken(token)
-          const uuid = await minioUpload(ctx, config.minio, payload.workspace, file)
+          const uuid = await minioUpload(ctx, config.storageAdapter, payload.workspace, file)
 
           res.status(200).send(uuid)
         } catch (error: any) {
@@ -508,13 +519,16 @@ export function start (
       }
 
       // TODO: We need to allow delete only of user attached documents. (https://front.hc.engineering/workbench/platform/tracker/TSK-1081)
-      await config.minio.remove(payload.workspace, [uuid])
+      await config.storageAdapter.remove(ctx, payload.workspace, [uuid])
 
-      const extra = await config.minio.list(payload.workspace, uuid)
+      // TODO: Add support for related documents.
+      // TODO: Move support of image resize/format change to separate place.
+      const extra = await config.storageAdapter.list(ctx, payload.workspace, uuid)
       if (extra.length > 0) {
-        await config.minio.remove(
+        await config.storageAdapter.remove(
+          ctx,
           payload.workspace,
-          Array.from(extra.entries()).map((it) => it[1].name)
+          Array.from(extra.entries()).map((it) => it[1]._id)
         )
       }
 
@@ -570,10 +584,7 @@ export function start (
             return
           }
           const id = uuid()
-          const contentType = response.headers['content-type']
-          const meta = {
-            'Content-Type': contentType
-          }
+          const contentType = response.headers['content-type'] ?? 'application/octet-stream'
           const data: Buffer[] = []
           response
             .on('data', function (chunk) {
@@ -581,8 +592,8 @@ export function start (
             })
             .on('end', function () {
               const buffer = Buffer.concat(data)
-              config.minio
-                .put(payload.workspace, id, buffer, 0, meta)
+              config.storageAdapter
+                .put(ctx, payload.workspace, id, buffer, contentType, buffer.length)
                 .then(async (objInfo) => {
                   console.log('uploaded uuid', id, objInfo.etag)
 
@@ -649,9 +660,6 @@ export function start (
         }
         const id = uuid()
         const contentType = response.headers['content-type']
-        const meta = {
-          'Content-Type': contentType
-        }
         const data: Buffer[] = []
         response
           .on('data', function (chunk) {
@@ -660,8 +668,8 @@ export function start (
           .on('end', function () {
             const buffer = Buffer.concat(data)
             // eslint-disable-next-line @typescript-eslint/no-misused-promises
-            config.minio
-              .put(payload.workspace, id, buffer, 0, meta)
+            config.storageAdapter
+              .put(ctx, payload.workspace, id, buffer, contentType ?? 'application/octet-stream', buffer.length)
               .then(async () => {
                 console.log('uploaded uuid', id)
 
@@ -753,9 +761,10 @@ export function start (
 //   | '2x-large'
 //   | 'full'
 async function getResizeID (
+  ctx: MeasureContext,
   size: string,
   uuid: string,
-  config: { minio: MinioService },
+  config: { storageAdapter: StorageAdapter },
   payload: Token
 ): Promise<string> {
   if (size !== undefined && size !== 'full') {
@@ -784,7 +793,7 @@ async function getResizeID (
     let hasSmall = false
     const sizeId = uuid + `%size%${width}`
     try {
-      const d = await config.minio.stat(payload.workspace, sizeId)
+      const d = await config.storageAdapter.stat(ctx, payload.workspace, sizeId)
       hasSmall = d !== undefined && d.size > 0
     } catch (err: any) {
       if (err.code !== 'NotFound') {
@@ -796,7 +805,7 @@ async function getResizeID (
       uuid = sizeId
     } else {
       // Let's get data and resize it
-      const data = Buffer.concat(await config.minio.read(payload.workspace, uuid))
+      const data = Buffer.concat(await config.storageAdapter.read(ctx, payload.workspace, uuid))
 
       const dataBuff = await sharp(data)
         .resize({
@@ -804,9 +813,9 @@ async function getResizeID (
         })
         .jpeg()
         .toBuffer()
-      await config.minio.put(payload.workspace, sizeId, dataBuff, dataBuff.length, {
-        'Content-Type': 'image/jpeg'
-      })
+
+      // Add support of avif as well.
+      await config.storageAdapter.put(ctx, payload.workspace, sizeId, dataBuff, 'image/jpeg', dataBuff.length)
       uuid = sizeId
     }
   }

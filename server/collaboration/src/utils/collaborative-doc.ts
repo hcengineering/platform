@@ -47,7 +47,7 @@ export async function loadCollaborativeDoc (
 
   return await ctx.with('loadCollaborativeDoc', { type: 'content' }, async (ctx) => {
     const yContent = await ctx.with('yDocFromMinio', { type: 'content' }, async () => {
-      return await yDocFromStorage(storageAdapter, workspace, documentId, new YDoc({ gc: false }))
+      return await yDocFromStorage(ctx, storageAdapter, workspace, documentId, new YDoc({ gc: false }))
     })
 
     // the document does not exist
@@ -60,7 +60,7 @@ export async function loadCollaborativeDoc (
     }
 
     const yHistory = await ctx.with('yDocFromMinio', { type: 'history' }, async () => {
-      return await yDocFromStorage(storageAdapter, workspace, historyDocumentId, new YDoc())
+      return await yDocFromStorage(ctx, storageAdapter, workspace, historyDocumentId, new YDoc())
     })
 
     // the history document does not exist
@@ -98,7 +98,7 @@ export async function saveCollaborativeDocVersion (
   await ctx.with('saveCollaborativeDoc', {}, async (ctx) => {
     if (versionId === 'HEAD') {
       await ctx.with('yDocToMinio', {}, async () => {
-        await yDocToStorage(storageAdapter, workspace, documentId, ydoc)
+        await yDocToStorage(ctx, storageAdapter, workspace, documentId, ydoc)
       })
     } else {
       console.warn('Cannot save non HEAD document version', documentId, versionId)
@@ -125,7 +125,7 @@ export async function removeCollaborativeDoc (
     }
     if (toRemove.length > 0) {
       await ctx.with('remove', {}, async () => {
-        await storageAdapter.remove(workspace, toRemove)
+        await storageAdapter.remove(ctx, workspace, toRemove)
       })
     }
   })
@@ -181,7 +181,7 @@ export async function takeCollaborativeDocSnapshot (
   await ctx.with('takeCollaborativeDocSnapshot', {}, async (ctx) => {
     const yHistory =
       (await ctx.with('yDocFromMinio', { type: 'history' }, async () => {
-        return await yDocFromStorage(storageAdapter, workspace, historyDocumentId, new YDoc({ gc: false }))
+        return await yDocFromStorage(ctx, storageAdapter, workspace, historyDocumentId, new YDoc({ gc: false }))
       })) ?? new YDoc()
 
     await ctx.with('createYdocSnapshot', {}, async () => {
@@ -189,7 +189,7 @@ export async function takeCollaborativeDocSnapshot (
     })
 
     await ctx.with('yDocToMinio', { type: 'history' }, async () => {
-      await yDocToStorage(storageAdapter, workspace, historyDocumentId, yHistory)
+      await yDocToStorage(ctx, storageAdapter, workspace, historyDocumentId, yHistory)
     })
   })
 }

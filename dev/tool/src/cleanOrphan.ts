@@ -1,5 +1,5 @@
 import { dropWorkspace, setWorkspaceDisabled, type Workspace } from '@hcengineering/account'
-import core, { AccountRole, MeasureMetricsContext, SortingOrder } from '@hcengineering/core'
+import core, { AccountRole, type MeasureContext, MeasureMetricsContext, SortingOrder } from '@hcengineering/core'
 import contact from '@hcengineering/model-contact'
 import { getWorkspaceDB } from '@hcengineering/mongo'
 import { type StorageAdapter } from '@hcengineering/server-core'
@@ -7,6 +7,7 @@ import { connect } from '@hcengineering/server-tool'
 import { type Db, type MongoClient } from 'mongodb'
 
 export async function checkOrphanWorkspaces (
+  ctx: MeasureContext,
   workspaces: Workspace[],
   transactorUrl: string,
   productId: string,
@@ -40,7 +41,7 @@ export async function checkOrphanWorkspaces (
 
       // Find last transaction index:
       const wspace = { name: ws.workspace, productId }
-      const hasBucket = await storageAdapter.exists(wspace)
+      const hasBucket = await storageAdapter.exists(ctx, wspace)
       const [lastTx] = await connection.findAll(
         core.class.Tx,
         {
@@ -69,12 +70,13 @@ export async function checkOrphanWorkspaces (
           const workspaceDb = getWorkspaceDB(client, { name: ws.workspace, productId })
           await workspaceDb.dropDatabase()
           if (storageAdapter !== undefined && hasBucket) {
-            const docs = await storageAdapter.list(wspace)
+            const docs = await storageAdapter.list(ctx, wspace)
             await storageAdapter.remove(
+              ctx,
               wspace,
-              docs.map((it) => it.name)
+              docs.map((it) => it._id)
             )
-            await storageAdapter?.delete(wspace)
+            await storageAdapter.delete(ctx, wspace)
           }
         }
       }
