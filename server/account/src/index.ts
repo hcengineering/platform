@@ -1092,7 +1092,7 @@ export async function getWorkspaceInfo (
 
   const [ws] = (
     await db.collection<Workspace>(WORKSPACE_COLLECTION).find(withProductId(productId, query)).toArray()
-  ).filter((it) => it.disabled !== true)
+  ).filter((it) => it.disabled !== true || account?.admin === true)
   if (ws == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
