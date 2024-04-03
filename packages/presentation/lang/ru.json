@@ -30,6 +30,7 @@
     "MakePrivateDescription": "Только пользователи могут видеть это",
     "Created": "Созданные",
     "NoResults": "Нет результатов",
-    "Next": "Далее"
+    "Next": "Далее",
+    "FailedToPreview": "Ошибка предпросмотра"
   }
 }

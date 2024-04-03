@@ -30,6 +30,7 @@
     "MakePrivateDescription": "Solo los miembros pueden verlo",
     "Created": "Creado",
     "NoResults": "No hay resultados para mostrar",
-    "Next": "Siguiente"
+    "Next": "Siguiente",
+    "FailedToPreview": "Error al previsualizar"
   }
 }
