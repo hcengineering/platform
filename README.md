@@ -46,6 +46,41 @@ This project offers a convenient method to host Huly using `docker`, designed fo
 - Make sure what docker and `docker compose` commands are available in your terminal (e.g. `docker --version` and `docker compose --version`).
 - Make sure what docker and `docker compose` commands can be executed without sudo (e.g. `docker run hello-world` and `docker compose --version`).
 
+## Installing Node.js:
+Node.js is a JavaScript runtime environment enabling the execution of JavaScript code outside of a web browser.
+
+## Using Node Version Manager (nvm):
+- Utilizing Node Version Manager (nvm):
+- Begin by installing [nvm](https://github.com/nvm-sh/nvm#installing-and-updating). Instructions for installation can be found
+- After successfully installing nvm, proceed to your project directory.
+- Execute the following command to utilize the version of Node.js defined in the project's .nvmrc file:
+
+```bash
+nvm use
+```
+
+## Manual Installation:
+- Begin by downloading the most recent version from the [official website](https://nodejs.org/en/download/).
+- Proceed by executing the installer and adhering to the provided instructions.
+
+Once you've installed it, open your terminal or command prompt and type `$ node` to confirm that the installation was successful.
+
+## Installing Docker:
+Docker, a platform designed for the development, delivery, and execution of applications within containers.
+
+## On Linux:
+When working with a Linux environment, consult the [Docker documentation](https://docs.docker.com/engine/install/) for detailed steps on installing Docker Engine, specifically tailored to your Linux distribution.
+
+
+## Verifying Installations:
+Upon completion of the installation process, you can confirm the successful installation of Node.js, Docker by executing the following commands:
+
+```bash
+node -v
+npm -v
+docker --version
+```
+
 ## Fast start
 
 ```bash
