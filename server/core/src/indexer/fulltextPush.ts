@@ -258,6 +258,9 @@ function updateDoc2Elastic (
     }
 
     let vv: any = v
+    if (vv != null && extra.includes('base64')) {
+      vv = Buffer.from(v, 'base64').toString()
+    }
     try {
       const attribute = hierarchy?.getAttribute(_class ?? doc._class[0], attr)
       if (attribute !== undefined && vv != null) {
@@ -277,10 +280,6 @@ function updateDoc2Elastic (
         }
       }
     } catch (e) {}
-
-    if (vv != null && extra.includes('base64')) {
-      vv = Buffer.from(v, 'base64').toString()
-    }
 
     docId = docIdOverride ?? docId
     if (docId === undefined) {
