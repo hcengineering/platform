@@ -156,7 +156,7 @@ export class ClientSession implements Session {
     }
 
     if (tx._class !== core.class.TxApplyIf) {
-      this.broadcast(this, this.token.workspace, { result: tx }, target)
+      this.broadcast(null, this.token.workspace, { result: tx }, target)
     }
     if (shouldBroadcast) {
       if (this.useBroadcast) {
@@ -176,7 +176,7 @@ export class ClientSession implements Session {
           if (tx._class === core.class.TxApplyIf) {
             ;(result as TxApplyResult).derived.push(bevent)
           }
-          this.broadcast(this, this.token.workspace, { result: bevent }, target)
+          this.broadcast(null, this.token.workspace, { result: bevent }, target)
         } else {
           if (tx._class === core.class.TxApplyIf) {
             ;(result as TxApplyResult).derived.push(...derived)
@@ -185,7 +185,7 @@ export class ClientSession implements Session {
             const part = derived.splice(0, 250)
             console.log('Broadcasting part', part.length, derived.length)
             this.broadcast(
-              tx._class === core.class.TxApplyIf ? this : null,
+              null,
               this.token.workspace,
               { result: part },
               target
