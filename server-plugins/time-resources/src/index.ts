@@ -417,7 +417,7 @@ async function createIssueHandler (issue: Issue, control: TriggerControl): Promi
     const project = (await control.findAll(task.class.Project, { _id: issue.space }))[0]
     if (project === undefined) return []
     const type = (await control.modelDb.findAll(task.class.ProjectType, { _id: project.type }))[0]
-    if (!(type?.classic)) return []
+    if (!type?.classic) return []
     const status = (await control.findAll(core.class.Status, { _id: issue.status }))[0]
     if (status === undefined) return []
     if (status.category === task.statusCategory.Active || status.category === task.statusCategory.ToDo) {
@@ -574,7 +574,7 @@ async function updateIssueHandler (tx: TxUpdateDoc<Issue>, control: TriggerContr
   const project = (await control.findAll(task.class.Project, { _id: tx.objectSpace as Ref<Project> }))[0]
   if (project === undefined) return []
   const type = (await control.modelDb.findAll(task.class.ProjectType, { _id: project.type }))[0]
-  if (!(type?.classic)) return []
+  if (!type?.classic) return []
   const newAssignee = tx.operations.assignee
   if (newAssignee != null) {
     res.push(...(await changeIssueAssigneeHandler(control, newAssignee, tx.objectId)))
