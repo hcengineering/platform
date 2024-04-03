@@ -188,7 +188,7 @@ export async function setClient (_client: MeasureClient): Promise<void> {
  */
 export async function refreshClient (clean: boolean): Promise<void> {
   if (!(liveQuery?.isClosed() ?? true)) {
-    await liveQuery?.refreshConnect(clean)
+    await liveQuery?.refreshConnect()
     for (const q of globalQueries) {
       q.refreshClient()
     }
