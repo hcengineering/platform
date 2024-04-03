@@ -1010,6 +1010,9 @@ dependencies:
   diff:
     specifier: ^5.1.0
     version: 5.2.0
+  dompurify:
+    specifier: ~3.0.11
+    version: 3.0.11
   dotenv:
     specifier: ~16.0.0
     version: 16.0.3
@@ -6110,6 +6113,12 @@ packages:
     resolution: {integrity: sha512-w5jZ0ee+HaPOaX25X2/2oGR/7rgAQSYII7X7pp0m9KgBfMP7uKfMfTvcpl5Dj+eDBbpxKGiqE+flqDr6XTd2RA==}
     dev: false
 
+  /@types/dompurify@3.0.5:
+    resolution: {integrity: sha512-1Wg0g3BtQF7sSb27fJQAKck1HECM6zV1EB66j8JH9i3LCjYabJa0FSdiSgsD5K/RbrsR0SiraKacLB+T8ZVYAg==}
+    dependencies:
+      '@types/trusted-types': 2.0.7
+    dev: false
+
   /@types/ejs@3.1.5:
     resolution: {integrity: sha512-nv+GSx77ZtXiJzwKdsASqi+YQ5Z7vwHsTP0JY2SiQgjGckkBRKZnk8nIM+7oUZ1VCtuTz0+By4qVR7fqzp/Dfg==}
     dev: false
@@ -6521,6 +6530,10 @@ packages:
 
   /@types/tough-cookie@4.0.5:
     resolution: {integrity: sha512-/Ad8+nIOV7Rl++6f1BdKxFSMgmoqEoYbHRpPcx3JEfv8VRsQe9Z4mCXeJBzxs7mbHY/XOZZuXlRNfhpVPbs6ZA==}
+    dev: false
+
+  /@types/trusted-types@2.0.7:
+    resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
     dev: false
 
   /@types/unist@2.0.10:
@@ -8726,6 +8739,10 @@ packages:
     engines: {node: '>= 4'}
     dependencies:
       domelementtype: 2.3.0
+    dev: false
+
+  /dompurify@3.0.11:
+    resolution: {integrity: sha512-Fan4uMuyB26gFV3ovPoEoQbxRRPfTu3CvImyZnhGq5fsIEO+gEFLp45ISFt+kQBWsK5ulDdT0oV28jS1UrwQLg==}
     dev: false
 
   /domutils@2.8.0:
@@ -23559,7 +23576,7 @@ packages:
     dev: false
 
   file:projects/text-editor.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(prosemirror-model@1.19.4)(ts-node@10.9.2):
-    resolution: {integrity: sha512-JUlbRI4A8/CmfAY5jjmSdgyZqCo4S78pQTwUfHz5T0IW6cdh9NNb6lYinIh/sn5Jl3jAPSWzrD/7bRbG8bWfrg==, tarball: file:projects/text-editor.tgz}
+    resolution: {integrity: sha512-L9cz1HtigreteqfZmImHXsiJ9ZdHQRcamjSBqKfWV3zgAysuwItVFV/yym++8GeB4XlQW85UsWOU4nAp+bItUA==, tarball: file:projects/text-editor.tgz}
     id: file:projects/text-editor.tgz
     name: '@rush-temp/text-editor'
     version: 0.0.0
@@ -23591,11 +23608,13 @@ packages:
       '@tiptap/starter-kit': 2.2.3(@tiptap/pm@2.2.3)
       '@tiptap/suggestion': 2.2.3(@tiptap/core@2.2.3)(@tiptap/pm@2.2.3)
       '@types/diff': 5.0.9
+      '@types/dompurify': 3.0.5
       '@types/jest': 29.5.12
       '@types/png-chunks-extract': 1.0.2
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
       diff: 5.2.0
+      dompurify: 3.0.11
       eslint: 8.56.0
       eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
       eslint-plugin-import: 2.29.1(eslint@8.56.0)

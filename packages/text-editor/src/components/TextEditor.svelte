@@ -33,6 +33,8 @@
   import { SubmitExtension } from './extension/submit'
   import { EditorKit } from '../kits/editor-kit'
 
+  import * as DOMPurify from 'dompurify'
+
   export let content: string = ''
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
   export let extensions: AnyExtension[] = []
@@ -63,7 +65,8 @@
   }
   export function submit (): void {
     content = editor.getHTML()
-    dispatch('content', content)
+    let contentSanitized = DOMPurify.sanitize(content)
+    dispatch('content', contentSanitized)
   }
   export function setContent (newContent: string): void {
     if (content !== newContent) {

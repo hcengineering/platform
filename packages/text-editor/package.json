@@ -35,7 +35,8 @@
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5",
     "svelte-eslint-parser": "^0.33.1",
-    "filesize": "^8.0.3"
+    "filesize": "^8.0.3",
+    "@types/dompurify": "~3.0.5"
   },
   "dependencies": {
     "@hcengineering/presentation": "^0.6.2",
@@ -80,6 +81,7 @@
     "rfc6902": "^5.0.1",
     "diff": "^5.1.0",
     "slugify": "^1.6.6",
-    "lib0": "^0.2.88"
+    "lib0": "^0.2.88",
+    "dompurify": "~3.0.11"
   }
 }
