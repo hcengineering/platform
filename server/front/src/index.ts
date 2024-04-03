@@ -31,7 +31,7 @@ import { v4 as uuid } from 'uuid'
 import { preConditions } from './utils'
 
 const cacheControlValue = 'public, max-age=365d'
-const cacheControlNoCache = 'max-age=1d, no-cache, must-revalidate'
+const cacheControlNoCache = 'public, no-store, no-cache, must-revalidate, max-age=0'
 
 async function minioUpload (
   ctx: MeasureContext,
@@ -316,10 +316,17 @@ export function start (
   app.use(
     expressStaticGzip(dist, {
       serveStatic: {
+        cacheControl: true,
+        dotfiles: 'allow',
         maxAge: '365d',
         etag: true,
         lastModified: true,
-        index: false
+        index: false,
+        setHeaders (res, path) {
+          if (path.toLowerCase().includes('index.html')) {
+            res.setHeader('Cache-Control', cacheControlNoCache)
+          }
+        }
       }
     })
   )
