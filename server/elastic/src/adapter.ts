@@ -194,7 +194,7 @@ class ElasticAdapter implements FullTextAdapter {
                   },
                   {
                     match: {
-                      workspaceId: toWorkspaceString(this.workspaceId)
+                      workspaceId: { query: toWorkspaceString(this.workspaceId), operator: 'and' }
                     }
                   }
                 ]
@@ -299,7 +299,7 @@ class ElasticAdapter implements FullTextAdapter {
           },
           {
             match: {
-              workspaceId: toWorkspaceString(this.workspaceId)
+              workspaceId: { query: toWorkspaceString(this.workspaceId), operator: 'and' }
             }
           }
         ],
@@ -407,7 +407,7 @@ class ElasticAdapter implements FullTextAdapter {
         ],
         must: {
           match: {
-            workspaceId: toWorkspaceString(this.workspaceId)
+            workspaceId: { query: toWorkspaceString(this.workspaceId), operator: 'and' }
           }
         },
         filter: [
@@ -526,7 +526,7 @@ class ElasticAdapter implements FullTextAdapter {
                     },
                     {
                       match: {
-                        workspaceId: toWorkspaceString(this.workspaceId)
+                        workspaceId: { query: toWorkspaceString(this.workspaceId), operator: 'and' }
                       }
                     }
                   ]
@@ -562,7 +562,7 @@ class ElasticAdapter implements FullTextAdapter {
               },
               {
                 match: {
-                  workspaceId: toWorkspaceString(this.workspaceId)
+                  workspaceId: { query: toWorkspaceString(this.workspaceId), operator: 'and' }
                 }
               }
             ]
