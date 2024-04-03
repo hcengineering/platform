@@ -71,7 +71,8 @@ export default plugin(presentationId, {
     OpenInANewTab: '' as IntlString,
     Created: '' as IntlString,
     NoResults: '' as IntlString,
-    Next: '' as IntlString
+    Next: '' as IntlString,
+    FailedToPreview: '' as IntlString
   },
   metadata: {
     RequiredVersion: '' as Metadata<string>,
