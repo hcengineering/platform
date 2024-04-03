@@ -139,6 +139,7 @@
       <div class="flex-row-center h-full content-color gap-3">
         <div class="history-box flex-row-center gap-3" class:embedded={embeddedPlatform}>
           <button
+            id="statusbar-back"
             class="antiButton ghost jf-center bs-none no-focus resetIconSize statusButton square"
             style:color={'var(--theme-dark-color)'}
             on:click={() => {
@@ -148,6 +149,7 @@
             <IconArrowLeft size={'small'} />
           </button>
           <button
+            id="statusbar-forward"
             class="antiButton ghost jf-center bs-none no-focus resetIconSize statusButton square"
             style:color={'var(--theme-dark-color)'}
             on:click={() => {
