@@ -696,12 +696,15 @@
               if (currentAppAlias === notificationId && lastLoc !== undefined) {
                 e.preventDefault()
                 e.stopPropagation()
+                
                 navigate(lastLoc)
                 lastLoc = undefined
               } else {
                 lastLoc = $location
               }
+              console.log("location",location);
             }}
+
             notify={hasInboxNotifications}
           />
         </NavLink>
@@ -821,6 +824,7 @@
             }}
           />
         {:else if specialComponent}
+        
           <Component
             is={specialComponent.component}
             props={{
@@ -845,6 +849,28 @@
             props={{ ...currentView.componentProps, currentView, visibleNav, navFloat, appsDirection }}
           />
         {:else}
+        {#if !lastLoc && !currentView && getLocation().path[getLocation().path.length-2]=="tracker"}
+        <div class="flex items-center justify-center h-full">
+          <div class="text-center">
+            <h1 class="text-8xl font-bold mb-8">We couldn't find the issue. The issue may be deleted or you don't have sufficient permissions to view it.</h1>
+            <div class="flex justify-center">
+              <button
+                class="bg-blue-500 hover:bg-blue-700 font-bold py-3 px-6 rounded focus:outline-none focus:shadow-outline"
+                on:click={(e) => {
+                  e.preventDefault();
+                  let modifiedLocation = { ...getLocation() };
+                  modifiedLocation.path[modifiedLocation.path.length - 1] = 'all-issues';
+                  console.log("modified location", $location);
+                  lastLoc=modifiedLocation;
+                  navigate(modifiedLocation);
+                }}
+              >
+                <span class="text-lg button-color">Go Back</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      {/if}
           <SpaceView {currentSpace} {currentView} {createItemDialog} {createItemLabel} />
         {/if}
       </div>
@@ -964,7 +990,9 @@
       left: calc(1.5rem + 8px);
     }
   }
-
+  .button-color{
+    color: rgb(38, 121, 216);
+  }
   .info-box {
     display: flex;
     align-items: center;
