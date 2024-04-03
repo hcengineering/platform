@@ -43,7 +43,7 @@ export function registerGithub (
     passport.authenticate('github', { failureRedirect: concatLink(frontUrl, '/login'), session: true }),
     async (ctx, next) => {
       const email = ctx.state.user.emails?.[0]?.value ?? `github:${ctx.state.user.username}`
-      const [first, last] = ctx.state.user.displayName.split(' ')
+      const [first, last = ""] = ctx.state.user.displayName.split(' ')
       if (email !== undefined) {
         if (ctx.query?.state != null) {
           const loginInfo = await joinWithProvider(ctx, db, productId, email, first, last, ctx.query.state, {
