@@ -65,7 +65,7 @@
   }
   export function submit (): void {
     content = editor.getHTML()
-    let contentSanitized = DOMPurify.sanitize(content)
+    const contentSanitized = DOMPurify.sanitize(content)
     dispatch('content', contentSanitized)
   }
   export function setContent (newContent: string): void {
