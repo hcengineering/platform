@@ -80,9 +80,9 @@ export async function OnWorkSlotCreate (tx: Tx, control: TriggerControl): Promis
   if (issue === undefined) return []
   const project = (await control.findAll(task.class.Project, { _id: issue.space }))[0]
   if (project !== undefined) {
-    const type = (await control.queryFind(task.class.ProjectType, {})).find((it) => it._id === project.type)
-    if (type?.classic === true) {
-      const taskType = (await control.queryFind(task.class.TaskType, {})).find((it) => it._id === issue.kind)
+    const type = (await control.modelDb.findAll(task.class.ProjectType, { _id: project.type }))[0]
+    if (type?.classic) {
+      const taskType = (await control.modelDb.findAll(task.class.TaskType, { _id: issue.kind }))[0]
       if (taskType !== undefined) {
         const statuses = await control.findAll(core.class.Status, { _id: { $in: taskType.statuses } })
         const statusMap = toIdMap(statuses)
@@ -128,10 +128,10 @@ export async function OnToDoRemove (tx: Tx, control: TriggerControl): Promise<Tx
   if (issue === undefined) return []
   const project = (await control.findAll(task.class.Project, { _id: issue.space }))[0]
   if (project !== undefined) {
-    const type = (await control.queryFind(task.class.ProjectType, {})).find((it) => it._id === project.type)
+    const type = (await control.modelDb.findAll(task.class.ProjectType, { _id: project.type }))[0]
     if (type !== undefined && type.classic) {
       const factory = new TxFactory(control.txFactory.account)
-      const taskType = (await control.queryFind(task.class.TaskType, {})).find((it) => it._id === issue.kind)
+      const taskType = (await control.modelDb.findAll(task.class.TaskType, { _id: issue.kind }))[0]
       if (taskType !== undefined) {
         const statuses = await control.findAll(core.class.Status, { _id: { $in: taskType.statuses } })
         const statusMap = toIdMap(statuses)
@@ -346,9 +346,9 @@ export async function IssueToDoDone (control: TriggerControl, workslots: WorkSlo
   if (issue !== undefined) {
     const project = (await control.findAll(task.class.Project, { _id: issue.space }))[0]
     if (project !== undefined) {
-      const type = (await control.queryFind(task.class.ProjectType, {})).find((it) => it._id === project.type)
-      if (type?.classic === true) {
-        const taskType = (await control.queryFind(task.class.TaskType, {})).find((it) => it._id === issue.kind)
+      const type = (await control.modelDb.findAll(task.class.ProjectType, { _id: project.type }))[0]
+      if (type?.classic) {
+        const taskType = (await control.modelDb.findAll(task.class.TaskType, { _id: issue.kind }))[0]
         if (taskType !== undefined) {
           const index = taskType.statuses.findIndex((p) => p === issue.status)
 
@@ -416,8 +416,8 @@ async function createIssueHandler (issue: Issue, control: TriggerControl): Promi
   if (issue.assignee != null) {
     const project = (await control.findAll(task.class.Project, { _id: issue.space }))[0]
     if (project === undefined) return []
-    const type = (await control.queryFind(task.class.ProjectType, {})).find((it) => it._id === project.type)
-    if (type?.classic !== true) return []
+    const type = (await control.modelDb.findAll(task.class.ProjectType, { _id: project.type }))[0]
+    if (!(type?.classic)) return []
     const status = (await control.findAll(core.class.Status, { _id: issue.status }))[0]
     if (status === undefined) return []
     if (status.category === task.statusCategory.Active || status.category === task.statusCategory.ToDo) {
@@ -573,8 +573,8 @@ async function updateIssueHandler (tx: TxUpdateDoc<Issue>, control: TriggerContr
   const res: Tx[] = []
   const project = (await control.findAll(task.class.Project, { _id: tx.objectSpace as Ref<Project> }))[0]
   if (project === undefined) return []
-  const type = (await control.queryFind(task.class.ProjectType, {})).find((it) => it._id === project.type)
-  if (type?.classic !== true) return []
+  const type = (await control.modelDb.findAll(task.class.ProjectType, { _id: project.type }))[0]
+  if (!(type?.classic)) return []
   const newAssignee = tx.operations.assignee
   if (newAssignee != null) {
     res.push(...(await changeIssueAssigneeHandler(control, newAssignee, tx.objectId)))
