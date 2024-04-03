@@ -8,7 +8,7 @@ export function storageConfigFromEnv (): StorageConfiguration {
     process.env.STORAGE_CONFIG ?? '{ "default": "", "storages": []}'
   )
   if (storageConfig.storages.length === 0 || storageConfig.default === '') {
-    console.info('STORAGE_CONFIG is required for complex configuration, fallback to minio config')
+    // 'STORAGE_CONFIG is required for complex configuration, fallback to minio config'
 
     let minioEndpoint = process.env.MINIO_ENDPOINT
     if (minioEndpoint === undefined) {

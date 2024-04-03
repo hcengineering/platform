@@ -844,12 +844,12 @@ export async function createWorkspace (
           getWorkspaceId(initWS, productId),
           getWorkspaceId(workspaceInfo.workspace, productId)
         )
-        client = await upgradeModel(getTransactor(), wsId, txes, migrationOperation, ctxModellogger)
+        client = await upgradeModel(ctx, getTransactor(), wsId, txes, migrationOperation, ctxModellogger)
       } else {
         client = await initModel(ctx, getTransactor(), wsId, txes, migrationOperation, ctxModellogger)
       }
     } catch (err: any) {
-      return { workspaceInfo, err, client: {} as any }
+      return { workspaceInfo, err, client: null as any }
     }
     // Workspace is created, we need to clear disabled flag.
     await db
@@ -863,6 +863,7 @@ export async function createWorkspace (
  * @public
  */
 export async function upgradeWorkspace (
+  ctx: MeasureContext,
   version: Data<Version>,
   txes: Tx[],
   migrationOperation: [string, MigrateOperation][],
@@ -899,7 +900,7 @@ export async function upgradeWorkspace (
     }
   )
   await (
-    await upgradeModel(getTransactor(), getWorkspaceId(ws.workspace, productId), txes, migrationOperation, logger)
+    await upgradeModel(ctx, getTransactor(), getWorkspaceId(ws.workspace, productId), txes, migrationOperation, logger)
   ).close()
   return versionStr
 }
