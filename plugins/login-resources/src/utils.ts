@@ -88,6 +88,50 @@ export async function doLogin (email: string, password: string): Promise<[Status
   }
 }
 
+export async function doSubmit2faCode (code: string): Promise<[Status, LoginInfo | undefined]> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const email = fetchMetadataLocalStorage(login.metadata.LoginEmail) ?? ''
+  const token = getMetadata(login.metadata.OverrideLoginToken)
+  if (token !== undefined) {
+    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
+    if (endpoint !== undefined) {
+      return [OK, { token, endpoint, email, confirmed: true }]
+    }
+  }
+
+  const request = {
+    method: 'submit2faCode',
+    params: [email, code]
+  }
+
+  try {
+    const response = await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request)
+    })
+    const result = await response.json()
+    console.log('submit2fa result', result)
+    if (result.error == null) {
+      Analytics.handleEvent('submit2faCode')
+    } else {
+      await handleStatusError('2FA error', result.error)
+    }
+    return [result.error ?? OK, result.result]
+  } catch (err: any) {
+    console.log('submit2fa error', err)
+    Analytics.handleError(err)
+    return [unknownError(err), undefined]
+  }
+}
+
 export async function signUp (
   email: string,
   password: string,

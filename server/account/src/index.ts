@@ -84,6 +84,7 @@ export interface Account {
   // null if auth provider was used
   hash: Binary | null
   salt: Binary
+  using2fa: boolean
   workspaces: ObjectId[]
   first: string
   last: string
@@ -245,6 +246,23 @@ async function getAccountInfo (ctx: MeasureContext, db: Db, email: string, passw
   return toAccountInfo(account)
 }
 
+// TODO: Remove as soon as we persist a true code
+const HARD_CODED_2FA_CODE = 123456
+
+async function getAccountInfoBy2faCode (ctx: MeasureContext, db: Db, email: string, code: string): Promise<AccountInfo> {
+  const account = await getAccount(db, email)
+  if (account === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
+  }
+
+  // TODO: Consume persisted code
+  if (code !== HARD_CODED_2FA_CODE.toString()) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.InvalidPassword, { account: email }))
+  }
+
+  return toAccountInfo(account)
+}
+
 async function getAccountInfoByToken (
   ctx: MeasureContext,
   db: Db,
@@ -272,6 +290,17 @@ async function getAccountInfoByToken (
   return result
 }
 
+async function send2faEmail (info: AccountInfo): Promise<void> {
+  // TODO: Utilize randomness (ideally use a stronger crypto generator) and persist for later comparison
+  const code = HARD_CODED_2FA_CODE // Math.floor(Math.random() * 900000) + 100000
+  const text = `Your login code is: ${code}`
+  const html = `<div>${text}</div>`
+  const subject = 'Your login code for Huly'
+  const to = info.email
+  console.info(`Sending 2FA email to ${to} with code: ${code}`)
+  await sendEmail(text, html, subject, to)
+}
+
 /**
  * @public
  * @param db -
@@ -290,16 +319,57 @@ export async function login (
   const email = cleanEmail(_email)
   try {
     const info = await getAccountInfo(ctx, db, email, password)
+    let token: string
+    if (info.using2fa) {
+      token = 'REQUIRE2FA'
+      await send2faEmail(info)
+    } else {
+      token = generateToken(email, getWorkspaceId('', productId), getExtra(info))
+    }
+
+    const result = {
+      endpoint: getEndpoint(),
+      email,
+      confirmed: info.confirmed ?? true,
+      token: token
+    }
+
+    await ctx.info('login success', { email, productId })
+    return result
+  } catch (err: any) {
+    await ctx.error('login failed', { email, productId, _email, err })
+    throw err
+  }
+}
+
+/**
+ * @public
+ * @param db -
+ * @param email -
+ * @param password -
+ * @param workspace -
+ * @returns
+ */
+export async function submit2faCode (
+  ctx: MeasureContext,
+  db: Db,
+  productId: string,
+  _email: string,
+  code: string
+): Promise<LoginInfo> {
+  const email = cleanEmail(_email)
+  try {
+    const info = await getAccountInfoBy2faCode(ctx, db, email, code)
     const result = {
       endpoint: getEndpoint(),
       email,
       confirmed: info.confirmed ?? true,
       token: generateToken(email, getWorkspaceId('', productId), getExtra(info))
     }
-    await ctx.info('login success', { email, productId })
+    await ctx.info('2FA success', { email, productId })
     return result
   } catch (err: any) {
-    await ctx.error('login failed', { email, productId, _email, err })
+    await ctx.error('2FA failed', { email, productId, _email, err })
     throw err
   }
 }
@@ -471,11 +541,6 @@ export async function confirm (ctx: MeasureContext, db: Db, productId: string, t
 }
 
 async function sendConfirmation (productId: string, account: Account): Promise<void> {
-  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
-  if (sesURL === undefined || sesURL === '') {
-    console.info('Please provide email service url to enable email confirmations.')
-    return
-  }
   const front = getMetadata(accountPlugin.metadata.FrontURL)
   if (front === undefined || front === '') {
     throw new Error('Please provide front url')
@@ -495,9 +560,19 @@ async function sendConfirmation (productId: string, account: Account): Promise<v
   const text = await translate(accountPlugin.string.ConfirmationText, { name, link })
   const html = await translate(accountPlugin.string.ConfirmationHTML, { name, link })
   const subject = await translate(accountPlugin.string.ConfirmationSubject, { name })
+  const to = account.email
+
+  await sendEmail(text, html, subject, to)
+}
+
+async function sendEmail (text: string, html: string, subject: string, to: string): Promise<void> {
+  const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
+  if (sesURL === undefined || sesURL === '') {
+    console.info('Please provide email service url to enable email sending.')
+    return
+  }
 
   if (sesURL !== undefined && sesURL !== '') {
-    const to = account.email
     await fetch(concatLink(sesURL, '/send'), {
       method: 'post',
       headers: {
@@ -1430,18 +1505,7 @@ export async function requestPassword (ctx: MeasureContext, db: Db, productId: s
   const subject = await translate(accountPlugin.string.RecoverySubject, {})
 
   const to = account.email
-  await fetch(concatLink(sesURL, '/send'), {
-    method: 'post',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      text,
-      html,
-      subject,
-      to
-    })
-  })
+  await sendEmail(text, html, subject, to)
   await ctx.info('recovery email sent', { email, accountEmail: account.email })
 }
 
@@ -1654,19 +1718,7 @@ export async function sendInvite (
   const html = await translate(accountPlugin.string.InviteHTML, { link, ws, expHours })
   const subject = await translate(accountPlugin.string.InviteSubject, { ws })
 
-  const to = email
-  await fetch(concatLink(sesURL, '/send'), {
-    method: 'post',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      text,
-      html,
-      subject,
-      to
-    })
-  })
+  await sendEmail(text, html, subject, email)
   await ctx.info('Invite sent', { email, workspace, link })
 }
 
@@ -1831,6 +1883,7 @@ export function getMethods (
   return {
     getEndpoint: wrap(async () => getEndpoint()),
     login: wrap(login),
+    submit2faCode: wrap(submit2faCode),
     join: wrap(join),
     checkJoin: wrap(checkJoin),
     signUpJoin: wrap(signUpJoin),

@@ -47,37 +47,54 @@
     updateStatus: (status: Status<any>) => void
   ): Promise<void> {
     if (result !== undefined) {
-      setMetadata(presentation.metadata.Token, result.token)
-      setMetadataLocalStorage(login.metadata.LastToken, result.token)
-      setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
-      setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
+      if ((result.token ?? '').trim() !== 'REQUIRE2FA') {
+        // 2FA disabled for account
+        setMetadata(presentation.metadata.Token, result.token)
+        setMetadataLocalStorage(login.metadata.LastToken, result.token)
+        setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
+        setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
 
-      if (navigateUrl !== undefined) {
-        try {
-          const loc = JSON.parse(decodeURIComponent(navigateUrl)) as Location
-          const workspace = loc.path[1]
-          if (workspace !== undefined) {
-            const workspaces = await getWorkspaces()
-            if (workspaces.find((p) => p.workspace === workspace) !== undefined) {
-              updateStatus(new Status(Severity.INFO, login.status.ConnectingToServer, {}))
+        if (navigateUrl !== undefined) {
+          try {
+            const loc = JSON.parse(decodeURIComponent(navigateUrl)) as Location
+            const workspace = loc.path[1]
+            if (workspace !== undefined) {
+              const workspaces = await getWorkspaces()
+              if (workspaces.find((p) => p.workspace === workspace) !== undefined) {
+                updateStatus(new Status(Severity.INFO, login.status.ConnectingToServer, {}))
 
-              const [loginStatus, result] = await selectWorkspace(workspace)
-              updateStatus(loginStatus)
-              navigateToWorkspace(workspace, result, navigateUrl)
-              return
+                const [loginStatus, result] = await selectWorkspace(workspace)
+                updateStatus(loginStatus)
+                navigateToWorkspace(workspace, result, navigateUrl)
+                return
+              }
             }
+          } catch (err: any) {
+            // Json parse error could be ignored
           }
-        } catch (err: any) {
-          // Json parse error could be ignored
         }
+        const loc = getCurrentLocation()
+        loc.path[1] = result.confirmed ? 'selectWorkspace' : 'confirmationSend'
+        loc.path.length = 2
+        if (navigateUrl !== undefined) {
+          loc.query = { ...loc.query, navigateUrl }
+        }
+        navigate(loc)
+      } else {
+        // 2FA enabled for account, another step before getting to workspaces
+        console.log('2FA enabled for account')
+
+        setMetadataLocalStorage(login.metadata.LoginEndpoint, result.endpoint)
+        setMetadataLocalStorage(login.metadata.LoginEmail, result.email)
+
+        const loc = getCurrentLocation()
+        loc.path[1] = 'twoFactorAuth'
+        loc.path.length = 2
+        if (navigateUrl !== undefined) {
+          loc.query = { ...loc.query, navigateUrl }
+        }
+        navigate(loc)
       }
-      const loc = getCurrentLocation()
-      loc.path[1] = result.confirmed ? 'selectWorkspace' : 'confirmationSend'
-      loc.path.length = 2
-      if (navigateUrl !== undefined) {
-        loc.query = { ...loc.query, navigateUrl }
-      }
-      navigate(loc)
     }
   }
 

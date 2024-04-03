@@ -7,6 +7,9 @@
   },
   "string": {
     "LogIn": "Log In",
+    "TwoFactorAuth": "Please enter the code you received by email to login.",
+    "TwoFactorCode": "Code",
+    "Submit": "Submit",
     "SignUp": "Sign Up",
     "CreateWorkspace": "Create workspace",
     "HaveWorkspace": "Already have a workspace?",

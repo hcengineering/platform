@@ -35,6 +35,7 @@
   import CreateWorkspaceForm from './CreateWorkspaceForm.svelte'
   import Join from './Join.svelte'
   import LoginForm from './LoginForm.svelte'
+  import TwoFactorAuth from './TwoFactorAuth.svelte'
   import PasswordRequest from './PasswordRequest.svelte'
   import PasswordRestore from './PasswordRestore.svelte'
   import SelectWorkspace from './SelectWorkspace.svelte'
@@ -63,6 +64,7 @@
     page = (loc.path[1] as Pages) ?? (token != null ? 'selectWorkspace' : 'login')
     const allowedUnauthPages: Pages[] = [
       'login',
+      'twoFactorAuth',
       'signup',
       'password',
       'recovery',
@@ -131,6 +133,8 @@
         <div class="form-content">
           {#if page === 'login'}
             <LoginForm {navigateUrl} />
+          {:else if page === 'twoFactorAuth'}
+            <TwoFactorAuth {navigateUrl} />
           {:else if page === 'signup'}
             <SignupForm />
           {:else if page === 'createWorkspace'}
