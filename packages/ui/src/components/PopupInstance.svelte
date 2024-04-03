@@ -159,7 +159,6 @@
     options.props.top = `${pp.y}px`
     options.props.maxHeight = `${pp.height}px`
   }
-  $: minHeight = element === 'movable' ? 10.375 * $deviceInfo.fontSize : 0
   $: updatedPopupParams(popupParams)
 
   function mouseDown (e: MouseEvent & { currentTarget: EventTarget & HTMLDivElement }): void {
