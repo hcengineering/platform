@@ -25,6 +25,7 @@ This project offers a convenient method to host Huly using `docker`, designed fo
 ## Table of Content
 
 - [Pre-requisites](#pre-requisites)
+- [Setup Process for Windows](#setup-process-for-windows)
 - [Fast start](#fast-start)
 - [Installation](#installation)
 - [Build and run](#build-and-run)
@@ -45,6 +46,13 @@ This project offers a convenient method to host Huly using `docker`, designed fo
   - [Docker Compose](https://docs.docker.com/compose/install/)
 - Make sure what docker and `docker compose` commands are available in your terminal (e.g. `docker --version` and `docker compose --version`).
 - Make sure what docker and `docker compose` commands can be executed without sudo (e.g. `docker run hello-world` and `docker compose --version`).
+
+## Setup Process for Windows
+
+- You will need Windows Subsystem for Linux (WSL) installed on your system:
+  - [WSL Install](https://learn.microsoft.com/en-us/windows/wsl/install)
+  - [Node.js Install](https://learn.microsoft.com/en-us/windows/dev-environment/javascript/nodejs-on-wsl)
+  - [Integrate Docker](https://learn.microsoft.com/en-us/windows/wsl/tutorials/wsl-containers)
 
 ## Fast start
 
