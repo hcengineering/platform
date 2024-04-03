@@ -53,7 +53,7 @@ export class ClientSession implements Session {
   useCompression: boolean = true
   useBroadcast: boolean = false
   sessionId = ''
-  lastRequest = 0
+  lastRequest = Date.now()
 
   total: StatisticsElement = { find: 0, tx: 0 }
   current: StatisticsElement = { find: 0, tx: 0 }

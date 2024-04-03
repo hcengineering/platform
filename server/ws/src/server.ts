@@ -144,12 +144,12 @@ class TSessionManager implements SessionManager {
         }
         const now = Date.now()
         const diff = now - s[1].session.lastRequest
-        if (diff > 60000) {
+        if (diff > 60000 && this.ticks % 10 === 0) {
           console.log('session hang, closing...', h[0], s[1].session.getUser())
           void this.close(s[1].socket, h[1].workspaceId, 1001, 'CLIENT_HANGOUT')
           continue
         }
-        if (diff > 20000 && this.ticks % 10 === 0) {
+        if (diff > 20000 && diff < 60000 && this.ticks % 10 === 0) {
           void s[1].socket.send(
             h[1].context,
             { result: 'ping' },
