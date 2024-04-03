@@ -65,12 +65,7 @@ export class FullTextIndex implements WithFind {
   ) {
     if (!upgrade) {
       // Schedule indexing after consistency check
-      this.consistency = this.indexer.checkIndexConsistency(dbStorage)
-
-      // Schedule indexing after consistency check
-      void this.consistency.then(() => {
-        void this.indexer.startIndexing()
-      })
+      void this.indexer.startIndexing()
     }
   }
 
