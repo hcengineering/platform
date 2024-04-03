@@ -116,13 +116,14 @@ export class FullTextIndex implements WithFind {
             // Object created and deleted, skip index
             stDocs.delete(cud.objectId as Ref<DocIndexState>)
             continue
-          } else if (old !== undefined) {
+          } else {
             // Create and update
-            if (old.removed) continue
+            if (old?.removed === true) continue
             else {
               stDocs.set(cud.objectId as Ref<DocIndexState>, {
                 ...old,
-                updated: cud._class !== core.class.TxRemoveDoc,
+                create: cud._class !== core.class.TxRemoveDoc ? old?.create : undefined,
+                updated: cud._class !== core.class.TxRemoveDoc && old?.create === undefined,
                 removed: cud._class === core.class.TxRemoveDoc
               })
             }
