@@ -1339,7 +1339,7 @@ export interface PermissionsStore {
   whitelist: Set<Ref<Space>>
 }
 
-export function checkMyPermission (_id: Ref<Permission>, space: Ref<Space>, store: PermissionsStore): boolean {
+export function checkMyPermission (_id: Ref<Permission>, space: Ref<TypedSpace>, store: PermissionsStore): boolean {
   return (store.whitelist.has(space) || store.ps[space]?.has(_id)) ?? false
 }
 
