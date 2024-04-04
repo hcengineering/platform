@@ -17,7 +17,7 @@
   Class that allows synchronization of async functions to prevent race conditions.
   Inspired by https://stackoverflow.com/a/51086893
 **/
-export class Mutex {
+class Mutex {
   currentLock: Promise<void>
 
   constructor () {
@@ -60,5 +60,25 @@ export class Mutex {
     this.currentLock = afterReleasePromise
     // Return the new promise
     return await blockingPromise
+  }
+}
+
+type AnyFunction<R> = (...args: any[]) => Promise<R>
+/**
+  This function wraps around the Mutex implementation above and provides a simple interface.
+
+  @return {Promise<VoidFunction>} a sequential version of the passed function. This version guarantees
+  that its invocations are executed one by one.
+**/
+export function makeSequential<R, T extends AnyFunction<R>> (fn: T): (...args: Parameters<T>) => Promise<R> {
+  const mutex = new Mutex()
+
+  return async function (...args: Parameters<T>): Promise<R> {
+    const unlockMutex = await mutex.lock()
+    try {
+      return await fn(...args)
+    } finally {
+      unlockMutex()
+    }
   }
 }

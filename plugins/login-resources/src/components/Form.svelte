@@ -31,7 +31,7 @@
   import { onMount } from 'svelte'
   import { BottomAction, getHref } from '..'
   import login from '../plugin'
-  import { Mutex } from '../mutex'
+  import { makeSequential } from '../mutex'
   import Providers from './Providers.svelte'
 
   interface Field {
@@ -67,19 +67,7 @@
 
   $: $themeStore.language && validate($themeStore.language)
 
-  const validationMutex = new Mutex()
-
-  // This function wraps around `validateAsync` to make its executions sequential / synchronized
-  async function validate (language: string): Promise<boolean> {
-    const unlockMutex = await validationMutex.lock()
-    try {
-      return await validateAsync(language)
-    } finally {
-      unlockMutex()
-    }
-  }
-
-  async function validateAsync (language: string): Promise<boolean> {
+  const validate = makeSequential(async function validateAsync (language: string): Promise<boolean> {
     if (ignoreInitialValidation) return true
     for (const field of fields) {
       const v = object[field.name]
@@ -114,7 +102,7 @@
     }
     status = OK
     return true
-  }
+  })
   validate($themeStore.language)
 
   let inAction = false
