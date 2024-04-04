@@ -15,9 +15,10 @@
 //
 
 import client, { clientId } from '@hcengineering/client'
-import { Client, systemAccountEmail, WorkspaceId } from '@hcengineering/core'
+import { Client, LoadModelResponse, systemAccountEmail, Tx, WorkspaceId } from '@hcengineering/core'
 import { addLocation, getMetadata, getResource, setMetadata } from '@hcengineering/platform'
 import { generateToken } from '@hcengineering/server-token'
+import crypto from 'node:crypto'
 import plugin from './plugin'
 
 /**
@@ -27,7 +28,8 @@ export async function connect (
   transactorUrl: string,
   workspace: WorkspaceId,
   email?: string,
-  extra?: Record<string, string>
+  extra?: Record<string, string>,
+  model?: Tx[]
 ): Promise<Client> {
   const token = generateToken(email ?? systemAccountEmail, workspace, extra)
 
@@ -48,7 +50,25 @@ export async function connect (
   })
   addLocation(clientId, () => import('@hcengineering/client-resources'))
 
-  return await (
-    await getResource(client.function.GetClient)
-  )(token, transactorUrl)
+  if (model !== undefined) {
+    let prev = ''
+    const hashes = model.map((it) => {
+      const h = crypto.createHash('sha1')
+      h.update(prev)
+      h.update(JSON.stringify(it))
+      prev = h.digest('hex')
+      return prev
+    })
+    setMetadata(client.metadata.OverridePersistenceStore, {
+      load: async () => ({
+        hash: hashes[hashes.length - 1],
+        transactions: model,
+        full: true
+      }),
+      store: async (model: LoadModelResponse) => {}
+    })
+  }
+
+  const clientFactory = await getResource(client.function.GetClient)
+  return await clientFactory(token, transactorUrl)
 }
