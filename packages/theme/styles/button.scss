@@ -359,3 +359,280 @@
     }
   }
 }
+
+// Huly SplitButton
+.hulySplitButton-container {
+  display: flex;
+  align-items: stretch;
+  flex-shrink: 0;
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid transparent;
+
+  button {
+    font-weight: 500;
+    font-size: 0.875rem;
+    border: none;
+
+    .btn-icon {
+      width: var(--spacing-2_5);
+      height: var(--spacing-2_5);
+    }
+  }
+  &.no-focus button {
+    outline: none;
+  }
+  &:not(.no-focus) button:focus {
+    box-shadow: 0 0 0 2px var(--theme-button-contrast-color);
+    outline: 2px solid var(--global-focus-BorderColor);
+    outline-offset: 2px;
+  }
+  button:focus,
+  button.pressed {
+    z-index: 1;
+  }
+  .hulySplitButton-main {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-1);
+    min-width: 0;
+  }
+  .hulySplitButton-second {
+    margin: 0;
+    padding: 0;
+
+    .btn-icon {
+      width: var(--global-min-Size);
+      height: var(--global-min-Size);
+    }
+  }
+
+  &.large {
+    height: var(--global-large-Size);
+
+    .hulySplitButton-main {
+      padding: 0 var(--spacing-1) 0 var(--spacing-2);
+    }
+    .hulySplitButton-second {
+      width: var(--global-small-Size);
+    }
+    &.separate .hulySplitButton-main {
+      padding: 0 var(--spacing-1_25) 0 var(--spacing-2);
+    }
+  }
+  &.medium {
+    height: var(--global-medium-Size);
+
+    .hulySplitButton-main {
+      padding: 0 var(--spacing-0_75) 0 var(--spacing-1_5);
+    }
+    .hulySplitButton-second {
+      width: var(--global-small-Size);
+    }
+    &.separate .hulySplitButton-main {
+      padding: 0 var(--spacing-1_25) 0 var(--spacing-1_5);
+    }
+  }
+  &.large,
+  &.medium {
+    border-radius: var(--medium-BorderRadius);
+
+    button:first-child {
+      border-top-left-radius: var(--medium-BorderRadius);
+      border-bottom-left-radius: var(--medium-BorderRadius);
+    }
+    button:last-child {
+      border-top-right-radius: var(--medium-BorderRadius);
+      border-bottom-right-radius: var(--medium-BorderRadius);
+    }
+  }
+  &.small {
+    height: var(--global-small-Size);
+    border-radius: var(--small-BorderRadius);
+
+    button:first-child {
+      border-top-left-radius: var(--small-BorderRadius);
+      border-bottom-left-radius: var(--small-BorderRadius);
+    }
+    button:last-child {
+      border-top-right-radius: var(--small-BorderRadius);
+      border-bottom-right-radius: var(--small-BorderRadius);
+    }
+    .hulySplitButton-main {
+      padding: 0 var(--spacing-0_5) 0 var(--spacing-1);
+    }
+    .hulySplitButton-second {
+      width: var(--global-extra-small-Size);
+    }
+    &.separate .hulySplitButton-main {
+      padding: 0 var(--spacing-0_75) 0 var(--spacing-1);
+    }
+  }
+  &.extra-small {
+    height: var(--global-extra-small-Size);
+    border-radius: var(--extra-small-BorderRadius);
+
+    button:first-child {
+      border-top-left-radius: var(--extra-small-BorderRadius);
+      border-bottom-left-radius: var(--extra-small-BorderRadius);
+    }
+    button:last-child {
+      border-top-right-radius: var(--extra-small-BorderRadius);
+      border-bottom-right-radius: var(--extra-small-BorderRadius);
+    }
+    button .btn-icon {
+      width: var(--spacing-1_5);
+      height: var(--spacing-1_5);
+    }
+    .hulySplitButton-main {
+      padding: 0 var(--spacing-0_75);
+    }
+    .hulySplitButton-second {
+      width: var(--global-min-Size);
+    }
+  }
+  &.min {
+    height: var(--global-min-Size);
+    border-radius: var(--min-BorderRadius);
+
+    button:first-child {
+      border-top-left-radius: var(--min-BorderRadius);
+      border-bottom-left-radius: var(--min-BorderRadius);
+    }
+    button:last-child {
+      border-top-right-radius: var(--min-BorderRadius);
+      border-bottom-right-radius: var(--min-BorderRadius);
+    }
+    button {
+      font-size: .75rem;
+
+      .btn-icon {
+        width: var(--spacing-1_25);
+        height: var(--spacing-1_25);
+      }
+    }
+    .hulySplitButton-main {
+      padding: 0 var(--spacing-0_5);
+    }
+    .hulySplitButton-second {
+      width: var(--global-min-Size);
+    }
+  }
+  &.small .hulySplitButton-main,
+  &.extra-small .hulySplitButton-main,
+  &.min .hulySplitButton-main {
+    gap: var(--spacing-0_5);
+  }
+
+  &.secondary {
+    background-color: var(--button-secondary-BackgroundColor);
+    border-color: var(--button-secondary-BorderColor);
+
+    button {
+      color: var(--button-subtle-LabelColor);
+
+      &:enabled {
+        &:hover {
+          background-color: var(--button-secondary-hover-BackgroundColor);
+        }
+        &:active,
+        &.pressed,
+        &.pressed:hover {
+          background-color: var(--button-secondary-active-BackgroundColor);
+        }
+        &:focus {
+          color: var(--theme-caption-color);
+          background-color: var(--theme-button-focused);
+        }
+      }
+    }
+    &:not(.disabled):focus-within {
+      border-color: var(--theme-button-focused-border);
+    }
+    &.disabled {
+      background-color: var(--button-disabled-BackgroundColor);
+      
+      button {
+        color: var(--button-disabled-LabelColor);
+        background-color: transparent;
+      }
+    }
+  }
+
+  &.primary {
+    color: var(--primary-button-content-color);
+    background-color: var(--primary-button-default);
+    border-color: var(--primary-button-border);
+
+    button {
+      color: var(--primary-button-color);
+      
+      &:enabled {
+        &:hover {
+          background-color: var(--primary-button-hovered);
+        }
+        &:active,
+        &.pressed,
+        &.pressed:hover {
+          background-color: var(--primary-button-pressed);
+        }
+        &:focus {
+          background-color: var(--primary-button-focused);
+        }
+      }
+    }
+    &:not(.disabled):focus-within {
+      border-color: var(--theme-button-focused-border);
+    }
+    &.disabled {
+      background-color: var(--primary-button-disabled);
+      
+      button {
+        color: var(--primary-button-disabled-color);
+        background-color: transparent;
+
+        .btn-icon {
+          color: var(--primary-button-disabled-color);
+        }
+      }
+    }
+  }
+
+  &.disabled {
+    border-color: transparent;
+    
+    button {
+      color: var(--theme-darker-color);
+      cursor: not-allowed;
+
+      .btn-icon {
+        color: var(--button-disabled-IconColor);
+      }
+    }
+  }
+
+  &.separate {
+    .hulySplitButton-second {
+      position: relative;
+
+      &::after {
+        position: absolute;
+        content: '';
+        top: 20%;
+        left: -0.5px;
+        width: 1px;
+        height: 60%;
+        opacity: 0.2;
+      }
+    }
+    &.secondary .hulySplitButton-second::after {
+      background-color: var(--theme-caption-color);
+    }
+    &.primary .hulySplitButton-second::after {
+      background-color: var(--primary-button-color);
+    }
+    &:focus-within .hulySplitButton-second::after {
+      content: none;
+    }
+  }
+}
