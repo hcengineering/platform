@@ -1333,10 +1333,14 @@ async function getAttrEditor (key: KeyedAttribute, hierarchy: Hierarchy): Promis
 
 type PermissionsBySpace = Record<Ref<Space>, Set<Ref<Permission>>>
 type AccountsByPermission = Record<Ref<Space>, Record<Ref<Permission>, Set<Ref<Account>>>>
-interface PermissionsStore {
+export interface PermissionsStore {
   ps: PermissionsBySpace
   ap: AccountsByPermission
   whitelist: Set<Ref<Space>>
+}
+
+export function checkMyPermission (_id: Ref<Permission>, space: Ref<Space>, store: PermissionsStore): boolean {
+  return (store.whitelist.has(space) || store.ps[space]?.has(_id)) ?? false
 }
 
 export const permissionsStore = writable<PermissionsStore>({
