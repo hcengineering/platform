@@ -366,6 +366,7 @@
       flex-shrink: 0;
       gap: var(--spacing-0_5);
       min-width: 0;
+      max-width: 50%;
     }
     &__separator,
     &__counter,
