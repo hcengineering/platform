@@ -24,6 +24,7 @@ export interface CompAndProps {
     category: string
     overlay: boolean
     fixed?: boolean
+    zIndexOverride?: number
   }
 }
 
@@ -61,6 +62,7 @@ export function showPopup (
     category: string
     overlay: boolean
     fixed?: boolean
+    zIndexOverride?: number
   } = { category: 'popup', overlay: true }
 ): PopupResult {
   const id = `${popupId++}`

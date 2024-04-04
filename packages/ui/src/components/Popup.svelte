@@ -38,7 +38,7 @@
     element={popup.element}
     onClose={popup.onClose}
     onUpdate={popup.onUpdate}
-    zIndex={(i + 1) * 500}
+    zIndex={popup.options.zIndexOverride ?? (i + 1) * 500}
     top={$modal.length - 1 === i}
     close={popup.close}
     {contentPanel}

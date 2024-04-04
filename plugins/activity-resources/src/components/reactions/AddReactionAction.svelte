@@ -39,11 +39,18 @@
 
   function openEmojiPalette (ev: Event) {
     dispatch('open')
-    showPopup(EmojiPopup, {}, ev.target as HTMLElement, (emoji: string) => {
-      updateDocReactions(client, reactions, object, emoji)
-      isOpened = false
-      dispatch('close')
-    })
+    showPopup(
+      EmojiPopup,
+      {},
+      ev.target as HTMLElement,
+      (emoji: string) => {
+        updateDocReactions(client, reactions, object, emoji)
+        isOpened = false
+        dispatch('close')
+      },
+      undefined,
+      { category: 'popup', overlay: true, zIndexOverride: 10002 }
+    )
 
     isOpened = true
   }
