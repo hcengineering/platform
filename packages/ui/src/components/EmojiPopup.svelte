@@ -16,7 +16,7 @@
   import { tooltip } from '../tooltips'
   import { AnySvelteComponent, emojiSP } from '../types'
   import plugin from '../plugin'
-  import { fromCodePoint } from '../utils'
+  import { codepointsToEmoji, emojiToCodepoints, fromCodePoint } from '../utils'
 
   export let embedded = false
   export let selected: string | undefined
@@ -52,13 +52,15 @@
         String.fromCodePoint(0x1f44b, 0x1f3fc),
         String.fromCodePoint(0x1f44d, 0x1f3fc),
         String.fromCodePoint(0x1f44c, 0x1f3fc)
-      ],
+      ].map((emoji) => (emoji ? codepointsToEmoji(emojiToCodepoints(emoji)) : undefined)),
       icon: Work
     },
     {
       id: 'smileys',
       label: plugin.string.Smileys,
-      emojis: [...getEmojis(0x1f600, 0x1f64f), ...getEmojis(0x1f90c, 0x1f92f)],
+      emojis: [...getEmojis(0x1f600, 0x1f64f), ...getEmojis(0x1f90c, 0x1f92f)].map((emoji) =>
+        emoji ? codepointsToEmoji(emojiToCodepoints(emoji)) : undefined
+      ),
       icon: Emoji
     },
     {
@@ -71,25 +73,25 @@
         ...getEmojis(0x1f300, 0x1f320),
         ...getEmojis(0x1f324, 0x1f32c, [0xfe0f]),
         ...getEmojis(0x2600, 0x2604, [0xfe0f])
-      ],
+      ].map(emoji => emoji ? codepointsToEmoji(emojiToCodepoints(emoji)) : undefined),
       icon: Nature
     },
     {
       id: 'travels',
       label: plugin.string.TravelAndPlaces,
-      emojis: [...getEmojis(0x1f5fb, 0x1f5ff), ...getEmojis(0x1f3e0, 0x1f3f0), ...getEmojis(0x1f680, 0x1f6a3)],
+      emojis: [...getEmojis(0x1f5fb, 0x1f5ff), ...getEmojis(0x1f3e0, 0x1f3f0), ...getEmojis(0x1f680, 0x1f6a3)].map(emoji => emoji ? codepointsToEmoji(emojiToCodepoints(emoji)) : undefined),
       icon: Places
     },
     {
       id: 'food',
       label: plugin.string.Food,
-      emojis: [...getEmojis(0x1f345, 0x1f37f), ...getEmojis(0x1f32d, 0x1f32f)],
+      emojis: [...getEmojis(0x1f345, 0x1f37f), ...getEmojis(0x1f32d, 0x1f32f)].map(emoji => emoji ? codepointsToEmoji(emojiToCodepoints(emoji)) : undefined),
       icon: Food
     },
     {
       id: 'objects',
       label: plugin.string.Objects,
-      emojis: [...getEmojis(0x1f4b6, 0x1f4fc)],
+      emojis: [...getEmojis(0x1f4b6, 0x1f4fc)].map(emoji => emoji ? codepointsToEmoji(emojiToCodepoints(emoji)) : undefined),
       icon: Objects
     },
     {
@@ -100,14 +102,14 @@
         ...getEmojis(0x2764, 0x2b07, [0xfe0f]),
         ...getEmojis(0x0023, 0x0039, [0xfe0f, 0x20e3]),
         ...getEmojis(0x1f532, 0x1f53d)
-      ],
+      ].map(emoji => emoji ? codepointsToEmoji(emojiToCodepoints(emoji)) : undefined),
       icon: Symbols
     }
   ]
 
   let currentCategory = categories[0]
 
-  function getEmojis (startCode: number, endCode: number, postfix?: number[]): Array<string | undefined> {
+  function getEmojis(startCode: number, endCode: number, postfix?: number[]): Array<string | undefined> {
     return [...Array(endCode - startCode + 1).keys()].map((v) => {
       const str = postfix ? fromCodePoint(v + startCode, ...postfix) : fromCodePoint(v + startCode)
       if ([...str.matchAll(regex)].length > 0) return str
@@ -115,7 +117,7 @@
     })
   }
 
-  function handleScrollToCategory (categoryId: string) {
+  function handleScrollToCategory(categoryId: string) {
     const labelElement = document.getElementById(categoryId)
 
     if (labelElement) {
@@ -124,7 +126,7 @@
     }
   }
 
-  function handleCategoryScrolled () {
+  function handleCategoryScrolled() {
     const selectedCategory = categories.find((category) => {
       const labelElement = document.getElementById(category.id)
 
