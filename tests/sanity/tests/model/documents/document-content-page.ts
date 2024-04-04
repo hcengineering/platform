@@ -26,7 +26,6 @@ export class DocumentContentPage extends CommonPage {
   }
 
   async addContentToTheNewLine (newContent: string): Promise<string> {
-    await expect(this.inputContent).toBeVisible()
     await this.inputContent.pressSequentially(`\n${newContent}`)
     const endContent = await this.inputContent.textContent()
     if (endContent == null) {

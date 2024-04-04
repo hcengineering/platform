@@ -26,6 +26,12 @@ export interface NewVacancy {
   location?: string
 }
 
+export interface NewSkill {
+  title: string
+  description: string
+  category: string
+}
+
 export interface SocialLink {
   type: string
   value: string

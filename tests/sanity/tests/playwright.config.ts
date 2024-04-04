@@ -18,10 +18,12 @@ const config: PlaywrightTestConfig = {
           snapshots: true,
           screenshots: true,
           sources: true
-        }
+        },
+        headless: false
       }
     }
   ],
+  workers: 1,
   retries: 1,
   timeout: 60000,
   maxFailures: 5,

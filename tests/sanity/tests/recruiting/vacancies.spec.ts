@@ -79,7 +79,7 @@ test.describe('Vacancy tests', () => {
   //   expect(await page.locator('.antiTable-body__row').count()).toBeGreaterThan(2)
   // })
 
-  test('Edit a Vacancy', async ({ page }) => {
+  test('EditaVacancy', async ({ page }) => {
     const vacancyName = 'Edit Vacancy ' + generateId(4)
 
     const navigationMenuPage = new NavigationMenuPage(page)

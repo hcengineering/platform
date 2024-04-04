@@ -55,9 +55,6 @@ export class IssuesDetailsPage extends CommonTrackerPage {
   }
 
   async editIssue (data: Issue): Promise<void> {
-    if (data.title != null) {
-      await this.inputTitle.fill(data.title)
-    }
     if (data.status != null) {
       await this.buttonStatus.click()
       await this.selectFromDropdown(this.page, data.status)

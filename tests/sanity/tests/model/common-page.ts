@@ -38,6 +38,14 @@ export class CommonPage {
     await page.locator('div.selectPopup button').click()
   }
 
+  async fillToSelectPopupWithCrossButton (page: Page, input: string): Promise<void> {
+    await expect(page.locator('div.selectPopup input')).toBeVisible()
+    await page.locator('div.selectPopup input').fill(input)
+    await page.locator('div.selectPopup button.menu-item').click()
+  }
+
+
+
   async checkFromDropdown (page: Page, point: string): Promise<void> {
     await page.locator('div.selectPopup span[class^="lines"]', { hasText: point }).first().click()
   }
