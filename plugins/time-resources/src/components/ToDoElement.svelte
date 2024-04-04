@@ -78,9 +78,11 @@
 >
   <div class="flex-row-top flex-grow flex-gap-2">
     <div class="flex-row-center flex-no-shrink">
-      <button class="hulyToDoLine-dragbox" class:isNew on:contextmenu={onMenuClick}>
-        <Icon icon={IconMoreV2} size={'small'} />
-      </button>
+      {#if !isDone}
+        <button class="hulyToDoLine-dragbox" class:isNew on:contextmenu={onMenuClick}>
+          <Icon icon={IconMoreV2} size={'small'} />
+        </button>
+      {/if}
       <div class="hulyToDoLine-statusPriority">
         <div class="hulyToDoLine-checkbox" class:updating>
           {#if updating !== undefined}

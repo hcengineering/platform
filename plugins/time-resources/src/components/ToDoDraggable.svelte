@@ -103,7 +103,7 @@
 <div
   class="hulyToDoLine-draggable {draggingOverClass} step-tb125"
   class:dragging={isDragging}
-  draggable={true}
+  draggable={isDraggable}
   on:dragstart={handleDragStart}
   on:dragend={handleDragEnd}
   on:dragover|preventDefault={handleDragOver}
