@@ -48,13 +48,14 @@ import serverToken, { decodeToken, generateToken } from '@hcengineering/server-t
 import toolPlugin, { FileModelLogger } from '@hcengineering/server-tool'
 
 import { program, type Command } from 'commander'
-import { MongoClient, type Db } from 'mongodb'
+import { type Db, type MongoClient } from 'mongodb'
 import { clearTelegramHistory } from './telegram'
 import { diffWorkspace, updateField } from './workspace'
 
 import {
   getWorkspaceId,
   MeasureMetricsContext,
+  metricsToString,
   RateLimiter,
   type AccountRole,
   type Data,
@@ -62,6 +63,7 @@ import {
   type Version
 } from '@hcengineering/core'
 import { consoleModelLogger, type MigrateOperation } from '@hcengineering/model'
+import { getMongoClient } from '@hcengineering/mongo'
 import { openAIConfigDefaults } from '@hcengineering/openai'
 import { type StorageAdapter } from '@hcengineering/server-core'
 import path from 'path'
@@ -129,9 +131,10 @@ export function devTool (
   async function withDatabase (uri: string, f: (db: Db, client: MongoClient) => Promise<any>): Promise<void> {
     console.log(`connecting to database '${uri}'...`)
 
-    const client = await MongoClient.connect(uri)
-    await f(client.db(ACCOUNT_DB), client)
-    await client.close()
+    const client = getMongoClient(uri)
+    const _client = await client.getClient()
+    await f(_client.db(ACCOUNT_DB), _client)
+    client.close()
   }
 
   program.version('0.0.1')
@@ -285,14 +288,29 @@ export function devTool (
   program
     .command('upgrade-workspace <name>')
     .description('upgrade workspace')
-    .action(async (workspace, cmd) => {
+    .option('-f|--force [force]', 'Force update', true)
+    .action(async (workspace, cmd: { force: boolean }) => {
       const { mongodbUri, version, txes, migrateOperations } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
         const info = await getWorkspaceById(db, productId, workspace)
         if (info === null) {
           throw new Error(`workspace ${workspace} not found`)
         }
-        await upgradeWorkspace(version, txes, migrateOperations, productId, db, info.workspaceUrl ?? info.workspace)
+
+        const measureCtx = new MeasureMetricsContext('upgrade', {})
+
+        await upgradeWorkspace(
+          measureCtx,
+          version,
+          txes,
+          migrateOperations,
+          productId,
+          db,
+          info.workspaceUrl ?? info.workspace,
+          consoleModelLogger,
+          cmd.force
+        )
+        console.log(metricsToString(measureCtx.metrics, 'upgrade', 60), {})
       })
     })
 
@@ -312,6 +330,7 @@ export function devTool (
       const { mongodbUri, version, txes, migrateOperations } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
         const workspaces = await listWorkspacesRaw(db, productId)
+        workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
 
         // We need to update workspaces with missing workspaceUrl
         for (const ws of workspaces) {
@@ -343,15 +362,16 @@ export function devTool (
           console.log(
             '---UPGRADING----',
             ws.workspace,
-            !cmd.console ? (logger as FileModelLogger).file : '',
+            ws.workspaceUrl,
             'pending: ',
             toProcess,
             'ETA:',
-            avgTime * toProcess
+            Math.floor(avgTime * toProcess * 100) / 100
           )
           toProcess--
           try {
             await upgradeWorkspace(
+              toolCtx,
               version,
               txes,
               migrateOperations,
@@ -383,6 +403,10 @@ export function devTool (
               })
             )
           )
+          console.log('Upgrade done')
+          // console.log((process as any)._getActiveHandles())
+          // console.log((process as any)._getActiveRequests())
+          process.exit()
         } else {
           console.log('UPGRADE write logs at:', cmd.logs)
           for (const ws of workspaces) {

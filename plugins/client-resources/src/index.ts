@@ -85,6 +85,11 @@ export default async () => {
   }
 }
 function createModelPersistence (workspace: string): TxPersistenceStore | undefined {
+  const overrideStore = getMetadata(clientPlugin.metadata.OverridePersistenceStore)
+  if (overrideStore !== undefined) {
+    return overrideStore
+  }
+
   let dbRequest: IDBOpenDBRequest | undefined
   let dbPromise: Promise<IDBDatabase | undefined> = Promise.resolve(undefined)
 
