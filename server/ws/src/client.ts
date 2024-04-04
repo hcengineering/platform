@@ -184,12 +184,7 @@ export class ClientSession implements Session {
           while (derived.length > 0) {
             const part = derived.splice(0, 250)
             console.log('Broadcasting part', part.length, derived.length)
-            this.broadcast(
-              null,
-              this.token.workspace,
-              { result: part },
-              target
-            )
+            this.broadcast(null, this.token.workspace, { result: part }, target)
           }
         }
       } else {

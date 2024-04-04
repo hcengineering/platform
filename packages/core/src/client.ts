@@ -165,9 +165,14 @@ class ClientImpl implements AccountClient, BackupClient, MeasureClient {
 
   async updateFromRemote (...tx: Tx[]): Promise<void> {
     for (const t of tx) {
-      if (t.objectSpace === core.space.Model) {
-        this.hierarchy.tx(t)
-        await this.model.tx(t)
+      try {
+        if (t.objectSpace === core.space.Model) {
+          this.hierarchy.tx(t)
+          await this.model.tx(t)
+        }
+      } catch (err) {
+        console.error('failed to apply model transaction, skipping', t)
+        continue
       }
     }
     this.notify?.(...tx)
