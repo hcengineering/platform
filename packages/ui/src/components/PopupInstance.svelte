@@ -34,7 +34,7 @@
   // since they could be used, and any show will update them
   const initialProps = props
 
-  const WINDOW_PADDING = 16
+  const WINDOW_PADDING = 1
 
   interface PopupParams {
     x: number
@@ -254,6 +254,10 @@
     if (modalHTML) fitPopup(modalHTML, element, contentPanel)
     if (element === 'movable' && !locked) {
       locked = true
+      if (options.props.right !== '') {
+        const rect = modalHTML.getBoundingClientRect()
+        popupParams = { x: rect.left, y: rect.top, width: rect.width, height: rect.height }
+      }
       checkSize()
       windowSize.width = $deviceInfo.docWidth
       windowSize.height = $deviceInfo.docHeight
