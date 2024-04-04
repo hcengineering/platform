@@ -156,7 +156,6 @@ class ClientImpl implements AccountClient, BackupClient, MeasureClient {
 
     // We need to handle it on server, before performing local live query updates.
     const result = await this.conn.tx(tx)
-    this.notify?.(tx)
     return result
   }
 
@@ -166,9 +165,14 @@ class ClientImpl implements AccountClient, BackupClient, MeasureClient {
 
   async updateFromRemote (...tx: Tx[]): Promise<void> {
     for (const t of tx) {
-      if (t.objectSpace === core.space.Model) {
-        this.hierarchy.tx(t)
-        await this.model.tx(t)
+      try {
+        if (t.objectSpace === core.space.Model) {
+          this.hierarchy.tx(t)
+          await this.model.tx(t)
+        }
+      } catch (err) {
+        console.error('failed to apply model transaction, skipping', t)
+        continue
       }
     }
     this.notify?.(...tx)
