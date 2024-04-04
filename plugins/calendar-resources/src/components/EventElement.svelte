@@ -16,19 +16,20 @@
   import calendar, { CalendarEventPresenter, Event } from '@hcengineering/calendar'
   import { Doc } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Component, MILLISECONDS_IN_MINUTE, showPopup, tooltip } from '@hcengineering/ui'
+  import { Component, MILLISECONDS_IN_MINUTE, deviceSizes, showPopup, tooltip } from '@hcengineering/ui'
   import view, { ObjectEditor } from '@hcengineering/view'
   import { showMenu } from '@hcengineering/view-resources'
   import { calendarStore, isVisible } from '../utils'
   import EventPresenter from './EventPresenter.svelte'
+  import { log, log } from 'console'
 
   export let event: Event
   // export let hourHeight: number
   export let size: { width: number, height: number }
 
-  $: oneRow = size.height < 42 || event.allDay
+  $: oneRow = size.height < 25 || event.allDay
   $: narrow = event.dueDate - event.date < MILLISECONDS_IN_MINUTE * 25
-  $: empty = size.width < 44
+  $: empty = size.width < 0
 
   function click () {
     if (visible) {
@@ -60,7 +61,7 @@
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     bind:this={div}
-    class="event-container"
+    class='event-container'
     class:oneRow
     class:empty
     use:tooltip={{ component: EventPresenter, props: { value: event, hideDetails: !visible } }}
@@ -76,10 +77,11 @@
 <style lang="scss">
   .event-container {
     pointer-events: auto;
-    overflow: hidden;
+    overflow: hidden; 
     display: flex;
-    flex-direction: column;
+    flex-direction: column; 
     flex-grow: 1;
+    flex-wrap: wrap;
     width: 100%;
     height: 100%;
     min-width: 0;

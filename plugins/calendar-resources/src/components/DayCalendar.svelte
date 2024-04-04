@@ -655,9 +655,16 @@
     events = events
   }
 
+  const transparentImage = new Image(1, 1);
+  transparentImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
+
   function dragStartElement (e: DragEvent & { currentTarget: EventTarget & HTMLDivElement }, event: Event): void {
     if (isReadOnly(event) || event.allDay) return
-    if (e.dataTransfer) e.dataTransfer.effectAllowed = 'all'
+    
+    if (e.dataTransfer) {
+        e.dataTransfer.setDragImage(transparentImage, 0, 0);
+        e.dataTransfer.effectAllowed = 'all';
+    }
     originDate = event.date
     originDueDate = event.dueDate
     dragOnOld = null
