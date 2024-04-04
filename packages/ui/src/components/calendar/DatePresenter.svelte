@@ -26,11 +26,13 @@
   import DPCalendar from './icons/DPCalendar.svelte'
   import DPCalendarOver from './icons/DPCalendarOver.svelte'
   import { getMonthName } from './internal/DateUtils'
+  import { registerFocus } from '../../focus'
 
   export let value: number | null | undefined
   export let mode: DateRangeMode = DateRangeMode.DATE
   export let mondayStart: boolean = true
   export let editable: boolean = false
+  export let input: HTMLButtonElement | undefined = undefined
   export let icon: Asset | AnySvelteComponent | ComponentType | undefined = undefined
   export let iconModifier: 'normal' | 'warning' | 'critical' | 'overdue' = 'normal'
   export let shouldIgnoreOverdue: boolean = false
@@ -64,9 +66,30 @@
   }
 
   $: withTime = mode !== DateRangeMode.DATE
+
+  // Focusable control with index
+  export let focusIndex = -1
+  const { idx, focusManager } = registerFocus(focusIndex, {
+    focus: () => {
+      input?.focus()
+      return input != null
+    },
+    isFocus: () => document.activeElement === input
+  })
+
+  $: if (idx !== -1 && focusManager) {
+    focusManager.updateFocus(idx, focusIndex)
+  }
+
+  $: if (input != null) {
+    input.addEventListener('focus', () => {
+      focusManager?.setFocus(idx)
+    })
+  }
 </script>
 
 <button
+  bind:this={input}
   class="datetime-button {kind} {size}"
   class:editable
   class:dateTimeButtonNoLabel={!shouldShowLabel}

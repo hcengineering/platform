@@ -956,6 +956,7 @@
     </div>
     <div id="duedate-editor" class="new-line">
       <DatePresenter
+        focusIndex={10}
         bind:value={object.dueDate}
         labelNull={tracker.string.DueDate}
         kind={'regular'}
@@ -965,6 +966,7 @@
     </div>
     <div id="parentissue-editor" class="new-line">
       <Button
+        focusIndex={11}
         icon={tracker.icon.Parent}
         label={object.parentIssue != null ? tracker.string.RemoveParent : tracker.string.SetParent}
         kind={'regular'}
@@ -991,7 +993,7 @@
   </svelte:fragment>
   <svelte:fragment slot="footer">
     <Button
-      focusIndex={10}
+      focusIndex={12}
       icon={IconAttachment}
       iconProps={{ fill: 'var(--theme-dark-color)' }}
       size={'large'}
