@@ -653,7 +653,8 @@ export async function restoreRecruitingTaskTypes (
   transactorUrl: string
 ): Promise<void> {
   const connection = (await connect(transactorUrl, workspaceId, undefined, {
-    mode: 'backup'
+    mode: 'backup',
+    model: 'upgrade'
   })) as unknown as CoreClient & BackupClient
   const client = new MongoClient(mongoUrl)
   try {
