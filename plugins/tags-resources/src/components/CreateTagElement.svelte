@@ -48,6 +48,10 @@
 
   let colorSet = false
 
+  function getTitle (value: string): string {
+    return value.trim()
+  }
+
   $: if (!colorSet) {
     color = getColorNumberByText(title)
   }
@@ -55,7 +59,8 @@
   $: if (!categoryWasSet && categories.length > 0) {
     category = findTagCategory(title, categories)
   }
-
+  $: canSave = getTitle(title).length > 0
+ 
   export function canClose (): boolean {
     return title === ''
   }
@@ -100,7 +105,7 @@
   label={tags.string.AddTag}
   labelProps={{ word: keyTitle }}
   okAction={createTagElementFnc}
-  canSave={title.length > 0}
+  {canSave}
   on:close={() => {
     dispatch('close')
   }}
