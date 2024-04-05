@@ -13,134 +13,15 @@
 // limitations under the License.
 //
 
-import { Calendar, Event } from '@hcengineering/calendar'
-import type { Channel, Organization, Person } from '@hcengineering/contact'
-import type {
-  AttachedData,
-  AttachedDoc,
-  Attribute,
-  Class,
-  Doc,
-  Mixin,
-  Ref,
-  Space,
-  Status,
-  Timestamp
-} from '@hcengineering/core'
+import { Calendar } from '@hcengineering/calendar'
+import type { Attribute, Class, Doc, Mixin, Ref, Status } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import { TagReference } from '@hcengineering/tags'
-import type { Project, ProjectTypeDescriptor, Task, TaskType } from '@hcengineering/task'
+import type { ProjectTypeDescriptor, TaskType } from '@hcengineering/task'
 import { AnyComponent, ResolvedLocation } from '@hcengineering/ui'
+import type { Applicant, ApplicantMatch, Candidate, Candidates, Opinion, Review, Vacancy, VacancyList } from './types'
 
-/**
- * @public
- */
-export interface Vacancy extends Project {
-  fullDescription?: string
-  attachments?: number
-  dueTo?: Timestamp
-  location?: string
-  company?: Ref<Organization>
-  comments?: number
-  number: number
-}
-
-/**
- * @public
- */
-export interface VacancyList extends Organization {
-  vacancies: number
-}
-
-/**
- * @public
- */
-export interface Candidates extends Space {}
-
-/**
- * @public
- */
-export interface Candidate extends Person {
-  title?: string
-  applications?: number
-  onsite?: boolean
-  remote?: boolean
-  source?: string
-  skills?: number
-  reviews?: number
-}
-
-/**
- * @public
- */
-export interface CandidateDraft {
-  _id: Ref<Candidate>
-  firstName?: string
-  lastName?: string
-  title?: string
-  city: string
-  resumeUuid?: string
-  resumeName?: string
-  resumeSize?: number
-  resumeType?: string
-  resumeLastModified?: number
-  avatar?: File | undefined
-  channels: AttachedData<Channel>[]
-  onsite?: boolean
-  remote?: boolean
-  skills: TagReference[]
-}
-
-/**
- * @public
- */
-export interface Applicant extends Task {
-  space: Ref<Vacancy>
-  attachedTo: Ref<Candidate>
-  status: Ref<Status>
-  startDate: Timestamp | null
-}
-
-/**
- * @public
- */
-export interface ApplicantMatch extends AttachedDoc {
-  attachedTo: Ref<Candidate>
-
-  complete: boolean
-  vacancy: string
-  summary: string
-  response: string
-}
-
-/**
- * @public
- */
-export interface Review extends Event {
-  attachedTo: Ref<Candidate>
-  number: number
-
-  verdict: string
-
-  application?: Ref<Applicant>
-
-  company?: Ref<Organization>
-
-  opinions?: number
-}
-
-/**
- * @public
- */
-export interface Opinion extends AttachedDoc {
-  number: number
-  attachedTo: Ref<Review>
-  comments?: number
-  attachments?: number
-  description: string
-  value: string
-}
+export * from './types'
 
 /**
  * @public
