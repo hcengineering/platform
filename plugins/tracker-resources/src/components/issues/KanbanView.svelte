@@ -498,12 +498,6 @@
     .counter {
       color: var(--theme-dark-color);
     }
-    .tools {
-      opacity: 0;
-    }
-    &:hover .tools {
-      opacity: 1;
-    }
   }
   .tracker-card {
     position: relative;
