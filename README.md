@@ -24,18 +24,24 @@ This project offers a convenient method to host Huly using `docker`, designed fo
 
 ## Table of Content
 
-- [Pre-requisites](#pre-requisites)
-- [Fast start](#fast-start)
-- [Installation](#installation)
-- [Build and run](#build-and-run)
-- Development mode
+- [Huly Platform](#huly-platform)
+  - [About](#about)
+  - [Activity](#activity)
+  - [Self-Hosting](#self-hosting)
+  - [Table of Content](#table-of-content)
+  - [Pre-requisites](#pre-requisites)
+  - [Fast start](#fast-start)
+  - [Installation](#installation)
+  - [Build and run](#build-and-run)
   - [Run in development mode](#run-in-development-mode)
   - [Update project structure and database](#update-project-structure-and-database)
-  - Tests
-    - [Tests](#tests)
+  - [Troubleshooting](#troubleshooting)
+  - [Build \& Watch](#build--watch)
+  - [Tests](#tests)
     - [Unit tests](#unit-tests)
     - [UI tests](#ui-tests)
   - [Package publishing](#package-publishing)
+  - [Additional testing](#additional-testing)
 
 ## Pre-requisites
 
@@ -70,6 +76,7 @@ Support is available for both amd64 and arm64 containers on Linux and macOS.
 
 ```bash
 cd ./dev/
+rush install  # Will install package dependencies.
 rush build    # Will build all the required packages. 
 # rush rebuild  # could be used to omit build cache.
 rush bundle   # Will prepare bundles.
@@ -187,6 +194,7 @@ rush docker:build
 ## creates test Docker containers and sets up test database
 ./prepare.sh
 ## runs UI tests
+cd ./sanity
 rushx uitest
 ```
 
