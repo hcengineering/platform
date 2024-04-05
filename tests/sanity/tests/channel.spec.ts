@@ -13,12 +13,13 @@ test.describe('channel tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
-  test.skip('create new private channel tests', async ({ page }) => {
+  test('createnewprivate channel tests', async ({ page }) => {
     const leftSideMenuPage = new LeftSideMenuPage(page)
     await leftSideMenuPage.buttonChunter.click()
 
     const chunterPage = new ChunterPage(page)
-    await chunterPage.buttonChannelBrowser.click()
+    //await chunterPage.buttonChannelBrowser.click()
+    await chunterPage.buttonPlusSign.click()
     await chunterPage.buttonNewChannelHeader.click()
 
     const channel = 'channel-' + generateId()

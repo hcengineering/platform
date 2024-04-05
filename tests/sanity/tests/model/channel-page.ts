@@ -10,7 +10,7 @@ export class ChannelPage {
     this.page = page
     this.inputMessage = page.locator('div[class~="text-editor-view"]')
     this.buttonSendMessage = page.locator('g#Send')
-    this.textMessage = page.locator('div.message > div.text')
+    this.textMessage = page.locator('p.p-inline.contrast')
   }
 
   async sendMessage (message: string): Promise<void> {
