@@ -56,4 +56,21 @@ test.describe('channel tests', () => {
     await channelPage.checkMemberGotAdded('Chen')
   })
 
+  test('create a channel and then remove',async ({ page }) => {
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    await leftSideMenuPage.buttonChunter.click()
+
+    const chunterPage = new ChunterPage(page)
+    //await chunterPage.buttonChannelBrowser.click()
+    await chunterPage.buttonPlusSign.click()
+    await chunterPage.buttonNewChannelHeader.click()
+
+    const channel = 'channel-' + generateId()
+    await chunterPage.createNewChannel(channel, false)
+    await chunterPage.openChannel(channel)
+    await chunterPage.clickOnMoreOptionsOfChannel(channel)
+    await chunterPage.buttonLeaveChannel.click()
+    await page.waitForTimeout(2000);
+    await chunterPage.checkIfChannelNameIsRemoved(channel)
+  })
 })

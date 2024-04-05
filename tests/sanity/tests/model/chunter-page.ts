@@ -1,4 +1,4 @@
-import { type Locator, type Page } from '@playwright/test'
+import { expect, type Locator, type Page } from '@playwright/test'
 
 export class ChunterPage {
   readonly page: Page
@@ -11,6 +11,8 @@ export class ChunterPage {
   readonly buttonCreateChannel: Locator
   readonly buttonOpenChannel: Locator
   readonly buttonPrivateChannelType: Locator
+  readonly buttonLeaveChannel: Locator
+  
 
   constructor (page: Page) {
     this.page = page
@@ -23,6 +25,7 @@ export class ChunterPage {
     this.buttonPlusSign = page.locator('button.antiButton.primary')
     this.buttonChannelType = page.locator('button.font-medium-14.secondary.medium.type-button.svelte-i3hlsl.menu')
     this.buttonPrivateChannelType = page.locator('div.hulyPopup-row__label', {hasText: 'Private'})
+    this.buttonLeaveChannel = page.locator('span', {hasText: 'Leave channel'})
   }
 
   async createNewChannel (channelName: string, privateChannel: boolean): Promise<void> {
@@ -39,4 +42,13 @@ export class ChunterPage {
   async openChannel (channelName: string): Promise<void> {
     await this.buttonOpenChannel.filter({ hasText: channelName }).click()
   }
+
+  async clickOnMoreOptionsOfChannel(channelName: string): Promise<void> {
+    await this.page.locator("//*[text()='"+channelName+"']/ancestor::div[@class='root svelte-i7vp5c pressed']//div[@class='action svelte-i7vp5c']").click()
+  }
+
+  async checkIfChannelNameIsRemoved(channelName: string): Promise<void> {
+    await expect(this.buttonOpenChannel.filter({hasText: channelName})).toBeHidden()  
+  }
+
 }
