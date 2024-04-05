@@ -12,6 +12,7 @@
     "CompanyCreateLabel": "Компания",
     "VacancyPlaceholder": "Разработчик",
     "CreateAnApplication": "Новый Кандидат",
+    "NoVacancies": "Нет вакансий",
     "NoApplicationsForTalent": "Нет кандидатов для данного таланта.",
     "NoApplicationsForVacancy": "Нет кандидатов для данной вакансии.",
     "CreateApplication": "Новый Кандидат",
@@ -59,7 +60,7 @@
     "ManageVacancyStatuses": "Управление типами вакансии",
     "EditVacancy": "Редактировать",
     "FullDescription": "Детальное описание",
-    
+
     "CreateReview": "Запланировать Ревью",
     "CreateReviewParams": "Запланировать {label}",
     "Reviews": "Ревью",

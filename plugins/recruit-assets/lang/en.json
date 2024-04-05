@@ -12,6 +12,7 @@
     "CompanyCreateLabel": "Company",
     "VacancyPlaceholder": "Software Engineer",
     "CreateAnApplication": "New Application",
+    "NoVacancies": "No Vacancies",
     "NoApplicationsForTalent": "There are no applications for this talent.",
     "NoApplicationsForVacancy": "There are no applications for this vacancy.",
     "CreateApplication": "New Application",
