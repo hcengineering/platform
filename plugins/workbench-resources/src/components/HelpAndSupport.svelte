@@ -15,7 +15,7 @@
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
-  import support, { supportLink } from '@hcengineering/support'
+  import support, { supportLink, findBugLink } from '@hcengineering/support'
   import { getSupportClient } from '@hcengineering/support-resources'
   import {
     Button,
@@ -188,6 +188,14 @@
     </Scroller>
   {/if}
   <div class="footer">
+    <a href={findBugLink} target="_blank">
+      <Button
+        id="find-a-bug"
+        kind={'primary'}
+        label={support.string.FindBug}
+        stopPropagation={false}
+      />
+    </a>
     <a href={supportLink}>
       <Button
         id="contact-us"
