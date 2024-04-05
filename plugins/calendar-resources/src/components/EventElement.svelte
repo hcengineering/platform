@@ -29,7 +29,7 @@
 
   $: oneRow = size.height < 25 || event.allDay
   $: narrow = event.dueDate - event.date < MILLISECONDS_IN_MINUTE * 25
-  $: empty = size.width < 0
+  $: empty = size.width < 44
 
   function click () {
     if (visible) {
@@ -61,7 +61,7 @@
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     bind:this={div}
-    class='event-container'
+    class="event-container"
     class:oneRow
     class:empty
     use:tooltip={{ component: EventPresenter, props: { value: event, hideDetails: !visible } }}
@@ -77,9 +77,9 @@
 <style lang="scss">
   .event-container {
     pointer-events: auto;
-    overflow: hidden; 
+    overflow: hidden;
     display: flex;
-    flex-direction: column; 
+    flex-direction: column;
     flex-grow: 1;
     flex-wrap: wrap;
     width: 100%;
