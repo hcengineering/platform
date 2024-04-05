@@ -38,7 +38,6 @@ import { type DbAdapter } from './adapter'
  * @public
  */
 export class DummyDbAdapter implements DbAdapter {
-  async init (model: Tx[]): Promise<void> {}
   async findAll<T extends Doc>(
     ctx: MeasureContext,
     _class: Ref<Class<T>>,
@@ -98,16 +97,6 @@ class InMemoryAdapter extends DummyDbAdapter implements DbAdapter {
 
   async tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {
     return await this.modeldb.tx(...tx)
-  }
-
-  async init (model: Tx[]): Promise<void> {
-    for (const tx of model) {
-      try {
-        await this.modeldb.tx(tx)
-      } catch (err: any) {
-        console.error('skip broken TX', err)
-      }
-    }
   }
 }
 

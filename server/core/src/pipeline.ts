@@ -31,8 +31,8 @@ import {
   type Tx,
   type TxResult
 } from '@hcengineering/core'
-import { createServerStorage } from './server'
 import { type DbConfiguration } from './configuration'
+import { createServerStorage } from './server'
 import {
   type BroadcastFunc,
   type HandledBroadcastFunc,
@@ -67,12 +67,12 @@ export async function createPipeline (
         }
       })
   )
-  const pipeline = ctx.with(
-    'create pipeline',
-    {},
-    async (ctx) => await PipelineImpl.create(ctx, storage, constructors, broadcast)
+  const pipelineResult = await PipelineImpl.create(
+    ctx.newChild('pipeline-operations', {}),
+    storage,
+    constructors,
+    broadcast
   )
-  const pipelineResult = await pipeline
   broadcastHook = (tx, targets) => {
     return pipelineResult.handleBroadcast(tx, targets)
   }

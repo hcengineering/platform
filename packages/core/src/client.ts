@@ -18,11 +18,12 @@ import { BackupClient, DocChunk } from './backup'
 import { Account, AttachedDoc, Class, DOMAIN_MODEL, Doc, Domain, PluginConfiguration, Ref, Timestamp } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
+import { MeasureContext, MeasureMetricsContext } from './measurements'
 import { ModelDb } from './memdb'
 import type { DocumentQuery, FindOptions, FindResult, FulltextStorage, Storage, TxResult, WithLookup } from './storage'
 import { SearchOptions, SearchQuery, SearchResult, SortingOrder } from './storage'
 import { Tx, TxCUD, TxCollectionCUD, TxCreateDoc, TxProcessor, TxUpdateDoc } from './tx'
-import { toFindResult } from './utils'
+import { toFindResult, toIdMap } from './utils'
 
 const transactionThreshold = 500
 
@@ -222,8 +223,10 @@ export async function createClient (
   connect: (txHandler: TxHandler) => Promise<ClientConnection>,
   // If set will build model with only allowed plugins.
   allowedPlugins?: Plugin[],
-  txPersistence?: TxPersistenceStore
+  txPersistence?: TxPersistenceStore,
+  _ctx?: MeasureContext
 ): Promise<AccountClient> {
+  const ctx = _ctx ?? new MeasureMetricsContext('createClient', {})
   let client: ClientImpl | null = null
 
   // Temporal buffer, while we apply model
@@ -248,9 +251,13 @@ export async function createClient (
   }
   const configs = new Map<Ref<PluginConfiguration>, PluginConfiguration>()
 
-  const conn = await connect(txHandler)
+  const conn = await ctx.with('connect', {}, async () => await connect(txHandler))
 
-  await loadModel(conn, allowedPlugins, configs, hierarchy, model, false, txPersistence)
+  await ctx.with(
+    'load-model',
+    { reload: false },
+    async (ctx) => await loadModel(ctx, conn, allowedPlugins, configs, hierarchy, model, false, txPersistence)
+  )
 
   txBuffer = txBuffer.filter((tx) => tx.space !== core.space.Model)
 
@@ -264,14 +271,20 @@ export async function createClient (
   conn.onConnect = async (event) => {
     console.log('Client: onConnect', event)
     // Find all new transactions and apply
-    const loadModelResponse = await loadModel(conn, allowedPlugins, configs, hierarchy, model, true, txPersistence)
+    const loadModelResponse = await ctx.with(
+      'connect',
+      { reload: true },
+      async (ctx) => await loadModel(ctx, conn, allowedPlugins, configs, hierarchy, model, true, txPersistence)
+    )
 
     if (event === ClientConnectEvent.Reconnected && loadModelResponse.full) {
       // We have upgrade procedure and need rebuild all stuff.
       hierarchy = new Hierarchy()
       model = new ModelDb(hierarchy)
 
-      await buildModel(loadModelResponse, allowedPlugins, configs, hierarchy, model)
+      await ctx.with('build-model', {}, async (ctx) => {
+        await buildModel(ctx, loadModelResponse, allowedPlugins, configs, hierarchy, model)
+      })
       await oldOnConnect?.(ClientConnectEvent.Upgraded)
 
       // No need to fetch more stuff since upgrade was happened.
@@ -285,10 +298,15 @@ export async function createClient (
     }
 
     // We need to look for last {transactionThreshold} transactions and if it is more since lastTx one we receive, we need to perform full refresh.
-    const atxes = await conn.findAll(
-      core.class.Tx,
-      { modifiedOn: { $gt: lastTx }, objectSpace: { $ne: core.space.Model } },
-      { sort: { modifiedOn: SortingOrder.Ascending, _id: SortingOrder.Ascending }, limit: transactionThreshold }
+    const atxes = await ctx.with(
+      'find-atx',
+      {},
+      async () =>
+        await conn.findAll(
+          core.class.Tx,
+          { modifiedOn: { $gt: lastTx }, objectSpace: { $ne: core.space.Model } },
+          { sort: { modifiedOn: SortingOrder.Ascending, _id: SortingOrder.Ascending }, limit: transactionThreshold }
+        )
     )
 
     let needFullRefresh = false
@@ -318,14 +336,23 @@ export async function createClient (
 }
 
 async function tryLoadModel (
+  ctx: MeasureContext,
   conn: ClientConnection,
   reload: boolean,
   persistence?: TxPersistenceStore
 ): Promise<LoadModelResponse> {
-  const current = (await persistence?.load()) ?? { full: true, transactions: [], hash: '' }
+  const current = (await ctx.with('persistence-load', {}, async () => await persistence?.load())) ?? {
+    full: true,
+    transactions: [],
+    hash: ''
+  }
 
   const lastTxTime = getLastTxTime(current.transactions)
-  const result = await conn.loadModel(lastTxTime, current.hash)
+  const result = await ctx.with(
+    'connection-load-model',
+    { hash: current.hash !== '' },
+    async (ctx) => await conn.loadModel(lastTxTime, current.hash)
+  )
 
   if (Array.isArray(result)) {
     // Fallback to old behavior, only for tests
@@ -337,10 +364,15 @@ async function tryLoadModel (
   }
 
   // Save concatenated
-  await persistence?.store({
-    ...result,
-    transactions: !result.full ? current.transactions.concat(result.transactions) : result.transactions
-  })
+  void (await ctx.with(
+    'persistence-store',
+    {},
+    async (ctx) =>
+      await persistence?.store({
+        ...result,
+        transactions: !result.full ? current.transactions.concat(result.transactions) : result.transactions
+      })
+  ))
 
   if (!result.full && !reload) {
     result.transactions = current.transactions.concat(result.transactions)
@@ -361,6 +393,7 @@ function isPersonAccount (tx: Tx): boolean {
 }
 
 async function loadModel (
+  ctx: MeasureContext,
   conn: ClientConnection,
   allowedPlugins: Plugin[] | undefined,
   configs: Map<Ref<PluginConfiguration>, PluginConfiguration>,
@@ -371,7 +404,11 @@ async function loadModel (
 ): Promise<LoadModelResponse> {
   const t = Date.now()
 
-  const modelResponse = await tryLoadModel(conn, reload, persistence)
+  const modelResponse = await ctx.with(
+    'try-load-model',
+    { reload },
+    async (ctx) => await tryLoadModel(ctx, conn, reload, persistence)
+  )
 
   if (reload && modelResponse.full) {
     return modelResponse
@@ -385,11 +422,14 @@ async function loadModel (
     )
   }
 
-  await buildModel(modelResponse, allowedPlugins, configs, hierarchy, model)
+  await ctx.with('build-model', {}, async (ctx) => {
+    await buildModel(ctx, modelResponse, allowedPlugins, configs, hierarchy, model)
+  })
   return modelResponse
 }
 
 async function buildModel (
+  ctx: MeasureContext,
   modelResponse: LoadModelResponse,
   allowedPlugins: Plugin[] | undefined,
   configs: Map<Ref<PluginConfiguration>, PluginConfiguration>,
@@ -400,38 +440,45 @@ async function buildModel (
   const userTx: Tx[] = []
 
   const atxes = modelResponse.transactions
-  atxes.forEach((tx) =>
-    ((tx.modifiedBy === core.account.ConfigUser || tx.modifiedBy === core.account.System) && !isPersonAccount(tx)
-      ? systemTx
-      : userTx
-    ).push(tx)
-  )
+
+  await ctx.with('split txes', {}, async () => {
+    atxes.forEach((tx) =>
+      ((tx.modifiedBy === core.account.ConfigUser || tx.modifiedBy === core.account.System) && !isPersonAccount(tx)
+        ? systemTx
+        : userTx
+      ).push(tx)
+    )
+  })
 
   if (allowedPlugins != null) {
-    fillConfiguration(systemTx, configs)
-    fillConfiguration(userTx, configs)
+    await ctx.with('fill config system', {}, async () => {
+      fillConfiguration(systemTx, configs)
+    })
+    await ctx.with('fill config user', {}, async () => {
+      fillConfiguration(userTx, configs)
+    })
     const excludedPlugins = Array.from(configs.values()).filter(
       (it) => !it.enabled || !allowedPlugins.includes(it.pluginId)
     )
-    systemTx = pluginFilterTx(excludedPlugins, configs, systemTx)
+    await ctx.with('filter txes', {}, async () => {
+      systemTx = pluginFilterTx(excludedPlugins, configs, systemTx)
+    })
   }
 
   const txes = systemTx.concat(userTx)
 
-  for (const tx of txes) {
-    try {
-      hierarchy.tx(tx)
-    } catch (err: any) {
-      console.error('failed to apply model transaction, skipping', tx._id, tx._class, err?.message)
+  await ctx.with('build hierarchy', {}, async () => {
+    for (const tx of txes) {
+      try {
+        hierarchy.tx(tx)
+      } catch (err: any) {
+        console.error('failed to apply model transaction, skipping', tx._id, tx._class, err?.message)
+      }
     }
-  }
-  for (const tx of txes) {
-    try {
-      await model.tx(tx)
-    } catch (err: any) {
-      console.error('failed to apply model transaction, skipping', tx._id, tx._class, err?.message)
-    }
-  }
+  })
+  await ctx.with('build model', {}, async (ctx) => {
+    model.addTxes(ctx, txes, false)
+  })
 }
 
 function getLastTxTime (txes: Tx[]): number {
@@ -468,14 +515,15 @@ function pluginFilterTx (
   configs: Map<Ref<PluginConfiguration>, PluginConfiguration>,
   systemTx: Tx[]
 ): Tx[] {
+  const stx = toIdMap(systemTx)
+  const totalExcluded = new Set<Ref<Tx>>()
   for (const a of excludedPlugins) {
     for (const c of configs.values()) {
       if (a.pluginId === c.pluginId) {
-        const excluded = new Set<Ref<Tx>>()
         for (const id of c.transactions) {
           if (c.classFilter !== undefined) {
             const filter = new Set(c.classFilter)
-            const tx = systemTx.find((it) => it._id === id)
+            const tx = stx.get(id as Ref<Tx>)
             if (
               tx?._class === core.class.TxCreateDoc ||
               tx?._class === core.class.TxUpdateDoc ||
@@ -483,18 +531,17 @@ function pluginFilterTx (
             ) {
               const cud = tx as TxCUD<Doc>
               if (filter.has(cud.objectClass)) {
-                excluded.add(id as Ref<Tx>)
+                totalExcluded.add(id as Ref<Tx>)
               }
             }
           } else {
-            excluded.add(id as Ref<Tx>)
+            totalExcluded.add(id as Ref<Tx>)
           }
         }
-        const exclude = systemTx.filter((t) => excluded.has(t._id))
-        console.log('exclude plugin', c.pluginId, exclude.length)
-        systemTx = systemTx.filter((t) => !excluded.has(t._id))
+        console.log('exclude plugin', c.pluginId, c.transactions.length)
       }
     }
   }
+  systemTx = systemTx.filter((t) => !totalExcluded.has(t._id))
   return systemTx
 }

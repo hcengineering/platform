@@ -91,13 +91,12 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   }
 
   async cancel (): Promise<void> {
-    console.log(this.workspace.name, 'Cancel indexing', this.indexId)
     this.cancelling = true
     clearTimeout(this.skippedReiterationTimeout)
     this.triggerIndexing()
     await this.indexing
     await this.flush(true)
-    console.log(this.workspace.name, 'Indexing canceled', this.indexId)
+    await this.metrics.info('Cancel indexing', { workspace: this.workspace.name, indexId: this.indexId })
   }
 
   async markRemove (doc: DocIndexState): Promise<void> {
@@ -336,7 +335,10 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     try {
       this.hierarchy.getClass(core.class.DocIndexState)
     } catch (err: any) {
-      console.log(this.workspace.name, 'Models is not upgraded to support indexer', this.indexId)
+      await this.metrics.info('Models is not upgraded to support indexer', {
+        indexId: this.indexId,
+        workspace: this.workspace.name
+      })
       return
     }
     await this.metrics.with('init-states', {}, async () => {
@@ -367,12 +369,12 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       _classes.forEach((it) => this.broadcastClasses.add(it))
 
       if (this.triggerCounts > 0) {
-        console.log('No wait, trigger counts', this.triggerCounts)
+        await this.metrics.info('No wait, trigger counts', { triggerCount: this.triggerCounts })
       }
 
       if (this.toIndex.size === 0 && this.stageChanged === 0 && this.triggerCounts === 0) {
         if (this.toIndex.size === 0) {
-          console.log(this.workspace.name, 'Indexing complete', this.indexId)
+          await this.metrics.info('Indexing complete', { indexId: this.indexId, workspace: this.workspace.name })
         }
         if (!this.cancelling) {
           // We need to send index update event
@@ -398,7 +400,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         }
       }
     }
-    console.log(this.workspace.name, 'Exit indexer', this.indexId)
+    await this.metrics.info('Exit indexer', { indexId: this.indexId, workspace: this.workspace.name })
   }
 
   private async processIndex (ctx: MeasureContext): Promise<Ref<Class<Doc>>[]> {
@@ -470,13 +472,12 @@ export class FullTextIndexPipeline implements FullTextPipeline {
             }
 
             if (result.length > 0) {
-              console.log(
-                this.workspace.name,
-                `Full text: Indexing ${this.indexId} ${st.stageId}`,
-                Object.entries(this.currentStages)
-                  .map((it) => `${it[0]}:${it[1]}`)
-                  .join(' ')
-              )
+              await this.metrics.info('Full text: Indexing', {
+                indexId: this.indexId,
+                stageId: st.stageId,
+                workspace: this.workspace.name,
+                ...this.currentStages
+              })
             } else {
               // Nothing to index, check on next cycle.
               break
@@ -528,7 +529,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
               }
             }
           } catch (err: any) {
-            console.error(err)
+            await this.metrics.error('error during index', { error: err })
           }
         }
       })
