@@ -18,7 +18,7 @@ import { NotificationGroup, NotificationType } from '@hcengineering/notification
 import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
 import type { AnyComponent, Location, ResolvedLocation } from '@hcengineering/ui'
-import { Action, Viewlet } from '@hcengineering/view'
+import { Action } from '@hcengineering/view'
 import { Document, DocumentEmbedding, DocumentSnapshot, SavedDocument, Teamspace } from './types'
 
 /**
@@ -74,9 +74,6 @@ export const documentPlugin = plugin(documentId, {
     NoParent: '' as Ref<Document>,
     DocumentNotificationGroup: '' as Ref<NotificationGroup>,
     ContentNotification: '' as Ref<NotificationType>
-  },
-  viewlet: {
-    TableBranches: '' as Ref<Viewlet>
   },
   descriptor: {
     TeamspaceType: '' as Ref<SpaceTypeDescriptor>
