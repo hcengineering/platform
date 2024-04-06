@@ -63,7 +63,7 @@ export class FullTextIndex implements WithFind {
     readonly indexer: FullTextIndexPipeline,
     private readonly upgrade: boolean
   ) {
-    if (!upgrade) {
+    if (!this.upgrade) {
       // Schedule indexing after consistency check
       void this.indexer.startIndexing()
     }

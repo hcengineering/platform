@@ -42,12 +42,9 @@ import {
 import { type SessionContext } from '@hcengineering/server-core'
 import { ClientSession } from '../client'
 import { startHttpServer } from '../server_http'
-import { disableLogging } from '../types'
 import { genMinModel } from './minmodel'
 
 describe('server', () => {
-  disableLogging()
-
   async function getModelDb (): Promise<ModelDb> {
     const txes = genMinModel()
     const hierarchy = new Hierarchy()

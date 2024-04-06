@@ -18,6 +18,7 @@ import core, {
   AccountClient,
   ClientConnectEvent,
   LoadModelResponse,
+  MeasureContext,
   Tx,
   TxHandler,
   TxPersistenceStore,
@@ -37,6 +38,28 @@ import { connect } from './connection'
 
 export { connect }
 
+let dbRequest: IDBOpenDBRequest | undefined
+let dbPromise: Promise<IDBDatabase | undefined> = Promise.resolve(undefined)
+
+if (typeof localStorage !== 'undefined') {
+  const st = Date.now()
+  dbPromise = new Promise<IDBDatabase>((resolve) => {
+    dbRequest = indexedDB.open('model.db.persistence', 2)
+
+    dbRequest.onupgradeneeded = function () {
+      const db = (dbRequest as IDBOpenDBRequest).result
+      if (!db.objectStoreNames.contains('model')) {
+        db.createObjectStore('model', { keyPath: 'id' })
+      }
+    }
+    dbRequest.onsuccess = function () {
+      const db = (dbRequest as IDBOpenDBRequest).result
+      console.log('init DB complete', Date.now() - st)
+      resolve(db)
+    }
+  })
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => {
   return {
@@ -46,7 +69,8 @@ export default async () => {
         endpoint: string,
         onUpgrade?: () => void,
         onUnauthorized?: () => void,
-        onConnect?: (event: ClientConnectEvent) => void
+        onConnect?: (event: ClientConnectEvent) => void,
+        ctx?: MeasureContext
       ): Promise<AccountClient> => {
         const filterModel = getMetadata(clientPlugin.metadata.FilterModel) ?? false
 
@@ -75,7 +99,8 @@ export default async () => {
             return connect(url.href, upgradeHandler, onUpgrade, onUnauthorized, onConnect)
           },
           filterModel ? [...getPlugins(), ...(getMetadata(clientPlugin.metadata.ExtraPlugins) ?? [])] : undefined,
-          createModelPersistence(getWSFromToken(token))
+          createModelPersistence(getWSFromToken(token)),
+          ctx
         )
         // Check if we had dev hook for client.
         client = hookClient(client)
@@ -90,25 +115,6 @@ function createModelPersistence (workspace: string): TxPersistenceStore | undefi
     return overrideStore
   }
 
-  let dbRequest: IDBOpenDBRequest | undefined
-  let dbPromise: Promise<IDBDatabase | undefined> = Promise.resolve(undefined)
-
-  if (typeof localStorage !== 'undefined') {
-    dbPromise = new Promise<IDBDatabase>((resolve) => {
-      dbRequest = indexedDB.open('model.db.persistence', 2)
-
-      dbRequest.onupgradeneeded = function () {
-        const db = (dbRequest as IDBOpenDBRequest).result
-        if (!db.objectStoreNames.contains('model')) {
-          db.createObjectStore('model', { keyPath: 'id' })
-        }
-      }
-      dbRequest.onsuccess = function () {
-        const db = (dbRequest as IDBOpenDBRequest).result
-        resolve(db)
-      }
-    })
-  }
   return {
     load: async () => {
       const db = await dbPromise

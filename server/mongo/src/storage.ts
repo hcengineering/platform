@@ -1264,12 +1264,21 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
     return this.txColl
   }
 
-  async getModel (): Promise<Tx[]> {
-    const cursor = this.db
-      .collection(DOMAIN_TX)
-      .find<Tx>({ objectSpace: core.space.Model })
-      .sort({ _id: 1, modifiedOn: 1 })
-    const model = await toArray(cursor)
+  async getModel (ctx: MeasureContext): Promise<Tx[]> {
+    const modelProjection = {
+      '%hash%': 0,
+      objectSpace: 0,
+      createdBy: 0,
+      space: 0
+    }
+    const cursor = await ctx.with('find', {}, async () =>
+      this.db
+        .collection<Tx>(DOMAIN_TX)
+        .find({ objectSpace: core.space.Model })
+        .sort({ _id: 1, modifiedOn: 1 })
+        .project<Tx>(modelProjection)
+    )
+    const model = await ctx.with('to-array', {}, async () => await toArray<Tx>(cursor))
     // We need to put all core.account.System transactions first
     const systemTx: Tx[] = []
     const userTx: Tx[] = []
@@ -1284,7 +1293,6 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
           (tx as TxCUD<Doc>).objectClass === 'contact:class:EmployeeAccount')
       )
     }
-
     model.forEach((tx) => (tx.modifiedBy === core.account.System && !isPersonAccount(tx) ? systemTx : userTx).push(tx))
     return systemTx.concat(userTx)
   }
