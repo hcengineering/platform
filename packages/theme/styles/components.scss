@@ -1204,7 +1204,7 @@
   &::-webkit-scrollbar-track { margin: 0.25rem; }
   &::-webkit-scrollbar-thumb { background-color: var(--scrollbar-bar-color); }
 
-  &.mask-none { mask-image: linear-gradient(to right, rgba(0, 0, 0, 0) 1); }
+  &.mask-none { mask-image: none }
   &.mask-left { mask-image: linear-gradient(to right, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 1) 1rem); }
   &.mask-right { mask-image: linear-gradient(to left, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 1) 1rem); }
   &.mask-both {
