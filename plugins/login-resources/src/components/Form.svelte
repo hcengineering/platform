@@ -136,6 +136,7 @@
   style:min-height={$deviceInfo.docHeight > 720 ? '42rem' : '0'}
   on:keydown={(evt) => {
     if (evt.key === 'Enter' && !inAction) {
+      evt.preventDefault();
       validate($themeStore.language).then((res) => {
         if (res) {
           performAction(action)
