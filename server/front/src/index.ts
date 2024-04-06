@@ -292,7 +292,9 @@ export function start (
       const token = req.query.token as string
       const payload = decodeToken(token)
       const admin = payload.extra?.admin === 'true'
-      res.writeHead(200, { 'Content-Type': 'application/json' })
+      res.status(200)
+      res.setHeader('Content-Type', 'application/json')
+      res.setHeader('Cache-Control', cacheControlNoCache)
 
       const json = JSON.stringify({
         metrics: metricsAggregate((ctx as any).metrics),
@@ -301,7 +303,6 @@ export function start (
         },
         admin
       })
-      res.set('Cache-Control', 'private, no-cache')
       res.end(json)
     } catch (err) {
       console.error(err)

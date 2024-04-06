@@ -128,7 +128,7 @@ class Connection implements ClientConnection {
     }
   }
 
-  delay = 1
+  delay = 0
   pending: Promise<ClientSocket> | undefined
 
   private async waitOpenConnection (): Promise<ClientSocket> {
@@ -140,7 +140,7 @@ class Connection implements ClientConnection {
         }
         this.pending = this.openConnection()
         await this.pending
-        this.delay = 5
+        this.delay = 0
         return await this.pending
       } catch (err: any) {
         this.pending = undefined
@@ -154,7 +154,7 @@ class Connection implements ClientConnection {
           setTimeout(() => {
             console.log(`delay ${this.delay} second`)
             resolve(null)
-            if (this.delay !== 15) {
+            if (this.delay < 5) {
               this.delay++
             }
           }, this.delay * SECOND)

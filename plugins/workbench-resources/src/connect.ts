@@ -3,6 +3,8 @@ import client from '@hcengineering/client'
 import core, {
   ClientConnectEvent,
   getCurrentAccount,
+  MeasureMetricsContext,
+  metricsToString,
   setCurrentAccount,
   versionToString,
   type AccountClient,
@@ -41,6 +43,7 @@ export async function disconnect (): Promise<void> {
 }
 
 export async function connect (title: string): Promise<Client | undefined> {
+  const ctx = new MeasureMetricsContext('connect', {})
   const loc = getCurrentLocation()
   const ws = loc.path[1]
   if (ws === undefined) {
@@ -62,7 +65,7 @@ export async function connect (title: string): Promise<Client | undefined> {
   let token = tokens[ws]
   if (token === undefined && getMetadata(presentation.metadata.Token) !== undefined) {
     const selectWorkspace = await getResource(login.function.SelectWorkspace)
-    const loginInfo = (await selectWorkspace(ws))[1]
+    const loginInfo = await ctx.with('select-workspace', {}, async () => (await selectWorkspace(ws))[1])
     if (loginInfo !== undefined) {
       tokens[ws] = loginInfo.token
       token = loginInfo.token
@@ -88,8 +91,12 @@ export async function connect (title: string): Promise<Client | undefined> {
 
   if (_token !== token && _client !== undefined) {
     // We need to flush all data from memory
-    await purgeClient()
-    await _client.close()
+    await ctx.with('purge-client', {}, async () => {
+      await purgeClient()
+    })
+    await ctx.with('close previous client', {}, async () => {
+      await _client?.close()
+    })
     _client = undefined
     tokenChanged = true
   }
@@ -104,63 +111,79 @@ export async function connect (title: string): Promise<Client | undefined> {
     serverEndpoint = serverEndpoint.substring(0, serverEndpoint.length - 1)
   }
   const clientFactory = await getResource(client.function.GetClient)
-  _client = await clientFactory(
-    token,
-    endpoint,
-    () => {
-      location.reload()
-    },
-    () => {
-      clearMetadata(ws)
-      navigate({
-        path: [loginId],
-        query: {}
-      })
-    },
-    // We need to refresh all active live queries and clear old queries.
-    (event: ClientConnectEvent) => {
-      console.log('WorkbenchClient: onConnect', event)
-      try {
-        if ((_clientSet && event === ClientConnectEvent.Connected) || event === ClientConnectEvent.Refresh) {
-          void refreshClient(tokenChanged)
-          tokenChanged = false
-        }
-
-        if (event === ClientConnectEvent.Upgraded) {
-          window.location.reload()
-        }
-
-        void (async () => {
-          if (_client !== undefined) {
-            const newVersion = await _client.findOne<Version>(core.class.Version, {})
-            console.log('Reconnect Model version', newVersion)
-
-            const currentVersionStr = versionToString(version as Version)
-            const reconnectVersionStr = versionToString(newVersion as Version)
-
-            if (currentVersionStr !== reconnectVersionStr) {
-              // It seems upgrade happened
-              // location.reload()
-              versionError = `${currentVersionStr} != ${reconnectVersionStr}`
+  const newClient = await ctx.with(
+    'create-client',
+    {},
+    async (ctx) =>
+      await clientFactory(
+        token,
+        endpoint,
+        () => {
+          location.reload()
+        },
+        () => {
+          clearMetadata(ws)
+          navigate({
+            path: [loginId],
+            query: {}
+          })
+        },
+        // We need to refresh all active live queries and clear old queries.
+        (event: ClientConnectEvent) => {
+          console.log('WorkbenchClient: onConnect', event)
+          try {
+            if ((_clientSet && event === ClientConnectEvent.Connected) || event === ClientConnectEvent.Refresh) {
+              void ctx.with('refresh client', {}, async () => {
+                await refreshClient(tokenChanged)
+              })
+              tokenChanged = false
             }
-            const serverVersion: { version: string } = await (
-              await fetch(serverEndpoint + '/api/v1/version', {})
-            ).json()
 
-            console.log('Server version', serverVersion.version)
-            if (serverVersion.version !== '' && serverVersion.version !== currentVersionStr) {
-              versionError = `${currentVersionStr} => ${serverVersion.version}`
+            if (event === ClientConnectEvent.Upgraded) {
+              window.location.reload()
             }
+
+            void (async () => {
+              if (_client !== undefined) {
+                const newVersion = await ctx.with(
+                  'find-version',
+                  {},
+                  async () => await newClient.findOne<Version>(core.class.Version, {})
+                )
+                console.log('Reconnect Model version', newVersion)
+
+                const currentVersionStr = versionToString(version as Version)
+                const reconnectVersionStr = versionToString(newVersion as Version)
+
+                if (currentVersionStr !== reconnectVersionStr) {
+                  // It seems upgrade happened
+                  // location.reload()
+                  versionError = `${currentVersionStr} != ${reconnectVersionStr}`
+                }
+                const serverVersion: { version: string } = await ctx.with(
+                  'fetch-server-version',
+                  {},
+                  async () => await (await fetch(serverEndpoint + '/api/v1/version', {})).json()
+                )
+
+                console.log('Server version', serverVersion.version)
+                if (serverVersion.version !== '' && serverVersion.version !== currentVersionStr) {
+                  versionError = `${currentVersionStr} => ${serverVersion.version}`
+                }
+              }
+            })()
+          } catch (err) {
+            console.error(err)
           }
-        })()
-      } catch (err) {
-        console.error(err)
-      }
-    }
+        },
+        ctx
+      )
   )
+
+  _client = newClient
   console.log('logging in as', email)
 
-  const me = await _client?.getAccount()
+  const me = await ctx.with('get-account', {}, async () => await newClient.getAccount())
   if (me !== undefined) {
     Analytics.setUser(me.email)
     Analytics.setTag('workspace', ws)
@@ -176,11 +199,18 @@ export async function connect (title: string): Promise<Client | undefined> {
 
     // Update on connect, so it will be triggered
     _clientSet = true
-    await setClient(_client)
+    const client = _client
+    await ctx.with('set-client', {}, async () => {
+      await setClient(client)
+    })
     return
   }
   try {
-    version = await _client.findOne<Version>(core.class.Version, {})
+    version = await ctx.with(
+      'find-model-version',
+      {},
+      async () => await newClient.findOne<Version>(core.class.Version, {})
+    )
     console.log('Model version', version)
 
     const requiredVersion = getMetadata(presentation.metadata.RequiredVersion)
@@ -195,7 +225,11 @@ export async function connect (title: string): Promise<Client | undefined> {
     }
 
     try {
-      const serverVersion: { version: string } = await (await fetch(serverEndpoint + '/api/v1/version', {})).json()
+      const serverVersion: { version: string } = await ctx.with(
+        'find-server-version',
+        {},
+        async () => await (await fetch(serverEndpoint + '/api/v1/version', {})).json()
+      )
 
       console.log('Server version', serverVersion.version)
       if (
@@ -223,10 +257,14 @@ export async function connect (title: string): Promise<Client | undefined> {
   // Update window title
   document.title = [ws, title].filter((it) => it).join(' - ')
   _clientSet = true
-  await setClient(_client)
-  await broadcastEvent(plugin.event.NotifyConnection, getCurrentAccount())
-
-  return _client
+  await ctx.with('set-client', {}, async () => {
+    await setClient(newClient)
+  })
+  await ctx.with('broadcast-connected', {}, async () => {
+    await broadcastEvent(plugin.event.NotifyConnection, getCurrentAccount())
+  })
+  console.log(metricsToString(ctx.metrics, 'connect', 50))
+  return newClient
 }
 
 function clearMetadata (ws: string): void {

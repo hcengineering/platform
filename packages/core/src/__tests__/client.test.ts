@@ -25,6 +25,7 @@ import type { DocumentQuery, FindResult, TxResult, SearchQuery, SearchOptions, S
 import { Tx, TxFactory, TxProcessor } from '../tx'
 import { connect } from './connection'
 import { genMinModel } from './minmodel'
+import { clone } from '../clone'
 
 describe('client', () => {
   it('should create client and spaces', async () => {
@@ -118,7 +119,7 @@ describe('client', () => {
         loadDocs: async (domain: Domain, docs: Ref<Doc>[]) => [],
         upload: async (domain: Domain, docs: Doc[]) => {},
         clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
-        loadModel: async (last: Timestamp) => txes,
+        loadModel: async (last: Timestamp) => clone(txes),
         getAccount: async () => null as unknown as Account,
         measure: async () => {
           return async () => ({ time: 0, serverTime: 0 })
@@ -141,8 +142,8 @@ describe('client', () => {
 
     expect(result1).toHaveLength(1)
     expect(result1[0]._id).toStrictEqual(txCreateDoc1.objectId)
-    expect(spyCreate).toHaveBeenLastCalledWith(txCreateDoc1)
-    expect(spyUpdate).toBeCalledTimes(0)
+    expect(spyCreate).toHaveBeenLastCalledWith(txCreateDoc1, false)
+    expect(spyUpdate).toHaveBeenCalledTimes(0)
     await client1.close()
 
     const pluginData2 = {
@@ -159,8 +160,8 @@ describe('client', () => {
     expect(result2).toHaveLength(2)
     expect(result2[0]._id).toStrictEqual(txCreateDoc1.objectId)
     expect(result2[1]._id).toStrictEqual(txCreateDoc2.objectId)
-    expect(spyCreate).toHaveBeenLastCalledWith(txCreateDoc2)
-    expect(spyUpdate).toBeCalledTimes(0)
+    expect(spyCreate).toHaveBeenLastCalledWith(txCreateDoc2, false)
+    expect(spyUpdate).toHaveBeenCalledTimes(0)
     await client2.close()
 
     const pluginData3 = {
@@ -181,7 +182,7 @@ describe('client', () => {
 
     expect(result3).toHaveLength(1)
     expect(result3[0]._id).toStrictEqual(txCreateDoc2.objectId)
-    expect(spyCreate).toHaveBeenLastCalledWith(txCreateDoc2)
+    expect(spyCreate).toHaveBeenLastCalledWith(txCreateDoc2, false)
     expect(spyUpdate.mock.calls[1][1]).toStrictEqual(txUpdateDoc)
     expect(spyUpdate).toBeCalledTimes(2)
     await client3.close()

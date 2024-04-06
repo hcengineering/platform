@@ -55,8 +55,6 @@ class StorageBlobAdapter implements DbAdapter {
     return []
   }
 
-  async init (model: Tx[]): Promise<void> {}
-
   async createIndexes (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>): Promise<void> {}
   async removeOldIndex (domain: Domain, deletePattern: RegExp, keepPattern: RegExp): Promise<void> {}
 

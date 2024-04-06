@@ -17,7 +17,7 @@ let metricsContext: MeasureContext | undefined
 /**
  * @public
  */
-export function getMetricsContext (): MeasureContext {
+export function getMetricsContext (factory?: () => MeasureMetricsContext): MeasureContext {
   if (metricsContext !== undefined) {
     return metricsContext
   }
@@ -25,7 +25,11 @@ export function getMetricsContext (): MeasureContext {
     console.info('please provide apm server url for monitoring')
 
     const metrics = newMetrics()
-    metricsContext = new MeasureMetricsContext('System', {}, {}, metrics)
+    if (factory !== undefined) {
+      metricsContext = factory()
+    } else {
+      metricsContext = new MeasureMetricsContext('System', {}, {}, metrics)
+    }
 
     if (metricsFile !== undefined || metricsConsole) {
       console.info('storing measurements into local file', metricsFile)

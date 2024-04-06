@@ -75,7 +75,7 @@ import {
   notificationId,
   type MentionInboxNotification
 } from '@hcengineering/notification'
-import { type Asset, type IntlString } from '@hcengineering/platform'
+import { getEmbeddedLabel, type Asset, type IntlString } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 
@@ -178,12 +178,15 @@ export class TNotificationContextPresenter extends TClass implements Notificatio
 
 @Model(notification.class.DocUpdates, core.class.Doc, DOMAIN_NOTIFICATION)
 export class TDocUpdates extends TDoc implements DocUpdates {
+  @Prop(TypeRef(core.class.Account), core.string.Account)
   @Index(IndexKind.Indexed)
     user!: Ref<Account>
 
+  @Prop(TypeRef(core.class.Account), core.string.AttachedTo)
   @Index(IndexKind.Indexed)
     attachedTo!: Ref<Doc>
 
+  @Prop(TypeRef(core.class.Account), getEmbeddedLabel('Hidden'))
   @Index(IndexKind.Indexed)
     hidden!: boolean
 
