@@ -48,6 +48,7 @@ import { type BroadcastCall, type Session, type SessionRequest, type StatisticsE
  * @public
  */
 export class ClientSession implements Session {
+  createTime = Date.now()
   requests = new Map<string, SessionRequest>()
   binaryResponseMode: boolean = false
   useCompression: boolean = true
@@ -81,7 +82,7 @@ export class ClientSession implements Session {
   }
 
   async loadModel (ctx: MeasureContext, lastModelTx: Timestamp, hash?: string): Promise<Tx[] | LoadModelResponse> {
-    return await this._pipeline.storage.loadModel(lastModelTx, hash)
+    return await ctx.with('load-model', {}, async () => await this._pipeline.storage.loadModel(lastModelTx, hash))
   }
 
   async getAccount (ctx: MeasureContext): Promise<Account> {

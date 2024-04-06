@@ -50,11 +50,6 @@ export interface RawDBAdapter {
  * @public
  */
 export interface DbAdapter {
-  /**
-   * Method called after hierarchy is ready to use.
-   */
-  init: (model: Tx[]) => Promise<void>
-
   createIndexes: (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>) => Promise<void>
   removeOldIndex: (domain: Domain, deletePattern: RegExp, keepPattern: RegExp) => Promise<void>
 
@@ -83,7 +78,7 @@ export interface DbAdapter {
  * @public
  */
 export interface TxAdapter extends DbAdapter {
-  getModel: () => Promise<Tx[]>
+  getModel: (ctx: MeasureContext) => Promise<Tx[]>
 }
 
 /**

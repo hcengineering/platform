@@ -268,7 +268,7 @@ async function fetchModelFromMongo (
 
   const txAdapter = await createMongoTxAdapter(ctx, hierarchy, mongodbUri, workspaceId, modelDb)
 
-  const model = await ctx.with('get-model', {}, async () => await txAdapter.getModel())
+  const model = await ctx.with('get-model', {}, async (ctx) => await txAdapter.getModel(ctx))
 
   await ctx.with('build local model', {}, async () => {
     for (const tx of model) {

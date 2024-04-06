@@ -51,15 +51,15 @@ import {
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import calendar from '@hcengineering/model-calendar'
+import chunter from '@hcengineering/model-chunter'
 import contact, { TEmployee, TPersonAccount } from '@hcengineering/model-contact'
 import core, { TAttachedDoc, TDoc, TSpace, TType } from '@hcengineering/model-core'
 import view, { classPresenter, createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import { type Asset, type IntlString } from '@hcengineering/platform'
-import hr from './plugin'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
-import chunter from '@hcengineering/model-chunter'
+import hr from './plugin'
 
 export { hrId } from '@hcengineering/hr'
 export { hrOperation } from './migration'
@@ -147,6 +147,7 @@ export class TRequest extends TAttachedDoc implements Request {
   @Index(IndexKind.Indexed)
   declare attachedTo: Ref<Staff>
 
+  @Prop(TypeRef(core.class.Class), core.string.Class)
   @Index(IndexKind.Indexed)
   declare attachedToClass: Ref<Class<Staff>>
 
