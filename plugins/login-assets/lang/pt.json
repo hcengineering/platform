@@ -3,7 +3,11 @@
     "RequiredField": "Campo obrigatório {field}",
     "FieldsDoNotMatch": "{field} não coincidem com {field2}",
     "ConnectingToServer": "A ligar ao servidor....",
-    "IncorrectValue": "Valor incorreto {field}"
+    "IncorrectValue": "Valor incorreto {field}",
+    "PasswordLength": "A senha deve ter pelo menos 8 caracteres",
+    "PasswordNumber": "A senha deve conter pelo menos um número",
+    "PasswordLowercase": "A senha deve conter pelo menos uma letra minúscula",
+    "PasswordUppercase": "A senha deve conter pelo menos uma letra maiúscula"
   },
   "string": {
     "LogIn": "Iniciar Sessão",
