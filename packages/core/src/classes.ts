@@ -496,6 +496,7 @@ export interface BlobData extends Doc {
   name: string
   size: number
   type: string
+  provider?: string // If node defined, will be default one
   base64Data: string // base64 encoded data
 }
 

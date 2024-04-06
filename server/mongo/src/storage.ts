@@ -20,8 +20,6 @@ import core, {
   TxProcessor,
   cutObjectArray,
   escapeLikeForRegexp,
-  generateId,
-  getTypeOf,
   isOperator,
   toFindResult,
   type AttachedDoc,
@@ -59,7 +57,9 @@ import core, {
   type WithLookup,
   type WorkspaceId
 } from '@hcengineering/core'
-import type { DbAdapter, TxAdapter } from '@hcengineering/server-core'
+import { estimateDocSize, updateHashForDoc, type DbAdapter, type TxAdapter } from '@hcengineering/server-core'
+import { calculateObjectSize } from 'bson'
+import { createHash } from 'crypto'
 import {
   type AbstractCursor,
   type AnyBulkWriteOperation,
@@ -104,61 +104,6 @@ export async function toArray<T> (cursor: AbstractCursor<T>): Promise<T[]> {
   const data = await cursor.toArray()
   await cursor.close()
   return data
-}
-
-/**
- * Return some estimation for object size
- */
-function calcSize (obj: any): number {
-  if (typeof obj === 'undefined') {
-    return 0
-  }
-  if (typeof obj === 'function') {
-    return 0
-  }
-  let result = 0
-  for (const key in obj) {
-    // include prototype properties
-    const value = obj[key]
-    const type = getTypeOf(value)
-    result += key.length
-
-    switch (type) {
-      case 'Array':
-        result += 4 + calcSize(value)
-        break
-      case 'Object':
-        result += calcSize(value)
-        break
-      case 'Date':
-        result += 24 // Some value
-        break
-      case 'string':
-        result += (value as string).length
-        break
-      case 'number':
-        result += 8
-        break
-      case 'boolean':
-        result += 1
-        break
-      case 'symbol':
-        result += (value as symbol).toString().length
-        break
-      case 'bigint':
-        result += (value as bigint).toString().length
-        break
-      case 'undefined':
-        result += 1
-        break
-      case 'null':
-        result += 1
-        break
-      default:
-        result += value.toString().length
-    }
-  }
-  return result
 }
 
 abstract class MongoAdapterBase implements DbAdapter {
@@ -749,23 +694,36 @@ abstract class MongoAdapterBase implements DbAdapter {
     return docs
   }
 
-  find (domain: Domain): StorageIterator {
+  find (_ctx: MeasureContext, domain: Domain): StorageIterator {
+    const ctx = _ctx.newChild('find', { domain })
     const coll = this.db.collection<Doc>(domain)
-    const iterator = coll.find({}, {})
-
-    const hashID = generateId() // We just need a different value
+    let mode: 'hashed' | 'non-hashed' = 'hashed'
+    let iterator = coll.find(
+      { '%hash%': { $nin: ['', null] } },
+      {
+        projection: {
+          '%hash%': 1,
+          _id: 1
+        }
+      }
+    )
 
     const bulkUpdate = new Map<Ref<Doc>, string>()
     const flush = async (flush = false): Promise<void> => {
       if (bulkUpdate.size > 1000 || flush) {
         if (bulkUpdate.size > 0) {
-          await coll.bulkWrite(
-            Array.from(bulkUpdate.entries()).map((it) => ({
-              updateOne: {
-                filter: { _id: it[0] },
-                update: { $set: { '%hash%': it[1] } }
-              }
-            }))
+          await ctx.with(
+            'bulk-write',
+            {},
+            async () =>
+              await coll.bulkWrite(
+                Array.from(bulkUpdate.entries()).map((it) => ({
+                  updateOne: {
+                    filter: { _id: it[0] },
+                    update: { $set: { '%hash%': it[1] } }
+                  }
+                }))
+              )
           )
         }
         bulkUpdate.clear()
@@ -774,8 +732,13 @@ abstract class MongoAdapterBase implements DbAdapter {
 
     return {
       next: async () => {
-        const d = await iterator.next()
-        if (d === null) {
+        let d = await ctx.with('next', { mode }, async () => await iterator.next())
+        if (d == null && mode === 'hashed') {
+          mode = 'non-hashed'
+          iterator = coll.find({ '%hash%': { $in: ['', null] } })
+          d = await ctx.with('next', { mode }, async () => await iterator.next())
+        }
+        if (d == null) {
           return undefined
         }
         let digest: string | null = (d as any)['%hash%']
@@ -783,13 +746,22 @@ abstract class MongoAdapterBase implements DbAdapter {
           delete d['%hash%']
         }
         const pos = (digest ?? '').indexOf('|')
-        if (digest == null || digest === '' || pos === -1) {
-          const size = calcSize(d)
-          digest = hashID // we just need some random value
+        if (digest == null || digest === '') {
+          const cs = ctx.newChild('calc-size', {})
+          const size = estimateDocSize(d)
+          cs.end()
+
+          const hashDoc = ctx.newChild('hash-doc', {})
+          const hash = createHash('sha256')
+          updateHashForDoc(hash, d)
+          digest = hash.digest('base64')
+          hashDoc.end()
 
           bulkUpdate.set(d._id, `${digest}|${size.toString(16)}`)
 
-          await flush()
+          await ctx.with('flush', {}, async () => {
+            await flush()
+          })
           return {
             id: d._id,
             hash: digest,
@@ -804,70 +776,85 @@ abstract class MongoAdapterBase implements DbAdapter {
         }
       },
       close: async () => {
-        await flush(true)
-        await iterator.close()
+        await ctx.with('flush', {}, async () => {
+          await flush(true)
+        })
+        await ctx.with('close', {}, async () => {
+          await iterator.close()
+        })
+        ctx.end()
       }
     }
   }
 
-  async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
-    if (docs.length === 0) {
-      return []
-    }
-    const cursor = this.db.collection<Doc>(domain).find<Doc>({ _id: { $in: docs } }, { limit: docs.length })
-    const result = await toArray(cursor)
-    return this.stripHash(this.stripHash(result))
+  async load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+    return await ctx.with('load', { domain }, async () => {
+      if (docs.length === 0) {
+        return []
+      }
+      const cursor = this.db.collection<Doc>(domain).find<Doc>({ _id: { $in: docs } }, { limit: docs.length })
+      const result = await toArray(cursor)
+      return this.stripHash(result)
+    })
   }
 
-  async upload (domain: Domain, docs: Doc[]): Promise<void> {
-    const coll = this.db.collection(domain)
+  async upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
+    await ctx.with('upload', { domain }, async () => {
+      const coll = this.db.collection(domain)
 
-    await uploadDocuments(docs, coll)
+      await uploadDocuments(ctx, docs, coll)
+    })
   }
 
-  async update (domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {
-    const coll = this.db.collection(domain)
+  async update (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {
+    await ctx.with('update', { domain }, async () => {
+      const coll = this.db.collection(domain)
 
-    // remove old and insert new ones
-    const ops = Array.from(operations.entries())
-    let skip = 500
-    while (ops.length > 0) {
-      const part = ops.splice(0, skip)
-      try {
-        await coll.bulkWrite(
-          part.map((it) => {
-            const { $unset, ...set } = it[1] as any
-            if ($unset !== undefined) {
-              for (const k of Object.keys(set)) {
-                if ($unset[k] === '') {
-                  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-                  delete $unset[k]
+      // remove old and insert new ones
+      const ops = Array.from(operations.entries())
+      let skip = 500
+      while (ops.length > 0) {
+        const part = ops.splice(0, skip)
+        try {
+          await ctx.with('bulk-write', {}, async () => {
+            await coll.bulkWrite(
+              part.map((it) => {
+                const { $unset, ...set } = it[1] as any
+                if ($unset !== undefined) {
+                  for (const k of Object.keys(set)) {
+                    if ($unset[k] === '') {
+                      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+                      delete $unset[k]
+                    }
+                  }
                 }
-              }
-            }
-            return {
-              updateOne: {
-                filter: { _id: it[0] },
-                update: {
-                  $set: { ...set, '%hash%': null },
-                  ...($unset !== undefined ? { $unset } : {})
+                return {
+                  updateOne: {
+                    filter: { _id: it[0] },
+                    update: {
+                      $set: { ...set, '%hash%': null },
+                      ...($unset !== undefined ? { $unset } : {})
+                    }
+                  }
                 }
-              }
-            }
+              })
+            )
           })
-        )
-      } catch (err: any) {
-        if (skip !== 1) {
-          ops.push(...part)
-          skip = 1 // Let's update one by one, to loose only one failed variant.
+        } catch (err: any) {
+          await ctx.error('failed on bulk write', { error: err, skip })
+          if (skip !== 1) {
+            ops.push(...part)
+            skip = 1 // Let's update one by one, to loose only one failed variant.
+          }
         }
-        console.error(err)
       }
-    }
+    })
   }
 
-  async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {
-    await this.db.collection<Doc>(domain).deleteMany({ _id: { $in: docs } })
+  async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
+    await ctx.with('clean', {}, async () => {
+      await this.db.collection<Doc>(domain).deleteMany({ _id: { $in: docs } })
+    })
   }
 }
 
@@ -1298,7 +1285,7 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
   }
 }
 
-export async function uploadDocuments (docs: Doc[], coll: Collection<Document>): Promise<void> {
+export async function uploadDocuments (ctx: MeasureContext, docs: Doc[], coll: Collection<Document>): Promise<void> {
   const ops = Array.from(docs)
 
   while (ops.length > 0) {
@@ -1309,7 +1296,9 @@ export async function uploadDocuments (docs: Doc[], coll: Collection<Document>):
         if ('%hash%' in it) {
           delete it['%hash%']
         }
-        const size = calcSize(it)
+        const cs = ctx.newChild('calc-size', {})
+        const size = calculateObjectSize(it)
+        cs.end()
 
         return {
           replaceOne: {

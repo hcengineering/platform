@@ -21,24 +21,24 @@ import {
   IndexingConfiguration,
   MeasureContext,
   Ref,
+  SearchOptions,
+  SearchQuery,
   toWorkspaceString,
   TxResult,
-  WorkspaceId,
-  SearchQuery,
-  SearchOptions
+  WorkspaceId
 } from '@hcengineering/core'
 import type {
   EmbeddingSearchOption,
   FullTextAdapter,
-  SearchStringResult,
+  IndexedDoc,
   SearchScoring,
-  IndexedDoc
+  SearchStringResult
 } from '@hcengineering/server-core'
 import serverCore from '@hcengineering/server-core'
 
 import { Client, errors as esErr } from '@elastic/elasticsearch'
-import { Domain } from 'node:domain'
 import { getMetadata } from '@hcengineering/platform'
+import { Domain } from 'node:domain'
 
 const DEFAULT_LIMIT = 200
 const indexName = getMetadata(serverCore.metadata.ElasticIndexName) ?? 'storage_index'
@@ -104,26 +104,22 @@ class ElasticAdapter implements FullTextAdapter {
       if (field !== undefined) {
         console.log('Mapping', mappings.body)
       }
-      let wsMappings = mappings.body.storage_index
-      if (Object.keys(wsMappings?.mappings?.properties ?? {}).some((k) => k.includes('->'))) {
-        await this.client.indices.delete({
-          index: indexName
-        })
-        const createIndex = await this.client.indices.create({
-          index: indexName
-        })
-        console.log('recreate index', createIndex)
-        const mappings = await this.client.indices.getMapping({
-          index: indexName
-        })
-        wsMappings = mappings.body.storage_index
-      }
+      const wsMappings = mappings.body[indexName]
 
       // Collect old values.
       for (const [k, v] of Object.entries(wsMappings?.mappings?.properties ?? {})) {
         const va = v as any
         if (va?.type === 'dense_vector') {
           result[k] = va?.dims as number
+        }
+        if (k === 'workspaceId') {
+          if (va?.type !== 'keyword') {
+            await this.metrics().info('Force index-recreate, since wrong index type was used')
+            await this.client.indices.delete({
+              index: indexName
+            })
+            return await this.initMapping(field)
+          }
         }
       }
       await this.client.indices.putMapping({
@@ -133,6 +129,10 @@ class ElasticAdapter implements FullTextAdapter {
             fulltextSummary: {
               type: 'text',
               analyzer: 'rebuilt_english'
+            },
+            workspaceId: {
+              type: 'keyword',
+              index: true
             }
           }
         }
