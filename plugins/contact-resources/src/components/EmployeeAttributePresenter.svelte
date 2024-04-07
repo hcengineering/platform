@@ -35,7 +35,7 @@
   <AssigneeBox
     label={contact.string.Employee}
     {value}
-    size={'medium'}
+    size={'large'}
     kind={'link'}
     showNavigate={false}
     justify={'left'}
