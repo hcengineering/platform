@@ -66,7 +66,7 @@
 
   $: $themeStore.language && validate($themeStore.language)
 
-  async function validate (language: string): Promise<boolean> {
+  async function validate(language: string): Promise<boolean> {
     if (ignoreInitialValidation) return true
     for (const field of fields) {
       const v = object[field.name]
@@ -106,7 +106,7 @@
 
   let inAction = false
 
-  function performAction (action: Action): void {
+  function performAction(action: Action): void {
     for (const field of fields) {
       trim(field.name)
     }
@@ -117,7 +117,7 @@
   }
   onMount(() => (ignoreInitialValidation = false))
 
-  function trim (field: string): void {
+  function trim(field: string): void {
     object[field] = (object[field] as string).trim()
   }
 
@@ -175,9 +175,6 @@
     {/if}
     <div class="title"><Label label={caption} /></div>
   {/if}
-  <div class="status">
-    <StatusControl {status} />
-  </div>
   <div class="form">
     {#each fields as field (field.name)}
       <div class={field.short && !($deviceInfo.docWidth <= 600) ? 'form-col' : 'form-row'}>
@@ -193,6 +190,10 @@
         />
       </div>
     {/each}
+
+    <div class="status">
+      <StatusControl {status} />
+    </div>
 
     <div class="form-row send">
       <Button
@@ -275,9 +276,9 @@
       }
     }
     .status {
-      min-height: 7.5rem;
-      max-height: 7.5rem;
-      padding-top: 1.25rem;
+      padding-top: 1rem;
+      grid-column-start: 1;
+      grid-column-end: 3;
     }
 
     .form {
@@ -285,6 +286,7 @@
       grid-template-columns: 1fr 1fr;
       column-gap: 0.75rem;
       row-gap: 1.5rem;
+      margin-top: 1.5rem;
 
       .form-row {
         grid-column-start: 1;
@@ -298,7 +300,7 @@
       }
 
       .send {
-        margin-top: 2.25rem;
+        margin-top: 0rem;
       }
     }
     .grow-separator {
