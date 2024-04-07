@@ -23,6 +23,7 @@
   import SaveMessageAction from './SaveMessageAction.svelte'
   import ActivityMessageExtensionComponent from './activity-message/ActivityMessageExtension.svelte'
   import AddReactionAction from './reactions/AddReactionAction.svelte'
+  import CopyLinkMessageAction from './CopyLinkMessageAction.svelte'
 
   export let message: ActivityMessage | undefined
   export let extensions: ActivityMessageExtension[] = []
@@ -64,6 +65,7 @@
     <ActivityMessageExtensionComponent kind="action" {extensions} props={{ object: message }} on:close on:open />
     <PinMessageAction object={message} />
     <SaveMessageAction object={message} />
+    <CopyLinkMessageAction object={message} />
 
     {#if withActionMenu}
       <ActivityMessageAction size="small" icon={IconMoreV} opened={isActionMenuOpened} action={showMenu} />
