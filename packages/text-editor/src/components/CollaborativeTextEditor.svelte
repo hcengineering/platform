@@ -53,6 +53,7 @@
   import { InlinePopupExtension } from './extension/inlinePopup'
   import { InlineStyleToolbarExtension } from './extension/inlineStyleToolbar'
   import { completionConfig } from './extensions'
+  import CollaborationUsers from './CollaborationUsers.svelte'
 
   export let documentId: DocumentId
   export let field: string | undefined = undefined
@@ -330,6 +331,8 @@
   class:h-full={full}
   on:click|preventDefault|stopPropagation={() => (needFocus = true)}
 >
+  <CollaborationUsers provider={remoteProvider} {editor} />
+
   {#if loading}
     <div class="flex p-3">
       <Loading />
