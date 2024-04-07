@@ -22,7 +22,7 @@ export * from './types'
 export { deleteSupportConversation, updateSupportConversation } from './utils'
 
 export const supportLink = 'https://join.slack.com/t/hulycommunity/shared_invite/zt-2cyrevz8g-AGqEDZNsujbn4wHOWd7myg'
-export const findBugLink = 'https://github.com/hcengineering/platform/issues/new'
+export const reportBugLink = 'https://github.com/hcengineering/platform/issues/new'
 
 /**
  * @public
@@ -42,6 +42,6 @@ export default plugin(supportId, {
   },
   string: {
     ContactUs: '' as IntlString,
-    FindBug: '' as IntlString
+    ReportBug: '' as IntlString
   }
 })

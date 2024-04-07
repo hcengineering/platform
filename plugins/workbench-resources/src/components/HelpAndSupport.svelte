@@ -15,8 +15,7 @@
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
-  import support, { supportLink, findBugLink } from '@hcengineering/support'
-  import { getSupportClient } from '@hcengineering/support-resources'
+  import support, { supportLink, reportBugLink } from '@hcengineering/support'
   import {
     Button,
     capitalizeFirstLetter,
@@ -172,7 +171,7 @@
                       {#if jj !== 0}
                         <div class="ml-1 mr-1 lower"><Label label={view.string.Then} /></div>
                       {/if}
-                      {#each k as kk, j}
+                      {#each k as kk}
                         <div class="flex-center text-sm key-box">
                           {capitalizeFirstLetter(kk.trim())}
                         </div>
@@ -188,11 +187,11 @@
     </Scroller>
   {/if}
   <div class="footer">
-    <a href={findBugLink} target="_blank">
+    <a href={reportBugLink} target="_blank">
       <Button
-        id="find-a-bug"
+        id="report-a-bug"
         kind={'primary'}
-        label={support.string.FindBug}
+        label={support.string.ReportBug}
         stopPropagation={false}
       />
     </a>
