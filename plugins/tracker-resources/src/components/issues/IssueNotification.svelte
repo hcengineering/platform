@@ -17,7 +17,7 @@
 
   let issue: Issue | undefined = undefined
   let status: IssueStatus | undefined = undefined
-  let copiedSuccessfully : boolean = false
+  let showCopiedTooltip: boolean = false
 
   const { subTitle, params } = notification
 
@@ -48,21 +48,18 @@
   }
 
   function handleCopyUrl (): void {
-    copiedSuccessfully=true
-
-  
-    
     if (issue !== undefined) {
-      void copyTextToClipboard(params?.issueUrl)
+      
+      copyTextToClipboard(params?.issueUrl)
       .then(() => {
-        copiedSuccessfully=true
+        showCopiedTooltip = true;
+        setTimeout(() => {
+          showCopiedTooltip = false;
+        }, 30000); // 3 seconds
       })
       .catch((error) => {
           console.error('Failed to copy URL to clipboard:', error);
-          copiedSuccessfully = false;
-        });
-       
-   
+      });
     }
   }
 </script>
@@ -85,13 +82,26 @@
     </div>
   </svelte:fragment>
 
-  <svelte:fragment slot="buttons">
+  <svelte:fragment slot="buttons"  >
     <Button label={tracker.string.ViewIssue} on:click={handleIssueOpened} />
     <Button icon={view.icon.CopyLink} label={tracker.string.CopyIssueUrl} on:click={handleCopyUrl} />
 
-    {#if copiedSuccessfully}
-    <div class="alert alert-success">Copied to clipboard successfully!</div>
-  {/if}
-   
+    {#if showCopiedTooltip}
+      <div class="tooltip">Copied URL!</div>
+    {/if}
   </svelte:fragment>
 </NotificationToast>
+
+<style>
+  .tooltip {
+    position: absolute;
+    background-color: #555;
+    color: #fff;
+    padding: 5px;
+    border-radius: 5px;
+    left:70%;
+    top:45%;
+    transform: translateX(-50%);
+    font-size: 10px;
+  }
+</style>
