@@ -4,6 +4,7 @@
   "compilerOptions": {
     "rootDir": "./tests",
     "outDir": "./lib",
-    "lib": ["esnext", "dom"]
+    "declarationDir": "./types",
+    "lib": ["esnext", "dom"],
   }
 }

@@ -16,6 +16,7 @@
 import core, {
   BlobData,
   Class,
+  cutObjectArray,
   Doc,
   DocumentQuery,
   DocumentUpdate,
@@ -90,7 +91,8 @@ class StorageBlobAdapter implements DbAdapter {
     for (const item of docs) {
       const stat = await this.client.stat(this.ctx, this.workspaceId, item)
       if (stat === undefined) {
-        throw new Error(`Could not find blob ${item}`)
+        await ctx.error('Could not find blob', { domain, item, allDocs: cutObjectArray(docs) })
+        continue
       }
       const chunks: Buffer[] = await this.client.read(this.ctx, this.workspaceId, item)
       const final = Buffer.concat(chunks)
