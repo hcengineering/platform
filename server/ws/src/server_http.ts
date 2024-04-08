@@ -211,7 +211,7 @@ export function startHttpServer (
     )
     if ('upgrade' in session || 'error' in session) {
       if ('error' in session) {
-        void ctx.error('error', { error: session.error })
+        void ctx.error('error', { error: session.error?.message, stack: session.error?.stack })
       }
       cs.close()
       return

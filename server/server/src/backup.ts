@@ -1,9 +1,9 @@
-import { Doc, DocChunk, Domain, MeasureContext, Ref, StorageIterator } from '@hcengineering/core'
-import { Pipeline } from '@hcengineering/server-core'
+import { Doc, DocChunk, DocInfo, Domain, MeasureContext, Ref, StorageIterator } from '@hcengineering/core'
+import { estimateDocSize, Pipeline } from '@hcengineering/server-core'
 import { Token } from '@hcengineering/server-token'
 import { BroadcastCall, ClientSession, Session } from '@hcengineering/server-ws'
 
-const chunkSize = 1024 * 1024
+const chunkSize = 2 * 1024 * 1024
 
 /**
  * @public
@@ -48,7 +48,7 @@ export class BackupClientSession extends ClientSession implements BackupSession 
         if (chunk.finished === undefined) {
           return {
             idx,
-            docs: {},
+            docs: [],
             finished: true
           }
         }
@@ -57,7 +57,7 @@ export class BackupClientSession extends ClientSession implements BackupSession 
         this.chunkInfo.set(idx, chunk)
       }
       let size = 0
-      const docs: Record<string, string> = {}
+      const docs: DocInfo[] = []
 
       while (size < chunkSize) {
         const doc = await chunk.iterator.next(ctx)
@@ -66,8 +66,8 @@ export class BackupClientSession extends ClientSession implements BackupSession 
           break
         }
 
-        size = size + doc.size
-        docs[doc.id] = doc.hash
+        size += estimateDocSize(doc)
+        docs.push(doc)
       }
 
       return {
