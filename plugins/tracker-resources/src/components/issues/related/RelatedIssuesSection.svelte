@@ -16,7 +16,7 @@
 {#if $configurationStore.has(trackerId)}
   <QueryIssuesList {object} {query} createParams={{ relatedTo: object }} hasSubIssues>
     <svelte:fragment slot="header">
-      <div class="flex-row-center mb-3">
+      <div class="flex-row-center">
         <div class="antiSection-header__icon">
           <Icon icon={tracker.icon.Issue} size={'small'} />
         </div>
