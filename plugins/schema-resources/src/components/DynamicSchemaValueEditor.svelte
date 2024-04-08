@@ -16,7 +16,6 @@
 -->
 
 <script lang="ts">
-
   import { getClient } from '@hcengineering/presentation'
   import type { SchemaTypeId } from '@hcengineering/schema'
   import { Component } from '@hcengineering/ui'

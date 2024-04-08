@@ -22,4 +22,4 @@ export { default as DynamicSchemaValueEditor } from './components/DynamicSchemaV
 export { default as SchemaEditor } from './components/SchemaEditor.svelte'
 export { default as SchemaValueEditor } from './components/SchemaValueEditor.svelte'
 
-export default async (): Promise<Resources> => ({ })
+export default async (): Promise<Resources> => ({})

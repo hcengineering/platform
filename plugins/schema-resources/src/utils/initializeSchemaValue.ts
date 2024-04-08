@@ -18,10 +18,7 @@ import type { Schema } from '@hcengineering/schema'
 import { getResource } from '@hcengineering/platform'
 import { getSchemaMixin } from './getSchemaMixin'
 
-export async function initializeSchemaValue<S extends Schema, V> (
-  hierarchy: Hierarchy,
-  schema: S
-): Promise<V> {
+export async function initializeSchemaValue<S extends Schema, V> (hierarchy: Hierarchy, schema: S): Promise<V> {
   const mixin = getSchemaMixin(hierarchy, schema._class)
   const initializer = await getResource(mixin.valueInitializer)
   return await initializer(hierarchy, schema)

@@ -13,16 +13,15 @@
 // limitations under the License.
 //
 
-import type { Class, Hierarchy, Type } from '@hcengineering/core'
+import type { Class, Hierarchy } from '@hcengineering/core'
 import { type Schema, type SchemaTypeId } from '@hcengineering/schema'
 import schema from '../plugin'
 
-export function getSchemaTypes (
-  hierarchy: Hierarchy,
-  allowedTypes: SchemaTypeId[]
-): Array<Class<Schema>> {
-  return allowedTypes
-    .map((classRef) => hierarchy.getClass(classRef))
-    // TODO: Support inheritance?
-    .filter((_class) => hierarchy.hasMixin(_class, schema.mixin.SchemaMixin))
+export function getSchemaTypes (hierarchy: Hierarchy, allowedTypes: SchemaTypeId[]): Array<Class<Schema>> {
+  return (
+    allowedTypes
+      .map((classRef) => hierarchy.getClass(classRef))
+      // TODO: Support inheritance?
+      .filter((_class) => hierarchy.hasMixin(_class, schema.mixin.SchemaMixin))
+  )
 }
