@@ -52,10 +52,11 @@ describe('Elastic Data Adapter', () => {
     })
 
     it('should get properly closed', async () => {
+      const ctx = new MeasureMetricsContext('test', {})
       for (let i = 0; i <= 3; i++) {
-        const cursor = adapter.find(domain)
-        await cursor.next()
-        await cursor.close()
+        const cursor = adapter.find(ctx, domain)
+        await cursor.next(ctx)
+        await cursor.close(ctx)
       }
     })
   })

@@ -144,19 +144,19 @@ class PipelineImpl implements Pipeline {
     await this.storage.close()
   }
 
-  find (domain: Domain): StorageIterator {
-    return this.storage.find(domain)
+  find (ctx: MeasureContext, domain: Domain): StorageIterator {
+    return this.storage.find(ctx, domain)
   }
 
-  async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
-    return await this.storage.load(domain, docs)
+  async load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+    return await this.storage.load(ctx, domain, docs)
   }
 
-  async upload (domain: Domain, docs: Doc[]): Promise<void> {
-    await this.storage.upload(domain, docs)
+  async upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
+    await this.storage.upload(ctx, domain, docs)
   }
 
-  async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {
-    await this.storage.clean(domain, docs)
+  async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
+    await this.storage.clean(ctx, domain, docs)
   }
 }

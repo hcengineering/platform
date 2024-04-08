@@ -169,7 +169,7 @@ export class TServerStorage implements ServerStorage {
           const toDeleteDocs = await ctx.with(
             'adapter-load',
             { domain: lastDomain },
-            async () => await adapter.load(lastDomain as Domain, toDelete)
+            async () => await adapter.load(ctx, lastDomain as Domain, toDelete)
           )
 
           for (const ddoc of toDeleteDocs) {
@@ -807,20 +807,20 @@ export class TServerStorage implements ServerStorage {
     })
   }
 
-  find (domain: Domain): StorageIterator {
-    return this.getAdapter(domain).find(domain)
+  find (ctx: MeasureContext, domain: Domain): StorageIterator {
+    return this.getAdapter(domain).find(ctx, domain)
   }
 
-  async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
-    return await this.getAdapter(domain).load(domain, docs)
+  async load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+    return await this.getAdapter(domain).load(ctx, domain, docs)
   }
 
-  async upload (domain: Domain, docs: Doc[]): Promise<void> {
-    await this.getAdapter(domain).upload(domain, docs)
+  async upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
+    await this.getAdapter(domain).upload(ctx, domain, docs)
   }
 
-  async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {
-    await this.getAdapter(domain).clean(domain, docs)
+  async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
+    await this.getAdapter(domain).clean(ctx, domain, docs)
   }
 }
 
