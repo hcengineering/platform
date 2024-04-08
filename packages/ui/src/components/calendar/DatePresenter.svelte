@@ -32,7 +32,6 @@
   export let mode: DateRangeMode = DateRangeMode.DATE
   export let mondayStart: boolean = true
   export let editable: boolean = false
-  export let input: HTMLButtonElement | undefined = undefined
   export let icon: Asset | AnySvelteComponent | ComponentType | undefined = undefined
   export let iconModifier: 'normal' | 'warning' | 'critical' | 'overdue' = 'normal'
   export let shouldIgnoreOverdue: boolean = false
@@ -51,6 +50,7 @@
   let currentDate: Date | null = null
   if (value != null) currentDate = new Date(value)
   let opened: boolean = false
+  let input: HTMLButtonElement | undefined = undefined
 
   const onChange = (result: Date | null): void => {
     if (result === null) {
