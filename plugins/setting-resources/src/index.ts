@@ -49,8 +49,18 @@ import IntegrationPanel from './components/IntegrationPanel.svelte'
 import { getOwnerFirstName, getOwnerLastName, getOwnerPosition, getValue, filterDescendants } from './utils'
 import ClassAttributes from './components/ClassAttributes.svelte'
 import ClassAttributesList from './components/ClassAttributesList.svelte'
+import ManageSpaceTypes from './components/spaceTypes/ManageSpaceTypes.svelte'
+import ManageSpaceTypesTools from './components/spaceTypes/ManageSpaceTypesTools.svelte'
+import ManageSpaceTypeContent from './components/spaceTypes/ManageSpaceTypeContent.svelte'
+import PermissionPresenter from './components/presenters/PermissionPresenter.svelte'
+import SpaceTypeDescriptorPresenter from './components/presenters/SpaceTypeDescriptorPresenter.svelte'
+import SpaceTypeGeneralSectionEditor from './components/spaceTypes/editor/SpaceTypeGeneralSectionEditor.svelte'
+import SpaceTypePropertiesSectionEditor from './components/spaceTypes/editor/SpaceTypePropertiesSectionEditor.svelte'
+import SpaceTypeRolesSectionEditor from './components/spaceTypes/editor/SpaceTypeRolesSectionEditor.svelte'
+import RoleEditor from './components/spaceTypes/RoleEditor.svelte'
+import RoleAssignmentEditor from './components/typeEditors/RoleAssignmentEditor.svelte'
 
-export { ClassSetting, filterDescendants, ClassAttributes, ClassAttributesList }
+export { ClassSetting, filterDescendants, ClassAttributes, ClassAttributesList, SpaceTypeGeneralSectionEditor }
 export * from './store'
 
 async function DeleteMixin (object: Mixin<Class<Doc>>): Promise<void> {
@@ -106,7 +116,17 @@ export default async (): Promise<Resources> => ({
     CreateMixin,
     InviteSetting,
     IntegrationPanel,
-    Configure
+    Configure,
+    ManageSpaceTypes,
+    ManageSpaceTypesTools,
+    ManageSpaceTypeContent,
+    PermissionPresenter,
+    SpaceTypeDescriptorPresenter,
+    SpaceTypeGeneralSectionEditor,
+    SpaceTypePropertiesSectionEditor,
+    SpaceTypeRolesSectionEditor,
+    RoleEditor,
+    RoleAssignmentEditor
   },
   actionImpl: {
     DeleteMixin

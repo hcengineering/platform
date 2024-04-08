@@ -143,7 +143,7 @@
         icon: ofClassClass.icon
       })
 
-      await client.createDoc(task.class.TaskType, type._id, _taskType, taskTypeId)
+      await client.createDoc(task.class.TaskType, core.space.Model, _taskType, taskTypeId)
     }
 
     if (!type.tasks.includes(taskTypeId)) {

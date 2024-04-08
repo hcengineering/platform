@@ -24,7 +24,6 @@ import core, {
   Ref,
   Status,
   TxOperations,
-  generateId,
   type AnyAttribute,
   type Rank,
   type RefTo
@@ -168,7 +167,7 @@ export type TaskTypeWithFactory = Omit<Data<TaskType>, 'statuses' | 'parent' | '
   factory: Data<Status>[]
 } & Partial<Pick<TaskType, 'targetClass'>>
 
-type ProjectData = Omit<Data<ProjectType>, 'statuses' | 'private' | 'members' | 'archived' | 'targetClass'>
+type ProjectData = Omit<Data<ProjectType>, 'statuses' | 'targetClass'>
 
 async function createStates (
   client: TxOperations,
@@ -209,19 +208,19 @@ export async function createProjectType (
 
   const baseClassClass = client.getHierarchy().getClass(categoryObj.baseClass)
 
-  const targetProjectClassId: Ref<Class<Doc>> = generateId()
+  // NOTE: it is important for this id to be consistent when re-creating the same
+  // project type with the same id as it will happen during every migration if type is created by the system
+  const targetProjectClassId = `${_id}:type:mixin` as Ref<Class<Doc>>
   const tmpl = await client.createDoc(
     task.class.ProjectType,
-    core.space.Space,
+    core.space.Model,
     {
       description: data.description,
       shortDescription: data.shortDescription,
       descriptor: data.descriptor,
+      roles: 0,
       tasks: _tasks,
       name: data.name,
-      private: false,
-      members: [],
-      archived: false,
       statuses: calculateStatuses({ tasks: _tasks, statuses: [] }, tasksData, []),
       targetClass: targetProjectClassId,
       classic: data.classic
@@ -229,6 +228,7 @@ export async function createProjectType (
     _id
   )
 
+  // Mixin to hold custom fields of this project type
   await client.createDoc(
     core.class.Mixin,
     core.space.Model,
@@ -241,6 +241,7 @@ export async function createProjectType (
     targetProjectClassId
   )
 
+  // TODO: not needed ???
   await client.createMixin(targetProjectClassId, core.class.Mixin, core.space.Model, task.mixin.ProjectTypeClass, {
     projectType: _id
   })
@@ -324,7 +325,9 @@ async function createTaskTypes (
 
     if (tdata.targetClass === undefined) {
       // Create target class for custom field.
-      const targetClassId: Ref<Class<Task>> = generateId()
+      // NOTE: it is important for this id to be consistent when re-creating the same
+      // task type with the same id as it will happen during every migration if type is created by the system
+      const targetClassId = `${taskId}:type:mixin` as Ref<Class<Task>>
       tdata.targetClass = targetClassId
 
       await client.createDoc(
@@ -344,7 +347,7 @@ async function createTaskTypes (
         projectType: _id
       })
     }
-    await client.createDoc(task.class.TaskType, _id, tdata as Data<TaskType>, taskId)
+    await client.createDoc(task.class.TaskType, core.space.Model, tdata as Data<TaskType>, taskId)
     tasksData.set(taskId, tdata as Data<TaskType>)
     _tasks.push(taskId)
   }

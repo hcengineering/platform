@@ -39,7 +39,7 @@ export async function removeDocument (
   const historyDocumentId = collaborativeHistoryDocId(minioDocumentId)
 
   try {
-    await minio.remove(workspaceId, [minioDocumentId, historyDocumentId])
+    await minio.remove(ctx, workspaceId, [minioDocumentId, historyDocumentId])
   } catch (err) {
     await ctx.error('failed to remove document', { documentId, error: err })
   }

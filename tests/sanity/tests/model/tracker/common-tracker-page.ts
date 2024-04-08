@@ -208,4 +208,9 @@ export class CommonTrackerPage extends CalendarPage {
   async checkCategoryHeader (categoryHeader: string): Promise<void> {
     await expect(this.textCategoryHeader).toHaveText(categoryHeader)
   }
+
+  async checkActionMissing (action: string): Promise<void> {
+    await this.buttonMoreActions.click()
+    await this.checkDropdownHasNo(this.page, action)
+  }
 }

@@ -29,7 +29,8 @@ export default mergeIds(viewId, view, {
     TimestampFilter: '' as AnyComponent,
     FilterTypePopup: '' as AnyComponent,
     ProxyPresenter: '' as AnyComponent,
-    ArrayEditor: '' as AnyComponent
+    ArrayEditor: '' as AnyComponent,
+    SpaceTypeSelector: '' as AnyComponent
   },
   string: {
     Contains: '' as IntlString,

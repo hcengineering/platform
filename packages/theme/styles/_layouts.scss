@@ -71,10 +71,10 @@ audio, canvas, embed, iframe, img, object, svg, video {
 }
 input:-webkit-autofill,
 input:-webkit-autofill:hover, 
-input:-webkit-autofill:focus
+input:-webkit-autofill:focus,
 input:-webkit-autofill, 
 textarea:-webkit-autofill,
-textarea:-webkit-autofill:hover
+textarea:-webkit-autofill:hover,
 textarea:-webkit-autofill:focus,
 select:-webkit-autofill,
 select:-webkit-autofill:hover,
@@ -623,7 +623,7 @@ input.search {
 }
 
 /* --------- */
-.no-word-wrap { word-wrap: none; text-wrap: nowrap; }
+.no-word-wrap { word-wrap: normal; text-wrap: nowrap; }
 .relative { position: relative; }
 .absolute { position: absolute; }
 .abs-lt-content {
@@ -1020,7 +1020,6 @@ a.no-line {
 .left-divider { border-left: 1px solid var(--theme-divider-color); }
 .right-divider { border-right: 1px solid var(--theme-divider-color); }
 .bottom-highlight-select { border-bottom: 1px solid var(--highlight-select); }
-
 
 
 .checkbox_style {

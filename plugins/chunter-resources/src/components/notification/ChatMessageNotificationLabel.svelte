@@ -84,7 +84,9 @@
         {#if icon}
           <Icon {icon} size="x-small" iconProps={{ value: object }} />
         {/if}
-        {title}
+        <div class="overflow-label">
+          {title}
+        </div>
       </span>
     {/if}
   </span>

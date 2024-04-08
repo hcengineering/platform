@@ -134,7 +134,7 @@ export class MigrateClientImpl implements MigrationClient {
       }
     } finally {
       if (Date.now() - t > 1000) {
-        this.logger.log(`update${Date.now() - t > 5000 ? 'slow' : ''}`, domain, query, Date.now() - t)
+        this.logger.log(`update${Date.now() - t > 5000 ? 'slow' : ''}`, { domain, query, time: Date.now() - t })
       }
     }
   }
@@ -160,7 +160,7 @@ export class MigrateClientImpl implements MigrationClient {
     query: DocumentQuery<T>,
     targetDomain: Domain
   ): Promise<MigrationResult> {
-    this.logger.log('move', sourceDomain, query)
+    this.logger.log('move', { sourceDomain, query })
     const q = this.translateQuery(query)
     const cursor = this.db.collection(sourceDomain).find<T>(q)
     const target = this.db.collection(targetDomain)

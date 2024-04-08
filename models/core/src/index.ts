@@ -29,6 +29,7 @@ import {
   TArrOf,
   TAttachedDoc,
   TAttribute,
+  TBlob,
   TBlobData,
   TClass,
   TCollection,
@@ -67,7 +68,7 @@ import {
   TTypeTimestamp,
   TVersion
 } from './core'
-import { TAccount, TSpace } from './security'
+import { TAccount, TSpace, TSpaceType, TSpaceTypeDescriptor, TTypedSpace, TRole, TPermission } from './security'
 import { TStatus, TStatusCategory } from './status'
 import { TUserStatus } from './transient'
 import {
@@ -81,6 +82,7 @@ import {
   TTxUpdateDoc,
   TTxWorkspaceEvent
 } from './tx'
+import { definePermissions } from './permissions'
 
 export { coreId } from '@hcengineering/core'
 export * from './core'
@@ -108,6 +110,11 @@ export function createModel (builder: Builder): void {
     TTxApplyIf,
     TTxWorkspaceEvent,
     TSpace,
+    TTypedSpace,
+    TSpaceType,
+    TSpaceTypeDescriptor,
+    TRole,
+    TPermission,
     TAccount,
     TAttribute,
     TType,
@@ -145,7 +152,8 @@ export function createModel (builder: Builder): void {
     TIndexConfiguration,
     TStatus,
     TStatusCategory,
-    TMigrationState
+    TMigrationState,
+    TBlob
   )
 
   builder.createDoc(
@@ -214,4 +222,6 @@ export function createModel (builder: Builder): void {
   builder.mixin(core.class.Space, core.class.Class, core.mixin.FullTextSearchContext, {
     childProcessingAllowed: false
   })
+
+  definePermissions(builder)
 }

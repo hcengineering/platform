@@ -286,7 +286,8 @@
     "MapRelatedIssues": "Configure Related issue default projects",
     "DefaultIssueStatus": "Default issue status",
     "IssueStatus": "Status",
-    "Extensions": "Extensions"
+    "Extensions": "Extensions",
+    "RoleLabel": "Role: {role}"
   },
   "status": {}
 }

@@ -72,9 +72,10 @@ import {
   type ActivityNotificationViewlet,
   type BaseNotificationType,
   type CommonNotificationType,
-  notificationId
+  notificationId,
+  type MentionInboxNotification
 } from '@hcengineering/notification'
-import { type Asset, type IntlString } from '@hcengineering/platform'
+import { getEmbeddedLabel, type Asset, type IntlString } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 
@@ -177,12 +178,15 @@ export class TNotificationContextPresenter extends TClass implements Notificatio
 
 @Model(notification.class.DocUpdates, core.class.Doc, DOMAIN_NOTIFICATION)
 export class TDocUpdates extends TDoc implements DocUpdates {
+  @Prop(TypeRef(core.class.Account), core.string.Account)
   @Index(IndexKind.Indexed)
     user!: Ref<Account>
 
+  @Prop(TypeRef(core.class.Account), core.string.AttachedTo)
   @Index(IndexKind.Indexed)
     attachedTo!: Ref<Doc>
 
+  @Prop(TypeRef(core.class.Account), getEmbeddedLabel('Hidden'))
   @Index(IndexKind.Indexed)
     hidden!: boolean
 
@@ -274,6 +278,15 @@ export class TCommonInboxNotification extends TInboxNotification implements Comm
   iconProps?: Record<string, any>
 }
 
+@Model(notification.class.MentionInboxNotification, notification.class.CommonInboxNotification)
+export class TMentionInboxNotification extends TCommonInboxNotification implements MentionInboxNotification {
+  @Prop(TypeRef(core.class.Doc), core.string.Object)
+    mentionedIn!: Ref<Doc>
+
+  @Prop(TypeRef(core.class.Doc), core.string.Class)
+    mentionedInClass!: Ref<Class<Doc>>
+}
+
 @Model(notification.class.ActivityNotificationViewlet, core.class.Doc, DOMAIN_MODEL)
 export class TActivityNotificationViewlet extends TDoc implements ActivityNotificationViewlet {
   messageMatch!: DocumentQuery<Doc>
@@ -324,7 +337,8 @@ export function createModel (builder: Builder): void {
     TNotificationContextPresenter,
     TActivityNotificationViewlet,
     TBaseNotificationType,
-    TCommonNotificationType
+    TCommonNotificationType,
+    TMentionInboxNotification
   )
 
   // Temporarily disabled, we should think about it

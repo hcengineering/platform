@@ -47,7 +47,9 @@ import core, {
   type TxMixin,
   type TxOperations,
   type TxUpdateDoc,
-  type TypeAny
+  type TypeAny,
+  type TypedSpace,
+  type Permission
 } from '@hcengineering/core'
 import { type Restrictions } from '@hcengineering/guest'
 import type { Asset, IntlString } from '@hcengineering/platform'
@@ -60,7 +62,8 @@ import {
   hasResource,
   type KeyedAttribute,
   getFiltredKeys,
-  isAdminUser
+  isAdminUser,
+  createQuery
 } from '@hcengineering/presentation'
 import {
   ErrorPresenter,
@@ -1327,3 +1330,74 @@ async function getAttrEditor (key: KeyedAttribute, hierarchy: Hierarchy): Promis
     return undefined
   }
 }
+
+type PermissionsBySpace = Record<Ref<Space>, Set<Ref<Permission>>>
+type AccountsByPermission = Record<Ref<Space>, Record<Ref<Permission>, Set<Ref<Account>>>>
+export interface PermissionsStore {
+  ps: PermissionsBySpace
+  ap: AccountsByPermission
+  whitelist: Set<Ref<Space>>
+}
+
+export function checkMyPermission (_id: Ref<Permission>, space: Ref<TypedSpace>, store: PermissionsStore): boolean {
+  return (store.whitelist.has(space) || store.ps[space]?.has(_id)) ?? false
+}
+
+export const permissionsStore = writable<PermissionsStore>({
+  ps: {},
+  ap: {},
+  whitelist: new Set()
+})
+const permissionsQuery = createQuery(true)
+
+permissionsQuery.query(core.class.Space, {}, (res) => {
+  const whitelistedSpaces = new Set<Ref<Space>>()
+  const permissionsBySpace: PermissionsBySpace = {}
+  const accountsByPermission: AccountsByPermission = {}
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const me = getCurrentAccount()
+
+  for (const s of res) {
+    if (hierarchy.isDerived(s._class, core.class.TypedSpace)) {
+      const type = client.getModel().findAllSync(core.class.SpaceType, { _id: (s as TypedSpace).type })[0]
+      const mixin = type?.targetClass
+
+      if (mixin === undefined) {
+        permissionsBySpace[s._id] = new Set()
+        continue
+      }
+
+      const asMixin = hierarchy.as(s, mixin)
+      const roles = client.getModel().findAllSync(core.class.Role, { attachedTo: type._id })
+      const myRoles = roles.filter((r) => ((asMixin as any)[r._id] ?? []).includes(me._id))
+      permissionsBySpace[s._id] = new Set(myRoles.flatMap((r) => r.permissions))
+
+      accountsByPermission[s._id] = {}
+
+      for (const role of roles) {
+        const assignment: Array<Ref<Account>> = (asMixin as any)[role._id] ?? []
+
+        if (assignment.length === 0) {
+          continue
+        }
+
+        for (const permissionId of role.permissions) {
+          if (accountsByPermission[s._id][permissionId] === undefined) {
+            accountsByPermission[s._id][permissionId] = new Set()
+          }
+
+          assignment.forEach((acc) => accountsByPermission[s._id][permissionId].add(acc))
+        }
+      }
+    } else {
+      whitelistedSpaces.add(s._id)
+    }
+  }
+
+  permissionsStore.set({
+    ps: permissionsBySpace,
+    ap: accountsByPermission,
+    whitelist: whitelistedSpaces
+  })
+})

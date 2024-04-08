@@ -134,7 +134,7 @@
         <svelte:component
           this={headerComponent.presenter}
           value={category}
-          {space}
+          space={space ?? (items.every((i) => i?.space === items[0]?.space) ? items[0]?.space : undefined)}
           size={'small'}
           kind={'list-header'}
           colorInherit={!$themeStore.dark && level === 0}

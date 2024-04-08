@@ -13,11 +13,17 @@
 // limitations under the License.
 //
 
-import { Client, type BucketItemStat, type ItemBucketMetadata, type UploadedObjectInfo } from 'minio'
+import { Client, type UploadedObjectInfo } from 'minio'
 
-import { toWorkspaceString, type WorkspaceId } from '@hcengineering/core'
+import core, {
+  toWorkspaceString,
+  type Blob,
+  type MeasureContext,
+  type Ref,
+  type WorkspaceId
+} from '@hcengineering/core'
 
-import { type StorageAdapter, type WorkspaceItem } from '@hcengineering/server-core'
+import { type ListBlobResult, type StorageAdapter, type StorageConfig } from '@hcengineering/server-core'
 import { type Readable } from 'stream'
 
 /**
@@ -27,78 +33,127 @@ export function getBucketId (workspaceId: WorkspaceId): string {
   return toWorkspaceString(workspaceId, '.')
 }
 
+export interface MinioConfig extends StorageConfig {
+  kind: 'minio'
+  region: string
+  endpoint: string
+  accessKeyId: string
+  secretAccessKey: string
+
+  port: number
+  useSSL: boolean
+}
+
 /**
  * @public
  */
 export class MinioService implements StorageAdapter {
+  static config = 'minio'
   client: Client
   constructor (opt: { endPoint: string, port: number, accessKey: string, secretKey: string, useSSL: boolean }) {
     this.client = new Client(opt)
   }
 
-  async exists (workspaceId: WorkspaceId): Promise<boolean> {
+  async initialize (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {}
+
+  async exists (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<boolean> {
     return await this.client.bucketExists(getBucketId(workspaceId))
   }
 
-  async make (workspaceId: WorkspaceId): Promise<void> {
+  async make (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {
     await this.client.makeBucket(getBucketId(workspaceId), 'k8s')
   }
 
-  async remove (workspaceId: WorkspaceId, objectNames: string[]): Promise<void> {
+  async remove (ctx: MeasureContext, workspaceId: WorkspaceId, objectNames: string[]): Promise<void> {
     await this.client.removeObjects(getBucketId(workspaceId), objectNames)
   }
 
-  async delete (workspaceId: WorkspaceId): Promise<void> {
+  async delete (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {
     await this.client.removeBucket(getBucketId(workspaceId))
   }
 
-  async list (workspaceId: WorkspaceId, prefix?: string): Promise<WorkspaceItem[]> {
+  async list (ctx: MeasureContext, workspaceId: WorkspaceId, prefix?: string): Promise<ListBlobResult[]> {
     try {
-      const items = new Map<string, WorkspaceItem>()
+      const items = new Map<string, ListBlobResult>()
       const list = this.client.listObjects(getBucketId(workspaceId), prefix, true)
-      await new Promise((resolve) => {
+      await new Promise((resolve, reject) => {
         list.on('data', (data) => {
           if (data.name !== undefined) {
-            items.set(data.name, { metaData: {}, ...data } as any)
+            items.set(data.name, {
+              _id: data.name as Ref<Blob>,
+              _class: core.class.Blob,
+              etag: data.etag,
+              size: data.size,
+              provider: 'minio',
+              space: core.space.Configuration,
+              modifiedBy: core.account.ConfigUser,
+              modifiedOn: data.lastModified.getTime(),
+              storageId: data.name
+            })
           }
         })
         list.on('end', () => {
           list.destroy()
           resolve(null)
         })
+        list.on('error', (err) => {
+          list.destroy()
+          reject(err)
+        })
       })
       return Array.from(items.values())
     } catch (err: any) {
-      if (((err?.message as string) ?? '').includes('Invalid bucket name')) {
+      const msg = (err?.message as string) ?? ''
+      if (msg.includes('Invalid bucket name') || msg.includes('The specified bucket does not exist')) {
         return []
       }
       throw err
     }
   }
 
-  async stat (workspaceId: WorkspaceId, objectName: string): Promise<BucketItemStat> {
-    return await this.client.statObject(getBucketId(workspaceId), objectName)
+  async stat (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Blob | undefined> {
+    try {
+      const result = await this.client.statObject(getBucketId(workspaceId), objectName)
+      return {
+        provider: '',
+        _class: core.class.Blob,
+        _id: objectName as Ref<Blob>,
+        storageId: objectName,
+        contentType: result.metaData['content-type'],
+        size: result.size,
+        etag: result.etag,
+        space: core.space.Configuration,
+        modifiedBy: core.account.System,
+        modifiedOn: result.lastModified.getTime(),
+        version: result.versionId ?? null
+      }
+    } catch (err: any) {
+      await ctx.error('no object found', err)
+    }
   }
 
-  async get (workspaceId: WorkspaceId, objectName: string): Promise<Readable> {
+  async get (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Readable> {
     return await this.client.getObject(getBucketId(workspaceId), objectName)
   }
 
   async put (
+    ctx: MeasureContext,
     workspaceId: WorkspaceId,
     objectName: string,
     stream: Readable | Buffer | string,
-    size?: number,
-    metaData?: ItemBucketMetadata
+    contentType: string,
+    size?: number
   ): Promise<UploadedObjectInfo> {
-    return await this.client.putObject(getBucketId(workspaceId), objectName, stream, size, metaData)
+    return await this.client.putObject(getBucketId(workspaceId), objectName, stream, size, {
+      'Content-Type': contentType
+    })
   }
 
-  async read (workspaceId: WorkspaceId, name: string): Promise<Buffer[]> {
+  async read (ctx: MeasureContext, workspaceId: WorkspaceId, name: string): Promise<Buffer[]> {
     const data = await this.client.getObject(getBucketId(workspaceId), name)
     const chunks: Buffer[] = []
 
-    await new Promise((resolve) => {
+    await new Promise((resolve, reject) => {
       data.on('readable', () => {
         let chunk
         while ((chunk = data.read()) !== null) {
@@ -111,11 +166,20 @@ export class MinioService implements StorageAdapter {
         data.destroy()
         resolve(null)
       })
+      data.on('error', (err) => {
+        reject(err)
+      })
     })
     return chunks
   }
 
-  async partial (workspaceId: WorkspaceId, objectName: string, offset: number, length?: number): Promise<Readable> {
+  async partial (
+    ctx: MeasureContext,
+    workspaceId: WorkspaceId,
+    objectName: string,
+    offset: number,
+    length?: number
+  ): Promise<Readable> {
     return await this.client.getPartialObject(getBucketId(workspaceId), objectName, offset, length)
   }
 }

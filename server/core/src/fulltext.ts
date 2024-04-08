@@ -63,14 +63,9 @@ export class FullTextIndex implements WithFind {
     readonly indexer: FullTextIndexPipeline,
     private readonly upgrade: boolean
   ) {
-    if (!upgrade) {
+    if (!this.upgrade) {
       // Schedule indexing after consistency check
-      this.consistency = this.indexer.checkIndexConsistency(dbStorage)
-
-      // Schedule indexing after consistency check
-      void this.consistency.then(() => {
-        void this.indexer.startIndexing()
-      })
+      void this.indexer.startIndexing()
     }
   }
 
@@ -114,16 +109,20 @@ export class FullTextIndex implements WithFind {
           const old = stDocs.get(cud.objectId as Ref<DocIndexState>)
           if (cud._class === core.class.TxRemoveDoc && old?.create !== undefined) {
             // Object created and deleted, skip index
+            stDocs.delete(cud.objectId as Ref<DocIndexState>)
             continue
-          } else if (old !== undefined) {
+          } else {
             // Create and update
-            // Skip update
-            continue
+            if (old?.removed === true) continue
+            else {
+              stDocs.set(cud.objectId as Ref<DocIndexState>, {
+                ...old,
+                create: cud._class !== core.class.TxRemoveDoc ? old?.create : undefined,
+                updated: cud._class !== core.class.TxRemoveDoc && old?.create === undefined,
+                removed: cud._class === core.class.TxRemoveDoc
+              })
+            }
           }
-          stDocs.set(cud.objectId as Ref<DocIndexState>, {
-            updated: cud._class !== core.class.TxRemoveDoc,
-            removed: cud._class === core.class.TxRemoveDoc
-          })
         }
       }
     }
@@ -207,7 +206,7 @@ export class FullTextIndex implements WithFind {
     const indexedDocMap = new Map<Ref<Doc>, IndexedDoc>()
 
     for (const doc of docs) {
-      if (this.hierarchy.isDerived(doc._class, baseClass)) {
+      if (doc._class.some((cl) => this.hierarchy.isDerived(cl, baseClass))) {
         ids.add(doc.id)
         indexedDocMap.set(doc.id, doc)
       }

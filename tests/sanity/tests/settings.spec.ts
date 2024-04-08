@@ -83,7 +83,7 @@ test.describe('contact tests', () => {
     // await page.click('.box > div:nth-child(4)')
     await page.getByRole('button', { name: 'Notifications' }).click()
     // Click text=Vacancies
-    await page.locator('#new-project-type').click()
+    await page.locator('#new-space-type').click()
     // TODO: Need rework.
     // await page.getByRole('button', { name: 'Recruiting', exact: true }).click()
     // await page.locator('#navGroup-statuses').getByText('New Recruiting project type').first().click()

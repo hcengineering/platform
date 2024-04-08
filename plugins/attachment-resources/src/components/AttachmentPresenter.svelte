@@ -19,6 +19,10 @@
   import { showPopup, closeTooltip, Label, getIconSize2x, Loading } from '@hcengineering/ui'
   import presentation, { PDFViewer, getFileUrl } from '@hcengineering/presentation'
   import filesize from 'filesize'
+  import core from '@hcengineering/core'
+  import { permissionsStore } from '@hcengineering/view-resources'
+  import MediaViewer from './MediaViewer.svelte'
+  import { getType } from '../utils'
 
   import AttachmentName from './AttachmentName.svelte'
 
@@ -35,18 +39,27 @@
   const trimFilename = (fname: string): string =>
     fname.length > maxLenght ? fname.substr(0, (maxLenght - 1) / 2) + '...' + fname.substr(-(maxLenght - 1) / 2) : fname
 
+  $: canRemove =
+    removable &&
+    value !== undefined &&
+    value.readonly !== true &&
+    ($permissionsStore.whitelist.has(value.space) ||
+      !$permissionsStore.ps[value.space]?.has(core.permission.ForbidDeleteObject))
+
   function iconLabel (name: string): string {
     const parts = `${name}`.split('.')
     const ext = parts[parts.length - 1]
     return ext.substring(0, 4).toUpperCase()
   }
   function isImage (contentType: string): boolean {
-    return contentType.startsWith('image/')
+    return getType(contentType) === 'image'
+  }
+  function isPlayable (contentType: string) {
+    const type = getType(contentType)
+    return type === 'video' || type === 'audio'
   }
   function openEmbedded (contentType: string): boolean {
-    return (
-      contentType.includes('application/pdf') || contentType.startsWith('image/') || contentType.startsWith('video/')
-    )
+    return getType(contentType) !== 'other'
   }
 
   function clickHandler (e: MouseEvent): void {
@@ -61,7 +74,7 @@
     }
     closeTooltip()
     showPopup(
-      PDFViewer,
+      isPlayable(value.type) ? MediaViewer : PDFViewer,
       { file: value.file, name: value.name, contentType: value.type, value },
       isImage(value.type) ? 'centered' : 'float'
     )
@@ -156,7 +169,7 @@
             >
               <Label label={presentation.string.Download} />
             </a>
-            {#if removable && value.readonly !== true}
+            {#if canRemove}
               <span>•</span>
               <!-- svelte-ignore a11y-click-events-have-key-events -->
               <!-- svelte-ignore a11y-no-static-element-interactions -->

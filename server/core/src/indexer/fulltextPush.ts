@@ -14,7 +14,6 @@
 //
 
 import core, {
-  type AnyAttribute,
   type ArrOf,
   type Class,
   type Doc,
@@ -22,8 +21,8 @@ import core, {
   type DocumentQuery,
   type DocumentUpdate,
   extractDocKey,
+  type Hierarchy,
   isFullTextAttribute,
-  isIndexedAttribute,
   type MeasureContext,
   type Ref,
   type ServerStorage,
@@ -41,14 +40,7 @@ import {
   type FullTextPipelineStage,
   fullTextPushStageId
 } from './types'
-import {
-  collectPropagate,
-  collectPropagateClasses,
-  docKey,
-  getFullTextContext,
-  type IndexKeyOptions,
-  isCustomAttr
-} from './utils'
+import { collectPropagate, collectPropagateClasses, docKey, getFullTextContext, isCustomAttr } from './utils'
 
 /**
  * @public
@@ -107,52 +99,6 @@ export class FullTextPushStage implements FullTextPipelineStage {
     return { docs: [], pass: true }
   }
 
-  async indexRefAttributes (
-    attributes: Map<string, AnyAttribute>,
-    doc: DocIndexState,
-    elasticDoc: IndexedDoc,
-    metrics: MeasureContext
-  ): Promise<void> {
-    for (const attribute in doc.attributes) {
-      const { attr } = extractDocKey(attribute)
-      const attrObj = attributes.get(attr)
-      if (
-        attrObj !== null &&
-        attrObj !== undefined &&
-        (isFullTextAttribute(attrObj) || isIndexedAttribute(attrObj)) &&
-        (attrObj.type._class === core.class.RefTo ||
-          (attrObj.type._class === core.class.ArrOf && (attrObj.type as ArrOf<any>).of._class === core.class.RefTo))
-      ) {
-        const attrStringValue = doc.attributes[attribute]
-        if (attrStringValue !== undefined && attrStringValue !== null && attrStringValue !== '') {
-          const refs: Ref<DocIndexState>[] = attrStringValue.split(',')
-          if (refs.length > 0) {
-            const refDocs = await metrics.with(
-              'ref-docs',
-              {},
-              async (ctx) =>
-                await this.dbStorage.findAll(
-                  ctx,
-                  core.class.DocIndexState,
-                  {
-                    _id: refs.length === 1 ? refs[0] : { $in: refs }
-                  },
-                  { limit: refs.length }
-                )
-            )
-            if (refDocs.length > 0) {
-              for (const ref of refDocs) {
-                await metrics.with('updateDoc2Elastic', {}, async (ctx) => {
-                  updateDoc2Elastic(ref.attributes, elasticDoc, ref._id, attribute)
-                })
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
   async collect (toIndex: DocIndexState[], pipeline: FullTextPipeline, ctx: MeasureContext): Promise<void> {
     const bulk: IndexedDoc[] = []
 
@@ -183,7 +129,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
         const elasticDoc = createElasticDoc(doc)
         try {
           await ctx.with('updateDoc2Elastic', {}, async () => {
-            updateDoc2Elastic(doc.attributes, elasticDoc)
+            updateDoc2Elastic(doc.attributes, elasticDoc, undefined, undefined, pipeline.hierarchy)
           })
 
           // Include all child attributes
@@ -193,7 +139,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
               const fctx = getFullTextContext(pipeline.hierarchy, c.objectClass)
               if (fctx.parentPropagate ?? true) {
                 await ctx.with('updateDoc2Elastic', {}, async () => {
-                  updateDoc2Elastic(c.attributes, elasticDoc, c._id)
+                  updateDoc2Elastic(c.attributes, elasticDoc, c._id, undefined, pipeline.hierarchy, true)
                 })
               }
             }
@@ -214,7 +160,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
               if (parentDoc !== undefined) {
                 const ppdoc = parentDoc
                 await ctx.with('updateDoc2Elastic', {}, async () => {
-                  updateDoc2Elastic(ppdoc.attributes, elasticDoc, ppdoc._id)
+                  updateDoc2Elastic(ppdoc.attributes, elasticDoc, ppdoc._id, undefined, pipeline.hierarchy, true)
                 })
 
                 const collectClasses = collectPropagateClasses(pipeline, parentDoc.objectClass)
@@ -226,7 +172,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
                   )
                   for (const c of collections) {
                     await ctx.with('updateDoc2Elastic', {}, async () => {
-                      updateDoc2Elastic(c.attributes, elasticDoc, c._id)
+                      updateDoc2Elastic(c.attributes, elasticDoc, c._id, undefined, pipeline.hierarchy, true)
                     })
                   }
                 }
@@ -241,11 +187,6 @@ export class FullTextPushStage implements FullTextPipelineStage {
                 _id: (doc.attributes[docKey('space', { _class: doc.objectClass })] ?? doc.space) as Ref<DocIndexState>
               })
           )
-
-          const allAttributes = pipeline.hierarchy.getAllAttributes(elasticDoc._class)
-
-          // Include child ref attributes
-          await this.indexRefAttributes(allAttributes, doc, elasticDoc, ctx)
 
           await updateDocWithPresenter(pipeline.hierarchy, doc, elasticDoc, { parentDoc, spaceDoc })
 
@@ -290,7 +231,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
 export function createElasticDoc (upd: DocIndexState): IndexedDoc {
   const doc = {
     id: upd._id,
-    _class: upd.objectClass,
+    _class: [upd.objectClass, ...(upd.mixins ?? [])],
     modifiedBy: upd.modifiedBy,
     modifiedOn: upd.modifiedOn,
     space: upd.space,
@@ -303,7 +244,9 @@ function updateDoc2Elastic (
   attributes: Record<string, any>,
   doc: IndexedDoc,
   docIdOverride?: Ref<DocIndexState>,
-  refAttribute?: string
+  refAttribute?: string,
+  hierarchy?: Hierarchy,
+  isChildOrParentDoc?: boolean
 ): void {
   for (const [k, v] of Object.entries(attributes)) {
     if (v == null) {
@@ -318,6 +261,25 @@ function updateDoc2Elastic (
     if (vv != null && extra.includes('base64')) {
       vv = Buffer.from(v, 'base64').toString()
     }
+    try {
+      const attribute = hierarchy?.getAttribute(_class ?? doc._class[0], attr)
+      if (attribute !== undefined && vv != null) {
+        if (
+          isFullTextAttribute(attribute) ||
+          (isChildOrParentDoc === true &&
+            !(
+              attribute.type._class === core.class.RefTo ||
+              (attribute.type._class === core.class.ArrOf &&
+                (attribute.type as ArrOf<any>).of._class === core.class.RefTo)
+            ))
+        ) {
+          if (!(doc.fulltextSummary ?? '').includes(vv)) {
+            doc.fulltextSummary = (doc.fulltextSummary ?? '') + vv + '\n'
+            continue
+          }
+        }
+      }
+    } catch (e) {}
 
     docId = docIdOverride ?? docId
     if (docId === undefined) {
@@ -326,11 +288,7 @@ function updateDoc2Elastic (
       }
       continue
     }
-    const docKeyOpts: IndexKeyOptions = { _class, relative: true, extra: extra.filter((it) => it !== 'base64') }
-    if (refAttribute !== undefined) {
-      docKeyOpts.refAttribute = refAttribute
-    }
-    const docIdAttr = docKey(attr, docKeyOpts)
+    const docIdAttr = docKey(attr, { _class, extra: extra.filter((it) => it !== 'base64') })
     if (vv !== null) {
       // Since we replace array of values, we could ignore null
       doc[docIdAttr] =

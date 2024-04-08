@@ -35,7 +35,7 @@ import core, {
   TxUpdateDoc,
   Type
 } from '@hcengineering/core'
-import notification, { CommonInboxNotification } from '@hcengineering/notification'
+import notification, { MentionInboxNotification } from '@hcengineering/notification'
 import { ServerKit, extractReferences, getHTML, parseHTML, yDocContentToNodes } from '@hcengineering/text'
 import { StorageAdapter, TriggerControl } from '@hcengineering/server-core'
 import activity, { ActivityMessage, ActivityReference } from '@hcengineering/activity'
@@ -48,6 +48,28 @@ import {
 } from '@hcengineering/server-notification-resources'
 
 const extensions = [ServerKit]
+
+export function isDocMentioned (doc: Ref<Doc>, content: string | Buffer): boolean {
+  const references = []
+
+  if (content instanceof Buffer) {
+    const nodes = yDocContentToNodes(extensions, content)
+    for (const node of nodes) {
+      references.push(...extractReferences(node))
+    }
+  } else {
+    const doc = parseHTML(content, extensions)
+    references.push(...extractReferences(doc))
+  }
+
+  for (const ref of references) {
+    if (ref.objectId === doc) {
+      return true
+    }
+  }
+
+  return false
+}
 
 export async function getPersonNotificationTxes (
   reference: Data<ActivityReference>,
@@ -93,9 +115,11 @@ export async function getPersonNotificationTxes (
     return res
   }
 
-  const data: Partial<Data<CommonInboxNotification>> = {
+  const data: Partial<Data<MentionInboxNotification>> = {
     header: activity.string.MentionedYouIn,
-    messageHtml: reference.message
+    messageHtml: reference.message,
+    mentionedIn: reference.attachedDocId,
+    mentionedInClass: reference.attachedDocClass
   }
 
   const notifyResult = await shouldNotifyCommon(control, receiver._id, notification.ids.MentionCommonNotificationType)
@@ -114,7 +138,8 @@ export async function getPersonNotificationTxes (
     reference.srcDocClass,
     space,
     originTx.modifiedOn,
-    notifyResult
+    notifyResult,
+    notification.class.MentionInboxNotification
   )
 
   res.push(...texes)

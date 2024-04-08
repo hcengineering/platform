@@ -19,7 +19,7 @@ import type { Attribute, Class, Doc, Ref, Status, Timestamp } from '@hcengineeri
 import { Mixin } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import type { Project, ProjectTypeDescriptor, Task, TaskType } from '@hcengineering/task'
+import type { Project, ProjectType, ProjectTypeDescriptor, Task, TaskType } from '@hcengineering/task'
 
 /**
  * @public
@@ -87,6 +87,9 @@ const lead = plugin(leadId, {
   },
   taskType: {
     Lead: '' as Ref<TaskType>
+  },
+  template: {
+    DefaultFunnel: '' as Ref<ProjectType>
   }
 })
 

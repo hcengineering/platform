@@ -644,7 +644,7 @@
       class="bar"
       class:hovered={isScrolling === 'vertical'}
       bind:this={divBar}
-      on:mousedown={(ev) => {
+      on:mousedown|stopPropagation={(ev) => {
         onScrollStart(ev, 'vertical')
       }}
       on:mouseleave={checkFade}
@@ -665,7 +665,7 @@
       class="bar-horizontal"
       class:hovered={isScrolling === 'horizontal'}
       bind:this={divBarH}
-      on:mousedown={(ev) => {
+      on:mousedown|stopPropagation={(ev) => {
         onScrollStart(ev, 'horizontal')
       }}
       on:mouseleave={checkFade}

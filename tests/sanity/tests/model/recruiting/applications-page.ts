@@ -45,6 +45,8 @@ export class ApplicationsPage extends CommonRecruitingPage {
       lastName: `TestLast-${generateId(2)}`
     }
 
+    await this.selectType('Default vacancy')
+
     await this.buttonCreateApplication.click()
 
     await this.buttonTalentSelector.click()

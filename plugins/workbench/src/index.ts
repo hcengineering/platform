@@ -44,6 +44,7 @@ export interface Application extends Doc {
   checkIsHeaderHidden?: Resource<() => Promise<boolean>>
   checkIsHeaderDisabled?: Resource<() => Promise<boolean>>
   navFooterComponent?: AnyComponent
+  modern?: boolean
 }
 
 /**

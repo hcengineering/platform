@@ -40,7 +40,7 @@ import {
 } from '@hcengineering/model'
 import attachment, { TAttachment } from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
-import core, { TAttachedDoc, TSpace } from '@hcengineering/model-core'
+import core, { TAttachedDoc, TTypedSpace } from '@hcengineering/model-core'
 import { createPublicLinkAction } from '@hcengineering/model-guest'
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 import preference, { TPreference } from '@hcengineering/model-preference'
@@ -77,6 +77,11 @@ export class TDocument extends TAttachedDoc implements Document {
   @Prop(TypeRef(core.class.Class), core.string.AttachedToClass)
   @Hidden()
   declare attachedToClass: Ref<Class<Document>>
+
+  @Prop(TypeRef(core.class.Space), core.string.Space)
+  @Index(IndexKind.Indexed)
+  @Hidden()
+  declare space: Ref<Teamspace>
 
   @Prop(TypeString(), core.string.Collection)
   @Hidden()
@@ -129,6 +134,11 @@ export class TDocumentSnapshot extends TAttachedDoc implements DocumentSnapshot 
   @Prop(TypeRef(core.class.Class), core.string.AttachedToClass)
   declare attachedToClass: Ref<Class<Document>>
 
+  @Prop(TypeRef(core.class.Space), core.string.Space)
+  @Index(IndexKind.Indexed)
+  @Hidden()
+  declare space: Ref<Teamspace>
+
   @Prop(TypeString(), core.string.Collection)
   @Hidden()
   override collection: 'snapshots' = 'snapshots'
@@ -148,12 +158,25 @@ export class TSavedDocument extends TPreference implements SavedDocument {
   declare attachedTo: Ref<Document>
 }
 
-@Model(document.class.Teamspace, core.class.Space)
+@Model(document.class.Teamspace, core.class.TypedSpace)
 @UX(document.string.Teamspace, document.icon.Teamspace, 'Teamspace', 'name')
-export class TTeamspace extends TSpace implements Teamspace {}
+export class TTeamspace extends TTypedSpace implements Teamspace {}
 
 function defineTeamspace (builder: Builder): void {
   builder.createModel(TTeamspace)
+
+  builder.createDoc(
+    core.class.SpaceTypeDescriptor,
+    core.space.Model,
+    {
+      name: document.string.DocumentApplication,
+      description: document.string.Description,
+      icon: document.icon.Document,
+      baseClass: document.class.Teamspace,
+      availablePermissions: [core.permission.ForbidDeleteObject]
+    },
+    document.descriptor.TeamspaceType
+  )
 
   // Navigator
 
@@ -359,6 +382,12 @@ function defineDocument (builder: Builder): void {
     [],
     ['attachments', 'children', 'comments']
   )
+
+  // Activity & Inbox
+
+  builder.mixin(document.class.Document, core.class.Class, view.mixin.ObjectTitle, {
+    titleProvider: document.function.DocumentTitleProvider
+  })
 
   // Search
 

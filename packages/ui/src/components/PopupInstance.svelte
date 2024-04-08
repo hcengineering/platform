@@ -14,6 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { onMount } from 'svelte'
   import { deviceOptionsStore as deviceInfo, resizeObserver, testing } from '..'
   import { fitPopupElement } from '../popups'
   import type { AnySvelteComponent, PopupAlignment, PopupOptions, PopupPositionElement, DeviceOptions } from '../types'
@@ -28,6 +29,19 @@
   export let top: boolean
   export let close: () => void
   export let contentPanel: HTMLElement | undefined
+
+  // We should not update props after popup is created,
+  // since they could be used, and any show will update them
+  const initialProps = props
+
+  const WINDOW_PADDING = 1
+
+  interface PopupParams {
+    x: number
+    y: number
+    width: number
+    height: number
+  }
 
   let modalHTML: HTMLElement
   let componentInstance: any
@@ -54,6 +68,8 @@
     showOverlay: false,
     direction: 'bottom'
   }
+
+  $: document.body.style.cursor = drag ? 'all-scroll' : 'default'
 
   function _update (result: any): void {
     if (onUpdate !== undefined) onUpdate(result)
@@ -83,7 +99,9 @@
       options.props.maxHeight = '100vh'
       if (!modalHTML.classList.contains('fullsize')) modalHTML.classList.add('fullsize')
     } else {
-      options = fitPopupElement(modalHTML, device, element, contentPanel, clientWidth, clientHeight)
+      if (element !== 'movable' || options?.props?.top === undefined || options?.props?.top === '') {
+        options = fitPopupElement(modalHTML, device, element, contentPanel, clientWidth, clientHeight)
+      }
       if (modalHTML.classList.contains('fullsize')) modalHTML.classList.remove('fullsize')
     }
     options.fullSize = fullSize
@@ -126,6 +144,96 @@
     )
   }
 
+  let drag: boolean = false
+  let notFit: number = 0
+  let locked: boolean = false
+
+  const windowSize: { width: number, height: number } = { width: 0, height: 0 }
+  const dragParams: { offsetX: number, offsetY: number } = { offsetX: 0, offsetY: 0 }
+  let popupParams: PopupParams = { x: 0, y: 0, width: 0, height: 0 }
+
+  const updatedPopupParams = (pp: { x: number, y: number, width: number, height: number }): void => {
+    if (pp.width === 0 || pp.height === 0 || element !== 'movable') return
+    options.props.left = `${pp.x}px`
+    options.props.right = ''
+    options.props.top = `${pp.y}px`
+    options.props.maxHeight = `${pp.height}px`
+  }
+  $: updatedPopupParams(popupParams)
+
+  function mouseDown (e: MouseEvent & { currentTarget: EventTarget & HTMLDivElement }): void {
+    if (element !== 'movable') return
+    const rect = e.currentTarget.getBoundingClientRect()
+    popupParams = { x: rect.left, y: rect.top, width: rect.width, height: rect.height }
+    dragParams.offsetX = e.clientX - rect.left
+    dragParams.offsetY = e.clientY - rect.top
+    drag = true
+    window.addEventListener('mousemove', mouseMove)
+    window.addEventListener('mouseup', mouseUp)
+  }
+
+  function mouseMove (e: MouseEvent): void {
+    if (element !== 'movable' && !drag) return
+    let newTop = e.clientY - dragParams.offsetY
+    let newLeft = e.clientX - dragParams.offsetX
+    if (newTop < WINDOW_PADDING) newTop = WINDOW_PADDING
+    if (newTop + popupParams.height > $deviceInfo.docHeight - WINDOW_PADDING) {
+      newTop = $deviceInfo.docHeight - popupParams.height - WINDOW_PADDING
+    }
+    if (newLeft < WINDOW_PADDING) newLeft = WINDOW_PADDING
+    if (newLeft + popupParams.width > $deviceInfo.docWidth - WINDOW_PADDING) {
+      newLeft = $deviceInfo.docWidth - popupParams.width - WINDOW_PADDING
+    }
+    popupParams = { ...popupParams, x: newLeft, y: newTop }
+  }
+
+  function mouseUp (): void {
+    drag = false
+    window.removeEventListener('mousemove', mouseMove)
+    window.removeEventListener('mouseup', mouseUp)
+  }
+
+  function checkSize (): void {
+    const rect = modalHTML.getBoundingClientRect()
+    const newParams: PopupParams = { x: rect.left, y: rect.top, width: rect.width, height: rect.height }
+    if (popupParams.width === 0 && popupParams.height === 0) popupParams = newParams
+    newParams.x =
+      popupParams.x < WINDOW_PADDING
+        ? WINDOW_PADDING
+        : popupParams.x + popupParams.width > windowSize.width - WINDOW_PADDING * 2
+          ? $deviceInfo.docWidth - WINDOW_PADDING - popupParams.width
+          : popupParams.x
+    newParams.y =
+      popupParams.y < WINDOW_PADDING
+        ? WINDOW_PADDING
+        : popupParams.y + popupParams.height > $deviceInfo.docHeight - WINDOW_PADDING
+          ? $deviceInfo.docHeight - WINDOW_PADDING - popupParams.height
+          : popupParams.y
+    if (newParams.y < WINDOW_PADDING) {
+      newParams.height -= WINDOW_PADDING - newParams.y
+      newParams.y = WINDOW_PADDING
+    }
+    if (newParams.height > windowSize.height - WINDOW_PADDING * 2) {
+      newParams.height = windowSize.height - WINDOW_PADDING * 2
+      newParams.y = WINDOW_PADDING
+    }
+    const bottomFree: number = $deviceInfo.docHeight - WINDOW_PADDING - popupParams.y - popupParams.height
+    const topFree: number = popupParams.y - WINDOW_PADDING
+    if (notFit && bottomFree > 0) {
+      const dFit: number = bottomFree - notFit
+      newParams.height += dFit >= 0 ? notFit : bottomFree
+      notFit -= dFit >= 0 ? notFit : bottomFree
+    }
+    if (notFit && topFree > 0) {
+      const dFit: number = topFree - notFit
+      newParams.y -= dFit < 0 ? topFree : notFit
+      newParams.height += dFit < 0 ? topFree : notFit
+      notFit -= dFit < 0 ? topFree : notFit
+    }
+    popupParams = newParams
+    locked = false
+  }
+
   export function fitPopupInstance (): void {
     if (modalHTML) {
       fitPopup(modalHTML, element, contentPanel)
@@ -134,21 +242,35 @@
 
   $: if ($deviceInfo.docWidth <= 900 && !docSize) docSize = true
   $: if ($deviceInfo.docWidth > 900 && docSize) docSize = false
+
+  onMount(() => {
+    windowSize.width = $deviceInfo.docWidth
+    windowSize.height = $deviceInfo.docHeight
+  })
 </script>
 
 <svelte:window
   on:resize={() => {
-    if (modalHTML) {
-      fitPopup(modalHTML, element, contentPanel)
+    if (modalHTML) fitPopup(modalHTML, element, contentPanel)
+    if (element === 'movable' && !locked) {
+      locked = true
+      if (options.props.right !== '') {
+        const rect = modalHTML.getBoundingClientRect()
+        popupParams = { x: rect.left, y: rect.top, width: rect.width, height: rect.height }
+      }
+      checkSize()
+      windowSize.width = $deviceInfo.docWidth
+      windowSize.height = $deviceInfo.docHeight
     }
   }}
   on:keydown={handleKeydown}
 />
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   class="popup {testing ? 'endShow' : showing === undefined ? 'endShow' : !showing ? 'preShow' : 'startShow'}"
   class:testing
-  class:anim={(element === 'float' || element === 'centered') && !testing}
+  class:anim={(element === 'float' || element === 'centered') && !testing && !drag}
   bind:this={modalHTML}
   style={`z-index: ${zIndex + 1};`}
   style:top={options?.props?.top}
@@ -167,11 +289,12 @@
     clientHeight = element.clientHeight
     fitPopupInstance()
   }}
+  on:mousedown={mouseDown}
 >
   <svelte:component
     this={is}
     bind:this={componentInstance}
-    {...props}
+    {...initialProps}
     bind:popupOptions={options}
     on:update={(ev) => {
       _update(ev.detail)
@@ -183,18 +306,20 @@
       fullSize = !fullSize
       fitPopup(modalHTML, element, contentPanel)
     }}
-    on:changeContent={() => {
+    on:changeContent={(ev) => {
       fitPopup(modalHTML, element, contentPanel)
+      if (ev.detail?.notFit !== undefined) notFit = ev.detail.notFit
+      if (element === 'movable' && showing !== false) checkSize()
     }}
   />
 </div>
 
-{#if overlay}
+{#if overlay || drag}
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     class="modal-overlay"
     class:testing
-    class:antiOverlay={options?.showOverlay}
+    class:antiOverlay={options?.showOverlay && !drag}
     style={`z-index: ${zIndex};`}
     on:click={handleOverlayClick}
     on:keydown|stopPropagation|preventDefault={() => {}}

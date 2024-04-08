@@ -35,10 +35,11 @@ import core, {
   WorkspaceId,
   toWorkspaceString
 } from '@hcengineering/core'
-import { PlatformError, unknownStatus } from '@hcengineering/platform'
-import { DbAdapter, IndexedDoc } from '@hcengineering/server-core'
+import { getMetadata, PlatformError, unknownStatus } from '@hcengineering/platform'
+import serverCore, { DbAdapter, IndexedDoc } from '@hcengineering/server-core'
 import { createHash } from 'node:crypto'
 
+const indexName = getMetadata(serverCore.metadata.ElasticIndexName) ?? 'storage_index'
 class ElasticDataAdapter implements DbAdapter {
   constructor (
     readonly workspaceId: WorkspaceId,
@@ -58,8 +59,6 @@ class ElasticDataAdapter implements DbAdapter {
     return []
   }
 
-  async init (model: Tx[]): Promise<void> {}
-
   async createIndexes (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>): Promise<void> {}
   async removeOldIndex (domain: Domain, deletePattern: RegExp, keepPattern: RegExp): Promise<void> {}
 
@@ -67,7 +66,7 @@ class ElasticDataAdapter implements DbAdapter {
     await this.client.close()
   }
 
-  find (domain: Domain): StorageIterator {
+  find (ctx: MeasureContext, domain: Domain): StorageIterator {
     let listRecieved = false
     let pos = 0
     let buffer: { _id: string, data: IndexedDoc }[] = []
@@ -81,14 +80,20 @@ class ElasticDataAdapter implements DbAdapter {
         try {
           if (!listRecieved) {
             const q = {
-              index: toWorkspaceString(this.workspaceId),
+              index: indexName,
               type: '_doc',
               scroll: '23h',
               // search_type: 'scan', //if I use search_type then it requires size otherwise it shows 0 result
               size: 100,
               body: {
                 query: {
-                  match_all: {}
+                  bool: {
+                    must: {
+                      match: {
+                        workspaceId: { query: toWorkspaceString(this.workspaceId), operator: 'and' }
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -159,17 +164,28 @@ class ElasticDataAdapter implements DbAdapter {
     return stIterator
   }
 
-  async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+  async load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
     const result: Doc[] = []
 
     const resp = await this.client.search({
-      index: toWorkspaceString(this.workspaceId),
+      index: indexName,
       type: '_doc',
       body: {
         query: {
-          terms: {
-            _id: docs,
-            boost: 1.0
+          bool: {
+            must: [
+              {
+                terms: {
+                  _id: docs,
+                  boost: 1.0
+                }
+              },
+              {
+                match: {
+                  workspaceId: { query: toWorkspaceString(this.workspaceId), operator: 'and' }
+                }
+              }
+            ]
           }
         },
         size: docs.length
@@ -191,19 +207,30 @@ class ElasticDataAdapter implements DbAdapter {
     return result
   }
 
-  async upload (domain: Domain, docs: Doc[]): Promise<void> {
+  async upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
     while (docs.length > 0) {
       const part = docs.splice(0, 10000)
       try {
         await this.client.deleteByQuery(
           {
             type: '_doc',
-            index: toWorkspaceString(this.workspaceId),
+            index: indexName,
             body: {
               query: {
-                terms: {
-                  _id: Array.from(part.map((it) => it._id)),
-                  boost: 1.0
+                bool: {
+                  must: [
+                    {
+                      terms: {
+                        _id: Array.from(part.map((it) => it._id)),
+                        boost: 1.0
+                      }
+                    },
+                    {
+                      match: {
+                        workspaceId: { query: toWorkspaceString(this.workspaceId), operator: 'and' }
+                      }
+                    }
+                  ]
                 }
               },
               size: part.length
@@ -216,30 +243,44 @@ class ElasticDataAdapter implements DbAdapter {
       }
 
       const operations = part.flatMap((doc) => [
-        { index: { _index: toWorkspaceString(this.workspaceId), _id: doc._id } },
-        (doc as FullTextData).data
+        { index: { _index: indexName, _id: doc._id } },
+        {
+          workspaceId: toWorkspaceString(this.workspaceId),
+          ...(doc as FullTextData).data
+        }
       ])
 
       await this.client.bulk({ refresh: true, body: operations })
     }
   }
 
-  async update (domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {
+  async update (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {
     throw new Error('Method not implemented.')
   }
 
-  async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {
+  async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
     while (docs.length > 0) {
       const part = docs.splice(0, 10000)
       await this.client.deleteByQuery(
         {
           type: '_doc',
-          index: toWorkspaceString(this.workspaceId),
+          index: indexName,
           body: {
             query: {
-              terms: {
-                _id: part,
-                boost: 1.0
+              bool: {
+                must: [
+                  {
+                    terms: {
+                      _id: part,
+                      boost: 1.0
+                    }
+                  },
+                  {
+                    match: {
+                      workspaceId: { query: toWorkspaceString(this.workspaceId), operator: 'and' }
+                    }
+                  }
+                ]
               }
             },
             size: part.length
@@ -255,6 +296,7 @@ class ElasticDataAdapter implements DbAdapter {
  * @public
  */
 export async function createElasticBackupDataAdapter (
+  ctx: MeasureContext,
   hierarchy: Hierarchy,
   url: string,
   workspaceId: WorkspaceId

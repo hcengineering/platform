@@ -76,7 +76,7 @@ FulltextStorage & {
       }
       await Promise.all([model.tx(tx), transactions.tx(tx)])
       // Not required, since handled in client.
-      // handler(tx)
+      handler(tx)
       return {}
     },
     close: async () => {},

@@ -91,7 +91,9 @@ export default mergeIds(taskId, task, {
     Color: '' as IntlString,
 
     RenameStatus: '' as IntlString,
-    UpdateTasksStatusRequest: '' as IntlString
+    UpdateTasksStatusRequest: '' as IntlString,
+    TaskTypes: '' as IntlString,
+    Collections: '' as IntlString
   },
   status: {
     AssigneeRequired: '' as IntlString
@@ -101,7 +103,13 @@ export default mergeIds(taskId, task, {
     StatusFilter: '' as AnyComponent,
     TodoStatePresenter: '' as AnyComponent,
     AssignedTasks: '' as AnyComponent,
-    DueDateEditor: '' as AnyComponent
+    DueDateEditor: '' as AnyComponent,
+    CreateProjectType: '' as AnyComponent,
+    ProjectTypeGeneralSectionEditor: '' as AnyComponent,
+    ProjectTypeTasksTypeSectionEditor: '' as AnyComponent,
+    ProjectTypeAutomationsSectionEditor: '' as AnyComponent,
+    ProjectTypeCollectionsSectionEditor: '' as AnyComponent,
+    TaskTypeEditor: '' as AnyComponent
   },
   function: {
     GetAllStates: '' as GetAllValuesFunc,

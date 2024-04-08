@@ -14,9 +14,10 @@
 //
 
 import { toWorkspaceString, type WorkspaceId } from '@hcengineering/core'
+import { PlatformError, unknownStatus } from '@hcengineering/platform'
 import { type Db, MongoClient, type MongoClientOptions } from 'mongodb'
 
-let connections: MongoClient[] = []
+const connections = new Map<string, MongoClientReferenceImpl>()
 
 // Register mongo close on process exit.
 process.on('exit', () => {
@@ -30,24 +31,100 @@ process.on('exit', () => {
  */
 export async function shutdown (): Promise<void> {
   for (const c of connections.values()) {
-    await c.close()
+    c.close(true)
   }
-  connections = []
+  connections.clear()
 }
+
+export interface MongoClientReference {
+  getClient: () => Promise<MongoClient>
+  close: () => void
+}
+
+class MongoClientReferenceImpl {
+  count: number
+  client: MongoClient | Promise<MongoClient>
+
+  constructor (
+    client: MongoClient | Promise<MongoClient>,
+    readonly onclose: () => void
+  ) {
+    this.count = 0
+    this.client = client
+  }
+
+  async getClient (): Promise<MongoClient> {
+    if (this.client instanceof Promise) {
+      this.client = await this.client
+    }
+    return this.client
+  }
+
+  close (force: boolean = false): void {
+    this.count--
+    if (this.count === 0 || force) {
+      if (force) {
+        this.count = 0
+      }
+      this.onclose()
+      void (async () => {
+        await (await this.client).close()
+      })()
+    }
+  }
+
+  addRef (): void {
+    this.count++
+  }
+}
+
+export class ClientRef implements MongoClientReference {
+  constructor (readonly client: MongoClientReferenceImpl) {}
+
+  closed = false
+  async getClient (): Promise<MongoClient> {
+    if (!this.closed) {
+      return await this.client.getClient()
+    } else {
+      throw new PlatformError(unknownStatus('Mongo client is already closed'))
+    }
+  }
+
+  close (): void {
+    // Do not allow double close of mongo connection client
+    if (!this.closed) {
+      this.closed = true
+      this.client.close()
+    }
+  }
+}
+
 /**
  * Initialize a workspace connection to DB
  * @public
  */
-export async function getMongoClient (uri: string, options?: MongoClientOptions): Promise<MongoClient> {
+export function getMongoClient (uri: string, options?: MongoClientOptions): MongoClientReference {
   const extraOptions = JSON.parse(process.env.MONGO_OPTIONS ?? '{}')
-  const client = await MongoClient.connect(uri, {
-    ...options,
-    enableUtf8Validation: false,
-    maxConnecting: 1024,
-    ...extraOptions
-  })
-  connections.push(client)
-  return client
+  const key = `${uri}${process.env.MONGO_OPTIONS}_${JSON.stringify(options)}`
+  let existing = connections.get(key)
+
+  // If not created or closed
+  if (existing === undefined) {
+    existing = new MongoClientReferenceImpl(
+      MongoClient.connect(uri, {
+        ...options,
+        enableUtf8Validation: false,
+        ...extraOptions
+      }),
+      () => {
+        connections.delete(key)
+      }
+    )
+    connections.set(key, existing)
+  }
+  // Add reference and return once closable
+  existing.addRef()
+  return new ClientRef(existing)
 }
 
 /**

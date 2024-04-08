@@ -21,6 +21,12 @@ export default mergeIds(coreId, core, {
     Archived: '' as IntlString,
     ClassLabel: '' as IntlString,
     ClassPropertyLabel: '' as IntlString,
-    Members: '' as IntlString
+    Members: '' as IntlString,
+    Blob: '' as IntlString,
+    BlobContentType: '' as IntlString,
+    BlobEtag: '' as IntlString,
+    BlobVersion: '' as IntlString,
+    BlobStorageId: '' as IntlString,
+    BlobSize: '' as IntlString
   }
 })

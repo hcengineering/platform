@@ -262,6 +262,7 @@ test.describe('Tracker issue tests', () => {
 
     const issuesDetailsPage = new IssuesDetailsPage(page)
     await issuesDetailsPage.waitDetailsOpened(deleteIssue.title)
+
     await issuesDetailsPage.moreActionOnIssue('Delete')
     await issuesDetailsPage.pressYesForPopup(page)
 

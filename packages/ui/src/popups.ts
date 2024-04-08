@@ -23,6 +23,7 @@ export interface CompAndProps {
   options: {
     category: string
     overlay: boolean
+    fixed?: boolean
   }
 }
 
@@ -59,6 +60,7 @@ export function showPopup (
   options: {
     category: string
     overlay: boolean
+    fixed?: boolean
   } = { category: 'popup', overlay: true }
 ): PopupResult {
   const id = `${popupId++}`
@@ -94,7 +96,12 @@ export function closePopup (category?: string): void {
     if (category !== undefined) {
       popups = popups.filter((p) => p.options.category !== category)
     } else {
-      popups.pop()
+      for (let i = popups.length - 1; i >= 0; i--) {
+        if (popups[i].options.fixed !== true) {
+          popups.splice(i, 1)
+          break
+        }
+      }
     }
     return popups
   })
@@ -334,6 +341,9 @@ export function fitPopupElement (
     } else if (element === 'status') {
       newProps.top = 'calc(var(--status-bar-height) + 7.5px)'
       newProps.right = '12px'
+    } else if (element === 'movable') {
+      newProps.top = 'calc(var(--status-bar-height) + 4px)'
+      newProps.right = '1rem'
     }
   } else {
     if (clientWidth !== undefined && clientHeight !== undefined) {

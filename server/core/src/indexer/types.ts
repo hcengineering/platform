@@ -98,13 +98,13 @@ export interface FullTextPipelineStage {
 /**
  * @public
  */
-export const contentStageId = 'cnt-v2b'
+export const contentStageId = 'cnt-v3'
 /**
  * @public
  */
-export const fieldStateId = 'fld-v12'
+export const fieldStateId = 'fld-v13b'
 
 /**
  * @public
  */
-export const fullTextPushStageId = 'fts-v10b'
+export const fullTextPushStageId = 'fts-v13'

@@ -4,6 +4,7 @@ export interface NewIssue extends Issue {
 }
 
 export interface Issue {
+  title?: string
   status?: string
   priority?: string
   assignee?: string

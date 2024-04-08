@@ -41,8 +41,8 @@ export interface DocInfo {
  * @public
  */
 export interface StorageIterator {
-  next: () => Promise<DocInfo | undefined>
-  close: () => Promise<void>
+  next: (ctx: MeasureContext) => Promise<DocInfo | undefined>
+  close: (ctx: MeasureContext) => Promise<void>
 }
 
 /**
@@ -50,17 +50,17 @@ export interface StorageIterator {
  */
 export interface LowLevelStorage {
   // Low level streaming API to retrieve information
-  find: (domain: Domain) => StorageIterator
+  find: (ctx: MeasureContext, domain: Domain) => StorageIterator
 
   // Load passed documents from domain
-  load: (domain: Domain, docs: Ref<Doc>[]) => Promise<Doc[]>
+  load: (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => Promise<Doc[]>
 
   // Upload new versions of documents
   // docs - new/updated version of documents.
-  upload: (domain: Domain, docs: Doc[]) => Promise<void>
+  upload: (ctx: MeasureContext, domain: Domain, docs: Doc[]) => Promise<void>
 
   // Remove a list of documents.
-  clean: (domain: Domain, docs: Ref<Doc>[]) => Promise<void>
+  clean: (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => Promise<void>
 }
 /**
  * @public

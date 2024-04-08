@@ -14,11 +14,26 @@
 //
 
 import { deepEqual } from 'fast-equals'
-import { Account, AnyAttribute, Class, Doc, DocData, DocIndexState, IndexKind, Obj, Ref, Space } from './classes'
+import {
+  Account,
+  AnyAttribute,
+  Class,
+  Doc,
+  DocData,
+  DocIndexState,
+  IndexKind,
+  Obj,
+  Permission,
+  Ref,
+  Role,
+  Space,
+  TypedSpace
+} from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
 import { isPredicate } from './predicate'
 import { DocumentQuery, FindResult } from './storage'
+import { TxOperations } from './operations'
 
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
@@ -130,8 +145,6 @@ export interface IndexKeyOptions {
   _class?: Ref<Class<Obj>>
   docId?: Ref<DocIndexState>
   extra?: string[]
-  relative?: boolean
-  refAttribute?: string
 }
 /**
  * @public
@@ -542,3 +555,30 @@ export const isEnum =
     (token: any): token is T[keyof T] => {
       return typeof token === 'string' && Object.values(e as Record<string, any>).includes(token)
     }
+
+export async function checkPermission (
+  client: TxOperations,
+  _id: Ref<Permission>,
+  _space: Ref<TypedSpace>
+): Promise<boolean> {
+  const space = await client.findOne(core.class.TypedSpace, { _id: _space })
+  const type = await client
+    .getModel()
+    .findOne(core.class.SpaceType, { _id: space?.type }, { lookup: { _id: { roles: core.class.Role } } })
+  const mixin = type?.targetClass
+  if (space === undefined || type === undefined || mixin === undefined) {
+    return false
+  }
+
+  const me = getCurrentAccount()
+  const asMixin = client.getHierarchy().as(space, mixin)
+  const myRoles = type.$lookup?.roles?.filter((role) => (asMixin as any)[role._id]?.includes(me._id)) as Role[]
+
+  if (myRoles === undefined) {
+    return false
+  }
+
+  const myPermissions = new Set(myRoles.flatMap((role) => role.permissions))
+
+  return myPermissions.has(_id)
+}

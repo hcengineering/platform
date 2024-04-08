@@ -24,6 +24,7 @@
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
   export let actions: Action[] = []
   export let excludedActions: string[] = []
+  export let includedActions: string[] = []
   export let mode: ViewContextType | undefined = undefined
   let resActions = actions
 
@@ -41,9 +42,12 @@
     remove: 7
   }
 
-  getActions(client, object, baseMenuClass, mode).then((result) => {
+  void getActions(client, object, baseMenuClass, mode).then((result) => {
     const filtered = result.filter((a) => {
       if (excludedActions.includes(a._id)) {
+        return false
+      }
+      if (includedActions.length > 0 && !includedActions.includes(a._id)) {
         return false
       }
       if (a.override && a.override.filter((o) => excludedActions.includes(o)).length > 0) {

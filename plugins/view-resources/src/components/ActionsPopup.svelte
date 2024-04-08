@@ -244,7 +244,7 @@
   async function updateItems (query: string, filteredActions: Array<WithLookup<Action>>): Promise<void> {
     let searchItems: SearchItem[] = []
     if (query !== '' && query.indexOf('/') !== 0) {
-      searchItems = await searchFor('spotlight', query)
+      searchItems = (await searchFor('spotlight', query)).items
     }
     items = packSearchAndActions(searchItems, filteredActions)
   }

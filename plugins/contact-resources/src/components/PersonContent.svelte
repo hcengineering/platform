@@ -117,6 +117,7 @@
   <span
     class="antiPresenter h-full"
     class:text-base={enlargedText}
+    class:cursor-pointer={!disabled && onEdit !== undefined}
     use:tooltip={disabled ? undefined : showTooltip}
     on:click={onEditClick}
   >

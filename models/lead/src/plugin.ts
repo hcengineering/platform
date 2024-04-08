@@ -21,7 +21,7 @@ import lead from '@hcengineering/lead-resources/src/plugin'
 import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
 import type { IntlString } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
-import { type TaskTypeDescriptor, type ProjectType } from '@hcengineering/task'
+import { type TaskTypeDescriptor } from '@hcengineering/task'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
 import { type Action, type ActionCategory, type Viewlet } from '@hcengineering/view'
 
@@ -47,9 +47,6 @@ export default mergeIds(leadId, lead, {
   },
   space: {
     DefaultFunnel: '' as Ref<Funnel>
-  },
-  template: {
-    DefaultFunnel: '' as Ref<ProjectType>
   },
   viewlet: {
     TableCustomer: '' as Ref<Viewlet>,

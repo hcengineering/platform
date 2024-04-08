@@ -14,20 +14,21 @@
 -->
 <script lang="ts">
   // import { Doc } from '@hcengineering/core'
-  import { Button, Dialog } from '@hcengineering/ui'
+  import { Button, Dialog, Label, Spinner } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import presentation from '..'
   import { getFileUrl } from '../utils'
   import Download from './icons/Download.svelte'
   import ActionContext from './ActionContext.svelte'
 
-  export let file: string
+  export let file: string | undefined
   export let name: string
   export let contentType: string | undefined
   // export let popupOptions: PopupOptions
   // export let value: Doc
   export let showIcon = true
   export let fullSize = false
+  export let isLoading = false
 
   const dispatch = createEventDispatcher()
 
@@ -42,6 +43,8 @@
     }
   })
   let download: HTMLAnchorElement
+  $: src = file === undefined ? '' : getFileUrl(file, 'full', name)
+  $: isImage = contentType !== undefined && contentType.startsWith('image/')
 </script>
 
 <ActionContext context={{ mode: 'browser' }} />
@@ -66,24 +69,36 @@
   </svelte:fragment>
 
   <svelte:fragment slot="utils">
-    <a class="no-line" href={getFileUrl(file, 'full', name)} download={name} bind:this={download}>
-      <Button
-        icon={Download}
-        kind={'ghost'}
-        on:click={() => {
-          download.click()
-        }}
-        showTooltip={{ label: presentation.string.Download }}
-      />
-    </a>
+    {#if !isLoading && isImage && src !== ''}
+      <a class="no-line" href={src} download={name} bind:this={download}>
+        <Button
+          icon={Download}
+          kind={'ghost'}
+          on:click={() => {
+            download.click()
+          }}
+          showTooltip={{ label: presentation.string.Download }}
+        />
+      </a>
+    {/if}
   </svelte:fragment>
 
-  {#if contentType && contentType.startsWith('image/')}
-    <div class="pdfviewer-content img">
-      <img class="img-fit" src={getFileUrl(file, 'full', name)} alt="" />
-    </div>
+  {#if !isLoading}
+    {#if src === ''}
+      <div class="centered">
+        <Label label={presentation.string.FailedToPreview} />
+      </div>
+    {:else if isImage}
+      <div class="pdfviewer-content img">
+        <img class="img-fit" {src} alt="" />
+      </div>
+    {:else}
+      <iframe class="pdfviewer-content" src={src + '#view=FitH&navpanes=0'} title="" />
+    {/if}
   {:else}
-    <iframe class="pdfviewer-content" src={getFileUrl(file, 'full', name) + '#view=FitH&navpanes=0'} title="" />
+    <div class="centered">
+      <Spinner size="medium" />
+    </div>
   {/if}
 </Dialog>
 
@@ -122,5 +137,13 @@
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
+  }
+  .centered {
+    flex-grow: 1;
+    width: 100;
+    height: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 </style>

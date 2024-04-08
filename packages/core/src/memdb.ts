@@ -14,13 +14,13 @@
 //
 
 import { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { Lookup, ReverseLookups, getObjectValue } from '.'
-import type { Class, Doc, Ref } from './classes'
+import { Lookup, MeasureContext, ReverseLookups, getObjectValue } from '.'
+import type { AttachedDoc, Class, Doc, Ref } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
 import { checkMixinKey, matchQuery, resultSort } from './query'
 import type { DocumentQuery, FindOptions, FindResult, LookupData, Storage, TxResult, WithLookup } from './storage'
-import type { Tx, TxCreateDoc, TxMixin, TxRemoveDoc, TxUpdateDoc } from './tx'
+import type { Tx, TxCollectionCUD, TxCreateDoc, TxMixin, TxRemoveDoc, TxUpdateDoc } from './tx'
 import { TxProcessor } from './tx'
 import { toFindResult } from './utils'
 
@@ -28,17 +28,17 @@ import { toFindResult } from './utils'
  * @public
  */
 export abstract class MemDb extends TxProcessor implements Storage {
-  private readonly objectsByClass = new Map<Ref<Class<Doc>>, Doc[]>()
+  private readonly objectsByClass = new Map<Ref<Class<Doc>>, Map<Ref<Doc>, Doc>>()
   private readonly objectById = new Map<Ref<Doc>, Doc>()
 
   constructor (protected readonly hierarchy: Hierarchy) {
     super()
   }
 
-  private getObjectsByClass (_class: Ref<Class<Doc>>): Doc[] {
+  private getObjectsByClass (_class: Ref<Class<Doc>>): Map<Ref<Doc>, Doc> {
     const result = this.objectsByClass.get(_class)
     if (result === undefined) {
-      const result: Doc[] = []
+      const result = new Map<Ref<Doc>, Doc>()
       this.objectsByClass.set(_class, result)
       return result
     }
@@ -46,10 +46,9 @@ export abstract class MemDb extends TxProcessor implements Storage {
   }
 
   private cleanObjectByClass (_class: Ref<Class<Doc>>, _id: Ref<Doc>): void {
-    let result = this.objectsByClass.get(_class)
+    const result = this.objectsByClass.get(_class)
     if (result !== undefined) {
-      result = result.filter((cl) => cl._id !== _id)
-      this.objectsByClass.set(_class, result)
+      result.delete(_id)
     }
   }
 
@@ -152,7 +151,7 @@ export abstract class MemDb extends TxProcessor implements Storage {
     ) {
       result = this.getByIdQuery(query, baseClass)
     } else {
-      result = this.getObjectsByClass(baseClass)
+      result = Array.from(this.getObjectsByClass(baseClass).values())
     }
 
     result = matchQuery(result, query, _class, this.hierarchy, true)
@@ -195,7 +194,7 @@ export abstract class MemDb extends TxProcessor implements Storage {
     ) {
       result = this.getByIdQuery(query, baseClass)
     } else {
-      result = this.getObjectsByClass(baseClass)
+      result = Array.from(this.getObjectsByClass(baseClass).values())
     }
 
     result = matchQuery(result, query, _class, this.hierarchy, true)
@@ -214,12 +213,7 @@ export abstract class MemDb extends TxProcessor implements Storage {
   addDoc (doc: Doc): void {
     this.hierarchy.getAncestors(doc._class).forEach((_class) => {
       const arr = this.getObjectsByClass(_class)
-      const index = arr.findIndex((p) => p._id === doc._id)
-      if (index === -1) {
-        arr.push(doc)
-      } else {
-        arr[index] = doc
-      }
+      arr.set(doc._id, doc)
     })
     this.objectById.set(doc._id, doc)
   }
@@ -273,6 +267,74 @@ export class ModelDb extends MemDb {
   protected override async txCreateDoc (tx: TxCreateDoc<Doc>): Promise<TxResult> {
     this.addDoc(TxProcessor.createDoc2Doc(tx))
     return {}
+  }
+
+  addTxes (ctx: MeasureContext, txes: Tx[], clone: boolean): void {
+    for (const tx of txes) {
+      switch (tx._class) {
+        case core.class.TxCreateDoc:
+          this.addDoc(TxProcessor.createDoc2Doc(tx as TxCreateDoc<Doc>, clone))
+          break
+        case core.class.TxCollectionCUD: {
+          // We need update only create transactions to contain attached, attachedToClass.
+          const cud = tx as TxCollectionCUD<Doc, AttachedDoc<Doc>>
+          if (cud.tx._class === core.class.TxCreateDoc) {
+            const createTx = cud.tx as TxCreateDoc<AttachedDoc>
+            const d: TxCreateDoc<AttachedDoc> = {
+              ...createTx,
+              attributes: {
+                ...createTx.attributes,
+                attachedTo: cud.objectId,
+                attachedToClass: cud.objectClass,
+                collection: cud.collection
+              }
+            }
+            this.addDoc(TxProcessor.createDoc2Doc(d as TxCreateDoc<Doc>, clone))
+          }
+          this.addTxes(ctx, [cud.tx], clone)
+          break
+        }
+        case core.class.TxUpdateDoc: {
+          const cud = tx as TxUpdateDoc<Doc>
+          const doc = this.findObject(cud.objectId)
+          if (doc !== undefined) {
+            TxProcessor.updateDoc2Doc(doc, cud)
+          } else {
+            void ctx.error('no document found, failed to apply model transaction, skipping', {
+              _id: tx._id,
+              _class: tx._class,
+              objectId: cud.objectId
+            })
+          }
+          break
+        }
+        case core.class.TxRemoveDoc:
+          try {
+            this.delDoc((tx as TxRemoveDoc<Doc>).objectId)
+          } catch (err: any) {
+            void ctx.error('no document found, failed to apply model transaction, skipping', {
+              _id: tx._id,
+              _class: tx._class,
+              objectId: (tx as TxRemoveDoc<Doc>).objectId
+            })
+          }
+          break
+        case core.class.TxMixin: {
+          const mix = tx as TxMixin<Doc, Doc>
+          const obj = this.findObject(mix.objectId)
+          if (obj !== undefined) {
+            TxProcessor.updateMixin4Doc(obj, mix)
+          } else {
+            void ctx.error('no document found, failed to apply model transaction, skipping', {
+              _id: tx._id,
+              _class: tx._class,
+              objectId: mix.objectId
+            })
+          }
+          break
+        }
+      }
+    }
   }
 
   protected async txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<TxResult> {

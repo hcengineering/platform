@@ -14,8 +14,8 @@
 //
 
 import { getMethods } from '@hcengineering/account'
-import { type Tx } from '@hcengineering/core'
-import builder, { migrateOperations, getModelVersion } from '@hcengineering/model-all'
+import { MeasureMetricsContext, newMetrics, type Tx } from '@hcengineering/core'
+import builder, { getModelVersion, migrateOperations } from '@hcengineering/model-all'
 import { serveAccount } from '.'
 
 const enabled = (process.env.MODEL_ENABLED ?? '*').split(',').map((it) => it.trim())
@@ -23,4 +23,6 @@ const disabled = (process.env.MODEL_DISABLED ?? '').split(',').map((it) => it.tr
 
 const txes = JSON.parse(JSON.stringify(builder(enabled, disabled).getTxes())) as Tx[]
 
-serveAccount(getMethods(getModelVersion(), txes, migrateOperations))
+const metricsContext = new MeasureMetricsContext('account', {}, {}, newMetrics())
+
+serveAccount(metricsContext, getMethods(getModelVersion(), txes, migrateOperations))

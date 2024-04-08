@@ -97,6 +97,10 @@
     displayMessages = filteredMessages
   })
 
+  inboxClient.inboxNotificationsByContext.subscribe(() => {
+    readViewportMessages()
+  })
+
   function scrollToBottom (afterScrollFn?: () => void) {
     if (scroller !== undefined && scrollElement !== undefined) {
       scroller.scrollBy(scrollElement.scrollHeight)
@@ -275,7 +279,7 @@
   }
 
   function readViewportMessages () {
-    if (scrollElement === undefined || scrollContentBox === undefined) {
+    if (!scrollElement || !scrollContentBox) {
       return
     }
 
@@ -304,7 +308,7 @@
       return
     }
 
-    if (scrollContentBox === undefined || scrollElement === undefined) {
+    if (!scrollContentBox || !scrollElement) {
       return
     }
 

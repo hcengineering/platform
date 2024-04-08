@@ -114,7 +114,11 @@
           <Label label={hierarchy.getClass(value.attachedToClass).label} />
         {/if}
         <span class="title overflow-label clear-mins" {title}>
-          {title ?? hierarchy.getClass(value.attachedToClass).label}
+          {#if title}
+            {title}
+          {:else}
+            <Label label={hierarchy.getClass(value.attachedToClass).label} />
+          {/if}
         </span>
       {/if}
     </div>
@@ -140,7 +144,7 @@
 
   <div class="content">
     <div class="notifications">
-      {#each notifications.slice(0, maxNotifications).reverse() as notification}
+      {#each notifications.slice(0, maxNotifications) as notification}
         <div class="notification">
           <div class="embeddedMarker" />
           <InboxNotificationPresenter
@@ -210,7 +214,7 @@
       position: absolute;
       min-width: 0.25rem;
       border-radius: 0;
-      height: 2.375rem;
+      height: 100%;
       background: var(--global-ui-highlight-BackgroundColor);
     }
 

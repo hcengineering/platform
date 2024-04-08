@@ -29,7 +29,7 @@
   export let icon: Asset | AnySvelteComponent | ComponentType | undefined = undefined
   export let iconProps: any | undefined = undefined
   export let size: 'small' | 'medium' | 'large'
-  export let kind: 'default' | 'second' = 'default'
+  export let kind: 'default' | 'second' | 'no-border' = 'default'
   export let nested: boolean = false
   export let isOpen: boolean = false
   export let disabled: boolean = false
@@ -95,14 +95,14 @@
         {#if title}{title}{/if}
         <slot name="title" />
       </div>
-      {#if counter !== false}
+      {#if counter !== false || $$slots.counter}
         <span class="hulyAccordionItem-header__separator">•</span>
         <span class="hulyAccordionItem-header__counter">
           {#if typeof counter === 'number'}{counter}{/if}
           <slot name="counter" />
         </span>
       {/if}
-      {#if duration !== false}
+      {#if duration !== false || $$slots.duration}
         <span class="hulyAccordionItem-header__separator">•</span>
         <span class="hulyAccordionItem-header__duration">
           {#if typeof duration === 'number'}{duration}{/if}

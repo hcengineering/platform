@@ -152,7 +152,7 @@ export class IndexedFieldStage implements FullTextPipelineStage {
           const docUpdate: DocumentUpdate<DocIndexState> = {}
 
           let changes = 0
-
+          docUpdate.mixins = pipeline.hierarchy.findAllMixins(doc as Doc)
           // Convert previous child fields to just
           for (const [k] of Object.entries(docState.attributes)) {
             const { attr, docId, _class } = extractDocKey(k)

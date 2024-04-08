@@ -25,15 +25,16 @@ import core, {
   Hierarchy,
   IndexKind,
   IndexOrder,
+  MeasureContext,
   ModelDb,
   Tx,
   WorkspaceId
 } from '@hcengineering/core'
-import { MinioService } from '@hcengineering/minio'
 import { consoleModelLogger, MigrateOperation, ModelLogger } from '@hcengineering/model'
-import { getWorkspaceDB } from '@hcengineering/mongo'
-import { StorageAdapter } from '@hcengineering/server-core'
-import { Db, Document, MongoClient } from 'mongodb'
+import { createMongoTxAdapter, getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
+import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server'
+import { StorageAdapter, StorageConfiguration } from '@hcengineering/server-core'
+import { Db, Document } from 'mongodb'
 import { connect } from './connect'
 import toolPlugin from './plugin'
 import { MigrateClientImpl } from './upgrade'
@@ -53,8 +54,12 @@ export class FileModelLogger implements ModelLogger {
     this.handle = fs.createWriteStream(this.file, { flags: 'a' })
   }
 
-  log (...data: any[]): void {
-    this.handle.write(data.map((it: any) => JSON.stringify(it)).join(' ') + '\n')
+  log (msg: string, data: any): void {
+    this.handle.write(msg + ' : ' + JSON.stringify(data) + '\n')
+  }
+
+  error (msg: string, data: any): void {
+    this.handle.write(msg + ': ' + JSON.stringify(data) + '\n')
   }
 
   close (): void {
@@ -66,7 +71,7 @@ export class FileModelLogger implements ModelLogger {
  * @public
  */
 export function prepareTools (rawTxes: Tx[]): { mongodbUri: string, storageAdapter: StorageAdapter, txes: Tx[] } {
-  let minioEndpoint = process.env.MINIO_ENDPOINT
+  const minioEndpoint = process.env.MINIO_ENDPOINT
   if (minioEndpoint === undefined) {
     console.error('please provide minio endpoint')
     process.exit(1)
@@ -90,28 +95,18 @@ export function prepareTools (rawTxes: Tx[]): { mongodbUri: string, storageAdapt
     process.exit(1)
   }
 
-  let minioPort = 9000
-  const sp = minioEndpoint.split(':')
-  if (sp.length > 1) {
-    minioEndpoint = sp[0]
-    minioPort = parseInt(sp[1])
-  }
+  const storageConfig: StorageConfiguration = storageConfigFromEnv()
 
-  const minio = new MinioService({
-    endPoint: minioEndpoint,
-    port: minioPort,
-    useSSL: false,
-    accessKey: minioAccessKey,
-    secretKey: minioSecretKey
-  })
+  const storageAdapter = buildStorageFromConfig(storageConfig, mongodbUri)
 
-  return { mongodbUri, storageAdapter: minio, txes: JSON.parse(JSON.stringify(rawTxes)) as Tx[] }
+  return { mongodbUri, storageAdapter, txes: JSON.parse(JSON.stringify(rawTxes)) as Tx[] }
 }
 
 /**
  * @public
  */
 export async function initModel (
+  ctx: MeasureContext,
   transactorUrl: string,
   workspaceId: WorkspaceId,
   rawTxes: Tx[],
@@ -123,43 +118,49 @@ export async function initModel (
     throw Error('Model txes must target only core.space.Model')
   }
 
-  const client = new MongoClient(mongodbUri)
+  const _client = getMongoClient(mongodbUri)
+  const client = await _client.getClient()
   let connection: CoreClient & BackupClient
   try {
-    await client.connect()
     const db = getWorkspaceDB(client, workspaceId)
 
-    logger.log('dropping database...', workspaceId)
-    await db.dropDatabase()
-
     logger.log('creating model...', workspaceId)
-    const model = txes
-    const result = await db.collection(DOMAIN_TX).insertMany(model as Document[])
-    logger.log(`${result.insertedCount} model transactions inserted.`)
+    const result = await db.collection(DOMAIN_TX).insertMany(txes as Document[])
+    logger.log('model transactions inserted.', { count: result.insertedCount })
 
-    logger.log('creating data...', transactorUrl)
-    connection = (await connect(transactorUrl, workspaceId, undefined, {
-      model: 'upgrade'
-    })) as unknown as CoreClient & BackupClient
+    logger.log('creating data...', { transactorUrl })
+    const { model } = await fetchModelFromMongo(ctx, mongodbUri, workspaceId)
+
+    connection = (await connect(
+      transactorUrl,
+      workspaceId,
+      undefined,
+      {
+        model: 'upgrade',
+        admin: 'true'
+      },
+      model
+    )) as unknown as CoreClient & BackupClient
 
     try {
       for (const op of migrateOperations) {
-        logger.log('Migrate', op[0])
+        logger.log('Migrate', { name: op[0] })
         await op[1].upgrade(connection, logger)
       }
 
       // Create update indexes
-      await createUpdateIndexes(connection, db, logger)
+      await createUpdateIndexes(ctx, connection, db, logger)
 
-      logger.log('create minio bucket')
-      if (!(await minio.exists(workspaceId))) {
-        await minio.make(workspaceId)
+      logger.log('create minio bucket', { workspaceId })
+      if (!(await minio.exists(ctx, workspaceId))) {
+        await minio.make(ctx, workspaceId)
       }
-    } catch (e) {
-      logger.log(e)
+    } catch (e: any) {
+      logger.error('error', { error: e })
+      throw e
     }
   } finally {
-    await client.close()
+    _client.close()
   }
   return connection
 }
@@ -168,6 +169,7 @@ export async function initModel (
  * @public
  */
 export async function upgradeModel (
+  ctx: MeasureContext,
   transactorUrl: string,
   workspaceId: WorkspaceId,
   rawTxes: Tx[],
@@ -180,70 +182,117 @@ export async function upgradeModel (
     throw Error('Model txes must target only core.space.Model')
   }
 
-  const client = new MongoClient(mongodbUri)
+  // const client = new MongoClient(mongodbUri)
+  const _client = getMongoClient(mongodbUri)
+  const client = await _client.getClient()
   try {
-    await client.connect()
     const db = getWorkspaceDB(client, workspaceId)
 
-    logger.log(`${workspaceId.name}: removing model...`)
+    logger.log('removing model...', { workspaceId: workspaceId.name })
     // we're preserving accounts (created by core.account.System).
-    const result = await db.collection(DOMAIN_TX).deleteMany({
-      objectSpace: core.space.Model,
-      modifiedBy: core.account.System,
-      objectClass: { $nin: [contact.class.PersonAccount, 'contact:class:EmployeeAccount'] }
+    const result = await ctx.with(
+      'mongo-delete',
+      {},
+      async () =>
+        await db.collection(DOMAIN_TX).deleteMany({
+          objectSpace: core.space.Model,
+          modifiedBy: core.account.System,
+          objectClass: { $nin: [contact.class.PersonAccount, 'contact:class:EmployeeAccount'] }
+        })
+    )
+    logger.log('transactions deleted.', { workspaceId: workspaceId.name, count: result.deletedCount })
+
+    logger.log('creating model...', { workspaceId: workspaceId.name })
+    const insert = await ctx.with(
+      'mongo-insert',
+      {},
+      async () => await db.collection(DOMAIN_TX).insertMany(txes as Document[])
+    )
+
+    logger.log('model transactions inserted.', { workspaceId: workspaceId.name, count: insert.insertedCount })
+
+    const { hierarchy, modelDb, model } = await fetchModelFromMongo(ctx, mongodbUri, workspaceId)
+
+    await ctx.with('migrate', {}, async () => {
+      const migrateClient = new MigrateClientImpl(db, hierarchy, modelDb, logger)
+      for (const op of migrateOperations) {
+        const t = Date.now()
+        await op[1].migrate(migrateClient, logger)
+        logger.log('migrate:', { workspaceId: workspaceId.name, operation: op[0], time: Date.now() - t })
+      }
     })
-    logger.log(`${workspaceId.name}: ${result.deletedCount} transactions deleted.`)
+    logger.log('Apply upgrade operations', { workspaceId: workspaceId.name })
 
-    logger.log(`${workspaceId.name}: creating model...`)
-    const model = txes
-    const insert = await db.collection(DOMAIN_TX).insertMany(model as Document[])
-    logger.log(`${workspaceId.name}: ${insert.insertedCount} model transactions inserted.`)
+    const connection = await ctx.with(
+      'connect-platform',
+      {},
+      async (ctx) =>
+        await connect(
+          transactorUrl,
+          workspaceId,
+          undefined,
+          {
+            mode: 'backup',
+            model: 'upgrade',
+            admin: 'true'
+          },
+          model
+        )
+    )
 
-    const hierarchy = new Hierarchy()
-    const modelDb = new ModelDb(hierarchy)
-    for (const tx of txes) {
+    // Create update indexes
+    await ctx.with('create-indexes', {}, async (ctx) => {
+      await createUpdateIndexes(ctx, connection, db, logger)
+    })
+
+    await ctx.with('upgrade', {}, async () => {
+      for (const op of migrateOperations) {
+        const t = Date.now()
+        await op[1].upgrade(connection, logger)
+        logger.log('upgrade:', { operation: op[0], time: Date.now() - t, workspaceId: workspaceId.name })
+      }
+    })
+    return connection
+  } finally {
+    _client.close()
+  }
+}
+
+async function fetchModelFromMongo (
+  ctx: MeasureContext,
+  mongodbUri: string,
+  workspaceId: WorkspaceId
+): Promise<{ hierarchy: Hierarchy, modelDb: ModelDb, model: Tx[] }> {
+  const hierarchy = new Hierarchy()
+  const modelDb = new ModelDb(hierarchy)
+
+  const txAdapter = await createMongoTxAdapter(ctx, hierarchy, mongodbUri, workspaceId, modelDb)
+
+  const model = await ctx.with('get-model', {}, async (ctx) => await txAdapter.getModel(ctx))
+
+  await ctx.with('build local model', {}, async () => {
+    for (const tx of model) {
       try {
         hierarchy.tx(tx)
       } catch (err: any) {}
     }
-    for (const tx of txes) {
+    for (const tx of model) {
       try {
         await modelDb.tx(tx)
       } catch (err: any) {}
     }
-
-    const migrateClient = new MigrateClientImpl(db, hierarchy, modelDb, logger)
-    for (const op of migrateOperations) {
-      const t = Date.now()
-      await op[1].migrate(migrateClient, logger)
-      logger.log(`${workspaceId.name}: migrate:`, op[0], Date.now() - t)
-    }
-
-    logger.log(`${workspaceId.name}: Apply upgrade operations`)
-
-    const connection = await connect(transactorUrl, workspaceId, undefined, {
-      mode: 'backup',
-      model: 'upgrade',
-      admin: 'true'
-    })
-
-    // Create update indexes
-    await createUpdateIndexes(connection, db, logger)
-
-    for (const op of migrateOperations) {
-      const t = Date.now()
-      await op[1].upgrade(connection, logger)
-      logger.log(`${workspaceId.name}: upgrade:`, op[0], Date.now() - t)
-    }
-
-    return connection
-  } finally {
-    await client.close()
-  }
+  })
+  await txAdapter.close()
+  return { hierarchy, modelDb, model }
 }
 
-async function createUpdateIndexes (connection: CoreClient, db: Db, logger: ModelLogger): Promise<void> {
-  const classes = await connection.findAll(core.class.Class, {})
+async function createUpdateIndexes (
+  ctx: MeasureContext,
+  connection: CoreClient,
+  db: Db,
+  logger: ModelLogger
+): Promise<void> {
+  const classes = await ctx.with('find-classes', {}, async () => await connection.findAll(core.class.Class, {}))
 
   const hierarchy = connection.getHierarchy()
   const domains = new Map<Domain, Set<string | FieldIndex<Doc>>>()
@@ -280,10 +329,15 @@ async function createUpdateIndexes (connection: CoreClient, db: Db, logger: Mode
     }
   }
 
+  const collections = await ctx.with(
+    'list-collections',
+    {},
+    async () => await db.listCollections({}, { nameOnly: true }).toArray()
+  )
   for (const [d, v] of domains.entries()) {
-    const collInfo = await db.listCollections({ name: d }).next()
-    if (collInfo === null) {
-      await db.createCollection(d)
+    const collInfo = collections.find((it) => it.name === d)
+    if (collInfo == null) {
+      await ctx.with('create-collection', { d }, async () => await db.createCollection(d))
     }
     const collection = db.collection(d)
     const bb: (string | FieldIndex<Doc>)[] = []
@@ -294,14 +348,14 @@ async function createUpdateIndexes (connection: CoreClient, db: Db, logger: Mode
         const exists = await collection.indexExists(name)
         if (!exists) {
           await collection.createIndex(vv)
+          bb.push(vv)
         }
       } catch (err: any) {
-        logger.log('error: failed to create index', d, vv, JSON.stringify(err))
+        logger.error('error: failed to create index', { d, vv, err })
       }
-      bb.push(vv)
     }
     if (bb.length > 0) {
-      logger.log('created indexes', d, JSON.stringify(bb))
+      logger.log('created indexes', { d, bb })
     }
   }
 }
