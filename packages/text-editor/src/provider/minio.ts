@@ -26,9 +26,10 @@ async function fetchContent (doc: YDoc, name: string): Promise<void> {
   for (let i = 0; i < 2; i++) {
     try {
       const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
+      const token = getCookieToken(); 
 
       try {
-        const res = await fetch(concatLink(frontUrl, `/files?file=${name}`))
+        const res = await fetch(concatLink(frontUrl, `/files?file=${name}&token=${token}`))
 
         if (res.ok) {
           const blob = await res.blob()
@@ -40,10 +41,22 @@ async function fetchContent (doc: YDoc, name: string): Promise<void> {
     } catch (err: any) {
       console.error(err)
     }
-    // White a while
+    // Wait for a while
     await new Promise((resolve) => setTimeout(resolve, 10))
   }
 }
+
+function getCookieToken(): string | null {
+  const cookies = document.cookie.split(';');
+  for (let i = 0; i < cookies.length; i++) {
+    const cookie = cookies[i].trim();
+    if (cookie.startsWith('presentation-metadata-Token=')) {
+      return cookie.substring('presentation-metadata-Token='.length, cookie.length);
+    }
+  }
+  return null; 
+}
+
 
 export class MinioProvider extends Observable<EVENTS> {
   loaded: Promise<void>
