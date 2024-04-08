@@ -131,12 +131,12 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     if (this.pending.size > 0 && (this.pending.size >= 50 || force)) {
       // Push all pending changes to storage.
       try {
-        await this.storage.update(DOMAIN_DOC_INDEX_STATE, this.pending)
+        await this.storage.update(this.metrics, DOMAIN_DOC_INDEX_STATE, this.pending)
       } catch (err: any) {
         console.error(err)
         // Go one by one.
         for (const o of this.pending) {
-          await this.storage.update(DOMAIN_DOC_INDEX_STATE, new Map([o]))
+          await this.storage.update(this.metrics, DOMAIN_DOC_INDEX_STATE, new Map([o]))
         }
       }
       this.pending.clear()
@@ -173,7 +173,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     const uploads = entries.filter((it) => it[1].create !== undefined).map((it) => it[1].create) as DocIndexState[]
     if (uploads.length > 0) {
       await ctx.with('upload', {}, async () => {
-        await this.storage.upload(DOMAIN_DOC_INDEX_STATE, uploads)
+        await this.storage.upload(this.metrics, DOMAIN_DOC_INDEX_STATE, uploads)
       })
     }
 
@@ -189,7 +189,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         ops.set(u[0], upd)
       }
       await ctx.with('upload', {}, async () => {
-        await this.storage.update(DOMAIN_DOC_INDEX_STATE, ops)
+        await this.storage.update(this.metrics, DOMAIN_DOC_INDEX_STATE, ops)
       })
     }
     this.triggerIndexing()
@@ -225,7 +225,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
     if (udoc === undefined) {
       // Some updated, document, let's load it.
-      udoc = (await this.storage.load(DOMAIN_DOC_INDEX_STATE, [docId])).shift() as DocIndexState
+      udoc = (await this.storage.load(this.metrics, DOMAIN_DOC_INDEX_STATE, [docId])).shift() as DocIndexState
     }
 
     if (udoc !== undefined && this.currentStage !== undefined) {
@@ -463,6 +463,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
             if (toRemove.length > 0) {
               try {
                 await this.storage.clean(
+                  this.metrics,
                   DOMAIN_DOC_INDEX_STATE,
                   toRemove.map((it) => it._id)
                 )
@@ -582,7 +583,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
       await this.flush(true)
       if (toRemoveIds.length > 0) {
-        await this.storage.clean(DOMAIN_DOC_INDEX_STATE, toRemoveIds)
+        await this.storage.clean(this.metrics, DOMAIN_DOC_INDEX_STATE, toRemoveIds)
       } else {
         break
       }

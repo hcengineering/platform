@@ -259,7 +259,7 @@ class TSessionManager implements SessionManager {
       let pipeline: Pipeline
       if (token.extra?.model === 'upgrade') {
         if (workspace.upgrade) {
-          pipeline = await ctx.with('💤 wait ' + workspaceName, {}, async () => await (workspace as Workspace).pipeline)
+          pipeline = await ctx.with('💤 wait', { workspaceName }, async () => await (workspace as Workspace).pipeline)
         } else {
           pipeline = await this.createUpgradeSession(
             token,
@@ -277,7 +277,7 @@ class TSessionManager implements SessionManager {
         if (workspace.upgrade) {
           return { upgrade: true }
         }
-        pipeline = await ctx.with('💤 wait ' + workspaceName, {}, async () => await (workspace as Workspace).pipeline)
+        pipeline = await ctx.with('💤 wait', { workspaceName }, async () => await (workspace as Workspace).pipeline)
       }
 
       const session = this.createSession(token, pipeline)
@@ -666,7 +666,8 @@ class TSessionManager implements SessionManager {
 
     const st = Date.now()
     try {
-      await userCtx.with('🧭 handleRequest', {}, async (ctx) => {
+      const backupMode = 'loadChunk' in service
+      await userCtx.with(`🧭 ${backupMode ? 'handleBackup' : 'handleRequest'}`, {}, async (ctx) => {
         const request = await ctx.with('📥 read', {}, async () => readRequest(msg, false))
         if (request.id === -1 && request.method === 'hello') {
           const hello = request as HelloRequest

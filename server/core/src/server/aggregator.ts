@@ -54,7 +54,7 @@ export class AggregatorStorageAdapter implements StorageAdapter {
   }
 
   async remove (ctx: MeasureContext, workspaceId: WorkspaceId, objectNames: string[]): Promise<void> {
-    const docs = await this.dbAdapter.find<Blob>(workspaceId, DOMAIN_BLOB_DATA, {
+    const docs = await this.dbAdapter.find<Blob>(ctx, workspaceId, DOMAIN_BLOB_DATA, {
       _class: core.class.Blob,
       _id: { $in: objectNames as Ref<Blob>[] }
     })
@@ -74,7 +74,7 @@ export class AggregatorStorageAdapter implements StorageAdapter {
   }
 
   async list (ctx: MeasureContext, workspaceId: WorkspaceId, prefix?: string | undefined): Promise<ListBlobResult[]> {
-    return await this.dbAdapter.find<Blob>(workspaceId, DOMAIN_BLOB_DATA, {
+    return await this.dbAdapter.find<Blob>(ctx, workspaceId, DOMAIN_BLOB_DATA, {
       _class: core.class.Blob,
       _id: { $regex: `/^${prefix ?? ''}/i` }
     })
@@ -83,6 +83,7 @@ export class AggregatorStorageAdapter implements StorageAdapter {
   async stat (ctx: MeasureContext, workspaceId: WorkspaceId, name: string): Promise<Blob | undefined> {
     return (
       await this.dbAdapter.find<Blob>(
+        ctx,
         workspaceId,
         DOMAIN_BLOB_DATA,
         { _class: core.class.Blob, _id: name as Ref<Blob> },
@@ -103,6 +104,7 @@ export class AggregatorStorageAdapter implements StorageAdapter {
   ): Promise<{ provider: StorageAdapter, stat: Blob }> {
     const stat = (
       await this.dbAdapter.find<Blob>(
+        ctx,
         workspaceId,
         DOMAIN_BLOB_DATA,
         { _class: core.class.Blob, _id: objectName as Ref<Blob> },
@@ -176,7 +178,7 @@ export class AggregatorStorageAdapter implements StorageAdapter {
       version: result.versionId ?? null
     }
 
-    await this.dbAdapter.upload<Blob>(workspaceId, DOMAIN_BLOB_DATA, [blobDoc])
+    await this.dbAdapter.upload<Blob>(ctx, workspaceId, DOMAIN_BLOB_DATA, [blobDoc])
     return result
   }
 }

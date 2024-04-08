@@ -84,7 +84,7 @@ export class MinioService implements StorageAdapter {
               _class: core.class.Blob,
               etag: data.etag,
               size: data.size,
-              provider: '',
+              provider: 'minio',
               space: core.space.Configuration,
               modifiedBy: core.account.ConfigUser,
               modifiedOn: data.lastModified.getTime(),

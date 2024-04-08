@@ -30,6 +30,7 @@ import {
   type FindResult,
   getWorkspaceId,
   Hierarchy,
+  type MeasureContext,
   MeasureMetricsContext,
   ModelDb,
   type Ref,
@@ -71,13 +72,13 @@ describe('server', () => {
       close: async () => {},
       storage: {} as unknown as ServerStorage,
       domains: async () => [],
-      find: (domain: Domain) => ({
-        next: async () => undefined,
-        close: async () => {}
+      find: (ctx: MeasureContext, domain: Domain) => ({
+        next: async (ctx: MeasureContext) => undefined,
+        close: async (ctx: MeasureContext) => {}
       }),
-      load: async (domain: Domain, docs: Ref<Doc>[]) => [],
-      upload: async (domain: Domain, docs: Doc[]) => {},
-      clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
+      load: async (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => [],
+      upload: async (ctx: MeasureContext, domain: Domain, docs: Doc[]) => {},
+      clean: async (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => {},
       searchFulltext: async (ctx, query, options) => {
         return { docs: [] }
       }
@@ -170,13 +171,13 @@ describe('server', () => {
         close: async () => {},
         storage: {} as unknown as ServerStorage,
         domains: async () => [],
-        find: (domain: Domain) => ({
-          next: async () => undefined,
-          close: async () => {}
+        find: (ctx: MeasureContext, domain: Domain) => ({
+          next: async (ctx: MeasureContext) => undefined,
+          close: async (ctx: MeasureContext) => {}
         }),
-        load: async (domain: Domain, docs: Ref<Doc>[]) => [],
-        upload: async (domain: Domain, docs: Doc[]) => {},
-        clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
+        load: async (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => [],
+        upload: async (ctx: MeasureContext, domain: Domain, docs: Doc[]) => {},
+        clean: async (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => {},
         searchFulltext: async (ctx, query, options) => {
           return { docs: [] }
         }

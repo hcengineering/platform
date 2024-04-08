@@ -66,7 +66,7 @@ class ElasticDataAdapter implements DbAdapter {
     await this.client.close()
   }
 
-  find (domain: Domain): StorageIterator {
+  find (ctx: MeasureContext, domain: Domain): StorageIterator {
     let listRecieved = false
     let pos = 0
     let buffer: { _id: string, data: IndexedDoc }[] = []
@@ -90,7 +90,7 @@ class ElasticDataAdapter implements DbAdapter {
                   bool: {
                     must: {
                       match: {
-                        workspaceId: toWorkspaceString(this.workspaceId)
+                        workspaceId: { query: toWorkspaceString(this.workspaceId), operator: 'and' }
                       }
                     }
                   }
@@ -164,7 +164,7 @@ class ElasticDataAdapter implements DbAdapter {
     return stIterator
   }
 
-  async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+  async load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
     const result: Doc[] = []
 
     const resp = await this.client.search({
@@ -182,7 +182,7 @@ class ElasticDataAdapter implements DbAdapter {
               },
               {
                 match: {
-                  workspaceId: toWorkspaceString(this.workspaceId)
+                  workspaceId: { query: toWorkspaceString(this.workspaceId), operator: 'and' }
                 }
               }
             ]
@@ -207,7 +207,7 @@ class ElasticDataAdapter implements DbAdapter {
     return result
   }
 
-  async upload (domain: Domain, docs: Doc[]): Promise<void> {
+  async upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
     while (docs.length > 0) {
       const part = docs.splice(0, 10000)
       try {
@@ -227,7 +227,7 @@ class ElasticDataAdapter implements DbAdapter {
                     },
                     {
                       match: {
-                        workspaceId: toWorkspaceString(this.workspaceId)
+                        workspaceId: { query: toWorkspaceString(this.workspaceId), operator: 'and' }
                       }
                     }
                   ]
@@ -254,11 +254,11 @@ class ElasticDataAdapter implements DbAdapter {
     }
   }
 
-  async update (domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {
+  async update (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {
     throw new Error('Method not implemented.')
   }
 
-  async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {
+  async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
     while (docs.length > 0) {
       const part = docs.splice(0, 10000)
       await this.client.deleteByQuery(
@@ -277,7 +277,7 @@ class ElasticDataAdapter implements DbAdapter {
                   },
                   {
                     match: {
-                      workspaceId: toWorkspaceString(this.workspaceId)
+                      workspaceId: { query: toWorkspaceString(this.workspaceId), operator: 'and' }
                     }
                   }
                 ]
