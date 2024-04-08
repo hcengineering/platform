@@ -77,6 +77,7 @@
     "@hcengineering/model-server-hr": "^0.6.0",
     "@hcengineering/model-bitrix": "^0.6.0",
     "@hcengineering/model-request": "^0.6.0",
+    "@hcengineering/model-schema": "^0.6.1",
     "@hcengineering/model-server-request": "^0.6.0",
     "@hcengineering/model-server-view": "^0.6.0",
     "@hcengineering/model-server-activity": "^0.6.0",

@@ -124,7 +124,7 @@
         <div class="flex-center caption-color">
           <UploadDuo size={'large'} />
         </div>
-        <div class="text-sm content-dark-color" style:pointer-events="none">
+        <div class="text-sm content-dark-color mt-2" style:pointer-events="none">
           <Label label={attachment.string.NoAttachments} />
         </div>
         <!-- svelte-ignore a11y-click-events-have-key-events -->

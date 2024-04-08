@@ -41,12 +41,14 @@ import { timeOperation } from '@hcengineering/model-time'
 import { activityOperation } from '@hcengineering/model-activity'
 import { activityServerOperation } from '@hcengineering/model-server-activity'
 import { documentOperation } from '@hcengineering/model-document'
+import { formOperation } from '@hcengineering/model-schema'
 
 export const migrateOperations: [string, MigrateOperation][] = [
   ['core', coreOperation],
   ['activity', activityOperation],
   ['chunter', chunterOperation],
   ['calendar', calendarOperation],
+  ['form', formOperation],
   ['gmail', gmailOperation],
   ['templates', templatesOperation],
   ['telegram', telegramOperation],

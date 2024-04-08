@@ -25,6 +25,7 @@ import chunter, { chunterId, createModel as chunterModel } from '@hcengineering/
 import contact, { contactId, createModel as contactModel } from '@hcengineering/model-contact'
 import { createModel as coreModel } from '@hcengineering/model-core'
 import document, { documentId, createModel as documentModel } from '@hcengineering/model-document'
+import { schemaId, createModel as schemaModel } from '@hcengineering/model-schema'
 import gmail, { gmailId, createModel as gmailModel } from '@hcengineering/model-gmail'
 import hr, { hrId, createModel as hrModel } from '@hcengineering/model-hr'
 import { timeId, createModel as timeModel } from '@hcengineering/model-time'
@@ -121,6 +122,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [tagsModel, tagsId],
     [viewModel, viewId],
     [workbenchModel, workbenchId],
+    [schemaModel, schemaId],
     [
       contactModel,
       contactId,

@@ -13,8 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
   import type { DropdownIntlItem } from '../types'
+  import Icon from './Icon.svelte'
   import IconCheck from './icons/Check.svelte'
   import Label from './Label.svelte'
   import { resizeObserver } from '..'
@@ -22,6 +23,7 @@
   export let items: DropdownIntlItem[]
   export let selected: DropdownIntlItem['id'] | undefined = undefined
   export let params: Record<string, any> = {}
+  export let autoFocus: boolean = false
 
   const dispatch = createEventDispatcher()
   const btns: HTMLButtonElement[] = []
@@ -35,6 +37,13 @@
       else btns[n - 1].focus()
     }
   }
+
+  onMount(() => {
+    if (autoFocus) {
+      btns[0]?.focus()
+      autoFocus = false
+    }
+  })
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
@@ -44,7 +53,8 @@
       {#each items as item, i}
         <!-- svelte-ignore a11y-mouse-events-have-key-events -->
         <button
-          class="menu-item flex-between"
+          class="menu-item flex-between flex-gap-1"
+          bind:this={btns[i]}
           on:mouseover={(ev) => {
             ev.currentTarget.focus()
           }}
@@ -55,6 +65,9 @@
             dispatch('close', item.id)
           }}
         >
+          {#if item.icon}
+            <span class="icon"><Icon size="small" icon={item.icon} /></span>
+          {/if}
           <div class="flex-grow caption-color nowrap"><Label label={item.label} params={item.params ?? params} /></div>
           <div class="check">
             {#if item.id === selected}<IconCheck size={'small'} />{/if}
