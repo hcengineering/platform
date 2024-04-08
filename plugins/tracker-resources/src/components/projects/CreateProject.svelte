@@ -15,21 +15,31 @@
 <script lang="ts">
   import { Employee } from '@hcengineering/contact'
   import { AccountArrayEditor, AssigneeBox } from '@hcengineering/contact-resources'
-  import core, { Account, Data, DocumentUpdate, Ref, generateId, getCurrentAccount } from '@hcengineering/core'
+  import core, {
+    Account,
+    Data,
+    DocumentUpdate,
+    Ref,
+    Role,
+    RolesAssignment,
+    SortingOrder,
+    SpaceType,
+    generateId,
+    getCurrentAccount
+  } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import presentation, { Card, createQuery, getClient } from '@hcengineering/presentation'
-  import task, { ProjectType } from '@hcengineering/task'
+  import task, { ProjectType, TaskType } from '@hcengineering/task'
+  import { taskTypeStore, typeStore } from '@hcengineering/task-resources'
   import { StyledTextBox } from '@hcengineering/text-editor'
   import { IssueStatus, Project, TimeReportDayType } from '@hcengineering/tracker'
   import {
     Button,
     Component,
     EditBox,
-    IconEdit,
     IconWithEmoji,
     Label,
     Toggle,
-    eventToHTMLElement,
     getColorNumberByText,
     getPlatformColorDef,
     getPlatformColorForTextDef,
@@ -38,14 +48,12 @@
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { IconPicker } from '@hcengineering/view-resources'
+  import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import StatusSelector from '../issues/StatusSelector.svelte'
-  import ChangeIdentity from './ChangeIdentity.svelte'
-  import { typeStore, taskTypeStore } from '@hcengineering/task-resources'
 
   export let project: Project | undefined = undefined
-
   export let namePlaceholder: string = ''
   export let descriptionPlaceholder: string = ''
 
@@ -65,6 +73,7 @@
   let projectsIdentifiers = new Set<string>()
   let isSaving = false
   let defaultStatus: Ref<IssueStatus> | undefined = project?.defaultIssueStatus
+  let rolesAssignment: RolesAssignment | undefined
 
   let changeIdentityRef: HTMLElement
 
@@ -99,8 +108,22 @@
     }
   }
 
+  function getRolesAssignment (): RolesAssignment {
+    if (project === undefined || typeType?.targetClass === undefined || roles === undefined) {
+      return {}
+    }
+
+    const asMixin = hierarchy.as(project, typeType?.targetClass)
+
+    return roles.reduce<RolesAssignment>((prev, { _id }) => {
+      prev[_id] = (asMixin as any)[_id]
+
+      return prev
+    }, {})
+  }
+
   async function updateProject (): Promise<void> {
-    if (!project) {
+    if (!project || typeType?.targetClass === undefined) {
       return
     }
 
@@ -147,15 +170,31 @@
       isSaving = false
     }
 
+    if (rolesAssignment && !deepEqual(rolesAssignment, getRolesAssignment())) {
+      await client.updateMixin(
+        project._id,
+        tracker.class.Project,
+        core.space.Space,
+        typeType.targetClass,
+        rolesAssignment
+      )
+    }
+
     close()
   }
 
   let typeId: Ref<ProjectType> | undefined = project?.type
-
   $: typeType = typeId !== undefined ? $typeStore.get(typeId) : undefined
 
-  $: if (defaultStatus === undefined && typeType !== undefined) {
-    defaultStatus = typeType.statuses[0]?._id
+  function findTaskTypes (typeId: Ref<SpaceType>): TaskType[] {
+    return Array.from($taskTypeStore.values()).filter(
+      (it) => it.parent === typeId && it.ofClass === tracker.class.Issue
+    )
+  }
+
+  $: if (defaultStatus === undefined && typeId !== undefined) {
+    const sts = findTaskTypes(typeId)?.[0]?.statuses
+    defaultStatus = sts?.[0]
   }
 
   async function createProject (): Promise<void> {
@@ -171,8 +210,14 @@
       const succeeded = await ops.commit()
 
       if (succeeded) {
-        // Add vacancy mixin
-        await client.createMixin(projectId, tracker.class.Project, core.space.Space, typeType.targetClass, {})
+        // Add space type's mixin with roles assignments
+        await client.createMixin(
+          projectId,
+          tracker.class.Project,
+          core.space.Space,
+          typeType.targetClass,
+          rolesAssignment ?? {}
+        )
 
         close(projectId)
       } else {
@@ -207,6 +252,52 @@
   }
 
   $: identifier = identifier.toLocaleUpperCase().replaceAll('-', '_').replaceAll(' ', '_').substring(0, 5)
+
+  let roles: Role[] = []
+  const rolesQuery = createQuery()
+  $: if (typeType !== undefined) {
+    rolesQuery.query(
+      core.class.Role,
+      { attachedTo: typeType._id },
+      (res) => {
+        roles = res
+
+        if (rolesAssignment === undefined && typeType !== undefined) {
+          rolesAssignment = getRolesAssignment()
+        }
+      },
+      {
+        sort: {
+          name: SortingOrder.Ascending
+        }
+      }
+    )
+  } else {
+    rolesQuery.unsubscribe()
+  }
+
+  function handleMembersChanged (newMembers: Ref<Account>[]): void {
+    // If a member was removed we need to remove it from any roles assignments as well
+    const newMembersSet = new Set(newMembers)
+    const removedMembersSet = new Set(members.filter((m) => !newMembersSet.has(m)))
+
+    if (removedMembersSet.size > 0 && rolesAssignment !== undefined) {
+      for (const [key, value] of Object.entries(rolesAssignment)) {
+        rolesAssignment[key as Ref<Role>] =
+          value !== undefined ? value.filter((m) => !removedMembersSet.has(m)) : undefined
+      }
+    }
+
+    members = newMembers
+  }
+
+  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: Ref<Account>[]): void {
+    if (rolesAssignment === undefined) {
+      rolesAssignment = {}
+    }
+
+    rolesAssignment[roleId] = newMembers
+  }
 </script>
 
 <Card
@@ -328,19 +419,6 @@
 
     <div class="antiGrid-row">
       <div class="antiGrid-row__header">
-        <Label label={tracker.string.Members} />
-      </div>
-      <AccountArrayEditor
-        value={members}
-        label={tracker.string.Members}
-        onChange={(refs) => (members = refs)}
-        kind={'regular'}
-        size={'large'}
-      />
-    </div>
-
-    <div class="antiGrid-row">
-      <div class="antiGrid-row__header">
         <Label label={tracker.string.DefaultAssignee} />
       </div>
       <AssigneeBox
@@ -359,16 +437,48 @@
       <div class="antiGrid-row__header">
         <Label label={tracker.string.DefaultIssueStatus} />
       </div>
-      <StatusSelector
-        taskType={Array.from($taskTypeStore.values()).filter(
-          (it) => it.parent === typeId && it.ofClass === tracker.class.Issue
-        )[0]?._id}
-        bind:value={defaultStatus}
-        type={typeId}
+      {#if typeId !== undefined}
+        <StatusSelector
+          taskType={findTaskTypes(typeId)[0]?._id}
+          bind:value={defaultStatus}
+          type={typeId}
+          kind={'regular'}
+          size={'large'}
+        />
+      {/if}
+    </div>
+
+    <div class="antiGrid-row">
+      <div class="antiGrid-row__header">
+        <Label label={tracker.string.Members} />
+      </div>
+      <AccountArrayEditor
+        value={members}
+        label={tracker.string.Members}
+        onChange={handleMembersChanged}
         kind={'regular'}
         size={'large'}
       />
     </div>
+
+    {#each roles as role}
+      <div class="antiGrid-row">
+        <div class="antiGrid-row__header">
+          <Label label={tracker.string.RoleLabel} params={{ role: role.name }} />
+        </div>
+        <AccountArrayEditor
+          value={rolesAssignment?.[role._id] ?? []}
+          label={tracker.string.Members}
+          includeItems={members}
+          readonly={members.length === 0}
+          onChange={(refs) => {
+            handleRoleAssignmentChanged(role._id, refs)
+          }}
+          kind={'regular'}
+          size={'large'}
+        />
+      </div>
+    {/each}
   </div>
 </Card>
 

@@ -38,8 +38,6 @@
   export let hideFooter = false
   export let actions: Action[] = []
   export let skipLabel = false
-  export let withFlatActions: boolean = true
-  export let excludedActions: string[] = []
   export let hoverable = true
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
   export let hideLink = false
@@ -105,13 +103,11 @@
   {isSelected}
   {shouldScroll}
   {embedded}
-  {excludedActions}
   {withActions}
   {showEmbedded}
   {hideFooter}
   {actions}
   {skipLabel}
-  {withFlatActions}
   {hoverable}
   {hoverStyles}
   {onClick}

@@ -22,28 +22,18 @@ import NotificationPresenter from './components/NotificationPresenter.svelte'
 import TxCollaboratorsChange from './components/activity/TxCollaboratorsChange.svelte'
 import TxDmCreation from './components/activity/TxDmCreation.svelte'
 import DocNotifyContextPresenter from './components/DocNotifyContextPresenter.svelte'
-import NotificationCollaboratorsChanged from './components/NotificationCollaboratorsChanged.svelte'
+import CollaboratorsChanged from './components/activity/CollaboratorsChanged.svelte'
 import ActivityInboxNotificationPresenter from './components/inbox/ActivityInboxNotificationPresenter.svelte'
 import CommonInboxNotificationPresenter from './components/inbox/CommonInboxNotificationPresenter.svelte'
-import InboxFlatListView from './components/inbox/InboxFlatListView.svelte'
-import InboxGroupedListView from './components/inbox/InboxGroupedListView.svelte'
+import NotificationCollaboratorsChanged from './components/NotificationCollaboratorsChanged.svelte'
+import ReactionNotificationPresenter from './components/ReactionNotificationPresenter.svelte'
 import {
   unsubscribe,
   resolveLocation,
-  markAsReadInboxNotification,
-  markAsUnreadInboxNotification,
-  deleteInboxNotification,
-  hasMarkAsUnreadAction,
-  hasMarkAsReadAction,
   hasDocNotifyContextPinAction,
-  isDocNotifyContextHidden,
   hasDocNotifyContextUnpinAction,
-  isDocNotifyContextVisible,
-  hasHiddenDocNotifyContext,
   pinDocNotifyContext,
   unpinDocNotifyContext,
-  hideDocNotifyContext,
-  unHideDocNotifyContext,
   canReadNotifyContext,
   canUnReadNotifyContext,
   readNotifyContext,
@@ -68,40 +58,30 @@ export default async (): Promise<Resources> => ({
     Inbox,
     NotificationPresenter,
     NotificationSettings,
-    NotificationCollaboratorsChanged,
+    CollaboratorsChanged,
     DocNotifyContextPresenter,
     ActivityInboxNotificationPresenter,
     CommonInboxNotificationPresenter,
-    InboxFlatListView,
-    InboxGroupedListView
+    NotificationCollaboratorsChanged,
+    ReactionNotificationPresenter
   },
   activity: {
     TxCollaboratorsChange,
     TxDmCreation
   },
   function: {
-    HasMarkAsUnreadAction: hasMarkAsUnreadAction,
-    HasMarkAsReadAction: hasMarkAsReadAction,
     // eslint-disable-next-line @typescript-eslint/unbound-method
     GetInboxNotificationsClient: InboxNotificationsClientImpl.getClient,
     HasDocNotifyContextPinAction: hasDocNotifyContextPinAction,
     HasDocNotifyContextUnpinAction: hasDocNotifyContextUnpinAction,
-    IsDocNotifyContextHidden: isDocNotifyContextHidden,
-    IsDocNotifyContextTracked: isDocNotifyContextVisible,
-    HasHiddenDocNotifyContext: hasHiddenDocNotifyContext,
     CanReadNotifyContext: canReadNotifyContext,
     CanUnReadNotifyContext: canUnReadNotifyContext,
     HasInboxNotifications: hasInboxNotifications
   },
   actionImpl: {
     Unsubscribe: unsubscribe,
-    MarkAsReadInboxNotification: markAsReadInboxNotification,
-    MarkAsUnreadInboxNotification: markAsUnreadInboxNotification,
-    DeleteInboxNotification: deleteInboxNotification,
     PinDocNotifyContext: pinDocNotifyContext,
     UnpinDocNotifyContext: unpinDocNotifyContext,
-    HideDocNotifyContext: hideDocNotifyContext,
-    UnHideDocNotifyContext: unHideDocNotifyContext,
     ReadNotifyContext: readNotifyContext,
     UnReadNotifyContext: unReadNotifyContext,
     DeleteContextNotifications: deleteContextNotifications,

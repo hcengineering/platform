@@ -80,9 +80,9 @@ export async function OnWorkSlotCreate (tx: Tx, control: TriggerControl): Promis
   if (issue === undefined) return []
   const project = (await control.findAll(task.class.Project, { _id: issue.space }))[0]
   if (project !== undefined) {
-    const type = (await control.queryFind(task.class.ProjectType, {})).find((it) => it._id === project.type)
-    if (type?.classic === true) {
-      const taskType = (await control.queryFind(task.class.TaskType, {})).find((it) => it._id === issue.kind)
+    const type = (await control.modelDb.findAll(task.class.ProjectType, { _id: project.type }))[0]
+    if (type?.classic) {
+      const taskType = (await control.modelDb.findAll(task.class.TaskType, { _id: issue.kind }))[0]
       if (taskType !== undefined) {
         const statuses = await control.findAll(core.class.Status, { _id: { $in: taskType.statuses } })
         const statusMap = toIdMap(statuses)
@@ -128,10 +128,10 @@ export async function OnToDoRemove (tx: Tx, control: TriggerControl): Promise<Tx
   if (issue === undefined) return []
   const project = (await control.findAll(task.class.Project, { _id: issue.space }))[0]
   if (project !== undefined) {
-    const type = (await control.queryFind(task.class.ProjectType, {})).find((it) => it._id === project.type)
+    const type = (await control.modelDb.findAll(task.class.ProjectType, { _id: project.type }))[0]
     if (type !== undefined && type.classic) {
       const factory = new TxFactory(control.txFactory.account)
-      const taskType = (await control.queryFind(task.class.TaskType, {})).find((it) => it._id === issue.kind)
+      const taskType = (await control.modelDb.findAll(task.class.TaskType, { _id: issue.kind }))[0]
       if (taskType !== undefined) {
         const statuses = await control.findAll(core.class.Status, { _id: { $in: taskType.statuses } })
         const statusMap = toIdMap(statuses)
@@ -183,27 +183,32 @@ export async function OnToDoCreate (tx: TxCUD<Doc>, control: TriggerControl): Pr
     return []
   }
 
+  const object = (await control.findAll(todo.attachedToClass, { _id: todo.attachedTo }))[0]
+
+  if (object === undefined) return []
+
   const res: Tx[] = []
   const notifyResult = await isShouldNotifyTx(control, createTx, tx, todo, account._id, true, false)
   const content = await getNotificationContent(tx, account._id, todo, control)
-  const details = todo.description != null && todo.description.length > 0 ? todo.description : todo.title
   const data: Partial<Data<CommonInboxNotification>> = {
     ...content,
-    header: time.string.CreatedToDo,
-    message: time.string.NewToDoDetails,
-    props: { details }
+    header: time.string.ToDo,
+    headerIcon: time.icon.Planned,
+    headerObjectId: object._id,
+    headerObjectClass: object._class,
+    messageHtml: todo.title
   }
 
   res.push(
     ...(await getCommonNotificationTxes(
       control,
-      todo,
+      object,
       data,
       account._id,
       tx.modifiedBy,
-      todo._id,
-      todo._class,
-      todo.space,
+      object._id,
+      object._class,
+      object.space,
       createTx.modifiedOn,
       notifyResult
     ))
@@ -341,9 +346,9 @@ export async function IssueToDoDone (control: TriggerControl, workslots: WorkSlo
   if (issue !== undefined) {
     const project = (await control.findAll(task.class.Project, { _id: issue.space }))[0]
     if (project !== undefined) {
-      const type = (await control.queryFind(task.class.ProjectType, {})).find((it) => it._id === project.type)
-      if (type?.classic === true) {
-        const taskType = (await control.queryFind(task.class.TaskType, {})).find((it) => it._id === issue.kind)
+      const type = (await control.modelDb.findAll(task.class.ProjectType, { _id: project.type }))[0]
+      if (type?.classic) {
+        const taskType = (await control.modelDb.findAll(task.class.TaskType, { _id: issue.kind }))[0]
         if (taskType !== undefined) {
           const index = taskType.statuses.findIndex((p) => p === issue.status)
 
@@ -411,8 +416,8 @@ async function createIssueHandler (issue: Issue, control: TriggerControl): Promi
   if (issue.assignee != null) {
     const project = (await control.findAll(task.class.Project, { _id: issue.space }))[0]
     if (project === undefined) return []
-    const type = (await control.queryFind(task.class.ProjectType, {})).find((it) => it._id === project.type)
-    if (type?.classic !== true) return []
+    const type = (await control.modelDb.findAll(task.class.ProjectType, { _id: project.type }))[0]
+    if (!type?.classic) return []
     const status = (await control.findAll(core.class.Status, { _id: issue.status }))[0]
     if (status === undefined) return []
     if (status.category === task.statusCategory.Active || status.category === task.statusCategory.ToDo) {
@@ -568,8 +573,8 @@ async function updateIssueHandler (tx: TxUpdateDoc<Issue>, control: TriggerContr
   const res: Tx[] = []
   const project = (await control.findAll(task.class.Project, { _id: tx.objectSpace as Ref<Project> }))[0]
   if (project === undefined) return []
-  const type = (await control.queryFind(task.class.ProjectType, {})).find((it) => it._id === project.type)
-  if (type?.classic !== true) return []
+  const type = (await control.modelDb.findAll(task.class.ProjectType, { _id: project.type }))[0]
+  if (!type?.classic) return []
   const newAssignee = tx.operations.assignee
   if (newAssignee != null) {
     res.push(...(await changeIssueAssigneeHandler(control, newAssignee, tx.objectId)))

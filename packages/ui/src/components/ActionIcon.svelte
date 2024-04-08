@@ -36,6 +36,7 @@
   use:tooltip={{ label, direction, props: labelProps }}
   tabindex="0"
   on:click|stopPropagation|preventDefault={action}
+  on:contextmenu
   {disabled}
 >
   <div class="icon {size}" class:invisible>
@@ -46,6 +47,7 @@
 <style lang="scss">
   .button {
     color: inherit;
+    border: none;
     border-radius: 0.125rem;
     cursor: pointer;
 

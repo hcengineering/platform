@@ -67,8 +67,11 @@
     return false
   }
 
-  async function updateItems (query: string): Promise<void> {
-    items = await searchFor('mention', query)
+  async function updateItems (localQuery: string): Promise<void> {
+    const r = await searchFor('mention', localQuery)
+    if (r.query === query) {
+      items = r.items
+    }
   }
   $: void updateItems(query)
 </script>

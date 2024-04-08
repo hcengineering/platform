@@ -72,14 +72,14 @@ import {
   type ActivityNotificationViewlet,
   type BaseNotificationType,
   type CommonNotificationType,
-  notificationId
+  notificationId,
+  type MentionInboxNotification
 } from '@hcengineering/notification'
-import { type Asset, type IntlString } from '@hcengineering/platform'
+import { getEmbeddedLabel, type Asset, type IntlString } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 
 import notification from './plugin'
-import { defineViewlets } from './viewlets'
 
 export { notificationId } from '@hcengineering/notification'
 export { notificationOperation } from './migration'
@@ -178,12 +178,15 @@ export class TNotificationContextPresenter extends TClass implements Notificatio
 
 @Model(notification.class.DocUpdates, core.class.Doc, DOMAIN_NOTIFICATION)
 export class TDocUpdates extends TDoc implements DocUpdates {
+  @Prop(TypeRef(core.class.Account), core.string.Account)
   @Index(IndexKind.Indexed)
     user!: Ref<Account>
 
+  @Prop(TypeRef(core.class.Account), core.string.AttachedTo)
   @Index(IndexKind.Indexed)
     attachedTo!: Ref<Doc>
 
+  @Prop(TypeRef(core.class.Account), getEmbeddedLabel('Hidden'))
   @Index(IndexKind.Indexed)
     hidden!: boolean
 
@@ -256,8 +259,16 @@ export class TCommonInboxNotification extends TInboxNotification implements Comm
   @Prop(TypeIntlString(), core.string.String)
     header?: IntlString
 
+  @Prop(TypeRef(core.class.Doc), core.string.Object)
+    headerObjectId?: Ref<Doc>
+
+  @Prop(TypeRef(core.class.Doc), core.string.Class)
+    headerObjectClass?: Ref<Class<Doc>>
+
   @Prop(TypeIntlString(), notification.string.Message)
     message?: IntlString
+
+  headerIcon?: Asset
 
   @Prop(TypeString(), notification.string.Message)
     messageHtml?: string
@@ -265,6 +276,15 @@ export class TCommonInboxNotification extends TInboxNotification implements Comm
   props?: Record<string, any>
   icon?: Asset
   iconProps?: Record<string, any>
+}
+
+@Model(notification.class.MentionInboxNotification, notification.class.CommonInboxNotification)
+export class TMentionInboxNotification extends TCommonInboxNotification implements MentionInboxNotification {
+  @Prop(TypeRef(core.class.Doc), core.string.Object)
+    mentionedIn!: Ref<Doc>
+
+  @Prop(TypeRef(core.class.Doc), core.string.Class)
+    mentionedInClass!: Ref<Class<Doc>>
 }
 
 @Model(notification.class.ActivityNotificationViewlet, core.class.Doc, DOMAIN_MODEL)
@@ -317,7 +337,8 @@ export function createModel (builder: Builder): void {
     TNotificationContextPresenter,
     TActivityNotificationViewlet,
     TBaseNotificationType,
-    TCommonNotificationType
+    TCommonNotificationType,
+    TMentionInboxNotification
   )
 
   // Temporarily disabled, we should think about it
@@ -452,6 +473,14 @@ export function createModel (builder: Builder): void {
     notification.ids.TxDmCreation
   )
 
+  builder.createDoc(notification.class.ActivityNotificationViewlet, core.space.Model, {
+    presenter: notification.component.NotificationCollaboratorsChanged,
+    messageMatch: {
+      _class: activity.class.DocUpdateMessage,
+      'attributeUpdates.attrClass': notification.mixin.Collaborators
+    }
+  })
+
   builder.createDoc(
     activity.class.DocUpdateMessageViewlet,
     core.space.Model,
@@ -461,57 +490,12 @@ export function createModel (builder: Builder): void {
       icon: notification.icon.Notifications,
       label: notification.string.ChangeCollaborators
     },
-    notification.ids.NotificationCollaboratorsChanged
+    notification.ids.CollaboratorsChangedMessage
   )
 
   builder.mixin(notification.mixin.Collaborators, core.class.Class, activity.mixin.ActivityAttributeUpdatesPresenter, {
-    presenter: notification.component.NotificationCollaboratorsChanged
+    presenter: notification.component.CollaboratorsChanged
   })
-
-  createAction(
-    builder,
-    {
-      action: notification.actionImpl.MarkAsReadInboxNotification,
-      label: notification.string.MarkAsRead,
-      icon: notification.icon.Notifications,
-      input: 'focus',
-      visibilityTester: notification.function.HasMarkAsReadAction,
-      category: notification.category.Notification,
-      target: notification.class.InboxNotification,
-      context: { mode: 'context', application: notification.app.Notification, group: 'edit' }
-    },
-    notification.action.MarkAsReadInboxNotification
-  )
-
-  createAction(
-    builder,
-    {
-      action: notification.actionImpl.MarkAsUnreadInboxNotification,
-      label: notification.string.MarkAsUnread,
-      icon: notification.icon.Track,
-      input: 'focus',
-      visibilityTester: notification.function.HasMarkAsUnreadAction,
-      category: notification.category.Notification,
-      target: notification.class.InboxNotification,
-      context: { mode: 'context', application: notification.app.Notification, group: 'edit' }
-    },
-    notification.action.MarkAsUnreadInboxNotification
-  )
-
-  createAction(
-    builder,
-    {
-      action: notification.actionImpl.DeleteInboxNotification,
-      label: notification.string.Archive,
-      icon: view.icon.Archive,
-      input: 'focus',
-      keyBinding: ['Backspace'],
-      category: notification.category.Notification,
-      target: notification.class.InboxNotification,
-      context: { mode: ['context', 'browser'], group: 'edit' }
-    },
-    notification.action.DeleteInboxNotification
-  )
 
   createAction(
     builder,
@@ -523,7 +507,7 @@ export function createModel (builder: Builder): void {
       visibilityTester: notification.function.CanReadNotifyContext,
       category: notification.category.Notification,
       target: notification.class.DocNotifyContext,
-      context: { mode: 'context', application: notification.app.Notification, group: 'edit' }
+      context: { mode: ['context', 'panel'], application: notification.app.Notification, group: 'edit' }
     },
     notification.action.ReadNotifyContext
   )
@@ -538,7 +522,7 @@ export function createModel (builder: Builder): void {
       visibilityTester: notification.function.CanUnReadNotifyContext,
       category: notification.category.Notification,
       target: notification.class.DocNotifyContext,
-      context: { mode: 'context', application: notification.app.Notification, group: 'edit' }
+      context: { mode: ['context', 'panel'], application: notification.app.Notification, group: 'edit' }
     },
     notification.action.UnReadNotifyContext
   )
@@ -552,7 +536,7 @@ export function createModel (builder: Builder): void {
       input: 'focus',
       category: notification.category.Notification,
       target: notification.class.DocNotifyContext,
-      context: { mode: 'context', application: notification.app.Notification, group: 'edit' }
+      context: { mode: ['panel'], application: notification.app.Notification, group: 'remove' }
     },
     notification.action.DeleteContextNotifications
   )
@@ -560,37 +544,18 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
-      action: notification.actionImpl.HideDocNotifyContext,
-      label: notification.string.DontTrack,
-      icon: notification.icon.DontTrack,
+      action: notification.actionImpl.Unsubscribe,
+      label: notification.string.Unsubscribe,
+      icon: view.icon.EyeCrossed,
       input: 'focus',
       category: notification.category.Notification,
       target: notification.class.DocNotifyContext,
       context: {
-        mode: ['browser', 'context'],
+        mode: ['panel'],
         group: 'remove'
-      },
-      visibilityTester: notification.function.IsDocNotifyContextTracked
+      }
     },
-    notification.action.HideDocNotifyContext
-  )
-
-  createAction(
-    builder,
-    {
-      action: notification.actionImpl.UnHideDocNotifyContext,
-      label: view.string.UnArchive,
-      icon: view.icon.Archive,
-      input: 'focus',
-      category: view.category.General,
-      target: notification.class.DocNotifyContext,
-      context: {
-        mode: ['browser', 'context'],
-        group: 'remove'
-      },
-      visibilityTester: notification.function.IsDocNotifyContextHidden
-    },
-    notification.action.UnHideDocNotifyContext
+    notification.action.Unsubscribe
   )
 
   builder.mixin(notification.class.DocNotifyContext, core.class.Class, view.mixin.ObjectPresenter, {
@@ -604,8 +569,6 @@ export function createModel (builder: Builder): void {
   builder.mixin(notification.class.CommonInboxNotification, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: notification.component.CommonInboxNotificationPresenter
   })
-
-  defineViewlets(builder)
 
   builder.createDoc(
     notification.class.CommonNotificationType,
@@ -640,7 +603,7 @@ export function createModel (builder: Builder): void {
       target: core.class.Doc,
       context: {
         mode: ['browser'],
-        group: 'edit'
+        group: 'remove'
       }
     },
     notification.action.ArchiveAll
@@ -688,6 +651,14 @@ export function createModel (builder: Builder): void {
     { label: notification.string.Inbox, visible: true },
     notification.category.Notification
   )
+
+  builder.createDoc(notification.class.ActivityNotificationViewlet, core.space.Model, {
+    messageMatch: {
+      _class: activity.class.DocUpdateMessage,
+      objectClass: activity.class.Reaction
+    },
+    presenter: notification.component.ReactionNotificationPresenter
+  })
 }
 
 export function generateClassNotificationTypes (

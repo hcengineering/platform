@@ -20,11 +20,10 @@
   } from '@hcengineering/activity'
   import { Person } from '@hcengineering/contact'
   import { Avatar, EmployeePresenter, SystemAvatar } from '@hcengineering/contact-resources'
-  import core, { getDisplayTime } from '@hcengineering/core'
+  import core from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Action, Label, tooltip } from '@hcengineering/ui'
+  import { Action, Label } from '@hcengineering/ui'
   import { getActions, restrictionStore } from '@hcengineering/view-resources'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
 
   import ReactionsPresenter from '../reactions/ReactionsPresenter.svelte'
   import ActivityMessageExtensionComponent from './ActivityMessageExtension.svelte'
@@ -33,6 +32,7 @@
   import { isReactionMessage } from '../../activityMessagesUtils'
   import Bookmark from '../icons/Bookmark.svelte'
   import { savedMessagesStore } from '../../activity'
+  import MessageTimestamp from '../MessageTimestamp.svelte'
 
   export let message: DisplayActivityMessage
   export let parentMessage: DisplayActivityMessage | undefined = undefined
@@ -40,14 +40,12 @@
   export let viewlet: ActivityMessageViewlet | undefined = undefined
   export let person: Person | undefined = undefined
   export let actions: Action[] = []
-  export let excludedActions: string[] = []
   export let showNotify: boolean = false
   export let isHighlighted: boolean = false
   export let isSelected: boolean = false
   export let shouldScroll: boolean = false
   export let embedded: boolean = false
   export let withActions: boolean = true
-  export let withFlatActions: boolean = true
   export let showEmbedded = false
   export let hideFooter = false
   export let skipLabel = false
@@ -59,7 +57,7 @@
 
   const client = getClient()
 
-  let allActionIds: string[] = []
+  let menuActionIds: string[] = []
 
   let element: HTMLDivElement | undefined = undefined
   let extensions: ActivityMessageExtension[] = []
@@ -73,7 +71,7 @@
 
   $: withActions &&
     getActions(client, message, activity.class.ActivityMessage).then((res) => {
-      allActionIds = res.map(({ _id }) => _id)
+      menuActionIds = res.map(({ _id }) => _id)
     })
 
   function scrollToMessage (): void {
@@ -104,19 +102,10 @@
   $: key = parentMessage != null ? `${message._id}_${parentMessage._id}` : message._id
 
   $: isHidden = !!viewlet?.onlyWithParent && parentMessage === undefined
-  $: withActionMenu =
-    withActions && !embedded && (actions.length > 0 || allActionIds.some((id) => !excludedActions.includes(id)))
+  $: withActionMenu = withActions && !embedded && (actions.length > 0 || menuActionIds.length > 0)
 
   let readonly: boolean = false
   $: readonly = $restrictionStore.disableComments
-
-  $: fullDate = new Date(message.createdOn ?? message.modifiedOn).toLocaleString('default', {
-    minute: '2-digit',
-    hour: 'numeric',
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric'
-  })
 </script>
 
 {#if !isHidden}
@@ -178,13 +167,8 @@
             </span>
           {/if}
 
-          <span
-            class="text-sm"
-            use:tooltip={{
-              label: getEmbeddedLabel(fullDate)
-            }}
-          >
-            {getDisplayTime(message.createdOn ?? 0)}
+          <span class="text-sm lower">
+            <MessageTimestamp date={message.createdOn ?? message.modifiedOn} />
           </span>
         </div>
 
@@ -211,8 +195,6 @@
             {extensions}
             {actions}
             {withActionMenu}
-            {withFlatActions}
-            {excludedActions}
             on:open={handleActionsOpened}
             on:close={handleActionsClosed}
           />
@@ -249,7 +231,7 @@
     }
 
     &.selected {
-      background-color: var(--highlight-select);
+      background-color: var(--global-ui-highlight-BackgroundColor);
     }
 
     &.embedded {
@@ -275,7 +257,7 @@
 
     &.actionsOpened {
       &.borderedHover {
-        border: 1px solid var(--highlight-hover);
+        border: 1px solid var(--global-ui-BackgroundColor);
       }
 
       &.filledHover {
@@ -286,7 +268,7 @@
     &.hoverable {
       &:hover:not(.embedded) {
         &.borderedHover {
-          border: 1px solid var(--highlight-hover);
+          border: 1px solid var(--global-ui-BackgroundColor);
         }
 
         &.filledHover {
@@ -300,7 +282,7 @@
     display: flex;
     align-items: baseline;
     font-size: 0.875rem;
-    color: var(--theme-halfcontent-color);
+    color: var(--global-secondary-TextColor);
     margin-bottom: 0.25rem;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -319,14 +301,14 @@
     left: 0.25rem;
     height: 0.5rem;
     width: 0.5rem;
-    background-color: var(--theme-inbox-notify);
+    background-color: var(--global-higlight-Color);
     border-radius: 50%;
   }
 
   .embeddedMarker {
     width: 0.25rem;
     border-radius: 0.5rem;
-    background: var(--secondary-button-default);
+    background: var(--global-ui-highlight-BackgroundColor);
   }
 
   .saveMarker {

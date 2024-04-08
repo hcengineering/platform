@@ -191,7 +191,7 @@
       {#if showSend}
         <Button
           {loading}
-          disabled={(isEmpty && !haveAttachment) || loading}
+          disabled={(isEmpty && !haveAttachment) || (!isEmpty && !content.replace(/<[^>]*>/g, '').trim()) || loading}
           icon={iconSend ?? Send}
           iconProps={{ size: buttonSize }}
           kind={kindSend}

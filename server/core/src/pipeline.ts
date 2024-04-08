@@ -31,8 +31,8 @@ import {
   type Tx,
   type TxResult
 } from '@hcengineering/core'
-import { createServerStorage } from './server'
 import { type DbConfiguration } from './configuration'
+import { createServerStorage } from './server'
 import {
   type BroadcastFunc,
   type HandledBroadcastFunc,
@@ -67,12 +67,12 @@ export async function createPipeline (
         }
       })
   )
-  const pipeline = ctx.with(
-    'create pipeline',
-    {},
-    async (ctx) => await PipelineImpl.create(ctx, storage, constructors, broadcast)
+  const pipelineResult = await PipelineImpl.create(
+    ctx.newChild('pipeline-operations', {}),
+    storage,
+    constructors,
+    broadcast
   )
-  const pipelineResult = await pipeline
   broadcastHook = (tx, targets) => {
     return pipelineResult.handleBroadcast(tx, targets)
   }
@@ -144,19 +144,19 @@ class PipelineImpl implements Pipeline {
     await this.storage.close()
   }
 
-  find (domain: Domain): StorageIterator {
-    return this.storage.find(domain)
+  find (ctx: MeasureContext, domain: Domain): StorageIterator {
+    return this.storage.find(ctx, domain)
   }
 
-  async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
-    return await this.storage.load(domain, docs)
+  async load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+    return await this.storage.load(ctx, domain, docs)
   }
 
-  async upload (domain: Domain, docs: Doc[]): Promise<void> {
-    await this.storage.upload(domain, docs)
+  async upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
+    await this.storage.upload(ctx, domain, docs)
   }
 
-  async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {
-    await this.storage.clean(domain, docs)
+  async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
+    await this.storage.clean(ctx, domain, docs)
   }
 }

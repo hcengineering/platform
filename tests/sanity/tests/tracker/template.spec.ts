@@ -110,7 +110,7 @@ test.describe('Tracker template tests', () => {
     }
   })
 
-  test('Delete Template', async ({ page }) => {
+  test('Delete a Template', async ({ page }) => {
     const deleteTemplate: NewIssue = {
       title: `Template for delete-${generateId()}`,
       description: 'Created template for delete'
@@ -127,6 +127,7 @@ test.describe('Tracker template tests', () => {
     await templatePage.openTemplate(deleteTemplate.title)
 
     const templateDetailsPage = new TemplateDetailsPage(page)
+
     await templateDetailsPage.deleteTemplate()
 
     templatePage = new TemplatePage(page)

@@ -94,7 +94,7 @@
 
   .counter {
     font-size: 0.75rem;
-    color: var(--theme-dark-color);
+    color: var(--global-secondary-TextColor);
     margin-left: 0.25rem;
   }
 
@@ -104,15 +104,20 @@
     justify-content: center;
     width: 2.625rem;
     height: 1.5rem;
-    background: var(--secondary-button-disabled);
+    background: var(--button-disabled-BackgroundColor);
     border: none;
+    cursor: pointer;
 
     &:hover {
-      border: 1px solid var(--theme-darker-color);
+      background: var(--global-ui-highlight-BackgroundColor);
     }
 
     &.withoutBackground {
       background: transparent;
+
+      &:hover {
+        background: var(--global-ui-highlight-BackgroundColor);
+      }
     }
   }
 </style>

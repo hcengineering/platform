@@ -24,6 +24,7 @@
   export let attributeModel: AttributeModel
   export let values: DocAttributeUpdates['set']
   export let prevValue: any
+  export let preview = false
 
   $: attrViewletConfig = viewlet?.config?.[attributeModel.key]
   $: attributeIcon = attrViewletConfig?.icon ?? attributeModel.icon ?? IconEdit
@@ -46,7 +47,7 @@
 </script>
 
 {#if isUnset}
-  <div class="unset">
+  <div class="unset overflow-label">
     <span class="mr-1"><Icon icon={attributeIcon} size="small" /></span>
     <Label label={activity.string.Unset} />
     <span class="lower"><Label label={attributeModel.label} /></span>
@@ -62,7 +63,7 @@
     <svelte:component this={attributeModel.presenter} value={values[0]} {prevValue} showOnlyDiff />
   {/if}
 {:else}
-  <ChangeAttributesTemplate {viewlet} {attributeModel} {values}>
+  <ChangeAttributesTemplate {viewlet} {attributeModel} {values} {preview}>
     <svelte:fragment slot="text">
       <Label label={attributeModel.label} />
       <span class="lower"><Label label={activity.string.Set} /></span>
@@ -79,7 +80,7 @@
   }
 
   .showMore {
-    color: var(--theme-link-color);
+    color: var(--global-primary-LinkColor);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -93,28 +94,28 @@
       &.left {
         border-top: 0.25rem solid transparent;
         border-bottom: 0.25rem solid transparent;
-        border-left: 0.25rem solid var(--theme-link-color);
+        border-left: 0.25rem solid var(--global-primary-LinkColor);
         border-right: none;
       }
 
       &.down {
         border-left: 0.25rem solid transparent;
         border-right: 0.25rem solid transparent;
-        border-top: 0.25rem solid var(--theme-link-color);
+        border-top: 0.25rem solid var(--global-primary-LinkColor);
         border-bottom: none;
       }
     }
 
     &:hover {
-      color: var(--theme-toggle-on-bg-hover);
+      color: var(--global-focus-BorderColor);
 
       .triangle {
         &.left {
-          border-left-color: var(--theme-toggle-on-bg-hover);
+          border-left-color: var(--global-focus-BorderColor);
         }
 
         &.down {
-          border-top-color: var(--theme-toggle-on-bg-hover);
+          border-top-color: var(--global-focus-BorderColor);
         }
       }
     }

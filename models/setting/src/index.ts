@@ -30,7 +30,10 @@ import {
   type InviteSettings,
   type WorkspaceSetting,
   type SettingsCategory,
-  type UserMixin
+  type UserMixin,
+  type SpaceTypeEditor,
+  type SpaceTypeEditorSection,
+  type SpaceTypeCreator
 } from '@hcengineering/setting'
 import templates from '@hcengineering/templates'
 import setting from './plugin'
@@ -105,6 +108,17 @@ export class TWorkspaceSetting extends TDoc implements WorkspaceSetting {
   icon?: string
 }
 
+@Mixin(setting.mixin.SpaceTypeEditor, core.class.Class)
+export class TSpaceTypeEditor extends TClass implements SpaceTypeEditor {
+  sections!: SpaceTypeEditorSection[]
+  subEditors?: Record<string, AnyComponent>
+}
+
+@Mixin(setting.mixin.SpaceTypeCreator, core.class.Class)
+export class TSpaceTypeCreator extends TClass implements SpaceTypeCreator {
+  extraComponent!: AnyComponent
+}
+
 export function createModel (builder: Builder): void {
   builder.createModel(
     TIntegration,
@@ -114,7 +128,9 @@ export function createModel (builder: Builder): void {
     TEditable,
     TUserMixin,
     TInviteSettings,
-    TWorkspaceSetting
+    TWorkspaceSetting,
+    TSpaceTypeEditor,
+    TSpaceTypeCreator
   )
 
   builder.mixin(setting.class.Integration, core.class.Class, notification.mixin.ClassCollaborators, {
@@ -320,7 +336,8 @@ export function createModel (builder: Builder): void {
       icon: setting.icon.Setting,
       alias: settingId,
       hidden: true,
-      component: setting.component.Settings
+      component: setting.component.Settings,
+      modern: true
     },
     setting.ids.SettingApp
   )
@@ -559,4 +576,56 @@ export function createModel (builder: Builder): void {
     },
     setting.ids.IntegrationDisabledNotification
   )
+
+  builder.createDoc(
+    setting.class.SettingsCategory,
+    core.space.Model,
+    {
+      name: 'spaceTypes',
+      label: setting.string.SpaceTypes,
+      icon: setting.icon.Privacy, // TODO: update icon. Where is it displayed?
+      component: setting.component.ManageSpaceTypeContent,
+      extraComponents: {
+        navigation: setting.component.ManageSpaceTypes,
+        tools: setting.component.ManageSpaceTypesTools
+      },
+      group: 'settings-editor',
+      secured: false,
+      order: 6000,
+      expandable: true
+    },
+    setting.ids.ManageSpaces
+  )
+
+  builder.mixin(core.class.SpaceType, core.class.Class, setting.mixin.SpaceTypeEditor, {
+    sections: [
+      {
+        id: 'general',
+        label: setting.string.General,
+        component: setting.component.SpaceTypeGeneralSectionEditor,
+        withoutContainer: true
+      },
+      {
+        id: 'properties',
+        label: setting.string.Properties,
+        component: setting.component.SpaceTypePropertiesSectionEditor
+      },
+      {
+        id: 'roles',
+        label: setting.string.Roles,
+        component: setting.component.SpaceTypeRolesSectionEditor
+      }
+    ],
+    subEditors: {
+      roles: setting.component.RoleEditor
+    }
+  })
+
+  builder.mixin(core.class.SpaceTypeDescriptor, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: setting.component.SpaceTypeDescriptorPresenter
+  })
+
+  builder.mixin(core.class.Permission, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: setting.component.PermissionPresenter
+  })
 }

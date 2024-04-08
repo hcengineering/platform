@@ -3,6 +3,8 @@ import type { Asset, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { AnyComponent, Location } from '@hcengineering/ui'
 
+export * from './utils'
+
 export interface PublicLink extends Doc {
   attachedTo: Ref<Doc>
   url: string

@@ -17,6 +17,8 @@
 import account, { ACCOUNT_DB, type AccountMethod, accountId } from '@hcengineering/account'
 import accountEn from '@hcengineering/account/lang/en.json'
 import accountRu from '@hcengineering/account/lang/ru.json'
+import { registerProviders } from '@hcengineering/auth-providers'
+import { type MeasureContext } from '@hcengineering/core'
 import platform, { Severity, Status, addStringsLoader, setMetadata } from '@hcengineering/platform'
 import serverToken from '@hcengineering/server-token'
 import toolPlugin from '@hcengineering/server-tool'
@@ -26,12 +28,11 @@ import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
 import Router from 'koa-router'
 import { MongoClient } from 'mongodb'
-import { registerProviders } from '@hcengineering/auth-providers'
 
 /**
  * @public
  */
-export function serveAccount (methods: Record<string, AccountMethod>, productId = ''): void {
+export function serveAccount (measureCtx: MeasureContext, methods: Record<string, AccountMethod>, productId = ''): void {
   const ACCOUNT_PORT = parseInt(process.env.ACCOUNT_PORT ?? '3000')
   const dbUri = process.env.MONGO_URL
   if (dbUri === undefined) {
@@ -89,9 +90,9 @@ export function serveAccount (methods: Record<string, AccountMethod>, productId 
   const app = new Koa()
   const router = new Router()
 
-  void client.then((p) => {
+  void client.then((p: MongoClient) => {
     const db = p.db(ACCOUNT_DB)
-    registerProviders(app, router, db, productId, serverSecret, frontURL)
+    registerProviders(measureCtx, app, router, db, productId, serverSecret, frontURL)
   })
 
   const extractToken = (header: IncomingHttpHeaders): string | undefined => {
@@ -120,7 +121,7 @@ export function serveAccount (methods: Record<string, AccountMethod>, productId 
       client = await client
     }
     const db = client.db(ACCOUNT_DB)
-    const result = await method(db, productId, request, token)
+    const result = await method(measureCtx, db, productId, request, token)
     ctx.body = result
   })
 

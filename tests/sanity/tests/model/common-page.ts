@@ -23,6 +23,10 @@ export class CommonPage {
     await page.locator('div[class$="opup"] span[class*="label"]', { hasText: point }).click()
   }
 
+  async checkDropdownHasNo (page: Page, item: string): Promise<void> {
+    await expect(page.locator('div.selectPopup span[class^="lines"]', { hasText: item })).not.toBeVisible()
+  }
+
   async fillToDropdown (page: Page, input: string): Promise<void> {
     await page.locator('div.popup input.search').fill(input)
     await page.locator('div.popup button#channel-ok').click()

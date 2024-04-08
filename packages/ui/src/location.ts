@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import justClone from 'just-clone'
+import { clone } from '@hcengineering/core'
 import { derived, get, writable } from 'svelte/store'
 import { closePopup } from './popups'
 import { type Location as PlatformLocation } from './types'
@@ -105,7 +105,7 @@ export function getRawCurrentLocation (): PlatformLocation {
 }
 
 export function getCurrentResolvedLocation (): PlatformLocation {
-  return justClone(resolvedLocation)
+  return clone(resolvedLocation)
 }
 
 declare global {
@@ -130,7 +130,7 @@ if (!embeddedPlatform) {
   })
 }
 
-export const location = derived(locationWritable, (loc) => justClone(loc))
+export const location = derived(locationWritable, (loc) => clone(loc))
 
 /**
  * Unlike {@link location}, exposes raw browser location as seen in URL
@@ -143,7 +143,7 @@ export const workspaceId = derived(location, (loc) => loc.path[1])
  * @public
  */
 export function getLocation (): PlatformLocation {
-  return justClone(get(location))
+  return clone(get(location))
 }
 
 export const resolvedLocationStore = writable(getRawCurrentLocation())
@@ -151,12 +151,12 @@ let resolvedLocation = getRawCurrentLocation()
 
 export function setResolvedLocation (location: PlatformLocation): void {
   resolvedLocation = location
-  resolvedLocationStore.set(justClone(location))
+  resolvedLocationStore.set(clone(location))
 }
 
 export function getCurrentLocation (): PlatformLocation {
   if (embeddedPlatform) {
-    return justClone(get(locationWritable))
+    return clone(get(locationWritable))
   }
   return getRawCurrentLocation()
 }
@@ -202,5 +202,6 @@ export const getTreeCollapsed = (_id: any): boolean => {
 
 export const setTreeCollapsed = (_id: any, collapsed: boolean): void => {
   if (_id === undefined || _id === 'undefined') return
-  localStorage.setItem(getCollapsedKey(_id), collapsed ? COLLAPSED : '')
+  const key = getCollapsedKey(_id)
+  collapsed ? localStorage.setItem(key, COLLAPSED) : localStorage.removeItem(key)
 }

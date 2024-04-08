@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { WorkspaceId } from '@hcengineering/core'
+import { MeasureContext, WorkspaceId } from '@hcengineering/core'
 import { StorageAdapter } from '@hcengineering/server-core'
 import { Doc as YDoc } from 'yjs'
 
@@ -21,6 +21,7 @@ import { yDocFromBuffer, yDocToBuffer } from './ydoc'
 
 /** @public */
 export async function yDocFromStorage (
+  ctx: MeasureContext,
   storageAdapter: StorageAdapter,
   workspace: WorkspaceId,
   minioDocumentId: string,
@@ -31,7 +32,7 @@ export async function yDocFromStorage (
   ydoc ??= new YDoc({ gc: false })
 
   try {
-    const buffer = await storageAdapter.read(workspace, minioDocumentId)
+    const buffer = await storageAdapter.read(ctx, workspace, minioDocumentId)
     return yDocFromBuffer(Buffer.concat(buffer), ydoc)
   } catch (err: any) {
     if (err?.code === 'NoSuchKey' || err?.code === 'NotFound') {
@@ -43,12 +44,12 @@ export async function yDocFromStorage (
 
 /** @public */
 export async function yDocToStorage (
+  ctx: MeasureContext,
   storageAdapter: StorageAdapter,
   workspace: WorkspaceId,
   minioDocumentId: string,
   ydoc: YDoc
 ): Promise<void> {
   const buffer = yDocToBuffer(ydoc)
-  const metadata = { 'content-type': 'application/ydoc' }
-  await storageAdapter.put(workspace, minioDocumentId, buffer, buffer.length, metadata)
+  await storageAdapter.put(ctx, workspace, minioDocumentId, buffer, 'application/ydoc', buffer.length)
 }

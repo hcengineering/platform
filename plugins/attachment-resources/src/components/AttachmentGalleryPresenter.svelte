@@ -16,6 +16,8 @@
   import type { Attachment } from '@hcengineering/attachment'
   import { showPopup, closeTooltip } from '@hcengineering/ui'
   import { PDFViewer, getFileUrl } from '@hcengineering/presentation'
+  import MediaViewer from './MediaViewer.svelte'
+  import { getType } from '../utils'
   import filesize from 'filesize'
 
   export let value: Attachment
@@ -30,21 +32,22 @@
     return ext.substring(0, 4).toUpperCase()
   }
 
-  function isPDF (contentType: string) {
-    return contentType.includes('application/pdf')
+  function isPlayable (contentType: string) {
+    const type = getType(contentType)
+    return type === 'video' || type === 'audio'
   }
   function isImage (contentType: string) {
-    return contentType.startsWith('image/')
+    return getType(contentType) === 'image'
   }
   function isEmbedded (contentType: string) {
-    return isPDF(contentType) || isImage(contentType)
+    return getType(contentType) !== 'other'
   }
 
   function openAttachment () {
     closeTooltip()
     showPopup(
-      PDFViewer,
-      { file: value.file, name: value.name, contentType: value.type },
+      isPlayable(value.type) ? MediaViewer : PDFViewer,
+      { file: value.file, name: value.name, contentType: value.type, value },
       isImage(value.type) ? 'centered' : 'float'
     )
   }
@@ -60,7 +63,7 @@
       </div>
     {:else}
       <div class="cellMiscPreview">
-        {#if isPDF(value.type)}
+        {#if isEmbedded(value.type)}
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <!-- svelte-ignore a11y-no-static-element-interactions -->
           <div class="flex-center extensionIcon" on:click={openAttachment}>

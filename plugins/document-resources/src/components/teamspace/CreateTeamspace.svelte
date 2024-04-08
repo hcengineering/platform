@@ -13,9 +13,21 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { deepEqual } from 'fast-equals'
   import { AccountArrayEditor } from '@hcengineering/contact-resources'
-  import core, { Account, Data, DocumentUpdate, Ref, generateId, getCurrentAccount } from '@hcengineering/core'
-  import { Teamspace } from '@hcengineering/document'
+  import core, {
+    Account,
+    Data,
+    DocumentUpdate,
+    RolesAssignment,
+    Ref,
+    Role,
+    SpaceType,
+    generateId,
+    getCurrentAccount,
+    WithLookup
+  } from '@hcengineering/core'
+  import document, { Teamspace } from '@hcengineering/document'
   import { Asset } from '@hcengineering/platform'
   import presentation, { Card, getClient } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor'
@@ -32,15 +44,16 @@
     themeStore
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { IconPicker } from '@hcengineering/view-resources'
+  import { IconPicker, SpaceTypeSelector } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import document from '../../plugin'
+
+  import documentRes from '../../plugin'
 
   export let teamspace: Teamspace | undefined = undefined
-
   export let namePlaceholder: string = ''
   export let descriptionPlaceholder: string = ''
 
+  const dispatch = createEventDispatcher()
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
@@ -52,10 +65,42 @@
   let isColorSelected = false
   let members: Ref<Account>[] =
     teamspace?.members !== undefined ? hierarchy.clone(teamspace.members) : [getCurrentAccount()._id]
-
-  const dispatch = createEventDispatcher()
+  let rolesAssignment: RolesAssignment = {}
 
   $: isNew = teamspace === undefined
+
+  let typeId: Ref<SpaceType> | undefined = teamspace?.type || document.spaceType.DefaultTeamspaceType
+  let spaceType: WithLookup<SpaceType> | undefined
+
+  $: void loadSpaceType(typeId)
+  async function loadSpaceType (id: typeof typeId): Promise<void> {
+    spaceType =
+      id !== undefined
+        ? await client
+          .getModel()
+          .findOne(core.class.SpaceType, { _id: id }, { lookup: { _id: { roles: core.class.Role } } })
+        : undefined
+
+    if (teamspace === undefined || spaceType?.targetClass === undefined || spaceType?.$lookup?.roles === undefined) {
+      return
+    }
+
+    rolesAssignment = getRolesAssignment()
+  }
+
+  function getRolesAssignment (): RolesAssignment {
+    if (teamspace === undefined || spaceType?.targetClass === undefined || spaceType?.$lookup?.roles === undefined) {
+      return {}
+    }
+
+    const asMixin = hierarchy.as(teamspace, spaceType?.targetClass)
+
+    return spaceType.$lookup.roles.reduce<RolesAssignment>((prev, { _id }) => {
+      prev[_id as Ref<Role>] = (asMixin as any)[_id]
+
+      return prev
+    }, {})
+  }
 
   async function handleSave (): Promise<void> {
     if (isNew) {
@@ -65,7 +110,7 @@
     }
   }
 
-  function getTeamspaceData (): Data<Teamspace> {
+  function getTeamspaceData (): Omit<Data<Teamspace>, 'type'> {
     return {
       name,
       description,
@@ -78,7 +123,7 @@
   }
 
   async function updateTeamspace (): Promise<void> {
-    if (teamspace === undefined) {
+    if (teamspace === undefined || spaceType?.targetClass === undefined) {
       return
     }
 
@@ -114,14 +159,37 @@
       await client.update(teamspace, update)
     }
 
+    if (!deepEqual(rolesAssignment, getRolesAssignment())) {
+      await client.updateMixin(
+        teamspace._id,
+        document.class.Teamspace,
+        core.space.Space,
+        spaceType.targetClass,
+        rolesAssignment
+      )
+    }
+
     close()
   }
 
   async function createTeamspace (): Promise<void> {
+    if (typeId === undefined || spaceType?.targetClass === undefined) {
+      return
+    }
+
     const teamspaceId = generateId<Teamspace>()
     const teamspaceData = getTeamspaceData()
 
-    await client.createDoc(document.class.Teamspace, core.space.Space, { ...teamspaceData }, teamspaceId)
+    await client.createDoc(document.class.Teamspace, core.space.Space, { ...teamspaceData, type: typeId }, teamspaceId)
+
+    // Create space type's mixin with roles assignments
+    await client.createMixin(
+      teamspaceId,
+      document.class.Teamspace,
+      core.space.Space,
+      spaceType.targetClass,
+      rolesAssignment
+    )
 
     close(teamspaceId)
   }
@@ -141,13 +209,42 @@
   function close (id?: Ref<Teamspace>): void {
     dispatch('close', id)
   }
+
+  function handleTypeChange (evt: CustomEvent<Ref<SpaceType>>): void {
+    typeId = evt.detail
+  }
+
+  $: roles = (spaceType?.$lookup?.roles ?? []) as Role[]
+
+  function handleMembersChanged (newMembers: Ref<Account>[]): void {
+    // If a member was removed we need to remove it from any roles assignments as well
+    const newMembersSet = new Set(newMembers)
+    const removedMembersSet = new Set(members.filter((m) => !newMembersSet.has(m)))
+
+    if (removedMembersSet.size > 0 && rolesAssignment !== undefined) {
+      for (const [key, value] of Object.entries(rolesAssignment)) {
+        rolesAssignment[key as Ref<Role>] =
+          value !== undefined ? value.filter((m) => !removedMembersSet.has(m)) : undefined
+      }
+    }
+
+    members = newMembers
+  }
+
+  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: Ref<Account>[]): void {
+    if (rolesAssignment === undefined) {
+      rolesAssignment = {}
+    }
+
+    rolesAssignment[roleId] = newMembers
+  }
 </script>
 
 <Card
-  label={isNew ? document.string.NewTeamspace : document.string.EditTeamspace}
+  label={isNew ? documentRes.string.NewTeamspace : documentRes.string.EditTeamspace}
   okLabel={isNew ? presentation.string.Create : presentation.string.Save}
   okAction={handleSave}
-  canSave={name.length > 0 && !(members.length === 0 && isPrivate)}
+  canSave={name.length > 0 && !(members.length === 0 && isPrivate) && typeId !== undefined}
   accentHeader
   width={'medium'}
   gap={'gapV-6'}
@@ -157,12 +254,28 @@
   <div class="antiGrid">
     <div class="antiGrid-row">
       <div class="antiGrid-row__header">
-        <Label label={document.string.TeamspaceTitle} />
+        <Label label={core.string.SpaceType} />
+      </div>
+
+      <SpaceTypeSelector
+        disabled={!isNew}
+        descriptors={[document.descriptor.TeamspaceType]}
+        type={typeId}
+        focusIndex={4}
+        kind="regular"
+        size="large"
+        on:change={handleTypeChange}
+      />
+    </div>
+
+    <div class="antiGrid-row">
+      <div class="antiGrid-row__header">
+        <Label label={documentRes.string.TeamspaceTitle} />
       </div>
       <div class="padding">
         <EditBox
           bind:value={name}
-          placeholder={document.string.TeamspaceTitlePlaceholder}
+          placeholder={documentRes.string.TeamspaceTitlePlaceholder}
           kind={'large-style'}
           autoFocus
           on:input={() => {
@@ -176,14 +289,14 @@
 
     <div class="antiGrid-row">
       <div class="antiGrid-row__header topAlign">
-        <Label label={document.string.Description} />
+        <Label label={documentRes.string.Description} />
       </div>
       <div class="padding clear-mins">
         <StyledTextBox
           alwaysEdit
           showButtons={false}
           bind:content={description}
-          placeholder={document.string.TeamspaceDescriptionPlaceholder}
+          placeholder={documentRes.string.TeamspaceDescriptionPlaceholder}
         />
       </div>
     </div>
@@ -192,7 +305,7 @@
   <div class="antiGrid">
     <div class="antiGrid-row">
       <div class="antiGrid-row__header">
-        <Label label={document.string.ChooseIcon} />
+        <Label label={documentRes.string.ChooseIcon} />
       </div>
       <Button
         icon={icon === view.ids.IconWithEmoji ? IconWithEmoji : icon ?? document.icon.Teamspace}
@@ -219,15 +332,34 @@
 
     <div class="antiGrid-row">
       <div class="antiGrid-row__header">
-        <Label label={document.string.TeamspaceMembers} />
+        <Label label={documentRes.string.TeamspaceMembers} />
       </div>
       <AccountArrayEditor
         value={members}
-        label={document.string.TeamspaceMembers}
-        onChange={(refs) => (members = refs)}
+        label={documentRes.string.TeamspaceMembers}
+        onChange={handleMembersChanged}
         kind={'regular'}
         size={'large'}
       />
     </div>
+
+    {#each roles as role}
+      <div class="antiGrid-row">
+        <div class="antiGrid-row__header">
+          <Label label={documentRes.string.RoleLabel} params={{ role: role.name }} />
+        </div>
+        <AccountArrayEditor
+          value={rolesAssignment?.[role._id] ?? []}
+          label={documentRes.string.TeamspaceMembers}
+          includeItems={members}
+          readonly={members.length === 0}
+          onChange={(refs) => {
+            handleRoleAssignmentChanged(role._id, refs)
+          }}
+          kind={'regular'}
+          size={'large'}
+        />
+      </div>
+    {/each}
   </div>
 </Card>

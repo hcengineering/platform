@@ -687,6 +687,7 @@ export function createModel (builder: Builder): void {
       description: tracker.string.ManageWorkflowStatuses,
       icon: task.icon.Task,
       baseClass: tracker.class.Project,
+      availablePermissions: [core.permission.ForbidDeleteObject],
       allowedClassic: true,
       allowedTaskTypeDescriptors: [tracker.descriptors.Issue]
     },
@@ -706,4 +707,8 @@ export function createModel (builder: Builder): void {
     },
     tracker.descriptors.Issue
   )
+
+  builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ObjectIcon, {
+    component: tracker.component.IssueStatusPresenter
+  })
 }

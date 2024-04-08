@@ -26,7 +26,6 @@
   import ToDoPriorityPresenter from './ToDoPriorityPresenter.svelte'
 
   export let todo: WithLookup<ToDo>
-  export let size: 'small' | 'large' = 'small'
   export let planned: boolean = true
   export let isNew: boolean = false
 
@@ -69,7 +68,7 @@
 </script>
 
 <button
-  class="hulyToDoLine-container {size}"
+  class="hulyToDoLine-container"
   class:hovered
   class:isDone
   on:click|stopPropagation={open}
@@ -90,44 +89,21 @@
             <ToDoCheckbox checked={isDone} priority={todo.priority} on:value={markDone} />
           {/if}
         </div>
-        {#if size === 'small'}
-          <ToDoPriorityPresenter value={todo.priority} muted={isDone} />
-        {/if}
+        <ToDoPriorityPresenter value={todo.priority} muted={isDone} />
       </div>
     </div>
     <WorkItemPresenter {todo} kind={'todo-line'} withoutSpace />
-    {#if size === 'small'}
-      <div class="hulyToDoLine-title hulyToDoLine-top-align top-12 text-left font-regular-14 overflow-label">
-        {todo.title}
-      </div>
-    {:else}
-      <div class="flex-col flex-gap-2 flex-grow text-left">
-        <div class="hulyToDoLine-title hulyToDoLine-top-align top-12 text-left font-regular-14">
-          {todo.title}
-        </div>
-        {#if todo.labels && todo.labels > 0 && todo.priority !== ToDoPriority.NoPriority}
-          <div class="flex-row-center flex-grow flex-gap-2">
-            {#if todo.labels && todo.labels > 0}
-              <Component
-                is={tags.component.LabelsPresenter}
-                props={{ object: todo, value: todo.labels, kind: 'todo' }}
-              />
-            {/if}
-            <ToDoPriorityPresenter value={todo.priority} muted={isDone} showLabel />
-          </div>
-        {/if}
-      </div>
-    {/if}
+    <div class="hulyToDoLine-title hulyToDoLine-top-align top-12 text-left font-regular-14 overflow-label">
+      {todo.title}
+    </div>
   </div>
   <div class="flex-row-top flex-no-shrink flex-gap-2">
-    {#if size === 'small'}
-      <div class="flex-row-center min-h-6 max-h-6 flex-gap-2">
-        <Component
-          is={tags.component.LabelsPresenter}
-          props={{ object: todo, value: todo.labels, kind: 'todo-compact' }}
-        />
-      </div>
-    {/if}
+    <div class="flex-row-center min-h-6 max-h-6 flex-gap-2">
+      <Component
+        is={tags.component.LabelsPresenter}
+        props={{ object: todo, value: todo.labels, kind: 'todo-compact' }}
+      />
+    </div>
   </div>
   <div class="flex flex-no-shrink flex-gap-3 pl-2">
     {#if events.length > 0}

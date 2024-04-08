@@ -28,6 +28,7 @@
   export let disabled: boolean = false
   export let inline: boolean = false
   export let accent: boolean = false
+  export let compact = false
 
   $: employee = $employeeByIdStore.get((value as PersonAccount)?.person as Ref<Employee>)
 
@@ -38,9 +39,9 @@
 {#if value}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   {#if employee}
-    <EmployeePresenter value={employee} {disabled} {inline} {accent} {avatarSize} on:accent-color />
+    <EmployeePresenter value={employee} {disabled} {inline} {accent} {avatarSize} {compact} on:accent-color />
   {:else if person}
-    <PersonPresenter value={person} {disabled} {inline} {accent} {avatarSize} on:accent-color />
+    <PersonPresenter value={person} {disabled} {inline} {accent} {avatarSize} {compact} on:accent-color />
   {:else}
     <div class="flex-row-center">
       <Avatar size={avatarSize} />

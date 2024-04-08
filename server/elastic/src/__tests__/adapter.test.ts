@@ -41,7 +41,7 @@ describe('Elastic Adapter', () => {
   it('should create document', async () => {
     const doc: IndexedDoc = {
       id: 'doc1' as Ref<Doc>,
-      _class: 'class1' as Ref<Class<Doc>>,
+      _class: ['class1' as Ref<Class<Doc>>],
       modifiedBy: 'andrey' as Ref<Account>,
       modifiedOn: 0,
       space: 'space1' as Ref<Space>,

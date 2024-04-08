@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Class, Ref, Doc, SearchResultDoc, TxOperations, SearchResult } from '@hcengineering/core'
+import type { Class, Ref, Doc, SearchResultDoc, TxOperations } from '@hcengineering/core'
 import { type ObjectSearchCategory } from './types'
 import plugin from './plugin'
 import { getClient } from './utils'
@@ -61,48 +61,42 @@ function packSearchResultsForListView (sections: SearchSection[]): SearchItem[] 
   return results
 }
 
+async function searchCategory (
+  client: TxOperations,
+  cl: Ref<Class<Doc>>,
+  query: string,
+  categories: ObjectSearchCategory[]
+): Promise<SearchSection | undefined> {
+  const r = await client.searchFulltext(
+    {
+      query: `${query}*`,
+      classes: [cl]
+    },
+    {
+      limit: 5
+    }
+  )
+  const category = findCategoryByClass(categories, cl)
+  return category !== undefined ? { category, items: r.docs } : undefined
+}
+
 async function doFulltextSearch (
   client: TxOperations,
   classes: Array<Ref<Class<Doc>>>,
   query: string,
   categories: ObjectSearchCategory[]
 ): Promise<SearchSection[]> {
-  let result: SearchResult | undefined
-  for (const cl of classes) {
-    const r = await client.searchFulltext(
-      {
-        query: `${query}*`,
-        classes: [cl]
-      },
-      {
-        limit: 5
-      }
-    )
-    if (result === undefined) {
-      result = r
-    } else {
-      result.docs.push(...r.docs)
-      result.total = (result?.total ?? 0) + (r.total ?? 0)
-    }
-  }
-
-  const itemsByClass = new Map<Ref<Class<Doc>>, SearchResultDoc[]>()
-  for (const item of result?.docs ?? []) {
-    const list = itemsByClass.get(item.doc._class)
-    if (list === undefined) {
-      itemsByClass.set(item.doc._class, [item])
-    } else {
-      list.push(item)
-    }
-  }
-
   const sections: SearchSection[] = []
-  for (const [_class, items] of itemsByClass.entries()) {
-    const category = findCategoryByClass(categories, _class)
-    if (category !== undefined) {
-      sections.push({ category, items })
-    }
+  const promises: Array<Promise<SearchSection | undefined>> = []
+  for (const cl of classes) {
+    promises.push(searchCategory(client, cl, query, categories))
   }
+
+  const resolvedSections = await Promise.all(promises)
+  for (const s of resolvedSections) {
+    if (s !== undefined) sections.push(s)
+  }
+
   return sections.sort((a, b) => {
     const maxScoreA = Math.max(...(a?.items ?? []).map((obj) => obj?.score ?? 0))
     const maxScoreB = Math.max(...(b?.items ?? []).map((obj) => obj?.score ?? 0))
@@ -112,7 +106,10 @@ async function doFulltextSearch (
 
 const categoriesByContext = new Map<string, ObjectSearchCategory[]>()
 
-export async function searchFor (context: 'mention' | 'spotlight', query: string): Promise<SearchItem[]> {
+export async function searchFor (
+  context: 'mention' | 'spotlight',
+  query: string
+): Promise<{ items: SearchItem[], query: string }> {
   const client = getClient()
   let categories = categoriesByContext.get(context)
   if (categories === undefined) {
@@ -121,7 +118,7 @@ export async function searchFor (context: 'mention' | 'spotlight', query: string
   }
 
   if (categories === undefined) {
-    return []
+    return { items: [], query }
   }
 
   const classesToSearch: Array<Ref<Class<Doc>>> = []
@@ -132,5 +129,5 @@ export async function searchFor (context: 'mention' | 'spotlight', query: string
   }
 
   const sections = await doFulltextSearch(client, classesToSearch, query, categories)
-  return packSearchResultsForListView(sections)
+  return { items: packSearchResultsForListView(sections), query }
 }

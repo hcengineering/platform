@@ -134,7 +134,7 @@ export interface RadioItem {
   labelParams?: Record<string, any>
   value: any
   disabled?: boolean
-  action?: () => void
+  action?: (() => void) | (() => Promise<void>)
 }
 
 export type ButtonBaseType = 'type-button' | 'type-button-icon'
@@ -200,43 +200,32 @@ export interface PopupPositionElement {
   kind?: 'submenu'
 }
 
-export type PopupPosAlignment =
-  | 'right'
-  | 'top'
-  | 'float'
-  | 'logo'
-  | 'logo-mini'
-  | 'logo-portrait'
-  | 'account'
-  | 'account-portrait'
-  | 'account-mobile'
-  | 'notify'
-  | 'notify-mobile'
-  | 'full'
-  | 'content'
-  | 'middle'
-  | 'help-center'
-  | 'centered'
-  | 'center'
-  | 'status'
+export const posAlignment = [
+  'right',
+  'top',
+  'float',
+  'logo',
+  'logo-mini',
+  'logo-portrait',
+  'account',
+  'account-portrait',
+  'account-mobile',
+  'notify',
+  'notify-mobile',
+  'full',
+  'content',
+  'middle',
+  'help-center',
+  'centered',
+  'center',
+  'status',
+  'movable'
+] as const
+
+export type PopupPosAlignment = (typeof posAlignment)[number]
 
 export function isPopupPosAlignment (x: any): x is PopupPosAlignment {
-  return (
-    typeof x === 'string' &&
-    (x === 'right' ||
-      x === 'top' ||
-      x === 'float' ||
-      x === 'logo' ||
-      x === 'logo-mini' ||
-      x === 'logo-portrait' ||
-      x === 'account' ||
-      x === 'full' ||
-      x === 'content' ||
-      x === 'middle' ||
-      x === 'help-center' ||
-      x === 'centered' ||
-      x === 'center')
-  )
+  return typeof x === 'string' && (posAlignment as typeof posAlignment).includes(x as PopupPosAlignment)
 }
 
 export type PopupAlignment = PopupPosAlignment | PopupPositionElement | null

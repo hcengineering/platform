@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { AccountClient, ClientConnectEvent } from '@hcengineering/core'
+import type { AccountClient, ClientConnectEvent, MeasureContext, TxPersistenceStore } from '@hcengineering/core'
 import type { Plugin, Resource } from '@hcengineering/platform'
 import { Metadata, plugin } from '@hcengineering/platform'
 
@@ -66,7 +66,8 @@ export type ClientFactory = (
   endpoint: string,
   onUpgrade?: () => void,
   onUnauthorized?: () => void,
-  onConnect?: (event: ClientConnectEvent) => void
+  onConnect?: (event: ClientConnectEvent) => void,
+  ctx?: MeasureContext
 ) => Promise<AccountClient>
 
 export default plugin(clientId, {
@@ -76,7 +77,8 @@ export default plugin(clientId, {
     FilterModel: '' as Metadata<boolean>,
     ExtraPlugins: '' as Metadata<Plugin[]>,
     UseBinaryProtocol: '' as Metadata<boolean>,
-    UseProtocolCompression: '' as Metadata<boolean>
+    UseProtocolCompression: '' as Metadata<boolean>,
+    OverridePersistenceStore: '' as Metadata<TxPersistenceStore>
   },
   function: {
     GetClient: '' as Resource<ClientFactory>

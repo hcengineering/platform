@@ -21,8 +21,8 @@
     DocUpdateMessageViewlet
   } from '@hcengineering/activity'
   import { Person, PersonAccount } from '@hcengineering/contact'
-  import { personByIdStore } from '@hcengineering/contact-resources'
-  import core, { Account, AttachedDoc, Class, Collection, Doc, Ref } from '@hcengineering/core'
+  import { personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
+  import { Account, AttachedDoc, Class, Collection, Doc, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Component, ShowMore, Action } from '@hcengineering/ui'
@@ -47,8 +47,6 @@
   export let hideFooter = false
   export let actions: Action[] = []
   export let skipLabel = false
-  export let withFlatActions: boolean = true
-  export let excludedActions: string[] = []
   export let hoverable = true
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
   export let hideLink = false
@@ -58,7 +56,6 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  const userQuery = createQuery()
   const objectQuery = createQuery()
   const parentObjectQuery = createQuery()
 
@@ -68,10 +65,9 @@
   $: collectionAttribute = getCollectionAttribute(hierarchy, value.attachedToClass, value.updateCollection)
   $: clazz = hierarchy.getClass(value.objectClass)
 
-  $: objectName = (collectionAttribute?.type as Collection<AttachedDoc>)?.itemLabel || clazz.label
+  $: objectName = (collectionAttribute?.type as Collection<AttachedDoc>)?.itemLabel ?? clazz.label
   $: collectionName = collectionAttribute?.label
 
-  let user: PersonAccount | undefined = undefined
   let person: Person | undefined = undefined
   let viewlet: DocUpdateMessageViewlet | undefined
   let attributeModel: AttributeModel | undefined = undefined
@@ -98,11 +94,25 @@
     parentMessage = res as DisplayActivityMessage
   })
 
-  $: userQuery.query(core.class.Account, { _id: value.createdBy }, (res: Account[]) => {
-    user = res[0] as PersonAccount
-  })
+  $: person = getPerson(value.createdBy, $personAccountByIdStore, $personByIdStore)
 
-  $: person = user?.person != null ? $personByIdStore.get(user.person) : undefined
+  function getPerson (
+    _id: Ref<Account> | undefined,
+    accountById: Map<Ref<PersonAccount>, PersonAccount>,
+    personById: Map<Ref<Person>, Person>
+  ): Person | undefined {
+    if (_id === undefined) {
+      return undefined
+    }
+
+    const personAccount = accountById.get(_id as Ref<PersonAccount>)
+
+    if (personAccount === undefined) {
+      return undefined
+    }
+
+    return personById.get(personAccount.person)
+  }
 
   $: void loadObject(value.objectId, value.objectClass)
   $: void loadParentObject(value, parentMessage)
@@ -152,14 +162,12 @@
   {isSelected}
   {shouldScroll}
   {embedded}
-  {excludedActions}
   {withActions}
   {viewlet}
   {showEmbedded}
   {hideFooter}
   {actions}
   {skipLabel}
-  {withFlatActions}
   {hoverable}
   {hoverStyles}
   showDatePreposition={hideLink}

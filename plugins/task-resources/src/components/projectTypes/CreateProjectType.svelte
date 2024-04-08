@@ -14,72 +14,45 @@
 -->
 
 <script lang="ts">
-  import { Ref, generateId } from '@hcengineering/core'
-  import { Card, getClient, hasResource } from '@hcengineering/presentation'
+  import { SpaceTypeDescriptor, generateId } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
   import { ProjectTypeDescriptor, createProjectType } from '@hcengineering/task'
-  import { DropdownLabelsIntl, EditBox, ToggleWithLabel } from '@hcengineering/ui'
+  import { ToggleWithLabel } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import task from '../../plugin'
-  import { Resource } from '@hcengineering/platform'
 
   const client = getClient()
 
-  let name: string = ''
-  let classic: boolean = true
+  export let descriptor: SpaceTypeDescriptor
+  export let name: string = ''
+  export const handleTypeCreated: () => Promise<void> = createType
 
-  let descriptor: ProjectTypeDescriptor | undefined = undefined
+  let classic: boolean = true
+  $: projDescriptor = descriptor as ProjectTypeDescriptor
 
   const dispatch = createEventDispatcher()
 
   async function createType (): Promise<void> {
-    if (descriptor === undefined) {
+    if (projDescriptor === undefined) {
       return
     }
     await createProjectType(
       client,
       {
         name,
-        descriptor: descriptor._id,
+        descriptor: projDescriptor._id,
         description: '',
         tasks: [],
-        classic: descriptor.allowedClassic === true ? classic : false
+        roles: 0,
+        classic: projDescriptor.allowedClassic === true ? classic : false
       },
       [],
       generateId()
     )
     dispatch('close')
   }
-
-  const descriptors = client
-    .getModel()
-    .findAllSync(task.class.ProjectTypeDescriptor, {})
-    .filter((p) => hasResource(p._id as any as Resource<any>))
-  const items = descriptors.map((it) => ({
-    label: it.name,
-    id: it._id
-  }))
-
-  function selectType (evt: CustomEvent<Ref<ProjectTypeDescriptor>>): void {
-    descriptor = descriptors.find((it) => it._id === evt.detail)
-  }
-
-  descriptor = descriptors[0]
 </script>
 
-<Card
-  label={task.string.CreateProjectType}
-  canSave={name.trim().length > 0 && descriptor !== undefined}
-  okAction={createType}
-  on:close={() => {
-    dispatch('close')
-  }}
-  on:changeContent
->
-  <div class="flex-col flex-gap-2">
-    <EditBox bind:value={name} placeholder={task.string.ProjectType} />
-    <DropdownLabelsIntl {items} on:selected={selectType} />
-    {#if descriptor?.allowedClassic === true}
-      <ToggleWithLabel label={task.string.ClassicProject} bind:on={classic} />
-    {/if}
-  </div>
-</Card>
+{#if projDescriptor?.allowedClassic === true}
+  <ToggleWithLabel label={task.string.ClassicProject} bind:on={classic} />
+{/if}

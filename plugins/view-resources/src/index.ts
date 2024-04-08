@@ -79,6 +79,7 @@ import SearchSelector from './components/SearchSelector.svelte'
 import SpaceHeader from './components/SpaceHeader.svelte'
 import SpacePresenter from './components/SpacePresenter.svelte'
 import SpaceRefPresenter from './components/SpaceRefPresenter.svelte'
+import SpaceTypeSelector from './components/SpaceTypeSelector.svelte'
 import StatusPresenter from './components/status/StatusPresenter.svelte'
 import StatusRefPresenter from './components/status/StatusRefPresenter.svelte'
 import StringEditor from './components/StringEditor.svelte'
@@ -117,6 +118,7 @@ import {
 import { IndexedDocumentPreview } from '@hcengineering/presentation'
 import { AggregationMiddleware, AnalyticsMiddleware } from './middleware'
 import { showEmptyGroups } from './viewOptions'
+import { canDeleteObject } from './visibilityTester'
 export { getActions, getContextActions, invokeAction, showMenu } from './actions'
 export { default as ActionButton } from './components/ActionButton.svelte'
 export { default as ActionHandler } from './components/ActionHandler.svelte'
@@ -133,11 +135,13 @@ export { default as MarkupPreviewPopup } from './components/MarkupPreviewPopup.s
 export { default as ContextMenu } from './components/Menu.svelte'
 export { default as NavLink } from './components/navigator/NavLink.svelte'
 export { default as ObjectBox } from './components/ObjectBox.svelte'
+export { default as ObjectBoxPopup } from './components/ObjectBoxPopup.svelte'
 export { default as ObjectPresenter } from './components/ObjectPresenter.svelte'
 export { default as ObjectSearchBox } from './components/ObjectSearchBox.svelte'
 export { default as ParentsNavigator } from './components/ParentsNavigator.svelte'
 export { default as StatusPresenter } from './components/status/StatusPresenter.svelte'
 export { default as StatusRefPresenter } from './components/status/StatusRefPresenter.svelte'
+export { default as SpaceTypeSelector } from './components/SpaceTypeSelector.svelte'
 export { default as TableBrowser } from './components/TableBrowser.svelte'
 export { default as ValueSelector } from './components/ValueSelector.svelte'
 export { default as ViewletSelector } from './components/ViewletSelector.svelte'
@@ -255,6 +259,7 @@ export default async (): Promise<Resources> => ({
     DividerPresenter,
     IndexedDocumentPreview,
     SpaceRefPresenter,
+    SpaceTypeSelector,
     EnumArrayEditor,
     EnumPresenter,
     StatusPresenter,
@@ -293,6 +298,7 @@ export default async (): Promise<Resources> => ({
     // eslint-disable-next-line @typescript-eslint/unbound-method
     CreateDocMiddleware: AggregationMiddleware.create,
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    AnalyticsMiddleware: AnalyticsMiddleware.create
+    AnalyticsMiddleware: AnalyticsMiddleware.create,
+    CanDeleteObject: canDeleteObject
   }
 })

@@ -21,6 +21,7 @@ import {
   Class,
   Doc,
   DocumentQuery,
+  IdMap,
   Mixin,
   Ref,
   Space,
@@ -34,7 +35,7 @@ import { plugin } from '@hcengineering/platform'
 import { Preference } from '@hcengineering/preference'
 import { IntegrationType } from '@hcengineering/setting'
 import { AnyComponent, Location, ResolvedLocation } from '@hcengineering/ui'
-import { Action, Viewlet, ViewletDescriptor } from '@hcengineering/view'
+import { Action } from '@hcengineering/view'
 import { Readable, Writable } from './types'
 
 export * from './types'
@@ -238,11 +239,19 @@ export interface ActivityInboxNotification extends InboxNotification {
 
 export interface CommonInboxNotification extends InboxNotification {
   header?: IntlString
+  headerIcon?: Asset
+  headerObjectId?: Ref<Doc>
+  headerObjectClass?: Ref<Class<Doc>>
   message?: IntlString
   messageHtml?: string
   props?: Record<string, any>
   icon?: Asset
   iconProps?: Record<string, any>
+}
+
+export interface MentionInboxNotification extends CommonInboxNotification {
+  mentionedIn: Ref<Doc>
+  mentionedInClass: Ref<Class<Doc>>
 }
 
 export interface DisplayActivityInboxNotification extends ActivityInboxNotification {
@@ -271,11 +280,14 @@ export interface DocNotifyContext extends Doc {
  * @public
  */
 export interface InboxNotificationsClient {
-  docNotifyContextByDoc: Writable<Map<Ref<Doc>, DocNotifyContext>>
-  docNotifyContexts: Writable<DocNotifyContext[]>
+  contextByDoc: Writable<Map<Ref<Doc>, DocNotifyContext>>
+  contexts: Writable<DocNotifyContext[]>
+  contextById: Readable<IdMap<DocNotifyContext>>
+
   inboxNotifications: Readable<InboxNotification[]>
   activityInboxNotifications: Writable<ActivityInboxNotification[]>
   inboxNotificationsByContext: Readable<Map<Ref<DocNotifyContext>, InboxNotification[]>>
+
   readDoc: (client: TxOperations, _id: Ref<Doc>) => Promise<void>
   forceReadDoc: (client: TxOperations, _id: Ref<Doc>, _class: Ref<Class<Doc>>) => Promise<void>
   readMessages: (client: TxOperations, ids: Ref<ActivityMessage>[]) => Promise<void>
@@ -325,7 +337,8 @@ const notification = plugin(notificationId, {
     InboxNotification: '' as Ref<Class<InboxNotification>>,
     ActivityInboxNotification: '' as Ref<Class<ActivityInboxNotification>>,
     CommonInboxNotification: '' as Ref<Class<CommonInboxNotification>>,
-    ActivityNotificationViewlet: '' as Ref<Class<ActivityNotificationViewlet>>
+    ActivityNotificationViewlet: '' as Ref<Class<ActivityNotificationViewlet>>,
+    MentionInboxNotification: '' as Ref<Class<MentionInboxNotification>>
   },
   ids: {
     NotificationSettings: '' as Ref<Doc>,
@@ -344,28 +357,17 @@ const notification = plugin(notificationId, {
   component: {
     Inbox: '' as AnyComponent,
     NotificationPresenter: '' as AnyComponent,
-    NotificationCollaboratorsChanged: '' as AnyComponent,
+    CollaboratorsChanged: '' as AnyComponent,
     DocNotifyContextPresenter: '' as AnyComponent,
-    InboxFlatListView: '' as AnyComponent,
-    InboxGroupedListView: '' as AnyComponent
+    NotificationCollaboratorsChanged: '' as AnyComponent,
+    ReactionNotificationPresenter: '' as AnyComponent
   },
   activity: {
     TxCollaboratorsChange: '' as AnyComponent
   },
-  viewlet: {
-    FlatList: '' as Ref<ViewletDescriptor>,
-    InboxFlatList: '' as Ref<Viewlet>,
-    GroupedList: '' as Ref<ViewletDescriptor>,
-    InboxGroupedList: '' as Ref<Viewlet>
-  },
   action: {
-    MarkAsUnreadInboxNotification: '' as Ref<Action>,
-    MarkAsReadInboxNotification: '' as Ref<Action>,
-    DeleteInboxNotification: '' as Ref<Action>,
     PinDocNotifyContext: '' as Ref<Action>,
     UnpinDocNotifyContext: '' as Ref<Action>,
-    HideDocNotifyContext: '' as Ref<Action>,
-    UnHideDocNotifyContext: '' as Ref<Action>,
     UnReadNotifyContext: '' as Ref<Action>,
     ReadNotifyContext: '' as Ref<Action>,
     DeleteContextNotifications: '' as Ref<Action>
@@ -394,20 +396,17 @@ const notification = plugin(notificationId, {
     RemovedCollaborators: '' as IntlString,
     Edited: '' as IntlString,
     Pinned: '' as IntlString,
-    FlatList: '' as IntlString,
-    GroupedList: '' as IntlString,
     All: '' as IntlString,
     ArchiveAll: '' as IntlString,
     MarkReadAll: '' as IntlString,
     MarkUnreadAll: '' as IntlString,
     ArchiveAllConfirmationTitle: '' as IntlString,
-    ArchiveAllConfirmationMessage: '' as IntlString
+    ArchiveAllConfirmationMessage: '' as IntlString,
+    YouAddedCollaborators: '' as IntlString,
+    YouRemovedCollaborators: '' as IntlString
   },
   function: {
     GetInboxNotificationsClient: '' as Resource<InboxNotificationsClientFactory>,
-    HasHiddenDocNotifyContext: '' as Resource<(doc: Doc[]) => Promise<boolean>>,
-    IsDocNotifyContextHidden: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
-    IsDocNotifyContextTracked: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     HasInboxNotifications: '' as Resource<
     (notificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>) => Promise<boolean>
     >

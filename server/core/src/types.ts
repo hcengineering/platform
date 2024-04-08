@@ -41,8 +41,9 @@ import {
   type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 import type { Asset, Resource } from '@hcengineering/platform'
-import { type StorageAdapter } from './storage'
 import { type Readable } from 'stream'
+import { type ServiceAdaptersManager } from './service'
+import { type StorageAdapter } from './storage'
 
 /**
  * @public
@@ -133,7 +134,7 @@ export interface TriggerControl {
   // Later can be replaced with generic one with bucket encapsulated inside.
   storageFx: (f: (adapter: StorageAdapter, workspaceId: WorkspaceId) => Promise<void>) => void
   fx: (f: () => Promise<void>) => void
-
+  serviceFx: (f: (adapter: ServiceAdaptersManager) => Promise<void>) => void
   // Bulk operations in case trigger require some
   apply: (tx: Tx[], broadcast: boolean, target?: string[]) => Promise<TxResult>
   applyCtx: (ctx: MeasureContext, tx: Tx[], broadcast: boolean, target?: string[]) => Promise<TxResult>
@@ -182,7 +183,7 @@ export interface EmbeddingSearchOption {
  */
 export interface IndexedDoc {
   id: Ref<Doc>
-  _class: Ref<Class<Doc>>
+  _class: Ref<Class<Doc>>[]
   space: Ref<Space>
   modifiedOn: Timestamp
   modifiedBy: Ref<Account>
@@ -191,6 +192,7 @@ export interface IndexedDoc {
   searchTitle?: string
   searchShortTitle?: string
   searchIcon?: any
+  fulltextSummary?: string
   [key: string]: any
 }
 
@@ -410,4 +412,27 @@ export interface ServerStorageOptions {
   upgrade: boolean
 
   broadcast?: BroadcastFunc
+}
+
+export interface ServiceAdapter {
+  close: () => Promise<void>
+  metrics: () => MeasureContext
+}
+
+export type ServiceAdapterFactory = (url: string, db: string, context: MeasureContext) => Promise<ServiceAdapter>
+
+export interface ServiceAdapterConfig {
+  factory: ServiceAdapterFactory
+  db: string
+  url: string
+}
+
+export interface StorageConfig {
+  name: string
+  kind: string
+}
+
+export interface StorageConfiguration {
+  default: string
+  storages: StorageConfig[]
 }

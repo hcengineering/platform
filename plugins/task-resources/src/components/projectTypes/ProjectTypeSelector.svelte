@@ -31,14 +31,9 @@
 
   let types: ProjectType[] = []
   const typesQ = createQuery()
-  const query = disabled
-    ? {
-        descriptor: { $in: descriptors }
-      }
-    : {
-        descriptor: { $in: descriptors },
-        archived: false
-      }
+  const query = {
+    descriptor: { $in: descriptors }
+  }
   $: typesQ.query(task.class.ProjectType, query, (result) => {
     types = result
   })

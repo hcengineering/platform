@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Class, Doc, Ref, Space } from '@hcengineering/core'
+import type { Class, Doc, Ref, Space, SpaceType, SpaceTypeDescriptor } from '@hcengineering/core'
 import { NotificationGroup, NotificationType } from '@hcengineering/notification'
 import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
@@ -77,6 +77,12 @@ export const documentPlugin = plugin(documentId, {
   },
   viewlet: {
     TableBranches: '' as Ref<Viewlet>
+  },
+  descriptor: {
+    TeamspaceType: '' as Ref<SpaceTypeDescriptor>
+  },
+  spaceType: {
+    DefaultTeamspaceType: '' as Ref<SpaceType>
   }
 })
 

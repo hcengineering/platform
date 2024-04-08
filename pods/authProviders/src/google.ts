@@ -1,11 +1,12 @@
-import { concatLink } from '@hcengineering/core'
-import Router from 'koa-router'
-import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
 import { joinWithProvider, loginWithProvider } from '@hcengineering/account'
+import { concatLink, MeasureContext } from '@hcengineering/core'
+import Router from 'koa-router'
 import { Db } from 'mongodb'
+import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
 import { Passport } from '.'
 
 export function registerGoogle (
+  measureCtx: MeasureContext,
   passport: Passport,
   router: Router<any, any>,
   accountsUrl: string,
@@ -45,19 +46,24 @@ export function registerGoogle (
       const first = ctx.state.user.name.givenName
       const last = ctx.state.user.name.familyName
       if (email !== undefined) {
-        if (ctx.query?.state != null) {
-          const loginInfo = await joinWithProvider(db, productId, email, first, last, ctx.query.state)
-          if (ctx.session != null) {
-            ctx.session.loginInfo = loginInfo
+        try {
+          if (ctx.query?.state != null) {
+            const loginInfo = await joinWithProvider(measureCtx, db, productId, email, first, last, ctx.query.state)
+            if (ctx.session != null) {
+              ctx.session.loginInfo = loginInfo
+            }
+          } else {
+            const loginInfo = await loginWithProvider(measureCtx, db, productId, email, first, last)
+            if (ctx.session != null) {
+              ctx.session.loginInfo = loginInfo
+            }
           }
-        } else {
-          const loginInfo = await loginWithProvider(db, productId, email, first, last)
-          if (ctx.session != null) {
-            ctx.session.loginInfo = loginInfo
-          }
+
+          // Successful authentication, redirect to your application
+          ctx.redirect(concatLink(frontUrl, '/login/auth'))
+        } catch (err: any) {
+          await measureCtx.error('failed to auth', err)
         }
-        // Successful authentication, redirect to your application
-        ctx.redirect(concatLink(frontUrl, '/login/auth'))
       }
       await next()
     }

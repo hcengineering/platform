@@ -16,11 +16,11 @@
 import { FindOptions, Lookup, ToClassRefT, WithLookup } from '.'
 import type { AnyAttribute, Class, Classifier, Doc, Domain, Interface, Mixin, Obj, Ref } from './classes'
 import { ClassifierKind } from './classes'
+import { clone as deepClone } from './clone'
 import core from './component'
 import { _createMixinProxy, _mixinClass, _toDoc } from './proxy'
 import type { Tx, TxCreateDoc, TxMixin, TxRemoveDoc, TxUpdateDoc } from './tx'
 import { TxProcessor } from './tx'
-import { getTypeOf } from './typeof'
 
 /**
  * @public
@@ -139,6 +139,21 @@ export class Hierarchy {
       }
     }
     return result
+  }
+
+  findAllMixins<D extends Doc, M extends D>(doc: Doc): Ref<Class<M>>[] {
+    const _doc = _toDoc(doc)
+    const resultSet = new Set<Ref<Class<M>>>()
+    for (const [k, v] of Object.entries(_doc)) {
+      if (typeof v === 'object' && this.classifiers.has(k as Ref<Classifier>)) {
+        if (this.isMixin(k as Ref<Classifier>)) {
+          if (!resultSet.has(k as Ref<Classifier>)) {
+            resultSet.add(k as Ref<Classifier>)
+          }
+        }
+      }
+    }
+    return Array.from(resultSet)
   }
 
   isMixin (_class: Ref<Class<Doc>>): boolean {
@@ -572,33 +587,11 @@ export class Hierarchy {
   }
 
   clone (obj: any): any {
-    if (typeof obj === 'undefined') {
-      return undefined
-    }
-    if (typeof obj === 'function') {
-      return obj
-    }
-    const isArray = Array.isArray(obj)
-    const result: any = isArray ? [] : Object.assign({}, obj)
-    for (const key in obj) {
-      // include prototype properties
-      const value = obj[key]
-      const type = getTypeOf(value)
-      if (type === 'Array') {
-        result[key] = this.clone(value)
-      } else if (type === 'Object') {
-        const m = Hierarchy.mixinClass(value)
-        const valClone = this.clone(value)
-        result[key] = m !== undefined ? this.as(valClone, m) : valClone
-      } else if (type === 'Date') {
-        result[key] = new Date(value.getTime())
-      } else {
-        if (isArray) {
-          result[key] = value
-        }
-      }
-    }
-    return result
+    return deepClone(
+      obj,
+      (doc, m) => this.as(doc, m),
+      (value) => Hierarchy.mixinClass(value)
+    )
   }
 
   domains (): Domain[] {

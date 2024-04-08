@@ -24,7 +24,9 @@ import core, {
   type Ref,
   type Status,
   type Tx,
-  type TxCreateDoc
+  type TxCreateDoc,
+  type StatusCategory,
+  type TxMixin
 } from '@hcengineering/core'
 import {
   createOrUpdate,
@@ -66,6 +68,7 @@ async function createDefaultProject (tx: TxOperations): Promise<void> {
         descriptor: tracker.descriptors.ProjectType,
         description: '',
         tasks: [],
+        roles: 0,
         classic: true
       },
       [
@@ -364,6 +367,134 @@ async function migrateIdentifiers (client: MigrationClient): Promise<void> {
   }
 }
 
+async function restoreTaskTypes (client: MigrationClient): Promise<void> {
+  // Query all tracker project types creations (in Model)
+  // We only update new project types in model here and not old ones in spaces
+  const projectTypes = (await client.find(DOMAIN_TX, {
+    _class: core.class.TxCreateDoc,
+    objectClass: task.class.ProjectType,
+    objectSpace: core.space.Model,
+    'attributes.descriptor': tracker.descriptors.ProjectType
+  })) as TxCreateDoc<ProjectType>[]
+
+  if (projectTypes.length === 0) {
+    return
+  }
+
+  const descr = client.model.getObject(tracker.descriptors.ProjectType)
+  const knownCategories = classicIssueTaskStatuses.map((c) => c.category)
+
+  function compareCategories (a: Ref<StatusCategory>, b: Ref<StatusCategory>): number {
+    const indexOfA = knownCategories.indexOf(a)
+    const indexOfB = knownCategories.indexOf(b)
+
+    return indexOfA - indexOfB
+  }
+
+  for (const projType of projectTypes) {
+    for (const taskTypeId of projType.attributes.tasks) {
+      // Check if task type create TX exists
+      const createTx = (
+        (await client.find(DOMAIN_TX, {
+          _class: core.class.TxCreateDoc,
+          objectClass: task.class.TaskType,
+          objectSpace: core.space.Model,
+          objectId: taskTypeId
+        })) as TxCreateDoc<TaskType>[]
+      )[0]
+
+      if (createTx !== undefined) {
+        continue
+      }
+
+      // Restore create task type tx
+
+      // Get target class mixin
+
+      const typeMixin = (
+        await client.find(DOMAIN_TX, {
+          mixin: task.mixin.TaskTypeClass,
+          'attributes.projectType': projType.objectId,
+          'attributes.taskType': taskTypeId
+        })
+      )[0] as TxMixin<any, any>
+
+      if (typeMixin === undefined) {
+        console.error(new Error('No type mixin found for the task type being restored'))
+        continue
+      }
+
+      // Get statuses and categories
+      const statusesIds = projType.attributes.statuses.filter((s) => s.taskType === taskTypeId).map((s) => s._id)
+      if (statusesIds.length === 0) {
+        throw new Error('No statuses defined for the task type being restored')
+      }
+      const statuses = await client.find<Status>(DOMAIN_STATUS, {
+        _id: { $in: statusesIds }
+      })
+      const categoriesIds = new Set<Ref<StatusCategory>>()
+
+      statuses.forEach((st) => {
+        if (st.category !== undefined) {
+          categoriesIds.add(st.category)
+        }
+      })
+
+      if (categoriesIds.size === 0) {
+        throw new Error('No categories found for the task type being restored')
+      }
+
+      const statusCategories = Array.from(categoriesIds)
+
+      statusCategories.sort(compareCategories)
+
+      const createTxNew: TxCreateDoc<TaskType> = {
+        _id: generateId(),
+        _class: core.class.TxCreateDoc,
+        space: core.space.Tx,
+        objectId: taskTypeId,
+        objectClass: task.class.TaskType,
+        objectSpace: core.space.Model,
+        modifiedBy: core.account.ConfigUser, // So it's not removed during the next migration
+        modifiedOn: projType.modifiedOn,
+        createdOn: projType.createdOn,
+        attributes: {
+          name: 'Issue',
+          descriptor: tracker.descriptors.Issue,
+          ofClass: tracker.class.Issue,
+          targetClass: typeMixin.objectId,
+          statusClass: tracker.class.IssueStatus,
+          allowedAsChildOf: [taskTypeId],
+          statuses: statusesIds,
+          statusCategories,
+          parent: projType.objectId,
+          kind: 'both',
+          icon: descr.icon
+        }
+      }
+
+      await client.create(DOMAIN_TX, createTxNew)
+
+      // If there were updates to the task type - move them to the model
+      // Check if task type create TX exists
+      const updateTxes = await client.find(DOMAIN_TX, {
+        _class: { $in: [core.class.TxUpdateDoc, core.class.TxRemoveDoc] },
+        objectClass: task.class.TaskType,
+        objectSpace: projType.objectId,
+        objectId: taskTypeId
+      })
+
+      for (const updTx of updateTxes) {
+        await client.create<Tx>(DOMAIN_TX, {
+          ...updTx,
+          _id: generateId(),
+          objectSpace: core.space.Model
+        })
+      }
+    }
+  }
+}
+
 export const trackerOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, 'tracker', [
@@ -503,6 +634,10 @@ export const trackerOperation: MigrateOperation = {
       {
         state: 'passIdentifierToParentInfo',
         func: passIdentifierToParentInfo
+      },
+      {
+        state: 'restoreTaskTypes',
+        func: restoreTaskTypes
       }
     ])
   },

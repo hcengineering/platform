@@ -5,10 +5,12 @@ import session from 'koa-session'
 import { Db } from 'mongodb'
 import { registerGithub } from './github'
 import { registerGoogle } from './google'
+import { MeasureContext } from '@hcengineering/core'
 
 export type Passport = typeof passport
 
 export type AuthProvider = (
+  ctx: MeasureContext,
   passport: Passport,
   router: Router<any, any>,
   accountsUrl: string,
@@ -18,6 +20,7 @@ export type AuthProvider = (
 ) => string | undefined
 
 export function registerProviders (
+  ctx: MeasureContext,
   app: Koa<Koa.DefaultState, Koa.DefaultContext>,
   router: Router<any, any>,
   db: Db,
@@ -57,7 +60,7 @@ export function registerProviders (
   const res: string[] = []
   const providers: AuthProvider[] = [registerGoogle, registerGithub]
   for (const provider of providers) {
-    const value = provider(passport, router, accountsUrl, db, productId, frontUrl)
+    const value = provider(ctx, passport, router, accountsUrl, db, productId, frontUrl)
     if (value !== undefined) res.push(value)
   }
 

@@ -25,11 +25,11 @@
 
   const objectQuery = createQuery()
   const inboxClient = InboxNotificationsClientImpl.getClient()
-  const docNotifyContextByDocStore = inboxClient.docNotifyContextByDoc
+  const contextByDocStore = inboxClient.contextByDoc
 
   let object: ChunterSpace | undefined = undefined
 
-  $: context = $docNotifyContextByDocStore.get(_id)
+  $: context = $contextByDocStore.get(_id)
 
   $: objectQuery.query(_class, { _id }, (res) => {
     object = res[0]

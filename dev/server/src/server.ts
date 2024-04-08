@@ -73,6 +73,7 @@ export async function start (port: number, host?: string): Promise<void> {
             url: ''
           }
         },
+        serviceAdapters: {},
         defaultContentAdapter: 'default',
         workspace: workspaceId
       }

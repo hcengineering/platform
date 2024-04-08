@@ -44,9 +44,8 @@ import {
   DummyFullTextAdapter,
   type FullTextAdapter
 } from '@hcengineering/server-core'
-import { type MongoClient } from 'mongodb'
 import { createMongoAdapter, createMongoTxAdapter } from '..'
-import { getMongoClient, shutdown } from '../utils'
+import { getMongoClient, type MongoClientReference, shutdown } from '../utils'
 import { genMinModel } from './minmodel'
 import { createTaskModel, type Task, type TaskComment, taskPlugin } from './tasks'
 
@@ -55,6 +54,7 @@ const txes = genMinModel()
 createTaskModel(txes)
 
 async function createNullAdapter (
+  ctx: MeasureContext,
   hierarchy: Hierarchy,
   url: string,
   db: WorkspaceId,
@@ -80,7 +80,7 @@ async function createNullContentTextAdapter (): Promise<ContentTextAdapter> {
 
 describe('mongo operations', () => {
   const mongodbUri: string = process.env.MONGO_URL ?? 'mongodb://localhost:27017'
-  let mongoClient!: MongoClient
+  let mongoClient!: MongoClientReference
   let dbId: string = generateId()
   let hierarchy: Hierarchy
   let model: ModelDb
@@ -88,7 +88,7 @@ describe('mongo operations', () => {
   let operations: TxOperations
 
   beforeAll(async () => {
-    mongoClient = await getMongoClient(mongodbUri)
+    mongoClient = getMongoClient(mongodbUri)
   })
 
   afterAll(async () => {
@@ -101,7 +101,7 @@ describe('mongo operations', () => {
 
   afterEach(async () => {
     try {
-      await mongoClient.db(dbId).dropDatabase()
+      await (await mongoClient.getClient()).db(dbId).dropDatabase()
     } catch (eee) {}
   })
 
@@ -117,7 +117,13 @@ describe('mongo operations', () => {
     }
 
     const mctx = new MeasureMetricsContext('', {})
-    const txStorage = await createMongoTxAdapter(hierarchy, mongodbUri, getWorkspaceId(dbId, ''), model)
+    const txStorage = await createMongoTxAdapter(
+      new MeasureMetricsContext('', {}),
+      hierarchy,
+      mongodbUri,
+      getWorkspaceId(dbId, ''),
+      model
+    )
 
     // Put all transactions to Tx
     for (const t of txes) {
@@ -157,6 +163,7 @@ describe('mongo operations', () => {
           url: ''
         }
       },
+      serviceAdapters: {},
       defaultContentAdapter: 'default',
       workspace: { ...getWorkspaceId(dbId, ''), workspaceName: '', workspaceUrl: '' },
       storageFactory: () => createNullStorageFactory()

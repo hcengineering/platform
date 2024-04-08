@@ -22,8 +22,8 @@
   export let size: IconSize = 'small'
 
   const inboxClient = InboxNotificationsClientImpl.getClient()
-  const store = inboxClient.docNotifyContextByDoc
-  $: subscribed = $store.get(object._id) !== undefined
+  const contextByDocStore = inboxClient.contextByDoc
+  $: subscribed = $contextByDocStore.get(object._id) !== undefined
 </script>
 
 {#if subscribed}

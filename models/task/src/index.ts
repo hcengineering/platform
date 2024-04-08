@@ -53,7 +53,15 @@ import {
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
-import core, { DOMAIN_SPACE, TAttachedDoc, TClass, TDoc, TSpace } from '@hcengineering/model-core'
+import core, {
+  DOMAIN_SPACE,
+  TAttachedDoc,
+  TClass,
+  TDoc,
+  TSpaceType,
+  TSpaceTypeDescriptor,
+  TTypedSpace
+} from '@hcengineering/model-core'
 import view, {
   classPresenter,
   createAction,
@@ -173,18 +181,20 @@ export class TProjectTypeClass extends TClass implements ProjectTypeClass {
   projectType!: Ref<ProjectType>
 }
 
-@Model(task.class.Project, core.class.Space)
-export class TProject extends TSpace implements Project {
+@Model(task.class.Project, core.class.TypedSpace)
+export class TProject extends TTypedSpace implements Project {
   @Prop(TypeRef(task.class.ProjectType), task.string.ProjectType)
-    type!: Ref<ProjectType>
+  declare type: Ref<ProjectType>
 }
 
-@Model(task.class.ProjectType, core.class.Space)
-export class TProjectType extends TSpace implements ProjectType {
-  shortDescription?: string
-
+@Model(task.class.ProjectType, core.class.SpaceType)
+export class TProjectType extends TSpaceType implements ProjectType {
   @Prop(TypeRef(task.class.ProjectTypeDescriptor), getEmbeddedLabel('Descriptor'))
-    descriptor!: Ref<ProjectTypeDescriptor>
+  declare descriptor: Ref<ProjectTypeDescriptor>
+
+  @Prop(TypeString(), task.string.Description)
+  @Index(IndexKind.FullText)
+    description!: string
 
   @Prop(ArrOf(TypeRef(task.class.TaskType)), getEmbeddedLabel('Tasks'))
     tasks!: Ref<TaskType>[]
@@ -193,13 +203,13 @@ export class TProjectType extends TSpace implements ProjectType {
     statuses!: ProjectStatus[]
 
   @Prop(TypeRef(core.class.Class), getEmbeddedLabel('Target Class'))
-    targetClass!: Ref<Class<Project>>
+  declare targetClass: Ref<Class<Project>>
 
   @Prop(TypeBoolean(), getEmbeddedLabel('Classic'))
     classic!: boolean
 }
 
-@Model(task.class.TaskType, core.class.Doc, DOMAIN_TASK)
+@Model(task.class.TaskType, core.class.Doc, DOMAIN_MODEL)
 export class TTaskType extends TDoc implements TaskType {
   @Prop(TypeString(), getEmbeddedLabel('Name'))
     name!: string
@@ -232,15 +242,12 @@ export class TTaskType extends TDoc implements TaskType {
     statusCategories!: Ref<StatusCategory>[]
 }
 
-@Model(task.class.ProjectTypeDescriptor, core.class.Doc, DOMAIN_MODEL)
-export class TProjectTypeDescriptor extends TDoc implements ProjectTypeDescriptor {
-  name!: IntlString
-  description!: IntlString
-  icon!: Asset
+@Model(task.class.ProjectTypeDescriptor, core.class.SpaceTypeDescriptor, DOMAIN_MODEL)
+export class TProjectTypeDescriptor extends TSpaceTypeDescriptor implements ProjectTypeDescriptor {
   editor?: AnyComponent
   allowedClassic?: boolean
   allowedTaskTypeDescriptors?: Ref<TaskTypeDescriptor>[] // if undefined we allow all possible
-  baseClass!: Ref<Class<Task>>
+  declare baseClass: Ref<Class<Project>>
 }
 
 @Model(task.class.Sequence, core.class.Doc, DOMAIN_KANBAN)
@@ -540,25 +547,49 @@ export function createModel (builder: Builder): void {
     value: true
   })
 
-  builder.createDoc(
-    setting.class.SettingsCategory,
-    core.space.Model,
-    {
-      name: 'statuses',
-      label: task.string.ManageProjects,
-      icon: task.icon.ManageTemplates,
-      component: task.component.ManageProjectsContent,
-      extraComponents: {
-        navigation: task.component.ManageProjects,
-        tools: task.component.ManageProjectsTools
+  builder.mixin(task.class.ProjectTypeDescriptor, core.class.Class, setting.mixin.SpaceTypeCreator, {
+    extraComponent: task.component.CreateProjectType
+  })
+
+  builder.mixin(task.class.ProjectType, core.class.Class, setting.mixin.SpaceTypeEditor, {
+    sections: [
+      {
+        id: 'general',
+        label: setting.string.General,
+        component: task.component.ProjectTypeGeneralSectionEditor,
+        withoutContainer: true
       },
-      group: 'settings-editor',
-      secured: false,
-      order: 6000,
-      expandable: true
-    },
-    task.ids.ManageProjects
-  )
+      {
+        id: 'properties',
+        label: setting.string.Properties,
+        component: setting.component.SpaceTypePropertiesSectionEditor
+      },
+      {
+        id: 'roles',
+        label: setting.string.Roles,
+        component: setting.component.SpaceTypeRolesSectionEditor
+      },
+      {
+        id: 'taskTypes',
+        label: setting.string.TaskTypes,
+        component: task.component.ProjectTypeTasksTypeSectionEditor
+      },
+      {
+        id: 'automations',
+        label: setting.string.Automations,
+        component: task.component.ProjectTypeAutomationsSectionEditor
+      },
+      {
+        id: 'collections',
+        label: setting.string.Collections,
+        component: task.component.ProjectTypeCollectionsSectionEditor
+      }
+    ],
+    subEditors: {
+      taskTypes: task.component.TaskTypeEditor,
+      roles: setting.component.RoleEditor
+    }
+  })
 
   createPublicLinkAction(builder, task.class.Task, task.action.PublicLink)
 }
@@ -589,8 +620,7 @@ export async function fixTaskTypes (
     throw new Error('category is not found in model')
   }
 
-  const projectTypes = await client.find<ProjectType>(DOMAIN_SPACE, {
-    _class: task.class.ProjectType,
+  const projectTypes = await client.model.findAll(task.class.ProjectType, {
     descriptor
   })
   const baseClassClass = client.hierarchy.getClass(categoryObj.baseClass)
@@ -751,7 +781,7 @@ export async function fixTaskTypes (
         parent: t._id,
         _id: taskTypeId,
         _class: task.class.TaskType,
-        space: t._id,
+        space: core.space.Model,
         statuses: dStatuses,
         modifiedBy: core.account.System,
         modifiedOn: Date.now(),

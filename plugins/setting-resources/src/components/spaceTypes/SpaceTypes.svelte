@@ -1,6 +1,5 @@
 <!--
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,47 +13,47 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, WithLookup } from '@hcengineering/core'
-  import { ProjectType } from '@hcengineering/task'
+  import { Ref, SpaceType, WithLookup } from '@hcengineering/core'
   import { Icon, Label, IconOpenedArrow } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
-  export let type: ProjectType | undefined
-  export let typeId: Ref<ProjectType> | undefined
-
-  export let types: WithLookup<ProjectType>[] = []
+  export let selectedTypeId: Ref<SpaceType> | undefined
+  export let types: WithLookup<SpaceType>[] = []
 
   const dispatch = createEventDispatcher()
-  function select (item: ProjectType): void {
-    typeId = item._id
-    dispatch('change', typeId)
+
+  function handleSelected (type: SpaceType): void {
+    selectedTypeId = type._id
+
+    dispatch('change', selectedTypeId)
   }
 </script>
 
-{#each types as typeItem}
+{#each types as type}
+  {@const descriptor = type.$lookup?.descriptor}
   <button
     class="hulyTaskNavLink-container font-regular-14"
-    class:selected={typeItem._id === typeId}
+    class:selected={type._id === selectedTypeId}
     on:click={() => {
-      select(typeItem)
+      handleSelected(type)
     }}
   >
     <div class="hulyTaskNavLink-avatar">
-      {#if typeItem.$lookup?.descriptor?.icon}
+      {#if descriptor?.icon}
         <div class="hulyTaskNavLink-icon">
-          <Icon icon={typeItem.$lookup?.descriptor?.icon} size={'small'} fill={'currentColor'} />
+          <Icon icon={descriptor?.icon} size="small" fill="currentColor" />
         </div>
       {/if}
     </div>
-    {#if typeItem.$lookup?.descriptor}
+    {#if descriptor}
       <div class="hulyTaskNavLink-content">
-        <span class="hulyTaskNavLink-content__title">{typeItem.name}</span>
+        <span class="hulyTaskNavLink-content__title">{type.name}</span>
         <span class="hulyTaskNavLink-content__descriptor">
-          <Label label={typeItem.$lookup?.descriptor.name} />
+          <Label label={descriptor.name} />
         </span>
       </div>
     {/if}
-    {#if typeItem._id === typeId}
+    {#if type._id === selectedTypeId}
       <div class="hulyTaskNavLink-icon right">
         <IconOpenedArrow size={'small'} />
       </div>

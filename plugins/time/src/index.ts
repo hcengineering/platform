@@ -138,6 +138,7 @@ export default plugin(timeId, {
     DayCalendar: '' as IntlString,
     CreatedToDo: '' as IntlString,
     AddToDo: '' as IntlString,
-    NewToDoDetails: '' as IntlString
+    NewToDoDetails: '' as IntlString,
+    ToDo: '' as IntlString
   }
 })

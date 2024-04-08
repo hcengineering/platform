@@ -87,7 +87,7 @@ interface DocumentRef {
  * @public
  */
 export class LiveQuery implements WithTx, Client {
-  private client: Client
+  private readonly client: Client
   private readonly queries: Map<Ref<Class<Doc>>, Query[]> = new Map<Ref<Class<Doc>>, Query[]>()
   private readonly queue: Query[] = []
   private queryCounter: number = 0
@@ -98,11 +98,6 @@ export class LiveQuery implements WithTx, Client {
 
   constructor (client: Client) {
     this.client = client
-  }
-
-  async updateClient (client: Client): Promise<void> {
-    this.client = client
-    await this.refreshConnect()
   }
 
   public isClosed (): boolean {
@@ -123,10 +118,13 @@ export class LiveQuery implements WithTx, Client {
   }
 
   // Perform refresh of content since connection established.
-  async refreshConnect (): Promise<void> {
+  async refreshConnect (clean: boolean): Promise<void> {
     for (const q of [...this.queue]) {
       if (!this.removeFromQueue(q)) {
         try {
+          if (clean) {
+            this.cleanQuery(q)
+          }
           void this.refresh(q)
         } catch (err: any) {
           if (err instanceof PlatformError) {
@@ -141,6 +139,9 @@ export class LiveQuery implements WithTx, Client {
     for (const v of this.queries.values()) {
       for (const q of v) {
         try {
+          if (clean) {
+            this.cleanQuery(q)
+          }
           void this.refresh(q)
         } catch (err: any) {
           if (err instanceof PlatformError) {
@@ -152,6 +153,14 @@ export class LiveQuery implements WithTx, Client {
         }
       }
     }
+  }
+
+  private cleanQuery (q: Query): void {
+    q.callbacks.forEach((callback) => {
+      callback(toFindResult([], 0))
+    })
+    q.result = []
+    q.total = -1
   }
 
   private match (q: Query, doc: Doc, skipLookup = false): boolean {
@@ -206,7 +215,12 @@ export class LiveQuery implements WithTx, Client {
         }
       }
     }
-    if (options?.limit === 1 && options.total !== true) {
+    if (
+      options?.limit === 1 &&
+      options.total !== true &&
+      options?.sort === undefined &&
+      options?.projection === undefined
+    ) {
       const docs = this.documentRefs.get(classKey)
       if (docs !== undefined) {
         const _docs = Array.from(docs.values()).map((it) => it.doc)

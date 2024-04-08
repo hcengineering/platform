@@ -63,10 +63,18 @@ test.describe('Application tests', () => {
   })
 
   test.skip('Edit an Application', async ({ page }) => {
-    const vacancyName = 'Software Engineer'
-    const navigationMenuPage = new NavigationMenuPage(page)
-    await navigationMenuPage.buttonApplications.click()
+    const vacancyName = 'Edit an Application Vacancy ' + generateId(4)
 
+    const navigationMenuPage = new NavigationMenuPage(page)
+    await navigationMenuPage.buttonVacancies.click()
+    const vacanciesPage = new VacanciesPage(page)
+    await vacanciesPage.createNewVacancy({
+      title: vacancyName,
+      description: 'Vacancy description from Edit a Vacancy test',
+      location: 'Edit a Vacancy location'
+    })
+
+    await navigationMenuPage.buttonApplications.click()
     const applicationsPage = new ApplicationsPage(page)
     const talentName = await applicationsPage.createNewApplicationWithNewTalent({
       vacancy: vacancyName,
@@ -160,14 +168,21 @@ test.describe('Application tests', () => {
 
   test('Comment stored after reload the page', async ({ page }) => {
     const commentText = `Application comment should be stored after reload-${generateId()}`
+    const vacancyName = 'Comment stored Vacancy ' + generateId(4)
 
-    const vacancyName = 'Software Engineer'
     const navigationMenuPage = new NavigationMenuPage(page)
-    await navigationMenuPage.buttonApplications.click()
+    await navigationMenuPage.buttonVacancies.click()
+    const vacanciesPage = new VacanciesPage(page)
+    await vacanciesPage.createNewVacancy({
+      title: vacancyName,
+      description: 'Vacancy description from Edit a Vacancy test',
+      location: 'Edit a Vacancy location'
+    })
 
+    await navigationMenuPage.buttonApplications.click()
     const applicationsPage = new ApplicationsPage(page)
     const talentName = await applicationsPage.createNewApplicationWithNewTalent({
-      vacancy: vacancyName,
+      vacancy: 'first',
       recruiterName: 'first'
     })
     await applicationsPage.openApplicationByTalentName(talentName)

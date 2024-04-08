@@ -57,7 +57,7 @@
 
   const client = getClient()
   const inboxClient = InboxNotificationsClientImpl.getClient()
-  const contextByDocStore = inboxClient.docNotifyContextByDoc
+  const contextByDocStore = inboxClient.contextByDoc
   const filters = client.getModel().findAllSync(activity.class.ActivityMessagesFilter, {})
 
   const messagesStore = provider.messagesStore
@@ -95,6 +95,10 @@
 
   $: void filterChatMessages(messages, filters, objectClass, selectedFilters).then((filteredMessages) => {
     displayMessages = filteredMessages
+  })
+
+  inboxClient.inboxNotificationsByContext.subscribe(() => {
+    readViewportMessages()
   })
 
   function scrollToBottom (afterScrollFn?: () => void) {
@@ -275,7 +279,7 @@
   }
 
   function readViewportMessages () {
-    if (scrollElement === undefined || scrollContentBox === undefined) {
+    if (!scrollElement || !scrollContentBox) {
       return
     }
 
@@ -304,7 +308,7 @@
       return
     }
 
-    if (scrollContentBox === undefined || scrollElement === undefined) {
+    if (!scrollContentBox || !scrollElement) {
       return
     }
 
@@ -610,7 +614,7 @@
 
 <style lang="scss">
   .msg {
-    margin: 0 1.5rem;
+    margin: 0;
     min-height: 4.375rem;
     height: auto;
     display: flex;

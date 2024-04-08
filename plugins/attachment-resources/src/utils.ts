@@ -105,7 +105,7 @@ export async function createAttachments (
   }
 }
 
-export function getType (type: string): 'image' | 'video' | 'audio' | 'pdf' | 'other' {
+export function getType (type: string): 'image' | 'text' | 'json' | 'video' | 'audio' | 'pdf' | 'other' {
   if (type.startsWith('image/')) {
     return 'image'
   }
@@ -117,6 +117,12 @@ export function getType (type: string): 'image' | 'video' | 'audio' | 'pdf' | 'o
   }
   if (type.includes('application/pdf')) {
     return 'pdf'
+  }
+  if (type === 'application/json') {
+    return 'json'
+  }
+  if (type.startsWith('text/')) {
+    return 'text'
   }
 
   return 'other'

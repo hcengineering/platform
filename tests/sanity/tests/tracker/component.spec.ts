@@ -90,6 +90,7 @@ test.describe('Tracker component tests', () => {
     await componentsPage.openComponentByName(newComponent.name)
 
     const componentsDetailsPage = new ComponentsDetailsPage(page)
+
     await componentsDetailsPage.checkComponent(newComponent)
     await componentsDetailsPage.deleteComponent()
 

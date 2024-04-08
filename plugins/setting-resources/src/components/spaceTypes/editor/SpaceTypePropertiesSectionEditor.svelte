@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,11 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Attachment } from '@hcengineering/attachment'
+  import { type SpaceType, type SpaceTypeDescriptor } from '@hcengineering/core'
 
-  export let value: Attachment
+  import ClassAttributes from '../../ClassAttributes.svelte'
+
+  export let type: SpaceType | undefined
+  export let descriptor: SpaceTypeDescriptor | undefined
 </script>
 
-<div class="flex-row-center">
-  {value.name}
-</div>
+{#if type !== undefined && descriptor !== undefined}
+  <ClassAttributes ofClass={descriptor.baseClass} _class={type.targetClass} showHierarchy />
+{/if}

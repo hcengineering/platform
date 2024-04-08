@@ -1,6 +1,6 @@
 <!--
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021, 2022, 2023 Hardcore Engineering Inc.
+
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,12 +14,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, IconAdd, showPopup } from '@hcengineering/ui'
-  import CreateProjectType from './CreateProjectType.svelte'
+  import { Permission } from '@hcengineering/core'
+  import { Label } from '@hcengineering/ui'
 
-  function open () {
-    showPopup(CreateProjectType, {}, 'top')
-  }
+  export let value: Permission
+  export let inline: boolean = false
 </script>
 
-<Button id="new-project-type" icon={IconAdd} kind={'link'} size="small" on:click={open} />
+{#if value}
+  <div class="flex-presenter" class:inline-presenter={inline}>
+    <Label label={value.label} />
+  </div>
+{/if}

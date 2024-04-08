@@ -41,6 +41,7 @@ import IconUploadDuo from './components/icons/UploadDuo.svelte'
 import IconAttachment from './components/icons/Attachment.svelte'
 import AttachmentPreview from './components/AttachmentPreview.svelte'
 import AttachmentsUpdatedMessage from './components/activity/AttachmentsUpdatedMessage.svelte'
+import AttachmentsTooltip from './components/AttachmentsTooltip.svelte'
 import { deleteFile, uploadFile } from './utils'
 
 export * from './types'
@@ -63,7 +64,8 @@ export {
   AccordionEditor,
   IconUploadDuo,
   IconAttachment,
-  AttachmentPreview
+  AttachmentPreview,
+  AttachmentsTooltip
 }
 
 export enum FileBrowserSortMode {

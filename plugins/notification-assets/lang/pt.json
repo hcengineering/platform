@@ -35,6 +35,13 @@
     "Pinned": "Fixado",
     "Message": "Mensagem",
     "FlatList": "Lista Plana",
-    "GroupedList": "Lista Agrupada"
+    "GroupedList": "Lista Agrupada",
+    "ArchiveAll": "Arquivar tudo",
+    "MarkReadAll": "Marcar tudo como lido",
+    "MarkUnreadAll": "Marcar tudo como não lido",
+    "ArchiveAllConfirmationTitle": "Arquivar todas as notificações?",
+    "ArchiveAllConfirmationMessage": "Esta seguro que quer arquivar todas as notificações? Esta operação não se pode desfazer.",
+    "StarDocument": "Marcar documento",
+    "UnstarDocument": "Desmarcar documento"
   }
 }

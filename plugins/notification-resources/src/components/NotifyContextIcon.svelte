@@ -20,7 +20,12 @@
   import view from '@hcengineering/view'
   import { Doc } from '@hcengineering/core'
 
+  import NotifyMarker from './NotifyMarker.svelte'
+
   export let value: DocNotifyContext
+  export let size: IconSize = 'medium'
+  export let notifyCount: number = 0
+
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const query = createQuery()
@@ -36,10 +41,14 @@
 
 <div class="container">
   {#if iconMixin && object}
-    <Component is={iconMixin.component} props={{ value: object, size: 'medium' }} />
-  {:else}
-    <Icon icon={classIcon(client, value.attachedToClass) ?? notification.icon.Notifications} size="medium" />
+    <Component is={iconMixin.component} props={{ value: object, size }} />
+  {:else if !iconMixin}
+    <Icon icon={classIcon(client, value.attachedToClass) ?? notification.icon.Notifications} {size} />
   {/if}
+
+  <div class="notifyMarker">
+    <NotifyMarker count={notifyCount} size="medium" />
+  </div>
 </div>
 
 <style lang="scss">
@@ -47,10 +56,20 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid transparent;
-    border-radius: 0.5rem;
-    background-color: var(--theme-button-hovered);
+    color: var(--global-secondary-TextColor);
+    border-radius: var(--medium-BorderRadius);
+    border: 1px solid var(--global-subtle-ui-BorderColor);
+    background-color: var(--global-ui-BackgroundColor);
     width: 2.5rem;
     height: 2.5rem;
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+    position: relative;
+
+    .notifyMarker {
+      position: absolute;
+      top: -0.375rem;
+      right: -0.375rem;
+    }
   }
 </style>

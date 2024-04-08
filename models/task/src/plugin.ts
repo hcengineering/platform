@@ -61,10 +61,7 @@ export default mergeIds(taskId, task, {
     TaskTypePresenter: '' as AnyComponent,
     ProjectTypePresenter: '' as AnyComponent,
     TaskTypeClassPresenter: '' as AnyComponent,
-    ProjectTypeClassPresenter: '' as AnyComponent,
-    ManageProjects: '' as AnyComponent,
-    ManageProjectsTools: '' as AnyComponent,
-    ManageProjectsContent: '' as AnyComponent
+    ProjectTypeClassPresenter: '' as AnyComponent
   },
   space: {
     TasksPublic: '' as Ref<Space>

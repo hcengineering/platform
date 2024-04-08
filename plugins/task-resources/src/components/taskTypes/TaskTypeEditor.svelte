@@ -1,6 +1,6 @@
 <!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021, 2022, 2023 Hardcore Engineering Inc.
+// Copyright © 2021, 2022, 2023, 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,11 +14,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttributeEditor, getClient } from '@hcengineering/presentation'
+  import { AttributeEditor, createQuery, getClient } from '@hcengineering/presentation'
   import task, { ProjectType, TaskType, calculateStatuses, findStatusAttr } from '@hcengineering/task'
-  import { Ref, Status } from '@hcengineering/core'
+  import { Ref, SortingOrder, Status } from '@hcengineering/core'
   import { Asset, getEmbeddedLabel } from '@hcengineering/platform'
-  import { Label, showPopup, ButtonIcon, ModernButton, IconSquareExpand, IconAdd, Icon } from '@hcengineering/ui'
+  import {
+    Label,
+    showPopup,
+    ButtonIcon,
+    ModernButton,
+    IconSquareExpand,
+    IconAdd,
+    Icon,
+    Scroller
+  } from '@hcengineering/ui'
   import { IconPicker, statusStore } from '@hcengineering/view-resources'
   import { ClassAttributes, settingsStore } from '@hcengineering/setting-resources'
   import { taskTypeStore } from '../..'
@@ -28,31 +37,67 @@
   import TaskTypeIcon from './TaskTypeIcon.svelte'
   import plugin from '../../plugin'
 
-  export let projectType: ProjectType
-  export let taskType: TaskType
-  export let taskTypeCounter: Map<Ref<TaskType>, number>
-  export let taskTypes: TaskType[]
+  export let spaceType: ProjectType
+  export let objectId: Ref<TaskType>
+  export let name: string | undefined
+  export let icon: Asset | undefined
 
   const client = getClient()
 
-  $: descriptor = client.getModel().findAllSync(task.class.TaskTypeDescriptor, { _id: taskType?.descriptor })
+  let taskTypes: TaskType[] = []
+  const taskTypesQuery = createQuery()
+  $: taskTypesQuery.query(
+    task.class.TaskType,
+    { _id: { $in: spaceType?.tasks ?? [] } },
+    (res) => {
+      taskTypes = res
+    },
+    { sort: { _id: SortingOrder.Ascending } }
+  )
 
-  $: states = taskType.statuses.map((p) => $statusStore.byId.get(p)).filter((p) => p !== undefined) as Status[]
+  $: taskType = taskTypes.find((tt) => tt._id === objectId)
+  $: name = taskType?.name
+  $: icon = taskType?.icon
+  $: descriptor = client.getModel().findAllSync(task.class.TaskTypeDescriptor, { _id: taskType?.descriptor })
+  $: states = (taskType?.statuses.map((p) => $statusStore.byId.get(p)).filter((p) => p !== undefined) as Status[]) ?? []
+
+  let tasksCounter: number = 0
+  const tasksCounterQuery = createQuery()
+  $: if (taskType !== undefined) {
+    tasksCounterQuery.query(
+      task.class.Task,
+      { kind: taskType._id },
+      (res) => {
+        tasksCounter = res.length
+      },
+      {
+        projection: {
+          _id: 1
+        }
+      }
+    )
+  }
 
   function selectIcon (el: MouseEvent): void {
     const icons: Asset[] = [descriptor[0].icon]
+
     showPopup(
       IconPicker,
       { icon: taskType?.icon, color: taskType?.color, icons, showColor: false },
       el.target as HTMLElement,
       async (result) => {
-        if (result !== undefined && result !== null) {
+        if (result !== undefined && result !== null && taskType !== undefined) {
           await client.update(taskType, { color: result.color, icon: result.icon })
         }
       }
     )
   }
+
   function handleAddStatus (): void {
+    if (taskType === undefined) {
+      return
+    }
+
     const icons: Asset[] = []
     const attr = findStatusAttr(getClient().getHierarchy(), taskType.ofClass)
     $settingsStore = {
@@ -63,7 +108,7 @@
         taskType,
         _class: taskType.statusClass,
         category: task.statusCategory.Active,
-        type: projectType,
+        type: spaceType,
         ofAttribute: attr._id,
         icon: undefined,
         color: 0,
@@ -73,93 +118,120 @@
   }
 </script>
 
-<div class="hulyComponent-content__column-group mt-4">
-  <div class="hulyComponent-content__header mb-6">
-    <div class="flex-row-center gap-1-5">
-      <TaskTypeKindEditor
-        kind={taskType.kind}
-        on:change={(evt) => {
-          void client.diffUpdate(taskType, { kind: evt.detail })
-        }}
-      />
-      <ButtonIcon
-        icon={TaskTypeIcon}
-        iconProps={{ value: taskType }}
-        size={'large'}
-        kind={'secondary'}
-        on:click={selectIcon}
-      />
+{#if taskType !== undefined}
+  <div class="hulyComponent-content__container columns">
+    <div class="hulyComponent-content__column content">
+      <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
+        <div class="hulyComponent-content gap">
+          <div class="hulyComponent-content__column-group mt-4">
+            <div class="hulyComponent-content__header mb-6">
+              <div class="flex-row-center gap-1-5">
+                <TaskTypeKindEditor
+                  kind={taskType.kind}
+                  on:change={(evt) => {
+                    if (taskType === undefined) {
+                      return
+                    }
+                    void client.diffUpdate(taskType, { kind: evt.detail })
+                  }}
+                />
+                <ButtonIcon
+                  icon={TaskTypeIcon}
+                  iconProps={{ value: taskType }}
+                  size={'large'}
+                  kind={'secondary'}
+                  on:click={selectIcon}
+                />
+              </div>
+              <ModernButton
+                icon={IconSquareExpand}
+                label={plugin.string.CountTasks}
+                labelParams={{ count: tasksCounter }}
+                disabled={tasksCounter === 0}
+                kind={'tertiary'}
+                size={'medium'}
+                hasMenu
+              />
+            </div>
+
+            <AttributeEditor
+              _class={task.class.TaskType}
+              object={taskType}
+              key="name"
+              editKind={'modern-ghost-large'}
+            />
+
+            <div class="flex-row-center mt-4 ml-4 mr-4 gap-4">
+              <div class="flex-no-shrink trans-title uppercase">
+                <Label label={getEmbeddedLabel('Parent type restrictions')} />
+              </div>
+              {#if taskType.kind === 'subtask' || taskType.kind === 'both'}
+                <TaskTypeRefEditor
+                  label={getEmbeddedLabel('Allowed parents')}
+                  value={taskType.allowedAsChildOf}
+                  types={taskTypes.filter((it) => it.kind === 'task' || it.kind === 'both')}
+                  onChange={(evt) => {
+                    if (taskType === undefined) {
+                      return
+                    }
+                    void client.diffUpdate(taskType, { allowedAsChildOf: evt })
+                  }}
+                />
+              {/if}
+            </div>
+          </div>
+
+          <div class="hulyTableAttr-container">
+            <div class="hulyTableAttr-header font-medium-12">
+              <Icon icon={task.icon.ManageTemplates} size={'small'} />
+              <span><Label label={plugin.string.ProcessStates} /></span>
+              <ButtonIcon kind={'primary'} icon={IconAdd} size={'small'} on:click={handleAddStatus} />
+            </div>
+            <StatesProjectEditor
+              {taskType}
+              type={spaceType}
+              {states}
+              on:delete={async (evt) => {
+                if (taskType === undefined) {
+                  return
+                }
+                const index = taskType.statuses.findIndex((p) => p === evt.detail.state._id)
+                taskType.statuses.splice(index, 1)
+                await client.update(taskType, {
+                  statuses: taskType.statuses
+                })
+                await client.update(spaceType, {
+                  statuses: calculateStatuses(spaceType, $taskTypeStore, [
+                    { taskTypeId: taskType._id, statuses: taskType.statuses }
+                  ])
+                })
+              }}
+              on:move={async (evt) => {
+                if (taskType === undefined) {
+                  return
+                }
+                const index = taskType.statuses.findIndex((p) => p === evt.detail.stateID)
+                const state = taskType.statuses.splice(index, 1)[0]
+
+                const statuses = [
+                  ...taskType.statuses.slice(0, evt.detail.position),
+                  state,
+                  ...taskType.statuses.slice(evt.detail.position)
+                ]
+                await client.update(taskType, {
+                  statuses
+                })
+
+                await client.update(spaceType, {
+                  statuses: calculateStatuses(spaceType, $taskTypeStore, [{ taskTypeId: taskType._id, statuses }])
+                })
+              }}
+            />
+          </div>
+
+          <ClassAttributes ofClass={taskType.ofClass} _class={taskType.targetClass} showHierarchy />
+        </div>
+      </Scroller>
     </div>
-    <ModernButton
-      icon={IconSquareExpand}
-      label={plugin.string.CountTasks}
-      labelParams={{ count: taskTypeCounter.get(taskType._id) ?? 0 }}
-      disabled={taskTypeCounter.get(taskType._id) === undefined}
-      kind={'tertiary'}
-      size={'medium'}
-      hasMenu
-    />
   </div>
-
-  <AttributeEditor _class={task.class.TaskType} object={taskType} key="name" editKind={'modern-ghost-large'} />
-
-  <div class="flex-row-center mt-4 ml-4 mr-4 gap-4">
-    <div class="flex-no-shrink trans-title uppercase">
-      <Label label={getEmbeddedLabel('Parent type restrictions')} />
-    </div>
-    {#if taskType.kind === 'subtask' || taskType.kind === 'both'}
-      <TaskTypeRefEditor
-        label={getEmbeddedLabel('Allowed parents')}
-        value={taskType.allowedAsChildOf}
-        types={taskTypes.filter((it) => it.kind === 'task' || it.kind === 'both')}
-        onChange={(evt) => {
-          void client.diffUpdate(taskType, { allowedAsChildOf: evt })
-        }}
-      />
-    {/if}
-  </div>
-</div>
-
-<div class="hulyTableAttr-container">
-  <div class="hulyTableAttr-header font-medium-12">
-    <Icon icon={task.icon.ManageTemplates} size={'small'} />
-    <span><Label label={plugin.string.ProcessStates} /></span>
-    <ButtonIcon kind={'primary'} icon={IconAdd} size={'small'} on:click={handleAddStatus} />
-  </div>
-  <StatesProjectEditor
-    {taskType}
-    type={projectType}
-    {states}
-    on:delete={async (evt) => {
-      const index = taskType.statuses.findIndex((p) => p === evt.detail.state._id)
-      taskType.statuses.splice(index, 1)
-      await client.update(taskType, {
-        statuses: taskType.statuses
-      })
-      await client.update(projectType, {
-        statuses: calculateStatuses(projectType, $taskTypeStore, [
-          { taskTypeId: taskType._id, statuses: taskType.statuses }
-        ])
-      })
-    }}
-    on:move={async (evt) => {
-      const index = taskType.statuses.findIndex((p) => p === evt.detail.stateID)
-      const state = taskType.statuses.splice(index, 1)[0]
-
-      const statuses = [
-        ...taskType.statuses.slice(0, evt.detail.position),
-        state,
-        ...taskType.statuses.slice(evt.detail.position)
-      ]
-      await client.update(taskType, {
-        statuses
-      })
-
-      await client.update(projectType, {
-        statuses: calculateStatuses(projectType, $taskTypeStore, [{ taskTypeId: taskType._id, statuses }])
-      })
-    }}
-  />
-</div>
-
-<ClassAttributes ofClass={taskType.ofClass} _class={taskType.targetClass} showHierarchy />
+{/if}

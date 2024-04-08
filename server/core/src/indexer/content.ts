@@ -14,6 +14,7 @@
 //
 
 import core, {
+  type Blob,
   type Class,
   type Doc,
   type DocIndexState,
@@ -100,15 +101,10 @@ export class ContentRetrievalStage implements FullTextPipelineStage {
           // We need retrieve value of attached document content.
           const ref = doc.attributes[docKey(val.name, { _class: val.attributeOf })] as Ref<Doc>
           if (ref !== undefined && ref !== '') {
-            let docInfo: any | undefined
-            try {
-              docInfo = await this.storageAdapter?.stat(this.workspace, ref)
-            } catch (err: any) {
-              // not found.
-            }
+            const docInfo: Blob | undefined = await this.storageAdapter?.stat(this.metrics, this.workspace, ref)
             if (docInfo !== undefined && docInfo.size < 30 * 1024 * 1024) {
               // We have blob, we need to decode it to string.
-              const contentType = ((docInfo.metaData['content-type'] as string) ?? '').split(';')[0]
+              const contentType = (docInfo.contentType ?? '').split(';')[0]
 
               if (!contentType.includes('image')) {
                 const digest = docInfo.etag
@@ -116,7 +112,7 @@ export class ContentRetrievalStage implements FullTextPipelineStage {
                 if (doc.attributes[digestKey] !== digest) {
                   ;(update as any)[docUpdKey(digestKey)] = digest
 
-                  const readable = await this.storageAdapter?.get(this.workspace, ref)
+                  const readable = await this.storageAdapter?.get(this.metrics, this.workspace, ref)
 
                   if (readable !== undefined) {
                     let textContent = await this.metrics.with(

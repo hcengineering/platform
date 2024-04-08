@@ -17,6 +17,7 @@
   import Nodes from './message/Nodes.svelte'
 
   export let message: string
+  export let preview = false
 
   let dom: HTMLElement
 
@@ -30,4 +31,4 @@
   $: dom = doc.firstChild?.childNodes[1] as HTMLElement
 </script>
 
-<Nodes nodes={dom.childNodes} />
+<Nodes nodes={dom.childNodes} {preview} />

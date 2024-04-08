@@ -19,7 +19,6 @@ import {
   type DocumentQuery,
   type Ref,
   type RelatedDocument,
-  type Space,
   type WithLookup,
   generateId,
   getCurrentAccount
@@ -46,7 +45,7 @@ import Move from './components/Move.svelte'
 import DocumentToDoPresenter from './components/DocumentToDoPresenter.svelte'
 
 import document from './plugin'
-import { createEmptyDocument, getDocumentLink, getDocumentUrl, resolveLocation } from './utils'
+import { createEmptyDocument, documentTitleProvider, getDocumentLink, getDocumentUrl, resolveLocation } from './utils'
 
 const toObjectSearchResult = (e: WithLookup<Document>): ObjectSearchResult => ({
   doc: e,
@@ -89,7 +88,7 @@ async function createDocument (space: Teamspace): Promise<void> {
   await _createDocument(id, space._id, parent)
 }
 
-async function _createDocument (id: Ref<Document>, space: Ref<Space>, parent: Ref<Document>): Promise<void> {
+async function _createDocument (id: Ref<Document>, space: Ref<Teamspace>, parent: Ref<Document>): Promise<void> {
   const client = getClient()
 
   await createEmptyDocument(client, id, space, parent, {})
@@ -153,7 +152,8 @@ export default async (): Promise<Resources> => ({
   function: {
     GetDocumentLink: getDocumentUrl,
     GetObjectLinkFragment: getDocumentLink,
-    IsTeamspaceVisible: async (space: Teamspace) => !space.private || space.members.includes(getCurrentAccount()._id)
+    IsTeamspaceVisible: async (space: Teamspace) => !space.private || space.members.includes(getCurrentAccount()._id),
+    DocumentTitleProvider: documentTitleProvider
   },
   resolver: {
     Location: resolveLocation

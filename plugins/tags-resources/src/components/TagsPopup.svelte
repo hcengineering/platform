@@ -219,7 +219,7 @@
         {/if}
       {/each}
       {#if objects.length === 0}
-        {#if !hideAdd}
+        {#if !hideAdd && search !== ''}
           <button class="menu-item focus flex-row-center" on:click={createTagElementQuick}>
             <Label label={tags.string.QuickAddItems} params={{ word: keyLabel, title: search }} />
           </button>

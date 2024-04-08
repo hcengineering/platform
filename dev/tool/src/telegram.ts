@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { DOMAIN_TX, type Ref, type WorkspaceId } from '@hcengineering/core'
+import { DOMAIN_TX, type MeasureContext, type Ref, type WorkspaceId } from '@hcengineering/core'
 import { type StorageAdapter } from '@hcengineering/server-core'
 import { DOMAIN_ATTACHMENT } from '@hcengineering/model-attachment'
 import contact, { DOMAIN_CHANNEL } from '@hcengineering/model-contact'
@@ -29,6 +29,7 @@ const LastMessages = 'last-msgs'
  * @public
  */
 export async function clearTelegramHistory (
+  ctx: MeasureContext,
   mongoUrl: string,
   workspaceId: WorkspaceId,
   tgDb: string,
@@ -90,7 +91,7 @@ export async function clearTelegramHistory (
       workspaceDB.collection(DOMAIN_ATTACHMENT).deleteMany({
         attachedToClass: telegram.class.Message
       }),
-      storageAdapter.remove(workspaceId, Array.from(attachments))
+      storageAdapter.remove(ctx, workspaceId, Array.from(attachments))
     ])
 
     console.log('clearing telegram service data...')

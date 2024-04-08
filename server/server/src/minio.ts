@@ -33,12 +33,13 @@ import core, {
   TxResult,
   WorkspaceId
 } from '@hcengineering/core'
-import { DbAdapter, StorageAdapter, WorkspaceItem } from '@hcengineering/server-core'
+import { DbAdapter, ListBlobResult, StorageAdapter } from '@hcengineering/server-core'
 
 class StorageBlobAdapter implements DbAdapter {
   constructor (
     readonly workspaceId: WorkspaceId,
-    readonly client: StorageAdapter
+    readonly client: StorageAdapter,
+    readonly ctx: MeasureContext
   ) {}
 
   async findAll<T extends Doc>(
@@ -54,27 +55,25 @@ class StorageBlobAdapter implements DbAdapter {
     return []
   }
 
-  async init (model: Tx[]): Promise<void> {}
-
   async createIndexes (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>): Promise<void> {}
   async removeOldIndex (domain: Domain, deletePattern: RegExp, keepPattern: RegExp): Promise<void> {}
 
   async close (): Promise<void> {}
 
-  find (domain: Domain): StorageIterator {
+  find (ctx: MeasureContext, domain: Domain): StorageIterator {
     let listReceived = false
-    let items: WorkspaceItem[] = []
+    let items: ListBlobResult[] = []
     let pos = 0
     return {
       next: async () => {
         if (!listReceived) {
-          items = await this.client.list(this.workspaceId)
+          items = await this.client.list(this.ctx, this.workspaceId)
           listReceived = true
         }
         if (pos < items?.length) {
           const item = items[pos]
           const result = {
-            id: item.name,
+            id: item._id,
             hash: item.etag,
             size: item.size
           }
@@ -86,20 +85,23 @@ class StorageBlobAdapter implements DbAdapter {
     }
   }
 
-  async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+  async load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
     const result: Doc[] = []
     for (const item of docs) {
-      const stat = await this.client.stat(this.workspaceId, item)
-      const chunks: Buffer[] = await this.client.read(this.workspaceId, item)
+      const stat = await this.client.stat(this.ctx, this.workspaceId, item)
+      if (stat === undefined) {
+        throw new Error(`Could not find blob ${item}`)
+      }
+      const chunks: Buffer[] = await this.client.read(this.ctx, this.workspaceId, item)
       const final = Buffer.concat(chunks)
       const dta: BlobData = {
         _id: item as Ref<BlobData>,
         _class: core.class.BlobData,
         name: item as string,
         size: stat.size,
-        type: stat.metaData['content-type'],
+        type: stat.contentType,
         space: 'blob' as Ref<Space>,
-        modifiedOn: stat.lastModified.getTime(),
+        modifiedOn: stat.modifiedOn,
         modifiedBy: core.account.System,
         base64Data: final.toString('base64')
       }
@@ -108,7 +110,7 @@ class StorageBlobAdapter implements DbAdapter {
     return result
   }
 
-  async upload (domain: Domain, docs: Doc[]): Promise<void> {
+  async upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
     // Find documents to be updated
     for (const d of docs) {
       if (d._class !== core.class.BlobData) {
@@ -118,23 +120,22 @@ class StorageBlobAdapter implements DbAdapter {
       const blob = d as unknown as BlobData
       // Remove existing document
       try {
-        await this.client.remove(this.workspaceId, [blob._id])
+        await this.client.remove(this.ctx, this.workspaceId, [blob._id])
       } catch (ee) {
         // ignore error
       }
       const buffer = Buffer.from(blob.base64Data, 'base64')
-      await this.client.put(this.workspaceId, blob._id, buffer, buffer.length, {
-        'Content-Type': blob.type,
-        lastModified: new Date(blob.modifiedOn)
-      })
+      // TODO: Add support of
+      /// lastModified: new Date(blob.modifiedOn)
+      await this.client.put(this.ctx, this.workspaceId, blob._id, buffer, blob.type, buffer.length)
     }
   }
 
-  async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {
-    await this.client.remove(this.workspaceId, docs)
+  async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
+    await this.client.remove(this.ctx, this.workspaceId, docs)
   }
 
-  async update (domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {
+  async update (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {
     throw new Error('Method not implemented.')
   }
 }
@@ -143,6 +144,7 @@ class StorageBlobAdapter implements DbAdapter {
  * @public
  */
 export async function createStorageDataAdapter (
+  ctx: MeasureContext,
   hierarchy: Hierarchy,
   url: string,
   workspaceId: WorkspaceId,
@@ -152,5 +154,11 @@ export async function createStorageDataAdapter (
   if (storage === undefined) {
     throw new Error('minio storage adapter require minio')
   }
-  return new StorageBlobAdapter(workspaceId, storage)
+  // We need to create bucket if it doesn't exist
+  if (storage !== undefined) {
+    if (!(await storage.exists(ctx, workspaceId))) {
+      await storage.make(ctx, workspaceId)
+    }
+  }
+  return new StorageBlobAdapter(workspaceId, storage, ctx)
 }

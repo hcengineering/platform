@@ -341,6 +341,12 @@ export const DOMAIN_BLOB = 'blob' as Domain
  * Special domain to access s3 blob data.
  * @public
  */
+export const DOMAIN_BLOB_DATA = 'blob-data' as Domain
+
+/**
+ * Special domain to access s3 blob data.
+ * @public
+ */
 export const DOMAIN_FULLTEXT_BLOB = 'fulltext-blob' as Domain
 
 /**
@@ -360,6 +366,66 @@ export interface Space extends Doc {
   private: boolean
   members: Arr<Ref<Account>>
   archived: boolean
+}
+
+/**
+ * @public
+ *
+ * Space with custom configured type
+ */
+export interface TypedSpace extends Space {
+  type: Ref<SpaceType>
+}
+
+/**
+ * @public
+ *
+ * Is used to describe "types" for space type
+ */
+export interface SpaceTypeDescriptor extends Doc {
+  name: IntlString
+  description: IntlString
+  icon: Asset
+  baseClass: Ref<Class<Space>> // Child class of Space for which the space type can be defined
+  availablePermissions: Ref<Permission>[]
+}
+
+/**
+ * @public
+ *
+ * Customisable space type allowing to configure space roles and permissions within them
+ */
+export interface SpaceType extends Doc {
+  name: string
+  shortDescription?: string
+  descriptor: Ref<SpaceTypeDescriptor>
+  targetClass: Ref<Class<Space>> // A dynamic mixin for Spaces to hold custom attributes and roles assignment of the space type
+  roles: CollectionSize<Role>
+}
+
+/**
+ * @public
+ * Role defines permissions for employees assigned to this role within the space
+ */
+export interface Role extends AttachedDoc<SpaceType, 'roles'> {
+  name: string
+  permissions: Ref<Permission>[]
+}
+
+/**
+ * @public
+ * Defines assignment of employees to a role within a space
+ */
+export type RolesAssignment = Record<Ref<Role>, Ref<Account>[] | undefined>
+
+/**
+ * @public
+ * Permission is a basic access control item in the system
+ */
+export interface Permission extends Doc {
+  label: IntlString
+  description?: IntlString
+  icon?: Asset
 }
 
 /**
@@ -430,6 +496,7 @@ export interface BlobData extends Doc {
   name: string
   size: number
   type: string
+  provider?: string // If node defined, will be default one
   base64Data: string // base64 encoded data
 }
 
@@ -461,7 +528,7 @@ export interface DocIndexState extends Doc {
 
   // Indexable attributes, including child ones.
   attributes: Record<string, any>
-
+  mixins?: Ref<Class<Doc>>[]
   // Full Summary
   fullSummary?: Markup | null
   shortSummary?: Markup | null
@@ -473,6 +540,29 @@ export interface DocIndexState extends Doc {
 export interface IndexStageState extends Doc {
   stageId: string
   attributes: Record<string, any>
+}
+
+/**
+ * @public
+ *
+ * A blob document to manage blob attached documents.
+ *
+ * _id: is a platform ID and it created using our regular generateId(),
+ * and storageId is a provider specified storage id.
+ */
+export interface Blob extends Doc {
+  // Provider
+  provider: string
+  // A provider specific id
+  storageId: string
+  // A content type for blob
+  contentType: string
+  // A etag for blob
+  etag: string
+  // Document version if supported by provider
+  version: string | null
+  // A document size
+  size: number
 }
 
 /**

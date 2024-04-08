@@ -624,7 +624,8 @@ export function createModel (builder: Builder): void {
       category: view.category.General,
       input: 'any',
       target: core.class.Doc,
-      context: { mode: ['context', 'browser'], group: 'remove' }
+      context: { mode: ['context', 'browser'], group: 'remove' },
+      visibilityTester: view.function.CanDeleteObject
     },
     view.action.Delete
   )

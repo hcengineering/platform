@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Doc, Timestamp } from '@hcengineering/core'
-  import { PublicLink } from '@hcengineering/guest'
+  import { PublicLink, createPublicLink } from '@hcengineering/guest'
   import presentaion, {
     Card,
     MessageBox,
@@ -22,7 +22,7 @@
     createQuery,
     getClient
   } from '@hcengineering/presentation'
-  import { Button, Loading, Location, showPopup, ticker } from '@hcengineering/ui'
+  import { Button, Loading, showPopup, ticker } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { getObjectLinkFragment } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
@@ -37,26 +37,11 @@
 
   const dispatch = createEventDispatcher()
 
-  async function createLink (location: Location, revokable: boolean = true): Promise<void> {
-    await client.createDoc(guest.class.PublicLink, guest.space.Links, {
-      attachedTo: value._id,
-      location,
-      revokable,
-      restrictions: {
-        readonly: true,
-        disableNavigation: true,
-        disableActions: true,
-        disableComments: true
-      },
-      url: ''
-    })
-  }
-
   async function generate (object: Doc): Promise<void> {
     const panelComponent = client.getHierarchy().classHierarchyMixin(object._class, view.mixin.ObjectPanel)
     const comp = panelComponent?.component ?? view.component.EditDoc
     const loc = await getObjectLinkFragment(client.getHierarchy(), object, {}, comp)
-    await createLink(loc)
+    await createPublicLink(client, value, loc)
   }
 
   async function checkNeedGenerate (value: Doc, loading: boolean, link: PublicLink | undefined): Promise<void> {
