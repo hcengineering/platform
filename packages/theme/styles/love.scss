@@ -131,3 +131,30 @@
     .floorGrid-room__field { visibility: hidden; }
   }
 }
+
+// RoomPopup
+.room-popup {
+  .room-btns {
+    button.secondary,
+    .hulySplitButton-main {
+      flex-grow: 1;
+    }
+    &.no-video:not(.row) .hulySplitButton-container {
+      grid-column: span 2;
+    }
+    &.row .hulySplitButton-container {
+      flex-grow: 2;
+    }
+    &.row.no-video .hulySplitButton-container {
+      flex-grow: 4;
+    }
+  }
+
+  &.small.cropped .scroller-container,
+  &.large.cropped .scroller-container {
+    max-height: 24.5rem;
+  }
+  &.medium.cropped .scroller-container {
+    max-height: 22.5rem;
+  }
+}
