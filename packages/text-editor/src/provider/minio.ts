@@ -22,7 +22,7 @@ interface EVENTS {
   synced: (...args: any[]) => void
 }
 
-async function fetchContent(doc: YDoc, name: string): Promise<void> {
+async function fetchContent (doc: YDoc, name: string): Promise<void> {
   for (let i = 0; i < 2; i++) {
     try {
       const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
