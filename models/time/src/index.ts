@@ -74,7 +74,7 @@ export { default } from './plugin'
 
 export const DOMAIN_TIME = 'time' as Domain
 
-export function TypeToDoPriority (): Type<ToDoPriority> {
+export function TypeToDoPriority(): Type<ToDoPriority> {
   return { _class: time.class.TypeToDoPriority, label: time.string.Priority }
 }
 
@@ -97,34 +97,34 @@ export class TTypeToDoPriority extends TType {}
 @UX(time.string.ToDo, time.icon.Planned)
 export class TToDO extends TAttachedDoc implements ToDo {
   @Prop(TypeDate(DateRangeMode.DATE), task.string.DueDate)
-    dueDate?: number | null | undefined
+  dueDate?: number | null | undefined
 
   @Prop(TypeToDoPriority(), time.string.Priority)
-    priority!: ToDoPriority
+  priority!: ToDoPriority
 
   visibility!: Visibility
   attachedSpace?: Ref<Space> | undefined
 
   @Prop(TypeString(), calendarPlugin.string.Title)
-    title!: string
+  title!: string
 
   @Prop(TypeString(), calendarPlugin.string.Description)
-    description!: Markup
+  description!: Markup
 
   doneOn?: Timestamp | null
 
   @Prop(TypeRef(contactPlugin.class.Person), contactPlugin.string.For)
-    user!: Ref<Person>
+  user!: Ref<Person>
 
   @Prop(Collection(time.class.WorkSlot, time.string.WorkSlot), time.string.WorkSlot)
-    workslots!: number
+  workslots!: number
 
   @Prop(Collection(tags.class.TagReference, tags.string.TagLabel), tags.string.Tags)
-    labels?: number | undefined
+  labels?: number | undefined
 
   @Index(IndexKind.Indexed)
   @Hidden()
-    rank!: Rank
+  rank!: Rank
 }
 
 @Model(time.class.ProjectToDo, time.class.ToDo)
@@ -139,7 +139,7 @@ export class TTodoAutomationHelper extends TDoc implements TodoAutomationHelper 
   onDoneTester!: Resource<TodoDoneTester>
 }
 
-export function createModel (builder: Builder): void {
+export function createModel(builder: Builder): void {
   builder.createModel(TWorkSlot, TItemPresenter, TToDO, TProjectToDo, TTypeToDoPriority, TTodoAutomationHelper)
 
   builder.mixin(time.class.ToDo, core.class.Class, activity.mixin.IgnoreActivity, {})
@@ -321,7 +321,7 @@ export function createModel (builder: Builder): void {
       mode: 'app',
       application: 'time'
     },
-    label: time.string.GotoTimePlaning,
+    label: time.string.GotoTimePlanning,
     icon: view.icon.ArrowRight,
     input: 'none',
     category: view.category.Navigation,
@@ -336,7 +336,7 @@ export function createModel (builder: Builder): void {
       mode: 'app',
       application: 'team'
     },
-    label: time.string.GotoTimeTeamPlaning,
+    label: time.string.GotoTimeTeamPlanning,
     icon: view.icon.ArrowRight,
     input: 'none',
     category: view.category.Navigation,
