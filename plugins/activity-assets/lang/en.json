@@ -40,6 +40,11 @@
     "Mentions": "Mentions",
     "MentionedYouIn": "Mentioned you in",
     "Messages": "Messages",
-    "Thread": "Thread"
+    "Thread": "Thread",
+    "ReactWithEmoji": "React With Emoji",
+    "ReplyInThread": "Reply In Thread",
+    "SaveForLater": "Save For Later",
+    "MoreActions": "More Actions",
+    "PinMessage": "Pin Message"
   }
 }

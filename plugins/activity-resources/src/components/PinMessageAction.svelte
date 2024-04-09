@@ -17,8 +17,10 @@
   import view from '@hcengineering/view'
   import { ActivityMessage } from '@hcengineering/activity'
   import ActivityMessageAction from './ActivityMessageAction.svelte'
+  import { LabelAndProps } from '@hcengineering/ui'
 
   export let object: ActivityMessage
+  export let showTooltip: LabelAndProps | undefined = undefined
 
   const client = getClient()
 
@@ -31,4 +33,5 @@
   icon={view.icon.Pin}
   iconProps={{ fill: object.isPinned ? '#3265cb' : 'currentColor' }}
   action={toggleMessagePinning}
+  {showTooltip}
 />

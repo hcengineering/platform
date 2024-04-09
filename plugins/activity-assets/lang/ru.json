@@ -40,6 +40,11 @@
     "Mentions": "Упоминания",
     "MentionedYouIn": "Упомянул(а) вас в",
     "Messages": "Cообщения",
-    "Thread": "Обсуждение"
+    "Thread": "Обсуждение",
+    "ReactWithEmoji": "Реагируйте с помощью эмодзи",
+    "ReplyInThread": "Ответить в теме",
+    "SaveForLater": "Сохранить на потом",
+    "MoreActions": "Больше действий",
+    "PinMessage": "Пин-сообщение"
   }
 }

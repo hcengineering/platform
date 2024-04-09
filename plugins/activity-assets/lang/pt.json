@@ -37,6 +37,11 @@
     "Mentioned": "Mencionado",
     "You": "Tu",
     "Mentions": "Menções",
-    "MentionedYouIn": "Foste Mencionado em"
+    "MentionedYouIn": "Foste Mencionado em",
+    "ReactWithEmoji": "Reaja com Emoji",
+    "ReplyInThread": "Responder no tópico",
+    "SaveForLater": "Save For Later",
+    "MoreActions": "Guardar para depois",
+    "PinMessage": "Fixar mensagem"
   }
 }

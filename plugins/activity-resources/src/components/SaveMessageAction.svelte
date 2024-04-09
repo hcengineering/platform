@@ -21,12 +21,14 @@
   import ActivityMessageAction from './ActivityMessageAction.svelte'
   import Bookmark from './icons/Bookmark.svelte'
   import { savedMessagesStore } from '../activity'
+  import { LabelAndProps } from '@hcengineering/ui'
 
   export let object: ActivityMessage
 
   const client = getClient()
 
   let savedMessage: SavedMessage | undefined = undefined
+  export let showTooltip: LabelAndProps | undefined = undefined
 
   savedMessagesStore.subscribe((saved) => {
     savedMessage = saved.find(({ attachedTo }) => attachedTo === object._id)
@@ -49,4 +51,5 @@
   size={savedMessage ? 'small' : 'x-small'}
   iconProps={{ fill: savedMessage ? 'var(--global-accent-TextColor)' : 'currentColor' }}
   action={toggleSaveMessage}
+  {showTooltip}
 />

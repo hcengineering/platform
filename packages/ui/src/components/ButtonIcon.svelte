@@ -28,8 +28,8 @@
   export let hasMenu: boolean = false
   export let loading: boolean = false
   export let inheritColor: boolean = false
-  export let tooltip: LabelAndProps | undefined = undefined
   export let focusIndex = -1
+  export let showTooltip: LabelAndProps | undefined = undefined
 
   let element: ButtonBase | undefined
 
@@ -51,8 +51,8 @@
   {inheritColor}
   {pressed}
   {hasMenu}
-  {tooltip}
   {focusIndex}
+  {showTooltip}
   on:click
   on:keydown
 />

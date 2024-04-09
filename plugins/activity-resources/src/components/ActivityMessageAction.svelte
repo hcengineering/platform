@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { type AnySvelteComponent, ButtonIcon } from '@hcengineering/ui'
+  import { type AnySvelteComponent, ButtonIcon, LabelAndProps } from '@hcengineering/ui'
   import { Asset } from '@hcengineering/platform'
   import { ComponentType } from 'svelte'
 
@@ -22,6 +22,7 @@
   export let size: 'x-small' | 'small' = 'small'
   export let action: (ev: MouseEvent) => Promise<void> | void = async () => {}
   export let opened = false
+  export let showTooltip: LabelAndProps | undefined = undefined
 
   function onClick (ev: MouseEvent): void {
     ev.stopPropagation()
@@ -30,4 +31,4 @@
   }
 </script>
 
-<ButtonIcon {icon} {iconProps} iconSize={size} size="small" kind="tertiary" pressed={opened} on:click={onClick} />
+<ButtonIcon {icon} {iconProps} iconSize={size} size="small" kind="tertiary" pressed={opened} on:click={onClick} {showTooltip}/>

@@ -37,9 +37,9 @@
   export let type: ButtonBaseType
   export let inheritColor: boolean = false
   export let inheritFont: boolean = false
-  export let tooltip: LabelAndProps | undefined = undefined
   export let element: HTMLButtonElement | undefined = undefined
   export let id: string | undefined = undefined
+  export let showTooltip: LabelAndProps | undefined = undefined
 
   let actualIconSize: IconSize = 'small'
 
@@ -87,7 +87,7 @@
   class:inheritFont
   class:menu={hasMenu}
   disabled={loading || disabled}
-  use:tp={tooltip}
+  use:tp={showTooltip}
   on:click|stopPropagation
   on:keydown
 >

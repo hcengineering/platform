@@ -23,6 +23,11 @@ export default mergeIds(activityId, activity, {
     CollectionUpdated: '' as IntlString,
     DocAdded: '' as IntlString,
     DocCreated: '' as IntlString,
-    DocDeleted: '' as IntlString
+    DocDeleted: '' as IntlString,
+    ReactWithEmoji: '' as IntlString,
+    ReplyInThread: '' as IntlString,
+    PinMessage: '' as IntlString,
+    SaveForLater: '' as IntlString,
+    MoreActions: '' as IntlString
   }
 })

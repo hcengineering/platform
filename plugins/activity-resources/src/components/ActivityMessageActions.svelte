@@ -17,6 +17,8 @@
   import { Action, IconMoreV, showPopup } from '@hcengineering/ui'
   import { Menu } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
+  import ActivityPlugin from '../plugin'
+  import { tooltip } from '@hcengineering/ui'
 
   import ActivityMessageAction from './ActivityMessageAction.svelte'
   import PinMessageAction from './PinMessageAction.svelte'
@@ -59,14 +61,14 @@
 </script>
 
 {#if message}
-  <div class="root">
-    <AddReactionAction object={message} on:open on:close />
-    <ActivityMessageExtensionComponent kind="action" {extensions} props={{ object: message }} on:close on:open />
-    <PinMessageAction object={message} />
-    <SaveMessageAction object={message} />
+  <div class="root"> 
+    <AddReactionAction object={message} on:open on:close showTooltip={{ label: ActivityPlugin.string.ReactWithEmoji }}/>
+    <span use:tooltip={{ label: ActivityPlugin.string.ReplyInThread }}><ActivityMessageExtensionComponent kind="action" {extensions} props={{ object: message }} on:close on:open /> </span>
+    <PinMessageAction object={message} showTooltip={{ label: ActivityPlugin.string.PinMessage }}/>
+    <SaveMessageAction object={message} showTooltip={{ label: ActivityPlugin.string.SaveForLater }}/>
 
     {#if withActionMenu}
-      <ActivityMessageAction size="small" icon={IconMoreV} opened={isActionMenuOpened} action={showMenu} />
+      <ActivityMessageAction size="small" icon={IconMoreV} opened={isActionMenuOpened} action={showMenu} showTooltip={{ label: ActivityPlugin.string.MoreActions }} />
     {/if}
   </div>
 {/if}

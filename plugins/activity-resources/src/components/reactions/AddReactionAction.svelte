@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { EmojiPopup, IconEmoji, showPopup } from '@hcengineering/ui'
+  import { EmojiPopup, IconEmoji, LabelAndProps, showPopup } from '@hcengineering/ui'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import activity, { ActivityMessage, Reaction } from '@hcengineering/activity'
 
@@ -30,6 +30,7 @@
 
   let reactions: Reaction[] = []
   let isOpened = false
+  export let showTooltip: LabelAndProps | undefined = undefined
 
   $: if (object?.reactions && object.reactions > 0) {
     reactionsQuery.query(activity.class.Reaction, { attachedTo: object._id }, (res?: Reaction[]) => {
@@ -49,4 +50,4 @@
   }
 </script>
 
-<ActivityMessageAction icon={IconEmoji} action={openEmojiPalette} opened={isOpened} />
+<ActivityMessageAction icon={IconEmoji} action={openEmojiPalette} opened={isOpened} {showTooltip}/>
