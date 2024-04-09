@@ -20,7 +20,6 @@
   import {
     AnyComponent,
     Component,
-    DropdownIntlItem,
     DropdownLabelsIntl,
     ModernEditbox,
     Label,
@@ -30,8 +29,8 @@
     IconDelete,
     IconCopy
   } from '@hcengineering/ui'
-  import view from '@hcengineering/view-resources/src/plugin'
   import { clearSettingsStore } from '../store'
+  import { getTypeEditor, getTypes } from '../utils'
 
   export let attribute: AnyAttribute
   export let exist: boolean
@@ -44,7 +43,7 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  translate(attribute.label, {}, $themeStore.language).then((p) => (name = p))
+  void translate(attribute.label, {}, $themeStore.language).then((p) => (name = p))
 
   async function save (): Promise<void> {
     const update: DocumentUpdate<AnyAttribute> = {}
@@ -67,37 +66,18 @@
     clearSettingsStore()
   }
 
-  function getTypes (): DropdownIntlItem[] {
-    const descendants = hierarchy.getDescendants(core.class.Type)
-    const res: DropdownIntlItem[] = []
-    for (const descendant of descendants) {
-      const _class = hierarchy.getClass(descendant)
-      if (_class.label !== undefined && hierarchy.hasMixin(_class, view.mixin.ObjectEditor)) {
-        res.push({
-          label: _class.label,
-          id: _class._id
-        })
-      }
-    }
-    return res
-  }
-
-  const items = getTypes()
+  const items = getTypes(hierarchy).map(({ label, _id }) => ({ label, id: _id }))
   let selectedType: Ref<Class<Type<PropertyType>>> = attribute.type._class
 
   $: selectedType && selectType(selectedType)
 
   function selectType (type: Ref<Class<Type<PropertyType>>>): void {
-    const _class = hierarchy.getClass(type)
-    const editor = hierarchy.as(_class, view.mixin.ObjectEditor)
-    if (editor.editor !== undefined) {
-      is = editor.editor
-    }
+    is = getTypeEditor(hierarchy, type) ?? is
   }
-  const handleSelect = (e: any) => {
+  const handleSelect = (e: any): void => {
     selectType(e.detail)
   }
-  const handleChange = (e: any) => {
+  const handleChange = (e: any): void => {
     type = e.detail?.type
     index = e.detail?.index
     defaultValue = e.detail?.defaultValue

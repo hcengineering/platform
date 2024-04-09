@@ -582,3 +582,26 @@ export async function checkPermission (
 
   return myPermissions.has(_id)
 }
+
+/**
+ * Less harmful and more linter-friendly analog of TypeScript native type assertion, a.k.a. as
+ *
+ * @example
+ * const object = {
+ *   person1: {
+ *     name: 'Hyde',
+ *     title: 'Mr.,
+ *     comment: 'Evil type assertion'
+ *   } as Person,
+ *   person2: as<Person>({
+ *     name: 'Jekyll',
+ *     title: 'Dr.',
+ *     comment: 'Better type assertion'
+ *   })
+ * }
+ *
+ * @see https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#type-assertions
+ */
+export function as<T> (value: T): T {
+  return value
+}

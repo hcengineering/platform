@@ -13,11 +13,16 @@
 // limitations under the License.
 //
 
-import { type Client, type Doc, type Ref, type Space } from '@hcengineering/core'
+import { type Client, type Doc, type Ref, type Space, type Type } from '@hcengineering/core'
 import type { IntlString, Resource, StatusCode } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/presentation'
-import recruit, { recruitId } from '@hcengineering/recruit'
+import recruit, {
+  recruitId,
+  type ScriptTypedAttributeEditorComponentType,
+  type ScriptTypedAttributeFactoryFn,
+  type ScriptTypedPropertyEditorComponentType
+} from '@hcengineering/recruit'
 import { type TagCategory } from '@hcengineering/tags'
 import { type AnyComponent } from '@hcengineering/ui'
 import { type FilterFunction, type FilterMode, type Viewlet } from '@hcengineering/view'
@@ -133,7 +138,13 @@ export default mergeIds(recruitId, recruit, {
     OpenVacancyList: '' as IntlString,
     Export: '' as IntlString,
     GetTalentIds: '' as IntlString,
-    CreateNewSkills: '' as IntlString
+    CreateNewSkills: '' as IntlString,
+
+    Script: '' as IntlString,
+    NoScriptForVacancy: '' as IntlString,
+    CreateScript: '' as IntlString,
+    ScriptAttributeTitle: '' as IntlString,
+    ScriptAttributeDefaultValue: '' as IntlString
   },
   space: {
     CandidatesPublic: '' as Ref<Space>
@@ -154,7 +165,10 @@ export default mergeIds(recruitId, recruit, {
     OpinionsPresenter: '' as AnyComponent,
     VacancyModifiedPresenter: '' as AnyComponent,
     CreateVacancy: '' as AnyComponent,
-    CreateCandidate: '' as AnyComponent
+    CreateCandidate: '' as AnyComponent,
+
+    ScriptStringAttributeEditor: '' as Resource<ScriptTypedAttributeEditorComponentType<Type<string>>>,
+    ScriptStringPropertyEditor: '' as Resource<ScriptTypedPropertyEditorComponentType<Type<string>>>
   },
   function: {
     IdProvider: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
@@ -164,7 +178,9 @@ export default mergeIds(recruitId, recruit, {
     RevTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
     HasActiveApplicant: '' as FilterFunction,
     HasNoActiveApplicant: '' as FilterFunction,
-    NoneApplications: '' as FilterFunction
+    NoneApplications: '' as FilterFunction,
+
+    ScriptStringAttributeFactory: '' as Resource<ScriptTypedAttributeFactoryFn<Type<string>>>
   },
   filter: {
     HasActive: '' as Ref<FilterMode>,

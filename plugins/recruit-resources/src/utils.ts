@@ -1,6 +1,17 @@
 import contact, { getName } from '@hcengineering/contact'
-import { Hierarchy, type Class, type Client, type Doc, type Ref } from '@hcengineering/core'
-import { getMetadata } from '@hcengineering/platform'
+import core, {
+  Hierarchy,
+  type Class,
+  type Client,
+  type Doc,
+  type DocData,
+  type Ref,
+  type Type,
+  type TxOperations,
+  type Obj,
+  generateId
+} from '@hcengineering/core'
+import { getEmbeddedLabel, getMetadata, getResource } from '@hcengineering/platform'
 import presentation, { getClient } from '@hcengineering/presentation'
 import {
   recruitId,
@@ -8,8 +19,14 @@ import {
   type Candidate,
   type Review,
   type Vacancy,
-  type VacancyList
+  type VacancyList,
+  type ScriptAttribute,
+  type ScriptTypedAttributeEditorMixin,
+  type ScriptTypedAttributeFactoryFn,
+  type ScriptTypedAttributeFactoryMixin,
+  type ScriptTypedPropertyEditorMixin
 } from '@hcengineering/recruit'
+
 import { getCurrentResolvedLocation, getPanelURI, type Location, type ResolvedLocation } from '@hcengineering/ui'
 import view from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
@@ -20,8 +37,7 @@ type RecruitDocument = Vacancy | Applicant | Review
 export async function objectLinkProvider (doc: RecruitDocument): Promise<string> {
   const location = getCurrentResolvedLocation()
   const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
-  const url = `${frontUrl}/${workbenchId}/${location.path[1]}/${recruitId}/${await getSequenceId(doc)}`
-  return url
+  return `${frontUrl}/${workbenchId}/${location.path[1]}/${recruitId}/${await getSequenceId(doc)}`
 }
 
 function isShortId (shortLink: string): boolean {
@@ -217,4 +233,83 @@ export async function getSequenceId (doc: RecruitDocument): Promise<string> {
 
 export async function getTalentId (doc: Candidate): Promise<string> {
   return doc._id
+}
+
+export function getScriptAttributeTypeClasses (hierarchy: Hierarchy): Map<Ref<Class<Type<any>>>, Class<Type<any>>> {
+  return new Map(
+    hierarchy
+      .getDescendants(core.class.Type)
+      .map((descendantClassRef) => hierarchy.getClass(descendantClassRef))
+      .filter((descendantClass) => hierarchy.hasMixin(descendantClass, recruit.mixin.ScriptTypedAttributeEditor))
+      .map((descendantClass) => [descendantClass._id, descendantClass])
+  )
+}
+
+export function getScriptTypedAttributeEditorMixin<T extends Type<any>> (
+  hierarchy: Hierarchy,
+  typeClassRef: Ref<Class<T>>
+): ScriptTypedAttributeEditorMixin<T> | undefined {
+  const _class = hierarchy.getClass(typeClassRef)
+  return hierarchy.hasMixin(_class, recruit.mixin.ScriptTypedAttributeEditor)
+    ? hierarchy.as(_class, recruit.mixin.ScriptTypedAttributeEditor)
+    : undefined
+}
+
+export function getScriptTypedAttributeFactoryMixin<T extends Type<any>> (
+  hierarchy: Hierarchy,
+  typeClassRef: Ref<Class<T>>
+): ScriptTypedAttributeFactoryMixin<T> | undefined {
+  const _class = hierarchy.getClass(typeClassRef)
+  return hierarchy.hasMixin(_class, recruit.mixin.ScriptTypedAttributeFactory)
+    ? hierarchy.as(_class, recruit.mixin.ScriptTypedAttributeFactory)
+    : undefined
+}
+
+export async function addScriptTypedAttribute<T extends Type<any>> (
+  client: TxOperations,
+  scriptClassRef: Ref<Class<Obj>>,
+  typeClass: Class<T>,
+  attributeData: Omit<DocData<ScriptAttribute<T>>, 'label' | 'attributeOf' | 'name' | 'type'>
+): Promise<Ref<ScriptAttribute>> {
+  let factoryValues = {}
+  const factoryMixin = getScriptTypedAttributeFactoryMixin(client.getHierarchy(), typeClass._id)
+  if (factoryMixin !== undefined) {
+    const factoryFn = await getResource<ScriptTypedAttributeFactoryFn<T>>(factoryMixin.factory)
+    factoryValues = await factoryFn()
+  }
+
+  const id = generateId()
+  return await client.createDoc<ScriptAttribute>(
+    core.class.Attribute,
+    core.space.Model,
+    {
+      ...factoryValues,
+      ...attributeData,
+      label: getEmbeddedLabel(''),
+      attributeOf: scriptClassRef,
+      name: id,
+      // TODO: There should be a better way to instantiate registered class (even a type class)
+      type: {
+        _class: typeClass._id,
+        label: typeClass.label,
+        hidden: false,
+        readonly: false
+      }
+    },
+    id as Ref<ScriptAttribute>
+  )
+}
+
+export function getScriptTypedPropertyEditorMixin<T extends Type<any>> (
+  hierarchy: Hierarchy,
+  type: Ref<Class<T>>
+): ScriptTypedPropertyEditorMixin<T> | undefined {
+  const _class = hierarchy.getClass(type)
+  return hierarchy.hasMixin(_class, recruit.mixin.ScriptTypedPropertyEditor)
+    ? hierarchy.as(_class, recruit.mixin.ScriptTypedPropertyEditor)
+    : undefined
+}
+
+export function makeScriptClassRef (vacancyRef: Ref<Vacancy>): Ref<Class<Obj>> {
+  return `${recruitId}:class:script:${vacancyRef}` as Ref<Class<Obj>>
 }

@@ -119,7 +119,13 @@
     "HideDoneState": "Ocultar candidaturas concluídas",
     "HideArchivedVacancies": "Ocultar vagas arquivadas",
     "HideApplicantsFromArchivedVacancies": "Ocultar de vagas arquivadas",
-    "CreateNewSkills": "Criar novas competências se as existentes não forem encontradas"
+    "CreateNewSkills": "Criar novas competências se as existentes não forem encontradas",
+
+    "Script":  "Script",
+    "NoScriptForVacancy": "Não existe script para para esta vaga",
+    "CreateScript": "Criar script",
+    "ScriptAttributeTitle": "pergunta",
+    "ScriptAttributeDefaultValue": "Valor predefinido"
   },
   "status": {
     "ApplicationExists": "A candidatura já existe",

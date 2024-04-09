@@ -122,7 +122,13 @@
     "HideDoneState": "Скрыть завершенных кандидатов",
     "HideArchivedVacancies": "Скрыть архивные вакансии",
     "HideApplicantsFromArchivedVacancies": "Скрыть из архивных вакансии",
-    "CreateNewSkills": "Создать навыки, если не найдены существующие"
+    "CreateNewSkills": "Создать навыки, если не найдены существующие",
+
+    "Script":  "Скрипт",
+    "NoScriptForVacancy": "Нет скрипта для данной вакансии.",
+    "CreateScript": "Создать скрипт",
+    "ScriptAttributeTitle": "Вопрос",
+    "ScriptAttributeDefaultValue": "Значение по умолчанию"
   },
   "status": {
     "ApplicationExists": "Кандидат уже существует",

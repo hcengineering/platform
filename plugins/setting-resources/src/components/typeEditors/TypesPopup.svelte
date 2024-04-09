@@ -13,36 +13,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Label, resizeObserver, Scroller } from '@hcengineering/ui'
-  import { DropdownIntlItem } from '@hcengineering/ui/src/types'
   import { createEventDispatcher } from 'svelte'
-  import view from '@hcengineering/view'
+  import { getTypes } from '../../utils'
 
   const dispatch = createEventDispatcher()
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  function getTypes (): DropdownIntlItem[] {
-    const descendants = hierarchy.getDescendants(core.class.Type)
-    const res: DropdownIntlItem[] = []
-    for (const descendant of descendants) {
-      const _class = hierarchy.getClass(descendant)
-      if (_class.label !== undefined && hierarchy.hasMixin(_class, view.mixin.ObjectEditor)) {
-        res.push({
-          label: _class.label,
-          id: _class._id
-        })
-      }
-    }
-    return res
-  }
+  const items = getTypes(hierarchy).map(({ label, _id }) => ({ label, id: _id }))
 
-  const items = getTypes()
-
-  const handleSelection = (id: string | number) => {
+  const handleSelection = (id: string | number): void => {
     dispatch('close', id)
   }
 </script>

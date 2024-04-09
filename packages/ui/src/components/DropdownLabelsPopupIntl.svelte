@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
   import type { DropdownIntlItem } from '../types'
   import IconCheck from './icons/Check.svelte'
   import Label from './Label.svelte'
@@ -22,6 +22,7 @@
   export let items: DropdownIntlItem[]
   export let selected: DropdownIntlItem['id'] | undefined = undefined
   export let params: Record<string, any> = {}
+  export let autoFocus: boolean = false
 
   const dispatch = createEventDispatcher()
   const btns: HTMLButtonElement[] = []
@@ -35,6 +36,13 @@
       else btns[n - 1].focus()
     }
   }
+
+  onMount(() => {
+    if (autoFocus) {
+      btns[0]?.focus()
+      autoFocus = false
+    }
+  })
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
@@ -42,12 +50,13 @@
   <div class="scroll">
     <div class="box">
       {#each items as item, i}
-        <!-- svelte-ignore a11y-mouse-events-have-key-events -->
         <button
           class="menu-item flex-between"
+          bind:this={btns[i]}
           on:mouseover={(ev) => {
             ev.currentTarget.focus()
           }}
+          on:focus={() => {}}
           on:keydown={(ev) => {
             keyDown(ev, i)
           }}
