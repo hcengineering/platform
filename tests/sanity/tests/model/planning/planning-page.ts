@@ -258,7 +258,9 @@ export class PlanningPage extends CalendarPage {
 
   public async deleteTimeSlot (rowNumber: number): Promise<void> {
     const row = this.page
-      .locator('div.hulyModal-container div.slots-content div.scroller-container div.box div.flex-row-center.min-w-full div.tool')
+      .locator(
+        'div.hulyModal-container div.slots-content div.scroller-container div.box div.flex-row-center.min-w-full div.tool'
+      )
       .nth(rowNumber)
     await row.locator('xpath=..').hover()
     await row.locator('button').click()
@@ -266,7 +268,11 @@ export class PlanningPage extends CalendarPage {
   }
 
   public async checkTimeSlotEndDate (rowNumber: number, dateEnd: string): Promise<void> {
-    const row = this.page.locator('div.hulyModal-container div.slots-content div.scroller-container div.box div.flex-row-center.min-w-full').nth(rowNumber)
+    const row = this.page
+      .locator(
+        'div.hulyModal-container div.slots-content div.scroller-container div.box div.flex-row-center.min-w-full'
+      )
+      .nth(rowNumber)
     // dateEnd
     await expect(row.locator('div.dateEditor-container:nth-child(1) button:first-child')).toContainText(dateEnd)
   }
