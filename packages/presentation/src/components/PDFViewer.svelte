@@ -29,6 +29,7 @@
   export let showIcon = true
   export let fullSize = false
   export let isLoading = false
+  export let css: string | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -45,6 +46,19 @@
   let download: HTMLAnchorElement
   $: src = file === undefined ? '' : getFileUrl(file, 'full', name)
   $: isImage = contentType !== undefined && contentType.startsWith('image/')
+
+  let frame: HTMLIFrameElement | undefined = undefined
+  // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+  $: if (css !== undefined && frame !== undefined && frame !== null) {
+    frame.onload = () => {
+      const head = frame?.contentDocument?.querySelector('head')
+
+      // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+      if (css !== undefined && head !== undefined && head !== null) {
+        head.appendChild(document.createElement('style')).textContent = css
+      }
+    }
+  }
 </script>
 
 <ActionContext context={{ mode: 'browser' }} />
@@ -69,7 +83,7 @@
   </svelte:fragment>
 
   <svelte:fragment slot="utils">
-    {#if !isLoading && isImage && src !== ''}
+    {#if !isLoading && src !== ''}
       <a class="no-line" href={src} download={name} bind:this={download}>
         <Button
           icon={Download}
@@ -93,7 +107,7 @@
         <img class="img-fit" {src} alt="" />
       </div>
     {:else}
-      <iframe class="pdfviewer-content" src={src + '#view=FitH&navpanes=0'} title="" />
+      <iframe bind:this={frame} class="pdfviewer-content" src={src + '#view=FitH&navpanes=0'} title="" />
     {/if}
   {:else}
     <div class="centered">
@@ -119,9 +133,7 @@
   .pdfviewer-content {
     flex-grow: 1;
     overflow: auto;
-    border-style: none;
-    border-radius: 0.5rem;
-    background-color: var(--theme-bg-color);
+    border: none;
 
     &.img {
       display: flex;

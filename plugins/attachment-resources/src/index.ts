@@ -17,7 +17,7 @@ import attachment, { type Attachment } from '@hcengineering/attachment'
 import { type ObjQueryType, SortingOrder, type SortingQuery, type Markup } from '@hcengineering/core'
 import { type IntlString, type Resources } from '@hcengineering/platform'
 import preference from '@hcengineering/preference'
-import { getClient } from '@hcengineering/presentation'
+import { getClient, PDFViewer } from '@hcengineering/presentation'
 import activity, { type ActivityMessage, type DocUpdateMessage } from '@hcengineering/activity'
 
 import TxAttachmentCreate from './components/activity/TxAttachmentCreate.svelte'
@@ -42,6 +42,7 @@ import IconAttachment from './components/icons/Attachment.svelte'
 import AttachmentPreview from './components/AttachmentPreview.svelte'
 import AttachmentsUpdatedMessage from './components/activity/AttachmentsUpdatedMessage.svelte'
 import AttachmentsTooltip from './components/AttachmentsTooltip.svelte'
+import MediaViewer from './components/MediaViewer.svelte'
 import { deleteFile, uploadFile } from './utils'
 
 export * from './types'
@@ -258,7 +259,9 @@ export default async (): Promise<Resources> => ({
     AttachmentGalleryPresenter,
     Attachments,
     FileBrowser,
-    Photos
+    Photos,
+    PDFViewer,
+    MediaViewer
   },
   activity: {
     TxAttachmentCreate,
