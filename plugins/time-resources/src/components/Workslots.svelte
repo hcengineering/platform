@@ -23,6 +23,7 @@
 
   export let slots: WorkSlot[] = []
   export let shortcuts: boolean = true
+  export let key: string = ''
 
   const dispatch = createEventDispatcher()
 
@@ -60,6 +61,7 @@
         startDate={slot.date}
         dueDate={slot.dueDate}
         grow
+        {key}
         on:change={(e) => change(e, slot)}
         on:dueChange={(e) => dueChange(e, slot)}
       />

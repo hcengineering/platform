@@ -89,7 +89,7 @@
         </ButtonBase>
       </div>
     {:else}
-      <FixedColumn key={fixed} addClass={'min-w-28'}>
+      <FixedColumn key={fixed + '-date'} addClass={'min-w-28'}>
         <ButtonBase type="type-button" {kind} {size} {disabled} {focusIndex} on:click={dateClick}>
           <span class="overflow-label"><DateLocalePresenter date={currentDate.getTime()} {timeZone} /></span>
         </ButtonBase>
@@ -102,24 +102,47 @@
   {/if}
 
   {#if !withoutTime}
-    <ButtonBase
-      type="type-button"
-      {kind}
-      {size}
-      {disabled}
-      focusIndex={focusIndex !== -1 ? focusIndex + 1 : focusIndex}
-      on:click={timeClick}
-    >
-      <TimeInputBox
-        bind:currentDate
-        {timeZone}
-        noBorder
-        size={'small'}
-        on:update={(date) => {
-          updateTime(date.detail)
-        }}
-      />
-    </ButtonBase>
+    {#if fixed === undefined}
+      <ButtonBase
+        type="type-button"
+        {kind}
+        {size}
+        {disabled}
+        focusIndex={focusIndex !== -1 ? focusIndex + 1 : focusIndex}
+        on:click={timeClick}
+      >
+        <TimeInputBox
+          bind:currentDate
+          {timeZone}
+          noBorder
+          size={'small'}
+          on:update={(date) => {
+            updateTime(date.detail)
+          }}
+        />
+      </ButtonBase>
+    {:else}
+      <FixedColumn key={fixed + '-time'} addClass={'min-w-28'}>
+        <ButtonBase
+          type="type-button"
+          {kind}
+          {size}
+          {disabled}
+          focusIndex={focusIndex !== -1 ? focusIndex + 1 : focusIndex}
+          on:click={timeClick}
+        >
+          <TimeInputBox
+            bind:currentDate
+            {timeZone}
+            noBorder
+            size={'small'}
+            on:update={(date) => {
+              updateTime(date.detail)
+            }}
+          />
+        </ButtonBase>
+      </FixedColumn>
+    {/if}
   {/if}
 </div>
 

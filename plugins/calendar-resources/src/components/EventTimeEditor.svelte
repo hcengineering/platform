@@ -25,6 +25,7 @@
   export let timeZone: string = getUserTimezone()
   export let focusIndex = -1
   export let grow: boolean = false
+  export let key: string = ''
 
   $: sameDate = areDatesEqual(utcToZonedTime(startDate, timeZone), utcToZonedTime(dueDate, timeZone))
 
@@ -59,7 +60,7 @@
     on:update={dateChange}
     {disabled}
     {focusIndex}
-    fixed={'date-presenter'}
+    fixed={key + '-startDate'}
   />
   <div class="flex-no-shrink content-darker-color">—</div>
   <DateEditor
@@ -71,7 +72,7 @@
     {disabled}
     {timeZone}
     focusIndex={focusIndex !== -1 ? focusIndex + 1 : focusIndex}
-    fixed={'time-presenter'}
+    fixed={key + '-dueDate'}
     on:update={dueChange}
   />
 </div>

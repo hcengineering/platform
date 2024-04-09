@@ -92,4 +92,4 @@
   }
 </script>
 
-<Workslots {slots} on:change={change} on:dueChange={dueChange} on:create={create} on:remove={remove} />
+<Workslots {slots} key={'toDo'} on:change={change} on:dueChange={dueChange} on:create={create} on:remove={remove} />
