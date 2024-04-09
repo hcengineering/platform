@@ -34,6 +34,7 @@
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
   export let labelDirection: TooltipAlignment | undefined = undefined
+  export let focusIndex = -1
 
   export let disabled: boolean = false
 
@@ -90,6 +91,7 @@
   {kind}
   {size}
   {justify}
+  {focusIndex}
   showTooltip={{ label: key.attr.label, direction: labelDirection }}
   on:click={addTag}
 >
