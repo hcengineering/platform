@@ -32,5 +32,6 @@ loadMetadata(recruit.icon, {
   Skills: `${icons}#skills`,
   Issue: `${icons}#issue`,
   Schedule: `${icons}#schedule`,
-  Talents: `${icons}#talents`
+  Talents: `${icons}#talents`,
+  Script: `${icons}#script`
 })

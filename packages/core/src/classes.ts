@@ -106,6 +106,9 @@ export interface AttachedDoc<
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface Type<T extends PropertyType> extends UXObject {}
 
+/** @public */
+export type PropertyOfType<T extends Type<any>> = T extends Type<infer P> ? P : never
+
 /**
  * @public
  */
@@ -137,7 +140,7 @@ export interface Enum extends Doc {
 /**
  * @public
  */
-export interface Attribute<T extends PropertyType> extends Doc, UXObject {
+export interface BaseAttribute<T extends PropertyType> extends Doc, UXObject {
   attributeOf: Ref<Class<Obj>>
   name: string
   type: Type<T>
@@ -145,10 +148,14 @@ export interface Attribute<T extends PropertyType> extends Doc, UXObject {
   shortLabel?: IntlString
   isCustom?: boolean
   defaultValue?: any
-
-  // Extra customization properties
-  [key: string]: any
 }
+
+/**
+ * @public
+ */
+export type Attribute<T extends PropertyType> = BaseAttribute<T> &
+// Extra customization properties
+Record<string, any>
 
 /**
  * @public

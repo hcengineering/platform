@@ -1,9 +1,11 @@
 import contact, { type Employee, type PersonAccount, getFirstName, getLastName } from '@hcengineering/contact'
 import { employeeByIdStore } from '@hcengineering/contact-resources'
-import { type Class, type Doc, type Hierarchy, type Ref } from '@hcengineering/core'
+import core, { type Class, type Doc, type Hierarchy, type Ref, type Type } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import setting from '@hcengineering/setting'
 import { type TemplateDataProvider } from '@hcengineering/templates'
+import { type AnyComponent } from '@hcengineering/ui'
+import view from '@hcengineering/view'
 import { get } from 'svelte/store'
 
 function isEditable (hierarchy: Hierarchy, p: Class<Doc>): boolean {
@@ -97,4 +99,25 @@ export async function getOwnerPosition (provider: TemplateDataProvider): Promise
     }
     return undefined
   }
+}
+
+// This is a historical mis-use of ObjectEditor.
+// ObjectEditor should be mixed into Class, and provide UI to edit instances of that class.
+// But for types settings ObjectEditor mixed into type class
+// provides UI to edit instance of another class - parent Attribute.
+// TODO: Refactor
+const editorMixinRef = view.mixin.ObjectEditor
+
+export function getTypes (hierarchy: Hierarchy): Array<Class<Type<any>>> {
+  return hierarchy
+    .getDescendants(core.class.Type)
+    .map((descendantClassRef) => hierarchy.getClass(descendantClassRef))
+    .filter(
+      (descendantClass) => descendantClass.label !== undefined && hierarchy.hasMixin(descendantClass, editorMixinRef)
+    )
+}
+
+export function getTypeEditor (hierarchy: Hierarchy, type: Ref<Class<Type<any>>>): AnyComponent | undefined {
+  const _class = hierarchy.getClass(type)
+  return hierarchy.hasMixin(_class, editorMixinRef) ? hierarchy.as(_class, editorMixinRef).editor : undefined
 }
