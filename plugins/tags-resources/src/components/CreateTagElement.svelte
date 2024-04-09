@@ -94,20 +94,13 @@
       }
     )
   }
-  
-
-  function isNotEmpty(str: string): boolean {
-    return str !== undefined && str.trim().length > 0;
-  }
-
-
 </script>
 
 <Card
   label={tags.string.AddTag}
   labelProps={{ word: keyTitle }}
   okAction={createTagElementFnc}
-  canSave={isNotEmpty(title)}
+  canSave={title.trim().length > 0}
   on:close={() => {
     dispatch('close')
   }}
