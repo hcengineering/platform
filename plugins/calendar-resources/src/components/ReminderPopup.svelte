@@ -17,6 +17,7 @@
   import { createEventDispatcher } from 'svelte'
 
   export let value: number
+  export let existingReminders: number[] = []
 
   export function canClose () {
     return true
@@ -27,13 +28,14 @@
   const days: number[] = [1]
 
   $: values = [...minutes.map((m) => m * MINUTE), ...hours.map((m) => m * HOUR), ...days.map((m) => m * DAY)]
+  $: availableValues = values.filter(val => !existingReminders.includes(val))
 
   const dispatch = createEventDispatcher()
 </script>
 
 <div class="antiPopup thinStyle">
   <div class="ap-space x1-5" />
-  {#each values as val}
+  {#each availableValues as val}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div

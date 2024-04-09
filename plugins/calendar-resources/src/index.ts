@@ -25,6 +25,7 @@ import DocReminder from './components/DocReminder.svelte'
 import EditEvent from './components/EditEvent.svelte'
 import EventPresenter from './components/EventPresenter.svelte'
 import Events from './components/Events.svelte'
+import EventManager from './components/EventManager.svelte'
 import IntegrationConnect from './components/IntegrationConnect.svelte'
 import PersonsPresenter from './components/PersonsPresenter.svelte'
 import SaveEventReminder from './components/SaveEventReminder.svelte'
@@ -185,6 +186,7 @@ export default async (): Promise<Resources> => ({
     DocReminder,
     EventPresenter,
     CreateEvent,
+    EventManager,
     IntegrationConnect,
     CalendarIntegrationIcon,
     CalendarEventPresenter,

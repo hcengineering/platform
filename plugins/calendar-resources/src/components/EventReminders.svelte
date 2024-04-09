@@ -26,16 +26,15 @@
   let shown: boolean = false
 
   function addReminder (e: MouseEvent) {
-    showPopup(ReminderPopup, { value: 0 }, eventToHTMLElement(e), (event) => {
-      if (event) reminders = [...reminders, event]
+    showPopup(ReminderPopup, { value: 0, existingReminders: reminders  }, eventToHTMLElement(e), (event) => {
+      if (event) reminders = [...reminders, event].sort((a, b) => a - b)
     })
   }
 
   function edit (e: MouseEvent, value: number, index: number) {
-    showPopup(ReminderPopup, { value }, eventToHTMLElement(e), (event) => {
-      if (event) {
-        reminders = [...reminders.slice(0, index), event, ...reminders.slice(index + 1)]
-      }
+    const existingReminders = reminders.filter((_, i) => i !== index);
+    showPopup(ReminderPopup, { value, existingReminders }, eventToHTMLElement(e), (event) => {
+      if (event) reminders = [...existingReminders, event].sort((a, b) => a - b)
     })
   }
 
