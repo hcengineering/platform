@@ -53,7 +53,7 @@ import { type Db, type MongoClient } from 'mongodb'
 import { clearTelegramHistory } from './telegram'
 import { diffWorkspace, updateField } from './workspace'
 
-import {
+import core, {
   getWorkspaceId,
   MeasureMetricsContext,
   metricsToString,
@@ -64,7 +64,8 @@ import {
   type Version
 } from '@hcengineering/core'
 import { consoleModelLogger, type MigrateOperation } from '@hcengineering/model'
-import { getMongoClient } from '@hcengineering/mongo'
+import contact from '@hcengineering/model-contact'
+import { getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
 import { openAIConfigDefaults } from '@hcengineering/openai'
 import { type StorageAdapter } from '@hcengineering/server-core'
 import path from 'path'
@@ -476,6 +477,25 @@ export function devTool (
         console.log('latest model version:', JSON.stringify(version))
       })
     })
+
+  program.command('fix-person-accounts').action(async () => {
+    const { mongodbUri, version } = prepareTools()
+    await withDatabase(mongodbUri, async (db, client) => {
+      const ws = await listWorkspaces(toolCtx, db, productId)
+      for (const w of ws) {
+        const wsDb = getWorkspaceDB(client, { name: w.workspace, productId })
+        await wsDb.collection('tx').updateMany(
+          {
+            objectClass: contact.class.PersonAccount,
+            objectSpace: null
+          },
+          { $set: { objectSpace: core.space.Model } }
+        )
+      }
+
+      console.log('latest model version:', JSON.stringify(version))
+    })
+  })
 
   program
     .command('show-accounts')
