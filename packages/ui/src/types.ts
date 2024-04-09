@@ -368,6 +368,7 @@ export interface DeviceOptions {
   twoRows: boolean
   theme?: string
   language?: string
+  replacedPanel?: HTMLElement
 }
 
 export interface TimelineItem {
