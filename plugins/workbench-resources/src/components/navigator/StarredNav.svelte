@@ -88,7 +88,7 @@
 
   function getSpaceModel (space: Ref<Class<Space>>): SpacesNavModel | undefined {
     const hierarchy = client.getHierarchy()
-    const ancestors = [space, ...hierarchy.getAncestors(space).reverse()]
+    const ancestors = [space, ...[...hierarchy.getAncestors(space)].reverse()]
     for (const clazz of ancestors) {
       const model = models.find((p) => p.spaceClass === clazz)
       if (model !== undefined) return model
