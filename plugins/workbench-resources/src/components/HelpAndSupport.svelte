@@ -188,12 +188,7 @@
   {/if}
   <div class="footer">
     <a href={reportBugLink} target="_blank">
-      <Button
-        id="report-a-bug"
-        kind={'primary'}
-        label={support.string.ReportBug}
-        stopPropagation={false}
-      />
+      <Button id="report-a-bug" kind={'primary'} label={support.string.ReportBug} stopPropagation={false} />
     </a>
     <a href={supportLink}>
       <Button
