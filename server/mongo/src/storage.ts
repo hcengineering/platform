@@ -1253,10 +1253,7 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
 
   async getModel (ctx: MeasureContext): Promise<Tx[]> {
     const modelProjection = {
-      '%hash%': 0,
-      objectSpace: 0,
-      createdBy: 0,
-      space: 0
+      '%hash%': 0
     }
     const cursor = await ctx.with('find', {}, async () =>
       this.db
