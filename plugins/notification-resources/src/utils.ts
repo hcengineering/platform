@@ -37,8 +37,8 @@ import notification, {
   type DocNotifyContext,
   type InboxNotification
 } from '@hcengineering/notification'
-import { getClient, MessageBox } from '@hcengineering/presentation'
-import { getLocation, navigate, type Location, type ResolvedLocation, showPopup } from '@hcengineering/ui'
+import { MessageBox, getClient } from '@hcengineering/presentation'
+import { getLocation, navigate, showPopup, type Location, type ResolvedLocation } from '@hcengineering/ui'
 import { get } from 'svelte/store'
 
 import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
@@ -510,4 +510,38 @@ export function openInboxDoc (
   loc.query = { ...loc.query, message: message ?? null }
 
   navigate(loc)
+}
+
+export async function checkPermission (value: boolean): Promise<boolean> {
+  if (!value) return true
+  if ('Notification' in window) {
+    if (Notification?.permission === 'denied') return false
+    if (Notification?.permission === 'granted') return true
+    if (Notification?.permission === 'default') {
+      const res = await Notification?.requestPermission()
+      return res === 'granted'
+    }
+  }
+  return false
+}
+
+export async function askPermission (): Promise<void> {
+  if ('Notification' in window && Notification?.permission === 'default') {
+    await Notification?.requestPermission()
+  }
+}
+
+export function notify (title: string, body: string, _id?: string, onClick?: () => void): void {
+  if ('Notification' in window && Notification?.permission === 'granted') {
+    const req: NotificationOptions = {
+      body
+    }
+    if (_id !== undefined) {
+      req.tag = _id
+    }
+    const notification = new Notification(title, req)
+    if (onClick !== undefined) {
+      notification.onclick = onClick
+    }
+  }
 }

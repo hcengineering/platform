@@ -456,6 +456,7 @@ export function createModel (builder: Builder, options = { addApplication: true 
       objectClass: chunter.class.ChatMessage,
       providers: {
         [notification.providers.EmailNotification]: false,
+        [notification.providers.BrowserNotification]: true,
         [notification.providers.PlatformNotification]: true
       },
       group: chunter.ids.ChunterNotificationGroup,
@@ -478,7 +479,8 @@ export function createModel (builder: Builder, options = { addApplication: true 
       txClasses: [core.class.TxCreateDoc],
       objectClass: chunter.class.ChatMessage,
       providers: {
-        [notification.providers.PlatformNotification]: true
+        [notification.providers.PlatformNotification]: true,
+        [notification.providers.BrowserNotification]: true
       },
       group: chunter.ids.ChunterNotificationGroup
     },
@@ -495,7 +497,8 @@ export function createModel (builder: Builder, options = { addApplication: true 
       txClasses: [core.class.TxCreateDoc],
       objectClass: chunter.class.ThreadMessage,
       providers: {
-        [notification.providers.PlatformNotification]: true
+        [notification.providers.PlatformNotification]: true,
+        [notification.providers.BrowserNotification]: true
       },
       group: chunter.ids.ChunterNotificationGroup
     },
