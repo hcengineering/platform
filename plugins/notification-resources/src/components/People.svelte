@@ -25,7 +25,7 @@
 
   import PeopleNotificationView from './PeopleNotificationsView.svelte'
 
-  export let filter: 'all' | 'read' | 'unread' = 'all'
+  export let filter: 'all' | 'unread' = 'all'
   export let _id: Ref<Doc> | undefined
 
   const query = createQuery()
@@ -53,19 +53,11 @@
     }
   )
 
-  async function getFiltered (docs: DocUpdates[], filter: 'all' | 'read' | 'unread'): Promise<void> {
+  async function getFiltered (docs: DocUpdates[], filter: 'all' | 'unread'): Promise<void> {
     const filtered: DocUpdates[] = []
     for (const doc of docs) {
       if (doc.txes.length === 0) continue
-      if (filter === 'read') {
-        const txes = doc.txes.filter((p) => !p.isNew)
-        if (txes.length > 0) {
-          filtered.push({
-            ...doc,
-            txes
-          })
-        }
-      } else if (filter === 'unread') {
+      if (filter === 'unread') {
         const txes = doc.txes.filter((p) => p.isNew)
         if (txes.length > 0) {
           filtered.push({

@@ -222,8 +222,6 @@
     switch (filter) {
       case 'unread':
         return notifications.filter(({ isViewed }) => !isViewed)
-      case 'read':
-        return notifications.filter(({ isViewed }) => isViewed)
       case 'all':
         return notifications
     }

@@ -291,10 +291,6 @@ export async function getDisplayInboxNotifications (
       continue
     }
 
-    if (filter === 'read' && !notification.isViewed) {
-      continue
-    }
-
     if (isActivityNotification(notification)) {
       activityNotifications.push(notification)
     } else {
