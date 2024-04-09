@@ -14,10 +14,8 @@
 //
 
 import core, {
-  type AttachedDoc,
   type Class,
   DOMAIN_DOC_INDEX_STATE,
-  DOMAIN_FULLTEXT_BLOB,
   type Doc,
   type DocIndexState,
   type DocumentQuery,
@@ -26,22 +24,18 @@ import core, {
   type MeasureContext,
   type ModelDb,
   type Ref,
-  type ServerStorage,
   SortingOrder,
   TxFactory,
   type WorkspaceId,
   _getOperator,
   docKey,
-  generateId,
   setObjectValue,
-  toFindResult,
-  versionToString
+  toFindResult
 } from '@hcengineering/core'
 import { type DbAdapter } from '../adapter'
 import { RateLimiter } from '../limitter'
 import type { IndexedDoc } from '../types'
 import { type FullTextPipeline, type FullTextPipelineStage } from './types'
-import { createStateDoc, isClassIndexable } from './utils'
 
 export * from './content'
 export * from './field'
@@ -97,13 +91,12 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   }
 
   async cancel (): Promise<void> {
-    console.log(this.workspace.name, 'Cancel indexing', this.indexId)
     this.cancelling = true
     clearTimeout(this.skippedReiterationTimeout)
     this.triggerIndexing()
     await this.indexing
     await this.flush(true)
-    console.log(this.workspace.name, 'Indexing canceled', this.indexId)
+    await this.metrics.info('Cancel indexing', { workspace: this.workspace.name, indexId: this.indexId })
   }
 
   async markRemove (doc: DocIndexState): Promise<void> {
@@ -138,12 +131,12 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     if (this.pending.size > 0 && (this.pending.size >= 50 || force)) {
       // Push all pending changes to storage.
       try {
-        await this.storage.update(DOMAIN_DOC_INDEX_STATE, this.pending)
+        await this.storage.update(this.metrics, DOMAIN_DOC_INDEX_STATE, this.pending)
       } catch (err: any) {
         console.error(err)
         // Go one by one.
         for (const o of this.pending) {
-          await this.storage.update(DOMAIN_DOC_INDEX_STATE, new Map([o]))
+          await this.storage.update(this.metrics, DOMAIN_DOC_INDEX_STATE, new Map([o]))
         }
       }
       this.pending.clear()
@@ -180,7 +173,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     const uploads = entries.filter((it) => it[1].create !== undefined).map((it) => it[1].create) as DocIndexState[]
     if (uploads.length > 0) {
       await ctx.with('upload', {}, async () => {
-        await this.storage.upload(DOMAIN_DOC_INDEX_STATE, uploads)
+        await this.storage.upload(this.metrics, DOMAIN_DOC_INDEX_STATE, uploads)
       })
     }
 
@@ -196,7 +189,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         ops.set(u[0], upd)
       }
       await ctx.with('upload', {}, async () => {
-        await this.storage.update(DOMAIN_DOC_INDEX_STATE, ops)
+        await this.storage.update(this.metrics, DOMAIN_DOC_INDEX_STATE, ops)
       })
     }
     this.triggerIndexing()
@@ -232,7 +225,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
     if (udoc === undefined) {
       // Some updated, document, let's load it.
-      udoc = (await this.storage.load(DOMAIN_DOC_INDEX_STATE, [docId])).shift() as DocIndexState
+      udoc = (await this.storage.load(this.metrics, DOMAIN_DOC_INDEX_STATE, [docId])).shift() as DocIndexState
     }
 
     if (udoc !== undefined && this.currentStage !== undefined) {
@@ -342,7 +335,10 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     try {
       this.hierarchy.getClass(core.class.DocIndexState)
     } catch (err: any) {
-      console.log(this.workspace.name, 'Models is not upgraded to support indexer', this.indexId)
+      await this.metrics.info('Models is not upgraded to support indexer', {
+        indexId: this.indexId,
+        workspace: this.workspace.name
+      })
       return
     }
     await this.metrics.with('init-states', {}, async () => {
@@ -373,12 +369,12 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       _classes.forEach((it) => this.broadcastClasses.add(it))
 
       if (this.triggerCounts > 0) {
-        console.log('No wait, trigger counts', this.triggerCounts)
+        await this.metrics.info('No wait, trigger counts', { triggerCount: this.triggerCounts })
       }
 
       if (this.toIndex.size === 0 && this.stageChanged === 0 && this.triggerCounts === 0) {
         if (this.toIndex.size === 0) {
-          console.log(this.workspace.name, 'Indexing complete', this.indexId)
+          await this.metrics.info('Indexing complete', { indexId: this.indexId, workspace: this.workspace.name })
         }
         if (!this.cancelling) {
           // We need to send index update event
@@ -404,7 +400,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         }
       }
     }
-    console.log(this.workspace.name, 'Exit indexer', this.indexId)
+    await this.metrics.info('Exit indexer', { indexId: this.indexId, workspace: this.workspace.name })
   }
 
   private async processIndex (ctx: MeasureContext): Promise<Ref<Class<Doc>>[]> {
@@ -467,6 +463,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
             if (toRemove.length > 0) {
               try {
                 await this.storage.clean(
+                  this.metrics,
                   DOMAIN_DOC_INDEX_STATE,
                   toRemove.map((it) => it._id)
                 )
@@ -476,13 +473,12 @@ export class FullTextIndexPipeline implements FullTextPipeline {
             }
 
             if (result.length > 0) {
-              console.log(
-                this.workspace.name,
-                `Full text: Indexing ${this.indexId} ${st.stageId}`,
-                Object.entries(this.currentStages)
-                  .map((it) => `${it[0]}:${it[1]}`)
-                  .join(' ')
-              )
+              await this.metrics.info('Full text: Indexing', {
+                indexId: this.indexId,
+                stageId: st.stageId,
+                workspace: this.workspace.name,
+                ...this.currentStages
+              })
             } else {
               // Nothing to index, check on next cycle.
               break
@@ -534,7 +530,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
               }
             }
           } catch (err: any) {
-            console.error(err)
+            await this.metrics.error('error during index', { error: err })
           }
         }
       })
@@ -587,7 +583,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
       await this.flush(true)
       if (toRemoveIds.length > 0) {
-        await this.storage.clean(DOMAIN_DOC_INDEX_STATE, toRemoveIds)
+        await this.storage.clean(this.metrics, DOMAIN_DOC_INDEX_STATE, toRemoveIds)
       } else {
         break
       }
@@ -611,163 +607,5 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       }
     }
     return toIndex
-  }
-
-  // TODO: Move to migration
-  async checkIndexConsistency (dbStorage: ServerStorage): Promise<void> {
-    await rateLimiter.exec(async () => {
-      await this.metrics.with('check-index-consistency', {}, async (ctx) => {
-        if (process.env.MODEL_VERSION !== undefined && process.env.MODEL_VERSION !== '') {
-          const modelVersion = (await this.model.findAll(core.class.Version, {}))[0]
-          if (modelVersion !== undefined) {
-            const modelVersionString = versionToString(modelVersion)
-            if (modelVersionString !== process.env.MODEL_VERSION) {
-              console.error(
-                `Indexer: Model version mismatch model: ${modelVersionString} env: ${process.env.MODEL_VERSION}`
-              )
-              return
-            }
-          }
-        }
-
-        this.hierarchy.domains()
-        const allClasses = this.hierarchy.getDescendants(core.class.Doc)
-        for (const c of allClasses) {
-          if (this.cancelling) {
-            return
-          }
-
-          if (!isClassIndexable(this.hierarchy, c)) {
-            // No need, since no indexable fields or attachments.
-            continue
-          }
-
-          console.log(this.workspace.name, 'checking index', c)
-
-          const generationId = generateId()
-
-          let lastId = ''
-
-          while (true) {
-            if (this.cancelling) {
-              return
-            }
-
-            let newDocs: DocIndexState[] = []
-            let updates = new Map<Ref<DocIndexState>, DocumentUpdate<DocIndexState>>()
-
-            try {
-              const docs = await dbStorage.findAll<Doc>(
-                ctx,
-                c,
-                { _class: c, _id: { $gt: lastId as any } },
-                {
-                  limit: 10000,
-                  sort: { _id: 1 },
-                  projection: { _id: 1, attachedTo: 1, attachedToClass: 1 } as any,
-                  prefix: 'indexer'
-                }
-              )
-
-              if (docs.length === 0) {
-                // All updated for this class
-                break
-              }
-
-              lastId = docs[docs.length - 1]._id
-
-              const states = (
-                await this.storage.findAll(
-                  ctx,
-                  core.class.DocIndexState,
-                  {
-                    objectClass: c,
-                    _id: {
-                      $gte: docs[0]._id as any,
-                      $lte: docs[docs.length - 1]._id as any
-                    }
-                  },
-                  { projection: { _id: 1 } }
-                )
-              ).map((it) => it._id)
-              const statesSet = new Set(states)
-
-              // create missing index states
-              newDocs = docs
-                .filter((it) => !statesSet.has(it._id as Ref<DocIndexState>))
-                .map((it) => {
-                  return createStateDoc(it._id, c, {
-                    generationId,
-                    stages: {},
-                    attributes: {},
-                    removed: false,
-                    space: it.space,
-                    attachedTo: (it as AttachedDoc)?.attachedTo ?? undefined,
-                    attachedToClass: (it as AttachedDoc)?.attachedToClass ?? undefined
-                  })
-                })
-
-              // update generationId for existing index states
-              updates = new Map()
-              docs
-                .filter((it) => statesSet.has(it._id as Ref<DocIndexState>))
-                .forEach((it) => {
-                  updates.set(it._id as Ref<DocIndexState>, { generationId })
-                })
-            } catch (e) {
-              console.error(e)
-              break
-            }
-
-            try {
-              await this.storage.update(DOMAIN_DOC_INDEX_STATE, updates)
-            } catch (err: any) {
-              console.error(err)
-            }
-
-            try {
-              await this.storage.upload(DOMAIN_DOC_INDEX_STATE, newDocs)
-            } catch (err: any) {
-              console.error(err)
-            }
-          }
-
-          // remove index states for documents that do not exist
-          const toRemove = (
-            await this.storage.findAll(
-              ctx,
-              core.class.DocIndexState,
-              { objectClass: c, generationId: { $ne: generationId } },
-              { projection: { _id: 1 } }
-            )
-          ).map((it) => it._id)
-
-          if (toRemove.length > 0) {
-            await this.storage.clean(DOMAIN_DOC_INDEX_STATE, toRemove)
-            await this.storage.clean(DOMAIN_FULLTEXT_BLOB, toRemove)
-          }
-        }
-
-        // Clean for non existing classes
-
-        while (true) {
-          const docRefs = await this.storage.findAll(
-            ctx,
-            core.class.DocIndexState,
-            { objectClass: { $nin: allClasses } },
-            { projection: { _id: 1, objectClass: 1 }, limit: 10000 }
-          )
-          const unknownClasses = docRefs.map((it) => it._id)
-
-          console.log('cleaning', docRefs.length, Array.from(new Set(docRefs.map((it) => it.objectClass))).join(', '))
-
-          if (unknownClasses.length > 0) {
-            await this.storage.clean(DOMAIN_DOC_INDEX_STATE, unknownClasses)
-          } else {
-            break
-          }
-        }
-      })
-    })
   }
 }

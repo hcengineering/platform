@@ -76,14 +76,14 @@ FulltextStorage & {
       }
       await Promise.all([model.tx(tx), transactions.tx(tx)])
       // Not required, since handled in client.
-      // handler(tx)
+      handler(tx)
       return {}
     },
     close: async () => {},
     loadChunk: async (domain: Domain, idx?: number) => ({
       idx: -1,
       index: -1,
-      docs: {},
+      docs: [],
       finished: true,
       digest: ''
     }),

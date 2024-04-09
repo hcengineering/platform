@@ -38,23 +38,19 @@ import { type StorageAdapter } from './storage'
  */
 export interface RawDBAdapter {
   find: <T extends Doc>(
+    ctx: MeasureContext,
     workspace: WorkspaceId,
     domain: Domain,
     query: DocumentQuery<T>,
     options?: Omit<FindOptions<T>, 'projection' | 'lookup'>
   ) => Promise<FindResult<T>>
-  upload: <T extends Doc>(workspace: WorkspaceId, domain: Domain, docs: T[]) => Promise<void>
+  upload: <T extends Doc>(ctx: MeasureContext, workspace: WorkspaceId, domain: Domain, docs: T[]) => Promise<void>
 }
 
 /**
  * @public
  */
 export interface DbAdapter {
-  /**
-   * Method called after hierarchy is ready to use.
-   */
-  init: (model: Tx[]) => Promise<void>
-
   createIndexes: (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>) => Promise<void>
   removeOldIndex: (domain: Domain, deletePattern: RegExp, keepPattern: RegExp) => Promise<void>
 
@@ -69,21 +65,21 @@ export interface DbAdapter {
   ) => Promise<FindResult<T>>
   tx: (ctx: MeasureContext, ...tx: Tx[]) => Promise<TxResult[]>
 
-  find: (domain: Domain) => StorageIterator
+  find: (ctx: MeasureContext, domain: Domain) => StorageIterator
 
-  load: (domain: Domain, docs: Ref<Doc>[]) => Promise<Doc[]>
-  upload: (domain: Domain, docs: Doc[]) => Promise<void>
-  clean: (domain: Domain, docs: Ref<Doc>[]) => Promise<void>
+  load: (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => Promise<Doc[]>
+  upload: (ctx: MeasureContext, domain: Domain, docs: Doc[]) => Promise<void>
+  clean: (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => Promise<void>
 
   // Bulk update operations
-  update: (domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>) => Promise<void>
+  update: (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>) => Promise<void>
 }
 
 /**
  * @public
  */
 export interface TxAdapter extends DbAdapter {
-  getModel: () => Promise<Tx[]>
+  getModel: (ctx: MeasureContext) => Promise<Tx[]>
 }
 
 /**

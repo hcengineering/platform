@@ -14,6 +14,7 @@
 //
 
 import core, {
+  Blob,
   Class,
   CollaborativeDoc,
   Doc,
@@ -106,7 +107,7 @@ export class CollaborativeContentRetrievalStage implements FullTextPipelineStage
           if (collaborativeDoc !== undefined && collaborativeDoc !== '') {
             const { documentId } = parseCollaborativeDoc(collaborativeDoc)
 
-            const docInfo: any | undefined = await this.storageAdapter?.stat(this.metrics, this.workspace, documentId)
+            const docInfo: Blob | undefined = await this.storageAdapter?.stat(this.metrics, this.workspace, documentId)
 
             if (docInfo !== undefined) {
               const digest = docInfo.etag
@@ -114,7 +115,7 @@ export class CollaborativeContentRetrievalStage implements FullTextPipelineStage
               if (doc.attributes[digestKey] !== digest) {
                 ;(update as any)[docUpdKey(digestKey)] = digest
 
-                const contentType = ((docInfo.metaData['content-type'] as string) ?? '').split(';')[0]
+                const contentType = (docInfo.contentType ?? '').split(';')[0]
                 const readable = await this.storageAdapter?.get(this.metrics, this.workspace, documentId)
 
                 if (readable !== undefined) {

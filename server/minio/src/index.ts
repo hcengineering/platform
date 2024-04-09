@@ -84,7 +84,7 @@ export class MinioService implements StorageAdapter {
               _class: core.class.Blob,
               etag: data.etag,
               size: data.size,
-              provider: '',
+              provider: 'minio',
               space: core.space.Configuration,
               modifiedBy: core.account.ConfigUser,
               modifiedOn: data.lastModified.getTime(),
@@ -111,20 +111,24 @@ export class MinioService implements StorageAdapter {
     }
   }
 
-  async stat (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Blob> {
-    const result = await this.client.statObject(getBucketId(workspaceId), objectName)
-    return {
-      provider: '',
-      _class: core.class.Blob,
-      _id: objectName as Ref<Blob>,
-      storageId: objectName,
-      contentType: result.metaData['content-type'],
-      size: result.size,
-      etag: result.etag,
-      space: core.space.Configuration,
-      modifiedBy: core.account.System,
-      modifiedOn: result.lastModified.getTime(),
-      version: result.versionId ?? null
+  async stat (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Blob | undefined> {
+    try {
+      const result = await this.client.statObject(getBucketId(workspaceId), objectName)
+      return {
+        provider: '',
+        _class: core.class.Blob,
+        _id: objectName as Ref<Blob>,
+        storageId: objectName,
+        contentType: result.metaData['content-type'],
+        size: result.size,
+        etag: result.etag,
+        space: core.space.Configuration,
+        modifiedBy: core.account.System,
+        modifiedOn: result.lastModified.getTime(),
+        version: result.versionId ?? null
+      }
+    } catch (err: any) {
+      await ctx.error('no object found', err)
     }
   }
 

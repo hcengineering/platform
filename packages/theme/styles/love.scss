@@ -25,7 +25,7 @@
     right: calc(100% / var(--huly-floor-roomWidth) / 5 * -1);
     background-color: var(--theme-popup-color);
     border: 1px solid var(--theme-popup-divider);
-    border-radius: .75rem;
+    border-radius: 1rem;
   }
 }
 
@@ -129,5 +129,32 @@
 
     .floorGrid-room__header,
     .floorGrid-room__field { visibility: hidden; }
+  }
+}
+
+// RoomPopup
+.room-popup {
+  .room-btns {
+    button.secondary,
+    .hulySplitButton-main {
+      flex-grow: 1;
+    }
+    &.no-video:not(.row) .hulySplitButton-container {
+      grid-column: span 2;
+    }
+    &.row .hulySplitButton-container {
+      flex-grow: 2;
+    }
+    &.row.no-video .hulySplitButton-container {
+      flex-grow: 4;
+    }
+  }
+
+  &.small.cropped .scroller-container,
+  &.large.cropped .scroller-container {
+    max-height: 24.5rem;
+  }
+  &.medium.cropped .scroller-container {
+    max-height: 22.5rem;
   }
 }

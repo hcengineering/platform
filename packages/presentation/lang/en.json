@@ -30,6 +30,7 @@
     "MakePrivateDescription": "Only members can see it",
     "Created": "Created",
     "NoResults": "No results to show",
-    "Next": "Next"
+    "Next": "Next",
+    "FailedToPreview": "Failed to preview"
   }
 }

@@ -48,12 +48,13 @@ import { type BroadcastCall, type Session, type SessionRequest, type StatisticsE
  * @public
  */
 export class ClientSession implements Session {
+  createTime = Date.now()
   requests = new Map<string, SessionRequest>()
   binaryResponseMode: boolean = false
   useCompression: boolean = true
   useBroadcast: boolean = false
   sessionId = ''
-  lastRequest = 0
+  lastRequest = Date.now()
 
   total: StatisticsElement = { find: 0, tx: 0 }
   current: StatisticsElement = { find: 0, tx: 0 }
@@ -81,7 +82,7 @@ export class ClientSession implements Session {
   }
 
   async loadModel (ctx: MeasureContext, lastModelTx: Timestamp, hash?: string): Promise<Tx[] | LoadModelResponse> {
-    return await this._pipeline.storage.loadModel(lastModelTx, hash)
+    return await ctx.with('load-model', {}, async () => await this._pipeline.storage.loadModel(lastModelTx, hash))
   }
 
   async getAccount (ctx: MeasureContext): Promise<Account> {
@@ -156,7 +157,7 @@ export class ClientSession implements Session {
     }
 
     if (tx._class !== core.class.TxApplyIf) {
-      this.broadcast(this, this.token.workspace, { result: tx }, target)
+      this.broadcast(null, this.token.workspace, { result: tx }, target)
     }
     if (shouldBroadcast) {
       if (this.useBroadcast) {
@@ -176,7 +177,7 @@ export class ClientSession implements Session {
           if (tx._class === core.class.TxApplyIf) {
             ;(result as TxApplyResult).derived.push(bevent)
           }
-          this.broadcast(this, this.token.workspace, { result: bevent }, target)
+          this.broadcast(null, this.token.workspace, { result: bevent }, target)
         } else {
           if (tx._class === core.class.TxApplyIf) {
             ;(result as TxApplyResult).derived.push(...derived)
@@ -184,12 +185,7 @@ export class ClientSession implements Session {
           while (derived.length > 0) {
             const part = derived.splice(0, 250)
             console.log('Broadcasting part', part.length, derived.length)
-            this.broadcast(
-              tx._class === core.class.TxApplyIf ? this : null,
-              this.token.workspace,
-              { result: part },
-              target
-            )
+            this.broadcast(null, this.token.workspace, { result: part }, target)
           }
         }
       } else {

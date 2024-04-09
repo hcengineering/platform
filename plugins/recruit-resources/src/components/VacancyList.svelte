@@ -14,7 +14,6 @@
 -->
 <script lang="ts">
   import { Doc, Ref } from '@hcengineering/core'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
   import { Button, Icon, IconAdd, Label, showPopup, Scroller } from '@hcengineering/ui'
   import view, { BuildModelKey } from '@hcengineering/view'
@@ -22,6 +21,7 @@
   import recruit from '../plugin'
   import CreateVacancy from './CreateVacancy.svelte'
   import FileDuo from './icons/FileDuo.svelte'
+  import SectionEmpty from './SectionEmpty.svelte'
 
   export let objectId: Ref<Doc>
   export let vacancies: number | undefined
@@ -71,18 +71,12 @@
       />
     </Scroller>
   {:else}
-    <div class="antiSection-empty solid flex-col-center mt-3">
-      <div class="caption-color">
-        <FileDuo size={'large'} />
-      </div>
-      <span class="content-dark-color">
-        <Label label={getEmbeddedLabel('No Vacancies')} />
+    <SectionEmpty icon={FileDuo} label={recruit.string.NoVacancies}>
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <span class="over-underline content-color" on:click={createApp}>
+        <Label label={recruit.string.CreateVacancy} />
       </span>
-      {#if !readonly}
-        <span class="over-underline content-color" on:click={createApp}>
-          <Label label={recruit.string.CreateVacancy} />
-        </span>
-      {/if}
-    </div>
+    </SectionEmpty>
   {/if}
 </div>

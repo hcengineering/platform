@@ -9,6 +9,7 @@
 </script>
 
 <button
+  id="statusbar-search"
   class="antiButton ghost jf-center bs-none no-focus resetIconSize statusButton square"
   on:click={openPopup}
   style:color={'var(--theme-dark-color)'}

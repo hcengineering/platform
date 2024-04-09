@@ -1,7 +1,7 @@
 import { MeasureContext, WorkspaceId } from '@hcengineering/core'
 import { StorageAdapter } from '@hcengineering/server-core'
 import { createReadStream, createWriteStream, existsSync } from 'fs'
-import { mkdir, readFile, writeFile } from 'fs/promises'
+import { mkdir, readFile, rm, writeFile } from 'fs/promises'
 import { dirname, join } from 'path'
 import { PassThrough, Readable, Writable } from 'stream'
 
@@ -14,6 +14,7 @@ export interface BackupStorage {
   write: (name: string) => Promise<Writable>
   writeFile: (name: string, data: string | Buffer) => Promise<void>
   exists: (name: string) => Promise<boolean>
+  delete: (name: string) => Promise<void>
 }
 
 class FileStorage implements BackupStorage {
@@ -38,6 +39,10 @@ class FileStorage implements BackupStorage {
 
   async exists (name: string): Promise<boolean> {
     return existsSync(join(this.root, name))
+  }
+
+  async delete (name: string): Promise<void> {
+    await rm(join(this.root, name))
   }
 
   async writeFile (name: string, data: string | Buffer): Promise<void> {
@@ -80,6 +85,10 @@ class AdapterStorage implements BackupStorage {
     } catch (err) {
       return false
     }
+  }
+
+  async delete (name: string): Promise<void> {
+    await this.client.remove(this.ctx, this.workspaceId, [join(this.root, name)])
   }
 
   async writeFile (name: string, data: string | Buffer): Promise<void> {

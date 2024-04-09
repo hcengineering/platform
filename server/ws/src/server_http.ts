@@ -47,7 +47,9 @@ export function startHttpServer (
   enableCompression: boolean,
   accountsUrl: string
 ): () => Promise<void> {
-  if (LOGGING_ENABLED) console.log(`starting server on port ${port} ...`)
+  if (LOGGING_ENABLED) {
+    void ctx.info('starting server on', { port, productId, enableCompression, accountsUrl })
+  }
 
   const app = express()
   app.use(cors())
@@ -209,21 +211,27 @@ export function startHttpServer (
     )
     if ('upgrade' in session || 'error' in session) {
       if ('error' in session) {
-        console.error(session.error)
+        void ctx.error('error', { error: session.error?.message, stack: session.error?.stack })
       }
       cs.close()
       return
     }
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     ws.on('message', (msg: RawData) => {
-      let buff: any | undefined
-      if (msg instanceof Buffer) {
-        buff = msg?.toString()
-      } else if (Array.isArray(msg)) {
-        buff = Buffer.concat(msg).toString()
-      }
-      if (buff !== undefined) {
-        void handleRequest(session.context, session.session, cs, buff, session.workspaceName)
+      try {
+        let buff: any | undefined
+        if (msg instanceof Buffer) {
+          buff = msg?.toString()
+        } else if (Array.isArray(msg)) {
+          buff = Buffer.concat(msg).toString()
+        }
+        if (buff !== undefined) {
+          void handleRequest(session.context, session.session, cs, buff, session.workspaceName)
+        }
+      } catch (err: any) {
+        if (LOGGING_ENABLED) {
+          void ctx.error('message error', err)
+        }
       }
     })
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -251,12 +259,17 @@ export function startHttpServer (
       const sessionId = url.searchParams.get('sessionId')
 
       if (payload.workspace.productId !== productId) {
+        if (LOGGING_ENABLED) {
+          void ctx.error('invalid product', { required: payload.workspace.productId, productId })
+        }
         throw new Error('Invalid workspace product')
       }
 
       wss.handleUpgrade(request, socket, head, (ws) => wss.emit('connection', ws, request, payload, token, sessionId))
-    } catch (err) {
-      if (LOGGING_ENABLED) console.error('invalid token', err)
+    } catch (err: any) {
+      if (LOGGING_ENABLED) {
+        void ctx.error('invalid token', err)
+      }
       wss.handleUpgrade(request, socket, head, (ws) => {
         const resp: Response<any> = {
           id: -1,
@@ -274,7 +287,9 @@ export function startHttpServer (
     }
   })
   httpServer.on('error', (err) => {
-    if (LOGGING_ENABLED) console.error('server error', err)
+    if (LOGGING_ENABLED) {
+      void ctx.error('server error', err)
+    }
   })
 
   httpServer.listen(port)

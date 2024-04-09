@@ -5,7 +5,7 @@
   //
 
   import type { Asset, IntlString } from '@hcengineering/platform'
-  import { AnySvelteComponent, ButtonBaseSize, IconSize } from '../types'
+  import { AnySvelteComponent, ButtonBaseSize, IconSize, LabelAndProps } from '../types'
   import { ComponentType } from 'svelte'
   import ButtonBase from './ButtonBase.svelte'
 
@@ -21,6 +21,7 @@
   export let hasMenu: boolean = false
   export let inheritFont: boolean = false
   export let focusIndex = -1
+  export let tooltip: LabelAndProps | undefined = undefined
 </script>
 
 <ButtonBase
@@ -37,6 +38,7 @@
   {hasMenu}
   {inheritFont}
   {focusIndex}
+  {tooltip}
   on:click
 >
   <slot />
