@@ -617,6 +617,7 @@
 
   let modern: boolean
   $: modern = currentApplication?.modern ?? false
+  $: elementPanel = modern ? $deviceInfo.replacedPanel ?? contentPanel : contentPanel
 </script>
 
 {#if employee && !employee.active && !isAdminUser()}
@@ -811,15 +812,7 @@
       {/if}
       <div class="antiPanel-component antiComponent" bind:this={contentPanel}>
         {#if currentApplication && currentApplication.component}
-          <Component
-            is={currentApplication.component}
-            props={{ currentSpace, visibleNav, navFloat, appsDirection }}
-            on:change={(e) => {
-              if (e.detail?.type === 'replacedPanel' && e.detail?.replacedPanel !== undefined) {
-                replacedPanel = e.detail.replacedPanel
-              }
-            }}
-          />
+          <Component is={currentApplication.component} props={{ currentSpace, visibleNav, navFloat, appsDirection }} />
         {:else if specialComponent}
           <Component
             is={specialComponent.component}
@@ -861,16 +854,12 @@
   </div>
   <div bind:this={cover} class="cover" />
   <TooltipInstance />
-  <PanelInstance
-    bind:this={panelInstance}
-    contentPanel={modern ? replacedPanel : contentPanel}
-    kind={modern ? 'modern' : 'default'}
-  >
+  <PanelInstance bind:this={panelInstance} contentPanel={elementPanel} kind={modern ? 'modern' : 'default'}>
     <svelte:fragment slot="panel-header">
       <ActionContext context={{ mode: 'panel' }} />
     </svelte:fragment>
   </PanelInstance>
-  <Popup bind:this={popupInstance} contentPanel={modern ? replacedPanel : contentPanel}>
+  <Popup bind:this={popupInstance} contentPanel={elementPanel}>
     <svelte:fragment slot="popup-header">
       <ActionContext context={{ mode: 'popup' }} />
     </svelte:fragment>
