@@ -17,6 +17,7 @@
 
   export let date: number
   export let timeZone: string = getUserTimezone()
+  export let overflow: boolean = false
 
   const current = new Date()
   let options: Intl.DateTimeFormatOptions = {
@@ -35,4 +36,8 @@
   $: options.timeZone = timeZone
 </script>
 
-{new Date(date).toLocaleDateString('default', options)}
+{#if overflow}
+  <span class="overflow-label">{new Date(date).toLocaleDateString('default', options)}</span>
+{:else}
+  {new Date(date).toLocaleDateString('default', options)}
+{/if}

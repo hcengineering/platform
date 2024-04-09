@@ -25,6 +25,7 @@
     getUserTimezone,
     showPopup
   } from '@hcengineering/ui'
+  import { FixedColumn } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import DateLocalePresenter from './DateLocalePresenter.svelte'
 
@@ -80,11 +81,11 @@
   class:flex-gap-2={direction === 'horizontal'}
 >
   {#if showDate || withoutTime}
-    <div class="min-w-28">
+    <FixedColumn key={'date-presenter'} addClass={'min-w-28'}>
       <ButtonBase type="type-button" {kind} {size} {disabled} {focusIndex} on:click={dateClick}>
-        <DateLocalePresenter date={currentDate.getTime()} {timeZone} />
+        <DateLocalePresenter date={currentDate.getTime()} {timeZone} overflow />
       </ButtonBase>
-    </div>
+    </FixedColumn>
   {/if}
 
   {#if showDate && !withoutTime && direction === 'horizontal'}
