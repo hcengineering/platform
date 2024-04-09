@@ -814,7 +814,7 @@ export async function createWorkspace (
     })
     let workspaceInfo = await searchPromise
 
-    let client: Client
+    let client: Client | undefined
     const childLogger = ctx.newChild(
       'createWorkspace',
       { workspace: workspaceInfo.workspace },
