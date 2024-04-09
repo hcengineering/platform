@@ -15,22 +15,39 @@
 //
 -->
 <script lang="ts">
-  import { onDestroy, setContext } from 'svelte'
+  import { type Class, type CollaborativeDoc, type Doc, type Ref } from '@hcengineering/core'
+  import { type DocumentId, type PlatformDocumentId } from '@hcengineering/collaborator-client'
   import { getMetadata } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
+  import { onDestroy, setContext } from 'svelte'
 
   import textEditorPlugin from '../plugin'
-  import { DocumentId, TiptapCollabProvider, createTiptapCollaborationData } from '../provider/tiptap'
+  import { TiptapCollabProvider, createTiptapCollaborationData } from '../provider/tiptap'
+  import { formatCollaborativeDocumentId, formatPlatformDocumentId } from '../provider/utils'
   import { CollaborationIds } from '../types'
 
-  export let documentId: DocumentId
-  export let initialContentId: DocumentId | undefined = undefined
-  export let targetContentId: DocumentId | undefined = undefined
+  export let collaborativeDoc: CollaborativeDoc
+  export let initialCollaborativeDoc: CollaborativeDoc | undefined = undefined
+
+  export let objectClass: Ref<Class<Doc>> | undefined = undefined
+  export let objectId: Ref<Doc> | undefined = undefined
+  export let objectAttr: string | undefined = undefined
 
   const token = getMetadata(presentation.metadata.Token) ?? ''
   const collaboratorURL = getMetadata(textEditorPlugin.metadata.CollaboratorUrl) ?? ''
 
-  let _documentId = ''
+  let initialContentId: DocumentId | undefined
+  let platformDocumentId: PlatformDocumentId | undefined
+
+  $: documentId = formatCollaborativeDocumentId(collaborativeDoc)
+  $: if (initialCollaborativeDoc !== undefined) {
+    initialContentId = formatCollaborativeDocumentId(initialCollaborativeDoc)
+  }
+  $: if (objectClass !== undefined && objectId !== undefined && objectAttr !== undefined) {
+    platformDocumentId = formatPlatformDocumentId(objectClass, objectId, objectAttr)
+  }
+
+  let _documentId: DocumentId | undefined
 
   let provider: TiptapCollabProvider | undefined
 
@@ -40,10 +57,10 @@
       provider.disconnect()
     }
     const data = createTiptapCollaborationData({
-      collaboratorURL,
       documentId,
       initialContentId,
-      targetContentId,
+      platformDocumentId,
+      collaboratorURL,
       token
     })
     provider = data.provider

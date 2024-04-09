@@ -15,6 +15,8 @@
 //
 -->
 <script lang="ts">
+  import { type Class, type CollaborativeDoc, type Doc, type Ref } from '@hcengineering/core'
+  import { type DocumentId, type PlatformDocumentId } from '@hcengineering/collaborator-client'
   import { IntlString, getMetadata, translate } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
   import { Button, IconSize, Loading, themeStore } from '@hcengineering/ui'
@@ -31,7 +33,8 @@
   import { EditorKit } from '../kits/editor-kit'
   import textEditorPlugin from '../plugin'
   import { MinioProvider } from '../provider/minio'
-  import { DocumentId, TiptapCollabProvider } from '../provider/tiptap'
+  import { TiptapCollabProvider } from '../provider/tiptap'
+  import { formatCollaborativeDocumentId, formatPlatformDocumentId } from '../provider/utils'
   import {
     CollaborationIds,
     RefAction,
@@ -54,10 +57,13 @@
   import { InlineStyleToolbarExtension } from './extension/inlineStyleToolbar'
   import { completionConfig } from './extensions'
 
-  export let documentId: DocumentId
+  export let collaborativeDoc: CollaborativeDoc
+  export let initialCollaborativeDoc: CollaborativeDoc | undefined = undefined
   export let field: string | undefined = undefined
-  export let initialContentId: DocumentId | undefined = undefined
-  export let targetContentId: DocumentId | undefined = undefined
+
+  export let objectClass: Ref<Class<Doc>> | undefined
+  export let objectId: Ref<Doc> | undefined
+  export let objectAttr: string | undefined
 
   export let readonly = false
 
@@ -93,6 +99,18 @@
   const token = getMetadata(presentation.metadata.Token) ?? ''
   const collaboratorURL = getMetadata(textEditorPlugin.metadata.CollaboratorUrl) ?? ''
 
+  const documentId = formatCollaborativeDocumentId(collaborativeDoc)
+
+  let initialContentId: DocumentId | undefined
+  if (initialCollaborativeDoc !== undefined) {
+    initialContentId = formatCollaborativeDocumentId(collaborativeDoc)
+  }
+
+  let platformDocumentId: PlatformDocumentId | undefined
+  if (objectClass !== undefined && objectId !== undefined && objectAttr !== undefined) {
+    platformDocumentId = formatPlatformDocumentId(objectClass, objectId, objectAttr)
+  }
+
   const ydoc = getContext<YDoc>(CollaborationIds.Doc) ?? new YDoc()
   const contextProvider = getContext<TiptapCollabProvider>(CollaborationIds.Provider)
 
@@ -107,7 +125,7 @@
       token,
       parameters: {
         initialContentId,
-        targetContentId
+        platformDocumentId
       }
     })
 
