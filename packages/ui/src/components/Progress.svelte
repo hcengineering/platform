@@ -15,34 +15,70 @@
 <script lang="ts">
   import { themeStore } from '@hcengineering/theme'
   import { getPlatformColor } from '../colors'
+  import { createEventDispatcher } from 'svelte'
+
   export let value: number
   export let min: number = 0
   export let max: number = 100
-  export let color: number = 5
+  export let color: number | undefined = undefined
   export let editable = false
 
   $: proc = (max - min) / 100
   if (value > max) value = max
   if (value < min) value = min
 
-  function click (e: MouseEvent) {
+  const dispatch = createEventDispatcher()
+
+  function click (e: MouseEvent): void {
     if (!editable) return
-    const rect = (e.target as HTMLElement).getBoundingClientRect()
+    calcValue(e)
+    dispatch('change', value)
+  }
+
+  function calcValue (e: MouseEvent): void {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
     const x = e.clientX - rect.left
     const pos = x / rect.width
     value = (max - min) * pos
+    if (value > max) value = max
+    if (value < min) value = min
   }
+
+  function save (): void {
+    if (drag) {
+      dispatch('change', value)
+      drag = false
+    }
+  }
+
+  function move (e: MouseEvent): void {
+    if (!drag) return
+    calcValue(e)
+  }
+
+  let drag: boolean = false
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<div class="container" on:click={click} class:cursor-pointer={editable}>
+<div class="container" class:editable on:click={click} on:mousemove={move} on:mouseleave={save} on:mouseup={save}>
   <div
     class="bar"
-    style="background-color: {getPlatformColor(color, $themeStore.dark)}; width: calc(100% * {proc !== 0
-      ? Math.round((value - min) / proc)
-      : 0} / 100);"
+    style="background-color: {color !== undefined
+      ? getPlatformColor(color, $themeStore.dark)
+      : 'var(--theme-toggle-on-bg-color)'}; width: calc(100% * {proc !== 0
+        ? Math.round((value - min) / proc)
+        : 0} / 100);"
   />
+  {#if editable}
+    <div
+      class="control"
+      on:mousedown={() => {
+        drag = true
+      }}
+      style="left: calc(100% * {proc !== 0 ? Math.round((value - min) / proc) : 0} / 100 - 0.5rem);"
+    />
+  {/if}
 </div>
 
 <style lang="scss">
@@ -52,6 +88,26 @@
     height: 0.25rem;
     background-color: var(--trans-content-10);
     border-radius: 0.125rem;
+
+    &.editable {
+      height: 1rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+
+      .bar {
+        border-radius: 0.5rem;
+      }
+
+      .control {
+        position: absolute;
+        top: 0;
+        height: 1rem;
+        width: 1rem;
+        border-radius: 50%;
+        background-color: var(--caption-color);
+        border: 1px solid var(--theme-divider-color);
+      }
+    }
 
     .bar {
       position: absolute;
