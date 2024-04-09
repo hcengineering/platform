@@ -42,6 +42,7 @@
     "ArchiveAllConfirmationMessage": "Are you sure you want to archive all notifications? This operation cannot be undone.",
     "StarDocument": "Star document",
     "UnstarDocument": "Unstar document",
-    "Unsubscribe": "Unsubscribe"
+    "Unsubscribe": "Unsubscribe",
+    "Push": "Push"
   }
 }

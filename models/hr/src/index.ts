@@ -476,6 +476,7 @@ export function createModel (builder: Builder): void {
       objectClass: hr.class.Request,
       providers: {
         [notification.providers.EmailNotification]: true,
+        [notification.providers.BrowserNotification]: false,
         [notification.providers.PlatformNotification]: true
       },
       templates: {
@@ -500,6 +501,7 @@ export function createModel (builder: Builder): void {
       objectClass: hr.class.Request,
       providers: {
         [notification.providers.EmailNotification]: true,
+        [notification.providers.BrowserNotification]: true,
         [notification.providers.PlatformNotification]: true
       },
       templates: {
@@ -524,6 +526,7 @@ export function createModel (builder: Builder): void {
       objectClass: hr.class.Request,
       providers: {
         [notification.providers.EmailNotification]: true,
+        [notification.providers.BrowserNotification]: true,
         [notification.providers.PlatformNotification]: true
       },
       templates: {
@@ -548,6 +551,7 @@ export function createModel (builder: Builder): void {
       objectClass: hr.class.PublicHoliday,
       providers: {
         [notification.providers.EmailNotification]: true,
+        [notification.providers.BrowserNotification]: true,
         [notification.providers.PlatformNotification]: true
       },
       templates: {

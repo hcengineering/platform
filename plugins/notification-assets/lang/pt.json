@@ -42,6 +42,7 @@
     "ArchiveAllConfirmationTitle": "Arquivar todas as notificações?",
     "ArchiveAllConfirmationMessage": "Esta seguro que quer arquivar todas as notificações? Esta operação não se pode desfazer.",
     "StarDocument": "Marcar documento",
-    "UnstarDocument": "Desmarcar documento"
+    "UnstarDocument": "Desmarcar documento",
+    "Push": "Push"
   }
 }

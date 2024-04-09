@@ -128,7 +128,7 @@ export async function getPersonNotificationTxes (
     notifyResult.allowed = false
   }
 
-  const texes = await getCommonNotificationTxes(
+  const txes = await getCommonNotificationTxes(
     control,
     doc,
     data,
@@ -142,7 +142,7 @@ export async function getPersonNotificationTxes (
     notification.class.MentionInboxNotification
   )
 
-  res.push(...texes)
+  res.push(...txes)
   return res
 }
 

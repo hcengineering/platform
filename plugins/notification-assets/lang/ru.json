@@ -42,6 +42,7 @@
     "ArchiveAllConfirmationMessage": "Вы уверены, что хотите заархивировать все уведомления? Эту операцию невозможно отменить.",
     "StarDocument": "Добавить в избранное",
     "UnstarDocument": "Удалить из избранного",
-    "Unsubscribe": "Отписаться"
+    "Unsubscribe": "Отписаться",
+    "Push": "Push"
   }
 }

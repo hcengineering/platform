@@ -380,7 +380,8 @@ export function createModel (builder: Builder): void {
       txClasses: [core.class.TxCreateDoc],
       objectClass: activity.class.Reaction,
       providers: {
-        [notification.providers.PlatformNotification]: true
+        [notification.providers.PlatformNotification]: true,
+        [notification.providers.BrowserNotification]: false
       }
     },
     activity.ids.AddReactionNotification
