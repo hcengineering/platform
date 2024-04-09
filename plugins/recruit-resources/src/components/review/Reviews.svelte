@@ -22,6 +22,7 @@
   import { Table } from '@hcengineering/view-resources'
   import recruit from '../../plugin'
   import FileDuo from '../icons/FileDuo.svelte'
+  import SectionEmpty from '../SectionEmpty.svelte'
   import CreateReview from './CreateReview.svelte'
 
   export let objectId: Ref<Doc>
@@ -93,19 +94,14 @@
       />
     </Scroller>
   {:else}
-    <div class="antiSection-empty solid flex-col-center mt-3">
-      <div class="caption-color">
-        <FileDuo size={'large'} />
-      </div>
-      <span class="content-dark-color mt-2">
-        <Label label={recruit.string.NoReviewForCandidate} />
-      </span>
+    <SectionEmpty icon={FileDuo} label={recruit.string.NoReviewForCandidate}>
       {#if !readonly}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
         <span class="over-underline content-color" on:click={createApp}>
           <Label label={recruit.string.CreateAnReview} />
         </span>
       {/if}
-    </div>
+    </SectionEmpty>
   {/if}
 </div>

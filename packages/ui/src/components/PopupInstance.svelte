@@ -34,7 +34,7 @@
   // since they could be used, and any show will update them
   const initialProps = props
 
-  const WINDOW_PADDING = 16
+  const WINDOW_PADDING = 1
 
   interface PopupParams {
     x: number
@@ -146,6 +146,7 @@
 
   let drag: boolean = false
   let notFit: number = 0
+  let locked: boolean = false
 
   const windowSize: { width: number, height: number } = { width: 0, height: 0 }
   const dragParams: { offsetX: number, offsetY: number } = { offsetX: 0, offsetY: 0 }
@@ -154,10 +155,10 @@
   const updatedPopupParams = (pp: { x: number, y: number, width: number, height: number }): void => {
     if (pp.width === 0 || pp.height === 0 || element !== 'movable') return
     options.props.left = `${pp.x}px`
+    options.props.right = ''
     options.props.top = `${pp.y}px`
     options.props.maxHeight = `${pp.height}px`
   }
-  $: minHeight = element === 'movable' ? 10.375 * $deviceInfo.fontSize : 0
   $: updatedPopupParams(popupParams)
 
   function mouseDown (e: MouseEvent & { currentTarget: EventTarget & HTMLDivElement }): void {
@@ -184,7 +185,6 @@
       newLeft = $deviceInfo.docWidth - popupParams.width - WINDOW_PADDING
     }
     popupParams = { ...popupParams, x: newLeft, y: newTop }
-    options.props.right = ''
   }
 
   function mouseUp (): void {
@@ -193,32 +193,45 @@
     window.removeEventListener('mouseup', mouseUp)
   }
 
-  function checkMovable (): void {
-    if (drag) return
-    const newParams: PopupParams = popupParams
-    if (windowSize.width < $deviceInfo.docWidth) {
-      // Increase Window Width
-      if (windowSize.width - popupParams.width - popupParams.x <= WINDOW_PADDING) {
-        newParams.x = $deviceInfo.docWidth - popupParams.width - WINDOW_PADDING
-      }
-    } else if (windowSize.width > $deviceInfo.docWidth) {
-      // Decrease Window Width
-      if (popupParams.x + popupParams.width >= windowSize.width - WINDOW_PADDING) {
-        newParams.x = $deviceInfo.docWidth - popupParams.width - WINDOW_PADDING
-      }
+  function checkSize (): void {
+    const rect = modalHTML.getBoundingClientRect()
+    const newParams: PopupParams = { x: rect.left, y: rect.top, width: rect.width, height: rect.height }
+    if (popupParams.width === 0 && popupParams.height === 0) popupParams = newParams
+    newParams.x =
+      popupParams.x < WINDOW_PADDING
+        ? WINDOW_PADDING
+        : popupParams.x + popupParams.width > windowSize.width - WINDOW_PADDING * 2
+          ? $deviceInfo.docWidth - WINDOW_PADDING - popupParams.width
+          : popupParams.x
+    newParams.y =
+      popupParams.y < WINDOW_PADDING
+        ? WINDOW_PADDING
+        : popupParams.y + popupParams.height > $deviceInfo.docHeight - WINDOW_PADDING
+          ? $deviceInfo.docHeight - WINDOW_PADDING - popupParams.height
+          : popupParams.y
+    if (newParams.y < WINDOW_PADDING) {
+      newParams.height -= WINDOW_PADDING - newParams.y
+      newParams.y = WINDOW_PADDING
     }
-    if (windowSize.height < $deviceInfo.docHeight) {
-      // Increase Window Height
-      if (windowSize.height - popupParams.height - popupParams.y <= WINDOW_PADDING) {
-        newParams.y = $deviceInfo.docHeight - popupParams.height - WINDOW_PADDING
-      }
-    } else if (windowSize.height > $deviceInfo.docHeight) {
-      // Decrease Window Height
-      if (popupParams.y + popupParams.height >= windowSize.height - WINDOW_PADDING) {
-        newParams.y = $deviceInfo.docHeight - popupParams.height - WINDOW_PADDING
-      }
+    if (newParams.height > windowSize.height - WINDOW_PADDING * 2) {
+      newParams.height = windowSize.height - WINDOW_PADDING * 2
+      newParams.y = WINDOW_PADDING
+    }
+    const bottomFree: number = $deviceInfo.docHeight - WINDOW_PADDING - popupParams.y - popupParams.height
+    const topFree: number = popupParams.y - WINDOW_PADDING
+    if (notFit && bottomFree > 0) {
+      const dFit: number = bottomFree - notFit
+      newParams.height += dFit >= 0 ? notFit : bottomFree
+      notFit -= dFit >= 0 ? notFit : bottomFree
+    }
+    if (notFit && topFree > 0) {
+      const dFit: number = topFree - notFit
+      newParams.y -= dFit < 0 ? topFree : notFit
+      newParams.height += dFit < 0 ? topFree : notFit
+      notFit -= dFit < 0 ? topFree : notFit
     }
     popupParams = newParams
+    locked = false
   }
 
   export function fitPopupInstance (): void {
@@ -239,15 +252,16 @@
 <svelte:window
   on:resize={() => {
     if (modalHTML) fitPopup(modalHTML, element, contentPanel)
-    if (element === 'movable') {
-      if (popupParams.width === 0 && popupParams.height === 0) {
+    if (element === 'movable' && !locked) {
+      locked = true
+      if (options.props.right !== '') {
         const rect = modalHTML.getBoundingClientRect()
         popupParams = { x: rect.left, y: rect.top, width: rect.width, height: rect.height }
       }
-      checkMovable()
+      checkSize()
+      windowSize.width = $deviceInfo.docWidth
+      windowSize.height = $deviceInfo.docHeight
     }
-    windowSize.width = $deviceInfo.docWidth
-    windowSize.height = $deviceInfo.docHeight
   }}
   on:keydown={handleKeydown}
 />
@@ -295,6 +309,7 @@
     on:changeContent={(ev) => {
       fitPopup(modalHTML, element, contentPanel)
       if (ev.detail?.notFit !== undefined) notFit = ev.detail.notFit
+      if (element === 'movable' && showing !== false) checkSize()
     }}
   />
 </div>

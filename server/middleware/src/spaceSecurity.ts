@@ -62,6 +62,8 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
 
   private spaceMeasureCtx!: MeasureContext
 
+  private spaceSecurityInit: Promise<void> | undefined
+
   private readonly systemSpaces = [
     core.space.Configuration,
     core.space.DerivedTx,
@@ -86,7 +88,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
   ): Promise<SpaceSecurityMiddleware> {
     const res = new SpaceSecurityMiddleware(broadcast, storage, next)
     res.spaceMeasureCtx = ctx.newChild('space chain', {})
-    await res.init(res.spaceMeasureCtx)
+    res.spaceSecurityInit = res.init(res.spaceMeasureCtx)
     return res
   }
 
@@ -122,6 +124,13 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       }
     }
     this.publicSpaces = spaces.filter((it) => !it.private).map((p) => p._id)
+  }
+
+  async waitInit (): Promise<void> {
+    if (this.spaceSecurityInit !== undefined) {
+      await this.spaceSecurityInit
+      this.spaceSecurityInit = undefined
+    }
   }
 
   private removeMemberSpace (member: Ref<Account>, space: Ref<Space>): void {
@@ -240,6 +249,8 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
   }
 
   private async handleUpdate (ctx: SessionContext, tx: TxCUD<Space>): Promise<void> {
+    await this.waitInit()
+
     const updateDoc = tx as TxUpdateDoc<Space>
     if (!this.storage.hierarchy.isDerived(updateDoc.objectClass, core.class.Space)) return
 
@@ -285,6 +296,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
   }
 
   private async handleTx (ctx: SessionContext, tx: TxCUD<Space>): Promise<void> {
+    await this.waitInit()
     if (tx._class === core.class.TxCreateDoc) {
       this.handleCreate(tx)
     } else if (tx._class === core.class.TxUpdateDoc) {
@@ -370,6 +382,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
   }
 
   async tx (ctx: SessionContext, tx: Tx): Promise<TxMiddlewareResult> {
+    await this.waitInit()
     const account = await getUser(this.storage, ctx)
     if (account.role === AccountRole.Guest) {
       throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
@@ -385,6 +398,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
 
   handleBroadcast (tx: Tx[], targets?: string[]): Tx[] {
     const process = async (): Promise<void> => {
+      await this.waitInit()
       for (const t of tx) {
         if (this.storage.hierarchy.isDerived(t._class, core.class.TxCUD)) {
           await this.processTxSpaceDomain(t as TxCUD<Doc>)
@@ -476,6 +490,8 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
+    await this.waitInit()
+
     const domain = this.storage.hierarchy.getDomain(_class)
     const newQuery = query
     const account = await getUser(this.storage, ctx)
@@ -509,6 +525,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     query: SearchQuery,
     options: SearchOptions
   ): Promise<SearchResult> {
+    await this.waitInit()
     const newQuery = { ...query }
     const account = await getUser(this.storage, ctx)
     if (!isSystem(account)) {

@@ -38,7 +38,7 @@ import { workbenchId } from '@hcengineering/workbench'
  */
 export async function OnContactDelete (
   tx: Tx,
-  { findAll, hierarchy, storageFx, removedMap, txFactory }: TriggerControl
+  { findAll, hierarchy, storageFx, removedMap, txFactory, ctx }: TriggerControl
 ): Promise<Tx[]> {
   const rmTx = tx as TxRemoveDoc<Contact>
 
@@ -61,14 +61,15 @@ export async function OnContactDelete (
   }
 
   storageFx(async (adapter, bucket) => {
-    await adapter.remove(bucket, [avatar])
+    await adapter.remove(ctx, bucket, [avatar])
 
     if (avatar != null) {
-      const extra = await adapter.list(bucket, avatar)
+      const extra = await adapter.list(ctx, bucket, avatar)
       if (extra.length > 0) {
         await adapter.remove(
+          ctx,
           bucket,
-          Array.from(extra.entries()).map((it) => it[1].name)
+          Array.from(extra.entries()).map((it) => it[1]._id)
         )
       }
     }

@@ -18,6 +18,7 @@ import chunter, { type ChatMessage } from '@hcengineering/chunter'
 import contact from '@hcengineering/contact'
 import core, {
   DOMAIN_TX,
+  type MeasureContext,
   SortingOrder,
   TxOperations,
   TxProcessor,
@@ -29,13 +30,18 @@ import core, {
   type Domain,
   type Ref,
   type TxCreateDoc,
-  type WorkspaceId
+  type WorkspaceId,
+  type StatusCategory,
+  type TxMixin,
+  type TxCUD
 } from '@hcengineering/core'
 import { getWorkspaceDB } from '@hcengineering/mongo'
 import recruit from '@hcengineering/recruit'
+import recruitModel from '@hcengineering/model-recruit'
 import { type StorageAdapter } from '@hcengineering/server-core'
 import { connect } from '@hcengineering/server-tool'
 import tags, { type TagCategory, type TagElement, type TagReference } from '@hcengineering/tags'
+import task, { type ProjectType, type TaskType } from '@hcengineering/task'
 import tracker from '@hcengineering/tracker'
 import { deepEqual } from 'fast-equals'
 import { MongoClient } from 'mongodb'
@@ -43,6 +49,7 @@ import { MongoClient } from 'mongodb'
 export const DOMAIN_ACTIVITY = 'activity' as Domain
 
 export async function cleanWorkspace (
+  ctx: MeasureContext,
   mongoUrl: string,
   workspaceId: WorkspaceId,
   storageAdapter: StorageAdapter,
@@ -67,14 +74,14 @@ export async function cleanWorkspace (
       attachments.map((it) => it.file).concat(contacts.map((it) => it.avatar).filter((it) => it) as string[])
     )
 
-    const minioList = await storageAdapter.list(workspaceId)
+    const minioList = await storageAdapter.list(ctx, workspaceId)
     const toClean: string[] = []
     for (const mv of minioList) {
-      if (!files.has(mv.name)) {
-        toClean.push(mv.name)
+      if (!files.has(mv._id)) {
+        toClean.push(mv._id)
       }
     }
-    await storageAdapter.remove(workspaceId, toClean)
+    await storageAdapter.remove(ctx, workspaceId, toClean)
     // connection.loadChunk(DOMAIN_BLOB, idx = )
 
     if (opt.recruit) {
@@ -145,16 +152,20 @@ export async function cleanWorkspace (
   }
 }
 
-export async function fixMinioBW (workspaceId: WorkspaceId, storageService: StorageAdapter): Promise<void> {
+export async function fixMinioBW (
+  ctx: MeasureContext,
+  workspaceId: WorkspaceId,
+  storageService: StorageAdapter
+): Promise<void> {
   console.log('try clean bw miniature for ', workspaceId.name)
-  const from = new Date(new Date().setDate(new Date().getDate() - 7))
-  const list = await storageService.list(workspaceId)
+  const from = new Date(new Date().setDate(new Date().getDate() - 7)).getTime()
+  const list = await storageService.list(ctx, workspaceId)
   console.log('found', list.length)
   let removed = 0
   for (const obj of list) {
-    if (obj.lastModified < from) continue
-    if (obj.name.includes('%size%')) {
-      await storageService.remove(workspaceId, [obj.name])
+    if (obj.modifiedOn < from) continue
+    if ((obj._id as string).includes('%size%')) {
+      await storageService.remove(ctx, workspaceId, [obj._id])
       removed++
       if (removed % 100 === 0) {
         console.log('removed: ', removed)
@@ -634,4 +645,168 @@ function groupBy<T extends Doc> (docs: T[], key: string): Record<any, T[]> {
 
     return storage
   }, {})
+}
+
+export async function restoreRecruitingTaskTypes (
+  mongoUrl: string,
+  workspaceId: WorkspaceId,
+  transactorUrl: string
+): Promise<void> {
+  const connection = (await connect(transactorUrl, workspaceId, undefined, {
+    mode: 'backup',
+    model: 'upgrade'
+  })) as unknown as CoreClient & BackupClient
+  const client = new MongoClient(mongoUrl)
+  try {
+    await client.connect()
+    const db = getWorkspaceDB(client, workspaceId)
+
+    // Query all vacancy project types creations (in Model)
+    // We only update new project types in model here and not old ones in spaces
+    const vacancyTypes = await connection.findAll<TxCreateDoc<ProjectType>>(core.class.TxCreateDoc, {
+      objectClass: task.class.ProjectType,
+      objectSpace: core.space.Model,
+      'attributes.descriptor': recruit.descriptors.VacancyType
+    })
+
+    console.log('Found ', vacancyTypes.length, ' vacancy types to check')
+
+    if (vacancyTypes.length === 0) {
+      return
+    }
+
+    const descr = connection.getModel().getObject(recruit.descriptors.VacancyType)
+    const knownCategories = [
+      task.statusCategory.UnStarted,
+      task.statusCategory.Active,
+      task.statusCategory.Won,
+      task.statusCategory.Lost
+    ]
+
+    function compareCategories (a: Ref<StatusCategory>, b: Ref<StatusCategory>): number {
+      const indexOfA = knownCategories.indexOf(a)
+      const indexOfB = knownCategories.indexOf(b)
+
+      return indexOfA - indexOfB
+    }
+
+    for (const vacType of vacancyTypes) {
+      for (const taskTypeId of vacType.attributes.tasks) {
+        // Check if task type create TX exists
+        const createTx = (
+          await connection.findAll<TxCreateDoc<TaskType>>(core.class.TxCreateDoc, {
+            objectClass: task.class.TaskType,
+            objectSpace: core.space.Model,
+            objectId: taskTypeId
+          })
+        )[0]
+
+        console.log('####################################')
+        console.log('Checking vacancy type: ', vacType.attributes.name)
+
+        if (createTx !== undefined) {
+          console.log('Task type already exists in model')
+          continue
+        }
+
+        console.log('Restoring task type: ', taskTypeId, ' in vacancy type: ', vacType.attributes.name)
+
+        // Restore create task type tx
+
+        // Get target class mixin
+
+        const typeMixin = (
+          await connection.findAll<TxMixin<any, any>>(core.class.TxMixin, {
+            mixin: task.mixin.TaskTypeClass,
+            'attributes.projectType': vacType.objectId,
+            'attributes.taskType': taskTypeId
+          })
+        )[0]
+
+        if (typeMixin === undefined) {
+          console.error(new Error('No type mixin found for the task type being restored'))
+          continue
+        }
+
+        // Get statuses and categories
+        const statusesIds = vacType.attributes.statuses.filter((s) => s.taskType === taskTypeId).map((s) => s._id)
+        if (statusesIds.length === 0) {
+          console.error(new Error('No statuses defined for the task type being restored'))
+          continue
+        }
+
+        const statuses = await connection.findAll(core.class.Status, {
+          _id: { $in: statusesIds }
+        })
+        const categoriesIds = new Set<Ref<StatusCategory>>()
+
+        statuses.forEach((st) => {
+          if (st.category !== undefined) {
+            categoriesIds.add(st.category)
+          }
+        })
+
+        if (categoriesIds.size === 0) {
+          console.error(new Error('No categories found for the task type being restored'))
+          continue
+        }
+
+        const statusCategories = Array.from(categoriesIds)
+
+        statusCategories.sort(compareCategories)
+
+        const createTxNew: TxCreateDoc<TaskType> = {
+          _id: generateId(),
+          _class: core.class.TxCreateDoc,
+          space: core.space.Tx,
+          objectId: taskTypeId,
+          objectClass: task.class.TaskType,
+          objectSpace: core.space.Model,
+          modifiedBy: core.account.ConfigUser, // So it's not removed during the next migration
+          modifiedOn: vacType.modifiedOn,
+          createdOn: vacType.createdOn,
+          attributes: {
+            name: 'Applicant',
+            descriptor: recruitModel.descriptors.Application,
+            ofClass: recruit.class.Applicant,
+            targetClass: typeMixin.objectId,
+            statusClass: core.class.Status,
+            allowedAsChildOf: [taskTypeId],
+            statuses: statusesIds,
+            statusCategories,
+            parent: vacType.objectId,
+            kind: 'both',
+            icon: descr.icon
+          }
+        }
+
+        await db.collection<Doc>(DOMAIN_TX).insertOne(createTxNew)
+        console.log('Successfully created new task type: ')
+        console.log(createTxNew)
+
+        // If there were updates to the task type - move them to the model
+        const updateTxes = (
+          await connection.findAll(core.class.TxCUD, {
+            objectClass: task.class.TaskType,
+            objectSpace: vacType.objectId as any,
+            objectId: taskTypeId
+          })
+        ).filter((tx) => [core.class.TxUpdateDoc, core.class.TxRemoveDoc].includes(tx._class))
+
+        for (const updTx of updateTxes) {
+          await db.collection<TxCUD<Doc>>(DOMAIN_TX).insertOne({
+            ...updTx,
+            _id: generateId(),
+            objectSpace: core.space.Model
+          })
+        }
+        console.log('Successfully restored ', updateTxes.length, ' CUD transactions')
+      }
+    }
+  } catch (err: any) {
+    console.trace(err)
+  } finally {
+    await client.close()
+    await connection.close()
+  }
 }

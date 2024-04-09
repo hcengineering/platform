@@ -179,16 +179,16 @@ export async function setClient (_client: MeasureClient): Promise<void> {
     void uiClient.doNotify(...tx)
   }
   if (needRefresh || globalQueries.length > 0) {
-    await refreshClient()
+    await refreshClient(true)
   }
 }
 
 /**
  * @public
  */
-export async function refreshClient (): Promise<void> {
+export async function refreshClient (clean: boolean): Promise<void> {
   if (!(liveQuery?.isClosed() ?? true)) {
-    await liveQuery?.refreshConnect()
+    await liveQuery?.refreshConnect(clean)
     for (const q of globalQueries) {
       q.refreshClient()
     }

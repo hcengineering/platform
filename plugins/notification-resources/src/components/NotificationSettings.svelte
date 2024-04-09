@@ -44,12 +44,10 @@
   const dispatch = createEventDispatcher()
 
   const client = getClient()
-  let groups: NotificationGroup[] = []
-  let preferencesGroups: NotificationPreferencesGroup[] = []
-
-  void client.findAll(notification.class.NotificationGroup, {}).then((res) => {
-    groups = res
-  })
+  const groups: NotificationGroup[] = client.getModel().findAllSync(notification.class.NotificationGroup, {})
+  const preferencesGroups: NotificationPreferencesGroup[] = client
+    .getModel()
+    .findAllSync(notification.class.NotificationPreferencesGroup, {})
 
   let settings = new Map<Ref<BaseNotificationType>, NotificationSetting[]>()
 
@@ -67,10 +65,6 @@
 
   let group: Ref<NotificationGroup> | undefined = undefined
   let currentPreferenceGroup: NotificationPreferencesGroup | undefined = undefined
-
-  void client.findAll(notification.class.NotificationPreferencesGroup, {}).then((res) => {
-    preferencesGroups = res
-  })
 
   $: if (!group && !currentPreferenceGroup) {
     if (preferencesGroups.length > 0) {

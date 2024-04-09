@@ -26,6 +26,7 @@
   import DPCalendar from './icons/DPCalendar.svelte'
   import DPCalendarOver from './icons/DPCalendarOver.svelte'
   import { getMonthName } from './internal/DateUtils'
+  import { registerFocus } from '../../focus'
 
   export let value: number | null | undefined
   export let mode: DateRangeMode = DateRangeMode.DATE
@@ -49,6 +50,7 @@
   let currentDate: Date | null = null
   if (value != null) currentDate = new Date(value)
   let opened: boolean = false
+  let input: HTMLButtonElement | undefined = undefined
 
   const onChange = (result: Date | null): void => {
     if (result === null) {
@@ -64,9 +66,30 @@
   }
 
   $: withTime = mode !== DateRangeMode.DATE
+
+  // Focusable control with index
+  export let focusIndex = -1
+  const { idx, focusManager } = registerFocus(focusIndex, {
+    focus: () => {
+      input?.focus()
+      return input != null
+    },
+    isFocus: () => document.activeElement === input
+  })
+
+  $: if (idx !== -1 && focusManager) {
+    focusManager.updateFocus(idx, focusIndex)
+  }
+
+  $: if (input != null) {
+    input.addEventListener('focus', () => {
+      focusManager?.setFocus(idx)
+    })
+  }
 </script>
 
 <button
+  bind:this={input}
   class="datetime-button {kind} {size}"
   class:editable
   class:dateTimeButtonNoLabel={!shouldShowLabel}

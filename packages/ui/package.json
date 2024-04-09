@@ -41,7 +41,6 @@
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/theme": "^0.6.3",
     "@hcengineering/core": "^0.6.28",
-    "just-clone": "~6.2.0",
     "svelte": "^4.2.12",
     "fast-equals": "^2.0.3",
     "autolinker": "4.0.0",

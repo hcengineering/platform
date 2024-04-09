@@ -13,188 +13,44 @@
 // limitations under the License.
 //
 
-import type { Employee, Organization } from '@hcengineering/contact'
-import { IndexKind, type Lookup, type Ref, SortingOrder, type Status, type Timestamp } from '@hcengineering/core'
-import {
-  type Builder,
-  Collection,
-  Hidden,
-  Index,
-  Mixin,
-  Model,
-  Prop,
-  ReadOnly,
-  TypeBoolean,
-  TypeCollaborativeMarkup,
-  TypeDate,
-  TypeMarkup,
-  TypeRef,
-  TypeString,
-  UX
-} from '@hcengineering/model'
+import activity from '@hcengineering/activity'
+import { type Lookup, type Ref, SortingOrder } from '@hcengineering/core'
+import { type Builder } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import calendar from '@hcengineering/model-calendar'
 import chunter from '@hcengineering/model-chunter'
-import contact, { TOrganization, TPerson } from '@hcengineering/model-contact'
-import core, { TAttachedDoc, TSpace } from '@hcengineering/model-core'
+import contact from '@hcengineering/model-contact'
+import core from '@hcengineering/model-core'
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 import presentation from '@hcengineering/model-presentation'
 import tags from '@hcengineering/model-tags'
-import task, { DOMAIN_TASK, TProject, TTask, actionTemplates } from '@hcengineering/model-task'
+import task, { actionTemplates } from '@hcengineering/model-task'
 import tracker from '@hcengineering/model-tracker'
-import view, { createAction, showColorsViewOption, actionTemplates as viewTemplates } from '@hcengineering/model-view'
+import view, { actionTemplates as viewTemplates, createAction, showColorsViewOption } from '@hcengineering/model-view'
 import workbench, { type Application, createNavigateAction } from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
-import { type IntlString, getEmbeddedLabel } from '@hcengineering/platform'
-import {
-  type Applicant,
-  type ApplicantMatch,
-  type Candidate,
-  type Candidates,
-  type Vacancy,
-  type VacancyList,
-  recruitId
-} from '@hcengineering/recruit'
+import { type IntlString } from '@hcengineering/platform'
+import { type Applicant, recruitId } from '@hcengineering/recruit'
 import setting from '@hcengineering/setting'
 import { type KeyBinding, type ViewOptionModel, type ViewOptionsModel } from '@hcengineering/view'
-import activity from '@hcengineering/activity'
 
 import recruit from './plugin'
 import { createReviewModel, reviewTableConfig, reviewTableOptions } from './review'
-import { TOpinion, TReview } from './review-model'
+import {
+  TApplicant,
+  TApplicantMatch,
+  TCandidate,
+  TCandidates,
+  TOpinion,
+  TReview,
+  TVacancy,
+  TVacancyList
+} from './types'
 
 export { recruitId } from '@hcengineering/recruit'
 export { recruitOperation } from './migration'
 export { default } from './plugin'
-
-@Model(recruit.class.Vacancy, task.class.Project)
-@UX(recruit.string.Vacancy, recruit.icon.Vacancy, 'VCN', 'name', undefined, recruit.string.Vacancies)
-export class TVacancy extends TProject implements Vacancy {
-  @Prop(TypeCollaborativeMarkup(), recruit.string.FullDescription)
-  @Index(IndexKind.FullText)
-    fullDescription?: string
-
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
-    attachments?: number
-
-  @Prop(TypeDate(), recruit.string.Due, recruit.icon.Calendar)
-    dueTo?: Timestamp
-
-  @Prop(TypeString(), recruit.string.Location, recruit.icon.Location)
-  @Index(IndexKind.FullText)
-    location?: string
-
-  @Prop(TypeRef(contact.class.Organization), recruit.string.Company, { icon: contact.icon.Company })
-    company?: Ref<Organization>
-
-  @Prop(Collection(chunter.class.ChatMessage), chunter.string.Comments)
-    comments?: number
-
-  @Prop(TypeString(), recruit.string.Vacancy)
-  @Index(IndexKind.FullText)
-  @Hidden()
-    number!: number
-}
-
-@Model(recruit.class.Candidates, core.class.Space)
-@UX(recruit.string.TalentPools, recruit.icon.RecruitApplication)
-export class TCandidates extends TSpace implements Candidates {}
-
-@Mixin(recruit.mixin.Candidate, contact.class.Person)
-@UX(recruit.string.Talent, recruit.icon.RecruitApplication, 'TLNT', 'name', undefined, recruit.string.Talents)
-export class TCandidate extends TPerson implements Candidate {
-  @Prop(TypeString(), recruit.string.Title)
-  @Index(IndexKind.FullText)
-    title?: string
-
-  @Prop(Collection(recruit.class.Applicant), recruit.string.Applications, {
-    shortLabel: recruit.string.ApplicationsShort
-  })
-    applications?: number
-
-  @Prop(TypeBoolean(), recruit.string.Onsite)
-    onsite?: boolean
-
-  @Prop(TypeBoolean(), recruit.string.Remote)
-    remote?: boolean
-
-  @Prop(TypeString(), recruit.string.Source)
-  @Index(IndexKind.FullText)
-    source?: string
-
-  @Prop(Collection(tags.class.TagReference, recruit.string.SkillLabel), recruit.string.SkillsLabel, {
-    icon: recruit.icon.Skills,
-    schema: '3'
-  })
-    skills?: number
-
-  @Prop(Collection(recruit.class.Review, recruit.string.Review), recruit.string.Reviews)
-    reviews?: number
-
-  @Prop(
-    Collection(recruit.class.ApplicantMatch, getEmbeddedLabel('Vacancy match')),
-    getEmbeddedLabel('Vacancy Matches')
-  )
-    vacancyMatch?: number
-}
-
-@Mixin(recruit.mixin.VacancyList, contact.class.Organization)
-@UX(recruit.string.VacancyList, recruit.icon.RecruitApplication, 'CM', 'name')
-export class TVacancyList extends TOrganization implements VacancyList {
-  @Prop(Collection(recruit.class.Vacancy), recruit.string.Vacancies)
-    vacancies!: number
-}
-
-@Model(recruit.class.Applicant, task.class.Task)
-@UX(recruit.string.Application, recruit.icon.Application, 'APP', 'number', undefined, recruit.string.Applications)
-export class TApplicant extends TTask implements Applicant {
-  // We need to declare, to provide property with label
-  @Prop(TypeRef(recruit.mixin.Candidate), recruit.string.Talent)
-  @Index(IndexKind.Indexed)
-  @ReadOnly()
-  declare attachedTo: Ref<Candidate>
-
-  // We need to declare, to provide property with label
-  @Prop(TypeRef(recruit.class.Vacancy), recruit.string.Vacancy)
-  @Index(IndexKind.Indexed)
-  declare space: Ref<Vacancy>
-
-  @Prop(TypeDate(), task.string.StartDate)
-    startDate!: Timestamp | null
-
-  @Prop(TypeRef(contact.mixin.Employee), recruit.string.AssignedRecruiter)
-  @Index(IndexKind.Indexed)
-  declare assignee: Ref<Employee> | null
-
-  @Prop(TypeRef(core.class.Status), task.string.TaskState, { _id: recruit.attribute.State })
-  @Index(IndexKind.Indexed)
-  declare status: Ref<Status>
-}
-
-@Model(recruit.class.ApplicantMatch, core.class.AttachedDoc, DOMAIN_TASK)
-@UX(recruit.string.Application, recruit.icon.Application, 'APP', 'number')
-export class TApplicantMatch extends TAttachedDoc implements ApplicantMatch {
-  // We need to declare, to provide property with label
-  @Prop(TypeRef(recruit.mixin.Candidate), recruit.string.Talent)
-  @Index(IndexKind.Indexed)
-  declare attachedTo: Ref<Candidate>
-
-  @Prop(TypeBoolean(), getEmbeddedLabel('Complete'))
-  @ReadOnly()
-    complete!: boolean
-
-  @Prop(TypeString(), getEmbeddedLabel('Vacancy'))
-  @ReadOnly()
-    vacancy!: string
-
-  @Prop(TypeString(), getEmbeddedLabel('Summary'))
-  @ReadOnly()
-    summary!: string
-
-  @Prop(TypeMarkup(), getEmbeddedLabel('Response'))
-  @ReadOnly()
-    response!: string
-}
+export * from './types'
 
 export function createModel (builder: Builder): void {
   builder.createModel(TVacancy, TCandidates, TCandidate, TApplicant, TReview, TOpinion, TVacancyList, TApplicantMatch)
@@ -1448,6 +1304,7 @@ export function createModel (builder: Builder): void {
       },
       providers: {
         [notification.providers.PlatformNotification]: true,
+        [notification.providers.BrowserNotification]: true,
         [notification.providers.EmailNotification]: true
       }
     },
@@ -1486,7 +1343,8 @@ export function createModel (builder: Builder): void {
       objectClass: recruit.class.Applicant,
       spaceSubscribe: true,
       providers: {
-        [notification.providers.PlatformNotification]: false
+        [notification.providers.PlatformNotification]: false,
+        [notification.providers.BrowserNotification]: false
       }
     },
     recruit.ids.ApplicationCreateNotification

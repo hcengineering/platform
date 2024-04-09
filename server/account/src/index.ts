@@ -833,19 +833,20 @@ export async function createWorkspace (
       const initWS = getMetadata(toolPlugin.metadata.InitWorkspace)
       const wsId = getWorkspaceId(workspaceInfo.workspace, productId)
       if (initWS !== undefined && (await getWorkspaceById(db, productId, initWS)) !== null) {
-        client = await initModel(getTransactor(), wsId, txes, [], ctxModellogger)
-        await client.close()
+        // Just any valid model for transactor to be able to function
+        await initModel(ctx, getTransactor(), wsId, txes, [], ctxModellogger, true)
+        // Clone init workspace.
         await cloneWorkspace(
           getTransactor(),
           getWorkspaceId(initWS, productId),
           getWorkspaceId(workspaceInfo.workspace, productId)
         )
-        client = await upgradeModel(getTransactor(), wsId, txes, migrationOperation, ctxModellogger)
+        client = await upgradeModel(ctx, getTransactor(), wsId, txes, migrationOperation, ctxModellogger)
       } else {
-        client = await initModel(getTransactor(), wsId, txes, migrationOperation, ctxModellogger)
+        client = await initModel(ctx, getTransactor(), wsId, txes, migrationOperation, ctxModellogger)
       }
     } catch (err: any) {
-      return { workspaceInfo, err, client: {} as any }
+      return { workspaceInfo, err, client: null as any }
     }
     // Workspace is created, we need to clear disabled flag.
     await db
@@ -859,6 +860,7 @@ export async function createWorkspace (
  * @public
  */
 export async function upgradeWorkspace (
+  ctx: MeasureContext,
   version: Data<Version>,
   txes: Tx[],
   migrationOperation: [string, MigrateOperation][],
@@ -895,7 +897,7 @@ export async function upgradeWorkspace (
     }
   )
   await (
-    await upgradeModel(getTransactor(), getWorkspaceId(ws.workspace, productId), txes, migrationOperation, logger)
+    await upgradeModel(ctx, getTransactor(), getWorkspaceId(ws.workspace, productId), txes, migrationOperation, logger)
   ).close()
   return versionStr
 }
@@ -925,6 +927,20 @@ export const createUserWorkspace =
             new Status(Severity.ERROR, platform.status.WorkspaceRateLimit, { workspace: workspaceName })
           )
         }
+      }
+
+      let workSpaceRes = (
+        await db
+          .collection<Workspace>(WORKSPACE_COLLECTION)
+          .find(withProductId(productId, {
+            _id: { $in: info.workspaces },
+            workspaceName: workspaceName
+          }))
+          .toArray()).filter((it) => it.disabled !== true)
+        .map(mapToClientWorkspace)
+      if (workSpaceRes.length > 0) {
+        await ctx.error('failed to create workspace : duplicate workspace name')
+        throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceAlreadyExists, { workspace: workspaceName }))
       }
 
       const { workspaceInfo, err, client } = await createWorkspace(

@@ -35,6 +35,7 @@ export interface StatisticsElement {
  * @public
  */
 export interface Session {
+  createTime: number
   getUser: () => string
   pipeline: () => Pipeline
   ping: () => Promise<string>
@@ -117,7 +118,9 @@ export interface Workspace {
   pipeline: Promise<Pipeline>
   sessions: Map<string, { session: Session, socket: ConnectionSocket }>
   upgrade: boolean
+
   closing?: Promise<void>
+  closeTimeout?: any
 
   workspaceId: WorkspaceId
   workspaceName: string

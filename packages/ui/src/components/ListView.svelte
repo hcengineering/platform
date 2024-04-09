@@ -27,7 +27,7 @@
   export let updateOnMouse = true
   export let lazy = false
   export let highlightIndex: number | undefined = undefined
-  export let getKey: (index: number) => string = (index) => index.toString()
+  const getKey: (index: number) => string = (index) => index.toString()
 
   const refs: HTMLElement[] = []
 

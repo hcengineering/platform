@@ -266,7 +266,8 @@ export function createModel (builder: Builder): void {
       group: gmail.ids.EmailNotificationGroup,
       allowedForAuthor: true,
       providers: {
-        [notification.providers.PlatformNotification]: true
+        [notification.providers.PlatformNotification]: true,
+        [notification.providers.BrowserNotification]: false
       }
     },
     gmail.ids.EmailNotification

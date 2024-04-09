@@ -17,6 +17,9 @@
 import activity, { type ActivityMessage } from '@hcengineering/activity'
 import chunter from '@hcengineering/chunter'
 import {
+  DOMAIN_MODEL,
+  Hierarchy,
+  IndexKind,
   type Account,
   type AttachedDoc,
   type Class,
@@ -25,59 +28,55 @@ import {
   type Doc,
   type DocumentQuery,
   type Domain,
-  DOMAIN_MODEL,
-  Hierarchy,
-  IndexKind,
   type Ref,
   type Timestamp,
-  type Tx,
-  type TxCUD
+  type Tx
 } from '@hcengineering/core'
 import {
   ArrOf,
-  type Builder,
   Index,
   Mixin,
   Model,
   Prop,
+  TypeBoolean,
+  TypeDate,
+  TypeIntlString,
   TypeRef,
   TypeString,
   UX,
-  TypeBoolean,
-  TypeDate,
-  TypeIntlString
+  type Builder
 } from '@hcengineering/model'
-import core, { TAttachedDoc, TClass, TDoc } from '@hcengineering/model-core'
+import core, { TClass, TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import view, { createAction, template } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import {
-  type DocUpdates,
-  type DocUpdateTx,
-  type InboxNotification,
+  notificationId,
+  type ActivityInboxNotification,
+  type ActivityNotificationViewlet,
+  type BaseNotificationType,
+  type BrowserNotification,
+  type CommonInboxNotification,
+  type CommonNotificationType,
   type DocNotifyContext,
-  type Notification,
+  type DocUpdateTx,
+  type DocUpdates,
+  type InboxNotification,
+  type MentionInboxNotification,
+  type NotificationContextPresenter,
   type NotificationGroup,
+  type NotificationObjectPresenter,
   type NotificationPreferencesGroup,
   type NotificationPreview,
   type NotificationProvider,
   type NotificationSetting,
   type NotificationStatus,
   type NotificationTemplate,
-  type NotificationType,
-  type NotificationObjectPresenter,
-  type ActivityInboxNotification,
-  type CommonInboxNotification,
-  type NotificationContextPresenter,
-  type ActivityNotificationViewlet,
-  type BaseNotificationType,
-  type CommonNotificationType,
-  notificationId,
-  type MentionInboxNotification
+  type NotificationType
 } from '@hcengineering/notification'
-import { type Asset, type IntlString } from '@hcengineering/platform'
+import { getEmbeddedLabel, type Asset, type IntlString, type Resource } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
-import { type AnyComponent } from '@hcengineering/ui/src/types'
+import { type AnyComponent, type Location } from '@hcengineering/ui/src/types'
 
 import notification from './plugin'
 
@@ -87,17 +86,13 @@ export { notification as default }
 
 export const DOMAIN_NOTIFICATION = 'notification' as Domain
 
-@Model(notification.class.Notification, core.class.AttachedDoc, DOMAIN_NOTIFICATION)
-export class TNotification extends TAttachedDoc implements Notification {
-  @Prop(TypeRef(core.class.Tx), 'TX' as IntlString)
-    tx!: Ref<TxCUD<Doc>>
-
-  @Prop(TypeString(), 'Status' as IntlString)
-    status!: NotificationStatus
-
-  text!: string
-
-  type!: Ref<NotificationType>
+@Model(notification.class.BrowserNotification, core.class.Doc, DOMAIN_NOTIFICATION)
+export class TBrowserNotification extends TDoc implements BrowserNotification {
+  title!: string
+  body!: string
+  onClickLocation?: Location | undefined
+  user!: Ref<Account>
+  status!: NotificationStatus
 }
 
 @Model(notification.class.BaseNotificationType, core.class.Doc, DOMAIN_MODEL)
@@ -138,7 +133,8 @@ export class TNotificationPreferencesGroup extends TDoc implements NotificationP
 @Model(notification.class.NotificationProvider, core.class.Doc, DOMAIN_MODEL)
 export class TNotificationProvider extends TDoc implements NotificationProvider {
   label!: IntlString
-  default!: boolean
+  depends?: Ref<NotificationProvider>
+  onChange?: Resource<(value: boolean) => Promise<boolean>>
 }
 
 @Model(notification.class.NotificationSetting, preference.class.Preference)
@@ -178,12 +174,15 @@ export class TNotificationContextPresenter extends TClass implements Notificatio
 
 @Model(notification.class.DocUpdates, core.class.Doc, DOMAIN_NOTIFICATION)
 export class TDocUpdates extends TDoc implements DocUpdates {
+  @Prop(TypeRef(core.class.Account), core.string.Account)
   @Index(IndexKind.Indexed)
     user!: Ref<Account>
 
+  @Prop(TypeRef(core.class.Account), core.string.AttachedTo)
   @Index(IndexKind.Indexed)
     attachedTo!: Ref<Doc>
 
+  @Prop(TypeRef(core.class.Account), getEmbeddedLabel('Hidden'))
   @Index(IndexKind.Indexed)
     hidden!: boolean
 
@@ -316,7 +315,7 @@ export const notificationActionTemplates = template({
 
 export function createModel (builder: Builder): void {
   builder.createModel(
-    TNotification,
+    TBrowserNotification,
     TNotificationType,
     TNotificationProvider,
     TNotificationSetting,
@@ -338,17 +337,6 @@ export function createModel (builder: Builder): void {
     TMentionInboxNotification
   )
 
-  // Temporarily disabled, we should think about it
-  // builder.createDoc(
-  //   notification.class.NotificationProvider,
-  //   core.space.Model,
-  //   {
-  //     label: notification.string.BrowserNotification,
-  //     default: true
-  //   },
-  //   notification.ids.BrowserNotification
-  // )
-
   builder.createDoc(
     notification.class.NotificationProvider,
     core.space.Model,
@@ -356,6 +344,17 @@ export function createModel (builder: Builder): void {
       label: notification.string.Inbox
     },
     notification.providers.PlatformNotification
+  )
+
+  builder.createDoc(
+    notification.class.NotificationProvider,
+    core.space.Model,
+    {
+      label: notification.string.Push,
+      depends: notification.providers.PlatformNotification,
+      onChange: notification.function.CheckPushPermission
+    },
+    notification.providers.BrowserNotification
   )
 
   builder.createDoc(
@@ -693,7 +692,8 @@ export function generateClassNotificationTypes (
       txClasses,
       hidden: false,
       providers: {
-        [notification.providers.PlatformNotification]: defaultEnabled.includes(attribute.name)
+        [notification.providers.PlatformNotification]: defaultEnabled.includes(attribute.name),
+        [notification.providers.BrowserNotification]: false
       },
       label: attribute.label
     }

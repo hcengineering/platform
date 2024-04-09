@@ -1,5 +1,5 @@
 //
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,6 +13,8 @@
 // limitations under the License.
 //
 
+import type { Class, Doc, Domain, Ref } from '@hcengineering/core'
+
 /** @public */
 export interface DocumentId {
   workspaceUrl: string
@@ -21,41 +23,9 @@ export interface DocumentId {
 }
 
 /** @public */
-export type Action = DocumentCopyAction | DocumentFieldCopyAction | DocumentContentAction
-
-/** @public */
-export interface DocumentContentAction {
-  action: 'document.content'
-  params: {
-    field: string
-    content: string
-  }
-}
-
-/** @public */
-export interface DocumentCopyAction {
-  action: 'document.copy'
-  params: {
-    sourceId: string
-    targetId: string
-  }
-}
-
-/** @public */
-export interface DocumentFieldCopyAction {
-  action: 'document.field.copy'
-  params: {
-    documentId: string
-    srcFieldId: string
-    dstFieldId: string
-  }
-}
-
-/** @public */
-export type ActionStatus = 'completed' | 'failed'
-
-/** @public */
-export interface ActionStatusResponse {
-  action: Action
-  status: ActionStatus
+export interface PlatformDocumentId {
+  objectDomain: Domain
+  objectClass: Ref<Class<Doc>>
+  objectId: Ref<Doc>
+  objectAttr: string
 }

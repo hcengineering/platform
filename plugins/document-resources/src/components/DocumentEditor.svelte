@@ -16,16 +16,14 @@
 -->
 <script lang="ts">
   import { Extensions, FocusPosition } from '@tiptap/core'
-  import document, { Document } from '@hcengineering/document'
+  import { Document } from '@hcengineering/document'
   import {
     CollaboratorEditor,
     HeadingsExtension,
     ImageOptions,
     SvelteNodeViewRenderer,
     TodoItemExtension,
-    TodoListExtension,
-    collaborativeDocumentId,
-    platformDocumentId
+    TodoListExtension
   } from '@hcengineering/text-editor'
   import { createEventDispatcher } from 'svelte'
 
@@ -78,14 +76,13 @@
       }
     })
   ]
-
-  $: documentId = collaborativeDocumentId(object.content)
-  $: targetContentId = platformDocumentId(document.class.Document, object._id, 'content')
 </script>
 
 <CollaboratorEditor
-  {documentId}
-  {targetContentId}
+  collaborativeDoc={object.content}
+  objectClass={object._class}
+  objectId={object._id}
+  objectAttr="content"
   {focusIndex}
   {readonly}
   {attachFile}

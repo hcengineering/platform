@@ -63,14 +63,9 @@ export class FullTextIndex implements WithFind {
     readonly indexer: FullTextIndexPipeline,
     private readonly upgrade: boolean
   ) {
-    if (!upgrade) {
+    if (!this.upgrade) {
       // Schedule indexing after consistency check
-      this.consistency = this.indexer.checkIndexConsistency(dbStorage)
-
-      // Schedule indexing after consistency check
-      void this.consistency.then(() => {
-        void this.indexer.startIndexing()
-      })
+      void this.indexer.startIndexing()
     }
   }
 
@@ -116,13 +111,14 @@ export class FullTextIndex implements WithFind {
             // Object created and deleted, skip index
             stDocs.delete(cud.objectId as Ref<DocIndexState>)
             continue
-          } else if (old !== undefined) {
+          } else {
             // Create and update
-            if (old.removed) continue
+            if (old?.removed === true) continue
             else {
               stDocs.set(cud.objectId as Ref<DocIndexState>, {
                 ...old,
-                updated: cud._class !== core.class.TxRemoveDoc,
+                create: cud._class !== core.class.TxRemoveDoc ? old?.create : undefined,
+                updated: cud._class !== core.class.TxRemoveDoc && old?.create === undefined,
                 removed: cud._class === core.class.TxRemoveDoc
               })
             }

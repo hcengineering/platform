@@ -13,26 +13,18 @@
 // limitations under the License.
 //
 
-import { Hierarchy, ModelDb, WorkspaceId } from '@hcengineering/core'
+import { Hierarchy, MeasureContext, ModelDb, WorkspaceId } from '@hcengineering/core'
 import { DbAdapter, DummyDbAdapter } from '@hcengineering/server-core'
 
 /**
  * @public
  */
 export async function createNullAdapter (
+  ctx: MeasureContext,
   hierarchy: Hierarchy,
   url: string,
   workspaceId: WorkspaceId,
   modelDb: ModelDb
 ): Promise<DbAdapter> {
   return new DummyDbAdapter()
-}
-
-/**
- * @public
- */
-export interface MinioConfig {
-  endPoint: string
-  accessKey: string
-  secretKey: string
 }

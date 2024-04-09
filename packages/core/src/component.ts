@@ -20,6 +20,7 @@ import type {
   AnyAttribute,
   ArrOf,
   AttachedDoc,
+  Blob,
   BlobData,
   Class,
   Collection,
@@ -82,6 +83,7 @@ export default plugin(coreId, {
   class: {
     Obj: '' as Ref<Class<Obj>>,
     Doc: '' as Ref<Class<Doc>>,
+    Blob: '' as Ref<Class<Blob>>,
     AttachedDoc: '' as Ref<Class<AttachedDoc>>,
     Class: '' as Ref<Class<Class<Obj>>>,
     Mixin: '' as Ref<Class<Mixin<Doc>>>,

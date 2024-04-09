@@ -25,27 +25,26 @@ import {
   type ServerStorage,
   type WorkspaceId
 } from '@hcengineering/core'
-import { MinioService } from '@hcengineering/minio'
 import { createElasticAdapter, createElasticBackupDataAdapter } from '@hcengineering/elastic'
 import {
   ConfigurationMiddleware,
   ModifiedMiddleware,
   PrivateMiddleware,
   QueryJoinMiddleware,
-  SpaceSecurityMiddleware,
-  SpacePermissionsMiddleware
+  SpacePermissionsMiddleware,
+  SpaceSecurityMiddleware
 } from '@hcengineering/middleware'
 import { createMongoAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
 import { OpenAIEmbeddingsStage, openAIId, openAIPluginImpl } from '@hcengineering/openai'
 import { addLocation, addStringsLoader } from '@hcengineering/platform'
 import {
   BackupClientSession,
+  buildStorageFromConfig,
   createNullAdapter,
   createRekoniAdapter,
   createStorageDataAdapter,
   createYDocAdapter,
-  getMetricsContext,
-  type MinioConfig
+  getMetricsContext
 } from '@hcengineering/server'
 import { serverActivityId } from '@hcengineering/server-activity'
 import { serverAttachmentId } from '@hcengineering/server-attachment'
@@ -61,13 +60,14 @@ import {
   FullTextPushStage,
   globalIndexer,
   IndexedFieldStage,
-  type StorageAdapter,
+  type StorageConfiguration,
   type ContentTextAdapter,
   type DbConfiguration,
   type FullTextAdapter,
   type FullTextPipelineStage,
   type MiddlewareCreator,
-  type Pipeline
+  type Pipeline,
+  type StorageAdapter
 } from '@hcengineering/server-core'
 import { serverDocumentId } from '@hcengineering/server-document'
 import { serverGmailId } from '@hcengineering/server-gmail'
@@ -188,7 +188,7 @@ export function start (
   dbUrl: string,
   opt: {
     fullTextUrl: string
-    minioConf: MinioConfig
+    storageConfig: StorageConfiguration
     rekoniUrl: string
     port: number
     productId: string
@@ -236,6 +236,9 @@ export function start (
   ]
 
   const metrics = getMetricsContext()
+
+  const externalStorage = buildStorageFromConfig(opt.storageConfig, dbUrl)
+
   function createIndexStages (
     fullText: MeasureContext,
     workspace: WorkspaceId,
@@ -361,12 +364,7 @@ export function start (
       },
       serviceAdapters: {},
       defaultContentAdapter: 'Rekoni',
-      storageFactory: () =>
-        new MinioService({
-          ...opt.minioConf,
-          port: 9000,
-          useSSL: false
-        }),
+      storageFactory: () => externalStorage,
       workspace
     }
     return createPipeline(ctx, conf, middlewares, upgrade, broadcast)

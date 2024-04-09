@@ -16,7 +16,7 @@ test.describe('Workspace tests', () => {
     const newUser: SignUpData = {
       firstName: `FirstName-${generateId()}`,
       lastName: `LastName-${generateId()}`,
-      email: `email+${generateId()}@gmail.com`,
+      email: `sanity-email+${generateId()}@gmail.com`,
       password: '1234'
     }
     const newWorkspaceName = `New Workspace Name - ${generateId(2)}`
@@ -39,7 +39,7 @@ test.describe('Workspace tests', () => {
     const newUser: SignUpData = {
       firstName: `FirstName-${generateId()}`,
       lastName: `LastName-${generateId()}`,
-      email: `email+${generateId()}@gmail.com`,
+      email: `sanity-email+${generateId()}@gmail.com`,
       password: '1234'
     }
     const newIssue: NewIssue = {
@@ -92,7 +92,7 @@ test.describe('Workspace tests', () => {
     const newUser: SignUpData = {
       firstName: `FirstName-${generateId()}`,
       lastName: `LastName-${generateId()}`,
-      email: `email+${generateId()}@gmail.com`,
+      email: `sanity-email+${generateId()}@gmail.com`,
       password: '1234'
     }
     const newWorkspaceName = `New Workspace Name - ${generateId(2)}`
@@ -125,7 +125,7 @@ test.describe('Workspace tests', () => {
     const newUser: SignUpData = {
       firstName: `FirstName-${generateId()}`,
       lastName: `LastName-${generateId()}`,
-      email: `email+${generateId()}@gmail.com`,
+      email: `sanity-email+${generateId()}@gmail.com`,
       password: '1234'
     }
     const newWorkspaceName = `Some HULY #@$ WS - ${generateId(12)}`
@@ -158,7 +158,7 @@ test.describe('Workspace tests', () => {
     const newUser2: SignUpData = {
       firstName: `FirstName2-${generateId()}`,
       lastName: `LastName2-${generateId()}`,
-      email: `email+${generateId()}@gmail.com`,
+      email: `sanity-email+${generateId()}@gmail.com`,
       password: '1234'
     }
 
@@ -174,7 +174,7 @@ test.describe('Workspace tests', () => {
     const newUser: SignUpData = {
       firstName: `FirstName-${generateId()}`,
       lastName: `LastName-${generateId()}`,
-      email: `email+${generateId()}@gmail.com`,
+      email: `sanity-email+${generateId()}@gmail.com`,
       password: '1234'
     }
     const newWorkspaceName = `Some HULY #@$ WS - ${generateId(12)}`
@@ -209,7 +209,7 @@ test.describe('Workspace tests', () => {
     const newUser2: SignUpData = {
       firstName: `FirstName2-${generateId()}`,
       lastName: `LastName2-${generateId()}`,
-      email: `email+${generateId()}@gmail.com`,
+      email: `sanity-email+${generateId()}@gmail.com`,
       password: '1234'
     }
 

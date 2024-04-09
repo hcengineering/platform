@@ -14,6 +14,7 @@
 //
 
 import core, {
+  Blob,
   Class,
   CollaborativeDoc,
   Doc,
@@ -23,7 +24,7 @@ import core, {
   MeasureContext,
   Ref,
   WorkspaceId,
-  parseCollaborativeDoc
+  collaborativeDocParse
 } from '@hcengineering/core'
 import {
   ContentTextAdapter,
@@ -104,14 +105,9 @@ export class CollaborativeContentRetrievalStage implements FullTextPipelineStage
         if (val.type._class === core.class.TypeCollaborativeDoc) {
           const collaborativeDoc = doc.attributes[docKey(val.name, { _class: val.attributeOf })] as CollaborativeDoc
           if (collaborativeDoc !== undefined && collaborativeDoc !== '') {
-            const { documentId } = parseCollaborativeDoc(collaborativeDoc)
+            const { documentId } = collaborativeDocParse(collaborativeDoc)
 
-            let docInfo: any | undefined
-            try {
-              docInfo = await this.storageAdapter?.stat(this.workspace, documentId)
-            } catch (err: any) {
-              // not found.
-            }
+            const docInfo: Blob | undefined = await this.storageAdapter?.stat(this.metrics, this.workspace, documentId)
 
             if (docInfo !== undefined) {
               const digest = docInfo.etag
@@ -119,8 +115,8 @@ export class CollaborativeContentRetrievalStage implements FullTextPipelineStage
               if (doc.attributes[digestKey] !== digest) {
                 ;(update as any)[docUpdKey(digestKey)] = digest
 
-                const contentType = ((docInfo.metaData['content-type'] as string) ?? '').split(';')[0]
-                const readable = await this.storageAdapter?.get(this.workspace, documentId)
+                const contentType = (docInfo.contentType ?? '').split(';')[0]
+                const readable = await this.storageAdapter?.get(this.metrics, this.workspace, documentId)
 
                 if (readable !== undefined) {
                   let textContent = await this.metrics.with(

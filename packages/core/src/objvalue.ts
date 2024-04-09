@@ -1,7 +1,7 @@
 import { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { Doc } from './classes'
+import { clone } from './clone'
 import core from './component'
-import justClone from 'just-clone'
 
 /**
  * @public
@@ -60,7 +60,7 @@ export function setObjectValue (key: string, doc: Doc, newValue: any): void {
       value = lvalue
     }
   }
-  value[last] = justClone(newValue)
+  value[last] = clone(newValue)
   return value
 }
 

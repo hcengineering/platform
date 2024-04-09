@@ -14,20 +14,22 @@
 -->
 <script lang="ts">
   // import { Doc } from '@hcengineering/core'
-  import { Button, Dialog } from '@hcengineering/ui'
+  import { Button, Dialog, Label, Spinner } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import presentation from '..'
   import { getFileUrl } from '../utils'
   import Download from './icons/Download.svelte'
   import ActionContext from './ActionContext.svelte'
 
-  export let file: string
+  export let file: string | undefined
   export let name: string
   export let contentType: string | undefined
   // export let popupOptions: PopupOptions
   // export let value: Doc
   export let showIcon = true
   export let fullSize = false
+  export let isLoading = false
+  export let css: string | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -42,7 +44,21 @@
     }
   })
   let download: HTMLAnchorElement
-  $: src = getFileUrl(file, 'full', name)
+  $: src = file === undefined ? '' : getFileUrl(file, 'full', name)
+  $: isImage = contentType !== undefined && contentType.startsWith('image/')
+
+  let frame: HTMLIFrameElement | undefined = undefined
+  // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+  $: if (css !== undefined && frame !== undefined && frame !== null) {
+    frame.onload = () => {
+      const head = frame?.contentDocument?.querySelector('head')
+
+      // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+      if (css !== undefined && head !== undefined && head !== null) {
+        head.appendChild(document.createElement('style')).textContent = css
+      }
+    }
+  }
 </script>
 
 <ActionContext context={{ mode: 'browser' }} />
@@ -67,24 +83,36 @@
   </svelte:fragment>
 
   <svelte:fragment slot="utils">
-    <a class="no-line" href={src} download={name} bind:this={download}>
-      <Button
-        icon={Download}
-        kind={'ghost'}
-        on:click={() => {
-          download.click()
-        }}
-        showTooltip={{ label: presentation.string.Download }}
-      />
-    </a>
+    {#if !isLoading && src !== ''}
+      <a class="no-line" href={src} download={name} bind:this={download}>
+        <Button
+          icon={Download}
+          kind={'ghost'}
+          on:click={() => {
+            download.click()
+          }}
+          showTooltip={{ label: presentation.string.Download }}
+        />
+      </a>
+    {/if}
   </svelte:fragment>
 
-  {#if contentType && contentType.startsWith('image/')}
-    <div class="pdfviewer-content img">
-      <img class="img-fit" {src} alt="" />
-    </div>
+  {#if !isLoading}
+    {#if src === ''}
+      <div class="centered">
+        <Label label={presentation.string.FailedToPreview} />
+      </div>
+    {:else if isImage}
+      <div class="pdfviewer-content img">
+        <img class="img-fit" {src} alt="" />
+      </div>
+    {:else}
+      <iframe bind:this={frame} class="pdfviewer-content" src={src + '#view=FitH&navpanes=0'} title="" />
+    {/if}
   {:else}
-    <iframe class="pdfviewer-content" src={src + '#view=FitH&navpanes=0'} title="" />
+    <div class="centered">
+      <Spinner size="medium" />
+    </div>
   {/if}
 </Dialog>
 
@@ -105,9 +133,7 @@
   .pdfviewer-content {
     flex-grow: 1;
     overflow: auto;
-    border-style: none;
-    border-radius: 0.5rem;
-    background-color: var(--theme-bg-color);
+    border: none;
 
     &.img {
       display: flex;
@@ -123,5 +149,13 @@
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
+  }
+  .centered {
+    flex-grow: 1;
+    width: 100;
+    height: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 </style>

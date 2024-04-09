@@ -240,7 +240,7 @@ export class TReaction extends TAttachedDoc implements Reaction {
   @Index(IndexKind.Indexed)
   declare attachedTo: Ref<ActivityMessage>
 
-  @Prop(TypeRef(activity.class.ActivityMessage), core.string.AttachedToClass)
+  @Prop(TypeRef(core.class.Class), core.string.AttachedToClass)
   @Index(IndexKind.Indexed)
   declare attachedToClass: Ref<Class<ActivityMessage>>
 
@@ -380,7 +380,8 @@ export function createModel (builder: Builder): void {
       txClasses: [core.class.TxCreateDoc],
       objectClass: activity.class.Reaction,
       providers: {
-        [notification.providers.PlatformNotification]: true
+        [notification.providers.PlatformNotification]: true,
+        [notification.providers.BrowserNotification]: false
       }
     },
     activity.ids.AddReactionNotification

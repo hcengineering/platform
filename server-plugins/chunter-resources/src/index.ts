@@ -313,9 +313,17 @@ export async function OnDirectMessageSent (originTx: Tx, control: TriggerControl
 
     if (anotherPerson == null) return []
 
-    await pushActivityInboxNotifications(dmCreationTx, control, res, anotherPerson, directChannel, notifyContexts, [
-      message
-    ])
+    await pushActivityInboxNotifications(
+      dmCreationTx,
+      control,
+      res,
+      anotherPerson,
+      directChannel,
+      notifyContexts,
+      [message],
+      true,
+      true
+    )
   } else if (notifyContext.hidden) {
     res.push(
       control.txFactory.createTxUpdateDoc(notifyContext._class, notifyContext.space, notifyContext._id, {

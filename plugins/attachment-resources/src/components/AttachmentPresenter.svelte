@@ -15,14 +15,13 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import type { Attachment } from '@hcengineering/attachment'
-  import { showPopup, closeTooltip, Label, getIconSize2x, Loading } from '@hcengineering/ui'
-  import presentation, { PDFViewer, getFileUrl } from '@hcengineering/presentation'
+  import type { Attachment, AttachmentPreviewExtension } from '@hcengineering/attachment'
+  import { showPopup, closeTooltip, Label, getIconSize2x, Loading, PopupAlignment } from '@hcengineering/ui'
+  import presentation, { getFileUrl } from '@hcengineering/presentation'
   import filesize from 'filesize'
   import core from '@hcengineering/core'
   import { permissionsStore } from '@hcengineering/view-resources'
-  import MediaViewer from './MediaViewer.svelte'
-  import { getType } from '../utils'
+  import { getType, isOpenable, previewTypes, getPreviewType } from '../utils'
 
   import AttachmentName from './AttachmentName.svelte'
 
@@ -54,18 +53,29 @@
   function isImage (contentType: string): boolean {
     return getType(contentType) === 'image'
   }
-  function isPlayable (contentType: string) {
-    const type = getType(contentType)
-    return type === 'video' || type === 'audio'
+
+  let openable = false
+  $: if (value !== undefined) {
+    void isOpenable(value.type, $previewTypes).then((res) => {
+      openable = res
+    })
+  } else {
+    openable = false
   }
-  function openEmbedded (contentType: string): boolean {
-    return getType(contentType) !== 'other'
+
+  let previewType: AttachmentPreviewExtension | undefined = undefined
+  $: if (openable && value !== undefined) {
+    void getPreviewType(value.type, $previewTypes).then((res) => {
+      previewType = res
+    })
+  } else {
+    previewType = undefined
   }
 
   function clickHandler (e: MouseEvent): void {
     if (value === undefined) return
 
-    if (!openEmbedded(value.type)) return
+    if (!openable || previewType === undefined) return
     e.preventDefault()
     e.stopPropagation()
     if (e.metaKey || e.ctrlKey) {
@@ -74,9 +84,9 @@
     }
     closeTooltip()
     showPopup(
-      isPlayable(value.type) ? MediaViewer : PDFViewer,
-      { file: value.file, name: value.name, contentType: value.type, value },
-      isImage(value.type) ? 'centered' : 'float'
+      previewType.component,
+      { ...(previewType.props ?? {}), file: value.file, name: value.name, contentType: value.type, value },
+      (previewType.alignment ?? 'center') as PopupAlignment
     )
   }
 

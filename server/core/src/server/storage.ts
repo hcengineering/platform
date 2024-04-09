@@ -60,10 +60,10 @@ import crypto from 'node:crypto'
 import { type DbAdapter } from '../adapter'
 import { type FullTextIndex } from '../fulltext'
 import serverCore from '../plugin'
+import { type ServiceAdaptersManager } from '../service'
+import { type StorageAdapter } from '../storage'
 import { type Triggers } from '../triggers'
 import type { FullTextAdapter, ObjectDDParticipant, ServerStorageOptions, TriggerControl } from '../types'
-import { type StorageAdapter } from '../storage'
-import { type ServiceAdaptersManager } from '../service'
 
 export class TServerStorage implements ServerStorage {
   private readonly fulltext: FullTextIndex
@@ -137,15 +137,11 @@ export class TServerStorage implements ServerStorage {
   }
 
   async close (): Promise<void> {
-    console.timeLog(this.workspace.name, 'closing')
     await this.fulltext.close()
-    console.timeLog(this.workspace.name, 'closing adapters')
     for (const o of this.adapters.values()) {
       await o.close()
     }
-    console.timeLog(this.workspace.name, 'closing fulltext')
     await this.fulltextAdapter.close()
-    console.timeLog(this.workspace.name, 'closing service adapters')
     await this.serviceAdaptersManager.close()
   }
 
@@ -173,7 +169,7 @@ export class TServerStorage implements ServerStorage {
           const toDeleteDocs = await ctx.with(
             'adapter-load',
             { domain: lastDomain },
-            async () => await adapter.load(lastDomain as Domain, toDelete)
+            async () => await adapter.load(ctx, lastDomain as Domain, toDelete)
           )
 
           for (const ddoc of toDeleteDocs) {
@@ -199,7 +195,7 @@ export class TServerStorage implements ServerStorage {
       const txCUD = TxProcessor.extractTx(tx) as TxCUD<Doc>
       if (!this.hierarchy.isDerived(txCUD._class, core.class.TxCUD)) {
         // Skip unsupported tx
-        console.error('Unsupported transaction', tx)
+        await ctx.error('Unsupported transaction', tx)
         continue
       }
       const domain = this.hierarchy.getDomain(txCUD.objectClass)
@@ -397,7 +393,7 @@ export class TServerStorage implements ServerStorage {
       { clazz, query, options }
     )
     if (Date.now() - st > 1000) {
-      console.error('FindAll', Date.now() - st, clazz, query, options)
+      await ctx.error('FindAll', { time: Date.now() - st, clazz, query, options })
     }
     return result
   }
@@ -794,7 +790,7 @@ export class TServerStorage implements ServerStorage {
         await fx()
       }
     } catch (err: any) {
-      console.log(err)
+      await ctx.error('error process tx', { error: err })
       throw err
     } finally {
       onEnds.forEach((p) => {
@@ -811,20 +807,20 @@ export class TServerStorage implements ServerStorage {
     })
   }
 
-  find (domain: Domain): StorageIterator {
-    return this.getAdapter(domain).find(domain)
+  find (ctx: MeasureContext, domain: Domain): StorageIterator {
+    return this.getAdapter(domain).find(ctx, domain)
   }
 
-  async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
-    return await this.getAdapter(domain).load(domain, docs)
+  async load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+    return await this.getAdapter(domain).load(ctx, domain, docs)
   }
 
-  async upload (domain: Domain, docs: Doc[]): Promise<void> {
-    await this.getAdapter(domain).upload(domain, docs)
+  async upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
+    await this.getAdapter(domain).upload(ctx, domain, docs)
   }
 
-  async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {
-    await this.getAdapter(domain).clean(domain, docs)
+  async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
+    await this.getAdapter(domain).clean(ctx, domain, docs)
   }
 }
 

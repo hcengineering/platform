@@ -29,6 +29,7 @@ import {
   TArrOf,
   TAttachedDoc,
   TAttribute,
+  TBlob,
   TBlobData,
   TClass,
   TCollection,
@@ -151,7 +152,8 @@ export function createModel (builder: Builder): void {
     TIndexConfiguration,
     TStatus,
     TStatusCategory,
-    TMigrationState
+    TMigrationState,
+    TBlob
   )
 
   builder.createDoc(

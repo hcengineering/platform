@@ -21,6 +21,7 @@
   import CreateApplication from './CreateApplication.svelte'
   import IconApplication from './icons/Application.svelte'
   import FileDuo from './icons/FileDuo.svelte'
+  import SectionEmpty from './SectionEmpty.svelte'
 
   export let objectId: Ref<Doc>
 
@@ -50,7 +51,7 @@
   </svelte:fragment>
 
   <svelte:fragment slot="content">
-    {#if applications > 0 && viewlet && !loading}
+    {#if applications > 0 && viewlet !== undefined && !loading}
       <Scroller horizontal>
         <Table
           _class={recruit.class.Applicant}
@@ -60,19 +61,13 @@
         />
       </Scroller>
     {:else}
-      <div class="antiSection-empty solid flex-col-center mt-3">
-        <div class="caption-color">
-          <FileDuo size={'large'} />
-        </div>
-        <span class="content-dark-color">
-          <Label label={recruit.string.NoApplicationsForTalent} />
-        </span>
+      <SectionEmpty icon={FileDuo} label={recruit.string.NoApplicationsForTalent}>
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->
         <span class="over-underline content-color" on:click={createApp}>
           <Label label={recruit.string.CreateAnApplication} />
         </span>
-      </div>
+      </SectionEmpty>
     {/if}
   </svelte:fragment>
 </Section>

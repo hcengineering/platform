@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { chunterId } from '@hcengineering/chunter'
 import core, { type Class, type Doc, type Domain, type Ref, TxOperations } from '@hcengineering/core'
 import {
   type MigrateOperation,
@@ -20,7 +21,6 @@ import {
   type MigrationUpgradeClient,
   tryMigrate
 } from '@hcengineering/model'
-import { chunterId } from '@hcengineering/chunter'
 import activity, { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 import notification from '@hcengineering/notification'
 
@@ -35,15 +35,16 @@ export async function createDocNotifyContexts (
   attachedToClass: Ref<Class<Doc>>
 ): Promise<void> {
   const users = await client.findAll(core.class.Account, {})
+  const docNotifyContexts = await client.findAll(notification.class.DocNotifyContext, {
+    user: { $in: users.map((it) => it._id) },
+    attachedTo,
+    attachedToClass
+  })
   for (const user of users) {
     if (user._id === core.account.System) {
       continue
     }
-    const docNotifyContext = await client.findOne(notification.class.DocNotifyContext, {
-      user: user._id,
-      attachedTo,
-      attachedToClass
-    })
+    const docNotifyContext = docNotifyContexts.find((it) => it.user === user._id)
 
     if (docNotifyContext === undefined) {
       await tx.createDoc(notification.class.DocNotifyContext, core.space.Space, {

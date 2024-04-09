@@ -1,5 +1,6 @@
 {
   "string": {
-    "ContactUs": "Contacta con Nosotros"
+    "ContactUs": "Contacta con Nosotros",
+    "ReportBug": "Reportar un error?"
   }
 }
