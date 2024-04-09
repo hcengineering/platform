@@ -195,7 +195,7 @@ previewTypesQuery.query(attachments.class.AttachmentPreviewExtension, {}, (resul
 })
 
 function getPreviewTypeRegExp (type: string): RegExp {
-  return new RegExp(type.replace(/\//g, '\\/'))
+  return new RegExp(`^${type.replaceAll('/', '\\/').replaceAll('*', '.*')}$`)
 }
 
 /**

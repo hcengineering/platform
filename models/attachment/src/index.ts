@@ -198,7 +198,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       contentType: ['video/*', 'audio/*'],
-      alignment: 'float',
+      alignment: 'centered',
       component: attachment.component.MediaViewer,
       extension: attachment.extension.AttachmentPreview
     },
