@@ -43,8 +43,8 @@ export function registerGoogle (
     passport.authenticate('google', { failureRedirect: concatLink(frontUrl, '/login'), session: true }),
     async (ctx, next) => {
       const email = ctx.state.user.emails?.[0]?.value
-      const first = ctx.state.user.name.givenName ?? ""
-      const last = ctx.state.user.name.familyName ?? ""
+      const first = ctx.state.user.name.givenName ?? ''
+      const last = ctx.state.user.name.familyName ?? ''
       if (email !== undefined) {
         try {
           if (ctx.query?.state != null) {
