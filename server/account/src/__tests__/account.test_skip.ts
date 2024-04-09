@@ -43,6 +43,8 @@ describe('server', () => {
     db = conn.db(DB_NAME)
     await db.collection('account').createIndex({ email: 1 }, { unique: true })
     await db.collection('workspace').createIndex({ workspace: 1 }, { unique: true })
+    await db.collection('workspace').createIndex({ workspaceUrl: 1 }, { unique: true })
+    await db.collection('workspace').createIndex({ workspaceName: 1, createdBy: 1}, { unique: true })
   })
 
   it('should create workspace', async () => {
