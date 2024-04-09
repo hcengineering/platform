@@ -13,19 +13,8 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, Domain, Ref } from '@hcengineering/core'
+/** @public */
+export type DocumentId = string & { __documentId: true }
 
 /** @public */
-export interface DocumentId {
-  workspaceUrl: string
-  documentId: string
-  versionId: string
-}
-
-/** @public */
-export interface PlatformDocumentId {
-  objectDomain: Domain
-  objectClass: Ref<Class<Doc>>
-  objectId: Ref<Doc>
-  objectAttr: string
-}
+export type PlatformDocumentId = string & { __platformDocId: true }

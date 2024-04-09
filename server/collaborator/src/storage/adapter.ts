@@ -13,19 +13,12 @@
 // limitations under the License.
 //
 
-import { YDocVersion } from '@hcengineering/collaboration'
+import { DocumentId } from '@hcengineering/collaborator-client'
+import { MeasureContext } from '@hcengineering/core'
 import { Doc as YDoc } from 'yjs'
 import { Context } from '../context'
 
-export interface StorageAdapter {
-  loadDocument: (documentId: string, context: Context) => Promise<YDoc | undefined>
-  saveDocument: (
-    documentId: string,
-    document: YDoc,
-    snapshot: YDocVersion | undefined,
-    context: Context
-  ) => Promise<void>
-  takeSnapshot: (documentId: string, document: YDoc, context: Context) => Promise<YDocVersion | undefined>
+export interface CollabStorageAdapter {
+  loadDocument: (ctx: MeasureContext, documentId: DocumentId, context: Context) => Promise<YDoc | undefined>
+  saveDocument: (ctx: MeasureContext, documentId: DocumentId, document: YDoc, context: Context) => Promise<void>
 }
-
-export type StorageAdapters = Record<string, StorageAdapter>
