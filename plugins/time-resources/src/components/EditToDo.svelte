@@ -49,6 +49,7 @@
   let title: string
   let description: Markup
   let countTag: number = 0
+  let modalWidth: number
 
   const dispatch = createEventDispatcher()
   const queryClient = createQuery()
@@ -135,6 +136,7 @@
         value={object.visibility}
         size={'small'}
         disabled={object._class === time.class.ProjectToDo}
+        withoutLabel={modalWidth < 380}
         on:change={(e) => visibilityChange(e.detail)}
       />
     {/if}
@@ -144,7 +146,7 @@
   </svelte:fragment>
 
   {#if object}
-    <div class="top-content">
+    <div bind:clientHeight={modalWidth} class="top-content">
       <ModernEditbox
         bind:value={title}
         label={time.string.AddTitle}

@@ -23,6 +23,7 @@
   export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
   export let size: 'small' | 'medium' | 'large' = 'medium'
   export let withoutIcon: boolean = false
+  export let withoutLabel: boolean = false
   export let focusIndex = -1
 
   const dispatch = createEventDispatcher()
@@ -57,7 +58,7 @@
 
 <ButtonMenu
   icon={withoutIcon ? undefined : calendar.icon.Hidden}
-  label={selected?.label}
+  label={withoutLabel ? undefined : selected?.label}
   selected={selected?.id}
   {items}
   {kind}

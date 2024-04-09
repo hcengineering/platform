@@ -25,6 +25,7 @@
     getUserTimezone,
     showPopup
   } from '@hcengineering/ui'
+  import { FixedColumn } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import DateLocalePresenter from './DateLocalePresenter.svelte'
 
@@ -38,6 +39,7 @@
   export let disabled: boolean = false
   export let focusIndex = -1
   export let timeZone: string = getUserTimezone()
+  export let fixed: string | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -80,11 +82,19 @@
   class:flex-gap-2={direction === 'horizontal'}
 >
   {#if showDate || withoutTime}
-    <div class="min-w-28">
-      <ButtonBase type="type-button" {kind} {size} {disabled} {focusIndex} on:click={dateClick}>
-        <DateLocalePresenter date={currentDate.getTime()} {timeZone} />
-      </ButtonBase>
-    </div>
+    {#if fixed === undefined}
+      <div class="min-w-28">
+        <ButtonBase type="type-button" {kind} {size} {disabled} {focusIndex} on:click={dateClick}>
+          <span class="overflow-label"><DateLocalePresenter date={currentDate.getTime()} {timeZone} /></span>
+        </ButtonBase>
+      </div>
+    {:else}
+      <FixedColumn key={fixed} addClass={'min-w-28'}>
+        <ButtonBase type="type-button" {kind} {size} {disabled} {focusIndex} on:click={dateClick}>
+          <span class="overflow-label"><DateLocalePresenter date={currentDate.getTime()} {timeZone} /></span>
+        </ButtonBase>
+      </FixedColumn>
+    {/if}
   {/if}
 
   {#if showDate && !withoutTime && direction === 'horizontal'}
