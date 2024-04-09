@@ -783,6 +783,7 @@ async function generateWorkspaceRecord(
       }
     }
   }
+  return { _id: new ObjectId(), ...data }
 }
 
 let searchPromise: Promise<Workspace> | undefined
