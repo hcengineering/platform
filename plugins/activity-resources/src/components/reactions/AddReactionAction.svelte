@@ -48,8 +48,7 @@
         isOpened = false
         dispatch('close')
       },
-      undefined,
-      { category: 'popup', overlay: true, zIndexOverride: 10002 }
+      undefined
     )
 
     isOpened = true

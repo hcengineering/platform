@@ -289,6 +289,7 @@ export interface LabelAndProps {
   onUpdate?: (result: any) => void
   kind?: 'tooltip' | 'submenu' | 'popup'
   keys?: string[]
+  zIndex?: number
 }
 
 export interface ListItem {

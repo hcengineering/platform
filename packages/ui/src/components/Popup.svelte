@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { popupstore as modal } from '../popups'
+  import { popupstore as modal, zIndexPopupTooltip } from '../popups'
   import PopupInstance from './PopupInstance.svelte'
 
   export let contentPanel: HTMLElement | undefined = undefined
@@ -38,7 +38,7 @@
     element={popup.element}
     onClose={popup.onClose}
     onUpdate={popup.onUpdate}
-    zIndex={popup.options.zIndexOverride ?? (i + 1) * 500}
+    zIndex={zIndexPopupTooltip.findIndex((id) => id === popup.id) + 10000 ?? (i + 1) * 500}
     top={$modal.length - 1 === i}
     close={popup.close}
     {contentPanel}

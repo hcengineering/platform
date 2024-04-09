@@ -26,6 +26,7 @@ export interface CompAndProps {
     fixed?: boolean
     zIndexOverride?: number
   }
+  zIndex?: number
 }
 
 export interface PopupResult {
@@ -44,7 +45,7 @@ export function updatePopup (id: string, props: Partial<CompAndProps>): void {
     return popups
   })
 }
-
+export const zIndexPopupTooltip: string[] = []
 function addPopup (props: CompAndProps): void {
   popupstore.update((popups) => {
     popups.push(props)
@@ -72,6 +73,7 @@ export function showPopup (
       if (pos !== -1) {
         popups.splice(pos, 1)
       }
+      zIndexPopupTooltip.pop()
       return popups
     })
   }
@@ -79,12 +81,14 @@ export function showPopup (
   if (typeof component === 'string') {
     getResource(component)
       .then((resolved) => {
+        zIndexPopupTooltip.push(id)
         addPopup({ id, is: resolved, props, element: _element, onClose, onUpdate, close: closePopupOp, options })
       })
       .catch((err) => {
         console.log(err)
       })
   } else {
+    zIndexPopupTooltip.push(id)
     addPopup({ id, is: component, props, element: _element, onClose, onUpdate, close: closePopupOp, options })
   }
   return {

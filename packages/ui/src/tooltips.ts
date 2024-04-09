@@ -1,6 +1,7 @@
 import { type IntlString } from '@hcengineering/platform'
 import { writable } from 'svelte/store'
 import type { AnyComponent, AnySvelteComponent, LabelAndProps, TooltipAlignment } from './types'
+import { zIndexPopupTooltip } from './popups'
 
 const emptyTooltip: LabelAndProps = {
   label: undefined,
@@ -107,7 +108,8 @@ export function showTooltip (
     anchor,
     onUpdate,
     kind,
-    keys
+    keys,
+    zIndex: zIndexPopupTooltip.push(label as string)
   }
   tooltipstore.update((old) => {
     if (old.component === storedValue.component) {
@@ -126,4 +128,5 @@ export function closeTooltip (): void {
   clearTimeout(toHandler)
   storedValue = emptyTooltip
   tooltipstore.set(emptyTooltip)
+  zIndexPopupTooltip.pop()
 }
