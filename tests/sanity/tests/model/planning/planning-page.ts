@@ -48,10 +48,8 @@ export class PlanningPage extends CalendarPage {
     )
     this.buttonPopupCreatePriority = page.locator('div.popup button#priorityButton')
     this.buttonPanelCreatePriority = page.locator('div.hulyModal-container button#priorityButton')
-    this.buttonPopupCreateVisible = page.locator('div.popup button.type-button.menu', { hasText: 'visible' })
-    this.buttonPanelCreateVisible = page.locator('div.hulyModal-container button.type-button.menu', {
-      hasText: 'visible'
-    })
+    this.buttonPopupCreateVisible = page.locator('div.popup button#visibleButton')
+    this.buttonPanelCreateVisible = page.locator('div.hulyModal-container button#visibleButton')
     this.buttonPopupCreateAddLabel = page.locator('div.popup button.antiButton', { hasText: 'Add label' })
     this.buttonPanelCreateAddLabel = page.locator('.hulyHeader-titleGroup > button:nth-child(2)')
     this.buttonPopupCreateAddSlot = page.locator('div.popup button', { hasText: 'Add Slot' })
@@ -137,8 +135,8 @@ export class PlanningPage extends CalendarPage {
 
   public async setTimeSlot (rowNumber: number, slot: Slot, popup: boolean = false): Promise<void> {
     const p = popup
-      ? 'div.popup div.horizontalBox div.end div.flex-col div.flex'
-      : 'div.hulyModal-container div.slots-content div.flex-col div.flex'
+      ? 'div.popup div.horizontalBox div.end div.scroller-container div.box div.flex-row-center.min-w-full'
+      : 'div.hulyModal-container div.slots-content div.scroller-container div.box div.flex-row-center.min-w-full'
     const row = this.page.locator(p).nth(rowNumber)
 
     // dateStart

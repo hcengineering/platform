@@ -65,6 +65,7 @@
   {size}
   {disabled}
   {focusIndex}
+  id={'visibleButton'}
   on:selected={(event) => {
     if (event.detail) change(event.detail)
   }}
