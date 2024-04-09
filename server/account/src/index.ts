@@ -45,8 +45,8 @@ import platform, { getMetadata, PlatformError, Severity, Status, translate } fro
 import { cloneWorkspace } from '@hcengineering/server-backup'
 import { decodeToken, generateToken } from '@hcengineering/server-token'
 import toolPlugin, { connect, initModel, upgradeModel } from '@hcengineering/server-tool'
-import { pbkdf2Sync, randomBytes } from 'crypto'
-import { Binary, Db, Filter, ObjectId } from 'mongodb'
+import { createHash, pbkdf2Sync, randomBytes } from 'crypto'
+import { Binary, Db, Filter, MongoServerError, ObjectId } from 'mongodb'
 import fetch from 'node-fetch'
 import accountPlugin from './plugin'
 
@@ -713,7 +713,8 @@ function getEmailName (email: string): string {
   return email.split('@')[0]
 }
 
-async function generateWorkspaceRecord (
+async function generateWorkspaceRecord(
+  ctx: MeasureContext,
   db: Db,
   email: string,
   productId: string,
@@ -723,12 +724,6 @@ async function generateWorkspaceRecord (
 ): Promise<Workspace> {
   const coll = db.collection<Omit<Workspace, '_id'>>(WORKSPACE_COLLECTION)
   if (fixedWorkspace !== undefined) {
-    const ws = await coll.find<Workspace>({ workspaceUrl: fixedWorkspace }).toArray()
-    if ((await getWorkspaceById(db, productId, fixedWorkspace)) !== null || ws.length > 0) {
-      throw new PlatformError(
-        new Status(Severity.ERROR, platform.status.WorkspaceAlreadyExists, { workspace: fixedWorkspace })
-      )
-    }
     const data = {
       workspace: fixedWorkspace,
       workspaceUrl: fixedWorkspace,
@@ -742,54 +737,53 @@ async function generateWorkspaceRecord (
       createdBy: email
     }
     // Add fixed workspace
-    const id = await coll.insertOne(data)
-    return { _id: id.insertedId, ...data }
-  }
-  const workspaceUrlPrefix = stripId(workspaceName)
-  const workspaceIdPrefix = stripId(getEmailName(email)).slice(0, 12) + '-' + workspaceUrlPrefix.slice(0, 12)
-  let iteration = 0
-  let idPostfix = generateId('-')
-  let urlPostfix = ''
-  while (true) {
-    const workspace = 'w-' + workspaceIdPrefix + '-' + idPostfix
-    let workspaceUrl =
-      workspaceUrlPrefix + (workspaceUrlPrefix.length > 0 && urlPostfix.length > 0 ? '-' : '') + urlPostfix
-    if (workspaceUrl.trim().length === 0) {
-      workspaceUrl = generateId('-')
-    }
-    const ws = await coll.find<Workspace>({ $or: [{ workspaceUrl }, { workspace }] }).toArray()
-    if (ws.length === 0) {
-      const data = {
-        workspace,
-        workspaceUrl,
-        productId,
-        version,
-        workspaceName,
-        accounts: [],
-        disabled: true,
-        createdOn: Date.now(),
-        lastVisit: Date.now(),
-        createdBy: email
-      }
-      // Nice we do not have a workspace or workspaceUrl duplicated.
+    try {
       const id = await coll.insertOne(data)
       return { _id: id.insertedId, ...data }
-    }
-    for (const w of ws) {
-      if (w.workspace === workspaceUrl) {
-        idPostfix = generateId('-')
-      }
-      if (w.workspaceUrl === workspaceUrl) {
-        urlPostfix = generateId('-')
-      }
-    }
-    iteration++
+    } catch (err) {
+      await ctx.error('Add fixed workspace in create workspace', { fixedWorkspace, err })
 
-    // A stupid check, but for sure we not hang.
-    if (iteration > 10000) {
-      throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceRateLimit, { workspace }))
+      if (err instanceof MongoServerError) {
+        if (err.code == 11000) {
+          throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceAlreadyExists, { workspace: err.errmsg }))
+        }
+      }
+    }
+
+  }
+
+
+  const hashFunc = createHash('md5');
+  hashFunc.update(getEmailName(email) + workspaceName);
+  let Hashedworkspace = hashFunc.digest('hex');
+  const workspace = 'w-' + Hashedworkspace
+  const workspaceUrl = 'w-' + Hashedworkspace + "-" + email
+  await ctx.error('get hash in create workspace', { workspace, workspaceUrl, workspaceName, email })
+
+  const data = {
+    workspace: workspace,
+    workspaceUrl: workspaceUrl,
+    productId,
+    version,
+    workspaceName,
+    accounts: [],
+    disabled: true,
+    createdOn: Date.now(),
+    lastVisit: Date.now(),
+    createdBy: email
+  }
+
+  try {
+    const id = await coll.insertOne(data)
+    return { _id: id.insertedId, ...data }
+  } catch (err) {
+    if (err instanceof MongoServerError) {
+      if (err.code == 11000) {
+        throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceAlreadyExists, { workspace: err.errmsg }))
+      }
     }
   }
+  return { _id: new ObjectId(), ...data }
 }
 
 let searchPromise: Promise<Workspace> | undefined
@@ -813,10 +807,11 @@ export async function createWorkspace (
   return await rateLimiter.exec(async () => {
     // We need to search for duplicate workspaceUrl
     await searchPromise
-
     // Safe generate workspace record.
-    searchPromise = generateWorkspaceRecord(db, email, productId, version, workspaceName, workspace)
-
+    searchPromise = generateWorkspaceRecord(ctx, db, email, productId, version, workspaceName, workspace);
+    searchPromise.finally(() => {
+      searchPromise = undefined
+    })
     const workspaceInfo = await searchPromise
     let client: Client | undefined
     const childLogger = ctx.newChild(
