@@ -13,13 +13,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Attachment } from '@hcengineering/attachment'
+  import { AttachmentPreviewExtension, type Attachment } from '@hcengineering/attachment'
   import { getResource } from '@hcengineering/platform'
-  import { PDFViewer, getFileUrl } from '@hcengineering/presentation'
-  import { Action as UIAction, ActionIcon, IconMoreH, IconOpen, Menu, closeTooltip, showPopup } from '@hcengineering/ui'
+  import { getFileUrl } from '@hcengineering/presentation'
+  import {
+    Action as UIAction,
+    ActionIcon,
+    IconMoreH,
+    IconOpen,
+    Menu,
+    closeTooltip,
+    showPopup,
+    PopupAlignment
+  } from '@hcengineering/ui'
   import view, { Action } from '@hcengineering/view'
-  import MediaViewer from './MediaViewer.svelte'
 
+  import { previewTypes, getPreviewType, isOpenable } from '../utils'
   import attachmentPlugin from '../plugin'
   import FileDownload from './icons/FileDownload.svelte'
 
@@ -30,10 +39,27 @@
   let download: HTMLAnchorElement
 
   $: contentType = attachment?.type ?? ''
-  $: openable =
-    contentType.includes('application/pdf') || contentType.startsWith('image/') || contentType.startsWith('video/')
+  let openable = false
+  $: {
+    void isOpenable(contentType, $previewTypes).then((res) => {
+      openable = res
+    })
+  }
+
+  let previewType: AttachmentPreviewExtension | undefined = undefined
+  $: if (openable) {
+    void getPreviewType(contentType, $previewTypes).then((res) => {
+      previewType = res
+    })
+  } else {
+    previewType = undefined
+  }
 
   function showPreview (e: MouseEvent): void {
+    if (!openable || previewType === undefined) {
+      return
+    }
+
     e.preventDefault()
     e.stopPropagation()
     if (e.metaKey || e.ctrlKey) {
@@ -41,10 +67,11 @@
       return
     }
     closeTooltip()
+
     showPopup(
-      contentType.startsWith('video/') ? MediaViewer : PDFViewer,
-      { file: attachment.file, name: attachment.name, contentType, value: attachment },
-      contentType.startsWith('image/') ? 'centered' : 'float'
+      previewType.component,
+      { ...(previewType.props ?? {}), file: attachment.file, name: attachment.name, contentType, value: attachment },
+      (previewType.alignment ?? 'center') as PopupAlignment
     )
   }
 

@@ -51,7 +51,8 @@
     "PinAttachment": "Marcar como importante",
     "UnPinAttachment": "Marcar como menos importante",
     "FilterAttachments": "Anexos",
-    "RemovedAttachment": "Anexo removido"
+    "RemovedAttachment": "Anexo removido",
+    "ContentType": "Tipo de conteúdo"
   },
   "status": {
     "FileTooLarge": "Ficheiro demasiado grande"
