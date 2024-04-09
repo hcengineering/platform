@@ -7,19 +7,19 @@
 
 ## About
 
-The Huly Platform is a robust framework designed to accelerate the development of business applications, such as CRM systems. 
-This repository includes several applications, such as Chat, Project Management, CRM, HRM, and ATS. 
+The Huly Platform is a robust framework designed to accelerate the development of business applications, such as CRM systems.
+This repository includes several applications, such as Chat, Project Management, CRM, HRM, and ATS.
 Various teams are building products on top of the Platform, including [Huly](https://huly.io) and [TraceX](https://tracex.co).
 
 ![Huly](https://huly.io/_astro/dark-kanban.D2kAOX88_q4nnu.webp)
 
 ## Activity
 
-![Alt](https://repobeats.axiom.co/api/embed/c42c99e21691fa60ea61b5cdf11c2e0647621534.svg "Repobeats analytics image")
+![Alt](https://repobeats.axiom.co/api/embed/c42c99e21691fa60ea61b5cdf11c2e0647621534.svg 'Repobeats analytics image')
 
 ## Self-Hosting
 
-If you're primarily interested in self-hosting Huly without the intention to modify or contribute to its development, please use [huly-selfhost](https://github.com/hcengineering/huly-selfhost). 
+If you're primarily interested in self-hosting Huly without the intention to modify or contribute to its development, please use [huly-selfhost](https://github.com/hcengineering/huly-selfhost).
 This project offers a convenient method to host Huly using `docker`, designed for ease of use and quick setup. Explore this option to effortlessly enjoy Huly on your own server.
 
 ## Table of Content
@@ -70,7 +70,7 @@ Support is available for both amd64 and arm64 containers on Linux and macOS.
 
 ```bash
 cd ./dev/
-rush build    # Will build all the required packages. 
+rush build    # Will build all the required packages.
 # rush rebuild  # could be used to omit build cache.
 rush bundle   # Will prepare bundles.
 rush package  # Will build all webpack packages.
@@ -107,6 +107,12 @@ or just:
 ```bash
 sh ./scripts/create-workspace.sh
 ```
+
+If you encounter any errors while attempting to create a workspace using the commands mentioned between lines 96 and 101, you can proceed with the following steps:
+
+- Skip the commands from lines 96 to 101.
+- Go to "Run in development mode" section and run the 2 commands specified in this section.
+- You can now manually create your workspace and begin your work.
 
 Accessing the URL http://localhost:8087 will lead you to the app in production mode.
 
