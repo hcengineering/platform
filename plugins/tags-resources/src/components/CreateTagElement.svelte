@@ -95,9 +95,11 @@
     )
   }
   
+
   function isNotEmpty(str: string): boolean {
     return str !== undefined && str.trim().length > 0;
   }
+
 
 </script>
 
