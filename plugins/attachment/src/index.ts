@@ -133,7 +133,7 @@ export default plugin(attachmentId, {
   },
   previewExtension: {
     Image: '' as Ref<AttachmentPreviewExtension>,
-    Video: '' as Ref<AttachmentPreviewExtension>,
+    Media: '' as Ref<AttachmentPreviewExtension>,
     PDF: '' as Ref<AttachmentPreviewExtension>
   },
   extension: {

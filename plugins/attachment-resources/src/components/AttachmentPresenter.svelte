@@ -85,7 +85,7 @@
     closeTooltip()
     showPopup(
       previewType.component,
-      { file: value.file, name: value.name, contentType: value.type, value },
+      { ...(previewType.props ?? {}), file: value.file, name: value.name, contentType: value.type, value },
       (previewType.alignment ?? 'center') as PopupAlignment
     )
   }

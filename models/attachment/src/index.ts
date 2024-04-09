@@ -202,7 +202,7 @@ export function createModel (builder: Builder): void {
       component: attachment.component.MediaViewer,
       extension: attachment.extension.AttachmentPreview
     },
-    attachment.previewExtension.Video
+    attachment.previewExtension.Media
   )
 
   builder.createDoc(
