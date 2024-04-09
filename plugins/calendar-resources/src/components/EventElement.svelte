@@ -21,7 +21,6 @@
   import { showMenu } from '@hcengineering/view-resources'
   import { calendarStore, isVisible } from '../utils'
   import EventPresenter from './EventPresenter.svelte'
-  import { log, log } from 'console'
 
   export let event: Event
   // export let hourHeight: number
