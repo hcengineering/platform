@@ -133,6 +133,7 @@ export function createModel (builder: Builder): void {
       label: request.string.Request,
       allowedForAuthor: true,
       providers: {
+        [notification.providers.BrowserNotification]: false,
         [notification.providers.PlatformNotification]: true
       }
     },

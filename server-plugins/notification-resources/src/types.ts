@@ -28,5 +28,6 @@ export interface Content {
  */
 export interface NotifyResult {
   allowed: boolean
+  push: boolean
   emails: BaseNotificationType[]
 }

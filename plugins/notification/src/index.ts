@@ -17,7 +17,6 @@ import { ActivityMessage } from '@hcengineering/activity'
 import {
   Account,
   AnyAttribute,
-  AttachedDoc,
   Class,
   Doc,
   DocumentQuery,
@@ -43,11 +42,12 @@ export * from './types'
 /**
  * @public
  */
-export interface Notification extends AttachedDoc {
-  tx: Ref<TxCUD<Doc>>
+export interface BrowserNotification extends Doc {
+  user: Ref<Account>
   status: NotificationStatus
-  text: string
-  type: Ref<NotificationType>
+  title: string
+  body: string
+  onClickLocation?: Location
 }
 
 /**
@@ -55,8 +55,7 @@ export interface Notification extends AttachedDoc {
  */
 export enum NotificationStatus {
   New,
-  Notified,
-  Read
+  Notified
 }
 
 /**
@@ -137,6 +136,8 @@ export interface CommonNotificationType extends BaseNotificationType {}
  */
 export interface NotificationProvider extends Doc {
   label: IntlString
+  depends?: Ref<NotificationProvider>
+  onChange?: Resource<(value: boolean) => Promise<boolean>>
 }
 
 /**
@@ -315,6 +316,11 @@ export interface ActivityNotificationViewlet extends Doc {
 /**
  * @public
  */
+export type NotifyFunc = (title: string, body: string, _id?: string, onClick?: () => void) => void
+
+/**
+ * @public
+ */
 const notification = plugin(notificationId, {
   mixin: {
     ClassCollaborators: '' as Ref<Mixin<ClassCollaborators>>,
@@ -324,7 +330,7 @@ const notification = plugin(notificationId, {
     NotificationContextPresenter: '' as Ref<Mixin<NotificationContextPresenter>>
   },
   class: {
-    Notification: '' as Ref<Class<Notification>>,
+    BrowserNotification: '' as Ref<Class<BrowserNotification>>,
     BaseNotificationType: '' as Ref<Class<BaseNotificationType>>,
     NotificationType: '' as Ref<Class<NotificationType>>,
     CommonNotificationType: '' as Ref<Class<CommonNotificationType>>,
@@ -403,9 +409,12 @@ const notification = plugin(notificationId, {
     ArchiveAllConfirmationTitle: '' as IntlString,
     ArchiveAllConfirmationMessage: '' as IntlString,
     YouAddedCollaborators: '' as IntlString,
-    YouRemovedCollaborators: '' as IntlString
+    YouRemovedCollaborators: '' as IntlString,
+    Push: '' as IntlString
   },
   function: {
+    Notify: '' as Resource<NotifyFunc>,
+    CheckPushPermission: '' as Resource<(value: boolean) => Promise<boolean>>,
     GetInboxNotificationsClient: '' as Resource<InboxNotificationsClientFactory>,
     HasInboxNotifications: '' as Resource<
     (notificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>) => Promise<boolean>

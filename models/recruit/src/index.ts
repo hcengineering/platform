@@ -1304,6 +1304,7 @@ export function createModel (builder: Builder): void {
       },
       providers: {
         [notification.providers.PlatformNotification]: true,
+        [notification.providers.BrowserNotification]: true,
         [notification.providers.EmailNotification]: true
       }
     },
@@ -1342,7 +1343,8 @@ export function createModel (builder: Builder): void {
       objectClass: recruit.class.Applicant,
       spaceSubscribe: true,
       providers: {
-        [notification.providers.PlatformNotification]: false
+        [notification.providers.PlatformNotification]: false,
+        [notification.providers.BrowserNotification]: false
       }
     },
     recruit.ids.ApplicationCreateNotification

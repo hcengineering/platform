@@ -369,7 +369,8 @@ function defineDocument (builder: Builder): void {
       txClasses: [core.class.TxUpdateDoc],
       objectClass: document.class.Document,
       providers: {
-        [notification.providers.PlatformNotification]: true
+        [notification.providers.PlatformNotification]: true,
+        [notification.providers.BrowserNotification]: false
       }
     },
     document.ids.ContentNotification
