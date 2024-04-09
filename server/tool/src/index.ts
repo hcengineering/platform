@@ -111,8 +111,9 @@ export async function initModel (
   workspaceId: WorkspaceId,
   rawTxes: Tx[],
   migrateOperations: [string, MigrateOperation][],
-  logger: ModelLogger = consoleModelLogger
-): Promise<CoreClient> {
+  logger: ModelLogger = consoleModelLogger,
+  skipOperations: boolean = false
+): Promise<CoreClient | undefined> {
   const { mongodbUri, storageAdapter: minio, txes } = prepareTools(rawTxes)
   if (txes.some((tx) => tx.objectSpace !== core.space.Model)) {
     throw Error('Model txes must target only core.space.Model')
@@ -131,38 +132,39 @@ export async function initModel (
     logger.log('creating data...', { transactorUrl })
     const { model } = await fetchModelFromMongo(ctx, mongodbUri, workspaceId)
 
-    connection = (await connect(
-      transactorUrl,
-      workspaceId,
-      undefined,
-      {
-        model: 'upgrade',
-        admin: 'true'
-      },
-      model
-    )) as unknown as CoreClient & BackupClient
+    logger.log('create minio bucket', { workspaceId })
+    if (!(await minio.exists(ctx, workspaceId))) {
+      await minio.make(ctx, workspaceId)
+    }
+    if (!skipOperations) {
+      connection = (await connect(
+        transactorUrl,
+        workspaceId,
+        undefined,
+        {
+          model: 'upgrade',
+          admin: 'true'
+        },
+        model
+      )) as unknown as CoreClient & BackupClient
 
-    try {
-      for (const op of migrateOperations) {
-        logger.log('Migrate', { name: op[0] })
-        await op[1].upgrade(connection, logger)
+      try {
+        for (const op of migrateOperations) {
+          logger.log('Migrate', { name: op[0] })
+          await op[1].upgrade(connection, logger)
+        }
+
+        // Create update indexes
+        await createUpdateIndexes(ctx, connection, db, logger)
+      } catch (e: any) {
+        logger.error('error', { error: e })
+        throw e
       }
-
-      // Create update indexes
-      await createUpdateIndexes(ctx, connection, db, logger)
-
-      logger.log('create minio bucket', { workspaceId })
-      if (!(await minio.exists(ctx, workspaceId))) {
-        await minio.make(ctx, workspaceId)
-      }
-    } catch (e: any) {
-      logger.error('error', { error: e })
-      throw e
+      return connection
     }
   } finally {
     _client.close()
   }
-  return connection
 }
 
 /**
@@ -174,7 +176,8 @@ export async function upgradeModel (
   workspaceId: WorkspaceId,
   rawTxes: Tx[],
   migrateOperations: [string, MigrateOperation][],
-  logger: ModelLogger = consoleModelLogger
+  logger: ModelLogger = consoleModelLogger,
+  skipTxUpdate: boolean = false
 ): Promise<CoreClient> {
   const { mongodbUri, txes } = prepareTools(rawTxes)
 
@@ -188,28 +191,30 @@ export async function upgradeModel (
   try {
     const db = getWorkspaceDB(client, workspaceId)
 
-    logger.log('removing model...', { workspaceId: workspaceId.name })
-    // we're preserving accounts (created by core.account.System).
-    const result = await ctx.with(
-      'mongo-delete',
-      {},
-      async () =>
-        await db.collection(DOMAIN_TX).deleteMany({
-          objectSpace: core.space.Model,
-          modifiedBy: core.account.System,
-          objectClass: { $nin: [contact.class.PersonAccount, 'contact:class:EmployeeAccount'] }
-        })
-    )
-    logger.log('transactions deleted.', { workspaceId: workspaceId.name, count: result.deletedCount })
+    if (!skipTxUpdate) {
+      logger.log('removing model...', { workspaceId: workspaceId.name })
+      // we're preserving accounts (created by core.account.System).
+      const result = await ctx.with(
+        'mongo-delete',
+        {},
+        async () =>
+          await db.collection(DOMAIN_TX).deleteMany({
+            objectSpace: core.space.Model,
+            modifiedBy: core.account.System,
+            objectClass: { $nin: [contact.class.PersonAccount, 'contact:class:EmployeeAccount'] }
+          })
+      )
+      logger.log('transactions deleted.', { workspaceId: workspaceId.name, count: result.deletedCount })
 
-    logger.log('creating model...', { workspaceId: workspaceId.name })
-    const insert = await ctx.with(
-      'mongo-insert',
-      {},
-      async () => await db.collection(DOMAIN_TX).insertMany(txes as Document[])
-    )
+      logger.log('creating model...', { workspaceId: workspaceId.name })
+      const insert = await ctx.with(
+        'mongo-insert',
+        {},
+        async () => await db.collection(DOMAIN_TX).insertMany(txes as Document[])
+      )
 
-    logger.log('model transactions inserted.', { workspaceId: workspaceId.name, count: insert.insertedCount })
+      logger.log('model transactions inserted.', { workspaceId: workspaceId.name, count: insert.insertedCount })
+    }
 
     const { hierarchy, modelDb, model } = await fetchModelFromMongo(ctx, mongodbUri, workspaceId)
 

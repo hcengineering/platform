@@ -166,43 +166,47 @@ class ElasticDataAdapter implements DbAdapter {
 
   async load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
     const result: Doc[] = []
+    const toLoad = [...docs]
 
-    const resp = await this.client.search({
-      index: indexName,
-      type: '_doc',
-      body: {
-        query: {
-          bool: {
-            must: [
-              {
-                terms: {
-                  _id: docs,
-                  boost: 1.0
+    while (toLoad.length > 0) {
+      const part = toLoad.splice(0, 5000)
+      const resp = await this.client.search({
+        index: indexName,
+        type: '_doc',
+        body: {
+          query: {
+            bool: {
+              must: [
+                {
+                  terms: {
+                    _id: part,
+                    boost: 1.0
+                  }
+                },
+                {
+                  match: {
+                    workspaceId: { query: toWorkspaceString(this.workspaceId), operator: 'and' }
+                  }
                 }
-              },
-              {
-                match: {
-                  workspaceId: { query: toWorkspaceString(this.workspaceId), operator: 'and' }
-                }
-              }
-            ]
-          }
-        },
-        size: docs.length
-      }
-    })
-    const buffer = resp.body.hits.hits.map((hit: any) => ({ _id: hit._id, data: hit._source }))
+              ]
+            }
+          },
+          size: part.length
+        }
+      })
+      const buffer = resp.body.hits.hits.map((hit: any) => ({ _id: hit._id, data: hit._source }))
 
-    for (const item of buffer) {
-      const dta: FullTextData = {
-        _id: item._id as Ref<FullTextData>,
-        _class: core.class.FulltextData,
-        space: 'fulltext-blob' as Ref<Space>,
-        modifiedOn: item.data.modifiedOn,
-        modifiedBy: item.data.modifiedBy,
-        data: item.data
+      for (const item of buffer) {
+        const dta: FullTextData = {
+          _id: item._id as Ref<FullTextData>,
+          _class: core.class.FulltextData,
+          space: 'fulltext-blob' as Ref<Space>,
+          modifiedOn: item.data.modifiedOn,
+          modifiedBy: item.data.modifiedBy,
+          data: item.data
+        }
+        result.push(dta)
       }
-      result.push(dta)
     }
     return result
   }
