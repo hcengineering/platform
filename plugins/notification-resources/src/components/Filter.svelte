@@ -13,36 +13,27 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { IconFilter, SelectPopup, eventToHTMLElement, showPopup, ButtonIcon } from '@hcengineering/ui'
-  import notification from '../plugin'
-
-  export let filter: 'all' | 'read' | 'unread' = 'all'
-
-  $: filters = [
-    {
-      id: 'all',
-      isSelected: filter === 'all',
-      label: notification.string.All
-    },
-    {
-      id: 'read',
-      isSelected: filter === 'read',
-      label: notification.string.Read
-    },
-    {
-      id: 'unread',
-      isSelected: filter === 'unread',
-      label: notification.string.Unread
-    }
-  ]
-
-  function click (e: MouseEvent) {
-    showPopup(SelectPopup, { value: filters }, eventToHTMLElement(e), (res) => {
-      if (res) {
-        filter = res
-      }
-    })
+  import ToggleWithLabel from "@hcengineering/ui/src/components/ToggleWithLabel.svelte"
+  export let filter: 'all' | 'unread' = 'all'
+  function toggle (on?: boolean) {
+    filter = on ? 'unread' : 'all'
   }
 </script>
 
-<ButtonIcon icon={IconFilter} size="small" on:click={click} />
+<div class="toggle-wrapper">
+  <ToggleWithLabel 
+    label={"Unread"}
+    on:change={(e) => toggle(e.detail)}
+  />
+</div>
+
+<style lang="scss">
+  .toggle-wrapper {
+    width: fit-content;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: .5rem;
+  }
+</style>
+
