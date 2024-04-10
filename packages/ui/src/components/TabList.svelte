@@ -29,6 +29,8 @@
   export let onlyIcons: boolean = false
   export let size: 'small' | 'medium' = 'medium'
   export let adaptiveShrink: WidthType | null = null
+  export let padding: string | undefined = undefined
+  export let bottomPadding: string | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -67,7 +69,7 @@
       }}
     />
   {:else}
-    <Scroller horizontal>
+    <Scroller horizontal stickedScrollBars {padding} {bottomPadding}>
       <div class="tablist-container {kind} {size} {expansion}">
         {#each items as item, i}
           <!-- svelte-ignore a11y-click-events-have-key-events -->

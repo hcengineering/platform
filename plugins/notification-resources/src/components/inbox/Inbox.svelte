@@ -346,7 +346,7 @@
         </div>
 
         <div class="tabs">
-          <TabList items={tabItems} selected={selectedTabId} on:select={selectTab} />
+          <TabList items={tabItems} selected={selectedTabId} on:select={selectTab} padding={'var(--spacing-1) 0'} />
         </div>
 
         <Scroller padding="0">
@@ -377,10 +377,7 @@
 <style lang="scss">
   .tabs {
     display: flex;
-    margin-top: 0.5rem;
-    margin-bottom: 0;
     padding: 0 var(--spacing-1_5);
-    padding-bottom: 0.5rem;
     border-bottom: 1px solid var(--theme-navpanel-border);
   }
 
