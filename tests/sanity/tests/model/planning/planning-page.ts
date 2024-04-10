@@ -272,6 +272,8 @@ export class PlanningPage extends CalendarPage {
       .locator('div.hulyModal-container div.slots-content div.scroller-container div.box div.flex-between.min-w-full')
       .nth(rowNumber)
     // dateEnd
-    await expect(row.locator('div.dateEditor-container:first-child > div.min-w-28:first-child button')).toContainText(dateEnd)
+    await expect(row.locator('div.dateEditor-container:first-child > div.min-w-28:first-child button')).toContainText(
+      dateEnd
+    )
   }
 }

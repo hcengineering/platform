@@ -182,7 +182,7 @@
   </div>
   <Scroller thinScrollBars>
     <div class="block first flex-no-shrink">
-      <EventTimeEditor {allDay} bind:startDate bind:dueDate {timeZone} focusIndex={10004} fixed={'createEvent'} />
+      <EventTimeEditor {allDay} bind:startDate bind:dueDate {timeZone} focusIndex={10004} />
       <EventTimeExtraButton
         bind:allDay
         bind:timeZone
