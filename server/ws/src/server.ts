@@ -64,6 +64,7 @@ export interface Timeouts {
 }
 
 class TSessionManager implements SessionManager {
+  private readonly statusPromises = new Map<string, Promise<void>>()
   readonly workspaces = new Map<string, Workspace>()
   checkInterval: any
 
@@ -295,7 +296,7 @@ class TSessionManager implements SessionManager {
       workspace.sessions.set(session.sessionId, { session, socket: ws })
 
       // We do not need to wait for set-status, just return session to client
-      void ctx.with('set-status', {}, (ctx) => this.setStatus(ctx, session, true))
+      void ctx.with('set-status', {}, (ctx) => this.trySetStatus(ctx, session, true))
 
       if (this.timeMinutes > 0) {
         void ws.send(
@@ -420,6 +421,17 @@ class TSessionManager implements SessionManager {
     return workspace
   }
 
+  private async trySetStatus (ctx: MeasureContext, session: Session, online: boolean): Promise<void> {
+    const current = this.statusPromises.get(session.getUser())
+    if (current !== undefined) {
+      await current
+    }
+    const promise = this.setStatus(ctx, session, online)
+    this.statusPromises.set(session.getUser(), promise)
+    await promise
+    this.statusPromises.delete(session.getUser())
+  }
+
   private async setStatus (ctx: MeasureContext, session: Session, online: boolean): Promise<void> {
     try {
       const user = (
@@ -475,7 +487,7 @@ class TSessionManager implements SessionManager {
       const user = sessionRef.session.getUser()
       const another = Array.from(workspace.sessions.values()).findIndex((p) => p.session.getUser() === user)
       if (another === -1) {
-        await this.setStatus(workspace.context, sessionRef.session, false)
+        await this.trySetStatus(workspace.context, sessionRef.session, false)
       }
       if (!workspace.upgrade) {
         // Wait some time for new client to appear before closing workspace.
@@ -513,7 +525,7 @@ class TSessionManager implements SessionManager {
         await this.sendUpgrade(workspace.context, webSocket, s.binaryResponseMode)
       }
       webSocket.close()
-      await this.setStatus(workspace.context, s, false)
+      await this.trySetStatus(workspace.context, s, false)
     }
 
     if (LOGGING_ENABLED) {
