@@ -31,6 +31,7 @@ import core, {
   generateId,
   getWorkspaceId,
   MeasureContext,
+  MeasureMetricsContext,
   RateLimiter,
   Ref,
   systemAccountEmail,
@@ -112,6 +113,9 @@ export interface Workspace {
   lastVisit: number
 
   createdBy: string
+
+  creating?: boolean
+  createProgress?: number // Some progress
 }
 
 /**
@@ -129,6 +133,9 @@ export interface LoginInfo {
 export interface WorkspaceLoginInfo extends LoginInfo {
   workspace: string
   productId: string
+
+  creating?: boolean
+  createProgress?: number
 }
 
 /**
@@ -344,12 +351,14 @@ export async function selectWorkspace (
       email,
       token: generateToken(email, getWorkspaceId(workspaceInfo.workspace, productId), getExtra(accountInfo)),
       workspace: workspaceUrl,
-      productId
+      productId,
+      creating: workspaceInfo.creating,
+      createProgress: workspaceInfo.createProgress
     }
   }
 
   if (workspaceInfo !== null) {
-    if (workspaceInfo.disabled === true) {
+    if (workspaceInfo.disabled === true && workspaceInfo.creating !== true) {
       await ctx.error('workspace disabled', { workspaceUrl, email })
       throw new PlatformError(
         new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspaceUrl })
@@ -364,7 +373,9 @@ export async function selectWorkspace (
           email,
           token: generateToken(email, getWorkspaceId(workspaceInfo.workspace, productId), getExtra(accountInfo)),
           workspace: workspaceUrl,
-          productId
+          productId,
+          creating: workspaceInfo.creating,
+          createProgress: workspaceInfo.createProgress
         }
         return result
       }
@@ -675,6 +686,19 @@ export async function setWorkspaceDisabled (db: Db, workspaceId: Workspace['_id'
   await db.collection<Workspace>(WORKSPACE_COLLECTION).updateOne({ _id: workspaceId }, { $set: { disabled } })
 }
 
+export async function cleanInProgressWorkspaces (db: Db, productId: string): Promise<void> {
+  const toDelete = (
+    await db
+      .collection<Workspace>(WORKSPACE_COLLECTION)
+      .find(withProductId(productId, { creating: true }))
+      .toArray()
+  ).map((it) => ({ ...it, productId }))
+  const ctx = new MeasureMetricsContext('clean', {})
+  for (const d of toDelete) {
+    await dropWorkspace(ctx, db, productId, d.workspace)
+  }
+}
+
 /**
  * @public
  */
@@ -737,6 +761,8 @@ async function generateWorkspaceRecord (
       workspaceName,
       accounts: [],
       disabled: true,
+      creating: true,
+      createProgress: 0,
       createdOn: Date.now(),
       lastVisit: Date.now(),
       createdBy: email
@@ -767,6 +793,8 @@ async function generateWorkspaceRecord (
         workspaceName,
         accounts: [],
         disabled: true,
+        creating: true,
+        createProgress: 0,
         createdOn: Date.now(),
         lastVisit: Date.now(),
         createdBy: email
@@ -808,7 +836,8 @@ export async function createWorkspace (
   productId: string,
   email: string,
   workspaceName: string,
-  workspace?: string
+  workspace?: string,
+  notifyHandler?: (workspace: Workspace) => void
 ): Promise<{ workspaceInfo: Workspace, err?: any, client?: Client }> {
   return await rateLimiter.exec(async () => {
     // We need to search for duplicate workspaceUrl
@@ -818,6 +847,18 @@ export async function createWorkspace (
     searchPromise = generateWorkspaceRecord(db, email, productId, version, workspaceName, workspace)
 
     const workspaceInfo = await searchPromise
+
+    notifyHandler?.(workspaceInfo)
+
+    const wsColl = db.collection<Omit<Workspace, '_id'>>(WORKSPACE_COLLECTION)
+
+    async function updateInfo (ops: Partial<Workspace>): Promise<void> {
+      await wsColl.updateOne({ _id: workspaceInfo._id }, { $set: ops })
+      console.log('update', ops)
+    }
+
+    await updateInfo({ createProgress: 10 })
+
     let client: Client | undefined
     const childLogger = ctx.newChild(
       'createWorkspace',
@@ -838,24 +879,54 @@ export async function createWorkspace (
       const wsId = getWorkspaceId(workspaceInfo.workspace, productId)
       if (initWS !== undefined && (await getWorkspaceById(db, productId, initWS)) !== null) {
         // Just any valid model for transactor to be able to function
-        await initModel(ctx, getTransactor(), wsId, txes, [], ctxModellogger, true)
+        await (
+          await initModel(ctx, getTransactor(), wsId, txes, [], ctxModellogger, async (value) => {
+            await updateInfo({ createProgress: Math.round((Math.min(value, 100) / 100) * 20) })
+          })
+        ).close()
+        await updateInfo({ createProgress: 20 })
         // Clone init workspace.
         await cloneWorkspace(
           getTransactor(),
           getWorkspaceId(initWS, productId),
-          getWorkspaceId(workspaceInfo.workspace, productId)
+          getWorkspaceId(workspaceInfo.workspace, productId),
+          true,
+          async (value) => {
+            await updateInfo({ createProgress: 20 + Math.round((Math.min(value, 100) / 100) * 30) })
+          }
         )
-        client = await upgradeModel(ctx, getTransactor(), wsId, txes, migrationOperation, ctxModellogger)
+        await updateInfo({ createProgress: 50 })
+        client = await upgradeModel(
+          ctx,
+          getTransactor(),
+          wsId,
+          txes,
+          migrationOperation,
+          ctxModellogger,
+          true,
+          async (value) => {
+            await updateInfo({ createProgress: Math.round(50 + (Math.min(value, 100) / 100) * 40) })
+          }
+        )
+        await updateInfo({ createProgress: 90 })
       } else {
-        client = await initModel(ctx, getTransactor(), wsId, txes, migrationOperation, ctxModellogger)
+        client = await initModel(
+          ctx,
+          getTransactor(),
+          wsId,
+          txes,
+          migrationOperation,
+          ctxModellogger,
+          async (value) => {
+            await updateInfo({ createProgress: Math.round(Math.min(value, 100)) })
+          }
+        )
       }
     } catch (err: any) {
       return { workspaceInfo, err, client: null as any }
     }
     // Workspace is created, we need to clear disabled flag.
-    await db
-      .collection<Omit<Workspace, '_id'>>(WORKSPACE_COLLECTION)
-      .updateOne({ _id: workspaceInfo._id }, { $set: { disabled: false } })
+    await updateInfo({ createProgress: 100, disabled: false, creating: false })
     return { workspaceInfo, client }
   })
 }
@@ -901,7 +972,16 @@ export async function upgradeWorkspace (
     }
   )
   await (
-    await upgradeModel(ctx, getTransactor(), getWorkspaceId(ws.workspace, productId), txes, migrationOperation, logger)
+    await upgradeModel(
+      ctx,
+      getTransactor(),
+      getWorkspaceId(ws.workspace, productId),
+      txes,
+      migrationOperation,
+      logger,
+      false,
+      async (value) => {}
+    )
   ).close()
   return versionStr
 }
@@ -933,42 +1013,56 @@ export const createUserWorkspace =
         }
       }
 
-      const { workspaceInfo, err, client } = await createWorkspace(
-        ctx,
-        version,
-        txes,
-        migrationOperation,
-        db,
-        productId,
-        email,
-        workspaceName
-      )
-
-      if (err != null) {
-        await ctx.error('failed to create workspace', { err, workspaceName, email })
-        // We need to drop workspace, to prevent wrong data usage.
-
-        await db.collection(WORKSPACE_COLLECTION).updateOne(
-          {
-            _id: workspaceInfo._id
-          },
-          { $set: { disabled: true, message: JSON.stringify(err?.message ?? ''), err: JSON.stringify(err) } }
+      async function doCreate (info: Account, notifyHandler: (workspace: Workspace) => void): Promise<void> {
+        const { workspaceInfo, err, client } = await createWorkspace(
+          ctx,
+          version,
+          txes,
+          migrationOperation,
+          db,
+          productId,
+          email,
+          workspaceName,
+          undefined,
+          notifyHandler
         )
-        throw err
-      }
-      try {
-        info.lastWorkspace = Date.now()
 
-        // Update last workspace time.
-        await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: info._id }, { $set: { lastWorkspace: Date.now() } })
+        if (err != null) {
+          await ctx.error('failed to create workspace', { err, workspaceName, email })
+          // We need to drop workspace, to prevent wrong data usage.
 
-        const initWS = getMetadata(toolPlugin.metadata.InitWorkspace)
-        const shouldUpdateAccount = initWS !== undefined && (await getWorkspaceById(db, productId, initWS)) !== null
-        await assignWorkspace(ctx, db, productId, email, workspaceInfo.workspace, shouldUpdateAccount, client)
-        await setRole(email, workspaceInfo.workspace, productId, AccountRole.Owner, client)
-      } finally {
-        await client?.close()
+          await db.collection(WORKSPACE_COLLECTION).updateOne(
+            {
+              _id: workspaceInfo._id
+            },
+            { $set: { disabled: true, message: JSON.stringify(err?.message ?? ''), err: JSON.stringify(err) } }
+          )
+          throw err
+        }
+        try {
+          info.lastWorkspace = Date.now()
+
+          // Update last workspace time.
+          await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: info._id }, { $set: { lastWorkspace: Date.now() } })
+
+          const initWS = getMetadata(toolPlugin.metadata.InitWorkspace)
+          const shouldUpdateAccount = initWS !== undefined && (await getWorkspaceById(db, productId, initWS)) !== null
+          await assignWorkspace(ctx, db, productId, email, workspaceInfo.workspace, shouldUpdateAccount, client)
+          await setRole(email, workspaceInfo.workspace, productId, AccountRole.Owner, client)
+          await ctx.info('Creating server side done', { workspaceName, email })
+        } finally {
+          await client?.close()
+        }
       }
+
+      const workspaceInfo = await new Promise<Workspace>((resolve) => {
+        void doCreate(info, (info: Workspace) => {
+          resolve(info)
+        })
+      })
+
+      await assignWorkspaceRaw(db, { account: info, workspace: workspaceInfo })
+
       const result = {
         endpoint: getEndpoint(),
         email,
@@ -976,7 +1070,7 @@ export const createUserWorkspace =
         productId,
         workspace: workspaceInfo.workspaceUrl
       }
-      await ctx.info('Creating workspace done', { workspaceName, email })
+      await ctx.info('Creating user side done', { workspaceName, email })
       return result
     }
 
@@ -1051,7 +1145,7 @@ export async function getUserWorkspaces (
       .find(withProductId(productId, account.admin === true ? {} : { _id: { $in: account.workspaces } }))
       .toArray()
   )
-    .filter((it) => it.disabled !== true)
+    .filter((it) => it.disabled !== true || it.creating === true)
     .map(mapToClientWorkspace)
 }
 
@@ -1094,7 +1188,7 @@ export async function getWorkspaceInfo (
 
   const [ws] = (
     await db.collection<Workspace>(WORKSPACE_COLLECTION).find(withProductId(productId, query)).toArray()
-  ).filter((it) => it.disabled !== true || account?.admin === true)
+  ).filter((it) => it.disabled !== true || account?.admin === true || it.creating === true)
   if (ws == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
@@ -1198,6 +1292,13 @@ export async function assignWorkspace (
   }
 
   // Add account into workspace.
+  await assignWorkspaceRaw(db, workspaceInfo)
+
+  await ctx.info('assign-workspace success', { email, workspaceId })
+  return workspaceInfo.workspace
+}
+
+async function assignWorkspaceRaw (db: Db, workspaceInfo: { account: Account, workspace: Workspace }): Promise<void> {
   await db
     .collection(WORKSPACE_COLLECTION)
     .updateOne({ _id: workspaceInfo.workspace._id }, { $addToSet: { accounts: workspaceInfo.account._id } })
@@ -1206,9 +1307,6 @@ export async function assignWorkspace (
   await db
     .collection(ACCOUNT_COLLECTION)
     .updateOne({ _id: workspaceInfo.account._id }, { $addToSet: { workspaces: workspaceInfo.workspace._id } })
-
-  await ctx.info('assign-workspace success', { email, workspaceId })
-  return workspaceInfo.workspace
 }
 
 async function createEmployee (ops: TxOperations, name: string, _email: string): Promise<Ref<Person>> {

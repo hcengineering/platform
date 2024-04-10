@@ -112,8 +112,8 @@ export async function initModel (
   rawTxes: Tx[],
   migrateOperations: [string, MigrateOperation][],
   logger: ModelLogger = consoleModelLogger,
-  skipOperations: boolean = false
-): Promise<CoreClient | undefined> {
+  progress: (value: number) => Promise<void>
+): Promise<CoreClient> {
   const { mongodbUri, storageAdapter: minio, txes } = prepareTools(rawTxes)
   if (txes.some((tx) => tx.objectSpace !== core.space.Model)) {
     throw Error('Model txes must target only core.space.Model')
@@ -129,39 +129,48 @@ export async function initModel (
     const result = await db.collection(DOMAIN_TX).insertMany(txes as Document[])
     logger.log('model transactions inserted.', { count: result.insertedCount })
 
+    await progress(10)
+
     logger.log('creating data...', { transactorUrl })
     const { model } = await fetchModelFromMongo(ctx, mongodbUri, workspaceId)
+
+    await progress(20)
 
     logger.log('create minio bucket', { workspaceId })
     if (!(await minio.exists(ctx, workspaceId))) {
       await minio.make(ctx, workspaceId)
     }
-    if (!skipOperations) {
-      connection = (await connect(
-        transactorUrl,
-        workspaceId,
-        undefined,
-        {
-          model: 'upgrade',
-          admin: 'true'
-        },
-        model
-      )) as unknown as CoreClient & BackupClient
+    connection = (await connect(
+      transactorUrl,
+      workspaceId,
+      undefined,
+      {
+        model: 'upgrade',
+        admin: 'true'
+      },
+      model
+    )) as unknown as CoreClient & BackupClient
 
-      try {
-        for (const op of migrateOperations) {
-          logger.log('Migrate', { name: op[0] })
-          await op[1].upgrade(connection, logger)
-        }
-
-        // Create update indexes
-        await createUpdateIndexes(ctx, connection, db, logger)
-      } catch (e: any) {
-        logger.error('error', { error: e })
-        throw e
+    try {
+      let i = 0
+      for (const op of migrateOperations) {
+        logger.log('Migrate', { name: op[0] })
+        await op[1].upgrade(connection, logger)
+        i++
+        await progress(20 + (((100 / migrateOperations.length) * i) / 100) * 10)
       }
-      return connection
+      await progress(30)
+
+      // Create update indexes
+      await createUpdateIndexes(ctx, connection, db, logger, async (value) => {
+        await progress(30 + (Math.min(value, 100) / 100) * 70)
+      })
+      await progress(100)
+    } catch (e: any) {
+      logger.error('error', { error: e })
+      throw e
     }
+    return connection
   } finally {
     _client.close()
   }
@@ -177,7 +186,8 @@ export async function upgradeModel (
   rawTxes: Tx[],
   migrateOperations: [string, MigrateOperation][],
   logger: ModelLogger = consoleModelLogger,
-  skipTxUpdate: boolean = false
+  skipTxUpdate: boolean = false,
+  progress: (value: number) => Promise<void>
 ): Promise<CoreClient> {
   const { mongodbUri, txes } = prepareTools(rawTxes)
 
@@ -193,6 +203,7 @@ export async function upgradeModel (
 
     if (!skipTxUpdate) {
       logger.log('removing model...', { workspaceId: workspaceId.name })
+      await progress(10)
       // we're preserving accounts (created by core.account.System).
       const result = await ctx.with(
         'mongo-delete',
@@ -214,16 +225,20 @@ export async function upgradeModel (
       )
 
       logger.log('model transactions inserted.', { workspaceId: workspaceId.name, count: insert.insertedCount })
+      await progress(20)
     }
 
     const { hierarchy, modelDb, model } = await fetchModelFromMongo(ctx, mongodbUri, workspaceId)
 
     await ctx.with('migrate', {}, async () => {
       const migrateClient = new MigrateClientImpl(db, hierarchy, modelDb, logger)
+      let i = 0
       for (const op of migrateOperations) {
         const t = Date.now()
         await op[1].migrate(migrateClient, logger)
         logger.log('migrate:', { workspaceId: workspaceId.name, operation: op[0], time: Date.now() - t })
+        await progress(20 + ((100 / migrateOperations.length) * i * 20) / 100)
+        i++
       }
     })
     logger.log('Apply upgrade operations', { workspaceId: workspaceId.name })
@@ -245,16 +260,23 @@ export async function upgradeModel (
         )
     )
 
-    // Create update indexes
-    await ctx.with('create-indexes', {}, async (ctx) => {
-      await createUpdateIndexes(ctx, connection, db, logger)
-    })
+    if (!skipTxUpdate) {
+      // Create update indexes
+      await ctx.with('create-indexes', {}, async (ctx) => {
+        await createUpdateIndexes(ctx, connection, db, logger, async (value) => {
+          await progress(40 + (Math.min(value, 100) / 100) * 20)
+        })
+      })
+    }
 
     await ctx.with('upgrade', {}, async () => {
+      let i = 0
       for (const op of migrateOperations) {
         const t = Date.now()
         await op[1].upgrade(connection, logger)
         logger.log('upgrade:', { operation: op[0], time: Date.now() - t, workspaceId: workspaceId.name })
+        await progress(60 + ((100 / migrateOperations.length) * i * 40) / 100)
+        i++
       }
     })
     return connection
@@ -295,7 +317,8 @@ async function createUpdateIndexes (
   ctx: MeasureContext,
   connection: CoreClient,
   db: Db,
-  logger: ModelLogger
+  logger: ModelLogger,
+  progress: (value: number) => Promise<void>
 ): Promise<void> {
   const classes = await ctx.with('find-classes', {}, async () => await connection.findAll(core.class.Class, {}))
 
@@ -339,6 +362,8 @@ async function createUpdateIndexes (
     {},
     async () => await db.listCollections({}, { nameOnly: true }).toArray()
   )
+  const promises: Promise<void>[] = []
+  let completed = 0
   for (const [d, v] of domains.entries()) {
     const collInfo = collections.find((it) => it.name === d)
     if (collInfo == null) {
@@ -352,13 +377,25 @@ async function createUpdateIndexes (
         const name = typeof vv === 'string' ? `${key}_1` : `${key}_${vv[key]}`
         const exists = await collection.indexExists(name)
         if (!exists) {
-          await collection.createIndex(vv)
           bb.push(vv)
         }
       } catch (err: any) {
         logger.error('error: failed to create index', { d, vv, err })
       }
     }
+    for (const vv of bb) {
+      promises.push(
+        collection
+          .createIndex(vv, {
+            background: true
+          })
+          .then(async () => {
+            completed++
+            await progress((100 / bb.length) * completed)
+          })
+      )
+    }
+    await Promise.all(promises)
     if (bb.length > 0) {
       logger.log('created indexes', { d, bb })
     }

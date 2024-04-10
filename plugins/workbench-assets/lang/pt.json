@@ -30,6 +30,7 @@
     "PleaseUpdate": "Atualize",
     "ServerUnderMaintenance": "Servidor em manutenção",
     "MobileNotSupported": "Desculpe, o suporte para dispositivos móveis estará disponível em breve. Enquanto isso, por favor, use o Desktop.",
-    "LogInAnyway": "Entrar de qualquer maneira"
+    "LogInAnyway": "Entrar de qualquer maneira",
+    "WorkspaceCreating": "Creation in progress..."
   }
 }

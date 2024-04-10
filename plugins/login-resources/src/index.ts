@@ -17,7 +17,15 @@
 import { type IntlString } from '@hcengineering/platform'
 import InviteLink from './components/InviteLink.svelte'
 import LoginApp from './components/LoginApp.svelte'
-import { changePassword, getWorkspaces, leaveWorkspace, selectWorkspace, sendInvite, getEnpoint } from './utils'
+import {
+  changePassword,
+  getWorkspaces,
+  leaveWorkspace,
+  selectWorkspace,
+  sendInvite,
+  getEnpoint,
+  fetchWorkspace
+} from './utils'
 /*!
  * Anticrm Platform™ Login Plugin
  * © 2020, 2021 Anticrm Platform Contributors.
@@ -34,6 +42,7 @@ export default async () => ({
     LeaveWorkspace: leaveWorkspace,
     ChangePassword: changePassword,
     SelectWorkspace: selectWorkspace,
+    FetchWorkspace: fetchWorkspace,
     GetWorkspaces: getWorkspaces,
     SendInvite: sendInvite,
     GetEndpoint: getEnpoint
