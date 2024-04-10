@@ -65,8 +65,8 @@
   let fontSize: number = 16
   let element: HTMLElement
   const pulsating: Keyframe[] = [
-    { boxShadow: '0 0 .25rem 0 var(--theme-bg-color), 0 0 .5rem .125rem var(--border-color)' },
-    { boxShadow: '0 0 .25rem 0 var(--theme-bg-color), 0 0 0 0 var(--border-color)' }
+    { boxShadow: '0 0 .75rem 0 var(--theme-bg-color), 0 0 .75rem .125rem var(--border-color)' },
+    { boxShadow: '0 0 0 0 var(--theme-bg-color), 0 0 0 0 var(--border-color)' }
   ]
 
   $: displayName = getDisplayName(name)
