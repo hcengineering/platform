@@ -678,6 +678,7 @@ input.search {
 .h-50 { height: 12.5rem; }
 .h-60 { height: 15.0rem; }
 .w-min { width: min-content; }
+.w-max { width: max-content; }
 .w-full { width: 100%;  }
 .w-2 { width: .5rem; }
 .w-4 { width: 1rem; }
@@ -708,6 +709,7 @@ input.search {
 .min-w-144 { min-width: 25rem; }
 .min-w-168 { min-width: 42rem; }
 .min-w-min { min-width: min-content; }
+.min-w-full { min-width: 100%; }
 .min-h-0 { min-height: 0; }
 .min-h-2 { min-height: .5rem; }
 .min-h-4 { min-height: 1rem; }
@@ -1001,6 +1003,7 @@ a.no-line {
 .content-primary-color { color: var(--primary-button-color); }
 .red-color { color: var(--highlight-red); }
 .error-color { color: var(--theme-error-color); }
+.sunshine-text-color { color: var(--tag-accent-SunshineText) !important; }
 
 .border-radius-4 { border-radius: 1rem; }
 .border-radius-3 { border-radius: 0.75rem; }

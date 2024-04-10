@@ -25,6 +25,7 @@
     getUserTimezone,
     showPopup
   } from '@hcengineering/ui'
+  import { FixedColumn } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import DateLocalePresenter from './DateLocalePresenter.svelte'
 
@@ -38,6 +39,7 @@
   export let disabled: boolean = false
   export let focusIndex = -1
   export let timeZone: string = getUserTimezone()
+  export let fixed: string | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -80,11 +82,19 @@
   class:flex-gap-2={direction === 'horizontal'}
 >
   {#if showDate || withoutTime}
-    <div class="min-w-28">
-      <ButtonBase type="type-button" {kind} {size} {disabled} {focusIndex} on:click={dateClick}>
-        <DateLocalePresenter date={currentDate.getTime()} {timeZone} />
-      </ButtonBase>
-    </div>
+    {#if fixed === undefined}
+      <div class="min-w-28">
+        <ButtonBase type="type-button" {kind} {size} {disabled} {focusIndex} on:click={dateClick}>
+          <span class="overflow-label"><DateLocalePresenter date={currentDate.getTime()} {timeZone} /></span>
+        </ButtonBase>
+      </div>
+    {:else}
+      <FixedColumn key={fixed + '-date'} addClass={'min-w-28'}>
+        <ButtonBase type="type-button" {kind} {size} {disabled} {focusIndex} on:click={dateClick}>
+          <span class="overflow-label"><DateLocalePresenter date={currentDate.getTime()} {timeZone} /></span>
+        </ButtonBase>
+      </FixedColumn>
+    {/if}
   {/if}
 
   {#if showDate && !withoutTime && direction === 'horizontal'}
@@ -92,32 +102,61 @@
   {/if}
 
   {#if !withoutTime}
-    <ButtonBase
-      type="type-button"
-      {kind}
-      {size}
-      {disabled}
-      focusIndex={focusIndex !== -1 ? focusIndex + 1 : focusIndex}
-      on:click={timeClick}
-    >
-      <TimeInputBox
-        bind:currentDate
-        {timeZone}
-        noBorder
-        size={'small'}
-        on:update={(date) => {
-          updateTime(date.detail)
-        }}
-      />
-    </ButtonBase>
+    {#if fixed === undefined}
+      <ButtonBase
+        type="type-button"
+        {kind}
+        {size}
+        {disabled}
+        focusIndex={focusIndex !== -1 ? focusIndex + 1 : focusIndex}
+        on:click={timeClick}
+      >
+        <TimeInputBox
+          bind:currentDate
+          {timeZone}
+          noBorder
+          size={'small'}
+          on:update={(date) => {
+            updateTime(date.detail)
+          }}
+        />
+      </ButtonBase>
+    {:else}
+      <FixedColumn key={fixed + '-time'} addClass={'min-w-28'}>
+        <ButtonBase
+          type="type-button"
+          {kind}
+          {size}
+          {disabled}
+          focusIndex={focusIndex !== -1 ? focusIndex + 1 : focusIndex}
+          on:click={timeClick}
+        >
+          <TimeInputBox
+            bind:currentDate
+            {timeZone}
+            noBorder
+            size={'small'}
+            on:update={(date) => {
+              updateTime(date.detail)
+            }}
+          />
+        </ButtonBase>
+      </FixedColumn>
+    {/if}
   {/if}
 </div>
 
 {#if !withoutTime && difference > 0}
   <div class="divider" />
-  <div class="duration font-regular-14">
-    <TimeShiftPresenter value={date - difference} exact />
-  </div>
+  {#if fixed === undefined}
+    <div class="p-2 font-regular-14 sunshine-text-color">
+      <TimeShiftPresenter value={date - difference} exact />
+    </div>
+  {:else}
+    <FixedColumn key={fixed + '-duration'} addClass={'p-2 font-regular-14 sunshine-text-color'}>
+      <TimeShiftPresenter value={date - difference} exact />
+    </FixedColumn>
+  {/if}
 {/if}
 
 <style lang="scss">
@@ -138,11 +177,6 @@
         align-items: start;
       }
     }
-  }
-
-  .duration {
-    padding: var(--spacing-1);
-    color: var(--tag-accent-SunshineText);
   }
 
   .divider {

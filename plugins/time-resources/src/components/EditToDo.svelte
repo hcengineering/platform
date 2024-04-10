@@ -236,6 +236,7 @@
   .slots-content {
     gap: var(--spacing-2);
     padding: var(--spacing-2) var(--spacing-4);
+    min-width: 0;
     border-top: 1px solid var(--theme-divider-color);
   }
   .eventPopup-container {
