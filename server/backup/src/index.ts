@@ -206,7 +206,8 @@ export async function cloneWorkspace (
   transactorUrl: string,
   sourceWorkspaceId: WorkspaceId,
   targetWorkspaceId: WorkspaceId,
-  clearTime: boolean = true
+  clearTime: boolean = true,
+  progress: (value: number) => Promise<void>
 ): Promise<void> {
   const sourceConnection = (await connect(transactorUrl, sourceWorkspaceId, undefined, {
     mode: 'backup'
@@ -220,6 +221,7 @@ export async function cloneWorkspace (
       .domains()
       .filter((it) => it !== DOMAIN_TRANSIENT && it !== DOMAIN_MODEL)
 
+    let i = 0
     for (const c of domains) {
       console.log('clone domain...', c)
 
@@ -322,6 +324,9 @@ export async function cloneWorkspace (
           continue
         }
       }
+
+      i++
+      await progress((100 / domains.length) * i)
     }
   } catch (err: any) {
     console.error(err)

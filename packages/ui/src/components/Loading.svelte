@@ -35,8 +35,9 @@
 </script>
 
 <div class="spinner-container" class:fullSize={!shrink}>
-  <div data-label={label} class="inner" class:labeled={label !== ''}>
+  <div data-label={label} class="inner flex-row-center" class:labeled={label !== ''}>
     <Spinner {size} />
+    <slot />
   </div>
 </div>
 

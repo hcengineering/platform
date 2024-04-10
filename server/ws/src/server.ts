@@ -17,6 +17,7 @@ import core, {
   TxFactory,
   WorkspaceEvent,
   generateId,
+  systemAccountEmail,
   toWorkspaceString,
   type MeasureContext,
   type Ref,
@@ -183,6 +184,7 @@ class TSessionManager implements SessionManager {
       workspace: string
       workspaceUrl?: string | null
       workspaceName?: string
+      creating?: boolean
     }> {
     const userInfo = await (
       await fetch(accounts, {
@@ -219,6 +221,10 @@ class TSessionManager implements SessionManager {
       let workspaceInfo = await ctx.with('check-token', {}, async (ctx) =>
         accountsUrl !== '' ? await this.getWorkspaceInfo(accountsUrl, rawToken) : this.wsFromToken(token)
       )
+      if (workspaceInfo?.creating === true && token.email !== systemAccountEmail) {
+        // No access to workspace for token.
+        return { error: new Error(`Workspace during creation phase ${token.email} ${token.workspace.name}`) }
+      }
       if (workspaceInfo === undefined && token.extra?.admin !== 'true') {
         // No access to workspace for token.
         return { error: new Error(`No access to workspace for token ${token.email} ${token.workspace.name}`) }
@@ -307,6 +313,7 @@ class TSessionManager implements SessionManager {
     workspace: string
     workspaceUrl?: string | null
     workspaceName?: string
+    creating?: boolean
   } {
     return {
       workspace: token.workspace.name,

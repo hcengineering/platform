@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import account, { ACCOUNT_DB, type AccountMethod, accountId } from '@hcengineering/account'
+import account, { ACCOUNT_DB, type AccountMethod, accountId, cleanInProgressWorkspaces } from '@hcengineering/account'
 import accountEn from '@hcengineering/account/lang/en.json'
 import accountRu from '@hcengineering/account/lang/ru.json'
 import { registerProviders } from '@hcengineering/auth-providers'
@@ -93,6 +93,9 @@ export function serveAccount (measureCtx: MeasureContext, methods: Record<string
   void client.then((p: MongoClient) => {
     const db = p.db(ACCOUNT_DB)
     registerProviders(measureCtx, app, router, db, productId, serverSecret, frontURL)
+
+    // We need to clean workspace with creating === true, since server is restarted.
+    void cleanInProgressWorkspaces(db, productId)
   })
 
   const extractToken = (header: IncomingHttpHeaders): string | undefined => {
