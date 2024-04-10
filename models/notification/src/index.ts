@@ -576,6 +576,7 @@ export function createModel (builder: Builder): void {
       group: notification.ids.NotificationGroup,
       providers: {
         [notification.providers.EmailNotification]: true,
+        [notification.providers.BrowserNotification]: true,
         [notification.providers.PlatformNotification]: true
       },
       templates: {

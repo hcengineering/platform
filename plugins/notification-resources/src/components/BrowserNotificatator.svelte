@@ -44,7 +44,8 @@
       for (const value of notifications) {
         const req: NotificationOptions = {
           body: value.body,
-          tag: value._id
+          tag: value._id,
+          silent: false
         }
         const notification = new Notification(value.title, req)
         if (value.onClickLocation !== undefined) {
