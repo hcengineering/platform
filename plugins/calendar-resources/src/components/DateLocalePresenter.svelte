@@ -25,14 +25,11 @@
     weekday: 'short',
     month: 'short'
   }
-  if (current.getFullYear() !== new Date(date).getFullYear()) {
-    options = {
-      ...options,
-      year: '2-digit'
-    }
+  $: options = {
+    ...options,
+    timeZone,
+    year: current.getFullYear() !== new Date(date).getFullYear() ? '2-digit' : undefined
   }
-
-  $: options.timeZone = timeZone
 </script>
 
 {new Date(date).toLocaleDateString('default', options)}

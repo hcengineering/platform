@@ -192,7 +192,7 @@
         bind:dueDate
         disabled={readOnly}
         focusIndex={10004}
-        key={'editEvent'}
+        fixed={'editEvent'}
       />
       <EventTimeExtraButton
         bind:allDay

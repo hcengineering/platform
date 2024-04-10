@@ -23,7 +23,7 @@
 
   export let slots: WorkSlot[] = []
   export let shortcuts: boolean = true
-  export let key: string = ''
+  export let fixed: string | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -54,14 +54,14 @@
 
 <Scroller gap={'flex-gap-1'} horizontal>
   {#each slots as slot, i}
-    <div class="flex-row-center flex-no-shrink flex-gap-2 min-w-full w-max pr-4 slot">
+    <div class="flex-between flex-no-shrink flex-gap-2 min-w-full w-max slot">
       <Hotkey key={(i + 1).toString()} />
       <EventTimeEditor
         allDay={false}
         startDate={slot.date}
         dueDate={slot.dueDate}
         grow
-        {key}
+        {fixed}
         on:change={(e) => change(e, slot)}
         on:dueChange={(e) => dueChange(e, slot)}
       />
@@ -106,10 +106,6 @@
     border-left: var(--extra-small-BorderRadius) solid var(--tag-accent-SunshineBackground);
     border-radius: var(--extra-small-BorderRadius) var(--small-BorderRadius) var(--small-BorderRadius)
       var(--extra-small-BorderRadius);
-
-    // .tool {
-    //   margin-left: auto;
-    // }
   }
 
   .duration {

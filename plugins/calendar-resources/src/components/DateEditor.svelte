@@ -148,9 +148,15 @@
 
 {#if !withoutTime && difference > 0}
   <div class="divider" />
-  <div class="duration font-regular-14">
-    <TimeShiftPresenter value={date - difference} exact />
-  </div>
+  {#if fixed === undefined}
+    <div class="p-2 font-regular-14 sunshine-text-color">
+      <TimeShiftPresenter value={date - difference} exact />
+    </div>
+  {:else}
+    <FixedColumn key={fixed + '-duration'} addClass={'p-2 font-regular-14 sunshine-text-color'}>
+      <TimeShiftPresenter value={date - difference} exact />
+    </FixedColumn>
+  {/if}
 {/if}
 
 <style lang="scss">
@@ -171,11 +177,6 @@
         align-items: start;
       }
     }
-  }
-
-  .duration {
-    padding: var(--spacing-1);
-    color: var(--tag-accent-SunshineText);
   }
 
   .divider {

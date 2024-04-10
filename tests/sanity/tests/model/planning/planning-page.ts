@@ -135,12 +135,12 @@ export class PlanningPage extends CalendarPage {
 
   public async setTimeSlot (rowNumber: number, slot: Slot, popup: boolean = false): Promise<void> {
     const p = popup
-      ? 'div.popup div.horizontalBox div.end div.scroller-container div.box div.flex-row-center.min-w-full'
-      : 'div.hulyModal-container div.slots-content div.scroller-container div.box div.flex-row-center.min-w-full'
+      ? 'div.popup div.horizontalBox div.end div.scroller-container div.box div.flex-between.min-w-full'
+      : 'div.hulyModal-container div.slots-content div.scroller-container div.box div.flex-between.min-w-full'
     const row = this.page.locator(p).nth(rowNumber)
 
     // dateStart
-    await row.locator('div.dateEditor-container:nth-child(1) button:first-child').click()
+    await row.locator('div.dateEditor-container:first-child > div.min-w-28:first-child button').click()
     if (slot.dateStart === 'today') {
       await this.buttonCalendarToday.click()
     } else {
@@ -175,8 +175,8 @@ export class PlanningPage extends CalendarPage {
 
   private async checkTimeSlot (rowNumber: number, slot: Slot, popup: boolean = false): Promise<void> {
     const p = popup
-      ? 'div.popup div.horizontalBox div.end div.scroller-container div.box div.flex-row-center.min-w-full'
-      : 'div.hulyModal-container div.slots-content div.scroller-container div.box div.flex-row-center.min-w-full'
+      ? 'div.popup div.horizontalBox div.end div.scroller-container div.box div.flex-between.min-w-full'
+      : 'div.hulyModal-container div.slots-content div.scroller-container div.box div.flex-between.min-w-full'
     const row = this.page.locator(p).nth(rowNumber)
     // timeStart
     await expect(row.locator('div.dateEditor-container:nth-child(1) button:last-child div.datetime-input')).toHaveText(
@@ -259,7 +259,7 @@ export class PlanningPage extends CalendarPage {
   public async deleteTimeSlot (rowNumber: number): Promise<void> {
     const row = this.page
       .locator(
-        'div.hulyModal-container div.slots-content div.scroller-container div.box div.flex-row-center.min-w-full div.tool'
+        'div.hulyModal-container div.slots-content div.scroller-container div.box div.flex-between.min-w-full div.tool'
       )
       .nth(rowNumber)
     await row.locator('xpath=..').hover()
@@ -269,11 +269,9 @@ export class PlanningPage extends CalendarPage {
 
   public async checkTimeSlotEndDate (rowNumber: number, dateEnd: string): Promise<void> {
     const row = this.page
-      .locator(
-        'div.hulyModal-container div.slots-content div.scroller-container div.box div.flex-row-center.min-w-full'
-      )
+      .locator('div.hulyModal-container div.slots-content div.scroller-container div.box div.flex-between.min-w-full')
       .nth(rowNumber)
     // dateEnd
-    await expect(row.locator('div.dateEditor-container:nth-child(1) button:first-child')).toContainText(dateEnd)
+    await expect(row.locator('div.dateEditor-container:first-child > div.min-w-28:first-child button')).toContainText(dateEnd)
   }
 }
