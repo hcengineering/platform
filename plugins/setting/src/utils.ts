@@ -13,14 +13,29 @@
 // limitations under the License.
 //
 
-import core, { Class, ClassifierKind, Data, Doc, Ref, SpaceType, TxOperations } from '@hcengineering/core'
+import core, {
+  AttachedData,
+  Attribute,
+  Class,
+  ClassifierKind,
+  Data,
+  PropertyType,
+  Ref,
+  Role,
+  Space,
+  SpaceType,
+  TxOperations
+} from '@hcengineering/core'
+import { ArrOf, TypeRef } from '@hcengineering/model'
 import { getEmbeddedLabel } from '@hcengineering/platform'
+import setting from './index'
 
-export async function createSpaceType (
+export async function createSpaceType<T extends SpaceType> (
   client: TxOperations,
-  data: Omit<Data<SpaceType>, 'targetClass'>,
-  _id: Ref<SpaceType>
-): Promise<Ref<SpaceType>> {
+  data: Omit<Data<T>, 'targetClass'>,
+  _id: Ref<T>,
+  _class: Ref<Class<T>> = core.class.SpaceType
+): Promise<Ref<T>> {
   const descriptorObj = client.getModel().findObject(data.descriptor)
   if (descriptorObj === undefined) {
     throw new Error('Descriptor is not found in the model')
@@ -29,7 +44,7 @@ export async function createSpaceType (
   const baseClassClazz = client.getHierarchy().getClass(descriptorObj.baseClass)
   // NOTE: it is important for this id to be consistent when re-creating the same
   // space type with the same id as it will happen during every migration if type is created by the system
-  const spaceTypeMixinId = `${_id}:type:mixin` as Ref<Class<Doc>>
+  const spaceTypeMixinId = `${_id}:type:mixin` as Ref<Class<Space>>
   await client.createDoc(
     core.class.Mixin,
     core.space.Model,
@@ -43,15 +58,56 @@ export async function createSpaceType (
   )
 
   return await client.createDoc(
-    core.class.SpaceType,
+    _class,
     core.space.Model,
-    {
-      shortDescription: data.shortDescription,
-      descriptor: data.descriptor,
-      roles: data.roles,
-      name: data.name,
-      targetClass: spaceTypeMixinId
-    },
+    { ...data, targetClass: spaceTypeMixinId } as unknown as Data<T>,
     _id
   )
+}
+
+export async function createSpaceTypeRole (
+  client: TxOperations,
+  type: Pick<SpaceType, '_id' | '_class' | 'targetClass'>,
+  data: AttachedData<Role>,
+  _id?: Ref<Role> | undefined
+): Promise<Ref<Role>> {
+  const name = data.name.trim()
+
+  const roleId = await client.addCollection(
+    core.class.Role,
+    core.space.Model,
+    type._id,
+    type._class,
+    'roles',
+    data,
+    _id
+  )
+
+  await client.createDoc(
+    core.class.Attribute,
+    core.space.Model,
+    {
+      name: roleId,
+      attributeOf: type.targetClass,
+      type: ArrOf(TypeRef(core.class.Account)),
+      label: getEmbeddedLabel(`Role: ${name}`),
+      editor: setting.component.RoleAssignmentEditor
+    },
+    `role-${roleId}` as Ref<Attribute<PropertyType>>
+  )
+
+  return roleId
+}
+
+export async function createSpaceTypeRoles (
+  tx: TxOperations,
+  typeId: Ref<SpaceType>,
+  roles: Pick<Role, '_id' | 'name' | 'permissions'>[]
+): Promise<void> {
+  const spaceType = await tx.findOne(core.class.SpaceType, { _id: typeId })
+  if (spaceType === undefined) return
+
+  for (const { _id, name, permissions } of roles) {
+    await createSpaceTypeRole(tx, spaceType, { name, permissions }, _id)
+  }
 }
