@@ -119,6 +119,7 @@ function defineNotifications (builder: Builder): void {
       },
       providers: {
         [notification.providers.PlatformNotification]: true,
+        [notification.providers.BrowserNotification]: true,
         [notification.providers.EmailNotification]: true
       }
     },
