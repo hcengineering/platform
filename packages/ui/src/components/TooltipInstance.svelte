@@ -300,7 +300,7 @@
     style:width={options.width}
     style:height={options.height}
     style:transform={options.transform}
-    style:z-index={($tooltip.zIndex ?? 0) + 10000}
+    style:z-index={($tooltip.zIndex ?? 1) + 10000}
     bind:this={tooltipHTML}
   >
     {#if $tooltip.label}
