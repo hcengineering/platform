@@ -87,14 +87,14 @@ export type Presenter<T extends Doc = any> = (doc: T, control: TriggerControl) =
 /**
  * @public
  */
-export interface HTMLPresenter<T extends Doc = any> extends Class<Doc> {
+export interface HTMLPresenter<T extends Doc = any> extends Class<T> {
   presenter: Resource<Presenter<T>>
 }
 
 /**
  * @public
  */
-export interface TextPresenter<T extends Doc = any> extends Class<Doc> {
+export interface TextPresenter<T extends Doc = any> extends Class<T> {
   presenter: Resource<Presenter<T>>
 }
 
