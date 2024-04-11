@@ -49,7 +49,6 @@
   let label = ''
 
   $: translate(calendar.string.GooglePrivacy, {}, $themeStore.language).then((res) => {
-    console.log(res)
     label = res
   })
 </script>
