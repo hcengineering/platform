@@ -15,7 +15,8 @@
 <script lang="ts">
   import ToggleWithLabel from "@hcengineering/ui/src/components/ToggleWithLabel.svelte"
   import notification from '../plugin'
-  export let filter: 'all' | 'unread' = 'all'
+  import { InboxNotificationsFilter } from "../types"
+  export let filter: InboxNotificationsFilter = 'all'
   function toggle (on?: boolean) {
     filter = on ? 'unread' : 'all'
   }

@@ -24,8 +24,9 @@
   import { Loading, Scroller } from '@hcengineering/ui'
 
   import PeopleNotificationView from './PeopleNotificationsView.svelte'
+  import { InboxNotificationsFilter } from '../types'
 
-  export let filter: 'all' | 'unread' = 'all'
+  export let filter: InboxNotificationsFilter = 'all'
   export let _id: Ref<Doc> | undefined
 
   const query = createQuery()
