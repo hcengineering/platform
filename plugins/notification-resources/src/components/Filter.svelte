@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import ToggleWithLabel from "@hcengineering/ui/src/components/ToggleWithLabel.svelte"
+  import notification from '../plugin'
   export let filter: 'all' | 'unread' = 'all'
   function toggle (on?: boolean) {
     filter = on ? 'unread' : 'all'
@@ -22,7 +23,7 @@
 
 <div class="toggle-wrapper">
   <ToggleWithLabel 
-    label={"Unread"}
+    label={notification.string.Unread}
     on:change={(e) => toggle(e.detail)}
   />
 </div>
