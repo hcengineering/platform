@@ -722,6 +722,21 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/schema",
+      "projectFolder": "plugins/schema",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/schema-resources",
+      "projectFolder": "plugins/schema-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-schema",
+      "projectFolder": "models/schema",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/image-cropper",
       "projectFolder": "plugins/image-cropper",
       "shouldPublish": false

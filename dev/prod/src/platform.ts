@@ -34,6 +34,7 @@ import { notificationId } from '@hcengineering/notification'
 import { recruitId } from '@hcengineering/recruit'
 import rekoni from '@hcengineering/rekoni'
 import { requestId } from '@hcengineering/request'
+import { schemaId } from '@hcengineering/schema'
 import { settingId } from '@hcengineering/setting'
 import { supportId } from '@hcengineering/support'
 import { tagsId } from '@hcengineering/tags'
@@ -43,7 +44,7 @@ import { templatesId } from '@hcengineering/templates'
 import { timeId } from '@hcengineering/time'
 import tracker, { trackerId } from '@hcengineering/tracker'
 import uiPlugin from '@hcengineering/ui'
-import view, { viewId } from '@hcengineering/view'
+import { viewId } from '@hcengineering/view'
 import workbench, { workbenchId } from '@hcengineering/workbench'
 
 import { bitrixId } from '@hcengineering/bitrix'
@@ -215,6 +216,7 @@ export async function configurePlatform() {
   addLocation(documentId, () => import(/* webpackChunkName: "document" */ '@hcengineering/document-resources'))
   addLocation(guestId, () => import(/* webpackChunkName: "guest" */ '@hcengineering/guest-resources'))
   addLocation(timeId, () => import(/* webpackChunkName: "time" */ '@hcengineering/time-resources'))
+  addLocation(schemaId, () => import(/* webpackChunkName: "schema" */ '@hcengineering/schema-resources'))
 
   setMetadata(client.metadata.FilterModel, true)
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])
