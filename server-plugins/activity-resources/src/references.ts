@@ -36,7 +36,7 @@ import core, {
   Type
 } from '@hcengineering/core'
 import notification, { MentionInboxNotification } from '@hcengineering/notification'
-import { ServerKit, extractReferences, getHTML, parseHTML, yDocContentToNodes } from '@hcengineering/text'
+import { extractReferences, markupToPmNode, pmNodeToMarkup, yDocContentToNodes } from '@hcengineering/text'
 import { StorageAdapter, TriggerControl } from '@hcengineering/server-core'
 import activity, { ActivityMessage, ActivityReference } from '@hcengineering/activity'
 import contact, { Person, PersonAccount } from '@hcengineering/contact'
@@ -47,18 +47,16 @@ import {
   shouldNotifyCommon
 } from '@hcengineering/server-notification-resources'
 
-const extensions = [ServerKit]
-
 export function isDocMentioned (doc: Ref<Doc>, content: string | Buffer): boolean {
   const references = []
 
   if (content instanceof Buffer) {
-    const nodes = yDocContentToNodes(extensions, content)
+    const nodes = yDocContentToNodes(content)
     for (const node of nodes) {
       references.push(...extractReferences(node))
     }
   } else {
-    const doc = parseHTML(content, extensions)
+    const doc = markupToPmNode(content)
     references.push(...extractReferences(doc))
   }
 
@@ -338,12 +336,12 @@ export function getReferencesData (
   const references = []
 
   if (content instanceof Buffer) {
-    const nodes = yDocContentToNodes(extensions, content)
+    const nodes = yDocContentToNodes(content)
     for (const node of nodes) {
       references.push(...extractReferences(node))
     }
   } else {
-    const doc = parseHTML(content, extensions)
+    const doc = markupToPmNode(content)
     references.push(...extractReferences(doc))
   }
 
@@ -355,7 +353,7 @@ export function getReferencesData (
         collection: 'references',
         srcDocId,
         srcDocClass,
-        message: ref.parentNode !== null ? getHTML(ref.parentNode, extensions) : '',
+        message: ref.parentNode !== null ? pmNodeToMarkup(ref.parentNode) : '',
         attachedDocId,
         attachedDocClass
       })
@@ -461,6 +459,7 @@ async function ActivityReferenceCreate (tx: TxCUD<Doc>, control: TriggerControl)
   const ctx = TxProcessor.extractTx(tx) as TxCreateDoc<Doc>
 
   if (ctx._class !== core.class.TxCreateDoc) return []
+  if (control.hierarchy.isDerived(ctx.objectClass, notification.class.InboxNotification)) return []
   if (control.hierarchy.isDerived(ctx.objectClass, activity.class.ActivityReference)) return []
 
   control.storageFx(async (adapter) => {
@@ -568,8 +567,9 @@ async function ActivityReferenceRemove (tx: Tx, control: TriggerControl): Promis
 export async function ReferenceTrigger (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
 
-  const etx = TxProcessor.extractTx(tx) as TxCreateDoc<Doc>
+  const etx = TxProcessor.extractTx(tx) as TxCUD<Doc>
   if (control.hierarchy.isDerived(etx.objectClass, activity.class.ActivityReference)) return []
+  if (control.hierarchy.isDerived(etx.objectClass, notification.class.InboxNotification)) return []
 
   if (etx._class === core.class.TxCreateDoc) {
     result.push(...(await ActivityReferenceCreate(tx, control)))

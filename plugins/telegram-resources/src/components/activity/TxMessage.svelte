@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { MessageViewer } from '@hcengineering/presentation'
+  import { HTMLViewer } from '@hcengineering/presentation'
   import { TelegramMessage } from '@hcengineering/telegram'
   export let value: TelegramMessage
 </script>
 
 <div class="content lines-limit-2">
-  <MessageViewer message={value.content} />
+  <HTMLViewer value={value.content} />
 </div>
 
 <style lang="scss">

@@ -5,6 +5,7 @@
     Card,
     createQuery,
     getClient,
+    HTMLViewer,
     IndexedDocumentCompare,
     MessageViewer,
     SpaceSelect
@@ -188,7 +189,7 @@
                   {vacancy.description}
                 {/if}
                 {#if vacancyState?.fullSummary}
-                  <MessageViewer message={vacancyState?.fullSummary.split('\n').join('<br/>')} />
+                  <HTMLViewer value={vacancyState?.fullSummary.split('\n').join('<br/>')} />
                 {/if}
               </div>
             </Scroller>

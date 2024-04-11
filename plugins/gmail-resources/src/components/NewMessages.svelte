@@ -17,13 +17,13 @@
   import attachmentP, { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
   import contact, { Channel, Contact, getName as getContactName } from '@hcengineering/contact'
-  import { generateId, getCurrentAccount, Ref, toIdMap } from '@hcengineering/core'
+  import { generateId, getCurrentAccount, Markup, Ref, toIdMap } from '@hcengineering/core'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { Integration } from '@hcengineering/setting'
   import templates, { TemplateDataProvider } from '@hcengineering/templates'
-  import { StyledTextEditor } from '@hcengineering/text-editor'
+  import { StyledTextEditor, isEmptyMarkup } from '@hcengineering/text-editor'
   import {
     Button,
     EditBox,
@@ -38,6 +38,7 @@
   import plugin from '../plugin'
   import Connect from './Connect.svelte'
   import IntegrationSelector from './IntegrationSelector.svelte'
+  import { markupToHTML } from '@hcengineering/text'
 
   export let value: Contact[] | Contact
   const contacts = Array.isArray(value) ? value : [value]
@@ -69,18 +70,19 @@
   const attachmentParentId = generateId()
 
   let subject: string = ''
-  let content: string = ''
+  let content: Markup = ''
   let copy: string = ''
   let saved = false
 
-  async function sendMsg () {
+  async function sendMsg (): Promise<void> {
     const templateProvider = (await getResource(templates.function.GetTemplateDataProvider))()
     if (templateProvider === undefined || selectedIntegration === undefined) return
     for (const channel of channels) {
       const target = contacts.find((p) => p._id === channel.attachedTo)
       if (target === undefined) continue
       templateProvider.set(contact.class.Contact, target)
-      const message = await templateProvider.fillTemplate(content)
+      const htmlContent = markupToHTML(content)
+      const message = await templateProvider.fillTemplate(htmlContent)
       const id = await client.createDoc(plugin.class.NewMessage, plugin.space.Gmail, {
         subject,
         content: message,
@@ -296,7 +298,7 @@
             label={plugin.string.Send}
             size={'small'}
             kind={'primary'}
-            disabled={channels.length === 0 || content === '' || content === '<p></p>'}
+            disabled={channels.length === 0 || isEmptyMarkup(content)}
             on:click={sendMsg}
           />
         {/if}

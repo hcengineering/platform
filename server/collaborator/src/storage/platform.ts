@@ -220,7 +220,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     })
 
     const content = doc !== null && objectAttr in doc ? ((doc as any)[objectAttr] as string) : ''
-    if (content.startsWith('<') && content.endsWith('>')) {
+    if (content.startsWith('{') && content.endsWith('}')) {
       return await ctx.with('transform', {}, () => {
         return transformer.toYdoc(content, objectAttr)
       })

@@ -27,24 +27,22 @@ export class DocumentsPage extends CommonPage {
     this.popupCreateDocument = new DocumentCreatePopup(page)
     this.popupMoveDocument = new DocumentMovePopup(page)
 
+    const newForm = page.locator('form[id="document:string:NewTeamspace"]')
+    const editForm = page.locator('form[id="document:string:EditTeamspace"]')
+
     this.buttonCreateDocument = page.locator('div[data-float="navigator"] button[id="new-document"]')
     this.divTeamspacesParent = page.locator('div#tree-teamspaces').locator('xpath=..')
     this.buttonCreateTeamspace = page.locator('div#tree-teamspaces > button')
-    this.inputModalNewTeamspaceTitle = page.locator(
-      'form[id="document:string:NewTeamspace"] input[placeholder="New teamspace"]'
-    )
-    this.inputModalNewTeamspaceDescription = page.locator('form[id="document:string:NewTeamspace"] div.tiptap')
-    this.inputModalNewTeamspacePrivate = page.locator(
-      'form[id="document:string:NewTeamspace"] div.antiGrid label.toggle'
-    )
-    this.buttonModalNewTeamspaceCreate = page.locator('form[id="document:string:NewTeamspace"] button[type="submit"]')
-    this.buttonModalEditTeamspaceTitle = page.locator('form[id="document:string:EditTeamspace"] input[type="text"]')
-    this.buttonModalEditTeamspaceDescription = page.locator('form[id="document:string:EditTeamspace"] div.tiptap')
-    this.buttonModalEditTeamspacePrivate = page.locator(
-      'form[id="document:string:EditTeamspace"] div.antiGrid label.toggle'
-    )
-    this.buttonModalEditTeamspaceSave = page.locator('form[id="document:string:EditTeamspace"] button[type="submit"]')
-    this.buttonModalEditTeamspaceClose = page.locator('form[id="document:string:EditTeamspace"] button#card-close')
+    this.inputModalNewTeamspaceTitle = newForm.locator('div[id="teamspace-title"] input')
+    this.inputModalNewTeamspaceDescription = newForm.locator('div[id="teamspace-description"] input')
+    this.inputModalNewTeamspacePrivate = newForm.locator('div.antiGrid label.toggle')
+    this.buttonModalNewTeamspaceCreate = newForm.locator('button[type="submit"]')
+
+    this.buttonModalEditTeamspaceTitle = editForm.locator('div[id="teamspace-title"] input')
+    this.buttonModalEditTeamspaceDescription = editForm.locator('div[id="teamspace-description"] input')
+    this.buttonModalEditTeamspacePrivate = editForm.locator('div.antiGrid label.toggle')
+    this.buttonModalEditTeamspaceSave = editForm.locator('button[type="submit"]')
+    this.buttonModalEditTeamspaceClose = editForm.locator('button#card-close')
   }
 
   async createNewTeamspace (data: NewTeamspace): Promise<void> {
@@ -117,7 +115,7 @@ export class DocumentsPage extends CommonPage {
   async checkTeamspace (data: NewTeamspace): Promise<void> {
     await expect(this.buttonModalEditTeamspaceTitle).toHaveValue(data.title)
     if (data.description != null) {
-      await expect(this.buttonModalEditTeamspaceDescription).toHaveText(data.description)
+      await expect(this.buttonModalEditTeamspaceDescription).toHaveValue(data.description)
     }
     await this.buttonModalEditTeamspaceClose.click()
   }

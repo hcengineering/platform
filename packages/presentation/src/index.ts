@@ -23,6 +23,7 @@ export { default as InlineAttributeBarEditor } from './components/InlineAttribut
 export { default as InlineAttributeBar } from './components/InlineAttributeBar.svelte'
 export { default as AttributesBar } from './components/AttributesBar.svelte'
 export { default as Card } from './components/Card.svelte'
+export { default as HTMLViewer } from './components/HTMLViewer.svelte'
 export { default as MessageBox } from './components/MessageBox.svelte'
 export { default as MessageViewer } from './components/MessageViewer.svelte'
 export { default as ObjectPopup } from './components/ObjectPopup.svelte'

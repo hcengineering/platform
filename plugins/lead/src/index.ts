@@ -15,7 +15,7 @@
 //
 
 import type { Contact } from '@hcengineering/contact'
-import type { Attribute, Class, Doc, Ref, Status, Timestamp } from '@hcengineering/core'
+import type { Attribute, Class, Doc, Markup, Ref, Status, Timestamp } from '@hcengineering/core'
 import { Mixin } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -25,7 +25,7 @@ import type { Project, ProjectType, ProjectTypeDescriptor, Task, TaskType } from
  * @public
  */
 export interface Funnel extends Project {
-  fullDescription?: string
+  fullDescription?: Markup
   attachments?: number
 }
 

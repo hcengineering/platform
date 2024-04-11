@@ -28,6 +28,7 @@ import {
   type Doc,
   type DocumentQuery,
   type Domain,
+  type Markup,
   type Ref,
   type Timestamp,
   type Tx
@@ -41,8 +42,8 @@ import {
   TypeBoolean,
   TypeDate,
   TypeIntlString,
+  TypeMarkup,
   TypeRef,
-  TypeString,
   UX,
   type Builder
 } from '@hcengineering/model'
@@ -266,8 +267,8 @@ export class TCommonInboxNotification extends TInboxNotification implements Comm
 
   headerIcon?: Asset
 
-  @Prop(TypeString(), notification.string.Message)
-    messageHtml?: string
+  @Prop(TypeMarkup(), notification.string.Message)
+    messageHtml?: Markup
 
   props?: Record<string, any>
   icon?: Asset

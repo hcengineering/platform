@@ -29,7 +29,7 @@ import core, {
   type ServerStorage
 } from '@hcengineering/core'
 import { translate } from '@hcengineering/platform'
-import { convert } from 'html-to-text'
+import { jsonToText, markupToJSON } from '@hcengineering/text'
 import { type DbAdapter } from '../adapter'
 import { type IndexedDoc } from '../types'
 import {
@@ -285,10 +285,7 @@ export async function extractIndexedValues (
       }
 
       if (keyAttr.type._class === core.class.TypeMarkup || keyAttr.type._class === core.class.TypeCollaborativeMarkup) {
-        sourceContent = convert(sourceContent, {
-          preserveNewlines: true,
-          selectors: [{ selector: 'img', format: 'skip' }]
-        })
+        sourceContent = jsonToText(markupToJSON(sourceContent))
       }
 
       if (!opt.fieldFilter.every((it) => it(keyAttr, sourceContent))) {

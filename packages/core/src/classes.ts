@@ -530,8 +530,8 @@ export interface DocIndexState extends Doc {
   attributes: Record<string, any>
   mixins?: Ref<Class<Doc>>[]
   // Full Summary
-  fullSummary?: Markup | null
-  shortSummary?: Markup | null
+  fullSummary?: string | null
+  shortSummary?: string | null
 }
 
 /**

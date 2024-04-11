@@ -13,11 +13,6 @@
 // limitations under the License.
 //
 
-import { Node as ProseMirrorNode } from '@tiptap/pm/model'
+import { ServerKit } from './kits/server-kit'
 
-/**
- * @public
- */
-export function getText (node: ProseMirrorNode): string {
-  return node.textBetween(0, node.content.size, '\n', '')
-}
+export const defaultExtensions = [ServerKit]

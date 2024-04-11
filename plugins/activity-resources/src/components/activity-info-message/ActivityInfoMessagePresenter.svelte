@@ -25,7 +25,7 @@
   import { Action } from '@hcengineering/ui'
   import { Ref } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
-  import { MessageViewer } from '@hcengineering/presentation'
+  import { HTMLViewer } from '@hcengineering/presentation'
 
   import ActivityMessageTemplate from '../activity-message/ActivityMessageTemplate.svelte'
   import ActivityMessageHeader from '../activity-message/ActivityMessageHeader.svelte'
@@ -99,7 +99,7 @@
   <svelte:fragment slot="content">
     <div class="flex-row-center">
       <div class="customContent">
-        <MessageViewer message={content} />
+        <HTMLViewer value={content} />
       </div>
     </div>
   </svelte:fragment>

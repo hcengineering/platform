@@ -19,6 +19,7 @@ import { Level } from '@tiptap/extension-heading'
 import Highlight from '@tiptap/extension-highlight'
 import Link from '@tiptap/extension-link'
 import Typography from '@tiptap/extension-typography'
+import Underline from '@tiptap/extension-underline'
 import StarterKit, { StarterKitOptions } from '@tiptap/starter-kit'
 
 export interface DefaultKitOptions {
@@ -49,10 +50,16 @@ export const DefaultKit = Extension.create<DefaultKitOptions>({
             class: 'proseCode'
           }
         },
+        blockquote: {
+          HTMLAttributes: {
+            class: 'proseBlockQuote'
+          }
+        },
         codeBlock,
         heading: this.options.heading,
         history: this.options.history
       }),
+      Underline,
       Highlight.configure({
         multicolor: false
       }),

@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Calendar, RecurringRule, Visibility, generateEventId } from '@hcengineering/calendar'
   import { Person, PersonAccount } from '@hcengineering/contact'
-  import { Class, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
+  import { Class, Doc, Markup, Ref, getCurrentAccount } from '@hcengineering/core'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor'
   import {
@@ -62,7 +62,7 @@
 
   let reminders = [30 * 60 * 1000]
 
-  let description: string = ''
+  let description: Markup = ''
   let visibility: Visibility = 'private'
   const me = getCurrentAccount()
   let space: Ref<Calendar> = `${me._id}_calendar` as Ref<Calendar>

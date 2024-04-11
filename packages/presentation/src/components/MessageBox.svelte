@@ -16,8 +16,7 @@
   import { translate, type IntlString } from '@hcengineering/platform'
   import { Button, FocusHandler, Label, createFocusManager } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import presentation from '..'
-  import MessageViewer from './MessageViewer.svelte'
+  import presentation, { HTMLViewer } from '..'
 
   export let label: IntlString
   export let labelProps: IntlString
@@ -41,7 +40,7 @@
   <div class="message">
     {#if richMessage}
       {#await translate(message, params) then msg}
-        <MessageViewer message={msg} />
+        <HTMLViewer value={msg} />
       {/await}
     {:else}
       <Label label={message} {params} />

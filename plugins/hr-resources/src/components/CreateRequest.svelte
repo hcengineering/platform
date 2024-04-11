@@ -16,7 +16,7 @@
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import calendar from '@hcengineering/calendar'
   import { Employee } from '@hcengineering/contact'
-  import core, { DocumentQuery, generateId, Ref } from '@hcengineering/core'
+  import core, { DocumentQuery, generateId, Markup, Ref } from '@hcengineering/core'
   import { Request, RequestType, Staff, toTzDate } from '@hcengineering/hr'
   import { translate } from '@hcengineering/platform'
   import { Card, createQuery, getClient } from '@hcengineering/presentation'
@@ -39,7 +39,7 @@
   export let docQuery: DocumentQuery<Employee> | undefined
   export let employeeRequests: Map<Ref<Staff>, Request[]>
 
-  let description: string = ''
+  let description: Markup = ''
   let employee: Ref<Employee> = staff._id
 
   const objectId: Ref<Request> = generateId()
