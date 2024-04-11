@@ -744,6 +744,11 @@ export function createModel (builder: Builder, options = { addApplication: true 
   builder.mixin(chunter.class.ThreadMessage, core.class.Class, activity.mixin.ActivityMessagePreview, {
     presenter: chunter.component.ThreadMessagePreview
   })
+
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_CHUNTER,
+    disabled: [{ _class: 1 }, { space: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { createdOn: -1 }]
+  })
 }
 
 export default chunter

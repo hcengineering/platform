@@ -36,6 +36,6 @@
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/server-preference": "^0.6.0",
-    "fast-equals": "^2.0.3"
+    "fast-equals": "^5.0.1"
   }
 }

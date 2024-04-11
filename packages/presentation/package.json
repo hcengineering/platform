@@ -49,7 +49,7 @@
     "svelte": "^4.2.12",
     "@hcengineering/client": "^0.6.14",
     "@hcengineering/collaborator-client": "^0.6.0",
-    "fast-equals": "^2.0.3",
+    "fast-equals": "^5.0.1",
     "png-chunks-extract": "^1.0.0"
   }
 }

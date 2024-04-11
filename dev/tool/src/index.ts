@@ -138,6 +138,7 @@ export function devTool (
     const _client = await client.getClient()
     await f(_client.db(ACCOUNT_DB), _client)
     client.close()
+    console.log(`closing database connection to '${uri}'...`)
   }
 
   program.version('0.0.1')
@@ -363,13 +364,12 @@ export function devTool (
 
           const avgTime = (Date.now() - st) / (workspaces.length - toProcess + 1)
           console.log(
-            '---UPGRADING----',
-            ws.workspace,
-            ws.workspaceUrl,
+            '----------------------------------------------------------\n---UPGRADING----',
             'pending: ',
             toProcess,
-            'ETA:',
-            Math.floor(avgTime * toProcess * 100) / 100
+            'ETA: ',
+            Math.floor(avgTime * toProcess),
+            ws.workspace
           )
           toProcess--
           try {
@@ -384,11 +384,11 @@ export function devTool (
               logger,
               cmd.force
             )
-            console.log('---UPGRADING-DONE----', ws.workspace, Date.now() - t)
+            console.log('---done---------', 'pending: ', toProcess, 'TIME:', Date.now() - t, ws.workspace)
           } catch (err: any) {
             withError.push(ws.workspace)
             logger.log('error', JSON.stringify(err))
-            console.log('---UPGRADING-FAILED----', ws.workspace, Date.now() - t)
+            console.log('   FAILED-------', 'pending: ', toProcess, 'TIME:', Date.now() - t, ws.workspace)
           } finally {
             if (!cmd.console) {
               ;(logger as FileModelLogger).close()
@@ -409,7 +409,7 @@ export function devTool (
           console.log('Upgrade done')
           // console.log((process as any)._getActiveHandles())
           // console.log((process as any)._getActiveRequests())
-          process.exit()
+          // process.exit()
         } else {
           console.log('UPGRADE write logs at:', cmd.logs)
           for (const ws of workspaces) {

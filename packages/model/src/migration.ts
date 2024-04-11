@@ -98,12 +98,16 @@ export interface MigrationClient {
 
   hierarchy: Hierarchy
   model: ModelDb
+
+  migrateState: Map<string, Set<string>>
 }
 
 /**
  * @public
  */
-export type MigrationUpgradeClient = Client
+export type MigrationUpgradeClient = Client & {
+  migrateState: Map<string, Set<string>>
+}
 
 /**
  * @public
@@ -135,11 +139,7 @@ export interface UpgradeOperations {
  * @public
  */
 export async function tryMigrate (client: MigrationClient, plugin: string, migrations: Migrations[]): Promise<void> {
-  const states = new Set(
-    (await client.find<MigrationState>(DOMAIN_MIGRATION, { _class: core.class.MigrationState, plugin })).map(
-      (p) => p.state
-    )
-  )
+  const states = client.migrateState.get(plugin) ?? new Set()
   for (const migration of migrations) {
     if (states.has(migration.state)) continue
     await migration.func(client)
@@ -164,7 +164,7 @@ export async function tryUpgrade (
   plugin: string,
   migrations: UpgradeOperations[]
 ): Promise<void> {
-  const states = new Set((await client.findAll(core.class.MigrationState, { plugin })).map((p) => p.state))
+  const states = client.migrateState.get(plugin) ?? new Set()
   for (const migration of migrations) {
     if (states.has(migration.state)) continue
     await migration.func(client)

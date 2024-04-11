@@ -14,8 +14,14 @@
 //
 
 import core, { TxOperations } from '@hcengineering/core'
-import { type MigrateOperation, type MigrationClient, type MigrationUpgradeClient } from '@hcengineering/model'
+import {
+  tryUpgrade,
+  type MigrateOperation,
+  type MigrationClient,
+  type MigrationUpgradeClient
+} from '@hcengineering/model'
 import setting from './plugin'
+import { settingId } from '@hcengineering/setting'
 
 async function createSpace (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(core.class.Space, {
@@ -40,7 +46,14 @@ async function createSpace (tx: TxOperations): Promise<void> {
 export const settingOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    const tx = new TxOperations(client, core.account.System)
-    await createSpace(tx)
+    await tryUpgrade(client, settingId, [
+      {
+        state: 'create-defaults',
+        func: async (client) => {
+          const tx = new TxOperations(client, core.account.System)
+          await createSpace(tx)
+        }
+      }
+    ])
   }
 }

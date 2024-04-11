@@ -957,7 +957,7 @@ export async function upgradeWorkspace (
   const versionStr = versionToString(version)
 
   console.log(
-    `${workspaceUrl} - ${forceUpdate ? 'force-' : ''}upgrade from "${
+    `${ws.workspace} - ${forceUpdate ? 'force-' : ''}upgrade from "${
       ws?.version !== undefined ? versionToString(ws.version) : ''
     }" to "${versionStr}"`
   )

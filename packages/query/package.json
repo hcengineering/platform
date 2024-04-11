@@ -35,7 +35,8 @@
   "dependencies": {
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/core": "^0.6.28",
-    "fast-equals": "^2.0.3"
+    "@hcengineering/analytics": "^0.6.0",
+    "fast-equals": "^5.0.1"
   },
   "repository": "https://github.com/hcenginneing/anticrm",
   "publishConfig": {

@@ -14,7 +14,7 @@
 //
 
 import clientPlugin from '@hcengineering/client'
-import { AccountClient, createClient } from '@hcengineering/core'
+import core, { AccountClient, createClient, groupByArray, MigrationState } from '@hcengineering/core'
 import { migrateOperations } from '@hcengineering/model-all'
 import { getMetadata, getResource } from '@hcengineering/platform'
 import { connect } from './connection'
@@ -27,9 +27,18 @@ export default async () => {
       GetClient: async (): Promise<AccountClient> => {
         if (client === undefined) {
           client = await createClient(connect)
+
+          const states = await client.findAll<MigrationState>(core.class.MigrationState, {})
+          const migrateState = new Map(
+            Array.from(groupByArray(states, (it) => it.plugin).entries()).map((it) => [
+              it[0],
+              new Set(it[1].map((q) => q.state))
+            ])
+          )
+          ;(client as any).migrateState = migrateState
           for (const op of migrateOperations) {
             console.log('Migrate', op[0])
-            await op[1].upgrade(client, {
+            await op[1].upgrade(client as any, {
               log (msg, data) {
                 console.log(msg, data)
               },

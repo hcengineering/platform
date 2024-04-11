@@ -100,8 +100,6 @@
         notification,
         integration: provider.integrationType !== undefined ? integrations.has(provider.integrationType) : false
       }
-    } else {
-      console.log('provider not found: ', item.provider)
     }
   }
 

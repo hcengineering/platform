@@ -179,9 +179,14 @@ export const leadOperation: MigrateOperation = {
     ])
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    const ops = new TxOperations(client, core.account.System)
-    await createDefaults(ops)
-
-    await tryUpgrade(client, leadId, [])
+    await tryUpgrade(client, leadId, [
+      {
+        state: 'u-default-funnel',
+        func: async (client) => {
+          const ops = new TxOperations(client, core.account.System)
+          await createDefaults(ops)
+        }
+      }
+    ])
   }
 }

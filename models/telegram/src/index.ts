@@ -257,4 +257,17 @@ export function createModel (builder: Builder): void {
     parentPropagate: false,
     childProcessingAllowed: true
   })
+
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_TELEGRAM,
+    disabled: [
+      { _class: 1 },
+      { space: 1 },
+      { modifiedBy: 1 },
+      { attachedToClass: 1 },
+      { createdBy: 1 },
+      { createdOn: 1 },
+      { createdOn: -1 }
+    ]
+  })
 }

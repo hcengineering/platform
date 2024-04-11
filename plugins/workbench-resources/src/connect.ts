@@ -263,7 +263,8 @@ export async function connect (title: string): Promise<Client | undefined> {
       return
     }
   } catch (err: any) {
-    console.log(err)
+    console.error(err)
+    Analytics.handleError(err)
     const requirdVersion = getMetadata(presentation.metadata.RequiredVersion)
     console.log('checking min model version', requirdVersion)
     if (requirdVersion !== undefined) {

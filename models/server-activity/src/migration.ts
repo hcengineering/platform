@@ -234,8 +234,6 @@ async function createDocUpdateMessages (client: MigrationClient): Promise<void> 
   }
 
   for (const activityClass of activityDocClasses) {
-    console.log('processing', activityClass)
-
     if (client.hierarchy.isMixin(activityClass)) {
       // Skip mixins
       continue

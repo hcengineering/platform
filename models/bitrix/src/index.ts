@@ -133,4 +133,8 @@ export function createModel (builder: Builder): void {
     },
     bitrix.action.BitrixImport
   )
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_BITRIX,
+    disabled: [{ _id: 1 }, { _class: 1 }, { space: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { createdOn: -1 }]
+  })
 }

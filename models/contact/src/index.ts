@@ -1133,4 +1133,22 @@ export function createModel (builder: Builder): void {
   )
 
   createPublicLinkAction(builder, contact.class.Contact, contact.action.PublicLink)
+
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_CHANNEL,
+    disabled: [
+      { attachedToClass: 1 },
+      { provider: 1 },
+      { space: 1 },
+      { modifiedBy: 1 },
+      { modifiedOn: 1 },
+      { createdBy: 1 },
+      { createdBy: -1 },
+      { createdOn: -1 }
+    ]
+  })
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_CONTACT,
+    disabled: [{ attachedToClass: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { createdOn: -1 }, { attachedTo: 1 }]
+  })
 }

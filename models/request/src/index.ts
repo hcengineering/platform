@@ -16,12 +16,11 @@
 import activity from '@hcengineering/activity'
 import type { PersonAccount } from '@hcengineering/contact'
 import contact from '@hcengineering/contact'
-import { type Domain, IndexKind, type Ref, type Tx } from '@hcengineering/core'
+import { type Domain, type Ref, type Tx } from '@hcengineering/core'
 import {
   ArrOf,
   type Builder,
   Collection,
-  Index,
   Mixin,
   Model,
   Prop,
@@ -53,7 +52,7 @@ export const DOMAIN_REQUEST = 'request' as Domain
 @UX(request.string.Request, request.icon.Requests)
 export class TRequest extends TAttachedDoc implements Request {
   @Prop(ArrOf(TypeRef(contact.class.PersonAccount)), request.string.Requested)
-  @Index(IndexKind.Indexed)
+  // @Index(IndexKind.Indexed)
     requested!: Ref<PersonAccount>[]
 
   @Prop(ArrOf(TypeRef(contact.class.PersonAccount)), request.string.Approved)
@@ -63,7 +62,7 @@ export class TRequest extends TAttachedDoc implements Request {
   requiredApprovesCount!: number
 
   @Prop(TypeString(), request.string.Status)
-  @Index(IndexKind.Indexed)
+  // @Index(IndexKind.Indexed)
     status!: RequestStatus
 
   tx!: Tx
@@ -162,4 +161,19 @@ export function createModel (builder: Builder): void {
     },
     request.ids.TxRequestCreate
   )
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_REQUEST,
+    disabled: [
+      { _class: 1 },
+      { space: 1 },
+      { modifiedBy: 1 },
+      { modifiedOn: 1 },
+      { createdBy: 1 },
+      { createdOn: 1 },
+      { attachedTo: 1 },
+      { attachedToClass: 1 },
+      { status: 1 },
+      { requested: 1 }
+    ]
+  })
 }

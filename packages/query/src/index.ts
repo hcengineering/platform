@@ -58,6 +58,7 @@ import core, {
 } from '@hcengineering/core'
 import { PlatformError } from '@hcengineering/platform'
 import { deepEqual } from 'fast-equals'
+import { Analytics } from '@hcengineering/analytics'
 
 const CACHE_SIZE = 100
 
@@ -132,6 +133,7 @@ export class LiveQuery implements WithTx, Client {
               continue
             }
           }
+          Analytics.handleError(err)
           console.error(err)
         }
       }
@@ -149,6 +151,7 @@ export class LiveQuery implements WithTx, Client {
               continue
             }
           }
+          Analytics.handleError(err)
           console.error(err)
         }
       }
@@ -398,7 +401,8 @@ export class LiveQuery implements WithTx, Client {
         q.total = result.total
         await this.callback(q)
       })
-      .catch((err) => {
+      .catch((err: any) => {
+        Analytics.handleError(err)
         console.log('failed to update Live Query: ', err)
       })
 
@@ -1311,7 +1315,8 @@ export class LiveQuery implements WithTx, Client {
           if (!this.removeFromQueue(q)) {
             try {
               await this.refresh(q, true)
-            } catch (err) {
+            } catch (err: any) {
+              Analytics.handleError(err)
               console.error(err)
             }
           }
@@ -1322,7 +1327,8 @@ export class LiveQuery implements WithTx, Client {
           if (hasClass(q, indexingParam._class) && q.query.$search !== undefined) {
             try {
               await this.refresh(q, true)
-            } catch (err) {
+            } catch (err: any) {
+              Analytics.handleError(err)
               console.error(err)
             }
           }
@@ -1336,7 +1342,8 @@ export class LiveQuery implements WithTx, Client {
           if (!this.removeFromQueue(q)) {
             try {
               await this.refresh(q, true)
-            } catch (err) {
+            } catch (err: any) {
+              Analytics.handleError(err)
               console.error(err)
             }
           }
@@ -1347,7 +1354,8 @@ export class LiveQuery implements WithTx, Client {
           if (hasClass(q, params._class)) {
             try {
               await this.refresh(q, true)
-            } catch (err) {
+            } catch (err: any) {
+              Analytics.handleError(err)
               console.error(err)
             }
           }
@@ -1363,7 +1371,8 @@ export class LiveQuery implements WithTx, Client {
           if (!this.removeFromQueue(q)) {
             try {
               await this.refresh(q)
-            } catch (err) {
+            } catch (err: any) {
+              Analytics.handleError(err)
               console.error(err)
             }
           }
@@ -1374,7 +1383,8 @@ export class LiveQuery implements WithTx, Client {
           if (typeof q.query.space !== 'string') {
             try {
               await this.refresh(q)
-            } catch (err) {
+            } catch (err: any) {
+              Analytics.handleError(err)
               console.error(err)
             }
           }
