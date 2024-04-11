@@ -499,7 +499,7 @@ export function createModel (builder: Builder): void {
     {
       action: notification.actionImpl.ReadNotifyContext,
       label: notification.string.MarkAsRead,
-      icon: notification.icon.Notifications,
+      icon: view.icon.Eye,
       input: 'focus',
       visibilityTester: notification.function.CanReadNotifyContext,
       category: notification.category.Notification,
@@ -514,7 +514,7 @@ export function createModel (builder: Builder): void {
     {
       action: notification.actionImpl.UnReadNotifyContext,
       label: notification.string.MarkAsUnread,
-      icon: notification.icon.Notifications,
+      icon: view.icon.EyeCrossed,
       input: 'focus',
       visibilityTester: notification.function.CanUnReadNotifyContext,
       category: notification.category.Notification,
@@ -529,7 +529,7 @@ export function createModel (builder: Builder): void {
     {
       action: notification.actionImpl.DeleteContextNotifications,
       label: notification.string.Archive,
-      icon: view.icon.Archive,
+      icon: view.icon.CheckCircle,
       input: 'focus',
       category: notification.category.Notification,
       target: notification.class.DocNotifyContext,
@@ -543,7 +543,7 @@ export function createModel (builder: Builder): void {
     {
       action: notification.actionImpl.Unsubscribe,
       label: notification.string.Unsubscribe,
-      icon: view.icon.EyeCrossed,
+      icon: notification.icon.BellCrossed,
       input: 'focus',
       category: notification.category.Notification,
       target: notification.class.DocNotifyContext,
@@ -594,7 +594,7 @@ export function createModel (builder: Builder): void {
     {
       action: notification.actionImpl.ArchiveAll,
       label: notification.string.ArchiveAll,
-      icon: view.icon.Archive,
+      icon: view.icon.CheckCircle,
       keyBinding: [],
       input: 'none',
       category: notification.category.Notification,
@@ -612,7 +612,7 @@ export function createModel (builder: Builder): void {
     {
       action: notification.actionImpl.ReadAll,
       label: notification.string.MarkReadAll,
-      icon: notification.icon.ReadAll,
+      icon: view.icon.Eye,
       keyBinding: [],
       input: 'none',
       category: notification.category.Notification,
@@ -630,7 +630,7 @@ export function createModel (builder: Builder): void {
     {
       action: notification.actionImpl.UnreadAll,
       label: notification.string.MarkUnreadAll,
-      icon: notification.icon.UnreadAll,
+      icon: view.icon.EyeCrossed,
       keyBinding: [],
       input: 'none',
       category: notification.category.Notification,
