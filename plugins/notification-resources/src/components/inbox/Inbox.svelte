@@ -31,7 +31,7 @@
     TabList
   } from '@hcengineering/ui'
   import chunter, { ThreadMessage } from '@hcengineering/chunter'
-  import { Account, getCurrentAccount, IdMap, Ref } from '@hcengineering/core'
+  import { IdMap, Ref } from '@hcengineering/core'
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import { isReactionMessage } from '@hcengineering/activity-resources'
   import { get } from 'svelte/store'
@@ -318,22 +318,22 @@
                 justify="left"
                 kind="regular"
                 label={notification.string.MarkReadAll}
-                icon={notification.icon.ReadAll}
+                icon={view.icon.Eye}
                 on:click={readAll}
                 dropdownItems={[
                   {
                     id: 'read',
-                    icon: notification.icon.ReadAll,
+                    icon: view.icon.Eye,
                     label: notification.string.MarkReadAll
                   },
                   {
                     id: 'unread',
-                    icon: notification.icon.UnreadAll,
+                    icon: view.icon.EyeCrossed,
                     label: notification.string.MarkUnreadAll
                   },
                   {
                     id: 'archive',
-                    icon: view.icon.Archive,
+                    icon: view.icon.CheckCircle,
                     label: notification.string.ArchiveAll
                   }
                 ]}
