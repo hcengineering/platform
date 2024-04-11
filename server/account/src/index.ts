@@ -697,17 +697,6 @@ export async function listAccounts (db: Db): Promise<Account[]> {
 const workspaceReg = /[a-z0-9]/
 const workspaceRegDigit = /[0-9]/
 
-function stripId (name: string): string {
-  let workspaceId = ''
-  for (const c of name.toLowerCase()) {
-    if (workspaceReg.test(c) || c === '-') {
-      if (workspaceId.length > 0 || !workspaceRegDigit.test(c)) {
-        workspaceId += c
-      }
-    }
-  }
-  return workspaceId
-}
 
 function getEmailName (email: string): string {
   return email.split('@')[0]
@@ -744,7 +733,7 @@ async function generateWorkspaceRecord(
       await ctx.error('Add fixed workspace in create workspace', { fixedWorkspace, err })
 
       if (err instanceof MongoServerError) {
-        if (err.code == 11000) {
+        if (err.code === 11000) {
           throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceAlreadyExists, { workspace: err.errmsg }))
         }
       }
@@ -778,7 +767,7 @@ async function generateWorkspaceRecord(
     return { _id: id.insertedId, ...data }
   } catch (err) {
     if (err instanceof MongoServerError) {
-      if (err.code == 11000) {
+      if (err.code === 11000) {
         throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceAlreadyExists, { workspace: err.errmsg }))
       }
     }
@@ -809,10 +798,8 @@ export async function createWorkspace (
     await searchPromise
     // Safe generate workspace record.
     searchPromise = generateWorkspaceRecord(ctx, db, email, productId, version, workspaceName, workspace);
-    searchPromise.finally(() => {
-      searchPromise = undefined
-    })
     const workspaceInfo = await searchPromise
+    searchPromise = undefined
     let client: Client | undefined
     const childLogger = ctx.newChild(
       'createWorkspace',
