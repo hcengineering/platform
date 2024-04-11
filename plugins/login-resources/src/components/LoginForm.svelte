@@ -95,11 +95,6 @@
       })
     }
   }
-
-  onMount(() => {
-    setMetadata(presentation.metadata.Token, null)
-    setMetadataLocalStorage(login.metadata.LastToken, null)
-  })
 </script>
 
 <Form
