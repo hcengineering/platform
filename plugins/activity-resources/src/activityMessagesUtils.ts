@@ -594,3 +594,11 @@ export function isReactionMessage (message?: ActivityMessage): boolean {
 
   return message.objectClass === activity.class.Reaction
 }
+
+export function isActivityMessageClass (_class?: Ref<Class<Doc>>): boolean {
+  if (_class === undefined) {
+    return false
+  }
+
+  return getClient().getHierarchy().isDerived(_class, activity.class.ActivityMessage)
+}

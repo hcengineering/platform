@@ -52,7 +52,11 @@ import activity, {
   type DisplayDocUpdateMessage,
   type DocUpdateMessage
 } from '@hcengineering/activity'
-import { deleteContextNotifications, InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
+import {
+  deleteContextNotifications,
+  InboxNotificationsClientImpl,
+  isMentionNotification
+} from '@hcengineering/notification-resources'
 import notification, { type DocNotifyContext, notificationId } from '@hcengineering/notification'
 import { get, type Unsubscriber } from 'svelte/store'
 
@@ -479,12 +483,20 @@ export async function readChannelMessages (
       return [message._id, ...(combined ?? [])]
     })
     .flat()
+  const relatedMentions = get(inboxClient.otherInboxNotifications).filter(
+    (n) => !n.isViewed && isMentionNotification(n) && allIds.includes(n.mentionedIn as Ref<ActivityMessage>)
+  )
 
   const ops = getClient().apply(generateId())
 
   void inboxClient.readMessages(ops, allIds).then(() => {
     void ops.commit()
   })
+
+  void inboxClient.readNotifications(
+    client,
+    relatedMentions.map((n) => n._id)
+  )
 
   if (context === undefined) {
     return
