@@ -72,6 +72,7 @@ export default mergeIds(documentId, document, {
     Star: '' as IntlString,
     Unstar: '' as IntlString,
     CopyDocumentUrl: '' as IntlString,
+    DownloadDocument: '' as IntlString,
 
     ViewMode: '' as IntlString,
     EditMode: '' as IntlString,

@@ -15,6 +15,7 @@
 //
 -->
 <script lang="ts">
+  import printJS from 'print-js'
   import attachment, { Attachment } from '@hcengineering/attachment'
   import core, { Doc, Ref, WithLookup, generateId } from '@hcengineering/core'
   import { Document } from '@hcengineering/document'
@@ -68,7 +69,7 @@
 
   let useMaxWidth = true
 
-  export function canClose (): boolean {
+  export function canClose(): boolean {
     return false
   }
 
@@ -86,7 +87,7 @@
   const notificationClient = getResource(notification.function.GetInboxNotificationsClient).then((res) => res())
 
   $: read(_id)
-  function read (_id: Ref<Doc>): void {
+  function read(_id: Ref<Doc>): void {
     if (lastId !== _id) {
       const prev = lastId
       lastId = _id
@@ -104,7 +105,7 @@
     isStarred = res.length !== 0
   })
 
-  async function createEmbedding (file: File): Promise<{ file: string, type: string } | undefined> {
+  async function createEmbedding(file: File): Promise<{ file: string; type: string } | undefined> {
     if (doc === undefined) {
       return undefined
     }
@@ -144,7 +145,7 @@
 
   $: canSave = name.trim().length > 0
 
-  async function saveTitle (ev: Event): Promise<void> {
+  async function saveTitle(ev: Event): Promise<void> {
     ev.preventDefault()
 
     if (doc === undefined || !canSave) {
@@ -158,7 +159,7 @@
     }
   }
 
-  async function chooseIcon (): Promise<void> {
+  async function chooseIcon(): Promise<void> {
     if (doc !== undefined) {
       const { icon, color } = doc
       const icons = [document.icon.Document, document.icon.Teamspace]
@@ -171,10 +172,125 @@
     }
   }
 
-  function showContextMenu (ev: MouseEvent): void {
+  function showContextMenu(ev: MouseEvent): void {
     if (doc !== undefined) {
       showMenu(ev, { object: doc, excludedActions: [view.action.Open] })
     }
+  }
+
+  function downloadDocument() {
+    const contentNode = content.cloneNode(true) as HTMLElement
+    contentNode.querySelector('.antiButton')?.remove()
+    contentNode.querySelector('input')?.remove()
+
+    const classStyles = `
+        blockquote {
+          border-left: 2px solid gray;
+          padding-left: 1em;
+          margin-left: 0;
+          margin-right: 0;
+          font-family: mono !important;
+        }
+
+        code {
+          font-family: mono;
+        }
+
+        .proseCode {
+            display: inline;
+            margin: 0;
+            padding: 0 0.25rem;
+            font-family: mono;
+            color: offwhite
+            background-color: gray;
+            border: 1px solid lightgray;
+            border-radius: 0.25rem;
+            word-wrap: break-word;
+            word-break: break-all;
+        }
+
+        .proseCodeBlock {
+            font-family: mono;
+            color: offwhite;
+            background-color: gray;
+            border: 1px solid lightgray;
+            border-radius: 0.25rem;
+            padding: 0.5rem;
+            word-wrap: break-word;
+            word-break: break-all;
+        }
+
+        pre {
+            white-space: pre-wrap;
+        }
+
+        th {
+            text-align: left;
+            min-width: 1rem;
+            height: 1rem;
+            padding-left: 0.5rem;
+            border: 1px solid lightgray;
+            vertical-align: top;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        td {
+            min-width: 1rem;
+            height: 1rem;
+            padding-left: 0.5rem;
+            border: 1px solid lightgray;  
+            vertical-align: top;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            table-layout: fixed;
+            position: relative;
+            border: 1px solid lightgray;
+            background: ofwhite;
+        }
+
+        tbody {
+            display: table-row-group;
+            vertical-align: middle;
+            border-color: inherit;
+            border: 1px solid lightgray;
+        }
+
+        thead {
+            display: table-header-group;
+            vertical-align: middle;
+            border-color: inherit;
+            background-color: lightgray !important;
+            border: 1px solid lightgray;
+        }
+
+        tr {
+            display: table-row;
+            vertical-align: inherit;
+            border-color: inherit;
+            padding: 0.1rem;
+        }
+
+        .ProseMirror-widget {
+          display: none;
+        }`
+
+    printJS({
+      printable: contentNode,
+      type: 'html',
+      documentTitle: doc?.name || 'Document',
+      honorMarginPadding: false,
+      scanStyles: true,
+      targetStyles: ['*'],
+      style: classStyles
+    })
   }
 
   onMount(() => {
@@ -212,6 +328,15 @@
       action: () => {
         if (doc !== undefined) {
           void copyTextToClipboard(getDocumentUrl(doc))
+        }
+      }
+    },
+    {
+      icon: view.icon.Download,
+      label: document.string.DownloadDocument,
+      action: () => {
+        if (doc !== undefined) {
+          downloadDocument()
         }
       }
     },
