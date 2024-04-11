@@ -25,5 +25,6 @@ loadMetadata(document.icon, {
   References: `${icons}#references`,
   History: `${icons}#history`,
   Star: `${icons}#star`,
-  Starred: `${icons}#starred`
+  Starred: `${icons}#starred`,
+  Download: `${icons}#download`
 })

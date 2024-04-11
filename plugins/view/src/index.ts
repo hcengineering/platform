@@ -209,6 +209,7 @@ const view = plugin(viewId, {
     Open: '' as Asset,
     Edit: '' as Asset,
     CopyId: '' as Asset,
+    Download: '' as Asset,
     CopyLink: '' as Asset,
     ArrowRight: '' as Asset,
     Views: '' as Asset,

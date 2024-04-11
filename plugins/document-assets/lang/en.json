@@ -39,6 +39,7 @@
     "Description": "Description",
 
     "CopyDocumentUrl": "Copy Document URL to clipboard",
+    "DownloadDocument": "Download document",
 
     "ViewMode": "View",
     "EditMode": "Edit",

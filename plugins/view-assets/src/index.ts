@@ -30,6 +30,7 @@ loadMetadata(view.icon, {
   Open: `${icons}#open`,
   Edit: `${icons}#edit`,
   CopyId: `${icons}#copyId`,
+  Download: `${icons}#download`,
   CopyLink: `${icons}#copyLink`,
   Setting: `${icons}#setting`,
   ArrowRight: `${icons}#arrow-right`,

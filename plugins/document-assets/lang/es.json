@@ -1,6 +1,7 @@
 {
   "string": {
     "Document": "Documento",
+    "DownloadDocument": "Descargar documento",
     "ParentDocument": "Documento superior",
     "ChildDocument": "Documento inferior",
     "CreateDocument": "Crear un documento",
