@@ -13,7 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import notification, { DocNotifyContext, InboxNotification } from '@hcengineering/notification'
+  import notification, {
+    ActivityInboxNotification,
+    DocNotifyContext,
+    InboxNotification
+  } from '@hcengineering/notification'
   import { ActionContext, getClient } from '@hcengineering/presentation'
   import view from '@hcengineering/view'
   import {
@@ -33,13 +37,21 @@
   import chunter, { ThreadMessage } from '@hcengineering/chunter'
   import { IdMap, Ref } from '@hcengineering/core'
   import activity, { ActivityMessage } from '@hcengineering/activity'
-  import { isReactionMessage } from '@hcengineering/activity-resources'
+  import { isActivityMessageClass, isReactionMessage } from '@hcengineering/activity-resources'
   import { get } from 'svelte/store'
   import { translate } from '@hcengineering/platform'
 
   import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
   import Filter from '../Filter.svelte'
-  import { archiveAll, getDisplayInboxData, openInboxDoc, readAll, resolveLocation, unreadAll } from '../../utils'
+  import {
+    archiveAll,
+    getDisplayInboxData,
+    isMentionNotification,
+    openInboxDoc,
+    readAll,
+    resolveLocation,
+    unreadAll
+  } from '../../utils'
   import { InboxData, InboxNotificationsFilter } from '../../types'
   import InboxGroupedListView from './InboxGroupedListView.svelte'
 
@@ -161,7 +173,19 @@
       return
     }
 
-    if (hierarchy.isDerived(selectedContext.attachedToClass, activity.class.ActivityMessage)) {
+    const selectedNotification: InboxNotification | undefined = event?.detail?.notification
+
+    if (isMentionNotification(selectedNotification) && isActivityMessageClass(selectedNotification.mentionedInClass)) {
+      const selectedMsg = selectedNotification.mentionedIn as Ref<ActivityMessage>
+
+      openInboxDoc(
+        selectedContext._id,
+        isActivityMessageClass(selectedContext.attachedToClass)
+          ? (selectedContext.attachedTo as Ref<ActivityMessage>)
+          : undefined,
+        selectedMsg
+      )
+    } else if (hierarchy.isDerived(selectedContext.attachedToClass, activity.class.ActivityMessage)) {
       const message = event?.detail?.notification?.$lookup?.attachedTo
 
       if (selectedContext.attachedToClass === chunter.class.ThreadMessage) {
@@ -172,7 +196,7 @@
       } else if (isReactionMessage(message)) {
         openInboxDoc(selectedContext._id, undefined, selectedContext.attachedTo as Ref<ActivityMessage>)
       } else {
-        const selectedMsg = event?.detail?.notification?.attachedTo
+        const selectedMsg = (selectedNotification as ActivityInboxNotification)?.attachedTo
 
         openInboxDoc(
           selectedContext._id,
@@ -181,7 +205,7 @@
         )
       }
     } else {
-      openInboxDoc(selectedContext._id, undefined, event?.detail?.notification?.attachedTo)
+      openInboxDoc(selectedContext._id, undefined, (selectedNotification as ActivityInboxNotification)?.attachedTo)
     }
   }
 
