@@ -13,19 +13,22 @@
 // limitations under the License.
 //
 
-import { type Client, type Doc, type Ref, type Space, type Type } from '@hcengineering/core'
+import { type Client, type Doc, type Mixin, type Ref, type Space, type Type } from '@hcengineering/core'
 import type { IntlString, Resource, StatusCode } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/presentation'
-import recruit, {
-  recruitId,
-  type ScriptTypedAttributeEditorComponentType,
-  type ScriptTypedAttributeFactoryFn,
-  type ScriptTypedPropertyEditorComponentType
-} from '@hcengineering/recruit'
+import recruit, { recruitId } from '@hcengineering/recruit'
 import { type TagCategory } from '@hcengineering/tags'
 import { type AnyComponent } from '@hcengineering/ui'
 import { type FilterFunction, type FilterMode, type Viewlet } from '@hcengineering/view'
+import type {
+  ScriptTypedAttributeEditorComponentType,
+  ScriptTypedAttributeEditorMixin,
+  ScriptTypedAttributeFactoryFn,
+  ScriptTypedAttributeFactoryMixin,
+  ScriptTypedPropertyEditorComponentType,
+  ScriptTypedPropertyEditorMixin
+} from './types'
 
 export default mergeIds(recruitId, recruit, {
   viewlet: {
@@ -158,6 +161,11 @@ export default mergeIds(recruitId, recruit, {
     ApplicationCategory: '' as Ref<ObjectSearchCategory>,
     VacancyCategory: '' as Ref<ObjectSearchCategory>,
     VacancyQuery: '' as Resource<ObjectSearchFactory>
+  },
+  mixin: {
+    ScriptTypedAttributeEditor: '' as Ref<Mixin<ScriptTypedAttributeEditorMixin<any>>>,
+    ScriptTypedAttributeFactory: '' as Ref<Mixin<ScriptTypedAttributeFactoryMixin<any>>>,
+    ScriptTypedPropertyEditor: '' as Ref<Mixin<ScriptTypedPropertyEditorMixin<any>>>
   },
   component: {
     VacancyItemPresenter: '' as AnyComponent,

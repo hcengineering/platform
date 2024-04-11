@@ -46,15 +46,17 @@ import type {
   Candidates,
   Opinion,
   Review,
+  Vacancy,
+  VacancyList
+} from '@hcengineering/recruit'
+import type {
   ScriptTypedAttributeEditorComponentType,
   ScriptTypedAttributeEditorMixin,
   ScriptTypedAttributeFactoryFn,
   ScriptTypedAttributeFactoryMixin,
   ScriptTypedPropertyEditorComponentType,
-  ScriptTypedPropertyEditorMixin,
-  Vacancy,
-  VacancyList
-} from '@hcengineering/recruit'
+  ScriptTypedPropertyEditorMixin
+} from '@hcengineering/recruit-resources'
 import recruit from './plugin'
 
 @Model(recruit.class.Vacancy, task.class.Project)

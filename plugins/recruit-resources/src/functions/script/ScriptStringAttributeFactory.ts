@@ -14,7 +14,7 @@
 //
 
 import type { Type } from '@hcengineering/core'
-import type { ScriptTypedAttributeFactoryFn } from '@hcengineering/recruit'
+import type { ScriptTypedAttributeFactoryFn } from '../../types'
 
 export const ScriptStringAttributeFactory: ScriptTypedAttributeFactoryFn<Type<string>> = async () => ({
   defaultValue: ''

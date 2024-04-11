@@ -17,12 +17,9 @@
 
 <script lang="ts">
   import type { Type } from '@hcengineering/core'
-  import type {
-    ScriptAttribute,
-    ScriptTypedPropertyEditorComponentChange,
-    ScriptTypedPropertyEditorComponentProps
-  } from '@hcengineering/recruit'
+  import type { ScriptAttribute } from '@hcengineering/recruit'
   import Textarea from './Textarea.svelte'
+  import type { ScriptTypedPropertyEditorComponentChange, ScriptTypedPropertyEditorComponentProps } from '../../types'
 
   type $$Props = ScriptTypedPropertyEditorComponentProps<Type<string>>
 

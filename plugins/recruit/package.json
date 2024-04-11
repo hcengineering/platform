@@ -32,7 +32,6 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "svelte": "^4.2.12",
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/core": "^0.6.28",
     "@hcengineering/contact": "^0.6.20",

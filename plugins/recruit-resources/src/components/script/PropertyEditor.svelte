@@ -18,13 +18,10 @@
 <script lang="ts">
   import type { Class, Ref, Type } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import type {
-    ScriptAttribute,
-    ScriptTypedPropertyEditorComponentProps,
-    ScriptTypedPropertyEditorMixin
-  } from '@hcengineering/recruit'
+  import type { ScriptAttribute } from '@hcengineering/recruit'
   import { Component, Loading } from '@hcengineering/ui'
   import { getScriptTypedPropertyEditorMixin } from '../../utils'
+  import type { ScriptTypedPropertyEditorComponentProps, ScriptTypedPropertyEditorMixin } from '../../types'
 
   type T = $$Generic<Type<any>>
   type $$Props = ScriptTypedPropertyEditorComponentProps<T>

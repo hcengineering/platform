@@ -19,9 +19,10 @@
   import type { Type } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import type { ScriptAttribute, ScriptTypedAttributeEditorComponentProps } from '@hcengineering/recruit'
+  import type { ScriptAttribute } from '@hcengineering/recruit'
   import { themeStore } from '@hcengineering/theme'
   import recruit from '../../plugin'
+  import type { ScriptTypedAttributeEditorComponentProps } from '../../types'
   import Textarea from './Textarea.svelte'
 
   type P = $$Generic<string>

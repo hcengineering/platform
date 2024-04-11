@@ -20,12 +20,14 @@ import {
   type Review,
   type Vacancy,
   type VacancyList,
-  type ScriptAttribute,
+  type ScriptAttribute
+} from '@hcengineering/recruit'
+import {
   type ScriptTypedAttributeEditorMixin,
   type ScriptTypedAttributeFactoryFn,
   type ScriptTypedAttributeFactoryMixin,
   type ScriptTypedPropertyEditorMixin
-} from '@hcengineering/recruit'
+} from './types'
 
 import { getCurrentResolvedLocation, getPanelURI, type Location, type ResolvedLocation } from '@hcengineering/ui'
 import view from '@hcengineering/view'

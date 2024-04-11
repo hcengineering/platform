@@ -84,6 +84,8 @@ import {
 import { get } from 'svelte/store'
 import { MoveApplicant } from './actionImpl'
 
+export * from './types'
+
 async function createOpinion (object: Doc): Promise<void> {
   showPopup(CreateOpinion, { space: object.space, review: object._id })
 }

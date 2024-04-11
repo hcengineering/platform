@@ -19,21 +19,16 @@ import type {
   AttachedData,
   AttachedDoc,
   BaseAttribute,
-  Class,
   Markup,
-  PropertyOfType,
   PropertyType,
   Rank,
   Ref,
   Space,
   Status,
-  Timestamp,
-  Type
+  Timestamp
 } from '@hcengineering/core'
-import type { Resource } from '@hcengineering/platform'
 import { TagReference } from '@hcengineering/tags'
 import type { Project, Task } from '@hcengineering/task'
-import type { ComponentType, SvelteComponent } from 'svelte'
 
 /** @public */
 export interface Candidates extends Space {}
@@ -134,52 +129,4 @@ export interface ScriptAttribute<T extends PropertyType = any> extends BaseAttri
   title: string
   rank: Rank
   defaultValue: T
-}
-
-/** @public */
-export interface ScriptTypedAttributeEditorComponentProps<T extends Type<any>> {
-  object: ScriptAttribute<T extends Type<infer P> ? P : never>
-  readonly: boolean
-}
-
-/** @public */
-export type ScriptTypedAttributeEditorComponentType<T extends Type<any>> = ComponentType<
-SvelteComponent<ScriptTypedAttributeEditorComponentProps<T>>
->
-
-/** @public */
-export interface ScriptTypedAttributeEditorMixin<T extends Type<any>> extends Class<T> {
-  editor: Resource<ScriptTypedAttributeEditorComponentType<T>>
-}
-
-/** @public */
-export type ScriptTypedAttributeFactoryFn<T extends Type<any>> = () => Promise<
-Pick<ScriptAttribute<PropertyOfType<T>>, 'defaultValue'>
->
-
-/** @public */
-export interface ScriptTypedAttributeFactoryMixin<T extends Type<any>> extends Class<T> {
-  factory: Resource<ScriptTypedAttributeFactoryFn<T>>
-}
-
-/** @public */
-export type ScriptTypedPropertyEditorComponentChange<T extends Type<any>> =
-  | ((value: PropertyOfType<T>) => Promise<boolean>)
-  | null
-
-/** @public */
-export interface ScriptTypedPropertyEditorComponentProps<T extends Type<any>> {
-  attribute: ScriptAttribute<T>
-  value: PropertyOfType<T>
-  change: ScriptTypedPropertyEditorComponentChange<T>
-}
-
-/** @public */
-export type ScriptTypedPropertyEditorComponentType<T extends Type<any>> = ComponentType<
-SvelteComponent<ScriptTypedPropertyEditorComponentProps<T>>
->
-
-/** @public */
-export interface ScriptTypedPropertyEditorMixin<T extends Type<any>> extends Class<T> {
-  editor: Resource<ScriptTypedPropertyEditorComponentType<T>>
 }
