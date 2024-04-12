@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { EmojiPopup, IconEmoji, showPopup } from '@hcengineering/ui'
+  import { EmojiPopup, showPopup } from '@hcengineering/ui'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import activity, { ActivityMessage, Reaction } from '@hcengineering/activity'
 
@@ -49,4 +49,4 @@
   }
 </script>
 
-<ActivityMessageAction icon={IconEmoji} action={openEmojiPalette} opened={isOpened} />
+<ActivityMessageAction icon={activity.icon.Emoji} action={openEmojiPalette} opened={isOpened} />
