@@ -76,7 +76,7 @@
 
   const client = getClient()
 
-  async function updateSelected (value: Ref<Person> | null | undefined) {
+  async function updateSelected(value: Ref<Person> | null | undefined) {
     selected = value
       ? $personByIdStore.get(value) ?? (await client.findOne(contact.class.Person, { _id: value }))
       : undefined
@@ -86,7 +86,7 @@
 
   const mgr = getFocusManager()
 
-  function _click (ev: MouseEvent): void {
+  function _click(ev: MouseEvent): void {
     if (!readonly) {
       ev.preventDefault()
       ev.stopPropagation()
@@ -128,7 +128,13 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<div {id} bind:this={container} class="min-w-0 h-full flex items-center" class:w-full={width === '100%'} style:flex-shrink={shrink}>
+<div
+  {id}
+  bind:this={container}
+  class="min-w-0 h-full flex items-center"
+  class:w-full={width === '100%'}
+  style:flex-shrink={shrink}
+>
   {#if $$slots.content}
     <div
       class="w-full h-full flex-streatch"
