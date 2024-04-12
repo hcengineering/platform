@@ -591,10 +591,7 @@
     }
   }
 
-  .hulyToDoLine-statusPriority {
-    display: flex;
-    gap: var(--spacing-0_25);
-  }
+  .hulyToDoLine-statusPriority,
   .hulyToDoLine-dragbox,
   .hulyToDoLine-checkbox {
     display: flex;
@@ -602,8 +599,7 @@
     flex-shrink: 0;
   }
   .hulyToDoLine-dragbox {
-    position: relative;
-    margin-right: var(--spacing-0_25);
+    display: none;
     padding: 0;
     width: var(--global-min-Size);
     height: var(--global-min-Size);
@@ -611,28 +607,28 @@
     border: none;
     outline: none;
     cursor: grab;
+  }
+  .hulyToDoLine-statusPriority {
+    position: relative;
+    margin-right: var(--spacing-0_25);
+    padding-top: var(--spacing-0_5);
+    min-width: var(--global-min-Size);
 
     &.isNew::after {
       position: absolute;
       content: '';
-      top: var(--spacing-0_75);
-      right: var(--spacing-0_5);
+      top: var(--spacing-1_25);
+      right: calc(-1 * var(--spacing-0_75));
       width: var(--spacing-0_5);
       height: var(--spacing-0_5);
       background-color: var(--global-primary-LinkColor);
       border-radius: 50%;
     }
-    svg {
-      visibility: hidden;
-    }
   }
   .hulyToDoLine-checkbox {
+    display: none;
     width: var(--global-extra-small-Size);
     height: var(--global-extra-small-Size);
-
-    &.updating {
-      padding-top: var(--spacing-0_5);
-    }
   }
   .hulyToDoLine-top-align {
     color: var(--global-primary-TextColor);
@@ -677,24 +673,21 @@
   &:hover {
     background-color: var(--global-surface-01-hover-BackgroundColor);
 
-    .hulyToDoLine-dragbox {
-      &.isNew::after {
-        content: none;
-      }
-      svg {
-        visibility: visible;
-      }
+    .priority-container {
+      display: none;
+    }
+    .hulyToDoLine-dragbox,
+    .hulyToDoLine-checkbox {
+      display: flex;
     }
   }
 
   &.isDrag {
+    .priority-container {
+      display: flex;
+    }
     .hulyToDoLine-dragbox {
-      &.isNew::after {
-        content: '';
-      }
-      svg {
-        visibility: hidden;
-      }
+      display: none;
     }
   }
 }
