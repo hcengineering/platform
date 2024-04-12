@@ -64,7 +64,10 @@ export class TalentDetailsPage extends CommonRecruitingPage {
     await this.buttonFinalContact.click()
     await this.selectMenuItem(this.page, talentName.finalContactName)
 
-    await this.buttonMergeRow.locator('div.flex-center', { hasText: talentName.name }).locator('label.checkbox-container').click()
+    await this.buttonMergeRow
+      .locator('div.flex-center', { hasText: talentName.name })
+      .locator('label.checkbox-container')
+      .click()
 
     if (talentName.mergeLocation) {
       await this.buttonMergeRow
