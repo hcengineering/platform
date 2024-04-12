@@ -1,8 +1,9 @@
 import { type Asset, type IntlString, type Resource } from '@hcengineering/platform'
 import { type Account, type Doc, type Markup, type Ref } from '@hcengineering/core'
 import type { AnySvelteComponent } from '@hcengineering/ui'
-import { type Editor, type SingleCommands } from '@tiptap/core'
 import { type RelativePosition } from 'yjs'
+import { type Content, type Editor, type SingleCommands } from '@tiptap/core'
+import { type ParseOptions } from '@tiptap/pm/model'
 
 /**
  * @public
@@ -11,12 +12,22 @@ export interface TextEditorHandler {
   insertText: (html: string) => void
   insertMarkup: (markup: Markup) => void
   insertTemplate: (name: string, markup: string) => void
+  insertTable: (options: { rows?: number, cols?: number, withHeaderRow?: boolean }) => void
+  insertCodeBlock: (pos?: number) => void
+  insertSeparatorLine: () => void
+  insertContent: (
+    value: Content,
+    options?: {
+      parseOptions?: ParseOptions
+      updateSelection?: boolean
+    }
+  ) => void
   focus: () => void
 }
 /**
  * @public
  */
-export type RefInputAction = (element: HTMLElement, editor: TextEditorHandler) => void
+export type RefInputAction = (element: HTMLElement, editor: TextEditorHandler, event?: MouseEvent) => void
 /**
  * A contribution to reference input control, to allow to add more actions to it.
  * @public

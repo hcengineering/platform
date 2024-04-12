@@ -47,6 +47,8 @@
     "TableOptions": "Customize table",
     "Width": "Width",
     "Height": "Height",
-    "Unset": "Unset"
+    "Unset": "Unset",
+    "Image": "Image",
+    "SeparatorLine": "Separator line"
   }
 }
