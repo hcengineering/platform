@@ -22,7 +22,7 @@ import cors from 'cors'
 import express from 'express'
 import http, { type IncomingMessage } from 'http'
 import { WebSocketServer, type RawData, type WebSocket } from 'ws'
-import { getStatistics } from './stats'
+import { getStatistics, wipeStatistics } from './stats'
 import {
   LOGGING_ENABLED,
   type ConnectionSocket,
@@ -118,7 +118,14 @@ export function startHttpServer (
 
           res.writeHead(200)
           res.end()
-          break
+          return
+        }
+        case 'wipe-statistics': {
+          wipeStatistics(ctx)
+
+          res.writeHead(200)
+          res.end()
+          return
         }
         case 'reboot': {
           process.exit(0)
