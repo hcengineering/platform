@@ -168,4 +168,9 @@ export function createModel (builder: Builder): void {
   builder.mixin(templates.class.MessageTemplate, core.class.Class, view.mixin.IgnoreActions, {
     actions: [view.action.Open, tracker.action.NewRelatedIssue]
   })
+
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_TEMPLATES,
+    disabled: [{ _class: 1 }, { space: 1 }, { modifiedBy: 1 }, { modifiedOn: 1 }, { createdBy: 1 }, { createdOn: -1 }]
+  })
 }

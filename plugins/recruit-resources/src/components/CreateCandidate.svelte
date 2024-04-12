@@ -482,7 +482,6 @@
   }
 
   function fileSelected () {
-    console.log(inputFile.files)
     const file = inputFile.files?.[0]
     if (file !== undefined) {
       createAttachment(file)

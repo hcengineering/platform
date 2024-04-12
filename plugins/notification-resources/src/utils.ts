@@ -35,7 +35,8 @@ import notification, {
   type Collaborators,
   type DisplayInboxNotification,
   type DocNotifyContext,
-  type InboxNotification
+  type InboxNotification,
+  type MentionInboxNotification
 } from '@hcengineering/notification'
 import { MessageBox, getClient } from '@hcengineering/presentation'
 import { getLocation, navigate, showPopup, type Location, type ResolvedLocation } from '@hcengineering/ui'
@@ -274,8 +275,14 @@ export async function unreadAll (): Promise<void> {
   await client.unreadAllNotifications()
 }
 
-export function isActivityNotification (doc: InboxNotification): doc is ActivityInboxNotification {
+export function isActivityNotification (doc?: InboxNotification): doc is ActivityInboxNotification {
+  if (doc === undefined) return false
   return doc._class === notification.class.ActivityInboxNotification
+}
+
+export function isMentionNotification (doc?: InboxNotification): doc is MentionInboxNotification {
+  if (doc === undefined) return false
+  return doc._class === notification.class.MentionInboxNotification
 }
 
 export async function getDisplayInboxNotifications (

@@ -313,6 +313,18 @@ export function createModel (builder: Builder): void {
   builder.mixin(calendar.class.Event, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: calendar.component.EventPresenter
   })
+
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_CALENDAR,
+    disabled: [
+      { attachedToClass: 1 },
+      { modifiedOn: 1 },
+      { modifiedBy: 1 },
+      { createdBy: 1 },
+      { createdOn: -1 },
+      { state: 1 }
+    ]
+  })
 }
 
 export default calendar

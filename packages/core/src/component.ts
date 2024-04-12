@@ -28,6 +28,7 @@ import type {
   ConfigurationElement,
   Doc,
   DocIndexState,
+  DomainIndexConfiguration,
   Enum,
   EnumOf,
   FullTextData,
@@ -135,6 +136,7 @@ export default plugin(coreId, {
     TypeRelatedDocument: '' as Ref<Class<Type<RelatedDocument>>>,
     DocIndexState: '' as Ref<Class<DocIndexState>>,
     IndexStageState: '' as Ref<Class<IndexStageState>>,
+    DomainIndexConfiguration: '' as Ref<Class<DomainIndexConfiguration>>,
 
     Configuration: '' as Ref<Class<Configuration>>,
 

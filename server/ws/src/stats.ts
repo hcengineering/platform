@@ -1,4 +1,10 @@
-import { type MeasureContext, metricsAggregate } from '@hcengineering/core'
+import {
+  type MeasureContext,
+  MeasureMetricsContext,
+  type Metrics,
+  metricsAggregate,
+  type MetricsData
+} from '@hcengineering/core'
 import os from 'os'
 import { type SessionManager } from './types'
 
@@ -32,4 +38,37 @@ export function getStatistics (ctx: MeasureContext, sessions: SessionManager, ad
   data.statistics.totalMem = Math.round((os.totalmem() / 1024 / 1024) * 100) / 100
 
   return data
+}
+
+/**
+ * @public
+ */
+export function wipeStatistics (ctx: MeasureContext): void {
+  const toClean: (Metrics | MetricsData)[] = []
+  function cleanMetrics (m: Metrics | MetricsData): void {
+    m.operations = 0
+    m.value = 0
+    m.topResult = undefined
+    if ('measurements' in m) {
+      for (const v of Object.values(m.measurements)) {
+        toClean.push(v)
+      }
+      for (const v of Object.values(m.params)) {
+        for (const vv of Object.values(v)) {
+          toClean.push(vv)
+        }
+      }
+    }
+  }
+
+  if (ctx instanceof MeasureMetricsContext) {
+    toClean.push(ctx.metrics)
+    while (toClean.length > 0) {
+      const v = toClean.shift()
+      if (v === undefined) {
+        break
+      }
+      cleanMetrics(v)
+    }
+  }
 }

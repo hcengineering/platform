@@ -117,7 +117,7 @@ export class TActivityMessage extends TAttachedDoc implements ActivityMessage {
     repliedPersons?: Ref<Person>[]
 
   @Prop(TypeTimestamp(), activity.string.LastReply)
-  @Index(IndexKind.Indexed)
+  // @Index(IndexKind.Indexed)
     lastReply?: Timestamp
 
   @Prop(Collection(activity.class.Reaction), activity.string.Reactions)
@@ -134,15 +134,15 @@ export class TDocUpdateMessage extends TActivityMessage implements DocUpdateMess
     objectId!: Ref<Doc>
 
   @Prop(TypeRef(core.class.Class), core.string.Class)
-  @Index(IndexKind.Indexed)
+  // @Index(IndexKind.Indexed)
     objectClass!: Ref<Class<Doc>>
 
   @Prop(TypeRef(core.class.TxCUD), core.string.Object)
-  @Index(IndexKind.Indexed)
+  // @Index(IndexKind.Indexed)
     txId!: Ref<TxCUD<Doc>>
 
   @Prop(TypeString(), core.string.Object)
-  @Index(IndexKind.Indexed)
+  // @Index(IndexKind.Indexed)
     action!: DocUpdateAction
 
   updateCollection?: string
@@ -153,11 +153,11 @@ export class TDocUpdateMessage extends TActivityMessage implements DocUpdateMess
 export class TActivityReference extends TActivityMessage implements ActivityReference {
   // Source document we have reference from, it should be parent document for Comment/Message.
   @Prop(TypeRef(core.class.Doc), core.string.Object)
-  @Index(IndexKind.Indexed)
+  // @Index(IndexKind.Indexed)
     srcDocId!: Ref<Doc>
 
   @Prop(TypeRef(core.class.Class), core.string.Class)
-  @Index(IndexKind.Indexed)
+  // @Index(IndexKind.Indexed)
     srcDocClass!: Ref<Class<Doc>>
 
   // Reference to comment/message in source doc
@@ -382,6 +382,22 @@ export function createModel (builder: Builder): void {
     },
     activity.ids.AddReactionNotification
   )
+
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_ACTIVITY,
+    indexes: [
+      { attachedTo: 1, createdOn: 1 },
+      { attachedTo: 1, createdOn: -1 }
+    ],
+    disabled: [
+      { modifiedOn: 1 },
+      { createdOn: -1 },
+      { space: 1 },
+      { modifiedBy: 1 },
+      { createdBy: 1 },
+      { attachedToClass: 1 }
+    ]
+  })
 }
 
 export default activity

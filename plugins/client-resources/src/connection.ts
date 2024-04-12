@@ -96,32 +96,46 @@ class Connection implements ClientConnection {
         if (!(s instanceof Promise)) {
           console.log('no ping response from server. Closing socket.', s, (s as any)?.readyState)
           // Trying to close connection and re-establish it.
-          s?.close()
+          s?.close(1000)
         } else {
           console.log('no ping response from server. Closing socket.', s)
           void s.then((s) => {
-            s.close()
+            s.close(1000)
           })
         }
         this.websocket = null
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      void this.sendRequest({ method: 'ping', params: [] }).then(() => {
-        this.pingResponse = Date.now()
-      })
+      if (!this.closed) {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        void this.sendRequest({ method: 'ping', params: [] }).then(() => {
+          this.pingResponse = Date.now()
+        })
+      } else {
+        clearInterval(this.interval)
+      }
     }, pingTimeout)
   }
 
   async close (): Promise<void> {
     this.closed = true
     clearInterval(this.interval)
+    const closeEvt = serialize(
+      {
+        method: 'close',
+        params: [],
+        id: -1
+      },
+      false
+    )
     if (this.websocket !== null) {
       if (this.websocket instanceof Promise) {
         await this.websocket.then((ws) => {
-          ws.close()
+          ws.send(closeEvt)
+          ws.close(1000)
         })
       } else {
+        this.websocket.send(closeEvt)
         this.websocket.close(1000)
       }
       this.websocket = null
@@ -143,6 +157,9 @@ class Connection implements ClientConnection {
         this.delay = 0
         return await this.pending
       } catch (err: any) {
+        if (this.closed) {
+          throw new Error('connection closed')
+        }
         this.pending = undefined
         console.log('failed to connect', err)
         if (err?.code === UNAUTHORIZED.code) {

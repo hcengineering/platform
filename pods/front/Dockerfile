@@ -1,13 +1,11 @@
-FROM node:20-alpine
+FROM node:20
 
-RUN apk add dumb-init
 ENV NODE_ENV production
 
 WORKDIR /app
-RUN npm install --ignore-scripts=false --verbose sharp@v0.32.6 --unsafe-perm
-
+RUN npm install --ignore-scripts=false --verbose sharp@v0.32.6 bufferutil utf-8-validate @mongodb-js/zstd --unsafe-perm
 COPY bundle/bundle.js ./
 COPY dist/ ./dist/
 
 EXPOSE 8080
-CMD [ "dumb-init", "node", "./bundle.js" ]
+CMD [ "node", "./bundle.js" ]

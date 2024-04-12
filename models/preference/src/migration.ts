@@ -14,9 +14,14 @@
 //
 
 import { TxOperations } from '@hcengineering/core'
-import { type MigrateOperation, type MigrationClient, type MigrationUpgradeClient } from '@hcengineering/model'
+import {
+  tryUpgrade,
+  type MigrateOperation,
+  type MigrationClient,
+  type MigrationUpgradeClient
+} from '@hcengineering/model'
 import core from '@hcengineering/model-core'
-import preference from '@hcengineering/preference'
+import preference, { preferenceId } from '@hcengineering/preference'
 
 async function createSpace (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(core.class.Space, {
@@ -45,7 +50,14 @@ async function createDefaults (tx: TxOperations): Promise<void> {
 export const preferenceOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    const ops = new TxOperations(client, core.account.System)
-    await createDefaults(ops)
+    await tryUpgrade(client, preferenceId, [
+      {
+        state: 'create-defaults',
+        func: async (client) => {
+          const ops = new TxOperations(client, core.account.System)
+          await createDefaults(ops)
+        }
+      }
+    ])
   }
 }

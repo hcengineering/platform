@@ -944,7 +944,8 @@ export async function moveToSpace (
       const allAttached = await client.findAll(collection.of, { attachedTo: doc._id })
       for (const attached of allAttached) {
         // Do not use extra for childs.
-        await moveToSpace(client, attached, space).catch((err) => {
+        await moveToSpace(client, attached, space).catch((err: any) => {
+          Analytics.handleError(err)
           console.log('failed to move', name, err)
         })
       }

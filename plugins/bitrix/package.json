@@ -43,7 +43,7 @@
     "@hcengineering/recruit": "^0.6.21",
     "@hcengineering/tags": "^0.6.12",
     "@hcengineering/task": "^0.6.13",
-    "fast-equals": "^2.0.3",
+    "fast-equals": "^5.0.1",
     "qs": "~6.11.0"
   },
   "repository": "https://github.com/hcengineering/anticrm",

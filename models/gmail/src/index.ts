@@ -294,4 +294,17 @@ export function createModel (builder: Builder): void {
   builder.mixin(gmail.class.Message, core.class.Class, core.mixin.FullTextSearchContext, {
     parentPropagate: false
   })
+
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_GMAIL,
+    disabled: [
+      { _class: 1 },
+      { createdOn: -1 },
+      { space: 1 },
+      { modifiedBy: 1 },
+      { createdBy: 1 },
+      { attachedToClass: 1 },
+      { createdOn: -1 }
+    ]
+  })
 }

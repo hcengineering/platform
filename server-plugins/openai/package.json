@@ -40,7 +40,7 @@
     "@hcengineering/recruit": "^0.6.21",
     "@hcengineering/server": "^0.6.4",
     "@hcengineering/server-core": "^0.6.1",
-    "fast-equals": "^2.0.3",
+    "fast-equals": "^5.0.1",
     "got": "^11.8.3",
     "html-to-text": "^9.0.3"
   }

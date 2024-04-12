@@ -54,7 +54,8 @@ import {
   type Timestamp,
   type Type,
   type TypeAny,
-  type Version
+  type Version,
+  type DomainIndexConfiguration
 } from '@hcengineering/core'
 import {
   Hidden,
@@ -385,6 +386,11 @@ export class TConfiguration extends TDoc implements Configuration {
 export class TIndexConfiguration<T extends Doc = Doc> extends TClass implements IndexingConfiguration<T> {
   indexes!: FieldIndex<T>[]
   searchDisabled!: boolean
+}
+
+@Model(core.class.DomainIndexConfiguration, core.class.Doc, DOMAIN_MODEL)
+export class TDomainIndexConfiguration extends TDoc implements DomainIndexConfiguration {
+  domain!: Domain
 }
 
 @UX(core.string.CollaborativeDoc)

@@ -19,13 +19,16 @@ import core, {
   Client as CoreClient,
   Doc,
   Domain,
+  DOMAIN_MIGRATION,
   DOMAIN_MODEL,
   DOMAIN_TX,
   FieldIndex,
+  groupByArray,
   Hierarchy,
   IndexKind,
   IndexOrder,
   MeasureContext,
+  MigrationState,
   ModelDb,
   Tx,
   WorkspaceId
@@ -39,6 +42,7 @@ import { connect } from './connect'
 import toolPlugin from './plugin'
 import { MigrateClientImpl } from './upgrade'
 
+import { deepEqual } from 'fast-equals'
 import fs from 'fs'
 import path from 'path'
 
@@ -151,11 +155,20 @@ export async function initModel (
       model
     )) as unknown as CoreClient & BackupClient
 
+    const states = await connection.findAll<MigrationState>(core.class.MigrationState, {})
+    const migrateState = new Map(
+      Array.from(groupByArray(states, (it) => it.plugin).entries()).map((it) => [
+        it[0],
+        new Set(it[1].map((q) => q.state))
+      ])
+    )
+    ;(connection as any).migrateState = migrateState
+
     try {
       let i = 0
       for (const op of migrateOperations) {
         logger.log('Migrate', { name: op[0] })
-        await op[1].upgrade(connection, logger)
+        await op[1].upgrade(connection as any, logger)
         i++
         await progress(20 + (((100 / migrateOperations.length) * i) / 100) * 10)
       }
@@ -229,9 +242,18 @@ export async function upgradeModel (
     }
 
     const { hierarchy, modelDb, model } = await fetchModelFromMongo(ctx, mongodbUri, workspaceId)
+    const migrateClient = new MigrateClientImpl(db, hierarchy, modelDb, logger)
+
+    const states = await migrateClient.find<MigrationState>(DOMAIN_MIGRATION, { _class: core.class.MigrationState })
+    const migrateState = new Map(
+      Array.from(groupByArray(states, (it) => it.plugin).entries()).map((it) => [
+        it[0],
+        new Set(it[1].map((q) => q.state))
+      ])
+    )
+    migrateClient.migrateState = migrateState
 
     await ctx.with('migrate', {}, async () => {
-      const migrateClient = new MigrateClientImpl(db, hierarchy, modelDb, logger)
       let i = 0
       for (const op of migrateOperations) {
         const t = Date.now()
@@ -260,6 +282,18 @@ export async function upgradeModel (
         )
     )
 
+    await ctx.with('upgrade', {}, async () => {
+      let i = 0
+      for (const op of migrateOperations) {
+        const t = Date.now()
+        ;(connection as any).migrateState = migrateState
+        await op[1].upgrade(connection as any, logger)
+        logger.log('upgrade:', { operation: op[0], time: Date.now() - t, workspaceId: workspaceId.name })
+        await progress(60 + ((100 / migrateOperations.length) * i * 40) / 100)
+        i++
+      }
+    })
+
     if (!skipTxUpdate) {
       // Create update indexes
       await ctx.with('create-indexes', {}, async (ctx) => {
@@ -268,17 +302,6 @@ export async function upgradeModel (
         })
       })
     }
-
-    await ctx.with('upgrade', {}, async () => {
-      let i = 0
-      for (const op of migrateOperations) {
-        const t = Date.now()
-        await op[1].upgrade(connection, logger)
-        logger.log('upgrade:', { operation: op[0], time: Date.now() - t, workspaceId: workspaceId.name })
-        await progress(60 + ((100 / migrateOperations.length) * i * 40) / 100)
-        i++
-      }
-    })
     return connection
   } finally {
     _client.close()
@@ -322,6 +345,12 @@ async function createUpdateIndexes (
 ): Promise<void> {
   const classes = await ctx.with('find-classes', {}, async () => await connection.findAll(core.class.Class, {}))
 
+  const domainConfigurations = await ctx.with(
+    'find-domain-configs',
+    {},
+    async () => await connection.findAll(core.class.DomainIndexConfiguration, {})
+  )
+
   const hierarchy = connection.getHierarchy()
   const domains = new Map<Domain, Set<string | FieldIndex<Doc>>>()
   // Find all domains and indexed fields inside
@@ -362,42 +391,100 @@ async function createUpdateIndexes (
     {},
     async () => await db.listCollections({}, { nameOnly: true }).toArray()
   )
-  const promises: Promise<void>[] = []
   let completed = 0
-  for (const [d, v] of domains.entries()) {
+  const allDomains = Array.from(domains.entries())
+  for (const [d, v] of allDomains) {
+    const cfg = domainConfigurations.find((it) => it.domain === d)
+
+    if (cfg?.disableCollection === true) {
+      await db.dropCollection(d)
+      continue
+    }
     const collInfo = collections.find((it) => it.name === d)
     if (collInfo == null) {
       await ctx.with('create-collection', { d }, async () => await db.createCollection(d))
     }
     const collection = db.collection(d)
     const bb: (string | FieldIndex<Doc>)[] = []
-    for (const vv of v.values()) {
+    const added = new Set<string>()
+
+    const allIndexes = (await collection.listIndexes().toArray()).filter((it) => it.name !== '_id_')
+
+    for (const vv of [...v.values(), ...(cfg?.indexes ?? [])]) {
       try {
-        const key = typeof vv === 'string' ? vv : Object.keys(vv)[0]
-        const name = typeof vv === 'string' ? `${key}_1` : `${key}_${vv[key]}`
-        const exists = await collection.indexExists(name)
+        const name =
+          typeof vv === 'string'
+            ? `${vv}_1`
+            : Object.entries(vv)
+              .map(([key, val]) => `${key}_${val}`)
+              .join('_')
+
+        // Check if index is disabled or not
+        const isDisabled =
+          cfg?.disabled?.some((it) => {
+            const _it = typeof it === 'string' ? { [it]: 1 } : it
+            const _vv = typeof vv === 'string' ? { [vv]: 1 } : vv
+            return deepEqual(_it, _vv)
+          }) ?? false
+        if (isDisabled) {
+          // skip index since it is disabled
+          continue
+        }
+        if (added.has(name)) {
+          // Index already added
+          continue
+        }
+        added.add(name)
+
+        const existingOne = allIndexes.findIndex((it) => it.name === name)
+        if (existingOne !== -1) {
+          allIndexes.splice(existingOne, 1)
+        }
+        const exists = existingOne !== -1
+        // Check if index exists
         if (!exists) {
-          bb.push(vv)
+          if (!isDisabled) {
+            // Check if not disabled
+            bb.push(vv)
+            await collection.createIndex(vv, {
+              background: true,
+              name
+            })
+          }
         }
       } catch (err: any) {
         logger.error('error: failed to create index', { d, vv, err })
       }
     }
-    for (const vv of bb) {
-      promises.push(
-        collection
-          .createIndex(vv, {
-            background: true
-          })
-          .then(async () => {
-            completed++
-            await progress((100 / bb.length) * completed)
-          })
-      )
+    if (allIndexes.length > 0) {
+      for (const c of allIndexes) {
+        if (cfg?.skip !== undefined) {
+          if (Array.from(cfg.skip ?? []).some((it) => c.name.includes(it))) {
+            continue
+          }
+        }
+        logger.log('drop unused indexes', { name: c.name })
+        await collection.dropIndex(c.name)
+      }
     }
-    await Promise.all(promises)
+
     if (bb.length > 0) {
       logger.log('created indexes', { d, bb })
+    }
+
+    const pos = collections.findIndex((it) => it.name === d)
+    if (pos !== -1) {
+      collections.splice(pos, 1)
+    }
+
+    completed++
+    await progress((100 / allDomains.length) * completed)
+  }
+  if (collections.length > 0) {
+    // We could drop unused collections.
+    for (const c of collections) {
+      logger.log('drop unused collection', { name: c.name })
+      await db.dropCollection(c.name)
     }
   }
 }

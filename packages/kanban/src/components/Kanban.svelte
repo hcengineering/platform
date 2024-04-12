@@ -76,7 +76,6 @@
     let updates = getUpdateProps(dragCard, state)
 
     if (updates === undefined) {
-      console.log('no update props')
       panelDragLeave(undefined, dragCardState)
       dragCard = undefined
       dragCardAvailableCategories = undefined
@@ -126,7 +125,6 @@
       }
 
       const updates = getUpdateProps(dragCard, state)
-      console.log('UPD', updates)
       if (updates === undefined) {
         return
       }

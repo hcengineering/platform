@@ -636,3 +636,17 @@ export interface IndexingConfiguration<T extends Doc> extends Class<Doc> {
   indexes: (FieldIndex<T> | string)[]
   searchDisabled?: boolean
 }
+
+export interface DomainIndexConfiguration extends Doc {
+  domain: Domain
+  disableCollection?: boolean // For some special cases we could decide to disable collection and index creations at all.
+
+  // A set of indexes we need to disable for domain
+  // Disabled indexes will be removed
+  disabled?: (FieldIndex<Doc> | string)[]
+
+  // Additional indexes we could like to enabled
+  indexes?: (FieldIndex<Doc> | string)[]
+
+  skip?: string[]
+}

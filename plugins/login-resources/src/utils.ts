@@ -82,7 +82,7 @@ export async function doLogin (email: string, password: string): Promise<[Status
     }
     return [result.error ?? OK, result.result]
   } catch (err: any) {
-    console.log('login error', err)
+    console.error('login error', err)
     Analytics.handleError(err)
     return [unknownError(err), undefined]
   }
@@ -900,7 +900,7 @@ export async function getEnpoint (): Promise<string | undefined> {
     const result = await response.json()
     return result.result
   } catch (err: any) {
-    console.log('get endpoint error', err)
+    console.error('get endpoint error', err)
     Analytics.handleError(err)
   }
 }
@@ -920,7 +920,7 @@ export async function getSessionLoginInfo (): Promise<LoginInfo | WorkspaceLogin
     const result = await response.json()
     return result
   } catch (err: any) {
-    console.log('login error', err)
+    console.error('login error', err)
     Analytics.handleError(err)
   }
 }
