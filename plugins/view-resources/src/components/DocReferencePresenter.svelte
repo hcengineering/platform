@@ -22,7 +22,6 @@
   import { classIcon, getObjectPresenter } from '../utils'
 
   export let value: Doc | undefined
-  export let maxWidth: string | null = null
   export let compact = false
 
   const client = getClient()
@@ -41,14 +40,12 @@
 
   $: if (value && hierarchy.isDerived(value._class, contact.class.Person)) {
     size = 'tiny'
-  } else if (compact) {
-    size = 'x-small'
   } else {
     size = 'small'
   }
 </script>
 
-<button class="reference flex-row-top flex-no-shrink flex-gap-2" style:maxWidth class:compact on:click>
+<button class="reference flex-row-top flex-no-shrink flex-gap-2" class:compact on:click>
   <span class="label overflow-label font-medium-12 text-left secondary-textColor">
     <slot name="prefix" />
   </span>
@@ -59,7 +56,7 @@
       <Icon icon={classIcon(client, value._class) ?? view.icon.Views} {size} />
     {/if}
   </div>
-  <span class="label overflow-label font-medium-12 text-left secondary-textColor">
+  <span class="label overflow-label font-medium-12 text-left max-w-20 secondary-textColor">
     {#if presenter && value}
       <svelte:component
         this={presenter.presenter}
@@ -84,8 +81,7 @@
     background-color: var(--tag-nuance-SkyBackground);
 
     &.compact {
-      padding-left: 0.5rem;
-      gap: 0.25rem;
+      gap: var(--spacing-0_5);
     }
 
     &:hover {

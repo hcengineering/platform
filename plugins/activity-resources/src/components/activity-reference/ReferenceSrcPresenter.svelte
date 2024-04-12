@@ -36,10 +36,10 @@
     })
 </script>
 
-<DocReferencePresenter value={showParent ? parentObject : value} compact={showParent} maxWidth="10rem">
+<DocReferencePresenter value={showParent ? parentObject : value} compact={showParent}>
   <svelte:fragment slot="prefix">
     {#if showParent}
-      <span class="nowrap flex-presenter flex-gap-1 lower">
+      <span class="nowrap flex-presenter flex-gap-1 lower ml-2">
         <Icon icon={view.icon.Bubble} size="x-small" />
         <Label label={activity.string.Thread} />
         <Label label={activity.string.In} />
