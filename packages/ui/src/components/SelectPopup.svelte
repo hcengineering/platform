@@ -93,15 +93,7 @@
   $: huge = size === 'medium' || size === 'large'
 
   $: if (popupElement) {
-    console.log('before focus')
-    console.log(document.activeElement)
     popupElement.focus()
-    console.log('after focus')
-    console.log(document.activeElement)
-    setTimeout(() => {
-      console.log('1000ms after focus')
-      console.log(document.activeElement)
-    }, 1000)
   }
 </script>
 
