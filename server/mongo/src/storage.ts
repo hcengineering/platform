@@ -486,8 +486,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     if (options?.total === true) {
       totalPipeline.push({ $count: 'total' })
       const totalCursor = this.db.collection(domain).aggregate(totalPipeline, {
-        checkKeys: false,
-        enableUtf8Validation: false
+        checkKeys: false
       })
       const arr = await toArray(totalCursor)
       total = arr?.[0]?.total ?? 0
@@ -592,8 +591,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     const mongoQuery = this.translateQuery(_class, query)
 
     let cursor = coll.find<T>(mongoQuery, {
-      checkKeys: false,
-      enableUtf8Validation: false
+      checkKeys: false
     })
 
     if (options?.projection !== undefined) {
@@ -1252,15 +1250,19 @@ class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
   }
 
   async getModel (ctx: MeasureContext): Promise<Tx[]> {
-    const modelProjection = {
-      '%hash%': 0
-    }
     const cursor = await ctx.with('find', {}, async () =>
-      this.db
-        .collection<Tx>(DOMAIN_TX)
-        .find({ objectSpace: core.space.Model })
-        .sort({ _id: 1, modifiedOn: 1 })
-        .project<Tx>(modelProjection)
+      this.db.collection<Tx>(DOMAIN_TX).find(
+        { objectSpace: core.space.Model },
+        {
+          sort: {
+            _id: 1,
+            modifiedOn: 1
+          },
+          projection: {
+            '%hash%': 0
+          }
+        }
+      )
     )
     const model = await ctx.with('to-array', {}, async () => await toArray<Tx>(cursor))
     // We need to put all core.account.System transactions first

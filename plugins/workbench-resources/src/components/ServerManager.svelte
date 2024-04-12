@@ -30,27 +30,34 @@
     endpoint = endpoint.substring(0, endpoint.length - 1)
   }
 
+  async function fetchStats (): Promise<void> {
+    await fetch(endpoint + `/api/v1/statistics?token=${token}`, {})
+      .then(async (json) => {
+        data = await json.json()
+        admin = data?.admin ?? false
+      })
+      .catch((err) => {
+        console.error(err)
+      })
+  }
+  async function fetchUIStats (): Promise<void> {
+    await fetch(`/api/v1/statistics?token=${token}`, {})
+      .then(async (json) => {
+        dataFront = await json.json()
+      })
+      .catch((err) => {
+        console.error(err)
+      })
+  }
+
   let data: any
   let dataFront: any
   let admin = false
   onDestroy(
     ticker.subscribe(() => {
-      void fetch(endpoint + `/api/v1/statistics?token=${token}`, {})
-        .then(async (json) => {
-          data = await json.json()
-          admin = data?.admin ?? false
-        })
-        .catch((err) => {
-          console.error(err)
-        })
+      void fetchStats()
 
-      void fetch(`/api/v1/statistics?token=${token}`, {})
-        .then(async (json) => {
-          dataFront = await json.json()
-        })
-        .catch((err) => {
-          console.error(err)
-        })
+      void fetchUIStats()
     })
   )
   const tabs: TabItem[] = [
@@ -264,6 +271,24 @@
         {/each}
       </div>
     {:else if selectedTab === 'statistics'}
+      {#if admin}
+        <div class="flex flex-col">
+          <div class="flex-row-center p-1">
+            <div class="p-3">1.</div>
+            <Button
+              icon={IconArrowRight}
+              label={getEmbeddedLabel('Wipe statistics')}
+              on:click={() => {
+                void fetch(endpoint + `/api/v1/manage?token=${token}&operation=wipe-statistics`, {
+                  method: 'PUT'
+                }).then(async () => {
+                  await fetchStats()
+                })
+              }}
+            />
+          </div>
+        </div>
+      {/if}
       <div class="flex-column p-3 h-full" style:overflow="auto">
         {#if metricsData !== undefined}
           <MetricsInfo metrics={metricsData} />
