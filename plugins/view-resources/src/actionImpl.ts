@@ -379,7 +379,6 @@ async function ShowEditor (
       }
     }
     if (editor !== undefined) {
-      console.log('EVT', evt)
       showPopup(
         editor,
         cprops,

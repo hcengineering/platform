@@ -55,7 +55,7 @@
     "@tiptap/extension-underline": "^2.2.4",
     "@tiptap/suggestion": "^2.2.4",
     "prosemirror-model": "^1.19.4",
-    "fast-equals": "^2.0.3",
+    "fast-equals": "^5.0.1",
     "yjs": "^13.5.52",
     "y-prosemirror": "^1.2.1"
   },

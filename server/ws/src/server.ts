@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import core, {
   TxFactory,
   WorkspaceEvent,
@@ -378,6 +379,7 @@ class TSessionManager implements SessionManager {
               session.session.useCompression
             )
           } catch (err: any) {
+            Analytics.handleError(err)
             void ctx.error('error during send', { error: err })
           }
         }
@@ -465,9 +467,6 @@ class TSessionManager implements SessionManager {
     const wsid = toWorkspaceString(workspaceId)
     const workspace = this.workspaces.get(wsid)
     if (workspace === undefined) {
-      if (LOGGING_ENABLED) {
-        await this.ctx.error('internal: cannot find sessions', { id: ws.id, workspace: workspaceId.name, code, reason })
-      }
       return
     }
     const sessionRef = this.sessions.get(ws.id)
@@ -543,6 +542,7 @@ class TSessionManager implements SessionManager {
           await (await workspace.pipeline).close()
         })
       } catch (err: any) {
+        Analytics.handleError(err)
         await this.ctx.error('close-pipeline-error', { error: err })
       }
     }
@@ -605,6 +605,7 @@ class TSessionManager implements SessionManager {
               }
             }
           } catch (err: any) {
+            Analytics.handleError(err)
             this.workspaces.delete(wsid)
             if (LOGGING_ENABLED) {
               await this.ctx.error('failed', { ...logParams, error: err })
@@ -688,6 +689,15 @@ class TSessionManager implements SessionManager {
       const backupMode = 'loadChunk' in service
       await userCtx.with(`🧭 ${backupMode ? 'handleBackup' : 'handleRequest'}`, {}, async (ctx) => {
         const request = await ctx.with('📥 read', {}, async () => readRequest(msg, false))
+        if (request.id === -1 && request.method === 'close') {
+          const wsRef = this.workspaces.get(workspace)
+          if (wsRef !== undefined) {
+            await this.close(ws, wsRef?.workspaceId, 1000, 'client request to close workspace')
+          } else {
+            ws.close()
+          }
+          return
+        }
         if (request.id === -1 && request.method === 'hello') {
           const hello = request as HelloRequest
           service.binaryResponseMode = hello.binary ?? false
@@ -747,6 +757,7 @@ class TSessionManager implements SessionManager {
             service.useCompression
           )
         } catch (err: any) {
+          Analytics.handleError(err)
           if (LOGGING_ENABLED) {
             await this.ctx.error('error handle request', { error: err, request })
           }
@@ -791,6 +802,7 @@ class TSessionManager implements SessionManager {
         service.useCompression
       )
     } catch (err: any) {
+      Analytics.handleError(err)
       if (LOGGING_ENABLED) {
         await ctx.error('error handle measure', { error: err, request })
       }

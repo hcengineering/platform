@@ -28,6 +28,17 @@ export function createModel (builder: Builder): void {
     },
     guest.account.Guest
   )
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: GUEST_DOMAIN,
+    disabled: [
+      { createdOn: -1 },
+      { space: 1 },
+      { modifiedBy: 1 },
+      { createdBy: 1 },
+      { attachedToClass: 1 },
+      { createdOn: -1 }
+    ]
+  })
 }
 
 export { guestId } from '@hcengineering/guest'

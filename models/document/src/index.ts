@@ -444,4 +444,16 @@ export function createModel (builder: Builder): void {
   defineDocument(builder)
 
   defineApplication(builder)
+
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_DOCUMENT,
+    disabled: [
+      { modifiedOn: 1 },
+      { modifiedBy: 1 },
+      { createdBy: 1 },
+      { attachedToClass: 1 },
+      { createdOn: -1 },
+      { attachedTo: 1 }
+    ]
+  })
 }

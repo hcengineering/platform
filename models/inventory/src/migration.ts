@@ -14,8 +14,14 @@
 //
 
 import core, { TxOperations } from '@hcengineering/core'
-import { type MigrateOperation, type MigrationClient, type MigrationUpgradeClient } from '@hcengineering/model'
+import {
+  tryUpgrade,
+  type MigrateOperation,
+  type MigrationClient,
+  type MigrationUpgradeClient
+} from '@hcengineering/model'
 import inventory from './plugin'
+import { inventoryId } from '@hcengineering/inventory'
 
 async function createSpace (tx: TxOperations): Promise<void> {
   const categories = await tx.findOne(core.class.Space, {
@@ -57,7 +63,14 @@ async function createSpace (tx: TxOperations): Promise<void> {
 export const inventoryOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    const tx = new TxOperations(client, core.account.System)
-    await createSpace(tx)
+    await tryUpgrade(client, inventoryId, [
+      {
+        state: 'create-defaults',
+        func: async (client) => {
+          const tx = new TxOperations(client, core.account.System)
+          await createSpace(tx)
+        }
+      }
+    ])
   }
 }

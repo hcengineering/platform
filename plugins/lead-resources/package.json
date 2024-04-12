@@ -57,6 +57,6 @@
     "@hcengineering/view-resources": "^0.6.0",
     "@hcengineering/workbench": "^0.6.9",
     "svelte": "^4.2.12",
-    "fast-equals": "^2.0.3"
+    "fast-equals": "^5.0.1"
   }
 }

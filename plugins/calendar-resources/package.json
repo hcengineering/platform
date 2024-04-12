@@ -53,7 +53,7 @@
     "@hcengineering/view-resources": "^0.6.0",
     "@hcengineering/view": "^0.6.9",
     "@hcengineering/workbench": "^0.6.9",
-    "fast-equals": "^2.0.3",
+    "fast-equals": "^5.0.1",
     "date-fns": "^2.30.0",
     "date-fns-tz": "^2.0.0"
   }

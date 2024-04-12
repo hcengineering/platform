@@ -36,4 +36,9 @@ export class TSpacePreference extends TPreference implements SpacePreference {
 
 export function createModel (builder: Builder): void {
   builder.createModel(TPreference, TSpacePreference)
+
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_PREFERENCE,
+    disabled: [{ modifiedOn: 1 }, { createdOn: 1 }]
+  })
 }

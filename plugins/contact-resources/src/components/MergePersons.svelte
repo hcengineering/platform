@@ -223,7 +223,6 @@
     const accounts = await client.findAll(contact.class.PersonAccount, { person: sourceAccount._id })
 
     const h = client.getHierarchy()
-    console.log('merge employee:', sourceAccount.name, 'to', targetAccount.name)
     // Move all possible references to Account and Employee and replace to target one.
     const reftos = (await client.findAll(core.class.Attribute, { 'type._class': core.class.RefTo })).filter((it) => {
       const to = it.type as RefTo<Doc>
@@ -258,7 +257,6 @@
                 await updateAttribute(builder, v, d, { key: attr.name, attr }, targetAccount._id)
               }
               if (builder.txes.length > 0) {
-                console.log('merge employee:', sourceAccount.name, 'to', targetAccount.name, d, builder.txes.length)
                 await builder.commit()
               }
             }
@@ -288,7 +286,6 @@
               for (const v of values) {
                 await updateAttribute(builder, v, d, { key: attr.name, attr }, targetAccount._id)
               }
-              console.log('merge employee:', sourceAccount.name, 'to', targetAccount.name, d, builder.txes.length)
               await builder.commit()
             }
           }

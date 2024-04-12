@@ -30,6 +30,7 @@ import {
   type PipelineFactory,
   type SessionManager
 } from './types'
+import { Analytics } from '@hcengineering/analytics'
 
 /**
  * @public
@@ -91,7 +92,8 @@ export function startHttpServer (
         admin
       })
       res.end(json)
-    } catch (err) {
+    } catch (err: any) {
+      Analytics.handleError(err)
       console.error(err)
       res.writeHead(404, {})
       res.end()
@@ -125,7 +127,8 @@ export function startHttpServer (
 
       res.writeHead(404, {})
       res.end()
-    } catch (err) {
+    } catch (err: any) {
+      Analytics.handleError(err)
       console.error(err)
       res.writeHead(404, {})
       res.end()
@@ -229,6 +232,7 @@ export function startHttpServer (
           void handleRequest(session.context, session.session, cs, buff, session.workspaceName)
         }
       } catch (err: any) {
+        Analytics.handleError(err)
         if (LOGGING_ENABLED) {
           void ctx.error('message error', err)
         }
@@ -267,6 +271,7 @@ export function startHttpServer (
 
       wss.handleUpgrade(request, socket, head, (ws) => wss.emit('connection', ws, request, payload, token, sessionId))
     } catch (err: any) {
+      Analytics.handleError(err)
       if (LOGGING_ENABLED) {
         void ctx.error('invalid token', err)
       }

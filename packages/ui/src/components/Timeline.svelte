@@ -168,9 +168,7 @@
   const mouseOutEvent = (e: MouseEvent) => {
     time.cursorMarker = undefined
   }
-  const clickEvent = (e: MouseEvent) => {
-    console.log('[Timeline] Cursor: ', time.cursorMarker)
-  }
+  const clickEvent = (e: MouseEvent) => {}
 
   onMount(() => {
     container.addEventListener('wheel', wheelEvent)

@@ -184,7 +184,7 @@ export class TDocUpdates extends TDoc implements DocUpdates {
     attachedTo!: Ref<Doc>
 
   @Prop(TypeRef(core.class.Account), getEmbeddedLabel('Hidden'))
-  @Index(IndexKind.Indexed)
+  // @Index(IndexKind.Indexed)
     hidden!: boolean
 
   attachedToClass!: Ref<Class<Doc>>
@@ -231,7 +231,7 @@ export class TInboxNotification extends TDoc implements InboxNotification {
     user!: Ref<Account>
 
   @Prop(TypeBoolean(), core.string.Boolean)
-  @Index(IndexKind.Indexed)
+  // @Index(IndexKind.Indexed)
     isViewed!: boolean
 
   title?: IntlString
@@ -656,6 +656,10 @@ export function createModel (builder: Builder): void {
       objectClass: activity.class.Reaction
     },
     presenter: notification.component.ReactionNotificationPresenter
+  })
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_NOTIFICATION,
+    disabled: [{ modifiedOn: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { isViewed: 1 }, { hidden: 1 }]
   })
 }
 

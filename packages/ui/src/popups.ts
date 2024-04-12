@@ -4,13 +4,15 @@ import { writable } from 'svelte/store'
 import type {
   AnyComponent,
   AnySvelteComponent,
+  DeviceOptions,
   HorizontalAlignment,
   PopupAlignment,
   PopupOptions,
   PopupPositionElement,
-  VerticalAlignment,
-  DeviceOptions
+  VerticalAlignment
 } from './types'
+
+import { Analytics } from '@hcengineering/analytics'
 
 export interface CompAndProps {
   id: string
@@ -80,7 +82,8 @@ export function showPopup (
         addPopup({ id, is: resolved, props, element: _element, onClose, onUpdate, close: closePopupOp, options })
       })
       .catch((err) => {
-        console.log(err)
+        Analytics.handleError(err)
+        console.error(err)
       })
   } else {
     addPopup({ id, is: component, props, element: _element, onClose, onUpdate, close: closePopupOp, options })

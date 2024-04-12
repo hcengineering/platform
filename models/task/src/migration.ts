@@ -15,14 +15,14 @@
 
 import {
   ClassifierKind,
+  DOMAIN_TX,
   TxOperations,
+  generateId,
   toIdMap,
   type Class,
   type Doc,
   type Ref,
-  type TxCreateDoc,
-  generateId,
-  DOMAIN_TX
+  type TxCreateDoc
 } from '@hcengineering/core'
 import {
   createOrUpdate,
@@ -35,7 +35,7 @@ import {
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 import tags from '@hcengineering/model-tags'
 import { getEmbeddedLabel } from '@hcengineering/platform'
-import { type ProjectType, taskId, type TaskType } from '@hcengineering/task'
+import { taskId, type ProjectType, type TaskType } from '@hcengineering/task'
 import { DOMAIN_TASK } from '.'
 import task from './plugin'
 
@@ -282,30 +282,39 @@ export const taskOperation: MigrateOperation = {
             await client.update(DOMAIN_TASK, { _id: taskType._id }, { $set: { space: taskType.parent } })
           }
         }
+      },
+      {
+        state: 'task001',
+        func: async (client) => {
+          await migrateTaskTypes(client)
+          await migrateProjectTypes(client)
+        }
       }
     ])
-    await migrateTaskTypes(client)
-    await migrateProjectTypes(client)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    const tx = new TxOperations(client, core.account.System)
-    await createDefaults(tx)
-
-    await createOrUpdate(
-      tx,
-      tags.class.TagCategory,
-      tags.space.Tags,
-      {
-        icon: tags.icon.Tags,
-        label: 'Text Label',
-        targetClass: task.class.Task,
-        tags: [],
-        default: true
-      },
-      task.category.TaskTag
-    )
-
     await tryUpgrade(client, taskId, [
+      {
+        state: 'u-task-001',
+        func: async (client) => {
+          const tx = new TxOperations(client, core.account.System)
+          await createDefaults(tx)
+
+          await createOrUpdate(
+            tx,
+            tags.class.TagCategory,
+            tags.space.Tags,
+            {
+              icon: tags.icon.Tags,
+              label: 'Text Label',
+              targetClass: task.class.Task,
+              tags: [],
+              default: true
+            },
+            task.category.TaskTag
+          )
+        }
+      },
       {
         state: 'reorderStates',
         func: reorderStates

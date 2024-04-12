@@ -15,6 +15,14 @@
 
 import {
   AccountRole,
+  DOMAIN_BLOB,
+  DOMAIN_BLOB_DATA,
+  DOMAIN_CONFIGURATION,
+  DOMAIN_DOC_INDEX_STATE,
+  DOMAIN_MIGRATION,
+  DOMAIN_STATUS,
+  DOMAIN_TRANSIENT,
+  DOMAIN_TX,
   systemAccountEmail,
   type AttachedDoc,
   type Class,
@@ -37,6 +45,7 @@ import {
   TConfigurationElement,
   TDoc,
   TDocIndexState,
+  TDomainIndexConfiguration,
   TEnum,
   TEnumOf,
   TFullTextSearchContext,
@@ -68,7 +77,17 @@ import {
   TTypeTimestamp,
   TVersion
 } from './core'
-import { TAccount, TSpace, TSpaceType, TSpaceTypeDescriptor, TTypedSpace, TRole, TPermission } from './security'
+import { definePermissions } from './permissions'
+import {
+  DOMAIN_SPACE,
+  TAccount,
+  TPermission,
+  TRole,
+  TSpace,
+  TSpaceType,
+  TSpaceTypeDescriptor,
+  TTypedSpace
+} from './security'
 import { TStatus, TStatusCategory } from './status'
 import { TUserStatus } from './transient'
 import {
@@ -82,7 +101,6 @@ import {
   TTxUpdateDoc,
   TTxWorkspaceEvent
 } from './tx'
-import { definePermissions } from './permissions'
 
 export { coreId } from '@hcengineering/core'
 export * from './core'
@@ -153,7 +171,8 @@ export function createModel (builder: Builder): void {
     TStatus,
     TStatusCategory,
     TMigrationState,
-    TBlob
+    TBlob,
+    TDomainIndexConfiguration
   )
 
   builder.createDoc(
@@ -173,25 +192,100 @@ export function createModel (builder: Builder): void {
     {
       indexes: [
         'tx.objectId',
-        'tx._class',
-        'tx.objectClass',
         'tx.operations.attachedTo',
         'space',
-        'objectSpace',
         {
-          _class: 1,
           objectSpace: 1,
           _id: 1,
           modifiedOn: 1
         },
         {
-          _class: 1,
-          _id: 1,
-          modifiedOn: 1
+          objectSpace: 1,
+          modifiedBy: 1,
+          objectClass: 1
         }
       ]
     }
   )
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_TX,
+    disabled: [{ space: 1 }, { objectClass: 1 }, { createdBy: 1 }, { createdBy: -1 }, { createdOn: -1 }]
+  })
+
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_TRANSIENT,
+    disableCollection: true,
+    disabled: [
+      { _id: 1 },
+      { space: 1 },
+      { objectClass: 1 },
+      { modifiedBy: 1 },
+      { createdBy: 1 },
+      { createdBy: -1 },
+      { createdOn: -1 }
+    ]
+  })
+
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_CONFIGURATION,
+    disabled: [
+      { _class: 1 },
+      { space: 1 },
+      { modifiedOn: 1 },
+      { modifiedBy: 1 },
+      { createdBy: 1 },
+      { createdBy: -1 },
+      { createdOn: -1 }
+    ]
+  })
+
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_MIGRATION,
+    disabled: [
+      { _class: 1 },
+      { space: 1 },
+      { modifiedOn: 1 },
+      { modifiedBy: 1 },
+      { createdBy: 1 },
+      { createdBy: -1 },
+      { createdOn: -1 }
+    ]
+  })
+
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_STATUS,
+    disabled: [{ modifiedOn: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { createdBy: -1 }, { createdOn: -1 }]
+  })
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_SPACE,
+    disabled: [{ space: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { createdBy: -1 }, { createdOn: -1 }]
+  })
+
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_BLOB,
+    disabled: [{ _class: 1 }, { space: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { createdBy: -1 }, { createdOn: -1 }]
+  })
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_BLOB_DATA,
+    disableCollection: true,
+    disabled: [{ _class: 1 }, { space: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { createdBy: -1 }, { createdOn: -1 }]
+  })
+
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_DOC_INDEX_STATE,
+    disabled: [
+      { attachedToClass: 1 },
+      { stages: 1 },
+      { generationId: 1 },
+      { space: 1 },
+      { _class: 1 },
+      { modifiedBy: 1 },
+      { createdBy: 1 },
+      { createdBy: -1 },
+      { createdOn: -1 }
+    ],
+    skip: ['stages.']
+  })
 
   builder.mixin<Class<DocIndexState>, IndexingConfiguration<TxCollectionCUD<Doc, AttachedDoc>>>(
     core.class.DocIndexState,

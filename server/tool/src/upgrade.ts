@@ -23,6 +23,8 @@ export class MigrateClientImpl implements MigrationClient {
     readonly logger: ModelLogger
   ) {}
 
+  migrateState = new Map<string, Set<string>>()
+
   private translateQuery<T extends Doc>(query: DocumentQuery<T>): Filter<Document> {
     const translated: any = {}
     for (const key in query) {

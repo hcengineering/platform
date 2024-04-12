@@ -562,4 +562,8 @@ export function createModel (builder: Builder): void {
     },
     hr.ids.CreatePublicHolidayNotification
   )
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_HR,
+    disabled: [{ modifiedOn: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { attachedToClass: 1 }, { createdOn: -1 }]
+  })
 }
