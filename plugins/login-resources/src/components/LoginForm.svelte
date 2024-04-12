@@ -24,7 +24,6 @@
   import { LoginInfo } from '@hcengineering/login'
   import { recoveryAction } from '../actions'
   import login from '../plugin'
-  import { onMount } from 'svelte'
 
   export let navigateUrl: string | undefined = undefined
 
