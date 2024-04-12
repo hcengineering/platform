@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getMetadata } from '@hcengineering/platform'
-  import { Button, IconClose, Label } from '@hcengineering/ui'
+  import { getMetadata, translate } from '@hcengineering/platform'
+  import { Button, IconClose, Label, themeStore } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import calendar from '../plugin'
   import { concatLink } from '@hcengineering/core'
@@ -45,6 +45,12 @@
     window.open(redirectTo, '_blank', 'location=yes,height=870,width=720,scrollbars=yes,status=yes')
     dispatch('close')
   }
+
+  let label = ''
+
+  $: translate(calendar.string.GooglePrivacy, {}, $themeStore.language).then((res) => {
+    label = res
+  })
 </script>
 
 <div class="card">
@@ -62,7 +68,13 @@
     </div>
   </div>
   <div class="content">
-    <Label label={calendar.string.RedirectGoogle} />
+    <div>
+      <Label label={calendar.string.RedirectGoogle} />
+    </div>
+    <div class="mt-2">
+      {@html label}
+    </div>
+
     <img class="image" src={getMetadata(calendar.image.Permissions)} alt="" />
     <div class="footer">
       <Button label={calendar.string.Connect} kind={'primary'} disabled={connecting} on:click={sendRequest} />
@@ -100,14 +112,14 @@
     .content {
       flex-shrink: 0;
       flex-grow: 1;
-      height: fit-content;
+      color: var(--theme-content-color);
       margin: 0 1.75rem 0.5rem;
     }
 
     .image {
       width: 100%;
       height: auto;
-      margin: 1rem;
+      margin-top: 2rem;
     }
 
     .footer {
