@@ -129,11 +129,15 @@ export const completionConfig: Partial<CompletionOptions> = {
   }
 }
 
+const inlineCommandsIds = ['image', 'table', 'code-block', 'separator-line'] as const
+export type InlineCommandId = (typeof inlineCommandsIds)[number]
+
 /**
  * @public
  */
 export function inlineCommandsConfig (
-  handleSelect: (id: string, pos: number, targetItem?: MouseEvent | HTMLElement) => Promise<void>
+  handleSelect: (id: string, pos: number, targetItem?: MouseEvent | HTMLElement) => Promise<void>,
+  excludedCommands: InlineCommandId[] = []
 ): Partial<CompletionOptions> {
   return {
     suggestion: {
@@ -143,7 +147,7 @@ export function inlineCommandsConfig (
           { id: 'table', label: plugin.string.Table, icon: view.icon.Table2 },
           { id: 'code-block', label: plugin.string.CodeBlock, icon: view.icon.CodeBlock },
           { id: 'separator-line', label: plugin.string.SeparatorLine, icon: view.icon.SeparatorLine }
-        ]
+        ].filter(({ id }) => !excludedCommands.includes(id as InlineCommandId))
       },
       command: ({ editor, range, props }: { editor: Editor, range: Range, props: any }) => {
         editor.commands.deleteRange(range)

@@ -198,7 +198,11 @@
     }
 
     if (enableInlineCommands) {
-      extensions.push(InlineCommandsExtension.configure(inlineCommandsConfig(handleCommandSelected)))
+      extensions.push(
+        InlineCommandsExtension.configure(
+          inlineCommandsConfig(handleCommandSelected, attachFile === undefined ? ['image'] : [])
+        )
+      )
     }
 
     return extensions
