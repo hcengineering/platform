@@ -190,7 +190,7 @@
     <a href={reportBugLink} target="_blank">
       <Button id="report-a-bug" kind={'primary'} label={support.string.ReportBug} stopPropagation={false} />
     </a>
-    <a href={supportLink}>
+    <a href={supportLink} target="_blank">
       <Button
         id="contact-us"
         icon={support.icon.Support}
