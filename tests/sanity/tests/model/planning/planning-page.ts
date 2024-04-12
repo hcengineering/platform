@@ -236,7 +236,7 @@ export class PlanningPage extends CalendarPage {
     await this.page
       .locator('button.hulyToDoLine-container div[class$="overflow-label"]', { hasText: toDoName })
       .locator('xpath=..')
-      .locator('div.flex-row-center button.hulyToDoLine-dragbox')
+      .locator('div.hulyToDoLine-statusPriority button.hulyToDoLine-dragbox')
       .click({ button: 'right' })
     await this.buttonMenuDelete.click()
     await this.pressYesDeletePopup(this.page)
@@ -246,7 +246,7 @@ export class PlanningPage extends CalendarPage {
     await this.page
       .locator('button.hulyToDoLine-container div[class$="overflow-label"]', { hasText: toDoName })
       .locator('xpath=..')
-      .locator('div.flex-row-center div.hulyToDoLine-checkbox > label')
+      .locator('div.hulyToDoLine-checkbox > label')
       .click()
   }
 

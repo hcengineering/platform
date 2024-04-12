@@ -617,8 +617,8 @@
     &.isNew::after {
       position: absolute;
       content: '';
-      top: 0;
-      left: 0;
+      top: var(--spacing-1_25);
+      right: calc(-1 * var(--spacing-0_75));
       width: var(--spacing-0_5);
       height: var(--spacing-0_5);
       background-color: var(--global-primary-LinkColor);
@@ -673,9 +673,6 @@
   &:hover {
     background-color: var(--global-surface-01-hover-BackgroundColor);
 
-    .hulyToDoLine-statusPriority.isNew::after {
-      content: none;
-    }
     .priority-container {
       display: none;
     }
