@@ -221,7 +221,8 @@ const view = plugin(viewId, {
     Database: '' as Asset,
     Star: '' as Asset,
     Eye: '' as Asset,
-    EyeCrossed: '' as Asset
+    EyeCrossed: '' as Asset,
+    Bubble: '' as Asset
   },
   category: {
     General: '' as Ref<ActionCategory>,

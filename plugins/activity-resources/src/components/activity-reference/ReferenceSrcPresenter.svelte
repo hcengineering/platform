@@ -14,33 +14,36 @@
 -->
 <script lang="ts">
   import type { Doc } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { AttributeModel } from '@hcengineering/view'
-  import { getObjectPresenter } from '@hcengineering/view-resources'
-  import { ActivityReference } from '@hcengineering/activity'
+  import { getClient } from '@hcengineering/presentation'
+  import { DocReferencePresenter } from '@hcengineering/view-resources'
+  import activity from '../../plugin'
 
-  export let value: ActivityReference
-  export let inline = true
+  import { isActivityMessage } from '../../activityMessagesUtils'
+  import view from '@hcengineering/view'
+  import { Icon, Label } from '@hcengineering/ui'
+
+  export let value: Doc | undefined
 
   const client = getClient()
-  const srcDocQuery = createQuery()
 
-  let srcDoc: Doc | undefined
-  let presenter: AttributeModel | undefined
+  let parentObject: Doc | undefined
 
-  $: srcDocQuery.query(value.srcDocClass, { _id: value.srcDocId }, (r) => {
-    srcDoc = r.shift()
-  })
+  $: showParent = isActivityMessage(value)
 
-  $: if (srcDoc !== undefined) {
-    void getObjectPresenter(client, srcDoc._class, { key: '' }).then((result) => {
-      presenter = result
+  $: isActivityMessage(value) &&
+    client.findOne(value.attachedToClass, { _id: value.attachedTo }).then((res) => {
+      parentObject = res
     })
-  }
 </script>
 
-{#if presenter}
-  <span class="labels-row">
-    <svelte:component this={presenter.presenter} value={srcDoc} {inline} embedded shouldShowAvatar={false} />
-  </span>
-{/if}
+<DocReferencePresenter value={showParent ? parentObject : value} compact={showParent} maxWidth="10rem">
+  <svelte:fragment slot="prefix">
+    {#if showParent}
+      <span class="nowrap flex-presenter flex-gap-1 lower">
+        <Icon icon={view.icon.Bubble} size="x-small" />
+        <Label label={activity.string.Thread} />
+        <Label label={activity.string.In} />
+      </span>
+    {/if}
+  </svelte:fragment>
+</DocReferencePresenter>

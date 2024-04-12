@@ -70,7 +70,8 @@ import {
   buildThreadLink,
   getThreadLink,
   leaveChannelAction,
-  removeChannelAction
+  removeChannelAction,
+  getMessageLocation
 } from './utils'
 import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
 
@@ -255,7 +256,8 @@ export default async (): Promise<Resources> => ({
     CanCopyMessageLink: canCopyMessageLink,
     GetChunterSpaceLinkFragment: chunterSpaceLinkFragmentProvider,
     GetUnreadThreadsCount: getUnreadThreadsCount,
-    GetThreadLink: getThreadLink
+    GetThreadLink: getThreadLink,
+    GetMessageLink: getMessageLocation
   },
   actionImpl: {
     ArchiveChannel,

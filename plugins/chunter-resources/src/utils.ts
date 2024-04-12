@@ -431,6 +431,30 @@ export async function getThreadLink (doc: ThreadMessage): Promise<Location> {
   return buildThreadLink(loc, contextId, doc.attachedTo)
 }
 
+export async function getMessageLocation (doc: ActivityMessage): Promise<Location> {
+  const loc = getCurrentResolvedLocation()
+  const client = getClient()
+  const inboxClient = InboxNotificationsClientImpl.getClient()
+
+  let contextId: Ref<DocNotifyContext> | undefined = get(inboxClient.contextByDoc).get(doc.attachedTo)?._id
+
+  if (contextId === undefined) {
+    contextId = await client.createDoc(notification.class.DocNotifyContext, doc.space, {
+      attachedTo: doc.attachedTo,
+      attachedToClass: doc.attachedToClass,
+      user: getCurrentAccount()._id,
+      hidden: false,
+      lastViewedTimestamp: Date.now()
+    })
+  }
+
+  if (contextId === undefined) {
+    return loc
+  }
+
+  return buildThreadLink(loc, contextId, doc._id)
+}
+
 export async function joinChannel (channel: Channel, value: Ref<Account> | Array<Ref<Account>>): Promise<void> {
   const client = getClient()
 

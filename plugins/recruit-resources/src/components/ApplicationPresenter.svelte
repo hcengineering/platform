@@ -15,9 +15,9 @@
 -->
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
-  import type { Applicant } from '@hcengineering/recruit'
-  import recruit from '@hcengineering/recruit'
-  import { Icon } from '@hcengineering/ui'
+  import recruit, { Applicant } from '@hcengineering/recruit'
+  import { Icon, tooltip } from '@hcengineering/ui'
+  import { ObjectPresenterType } from '@hcengineering/view'
   import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
 
   export let value: Applicant
@@ -26,15 +26,17 @@
   export let noUnderline: boolean = false
   export let accent: boolean = false
   export let shouldShowAvatar: boolean = true
+  export let type: ObjectPresenterType = 'link'
 
   const client = getClient()
-  const shortLabel = value && client.getHierarchy().getClass(value._class).shortLabel
+  const clazz = client.getHierarchy().getClass(value._class)
+  const shortLabel = value && clazz.shortLabel
 </script>
 
 {#if value && shortLabel}
   {#if inline}
     <ObjectMention object={value} {disabled} {noUnderline} {accent} />
-  {:else}
+  {:else if type === 'link'}
     <DocNavLink object={value} {disabled} {noUnderline} {accent}>
       <div class="flex-presenter">
         {#if shouldShowAvatar}
@@ -47,5 +49,9 @@
         </span>
       </div>
     </DocNavLink>
+  {:else if type === 'text'}
+    <span class="overflow-label" use:tooltip={{ label: clazz.label }}>
+      {#if shortLabel}{shortLabel}-{/if}{value.number}
+    </span>
   {/if}
 {/if}
