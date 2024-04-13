@@ -20,12 +20,16 @@ import CollaborationUserPopup from '../CollaborationUserPopup.svelte'
 
 export const renderCursor = (user: CollaborationUser): HTMLElement => {
   const cursor = document.createElement('span')
-
-  cursor.classList.add('collaboration-cursor__caret')
+  cursor.classList.add('collaboration-cursor__cursor')
   cursor.setAttribute('style', `border-color: ${user.color}`)
 
-  cursor.addEventListener('mousemove', () => {
-    showTooltip(undefined, cursor, 'top', CollaborationUserPopup, { user })
+  const caret = document.createElement('div')
+  caret.classList.add('collaboration-cursor__caret')
+  caret.setAttribute('style', `border-color: ${user.color}`)
+  cursor.appendChild(caret)
+
+  caret.addEventListener('mousemove', () => {
+    showTooltip(undefined, caret, 'top', CollaborationUserPopup, { user })
   })
 
   return cursor
