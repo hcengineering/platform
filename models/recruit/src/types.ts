@@ -14,7 +14,15 @@
 //
 
 import type { Employee, Organization } from '@hcengineering/contact'
-import { type Domain, IndexKind, type Markup, type Ref, type Status, type Timestamp, type Type } from '@hcengineering/core'
+import {
+  type Domain,
+  IndexKind,
+  type Markup,
+  type Ref,
+  type Status,
+  type Timestamp,
+  type Type
+} from '@hcengineering/core'
 import {
   Collection,
   Hidden,
