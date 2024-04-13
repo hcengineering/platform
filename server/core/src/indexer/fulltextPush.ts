@@ -26,7 +26,8 @@ import core, {
   type MeasureContext,
   type Ref,
   type ServerStorage,
-  type WorkspaceId
+  type WorkspaceId,
+  getFullTextContext
 } from '@hcengineering/core'
 import { jsonToText, markupToJSON } from '@hcengineering/text'
 import { type DbAdapter } from '../adapter'
@@ -41,7 +42,7 @@ import {
   type FullTextPipelineStage,
   fullTextPushStageId
 } from './types'
-import { collectPropagate, collectPropagateClasses, docKey, getFullTextContext, isCustomAttr } from './utils'
+import { collectPropagate, collectPropagateClasses, docKey, isCustomAttr } from './utils'
 
 /**
  * @public
