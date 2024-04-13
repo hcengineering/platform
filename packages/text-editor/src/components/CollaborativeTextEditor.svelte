@@ -20,7 +20,7 @@
   import { IntlString, getMetadata, translate } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
   import { markupToJSON } from '@hcengineering/text'
-  import { Button, IconSize, Loading, themeStore } from '@hcengineering/ui'
+  import { AnySvelteComponent, Button, IconSize, Loading, ThrottledCaller, themeStore } from '@hcengineering/ui'
   import { AnyExtension, Editor, FocusPosition, mergeAttributes } from '@tiptap/core'
   import Collaboration, { isChangeOrigin } from '@tiptap/extension-collaboration'
   import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
@@ -38,13 +38,13 @@
   import { formatCollaborativeDocumentId, formatPlatformDocumentId } from '../provider/utils'
   import {
     CollaborationIds,
+    CollaborationUser,
     RefAction,
     TextEditorCommandHandler,
     TextEditorHandler,
     TextFormatCategory,
     TextNodeAction
   } from '../types'
-  import { getCollaborationUser, throttle } from '../utils'
 
   import CollaborationUsers from './CollaborationUsers.svelte'
   import ImageStyleToolbar from './ImageStyleToolbar.svelte'
@@ -66,6 +66,9 @@
   export let objectClass: Ref<Class<Doc>> | undefined
   export let objectId: Ref<Doc> | undefined
   export let objectAttr: string | undefined
+
+  export let user: CollaborationUser
+  export let userComponent: AnySvelteComponent | undefined = undefined
 
   export let readonly = false
 
@@ -95,8 +98,6 @@
   export let canShowPopups = true
   export let canEmbedFiles = true
   export let canEmbedImages = true
-
-  export let showCollaborators = true
 
   const dispatch = createEventDispatcher()
 
@@ -259,13 +260,13 @@
     }
   }
 
-  const updateLastUpdateTime = throttle(() => {
+  const throttle = new ThrottledCaller(100)
+  const updateLastUpdateTime = (): void => {
     remoteProvider.awareness?.setLocalStateField('lastUpdate', Date.now())
-  }, 100)
+  }
 
   onMount(async () => {
     await ph
-    const user = await getCollaborationUser()
 
     editor = new Editor({
       element,
@@ -333,7 +334,7 @@
         // ignore non-local changes
         if (isChangeOrigin(transaction)) return
 
-        updateLastUpdateTime()
+        throttle.call(updateLastUpdateTime)
         dispatch('update')
       }
     })
@@ -392,8 +393,8 @@
 
   <div class="textInput">
     <div class="select-text" class:hidden={loading} style="width: 100%;" bind:this={element} />
-    {#if showCollaborators && remoteProvider && editor}
-      <CollaborationUsers provider={remoteProvider} {editor} />
+    {#if remoteProvider && editor && userComponent}
+      <CollaborationUsers provider={remoteProvider} {editor} component={userComponent} />
     {/if}
   </div>
 

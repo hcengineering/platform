@@ -15,13 +15,6 @@
 
 import { type Attribute } from '@tiptap/core'
 
-import contact, { type PersonAccount, formatName } from '@hcengineering/contact'
-import { getCurrentAccount } from '@hcengineering/core'
-import { getClient } from '@hcengineering/presentation'
-import { getColorNumberByText } from '@hcengineering/ui'
-
-import { type CollaborationUser } from './types'
-
 export function getDataAttribute (
   name: string,
   options?: Omit<Attribute, 'parseHTML' | 'renderHTML'>
@@ -42,49 +35,5 @@ export function getDataAttribute (
       }
     },
     ...(options ?? {})
-  }
-}
-
-export async function getCollaborationUser (): Promise<CollaborationUser> {
-  const client = getClient()
-
-  const me = getCurrentAccount() as PersonAccount
-  const person = await client.findOne(contact.class.Person, { _id: me.person })
-  const name = person !== undefined ? formatName(person.name) : me.email
-  const color = getColorNumberByText(name)
-
-  return {
-    id: me._id,
-    name,
-    email: me.email,
-    color
-  }
-}
-
-export function throttle (fn: (...args: any[]) => any, delay: number): any {
-  let timeout: any | undefined
-
-  return (...args: any[]) => {
-    if (timeout === undefined) {
-      fn(...args)
-
-      timeout = setTimeout(() => {
-        timeout = undefined
-      }, delay)
-    }
-  }
-}
-
-export function debounce (fn: (...args: any[]) => any, delay: number): any {
-  let timeout: any | undefined
-
-  return (...args: any[]) => {
-    if (timeout !== undefined) {
-      clearTimeout(timeout)
-    }
-
-    timeout = setTimeout(() => {
-      fn(...args)
-    }, delay)
   }
 }

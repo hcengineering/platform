@@ -16,6 +16,7 @@
 -->
 
 <script lang="ts">
+  import { AnySvelteComponent, Button, DelayedCaller } from '@hcengineering/ui'
   import { onMount } from 'svelte'
   import { Editor } from '@tiptap/core'
   import { createRelativePositionFromJSON } from 'yjs'
@@ -23,18 +24,19 @@
 
   import { TiptapCollabProvider } from '../provider/tiptap'
   import { AwarenessChangeEvent, CollaborationUserState } from '../types'
-  import { debounce } from '../utils'
-
-  import CollaborationUser from './CollaborationUser.svelte'
 
   export let provider: TiptapCollabProvider
   export let editor: Editor
+  export let component: AnySvelteComponent
 
   let states: CollaborationUserState[] = []
 
-  const onAwarenessChange = debounce((event: AwarenessChangeEvent) => {
-    states = event.states.filter((p) => p.user != null).filter((p) => p.clientId !== provider.awareness?.clientID)
-  }, 100)
+  const debounce = new DelayedCaller(100)
+  const onAwarenessChange = (event: AwarenessChangeEvent): void => {
+    debounce.call(() => {
+      states = event.states.filter((p) => p.user != null).filter((p) => p.clientId !== provider.awareness?.clientID)
+    })
+  }
 
   function goToCursor (state: CollaborationUserState): void {
     const cursor = state.cursor
@@ -64,28 +66,32 @@
 </script>
 
 {#if states.length > 0}
-  <div class="collaboration-users flex-col flex-gap-2 pt-2">
+  <div class="container flex-col flex-gap-2 pt-2">
     {#each states as state}
-      <CollaborationUser
-        value={state.user}
-        lastUpdate={state.lastUpdate ?? 0}
+      <Button
+        kind="icon"
+        shape="round-small"
+        padding="0"
+        size="x-small"
+        noFocus
         on:click={(e) => {
           e.preventDefault()
           e.stopPropagation()
           goToCursor(state)
         }}
-      />
+      >
+        <svelte:fragment slot="icon">
+          <svelte:component this={component} user={state.user} lastUpdate={state.lastUpdate ?? 0} size={'x-small'} />
+        </svelte:fragment>
+      </Button>
     {/each}
   </div>
 {/if}
 
 <style lang="scss">
-  .collaboration-users {
+  .container {
     position: sticky;
     top: 0;
-    display: flex;
-    flex-direction: column;
     width: 1.5rem;
-    gap: 0.5rem;
   }
 </style>

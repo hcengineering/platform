@@ -13,17 +13,26 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import contact from '@hcengineering/contact'
   import { Doc } from '@hcengineering/core'
-
+  import { getResource } from '@hcengineering/platform'
   import { KeyedAttribute } from '@hcengineering/presentation'
   import { CollaborativeAttributeSectionBox } from '@hcengineering/text-editor'
+  import { AnySvelteComponent } from '@hcengineering/ui'
+  import { getCollaborationUser } from '../utils'
 
   export let object: Doc
   export let key: KeyedAttribute
+
+  const user = getCollaborationUser()
+  let userComponent: AnySvelteComponent | undefined
+  void getResource(contact.component.CollaborationUserAvatar).then((component) => {
+    userComponent = component
+  })
 </script>
 
 {#key object._id}
   {#key key.key}
-    <CollaborativeAttributeSectionBox {object} {key} label={key.attr.label} />
+    <CollaborativeAttributeSectionBox {object} {key} {user} {userComponent} label={key.attr.label} />
   {/key}
 {/key}

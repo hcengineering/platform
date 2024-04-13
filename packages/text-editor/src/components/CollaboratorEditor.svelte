@@ -17,12 +17,12 @@
 <script lang="ts">
   import { type Class, type CollaborativeDoc, type Doc, type Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { IconSize, registerFocus } from '@hcengineering/ui'
+  import { AnySvelteComponent, IconSize, registerFocus } from '@hcengineering/ui'
   import { AnyExtension, Editor, FocusPosition, getMarkRange } from '@tiptap/core'
   import { TextSelection } from '@tiptap/pm/state'
 
   import textEditorPlugin from '../plugin'
-  import { TextEditorCommandHandler, TextFormatCategory, TextNodeAction } from '../types'
+  import { CollaborationUser, TextEditorCommandHandler, TextFormatCategory, TextNodeAction } from '../types'
 
   import CollaborativeTextEditor from './CollaborativeTextEditor.svelte'
   import { FileAttachFunction } from './extension/types'
@@ -35,6 +35,9 @@
   export let objectClass: Ref<Class<Doc>> | undefined = undefined
   export let objectId: Ref<Doc> | undefined = undefined
   export let objectAttr: string | undefined = undefined
+
+  export let user: CollaborationUser
+  export let userComponent: AnySvelteComponent | undefined = undefined
 
   export let readonly = false
 
@@ -49,7 +52,6 @@
 
   export let attachFile: FileAttachFunction | undefined = undefined
   export let canShowPopups = true
-  export let showCollaborators = false
 
   let element: HTMLElement
 
@@ -163,6 +165,8 @@
     {objectClass}
     {objectId}
     {objectAttr}
+    {user}
+    {userComponent}
     {readonly}
     {buttonSize}
     {placeholder}
@@ -183,7 +187,6 @@
     extensions={[...onExtensions()]}
     {textNodeActions}
     {canShowPopups}
-    {showCollaborators}
     {editorAttributes}
     on:update
     on:open-document

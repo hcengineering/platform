@@ -98,9 +98,7 @@ export interface TextEditorCommandHandler {
   chain: (...commands: TextEditorCommand[]) => boolean
 }
 
-/**
- * @public
- */
+/** @public */
 export interface CollaborationUser {
   id: Ref<Account>
   name: string
