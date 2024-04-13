@@ -1844,6 +1844,9 @@ export async function joinWithProvider (
   const email = cleanEmail(_email)
   const invite = await getInvite(db, inviteId)
   const workspace = await checkInvite(invite, email)
+  if (last == null) {
+    last = ''
+  }
   let account = await getAccount(db, email)
   if (account == null && extra !== undefined) {
     account = await getAccountByQuery(db, extra)
@@ -1893,6 +1896,9 @@ export async function loginWithProvider (
   extra?: Record<string, string>
 ): Promise<LoginInfo> {
   const email = cleanEmail(_email)
+  if (last == null) {
+    last = ''
+  }
   let account = await getAccount(db, email)
   if (account == null && extra !== undefined) {
     account = await getAccountByQuery(db, extra)
@@ -1909,7 +1915,6 @@ export async function loginWithProvider (
     }
     return result
   }
-
   const newAccount = await createAcc(ctx, db, productId, email, null, first, last, true, extra)
 
   const result = {
