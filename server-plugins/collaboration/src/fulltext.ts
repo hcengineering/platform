@@ -24,7 +24,8 @@ import core, {
   MeasureContext,
   Ref,
   WorkspaceId,
-  collaborativeDocParse
+  collaborativeDocParse,
+  getFullTextIndexableAttributes
 } from '@hcengineering/core'
 import {
   ContentTextAdapter,
@@ -37,8 +38,7 @@ import {
   contentStageId,
   docKey,
   docUpdKey,
-  fieldStateId,
-  getFullTextIndexableAttributes
+  fieldStateId
 } from '@hcengineering/server-core'
 
 /**

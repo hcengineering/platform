@@ -1,4 +1,11 @@
-import { AccountRole, type Doc, type Domain, type Ref } from '@hcengineering/core'
+import {
+  AccountRole,
+  type Class,
+  type IndexingConfiguration,
+  type Doc,
+  type Domain,
+  type Ref
+} from '@hcengineering/core'
 import { type PublicLink, type Restrictions, guestAccountEmail } from '@hcengineering/guest'
 import { type Builder, Model } from '@hcengineering/model'
 import core, { TDoc } from '@hcengineering/model-core'
@@ -39,6 +46,14 @@ export function createModel (builder: Builder): void {
       { createdOn: -1 }
     ]
   })
+  builder.mixin<Class<PublicLink>, IndexingConfiguration<PublicLink>>(
+    guest.class.PublicLink,
+    core.class.Class,
+    core.mixin.IndexConfiguration,
+    {
+      searchDisabled: true
+    }
+  )
 }
 
 export { guestId } from '@hcengineering/guest'

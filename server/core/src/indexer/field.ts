@@ -23,7 +23,9 @@ import core, {
   type IndexStageState,
   type MeasureContext,
   type Ref,
-  type ServerStorage
+  type ServerStorage,
+  getFullTextIndexableAttributes,
+  getFullTextContext
 } from '@hcengineering/core'
 import { deepEqual } from 'fast-equals'
 import { type DbAdapter } from '../adapter'
@@ -41,8 +43,6 @@ import {
   docUpdKey,
   getContent,
   getCustomAttrKeys,
-  getFullTextContext,
-  getFullTextIndexableAttributes,
   isFullTextAttribute,
   loadIndexStageStage
 } from './utils'
@@ -250,6 +250,7 @@ export class IndexedFieldStage implements FullTextPipelineStage {
     }
   }
 
+  // Remove should be safe to missing class
   async remove (docs: DocIndexState[], pipeline: FullTextPipeline): Promise<void> {
     for (const doc of docs) {
       if (doc.attachedTo !== undefined) {
@@ -260,8 +261,8 @@ export class IndexedFieldStage implements FullTextPipelineStage {
           const { _class, attr, extra, docId } = extractDocKey(k)
 
           if (_class !== undefined && docId === undefined) {
-            const keyAttr = pipeline.hierarchy.getAttribute(_class, attr)
-            if (isFullTextAttribute(keyAttr)) {
+            const keyAttr = pipeline.hierarchy.findAttribute(_class, attr)
+            if (keyAttr !== undefined && isFullTextAttribute(keyAttr)) {
               ;(parentDocUpdate as any)[docUpdKey(attr, { _class, docId: doc._id, extra })] = null
             }
           }

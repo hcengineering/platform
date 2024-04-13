@@ -26,7 +26,8 @@ import core, {
   isFullTextAttribute,
   type MeasureContext,
   type Ref,
-  type ServerStorage
+  type ServerStorage,
+  getFullTextContext
 } from '@hcengineering/core'
 import { translate } from '@hcengineering/platform'
 import { jsonToText, markupToJSON } from '@hcengineering/text'
@@ -39,13 +40,7 @@ import {
   type FullTextPipeline,
   type FullTextPipelineStage
 } from './types'
-import {
-  collectPropagate,
-  collectPropagateClasses,
-  getFullTextContext,
-  isCustomAttr,
-  loadIndexStageStage
-} from './utils'
+import { collectPropagate, collectPropagateClasses, isCustomAttr, loadIndexStageStage } from './utils'
 
 /**
  * @public
