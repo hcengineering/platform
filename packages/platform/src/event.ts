@@ -18,20 +18,35 @@ import { Status, OK, unknownError, Severity } from './status'
 
 /**
  * @public
+ * @constant PlatformEvent
+ * 
+ * A constant that represents the platform event.
  */
 export const PlatformEvent = 'platform-event'
 
 /**
  * @public
+ * @typedef EventListener
+ * 
+ * Represents an event listener. Takes an event and data and returns a promise that resolves to void.
  */
 export type EventListener = (event: string, data: any) => Promise<void>
 
+/**
+ * @constant eventListeners
+ * A map that stores event listeners for each event.
+ */
 const eventListeners = new Map<string, EventListener[]>()
 
 /**
  * @public
- * @param event -
- * @param listener -
+ * @function addEventListener
+ * 
+ * Adds an event listener for a given event. If there are already listeners for the event, 
+ * it adds the listener to the list. Otherwise, it creates a new list with the listener.
+ * 
+ * @param event - The event to add the listener for.
+ * @param listener - The listener to add.
  */
 export function addEventListener (event: string, listener: EventListener): void {
   const listeners = eventListeners.get(event)
@@ -44,8 +59,13 @@ export function addEventListener (event: string, listener: EventListener): void 
 
 /**
  * @public
- * @param event -
- * @param listener -
+ * @function removeEventListener
+ * 
+ * Removes an event listener for a given event. If there are listeners for the event, 
+ * it removes the listener from the list.
+ * 
+ * @param event - The event to remove the listener for.
+ * @param listener - The listener to remove.
  */
 export function removeEventListener (event: string, listener: EventListener): void {
   const listeners = eventListeners.get(event)
@@ -56,6 +76,13 @@ export function removeEventListener (event: string, listener: EventListener): vo
 
 /**
  * @public
+ * @function broadcastEvent
+ * 
+ * Broadcasts an event to all its listeners with the given data. If there are listeners for the event, 
+ * it calls each listener with the event and data.
+ * 
+ * @param event - The event to broadcast.
+ * @param data - The data to broadcast with the event.
  */
 export async function broadcastEvent (event: string, data: any): Promise<void> {
   const listeners = eventListeners.get(event)
@@ -69,8 +96,12 @@ export async function broadcastEvent (event: string, data: any): Promise<void> {
 
 /**
  * @public
- * @param status -
- * @returns
+ * @function setPlatformStatus
+ * 
+ * Sets the platform status and broadcasts a platform event with the status. 
+ * If the status severity is ERROR, it also logs a trace of the status.
+ * 
+ * @param status - The status to set.
  */
 export async function setPlatformStatus (status: Status): Promise<void> {
   if (status.severity === Severity.ERROR) {
@@ -81,9 +112,14 @@ export async function setPlatformStatus (status: Status): Promise<void> {
 
 /**
  * @public
- * @param status -
- * @param promise -
- * @returns
+ * @function monitor
+ * 
+ * Monitors a promise with a status. Sets the platform status, waits for the promise, 
+ * then updates the status based on the outcome. Logs and rethrows any errors.
+ * 
+ * @param status - The status to monitor the promise with.
+ * @param promise - The promise to monitor.
+ * @returns The result of the promise.
  */
 export async function monitor<T> (status: Status, promise: Promise<T>): Promise<T> {
   void setPlatformStatus(status) // eslint-disable-line no-void

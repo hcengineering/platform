@@ -23,11 +23,17 @@ import platform from './platform'
 
 /**
  * @public
+ * @typedef Resources
+ * 
+ * A type representing a map of resources, where each resource is a map of string keys to any value.
  */
 export type Resources = Record<string, Record<string, any>>
 
 /**
  * @public
+ * @interface PluginModule
+ * 
+ * An interface representing a plugin module, which is a function that returns a promise resolving to a map of resources.
  */
 export interface PluginModule<R extends Resources> {
   default: () => Promise<R>
@@ -35,15 +41,23 @@ export interface PluginModule<R extends Resources> {
 
 /**
  * @public
+ * @typedef PluginLoader
+ * 
+ * A type representing a function that loads a plugin module and returns a promise resolving to it.
  */
 export type PluginLoader<R extends Resources> = () => Promise<PluginModule<R>>
 
+// A map of plugins to their loaders.
 const locations = new Map<Plugin, PluginLoader<Resources>>()
 
 /**
  * @public
- * @param plugin -
- * @param module -
+ * @function addLocation
+ * 
+ * Registers a plugin and its loader.
+ * 
+ * @param plugin - The plugin to register.
+ * @param module - The loader for the plugin.
  */
 export function addLocation<R extends Resources> (plugin: Plugin, module: PluginLoader<R>): void {
   locations.set(plugin, module)
@@ -51,12 +65,24 @@ export function addLocation<R extends Resources> (plugin: Plugin, module: Plugin
 
 /**
  * @public
- * return list of registred plugins.
+ * @function getPlugins
+ * 
+ * Returns a list of all registered plugins.
+ * 
+ * @returns {Plugin[]} - An array of registered plugins.
  */
 export function getPlugins (): Plugin[] {
   return Array.from(locations.keys())
 }
 
+/**
+ * @function getLocation
+ * 
+ * Retrieves the loader for a plugin.
+ * 
+ * @param {Plugin} plugin - The plugin to retrieve the loader for.
+ * @returns {PluginLoader<Resources>} - The loader for the plugin.
+ */
 function getLocation (plugin: Plugin): PluginLoader<Resources> {
   const location = locations.get(plugin)
   if (location === undefined) {
@@ -69,8 +95,17 @@ function getLocation (plugin: Plugin): PluginLoader<Resources> {
   return location
 }
 
+// A map of plugins to promises that resolve to their loaded resources.
 const loading = new Map<Plugin, Promise<Resources>>()
 
+/**
+ * @function loadPlugin
+ * 
+ * Loads a plugin and returns a promise that resolves to its resources.
+ * 
+ * @param {Plugin} id - The ID of the plugin to load.
+ * @returns {Promise<Resources>} - A promise that resolves to the loaded resources.
+ */
 async function loadPlugin (id: Plugin): Promise<Resources> {
   let pluginLoader = loading.get(id)
   if (pluginLoader === undefined) {
@@ -95,12 +130,17 @@ async function loadPlugin (id: Plugin): Promise<Resources> {
   return await pluginLoader
 }
 
+// A map of resources ot their cached values.
 const cachedResource = new Map<string, any>()
 
 /**
  * @public
- * @param resource -
- * @returns
+ * @function getResource
+ * 
+ * Retrieves a resource. If the resource is cached, it returns the cached value. Otherwise, it loads the resource, caches it, and then returns it.
+ * 
+ * @param resource - The resource to retrieve.
+ * @returns {Promise<T>} - A promise that resolves to the retrieved resource.
  */
 export async function getResource<T> (resource: Resource<T>): Promise<T> {
   const cached = cachedResource.get(resource)
@@ -119,6 +159,12 @@ export async function getResource<T> (resource: Resource<T>): Promise<T> {
 
 /**
  * @public
+ * @function getResourcePlugin
+ * 
+ * Retrieves the plugin associated with a resource.
+ * 
+ * @param resource - The resource to retrieve the plugin for.
+ * @returns {Plugin} - The plugin associated with the resource.
  */
 export function getResourcePlugin<T> (resource: Resource<T>): Plugin {
   const info = _parseId(resource)

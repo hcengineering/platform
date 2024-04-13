@@ -25,6 +25,10 @@ import platform, { _EmbeddedId } from './platform'
 
 /**
  * @public
+ * @typedef Loader
+ * 
+ * Loads a set of strings for a given locale and resolves to a record of strings. 
+ * Each string can be either a simple string or a record of strings.
  */
 export type Loader = (locale: string) => Promise<Record<string, string | Record<string, string>>>
 
@@ -36,16 +40,25 @@ const cache = new Map<IntlString, IntlMessageFormat | Status>()
 
 /**
  * @public
- * @param plugin -
- * @param loader -
+ * @function addStringsLoader
+ * 
+ * Adds a strings loader for a given plugin.
+ * 
+ * @param plugin - The plugin to add the strings loader for.
+ * @param loader - The strings loader to add.
  */
 export function addStringsLoader (plugin: Plugin, loader: Loader): void {
   loaders.set(plugin, loader)
 }
 
 /**
- * Perform load of all internationalization sources for all plugins available.
  * @public
+ * @function loadPluginStrings
+ * 
+ * Perform load of all internationalization sources for all plugins available.
+ * 
+ * @param locale - The locale to load the strings for.
+ * @param force - Whether to force a reload of the strings, even if they are already loaded.
  */
 export async function loadPluginStrings (locale: string, force: boolean = false): Promise<void> {
   if (force) {
@@ -60,6 +73,16 @@ export async function loadPluginStrings (locale: string, force: boolean = false)
   }
 }
 
+/**
+ * @function loadTranslationsForComponent
+ * 
+ * Loads translations for a given plugin and locale. If no loader is found for the plugin, it sets an error status. 
+ * If the loader fails, it tries to load the 'en' locale as a fallback.
+ * 
+ * @param plugin - The plugin to load translations for.
+ * @param locale - The locale to load translations for.
+ * @returns A promise that resolves to the loaded messages or a status indicating an error.
+ */
 async function loadTranslationsForComponent (plugin: Plugin, locale: string): Promise<Messages | Status> {
   const loader = loaders.get(plugin)
   if (loader === undefined) {
@@ -81,6 +104,16 @@ async function loadTranslationsForComponent (plugin: Plugin, locale: string): Pr
   }
 }
 
+/**
+ * @function getTranslation
+ * 
+ * Gets a translation for a given id and locale. If no translations are loaded for the id's component, it loads them. 
+ * If an error occurs, it sets an error status.
+ * 
+ * @param id - The id of the translation to get.
+ * @param locale - The locale to get the translation for.
+ * @returns A promise that resolves to the translation, a status indicating an error, or undefined if no translation is found.
+ */
 async function getTranslation (id: _IdInfo, locale: string): Promise<IntlString | Status | undefined> {
   try {
     let messages = translations.get(id.component)
@@ -103,9 +136,15 @@ async function getTranslation (id: _IdInfo, locale: string): Promise<IntlString 
 
 /**
  * @public
- * @param message -
- * @param params -
- * @returns
+ * @function translate
+ * 
+ * Translates a message using the provided parameters and the current locale. If a translation is 
+ * not found, it uses the original message. If an error occurs, it sets an error status.
+ * 
+ * @param message - The message to translate.
+ * @param params - The parameters to use for the translation.
+ * @param language - The language to translate the message to. If not provided, the current locale is used.
+ * @returns A promise that resolves to the translated message.
  */
 export async function translate<P extends Record<string, any>> (
   message: IntlString<P>,

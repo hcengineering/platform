@@ -16,6 +16,7 @@
 
 import type { Metadata } from './metadata'
 
+// Re-exporting modules for easier access
 export * from './event'
 export * from './i18n'
 export * from './metadata'
@@ -27,10 +28,16 @@ export * from './testUtils'
 
 /**
  * @public
+ * @typedef URL
+ * 
+ * A type representing a URL as a string.
  */
 export type URL = string
 
 /**
  * @public
+ * @typedef Asset
+ * 
+ * A type representing an asset. An asset is a metadata object where the metadata is a URL.
  */
 export type Asset = Metadata<URL>

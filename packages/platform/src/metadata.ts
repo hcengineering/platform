@@ -19,8 +19,8 @@ import type { Id } from './platform'
  * Platform Metadata Identifier (PMI).
  *
  * 'Metadata' is simply any JavaScript object, which is used to configure platform, e.g. IP addresses.
- * Another example of metadata is an asset URL. The logic behind providing asset URLs as metadata is
- * we know URL at compile time only and URLs vary depending on deployment options.
+ * Another example of metadata is an asset URL. Asset URLs are provided as metadata because they are
+ * known only at compile time and can vary depending on deployment options.
  *
  * @public
  */
@@ -28,17 +28,25 @@ export type Metadata<T> = Id & { __metadata: T }
 
 /**
  * @public
+ * @typedef ExtractType
+ * 
+ * A utility type that extracts the metadata type from a record of metadata.
  */
 export type ExtractType<T, X extends Record<string, Metadata<T>>> = {
   [P in keyof X]: X[P] extends Metadata<infer Z> ? Z : never
 }
 
+// Map to store metadata
 const metadata = new Map<Metadata<any>, any>()
 
 /**
  * @public
- * @param id -
- * @returns
+ * @function getMetadata
+ * 
+ * Retrieves the metadata associated with a given ID.
+ * 
+ * @param id - The ID of the metadata to retrieve.
+ * @returns {T | undefined} - The metadata associated with the ID, or undefined if no metadata is found.
  */
 export function getMetadata<T> (id: Metadata<T>): T | undefined {
   return metadata.get(id)
@@ -46,8 +54,12 @@ export function getMetadata<T> (id: Metadata<T>): T | undefined {
 
 /**
  * @public
- * @param id -
- * @param value -
+ * @function setMetadata
+ * 
+ * Sets the metadata for a given ID.
+ * 
+ * @param id - The ID to associate the metadata with.
+ * @param value - The metadata to set.
  */
 export function setMetadata<T> (id: Metadata<T>, value: T): void {
   metadata.set(id, value)
@@ -55,8 +67,12 @@ export function setMetadata<T> (id: Metadata<T>, value: T): void {
 
 /**
  * @public
- * @param ids -
- * @param data -
+ * @function loadMetadata
+ * 
+ * Loads a set of metadata into the map.
+ * 
+ * @param ids - The IDs of the metadata to load.
+ * @param data - The metadata to load.
  */
 export function loadMetadata<T, X extends Record<string, Metadata<T>>> (ids: X, data: ExtractType<T, X>): void {
   for (const key in ids) {

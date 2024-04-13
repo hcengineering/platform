@@ -20,6 +20,9 @@ import platform, { _ID_SEPARATOR } from './platform'
 
 /**
  * @internal
+ * @interface _IdInfo
+ * 
+ * Represents the parsed information from an ID. ID is split into a component (the plugin), a kind, and a name.
  */
 export interface _IdInfo {
   component: Plugin
@@ -29,6 +32,13 @@ export interface _IdInfo {
 
 /**
  * @internal
+ * @function _parseId
+ * 
+ * Parses an ID into its component parts: the plugin, the kind, and the name. If the ID is invalid 
+ * (i.e., it does not contain at least three parts), it throws a PlatformError with status of InvalidId.
+
+ * @param id - The ID to parse.
+ * @returns {_IdInfo} - The parsed ID information.
  */
 export function _parseId (id: Id): _IdInfo {
   const path = id.split(_ID_SEPARATOR)
