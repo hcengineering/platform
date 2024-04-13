@@ -73,6 +73,10 @@ export function checkAdaptiveMatching (size: WidthType | null, limit: WidthType)
   return size !== null ? range.has(size) : false
 }
 
+// Renamed the function from floorFractionDigits to roundToFixedDecimal 
+// to better reflect its behavior of rounding to the nearest decimal value.
+// The previous name was misleading as it implied flooring the number.
+// (floorFractionDigits(2.5) === 3.0)
 export function roundToFixedDecimal (n: number | string, amount: number): number {
   return Number(Number(n).toFixed(amount))
 }
