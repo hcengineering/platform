@@ -216,7 +216,7 @@ export async function openIssue (page: Page, name: string): Promise<void> {
   })
 }
 
-export async function floorFractionDigits (n: number | string, amount: number): Promise<number> {
+export async function roundToFixedDecimal (n: number | string, amount: number): Promise<number> {
   return Number(Number(n).toFixed(amount))
 }
 

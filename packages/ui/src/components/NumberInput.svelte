@@ -20,7 +20,7 @@
   import { registerFocus } from '../focus'
   import plugin from '../plugin'
   import { resizeObserver } from '../resize'
-  import { floorFractionDigits } from '../utils'
+  import { roundToFixedDecimal } from '../utils'
   import DownOutline from './icons/DownOutline.svelte'
   import UpOutline from './icons/UpOutline.svelte'
   import Button from './Button.svelte'
@@ -50,7 +50,7 @@
       value &&
       !value.toString().match(`^\\d+\\.?\\d{0,${maxDigitsAfterPoint}}$`)
     ) {
-      value = floorFractionDigits(Number(value), maxDigitsAfterPoint)
+      value = roundToFixedDecimal(Number(value), maxDigitsAfterPoint)
     }
   }
 

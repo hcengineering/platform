@@ -16,7 +16,7 @@
   import { AttachedData } from '@hcengineering/core'
 
   import { Issue } from '@hcengineering/tracker'
-  import { floorFractionDigits } from '@hcengineering/ui'
+  import { roundToFixedDecimal } from '@hcengineering/ui'
   import EstimationProgressCircle from './EstimationProgressCircle.svelte'
   import TimePresenter from './TimePresenter.svelte'
 
@@ -26,7 +26,7 @@
 
   $: _estimation = estimation ?? value.estimation
 
-  $: childReportTime = floorFractionDigits(
+  $: childReportTime = roundToFixedDecimal(
     value.reportedTime + (value.childInfo ?? []).map((it) => it.reportedTime).reduce((a, b) => a + b, 0),
     3
   )
@@ -46,7 +46,7 @@
     {#if value.reportedTime > 0 || childReportTime > 0}
       {#if childReportTime}
         {@const rchildReportTime = childReportTime}
-        {@const reportDiff = floorFractionDigits(rchildReportTime - value.reportedTime, 3)}
+        {@const reportDiff = roundToFixedDecimal(rchildReportTime - value.reportedTime, 3)}
         {#if reportDiff !== 0 && value.reportedTime !== 0}
           <div
             class="flex flex-nowrap"

@@ -20,7 +20,7 @@
   import plugin from '../plugin'
   import type { EditStyle } from '../types'
   import Label from './Label.svelte'
-  import { floorFractionDigits } from '../utils'
+  import { roundToFixedDecimal } from '../utils'
   import { themeStore } from '@hcengineering/theme'
 
   export let id: string | undefined = undefined
@@ -53,7 +53,7 @@
       value &&
       !value.toString().match(`^\\d+\\.?\\d{0,${maxDigitsAfterPoint}}$`)
     ) {
-      value = floorFractionDigits(Number(value), maxDigitsAfterPoint)
+      value = roundToFixedDecimal(Number(value), maxDigitsAfterPoint)
     }
   }
   $: void translate(placeholder, placeholderParam ?? {}, $themeStore.language).then((res) => {

@@ -15,7 +15,7 @@
 <script lang="ts">
   import task from '@hcengineering/task'
   import { Issue } from '@hcengineering/tracker'
-  import { floorFractionDigits, Label } from '@hcengineering/ui'
+  import { roundToFixedDecimal, Label } from '@hcengineering/ui'
   import { FixedColumn, statusStore } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import EstimationProgressCircle from '../issues/timereport/EstimationProgressCircle.svelte'
@@ -32,7 +32,7 @@
     (it) => $statusStore.byId.get(it.status)?.category !== task.statusCategory.UnStarted
   )
 
-  $: totalEstimation = floorFractionDigits(
+  $: totalEstimation = roundToFixedDecimal(
     (rootNoBacklogIssues ?? [{ estimation: 0, childInfo: [] } as unknown as Issue])
       .map((it) => {
         const cat = $statusStore.byId.get(it.status)?.category
@@ -63,7 +63,7 @@
       }, 0),
     3
   )
-  $: totalReported = floorFractionDigits(
+  $: totalReported = roundToFixedDecimal(
     (noParents ?? [{ reportedTime: 0, childInfo: [] } as unknown as Issue])
       .map((it) => {
         if (it.childInfo?.length > 0) {

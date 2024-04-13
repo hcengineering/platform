@@ -16,7 +16,7 @@
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
   import { Issue, Project } from '@hcengineering/tracker'
-  import { ActionIcon, IconAdd, Label, eventToHTMLElement, floorFractionDigits, showPopup } from '@hcengineering/ui'
+  import { ActionIcon, IconAdd, Label, eventToHTMLElement, roundToFixedDecimal, showPopup } from '@hcengineering/ui'
   import { activeProjects } from '../../../utils'
   import ReportsPopup from './ReportsPopup.svelte'
   import TimePresenter from './TimePresenter.svelte'
@@ -57,7 +57,7 @@
     if (readonly) return
     showPopup(ReportsPopup, { issue: object }, eventToHTMLElement(event))
   }
-  $: childTime = floorFractionDigits(
+  $: childTime = roundToFixedDecimal(
     (object.childInfo ?? []).map((it) => it.reportedTime).reduce((a, b) => a + b, 0),
     3
   )

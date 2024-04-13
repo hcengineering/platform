@@ -73,8 +73,7 @@ export function checkAdaptiveMatching (size: WidthType | null, limit: WidthType)
   return size !== null ? range.has(size) : false
 }
 
-// TODO: Fix naming, since it doesn't floor (floorFractionDigits(2.5) === 3.0)
-export function floorFractionDigits (n: number | string, amount: number): number {
+export function roundToFixedDecimal (n: number | string, amount: number): number {
   return Number(Number(n).toFixed(amount))
 }
 

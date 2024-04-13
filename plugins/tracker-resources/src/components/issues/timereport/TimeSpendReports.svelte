@@ -16,7 +16,7 @@
   import { DocumentQuery, SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Issue, TimeSpendReport } from '@hcengineering/tracker'
-  import { Expandable, Label, Spinner, floorFractionDigits } from '@hcengineering/ui'
+  import { Expandable, Label, Spinner, roundToFixedDecimal } from '@hcengineering/ui'
   import tracker from '../../../plugin'
   import TimePresenter from './TimePresenter.svelte'
   import TimeSpendReportsList from './TimeSpendReportsList.svelte'
@@ -42,8 +42,8 @@
     }
   )
 
-  $: total = (reports ?? []).reduce((a, b) => a + floorFractionDigits(b.value, 3), 0)
-  $: reportedTime = floorFractionDigits(issue.reportedTime, 3)
+  $: total = (reports ?? []).reduce((a, b) => a + roundToFixedDecimal(b.value, 3), 0)
+  $: reportedTime = roundToFixedDecimal(issue.reportedTime, 3)
 </script>
 
 {#if reports}
@@ -53,7 +53,7 @@
         <Label label={tracker.string.ReportedTime} />:
         <span class="caption-color"><TimePresenter value={reportedTime} /></span>.
         <Label label={tracker.string.TimeSpendReports} />:
-        <span class="caption-color"><TimePresenter value={floorFractionDigits(total, 3)} /></span>
+        <span class="caption-color"><TimePresenter value={roundToFixedDecimal(total, 3)} /></span>
       </span>
     </svelte:fragment>
     <TimeSpendReportsList {reports} />

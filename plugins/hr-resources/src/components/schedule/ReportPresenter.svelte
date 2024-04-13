@@ -14,12 +14,12 @@
 -->
 <script lang="ts">
   import { Staff } from '@hcengineering/hr'
-  import { floorFractionDigits } from '@hcengineering/ui'
+  import { roundToFixedDecimal } from '@hcengineering/ui'
 
   export let value: Staff
   export let display: (staff: Staff) => number | string
 
-  $: _value = floorFractionDigits(display(value), 3)
+  $: _value = roundToFixedDecimal(display(value), 3)
 </script>
 
 <span class="select-text flex lines-limit-2">{_value}</span>
