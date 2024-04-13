@@ -263,10 +263,22 @@ export * from './focus'
 export * from './resize'
 export * from './lazy'
 
+/**
+ * @function createApp
+ * 
+ * Creates a new Svelte app with the specified target.
+ * 
+ * @param {HTMLElement} target - The target element for the Svelte app.
+ * @returns {SvelteComponent} The created Svelte app.
+ */
 export function createApp (target: HTMLElement): SvelteComponent {
   return new Root({ target })
 }
 
+/**
+ * Creates a readable store that emits the current timestamp every 10 seconds.
+ * @returns {Readable} The created store.
+ */
 export const ticker = readable(Date.now(), (set) => {
   set(Date.now())
 
@@ -279,8 +291,13 @@ export const ticker = readable(Date.now(), (set) => {
   }
 })
 
+// Adds a location to the UI
 addLocation(uiId, async () => ({ default: async () => ({}) }))
 
+/**
+ * Creates a writable store with the initial device options.
+ * @returns {Writable<DeviceOptions>} The created store.
+ */
 export const deviceOptionsStore = writable<DeviceOptions>({
   docWidth: 0,
   docHeight: 0,

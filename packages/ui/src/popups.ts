@@ -36,6 +36,14 @@ export interface PopupResult {
 
 export const popupstore = writable<CompAndProps[]>([])
 
+/**
+ * @function updatePopup
+ * 
+ * Update a popup with new properties.
+ * 
+ * @param {string} id - The ID of the popup to update.
+ * @param {Partial<CompAndProps>} props - The new properties for the popup.
+ */
 export function updatePopup (id: string, props: Partial<CompAndProps>): void {
   popupstore.update((popups) => {
     const popupIndex = popups.findIndex((p) => p.id === id)
@@ -46,6 +54,13 @@ export function updatePopup (id: string, props: Partial<CompAndProps>): void {
   })
 }
 
+/**
+ * @function addPopup
+ * 
+ * Add a new popup to the store.
+ * 
+ * @param {CompAndProps} props - The properties for the new popup.
+ */
 function addPopup (props: CompAndProps): void {
   popupstore.update((popups) => {
     popups.push(props)
@@ -53,6 +68,20 @@ function addPopup (props: CompAndProps): void {
   })
 }
 let popupId: number = 0
+
+/**
+ * @function showPopup
+ * 
+ * Show a new popup.
+ * 
+ * @param {AnySvelteComponent | AnyComponent | ComponentType} component - The component to show in the popup.
+ * @param {any} props - The properties for the popup.
+ * @param {PopupAlignment} [element] - The alignment for the popup.
+ * @param {(result: any) => void | Promise<void>} [onClose] - Callback when the popup is closed.
+ * @param {(result: any) => void | Promise<void>} [onUpdate] - Callback when the popup is updated.
+ * @param {Object} options - The options for the popup.
+ * @returns {PopupResult} The result of the popup.
+ */
 export function showPopup (
   component: AnySvelteComponent | AnyComponent | ComponentType,
   props: any,
@@ -94,6 +123,13 @@ export function showPopup (
   }
 }
 
+/**
+ * @function closePopup
+ * 
+ * Close a popup.
+ * 
+ * @param {string} [category] - The category of the popup to close.
+ */
 export function closePopup (category?: string): void {
   popupstore.update((popups) => {
     if (category !== undefined) {
@@ -363,10 +399,27 @@ export function fitPopupElement (
   return { props: newProps, showOverlay: show, direction: '' }
 }
 
+/**
+ * @function eventToHTMLElement
+ * 
+ * Convert a MouseEvent into an HTMLElement.
+ *
+ * @param evt - The MouseEvent to convert.
+ * @returns The HTMLElement representation of the MouseEvent.
+ */
 export function eventToHTMLElement (evt: MouseEvent): HTMLElement {
   return evt.target as HTMLElement
 }
 
+/**
+ * @function getEventPopupPositionElement
+ * 
+ * Get the PopupAlignment from an Event and a position.
+ *
+ * @param e - The Event to get the PopupAlignment from.
+ * @param position - The position to use for the PopupAlignment.
+ * @returns The PopupAlignment, or undefined if it could not be determined.
+ */
 export function getEventPopupPositionElement (
   e?: Event,
   position?: { v: VerticalAlignment, h: HorizontalAlignment }
@@ -378,6 +431,15 @@ export function getEventPopupPositionElement (
   return getPopupPositionElement(target, position)
 }
 
+/**
+ * @function getPopupPositionElement
+ * 
+ * Get the PopupAlignment from an HTMLElement and a position.
+ *
+ * @param el - The HTMLElement to get the PopupAlignment from.
+ * @param position - The position to use for the PopupAlignment.
+ * @returns The PopupAlignment, or undefined if it could not be determined.
+ */
 export function getPopupPositionElement (
   el: HTMLElement | undefined,
   position?: { v: VerticalAlignment, h: HorizontalAlignment }
@@ -392,6 +454,15 @@ export function getPopupPositionElement (
 
   return undefined
 }
+
+/**
+ * @function getEventPositionElement 
+ * 
+ * Get the PopupAlignment from a MouseEvent.
+ *
+ * @param evt - The MouseEvent to get the PopupAlignment from.
+ * @returns The PopupAlignment.
+ */
 export function getEventPositionElement (evt: MouseEvent): PopupAlignment | undefined {
   const rect = DOMRect.fromRect({ width: 1, height: 1, x: evt.clientX, y: evt.clientY })
   return {

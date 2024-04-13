@@ -2,6 +2,11 @@ import { type IntlString } from '@hcengineering/platform'
 import { writable } from 'svelte/store'
 import type { AnyComponent, AnySvelteComponent, LabelAndProps, TooltipAlignment } from './types'
 
+/**
+ * @typedef LabelAndProps
+ * 
+ * Represents an empty tooltip.
+ */
 const emptyTooltip: LabelAndProps = {
   label: undefined,
   element: undefined,
@@ -13,10 +18,33 @@ const emptyTooltip: LabelAndProps = {
   keys: undefined,
   kind: 'tooltip'
 }
+
+/**
+ * @typedef LabelAndProps
+ * 
+ * Represents the current tooltip.
+ */
 let storedValue: LabelAndProps = emptyTooltip
+
+/**
+ * @typedef writable<LabelAndProps>
+ * 
+ * Represents a writable store for the tooltip.
+ */
 export const tooltipstore = writable<LabelAndProps>(emptyTooltip)
 
 let toHandler: any
+
+/**
+ * @function tooltip
+ * 
+ * Creates a tooltip for a given HTML element with optional properties. 
+ * Returns an object with methods to update or destroy the tooltip.
+ * 
+ * @param {HTMLElement} node - The HTML element to attach the tooltip to.
+ * @param {LabelAndProps} options - The options for the tooltip.
+ * @returns {any} - An object with update and destroy methods.
+ */
 export function tooltip (node: HTMLElement, options?: LabelAndProps): any {
   if (options === undefined) {
     return {}
@@ -87,6 +115,21 @@ export function tooltip (node: HTMLElement, options?: LabelAndProps): any {
   }
 }
 
+/**
+ * @function showTooltip
+ * 
+ * Displays a tooltip with the given parameters. Updates the stored value and the tooltip store with the new tooltip information.
+ * 
+ * @param label - The label for the tooltip.
+ * @param element - The HTML element to attach the tooltip to.
+ * @param direction - The direction of the tooltip.
+ * @param component - The component for the tooltip.
+ * @param props - The properties for the tooltip.
+ * @param anchor - The anchor for the tooltip.
+ * @param onUpdate - The update function for the tooltip.
+ * @param kind - The kind of the tooltip.
+ * @param keys - The keys for the tooltip.
+ */
 export function showTooltip (
   label: IntlString | undefined,
   element: HTMLElement,

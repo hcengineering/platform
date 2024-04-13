@@ -18,6 +18,14 @@ import { derived, get, writable } from 'svelte/store'
 import { closePopup } from './popups'
 import { type Location as PlatformLocation } from './types'
 
+/**
+ * @function locationToUrl
+ * 
+ * Converts a PlatformLocation object to a URL string.
+ * 
+ * @param {PlatformLocation} location - The location object to convert.
+ * @returns {string} The URL string.
+ */
 export function locationToUrl (location: PlatformLocation): string {
   let result = '/'
   if (location.path != null) {
@@ -45,6 +53,14 @@ export function locationToUrl (location: PlatformLocation): string {
   return result
 }
 
+/**
+ * @function parseLocation
+ * 
+ * Parses a Location or URL object into a PlatformLocation object.
+ * 
+ * @param {Location | URL} location - The location or URL to parse.
+ * @returns {PlatformLocation} The parsed location.
+ */
 export function parseLocation (location: Location | URL): PlatformLocation {
   return {
     path: parsePath(location.pathname),
@@ -53,6 +69,14 @@ export function parseLocation (location: Location | URL): PlatformLocation {
   }
 }
 
+/**
+ * @function parseQuery
+ * 
+ * Parses a query string into a record of key-value pairs.
+ * 
+ * @param {string} query - The query string to parse.
+ * @returns {Record<string, string | null> | undefined} The parsed query.
+ */
 function parseQuery (query: string): Record<string, string | null> | undefined {
   query = query.trim()
   if (query.length === 0 || !query.startsWith('?')) {
@@ -76,6 +100,14 @@ function parseQuery (query: string): Record<string, string | null> | undefined {
   return result
 }
 
+/**
+ * @function parsePath
+ * 
+ * Parses a path string into an array of path segments.
+ * 
+ * @param {string} path - The path string to parse.
+ * @returns {string[]} The parsed path segments.
+ */
 function parsePath (path: string): string[] {
   const split = path.split('/').map((ps) => decodeURIComponent(ps))
   if (split.length >= 1) {
@@ -91,6 +123,14 @@ function parsePath (path: string): string[] {
   return split
 }
 
+/**
+ * @function parseHash
+ * 
+ * Parses a hash string into a decoded string.
+ * 
+ * @param {string} hash - The hash string to parse.
+ * @returns {string} The parsed hash.
+ */
 function parseHash (hash: string): string {
   if (hash.startsWith('#')) {
     return decodeURIComponent(hash.substring(1))
@@ -100,10 +140,13 @@ function parseHash (hash: string): string {
 
 // ------------------------
 
+
+// Returns the current raw location as a PlatformLocation object.
 export function getRawCurrentLocation (): PlatformLocation {
   return parseLocation(window.location)
 }
 
+// Returns the current resolved location as a PlatformLocation object.
 export function getCurrentResolvedLocation (): PlatformLocation {
   return clone(resolvedLocation)
 }
@@ -141,6 +184,11 @@ export const workspaceId = derived(location, (loc) => loc.path[1])
 
 /**
  * @public
+ * @function getLocation
+ * 
+ * Sets the resolved location.
+ * 
+ * @param {PlatformLocation} location - The location to set.
  */
 export function getLocation (): PlatformLocation {
   return clone(get(location))
@@ -154,6 +202,13 @@ export function setResolvedLocation (location: PlatformLocation): void {
   resolvedLocationStore.set(clone(location))
 }
 
+/**
+ * @function getCurrentLocation
+ * 
+ * Returns the current location as a PlatformLocation object.
+ * 
+ * @returns {PlatformLocation} The current location.
+ */
 export function getCurrentLocation (): PlatformLocation {
   if (embeddedPlatform) {
     return clone(get(locationWritable))
@@ -166,10 +221,26 @@ export function getCurrentLocation (): PlatformLocation {
  */
 export let locationStorageKeyId = 'platform_last_loc'
 
+/**
+ * @function setLocationStorageKey
+ * 
+ * Sets the location storage key.
+ * 
+ * @param {string} storageKey - The storage key to set.
+ */
 export function setLocationStorageKey (storageKey: string): void {
   locationStorageKeyId = storageKey
 }
 
+/**
+ * @function navigate
+ * 
+ * Navigates to a new location.
+ * 
+ * @param {PlatformLocation} location - The location to navigate to.
+ * @param {boolean} [replace=false] - Whether to replace the current history state.
+ * @returns {boolean} Whether the navigation was successful.
+ */
 export function navigate (location: PlatformLocation, replace = false): boolean {
   closePopup()
   const cur = locationToUrl(getCurrentLocation())
@@ -193,13 +264,28 @@ export function navigate (location: PlatformLocation, replace = false): boolean 
 }
 
 const COLLAPSED = 'COLLAPSED'
+/**
+ * Returns the collapsed key for a given ID.
+ * @param {string} _id - The ID to get the collapsed key for.
+ * @returns {string} The collapsed key.
+ */
 export const getCollapsedKey = (_id: string): string => `${getCurrentLocation().path[1]}_${_id}_collapsed`
 
+/**
+ * Returns a boolean whether a tree is collapsed.
+ * @param {any} _id - The ID of the tree.
+ * @returns {boolean} Whether the tree is collapsed.
+ */
 export const getTreeCollapsed = (_id: any): boolean => {
   if (_id === undefined || _id === 'undefined') return false
   return localStorage.getItem(getCollapsedKey(_id as string)) === COLLAPSED
 }
 
+/**
+ * Sets whether a tree is collapsed.
+ * @param {any} _id - The ID of the tree.
+ * @param {boolean} collapsed - Whether the tree is collapsed.
+ */
 export const setTreeCollapsed = (_id: any, collapsed: boolean): void => {
   if (_id === undefined || _id === 'undefined') return
   const key = getCollapsedKey(_id)

@@ -21,7 +21,9 @@ import type {
 import { /* getContext, */ type ComponentType } from 'svelte'
 
 /**
- * Describe a browser URI location parsed to path, query and fragment.
+ * @typedef Location
+ * 
+ * Represents a browser URI location parsed to path, query and fragment.
  */
 export interface Location {
   path: string[] // A useful path value
@@ -29,13 +31,24 @@ export interface Location {
   fragment?: string // a value of fragment
 }
 
+/**
+ * @typedef ResolvedLocation
+ * 
+ * Represents a resolved location with a default location.
+ */
 export interface ResolvedLocation {
   loc: Location
   defaultLocation: Location
 }
 
 /**
+ * @function areLocationsEqual
+ * 
  * Returns true if locations are equal.
+ * 
+ * @param loc1 - The first location to compare.
+ * @param loc2 - The second location to compare.
+ * @returns True if the locations are equal, false otherwise.
  */
 export function areLocationsEqual (loc1: Location, loc2: Location): boolean {
   if (loc1 === loc2) {
@@ -78,6 +91,11 @@ export interface AnySvelteComponentWithProps {
   props?: Record<string, any>
 }
 
+/**
+ * @typedef Action
+ * 
+ * Represents an action with a label, an icon, and an action function.
+ */
 export interface Action {
   label: IntlString
   icon?: Asset | AnySvelteComponent
@@ -93,6 +111,11 @@ export interface Action {
   group?: string
 }
 
+/**
+ * @typedef IPopupItem
+ * 
+ * Represents an item in a popup.
+ */
 export interface IPopupItem {
   _id?: number
   title?: IntlString | undefined
@@ -102,18 +125,38 @@ export interface IPopupItem {
   action?: () => void
 }
 
+/**
+ * @typedef TabBase
+ * 
+ * Represents the base structure of a Tab with a label and an optional icon.
+ */
 export interface TabBase {
   label: IntlString
   icon?: Asset
 }
 
+/**
+ * @typedef Tab
+ * 
+ * Represents a Tab which extends TabBase with a component and props.
+ */
 export interface Tab extends TabBase {
   component: AnyComponent | AnySvelteComponent
   props: any
 }
 
+/**
+ * @typedef TabModel
+ * 
+ * An array of Tab.
+ */
 export type TabModel = Tab[]
 
+/**
+ * @typedef TabItem
+ * 
+ * Represents an item in a Tab with various properties.
+ */
 export interface TabItem {
   id: string
   label?: string
@@ -125,6 +168,11 @@ export interface TabItem {
   action?: () => void
 }
 
+/**
+ * @typedef RadioItem
+ * 
+ * Represents an item in a Radio with various properties.
+ */
 export interface RadioItem {
   id?: string
   label?: string
@@ -191,6 +239,11 @@ export interface ButtonItem {
   showTooltip?: LabelAndProps
 }
 
+/**
+ * @typedef PopupPositionElement
+ * 
+ * Represents an element in a Popup with a position and an optional kind.
+ */
 export interface PopupPositionElement {
   getBoundingClientRect: () => DOMRect
   position?: {
@@ -200,6 +253,11 @@ export interface PopupPositionElement {
   kind?: 'submenu'
 }
 
+/**
+ * @typedef posAlignment
+ * 
+ * Possible alignments of a position.
+ */
 export const posAlignment = [
   'right',
   'top',
@@ -222,8 +280,21 @@ export const posAlignment = [
   'movable'
 ] as const
 
+/**
+ * @typedef PopupPosAlignment
+ * 
+ * Represents the alignment of a Popup position.
+ */
 export type PopupPosAlignment = (typeof posAlignment)[number]
 
+/**
+ * @function isPopupPosAlignment
+ * 
+ * Checks if a given value is a PopupPosAlignment.
+ * 
+ * @param {any} x - The value to check.
+ * @returns {boolean} - Returns true if the value is a PopupPosAlignment, false otherwise.
+ */
 export function isPopupPosAlignment (x: any): x is PopupPosAlignment {
   return typeof x === 'string' && (posAlignment as typeof posAlignment).includes(x as PopupPosAlignment)
 }
@@ -254,6 +325,11 @@ export interface IconProps {
   filled?: boolean
 }
 
+/**
+ * @function getIconSize2x
+ * 
+ * Returns the 2x size of the given IconSize.
+ */
 export function getIconSize2x (size: IconSize): IconSize {
   switch (size) {
     case 'inline':

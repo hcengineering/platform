@@ -23,6 +23,12 @@ import { deviceSizes, type AnyComponent, type AnySvelteComponent, type WidthType
 
 /**
  * @public
+ * @function setMetadataLocalStorage
+ * 
+ * Sets the metadata in local storage and in the platform.
+ * 
+ * @param id - The id of the metadata.
+ * @param value - The value of the metadata.
  */
 export function setMetadataLocalStorage<T> (id: Metadata<T>, value: T | null): void {
   if (value != null) {
@@ -35,6 +41,12 @@ export function setMetadataLocalStorage<T> (id: Metadata<T>, value: T | null): v
 
 /**
  * @public
+ * @function fetchMetadataLocalStorage
+ * 
+ * Fetches the metadata from local storage and attempts to set it in the platform.
+ * 
+ * @param id - The id of the metadata.
+ * @returns The value of the metadata.
  */
 export function fetchMetadataLocalStorage<T> (id: Metadata<T>): T | null {
   const data = localStorage.getItem(id)
@@ -53,6 +65,11 @@ export function fetchMetadataLocalStorage<T> (id: Metadata<T>): T | null {
 
 /**
  * @public
+ * @function checkMobile
+ * 
+ * Checks if the user agent is a mobile device.
+ * 
+ * @returns True if the user agent is a mobile device, false otherwise.
  */
 export function checkMobile (): boolean {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|Mobile|Opera Mini/i.test(navigator.userAgent)
@@ -60,6 +77,11 @@ export function checkMobile (): boolean {
 
 /**
  * @public
+ * @function isSafari
+ * 
+ * Checks if the user agent is Safari.
+ * 
+ * @returns True if the user agent is Safari, false otherwise.
  */
 export function isSafari (): boolean {
   return navigator.userAgent.toLowerCase().includes('safari/')
@@ -67,6 +89,13 @@ export function isSafari (): boolean {
 
 /**
  * @public
+ * @function checkAdaptiveMatching
+ * 
+ * Checks if the size is within the limit.
+ * 
+ * @param size - The size to check.
+ * @param limit - The limit to check against.
+ * @returns True if the size is within the limit, false otherwise.
  */
 export function checkAdaptiveMatching (size: WidthType | null, limit: WidthType): boolean {
   const range = new Set(deviceSizes.slice(0, deviceSizes.findIndex((ds) => ds === limit) + 1))
@@ -80,6 +109,14 @@ export function floorFractionDigits (n: number | string, amount: number): number
 
 /**
  * @public
+ * @function addNotification
+ * 
+ * Adds a notification.
+ * 
+ * @param title - The title of the notification.
+ * @param subTitle - The subtitle of the notification.
+ * @param component - The component of the notification.
+ * @param params - The parameters of the notification.
  */
 export function addNotification (
   title: string,
@@ -106,6 +143,13 @@ export function addNotification (
 
 /**
  * @public
+ * @function handler
+ * 
+ * Creates a handler for an event.
+ * 
+ * @param target - The target of the event.
+ * @param op - The operation to perform when the event occurs.
+ * @returns The handler for the event.
  */
 export function handler<T, EVT = MouseEvent> (target: T, op: (value: T, evt: EVT) => void): (evt: EVT) => void {
   return (evt: EVT) => {
@@ -115,6 +159,13 @@ export function handler<T, EVT = MouseEvent> (target: T, op: (value: T, evt: EVT
 
 /**
  * @public
+ * @function tableToCSV
+ * 
+ * Converts a table to CSV.
+ * 
+ * @param tableId - The id of the table.
+ * @param separator - The separator to use in the CSV.
+ * @returns The CSV representation of the table.
  */
 export function tableToCSV (tableId: string, separator = ','): string {
   const rows = document.querySelectorAll('table#' + tableId + ' tr')
@@ -142,7 +193,13 @@ let attractorMx: number | undefined
 let attractorMy: number | undefined
 
 /**
- * perform mouse movement checks and call method if they was
+ * @function mouseAttractor
+ * 
+ * Perform mouse movement checks and call method if movement is detected.
+ * 
+ * @param op - The operation to perform when the mouse moves.
+ * @param diff - The difference in mouse position to consider as a movement.
+ * @returns The mouse attractor.
  */
 export function mouseAttractor (op: () => void, diff = 2): (evt: MouseEvent) => void {
   return (evt: MouseEvent) => {
@@ -162,6 +219,7 @@ export function mouseAttractor (op: () => void, diff = 2): (evt: MouseEvent) => 
 }
 
 /**
+ * @function replaceURLs
  * Replaces URLs with Links in a given block of text/HTML
  *
  * @example
@@ -169,8 +227,8 @@ export function mouseAttractor (op: () => void, diff = 2): (evt: MouseEvent) => 
  * returns: "Check out <a href='http://google.com' target='_blank' rel='noopener noreferrer'>google.com</a>"
  *
  * @export
- * @param {string} text
- * @returns {string} string with replaced URLs
+ * @param {string} text - the text to replace URLs in
+ * @returns {string} - string with replaced URLs
  */
 export function replaceURLs (text: string): string {
   try {
@@ -188,6 +246,7 @@ export function replaceURLs (text: string): string {
 }
 
 /**
+ * @function parseURL
  * Parse first URL from the given text or html
  *
  * @example
@@ -195,8 +254,8 @@ export function replaceURLs (text: string): string {
  * returns: "http://github.com"
  *
  * @export
- * @param {string} text
- * @returns {string} string with parsed URL
+ * @param {string} text - text to parse the URL from
+ * @returns {string} - string with parsed URL
  */
 export function parseURL (text: string): string {
   const matches = autolinker.parse(text, { urls: true })
@@ -205,6 +264,15 @@ export function parseURL (text: string): string {
 
 /**
  * @public
+ * @interface IModeSelector
+ * 
+ * Interface for managing modes in an application.
+ * 
+ * @template Mode - The type of the mode, default is string.
+ * 
+ * @property mode - The current mode.
+ * @property config - Array of tuples. Each tuple contains mode, its internationalized string, and additional config.
+ * @property onChange - Called when the mode changes. The new mode is passed as an argument to this function.
  */
 export interface IModeSelector<Mode extends string = string> {
   mode: Mode
@@ -214,15 +282,29 @@ export interface IModeSelector<Mode extends string = string> {
 
 /**
  * @public
+ * @function capitalizeFirstLetter
+ * 
+ * Capitalizes the first letter of a string.
  */
 export function capitalizeFirstLetter (str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
+/**
+ * @constant isMac
+ * 
+ * A constant that checks if the user agent is a Macintosh.
+ */
 const isMac = /Macintosh/i.test(navigator.userAgent)
 
 /**
  * @public
+ * @function formatKey
+ * 
+ * Formats a key.
+ * 
+ * @param key - The key to format.
+ * @returns The formatted key.
  */
 export function formatKey (key: string): string[][] {
   const thens = key.split('->')
@@ -245,12 +327,29 @@ export function formatKey (key: string): string[][] {
   return result
 }
 
+/**
+ * @function fromCodePoint
+ * 
+ * Converts code points to a string.
+ * 
+ * @param vals - The code points to convert.
+ * @returns The string representation of the code points.
+ */
 export function fromCodePoint (...vals: number[]): string {
   return String.fromCodePoint(...vals.map((p) => Math.abs(p) % 0x10ffff))
 }
 
 /**
- * @public
+ * @class DelayedCaller
+ * 
+ * A class that calls a function after a delay.
+ * 
+ * @property {() => void} op - The operation/function to be called after a delay. 
+ * @property {number} delay - The delay in milliseconds before the operation is called. Defaults to 10.
+ * 
+ * @method call - Calls the operation after a delay.
+ * @param {() => void} op - The operation/function to be called after a delay. 
+ * @returns {void}
  */
 export class DelayedCaller {
   op?: () => void
@@ -267,6 +366,9 @@ export class DelayedCaller {
   }
 }
 
+// Indicates if testing is enabled.
 export const testing = (localStorage.getItem('#platform.testing.enabled') ?? 'false') === 'true'
 
+
+// A writable store that holds the root bar extensions.
 export const rootBarExtensions = writable<Array<['left' | 'right', AnyComponent]>>([])
