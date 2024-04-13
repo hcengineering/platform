@@ -18,6 +18,10 @@ import { Attribute, Doc, Domain, Ref } from './classes'
 
 /**
  * @public
+ * @interface StatusCategory
+ * 
+ * Represents a category of statuses.
+ * Each category is associated with a specific attribute, has an icon, label, color, default status name, and order.
  */
 export interface StatusCategory extends Doc {
   ofAttribute: Ref<Attribute<Status>>
@@ -34,8 +38,10 @@ export const DOMAIN_STATUS = 'status' as Domain
 
 /**
  * @public
- *
- * Status is attached to attribute, and if user attribute will be removed, all status values will be remove as well.
+ * @interface Status
+ * 
+ * Each status is attached to an attribute, and if the user attribute is removed, all status values will be removed as well.
+ * Each status has a name, an attribute, and optionally a category, color, and description.
  */
 export interface Status extends Doc {
   // We attach to attribute, so we could distinguish between

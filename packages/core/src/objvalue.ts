@@ -5,6 +5,13 @@ import core from './component'
 
 /**
  * @public
+ * @function getObjectValue
+ * 
+ * Retrieves the value of a property from a document using dot notation.
+ * 
+ * @param {string} key - The key of the property to retrieve, in dot notation.
+ * @param {Doc} doc - The document to retrieve the property value from.
+ * @returns {any} The value of the property.
  */
 export function getObjectValue (key: string, doc: Doc): any {
   // Check dot notation
@@ -32,6 +39,14 @@ export function getObjectValue (key: string, doc: Doc): any {
 
 /**
  * @public
+ * @function setObjectValue
+ * 
+ * Sets the value of a property in a document using dot notation.
+ * 
+ * @param {string} key - The key of the property to set, in dot notation.
+ * @param {Doc} doc - The document to set the property value in.
+ * @param {any} newValue - The new value to set.
+ * @returns {void}
  */
 export function setObjectValue (key: string, doc: Doc, newValue: any): void {
   // Check dot notation
@@ -64,10 +79,28 @@ export function setObjectValue (key: string, doc: Doc, newValue: any): void {
   return value
 }
 
+/**
+ * @function isNestedArrayQuery
+ * 
+ * Checks if a value is a nested array query.
+ * 
+ * @param {any} value - The value to check.
+ * @param {string} d - The key to check.
+ * @returns {boolean} True if the value is a nested array query, false otherwise.
+ */
 function isNestedArrayQuery (value: any, d: string): boolean {
   return Number.isNaN(Number.parseInt(d)) && value?.[d as any] === undefined
 }
 
+/**
+ * @function getNestedArrayValue
+ * 
+ * Retrieves the nested array value of a property from a document using dot notation.
+ * 
+ * @param {any[]} value - The array to retrieve the nested value from.
+ * @param {string} name - The name of the property to retrieve, in dot notation.
+ * @returns {any[]} The nested array value of the property.
+ */
 function getNestedArrayValue (value: any[], name: string): any[] {
   const result = []
   for (const v of value) {
@@ -76,6 +109,14 @@ function getNestedArrayValue (value: any[], name: string): any[] {
   return result
 }
 
+/**
+ * @function arrayOrValue
+ * 
+ * Checks if a value is an array, and if not, wraps it in an array.
+ * 
+ * @param {any} vv - The value to check.
+ * @returns {any[]} The value, either as it was if it was an array, or wrapped in an array if it was not.
+ */
 function arrayOrValue (vv: any): any[] {
   return Array.isArray(vv) ? vv : [vv]
 }

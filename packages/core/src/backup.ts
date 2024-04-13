@@ -3,8 +3,14 @@ import { DocInfo } from './server'
 
 /**
  * @public
- * Define a st of document + hashcode for chunk
- * So backup client could decide to download or not any of documents.
+
+ * Defines a 'chunk' of documents for backup. Each chunk, identified by an index, contains an 
+ * array of `DocInfo` objects. Each `DocInfo` includes a unique ID and a hash code, used by
+ * the backup client if a document needs to be downloaded. 
+ * 
+ * @property {number} idx - The index of the chunk.
+ * @property {DocInfo[]} docs - The array of document information.
+ * @property {boolean} finished - A flag indicating whether the chunk is finished and all documents have been processed.
  */
 export interface DocChunk {
   idx: number

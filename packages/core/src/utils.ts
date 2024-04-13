@@ -35,6 +35,15 @@ import { isPredicate } from './predicate'
 import { DocumentQuery, FindResult } from './storage'
 import { TxOperations } from './operations'
 
+/**
+ * @function toHex
+ * 
+ * Converts a number to a hexadecimal string.
+ * 
+ * @param value - The number to convert.
+ * @param chars - The number of characters in the resulting string.
+ * @returns The hexadecimal string.
+ */
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
   if (result.length < chars) {
@@ -46,11 +55,17 @@ function toHex (value: number, chars: number): string {
 let counter = (Math.random() * (1 << 24)) | 0
 const random = toHex((Math.random() * (1 << 24)) | 0, 6) + toHex((Math.random() * (1 << 16)) | 0, 4)
 
+/**
+ * @returns A timestamp as a hexadecimal string.
+ */
 function timestamp (): string {
   const time = (Date.now() / 1000) | 0
   return toHex(time, 8)
 }
 
+/**
+ * @returns A counter as a hexadecimal string.
+ */
 function count (): string {
   const val = counter++ & 0xffffff
   return toHex(val, 6)
@@ -58,13 +73,26 @@ function count (): string {
 
 /**
  * @public
- * @returns
+ * @function generateId
+ * 
+ * Generates a unique ID.
+ * 
+ * @param join - The string to join the parts of the ID with.
+ * @returns The generated ID.
  */
 export function generateId<T extends Doc> (join: string = ''): Ref<T> {
   return (timestamp() + join + random + join + count()) as Ref<T>
 }
 
-/** @public */
+/** 
+ * @public
+ * @function isId
+ * 
+ * Checks if a value is an ID.
+ * 
+ * @param value - The value to check.
+ * @returns True if the value is an ID, false otherwise.
+ */
 export function isId (value: any): value is Ref<any> {
   return typeof value === 'string' && /^[0-9a-f]{24,24}$/.test(value)
 }
@@ -73,7 +101,7 @@ let currentAccount: Account
 
 /**
  * @public
- * @returns
+ * @returns The current account.
  */
 export function getCurrentAccount (): Account {
   return currentAccount
@@ -81,13 +109,21 @@ export function getCurrentAccount (): Account {
 
 /**
  * @public
- * @param account -
+ * Sets the current account.
+ * @param account - The account to set.
  */
 export function setCurrentAccount (account: Account): void {
   currentAccount = account
 }
+
 /**
  * @public
+ * @function escapeLikeForRegexp
+ * 
+ * Escapes a string for use in a regular expression.
+ * 
+ * @param value - The string to escape.
+ * @returns The escaped string.
  */
 export function escapeLikeForRegexp (value: string): string {
   return value.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')
@@ -95,6 +131,13 @@ export function escapeLikeForRegexp (value: string): string {
 
 /**
  * @public
+ * @function toFindResult
+ * 
+ * Converts an array of documents to a find result.
+ * 
+ * @param docs - The documents to convert.
+ * @param total - The total number of documents.
+ * @returns The find result.
  */
 export function toFindResult<T extends Doc> (docs: T[], total?: number): FindResult<T> {
   const length = total ?? docs.length
@@ -119,8 +162,13 @@ export interface WorkspaceIdWithUrl extends WorkspaceId {
 
 /**
  * @public
+ * @function getWorkspaceId
  *
- * Combine workspace with productId, if not equal ''
+ * Creates a WorkspaceId object by combining the workspace and productId (if productId is provided).
+ * 
+ * @param {string} workspace - The name of the workspace.
+ * @param {string} productId - The product ID.
+ * @returns {WorkspaceId} The workspace ID.
  */
 export function getWorkspaceId (workspace: string, productId: string = ''): WorkspaceId {
   return {
@@ -131,6 +179,12 @@ export function getWorkspaceId (workspace: string, productId: string = ''): Work
 
 /**
  * @public
+
+ * Converts a workspace ID to a string.
+
+ * @param {WorkspaceId} id - The workspace ID.
+ * @param {string} sep - The separator to use.
+ * @returns {string} The workspace string.
  */
 export function toWorkspaceString (id: WorkspaceId, sep = '@'): string {
   return id.name + (id.productId === '' ? '' : sep + id.productId)
@@ -148,13 +202,26 @@ export interface IndexKeyOptions {
 }
 /**
  * @public
+ * @function docUpdKey
+ * 
+ * Function to get a document update key.
+ * 
+ * @param {string} name - The name of the document.
+ * @param {IndexKeyOptions} opt - The index key options.
+ * @returns {string} The document update key.
  */
-
 export function docUpdKey (name: string, opt?: IndexKeyOptions): string {
   return attributesPrefix + docKey(name, opt)
 }
 /**
  * @public
+ * @function docKey
+ * 
+ * Function to get a document key.
+ * 
+ * @param {string} name - The name of the document.
+ * @param {IndexKeyOptions} opt - The index key options.
+ * @returns {string} The document key.
  */
 export function docKey (name: string, opt?: IndexKeyOptions): string {
   const extra = opt?.extra !== undefined && opt?.extra?.length > 0 ? `#${opt.extra?.join('#') ?? ''}` : ''
@@ -163,6 +230,12 @@ export function docKey (name: string, opt?: IndexKeyOptions): string {
 
 /**
  * @public
+ * @function extractDocKey
+ * 
+ * Function to extract a document key.
+ * 
+ * @param {string} key - The key to extract.
+ * @returns {object} The extracted document key.
  */
 export function extractDocKey (key: string): {
   _class?: Ref<Class<Doc>>
@@ -197,6 +270,12 @@ export function extractDocKey (key: string): {
 
 /**
  * @public
+ * @function isFullTextAttribute
+ * 
+ * Function to check if an attribute is a full text attribute.
+ * 
+ * @param {AnyAttribute} attr - The attribute to check.
+ * @returns {boolean} True if the attribute is a full text attribute, false otherwise.
  */
 export function isFullTextAttribute (attr: AnyAttribute): boolean {
   return (
@@ -209,6 +288,12 @@ export function isFullTextAttribute (attr: AnyAttribute): boolean {
 
 /**
  * @public
+ * @function isIndexedAttribute
+ * 
+ * Function to check if an attribute is an indexed attribute.
+ * 
+ * @param {AnyAttribute} attr - The attribute to check.
+ * @returns {boolean} True if the attribute is an indexed attribute, false otherwise.
  */
 export function isIndexedAttribute (attr: AnyAttribute): boolean {
   return attr.index === IndexKind.Indexed || attr.index === IndexKind.IndexedDsc
@@ -228,6 +313,13 @@ export function toIdMap<T extends Doc> (arr: T[]): IdMap<T> {
 
 /**
  * @public
+ * @function concatLink
+ * 
+ * Function to concatenate a host and a path into a URL.
+ * 
+ * @param {string} host - The host part of the URL.
+ * @param {string} path - The path part of the URL.
+ * @returns {string} The concatenated URL.
  */
 export function concatLink (host: string, path: string): string {
   if (!host.endsWith('/') && !path.startsWith('/')) {
@@ -242,6 +334,14 @@ export function concatLink (host: string, path: string): string {
 
 /**
  * @public
+ * @function fillDefaults
+ * 
+ * Function to fill default values in a document object.
+ * 
+ * @param {Hierarchy} hierarchy - The hierarchy of the document.
+ * @param {DocData<T> | T} object - The document object.
+ * @param {Ref<Class<T>>} _class - The class of the document.
+ * @returns {DocData<T> | T} The document object with default values filled.
  */
 export function fillDefaults<T extends Doc> (
   hierarchy: Hierarchy,
@@ -364,6 +464,13 @@ export class RateLimiter {
   }
 }
 
+/**
+ * @function mergeQueries
+ * Function to merge two document queries.
+ * @param {DocumentQuery<T>} query1 - The first query.
+ * @param {DocumentQuery<T>} query2 - The second query.
+ * @returns {DocumentQuery<T>} The merged query.
+ */
 export function mergeQueries<T extends Doc> (query1: DocumentQuery<T>, query2: DocumentQuery<T>): DocumentQuery<T> {
   const keys1 = Object.keys(query1)
   const keys2 = Object.keys(query2)
@@ -390,6 +497,15 @@ export function mergeQueries<T extends Doc> (query1: DocumentQuery<T>, query2: D
   return query
 }
 
+/**
+ * @function mergeField
+ * 
+ * Function to merge two fields.
+ * 
+ * @param {any} field1 - The first field.
+ * @param {any} field2 - The second field.
+ * @returns {any | undefined} The merged field, or undefined if not possible.
+ */
 function mergeField (field1: any, field2: any): any | undefined {
   // this is a special predicate that causes query never return any docs
   // it is used in cases when queries intersection is empty
@@ -450,6 +566,16 @@ function mergeField (field1: any, field2: any): any | undefined {
   }
 }
 
+/**
+ * @function mergePredicateWithPredicate
+ * 
+ * Function to merge two predicates.
+ * 
+ * @param {string} predicate - The predicate.
+ * @param {any} val1 - The first value.
+ * @param {any} val2 - The second value.
+ * @returns {any | undefined} The merged predicate, or undefined if not possible.
+ */
 function mergePredicateWithPredicate (predicate: string, val1: any, val2: any): any | undefined {
   if (val1 === undefined) return val2
   if (val2 === undefined) return val1
@@ -471,6 +597,16 @@ function mergePredicateWithPredicate (predicate: string, val1: any, val2: any): 
   return val1
 }
 
+/**
+ * @function mergePredicateWithValue
+ * 
+ * Function to merge a predicate with a value.
+ * 
+ * @param {string} predicate - The predicate.
+ * @param {any} val1 - The predicate value.
+ * @param {any} val2 - The value.
+ * @returns {any | undefined} The merged predicate and value, or undefined if not possible.
+ */
 function mergePredicateWithValue (predicate: string, val1: any, val2: any): any | undefined {
   switch (predicate) {
     case '$in':
@@ -495,6 +631,15 @@ function mergePredicateWithValue (predicate: string, val1: any, val2: any): any 
   return val2
 }
 
+/**
+ * @function getInNiN
+ * 
+ * Function to get the intersection of two queries.
+ * 
+ * @param {any} query1 - The first query.
+ * @param {any} query2 - The second query.
+ * @returns {any} The intersection of the two queries.
+ */
 function getInNiN (query1: any, query2: any): any {
   const aIn = typeof query1 === 'object' && '$in' in query1 ? query1.$in : undefined
   const bIn = typeof query2 === 'object' && '$in' in query2 ? query2.$in : undefined
@@ -529,6 +674,14 @@ function getInNiN (query1: any, query2: any): any {
   return {}
 }
 
+/**
+ * @function cutObjectArray
+ * 
+ * Function to cut an object array.
+ * 
+ * @param {any} obj - The object to cut.
+ * @returns {any} The cut object.
+ */
 export function cutObjectArray (obj: any): any {
   if (obj == null) {
     return obj
@@ -550,12 +703,28 @@ export function cutObjectArray (obj: any): any {
   return r
 }
 
+/**
+ * @function isEnum
+ * Function to check if a token is an enum.
+ * @param {T} e - The enum to check against.
+ * @returns {(token: any) => token is T[keyof T]} A function that takes a token and returns whether it is an enum.
+ */
 export const isEnum =
   <T>(e: T) =>
     (token: any): token is T[keyof T] => {
       return typeof token === 'string' && Object.values(e as Record<string, any>).includes(token)
     }
 
+/**
+ * @function checkPermission
+ * 
+ * Async function to check permissions.
+ * 
+ * @param {TxOperations} client - The client to use for operations.
+ * @param {Ref<Permission>} _id - The ID of the permission to check.
+ * @param {Ref<TypedSpace>} _space - The space to check in.
+ * @returns {Promise<boolean>} A promise that resolves to whether the permission is granted.
+ */
 export async function checkPermission (
   client: TxOperations,
   _id: Ref<Permission>,

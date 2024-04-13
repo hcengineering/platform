@@ -25,6 +25,16 @@ type PredicateFactory = (pred: any, propertyKey: string) => Predicate
 
 type ExecPredicate = (value: any) => boolean
 
+/**
+ * @function execPredicate
+ * 
+ * Executes a predicate on each document in an array of documents.
+ * 
+ * @param {Doc[]} docs - The array of documents.
+ * @param {string} propertyKey - The property key.
+ * @param {ExecPredicate} pred - The predicate to execute.
+ * @returns {Doc[]} The array of documents that satisfy the predicate.
+ */
 function execPredicate (docs: Doc[], propertyKey: string, pred: ExecPredicate): Doc[] {
   const result: Doc[] = []
   for (const doc of docs) {
@@ -36,6 +46,7 @@ function execPredicate (docs: Doc[], propertyKey: string, pred: ExecPredicate): 
   return result
 }
 
+// Maps predicate names to their corresponding PredicateFactory.
 const predicates: Record<string, PredicateFactory> = {
   $in: (o, propertyKey) => {
     if (!Array.isArray(o)) {
@@ -106,6 +117,14 @@ const predicates: Record<string, PredicateFactory> = {
   }
 }
 
+/**
+ * @function isPredicate
+ * 
+ * Checks if an object is a predicate.
+ * 
+ * @param {Record<string, any>} o - The object to check.
+ * @returns {boolean} True if the object is a predicate, false otherwise.
+ */
 export function isPredicate (o: Record<string, any>): boolean {
   if (o === null || typeof o !== 'object') {
     return false
@@ -114,6 +133,15 @@ export function isPredicate (o: Record<string, any>): boolean {
   return keys.length > 0 && keys.every((key) => key.startsWith('$'))
 }
 
+/**
+ * @function createPredicates
+ * 
+ * Creates an array of Predicates from an object and a property key.
+ * 
+ * @param {Record<string, any>} o - The object.
+ * @param {string} propertyKey - The property key.
+ * @returns {Predicate[]} The array of Predicates.
+ */
 export function createPredicates (o: Record<string, any>, propertyKey: string): Predicate[] {
   const keys = Object.keys(o)
   const result: Predicate[] = []

@@ -14,12 +14,28 @@
 //
 import { Timestamp } from './classes'
 
+/**
+ * @function getDay
+ * 
+ * Function to get the start of the day for a given timestamp.
+ * 
+ * @param {Timestamp} time - The timestamp to get the day for.
+ * @returns {Timestamp} The timestamp at the start of the day.
+ */
 export function getDay (time: Timestamp): Timestamp {
   const date: Date = new Date(time)
   date.setHours(0, 0, 0, 0)
   return date.getTime()
 }
 
+/**
+ * @function getDisplayTime
+ * 
+ * Function to get a displayable string for a given timestamp.
+ * 
+ * @param {number} time - The timestamp to get the display time for.
+ * @returns {string} The displayable time string.
+ */
 export function getDisplayTime (time: number): string {
   let options: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: 'numeric' }
   if (!isToday(time)) {
@@ -33,10 +49,27 @@ export function getDisplayTime (time: number): string {
   return new Date(time).toLocaleString('default', options)
 }
 
+/**
+ * @function isOtherDay
+ * 
+ * Function to check if two timestamps are on different days.
+ * 
+ * @param {Timestamp} time1 - The first timestamp.
+ * @param {Timestamp} time2 - The second timestamp.
+ * @returns {boolean} Whether the two timestamps are on different days.
+ */
 export function isOtherDay (time1: Timestamp, time2: Timestamp): boolean {
   return getDay(time1) !== getDay(time2)
 }
 
+/**
+ * @function isToday
+ * 
+ * Function to check if a timestamp is on the current day.
+ * 
+ * @param {number} time - The timestamp to check.
+ * @returns {boolean} Whether the timestamp is on the current day.
+ */
 function isToday (time: number): boolean {
   const current = new Date()
   const target = new Date(time)

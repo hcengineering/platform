@@ -1,6 +1,16 @@
+// Check if Symbol is defined
 const se = typeof Symbol !== 'undefined'
+// Check if Symbol.toStringTag is defined
 const ste = se && typeof Symbol.toStringTag !== 'undefined'
 
+/**
+ * @function getTypeOf
+ * 
+ * Returns the type of the given object.
+ * 
+ * @param {any} obj - The object to check.
+ * @returns {string} The type of the object.
+ */
 export function getTypeOf (obj: any): string {
   const typeofObj = typeof obj
   if (typeofObj !== 'object') {
@@ -34,6 +44,16 @@ export function getTypeOf (obj: any): string {
   return {}.toString.call(obj).slice(8, -1)
 }
 
+/**
+ * @function clone
+ * 
+ * Clones the given object.
+ * 
+ * @param {any} obj - The object to clone.
+ * @param {(doc: any, m: any) => any} as - A function to transform the cloned object.
+ * @param {(value: any) => any | undefined} needAs - A function to check if the transformation is needed.
+ * @returns {any} The cloned object.
+ */
 export function clone (obj: any, as?: (doc: any, m: any) => any, needAs?: (value: any) => any | undefined): any {
   if (typeof obj === 'undefined') {
     return undefined

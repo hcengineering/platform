@@ -31,6 +31,8 @@ import type { Tx } from './tx'
 
 /**
  * @public
+ * @interface DocInfo
+ * Represents information about a document, including its ID, hash, and approximate size.
  */
 export interface DocInfo {
   id: string
@@ -39,6 +41,8 @@ export interface DocInfo {
 }
 /**
  * @public
+ * @interface StorageIterator
+ * Represents an iterator over storage, with methods to get the next document info and to close the iterator.
  */
 export interface StorageIterator {
   next: (ctx: MeasureContext) => Promise<DocInfo | undefined>
@@ -47,6 +51,8 @@ export interface StorageIterator {
 
 /**
  * @public
+ * @interface LowLevelStorage
+ * Represents a low-level storage interface, with methods to find, load, upload, and clean documents.
  */
 export interface LowLevelStorage {
   // Low level streaming API to retrieve information
@@ -64,6 +70,8 @@ export interface LowLevelStorage {
 }
 /**
  * @public
+ * @interface ServerStorage
+ * Represents a server storage interface, extending the low-level storage interface with additional methods.
  */
 export interface ServerStorage extends LowLevelStorage {
   hierarchy: Hierarchy
