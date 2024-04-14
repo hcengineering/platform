@@ -39,10 +39,11 @@ import core, {
   docKey,
   isFullTextAttribute,
   isIndexedAttribute,
-  toFindResult
+  toFindResult,
+  isClassIndexable
 } from '@hcengineering/core'
 import { type FullTextIndexPipeline } from './indexer'
-import { createStateDoc, isClassIndexable } from './indexer/utils'
+import { createStateDoc } from './indexer/utils'
 import { getScoringConfig, mapSearchResultDoc } from './mapper'
 import { type StorageAdapter } from './storage'
 import type { FullTextAdapter, IndexedDoc, WithFind } from './types'

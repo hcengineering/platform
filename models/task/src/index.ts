@@ -592,6 +592,30 @@ export function createModel (builder: Builder): void {
   })
 
   createPublicLinkAction(builder, task.class.Task, task.action.PublicLink)
+
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_TASK,
+    disabled: [
+      { modifiedBy: 1 },
+      { attachedToClass: 1 },
+      { component: 1 },
+      { milestone: 1 },
+      { relations: 1 },
+      { priority: 1 }
+    ]
+  })
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_KANBAN,
+    disabled: [
+      { space: 1 },
+      { modifiedOn: 1 },
+      { modifiedBy: 1 },
+      { createdBy: 1 },
+      { createdOn: -1 },
+      { _class: 1 },
+      { attachedToClass: 1 }
+    ]
+  })
 }
 
 /**

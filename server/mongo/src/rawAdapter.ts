@@ -45,8 +45,7 @@ export function createRawMongoDBAdapter (url: string): RawDBAdapter {
       const db = getWorkspaceDB(await client.getClient(), workspace)
       const coll = db.collection(domain)
       let cursor = coll.find<T>(query as Filter<Document>, {
-        checkKeys: false,
-        enableUtf8Validation: false
+        checkKeys: false
       })
 
       let total: number = -1

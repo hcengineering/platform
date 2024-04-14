@@ -28,8 +28,9 @@
   import { connect, disconnect, versionError } from '../connect'
 
   import { workbenchId } from '@hcengineering/workbench'
-  import workbench from '../plugin'
   import { onDestroy } from 'svelte'
+  import workbench from '../plugin'
+  import { workspaceCreating } from '../utils'
 
   const isNeedUpgrade = window.location.host === ''
 
@@ -54,7 +55,14 @@
   {:else}
     {#key $location.path[1]}
       {#await connect(getMetadata(workbench.metadata.PlatformTitle) ?? 'Platform')}
-        <Loading />
+        <Loading>
+          {#if ($workspaceCreating ?? -1) > 0}
+            <div class="ml-1">
+              <Label label={workbench.string.WorkspaceCreating} />
+              {$workspaceCreating} %
+            </div>
+          {/if}
+        </Loading>
       {:then client}
         {#if !client && versionError}
           <div class="version-wrapper">

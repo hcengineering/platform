@@ -1,5 +1,5 @@
 import { type Asset, type IntlString, type Resource } from '@hcengineering/platform'
-import { type Account, type Doc, type Ref } from '@hcengineering/core'
+import { type Account, type Doc, type Markup, type Ref } from '@hcengineering/core'
 import type { AnySvelteComponent } from '@hcengineering/ui'
 import { type Editor, type SingleCommands } from '@tiptap/core'
 
@@ -8,7 +8,8 @@ import { type Editor, type SingleCommands } from '@tiptap/core'
  */
 export interface TextEditorHandler {
   insertText: (html: string) => void
-  insertTemplate: (name: string, html: string) => void
+  insertMarkup: (markup: Markup) => void
+  insertTemplate: (name: string, markup: string) => void
   focus: () => void
 }
 /**

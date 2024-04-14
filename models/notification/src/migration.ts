@@ -28,6 +28,7 @@ import core, {
 } from '@hcengineering/core'
 import {
   tryMigrate,
+  tryUpgrade,
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient
@@ -286,6 +287,13 @@ export const notificationOperation: MigrateOperation = {
     ])
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    await createSpace(client)
+    await tryUpgrade(client, notificationId, [
+      {
+        state: 'create-defaults',
+        func: async (client) => {
+          await createSpace(client)
+        }
+      }
+    ])
   }
 }

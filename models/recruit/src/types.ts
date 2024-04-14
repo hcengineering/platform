@@ -14,7 +14,7 @@
 //
 
 import type { Employee, Organization } from '@hcengineering/contact'
-import { type Domain, IndexKind, type Ref, type Status, type Timestamp } from '@hcengineering/core'
+import { type Domain, IndexKind, type Markup, type Ref, type Status, type Timestamp } from '@hcengineering/core'
 import {
   Collection,
   Hidden,
@@ -221,7 +221,7 @@ export class TOpinion extends TAttachedDoc implements Opinion {
     comments?: number
 
   @Prop(TypeMarkup(), recruit.string.Description)
-    description!: string
+    description!: Markup
 
   @Prop(TypeString(), recruit.string.OpinionValue)
     value!: string

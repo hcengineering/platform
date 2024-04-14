@@ -43,7 +43,8 @@ export default mergeIds(workbenchId, workbench, {
     NewVersionAvailable: '' as IntlString,
     PleaseUpdate: '' as IntlString,
     MobileNotSupported: '' as IntlString,
-    LogInAnyway: '' as IntlString
+    LogInAnyway: '' as IntlString,
+    WorkspaceCreating: '' as IntlString
   },
   metadata: {
     MobileAllowed: '' as Metadata<boolean>

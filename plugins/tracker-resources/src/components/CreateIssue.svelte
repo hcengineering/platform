@@ -46,6 +46,7 @@
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import { TaskType, makeRank } from '@hcengineering/task'
   import { TaskKindSelector } from '@hcengineering/task-resources'
+  import { EmptyMarkup } from '@hcengineering/text-editor'
   import {
     Component as ComponentType,
     Issue,
@@ -227,7 +228,7 @@
     assignee: assignee ?? currentProject?.defaultAssignee,
     status: status ?? currentProject?.defaultIssueStatus,
     parentIssue: parentIssue?._id,
-    description: '<p></p>',
+    description: EmptyMarkup,
     component: component ?? $activeComponent ?? null,
     milestone: milestone ?? $activeMilestone ?? null,
     priority: priority ?? IssuePriority.NoPriority,
@@ -932,7 +933,7 @@
       }}
     />
     <ComponentSelector
-      focusIndex={8}
+      focusIndex={7}
       value={object.component}
       space={_space}
       onChange={handleComponentIdChanged}
@@ -941,7 +942,7 @@
       size={'large'}
     />
     <div id="estimation-editor" class="new-line">
-      <EstimationEditor focusIndex={7} kind={'regular'} size={'large'} value={object} />
+      <EstimationEditor focusIndex={8} kind={'regular'} size={'large'} value={object} />
     </div>
     <div id="milestone-editor" class="new-line">
       <MilestoneSelector
@@ -956,6 +957,7 @@
     </div>
     <div id="duedate-editor" class="new-line">
       <DatePresenter
+        focusIndex={10}
         bind:value={object.dueDate}
         labelNull={tracker.string.DueDate}
         kind={'regular'}
@@ -965,6 +967,7 @@
     </div>
     <div id="parentissue-editor" class="new-line">
       <Button
+        focusIndex={11}
         icon={tracker.icon.Parent}
         label={object.parentIssue != null ? tracker.string.RemoveParent : tracker.string.SetParent}
         kind={'regular'}
@@ -991,7 +994,7 @@
   </svelte:fragment>
   <svelte:fragment slot="footer">
     <Button
-      focusIndex={10}
+      focusIndex={12}
       icon={IconAttachment}
       iconProps={{ fill: 'var(--theme-dark-color)' }}
       size={'large'}

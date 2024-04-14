@@ -31,7 +31,6 @@
   import presentation, { Card, createQuery, getClient } from '@hcengineering/presentation'
   import task, { ProjectType, TaskType } from '@hcengineering/task'
   import { taskTypeStore, typeStore } from '@hcengineering/task-resources'
-  import { StyledTextBox } from '@hcengineering/text-editor'
   import { IssueStatus, Project, TimeReportDayType } from '@hcengineering/tracker'
   import {
     Button,
@@ -339,6 +338,7 @@
       </div>
       <div class="padding">
         <EditBox
+          id="project-title"
           bind:value={name}
           placeholder={tracker.string.ProjectTitlePlaceholder}
           kind={'large-style'}
@@ -360,6 +360,7 @@
       </div>
       <div bind:this={changeIdentityRef} class="padding flex-row-center relative">
         <EditBox
+          id="project-identifier"
           bind:value={identifier}
           disabled={!isNew}
           placeholder={tracker.string.ProjectIdentifierPlaceholder}
@@ -379,10 +380,9 @@
         <Label label={tracker.string.Description} />
       </div>
       <div class="padding clear-mins">
-        <StyledTextBox
-          alwaysEdit
-          showButtons={false}
-          bind:content={description}
+        <EditBox
+          id="project-description"
+          bind:value={description}
           placeholder={tracker.string.IssueDescriptionPlaceholder}
         />
       </div>

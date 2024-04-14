@@ -26,10 +26,11 @@ import core, {
   isFullTextAttribute,
   type MeasureContext,
   type Ref,
-  type ServerStorage
+  type ServerStorage,
+  getFullTextContext
 } from '@hcengineering/core'
 import { translate } from '@hcengineering/platform'
-import { convert } from 'html-to-text'
+import { jsonToText, markupToJSON } from '@hcengineering/text'
 import { type DbAdapter } from '../adapter'
 import { type IndexedDoc } from '../types'
 import {
@@ -39,13 +40,7 @@ import {
   type FullTextPipeline,
   type FullTextPipelineStage
 } from './types'
-import {
-  collectPropagate,
-  collectPropagateClasses,
-  getFullTextContext,
-  isCustomAttr,
-  loadIndexStageStage
-} from './utils'
+import { collectPropagate, collectPropagateClasses, isCustomAttr, loadIndexStageStage } from './utils'
 
 /**
  * @public
@@ -285,10 +280,7 @@ export async function extractIndexedValues (
       }
 
       if (keyAttr.type._class === core.class.TypeMarkup || keyAttr.type._class === core.class.TypeCollaborativeMarkup) {
-        sourceContent = convert(sourceContent, {
-          preserveNewlines: true,
-          selectors: [{ selector: 'img', format: 'skip' }]
-        })
+        sourceContent = jsonToText(markupToJSON(sourceContent))
       }
 
       if (!opt.fieldFilter.every((it) => it(keyAttr, sourceContent))) {

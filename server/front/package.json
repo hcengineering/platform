@@ -58,6 +58,7 @@
     "sharp": "~0.32.0",
     "@hcengineering/minio": "^0.6.0",
     "@hcengineering/mongo": "^0.6.1",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "@hcengineering/analytics": "^0.6.0"
   }
 }

@@ -77,20 +77,15 @@
   }}
 >
   <div class="flex-row-top flex-grow flex-gap-2">
-    <div class="flex-row-center flex-no-shrink">
-      <button class="hulyToDoLine-dragbox" class:isNew on:contextmenu={onMenuClick}>
-        <Icon icon={IconMoreV2} size={'small'} />
-      </button>
-      <div class="hulyToDoLine-statusPriority">
-        <div class="hulyToDoLine-checkbox" class:updating>
-          {#if updating !== undefined}
-            <Spinner size={'small'} />
-          {:else}
-            <ToDoCheckbox checked={isDone} priority={todo.priority} on:value={markDone} />
-          {/if}
-        </div>
+    <div class="hulyToDoLine-statusPriority" class:isNew>
+      {#if updating !== undefined}
+        <Spinner size={'small'} />
+      {:else}
+        <button class="hulyToDoLine-dragbox" on:contextmenu={onMenuClick}>
+          <Icon icon={IconMoreV2} size={'small'} />
+        </button>
         <ToDoPriorityPresenter value={todo.priority} muted={isDone} />
-      </div>
+      {/if}
     </div>
     <WorkItemPresenter {todo} kind={'todo-line'} withoutSpace />
     <div class="hulyToDoLine-title hulyToDoLine-top-align top-12 text-left font-regular-14 overflow-label">
@@ -116,5 +111,8 @@
         {new Date(todo.dueDate).toLocaleDateString('default', { month: 'short', day: 'numeric' })}
       </span>
     {/if}
+  </div>
+  <div class="hulyToDoLine-checkbox" class:updating>
+    <ToDoCheckbox checked={isDone} priority={todo.priority} on:value={markDone} />
   </div>
 </button>

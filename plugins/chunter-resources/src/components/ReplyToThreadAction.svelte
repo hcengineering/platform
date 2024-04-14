@@ -28,5 +28,5 @@
 </script>
 
 {#if canReplyToThread(object)}
-  <ActivityMessageAction size="x-small" icon={chunter.icon.Thread} action={onReply} />
+  <ActivityMessageAction size="small" icon={chunter.icon.Thread} action={onReply} />
 {/if}

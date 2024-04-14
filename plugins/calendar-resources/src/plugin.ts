@@ -76,6 +76,7 @@ export default mergeIds(calendarId, calendar, {
     AddReminder: '' as IntlString,
     SeeAllNumberParticipants: '' as IntlString,
     SeeAllNumberReminders: '' as IntlString,
-    DefaultVisibility: '' as IntlString
+    DefaultVisibility: '' as IntlString,
+    GooglePrivacy: '' as IntlString
   }
 })

@@ -29,6 +29,7 @@
   export let readonly: boolean = false
 
   let modalHTML: HTMLElement
+  let oldPanel: HTMLElement | undefined
   let componentInstance: any
 
   let options: PopupOptions = {
@@ -123,6 +124,10 @@
     if (props && contentPanel) fitPopup(props, contentPanel)
   })
 
+  $: if (contentPanel !== oldPanel) {
+    oldPanel = contentPanel
+    keepSize = false
+  }
   $: if (props && contentPanel !== undefined) {
     fitPopup(props, contentPanel)
     if (!keepSize && props?.element === 'content') {

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, Ref, Space } from '@hcengineering/core'
+import type { Class, Doc, Markup, Ref, Space } from '@hcengineering/core'
 import type { IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { Asset, plugin } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
@@ -29,7 +29,7 @@ export interface TemplateCategory extends Space {}
 export interface MessageTemplate extends Doc {
   space: Ref<TemplateCategory>
   title: string
-  message: string
+  message: Markup
 }
 
 /**

@@ -26,7 +26,7 @@
 </script>
 
 {#if value !== ToDoPriority.NoPriority}
-  <div class="flex-center flex-gap-1-5">
+  <div class="priority-container flex-center flex-gap-1-5">
     <Priority {value} {muted} />
     {#if showLabel}
       <span class="priority-label font-medium-12" style:color>

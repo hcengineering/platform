@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Analytics } from '@hcengineering/analytics'
   import login from '@hcengineering/login'
   import { getResource } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
@@ -43,8 +44,9 @@
       const changePassword = await getResource(login.function.ChangePassword)
       await changePassword(oldPassword, password)
       label = setting.string.Saved
-    } catch (e) {
-      console.log(e)
+    } catch (e: any) {
+      Analytics.handleError(e)
+      console.error(e)
       label = presentation.string.Save
       saved = false
       error = true

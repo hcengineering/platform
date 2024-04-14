@@ -40,6 +40,15 @@ export { default } from './plugin'
 export * from './types'
 export * from './utils'
 
+export {
+  EmptyMarkup,
+  areEqualMarkups,
+  getMarkup,
+  isEmptyMarkup,
+  pmNodeToMarkup,
+  markupToPmNode
+} from '@hcengineering/text'
+
 export { FocusExtension, type FocusOptions, type FocusStorage } from './components/extension/focus'
 export { HeadingsExtension, type HeadingsOptions, type HeadingsStorage } from './components/extension/headings'
 export {
@@ -66,12 +75,11 @@ export { TodoItemExtension, TodoListExtension } from './components/extension/tod
 
 export * from './command/deleteAttachment'
 export {
-  type DocumentId,
   TiptapCollabProvider,
   type TiptapCollabProviderConfiguration,
   createTiptapCollaborationData
 } from './provider/tiptap'
-export { collaborativeDocumentId, mongodbDocumentId, platformDocumentId } from './provider/utils'
+export { formatCollaborativeDocumentId, formatPlatformDocumentId } from './provider/utils'
 export { CollaborationIds } from './types'
 
 export { textEditorId }

@@ -13,10 +13,12 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import core, {
   TxFactory,
   WorkspaceEvent,
   generateId,
+  systemAccountEmail,
   toWorkspaceString,
   type MeasureContext,
   type Ref,
@@ -63,6 +65,7 @@ export interface Timeouts {
 }
 
 class TSessionManager implements SessionManager {
+  private readonly statusPromises = new Map<string, Promise<void>>()
   readonly workspaces = new Map<string, Workspace>()
   checkInterval: any
 
@@ -183,6 +186,7 @@ class TSessionManager implements SessionManager {
       workspace: string
       workspaceUrl?: string | null
       workspaceName?: string
+      creating?: boolean
     }> {
     const userInfo = await (
       await fetch(accounts, {
@@ -219,6 +223,10 @@ class TSessionManager implements SessionManager {
       let workspaceInfo = await ctx.with('check-token', {}, async (ctx) =>
         accountsUrl !== '' ? await this.getWorkspaceInfo(accountsUrl, rawToken) : this.wsFromToken(token)
       )
+      if (workspaceInfo?.creating === true && token.email !== systemAccountEmail) {
+        // No access to workspace for token.
+        return { error: new Error(`Workspace during creation phase ${token.email} ${token.workspace.name}`) }
+      }
       if (workspaceInfo === undefined && token.extra?.admin !== 'true') {
         // No access to workspace for token.
         return { error: new Error(`No access to workspace for token ${token.email} ${token.workspace.name}`) }
@@ -289,7 +297,7 @@ class TSessionManager implements SessionManager {
       workspace.sessions.set(session.sessionId, { session, socket: ws })
 
       // We do not need to wait for set-status, just return session to client
-      void ctx.with('set-status', {}, (ctx) => this.setStatus(ctx, session, true))
+      void ctx.with('set-status', {}, (ctx) => this.trySetStatus(ctx, session, true))
 
       if (this.timeMinutes > 0) {
         void ws.send(
@@ -307,6 +315,7 @@ class TSessionManager implements SessionManager {
     workspace: string
     workspaceUrl?: string | null
     workspaceName?: string
+    creating?: boolean
   } {
     return {
       workspace: token.workspace.name,
@@ -370,6 +379,7 @@ class TSessionManager implements SessionManager {
               session.session.useCompression
             )
           } catch (err: any) {
+            Analytics.handleError(err)
             void ctx.error('error during send', { error: err })
           }
         }
@@ -413,6 +423,17 @@ class TSessionManager implements SessionManager {
     return workspace
   }
 
+  private async trySetStatus (ctx: MeasureContext, session: Session, online: boolean): Promise<void> {
+    const current = this.statusPromises.get(session.getUser())
+    if (current !== undefined) {
+      await current
+    }
+    const promise = this.setStatus(ctx, session, online)
+    this.statusPromises.set(session.getUser(), promise)
+    await promise
+    this.statusPromises.delete(session.getUser())
+  }
+
   private async setStatus (ctx: MeasureContext, session: Session, online: boolean): Promise<void> {
     try {
       const user = (
@@ -446,9 +467,6 @@ class TSessionManager implements SessionManager {
     const wsid = toWorkspaceString(workspaceId)
     const workspace = this.workspaces.get(wsid)
     if (workspace === undefined) {
-      if (LOGGING_ENABLED) {
-        await this.ctx.error('internal: cannot find sessions', { id: ws.id, workspace: workspaceId.name, code, reason })
-      }
       return
     }
     const sessionRef = this.sessions.get(ws.id)
@@ -468,7 +486,7 @@ class TSessionManager implements SessionManager {
       const user = sessionRef.session.getUser()
       const another = Array.from(workspace.sessions.values()).findIndex((p) => p.session.getUser() === user)
       if (another === -1) {
-        await this.setStatus(workspace.context, sessionRef.session, false)
+        await this.trySetStatus(workspace.context, sessionRef.session, false)
       }
       if (!workspace.upgrade) {
         // Wait some time for new client to appear before closing workspace.
@@ -506,7 +524,7 @@ class TSessionManager implements SessionManager {
         await this.sendUpgrade(workspace.context, webSocket, s.binaryResponseMode)
       }
       webSocket.close()
-      await this.setStatus(workspace.context, s, false)
+      await this.trySetStatus(workspace.context, s, false)
     }
 
     if (LOGGING_ENABLED) {
@@ -524,6 +542,7 @@ class TSessionManager implements SessionManager {
           await (await workspace.pipeline).close()
         })
       } catch (err: any) {
+        Analytics.handleError(err)
         await this.ctx.error('close-pipeline-error', { error: err })
       }
     }
@@ -586,6 +605,7 @@ class TSessionManager implements SessionManager {
               }
             }
           } catch (err: any) {
+            Analytics.handleError(err)
             this.workspaces.delete(wsid)
             if (LOGGING_ENABLED) {
               await this.ctx.error('failed', { ...logParams, error: err })
@@ -669,6 +689,15 @@ class TSessionManager implements SessionManager {
       const backupMode = 'loadChunk' in service
       await userCtx.with(`🧭 ${backupMode ? 'handleBackup' : 'handleRequest'}`, {}, async (ctx) => {
         const request = await ctx.with('📥 read', {}, async () => readRequest(msg, false))
+        if (request.id === -1 && request.method === 'close') {
+          const wsRef = this.workspaces.get(workspace)
+          if (wsRef !== undefined) {
+            await this.close(ws, wsRef?.workspaceId, 1000, 'client request to close workspace')
+          } else {
+            ws.close()
+          }
+          return
+        }
         if (request.id === -1 && request.method === 'hello') {
           const hello = request as HelloRequest
           service.binaryResponseMode = hello.binary ?? false
@@ -728,6 +757,7 @@ class TSessionManager implements SessionManager {
             service.useCompression
           )
         } catch (err: any) {
+          Analytics.handleError(err)
           if (LOGGING_ENABLED) {
             await this.ctx.error('error handle request', { error: err, request })
           }
@@ -772,6 +802,7 @@ class TSessionManager implements SessionManager {
         service.useCompression
       )
     } catch (err: any) {
+      Analytics.handleError(err)
       if (LOGGING_ENABLED) {
         await ctx.error('error handle measure', { error: err, request })
       }

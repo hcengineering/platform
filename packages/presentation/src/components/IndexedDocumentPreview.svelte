@@ -14,7 +14,6 @@
   const indexDocQuery = createQuery()
   $: if (objectId !== undefined) {
     indexDocQuery.query(core.class.DocIndexState, { _id: objectId as Ref<DocIndexState> }, (res) => {
-      console.log(res)
       indexDoc = res.shift()
     })
   } else {

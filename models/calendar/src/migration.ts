@@ -18,6 +18,7 @@ import contact from '@hcengineering/contact'
 import core, { TxOperations, type Ref } from '@hcengineering/core'
 import {
   tryMigrate,
+  tryUpgrade,
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient
@@ -139,12 +140,17 @@ async function migrateTimezone (client: MigrationClient): Promise<void> {
 
 export const calendarOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
-    await fixEventDueDate(client)
-    await migrateReminders(client)
-    await fillOriginalStartTime(client)
-    await migrateSync(client)
-    await migrateExternalCalendars(client)
     await tryMigrate(client, calendarId, [
+      {
+        state: 'calendar001',
+        func: async (client) => {
+          await fixEventDueDate(client)
+          await migrateReminders(client)
+          await fillOriginalStartTime(client)
+          await migrateSync(client)
+          await migrateExternalCalendars(client)
+        }
+      },
       {
         state: 'timezone',
         func: migrateTimezone
@@ -152,7 +158,14 @@ export const calendarOperation: MigrateOperation = {
     ])
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    const tx = new TxOperations(client, core.account.System)
-    await migrateCalendars(tx)
+    await tryUpgrade(client, calendarId, [
+      {
+        state: 'u-calendar0002',
+        func: async (client) => {
+          const tx = new TxOperations(client, core.account.System)
+          await migrateCalendars(tx)
+        }
+      }
+    ])
   }
 }

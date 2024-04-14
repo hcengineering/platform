@@ -210,14 +210,14 @@ function getDirectActions (): Action[] {
 function getActivityActions (contexts: DocNotifyContext[]): Action[] {
   return [
     {
-      icon: notification.icon.ReadAll,
+      icon: view.icon.Eye,
       label: notification.string.MarkReadAll,
       action: async () => {
         await readActivityChannels(contexts)
       }
     },
     {
-      icon: view.icon.Archive,
+      icon: view.icon.CheckCircle,
       label: notification.string.ArchiveAll,
       action: async () => {
         archiveActivityChannels(contexts)

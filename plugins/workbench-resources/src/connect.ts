@@ -23,6 +23,7 @@ import {
   setMetadataLocalStorage
 } from '@hcengineering/ui'
 import plugin from './plugin'
+import { workspaceCreating } from './utils'
 
 export let versionError: string | undefined = ''
 
@@ -63,6 +64,7 @@ export async function connect (title: string): Promise<Client | undefined> {
   }
   const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
   let token = tokens[ws]
+
   if (token === undefined && getMetadata(presentation.metadata.Token) !== undefined) {
     const selectWorkspace = await getResource(login.function.SelectWorkspace)
     const loginInfo = await ctx.with('select-workspace', {}, async () => (await selectWorkspace(ws))[1])
@@ -73,6 +75,22 @@ export async function connect (title: string): Promise<Client | undefined> {
     }
   }
   setMetadata(presentation.metadata.Token, token)
+
+  const fetchWorkspace = await getResource(login.function.FetchWorkspace)
+  let loginInfo = await ctx.with('select-workspace', {}, async () => (await fetchWorkspace(ws))[1])
+  if (loginInfo?.creating === true) {
+    while (true) {
+      workspaceCreating.set(loginInfo?.createProgress ?? 0)
+      loginInfo = await ctx.with('select-workspace', {}, async () => (await fetchWorkspace(ws))[1])
+      workspaceCreating.set(loginInfo?.createProgress)
+      if (loginInfo?.creating === false) {
+        workspaceCreating.set(-1)
+        break
+      }
+      await new Promise<void>((resolve) => setTimeout(resolve, 1000))
+    }
+  }
+
   document.cookie =
     encodeURIComponent(presentation.metadata.Token.replaceAll(':', '-')) + '=' + encodeURIComponent(token) + '; path=/'
 
@@ -245,7 +263,8 @@ export async function connect (title: string): Promise<Client | undefined> {
       return
     }
   } catch (err: any) {
-    console.log(err)
+    console.error(err)
+    Analytics.handleError(err)
     const requirdVersion = getMetadata(presentation.metadata.RequiredVersion)
     console.log('checking min model version', requirdVersion)
     if (requirdVersion !== undefined) {

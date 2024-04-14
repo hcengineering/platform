@@ -13,30 +13,60 @@
 // limitations under the License.
 //
 
-import core, { TxOperations } from '@hcengineering/core'
-import { type MigrateOperation, type MigrationClient, type MigrationUpgradeClient } from '@hcengineering/model'
+import core, { coreId, DOMAIN_DOC_INDEX_STATE, isClassIndexable, TxOperations } from '@hcengineering/core'
+import {
+  tryUpgrade,
+  type MigrateOperation,
+  type MigrationClient,
+  type MigrationUpgradeClient
+} from '@hcengineering/model'
 
 export const coreOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    const tx = new TxOperations(client, core.account.System)
+  async migrate (client: MigrationClient): Promise<void> {
+    // We need to delete all documents in doc index state for missing classes
+    const allClasses = client.hierarchy.getDescendants(core.class.Doc)
+    const allIndexed = allClasses.filter((it) => isClassIndexable(client.hierarchy, it))
+    const indexed = new Set(allIndexed)
+    const skipped = allClasses.filter((it) => !indexed.has(it))
 
-    const spaceSpace = await tx.findOne(core.class.Space, {
-      _id: core.space.Space
-    })
-    if (spaceSpace === undefined) {
-      await tx.createDoc(
-        core.class.Space,
-        core.space.Space,
-        {
-          name: 'Space for all spaces',
-          description: 'Spaces',
-          private: false,
-          archived: false,
-          members: []
-        },
-        core.space.Space
-      )
-    }
+    // Next remove all non indexed classes and missing classes as well.
+    const updated = await client.update(
+      DOMAIN_DOC_INDEX_STATE,
+      { objectClass: { $nin: allIndexed } },
+      {
+        $set: {
+          removed: true
+        }
+      }
+    )
+    console.log('clearing non indexed documents', skipped, updated.updated, updated.matched)
+  },
+  async upgrade (client: MigrationUpgradeClient): Promise<void> {
+    await tryUpgrade(client, coreId, [
+      {
+        state: 'create-defaults',
+        func: async (client) => {
+          const tx = new TxOperations(client, core.account.System)
+
+          const spaceSpace = await tx.findOne(core.class.Space, {
+            _id: core.space.Space
+          })
+          if (spaceSpace === undefined) {
+            await tx.createDoc(
+              core.class.Space,
+              core.space.Space,
+              {
+                name: 'Space for all spaces',
+                description: 'Spaces',
+                private: false,
+                archived: false,
+                members: []
+              },
+              core.space.Space
+            )
+          }
+        }
+      }
+    ])
   }
 }

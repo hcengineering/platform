@@ -15,7 +15,7 @@
 <script lang="ts">
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { Attachment } from '@hcengineering/attachment'
-  import { Account, Class, Doc, generateId, Ref, Space, toIdMap } from '@hcengineering/core'
+  import { Account, Class, Doc, generateId, Markup, Ref, Space, toIdMap } from '@hcengineering/core'
   import { IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
   import textEditor, { AttachIcon, type RefAction, StyledTextBox } from '@hcengineering/text-editor'
@@ -28,7 +28,7 @@
   export let objectId: Ref<Doc> | undefined = undefined
   export let space: Ref<Space> | undefined = undefined
   export let _class: Ref<Class<Doc>> | undefined = undefined
-  export let content: string = ''
+  export let content: Markup = ''
   export let placeholder: IntlString | undefined = undefined
   export let alwaysEdit = false
   export let showButtons = false

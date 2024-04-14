@@ -14,6 +14,7 @@
 //
 
 // To help typescript locate view plugin properly
+import activity from '@hcengineering/activity'
 import type { Employee } from '@hcengineering/contact'
 import { type FindOptions, IndexKind, type Ref, SortingOrder, type Status, type Timestamp } from '@hcengineering/core'
 import { type Customer, type Funnel, type Lead, leadId } from '@hcengineering/lead'
@@ -44,7 +45,6 @@ import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import setting from '@hcengineering/setting'
 import { type ViewOptionsModel } from '@hcengineering/view'
-import activity from '@hcengineering/activity'
 
 import lead from './plugin'
 
@@ -411,6 +411,7 @@ export function createModel (builder: Builder): void {
       },
       providers: {
         [notification.providers.PlatformNotification]: true,
+        [notification.providers.BrowserNotification]: true,
         [notification.providers.EmailNotification]: true
       }
     },
@@ -462,7 +463,8 @@ export function createModel (builder: Builder): void {
       objectClass: lead.class.Funnel,
       spaceSubscribe: true,
       providers: {
-        [notification.providers.PlatformNotification]: false
+        [notification.providers.PlatformNotification]: false,
+        [notification.providers.BrowserNotification]: false
       }
     },
     lead.ids.LeadCreateNotification

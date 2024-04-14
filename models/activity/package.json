@@ -38,6 +38,7 @@
     "@hcengineering/model-view": "^0.6.0",
     "@hcengineering/notification": "^0.6.16",
     "@hcengineering/platform": "^0.6.9",
+    "@hcengineering/text": "^0.6.1",
     "@hcengineering/ui": "^0.6.11",
     "@hcengineering/view": "^0.6.9"
   }

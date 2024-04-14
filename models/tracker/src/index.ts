@@ -30,6 +30,7 @@ import { createActions as defineActions } from './actions'
 import tracker from './plugin'
 import { definePresenters } from './presenters'
 import {
+  DOMAIN_TRACKER,
   TComponent,
   TIssue,
   TIssueStatus,
@@ -119,6 +120,7 @@ function defineNotifications (builder: Builder): void {
       },
       providers: {
         [notification.providers.PlatformNotification]: true,
+        [notification.providers.BrowserNotification]: true,
         [notification.providers.EmailNotification]: true
       }
     },
@@ -710,5 +712,26 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ObjectIcon, {
     component: tracker.component.IssueStatusPresenter
+  })
+
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_TRACKER,
+    disabled: [
+      { space: 1 },
+      { attachedToClass: 1 },
+      { status: 1 },
+      { project: 1 },
+      { priority: 1 },
+      { assignee: 1 },
+      { sprint: 1 },
+      { component: 1 },
+      { category: 1 },
+      { modifiedOn: 1 },
+      { modifiedBy: 1 },
+      { createdBy: 1 },
+      { relations: 1 },
+      { milestone: 1 },
+      { createdOn: -1 }
+    ]
   })
 }

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery, MessageViewer } from '@hcengineering/presentation'
+  import { createQuery, HTMLViewer } from '@hcengineering/presentation'
   import { TelegramMessage } from '@hcengineering/telegram'
   import { Ref } from '@hcengineering/core'
 
@@ -38,7 +38,7 @@
 
 {#if doc}
   <div class="content lines-limit-2">
-    <MessageViewer message={doc.content} />
+    <HTMLViewer value={doc.content} />
   </div>
 {/if}
 

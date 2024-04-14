@@ -29,6 +29,9 @@ export interface Workspace {
   workspace: string // workspace Url
   workspaceName?: string // A company name
   workspaceId: string // A unique identifier for the workspace
+
+  creating?: boolean
+  createProgress?: number
 }
 
 /**
@@ -36,6 +39,8 @@ export interface Workspace {
  */
 export interface WorkspaceLoginInfo extends LoginInfo {
   workspace: string
+  creating?: boolean
+  createProgress?: number
 }
 
 /**
@@ -76,6 +81,7 @@ export default plugin(loginId, {
     LeaveWorkspace: '' as Resource<(email: string) => Promise<void>>,
     ChangePassword: '' as Resource<(oldPassword: string, password: string) => Promise<void>>,
     SelectWorkspace: '' as Resource<(workspace: string) => Promise<[Status, WorkspaceLoginInfo | undefined]>>,
+    FetchWorkspace: '' as Resource<(workspace: string) => Promise<[Status, WorkspaceLoginInfo | undefined]>>,
     GetWorkspaces: '' as Resource<() => Promise<Workspace[]>>,
     GetEndpoint: '' as Resource<() => Promise<string>>
   }

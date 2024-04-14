@@ -6,7 +6,8 @@ import {
   type MigrationClient,
   type MigrationUpgradeClient,
   type ModelLogger,
-  tryMigrate
+  tryMigrate,
+  tryUpgrade
 } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import { DOMAIN_VIEW } from '@hcengineering/model-view'
@@ -53,10 +54,11 @@ async function createSpace (tx: TxOperations): Promise<void> {
 
 async function createEmployeeEmail (client: TxOperations): Promise<void> {
   const employees = await client.findAll(contact.mixin.Employee, {})
-  const channels = await client.findAll(contact.class.Channel, {
-    provider: contact.channelProvider.Email,
-    attachedTo: { $in: employees.map((p) => p._id) }
-  })
+  const channels = (
+    await client.findAll(contact.class.Channel, {
+      attachedTo: { $in: employees.map((p) => p._id) }
+    })
+  ).filter((it) => it.provider === contact.channelProvider.Email)
   const channelsMap = new Map(channels.map((p) => [p.attachedTo, p]))
   for (const employee of employees) {
     const acc = await client.findOne(contact.class.PersonAccount, { person: employee._id })
@@ -207,8 +209,21 @@ export const contactOperation: MigrateOperation = {
     ])
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    const tx = new TxOperations(client, core.account.System)
-    await createSpace(tx)
-    await createEmployeeEmail(tx)
+    await tryUpgrade(client, contactId, [
+      {
+        state: 'createSpace',
+        func: async (client) => {
+          const tx = new TxOperations(client, core.account.System)
+          await createSpace(tx)
+        }
+      },
+      {
+        state: 'createEmails',
+        func: async (client) => {
+          const tx = new TxOperations(client, core.account.System)
+          await createEmployeeEmail(tx)
+        }
+      }
+    ])
   }
 }

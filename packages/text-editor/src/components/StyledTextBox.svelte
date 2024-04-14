@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { Markup } from '@hcengineering/core'
   import { IntlString, getMetadata } from '@hcengineering/platform'
   import presentation, { MessageViewer } from '@hcengineering/presentation'
   import {
@@ -27,7 +28,7 @@
   import { RefAction } from '../types'
 
   export let label: IntlString | undefined = undefined
-  export let content: string
+  export let content: Markup
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
 
   export let kind: 'normal' | 'emphasized' | 'indented' = 'normal'
@@ -74,8 +75,8 @@
 
   let canBlur = true
   let focused = false
-  let rawValue: string
-  let oldContent = ''
+  let rawValue: Markup
+  let oldContent: Markup = ''
   let modified: boolean = false
 
   let textEditor: StyledTextEditor

@@ -93,7 +93,7 @@ class ServerStorageWrapper implements ClientConnection {
   async close (): Promise<void> {}
 
   async loadChunk (domain: Domain, idx?: number): Promise<DocChunk> {
-    return { idx: -1, docs: {}, finished: true }
+    return { idx: -1, docs: [], finished: true }
   }
 
   async closeChunk (idx: number): Promise<void> {}

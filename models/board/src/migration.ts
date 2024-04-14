@@ -20,7 +20,8 @@ import {
   type MigrationClient,
   type MigrationUpgradeClient,
   createOrUpdate,
-  tryMigrate
+  tryMigrate,
+  tryUpgrade
 } from '@hcengineering/model'
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 import { DOMAIN_TASK, createProjectType, createSequence, fixTaskTypes } from '@hcengineering/model-task'
@@ -184,7 +185,14 @@ export const boardOperation: MigrateOperation = {
     ])
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    const ops = new TxOperations(client, core.account.System)
-    await createDefaults(ops)
+    await tryUpgrade(client, boardId, [
+      {
+        state: 'board0001',
+        func: async (client) => {
+          const ops = new TxOperations(client, core.account.System)
+          await createDefaults(ops)
+        }
+      }
+    ])
   }
 }

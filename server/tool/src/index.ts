@@ -19,13 +19,16 @@ import core, {
   Client as CoreClient,
   Doc,
   Domain,
+  DOMAIN_MIGRATION,
   DOMAIN_MODEL,
   DOMAIN_TX,
   FieldIndex,
+  groupByArray,
   Hierarchy,
   IndexKind,
   IndexOrder,
   MeasureContext,
+  MigrationState,
   ModelDb,
   Tx,
   WorkspaceId
@@ -39,6 +42,7 @@ import { connect } from './connect'
 import toolPlugin from './plugin'
 import { MigrateClientImpl } from './upgrade'
 
+import { deepEqual } from 'fast-equals'
 import fs from 'fs'
 import path from 'path'
 
@@ -111,7 +115,8 @@ export async function initModel (
   workspaceId: WorkspaceId,
   rawTxes: Tx[],
   migrateOperations: [string, MigrateOperation][],
-  logger: ModelLogger = consoleModelLogger
+  logger: ModelLogger = consoleModelLogger,
+  progress: (value: number) => Promise<void>
 ): Promise<CoreClient> {
   const { mongodbUri, storageAdapter: minio, txes } = prepareTools(rawTxes)
   if (txes.some((tx) => tx.objectSpace !== core.space.Model)) {
@@ -128,9 +133,17 @@ export async function initModel (
     const result = await db.collection(DOMAIN_TX).insertMany(txes as Document[])
     logger.log('model transactions inserted.', { count: result.insertedCount })
 
+    await progress(10)
+
     logger.log('creating data...', { transactorUrl })
     const { model } = await fetchModelFromMongo(ctx, mongodbUri, workspaceId)
 
+    await progress(20)
+
+    logger.log('create minio bucket', { workspaceId })
+    if (!(await minio.exists(ctx, workspaceId))) {
+      await minio.make(ctx, workspaceId)
+    }
     connection = (await connect(
       transactorUrl,
       workspaceId,
@@ -142,27 +155,38 @@ export async function initModel (
       model
     )) as unknown as CoreClient & BackupClient
 
+    const states = await connection.findAll<MigrationState>(core.class.MigrationState, {})
+    const migrateState = new Map(
+      Array.from(groupByArray(states, (it) => it.plugin).entries()).map((it) => [
+        it[0],
+        new Set(it[1].map((q) => q.state))
+      ])
+    )
+    ;(connection as any).migrateState = migrateState
+
     try {
+      let i = 0
       for (const op of migrateOperations) {
         logger.log('Migrate', { name: op[0] })
-        await op[1].upgrade(connection, logger)
+        await op[1].upgrade(connection as any, logger)
+        i++
+        await progress(20 + (((100 / migrateOperations.length) * i) / 100) * 10)
       }
+      await progress(30)
 
       // Create update indexes
-      await createUpdateIndexes(ctx, connection, db, logger)
-
-      logger.log('create minio bucket', { workspaceId })
-      if (!(await minio.exists(ctx, workspaceId))) {
-        await minio.make(ctx, workspaceId)
-      }
+      await createUpdateIndexes(ctx, connection, db, logger, async (value) => {
+        await progress(30 + (Math.min(value, 100) / 100) * 70)
+      })
+      await progress(100)
     } catch (e: any) {
       logger.error('error', { error: e })
       throw e
     }
+    return connection
   } finally {
     _client.close()
   }
-  return connection
 }
 
 /**
@@ -174,7 +198,9 @@ export async function upgradeModel (
   workspaceId: WorkspaceId,
   rawTxes: Tx[],
   migrateOperations: [string, MigrateOperation][],
-  logger: ModelLogger = consoleModelLogger
+  logger: ModelLogger = consoleModelLogger,
+  skipTxUpdate: boolean = false,
+  progress: (value: number) => Promise<void>
 ): Promise<CoreClient> {
   const { mongodbUri, txes } = prepareTools(rawTxes)
 
@@ -188,37 +214,53 @@ export async function upgradeModel (
   try {
     const db = getWorkspaceDB(client, workspaceId)
 
-    logger.log('removing model...', { workspaceId: workspaceId.name })
-    // we're preserving accounts (created by core.account.System).
-    const result = await ctx.with(
-      'mongo-delete',
-      {},
-      async () =>
-        await db.collection(DOMAIN_TX).deleteMany({
-          objectSpace: core.space.Model,
-          modifiedBy: core.account.System,
-          objectClass: { $nin: [contact.class.PersonAccount, 'contact:class:EmployeeAccount'] }
-        })
-    )
-    logger.log('transactions deleted.', { workspaceId: workspaceId.name, count: result.deletedCount })
+    if (!skipTxUpdate) {
+      logger.log('removing model...', { workspaceId: workspaceId.name })
+      await progress(10)
+      // we're preserving accounts (created by core.account.System).
+      const result = await ctx.with(
+        'mongo-delete',
+        {},
+        async () =>
+          await db.collection(DOMAIN_TX).deleteMany({
+            objectSpace: core.space.Model,
+            modifiedBy: core.account.System,
+            objectClass: { $nin: [contact.class.PersonAccount, 'contact:class:EmployeeAccount'] }
+          })
+      )
+      logger.log('transactions deleted.', { workspaceId: workspaceId.name, count: result.deletedCount })
 
-    logger.log('creating model...', { workspaceId: workspaceId.name })
-    const insert = await ctx.with(
-      'mongo-insert',
-      {},
-      async () => await db.collection(DOMAIN_TX).insertMany(txes as Document[])
-    )
+      logger.log('creating model...', { workspaceId: workspaceId.name })
+      const insert = await ctx.with(
+        'mongo-insert',
+        {},
+        async () => await db.collection(DOMAIN_TX).insertMany(txes as Document[])
+      )
 
-    logger.log('model transactions inserted.', { workspaceId: workspaceId.name, count: insert.insertedCount })
+      logger.log('model transactions inserted.', { workspaceId: workspaceId.name, count: insert.insertedCount })
+      await progress(20)
+    }
 
     const { hierarchy, modelDb, model } = await fetchModelFromMongo(ctx, mongodbUri, workspaceId)
+    const migrateClient = new MigrateClientImpl(db, hierarchy, modelDb, logger)
+
+    const states = await migrateClient.find<MigrationState>(DOMAIN_MIGRATION, { _class: core.class.MigrationState })
+    const migrateState = new Map(
+      Array.from(groupByArray(states, (it) => it.plugin).entries()).map((it) => [
+        it[0],
+        new Set(it[1].map((q) => q.state))
+      ])
+    )
+    migrateClient.migrateState = migrateState
 
     await ctx.with('migrate', {}, async () => {
-      const migrateClient = new MigrateClientImpl(db, hierarchy, modelDb, logger)
+      let i = 0
       for (const op of migrateOperations) {
         const t = Date.now()
         await op[1].migrate(migrateClient, logger)
         logger.log('migrate:', { workspaceId: workspaceId.name, operation: op[0], time: Date.now() - t })
+        await progress(20 + ((100 / migrateOperations.length) * i * 20) / 100)
+        i++
       }
     })
     logger.log('Apply upgrade operations', { workspaceId: workspaceId.name })
@@ -240,18 +282,26 @@ export async function upgradeModel (
         )
     )
 
-    // Create update indexes
-    await ctx.with('create-indexes', {}, async (ctx) => {
-      await createUpdateIndexes(ctx, connection, db, logger)
-    })
-
     await ctx.with('upgrade', {}, async () => {
+      let i = 0
       for (const op of migrateOperations) {
         const t = Date.now()
-        await op[1].upgrade(connection, logger)
+        ;(connection as any).migrateState = migrateState
+        await op[1].upgrade(connection as any, logger)
         logger.log('upgrade:', { operation: op[0], time: Date.now() - t, workspaceId: workspaceId.name })
+        await progress(60 + ((100 / migrateOperations.length) * i * 40) / 100)
+        i++
       }
     })
+
+    if (!skipTxUpdate) {
+      // Create update indexes
+      await ctx.with('create-indexes', {}, async (ctx) => {
+        await createUpdateIndexes(ctx, connection, db, logger, async (value) => {
+          await progress(40 + (Math.min(value, 100) / 100) * 20)
+        })
+      })
+    }
     return connection
   } finally {
     _client.close()
@@ -290,9 +340,16 @@ async function createUpdateIndexes (
   ctx: MeasureContext,
   connection: CoreClient,
   db: Db,
-  logger: ModelLogger
+  logger: ModelLogger,
+  progress: (value: number) => Promise<void>
 ): Promise<void> {
   const classes = await ctx.with('find-classes', {}, async () => await connection.findAll(core.class.Class, {}))
+
+  const domainConfigurations = await ctx.with(
+    'find-domain-configs',
+    {},
+    async () => await connection.findAll(core.class.DomainIndexConfiguration, {})
+  )
 
   const hierarchy = connection.getHierarchy()
   const domains = new Map<Domain, Set<string | FieldIndex<Doc>>>()
@@ -334,28 +391,100 @@ async function createUpdateIndexes (
     {},
     async () => await db.listCollections({}, { nameOnly: true }).toArray()
   )
-  for (const [d, v] of domains.entries()) {
+  let completed = 0
+  const allDomains = Array.from(domains.entries())
+  for (const [d, v] of allDomains) {
+    const cfg = domainConfigurations.find((it) => it.domain === d)
+
+    if (cfg?.disableCollection === true) {
+      await db.dropCollection(d)
+      continue
+    }
     const collInfo = collections.find((it) => it.name === d)
     if (collInfo == null) {
       await ctx.with('create-collection', { d }, async () => await db.createCollection(d))
     }
     const collection = db.collection(d)
     const bb: (string | FieldIndex<Doc>)[] = []
-    for (const vv of v.values()) {
+    const added = new Set<string>()
+
+    const allIndexes = (await collection.listIndexes().toArray()).filter((it) => it.name !== '_id_')
+
+    for (const vv of [...v.values(), ...(cfg?.indexes ?? [])]) {
       try {
-        const key = typeof vv === 'string' ? vv : Object.keys(vv)[0]
-        const name = typeof vv === 'string' ? `${key}_1` : `${key}_${vv[key]}`
-        const exists = await collection.indexExists(name)
+        const name =
+          typeof vv === 'string'
+            ? `${vv}_1`
+            : Object.entries(vv)
+              .map(([key, val]) => `${key}_${val}`)
+              .join('_')
+
+        // Check if index is disabled or not
+        const isDisabled =
+          cfg?.disabled?.some((it) => {
+            const _it = typeof it === 'string' ? { [it]: 1 } : it
+            const _vv = typeof vv === 'string' ? { [vv]: 1 } : vv
+            return deepEqual(_it, _vv)
+          }) ?? false
+        if (isDisabled) {
+          // skip index since it is disabled
+          continue
+        }
+        if (added.has(name)) {
+          // Index already added
+          continue
+        }
+        added.add(name)
+
+        const existingOne = allIndexes.findIndex((it) => it.name === name)
+        if (existingOne !== -1) {
+          allIndexes.splice(existingOne, 1)
+        }
+        const exists = existingOne !== -1
+        // Check if index exists
         if (!exists) {
-          await collection.createIndex(vv)
-          bb.push(vv)
+          if (!isDisabled) {
+            // Check if not disabled
+            bb.push(vv)
+            await collection.createIndex(vv, {
+              background: true,
+              name
+            })
+          }
         }
       } catch (err: any) {
         logger.error('error: failed to create index', { d, vv, err })
       }
     }
+    if (allIndexes.length > 0) {
+      for (const c of allIndexes) {
+        if (cfg?.skip !== undefined) {
+          if (Array.from(cfg.skip ?? []).some((it) => c.name.includes(it))) {
+            continue
+          }
+        }
+        logger.log('drop unused indexes', { name: c.name })
+        await collection.dropIndex(c.name)
+      }
+    }
+
     if (bb.length > 0) {
       logger.log('created indexes', { d, bb })
+    }
+
+    const pos = collections.findIndex((it) => it.name === d)
+    if (pos !== -1) {
+      collections.splice(pos, 1)
+    }
+
+    completed++
+    await progress((100 / allDomains.length) * completed)
+  }
+  if (collections.length > 0) {
+    // We could drop unused collections.
+    for (const c of collections) {
+      logger.log('drop unused collection', { name: c.name })
+      await db.dropCollection(c.name)
     }
   }
 }

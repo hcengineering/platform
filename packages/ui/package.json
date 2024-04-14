@@ -42,11 +42,12 @@
     "@hcengineering/theme": "^0.6.3",
     "@hcengineering/core": "^0.6.28",
     "svelte": "^4.2.12",
-    "fast-equals": "^2.0.3",
+    "fast-equals": "^5.0.1",
     "autolinker": "4.0.0",
     "emoji-regex": "^10.1.0",
     "date-fns": "^2.30.0",
-    "date-fns-tz": "^2.0.0"
+    "date-fns-tz": "^2.0.0",
+    "@hcengineering/analytics": "^0.6.0"
   },
   "repository": "https://github.com/hcenginneing/anticrm",
   "publishConfig": {

@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import { MeasureContext, WorkspaceId, metricsAggregate } from '@hcengineering/core'
 import { StorageAdapter } from '@hcengineering/server-core'
 import { Token, decodeToken } from '@hcengineering/server-token'
@@ -126,7 +127,8 @@ async function getFileRange (
             resolve()
           })
           dataStream.on('error', (err) => {
-            console.error(err)
+            void ctx.error('error receive stream', { workspace: workspace.name, uuid, error: err })
+            Analytics.handleError(err)
             res.end()
             reject(err)
           })
@@ -136,11 +138,12 @@ async function getFileRange (
         })
       } catch (err: any) {
         if (err?.code === 'NoSuchKey' || err?.code === 'NotFound') {
-          console.log('No such key', workspace.name, uuid)
+          await ctx.info('No such key', { workspace: workspace.name, uuid })
           res.status(404).send()
           return
         } else {
-          console.log(err)
+          Analytics.handleError(err)
+          void ctx.error(err)
         }
         res.status(500).send()
       }
@@ -207,12 +210,14 @@ async function getFile (
           })
           dataStream.on('error', function (err) {
             res.status(500).send()
-            console.log(err)
+            Analytics.handleError(err)
+            void ctx.error('error', { err })
             reject(err)
           })
         })
       } catch (err: any) {
-        console.log(err)
+        await ctx.error('get-file-error', { workspace: workspace.name, err })
+        Analytics.handleError(err)
         res.status(500).send()
       }
     },
@@ -304,8 +309,9 @@ export function start (
         admin
       })
       res.end(json)
-    } catch (err) {
-      console.error(err)
+    } catch (err: any) {
+      void ctx.error('statistics error', { err })
+      Analytics.handleError(err)
       res.writeHead(404, {})
       res.end()
     }
@@ -394,31 +400,30 @@ export function start (
   })
 
   const filesHandler = async (ctx: MeasureContext, req: Request, res: Response): Promise<void> => {
+    let payload: Token
     try {
       const cookies = ((req?.headers?.cookie as string) ?? '').split(';').map((it) => it.trim().split('='))
 
       const token = cookies.find((it) => it[0] === 'presentation-metadata-Token')?.[1]
-      const payload =
+      payload =
         token !== undefined
           ? decodeToken(token)
           : { email: 'guest', workspace: { name: req.query.workspace as string, productId: '' } }
 
       let uuid = req.query.file as string
       if (token === undefined) {
-        try {
-          const d = await ctx.with(
-            'notoken-stat',
-            { workspace: payload.workspace.name },
-            async () => await config.storageAdapter.stat(ctx, payload.workspace, uuid)
-          )
-          if (d !== undefined && !(d.contentType ?? '').includes('image')) {
-            // Do not allow to return non images with no token.
-            if (token === undefined) {
-              res.status(403).send()
-              return
-            }
+        const d = await ctx.with(
+          'notoken-stat',
+          { workspace: payload.workspace.name },
+          async () => await config.storageAdapter.stat(ctx, payload.workspace, uuid)
+        )
+        if (d !== undefined && !(d.contentType ?? '').includes('image')) {
+          // Do not allow to return non images with no token.
+          if (token === undefined) {
+            res.status(403).send()
+            return
           }
-        } catch (err) {}
+        }
       }
 
       const size = req.query.size as 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' | 'full'
@@ -442,7 +447,7 @@ export function start (
       }
     } catch (error: any) {
       if (error?.code === 'NoSuchKey' || error?.code === 'NotFound') {
-        console.log('No such key', req.query.file)
+        await ctx.error('No such key', { file: req.query.file })
         res.status(404).send()
         return
       } else {
@@ -541,8 +546,9 @@ export function start (
       }
 
       res.status(200).send()
-    } catch (error) {
-      console.log(error)
+    } catch (error: any) {
+      Analytics.handleError(error)
+      await ctx.error('failed to delete', { url: req.url })
       res.status(500).send()
     }
   }
@@ -585,7 +591,6 @@ export function start (
 
       https
         .get(url, options, (response) => {
-          console.log('status', response.statusCode)
           if (response.statusCode !== 200) {
             // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             res.status(500).send(`server returned ${response.statusCode}`)
@@ -603,31 +608,34 @@ export function start (
               config.storageAdapter
                 .put(ctx, payload.workspace, id, buffer, contentType, buffer.length)
                 .then(async (objInfo) => {
-                  console.log('uploaded uuid', id, objInfo.etag)
-
                   res.status(200).send({
                     id,
                     contentType,
                     size: buffer.length
                   })
                 })
-                .catch((err) => {
+                .catch((err: any) => {
                   if (err !== null) {
-                    console.log('minio putObject error', err)
+                    Analytics.handleError(err)
+                    void ctx.error('error', { err })
                     res.status(500).send(err)
                   }
                 })
             })
             .on('error', function (err) {
+              Analytics.handleError(err)
+              void ctx.error('error', { err })
               res.status(500).send(err)
             })
         })
         .on('error', (e) => {
-          console.error(e)
+          Analytics.handleError(e)
+          void ctx.error('error', { e })
           res.status(500).send(e)
         })
-    } catch (error) {
-      console.log(error)
+    } catch (error: any) {
+      Analytics.handleError(error)
+      void ctx.error('error', { error })
       res.status(500).send()
     }
   })
@@ -679,41 +687,27 @@ export function start (
             config.storageAdapter
               .put(ctx, payload.workspace, id, buffer, contentType ?? 'application/octet-stream', buffer.length)
               .then(async () => {
-                console.log('uploaded uuid', id)
-
-                // if (attachedTo !== undefined) {
-                //   const elastic = await createElasticAdapter(config.elasticUrl, payload.workspace)
-
-                //   const indexedDoc: IndexedDoc = {
-                //     id: id as Ref<Doc>,
-                //     _class: attachment.class.Attachment,
-                //     space,
-                //     modifiedOn: Date.now(),
-                //     modifiedBy: 'core:account:System' as Ref<Account>,
-                //     attachedTo,
-                //     data: buffer.toString('base64')
-                //   }
-
-                //   await elastic.index(indexedDoc)
-                // }
-
                 res.status(200).send({
                   id,
                   contentType,
                   size: buffer.length
                 })
               })
-              .catch((err) => {
-                console.log('minio putObject error', err)
+              .catch((err: any) => {
+                Analytics.handleError(err)
+                void ctx.error('error', { err })
                 res.status(500).send(err)
               })
           })
           .on('error', function (err) {
+            Analytics.handleError(err)
+            void ctx.error('error', { err })
             res.status(500).send(err)
           })
       })
-    } catch (error) {
-      console.log(error)
+    } catch (error: any) {
+      Analytics.handleError(error)
+      void ctx.error('error', { error })
       res.status(500).send()
     }
   })
@@ -800,14 +794,10 @@ async function getResizeID (
     }
     let hasSmall = false
     const sizeId = uuid + `%size%${width}`
-    try {
-      const d = await config.storageAdapter.stat(ctx, payload.workspace, sizeId)
-      hasSmall = d !== undefined && d.size > 0
-    } catch (err: any) {
-      if (err.code !== 'NotFound') {
-        console.error(err)
-      }
-    }
+
+    const d = await config.storageAdapter.stat(ctx, payload.workspace, sizeId)
+    hasSmall = d !== undefined && d.size > 0
+
     if (hasSmall) {
       // We have cached small document, let's proceed with it.
       uuid = sizeId

@@ -15,6 +15,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
+  import { Markup } from '@hcengineering/core'
   import { IntlString, Asset } from '@hcengineering/platform'
   import { Label, Icon } from '@hcengineering/ui'
   import type { AnySvelteComponent } from '@hcengineering/ui'
@@ -24,7 +25,7 @@
 
   export let label: IntlString = textEditorPlugin.string.FullDescription
   export let icon: Asset | AnySvelteComponent = IconDescription
-  export let content: string = ''
+  export let content: Markup = ''
   export let maxHeight: string = '40vh'
   export let enableBackReferences = false
 

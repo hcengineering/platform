@@ -14,31 +14,44 @@
 //
 
 import core, { TxOperations } from '@hcengineering/core'
-import { type MigrateOperation, type MigrationClient, type MigrationUpgradeClient } from '@hcengineering/model'
+import {
+  tryUpgrade,
+  type MigrateOperation,
+  type MigrationClient,
+  type MigrationUpgradeClient
+} from '@hcengineering/model'
 import templates from './plugin'
+import { templatesId } from '@hcengineering/templates'
 
 export const templatesOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    const tx = new TxOperations(client, core.account.System)
-    const current = await tx.findOne(core.class.Space, {
-      _id: templates.space.Templates
-    })
-    if (current === undefined) {
-      await tx.createDoc(
-        templates.class.TemplateCategory,
-        core.space.Space,
-        {
-          name: 'Public templates',
-          description: 'Space for public templates',
-          private: false,
-          archived: false,
-          members: []
-        },
-        templates.space.Templates
-      )
-    } else if (current.private) {
-      await tx.update(current, { private: false })
-    }
+    await tryUpgrade(client, templatesId, [
+      {
+        state: 'create-defaults',
+        func: async (client) => {
+          const tx = new TxOperations(client, core.account.System)
+          const current = await tx.findOne(core.class.Space, {
+            _id: templates.space.Templates
+          })
+          if (current === undefined) {
+            await tx.createDoc(
+              templates.class.TemplateCategory,
+              core.space.Space,
+              {
+                name: 'Public templates',
+                description: 'Space for public templates',
+                private: false,
+                archived: false,
+                members: []
+              },
+              templates.space.Templates
+            )
+          } else if (current.private) {
+            await tx.update(current, { private: false })
+          }
+        }
+      }
+    ])
   }
 }

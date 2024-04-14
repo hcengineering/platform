@@ -1,4 +1,5 @@
 import { Doc, Domain, Ref } from './classes'
+import { DocInfo } from './server'
 
 /**
  * @public
@@ -8,7 +9,7 @@ import { Doc, Domain, Ref } from './classes'
 export interface DocChunk {
   idx: number
   // _id => hash mapping
-  docs: Record<string, string>
+  docs: DocInfo[]
   finished: boolean
 }
 

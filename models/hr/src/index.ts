@@ -476,6 +476,7 @@ export function createModel (builder: Builder): void {
       objectClass: hr.class.Request,
       providers: {
         [notification.providers.EmailNotification]: true,
+        [notification.providers.BrowserNotification]: false,
         [notification.providers.PlatformNotification]: true
       },
       templates: {
@@ -500,6 +501,7 @@ export function createModel (builder: Builder): void {
       objectClass: hr.class.Request,
       providers: {
         [notification.providers.EmailNotification]: true,
+        [notification.providers.BrowserNotification]: true,
         [notification.providers.PlatformNotification]: true
       },
       templates: {
@@ -524,6 +526,7 @@ export function createModel (builder: Builder): void {
       objectClass: hr.class.Request,
       providers: {
         [notification.providers.EmailNotification]: true,
+        [notification.providers.BrowserNotification]: true,
         [notification.providers.PlatformNotification]: true
       },
       templates: {
@@ -548,6 +551,7 @@ export function createModel (builder: Builder): void {
       objectClass: hr.class.PublicHoliday,
       providers: {
         [notification.providers.EmailNotification]: true,
+        [notification.providers.BrowserNotification]: true,
         [notification.providers.PlatformNotification]: true
       },
       templates: {
@@ -558,4 +562,8 @@ export function createModel (builder: Builder): void {
     },
     hr.ids.CreatePublicHolidayNotification
   )
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_HR,
+    disabled: [{ modifiedOn: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { attachedToClass: 1 }, { createdOn: -1 }]
+  })
 }

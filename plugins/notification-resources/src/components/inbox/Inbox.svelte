@@ -13,7 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import notification, { DocNotifyContext, InboxNotification } from '@hcengineering/notification'
+  import notification, {
+    ActivityInboxNotification,
+    DocNotifyContext,
+    InboxNotification
+  } from '@hcengineering/notification'
   import { ActionContext, getClient } from '@hcengineering/presentation'
   import view from '@hcengineering/view'
   import {
@@ -31,15 +35,23 @@
     TabList
   } from '@hcengineering/ui'
   import chunter, { ThreadMessage } from '@hcengineering/chunter'
-  import { Account, getCurrentAccount, IdMap, Ref } from '@hcengineering/core'
+  import { IdMap, Ref } from '@hcengineering/core'
   import activity, { ActivityMessage } from '@hcengineering/activity'
-  import { isReactionMessage } from '@hcengineering/activity-resources'
+  import { isActivityMessageClass, isReactionMessage } from '@hcengineering/activity-resources'
   import { get } from 'svelte/store'
   import { translate } from '@hcengineering/platform'
 
   import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
   import Filter from '../Filter.svelte'
-  import { archiveAll, getDisplayInboxData, openInboxDoc, readAll, resolveLocation, unreadAll } from '../../utils'
+  import {
+    archiveAll,
+    getDisplayInboxData,
+    isMentionNotification,
+    openInboxDoc,
+    readAll,
+    resolveLocation,
+    unreadAll
+  } from '../../utils'
   import { InboxData, InboxNotificationsFilter } from '../../types'
   import InboxGroupedListView from './InboxGroupedListView.svelte'
 
@@ -161,7 +173,19 @@
       return
     }
 
-    if (hierarchy.isDerived(selectedContext.attachedToClass, activity.class.ActivityMessage)) {
+    const selectedNotification: InboxNotification | undefined = event?.detail?.notification
+
+    if (isMentionNotification(selectedNotification) && isActivityMessageClass(selectedNotification.mentionedInClass)) {
+      const selectedMsg = selectedNotification.mentionedIn as Ref<ActivityMessage>
+
+      openInboxDoc(
+        selectedContext._id,
+        isActivityMessageClass(selectedContext.attachedToClass)
+          ? (selectedContext.attachedTo as Ref<ActivityMessage>)
+          : undefined,
+        selectedMsg
+      )
+    } else if (hierarchy.isDerived(selectedContext.attachedToClass, activity.class.ActivityMessage)) {
       const message = event?.detail?.notification?.$lookup?.attachedTo
 
       if (selectedContext.attachedToClass === chunter.class.ThreadMessage) {
@@ -172,7 +196,7 @@
       } else if (isReactionMessage(message)) {
         openInboxDoc(selectedContext._id, undefined, selectedContext.attachedTo as Ref<ActivityMessage>)
       } else {
-        const selectedMsg = event?.detail?.notification?.attachedTo
+        const selectedMsg = (selectedNotification as ActivityInboxNotification)?.attachedTo
 
         openInboxDoc(
           selectedContext._id,
@@ -181,7 +205,7 @@
         )
       }
     } else {
-      openInboxDoc(selectedContext._id, undefined, event?.detail?.notification?.attachedTo)
+      openInboxDoc(selectedContext._id, undefined, (selectedNotification as ActivityInboxNotification)?.attachedTo)
     }
   }
 
@@ -318,22 +342,22 @@
                 justify="left"
                 kind="regular"
                 label={notification.string.MarkReadAll}
-                icon={notification.icon.ReadAll}
+                icon={view.icon.Eye}
                 on:click={readAll}
                 dropdownItems={[
                   {
                     id: 'read',
-                    icon: notification.icon.ReadAll,
+                    icon: view.icon.Eye,
                     label: notification.string.MarkReadAll
                   },
                   {
                     id: 'unread',
-                    icon: notification.icon.UnreadAll,
+                    icon: view.icon.EyeCrossed,
                     label: notification.string.MarkUnreadAll
                   },
                   {
                     id: 'archive',
-                    icon: view.icon.Archive,
+                    icon: view.icon.CheckCircle,
                     label: notification.string.ArchiveAll
                   }
                 ]}
@@ -346,7 +370,7 @@
         </div>
 
         <div class="tabs">
-          <TabList items={tabItems} selected={selectedTabId} on:select={selectTab} />
+          <TabList items={tabItems} selected={selectedTabId} on:select={selectTab} padding={'var(--spacing-1) 0'} />
         </div>
 
         <Scroller padding="0">
@@ -377,10 +401,7 @@
 <style lang="scss">
   .tabs {
     display: flex;
-    margin-top: 0.5rem;
-    margin-bottom: 0;
     padding: 0 var(--spacing-1_5);
-    padding-bottom: 0.5rem;
     border-bottom: 1px solid var(--theme-navpanel-border);
   }
 

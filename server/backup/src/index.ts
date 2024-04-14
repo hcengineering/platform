@@ -39,6 +39,7 @@ export * from './storage'
 
 const dataBlobSize = 50 * 1024 * 1024
 const dataUploadSize = 2 * 1024 * 1024
+const retrieveChunkSize = 2 * 1024 * 1024
 
 const defaultLevel = 9
 
@@ -205,7 +206,8 @@ export async function cloneWorkspace (
   transactorUrl: string,
   sourceWorkspaceId: WorkspaceId,
   targetWorkspaceId: WorkspaceId,
-  clearTime: boolean = true
+  clearTime: boolean = true,
+  progress: (value: number) => Promise<void>
 ): Promise<void> {
   const sourceConnection = (await connect(transactorUrl, sourceWorkspaceId, undefined, {
     mode: 'backup'
@@ -219,6 +221,7 @@ export async function cloneWorkspace (
       .domains()
       .filter((it) => it !== DOMAIN_TRANSIENT && it !== DOMAIN_MODEL)
 
+    let i = 0
     for (const c of domains) {
       console.log('clone domain...', c)
 
@@ -241,17 +244,25 @@ export async function cloneWorkspace (
           const it = await sourceConnection.loadChunk(c, idx)
           idx = it.idx
 
-          const needRetrieve: Ref<Doc>[] = []
+          let needRetrieve: Ref<Doc>[] = []
+          let needRetrieveSize = 0
 
-          for (const [k, v] of Object.entries(it.docs)) {
+          for (const { id, hash, size } of it.docs) {
             processed++
             if (Date.now() - st > 2500) {
               console.log('processed', processed, Date.now() - st)
               st = Date.now()
             }
 
-            changes.added.set(k as Ref<Doc>, v)
-            needRetrieve.push(k as Ref<Doc>)
+            changes.added.set(id as Ref<Doc>, hash)
+            needRetrieve.push(id as Ref<Doc>)
+            needRetrieveSize += size
+
+            if (needRetrieveSize > retrieveChunkSize) {
+              needRetrieveChunks.push(needRetrieve)
+              needRetrieveSize = 0
+              needRetrieve = []
+            }
           }
           if (needRetrieve.length > 0) {
             needRetrieveChunks.push(needRetrieve)
@@ -313,6 +324,9 @@ export async function cloneWorkspace (
           continue
         }
       }
+
+      i++
+      await progress((100 / domains.length) * i)
     }
   } catch (err: any) {
     console.error(err)
@@ -375,10 +389,10 @@ export async function backup (
       if (lastTx._id === backupInfo.lastTxId && !force) {
         console.log('No transaction changes. Skipping backup.')
         return
-      } else {
-        backupInfo.lastTxId = lastTx._id
       }
     }
+
+    backupInfo.lastTxId = '' // Clear until full backup will be complete
 
     const snapshot: BackupSnapshot = {
       date: Date.now(),
@@ -434,35 +448,44 @@ export async function backup (
       // Load all digest from collection.
       while (true) {
         try {
-          const it = await connection.loadChunk(domain, idx)
-          idx = it.idx
+          const currentChunk = await connection.loadChunk(domain, idx)
+          idx = currentChunk.idx
 
-          const needRetrieve: Ref<Doc>[] = []
+          let needRetrieve: Ref<Doc>[] = []
+          let currentNeedRetrieveSize = 0
 
-          for (const [k, v] of Object.entries(it.docs)) {
+          for (const { id, hash, size } of currentChunk.docs) {
             processed++
             if (Date.now() - st > 2500) {
               console.log('processed', processed, digest.size, Date.now() - st)
               st = Date.now()
             }
-            const kHash = digest.get(k as Ref<Doc>)
+            const kHash = digest.get(id as Ref<Doc>)
             if (kHash !== undefined) {
-              digest.delete(k as Ref<Doc>)
-              if (kHash !== v) {
-                changes.updated.set(k as Ref<Doc>, v)
-                needRetrieve.push(k as Ref<Doc>)
+              digest.delete(id as Ref<Doc>)
+              if (kHash !== hash) {
+                changes.updated.set(id as Ref<Doc>, hash)
+                needRetrieve.push(id as Ref<Doc>)
+                currentNeedRetrieveSize += size
                 changed++
               }
             } else {
-              changes.added.set(k as Ref<Doc>, v)
-              needRetrieve.push(k as Ref<Doc>)
+              changes.added.set(id as Ref<Doc>, hash)
+              needRetrieve.push(id as Ref<Doc>)
               changed++
+              currentNeedRetrieveSize += size
+            }
+
+            if (currentNeedRetrieveSize > retrieveChunkSize) {
+              needRetrieveChunks.push(needRetrieve)
+              currentNeedRetrieveSize = 0
+              needRetrieve = []
             }
           }
           if (needRetrieve.length > 0) {
             needRetrieveChunks.push(needRetrieve)
           }
-          if (it.finished) {
+          if (currentChunk.finished) {
             await connection.closeChunk(idx)
             break
           }
@@ -510,7 +533,10 @@ export async function backup (
             processedChanges.added.clear()
             processedChanges.removed = []
             processedChanges.updated.clear()
-            await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2)))
+            await storage.writeFile(
+              infoFile,
+              gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel })
+            )
           }
         }
         if (_pack === undefined) {
@@ -583,12 +609,13 @@ export async function backup (
         processedChanges.updated.clear()
         _pack?.finalize()
         // This will allow to retry in case of critical error.
-        await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2)))
+        await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel }))
       }
     }
 
     backupInfo.snapshotsIndex = backupInfo.snapshots.length
-    await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2)))
+    backupInfo.lastTxId = lastTx?._id ?? '0' // We could store last tx, since full backup is complete
+    await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel }))
   } catch (err: any) {
     console.error(err)
   } finally {
@@ -680,8 +707,8 @@ export async function restore (
         idx = it.idx
         el += Date.now() - st
 
-        for (const [_id, hash] of Object.entries(it.docs)) {
-          serverChangeset.set(_id as Ref<Doc>, hash)
+        for (const { id, hash } of it.docs) {
+          serverChangeset.set(id as Ref<Doc>, hash)
           loaded++
         }
 
@@ -979,7 +1006,10 @@ export async function compactBackup (storage: BackupStorage, force: boolean = fa
             processedChanges.added.clear()
             processedChanges.removed = []
             processedChanges.updated.clear()
-            await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2)))
+            await storage.writeFile(
+              infoFile,
+              gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel })
+            )
           }
         }
         if (_pack === undefined) {
@@ -1154,7 +1184,7 @@ export async function compactBackup (storage: BackupStorage, force: boolean = fa
         processedChanges.updated.clear()
         _pack?.finalize()
         // This will allow to retry in case of critical error.
-        await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2)))
+        await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel }))
       }
     }
 
@@ -1176,7 +1206,7 @@ export async function compactBackup (storage: BackupStorage, force: boolean = fa
     }
 
     backupInfo.snapshotsIndex = backupInfo.snapshots.length
-    await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2)))
+    await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel }))
   } catch (err: any) {
     console.error(err)
   } finally {

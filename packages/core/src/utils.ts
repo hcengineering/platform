@@ -17,10 +17,19 @@ import { deepEqual } from 'fast-equals'
 import {
   Account,
   AnyAttribute,
+  AttachedDoc,
   Class,
+  ClassifierKind,
+  Collection,
   Doc,
   DocData,
   DocIndexState,
+  DOMAIN_BLOB,
+  DOMAIN_DOC_INDEX_STATE,
+  DOMAIN_FULLTEXT_BLOB,
+  DOMAIN_MODEL,
+  DOMAIN_TRANSIENT,
+  FullTextSearchContext,
   IndexKind,
   Obj,
   Permission,
@@ -31,9 +40,10 @@ import {
 } from './classes'
 import core from './component'
 import { Hierarchy } from './hierarchy'
+import { TxOperations } from './operations'
 import { isPredicate } from './predicate'
 import { DocumentQuery, FindResult } from './storage'
-import { TxOperations } from './operations'
+import { DOMAIN_TX } from './tx'
 
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
@@ -581,4 +591,126 @@ export async function checkPermission (
   const myPermissions = new Set(myRoles.flatMap((role) => role.permissions))
 
   return myPermissions.has(_id)
+}
+
+/**
+ * @public
+ */
+export function getFullTextIndexableAttributes (
+  hierarchy: Hierarchy,
+  clazz: Ref<Class<Obj>>,
+  skipDocs: boolean = false
+): AnyAttribute[] {
+  const allAttributes = hierarchy.getAllAttributes(clazz)
+  const result: AnyAttribute[] = []
+  for (const [, attr] of allAttributes) {
+    if (skipDocs && (attr.attributeOf === core.class.Doc || attr.attributeOf === core.class.AttachedDoc)) {
+      continue
+    }
+    if (isFullTextAttribute(attr) || isIndexedAttribute(attr)) {
+      result.push(attr)
+    }
+  }
+
+  hierarchy
+    .getDescendants(clazz)
+    .filter((m) => hierarchy.getClass(m).kind === ClassifierKind.MIXIN)
+    .forEach((m) => {
+      for (const [, v] of hierarchy.getAllAttributes(m, clazz)) {
+        if (skipDocs && (v.attributeOf === core.class.Doc || v.attributeOf === core.class.AttachedDoc)) {
+          continue
+        }
+        if (isFullTextAttribute(v) || isIndexedAttribute(v)) {
+          result.push(v)
+        }
+      }
+    })
+  return result
+}
+
+/**
+ * @public
+ */
+export function getFullTextContext (
+  hierarchy: Hierarchy,
+  objectClass: Ref<Class<Doc>>
+): Omit<FullTextSearchContext, keyof Class<Doc>> {
+  let objClass = hierarchy.getClass(objectClass)
+
+  while (true) {
+    if (hierarchy.hasMixin(objClass, core.mixin.FullTextSearchContext)) {
+      const ctx = hierarchy.as<Class<Doc>, FullTextSearchContext>(objClass, core.mixin.FullTextSearchContext)
+      if (ctx !== undefined) {
+        return ctx
+      }
+    }
+    if (objClass.extends === undefined) {
+      break
+    }
+    objClass = hierarchy.getClass(objClass.extends)
+  }
+  return {
+    fullTextSummary: false,
+    forceIndex: false,
+    propagate: [],
+    childProcessingAllowed: true
+  }
+}
+
+/**
+ * @public
+ */
+export function isClassIndexable (hierarchy: Hierarchy, c: Ref<Class<Doc>>): boolean {
+  const indexed = hierarchy.getClassifierProp(c, 'class_indexed')
+  if (indexed !== undefined) {
+    return indexed as boolean
+  }
+  const domain = hierarchy.findDomain(c)
+  if (domain === undefined) {
+    hierarchy.setClassifierProp(c, 'class_indexed', false)
+    return false
+  }
+
+  if (
+    domain === DOMAIN_DOC_INDEX_STATE ||
+    domain === DOMAIN_TX ||
+    domain === DOMAIN_MODEL ||
+    domain === DOMAIN_BLOB ||
+    domain === DOMAIN_FULLTEXT_BLOB ||
+    domain === DOMAIN_TRANSIENT
+  ) {
+    hierarchy.setClassifierProp(c, 'class_indexed', false)
+    return false
+  }
+
+  const indexMixin = hierarchy.classHierarchyMixin(c, core.mixin.IndexConfiguration)
+  if (indexMixin?.searchDisabled !== undefined && indexMixin?.searchDisabled) {
+    hierarchy.setClassifierProp(c, 'class_indexed', false)
+    return false
+  }
+
+  const attrs = getFullTextIndexableAttributes(hierarchy, c, true)
+  for (const d of hierarchy.getDescendants(c)) {
+    if (hierarchy.isMixin(d)) {
+      attrs.push(...getFullTextIndexableAttributes(hierarchy, d, true))
+    }
+  }
+
+  let result = true
+
+  if (attrs.length === 0 && !(getFullTextContext(hierarchy, c)?.forceIndex ?? false)) {
+    result = false
+    // We need check if document has collections with indexable fields.
+    const attrs = hierarchy.getAllAttributes(c).values()
+    for (const attr of attrs) {
+      if (attr.type._class === core.class.Collection) {
+        if (isClassIndexable(hierarchy, (attr.type as Collection<AttachedDoc>).of)) {
+          result = true
+          break
+        }
+      }
+    }
+  }
+  hierarchy.setClassifierProp(c, 'class_indexed', result)
+  return result
 }

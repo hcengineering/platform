@@ -51,6 +51,7 @@ import { onDestroy } from 'svelte'
 import { type KeyedAttribute } from '..'
 import { OptimizeQueryMiddleware, PresentationPipelineImpl, type PresentationPipeline } from './pipeline'
 import plugin from './plugin'
+import { Analytics } from '@hcengineering/analytics'
 
 let liveQuery: LQ
 let client: TxOperations & MeasureClient
@@ -99,6 +100,7 @@ class UIClient extends TxOperations implements Client, MeasureClient {
           it(...tx)
         })
       } catch (err: any) {
+        Analytics.handleError(err)
         console.log(err)
       }
     }

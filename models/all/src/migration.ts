@@ -41,6 +41,7 @@ import { timeOperation } from '@hcengineering/model-time'
 import { activityOperation } from '@hcengineering/model-activity'
 import { activityServerOperation } from '@hcengineering/model-server-activity'
 import { documentOperation } from '@hcengineering/model-document'
+import { textEditorOperation } from '@hcengineering/model-text-editor'
 
 export const migrateOperations: [string, MigrateOperation][] = [
   ['core', coreOperation],
@@ -68,6 +69,7 @@ export const migrateOperations: [string, MigrateOperation][] = [
   ['time', timeOperation],
   ['activityServer', activityServerOperation],
   ['document', documentOperation],
+  ['textEditor', textEditorOperation],
   // We should call it after activityServer and chunter
   ['notification', notificationOperation]
 ]

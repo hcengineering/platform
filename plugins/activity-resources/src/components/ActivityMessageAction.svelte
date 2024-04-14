@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { type AnySvelteComponent, ButtonIcon } from '@hcengineering/ui'
+  import { type AnySvelteComponent, ButtonIcon, IconSize } from '@hcengineering/ui'
   import { Asset } from '@hcengineering/platform'
   import { ComponentType } from 'svelte'
 
   export let icon: Asset | AnySvelteComponent | ComponentType
   export let iconProps: any | undefined = undefined
-  export let size: 'x-small' | 'small' = 'small'
+  export let size: IconSize = 'small'
   export let action: (ev: MouseEvent) => Promise<void> | void = async () => {}
   export let opened = false
 

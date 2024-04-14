@@ -50,7 +50,8 @@
         "ACCOUNTS_URL": "http://localhost:3000",
         // "SERVER_PROVIDER":"uweb"
         "SERVER_PROVIDER":"ws",
-        "MODEL_VERSION": ""
+        "MODEL_VERSION": "",
+        "ELASTIC_INDEX_NAME": "local_storage_index"
         
         // "RETRANSLATE_URL": "http://127.0.0.1:4500",
         //"RETRANSLATE_URL": "https://208.167.249.201",

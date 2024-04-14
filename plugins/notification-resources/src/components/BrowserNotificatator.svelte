@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,132 +13,61 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { PersonAccount } from '@hcengineering/contact'
-  import { getCurrentAccount, Ref } from '@hcengineering/core'
-  import {
-    NotificationProvider,
-    NotificationSetting,
-    NotificationStatus,
-    Notification as PlatformNotification,
-    BaseNotificationType
-  } from '@hcengineering/notification'
+  import { getCurrentAccount } from '@hcengineering/core'
+  import notification, { BrowserNotification, NotificationStatus } from '@hcengineering/notification'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { getCurrentLocation, showPanel } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
-  import notification from '../plugin'
+  import { getCurrentLocation, navigate } from '@hcengineering/ui'
+  import { askPermission } from '../utils'
+
+  let notifications: BrowserNotification[] = []
 
   const query = createQuery()
-  const settingQuery = createQuery()
-  const providersQuery = createQuery()
-
-  let settingsReceived = false
-  let settings: Map<Ref<BaseNotificationType>, NotificationSetting> = new Map<
-  Ref<BaseNotificationType>,
-  NotificationSetting
-  >()
-  let provider: NotificationProvider | undefined
-
-  $: enabled = 'Notification' in window && Notification?.permission !== 'denied'
-
-  $: enabled &&
-    providersQuery.query(
-      notification.class.NotificationProvider,
-      { _id: notification.providers.BrowserNotification },
-      (res) => {
-        provider = res[0]
-      }
-    )
-
-  $: enabled &&
-    settingQuery.query(notification.class.NotificationSetting, {}, (res) => {
-      settings = new Map(
-        res.map((setting) => {
-          return [setting.type, setting]
-        })
-      )
-      settingsReceived = true
-    })
-
-  const alreadyShown = new Set<Ref<PlatformNotification>>()
-
-  $: enabled &&
-    settingsReceived &&
-    provider !== undefined &&
-    query.query(
-      notification.class.Notification,
-      {
-        attachedTo: (getCurrentAccount() as PersonAccount).person,
-        status: { $nin: [NotificationStatus.Read] }
-      },
-      (res) => {
-        process(res.reverse())
-      },
-      {
-        sort: {
-          modifiedOn: 1
-        }
-      }
-    )
-
-  async function process (notifications: PlatformNotification[]): Promise<void> {
-    for (const notification of notifications) {
-      await tryNotify(notification)
+  query.query(
+    notification.class.BrowserNotification,
+    {
+      user: getCurrentAccount()._id,
+      status: NotificationStatus.New
+    },
+    (res) => {
+      notifications = res
     }
-  }
+  )
 
-  async function tryNotify (notification: PlatformNotification): Promise<void> {
-    const text = notification.text.replace(/<[^>]*>/g, '').trim()
-    if (text === '') return
-    const setting = settings.get(notification.type)
-    const enabled = setting?.enabled
-    if (!enabled) return
-    if ((setting?.modifiedOn ?? notification.modifiedOn) < 0) return
-
-    if (Notification?.permission !== 'granted') {
-      await Notification?.requestPermission()
-    }
-
-    if (Notification?.permission === 'granted') {
-      await notify(text, notification)
-    }
-  }
   const client = getClient()
-  const hierarchy = client.getHierarchy()
 
-  let clearTimer: any | undefined
+  $: process(notifications)
 
-  async function notify (text: string, notifyInstance: PlatformNotification): Promise<void> {
-    if (notifyInstance.status !== NotificationStatus.New) {
-      return
-    }
-    if (alreadyShown.has(notifyInstance._id)) {
-      return
-    }
-    alreadyShown.add(notifyInstance._id)
-
-    client.updateDoc(notifyInstance._class, notifyInstance.space, notifyInstance._id, {
-      status: NotificationStatus.Notified
-    })
-
-    if (clearTimer) {
-      clearTimeout(clearTimer)
-    }
-
-    clearTimer = setTimeout(() => {
-      alreadyShown.clear()
-    }, 5000)
-
-    // eslint-disable-next-line
-    const notification = new Notification(getCurrentLocation().path[1], {
-      tag: notifyInstance._id,
-      icon: '/favicon.png',
-      body: text
-    })
-
-    notification.onclick = () => {
-      const panelComponent = hierarchy.classHierarchyMixin(notifyInstance.attachedToClass, view.mixin.ObjectPanel)
-      const component = panelComponent?.component ?? view.component.EditDoc
-      showPanel(component, notifyInstance.attachedTo, notifyInstance.attachedToClass, 'content')
+  async function process (notifications: BrowserNotification[]): Promise<void> {
+    if (notifications.length === 0) return
+    await askPermission()
+    if ('Notification' in window && Notification?.permission === 'granted') {
+      for (const value of notifications) {
+        const req: NotificationOptions = {
+          body: value.body,
+          tag: value._id,
+          silent: false
+        }
+        const notification = new Notification(value.title, req)
+        if (value.onClickLocation !== undefined) {
+          const loc = getCurrentLocation()
+          loc.path.length = 3
+          loc.path[2] = value.onClickLocation.path[2]
+          if (value.onClickLocation.path[3]) {
+            loc.path[3] = value.onClickLocation.path[3]
+            if (value.onClickLocation.path[4]) {
+              loc.path[4] = value.onClickLocation.path[4]
+            }
+          }
+          loc.query = value.onClickLocation.query
+          loc.fragment = value.onClickLocation.fragment
+          const onClick = () => {
+            navigate(loc)
+            window.parent.parent.focus()
+          }
+          notification.onclick = onClick
+        }
+        await client.update(value, { status: NotificationStatus.Notified })
+      }
     }
   }
 </script>

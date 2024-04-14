@@ -38,7 +38,12 @@
     <CircleButton size="x-large" on:click={buttonClick} {icon} />
   </div>
   <div class="w-full ml-4">
-    <Progress bind:value={time} max={Number.isFinite(duration) ? duration : 100} editable />
+    <Progress
+      value={time}
+      max={Number.isFinite(duration) ? duration : 100}
+      editable
+      on:change={(e) => (time = e.detail)}
+    />
   </div>
 </div>
 <audio bind:duration bind:currentTime={time} bind:paused>
