@@ -98,7 +98,7 @@
 <Card
   label={board.string.CreateCard}
   okAction={createCard}
-  canSave={title.length > 0}
+  canSave={title.trim().length > 0}
   on:close={() => {
     dispatch('close')
   }}

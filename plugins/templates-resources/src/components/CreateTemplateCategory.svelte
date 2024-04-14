@@ -46,7 +46,7 @@
 <SpaceCreateCard
   label={templates.string.CreateTemplateCategory}
   okAction={create}
-  canSave={name.length > 0}
+  canSave={name.trim().length > 0}
   on:close={() => {
     dispatch('close')
   }}

@@ -100,7 +100,7 @@
   label={tags.string.EditTag}
   labelProps={{ word: keyTitle }}
   okAction={updateElement}
-  canSave={value.title.length > 0}
+  canSave={value.title.trim().length > 0}
   on:close={() => {
     dispatch('close')
   }}
