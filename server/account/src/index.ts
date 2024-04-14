@@ -241,13 +241,15 @@ function toAccountInfo (account: Account): AccountInfo {
 async function getAccountInfo (ctx: MeasureContext, db: Db, email: string, password: string): Promise<AccountInfo> {
   const account = await getAccount(db, email)
   if (account === null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
+    await ctx.error('account not found', { email })
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.InvalidCredentials, { account: email }))
   }
   if (account.hash === null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.InvalidPassword, { account: email }))
+    await ctx.error('account not found', { email })
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.InvalidCredentials, { account: email }))
   }
   if (!verifyPassword(password, Buffer.from(account.hash.buffer), Buffer.from(account.salt.buffer))) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.InvalidPassword, { account: email }))
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.InvalidCredentials, { account: email }))
   }
   return toAccountInfo(account)
 }

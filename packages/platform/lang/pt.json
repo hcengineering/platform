@@ -10,6 +10,7 @@
     "UnknownMethod": "Método desconhecido: {method}",
     "InternalServerError": "Erro interno do servidor",
     "MaintenanceWarning": "Manutenção programada dentro de {time, plural, =1 {menos de um minuto} other {# minutos}}",
+    "InvalidCredentials":"Credenciais inválidas",
     "AccountNotFound": "Conta não encontrada",
     "AccountNotConfirmed": "Conta não confirmada",
     "WorkspaceNotFound": "Espaço de trabalho não encontrado",
