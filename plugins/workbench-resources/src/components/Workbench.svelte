@@ -116,7 +116,7 @@
   let popupInstance: Popup
 
   let visibleNav: boolean = getMetadata(workbench.metadata.NavigationExpandedDefault) ?? true
-  async function toggleNav (): Promise<void> {
+  async function toggleNav(): Promise<void> {
     visibleNav = !visibleNav
     closeTooltip()
     if (currentApplication && navigatorModel && navigator) {
@@ -200,7 +200,7 @@
 
   let windowWorkspaceName = ''
 
-  async function updateWindowTitle (loc: Location): Promise<void> {
+  async function updateWindowTitle(loc: Location): Promise<void> {
     let ws = loc.path[1]
     const wsName = $workspacesStore.find((it) => it.workspace === ws)
     if (wsName !== undefined) {
@@ -217,7 +217,7 @@
     void broadcastEvent(workbench.event.NotifyTitle, document.title)
   }
 
-  async function getWindowTitle (loc: Location): Promise<string | undefined> {
+  async function getWindowTitle(loc: Location): Promise<string | undefined> {
     if (loc.fragment == null) return
     const hierarchy = client.getHierarchy()
     const [, _id, _class] = decodeURIComponent(loc.fragment).split('|')
@@ -234,7 +234,7 @@
     }
   }
 
-  async function resolveShortLink (loc: Location): Promise<ResolvedLocation | undefined> {
+  async function resolveShortLink(loc: Location): Promise<ResolvedLocation | undefined> {
     let locationResolver = currentApplication?.locationResolver
     if (loc.path[2] !== undefined && loc.path[2].trim().length > 0) {
       const app = apps.find((p) => p.alias === loc.path[2])
@@ -248,7 +248,7 @@
     }
   }
 
-  function mergeLoc (loc: Location, resolved: ResolvedLocation): Location {
+  function mergeLoc(loc: Location, resolved: ResolvedLocation): Location {
     const resolvedApp = resolved.loc.path[2]
     const resolvedSpace = resolved.loc.path[3]
     const resolvedSpecial = resolved.loc.path[4]
@@ -294,7 +294,7 @@
     return loc
   }
 
-  async function syncLoc (loc: Location, iteration: number): Promise<void> {
+  async function syncLoc(loc: Location, iteration: number): Promise<void> {
     const originalLoc = JSON.stringify(loc)
 
     if (loc.path.length > 3 && getSpecialComponent(loc.path[3]) === undefined) {
@@ -420,7 +420,7 @@
     }
   }
 
-  async function setOpenPanelFocus (fragment: string): Promise<void> {
+  async function setOpenPanelFocus(fragment: string): Promise<void> {
     const props = decodeURIComponent(fragment).split('|')
 
     if (props.length >= 3) {
@@ -446,7 +446,7 @@
     }
   }
 
-  function clear (level: number): void {
+  function clear(level: number): void {
     switch (level) {
       case 1:
         currentAppAlias = undefined
@@ -469,7 +469,7 @@
     }
   }
 
-  function closeAside (): void {
+  function closeAside(): void {
     const loc = getLocation()
     loc.path.length = 4
     asideId = undefined
@@ -477,7 +477,7 @@
     navigate(loc)
   }
 
-  async function updateSpace (spaceId?: Ref<Space>): Promise<void> {
+  async function updateSpace(spaceId?: Ref<Space>): Promise<void> {
     if (spaceId === currentSpace) return
     clear(2)
     if (spaceId === undefined) return
@@ -491,7 +491,7 @@
     createItemLabel = currentView?.createItemLabel
   }
 
-  function setSpaceSpecial (spaceSpecial: string | undefined): void {
+  function setSpaceSpecial(spaceSpecial: string | undefined): void {
     if (currentSpecial !== undefined && spaceSpecial === currentSpecial) return
     if (asideId !== undefined && spaceSpecial === asideId) return
     clear(3)
@@ -504,7 +504,7 @@
     }
   }
 
-  function getSpecialComponent (id: string): SpecialNavModel | undefined {
+  function getSpecialComponent(id: string): SpecialNavModel | undefined {
     const sp = navigatorModel?.specials?.find((x) => x.id === id)
     if (sp !== undefined) {
       return sp
@@ -554,13 +554,13 @@
     subscribeMobile(setTheme)
   })
 
-  async function checkIsHeaderHidden (currentApplication: Application | undefined) {
+  async function checkIsHeaderHidden(currentApplication: Application | undefined) {
     return (
       currentApplication?.checkIsHeaderHidden && (await (await getResource(currentApplication.checkIsHeaderHidden))())
     )
   }
 
-  async function checkIsHeaderDisabled (currentApplication: Application | undefined) {
+  async function checkIsHeaderDisabled(currentApplication: Application | undefined) {
     return (
       currentApplication?.checkIsHeaderDisabled &&
       (await (
@@ -569,7 +569,7 @@
     )
   }
 
-  function checkInbox (popups: CompAndProps[]) {
+  function checkInbox(popups: CompAndProps[]) {
     if (inboxPopup !== undefined) {
       const exists = popups.find((p) => p.id === inboxPopup?.id)
       if (!exists) {
@@ -579,7 +579,7 @@
   }
 
   let supportStatus: SupportStatus | undefined = undefined
-  function handleSupportStatusChanged (status: SupportStatus) {
+  function handleSupportStatusChanged(status: SupportStatus) {
     supportStatus = status
   }
 
@@ -596,7 +596,7 @@
   })
 
   let supportWidgetLoading = false
-  async function handleToggleSupportWidget (): Promise<void> {
+  async function handleToggleSupportWidget(): Promise<void> {
     const timer = setTimeout(() => {
       supportWidgetLoading = true
     }, 100)
@@ -618,6 +618,35 @@
   let modern: boolean
   $: modern = currentApplication?.modern ?? false
   $: elementPanel = modern ? $deviceInfo.replacedPanel ?? contentPanel : contentPanel
+
+  let visibleNavbar = false
+  let parmanentNavbar = false
+
+  function handleTopButtonAction() {
+    console.log('Top button clicked', parmanentNavbar)
+    console.log('down button clicked', visibleNavbar)
+    visibleNavbar = !visibleNavbar
+    parmanentNavbar = !parmanentNavbar
+  }
+
+  function handleMouseMove(e: any) {
+    if (e.clientX < 15) {
+      visibleNavbar = false
+    } else if (e.clientX > 200) {
+      visibleNavbar = true
+    }
+  }
+
+  $: {
+    if (parmanentNavbar && visibleNavbar) {
+      console.log('called')
+      window.addEventListener('mousemove', handleMouseMove)
+
+      onDestroy(() => {
+        window.removeEventListener('mousemove', handleMouseMove)
+      })
+    } else visibleNavbar = false
+  }
 </script>
 
 {#if employee && !employee.active && !isAdminUser()}
@@ -660,7 +689,13 @@
     class:modern-app={modern}
     style:flex-direction={appsDirection === 'horizontal' ? 'column-reverse' : 'row'}
   >
-    <div class="antiPanel-application {appsDirection}" class:lastDivider={!visibleNav}>
+    <div class="antiPanel-application {appsDirection} {visibleNavbar ? 'open' : ''}">
+      <button on:click={handleTopButtonAction}>
+        <div class="slider-container {parmanentNavbar ? 'active' : ''}">
+          <span class={`slider-button ${parmanentNavbar ? 'active' : ''}`}></span>
+        </div>
+      </button>
+
       <div
         class="hamburger-container clear-mins"
         class:portrait={appsDirection === 'horizontal'}
@@ -668,6 +703,7 @@
       >
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->
+
         <div
           class="logo-container clear-mins"
           class:mini={appsMini}
@@ -900,9 +936,19 @@
       .antiPanel-application {
         border-radius: var(--medium-BorderRadius) 0 0 var(--medium-BorderRadius);
         border-right: none;
+        transition: width 0.1s ease, min-width 0.1s ease;
       }
+     
     }
   }
+  .antiPanel-application.open {
+        min-width: 0px ; 
+        width: 0px ;
+        border-radius: var(--medium-BorderRadius) 0 0 var(--medium-BorderRadius);
+        border-right: none;
+        overflow: hidden;
+        transition: width 0.1s ease, min-width 0.1s ease, border-radius 0.1s ease;
+      }
 
   .hamburger-container {
     display: flex;
@@ -1028,5 +1074,34 @@
         border-left: 2px solid var(--primary-bg-color);
       }
     }
+  }
+
+  .slider-container {
+    display: flex;
+    width: 40px;
+    height: 20px;
+    background-color: #718096;
+    margin-top: 10px;
+    border-radius: 9999px;
+    transition: all 0.5s;
+    cursor: pointer;
+    align-items: center;
+  }
+
+  .slider-container.active {
+    background-color: #48bb78;
+  }
+
+  .slider-button {
+    height: 20px;
+    width: 20px;
+    background-color: white;
+    border-radius: 9999px;
+    transition: all 0.5s;
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2);
+  }
+
+  .slider-button.active {
+    margin-left: 20px;
   }
 </style>
