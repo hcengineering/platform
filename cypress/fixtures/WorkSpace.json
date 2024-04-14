@@ -1,0 +1,11 @@
+{
+    "email": "user1",
+    "password": "1234",
+    "verifylogin": "Homepage",
+    "errorbox":"Invalid Username or password.",
+    "errortext":"RequiredRequired",
+    "ivpassword": "test",
+    "ivusername": "automation",
+    "invaliduser": "de4",
+    "invalidpassword": "43f"
+  }
