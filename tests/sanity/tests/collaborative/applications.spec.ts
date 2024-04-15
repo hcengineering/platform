@@ -1,14 +1,10 @@
 import { test } from '@playwright/test'
-import { getSecondPage, PlatformSetting, PlatformURI } from '../utils'
+import { getSecondPage, PlatformURI } from '../utils'
 import { NavigationMenuPage } from '../model/recruiting/navigation-menu-page'
 import { ApplicationsPage } from '../model/recruiting/applications-page'
 import { ApplicationsDetailsPage } from '../model/recruiting/applications-details-page'
 import { TalentName } from '../model/recruiting/types'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
-
-test.use({
-  storageState: PlatformSetting
-})
 
 test.describe('Collaborative tests for Application', () => {
   test.beforeEach(async ({ page }) => {

@@ -1,12 +1,8 @@
 import { test } from '@playwright/test'
-import { generateId, PlatformSetting, PlatformURI } from '../utils'
+import { generateId, PlatformURI } from '../utils'
 import { NewTeamspace } from '../model/documents/types'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { DocumentsPage } from '../model/documents/documents-page'
-
-test.use({
-  storageState: PlatformSetting
-})
 
 test.describe('Teamspace tests', () => {
   test.beforeEach(async ({ page }) => {

@@ -1,9 +1,6 @@
 import { expect, test } from '@playwright/test'
-import { fillSearch, generateId, PlatformSetting, PlatformURI } from './utils'
+import { fillSearch, generateId, PlatformURI } from './utils'
 
-test.use({
-  storageState: PlatformSetting
-})
 
 test.describe('contact tests', () => {
   test.beforeEach(async ({ page }) => {
@@ -31,6 +28,7 @@ test.describe('contact tests', () => {
     await page.locator('.antiCard').locator('button:has-text("Create")').click()
     await page.waitForSelector('form.antiCard', { state: 'detached' })
   })
+
   test('create-company', async ({ page }) => {
     await page.locator('[id="app-contact\\:string\\:Contacts"]').click()
 
@@ -47,6 +45,7 @@ test.describe('contact tests', () => {
     await page.waitForSelector('form.antiCard', { state: 'detached' })
     await expect(page.locator(`text=${orgName}`)).toBeVisible()
   })
+  
   test('contact-search', async ({ page }) => {
     await page.locator('[id="app-contact\\:string\\:Contacts"]').click()
 

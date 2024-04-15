@@ -1,14 +1,10 @@
 import { expect, test } from '@playwright/test'
-import { generateId, PlatformSetting, PlatformURI } from '../utils'
+import { generateId, PlatformURI } from '../utils'
 import { NavigationMenuPage } from '../model/recruiting/navigation-menu-page'
 import { ApplicationsPage } from '../model/recruiting/applications-page'
 import { ApplicationsDetailsPage } from '../model/recruiting/applications-details-page'
 import { VacancyDetailsPage } from '../model/recruiting/vacancy-details-page'
 import { VacanciesPage } from '../model/recruiting/vacancies-page'
-
-test.use({
-  storageState: PlatformSetting
-})
 
 test.describe('Application tests', () => {
   test.beforeEach(async ({ page }) => {

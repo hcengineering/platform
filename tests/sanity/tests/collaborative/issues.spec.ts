@@ -1,13 +1,9 @@
 import { test } from '@playwright/test'
-import { generateId, getSecondPage, PlatformSetting, PlatformURI } from '../utils'
+import { generateId, getSecondPage, PlatformURI } from '../utils'
 import { NewIssue } from '../model/tracker/types'
 import { IssuesPage } from '../model/tracker/issues-page'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
-
-test.use({
-  storageState: PlatformSetting
-})
 
 test.describe('Collaborative test for issue', () => {
   test.beforeEach(async ({ page }) => {

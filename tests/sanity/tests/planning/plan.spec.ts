@@ -1,12 +1,8 @@
 import { test } from '@playwright/test'
-import { PlatformSetting, PlatformURI } from '../utils'
+import { PlatformURI } from '../utils'
 import { PlanningPage } from '../model/planning/planning-page'
 import { NewToDo } from '../model/planning/types'
 import { PlanningNavigationMenuPage } from '../model/planning/planning-navigation-menu-page'
-
-test.use({
-  storageState: PlatformSetting
-})
 
 test.describe('Planning ToDo tests', () => {
   test.beforeEach(async ({ page }) => {

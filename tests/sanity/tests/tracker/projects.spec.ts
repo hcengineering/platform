@@ -1,13 +1,9 @@
 import { test } from '@playwright/test'
-import { PlatformSetting, PlatformURI } from '../utils'
+import { PlatformURI } from '../utils'
 import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
 import { NewProjectPage } from '../model/tracker/new-project-page'
 import { NewProject } from '../model/tracker/types'
 import { EditProjectPage } from '../model/tracker/edit-project-page'
-
-test.use({
-  storageState: PlatformSetting
-})
 
 test.describe('Tracker Projects tests', () => {
   test.beforeEach(async ({ page }) => {

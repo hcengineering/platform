@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { generateId, PlatformSetting, PlatformURI } from '../utils'
+import { generateId, PlatformURI } from '../utils'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { IssuesPage } from '../model/tracker/issues-page'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
@@ -7,10 +7,6 @@ import { Issue, NewIssue } from '../model/tracker/types'
 import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
 import { prepareNewIssueWithOpenStep } from './common-steps'
 import { IssueCommentPopup } from '../model/tracker/issue-comment-popup'
-
-test.use({
-  storageState: PlatformSetting
-})
 
 test.describe('Tracker issue tests', () => {
   test.beforeEach(async ({ page }) => {

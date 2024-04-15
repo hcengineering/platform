@@ -1,14 +1,10 @@
 import { test } from '@playwright/test'
 import { IssuesPage } from '../model/tracker/issues-page'
-import { generateId, PlatformSetting, PlatformURI } from '../utils'
+import { generateId, PlatformURI } from '../utils'
 import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
 import { NewIssue } from '../model/tracker/types'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
-
-test.use({
-  storageState: PlatformSetting
-})
 
 test.describe('Attachments tests', () => {
   test.beforeEach(async ({ page }) => {

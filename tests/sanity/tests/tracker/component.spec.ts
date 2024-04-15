@@ -1,15 +1,11 @@
 import { expect, test } from '@playwright/test'
 import { navigate } from './tracker.utils'
-import { generateId, PlatformSetting, PlatformURI, fillSearch } from '../utils'
+import { generateId, PlatformURI, fillSearch } from '../utils'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
 import { ComponentsPage } from '../model/tracker/components-page'
 import { NewComponent } from '../model/tracker/types'
 import { ComponentsDetailsPage } from '../model/tracker/component-details-page'
-
-test.use({
-  storageState: PlatformSetting
-})
 
 test.describe('Tracker component tests', () => {
   test.beforeEach(async ({ page }) => {

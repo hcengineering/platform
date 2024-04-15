@@ -1,16 +1,12 @@
 import { test } from '@playwright/test'
-import { generateId, PlatformSetting, PlatformURI } from '../utils'
-
-test.use({
-  storageState: PlatformSetting
-})
+import { generateId, PlatformURI } from '../utils'
 
 test.describe('review tests', () => {
   test.beforeEach(async ({ page }) => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/recruit`))?.finished()
   })
 
-  test('create-review', async ({ page, context }) => {
+  test('create-review', async ({ page }) => {
     await page.click('[id="app-recruit\\:string\\:RecruitApplication"]')
     await page.click('text=Reviews')
     await page.click('button:has-text("Review")')

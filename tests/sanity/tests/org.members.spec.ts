@@ -1,10 +1,6 @@
 import { test } from '@playwright/test'
 import { generateId, PlatformSetting, PlatformURI } from './utils'
 
-test.use({
-  storageState: PlatformSetting
-})
-
 test.describe('recruit tests', () => {
   test.beforeEach(async ({ page }) => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()

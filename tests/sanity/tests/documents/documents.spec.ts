@@ -1,13 +1,9 @@
 import { test } from '@playwright/test'
-import { generateId, getSecondPage, PlatformSetting, PlatformURI } from '../utils'
+import { generateId, getSecondPage, PlatformURI } from '../utils'
 import { NewDocument, NewTeamspace } from '../model/documents/types'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { DocumentsPage } from '../model/documents/documents-page'
 import { DocumentContentPage } from '../model/documents/document-content-page'
-
-test.use({
-  storageState: PlatformSetting
-})
 
 test.describe('Documents tests', () => {
   test.beforeEach(async ({ page }) => {

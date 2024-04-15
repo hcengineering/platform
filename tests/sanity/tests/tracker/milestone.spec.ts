@@ -1,14 +1,10 @@
 import { test } from '@playwright/test'
-import { generateId, PlatformSetting, PlatformURI } from '../utils'
+import { generateId, PlatformURI } from '../utils'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
 import { MilestonesPage } from '../model/tracker/milestones-page'
 import { NewMilestone } from '../model/tracker/types'
 import { MilestonesDetailsPage } from '../model/tracker/milestones-details-page'
-
-test.use({
-  storageState: PlatformSetting
-})
 
 test.describe('Tracker milestone tests', () => {
   test.beforeEach(async ({ page }) => {

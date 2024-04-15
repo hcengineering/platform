@@ -1,9 +1,6 @@
 import { expect, test } from '@playwright/test'
-import { PlatformSetting, PlatformURI } from './utils'
+import { PlatformURI } from './utils'
 
-test.use({
-  storageState: PlatformSetting
-})
 test.describe('workbench tests', () => {
   test.beforeEach(async ({ page }) => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()

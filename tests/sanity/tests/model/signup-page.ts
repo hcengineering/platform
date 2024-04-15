@@ -12,7 +12,7 @@ export class SignUpPage extends CommonPage {
   readonly buttonSignUp: Locator
   readonly buttonJoin: Locator
 
-  constructor (page: Page) {
+  constructor(page: Page) {
     super()
     this.page = page
     this.inputFirstName = page.locator('input[name="given-name"]')
@@ -24,20 +24,16 @@ export class SignUpPage extends CommonPage {
     this.buttonJoin = page.locator('button', { hasText: 'Join' })
   }
 
-  async signUp (data: SignUpData, mode: 'join' | 'signup' = 'signup'): Promise<void> {
-    await this.inputFirstName.fill(data.firstName)
-    await this.inputLastName.fill(data.lastName)
-    await this.inputEmail.fill(data.email)
-    await this.inputNewPassword.fill(data.password)
-    await this.inputRepeatPassword.fill(data.password)
-    switch (mode) {
-      case 'join':
-        expect(await this.buttonJoin.isEnabled()).toBe(true)
-        await this.buttonJoin.click()
-        break
-      case 'signup':
-        expect(await this.buttonSignUp.isEnabled()).toBe(true)
-        await this.buttonSignUp.click()
-    }
+  async signUp(data: SignUpData, mode: 'join' | 'signup' = 'signup'): Promise<void> {
+    const { firstName, lastName, email, password } = data
+
+    await this.inputFirstName.fill(firstName)
+    await this.inputLastName.fill(lastName)
+    await this.inputEmail.fill(email)
+    await this.inputNewPassword.fill(password)
+    await this.inputRepeatPassword.fill(password)
+    const button = mode === 'join' ? this.buttonJoin : this.buttonSignUp
+    expect(await button.isEnabled()).toBe(true)
+    await button.click()
   }
 }

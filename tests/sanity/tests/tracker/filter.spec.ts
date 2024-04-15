@@ -1,14 +1,10 @@
 import { expect, test } from '@playwright/test'
-import { generateId, iterateLocator, PlatformSetting, PlatformURI } from '../utils'
+import { generateId, iterateLocator, PlatformURI } from '../utils'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { IssuesPage } from '../model/tracker/issues-page'
 import { DateDivided, NewIssue } from '../model/tracker/types'
 import { DEFAULT_STATUSES, DEFAULT_STATUSES_ID, PRIORITIES } from './tracker.utils'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
-
-test.use({
-  storageState: PlatformSetting
-})
 
 test.describe('Tracker filters tests', () => {
   test.beforeEach(async ({ page }) => {

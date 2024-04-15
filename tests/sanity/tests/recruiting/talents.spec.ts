@@ -1,13 +1,9 @@
 import { expect, test } from '@playwright/test'
-import { generateId, PlatformSetting, PlatformURI } from '../utils'
+import { generateId, PlatformURI } from '../utils'
 import { NavigationMenuPage } from '../model/recruiting/navigation-menu-page'
 import { TalentsPage } from '../model/recruiting/talents-page'
 import { TalentDetailsPage } from '../model/recruiting/talent-details-page'
 import { TalentName } from '../model/recruiting/types'
-
-test.use({
-  storageState: PlatformSetting
-})
 
 test.describe('candidate/talents tests', () => {
   test.beforeEach(async ({ page }) => {

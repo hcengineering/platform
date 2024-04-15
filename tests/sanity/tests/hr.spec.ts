@@ -1,9 +1,6 @@
 import { Page, test } from '@playwright/test'
-import { PlatformSetting, PlatformURI } from './utils'
+import { PlatformURI } from './utils'
 
-test.use({
-  storageState: PlatformSetting
-})
 
 export async function createDepartment (page: Page, departmentName: string): Promise<void> {
   await page.click('button:has-text("Department")')

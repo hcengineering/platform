@@ -1,9 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { IssuesPage } from '../model/tracker/issues-page'
-import { PlatformSetting, PlatformURI } from '../utils'
-test.use({
-  storageState: PlatformSetting
-})
+import { PlatformURI } from '../utils'
 
 test('check-status-loading', async ({ page }) => {
   await (

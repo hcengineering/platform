@@ -1,9 +1,5 @@
 import { test } from '@playwright/test'
-import { generateId, PlatformSetting, PlatformURI } from './utils'
-
-test.use({
-  storageState: PlatformSetting
-})
+import { generateId, PlatformURI } from './utils'
 
 test.describe('duplicate-org-test', () => {
   test.beforeEach(async ({ page }) => {

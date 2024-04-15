@@ -1,13 +1,22 @@
 import { devices, PlaywrightTestConfig } from '@playwright/test'
 import { config as dotenvConfig } from 'dotenv'
+
 dotenvConfig()
 
 const config: PlaywrightTestConfig = {
   projects: [
     {
+      name: 'setupAuth',
+      use: {
+        ...devices['Desktop Chrome']
+      },
+      testMatch: ['login.spec.ts']
+    },
+    {
       name: 'Platform',
       use: {
         ...devices['Desktop Chrome'],
+        storageState: '.auth.json',
         screenshot: 'only-on-failure',
         viewport: {
           width: 1440,
@@ -19,7 +28,8 @@ const config: PlaywrightTestConfig = {
           screenshots: true,
           sources: true
         }
-      }
+      },
+      dependencies: ['setupAuth']
     }
   ],
   retries: 1,
@@ -40,4 +50,5 @@ const config: PlaywrightTestConfig = {
     ]
   ]
 }
+
 export default config

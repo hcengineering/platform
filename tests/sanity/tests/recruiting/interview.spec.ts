@@ -1,9 +1,5 @@
 import { test } from '@playwright/test'
-import { PlatformSetting, PlatformURI } from '../utils'
-
-test.use({
-  storageState: PlatformSetting
-})
+import { PlatformURI } from '../utils'
 
 test.describe('interview tests', () => {
   test.beforeEach(async ({ page }) => {

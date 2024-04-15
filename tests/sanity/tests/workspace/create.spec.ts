@@ -22,7 +22,7 @@ test.describe('Workspace tests', () => {
     const newWorkspaceName = `New Workspace Name - ${generateId(2)}`
 
     const loginPage = new LoginPage(page)
-    await loginPage.goto()
+    await loginPage.visitLoginRoute()
     await loginPage.linkSignUp.click()
 
     const signUpPage = new SignUpPage(page)
@@ -59,7 +59,7 @@ test.describe('Workspace tests', () => {
     const newWorkspaceName = `New Issue Name - ${generateId(2)}`
 
     const loginPage = new LoginPage(page)
-    await loginPage.goto()
+    await loginPage.visitLoginRoute()
     await loginPage.linkSignUp.click()
 
     const signUpPage = new SignUpPage(page)
@@ -98,7 +98,7 @@ test.describe('Workspace tests', () => {
     const newWorkspaceName = `New Workspace Name - ${generateId(2)}`
 
     const loginPage = new LoginPage(page)
-    await loginPage.goto()
+    await loginPage.visitLoginRoute()
     await loginPage.linkSignUp.click()
 
     const signUpPage = new SignUpPage(page)
@@ -131,7 +131,7 @@ test.describe('Workspace tests', () => {
     const newWorkspaceName = `Some HULY #@$ WS - ${generateId(12)}`
 
     const loginPage = new LoginPage(page)
-    await loginPage.goto()
+    await loginPage.visitLoginRoute()
     await loginPage.linkSignUp.click()
 
     const signUpPage = new SignUpPage(page)
@@ -180,7 +180,7 @@ test.describe('Workspace tests', () => {
     const newWorkspaceName = `Some HULY #@$ WS - ${generateId(12)}`
 
     const loginPage = new LoginPage(page)
-    await loginPage.goto()
+    await loginPage.visitLoginRoute()
     await loginPage.linkSignUp.click()
 
     const signUpPage = new SignUpPage(page)

@@ -13,9 +13,9 @@ import { LoginPage } from './model/login-page'
 import { SignUpPage } from './model/signup-page'
 import { SelectWorkspacePage } from './model/select-workspace-page'
 
-test.use({
-  storageState: PlatformSetting
-})
+// test.use({
+//   storageState: PlatformSetting
+// })
 
 const retryOptions = { intervals: [1000, 1500, 2500], timeout: 60000 }
 
@@ -410,7 +410,7 @@ test.describe('Fulltext index', () => {
         }
         const newWorkspaceName = `New Workspace Name - ${generateId(2)}`
 
-        await loginPage.goto()
+        await loginPage.visitLoginRoute()
         await loginPage.linkSignUp.click()
         await signUpPage.signUp(newUser)
 

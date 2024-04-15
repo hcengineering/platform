@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { IssuesPage } from '../model/tracker/issues-page'
-import { PlatformSetting, fillSearch, generateId } from '../utils'
+import { fillSearch, generateId } from '../utils'
 import {
   DEFAULT_STATUSES,
   ViewletSelectors,
@@ -12,10 +12,6 @@ import {
 } from './tracker.utils'
 import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
-
-test.use({
-  storageState: PlatformSetting
-})
 
 const getIssueName = (postfix: string = generateId()): string => `issue-${postfix}`
 
@@ -37,7 +33,7 @@ test.describe('Tracker tests', () => {
       await performPanelTest(statuses, pPage[0], pPage[1])
     }
 
-    async function performPanelTest (statuses: string[], panel: string, mode: string): Promise<void> {
+    async function performPanelTest(statuses: string[], panel: string, mode: string): Promise<void> {
       const excluded = DEFAULT_STATUSES.filter((status) => !statuses.includes(status))
       await new TrackerNavigationMenuPage(page).openIssuesForProject('Default')
       await page.locator(`.ac-header .overflow-label:has-text("${mode}")`).click()
