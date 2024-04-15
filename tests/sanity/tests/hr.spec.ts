@@ -1,7 +1,6 @@
 import { Page, test } from '@playwright/test'
 import { PlatformURI } from './utils'
 
-
 export async function createDepartment (page: Page, departmentName: string): Promise<void> {
   await page.click('button:has-text("Department")')
   const departmentNameField = page.locator('[placeholder="Department"]')

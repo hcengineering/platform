@@ -12,7 +12,7 @@ export class SignUpPage extends CommonPage {
   readonly buttonSignUp: Locator
   readonly buttonJoin: Locator
 
-  constructor(page: Page) {
+  constructor (page: Page) {
     super()
     this.page = page
     this.inputFirstName = page.locator('input[name="given-name"]')
@@ -24,7 +24,7 @@ export class SignUpPage extends CommonPage {
     this.buttonJoin = page.locator('button', { hasText: 'Join' })
   }
 
-  async signUp(data: SignUpData, mode: 'join' | 'signup' = 'signup'): Promise<void> {
+  async signUp (data: SignUpData, mode: 'join' | 'signup' = 'signup'): Promise<void> {
     const { firstName, lastName, email, password } = data
 
     await this.inputFirstName.fill(firstName)

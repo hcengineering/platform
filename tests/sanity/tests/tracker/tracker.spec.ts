@@ -33,7 +33,7 @@ test.describe('Tracker tests', () => {
       await performPanelTest(statuses, pPage[0], pPage[1])
     }
 
-    async function performPanelTest(statuses: string[], panel: string, mode: string): Promise<void> {
+    async function performPanelTest (statuses: string[], panel: string, mode: string): Promise<void> {
       const excluded = DEFAULT_STATUSES.filter((status) => !statuses.includes(status))
       await new TrackerNavigationMenuPage(page).openIssuesForProject('Default')
       await page.locator(`.ac-header .overflow-label:has-text("${mode}")`).click()

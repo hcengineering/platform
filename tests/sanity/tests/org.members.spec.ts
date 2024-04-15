@@ -1,5 +1,5 @@
 import { test } from '@playwright/test'
-import { generateId, PlatformSetting, PlatformURI } from './utils'
+import { generateId, PlatformURI } from './utils'
 
 test.describe('recruit tests', () => {
   test.beforeEach(async ({ page }) => {

@@ -18,7 +18,7 @@ import {
 
 const getIssueName = (postfix: string = generateId(5)): string => `issue-${postfix}`
 
-async function createIssues(
+async function createIssues (
   prefix: string,
   page: Page,
   components?: string[],
@@ -47,7 +47,7 @@ async function createIssues(
   return issuesProps
 }
 
-async function createComponents(page: Page): Promise<string[]> {
+async function createComponents (page: Page): Promise<string[]> {
   const components = []
 
   for (let index = 0; index < 5; index++) {
@@ -60,7 +60,7 @@ async function createComponents(page: Page): Promise<string[]> {
   return components
 }
 
-async function createMilestones(page: Page): Promise<string[]> {
+async function createMilestones (page: Page): Promise<string[]> {
   const milestones = []
 
   for (let index = 0; index < 5; index++) {
@@ -73,7 +73,7 @@ async function createMilestones(page: Page): Promise<string[]> {
   return milestones
 }
 
-async function initIssues(prefix: string, page: Page): Promise<IssueProps[]> {
+async function initIssues (prefix: string, page: Page): Promise<IssueProps[]> {
   const components = await createComponents(page)
   const milestones = await createMilestones(page)
   const issuesProps = await createIssues(prefix, page, components, milestones)

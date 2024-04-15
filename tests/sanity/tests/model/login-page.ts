@@ -10,7 +10,7 @@ export class LoginPage {
   readonly buttonLogin: Locator
   readonly linkSignUp: Locator
 
-  constructor(page: Page) {
+  constructor (page: Page) {
     this.page = page
     this.inputEmail = page.locator('input[name=email]')
     this.inputPassword = page.locator('input[name=current-password]')
@@ -18,11 +18,11 @@ export class LoginPage {
     this.linkSignUp = page.getByRole('link', { name: 'Sign Up' })
   }
 
-  async visitLoginRoute(): Promise<void> {
+  async visitLoginRoute (): Promise<void> {
     await (await this.page.goto(`${PlatformURI}${LoginPage.loginRoute}`))?.finished()
   }
 
-  async login(email: string, password: string, path?: string): Promise<void> {
+  async login (email: string, password: string, path?: string): Promise<void> {
     await this.inputEmail.fill(email)
     await this.inputPassword.fill(password)
     expect(await this.buttonLogin.isEnabled()).toBe(true)

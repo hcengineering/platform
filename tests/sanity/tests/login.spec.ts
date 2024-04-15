@@ -1,7 +1,6 @@
 import { test } from '@playwright/test'
 import { PlatformUser } from './utils'
 import { LoginPage } from './model/login-page'
-import { SelectWorkspacePage } from './model/select-workspace-page'
 
 test.describe('login test', () => {
   test('check login', async ({ page }) => {

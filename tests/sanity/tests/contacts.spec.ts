@@ -1,7 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { fillSearch, generateId, PlatformURI } from './utils'
 
-
 test.describe('contact tests', () => {
   test.beforeEach(async ({ page }) => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
@@ -45,7 +44,7 @@ test.describe('contact tests', () => {
     await page.waitForSelector('form.antiCard', { state: 'detached' })
     await expect(page.locator(`text=${orgName}`)).toBeVisible()
   })
-  
+
   test('contact-search', async ({ page }) => {
     await page.locator('[id="app-contact\\:string\\:Contacts"]').click()
 
