@@ -303,8 +303,8 @@
   label={isNew ? tracker.string.NewProject : tracker.string.EditProject}
   okLabel={isNew ? presentation.string.Create : presentation.string.Save}
   okAction={handleSave}
-  canSave={name.length > 0 &&
-    identifier.length > 0 &&
+  canSave={name.trim().length > 0 &&
+    identifier.trim().length > 0 &&
     !projectsIdentifiers.has(identifier.toUpperCase()) &&
     !(members.length === 0 && isPrivate)}
   accentHeader
