@@ -287,6 +287,9 @@ export async function cloneWorkspace (
         console.log('Retrieve chunk:', needRetrieve.length)
         let docs: Doc[] = []
         try {
+          // We need to clean target connection before copying something.
+          await cleanDomain(targetConnection, c)
+
           docs = await sourceConnection.loadDocs(c, needRetrieve)
           if (clearTime) {
             docs = docs.map((p) => {
@@ -334,6 +337,32 @@ export async function cloneWorkspace (
     console.log('end clone')
     await sourceConnection.close()
     await targetConnection.close()
+  }
+}
+
+async function cleanDomain (connection: CoreClient & BackupClient, domain: Domain): Promise<void> {
+  // Load all digest from collection.
+  let idx: number | undefined
+  const ids: Ref<Doc>[] = []
+  while (true) {
+    try {
+      const it = await connection.loadChunk(domain, idx)
+      idx = it.idx
+
+      ids.push(...it.docs.map((it) => it.id as Ref<Doc>))
+      if (it.finished) {
+        break
+      }
+    } catch (err: any) {
+      console.error(err)
+      if (idx !== undefined) {
+        await connection.closeChunk(idx)
+      }
+    }
+  }
+  while (ids.length > 0) {
+    const part = ids.splice(0, 5000)
+    await connection.clean(domain, part)
   }
 }
 
