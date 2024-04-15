@@ -32,7 +32,29 @@ async function createSpace (tx: TxOperations): Promise<void> {
     _id: lead.space.DefaultFunnel
   })
   if (current === undefined) {
-    const type = await createProjectType(
+    await tx.createDoc(
+      lead.class.Funnel,
+      core.space.Space,
+      {
+        name: 'Funnel',
+        description: 'Default funnel',
+        private: false,
+        archived: false,
+        members: [],
+        type: lead.template.DefaultFunnel
+      },
+      lead.space.DefaultFunnel
+    )
+  }
+}
+
+async function createSpaceType (tx: TxOperations): Promise<void> {
+  const current = await tx.findOne(task.class.ProjectType, {
+    _id: lead.template.DefaultFunnel
+  })
+
+  if (current === undefined) {
+    await createProjectType(
       tx,
       {
         name: 'Default funnel',
@@ -101,19 +123,6 @@ async function createSpace (tx: TxOperations): Promise<void> {
       ],
       lead.template.DefaultFunnel
     )
-    await tx.createDoc(
-      lead.class.Funnel,
-      core.space.Space,
-      {
-        name: 'Funnel',
-        description: 'Default funnel',
-        private: false,
-        archived: false,
-        members: [],
-        type
-      },
-      lead.space.DefaultFunnel
-    )
   }
 }
 
@@ -179,14 +188,17 @@ export const leadOperation: MigrateOperation = {
     ])
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
+    const ops = new TxOperations(client, core.account.System)
     await tryUpgrade(client, leadId, [
       {
         state: 'u-default-funnel',
-        func: async (client) => {
-          const ops = new TxOperations(client, core.account.System)
+        func: async () => {
           await createDefaults(ops)
         }
       }
     ])
+    // Currently space type has to be recreated every time as it's in the model
+    // created by the system user
+    await createSpaceType(ops)
   }
 }
