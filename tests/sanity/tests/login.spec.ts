@@ -12,7 +12,5 @@ test.describe('login test', () => {
     const loginPage = new LoginPage(page)
     await loginPage.visitLoginRoute()
     await loginPage.login(PlatformUser, '1234', '.auth.json')
-    // const selectWorkspacePage = new SelectWorkspacePage(page)
-    // await selectWorkspacePage.selectWorkspace('SanityTest')
   })
 })
