@@ -1368,6 +1368,7 @@ permissionsQuery.query(core.class.Space, {}, (res) => {
 
       if (mixin === undefined) {
         permissionsBySpace[s._id] = new Set()
+        accountsByPermission[s._id] = {}
         continue
       }
 
