@@ -17,7 +17,7 @@ import { ActivityMessage, ActivityMessageViewlet } from '@hcengineering/activity
 import type { Person } from '@hcengineering/contact'
 import type { Account, AttachedDoc, Class, Doc, Markup, Mixin, Ref, Space, Timestamp } from '@hcengineering/core'
 import { NotificationType } from '@hcengineering/notification'
-import type { Asset, Plugin, Resource } from '@hcengineering/platform'
+import type { Asset, Plugin } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
 import { Action } from '@hcengineering/view'
@@ -83,7 +83,6 @@ export interface DirectMessageInput extends Class<Doc> {
  */
 export interface ObjectChatPanel extends Class<Doc> {
   ignoreKeys: string[]
-  titleProvider: Resource<(object: Doc) => string>
 }
 
 /**
