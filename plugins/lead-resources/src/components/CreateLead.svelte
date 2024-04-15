@@ -127,7 +127,7 @@
 <Card
   label={lead.string.CreateLead}
   okAction={createLead}
-  canSave={title.length > 0 && customer !== null}
+  canSave={title.trim().length > 0 && customer !== null}
   on:close={() => {
     dispatch('close')
   }}

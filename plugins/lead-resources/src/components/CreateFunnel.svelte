@@ -152,7 +152,7 @@
   label={leadRes.string.CreateFunnel}
   okAction={save}
   okLabel={!isNew ? ui.string.Save : undefined}
-  canSave={name.length > 0}
+  canSave={name.trim().length > 0}
   on:close={() => {
     dispatch('close')
   }}
