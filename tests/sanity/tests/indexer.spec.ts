@@ -6,12 +6,16 @@ import { DocumentContentPage } from './model/documents/document-content-page'
 import { IssuesPage } from './model/tracker/issues-page'
 import { IssuesDetailsPage } from './model/tracker/issues-details-page'
 import { SpotlightPopup } from './model/spotlight-popup'
-import { generateId, PlatformURI } from './utils'
+import { generateId, PlatformSetting, PlatformURI } from './utils'
 import { NewIssue } from './model/tracker/types'
 import { SignUpData } from './model/common-types'
 import { LoginPage } from './model/login-page'
 import { SignUpPage } from './model/signup-page'
 import { SelectWorkspacePage } from './model/select-workspace-page'
+
+// test.use({
+//   storageState: PlatformSetting
+// })
 
 const retryOptions = { intervals: [1000, 1500, 2500], timeout: 60000 }
 
