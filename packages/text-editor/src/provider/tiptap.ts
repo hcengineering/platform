@@ -55,8 +55,8 @@ export class TiptapCollabProvider extends HocuspocusProvider {
   }
 
   destroy (): void {
-    this.configuration.websocketProvider.disconnect()
     super.destroy()
+    this.configuration.websocketProvider.disconnect()
   }
 }
 

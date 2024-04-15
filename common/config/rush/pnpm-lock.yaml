@@ -20650,7 +20650,7 @@ packages:
     dev: false
 
   file:projects/panel.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-P4H97igqWddz9UBNpLY742cNaADue6UfT+1y00SNB/MmJE7qop/lttaCMAvFXgZJ4HvlN7d18II/AHpMZAnABg==, tarball: file:projects/panel.tgz}
+    resolution: {integrity: sha512-cFoTjnZ6mHJtNSppmfDuDx2wE5B4xGLxee96kAfHWSufWMYuHF69977P0VSlDEen1iXSNu2jQAWUux7wiEaKQQ==, tarball: file:projects/panel.tgz}
     id: file:projects/panel.tgz
     name: '@rush-temp/panel'
     version: 0.0.0
