@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DocumentQuery, Ref, SortingOrder } from '@hcengineering/core'
+  import { Data, DocumentQuery, Ref, SortingOrder, Space } from '@hcengineering/core'
   import { IntlString, getEmbeddedLabel, translate } from '@hcengineering/platform'
-  import { createQuery } from '@hcengineering/presentation'
-  import { Milestone } from '@hcengineering/tracker'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Milestone, MilestoneStatus } from '@hcengineering/tracker'
   import type { ButtonKind, ButtonSize, LabelAndProps } from '@hcengineering/ui'
   import { Button, ButtonShape, Label, SelectPopup, eventToHTMLElement, showPopup, themeStore } from '@hcengineering/ui'
   import tracker from '../../plugin'
@@ -40,6 +40,8 @@
   export let isAction: boolean = false
 
   export let showTooltip: LabelAndProps | undefined = undefined
+
+  const client = getClient()
 
   let selectedMilestone: Milestone | undefined
   let defaultMilestoneLabel = ''
@@ -96,6 +98,17 @@
 
   $: milestones = getMilestoneInfo(rawMilestones, selectedMilestone)
 
+  const handleOnCreate = async (value: string) => {
+    const object: Data<Milestone> = {
+      label: value,
+      status: MilestoneStatus.Planned,
+      comments: 0,
+      targetDate: Date.now() + 14 * 24 * 60 * 60 * 1000
+    }
+    const id = await client.createDoc(tracker.class.Milestone, space as Ref<Space>, object)
+    if (onChange !== undefined) onChange(id)
+  }
+
   const handleMilestoneEditorOpened = async (event: MouseEvent): Promise<void> => {
     event.stopPropagation()
     if (!isEditable) {
@@ -104,7 +117,7 @@
 
     showPopup(
       SelectPopup,
-      { value: milestones, placeholder: popupPlaceholder, searchable: true },
+      { value: milestones, placeholder: popupPlaceholder, searchable: true, onCreate: handleOnCreate },
       eventToHTMLElement(event),
       onChange
     )
@@ -116,6 +129,7 @@
     value={milestones}
     placeholder={popupPlaceholder}
     searchable
+    onCreate={handleOnCreate}
     on:close={(evt) => {
       if (onChange !== undefined) onChange(evt.detail)
     }}

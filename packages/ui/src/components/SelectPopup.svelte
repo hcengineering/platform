@@ -33,6 +33,7 @@
   export let value: SelectPopupValueType[]
   export let width: 'medium' | 'large' | 'full' = 'medium'
   export let size: 'small' | 'medium' | 'large' = 'small'
+  export let onCreate: ((string: string) => void) | undefined = undefined
   export let onSelect: ((value: SelectPopupValueType['id'], event?: Event) => void) | undefined = undefined
   export let showShadow: boolean = true
   export let embedded: boolean = false
@@ -54,6 +55,10 @@
     selected = id
     if (onSelect) {
       onSelect(id)
+    } else if (onCreate && search && !selected) {
+      onCreate(search)
+      dispatch('close')
+      search = '';
     } else {
       dispatch('close', id)
     }
