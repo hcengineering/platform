@@ -30,7 +30,7 @@ import {
   TxCUD,
   TxOperations
 } from '@hcengineering/core'
-import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
+import type { Asset, IntlString, Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { Preference } from '@hcengineering/preference'
 import { IntegrationType } from '@hcengineering/setting'
@@ -49,6 +49,26 @@ export interface BrowserNotification extends Doc {
   title: string
   body: string
   onClickLocation?: Location
+}
+
+export interface PushData {
+  tag?: string
+  title: string
+  body: string
+  icon?: string
+  domain?: string
+  url?: string
+}
+
+export interface PushSubscriptionKeys {
+  p256dh: string
+  auth: string
+}
+
+export interface PushSubscription extends Doc {
+  user: Ref<Account>
+  endpoint: string
+  keys: PushSubscriptionKeys
 }
 
 /**
@@ -332,6 +352,7 @@ const notification = plugin(notificationId, {
   },
   class: {
     BrowserNotification: '' as Ref<Class<BrowserNotification>>,
+    PushSubscription: '' as Ref<Class<PushSubscription>>,
     BaseNotificationType: '' as Ref<Class<BaseNotificationType>>,
     NotificationType: '' as Ref<Class<NotificationType>>,
     CommonNotificationType: '' as Ref<Class<CommonNotificationType>>,
@@ -352,6 +373,9 @@ const notification = plugin(notificationId, {
     NotificationGroup: '' as Ref<NotificationGroup>,
     CollaboratoAddNotification: '' as Ref<NotificationType>,
     MentionCommonNotificationType: '' as Ref<CommonNotificationType>
+  },
+  metadata: {
+    PushPublicKey: '' as Metadata<string>
   },
   providers: {
     PlatformNotification: '' as Ref<NotificationProvider>,

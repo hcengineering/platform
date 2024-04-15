@@ -41,6 +41,7 @@ const serverCore = plugin(serverCoreId, {
   },
   metadata: {
     FrontUrl: '' as Metadata<string>,
+    UploadURL: '' as Metadata<string>,
     CursorMaxTimeMS: '' as Metadata<string>,
     ElasticIndexName: '' as Metadata<string>
   }

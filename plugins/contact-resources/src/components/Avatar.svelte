@@ -29,7 +29,13 @@
 </script>
 
 <script lang="ts">
-  import contact, { AvatarProvider, AvatarType, getFirstName, getLastName } from '@hcengineering/contact'
+  import contact, {
+    AvatarProvider,
+    AvatarType,
+    getFirstName,
+    getLastName,
+    getAvatarProviderId
+  } from '@hcengineering/contact'
   import { Asset, getMetadata, getResource } from '@hcengineering/platform'
   import { getBlobURL, getClient } from '@hcengineering/presentation'
   import {
@@ -43,7 +49,6 @@
     themeStore,
     resizeObserver
   } from '@hcengineering/ui'
-  import { getAvatarProviderId } from '../utils'
   import AvatarIcon from './icons/Avatar.svelte'
   import { onMount } from 'svelte'
 
