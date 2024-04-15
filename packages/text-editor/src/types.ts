@@ -12,7 +12,7 @@ export interface TextEditorHandler {
   insertText: (html: string) => void
   insertMarkup: (markup: Markup) => void
   insertTemplate: (name: string, markup: string) => void
-  insertTable: (options: { rows?: number; cols?: number; withHeaderRow?: boolean }) => void
+  insertTable: (options: { rows?: number, cols?: number, withHeaderRow?: boolean }) => void
   insertCodeBlock: (pos?: number) => void
   insertSeparatorLine: () => void
   insertContent: (
@@ -115,7 +115,6 @@ export interface CollaborationUser {
   name: string
   email: string
   color: number
-  isTyping: boolean
 }
 
 /** @public */
