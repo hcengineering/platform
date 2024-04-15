@@ -27,7 +27,7 @@
     getObjectValue
   } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
-  import { createQuery, getClient, updateAttribute } from '@hcengineering/presentation'
+  import { createQuery, getClient, reduceCalls, updateAttribute } from '@hcengineering/presentation'
   import ui, {
     Button,
     CheckBox,
@@ -117,7 +117,7 @@
       : { ...(options?.sort ?? {}), [sortKey]: sortOrder }
   }
 
-  async function update (
+  const update = reduceCalls(async function (
     _class: Ref<Class<Doc>>,
     query: DocumentQuery<Doc>,
     sortKey: string | string[],
@@ -143,8 +143,8 @@
     )
       ? 1
       : 0
-  }
-  $: update(_class, query, _sortKey, sortOrder, lookup, limit, options)
+  })
+  $: void update(_class, query, _sortKey, sortOrder, lookup, limit, options)
 
   $: dispatch('content', objects)
 
@@ -276,36 +276,31 @@
   let model: AttributeModel[] | undefined
   let modelOptions: BuildModelOptions | undefined
 
-  $: updateModelOptions(client, _class, config, lookup)
-  async function updateModelOptions (
+  const updateModelOptions = reduceCalls(async function updateModelOptions (
     client: TxOperations,
     _class: Ref<Class<Doc>>,
     config: Array<string | BuildModelKey>,
     lookup?: Lookup<Doc>
-  ) {
+  ): Promise<void> {
     const newModelOpts = { client, _class, keys: config, lookup }
     if (modelOptions == null || !deepEqual(modelOptions, newModelOpts)) {
       modelOptions = newModelOpts
       await build(modelOptions)
     }
-  }
+  })
+  $: void updateModelOptions(client, _class, config, lookup)
 
-  let buildIndex = 0
-
-  async function build (modelOptions: BuildModelOptions) {
+  async function build (modelOptions: BuildModelOptions): Promise<void> {
     isBuildingModel = true
-    const idx = ++buildIndex
     const res = await buildModel(modelOptions)
-    if (buildIndex === idx) {
-      model = res
-    }
+    model = res
     isBuildingModel = false
   }
 
   function contextHandler (object: Doc, row: number): (ev: MouseEvent) => void {
     return (ev) => {
       if (!readonly) {
-        showContextMenu(ev, object, row)
+        void showContextMenu(ev, object, row)
       }
     }
   }

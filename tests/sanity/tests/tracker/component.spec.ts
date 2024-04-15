@@ -1,5 +1,4 @@
 import { expect, test } from '@playwright/test'
-import { navigate } from './tracker.utils'
 import { generateId, PlatformSetting, PlatformURI, fillSearch } from '../utils'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
@@ -18,8 +17,6 @@ test.describe('Tracker component tests', () => {
 
   test('create-component-issue', async ({ page }) => {
     await page.click('[id="app-tracker\\:string\\:TrackerApplication"]')
-
-    await navigate(page)
     await page.click('text=Components')
     await expect(page).toHaveURL(
       `${PlatformURI}/workbench/sanity-ws/tracker/tracker%3Aproject%3ADefaultProject/components`

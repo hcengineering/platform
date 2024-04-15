@@ -63,7 +63,7 @@
   $: from = getFrom(currentDate)
   $: to = getTo(currentDate)
 
-  function update (calendars: Calendar[]) {
+  function update (calendars: Calendar[]): void {
     q.query<Event>(
       calendar.class.Event,
       { space: { $in: calendars.map((p) => p._id) } },

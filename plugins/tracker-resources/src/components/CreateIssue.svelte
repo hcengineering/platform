@@ -41,7 +41,8 @@
     MultipleDraftController,
     SpaceSelector,
     createQuery,
-    getClient
+    getClient,
+    reduceCalls
   } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import { TaskType, makeRank } from '@hcengineering/task'
@@ -730,6 +731,18 @@
   $: if (_space !== undefined) {
     updateCurrentProjectPref(_space)
   }
+  const a = 50
+
+  const update = reduceCalls(async (value: number): Promise<void> => {
+    await new Promise((resolve) => {
+      setTimeout(resolve, value)
+    })
+  })
+
+  update(25)
+  update(500)
+  update(250)
+  update(50)
 </script>
 
 <FocusHandler {manager} />
@@ -746,6 +759,7 @@
   noFade={true}
   on:changeContent
 >
+  {a}
   <svelte:fragment slot="header">
     <SpaceSelector
       _class={tracker.class.Project}

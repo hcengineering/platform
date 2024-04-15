@@ -110,11 +110,10 @@ export class IssuesPage extends CommonTrackerPage {
       if (data.createLabel) {
         await this.pressCreateButtonSelectPopup(this.page)
         await this.addNewTagPopup(this.page, data.labels, 'Tag from createNewIssue')
+        await this.page.locator('.popup#TagsPopup').press('Escape')
       } else {
         await this.checkFromDropdown(this.page, data.labels)
       }
-      await this.inputPopupCreateNewIssueTitle.press('Escape')
-      await this.inputPopupCreateNewIssueTitle.click({ force: true })
     }
     if (data.component != null) {
       await this.buttonPopupCreateNewIssueComponent.click()
@@ -211,9 +210,28 @@ export class IssuesPage extends CommonTrackerPage {
   }
 
   async checkAllIssuesByPriority (priorityName: string): Promise<void> {
-    for await (const locator of iterateLocator(this.issuesList)) {
-      const href = await locator.locator('div.priority-container use').getAttribute('href')
-      expect(href).toContain(priorityName)
+    let retry = 150
+    while (retry > 0) {
+      let matched = 0
+      let total = 0
+      for await (const locator of iterateLocator(this.issuesList)) {
+        total++
+        const href = await locator.locator('div.priority-container use').getAttribute('href')
+        if ((href ?? '').includes(priorityName)) {
+          matched++
+        }
+        if (retry === 1) {
+          expect(href, { message: `Should contain ${priorityName} but it is ${href}` }).toContain(priorityName)
+        }
+      }
+      if (total === matched) {
+        // all good
+        return
+      }
+      await new Promise((resolve) => {
+        setTimeout(resolve, 100)
+      })
+      retry--
     }
   }
 

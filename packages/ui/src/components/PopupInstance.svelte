@@ -16,11 +16,11 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import { deviceOptionsStore as deviceInfo, resizeObserver, testing } from '..'
-  import { fitPopupElement } from '../popups'
-  import type { AnySvelteComponent, PopupAlignment, PopupOptions, PopupPositionElement, DeviceOptions } from '../types'
+  import { CompAndProps, fitPopupElement } from '../popups'
+  import type { AnySvelteComponent, DeviceOptions, PopupAlignment, PopupOptions, PopupPositionElement } from '../types'
 
   export let is: AnySvelteComponent
-  export let props: object
+  export let props: Record<string, any>
   export let element: PopupAlignment | undefined
   export let onClose: ((result: any) => void) | undefined
   export let onUpdate: ((result: any) => void) | undefined
@@ -29,11 +29,15 @@
   export let top: boolean
   export let close: () => void
   export let contentPanel: HTMLElement | undefined
+  export let popup: CompAndProps
 
   // We should not update props after popup is created,
   // since they could be used, and any show will update them
-  const initialProps = props
+  let initialProps: Record<string, any> = props
 
+  $: popup.update = (props) => {
+    initialProps = Object.assign(initialProps, props)
+  }
   const WINDOW_PADDING = 1
 
   interface PopupParams {
@@ -81,7 +85,7 @@
     close()
   }
 
-  function escapeClose () {
+  function escapeClose (): void {
     if (componentInstance?.canClose) {
       if (!componentInstance.canClose()) return
     }
@@ -109,6 +113,8 @@
 
   function handleKeydown (ev: KeyboardEvent) {
     if (ev.key === 'Escape' && is && top) {
+      ev.preventDefault()
+      ev.stopPropagation()
       escapeClose()
     }
   }
@@ -268,6 +274,7 @@
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
+  id={popup.options.refId}
   class="popup {testing ? 'endShow' : showing === undefined ? 'endShow' : !showing ? 'preShow' : 'startShow'}"
   class:testing
   class:anim={(element === 'float' || element === 'centered') && !testing && !drag}
