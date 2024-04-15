@@ -44,7 +44,6 @@ test.describe('Documents link tests', () => {
 
       const documentContentClearPage = new DocumentContentPage(clearPage)
       await documentContentClearPage.checkDocumentTitle(publicLinkDocument.title)
-      expect(clearPage.url()).toContain('guest')
     })
 
     await test.step('Revoke guest access to the document', async () => {
@@ -55,6 +54,7 @@ test.describe('Documents link tests', () => {
     await test.step('Check guest access to the document after the revoke', async () => {
       await clearPage.goto(link)
       await expect(clearPage.locator('div.antiPopup > h1')).toHaveText('Public link was revoked')
+      expect(clearPage.url()).toContain('guest')
     })
   })
 })

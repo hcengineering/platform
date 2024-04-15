@@ -203,7 +203,7 @@ test.describe('Workspace tests', () => {
     const page2 = await browser.newPage()
 
     const loginPage2 = new LoginPage(page2)
-    await loginPage2.goto()
+    await loginPage2.visitLoginRoute()
     await loginPage2.linkSignUp.click()
 
     const newUser2: SignUpData = {
@@ -229,7 +229,7 @@ test.describe('Workspace tests', () => {
 
   test('Create workspace with LastToken in the localStorage', async ({ page, browser }) => {
     const loginPage = new LoginPage(page)
-    await loginPage.goto()
+    await loginPage.visitLoginRoute()
     await loginPage.login(PlatformUser, '1234')
 
     const selectWorkspacePage = new SelectWorkspacePage(page)
