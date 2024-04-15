@@ -6,10 +6,12 @@
   "license": "EPL-2.0",
   "scripts": {
     "build": "compile ui",
+    "test": "jest --passWithNoTests --silent",
     "build:docs": "api-extractor run --local",
     "format": "format src",
     "build:watch": "compile ui",
     "_phase:build": "compile ui",
+    "_phase:test": "jest --passWithNoTests --silent",
     "_phase:format": "format src",
     "_phase:validate": "compile validate"
   },
