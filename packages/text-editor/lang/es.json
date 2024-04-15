@@ -45,6 +45,8 @@
     "TableOptions": "Personalizar tabla",
     "Width": "Ancho",
     "Height": "Alto",
-    "Unset": "Anular"
+    "Unset": "Anular",
+    "Image": "Imagen",
+    "SeparatorLine": "Línea de separación"
   }
 }

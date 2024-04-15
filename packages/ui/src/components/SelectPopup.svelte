@@ -33,7 +33,7 @@
   export let value: SelectPopupValueType[]
   export let width: 'medium' | 'large' | 'full' = 'medium'
   export let size: 'small' | 'medium' | 'large' = 'small'
-  export let onSelect: ((value: SelectPopupValueType['id']) => void) | undefined = undefined
+  export let onSelect: ((value: SelectPopupValueType['id'], event?: Event) => void) | undefined = undefined
   export let showShadow: boolean = true
   export let embedded: boolean = false
   export let loading = false
@@ -59,27 +59,32 @@
     }
   }
 
-  function onKeydown (key: KeyboardEvent): void {
+  export function onKeydown (key: KeyboardEvent): boolean {
     if (key.code === 'Tab') {
       dispatch('close')
       key.preventDefault()
       key.stopPropagation()
+      return true
     }
     if (key.code === 'ArrowUp') {
       key.stopPropagation()
       key.preventDefault()
       list.select(selection - 1)
+      return true
     }
     if (key.code === 'ArrowDown') {
       key.stopPropagation()
       key.preventDefault()
       list.select(selection + 1)
+      return true
     }
     if (key.code === 'Enter') {
       key.preventDefault()
       key.stopPropagation()
       sendSelect(value[selection].id)
+      return true
     }
+    return false
   }
   const manager = createFocusManager()
 

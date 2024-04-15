@@ -13,10 +13,15 @@
 // limitations under the License.
 //
 
+import view from '@hcengineering/view'
+import { type Editor, type Range } from '@tiptap/core'
+
 import { type CompletionOptions } from '../Completion'
 import MentionList from './MentionList.svelte'
 import { SvelteRenderer } from './node-view'
 import type { SuggestionKeyDownProps, SuggestionProps } from './extension/suggestion'
+import InlineCommandsList from './InlineCommandsList.svelte'
+import plugin from '../plugin'
 
 export const mInsertTable = [
   {
@@ -118,6 +123,69 @@ export const completionConfig: Partial<CompletionOptions> = {
         },
         onExit () {
           component.destroy()
+        }
+      }
+    }
+  }
+}
+
+const inlineCommandsIds = ['image', 'table', 'code-block', 'separator-line'] as const
+export type InlineCommandId = (typeof inlineCommandsIds)[number]
+
+/**
+ * @public
+ */
+export function inlineCommandsConfig (
+  handleSelect: (id: string, pos: number, targetItem?: MouseEvent | HTMLElement) => Promise<void>,
+  excludedCommands: InlineCommandId[] = []
+): Partial<CompletionOptions> {
+  return {
+    suggestion: {
+      items: () => {
+        return [
+          { id: 'image', label: plugin.string.Image, icon: view.icon.Image },
+          { id: 'table', label: plugin.string.Table, icon: view.icon.Table2 },
+          { id: 'code-block', label: plugin.string.CodeBlock, icon: view.icon.CodeBlock },
+          { id: 'separator-line', label: plugin.string.SeparatorLine, icon: view.icon.SeparatorLine }
+        ].filter(({ id }) => !excludedCommands.includes(id as InlineCommandId))
+      },
+      command: ({ editor, range, props }: { editor: Editor, range: Range, props: any }) => {
+        editor.commands.deleteRange(range)
+
+        if (props?.id != null) {
+          const { node } = editor.view.domAtPos(range.from)
+          const targetElement = node instanceof HTMLElement ? node : undefined
+
+          void handleSelect(props.id, range.from, targetElement)
+        }
+      },
+      render: () => {
+        let component: any
+
+        return {
+          onStart: (props: SuggestionProps) => {
+            component = new SvelteRenderer(InlineCommandsList, {
+              element: document.body,
+              props: {
+                ...props,
+                close: () => {
+                  component.destroy()
+                }
+              }
+            })
+          },
+          onUpdate (props: SuggestionProps) {
+            component.updateProps(props)
+          },
+          onKeyDown (props: SuggestionKeyDownProps) {
+            if (props.event.key === 'Escape') {
+              props.event.stopPropagation()
+            }
+            return component.onKeyDown(props)
+          },
+          onExit () {
+            component.destroy()
+          }
         }
       }
     }

@@ -901,6 +901,10 @@ a.no-line {
   &.disabled { pointer-events: none; }
 }
 
+.hidden {
+  visibility: hidden;
+}
+
 .lines-limit-2, .lines-limit-4 {
   min-width: 0;
   overflow: hidden;

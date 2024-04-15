@@ -19,7 +19,7 @@ export class TemplatePage extends CommonTrackerPage {
     super(page)
     this.page = page
     this.buttonNewTemplate = page.locator('button > span', { hasText: 'Template' })
-    this.inputIssueTitle = page.locator('form[id$="NewProcess"] input')
+    this.inputIssueTitle = page.locator('form[id$="NewProcess"] input[type="text"]')
     this.inputIssueDescription = page.locator('form[id$="NewProcess"] div.tiptap')
     this.buttonPopupCreateNewTemplatePriority = page.locator(
       'form[id$="NewProcess"] div.antiCard-pool > button:first-child'

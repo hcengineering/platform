@@ -37,7 +37,7 @@ export class PlanningPage extends CalendarPage {
     this.page = page
     this.pageHeader = page.locator('div[class*="navigator"] div[class*="header"]', { hasText: 'Planning' })
     this.buttonCreateNewToDo = page.locator('div[class*="toDos-container"] button.button')
-    this.inputPopupCreateTitle = page.locator('div.popup input')
+    this.inputPopupCreateTitle = page.locator('div.popup input[type="text"]')
     this.inputPopupCreateDescription = page.locator('div.popup div.tiptap')
     this.inputPanelCreateDescription = page.locator('div.hulyModal-container div.tiptap')
     this.buttonPopupCreateDueDate = page.locator(
