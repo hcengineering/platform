@@ -183,7 +183,7 @@
     insertTemplate: (name, markup) => {
       editor?.commands.insertContent(markupToJSON(markup))
     },
-    insertTable: (options: { rows?: number, cols?: number, withHeaderRow?: boolean }) => {
+    insertTable: (options: { rows?: number; cols?: number; withHeaderRow?: boolean }) => {
       editor?.commands.insertTable(options)
     },
     insertCodeBlock: () => {
@@ -208,21 +208,21 @@
     }
   }
 
-  function handleAction (a: RefAction, evt?: MouseEvent): void {
+  function handleAction(a: RefAction, evt?: MouseEvent): void {
     a.action(evt?.target as HTMLElement, editorHandler, evt)
   }
 
   $: commandHandler = textEditorCommandHandler(editor)
 
-  export function commands (): TextEditorCommandHandler | undefined {
+  export function commands(): TextEditorCommandHandler | undefined {
     return commandHandler
   }
 
-  export function removeAttachment (id: string): void {
+  export function removeAttachment(id: string): void {
     editor.commands.command(deleteAttachment(id))
   }
 
-  export function isEditable (): boolean {
+  export function isEditable(): boolean {
     return editor?.isEditable ?? false
   }
 
@@ -230,12 +230,12 @@
   let focused = false
   let posFocus: FocusPosition | undefined = undefined
 
-  export function focus (position?: FocusPosition): void {
+  export function focus(position?: FocusPosition): void {
     posFocus = position
     needFocus = true
   }
 
-  export function isFocused (): boolean {
+  export function isFocused(): boolean {
     return focused
   }
 
@@ -247,7 +247,7 @@
     needFocus = false
   }
 
-  function handleFocus (): void {
+  function handleFocus(): void {
     needFocus = true
   }
 
@@ -328,11 +328,11 @@
 
   let inputImage: HTMLInputElement
 
-  export function handleAttachImage (): void {
+  export function handleAttachImage(): void {
     inputImage.click()
   }
 
-  async function createInlineImage (file: File): Promise<void> {
+  async function createInlineImage(file: File): Promise<void> {
     if (!file.type.startsWith('image/') || attachFile === undefined) {
       return
     }
@@ -361,7 +361,7 @@
     )
   }
 
-  async function fileSelected (): Promise<void> {
+  async function fileSelected(): Promise<void> {
     if (readonly) return
     const list = inputImage.files
     if (list === null || list.length === 0) return
@@ -374,7 +374,7 @@
     inputImage.value = ''
   }
 
-  async function handleLeftMenuClick (id: string, pos: number, targetItem?: MouseEvent | HTMLElement): Promise<void> {
+  async function handleLeftMenuClick(id: string, pos: number, targetItem?: MouseEvent | HTMLElement): Promise<void> {
     editor.commands.focus(pos, { scrollIntoView: false })
 
     switch (id) {
@@ -422,16 +422,6 @@
   onMount(async () => {
     await ph
 
-    remoteProvider.awareness?.on('change', (data: any) => {
-      remoteProvider.awareness?.states.forEach((value, key) => {
-        const element = document.getElementById(value?.user?.id)
-        const typing = value?.user?.isTyping ? '1' : '0'
-        console.log('1111111111typing', typing)
-        if (element?.getAttribute('type') !== typing) {
-          element?.setAttribute('typing', typing)
-        }
-      })
-    })
     editor = new Editor({
       element,
       editorProps: { attributes: mergeAttributes(defaultEditorAttributes, editorAttributes, { class: 'flex-grow' }) },
@@ -470,7 +460,7 @@
         }),
         Completion.configure({
           ...completionConfig,
-          showDoc (event: MouseEvent, _id: string, _class: string) {
+          showDoc(event: MouseEvent, _id: string, _class: string) {
             dispatch('open-document', { event, _id, _class })
           }
         }),
@@ -499,16 +489,6 @@
         if (isChangeOrigin(transaction)) return
 
         throttle.call(updateLastUpdateTime)
-
-        // TODO: Update user to set isTyping true
-        editor.commands.updateUser({
-          ...user,
-          isTyping: true
-        })
-        if (timer) {
-          clearTimeout(timer)
-        }
-        timer = setTimeout(() => editor.commands.updateUser({ ...user, isTyping: false }), 3000)
 
         dispatch('update')
       }

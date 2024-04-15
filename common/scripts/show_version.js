@@ -26,6 +26,6 @@ exec('git describe --tags --abbrev=0', (err, stdout, stderr) => {
       minor: parseInt(rawVersion[1]),
       patch: parseInt(rawVersion[2])
     }
-    console.log(`"${version.major}.${version.minor}.${version.patch}"`)
+    console.log(`"${version.major}.${version.minor}.230"`)
   }
 })
