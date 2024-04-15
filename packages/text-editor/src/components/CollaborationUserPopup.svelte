@@ -15,7 +15,7 @@
 //
 -->
 <script lang="ts">
-  import contact from '@hcengineering/contact'
+  import core from '@hcengineering/core'
   import { Component } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { CollaborationUser } from '../types'
@@ -27,7 +27,7 @@
   is={view.component.ObjectPresenter}
   props={{
     objectId: user.id,
-    _class: contact.class.PersonAccount,
+    _class: core.class.Account,
     shouldShowAvatar: true,
     shouldShowName: true
   }}

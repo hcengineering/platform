@@ -14,13 +14,14 @@
 -->
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
+  import contact from '@hcengineering/contact'
   import { Account, Doc, Ref, generateId } from '@hcengineering/core'
-  import { IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
+  import { IntlString, getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { KeyedAttribute, createQuery, getClient } from '@hcengineering/presentation'
   import textEditor, { AttachIcon, CollaborativeAttributeBox, RefAction } from '@hcengineering/text-editor'
-  import { navigate } from '@hcengineering/ui'
+  import { AnySvelteComponent, navigate } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { getObjectLinkFragment } from '@hcengineering/view-resources'
+  import { getCollaborationUser, getObjectLinkFragment } from '@hcengineering/view-resources'
   import AttachmentsGrid from './AttachmentsGrid.svelte'
   import { uploadFile } from '../utils'
   import { defaultRefActions, getModelRefActions } from '@hcengineering/text-editor/src/components/editor/actions'
@@ -37,6 +38,12 @@
   export let readonly: boolean = false
 
   const client = getClient()
+
+  const user = getCollaborationUser()
+  let userComponent: AnySvelteComponent | undefined
+  void getResource(contact.component.CollaborationUserAvatar).then((component) => {
+    userComponent = component
+  })
 
   let editor: CollaborativeAttributeBox
 
@@ -235,6 +242,8 @@
       bind:this={editor}
       {object}
       {key}
+      {user}
+      {userComponent}
       {focusIndex}
       {placeholder}
       {boundary}

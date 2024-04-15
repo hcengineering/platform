@@ -20,7 +20,7 @@
   import { IntlString, getMetadata, translate } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
   import { markupToJSON } from '@hcengineering/text'
-  import { Button, IconSize, Loading, themeStore } from '@hcengineering/ui'
+  import { AnySvelteComponent, Button, IconSize, Loading, ThrottledCaller, themeStore } from '@hcengineering/ui'
   import { AnyExtension, Editor, FocusPosition, mergeAttributes } from '@tiptap/core'
   import Collaboration, { isChangeOrigin } from '@tiptap/extension-collaboration'
   import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
@@ -38,14 +38,15 @@
   import { formatCollaborativeDocumentId, formatPlatformDocumentId } from '../provider/utils'
   import {
     CollaborationIds,
+    CollaborationUser,
     RefAction,
     TextEditorCommandHandler,
     TextEditorHandler,
     TextFormatCategory,
     TextNodeAction
   } from '../types'
-  import { getCollaborationUser } from '../utils'
 
+  import CollaborationUsers from './CollaborationUsers.svelte'
   import ImageStyleToolbar from './ImageStyleToolbar.svelte'
   import TextEditorStyleToolbar from './TextEditorStyleToolbar.svelte'
   import { noSelectionRender, renderCursor } from './editor/collaboration'
@@ -65,6 +66,9 @@
   export let objectClass: Ref<Class<Doc>> | undefined
   export let objectId: Ref<Doc> | undefined
   export let objectAttr: string | undefined
+
+  export let user: CollaborationUser
+  export let userComponent: AnySvelteComponent | undefined = undefined
 
   export let readonly = false
 
@@ -256,9 +260,13 @@
     }
   }
 
+  const throttle = new ThrottledCaller(100)
+  const updateLastUpdateTime = (): void => {
+    remoteProvider.awareness?.setLocalStateField('lastUpdate', Date.now())
+  }
+
   onMount(async () => {
     await ph
-    const user = await getCollaborationUser()
 
     editor = new Editor({
       element,
@@ -326,6 +334,7 @@
         // ignore non-local changes
         if (isChangeOrigin(transaction)) return
 
+        throttle.call(updateLastUpdateTime)
         dispatch('update')
       }
     })
@@ -384,6 +393,9 @@
 
   <div class="textInput">
     <div class="select-text" class:hidden={loading} style="width: 100%;" bind:this={element} />
+    {#if remoteProvider && editor && userComponent}
+      <CollaborationUsers provider={remoteProvider} {editor} component={userComponent} />
+    {/if}
   </div>
 
   {#if refActions.length > 0}
@@ -430,7 +442,7 @@
     flex-grow: 1;
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
+    align-items: flex-start;
     min-height: 1.25rem;
     background-color: transparent;
   }
