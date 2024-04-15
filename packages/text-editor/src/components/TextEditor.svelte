@@ -14,10 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Markup } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
+  import { EmptyMarkup, getMarkup, markupToJSON } from '@hcengineering/text'
   import { themeStore } from '@hcengineering/ui'
 
-  import { AnyExtension, Editor, FocusPosition, mergeAttributes } from '@tiptap/core'
+  import { AnyExtension, Content, Editor, FocusPosition, mergeAttributes } from '@tiptap/core'
   import Placeholder from '@tiptap/extension-placeholder'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
 
@@ -32,8 +34,11 @@
   import { InlineStyleToolbarExtension } from './extension/inlineStyleToolbar'
   import { SubmitExtension } from './extension/submit'
   import { EditorKit } from '../kits/editor-kit'
+  import { getFileUrl, getImageSize } from '@hcengineering/presentation'
+  import { FileAttachFunction } from './extension/types'
+  import { ParseOptions } from '@tiptap/pm/model'
 
-  export let content: string = ''
+  export let content: Markup = ''
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
   export let extensions: AnyExtension[] = []
   export let textFormatCategories: TextFormatCategory[] = []
@@ -41,6 +46,7 @@
   export let editorAttributes: Record<string, string> = {}
   export let boundary: HTMLElement | undefined = undefined
   export let autofocus: FocusPosition = false
+  export let attachFile: FileAttachFunction | undefined = undefined
 
   let element: HTMLElement
   let editor: Editor
@@ -62,22 +68,60 @@
     }
   }
   export function submit (): void {
-    content = editor.getHTML()
+    content = getContent()
     dispatch('content', content)
   }
-  export function setContent (newContent: string): void {
+  export function getContent (): Markup {
+    return getMarkup(editor)
+  }
+  export function setContent (newContent: Markup): void {
     if (content !== newContent) {
       content = newContent
-      editor.commands.setContent(content)
+      editor.commands.setContent(markupToJSON(content))
     }
   }
   export function clear (): void {
-    content = ''
+    content = EmptyMarkup
 
     editor.commands.clearContent(true)
   }
+
   export function insertText (text: string): void {
     editor.commands.insertContent(text)
+  }
+  export function insertTable (options: { rows?: number, cols?: number, withHeaderRow?: boolean }) {
+    editor.commands.insertTable(options)
+  }
+  export function insertCodeBlock (pos?: number): void {
+    editor.commands.insertContent(
+      {
+        type: 'codeBlock',
+        content: [{ type: 'text', text: ' ' }]
+      },
+      {
+        updateSelection: false
+      }
+    )
+
+    if (pos !== undefined) {
+      editor.commands.focus(pos, { scrollIntoView: false })
+    }
+  }
+  export function insertSeparatorLine (): void {
+    editor.commands.setHorizontalRule()
+  }
+  export function insertContent (
+    value: Content,
+    options?: {
+      parseOptions?: ParseOptions
+      updateSelection?: boolean
+    }
+  ): void {
+    editor.commands.insertContent(value, options)
+  }
+
+  export function insertMarkup (markup: Markup): void {
+    editor.commands.insertContent(markupToJSON(markup))
   }
 
   let needFocus = false
@@ -123,7 +167,7 @@
       editor = new Editor({
         element,
         editorProps: { attributes: mergeAttributes(defaultEditorAttributes, editorAttributes) },
-        content,
+        content: markupToJSON(content),
         autofocus,
         extensions: [
           EditorKit,
@@ -169,7 +213,7 @@
           dispatch('focus')
         },
         onUpdate: () => {
-          content = editor.getHTML()
+          content = getContent()
           dispatch('value', content)
           dispatch('update', content)
         }

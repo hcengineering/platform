@@ -14,6 +14,7 @@
 //
 
 import core, {
+  getFullTextIndexableAttributes,
   type Blob,
   type Class,
   type Doc,
@@ -28,13 +29,13 @@ import { type DbAdapter } from '../adapter'
 import { type StorageAdapter } from '../storage'
 import { type ContentTextAdapter, type IndexedDoc } from '../types'
 import {
+  contentStageId,
+  fieldStateId,
   type DocUpdateHandler,
   type FullTextPipeline,
-  type FullTextPipelineStage,
-  contentStageId,
-  fieldStateId
+  type FullTextPipelineStage
 } from './types'
-import { docKey, docUpdKey, getFullTextIndexableAttributes } from './utils'
+import { docKey, docUpdKey } from './utils'
 
 /**
  * @public

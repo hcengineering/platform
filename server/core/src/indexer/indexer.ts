@@ -29,6 +29,7 @@ import core, {
   type WorkspaceId,
   _getOperator,
   docKey,
+  groupByArray,
   setObjectValue,
   toFindResult
 } from '@hcengineering/core'
@@ -91,13 +92,12 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   }
 
   async cancel (): Promise<void> {
-    console.log(this.workspace.name, 'Cancel indexing', this.indexId)
     this.cancelling = true
     clearTimeout(this.skippedReiterationTimeout)
     this.triggerIndexing()
     await this.indexing
     await this.flush(true)
-    console.log(this.workspace.name, 'Indexing canceled', this.indexId)
+    await this.metrics.info('Cancel indexing', { workspace: this.workspace.name, indexId: this.indexId })
   }
 
   async markRemove (doc: DocIndexState): Promise<void> {
@@ -132,12 +132,12 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     if (this.pending.size > 0 && (this.pending.size >= 50 || force)) {
       // Push all pending changes to storage.
       try {
-        await this.storage.update(DOMAIN_DOC_INDEX_STATE, this.pending)
+        await this.storage.update(this.metrics, DOMAIN_DOC_INDEX_STATE, this.pending)
       } catch (err: any) {
         console.error(err)
         // Go one by one.
         for (const o of this.pending) {
-          await this.storage.update(DOMAIN_DOC_INDEX_STATE, new Map([o]))
+          await this.storage.update(this.metrics, DOMAIN_DOC_INDEX_STATE, new Map([o]))
         }
       }
       this.pending.clear()
@@ -174,7 +174,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     const uploads = entries.filter((it) => it[1].create !== undefined).map((it) => it[1].create) as DocIndexState[]
     if (uploads.length > 0) {
       await ctx.with('upload', {}, async () => {
-        await this.storage.upload(DOMAIN_DOC_INDEX_STATE, uploads)
+        await this.storage.upload(this.metrics, DOMAIN_DOC_INDEX_STATE, uploads)
       })
     }
 
@@ -190,7 +190,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         ops.set(u[0], upd)
       }
       await ctx.with('upload', {}, async () => {
-        await this.storage.update(DOMAIN_DOC_INDEX_STATE, ops)
+        await this.storage.update(this.metrics, DOMAIN_DOC_INDEX_STATE, ops)
       })
     }
     this.triggerIndexing()
@@ -226,7 +226,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
     if (udoc === undefined) {
       // Some updated, document, let's load it.
-      udoc = (await this.storage.load(DOMAIN_DOC_INDEX_STATE, [docId])).shift() as DocIndexState
+      udoc = (await this.storage.load(this.metrics, DOMAIN_DOC_INDEX_STATE, [docId])).shift() as DocIndexState
     }
 
     if (udoc !== undefined && this.currentStage !== undefined) {
@@ -336,7 +336,10 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     try {
       this.hierarchy.getClass(core.class.DocIndexState)
     } catch (err: any) {
-      console.log(this.workspace.name, 'Models is not upgraded to support indexer', this.indexId)
+      await this.metrics.info('Models is not upgraded to support indexer', {
+        indexId: this.indexId,
+        workspace: this.workspace.name
+      })
       return
     }
     await this.metrics.with('init-states', {}, async () => {
@@ -367,12 +370,12 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       _classes.forEach((it) => this.broadcastClasses.add(it))
 
       if (this.triggerCounts > 0) {
-        console.log('No wait, trigger counts', this.triggerCounts)
+        await this.metrics.info('No wait, trigger counts', { triggerCount: this.triggerCounts })
       }
 
       if (this.toIndex.size === 0 && this.stageChanged === 0 && this.triggerCounts === 0) {
         if (this.toIndex.size === 0) {
-          console.log(this.workspace.name, 'Indexing complete', this.indexId)
+          await this.metrics.info('Indexing complete', { indexId: this.indexId, workspace: this.workspace.name })
         }
         if (!this.cancelling) {
           // We need to send index update event
@@ -398,7 +401,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         }
       }
     }
-    console.log(this.workspace.name, 'Exit indexer', this.indexId)
+    await this.metrics.info('Exit indexer', { indexId: this.indexId, workspace: this.workspace.name })
   }
 
   private async processIndex (ctx: MeasureContext): Promise<Ref<Class<Doc>>[]> {
@@ -461,6 +464,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
             if (toRemove.length > 0) {
               try {
                 await this.storage.clean(
+                  this.metrics,
                   DOMAIN_DOC_INDEX_STATE,
                   toRemove.map((it) => it._id)
                 )
@@ -470,13 +474,12 @@ export class FullTextIndexPipeline implements FullTextPipeline {
             }
 
             if (result.length > 0) {
-              console.log(
-                this.workspace.name,
-                `Full text: Indexing ${this.indexId} ${st.stageId}`,
-                Object.entries(this.currentStages)
-                  .map((it) => `${it[0]}:${it[1]}`)
-                  .join(' ')
-              )
+              await this.metrics.info('Full text: Indexing', {
+                indexId: this.indexId,
+                stageId: st.stageId,
+                workspace: this.workspace.name,
+                ...this.currentStages
+              })
             } else {
               // Nothing to index, check on next cycle.
               break
@@ -528,7 +531,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
               }
             }
           } catch (err: any) {
-            console.error(err)
+            await this.metrics.error('error during index', { error: err })
           }
         }
       })
@@ -537,6 +540,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   }
 
   private async processRemove (): Promise<void> {
+    let total = 0
     while (true) {
       const result = await this.storage.findAll(
         this.metrics,
@@ -545,9 +549,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
           removed: true
         },
         {
-          sort: {
-            modifiedOn: 1
-          },
+          limit: 1000,
           projection: {
             _id: 1,
             stages: 1,
@@ -581,7 +583,13 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
       await this.flush(true)
       if (toRemoveIds.length > 0) {
-        await this.storage.clean(DOMAIN_DOC_INDEX_STATE, toRemoveIds)
+        await this.storage.clean(this.metrics, DOMAIN_DOC_INDEX_STATE, toRemoveIds)
+        total += toRemoveIds.length
+        await this.metrics.info('indexer', {
+          _classes: Array.from(groupByArray(toIndex, (it) => it.objectClass).keys()),
+          total,
+          count: toRemoveIds.length
+        })
       } else {
         break
       }

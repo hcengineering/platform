@@ -26,8 +26,10 @@ import core, {
   type MeasureContext,
   type Ref,
   type ServerStorage,
-  type WorkspaceId
+  type WorkspaceId,
+  getFullTextContext
 } from '@hcengineering/core'
+import { jsonToText, markupToJSON } from '@hcengineering/text'
 import { type DbAdapter } from '../adapter'
 import { updateDocWithPresenter } from '../mapper'
 import { type FullTextAdapter, type IndexedDoc } from '../types'
@@ -40,7 +42,7 @@ import {
   type FullTextPipelineStage,
   fullTextPushStageId
 } from './types'
-import { collectPropagate, collectPropagateClasses, docKey, getFullTextContext, isCustomAttr } from './utils'
+import { collectPropagate, collectPropagateClasses, docKey, isCustomAttr } from './utils'
 
 /**
  * @public
@@ -273,8 +275,15 @@ function updateDoc2Elastic (
                 (attribute.type as ArrOf<any>).of._class === core.class.RefTo)
             ))
         ) {
-          if (!(doc.fulltextSummary ?? '').includes(vv)) {
-            doc.fulltextSummary = (doc.fulltextSummary ?? '') + vv + '\n'
+          let vvv = vv
+          if (
+            attribute.type._class === core.class.TypeMarkup ||
+            attribute.type._class === core.class.TypeCollaborativeMarkup
+          ) {
+            vvv = jsonToText(markupToJSON(vv))
+          }
+          if (!(doc.fulltextSummary ?? '').includes(vvv)) {
+            doc.fulltextSummary = (doc.fulltextSummary ?? '') + vvv + '\n'
             continue
           }
         }

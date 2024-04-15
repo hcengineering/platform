@@ -1098,6 +1098,11 @@ export function createModel (builder: Builder): void {
   builder.mixin(core.class.Status, core.class.Class, view.mixin.AttributePresenter, {
     presenter: view.component.StatusRefPresenter
   })
+
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_VIEW,
+    disabled: [{ space: 1 }, { modifiedOn: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { createdOn: -1 }]
+  })
 }
 
 export default view

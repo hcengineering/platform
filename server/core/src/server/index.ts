@@ -56,18 +56,20 @@ export async function createServerStorage (
 
   const storageAdapter = conf.storageFactory?.()
 
-  for (const key in conf.adapters) {
-    const adapterConf = conf.adapters[key]
-    adapters.set(
-      key,
-      await adapterConf.factory(ctx, hierarchy, adapterConf.url, conf.workspace, modelDb, storageAdapter)
-    )
-  }
+  await ctx.with('create-adapters', {}, async (ctx) => {
+    for (const key in conf.adapters) {
+      const adapterConf = conf.adapters[key]
+      adapters.set(
+        key,
+        await adapterConf.factory(ctx, hierarchy, adapterConf.url, conf.workspace, modelDb, storageAdapter)
+      )
+    }
+  })
 
   const txAdapter = adapters.get(conf.domains[DOMAIN_TX]) as TxAdapter
 
   const model = await ctx.with('get model', {}, async (ctx) => {
-    const model = await txAdapter.getModel()
+    const model = await ctx.with('fetch-model', {}, async (ctx) => await txAdapter.getModel(ctx))
     for (const tx of model) {
       try {
         hierarchy.tx(tx)
@@ -76,21 +78,9 @@ export async function createServerStorage (
         console.error('failed to apply model transaction, skipping', JSON.stringify(tx), err)
       }
     }
-    for (const tx of model) {
-      try {
-        await modelDb.tx(tx)
-      } catch (err: any) {
-        console.error('failed to apply model transaction, skipping', JSON.stringify(tx), err)
-      }
-    }
+    modelDb.addTxes(ctx, model, false)
     return model
   })
-
-  for (const [adn, adapter] of adapters) {
-    await ctx.with('init-adapter', { name: adn }, async (ctx) => {
-      await adapter.init(model)
-    })
-  }
 
   const fulltextAdapter = await ctx.with(
     'create full text adapter',

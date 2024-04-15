@@ -39,6 +39,7 @@
     IconSize,
     getPlatformAvatarColorByName,
     getPlatformAvatarColorForTextDef,
+    getPlatformColor,
     themeStore,
     resizeObserver
   } from '@hcengineering/ui'
@@ -52,14 +53,24 @@
   export let size: IconSize
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let variant: 'circle' | 'roundedRect' | 'none' = 'roundedRect'
+  export let borderColor: number | undefined = undefined
+
+  export function pulse (): void {
+    if (element) element.animate(pulsating, { duration: 150, easing: 'ease-in' })
+  }
 
   let url: string[] | undefined
   let avatarProvider: AvatarProvider | undefined
   let color: ColorDefinition | undefined = undefined
   let fontSize: number = 16
   let element: HTMLElement
+  const pulsating: Keyframe[] = [
+    { boxShadow: '0 0 .75rem 0 var(--theme-bg-color), 0 0 .75rem .125rem var(--border-color)' },
+    { boxShadow: '0 0 0 0 var(--theme-bg-color), 0 0 0 0 var(--border-color)' }
+  ]
 
   $: displayName = getDisplayName(name)
+  $: bColor = borderColor !== undefined ? getPlatformColor(borderColor, $themeStore.dark) : undefined
 
   function getDisplayName (name: string | null | undefined): string {
     if (name == null) {
@@ -103,8 +114,6 @@
   }
   $: update(size, avatar, direct, name)
 
-  let imageElement: HTMLImageElement | undefined = undefined
-
   $: srcset = url?.slice(1)?.join(', ')
 
   onMount(() => {
@@ -120,6 +129,8 @@
     class="ava-{size} flex-center avatar-container {variant}"
     class:no-img={!url && color}
     class:bordered={!url && color === undefined}
+    class:border={bColor !== undefined}
+    style:--border-color={bColor ?? 'var(--primary-button-default)'}
     style:background-color={color && !url ? color.icon : 'var(--theme-button-default)'}
     use:resizeObserver={(element) => {
       fontSize = element.clientWidth * 0.6
@@ -134,16 +145,16 @@
   </div>
 {:else}
   <div
+    bind:this={element}
     class="ava-{size} flex-center avatar-container {variant}"
     class:no-img={!url && color}
     class:bordered={!url && color === undefined}
+    class:border={bColor !== undefined}
+    style:--border-color={bColor ?? 'var(--primary-button-default)'}
     style:background-color={color && !url ? color.icon : 'var(--theme-button-default)'}
   >
     {#if url}
-      {#if size === 'large' || size === 'x-large' || size === '2x-large'}
-        <img class="ava-{size} ava-blur {variant}" src={url[0]} {srcset} alt={''} bind:this={imageElement} />
-      {/if}
-      <img class="ava-{size} ava-mask {variant}" src={url[0]} {srcset} alt={''} bind:this={imageElement} />
+      <img class="ava-{size} ava-image" src={url[0]} {srcset} alt={''} />
     {:else if name && displayName && displayName !== ''}
       <div
         class="ava-text"
@@ -166,11 +177,12 @@
     background-color: var(--theme-button-default);
     pointer-events: none;
 
-    &.circle {
+    &.circle,
+    &.circle img.ava-image {
       border-radius: 50%;
     }
-
-    &.roundedRect {
+    &.roundedRect,
+    &.roundedRect img.ava-image {
       border-radius: 20%;
     }
 
@@ -182,12 +194,22 @@
       color: var(--theme-dark-color);
       border: 1px solid var(--theme-button-border);
     }
+    &.border {
+      border: 1px solid var(--theme-bg-color);
+      outline: 2px solid var(--border-color);
+
+      &.ava-inline,
+      &.ava-tiny {
+        outline-width: 1px;
+      }
+      &.ava-large,
+      &.ava-x-large,
+      &.ava-2x-large {
+        border-width: 2px;
+      }
+    }
     img {
       object-fit: cover;
-
-      &.circle {
-        border: 1px solid var(--avatar-border-color);
-      }
     }
     .icon,
     .ava-text::after {
@@ -307,46 +329,5 @@
     .ava-text {
       font-size: inherit;
     }
-  }
-
-  .ava-blur {
-    position: absolute;
-    filter: blur(32px);
-  }
-
-  .ava-mask {
-    position: absolute;
-
-    &.circle {
-      border: 1px solid var(--avatar-border-color);
-      border-radius: 50%;
-    }
-
-    .roundedRect {
-      border-radius: 20%;
-    }
-  }
-
-  .ava-large .ava-mask,
-  .ava-x-large .ava-mask,
-  .ava-2x-large .ava-mask {
-    &.circle {
-      border-width: 2px;
-    }
-  }
-
-  .ava-inline .ava-mask,
-  .ava-inline.no-img,
-  .ava-card .ava-mask,
-  .ava-card.no-img,
-  .ava-x-small .ava-mask,
-  .ava-x-small.no-img,
-  .ava-smaller .ava-mask,
-  .ava-smaller.no-img,
-  .ava-small .ava-mask,
-  .ava-small.no-img,
-  .ava-medium .ava-mask,
-  .ava-medium.no-img {
-    border-style: none;
   }
 </style>

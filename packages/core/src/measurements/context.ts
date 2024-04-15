@@ -69,7 +69,7 @@ export class MeasureMetricsContext implements MeasureContext {
       c.end()
       return value
     } catch (err: any) {
-      await c.error('Error during:' + name, err)
+      await c.error('Error during:' + name, { err })
       throw err
     }
   }

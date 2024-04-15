@@ -18,9 +18,9 @@ export class NewProjectPage extends CommonTrackerPage {
     this.popupHeader = page.locator('form[id="tracker:string:NewProject"] div[class*="title"]:last-child', {
       hasText: 'New project'
     })
-    this.inputTitle = page.locator('input[placeholder="New project"]')
-    this.inputIdentifier = page.locator('input[placeholder="PRJCT"]')
-    this.inputDescription = page.locator('form[id="tracker:string:NewProject"] div.tiptap')
+    this.inputTitle = page.locator('div[id="project-title"] input')
+    this.inputIdentifier = page.locator('div[id="project-identifier"] input')
+    this.inputDescription = page.locator('div[id="project-description"] input')
     this.buttonChooseIcon = page.locator('div.antiGrid-row button.only-icon')
     this.buttonMakePrivate = page.locator('div.antiGrid-row span.toggle-switch')
     this.buttonCreateProject = page.locator('form[id="tracker:string:NewProject"] button[type="submit"]')

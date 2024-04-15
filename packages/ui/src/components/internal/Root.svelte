@@ -136,29 +136,31 @@
 <Theme>
   <div id="ui-root">
     <div class="antiStatusBar">
-      <div class="flex-row-center h-full content-color gap-3">
-        <div class="history-box flex-row-center gap-3" class:embedded={embeddedPlatform}>
-          <button
-            id="statusbar-back"
-            class="antiButton ghost jf-center bs-none no-focus resetIconSize statusButton square"
-            style:color={'var(--theme-dark-color)'}
-            on:click={() => {
-              history.back()
-            }}
-          >
-            <IconArrowLeft size={'small'} />
-          </button>
-          <button
-            id="statusbar-forward"
-            class="antiButton ghost jf-center bs-none no-focus resetIconSize statusButton square"
-            style:color={'var(--theme-dark-color)'}
-            on:click={() => {
-              history.forward()
-            }}
-          >
-            <IconArrowRight size={'small'} />
-          </button>
-        </div>
+      <div class="flex-row-center h-full content-color gap-3 pl-4">
+        {#if embeddedPlatform}
+          <div class="history-box flex-row-center gap-3">
+            <button
+              id="statusbar-back"
+              class="antiButton ghost jf-center bs-none no-focus resetIconSize statusButton square"
+              style:color={'var(--theme-dark-color)'}
+              on:click={() => {
+                history.back()
+              }}
+            >
+              <IconArrowLeft size={'small'} />
+            </button>
+            <button
+              id="statusbar-forward"
+              class="antiButton ghost jf-center bs-none no-focus resetIconSize statusButton square"
+              style:color={'var(--theme-dark-color)'}
+              on:click={() => {
+                history.forward()
+              }}
+            >
+              <IconArrowRight size={'small'} />
+            </button>
+          </div>
+        {/if}
         <div class="flex-row-center" style:-webkit-app-region={'no-drag'}>
           <RootBarExtension position="left" />
         </div>
@@ -221,11 +223,7 @@
 
       .history-box {
         -webkit-app-region: no-drag;
-        margin-left: 1rem;
-
-        &.embedded {
-          margin-left: 5.625rem;
-        }
+        margin-left: 4.625rem;
       }
       .maintenanceScheduled {
         padding: 0 0.5rem;

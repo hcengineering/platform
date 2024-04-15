@@ -23,6 +23,7 @@
   import CreateApplication from './CreateApplication.svelte'
   import IconApplication from './icons/Application.svelte'
   import FileDuo from './icons/FileDuo.svelte'
+  import SectionEmpty from './SectionEmpty.svelte'
 
   export let objectId: Ref<Vacancy>
   let applications: number
@@ -63,7 +64,7 @@
     </div>
   </div>
   {#if applications > 0}
-    {#if viewlet && !loading}
+    {#if viewlet !== undefined && !loading}
       <Scroller horizontal>
         <Table
           _class={recruit.class.Applicant}
@@ -76,16 +77,12 @@
       <Loading />
     {/if}
   {:else}
-    <div class="antiSection-empty solid flex-col-center mt-3">
-      <div class="caption-color">
-        <FileDuo size={'large'} />
-      </div>
-      <span class="content-dark-color">
-        <Label label={recruit.string.NoApplicationsForVacancy} />
-      </span>
+    <SectionEmpty icon={FileDuo} label={recruit.string.NoApplicationsForVacancy}>
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <span class="over-underline content-color" on:click={createApp}>
         <Label label={recruit.string.CreateAnApplication} />
       </span>
-    </div>
+    </SectionEmpty>
   {/if}
 </div>

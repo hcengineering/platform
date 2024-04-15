@@ -14,7 +14,12 @@
 // limitations under the License.
 //
 
-import { type Attachment, type AttachmentMetadata } from '@hcengineering/attachment'
+import { writable } from 'svelte/store'
+import attachments, {
+  type AttachmentPreviewExtension,
+  type Attachment,
+  type AttachmentMetadata
+} from '@hcengineering/attachment'
 import {
   type Class,
   concatLink,
@@ -24,8 +29,16 @@ import {
   type Space,
   type TxOperations as Client
 } from '@hcengineering/core'
-import presentation, { getFileUrl, getImageSize } from '@hcengineering/presentation'
-import { PlatformError, Severity, Status, getMetadata, setPlatformStatus, unknownError } from '@hcengineering/platform'
+import presentation, { createQuery, getFileUrl, getImageSize } from '@hcengineering/presentation'
+import {
+  PlatformError,
+  Severity,
+  Status,
+  getMetadata,
+  getResource,
+  setPlatformStatus,
+  unknownError
+} from '@hcengineering/platform'
 
 import attachment from './plugin'
 
@@ -173,4 +186,68 @@ async function getVideoSize (uuid: string): Promise<{ width: number, height: num
   })
 
   return await promise
+}
+
+export const previewTypes = writable<AttachmentPreviewExtension[]>([])
+const previewTypesQuery = createQuery(true)
+previewTypesQuery.query(attachments.class.AttachmentPreviewExtension, {}, (result) => {
+  previewTypes.set(result)
+})
+
+function getPreviewTypeRegExp (type: string): RegExp {
+  return new RegExp(`^${type.replaceAll('/', '\\/').replaceAll('*', '.*')}$`)
+}
+
+/**
+ * @public
+ */
+export async function isOpenable (contentType: string, _previewTypes: AttachmentPreviewExtension[]): Promise<boolean> {
+  for (const previewType of _previewTypes) {
+    if (await isApplicableType(previewType, contentType)) {
+      return true
+    }
+  }
+
+  return false
+}
+
+async function isApplicableType (
+  { contentType, availabilityChecker }: AttachmentPreviewExtension,
+  _contentType: string
+): Promise<boolean> {
+  const checkAvailability = availabilityChecker !== undefined ? await getResource(availabilityChecker) : undefined
+  const isAvailable: boolean = checkAvailability === undefined || (await checkAvailability())
+
+  return (
+    isAvailable &&
+    (Array.isArray(contentType) ? contentType : [contentType]).some((type) =>
+      getPreviewTypeRegExp(type).test(_contentType)
+    )
+  )
+}
+
+function comparePreviewTypes (a: AttachmentPreviewExtension, b: AttachmentPreviewExtension): number {
+  if (a.order === undefined && b.order === undefined) {
+    return 0
+  } else if (a.order === undefined) {
+    return -1
+  } else if (b.order === undefined) {
+    return 1
+  } else {
+    return a.order - b.order
+  }
+}
+
+export async function getPreviewType (
+  contentType: string,
+  _previewTypes: AttachmentPreviewExtension[]
+): Promise<AttachmentPreviewExtension | undefined> {
+  const applicableTypes: AttachmentPreviewExtension[] = []
+  for (const previewType of _previewTypes) {
+    if (await isApplicableType(previewType, contentType)) {
+      applicableTypes.push(previewType)
+    }
+  }
+
+  return applicableTypes.sort(comparePreviewTypes)[0]
 }

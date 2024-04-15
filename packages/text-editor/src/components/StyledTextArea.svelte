@@ -1,5 +1,6 @@
 <script lang="ts">
   import { AnyExtension } from '@tiptap/core'
+  import { Markup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { ButtonSize, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -21,8 +22,8 @@
   export let required = false
   export let enableBackReferences = false
 
-  let rawValue: string
-  let oldContent = ''
+  let rawValue: Markup
+  let oldContent: Markup = ''
 
   $: if (content !== undefined && oldContent !== content) {
     oldContent = content

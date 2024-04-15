@@ -9,7 +9,7 @@
 
   async function addCard (event: CustomEvent) {
     const title = event.detail
-    if (!title) {
+    if (!title || title.trim().length === 0) {
       return
     }
     await onAdd(title, true)

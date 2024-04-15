@@ -13,10 +13,12 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import core, {
   TxFactory,
   WorkspaceEvent,
   generateId,
+  systemAccountEmail,
   toWorkspaceString,
   type MeasureContext,
   type Ref,
@@ -63,6 +65,7 @@ export interface Timeouts {
 }
 
 class TSessionManager implements SessionManager {
+  private readonly statusPromises = new Map<string, Promise<void>>()
   readonly workspaces = new Map<string, Workspace>()
   checkInterval: any
 
@@ -145,7 +148,7 @@ class TSessionManager implements SessionManager {
         const now = Date.now()
         const diff = now - s[1].session.lastRequest
         if (diff > 60000 && this.ticks % 10 === 0) {
-          console.log('session hang, closing...', h[0], s[1].session.getUser())
+          void this.ctx.error('session hang, closing...', { sessionId: h[0], user: s[1].session.getUser() })
           void this.close(s[1].socket, h[1].workspaceId, 1001, 'CLIENT_HANGOUT')
           continue
         }
@@ -160,7 +163,11 @@ class TSessionManager implements SessionManager {
 
         for (const r of s[1].session.requests.values()) {
           if (now - r.start > 30000) {
-            console.log(h[0], 'request hang found, 30sec', h[0], s[1].session.getUser(), r.params)
+            void this.ctx.info('request hang found, 30sec', {
+              sessionId: h[0],
+              user: s[1].session.getUser(),
+              ...r.params
+            })
           }
         }
       }
@@ -179,6 +186,7 @@ class TSessionManager implements SessionManager {
       workspace: string
       workspaceUrl?: string | null
       workspaceName?: string
+      creating?: boolean
     }> {
     const userInfo = await (
       await fetch(accounts, {
@@ -212,8 +220,13 @@ class TSessionManager implements SessionManager {
     return await baseCtx.with('📲 add-session', {}, async (ctx) => {
       const wsString = toWorkspaceString(token.workspace, '@')
 
-      let workspaceInfo =
+      let workspaceInfo = await ctx.with('check-token', {}, async (ctx) =>
         accountsUrl !== '' ? await this.getWorkspaceInfo(accountsUrl, rawToken) : this.wsFromToken(token)
+      )
+      if (workspaceInfo?.creating === true && token.email !== systemAccountEmail) {
+        // No access to workspace for token.
+        return { error: new Error(`Workspace during creation phase ${token.email} ${token.workspace.name}`) }
+      }
       if (workspaceInfo === undefined && token.extra?.admin !== 'true') {
         // No access to workspace for token.
         return { error: new Error(`No access to workspace for token ${token.email} ${token.workspace.name}`) }
@@ -222,6 +235,10 @@ class TSessionManager implements SessionManager {
       }
 
       let workspace = this.workspaces.get(wsString)
+      if (workspace?.closeTimeout !== undefined) {
+        await ctx.info('Cancel workspace warm close', { wsString })
+        clearTimeout(workspace?.closeTimeout)
+      }
       await workspace?.closing
       workspace = this.workspaces.get(wsString)
       if (sessionId !== undefined && workspace?.sessions?.has(sessionId) === true) {
@@ -250,7 +267,7 @@ class TSessionManager implements SessionManager {
       let pipeline: Pipeline
       if (token.extra?.model === 'upgrade') {
         if (workspace.upgrade) {
-          pipeline = await ctx.with('💤 wait ' + workspaceName, {}, async () => await (workspace as Workspace).pipeline)
+          pipeline = await ctx.with('💤 wait', { workspaceName }, async () => await (workspace as Workspace).pipeline)
         } else {
           pipeline = await this.createUpgradeSession(
             token,
@@ -268,7 +285,7 @@ class TSessionManager implements SessionManager {
         if (workspace.upgrade) {
           return { upgrade: true }
         }
-        pipeline = await ctx.with('💤 wait ' + workspaceName, {}, async () => await (workspace as Workspace).pipeline)
+        pipeline = await ctx.with('💤 wait', { workspaceName }, async () => await (workspace as Workspace).pipeline)
       }
 
       const session = this.createSession(token, pipeline)
@@ -278,7 +295,9 @@ class TSessionManager implements SessionManager {
       this.sessions.set(ws.id, { session, socket: ws })
       // We need to delete previous session with Id if found.
       workspace.sessions.set(session.sessionId, { session, socket: ws })
-      await ctx.with('set-status', {}, () => this.setStatus(ctx, session, true))
+
+      // We do not need to wait for set-status, just return session to client
+      void ctx.with('set-status', {}, (ctx) => this.trySetStatus(ctx, session, true))
 
       if (this.timeMinutes > 0) {
         void ws.send(
@@ -296,6 +315,7 @@ class TSessionManager implements SessionManager {
     workspace: string
     workspaceUrl?: string | null
     workspaceName?: string
+    creating?: boolean
   } {
     return {
       workspace: token.workspace.name,
@@ -316,7 +336,7 @@ class TSessionManager implements SessionManager {
     workspaceName: string
   ): Promise<Pipeline> {
     if (LOGGING_ENABLED) {
-      console.log(workspaceName, 'reloading workspace', JSON.stringify(token))
+      await ctx.info('reloading workspace', { workspaceName, token: JSON.stringify(token) })
     }
     // If upgrade client is used.
     // Drop all existing clients
@@ -351,12 +371,17 @@ class TSessionManager implements SessionManager {
       for (const session of sessions.splice(0, 1)) {
         if (targets !== undefined && !targets.includes(session.session.getUser())) continue
         for (const _tx of tx) {
-          void session.socket.send(
-            ctx,
-            { result: _tx },
-            session.session.binaryResponseMode,
-            session.session.useCompression
-          )
+          try {
+            void session.socket.send(
+              ctx,
+              { result: _tx },
+              session.session.binaryResponseMode,
+              session.session.useCompression
+            )
+          } catch (err: any) {
+            Analytics.handleError(err)
+            void ctx.error('error during send', { error: err })
+          }
         }
       }
       if (sessions.length > 0) {
@@ -377,11 +402,12 @@ class TSessionManager implements SessionManager {
   ): Workspace {
     const upgrade = token.extra?.model === 'upgrade'
     const context = ctx.newChild('🧲 session', {})
+    const pipelineCtx = context.newChild('🧲 pipeline-factory', {})
     const workspace: Workspace = {
       context,
       id: generateId(),
       pipeline: pipelineFactory(
-        context,
+        pipelineCtx,
         { ...token.workspace, workspaceUrl, workspaceName },
         upgrade,
         (tx, targets) => {
@@ -393,10 +419,19 @@ class TSessionManager implements SessionManager {
       workspaceId: token.workspace,
       workspaceName
     }
-    if (LOGGING_ENABLED) console.time(workspaceName)
-    if (LOGGING_ENABLED) console.timeLog(workspaceName, 'Creating Workspace:', workspace.id)
     this.workspaces.set(toWorkspaceString(token.workspace), workspace)
     return workspace
+  }
+
+  private async trySetStatus (ctx: MeasureContext, session: Session, online: boolean): Promise<void> {
+    const current = this.statusPromises.get(session.getUser())
+    if (current !== undefined) {
+      await current
+    }
+    const promise = this.setStatus(ctx, session, online)
+    this.statusPromises.set(session.getUser(), promise)
+    await promise
+    this.statusPromises.delete(session.getUser())
   }
 
   private async setStatus (ctx: MeasureContext, session: Session, online: boolean): Promise<void> {
@@ -429,11 +464,9 @@ class TSessionManager implements SessionManager {
   }
 
   async close (ws: ConnectionSocket, workspaceId: WorkspaceId, code: number, reason: string): Promise<void> {
-    // if (LOGGING_ENABLED) console.log(workspaceId.name, `closing websocket, code: ${code}, reason: ${reason}`)
     const wsid = toWorkspaceString(workspaceId)
     const workspace = this.workspaces.get(wsid)
     if (workspace === undefined) {
-      if (LOGGING_ENABLED) console.error(new Error('internal: cannot find sessions'))
       return
     }
     const sessionRef = this.sessions.get(ws.id)
@@ -453,12 +486,14 @@ class TSessionManager implements SessionManager {
       const user = sessionRef.session.getUser()
       const another = Array.from(workspace.sessions.values()).findIndex((p) => p.session.getUser() === user)
       if (another === -1) {
-        await this.setStatus(workspace.context, sessionRef.session, false)
+        await this.trySetStatus(workspace.context, sessionRef.session, false)
       }
       if (!workspace.upgrade) {
         // Wait some time for new client to appear before closing workspace.
         if (workspace.sessions.size === 0) {
-          setTimeout(() => {
+          clearTimeout(workspace.closeTimeout)
+          void this.ctx.info('schedule warm closing', { workspace: workspace.workspaceName, wsid })
+          workspace.closeTimeout = setTimeout(() => {
             void this.performWorkspaceCloseCheck(workspace, workspaceId, wsid)
           }, this.timeouts.shutdownWarmTimeout)
         }
@@ -469,7 +504,15 @@ class TSessionManager implements SessionManager {
   }
 
   async closeAll (wsId: string, workspace: Workspace, code: number, reason: 'upgrade' | 'shutdown'): Promise<void> {
-    if (LOGGING_ENABLED) console.timeLog(wsId, `closing workspace ${workspace.id}, code: ${code}, reason: ${reason}`)
+    if (LOGGING_ENABLED) {
+      await this.ctx.info('closing workspace', {
+        workspace: workspace.id,
+        wsName: workspace.workspaceName,
+        code,
+        reason,
+        wsId
+      })
+    }
 
     const sessions = Array.from(workspace.sessions)
     workspace.sessions = new Map()
@@ -481,24 +524,34 @@ class TSessionManager implements SessionManager {
         await this.sendUpgrade(workspace.context, webSocket, s.binaryResponseMode)
       }
       webSocket.close()
-      await this.setStatus(workspace.context, s, false)
+      await this.trySetStatus(workspace.context, s, false)
     }
 
-    if (LOGGING_ENABLED) console.timeLog(wsId, workspace.id, 'Clients disconnected. Closing Workspace...')
+    if (LOGGING_ENABLED) {
+      await this.ctx.info('Clients disconnected. Closing Workspace...', {
+        wsId,
+        workspace: workspace.id,
+        wsName: workspace.workspaceName
+      })
+    }
     await Promise.all(sessions.map((s) => closeS(s[1].session, s[1].socket)))
 
     const closePipeline = async (): Promise<void> => {
       try {
-        if (LOGGING_ENABLED) console.timeLog(wsId, 'closing pipeline')
-        await (await workspace.pipeline).close()
-        if (LOGGING_ENABLED) console.timeLog(wsId, 'closing pipeline done')
+        await this.ctx.with('close-pipeline', {}, async () => {
+          await (await workspace.pipeline).close()
+        })
       } catch (err: any) {
-        console.error(err)
+        Analytics.handleError(err)
+        await this.ctx.error('close-pipeline-error', { error: err })
       }
     }
-    await Promise.race([closePipeline(), timeoutPromise(15000)])
-    if (LOGGING_ENABLED) console.timeLog(wsId, 'Workspace closed...')
-    console.timeEnd(wsId)
+    await this.ctx.with('closing', {}, async () => {
+      await Promise.race([closePipeline(), timeoutPromise(15000)])
+    })
+    if (LOGGING_ENABLED) {
+      await this.ctx.info('Workspace closed...', { workspace: workspace.id, wsId, wsName: workspace.workspaceName })
+    }
   }
 
   private async sendUpgrade (ctx: MeasureContext, webSocket: ConnectionSocket, binary: boolean): Promise<void> {
@@ -530,31 +583,37 @@ class TSessionManager implements SessionManager {
   ): Promise<void> {
     if (workspace.sessions.size === 0) {
       const wsUID = workspace.id
+      const logParams = { wsid, workspace: workspace.id, wsName: workspaceId.name }
       if (LOGGING_ENABLED) {
-        console.log(workspaceId.name, 'no sessions for workspace', wsid, wsUID)
+        await this.ctx.info('no sessions for workspace', logParams)
       }
 
-      const waitAndClose = async (workspace: Workspace): Promise<void> => {
-        try {
-          const pl = await workspace.pipeline
-          await Promise.race([pl, timeoutPromise(60000)])
-          await Promise.race([pl.close(), timeoutPromise(60000)])
+      if (workspace.closing === undefined) {
+        const waitAndClose = async (workspace: Workspace): Promise<void> => {
+          try {
+            if (workspace.sessions.size === 0) {
+              const pl = await workspace.pipeline
+              await Promise.race([pl, timeoutPromise(60000)])
+              await Promise.race([pl.close(), timeoutPromise(60000)])
 
-          if (this.workspaces.get(wsid)?.id === wsUID) {
+              if (this.workspaces.get(wsid)?.id === wsUID) {
+                this.workspaces.delete(wsid)
+              }
+              workspace.context.end()
+              if (LOGGING_ENABLED) {
+                await this.ctx.info('Closed workspace', logParams)
+              }
+            }
+          } catch (err: any) {
+            Analytics.handleError(err)
             this.workspaces.delete(wsid)
-          }
-          workspace.context.end()
-          if (LOGGING_ENABLED) {
-            console.timeLog(workspaceId.name, 'Closed workspace', wsUID)
-          }
-        } catch (err: any) {
-          this.workspaces.delete(wsid)
-          if (LOGGING_ENABLED) {
-            console.error(workspaceId.name, err)
+            if (LOGGING_ENABLED) {
+              await this.ctx.error('failed', { ...logParams, error: err })
+            }
           }
         }
+        workspace.closing = waitAndClose(workspace)
       }
-      workspace.closing = waitAndClose(workspace)
       await workspace.closing
     }
   }
@@ -562,13 +621,22 @@ class TSessionManager implements SessionManager {
   broadcast (from: Session | null, workspaceId: WorkspaceId, resp: Response<any>, target?: string[]): void {
     const workspace = this.workspaces.get(toWorkspaceString(workspaceId))
     if (workspace === undefined) {
-      console.error(new Error('internal: cannot find sessions'))
+      void this.ctx.error('internal: cannot find sessions', {
+        workspaceId: workspaceId.name,
+        target,
+        userId: from?.getUser() ?? '$unknown'
+      })
       return
     }
     if (workspace?.upgrade ?? false) {
       return
     }
-    if (LOGGING_ENABLED) console.log(workspaceId.name, `server broadcasting to ${workspace.sessions.size} clients...`)
+    if (LOGGING_ENABLED) {
+      void this.ctx.info('server broadcasting to clients...', {
+        workspace: workspaceId.name,
+        count: workspace.sessions.size
+      })
+    }
 
     const sessions = [...workspace.sessions.values()]
     const ctx = this.ctx.newChild('📭 broadcast', {})
@@ -618,8 +686,18 @@ class TSessionManager implements SessionManager {
 
     const st = Date.now()
     try {
-      await userCtx.with('🧭 handleRequest', {}, async (ctx) => {
+      const backupMode = 'loadChunk' in service
+      await userCtx.with(`🧭 ${backupMode ? 'handleBackup' : 'handleRequest'}`, {}, async (ctx) => {
         const request = await ctx.with('📥 read', {}, async () => readRequest(msg, false))
+        if (request.id === -1 && request.method === 'close') {
+          const wsRef = this.workspaces.get(workspace)
+          if (wsRef !== undefined) {
+            await this.close(ws, wsRef?.workspaceId, 1000, 'client request to close workspace')
+          } else {
+            ws.close()
+          }
+          return
+        }
         if (request.id === -1 && request.method === 'hello') {
           const hello = request as HelloRequest
           service.binaryResponseMode = hello.binary ?? false
@@ -627,19 +705,14 @@ class TSessionManager implements SessionManager {
           service.useBroadcast = hello.broadcast ?? false
 
           if (LOGGING_ENABLED) {
-            console.timeLog(
-              workspace,
-              'hello happen',
-              service.getUser(),
-              'binary:',
-              service.binaryResponseMode,
-              'compression:',
-              service.useCompression,
-              'workspace users:',
-              this.workspaces.get(workspace)?.sessions?.size,
-              'total users:',
-              this.sessions.size
-            )
+            await ctx.info('hello happen', {
+              user: service.getUser(),
+              binary: service.binaryResponseMode,
+              compression: service.useCompression,
+              timeToHello: Date.now() - service.createTime,
+              workspaceUsers: this.workspaces.get(workspace)?.sessions?.size,
+              totalUsers: this.sessions.size
+            })
           }
           const helloResponse: HelloResponse = {
             id: -1,
@@ -684,7 +757,10 @@ class TSessionManager implements SessionManager {
             service.useCompression
           )
         } catch (err: any) {
-          if (LOGGING_ENABLED) console.error(err)
+          Analytics.handleError(err)
+          if (LOGGING_ENABLED) {
+            await this.ctx.error('error handle request', { error: err, request })
+          }
           const resp: Response<any> = {
             id: request.id,
             error: unknownError(err),
@@ -726,7 +802,10 @@ class TSessionManager implements SessionManager {
         service.useCompression
       )
     } catch (err: any) {
-      if (LOGGING_ENABLED) console.error(err)
+      Analytics.handleError(err)
+      if (LOGGING_ENABLED) {
+        await ctx.error('error handle measure', { error: err, request })
+      }
       const resp: Response<any> = {
         id: request.id,
         error: unknownError(err),

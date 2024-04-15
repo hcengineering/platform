@@ -23,6 +23,7 @@
   import { floorFractionDigits } from '../utils'
   import { themeStore } from '@hcengineering/theme'
 
+  export let id: string | undefined = undefined
   export let label: IntlString | undefined = undefined
   export let maxWidth: string = '100%'
   export let value: string | number | undefined = undefined
@@ -106,6 +107,7 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
+  {id}
   class="antiEditBox"
   class:flex-grow={fullSize}
   class:w-full={focusable || fullSize}

@@ -15,7 +15,7 @@
 
 import { Event } from '@hcengineering/calendar'
 import type { Channel, Organization, Person } from '@hcengineering/contact'
-import type { AttachedData, AttachedDoc, Ref, Space, Status, Timestamp } from '@hcengineering/core'
+import type { AttachedData, AttachedDoc, Markup, Ref, Space, Status, Timestamp } from '@hcengineering/core'
 import { TagReference } from '@hcengineering/tags'
 import type { Project, Task } from '@hcengineering/task'
 
@@ -102,6 +102,6 @@ export interface Opinion extends AttachedDoc {
   attachedTo: Ref<Review>
   comments?: number
   attachments?: number
-  description: string
+  description: Markup
   value: string
 }

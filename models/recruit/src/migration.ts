@@ -75,10 +75,14 @@ export const recruitOperation: MigrateOperation = {
     ])
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    const tx = new TxOperations(client, core.account.System)
-    await createDefaults(tx)
-
     await tryUpgrade(client, recruitId, [
+      {
+        state: 'create-default-project',
+        func: async (client) => {
+          const tx = new TxOperations(client, core.account.System)
+          await createDefaults(tx)
+        }
+      },
       {
         state: 'remove-members',
         func: async (client): Promise<void> => {

@@ -18,7 +18,12 @@
   import { getClient } from '@hcengineering/presentation'
   import { Action, IconEdit } from '@hcengineering/ui'
   import { getActions } from '@hcengineering/view-resources'
-  import { getNotificationsCount, InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
+  import {
+    getNotificationsCount,
+    InboxNotificationsClientImpl,
+    isActivityNotification,
+    isMentionNotification
+  } from '@hcengineering/notification-resources'
   import { createEventDispatcher } from 'svelte'
 
   import NavItem from './NavItem.svelte'
@@ -38,9 +43,7 @@
   let actions: Action[] = []
 
   notificationClient.inboxNotificationsByContext.subscribe((res) => {
-    notifications = (res.get(context._id) ?? []).filter(
-      ({ _class }) => _class === notification.class.ActivityInboxNotification
-    )
+    notifications = (res.get(context._id) ?? []).filter((n) => isMentionNotification(n) || isActivityNotification(n))
   })
 
   $: void getNotificationsCount(context, notifications).then((res) => {

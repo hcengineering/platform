@@ -21,6 +21,7 @@
   import { RefAction, TextEditorHandler, TextFormatCategory } from '../types'
   import { defaultRefActions, getModelRefActions } from './editor/actions'
   import TextEditor from './TextEditor.svelte'
+  import { Markup } from '@hcengineering/core'
 
   const dispatch = createEventDispatcher()
 
@@ -63,10 +64,10 @@
   export function setEditable (editable: boolean): void {
     textEditor?.setEditable(editable)
   }
-  export function getContent (): string {
+  export function getContent (): Markup {
     return content
   }
-  export function setContent (data: string): void {
+  export function setContent (data: Markup): void {
     textEditor?.setContent(data)
   }
   export function insertText (text: string): void {
@@ -82,13 +83,28 @@
           ? 'max-content'
           : maxHeight
 
-  const editorHandler: TextEditorHandler = {
+  export const editorHandler: TextEditorHandler = {
     insertText: (text) => {
       textEditor?.insertText(text)
     },
-    insertTemplate: (name, text) => {
-      textEditor?.insertText(text)
+    insertMarkup: (markup) => {
+      textEditor?.insertMarkup(markup)
+    },
+    insertTemplate: (name, markup) => {
+      textEditor?.insertMarkup(markup)
       dispatch('template', name)
+    },
+    insertTable (options: { rows?: number, cols?: number, withHeaderRow?: boolean }) {
+      textEditor?.insertTable(options)
+    },
+    insertCodeBlock: (pos?: number) => {
+      textEditor?.insertCodeBlock(pos)
+    },
+    insertSeparatorLine: () => {
+      textEditor?.insertSeparatorLine()
+    },
+    insertContent: (value, options) => {
+      textEditor?.insertContent(value, options)
     },
     focus: () => {
       textEditor?.focus()

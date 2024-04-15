@@ -145,4 +145,16 @@ export function createModel (builder: Builder): void {
     },
     tags.filter.FilterTagsNin
   )
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_TAGS,
+    disabled: [
+      { modifiedOn: 1 },
+      { modifiedBy: 1 },
+      { createdBy: 1 },
+      { createdOn: 1 },
+      { space: 1 },
+      { attachedToClass: 1 },
+      { createdOn: -1 }
+    ]
+  })
 }

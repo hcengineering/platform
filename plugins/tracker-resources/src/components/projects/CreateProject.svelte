@@ -31,7 +31,6 @@
   import presentation, { Card, createQuery, getClient } from '@hcengineering/presentation'
   import task, { ProjectType, TaskType } from '@hcengineering/task'
   import { taskTypeStore, typeStore } from '@hcengineering/task-resources'
-  import { StyledTextBox } from '@hcengineering/text-editor'
   import { IssueStatus, Project, TimeReportDayType } from '@hcengineering/tracker'
   import {
     Button,
@@ -116,7 +115,7 @@
     const asMixin = hierarchy.as(project, typeType?.targetClass)
 
     return roles.reduce<RolesAssignment>((prev, { _id }) => {
-      prev[_id] = (asMixin as any)[_id]
+      prev[_id] = (asMixin as any)[_id] ?? []
 
       return prev
     }, {})
@@ -304,8 +303,8 @@
   label={isNew ? tracker.string.NewProject : tracker.string.EditProject}
   okLabel={isNew ? presentation.string.Create : presentation.string.Save}
   okAction={handleSave}
-  canSave={name.length > 0 &&
-    identifier.length > 0 &&
+  canSave={name.trim().length > 0 &&
+    identifier.trim().length > 0 &&
     !projectsIdentifiers.has(identifier.toUpperCase()) &&
     !(members.length === 0 && isPrivate)}
   accentHeader
@@ -339,6 +338,7 @@
       </div>
       <div class="padding">
         <EditBox
+          id="project-title"
           bind:value={name}
           placeholder={tracker.string.ProjectTitlePlaceholder}
           kind={'large-style'}
@@ -360,6 +360,7 @@
       </div>
       <div bind:this={changeIdentityRef} class="padding flex-row-center relative">
         <EditBox
+          id="project-identifier"
           bind:value={identifier}
           disabled={!isNew}
           placeholder={tracker.string.ProjectIdentifierPlaceholder}
@@ -379,10 +380,9 @@
         <Label label={tracker.string.Description} />
       </div>
       <div class="padding clear-mins">
-        <StyledTextBox
-          alwaysEdit
-          showButtons={false}
-          bind:content={description}
+        <EditBox
+          id="project-description"
+          bind:value={description}
           placeholder={tracker.string.IssueDescriptionPlaceholder}
         />
       </div>

@@ -19,10 +19,8 @@
   import { getAttribute, getClient, KeyedAttribute, updateAttribute } from '@hcengineering/presentation'
   import { FullDescriptionBox } from '@hcengineering/text-editor'
 
-  // export let objectId: Ref<Doc>
-  // export let _class: Ref<Class<Doc>>
+  // TODO Rename this component to MarkupEditor
   export let object: Doc
-  // export let space: Ref<Space>
   export let key: KeyedAttribute
 
   $: description = getAttribute(getClient(), object, key)

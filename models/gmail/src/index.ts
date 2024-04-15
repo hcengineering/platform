@@ -266,7 +266,8 @@ export function createModel (builder: Builder): void {
       group: gmail.ids.EmailNotificationGroup,
       allowedForAuthor: true,
       providers: {
-        [notification.providers.PlatformNotification]: true
+        [notification.providers.PlatformNotification]: true,
+        [notification.providers.BrowserNotification]: false
       }
     },
     gmail.ids.EmailNotification
@@ -292,5 +293,18 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(gmail.class.Message, core.class.Class, core.mixin.FullTextSearchContext, {
     parentPropagate: false
+  })
+
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_GMAIL,
+    disabled: [
+      { _class: 1 },
+      { createdOn: -1 },
+      { space: 1 },
+      { modifiedBy: 1 },
+      { createdBy: 1 },
+      { attachedToClass: 1 },
+      { createdOn: -1 }
+    ]
   })
 }

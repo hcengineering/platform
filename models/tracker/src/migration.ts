@@ -31,6 +31,7 @@ import core, {
 import {
   createOrUpdate,
   tryMigrate,
+  tryUpgrade,
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient
@@ -43,6 +44,7 @@ import {
   TimeReportDayType,
   classicIssueTaskStatuses,
   createStatesData,
+  trackerId,
   type Issue,
   type IssueStatus,
   type Project
@@ -497,7 +499,7 @@ async function restoreTaskTypes (client: MigrationClient): Promise<void> {
 
 export const trackerOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, 'tracker', [
+    await tryMigrate(client, trackerId, [
       {
         state: 'fix-category-descriptors',
         func: async (client) => {
@@ -642,7 +644,14 @@ export const trackerOperation: MigrateOperation = {
     ])
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    const tx = new TxOperations(client, core.account.System)
-    await createDefaults(tx)
+    await tryUpgrade(client, trackerId, [
+      {
+        state: 'create-defaults',
+        func: async (client) => {
+          const tx = new TxOperations(client, core.account.System)
+          await createDefaults(tx)
+        }
+      }
+    ])
   }
 }

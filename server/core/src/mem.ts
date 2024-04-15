@@ -38,7 +38,6 @@ import { type DbAdapter } from './adapter'
  * @public
  */
 export class DummyDbAdapter implements DbAdapter {
-  async init (model: Tx[]): Promise<void> {}
   async findAll<T extends Doc>(
     ctx: MeasureContext,
     _class: Ref<Class<T>>,
@@ -57,22 +56,22 @@ export class DummyDbAdapter implements DbAdapter {
 
   async close (): Promise<void> {}
 
-  find (domain: Domain): StorageIterator {
+  find (ctx: MeasureContext, domain: Domain): StorageIterator {
     return {
       next: async () => undefined,
       close: async () => {}
     }
   }
 
-  async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+  async load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
     return []
   }
 
-  async upload (domain: Domain, docs: Doc[]): Promise<void> {}
+  async upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {}
 
-  async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
+  async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
 
-  async update (domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {}
+  async update (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {}
 }
 
 class InMemoryAdapter extends DummyDbAdapter implements DbAdapter {
@@ -92,22 +91,12 @@ class InMemoryAdapter extends DummyDbAdapter implements DbAdapter {
     return await this.modeldb.findAll(_class, query, options)
   }
 
-  async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+  async load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
     return await this.modeldb.findAll(core.class.Doc, { _id: { $in: docs } })
   }
 
   async tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {
     return await this.modeldb.tx(...tx)
-  }
-
-  async init (model: Tx[]): Promise<void> {
-    for (const tx of model) {
-      try {
-        await this.modeldb.tx(tx)
-      } catch (err: any) {
-        console.error('skip broken TX', err)
-      }
-    }
   }
 }
 

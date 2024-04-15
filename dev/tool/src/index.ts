@@ -40,6 +40,7 @@ import { setMetadata } from '@hcengineering/platform'
 import {
   backup,
   backupList,
+  compactBackup,
   createFileBackupStorage,
   createStorageBackupStorage,
   restore
@@ -52,7 +53,7 @@ import { type Db, type MongoClient } from 'mongodb'
 import { clearTelegramHistory } from './telegram'
 import { diffWorkspace, updateField } from './workspace'
 
-import {
+import core, {
   getWorkspaceId,
   MeasureMetricsContext,
   metricsToString,
@@ -63,7 +64,8 @@ import {
   type Version
 } from '@hcengineering/core'
 import { consoleModelLogger, type MigrateOperation } from '@hcengineering/model'
-import { getMongoClient } from '@hcengineering/mongo'
+import contact from '@hcengineering/model-contact'
+import { getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
 import { openAIConfigDefaults } from '@hcengineering/openai'
 import { type StorageAdapter } from '@hcengineering/server-core'
 import path from 'path'
@@ -75,8 +77,8 @@ import {
   fixCommentDoubleIdCreate,
   fixMinioBW,
   fixSkills,
-  restoreRecruitingTaskTypes,
-  optimizeModel
+  optimizeModel,
+  restoreRecruitingTaskTypes
 } from './clean'
 import { checkOrphanWorkspaces } from './cleanOrphan'
 import { changeConfiguration } from './configuration'
@@ -136,6 +138,7 @@ export function devTool (
     const _client = await client.getClient()
     await f(_client.db(ACCOUNT_DB), _client)
     client.close()
+    console.log(`closing database connection to '${uri}'...`)
   }
 
   program.version('0.0.1')
@@ -361,13 +364,12 @@ export function devTool (
 
           const avgTime = (Date.now() - st) / (workspaces.length - toProcess + 1)
           console.log(
-            '---UPGRADING----',
-            ws.workspace,
-            ws.workspaceUrl,
+            '----------------------------------------------------------\n---UPGRADING----',
             'pending: ',
             toProcess,
-            'ETA:',
-            Math.floor(avgTime * toProcess * 100) / 100
+            'ETA: ',
+            Math.floor(avgTime * toProcess),
+            ws.workspace
           )
           toProcess--
           try {
@@ -382,11 +384,11 @@ export function devTool (
               logger,
               cmd.force
             )
-            console.log('---UPGRADING-DONE----', ws.workspace, Date.now() - t)
+            console.log('---done---------', 'pending: ', toProcess, 'TIME:', Date.now() - t, ws.workspace)
           } catch (err: any) {
             withError.push(ws.workspace)
             logger.log('error', JSON.stringify(err))
-            console.log('---UPGRADING-FAILED----', ws.workspace, Date.now() - t)
+            console.log('   FAILED-------', 'pending: ', toProcess, 'TIME:', Date.now() - t, ws.workspace)
           } finally {
             if (!cmd.console) {
               ;(logger as FileModelLogger).close()
@@ -407,7 +409,7 @@ export function devTool (
           console.log('Upgrade done')
           // console.log((process as any)._getActiveHandles())
           // console.log((process as any)._getActiveRequests())
-          process.exit()
+          // process.exit()
         } else {
           console.log('UPGRADE write logs at:', cmd.logs)
           for (const ws of workspaces) {
@@ -476,6 +478,25 @@ export function devTool (
       })
     })
 
+  program.command('fix-person-accounts').action(async () => {
+    const { mongodbUri, version } = prepareTools()
+    await withDatabase(mongodbUri, async (db, client) => {
+      const ws = await listWorkspaces(toolCtx, db, productId)
+      for (const w of ws) {
+        const wsDb = getWorkspaceDB(client, { name: w.workspace, productId })
+        await wsDb.collection('tx').updateMany(
+          {
+            objectClass: contact.class.PersonAccount,
+            objectSpace: null
+          },
+          { $set: { objectSpace: core.space.Model } }
+        )
+      }
+
+      console.log('latest model version:', JSON.stringify(version))
+    })
+  })
+
   program
     .command('show-accounts')
     .description('Show accounts')
@@ -522,6 +543,15 @@ export function devTool (
     })
 
   program
+    .command('backup-compact <dirName>')
+    .description('Compact a given backup, will create one snapshot clean unused resources')
+    .option('-f, --force', 'Force compact.', false)
+    .action(async (dirName: string, cmd: { force: boolean }) => {
+      const storage = await createFileBackupStorage(dirName)
+      await compactBackup(storage, cmd.force)
+    })
+
+  program
     .command('backup-restore <dirName> <workspace> [date]')
     .option('-m, --merge', 'Enable merge of remote and backup content.', false)
     .description('dump workspace transactions and minio resources')
@@ -550,6 +580,44 @@ export function devTool (
         dirName
       )
       await backup(transactorUrl, getWorkspaceId(workspace, productId), storage)
+    })
+
+  program
+    .command('backup-compact-s3 <bucketName> <dirName>')
+    .description('Compact a given backup to just one snapshot')
+    .option('-f, --force', 'Force compact.', false)
+    .action(async (bucketName: string, dirName: string, cmd: { force: boolean }) => {
+      const { storageAdapter } = prepareTools()
+      const storage = await createStorageBackupStorage(
+        toolCtx,
+        storageAdapter,
+        getWorkspaceId(bucketName, productId),
+        dirName
+      )
+      await compactBackup(storage, cmd.force)
+    })
+
+  program
+    .command('backup-compact-s3-all <bucketName>')
+    .description('Compact a given backup to just one snapshot')
+    .option('-f, --force', 'Force compact.', false)
+    .action(async (bucketName: string, dirName: string, cmd: { force: boolean }) => {
+      const { mongodbUri } = prepareTools()
+      await withDatabase(mongodbUri, async (db) => {
+        const { storageAdapter } = prepareTools()
+        const storage = await createStorageBackupStorage(
+          toolCtx,
+          storageAdapter,
+          getWorkspaceId(bucketName, productId),
+          dirName
+        )
+        const workspaces = await listWorkspaces(toolCtx, db, productId)
+
+        for (const w of workspaces) {
+          console.log(`clearing ${w.workspace} history:`)
+          await compactBackup(storage, cmd.force)
+        }
+      })
     })
   program
     .command('backup-s3-restore <bucketName> <dirName> <workspace> [date]')

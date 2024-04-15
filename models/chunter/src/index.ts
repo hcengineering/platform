@@ -62,7 +62,7 @@ import notification, { notificationActionTemplates } from '@hcengineering/model-
 import view, { createAction, template, actionTemplates as viewTemplates } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
-import type { IntlString, Resource } from '@hcengineering/platform'
+import type { IntlString } from '@hcengineering/platform'
 import { TActivityMessage } from '@hcengineering/model-activity'
 
 import chunter from './plugin'
@@ -190,7 +190,6 @@ export class TChatMessageViewlet extends TDoc implements ChatMessageViewlet {
 @Mixin(chunter.mixin.ObjectChatPanel, core.class.Class)
 export class TObjectChatPanel extends TClass implements ObjectChatPanel {
   ignoreKeys!: string[]
-  titleProvider!: Resource<(object: Doc) => string>
 }
 
 const actionTemplates = template({
@@ -456,6 +455,7 @@ export function createModel (builder: Builder, options = { addApplication: true 
       objectClass: chunter.class.ChatMessage,
       providers: {
         [notification.providers.EmailNotification]: false,
+        [notification.providers.BrowserNotification]: true,
         [notification.providers.PlatformNotification]: true
       },
       group: chunter.ids.ChunterNotificationGroup,
@@ -478,7 +478,8 @@ export function createModel (builder: Builder, options = { addApplication: true 
       txClasses: [core.class.TxCreateDoc],
       objectClass: chunter.class.ChatMessage,
       providers: {
-        [notification.providers.PlatformNotification]: true
+        [notification.providers.PlatformNotification]: true,
+        [notification.providers.BrowserNotification]: true
       },
       group: chunter.ids.ChunterNotificationGroup
     },
@@ -495,7 +496,8 @@ export function createModel (builder: Builder, options = { addApplication: true 
       txClasses: [core.class.TxCreateDoc],
       objectClass: chunter.class.ThreadMessage,
       providers: {
-        [notification.providers.PlatformNotification]: true
+        [notification.providers.PlatformNotification]: true,
+        [notification.providers.BrowserNotification]: true
       },
       group: chunter.ids.ChunterNotificationGroup
     },
@@ -740,6 +742,11 @@ export function createModel (builder: Builder, options = { addApplication: true 
 
   builder.mixin(chunter.class.ThreadMessage, core.class.Class, activity.mixin.ActivityMessagePreview, {
     presenter: chunter.component.ThreadMessagePreview
+  })
+
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_CHUNTER,
+    disabled: [{ _class: 1 }, { space: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { createdOn: -1 }]
   })
 }
 

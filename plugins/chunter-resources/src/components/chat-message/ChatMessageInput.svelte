@@ -21,6 +21,7 @@
   import chunter, { ChatMessage, ThreadMessage } from '@hcengineering/chunter'
   import { PersonAccount } from '@hcengineering/contact'
   import activity, { ActivityMessage } from '@hcengineering/activity'
+  import { EmptyMarkup } from '@hcengineering/text-editor'
 
   export let object: Doc
   export let chatMessage: ChatMessage | undefined = undefined
@@ -47,8 +48,8 @@
   const draftController = new DraftController<MessageDraft>(draftKey)
   const currentDraft = shouldSaveDraft ? $draftsStore[draftKey] : undefined
 
-  const emptyMessage = {
-    message: '<p></p>',
+  const emptyMessage: Pick<MessageDraft, 'message' | 'attachments'> = {
+    message: EmptyMarkup,
     attachments: 0
   }
 

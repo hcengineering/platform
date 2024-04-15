@@ -17,6 +17,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { AttributeModel } from '@hcengineering/view'
   import { getObjectPresenter } from '../utils'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let objectId: Ref<Doc> | undefined = undefined
   export let _class: Ref<Class<Doc>> | undefined = undefined
@@ -61,10 +62,8 @@
       .then((p) => {
         presenter = p
       })
-      .catch((p) => {
-        console.log(objectId)
-        console.log(_class)
-        console.log(value)
+      .catch((p: any) => {
+        Analytics.handleError(p)
         throw p
       })
   }

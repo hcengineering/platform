@@ -45,7 +45,7 @@
 <SpaceCreateCard
   label={board.string.CreateBoard}
   okAction={onCreateBoard}
-  canSave={name.length > 0 && typeId !== undefined}
+  canSave={name.trim().length > 0 && typeId !== undefined}
   on:close={() => {
     dispatch('close')
   }}

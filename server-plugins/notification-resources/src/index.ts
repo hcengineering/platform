@@ -45,14 +45,17 @@ import core, {
 import notification, {
   ActivityInboxNotification,
   BaseNotificationType,
+  BrowserNotification,
   ClassCollaborators,
   Collaborators,
   CommonInboxNotification,
   DocNotifyContext,
   InboxNotification,
+  notificationId,
+  NotificationStatus,
   NotificationType
 } from '@hcengineering/notification'
-import { getMetadata, getResource } from '@hcengineering/platform'
+import { getMetadata, getResource, translate } from '@hcengineering/platform'
 import type { TriggerControl } from '@hcengineering/server-core'
 import serverNotification, {
   getEmployee,
@@ -135,7 +138,8 @@ export async function getCommonNotificationTxes (
       notifyContexts,
       data,
       _class,
-      modifiedOn
+      modifiedOn,
+      notifyResult.push
     )
   }
 
@@ -365,6 +369,7 @@ export async function pushInboxNotifications (
   data: Partial<Data<InboxNotification>>,
   _class: Ref<Class<InboxNotification>>,
   modifiedOn: Timestamp,
+  shouldPush: boolean,
   shouldUpdateTimestamp = true
 ): Promise<void> {
   const context = getDocNotifyContext(contexts, targetUser, attachedTo, res)
@@ -396,15 +401,116 @@ export async function pushInboxNotifications (
   }
 
   if (!isHidden) {
-    res.push(
-      control.txFactory.createTxCreateDoc(_class, space, {
-        user: targetUser,
-        isViewed: false,
-        docNotifyContext: docNotifyContextId,
-        ...data
-      })
-    )
+    const notificationData = {
+      user: targetUser,
+      isViewed: false,
+      docNotifyContext: docNotifyContextId,
+      ...data
+    }
+    const notificationTx = control.txFactory.createTxCreateDoc(_class, space, notificationData)
+    res.push(notificationTx)
+    if (shouldPush) {
+      const pushTx = await createPushFromInbox(control, targetUser, space, docNotifyContextId, notificationData, _class)
+      if (pushTx !== undefined) {
+        res.push(pushTx)
+      }
+    }
   }
+}
+
+async function activityInboxNotificationToText (doc: Data<ActivityInboxNotification>): Promise<[string, string]> {
+  let title: string = ''
+  let body: string = ''
+
+  const params = doc.intlParams ?? {}
+  if (doc.intlParamsNotLocalized != null && Object.keys(doc.intlParamsNotLocalized).length > 0) {
+    for (const key in doc.intlParamsNotLocalized) {
+      const val = doc.intlParamsNotLocalized[key]
+      params[key] = await translate(val, params)
+    }
+  }
+  if (doc.title != null) {
+    title = await translate(doc.title, params)
+  }
+  if (doc.body != null) {
+    body = await translate(doc.body, params)
+  }
+  return [title, body]
+}
+
+async function commonInboxNotificationToText (doc: Data<CommonInboxNotification>): Promise<[string, string]> {
+  let title: string = ''
+  let body: string = ''
+
+  let params = doc.intlParams ?? {}
+  if (doc.props != null) {
+    params = { ...params, ...doc.props }
+  }
+  if (doc.intlParamsNotLocalized != null && Object.keys(doc.intlParamsNotLocalized).length > 0) {
+    for (const key in doc.intlParamsNotLocalized) {
+      const val = doc.intlParamsNotLocalized[key]
+      params[key] = await translate(val, params)
+    }
+  }
+  if (doc.header != null) {
+    title = await translate(doc.header, params)
+  }
+  if (doc.messageHtml != null) {
+    body = doc.messageHtml
+  }
+  if (doc.message != null) {
+    body = await translate(doc.message, params)
+  }
+  return [title, body]
+}
+
+export async function createPushFromInbox (
+  control: TriggerControl,
+  targetUser: Ref<Account>,
+  space: Ref<Space>,
+  docNotifyContextId: Ref<DocNotifyContext>,
+  data: Data<InboxNotification>,
+  _class: Ref<Class<InboxNotification>>
+): Promise<Tx | undefined> {
+  let title: string = ''
+  let body: string = ''
+  if (control.hierarchy.isDerived(_class, notification.class.ActivityInboxNotification)) {
+    ;[title, body] = await activityInboxNotificationToText(data as Data<ActivityInboxNotification>)
+  } else if (control.hierarchy.isDerived(_class, notification.class.CommonInboxNotification)) {
+    ;[title, body] = await commonInboxNotificationToText(data as Data<CommonInboxNotification>)
+  }
+  if (title === '' || body === '') {
+    return
+  }
+  return await createPushNotification(control, targetUser, space, title, body, [
+    '',
+    '',
+    notificationId,
+    docNotifyContextId
+  ])
+}
+
+export async function createPushNotification (
+  control: TriggerControl,
+  targetUser: Ref<Account>,
+  space: Ref<Space>,
+  title: string,
+  body: string,
+  onClick?: string[]
+): Promise<TxCreateDoc<BrowserNotification>> {
+  const data: Data<BrowserNotification> = {
+    user: targetUser,
+    status: NotificationStatus.New,
+    title,
+    body
+  }
+  if (onClick !== undefined) {
+    data.onClickLocation = {
+      path: onClick
+    }
+  }
+  const res = control.txFactory.createTxCreateDoc(notification.class.BrowserNotification, space, data)
+  return res
 }
 
 /**
@@ -418,7 +524,8 @@ export async function pushActivityInboxNotifications (
   object: Doc,
   docNotifyContexts: DocNotifyContext[],
   activityMessages: ActivityMessage[],
-  shouldUpdateTimestamp = true
+  shouldUpdateTimestamp: boolean,
+  shouldPush: boolean
 ): Promise<void> {
   for (const activityMessage of activityMessages) {
     const existNotifications = await control.findAll(notification.class.ActivityInboxNotification, {
@@ -448,6 +555,7 @@ export async function pushActivityInboxNotifications (
       data,
       notification.class.ActivityInboxNotification,
       activityMessage.modifiedOn,
+      shouldPush,
       shouldUpdateTimestamp
     )
   }
@@ -477,7 +585,8 @@ export async function getNotificationTxes (
       object,
       docNotifyContexts,
       activityMessages,
-      shouldUpdateTimestamp
+      shouldUpdateTimestamp,
+      notifyResult.push
     )
   }
 
@@ -699,7 +808,9 @@ async function updateCollaboratorsMixin (
           collab,
           prevDoc,
           docNotifyContexts,
-          activityMessages
+          activityMessages,
+          true,
+          true
         )
       }
     }

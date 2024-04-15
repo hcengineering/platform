@@ -1,4 +1,5 @@
 import {
+  type MeasureContext,
   SortingOrder,
   cutObjectArray,
   toFindResult,
@@ -35,6 +36,7 @@ export function createRawMongoDBAdapter (url: string): RawDBAdapter {
   }
   return {
     find: async function <T extends Doc>(
+      ctx: MeasureContext,
       workspace: WorkspaceId,
       domain: Domain,
       query: DocumentQuery<T>,
@@ -43,8 +45,7 @@ export function createRawMongoDBAdapter (url: string): RawDBAdapter {
       const db = getWorkspaceDB(await client.getClient(), workspace)
       const coll = db.collection(domain)
       let cursor = coll.find<T>(query as Filter<Document>, {
-        checkKeys: false,
-        enableUtf8Validation: false
+        checkKeys: false
       })
 
       let total: number = -1
@@ -75,10 +76,10 @@ export function createRawMongoDBAdapter (url: string): RawDBAdapter {
         throw e
       }
     },
-    upload: async (workspace, domain, docs) => {
+    upload: async (ctx: MeasureContext, workspace, domain, docs) => {
       const db = getWorkspaceDB(await client.getClient(), workspace)
       const coll = db.collection(domain)
-      await uploadDocuments(docs, coll)
+      await uploadDocuments(ctx, docs, coll)
     }
   }
 }

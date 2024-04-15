@@ -21,32 +21,20 @@
     NotificationSetting,
     NotificationType
   } from '@hcengineering/notification'
-  import { IntlString } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { IntlString, getResource } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
   import { Grid, Label, ToggleWithLabel } from '@hcengineering/ui'
   import notification from '../plugin'
+  import { validateHeaderName } from 'http'
 
   export let group: Ref<NotificationGroup>
   export let settings: Map<Ref<BaseNotificationType>, NotificationSetting[]>
 
   const client = getClient()
-  let types: BaseNotificationType[] = []
-  let typesMap: IdMap<BaseNotificationType> = new Map()
-  let providers: NotificationProvider[] = []
-  let providersMap: IdMap<NotificationProvider> = new Map()
-
-  void load()
-
-  const query = createQuery()
-  $: query.query(notification.class.BaseNotificationType, { group }, (res) => {
-    types = res
-    typesMap = toIdMap(types)
-  })
-
-  async function load () {
-    providers = await client.findAll(notification.class.NotificationProvider, {})
-    providersMap = toIdMap(providers)
-  }
+  $: types = client.getModel().findAllSync(notification.class.BaseNotificationType, { group })
+  $: typesMap = toIdMap(types)
+  const providers: NotificationProvider[] = client.getModel().findAllSync(notification.class.NotificationProvider, {})
+  const providersMap: IdMap<NotificationProvider> = toIdMap(providers)
 
   $: column = providers.length + 1
 
@@ -64,28 +52,50 @@
     return typeValue?.providers?.[provider] ?? false
   }
 
-  function createHandler (type: Ref<BaseNotificationType>, provider: Ref<NotificationProvider>): (evt: any) => void {
+  function changeHandler (type: Ref<BaseNotificationType>, provider: Ref<NotificationProvider>): (evt: any) => void {
     return (evt: any) => {
       void change(type, provider, evt.detail)
     }
   }
 
   async function change (
-    type: Ref<BaseNotificationType>,
-    provider: Ref<NotificationProvider>,
+    typeId: Ref<BaseNotificationType>,
+    providerId: Ref<NotificationProvider>,
     value: boolean
   ): Promise<void> {
-    const current = getSetting(settings, type, provider)
+    const provider = providersMap.get(providerId)
+    if (provider === undefined) return
+    if (provider.onChange !== undefined) {
+      const f = await getResource(provider.onChange)
+      const res = await f(value)
+      if (!res) {
+        value = !value
+      }
+    }
+    const current = getSetting(settings, typeId, providerId)
     if (current === undefined) {
       await client.createDoc(notification.class.NotificationSetting, notification.space.Notifications, {
-        attachedTo: provider,
-        type,
+        attachedTo: providerId,
+        type: typeId,
         enabled: value
       })
     } else {
       await client.update(current, {
         enabled: value
       })
+    }
+    if (value) {
+      if (provider?.depends !== undefined) {
+        const current = getStatus(settings, typeId, provider.depends)
+        if (!current) {
+          await change(typeId, provider.depends, true)
+        }
+      }
+    } else {
+      const dependents = providers.filter((p) => p.depends === providerId)
+      for (const dependent of dependents) {
+        await change(typeId, dependent._id, false)
+      }
     }
   }
 
@@ -127,7 +137,7 @@
             <ToggleWithLabel
               label={provider.label}
               on={getStatus(settings, type._id, provider._id)}
-              on:change={createHandler(type._id, provider._id)}
+              on:change={changeHandler(type._id, provider._id)}
             />
           </div>
         {:else}

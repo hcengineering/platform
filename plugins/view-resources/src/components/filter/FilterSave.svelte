@@ -41,7 +41,7 @@
 <Card
   label={view.string.NewFilteredView}
   okAction={saveFilter}
-  canSave={filterName.length > 0}
+  canSave={filterName.trim().length > 0}
   gap={'gapV-4'}
   on:close={() => {
     dispatch('close')

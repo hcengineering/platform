@@ -18,7 +18,7 @@
   import { AttachmentList } from '@hcengineering/attachment-resources'
   import { formatName } from '@hcengineering/contact'
   import { WithLookup } from '@hcengineering/core'
-  import { MessageViewer } from '@hcengineering/presentation'
+  import { HTMLViewer } from '@hcengineering/presentation'
   import type { SharedTelegramMessage } from '@hcengineering/telegram'
   import { CheckBox, getPlatformColorForText, themeStore } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -34,6 +34,7 @@
 
 <div class="message-row-bg" class:selectable class:selected-row={selected} data-type={message.incoming ? 'in' : 'out'}>
   <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     class="message-row"
     class:selectable
@@ -56,7 +57,7 @@
           <AttachmentList {attachments} />
         {/if}
         <div class="flex">
-          <div class="caption-color mr-4"><MessageViewer message={message.content} /></div>
+          <div class="caption-color mr-4"><HTMLViewer value={message.content} /></div>
           <div class="time">
             {new Date(message.sendOn).toLocaleString('default', { hour: 'numeric', minute: 'numeric' })}
           </div>

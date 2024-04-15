@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 
-import justClone from 'just-clone'
 import type { KeysByType } from 'simplytyped'
 import type {
   Account,
@@ -35,6 +34,7 @@ import { _getOperator } from './operator'
 import { _toDoc } from './proxy'
 import type { DocumentQuery, TxResult } from './storage'
 import { generateId } from './utils'
+import { clone } from './clone'
 
 /**
  * @public
@@ -357,10 +357,10 @@ export abstract class TxProcessor implements WithTx {
     return result
   }
 
-  static createDoc2Doc<T extends Doc>(tx: TxCreateDoc<T>): T {
+  static createDoc2Doc<T extends Doc>(tx: TxCreateDoc<T>, doClone = true): T {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     return {
-      ...justClone(tx.attributes),
+      ...(doClone ? clone(tx.attributes) : tx.attributes),
       _id: tx.objectId,
       _class: tx.objectClass,
       space: tx.objectSpace,

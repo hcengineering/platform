@@ -84,6 +84,7 @@
       flagToUpdateWorkspaces = true
       await updateWorkspaces()
     } catch (err: any) {
+      setMetadataLocalStorage(login.metadata.LastToken, null)
       setMetadataLocalStorage(presentation.metadata.Token, null)
       setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
       setMetadataLocalStorage(login.metadata.LoginEmail, null)
@@ -124,6 +125,9 @@
             <div class="flex flex-col flex-grow">
               <span class="label overflow-label flex-center">
                 {wsName}
+                {#if workspace.creating === true}
+                  ({workspace.createProgress}%)
+                {/if}
               </span>
               {#if isAdmin && wsName !== workspace.workspace}
                 <span class="text-xs flex-center">
@@ -157,7 +161,16 @@
       {/if}
       <div>
         <span><Label label={login.string.NotSeeingWorkspace} /></span>
-        <NavLink href={getHref('login')}><Label label={login.string.ChangeAccount} /></NavLink>
+        <NavLink
+          href={getHref('login')}
+          onClick={() => {
+            setMetadataLocalStorage(login.metadata.LastToken, null)
+            setMetadataLocalStorage(presentation.metadata.Token, null)
+            setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
+            setMetadataLocalStorage(login.metadata.LoginEmail, null)
+            goTo('login')
+          }}><Label label={login.string.ChangeAccount} /></NavLink
+        >
       </div>
     </div>
   {/await}

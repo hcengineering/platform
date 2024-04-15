@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ButtonBase, ButtonIcon, IconDelete, themeStore, Hotkey, HotkeyGroup } from '@hcengineering/ui'
+  import { ButtonBase, ButtonIcon, IconDelete, themeStore, Hotkey, HotkeyGroup, Scroller } from '@hcengineering/ui'
   import { EventTimeEditor } from '@hcengineering/calendar-resources'
   import { WorkSlot } from '@hcengineering/time'
   import { createEventDispatcher } from 'svelte'
@@ -23,6 +23,7 @@
 
   export let slots: WorkSlot[] = []
   export let shortcuts: boolean = true
+  export let fixed: string | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -51,18 +52,20 @@
 
 <svelte:window on:keydown={handleKeyDown} />
 
-<div class="flex-col w-full flex-gap-1">
+<Scroller gap={'flex-gap-1'} horizontal>
   {#each slots as slot, i}
-    <div class="flex justify-start items-center flex-gap-2 w-full pr-4 slot">
+    <div class="flex-between flex-no-shrink flex-gap-2 min-w-full w-max slot">
       <Hotkey key={(i + 1).toString()} />
       <EventTimeEditor
         allDay={false}
         startDate={slot.date}
         dueDate={slot.dueDate}
+        grow
+        {fixed}
         on:change={(e) => change(e, slot)}
         on:dueChange={(e) => dueChange(e, slot)}
       />
-      <div class="tool">
+      <div class="tool flex-no-shrink">
         <ButtonIcon
           kind="tertiary"
           size="small"
@@ -74,7 +77,7 @@
       </div>
     </div>
   {/each}
-</div>
+</Scroller>
 <div class="flex-row-center flex-gap-4">
   <ButtonBase
     kind="secondary"
@@ -98,25 +101,11 @@
 
 <style lang="scss">
   .slot {
-    position: relative;
-    padding: var(--spacing-1) var(--spacing-1) var(--spacing-1) var(--spacing-2_5);
-    border-radius: var(--small-BorderRadius);
+    padding: var(--spacing-1) var(--spacing-1) var(--spacing-1) var(--spacing-2);
     background-color: var(--tag-nuance-SunshineBackground);
-
-    &:before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 0.25rem;
-      height: 100%;
-      background-color: var(--tag-accent-SunshineBackground);
-      border-radius: var(--small-BorderRadius) 0 0 var(--small-BorderRadius);
-    }
-
-    .tool {
-      margin-left: auto;
-    }
+    border-left: var(--extra-small-BorderRadius) solid var(--tag-accent-SunshineBackground);
+    border-radius: var(--extra-small-BorderRadius) var(--small-BorderRadius) var(--small-BorderRadius)
+      var(--extra-small-BorderRadius);
   }
 
   .duration {

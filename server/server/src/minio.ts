@@ -16,6 +16,7 @@
 import core, {
   BlobData,
   Class,
+  cutObjectArray,
   Doc,
   DocumentQuery,
   DocumentUpdate,
@@ -55,14 +56,12 @@ class StorageBlobAdapter implements DbAdapter {
     return []
   }
 
-  async init (model: Tx[]): Promise<void> {}
-
   async createIndexes (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>): Promise<void> {}
   async removeOldIndex (domain: Domain, deletePattern: RegExp, keepPattern: RegExp): Promise<void> {}
 
   async close (): Promise<void> {}
 
-  find (domain: Domain): StorageIterator {
+  find (ctx: MeasureContext, domain: Domain): StorageIterator {
     let listReceived = false
     let items: ListBlobResult[] = []
     let pos = 0
@@ -87,12 +86,13 @@ class StorageBlobAdapter implements DbAdapter {
     }
   }
 
-  async load (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+  async load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
     const result: Doc[] = []
     for (const item of docs) {
       const stat = await this.client.stat(this.ctx, this.workspaceId, item)
       if (stat === undefined) {
-        throw new Error(`Could not find blob ${item}`)
+        await ctx.error('Could not find blob', { domain, item, allDocs: cutObjectArray(docs) })
+        continue
       }
       const chunks: Buffer[] = await this.client.read(this.ctx, this.workspaceId, item)
       const final = Buffer.concat(chunks)
@@ -112,7 +112,7 @@ class StorageBlobAdapter implements DbAdapter {
     return result
   }
 
-  async upload (domain: Domain, docs: Doc[]): Promise<void> {
+  async upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
     // Find documents to be updated
     for (const d of docs) {
       if (d._class !== core.class.BlobData) {
@@ -133,11 +133,11 @@ class StorageBlobAdapter implements DbAdapter {
     }
   }
 
-  async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {
+  async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
     await this.client.remove(this.ctx, this.workspaceId, docs)
   }
 
-  async update (domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {
+  async update (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {
     throw new Error('Method not implemented.')
   }
 }

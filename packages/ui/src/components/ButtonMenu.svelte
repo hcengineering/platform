@@ -37,6 +37,7 @@
   export let selected: DropdownIntlItem['id'] | undefined = undefined
   export let element: HTMLButtonElement | undefined = undefined
   export let focusIndex = -1
+  export let id: string | undefined = undefined
 
   let opened: boolean = false
 
@@ -83,5 +84,6 @@
   {inheritColor}
   pressed={opened}
   {focusIndex}
+  {id}
   on:click={openPopup}
 />

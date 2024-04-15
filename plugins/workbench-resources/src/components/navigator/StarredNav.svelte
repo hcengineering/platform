@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Doc, Ref, Space } from '@hcengineering/core'
+  import type { Class, Doc, Ref, Space } from '@hcengineering/core'
   import core from '@hcengineering/core'
   import { DocNotifyContext, InboxNotification } from '@hcengineering/notification'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
@@ -86,6 +86,16 @@
     return result
   }
 
+  function getSpaceModel (space: Ref<Class<Space>>): SpacesNavModel | undefined {
+    const hierarchy = client.getHierarchy()
+    const ancestors = [space, ...[...hierarchy.getAncestors(space)].reverse()]
+    for (const clazz of ancestors) {
+      const model = models.find((p) => p.spaceClass === clazz)
+      if (model !== undefined) return model
+    }
+    return undefined
+  }
+
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const notifyContextByDocStore = inboxClient.contextByDoc
   const inboxNotificationsByContextStore = inboxClient.inboxNotificationsByContext
@@ -103,7 +113,7 @@
 
 <TreeNode _id={'tree-stared'} {label} node actions={async () => [unStarAll]}>
   {#each spaces as space (space._id)}
-    {@const model = models.find((p) => p.spaceClass === space._class)}
+    {@const model = getSpaceModel(space._class)}
     {#await getSpacePresenter(client, space._class) then presenter}
       {#if presenter && model}
         <svelte:component

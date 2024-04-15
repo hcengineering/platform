@@ -82,20 +82,20 @@ export async function getEmployee (employee: Ref<Employee>, control: TriggerCont
 /**
  * @public
  */
-export type Presenter = (doc: Doc, control: TriggerControl) => Promise<string>
+export type Presenter<T extends Doc = any> = (doc: T, control: TriggerControl) => Promise<string>
 
 /**
  * @public
  */
-export interface HTMLPresenter extends Class<Doc> {
-  presenter: Resource<Presenter>
+export interface HTMLPresenter<T extends Doc = any> extends Class<T> {
+  presenter: Resource<Presenter<T>>
 }
 
 /**
  * @public
  */
-export interface TextPresenter extends Class<Doc> {
-  presenter: Resource<Presenter>
+export interface TextPresenter<T extends Doc = any> extends Class<T> {
+  presenter: Resource<Presenter<T>>
 }
 
 /**

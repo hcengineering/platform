@@ -387,6 +387,18 @@ export function createModel (builder: Builder): void {
   builder.mixin(time.class.ProjectToDo, core.class.Class, view.mixin.ObjectPanel, {
     component: view.component.AttachedDocPanel
   })
+
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_TIME,
+    disabled: [
+      { modifiedOn: 1 },
+      { modifiedBy: 1 },
+      { createdBy: 1 },
+      { attachedToClass: 1 },
+      { createdOn: -1 },
+      { modifiedOn: 1 }
+    ]
+  })
 }
 
 export * from './migration'

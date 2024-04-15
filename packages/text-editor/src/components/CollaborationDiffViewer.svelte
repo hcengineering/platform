@@ -15,6 +15,7 @@
 //
 -->
 <script lang="ts">
+  import { MarkupNode } from '@hcengineering/text'
   import { onDestroy, onMount } from 'svelte'
   import { Doc as Ydoc } from 'yjs'
 
@@ -38,7 +39,7 @@
   let editor: Editor
 
   let _decoration = DecorationSet.empty
-  let oldContent = ''
+  let oldContent: MarkupNode | undefined
 
   function updateEditor (editor: Editor, ydoc: Ydoc, field?: string): void {
     const r = calculateDecorations(editor, oldContent, createYdocDocument(editor.schema, ydoc, field))

@@ -64,24 +64,27 @@ export class TalentDetailsPage extends CommonRecruitingPage {
     await this.buttonFinalContact.click()
     await this.selectMenuItem(this.page, talentName.finalContactName)
 
-    await this.buttonMergeRow.locator('div.flex-center', { hasText: talentName.name }).locator('label.checkbox').click()
+    await this.buttonMergeRow
+      .locator('div.flex-center', { hasText: talentName.name })
+      .locator('label.checkbox-container')
+      .click()
 
     if (talentName.mergeLocation) {
       await this.buttonMergeRow
         .locator('div.flex-center', { hasText: talentName.location })
-        .locator('label.checkbox')
+        .locator('label.checkbox-container')
         .click()
     }
     if (talentName.mergeTitle) {
       await this.buttonMergeRow
         .locator('div.flex-center', { hasText: talentName.title })
-        .locator('label.checkbox')
+        .locator('label.checkbox-container')
         .click()
     }
     if (talentName.mergeSource) {
       await this.buttonMergeRow
         .locator('div.flex-center', { hasText: talentName.source })
-        .locator('label.checkbox')
+        .locator('label.checkbox-container')
         .click()
     }
 

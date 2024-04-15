@@ -249,6 +249,7 @@
       <Workslots
         bind:slots
         shortcuts={false}
+        fixed={'createToDo'}
         on:remove={removeSlot}
         on:create={createSlot}
         on:change={changeSlot}

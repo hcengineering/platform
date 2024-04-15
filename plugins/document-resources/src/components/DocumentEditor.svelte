@@ -15,18 +15,20 @@
 //
 -->
 <script lang="ts">
-  import { Extensions, FocusPosition } from '@tiptap/core'
-  import document, { Document } from '@hcengineering/document'
+  import contact from '@hcengineering/contact'
+  import { Document } from '@hcengineering/document'
+  import { getResource } from '@hcengineering/platform'
   import {
     CollaboratorEditor,
     HeadingsExtension,
     ImageOptions,
     SvelteNodeViewRenderer,
     TodoItemExtension,
-    TodoListExtension,
-    collaborativeDocumentId,
-    platformDocumentId
+    TodoListExtension
   } from '@hcengineering/text-editor'
+  import { AnySvelteComponent } from '@hcengineering/ui'
+  import { getCollaborationUser } from '@hcengineering/view-resources'
+  import { Extensions, FocusPosition } from '@tiptap/core'
   import { createEventDispatcher } from 'svelte'
 
   import ToDoItemNodeView from './node-view/ToDoItemNodeView.svelte'
@@ -39,6 +41,12 @@
   export let focusIndex = -1
   export let overflow: 'auto' | 'none' = 'none'
   export let editorAttributes: Record<string, string> = {}
+
+  const user = getCollaborationUser()
+  let userComponent: AnySvelteComponent | undefined
+  void getResource(contact.component.CollaborationUserAvatar).then((component) => {
+    userComponent = component
+  })
 
   let collabEditor: CollaboratorEditor
 
@@ -78,14 +86,15 @@
       }
     })
   ]
-
-  $: documentId = collaborativeDocumentId(object.content)
-  $: targetContentId = platformDocumentId(document.class.Document, object._id, 'content')
 </script>
 
 <CollaboratorEditor
-  {documentId}
-  {targetContentId}
+  collaborativeDoc={object.content}
+  objectClass={object._class}
+  objectId={object._id}
+  objectAttr="content"
+  {user}
+  {userComponent}
   {focusIndex}
   {readonly}
   {attachFile}

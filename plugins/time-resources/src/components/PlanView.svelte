@@ -20,7 +20,7 @@
   import { Ref, getCurrentAccount } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { TagElement } from '@hcengineering/tags'
-  import { Separator, defineSeparators } from '@hcengineering/ui'
+  import { Separator, defineSeparators, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { ToDosMode } from '..'
   import PlanningCalendar from './PlanningCalendar.svelte'
   import ToDosNavigator from './ToDosNavigator.svelte'
@@ -78,7 +78,7 @@
 
   dispatch('change', true)
   afterUpdate(() => {
-    dispatch('change', { type: 'replacedPanel', replacedPanel })
+    $deviceInfo.replacedPanel = replacedPanel
   })
 </script>
 

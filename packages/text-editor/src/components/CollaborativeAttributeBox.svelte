@@ -16,20 +16,21 @@
   import core, { CollaborativeDoc, Doc, getCollaborativeDoc, getCollaborativeDocId } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { KeyedAttribute, getAttribute, getClient } from '@hcengineering/presentation'
-  import { registerFocus } from '@hcengineering/ui'
+  import { AnySvelteComponent, registerFocus } from '@hcengineering/ui'
   import CollaborativeTextEditor from './CollaborativeTextEditor.svelte'
   import { FocusExtension } from './extension/focus'
   import { type FileAttachFunction } from './extension/types'
   import textEditorPlugin from '../plugin'
-  import { DocumentId } from '../provider/tiptap'
-  import { collaborativeDocumentId, mongodbDocumentId, platformDocumentId } from '../provider/utils'
-  import { RefAction, TextNodeAction } from '../types'
+  import { CollaborationUser, RefAction, TextNodeAction } from '../types'
 
   export let object: Doc
   export let key: KeyedAttribute
   export let readonly = false
   export let textNodeActions: TextNodeAction[] = []
   export let refActions: RefAction[] = []
+
+  export let user: CollaborationUser
+  export let userComponent: AnySvelteComponent | undefined = undefined
 
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
   export let attachFile: FileAttachFunction | undefined = undefined
@@ -47,28 +48,18 @@
 
   let editor: CollaborativeTextEditor
 
-  $: documentId = getDocumentId(object, key)
-  $: initialContentId = getInitialContentId(object, key)
-  $: targetContentId = platformDocumentId(object._class, object._id, key.key)
+  $: collaborativeDoc = getCollaborativeDocFromAttribute(object, key)
 
-  function getDocumentId (object: Doc, key: KeyedAttribute): DocumentId {
+  function getCollaborativeDocFromAttribute (object: Doc, key: KeyedAttribute): CollaborativeDoc {
     const value = getAttribute(getClient(), object, key)
     if (key.attr.type._class === core.class.TypeCollaborativeDoc) {
-      return collaborativeDocumentId(value as CollaborativeDoc)
+      return value as CollaborativeDoc
     } else if (key.attr.type._class === core.class.TypeCollaborativeDocVersion) {
-      return collaborativeDocumentId(value as CollaborativeDoc)
+      return value as CollaborativeDoc
     } else {
       // TODO Remove this when we migrate to minio
       const collaborativeDocId = getCollaborativeDocId(object._id, key.key)
-      const collaborativeDoc = getCollaborativeDoc(collaborativeDocId)
-      return collaborativeDocumentId(collaborativeDoc)
-    }
-  }
-
-  function getInitialContentId (object: Doc, key: KeyedAttribute): DocumentId | undefined {
-    // TODO Remove this when we migrate all content to minio
-    if (key.attr.type._class === core.class.TypeCollaborativeMarkup) {
-      return mongodbDocumentId(object._id, key)
+      return getCollaborativeDoc(collaborativeDocId)
     }
   }
 
@@ -113,9 +104,12 @@
 
 <CollaborativeTextEditor
   bind:this={editor}
-  {documentId}
-  {initialContentId}
-  {targetContentId}
+  {collaborativeDoc}
+  objectClass={object._class}
+  objectId={object._id}
+  objectAttr={key.key}
+  {user}
+  {userComponent}
   {textNodeActions}
   {refActions}
   {extensions}
@@ -125,6 +119,7 @@
   {readonly}
   field={key.key}
   canEmbedFiles={false}
+  withSideMenu={false}
   on:focus
   on:blur
   on:update

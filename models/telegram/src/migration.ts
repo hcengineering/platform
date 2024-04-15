@@ -14,29 +14,42 @@
 //
 
 import core, { TxOperations } from '@hcengineering/core'
-import { type MigrateOperation, type MigrationClient, type MigrationUpgradeClient } from '@hcengineering/model'
+import {
+  tryUpgrade,
+  type MigrateOperation,
+  type MigrationClient,
+  type MigrationUpgradeClient
+} from '@hcengineering/model'
 import telegram from './plugin'
+import { telegramId } from '@hcengineering/telegram'
 
 export const telegramOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    const tx = new TxOperations(client, core.account.System)
-    const current = await tx.findOne(core.class.Space, {
-      _id: telegram.space.Telegram
-    })
-    if (current === undefined) {
-      await tx.createDoc(
-        core.class.Space,
-        core.space.Space,
-        {
-          name: 'Telegram',
-          description: 'Space for all telegram messages',
-          private: false,
-          archived: false,
-          members: []
-        },
-        telegram.space.Telegram
-      )
-    }
+    await tryUpgrade(client, telegramId, [
+      {
+        state: 'create-defaults',
+        func: async (client) => {
+          const tx = new TxOperations(client, core.account.System)
+          const current = await tx.findOne(core.class.Space, {
+            _id: telegram.space.Telegram
+          })
+          if (current === undefined) {
+            await tx.createDoc(
+              core.class.Space,
+              core.space.Space,
+              {
+                name: 'Telegram',
+                description: 'Space for all telegram messages',
+                private: false,
+                archived: false,
+                members: []
+              },
+              telegram.space.Telegram
+            )
+          }
+        }
+      }
+    ])
   }
 }

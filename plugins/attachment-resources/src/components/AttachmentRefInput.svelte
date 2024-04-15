@@ -15,7 +15,7 @@
 <script lang="ts">
   import { createEventDispatcher, onDestroy, tick } from 'svelte'
   import { Attachment } from '@hcengineering/attachment'
-  import { Account, Class, Doc, generateId, IdMap, Ref, Space, toIdMap } from '@hcengineering/core'
+  import { Account, Class, Doc, generateId, IdMap, Markup, Ref, Space, toIdMap } from '@hcengineering/core'
   import { IntlString, setPlatformStatus, unknownError, Asset } from '@hcengineering/platform'
   import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
   import textEditor, { AttachIcon, type RefAction, ReferenceInput } from '@hcengineering/text-editor'
@@ -27,7 +27,7 @@
   export let objectId: Ref<Doc>
   export let space: Ref<Space>
   export let _class: Ref<Class<Doc>>
-  export let content: string = ''
+  export let content: Markup = ''
   export let iconSend: Asset | AnySvelteComponent | undefined = undefined
   export let labelSend: IntlString | undefined = undefined
   export let showSend = true

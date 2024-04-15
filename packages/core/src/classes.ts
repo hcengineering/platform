@@ -496,6 +496,7 @@ export interface BlobData extends Doc {
   name: string
   size: number
   type: string
+  provider?: string // If node defined, will be default one
   base64Data: string // base64 encoded data
 }
 
@@ -529,8 +530,8 @@ export interface DocIndexState extends Doc {
   attributes: Record<string, any>
   mixins?: Ref<Class<Doc>>[]
   // Full Summary
-  fullSummary?: Markup | null
-  shortSummary?: Markup | null
+  fullSummary?: string | null
+  shortSummary?: string | null
 }
 
 /**
@@ -634,4 +635,18 @@ export interface IndexingConfiguration<T extends Doc> extends Class<Doc> {
   // Define a list of extra index definitions.
   indexes: (FieldIndex<T> | string)[]
   searchDisabled?: boolean
+}
+
+export interface DomainIndexConfiguration extends Doc {
+  domain: Domain
+  disableCollection?: boolean // For some special cases we could decide to disable collection and index creations at all.
+
+  // A set of indexes we need to disable for domain
+  // Disabled indexes will be removed
+  disabled?: (FieldIndex<Doc> | string)[]
+
+  // Additional indexes we could like to enabled
+  indexes?: (FieldIndex<Doc> | string)[]
+
+  skip?: string[]
 }

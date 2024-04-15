@@ -24,6 +24,8 @@
   export let disabled: boolean = false
   export let timeZone: string = getUserTimezone()
   export let focusIndex = -1
+  export let grow: boolean = false
+  export let fixed: string | undefined = undefined
 
   $: sameDate = areDatesEqual(utcToZonedTime(startDate, timeZone), utcToZonedTime(dueDate, timeZone))
 
@@ -49,7 +51,7 @@
   }
 </script>
 
-<div class="flex-row-center flex-gap-2">
+<div class="flex-row-center flex-gap-2 flex-no-shrink" class:flex-grow={grow}>
   <DateEditor
     bind:date={startDate}
     direction={sameDate ? 'horizontal' : 'vertical'}
@@ -58,6 +60,7 @@
     on:update={dateChange}
     {disabled}
     {focusIndex}
+    fixed={fixed === undefined ? undefined : fixed + '-startDate'}
   />
   <div class="flex-no-shrink content-darker-color">—</div>
   <DateEditor
@@ -69,6 +72,7 @@
     {disabled}
     {timeZone}
     focusIndex={focusIndex !== -1 ? focusIndex + 1 : focusIndex}
+    fixed={fixed === undefined ? undefined : fixed + '-dueDate'}
     on:update={dueChange}
   />
 </div>

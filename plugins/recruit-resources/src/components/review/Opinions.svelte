@@ -18,6 +18,7 @@
   import { Table } from '@hcengineering/view-resources'
   import recruit from '../../plugin'
   import FileDuo from '../icons/FileDuo.svelte'
+  import SectionEmpty from '../SectionEmpty.svelte'
   import CreateOpinion from './CreateOpinion.svelte'
 
   export let objectId: Ref<Doc>
@@ -44,16 +45,12 @@
       loadingProps={{ length: opinions }}
     />
   {:else}
-    <div class="antiSection-empty solid flex-col-center mt-3">
-      <div class="content-color">
-        <FileDuo size={'large'} />
-      </div>
-      <div class="text-sm content-dark-color mt-2">
-        <Label label={recruit.string.NoReviewForCandidate} />
-      </div>
+    <SectionEmpty icon={FileDuo} label={recruit.string.NoReviewForCandidate}>
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <span class="text-sm content-color over-underline" on:click={createApp}>
         <Label label={recruit.string.CreateAnReview} />
       </span>
-    </div>
+    </SectionEmpty>
   {/if}
 </div>

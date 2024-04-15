@@ -15,15 +15,15 @@
 import activity, { type ActivityMessage } from '@hcengineering/activity'
 import {
   SortingOrder,
+  generateId,
   getCurrentAccount,
+  toIdMap,
   type Class,
   type Doc,
+  type IdMap,
   type Ref,
   type TxOperations,
-  type WithLookup,
-  generateId,
-  toIdMap,
-  type IdMap
+  type WithLookup
 } from '@hcengineering/core'
 import notification, {
   type ActivityInboxNotification,

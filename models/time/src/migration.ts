@@ -19,13 +19,15 @@ import {
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient,
-  createOrUpdate
+  createOrUpdate,
+  tryMigrate,
+  tryUpgrade
 } from '@hcengineering/model'
 import { makeRank } from '@hcengineering/rank'
 import core from '@hcengineering/model-core'
 import task from '@hcengineering/task'
 import tags from '@hcengineering/tags'
-import { type ToDo, ToDoPriority } from '@hcengineering/time'
+import { timeId, type ToDo, ToDoPriority } from '@hcengineering/time'
 import { DOMAIN_TIME } from '.'
 import time from './plugin'
 
@@ -183,26 +185,40 @@ async function fillProps (client: MigrationClient): Promise<void> {
 
 export const timeOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
-    await fillProps(client)
+    await tryMigrate(client, timeId, [
+      {
+        state: 'm-time-001',
+        func: async (client) => {
+          await fillProps(client)
+        }
+      }
+    ])
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    const tx = new TxOperations(client, core.account.System)
-    await createDefaultSpace(tx)
-    await createOrUpdate(
-      tx,
-      tags.class.TagCategory,
-      tags.space.Tags,
+    await tryUpgrade(client, timeId, [
       {
-        icon: tags.icon.Tags,
-        label: 'Other',
-        targetClass: time.class.ToDo,
-        tags: [],
-        default: true
-      },
-      time.category.Other
-    )
-    await migrateWorkSlots(tx)
-    await migrateTodosSpace(tx)
-    await migrateTodosRanks(tx)
+        state: 'u-time-0001',
+        func: async (client) => {
+          const tx = new TxOperations(client, core.account.System)
+          await createDefaultSpace(tx)
+          await createOrUpdate(
+            tx,
+            tags.class.TagCategory,
+            tags.space.Tags,
+            {
+              icon: tags.icon.Tags,
+              label: 'Other',
+              targetClass: time.class.ToDo,
+              tags: [],
+              default: true
+            },
+            time.category.Other
+          )
+          await migrateWorkSlots(tx)
+          await migrateTodosSpace(tx)
+          await migrateTodosRanks(tx)
+        }
+      }
+    ])
   }
 }

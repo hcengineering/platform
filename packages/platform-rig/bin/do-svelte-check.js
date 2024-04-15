@@ -2,7 +2,7 @@ const { join, dirname } = require("path")
 const { readFileSync, existsSync, mkdirSync, createWriteStream } = require('fs')
 const { spawn } = require('child_process')
 
-async function execProcess(cmd, logFile, args) {
+async function execProcess(cmd, logFile, args, useConsole) {
   let compileRoot = dirname(dirname(process.argv[1]))
   console.log("Svelte check...\n", process.cwd(), args)
 
@@ -22,6 +22,10 @@ async function execProcess(cmd, logFile, args) {
       compileOut.stdout.pipe(outPipe)
       compileOut.stdout.on('end', function (data) {
         outPipe.close()
+        if( useConsole ) {
+          console.log(readFileSync(stdoutFilePath).toString())
+          console.log(readFileSync(stderrFilePath).toString())
+        }
         resolve()
       })
     } else {
@@ -64,14 +68,22 @@ async function execProcess(cmd, logFile, args) {
   }
 }
 
-let args = process.argv.splice(2)
+let args = [] // process.argv.slice(2)
+let useConsole = false
+for(const a of process.argv.slice(2)) {
+  if( a === '--console') {
+    useConsole = true
+  } else {
+    args.push(a)
+  }
+}
 let st = Date.now()
 execProcess(
   'svelte-check',
   'svelte-check', [
   '--output', 'human',
-  ...process.argv.splice(2)
-])
+  ...args  
+], useConsole)
   .then(() => {
     console.log("Svelte check time: ", Date.now() - st)
   })

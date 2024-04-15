@@ -18,7 +18,6 @@ table.proseTable {
   --table-selection-border-width: 2px;
   --table-selection-border-indent: -2px;
   --table-selection-border-radius: 2px;
-  --table-selection-border-width: 2px;
   --table-handle-size: 1.25rem;
   --table-handle-indent: calc(-1.25rem - 1px);
 
@@ -299,6 +298,16 @@ table.proseTable {
       transform: rotate(90deg);
     }
   }
+}
+
+.proseBlockQuote {
+  margin-inline: 1px 0;
+  padding-left: 1.5em;
+  padding-right: 1.5em;
+  font-style: italic;
+  position: relative;
+
+  border-left: 3px solid var(--theme-text-primary-color);
 }
 
 .proseCode {

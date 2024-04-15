@@ -20,7 +20,8 @@ import {
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient,
-  tryMigrate
+  tryMigrate,
+  tryUpgrade
 } from '@hcengineering/model'
 import { DOMAIN_ATTACHMENT } from '@hcengineering/model-attachment'
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
@@ -276,8 +277,13 @@ async function migrateTeamspaces (client: MigrationClient): Promise<void> {
 
 export const documentOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
-    await setNoParent(client)
     await tryMigrate(client, documentId, [
+      {
+        state: 'migrate-no-parent',
+        func: async (client) => {
+          await setNoParent(client)
+        }
+      },
       {
         state: 'collaborativeContent',
         func: migrateCollaborativeContent
@@ -297,14 +303,29 @@ export const documentOperation: MigrateOperation = {
       {
         state: 'updateDocumentIcons',
         func: migrateDocumentIcons
+      },
+      {
+        state: 'migrate-timespaces',
+        func: async (client) => {
+          await migrateTeamspaces(client)
+        }
       }
     ])
-    await migrateTeamspaces(client)
   },
 
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
-    await createSpace(tx)
+    await tryUpgrade(client, documentId, [
+      {
+        state: 'u-default-project',
+        func: async (client) => {
+          await createSpace(tx)
+        }
+      }
+    ])
+
+    // Currently space type has to be recreated every time as it's in the model
+    // created by the system user
     await createDefaultTeamspaceType(tx)
   }
 }

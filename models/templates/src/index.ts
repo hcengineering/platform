@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import { type Domain, DOMAIN_MODEL, IndexKind, type Ref } from '@hcengineering/core'
-import { type Builder, Index, Model, Prop, TypeString, UX } from '@hcengineering/model'
+import { type Domain, DOMAIN_MODEL, IndexKind, type Ref, type Markup } from '@hcengineering/core'
+import { type Builder, Index, Model, Prop, TypeString, UX, TypeMarkup } from '@hcengineering/model'
 import core, { TDoc, TSpace } from '@hcengineering/model-core'
 import textEditor from '@hcengineering/model-text-editor'
 import tracker from '@hcengineering/model-tracker'
@@ -43,9 +43,9 @@ export class TMessageTemplate extends TDoc implements MessageTemplate {
   @Index(IndexKind.FullText)
     title!: string
 
-  @Prop(TypeString(), templates.string.Message)
+  @Prop(TypeMarkup(), templates.string.Message)
   @Index(IndexKind.FullText)
-    message!: string
+    message!: Markup
 }
 
 @Model(templates.class.TemplateCategory, core.class.Space)
@@ -167,5 +167,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(templates.class.MessageTemplate, core.class.Class, view.mixin.IgnoreActions, {
     actions: [view.action.Open, tracker.action.NewRelatedIssue]
+  })
+
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_TEMPLATES,
+    disabled: [{ _class: 1 }, { space: 1 }, { modifiedBy: 1 }, { modifiedOn: 1 }, { createdBy: 1 }, { createdOn: -1 }]
   })
 }

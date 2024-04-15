@@ -82,7 +82,7 @@ export async function doLogin (email: string, password: string): Promise<[Status
     }
     return [result.error ?? OK, result.result]
   } catch (err: any) {
-    console.log('login error', err)
+    console.error('login error', err)
     Analytics.handleError(err)
     return [unknownError(err), undefined]
   }
@@ -340,6 +340,55 @@ export async function selectWorkspace (workspace: string): Promise<[Status, Work
       Analytics.setTag('workspace', workspace)
     } else {
       await handleStatusError('Select workspace error', result.error)
+    }
+    return [result.error ?? OK, result.result]
+  } catch (err: any) {
+    Analytics.handleError(err)
+    return [unknownError(err), undefined]
+  }
+}
+
+export async function fetchWorkspace (workspace: string): Promise<[Status, WorkspaceLoginInfo | undefined]> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
+  const email = fetchMetadataLocalStorage(login.metadata.LoginEmail) ?? ''
+  if (overrideToken !== undefined) {
+    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
+    if (endpoint !== undefined) {
+      return [OK, { token: overrideToken, endpoint, email, workspace, confirmed: true }]
+    }
+  }
+
+  const token = getMetadata(presentation.metadata.Token)
+  if (token === undefined) {
+    return [unknownStatus('Please login'), undefined]
+  }
+
+  const request = {
+    method: 'getWorkspaceInfo',
+    params: [token]
+  }
+
+  try {
+    const response = await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request)
+    })
+    const result = await response.json()
+    if (result.error == null) {
+      Analytics.handleEvent('Fetch workspace')
+      Analytics.setTag('workspace', workspace)
+    } else {
+      await handleStatusError('Fetch workspace error', result.error)
     }
     return [result.error ?? OK, result.result]
   } catch (err: any) {
@@ -851,7 +900,7 @@ export async function getEnpoint (): Promise<string | undefined> {
     const result = await response.json()
     return result.result
   } catch (err: any) {
-    console.log('get endpoint error', err)
+    console.error('get endpoint error', err)
     Analytics.handleError(err)
   }
 }
@@ -871,7 +920,7 @@ export async function getSessionLoginInfo (): Promise<LoginInfo | WorkspaceLogin
     const result = await response.json()
     return result
   } catch (err: any) {
-    console.log('login error', err)
+    console.error('login error', err)
     Analytics.handleError(err)
   }
 }

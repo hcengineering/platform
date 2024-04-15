@@ -1,6 +1,6 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2021, 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -65,8 +65,10 @@ import {
   isAdminUser,
   createQuery
 } from '@hcengineering/presentation'
+import { type CollaborationUser } from '@hcengineering/text-editor'
 import {
   ErrorPresenter,
+  getColorNumberByText,
   getCurrentResolvedLocation,
   getPanelURI,
   getPlatformColorForText,
@@ -944,7 +946,8 @@ export async function moveToSpace (
       const allAttached = await client.findAll(collection.of, { attachedTo: doc._id })
       for (const attached of allAttached) {
         // Do not use extra for childs.
-        await moveToSpace(client, attached, space).catch((err) => {
+        await moveToSpace(client, attached, space).catch((err: any) => {
+          Analytics.handleError(err)
           console.log('failed to move', name, err)
         })
       }
@@ -1365,6 +1368,7 @@ permissionsQuery.query(core.class.Space, {}, (res) => {
 
       if (mixin === undefined) {
         permissionsBySpace[s._id] = new Set()
+        accountsByPermission[s._id] = {}
         continue
       }
 
@@ -1401,3 +1405,15 @@ permissionsQuery.query(core.class.Space, {}, (res) => {
     whitelist: whitelistedSpaces
   })
 })
+
+export function getCollaborationUser (): CollaborationUser {
+  const me = getCurrentAccount() as PersonAccount
+  const color = getColorNumberByText(me.email)
+
+  return {
+    id: me._id,
+    name: me.email,
+    email: me.email,
+    color
+  }
+}

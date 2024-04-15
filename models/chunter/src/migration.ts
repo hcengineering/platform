@@ -19,14 +19,15 @@ import {
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient,
-  tryMigrate
+  tryMigrate,
+  tryUpgrade
 } from '@hcengineering/model'
 import activity, { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 import notification from '@hcengineering/notification'
 
 import chunter from './plugin'
 
-const DOMAIN_COMMENT = 'comment' as Domain
+export const DOMAIN_COMMENT = 'comment' as Domain
 
 export async function createDocNotifyContexts (
   client: MigrationUpgradeClient,
@@ -128,9 +129,7 @@ export const chunterOperation: MigrateOperation = {
       {
         state: 'create-chat-messages',
         func: convertCommentsToChatMessages
-      }
-    ])
-    await tryMigrate(client, chunterId, [
+      },
       {
         state: 'remove-backlinks',
         func: removeBacklinks
@@ -138,8 +137,15 @@ export const chunterOperation: MigrateOperation = {
     ])
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    const tx = new TxOperations(client, core.account.System)
-    await createGeneral(client, tx)
-    await createRandom(client, tx)
+    await tryUpgrade(client, chunterId, [
+      {
+        state: 'create-defaults',
+        func: async (client) => {
+          const tx = new TxOperations(client, core.account.System)
+          await createGeneral(client, tx)
+          await createRandom(client, tx)
+        }
+      }
+    ])
   }
 }

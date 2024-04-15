@@ -16,7 +16,17 @@
   import calendar from '@hcengineering/calendar'
   import type { Contact, PersonAccount, Organization, Person } from '@hcengineering/contact'
   import contact from '@hcengineering/contact'
-  import { Account, Class, Client, DateRangeMode, Doc, generateId, getCurrentAccount, Ref } from '@hcengineering/core'
+  import {
+    Account,
+    Class,
+    Client,
+    DateRangeMode,
+    Doc,
+    generateId,
+    getCurrentAccount,
+    Markup,
+    Ref
+  } from '@hcengineering/core'
   import { getResource, OK, Resource, Severity, Status } from '@hcengineering/platform'
   import { Card, getClient } from '@hcengineering/presentation'
   import { UserBox, UserBoxList } from '@hcengineering/contact-resources'
@@ -45,7 +55,7 @@
   let status: Status = OK
 
   let title: string = ''
-  let description: string = ''
+  let description: Markup = ''
   let startDate: number = initDate.getTime()
   let dueDate: number = initDate.getTime() + 30 * 60 * 1000
   let location: string = ''

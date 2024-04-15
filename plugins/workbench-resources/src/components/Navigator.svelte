@@ -42,10 +42,11 @@
   let shownSpaces: Space[] = []
 
   $: if (model) {
+    const classes = getSpecialSpaceClass(model).flatMap((c) => hierarchy.getDescendants(c))
     query.query(
       core.class.Space,
       {
-        _class: { $in: getSpecialSpaceClass(model) }
+        _class: { $in: classes }
         // temp disabled, need way for default spaces
         // members: getCurrentAccount()._id
       },

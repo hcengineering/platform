@@ -12,7 +12,8 @@ import {
   type MigrationClient,
   type MigrationUpgradeClient,
   type ModelLogger,
-  tryMigrate
+  tryMigrate,
+  tryUpgrade
 } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import guest from './plugin'
@@ -92,6 +93,13 @@ export const guestOperation: MigrateOperation = {
     ])
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    await createDefaults(client)
+    await tryUpgrade(client, guestId, [
+      {
+        state: 'create-defaults',
+        func: async (client) => {
+          await createDefaults(client)
+        }
+      }
+    ])
   }
 }

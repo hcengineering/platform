@@ -23,9 +23,9 @@ export class EditProjectPage extends CommonTrackerPage {
     this.popupHeader = page.locator('form[id="tracker:string:EditProject"] div[class*="title"]:last-child', {
       hasText: 'Edit project'
     })
-    this.inputTitle = page.locator('input[placeholder="New project"]')
-    this.inputIdentifier = page.locator('input[placeholder="PRJCT"]')
-    this.inputDescription = page.locator('form[id="tracker:string:EditProject"] div.tiptap')
+    this.inputTitle = page.locator('form[id="tracker:string:EditProject"] div[id="project-title"] input')
+    this.inputIdentifier = page.locator('form[id="tracker:string:EditProject"] div[id="project-identifier"] input')
+    this.inputDescription = page.locator('form[id="tracker:string:EditProject"] div[id="project-description"] input')
     this.buttonChooseIcon = page.locator('div.antiGrid-row button.only-icon')
     this.buttonMakePrivate = page.locator('div.antiGrid-row span.toggle-switch')
     this.buttonSaveProject = page.locator('form[id="tracker:string:EditProject"] button[type="submit"]')
@@ -55,7 +55,7 @@ export class EditProjectPage extends CommonTrackerPage {
       await expect(this.inputIdentifier).toHaveValue(data.identifier)
     }
     if (data.description != null) {
-      await expect(this.inputDescription).toContainText(data.description)
+      await expect(this.inputDescription).toHaveValue(data.description)
     }
     if (data.defaultAssigneeForIssues != null) {
       await expect(

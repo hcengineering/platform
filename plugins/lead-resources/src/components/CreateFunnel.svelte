@@ -78,7 +78,7 @@
     const asMixin = hierarchy.as(funnel, spaceType?.targetClass)
 
     return spaceType.$lookup.roles.reduce<RolesAssignment>((prev, { _id }) => {
-      prev[_id as Ref<Role>] = (asMixin as any)[_id]
+      prev[_id as Ref<Role>] = (asMixin as any)[_id] ?? []
 
       return prev
     }, {})
@@ -152,7 +152,7 @@
   label={leadRes.string.CreateFunnel}
   okAction={save}
   okLabel={!isNew ? ui.string.Save : undefined}
-  canSave={name.length > 0}
+  canSave={name.trim().length > 0}
   on:close={() => {
     dispatch('close')
   }}

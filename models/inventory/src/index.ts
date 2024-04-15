@@ -229,4 +229,16 @@ export function createModel (builder: Builder): void {
   builder.mixin(inventory.class.Product, core.class.Class, view.mixin.ClassFilters, {
     filters: ['attachedTo']
   })
+
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_INVENTORY,
+    disabled: [
+      { modifiedOn: 1 },
+      { modifiedBy: 1 },
+      { createdBy: 1 },
+      { attachedToClass: 1 },
+      { createdOn: -1 },
+      { attachedTo: 1 }
+    ]
+  })
 }

@@ -114,19 +114,23 @@ export async function shouldNotifyCommon (
 
   const emailTypes: BaseNotificationType[] = []
   let allowed = false
+  let push = false
 
   if (type === undefined) {
-    return { allowed, emails: emailTypes }
+    return { allowed, emails: emailTypes, push }
   }
 
   if (await isAllowed(control, user as Ref<PersonAccount>, type._id, notification.providers.PlatformNotification)) {
     allowed = true
   }
+  if (await isAllowed(control, user as Ref<PersonAccount>, type._id, notification.providers.BrowserNotification)) {
+    push = true
+  }
   if (await isAllowed(control, user as Ref<PersonAccount>, type._id, notification.providers.EmailNotification)) {
     emailTypes.push(type)
   }
 
-  return { allowed, emails: emailTypes }
+  return { allowed, push, emails: emailTypes }
 }
 
 export async function isAllowed (
@@ -169,6 +173,7 @@ export async function isShouldNotifyTx (
   docUpdateMessage?: DocUpdateMessage
 ): Promise<NotifyResult> {
   let allowed = false
+  let push = false
 
   const emailTypes: NotificationType[] = []
   const types = await getMatchedTypes(
@@ -203,12 +208,16 @@ export async function isShouldNotifyTx (
     if (await isAllowed(control, user as Ref<PersonAccount>, type._id, notification.providers.PlatformNotification)) {
       allowed = true
     }
+    if (await isAllowed(control, user as Ref<PersonAccount>, type._id, notification.providers.BrowserNotification)) {
+      push = true
+    }
     if (await isAllowed(control, user as Ref<PersonAccount>, type._id, notification.providers.EmailNotification)) {
       emailTypes.push(type)
     }
   }
   return {
     allowed,
+    push,
     emails: emailTypes
   }
 }

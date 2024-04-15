@@ -47,7 +47,6 @@
   isFullSize
   on:fullsize
   on:close={() => {
-    console.log('close')
     dispatch('close')
   }}
 >

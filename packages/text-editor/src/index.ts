@@ -34,11 +34,21 @@ export { default as StyledTextEditor } from './components/StyledTextEditor.svelt
 export { default as TextEditor } from './components/TextEditor.svelte'
 export { default as TextEditorStyleToolbar } from './components/TextEditorStyleToolbar.svelte'
 export { default as AttachIcon } from './components/icons/Attach.svelte'
+export { default as TableIcon } from './components/icons/Table.svelte'
 export { default as TableOfContents } from './components/toc/TableOfContents.svelte'
 export * from './components/node-view'
 export { default } from './plugin'
 export * from './types'
 export * from './utils'
+
+export {
+  EmptyMarkup,
+  areEqualMarkups,
+  getMarkup,
+  isEmptyMarkup,
+  pmNodeToMarkup,
+  markupToPmNode
+} from '@hcengineering/text'
 
 export { FocusExtension, type FocusOptions, type FocusStorage } from './components/extension/focus'
 export { HeadingsExtension, type HeadingsOptions, type HeadingsStorage } from './components/extension/headings'
@@ -66,12 +76,11 @@ export { TodoItemExtension, TodoListExtension } from './components/extension/tod
 
 export * from './command/deleteAttachment'
 export {
-  type DocumentId,
   TiptapCollabProvider,
   type TiptapCollabProviderConfiguration,
   createTiptapCollaborationData
 } from './provider/tiptap'
-export { collaborativeDocumentId, mongodbDocumentId, platformDocumentId } from './provider/utils'
+export { formatCollaborativeDocumentId, formatPlatformDocumentId } from './provider/utils'
 export { CollaborationIds } from './types'
 
 export { textEditorId }

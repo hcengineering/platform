@@ -25,6 +25,7 @@
   import setting, { Integration } from '@hcengineering/setting'
   import type { NewTelegramMessage, SharedTelegramMessage, TelegramMessage } from '@hcengineering/telegram'
   import templates, { TemplateDataProvider } from '@hcengineering/templates'
+  import { markupToHTML } from '@hcengineering/text'
   import {
     Button,
     Icon,
@@ -121,7 +122,7 @@
       channel._class,
       'newMessages',
       {
-        content: message,
+        content: markupToHTML(message),
         status: 'new',
         attachments
       },

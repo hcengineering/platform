@@ -221,7 +221,13 @@ const view = plugin(viewId, {
     Database: '' as Asset,
     Star: '' as Asset,
     Eye: '' as Asset,
-    EyeCrossed: '' as Asset
+    EyeCrossed: '' as Asset,
+    CheckCircle: '' as Asset,
+    Add: '' as Asset,
+    Image: '' as Asset,
+    Table2: '' as Asset,
+    CodeBlock: '' as Asset,
+    SeparatorLine: '' as Asset
   },
   category: {
     General: '' as Ref<ActionCategory>,
