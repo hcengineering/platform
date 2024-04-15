@@ -119,6 +119,7 @@
   {readonly}
   field={key.key}
   canEmbedFiles={false}
+  withSideMenu={false}
   on:focus
   on:blur
   on:update

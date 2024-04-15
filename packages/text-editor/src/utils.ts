@@ -14,6 +14,9 @@
 //
 
 import { type Attribute } from '@tiptap/core'
+import { showPopup, SelectPopup, type PopupAlignment } from '@hcengineering/ui'
+
+import { mInsertTable } from './components/extensions'
 
 export function getDataAttribute (
   name: string,
@@ -36,4 +39,29 @@ export function getDataAttribute (
     },
     ...(options ?? {})
   }
+}
+
+export async function addTableHandler (
+  insertTable: (options: { rows?: number, cols?: number, withHeaderRow?: boolean }) => void,
+  alignment?: PopupAlignment
+): Promise<void> {
+  showPopup(
+    SelectPopup,
+    {
+      value: mInsertTable.map((it) => ({ id: it.label, text: it.label }))
+    },
+    alignment ?? 'center',
+    (val) => {
+      if (val !== undefined) {
+        const tab = mInsertTable.find((it) => it.label === val)
+        if (tab !== undefined) {
+          insertTable({
+            cols: tab.cols,
+            rows: tab.rows,
+            withHeaderRow: tab.header
+          })
+        }
+      }
+    }
+  )
 }
