@@ -14,7 +14,7 @@
 //
 
 import { type DecorationAttrs } from '@tiptap/pm/view'
-import { getPlatformColor, showTooltip } from '@hcengineering/ui'
+import { getPlatformColor, closeTooltip, showTooltip } from '@hcengineering/ui'
 import { type CollaborationUser } from '../../types'
 import CollaborationUserPopup from '../CollaborationUserPopup.svelte'
 
@@ -33,6 +33,22 @@ export const renderCursor = (user: CollaborationUser): HTMLElement => {
   caret.addEventListener('mousemove', () => {
     showTooltip(undefined, caret, 'top', CollaborationUserPopup, { user })
   })
+  caret.setAttribute('id', user.id)
+
+  const handler = (data: any, observer: any): void => {
+    data.forEach((item: any) => {
+      if (item.type === 'attributes') {
+        if (item.target.attributes.typing.nodeValue === '1') {
+          showTooltip(undefined, caret, 'top', CollaborationUserPopup, { user }, undefined, undefined, 'sticky_tooltip')
+        } else {
+          closeTooltip()
+        }
+      }
+    })
+  }
+
+  const observer = new MutationObserver(handler)
+  observer.observe(caret, { attributes: true, attributeOldValue: true, attributeFilter: ['typing'] })
 
   return cursor
 }

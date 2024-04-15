@@ -152,6 +152,7 @@
 
   let localSynced = false
   let remoteSynced = false
+  let timer: any = undefined
 
   $: loading = !localSynced && !remoteSynced
   $: editable = !readonly && remoteSynced
@@ -421,6 +422,16 @@
   onMount(async () => {
     await ph
 
+    remoteProvider.awareness?.on('change', (data: any) => {
+      remoteProvider.awareness?.states.forEach((value, key) => {
+        const element = document.getElementById(value?.user?.id)
+        const typing = value?.user?.isTyping ? '1' : '0'
+        console.log('1111111111typing', typing)
+        if (element?.getAttribute('type') !== typing) {
+          element?.setAttribute('typing', typing)
+        }
+      })
+    })
     editor = new Editor({
       element,
       editorProps: { attributes: mergeAttributes(defaultEditorAttributes, editorAttributes, { class: 'flex-grow' }) },
@@ -488,6 +499,17 @@
         if (isChangeOrigin(transaction)) return
 
         throttle.call(updateLastUpdateTime)
+
+        // TODO: Update user to set isTyping true
+        editor.commands.updateUser({
+          ...user,
+          isTyping: true
+        })
+        if (timer) {
+          clearTimeout(timer)
+        }
+        timer = setTimeout(() => editor.commands.updateUser({ ...user, isTyping: false }), 3000)
+
         dispatch('update')
       }
     })
