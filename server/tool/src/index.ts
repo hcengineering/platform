@@ -356,8 +356,8 @@ async function createUpdateIndexes (
   // Find all domains and indexed fields inside
   for (const c of classes) {
     try {
-      const domain = hierarchy.getDomain(c._id)
-      if (domain === DOMAIN_MODEL) {
+      const domain = hierarchy.findDomain(c._id)
+      if (domain === undefined || domain === DOMAIN_MODEL) {
         continue
       }
       const attrs = hierarchy.getAllAttributes(c._id)
@@ -396,11 +396,17 @@ async function createUpdateIndexes (
   for (const [d, v] of allDomains) {
     const cfg = domainConfigurations.find((it) => it.domain === d)
 
-    if (cfg?.disableCollection === true) {
-      await db.dropCollection(d)
+    const collInfo = collections.find((it) => it.name === d)
+
+    if (cfg?.disableCollection === true && collInfo != null) {
+      try {
+        await db.dropCollection(d)
+      } catch (err) {
+        logger.error('error: failed to delete collection', { d, err })
+      }
       continue
     }
-    const collInfo = collections.find((it) => it.name === d)
+
     if (collInfo == null) {
       await ctx.with('create-collection', { d }, async () => await db.createCollection(d))
     }
@@ -458,13 +464,17 @@ async function createUpdateIndexes (
     }
     if (allIndexes.length > 0) {
       for (const c of allIndexes) {
-        if (cfg?.skip !== undefined) {
-          if (Array.from(cfg.skip ?? []).some((it) => c.name.includes(it))) {
-            continue
+        try {
+          if (cfg?.skip !== undefined) {
+            if (Array.from(cfg.skip ?? []).some((it) => c.name.includes(it))) {
+              continue
+            }
           }
+          logger.log('drop unused indexes', { name: c.name })
+          await collection.dropIndex(c.name)
+        } catch (err) {
+          console.error('error: failed to drop index', { c, err })
         }
-        logger.log('drop unused indexes', { name: c.name })
-        await collection.dropIndex(c.name)
       }
     }
 
@@ -483,8 +493,12 @@ async function createUpdateIndexes (
   if (collections.length > 0) {
     // We could drop unused collections.
     for (const c of collections) {
-      logger.log('drop unused collection', { name: c.name })
-      await db.dropCollection(c.name)
+      try {
+        logger.log('drop unused collection', { name: c.name })
+        await db.dropCollection(c.name)
+      } catch (err) {
+        console.error('error: failed to drop collection', { c, err })
+      }
     }
   }
 }
