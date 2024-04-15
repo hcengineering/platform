@@ -29,8 +29,8 @@
   export let type: ObjectPresenterType = 'link'
 
   const client = getClient()
-  const clazz = client.getHierarchy().getClass(value._class)
-  const shortLabel = value && clazz.shortLabel
+  const clazz = value && client.getHierarchy().getClass(value._class)
+  const shortLabel = clazz?.shortLabel
 </script>
 
 {#if value && shortLabel}
