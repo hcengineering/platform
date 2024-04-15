@@ -15,7 +15,7 @@
     padding-left: 0.25rem;
     color: var(--theme-link-color);
     background-color: var(--theme-mention-bg-color);
-    border-radius: 0.25rem;
+    border-radius: .25rem;
   }
 
   .title,
@@ -65,15 +65,15 @@
     margin-block-start: 0.5rem;
   }
 
-  > * + * {
+  >*+* {
     margin-top: 0.5rem;
     margin-bottom: 0;
   }
 
   ul,
   ol {
-    margin-right: 0.25rem;
-    margin-left: 0.75rem;
+    margin-right: .25rem;
+    margin-left: .75rem;
     padding: 0;
   }
 
@@ -86,7 +86,7 @@
     margin: 0;
   }
 
-  ul[data-type='todoList'] {
+  ul[data-type="todoList"] {
     list-style: none;
     margin: 0;
     padding: 0;
@@ -97,24 +97,12 @@
     }
   }
 
-  ol ol {
-    list-style: lower-alpha;
-  }
-  ol ol ol {
-    list-style: lower-roman;
-  }
-  ol ol ol ol {
-    list-style: decimal;
-  }
-  ol ol ol ol ol {
-    list-style: lower-alpha;
-  }
-  ol ol ol ol ol ol {
-    list-style: lower-roman;
-  }
-  ol ol ol ol ol ol ol {
-    list-style: decimal;
-  }
+  ol ol { list-style: lower-alpha; }
+  ol ol ol { list-style: lower-roman; }
+  ol ol ol ol { list-style: decimal; }
+  ol ol ol ol ol { list-style: lower-alpha; }
+  ol ol ol ol ol ol { list-style: lower-roman; }
+  ol ol ol ol ol ol ol { list-style: decimal; }
 
   /* Placeholder (at the top) */
   p.is-editor-empty:first-child::before {
@@ -216,15 +204,15 @@
   display: flex;
   flex-direction: row;
 
-  &[data-align='center'] {
+  &[data-align="center"] {
     justify-content: center;
   }
 
-  &[data-align='left'] {
+  &[data-align="left"] {
     justify-content: left;
   }
 
-  &[data-align='right'] {
+  &[data-align="right"] {
     justify-content: right;
   }
 }
@@ -277,7 +265,7 @@
       text-decoration: none;
       max-width: 16rem;
     }
-    a:hover {
+    a:hover  {
       text-decoration: underline;
     }
   }
@@ -324,8 +312,7 @@
   background-color: var(--text-editor-highlighted-node-warning-background-color);
   border-bottom: 0.0625rem solid var(--text-editor-highlighted-node-warning-border-color);
 
-  &.text-editor-highlighted-node-selected,
-  &:hover {
+  &.text-editor-highlighted-node-selected, &:hover {
     background-color: var(--text-editor-highlighted-node-warning-active-background-color);
   }
 }
@@ -338,7 +325,7 @@
 
 .text-editor-highlighted-node-add {
   background-color: var(--text-editor-highlighted-node-add-background-color);
-  color: var(--text-editor-highlighted-node-add-font-color);
+  color: var(--text-editor-highlighted-node-add-font-color)
 }
 
 .text-editor-popup {
