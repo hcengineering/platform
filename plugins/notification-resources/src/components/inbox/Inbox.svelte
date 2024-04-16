@@ -45,6 +45,7 @@
   import Filter from '../Filter.svelte'
   import {
     archiveAll,
+    decodeObjectURI,
     getDisplayInboxData,
     isMentionNotification,
     openInboxDoc,
@@ -65,6 +66,7 @@
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const notificationsByContextStore = inboxClient.inboxNotificationsByContext
   const contextByIdStore = inboxClient.contextById
+  const contextByDocStore = inboxClient.contextByDoc
   const contextsStore = inboxClient.contexts
 
   const allTab: TabItem = {
@@ -98,8 +100,10 @@
 
   async function syncLocation (newLocation: Location): Promise<void> {
     const loc = await resolveLocation(newLocation)
+    const [_id] = decodeObjectURI(loc?.loc.path[3] ?? '')
+    const context = $contextByDocStore.get(_id)
 
-    selectedContextId = loc?.loc.path[3] as Ref<DocNotifyContext> | undefined
+    selectedContextId = context?._id
 
     if (selectedContextId !== selectedContext?._id) {
       selectedContext = undefined
@@ -179,7 +183,8 @@
       const selectedMsg = selectedNotification.mentionedIn as Ref<ActivityMessage>
 
       openInboxDoc(
-        selectedContext._id,
+        selectedContext.attachedTo,
+        selectedContext.attachedToClass,
         isActivityMessageClass(selectedContext.attachedToClass)
           ? (selectedContext.attachedTo as Ref<ActivityMessage>)
           : undefined,
@@ -192,20 +197,31 @@
         const thread = await client.findOne(chunter.class.ThreadMessage, {
           _id: selectedContext.attachedTo as Ref<ThreadMessage>
         })
-        openInboxDoc(selectedContext._id, thread?.attachedTo, thread?._id)
+        openInboxDoc(selectedContext.attachedTo, selectedContext.attachedToClass, thread?.attachedTo, thread?._id)
       } else if (isReactionMessage(message)) {
-        openInboxDoc(selectedContext._id, undefined, selectedContext.attachedTo as Ref<ActivityMessage>)
+        openInboxDoc(
+          selectedContext.attachedTo,
+          selectedContext.attachedToClass,
+          undefined,
+          selectedContext.attachedTo as Ref<ActivityMessage>
+        )
       } else {
         const selectedMsg = (selectedNotification as ActivityInboxNotification)?.attachedTo
 
         openInboxDoc(
-          selectedContext._id,
+          selectedContext.attachedTo,
+          selectedContext.attachedToClass,
           selectedMsg ? (selectedContext.attachedTo as Ref<ActivityMessage>) : undefined,
           selectedMsg ?? (selectedContext.attachedTo as Ref<ActivityMessage>)
         )
       }
     } else {
-      openInboxDoc(selectedContext._id, undefined, (selectedNotification as ActivityInboxNotification)?.attachedTo)
+      openInboxDoc(
+        selectedContext.attachedTo,
+        selectedContext.attachedToClass,
+        undefined,
+        (selectedNotification as ActivityInboxNotification)?.attachedTo
+      )
     }
   }
 

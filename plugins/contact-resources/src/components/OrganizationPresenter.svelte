@@ -18,6 +18,7 @@
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { tooltip } from '@hcengineering/ui'
   import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
+  import { ObjectPresenterType } from '@hcengineering/view'
 
   import contact from '../plugin'
   import Company from './icons/Company.svelte'
@@ -28,6 +29,7 @@
   export let accent: boolean = false
   export let noUnderline: boolean = false
   export let maxWidth = ''
+  export let type: ObjectPresenterType = 'link'
 </script>
 
 {#if value}
@@ -39,7 +41,7 @@
       {noUnderline}
       component={contact.component.EditOrganizationPanel}
     />
-  {:else}
+  {:else if type === 'link'}
     <DocNavLink {disabled} object={value} {accent} {noUnderline} component={contact.component.EditOrganizationPanel}>
       <div class="flex-presenter" style:max-width={maxWidth} use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
         <div class="icon circle">
@@ -50,5 +52,7 @@
         >
       </div>
     </DocNavLink>
+  {:else if type === 'text'}
+    <span class="overflow-label" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>{value.name}</span>
   {/if}
 {/if}

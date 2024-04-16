@@ -61,7 +61,7 @@
 <Card
   label={recruit.string.Opinion}
   okAction={editOpinion}
-  canSave={value.length > 0}
+  canSave={value.trim().length > 0}
   gap={'gapV-4'}
   on:close={() => {
     dispatch('close')

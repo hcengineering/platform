@@ -61,36 +61,6 @@ async function createDefaultProject (tx: TxOperations): Promise<void> {
     objectId: tracker.project.DefaultProject
   })
 
-  if ((await tx.findOne(task.class.ProjectType, { _id: tracker.ids.ClassingProjectType })) === undefined) {
-    const states: Omit<Data<Status>, 'rank'>[] = createStatesData(classicIssueTaskStatuses)
-    await createProjectType(
-      tx,
-      {
-        name: 'Classic project',
-        descriptor: tracker.descriptors.ProjectType,
-        description: '',
-        tasks: [],
-        roles: 0,
-        classic: true
-      },
-      [
-        {
-          _id: tracker.taskTypes.Issue,
-          descriptor: tracker.descriptors.Issue,
-          name: 'Issue',
-          factory: states,
-          ofClass: tracker.class.Issue,
-          targetClass: tracker.class.Issue,
-          statusCategories: classicIssueTaskStatuses.map((it) => it.category),
-          statusClass: core.class.Status,
-          kind: 'both',
-          allowedAsChildOf: [tracker.taskTypes.Issue]
-        }
-      ],
-      tracker.ids.ClassingProjectType
-    )
-  }
-
   // temporary disabled until nice automation
   // if ((await tx.findOne(task.class.ProjectType, { _id: tracker.ids.BaseProjectType })) === undefined) {
   //   const issueId: Ref<TaskType> = generateId()
@@ -151,6 +121,43 @@ async function createDefaultProject (tx: TxOperations): Promise<void> {
         )
       }
     }
+  }
+}
+
+async function createDefaultProjectType (tx: TxOperations): Promise<void> {
+  const existing = await tx.findOne(task.class.ProjectType, { _id: tracker.ids.ClassingProjectType })
+  const existingDeleted = await tx.findOne(core.class.TxRemoveDoc, {
+    objectId: tracker.ids.ClassingProjectType
+  })
+
+  if (existing === undefined && existingDeleted === undefined) {
+    const states: Omit<Data<Status>, 'rank'>[] = createStatesData(classicIssueTaskStatuses)
+    await createProjectType(
+      tx,
+      {
+        name: 'Classic project',
+        descriptor: tracker.descriptors.ProjectType,
+        description: '',
+        tasks: [],
+        roles: 0,
+        classic: true
+      },
+      [
+        {
+          _id: tracker.taskTypes.Issue,
+          descriptor: tracker.descriptors.Issue,
+          name: 'Issue',
+          factory: states,
+          ofClass: tracker.class.Issue,
+          targetClass: tracker.class.Issue,
+          statusCategories: classicIssueTaskStatuses.map((it) => it.category),
+          statusClass: core.class.Status,
+          kind: 'both',
+          allowedAsChildOf: [tracker.taskTypes.Issue]
+        }
+      ],
+      tracker.ids.ClassingProjectType
+    )
   }
 }
 
@@ -644,11 +651,14 @@ export const trackerOperation: MigrateOperation = {
     ])
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
+    const tx = new TxOperations(client, core.account.System)
+    // For now need to be created every time as it's system model
+    await createDefaultProjectType(tx)
+
     await tryUpgrade(client, trackerId, [
       {
         state: 'create-defaults',
-        func: async (client) => {
-          const tx = new TxOperations(client, core.account.System)
+        func: async () => {
           await createDefaults(tx)
         }
       }

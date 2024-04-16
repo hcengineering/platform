@@ -13,6 +13,7 @@
 // limitations under the f.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import contact, {
   AvatarType,
   buildGravatarId,
@@ -264,6 +265,7 @@ async function getAccountInfoByToken (
   try {
     email = decodeToken(token)?.email
   } catch (err: any) {
+    Analytics.handleError(err)
     await ctx.error('Invalid token', { token })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Unauthorized, {}))
   }
@@ -308,6 +310,7 @@ export async function login (
     await ctx.info('login success', { email, productId })
     return result
   } catch (err: any) {
+    Analytics.handleError(err)
     await ctx.error('login failed', { email, productId, _email, err })
     throw err
   }
@@ -397,14 +400,20 @@ export async function getInvite (db: Db, inviteId: ObjectId): Promise<Invite | n
 /**
  * @public
  */
-export async function checkInvite (invite: Invite | null, email: string): Promise<WorkspaceId> {
+export async function checkInvite (ctx: MeasureContext, invite: Invite | null, email: string): Promise<WorkspaceId> {
   if (invite === null || invite.limit === 0) {
+    void ctx.error('invite', { email, state: 'no invite or limit exceed' })
+    Analytics.handleError(new Error(`no invite or invite limit exceed ${email}`))
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
   if (invite.exp < Date.now()) {
+    void ctx.error('invite', { email, state: 'link expired' })
+    Analytics.handleError(new Error(`invite link expired ${invite._id.toString()} ${email}`))
     throw new PlatformError(new Status(Severity.ERROR, platform.status.ExpiredLink, {}))
   }
-  if (!new RegExp(invite.emailMask).test(email)) {
+  if (invite.emailMask != null && invite.emailMask.trim().length > 0 && !new RegExp(invite.emailMask).test(email)) {
+    void ctx.error('invite', { email, state: 'mask to match', mask: invite.emailMask })
+    Analytics.handleError(new Error(`invite link mask failed ${invite._id.toString()} ${email} ${invite.emailMask}`))
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
@@ -431,7 +440,7 @@ export async function join (
 ): Promise<WorkspaceLoginInfo> {
   const email = cleanEmail(_email)
   const invite = await getInvite(db, inviteId)
-  const workspace = await checkInvite(invite, email)
+  const workspace = await checkInvite(ctx, invite, email)
   await ctx.info(`join attempt:${email}, ${workspace.name}`)
   const ws = await assignWorkspace(ctx, db, productId, email, workspace.name)
 
@@ -542,7 +551,7 @@ export async function signUpJoin (
   const email = cleanEmail(_email)
   console.log(`signup join:${email} ${first} ${last}`)
   const invite = await getInvite(db, inviteId)
-  const workspace = await checkInvite(invite, email)
+  const workspace = await checkInvite(ctx, invite, email)
   const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
   await createAcc(
     ctx,
@@ -879,7 +888,13 @@ export async function createWorkspace (
     try {
       const initWS = getMetadata(toolPlugin.metadata.InitWorkspace)
       const wsId = getWorkspaceId(workspaceInfo.workspace, productId)
-      if (initWS !== undefined && (await getWorkspaceById(db, productId, initWS)) !== null) {
+
+      // We should not try to clone INIT_WS into INIT_WS during it's creation.
+      if (
+        initWS !== undefined &&
+        (await getWorkspaceById(db, productId, initWS)) !== null &&
+        initWS !== workspaceInfo.workspace
+      ) {
         // Just any valid model for transactor to be able to function
         await (
           await initModel(ctx, getTransactor(), wsId, txes, [], ctxModellogger, async (value) => {
@@ -925,6 +940,7 @@ export async function createWorkspace (
         )
       }
     } catch (err: any) {
+      Analytics.handleError(err)
       return { workspaceInfo, err, client: null as any }
     }
     // Workspace is created, we need to clear disabled flag.
@@ -1277,6 +1293,7 @@ export async function assignWorkspace (
   const email = cleanEmail(_email)
   const initWS = getMetadata(toolPlugin.metadata.InitWorkspace)
   if (initWS !== undefined && initWS === workspaceId) {
+    Analytics.handleError(new Error(`assign-workspace failed ${email} ${workspaceId}`))
     await ctx.error('assign-workspace failed', { email, workspaceId, reason: 'initWs === workspaceId' })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
@@ -1612,7 +1629,7 @@ export async function checkJoin (
 ): Promise<WorkspaceLoginInfo> {
   const { email } = decodeToken(token)
   const invite = await getInvite(db, inviteId)
-  const workspace = await checkInvite(invite, email)
+  const workspace = await checkInvite(ctx, invite, email)
   const ws = await getWorkspaceById(db, productId, workspace.name)
   if (ws === null) {
     await ctx.error('workspace not found', { name: workspace.name, email, inviteId })
@@ -1822,6 +1839,7 @@ function wrap (
             ? err.status
             : new Status(Severity.ERROR, platform.status.InternalServerError, {})
         if (status.code === platform.status.InternalServerError) {
+          Analytics.handleError(err)
           void ctx.error('error', { status, err })
         } else {
           void ctx.error('error', { status })
@@ -1845,7 +1863,7 @@ export async function joinWithProvider (
 ): Promise<WorkspaceLoginInfo | LoginInfo> {
   const email = cleanEmail(_email)
   const invite = await getInvite(db, inviteId)
-  const workspace = await checkInvite(invite, email)
+  const workspace = await checkInvite(ctx, invite, email)
   if (last == null) {
     last = ''
   }

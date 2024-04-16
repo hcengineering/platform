@@ -198,7 +198,8 @@ export const contactPlugin = plugin(contactId, {
     DeleteConfirmationPopup: '' as AnyComponent,
     AccountArrayEditor: '' as AnyComponent,
     PersonIcon: '' as AnyComponent,
-    EditOrganizationPanel: '' as AnyComponent
+    EditOrganizationPanel: '' as AnyComponent,
+    CollaborationUserAvatar: '' as AnyComponent
   },
   channelProvider: {
     Email: '' as Ref<ChannelProvider>,

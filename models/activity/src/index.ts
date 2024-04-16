@@ -34,7 +34,8 @@ import {
   type IgnoreActivity,
   type Reaction,
   type SavedMessage,
-  type TxViewlet
+  type TxViewlet,
+  type ReplyProvider
 } from '@hcengineering/activity'
 import contact, { type Person } from '@hcengineering/contact'
 import core, {
@@ -264,6 +265,11 @@ export class TActivityMessagePreview extends TClass implements ActivityMessagePr
   presenter!: AnyComponent
 }
 
+@Model(activity.class.ReplyProvider, core.class.Doc, DOMAIN_MODEL)
+export class TReplyProvider extends TDoc implements ReplyProvider {
+  function!: Resource<(message: ActivityMessage) => Promise<void>>
+}
+
 export function createModel (builder: Builder): void {
   builder.createModel(
     TTxViewlet,
@@ -281,7 +287,8 @@ export function createModel (builder: Builder): void {
     TSavedMessage,
     TIgnoreActivity,
     TActivityReference,
-    TActivityMessagePreview
+    TActivityMessagePreview,
+    TReplyProvider
   )
 
   builder.mixin(activity.class.DocUpdateMessage, core.class.Class, view.mixin.ObjectPresenter, {
@@ -306,10 +313,6 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(activity.class.ActivityReference, core.class.Class, activity.mixin.ActivityMessagePreview, {
     presenter: activity.component.ActivityReferencePreview
-  })
-
-  builder.mixin(activity.class.DocUpdateMessage, core.class.Class, view.mixin.LinkProvider, {
-    encode: activity.function.GetFragment
   })
 
   builder.createDoc(
@@ -375,7 +378,8 @@ export function createModel (builder: Builder): void {
     core.class.Class,
     core.mixin.IndexConfiguration,
     {
-      searchDisabled: true
+      searchDisabled: true,
+      indexes: []
     }
   )
 
@@ -384,7 +388,8 @@ export function createModel (builder: Builder): void {
     core.class.Class,
     core.mixin.IndexConfiguration,
     {
-      searchDisabled: true
+      searchDisabled: true,
+      indexes: []
     }
   )
 

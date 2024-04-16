@@ -45,6 +45,7 @@
     "@hcengineering/server-backup": "^0.6.0",
     "@hcengineering/server-tool": "^0.6.0",
     "@hcengineering/server-token": "^0.6.7",
+    "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/model-all": "^0.6.0",
     "node-fetch": "^2.6.6"
   }

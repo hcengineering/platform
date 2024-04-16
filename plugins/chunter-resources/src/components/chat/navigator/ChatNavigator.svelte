@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref } from '@hcengineering/core'
+  import { Doc, Ref } from '@hcengineering/core'
   import { Scroller, SearchEdit, Label, Button, IconAdd, showPopup, Menu } from '@hcengineering/ui'
   import { DocNotifyContext } from '@hcengineering/notification'
   import { SpecialNavModel } from '@hcengineering/workbench'
@@ -27,9 +27,10 @@
   import { chatNavGroupModels, chatSpecials } from '../utils'
   import ChatSpecialElement from './ChatSpecialElement.svelte'
   import { userSearch } from '../../../index'
-  import { navigateToSpecial } from '../../../utils'
+  import { navigateToSpecial } from '../../../navigation'
 
-  export let selectedContextId: Ref<DocNotifyContext> | undefined
+  export let objectId: Ref<Doc> | undefined
+  export let object: Doc | undefined
   export let currentSpecial: SpecialNavModel | undefined
 
   const notificationClient = InboxNotificationsClientImpl.getClient()
@@ -105,7 +106,7 @@
   </div>
   <Scroller>
     {#each chatNavGroupModels as model}
-      <ChatNavGroup {selectedContextId} {model} on:select />
+      <ChatNavGroup {object} {objectId} {model} on:select />
     {/each}
     <div class="antiNav-space" />
   </Scroller>

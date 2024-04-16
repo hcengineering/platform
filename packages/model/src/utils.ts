@@ -60,6 +60,15 @@ export interface ModelLogger {
   error: (msg: string, err: any) => void
 }
 
+const errorPrinter = ({ message, stack, ...rest }: Error): object => ({
+  message,
+  stack,
+  ...rest
+})
+function replacer (value: any): any {
+  return value instanceof Error ? errorPrinter(value) : value
+}
+
 /**
  * @public
  */
@@ -68,6 +77,6 @@ export const consoleModelLogger: ModelLogger = {
     console.log(msg, data)
   },
   error (msg: string, data: any): void {
-    console.error(msg, data)
+    console.error(msg, replacer(data))
   }
 }

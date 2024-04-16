@@ -54,6 +54,7 @@
     "@hcengineering/attachment": "^0.6.9",
     "@hcengineering/login": "^0.6.8",
     "@hcengineering/templates": "^0.6.7",
-    "@hcengineering/image-cropper": "^0.6.0"
+    "@hcengineering/image-cropper": "^0.6.0",
+    "@hcengineering/text-editor": "^0.6.0"
   }
 }

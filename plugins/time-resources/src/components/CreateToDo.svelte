@@ -1,6 +1,6 @@
 <script lang="ts">
   import { ActionIcon, IconAdd, showPopup, ModernEditbox } from '@hcengineering/ui'
-  import { SortingOrder, getCurrentAccount } from '@hcengineering/core'
+  import { SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
   import { PersonAccount } from '@hcengineering/contact'
   import { ToDoPriority } from '@hcengineering/time'
   import { getClient } from '@hcengineering/presentation'
@@ -19,7 +19,7 @@
     name = name.trim()
     if (name.length === 0) return
     description = description?.trim() ?? ''
-    const ops = client.apply('todo')
+    const ops = client.apply('todo' + generateId())
     const latestTodo = await ops.findOne(
       time.class.ToDo,
       {

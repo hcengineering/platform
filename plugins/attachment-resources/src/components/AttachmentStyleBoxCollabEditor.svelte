@@ -14,16 +14,25 @@
 -->
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
+  import contact from '@hcengineering/contact'
   import { Account, Doc, Ref, generateId } from '@hcengineering/core'
-  import { IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
+  import { IntlString, getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { KeyedAttribute, createQuery, getClient } from '@hcengineering/presentation'
-  import textEditor, { AttachIcon, CollaborativeAttributeBox, RefAction } from '@hcengineering/text-editor'
-  import { navigate } from '@hcengineering/ui'
+  import { getCollaborationUser, getObjectLinkFragment } from '@hcengineering/view-resources'
+  import textEditor, {
+    AttachIcon,
+    CollaborativeAttributeBox,
+    RefAction,
+    TableIcon,
+    TextEditorHandler,
+    addTableHandler
+  } from '@hcengineering/text-editor'
+  import { AnySvelteComponent, getEventPositionElement, getPopupPositionElement, navigate } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { getObjectLinkFragment } from '@hcengineering/view-resources'
+  import { defaultRefActions, getModelRefActions } from '@hcengineering/text-editor/src/components/editor/actions'
+
   import AttachmentsGrid from './AttachmentsGrid.svelte'
   import { uploadFile } from '../utils'
-  import { defaultRefActions, getModelRefActions } from '@hcengineering/text-editor/src/components/editor/actions'
 
   export let object: Doc
   export let key: KeyedAttribute
@@ -38,6 +47,12 @@
 
   const client = getClient()
 
+  const user = getCollaborationUser()
+  let userComponent: AnySvelteComponent | undefined
+  void getResource(contact.component.CollaborationUserAvatar).then((component) => {
+    userComponent = component
+  })
+
   let editor: CollaborativeAttributeBox
 
   let refActions: RefAction[] = []
@@ -51,6 +66,12 @@
         icon: AttachIcon,
         action: handleAttach,
         order: 1001
+      },
+      {
+        label: textEditor.string.Table,
+        icon: TableIcon,
+        action: handleTable,
+        order: 1501
       }
     ]
   } else {
@@ -85,6 +106,12 @@
 
   export function isFocused (): boolean {
     return editor?.isFocused() ?? false
+  }
+
+  export function handleTable (element: HTMLElement, editorHandler: TextEditorHandler, event?: MouseEvent): void {
+    const position = event !== undefined ? getEventPositionElement(event) : getPopupPositionElement(element)
+
+    addTableHandler(editorHandler.insertTable, position)
   }
 
   export function handleAttach (): void {
@@ -235,6 +262,8 @@
       bind:this={editor}
       {object}
       {key}
+      {user}
+      {userComponent}
       {focusIndex}
       {placeholder}
       {boundary}

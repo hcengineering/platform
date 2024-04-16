@@ -115,7 +115,7 @@
     const asMixin = hierarchy.as(project, typeType?.targetClass)
 
     return roles.reduce<RolesAssignment>((prev, { _id }) => {
-      prev[_id] = (asMixin as any)[_id]
+      prev[_id] = (asMixin as any)[_id] ?? []
 
       return prev
     }, {})
@@ -303,8 +303,8 @@
   label={isNew ? tracker.string.NewProject : tracker.string.EditProject}
   okLabel={isNew ? presentation.string.Create : presentation.string.Save}
   okAction={handleSave}
-  canSave={name.length > 0 &&
-    identifier.length > 0 &&
+  canSave={name.trim().length > 0 &&
+    identifier.trim().length > 0 &&
     !projectsIdentifiers.has(identifier.toUpperCase()) &&
     !(members.length === 0 && isPrivate)}
   accentHeader

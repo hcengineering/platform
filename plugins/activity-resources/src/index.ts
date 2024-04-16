@@ -26,13 +26,7 @@ import DocUpdateMessagePreview from './components/doc-update-message/DocUpdateMe
 import ActivityReferencePreview from './components/activity-reference/ActivityReferencePreview.svelte'
 import ActivityInfoMessagePreview from './components/activity-info-message/ActivityInfoMessagePreview.svelte'
 
-import {
-  getMessageFragment,
-  attributesFilter,
-  pinnedFilter,
-  allFilter,
-  referencesFilter
-} from './activityMessagesUtils'
+import { attributesFilter, pinnedFilter, allFilter, referencesFilter } from './activityMessagesUtils'
 import { updateReferences } from './references'
 
 export * from './activity'
@@ -75,9 +69,6 @@ export default async (): Promise<Resources> => ({
     PinnedFilter: pinnedFilter,
     AllFilter: allFilter,
     ReferencesFilter: referencesFilter
-  },
-  function: {
-    GetFragment: getMessageFragment
   },
   backreference: {
     Update: updateReferences

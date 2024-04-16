@@ -16,7 +16,7 @@
   import { Person } from '@hcengineering/contact'
   import { personByIdStore, Avatar } from '@hcengineering/contact-resources'
   import { Doc, IdMap, Ref, WithLookup } from '@hcengineering/core'
-  import { getLocation, Label, navigate, TimeSince } from '@hcengineering/ui'
+  import { Label, TimeSince } from '@hcengineering/ui'
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import notification, {
     ActivityInboxNotification,
@@ -25,14 +25,13 @@
     InboxNotificationsClient
   } from '@hcengineering/notification'
   import { getResource } from '@hcengineering/platform'
-  import { get } from 'svelte/store'
-
-  import { buildThreadLink } from '../utils'
+  import { getClient } from '@hcengineering/presentation'
 
   export let object: ActivityMessage
   export let embedded = false
   export let onReply: (() => void) | undefined = undefined
 
+  const client = getClient()
   const maxDisplayPersons = 5
 
   $: lastReply = object.lastReply ?? new Date().getTime()
@@ -40,7 +39,7 @@
 
   let inboxClient: InboxNotificationsClient | undefined = undefined
 
-  getResource(notification.function.GetInboxNotificationsClient).then((getClientFn) => {
+  void getResource(notification.function.GetInboxNotificationsClient).then((getClientFn) => {
     inboxClient = getClientFn()
   })
 
@@ -71,14 +70,16 @@
       .some(({ isViewed }) => !isViewed)
   }
 
-  function updateQuery (personIds: Set<Ref<Person>>, personById: IdMap<Person>) {
+  function updateQuery (personIds: Set<Ref<Person>>, personById: IdMap<Person>): void {
     displayPersons = Array.from(personIds)
       .map((id) => personById.get(id))
       .filter((person): person is Person => person !== undefined)
       .slice(0, maxDisplayPersons - 1)
   }
 
-  function handleReply (e: any) {
+  const replyProvider = client.getModel().findAllSync(activity.class.ReplyProvider, {})[0]
+
+  async function handleReply (e: MouseEvent) {
     e.stopPropagation()
     e.preventDefault()
 
@@ -87,17 +88,10 @@
       return
     }
 
-    if (inboxClient === undefined) {
-      return
+    if (replyProvider) {
+      const fn = await getResource(replyProvider.function)
+      fn(object)
     }
-
-    const context = get(inboxClient.contextByDoc).get(object.attachedTo)
-
-    if (context === undefined) {
-      return
-    }
-
-    navigate(buildThreadLink(getLocation(), context._id, object._id))
   }
 </script>
 

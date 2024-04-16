@@ -34,9 +34,7 @@ test.describe('Mentions issue tests', () => {
     await issuesDetailsPage.addMentions('Dirak Kainin')
     await issuesDetailsPage.checkCommentExist('@Dirak Kainin')
 
-    await issuesDetailsPage.checkCollaborators(['Appleseed John'])
-    // TODO bug with adding in collaborators
-    // await issuesDetailsPage.checkCollaborators(['Appleseed John', 'Dirak Kainin'])
+    await issuesDetailsPage.checkCollaborators(['Appleseed John', 'Dirak Kainin'])
   })
 
   test('When Change assigner user should be added as Collaborators', async ({ page }) => {

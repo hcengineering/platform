@@ -20,7 +20,14 @@
   import notification, { DocNotifyContext, InboxNotification, notificationId } from '@hcengineering/notification'
   import { BrowserNotificatator, InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { IntlString, broadcastEvent, getMetadata, getResource } from '@hcengineering/platform'
-  import { ActionContext, ComponentExtensions, createQuery, getClient, isAdminUser } from '@hcengineering/presentation'
+  import {
+    ActionContext,
+    ComponentExtensions,
+    createQuery,
+    getClient,
+    isAdminUser,
+    reduceCalls
+  } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
   import support, { SupportStatus, supportLink } from '@hcengineering/support'
   import {
@@ -163,18 +170,17 @@
   let hasNotificationsFn: ((data: Map<Ref<DocNotifyContext>, InboxNotification[]>) => Promise<boolean>) | undefined =
     undefined
   let hasInboxNotifications = false
-  let syncPromise: Promise<void> | undefined = undefined
-  let locUpdate = 0
 
-  getResource(notification.function.HasInboxNotifications).then((f) => {
+  void getResource(notification.function.HasInboxNotifications).then((f) => {
     hasNotificationsFn = f
   })
 
-  $: hasNotificationsFn?.($inboxNotificationsByContextStore).then((res) => {
+  $: void hasNotificationsFn?.($inboxNotificationsByContextStore).then((res) => {
     hasInboxNotifications = res
   })
 
-  const doSyncLoc = async (loc: Location, iteration: number): Promise<void> => {
+  const doSyncLoc = reduceCalls(async (loc: Location): Promise<void> => {
+    console.log('do sync', JSON.stringify(loc), $location.path)
     if (workspaceId !== $location.path[1]) {
       // Switch of workspace
       return
@@ -182,19 +188,15 @@
     closeTooltip()
     closePopup()
 
-    await syncLoc(loc, iteration)
+    await syncLoc(loc)
     await updateWindowTitle(loc)
     checkOnHide()
-    syncPromise = undefined
-  }
+    console.log('do sync-end', JSON.stringify(loc), $location.path)
+  })
+
   onDestroy(
     location.subscribe((loc) => {
-      locUpdate++
-      if (syncPromise !== undefined) {
-        void syncPromise.then(() => doSyncLoc(loc, locUpdate))
-      } else {
-        syncPromise = doSyncLoc(loc, locUpdate)
-      }
+      void doSyncLoc(loc)
     })
   )
 
@@ -294,15 +296,12 @@
     return loc
   }
 
-  async function syncLoc (loc: Location, iteration: number): Promise<void> {
+  async function syncLoc (loc: Location): Promise<void> {
     const originalLoc = JSON.stringify(loc)
 
     if (loc.path.length > 3 && getSpecialComponent(loc.path[3]) === undefined) {
       // resolve short links
       const resolvedLoc = await resolveShortLink(loc)
-      if (locUpdate !== iteration) {
-        return
-      }
       if (resolvedLoc !== undefined && !areLocationsEqual(loc, resolvedLoc.loc)) {
         loc = mergeLoc(loc, resolvedLoc)
       }
@@ -334,9 +333,6 @@
           let len = 3
           if (spaceRef !== undefined && specialRef !== undefined) {
             const spaceObj = await client.findOne<Space>(core.class.Space, { _id: spaceRef })
-            if (locUpdate !== iteration) {
-              return
-            }
             if (spaceObj !== undefined) {
               loc.path[3] = spaceRef
               loc.path[4] = specialRef
@@ -355,13 +351,7 @@
       clear(1)
       currentAppAlias = app
       currentApplication = await client.findOne<Application>(workbench.class.Application, { alias: app })
-      if (locUpdate !== iteration) {
-        return
-      }
       navigatorModel = await buildNavModel(client, currentApplication)
-      if (locUpdate !== iteration) {
-        return
-      }
     }
 
     if (
@@ -395,9 +385,6 @@
         currentSpecial = space
       } else {
         await updateSpace(space)
-        if (locUpdate !== iteration) {
-          return
-        }
         setSpaceSpecial(special)
       }
     }
@@ -425,6 +412,7 @@
 
     if (props.length >= 3) {
       const doc = await client.findOne<Doc>(props[2] as Ref<Class<Doc>>, { _id: props[1] as Ref<Doc> })
+
       if (doc !== undefined) {
         const provider = ListSelectionProvider.Find(doc._id)
         updateFocus({

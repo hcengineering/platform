@@ -16,7 +16,7 @@
   import contact, { Contact, Employee, Person, getName } from '@hcengineering/contact'
   import { Class, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
   import { IntlString, getEmbeddedLabel } from '@hcengineering/platform'
-  import presentation, { getClient } from '@hcengineering/presentation'
+  import presentation, { getClient, reduceCalls } from '@hcengineering/presentation'
   import {
     ActionIcon,
     Button,
@@ -76,13 +76,13 @@
 
   const client = getClient()
 
-  async function updateSelected (value: Ref<Person> | null | undefined) {
+  const updateSelected = reduceCalls(async function (value: Ref<Person> | null | undefined) {
     selected = value
       ? $personByIdStore.get(value) ?? (await client.findOne(contact.class.Person, { _id: value }))
       : undefined
-  }
+  })
 
-  $: updateSelected(value)
+  $: void updateSelected(value)
 
   const mgr = getFocusManager()
 

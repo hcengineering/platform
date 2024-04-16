@@ -308,6 +308,10 @@ export interface SavedMessage extends Preference {
   attachedTo: Ref<ActivityMessage>
 }
 
+export interface ReplyProvider extends Doc {
+  function: Resource<(message: ActivityMessage) => Promise<void>>
+}
+
 /**
  * @public
  */
@@ -334,7 +338,8 @@ export default plugin(activityId, {
     ActivityExtension: '' as Ref<Class<ActivityExtension>>,
     Reaction: '' as Ref<Class<Reaction>>,
     SavedMessage: '' as Ref<Class<SavedMessage>>,
-    ActivityReference: '' as Ref<Class<ActivityReference>>
+    ActivityReference: '' as Ref<Class<ActivityReference>>,
+    ReplyProvider: '' as Ref<Class<ReplyProvider>>
   },
   icon: {
     Activity: '' as Asset,

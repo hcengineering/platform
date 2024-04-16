@@ -24,9 +24,9 @@
   import { ActivityMessagePresenter, savedMessagesStore } from '@hcengineering/activity-resources'
 
   import chunter from '../../../plugin'
-  import { openMessageFromSpecial } from '../../../utils'
   import { savedAttachmentsStore } from '../utils'
   import Header from '../../Header.svelte'
+  import { openMessageFromSpecial } from '../../../navigation'
 
   const client = getClient()
 

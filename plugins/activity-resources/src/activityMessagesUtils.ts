@@ -562,25 +562,20 @@ export async function getLinkData (
   }
 }
 
-export async function getMessageFragment (doc: Doc): Promise<string> {
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-  let clazz = hierarchy.getClass(doc._class)
-  let label = clazz.shortLabel
-  while (label === undefined && clazz.extends !== undefined) {
-    clazz = hierarchy.getClass(clazz.extends)
-    label = clazz.shortLabel
-  }
-  label = label ?? doc._class
-  return `${label}-${doc._id}`
-}
-
 function isDocUpdateMessage (message?: ActivityMessage): message is DocUpdateMessage {
   if (message === undefined) {
     return false
   }
 
   return message._class === activity.class.DocUpdateMessage
+}
+
+export function isActivityMessage (message?: Doc): message is ActivityMessage {
+  if (message === undefined) {
+    return false
+  }
+
+  return getClient().getHierarchy().isDerived(message._class, activity.class.ActivityMessage)
 }
 
 export function isReactionMessage (message?: ActivityMessage): boolean {

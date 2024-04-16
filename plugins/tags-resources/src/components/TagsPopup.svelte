@@ -16,7 +16,7 @@
   import { Class, Doc, Ref } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
-  import { findTagCategory, TagCategory, TagElement } from '@hcengineering/tags'
+  import { TagCategory, TagElement, findTagCategory } from '@hcengineering/tags'
   import {
     Button,
     EditWithIcon,
@@ -33,10 +33,10 @@
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tags from '../plugin'
+  import { createTagElement } from '../utils'
   import CreateTagElement from './CreateTagElement.svelte'
   import IconView from './icons/View.svelte'
   import IconViewHide from './icons/ViewHide.svelte'
-  import { createTagElement } from '../utils'
 
   export let newElements: TagElement[] = []
   export let targetClass: Ref<Class<Doc>>
@@ -69,15 +69,12 @@
     objects = newElements.concat(result)
   })
 
-  async function onCreateTagElement (res: any): Promise<void> {
-    if (res === null) return
-    setTimeout(() => {
-      const tag = objects.findLast((e) => e._id === res)
-      if (tag === undefined) return
-      selected = [...selected, tag._id]
-      dispatch('update', { action: 'add', tag })
-      inProcess = false
-    }, 1)
+  async function onCreateTagElement (res: Ref<TagElement> | undefined | null): Promise<void> {
+    if (res == null) return
+    const tag = await getClient().findOne(tags.class.TagElement, { _id: res })
+    dispatch('update', { action: 'add', tag })
+    selected = [...selected, res]
+    inProcess = false
   }
 
   async function createTagElementPopup (): Promise<void> {

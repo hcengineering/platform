@@ -33,7 +33,7 @@
   export let contexts: DocNotifyContext[]
   export let actions: Action[] = []
   export let maxItems: number | undefined = undefined
-  export let selectedContextId: Ref<DocNotifyContext> | undefined = undefined
+  export let objectId: Ref<Doc> | undefined
   export let sortFn: (items: ChatNavItemModel[], contexts: DocNotifyContext[]) => ChatNavItemModel[]
 
   const client = getClient()
@@ -52,7 +52,7 @@
 
   $: canShowMore = !!maxItems && items.length > maxItems
 
-  $: visibleItems = getVisibleItems(canShowMore, isShownMore, maxItems, items, selectedContextId, contexts)
+  $: visibleItems = getVisibleItems(canShowMore, isShownMore, maxItems, items, objectId)
 
   async function getChatNavItems (objects: Doc[]): Promise<ChatNavItemModel[]> {
     const items: ChatNavItemModel[] = []
@@ -98,8 +98,7 @@
     isShownMore: boolean,
     maxItems: number | undefined,
     items: ChatNavItemModel[],
-    selectedContextId: Ref<DocNotifyContext> | undefined,
-    contexts: DocNotifyContext[]
+    selectedObjectId: Ref<Doc> | undefined
   ): ChatNavItemModel[] {
     if (!canShowMore || isShownMore) {
       return items
@@ -107,23 +106,17 @@
 
     const result = items.slice(0, maxItems)
 
-    if (selectedContextId === undefined) {
+    if (selectedObjectId === undefined) {
       return result
     }
 
-    const context = contexts.find(({ _id }) => _id === selectedContextId)
-
-    if (context === undefined) {
-      return result
-    }
-
-    const exists = result.some(({ id }) => id === context.attachedTo)
+    const exists = result.some(({ id }) => id === selectedObjectId)
 
     if (exists) {
       return result
     }
 
-    const selectedItem = items.find(({ id }) => id === context?.attachedTo)
+    const selectedItem = items.find(({ id }) => id === selectedObjectId)
 
     if (selectedItem === undefined) {
       return result
@@ -148,9 +141,7 @@
     {#if !isCollapsed}
       {#each visibleItems as item (item.id)}
         {@const context = contexts.find(({ attachedTo }) => attachedTo === item.id)}
-        {#if context}
-          <ChatNavItem {context} isSelected={selectedContextId === context._id} {item} on:select />
-        {/if}
+        <ChatNavItem {context} isSelected={objectId === item.id} {item} on:select />
       {/each}
       {#if canShowMore}
         <div class="showMore">

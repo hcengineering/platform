@@ -14,7 +14,7 @@
 //
 
 import { type Card, boardId } from '@hcengineering/board'
-import { type Ref, TxOperations } from '@hcengineering/core'
+import { TxOperations } from '@hcengineering/core'
 import {
   type MigrateOperation,
   type MigrationClient,
@@ -26,7 +26,7 @@ import {
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 import { DOMAIN_TASK, createProjectType, createSequence, fixTaskTypes } from '@hcengineering/model-task'
 import tags from '@hcengineering/tags'
-import task, { type ProjectType } from '@hcengineering/task'
+import task from '@hcengineering/task'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 import board from './plugin'
 
@@ -34,8 +34,8 @@ async function createSpace (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(core.class.Space, {
     _id: board.space.DefaultBoard
   })
+
   if (current === undefined) {
-    const defaultType = await createDefaultProjectType(tx)
     await tx.createDoc(
       board.class.Board,
       core.space.Space,
@@ -45,15 +45,24 @@ async function createSpace (tx: TxOperations): Promise<void> {
         private: false,
         archived: false,
         members: [],
-        type: defaultType
+        type: board.template.DefaultBoard
       },
       board.space.DefaultBoard
     )
   }
 }
 
-async function createDefaultProjectType (tx: TxOperations): Promise<Ref<ProjectType>> {
-  return await createProjectType(
+async function createDefaultProjectType (tx: TxOperations): Promise<void> {
+  const existing = await tx.findOne(task.class.ProjectType, { _id: board.template.DefaultBoard })
+  const existingDeleted = await tx.findOne(core.class.TxRemoveDoc, {
+    objectId: board.template.DefaultBoard
+  })
+
+  if (existing !== undefined || existingDeleted !== undefined) {
+    return
+  }
+
+  await createProjectType(
     tx,
     {
       name: 'Default board',
@@ -185,11 +194,14 @@ export const boardOperation: MigrateOperation = {
     ])
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
+    const ops = new TxOperations(client, core.account.System)
+    // For now need to be created every time as it's system model
+    await createDefaultProjectType(ops)
+
     await tryUpgrade(client, boardId, [
       {
         state: 'board0001',
-        func: async (client) => {
-          const ops = new TxOperations(client, core.account.System)
+        func: async () => {
           await createDefaults(ops)
         }
       }

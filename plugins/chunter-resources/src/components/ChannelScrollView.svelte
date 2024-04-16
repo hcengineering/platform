@@ -29,6 +29,7 @@
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { get } from 'svelte/store'
   import { tick, beforeUpdate, afterUpdate } from 'svelte'
+  import { getResource } from '@hcengineering/platform'
 
   import ActivityMessagesSeparator from './ChannelMessagesSeparator.svelte'
   import { filterChatMessages, getClosestDate, readChannelMessages } from '../utils'
@@ -58,7 +59,12 @@
   const client = getClient()
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const contextByDocStore = inboxClient.contextByDoc
-  const filters = client.getModel().findAllSync(activity.class.ActivityMessagesFilter, {})
+
+  let filters: ActivityMessagesFilter[] = []
+  const filterResources = new Map<
+  Ref<ActivityMessagesFilter>,
+  (message: ActivityMessage, _class?: Ref<Doc>) => boolean
+  >()
 
   const messagesStore = provider.messagesStore
   const isLoadingStore = provider.isLoadingStore
@@ -93,15 +99,23 @@
 
   $: notifyContext = $contextByDocStore.get(objectId)
 
-  $: void filterChatMessages(messages, filters, objectClass, selectedFilters).then((filteredMessages) => {
-    displayMessages = filteredMessages
-  })
+  void client
+    .getModel()
+    .findAll(activity.class.ActivityMessagesFilter, {})
+    .then(async (res) => {
+      filters = res
+      for (const filter of filters) {
+        filterResources.set(filter._id, await getResource(filter.filter))
+      }
+    })
+
+  $: displayMessages = filterChatMessages(messages, filters, filterResources, objectClass, selectedFilters)
 
   inboxClient.inboxNotificationsByContext.subscribe(() => {
     readViewportMessages()
   })
 
-  function scrollToBottom (afterScrollFn?: () => void) {
+  function scrollToBottom (afterScrollFn?: () => void): void {
     if (scroller !== undefined && scrollElement !== undefined) {
       scroller.scrollBy(scrollElement.scrollHeight)
       updateSelectedDate()
@@ -109,9 +123,19 @@
     }
   }
 
-  function scrollToSeparator () {
-    if (separatorElement) {
+  function scrollToSeparator (): void {
+    if (separatorElement && scrollElement) {
+      const messagesElements = scrollContentBox?.getElementsByClassName('activityMessage')
+      const messagesHeight = displayMessages
+        .slice(separatorIndex)
+        .reduce((res, msg) => res + (messagesElements?.[msg._id as any]?.clientHeight ?? 0), 0)
+
       separatorElement.scrollIntoView()
+
+      if (messagesHeight >= scrollElement.clientHeight) {
+        scroller?.scrollBy(-50)
+      }
+
       updateShouldScrollToNew()
       readViewportMessages()
     }
@@ -373,7 +397,7 @@
     newTimestamp !== undefined
       ? displayMessages.findIndex((message) => (message.createdOn ?? 0) >= (newTimestamp ?? 0))
       : -1
-  $: void initializeScroll($isLoadingStore, separatorElement, separatorIndex)
+  $: void initializeScroll(isLoading, separatorElement, separatorIndex)
 
   let isInitialScrolling = true
   async function initializeScroll (isLoading: boolean, separatorElement?: HTMLDivElement, separatorIndex?: number) {
@@ -389,6 +413,7 @@
       scrollToMessage()
       isInitialScrolling = false
     } else if (separatorIndex === -1) {
+      await wait()
       isScrollInitialized = true
       shouldWaitAndRead = true
       autoscroll = true

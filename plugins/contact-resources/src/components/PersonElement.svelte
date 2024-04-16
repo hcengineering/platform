@@ -16,6 +16,7 @@
   import { Employee, Person } from '@hcengineering/contact'
   import { IconSize, LabelAndProps, tooltip } from '@hcengineering/ui'
   import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
+  import { ObjectPresenterType } from '@hcengineering/view'
   import Avatar from './Avatar.svelte'
 
   export let value: Person | Employee | undefined | null
@@ -32,12 +33,13 @@
   export let colorInherit: boolean = false
   export let accent: boolean = false
   export let maxWidth: string = ''
+  export let type: ObjectPresenterType = 'link'
 </script>
 
 {#if value}
   {#if inline}
     <ObjectMention object={value} {disabled} {accent} {noUnderline} {colorInherit} onClick={onEdit} />
-  {:else}
+  {:else if type === 'link'}
     <DocNavLink object={value} onClick={onEdit} {disabled} {noUnderline} {colorInherit} {accent} noOverflow>
       <span
         use:tooltip={disabled ? undefined : showTooltip}
@@ -61,5 +63,9 @@
         {/if}
       </span>
     </DocNavLink>
+  {:else if type === 'text'}
+    <span class="overflow-label" use:tooltip={disabled ? undefined : showTooltip}>
+      {name}
+    </span>
   {/if}
 {/if}

@@ -12,14 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import {
-  type Channel,
-  type ChatMessage,
-  chunterId,
-  type ChunterSpace,
-  type DirectMessage,
-  type ThreadMessage
-} from '@hcengineering/chunter'
+import { type Channel, type ChatMessage, type DirectMessage, type ThreadMessage } from '@hcengineering/chunter'
 import contact, { type Employee, type PersonAccount, getName, type Person } from '@hcengineering/contact'
 import { employeeByIdStore, PersonIcon } from '@hcengineering/contact-resources'
 import {
@@ -35,15 +28,8 @@ import {
   generateId
 } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
-import {
-  type AnySvelteComponent,
-  getCurrentResolvedLocation,
-  getLocation,
-  type Location,
-  navigate
-} from '@hcengineering/ui'
-import { workbenchId } from '@hcengineering/workbench'
-import { type Asset, getResource, translate } from '@hcengineering/platform'
+import { type AnySvelteComponent } from '@hcengineering/ui'
+import { type Asset, translate } from '@hcengineering/platform'
 import { classIcon, getDocLinkTitle, getDocTitle } from '@hcengineering/view-resources'
 import activity, {
   type ActivityMessage,
@@ -57,13 +43,12 @@ import {
   InboxNotificationsClientImpl,
   isMentionNotification
 } from '@hcengineering/notification-resources'
-import notification, { type DocNotifyContext, notificationId } from '@hcengineering/notification'
+import notification, { type DocNotifyContext } from '@hcengineering/notification'
 import { get, type Unsubscriber } from 'svelte/store'
 
 import chunter from './plugin'
 import DirectIcon from './components/DirectIcon.svelte'
 import ChannelIcon from './components/ChannelIcon.svelte'
-import { chatSpecials } from './components/chat/utils'
 
 export async function getDmName (client: Client, space?: Space): Promise<string> {
   if (space === undefined) {
@@ -205,67 +190,11 @@ export async function ChannelTitleProvider (client: Client, id: Ref<Channel>): P
   return channel.name
 }
 
-export async function openMessageFromSpecial (message?: ActivityMessage): Promise<void> {
-  if (message === undefined) {
-    return
-  }
-
-  const inboxClient = InboxNotificationsClientImpl.getClient()
-  const loc = getCurrentResolvedLocation()
-
-  if (message._class === chunter.class.ThreadMessage) {
-    const threadMessage = message as ThreadMessage
-
-    loc.path[4] = threadMessage.attachedTo
-  } else {
-    const context = get(inboxClient.contextByDoc).get(message.attachedTo)
-
-    if (context === undefined) {
-      return
-    }
-
-    loc.path[4] = context._id
-  }
-
-  loc.query = { ...loc.query, message: message._id }
-
-  navigate(loc)
-}
-
-export function navigateToSpecial (specialId: string): void {
-  const loc = getLocation()
-  loc.path[2] = chunterId
-  loc.path[3] = specialId
-  navigate(loc)
-}
-
 export enum SearchType {
   Messages,
   Channels,
   Files,
   Contacts
-}
-
-export async function getMessageLink (message: ActivityMessage): Promise<string> {
-  const inboxClient = InboxNotificationsClientImpl.getClient()
-  const location = getCurrentResolvedLocation()
-
-  let context: DocNotifyContext | undefined
-  let threadParent: string = ''
-
-  if (message._class === chunter.class.ThreadMessage) {
-    const threadMessage = message as ThreadMessage
-    threadParent = `/${threadMessage.attachedTo}`
-    context = get(inboxClient.contextByDoc).get(threadMessage.objectId)
-  } else {
-    context = get(inboxClient.contextByDoc).get(message.attachedTo)
-  }
-
-  if (context === undefined) {
-    return ''
-  }
-
-  return `${window.location.protocol}//${window.location.host}/${workbenchId}/${location.path[1]}/${chunterId}/${context._id}${threadParent}?message=${message._id}`
 }
 
 export async function getTitle (doc: Doc): Promise<string> {
@@ -279,24 +208,6 @@ export async function getTitle (doc: Doc): Promise<string> {
   }
   label = label ?? doc._class
   return `${label}-${doc._id}`
-}
-
-export async function chunterSpaceLinkFragmentProvider (doc: ChunterSpace): Promise<Location> {
-  const inboxClient = InboxNotificationsClientImpl.getClient()
-  const context = get(inboxClient.contextByDoc).get(doc._id)
-  const loc = getCurrentResolvedLocation()
-
-  if (context === undefined) {
-    return loc
-  }
-
-  loc.path.length = 2
-  loc.fragment = undefined
-  loc.query = undefined
-  loc.path[2] = chunterId
-  loc.path[3] = context._id
-
-  return loc
 }
 
 export function getObjectIcon (_class: Ref<Class<Doc>>): Asset | AnySvelteComponent | undefined {
@@ -362,12 +273,13 @@ export function getClosestDate (selectedDate: Timestamp, dates: Timestamp[]): Ti
   return closestDate
 }
 
-export async function filterChatMessages (
+export function filterChatMessages (
   messages: DisplayActivityMessage[],
   filters: ActivityMessagesFilter[],
+  filterResources: Map<Ref<ActivityMessagesFilter>, (message: ActivityMessage, _class?: Ref<Doc>) => boolean>,
   objectClass: Ref<Class<Doc>>,
   selectedIds: Array<Ref<ActivityMessagesFilter>>
-): Promise<DisplayActivityMessage[]> {
+): DisplayActivityMessage[] {
   if (selectedIds.length === 0 || selectedIds.includes(activity.ids.AllFilter)) {
     return messages
   }
@@ -380,59 +292,13 @@ export async function filterChatMessages (
   const filtersFns: Array<(message: ActivityMessage, _class?: Ref<Doc>) => boolean> = []
 
   for (const filter of selectedFilters) {
-    const filterFn = await getResource(filter.filter)
-    filtersFns.push(filterFn)
+    const filterFn = filterResources.get(filter._id)
+    if (filterFn !== undefined) {
+      filtersFns.push(filterFn)
+    }
   }
 
   return messages.filter((message) => filtersFns.some((filterFn) => filterFn(message, objectClass)))
-}
-
-export function buildThreadLink (loc: Location, contextId: Ref<DocNotifyContext>, _id: Ref<ActivityMessage>): Location {
-  const specials = chatSpecials.map(({ id }) => id)
-  const isSameContext = loc.path[3] === contextId
-
-  if (!isSameContext) {
-    loc.query = { message: _id }
-  }
-
-  if (loc.path[2] === chunterId && specials.includes(loc.path[3])) {
-    loc.path[4] = _id
-    return loc
-  }
-
-  if (loc.path[2] !== notificationId) {
-    loc.path[2] = chunterId
-  }
-
-  loc.path[3] = contextId
-  loc.path[4] = _id
-  loc.fragment = undefined
-
-  return loc
-}
-
-export async function getThreadLink (doc: ThreadMessage): Promise<Location> {
-  const loc = getCurrentResolvedLocation()
-  const client = getClient()
-  const inboxClient = InboxNotificationsClientImpl.getClient()
-
-  let contextId: Ref<DocNotifyContext> | undefined = get(inboxClient.contextByDoc).get(doc.objectId)?._id
-
-  if (contextId === undefined) {
-    contextId = await client.createDoc(notification.class.DocNotifyContext, doc.space, {
-      attachedTo: doc.attachedTo,
-      attachedToClass: doc.attachedToClass,
-      user: getCurrentAccount()._id,
-      hidden: false,
-      lastViewedTimestamp: Date.now()
-    })
-  }
-
-  if (contextId === undefined) {
-    return loc
-  }
-
-  return buildThreadLink(loc, contextId, doc.attachedTo)
 }
 
 export async function joinChannel (channel: Channel, value: Ref<Account> | Array<Ref<Account>>): Promise<void> {
@@ -532,4 +398,8 @@ export async function removeChannelAction (context?: DocNotifyContext): Promise<
 
   await deleteContextNotifications(context)
   await client.remove(context)
+}
+
+export function isThreadMessage (message: ActivityMessage): message is ThreadMessage {
+  return message._class === chunter.class.ThreadMessage
 }

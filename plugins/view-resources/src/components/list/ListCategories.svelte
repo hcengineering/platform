@@ -26,7 +26,7 @@
     Space
   } from '@hcengineering/core'
   import { getResource, IntlString } from '@hcengineering/platform'
-  import { getClient } from '@hcengineering/presentation'
+  import { getClient, reduceCalls } from '@hcengineering/presentation'
   import { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
   import {
     AttributeModel,
@@ -100,57 +100,56 @@
     CategoryQuery.remove(queryId)
   })
 
-  function update (): void {
-    void updateCategories(_class, space, docs, groupByKey, viewOptions, viewOptionsConfig)
-  }
-
-  async function updateCategories (
-    _class: Ref<Class<Doc>>,
-    space: Ref<Space> | undefined,
-    docs: Doc[],
-    groupByKey: string,
-    viewOptions: ViewOptions,
-    viewOptionsModel: ViewOptionModel[] | undefined
-  ): Promise<void> {
-    categories = await getCategories(client, _class, space, docs, groupByKey)
-    if (level === 0) {
-      for (const viewOption of viewOptionsModel ?? []) {
-        if (viewOption.actionTarget !== 'category') continue
-        const categoryFunc = viewOption as CategoryOption
-        if (viewOptions[viewOption.key] ?? viewOption.defaultValue) {
-          const f = await getResource(categoryFunc.action)
-          const res = hierarchy.clone(await f(_class, query, space, groupByKey, update, queryId))
-          if (res !== undefined) {
-            categories = concatCategories(res, categories)
-            return
+  const updateCategories = reduceCalls(
+    async (
+      _class: Ref<Class<Doc>>,
+      space: Ref<Space> | undefined,
+      docs: Doc[],
+      groupByKey: string,
+      viewOptions: ViewOptions,
+      viewOptionsModel: ViewOptionModel[] | undefined
+    ): Promise<void> => {
+      categories = await getCategories(client, _class, space, docs, groupByKey)
+      if (level === 0) {
+        for (const viewOption of viewOptionsModel ?? []) {
+          if (viewOption.actionTarget !== 'category') continue
+          const categoryFunc = viewOption as CategoryOption
+          if (viewOptions[viewOption.key] ?? viewOption.defaultValue) {
+            const f = await getResource(categoryFunc.action)
+            const res = hierarchy.clone(await f(_class, query, space, groupByKey, update, queryId))
+            if (res !== undefined) {
+              categories = concatCategories(res, categories)
+              return
+            }
           }
         }
       }
     }
+  )
+
+  function update (): void {
+    void updateCategories(_class, space, docs, groupByKey, viewOptions, viewOptionsConfig)
   }
 
   let itemModels = new Map<Ref<Class<Doc>>, AttributeModel[]>()
 
-  function getHeader (_class: Ref<Class<Doc>>, groupByKey: string): void {
+  const getHeader = reduceCalls(async function (_class: Ref<Class<Doc>>, groupByKey: string): Promise<void> {
     if (groupByKey === noCategory) {
       headerComponent = undefined
     } else {
-      getPresenter(client, _class, { key: groupByKey }, { key: groupByKey }).then((p) => (headerComponent = p))
+      await getPresenter(client, _class, { key: groupByKey }, { key: groupByKey }).then((p) => (headerComponent = p))
     }
-  }
+  })
 
   let headerComponent: AttributeModel | undefined
-  $: getHeader(_class, groupByKey)
+  $: void getHeader(_class, groupByKey)
 
-  let updateCounter = 0
   let configurationsVersion = 0
-  async function buildModels (
+  const buildModels = reduceCalls(async function (
     _class: Ref<Class<Doc>>,
     config: Array<string | BuildModelKey>,
     configurations?: Record<Ref<Class<Doc>>, Viewlet['config']> | undefined
   ): Promise<void> {
-    const id = ++updateCounter
-    updateCounter = id
     const newItemModels = new Map<Ref<Class<Doc>>, AttributeModel[]>()
     const entries = Object.entries(configurations ?? [])
     for (const [k, v] of entries) {
@@ -164,24 +163,22 @@
       newItemModels.set(_class, res)
     }
 
-    if (id === updateCounter) {
-      itemModels = newItemModels
-      configurationsVersion = updateCounter
-      for (const [, v] of Object.entries(newItemModels)) {
-        // itemModels = itemModels
-        ;(v as AttributeModel[]).forEach((m: AttributeModel) => {
-          if (m.displayProps?.key !== undefined) {
-            const key = `list_item_${m.displayProps.key}`
-            if (m.displayProps.fixed) {
-              $fixedWidthStore[key] = 0
-            }
+    itemModels = newItemModels
+    for (const [, v] of Object.entries(newItemModels)) {
+      // itemModels = itemModels
+      ;(v as AttributeModel[]).forEach((m: AttributeModel) => {
+        if (m.displayProps?.key !== undefined) {
+          const key = `list_item_${m.displayProps.key}`
+          if (m.displayProps.fixed) {
+            $fixedWidthStore[key] = 0
           }
-        })
-      }
+        }
+      })
     }
-  }
+    configurationsVersion = configurationsVersion + 1
+  })
 
-  $: buildModels(_class, config, configurations)
+  $: void buildModels(_class, config, configurations)
 
   function getInitIndex (categories: any, i: number): number {
     let res = initIndex

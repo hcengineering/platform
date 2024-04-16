@@ -83,7 +83,7 @@
           ? 'max-content'
           : maxHeight
 
-  const editorHandler: TextEditorHandler = {
+  export const editorHandler: TextEditorHandler = {
     insertText: (text) => {
       textEditor?.insertText(text)
     },
@@ -93,6 +93,18 @@
     insertTemplate: (name, markup) => {
       textEditor?.insertMarkup(markup)
       dispatch('template', name)
+    },
+    insertTable (options: { rows?: number, cols?: number, withHeaderRow?: boolean }) {
+      textEditor?.insertTable(options)
+    },
+    insertCodeBlock: (pos?: number) => {
+      textEditor?.insertCodeBlock(pos)
+    },
+    insertSeparatorLine: () => {
+      textEditor?.insertSeparatorLine()
+    },
+    insertContent: (value, options) => {
+      textEditor?.insertContent(value, options)
     },
     focus: () => {
       textEditor?.focus()

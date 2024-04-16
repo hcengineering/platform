@@ -42,9 +42,20 @@
 
   async function click (evt: MouseEvent): Promise<void> {
     pressed = true
-    showPopup(TagsEditorPopup, { object, targetClass }, getEventPopupPositionElement(evt), () => {
-      pressed = false
-    })
+    showPopup(
+      TagsEditorPopup,
+      { object, targetClass },
+      getEventPopupPositionElement(evt),
+      () => {
+        pressed = false
+      },
+      undefined,
+      {
+        refId: 'TagsPopup',
+        category: 'popup',
+        overlay: true
+      }
+    )
   }
 
   async function removeTag (tag: TagReference): Promise<void> {
