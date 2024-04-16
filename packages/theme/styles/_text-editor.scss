@@ -156,6 +156,8 @@
   }
 
   .collaboration-cursor__caret {
+    display: flex;
+    justify-content: center;
     cursor: text;
     height: 110%;
     width: 8px;
