@@ -29,7 +29,7 @@ import {
 } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import { type AnySvelteComponent } from '@hcengineering/ui'
-import { type Asset, getResource, translate } from '@hcengineering/platform'
+import { type Asset, translate } from '@hcengineering/platform'
 import { classIcon, getDocLinkTitle, getDocTitle } from '@hcengineering/view-resources'
 import activity, {
   type ActivityMessage,
@@ -273,12 +273,13 @@ export function getClosestDate (selectedDate: Timestamp, dates: Timestamp[]): Ti
   return closestDate
 }
 
-export async function filterChatMessages (
+export function filterChatMessages (
   messages: DisplayActivityMessage[],
   filters: ActivityMessagesFilter[],
+  filterResources: Map<Ref<ActivityMessagesFilter>, (message: ActivityMessage, _class?: Ref<Doc>) => boolean>,
   objectClass: Ref<Class<Doc>>,
   selectedIds: Array<Ref<ActivityMessagesFilter>>
-): Promise<DisplayActivityMessage[]> {
+): DisplayActivityMessage[] {
   if (selectedIds.length === 0 || selectedIds.includes(activity.ids.AllFilter)) {
     return messages
   }
@@ -291,8 +292,10 @@ export async function filterChatMessages (
   const filtersFns: Array<(message: ActivityMessage, _class?: Ref<Doc>) => boolean> = []
 
   for (const filter of selectedFilters) {
-    const filterFn = await getResource(filter.filter)
-    filtersFns.push(filterFn)
+    const filterFn = filterResources.get(filter._id)
+    if (filterFn !== undefined) {
+      filtersFns.push(filterFn)
+    }
   }
 
   return messages.filter((message) => filtersFns.some((filterFn) => filterFn(message, objectClass)))

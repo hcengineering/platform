@@ -16,7 +16,7 @@
   import { Person } from '@hcengineering/contact'
   import { personByIdStore, Avatar } from '@hcengineering/contact-resources'
   import { Doc, IdMap, Ref, WithLookup } from '@hcengineering/core'
-  import { getLocation, Label, navigate, TimeSince } from '@hcengineering/ui'
+  import { Label, TimeSince } from '@hcengineering/ui'
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import notification, {
     ActivityInboxNotification,
@@ -25,13 +25,13 @@
     InboxNotificationsClient
   } from '@hcengineering/notification'
   import { getResource } from '@hcengineering/platform'
-
-  import { buildThreadLink } from '../navigation'
+  import { getClient } from '@hcengineering/presentation'
 
   export let object: ActivityMessage
   export let embedded = false
   export let onReply: (() => void) | undefined = undefined
 
+  const client = getClient()
   const maxDisplayPersons = 5
 
   $: lastReply = object.lastReply ?? new Date().getTime()
@@ -77,7 +77,9 @@
       .slice(0, maxDisplayPersons - 1)
   }
 
-  function handleReply (e: MouseEvent) {
+  const replyProvider = client.getModel().findAllSync(activity.class.ReplyProvider, {})[0]
+
+  async function handleReply (e: MouseEvent) {
     e.stopPropagation()
     e.preventDefault()
 
@@ -86,7 +88,10 @@
       return
     }
 
-    navigate(buildThreadLink(getLocation(), object.attachedTo, object.attachedToClass, object._id))
+    if (replyProvider) {
+      const fn = await getResource(replyProvider.function)
+      fn(object)
+    }
   }
 </script>
 
