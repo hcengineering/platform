@@ -131,7 +131,6 @@ export default plugin(chunterId, {
   },
   component: {
     DmHeader: '' as AnyComponent,
-    ChannelView: '' as AnyComponent,
     ThreadView: '' as AnyComponent,
     Thread: '' as AnyComponent,
     Reactions: '' as AnyComponent,
@@ -212,7 +211,6 @@ export default plugin(chunterId, {
   },
   action: {
     DeleteChatMessage: '' as Ref<Action>,
-    OpenChannel: '' as Ref<Action>,
     LeaveChannel: '' as Ref<Action>,
     RemoveChannel: '' as Ref<Action>,
     CloseConversation: '' as Ref<Action>

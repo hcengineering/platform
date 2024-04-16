@@ -21,7 +21,7 @@
 
   import Lock from '../../icons/Lock.svelte'
   import chunter from '../../../plugin'
-  import { openChannel } from '../../../index'
+  import { openChannel } from '../../../navigation'
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -60,14 +60,14 @@
       members: [accountId],
       topic: description
     })
-    const notifyContextId = await client.createDoc(notification.class.DocNotifyContext, core.space.Space, {
+    await client.createDoc(notification.class.DocNotifyContext, core.space.Space, {
       user: accountId,
       attachedTo: channelId,
       attachedToClass: chunter.class.Channel,
       hidden: false
     })
 
-    await openChannel(undefined, undefined, { _id: notifyContextId })
+    openChannel(channelId, chunter.class.Channel)
   }
 
   function handleCancel (): void {

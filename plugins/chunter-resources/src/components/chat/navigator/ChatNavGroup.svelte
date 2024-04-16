@@ -20,11 +20,12 @@
   import { translate } from '@hcengineering/platform'
   import { Action } from '@hcengineering/ui'
 
-  import { ChatNavGroupModel } from '../types'
+  import { ChatGroup, ChatNavGroupModel } from '../types'
   import ChatNavSection from './ChatNavSection.svelte'
   import chunter from '../../../plugin'
 
-  export let selectedContextId: Ref<DocNotifyContext> | undefined = undefined
+  export let objectId: Ref<Doc> | undefined
+  export let object: Doc | undefined
   export let model: ChatNavGroupModel
 
   interface Section {
@@ -42,6 +43,8 @@
 
   let objectsByClass = new Map<Ref<Class<Doc>>, Doc[]>()
   let contexts: DocNotifyContext[] = []
+
+  let shouldPushObject = false
 
   let sections: Section[] = []
 
@@ -63,9 +66,14 @@
 
   $: loadObjects(contexts)
 
-  $: void getSections(objectsByClass, model).then((res) => {
+  $: void getSections(objectsByClass, model, shouldPushObject ? object : undefined).then((res) => {
     sections = res
   })
+
+  $: shouldPushObject =
+    object !== undefined &&
+    getObjectGroup(object) === model.id &&
+    !contexts.some(({ attachedTo }) => attachedTo === object?._id)
 
   function loadObjects (contexts: DocNotifyContext[]): void {
     const contextsByClass = groupByArray(contexts, ({ attachedToClass }) => attachedToClass)
@@ -92,9 +100,22 @@
     }
   }
 
+  function getObjectGroup (object: Doc): ChatGroup {
+    if (hierarchy.isDerived(object._class, chunter.class.Channel)) {
+      return 'channels'
+    }
+
+    if (hierarchy.isDerived(object._class, chunter.class.DirectMessage)) {
+      return 'direct'
+    }
+
+    return 'activity'
+  }
+
   async function getSections (
     objectsByClass: Map<Ref<Class<Doc>>, Doc[]>,
-    model: ChatNavGroupModel
+    model: ChatNavGroupModel,
+    object: Doc | undefined
   ): Promise<Section[]> {
     const result: Section[] = []
 
@@ -108,13 +129,32 @@
       return result
     }
 
+    let isObjectPushed = false
+
     for (const [_class, objects] of objectsByClass.entries()) {
       const clazz = hierarchy.getClass(_class)
+      const sectionObjects = [...objects]
+
+      if (object && _class === object._class) {
+        isObjectPushed = true
+        sectionObjects.push(object)
+      }
 
       result.push({
         id: _class,
         _class,
-        objects,
+        objects: sectionObjects,
+        label: await translate(clazz.pluralLabel ?? clazz.label, {})
+      })
+    }
+
+    if (!isObjectPushed && object) {
+      const clazz = hierarchy.getClass(object._class)
+
+      result.push({
+        id: object._id,
+        _class: object._class,
+        objects: [object],
         label: await translate(clazz.pluralLabel ?? clazz.label, {})
       })
     }
@@ -141,7 +181,7 @@
   <ChatNavSection
     objects={section.objects}
     {contexts}
-    {selectedContextId}
+    {objectId}
     header={section.label}
     actions={getSectionActions(section, contexts)}
     sortFn={model.sortFn}

@@ -25,9 +25,8 @@
     InboxNotificationsClient
   } from '@hcengineering/notification'
   import { getResource } from '@hcengineering/platform'
-  import { get } from 'svelte/store'
 
-  import { buildThreadLink } from '../utils'
+  import { buildThreadLink } from '../navigation'
 
   export let object: ActivityMessage
   export let embedded = false
@@ -40,7 +39,7 @@
 
   let inboxClient: InboxNotificationsClient | undefined = undefined
 
-  getResource(notification.function.GetInboxNotificationsClient).then((getClientFn) => {
+  void getResource(notification.function.GetInboxNotificationsClient).then((getClientFn) => {
     inboxClient = getClientFn()
   })
 
@@ -78,7 +77,7 @@
       .slice(0, maxDisplayPersons - 1)
   }
 
-  function handleReply (e: any) {
+  function handleReply (e: MouseEvent) {
     e.stopPropagation()
     e.preventDefault()
 
@@ -87,17 +86,7 @@
       return
     }
 
-    if (inboxClient === undefined) {
-      return
-    }
-
-    const context = get(inboxClient.contextByDoc).get(object.attachedTo)
-
-    if (context === undefined) {
-      return
-    }
-
-    navigate(buildThreadLink(getLocation(), context._id, object._id))
+    navigate(buildThreadLink(getLocation(), object.attachedTo, object.attachedToClass, object._id))
   }
 </script>
 

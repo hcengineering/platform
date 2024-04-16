@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, IdMap, Ref } from '@hcengineering/core'
+  import { Doc, Ref, Class } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import {
     Component,
@@ -24,7 +24,6 @@
     Separator,
     Location
   } from '@hcengineering/ui'
-  import { DocNotifyContext } from '@hcengineering/notification'
 
   import { NavigatorModel, SpecialNavModel } from '@hcengineering/workbench'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
@@ -33,13 +32,15 @@
   import ChatNavigator from './navigator/ChatNavigator.svelte'
   import ChannelView from '../ChannelView.svelte'
   import { chatSpecials, loadSavedAttachments } from './utils'
+  import { SelectChannelEvent } from './types'
+  import { decodeChannelURI, openChannel } from '../../navigation'
 
   export let visibleNav: boolean = true
   export let navFloat: boolean = false
   export let appsDirection: 'vertical' | 'horizontal' = 'horizontal'
 
   const notificationsClient = InboxNotificationsClientImpl.getClient()
-  const contextByIdStore = notificationsClient.contextById
+  const contextByDocStore = notificationsClient.contextByDoc
   const objectQuery = createQuery()
 
   const navigatorModel: NavigatorModel = {
@@ -47,8 +48,7 @@
     specials: chatSpecials
   }
 
-  let selectedContextId: Ref<DocNotifyContext> | undefined = undefined
-  let selectedContext: DocNotifyContext | undefined = undefined
+  let selectedData: { _id: Ref<Doc>, _class: Ref<Class<Doc>> } | undefined = undefined
 
   let currentSpecial: SpecialNavModel | undefined
 
@@ -58,17 +58,24 @@
     syncLocation(loc)
   })
 
-  $: updateSelectedContext($contextByIdStore, selectedContextId)
+  $: void loadObject(selectedData?._id, selectedData?._class)
 
-  $: selectedContext &&
+  async function loadObject (_id?: Ref<Doc>, _class?: Ref<Class<Doc>>): Promise<void> {
+    if (_id === undefined || _class === undefined) {
+      object = undefined
+      objectQuery.unsubscribe()
+      return
+    }
+
     objectQuery.query(
-      selectedContext.attachedToClass,
-      { _id: selectedContext.attachedTo },
+      _class,
+      { _id },
       (res) => {
         object = res[0]
       },
       { limit: 1 }
     )
+  }
 
   function syncLocation (loc: Location) {
     const specialId = loc.path[3]
@@ -76,39 +83,24 @@
     currentSpecial = navigatorModel?.specials?.find((special) => special.id === specialId)
 
     if (currentSpecial !== undefined) {
-      selectedContext = undefined
-      selectedContextId = undefined
+      selectedData = undefined
     } else {
-      selectedContextId = loc.path[3] as Ref<DocNotifyContext> | undefined
+      const [_id, _class] = decodeChannelURI(loc.path[3])
+
+      selectedData = { _id, _class }
     }
   }
 
-  function updateSelectedContext (contexts: IdMap<DocNotifyContext>, _id?: Ref<DocNotifyContext>) {
-    if (selectedContextId === undefined) {
-      selectedContext = undefined
-    } else {
-      selectedContext = contexts.get(selectedContextId)
-    }
-  }
+  function handleChannelSelected (event: CustomEvent): void {
+    const detail = (event.detail ?? {}) as SelectChannelEvent
 
-  function handleChannelSelected (event: CustomEvent) {
-    const { context } = event.detail ?? {}
+    selectedData = { _id: detail.object._id, _class: detail.object._class }
 
-    selectedContext = context
-    selectedContextId = selectedContext?._id
-
-    if (selectedContext?.attachedTo !== object?._id) {
-      object = undefined
+    if (selectedData._id !== object?._id) {
+      object = detail.object
     }
 
-    const loc = getCurrentLocation()
-
-    loc.path[3] = selectedContextId as string
-    loc.path[4] = ''
-    loc.query = { ...loc.query, message: null }
-    loc.path.length = 4
-
-    navigate(loc)
+    openChannel(selectedData._id, selectedData._class)
   }
 
   defineSeparators('chat', [
@@ -127,7 +119,7 @@
       class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'} background-surface-color"
     >
       <div class="antiPanel-wrap__content">
-        <ChatNavigator {selectedContextId} {currentSpecial} on:select={handleChannelSelected} />
+        <ChatNavigator objectId={selectedData?._id} {object} {currentSpecial} on:select={handleChannelSelected} />
       </div>
       <Separator name="chat" float={navFloat ? 'navigator' : true} index={0} />
     </div>
@@ -153,8 +145,9 @@
           }
         }}
       />
-    {:else if selectedContext}
-      <ChannelView context={selectedContext} {object} />
+    {:else if object}
+      {@const context = $contextByDocStore.get(object._id)}
+      <ChannelView {object} {context} />
     {/if}
   </div>
 </div>

@@ -409,9 +409,9 @@ export async function resolveLocation (loc: Location): Promise<ResolvedLocation 
     return undefined
   }
 
-  const contextId = loc.path[3] as Ref<DocNotifyContext> | undefined
+  const [_id, _class] = decodeObjectURI(loc.path[3])
 
-  if (contextId === undefined) {
+  if (_id === undefined || _class === undefined) {
     return {
       loc: {
         path: [loc.path[0], loc.path[1], notificationId],
@@ -424,12 +424,13 @@ export async function resolveLocation (loc: Location): Promise<ResolvedLocation 
     }
   }
 
-  return await generateLocation(loc, contextId)
+  return await generateLocation(loc, _id, _class)
 }
 
 async function generateLocation (
   loc: Location,
-  contextId: Ref<DocNotifyContext>
+  _id: Ref<Doc>,
+  _class: Ref<Class<Doc>>
 ): Promise<ResolvedLocation | undefined> {
   const client = getClient()
 
@@ -437,35 +438,18 @@ async function generateLocation (
   const workspace = loc.path[1] ?? ''
   const threadId = loc.path[4] as Ref<ActivityMessage> | undefined
 
-  const contextNotification = await client.findOne(notification.class.InboxNotification, {
-    docNotifyContext: contextId
-  })
-
-  if (contextNotification === undefined) {
-    return {
-      loc: {
-        path: [loc.path[0], loc.path[1], notificationId],
-        fragment: undefined
-      },
-      defaultLocation: {
-        path: [loc.path[0], loc.path[1], notificationId],
-        fragment: undefined
-      }
-    }
-  }
-
   const thread =
     threadId !== undefined ? await client.findOne(activity.class.ActivityMessage, { _id: threadId }) : undefined
 
   if (thread === undefined) {
     return {
       loc: {
-        path: [appComponent, workspace, notificationId, contextId],
+        path: [appComponent, workspace, notificationId, encodeObjectURI(_id, _class)],
         fragment: undefined,
         query: { ...loc.query }
       },
       defaultLocation: {
-        path: [appComponent, workspace, notificationId, contextId],
+        path: [appComponent, workspace, notificationId, encodeObjectURI(_id, _class)],
         fragment: undefined,
         query: { ...loc.query }
       }
@@ -474,20 +458,29 @@ async function generateLocation (
 
   return {
     loc: {
-      path: [appComponent, workspace, notificationId, contextId, threadId as string],
+      path: [appComponent, workspace, notificationId, encodeObjectURI(_id, _class), threadId as string],
       fragment: undefined,
       query: { ...loc.query }
     },
     defaultLocation: {
-      path: [appComponent, workspace, notificationId, contextId, threadId as string],
+      path: [appComponent, workspace, notificationId, encodeObjectURI(_id, _class), threadId as string],
       fragment: undefined,
       query: { ...loc.query }
     }
   }
 }
 
+export function decodeObjectURI (value: string): [Ref<Doc>, Ref<Class<Doc>>] {
+  return decodeURIComponent(value).split('|') as [Ref<Doc>, Ref<Class<Doc>>]
+}
+
+function encodeObjectURI (_id: Ref<Doc>, _class: Ref<Class<Doc>>): string {
+  return encodeURIComponent([_id, _class].join('|'))
+}
+
 export function openInboxDoc (
-  contextId?: Ref<DocNotifyContext>,
+  _id?: Ref<Doc>,
+  _class?: Ref<Class<Doc>>,
   thread?: Ref<ActivityMessage>,
   message?: Ref<ActivityMessage>
 ): void {
@@ -497,14 +490,14 @@ export function openInboxDoc (
     return
   }
 
-  if (contextId === undefined) {
-    loc.query = { ...loc.query, message: null }
+  if (_id === undefined || _class === undefined) {
+    loc.query = { message: null }
     loc.path.length = 3
     navigate(loc)
     return
   }
 
-  loc.path[3] = contextId
+  loc.path[3] = encodeObjectURI(_id, _class)
 
   if (thread !== undefined) {
     loc.path[4] = thread

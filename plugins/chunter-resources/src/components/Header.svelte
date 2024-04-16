@@ -32,7 +32,7 @@
   import { ActivityMessagesFilter } from '@hcengineering/activity'
 
   import { userSearch } from '../index'
-  import { navigateToSpecial } from '../utils'
+  import { navigateToSpecial } from '../navigation'
   import ChannelMessagesFilter from './ChannelMessagesFilter.svelte'
 
   export let object: Doc | undefined = undefined

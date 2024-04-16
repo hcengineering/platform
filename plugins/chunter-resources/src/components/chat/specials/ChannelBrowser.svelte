@@ -24,24 +24,12 @@
     Space
   } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
-  import {
-    AnyComponent,
-    Button,
-    getCurrentResolvedLocation,
-    Icon,
-    Label,
-    navigate,
-    Scroller,
-    SearchEdit,
-    showPopup
-  } from '@hcengineering/ui'
+  import presentation, { createQuery } from '@hcengineering/presentation'
+  import { AnyComponent, Button, Icon, Label, Scroller, SearchEdit, showPopup } from '@hcengineering/ui'
   import { FilterBar, FilterButton, SpacePresenter } from '@hcengineering/view-resources'
   import workbench from '@hcengineering/workbench'
   import { Channel } from '@hcengineering/chunter'
-  import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
-  import { get } from 'svelte/store'
-  import notification from '@hcengineering/notification'
+  import { openChannel } from '../../../navigation'
 
   import { getObjectIcon, joinChannel, leaveChannel } from '../../../utils'
   import chunter from './../../../plugin'
@@ -54,11 +42,8 @@
   export let withFilterButton: boolean = true
   export let search: string = ''
 
-  const client = getClient()
   const me = getCurrentAccount()._id
   const channelsQuery = createQuery()
-
-  const notificationClient = InboxNotificationsClientImpl.getClient()
 
   const sort: SortingQuery<Space> = {
     name: SortingOrder.Ascending
@@ -114,28 +99,7 @@
   }
 
   async function view (channel: Channel): Promise<void> {
-    const loc = getCurrentResolvedLocation()
-    const context = get(notificationClient.contextByDoc).get(channel._id)
-
-    let contextId = context?._id
-
-    if (contextId === undefined) {
-      contextId = await client.createDoc(notification.class.DocNotifyContext, channel.space, {
-        attachedToClass: channel._class,
-        attachedTo: channel._id,
-        user: me,
-        hidden: false,
-        lastViewedTimestamp: Date.now()
-      })
-    }
-
-    if (contextId === undefined) {
-      return
-    }
-
-    loc.path[3] = contextId
-
-    navigate(loc)
+    openChannel(channel._id, channel._class)
   }
 </script>
 
