@@ -174,6 +174,7 @@ const view = plugin(viewId, {
     SelectToMove: '' as IntlString,
     Cancel: '' as IntlString,
     List: '' as IntlString,
+    Grid: '' as IntlString,
     AddSavedView: '' as IntlString,
     Timeline: '' as IntlString,
     Public: '' as IntlString,
