@@ -250,7 +250,7 @@ export function start (
     lastNameFirst?: string
   },
   port: number,
-  extraConfig?: Record<string, string>
+  extraConfig?: Record<string, string | undefined>
 ): () => void {
   const app = express()
 
