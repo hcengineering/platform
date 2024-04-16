@@ -26,7 +26,6 @@
   import { getActions, restrictionStore } from '@hcengineering/view-resources'
 
   import ReactionsPresenter from '../reactions/ReactionsPresenter.svelte'
-  import ActivityMessageExtensionComponent from './ActivityMessageExtension.svelte'
   import ActivityMessagePresenter from './ActivityMessagePresenter.svelte'
   import ActivityMessageActions from '../ActivityMessageActions.svelte'
   import { isReactionMessage } from '../../activityMessagesUtils'

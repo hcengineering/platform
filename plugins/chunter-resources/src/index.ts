@@ -48,7 +48,6 @@ import ChannelIcon from './components/ChannelIcon.svelte'
 import ThreadNotificationPresenter from './components/notification/ThreadNotificationPresenter.svelte'
 import ChatMessageNotificationLabel from './components/notification/ChatMessageNotificationLabel.svelte'
 import ChatAside from './components/chat/ChatAside.svelte'
-import Replies from '../../activity-resources/src/components/Replies.svelte'
 import ReplyToThreadAction from './components/ReplyToThreadAction.svelte'
 import ThreadMessagePreview from './components/threads/ThreadMessagePreview.svelte'
 import ChatMessagePreview from './components/chat-message/ChatMessagePreview.svelte'
@@ -175,7 +174,6 @@ export default async (): Promise<Resources> => ({
     ChatMessageNotificationLabel,
     ThreadNotificationPresenter,
     ChatAside,
-    Replies,
     ReplyToThreadAction,
     ThreadMessagePreview,
     ChatMessagePreview
