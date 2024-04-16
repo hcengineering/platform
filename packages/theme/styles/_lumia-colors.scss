@@ -25,6 +25,10 @@
   --button-negative-hover-BackgroundColor: #e34748;
   --button-negative-active-BackgroundColor: #c42a32;
 
+  --selector-active-BackgroundColor: #3364e2;
+  --selector-IconColor: #ffffff;
+  --selector-disabled-IconColor: #8b97ad;
+
   --tag-on-accent-PorpoiseText: #FFFFFF;
   --tag-accent-SunshineBackground: #FFBD2E;
 }
@@ -104,6 +108,14 @@
   --input-HelperColor: #8b97ad;
   --input-error-BorderColor: #fb6863;
   --input-search-IconColor: #ffffff;
+
+  /** Checkboxes **/
+  --selector-BackgroundColor: #a5bdff0d;
+  --selector-BorderColor: #d9dee6;
+  --selector-off-BackgroundColor: #556178;
+  --selector-hover-overlay-BackgroundColor: #a5bdff1a;
+  --selector-disabled-BackgroundColor: #a5bdff1a;
+  --selector-disabled-BorderColor: #a5bdff0d;
 
   --love-active-call-color-1: #5190EC;
   --love-active-call-color-2: #F47758;
@@ -186,6 +198,14 @@
   --input-HelperColor: #556178;
   --input-error-BorderColor: #e34748;
   --input-search-IconColor: #0f121a;
+
+  /** Checkboxes **/
+  --selector-BackgroundColor: #1530720d;
+  --selector-BorderColor: #0f121a;
+  --selector-off-BackgroundColor: #cbd2dd;
+  --selector-hover-overlay-BackgroundColor: #1530721a;
+  --selector-disabled-BackgroundColor: #1530721a;
+  --selector-disabled-BorderColor: #1530720d;
 
   --love-active-call-color-1: #205DC2;
   --love-active-call-color-2: #e34748;
