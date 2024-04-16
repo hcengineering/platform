@@ -36,6 +36,7 @@ import { type KeyBinding, type ViewOptionModel, type ViewOptionsModel } from '@h
 
 import recruit from './plugin'
 import { createReviewModel, reviewTableConfig, reviewTableOptions } from './review'
+import { defineTypeString } from './script/TypeString'
 import {
   TApplicant,
   TApplicantMatch,
@@ -43,6 +44,9 @@ import {
   TCandidates,
   TOpinion,
   TReview,
+  TScriptTypedAttributeEditorMixin,
+  TScriptTypedAttributeFactoryMixin,
+  TScriptTypedPropertyEditorMixin,
   TVacancy,
   TVacancyList
 } from './types'
@@ -53,7 +57,21 @@ export { default } from './plugin'
 export * from './types'
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TVacancy, TCandidates, TCandidate, TApplicant, TReview, TOpinion, TVacancyList, TApplicantMatch)
+  builder.createModel(
+    TVacancy,
+    TCandidates,
+    TCandidate,
+    TApplicant,
+    TReview,
+    TOpinion,
+    TVacancyList,
+    TApplicantMatch,
+    TScriptTypedAttributeEditorMixin,
+    TScriptTypedAttributeFactoryMixin,
+    TScriptTypedPropertyEditorMixin
+  )
+
+  defineTypeString(builder)
 
   builder.mixin(recruit.class.Vacancy, core.class.Class, activity.mixin.ActivityDoc, {})
   builder.mixin(recruit.class.Applicant, core.class.Class, activity.mixin.ActivityDoc, {})

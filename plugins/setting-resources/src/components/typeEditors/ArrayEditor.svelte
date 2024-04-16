@@ -16,11 +16,12 @@
   import core, { ArrOf, Class, Doc, Ref, Type } from '@hcengineering/core'
   import { ArrOf as createArrOf } from '@hcengineering/model'
   import { getClient } from '@hcengineering/presentation'
-  import { AnyComponent, Component, DropdownLabelsIntl, Label } from '@hcengineering/ui'
+  import { Component, DropdownLabelsIntl, Label } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import setting from '../../plugin'
   import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
+  import { getTypeEditor, getTypes } from '../../utils'
 
   export let type: ArrOf<Doc> | undefined
   export let editable: boolean = true
@@ -31,32 +32,19 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  const descendants = hierarchy.getDescendants(core.class.Type)
-
-  const types: Class<Type<Doc>>[] = descendants
-    .map((p) => hierarchy.getClass(p))
-    .filter((p) => {
-      return (
-        (hierarchy.hasMixin(p, view.mixin.ArrayEditor) &&
-          hierarchy.hasMixin(p, view.mixin.ObjectEditor) &&
-          p.label !== undefined) ||
-        p._id === core.class.RefTo
-      )
-    })
+  const types: Class<Type<Doc>>[] = getTypes(hierarchy).filter(
+    (typeClass) => hierarchy.hasMixin(typeClass, view.mixin.ArrayEditor) || typeClass._id === core.class.RefTo
+  )
 
   let refClass: Ref<Doc> | undefined = type !== undefined ? hierarchy.getClass(type.of._class)._id : undefined
 
   $: selected = types.find((p) => p._id === refClass)
+  $: component = selected === undefined ? undefined : getTypeEditor(hierarchy, selected._id)
 
-  const handleChange = (e: any) => {
+  const handleChange = (e: any): void => {
     const type = e.detail?.type
     const res = { type: createArrOf(type) }
     dispatch('change', res)
-  }
-
-  function getComponent (selected: Class<Type<Doc>>): AnyComponent {
-    const editor = hierarchy.as(selected, view.mixin.ObjectEditor)
-    return editor.editor
   }
 </script>
 
@@ -79,9 +67,9 @@
     <Label label={selected.label} />
   {/if}
 </div>
-{#if selected}
+{#if component}
   <Component
-    is={getComponent(selected)}
+    is={component}
     props={{
       type: type?.of,
       editable,

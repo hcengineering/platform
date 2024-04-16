@@ -60,7 +60,7 @@
         bind:preference
         bind:loading
       />
-      <Button id="appls.add" icon={IconAdd} kind={'ghost'} on:click={createApp} />
+      <Button id="appls.add" icon={IconAdd} kind="ghost" on:click={createApp} />
     </div>
   </div>
   {#if applications > 0}

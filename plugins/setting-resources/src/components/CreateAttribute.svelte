@@ -37,10 +37,9 @@
     IconDelete,
     IconCopy
   } from '@hcengineering/ui'
-  import { DropdownIntlItem } from '@hcengineering/ui/src/types'
   import setting from '../plugin'
-  import view from '@hcengineering/view'
   import { clearSettingsStore } from '../store'
+  import { getTypeEditor, getTypes } from '../utils'
 
   export let _id: Ref<Class<Type<PropertyType>>> | undefined = undefined
   export let _class: Ref<Class<Doc>>
@@ -71,37 +70,18 @@
     clearSettingsStore()
   }
 
-  function getTypes (): DropdownIntlItem[] {
-    const descendants = hierarchy.getDescendants(core.class.Type)
-    const res: DropdownIntlItem[] = []
-    for (const descendant of descendants) {
-      const _class = hierarchy.getClass(descendant)
-      if (_class.label !== undefined && hierarchy.hasMixin(_class, view.mixin.ObjectEditor)) {
-        res.push({
-          label: _class.label,
-          id: _class._id
-        })
-      }
-    }
-    return res
-  }
-
-  const items = getTypes()
+  const items = getTypes(hierarchy).map(({ label, _id }) => ({ label, id: _id }))
   export let selectedType: Ref<Class<Type<PropertyType>>> | undefined = undefined
 
   $: selectedType && selectType(selectedType)
 
   function selectType (type: Ref<Class<Type<PropertyType>>>): void {
-    const _class = hierarchy.getClass(type)
-    const editor = hierarchy.as(_class, view.mixin.ObjectEditor)
-    if (editor.editor !== undefined) {
-      is = editor.editor
-    }
+    is = getTypeEditor(hierarchy, type) ?? is
   }
-  const handleSelection = (e: { detail: Ref<Class<Type<any>>> }) => {
+  const handleSelection = (e: { detail: Ref<Class<Type<any>>> }): void => {
     selectType(e.detail)
   }
-  const handleChange = (e: any) => {
+  const handleChange = (e: any): void => {
     type = e.detail?.type
     index = e.detail?.index
     defaultValue = e.detail?.defaultValue

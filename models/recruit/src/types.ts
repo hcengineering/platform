@@ -14,7 +14,15 @@
 //
 
 import type { Employee, Organization } from '@hcengineering/contact'
-import { type Domain, IndexKind, type Markup, type Ref, type Status, type Timestamp } from '@hcengineering/core'
+import {
+  type Domain,
+  IndexKind,
+  type Markup,
+  type Ref,
+  type Status,
+  type Timestamp,
+  type Type
+} from '@hcengineering/core'
 import {
   Collection,
   Hidden,
@@ -35,10 +43,10 @@ import attachment from '@hcengineering/model-attachment'
 import calendar, { TEvent } from '@hcengineering/model-calendar'
 import chunter from '@hcengineering/model-chunter'
 import contact, { TOrganization, TPerson } from '@hcengineering/model-contact'
-import core, { TAttachedDoc, TSpace } from '@hcengineering/model-core'
+import core, { TAttachedDoc, TClass, TSpace } from '@hcengineering/model-core'
 import tags from '@hcengineering/model-tags'
 import task, { DOMAIN_TASK, TProject, TTask } from '@hcengineering/model-task'
-import { getEmbeddedLabel } from '@hcengineering/platform'
+import { getEmbeddedLabel, type Resource } from '@hcengineering/platform'
 import type {
   Applicant,
   ApplicantMatch,
@@ -49,6 +57,14 @@ import type {
   Vacancy,
   VacancyList
 } from '@hcengineering/recruit'
+import type {
+  ScriptTypedAttributeEditorComponentType,
+  ScriptTypedAttributeEditorMixin,
+  ScriptTypedAttributeFactoryFn,
+  ScriptTypedAttributeFactoryMixin,
+  ScriptTypedPropertyEditorComponentType,
+  ScriptTypedPropertyEditorMixin
+} from '@hcengineering/recruit-resources'
 import recruit from './plugin'
 
 @Model(recruit.class.Vacancy, task.class.Project)
@@ -225,4 +241,25 @@ export class TOpinion extends TAttachedDoc implements Opinion {
 
   @Prop(TypeString(), recruit.string.OpinionValue)
     value!: string
+}
+
+@Mixin(recruit.mixin.ScriptTypedAttributeEditor, core.class.Class)
+export class TScriptTypedAttributeEditorMixin<T extends Type<any>>
+  extends TClass
+  implements ScriptTypedAttributeEditorMixin<T> {
+  editor!: Resource<ScriptTypedAttributeEditorComponentType<T>>
+}
+
+@Mixin(recruit.mixin.ScriptTypedAttributeFactory, core.class.Class)
+export class TScriptTypedAttributeFactoryMixin<T extends Type<any>>
+  extends TClass
+  implements ScriptTypedAttributeFactoryMixin<T> {
+  factory!: Resource<ScriptTypedAttributeFactoryFn<T>>
+}
+
+@Mixin(recruit.mixin.ScriptTypedPropertyEditor, core.class.Class)
+export class TScriptTypedPropertyEditorMixin<T extends Type<any>>
+  extends TClass
+  implements ScriptTypedPropertyEditorMixin<T> {
+  editor!: Resource<ScriptTypedPropertyEditorComponentType<T>>
 }

@@ -122,7 +122,13 @@
     "HideDoneState": "Hide complete applications",
     "HideArchivedVacancies": "Hide archived Vacancies",
     "HideApplicantsFromArchivedVacancies": "Hide from archived Vacancies",
-    "CreateNewSkills": "Create new skills if existing not found"
+    "CreateNewSkills": "Create new skills if existing not found",
+
+    "Script":  "Script",
+    "NoScriptForVacancy": "There is no script for this vacancy yet",
+    "CreateScript": "Create script",
+    "ScriptAttributeTitle": "Question",
+    "ScriptAttributeDefaultValue": "Default value"
   },
   "status": {
     "ApplicationExists": "Application already exists",

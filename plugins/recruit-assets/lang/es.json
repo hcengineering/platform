@@ -119,7 +119,13 @@
     "HideDoneState": "Ocultar solicitudes completadas",
     "HideArchivedVacancies": "Ocultar vacantes archivadas",
     "HideApplicantsFromArchivedVacancies": "Ocultar de vacantes archivadas",
-    "CreateNewSkills": "Crear nuevas habilidades si no se encuentran las existentes"
+    "CreateNewSkills": "Crear nuevas habilidades si no se encuentran las existentes",
+
+    "Script":  "Script",
+    "NoScriptForVacancy": "No hay scripts para esta vacante",
+    "CreateScript": "Crear script",
+    "ScriptAttributeTitle": "Pregunta",
+    "ScriptAttributeDefaultValue": "Valor predeterminado"
   },
   "status": {
     "ApplicationExists": "La solicitud ya existe",

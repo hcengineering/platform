@@ -28,6 +28,7 @@
   import { createEventDispatcher, onDestroy } from 'svelte'
   import recruit from '../plugin'
   import VacancyApplications from './VacancyApplications.svelte'
+  import VacancyScript from './VacancyScript.svelte'
 
   export let _id: Ref<Vacancy>
   export let embedded: boolean = false
@@ -189,6 +190,9 @@
       />
     </div>
 
+    <div class="w-full mt-6">
+      <VacancyScript {object} readonly={false} />
+    </div>
     <div class="w-full mt-6">
       <VacancyApplications objectId={object._id} />
     </div>

@@ -45,6 +45,8 @@ import MatchVacancy from './components/MatchVacancy.svelte'
 import NewCandidateHeader from './components/NewCandidateHeader.svelte'
 import NotificationApplicantPresenter from './components/NotificationApplicantPresenter.svelte'
 import Organizations from './components/Organizations.svelte'
+import ScriptStringAttributeEditor from './components/script/ScriptStringAttributeEditor.svelte'
+import ScriptStringPropertyEditor from './components/script/ScriptStringPropertyEditor.svelte'
 import SkillsView from './components/SkillsView.svelte'
 import TemplatesIcon from './components/TemplatesIcon.svelte'
 import Vacancies from './components/Vacancies.svelte'
@@ -64,6 +66,7 @@ import Opinions from './components/review/Opinions.svelte'
 import OpinionsPresenter from './components/review/OpinionsPresenter.svelte'
 import ReviewPresenter from './components/review/ReviewPresenter.svelte'
 import Reviews from './components/review/Reviews.svelte'
+import { ScriptStringAttributeFactory } from './functions/script/ScriptStringAttributeFactory'
 import recruit from './plugin'
 import {
   getAppIdentifier,
@@ -80,6 +83,8 @@ import {
 
 import { get } from 'svelte/store'
 import { MoveApplicant } from './actionImpl'
+
+export * from './types'
 
 async function createOpinion (object: Doc): Promise<void> {
   showPopup(CreateOpinion, { space: object.space, review: object._id })
@@ -360,7 +365,10 @@ export default async (): Promise<Resources> => ({
 
     MatchVacancy,
     NotificationApplicantPresenter,
-    VacancyEditor
+    VacancyEditor,
+
+    ScriptStringAttributeEditor,
+    ScriptStringPropertyEditor
   },
   completion: {
     ApplicationQuery: async (
@@ -385,7 +393,8 @@ export default async (): Promise<Resources> => ({
     GetObjectLinkFragment: getSequenceLink,
     GetIdObjectLinkFragment: getObjectLink,
     HideDoneState: hideDoneState,
-    HideArchivedVacancies: hideArchivedVacancies
+    HideArchivedVacancies: hideArchivedVacancies,
+    ScriptStringAttributeFactory
   },
   resolver: {
     Location: resolveLocation

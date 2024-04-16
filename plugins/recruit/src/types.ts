@@ -15,7 +15,18 @@
 
 import { Event } from '@hcengineering/calendar'
 import type { Channel, Organization, Person } from '@hcengineering/contact'
-import type { AttachedData, AttachedDoc, Markup, Ref, Space, Status, Timestamp } from '@hcengineering/core'
+import type {
+  AttachedData,
+  AttachedDoc,
+  BaseAttribute,
+  Markup,
+  PropertyType,
+  Rank,
+  Ref,
+  Space,
+  Status,
+  Timestamp
+} from '@hcengineering/core'
 import { TagReference } from '@hcengineering/tags'
 import type { Project, Task } from '@hcengineering/task'
 
@@ -104,4 +115,18 @@ export interface Opinion extends AttachedDoc {
   attachments?: number
   description: Markup
   value: string
+}
+
+/**
+ * @public
+ *
+ * Base attribute to use in scripts. For declarative use only, i.e.
+ * it has no implementation class in models, because Platform doesn't
+ * yet support inheritance for attribute classes
+ * (see hardcoded checks like object._class === core.class.Attribute)
+ */
+export interface ScriptAttribute<T extends PropertyType = any> extends BaseAttribute<T> {
+  title: string
+  rank: Rank
+  defaultValue: T
 }
