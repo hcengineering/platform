@@ -13,57 +13,85 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import activity, { ActivityMessage, ActivityMessageExtension } from '@hcengineering/activity'
+  import activity, { ActivityMessage } from '@hcengineering/activity'
   import { Action, IconMoreV, showPopup } from '@hcengineering/ui'
-  import { Menu } from '@hcengineering/view-resources'
-  import { createEventDispatcher } from 'svelte'
+  import { getActions, Menu } from '@hcengineering/view-resources'
+  import { getClient } from '@hcengineering/presentation'
+  import { getResource } from '@hcengineering/platform'
+  import { Action as ViewAction } from '@hcengineering/view'
 
   import ActivityMessageAction from './ActivityMessageAction.svelte'
-  import PinMessageAction from './PinMessageAction.svelte'
-  import SaveMessageAction from './SaveMessageAction.svelte'
-  import ActivityMessageExtensionComponent from './activity-message/ActivityMessageExtension.svelte'
-  import AddReactionAction from './reactions/AddReactionAction.svelte'
+  import { savedMessagesStore } from '../activity'
 
   export let message: ActivityMessage | undefined
-  export let extensions: ActivityMessageExtension[] = []
   export let actions: Action[] = []
   export let withActionMenu = true
+  export let onOpen: () => void
+  export let onClose: () => void
 
-  const dispatch = createEventDispatcher()
+  const client = getClient()
 
+  let inlineActions: ViewAction[] = []
   let isActionMenuOpened = false
+
+  $: void updateInlineActions(message)
+
+  savedMessagesStore.subscribe(() => {
+    void updateInlineActions(message)
+  })
 
   function handleActionMenuOpened (): void {
     isActionMenuOpened = true
-    dispatch('open')
+    onOpen()
   }
 
   function handleActionMenuClosed (): void {
     isActionMenuOpened = false
-    dispatch('close')
+    onClose()
   }
 
   function showMenu (ev: MouseEvent): void {
+    const excludedActions = inlineActions.map(({ _id }) => _id)
+
     showPopup(
       Menu,
       {
         object: message,
         actions,
-        baseMenuClass: activity.class.ActivityMessage
+        baseMenuClass: activity.class.ActivityMessage,
+        excludedActions
       },
       ev.target as HTMLElement,
       handleActionMenuClosed
     )
     handleActionMenuOpened()
   }
+
+  async function updateInlineActions (message?: ActivityMessage): Promise<void> {
+    if (message === undefined) {
+      inlineActions = []
+      return
+    }
+    inlineActions = (await getActions(client, message, activity.class.ActivityMessage)).filter(
+      (action) => action.inline
+    )
+  }
 </script>
 
 {#if message}
   <div class="root">
-    <AddReactionAction object={message} on:open on:close />
-    <ActivityMessageExtensionComponent kind="action" {extensions} props={{ object: message }} on:close on:open />
-    <PinMessageAction object={message} />
-    <SaveMessageAction object={message} />
+    {#each inlineActions as inline}
+      {#if inline.icon}
+        {#await getResource(inline.action) then action}
+          <ActivityMessageAction
+            size={inline.actionProps?.size ?? 'small'}
+            icon={inline.icon}
+            iconProps={inline.actionProps?.iconProps}
+            action={(ev) => action(message, ev, { onOpen, onClose })}
+          />
+        {/await}
+      {/if}
+    {/each}
 
     {#if withActionMenu}
       <ActivityMessageAction size="small" icon={IconMoreV} opened={isActionMenuOpened} action={showMenu} />

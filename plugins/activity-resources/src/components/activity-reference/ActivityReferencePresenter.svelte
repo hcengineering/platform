@@ -43,7 +43,6 @@
   export let hideLink = false
   export let compact = false
   export let onClick: (() => void) | undefined = undefined
-  export let onReply: (() => void) | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -111,7 +110,6 @@
   {hoverable}
   {hoverStyles}
   {onClick}
-  {onReply}
 >
   <svelte:fragment slot="header">
     <span class="header">

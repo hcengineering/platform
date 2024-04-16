@@ -40,13 +40,15 @@ export default mergeIds(chunterId, chunter, {
     ArchiveChannel: '' as Ref<Action>,
     UnarchiveChannel: '' as Ref<Action>,
     ConvertToPrivate: '' as Ref<Action>,
-    CopyChatMessageLink: '' as Ref<Action<Doc, any>>
+    CopyChatMessageLink: '' as Ref<Action<Doc, any>>,
+    ReplyToThreadAction: '' as Ref<Action>
   },
   actionImpl: {
     ArchiveChannel: '' as ViewAction,
     UnarchiveChannel: '' as ViewAction,
     ConvertDmToPrivateChannel: '' as ViewAction,
-    DeleteChatMessage: '' as ViewAction
+    DeleteChatMessage: '' as ViewAction,
+    ReplyToThread: '' as ViewAction
   },
   category: {
     Chunter: '' as Ref<ActionCategory>
@@ -100,7 +102,8 @@ export default mergeIds(chunterId, chunter, {
     CanCopyMessageLink: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     GetChunterSpaceLinkFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
     GetThreadLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
-    ReplyToThread: '' as Resource<(doc: ActivityMessage) => Promise<void>>
+    ReplyToThread: '' as Resource<(doc: ActivityMessage) => Promise<void>>,
+    CanReplyToThread: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
   },
   filter: {
     ChatMessagesFilter: '' as Resource<(message: ActivityMessage, _class?: Ref<Doc>) => boolean>

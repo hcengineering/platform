@@ -40,7 +40,6 @@
   export let attachmentImageSize: AttachmentImageSize = 'x-large'
   export let videoPreload = true
   export let onClick: (() => void) | undefined = undefined
-  export let onReply: (() => void) | undefined = undefined
 
   const client = getClient()
 </script>
@@ -76,6 +75,5 @@
     {videoPreload}
     showLinksPreview={false}
     {onClick}
-    {onReply}
   />
 {/if}

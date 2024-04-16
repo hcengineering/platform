@@ -48,7 +48,6 @@ import ChannelIcon from './components/ChannelIcon.svelte'
 import ThreadNotificationPresenter from './components/notification/ThreadNotificationPresenter.svelte'
 import ChatMessageNotificationLabel from './components/notification/ChatMessageNotificationLabel.svelte'
 import ChatAside from './components/chat/ChatAside.svelte'
-import ReplyToThreadAction from './components/ReplyToThreadAction.svelte'
 import ThreadMessagePreview from './components/threads/ThreadMessagePreview.svelte'
 import ChatMessagePreview from './components/chat-message/ChatMessagePreview.svelte'
 
@@ -62,7 +61,8 @@ import {
   getUnreadThreadsCount,
   canCopyMessageLink,
   leaveChannelAction,
-  removeChannelAction
+  removeChannelAction,
+  canReplyToThread
 } from './utils'
 import { chunterSpaceLinkFragmentProvider, getThreadLink, getMessageLink, replyToThread } from './navigation'
 
@@ -174,7 +174,6 @@ export default async (): Promise<Resources> => ({
     ChatMessageNotificationLabel,
     ThreadNotificationPresenter,
     ChatAside,
-    ReplyToThreadAction,
     ThreadMessagePreview,
     ChatMessagePreview
   },
@@ -191,7 +190,8 @@ export default async (): Promise<Resources> => ({
     GetChunterSpaceLinkFragment: chunterSpaceLinkFragmentProvider,
     GetUnreadThreadsCount: getUnreadThreadsCount,
     GetThreadLink: getThreadLink,
-    ReplyToThread: replyToThread
+    ReplyToThread: replyToThread,
+    CanReplyToThread: canReplyToThread
   },
   actionImpl: {
     ArchiveChannel,
@@ -199,6 +199,7 @@ export default async (): Promise<Resources> => ({
     ConvertDmToPrivateChannel,
     DeleteChatMessage: deleteChatMessage,
     LeaveChannel: leaveChannelAction,
-    RemoveChannel: removeChannelAction
+    RemoveChannel: removeChannelAction,
+    ReplyToThread: replyToThread
   }
 })

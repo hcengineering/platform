@@ -14,7 +14,6 @@
 -->
 
 <script lang="ts">
-  import { getClient } from '@hcengineering/presentation'
   import { IntlString } from '@hcengineering/platform'
   import activity, { ActivityMessage, ActivityMessagePreviewType } from '@hcengineering/activity'
 
@@ -30,17 +29,14 @@
   export let message: ActivityMessage
   export let actions: Action[] = []
 
-  const client = getClient()
-
   let previewElement: BasePreview
   let isCompact = false
-
-  $: extensions = client.getModel().findAllSync(activity.class.ActivityMessageExtension, { ofMessage: message._class })
 </script>
 
 <BasePreview
   bind:this={previewElement}
   bind:isCompact
+  {message}
   {text}
   {intlLabel}
   {readonly}
@@ -58,13 +54,14 @@
     {/if}
   </svelte:fragment>
   <svelte:fragment slot="actions">
-    <ActivityMessageActions
-      {message}
-      {extensions}
-      {actions}
-      withActionMenu={false}
-      on:open={previewElement.onActionsOpened}
-      on:close={previewElement.onActionsClosed}
-    />
+    {#if previewElement}
+      <ActivityMessageActions
+        {message}
+        {actions}
+        withActionMenu={false}
+        onOpen={previewElement.onActionsOpened}
+        onClose={previewElement.onActionsClosed}
+      />
+    {/if}
   </svelte:fragment>
 </BasePreview>
