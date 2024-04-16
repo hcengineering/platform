@@ -117,9 +117,10 @@ export class PlanningPage extends CalendarPage {
       if (data.createLabel) {
         await this.pressCreateButtonSelectPopup(this.page)
         await this.addNewTagPopup(this.page, data.labels, 'Tag from createNewIssue')
+        await this.page.locator('.popup#TagsPopup').press('Escape')
+      } else {
+        await this.checkFromDropdownWithSearch(this.page, data.labels)
       }
-      await this.checkFromDropdownWithSearch(this.page, data.labels)
-      await (popup ? this.buttonPopupCreateAddLabel.press('Escape') : this.buttonPanelCreateAddLabel.press('Escape'))
     }
     if (data.slots != null) {
       let index = 0

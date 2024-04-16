@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import core, {
   TxOperations,
   getCurrentAccount,
@@ -51,7 +52,6 @@ import { onDestroy } from 'svelte'
 import { type KeyedAttribute } from '..'
 import { OptimizeQueryMiddleware, PresentationPipelineImpl, type PresentationPipeline } from './pipeline'
 import plugin from './plugin'
-import { Analytics } from '@hcengineering/analytics'
 
 let liveQuery: LQ
 let client: TxOperations & MeasureClient
@@ -551,4 +551,43 @@ export function decodeTokenPayload (token: string): any {
 
 export function isAdminUser (): boolean {
   return decodeTokenPayload(getMetadata(plugin.metadata.Token) ?? '').admin === 'true'
+}
+
+type ReduceParameters<T extends (...args: any) => any> = T extends (...args: infer P) => any ? P : never
+
+interface NextCall {
+  op: () => Promise<void>
+}
+
+/**
+ * Utility method to skip middle update calls, optimistically if update function is called multiple times with few different parameters, only the last variant will be executed.
+ * The last invocation is executed after a few cycles, allowing to skip middle ones.
+ *
+ * This method can be used inside Svelte components to collapse complex update logic and handle interactions.
+ */
+export function reduceCalls<T extends (...args: ReduceParameters<T>) => Promise<void>> (
+  operation: T
+): (...args: ReduceParameters<T>) => Promise<void> {
+  let nextCall: NextCall | undefined
+  let currentCall: NextCall | undefined
+
+  const next = (): void => {
+    currentCall = nextCall
+    nextCall = undefined
+    if (currentCall !== undefined) {
+      void currentCall.op()
+    }
+  }
+  return async function (...args: ReduceParameters<T>): Promise<void> {
+    const myOp = async (): Promise<void> => {
+      await operation(...args)
+      next()
+    }
+
+    nextCall = { op: myOp }
+    await Promise.resolve()
+    if (currentCall === undefined) {
+      next()
+    }
+  }
 }

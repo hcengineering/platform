@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import core, { IdMap, Ref, Status, StatusCategory } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
+  import { getClient, reduceCalls } from '@hcengineering/presentation'
   import task, { Project, ProjectType } from '@hcengineering/task'
   import {
     ColorDefinition,
@@ -23,8 +23,8 @@
     getPlatformColorDef,
     themeStore
   } from '@hcengineering/ui'
-  import { typeStore } from '../..'
   import { createEventDispatcher, onMount } from 'svelte'
+  import { typeStore } from '../..'
 
   export let value: Status | undefined
   export let shouldShowTooltip: boolean = false
@@ -36,8 +36,16 @@
   let category: StatusCategory | undefined
   let type: ProjectType | undefined = undefined
 
-  $: updateCategory(value)
-  $: getType(space, $typeStore)
+  const update = reduceCalls(async function (
+    value: Status | undefined,
+    space: Ref<Project>,
+    typeStore: IdMap<ProjectType>
+  ) {
+    await updateCategory(value)
+    await getType(space, typeStore)
+  })
+
+  $: void update(value, space, $typeStore)
 
   $: viewState = getViewState(type, value)
 
@@ -56,7 +64,7 @@
     }
   }
 
-  async function updateCategory (value: Status | undefined) {
+  async function updateCategory (value: Status | undefined): Promise<void> {
     if (value === undefined) return
     category = await client.findOne(core.class.StatusCategory, { _id: value.category })
   }

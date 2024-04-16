@@ -40,7 +40,11 @@
   }
 
   async function tagsHandler (evt: MouseEvent): Promise<void> {
-    showPopup(TagsEditorPopup, { object }, getEventPopupPositionElement(evt))
+    showPopup(TagsEditorPopup, { object }, getEventPopupPositionElement(evt), undefined, undefined, {
+      refId: 'TagsPopup',
+      category: 'popup',
+      overlay: true
+    })
   }
 
   let allWidth: number

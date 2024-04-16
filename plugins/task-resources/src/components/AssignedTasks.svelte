@@ -72,8 +72,15 @@
   let preference: ViewletPreference | undefined
 
   let documentIds: Ref<Task>[] = []
-  function updateResultQuery (search: string, documentIds: Ref<Task>[], doneStates: Status[]): void {
-    resultQuery.status = { $nin: doneStates.map((it) => it._id) }
+  function updateResultQuery (
+    search: string,
+    documentIds: Ref<Task>[],
+    doneStates: Status[],
+    mode: string | undefined
+  ): void {
+    if (mode === 'assigned') {
+      resultQuery.status = { $nin: doneStates.map((it) => it._id) }
+    }
     if (documentIds.length > 0) {
       resultQuery._id = { $in: documentIds }
     }
@@ -123,7 +130,7 @@
     }
   }
 
-  $: updateResultQuery(search, documentIds, doneStates)
+  $: updateResultQuery(search, documentIds, doneStates, mode)
 
   let viewlet: Viewlet | undefined
 
@@ -155,7 +162,7 @@
     <SearchEdit
       bind:value={search}
       on:change={() => {
-        updateResultQuery(search, documentIds, doneStates)
+        updateResultQuery(search, documentIds, doneStates, mode)
       }}
     />
     <div class="buttons-divider" />

@@ -13,42 +13,55 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { WithLookup, Doc, Ref, SearchResultDoc } from '@hcengineering/core'
+  import core, {
+    Doc,
+    Ref,
+    SearchResultDoc,
+    Tx,
+    TxBuilder,
+    TxWorkspaceEvent,
+    WithLookup,
+    WorkspaceEvent,
+    coreId
+  } from '@hcengineering/core'
   import { getResource, translate } from '@hcengineering/platform'
   import {
-    type SearchItem,
-    type ObjectSearchCategory,
+    ActionContext,
     SearchResult,
+    addTxListener,
     createQuery,
     getClient,
-    ActionContext,
-    searchFor
+    reduceCalls,
+    removeTxListener,
+    searchFor,
+    type ObjectSearchCategory,
+    type SearchItem
   } from '@hcengineering/presentation'
   import ui, {
     Button,
-    closePopup,
     Component,
     Icon,
     IconArrowLeft,
     Label,
-    deviceOptionsStore,
-    capitalizeFirstLetter,
-    formatKey,
-    themeStore,
     ListView,
-    resizeObserver
+    capitalizeFirstLetter,
+    closePopup,
+    deviceOptionsStore,
+    formatKey,
+    resizeObserver,
+    themeStore
   } from '@hcengineering/ui'
   import { Action, ActionCategory, ViewContext } from '@hcengineering/view'
+  import { createEventDispatcher, onMount, tick } from 'svelte'
   import { filterActions, getSelection } from '../actions'
   import view from '../plugin'
   import { focusStore, selectionStore } from '../selection'
   import { openDoc } from '../utils'
   import ObjectPresenter from './ObjectPresenter.svelte'
-  import { createEventDispatcher, tick } from 'svelte'
 
+  import { contextStore } from '@hcengineering/presentation'
   import ChevronDown from './icons/ChevronDown.svelte'
   import ChevronUp from './icons/ChevronUp.svelte'
-  import { contextStore } from '@hcengineering/presentation'
 
   export let viewContext: ViewContext | undefined = $contextStore.getLastContext()
 
@@ -98,7 +111,7 @@
 
   const client = getClient()
 
-  async function getSupportedActions (actions: Array<WithLookup<Action>>): Promise<void> {
+  const getSupportedActions = reduceCalls(async (actions: Array<WithLookup<Action>>): Promise<void> => {
     const docs = getSelection($focusStore, $selectionStore)
     let fActions: Array<WithLookup<Action>> = actions
 
@@ -125,11 +138,11 @@
     fActions = await filterVisibleActions(fActions, docs)
     // Sort by category.
     supportedActions = fActions.sort((a, b) => a.category.localeCompare(b.category))
-  }
+  })
 
   $: void getSupportedActions(actions)
 
-  async function filterSearchActions (actions: Array<WithLookup<Action>>, search: string): Promise<void> {
+  const filterSearchActions = reduceCalls(async (actions: Array<WithLookup<Action>>, search: string): Promise<void> => {
     const res: Array<WithLookup<Action>> = []
     let preparedSearch = search.trim().toLowerCase()
     if (preparedSearch.charAt(0) === '/') {
@@ -146,7 +159,7 @@
     } else {
       filteredActions = actions
     }
-  }
+  })
   $: void filterSearchActions(supportedActions, search)
 
   let selection = 0
@@ -241,15 +254,31 @@
 
   let items: SearchActionItem[] = []
 
-  async function updateItems (query: string, filteredActions: Array<WithLookup<Action>>): Promise<void> {
+  const updateItems = reduceCalls(async (query: string, filteredActions: Array<WithLookup<Action>>): Promise<void> => {
     let searchItems: SearchItem[] = []
     if (query !== '' && query.indexOf('/') !== 0) {
       searchItems = (await searchFor('spotlight', query)).items
     }
     items = packSearchAndActions(searchItems, filteredActions)
-  }
+  })
 
   $: void updateItems(search, filteredActions)
+
+  function txListener (tx: Tx): void {
+    if (tx._class === core.class.TxWorkspaceEvent) {
+      const evt = tx as TxWorkspaceEvent
+      if (evt.event === WorkspaceEvent.IndexingUpdate) {
+        void updateItems(search, filteredActions)
+      }
+    }
+  }
+
+  onMount(() => {
+    addTxListener(txListener)
+    return () => {
+      removeTxListener(txListener)
+    }
+  })
 
   let textHTML: HTMLInputElement
   let phTraslate: string = ''

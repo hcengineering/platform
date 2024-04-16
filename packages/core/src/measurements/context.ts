@@ -27,12 +27,21 @@ export class MeasureMetricsContext implements MeasureContext {
       this.logger.logOperation(this.name, spend, { ...params, ...fullParams })
     })
 
+    const errorPrinter = ({ message, stack, ...rest }: Error): object => ({
+      message,
+      stack,
+      ...rest
+    })
+    function replacer (value: any): any {
+      return value instanceof Error ? errorPrinter(value) : value
+    }
+
     this.logger = logger ?? {
       info: (msg, args) => {
-        console.info(msg, ...Object.entries(args ?? {}).map((it) => `${it[0]}=${JSON.stringify(it[1])}`))
+        console.info(msg, ...Object.entries(args ?? {}).map((it) => `${it[0]}=${JSON.stringify(replacer(it[1]))}`))
       },
       error: (msg, args) => {
-        console.error(msg, ...Object.entries(args ?? {}).map((it) => `${it[0]}=${JSON.stringify(it[1])}`))
+        console.error(msg, ...Object.entries(args ?? {}).map((it) => `${it[0]}=${JSON.stringify(replacer(it[1]))}`))
       },
       close: async () => {},
       logOperation: (operation, time, params) => {}

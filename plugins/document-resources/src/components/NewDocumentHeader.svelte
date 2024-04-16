@@ -84,7 +84,7 @@
     />
   {:else}
     <Button
-      id={'new-document'}
+      id={'new-teamspace'}
       icon={IconAdd}
       label={document.string.CreateTeamspace}
       justify={'left'}

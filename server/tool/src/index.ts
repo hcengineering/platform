@@ -245,19 +245,20 @@ export async function upgradeModel (
     const migrateClient = new MigrateClientImpl(db, hierarchy, modelDb, logger)
 
     const states = await migrateClient.find<MigrationState>(DOMAIN_MIGRATION, { _class: core.class.MigrationState })
-    const migrateState = new Map(
-      Array.from(groupByArray(states, (it) => it.plugin).entries()).map((it) => [
-        it[0],
-        new Set(it[1].map((q) => q.state))
-      ])
-    )
+    const sts = Array.from(groupByArray(states, (it) => it.plugin).entries())
+    const migrateState = new Map(sts.map((it) => [it[0], new Set(it[1].map((q) => q.state))]))
     migrateClient.migrateState = migrateState
 
     await ctx.with('migrate', {}, async () => {
       let i = 0
       for (const op of migrateOperations) {
         const t = Date.now()
-        await op[1].migrate(migrateClient, logger)
+        try {
+          await op[1].migrate(migrateClient, logger)
+        } catch (err: any) {
+          logger.error(`error during migrate: ${op[0]} ${err.message}`, err)
+          throw err
+        }
         logger.log('migrate:', { workspaceId: workspaceId.name, operation: op[0], time: Date.now() - t })
         await progress(20 + ((100 / migrateOperations.length) * i * 20) / 100)
         i++

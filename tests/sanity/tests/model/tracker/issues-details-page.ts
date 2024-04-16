@@ -31,7 +31,7 @@ export class IssuesDetailsPage extends CommonTrackerPage {
     super(page)
     this.page = page
     this.inputTitle = page.locator('div.popupPanel-body input[type="text"]')
-    this.inputDescription = page.locator('div.popupPanel-body div.textInput p')
+    this.inputDescription = page.locator('div.popupPanel-body div.textInput div.tiptap')
     this.buttonStatus = page.locator('//span[text()="Status"]/../button[1]//span')
     this.buttonPriority = page.locator('//span[text()="Priority"]/../button[2]//span')
     this.buttonAssignee = page.locator('(//span[text()="Assignee"]/../div/button)[2]')
@@ -170,6 +170,7 @@ export class IssuesDetailsPage extends CommonTrackerPage {
 
   async addToDescription (description: string): Promise<void> {
     const existDescription = await this.inputDescription.textContent()
+    await expect(this.inputDescription).toHaveJSProperty('contentEditable', 'true')
     await this.inputDescription.fill(`${existDescription}\n${description}`)
   }
 
