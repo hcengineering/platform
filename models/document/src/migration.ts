@@ -314,15 +314,18 @@ export const documentOperation: MigrateOperation = {
   },
 
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
+    const tx = new TxOperations(client, core.account.System)
     await tryUpgrade(client, documentId, [
       {
         state: 'u-default-project',
         func: async (client) => {
-          const tx = new TxOperations(client, core.account.System)
           await createSpace(tx)
-          await createDefaultTeamspaceType(tx)
         }
       }
     ])
+
+    // Currently space type has to be recreated every time as it's in the model
+    // created by the system user
+    await createDefaultTeamspaceType(tx)
   }
 }

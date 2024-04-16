@@ -22,7 +22,7 @@
 
   import chunter from '../../plugin'
   import Header from '../Header.svelte'
-  import { openMessageFromSpecial } from '../../utils'
+  import { openMessageFromSpecial } from '../../navigation'
 
   const threadsQuery = createQuery()
   const me = getCurrentAccount() as PersonAccount

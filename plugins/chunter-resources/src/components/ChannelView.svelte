@@ -26,8 +26,8 @@
   import chunter from '../plugin'
   import ChannelAside from './chat/ChannelAside.svelte'
 
-  export let context: DocNotifyContext
-  export let object: Doc | undefined = undefined
+  export let object: Doc
+  export let context: DocNotifyContext | undefined
   export let allowClose = false
   export let embedded = false
 
@@ -43,9 +43,8 @@
     isThreadOpened = newLocation.path[4] != null
   })
 
-  $: isDocChat = !hierarchy.isDerived(context.attachedToClass, chunter.class.ChunterSpace)
-  $: withAside =
-    !embedded && !isThreadOpened && !hierarchy.isDerived(context.attachedToClass, chunter.class.DirectMessage)
+  $: isDocChat = !hierarchy.isDerived(object._class, chunter.class.ChunterSpace)
+  $: withAside = !embedded && !isThreadOpened && !hierarchy.isDerived(object._class, chunter.class.DirectMessage)
 
   function toChannel (object?: Doc): Channel | undefined {
     return object as Channel | undefined
@@ -56,8 +55,8 @@
 
 <div class="popupPanel panel" class:embedded>
   <ChannelHeader
-    _id={context.attachedTo}
-    _class={context.attachedToClass}
+    _id={object._id}
+    _class={object._class}
     {object}
     {allowClose}
     {withAside}
@@ -72,7 +71,7 @@
 
   <div class="popupPanel-body" class:asideShown={withAside && isAsideShown}>
     <div class="popupPanel-body__main">
-      {#key context._id}
+      {#key object._id}
         <ChannelComponent {context} {object} {filters} isAsideOpened={(withAside && isAsideShown) || isThreadOpened} />
       {/key}
     </div>
@@ -82,10 +81,10 @@
       <div class="popupPanel-body__aside" class:float={false} class:shown={withAside && isAsideShown}>
         <Separator name="aside" float index={0} />
         <div class="antiPanel-wrap__content">
-          {#if hierarchy.isDerived(context.attachedToClass, chunter.class.Channel)}
-            <ChannelAside _class={context.attachedToClass} object={toChannel(object)} />
+          {#if hierarchy.isDerived(object._class, chunter.class.Channel)}
+            <ChannelAside _class={object._class} object={toChannel(object)} />
           {:else}
-            <DocAside _class={context.attachedToClass} {object} />
+            <DocAside _class={object._class} {object} />
           {/if}
         </div>
       </div>

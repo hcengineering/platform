@@ -29,6 +29,7 @@ import core, {
   type WorkspaceId,
   _getOperator,
   docKey,
+  groupByArray,
   setObjectValue,
   toFindResult
 } from '@hcengineering/core'
@@ -539,6 +540,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
   }
 
   private async processRemove (): Promise<void> {
+    let total = 0
     while (true) {
       const result = await this.storage.findAll(
         this.metrics,
@@ -547,9 +549,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
           removed: true
         },
         {
-          sort: {
-            modifiedOn: 1
-          },
+          limit: 1000,
           projection: {
             _id: 1,
             stages: 1,
@@ -584,6 +584,12 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       await this.flush(true)
       if (toRemoveIds.length > 0) {
         await this.storage.clean(this.metrics, DOMAIN_DOC_INDEX_STATE, toRemoveIds)
+        total += toRemoveIds.length
+        await this.metrics.info('indexer', {
+          _classes: Array.from(groupByArray(toIndex, (it) => it.objectClass).keys()),
+          total,
+          count: toRemoveIds.length
+        })
       } else {
         break
       }

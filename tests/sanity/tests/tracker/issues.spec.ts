@@ -317,6 +317,7 @@ test.describe('Tracker issue tests', () => {
     await trackerNavigationMenuPage.openIssuesForProject('Default')
 
     const issuesPage = new IssuesPage(page)
+    await issuesPage.searchIssueByName(commentIssue.title)
     await issuesPage.checkCommentsCount(commentIssue.title, '1')
     await issuesPage.openCommentPopupForIssueByName(commentIssue.title)
 
@@ -327,6 +328,7 @@ test.describe('Tracker issue tests', () => {
 
     await issuesPage.modelSelectorAll.click()
 
+    await issuesPage.searchIssueByName(commentIssue.title)
     await issuesPage.checkCommentsCount(commentIssue.title, '2')
   })
 })

@@ -60,8 +60,8 @@ import {
   type CommonInboxNotification,
   type CommonNotificationType,
   type DocNotifyContext,
-  type DocUpdateTx,
   type DocUpdates,
+  type DocUpdateTx,
   type InboxNotification,
   type MentionInboxNotification,
   type NotificationContextPresenter,
@@ -73,7 +73,9 @@ import {
   type NotificationSetting,
   type NotificationStatus,
   type NotificationTemplate,
-  type NotificationType
+  type PushSubscription,
+  type NotificationType,
+  type PushSubscriptionKeys
 } from '@hcengineering/notification'
 import { getEmbeddedLabel, type Asset, type IntlString, type Resource } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
@@ -94,6 +96,13 @@ export class TBrowserNotification extends TDoc implements BrowserNotification {
   onClickLocation?: Location | undefined
   user!: Ref<Account>
   status!: NotificationStatus
+}
+
+@Model(notification.class.PushSubscription, core.class.Doc, DOMAIN_NOTIFICATION)
+export class TPushSubscription extends TDoc implements PushSubscription {
+  user!: Ref<Account>
+  endpoint!: string
+  keys!: PushSubscriptionKeys
 }
 
 @Model(notification.class.BaseNotificationType, core.class.Doc, DOMAIN_MODEL)
@@ -335,7 +344,8 @@ export function createModel (builder: Builder): void {
     TActivityNotificationViewlet,
     TBaseNotificationType,
     TCommonNotificationType,
-    TMentionInboxNotification
+    TMentionInboxNotification,
+    TPushSubscription
   )
 
   builder.createDoc(

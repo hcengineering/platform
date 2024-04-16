@@ -19,7 +19,7 @@
   import { EmptyMarkup, getMarkup, markupToJSON } from '@hcengineering/text'
   import { themeStore } from '@hcengineering/ui'
 
-  import { AnyExtension, Editor, FocusPosition, mergeAttributes } from '@tiptap/core'
+  import { AnyExtension, Content, Editor, FocusPosition, mergeAttributes } from '@tiptap/core'
   import Placeholder from '@tiptap/extension-placeholder'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
 
@@ -34,6 +34,9 @@
   import { InlineStyleToolbarExtension } from './extension/inlineStyleToolbar'
   import { SubmitExtension } from './extension/submit'
   import { EditorKit } from '../kits/editor-kit'
+  import { getFileUrl, getImageSize } from '@hcengineering/presentation'
+  import { FileAttachFunction } from './extension/types'
+  import { ParseOptions } from '@tiptap/pm/model'
 
   export let content: Markup = ''
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
@@ -43,6 +46,7 @@
   export let editorAttributes: Record<string, string> = {}
   export let boundary: HTMLElement | undefined = undefined
   export let autofocus: FocusPosition = false
+  export let attachFile: FileAttachFunction | undefined = undefined
 
   let element: HTMLElement
   let editor: Editor
@@ -84,6 +88,36 @@
 
   export function insertText (text: string): void {
     editor.commands.insertContent(text)
+  }
+  export function insertTable (options: { rows?: number, cols?: number, withHeaderRow?: boolean }) {
+    editor.commands.insertTable(options)
+  }
+  export function insertCodeBlock (pos?: number): void {
+    editor.commands.insertContent(
+      {
+        type: 'codeBlock',
+        content: [{ type: 'text', text: ' ' }]
+      },
+      {
+        updateSelection: false
+      }
+    )
+
+    if (pos !== undefined) {
+      editor.commands.focus(pos, { scrollIntoView: false })
+    }
+  }
+  export function insertSeparatorLine (): void {
+    editor.commands.setHorizontalRule()
+  }
+  export function insertContent (
+    value: Content,
+    options?: {
+      parseOptions?: ParseOptions
+      updateSelection?: boolean
+    }
+  ): void {
+    editor.commands.insertContent(value, options)
   }
 
   export function insertMarkup (markup: Markup): void {

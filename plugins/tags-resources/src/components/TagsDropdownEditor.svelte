@@ -73,6 +73,11 @@
             }
           }
         }
+      },
+      {
+        refId: 'TagsPopup',
+        category: 'popup',
+        overlay: true
       }
     )
   }

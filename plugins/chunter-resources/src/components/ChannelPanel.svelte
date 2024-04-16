@@ -36,7 +36,7 @@
   })
 </script>
 
-{#if context}
+{#if object}
   <div class="antiComponent">
     <ChannelView {object} {context} embedded allowClose on:close />
   </div>

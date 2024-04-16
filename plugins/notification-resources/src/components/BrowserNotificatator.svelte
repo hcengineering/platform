@@ -14,60 +14,76 @@
 -->
 <script lang="ts">
   import { getCurrentAccount } from '@hcengineering/core'
-  import notification, { BrowserNotification, NotificationStatus } from '@hcengineering/notification'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { getCurrentLocation, navigate } from '@hcengineering/ui'
-  import { askPermission } from '../utils'
-
-  let notifications: BrowserNotification[] = []
-
-  const query = createQuery()
-  query.query(
-    notification.class.BrowserNotification,
-    {
-      user: getCurrentAccount()._id,
-      status: NotificationStatus.New
-    },
-    (res) => {
-      notifications = res
-    }
-  )
+  import notification from '@hcengineering/notification'
+  import { getMetadata } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
+  import { getCurrentLocation, navigate, parseLocation } from '@hcengineering/ui'
 
   const client = getClient()
 
-  $: process(notifications)
+  const publicKey = getMetadata(notification.metadata.PushPublicKey)
 
-  async function process (notifications: BrowserNotification[]): Promise<void> {
-    if (notifications.length === 0) return
-    await askPermission()
-    if ('Notification' in window && Notification?.permission === 'granted') {
-      for (const value of notifications) {
-        const req: NotificationOptions = {
-          body: value.body,
-          tag: value._id,
-          silent: false
+  async function subscribe (): Promise<void> {
+    if ('serviceWorker' in navigator && 'PushManager' in window && publicKey !== undefined) {
+      try {
+        const loc = getCurrentLocation()
+        const registration = await navigator.serviceWorker.register('/serviceWorker.js', {
+          scope: `./${loc.path[0]}/${loc.path[1]}`
+        })
+        const current = await registration.pushManager.getSubscription()
+        if (current == null) {
+          const subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: publicKey
+          })
+          await client.createDoc(notification.class.PushSubscription, notification.space.Notifications, {
+            user: getCurrentAccount()._id,
+            endpoint: subscription.endpoint,
+            keys: {
+              p256dh: arrayBufferToBase64(subscription.getKey('p256dh')),
+              auth: arrayBufferToBase64(subscription.getKey('auth'))
+            }
+          })
+        } else {
+          const exists = await client.findOne(notification.class.PushSubscription, {
+            user: getCurrentAccount()._id,
+            endpoint: current.endpoint
+          })
+          if (exists === undefined) {
+            await client.createDoc(notification.class.PushSubscription, notification.space.Notifications, {
+              user: getCurrentAccount()._id,
+              endpoint: current.endpoint,
+              keys: {
+                p256dh: arrayBufferToBase64(current.getKey('p256dh')),
+                auth: arrayBufferToBase64(current.getKey('auth'))
+              }
+            })
+          }
         }
-        const notification = new Notification(value.title, req)
-        if (value.onClickLocation !== undefined) {
-          const loc = getCurrentLocation()
-          loc.path.length = 3
-          loc.path[2] = value.onClickLocation.path[2]
-          if (value.onClickLocation.path[3]) {
-            loc.path[3] = value.onClickLocation.path[3]
-            if (value.onClickLocation.path[4]) {
-              loc.path[4] = value.onClickLocation.path[4]
+        navigator.serviceWorker.addEventListener('message', (event) => {
+          if (event.data && event.data.type === 'notification-click') {
+            const { url } = event.data
+            if (url !== undefined) {
+              navigate(parseLocation(new URL(url)))
             }
           }
-          loc.query = value.onClickLocation.query
-          loc.fragment = value.onClickLocation.fragment
-          const onClick = () => {
-            navigate(loc)
-            window.parent.parent.focus()
-          }
-          notification.onclick = onClick
-        }
-        await client.update(value, { status: NotificationStatus.Notified })
+        })
+      } catch (err) {
+        console.error('Service Worker registration failed:', err)
       }
     }
   }
+
+  function arrayBufferToBase64 (buffer: ArrayBuffer | null): string {
+    if (buffer) {
+      const bytes = new Uint8Array(buffer)
+      const array = Array.from(bytes)
+      const binary = String.fromCharCode.apply(null, array)
+      return btoa(binary)
+    } else {
+      return ''
+    }
+  }
+
+  subscribe()
 </script>

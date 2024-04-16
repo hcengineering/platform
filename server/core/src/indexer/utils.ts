@@ -15,25 +15,15 @@
 
 import core, {
   type AnyAttribute,
-  type AttachedDoc,
   type Class,
-  ClassifierKind,
-  type Collection,
   type Data,
   type Doc,
   type DocIndexState,
-  DOMAIN_BLOB,
-  DOMAIN_DOC_INDEX_STATE,
-  DOMAIN_FULLTEXT_BLOB,
-  DOMAIN_MODEL,
-  DOMAIN_TRANSIENT,
-  DOMAIN_TX,
   type FullTextSearchContext,
   generateId,
+  getFullTextContext,
   type Hierarchy,
   type IndexStageState,
-  isFullTextAttribute,
-  isIndexedAttribute,
   type MeasureContext,
   type Obj,
   type Ref,
@@ -44,30 +34,6 @@ import { deepEqual } from 'fast-equals'
 import { type DbAdapter } from '../adapter'
 import plugin from '../plugin'
 import { type FullTextPipeline } from './types'
-/**
- * @public
- */
-export function getFullTextIndexableAttributes (hierarchy: Hierarchy, clazz: Ref<Class<Obj>>): AnyAttribute[] {
-  const allAttributes = hierarchy.getAllAttributes(clazz)
-  const result: AnyAttribute[] = []
-  for (const [, attr] of allAttributes) {
-    if (isFullTextAttribute(attr) || isIndexedAttribute(attr)) {
-      result.push(attr)
-    }
-  }
-
-  hierarchy
-    .getDescendants(clazz)
-    .filter((m) => hierarchy.getClass(m).kind === ClassifierKind.MIXIN)
-    .forEach((m) => {
-      for (const [, v] of hierarchy.getAllAttributes(m, clazz)) {
-        if (isFullTextAttribute(v) || isIndexedAttribute(v)) {
-          result.push(v)
-        }
-      }
-    })
-  return result
-}
 
 export { docKey, docUpdKey, extractDocKey, isFullTextAttribute } from '@hcengineering/core'
 export type { IndexKeyOptions } from '@hcengineering/core'
@@ -96,63 +62,6 @@ export function getContent (
   return attrs
 }
 
-/**
- * @public
- */
-export function isClassIndexable (hierarchy: Hierarchy, c: Ref<Class<Doc>>): boolean {
-  const indexed = hierarchy.getClassifierProp(c, 'class_indexed')
-  if (indexed !== undefined) {
-    return indexed as boolean
-  }
-  const domain = hierarchy.findDomain(c)
-  if (domain === undefined) {
-    hierarchy.setClassifierProp(c, 'class_indexed', false)
-    return false
-  }
-
-  if (
-    domain === DOMAIN_DOC_INDEX_STATE ||
-    domain === DOMAIN_TX ||
-    domain === DOMAIN_MODEL ||
-    domain === DOMAIN_BLOB ||
-    domain === DOMAIN_FULLTEXT_BLOB ||
-    domain === DOMAIN_TRANSIENT
-  ) {
-    hierarchy.setClassifierProp(c, 'class_indexed', false)
-    return false
-  }
-
-  const indexMixin = hierarchy.classHierarchyMixin(c, core.mixin.IndexConfiguration)
-  if (indexMixin?.searchDisabled !== undefined && indexMixin?.searchDisabled) {
-    hierarchy.setClassifierProp(c, 'class_indexed', false)
-    return false
-  }
-
-  const attrs = getFullTextIndexableAttributes(hierarchy, c)
-  for (const d of hierarchy.getDescendants(c)) {
-    if (hierarchy.isMixin(d)) {
-      attrs.push(...getFullTextIndexableAttributes(hierarchy, d))
-    }
-  }
-
-  let result = true
-
-  if (attrs.length === 0 && !(getFullTextContext(hierarchy, c)?.forceIndex ?? false)) {
-    result = false
-    // We need check if document has collections with indexable fields.
-    const attrs = hierarchy.getAllAttributes(c).values()
-    for (const attr of attrs) {
-      if (attr.type._class === core.class.Collection) {
-        if (isClassIndexable(hierarchy, (attr.type as Collection<AttachedDoc>).of)) {
-          result = true
-          break
-        }
-      }
-    }
-  }
-  hierarchy.setClassifierProp(c, 'class_indexed', result)
-  return result
-}
 /**
  * @public
  */
@@ -223,35 +132,6 @@ export async function loadIndexStageStage (
     }
   }
   return [result, state]
-}
-
-/**
- * @public
- */
-export function getFullTextContext (
-  hierarchy: Hierarchy,
-  objectClass: Ref<Class<Doc>>
-): Omit<FullTextSearchContext, keyof Class<Doc>> {
-  let objClass = hierarchy.getClass(objectClass)
-
-  while (true) {
-    if (hierarchy.hasMixin(objClass, core.mixin.FullTextSearchContext)) {
-      const ctx = hierarchy.as<Class<Doc>, FullTextSearchContext>(objClass, core.mixin.FullTextSearchContext)
-      if (ctx !== undefined) {
-        return ctx
-      }
-    }
-    if (objClass.extends === undefined) {
-      break
-    }
-    objClass = hierarchy.getClass(objClass.extends)
-  }
-  return {
-    fullTextSummary: false,
-    forceIndex: false,
-    propagate: [],
-    childProcessingAllowed: true
-  }
 }
 
 /**

@@ -22,16 +22,19 @@ export interface CompAndProps {
   onClose?: (result: any) => void
   onUpdate?: (result: any) => void
   close: () => void
+  update?: (props: Record<string, any>) => void
   options: {
     category: string
     overlay: boolean
     fixed?: boolean
+    refId?: string
   }
 }
 
 export interface PopupResult {
   id: string
   close: () => void
+  update: (props: Record<string, any>) => void
 }
 
 export const popupstore = writable<CompAndProps[]>([])
@@ -40,7 +43,7 @@ export function updatePopup (id: string, props: Partial<CompAndProps>): void {
   popupstore.update((popups) => {
     const popupIndex = popups.findIndex((p) => p.id === id)
     if (popupIndex !== -1) {
-      popups[popupIndex] = { ...popups[popupIndex], ...props }
+      popups[popupIndex].update?.(props)
     }
     return popups
   })
@@ -63,7 +66,11 @@ export function showPopup (
     category: string
     overlay: boolean
     fixed?: boolean
-  } = { category: 'popup', overlay: true }
+    refId?: string
+  } = {
+    category: 'popup',
+    overlay: true
+  }
 ): PopupResult {
   const id = `${popupId++}`
   const closePopupOp = (): void => {
@@ -90,7 +97,10 @@ export function showPopup (
   }
   return {
     id,
-    close: closePopupOp
+    close: closePopupOp,
+    update: (props) => {
+      updatePopup(id, props)
+    }
   }
 }
 

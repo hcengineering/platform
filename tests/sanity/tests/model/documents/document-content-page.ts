@@ -27,6 +27,7 @@ export class DocumentContentPage extends CommonPage {
 
   async addContentToTheNewLine (newContent: string): Promise<string> {
     await expect(this.inputContent).toBeVisible()
+    await expect(this.inputContent).toHaveJSProperty('contentEditable', 'true')
     await this.inputContent.pressSequentially(`\n${newContent}`)
     const endContent = await this.inputContent.textContent()
     if (endContent == null) {
@@ -42,6 +43,7 @@ export class DocumentContentPage extends CommonPage {
 
   async updateDocumentTitle (title: string): Promise<void> {
     await this.buttonDocumentTitle.fill(title)
+    await this.buttonDocumentTitle.blur()
   }
 
   async addRandomLines (count: number, lineLength: number = 36): Promise<void> {

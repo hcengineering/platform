@@ -45,5 +45,10 @@ loadMetadata(view.icon, {
   Eye: `${icons}#eye`,
   EyeCrossed: `${icons}#eye-crossed`,
   Bubble: `${icons}#bubble`,
-  CheckCircle: `${icons}#check-circle`
+  CheckCircle: `${icons}#check-circle`,
+  Add: `${icons}#add`,
+  Image: `${icons}#image`,
+  Table2: `${icons}#table2`,
+  CodeBlock: `${icons}#code-block`,
+  SeparatorLine: `${icons}#separator-line`
 })

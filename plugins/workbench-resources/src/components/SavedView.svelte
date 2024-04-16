@@ -1,4 +1,5 @@
 <script lang="ts">
+  import contact from '@hcengineering/contact'
   import { Ref, getCurrentAccount, toIdMap } from '@hcengineering/core'
   import { copyTextToClipboard, createQuery, getClient } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
@@ -6,18 +7,19 @@
     Action,
     IconAdd,
     Location,
-    eventToHTMLElement,
-    location,
-    navigate,
-    showPopup,
     SelectPopup,
+    eventToHTMLElement,
     getEventPopupPositionElement,
+    getLocation,
     getPopupPositionElement,
+    location,
     locationToUrl,
-    getLocation
+    navigate,
+    showPopup
   } from '@hcengineering/ui'
   import view, { Filter, FilteredView, ViewOptions, Viewlet } from '@hcengineering/view'
   import {
+    EditBoxPopup,
     TreeItem,
     TreeNode,
     activeViewlet,
@@ -28,14 +30,13 @@
     setActiveViewletId,
     setFilters,
     setViewOptions,
-    viewOptionStore,
-    EditBoxPopup
+    viewOptionStore
   } from '@hcengineering/view-resources'
   import { Application } from '@hcengineering/workbench'
   import copy from 'fast-copy'
   import { createEventDispatcher } from 'svelte'
-  import contact from '@hcengineering/contact'
-  import task from '../../../task/lib'
+  import TodoCheck from './icons/TodoCheck.svelte'
+  import TodoUncheck from './icons/TodoUncheck.svelte'
 
   export let currentApplication: Application | undefined
 
@@ -99,7 +100,7 @@
   async function switchPublicAction (object: FilteredView, originalEvent: MouseEvent | undefined): Promise<Action[]> {
     return [
       {
-        icon: object.sharable ? task.icon.TodoCheck : task.icon.TodoUnCheck,
+        icon: object.sharable ? TodoCheck : TodoUncheck,
         label: view.string.PublicView,
         action: async (ctx: any, evt: Event) => {
           await client.update(object, { sharable: !object.sharable })

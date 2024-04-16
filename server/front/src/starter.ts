@@ -21,7 +21,7 @@ import { StorageConfiguration } from '@hcengineering/server-core'
 import serverToken from '@hcengineering/server-token'
 import { start } from '.'
 
-export function startFront (ctx: MeasureContext, extraConfig?: Record<string, string>): void {
+export function startFront (ctx: MeasureContext, extraConfig?: Record<string, string | undefined>): void {
   const defaultLanguage = process.env.DEFAULT_LANGUAGE ?? 'en'
   const languages = process.env.LANGUAGES ?? 'en,ru'
   const SERVER_PORT = parseInt(process.env.SERVER_PORT ?? '8080')

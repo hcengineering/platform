@@ -21,9 +21,11 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { SearchEdit } from '@hcengineering/ui'
   import { openDoc } from '@hcengineering/view-resources'
+
   import { userSearch } from '../index'
   import chunter from '../plugin'
-  import { getDmName, navigateToSpecial } from '../utils'
+  import { getDmName } from '../utils'
+  import { navigateToSpecial } from '../navigation'
 
   export let spaceId: Ref<DirectMessage> | undefined
   export let withSearch: boolean = true

@@ -77,6 +77,18 @@
     insertTemplate: (name, markup) => {
       textEditor?.insertMarkup(markup)
     },
+    insertTable (options: { rows?: number, cols?: number, withHeaderRow?: boolean }) {
+      textEditor?.insertTable(options)
+    },
+    insertCodeBlock: () => {
+      textEditor?.insertCodeBlock()
+    },
+    insertSeparatorLine: () => {
+      textEditor?.insertSeparatorLine()
+    },
+    insertContent: (content) => {
+      textEditor?.insertContent(content)
+    },
     focus: () => {
       textEditor?.focus()
     }

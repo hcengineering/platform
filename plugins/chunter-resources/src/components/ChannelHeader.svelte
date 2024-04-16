@@ -41,13 +41,13 @@
   let title: string | undefined = undefined
   let description: string | undefined = undefined
 
-  $: updateDescription(_id, _class, object)
+  $: void updateDescription(_id, _class, object)
 
-  $: getChannelName(_id, _class, object).then((res) => {
+  $: void getChannelName(_id, _class, object).then((res) => {
     title = res
   })
 
-  async function updateDescription (_id: Ref<Doc>, _class: Ref<Class<Doc>>, object?: Doc) {
+  async function updateDescription (_id: Ref<Doc>, _class: Ref<Class<Doc>>, object?: Doc): Promise<void> {
     if (hierarchy.isDerived(_class, chunter.class.DirectMessage)) {
       description = undefined
     } else if (hierarchy.isDerived(_class, chunter.class.Channel)) {

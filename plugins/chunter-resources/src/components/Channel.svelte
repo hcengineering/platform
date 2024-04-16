@@ -24,8 +24,8 @@
   import ChannelScrollView from './ChannelScrollView.svelte'
   import { ChannelDataProvider } from '../channelDataProvider'
 
-  export let context: DocNotifyContext
-  export let object: Doc | undefined
+  export let object: Doc
+  export let context: DocNotifyContext | undefined
   export let filters: Ref<ActivityMessagesFilter>[] = []
   export let isAsideOpened = false
 
@@ -39,18 +39,18 @@
     selectedMessageId = getMessageFromLoc(newLocation)
   })
 
-  $: isDocChannel = !hierarchy.isDerived(context.attachedToClass, chunter.class.ChunterSpace)
+  $: isDocChannel = !hierarchy.isDerived(object._class, chunter.class.ChunterSpace)
   $: _class = isDocChannel ? activity.class.ActivityMessage : chunter.class.ChatMessage
   $: collection = isDocChannel ? 'comments' : 'messages'
 
-  $: updateDataProvider(context.attachedTo, _class, context.lastViewedTimestamp, selectedMessageId)
+  $: updateDataProvider(object._id, _class, context?.lastViewedTimestamp, selectedMessageId)
 
   function updateDataProvider (
     attachedTo: Ref<Doc>,
     _class: Ref<Class<ActivityMessage>>,
     lastViewedTimestamp?: Timestamp,
     selectedMessageId?: Ref<ActivityMessage>
-  ) {
+  ): void {
     if (dataProvider === undefined) {
       // For now loading all messages for documents with activity. Need to correct handle aggregation with pagination.
       // Perhaps we should load all activity messages once, and keep loading in chunks only for ChatMessages then merge them correctly with activity messages
@@ -62,8 +62,8 @@
 
 {#if dataProvider}
   <ChannelScrollView
-    objectId={context.attachedTo}
-    objectClass={context.attachedToClass}
+    objectId={object._id}
+    objectClass={object._class}
     {object}
     skipLabels={!isDocChannel}
     selectedFilters={filters}

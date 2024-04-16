@@ -25,11 +25,14 @@
     isMentionNotification
   } from '@hcengineering/notification-resources'
   import { createEventDispatcher } from 'svelte'
+  import view from '@hcengineering/view'
+  import { Doc } from '@hcengineering/core'
 
   import NavItem from './NavItem.svelte'
   import { ChatNavItemModel } from '../types'
+  import { openChannel } from '../../../navigation'
 
-  export let context: DocNotifyContext
+  export let context: DocNotifyContext | undefined
   export let item: ChatNavItemModel
   export let isSelected = false
 
@@ -43,6 +46,9 @@
   let actions: Action[] = []
 
   notificationClient.inboxNotificationsByContext.subscribe((res) => {
+    if (context === undefined) {
+      return
+    }
     notifications = (res.get(context._id) ?? []).filter((n) => isMentionNotification(n) || isActivityNotification(n))
   })
 
@@ -50,12 +56,25 @@
     notificationsCount = res
   })
 
-  $: void getChannelActions(context).then((res) => {
+  $: void getChannelActions(context, item.object).then((res) => {
     actions = res
   })
 
-  async function getChannelActions (context: DocNotifyContext): Promise<Action[]> {
-    const result = []
+  async function getChannelActions (context: DocNotifyContext | undefined, object: Doc): Promise<Action[]> {
+    const result: Action[] = []
+
+    if (context === undefined) {
+      return []
+    }
+
+    result.push({
+      icon: view.icon.Open,
+      label: view.string.Open,
+      action: async () => {
+        openChannel(object._id, object._class)
+      }
+    })
+
     const excludedActions = [
       notification.action.DeleteContextNotifications,
       notification.action.UnReadNotifyContext,
@@ -100,6 +119,6 @@
   description={item.description}
   {actions}
   on:click={() => {
-    dispatch('select', { doc: item.object, context })
+    dispatch('select', { object: item.object })
   }}
 />

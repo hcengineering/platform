@@ -36,11 +36,12 @@ import core, {
   TxCollectionCUD,
   TxCreateDoc,
   TxCUD,
+  TxMixin,
   TxProcessor,
   TxRemoveDoc,
   TxUpdateDoc
 } from '@hcengineering/core'
-import notification, { NotificationContent } from '@hcengineering/notification'
+import notification, { Collaborators, NotificationContent } from '@hcengineering/notification'
 import { getMetadata, IntlString } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import {
@@ -197,14 +198,22 @@ async function OnChatMessageCreated (tx: TxCUD<Doc>, control: TriggerControl): P
   }
 
   if (isChannel && !(targetDoc as Channel).members.includes(chatMessage.modifiedBy)) {
-    res.push(
-      control.txFactory.createTxUpdateDoc(targetDoc._class, targetDoc.space, targetDoc._id, {
-        $push: { members: chatMessage.modifiedBy }
-      })
-    )
+    res.push(...joinChannel(control, targetDoc as Channel, chatMessage.modifiedBy))
   }
 
   return res
+}
+
+function joinChannel (control: TriggerControl, channel: Channel, user: Ref<Account>): Tx[] {
+  if (channel.members.includes(user)) {
+    return []
+  }
+
+  return [
+    control.txFactory.createTxUpdateDoc(channel._class, channel.space, channel._id, {
+      $push: { members: user }
+    })
+  ]
 }
 
 async function OnThreadMessageDeleted (tx: Tx, control: TriggerControl): Promise<Tx[]> {
@@ -252,7 +261,8 @@ export async function ChunterTrigger (tx: Tx, control: TriggerControl): Promise<
   const res = await Promise.all([
     OnThreadMessageCreated(tx, control),
     OnThreadMessageDeleted(tx, control),
-    OnChatMessageCreated(tx as TxCUD<Doc>, control)
+    OnChatMessageCreated(tx as TxCUD<Doc>, control),
+    OnCollaboratorsChanged(tx as TxMixin<Doc, Collaborators>, control)
   ])
   return res.flat()
 }
@@ -422,6 +432,16 @@ async function OnChannelMembersChanged (tx: TxUpdateDoc<Channel>, control: Trigg
     )
   }
 
+  if (added.length > 0) {
+    res.push(
+      control.txFactory.createTxMixin(tx.objectId, tx.objectClass, tx.objectSpace, notification.mixin.Collaborators, {
+        $push: {
+          collaborators: { $each: added, $position: 0 }
+        }
+      })
+    )
+  }
+
   for (const addedMember of added) {
     const context = allContexts.find(({ user }) => user === addedMember)
 
@@ -447,16 +467,28 @@ async function OnChannelMembersChanged (tx: TxUpdateDoc<Channel>, control: Trigg
 
   const contextsToRemove = allContexts.filter(({ user }) => removed.includes(user))
 
-  if (contextsToRemove.length === 0) {
-    return res
+  for (const context of contextsToRemove) {
+    res.push(control.txFactory.createTxRemoveDoc(context._class, context.space, context._id))
   }
 
-  const channel = (await control.findAll(chunter.class.Channel, { _id: tx.objectId }))[0]
+  return res
+}
 
-  if (channel !== undefined) {
-    for (const context of contextsToRemove) {
-      res.push(control.txFactory.createTxRemoveDoc(context._class, context.space, context._id))
-    }
+async function OnCollaboratorsChanged (tx: TxMixin<Doc, Collaborators>, control: TriggerControl): Promise<Tx[]> {
+  if (tx._class !== core.class.TxMixin || tx.mixin !== notification.mixin.Collaborators) return []
+
+  if (!control.hierarchy.isDerived(tx.objectClass, chunter.class.Channel)) return []
+
+  const doc = (await control.findAll(tx.objectClass, { _id: tx.objectId }))[0] as Channel | undefined
+
+  if (doc === undefined) return []
+  if (doc.private) return []
+
+  const added = combineAttributes([tx.attributes], 'collaborators', '$push', '$each')
+  const res: Tx[] = []
+
+  for (const addedMember of added) {
+    res.push(...joinChannel(control, doc, addedMember))
   }
 
   return res

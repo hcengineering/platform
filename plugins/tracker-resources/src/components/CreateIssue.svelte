@@ -41,7 +41,8 @@
     MultipleDraftController,
     SpaceSelector,
     createQuery,
-    getClient
+    getClient,
+    reduceCalls
   } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import { TaskType, makeRank } from '@hcengineering/task'

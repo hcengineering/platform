@@ -182,8 +182,7 @@ function defineFilters (builder: Builder): void {
       'description',
       'remainingTime',
       'reportedTime'
-    ],
-    titleProvider: tracker.function.IssueChatTitleProvider
+    ]
   })
 
   //

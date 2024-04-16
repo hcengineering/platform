@@ -15,68 +15,70 @@
 
 import {
   type ActivityAttributeUpdatesPresenter,
-  type ActivityInfoMessage,
   type ActivityDoc,
   type ActivityExtension,
   type ActivityExtensionKind,
+  type ActivityInfoMessage,
   type ActivityMessage,
+  type ActivityMessageControl,
   type ActivityMessageExtension,
   type ActivityMessageExtensionKind,
+  type ActivityMessagePreview,
   type ActivityMessagesFilter,
+  type ActivityReference,
   type DocAttributeUpdates,
   type DocUpdateAction,
   type DocUpdateMessage,
   type DocUpdateMessageViewlet,
   type DocUpdateMessageViewletAttributesConfig,
-  type Reaction,
-  type TxViewlet,
-  type ActivityMessageControl,
-  type SavedMessage,
   type IgnoreActivity,
-  type ActivityReference,
-  type ActivityMessagePreview
+  type Reaction,
+  type SavedMessage,
+  type TxViewlet,
+  type ReplyProvider
 } from '@hcengineering/activity'
+import contact, { type Person } from '@hcengineering/contact'
 import core, {
   DOMAIN_MODEL,
+  IndexKind,
+  type Account,
   type Class,
   type Doc,
   type DocumentQuery,
-  type Ref,
-  type Tx,
-  IndexKind,
-  type TxCUD,
   type Domain,
-  type Account,
-  type Timestamp
+  type IndexingConfiguration,
+  type Ref,
+  type Timestamp,
+  type Tx,
+  type TxCUD
 } from '@hcengineering/core'
 import {
-  Model,
-  type Builder,
-  Prop,
-  Index,
-  TypeRef,
-  TypeString,
-  Mixin,
+  ArrOf,
   Collection,
+  Index,
+  Mixin,
+  Model,
+  Prop,
   TypeBoolean,
   TypeIntlString,
-  ArrOf,
+  TypeMarkup,
+  TypeRef,
+  TypeString,
   TypeTimestamp,
   UX,
-  TypeMarkup
+  type Builder
 } from '@hcengineering/model'
 import { TAttachedDoc, TClass, TDoc } from '@hcengineering/model-core'
+import preference, { TPreference } from '@hcengineering/model-preference'
+import view from '@hcengineering/model-view'
+import notification from '@hcengineering/notification'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
-import contact, { type Person } from '@hcengineering/contact'
-import preference, { TPreference } from '@hcengineering/model-preference'
-import notification from '@hcengineering/notification'
-import view from '@hcengineering/model-view'
 
 import activity from './plugin'
 
-export { activityOperation } from './migration'
 export { activityId } from '@hcengineering/activity'
+export { activityOperation } from './migration'
 
 export const DOMAIN_ACTIVITY = 'activity' as Domain
 
@@ -263,6 +265,11 @@ export class TActivityMessagePreview extends TClass implements ActivityMessagePr
   presenter!: AnyComponent
 }
 
+@Model(activity.class.ReplyProvider, core.class.Doc, DOMAIN_MODEL)
+export class TReplyProvider extends TDoc implements ReplyProvider {
+  function!: Resource<(message: ActivityMessage) => Promise<void>>
+}
+
 export function createModel (builder: Builder): void {
   builder.createModel(
     TTxViewlet,
@@ -280,7 +287,8 @@ export function createModel (builder: Builder): void {
     TSavedMessage,
     TIgnoreActivity,
     TActivityReference,
-    TActivityMessagePreview
+    TActivityMessagePreview,
+    TReplyProvider
   )
 
   builder.mixin(activity.class.DocUpdateMessage, core.class.Class, view.mixin.ObjectPresenter, {
@@ -364,6 +372,26 @@ export function createModel (builder: Builder): void {
   builder.mixin(activity.class.ActivityMessage, core.class.Class, notification.mixin.NotificationContextPresenter, {
     labelPresenter: activity.component.ActivityMessageNotificationLabel
   })
+
+  builder.mixin<Class<DocUpdateMessage>, IndexingConfiguration<DocUpdateMessage>>(
+    activity.class.DocUpdateMessage,
+    core.class.Class,
+    core.mixin.IndexConfiguration,
+    {
+      searchDisabled: true,
+      indexes: []
+    }
+  )
+
+  builder.mixin<Class<DocUpdateMessage>, IndexingConfiguration<DocUpdateMessage>>(
+    activity.class.Reaction,
+    core.class.Class,
+    core.mixin.IndexConfiguration,
+    {
+      searchDisabled: true,
+      indexes: []
+    }
+  )
 
   builder.createDoc(
     notification.class.NotificationType,

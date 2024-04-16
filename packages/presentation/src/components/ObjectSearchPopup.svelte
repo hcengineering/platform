@@ -33,7 +33,7 @@
   import presentation from '../plugin'
   import { ObjectSearchCategory, ObjectSearchResult } from '../types'
   import { getClient } from '../utils'
-  import { hasResource } from '..'
+  import { hasResource, reduceCalls } from '..'
 
   export let query: string = ''
   export let label: IntlString | undefined = undefined
@@ -108,7 +108,7 @@
 
   export function done () {}
 
-  async function updateItems (
+  const updateItems = reduceCalls(async function updateItems (
     cat: ObjectSearchCategory | undefined,
     query: string,
     relatedDocuments?: RelatedDocument[]
@@ -148,8 +148,8 @@
         }
       }
     }
-  }
-  $: updateItems(category, query, relatedDocuments)
+  })
+  $: void updateItems(category, query, relatedDocuments)
 
   const manager = createFocusManager()
 

@@ -101,13 +101,11 @@ export async function getPersonNotificationTxes (
   }
 
   const res: Tx[] = []
-  const collaboratorsTx = await getCollaboratorsTxes(reference, control, receiver)
-
-  if (collaboratorsTx !== undefined) {
-    res.push(collaboratorsTx)
-  }
-
   const doc = (await control.findAll(reference.srcDocClass, { _id: reference.srcDocId }))[0]
+
+  const collaboratorsTx = await getCollaboratorsTxes(reference, control, receiver, doc)
+
+  res.push(...collaboratorsTx)
 
   if (doc === undefined) {
     return res
@@ -157,16 +155,27 @@ async function isSpaceAvailable (user: PersonAccount, spaceId: Ref<Space>, contr
 async function getCollaboratorsTxes (
   reference: Data<ActivityReference>,
   control: TriggerControl,
-  receiver: Account
-): Promise<TxMixin<Doc, Doc> | undefined> {
+  receiver: Account,
+  object?: Doc
+): Promise<TxMixin<Doc, Doc>[]> {
   const { hierarchy } = control
+  const res: TxMixin<Doc, Doc>[] = []
+
+  if (object !== undefined) {
+    // Add user to collaborators of object where user is mentioned
+    const objectTx = getPushCollaboratorTx(control, receiver._id, object)
+
+    if (objectTx !== undefined) {
+      res.push(objectTx)
+    }
+  }
 
   if (reference.attachedDocClass === undefined || reference.attachedDocId === undefined) {
-    return undefined
+    return res
   }
 
   if (!hierarchy.isDerived(reference.attachedDocClass, activity.class.ActivityMessage)) {
-    return undefined
+    return res
   }
 
   const message = (
@@ -180,10 +189,17 @@ async function getCollaboratorsTxes (
   )[0]
 
   if (message === undefined) {
-    return undefined
+    return res
   }
 
-  return getPushCollaboratorTx(control, receiver._id, message)
+  // Add user to collaborators of message where user is mentioned
+  const messageTx = getPushCollaboratorTx(control, receiver._id, message)
+
+  if (messageTx !== undefined) {
+    res.push(messageTx)
+  }
+
+  return res
 }
 
 async function isReferenceAlreadyNotified (

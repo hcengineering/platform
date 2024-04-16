@@ -55,7 +55,7 @@
 
   async function saveToDo (): Promise<void> {
     loading = true
-    const ops = client.apply('todo')
+    const ops = client.apply('todo-' + generateId())
     const latestTodo = await ops.findOne(
       time.class.ToDo,
       {
@@ -239,8 +239,8 @@
         <Component
           is={tagsPlugin.component.DraftTagsEditor}
           props={{ tags, targetClass: time.class.ToDo }}
-          on:change={(e) => {
-            tags = e.detail
+          on:update={(e) => {
+            tags = [...e.detail]
           }}
         />
       </div>

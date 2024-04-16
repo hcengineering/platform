@@ -134,7 +134,9 @@ export interface NotificationPresenter extends Class<Doc> {
  */
 export default plugin(serverNotificationId, {
   metadata: {
-    SesUrl: '' as Metadata<string>
+    SesUrl: '' as Metadata<string>,
+    PushPrivateKey: '' as Metadata<string>,
+    PushSubject: '' as Metadata<string>
   },
   mixin: {
     HTMLPresenter: '' as Ref<Mixin<HTMLPresenter>>,
