@@ -16,7 +16,6 @@ import { activityId, type ActivityMessage, type DocUpdateMessageViewlet } from '
 import activity from '@hcengineering/activity-resources/src/plugin'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { type Doc, type Ref } from '@hcengineering/core'
-import type { Location } from '@hcengineering/ui'
 import { type ActionCategory } from '@hcengineering/view'
 import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
 
@@ -37,9 +36,6 @@ export default mergeIds(activityId, activity, {
     ReactionAddedActivityViewlet: '' as Ref<DocUpdateMessageViewlet>,
     ActivityNotificationGroup: '' as Ref<NotificationGroup>,
     AddReactionNotification: '' as Ref<NotificationType>
-  },
-  function: {
-    GetFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>
   },
   category: {
     Activity: '' as Ref<ActionCategory>

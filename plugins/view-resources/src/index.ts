@@ -91,6 +91,7 @@ import UpDownNavigator from './components/UpDownNavigator.svelte'
 import ValueSelector from './components/ValueSelector.svelte'
 import ViewletContentView from './components/ViewletContentView.svelte'
 import ViewletSettingButton from './components/ViewletSettingButton.svelte'
+import DocReferencePresenter from './components/DocReferencePresenter.svelte'
 
 import {
   afterResult,
@@ -201,7 +202,8 @@ export {
   TreeNode,
   UpDownNavigator,
   ViewletContentView,
-  ViewletSettingButton
+  ViewletSettingButton,
+  DocReferencePresenter
 }
 
 function PositionElementAlignment (e?: Event): PopupAlignment | undefined {

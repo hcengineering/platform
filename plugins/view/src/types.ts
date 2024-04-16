@@ -778,3 +778,5 @@ export interface IconProps {
   icon?: Asset
   color?: number
 }
+
+export type ObjectPresenterType = 'link' | 'text'

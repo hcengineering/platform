@@ -398,6 +398,10 @@ export function createModel (builder: Builder, options = { addApplication: true 
     )
   }
 
+  builder.mixin(activity.class.ActivityMessage, core.class.Class, view.mixin.LinkProvider, {
+    encode: chunter.function.GetMessageLink
+  })
+
   builder.mixin(chunter.class.ThreadMessage, core.class.Class, view.mixin.LinkProvider, {
     encode: chunter.function.GetThreadLink
   })

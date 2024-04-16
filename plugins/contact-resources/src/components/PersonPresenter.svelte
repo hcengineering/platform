@@ -21,6 +21,7 @@
   import { getClient } from '@hcengineering/presentation'
   import { Ref } from '@hcengineering/core'
   import ui from '@hcengineering/ui'
+  import { ObjectPresenterType } from '@hcengineering/view'
 
   export let value: Ref<Person> | Person | null | undefined
   export let inline = false
@@ -40,6 +41,7 @@
   export let accent: boolean = false
   export let maxWidth = ''
   export let compact = false
+  export let type: ObjectPresenterType = 'link'
 
   const client = getClient()
   $: personValue = typeof value === 'string' ? $personByIdStore.get(value) : value
@@ -94,6 +96,7 @@
     {accent}
     {maxWidth}
     {compact}
+    {type}
     on:accent-color
   />
 {/if}

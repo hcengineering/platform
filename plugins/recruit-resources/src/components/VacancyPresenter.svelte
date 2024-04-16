@@ -19,6 +19,7 @@
   import { Icon, getPlatformAvatarColorForTextDef, themeStore, tooltip } from '@hcengineering/ui'
   import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'
+  import { ObjectPresenterType } from '@hcengineering/view'
 
   import recruit from '../plugin'
 
@@ -27,6 +28,7 @@
   export let disabled: boolean = false
   export let accent: boolean = false
   export let noUnderline: boolean = false
+  export let type: ObjectPresenterType = 'link'
 
   const dispatch = createEventDispatcher()
   $: accentColor = getPlatformAvatarColorForTextDef(value.name, $themeStore.dark)
@@ -40,7 +42,7 @@
 {#if value}
   {#if inline}
     <ObjectMention object={value} {disabled} {accent} {noUnderline} component={recruit.component.EditVacancy} />
-  {:else}
+  {:else if type === 'link'}
     <DocNavLink {disabled} object={value} {accent} {noUnderline} component={recruit.component.EditVacancy}>
       <div class="flex-presenter" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
         <div class="icon"><Icon icon={recruit.icon.Vacancy} size={'small'} /></div>
@@ -49,5 +51,9 @@
         </span>
       </div>
     </DocNavLink>
+  {:else if type === 'text'}
+    <span class="overflow-label" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
+      {value.name}
+    </span>
   {/if}
 {/if}

@@ -44,6 +44,7 @@ loadMetadata(view.icon, {
   Star: `${icons}#star`,
   Eye: `${icons}#eye`,
   EyeCrossed: `${icons}#eye-crossed`,
+  Bubble: `${icons}#bubble`,
   CheckCircle: `${icons}#check-circle`,
   Add: `${icons}#add`,
   Image: `${icons}#image`,

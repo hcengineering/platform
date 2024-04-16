@@ -14,28 +14,11 @@
 -->
 <script lang="ts">
   import type { Document } from '@hcengineering/document'
-  import { Icon, IconWithEmoji, getPlatformColorDef, themeStore } from '@hcengineering/ui'
-  import document from '@hcengineering/document'
-  import view from '@hcengineering/view'
-  import ToDoReference from '../ToDoReference.svelte'
+  import { DocReferencePresenter } from '@hcengineering/view-resources'
 
   export let value: Document
-  export let inline: boolean = false
-  export let disabled: boolean = false
-  export let withoutSpace: boolean = true
-
-  $: icon = value.icon === view.ids.IconWithEmoji ? IconWithEmoji : value.icon ?? document.icon.Document
-  $: iconProps =
-    value.icon === view.ids.IconWithEmoji
-      ? { icon: value.color }
-      : {
-          fill: value.color !== undefined ? getPlatformColorDef(value.color, $themeStore.dark).icon : 'currentColor'
-        }
 </script>
 
-<ToDoReference label={value.name} on:click>
-  <svelte:fragment slot="icon">
-    <Icon size="small" {icon} {iconProps} />
-  </svelte:fragment>
+<DocReferencePresenter {value} on:click>
   <slot />
-</ToDoReference>
+</DocReferencePresenter>

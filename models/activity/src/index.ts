@@ -315,10 +315,6 @@ export function createModel (builder: Builder): void {
     presenter: activity.component.ActivityReferencePreview
   })
 
-  builder.mixin(activity.class.DocUpdateMessage, core.class.Class, view.mixin.LinkProvider, {
-    encode: activity.function.GetFragment
-  })
-
   builder.createDoc(
     activity.class.ActivityMessagesFilter,
     core.space.Model,

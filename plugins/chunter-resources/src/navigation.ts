@@ -137,3 +137,9 @@ export async function replyToThread (message: ActivityMessage): Promise<void> {
 
   navigate(buildThreadLink(loc, message.attachedTo, message.attachedToClass, message._id))
 }
+
+export async function getMessageLocation (doc: ActivityMessage): Promise<Location> {
+  const loc = getCurrentResolvedLocation()
+
+  return buildThreadLink(loc, doc.attachedTo, doc.attachedToClass, doc._id)
+}
