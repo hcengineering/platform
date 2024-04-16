@@ -21,7 +21,7 @@
   import { ActivityMessagePresenter } from '@hcengineering/activity-resources'
 
   import plugin from '../../../plugin'
-  import { openMessageFromSpecial } from '../../../utils'
+  import { openMessageFromSpecial } from '../../../navigation'
 
   export let withHeader: boolean = true
   export let search: string = ''

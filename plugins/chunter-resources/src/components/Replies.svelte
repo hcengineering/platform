@@ -25,9 +25,8 @@
   } from '@hcengineering/notification'
   import { getResource } from '@hcengineering/platform'
   import { Label, TimeSince, getLocation, navigate } from '@hcengineering/ui'
-  import { get } from 'svelte/store'
 
-  import { buildThreadLink } from '../utils'
+  import { buildThreadLink } from '../navigation'
 
   export let object: ActivityMessage
   export let embedded = false
@@ -71,14 +70,14 @@
       .some(({ isViewed }) => !isViewed)
   }
 
-  function updateQuery (personIds: Set<Ref<Person>>, personById: IdMap<Person>) {
+  function updateQuery (personIds: Set<Ref<Person>>, personById: IdMap<Person>): void {
     displayPersons = Array.from(personIds)
       .map((id) => personById.get(id))
       .filter((person): person is Person => person !== undefined)
       .slice(0, maxDisplayPersons - 1)
   }
 
-  function handleReply (e: any) {
+  function handleReply (e: MouseEvent): void {
     e.stopPropagation()
     e.preventDefault()
 
@@ -87,17 +86,7 @@
       return
     }
 
-    if (inboxClient === undefined) {
-      return
-    }
-
-    const context = get(inboxClient.contextByDoc).get(object.attachedTo)
-
-    if (context === undefined) {
-      return
-    }
-
-    navigate(buildThreadLink(getLocation(), context._id, object._id))
+    navigate(buildThreadLink(getLocation(), object.attachedTo, object.attachedToClass, object._id))
   }
 </script>
 

@@ -402,29 +402,28 @@ export function createModel (builder: Builder, options = { addApplication: true 
     encode: chunter.function.GetThreadLink
   })
 
-  // Note: it is not working now, need to fix navigation by url UBERF-5686
-  // createAction(
-  //   builder,
-  //   {
-  //     action: view.actionImpl.CopyTextToClipboard,
-  //     actionProps: {
-  //       textProvider: chunter.function.GetLink
-  //     },
-  //     label: chunter.string.CopyLink,
-  //     icon: chunter.icon.Copy,
-  //     keyBinding: [],
-  //     input: 'none',
-  //     category: chunter.category.Chunter,
-  //     target: activity.class.ActivityMessage,
-  //     visibilityTester: chunter.function.CanCopyMessageLink,
-  //     context: {
-  //       mode: ['context', 'browser'],
-  //       application: chunter.app.Chunter,
-  //       group: 'copy'
-  //     }
-  //   },
-  //   chunter.action.CopyChatMessageLink
-  // )
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.CopyTextToClipboard,
+      actionProps: {
+        textProvider: chunter.function.GetLink
+      },
+      label: chunter.string.CopyLink,
+      icon: chunter.icon.Copy,
+      keyBinding: [],
+      input: 'none',
+      category: chunter.category.Chunter,
+      target: activity.class.ActivityMessage,
+      visibilityTester: chunter.function.CanCopyMessageLink,
+      context: {
+        mode: ['context', 'browser'],
+        application: chunter.app.Chunter,
+        group: 'copy'
+      }
+    },
+    chunter.action.CopyChatMessageLink
+  )
 
   builder.mixin(chunter.class.ChunterMessage, core.class.Class, view.mixin.ClassFilters, {
     filters: ['space', '_class']
@@ -600,20 +599,6 @@ export function createModel (builder: Builder, options = { addApplication: true 
       }
     },
     chunter.action.LeaveChannel
-  )
-
-  createAction(
-    builder,
-    {
-      ...viewTemplates.open,
-      target: notification.class.DocNotifyContext,
-      context: {
-        mode: ['browser', 'context'],
-        group: 'create'
-      },
-      action: chunter.actionImpl.OpenChannel
-    },
-    chunter.action.OpenChannel
   )
 
   createAction(builder, {

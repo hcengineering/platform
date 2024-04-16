@@ -13,17 +13,14 @@
 // limitations under the License.
 //
 
-import { get, writable } from 'svelte/store'
-import chunter, { type Channel, type ChatMessage, chunterId, type DirectMessage } from '@hcengineering/chunter'
-import { getCurrentAccount, type Ref } from '@hcengineering/core'
+import { writable } from 'svelte/store'
+import chunter, { type Channel, type ChatMessage, type DirectMessage } from '@hcengineering/chunter'
 import { type Resources } from '@hcengineering/platform'
 import { MessageBox, getClient } from '@hcengineering/presentation'
-import { closePanel, getCurrentLocation, getLocation, navigate, showPopup } from '@hcengineering/ui'
+import { getLocation, navigate, showPopup } from '@hcengineering/ui'
 import { type ActivityMessage } from '@hcengineering/activity'
-import notification, { type DocNotifyContext, notificationId } from '@hcengineering/notification'
 
 import ChannelPresenter from './components/ChannelPresenter.svelte'
-import ChannelView from './components/ChannelView.svelte'
 import ChannelPanel from './components/ChannelPanel.svelte'
 import ChunterBrowser from './components/chat/specials/ChunterBrowser.svelte'
 import ConvertDmToPrivateChannelModal from './components/ConvertDmToPrivateChannel.svelte'
@@ -60,19 +57,15 @@ import {
   ChannelTitleProvider,
   DirectTitleProvider,
   canDeleteMessage,
-  chunterSpaceLinkFragmentProvider,
   dmIdentifierProvider,
   getDmName,
-  getMessageLink,
   getTitle,
   getUnreadThreadsCount,
   canCopyMessageLink,
-  buildThreadLink,
-  getThreadLink,
   leaveChannelAction,
   removeChannelAction
 } from './utils'
-import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
+import { chunterSpaceLinkFragmentProvider, getThreadLink, getMessageLink } from './navigation'
 
 export { default as ChatMessagesPresenter } from './components/chat-message/ChatMessagesPresenter.svelte'
 export { default as ChatMessagePopup } from './components/chat-message/ChatMessagePopup.svelte'
@@ -132,34 +125,6 @@ async function ConvertDmToPrivateChannel (dm: DirectMessage): Promise<void> {
   })
 }
 
-export async function openChannel (
-  notifyContext?: DocNotifyContext,
-  evt?: Event,
-  props?: { _id: Ref<DocNotifyContext> }
-): Promise<void> {
-  evt?.preventDefault()
-
-  closePanel()
-
-  const loc = getCurrentLocation()
-  const id = notifyContext?._id ?? props?._id
-
-  if (id === undefined) {
-    return
-  }
-
-  if (loc.path[3] === id) {
-    return
-  }
-
-  loc.path[3] = id
-  loc.path.length = 4
-  loc.query = { message: null }
-
-  loc.fragment = undefined
-
-  navigate(loc)
-}
 export const userSearch = writable('')
 
 export async function chunterBrowserVisible (): Promise<boolean> {
@@ -176,34 +141,7 @@ export async function deleteChatMessage (message: ChatMessage): Promise<void> {
   await client.remove(message)
 }
 
-export async function replyToThread (message: ActivityMessage): Promise<void> {
-  const loc = getCurrentLocation()
-  const client = getClient()
-
-  const inboxClient = InboxNotificationsClientImpl.getClient()
-
-  let contextId: Ref<DocNotifyContext> | undefined = get(inboxClient.contextByDoc).get(message.attachedTo)?._id
-
-  if (contextId === undefined) {
-    contextId = await client.createDoc(notification.class.DocNotifyContext, message.space, {
-      attachedTo: message.attachedTo,
-      attachedToClass: message.attachedToClass,
-      user: getCurrentAccount()._id,
-      hidden: false,
-      lastViewedTimestamp: Date.now()
-    })
-  }
-
-  if (contextId === undefined) {
-    return
-  }
-
-  if (loc.path[2] !== notificationId) {
-    loc.path[2] = chunterId
-  }
-
-  navigate(buildThreadLink(loc, contextId, message._id))
-}
+export { replyToThread } from './navigation'
 
 export default async (): Promise<Resources> => ({
   filter: {
@@ -215,7 +153,6 @@ export default async (): Promise<Resources> => ({
     ThreadParentPresenter,
     ThreadViewPanel,
     ChannelHeader,
-    ChannelView,
     ChannelPanel,
     ChannelPresenter,
     DirectMessagePresenter,
@@ -262,7 +199,6 @@ export default async (): Promise<Resources> => ({
     UnarchiveChannel,
     ConvertDmToPrivateChannel,
     DeleteChatMessage: deleteChatMessage,
-    OpenChannel: openChannel,
     LeaveChannel: leaveChannelAction,
     RemoveChannel: removeChannelAction
   }
