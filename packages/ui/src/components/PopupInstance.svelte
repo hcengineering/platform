@@ -31,8 +31,9 @@
   export let contentPanel: HTMLElement | undefined
   export let popup: CompAndProps
 
-  // We should not update props after popup is created,
+  // We should not update props after popup is created using standard mechanism,
   // since they could be used, and any show will update them
+  // So special update callback should be used.
   let initialProps: Record<string, any> = props
 
   $: popup.update = (props) => {

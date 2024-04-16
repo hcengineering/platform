@@ -13,10 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts" context="module">
+  import contact, { AvatarProvider } from '@hcengineering/contact'
   import { Client, Ref } from '@hcengineering/core'
-  import contact, {
-    AvatarProvider
-  } from '@hcengineering/contact'
   import { getClient } from '@hcengineering/presentation'
 
   const providers = new Map<string, AvatarProvider | null>()
@@ -33,15 +31,9 @@
 </script>
 
 <script lang="ts">
-  import contact, {
-    AvatarProvider,
-    AvatarType,
-    getFirstName,
-    getLastName,
-    getAvatarProviderId
-  } from '@hcengineering/contact'
+  import { AvatarType, getAvatarProviderId, getFirstName, getLastName } from '@hcengineering/contact'
   import { Asset, getMetadata, getResource } from '@hcengineering/platform'
-  import { getBlobURL, getClient, reduceCalls } from '@hcengineering/presentation'
+  import { getBlobURL, reduceCalls } from '@hcengineering/presentation'
   import {
     AnySvelteComponent,
     ColorDefinition,
@@ -50,9 +42,10 @@
     getPlatformAvatarColorByName,
     getPlatformAvatarColorForTextDef,
     getPlatformColor,
-    themeStore,
-    resizeObserver
+    resizeObserver,
+    themeStore
   } from '@hcengineering/ui'
+  import { onMount } from 'svelte'
   import AvatarIcon from './icons/Avatar.svelte'
 
   export let avatar: string | null | undefined = undefined

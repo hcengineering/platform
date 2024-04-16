@@ -210,29 +210,14 @@ export class IssuesPage extends CommonTrackerPage {
   }
 
   async checkAllIssuesByPriority (priorityName: string): Promise<void> {
-    let retry = 150
-    while (retry > 0) {
-      let matched = 0
-      let total = 0
+    await expect(async () => {
       for await (const locator of iterateLocator(this.issuesList)) {
-        total++
         const href = await locator.locator('div.priority-container use').getAttribute('href')
-        if ((href ?? '').includes(priorityName)) {
-          matched++
-        }
-        if (retry === 1) {
-          expect(href, { message: `Should contain ${priorityName} but it is ${href}` }).toContain(priorityName)
-        }
+        expect(href, { message: `Should contain ${priorityName} but it is ${href}` }).toContain(priorityName)
       }
-      if (total === matched) {
-        // all good
-        return
-      }
-      await new Promise((resolve) => {
-        setTimeout(resolve, 100)
-      })
-      retry--
-    }
+    }).toPass({
+      timeout: 15000
+    })
   }
 
   async getIssueId (issueLabel: string, position: number = 0): Promise<string> {

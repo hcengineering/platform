@@ -877,7 +877,13 @@ export async function createWorkspace (
     try {
       const initWS = getMetadata(toolPlugin.metadata.InitWorkspace)
       const wsId = getWorkspaceId(workspaceInfo.workspace, productId)
-      if (initWS !== undefined && (await getWorkspaceById(db, productId, initWS)) !== null) {
+
+      // We should not try to clone INIT_WS into INIT_WS during it's creation.
+      if (
+        initWS !== undefined &&
+        (await getWorkspaceById(db, productId, initWS)) !== null &&
+        initWS !== workspaceInfo.workspace
+      ) {
         // Just any valid model for transactor to be able to function
         await (
           await initModel(ctx, getTransactor(), wsId, txes, [], ctxModellogger, async (value) => {
