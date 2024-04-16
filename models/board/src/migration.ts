@@ -195,6 +195,9 @@ export const boardOperation: MigrateOperation = {
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const ops = new TxOperations(client, core.account.System)
+    // For now need to be created every time as it's system model
+    await createDefaultProjectType(ops)
+
     await tryUpgrade(client, boardId, [
       {
         state: 'board0001',
@@ -203,8 +206,5 @@ export const boardOperation: MigrateOperation = {
         }
       }
     ])
-
-    // For now need to be created every time as it's system model
-    await createDefaultProjectType(ops)
   }
 }

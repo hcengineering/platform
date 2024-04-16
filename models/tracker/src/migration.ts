@@ -652,6 +652,9 @@ export const trackerOperation: MigrateOperation = {
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
+    // For now need to be created every time as it's system model
+    await createDefaultProjectType(tx)
+
     await tryUpgrade(client, trackerId, [
       {
         state: 'create-defaults',
@@ -660,8 +663,5 @@ export const trackerOperation: MigrateOperation = {
         }
       }
     ])
-
-    // For now need to be created every time as it's system model
-    await createDefaultProjectType(tx)
   }
 }
