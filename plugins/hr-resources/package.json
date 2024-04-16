@@ -51,6 +51,7 @@
     "@hcengineering/contact-resources": "^0.6.0",
     "@hcengineering/attachment-resources": "^0.6.0",
     "@hcengineering/workbench-resources": "^0.6.1",
+    "@hcengineering/text": "^0.6.1",
     "@hcengineering/text-editor": "^0.6.0",
     "@hcengineering/setting": "^0.6.11",
     "@hcengineering/attachment": "^0.6.9",
