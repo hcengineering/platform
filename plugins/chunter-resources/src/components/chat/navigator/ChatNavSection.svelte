@@ -86,7 +86,6 @@
       })
     }
 
-    console.log({ items })
     return items
   }
 

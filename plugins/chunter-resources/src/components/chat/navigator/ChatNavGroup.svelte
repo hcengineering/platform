@@ -131,11 +131,19 @@
 
     let isObjectPushed = false
 
+    if (
+      Array.from(objectsByClass.values())
+        .flat()
+        .some((o) => o._id === object?._id)
+    ) {
+      isObjectPushed = true
+    }
+
     for (const [_class, objects] of objectsByClass.entries()) {
       const clazz = hierarchy.getClass(_class)
       const sectionObjects = [...objects]
 
-      if (object && _class === object._class) {
+      if (object && _class === object._class && !objects.some(({ _id }) => _id === object._id)) {
         isObjectPushed = true
         sectionObjects.push(object)
       }
