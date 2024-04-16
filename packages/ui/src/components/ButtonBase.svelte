@@ -17,7 +17,7 @@
   import { AnySvelteComponent, ButtonBaseKind, ButtonBaseSize, ButtonBaseType, IconSize, LabelAndProps } from '../types'
   import { tooltip as tp } from '../tooltips'
   import { registerFocus } from '../focus'
-  import { ComponentType } from 'svelte'
+  import { ComponentType, onMount } from 'svelte'
   import Spinner from './Spinner.svelte'
   import Icon from './Icon.svelte'
   import Label from './Label.svelte'
@@ -34,6 +34,7 @@
   export let loading: boolean = false
   export let pressed: boolean = false
   export let hasMenu: boolean = false
+  export let autoFocus: boolean = false
   export let type: ButtonBaseType
   export let inheritColor: boolean = false
   export let inheritFont: boolean = false
@@ -52,6 +53,13 @@
   export function focus () {
     element?.focus()
   }
+
+  onMount(() => {
+    if (autoFocus && element) {
+      element.focus()
+      autoFocus = false
+    }
+  })
 
   // Focusable control with index
   export let focusIndex = -1

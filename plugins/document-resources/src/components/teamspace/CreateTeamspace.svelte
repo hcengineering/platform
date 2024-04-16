@@ -95,7 +95,7 @@
     const asMixin = hierarchy.as(teamspace, spaceType?.targetClass)
 
     return spaceType.$lookup.roles.reduce<RolesAssignment>((prev, { _id }) => {
-      prev[_id as Ref<Role>] = (asMixin as any)[_id]
+      prev[_id as Ref<Role>] = (asMixin as any)[_id] ?? []
 
       return prev
     }, {})

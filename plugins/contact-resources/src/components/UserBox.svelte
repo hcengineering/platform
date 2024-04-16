@@ -74,11 +74,11 @@
 
   const client = getClient()
 
-  async function updateSelected (value: Ref<Contact> | null | undefined) {
+  async function updateSelected (value: Ref<Contact> | null | undefined): Promise<void> {
     selected = value ? await client.findOne(_previewClass, { _id: value }) : undefined
   }
 
-  $: updateSelected(value)
+  $: void updateSelected(value)
 
   const mgr = getFocusManager()
 

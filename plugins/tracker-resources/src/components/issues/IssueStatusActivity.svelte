@@ -11,7 +11,7 @@
   } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Issue, IssueStatus } from '@hcengineering/tracker'
-  import { Label, ticker, Row } from '@hcengineering/ui'
+  import { Label, Row, ticker } from '@hcengineering/ui'
   import { statusStore } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import Duration from './Duration.svelte'
@@ -39,7 +39,7 @@
   )
 
   let displaySt: WithTime[] = []
-  async function updateStatus (txes: Tx[], statuses: IdMap<IssueStatus>, _: number): Promise<void> {
+  function updateStatus (txes: Tx[], statuses: IdMap<IssueStatus>, _: number): void {
     const result: WithTime[] = []
 
     let current: Ref<IssueStatus> | undefined

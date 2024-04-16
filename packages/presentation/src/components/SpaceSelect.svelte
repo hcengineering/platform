@@ -39,7 +39,7 @@
   import view, { IconProps } from '@hcengineering/view'
 
   import { ObjectCreate } from '../types'
-  import { getClient } from '../utils'
+  import { getClient, reduceCalls } from '../utils'
   import SpacesPopup from './SpacesPopup.svelte'
 
   export let _class: Ref<Class<Space>>
@@ -73,19 +73,24 @@
   const dispatch = createEventDispatcher()
 
   const mgr = getFocusManager()
-  async function updateSelected (_value: Ref<Space> | undefined, spaceQuery: DocumentQuery<Space> | undefined) {
-    selected = _value !== undefined ? await client.findOne(_class, { ...(spaceQuery ?? {}), _id: _value }) : undefined
+  const updateSelected = reduceCalls(async function (
+    _value: Ref<Space> | undefined,
+    spaceQuery: DocumentQuery<Space> | undefined
+  ) {
+    let v = _value !== undefined ? await client.findOne(_class, { ...(spaceQuery ?? {}), _id: _value }) : undefined
+    selected = v
 
     if (selected === undefined && autoSelect) {
-      selected = (await findDefaultSpace?.()) ?? (await client.findOne(_class, { ...(spaceQuery ?? {}) }))
+      v = (await findDefaultSpace?.()) ?? (await client.findOne(_class, { ...(spaceQuery ?? {}) }))
+      selected = v
       if (selected !== undefined) {
         value = selected._id ?? undefined
       }
     }
     dispatch('object', selected)
-  }
+  })
 
-  $: updateSelected(value, spaceQuery)
+  $: void updateSelected(value, spaceQuery)
 
   const showSpacesPopup = (ev: MouseEvent) => {
     if (readonly) {

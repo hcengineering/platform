@@ -13,11 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Person } from '@hcengineering/contact'
-  import { personByIdStore, Avatar } from '@hcengineering/contact-resources'
-  import { Doc, IdMap, Ref, WithLookup } from '@hcengineering/core'
-  import { getLocation, Label, navigate, TimeSince } from '@hcengineering/ui'
   import activity, { ActivityMessage } from '@hcengineering/activity'
+  import { Person } from '@hcengineering/contact'
+  import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
+  import { Doc, IdMap, Ref, WithLookup } from '@hcengineering/core'
   import notification, {
     ActivityInboxNotification,
     DocNotifyContext,
@@ -25,6 +24,7 @@
     InboxNotificationsClient
   } from '@hcengineering/notification'
   import { getResource } from '@hcengineering/platform'
+  import { Label, TimeSince, getLocation, navigate } from '@hcengineering/ui'
 
   import { buildThreadLink } from '../navigation'
 
@@ -70,14 +70,14 @@
       .some(({ isViewed }) => !isViewed)
   }
 
-  function updateQuery (personIds: Set<Ref<Person>>, personById: IdMap<Person>) {
+  function updateQuery (personIds: Set<Ref<Person>>, personById: IdMap<Person>): void {
     displayPersons = Array.from(personIds)
       .map((id) => personById.get(id))
       .filter((person): person is Person => person !== undefined)
       .slice(0, maxDisplayPersons - 1)
   }
 
-  function handleReply (e: MouseEvent) {
+  function handleReply (e: MouseEvent): void {
     e.stopPropagation()
     e.preventDefault()
 

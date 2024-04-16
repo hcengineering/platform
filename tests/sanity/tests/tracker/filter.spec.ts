@@ -235,6 +235,7 @@ test.describe('Tracker filters tests', () => {
     await leftSideMenuPage.buttonTracker.click()
 
     const issuesPage = new IssuesPage(page)
+    await issuesPage.linkSidebarAll.click()
     await issuesPage.modelSelectorAll.click()
 
     for (const status of DEFAULT_STATUSES) {

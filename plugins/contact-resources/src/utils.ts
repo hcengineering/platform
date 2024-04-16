@@ -15,43 +15,42 @@
 //
 
 import {
-  type AvatarProvider,
   AvatarType,
-  type ChannelProvider,
-  type Contact,
-  type Employee,
-  type Person,
-  type PersonAccount,
   contactId,
   formatName,
   getFirstName,
   getLastName,
   getName,
-  type Channel
+  type Channel,
+  type ChannelProvider,
+  type Contact,
+  type Employee,
+  type Person,
+  type PersonAccount
 } from '@hcengineering/contact'
 import {
+  getCurrentAccount,
+  toIdMap,
+  type Class,
   type Client,
   type Doc,
   type IdMap,
   type ObjQueryType,
   type Ref,
   type Timestamp,
-  type TxOperations,
-  getCurrentAccount,
-  toIdMap,
-  type Class
+  type TxOperations
 } from '@hcengineering/core'
 import notification, { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
 import { getEmbeddedLabel, getResource, translate } from '@hcengineering/platform'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { type TemplateDataProvider } from '@hcengineering/templates'
 import {
-  type Location,
-  type ResolvedLocation,
-  type TabItem,
   getCurrentResolvedLocation,
   getPanelURI,
-  type LabelAndProps
+  type LabelAndProps,
+  type Location,
+  type ResolvedLocation,
+  type TabItem
 } from '@hcengineering/ui'
 import view, { type Filter } from '@hcengineering/view'
 import { FilterQuery } from '@hcengineering/view-resources'
@@ -368,24 +367,6 @@ export function getAvatarTypeDropdownItems (hasGravatar: boolean, imageOnly?: bo
         ]
       : [])
   ]
-}
-
-export function getAvatarProviderId (avatar?: string | null): Ref<AvatarProvider> | undefined {
-  if (avatar === null || avatar === undefined || avatar === '') {
-    return
-  }
-  if (!avatar.includes('://')) {
-    return contact.avatarProvider.Image
-  }
-  const [schema] = avatar.split('://')
-
-  switch (schema) {
-    case AvatarType.GRAVATAR:
-      return contact.avatarProvider.Gravatar
-    case AvatarType.COLOR:
-      return contact.avatarProvider.Color
-  }
-  return contact.avatarProvider.Image
 }
 
 export async function contactTitleProvider (client: Client, ref: Ref<Contact>, doc?: Contact): Promise<string> {

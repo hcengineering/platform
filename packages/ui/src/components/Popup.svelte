@@ -43,5 +43,6 @@
     close={popup.close}
     {contentPanel}
     overlay={popup.options.overlay}
+    {popup}
   />
 {/each}

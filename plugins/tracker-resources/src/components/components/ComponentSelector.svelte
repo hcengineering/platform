@@ -18,7 +18,7 @@
   import { createQuery } from '@hcengineering/presentation'
   import { Component } from '@hcengineering/tracker'
   import type { ButtonKind, ButtonSize, LabelAndProps, SelectPopupValueType } from '@hcengineering/ui'
-  import { Button, ButtonShape, SelectPopup, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import { Button, ButtonShape, SelectPopup, eventToHTMLElement, showPopup, PopupResult } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import ComponentPresenter from './ComponentPresenter.svelte'
 
@@ -57,12 +57,10 @@
     }
   )
 
-  $: handleSelectedComponentIdUpdated(value, rawComponents)
-
-  const handleSelectedComponentIdUpdated = async (
+  const handleSelectedComponentIdUpdated = (
     newComponentId: Ref<Component> | null | undefined,
     components: Component[]
-  ) => {
+  ): void => {
     if (newComponentId === null || newComponentId === undefined) {
       selectedComponent = undefined
 
@@ -71,6 +69,8 @@
 
     selectedComponent = components.find((it) => it._id === newComponentId)
   }
+
+  $: handleSelectedComponentIdUpdated(value, rawComponents)
 
   function getComponentInfo (rawComponents: Component[], sp: Component | undefined): SelectPopupValueType[] {
     return [
@@ -100,17 +100,25 @@
   let components: SelectPopupValueType[] = []
   $: components = getComponentInfo(rawComponents, selectedComponent)
 
+  let selectPopupResult: PopupResult | undefined
+
+  // We need update SelectPopup when it active
+  $: selectPopupResult?.update({ value: components })
+
   const handleComponentEditorOpened = async (event: MouseEvent): Promise<void> => {
     event.stopPropagation()
     if (!isEditable) {
       return
     }
 
-    showPopup(
+    selectPopupResult = showPopup(
       SelectPopup,
       { value: components, placeholder: popupPlaceholder, searchable: true },
       eventToHTMLElement(event),
-      onChange
+      (result: any) => {
+        onChange?.(result)
+        selectPopupResult = undefined
+      }
     )
   }
 </script>

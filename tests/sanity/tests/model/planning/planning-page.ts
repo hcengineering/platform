@@ -37,7 +37,7 @@ export class PlanningPage extends CalendarPage {
     this.page = page
     this.pageHeader = page.locator('div[class*="navigator"] div[class*="header"]', { hasText: 'Planning' })
     this.buttonCreateNewToDo = page.locator('div[class*="toDos-container"] button.button')
-    this.inputPopupCreateTitle = page.locator('div.popup input')
+    this.inputPopupCreateTitle = page.locator('div.popup input[type="text"]')
     this.inputPopupCreateDescription = page.locator('div.popup div.tiptap')
     this.inputPanelCreateDescription = page.locator('div.hulyModal-container div.tiptap')
     this.buttonPopupCreateDueDate = page.locator(
@@ -117,9 +117,10 @@ export class PlanningPage extends CalendarPage {
       if (data.createLabel) {
         await this.pressCreateButtonSelectPopup(this.page)
         await this.addNewTagPopup(this.page, data.labels, 'Tag from createNewIssue')
+        await this.page.locator('.popup#TagsPopup').press('Escape')
+      } else {
+        await this.checkFromDropdownWithSearch(this.page, data.labels)
       }
-      await this.checkFromDropdownWithSearch(this.page, data.labels)
-      await (popup ? this.buttonPopupCreateAddLabel.press('Escape') : this.buttonPanelCreateAddLabel.press('Escape'))
     }
     if (data.slots != null) {
       let index = 0

@@ -130,22 +130,27 @@ test.describe('Documents tests', () => {
     })
 
     await test.step('User2. Add content second user', async () => {
-      const userSecondPage = await getSecondPage(browser)
-      await (await userSecondPage.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
+      const { page: userSecondPage, context } = await getSecondPage(browser)
+      try {
+        await (await userSecondPage.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
 
-      const leftSideMenuPageSecond = new LeftSideMenuPage(userSecondPage)
-      await leftSideMenuPageSecond.buttonDocuments.click()
+        const leftSideMenuPageSecond = new LeftSideMenuPage(userSecondPage)
+        await leftSideMenuPageSecond.buttonDocuments.click()
 
-      const documentsPageSecond = new DocumentsPage(userSecondPage)
-      await documentsPageSecond.openTeamspace(colDocument.space)
-      await documentsPageSecond.openDocument(colDocument.title)
+        const documentsPageSecond = new DocumentsPage(userSecondPage)
+        await documentsPageSecond.openTeamspace(colDocument.space)
+        await documentsPageSecond.openDocument(colDocument.title)
 
-      const documentContentPageSecond = new DocumentContentPage(page)
-      await documentContentPageSecond.checkDocumentTitle(colDocument.title)
-      await documentContentPageSecond.checkContent(content)
+        const documentContentPageSecond = new DocumentContentPage(page)
+        await documentContentPageSecond.checkDocumentTitle(colDocument.title)
+        await documentContentPageSecond.checkContent(content)
 
-      content = await documentContentPageSecond.addContentToTheNewLine(contentSecondUser)
-      await documentContentPageSecond.checkContent(content)
+        content = await documentContentPageSecond.addContentToTheNewLine(contentSecondUser)
+        await documentContentPageSecond.checkContent(content)
+      } finally {
+        await userSecondPage.close()
+        await context.close()
+      }
     })
 
     await test.step('User1. Check final content', async () => {

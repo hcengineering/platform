@@ -267,6 +267,22 @@ export class DelayedCaller {
   }
 }
 
+/**
+ * @public
+ */
+export class ThrottledCaller {
+  timeout?: any
+  constructor (readonly delay: number = 10) {}
+  call (op: () => void): void {
+    if (this.timeout === undefined) {
+      op()
+      this.timeout = setTimeout(() => {
+        this.timeout = undefined
+      }, this.delay)
+    }
+  }
+}
+
 export const testing = (localStorage.getItem('#platform.testing.enabled') ?? 'false') === 'true'
 
 export const rootBarExtensions = writable<Array<['left' | 'right', AnyComponent]>>([])

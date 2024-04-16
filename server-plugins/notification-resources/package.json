@@ -29,7 +29,8 @@
     "typescript": "^5.3.3",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
-    "@types/jest": "^29.5.5"
+    "@types/jest": "^29.5.5",
+    "@types/web-push": "~3.6.3"
   },
   "dependencies": {
     "@hcengineering/activity": "^0.6.0",
@@ -38,8 +39,10 @@
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/server-notification": "^0.6.1",
     "@hcengineering/notification": "^0.6.16",
+    "@hcengineering/workbench": "^0.6.9",
     "@hcengineering/chunter": "^0.6.12",
     "@hcengineering/view": "^0.6.9",
-    "@hcengineering/contact": "^0.6.20"
+    "@hcengineering/contact": "^0.6.20",
+    "web-push": "~3.6.7"
   }
 }

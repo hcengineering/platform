@@ -25,13 +25,14 @@
     KeyedAttribute,
     createQuery,
     getClient,
-    hasResource
+    hasResource,
+    reduceCalls
   } from '@hcengineering/presentation'
   import { AnyComponent, Button, Component, IconMixin, IconMoreH } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
 
-  import { DocNavLink, ParentsNavigator, getDocLabel, getDocMixins, showMenu, getDocAttrsInfo } from '..'
+  import { DocNavLink, ParentsNavigator, getDocAttrsInfo, getDocLabel, getDocMixins, showMenu } from '..'
   import { getCollectionCounter } from '../utils'
   import DocAttributeBar from './DocAttributeBar.svelte'
 
@@ -68,7 +69,7 @@
   const query = createQuery()
   $: updateQuery(_id, _class)
 
-  function updateQuery (_id: Ref<Doc>, _class: Ref<Class<Doc>>) {
+  function updateQuery (_id: Ref<Doc>, _class: Ref<Class<Doc>>): void {
     if (_id && _class) {
       query.query(_class, { _id }, (result) => {
         object = result[0]
@@ -146,12 +147,12 @@
 
   $: editorFooter = getEditorFooter(_class, object)
 
-  $: void getEditorOrDefault(realObjectClass, _id)
-
-  async function getEditorOrDefault (_class: Ref<Class<Doc>>, _id: Ref<Doc>): Promise<void> {
+  const getEditorOrDefault = reduceCalls(async function (_class: Ref<Class<Doc>>, _id: Ref<Doc>): Promise<void> {
     await updateKeys()
     mainEditor = getEditor(_class)
-  }
+  })
+
+  $: void getEditorOrDefault(realObjectClass, _id)
 
   let title: string | undefined = undefined
   let rawTitle: string = ''

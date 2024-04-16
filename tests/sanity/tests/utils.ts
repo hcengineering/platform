@@ -1,4 +1,4 @@
-import { Browser, Locator, Page, expect } from '@playwright/test'
+import { Browser, BrowserContext, Locator, Page, expect } from '@playwright/test'
 import { allure } from 'allure-playwright'
 
 export const PlatformURI = process.env.PLATFORM_URI as string
@@ -62,9 +62,9 @@ export async function fillSearch (page: Page, search: string): Promise<Locator> 
   return searchBox
 }
 
-export async function getSecondPage (browser: Browser): Promise<Page> {
+export async function getSecondPage (browser: Browser): Promise<{ page: Page, context: BrowserContext }> {
   const userSecondContext = await browser.newContext({ storageState: PlatformSettingSecond })
-  return await userSecondContext.newPage()
+  return { page: await userSecondContext.newPage(), context: userSecondContext }
 }
 export function expectToContainsOrdered (val: Locator, text: string[], timeout?: number): Promise<void> {
   const origIssuesExp = new RegExp('.*' + text.join('.*') + '.*')

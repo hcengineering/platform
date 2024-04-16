@@ -17,7 +17,7 @@
   import { IntlString, getEmbeddedLabel, translate } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { Milestone } from '@hcengineering/tracker'
-  import type { ButtonKind, ButtonSize, LabelAndProps } from '@hcengineering/ui'
+  import type { ButtonKind, ButtonSize, LabelAndProps, PopupResult } from '@hcengineering/ui'
   import { Button, ButtonShape, Label, SelectPopup, eventToHTMLElement, showPopup, themeStore } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import { milestoneStatusAssets } from '../../types'
@@ -96,19 +96,25 @@
 
   $: milestones = getMilestoneInfo(rawMilestones, selectedMilestone)
 
+  let milestonePopup: PopupResult | undefined
   const handleMilestoneEditorOpened = async (event: MouseEvent): Promise<void> => {
     event.stopPropagation()
     if (!isEditable) {
       return
     }
 
-    showPopup(
+    milestonePopup = showPopup(
       SelectPopup,
       { value: milestones, placeholder: popupPlaceholder, searchable: true },
       eventToHTMLElement(event),
-      onChange
+      (evt) => {
+        onChange?.(evt)
+        milestonePopup = undefined
+      }
     )
   }
+
+  $: milestonePopup?.update({ value: milestones })
 </script>
 
 {#if isAction}
