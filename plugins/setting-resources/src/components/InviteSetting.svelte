@@ -25,7 +25,7 @@
 
   const client = getClient()
   let expTime: number = 48
-  let mask: string
+  let mask: string = ''
   let limit: number = -1
   let noLimit: boolean = true
   let existingInviteSettings: InviteSettings[]
