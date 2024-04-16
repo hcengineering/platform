@@ -207,10 +207,19 @@ export class FullTextIndex implements WithFind {
     const indexedDocMap = new Map<Ref<Doc>, IndexedDoc>()
 
     for (const doc of docs) {
-      if (doc._class.some((cl) => this.hierarchy.isDerived(cl, baseClass))) {
+      if (
+        doc._class != null &&
+        Array.isArray(doc._class) &&
+        doc._class.some((cl) => this.hierarchy.isDerived(cl, baseClass))
+      ) {
         ids.add(doc.id)
         indexedDocMap.set(doc.id, doc)
       }
+      if (doc._class !== null && !Array.isArray(doc._class) && this.hierarchy.isDerived(doc._class, baseClass)) {
+        ids.add(doc.id)
+        indexedDocMap.set(doc.id, doc)
+      }
+
       if (doc.attachedTo != null) {
         if (doc.attachedToClass != null && this.hierarchy.isDerived(doc.attachedToClass, baseClass)) {
           if (this.hierarchy.isDerived(doc.attachedToClass, baseClass)) {

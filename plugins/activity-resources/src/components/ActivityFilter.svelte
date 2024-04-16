@@ -109,7 +109,7 @@
     }
   }
 
-  $: updateFilterActions(
+  $: void updateFilterActions(
     messages,
     filters,
     selectedFiltersRefs,

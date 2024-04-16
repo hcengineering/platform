@@ -124,12 +124,12 @@
 
   const q = createQuery()
 
-  async function update (
+  function update (
     _class: Ref<Class<Event>>,
     query: DocumentQuery<Event> | undefined,
     calendars: Calendar[],
     options?: FindOptions<Event>
-  ) {
+  ): void {
     q.query<Event>(
       _class,
       query ?? { space: { $in: calendars.map((p) => p._id) } },

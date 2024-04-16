@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Class, Doc, DocumentQuery, Ref, Space, getCurrentAccount } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
-  import { getClient } from '@hcengineering/presentation'
+  import { getClient, reduceCalls } from '@hcengineering/presentation'
   import { Button, IconAdd, eventToHTMLElement, getCurrentLocation, showPopup } from '@hcengineering/ui'
   import { Filter, FilteredView, ViewOptions, Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
@@ -80,7 +80,7 @@
     }
   }
 
-  async function makeQuery (query: DocumentQuery<Doc>, filters: Filter[]): Promise<void> {
+  const makeQuery = reduceCalls(async (query: DocumentQuery<Doc>, filters: Filter[]): Promise<void> => {
     const newQuery = hierarchy.clone(query)
     for (let i = 0; i < filters.length; i++) {
       const filter = filters[i]
@@ -141,7 +141,7 @@
       }
     }
     dispatch('change', newQuery)
-  }
+  })
 
   $: makeQuery(query, $filterStore)
 

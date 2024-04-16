@@ -13,7 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts" context="module">
+  import contact, { AvatarProvider } from '@hcengineering/contact'
   import { Client, Ref } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
 
   const providers = new Map<string, AvatarProvider | null>()
 
@@ -29,15 +31,9 @@
 </script>
 
 <script lang="ts">
-  import contact, {
-    AvatarProvider,
-    AvatarType,
-    getFirstName,
-    getLastName,
-    getAvatarProviderId
-  } from '@hcengineering/contact'
+  import { AvatarType, getAvatarProviderId, getFirstName, getLastName } from '@hcengineering/contact'
   import { Asset, getMetadata, getResource } from '@hcengineering/platform'
-  import { getBlobURL, getClient } from '@hcengineering/presentation'
+  import { getBlobURL, reduceCalls } from '@hcengineering/presentation'
   import {
     AnySvelteComponent,
     ColorDefinition,
@@ -46,11 +42,11 @@
     getPlatformAvatarColorByName,
     getPlatformAvatarColorForTextDef,
     getPlatformColor,
-    themeStore,
-    resizeObserver
+    resizeObserver,
+    themeStore
   } from '@hcengineering/ui'
-  import AvatarIcon from './icons/Avatar.svelte'
   import { onMount } from 'svelte'
+  import AvatarIcon from './icons/Avatar.svelte'
 
   export let avatar: string | null | undefined = undefined
   export let name: string | null | undefined = undefined
@@ -89,12 +85,16 @@
     return lastFirst ? lname + fname : fname + lname
   }
 
-  async function update (size: IconSize, avatar?: string | null, direct?: Blob, name?: string | null) {
+  const update = reduceCalls(async function (
+    size: IconSize,
+    avatar?: string | null,
+    direct?: Blob,
+    name?: string | null
+  ) {
     if (direct !== undefined) {
-      getBlobURL(direct).then((blobURL) => {
-        url = [blobURL]
-        avatarProvider = undefined
-      })
+      const blobURL = await getBlobURL(direct)
+      url = [blobURL]
+      avatarProvider = undefined
     } else if (avatar) {
       const avatarProviderId = getAvatarProviderId(avatar)
       avatarProvider = avatarProviderId && (await getProvider(getClient(), avatarProviderId))
@@ -116,8 +116,8 @@
       url = undefined
       avatarProvider = undefined
     }
-  }
-  $: update(size, avatar, direct, name)
+  })
+  $: void update(size, avatar, direct, name)
 
   $: srcset = url?.slice(1)?.join(', ')
 

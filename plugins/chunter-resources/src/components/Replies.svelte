@@ -13,11 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Person } from '@hcengineering/contact'
-  import { personByIdStore, Avatar } from '@hcengineering/contact-resources'
-  import { Doc, IdMap, Ref, WithLookup } from '@hcengineering/core'
-  import { getLocation, Label, navigate, TimeSince } from '@hcengineering/ui'
   import activity, { ActivityMessage } from '@hcengineering/activity'
+  import { Person } from '@hcengineering/contact'
+  import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
+  import { Doc, IdMap, Ref, WithLookup } from '@hcengineering/core'
   import notification, {
     ActivityInboxNotification,
     DocNotifyContext,
@@ -25,6 +24,7 @@
     InboxNotificationsClient
   } from '@hcengineering/notification'
   import { getResource } from '@hcengineering/platform'
+  import { Label, TimeSince, getLocation, navigate } from '@hcengineering/ui'
   import { get } from 'svelte/store'
 
   import { buildThreadLink } from '../utils'
@@ -40,7 +40,7 @@
 
   let inboxClient: InboxNotificationsClient | undefined = undefined
 
-  getResource(notification.function.GetInboxNotificationsClient).then((getClientFn) => {
+  void getResource(notification.function.GetInboxNotificationsClient).then((getClientFn) => {
     inboxClient = getClientFn()
   })
 
