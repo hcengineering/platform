@@ -32,6 +32,7 @@ import core, {
   Tx,
   TxCUD,
   TxMixin,
+  TxProcessor,
   TxUpdateDoc
 } from '@hcengineering/core'
 import serverNotification, {
@@ -318,8 +319,11 @@ async function getFallbackNotificationFullfillment (
   object: Doc,
   originTx: TxCUD<Doc>,
   control: TriggerControl
-): Promise<Record<string, string | number>> {
+): Promise<NotificationContent> {
+  const title: IntlString = notification.string.CommonNotificationTitle
+  let body: IntlString = notification.string.CommonNotificationBody
   const intlParams: Record<string, string | number> = {}
+  const intlParamsNotLocalized: Record<string, IntlString> = {}
 
   const textPresenter = getTextPresenter(object._class, control.hierarchy)
   if (textPresenter !== undefined) {
@@ -335,7 +339,30 @@ async function getFallbackNotificationFullfillment (
     }
   }
 
-  return intlParams
+  const actualTx = TxProcessor.extractTx(originTx)
+  if (actualTx._class === core.class.TxUpdateDoc) {
+    const updateTx = actualTx as TxUpdateDoc<Doc>
+    const attributes = control.hierarchy.getAllAttributes(object._class)
+    for (const attrName in updateTx.operations) {
+      if (!Object.prototype.hasOwnProperty.call(updateTx.operations, attrName)) {
+        continue
+      }
+
+      const attr = attributes.get(attrName)
+      if (attr !== null && attr !== undefined) {
+        intlParamsNotLocalized.property = attr.label
+        if (attr.type._class === core.class.TypeString) {
+          body = notification.string.CommonNotificationChangedProperty
+          intlParams.newValue = (updateTx.operations as any)[attrName]?.toString()
+        } else {
+          body = notification.string.CommonNotificationChanged
+        }
+      }
+      break
+    }
+  }
+
+  return { title, body, intlParams, intlParamsNotLocalized }
 }
 
 function getNotificationPresenter (_class: Ref<Class<Doc>>, hierarchy: Hierarchy): NotificationPresenter | undefined {
@@ -348,12 +375,14 @@ export async function getNotificationContent (
   object: Doc,
   control: TriggerControl
 ): Promise<NotificationContent> {
-  let title: IntlString = notification.string.CommonNotificationTitle
-  let body: IntlString = notification.string.CommonNotificationBody
-  let intlParams: Record<string, string | number> = await getFallbackNotificationFullfillment(object, originTx, control)
-  let intlParamsNotLocalized: Record<string, IntlString> | undefined
+  let { title, body, intlParams, intlParamsNotLocalized } = await getFallbackNotificationFullfillment(
+    object,
+    originTx,
+    control
+  )
 
-  const notificationPresenter = getNotificationPresenter(object._class, control.hierarchy)
+  const actualTx = TxProcessor.extractTx(originTx)
+  const notificationPresenter = getNotificationPresenter((actualTx as TxCUD<Doc>).objectClass, control.hierarchy)
   if (notificationPresenter !== undefined) {
     const getFuillfillmentParams = await getResource(notificationPresenter.presenter)
     const updateIntlParams = await getFuillfillmentParams(object, originTx, targetUser, control)
@@ -364,7 +393,10 @@ export async function getNotificationContent (
       ...updateIntlParams.intlParams
     }
     if (updateIntlParams.intlParamsNotLocalized != null) {
-      intlParamsNotLocalized = updateIntlParams.intlParamsNotLocalized
+      intlParamsNotLocalized = {
+        ...intlParamsNotLocalized,
+        ...updateIntlParams.intlParamsNotLocalized
+      }
     }
   }
 

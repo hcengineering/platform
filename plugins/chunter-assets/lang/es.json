@@ -76,6 +76,7 @@
     "NoMessages": "No hay mensajes todavía",
     "DirectNotificationTitle": "{senderName}",
     "DirectNotificationBody": "{message}",
+    "MessageNotificationBody": "{senderName}: {message}",
     "AddCommentPlaceholder": "Añadir comentario...",
     "Reacted": "Reaccionó",
     "Docs": "Documentos",

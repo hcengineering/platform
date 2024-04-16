@@ -42,6 +42,7 @@
     "@hcengineering/workbench": "^0.6.9",
     "@hcengineering/chunter": "^0.6.12",
     "@hcengineering/view": "^0.6.9",
+    "@hcengineering/text": "^0.6.1",
     "@hcengineering/contact": "^0.6.20",
     "web-push": "~3.6.7"
   }

@@ -55,6 +55,7 @@ import { Person, PersonAccount } from '@hcengineering/contact'
 import activity, { ActivityMessage, ActivityReference } from '@hcengineering/activity'
 
 import { IsChannelMessage, IsDirectMessage, IsThreadMessage } from './utils'
+import { NOTIFICATION_BODY_SIZE } from '@hcengineering/server-notification'
 
 /**
  * @public
@@ -345,22 +346,26 @@ export async function OnDirectMessageSent (originTx: Tx, control: TriggerControl
   return res
 }
 
-const NOTIFICATION_BODY_SIZE = 50
-
 /**
  * @public
  */
-export async function getChunterNotificationContent (_: Doc, tx: TxCUD<Doc>): Promise<NotificationContent> {
-  const title: IntlString = chunter.string.DirectNotificationTitle
+export async function getChunterNotificationContent (
+  _: Doc,
+  tx: TxCUD<Doc>,
+  target: Ref<Account>,
+  control: TriggerControl
+): Promise<NotificationContent> {
+  let title: IntlString = notification.string.CommonNotificationTitle
   let body: IntlString = chunter.string.Message
   const intlParams: Record<string, string | number> = {}
+  let intlParamsNotLocalized: Record<string, IntlString> | undefined
 
   let message: string | undefined
 
   if (tx._class === core.class.TxCollectionCUD) {
     const ptx = tx as TxCollectionCUD<Doc, AttachedDoc>
     if (ptx.tx._class === core.class.TxCreateDoc) {
-      if (ptx.tx.objectClass === chunter.class.ChatMessage) {
+      if (control.hierarchy.isDerived(ptx.tx.objectClass, chunter.class.ChatMessage)) {
         const createTx = ptx.tx as TxCreateDoc<ChatMessage>
         message = createTx.attributes.message
       } else if (ptx.tx.objectClass === activity.class.ActivityReference) {
@@ -372,13 +377,26 @@ export async function getChunterNotificationContent (_: Doc, tx: TxCUD<Doc>): Pr
 
   if (message !== undefined) {
     intlParams.message = stripTags(message, NOTIFICATION_BODY_SIZE)
-    body = chunter.string.DirectNotificationBody
+
+    body = chunter.string.MessageNotificationBody
+
+    if (control.hierarchy.isDerived(tx.objectClass, chunter.class.DirectMessage)) {
+      body = chunter.string.DirectNotificationBody
+      title = chunter.string.DirectNotificationTitle
+    }
+  }
+
+  if (control.hierarchy.isDerived(tx.objectClass, chunter.class.ChatMessage)) {
+    intlParamsNotLocalized = {
+      title: chunter.string.ThreadMessage
+    }
   }
 
   return {
     title,
     body,
-    intlParams
+    intlParams,
+    intlParamsNotLocalized
   }
 }
 
