@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import { clone } from '@hcengineering/core'
 import { derived, get, writable } from 'svelte/store'
 import { closePopup } from './popups'
@@ -177,6 +178,7 @@ export function navigate (location: PlatformLocation, replace = false): boolean 
   if (cur !== url) {
     const data = !embeddedPlatform ? null : { location }
     const _url = !embeddedPlatform ? url : undefined
+    Analytics.navigate(url)
     if (replace) {
       history.replaceState(data, '', _url)
     } else {
