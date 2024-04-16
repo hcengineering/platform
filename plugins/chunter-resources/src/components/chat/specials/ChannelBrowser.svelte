@@ -24,13 +24,14 @@
     Space
   } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import presentation, { createQuery } from '@hcengineering/presentation'
+  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import { AnyComponent, Button, Icon, Label, Scroller, SearchEdit, showPopup } from '@hcengineering/ui'
   import { FilterBar, FilterButton, SpacePresenter } from '@hcengineering/view-resources'
   import workbench from '@hcengineering/workbench'
   import { Channel } from '@hcengineering/chunter'
-  import { openChannel } from '../../../navigation'
+  import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
 
+  import { openChannel } from '../../../navigation'
   import { getObjectIcon, joinChannel, leaveChannel } from '../../../utils'
   import chunter from './../../../plugin'
 
@@ -44,6 +45,9 @@
 
   const me = getCurrentAccount()._id
   const channelsQuery = createQuery()
+
+  const client = getClient()
+  const notificationsClient = InboxNotificationsClientImpl.getClient()
 
   const sort: SortingQuery<Space> = {
     name: SortingOrder.Ascending

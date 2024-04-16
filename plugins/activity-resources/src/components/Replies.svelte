@@ -13,10 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import activity, { ActivityMessage } from '@hcengineering/activity'
   import { Person } from '@hcengineering/contact'
-  import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
+  import { personByIdStore, Avatar } from '@hcengineering/contact-resources'
   import { Doc, IdMap, Ref, WithLookup } from '@hcengineering/core'
+  import { Label, TimeSince } from '@hcengineering/ui'
+  import activity, { ActivityMessage } from '@hcengineering/activity'
   import notification, {
     ActivityInboxNotification,
     DocNotifyContext,
@@ -24,14 +25,13 @@
     InboxNotificationsClient
   } from '@hcengineering/notification'
   import { getResource } from '@hcengineering/platform'
-  import { Label, TimeSince, getLocation, navigate } from '@hcengineering/ui'
-
-  import { buildThreadLink } from '../navigation'
+  import { getClient } from '@hcengineering/presentation'
 
   export let object: ActivityMessage
   export let embedded = false
   export let onReply: (() => void) | undefined = undefined
 
+  const client = getClient()
   const maxDisplayPersons = 5
 
   $: lastReply = object.lastReply ?? new Date().getTime()
@@ -77,7 +77,9 @@
       .slice(0, maxDisplayPersons - 1)
   }
 
-  function handleReply (e: MouseEvent): void {
+  const replyProvider = client.getModel().findAllSync(activity.class.ReplyProvider, {})[0]
+
+  async function handleReply (e: MouseEvent) {
     e.stopPropagation()
     e.preventDefault()
 
@@ -86,7 +88,10 @@
       return
     }
 
-    navigate(buildThreadLink(getLocation(), object.attachedTo, object.attachedToClass, object._id))
+    if (replyProvider) {
+      const fn = await getResource(replyProvider.function)
+      fn(object)
+    }
   }
 </script>
 

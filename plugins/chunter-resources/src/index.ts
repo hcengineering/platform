@@ -48,7 +48,6 @@ import ChannelIcon from './components/ChannelIcon.svelte'
 import ThreadNotificationPresenter from './components/notification/ThreadNotificationPresenter.svelte'
 import ChatMessageNotificationLabel from './components/notification/ChatMessageNotificationLabel.svelte'
 import ChatAside from './components/chat/ChatAside.svelte'
-import Replies from './components/Replies.svelte'
 import ReplyToThreadAction from './components/ReplyToThreadAction.svelte'
 import ThreadMessagePreview from './components/threads/ThreadMessagePreview.svelte'
 import ChatMessagePreview from './components/chat-message/ChatMessagePreview.svelte'
@@ -65,7 +64,7 @@ import {
   leaveChannelAction,
   removeChannelAction
 } from './utils'
-import { chunterSpaceLinkFragmentProvider, getThreadLink, getMessageLink } from './navigation'
+import { chunterSpaceLinkFragmentProvider, getThreadLink, getMessageLink, replyToThread } from './navigation'
 
 export { default as ChatMessagesPresenter } from './components/chat-message/ChatMessagesPresenter.svelte'
 export { default as ChatMessagePopup } from './components/chat-message/ChatMessagePopup.svelte'
@@ -175,7 +174,6 @@ export default async (): Promise<Resources> => ({
     ChatMessageNotificationLabel,
     ThreadNotificationPresenter,
     ChatAside,
-    Replies,
     ReplyToThreadAction,
     ThreadMessagePreview,
     ChatMessagePreview
@@ -192,7 +190,8 @@ export default async (): Promise<Resources> => ({
     CanCopyMessageLink: canCopyMessageLink,
     GetChunterSpaceLinkFragment: chunterSpaceLinkFragmentProvider,
     GetUnreadThreadsCount: getUnreadThreadsCount,
-    GetThreadLink: getThreadLink
+    GetThreadLink: getThreadLink,
+    ReplyToThread: replyToThread
   },
   actionImpl: {
     ArchiveChannel,

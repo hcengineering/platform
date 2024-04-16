@@ -733,6 +733,10 @@ export function createModel (builder: Builder, options = { addApplication: true 
     domain: DOMAIN_CHUNTER,
     disabled: [{ _class: 1 }, { space: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { createdOn: -1 }]
   })
+
+  builder.createDoc(activity.class.ReplyProvider, core.space.Model, {
+    function: chunter.function.ReplyToThread
+  })
 }
 
 export default chunter

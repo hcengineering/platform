@@ -432,6 +432,16 @@ async function OnChannelMembersChanged (tx: TxUpdateDoc<Channel>, control: Trigg
     )
   }
 
+  if (added.length > 0) {
+    res.push(
+      control.txFactory.createTxMixin(tx.objectId, tx.objectClass, tx.objectSpace, notification.mixin.Collaborators, {
+        $push: {
+          collaborators: { $each: added, $position: 0 }
+        }
+      })
+    )
+  }
+
   for (const addedMember of added) {
     const context = allContexts.find(({ user }) => user === addedMember)
 
@@ -457,16 +467,8 @@ async function OnChannelMembersChanged (tx: TxUpdateDoc<Channel>, control: Trigg
 
   const contextsToRemove = allContexts.filter(({ user }) => removed.includes(user))
 
-  if (contextsToRemove.length === 0) {
-    return res
-  }
-
-  const channel = (await control.findAll(chunter.class.Channel, { _id: tx.objectId }))[0]
-
-  if (channel !== undefined) {
-    for (const context of contextsToRemove) {
-      res.push(control.txFactory.createTxRemoveDoc(context._class, context.space, context._id))
-    }
+  for (const context of contextsToRemove) {
+    res.push(control.txFactory.createTxRemoveDoc(context._class, context.space, context._id))
   }
 
   return res

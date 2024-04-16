@@ -26,13 +26,13 @@
   import { getActions, restrictionStore } from '@hcengineering/view-resources'
 
   import ReactionsPresenter from '../reactions/ReactionsPresenter.svelte'
-  import ActivityMessageExtensionComponent from './ActivityMessageExtension.svelte'
   import ActivityMessagePresenter from './ActivityMessagePresenter.svelte'
   import ActivityMessageActions from '../ActivityMessageActions.svelte'
   import { isReactionMessage } from '../../activityMessagesUtils'
   import Bookmark from '../icons/Bookmark.svelte'
   import { savedMessagesStore } from '../../activity'
   import MessageTimestamp from '../MessageTimestamp.svelte'
+  import Replies from '../Replies.svelte'
 
   export let message: DisplayActivityMessage
   export let parentMessage: DisplayActivityMessage | undefined = undefined
@@ -85,11 +85,7 @@
     setTimeout(scrollToMessage, 100)
   }
 
-  void client
-    .findAll(activity.class.ActivityMessageExtension, { ofMessage: message._class })
-    .then((res: ActivityMessageExtension[]) => {
-      extensions = res
-    })
+  $: extensions = client.getModel().findAllSync(activity.class.ActivityMessageExtension, { ofMessage: message._class })
 
   function handleActionsOpened (): void {
     isActionsOpened = true
@@ -175,11 +171,7 @@
         <slot name="content" />
 
         {#if !hideFooter}
-          <ActivityMessageExtensionComponent
-            kind="footer"
-            {extensions}
-            props={{ object: message, embedded, onReply }}
-          />
+          <Replies {embedded} object={message} {onReply} />
         {/if}
         <ReactionsPresenter object={message} {readonly} />
         {#if parentMessage && showEmbedded}
