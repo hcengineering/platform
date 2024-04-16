@@ -75,11 +75,14 @@ export const recruitOperation: MigrateOperation = {
     ])
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
+    const tx = new TxOperations(client, core.account.System)
+    // For now need to be created every time as it's system model
+    await createDefaultKanbanTemplate(tx)
+
     await tryUpgrade(client, recruitId, [
       {
         state: 'create-default-project',
         func: async (client) => {
-          const tx = new TxOperations(client, core.account.System)
           await createDefaults(tx)
         }
       },
@@ -150,7 +153,6 @@ async function createDefaults (tx: TxOperations): Promise<void> {
   await createSequence(tx, recruit.class.Opinion)
   await createSequence(tx, recruit.class.Applicant)
   await createSequence(tx, recruit.class.Vacancy)
-  await createDefaultKanbanTemplate(tx)
 }
 
 async function createDefaultKanbanTemplate (tx: TxOperations): Promise<Ref<ProjectType>> {
