@@ -13,6 +13,7 @@ export interface AnalyticProvider {
   setWorkspace: (ws: string) => void
   handleEvent: (event: string) => void
   handleError: (error: Error) => void
+  navigate: (path: string) => void
 }
 
 export const Analytics = {
@@ -50,6 +51,12 @@ export const Analytics = {
   handleError (error: Error): void {
     providers.forEach((provider) => {
       provider.handleError(error)
+    })
+  },
+
+  navigate (path: string): void {
+    providers.forEach((provider) => {
+      provider.navigate(path)
     })
   }
 }

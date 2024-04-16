@@ -43,7 +43,7 @@
 
   $: updateResultQuery(search)
 
-  function showCreateDialog () {
+  function showCreateDialog (): void {
     if (createComponent === undefined) {
       return
     }

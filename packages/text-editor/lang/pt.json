@@ -45,6 +45,8 @@
     "TableOptions": "Personalizar tabela",
     "Width": "Largura",
     "Height": "Altura",
-    "Unset": "Anular"
+    "Unset": "Anular",
+    "Image": "Imagem",
+    "SeparatorLine": "linha separadora"
   }
 }

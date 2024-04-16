@@ -36,7 +36,7 @@ import {
 } from '@hcengineering/middleware'
 import { createMongoAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
 import { OpenAIEmbeddingsStage, openAIId, openAIPluginImpl } from '@hcengineering/openai'
-import { addLocation, addStringsLoader } from '@hcengineering/platform'
+import { addLocation, addStringsLoader, platformId } from '@hcengineering/platform'
 import {
   BackupClientSession,
   buildStorageFromConfig,
@@ -123,8 +123,8 @@ import { viewId } from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
 
 import coreEng from '@hcengineering/core/lang/en.json'
-
 import loginEng from '@hcengineering/login-assets/lang/en.json'
+import platformEng from '@hcengineering/platform/lang/en.json'
 
 import activityEn from '@hcengineering/activity-assets/lang/en.json'
 import attachmentEn from '@hcengineering/attachment-assets/lang/en.json'
@@ -154,6 +154,7 @@ import workbenchEn from '@hcengineering/workbench-assets/lang/en.json'
 
 addStringsLoader(coreId, async (lang: string) => coreEng)
 addStringsLoader(loginId, async (lang: string) => loginEng)
+addStringsLoader(platformId, async (lang: string) => platformEng)
 
 addStringsLoader(taskId, async (lang: string) => taskEn)
 addStringsLoader(viewId, async (lang: string) => viewEn)

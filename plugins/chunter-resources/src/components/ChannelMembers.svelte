@@ -30,7 +30,7 @@
 
   $: updatePersons(ids)
 
-  function updatePersons (ids: Ref<Person>[]) {
+  function updatePersons (ids: Ref<Person>[]): void {
     persons = ids.map((_id) => $personByIdStore.get(_id)).filter((person): person is Person => !!person)
   }
 </script>

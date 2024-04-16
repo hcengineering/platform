@@ -32,7 +32,7 @@ import core, {
   IndexKind,
   Interface,
   Markup,
-  MixinUpdate,
+  MixinData,
   Obj,
   PropertyType,
   Rank,
@@ -359,7 +359,7 @@ export class Builder {
     objectId: Ref<D>,
     objectClass: Ref<Class<D>>,
     mixin: Ref<IMixin<M>>,
-    attributes: MixinUpdate<D, M>
+    attributes: MixinData<D, M>
   ): void {
     const tx = txFactory.createTxMixin(objectId, objectClass, core.space.Model, mixin, attributes)
     this.txes.push(tx)

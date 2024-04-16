@@ -116,7 +116,7 @@
     if (key.code === 'Enter') {
       key.preventDefault()
       key.stopPropagation()
-      handleSelection(key, objects, selection)
+      void handleSelection(key, objects, selection)
     }
   }
   const manager = createFocusManager()
@@ -217,7 +217,7 @@
             class="menu-item withList w-full flex-row-center"
             disabled={readonly || isDeselectDisabled || loading}
             on:click={() => {
-              handleSelection(undefined, objects, item)
+              void handleSelection(undefined, objects, item)
             }}
           >
             <span class="label" class:disabled={readonly || isDeselectDisabled || loading}>

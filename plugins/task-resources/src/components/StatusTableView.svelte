@@ -83,7 +83,7 @@
 
   const client = getClient()
 
-  async function updateQuery (query: DocumentQuery<Task>, selectedDoneStates: Set<Ref<Status>>): Promise<void> {
+  function updateQuery (query: DocumentQuery<Task>, selectedDoneStates: Set<Ref<Status>>): void {
     resConfig = updateConfig(config)
     const result = client.getHierarchy().clone(query)
     if (state) {
@@ -164,7 +164,14 @@
       <TabList items={itemsDS} bind:selected={selectedDS} multiselect on:select={handleDoneSelect} />
     </ScrollerBar>
   {:else}
-    <StatesBar bind:state {space} gap={'none'} on:change={() => updateQuery(query, selectedDoneStates)} />
+    <StatesBar
+      bind:state
+      {space}
+      gap={'none'}
+      on:change={() => {
+        updateQuery(query, selectedDoneStates)
+      }}
+    />
   {/if}
 </div>
 <div class="statustableview-container">

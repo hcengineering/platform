@@ -23,7 +23,7 @@ test.describe('Tracker sub-issues tests', () => {
   })
 
   test('create sub-issue', async ({ page }) => {
-    await navigate(page)
+    await page.click('[id="app-tracker\\:string\\:TrackerApplication"]')
 
     const props = {
       name: `issue-${generateId(5)}`,

@@ -35,13 +35,17 @@
   const spaceQ = createQuery()
   let templates: MessageTemplate[] = []
   let selected: Ref<MessageTemplate> | undefined
-  let newTemplate: Data<MessageTemplate> | undefined = undefined
+
+  let title: string = ''
+  let message: string = ''
+
+  let newTemplate: boolean = false
 
   query.query(templatesPlugin.class.MessageTemplate, {}, (t) => {
     templates = t
-    if (templates.findIndex((t) => t._id === selected) === -1) {
+    if (selected !== undefined && templates.findIndex((t) => t._id === selected) === -1) {
       selected = undefined
-      newTemplate = undefined
+      newTemplate = false
     }
   })
 
@@ -60,28 +64,28 @@
   let mode = Mode.View
 
   async function addTemplate (): Promise<void> {
-    newTemplate = {
-      title: '',
-      message: ''
-    }
+    title = ''
+    message = ''
+    newTemplate = true
     mode = Mode.Create
   }
   async function saveNewTemplate (): Promise<void> {
-    if (newTemplate === undefined) {
+    if (!newTemplate) {
       return
     }
     if (mode === Mode.Create) {
-      if (newTemplate.title.trim().length > 0 && space !== undefined) {
-        const ref = await client.createDoc(templatesPlugin.class.MessageTemplate, space, newTemplate)
+      if (title.trim().length > 0 && space !== undefined) {
+        const ref = await client.createDoc(templatesPlugin.class.MessageTemplate, space, {
+          title,
+          message
+        })
         selected = ref
       }
     } else if (selected !== undefined) {
-      await client.updateDoc(
-        templatesPlugin.class.MessageTemplate,
-        templatesPlugin.space.Templates,
-        selected,
-        newTemplate
-      )
+      await client.updateDoc(templatesPlugin.class.MessageTemplate, templatesPlugin.space.Templates, selected, {
+        title,
+        message
+      })
     }
     mode = Mode.View
   }
@@ -92,7 +96,7 @@
     textEditor.submit()
   }
   const updateTemplate = (evt: any) => {
-    newTemplate = { title: newTemplate?.title ?? '', message: evt.detail }
+    message = evt.detail
   }
 
   function addField (ev: MouseEvent) {
@@ -184,7 +188,9 @@
                 indent
                 on:click={() => {
                   selected = t._id
-                  newTemplate = { title: t.title, message: t.message }
+                  title = t.title
+                  message = t.message
+                  newTemplate = true
                   mode = Mode.View
                 }}
                 selected={selected === t._id}
@@ -223,18 +229,18 @@
             </div>
             <div class="text-lg caption-color">
               {#if mode !== Mode.View}
-                <EditBox bind:value={newTemplate.title} placeholder={templatesPlugin.string.TemplatePlaceholder} />
+                <EditBox bind:value={title} placeholder={templatesPlugin.string.TemplatePlaceholder} />
               {:else}
-                {newTemplate.title}
+                {title}
               {/if}
             </div>
             <div class="separator" />
             {#if mode !== Mode.View}
-              <StyledTextEditor bind:content={newTemplate.message} bind:this={textEditor} on:value={updateTemplate}>
+              <StyledTextEditor bind:content={message} bind:this={textEditor} on:value={updateTemplate}>
                 <div class="flex flex-reverse flex-grow">
                   <div class="ml-2">
                     <Button
-                      disabled={newTemplate.title.trim().length === 0}
+                      disabled={title.trim().length === 0}
                       kind={'primary'}
                       label={templatesPlugin.string.SaveTemplate}
                       on:click={saveNewTemplate}
@@ -245,7 +251,7 @@
                       label={templatesPlugin.string.Cancel}
                       on:click={() => {
                         if (mode === Mode.Create) {
-                          newTemplate = undefined
+                          newTemplate = false
                         }
                         mode = Mode.View
                       }}
@@ -256,7 +262,7 @@
               </StyledTextEditor>
             {:else}
               <div class="text">
-                <MessageViewer message={newTemplate.message} />
+                <MessageViewer {message} />
               </div>
               <div class="flex flex-reverse">
                 <Button

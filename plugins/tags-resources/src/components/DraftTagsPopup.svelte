@@ -25,18 +25,19 @@
 
   const dispatch = createEventDispatcher()
   async function addRef ({ title, color, _id: tag }: TagElement): Promise<void> {
-    tags.push({
-      tag,
-      title,
-      color
-    })
-    tags = tags
+    tags = [
+      ...tags,
+      {
+        tag,
+        title,
+        color
+      }
+    ]
     dispatch('update', tags)
   }
 
   async function removeTag (tag: TagElement): Promise<void> {
     tags = tags.filter((t) => t.tag !== tag._id)
-    tags = tags
     dispatch('update', tags)
   }
 

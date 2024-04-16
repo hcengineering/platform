@@ -19,11 +19,15 @@
   import { Label, Icon } from '@hcengineering/ui'
   import type { AnySvelteComponent } from '@hcengineering/ui'
   import textEditorPlugin from '../plugin'
+  import { CollaborationUser } from '../types'
   import CollaborativeAttributeBox from './CollaborativeAttributeBox.svelte'
   import IconDescription from './icons/Description.svelte'
 
   export let object: Doc
   export let key: KeyedAttribute
+
+  export let user: CollaborationUser
+  export let userComponent: AnySvelteComponent | undefined = undefined
 
   export let label: IntlString = textEditorPlugin.string.FullDescription
   export let icon: Asset | AnySvelteComponent = IconDescription
@@ -40,5 +44,14 @@
       <Label {label} />
     </span>
   </div>
-  <CollaborativeAttributeBox {object} {key} boundary={element?.parentElement ?? undefined} on:focus on:blur on:update />
+  <CollaborativeAttributeBox
+    {object}
+    {key}
+    {user}
+    {userComponent}
+    boundary={element?.parentElement ?? undefined}
+    on:focus
+    on:blur
+    on:update
+  />
 </div>

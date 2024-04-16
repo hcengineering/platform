@@ -52,6 +52,7 @@ export class CommonPage {
       .locator('div.popup form[id="tags:string:AddTag"] input[placeholder="Please type description here"]')
       .fill(description)
     await page.locator('div.popup form[id="tags:string:AddTag"] button[type="submit"]').click()
+    await page.locator('div.popup form[id="tags:string:AddTag"]').waitFor({ state: 'hidden' })
   }
 
   async selectAssignee (page: Page, name: string): Promise<void> {

@@ -199,7 +199,12 @@
         })
         openInboxDoc(selectedContext.attachedTo, selectedContext.attachedToClass, thread?.attachedTo, thread?._id)
       } else if (isReactionMessage(message)) {
-        openInboxDoc(selectedContext._id, undefined, selectedContext.attachedTo as Ref<ActivityMessage>)
+        openInboxDoc(
+          selectedContext.attachedTo,
+          selectedContext.attachedToClass,
+          undefined,
+          selectedContext.attachedTo as Ref<ActivityMessage>
+        )
       } else {
         const selectedMsg = (selectedNotification as ActivityInboxNotification)?.attachedTo
 

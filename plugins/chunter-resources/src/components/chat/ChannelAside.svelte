@@ -39,7 +39,7 @@
   $: disabledRemoveFor = currentAccount._id !== object?.createdBy && creatorPersonRef ? [creatorPersonRef] : []
   $: updateMembers(object)
 
-  function updateMembers (object: Channel | undefined) {
+  function updateMembers (object: Channel | undefined): void {
     if (object === undefined) {
       members = new Set()
       return
@@ -58,7 +58,7 @@
     )
   }
 
-  async function changeMembers (personRefs: Ref<Person>[], object?: Channel) {
+  async function changeMembers (personRefs: Ref<Person>[], object?: Channel): Promise<void> {
     if (object === undefined) {
       return
     }
@@ -75,7 +75,7 @@
     await Promise.all([leaveChannel(object, toLeave), joinChannel(object, toJoin)])
   }
 
-  async function removeMember (ev: CustomEvent) {
+  async function removeMember (ev: CustomEvent): Promise<void> {
     if (object === undefined) {
       return
     }
@@ -97,7 +97,7 @@
     await leaveChannel(object, accounts)
   }
 
-  function openSelectUsersPopup () {
+  function openSelectUsersPopup (): void {
     showPopup(
       SelectUsersPopup,
       {
@@ -108,7 +108,7 @@
       'top',
       (result?: Ref<Person>[]) => {
         if (result != null) {
-          changeMembers(result, object)
+          void changeMembers(result, object)
         }
       }
     )

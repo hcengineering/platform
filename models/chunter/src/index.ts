@@ -62,7 +62,7 @@ import notification, { notificationActionTemplates } from '@hcengineering/model-
 import view, { createAction, template, actionTemplates as viewTemplates } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
-import type { IntlString, Resource } from '@hcengineering/platform'
+import type { IntlString } from '@hcengineering/platform'
 import { TActivityMessage } from '@hcengineering/model-activity'
 
 import chunter from './plugin'
@@ -190,7 +190,6 @@ export class TChatMessageViewlet extends TDoc implements ChatMessageViewlet {
 @Mixin(chunter.mixin.ObjectChatPanel, core.class.Class)
 export class TObjectChatPanel extends TClass implements ObjectChatPanel {
   ignoreKeys!: string[]
-  titleProvider!: Resource<(object: Doc) => string>
 }
 
 const actionTemplates = template({

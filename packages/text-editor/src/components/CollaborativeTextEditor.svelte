@@ -18,9 +18,20 @@
   import { type Class, type CollaborativeDoc, type Doc, type Ref } from '@hcengineering/core'
   import { type DocumentId, type PlatformDocumentId } from '@hcengineering/collaborator-client'
   import { IntlString, getMetadata, translate } from '@hcengineering/platform'
-  import presentation from '@hcengineering/presentation'
   import { markupToJSON } from '@hcengineering/text'
-  import { Button, IconSize, Loading, themeStore } from '@hcengineering/ui'
+  import presentation, { getFileUrl, getImageSize } from '@hcengineering/presentation'
+  import view from '@hcengineering/view'
+  import {
+    AnySvelteComponent,
+    Button,
+    IconSize,
+    Loading,
+    PopupAlignment,
+    getEventPositionElement,
+    getPopupPositionElement,
+    ThrottledCaller,
+    themeStore
+  } from '@hcengineering/ui'
   import { AnyExtension, Editor, FocusPosition, mergeAttributes } from '@tiptap/core'
   import Collaboration, { isChangeOrigin } from '@tiptap/extension-collaboration'
   import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
@@ -38,14 +49,16 @@
   import { formatCollaborativeDocumentId, formatPlatformDocumentId } from '../provider/utils'
   import {
     CollaborationIds,
+    CollaborationUser,
     RefAction,
     TextEditorCommandHandler,
     TextEditorHandler,
     TextFormatCategory,
     TextNodeAction
   } from '../types'
-  import { getCollaborationUser } from '../utils'
+  import { addTableHandler } from '../utils'
 
+  import CollaborationUsers from './CollaborationUsers.svelte'
   import ImageStyleToolbar from './ImageStyleToolbar.svelte'
   import TextEditorStyleToolbar from './TextEditorStyleToolbar.svelte'
   import { noSelectionRender, renderCursor } from './editor/collaboration'
@@ -54,9 +67,11 @@
   import { ImageExtension } from './extension/imageExt'
   import { type FileAttachFunction } from './extension/types'
   import { FileExtension } from './extension/fileExt'
+  import { LeftMenuExtension } from './extension/leftMenu'
+  import { InlineCommandsExtension } from './extension/inlineCommands'
   import { InlinePopupExtension } from './extension/inlinePopup'
   import { InlineStyleToolbarExtension } from './extension/inlineStyleToolbar'
-  import { completionConfig } from './extensions'
+  import { completionConfig, inlineCommandsConfig } from './extensions'
 
   export let collaborativeDoc: CollaborativeDoc
   export let initialCollaborativeDoc: CollaborativeDoc | undefined = undefined
@@ -65,6 +80,9 @@
   export let objectClass: Ref<Class<Doc>> | undefined
   export let objectId: Ref<Doc> | undefined
   export let objectAttr: string | undefined
+
+  export let user: CollaborationUser
+  export let userComponent: AnySvelteComponent | undefined = undefined
 
   export let readonly = false
 
@@ -94,6 +112,8 @@
   export let canShowPopups = true
   export let canEmbedFiles = true
   export let canEmbedImages = true
+  export let withSideMenu = true
+  export let withInlineCommands = true
 
   const dispatch = createEventDispatcher()
 
@@ -162,13 +182,33 @@
     insertTemplate: (name, markup) => {
       editor?.commands.insertContent(markupToJSON(markup))
     },
+    insertTable: (options: { rows?: number, cols?: number, withHeaderRow?: boolean }) => {
+      editor?.commands.insertTable(options)
+    },
+    insertCodeBlock: () => {
+      editor?.commands.insertContent(
+        {
+          type: 'codeBlock',
+          content: [{ type: 'text', text: ' ' }]
+        },
+        {
+          updateSelection: false
+        }
+      )
+    },
+    insertContent: (content) => {
+      editor?.commands.insertContent(content)
+    },
+    insertSeparatorLine: () => {
+      editor?.commands.setHorizontalRule()
+    },
     focus: () => {
       focus()
     }
   }
 
-  function handleAction (a: RefAction, evt?: Event): void {
-    a.action(evt?.target as HTMLElement, editorHandler)
+  function handleAction (a: RefAction, evt?: MouseEvent): void {
+    a.action(evt?.target as HTMLElement, editorHandler, evt)
   }
 
   $: commandHandler = textEditorCommandHandler(editor)
@@ -254,11 +294,132 @@
         })
       )
     }
+    if (withSideMenu) {
+      optionalExtensions.push(
+        LeftMenuExtension.configure({
+          width: 20,
+          height: 20,
+          marginX: 8,
+          className: 'tiptap-left-menu',
+          icon: view.icon.Add,
+          iconProps: {
+            className: 'svg-tiny',
+            fill: 'currentColor'
+          },
+          items: [
+            ...(canEmbedImages ? [{ id: 'image', label: textEditorPlugin.string.Image, icon: view.icon.Image }] : []),
+            { id: 'table', label: textEditorPlugin.string.Table, icon: view.icon.Table2 },
+            { id: 'code-block', label: textEditorPlugin.string.CodeBlock, icon: view.icon.CodeBlock },
+            { id: 'separator-line', label: textEditorPlugin.string.SeparatorLine, icon: view.icon.SeparatorLine }
+          ],
+          handleSelect: handleLeftMenuClick
+        })
+      )
+    }
+    if (withInlineCommands) {
+      optionalExtensions.push(
+        InlineCommandsExtension.configure(
+          inlineCommandsConfig(handleLeftMenuClick, attachFile === undefined || !canEmbedImages ? ['image'] : [])
+        )
+      )
+    }
+  }
+
+  let inputImage: HTMLInputElement
+
+  export function handleAttachImage (): void {
+    inputImage.click()
+  }
+
+  async function createInlineImage (file: File): Promise<void> {
+    if (!file.type.startsWith('image/') || attachFile === undefined) {
+      return
+    }
+
+    const attached = await attachFile(file)
+    if (attached === undefined) {
+      return
+    }
+
+    const size = await getImageSize(
+      file,
+      getFileUrl(attached.file, 'full', getMetadata(presentation.metadata.UploadURL))
+    )
+
+    editor.commands.insertContent(
+      {
+        type: 'image',
+        attrs: {
+          'file-id': attached.file,
+          width: Math.round(size.width / size.pixelRatio)
+        }
+      },
+      {
+        updateSelection: false
+      }
+    )
+  }
+
+  async function fileSelected (): Promise<void> {
+    if (readonly) return
+    const list = inputImage.files
+    if (list === null || list.length === 0) return
+    for (let index = 0; index < list.length; index++) {
+      const file = list.item(index)
+      if (file !== null) {
+        await createInlineImage(file)
+      }
+    }
+    inputImage.value = ''
+  }
+
+  async function handleLeftMenuClick (id: string, pos: number, targetItem?: MouseEvent | HTMLElement): Promise<void> {
+    editor.commands.focus(pos, { scrollIntoView: false })
+
+    switch (id) {
+      case 'image':
+        handleAttachImage()
+        break
+      case 'table': {
+        let position: PopupAlignment | undefined = undefined
+        if (targetItem !== undefined) {
+          position =
+            targetItem instanceof MouseEvent ? getEventPositionElement(targetItem) : getPopupPositionElement(targetItem)
+        }
+
+        // We need to trigger it asynchronously in order for the editor to finish its focus event
+        // Otherwise, it hoggs the focus from the popup and keyboard navigation doesn't work
+        setTimeout(() => {
+          addTableHandler(editor.commands.insertTable, position)
+        })
+        break
+      }
+      case 'code-block':
+        // For some reason .setCodeBlock doesnt work in our case
+        editor.commands.insertContent(
+          {
+            type: 'codeBlock',
+            content: [{ type: 'text', text: ' ' }]
+          },
+          {
+            updateSelection: false
+          }
+        )
+        editor.commands.focus(pos, { scrollIntoView: false })
+        break
+      case 'separator-line':
+        editor.commands.setHorizontalRule()
+        break
+    }
+  }
+
+  const throttle = new ThrottledCaller(100)
+  const updateLastUpdateTime = (): void => {
+    remoteProvider.awareness?.setLocalStateField('lastUpdate', Date.now())
   }
 
   onMount(async () => {
     await ph
-    const user = await getCollaborationUser()
 
     editor = new Editor({
       element,
@@ -326,6 +487,7 @@
         // ignore non-local changes
         if (isChangeOrigin(transaction)) return
 
+        throttle.call(updateLastUpdateTime)
         dispatch('update')
       }
     })
@@ -344,6 +506,16 @@
   })
 </script>
 
+<input
+  bind:this={inputImage}
+  multiple
+  type="file"
+  name="file"
+  id="imageInput"
+  accept="image/*"
+  style="display: none"
+  on:change={fileSelected}
+/>
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
@@ -384,6 +556,9 @@
 
   <div class="textInput">
     <div class="select-text" class:hidden={loading} style="width: 100%;" bind:this={element} />
+    {#if remoteProvider && editor && userComponent}
+      <CollaborationUsers provider={remoteProvider} {editor} component={userComponent} />
+    {/if}
   </div>
 
   {#if refActions.length > 0}
@@ -430,9 +605,28 @@
     flex-grow: 1;
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
+    align-items: flex-start;
     min-height: 1.25rem;
     background-color: transparent;
+
+    :global(.tiptap-left-menu) {
+      color: var(--theme-trans-color);
+      width: 20px;
+      height: 20px;
+      border-radius: 20%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &:hover {
+        background-color: var(--theme-button-hovered);
+        cursor: pointer;
+      }
+
+      &:active {
+        background-color: var(--theme-button-pressed);
+      }
+    }
   }
 
   .hidden {

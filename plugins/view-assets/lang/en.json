@@ -67,6 +67,7 @@
     "View": "View",
     "MarkupEditor": "Edit of rich content field",
     "List": "List",
+    "Grid": "Grid",
     "Timeline": "Timeline",
     "Select": "Select",
     "NoGrouping": "No grouping",

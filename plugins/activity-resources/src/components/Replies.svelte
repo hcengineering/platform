@@ -70,7 +70,7 @@
       .some(({ isViewed }) => !isViewed)
   }
 
-  function updateQuery (personIds: Set<Ref<Person>>, personById: IdMap<Person>) {
+  function updateQuery (personIds: Set<Ref<Person>>, personById: IdMap<Person>): void {
     displayPersons = Array.from(personIds)
       .map((id) => personById.get(id))
       .filter((person): person is Person => person !== undefined)

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, {
+  import {
     Class,
     DocumentQuery,
     FindOptions,
@@ -29,8 +29,6 @@
   import { FilterBar, FilterButton, SpacePresenter } from '@hcengineering/view-resources'
   import workbench from '@hcengineering/workbench'
   import { Channel } from '@hcengineering/chunter'
-  import notification from '@hcengineering/notification'
-  import { get } from 'svelte/store'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
 
   import { openChannel } from '../../../navigation'

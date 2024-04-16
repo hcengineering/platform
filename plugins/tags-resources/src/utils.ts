@@ -1,22 +1,14 @@
 // Copyright © 2022 Hardcore Engineering Inc.
 
-import {
-  type Class,
-  type Data,
-  type Doc,
-  type DocumentQuery,
-  type FindResult,
-  generateId,
-  type Ref
-} from '@hcengineering/core'
+import { type Class, type Data, type Doc, type DocumentQuery, type FindResult, type Ref } from '@hcengineering/core'
 import { type Asset } from '@hcengineering/platform'
-import { type TagElement, type InitialKnowledge, type TagReference, type TagCategory } from '@hcengineering/tags'
+import { getClient } from '@hcengineering/presentation'
+import { type InitialKnowledge, type TagCategory, type TagElement, type TagReference } from '@hcengineering/tags'
 import { type ColorDefinition, getColorNumberByText } from '@hcengineering/ui'
 import { type Filter } from '@hcengineering/view'
 import { FilterQuery } from '@hcengineering/view-resources'
-import tags from './plugin'
 import { writable } from 'svelte/store'
-import { getClient } from '@hcengineering/presentation'
+import tags from './plugin'
 
 export function getTagStyle (color: ColorDefinition, selected = false): string {
   return `
@@ -79,7 +71,7 @@ export async function createTagElement (
   category?: Ref<TagCategory> | null,
   description?: string | null,
   color?: number | null
-): Promise<any> {
+): Promise<Ref<TagElement>> {
   const tagElement: Data<TagElement> = {
     title,
     description: description ?? '',
@@ -89,6 +81,5 @@ export async function createTagElement (
   }
 
   const client = getClient()
-  const tagElementId = generateId()
-  return await client.createDoc(tags.class.TagElement, tags.space.Tags, tagElement, tagElementId)
+  return await client.createDoc<TagElement>(tags.class.TagElement, tags.space.Tags, tagElement)
 }

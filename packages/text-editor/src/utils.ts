@@ -14,19 +14,9 @@
 //
 
 import { type Attribute } from '@tiptap/core'
-import { get } from 'svelte/store'
+import { showPopup, SelectPopup, type PopupAlignment } from '@hcengineering/ui'
 
-import contact, { type PersonAccount, formatName, AvatarType } from '@hcengineering/contact'
-import { getCurrentAccount } from '@hcengineering/core'
-import { getClient } from '@hcengineering/presentation'
-import {
-  type ColorDefinition,
-  getPlatformAvatarColorByName,
-  getPlatformAvatarColorForTextDef,
-  themeStore
-} from '@hcengineering/ui'
-
-import { type CollaborationUser } from './types'
+import { mInsertTable } from './components/extensions'
 
 export function getDataAttribute (
   name: string,
@@ -51,26 +41,27 @@ export function getDataAttribute (
   }
 }
 
-function getAvatarColor (name: string, avatar: string, darkTheme: boolean): ColorDefinition {
-  const [type, color] = avatar.split('://')
-  if (type === AvatarType.COLOR) {
-    return getPlatformAvatarColorByName(color, darkTheme)
-  }
-  return getPlatformAvatarColorForTextDef(name, darkTheme)
-}
-
-export async function getCollaborationUser (): Promise<CollaborationUser> {
-  const client = getClient()
-
-  const me = getCurrentAccount() as PersonAccount
-  const person = await client.findOne(contact.class.Person, { _id: me.person })
-  const name = person !== undefined ? formatName(person.name) : me.email
-  const color = getAvatarColor(name, person?.avatar ?? '', get(themeStore).dark)
-
-  return {
-    id: me._id,
-    name,
-    email: me.email,
-    color: color.icon ?? 'var(--theme-button-default)'
-  }
+export async function addTableHandler (
+  insertTable: (options: { rows?: number, cols?: number, withHeaderRow?: boolean }) => void,
+  alignment?: PopupAlignment
+): Promise<void> {
+  showPopup(
+    SelectPopup,
+    {
+      value: mInsertTable.map((it) => ({ id: it.label, text: it.label }))
+    },
+    alignment ?? 'center',
+    (val) => {
+      if (val !== undefined) {
+        const tab = mInsertTable.find((it) => it.label === val)
+        if (tab !== undefined) {
+          insertTable({
+            cols: tab.cols,
+            rows: tab.rows,
+            withHeaderRow: tab.header
+          })
+        }
+      }
+    }
+  )
 }

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Markup } from '@hcengineering/core'
   import { IntlString, getMetadata } from '@hcengineering/platform'
-  import presentation, { MessageViewer } from '@hcengineering/presentation'
+  import presentation, { MessageViewer, getFileUrl, getImageSize } from '@hcengineering/presentation'
   import {
     ActionIcon,
     ButtonSize,
@@ -9,7 +9,10 @@
     IconClose,
     IconEdit,
     Label,
+    PopupAlignment,
     ShowMore,
+    getEventPositionElement,
+    getPopupPositionElement,
     registerFocus,
     resizeObserver
   } from '@hcengineering/ui'
@@ -20,12 +23,14 @@
   import textEditorPlugin from '../plugin'
   import StyledTextEditor from './StyledTextEditor.svelte'
 
-  import { completionConfig } from './extensions'
+  import { completionConfig, inlineCommandsConfig } from './extensions'
   import { EmojiExtension } from './extension/emoji'
   import { FocusExtension } from './extension/focus'
   import { ImageExtension } from './extension/imageExt'
+  import { InlineCommandsExtension } from './extension/inlineCommands'
   import { type FileAttachFunction } from './extension/types'
   import { RefAction } from '../types'
+  import { addTableHandler } from '../utils'
 
   export let label: IntlString | undefined = undefined
   export let content: Markup
@@ -44,6 +49,7 @@
   export let autofocus = false
   export let enableBackReferences: boolean = false
   export let enableEmojiReplace: boolean = true
+  export let enableInlineCommands: boolean = true
   export let isScrollable: boolean = true
   export let boundary: HTMLElement | undefined = undefined
 
@@ -191,12 +197,102 @@
       extensions.push(EmojiExtension.configure())
     }
 
+    if (enableInlineCommands) {
+      extensions.push(
+        InlineCommandsExtension.configure(
+          inlineCommandsConfig(handleCommandSelected, attachFile === undefined ? ['image'] : [])
+        )
+      )
+    }
+
     return extensions
+  }
+
+  async function handleCommandSelected (id: string, pos: number, targetItem?: MouseEvent | HTMLElement): Promise<void> {
+    switch (id) {
+      case 'image':
+        handleAttachImage()
+        break
+      case 'table': {
+        let position: PopupAlignment | undefined = undefined
+        if (targetItem !== undefined) {
+          position =
+            targetItem instanceof MouseEvent ? getEventPositionElement(targetItem) : getPopupPositionElement(targetItem)
+        }
+
+        addTableHandler(textEditor.editorHandler.insertTable, position)
+        break
+      }
+      case 'code-block':
+        textEditor.editorHandler.insertCodeBlock(pos)
+
+        break
+      case 'separator-line':
+        textEditor.editorHandler.insertSeparatorLine()
+        break
+    }
+  }
+
+  let inputImage: HTMLInputElement
+
+  export function handleAttachImage (): void {
+    inputImage.click()
+  }
+
+  async function createInlineImage (file: File): Promise<void> {
+    if (!file.type.startsWith('image/') || attachFile === undefined) {
+      return
+    }
+
+    const attached = await attachFile(file)
+    if (attached === undefined) {
+      return
+    }
+
+    const size = await getImageSize(
+      file,
+      getFileUrl(attached.file, 'full', getMetadata(presentation.metadata.UploadURL))
+    )
+
+    textEditor.editorHandler.insertContent(
+      {
+        type: 'image',
+        attrs: {
+          'file-id': attached.file,
+          width: Math.round(size.width / size.pixelRatio)
+        }
+      },
+      {
+        updateSelection: false
+      }
+    )
+  }
+
+  async function fileSelected (): Promise<void> {
+    const list = inputImage.files
+    if (list === null || list.length === 0) return
+    for (let index = 0; index < list.length; index++) {
+      const file = list.item(index)
+      if (file !== null) {
+        await createInlineImage(file)
+      }
+    }
+    inputImage.value = ''
   }
 
   const extensions = configureExtensions()
 </script>
 
+<input
+  bind:this={inputImage}
+  multiple
+  type="file"
+  name="file"
+  id="imageInput"
+  accept="image/*"
+  style="display: none"
+  on:change={fileSelected}
+/>
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div

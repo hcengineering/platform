@@ -15,13 +15,11 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import presentation from '@hcengineering/presentation'
   import { getEventPositionElement, IconSize, SelectPopup, showPopup } from '@hcengineering/ui'
   import { Editor } from '@tiptap/core'
   import { Level } from '@tiptap/extension-heading'
   import textEditorPlugin from '../plugin'
   import { TextFormatCategory, TextNodeAction } from '../types'
-  import { mInsertTable } from './extensions'
   import Bold from './icons/Bold.svelte'
   import Code from './icons/Code.svelte'
   import CodeBlock from './icons/CodeBlock.svelte'
@@ -77,38 +75,6 @@
       textEditor.commands.toggleHeading({ level })
       dispatch('focus')
     }
-  }
-
-  function insertTable (event: MouseEvent): void {
-    showPopup(
-      SelectPopup,
-      {
-        value: [
-          { id: '#delete', label: presentation.string.Remove },
-          ...mInsertTable.map((it) => ({ id: it.label, text: it.label }))
-        ]
-      },
-      getEventPositionElement(event),
-      (val) => {
-        if (val !== undefined) {
-          if (val === '#delete') {
-            textEditor.commands.deleteTable()
-            dispatch('focus')
-            return
-          }
-          const tab = mInsertTable.find((it) => it.label === val)
-          if (tab !== undefined) {
-            textEditor.commands.insertTable({
-              cols: tab.cols,
-              rows: tab.rows,
-              withHeaderRow: tab.header
-            })
-
-            dispatch('focus')
-          }
-        }
-      }
-    )
   }
 
   function tableOptions (event: MouseEvent): void {
@@ -200,6 +166,9 @@
 
 {#if textEditor}
   {#each textFormatCategories as category, index}
+    {#if index > 0 && (category !== TextFormatCategory.Table || textEditor.isActive('table'))}
+      <div class="buttons-divider" />
+    {/if}
     {#if category === TextFormatCategory.Heading}
       <StyleButton
         icon={Header1}
@@ -305,14 +274,6 @@
       />
     {/if}
     {#if category === TextFormatCategory.Table}
-      <StyleButton
-        icon={IconTable}
-        iconProps={{ style: 'table' }}
-        size={formatButtonSize}
-        selected={textEditor.isActive('table')}
-        on:click={insertTable}
-        showTooltip={{ label: textEditorPlugin.string.InsertTable }}
-      />
       {#if textEditor.isActive('table')}
         <StyleButton
           icon={IconTable}
@@ -322,9 +283,6 @@
           showTooltip={{ label: textEditorPlugin.string.TableOptions }}
         />
       {/if}
-    {/if}
-    {#if index < textFormatCategories.length - 1}
-      <div class="buttons-divider" />
     {/if}
   {/each}
   {#if textFormatCategories.length > 0 && textNodeActions.length > 0}

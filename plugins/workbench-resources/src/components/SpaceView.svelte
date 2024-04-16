@@ -15,7 +15,7 @@
 <script lang="ts">
   import core, { Class, Doc, Ref, Space, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { getClient } from '@hcengineering/presentation'
+  import { getClient, reduceCalls } from '@hcengineering/presentation'
   import { AnyComponent, Component, resolvedLocationStore } from '@hcengineering/ui'
   import view, { ViewOptions, Viewlet } from '@hcengineering/view'
   import {
@@ -55,9 +55,7 @@
 
   $: active = $activeViewlet[key]
 
-  $: update(active, currentSpace, currentView?.class)
-
-  async function update (
+  const update = reduceCalls(async function update (
     active: Ref<Viewlet> | null,
     currentSpace?: Ref<Space>,
     attachTo?: Ref<Class<Doc>>
@@ -88,7 +86,9 @@
       }
       _class = attachTo
     }
-  }
+  })
+
+  $: void update(active, currentSpace, currentView?.class)
 
   const hierarchy = client.getHierarchy()
   async function getHeader (_class: Ref<Class<Space>>): Promise<AnyComponent | undefined> {
@@ -97,7 +97,7 @@
     if (headerMixin?.header == null && clazz.extends != null) return await getHeader(clazz.extends)
     return headerMixin.header
   }
-  function setViewlet (e: CustomEvent<WithLookup<Viewlet>>) {
+  function setViewlet (e: CustomEvent<WithLookup<Viewlet>>): void {
     viewlet = e.detail
   }
 </script>
