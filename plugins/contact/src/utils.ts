@@ -16,7 +16,7 @@
 import { AttachedData, Class, Client, Doc, FindResult, Ref, Hierarchy } from '@hcengineering/core'
 import { IconSize, ColorDefinition } from '@hcengineering/ui'
 import { MD5 } from 'crypto-js'
-import { Channel, Contact, contactPlugin, Person } from '.'
+import { AvatarProvider, AvatarType, Channel, Contact, contactPlugin, Person } from '.'
 import { AVATAR_COLORS, GravatarPlaceholderType } from './types'
 import { getMetadata } from '@hcengineering/platform'
 
@@ -53,6 +53,27 @@ export function getAvatarColorName (color: string): string {
  */
 export function buildGravatarId (email: string): string {
   return MD5(email.trim().toLowerCase()).toString()
+}
+
+/**
+ * @public
+ */
+export function getAvatarProviderId (avatar?: string | null): Ref<AvatarProvider> | undefined {
+  if (avatar === null || avatar === undefined || avatar === '') {
+    return
+  }
+  if (!avatar.includes('://')) {
+    return contactPlugin.avatarProvider.Image
+  }
+  const [schema] = avatar.split('://')
+
+  switch (schema) {
+    case AvatarType.GRAVATAR:
+      return contactPlugin.avatarProvider.Gravatar
+    case AvatarType.COLOR:
+      return contactPlugin.avatarProvider.Color
+  }
+  return contactPlugin.avatarProvider.Image
 }
 
 /**

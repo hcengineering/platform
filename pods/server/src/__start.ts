@@ -22,49 +22,42 @@ import serverCore, { type StorageConfiguration } from '@hcengineering/server-cor
 import serverNotification from '@hcengineering/server-notification'
 import serverToken from '@hcengineering/server-token'
 import { start } from '.'
+import notification from '@hcengineering/notification'
 
-const {
-  url,
-  frontUrl,
-  serverSecret,
-  sesUrl,
-  elasticUrl,
-  elasticIndexName,
-  accountsUrl,
-  rekoniUrl,
-  serverFactory,
-  serverPort,
-  enableCompression
-} = serverConfigFromEnv()
+const config = serverConfigFromEnv()
 const storageConfig: StorageConfiguration = storageConfigFromEnv()
 
 const cursorMaxTime = process.env.SERVER_CURSOR_MAXTIMEMS
 
 const lastNameFirst = process.env.LAST_NAME_FIRST === 'true'
 setMetadata(serverCore.metadata.CursorMaxTimeMS, cursorMaxTime)
-setMetadata(serverCore.metadata.FrontUrl, frontUrl)
-setMetadata(serverToken.metadata.Secret, serverSecret)
-setMetadata(serverNotification.metadata.SesUrl, sesUrl ?? '')
+setMetadata(serverCore.metadata.FrontUrl, config.frontUrl)
+setMetadata(serverCore.metadata.UploadURL, config.uploadUrl)
+setMetadata(serverToken.metadata.Secret, config.serverSecret)
+setMetadata(serverNotification.metadata.SesUrl, config.sesUrl ?? '')
+setMetadata(notification.metadata.PushPublicKey, config.pushPublicKey)
+setMetadata(serverNotification.metadata.PushPrivateKey, config.pushPrivateKey)
+setMetadata(serverNotification.metadata.PushSubject, config.pushSubject)
 setMetadata(contactPlugin.metadata.LastNameFirst, lastNameFirst)
-setMetadata(serverCore.metadata.ElasticIndexName, elasticIndexName)
+setMetadata(serverCore.metadata.ElasticIndexName, config.elasticIndexName)
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 console.log(
-  `starting server on ${serverPort} git_version: ${process.env.GIT_REVISION ?? ''} model_version: ${
+  `starting server on ${config.serverPort} git_version: ${process.env.GIT_REVISION ?? ''} model_version: ${
     process.env.MODEL_VERSION ?? ''
   }`
 )
-const shutdown = start(url, {
-  fullTextUrl: elasticUrl,
+const shutdown = start(config.url, {
+  fullTextUrl: config.elasticUrl,
   storageConfig,
-  rekoniUrl,
-  port: serverPort,
-  serverFactory,
+  rekoniUrl: config.rekoniUrl,
+  port: config.serverPort,
+  serverFactory: config.serverFactory,
   indexParallel: 2,
   indexProcessing: 50,
   productId: '',
-  enableCompression,
-  accountsUrl
+  enableCompression: config.enableCompression,
+  accountsUrl: config.accountsUrl
 })
 
 const close = (): void => {
