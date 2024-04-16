@@ -29,6 +29,8 @@
     "Unread": "Не прочитанное",
     "CommonNotificationTitle": "{title}",
     "CommonNotificationBody": "Обновление от {senderName}",
+    "CommonNotificationChanged": "{senderName} изменил {property}",
+    "CommonNotificationChangedProperty": "{senderName} изменил {property} на \"{newValue}\"",
     "ChangedCollaborators": "Изменены участники",
     "NewCollaborators": "Новые участники",
     "RemovedCollaborators": "Удалены участники",

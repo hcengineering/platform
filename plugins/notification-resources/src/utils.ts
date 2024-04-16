@@ -30,6 +30,8 @@ import {
   type WithLookup
 } from '@hcengineering/core'
 import notification, {
+  decodeObjectURI,
+  encodeObjectURI,
   notificationId,
   type ActivityInboxNotification,
   type Collaborators,
@@ -468,14 +470,6 @@ async function generateLocation (
       query: { ...loc.query }
     }
   }
-}
-
-export function decodeObjectURI (value: string): [Ref<Doc>, Ref<Class<Doc>>] {
-  return decodeURIComponent(value).split('|') as [Ref<Doc>, Ref<Class<Doc>>]
-}
-
-function encodeObjectURI (_id: Ref<Doc>, _class: Ref<Class<Doc>>): string {
-  return encodeURIComponent([_id, _class].join('|'))
 }
 
 export function openInboxDoc (

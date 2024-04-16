@@ -57,18 +57,22 @@ import notification, {
   Collaborators,
   CommonInboxNotification,
   DocNotifyContext,
+  encodeObjectURI,
   InboxNotification,
+  MentionInboxNotification,
   notificationId,
   NotificationType,
   PushData
 } from '@hcengineering/notification'
 import { getMetadata, getResource, translate } from '@hcengineering/platform'
 import type { TriggerControl } from '@hcengineering/server-core'
+import { stripTags } from '@hcengineering/text'
 import serverCore from '@hcengineering/server-core'
 import serverNotification, {
   getEmployee,
   getPersonAccount,
-  getPersonAccountById
+  getPersonAccountById,
+  NOTIFICATION_BODY_SIZE
 } from '@hcengineering/server-notification'
 import { workbenchId } from '@hcengineering/workbench'
 import webpush, { WebPushError } from 'web-push'
@@ -423,7 +427,8 @@ export async function pushInboxNotifications (
       await createPushFromInbox(
         control,
         targetUser,
-        docNotifyContextId,
+        attachedTo,
+        attachedToClass,
         notificationData,
         _class,
         senderId,
@@ -471,7 +476,7 @@ async function commonInboxNotificationToText (doc: Data<CommonInboxNotification>
     title = await translate(doc.header, params)
   }
   if (doc.messageHtml != null) {
-    body = doc.messageHtml
+    body = stripTags(doc.messageHtml, NOTIFICATION_BODY_SIZE)
   }
   if (doc.message != null) {
     body = await translate(doc.message, params)
@@ -479,10 +484,41 @@ async function commonInboxNotificationToText (doc: Data<CommonInboxNotification>
   return [title, body]
 }
 
+async function mentionInboxNotificationToText (
+  doc: Data<MentionInboxNotification>,
+  control: TriggerControl
+): Promise<[string, string]> {
+  let obj = (await control.findAll(doc.mentionedInClass, { _id: doc.mentionedIn }, { limit: 1 }))[0]
+  if (obj !== undefined) {
+    if (control.hierarchy.isDerived(obj._class, chunter.class.ChatMessage)) {
+      obj = (
+        await control.findAll(
+          (obj as ChatMessage).attachedToClass,
+          { _id: (obj as ChatMessage).attachedTo },
+          { limit: 1 }
+        )
+      )[0]
+    }
+    if (obj !== undefined) {
+      const textPresenter = getTextPresenter(obj._class, control.hierarchy)
+      if (textPresenter !== undefined) {
+        const textPresenterFunc = await getResource(textPresenter.presenter)
+        const title = await textPresenterFunc(obj, control)
+        doc.intlParams = {
+          ...doc.intlParams,
+          title
+        }
+      }
+    }
+  }
+  return await commonInboxNotificationToText(doc)
+}
+
 export async function createPushFromInbox (
   control: TriggerControl,
   targetUser: Ref<Account>,
-  docNotifyContextId: Ref<DocNotifyContext>,
+  attachedTo: Ref<Doc>,
+  attachedToClass: Ref<Class<Doc>>,
   data: Data<InboxNotification>,
   _class: Ref<Class<InboxNotification>>,
   senderId: Ref<PersonAccount>,
@@ -492,6 +528,8 @@ export async function createPushFromInbox (
   let body: string = ''
   if (control.hierarchy.isDerived(_class, notification.class.ActivityInboxNotification)) {
     ;[title, body] = await activityInboxNotificationToText(data as Data<ActivityInboxNotification>)
+  } else if (control.hierarchy.isDerived(_class, notification.class.MentionInboxNotification)) {
+    ;[title, body] = await mentionInboxNotificationToText(data as Data<MentionInboxNotification>, control)
   } else if (control.hierarchy.isDerived(_class, notification.class.CommonInboxNotification)) {
     ;[title, body] = await commonInboxNotificationToText(data as Data<CommonInboxNotification>)
   }
@@ -507,7 +545,7 @@ export async function createPushFromInbox (
   }
   await createPushNotification(control, targetUser, title, body, _id, senderPerson?.avatar, [
     notificationId,
-    docNotifyContextId
+    encodeObjectURI(attachedTo, attachedToClass)
   ])
 }
 
