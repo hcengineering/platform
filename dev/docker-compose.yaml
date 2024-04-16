@@ -156,6 +156,7 @@ services:
       - MINIO_SECRET_KEY=minioadmin
       - REKONI_URL=http://rekoni:4004
       - FRONT_URL=http://localhost:8087
+      - UPLOAD_URL=http://localhost:8087/files
       # - APM_SERVER_URL=http://apm-server:8200
       - SERVER_PROVIDER=ws
       - ACCOUNTS_URL=http://account:3000

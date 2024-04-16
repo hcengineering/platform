@@ -30,7 +30,7 @@ import { imageCropperId } from '@hcengineering/image-cropper'
 import { inventoryId } from '@hcengineering/inventory'
 import { leadId } from '@hcengineering/lead'
 import login, { loginId } from '@hcengineering/login'
-import { notificationId } from '@hcengineering/notification'
+import notification, { notificationId } from '@hcengineering/notification'
 import { recruitId } from '@hcengineering/recruit'
 import rekoni from '@hcengineering/rekoni'
 import { requestId } from '@hcengineering/request'
@@ -96,6 +96,7 @@ interface Config {
   CALENDAR_URL: string
   COLLABORATOR_URL: string
   COLLABORATOR_API_URL: string
+  PUSH_PUBLIC_KEY: string
   TITLE?: string
   LANGUAGES?: string
   DEFAULT_LANGUAGE?: string
@@ -158,6 +159,7 @@ export async function configurePlatform() {
   setMetadata(telegram.metadata.TelegramURL, config.TELEGRAM_URL ?? 'http://localhost:8086')
   setMetadata(gmail.metadata.GmailURL, config.GMAIL_URL ?? 'http://localhost:8087')
   setMetadata(calendar.metadata.CalendarServiceURL, config.CALENDAR_URL ?? 'http://localhost:8095')
+  setMetadata(notification.metadata.PushPublicKey, config.PUSH_PUBLIC_KEY)
 
   setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT)
 
