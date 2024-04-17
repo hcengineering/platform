@@ -10,6 +10,7 @@
     "UnknownMethod": "Неизвестный метод: {method}",
     "InternalServerError": "Внутренняя ошибка сервера",
     "MaintenanceWarning": "Серверные работы запланированы через {time, plural, one {# минуту} few {# минуты} other {# минут}}",
+    "InvalidCredentials":"Неверные учетные данные",
     "AccountNotFound": "Аккаунт не найден",
     "AccountNotConfirmed": "Аккаунт не подтвержден",
     "WorkspaceNotFound": "Рабочее пространство не найдено",

@@ -10,6 +10,7 @@
     "UnknownMethod": "Unknown method: {method}",
     "InternalServerError": "Internal server error",
     "MaintenanceWarning": "Maintenance Scheduled in {time, plural, =1 {less than a minute} other {# minutes}}",
+    "InvalidCredentials": "Invalid credentials",
     "AccountNotFound": "Account not found",
     "AccountNotConfirmed": "Account not confirmed",
     "WorkspaceNotFound": "Workspace not found",
