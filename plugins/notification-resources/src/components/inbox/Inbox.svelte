@@ -13,15 +13,38 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import {
+    ActivityInboxNotification,
+    DocNotifyContext,
+    InboxNotification
+  } from '@hcengineering/notification'
+  import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
+  import view from '@hcengineering/view'
+  import {
+    AnyComponent,
+    Component,
+    defineSeparators,
+    Loading,
+    Label,
+    location as locationStore,
+    Location,
+    Scroller,
+    Separator,
+    TabItem,
+    TabList
+  } from '@hcengineering/ui'
+  import chunter, { ThreadMessage } from '@hcengineering/chunter'
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import { isActivityMessageClass, isReactionMessage } from '@hcengineering/activity-resources'
   import { get } from 'svelte/store'
   import { translate } from '@hcengineering/platform'
+  import { groupByArray, IdMap, Ref, SortingOrder } from '@hcengineering/core'
 
   import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
   import SettingsButton from './SettingsButton.svelte'
   import {
     decodeObjectURI,
+    archiveAll,
     getDisplayInboxData,
     isMentionNotification,
     openInboxDoc,
@@ -29,25 +52,6 @@
   } from '../../utils'
   import { InboxData, InboxNotificationsFilter } from '../../types'
   import InboxGroupedListView from './InboxGroupedListView.svelte'
-  import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
-  import view from '@hcengineering/view'
-  import {
-    AnyComponent,
-    Component,
-    defineSeparators,
-    Label,
-    Scroller,
-    Separator,
-    TabItem,
-    TabList,
-    location as locationStore,
-    Location,
-    Loading
-  } from '@hcengineering/ui'
-  import { ActivityInboxNotification, DocNotifyContext, InboxNotification } from '@hcengineering/notification'
-  import { groupByArray, IdMap, Lookup, Ref, SortingOrder } from '@hcengineering/core'
-  import chunter, { ThreadMessage } from '@hcengineering/chunter'
-
   import notification from '../../plugin'
   import InboxMenuButton from './InboxMenuButton.svelte'
 

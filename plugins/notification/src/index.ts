@@ -421,6 +421,8 @@ const notification = plugin(notificationId, {
     Inbox: '' as IntlString,
     CommonNotificationTitle: '' as IntlString,
     CommonNotificationBody: '' as IntlString,
+    CommonNotificationChanged: '' as IntlString,
+    CommonNotificationChangedProperty: '' as IntlString,
     ChangedCollaborators: '' as IntlString,
     NewCollaborators: '' as IntlString,
     RemovedCollaborators: '' as IntlString,
@@ -449,4 +451,5 @@ const notification = plugin(notificationId, {
   }
 })
 
+export * from './utils'
 export default notification

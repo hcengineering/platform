@@ -603,6 +603,7 @@
 
   .textInput {
     flex-grow: 1;
+    gap: 1rem;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
