@@ -9,10 +9,10 @@ export class EmployeesPage extends CommonPage {
     this.page = page
   }
 
-    readonly pageHeader = (): Locator => this.page.locator('span[class$="title"]', { hasText: 'Employee' })
-    readonly employeeName = (employeeName: string): Locator => this.page.locator('tr a', { hasText: employeeName })
+  readonly pageHeader = (): Locator => this.page.locator('span[class$="title"]', { hasText: 'Employee' })
+  readonly employeeName = (employeeName: string): Locator => this.page.locator('tr a', { hasText: employeeName })
 
   async openEmployeeByName (employeeName: string): Promise<void> {
-    await this.employeeName(employeeName).click
+    await this.employeeName(employeeName).click()
   }
 }

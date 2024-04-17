@@ -401,7 +401,7 @@ test.describe('Tracker filters tests', () => {
         const issuesDetailsPage = new IssuesDetailsPage(page)
         await expect(issuesDetailsPage.buttonMilestone()).toHaveText('Milestone')
 
-        await issuesDetailsPage.buttonCloseIssue()
+        issuesDetailsPage.buttonCloseIssue()
       }
     })
   })

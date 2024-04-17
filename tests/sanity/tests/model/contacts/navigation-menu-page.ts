@@ -6,6 +6,6 @@ export class ContactsNavigationMenuPage {
   constructor (page: Page) {
     this.page = page
   }
-  readonly pageHeader = (): Locator => this.page.locator('a[href$="employees"]', { hasText: 'Employee' })
 
+  readonly pageHeader = (): Locator => this.page.locator('a[href$="employees"]', { hasText: 'Employee' })
 }

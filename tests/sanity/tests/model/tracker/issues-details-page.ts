@@ -5,55 +5,78 @@ import { Issue, NewIssue } from './types'
 export class IssuesDetailsPage extends CommonTrackerPage {
   readonly page: Page
 
-
   constructor (page: Page) {
     super(page)
     this.page = page
   }
 
-  readonly inputTitle = (): Locator => this.page.locator('div.popupPanel-body input[type="text"]');
-  readonly inputDescription = (): Locator => this.page.locator('div.popupPanel-body div.textInput div.tiptap');
-  readonly buttonStatus = (): Locator => this.page.locator('//span[text()="Status"]/../button[1]//span');
-  readonly buttonPriority = (): Locator => this.page.locator('//span[text()="Priority"]/../button[2]//span');
-  readonly buttonAssignee = (): Locator => this.page.locator('(//span[text()="Assignee"]/../div/button)[2]');
-  readonly textLabels = (): Locator => this.page.locator('div.step-container div.listitems-container');
-  readonly buttonAddLabel = (): Locator => this.page.locator('button.tag-button');
-  readonly buttonComponent = (): Locator => this.page.locator('//span[text()="Component"]/following-sibling::div[1]/div/button');
-  readonly buttonMilestone = (): Locator => this.page.locator('//span[text()="Milestone"]/following-sibling::div[1]/div/button');
-  readonly textEstimation = (): Locator => this.page.locator('//span[text()="Estimation"]/following-sibling::div[1]/button/span');
-  readonly buttonEstimation = (): Locator => this.page.locator('(//span[text()="Estimation"]/../div/button)[3]');
-  readonly buttonCreatedBy = (): Locator => this.page.locator('//span[text()="Created by"]/following-sibling::div[1]/button');
-  readonly buttonCloseIssue = (): Locator => this.page.locator('#btnPClose');
-  readonly textParentTitle = (): Locator => this.page.locator('span.issue-title');
-  readonly buttonAddSubIssue = (): Locator => this.page.locator('#add-sub-issue');
-  readonly textRelated = (): Locator => this.page.locator('//span[text()="Related"]/following-sibling::div[1]/div//span');
-  readonly buttonCollaborators = (): Locator => this.page.locator('//span[text()="Collaborators"]/following-sibling::div[1]/button');
-  readonly buttonIssueOnSearchForIssueModal = (): Locator => this.page.locator('div.popup div.tabs > div.tab:last-child');
-  readonly inputSearchOnSearchForIssueModal = (): Locator => this.page.locator('div.popup input[type="text"]');
-  readonly textBlockedBy = (): Locator => this.page.locator('//span[text()="Blocked by"]/following-sibling::div[1]/div/div/button/span');
-  readonly textBlocks = (): Locator => this.page.locator('//span[text()="Blocks"]/following-sibling::div[1]/div/div/button/span');
-  readonly buttonRemoveBlockedBy = (): Locator => this.page.locator('//span[text()="Blocked by"]/following-sibling::div[1]/div/button');
-  readonly details = (): Locator => this.page.locator('//span[text()="Blocked by"]/following-sibling::div[1]/div/button');
+  readonly inputTitle = (): Locator => this.page.locator('div.popupPanel-body input[type="text"]')
+  readonly inputDescription = (): Locator => this.page.locator('div.popupPanel-body div.textInput div.tiptap')
+  readonly buttonStatus = (): Locator => this.page.locator('//span[text()="Status"]/../button[1]//span')
+  readonly buttonPriority = (): Locator => this.page.locator('//span[text()="Priority"]/../button[2]//span')
+  readonly buttonAssignee = (): Locator => this.page.locator('(//span[text()="Assignee"]/../div/button)[2]')
+  readonly textLabels = (): Locator => this.page.locator('div.step-container div.listitems-container')
+  readonly buttonAddLabel = (): Locator => this.page.locator('button.tag-button')
+  readonly buttonComponent = (): Locator =>
+    this.page.locator('//span[text()="Component"]/following-sibling::div[1]/div/button')
+
+  readonly buttonMilestone = (): Locator =>
+    this.page.locator('//span[text()="Milestone"]/following-sibling::div[1]/div/button')
+
+  readonly textEstimation = (): Locator =>
+    this.page.locator('//span[text()="Estimation"]/following-sibling::div[1]/button/span')
+
+  readonly buttonEstimation = (): Locator => this.page.locator('(//span[text()="Estimation"]/../div/button)[3]')
+  readonly buttonCreatedBy = (): Locator =>
+    this.page.locator('//span[text()="Created by"]/following-sibling::div[1]/button')
+
+  readonly buttonCloseIssue = (): Locator => this.page.locator('#btnPClose')
+  readonly textParentTitle = (): Locator => this.page.locator('span.issue-title')
+  readonly buttonAddSubIssue = (): Locator => this.page.locator('#add-sub-issue')
+  readonly textRelated = (): Locator =>
+    this.page.locator('//span[text()="Related"]/following-sibling::div[1]/div//span')
+
+  readonly buttonCollaborators = (): Locator =>
+    this.page.locator('//span[text()="Collaborators"]/following-sibling::div[1]/button')
+
+  readonly buttonIssueOnSearchForIssueModal = (): Locator =>
+    this.page.locator('div.popup div.tabs > div.tab:last-child')
+
+  readonly inputSearchOnSearchForIssueModal = (): Locator => this.page.locator('div.popup input[type="text"]')
+  readonly textBlockedBy = (): Locator =>
+    this.page.locator('//span[text()="Blocked by"]/following-sibling::div[1]/div/div/button/span')
+
+  readonly textBlocks = (): Locator =>
+    this.page.locator('//span[text()="Blocks"]/following-sibling::div[1]/div/div/button/span')
+
+  readonly buttonRemoveBlockedBy = (): Locator =>
+    this.page.locator('//span[text()="Blocked by"]/following-sibling::div[1]/div/button')
+
+  readonly details = (): Locator =>
+    this.page.locator('//span[text()="Blocked by"]/following-sibling::div[1]/div/button')
+
   readonly popup = (): Locator => this.page.locator('.selectPopup')
-  readonly popupListItems = (issueTitle: string): Locator => this.page.locator('div.popup div.list-item', { hasText: issueTitle })
-  readonly antiPopupSubMenueBtn = (actionFirst: string): Locator => this.page.locator('button.antiPopup-submenu', { hasText: actionFirst })
-  
+  readonly popupListItems = (issueTitle: string): Locator =>
+    this.page.locator('div.popup div.list-item', { hasText: issueTitle })
+
+  readonly antiPopupSubMenueBtn = (actionFirst: string): Locator =>
+    this.page.locator('button.antiPopup-submenu', { hasText: actionFirst })
 
   readonly stateHistoryDropdown = (nameDr: string): Locator => {
-    return this.popup().locator(this.page.getByRole('button', { name: nameDr }));
-}
+    return this.popup().locator(this.page.getByRole('button', { name: nameDr }))
+  }
 
-async clickCloseIssueButton () {
-  this.buttonCloseIssue().click()
-}
+  async clickCloseIssueButton (): Promise<void> {
+    await this.buttonCloseIssue().click()
+  }
 
-async clickButtonAddSubIssue() {
-  this.buttonAddSubIssue().click()
-}
+  async clickButtonAddSubIssue (): Promise<void> {
+    await this.buttonAddSubIssue().click()
+  }
 
-async clickRemoveBlockedBy() {
-  this.buttonRemoveBlockedBy().click()
-}
+  async clickRemoveBlockedBy (): Promise<void> {
+    await this.buttonRemoveBlockedBy().click()
+  }
 
   async editIssue (data: Issue): Promise<void> {
     if (data.title != null) {
@@ -189,22 +212,19 @@ async clickRemoveBlockedBy() {
     await this.selectFromDropdown(this.page, actionSecond)
   }
 
-  async checkIfTextBlockedByIsVisible() {
-    await expect(this.textBlockedBy()).toBeVisible( { visible: false } )
+  async checkIfTextBlockedByIsVisible (): Promise<void> {
+    await expect(this.textBlockedBy()).toBeVisible({ visible: false })
   }
 
-  async checkIfButtonCreatedByHaveRealName(modifierName: string) {
-    await expect (this.buttonCreatedBy()).toHaveText(modifierName)
+  async checkIfButtonCreatedByHaveRealName (modifierName: string): Promise<void> {
+    await expect(this.buttonCreatedBy()).toHaveText(modifierName)
   }
 
-  async checkIfButtonComponentHasTextDefaultComponent(defaultComponent: string){
+  async checkIfButtonComponentHasTextDefaultComponent (defaultComponent: string): Promise<void> {
     await expect(this.buttonComponent()).toHaveText(defaultComponent)
   }
 
-  async checkIfButtonCbuttonCreatedByHaveTextCreatedBy(createdBy: string){
+  async checkIfButtonCbuttonCreatedByHaveTextCreatedBy (createdBy: string): Promise<void> {
     await expect(this.buttonCreatedBy()).toHaveText(createdBy)
   }
-
-  
 }
-

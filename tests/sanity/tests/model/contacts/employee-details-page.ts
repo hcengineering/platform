@@ -16,7 +16,6 @@ export class EmployeeDetailsPage extends CommonPage {
   readonly textEmployeeFirstName = (): Locator => this.page.locator('input[placeholder="First name"]')
   readonly textEmployeeLastName = (): Locator => this.page.locator('input[placeholder="Last name"]')
 
-
   async checkActivityExist (activityHeader: string, activityContent: string): Promise<void> {
     await expect(this.textActivity().filter({ hasText: activityHeader }).first()).toBeVisible()
     await expect(this.textActivityContent().filter({ hasText: activityContent }).first()).toBeVisible()
