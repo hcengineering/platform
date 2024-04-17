@@ -18,7 +18,7 @@
   import { getActions, Menu } from '@hcengineering/view-resources'
   import { getClient } from '@hcengineering/presentation'
   import { getResource } from '@hcengineering/platform'
-  import { Action as ViewAction } from '@hcengineering/view'
+  import view, { Action as ViewAction } from '@hcengineering/view'
 
   import ActivityMessageAction from './ActivityMessageAction.svelte'
   import { savedMessagesStore } from '../activity'
@@ -84,6 +84,7 @@
       {#if inline.icon}
         {#await getResource(inline.action) then action}
           <ActivityMessageAction
+            label={inline.label}
             size={inline.actionProps?.size ?? 'small'}
             icon={inline.icon}
             iconProps={inline.actionProps?.iconProps}
@@ -94,7 +95,13 @@
     {/each}
 
     {#if withActionMenu}
-      <ActivityMessageAction size="small" icon={IconMoreV} opened={isActionMenuOpened} action={showMenu} />
+      <ActivityMessageAction
+        size="small"
+        icon={IconMoreV}
+        opened={isActionMenuOpened}
+        action={showMenu}
+        label={view.string.MoreActions}
+      />
     {/if}
   </div>
 {/if}
