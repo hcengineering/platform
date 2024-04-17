@@ -96,17 +96,15 @@ describe('isEmptyMarkup', () => {
     expect(isEmptyMarkup(getMarkup(editor))).toBeFalsy()
   })
   it('returns true for various empty content', async () => {
-    expect(
-      isEmptyMarkup(jsonToMarkup({ type: MarkupNodeType.doc }))
-    ).toBeTruthy()
-    expect(
-      isEmptyMarkup(jsonToMarkup({ type: MarkupNodeType.doc, content: [] }))
-    ).toBeTruthy()
+    expect(isEmptyMarkup(jsonToMarkup({ type: MarkupNodeType.doc }))).toBeTruthy()
+    expect(isEmptyMarkup(jsonToMarkup({ type: MarkupNodeType.doc, content: [] }))).toBeTruthy()
     expect(
       isEmptyMarkup(jsonToMarkup({ type: MarkupNodeType.doc, content: [{ type: MarkupNodeType.paragraph }] }))
     ).toBeTruthy()
     expect(
-      isEmptyMarkup(jsonToMarkup({ type: MarkupNodeType.doc, content: [{ type: MarkupNodeType.paragraph, content: [] }] }))
+      isEmptyMarkup(
+        jsonToMarkup({ type: MarkupNodeType.doc, content: [{ type: MarkupNodeType.paragraph, content: [] }] })
+      )
     ).toBeTruthy()
   })
 })
@@ -121,9 +119,16 @@ describe('areEqualMarkups', () => {
     const markup2 = '{"type":"doc","content":[{"type":"paragraph","content":[]}]}'
     expect(areEqualMarkups(markup1, markup2)).toBeTruthy()
   })
+  it('returns true for similar content', async () => {
+    const markup1 = '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
+    const markup2 =
+      '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello","content":[],"marks":[],"attrs": {"color": null}}]}]}'
+    expect(areEqualMarkups(markup1, markup2)).toBeTruthy()
+  })
   it('returns false for the same content with different spaces', async () => {
     const markup1 = '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
-    const markup2 = '{"type":"doc","content":[{"type":"hardBreak"},{"type":"paragraph","content":[{"type":"text","text":"hello"}]},{"type":"hardBreak"}]}'
+    const markup2 =
+      '{"type":"doc","content":[{"type":"hardBreak"},{"type":"paragraph","content":[{"type":"text","text":"hello"}]},{"type":"hardBreak"}]}'
     expect(areEqualMarkups(markup1, markup2)).toBeFalsy()
   })
   it('returns false for different content', async () => {
@@ -132,8 +137,10 @@ describe('areEqualMarkups', () => {
     expect(areEqualMarkups(markup1, markup2)).toBeFalsy()
   })
   it('returns false for different marks', async () => {
-    const markup1 = '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello","marks":[{"type":"bold"}]}]}]}'
-    const markup2 = '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello","marks":[{"type":"italic"}]}]}]}'
+    const markup1 =
+      '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello","marks":[{"type":"bold"}]}]}]}'
+    const markup2 =
+      '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello","marks":[{"type":"italic"}]}]}]}'
     expect(areEqualMarkups(markup1, markup2)).toBeFalsy()
   })
 })

@@ -33,6 +33,7 @@ import core, {
   toWorkspaceString
 } from '@hcengineering/core'
 import { StorageAdapter } from '@hcengineering/server-core'
+import { areEqualMarkups } from '@hcengineering/text'
 import { Transformer } from '@hocuspocus/transformer'
 import { MongoClient } from 'mongodb'
 import { Doc as YDoc } from 'yjs'
@@ -276,9 +277,11 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
       const content = await ctx.with('transform', {}, () => {
         return this.transformer.fromYdoc(document, objectAttr)
       })
-      await ctx.with('update', {}, async () => {
-        await client.diffUpdate(current, { [objectAttr]: content })
-      })
+      if (!areEqualMarkups(content, (current as any)[objectAttr])) {
+        await ctx.with('update', {}, async () => {
+          await client.diffUpdate(current, { [objectAttr]: content })
+        })
+      }
     }
   }
 }

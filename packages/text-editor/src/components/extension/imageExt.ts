@@ -230,7 +230,10 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
           const type = getType(ctype ?? 'other')
 
           if (type === 'image') {
-            const node = view.state.schema.nodes.image.create({ 'file-id': _file, src: getFileUrl(_file, 'full', uploadUrl) })
+            const node = view.state.schema.nodes.image.create({
+              'file-id': _file,
+              src: getFileUrl(_file, 'full', uploadUrl)
+            })
             const transaction = view.state.tr.insert(pos?.pos ?? 0, node)
             view.dispatch(transaction)
             result = true

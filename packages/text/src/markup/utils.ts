@@ -19,7 +19,7 @@ import { generateHTML, generateJSON } from '@tiptap/html'
 import { Node as ProseMirrorNode, Schema } from '@tiptap/pm/model'
 
 import { defaultExtensions } from '../extensions'
-import { MarkupNode, emptyMarkupNode } from './model'
+import { MarkupMark, MarkupNode, emptyMarkupNode } from './model'
 import { nodeDoc, nodeParagraph, nodeText } from './dsl'
 import { deepEqual } from 'fast-equals'
 
@@ -46,39 +46,45 @@ export function areEqualMarkups (markup1: Markup, markup2: Markup): boolean {
     return true
   }
 
-  return areEqualMarkupNodes(markupToJSON(markup1), markupToJSON(markup2))
+  return equalNodes(markupToJSON(markup1), markupToJSON(markup2))
 }
 
 /** @public */
-export function areEqualMarkupNodes (node1: MarkupNode, node2: MarkupNode): boolean {
+export function areEqualJson (json1: MarkupNode, json2: MarkupNode): boolean {
+  return equalNodes(json1, json2)
+}
+
+function equalNodes (node1: MarkupNode, node2: MarkupNode): boolean {
   if (node1.type !== node2.type) return false
 
   const text1 = node1.text ?? ''
   const text2 = node2.text ?? ''
   if (text1 !== text2) return false
 
-  const content1 = node1.content ?? []
-  const content2 = node2.content ?? []
-  if (content1.length !== content2.length) return false
-  for (let i = 0; i < content1.length; i++) {
-    if (!areEqualMarkupNodes(content1[i], content2[i])) return false
-  }
-
-  const marks1 = node1.marks ?? []
-  const marks2 = node2.marks ?? []
-  if (marks1.length !== marks2.length) return false
-  for (let i = 0; i < marks1.length; i++) {
-    const mark1 = marks1[i]
-    const mark2 = marks2[i]
-    if (mark1.type !== mark2.type) return false
-    if (!deepEqual(mark1.attrs, mark2.attrs)) return false
-  }
-
-  const attrs1 = node1.attrs ?? {}
-  const attrs2 = node2.attrs ?? {}
-  if (!deepEqual(attrs1, attrs2)) return false
+  if (!equalArrays(node1.content, node2.content, equalNodes)) return false
+  if (!equalArrays(node1.marks, node2.marks, equalMarks)) return false
+  if (!equalRecords(node1.attrs, node2.attrs)) return false
 
   return true
+}
+
+function equalArrays<T> (a: T[] | undefined, b: T[] | undefined, equal: (a: T, b: T) => boolean): boolean {
+  if (a === b) return true
+  const arr1 = a ?? []
+  const arr2 = b ?? []
+  if (arr1.length !== arr2.length) return false
+  return arr1.every((item1, i) => equal(item1, arr2[i]))
+}
+
+function equalRecords (a: Record<string, any> | undefined, b: Record<string, any> | undefined): boolean {
+  if (a === b) return true
+  a = Object.fromEntries(Object.entries(a ?? {}).filter(([_, v]) => v != null))
+  b = Object.fromEntries(Object.entries(b ?? {}).filter(([_, v]) => v != null))
+  return deepEqual(a, b)
+}
+
+function equalMarks (a: MarkupMark, b: MarkupMark): boolean {
+  return a.type === b.type && equalRecords(a.attrs, b.attrs)
 }
 
 // Markup
