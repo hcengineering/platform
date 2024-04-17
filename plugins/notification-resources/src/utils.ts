@@ -41,7 +41,7 @@ import notification, {
   type MentionInboxNotification
 } from '@hcengineering/notification'
 import { MessageBox, getClient } from '@hcengineering/presentation'
-import { getLocation, navigate, showPopup, type Location, type ResolvedLocation } from '@hcengineering/ui'
+import { getCurrentLocation, getLocation, navigate, showPopup, type Location, type ResolvedLocation } from '@hcengineering/ui'
 import { get } from 'svelte/store'
 
 import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
@@ -508,12 +508,16 @@ export function openInboxDoc (
 
 export async function checkPermission (value: boolean): Promise<boolean> {
   if (!value) return true
-  if ('Notification' in window) {
-    if (Notification?.permission === 'denied') return false
-    if (Notification?.permission === 'granted') return true
-    if (Notification?.permission === 'default') {
-      const res = await Notification?.requestPermission()
-      return res === 'granted'
+  if ('serviceWorker' in navigator && 'PushManager' in window) {
+    try {
+      const loc = getCurrentLocation()
+      const registration = await navigator.serviceWorker.getRegistration(`/${loc.path[0]}/${loc.path[1]}`)
+      if (registration !== undefined) {
+        const current = await registration.pushManager.getSubscription()
+        return current !== null
+      }
+    } catch {
+      return false
     }
   }
   return false
