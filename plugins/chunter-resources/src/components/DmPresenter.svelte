@@ -16,6 +16,9 @@
   import { chunterId, DirectMessage } from '@hcengineering/chunter'
   import { getClient } from '@hcengineering/presentation'
   import { NavLink } from '@hcengineering/view-resources'
+  import { ObjectPresenterType } from '@hcengineering/view'
+  import { tooltip } from '@hcengineering/ui'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
 
   import { getDmName } from '../utils'
   import DirectIcon from './DirectIcon.svelte'
@@ -23,19 +26,24 @@
   export let value: DirectMessage
   export let disabled = false
   export let shouldShowAvatar = true
+  export let type: ObjectPresenterType = 'link'
 
   const client = getClient()
 </script>
 
 {#if value}
   {#await getDmName(client, value) then name}
-    <NavLink app={chunterId} space={value._id} {disabled}>
-      <div class="flex-presenter">
-        {#if shouldShowAvatar}
-          <DirectIcon {value} />
-        {/if}
-        <span class="label">{name}</span>
-      </div>
-    </NavLink>
+    {#if type === 'link'}
+      <NavLink app={chunterId} space={value._id} {disabled}>
+        <div class="flex-presenter">
+          {#if shouldShowAvatar}
+            <DirectIcon {value} />
+          {/if}
+          <span class="label">{name}</span>
+        </div>
+      </NavLink>
+    {:else if type === 'text'}
+      <span class="overflow-label" use:tooltip={{ label: getEmbeddedLabel(name) }}>{name}</span>
+    {/if}
   {/await}
 {/if}

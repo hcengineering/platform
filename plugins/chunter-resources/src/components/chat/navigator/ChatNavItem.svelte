@@ -31,12 +31,14 @@
   import NavItem from './NavItem.svelte'
   import { ChatNavItemModel } from '../types'
   import { openChannel } from '../../../navigation'
+  import chunter from '../../../plugin'
 
   export let context: DocNotifyContext | undefined
   export let item: ChatNavItemModel
   export let isSelected = false
 
   const client = getClient()
+  const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
   const notificationClient = InboxNotificationsClientImpl.getClient()
 
@@ -49,7 +51,12 @@
     if (context === undefined) {
       return
     }
-    notifications = (res.get(context._id) ?? []).filter((n) => isMentionNotification(n) || isActivityNotification(n))
+
+    notifications = (res.get(context._id) ?? []).filter((n) => {
+      if (isActivityNotification(n)) return true
+
+      return isMentionNotification(n) && hierarchy.isDerived(n.mentionedInClass, chunter.class.ChatMessage)
+    })
   })
 
   $: void getNotificationsCount(context, notifications).then((res) => {
