@@ -21,8 +21,6 @@ import {
   type ActivityInfoMessage,
   type ActivityMessage,
   type ActivityMessageControl,
-  type ActivityMessageExtension,
-  type ActivityMessageExtensionKind,
   type ActivityMessagePreview,
   type ActivityMessagesFilter,
   type ActivityReference,
@@ -70,7 +68,7 @@ import {
 } from '@hcengineering/model'
 import { TAttachedDoc, TClass, TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
-import view from '@hcengineering/model-view'
+import view, { createAction } from '@hcengineering/model-view'
 import notification from '@hcengineering/notification'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
@@ -210,15 +208,6 @@ export class TDocUpdateMessageViewlet extends TDoc implements DocUpdateMessageVi
   onlyWithParent?: boolean
 }
 
-@Model(activity.class.ActivityMessageExtension, core.class.Doc, DOMAIN_MODEL)
-export class TActivityMessageExtension extends TDoc implements ActivityMessageExtension {
-  @Prop(TypeRef(activity.class.ActivityMessage), core.string.Class)
-  @Index(IndexKind.Indexed)
-    ofMessage!: Ref<Class<ActivityMessage>>
-
-  components!: { kind: ActivityMessageExtensionKind, component: AnyComponent }[]
-}
-
 @Model(activity.class.ActivityExtension, core.class.Doc, DOMAIN_MODEL)
 export class TActivityExtension extends TDoc implements ActivityExtension {
   @Prop(TypeRef(core.class.Class), core.string.Class)
@@ -275,7 +264,6 @@ export function createModel (builder: Builder): void {
     TTxViewlet,
     TActivityDoc,
     TActivityMessagesFilter,
-    TActivityMessageExtension,
     TActivityMessage,
     TDocUpdateMessage,
     TDocUpdateMessageViewlet,
@@ -426,6 +414,113 @@ export function createModel (builder: Builder): void {
       { attachedToClass: 1 }
     ]
   })
+
+  createAction(
+    builder,
+    {
+      action: activity.actionImpl.AddReaction,
+      label: activity.string.AddReaction,
+      icon: activity.icon.Emoji,
+      input: 'focus',
+      category: activity.category.Activity,
+      target: activity.class.ActivityMessage,
+      inline: true,
+      context: {
+        mode: 'context',
+        group: 'edit'
+      }
+    },
+    activity.ids.AddReactionAction
+  )
+
+  createAction(
+    builder,
+    {
+      action: activity.actionImpl.SaveForLater,
+      label: activity.string.SaveForLater,
+      icon: activity.icon.Bookmark,
+      input: 'focus',
+      inline: true,
+      actionProps: {
+        size: 'x-small'
+      },
+      category: activity.category.Activity,
+      target: activity.class.ActivityMessage,
+      visibilityTester: activity.function.CanSaveForLater,
+      context: {
+        mode: 'context',
+        group: 'edit'
+      }
+    },
+    activity.ids.SaveForLaterAction
+  )
+
+  createAction(
+    builder,
+    {
+      action: activity.actionImpl.RemoveFromSaved,
+      label: activity.string.RemoveFromLater,
+      icon: activity.icon.BookmarkFilled,
+      input: 'focus',
+      inline: true,
+      actionProps: {
+        iconProps: {
+          fill: 'var(--global-accent-TextColor)'
+        }
+      },
+      category: activity.category.Activity,
+      target: activity.class.ActivityMessage,
+      visibilityTester: activity.function.CanRemoveFromSaved,
+      context: {
+        mode: 'context',
+        group: 'edit'
+      }
+    },
+    activity.ids.RemoveFromLaterAction
+  )
+
+  createAction(
+    builder,
+    {
+      action: activity.actionImpl.PinMessage,
+      label: view.string.Pin,
+      icon: view.icon.Pin,
+      input: 'focus',
+      inline: true,
+      category: activity.category.Activity,
+      target: activity.class.ActivityMessage,
+      visibilityTester: activity.function.CanPinMessage,
+      context: {
+        mode: 'context',
+        group: 'edit'
+      }
+    },
+    activity.ids.PinMessageAction
+  )
+
+  createAction(
+    builder,
+    {
+      action: activity.actionImpl.UnpinMessage,
+      label: view.string.Unpin,
+      icon: view.icon.Pin,
+      input: 'focus',
+      inline: true,
+      actionProps: {
+        iconProps: {
+          fill: 'var(--global-accent-TextColor)'
+        }
+      },
+      category: activity.category.Activity,
+      target: activity.class.ActivityMessage,
+      visibilityTester: activity.function.CanUnpinMessage,
+      context: {
+        mode: 'context',
+        group: 'edit'
+      }
+    },
+    activity.ids.UnpinMessageAction
+  )
 }
 
 export default activity

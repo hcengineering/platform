@@ -157,16 +157,6 @@ export interface ActivityInfoMessage extends ActivityMessage {
   links?: { _class: Ref<Class<Doc>>, _id: Ref<Doc> }[]
 }
 
-export type ActivityMessageExtensionKind = 'action' | 'footer'
-
-/**
- * @public
- */
-export interface ActivityMessageExtension extends Doc {
-  ofMessage: Ref<Class<ActivityMessage>>
-  components: { kind: ActivityMessageExtensionKind, component: AnyComponent }[]
-}
-
 /**
  * @public
  */
@@ -333,7 +323,6 @@ export default plugin(activityId, {
     ActivityInfoMessage: '' as Ref<Class<ActivityInfoMessage>>,
     ActivityMessageControl: '' as Ref<Class<ActivityMessageControl>>,
     DocUpdateMessageViewlet: '' as Ref<Class<DocUpdateMessageViewlet>>,
-    ActivityMessageExtension: '' as Ref<Class<ActivityMessageExtension>>,
     ActivityMessagesFilter: '' as Ref<Class<ActivityMessagesFilter>>,
     ActivityExtension: '' as Ref<Class<ActivityExtension>>,
     Reaction: '' as Ref<Class<Reaction>>,
@@ -344,7 +333,8 @@ export default plugin(activityId, {
   icon: {
     Activity: '' as Asset,
     Emoji: '' as Asset,
-    Bookmark: '' as Asset
+    Bookmark: '' as Asset,
+    BookmarkFilled: '' as Asset
   },
   string: {
     Activity: '' as IntlString,

@@ -138,8 +138,6 @@ export default plugin(chunterId, {
     ChatMessagePresenter: '' as AnyComponent,
     ThreadMessagePresenter: '' as AnyComponent,
     ChatAside: '' as AnyComponent,
-    Replies: '' as AnyComponent,
-    ReplyToThreadAction: '' as AnyComponent,
     ChatMessagePreview: '' as AnyComponent,
     ThreadMessagePreview: '' as AnyComponent
   },

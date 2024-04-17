@@ -111,6 +111,7 @@ export function closePopup (category?: string): void {
     } else {
       for (let i = popups.length - 1; i >= 0; i--) {
         if (popups[i].options.fixed !== true) {
+          popups[i].onClose?.(undefined)
           popups.splice(i, 1)
           break
         }

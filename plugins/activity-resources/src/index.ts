@@ -28,6 +28,17 @@ import ActivityInfoMessagePreview from './components/activity-info-message/Activ
 
 import { attributesFilter, pinnedFilter, allFilter, referencesFilter } from './activityMessagesUtils'
 import { updateReferences } from './references'
+import {
+  addReactionAction,
+  canPinMessage,
+  canRemoveFromSaved,
+  saveForLater,
+  unpinMessage,
+  pinMessage,
+  canSaveForLater,
+  canUnpinMessage,
+  removeFromSaved
+} from './utils'
 
 export * from './activity'
 export * from './utils'
@@ -42,7 +53,6 @@ export { default as ActivityDocLink } from './components/ActivityDocLink.svelte'
 export { default as ReactionPresenter } from './components/reactions/ReactionPresenter.svelte'
 export { default as ActivityMessageNotificationLabel } from './components/activity-message/ActivityMessageNotificationLabel.svelte'
 export { default as ActivityMessageHeader } from './components/activity-message/ActivityMessageHeader.svelte'
-export { default as AddReactionAction } from './components/reactions/AddReactionAction.svelte'
 export { default as ActivityMessageAction } from './components/ActivityMessageAction.svelte'
 export { default as ActivityMessagesFilterPopup } from './components/FilterPopup.svelte'
 export { default as ActivityReferencePresenter } from './components/activity-reference/ActivityReferencePresenter.svelte'
@@ -70,7 +80,20 @@ export default async (): Promise<Resources> => ({
     AllFilter: allFilter,
     ReferencesFilter: referencesFilter
   },
+  function: {
+    CanSaveForLater: canSaveForLater,
+    CanRemoveFromSaved: canRemoveFromSaved,
+    CanPinMessage: canPinMessage,
+    CanUnpinMessage: canUnpinMessage
+  },
   backreference: {
     Update: updateReferences
+  },
+  actionImpl: {
+    AddReaction: addReactionAction,
+    SaveForLater: saveForLater,
+    RemoveFromSaved: removeFromSaved,
+    PinMessage: pinMessage,
+    UnpinMessage: unpinMessage
   }
 })

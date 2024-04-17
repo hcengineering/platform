@@ -40,6 +40,9 @@
     "Mentions": "Mentions",
     "MentionedYouIn": "Mentioned you in {title}",
     "Messages": "Messages",
-    "Thread": "Thread"
+    "Thread": "Thread",
+    "AddReaction": "Add reaction",
+    "SaveForLater": "Save for later",
+    "RemoveFromLater": "Remove from saved"
   }
 }

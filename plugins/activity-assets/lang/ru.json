@@ -40,6 +40,9 @@
     "Mentions": "Упоминания",
     "MentionedYouIn": "Упомянул(а) вас в {title}",
     "Messages": "Cообщения",
-    "Thread": "Обсуждение"
+    "Thread": "Обсуждение",
+    "AddReaction": "Добавить реакцию",
+    "SaveForLater": "Cохранить",
+    "RemoveFromLater": "Удалить из сохраненных"
   }
 }

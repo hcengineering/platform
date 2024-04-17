@@ -51,7 +51,6 @@
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
   export let hideLink = false
   export let onClick: (() => void) | undefined = undefined
-  export let onReply: (() => void) | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -172,7 +171,6 @@
   {hoverStyles}
   showDatePreposition={hideLink}
   {onClick}
-  {onReply}
 >
   <svelte:fragment slot="header">
     <DocUpdateMessageHeader

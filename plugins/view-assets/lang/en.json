@@ -119,6 +119,7 @@
     "ToViewCommands": "to view available commands",
     "UnArchive": "Unarchive",
     "Pin": "Pin",
-    "Unpin": "Unpin"
+    "Unpin": "Unpin",
+    "MoreActions": "More actions"
   }
 }

@@ -26,9 +26,10 @@
   import core, { Account, Doc, Ref, Timestamp } from '@hcengineering/core'
   import { Icon, Label, resizeObserver, TimeSince, tooltip } from '@hcengineering/ui'
   import { Asset, getEmbeddedLabel, IntlString } from '@hcengineering/platform'
-  import activity, { ActivityMessagePreviewType } from '@hcengineering/activity'
-  import { classIcon, DocNavLink } from '@hcengineering/view-resources'
+  import activity, { ActivityMessage, ActivityMessagePreviewType } from '@hcengineering/activity'
+  import { classIcon, DocNavLink, showMenu } from '@hcengineering/view-resources'
 
+  export let message: ActivityMessage | undefined = undefined
   export let text: string | undefined = undefined
   export let intlLabel: IntlString | undefined = undefined
   export let readonly = false
@@ -99,6 +100,12 @@
     width = element.clientWidth
   }}
   on:click
+  on:contextmenu={(evt) => {
+    showMenu(evt, { object: message, baseMenuClass: activity.class.ActivityMessage }, () => {
+      isActionsOpened = false
+    })
+    isActionsOpened = true
+  }}
 >
   <span class="left overflow-label">
     {#if type === 'full'}
