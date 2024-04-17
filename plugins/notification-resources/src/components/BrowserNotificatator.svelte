@@ -28,7 +28,7 @@
       try {
         const loc = getCurrentLocation()
         const registration = await navigator.serviceWorker.register('/serviceWorker.js', {
-          scope: `./${loc.path[0]}/${loc.path[1]}`
+          scope: `${loc.path[0]}/${loc.path[1]}`
         })
         const current = await registration.pushManager.getSubscription()
         if (current == null) {
