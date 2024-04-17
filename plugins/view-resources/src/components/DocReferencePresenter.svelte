@@ -15,11 +15,12 @@
 <script lang="ts">
   import type { Doc } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import view, { AttributeModel } from '@hcengineering/view'
-  import { Component, Icon, IconSize } from '@hcengineering/ui'
+  import { AttributeModel } from '@hcengineering/view'
+  import { IconSize } from '@hcengineering/ui'
   import contact from '@hcengineering/contact'
 
-  import { classIcon, getObjectPresenter } from '../utils'
+  import { getObjectPresenter } from '../utils'
+  import ObjectIcon from './ObjectIcon.svelte'
 
   export let value: Doc | undefined
   export let compact = false
@@ -36,8 +37,6 @@
     })
   }
 
-  $: iconMixin = value && hierarchy.classHierarchyMixin(value._class, view.mixin.ObjectIcon)
-
   $: if (value && hierarchy.isDerived(value._class, contact.class.Person)) {
     size = 'tiny'
   } else {
@@ -49,13 +48,11 @@
   <span class="label overflow-label font-medium-12 text-left secondary-textColor">
     <slot name="prefix" />
   </span>
-  <div class="icon">
-    {#if iconMixin && value}
-      <Component is={iconMixin.component} props={{ value, size }} />
-    {:else if !iconMixin && value}
-      <Icon icon={classIcon(client, value._class) ?? view.icon.Views} {size} />
-    {/if}
-  </div>
+  {#if value}
+    <div class="icon">
+      <ObjectIcon {value} {size} />
+    </div>
+  {/if}
   <span class="label overflow-label font-medium-12 text-left max-w-20 secondary-textColor">
     {#if presenter && value}
       <svelte:component

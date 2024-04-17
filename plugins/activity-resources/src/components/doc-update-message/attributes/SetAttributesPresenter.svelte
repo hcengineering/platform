@@ -47,17 +47,17 @@
 </script>
 
 {#if isUnset}
-  <div class="unset overflow-label">
+  <div class="row overflow-label">
     <span class="mr-1"><Icon icon={attributeIcon} size="small" /></span>
     <Label label={activity.string.Unset} />
     <span class="lower"><Label label={attributeModel.label} /></span>
   </div>
 {:else if isTextType}
   {#if preview}
-    <div class="unset overflow-label">
+    <div class="row overflow-label">
       <span class="mr-1"><Icon icon={attributeIcon} size="small" /></span>
       <Label label={activity.string.Changed} />
-      <span class="lower fs-bold">
+      <span class="lower fs-bold overflow-label">
         <Label label={attributeModel.label} />
       </span>
     </div>
@@ -83,7 +83,7 @@
 {/if}
 
 <style lang="scss">
-  .unset {
+  .row {
     display: flex;
     align-items: center;
     gap: 0.25rem;
