@@ -8,7 +8,7 @@ export const accountId = 'account' as Plugin
 /**
  * @public
  */
-const accountPlugin = plugin(accountId, {
+export const accountPlugin = plugin(accountId, {
   metadata: {
     FrontURL: '' as Metadata<string>,
     SES_URL: '' as Metadata<string>,
@@ -26,5 +26,3 @@ const accountPlugin = plugin(accountId, {
     InviteSubject: '' as IntlString
   }
 })
-
-export default accountPlugin

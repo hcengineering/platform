@@ -26,8 +26,8 @@ import contact, { contactId, createModel as contactModel } from '@hcengineering/
 import { createModel as coreModel } from '@hcengineering/model-core'
 import document, { documentId, createModel as documentModel } from '@hcengineering/model-document'
 import gmail, { gmailId, createModel as gmailModel } from '@hcengineering/model-gmail'
+import { guestId, createModel as guestModel } from '@hcengineering/model-guest'
 import hr, { hrId, createModel as hrModel } from '@hcengineering/model-hr'
-import { timeId, createModel as timeModel } from '@hcengineering/model-time'
 import inventory, { inventoryId, createModel as inventoryModel } from '@hcengineering/model-inventory'
 import lead, { leadId, createModel as leadModel } from '@hcengineering/model-lead'
 import notification, { notificationId, createModel as notificationModel } from '@hcengineering/model-notification'
@@ -37,16 +37,17 @@ import recruit, { recruitId, createModel as recruitModel } from '@hcengineering/
 import { requestId, createModel as requestModel } from '@hcengineering/model-request'
 import { serverActivityId, createModel as serverActivityModel } from '@hcengineering/model-server-activity'
 import { serverAttachmentId, createModel as serverAttachmentModel } from '@hcengineering/model-server-attachment'
+import { serverCalendarId, createModel as serverCalendarModel } from '@hcengineering/model-server-calendar'
+import { serverChunterId, createModel as serverChunterModel } from '@hcengineering/model-server-chunter'
 import {
   serverCollaborationId,
   createModel as serverCollaborationModel
 } from '@hcengineering/model-server-collaboration'
-import { serverCalendarId, createModel as serverCalendarModel } from '@hcengineering/model-server-calendar'
-import { serverChunterId, createModel as serverChunterModel } from '@hcengineering/model-server-chunter'
 import { serverContactId, createModel as serverContactModel } from '@hcengineering/model-server-contact'
 import { serverCoreId, createModel as serverCoreModel } from '@hcengineering/model-server-core'
 import { serverDocumentId, createModel as serverDocumentModel } from '@hcengineering/model-server-document'
 import { serverGmailId, createModel as serverGmailModel } from '@hcengineering/model-server-gmail'
+import { serverGuestId, createModel as serverGuestModel } from '@hcengineering/model-server-guest'
 import { serverHrId, createModel as serverHrModel } from '@hcengineering/model-server-hr'
 import { serverInventoryId, createModel as serverInventoryModel } from '@hcengineering/model-server-inventory'
 import { serverLeadId, createModel as serverLeadModel } from '@hcengineering/model-server-lead'
@@ -58,6 +59,7 @@ import { serverTagsId, createModel as serverTagsModel } from '@hcengineering/mod
 import { serverTaskId, createModel as serverTaskModel } from '@hcengineering/model-server-task'
 import { serverTelegramId, createModel as serverTelegramModel } from '@hcengineering/model-server-telegram'
 import { serverTemplatesId, createModel as serverTemplatesModel } from '@hcengineering/model-server-templates'
+import { serverTimeId, createModel as serverTimeModel } from '@hcengineering/model-server-time'
 import { serverTrackerId, createModel as serverTrackerModel } from '@hcengineering/model-server-tracker'
 import { serverViewId, createModel as serverViewModel } from '@hcengineering/model-server-view'
 import setting, { settingId, createModel as settingModel } from '@hcengineering/model-setting'
@@ -67,12 +69,10 @@ import { taskId, createModel as taskModel } from '@hcengineering/model-task'
 import telegram, { telegramId, createModel as telegramModel } from '@hcengineering/model-telegram'
 import { templatesId, createModel as templatesModel } from '@hcengineering/model-templates'
 import { textEditorId, createModel as textEditorModel } from '@hcengineering/model-text-editor'
+import { timeId, createModel as timeModel } from '@hcengineering/model-time'
 import tracker, { trackerId, createModel as trackerModel } from '@hcengineering/model-tracker'
 import view, { viewId, createModel as viewModel } from '@hcengineering/model-view'
 import workbench, { workbenchId, createModel as workbenchModel } from '@hcengineering/model-workbench'
-import { guestId, createModel as guestModel } from '@hcengineering/model-guest'
-import { serverGuestId, createModel as serverGuestModel } from '@hcengineering/model-server-guest'
-import { serverTimeId, createModel as serverTimeModel } from '@hcengineering/model-server-time'
 
 import { openAIId, createModel as serverOpenAI } from '@hcengineering/model-server-openai'
 import { createModel as serverTranslate, translateId } from '@hcengineering/model-server-translate'
@@ -94,6 +94,8 @@ export function getModelVersion (): Data<Version> {
   }
   return { major: 0, minor: 6, patch: 0 }
 }
+
+export type { MigrateOperation } from '@hcengineering/model'
 
 /**
  * @public

@@ -17,7 +17,7 @@
 import builder, { migrateOperations, getModelVersion } from '@hcengineering/model-all'
 import { randomBytes } from 'crypto'
 import { Db, MongoClient } from 'mongodb'
-import accountPlugin, { getAccount, getMethods, getWorkspaceByUrl } from '..'
+import accountPlugin, { getAccount, getMethods, getWorkspaceByUrl } from '../operations'
 import { setMetadata } from '@hcengineering/platform'
 import { MeasureMetricsContext } from '@hcengineering/core'
 

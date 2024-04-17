@@ -30,10 +30,8 @@ import {
   replacePassword,
   setAccountAdmin,
   setRole,
-  updateWorkspace,
   upgradeWorkspace,
-  type Workspace,
-  type WorkspaceInfo
+  UpgradeWorker
 } from '@hcengineering/account'
 import { setMetadata } from '@hcengineering/platform'
 import {
@@ -45,7 +43,7 @@ import {
   restore
 } from '@hcengineering/server-backup'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
-import toolPlugin, { FileModelLogger } from '@hcengineering/server-tool'
+import toolPlugin from '@hcengineering/server-tool'
 
 import { program, type Command } from 'commander'
 import { type Db, type MongoClient } from 'mongodb'
@@ -56,7 +54,6 @@ import core, {
   getWorkspaceId,
   MeasureMetricsContext,
   metricsToString,
-  RateLimiter,
   versionToString,
   type AccountRole,
   type Data,
@@ -69,7 +66,6 @@ import { getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
 import { openAIConfigDefaults } from '@hcengineering/openai'
 import { type StorageAdapter } from '@hcengineering/server-core'
 import { deepEqual } from 'fast-equals'
-import path from 'path'
 import { benchmark } from './benchmark'
 import {
   cleanArchivedSpaces,
@@ -345,93 +341,15 @@ export function devTool (
     .option('-f|--force [force]', 'Force update', false)
     .action(async (cmd: { parallel: string, logs: string, retry: string, force: boolean, console: boolean }) => {
       const { mongodbUri, version, txes, migrateOperations } = prepareTools()
-      await withDatabase(mongodbUri, async (db) => {
-        const workspaces = await listWorkspacesRaw(db, productId)
-        workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
-
-        // We need to update workspaces with missing workspaceUrl
-        for (const ws of workspaces) {
-          if (ws.workspaceUrl == null) {
-            const upd: Partial<Workspace> = {
-              workspaceUrl: ws.workspace
-            }
-            if (ws.workspaceName == null) {
-              upd.workspaceName = ws.workspace
-            }
-            await updateWorkspace(db, productId, ws, upd)
-          }
-        }
-
-        const withError: string[] = []
-        let toProcess = workspaces.length
-        const st = Date.now()
-
-        async function _upgradeWorkspace (ws: WorkspaceInfo): Promise<void> {
-          if (ws.disabled === true) {
-            return
-          }
-          const t = Date.now()
-          const logger = cmd.console
-            ? consoleModelLogger
-            : new FileModelLogger(path.join(cmd.logs, `${ws.workspace}.log`))
-
-          const avgTime = (Date.now() - st) / (workspaces.length - toProcess + 1)
-          console.log(
-            '----------------------------------------------------------\n---UPGRADING----',
-            'pending: ',
-            toProcess,
-            'ETA: ',
-            Math.floor(avgTime * toProcess),
-            ws.workspace
-          )
-          toProcess--
-          try {
-            await upgradeWorkspace(
-              toolCtx,
-              version,
-              txes,
-              migrateOperations,
-              productId,
-              db,
-              ws.workspaceUrl ?? ws.workspace,
-              logger,
-              cmd.force
-            )
-            console.log('---done---------', 'pending: ', toProcess, 'TIME:', Date.now() - t, ws.workspace)
-          } catch (err: any) {
-            withError.push(ws.workspace)
-            logger.log('error', JSON.stringify(err))
-            console.log('   FAILED-------', 'pending: ', toProcess, 'TIME:', Date.now() - t, ws.workspace)
-          } finally {
-            if (!cmd.console) {
-              ;(logger as FileModelLogger).close()
-            }
-          }
-        }
-        if (cmd.parallel !== '0') {
-          const parallel = parseInt(cmd.parallel) ?? 1
-          const rateLimit = new RateLimiter(parallel)
-          console.log('parallel upgrade', parallel, cmd.parallel)
-          await Promise.all(
-            workspaces.map((it) =>
-              rateLimit.add(() => {
-                return _upgradeWorkspace(it)
-              })
-            )
-          )
-          console.log('Upgrade done')
-          // console.log((process as any)._getActiveHandles())
-          // console.log((process as any)._getActiveRequests())
-          // process.exit()
-        } else {
-          console.log('UPGRADE write logs at:', cmd.logs)
-          for (const ws of workspaces) {
-            await _upgradeWorkspace(ws)
-          }
-          if (withError.length > 0) {
-            console.log('Failed workspaces', withError)
-          }
-        }
+      await withDatabase(mongodbUri, async (db, client) => {
+        const worker = new UpgradeWorker(db, client, version, txes, migrateOperations, productId)
+        await worker.upgradeAll(toolCtx, {
+          errorHandler: async (ws, err) => {},
+          force: cmd.force,
+          console: cmd.console,
+          logs: cmd.logs,
+          parallel: parseInt(cmd.parallel ?? '1')
+        })
       })
     })
 

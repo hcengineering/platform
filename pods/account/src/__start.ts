@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 
-import { getMethods } from '@hcengineering/account'
 import { MeasureMetricsContext, newMetrics, type Tx } from '@hcengineering/core'
 import builder, { getModelVersion, migrateOperations } from '@hcengineering/model-all'
 import { serveAccount } from '.'
@@ -25,4 +24,4 @@ const txes = JSON.parse(JSON.stringify(builder(enabled, disabled).getTxes())) as
 
 const metricsContext = new MeasureMetricsContext('account', {}, {}, newMetrics())
 
-serveAccount(metricsContext, getMethods(getModelVersion(), txes, migrateOperations))
+serveAccount(metricsContext, getModelVersion(), txes, migrateOperations)

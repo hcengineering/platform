@@ -26,11 +26,9 @@ export const coreOperation: MigrateOperation = {
     // We need to delete all documents in doc index state for missing classes
     const allClasses = client.hierarchy.getDescendants(core.class.Doc)
     const allIndexed = allClasses.filter((it) => isClassIndexable(client.hierarchy, it))
-    const indexed = new Set(allIndexed)
-    const skipped = allClasses.filter((it) => !indexed.has(it))
 
     // Next remove all non indexed classes and missing classes as well.
-    const updated = await client.update(
+    await client.update(
       DOMAIN_DOC_INDEX_STATE,
       { objectClass: { $nin: allIndexed } },
       {
@@ -39,7 +37,6 @@ export const coreOperation: MigrateOperation = {
         }
       }
     )
-    console.log('clearing non indexed documents', skipped, updated.updated, updated.matched)
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     await tryUpgrade(client, coreId, [
