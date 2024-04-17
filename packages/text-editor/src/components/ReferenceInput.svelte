@@ -15,6 +15,7 @@
 <script lang="ts">
   import { Markup } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
+  import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
   import {
     AnySvelteComponent,
     Button,
@@ -37,7 +38,7 @@
   import { IsEmptyContentExtension } from './extension/isEmptyContent'
   import Send from './icons/Send.svelte'
 
-  export let content: Markup = ''
+  export let content: Markup = EmptyMarkup
   export let showHeader = false
   export let showActions = true
   export let showSend = true
@@ -62,6 +63,8 @@
   $: setContent(content)
   $: devSize = $deviceInfo.size
   $: shrinkButtons = checkAdaptiveMatching(devSize, 'sm')
+
+  $: canSubmit = (!isEmpty || haveAttachment) && !isEmptyMarkup(content) && !loading
 
   function setContent (content: Markup): void {
     textEditor?.setContent(content)
@@ -148,9 +151,9 @@
       {autofocus}
       {boundary}
       on:content={(ev) => {
-        if (!isEmpty || haveAttachment) {
+        if (canSubmit) {
           dispatch('message', ev.detail)
-          content = ''
+          content = EmptyMarkup
           textEditor?.clear()
         }
       }}
@@ -207,7 +210,7 @@
       {#if showSend}
         <Button
           {loading}
-          disabled={(isEmpty && !haveAttachment) || (!isEmpty && !content.replace(/<[^>]*>/g, '').trim()) || loading}
+          disabled={!canSubmit}
           icon={iconSend ?? Send}
           iconProps={{ size: buttonSize }}
           kind={kindSend}

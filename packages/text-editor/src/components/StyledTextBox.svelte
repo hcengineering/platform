@@ -2,6 +2,7 @@
   import { Markup } from '@hcengineering/core'
   import { IntlString, getMetadata } from '@hcengineering/platform'
   import presentation, { MessageViewer, getFileUrl, getImageSize } from '@hcengineering/presentation'
+  import { EmptyMarkup } from '@hcengineering/text'
   import {
     ActionIcon,
     ButtonSize,
@@ -63,7 +64,7 @@
   export let mode = Mode.View
 
   export function startEdit (): void {
-    rawValue = content ?? ''
+    rawValue = content ?? EmptyMarkup
     needFocus = true
     mode = Mode.Edit
   }
@@ -82,7 +83,7 @@
   let canBlur = true
   let focused = false
   let rawValue: Markup
-  let oldContent: Markup = ''
+  let oldContent: Markup = EmptyMarkup
   let modified: boolean = false
 
   let textEditor: StyledTextEditor

@@ -230,7 +230,10 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
           const type = getType(ctype ?? 'other')
 
           if (type === 'image') {
-            const node = view.state.schema.nodes.image.create({ 'file-id': _file })
+            const node = view.state.schema.nodes.image.create({
+              'file-id': _file,
+              src: getFileUrl(_file, 'full', uploadUrl)
+            })
             const transaction = view.state.tr.insert(pos?.pos ?? 0, node)
             view.dispatch(transaction)
             result = true
@@ -326,9 +329,11 @@ async function handleImageUpload (
   }
 
   try {
-    const size = await getImageSize(file, getFileUrl(attached.file, 'full', uploadUrl))
+    const url = getFileUrl(attached.file, 'full', uploadUrl)
+    const size = await getImageSize(file, url)
     const node = view.state.schema.nodes.image.create({
       'file-id': attached.file,
+      src: url,
       width: Math.round(size.width / size.pixelRatio)
     })
 

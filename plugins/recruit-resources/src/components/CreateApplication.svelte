@@ -42,6 +42,8 @@
   } from '@hcengineering/presentation'
   import type { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
   import task, { TaskType, getStates, makeRank } from '@hcengineering/task'
+  import { TaskKindSelector, selectedTypeStore, typeStore } from '@hcengineering/task-resources'
+  import { EmptyMarkup } from '@hcengineering/text-editor'
   import ui, {
     Button,
     ColorPopup,
@@ -62,12 +64,11 @@
   import CandidateCard from './CandidateCard.svelte'
   import VacancyCard from './VacancyCard.svelte'
   import VacancyOrgPresenter from './VacancyOrgPresenter.svelte'
-  import { TaskKindSelector, selectedTypeStore, typeStore } from '@hcengineering/task-resources'
 
   export let space: Ref<Vacancy>
   export let candidate: Ref<Candidate>
   export let assignee: Ref<Employee>
-  export let comment: Markup = ''
+  export let comment: Markup = EmptyMarkup
 
   $: _comment = comment
 

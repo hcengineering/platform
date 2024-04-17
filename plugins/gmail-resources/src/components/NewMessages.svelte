@@ -23,7 +23,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { Integration } from '@hcengineering/setting'
   import templates, { TemplateDataProvider } from '@hcengineering/templates'
-  import { StyledTextEditor, isEmptyMarkup } from '@hcengineering/text-editor'
+  import { EmptyMarkup, StyledTextEditor, isEmptyMarkup } from '@hcengineering/text-editor'
   import {
     Button,
     EditBox,
@@ -70,7 +70,7 @@
   const attachmentParentId = generateId()
 
   let subject: string = ''
-  let content: Markup = ''
+  let content: Markup = EmptyMarkup
   let copy: string = ''
   let saved = false
 

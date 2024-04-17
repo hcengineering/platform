@@ -18,7 +18,7 @@
   import { Account, Class, Doc, generateId, Markup, Ref, Space, toIdMap } from '@hcengineering/core'
   import { IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
-  import textEditor, { AttachIcon, type RefAction, StyledTextBox } from '@hcengineering/text-editor'
+  import textEditor, { AttachIcon, EmptyMarkup, type RefAction, StyledTextBox } from '@hcengineering/text-editor'
   import { ButtonSize } from '@hcengineering/ui'
 
   import attachment from '../plugin'
@@ -28,7 +28,7 @@
   export let objectId: Ref<Doc> | undefined = undefined
   export let space: Ref<Space> | undefined = undefined
   export let _class: Ref<Class<Doc>> | undefined = undefined
-  export let content: Markup = ''
+  export let content: Markup = EmptyMarkup
   export let placeholder: IntlString | undefined = undefined
   export let alwaysEdit = false
   export let showButtons = false

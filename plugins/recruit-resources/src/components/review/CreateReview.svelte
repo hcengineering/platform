@@ -32,7 +32,7 @@
   import { UserBox, UserBoxList } from '@hcengineering/contact-resources'
   import type { Applicant, Candidate, Review } from '@hcengineering/recruit'
   import task from '@hcengineering/task'
-  import { StyledTextArea } from '@hcengineering/text-editor'
+  import { EmptyMarkup, StyledTextArea } from '@hcengineering/text-editor'
   import { DateRangePresenter, EditBox, Status as StatusControl } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ObjectSearchBox } from '@hcengineering/view-resources'
@@ -55,7 +55,7 @@
   let status: Status = OK
 
   let title: string = ''
-  let description: Markup = ''
+  let description: Markup = EmptyMarkup
   let startDate: number = initDate.getTime()
   let dueDate: number = initDate.getTime() + 30 * 60 * 1000
   let location: string = ''

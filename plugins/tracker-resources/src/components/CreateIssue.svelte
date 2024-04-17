@@ -41,8 +41,7 @@
     MultipleDraftController,
     SpaceSelector,
     createQuery,
-    getClient,
-    reduceCalls
+    getClient
   } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import { TaskType, makeRank } from '@hcengineering/task'
@@ -172,7 +171,7 @@
     const base: IssueDraft = {
       _id: id ?? generateId(),
       title: '',
-      description: '',
+      description: EmptyMarkup,
       kind: '' as Ref<TaskType>,
       priority: priority ?? IssuePriority.NoPriority,
       space: _space as Ref<Project>,
@@ -314,7 +313,7 @@
 
     object = {
       ...object,
-      description: description ?? '',
+      description: description ?? EmptyMarkup,
       ...templBase,
       template: {
         template: template._id

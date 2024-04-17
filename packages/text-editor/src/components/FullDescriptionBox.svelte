@@ -17,6 +17,7 @@
   import { createEventDispatcher } from 'svelte'
   import { Markup } from '@hcengineering/core'
   import { IntlString, Asset } from '@hcengineering/platform'
+  import { EmptyMarkup } from '@hcengineering/text'
   import { Label, Icon } from '@hcengineering/ui'
   import type { AnySvelteComponent } from '@hcengineering/ui'
   import StyledTextBox from './StyledTextBox.svelte'
@@ -25,7 +26,7 @@
 
   export let label: IntlString = textEditorPlugin.string.FullDescription
   export let icon: Asset | AnySvelteComponent = IconDescription
-  export let content: Markup = ''
+  export let content: Markup = EmptyMarkup
   export let maxHeight: string = '40vh'
   export let enableBackReferences = false
 

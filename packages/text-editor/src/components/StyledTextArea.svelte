@@ -1,8 +1,9 @@
 <script lang="ts">
-  import { AnyExtension } from '@tiptap/core'
   import { Markup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
+  import { EmptyMarkup } from '@hcengineering/text'
   import { ButtonSize, Label } from '@hcengineering/ui'
+  import { AnyExtension } from '@tiptap/core'
   import { createEventDispatcher } from 'svelte'
   import textEditorPlugin from '../plugin'
   import StyledTextEditor from './StyledTextEditor.svelte'
@@ -10,7 +11,7 @@
   import { completionConfig } from './extensions'
 
   export let label: IntlString | undefined = undefined
-  export let content: string | undefined
+  export let content: Markup | undefined
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
 
   export let showButtons = true
@@ -23,7 +24,7 @@
   export let enableBackReferences = false
 
   let rawValue: Markup
-  let oldContent: Markup = ''
+  let oldContent: Markup = EmptyMarkup
 
   $: if (content !== undefined && oldContent !== content) {
     oldContent = content
