@@ -1368,6 +1368,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/backup-service",
+      "projectFolder": "server/backup-service",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/pod-backup",
       "projectFolder": "pods/backup",
       "shouldPublish": false

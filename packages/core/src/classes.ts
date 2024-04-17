@@ -650,3 +650,20 @@ export interface DomainIndexConfiguration extends Doc {
 
   skip?: string[]
 }
+
+export interface BaseWorkspaceInfo {
+  workspace: string // An uniq workspace name, Database names
+  productId: string
+  disabled?: boolean
+  version?: Data<Version>
+
+  workspaceUrl?: string | null // An optional url to the workspace, if not set workspace will be used
+  workspaceName?: string // An displayed workspace name
+  createdOn: number
+  lastVisit: number
+
+  createdBy: string
+
+  creating?: boolean
+  createProgress?: number // Some progress
+}

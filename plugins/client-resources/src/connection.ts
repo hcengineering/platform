@@ -79,6 +79,8 @@ class Connection implements ClientConnection {
   private sessionId: string | undefined
   private closed = false
 
+  private upgrading: boolean = false
+
   private pingResponse: number = Date.now()
 
   constructor (
@@ -161,7 +163,11 @@ class Connection implements ClientConnection {
           throw new Error('connection closed')
         }
         this.pending = undefined
-        console.log('failed to connect', err)
+        if (!this.upgrading) {
+          console.log('connection: failed to connect', this.lastId)
+        } else {
+          console.log('connection: workspace during upgrade', this.lastId)
+        }
         if (err?.code === UNAUTHORIZED.code) {
           Analytics.handleError(err)
           this.onUnauthorized?.()
@@ -169,7 +175,9 @@ class Connection implements ClientConnection {
         }
         await new Promise((resolve) => {
           setTimeout(() => {
-            console.log(`delay ${this.delay} second`)
+            if (!this.upgrading) {
+              console.log(`delay ${this.delay} second`)
+            }
             resolve(null)
             if (this.delay < 5) {
               this.delay++
@@ -220,7 +228,12 @@ class Connection implements ClientConnection {
 
       websocket.onmessage = (event: MessageEvent) => {
         const resp = readResponse<any>(event.data, binaryResponse)
+        if (resp.id === -1 && resp.result === 'upgrading') {
+          this.upgrading = true
+          return
+        }
         if (resp.id === -1 && resp.result === 'hello') {
+          this.upgrading = false
           if ((resp as HelloResponse).alreadyConnected === true) {
             this.sessionId = generateId()
             if (typeof sessionStorage !== 'undefined') {

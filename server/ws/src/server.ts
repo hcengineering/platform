@@ -20,6 +20,8 @@ import core, {
   generateId,
   systemAccountEmail,
   toWorkspaceString,
+  versionToString,
+  type BaseWorkspaceInfo,
   type MeasureContext,
   type Ref,
   type Space,
@@ -43,10 +45,7 @@ import {
   type Workspace
 } from './types'
 
-interface WorkspaceLoginInfo {
-  workspaceName?: string // A company name
-  workspace: string
-}
+interface WorkspaceLoginInfo extends BaseWorkspaceInfo {}
 
 function timeoutPromise (time: number): Promise<void> {
   return new Promise((resolve) => {
@@ -74,6 +73,8 @@ class TSessionManager implements SessionManager {
 
   maintenanceTimer: any
   timeMinutes = 0
+
+  modelVersion = process.env.MODEL_VERSION ?? ''
 
   constructor (
     readonly ctx: MeasureContext,
@@ -179,15 +180,7 @@ class TSessionManager implements SessionManager {
     return this.sessionFactory(token, pipeline, this.broadcast.bind(this))
   }
 
-  async getWorkspaceInfo (
-    accounts: string,
-    token: string
-  ): Promise<{
-      workspace: string
-      workspaceUrl?: string | null
-      workspaceName?: string
-      creating?: boolean
-    }> {
+  async getWorkspaceInfo (accounts: string, token: string): Promise<BaseWorkspaceInfo> {
     const userInfo = await (
       await fetch(accounts, {
         method: 'POST',
@@ -230,8 +223,23 @@ class TSessionManager implements SessionManager {
       if (workspaceInfo === undefined && token.extra?.admin !== 'true') {
         // No access to workspace for token.
         return { error: new Error(`No access to workspace for token ${token.email} ${token.workspace.name}`) }
-      } else {
+      } else if (workspaceInfo === undefined) {
         workspaceInfo = this.wsFromToken(token)
+      }
+
+      if (
+        this.modelVersion !== '' &&
+        workspaceInfo.version !== undefined &&
+        this.modelVersion !== versionToString(workspaceInfo.version) &&
+        token.extra?.model !== 'upgrade' &&
+        token.extra?.mode !== 'backup'
+      ) {
+        await ctx.info('model version mismatch', {
+          version: this.modelVersion,
+          workspaceVersion: versionToString(workspaceInfo.version)
+        })
+        // Version mismatch, return upgrading.
+        return { upgrade: true }
       }
 
       let workspace = this.workspaces.get(wsString)
@@ -311,16 +319,18 @@ class TSessionManager implements SessionManager {
     })
   }
 
-  private wsFromToken (token: Token): {
-    workspace: string
-    workspaceUrl?: string | null
-    workspaceName?: string
-    creating?: boolean
-  } {
+  private wsFromToken (token: Token): BaseWorkspaceInfo {
     return {
       workspace: token.workspace.name,
       workspaceUrl: token.workspace.name,
-      workspaceName: token.workspace.name
+      workspaceName: token.workspace.name,
+      createdBy: '',
+      createdOn: Date.now(),
+      lastVisit: Date.now(),
+      productId: '',
+      createProgress: 100,
+      creating: false,
+      disabled: false
     }
   }
 

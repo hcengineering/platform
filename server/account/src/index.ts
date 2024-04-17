@@ -26,6 +26,7 @@ import contact, {
 } from '@hcengineering/contact'
 import core, {
   AccountRole,
+  BaseWorkspaceInfo,
   Client,
   concatLink,
   Data,
@@ -100,23 +101,9 @@ export interface Account {
 /**
  * @public
  */
-export interface Workspace {
+export interface Workspace extends BaseWorkspaceInfo {
   _id: ObjectId
-  workspace: string // An uniq workspace name, Database names
   accounts: ObjectId[]
-  productId: string
-  disabled?: boolean
-  version?: Data<Version>
-
-  workspaceUrl?: string | null // An optional url to the workspace, if not set workspace will be used
-  workspaceName?: string // An displayed workspace name
-  createdOn: number
-  lastVisit: number
-
-  createdBy: string
-
-  creating?: boolean
-  createProgress?: number // Some progress
 }
 
 /**
@@ -664,7 +651,13 @@ export async function createAccount (
 /**
  * @public
  */
-export async function listWorkspaces (ctx: MeasureContext, db: Db, productId: string): Promise<WorkspaceInfo[]> {
+export async function listWorkspaces (
+  ctx: MeasureContext,
+  db: Db,
+  productId: string,
+  token: string
+): Promise<WorkspaceInfo[]> {
+  decodeToken(token) // Just verify token is valid
   return (await db.collection<Workspace>(WORKSPACE_COLLECTION).find(withProductId(productId, {})).toArray())
     .map((it) => ({ ...it, productId }))
     .filter((it) => it.disabled !== true)

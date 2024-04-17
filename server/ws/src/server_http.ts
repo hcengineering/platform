@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import { generateId, type MeasureContext } from '@hcengineering/core'
 import { UNAUTHORIZED } from '@hcengineering/platform'
 import { serialize, type Response } from '@hcengineering/rpc'
@@ -30,7 +31,6 @@ import {
   type PipelineFactory,
   type SessionManager
 } from './types'
-import { Analytics } from '@hcengineering/analytics'
 
 /**
  * @public
@@ -223,7 +223,11 @@ export function startHttpServer (
       if ('error' in session) {
         void ctx.error('error', { error: session.error?.message, stack: session.error?.stack })
       }
-      cs.close()
+      await cs.send(ctx, { id: -1, result: 'upgrading' }, false, false)
+      // Wait 1 second before closing the connection
+      setTimeout(() => {
+        cs.close()
+      }, 1000)
       return
     }
     // eslint-disable-next-line @typescript-eslint/no-misused-promises

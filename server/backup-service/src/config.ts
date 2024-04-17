@@ -13,13 +13,16 @@
 // limitations under the License.
 //
 
-interface Config {
+import { type BackupConfig } from '@hcengineering/server-backup'
+
+interface Config extends Omit<BackupConfig, 'Token'> {
   TransactorURL: string
   AccountsURL: string
   ServiceID: string
   Secret: string
 
-  Interval: number
+  Interval: number // Timeout in seconds
+  Timeout: number // Timeout in seconds
   BucketName: string
 
   MinioEndpoint: string
@@ -36,7 +39,8 @@ const envMap: { [key in keyof Config]: string } = {
   Interval: 'INTERVAL',
   MinioEndpoint: 'MINIO_ENDPOINT',
   MinioAccessKey: 'MINIO_ACCESS_KEY',
-  MinioSecretKey: 'MINIO_SECRET_KEY'
+  MinioSecretKey: 'MINIO_SECRET_KEY',
+  Timeout: 'TIMEOUT'
 }
 
 const required: Array<keyof Config> = [
@@ -55,12 +59,13 @@ const config: Config = (() => {
     TransactorURL: process.env[envMap.TransactorURL],
     AccountsURL: process.env[envMap.AccountsURL],
     Secret: process.env[envMap.Secret],
-    BucketName: process.env[envMap.BucketName],
+    BucketName: process.env[envMap.BucketName] ?? 'backups',
     ServiceID: process.env[envMap.ServiceID] ?? 'backup-service',
     Interval: parseInt(process.env[envMap.Interval] ?? '3600'),
     MinioEndpoint: process.env[envMap.MinioEndpoint],
     MinioAccessKey: process.env[envMap.MinioAccessKey],
-    MinioSecretKey: process.env[envMap.MinioSecretKey]
+    MinioSecretKey: process.env[envMap.MinioSecretKey],
+    Timeout: parseInt(process.env[envMap.Timeout] ?? '3600')
   }
 
   const missingEnv = required.filter((key) => params[key] === undefined).map((key) => envMap[key])
