@@ -66,7 +66,7 @@ export interface MarkupNode {
 export function emptyMarkupNode (): MarkupNode {
   return {
     type: MarkupNodeType.doc,
-    content: [{ type: MarkupNodeType.paragraph }]
+    content: [{ type: MarkupNodeType.paragraph, content: [] }]
   }
 }
 

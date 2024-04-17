@@ -21,6 +21,7 @@ import { Node as ProseMirrorNode, Schema } from '@tiptap/pm/model'
 import { defaultExtensions } from '../extensions'
 import { MarkupNode, emptyMarkupNode } from './model'
 import { nodeDoc, nodeParagraph, nodeText } from './dsl'
+import { deepEqual } from 'fast-equals'
 
 /** @public */
 export const EmptyMarkup: Markup = jsonToMarkup(emptyMarkupNode())
@@ -44,10 +45,40 @@ export function areEqualMarkups (markup1: Markup, markup2: Markup): boolean {
   if (markup1 === markup2) {
     return true
   }
-  const node1 = markupToPmNode(markup1)
-  const node2 = markupToPmNode(markup2)
 
-  return node1.textContent.trim() === node2.textContent.trim()
+  return areEqualMarkupNodes(markupToJSON(markup1), markupToJSON(markup2))
+}
+
+/** @public */
+export function areEqualMarkupNodes (node1: MarkupNode, node2: MarkupNode): boolean {
+  if (node1.type !== node2.type) return false
+
+  const text1 = node1.text ?? ''
+  const text2 = node2.text ?? ''
+  if (text1 !== text2) return false
+
+  const content1 = node1.content ?? []
+  const content2 = node2.content ?? []
+  if (content1.length !== content2.length) return false
+  for (let i = 0; i < content1.length; i++) {
+    if (!areEqualMarkupNodes(content1[i], content2[i])) return false
+  }
+
+  const marks1 = node1.marks ?? []
+  const marks2 = node2.marks ?? []
+  if (marks1.length !== marks2.length) return false
+  for (let i = 0; i < marks1.length; i++) {
+    const mark1 = marks1[i]
+    const mark2 = marks2[i]
+    if (mark1.type !== mark2.type) return false
+    if (!deepEqual(mark1.attrs, mark2.attrs)) return false
+  }
+
+  const attrs1 = node1.attrs ?? {}
+  const attrs2 = node2.attrs ?? {}
+  if (!deepEqual(attrs1, attrs2)) return false
+
+  return true
 }
 
 // Markup

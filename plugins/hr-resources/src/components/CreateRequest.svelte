@@ -21,6 +21,7 @@
   import { translate } from '@hcengineering/platform'
   import { Card, createQuery, getClient } from '@hcengineering/presentation'
   import { EmployeeBox } from '@hcengineering/contact-resources'
+  import { EmptyMarkup } from '@hcengineering/text-editor'
   import ui, {
     Button,
     DateRangePresenter,
@@ -39,7 +40,7 @@
   export let docQuery: DocumentQuery<Employee> | undefined
   export let employeeRequests: Map<Ref<Staff>, Request[]>
 
-  let description: Markup = ''
+  let description: Markup = EmptyMarkup
   let employee: Ref<Employee> = staff._id
 
   const objectId: Ref<Request> = generateId()

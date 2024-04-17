@@ -34,11 +34,10 @@
   import { InlineStyleToolbarExtension } from './extension/inlineStyleToolbar'
   import { SubmitExtension } from './extension/submit'
   import { EditorKit } from '../kits/editor-kit'
-  import { getFileUrl, getImageSize } from '@hcengineering/presentation'
   import { FileAttachFunction } from './extension/types'
   import { ParseOptions } from '@tiptap/pm/model'
 
-  export let content: Markup = ''
+  export let content: Markup = EmptyMarkup
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
   export let extensions: AnyExtension[] = []
   export let textFormatCategories: TextFormatCategory[] = []
