@@ -64,7 +64,7 @@
           {/if}
         </Loading>
       {:then client}
-        {#if !client && versionError}
+        {#if $versionError}
           <div class="version-wrapper">
             <div class="antiPopup version-popup">
               {#if isNeedUpgrade}
@@ -73,7 +73,7 @@
               {:else}
                 <h1><Label label={workbench.string.ServerUnderMaintenance} /></h1>
               {/if}
-              {versionError}
+              {$versionError}
             </div>
           </div>
         {:else if client}

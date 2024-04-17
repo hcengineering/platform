@@ -206,13 +206,13 @@
       {/if}
       <ComponentExtensions
         extension={tracker.extensions.EditIssueTitle}
-        props={{ size: 'medium', kind: 'ghost', space: issue.space, issue, readonly }}
+        props={{ size: 'medium', kind: 'ghost', space: issue.space, value: issue, readonly }}
       />
     </svelte:fragment>
     <svelte:fragment slot="pre-utils">
       <ComponentExtensions
         extension={tracker.extensions.EditIssueHeader}
-        props={{ size: 'medium', kind: 'ghost', space: issue.space, readonly, issue }}
+        props={{ size: 'medium', kind: 'ghost', space: issue.space, readonly, value: issue }}
       />
       {#if saved}
         <Label label={presentation.string.Saved} />
