@@ -285,8 +285,8 @@ test.describe('Tracker filters tests', () => {
       await issue.locator('span.list > a').click()
 
       const issuesDetailsPage = new IssuesDetailsPage(page)
-      await expect(issuesDetailsPage.buttonCreatedBy).toHaveText(createdBy)
-      await issuesDetailsPage.buttonCloseIssue.click()
+      expect(issuesDetailsPage.checkIfButtonCbuttonCreatedByHaveTextCreatedBy(createdBy))
+      await issuesDetailsPage.clickCloseIssueButton()
     }
   })
 
@@ -306,9 +306,9 @@ test.describe('Tracker filters tests', () => {
       await issue.locator('span.list > a').click()
 
       const issuesDetailsPage = new IssuesDetailsPage(page)
-      await expect(issuesDetailsPage.buttonComponent).toHaveText(defaultComponent)
+      expect(issuesDetailsPage.checkIfButtonComponentHasTextDefaultComponent(defaultComponent))
 
-      await issuesDetailsPage.buttonCloseIssue.click()
+      await issuesDetailsPage.clickCloseIssueButton()
     }
   })
 
@@ -357,9 +357,9 @@ test.describe('Tracker filters tests', () => {
       await issue.locator('span.list > a').click()
 
       const issuesDetailsPage = new IssuesDetailsPage(page)
-      await expect(issuesDetailsPage.buttonCreatedBy).toHaveText(modifierName)
+      expect(issuesDetailsPage.checkIfButtonCreatedByHaveRealName(modifierName))
 
-      await issuesDetailsPage.buttonCloseIssue.click()
+      await issuesDetailsPage.clickCloseIssueButton()
     }
   })
 
@@ -399,9 +399,9 @@ test.describe('Tracker filters tests', () => {
         await issue.locator('span.list > a').click()
 
         const issuesDetailsPage = new IssuesDetailsPage(page)
-        await expect(issuesDetailsPage.buttonMilestone).toHaveText('Milestone')
+        await expect(issuesDetailsPage.buttonMilestone()).toHaveText('Milestone')
 
-        await issuesDetailsPage.buttonCloseIssue.click()
+        await issuesDetailsPage.buttonCloseIssue()
       }
     })
   })

@@ -1,142 +1,108 @@
-import { expect, test } from '@playwright/test'
+import { test } from '@playwright/test'
 import { fillSearch, generateId, PlatformSetting, PlatformURI } from './utils'
+import { ContractPage, ButtonAction } from './model/contacts/contract-page'
 
 test.use({
   storageState: PlatformSetting
 })
 
 test.describe('contact tests', () => {
+  let contractPage: ContractPage
+  let first: string
+  let last: string
+  let mail: string
+  let orgName: string
+
   test.beforeEach(async ({ page }) => {
+    first = 'Elton-' + generateId(5)
+    last = 'John-' + generateId(5)
+    mail = 'eltonjohn@' + generateId(5)
+    orgName = 'Company' + generateId(5)
+    contractPage = new ContractPage(page)
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
   test('create-contact', async ({ page }) => {
-    // Create a new context with the saved storage state.
-    await page.locator('[id="app-contact\\:string\\:Contacts"]').click()
-
-    await page.click('.antiNav-element:has-text("Person")')
-    await page.click('button:has-text("Person")')
-
-    const first = 'Elton-' + generateId(5)
-    const last = 'John-' + generateId(5)
-
-    const firstName = page.locator('[placeholder="First name"]')
-    await firstName.click()
-    await firstName.fill(first)
-
-    const lastName = page.locator('[placeholder="Last name"]')
-    await lastName.click()
-    await lastName.fill(last)
-
-    await page.locator('.antiCard').locator('button:has-text("Create")').click()
-    await page.waitForSelector('form.antiCard', { state: 'detached' })
+    await contractPage.clickAppContact()
+    await contractPage.clickEmployeeNavElement('Person')
+    await contractPage.clickEmployeeButton('Person')
+    await contractPage.clickFirstNameInput()
+    await contractPage.fillFirstNameInput(first)
+    await contractPage.clickLastNameInput()
+    await contractPage.fillLastNameInput(last)
+    await contractPage.clickCreateButton()
+    await contractPage.waitForFormAntiCardDetached()
+    await contractPage.checkIfPersonIsCreated(first, last)
   })
+
   test('create-company', async ({ page }) => {
-    await page.locator('[id="app-contact\\:string\\:Contacts"]').click()
-
-    await page.click('.antiNav-element:has-text("Company")')
-    await page.click('button:has-text("Company")')
-
-    const orgName = 'Company' + generateId(5)
-
-    const firstName = page.locator('[placeholder="Company name"]')
-    await firstName.click()
-    await firstName.fill(orgName)
-
-    await page.locator('.antiCard').locator('button:has-text("Create")').click()
-    await page.waitForSelector('form.antiCard', { state: 'detached' })
-    await expect(page.locator(`text=${orgName}`)).toBeVisible()
+    await contractPage.clickAppContact()
+    await contractPage.clickCompanyTab()
+    await contractPage.clickAddCompany()
+    await contractPage.fillCompanyInput(orgName)
+    await contractPage.clickCreateCompany()
+    await contractPage.waitForFormAntiCardDetached()
+    await contractPage.checkIfTextIsVisible(orgName)
   })
+
   test('contact-search', async ({ page }) => {
-    await page.locator('[id="app-contact\\:string\\:Contacts"]').click()
-
-    await page.click('.antiNav-element:has-text("Person")')
-
-    await expect(page.locator('text=M. Marina')).toBeVisible()
-    expect(await page.locator('.antiTable-body__row').count()).toBeGreaterThanOrEqual(5)
-
+    await contractPage.clickAppContact()
+    await contractPage.clickEmployeeNavElement('Person')
+    await contractPage.checkPersonMarinaIsVisible('M. Marina')
+    await contractPage.checkPersonTableCount(5, true)
     await fillSearch(page, 'Marina')
-
-    await expect(page.locator('.antiTable-body__row')).toHaveCount(1, {
-      timeout: 15000
-    })
-
+    await contractPage.checkPersonTableCount(1)
     await fillSearch(page, '')
-
-    await expect(page.locator('text=P. Andrey')).toBeVisible()
-    expect(await page.locator('.antiTable-body__row').count()).toBeGreaterThan(3)
+    await contractPage.checkPersonMarinaIsVisible('P. Andrey')
+    await contractPage.checkPersonTableCount(3, true)
   })
 
   test('delete-contact', async ({ page }) => {
-    // Create a new context with the saved storage state.
-    await page.locator('[id="app-contact\\:string\\:Contacts"]').click()
-
-    await page.click('.antiNav-element:has-text("Person")')
-    await page.click('button:has-text("Person")')
-
-    const first = 'Elton-' + generateId(5)
-    const last = 'John-' + generateId(5)
-
-    const firstName = page.locator('[placeholder="First name"]')
-    await firstName.click()
-    await firstName.fill(first)
-
-    const lastName = page.locator('[placeholder="Last name"]')
-    await lastName.click()
-    await lastName.fill(last)
-
-    await page.locator('.antiCard button:has-text("Create")').click()
-    await page.waitForSelector('form.antiCard', { state: 'detached' })
-
-    await expect(page.locator(`td:has-text("${last} ${first}")`)).toHaveCount(1)
-
-    // Click #context-menu svg
-    await page.hover(`td:has-text("${last} ${first}")`)
-    await page.click(`td:has-text("${last} ${first}")`, {
-      button: 'right'
-    })
-    await page.click('text="Delete"')
-    await page.click('form[id="view:string:DeleteObject"] button[type="submit"]')
-
-    await expect(page.locator(`td:has-text("${last} ${first}")`)).toHaveCount(0)
+    await contractPage.clickAppContact()
+    await contractPage.clickEmployeeNavElement('Person')
+    await contractPage.clickEmployeeButton('Person')
+    await contractPage.clickFirstNameInput()
+    await contractPage.fillFirstNameInput(first)
+    await contractPage.clickLastNameInput()
+    await contractPage.fillLastNameInput(last)
+    await contractPage.clickCreateButton()
+    await contractPage.waitForFormAntiCardDetached()
+    await contractPage.checkIfPersonIsDeleted(first, last, 1)
+    await contractPage.personRightClickOption(first, last, ButtonAction.Delete)
+    await contractPage.clickSubmitButton()
+    await contractPage.checkIfPersonIsDeleted(first, last, 0)
   })
 
   test('kick-and-delete-employee', async ({ page }) => {
-    // Create a new context with the saved storage state.
-    await page.locator('[id="app-contact\\:string\\:Contacts"]').click()
+    await contractPage.clickAppContact()
+    await contractPage.clickEmployeeNavElement('Employee')
+    await contractPage.clickEmployeeButton('Employee')
+    await contractPage.clickFirstNameInput()
+    await contractPage.fillFirstNameInput(first)
+    await contractPage.clickLastNameInput()
+    await contractPage.fillLastNameInput(last)
+    await contractPage.clickEmailInput()
+    await contractPage.fillEmailInput(mail)
+    await contractPage.clickCreateButton()
+    await contractPage.waitForFormAntiCardDetached()
+    await contractPage.kickEmployee(first, last)
+    await contractPage.expectKickEmployeeShowsInactiveStatus(first, last)
+  })
 
-    // Create employee
-    await page.click('.antiNav-element:has-text("Employee")')
-    await page.click('button:has-text("Employee")')
-
-    const first = 'Elton-' + generateId(5)
-    const last = 'John-' + generateId(5)
-    const mail = 'eltonjohn@' + generateId(5)
-
-    const firstName = page.locator('[placeholder="First name"]')
-    await firstName.click()
-    await firstName.fill(first)
-
-    const lastName = page.locator('[placeholder="Last name"]')
-    await lastName.click()
-    await lastName.fill(last)
-
-    const email = page.locator('[placeholder="Email"]')
-    await email.click()
-    await email.fill(mail)
-
-    await page.locator('.antiCard button:has-text("Create")').click()
-    await page.waitForSelector('form.antiCard', { state: 'detached' })
-
-    // Kick employee
-
-    // Click #context-menu svg
-    await page.hover(`td:has-text("${last} ${first}")`)
-    await page.click(`td:has-text("${last} ${first}")`, { button: 'right' })
-    await page.click('text="Kick employee"')
-    // Click text=Ok
-    await page.click('text=Ok')
-
-    await expect(page.locator(`td:has-text("${last} ${first}")`)).toHaveCount(1)
+  test('add new application', async ({ page }) => {
+    await contractPage.clickAppContact()
+    await contractPage.clickEmployeeNavElement('Person')
+    await contractPage.clickEmployeeButton('Person')
+    await contractPage.clickFirstNameInput()
+    await contractPage.fillFirstNameInput(first)
+    await contractPage.clickLastNameInput()
+    await contractPage.fillLastNameInput(last)
+    await contractPage.clickCreateButton()
+    await contractPage.waitForFormAntiCardDetached()
+    await contractPage.checkIfPersonIsDeleted(first, last, 1)
+    await contractPage.personRightClickOption(first, last, ButtonAction.NewApplication)
+    await contractPage.addNewApplication('Test Application', 'CR Chen Rosamund')
+    await contractPage.clickOnEmployee(first, last)
+    await contractPage.checkStateApplication('HR Interview')
   })
 })

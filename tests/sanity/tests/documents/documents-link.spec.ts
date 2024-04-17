@@ -22,7 +22,7 @@ test.describe('Documents link tests', () => {
       await leftSideMenuPage.buttonDocuments.click()
 
       const documentsPage = new DocumentsPage(page)
-      await documentsPage.buttonCreateDocument.click()
+      await documentsPage.clickOnButtonCreateDocument()
 
       await documentsPage.createDocument(publicLinkDocument)
       await documentsPage.openDocument(publicLinkDocument.title)
