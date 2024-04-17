@@ -228,3 +228,4 @@ export class IssuesDetailsPage extends CommonTrackerPage {
     await expect(this.buttonCreatedBy()).toHaveText(createdBy)
   }
 }
+
