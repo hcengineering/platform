@@ -239,6 +239,7 @@ export type IconSize =
   | 'inline'
   | 'tiny'
   | 'card'
+  | 'xx-small'
   | 'x-small'
   | 'smaller'
   | 'small'
@@ -258,6 +259,7 @@ export function getIconSize2x (size: IconSize): IconSize {
   switch (size) {
     case 'inline':
     case 'tiny':
+    case 'xx-small':
     case 'x-small':
     case 'small':
     case 'card':

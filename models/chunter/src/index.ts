@@ -677,46 +677,6 @@ export function createModel (builder: Builder, options = { addApplication: true 
     components: { input: chunter.component.ChatMessageInput }
   })
 
-  builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
-    ofMessage: chunter.class.ChatMessage,
-    components: [{ kind: 'footer', component: chunter.component.Replies }]
-  })
-
-  builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
-    ofMessage: activity.class.DocUpdateMessage,
-    components: [{ kind: 'footer', component: chunter.component.Replies }]
-  })
-
-  builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
-    ofMessage: activity.class.ActivityInfoMessage,
-    components: [{ kind: 'footer', component: chunter.component.Replies }]
-  })
-
-  builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
-    ofMessage: activity.class.ActivityReference,
-    components: [{ kind: 'footer', component: chunter.component.Replies }]
-  })
-
-  builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
-    ofMessage: chunter.class.ChatMessage,
-    components: [{ kind: 'action', component: chunter.component.ReplyToThreadAction }]
-  })
-
-  builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
-    ofMessage: activity.class.DocUpdateMessage,
-    components: [{ kind: 'action', component: chunter.component.ReplyToThreadAction }]
-  })
-
-  builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
-    ofMessage: activity.class.ActivityInfoMessage,
-    components: [{ kind: 'action', component: chunter.component.ReplyToThreadAction }]
-  })
-
-  builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
-    ofMessage: activity.class.ActivityReference,
-    components: [{ kind: 'action', component: chunter.component.ReplyToThreadAction }]
-  })
-
   builder.mixin(chunter.class.Channel, core.class.Class, chunter.mixin.ObjectChatPanel, {
     ignoreKeys: ['archived', 'collaborators', 'lastMessage', 'pinned', 'topic', 'description']
   })
@@ -741,6 +701,25 @@ export function createModel (builder: Builder, options = { addApplication: true 
   builder.createDoc(activity.class.ReplyProvider, core.space.Model, {
     function: chunter.function.ReplyToThread
   })
+
+  createAction(
+    builder,
+    {
+      action: chunter.actionImpl.ReplyToThread,
+      label: chunter.string.ReplyToThread,
+      icon: chunter.icon.Thread,
+      input: 'focus',
+      category: chunter.category.Chunter,
+      target: activity.class.ActivityMessage,
+      visibilityTester: chunter.function.CanReplyToThread,
+      inline: true,
+      context: {
+        mode: 'context',
+        group: 'edit'
+      }
+    },
+    chunter.action.ReplyToThreadAction
+  )
 }
 
 export default chunter

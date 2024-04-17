@@ -14,9 +14,10 @@
 -->
 <script lang="ts">
   import { type AnySvelteComponent, ButtonIcon, IconSize } from '@hcengineering/ui'
-  import { Asset } from '@hcengineering/platform'
+  import { Asset, IntlString } from '@hcengineering/platform'
   import { ComponentType } from 'svelte'
 
+  export let label: IntlString
   export let icon: Asset | AnySvelteComponent | ComponentType
   export let iconProps: any | undefined = undefined
   export let size: IconSize = 'small'
@@ -30,4 +31,13 @@
   }
 </script>
 
-<ButtonIcon {icon} {iconProps} iconSize={size} size="small" kind="tertiary" pressed={opened} on:click={onClick} />
+<ButtonIcon
+  {icon}
+  {iconProps}
+  iconSize={size}
+  size="small"
+  kind="tertiary"
+  pressed={opened}
+  on:click={onClick}
+  tooltip={{ label }}
+/>

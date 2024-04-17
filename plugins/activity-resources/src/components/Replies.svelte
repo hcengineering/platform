@@ -29,7 +29,6 @@
 
   export let object: ActivityMessage
   export let embedded = false
-  export let onReply: (() => void) | undefined = undefined
 
   const client = getClient()
   const maxDisplayPersons = 5
@@ -82,11 +81,6 @@
   async function handleReply (e: MouseEvent) {
     e.stopPropagation()
     e.preventDefault()
-
-    if (onReply) {
-      onReply()
-      return
-    }
 
     if (replyProvider) {
       const fn = await getResource(replyProvider.function)

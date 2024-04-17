@@ -16,7 +16,13 @@ import { activityId, type ActivityMessage, type DocUpdateMessageViewlet } from '
 import activity from '@hcengineering/activity-resources/src/plugin'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { type Doc, type Ref } from '@hcengineering/core'
-import { type ActionCategory } from '@hcengineering/view'
+import type { Location } from '@hcengineering/ui'
+import {
+  type Action,
+  type ActionCategory,
+  type ViewAction,
+  type ViewActionAvailabilityFunction
+} from '@hcengineering/view'
 import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
 
 export default mergeIds(activityId, activity, {
@@ -24,7 +30,10 @@ export default mergeIds(activityId, activity, {
     Attributes: '' as IntlString,
     Pinned: '' as IntlString,
     Emoji: '' as IntlString,
-    Replies: '' as IntlString
+    Replies: '' as IntlString,
+    AddReaction: '' as IntlString,
+    SaveForLater: '' as IntlString,
+    RemoveFromLater: '' as IntlString
   },
   filter: {
     AttributesFilter: '' as Resource<(message: ActivityMessage, _class?: Ref<Doc>) => boolean>,
@@ -35,9 +44,28 @@ export default mergeIds(activityId, activity, {
   ids: {
     ReactionAddedActivityViewlet: '' as Ref<DocUpdateMessageViewlet>,
     ActivityNotificationGroup: '' as Ref<NotificationGroup>,
-    AddReactionNotification: '' as Ref<NotificationType>
+    AddReactionNotification: '' as Ref<NotificationType>,
+    AddReactionAction: '' as Ref<Action>,
+    SaveForLaterAction: '' as Ref<Action>,
+    RemoveFromLaterAction: '' as Ref<Action>,
+    PinMessageAction: '' as Ref<Action>,
+    UnpinMessageAction: '' as Ref<Action>
+  },
+  function: {
+    GetFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
+    CanSaveForLater: '' as Resource<ViewActionAvailabilityFunction>,
+    CanRemoveFromSaved: '' as Resource<ViewActionAvailabilityFunction>,
+    CanPinMessage: '' as Resource<ViewActionAvailabilityFunction>,
+    CanUnpinMessage: '' as Resource<ViewActionAvailabilityFunction>
   },
   category: {
     Activity: '' as Ref<ActionCategory>
+  },
+  actionImpl: {
+    AddReaction: '' as ViewAction,
+    SaveForLater: '' as ViewAction,
+    RemoveFromSaved: '' as ViewAction,
+    PinMessage: '' as ViewAction,
+    UnpinMessage: '' as ViewAction
   }
 })
