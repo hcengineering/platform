@@ -41,7 +41,14 @@ import notification, {
   type MentionInboxNotification
 } from '@hcengineering/notification'
 import { MessageBox, getClient } from '@hcengineering/presentation'
-import { getCurrentLocation, getLocation, navigate, showPopup, type Location, type ResolvedLocation } from '@hcengineering/ui'
+import {
+  getCurrentLocation,
+  getLocation,
+  navigate,
+  showPopup,
+  type Location,
+  type ResolvedLocation
+} from '@hcengineering/ui'
 import { get } from 'svelte/store'
 
 import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
