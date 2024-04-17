@@ -19,7 +19,7 @@ import { generateHTML, generateJSON } from '@tiptap/html'
 import { Node as ProseMirrorNode, Schema } from '@tiptap/pm/model'
 
 import { defaultExtensions } from '../extensions'
-import { MarkupMark, MarkupNode, emptyMarkupNode } from './model'
+import { MarkupMark, MarkupNode, MarkupNodeType, emptyMarkupNode } from './model'
 import { nodeDoc, nodeParagraph, nodeText } from './dsl'
 import { deepEqual } from 'fast-equals'
 
@@ -36,8 +36,7 @@ export function isEmptyMarkup (markup: Markup | undefined): boolean {
   if (markup === undefined || markup === null || markup === '') {
     return true
   }
-  const node = markupToPmNode(markup)
-  return node.textContent.trim() === ''
+  return isEmptyNode(markupToJSON(markup))
 }
 
 /** @public */
@@ -85,6 +84,26 @@ function equalRecords (a: Record<string, any> | undefined, b: Record<string, any
 
 function equalMarks (a: MarkupMark, b: MarkupMark): boolean {
   return a.type === b.type && equalRecords(a.attrs, b.attrs)
+}
+
+const emptyNodes = [MarkupNodeType.hard_break]
+
+const nonEmptyNodes = [
+  MarkupNodeType.horizontal_rule,
+  MarkupNodeType.image,
+  MarkupNodeType.reference,
+  MarkupNodeType.sub,
+  MarkupNodeType.table
+]
+
+/** @public */
+export function isEmptyNode (node: MarkupNode): boolean {
+  if (emptyNodes.includes(node.type)) return true
+  if (nonEmptyNodes.includes(node.type)) return false
+  if (node.text !== undefined && node.text?.trim().length > 0) return false
+
+  const content = node.content ?? []
+  return content.every(isEmptyNode)
 }
 
 // Markup

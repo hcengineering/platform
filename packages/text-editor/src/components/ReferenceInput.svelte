@@ -64,6 +64,8 @@
   $: devSize = $deviceInfo.size
   $: shrinkButtons = checkAdaptiveMatching(devSize, 'sm')
 
+  $: canSubmit = (!isEmpty || haveAttachment) && !isEmptyMarkup(content) && !loading
+
   function setContent (content: Markup): void {
     textEditor?.setContent(content)
   }
@@ -149,7 +151,7 @@
       {autofocus}
       {boundary}
       on:content={(ev) => {
-        if (!isEmpty || haveAttachment) {
+        if (canSubmit) {
           dispatch('message', ev.detail)
           content = EmptyMarkup
           textEditor?.clear()
@@ -208,7 +210,7 @@
       {#if showSend}
         <Button
           {loading}
-          disabled={(isEmpty && !haveAttachment) || (!isEmpty && isEmptyMarkup(content)) || loading}
+          disabled={!canSubmit}
           icon={iconSend ?? Send}
           iconProps={{ size: buttonSize }}
           kind={kindSend}

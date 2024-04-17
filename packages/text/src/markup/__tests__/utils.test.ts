@@ -26,6 +26,7 @@ import {
   htmlToMarkup,
   htmlToPmNode,
   isEmptyMarkup,
+  isEmptyNode,
   jsonToHTML,
   jsonToMarkup,
   jsonToText,
@@ -142,6 +143,85 @@ describe('areEqualMarkups', () => {
     const markup2 =
       '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello","marks":[{"type":"italic"}]}]}]}'
     expect(areEqualMarkups(markup1, markup2)).toBeFalsy()
+  })
+})
+
+describe('isEmptyNode', () => {
+  it('returns true for empty doc node', () => {
+    const node: MarkupNode = {
+      type: MarkupNodeType.doc,
+      content: []
+    }
+    expect(isEmptyNode(node)).toBeTruthy()
+  })
+
+  it('returns true for empty paragraph node', () => {
+    const node: MarkupNode = {
+      type: MarkupNodeType.doc,
+      content: [
+        {
+          type: MarkupNodeType.paragraph,
+          content: []
+        }
+      ]
+    }
+    expect(isEmptyNode(node)).toBeTruthy()
+  })
+
+  it('returns true for empty text node', () => {
+    const node: MarkupNode = {
+      type: MarkupNodeType.doc,
+      content: [
+        {
+          type: MarkupNodeType.paragraph,
+          content: [
+            {
+              type: MarkupNodeType.text,
+              text: ''
+            }
+          ]
+        }
+      ]
+    }
+    expect(isEmptyNode(node)).toBeTruthy()
+  })
+
+  it('returns false for non-empty text node', () => {
+    const node: MarkupNode = {
+      type: MarkupNodeType.paragraph,
+      content: [
+        {
+          type: MarkupNodeType.text,
+          text: 'Hello, world!'
+        }
+      ]
+    }
+    expect(isEmptyNode(node)).toBeFalsy()
+  })
+
+  it('returns false for non-empty text node', () => {
+    const node: MarkupNode = {
+      type: MarkupNodeType.paragraph,
+      content: [
+        {
+          type: MarkupNodeType.horizontal_rule
+        }
+      ]
+    }
+    expect(isEmptyNode(node)).toBeFalsy()
+  })
+
+  it('returns false for non-empty node', () => {
+    const node: MarkupNode = {
+      type: MarkupNodeType.paragraph,
+      content: [
+        {
+          type: MarkupNodeType.text,
+          text: 'Hello, world!'
+        }
+      ]
+    }
+    expect(isEmptyNode(node)).toBeFalsy()
   })
 })
 
