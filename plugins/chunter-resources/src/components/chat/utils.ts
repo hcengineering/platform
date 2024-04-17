@@ -272,7 +272,7 @@ export async function removeActivityChannels (contexts: DocNotifyContext[]): Pro
   try {
     for (const context of contexts) {
       const notifications = notificationsByContext.get(context._id) ?? []
-      await client.deleteNotifications(
+      await client.archiveNotifications(
         ops,
         notifications.map(({ _id }) => _id)
       )
@@ -293,7 +293,7 @@ export async function readActivityChannels (contexts: DocNotifyContext[]): Promi
   try {
     for (const context of contexts) {
       const notifications = notificationsByContext.get(context._id) ?? []
-      await client.deleteNotifications(
+      await client.archiveNotifications(
         ops,
         notifications
           .filter(({ _class }) => _class === notification.class.ActivityInboxNotification)

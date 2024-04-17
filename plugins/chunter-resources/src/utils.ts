@@ -39,7 +39,7 @@ import activity, {
   type DocUpdateMessage
 } from '@hcengineering/activity'
 import {
-  deleteContextNotifications,
+  archiveContextNotifications,
   InboxNotificationsClientImpl,
   isMentionNotification
 } from '@hcengineering/notification-resources'
@@ -396,7 +396,7 @@ export async function removeChannelAction (context?: DocNotifyContext): Promise<
 
   const client = getClient()
 
-  await deleteContextNotifications(context)
+  await archiveContextNotifications(context)
   await client.remove(context)
 }
 

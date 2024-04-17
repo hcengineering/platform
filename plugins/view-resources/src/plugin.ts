@@ -43,7 +43,6 @@ export default mergeIds(viewId, view, {
     DeletePopupNoPermissionLabel: '' as IntlString,
     DeletePopupCreatorLabel: '' as IntlString,
     DeletePopupOwnerLabel: '' as IntlString,
-    Archive: '' as IntlString,
     ArchiveConfirm: '' as IntlString,
     Assignees: '' as IntlString,
     Labels: '' as IntlString,

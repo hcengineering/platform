@@ -141,25 +141,52 @@ export async function unReadNotifyContext (doc: DocNotifyContext): Promise<void>
 /**
  * @public
  */
-export async function deleteContextNotifications (doc?: DocNotifyContext): Promise<void> {
+export async function archiveContextNotifications (doc?: DocNotifyContext): Promise<void> {
   if (doc === undefined) {
     return
   }
 
-  const doneOp = await getClient().measure('deleteContextNotifications')
+  const doneOp = await getClient().measure('archiveContextNotifications')
   const ops = getClient().apply(doc._id)
 
   try {
     const notifications = await ops.findAll(
       notification.class.InboxNotification,
-      { docNotifyContext: doc._id },
+      { docNotifyContext: doc._id, archived: { $ne: true } },
       { projection: { _id: 1, _class: 1, space: 1 } }
     )
 
     for (const notification of notifications) {
-      await ops.removeDoc(notification._class, notification.space, notification._id)
+      await ops.updateDoc(notification._class, notification.space, notification._id, { archived: true, isViewed: true })
     }
     await ops.update(doc, { lastViewedTimestamp: Date.now() })
+  } finally {
+    await ops.commit()
+    await doneOp()
+  }
+}
+
+/**
+ * @public
+ */
+export async function unarchiveContextNotifications (doc?: DocNotifyContext): Promise<void> {
+  if (doc === undefined) {
+    return
+  }
+
+  const doneOp = await getClient().measure('unarchiveContextNotifications')
+  const ops = getClient().apply(doc._id)
+
+  try {
+    const notifications = await ops.findAll(
+      notification.class.InboxNotification,
+      { docNotifyContext: doc._id, archived: true },
+      { projection: { _id: 1, _class: 1, space: 1 } }
+    )
+
+    for (const notification of notifications) {
+      await ops.updateDoc(notification._class, notification.space, notification._id, { archived: false })
+    }
   } finally {
     await ops.commit()
     await doneOp()
@@ -257,7 +284,7 @@ export async function archiveAll (): Promise<void> {
     'top',
     (result?: boolean) => {
       if (result === true) {
-        void client.deleteAllNotifications()
+        void client.archiveAllNotifications()
       }
     }
   )
@@ -295,10 +322,6 @@ export async function getDisplayInboxNotifications (
 
   for (const notification of notifications) {
     if (filter === 'unread' && notification.isViewed) {
-      continue
-    }
-
-    if (filter === 'read' && !notification.isViewed) {
       continue
     }
 
@@ -342,7 +365,10 @@ export async function getDisplayInboxNotifications (
 
       const displayNotification = {
         ...activityNotification,
-        combinedIds: activityNotifications.filter(({ attachedTo }) => ids.includes(attachedTo)).map(({ _id }) => _id)
+        combinedIds: activityNotifications.filter(({ attachedTo }) => ids.includes(attachedTo)).map(({ _id }) => _id),
+        combinedMessages: activityNotifications
+          .map((a) => a.$lookup?.attachedTo)
+          .filter((m): m is ActivityMessage => m !== undefined)
       }
 
       result.push(displayNotification)
@@ -351,7 +377,8 @@ export async function getDisplayInboxNotifications (
       if (activityNotification !== undefined) {
         result.push({
           ...activityNotification,
-          combinedIds: [activityNotification._id]
+          combinedIds: [activityNotification._id],
+          combinedMessages: [message]
         })
       }
     }

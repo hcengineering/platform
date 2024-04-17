@@ -38,12 +38,13 @@ import {
   canUnReadNotifyContext,
   readNotifyContext,
   unReadNotifyContext,
-  deleteContextNotifications,
+  archiveContextNotifications,
   hasInboxNotifications,
   archiveAll,
   readAll,
   unreadAll,
-  checkPermission
+  checkPermission,
+  unarchiveContextNotifications
 } from './utils'
 
 import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
@@ -86,7 +87,8 @@ export default async (): Promise<Resources> => ({
     UnpinDocNotifyContext: unpinDocNotifyContext,
     ReadNotifyContext: readNotifyContext,
     UnReadNotifyContext: unReadNotifyContext,
-    DeleteContextNotifications: deleteContextNotifications,
+    ArchiveContextNotifications: archiveContextNotifications,
+    UnarchiveContextNotifications: unarchiveContextNotifications,
     ArchiveAll: archiveAll,
     ReadAll: readAll,
     UnreadAll: unreadAll

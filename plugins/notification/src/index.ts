@@ -252,6 +252,7 @@ export interface InboxNotification extends Doc {
   body?: IntlString
   intlParams?: Record<string, string | number>
   intlParamsNotLocalized?: Record<string, IntlString>
+  archived?: boolean
 }
 
 export interface ActivityInboxNotification extends InboxNotification {
@@ -278,6 +279,7 @@ export interface MentionInboxNotification extends CommonInboxNotification {
 
 export interface DisplayActivityInboxNotification extends ActivityInboxNotification {
   combinedIds: Ref<ActivityInboxNotification>[]
+  combinedMessages: ActivityMessage[]
 }
 
 export type DisplayInboxNotification = DisplayActivityInboxNotification | InboxNotification
@@ -315,8 +317,8 @@ export interface InboxNotificationsClient {
   readMessages: (client: TxOperations, ids: Ref<ActivityMessage>[]) => Promise<void>
   readNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>
   unreadNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>
-  deleteNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>
-  deleteAllNotifications: () => Promise<void>
+  archiveNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>
+  archiveAllNotifications: () => Promise<void>
   readAllNotifications: () => Promise<void>
   unreadAllNotifications: () => Promise<void>
 }
@@ -401,7 +403,8 @@ const notification = plugin(notificationId, {
     UnpinDocNotifyContext: '' as Ref<Action>,
     UnReadNotifyContext: '' as Ref<Action>,
     ReadNotifyContext: '' as Ref<Action>,
-    DeleteContextNotifications: '' as Ref<Action>
+    ArchiveContextNotifications: '' as Ref<Action>,
+    UnarchiveContextNotifications: '' as Ref<Action>
   },
   icon: {
     Notifications: '' as Asset,
