@@ -129,6 +129,8 @@ export interface NotificationPresenter extends Class<Doc> {
   presenter: Resource<NotificationContentProvider>
 }
 
+export const NOTIFICATION_BODY_SIZE = 50
+
 /**
  * @public
  */

@@ -57,10 +57,8 @@ async function migrateMarkup (client: MigrationClient): Promise<void> {
     }
   )
 
-  console.log('processing', activity.class.DocUpdateMessage)
   try {
     await processMigrateMarkupFor(client, iterator)
-    console.log('processing finished', activity.class.DocUpdateMessage)
   } finally {
     await iterator.close()
   }

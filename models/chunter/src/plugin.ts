@@ -103,7 +103,8 @@ export default mergeIds(chunterId, chunter, {
     GetChunterSpaceLinkFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
     GetThreadLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
     ReplyToThread: '' as Resource<(doc: ActivityMessage) => Promise<void>>,
-    CanReplyToThread: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
+    CanReplyToThread: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    GetMessageLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>
   },
   filter: {
     ChatMessagesFilter: '' as Resource<(message: ActivityMessage, _class?: Ref<Doc>) => boolean>

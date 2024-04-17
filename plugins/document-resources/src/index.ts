@@ -43,6 +43,7 @@ import DocumentSearchIcon from './components/DocumentSearchIcon.svelte'
 import NotificationDocumentPresenter from './components/NotificationDocumentPresenter.svelte'
 import Move from './components/Move.svelte'
 import DocumentToDoPresenter from './components/DocumentToDoPresenter.svelte'
+import DocumentIcon from './components/DocumentIcon.svelte'
 
 import document from './plugin'
 import { createEmptyDocument, documentTitleProvider, getDocumentLink, getDocumentUrl, resolveLocation } from './utils'
@@ -135,7 +136,8 @@ export default async (): Promise<Resources> => ({
     DocumentSearchIcon,
     NotificationDocumentPresenter,
     Move,
-    DocumentToDoPresenter
+    DocumentToDoPresenter,
+    DocumentIcon
   },
   completion: {
     DocumentQuery: async (

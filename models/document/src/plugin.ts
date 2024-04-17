@@ -30,7 +30,8 @@ export default mergeIds(documentId, document, {
     NotificationDocumentPresenter: '' as AnyComponent,
     TeamspaceSpacePresenter: '' as AnyComponent,
     Move: '' as AnyComponent,
-    DocumentToDoPresenter: '' as AnyComponent
+    DocumentToDoPresenter: '' as AnyComponent,
+    DocumentIcon: '' as AnyComponent
   },
   completion: {
     DocumentQuery: '' as Resource<ObjectSearchFactory>,

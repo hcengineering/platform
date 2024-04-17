@@ -15,9 +15,11 @@
 -->
 <script lang="ts">
   import type { Lead } from '@hcengineering/lead'
-  import { Icon } from '@hcengineering/ui'
+  import { Icon, tooltip } from '@hcengineering/ui'
   import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
   import lead from '@hcengineering/lead'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
+  import { ObjectPresenterType } from '@hcengineering/view'
 
   export let value: Lead
   export let inline: boolean = false
@@ -25,12 +27,13 @@
   export let accent: boolean = false
   export let noUnderline: boolean = false
   export let shouldShowAvatar: boolean = true
+  export let type: ObjectPresenterType = 'link'
 </script>
 
 {#if value}
   {#if inline}
     <ObjectMention object={value} {disabled} {noUnderline} {accent} />
-  {:else}
+  {:else if type === 'link'}
     <DocNavLink object={value} {disabled} {noUnderline} {accent}>
       <div class="flex-presenter">
         {#if shouldShowAvatar}
@@ -41,5 +44,7 @@
         >
       </div>
     </DocNavLink>
+  {:else if type === 'text'}
+    <span class="overflow-label" use:tooltip={{ label: getEmbeddedLabel(value.title) }}>{value.identifier}</span>
   {/if}
 {/if}

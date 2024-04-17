@@ -16,7 +16,8 @@
   import notification, {
     ActivityInboxNotification,
     DocNotifyContext,
-    InboxNotification
+    InboxNotification,
+    decodeObjectURI
   } from '@hcengineering/notification'
   import { ActionContext, getClient } from '@hcengineering/presentation'
   import view from '@hcengineering/view'
@@ -45,7 +46,6 @@
   import Filter from '../Filter.svelte'
   import {
     archiveAll,
-    decodeObjectURI,
     getDisplayInboxData,
     isMentionNotification,
     openInboxDoc,

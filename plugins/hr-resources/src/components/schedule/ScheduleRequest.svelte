@@ -15,6 +15,7 @@
 <script lang="ts">
   import hr, { Request, RequestType } from '@hcengineering/hr'
   import { getClient } from '@hcengineering/presentation'
+  import { jsonToText, markupToJSON } from '@hcengineering/text'
   import { Icon, Label, closeTooltip } from '@hcengineering/ui'
   import { showMenu } from '@hcengineering/view-resources'
 
@@ -40,7 +41,7 @@
     showMenu(e, { object: request })
   }
 
-  $: description = shouldShowDescription ? request.description.replace(/<[^>]*>/g, '').trim() : ''
+  $: description = shouldShowDescription ? jsonToText(markupToJSON(request.description)) : ''
 </script>
 
 {#await getType(request) then type}

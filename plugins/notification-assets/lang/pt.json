@@ -28,6 +28,8 @@
     "Unread": "Não lido",
     "CommonNotificationTitle": "{title}",
     "CommonNotificationBody": "Atualizado por {senderName}",
+    "CommonNotificationChanged": "{senderName} alterou {property}",
+    "CommonNotificationChangedProperty": "{senderName} alterou {property} para \"{newValue}\"",
     "ChangedCollaborators": "Colaboradores alterados",
     "NewCollaborators": "Novos colaboradores",
     "RemovedCollaborators": "Colaboradores removidos",

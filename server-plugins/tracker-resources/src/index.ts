@@ -38,6 +38,7 @@ import { NotificationContent } from '@hcengineering/notification'
 import { workbenchId } from '@hcengineering/workbench'
 import { stripTags } from '@hcengineering/text'
 import chunter, { ChatMessage } from '@hcengineering/chunter'
+import { NOTIFICATION_BODY_SIZE } from '@hcengineering/server-notification'
 
 async function updateSubIssues (
   updateTx: TxUpdateDoc<Issue>,
@@ -85,7 +86,6 @@ function isSamePerson (control: TriggerControl, assignee: Ref<Person>, target: R
   return assignee === targetAccount?.person
 }
 
-const NOTIFICATION_BODY_SIZE = 50
 /**
  * @public
  */

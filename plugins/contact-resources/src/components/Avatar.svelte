@@ -55,19 +55,29 @@
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let variant: 'circle' | 'roundedRect' | 'none' = 'roundedRect'
   export let borderColor: number | undefined = undefined
+  export let standby: boolean = false
 
   export function pulse (): void {
-    if (element) element.animate(pulsating, { duration: 150, easing: 'ease-in' })
+    if (element) element.animate(pulsating, { duration: 150, easing: 'ease-out' })
+    if (standby) {
+      standbyMode = false
+      if (timer) clearTimeout(timer)
+      timer = setTimeout(() => {
+        standbyMode = true
+      }, 2000)
+    }
   }
 
   let url: string[] | undefined
   let avatarProvider: AvatarProvider | undefined
   let color: ColorDefinition | undefined = undefined
+  let standbyMode: boolean = standby
+  let timer: any | undefined = undefined
   let fontSize: number = 16
   let element: HTMLElement
   const pulsating: Keyframe[] = [
-    { boxShadow: '0 0 .75rem 0 var(--theme-bg-color), 0 0 .75rem .125rem var(--border-color)' },
-    { boxShadow: '0 0 0 0 var(--theme-bg-color), 0 0 0 0 var(--border-color)' }
+    { boxShadow: '0 0 .125rem 0 var(--theme-bg-color), 0 0 0 .125rem var(--border-color)' },
+    { boxShadow: '0 0 .375rem .375rem var(--theme-bg-color), 0 0 0 .25rem var(--border-color)' }
   ]
 
   $: displayName = getDisplayName(name)
@@ -135,6 +145,8 @@
     class:no-img={!url && color}
     class:bordered={!url && color === undefined}
     class:border={bColor !== undefined}
+    class:standby
+    class:standbyOn={standby && !standbyMode}
     style:--border-color={bColor ?? 'var(--primary-button-default)'}
     style:background-color={color && !url ? color.icon : 'var(--theme-button-default)'}
     use:resizeObserver={(element) => {
@@ -155,6 +167,8 @@
     class:no-img={!url && color}
     class:bordered={!url && color === undefined}
     class:border={bColor !== undefined}
+    class:standby
+    class:standbyOn={standby && !standbyMode}
     style:--border-color={bColor ?? 'var(--primary-button-default)'}
     style:background-color={color && !url ? color.icon : 'var(--theme-button-default)'}
   >
@@ -190,6 +204,19 @@
     &.roundedRect img.ava-image {
       border-radius: 20%;
     }
+    &.standby {
+      opacity: 0.5;
+      transition: opacity 0.5s ease-in-out;
+      pointer-events: all;
+
+      &:hover,
+      &.standbyOn {
+        opacity: 1;
+      }
+      &:hover {
+        transition-duration: 0.1s;
+      }
+    }
 
     &.no-img {
       color: var(--primary-button-color);
@@ -204,7 +231,9 @@
       outline: 2px solid var(--border-color);
 
       &.ava-inline,
-      &.ava-tiny {
+      &.ava-tiny,
+      &.ava-card,
+      &.ava-x-small {
         outline-width: 1px;
       }
       &.ava-large,

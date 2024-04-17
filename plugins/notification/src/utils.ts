@@ -1,4 +1,4 @@
-<!--
+//
 // Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,27 +11,14 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
--->
-<script lang="ts">
-  export let label: string
-</script>
+//
 
-<button class="hulyToDoLine-reference flex-row-top flex-no-shrink flex-gap-2" on:click>
-  <div class="hulyToDoLine-icon">
-    <slot name="icon" />
-  </div>
-  <span class="hulyToDoLine-label overflow-label font-medium-12 text-left max-w-20 secondary-textColor">
-    {label}
-  </span>
-  <slot />
-</button>
+import { Ref, Doc, Class } from '@hcengineering/core'
 
-<style lang="scss">
-  button {
-    margin: 0;
-    padding: 0;
-    text-align: left;
-    border: none;
-    outline: none;
-  }
-</style>
+export function decodeObjectURI (value: string): [Ref<Doc>, Ref<Class<Doc>>] {
+  return decodeURIComponent(value).split('|') as [Ref<Doc>, Ref<Class<Doc>>]
+}
+
+export function encodeObjectURI (_id: Ref<Doc>, _class: Ref<Class<Doc>>): string {
+  return encodeURIComponent([_id, _class].join('|'))
+}

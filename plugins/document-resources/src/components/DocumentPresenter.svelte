@@ -19,6 +19,7 @@
   import { Document } from '@hcengineering/document'
   import { tooltip } from '@hcengineering/ui'
   import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
+  import { ObjectPresenterType } from '@hcengineering/view'
 
   import document from '../plugin'
   import DocumentIcon from './DocumentIcon.svelte'
@@ -31,12 +32,13 @@
   export let breadcrumb: boolean = false
   export let maxWidth = ''
   export let shouldShowAvatar = true
+  export let type: ObjectPresenterType = 'link'
 </script>
 
 {#if value}
   {#if inline}
     <ObjectMention object={value} {disabled} {accent} {noUnderline} component={document.component.EditDoc} />
-  {:else}
+  {:else if type === 'link'}
     <DocNavLink {disabled} object={value} {accent} {noUnderline} component={document.component.EditDoc}>
       <div
         class="flex-presenter"
@@ -54,5 +56,9 @@
         </span>
       </div>
     </DocNavLink>
+  {:else if type === 'text'}
+    <span class="overflow-label" use:tooltip={{ label: document.string.Document }}>
+      {value.name}
+    </span>
   {/if}
 {/if}

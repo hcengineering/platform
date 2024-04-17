@@ -64,7 +64,13 @@ import {
   removeChannelAction,
   canReplyToThread
 } from './utils'
-import { chunterSpaceLinkFragmentProvider, getThreadLink, getMessageLink, replyToThread } from './navigation'
+import {
+  chunterSpaceLinkFragmentProvider,
+  getThreadLink,
+  getMessageLink,
+  replyToThread,
+  getMessageLocation
+} from './navigation'
 
 export { default as ChatMessagesPresenter } from './components/chat-message/ChatMessagesPresenter.svelte'
 export { default as ChatMessagePopup } from './components/chat-message/ChatMessagePopup.svelte'
@@ -191,7 +197,8 @@ export default async (): Promise<Resources> => ({
     GetUnreadThreadsCount: getUnreadThreadsCount,
     GetThreadLink: getThreadLink,
     ReplyToThread: replyToThread,
-    CanReplyToThread: canReplyToThread
+    CanReplyToThread: canReplyToThread,
+    GetMessageLink: getMessageLocation
   },
   actionImpl: {
     ArchiveChannel,

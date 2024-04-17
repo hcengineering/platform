@@ -189,6 +189,10 @@ export const leadOperation: MigrateOperation = {
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const ops = new TxOperations(client, core.account.System)
+    // Currently space type has to be recreated every time as it's in the model
+    // created by the system user
+    await createSpaceType(ops)
+
     await tryUpgrade(client, leadId, [
       {
         state: 'u-default-funnel',
@@ -197,8 +201,5 @@ export const leadOperation: MigrateOperation = {
         }
       }
     ])
-    // Currently space type has to be recreated every time as it's in the model
-    // created by the system user
-    await createSpaceType(ops)
   }
 }

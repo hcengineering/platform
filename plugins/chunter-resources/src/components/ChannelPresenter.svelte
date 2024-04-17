@@ -15,19 +15,22 @@
 <script lang="ts">
   import { Channel, chunterId } from '@hcengineering/chunter'
   import { getClient } from '@hcengineering/presentation'
-  import { Icon } from '@hcengineering/ui'
+  import { Icon, tooltip } from '@hcengineering/ui'
   import { NavLink } from '@hcengineering/view-resources'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
+  import { ObjectPresenterType } from '@hcengineering/view'
 
   export let value: Channel
   export let inline: boolean = false
   export let shouldShowAvatar = true
+  export let type: ObjectPresenterType = 'link'
 
   const client = getClient()
 
   $: icon = client.getHierarchy().getClass(value._class).icon
 </script>
 
-{#if value}
+{#if value && type === 'link'}
   <NavLink app={chunterId} space={value._id}>
     <div class="flex-presenter">
       {#if !inline && shouldShowAvatar}
@@ -40,4 +43,8 @@
       <span class="label">{value.name}</span>
     </div>
   </NavLink>
+{/if}
+
+{#if value && type === 'text'}
+  <span class="overflow-label" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>{value.name}</span>
 {/if}

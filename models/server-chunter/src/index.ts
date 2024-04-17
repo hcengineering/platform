@@ -42,10 +42,6 @@ export function createModel (builder: Builder): void {
     }
   )
 
-  builder.mixin(chunter.class.DirectMessage, core.class.Class, serverNotification.mixin.NotificationPresenter, {
-    presenter: serverChunter.function.ChunterNotificationContentProvider
-  })
-
   builder.mixin(chunter.class.ChatMessage, core.class.Class, serverNotification.mixin.NotificationPresenter, {
     presenter: serverChunter.function.ChunterNotificationContentProvider
   })

@@ -223,6 +223,7 @@ const view = plugin(viewId, {
     Star: '' as Asset,
     Eye: '' as Asset,
     EyeCrossed: '' as Asset,
+    Bubble: '' as Asset,
     CheckCircle: '' as Asset,
     Add: '' as Asset,
     Image: '' as Asset,
