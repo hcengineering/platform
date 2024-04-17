@@ -126,7 +126,7 @@
               <Label label={header ?? client.getHierarchy().getClass(headerObject._class).label} />
             </DocNavLink>
           {:else if person}
-            <EmployeePresenter value={person} shouldShowAvatar={false} compact />
+            <EmployeePresenter value={person} shouldShowAvatar={false} compact showStatus={false} />
           {:else}
             <Label label={core.string.System} />
           {/if}
