@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { createFocusManager, FocusHandler, ListView, resizeObserver, ToggleWithLabel } from '@hcengineering/ui'
+  import { createFocusManager, FocusHandler, Label, ListView, ModernToggle, resizeObserver } from '@hcengineering/ui'
   import { SettingItem } from '../../types'
 
   export let items: SettingItem[] = []
@@ -87,8 +87,9 @@
       <ListView bind:this={list} count={items.length} bind:selection on:changeContent={() => dispatch('changeContent')}>
         <svelte:fragment slot="item" let:item={itemId}>
           {@const item = items[itemId]}
-          <div class="menu-item withList w-full flex-center">
-            <ToggleWithLabel label={item.label} on={item.on} on:change={item.onToggle} />
+          <div class="menu-item withList w-full container">
+            <Label label={item.label} />
+            <ModernToggle checked={item.on} size="small" on:change={item.onToggle} />
           </div>
         </svelte:fragment>
       </ListView>
@@ -96,3 +97,11 @@
   </div>
   <div class="menu-space" />
 </div>
+
+<style lang="scss">
+  .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+</style>

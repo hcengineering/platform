@@ -15,6 +15,7 @@
 <script lang="ts">
   import {
     ActivityInboxNotification,
+    decodeObjectURI,
     DocNotifyContext,
     InboxNotification
   } from '@hcengineering/notification'
@@ -24,7 +25,6 @@
     AnyComponent,
     Component,
     defineSeparators,
-    Loading,
     Label,
     location as locationStore,
     Location,
@@ -38,18 +38,11 @@
   import { isActivityMessageClass, isReactionMessage } from '@hcengineering/activity-resources'
   import { get } from 'svelte/store'
   import { translate } from '@hcengineering/platform'
-  import { groupByArray, IdMap, Ref, SortingOrder } from '@hcengineering/core'
+  import { getCurrentAccount, groupByArray, IdMap, Ref, SortingOrder } from '@hcengineering/core'
 
   import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
   import SettingsButton from './SettingsButton.svelte'
-  import {
-    decodeObjectURI,
-    archiveAll,
-    getDisplayInboxData,
-    isMentionNotification,
-    openInboxDoc,
-    resolveLocation
-  } from '../../utils'
+  import { getDisplayInboxData, isMentionNotification, openInboxDoc, resolveLocation } from '../../utils'
   import { InboxData, InboxNotificationsFilter } from '../../types'
   import InboxGroupedListView from './InboxGroupedListView.svelte'
   import notification from '../../plugin'
@@ -61,6 +54,7 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
+  const me = getCurrentAccount()
 
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const notificationsByContextStore = inboxClient.inboxNotificationsByContext
@@ -68,7 +62,8 @@
   const contextByDocStore = inboxClient.contextByDoc
   const contextsStore = inboxClient.contexts
 
-  const archivedQuery = createQuery()
+  const archivedActivityNotificationsQuery = createQuery()
+  const archivedOtherNotificationsQuery = createQuery()
 
   const allTab: TabItem = {
     id: 'all',
@@ -76,12 +71,14 @@
   }
 
   let showArchive = false
-  let isArchiveLoading = false
+  let archivedActivityNotifications: InboxNotification[] = []
+  let archivedOtherNotifications: InboxNotification[] = []
+  let archivedNotifications: InboxNotification[] = []
 
   let inboxData: InboxData = new Map()
 
   let filteredData: InboxData = new Map()
-  let filter: InboxNotificationsFilter = 'all'
+  let filter: InboxNotificationsFilter = (localStorage.getItem('inbox-filter') as InboxNotificationsFilter) ?? 'all'
 
   let tabItems: TabItem[] = []
   let selectedTabId: string = allTab.id
@@ -91,33 +88,43 @@
   let selectedComponent: AnyComponent | undefined = undefined
 
   let selectedMessage: ActivityMessage | undefined = undefined
-  let archivedNotifications: InboxNotification[] = []
 
   $: if (showArchive) {
-    isArchiveLoading = true
-    archivedQuery.query(
-      notification.class.InboxNotification,
-      { archived: true },
+    archivedActivityNotificationsQuery.query(
+      notification.class.ActivityInboxNotification,
+      { archived: true, user: me._id },
       (res) => {
-        archivedNotifications = res
-        isArchiveLoading = false
+        archivedActivityNotifications = res
+      },
+      {
+        lookup: {
+          attachedTo: activity.class.ActivityMessage
+        },
+        sort: {
+          createdOn: SortingOrder.Descending
+        },
+        limit: 1000
+      }
+    )
+
+    archivedOtherNotificationsQuery.query(
+      notification.class.InboxNotification,
+      { _class: { $nin: [notification.class.ActivityInboxNotification] }, archived: true, user: me._id },
+      (res) => {
+        archivedOtherNotifications = res
       },
       {
         sort: {
           createdOn: SortingOrder.Descending
         },
-        lookup: {
-          attachedTo: activity.class.ActivityMessage
-        } as any,
-        limit: 1000
+        limit: 500
       }
     )
-  } else {
-    isArchiveLoading = false
-    archivedQuery.unsubscribe()
-    archivedNotifications = []
   }
 
+  $: archivedNotifications = [...archivedActivityNotifications, ...archivedOtherNotifications].sort(
+    (n1, n2) => (n2.createdOn ?? n2.modifiedOn) - (n1.createdOn ?? n1.modifiedOn)
+  )
   $: void updateInboxData($notificationsByContextStore, archivedNotifications, showArchive)
 
   async function updateInboxData (
@@ -357,23 +364,25 @@
 
   function onArchiveToggled (): void {
     showArchive = !showArchive
+    selectedTabId = allTab.id
   }
 
   function onUnreadsToggled (): void {
     filter = filter === 'unread' ? 'all' : 'unread'
+    localStorage.setItem('inbox-filter', filter)
   }
 
   $: items = [
     {
       id: 'unread',
       on: filter === 'unread',
-      label: notification.string.Unread,
+      label: notification.string.Unreads,
       onToggle: onUnreadsToggled
     },
     {
       id: 'archive',
       on: showArchive,
-      label: view.string.Archive,
+      label: view.string.Archived,
       onToggle: onArchiveToggled
     }
   ]
@@ -408,16 +417,12 @@
         </div>
 
         <Scroller padding="0">
-          {#if isArchiveLoading}
-            <Loading />
-          {:else}
-            <InboxGroupedListView
-              data={filteredData}
-              selectedContext={selectedContextId}
-              archived={showArchive}
-              on:click={selectContext}
-            />
-          {/if}
+          <InboxGroupedListView
+            data={filteredData}
+            selectedContext={selectedContextId}
+            archived={showArchive}
+            on:click={selectContext}
+          />
         </Scroller>
       </div>
       <Separator name="inbox" float={navFloat ? 'navigator' : true} index={0} />

@@ -195,7 +195,8 @@ const view = plugin(viewId, {
     UnArchive: '' as IntlString,
     Archive: '' as IntlString,
     Save: '' as IntlString,
-    PublicView: '' as IntlString
+    PublicView: '' as IntlString,
+    Archived: '' as IntlString
   },
   icon: {
     Table: '' as Asset,

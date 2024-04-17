@@ -34,6 +34,7 @@ import notification, {
 } from '@hcengineering/notification'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { derived, get, writable } from 'svelte/store'
+import { isActivityNotification } from './utils'
 
 /**
  * @public
@@ -324,7 +325,10 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
           isViewed: true,
           archived: { $ne: true }
         },
-        { projection: { _id: 1, _class: 1, space: 1 } }
+        {
+          projection: { _id: 1, _class: 1, space: 1, docNotifyContext: 1 },
+          sort: { createdOn: SortingOrder.Ascending }
+        }
       )
       const contexts = get(this.contexts) ?? []
 
@@ -332,7 +336,17 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
         await ops.updateDoc(notification._class, notification.space, notification._id, { isViewed: false })
       }
       for (const context of contexts) {
-        await ops.update(context, { lastViewedTimestamp: 0 })
+        const firstUnread = inboxNotifications.find(
+          (it) => it.docNotifyContext === context._id && isActivityNotification(it)
+        )
+
+        if (firstUnread === undefined) {
+          continue
+        }
+
+        const lastViewedTimestamp = (firstUnread.createdOn ?? firstUnread.modifiedOn) - 1
+
+        await ops.update(context, { lastViewedTimestamp })
       }
     } finally {
       await ops.commit()
