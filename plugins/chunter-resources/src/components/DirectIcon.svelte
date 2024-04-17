@@ -35,6 +35,12 @@
     getDmPersons(client, value).then((res) => {
       persons = res
     })
+
+  let avatarSize = size
+
+  $: if (size === 'small') {
+    avatarSize = 'tiny'
+  }
 </script>
 
 {#if persons.length === 0 && value}
@@ -42,7 +48,7 @@
 {/if}
 
 {#if persons.length === 1}
-  <Avatar avatar={persons[0].avatar} {size} name={persons[0].name} />
+  <Avatar avatar={persons[0].avatar} size={avatarSize} name={persons[0].name} />
 {/if}
 
 {#if persons.length > 1 && size === 'medium'}
@@ -64,7 +70,12 @@
 {/if}
 
 {#if persons.length > 1 && size !== 'medium'}
-  <CombineAvatars _class={contact.class.Person} items={persons.map(({ _id }) => _id)} {size} limit={visiblePersons} />
+  <CombineAvatars
+    _class={contact.class.Person}
+    items={persons.map(({ _id }) => _id)}
+    size={avatarSize}
+    limit={visiblePersons}
+  />
 {/if}
 
 <style lang="scss">

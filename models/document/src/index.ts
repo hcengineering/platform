@@ -394,6 +394,11 @@ function defineDocument (builder: Builder): void {
     titleProvider: document.function.DocumentTitleProvider
   })
 
+  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
+    ofClass: document.class.Document,
+    components: { input: chunter.component.ChatMessageInput }
+  })
+
   // Search
 
   builder.createDoc(

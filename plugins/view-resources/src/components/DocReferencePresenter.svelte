@@ -94,7 +94,6 @@
     justify-content: center;
     align-items: center;
     flex-shrink: 0;
-    width: var(--global-min-Size);
     height: var(--global-extra-small-Size);
   }
 
