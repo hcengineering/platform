@@ -30,25 +30,16 @@
   import { getActions } from '@hcengineering/view-resources'
   import { getResource } from '@hcengineering/platform'
 
-  import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
-
   export let value: DisplayActivityInboxNotification
   export let viewlets: ActivityNotificationViewlet[] = []
 
   const client = getClient()
-  const inboxClient = InboxNotificationsClientImpl.getClient()
-  const activityNotificationsStore = inboxClient.activityInboxNotifications
 
   let viewlet: ActivityNotificationViewlet | undefined = undefined
   let displayMessage: DisplayActivityMessage | undefined = undefined
   let actions: Action[] = []
 
-  $: combinedNotifications = $activityNotificationsStore.filter(({ _id }) => value.combinedIds.includes(_id))
-  $: messages = combinedNotifications
-    .map((it) => it.$lookup?.attachedTo)
-    .filter((it): it is ActivityMessage => it !== undefined)
-
-  $: void updateDisplayMessage(messages)
+  $: void updateDisplayMessage(value.combinedMessages)
 
   async function updateDisplayMessage (messages: ActivityMessage[]): Promise<void> {
     const combinedMessages = await combineActivityMessages(sortActivityMessages(messages))

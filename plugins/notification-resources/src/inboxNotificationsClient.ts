@@ -34,6 +34,7 @@ import notification, {
 } from '@hcengineering/notification'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { derived, get, writable } from 'svelte/store'
+import { isActivityNotification } from './utils'
 
 /**
  * @public
@@ -103,6 +104,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       notification.class.InboxNotification,
       {
         _class: { $nin: [notification.class.ActivityInboxNotification] },
+        archived: { $ne: true },
         user: getCurrentAccount()._id
       },
       (result: InboxNotification[]) => {
@@ -118,6 +120,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     this.activityInboxNotificationsQuery.query(
       notification.class.ActivityInboxNotification,
       {
+        archived: { $ne: true },
         user: getCurrentAccount()._id
       },
       (result: ActivityInboxNotification[]) => {
@@ -249,28 +252,29 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     }
   }
 
-  async deleteNotifications (client: TxOperations, ids: Array<Ref<InboxNotification>>): Promise<void> {
+  async archiveNotifications (client: TxOperations, ids: Array<Ref<InboxNotification>>): Promise<void> {
     const inboxNotifications = (get(this.inboxNotifications) ?? []).filter(({ _id }) => ids.includes(_id))
     for (const notification of inboxNotifications) {
-      await client.remove(notification)
+      await client.update(notification, { archived: true })
     }
   }
 
-  async deleteAllNotifications (): Promise<void> {
-    const doneOp = await getClient().measure('deleteAllNotifications')
+  async archiveAllNotifications (): Promise<void> {
+    const doneOp = await getClient().measure('archiveAllNotifications')
     const ops = getClient().apply(generateId())
 
     try {
       const inboxNotifications = await ops.findAll(
         notification.class.InboxNotification,
         {
-          user: getCurrentAccount()._id
+          user: getCurrentAccount()._id,
+          archived: { $ne: true }
         },
         { projection: { _id: 1, _class: 1, space: 1 } }
       )
       const contexts = get(this.contexts) ?? []
       for (const notification of inboxNotifications) {
-        await ops.removeDoc(notification._class, notification.space, notification._id)
+        await ops.updateDoc(notification._class, notification.space, notification._id, { archived: true })
       }
 
       for (const context of contexts) {
@@ -291,7 +295,8 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
         notification.class.InboxNotification,
         {
           user: getCurrentAccount()._id,
-          isViewed: { $ne: true }
+          isViewed: { $ne: true },
+          archived: { $ne: true }
         },
         { projection: { _id: 1, _class: 1, space: 1 } }
       )
@@ -317,9 +322,13 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
         notification.class.InboxNotification,
         {
           user: getCurrentAccount()._id,
-          isViewed: true
+          isViewed: true,
+          archived: { $ne: true }
         },
-        { projection: { _id: 1, _class: 1, space: 1 } }
+        {
+          projection: { _id: 1, _class: 1, space: 1, docNotifyContext: 1 },
+          sort: { createdOn: SortingOrder.Ascending }
+        }
       )
       const contexts = get(this.contexts) ?? []
 
@@ -327,7 +336,17 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
         await ops.updateDoc(notification._class, notification.space, notification._id, { isViewed: false })
       }
       for (const context of contexts) {
-        await ops.update(context, { lastViewedTimestamp: 0 })
+        const firstUnread = inboxNotifications.find(
+          (it) => it.docNotifyContext === context._id && isActivityNotification(it)
+        )
+
+        if (firstUnread === undefined) {
+          continue
+        }
+
+        const lastViewedTimestamp = (firstUnread.createdOn ?? firstUnread.modifiedOn) - 1
+
+        await ops.update(context, { lastViewedTimestamp })
       }
     } finally {
       await ops.commit()

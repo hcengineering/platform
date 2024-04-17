@@ -243,6 +243,9 @@ export class TInboxNotification extends TDoc implements InboxNotification {
   // @Index(IndexKind.Indexed)
     isViewed!: boolean
 
+  @Prop(TypeBoolean(), core.string.Boolean)
+    archived?: boolean
+
   title?: IntlString
   body?: IntlString
   intlParams?: Record<string, string | number>
@@ -537,15 +540,29 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
-      action: notification.actionImpl.DeleteContextNotifications,
-      label: notification.string.Archive,
+      action: notification.actionImpl.ArchiveContextNotifications,
+      label: view.string.Archive,
       icon: view.icon.CheckCircle,
       input: 'focus',
       category: notification.category.Notification,
       target: notification.class.DocNotifyContext,
       context: { mode: ['panel'], application: notification.app.Notification, group: 'remove' }
     },
-    notification.action.DeleteContextNotifications
+    notification.action.ArchiveContextNotifications
+  )
+
+  createAction(
+    builder,
+    {
+      action: notification.actionImpl.UnarchiveContextNotifications,
+      label: view.string.UnArchive,
+      icon: view.icon.Circle,
+      input: 'focus',
+      category: notification.category.Notification,
+      target: notification.class.DocNotifyContext,
+      context: { mode: ['panel'], application: notification.app.Notification, group: 'remove' }
+    },
+    notification.action.UnarchiveContextNotifications
   )
 
   createAction(
@@ -669,6 +686,7 @@ export function createModel (builder: Builder): void {
   })
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_NOTIFICATION,
+    indexes: [{ user: 1, archived: 1 }],
     disabled: [{ modifiedOn: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { isViewed: 1 }, { hidden: 1 }]
   })
 }

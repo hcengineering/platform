@@ -31,6 +31,7 @@
   export let disabled: boolean = false
   export let loading: boolean = false
   export let inheritColor: boolean = false
+  export let noSelection: boolean = false
 
   export let items: DropdownIntlItem[]
   export let params: Record<string, any> = {}
@@ -46,7 +47,7 @@
   function openPopup () {
     if (!opened) {
       opened = true
-      showPopup(ModernPopup, { items, selected, params }, element, (result) => {
+      showPopup(ModernPopup, { items, selected: noSelection ? undefined : selected, params }, element, (result) => {
         if (result) {
           selected = result
           dispatch('selected', result)

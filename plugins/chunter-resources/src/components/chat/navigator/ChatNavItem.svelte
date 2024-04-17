@@ -83,7 +83,7 @@
     })
 
     const excludedActions = [
-      notification.action.DeleteContextNotifications,
+      notification.action.ArchiveContextNotifications,
       notification.action.UnReadNotifyContext,
       notification.action.ReadNotifyContext
     ]

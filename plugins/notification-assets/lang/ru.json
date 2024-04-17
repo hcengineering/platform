@@ -45,6 +45,7 @@
     "StarDocument": "Добавить в избранное",
     "UnstarDocument": "Удалить из избранного",
     "Unsubscribe": "Отписаться",
-    "Push": "Push"
+    "Push": "Push",
+    "Unreads": "Непрочитанные"
   }
 }

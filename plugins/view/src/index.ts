@@ -193,8 +193,10 @@ const view = plugin(viewId, {
     NoGrouping: '' as IntlString,
     Type: '' as IntlString,
     UnArchive: '' as IntlString,
+    Archive: '' as IntlString,
     Save: '' as IntlString,
     PublicView: '' as IntlString,
+    Archived: '' as IntlString,
     MoreActions: '' as IntlString
   },
   icon: {
@@ -230,7 +232,8 @@ const view = plugin(viewId, {
     Image: '' as Asset,
     Table2: '' as Asset,
     CodeBlock: '' as Asset,
-    SeparatorLine: '' as Asset
+    SeparatorLine: '' as Asset,
+    Circle: '' as Asset
   },
   category: {
     General: '' as Ref<ActionCategory>,

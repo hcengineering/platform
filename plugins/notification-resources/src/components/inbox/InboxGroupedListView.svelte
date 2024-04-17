@@ -25,11 +25,12 @@
 
   import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
   import DocNotifyContextCard from '../DocNotifyContextCard.svelte'
-  import { deleteContextNotifications } from '../../utils'
+  import { archiveContextNotifications, unarchiveContextNotifications } from '../../utils'
   import { InboxData } from '../../types'
 
   export let data: InboxData
   export let selectedContext: Ref<DocNotifyContext> | undefined
+  export let archived = false
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -83,7 +84,11 @@
       const contextId = displayData[listSelection]?.[0]
       const context = $contextByIdStore.get(contextId)
 
-      void deleteContextNotifications(context)
+      if (archived) {
+        void unarchiveContextNotifications(context)
+      } else {
+        void archiveContextNotifications(context)
+      }
     }
     if (key.code === 'Enter') {
       key.preventDefault()
@@ -121,6 +126,7 @@
         <DocNotifyContextCard
           value={context}
           notifications={contextNotifications}
+          {archived}
           {viewlets}
           on:click={(event) => {
             dispatch('click', event.detail)

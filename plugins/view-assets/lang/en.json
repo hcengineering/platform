@@ -120,6 +120,7 @@
     "UnArchive": "Unarchive",
     "Pin": "Pin",
     "Unpin": "Unpin",
+    "Archived": "Archived",
     "MoreActions": "More actions"
   }
 }
