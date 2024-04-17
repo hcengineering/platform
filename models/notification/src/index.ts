@@ -686,6 +686,7 @@ export function createModel (builder: Builder): void {
   })
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_NOTIFICATION,
+    indexes: [{ user: 1, archived: 1 }],
     disabled: [{ modifiedOn: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { isViewed: 1 }, { hidden: 1 }]
   })
 }
