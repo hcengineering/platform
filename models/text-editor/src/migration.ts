@@ -41,11 +41,9 @@ async function migrateMarkup (client: MigrationClient): Promise<void> {
     })
     if (filtered.length === 0) continue
 
-    console.log('processing', _class, filtered.length, 'attributes')
     const iterator = await client.traverse(domain, { _class })
     try {
       await processMigrateMarkupFor(domain, filtered, client, iterator)
-      console.log('processing finished', _class)
     } finally {
       await iterator.close()
     }
