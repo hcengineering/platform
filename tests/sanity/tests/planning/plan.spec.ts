@@ -43,7 +43,7 @@ test.describe('Planning ToDo tests', () => {
 
     const planningPage = new PlanningPage(page)
     const planningNavigationMenuPage = new PlanningNavigationMenuPage(page)
-    await planningNavigationMenuPage.buttonToDoAll.click()
+    await planningNavigationMenuPage.clickOnButtonToDoAll()
 
     await planningPage.checkToDoExist(toDoSeveralSlots.title)
     await planningPage.openToDoByName(toDoSeveralSlots.title)
@@ -77,7 +77,7 @@ test.describe('Planning ToDo tests', () => {
       ]
     }
     const planningNavigationMenuPage = new PlanningNavigationMenuPage(page)
-    await planningNavigationMenuPage.buttonToDoAll.click()
+    await planningNavigationMenuPage.clickOnButtonToDoAll()
 
     const planningPage = new PlanningPage(page)
     await planningPage.checkToDoExist(deleteTimeSlot.title)
@@ -99,7 +99,7 @@ test.describe('Planning ToDo tests', () => {
     // add a new time slot
     // TODO delete after fix UBERF-4273
     await page.reload()
-    await planningNavigationMenuPage.buttonToDoAll.click()
+    await planningNavigationMenuPage.clickOnButtonToDoAll()
 
     await planningPage.openToDoByName(deleteTimeSlot.title)
     if (deleteTimeSlot.slots != null) {
@@ -142,7 +142,7 @@ test.describe('Planning ToDo tests', () => {
 
     const planningPage = new PlanningPage(page)
     const planningNavigationMenuPage = new PlanningNavigationMenuPage(page)
-    await planningNavigationMenuPage.buttonToDoAll.click()
+    await planningNavigationMenuPage.clickOnButtonToDoAll()
 
     await planningPage.checkToDoExist(toDoSeveralSlots.title)
     await planningPage.openToDoByName(toDoSeveralSlots.title)
@@ -154,7 +154,7 @@ test.describe('Planning ToDo tests', () => {
     }
     await planningPage.buttonCardClose.click()
 
-    await planningNavigationMenuPage.buttonToDoAll.click()
+    await planningNavigationMenuPage.clickOnButtonToDoAll()
     await planningPage.openToDoByName(toDoSeveralSlots.title)
     await planningPage.checkTimeSlotEndDate(0, dateEndToday.getDate().toString())
     await planningPage.checkTimeSlotEndDate(1, dateEndTomorrow.getDate().toString())
