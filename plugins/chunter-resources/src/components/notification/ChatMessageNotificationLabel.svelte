@@ -13,17 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Icon, Label } from '@hcengineering/ui'
+  import { Label } from '@hcengineering/ui'
   import { DocNotifyContext } from '@hcengineering/notification'
   import { getClient } from '@hcengineering/presentation'
   import { Class, Doc, Ref } from '@hcengineering/core'
-  import { getDocLinkTitle } from '@hcengineering/view-resources'
+  import { getDocLinkTitle, ObjectIcon } from '@hcengineering/view-resources'
   import { ChatMessage, ThreadMessage } from '@hcengineering/chunter'
+  import contact from '@hcengineering/contact'
 
   import chunter from '../../plugin'
   import ChatMessagePreview from '../chat-message/ChatMessagePreview.svelte'
   import ThreadMessagePreview from '../threads/ThreadMessagePreview.svelte'
-  import { getObjectIcon } from '../../utils'
 
   export let context: DocNotifyContext
 
@@ -65,8 +65,6 @@
   function toThread (message: ChatMessage): ThreadMessage {
     return message as ThreadMessage
   }
-
-  $: icon = object ? getObjectIcon(object._class) : undefined
 </script>
 
 {#if parentMessage}
@@ -81,8 +79,11 @@
         <Label label={chunter.string.In} />
       </span>
       <span class="flex-presenter flex-gap-0-5">
-        {#if icon}
-          <Icon {icon} size="x-small" iconProps={{ value: object }} />
+        {#if object}
+          <ObjectIcon
+            value={object}
+            size={hierarchy.isDerived(object._class, contact.class.Person) ? 'tiny' : 'small'}
+          />
         {/if}
         <div class="overflow-label">
           {title}

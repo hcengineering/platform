@@ -28,6 +28,7 @@
   import { Asset, getEmbeddedLabel, IntlString } from '@hcengineering/platform'
   import activity, { ActivityMessage, ActivityMessagePreviewType } from '@hcengineering/activity'
   import { classIcon, DocNavLink, showMenu } from '@hcengineering/view-resources'
+  import { markupToText } from '@hcengineering/text'
 
   export let message: ActivityMessage | undefined = undefined
   export let text: string | undefined = undefined
@@ -126,7 +127,7 @@
               <Label label={header ?? client.getHierarchy().getClass(headerObject._class).label} />
             </DocNavLink>
           {:else if person}
-            <EmployeePresenter value={person} shouldShowAvatar={false} compact />
+            <EmployeePresenter value={person} shouldShowAvatar={false} compact showStatus={false} />
           {:else}
             <Label label={core.string.System} />
           {/if}
@@ -136,7 +137,11 @@
     {/if}
 
     {#if text || intlLabel}
-      <span class="textContent overflow-label font-normal" class:contentOnly={type === 'content-only'}>
+      <span
+        class="textContent overflow-label font-normal"
+        class:contentOnly={type === 'content-only'}
+        use:tooltip={{ label: text ? getEmbeddedLabel(markupToText(text)) : intlLabel }}
+      >
         {#if intlLabel}
           <Label label={intlLabel} />
         {/if}

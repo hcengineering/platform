@@ -92,6 +92,7 @@ import ValueSelector from './components/ValueSelector.svelte'
 import ViewletContentView from './components/ViewletContentView.svelte'
 import ViewletSettingButton from './components/ViewletSettingButton.svelte'
 import DocReferencePresenter from './components/DocReferencePresenter.svelte'
+import ObjectIcon from './components/ObjectIcon.svelte'
 
 import {
   afterResult,
@@ -203,7 +204,8 @@ export {
   UpDownNavigator,
   ViewletContentView,
   ViewletSettingButton,
-  DocReferencePresenter
+  DocReferencePresenter,
+  ObjectIcon
 }
 
 function PositionElementAlignment (e?: Event): PopupAlignment | undefined {
