@@ -19,6 +19,7 @@
   import activity from '@hcengineering/activity'
   import { translate } from '@hcengineering/platform'
   import { Action } from '@hcengineering/ui'
+  import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
 
   import { ChatGroup, ChatNavGroupModel } from '../types'
   import ChatNavSection from './ChatNavSection.svelte'
@@ -37,6 +38,8 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
+  const inboxClient = InboxNotificationsClientImpl.getClient()
+  const contextByDocStore = inboxClient.contextByDoc
 
   const contextsQuery = createQuery()
   const objectsQueryByClass = new Map<Ref<Class<Doc>>, LiveQuery>()
@@ -71,9 +74,7 @@
   })
 
   $: shouldPushObject =
-    object !== undefined &&
-    getObjectGroup(object) === model.id &&
-    !contexts.some(({ attachedTo }) => attachedTo === object?._id)
+    object !== undefined && getObjectGroup(object) === model.id && !$contextByDocStore.has(object._id)
 
   function loadObjects (contexts: DocNotifyContext[]): void {
     const contextsByClass = groupByArray(contexts, ({ attachedToClass }) => attachedToClass)
