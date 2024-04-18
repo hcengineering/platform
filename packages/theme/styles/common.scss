@@ -29,8 +29,9 @@
 .heading-bold-20 {
   font-family: var(--font-family);
   font-style: normal;
-  line-height: 1rem;
   color: var(--global-primary-TextColor);
+
+  &:not(.line-height-auto) { line-height: 1rem; }
 }
 .font-regular-11,
 .font-medium-11 {
