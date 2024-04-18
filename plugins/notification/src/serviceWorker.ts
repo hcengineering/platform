@@ -18,41 +18,56 @@ self.addEventListener('push', (event: PushEvent) => {
     tag: payload.tag,
     data: {
       domain: payload.domain,
-      url: payload.url
+      url: payload.url,
+      notificationId: payload.tag
     }
   })
 })
 
-// Listen for notification click event
-self.addEventListener('notificationclick', (event: any) => {
+async function handleNotificationClick (event: any): Promise<void> {
+  event.notification.close()
   const clickedNotification = event.notification
   const notificationData = clickedNotification.data
+  const notificationId = notificationData.notificationId
   const notificationUrl = notificationData.url
   const domain = notificationData.domain
+
   if (notificationUrl !== undefined && domain !== undefined) {
-    // Check if any client with the same origin is already open
-    event.waitUntil(
-      // Check all active clients (browser windows or tabs)
-      self.clients
-        .matchAll({
-          type: 'window',
-          includeUncontrolled: true
+    const windowClients = (await self.clients.matchAll({
+      type: 'window',
+      includeUncontrolled: true
+    })) as ReadonlyArray<any>
+
+    const targetUrl = new URL(notificationUrl)
+    for (const client of windowClients) {
+      const clientUrl = new URL(client.url, self.location.href)
+      if (decodeURI(clientUrl.pathname) === targetUrl.pathname) {
+        client.postMessage({
+          type: 'notification-click',
+          url: notificationUrl,
+          _id: notificationId
         })
-        .then((clientList: any) => {
-          // Loop through each client
-          for (const client of clientList) {
-            // If a client has the same URL origin, focus and navigate to it
-            if ((client.url as string)?.startsWith(domain)) {
-              client.postMessage({
-                type: 'notification-click',
-                url: notificationUrl
-              })
-              return client.focus()
-            }
-          }
-          // If no client with the same URL origin is found, open a new window/tab
-          return self.clients.openWindow(notificationUrl)
+        await client.focus()
+        return
+      }
+    }
+
+    for (const client of windowClients) {
+      if ((client.url as string)?.startsWith(domain)) {
+        client.postMessage({
+          type: 'notification-click',
+          url: notificationUrl,
+          _id: notificationId
         })
-    )
+        await client.focus()
+        return
+      }
+    }
+
+    console.log('No matching client found')
+    // If no client with the same URL origin is found, open a new window/tab
+    await self.clients.openWindow(notificationUrl)
   }
-})
+}
+
+self.addEventListener('notificationclick', (e: any) => e.waitUntil(handleNotificationClick(e)))

@@ -45,6 +45,8 @@
     "ArchiveAllConfirmationMessage": "Esta seguro que quer arquivar todas as notificações? Esta operação não se pode desfazer.",
     "StarDocument": "Marcar documento",
     "UnstarDocument": "Desmarcar documento",
-    "Push": "Push"
+    "Push": "Push",
+    "EnablePush": "Ativar notificações push",
+    "NotificationBlockedInBrowser": "Notificações bloqueadas no navegador. Por favor habilite las notificaciones en la configuración de su navegador."
   }
 }

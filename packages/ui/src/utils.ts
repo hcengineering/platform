@@ -85,14 +85,15 @@ export function addNotification (
   title: string,
   subTitle: string,
   component: AnyComponent | AnySvelteComponent,
-  params?: Record<string, any>
+  params?: Record<string, any>,
+  severity: NotificationSeverity = NotificationSeverity.Success
 ): void {
   const closeTimeout = parseInt(localStorage.getItem('#platform.notification.timeout') ?? '10000')
   const notification: Notification = {
     id: generateId(),
     title,
     subTitle,
-    severity: NotificationSeverity.Success,
+    severity,
     position: NotificationPosition.BottomRight,
     component,
     closeTimeout,
