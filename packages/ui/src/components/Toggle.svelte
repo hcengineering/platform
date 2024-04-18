@@ -14,14 +14,17 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
+  import { LabelAndProps } from '../types'
+  import { tooltip } from '../tooltips'
 
   export let on: boolean = false
   export let disabled: boolean = false
+  export let showTooltip: LabelAndProps | undefined = undefined
 
   const dispatch = createEventDispatcher()
 </script>
 
-<label class="toggle">
+<label class="toggle" use:tooltip={showTooltip}>
   <input
     class="chBox"
     type="checkbox"
