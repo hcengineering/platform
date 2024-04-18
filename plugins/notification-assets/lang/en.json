@@ -46,6 +46,8 @@
     "UnstarDocument": "Unstar document",
     "Unsubscribe": "Unsubscribe",
     "Push": "Push",
-    "Unreads": "Unreads"
+    "Unreads": "Unreads",
+    "EnablePush": "Enable push notifications",
+    "NotificationBlockedInBrowser": "Notifications are blocked in your browser. Please enable notifications in your browser settings"
   }
 }

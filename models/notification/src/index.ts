@@ -20,6 +20,7 @@ import {
   DOMAIN_MODEL,
   Hierarchy,
   IndexKind,
+  type Space,
   type Account,
   type AttachedDoc,
   type Class,
@@ -60,8 +61,8 @@ import {
   type CommonInboxNotification,
   type CommonNotificationType,
   type DocNotifyContext,
-  type DocUpdates,
   type DocUpdateTx,
+  type DocUpdates,
   type InboxNotification,
   type MentionInboxNotification,
   type NotificationContextPresenter,
@@ -73,8 +74,8 @@ import {
   type NotificationSetting,
   type NotificationStatus,
   type NotificationTemplate,
-  type PushSubscription,
   type NotificationType,
+  type PushSubscription,
   type PushSubscriptionKeys
 } from '@hcengineering/notification'
 import { getEmbeddedLabel, type Asset, type IntlString, type Resource } from '@hcengineering/platform'
@@ -91,6 +92,8 @@ export const DOMAIN_NOTIFICATION = 'notification' as Domain
 
 @Model(notification.class.BrowserNotification, core.class.Doc, DOMAIN_NOTIFICATION)
 export class TBrowserNotification extends TDoc implements BrowserNotification {
+  senderId?: Ref<Account> | undefined
+  tag!: Ref<Doc<Space>>
   title!: string
   body!: string
   onClickLocation?: Location | undefined
@@ -365,8 +368,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       label: notification.string.Push,
-      depends: notification.providers.PlatformNotification,
-      onChange: notification.function.CheckPushPermission
+      depends: notification.providers.PlatformNotification
     },
     notification.providers.BrowserNotification
   )

@@ -61,6 +61,8 @@ import notification, {
   InboxNotification,
   MentionInboxNotification,
   notificationId,
+  NotificationStatus,
+  PushSubscription,
   NotificationType,
   PushData
 } from '@hcengineering/notification'
@@ -424,7 +426,8 @@ export async function pushInboxNotifications (
     const notificationTx = control.txFactory.createTxCreateDoc(_class, space, notificationData)
     res.push(notificationTx)
     if (shouldPush) {
-      await createPushFromInbox(
+      const now = Date.now()
+      const pushTx = await createPushFromInbox(
         control,
         targetUser,
         attachedTo,
@@ -434,6 +437,10 @@ export async function pushInboxNotifications (
         senderId,
         notificationTx.objectId
       )
+      console.log('Push takes', Date.now() - now, 'ms')
+      if (pushTx !== undefined) {
+        res.push(pushTx)
+      }
     }
   }
 }
@@ -522,8 +529,8 @@ export async function createPushFromInbox (
   data: Data<InboxNotification>,
   _class: Ref<Class<InboxNotification>>,
   senderId: Ref<PersonAccount>,
-  _id: string
-): Promise<void> {
+  _id: Ref<Doc>
+): Promise<Tx | undefined> {
   let title: string = ''
   let body: string = ''
   if (control.hierarchy.isDerived(_class, notification.class.ActivityInboxNotification)) {
@@ -543,10 +550,24 @@ export async function createPushFromInbox (
   if (sender !== undefined) {
     senderPerson = (await control.findAll(contact.class.Person, { _id: sender.person }))[0]
   }
-  await createPushNotification(control, targetUser, title, body, _id, senderPerson?.avatar, [
+  const path = [
+    workbenchId,
+    control.workspace.workspaceUrl,
     notificationId,
     encodeObjectURI(attachedTo, attachedToClass)
-  ])
+  ]
+  await createPushNotification(control, targetUser, title, body, _id, senderPerson?.avatar, path)
+  return control.txFactory.createTxCreateDoc(notification.class.BrowserNotification, notification.space.Notifications, {
+    user: targetUser,
+    status: NotificationStatus.New,
+    title,
+    body,
+    senderId,
+    tag: _id,
+    onClickLocation: {
+      path
+    }
+  })
 }
 
 export async function createPushNotification (
@@ -556,7 +577,7 @@ export async function createPushNotification (
   body: string,
   _id: string,
   senderAvatar?: string | null,
-  subPath?: string[]
+  path?: string[]
 ): Promise<void> {
   const publicKey = getMetadata(notification.metadata.PushPublicKey)
   const privateKey = getMetadata(serverNotification.metadata.PushPrivateKey)
@@ -577,9 +598,8 @@ export async function createPushNotification (
   const domainPath = `${workbenchId}/${control.workspace.workspaceUrl}`
   const domain = concatLink(front, domainPath)
   data.domain = domain
-  if (subPath !== undefined) {
-    const path = [domainPath, ...subPath].join('/')
-    const url = concatLink(front, path)
+  if (path !== undefined) {
+    const url = concatLink(front, path.join('/'))
     data.url = url
   }
   if (senderAvatar != null) {
@@ -598,14 +618,23 @@ export async function createPushNotification (
   webpush.setVapidDetails(subject, publicKey, privateKey)
 
   for (const subscription of subscriptions) {
-    try {
-      await webpush.sendNotification(subscription, JSON.stringify(data))
-    } catch (err) {
-      console.log('Cannot send push notification to', targetUser, err)
-      if (err instanceof WebPushError && err.body.includes('expired')) {
-        const tx = control.txFactory.createTxRemoveDoc(subscription._class, subscription.space, subscription._id)
-        await control.apply([tx], true)
-      }
+    void sendPushToSubscription(control, targetUser, subscription, data)
+  }
+}
+
+async function sendPushToSubscription (
+  control: TriggerControl,
+  targetUser: Ref<Account>,
+  subscription: PushSubscription,
+  data: PushData
+): Promise<void> {
+  try {
+    await webpush.sendNotification(subscription, JSON.stringify(data))
+  } catch (err) {
+    console.log('Cannot send push notification to', targetUser, err)
+    if (err instanceof WebPushError && err.body.includes('expired')) {
+      const tx = control.txFactory.createTxRemoveDoc(subscription._class, subscription.space, subscription._id)
+      await control.apply([tx], true)
     }
   }
 }

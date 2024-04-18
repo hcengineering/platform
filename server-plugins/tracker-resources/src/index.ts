@@ -97,8 +97,7 @@ export async function getIssueNotificationContent (
 ): Promise<NotificationContent> {
   const issue = doc as Issue
 
-  const issueShortName = await issueTextPresenter(doc)
-  const issueTitle = `${issueShortName}: ${issue.title}`
+  const issueTitle = await issueTextPresenter(doc)
 
   const title = tracker.string.IssueNotificationTitle
   let body = tracker.string.IssueNotificationBody
