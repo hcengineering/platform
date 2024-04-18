@@ -86,21 +86,33 @@ class Connection implements ClientConnection {
   constructor (
     private readonly url: string,
     private readonly handler: TxHandler,
+    readonly workspace: string,
+    readonly email: string,
     private readonly onUpgrade?: () => void,
     private readonly onUnauthorized?: () => void,
-    readonly onConnect?: (event: ClientConnectEvent) => Promise<void>
+    readonly onConnect?: (event: ClientConnectEvent, data?: any) => Promise<void>
   ) {
     this.interval = setInterval(() => {
+      if (this.upgrading) {
+        // no need to check while upgrade waiting
+        return
+      }
       if (this.pingResponse !== 0 && Date.now() - this.pingResponse > hangTimeout) {
         // No ping response from server.
         const s = this.websocket
 
         if (!(s instanceof Promise)) {
-          console.log('no ping response from server. Closing socket.', s, (s as any)?.readyState)
+          console.log(
+            'no ping response from server. Closing socket.',
+            this.workspace,
+            this.email,
+            s,
+            (s as any)?.readyState
+          )
           // Trying to close connection and re-establish it.
           s?.close(1000)
         } else {
-          console.log('no ping response from server. Closing socket.', s)
+          console.log('no ping response from server. Closing socket.', this.workspace, this.email, s)
           void s.then((s) => {
             s.close(1000)
           })
@@ -160,13 +172,13 @@ class Connection implements ClientConnection {
         return await this.pending
       } catch (err: any) {
         if (this.closed) {
-          throw new Error('connection closed')
+          throw new Error('connection closed + ' + this.workspace + ' user: ' + this.email)
         }
         this.pending = undefined
         if (!this.upgrading) {
-          console.log('connection: failed to connect', this.lastId)
+          console.log('connection: failed to connect', `requests: ${this.lastId}`, this.workspace, this.email)
         } else {
-          console.log('connection: workspace during upgrade', this.lastId)
+          console.log('connection: workspace during upgrade', `requests: ${this.lastId}`, this.workspace, this.email)
         }
         if (err?.code === UNAUTHORIZED.code) {
           Analytics.handleError(err)
@@ -176,7 +188,7 @@ class Connection implements ClientConnection {
         await new Promise((resolve) => {
           setTimeout(() => {
             if (!this.upgrading) {
-              console.log(`delay ${this.delay} second`)
+              console.log(`delay ${this.delay} second`, this.workspace, this.email)
             }
             resolve(null)
             if (this.delay < 5) {
@@ -228,12 +240,18 @@ class Connection implements ClientConnection {
 
       websocket.onmessage = (event: MessageEvent) => {
         const resp = readResponse<any>(event.data, binaryResponse)
-        if (resp.id === -1 && resp.result === 'upgrading') {
+        if (resp.id === -2 && resp.result.state === 'upgrading') {
+          void this.onConnect?.(ClientConnectEvent.Maintenance, resp.result.stats)
           this.upgrading = true
           return
         }
         if (resp.id === -1 && resp.result === 'hello') {
+          if (this.upgrading) {
+            // We need to call upgrade since connection is upgraded
+            this.onUpgrade?.()
+          }
           this.upgrading = false
+          console.log('connection established', this.workspace, this.email)
           if ((resp as HelloResponse).alreadyConnected === true) {
             this.sessionId = generateId()
             if (typeof sessionStorage !== 'undefined') {
@@ -265,7 +283,7 @@ class Connection implements ClientConnection {
         if (resp.id !== undefined) {
           const promise = this.requests.get(resp.id)
           if (promise === undefined) {
-            throw new Error(`unknown response id: ${resp.id as string}`)
+            throw new Error(`unknown response id: ${resp.id as string} ${this.workspace} ${this.email}`)
           }
 
           if (resp.chunk !== undefined) {
@@ -303,7 +321,9 @@ class Connection implements ClientConnection {
               'error: ',
               resp.error,
               'result: ',
-              resp.result
+              resp.result,
+              this.workspace,
+              this.email
             )
             promise.reject(new PlatformError(resp.error))
           } else {
@@ -325,7 +345,7 @@ class Connection implements ClientConnection {
                 (tx as TxWorkspaceEvent).event === WorkspaceEvent.Upgrade) ||
               tx?._class === core.class.TxModelUpgrade
             ) {
-              console.log('Processing upgrade')
+              console.log('Processing upgrade', this.workspace, this.email)
               websocket.send(
                 serialize(
                   {
@@ -374,7 +394,7 @@ class Connection implements ClientConnection {
         websocket.send(serialize(helloRequest, false))
       }
       websocket.onerror = (event: any) => {
-        console.error('client websocket error:', socketId, event)
+        console.error('client websocket error:', socketId, event, this.workspace, this.email)
         void broadcastEvent(client.event.NetworkRequests, -1)
         reject(new Error(`websocket error:${socketId}`))
       }
@@ -526,11 +546,13 @@ class Connection implements ClientConnection {
 export async function connect (
   url: string,
   handler: TxHandler,
+  workspace: string,
+  user: string,
   onUpgrade?: () => void,
   onUnauthorized?: () => void,
-  onConnect?: (event: ClientConnectEvent) => void
+  onConnect?: (event: ClientConnectEvent, data?: any) => void
 ): Promise<ClientConnection> {
-  return new Connection(url, handler, onUpgrade, onUnauthorized, async (event) => {
-    onConnect?.(event)
+  return new Connection(url, handler, workspace, user, onUpgrade, onUnauthorized, async (event, data) => {
+    onConnect?.(event, data)
   })
 }

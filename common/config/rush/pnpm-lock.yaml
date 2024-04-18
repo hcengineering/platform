@@ -29,6 +29,9 @@ dependencies:
   '@rush-temp/account':
     specifier: file:./projects/account.tgz
     version: file:projects/account.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)
+  '@rush-temp/account-service':
+    specifier: file:./projects/account-service.tgz
+    version: file:projects/account-service.tgz
   '@rush-temp/activity':
     specifier: file:./projects/activity.tgz
     version: file:projects/activity.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2)
@@ -17040,6 +17043,54 @@ packages:
       css-what: 6.1.0
     dev: false
 
+  file:projects/account-service.tgz:
+    resolution: {integrity: sha512-nobaJJXk2cwnaGafGa8skzZZ4Y3tn6AfYwO3SMo0hMyh5VSL6qzpqPo0Qyaf8PEgk/0IhyEt9fY9hqPzGnozAg==, tarball: file:projects/account-service.tgz}
+    name: '@rush-temp/account-service'
+    version: 0.0.0
+    dependencies:
+      '@koa/cors': 3.4.3
+      '@types/jest': 29.5.12
+      '@types/koa': 2.14.0
+      '@types/koa-bodyparser': 4.3.12
+      '@types/koa-router': 7.4.8
+      '@types/koa__cors': 3.3.1
+      '@types/node': 20.11.19
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
+      cross-env: 7.0.3
+      esbuild: 0.20.1
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      koa: 2.15.0
+      koa-bodyparser: 4.4.1
+      koa-router: 12.0.1
+      mongodb: 6.3.0
+      prettier: 3.2.5
+      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
+      ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
+      typescript: 5.3.3
+    transitivePeerDependencies:
+      - '@aws-sdk/credential-providers'
+      - '@babel/core'
+      - '@jest/types'
+      - '@mongodb-js/zstd'
+      - '@swc/core'
+      - '@swc/wasm'
+      - babel-jest
+      - babel-plugin-macros
+      - gcp-metadata
+      - kerberos
+      - mongodb-client-encryption
+      - node-notifier
+      - snappy
+      - socks
+      - supports-color
+    dev: false
+
   file:projects/account.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2):
     resolution: {integrity: sha512-9RuPhqNNHTYjQwezirzcJ6WZpMJTzbjc72jZSJC6dQFG7WqW0a2QZ8VTaa32IM902stPP950kaRUDGGEKlxEwg==, tarball: file:projects/account.tgz}
     id: file:projects/account.tgz
@@ -17118,7 +17169,7 @@ packages:
     dev: false
 
   file:projects/activity-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-VhX3SSgQDRNCtvHGWeYtqp+OeXxMpwNPv4PxmSS+LukRclxu9XPBBqIPfm8zOAIP+T+dtorTxAJBdlmlHT5kkw==, tarball: file:projects/activity-resources.tgz}
+    resolution: {integrity: sha512-CWMQG4ARK+tkN2nxFphlOBnSzy4afqvMbPHlBC1rEQNaLc+5C7a6s5DMhHfjfd+0PMMGpl3F9+HSIHSKhZF7JQ==, tarball: file:projects/activity-resources.tgz}
     id: file:projects/activity-resources.tgz
     name: '@rush-temp/activity-resources'
     version: 0.0.0
@@ -17420,7 +17471,7 @@ packages:
     dev: false
 
   file:projects/backup-service.tgz(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-V3tol7QGRHUEOi2hp9fv+nnjYVJJiMo/Pvfl5aRoL/CySk9vq/8KdQ6dBI2cFTLsRVjHiS4F4tzgsxcgZ09DQw==, tarball: file:projects/backup-service.tgz}
+    resolution: {integrity: sha512-tMU5TaEJAhjWjFJZsV2Vx/PUPFL7UIVy4SrVGzuYJvXD+5rAbfeVw2HjGVwazFmmPfTnvD8qwSxsL0od2FjJ2A==, tarball: file:projects/backup-service.tgz}
     id: file:projects/backup-service.tgz
     name: '@rush-temp/backup-service'
     version: 0.0.0
@@ -20661,7 +20712,7 @@ packages:
     dev: false
 
   file:projects/notification-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-FQo/OscXLnjmD9vm49ZL+pjyTVIFugcyHORnJwA124EWnWlxP1zezEvopvLqMd2wu6tLzfvhrVqnIEm8HkDfUg==, tarball: file:projects/notification-resources.tgz}
+    resolution: {integrity: sha512-D1CL9lg5xd7hZJxBvzOd3SwHTPH4Up4mREwFPvf1v5GyQUiKqZMW/RKCop1G81hwh4pje5De7cz/TBxa5bc24Q==, tarball: file:projects/notification-resources.tgz}
     id: file:projects/notification-resources.tgz
     name: '@rush-temp/notification-resources'
     version: 0.0.0
@@ -20873,7 +20924,7 @@ packages:
     dev: false
 
   file:projects/pod-account.tgz:
-    resolution: {integrity: sha512-nDD+/VgDS0KrGvPf9CH9ln72wJYfnlAuo6hkcfV8/Mj9vX2S434s62TH/MzgAtepyf7UcIgo5zPaEA9jAMJwtw==, tarball: file:projects/pod-account.tgz}
+    resolution: {integrity: sha512-yjd/f6z0VELT7H3hINe53TvADlDoTwoqC5UJduaQCpiQDB38Tf28WJ0tJWKZc23iGX6cKgUyP1NrmaNPiT9TUw==, tarball: file:projects/pod-account.tgz}
     name: '@rush-temp/pod-account'
     version: 0.0.0
     dependencies:
@@ -20922,7 +20973,7 @@ packages:
     dev: false
 
   file:projects/pod-backup.tgz:
-    resolution: {integrity: sha512-dBeAnTqAnVqtSW51jV3itx5qXCHKKGrPwKGQ2uDdzcmoIyMvCF9Wvlsxaoo57svC6QHLbywpD2a3WK5D7npp8w==, tarball: file:projects/pod-backup.tgz}
+    resolution: {integrity: sha512-9cFf3HVgqNaOIXVWmLnR2grJ5I2nbx5QO6v+R3EKBfWWdX8/Jof6RHaHHnevqH7vbQSosDcXnV5BmO0kH10l9A==, tarball: file:projects/pod-backup.tgz}
     name: '@rush-temp/pod-backup'
     version: 0.0.0
     dependencies:
@@ -20947,20 +20998,13 @@ packages:
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
       typescript: 5.3.3
     transitivePeerDependencies:
-      - '@aws-sdk/credential-providers'
       - '@babel/core'
       - '@jest/types'
-      - '@mongodb-js/zstd'
       - '@swc/core'
       - '@swc/wasm'
       - babel-jest
       - babel-plugin-macros
-      - gcp-metadata
-      - kerberos
-      - mongodb-client-encryption
       - node-notifier
-      - snappy
-      - socks
       - supports-color
     dev: false
 

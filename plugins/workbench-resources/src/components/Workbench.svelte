@@ -180,7 +180,6 @@
   })
 
   const doSyncLoc = reduceCalls(async (loc: Location): Promise<void> => {
-    console.log('do sync', JSON.stringify(loc), $location.path)
     if (workspaceId !== $location.path[1]) {
       // Switch of workspace
       return
@@ -191,7 +190,6 @@
     await syncLoc(loc)
     await updateWindowTitle(loc)
     checkOnHide()
-    console.log('do sync-end', JSON.stringify(loc), $location.path)
   })
 
   onDestroy(

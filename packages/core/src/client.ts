@@ -82,7 +82,8 @@ export enum ClientConnectEvent {
 
   // Client could cause back a few more states.
   Upgraded, // In case client code receive a full new model and need to be rebuild.
-  Refresh // In case we detect query refresh is required
+  Refresh, // In case we detect query refresh is required
+  Maintenance // In case we detect query refresh is required
 }
 /**
  * @public

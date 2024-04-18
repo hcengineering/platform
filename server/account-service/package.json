@@ -1,5 +1,5 @@
 {
-  "name": "@hcengineering/pod-account",
+  "name": "@hcengineering/account-service",
   "version": "0.6.0",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
@@ -11,14 +11,6 @@
     "start": "ts-node src/__start.ts",
     "build": "compile",
     "build:watch": "compile",
-    "_phase:bundle": "rushx bundle",
-    "_phase:docker-build": "rushx docker:build",
-    "_phase:docker-staging": "rushx docker:staging",
-    "bundle": "mkdir -p bundle && esbuild src/__start.ts --bundle --define:process.env.MODEL_VERSION=$(node ../../common/scripts/show_version.js) --minify --platform=node > bundle/bundle.js",
-    "docker:build": "../../common/scripts/docker_build.sh hardcoreeng/account",
-    "docker:staging": "../../common/scripts/docker_tag.sh hardcoreeng/account staging",
-    "docker:push": "../../common/scripts/docker_tag.sh hardcoreeng/account",
-    "run-local": "cross-env MONGO_URL=mongodb://localhost:27017 MINIO_ACCESS_KEY=minioadmi MINIO_SECRET_KEY=minioadmin MINIO_ENDPOINT=localhost SERVER_SECRET='secret' TRANSACTOR_URL=ws://localhost:3333 ts-node src/__start.ts",
     "format": "format src",
     "test": "jest --passWithNoTests --silent --forceExit",
     "_phase:build": "compile transpile src",
@@ -51,7 +43,7 @@
   },
   "dependencies": {
     "@hcengineering/account": "^0.6.0",
-    "@hcengineering/account-service": "^0.6.0",
+    "@hcengineering/model": "^0.6.7",
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/auth-providers": "^0.6.0",
     "@hcengineering/core": "^0.6.28",
@@ -62,6 +54,6 @@
     "@koa/cors": "^3.1.0",
     "@hcengineering/server-tool": "^0.6.0",
     "@hcengineering/server-token": "^0.6.7",
-    "@hcengineering/model-all": "^0.6.0"
+    "@hcengineering/analytics": "^0.6.0"
   }
 }
