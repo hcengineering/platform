@@ -186,8 +186,8 @@ test.describe('Relations', () => {
       })
 
       // delete here
-      await issuesDetailsPage.buttonRemoveBlockedBy.click()
-      await expect(issuesDetailsPage.textBlockedBy).toBeVisible({ visible: false })
+      await issuesDetailsPage.clickRemoveBlockedBy()
+      expect(issuesDetailsPage.checkIfTextBlockedByIsVisible())
     })
 
     await test.step('Check the second issue description', async () => {
@@ -197,7 +197,7 @@ test.describe('Relations', () => {
       await issuesPage.searchIssueByName(secondIssue.title)
       await issuesPage.openIssueByName(secondIssue.title)
       await issuesDetailsPage.waitDetailsOpened(secondIssue.title)
-      await expect(issuesDetailsPage.textBlocks).toBeVisible({ visible: false })
+      expect(issuesDetailsPage.checkIfTextBlockedByIsVisible())
     })
   })
 })

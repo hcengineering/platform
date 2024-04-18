@@ -65,7 +65,7 @@ test.describe('candidate/talents tests', () => {
 
   test('Edit the Talent', async ({ page, context }) => {
     const navigationMenuPage = new NavigationMenuPage(page)
-    await navigationMenuPage.buttonTalents.click()
+    await navigationMenuPage.clickButtonTalents()
 
     const talentsPage = new TalentsPage(page)
     const talentName = await talentsPage.createNewTalent()
@@ -94,7 +94,7 @@ test.describe('candidate/talents tests', () => {
 
   test('Delete the Talent', async ({ page, context }) => {
     const navigationMenuPage = new NavigationMenuPage(page)
-    await navigationMenuPage.buttonTalents.click()
+    await navigationMenuPage.clickButtonTalents()
 
     const talentsPage = new TalentsPage(page)
     const talentName = await talentsPage.createNewTalent()
@@ -104,13 +104,13 @@ test.describe('candidate/talents tests', () => {
     await talentDetailsPage.inputLocation.fill('Awesome Location')
     await talentDetailsPage.deleteEntity()
 
-    await navigationMenuPage.buttonTalents.click()
+    await navigationMenuPage.clickButtonTalents()
     await talentsPage.checkTalentNotExist(talentName)
   })
 
   test('Merge contacts', async ({ page, context }) => {
     const navigationMenuPage = new NavigationMenuPage(page)
-    await navigationMenuPage.buttonTalents.click()
+    await navigationMenuPage.clickButtonTalents()
     const talentsPage = new TalentsPage(page)
 
     // talent1
@@ -126,7 +126,7 @@ test.describe('candidate/talents tests', () => {
     await talentDetailsPage.checkSocialLinks('Phone', '123123213213')
 
     // talent 2
-    await navigationMenuPage.buttonTalents.click()
+    await navigationMenuPage.clickButtonTalents()
     const talentNameSecond = await talentsPage.createNewTalent()
     await talentsPage.openTalentByTalentName(talentNameSecond)
     talentDetailsPage = new TalentDetailsPage(page)
@@ -139,7 +139,7 @@ test.describe('candidate/talents tests', () => {
     await talentDetailsPage.checkSocialLinks('Email', 'test-merge-2@gmail.com')
 
     // merge
-    await navigationMenuPage.buttonTalents.click()
+    await navigationMenuPage.clickButtonTalents()
     await talentsPage.openTalentByTalentName(talentNameFirst)
 
     await talentDetailsPage.mergeContacts({
@@ -153,7 +153,7 @@ test.describe('candidate/talents tests', () => {
       source: sourceTalent1
     })
 
-    await navigationMenuPage.buttonTalents.click()
+    await navigationMenuPage.clickButtonTalents()
     await talentsPage.searchTalentByTalentName(talentNameFirst)
     await talentsPage.openTalentByTalentName(talentNameFirst)
     await talentDetailsPage.checkSocialLinks('Phone', '123123213213')
@@ -170,7 +170,7 @@ test.describe('candidate/talents tests', () => {
     }
 
     const navigationMenuPage = new NavigationMenuPage(page)
-    await navigationMenuPage.buttonTalents.click()
+    await navigationMenuPage.clickButtonTalents()
 
     const talentsPage = new TalentsPage(page)
     await talentsPage.createNewTalentWithName(talentName.firstName, talentName.lastName)

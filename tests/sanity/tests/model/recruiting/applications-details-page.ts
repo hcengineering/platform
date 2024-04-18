@@ -3,35 +3,36 @@ import { CommonRecruitingPage } from './common-recruiting-page'
 
 export class ApplicationsDetailsPage extends CommonRecruitingPage {
   readonly page: Page
-  readonly textApplicationId: Locator
-  readonly buttonState: Locator
-  readonly buttonSelectCollaborators: Locator
 
   constructor (page: Page) {
     super(page)
     this.page = page
-    this.textApplicationId = page.locator('div.popupPanel-title div.title:last-child')
-    this.buttonState = page
+  }
+
+  readonly textApplicationId = (): Locator => this.page.locator('div.popupPanel-title div.title:last-child')
+  readonly buttonState = (): Locator =>
+    this.page
       .locator('div[class*="collapsed-container"]')
       .nth(0)
       .locator('div[class*="aside-grid"] > div:nth-of-type(1) > button')
-    this.buttonSelectCollaborators = page.locator('xpath=//span[text()="Collaborators"]/..//button')
-  }
+
+  readonly buttonSelectCollaborators = (): Locator =>
+    this.page.locator('xpath=//span[text()="Collaborators"]/..//button')
 
   async getApplicationId (): Promise<string> {
-    const applicationId = await this.textApplicationId.textContent()
+    const applicationId = await this.textApplicationId().textContent()
     expect(applicationId !== null).toBeTruthy()
     return applicationId ?? ''
   }
 
   async changeState (status: string): Promise<void> {
-    await this.buttonState.click()
+    await this.buttonState().click()
     await this.selectFromDropdown(this.page, status)
-    await expect(this.buttonState).toContainText(status)
+    await expect(this.buttonState()).toContainText(status)
   }
 
   async addCollaborators (name: string): Promise<void> {
-    await this.buttonSelectCollaborators.click()
+    await this.buttonSelectCollaborators().click()
     if (name === 'all') {
       const checks = this.page.locator('div.popup button.menu-item')
       const count = await checks.count()
@@ -41,10 +42,10 @@ export class ApplicationsDetailsPage extends CommonRecruitingPage {
     } else {
       await this.page.locator('div.popup button.menu-item div.label', { hasText: name }).click()
     }
-    await this.buttonSelectCollaborators.press('Escape')
+    await this.buttonSelectCollaborators().press('Escape')
   }
 
   async waitApplicationDetailsOpened (applicationId: string): Promise<void> {
-    await expect(this.textApplicationId).toHaveText(applicationId)
+    await expect(this.textApplicationId()).toHaveText(applicationId)
   }
 }

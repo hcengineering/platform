@@ -58,7 +58,7 @@ test.describe('Tracker duplicate issue tests', () => {
       await issuesPage.openIssueById(firstIssueId)
 
       const issuesDetailsPage = new IssuesDetailsPage(page)
-      await issuesDetailsPage.inputTitle.fill(newIssueTitle)
+      await issuesDetailsPage.inputTitle().fill(newIssueTitle)
       await issuesDetailsPage.checkIssue({
         ...firstIssue,
         title: newIssueTitle

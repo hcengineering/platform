@@ -8,7 +8,7 @@ import { generateId, getSecondPage, PlatformSetting, PlatformURI } from '../util
 test.use({
   storageState: PlatformSetting
 })
-
+// ADDED NEW
 test.describe('Collaborative test for issue', () => {
   test.beforeEach(async ({ page }) => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()

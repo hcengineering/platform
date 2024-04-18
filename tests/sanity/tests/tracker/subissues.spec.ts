@@ -84,7 +84,7 @@ test.describe('Tracker sub-issues tests', () => {
     await issuesPage.openIssueByName(newIssue.title)
 
     const issuesDetailsPage = new IssuesDetailsPage(page)
-    await issuesDetailsPage.buttonAddSubIssue.click()
+    await issuesDetailsPage.clickButtonAddSubIssue()
 
     await issuesPage.fillNewIssueForm(newSubIssue)
     await issuesPage.buttonCreateIssue.click()
@@ -121,7 +121,7 @@ test.describe('Tracker sub-issues tests', () => {
     await issuesPage.openIssueByName(deleteIssue.title)
 
     const issuesDetailsPage = new IssuesDetailsPage(page)
-    await issuesDetailsPage.buttonAddSubIssue.click()
+    await issuesDetailsPage.clickButtonAddSubIssue()
 
     await issuesPage.fillNewIssueForm(deleteSubIssue)
     await issuesPage.buttonCreateIssue.click()

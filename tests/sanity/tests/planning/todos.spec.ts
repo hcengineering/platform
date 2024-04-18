@@ -43,7 +43,7 @@ test.describe('Planning ToDo tests', () => {
     await planningPage.createNewToDo(newToDo)
 
     const planningNavigationMenuPage = new PlanningNavigationMenuPage(page)
-    await planningNavigationMenuPage.buttonToDoAll.click()
+    await planningNavigationMenuPage.clickOnButtonToDoAll()
 
     await planningPage.checkToDoExist(newToDo.title)
     await planningPage.openToDoByName(newToDo.title)
@@ -74,7 +74,7 @@ test.describe('Planning ToDo tests', () => {
     }
 
     const planningNavigationMenuPage = new PlanningNavigationMenuPage(page)
-    await planningNavigationMenuPage.buttonToDoAll.click()
+    await planningNavigationMenuPage.clickOnButtonToDoAll()
 
     const planningPage = new PlanningPage(page)
     await planningPage.openToDoByName(editToDo.title)
@@ -107,7 +107,7 @@ test.describe('Planning ToDo tests', () => {
     }
 
     const planningNavigationMenuPage = new PlanningNavigationMenuPage(page)
-    await planningNavigationMenuPage.buttonToDoAll.click()
+    await planningNavigationMenuPage.clickOnButtonToDoAll()
 
     const planningPage = new PlanningPage(page)
     await planningPage.deleteToDoByName(deleteToDo.title)
@@ -125,21 +125,21 @@ test.describe('Planning ToDo tests', () => {
     const planningPage = new PlanningPage(page)
 
     const planningNavigationMenuPage = new PlanningNavigationMenuPage(page)
-    await planningNavigationMenuPage.buttonToDoAll.click()
+    await planningNavigationMenuPage.clickOnButtonToDoAll()
     await planningPage.checkToDoExist(newToDoPlanned.title)
     await planningPage.checkToDoExist(newToDoUnPlanned.title)
 
-    await planningNavigationMenuPage.buttonToDoUnplanned.click()
+    await planningNavigationMenuPage.clickOnButtonUnplanned()
     await planningPage.selectToDoByName(newToDoPlanned.title)
 
     await planningPage.checkToDoNotExist(newToDoPlanned.title)
     await planningPage.checkToDoExist(newToDoUnPlanned.title)
 
-    await planningNavigationMenuPage.buttonToDoPlanned.click()
+    await planningNavigationMenuPage.clickOnButtonToDoPlanned()
     await planningPage.checkToDoNotExist(newToDoUnPlanned.title)
     await planningPage.checkToDoExist(newToDoPlanned.title)
 
-    await planningNavigationMenuPage.buttonToDoAll.click()
+    await planningNavigationMenuPage.clickOnButtonToDoAll()
     await planningPage.checkToDoExist(newToDoPlanned.title)
     await planningPage.checkToDoExist(newToDoUnPlanned.title)
   })

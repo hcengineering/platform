@@ -2,18 +2,38 @@ import { type Locator, type Page } from '@playwright/test'
 
 export class NavigationMenuPage {
   readonly page: Page
-  readonly buttonApplications: Locator
-  readonly buttonMyApplications: Locator
-  readonly buttonTalents: Locator
-  readonly buttonVacancies: Locator
-  readonly buttonCompanies: Locator
 
   constructor (page: Page) {
     this.page = page
-    this.buttonApplications = page.locator('a[href$="candidates"]', { hasText: 'Applications' })
-    this.buttonMyApplications = page.locator('a[href$="my-applications"]', { hasText: 'My applications' })
-    this.buttonTalents = page.locator('a[href$="talents"]', { hasText: 'Talents' })
-    this.buttonVacancies = page.locator('a[href$="vacancies"]', { hasText: 'Vacancies' })
-    this.buttonCompanies = page.locator('a[href$="organizations"]', { hasText: 'Companies' })
+  }
+
+  // Locator methods
+  readonly buttonApplications = (): Locator => this.page.locator('a[href$="candidates"]', { hasText: 'Applications' })
+  readonly buttonMyApplications = (): Locator =>
+    this.page.locator('a[href$="my-applications"]', { hasText: 'My applications' })
+
+  readonly buttonTalents = (): Locator => this.page.locator('a[href$="talents"]', { hasText: 'Talents' })
+  readonly buttonVacancies = (): Locator => this.page.locator('a[href$="vacancies"]', { hasText: 'Vacancies' })
+  readonly buttonCompanies = (): Locator => this.page.locator('a[href$="organizations"]', { hasText: 'Companies' })
+
+  // Action methods to click on each button
+  async clickButtonApplications (): Promise<void> {
+    await this.buttonApplications().click()
+  }
+
+  async clickButtonMyApplications (): Promise<void> {
+    await this.buttonMyApplications().click()
+  }
+
+  async clickButtonTalents (): Promise<void> {
+    await this.buttonTalents().click()
+  }
+
+  async clickButtonVacancies (): Promise<void> {
+    await this.buttonVacancies().click()
+  }
+
+  async clickButtonCompanies (): Promise<void> {
+    await this.buttonCompanies().click()
   }
 }

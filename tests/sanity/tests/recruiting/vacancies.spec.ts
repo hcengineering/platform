@@ -83,7 +83,7 @@ test.describe('Vacancy tests', () => {
     const vacancyName = 'Edit Vacancy ' + generateId(4)
 
     const navigationMenuPage = new NavigationMenuPage(page)
-    await navigationMenuPage.buttonVacancies.click()
+    await navigationMenuPage.clickButtonVacancies()
     const vacanciesPage = new VacanciesPage(page)
     await vacanciesPage.createNewVacancy({
       title: vacancyName,
@@ -112,7 +112,7 @@ test.describe('Vacancy tests', () => {
     // viable when test set of vacancies fits to single page
     const vacancyName = 'Archive Vacancy ' + generateId(5)
     const navigationMenuPage = new NavigationMenuPage(page)
-    await navigationMenuPage.buttonVacancies.click()
+    await navigationMenuPage.clickButtonVacancies()
     const vacanciesPage = new VacanciesPage(page)
     await vacanciesPage.createNewVacancy({
       title: vacancyName,
@@ -141,7 +141,7 @@ test.describe('Vacancy tests', () => {
 
   test('Export vacancies', async ({ page }) => {
     const navigationMenuPage = new NavigationMenuPage(page)
-    await navigationMenuPage.buttonVacancies.click()
+    await navigationMenuPage.clickButtonVacancies()
 
     const vacanciesPage = new VacanciesPage(page)
     await vacanciesPage.selectAll()
@@ -156,7 +156,7 @@ test.describe('Vacancy tests', () => {
     }
 
     const navigationMenuPage = new NavigationMenuPage(page)
-    await navigationMenuPage.buttonVacancies.click()
+    await navigationMenuPage.clickButtonVacancies()
 
     const vacanciesPage = new VacanciesPage(page)
     await vacanciesPage.createNewVacancy(archiveVacancy)
@@ -167,7 +167,7 @@ test.describe('Vacancy tests', () => {
     await vacancyDetailsPage.pressYesForPopup(page)
     await vacancyDetailsPage.checkActivityExist('changed archived at')
 
-    await navigationMenuPage.buttonVacancies.click()
+    await navigationMenuPage.clickButtonVacancies()
     await vacanciesPage.checkVacancyNotExist(
       archiveVacancy.title,
       `Archieved vacancy "${archiveVacancy.title}" visible.`

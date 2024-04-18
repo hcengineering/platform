@@ -5,7 +5,7 @@ import { ApplicationsPage } from '../model/recruiting/applications-page'
 import { ApplicationsDetailsPage } from '../model/recruiting/applications-details-page'
 import { TalentName } from '../model/recruiting/types'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
-
+// ADDED NEW
 test.use({
   storageState: PlatformSetting
 })
@@ -24,7 +24,7 @@ test.describe('Collaborative tests for Application', () => {
     try {
       await test.step('User1. Add collaborators and comment from user1', async () => {
         const navigationMenuPage = new NavigationMenuPage(page)
-        await navigationMenuPage.buttonApplications.click()
+        await navigationMenuPage.clickButtonApplications()
 
         const applicationsPage = new ApplicationsPage(page)
         talentName = await applicationsPage.createNewApplicationWithNewTalent({
@@ -55,7 +55,7 @@ test.describe('Collaborative tests for Application', () => {
 
         await (await userSecondPage.goto(`${PlatformURI}/workbench/sanity-ws/recruit`))?.finished()
         const navigationMenuPageSecond = new NavigationMenuPage(userSecondPage)
-        await navigationMenuPageSecond.buttonApplications.click()
+        await navigationMenuPageSecond.clickButtonApplications()
 
         const applicationsPageSecond = new ApplicationsPage(userSecondPage)
         await applicationsPageSecond.openApplicationByTalentName(talentName)
@@ -80,7 +80,7 @@ test.describe('Collaborative tests for Application', () => {
 
         await (await page.goto(`${PlatformURI}/workbench/sanity-ws/recruit`))?.finished()
         const navigationMenuPage = new NavigationMenuPage(page)
-        await navigationMenuPage.buttonApplications.click()
+        await navigationMenuPage.clickButtonApplications()
 
         const applicationsPage = new ApplicationsPage(page)
         await applicationsPage.openApplicationByTalentName(talentName)

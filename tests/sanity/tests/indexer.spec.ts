@@ -47,7 +47,7 @@ test.describe('Fulltext index', () => {
       const spotlight = new SpotlightPopup(page)
 
       await test.step('create document', async () => {
-        await documentsPage.buttonCreateDocument.click()
+        await documentsPage.clickOnButtonCreateDocument()
 
         await documentsPage.createDocument(newDocument)
         await documentsPage.openDocument(newDocument.title)
@@ -105,7 +105,7 @@ test.describe('Fulltext index', () => {
       const spotlight = new SpotlightPopup(page)
 
       await test.step('create document', async () => {
-        await documentsPage.buttonCreateDocument.click()
+        await documentsPage.clickOnButtonCreateDocument()
 
         await documentsPage.createDocument(newDocument)
         await documentsPage.openDocument(newDocument.title)
@@ -172,7 +172,7 @@ test.describe('Fulltext index', () => {
       const spotlight = new SpotlightPopup(page)
 
       await test.step('create document', async () => {
-        await documentsPage.buttonCreateDocument.click()
+        await documentsPage.clickOnButtonCreateDocument()
 
         await documentsPage.createDocument(newDocument)
         await documentsPage.openDocument(newDocument.title)
@@ -291,7 +291,7 @@ test.describe('Fulltext index', () => {
         await issuesPage.openIssueByName(newIssue.title)
         await issuesDetailsPage.editIssue({ title: updatedTitle })
         await issuesDetailsPage.addToDescription(updatedContent)
-        await issuesDetailsPage.buttonCloseIssue.click()
+        await issuesDetailsPage.clickCloseIssueButton()
       })
 
       await test.step('search by old title', async () => {
