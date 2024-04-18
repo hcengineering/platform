@@ -24,4 +24,4 @@ const txes = JSON.parse(JSON.stringify(builder(enabled, disabled).getTxes())) as
 
 const metricsContext = new MeasureMetricsContext('account', {}, {}, newMetrics())
 
-serveAccount(metricsContext, getModelVersion(), txes, migrateOperations)
+serveAccount(metricsContext, getModelVersion(), txes, migrateOperations, '')

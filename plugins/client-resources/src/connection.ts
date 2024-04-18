@@ -240,7 +240,7 @@ class Connection implements ClientConnection {
 
       websocket.onmessage = (event: MessageEvent) => {
         const resp = readResponse<any>(event.data, binaryResponse)
-        if (resp.id === -2 && resp.result.state === 'upgrading') {
+        if (resp.id === -1 && resp.result.state === 'upgrading') {
           void this.onConnect?.(ClientConnectEvent.Maintenance, resp.result.stats)
           this.upgrading = true
           return

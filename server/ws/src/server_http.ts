@@ -223,7 +223,7 @@ export function startHttpServer (
       if ('error' in session) {
         void ctx.error('error', { error: session.error?.message, stack: session.error?.stack })
       }
-      await cs.send(ctx, { id: -2, result: { state: 'upgrading', stats: (session as any).upgradeInfo } }, false, false)
+      await cs.send(ctx, { id: -1, result: { state: 'upgrading', stats: (session as any).upgradeInfo } }, false, false)
 
       // Wait 1 second before closing the connection
       setTimeout(() => {
