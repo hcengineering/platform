@@ -24,8 +24,8 @@
   export let editable = false
 
   $: proc = (max - min) / 100
-  if (value > max) value = max
-  if (value < min) value = min
+  $: if (value > max) value = max
+  $: if (value < min) value = min
 
   const dispatch = createEventDispatcher()
 
@@ -38,10 +38,10 @@
   function calcValue (e: MouseEvent): void {
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
     const x = e.clientX - rect.left
-    const pos = x / rect.width
-    value = (max - min) * pos
-    if (value > max) value = max
-    if (value < min) value = min
+    let pos = x / rect.width
+    if (pos > 100) pos = 100
+    if (pos < 0) pos = 0
+    value = (max - min) * pos + min
   }
 
   function save (): void {
@@ -57,6 +57,8 @@
   }
 
   let drag: boolean = false
+
+  $: position = proc !== 0 ? Math.round((value - min) / proc) : 0
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -66,9 +68,7 @@
     class="bar"
     style="background-color: {color !== undefined
       ? getPlatformColor(color, $themeStore.dark)
-      : 'var(--theme-toggle-on-bg-color)'}; width: calc(100% * {proc !== 0
-        ? Math.round((value - min) / proc)
-        : 0} / 100);"
+      : 'var(--theme-toggle-on-bg-color)'}; width: calc(100% * {position} / 100 + 0.5rem);"
   />
   {#if editable}
     <div
@@ -76,7 +76,7 @@
       on:mousedown={() => {
         drag = true
       }}
-      style="left: calc(100% * {proc !== 0 ? Math.round((value - min) / proc) : 0} / 100 - 0.5rem);"
+      style="left: calc(100% * {position} / 100 - 0.5rem);"
     />
   {/if}
 </div>
@@ -84,7 +84,6 @@
 <style lang="scss">
   .container {
     position: relative;
-    width: 100%;
     height: 0.25rem;
     background-color: var(--trans-content-10);
     border-radius: 0.125rem;
