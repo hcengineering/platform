@@ -15,7 +15,7 @@
 <script lang="ts">
   import { afterUpdate, onDestroy } from 'svelte'
   import { resizeObserver } from '../resize'
-  import { closeTooltip, tooltipstore as tooltip } from '../tooltips'
+  import { closeTooltip, showTooltip, tooltipstore as tooltip } from '../tooltips'
   import type { TooltipAlignment } from '../types'
   import Component from './Component.svelte'
   import Label from './Label.svelte'
@@ -221,19 +221,20 @@
     closeTooltip()
   }
 
-  const whileShow = (ev: MouseEvent): void => {
-    if ($tooltip.element && tooltipHTML) {
-      const rectP = tooltipHTML.getBoundingClientRect()
-      rect = $tooltip.element.getBoundingClientRect()
-      const dT: number = dir === 'bottom' && $tooltip.kind !== 'submenu' ? 12 : 0
-      const dB: number = dir === 'top' && $tooltip.kind !== 'submenu' ? 12 : 0
-      const inTrigger: boolean = ev.x >= rect.left && ev.x <= rect.right && ev.y >= rect.top && ev.y <= rect.bottom
-      const inPopup: boolean =
-        ev.x >= rectP.left && ev.x <= rectP.right && ev.y >= rectP.top - dT && ev.y <= rectP.bottom + dB
+  $: shownTooltip = $tooltip.element && tooltipHTML
 
-      if ($tooltip.kind !== 'popup') {
-        if ((tooltipSW && !inTrigger) || !(inTrigger || inPopup)) hideTooltip()
-      }
+  const whileShow = (ev: MouseEvent): void => {
+    if (!$tooltip.element) return
+    const rectP = tooltipHTML.getBoundingClientRect()
+    rect = $tooltip.element.getBoundingClientRect()
+    const dT: number = dir === 'bottom' && $tooltip.kind !== 'submenu' ? 12 : 0
+    const dB: number = dir === 'top' && $tooltip.kind !== 'submenu' ? 12 : 0
+    const inTrigger: boolean = ev.x >= rect.left && ev.x <= rect.right && ev.y >= rect.top && ev.y <= rect.bottom
+    const inPopup: boolean =
+      ev.x >= rectP.left && ev.x <= rectP.right && ev.y >= rectP.top - dT && ev.y <= rectP.bottom + dB
+
+    if ($tooltip.kind !== 'popup') {
+      if ((tooltipSW && !inTrigger) || !(inTrigger || inPopup)) hideTooltip()
     }
   }
 
@@ -274,7 +275,7 @@
     }
   }}
   on:mousemove={(ev) => {
-    whileShow(ev)
+    if (shownTooltip) whileShow(ev)
   }}
   on:keydown={(evt) => {
     if (($tooltip.component || $tooltip.label) && evt.key === 'Escape' && $tooltip.kind !== 'popup') {
