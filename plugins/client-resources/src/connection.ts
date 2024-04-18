@@ -75,7 +75,7 @@ class Connection implements ClientConnection {
   private websocket: ClientSocket | Promise<ClientSocket> | null = null
   private readonly requests = new Map<ReqId, RequestPromise>()
   private lastId = 0
-  private readonly interval: number
+  private interval: number | undefined
   private sessionId: string | undefined
   private closed = false
 
@@ -91,7 +91,10 @@ class Connection implements ClientConnection {
     private readonly onUpgrade?: () => void,
     private readonly onUnauthorized?: () => void,
     readonly onConnect?: (event: ClientConnectEvent, data?: any) => Promise<void>
-  ) {
+  ) {}
+
+  private schedulePing (): void {
+    clearInterval(this.interval)
     this.interval = setInterval(() => {
       if (this.upgrading) {
         // no need to check while upgrade waiting
@@ -122,9 +125,7 @@ class Connection implements ClientConnection {
 
       if (!this.closed) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        void this.sendRequest({ method: 'ping', params: [] }).then(() => {
-          this.pingResponse = Date.now()
-        })
+        void this.sendRequest({ method: 'ping', params: [] })
       } else {
         clearInterval(this.interval)
       }
@@ -239,6 +240,7 @@ class Connection implements ClientConnection {
       }, dialTimeout)
 
       websocket.onmessage = (event: MessageEvent) => {
+        this.pingResponse = Date.now()
         const resp = readResponse<any>(event.data, binaryResponse)
         if (resp.id === -1 && resp.result.state === 'upgrading') {
           void this.onConnect?.(ClientConnectEvent.Maintenance, resp.result.stats)
@@ -250,8 +252,13 @@ class Connection implements ClientConnection {
             // We need to call upgrade since connection is upgraded
             this.onUpgrade?.()
           }
-          this.upgrading = false
+
           console.log('connection established', this.workspace, this.email)
+
+          // Ok we connected, let's schedule ping
+          this.schedulePing()
+
+          this.upgrading = false
           if ((resp as HelloResponse).alreadyConnected === true) {
             this.sessionId = generateId()
             if (typeof sessionStorage !== 'undefined') {
