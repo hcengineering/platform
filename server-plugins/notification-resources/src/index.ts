@@ -66,7 +66,6 @@ import notification, {
 } from '@hcengineering/notification'
 import { getMetadata, getResource, translate } from '@hcengineering/platform'
 import type { TriggerControl } from '@hcengineering/server-core'
-import { stripTags } from '@hcengineering/text'
 import serverCore from '@hcengineering/server-core'
 import serverNotification, {
   getEmployee,
@@ -74,6 +73,7 @@ import serverNotification, {
   getPersonAccountById,
   NOTIFICATION_BODY_SIZE
 } from '@hcengineering/server-notification'
+import { stripTags } from '@hcengineering/text'
 import { workbenchId } from '@hcengineering/workbench'
 import webpush, { WebPushError } from 'web-push'
 import { Content, NotifyResult } from './types'
