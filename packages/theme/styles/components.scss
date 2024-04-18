@@ -573,7 +573,7 @@
 .hulyToDoLine-container {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--spacing-1);
   margin: 0;
   padding: var(--spacing-0_75) var(--spacing-1) var(--spacing-0_75) var(--spacing-0_75);
@@ -584,6 +584,7 @@
   border-radius: var(--medium-BorderRadius);
   outline: none;
 
+  .hulyToDoLine-title { color: var(--global-primary-TextColor); }
   &.isDone {
     .hulyToDoLine-title {
       color: var(--global-tertiary-TextColor);
@@ -611,7 +612,6 @@
   .hulyToDoLine-statusPriority {
     position: relative;
     margin-right: var(--spacing-0_25);
-    padding-top: var(--spacing-0_5);
     min-width: var(--global-min-Size);
 
     &.isNew::after {
@@ -630,16 +630,6 @@
     width: var(--global-extra-small-Size);
     height: var(--global-extra-small-Size);
   }
-  .hulyToDoLine-top-align {
-    color: var(--global-primary-TextColor);
-
-    &.top-12 {
-      padding-top: 0.25rem;
-    }
-    &.top-14 {
-      padding-top: 0.175rem;
-    }
-  }
   .hulyToDoLine-icon {
     display: flex;
     justify-content: center;
@@ -651,7 +641,6 @@
   .hulyToDoLine-label {
     flex-grow: 1;
     flex-shrink: 1;
-    padding-top: var(--spacing-0_5);
     color: var(--global-secondary-TextColor);
 
     &:not(.large) {

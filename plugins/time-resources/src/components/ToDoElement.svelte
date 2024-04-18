@@ -76,7 +76,7 @@
     showMenu(e, { object: todo })
   }}
 >
-  <div class="flex-row-top flex-grow flex-gap-2">
+  <div class="flex-row-center flex-grow flex-gap-2">
     <div class="hulyToDoLine-statusPriority" class:isNew>
       {#if updating !== undefined}
         <Spinner size={'small'} />
@@ -88,7 +88,7 @@
       {/if}
     </div>
     <WorkItemPresenter {todo} kind={'todo-line'} withoutSpace />
-    <div class="hulyToDoLine-title hulyToDoLine-top-align top-12 text-left font-regular-14 overflow-label">
+    <div class="hulyToDoLine-title text-left font-regular-14 line-height-auto overflow-label">
       {todo.title}
     </div>
   </div>
@@ -102,12 +102,12 @@
   </div>
   <div class="flex flex-no-shrink flex-gap-3 pl-2">
     {#if events.length > 0}
-      <span class="hulyToDoLine-top-align top-12 font-regular-12 secondary-textColor">
+      <span class="font-regular-12 secondary-textColor">
         <ToDoDuration {events} />
       </span>
     {/if}
     {#if todo.dueDate}
-      <span class="hulyToDoLine-top-align top-12 font-regular-12 secondary-textColor">
+      <span class="font-regular-12 secondary-textColor">
         {new Date(todo.dueDate).toLocaleDateString('default', { month: 'short', day: 'numeric' })}
       </span>
     {/if}
