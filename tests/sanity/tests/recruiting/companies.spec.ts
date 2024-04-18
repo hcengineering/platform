@@ -30,7 +30,7 @@ test.describe('Companies tests', () => {
     }
 
     const navigationMenuPage = new NavigationMenuPage(page)
-    await navigationMenuPage.buttonCompanies.click()
+    await navigationMenuPage.clickButtonCompanies()
 
     const companiesPage = new CompaniesPage(page)
     await companiesPage.createNewCompany(newCompany)
@@ -62,7 +62,7 @@ test.describe('Companies tests', () => {
     }
 
     const navigationMenuPage = new NavigationMenuPage(page)
-    await navigationMenuPage.buttonCompanies.click()
+    await navigationMenuPage.clickButtonCompanies()
 
     const companiesPage = new CompaniesPage(page)
     await companiesPage.createNewCompany({ name: createdCompany })
@@ -83,7 +83,7 @@ test.describe('Companies tests', () => {
     }
 
     const navigationMenuPage = new NavigationMenuPage(page)
-    await navigationMenuPage.buttonCompanies.click()
+    await navigationMenuPage.clickButtonCompanies()
 
     const companiesPage = new CompaniesPage(page)
     await companiesPage.createNewCompany(deleteCompany)
@@ -93,7 +93,7 @@ test.describe('Companies tests', () => {
     await companyDetailsPage.checkCompany(deleteCompany)
     await companyDetailsPage.deleteEntity()
 
-    await navigationMenuPage.buttonCompanies.click()
+    await navigationMenuPage.clickButtonCompanies()
     await companiesPage.checkCompanyNotExist(deleteCompany.name)
   })
 })

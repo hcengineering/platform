@@ -3,47 +3,40 @@ import { CommonPage } from '../common-page'
 
 export class DocumentContentPage extends CommonPage {
   readonly page: Page
-  readonly buttonDocumentTitle: Locator
-  readonly inputContent: Locator
-  readonly buttonToolbarLink: Locator
-  readonly inputFormLink: Locator
-  readonly buttonFormLinkSave: Locator
-  readonly buttonMoreActions: Locator
 
   constructor (page: Page) {
     super()
     this.page = page
-    this.buttonDocumentTitle = page.locator('div[class*="main-content"] div.title input')
-    this.inputContent = page.locator('div.textInput div.tiptap')
-    this.buttonToolbarLink = page.locator('div.text-editor-toolbar button:nth-child(10)')
-    this.inputFormLink = page.locator('form[id="text-editor:string:Link"] input')
-    this.buttonFormLinkSave = page.locator('form[id="text-editor:string:Link"] button[type="submit"]')
-    this.buttonMoreActions = page.locator('div.popupPanel-title button#btn-doc-title-open-more')
   }
 
+  readonly buttonDocumentTitle = (): Locator => this.page.locator('div[class*="main-content"] div.title input')
+  readonly inputContent = (): Locator => this.page.locator('div.textInput div.tiptap')
+  readonly buttonToolbarLink = (): Locator => this.page.locator('div.text-editor-toolbar button:nth-child(10)')
+  readonly inputFormLink = (): Locator => this.page.locator('form[id="text-editor:string:Link"] input')
+  readonly buttonFormLinkSave = (): Locator =>
+    this.page.locator('form[id="text-editor:string:Link"] button[type="submit"]')
+
+  readonly buttonMoreActions = (): Locator => this.page.locator('div.popupPanel-title button#btn-doc-title-open-more')
+
   async checkDocumentTitle (title: string): Promise<void> {
-    await expect(this.buttonDocumentTitle).toHaveValue(title)
+    await expect(this.buttonDocumentTitle()).toHaveValue(title)
   }
 
   async addContentToTheNewLine (newContent: string): Promise<string> {
-    await expect(this.inputContent).toBeVisible()
-    await expect(this.inputContent).toHaveJSProperty('contentEditable', 'true')
-    await this.inputContent.pressSequentially(`\n${newContent}`)
-    const endContent = await this.inputContent.textContent()
-    if (endContent == null) {
-      return ''
-    } else {
-      return endContent
-    }
+    await expect(this.inputContent()).toBeVisible()
+    await expect(this.inputContent()).toHaveJSProperty('contentEditable', 'true')
+    await this.inputContent().pressSequentially(`\n${newContent}`)
+    const endContent = await this.inputContent().textContent()
+    return endContent ?? ''
   }
 
   async checkContent (content: string): Promise<void> {
-    await expect(this.inputContent).toHaveText(content)
+    await expect(this.inputContent()).toHaveText(content)
   }
 
   async updateDocumentTitle (title: string): Promise<void> {
-    await this.buttonDocumentTitle.fill(title)
-    await this.buttonDocumentTitle.blur()
+    await this.buttonDocumentTitle().fill(title)
+    await this.buttonDocumentTitle().blur()
   }
 
   async addRandomLines (count: number, lineLength: number = 36): Promise<void> {
@@ -57,10 +50,10 @@ export class DocumentContentPage extends CommonPage {
     await expect(this.page.locator('p', { hasText: text })).toBeVisible()
     await this.page.locator('p', { hasText: text }).click()
     await this.page.locator('p', { hasText: text }).dblclick()
-    await this.buttonToolbarLink.click()
+    await this.buttonToolbarLink().click()
 
-    await this.inputFormLink.fill(link)
-    await this.buttonFormLinkSave.click()
+    await this.inputFormLink().fill(link)
+    await this.buttonFormLinkSave().click()
   }
 
   async checkLinkInTheText (text: string, link: string): Promise<void> {
@@ -68,7 +61,7 @@ export class DocumentContentPage extends CommonPage {
   }
 
   async executeMoreAction (action: string): Promise<void> {
-    await this.buttonMoreActions.click()
+    await this.buttonMoreActions().click()
     await this.selectFromDropdown(this.page, action)
   }
 }

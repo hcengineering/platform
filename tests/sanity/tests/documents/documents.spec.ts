@@ -8,7 +8,7 @@ import { DocumentContentPage } from '../model/documents/document-content-page'
 test.use({
   storageState: PlatformSetting
 })
-
+// ADDED NEW
 test.describe('Documents tests', () => {
   test.beforeEach(async ({ page }) => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
@@ -24,7 +24,7 @@ test.describe('Documents tests', () => {
     await leftSideMenuPage.buttonDocuments.click()
 
     const documentsPage = new DocumentsPage(page)
-    await documentsPage.buttonCreateDocument.click()
+    await documentsPage.clickOnButtonCreateDocument()
 
     await documentsPage.createDocument(newDocument)
     await documentsPage.openDocument(newDocument.title)
@@ -46,7 +46,7 @@ test.describe('Documents tests', () => {
     await leftSideMenuPage.buttonDocuments.click()
 
     const documentsPage = new DocumentsPage(page)
-    await documentsPage.buttonCreateDocument.click()
+    await documentsPage.clickOnButtonCreateDocument()
 
     await documentsPage.createDocument(editDocument)
     await documentsPage.openDocument(editDocument.title)
@@ -83,7 +83,7 @@ test.describe('Documents tests', () => {
     await documentsPage.checkTeamspaceNotExist(moveTeamspace.title)
     await documentsPage.createNewTeamspace(moveTeamspace)
     await documentsPage.checkTeamspaceExist(moveTeamspace.title)
-    await documentsPage.buttonCreateDocument.click()
+    await documentsPage.clickOnButtonCreateDocument()
 
     await documentsPage.createDocument(moveDocument)
     await documentsPage.openDocument(moveDocument.title)
@@ -116,7 +116,7 @@ test.describe('Documents tests', () => {
 
     const documentsPage = new DocumentsPage(page)
     await documentsPage.openTeamspace(colDocument.space)
-    await documentsPage.buttonCreateDocument.click()
+    await documentsPage.clickOnButtonCreateDocument()
 
     await documentsPage.createDocument(colDocument)
     await documentsPage.openDocument(colDocument.title)
@@ -171,7 +171,7 @@ test.describe('Documents tests', () => {
     await leftSideMenuPage.buttonDocuments.click()
 
     const documentsPage = new DocumentsPage(page)
-    await documentsPage.buttonCreateDocument.click()
+    await documentsPage.clickOnButtonCreateDocument()
 
     await documentsPage.createDocument(linkDocument)
     await documentsPage.openDocument(linkDocument.title)

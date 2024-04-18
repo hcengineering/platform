@@ -35,7 +35,7 @@ test.describe('Application tests', () => {
     await expect(vacancyDetailsPage.inputComment).toBeVisible()
 
     const navigationMenuPage = new NavigationMenuPage(page)
-    await navigationMenuPage.buttonTalents.click()
+    await navigationMenuPage.clickButtonTalents()
 
     await page.click('text=P. Andrey')
 
@@ -66,7 +66,7 @@ test.describe('Application tests', () => {
     const vacancyName = 'Edit an Application Vacancy ' + generateId(4)
 
     const navigationMenuPage = new NavigationMenuPage(page)
-    await navigationMenuPage.buttonVacancies.click()
+    await navigationMenuPage.clickButtonVacancies()
     const vacanciesPage = new VacanciesPage(page)
     await vacanciesPage.createNewVacancy({
       title: vacancyName,
@@ -74,7 +74,7 @@ test.describe('Application tests', () => {
       location: 'Edit a Vacancy location'
     })
 
-    await navigationMenuPage.buttonApplications.click()
+    await navigationMenuPage.clickButtonApplications()
     const applicationsPage = new ApplicationsPage(page)
     const talentName = await applicationsPage.createNewApplicationWithNewTalent({
       vacancy: vacancyName,
@@ -93,7 +93,7 @@ test.describe('Application tests', () => {
 
   test('Change Done status', async ({ page }) => {
     const navigationMenuPage = new NavigationMenuPage(page)
-    await navigationMenuPage.buttonApplications.click()
+    await navigationMenuPage.clickButtonApplications()
 
     let applicationsPage = new ApplicationsPage(page)
     const talentName = await applicationsPage.createNewApplicationWithNewTalent({
@@ -105,7 +105,7 @@ test.describe('Application tests', () => {
     let applicationsDetailsPage = new ApplicationsDetailsPage(page)
     await applicationsDetailsPage.changeState('Lost')
 
-    await navigationMenuPage.buttonMyApplications.click()
+    await navigationMenuPage.clickButtonMyApplications()
     applicationsPage = new ApplicationsPage(page)
     await applicationsPage.buttonTabCreated.click()
     await applicationsPage.checkApplicationState(talentName, 'Lost')
@@ -114,7 +114,7 @@ test.describe('Application tests', () => {
     applicationsDetailsPage = new ApplicationsDetailsPage(page)
     await applicationsDetailsPage.changeState('Won')
 
-    await navigationMenuPage.buttonMyApplications.click()
+    await navigationMenuPage.clickButtonMyApplications()
     applicationsPage = new ApplicationsPage(page)
     await applicationsPage.buttonTabCreated.click()
     await applicationsPage.checkApplicationState(talentName, 'Won')
@@ -122,7 +122,7 @@ test.describe('Application tests', () => {
 
   test('Delete an Application', async ({ page }) => {
     const navigationMenuPage = new NavigationMenuPage(page)
-    await navigationMenuPage.buttonApplications.click()
+    await navigationMenuPage.clickButtonApplications()
 
     const applicationsPage = new ApplicationsPage(page)
     const talentName = await applicationsPage.createNewApplicationWithNewTalent({
@@ -137,13 +137,13 @@ test.describe('Application tests', () => {
     await applicationsDetailsPage.deleteEntity()
     expect(page.url()).toContain(applicationId)
 
-    await navigationMenuPage.buttonApplications.click()
+    await navigationMenuPage.clickButtonApplications()
     await applicationsPage.checkApplicationNotExist(applicationId)
   })
 
   test('Change & Save all States', async ({ page }) => {
     const navigationMenuPage = new NavigationMenuPage(page)
-    await navigationMenuPage.buttonApplications.click()
+    await navigationMenuPage.clickButtonApplications()
 
     const applicationsPage = new ApplicationsPage(page)
     const talentName = await applicationsPage.createNewApplicationWithNewTalent({
@@ -156,7 +156,7 @@ test.describe('Application tests', () => {
     let applicationsDetailsPage = new ApplicationsDetailsPage(page)
     await applicationsDetailsPage.changeState('Technical Interview')
 
-    await navigationMenuPage.buttonApplications.click()
+    await navigationMenuPage.clickButtonApplications()
     await applicationsPage.checkApplicationState(talentName, 'Technical Interview')
     await applicationsPage.changeApplicationStatus(talentName, 'Test task')
     await applicationsPage.checkApplicationState(talentName, 'Test task')
@@ -171,7 +171,7 @@ test.describe('Application tests', () => {
     const vacancyName = 'Comment stored Vacancy ' + generateId(4)
 
     const navigationMenuPage = new NavigationMenuPage(page)
-    await navigationMenuPage.buttonVacancies.click()
+    await navigationMenuPage.clickButtonVacancies()
     const vacanciesPage = new VacanciesPage(page)
     await vacanciesPage.createNewVacancy({
       title: vacancyName,
@@ -179,7 +179,7 @@ test.describe('Application tests', () => {
       location: 'Edit a Vacancy location'
     })
 
-    await navigationMenuPage.buttonApplications.click()
+    await navigationMenuPage.clickButtonApplications()
     const applicationsPage = new ApplicationsPage(page)
     const talentName = await applicationsPage.createNewApplicationWithNewTalent({
       vacancy: 'first',
