@@ -39,11 +39,15 @@ import { getMetadata, PlatformError, unknownStatus } from '@hcengineering/platfo
 import serverCore, { DbAdapter, IndexedDoc } from '@hcengineering/server-core'
 import { createHash } from 'node:crypto'
 
-const indexName = getMetadata(serverCore.metadata.ElasticIndexName) ?? 'storage_index'
+function getIndexName (): string {
+  return getMetadata(serverCore.metadata.ElasticIndexName) ?? 'storage_index'
+}
+
 class ElasticDataAdapter implements DbAdapter {
   constructor (
     readonly workspaceId: WorkspaceId,
-    readonly client: Client
+    readonly client: Client,
+    readonly indexName: string
   ) {}
 
   async findAll<T extends Doc>(
@@ -80,7 +84,7 @@ class ElasticDataAdapter implements DbAdapter {
         try {
           if (!listRecieved) {
             const q = {
-              index: indexName,
+              index: this.indexName,
               type: '_doc',
               scroll: '23h',
               // search_type: 'scan', //if I use search_type then it requires size otherwise it shows 0 result
@@ -171,7 +175,7 @@ class ElasticDataAdapter implements DbAdapter {
     while (toLoad.length > 0) {
       const part = toLoad.splice(0, 5000)
       const resp = await this.client.search({
-        index: indexName,
+        index: this.indexName,
         type: '_doc',
         body: {
           query: {
@@ -218,7 +222,7 @@ class ElasticDataAdapter implements DbAdapter {
         await this.client.deleteByQuery(
           {
             type: '_doc',
-            index: indexName,
+            index: this.indexName,
             body: {
               query: {
                 bool: {
@@ -247,7 +251,7 @@ class ElasticDataAdapter implements DbAdapter {
       }
 
       const operations = part.flatMap((doc) => [
-        { index: { _index: indexName, _id: doc._id } },
+        { index: { _index: this.indexName, _id: doc._id } },
         {
           workspaceId: toWorkspaceString(this.workspaceId),
           ...(doc as FullTextData).data
@@ -268,7 +272,7 @@ class ElasticDataAdapter implements DbAdapter {
       await this.client.deleteByQuery(
         {
           type: '_doc',
-          index: indexName,
+          index: this.indexName,
           body: {
             query: {
               bool: {
@@ -308,5 +312,6 @@ export async function createElasticBackupDataAdapter (
   const client = new Client({
     node: url
   })
-  return new ElasticDataAdapter(workspaceId, client)
+  const indexName = getIndexName()
+  return new ElasticDataAdapter(workspaceId, client, indexName)
 }
