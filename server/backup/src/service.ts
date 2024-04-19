@@ -71,11 +71,18 @@ class BackupWorker {
   async backup (ctx: MeasureContext): Promise<void> {
     const workspaces = await getWorkspaces(this.config.AccountsURL, this.config.Token)
     workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
+    let index = 0
     for (const ws of workspaces) {
       if (this.canceled) {
         return
       }
-      await ctx.info('\n\nBACKUP WORKSPACE ', { workspace: ws.workspace, productId: ws.productId })
+      index++
+      await ctx.info('\n\nBACKUP WORKSPACE ', {
+        workspace: ws.workspace,
+        productId: ws.productId,
+        index,
+        total: workspaces.length
+      })
       try {
         const storage = await createStorageBackupStorage(
           ctx,
