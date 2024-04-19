@@ -887,6 +887,9 @@ dependencies:
   '@types/koa-bodyparser':
     specifier: ^4.3.3
     version: 4.3.12
+  '@types/koa-morgan':
+    specifier: ^1.0.8
+    version: 1.0.8
   '@types/koa-passport':
     specifier: ^6.0.0
     version: 6.0.3
@@ -1118,6 +1121,9 @@ dependencies:
   koa-bodyparser:
     specifier: ^4.3.0
     version: 4.4.1
+  koa-morgan:
+    specifier: ^1.0.1
+    version: 1.0.1
   koa-passport:
     specifier: ~6.0.0
     version: 6.0.0
@@ -6277,6 +6283,13 @@ packages:
     resolution: {integrity: sha512-4Olc63RY+MKvxMwVknCUDhRQX1pFQoBZ/lXcRLP69PQkEpze/0cr8LNqJQe5NFb/b19DWi2a5bTi2VAlQzhJuA==}
     dependencies:
       '@types/koa': 2.14.0
+    dev: false
+
+  /@types/koa-morgan@1.0.8:
+    resolution: {integrity: sha512-2GredUi+iA3V0XrbzdsOAYgwj4F6+FnN+f5YjoKjessIE2lrMkqnc06YQQnzbMG75hRsXjyD+p6d5vlI70s1vg==}
+    dependencies:
+      '@types/koa': 2.14.0
+      '@types/morgan': 1.9.9
     dev: false
 
   /@types/koa-passport@6.0.3:
@@ -12119,6 +12132,12 @@ packages:
       koa-compose: 4.1.0
     dev: false
 
+  /koa-morgan@1.0.1:
+    resolution: {integrity: sha512-JOUdCNlc21G50afBXfErUrr1RKymbgzlrO5KURY+wmDG1Uvd2jmxUJcHgylb/mYXy2SjiNZyYim/ptUBGsIi3A==}
+    dependencies:
+      morgan: 1.10.0
+    dev: false
+
   /koa-passport@6.0.0:
     resolution: {integrity: sha512-bgcrQN7Ylfgi1PVr5l6hHYkr38RHUzx+ty3m7e/xoTte8MR0zbDt6+pvP3/nuF/yXL6Ba7IzX1rSqmCy6OrrIw==}
     engines: {node: '>= 4'}
@@ -17044,7 +17063,7 @@ packages:
     dev: false
 
   file:projects/account-service.tgz:
-    resolution: {integrity: sha512-nobaJJXk2cwnaGafGa8skzZZ4Y3tn6AfYwO3SMo0hMyh5VSL6qzpqPo0Qyaf8PEgk/0IhyEt9fY9hqPzGnozAg==, tarball: file:projects/account-service.tgz}
+    resolution: {integrity: sha512-41LxbvGXCGm44FSbEJRQju/3/rEYOoqGcOTtxFlhFha68GQApiBjYnesZZh5DUrkFsXt8/RUVNz5OUutPoENpg==, tarball: file:projects/account-service.tgz}
     name: '@rush-temp/account-service'
     version: 0.0.0
     dependencies:
@@ -17052,6 +17071,7 @@ packages:
       '@types/jest': 29.5.12
       '@types/koa': 2.14.0
       '@types/koa-bodyparser': 4.3.12
+      '@types/koa-morgan': 1.0.8
       '@types/koa-router': 7.4.8
       '@types/koa__cors': 3.3.1
       '@types/node': 20.11.19
@@ -17067,6 +17087,7 @@ packages:
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       koa: 2.15.0
       koa-bodyparser: 4.4.1
+      koa-morgan: 1.0.1
       koa-router: 12.0.1
       mongodb: 6.3.0
       prettier: 3.2.5

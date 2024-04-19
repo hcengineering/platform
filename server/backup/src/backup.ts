@@ -573,6 +573,10 @@ export async function backup (
         async (ctx) => await loadChangesFromServer(ctx, domain, digest, changes)
       )
 
+      if (needRetrieveChunks.length > 0) {
+        await ctx.info('dumping domain...', { workspace: workspaceId.name, domain })
+      }
+
       while (needRetrieveChunks.length > 0) {
         if (canceled) {
           return
@@ -701,8 +705,6 @@ export async function backup (
       if (canceled) {
         break
       }
-      await ctx.info('dumping domain...', { workspace: workspaceId.name, domain })
-
       await ctx.with('process-domain', { domain }, async (ctx) => {
         await processDomain(ctx, domain)
       })

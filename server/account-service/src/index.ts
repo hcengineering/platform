@@ -24,6 +24,7 @@ import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
 import Router from 'koa-router'
 import { MongoClient } from 'mongodb'
+import morgan from 'koa-morgan'
 
 /**
  * @public
@@ -93,6 +94,16 @@ export function serveAccount (
 
   const app = new Koa()
   const router = new Router()
+
+  class MyStream {
+    write (text: string): void {
+      void measureCtx.info(text)
+    }
+  }
+
+  const myStream = new MyStream()
+
+  app.use(morgan('short', { stream: myStream }))
 
   let worker: UpgradeWorker | undefined
 
