@@ -95,12 +95,9 @@ class Connection implements ClientConnection {
 
   private schedulePing (): void {
     clearInterval(this.interval)
+    this.pingResponse = Date.now()
     this.interval = setInterval(() => {
-      if (this.upgrading) {
-        // no need to check while upgrade waiting
-        return
-      }
-      if (this.pingResponse !== 0 && Date.now() - this.pingResponse > hangTimeout) {
+      if (!this.upgrading && this.pingResponse !== 0 && Date.now() - this.pingResponse > hangTimeout) {
         // No ping response from server.
         const s = this.websocket
 
@@ -125,7 +122,9 @@ class Connection implements ClientConnection {
 
       if (!this.closed) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        void this.sendRequest({ method: 'ping', params: [] })
+        void this.sendRequest({ method: 'ping', params: [] }).then((result) => {
+          this.pingResponse = Date.now()
+        })
       } else {
         clearInterval(this.interval)
       }
@@ -240,47 +239,48 @@ class Connection implements ClientConnection {
       }, dialTimeout)
 
       websocket.onmessage = (event: MessageEvent) => {
-        this.pingResponse = Date.now()
         const resp = readResponse<any>(event.data, binaryResponse)
-        if (resp.id === -1 && resp.result.state === 'upgrading') {
-          void this.onConnect?.(ClientConnectEvent.Maintenance, resp.result.stats)
-          this.upgrading = true
-          return
-        }
-        if (resp.id === -1 && resp.result === 'hello') {
-          if (this.upgrading) {
-            // We need to call upgrade since connection is upgraded
-            this.onUpgrade?.()
-          }
-
-          console.log('connection established', this.workspace, this.email)
-
-          // Ok we connected, let's schedule ping
-          this.schedulePing()
-
-          this.upgrading = false
-          if ((resp as HelloResponse).alreadyConnected === true) {
-            this.sessionId = generateId()
-            if (typeof sessionStorage !== 'undefined') {
-              sessionStorage.setItem('session.id.' + this.url, this.sessionId)
-            }
-            reject(new Error('alreadyConnected'))
-          }
-          if ((resp as HelloResponse).binary) {
-            binaryResponse = true
-          }
-          if (resp.error !== undefined) {
-            reject(resp.error)
+        if (resp.id === -1) {
+          if (resp.result?.state === 'upgrading') {
+            void this.onConnect?.(ClientConnectEvent.Maintenance, resp.result.stats)
+            this.upgrading = true
             return
           }
-          for (const [, v] of this.requests.entries()) {
-            v.reconnect?.()
-          }
-          resolve(websocket)
+          if (resp.result === 'hello') {
+            if (this.upgrading) {
+              // We need to call upgrade since connection is upgraded
+              this.onUpgrade?.()
+            }
 
-          void this.onConnect?.(
-            (resp as HelloResponse).reconnect === true ? ClientConnectEvent.Reconnected : ClientConnectEvent.Connected
-          )
+            console.log('connection established', this.workspace, this.email)
+
+            this.upgrading = false
+            if ((resp as HelloResponse).alreadyConnected === true) {
+              this.sessionId = generateId()
+              if (typeof sessionStorage !== 'undefined') {
+                sessionStorage.setItem('session.id.' + this.url, this.sessionId)
+              }
+              reject(new Error('alreadyConnected'))
+            }
+            if ((resp as HelloResponse).binary) {
+              binaryResponse = true
+            }
+            if (resp.error !== undefined) {
+              reject(resp.error)
+              return
+            }
+            for (const [, v] of this.requests.entries()) {
+              v.reconnect?.()
+            }
+            resolve(websocket)
+
+            void this.onConnect?.(
+              (resp as HelloResponse).reconnect === true ? ClientConnectEvent.Reconnected : ClientConnectEvent.Connected
+            )
+            return
+          } else {
+            Analytics.handleError(new Error(`unexpected response: ${JSON.stringify(resp)}`))
+          }
           return
         }
         if (resp.result === 'ping') {
@@ -399,6 +399,8 @@ class Connection implements ClientConnection {
           broadcast: true
         }
         websocket.send(serialize(helloRequest, false))
+        // Ok we connected, let's schedule ping
+        this.schedulePing()
       }
       websocket.onerror = (event: any) => {
         console.error('client websocket error:', socketId, event, this.workspace, this.email)

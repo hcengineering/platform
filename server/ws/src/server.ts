@@ -155,7 +155,13 @@ class TSessionManager implements SessionManager {
         }
         const now = Date.now()
         const diff = now - s[1].session.lastRequest
-        if (diff > 60000 && this.ticks % 10 === 0) {
+
+        let timeout = 60000
+        if (s[1].session.getUser() === systemAccountEmail) {
+          timeout = timeout * 10
+        }
+
+        if (diff > timeout && this.ticks % 10 === 0) {
           void this.ctx.error('session hang, closing...', { sessionId: h[0], user: s[1].session.getUser() })
           void this.close(s[1].socket, h[1].workspaceId, 1001, 'CLIENT_HANGOUT')
           continue

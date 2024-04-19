@@ -965,21 +965,14 @@ export async function upgradeWorkspace (
   }
   const versionStr = versionToString(version)
 
+  if (ws?.version !== undefined && !forceUpdate && versionStr === versionToString(ws.version)) {
+    return versionStr
+  }
   await ctx.info('upgrading', {
     force: forceUpdate,
     currentVersion: ws?.version !== undefined ? versionToString(ws.version) : '',
     toVersion: versionStr
   })
-
-  if (ws?.version !== undefined && !forceUpdate && versionStr === versionToString(ws.version)) {
-    return versionStr
-  }
-  await db.collection(WORKSPACE_COLLECTION).updateOne(
-    { _id: ws._id },
-    {
-      $set: { version }
-    }
-  )
   await (
     await upgradeModel(
       ctx,
@@ -992,6 +985,13 @@ export async function upgradeWorkspace (
       async (value) => {}
     )
   ).close()
+
+  await db.collection(WORKSPACE_COLLECTION).updateOne(
+    { _id: ws._id },
+    {
+      $set: { version }
+    }
+  )
   return versionStr
 }
 
