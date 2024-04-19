@@ -341,7 +341,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
         ...config,
         enabled:
           config?.label === undefined ||
-          ((config?.enabled ?? true) && (enabled.includes(id) || enabled.includes('*')) && !disabled.includes(id)),
+          (((config?.enabled ?? true) || enabled.includes(id) || enabled.includes('*')) && !disabled.includes(id)),
         beta: config?.beta ?? false
       },
       ('plugin-configuration-' + id) as Ref<PluginConfiguration>
