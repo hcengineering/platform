@@ -140,17 +140,8 @@ export async function isAllowed (
   typeId: Ref<BaseNotificationType>,
   providerId: Ref<NotificationProvider>
 ): Promise<boolean> {
-  const setting = (
-    await control.findAll(
-      notification.class.NotificationSetting,
-      {
-        attachedTo: providerId,
-        type: typeId,
-        modifiedBy: receiver
-      },
-      { limit: 1 }
-    )
-  )[0]
+  const settings = await control.queryFind(notification.class.NotificationSetting, {})
+  const setting = settings.find((p) => p.attachedTo === providerId && p.type === typeId && p.modifiedBy === receiver)
   if (setting !== undefined) {
     return setting.enabled
   }
