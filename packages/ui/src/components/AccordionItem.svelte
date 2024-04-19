@@ -44,7 +44,7 @@
 
   const dispatch = createEventDispatcher()
 
-  let collapsed: boolean = getTreeCollapsed(id)
+  $: collapsed = getTreeCollapsed(id)
   if (isOpen) collapsed = false
   $: setTreeCollapsed(id, collapsed)
 
@@ -72,12 +72,12 @@
       class="hulyAccordionItem-header__label-wrapper {size === 'large' ? 'heading-medium-16' : 'font-medium-12'}"
       class:withIcon={size === 'medium' && icon !== undefined}
     >
-      {#if size === 'large'}
+      {#if size === 'large' && !disabled}
         <div class="hulyAccordionItem-header__chevron">
           <Icon icon={IconChevronRight} size={'small'} />
         </div>
       {/if}
-      {#if size !== 'small' && icon !== undefined}
+      {#if size !== 'small' && icon !== undefined && !disabled}
         <div class="hulyAccordionItem-header__chevron">
           <Icon {icon} size={size === 'medium' ? 'small' : 'medium'} {iconProps} />
         </div>

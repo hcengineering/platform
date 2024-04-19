@@ -269,7 +269,7 @@
       time.string.Scheduled,
       scheduled.map((p) => p.todo)
     )
-    return Array.from(groups).filter((p) => p[1].length > 0)
+    return Array.from(groups)
   }
   const getDateStr = (date: Date): string => {
     return date.toLocaleDateString('default', { month: 'long', day: 'numeric', year: 'numeric' })
