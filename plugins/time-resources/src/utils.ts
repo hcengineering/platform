@@ -23,8 +23,8 @@ export function getNearest (events: WorkSlot[]): WorkSlot | undefined {
  */
 export const timeSeparators: DefSeparators = [
   { minSize: 18, size: 18, maxSize: 22.5, float: 'navigator' },
-  { minSize: 15, size: 35, maxSize: 45, float: 'planner' },
-  null
+  null,
+  { minSize: 15, size: 50, maxSize: 100, float: 'calendar' }
 ]
 
 /**

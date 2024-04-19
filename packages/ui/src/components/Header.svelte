@@ -36,7 +36,9 @@
       </button>
     {/if}
     <slot name="beforeTitle" />
-    <div class="hulyHeader-divider" />
+    {#if !noResize || $$slots.beforeTitle}
+      <div class="hulyHeader-divider" />
+    {/if}
   {/if}
   <div class="hulyHeader-titleGroup">
     <slot />

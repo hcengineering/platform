@@ -29,7 +29,6 @@
   export let currentDate: Date = new Date()
   export let displayedDaysCount = 1
   export let createComponent: AnyComponent | undefined = calendar.component.CreateEvent
-  export let visibleNav: boolean = true
 
   const dispatch = createEventDispatcher()
   const q = createQuery()
@@ -174,10 +173,10 @@
     showLabel = showLabel ? element.clientWidth > rem(3.5) + 399 : element.clientWidth > rem(3.5) + 400
   }}
 >
-  <Header minimize={!visibleNav} on:resize={(event) => dispatch('change', event.detail)}>
-    <span class="heading-medium-20 overflow-label">
+  <Header noResize>
+    <div class="heading-medium-20 line-height-auto overflow-label">
       <Label label={time.string.Schedule} />: <Label label={getTitle(currentDate, $ticker)} />
-    </span>
+    </div>
     <svelte:fragment slot="actions">
       <ButtonIcon
         icon={IconChevronLeft}

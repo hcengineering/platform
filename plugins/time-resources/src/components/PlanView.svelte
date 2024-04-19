@@ -36,12 +36,13 @@
   const dispatch = createEventDispatcher()
 
   const defaultDuration = 30 * 60 * 1000
+  let mainPanel: HTMLElement
   let replacedPanel: HTMLElement
-  let isVisiblePlannerNav: boolean = true
 
   let currentDate: Date = new Date()
 
   $: dragItem = $dragging.item
+  $: visibleCalendar = $deviceInfo.docWidth > 800
 
   const client = getClient()
 
@@ -78,33 +79,32 @@
 
   dispatch('change', true)
   afterUpdate(() => {
-    $deviceInfo.replacedPanel = replacedPanel
+    $deviceInfo.replacedPanel = replacedPanel ?? mainPanel
   })
 </script>
 
 {#if visibleNav}
-  {#if isVisiblePlannerNav}
-    <ToDosNavigator bind:mode bind:tag bind:currentDate {navFloat} {appsDirection} />
-    <Separator
-      name={'time'}
-      float={navFloat}
-      index={0}
-      disabledWhen={['panel-aside']}
-      color={'var(--theme-navpanel-border)'}
-    />
-  {/if}
-  <div class="flex-col clear-mins">
-    <ToDos {mode} {tag} bind:isVisiblePlannerNav bind:currentDate />
-  </div>
-  <Separator name={'time'} float={navFloat} index={1} color={'transparent'} separatorSize={0} short />
-{/if}
-<div class="w-full clear-mins" bind:this={replacedPanel}>
-  <PlanningCalendar
-    {dragItem}
-    {visibleNav}
-    bind:currentDate
-    displayedDaysCount={3}
-    on:dragDrop={drop}
-    on:change={(event) => (visibleNav = event.detail)}
+  <ToDosNavigator bind:mode bind:tag bind:currentDate {navFloat} {appsDirection} />
+  <Separator
+    name={'time'}
+    float={navFloat}
+    index={0}
+    disabledWhen={['panel-aside']}
+    color={'var(--theme-navpanel-border)'}
   />
+{/if}
+<div class="flex-col clear-mins" class:left-divider={!visibleNav} bind:this={mainPanel}>
+  <ToDos {mode} {tag} bind:visibleNav bind:currentDate />
 </div>
+{#if visibleCalendar}
+  <Separator name={'time'} index={1} color={'transparent'} separatorSize={0} short />
+  <div class="w-full clear-mins" bind:this={replacedPanel}>
+    <PlanningCalendar
+      {dragItem}
+      bind:currentDate
+      displayedDaysCount={3}
+      on:dragDrop={drop}
+      on:change={(event) => (visibleNav = event.detail)}
+    />
+  </div>
+{/if}
