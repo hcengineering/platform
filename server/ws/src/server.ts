@@ -45,7 +45,14 @@ import {
   type Workspace
 } from './types'
 
-interface WorkspaceLoginInfo extends BaseWorkspaceInfo {}
+interface WorkspaceLoginInfo extends BaseWorkspaceInfo {
+  upgrade?: {
+    toProcess: number
+    total: number
+    elapsed: number
+    eta: number
+  }
+}
 
 function timeoutPromise (time: number): Promise<void> {
   return new Promise((resolve) => {
@@ -180,7 +187,7 @@ class TSessionManager implements SessionManager {
     return this.sessionFactory(token, pipeline, this.broadcast.bind(this))
   }
 
-  async getWorkspaceInfo (accounts: string, token: string): Promise<BaseWorkspaceInfo> {
+  async getWorkspaceInfo (accounts: string, token: string): Promise<WorkspaceLoginInfo> {
     const userInfo = await (
       await fetch(accounts, {
         method: 'POST',
@@ -195,7 +202,7 @@ class TSessionManager implements SessionManager {
       })
     ).json()
 
-    return userInfo.result as WorkspaceLoginInfo
+    return { ...userInfo.result, upgrade: userInfo.upgrade }
   }
 
   async addSession (
@@ -208,7 +215,9 @@ class TSessionManager implements SessionManager {
     sessionId: string | undefined,
     accountsUrl: string
   ): Promise<
-    { session: Session, context: MeasureContext, workspaceName: string } | { upgrade: true } | { error: any }
+    | { session: Session, context: MeasureContext, workspaceName: string }
+    | { upgrade: true, upgradeInfo?: WorkspaceLoginInfo['upgrade'] }
+    | { error: any }
     > {
     return await baseCtx.with('📲 add-session', {}, async (ctx) => {
       const wsString = toWorkspaceString(token.workspace, '@')
@@ -239,7 +248,7 @@ class TSessionManager implements SessionManager {
           workspaceVersion: versionToString(workspaceInfo.version)
         })
         // Version mismatch, return upgrading.
-        return { upgrade: true }
+        return { upgrade: true, upgradeInfo: workspaceInfo.upgrade }
       }
 
       let workspace = this.workspaces.get(wsString)
@@ -319,7 +328,7 @@ class TSessionManager implements SessionManager {
     })
   }
 
-  private wsFromToken (token: Token): BaseWorkspaceInfo {
+  private wsFromToken (token: Token): WorkspaceLoginInfo {
     return {
       workspace: token.workspace.name,
       workspaceUrl: token.workspace.name,

@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
+import { serveAccount } from '@hcengineering/account-service'
 import { MeasureMetricsContext, newMetrics, type Tx } from '@hcengineering/core'
 import builder, { getModelVersion, migrateOperations } from '@hcengineering/model-all'
-import { serveAccount } from '.'
 
 const enabled = (process.env.MODEL_ENABLED ?? '*').split(',').map((it) => it.trim())
 const disabled = (process.env.MODEL_DISABLED ?? '').split(',').map((it) => it.trim())
@@ -24,4 +24,4 @@ const txes = JSON.parse(JSON.stringify(builder(enabled, disabled).getTxes())) as
 
 const metricsContext = new MeasureMetricsContext('account', {}, {}, newMetrics())
 
-serveAccount(metricsContext, getModelVersion(), txes, migrateOperations)
+serveAccount(metricsContext, getModelVersion(), txes, migrateOperations, '')

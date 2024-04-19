@@ -43,8 +43,18 @@ export class UpgradeWorker {
   canceled = false
 
   st: number = Date.now()
-  workspaces: BaseWorkspaceInfo[] = []
+  total: number = 0
   toProcess: number = 0
+  eta: number = 0
+
+  updateResponseStatistics (response: any): void {
+    response.upgrade = {
+      toProcess: this.toProcess,
+      total: this.total,
+      elapsed: Date.now() - this.st,
+      eta: this.eta
+    }
+  }
 
   async close (): Promise<void> {
     this.canceled = true
@@ -67,10 +77,11 @@ export class UpgradeWorker {
 
     const logger = opt.console ? ctxModelLogger : new FileModelLogger(path.join(opt.logs, `${ws.workspace}.log`))
 
-    const avgTime = (Date.now() - this.st) / (this.workspaces.length - this.toProcess + 1)
+    const avgTime = (Date.now() - this.st) / (this.total - this.toProcess + 1)
+    this.eta = Math.floor(avgTime * this.toProcess)
     await ctx.info('----------------------------------------------------------\n---UPGRADING----', {
       pending: this.toProcess,
-      eta: Math.floor(avgTime * this.toProcess),
+      eta: this.eta,
       workspace: ws.workspace
     })
     this.toProcess--
@@ -132,6 +143,7 @@ export class UpgradeWorker {
     const withError: string[] = []
     this.toProcess = workspaces.length
     this.st = Date.now()
+    this.total = workspaces.length
 
     if (opt.parallel !== 0) {
       const parallel = opt.parallel

@@ -1,17 +1,5 @@
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
-//
-// Licensed under the Eclipse Public License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License. You may
-// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright © 2023 Hardcore Engineering Inc.
 //
 
 import account, {
@@ -23,9 +11,10 @@ import account, {
 } from '@hcengineering/account'
 import accountEn from '@hcengineering/account/lang/en.json'
 import accountRu from '@hcengineering/account/lang/ru.json'
+import { Analytics } from '@hcengineering/analytics'
 import { registerProviders } from '@hcengineering/auth-providers'
 import { type Data, type MeasureContext, type Tx, type Version } from '@hcengineering/core'
-import { getModelVersion, type MigrateOperation } from '@hcengineering/model-all'
+import { type MigrateOperation } from '@hcengineering/model'
 import platform, { Severity, Status, addStringsLoader, setMetadata } from '@hcengineering/platform'
 import serverToken from '@hcengineering/server-token'
 import toolPlugin from '@hcengineering/server-tool'
@@ -44,9 +33,10 @@ export function serveAccount (
   version: Data<Version>,
   txes: Tx[],
   migrateOperations: [string, MigrateOperation][],
-  productId: string = ''
+  productId: string,
+  onClose?: () => void
 ): void {
-  const methods = getMethods(getModelVersion(), txes, migrateOperations)
+  const methods = getMethods(version, txes, migrateOperations)
   const ACCOUNT_PORT = parseInt(process.env.ACCOUNT_PORT ?? '3000')
   const dbUri = process.env.MONGO_URL
   if (dbUri === undefined) {
@@ -104,6 +94,8 @@ export function serveAccount (
   const app = new Koa()
   const router = new Router()
 
+  let worker: UpgradeWorker | undefined
+
   void client.then(async (p: MongoClient) => {
     const db = p.db(ACCOUNT_DB)
     registerProviders(measureCtx, app, router, db, productId, serverSecret, frontURL)
@@ -111,9 +103,11 @@ export function serveAccount (
     // We need to clean workspace with creating === true, since server is restarted.
     void cleanInProgressWorkspaces(db, productId)
 
-    const worker = new UpgradeWorker(db, p, version, txes, migrateOperations, productId)
+    worker = new UpgradeWorker(db, p, version, txes, migrateOperations, productId)
     await worker.upgradeAll(measureCtx, {
-      errorHandler: async (ws, err) => {},
+      errorHandler: async (ws, err) => {
+        Analytics.handleError(err)
+      },
       force: false,
       console: false,
       logs: 'upgrade-logs',
@@ -148,6 +142,8 @@ export function serveAccount (
     }
     const db = client.db(ACCOUNT_DB)
     const result = await method(measureCtx, db, productId, request, token)
+
+    worker?.updateResponseStatistics(result)
     ctx.body = result
   })
 
@@ -164,6 +160,7 @@ export function serveAccount (
   })
 
   const close = (): void => {
+    onClose?.()
     if (client instanceof Promise) {
       void client.then((c) => c.close())
     } else {
@@ -173,13 +170,13 @@ export function serveAccount (
   }
 
   process.on('uncaughtException', (e) => {
-    console.error(e)
+    void measureCtx.error('uncaughtException', { error: e })
   })
 
   process.on('unhandledRejection', (reason, promise) => {
     console.error('Unhandled Rejection at:', promise, 'reason:', reason)
+    void measureCtx.error('Unhandled Rejection at:', { reason, promise })
   })
-
   process.on('SIGINT', close)
   process.on('SIGTERM', close)
   process.on('exit', close)

@@ -822,6 +822,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/account-service",
+      "projectFolder": "server/account-service",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/collaborator",
       "projectFolder": "server/collaborator",
       "shouldPublish": false

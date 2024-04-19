@@ -66,7 +66,7 @@ export type ClientFactory = (
   endpoint: string,
   onUpgrade?: () => void,
   onUnauthorized?: () => void,
-  onConnect?: (event: ClientConnectEvent) => void,
+  onConnect?: (event: ClientConnectEvent, data: any) => void,
   ctx?: MeasureContext
 ) => Promise<AccountClient>
 

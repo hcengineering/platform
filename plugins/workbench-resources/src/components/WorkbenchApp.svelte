@@ -62,6 +62,11 @@
               {$workspaceCreating} %
             </div>
           {/if}
+          {#if $versionError}
+            <div class="ml-1">
+              {$versionError}
+            </div>
+          {/if}
         </Loading>
       {:then client}
         {#if $versionError}

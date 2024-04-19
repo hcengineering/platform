@@ -148,8 +148,16 @@ export async function connect (title: string): Promise<Client | undefined> {
           })
         },
         // We need to refresh all active live queries and clear old queries.
-        (event: ClientConnectEvent) => {
+        (event: ClientConnectEvent, data: any) => {
           console.log('WorkbenchClient: onConnect', event)
+          if (event === ClientConnectEvent.Maintenance) {
+            if (data !== undefined && data.total !== 0) {
+              versionError.set(`Maintenance ${Math.floor((100 / data.total) * (data.total - data.toProcess))}%`)
+            } else {
+              versionError.set('Maintenance...')
+            }
+            return
+          }
           try {
             if ((_clientSet && event === ClientConnectEvent.Connected) || event === ClientConnectEvent.Refresh) {
               void ctx.with('refresh client', {}, async () => {
