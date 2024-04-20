@@ -862,12 +862,7 @@ export async function createWorkspace (
     await updateInfo({ createProgress: 10 })
 
     let client: Client | undefined
-    const childLogger = ctx.newChild(
-      'createWorkspace',
-      { workspace: workspaceInfo.workspace },
-      {},
-      ctx.logger.childLogger?.(workspaceInfo.workspace, {}) ?? ctx.logger
-    )
+    const childLogger = ctx.newChild('createWorkspace', { workspace: workspaceInfo.workspace })
     const ctxModellogger: ModelLogger = {
       log: (msg, data) => {
         void childLogger.info(msg, data)
@@ -934,6 +929,7 @@ export async function createWorkspace (
       Analytics.handleError(err)
       return { workspaceInfo, err, client: null as any }
     }
+    childLogger.end()
     // Workspace is created, we need to clear disabled flag.
     await updateInfo({ createProgress: 100, disabled: false, creating: false })
     return { workspaceInfo, client }
@@ -971,7 +967,8 @@ export async function upgradeWorkspace (
   await ctx.info('upgrading', {
     force: forceUpdate,
     currentVersion: ws?.version !== undefined ? versionToString(ws.version) : '',
-    toVersion: versionStr
+    toVersion: versionStr,
+    workspace: ws.workspace
   })
   await (
     await upgradeModel(

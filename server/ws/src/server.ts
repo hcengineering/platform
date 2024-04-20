@@ -306,6 +306,12 @@ class TSessionManager implements SessionManager {
         }
       } else {
         if (workspace.upgrade) {
+          await ctx.info('connect during upgrade', {
+            email: token.email,
+            workspace: workspace.workspaceId.name,
+            sessionUsers: Array.from(workspace.sessions.values()).map((it) => it.session.getUser()),
+            sessionData: Array.from(workspace.sessions.values()).map((it) => it.socket.data())
+          })
           return { upgrade: true }
         }
         pipeline = await ctx.with('💤 wait', { workspaceName }, async () => await (workspace as Workspace).pipeline)

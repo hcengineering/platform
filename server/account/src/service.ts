@@ -86,7 +86,7 @@ export class UpgradeWorker {
     })
     this.toProcess--
     try {
-      await upgradeWorkspace(
+      const version = await upgradeWorkspace(
         ctx,
         this.version,
         this.txes,
@@ -100,7 +100,8 @@ export class UpgradeWorker {
       await ctx.info('---done---------', {
         pending: this.toProcess,
         time: Date.now() - t,
-        workspace: ws.workspace
+        workspace: ws.workspace,
+        version
       })
     } catch (err: any) {
       await opt.errorHandler(ws, err)

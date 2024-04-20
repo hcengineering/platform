@@ -176,7 +176,10 @@ export function startHttpServer (
     const data = {
       remoteAddress: request.socket.remoteAddress ?? '',
       userAgent: request.headers['user-agent'] ?? '',
-      language: request.headers['accept-language'] ?? ''
+      language: request.headers['accept-language'] ?? '',
+      email: token.email,
+      mode: token.extra?.mode,
+      model: token.extra?.model
     }
     const cs: ConnectionSocket = {
       id: generateId(),
