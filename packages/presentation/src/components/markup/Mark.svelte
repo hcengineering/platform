@@ -45,7 +45,7 @@
   {#if mark.type === MarkupMarkType.bold}
     <strong><slot /></strong>
   {:else if mark.type === MarkupMarkType.code}
-    <pre class="proseCode"><slot /></pre>
+    <code class="proseCode"><slot /></code>
   {:else if mark.type === MarkupMarkType.em}
     <em><slot /></em>
   {:else if mark.type === MarkupMarkType.link}
