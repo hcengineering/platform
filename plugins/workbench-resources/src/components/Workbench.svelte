@@ -701,7 +701,7 @@
           size={appsMini ? 'small' : 'large'}
           on:click={() => showPopup(AppSwitcher, { apps }, popupPosition)}
         />
-        <a href={supportLink}>
+        <a href={supportLink} target="_blank" rel="noopener noreferrer">
           <AppItem
             icon={support.icon.Support}
             label={support.string.ContactUs}
