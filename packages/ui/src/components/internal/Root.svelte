@@ -250,6 +250,7 @@
     }
 
     .app {
+      display: flex;
       height: calc(100% - var(--status-bar-height));
 
       .error {

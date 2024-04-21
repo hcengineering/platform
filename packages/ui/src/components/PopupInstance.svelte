@@ -16,7 +16,7 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import { deviceOptionsStore as deviceInfo, resizeObserver, testing } from '..'
-  import { CompAndProps, fitPopupElement } from '../popups'
+  import { CompAndProps, fitPopupElement, pin } from '../popups'
   import type { AnySvelteComponent, DeviceOptions, PopupAlignment, PopupOptions, PopupPositionElement } from '../types'
 
   export let is: AnySvelteComponent
@@ -313,6 +313,9 @@
     on:fullsize={() => {
       fullSize = !fullSize
       fitPopup(modalHTML, element, contentPanel)
+    }}
+    on:dock={() => {
+      pin(popup.id)
     }}
     on:changeContent={(ev) => {
       fitPopup(modalHTML, element, contentPanel)

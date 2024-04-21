@@ -252,6 +252,8 @@ export { default as NumberInput } from './components/NumberInput.svelte'
 export { default as Lazy } from './components/Lazy.svelte'
 export { default as TimeZonesPopup } from './components/TimeZonesPopup.svelte'
 
+export { default as Dock } from './components/Dock.svelte'
+
 export * from './types'
 export * from './location'
 export * from './utils'
