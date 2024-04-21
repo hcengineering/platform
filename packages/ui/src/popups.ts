@@ -1,6 +1,6 @@
 import { getResource } from '@hcengineering/platform'
 import { type ComponentType } from 'svelte'
-import { writable } from 'svelte/store'
+import { derived, writable } from 'svelte/store'
 import type {
   AnyComponent,
   AnySvelteComponent,
@@ -29,6 +29,7 @@ export interface CompAndProps {
     fixed?: boolean
     refId?: string
   }
+  dock?: boolean
 }
 
 export interface PopupResult {
@@ -38,6 +39,10 @@ export interface PopupResult {
 }
 
 export const popupstore = writable<CompAndProps[]>([])
+
+export const dockStore = derived(popupstore, (popups) => {
+  return popups.find((popup) => popup.dock)
+})
 
 export function updatePopup (id: string, props: Partial<CompAndProps>): void {
   popupstore.update((popups) => {
@@ -408,4 +413,18 @@ export function getEventPositionElement (evt: MouseEvent): PopupAlignment | unde
   return {
     getBoundingClientRect: () => rect
   }
+}
+
+export function pin (id: string): void {
+  popupstore.update((popups) => {
+    popups.forEach((p) => (p.dock = p.id === id))
+    return popups
+  })
+}
+
+export function unpin (): void {
+  popupstore.update((popups) => {
+    popups.forEach((p) => (p.dock = false))
+    return popups
+  })
 }

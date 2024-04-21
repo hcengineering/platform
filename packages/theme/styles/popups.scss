@@ -317,6 +317,11 @@
   box-shadow: var(--theme-popup-shadow);
   user-select: none;
 
+  &.isDock {
+    border-radius: 0;
+    height: 100%;
+  }
+
   .ap-space {
     flex-shrink: 0;
     height: .25rem;

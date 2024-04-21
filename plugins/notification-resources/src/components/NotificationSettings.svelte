@@ -34,7 +34,8 @@
     defineSeparators,
     settingsSeparators,
     Separator,
-    NavItem
+    NavItem,
+    Loading
   } from '@hcengineering/ui'
   import notification from '../plugin'
   import NotificationGroupSetting from './NotificationGroupSetting.svelte'
@@ -53,6 +54,8 @@
 
   const query = createQuery()
 
+  let loading = true
+
   query.query(notification.class.NotificationSetting, {}, (res) => {
     settings = new Map()
     for (const value of res) {
@@ -61,6 +64,7 @@
       settings.set(value.type, arr)
     }
     settings = settings
+    loading = false
   })
 
   let group: Ref<NotificationGroup> | undefined = undefined
@@ -136,13 +140,17 @@
     <div class="hulyComponent-content__column content">
       <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
         <div class="hulyComponent-content">
-          {#if group}
-            <NotificationGroupSetting {group} {settings} />
-          {/if}
-          {#if currentPreferenceGroup}
-            {#await getResource(currentPreferenceGroup.presenter) then presenter}
-              <svelte:component this={presenter} />
-            {/await}
+          {#if loading}
+            <Loading />
+          {:else}
+            {#if group}
+              <NotificationGroupSetting {group} {settings} />
+            {/if}
+            {#if currentPreferenceGroup}
+              {#await getResource(currentPreferenceGroup.presenter) then presenter}
+                <svelte:component this={presenter} />
+              {/await}
+            {/if}
           {/if}
         </div>
       </Scroller>

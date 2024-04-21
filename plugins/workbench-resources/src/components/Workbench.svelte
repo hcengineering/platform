@@ -35,6 +35,7 @@
     Button,
     CompAndProps,
     Component,
+    Dock,
     IconSettings,
     Label,
     Location,
@@ -852,6 +853,7 @@
   </Popup>
   <ComponentExtensions extension={workbench.extensions.WorkbenchExtensions} />
   <BrowserNotificatator />
+  <Dock />
 {/if}
 
 <style lang="scss">
