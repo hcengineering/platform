@@ -24,6 +24,7 @@ import {
   DocManager,
   IdMap,
   Markup,
+  Mixin,
   Ref,
   RelatedDocument,
   Space,
@@ -377,36 +378,6 @@ export class ComponentManager extends DocManager {
 /**
  * @public
  */
-export const classicIssueTaskStatuses: TaskStatusFactory[] = [
-  { category: task.statusCategory.UnStarted, statuses: [['Backlog', PaletteColorIndexes.Cloud]] },
-  { category: task.statusCategory.ToDo, statuses: [['Todo', PaletteColorIndexes.Porpoise]] },
-  {
-    category: task.statusCategory.Active,
-    statuses: [['In progress', PaletteColorIndexes.Cerulean]]
-  },
-  { category: task.statusCategory.Won, statuses: [['Done', PaletteColorIndexes.Grass]] },
-  { category: task.statusCategory.Lost, statuses: [['Canceled', PaletteColorIndexes.Coin]] }
-]
-
-/**
- * @public
- */
-export const baseIssueTaskStatuses: TaskStatusFactory[] = [
-  { category: task.statusCategory.UnStarted, statuses: [['Backlog', PaletteColorIndexes.Cloud]] },
-  {
-    category: task.statusCategory.Active,
-    statuses: [
-      ['Coding', PaletteColorIndexes.Porpoise],
-      ['Under review', PaletteColorIndexes.Cerulean]
-    ]
-  },
-  { category: task.statusCategory.Won, statuses: [['Done', PaletteColorIndexes.Grass]] },
-  { category: task.statusCategory.Lost, statuses: [['Canceled', PaletteColorIndexes.Coin]] }
-]
-
-/**
- * @public
- */
 export const trackerId = 'tracker' as Plugin
 
 const pluginState = plugin(trackerId, {
@@ -426,10 +397,21 @@ const pluginState = plugin(trackerId, {
     RelatedIssueTarget: '' as Ref<Class<RelatedIssueTarget>>,
     ProjectTargetPreference: '' as Ref<Class<ProjectTargetPreference>>
   },
+  mixin: {
+    ClassicProjectTypeData: '' as Ref<Mixin<Project>>,
+    IssueTypeData: '' as Ref<Mixin<Issue>>
+  },
   ids: {
     NoParent: '' as Ref<Issue>,
     IssueDraft: '',
     IssueDraftChild: ''
+  },
+  status: {
+    Backlog: '' as Ref<Status>,
+    Todo: '' as Ref<Status>,
+    InProgress: '' as Ref<Status>,
+    Done: '' as Ref<Status>,
+    Canceled: '' as Ref<Status>
   },
   component: {
     Tracker: '' as AnyComponent,
@@ -561,6 +543,42 @@ const pluginState = plugin(trackerId, {
   }
 })
 export default pluginState
+
+/**
+ * @public
+ */
+export const classicIssueTaskStatuses: TaskStatusFactory[] = [
+  {
+    category: task.statusCategory.UnStarted,
+    statuses: [['Backlog', PaletteColorIndexes.Cloud, pluginState.status.Backlog]]
+  },
+  { category: task.statusCategory.ToDo, statuses: [['Todo', PaletteColorIndexes.Porpoise, pluginState.status.Todo]] },
+  {
+    category: task.statusCategory.Active,
+    statuses: [['In progress', PaletteColorIndexes.Cerulean, pluginState.status.InProgress]]
+  },
+  { category: task.statusCategory.Won, statuses: [['Done', PaletteColorIndexes.Grass, pluginState.status.Done]] },
+  {
+    category: task.statusCategory.Lost,
+    statuses: [['Canceled', PaletteColorIndexes.Coin, pluginState.status.Canceled]]
+  }
+]
+
+/**
+ * @public
+ */
+export const baseIssueTaskStatuses: TaskStatusFactory[] = [
+  { category: task.statusCategory.UnStarted, statuses: [['Backlog', PaletteColorIndexes.Cloud]] },
+  {
+    category: task.statusCategory.Active,
+    statuses: [
+      ['Coding', PaletteColorIndexes.Porpoise],
+      ['Under review', PaletteColorIndexes.Cerulean]
+    ]
+  },
+  { category: task.statusCategory.Won, statuses: [['Done', PaletteColorIndexes.Grass]] },
+  { category: task.statusCategory.Lost, statuses: [['Canceled', PaletteColorIndexes.Coin]] }
+]
 
 /**
  * @public

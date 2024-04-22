@@ -74,8 +74,11 @@ import {
   fixCommentDoubleIdCreate,
   fixMinioBW,
   fixSkills,
+  migrateTrackerDefaultStatuses,
+  migrateRecruitingDefaultStatuses,
   optimizeModel,
-  restoreRecruitingTaskTypes
+  restoreRecruitingTaskTypes,
+  migrateLeadsDefaultStatuses
 } from './clean'
 import { checkOrphanWorkspaces } from './cleanOrphan'
 import { changeConfiguration } from './configuration'
@@ -856,10 +859,69 @@ export function devTool (
   program
     .command('restore-ats-types <workspace>')
     .description('Restore recruiting task types for workspace')
-    .action(async (workspace: string, step: string) => {
+    .action(async (workspace: string) => {
       const { mongodbUri } = prepareTools()
       console.log('Restoring recruiting task types in workspace ', workspace, '...')
       await restoreRecruitingTaskTypes(mongodbUri, getWorkspaceId(workspace, productId), transactorUrl)
+    })
+
+  program
+    .command('migrate-tracker-default-statuses <workspace>')
+    .description('Migrate tracker default statuses to use well-known ids')
+    .action(async (workspace: string) => {
+      const { mongodbUri } = prepareTools()
+      console.log('Migrating tracker statuses to use well-known ids ', workspace, '...')
+      await migrateTrackerDefaultStatuses(mongodbUri, getWorkspaceId(workspace, productId), transactorUrl)
+    })
+
+  program
+    .command('migrate-recruiting-default-statuses <workspace>')
+    .description('Migrate recruiting default statuses to use well-known ids')
+    .action(async (workspace: string) => {
+      const { mongodbUri } = prepareTools()
+      console.log('Migrating recruiting statuses to model ', workspace, '...')
+      await migrateRecruitingDefaultStatuses(mongodbUri, getWorkspaceId(workspace, productId), transactorUrl)
+    })
+
+  program
+    .command('migrate-leads-default-statuses <workspace>')
+    .description('Migrate leads default statuses to use well-known ids')
+    .action(async (workspace: string) => {
+      const { mongodbUri } = prepareTools()
+      console.log('Migrating leads statuses to model ', workspace, '...')
+      await migrateLeadsDefaultStatuses(mongodbUri, getWorkspaceId(workspace, productId), transactorUrl)
+    })
+
+  program
+    .command('migrate-all-default-statuses <workspace>')
+    .description('Migrate all default statuses to use well-known ids')
+    .action(async (workspace: string) => {
+      const { mongodbUri } = prepareTools()
+      console.log('Migrating tracker statuses to use well-known ids ', workspace, '...')
+      await migrateTrackerDefaultStatuses(mongodbUri, getWorkspaceId(workspace, productId), transactorUrl)
+      console.log('Migrating recruiting statuses to model ', workspace, '...')
+      await migrateRecruitingDefaultStatuses(mongodbUri, getWorkspaceId(workspace, productId), transactorUrl)
+      console.log('Migrating leads statuses to model ', workspace, '...')
+      await migrateLeadsDefaultStatuses(mongodbUri, getWorkspaceId(workspace, productId), transactorUrl)
+    })
+
+  program
+    .command('migrate-all-default-statuses-everywhere')
+    .description('Migrate all default statuses to use well-known ids in all workspaces')
+    .action(async () => {
+      const { mongodbUri } = prepareTools()
+      await withDatabase(mongodbUri, async (db) => {
+        const workspaces = await listWorkspacesRaw(db, productId)
+        for (const ws of workspaces) {
+          const wsId = getWorkspaceId(ws.workspaceUrl ?? ws.workspace, productId)
+          console.log('Migrating tracker statuses to use well-known ids ', wsId, '...')
+          await migrateTrackerDefaultStatuses(mongodbUri, wsId, transactorUrl)
+          console.log('Migrating recruiting statuses to model ', wsId, '...')
+          await migrateRecruitingDefaultStatuses(mongodbUri, wsId, transactorUrl)
+          console.log('Migrating leads statuses to model ', wsId, '...')
+          await migrateLeadsDefaultStatuses(mongodbUri, wsId, transactorUrl)
+        }
+      })
     })
 
   program

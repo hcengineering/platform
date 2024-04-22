@@ -19,7 +19,9 @@ import {
   DOMAIN_STATUS,
   type Ref,
   type Status,
-  type StatusCategory
+  type StatusCategory,
+  type Doc,
+  type Class
 } from '@hcengineering/core'
 import { Model, Prop, TypeRef, TypeString, UX } from '@hcengineering/model'
 import { type Asset, type IntlString } from '@hcengineering/platform'
@@ -28,7 +30,13 @@ import { TDoc } from './core'
 
 // S T A T U S
 
-@Model(core.class.Status, core.class.Doc, DOMAIN_STATUS)
+// Note: domain is removed if there's no model for that domain
+// We want to keep status domain for the migration period to make sure we don't lose
+// any data. After the migration period, we can remove this model along with the domain.
+@Model('domain:status:placeholder' as Ref<Class<Doc>>, core.class.Doc, DOMAIN_STATUS)
+export class TDomainStatusPlaceholder extends TDoc {}
+
+@Model(core.class.Status, core.class.Doc, DOMAIN_MODEL)
 @UX(core.string.Status, undefined, undefined, undefined, 'name')
 export class TStatus extends TDoc implements Status {
   // We attach to attribute, so we could distinguish between

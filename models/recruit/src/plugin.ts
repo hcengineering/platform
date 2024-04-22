@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import type { Client, Doc, Ref } from '@hcengineering/core'
+import type { Status, Client, Doc, Ref } from '@hcengineering/core'
 import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
-import type { IntlString, Resource, Status } from '@hcengineering/platform'
+import type { IntlString, Resource, Status as OperationStatus } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import { recruitId } from '@hcengineering/recruit'
 import recruit from '@hcengineering/recruit-resources/src/plugin'
@@ -76,7 +76,7 @@ export default mergeIds(recruitId, recruit, {
     HideApplicantsFromArchivedVacancies: '' as IntlString
   },
   validator: {
-    ApplicantValidator: '' as Resource<<T extends Doc>(doc: T, client: Client) => Promise<Status>>
+    ApplicantValidator: '' as Resource<<T extends Doc>(doc: T, client: Client) => Promise<OperationStatus>>
   },
   ids: {
     VacancyNotificationGroup: '' as Ref<NotificationGroup>,
@@ -142,5 +142,14 @@ export default mergeIds(recruitId, recruit, {
   },
   descriptors: {
     Application: '' as Ref<TaskTypeDescriptor>
+  },
+  taskTypeStatus: {
+    Backlog: '' as Ref<Status>,
+    HRInterview: '' as Ref<Status>,
+    TechnicalInterview: '' as Ref<Status>,
+    TestTask: '' as Ref<Status>,
+    Offer: '' as Ref<Status>,
+    Won: '' as Ref<Status>,
+    Lost: '' as Ref<Status>
   }
 })

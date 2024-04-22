@@ -13,13 +13,67 @@
 // limitations under the License.
 //
 
-import core, { coreId, DOMAIN_DOC_INDEX_STATE, isClassIndexable, TxOperations } from '@hcengineering/core'
+import core, {
+  coreId,
+  DOMAIN_DOC_INDEX_STATE,
+  DOMAIN_STATUS,
+  isClassIndexable,
+  type Status,
+  TxOperations,
+  generateId,
+  DOMAIN_TX,
+  type TxCreateDoc
+} from '@hcengineering/core'
 import {
+  tryMigrate,
   tryUpgrade,
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient
 } from '@hcengineering/model'
+
+async function migrateStatusesToModel (client: MigrationClient): Promise<void> {
+  // Move statuses to model:
+  // Migrate the default ones with well-known ids as system's model
+  // And the rest as user's model
+  // Skip __superseded statuses
+  const allStatuses = await client.find<Status>(DOMAIN_STATUS, {
+    _class: core.class.Status,
+    __superseded: { $exists: false }
+  })
+
+  for (const status of allStatuses) {
+    const isSystem = (status as any).__migratedFrom !== undefined
+    const modifiedBy =
+      status.modifiedBy === core.account.System
+        ? isSystem
+          ? core.account.System
+          : core.account.ConfigUser
+        : status.modifiedBy
+
+    const tx: TxCreateDoc<Status> = {
+      _id: generateId(),
+      _class: core.class.TxCreateDoc,
+      space: core.space.Tx,
+      objectId: status._id,
+      objectClass: status._class,
+      objectSpace: core.space.Model,
+      attributes: {
+        ofAttribute: status.ofAttribute,
+        category: status.category,
+        name: status.name,
+        color: status.color,
+        description: status.description
+      },
+      modifiedOn: status.modifiedOn,
+      createdBy: status.createdBy,
+      createdOn: status.createdOn,
+      modifiedBy
+    }
+
+    await client.create(DOMAIN_TX, tx)
+  }
+}
 
 export const coreOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
@@ -37,6 +91,12 @@ export const coreOperation: MigrateOperation = {
         }
       }
     )
+    await tryMigrate(client, coreId, [
+      {
+        state: 'statuses-to-model',
+        func: migrateStatusesToModel
+      }
+    ])
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     await tryUpgrade(client, coreId, [

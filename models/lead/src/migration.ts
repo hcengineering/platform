@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { TxOperations } from '@hcengineering/core'
+import { DOMAIN_TX, TxOperations } from '@hcengineering/core'
 import { type Lead, leadId } from '@hcengineering/lead'
 import {
   tryMigrate,
@@ -23,8 +23,8 @@ import {
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
-import task, { DOMAIN_TASK, createProjectType, createSequence, fixTaskTypes } from '@hcengineering/model-task'
-import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
+import { DOMAIN_TASK, createSequence } from '@hcengineering/model-task'
+
 import lead from './plugin'
 
 async function createSpace (tx: TxOperations): Promise<void> {
@@ -48,84 +48,6 @@ async function createSpace (tx: TxOperations): Promise<void> {
   }
 }
 
-async function createSpaceType (tx: TxOperations): Promise<void> {
-  const current = await tx.findOne(task.class.ProjectType, {
-    _id: lead.template.DefaultFunnel
-  })
-
-  if (current === undefined) {
-    await createProjectType(
-      tx,
-      {
-        name: 'Default funnel',
-        descriptor: lead.descriptors.FunnelType,
-        description: '',
-        tasks: [],
-        roles: 0,
-        classic: false
-      },
-      [
-        {
-          _id: lead.taskType.Lead,
-          name: 'Lead',
-          descriptor: lead.descriptors.Lead,
-          ofClass: lead.class.Lead,
-          targetClass: lead.class.Lead,
-          statusClass: core.class.Status,
-          statusCategories: [
-            task.statusCategory.UnStarted,
-            task.statusCategory.Active,
-            task.statusCategory.Won,
-            task.statusCategory.Lost
-          ],
-          kind: 'task',
-          factory: [
-            {
-              color: PaletteColorIndexes.Coin,
-              name: 'Backlog',
-              ofAttribute: lead.attribute.State,
-              category: task.statusCategory.UnStarted
-            },
-            {
-              color: PaletteColorIndexes.Coin,
-              name: 'Incoming',
-              ofAttribute: lead.attribute.State,
-              category: task.statusCategory.Active
-            },
-            {
-              color: PaletteColorIndexes.Arctic,
-              name: 'Negotation',
-              ofAttribute: lead.attribute.State,
-              category: task.statusCategory.Active
-            },
-            {
-              color: PaletteColorIndexes.Watermelon,
-              name: 'Offer preparing',
-              ofAttribute: lead.attribute.State,
-              category: task.statusCategory.Active
-            },
-            {
-              color: PaletteColorIndexes.Orange,
-              name: 'Make a decision',
-              ofAttribute: lead.attribute.State,
-              category: task.statusCategory.Active
-            },
-            {
-              color: PaletteColorIndexes.Ocean,
-              name: 'Contract conclusion',
-              ofAttribute: lead.attribute.State,
-              category: task.statusCategory.Active
-            },
-            { name: 'Won', ofAttribute: lead.attribute.State, category: task.statusCategory.Won },
-            { name: 'Lost', ofAttribute: lead.attribute.State, category: task.statusCategory.Lost }
-          ]
-        }
-      ],
-      lead.template.DefaultFunnel
-    )
-  }
-}
-
 async function createDefaults (tx: TxOperations): Promise<void> {
   await createSpace(tx)
   await createSequence(tx, lead.class.Lead)
@@ -144,59 +66,73 @@ async function migrateIdentifiers (client: MigrationClient): Promise<void> {
   }
 }
 
+async function migrateDefaultTypeMixins (client: MigrationClient): Promise<void> {
+  const oldSpaceTypeMixin = `${lead.template.DefaultFunnel}:type:mixin`
+  const newSpaceTypeMixin = lead.mixin.DefaultFunnelTypeData
+  const oldTaskTypeMixin = `${lead.taskType.Lead}:type:mixin`
+  const newTaskTypeMixin = lead.mixin.LeadTypeData
+
+  await client.update(
+    DOMAIN_TX,
+    {
+      objectClass: core.class.Attribute,
+      'attributes.attributeOf': oldSpaceTypeMixin
+    },
+    {
+      $set: {
+        'attributes.attributeOf': newSpaceTypeMixin
+      }
+    }
+  )
+
+  await client.update(
+    DOMAIN_SPACE,
+    {
+      _class: lead.class.Funnel,
+      [oldSpaceTypeMixin]: { $exists: true }
+    },
+    {
+      $rename: {
+        [oldSpaceTypeMixin]: newSpaceTypeMixin
+      }
+    }
+  )
+
+  await client.update(
+    DOMAIN_TASK,
+    {
+      _class: lead.class.Lead,
+      [oldTaskTypeMixin]: { $exists: true }
+    },
+    {
+      $rename: {
+        [oldTaskTypeMixin]: newTaskTypeMixin
+      }
+    }
+  )
+}
+
 export const leadOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, leadId, [
       {
-        state: 'fix-category-descriptors',
-        func: async (client) => {
-          await client.update(
-            DOMAIN_SPACE,
-            { _class: task.class.ProjectType, category: 'lead:category:FunnelTypeCategory' },
-            {
-              $set: { descriptor: lead.descriptors.FunnelType },
-              $unset: { category: 1 }
-            }
-          )
-        }
-      },
-      {
-        state: 'fixTaskStatus',
-        func: async (client): Promise<void> => {
-          await fixTaskTypes(client, lead.descriptors.FunnelType, async () => [
-            {
-              name: 'Lead',
-              descriptor: lead.descriptors.Lead,
-              ofClass: lead.class.Lead,
-              targetClass: lead.class.Lead,
-              statusCategories: [
-                task.statusCategory.UnStarted,
-                task.statusCategory.Active,
-                task.statusCategory.Won,
-                task.statusCategory.Lost
-              ],
-              statusClass: core.class.Status,
-              kind: 'task'
-            }
-          ])
-        }
-      },
-      {
         state: 'identifier',
         func: migrateIdentifiers
+      },
+      {
+        state: 'migrate-default-type-mixins',
+        func: async (client) => {
+          await migrateDefaultTypeMixins(client)
+        }
       }
     ])
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    const ops = new TxOperations(client, core.account.System)
-    // Currently space type has to be recreated every time as it's in the model
-    // created by the system user
-    await createSpaceType(ops)
-
     await tryUpgrade(client, leadId, [
       {
         state: 'u-default-funnel',
         func: async () => {
+          const ops = new TxOperations(client, core.account.System)
           await createDefaults(ops)
         }
       }

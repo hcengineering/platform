@@ -24,10 +24,12 @@ import core, {
   Role,
   Space,
   SpaceType,
-  TxOperations
+  TxOperations,
+  TypeAny as TypeAnyType
 } from '@hcengineering/core'
-import { ArrOf, TypeRef } from '@hcengineering/model'
-import { getEmbeddedLabel } from '@hcengineering/platform'
+import { TypeAny } from '@hcengineering/model'
+import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
+
 import setting from './index'
 
 export async function createSpaceType<T extends SpaceType> (
@@ -65,14 +67,27 @@ export async function createSpaceType<T extends SpaceType> (
   )
 }
 
+export interface RoleAttributeProps {
+  label: IntlString
+  roleType: TypeAnyType
+  id: Ref<Attribute<PropertyType>>
+}
+
+export function getRoleAttributeProps (data: AttachedData<Role>, roleId: Ref<Role>): RoleAttributeProps {
+  const name = data.name.trim()
+  const label = getEmbeddedLabel(`Role: ${name}`)
+  const roleType = TypeAny(setting.component.RoleAssignmentEditor, label, setting.component.RoleAssignmentEditor)
+  const id = `role-${roleId}` as Ref<Attribute<PropertyType>>
+
+  return { label, roleType, id }
+}
+
 export async function createSpaceTypeRole (
   client: TxOperations,
   type: Pick<SpaceType, '_id' | '_class' | 'targetClass'>,
   data: AttachedData<Role>,
   _id?: Ref<Role> | undefined
 ): Promise<Ref<Role>> {
-  const name = data.name.trim()
-
   const roleId = await client.addCollection(
     core.class.Role,
     core.space.Model,
@@ -83,17 +98,18 @@ export async function createSpaceTypeRole (
     _id
   )
 
+  const { label, roleType, id } = getRoleAttributeProps(data, roleId)
+
   await client.createDoc(
     core.class.Attribute,
     core.space.Model,
     {
       name: roleId,
       attributeOf: type.targetClass,
-      type: ArrOf(TypeRef(core.class.Account)),
-      label: getEmbeddedLabel(`Role: ${name}`),
-      editor: setting.component.RoleAssignmentEditor
+      type: roleType,
+      label
     },
-    `role-${roleId}` as Ref<Attribute<PropertyType>>
+    id
   )
 
   return roleId

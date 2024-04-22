@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, Ref, Space, SpaceType, SpaceTypeDescriptor } from '@hcengineering/core'
+import type { Class, Doc, Mixin, Ref, Space, SpaceType, SpaceTypeDescriptor } from '@hcengineering/core'
 import { NotificationGroup, NotificationType } from '@hcengineering/notification'
 import type { Asset, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
@@ -36,6 +36,9 @@ export const documentPlugin = plugin(documentId, {
     DocumentEmbedding: '' as Ref<Class<DocumentEmbedding>>,
     SavedDocument: '' as Ref<Class<SavedDocument>>,
     Teamspace: '' as Ref<Class<Teamspace>>
+  },
+  mixin: {
+    DefaultTeamspaceTypeData: '' as Ref<Mixin<Teamspace>>
   },
   component: {
     CreateDocument: '' as AnyComponent,

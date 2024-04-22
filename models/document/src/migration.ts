@@ -26,15 +26,14 @@ import {
 import { DOMAIN_ATTACHMENT } from '@hcengineering/model-attachment'
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 import { type Asset } from '@hcengineering/platform'
-import { createSpaceType } from '@hcengineering/setting'
 
 import document, { documentId, DOMAIN_DOCUMENT } from './index'
 
 async function createSpace (tx: TxOperations): Promise<void> {
-  const contacts = await tx.findOne(core.class.Space, {
+  const documents = await tx.findOne(core.class.Space, {
     _id: document.space.Documents
   })
-  if (contacts === undefined) {
+  if (documents === undefined) {
     await tx.createDoc(
       core.class.Space,
       core.space.Space,
@@ -241,25 +240,6 @@ async function setNoParent (client: MigrationClient): Promise<void> {
   )
 }
 
-async function createDefaultTeamspaceType (tx: TxOperations): Promise<void> {
-  const exist = await tx.findOne(core.class.SpaceType, { _id: document.spaceType.DefaultTeamspaceType })
-  const deleted = await tx.findOne(core.class.TxRemoveDoc, {
-    objectId: document.spaceType.DefaultTeamspaceType
-  })
-
-  if (exist === undefined && deleted === undefined) {
-    await createSpaceType(
-      tx,
-      {
-        name: 'Default teamspace type',
-        descriptor: document.descriptor.TeamspaceType,
-        roles: 0
-      },
-      document.spaceType.DefaultTeamspaceType
-    )
-  }
-}
-
 async function migrateTeamspaces (client: MigrationClient): Promise<void> {
   await client.update(
     DOMAIN_SPACE,
@@ -270,6 +250,37 @@ async function migrateTeamspaces (client: MigrationClient): Promise<void> {
     {
       $set: {
         type: document.spaceType.DefaultTeamspaceType
+      }
+    }
+  )
+}
+
+async function migrateTeamspacesMixins (client: MigrationClient): Promise<void> {
+  const oldSpaceTypeMixin = `${document.spaceType.DefaultTeamspaceType}:type:mixin`
+  const newSpaceTypeMixin = document.mixin.DefaultTeamspaceTypeData
+
+  await client.update(
+    DOMAIN_TX,
+    {
+      objectClass: core.class.Attribute,
+      'attributes.attributeOf': oldSpaceTypeMixin
+    },
+    {
+      $set: {
+        'attributes.attributeOf': newSpaceTypeMixin
+      }
+    }
+  )
+
+  await client.update(
+    DOMAIN_SPACE,
+    {
+      _class: document.class.Teamspace,
+      [oldSpaceTypeMixin]: { $exists: true }
+    },
+    {
+      $rename: {
+        [oldSpaceTypeMixin]: newSpaceTypeMixin
       }
     }
   )
@@ -309,20 +320,22 @@ export const documentOperation: MigrateOperation = {
         func: async (client) => {
           await migrateTeamspaces(client)
         }
+      },
+      {
+        state: 'migrate-teamspaces-mixins',
+        func: async (client) => {
+          await migrateTeamspacesMixins(client)
+        }
       }
     ])
   },
 
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    const tx = new TxOperations(client, core.account.System)
-    // Currently space type has to be recreated every time as it's in the model
-    // created by the system user
-    await createDefaultTeamspaceType(tx)
-
     await tryUpgrade(client, documentId, [
       {
         state: 'u-default-project',
         func: async (client) => {
+          const tx = new TxOperations(client, core.account.System)
           await createSpace(tx)
         }
       }

@@ -90,7 +90,7 @@ import {
   TSpaceTypeDescriptor,
   TTypedSpace
 } from './security'
-import { TStatus, TStatusCategory } from './status'
+import { TStatus, TStatusCategory, TDomainStatusPlaceholder } from './status'
 import { TUserStatus } from './transient'
 import {
   TTx,
@@ -171,6 +171,7 @@ export function createModel (builder: Builder): void {
     TConfigurationElement,
     TIndexConfiguration,
     TStatus,
+    TDomainStatusPlaceholder,
     TStatusCategory,
     TMigrationState,
     TBlob,
