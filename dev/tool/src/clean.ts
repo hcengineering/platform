@@ -1063,30 +1063,35 @@ async function migrateDefaultStatuses<T extends Task> (
   console.log(defaultType)
 
   if (defaultType.modifiedBy !== core.account.System) {
+    let moveToCustom = false
     if (defaultType.modifiedBy === core.account.ConfigUser) {
-      console.log('Moving the existing default type created by ConfigUser to a system one')
+      // Can only move to system if the task is with the system id
+      // and not modified by user
+      if (defaultType.attributes.tasks.length === 1 && defaultType.attributes.tasks[0] === defaultTaskTypeId) {
+        const defaultTaskType = await connection.findOne<TxCreateDoc<TaskType>>(core.class.TxCreateDoc, {
+          objectId: defaultTaskTypeId,
+          objectSpace: core.space.Model,
+          'attributes.parent': defaultTypeId
+        })
 
-      // Most likely the task type is also modified by ConfigUser
-      const defaultTaskType = await connection.findOne<TxCreateDoc<TaskType>>(core.class.TxCreateDoc, {
-        objectId: defaultTaskTypeId,
-        objectSpace: core.space.Model,
-        'attributes.parent': defaultTypeId
-      })
-
-      if (defaultTaskType?.modifiedBy === core.account.ConfigUser) {
-        console.log('Moving the existing default task type created by ConfigUser to a system one')
-        await db.collection(DOMAIN_TX).updateOne(
-          { _id: defaultTaskType._id },
-          {
-            $set: {
-              modifiedBy: core.account.System
+        if (defaultTaskType?.modifiedBy === core.account.ConfigUser) {
+          console.log('Moving the existing default type created by ConfigUser to a system one')
+          console.log('Moving the existing default task type created by ConfigUser to a system one')
+          await db.collection(DOMAIN_TX).updateOne(
+            { _id: defaultTaskType._id },
+            {
+              $set: {
+                modifiedBy: core.account.System
+              }
             }
-          }
-        )
-      } else if (defaultTaskType?.modifiedBy !== core.account.System) {
-        console.log('Default task type has been modified by user.')
-        console.log('NOT SUPPORTED. EXITING.')
-        return
+          )
+        } else if (defaultTaskType?.modifiedBy !== core.account.System) {
+          console.log('Default task type has been modified by user.')
+          console.log('NOT SUPPORTED. EXITING.')
+          return
+        }
+      } else {
+        moveToCustom = true
       }
 
       await db.collection(DOMAIN_TX).updateOne(
@@ -1097,7 +1102,9 @@ async function migrateDefaultStatuses<T extends Task> (
           }
         }
       )
-    } else {
+    }
+
+    if (defaultType.modifiedBy !== core.account.ConfigUser || moveToCustom) {
       // modified by user
       // Update to use the new ID of the type if no default task type
       if (defaultType.attributes.tasks.includes(defaultTaskTypeId)) {
