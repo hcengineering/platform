@@ -1084,6 +1084,15 @@ async function migrateDefaultStatuses<T extends Task> (
               }
             }
           )
+
+          await db.collection(DOMAIN_TX).updateOne(
+            { _id: defaultType._id },
+            {
+              $set: {
+                modifiedBy: core.account.System
+              }
+            }
+          )
         } else if (defaultTaskType?.modifiedBy !== core.account.System) {
           console.log('Default task type has been modified by user.')
           console.log('NOT SUPPORTED. EXITING.')
@@ -1092,15 +1101,6 @@ async function migrateDefaultStatuses<T extends Task> (
       } else {
         moveToCustom = true
       }
-
-      await db.collection(DOMAIN_TX).updateOne(
-        { _id: defaultType._id },
-        {
-          $set: {
-            modifiedBy: core.account.System
-          }
-        }
-      )
     }
 
     if (defaultType.modifiedBy !== core.account.ConfigUser || moveToCustom) {
