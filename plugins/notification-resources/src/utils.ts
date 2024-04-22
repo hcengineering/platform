@@ -375,10 +375,12 @@ export async function getDisplayInboxNotifications (
         continue
       }
 
+      const combined = activityNotifications.filter(({ attachedTo }) => ids.includes(attachedTo))
+
       const displayNotification = {
         ...activityNotification,
-        combinedIds: activityNotifications.filter(({ attachedTo }) => ids.includes(attachedTo)).map(({ _id }) => _id),
-        combinedMessages: activityNotifications
+        combinedIds: combined.map(({ _id }) => _id),
+        combinedMessages: combined
           .map((a) => a.$lookup?.attachedTo)
           .filter((m): m is ActivityMessage => m !== undefined)
       }
