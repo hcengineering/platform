@@ -24,7 +24,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Integration } from '@hcengineering/setting'
   import templates, { TemplateDataProvider } from '@hcengineering/templates'
-  import { EmptyMarkup, htmlToMarkup, isEmptyMarkup } from '@hcengineering/text'
+  import { EmptyMarkup, isEmptyMarkup, markupToHTML } from '@hcengineering/text'
   import { StyledTextEditor } from '@hcengineering/text-editor'
   import { Button, EditBox, IconArrowLeft, IconAttachment, Label, Scroller } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
@@ -71,7 +71,7 @@
       plugin.space.Gmail,
       {
         ...obj,
-        content: htmlToMarkup(content),
+        content: markupToHTML(content),
         attachments: attachments.length,
         from: selectedIntegration.createdBy,
         copy: copy
