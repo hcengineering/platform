@@ -37,10 +37,10 @@ import core, {
   type TxResult,
   type WorkspaceId,
   docKey,
+  isClassIndexable,
   isFullTextAttribute,
   isIndexedAttribute,
-  toFindResult,
-  isClassIndexable
+  toFindResult
 } from '@hcengineering/core'
 import { type FullTextIndexPipeline } from './indexer'
 import { createStateDoc } from './indexer/utils'
@@ -53,7 +53,6 @@ import type { FullTextAdapter, IndexedDoc, WithFind } from './types'
  */
 export class FullTextIndex implements WithFind {
   txFactory = new TxFactory(core.account.System, true)
-  consistency: Promise<void> | undefined
 
   constructor (
     private readonly hierarchy: Hierarchy,
@@ -72,7 +71,6 @@ export class FullTextIndex implements WithFind {
 
   async close (): Promise<void> {
     await this.indexer.cancel()
-    await this.consistency
   }
 
   async tx (ctx: MeasureContext, txes: Tx[]): Promise<TxResult> {

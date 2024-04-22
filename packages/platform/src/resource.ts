@@ -19,6 +19,7 @@ import { _parseId } from './ident'
 import type { Plugin, Resource } from './platform'
 import { PlatformError, Severity, Status } from './status'
 
+import { getMetadata } from './metadata'
 import platform from './platform'
 
 /**
@@ -77,19 +78,25 @@ async function loadPlugin (id: Plugin): Promise<Resources> {
     const status = new Status(Severity.INFO, platform.status.LoadingPlugin, {
       plugin: id
     })
-    pluginLoader = monitor(status, getLocation(id)()).then(async (plugin) => {
-      try {
-        // In case of ts-node, we have a bit different import structure, so let's check for it.
-        if (typeof plugin.default === 'object') {
-          // eslint-disable-next-line @typescript-eslint/return-await
-          return await (plugin as any).default.default()
+
+    const loadHelper = getMetadata(platform.metadata.LoadHelper)
+
+    const locationLoader = getLocation(id)
+    pluginLoader = monitor(status, loadHelper !== undefined ? loadHelper(locationLoader) : locationLoader()).then(
+      async (plugin) => {
+        try {
+          // In case of ts-node, we have a bit different import structure, so let's check for it.
+          if (typeof plugin.default === 'object') {
+            // eslint-disable-next-line @typescript-eslint/return-await
+            return await (plugin as any).default.default()
+          }
+          return await plugin.default()
+        } catch (err: any) {
+          console.error(err)
+          throw err
         }
-        return await plugin.default()
-      } catch (err: any) {
-        console.error(err)
-        throw err
       }
-    })
+    )
     loading.set(id, pluginLoader)
   }
   return await pluginLoader

@@ -183,7 +183,8 @@ describe('mongo operations', () => {
         clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
         loadModel: async () => txes,
         getAccount: async () => ({}) as any,
-        measure: async () => async () => ({ time: 0, serverTime: 0 })
+        measure: async () => async () => ({ time: 0, serverTime: 0 }),
+        sendForceClose: async () => {}
       }
       return st
     })

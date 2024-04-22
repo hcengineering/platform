@@ -117,7 +117,7 @@ export async function initModel (
   migrateOperations: [string, MigrateOperation][],
   logger: ModelLogger = consoleModelLogger,
   progress: (value: number) => Promise<void>
-): Promise<CoreClient> {
+): Promise<void> {
   const { mongodbUri, storageAdapter: minio, txes } = prepareTools(rawTxes)
   if (txes.some((tx) => tx.objectSpace !== core.space.Model)) {
     throw Error('Model txes must target only core.space.Model')
@@ -125,7 +125,7 @@ export async function initModel (
 
   const _client = getMongoClient(mongodbUri)
   const client = await _client.getClient()
-  let connection: CoreClient & BackupClient
+  let connection: (CoreClient & BackupClient) | undefined
   try {
     const db = getWorkspaceDB(client, workspaceId)
 
@@ -156,12 +156,8 @@ export async function initModel (
     )) as unknown as CoreClient & BackupClient
 
     const states = await connection.findAll<MigrationState>(core.class.MigrationState, {})
-    const migrateState = new Map(
-      Array.from(groupByArray(states, (it) => it.plugin).entries()).map((it) => [
-        it[0],
-        new Set(it[1].map((q) => q.state))
-      ])
-    )
+    const sts = Array.from(groupByArray(states, (it) => it.plugin).entries())
+    const migrateState = new Map(sts.map((it) => [it[0], new Set(it[1].map((q) => q.state))]))
     ;(connection as any).migrateState = migrateState
 
     try {
@@ -183,8 +179,9 @@ export async function initModel (
       logger.error('error', { error: e })
       throw e
     }
-    return connection
   } finally {
+    await connection?.sendForceClose()
+    await connection?.close()
     _client.close()
   }
 }
@@ -201,7 +198,7 @@ export async function upgradeModel (
   logger: ModelLogger = consoleModelLogger,
   skipTxUpdate: boolean = false,
   progress: (value: number) => Promise<void>
-): Promise<CoreClient> {
+): Promise<Tx[]> {
   const { mongodbUri, txes } = prepareTools(rawTxes)
 
   if (txes.some((tx) => tx.objectSpace !== core.space.Model)) {
@@ -266,7 +263,7 @@ export async function upgradeModel (
     })
     logger.log('Apply upgrade operations', { workspaceId: workspaceId.name })
 
-    const connection = await ctx.with(
+    const connection = (await ctx.with(
       'connect-platform',
       {},
       async (ctx) =>
@@ -281,29 +278,33 @@ export async function upgradeModel (
           },
           model
         )
-    )
-
-    await ctx.with('upgrade', {}, async () => {
-      let i = 0
-      for (const op of migrateOperations) {
-        const t = Date.now()
-        ;(connection as any).migrateState = migrateState
-        await op[1].upgrade(connection as any, logger)
-        logger.log('upgrade:', { operation: op[0], time: Date.now() - t, workspaceId: workspaceId.name })
-        await progress(60 + ((100 / migrateOperations.length) * i * 40) / 100)
-        i++
-      }
-    })
-
-    if (!skipTxUpdate) {
-      // Create update indexes
-      await ctx.with('create-indexes', {}, async (ctx) => {
-        await createUpdateIndexes(ctx, connection, db, logger, async (value) => {
-          await progress(40 + (Math.min(value, 100) / 100) * 20)
-        })
+    )) as CoreClient & BackupClient
+    try {
+      await ctx.with('upgrade', {}, async () => {
+        let i = 0
+        for (const op of migrateOperations) {
+          const t = Date.now()
+          ;(connection as any).migrateState = migrateState
+          await op[1].upgrade(connection as any, logger)
+          logger.log('upgrade:', { operation: op[0], time: Date.now() - t, workspaceId: workspaceId.name })
+          await progress(60 + ((100 / migrateOperations.length) * i * 40) / 100)
+          i++
+        }
       })
+
+      if (!skipTxUpdate) {
+        // Create update indexes
+        await ctx.with('create-indexes', {}, async (ctx) => {
+          await createUpdateIndexes(ctx, connection, db, logger, async (value) => {
+            await progress(40 + (Math.min(value, 100) / 100) * 20)
+          })
+        })
+      }
+    } finally {
+      await connection.sendForceClose()
+      await connection.close()
     }
-    return connection
+    return model
   } finally {
     _client.close()
   }

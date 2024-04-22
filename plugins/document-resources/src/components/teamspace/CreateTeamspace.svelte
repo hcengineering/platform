@@ -29,7 +29,7 @@
   } from '@hcengineering/core'
   import document, { Teamspace } from '@hcengineering/document'
   import { Asset } from '@hcengineering/platform'
-  import presentation, { Card, getClient } from '@hcengineering/presentation'
+  import presentation, { Card, getClient, reduceCalls } from '@hcengineering/presentation'
   import {
     Button,
     EditBox,
@@ -72,7 +72,7 @@
   let spaceType: WithLookup<SpaceType> | undefined
 
   $: void loadSpaceType(typeId)
-  async function loadSpaceType (id: typeof typeId): Promise<void> {
+  const loadSpaceType = reduceCalls(async (id: typeof typeId): Promise<void> => {
     spaceType =
       id !== undefined
         ? await client
@@ -85,7 +85,7 @@
     }
 
     rolesAssignment = getRolesAssignment()
-  }
+  })
 
   function getRolesAssignment (): RolesAssignment {
     if (teamspace === undefined || spaceType?.targetClass === undefined || spaceType?.$lookup?.roles === undefined) {
@@ -243,7 +243,10 @@
   label={isNew ? documentRes.string.NewTeamspace : documentRes.string.EditTeamspace}
   okLabel={isNew ? presentation.string.Create : presentation.string.Save}
   okAction={handleSave}
-  canSave={name.trim().length > 0 && !(members.length === 0 && isPrivate) && typeId !== undefined}
+  canSave={name.trim().length > 0 &&
+    !(members.length === 0 && isPrivate) &&
+    typeId !== undefined &&
+    spaceType?.targetClass !== undefined}
   accentHeader
   width={'medium'}
   gap={'gapV-6'}

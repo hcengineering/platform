@@ -134,22 +134,12 @@ class Connection implements ClientConnection {
   async close (): Promise<void> {
     this.closed = true
     clearInterval(this.interval)
-    const closeEvt = serialize(
-      {
-        method: 'close',
-        params: [],
-        id: -1
-      },
-      false
-    )
     if (this.websocket !== null) {
       if (this.websocket instanceof Promise) {
         await this.websocket.then((ws) => {
-          ws.send(closeEvt)
           ws.close(1000)
         })
       } else {
-        this.websocket.send(closeEvt)
         this.websocket.close(1000)
       }
       this.websocket = null
@@ -546,6 +536,10 @@ class Connection implements ClientConnection {
 
   searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
     return this.sendRequest({ method: 'searchFulltext', params: [query, options] })
+  }
+
+  sendForceClose (): Promise<void> {
+    return this.sendRequest({ method: 'forceClose', params: [] })
   }
 }
 

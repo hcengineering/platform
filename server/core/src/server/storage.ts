@@ -52,6 +52,7 @@ import core, {
   type TxResult,
   type TxUpdateDoc,
   type WorkspaceIdWithUrl,
+  cutObjectArray,
   toFindResult
 } from '@hcengineering/core'
 import { type Metadata, getResource } from '@hcengineering/platform'
@@ -393,7 +394,7 @@ export class TServerStorage implements ServerStorage {
       { clazz, query, options }
     )
     if (Date.now() - st > 1000) {
-      await ctx.error('FindAll', { time: Date.now() - st, clazz, query, options })
+      await ctx.error('FindAll', { time: Date.now() - st, clazz, query: cutObjectArray(query), options })
     }
     return result
   }

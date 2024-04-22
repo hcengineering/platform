@@ -3,7 +3,7 @@
   import { Metrics, systemAccountEmail } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { getEmbeddedLabel, getMetadata } from '@hcengineering/platform'
-  import presentation, { createQuery } from '@hcengineering/presentation'
+  import presentation, { createQuery, isAdminUser } from '@hcengineering/presentation'
   import {
     Button,
     CheckBox,
@@ -88,13 +88,20 @@
   $: activeSessions =
     (data?.statistics?.activeSessions as Record<
     string,
-    Array<{
-      userId: string
-      data?: Record<string, any>
-      total: StatisticsElement
-      mins5: StatisticsElement
-      current: StatisticsElement
-    }>
+    {
+      sessions: Array<{
+        userId: string
+        data?: Record<string, any>
+        total: StatisticsElement
+        mins5: StatisticsElement
+        current: StatisticsElement
+      }>
+      name: string
+      wsId: string
+      sessionsTotal: number
+      upgrading: boolean
+      closing: boolean
+    }
     >) ?? {}
 
   const employeeQuery = createQuery()
@@ -116,8 +123,8 @@
 
   $: totalStats = Array.from(Object.entries(activeSessions).values()).reduce(
     (cur, it) => {
-      const totalFind = it[1].reduce((it, itm) => itm.current.find + it, 0)
-      const totalTx = it[1].reduce((it, itm) => itm.current.tx + it, 0)
+      const totalFind = it[1].sessions.reduce((it, itm) => itm.current.find + it, 0)
+      const totalTx = it[1].sessions.reduce((it, itm) => itm.current.tx + it, 0)
       return {
         find: cur.find + totalFind,
         tx: cur.tx + totalTx
@@ -197,26 +204,49 @@
       <div class="flex-column p-3 h-full" style:overflow="auto">
         {#each Object.entries(activeSessions) as act}
           {@const wsInstance = $workspacesStore.find((it) => it.workspaceId === act[0])}
-          {@const totalFind = act[1].reduce((it, itm) => itm.current.find + it, 0)}
-          {@const totalTx = act[1].reduce((it, itm) => itm.current.tx + it, 0)}
-          {@const employeeGroups = Array.from(new Set(act[1].map((it) => it.userId))).filter(
+          {@const totalFind = act[1].sessions.reduce((it, itm) => itm.current.find + it, 0)}
+          {@const totalTx = act[1].sessions.reduce((it, itm) => itm.current.tx + it, 0)}
+          {@const employeeGroups = Array.from(new Set(act[1].sessions.map((it) => it.userId))).filter(
             (it) => systemAccountEmail !== it || !realUsers
           )}
-          {@const realGroup = Array.from(new Set(act[1].map((it) => it.userId))).filter(
+          {@const realGroup = Array.from(new Set(act[1].sessions.map((it) => it.userId))).filter(
             (it) => systemAccountEmail !== it
           )}
           {#if employeeGroups.length > 0}
             <span class="flex-col">
               <Expandable contentColor expanded={false} expandable={true} bordered>
                 <svelte:fragment slot="title">
-                  <div class="fs-title" class:greyed={realGroup.length === 0}>
-                    Workspace: {wsInstance?.workspaceName ?? act[0]}: {employeeGroups.length} current 5 mins => {totalFind}/{totalTx}
+                  <div class="flex flex-row-center flex-between flex-grow p-1">
+                    <div class="fs-title" class:greyed={realGroup.length === 0}>
+                      Workspace: {wsInstance?.workspaceName ?? act[0]}: {employeeGroups.length} current 5 mins => {totalFind}/{totalTx}
+                      {#if act[1].upgrading}
+                        (Upgrading)
+                      {/if}
+                      {#if act[1].closing}
+                        (Closing)
+                      {/if}
+                    </div>
+                    {#if isAdminUser()}
+                      <Button
+                        label={getEmbeddedLabel('Force close')}
+                        size={'small'}
+                        kind={'ghost'}
+                        on:click={() => {
+                          void fetch(
+                            endpoint + `/api/v1/manage?token=${token}&operation=force-close&wsId=${act[1].wsId}`,
+                            {
+                              method: 'PUT'
+                            }
+                          )
+                        }}
+                      />
+                    {/if}
                   </div>
                 </svelte:fragment>
                 <div class="flex-col">
                   {#each employeeGroups as employeeId}
                     {@const employee = employees.get(employeeId)}
-                    {@const connections = act[1].filter((it) => it.userId === employeeId)}
+                    {@const connections = act[1].sessions.filter((it) => it.userId === employeeId)}
 
                     {@const find = connections.reduce((it, itm) => itm.current.find + it, 0)}
                     {@const txes = connections.reduce((it, itm) => itm.current.tx + it, 0)}
