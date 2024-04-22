@@ -9,7 +9,7 @@ export class LeftSideMenuPage extends CommonPage {
   readonly buttonNotification: Locator
   readonly buttonDocuments: Locator
 
-  constructor (page: Page) {
+  constructor(page: Page) {
     super()
     this.page = page
     this.buttonChunter = page.locator('button[id$="ApplicationLabelChunter"]')

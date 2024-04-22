@@ -11,7 +11,7 @@ test('check-status-loading', async ({ page }) => {
   )?.finished()
 
   const issuesPage = new IssuesPage(page)
-  await issuesPage.modelSelectorAll.click()
+  await issuesPage.modelSelectorAll().click()
 
   await expect(page.locator('.categoryHeader :text-is("In Progress")').first()).toBeVisible()
   await expect(page.locator('.categoryHeader :text-is("Backlog")').first()).toBeVisible()

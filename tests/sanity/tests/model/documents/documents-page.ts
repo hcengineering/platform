@@ -7,7 +7,7 @@ import { DocumentMovePopup } from './document-move-popup'
 export class DocumentsPage extends CommonPage {
   readonly page: Page
 
-  constructor (page: Page) {
+  constructor(page: Page) {
     super()
     this.page = page
     this.popupCreateDocument = new DocumentCreatePopup(page)
@@ -44,11 +44,11 @@ export class DocumentsPage extends CommonPage {
   readonly buttonModalEditTeamspaceSave = (): Locator => this.formEditTeamspace().locator('button[type="submit"]')
   readonly buttonModalEditTeamspaceClose = (): Locator => this.formEditTeamspace().locator('button#card-close')
 
-  async clickOnButtonCreateDocument (): Promise<void> {
+  async clickOnButtonCreateDocument(): Promise<void> {
     await this.buttonCreateDocument().click()
   }
 
-  async createNewTeamspace (data: NewTeamspace): Promise<void> {
+  async createNewTeamspace(data: NewTeamspace): Promise<void> {
     await this.divTeamspacesParent().hover()
     await this.buttonCreateTeamspace().click()
     await this.inputModalNewTeamspaceTitle().fill(data.title)
@@ -61,7 +61,7 @@ export class DocumentsPage extends CommonPage {
     await this.buttonModalNewTeamspaceCreate().click()
   }
 
-  async openTeamspace (name: string): Promise<void> {
+  async openTeamspace(name: string): Promise<void> {
     const classes = await this.page
       .locator('div.antiNav-element span[class*="label"]', { hasText: name })
       .locator('xpath=..')
@@ -71,29 +71,29 @@ export class DocumentsPage extends CommonPage {
     }
   }
 
-  async checkTeamspaceExist (name: string): Promise<void> {
+  async checkTeamspaceExist(name: string): Promise<void> {
     await expect(this.page.locator('div[class*="dropbox"] span[class*="label"]', { hasText: name })).toHaveCount(1)
   }
 
-  async checkTeamspaceNotExist (name: string): Promise<void> {
+  async checkTeamspaceNotExist(name: string): Promise<void> {
     await expect(this.page.locator('div[class*="dropbox"] span[class*="label"]', { hasText: name })).toHaveCount(0)
   }
 
-  async moreActionTeamspace (name: string, action: string): Promise<void> {
+  async moreActionTeamspace(name: string, action: string): Promise<void> {
     await this.page.locator('div[class*="dropbox"] > div > span[class*="label"]', { hasText: name }).hover()
     await this.page.locator(`xpath=//span[text()="${name}"]/../div[last()]`).click()
     await this.selectFromDropdown(this.page, action)
   }
 
-  async createDocument (data: NewDocument): Promise<void> {
+  async createDocument(data: NewDocument): Promise<void> {
     await this.popupCreateDocument.createDocument(data)
   }
 
-  async openDocument (name: string): Promise<void> {
+  async openDocument(name: string): Promise<void> {
     await this.page.locator('div.tree > span[class*="label"]', { hasText: name }).click()
   }
 
-  async openDocumentForTeamspace (spaceName: string, documentName: string): Promise<void> {
+  async openDocumentForTeamspace(spaceName: string, documentName: string): Promise<void> {
     await this.page
       .locator('div.parent > span[class*="label"]', { hasText: spaceName })
       .locator('xpath=../following-sibling::div[1]')
@@ -101,7 +101,7 @@ export class DocumentsPage extends CommonPage {
       .click()
   }
 
-  async editTeamspace (data: NewTeamspace): Promise<void> {
+  async editTeamspace(data: NewTeamspace): Promise<void> {
     await this.buttonModalEditTeamspaceTitle().fill(data.title)
     if (data.description != null) {
       await this.buttonModalEditTeamspaceDescription().fill(data.description)
@@ -112,7 +112,7 @@ export class DocumentsPage extends CommonPage {
     await this.buttonModalEditTeamspaceSave().click()
   }
 
-  async checkTeamspace (data: NewTeamspace): Promise<void> {
+  async checkTeamspace(data: NewTeamspace): Promise<void> {
     await expect(this.buttonModalEditTeamspaceTitle()).toHaveValue(data.title)
     if (data.description != null) {
       await expect(this.buttonModalEditTeamspaceDescription()).toHaveValue(data.description)
@@ -120,7 +120,7 @@ export class DocumentsPage extends CommonPage {
     await this.buttonModalEditTeamspaceClose().click()
   }
 
-  async moreActionsOnDocument (documentName: string, action: string): Promise<void> {
+  async moreActionsOnDocument(documentName: string, action: string): Promise<void> {
     await this.page
       .locator('div.tree > span[class*="label"]', { hasText: documentName })
       .locator('xpath=..')
@@ -129,7 +129,7 @@ export class DocumentsPage extends CommonPage {
     await this.selectFromDropdown(this.page, action)
   }
 
-  async fillMoveDocumentForm (newSpace: string): Promise<void> {
+  async fillMoveDocumentForm(newSpace: string): Promise<void> {
     await this.popupMoveDocument.moveToSpace(newSpace)
   }
 }

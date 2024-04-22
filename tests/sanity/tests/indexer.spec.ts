@@ -285,8 +285,8 @@ test.describe('Fulltext index', () => {
       })
 
       await test.step('update issue', async () => {
-        await issuesPage.linkSidebarAll.click()
-        await issuesPage.modelSelectorAll.click()
+        await issuesPage.linkSidebarAll().click()
+        await issuesPage.modelSelectorAll().click()
         await issuesPage.searchIssueByName(newIssue.title)
         await issuesPage.openIssueByName(newIssue.title)
         await issuesDetailsPage.editIssue({ title: updatedTitle })
@@ -350,8 +350,8 @@ test.describe('Fulltext index', () => {
       })
 
       await test.step('remove issue', async () => {
-        await issuesPage.linkSidebarAll.click()
-        await issuesPage.modelSelectorAll.click()
+        await issuesPage.linkSidebarAll().click()
+        await issuesPage.modelSelectorAll().click()
         await issuesPage.searchIssueByName(newIssue.title)
         await issuesPage.openIssueByName(newIssue.title)
         await issuesDetailsPage.moreActionOnIssue('Delete')

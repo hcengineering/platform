@@ -3,7 +3,7 @@ import { expect, type Locator, type Page } from '@playwright/test'
 export class RecruitingPage {
   page: Page
 
-  constructor (page: Page) {
+  constructor(page: Page) {
     this.page = page
   }
 
@@ -25,62 +25,62 @@ export class RecruitingPage {
   readonly newTalentLastName = (): Locator => this.page.getByPlaceholder('Last name')
   readonly newTalentModalPath = (): Locator => this.page.getByText('Person New Talent')
 
-  async clickRecruitApplication (): Promise<void> {
+  async clickRecruitApplication(): Promise<void> {
     await this.recruitApplication().click()
   }
 
-  async clickTalentsNavElement (): Promise<void> {
+  async clickTalentsNavElement(): Promise<void> {
     await this.talentsNavElement().click()
   }
 
-  async clickFrontendEngineerOption (): Promise<void> {
+  async clickFrontendEngineerOption(): Promise<void> {
     await this.frontendEngineerOption().click()
   }
 
-  async pressMetaK (): Promise<void> {
+  async pressMetaK(): Promise<void> {
     await this.page.press('body', 'Meta+k')
   }
 
-  async fillSearchOrRunCommandInput (text: string): Promise<void> {
+  async fillSearchOrRunCommandInput(text: string): Promise<void> {
     await this.searchOrRunCommandInput().fill(text)
   }
 
-  async clickNewTalentPopup (): Promise<void> {
+  async clickNewTalentPopup(): Promise<void> {
     await this.newTalentPopupOption().click()
   }
 
-  async clickTalentCloseButton (): Promise<void> {
+  async clickTalentCloseButton(): Promise<void> {
     await this.cardCloseButton().click()
   }
 
-  async inputActionsInput (text: string): Promise<void> {
+  async inputActionsInput(text: string): Promise<void> {
     await this.actionsInput().click()
     await this.actionsInput().fill(text)
   }
 
-  async clickGoToVacanciesPopupOption (): Promise<void> {
+  async clickGoToVacanciesPopupOption(): Promise<void> {
     await this.goToVacanciesPopupOption().click({ delay: 100 })
   }
 
-  async clickOnGoToApplicationsPopupOption (): Promise<void> {
+  async clickOnGoToApplicationsPopupOption(): Promise<void> {
     await this.goToApplicationsPopupOption().click({ delay: 100 })
   }
 
   // ASSERTIONS
 
-  async checkIfCorrectURL (url: string): Promise<void> {
+  async checkIfCorrectURL(url: string): Promise<void> {
     expect(this.page.url()).toBe(url)
   }
 
-  async checkIfnewTalentPopupOptionIsVisible (): Promise<void> {
+  async checkIfnewTalentPopupOptionIsVisible(): Promise<void> {
     expect(await this.newTalentPopupOption().isVisible())
   }
 
-  async checkIfSelectedTalentsNavElementIsVisible (): Promise<void> {
+  async checkIfSelectedTalentsNavElementIsVisible(): Promise<void> {
     expect(await this.selectedTalentsNavElement().isVisible())
   }
 
-  async checkIfNewTalentModalIsClosed (): Promise<void> {
+  async checkIfNewTalentModalIsClosed(): Promise<void> {
     expect(await this.newTalentFirstName().isHidden())
     expect(await this.newTalentLastName().isHidden())
     expect(await this.newTalentModalPath().isHidden())

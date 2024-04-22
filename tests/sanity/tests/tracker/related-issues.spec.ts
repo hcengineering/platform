@@ -37,7 +37,7 @@ test.describe('Tracker related issue tests', () => {
     await leftSideMenuPage.buttonTracker.click()
 
     const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
+    await issuesPage.modelSelectorAll().click()
     await issuesPage.createNewIssue(newIssue)
     await issuesPage.searchIssueByName(newIssue.title)
     await issuesPage.openIssueByName(newIssue.title)
@@ -46,7 +46,7 @@ test.describe('Tracker related issue tests', () => {
     await issuesDetailsPage.moreActionOnIssue('New related issue')
 
     await issuesPage.fillNewIssueForm(relatedIssue)
-    await issuesPage.buttonCreateIssue.click()
+    await issuesPage.buttonCreateIssue().click()
 
     const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
     await trackerNavigationMenuPage.openIssuesForProject('Default')

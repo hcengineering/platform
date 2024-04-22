@@ -14,7 +14,7 @@ export class CalendarPage extends CommonPage {
   readonly inputPopupTime: Locator
   readonly inputPopupDateSave: Locator
 
-  constructor (page: Page) {
+  constructor(page: Page) {
     super()
     this.page = page
     this.buttonDatePopupToday = page.locator('div.popup div.today:not(.wrongMonth)')
@@ -29,7 +29,7 @@ export class CalendarPage extends CommonPage {
     this.inputPopupDateSave = page.locator('div[class*="date-popup"] div.footer button')
   }
 
-  async fillDatePopup (day: string, month: string, year: string): Promise<void> {
+  async fillDatePopup(day: string, month: string, year: string): Promise<void> {
     await expect(this.inputTargetDateDay).toBeVisible()
     await this.inputTargetDateDay.pressSequentially(day)
     await this.inputTargetDateMonth.pressSequentially(month)
@@ -37,12 +37,12 @@ export class CalendarPage extends CommonPage {
     await this.buttonTargetDateSave.click()
   }
 
-  async fillDatePopupInDays (inDays: string): Promise<void> {
+  async fillDatePopupInDays(inDays: string): Promise<void> {
     await expect(this.inputTargetDateDay).toBeVisible()
     await this.page.locator('div.popup div.shift-container div.btn span', { hasText: inDays }).click()
   }
 
-  async fillSelectDatePopup (day: string, month: string, year: string, time: string): Promise<void> {
+  async fillSelectDatePopup(day: string, month: string, year: string, time: string): Promise<void> {
     await this.inputPopupDateDay.click()
     await this.inputPopupDateDay.pressSequentially(day)
     await this.inputPopupDateMonth.click()

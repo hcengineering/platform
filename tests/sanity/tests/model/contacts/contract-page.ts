@@ -14,7 +14,7 @@ export enum ButtonAction {
 export class ContractPage {
   page: Page
 
-  constructor (page: Page) {
+  constructor(page: Page) {
     this.page = page
   }
 
@@ -69,7 +69,7 @@ export class ContractPage {
 
   // ACTIONS
 
-  async addNewApplication (description: string, recruiter: string): Promise<void> {
+  async addNewApplication(description: string, recruiter: string): Promise<void> {
     await this.newApplicationDescription().click()
     await this.newApplicationDescription().fill(description)
     await this.newApplicationAssignRectruiter().click()
@@ -79,93 +79,93 @@ export class ContractPage {
     await this.newApplicationCreate().click()
   }
 
-  async clickAppContact (): Promise<void> {
+  async clickAppContact(): Promise<void> {
     await this.appContact().click()
   }
 
-  async clickEmployeeNavElement (Employee: string): Promise<void> {
+  async clickEmployeeNavElement(Employee: string): Promise<void> {
     await this.employeeNavElement(Employee).click()
   }
 
-  async clickEmployeeButton (Employee: string): Promise<void> {
+  async clickEmployeeButton(Employee: string): Promise<void> {
     await this.employeeButton(Employee).click()
   }
 
-  async clickFirstNameInput (): Promise<void> {
+  async clickFirstNameInput(): Promise<void> {
     await this.firstNameInput().click()
   }
 
-  async fillFirstNameInput (firstName: string): Promise<void> {
+  async fillFirstNameInput(firstName: string): Promise<void> {
     await this.firstNameInput().fill(firstName)
   }
 
-  async clickLastNameInput (): Promise<void> {
+  async clickLastNameInput(): Promise<void> {
     await this.lastNameInput().click()
   }
 
-  async fillLastNameInput (lastName: string): Promise<void> {
+  async fillLastNameInput(lastName: string): Promise<void> {
     await this.lastNameInput().fill(lastName)
   }
 
-  async clickEmailInput (): Promise<void> {
+  async clickEmailInput(): Promise<void> {
     await this.emailInput().click()
   }
 
-  async fillEmailInput (email: string): Promise<void> {
+  async fillEmailInput(email: string): Promise<void> {
     await this.emailInput().fill(email)
   }
 
-  async fillCompanyInput (company: string): Promise<void> {
+  async fillCompanyInput(company: string): Promise<void> {
     await this.companyName().click()
     await this.companyName().fill(company)
   }
 
-  async clickCreateButton (): Promise<void> {
+  async clickCreateButton(): Promise<void> {
     await this.createButton().click()
   }
 
-  async clickSubmitButton (): Promise<void> {
+  async clickSubmitButton(): Promise<void> {
     await this.submitButton().click()
   }
 
-  async clickOnEmployee (first: string, last: string): Promise<void> {
+  async clickOnEmployee(first: string, last: string): Promise<void> {
     await this.employeeEntry(first, last).click()
   }
 
-  async waitForFormAntiCardDetached (): Promise<void> {
+  async waitForFormAntiCardDetached(): Promise<void> {
     await this.formAntiCard().waitFor({ state: 'detached' })
   }
 
-  async clickCompanyTab (): Promise<void> {
+  async clickCompanyTab(): Promise<void> {
     await this.comapnyTab().click()
   }
 
-  async clickAddCompany (): Promise<void> {
+  async clickAddCompany(): Promise<void> {
     await this.addCompany().click()
   }
 
-  async clickCreateCompany (): Promise<void> {
+  async clickCreateCompany(): Promise<void> {
     await this.companyCreateButton().click()
   }
 
-  async clickCompanyByName (company: string): Promise<void> {
+  async clickCompanyByName(company: string): Promise<void> {
     await this.companyByName(company).click()
   }
 
-  async clickAddMember (): Promise<void> {
+  async clickAddMember(): Promise<void> {
     await this.addMember().click()
   }
 
-  async clickSelectMember (): Promise<void> {
+  async clickSelectMember(): Promise<void> {
     await this.selectMember().click()
   }
 
-  async clickOpenNewMember (member: string): Promise<void> {
+  async clickOpenNewMember(member: string): Promise<void> {
     await this.openNewMember(member).click()
   }
 
   // Regular approach
-  async kickEmployee (first: string, last: string): Promise<void> {
+  async kickEmployee(first: string, last: string): Promise<void> {
     await this.employeeEntry(first, last).hover()
     await this.employeeEntry(first, last).click({ button: 'right' })
     await this.kickEmployeeOption().click()
@@ -173,7 +173,7 @@ export class ContractPage {
   }
 
   // Approach where we use the enum to determine the action to take on the right click
-  async personRightClickOption (first: string, last: string, action: ButtonAction): Promise<void> {
+  async personRightClickOption(first: string, last: string, action: ButtonAction): Promise<void> {
     await this.employeeEntry(first, last).hover()
     await this.employeeEntry(first, last).click({ button: 'right' })
     switch (action) {
@@ -208,23 +208,23 @@ export class ContractPage {
 
   // ASSERTIONS
 
-  async expectKickEmployeeShowsInactiveStatus (first: string, last: string): Promise<void> {
+  async expectKickEmployeeShowsInactiveStatus(first: string, last: string): Promise<void> {
     await expect(this.employeeEntry(first, last)).toContainText('Inactive')
   }
 
-  async checkIfPersonIsDeleted (first: string, last: string, count: number): Promise<void> {
+  async checkIfPersonIsDeleted(first: string, last: string, count: number): Promise<void> {
     await expect(this.employeeEntry(first, last)).toHaveCount(count)
   }
 
-  async checkIfPersonIsCreated (first: string, last: string): Promise<void> {
+  async checkIfPersonIsCreated(first: string, last: string): Promise<void> {
     await expect(this.employeeEntry(first, last)).toBeVisible()
   }
 
-  async checkPersonMarinaIsVisible (person: string): Promise<void> {
+  async checkPersonMarinaIsVisible(person: string): Promise<void> {
     await expect(this.personName(person)).toBeVisible()
   }
 
-  async checkPersonTableCount (count: number, checkMoreOrEqual: boolean = false): Promise<void> {
+  async checkPersonTableCount(count: number, checkMoreOrEqual: boolean = false): Promise<void> {
     const actualCount = await this.personTable().count()
 
     if (checkMoreOrEqual) {
@@ -234,15 +234,15 @@ export class ContractPage {
     }
   }
 
-  async checkIfTextIsVisible (text: string): Promise<void> {
+  async checkIfTextIsVisible(text: string): Promise<void> {
     await expect(this.page.locator(`text=${text}`)).toBeVisible()
   }
 
-  async checkIfNewMemberIsAdded (): Promise<void> {
+  async checkIfNewMemberIsAdded(): Promise<void> {
     await expect(this.newMemberAdded()).toBeVisible()
   }
 
-  async checkStateApplication (role: string): Promise<void> {
+  async checkStateApplication(role: string): Promise<void> {
     await expect(this.stateApplication(role)).toBeVisible()
     await this.commentApplication().hover()
     await expect(this.commentDescription()).toBeVisible()

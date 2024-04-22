@@ -28,13 +28,13 @@ test.describe('Attachments tests', () => {
     await trackerNavigationMenuPage.openIssuesForProject('Default')
 
     const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
+    await issuesPage.modelSelectorAll().click()
 
-    await issuesPage.buttonCreateNewIssue.click()
+    await issuesPage.buttonCreateNewIssue().click()
     await issuesPage.fillNewIssueForm(newIssue)
     await issuesPage.attachFileToNewIssueForm('cat.jpeg')
     await issuesPage.attachFileToNewIssueForm('cat2.jpeg')
-    await issuesPage.buttonCreateIssue.click()
+    await issuesPage.buttonCreateIssue().click()
 
     await issuesPage.searchIssueByName(newIssue.title)
     await issuesPage.checkAttachmentsCount(newIssue.title, '2')

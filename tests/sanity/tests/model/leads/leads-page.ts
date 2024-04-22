@@ -3,7 +3,7 @@ import { expect, type Locator, type Page } from '@playwright/test'
 export class LeadsPage {
   readonly page: Page
 
-  constructor (page: Page) {
+  constructor(page: Page) {
     this.page = page
   }
 
@@ -17,40 +17,40 @@ export class LeadsPage {
   readonly antiCardFormDetached = (): Locator => this.page.locator('form.antiCard')
   readonly contactExistsMessage = (): Locator => this.page.locator('text=Contact already exists...')
 
-  async clickLeadApplication (): Promise<void> {
+  async clickLeadApplication(): Promise<void> {
     await this.leadApplication().click()
   }
 
-  async clickCustomersNavElement (): Promise<void> {
+  async clickCustomersNavElement(): Promise<void> {
     await this.customersNavElement().click()
   }
 
-  async clickNewCustomerButton (): Promise<void> {
+  async clickNewCustomerButton(): Promise<void> {
     await this.newCustomerButton().click()
   }
 
-  async clickPersonButton (): Promise<void> {
+  async clickPersonButton(): Promise<void> {
     await this.personButton().click()
   }
 
-  async clickCompanyButton (): Promise<void> {
+  async clickCompanyButton(): Promise<void> {
     await this.companyButton().click()
   }
 
-  async inputCompanyName (companyName: string): Promise<void> {
+  async inputCompanyName(companyName: string): Promise<void> {
     await this.companyNameInput().click()
     await this.companyNameInput().fill(companyName)
   }
 
-  async clickCreateButton (): Promise<void> {
+  async clickCreateButton(): Promise<void> {
     await this.createButton().click()
   }
 
-  async waitForAntiCardFormDetached (): Promise<void> {
+  async waitForAntiCardFormDetached(): Promise<void> {
     await this.antiCardFormDetached().waitFor({ state: 'detached' })
   }
 
-  async checkContactExistsMessage (): Promise<void> {
+  async checkContactExistsMessage(): Promise<void> {
     await expect(this.contactExistsMessage()).toBeVisible()
   }
 }

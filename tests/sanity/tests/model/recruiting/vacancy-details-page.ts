@@ -4,55 +4,48 @@ import path from 'path'
 
 export class VacancyDetailsPage extends CommonRecruitingPage {
   readonly page: Page
-  readonly inputDescription: Locator
-  readonly buttonInputDescription: Locator
-  readonly buttonInputLocation: Locator
-  readonly inputAttachFile: Locator
-  readonly buttonInputCompany: Locator
-  readonly buttonInputDueDate: Locator
-  readonly buttonDatePopupSave: Locator
-  readonly inputComment: Locator
 
-  constructor (page: Page) {
+  constructor(page: Page) {
     super(page)
     this.page = page
-    this.inputDescription = page.locator('div[class*="full"] div.tiptap')
-    this.buttonInputDescription = page.locator('button > span', { hasText: 'Description' })
-    this.buttonInputLocation = page.locator('button > span', { hasText: 'Location' })
-    this.inputAttachFile = page.locator('div[class*="full"] input[name="file"]#fileInput')
-    this.buttonInputCompany = page.locator('button > div', { hasText: 'Company' })
-    this.buttonInputDueDate = page.locator('button > div', { hasText: 'Due date' })
-    this.buttonDatePopupSave = page.locator('div.popup button[type="submit"]')
-    this.inputComment = page.locator('div.text-input div.tiptap')
   }
 
-  async addComment (comment: string): Promise<void> {
-    await this.inputComment.fill(comment)
-    await this.buttonSendComment.click()
+  readonly inputDescription = (): Locator => this.page.locator('div[class*="full"] div.tiptap')
+  readonly buttonInputDescription = (): Locator => this.page.locator('button > span', { hasText: 'Description' })
+  readonly buttonInputLocation = (): Locator => this.page.locator('button > span', { hasText: 'Location' })
+  readonly inputAttachFile = (): Locator => this.page.locator('div[class*="full"] input[name="file"]#fileInput')
+  readonly buttonInputCompany = (): Locator => this.page.locator('button > div', { hasText: 'Company' })
+  readonly buttonInputDueDate = (): Locator => this.page.locator('button > div', { hasText: 'Due date' })
+  readonly buttonDatePopupSave = (): Locator => this.page.locator('div.popup button[type="submit"]')
+  readonly inputComment = (): Locator => this.page.locator('div.text-input div.tiptap')
+
+  async addComment(comment: string): Promise<void> {
+    await this.inputComment().fill(comment)
+    await this.buttonSendComment().click()
   }
 
-  async addAttachments (filePath: string): Promise<void> {
-    await this.inputAttachFile.setInputFiles(path.join(__dirname, `../../files/${filePath}`))
-    await expect(this.textAttachmentName.first()).toHaveAttribute('download', filePath)
+  async addAttachments(filePath: string): Promise<void> {
+    await this.inputAttachFile().setInputFiles(path.join(__dirname, `../../files/${filePath}`))
+    await expect(this.textAttachmentName().first()).toHaveAttribute('download', filePath)
   }
 
-  async addDescription (description: string): Promise<void> {
-    await this.buttonInputDescription.click()
+  async addDescription(description: string): Promise<void> {
+    await this.buttonInputDescription().click()
     await this.fillToSelectPopup(this.page, description)
   }
 
-  async addLocation (location: string): Promise<void> {
-    await this.buttonInputLocation.click()
+  async addLocation(location: string): Promise<void> {
+    await this.buttonInputLocation().click()
     await this.fillToSelectPopup(this.page, location)
   }
 
-  async addCompany (company: string): Promise<void> {
-    await this.buttonInputCompany.click()
+  async addCompany(company: string): Promise<void> {
+    await this.buttonInputCompany().click()
     await this.selectMenuItem(this.page, company)
   }
 
-  async addDueDateToday (): Promise<void> {
-    await this.buttonInputDueDate.click()
+  async addDueDateToday(): Promise<void> {
+    await this.buttonInputDueDate().click()
     await this.buttonDatePopupToday.click()
   }
 }

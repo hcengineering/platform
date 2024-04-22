@@ -49,12 +49,12 @@ test.describe('Planning ToDo tests', () => {
     await planningPage.openToDoByName(toDoSeveralSlots.title)
 
     if (toDoSeveralSlots.slots != null) {
-      await planningPage.buttonPanelCreateAddSlot.click({ force: true })
+      await planningPage.clickButtonCreateAddSlot()
       await planningPage.setTimeSlot(0, toDoSeveralSlots.slots[0])
-      await planningPage.buttonPanelCreateAddSlot.click({ force: true })
+      await planningPage.clickButtonCreateAddSlot()
       await planningPage.setTimeSlot(1, toDoSeveralSlots.slots[1])
     }
-    await planningPage.buttonCardClose.click()
+    await planningPage.clickButtonCardClose()
 
     await planningPage.checkToDoExistInCalendar(toDoSeveralSlots.title, 2)
   })
@@ -84,16 +84,16 @@ test.describe('Planning ToDo tests', () => {
     await planningPage.openToDoByName(deleteTimeSlot.title)
 
     if (deleteTimeSlot.slots != null) {
-      await planningPage.buttonPanelCreateAddSlot.click({ force: true })
+      await planningPage.clickButtonCreateAddSlot()
       await planningPage.setTimeSlot(0, deleteTimeSlot.slots[0])
     }
-    await planningPage.buttonCardClose.click()
+    await planningPage.clickButtonCardClose()
     await planningPage.checkToDoExistInCalendar(deleteTimeSlot.title, 1)
 
     // delete time slot
     await planningPage.openToDoByName(deleteTimeSlot.title)
     await planningPage.deleteTimeSlot(0)
-    await planningPage.buttonCardClose.click()
+    await planningPage.clickButtonCardClose()
     await planningPage.checkToDoExistInCalendar(deleteTimeSlot.title, 0)
 
     // add a new time slot
@@ -103,10 +103,10 @@ test.describe('Planning ToDo tests', () => {
 
     await planningPage.openToDoByName(deleteTimeSlot.title)
     if (deleteTimeSlot.slots != null) {
-      await planningPage.buttonPanelCreateAddSlot.click({ force: true })
+      await planningPage.clickButtonCreateAddSlot()
       await planningPage.setTimeSlot(0, deleteTimeSlot.slots[0])
     }
-    await planningPage.buttonCardClose.click()
+    await planningPage.clickButtonCardClose()
   })
 
   test('Plan work for several days', async ({ page }) => {
@@ -147,12 +147,12 @@ test.describe('Planning ToDo tests', () => {
     await planningPage.checkToDoExist(toDoSeveralSlots.title)
     await planningPage.openToDoByName(toDoSeveralSlots.title)
     if (toDoSeveralSlots.slots != null) {
-      await planningPage.buttonPanelCreateAddSlot.click({ force: true })
+      await planningPage.clickButtonCreateAddSlot()
       await planningPage.setTimeSlot(0, toDoSeveralSlots.slots[0])
-      await planningPage.buttonPanelCreateAddSlot.click({ force: true })
+      await planningPage.clickButtonCreateAddSlot()
       await planningPage.setTimeSlot(1, toDoSeveralSlots.slots[1])
     }
-    await planningPage.buttonCardClose.click()
+    await planningPage.clickButtonCardClose()
 
     await planningNavigationMenuPage.clickOnButtonToDoAll()
     await planningPage.openToDoByName(toDoSeveralSlots.title)

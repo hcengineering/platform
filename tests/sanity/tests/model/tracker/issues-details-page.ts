@@ -157,7 +157,7 @@ export class IssuesDetailsPage extends CommonTrackerPage {
   }
 
   async moreActionOnIssue (action: string): Promise<void> {
-    await this.buttonMoreActions.click()
+    await this.buttonMoreActions().click()
     await this.selectFromDropdown(this.page, action)
   }
 
@@ -192,7 +192,7 @@ export class IssuesDetailsPage extends CommonTrackerPage {
   }
 
   async openShowMoreLink (activityHeader: string, position: number = 0): Promise<void> {
-    await this.textActivity.filter({ hasText: activityHeader }).locator('xpath=..').locator('div.showMore').click()
+    await this.textActivity().filter({ hasText: activityHeader }).locator('xpath=..').locator('div.showMore').click()
   }
 
   async checkComparingTextAdded (text: string): Promise<void> {
@@ -206,7 +206,7 @@ export class IssuesDetailsPage extends CommonTrackerPage {
   }
 
   async moreActionOnIssueWithSecondLevel (actionFirst: string, actionSecond: string): Promise<void> {
-    await this.buttonMoreActions.click()
+    await this.buttonMoreActions().click()
     await this.antiPopupSubMenueBtn(actionFirst).hover()
     await this.antiPopupSubMenueBtn(actionFirst).click()
     await this.selectFromDropdown(this.page, actionSecond)

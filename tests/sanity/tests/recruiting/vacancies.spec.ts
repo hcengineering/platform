@@ -97,8 +97,8 @@ test.describe('Vacancy tests', () => {
     await vacancyDetailsPage.addComment('Test Vacancy Comment 12345')
     await vacancyDetailsPage.checkCommentExist('Test Vacancy Comment 12345')
 
-    await vacancyDetailsPage.inputDescription.fill('Edit a Vacancy description')
-    await expect(vacancyDetailsPage.inputDescription).toHaveText('Edit a Vacancy description')
+    await vacancyDetailsPage.inputDescription().fill('Edit a Vacancy description')
+    await expect(vacancyDetailsPage.inputDescription()).toHaveText('Edit a Vacancy description')
 
     await vacancyDetailsPage.addAttachments('cat.jpeg')
 
@@ -131,7 +131,7 @@ test.describe('Vacancy tests', () => {
       `Archieved vacancy "${vacancyName}" visible when hide archved off.`
     )
 
-    await vacanciesPage.buttonHideArchivedVacancies.click()
+    await vacanciesPage.clickOnHideArchivedVacancies()
 
     await vacanciesPage.checkVacancyNotExist(
       vacancyName,

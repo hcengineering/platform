@@ -224,7 +224,7 @@ test.describe('Tracker tests', () => {
       count += time
       await page.click('text="Issues"')
       const issuesPage = new IssuesPage(page)
-      await issuesPage.modelSelectorAll.click()
+      await issuesPage.modelSelectorAll().click()
       await page.click('button:has-text("View")')
       await page.click('.ordering >> nth=0')
       await page.locator('button.menu-item', { hasText: 'Modified date' }).click()

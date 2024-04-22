@@ -8,7 +8,7 @@ export class SelectWorkspacePage extends CommonPage {
   readonly buttonWorkspaceName: Locator
   readonly buttonCreateNewWorkspace: Locator
 
-  constructor (page: Page) {
+  constructor(page: Page) {
     super()
     this.page = page
     this.buttonWorkspace = page.locator('div[class*="workspace"]')
@@ -17,11 +17,11 @@ export class SelectWorkspacePage extends CommonPage {
     this.buttonCreateNewWorkspace = page.locator('div.form-row button')
   }
 
-  async selectWorkspace (workspace: string): Promise<void> {
+  async selectWorkspace(workspace: string): Promise<void> {
     await this.buttonWorkspace.filter({ hasText: workspace }).click()
   }
 
-  async createWorkspace (workspaceName: string): Promise<void> {
+  async createWorkspace(workspaceName: string): Promise<void> {
     await this.buttonCreateWorkspace.waitFor({ state: 'visible' })
     await this.buttonWorkspaceName.fill(workspaceName)
     expect(await this.buttonCreateNewWorkspace.isEnabled()).toBe(true)

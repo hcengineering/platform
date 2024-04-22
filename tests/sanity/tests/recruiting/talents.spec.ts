@@ -87,7 +87,7 @@ test.describe('candidate/talents tests', () => {
     await talentDetailsPage.addSocialLinks('Phone', '123123213213')
     await talentDetailsPage.checkSocialLinks('Phone', '123123213213')
 
-    await talentDetailsPage.inputLocation.fill('Awesome Location')
+    await talentDetailsPage.inputLocation().fill('Awesome Location')
     const title = `Title-${generateId(4)}`
     await talentDetailsPage.addTitle(title)
   })
@@ -101,7 +101,7 @@ test.describe('candidate/talents tests', () => {
     await talentsPage.openTalentByTalentName(talentName)
 
     const talentDetailsPage = new TalentDetailsPage(page)
-    await talentDetailsPage.inputLocation.fill('Awesome Location')
+    await talentDetailsPage.inputLocation().fill('Awesome Location')
     await talentDetailsPage.deleteEntity()
 
     await navigationMenuPage.clickButtonTalents()
@@ -117,7 +117,7 @@ test.describe('candidate/talents tests', () => {
     const talentNameFirst = await talentsPage.createNewTalent()
     await talentsPage.openTalentByTalentName(talentNameFirst)
     let talentDetailsPage = new TalentDetailsPage(page)
-    await talentDetailsPage.inputLocation.fill('Awesome Location Merge1')
+    await talentDetailsPage.inputLocation().fill('Awesome Location Merge1')
     const titleTalent1 = 'TitleMerge1'
     await talentDetailsPage.addTitle(titleTalent1)
     const sourceTalent1 = 'SourceTalent1'
@@ -130,7 +130,7 @@ test.describe('candidate/talents tests', () => {
     const talentNameSecond = await talentsPage.createNewTalent()
     await talentsPage.openTalentByTalentName(talentNameSecond)
     talentDetailsPage = new TalentDetailsPage(page)
-    await talentDetailsPage.inputLocation.fill('Awesome Location Merge2')
+    await talentDetailsPage.inputLocation().fill('Awesome Location Merge2')
     const titleTalent2 = 'TitleMerge2'
     await talentDetailsPage.addTitle(titleTalent2)
     const sourceTalent2 = 'SourceTalent2'
@@ -158,7 +158,7 @@ test.describe('candidate/talents tests', () => {
     await talentsPage.openTalentByTalentName(talentNameFirst)
     await talentDetailsPage.checkSocialLinks('Phone', '123123213213')
     await talentDetailsPage.checkSocialLinks('Email', 'test-merge-2@gmail.com')
-    await expect(talentDetailsPage.inputLocation).toHaveValue('Awesome Location Merge1')
+    await expect(talentDetailsPage.inputLocation()).toHaveValue('Awesome Location Merge1')
     await expect(talentDetailsPage.page.locator('button > span', { hasText: titleTalent2 })).toBeVisible()
     await expect(talentDetailsPage.page.locator('button > span', { hasText: sourceTalent2 })).toBeVisible()
   })
