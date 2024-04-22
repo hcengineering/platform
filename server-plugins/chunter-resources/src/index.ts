@@ -464,22 +464,22 @@ async function OnChannelMembersChanged (tx: TxUpdateDoc<Channel>, control: Trigg
     const context = allContexts.find(({ user }) => user === addedMember)
 
     if (context === undefined) {
-      res.push(
-        control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, tx.objectSpace, {
-          attachedTo: tx.objectId,
-          attachedToClass: tx.objectClass,
-          user: addedMember,
-          hidden: false,
-          lastViewedTimestamp: tx.modifiedOn
-        })
-      )
+      const createTx = control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, tx.objectSpace, {
+        attachedTo: tx.objectId,
+        attachedToClass: tx.objectClass,
+        user: addedMember,
+        hidden: false,
+        lastViewedTimestamp: tx.modifiedOn
+      })
+
+      await control.apply([createTx], true)
     } else {
-      res.push(
-        control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, {
-          hidden: false,
-          lastViewedTimestamp: tx.modifiedOn
-        })
-      )
+      const updateTx = control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, {
+        hidden: false,
+        lastViewedTimestamp: tx.modifiedOn
+      })
+
+      await control.apply([updateTx], true)
     }
   }
 

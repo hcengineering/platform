@@ -403,15 +403,14 @@ export async function pushInboxNotifications (
       hidden: false,
       lastUpdateTimestamp: shouldUpdateTimestamp ? modifiedOn : undefined
     })
-    res.push(createContextTx)
+    await control.apply([createContextTx], true)
     docNotifyContextId = createContextTx.objectId
   } else {
     if (shouldUpdateTimestamp) {
-      res.push(
-        control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, {
-          lastUpdateTimestamp: modifiedOn
-        })
-      )
+      const updateTx = control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, {
+        lastUpdateTimestamp: modifiedOn
+      })
+      await control.apply([updateTx], true)
     }
     docNotifyContextId = context._id
   }
