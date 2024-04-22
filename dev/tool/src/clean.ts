@@ -15,9 +15,11 @@
 
 import attachment from '@hcengineering/attachment'
 import chunter, { type ChatMessage } from '@hcengineering/chunter'
+import activity, { type DocUpdateMessage } from '@hcengineering/activity'
 import contact from '@hcengineering/contact'
 import core, {
   DOMAIN_TX,
+  DOMAIN_STATUS,
   type MeasureContext,
   SortingOrder,
   TxOperations,
@@ -33,18 +35,35 @@ import core, {
   type WorkspaceId,
   type StatusCategory,
   type TxMixin,
-  type TxCUD
+  type TxCUD,
+  type Status,
+  type TxUpdateDoc,
+  type TxCollectionCUD,
+  type Class,
+  type Space
 } from '@hcengineering/core'
 import { getWorkspaceDB } from '@hcengineering/mongo'
-import recruit from '@hcengineering/recruit'
-import recruitModel from '@hcengineering/model-recruit'
+import recruit, { type Applicant } from '@hcengineering/recruit'
+import recruitModel, { defaultApplicantStatuses } from '@hcengineering/model-recruit'
+import lead, { type Lead } from '@hcengineering/lead'
+import leadModel, { defaultLeadStatuses } from '@hcengineering/model-lead'
 import { type StorageAdapter } from '@hcengineering/server-core'
 import { connect } from '@hcengineering/server-tool'
 import tags, { type TagCategory, type TagElement, type TagReference } from '@hcengineering/tags'
-import task, { type ProjectType, type TaskType } from '@hcengineering/task'
-import tracker from '@hcengineering/tracker'
+import task, {
+  type ProjectTypeDescriptor,
+  type Task,
+  type ProjectStatus,
+  type ProjectType,
+  type TaskType
+} from '@hcengineering/task'
+import tracker, { type Issue, classicIssueTaskStatuses, type Project } from '@hcengineering/tracker'
+import trackerModel from '@hcengineering/model-tracker'
 import { deepEqual } from 'fast-equals'
-import { MongoClient } from 'mongodb'
+
+import { type Db, MongoClient } from 'mongodb'
+import { DOMAIN_SPACE } from '@hcengineering/model-core'
+import { DOMAIN_TASK } from '@hcengineering/model-task'
 import { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 
 export async function cleanWorkspace (
@@ -808,4 +827,711 @@ export async function restoreRecruitingTaskTypes (
     await client.close()
     await connection.close()
   }
+}
+
+export async function migrateTrackerDefaultStatuses (
+  mongoUrl: string,
+  workspaceId: WorkspaceId,
+  transactorUrl: string
+): Promise<void> {
+  const connection = (await connect(transactorUrl, workspaceId, undefined, {
+    mode: 'backup',
+    model: 'upgrade'
+  })) as unknown as CoreClient & BackupClient
+  const client = new MongoClient(mongoUrl)
+  try {
+    await client.connect()
+    const db = getWorkspaceDB(client, workspaceId)
+
+    const defaultTypeId = trackerModel.ids.ClassingProjectType
+    const typeDescriptor = trackerModel.descriptors.ProjectType
+    const baseClass = tracker.class.Project
+    const defaultTaskTypeId = trackerModel.taskTypes.Issue
+    const taskTypeClass = task.class.TaskType
+    const baseTaskClass = tracker.class.Issue
+    const getDefaultStatus = (oldStatus: Status): Ref<Status> | undefined => {
+      const classicStatus = classicIssueTaskStatuses.find((c) => c.category === oldStatus.category)
+
+      return classicStatus?.statuses[0][2] as Ref<Status>
+    }
+    const migrateProjects = async (getNewStatus: (oldStatus: Ref<Status>) => Ref<Status>): Promise<void> => {
+      // Find projects of the default type
+      // Default statuses in tracker are not reused anywhere else because they are created
+      // with core.class.Status class while all other statuses are created with
+      // tracker.class.IssueStatus class. So no need to account for these statuses to be
+      // used anywhere else except the default project and task types.
+      const affectedProjects = await connection.findAll<Project>(tracker.class.Project, {
+        type: trackerModel.ids.ClassingProjectType
+      })
+
+      console.log('affectedProjects: ' + affectedProjects.length)
+
+      // Project:
+      // 1. defaultIssueStatus
+      // 2. DocUpdateMessage:update:defaultIssueStatus
+      for (const project of affectedProjects) {
+        const newDefaultIssueStatus = getNewStatus(project.defaultIssueStatus)
+
+        await db
+          .collection(DOMAIN_SPACE)
+          .updateOne({ _id: project._id }, { $set: { defaultIssueStatus: newDefaultIssueStatus } })
+
+        const projectUpdateMessages = await connection.findAll<DocUpdateMessage>(activity.class.DocUpdateMessage, {
+          action: 'update',
+          objectId: project._id,
+          'attributeUpdates.attrKey': 'defaultIssueStatus'
+        })
+
+        for (const updateMessage of projectUpdateMessages) {
+          const statusSet = updateMessage.attributeUpdates?.set[0]
+          const newStatusSet = statusSet != null ? getNewStatus(statusSet as Ref<Status>) : statusSet
+
+          if (statusSet !== newStatusSet) {
+            await db
+              .collection(DOMAIN_ACTIVITY)
+              .updateOne({ _id: updateMessage._id }, { $set: { 'attributeUpdates.set.0': newStatusSet } })
+          }
+        }
+      }
+    }
+
+    await migrateDefaultStatuses<Issue>(connection, db, {
+      defaultTypeId,
+      typeDescriptor,
+      baseClass,
+      defaultTaskTypeId,
+      taskTypeClass,
+      baseTaskClass,
+      getDefaultStatus,
+      migrateProjects
+    })
+  } catch (err: any) {
+    console.log(err.message)
+    console.trace(err)
+  } finally {
+    await client.close()
+    await connection.close()
+  }
+}
+
+export async function migrateRecruitingDefaultStatuses (
+  mongoUrl: string,
+  workspaceId: WorkspaceId,
+  transactorUrl: string
+): Promise<void> {
+  const connection = (await connect(transactorUrl, workspaceId, undefined, {
+    mode: 'backup',
+    model: 'upgrade'
+  })) as unknown as CoreClient & BackupClient
+  const client = new MongoClient(mongoUrl)
+  try {
+    await client.connect()
+    const db = getWorkspaceDB(client, workspaceId)
+
+    const defaultTypeId = recruitModel.template.DefaultVacancy
+    const typeDescriptor = recruitModel.descriptors.VacancyType
+    const baseClass = recruit.class.Vacancy
+    const defaultTaskTypeId = recruit.taskTypes.Applicant
+    const taskTypeClass = task.class.TaskType
+    const baseTaskClass = recruit.class.Applicant
+    const getDefaultStatus = (oldStatus: Status): Ref<Status> | undefined => {
+      return defaultApplicantStatuses.find(
+        (defStatus) => defStatus.category === oldStatus.category && defStatus.name === oldStatus.name
+      )?.id
+    }
+
+    await migrateDefaultStatuses<Applicant>(connection, db, {
+      defaultTypeId,
+      typeDescriptor,
+      baseClass,
+      defaultTaskTypeId,
+      taskTypeClass,
+      baseTaskClass,
+      getDefaultStatus
+    })
+  } catch (err: any) {
+    console.log(err.message)
+    console.trace(err)
+  } finally {
+    await client.close()
+    await connection.close()
+  }
+}
+
+export async function migrateLeadsDefaultStatuses (
+  mongoUrl: string,
+  workspaceId: WorkspaceId,
+  transactorUrl: string
+): Promise<void> {
+  const connection = (await connect(transactorUrl, workspaceId, undefined, {
+    mode: 'backup',
+    model: 'upgrade'
+  })) as unknown as CoreClient & BackupClient
+  const client = new MongoClient(mongoUrl)
+  try {
+    await client.connect()
+    const db = getWorkspaceDB(client, workspaceId)
+
+    const defaultTypeId = leadModel.template.DefaultFunnel
+    const typeDescriptor = leadModel.descriptors.FunnelType
+    const baseClass = lead.class.Funnel
+    const defaultTaskTypeId = leadModel.taskType.Lead
+    const taskTypeClass = task.class.TaskType
+    const baseTaskClass = lead.class.Lead
+    const getDefaultStatus = (oldStatus: Status): Ref<Status> | undefined => {
+      return defaultLeadStatuses.find(
+        (defStatus) =>
+          defStatus.category === oldStatus.category &&
+          (defStatus.name === oldStatus.name || (defStatus.name === 'Negotiation' && oldStatus.name === 'Negotation'))
+      )?.id
+    }
+
+    await migrateDefaultStatuses<Lead>(connection, db, {
+      defaultTypeId,
+      typeDescriptor,
+      baseClass,
+      defaultTaskTypeId,
+      taskTypeClass,
+      baseTaskClass,
+      getDefaultStatus
+    })
+  } catch (err: any) {
+    console.log(err.message)
+    console.trace(err)
+  } finally {
+    await client.close()
+    await connection.close()
+  }
+}
+
+async function migrateDefaultStatuses<T extends Task> (
+  connection: CoreClient & BackupClient,
+  db: Db,
+  options: {
+    defaultTypeId: Ref<ProjectType>
+    typeDescriptor: Ref<ProjectTypeDescriptor>
+    baseClass: Ref<Class<Space>>
+    defaultTaskTypeId: Ref<TaskType>
+    taskTypeClass: Ref<Class<TaskType>>
+    baseTaskClass: Ref<Class<T>>
+    getDefaultStatus: (oldStatus: Status) => Ref<Status> | undefined
+    migrateProjects?: (getNewStatus: (oldStatus: Ref<Status>) => Ref<Status>) => Promise<void>
+  }
+): Promise<void> {
+  const {
+    defaultTypeId,
+    typeDescriptor,
+    baseClass,
+    defaultTaskTypeId,
+    taskTypeClass,
+    baseTaskClass,
+    getDefaultStatus,
+    migrateProjects
+  } = options
+  const h = connection.getHierarchy()
+  const baseTaskClasses = h.getDescendants(tracker.class.Issue).filter((it) => !h.isMixin(it))
+
+  let counter = 0
+  // There are several cases possible based on the history of the workspace
+  // 1. One system default type - pretty fresh or already migrated workspace.
+  // Proceed with the regular scenario.
+  // 2. One custom default type (modifiedBy user or ConfigUser) - migrated system type.
+  // 2.a. If modified by ConfigUser - proceed with the regular scenario. Update to become modified by system.
+  // 2.b. If modified by user - update to use the new ID of the type.
+  // 3. More than one type (one system and one custom) - the tool is running after the WS upgrade.
+  // Not supported for now. Alternatively - Proceed with (2) scenario for the custom one. Delete it in the end.
+
+  const defaultTypes = await connection.findAll<TxCreateDoc<ProjectType>>(core.class.TxCreateDoc, {
+    objectId: defaultTypeId,
+    objectSpace: core.space.Model,
+    'attributes.descriptor': typeDescriptor
+  })
+
+  if (defaultTypes.length === 2) {
+    console.log('Are you running the tool after the workspace has been upgraded?')
+    console.log('NOT SUPPORTED. EXITING.')
+    return
+  } else if (defaultTypes.length === 0) {
+    console.log('No default type found. Was custom and already migrated? Nothing to do.')
+    return
+  }
+
+  const defaultType = defaultTypes[0]
+
+  console.log('**********************')
+  console.log('Default type')
+  console.log(defaultType)
+
+  if (defaultType.modifiedBy !== core.account.System) {
+    if (defaultType.modifiedBy === core.account.ConfigUser) {
+      console.log('Moving the existing default type created by ConfigUser to a system one')
+
+      // Most likely the task type is also modified by ConfigUser
+      const defaultTaskType = await connection.findOne<TxCreateDoc<TaskType>>(core.class.TxCreateDoc, {
+        objectId: defaultTaskTypeId,
+        objectSpace: core.space.Model,
+        'attributes.parent': defaultTypeId
+      })
+
+      if (defaultTaskType?.modifiedBy === core.account.ConfigUser) {
+        console.log('Moving the existing default task type created by ConfigUser to a system one')
+        await db.collection(DOMAIN_TX).updateOne(
+          { _id: defaultTaskType._id },
+          {
+            $set: {
+              modifiedBy: core.account.System
+            }
+          }
+        )
+      } else if (defaultTaskType?.modifiedBy !== core.account.System) {
+        console.log('Default task type has been modified by user.')
+        console.log('NOT SUPPORTED. EXITING.')
+        return
+      }
+
+      await db.collection(DOMAIN_TX).updateOne(
+        { _id: defaultType._id },
+        {
+          $set: {
+            modifiedBy: core.account.System
+          }
+        }
+      )
+    } else {
+      // modified by user
+      // Update to use the new ID of the type if no default task type
+      if (defaultType.attributes.tasks.includes(defaultTaskTypeId)) {
+        console.log('Default type has been modified by user and it contains default task type')
+        console.log('NOT SUPPORTED. EXITING.')
+        return
+      }
+      console.log('Moving the existing default type to a custom one')
+      const newId = defaultType.objectId + '-custom'
+      await db.collection(DOMAIN_TX).updateOne(
+        { _id: defaultType._id },
+        {
+          $set: {
+            'attributes.name': defaultType.attributes.name + ' (custom)',
+            objectId: newId
+          }
+        }
+      )
+      await db.collection(DOMAIN_TX).updateMany(
+        {
+          objectId: defaultType.objectId,
+          objectSpace: core.space.Model
+        },
+        {
+          $set: {
+            objectId: newId
+          }
+        }
+      )
+      await db.collection(DOMAIN_TX).updateMany(
+        {
+          objectId: { $in: defaultType.attributes.tasks },
+          objectSpace: core.space.Model,
+          'attributes.parent': defaultTypeId
+        },
+        {
+          $set: {
+            'attributes.parent': newId
+          }
+        }
+      )
+      await db.collection(DOMAIN_SPACE).updateMany(
+        {
+          _class: baseClass,
+          type: defaultTypeId
+        },
+        {
+          $set: { type: newId }
+        }
+      )
+      return
+    }
+  }
+
+  // Find statuses for the default task type
+  const existingTypeStatuses = defaultType.attributes.statuses.filter((s) => s.taskType === defaultTaskTypeId)
+
+  if (existingTypeStatuses.length === 0) {
+    console.log('No statuses found for the default task type')
+    return
+  }
+
+  let oldStatusesIds = existingTypeStatuses.map((s) => (s as any).__oldId ?? s._id)
+
+  // For each status find it's category and check if it's already been migrated
+  const oldStatuses = await connection.findAll<Status>(core.class.Status, {
+    _id: { $in: oldStatusesIds },
+    __superseded: { $exists: false }
+  })
+
+  oldStatusesIds = oldStatusesIds.filter((s) => oldStatuses.find((os) => os._id === s) !== undefined)
+
+  // Return if all statuses are the same
+  if (oldStatusesIds.length === 0) {
+    console.log('All statuses have been already migrated?')
+    return
+  }
+
+  console.log('Old statuses')
+  console.log(oldStatuses)
+
+  // Build statuses mapping oldId -> {category, newId}
+  const statusMapping: Record<Ref<Status>, any> = {}
+  for (const s of oldStatuses) {
+    const defaultStatusId = getDefaultStatus(s)
+
+    if (defaultStatusId === undefined) {
+      console.log('No default status found for the status being migrated: ' + s._id)
+      console.log('EXITING')
+      return
+    }
+
+    statusMapping[s._id] = {
+      category: s.category,
+      newId: defaultStatusId
+    }
+  }
+
+  console.log('Status mapping')
+  console.log(statusMapping)
+
+  if (Object.entries(statusMapping).every(([oldId, { newId }]) => oldId === newId)) {
+    console.log('All statuses have been already migrated or running on upgraded workspace')
+    return
+  }
+
+  // Migration
+
+  function getNewProjectStatus (status: ProjectStatus): ProjectStatus {
+    const newId = statusMapping[status._id]?.newId
+
+    if (newId === undefined) {
+      return status
+    }
+
+    return { ...status, _id: newId }
+  }
+
+  function getNewStatus (status: Ref<Status>): Ref<Status> {
+    return statusMapping[status]?.newId ?? status
+  }
+
+  // For default type
+  // 1. Update create TX as it contains all the statuses right away
+  // 2. Update all update TXes with statuses
+
+  const newProjTypeStatuses = defaultType.attributes.statuses.map((ps) => {
+    const newPs = getNewProjectStatus(ps)
+
+    if (ps._id === newPs._id) {
+      return {
+        ...ps
+      }
+    }
+
+    return {
+      ...newPs,
+      __oldId: ps._id
+    }
+  })
+
+  console.log('newProjTypeStatuses')
+  console.log(newProjTypeStatuses)
+
+  if (
+    !areSameArrays(
+      oldStatuses.map((s) => s._id),
+      newProjTypeStatuses.map((s) => s._id)
+    )
+  ) {
+    await db
+      .collection(DOMAIN_TX)
+      .updateOne({ _id: defaultType._id }, { $set: { 'attributes.statuses': newProjTypeStatuses } })
+  } else {
+    console.log('No need to update default type statuses')
+  }
+
+  const defaultTypeStatusesUpdates = await connection.findAll<TxUpdateDoc<ProjectType>>(core.class.TxUpdateDoc, {
+    objectId: defaultTypeId,
+    objectSpace: core.space.Model,
+    'operations.statuses': { $exists: true }
+  })
+
+  console.log('defaultTypeStatusesUpdates: ' + defaultTypeStatusesUpdates.length)
+
+  counter = 0
+  for (const ptsUpdate of defaultTypeStatusesUpdates) {
+    const newUpdateStatuses = ptsUpdate.operations.statuses?.map(getNewProjectStatus)
+
+    if (areSameArrays(newUpdateStatuses, ptsUpdate.operations.statuses)) {
+      continue
+    }
+
+    counter++
+    await db
+      .collection(DOMAIN_TX)
+      .updateOne({ _id: ptsUpdate._id }, { $set: { 'operations.statuses': newUpdateStatuses } })
+  }
+  console.log('defaultTypeStatusesUpdates updated: ' + counter)
+
+  // For other types with the same descriptor
+  // 1. Update all create TXes with statuses
+  // 1. Update all update TXes with statuses
+  // 2. Update all push TXes with statuses
+
+  const otherTypeStatusesCreates = await connection.findAll<TxCreateDoc<ProjectType>>(core.class.TxCreateDoc, {
+    objectId: { $ne: defaultTypeId },
+    objectClass: task.class.ProjectType,
+    objectSpace: core.space.Model,
+    'attributes.descriptor': typeDescriptor
+  })
+
+  console.log('otherTypeStatusesCreates: ' + otherTypeStatusesCreates.length)
+
+  counter = 0
+  for (const ptsCreate of otherTypeStatusesCreates) {
+    const newUpdateStatuses = ptsCreate.attributes.statuses?.map(getNewProjectStatus)
+
+    if (areSameArrays(newUpdateStatuses, ptsCreate.attributes.statuses)) {
+      continue
+    }
+
+    counter++
+    await db
+      .collection(DOMAIN_TX)
+      .updateOne({ _id: ptsCreate._id }, { $set: { 'attributes.statuses': newUpdateStatuses } })
+  }
+  console.log('otherTypeStatusesCreates updated: ' + counter)
+
+  const otherTypeStatusesUpdates = await connection.findAll<TxUpdateDoc<ProjectType>>(core.class.TxUpdateDoc, {
+    objectId: { $in: otherTypeStatusesCreates.map((sc) => sc.objectId) },
+    objectClass: task.class.ProjectType,
+    objectSpace: core.space.Model,
+    'operations.statuses': { $exists: true }
+  })
+  console.log('otherTypeStatusesUpdates: ' + otherTypeStatusesUpdates.length)
+
+  counter = 0
+  for (const ptsUpdate of otherTypeStatusesUpdates) {
+    const newUpdateStatuses = ptsUpdate.operations.statuses?.map(getNewProjectStatus)
+
+    if (areSameArrays(newUpdateStatuses, ptsUpdate.operations.statuses)) {
+      continue
+    }
+
+    counter++
+    await db
+      .collection(DOMAIN_TX)
+      .updateOne({ _id: ptsUpdate._id }, { $set: { 'operations.statuses': newUpdateStatuses } })
+  }
+  console.log('otherTypeStatusesUpdates updated: ' + counter)
+
+  const otherTypeStatusesPushes = await connection.findAll<TxUpdateDoc<ProjectType>>(core.class.TxUpdateDoc, {
+    objectId: { $in: otherTypeStatusesCreates.map((sc) => sc.objectId) },
+    objectClass: task.class.ProjectType,
+    objectSpace: core.space.Model,
+    'operations.$push.statuses': { $exists: true }
+  })
+
+  console.log('otherTypeStatusesPushes: ' + otherTypeStatusesPushes.length)
+
+  counter = 0
+  for (const ptsUpdate of otherTypeStatusesPushes) {
+    const pushedProjectStatus = ptsUpdate.operations.$push?.statuses
+    if (pushedProjectStatus === undefined) {
+      continue
+    }
+
+    const newPushStatus = getNewProjectStatus(pushedProjectStatus as ProjectStatus)
+
+    if (pushedProjectStatus === newPushStatus) {
+      continue
+    }
+
+    counter++
+    await db
+      .collection(DOMAIN_TX)
+      .updateOne({ _id: ptsUpdate._id }, { $set: { 'operations.$push.statuses': newPushStatus } })
+  }
+  console.log('otherTypeStatusesPushes updated: ' + counter)
+
+  // All task types
+  // 1. Update create TX
+  // 2. Update all update TXes with statuses
+
+  const allTaskTypes = await connection.findAll<TxCreateDoc<TaskType>>(core.class.TxCreateDoc, {
+    objectClass: taskTypeClass,
+    'attributes.ofClass': { $in: baseTaskClasses }
+  })
+
+  console.log('allTaskTypes: ' + allTaskTypes.length)
+
+  counter = 0
+  for (const taskType of allTaskTypes) {
+    const newTaskTypeStatuses = taskType.attributes.statuses.map(getNewStatus)
+
+    if (areSameArrays(newTaskTypeStatuses, taskType.attributes.statuses)) {
+      continue
+    }
+
+    counter++
+    await db
+      .collection(DOMAIN_TX)
+      .updateOne({ _id: taskType._id }, { $set: { 'attributes.statuses': newTaskTypeStatuses } })
+  }
+  console.log('allTaskTypes updated: ' + counter)
+
+  const allTaskTypeStatusesUpdates = await connection.findAll<TxUpdateDoc<TaskType>>(core.class.TxUpdateDoc, {
+    objectClass: taskTypeClass,
+    objectId: { $in: allTaskTypes.map((tt) => tt.objectId) },
+    'operations.statuses': { $exists: true }
+  })
+
+  console.log('allTaskTypeStatusesUpdates: ' + allTaskTypeStatusesUpdates.length)
+
+  counter = 0
+  for (const ttsUpdate of allTaskTypeStatusesUpdates) {
+    const newTaskTypeUpdateStatuses = ttsUpdate.operations.statuses?.map(getNewStatus)
+
+    console.log('newTaskTypeUpdateStatuses for ' + ttsUpdate._id)
+    console.log(newTaskTypeUpdateStatuses)
+
+    if (areSameArrays(newTaskTypeUpdateStatuses, ttsUpdate.operations.statuses)) {
+      console.log('Nothing to update')
+      continue
+    }
+
+    counter++
+    await db
+      .collection(DOMAIN_TX)
+      .updateOne({ _id: ttsUpdate._id }, { $set: { 'operations.statuses': newTaskTypeUpdateStatuses } })
+  }
+  console.log('allTaskTypeStatusesUpdates updated: ' + counter)
+
+  await migrateProjects?.(getNewStatus)
+
+  // For all Tasks:
+  // 1. status
+  // 2. TxCollectionCUD:TxCreateDoc
+  // 3. TxCollectionCUD:TxUpdateDoc
+  // 3. DocUpdateMessage:action:update&attributeUpdates:attrKey:status
+
+  const affectedBaseTasks = await connection.findAll<T>(baseTaskClass, {
+    status: { $in: oldStatusesIds }
+  })
+
+  console.log('affectedBaseTasks: ' + affectedBaseTasks.length)
+
+  counter = 0
+  for (const baseTask of affectedBaseTasks) {
+    const newStatus = getNewStatus(baseTask.status)
+
+    if (newStatus !== baseTask.status) {
+      counter++
+      await db.collection(DOMAIN_TASK).updateOne({ _id: baseTask._id }, { $set: { status: newStatus } })
+    }
+  }
+  console.log('affectedBaseTasks updated: ' + counter)
+
+  const baseTaskCreateTxes = await connection.findAll<TxCollectionCUD<T, T>>(core.class.TxCollectionCUD, {
+    'tx._class': core.class.TxCreateDoc,
+    'tx.objectClass': { $in: baseTaskClasses },
+    'tx.attributes.status': { $in: oldStatusesIds }
+  })
+
+  console.log('Base task create TXes: ', baseTaskCreateTxes.length)
+
+  counter = 0
+  for (const baseTaskCreateTx of baseTaskCreateTxes) {
+    const tx = baseTaskCreateTx.tx as TxCreateDoc<T>
+    const newStatus = getNewStatus(tx.attributes.status)
+
+    if (newStatus !== tx.attributes.status) {
+      counter++
+      await db
+        .collection(DOMAIN_TX)
+        .updateOne({ _id: baseTaskCreateTx._id }, { $set: { 'tx.attributes.status': newStatus } })
+    }
+  }
+  console.log('Base task create TXes updated: ' + counter)
+
+  const baseTaskUpdateTxes = await connection.findAll<TxCollectionCUD<T, T>>(core.class.TxCollectionCUD, {
+    'tx._class': core.class.TxUpdateDoc,
+    'tx.objectClass': { $in: baseTaskClasses },
+    'tx.operations.status': { $in: oldStatusesIds }
+  })
+
+  console.log('Base task update TXes: ' + baseTaskUpdateTxes.length)
+
+  counter = 0
+  for (const baseTaskUpdateTx of baseTaskUpdateTxes) {
+    const tx = baseTaskUpdateTx.tx as TxUpdateDoc<T>
+    const newStatus = tx.operations.status !== undefined ? getNewStatus(tx.operations.status) : undefined
+
+    if (newStatus !== tx.operations.status) {
+      counter++
+      await db
+        .collection(DOMAIN_TX)
+        .updateOne({ _id: baseTaskUpdateTx._id }, { $set: { 'tx.operations.status': newStatus } })
+    }
+  }
+  console.log('Base task update TXes updated: ' + counter)
+
+  const baseTaskUpdateMessages = await connection.findAll<DocUpdateMessage>(activity.class.DocUpdateMessage, {
+    action: 'update',
+    objectClass: { $in: baseTaskClasses },
+    'attributeUpdates.attrKey': 'status',
+    'attributeUpdates.set.0.': { $in: oldStatusesIds }
+  })
+
+  console.log('Base task update messages: ' + baseTaskUpdateMessages.length)
+
+  counter = 0
+  for (const updateMessage of baseTaskUpdateMessages) {
+    const statusSet = updateMessage.attributeUpdates?.set[0]
+    const newStatusSet = statusSet != null ? getNewStatus(statusSet as Ref<Status>) : statusSet
+
+    if (statusSet !== newStatusSet) {
+      counter++
+      await db
+        .collection(DOMAIN_ACTIVITY)
+        .updateOne({ _id: updateMessage._id }, { $set: { 'attributeUpdates.set.0': newStatusSet } })
+    }
+  }
+  console.log('Base task update messages updated: ' + counter)
+
+  console.log('Updating statuses themselves:')
+  counter = 0
+  for (const oldStatus of oldStatuses) {
+    const newStatus = getNewStatus(oldStatus._id)
+
+    if (newStatus !== oldStatus._id) {
+      console.log('Updating status from ' + oldStatus._id + ' to ' + newStatus)
+
+      counter++
+      await db.collection(DOMAIN_STATUS).updateOne({ _id: oldStatus._id }, { $set: { __superseded: true } })
+      await db.collection(DOMAIN_STATUS).insertOne({
+        ...oldStatus,
+        _id: newStatus as any,
+        __migratedFrom: oldStatus._id
+      })
+    }
+  }
+  console.log('Statuses updated: ' + counter)
+}
+
+function areSameArrays (arr1: any[] | undefined, arr2: any[] | undefined): boolean {
+  if (arr1 === arr2) {
+    return true
+  }
+
+  if (arr1 === undefined || arr2 === undefined) {
+    return false
+  }
+
+  return arr1.length === arr2.length && arr1.every((elem, idx) => elem === arr2[idx])
 }

@@ -48,6 +48,7 @@ import {
   taskId,
   type ProjectStatus
 } from '@hcengineering/task'
+
 import task from './plugin'
 import { DOMAIN_TASK } from '.'
 

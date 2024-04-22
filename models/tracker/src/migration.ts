@@ -46,6 +46,7 @@ import {
   type Project,
   classicIssueTaskStatuses
 } from '@hcengineering/tracker'
+
 import tracker from './plugin'
 
 async function createDefaultProject (tx: TxOperations): Promise<void> {
