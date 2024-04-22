@@ -5,7 +5,7 @@ import { MergeContacts } from './types'
 export class TalentDetailsPage extends CommonRecruitingPage {
   readonly page: Page
 
-  constructor(page: Page) {
+  constructor (page: Page) {
     super(page)
     this.page = page
   }
@@ -27,7 +27,7 @@ export class TalentDetailsPage extends CommonRecruitingPage {
 
   readonly textAttachmentName = (): Locator => this.page.locator('div.name a') // Assuming this locator is also used appropriately
 
-  async addSkill(skillTag: string, skillDescription: string): Promise<void> {
+  async addSkill (skillTag: string, skillDescription: string): Promise<void> {
     await this.buttonAddSkill().click()
     await this.pressCreateButtonSelectPopup(this.page)
     await this.addNewTagPopup(this.page, skillTag, skillDescription)
@@ -36,21 +36,21 @@ export class TalentDetailsPage extends CommonRecruitingPage {
     await this.page.keyboard.press('Escape')
   }
 
-  async checkSkill(skillTag: string): Promise<void> {
+  async checkSkill (skillTag: string): Promise<void> {
     await expect(this.textTagItem().first()).toContainText(skillTag)
   }
 
-  async addTitle(title: string): Promise<void> {
+  async addTitle (title: string): Promise<void> {
     await this.buttonInputTitle().click()
     await this.fillToSelectPopup(this.page, title)
   }
 
-  async addSource(source: string): Promise<void> {
+  async addSource (source: string): Promise<void> {
     await this.buttonInputSource().click()
     await this.fillToSelectPopup(this.page, source)
   }
 
-  async mergeContacts(talentName: MergeContacts): Promise<void> {
+  async mergeContacts (talentName: MergeContacts): Promise<void> {
     await this.buttonMoreActions().click()
     await this.buttonMergeContacts().click()
 
@@ -84,7 +84,7 @@ export class TalentDetailsPage extends CommonRecruitingPage {
     await this.buttonPopupMergeContacts().click()
   }
 
-  async waitTalentDetailsOpened(applicationFirstName: string, applicationLastName?: string): Promise<void> {
+  async waitTalentDetailsOpened (applicationFirstName: string, applicationLastName?: string): Promise<void> {
     await this.page.waitForSelector(`div[class*="header"] div.name:first-child :has-text("${applicationFirstName}")`)
     if (applicationLastName != null) {
       await this.page.waitForSelector(`div[class*="header"] div.name:nth-child(2) :has-text("${applicationFirstName}")`)

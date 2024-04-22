@@ -6,7 +6,7 @@ import { generateId } from '../../utils'
 export class ApplicationsPage extends CommonRecruitingPage {
   readonly page: Page
 
-  constructor(page: Page) {
+  constructor (page: Page) {
     super(page)
     this.page = page
   }
@@ -25,7 +25,7 @@ export class ApplicationsPage extends CommonRecruitingPage {
   readonly textTableFirstCell = (): Locator => this.page.locator('div[class$="firstCell"]')
   readonly buttonTypeSelector = (): Locator => this.page.locator('div[class*="header"] div[class*="title"] button')
 
-  async createNewApplication(data: NewApplication): Promise<void> {
+  async createNewApplication (data: NewApplication): Promise<void> {
     await this.buttonCreateApplication().click()
     await this.selectTalent(data.talentsName ?? 'first')
     await this.selectVacancy(data.vacancy)
@@ -33,7 +33,7 @@ export class ApplicationsPage extends CommonRecruitingPage {
     await this.buttonCreateNewApplication().click()
   }
 
-  async createNewApplicationWithNewTalent(data: NewApplication): Promise<TalentName> {
+  async createNewApplicationWithNewTalent (data: NewApplication): Promise<TalentName> {
     const talentName: TalentName = {
       firstName: `TestFirst-${generateId(2)}`,
       lastName: `TestLast-${generateId(2)}`
@@ -50,29 +50,29 @@ export class ApplicationsPage extends CommonRecruitingPage {
     return talentName
   }
 
-  async selectTalent(name: string): Promise<void> {
+  async selectTalent (name: string): Promise<void> {
     await this.buttonTalentSelector().click()
     await this.selectMenuItem(this.page, name)
   }
 
-  async selectVacancy(name: string): Promise<void> {
+  async selectVacancy (name: string): Promise<void> {
     await this.buttonSpaceSelector().click()
     await this.selectMenuItem(this.page, name)
   }
 
-  async selectRecruiter(name: string): Promise<void> {
+  async selectRecruiter (name: string): Promise<void> {
     await this.buttonAssignedRecruiter().click()
     await this.selectMenuItem(this.page, name)
   }
 
-  async openApplicationByTalentName(talentName: TalentName): Promise<void> {
+  async openApplicationByTalentName (talentName: TalentName): Promise<void> {
     await this.page
       .locator('tr', { hasText: `${talentName.lastName} ${talentName.firstName}` })
       .locator('div[class*="firstCell"]')
       .click()
   }
 
-  async checkApplicationState(talentName: TalentName, done: string): Promise<void> {
+  async checkApplicationState (talentName: TalentName, done: string): Promise<void> {
     await expect(
       this.page
         .locator('tr', { hasText: `${talentName.lastName} ${talentName.firstName}` })
@@ -81,11 +81,11 @@ export class ApplicationsPage extends CommonRecruitingPage {
     ).toHaveText(done)
   }
 
-  async checkApplicationNotExist(applicationId: string): Promise<void> {
+  async checkApplicationNotExist (applicationId: string): Promise<void> {
     await expect(this.textTableFirstCell().filter({ hasText: applicationId })).toHaveCount(0)
   }
 
-  async changeApplicationStatus(talentName: TalentName, status: string): Promise<void> {
+  async changeApplicationStatus (talentName: TalentName, status: string): Promise<void> {
     await this.page
       .locator('tr', { hasText: `${talentName.lastName} ${talentName.firstName}` })
       .locator('td')
@@ -94,7 +94,7 @@ export class ApplicationsPage extends CommonRecruitingPage {
     await this.selectFromDropdown(this.page, status)
   }
 
-  async selectType(type: string): Promise<void> {
+  async selectType (type: string): Promise<void> {
     await this.buttonTypeSelector().click()
     await this.selectMenuItem(this.page, type)
   }

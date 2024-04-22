@@ -5,7 +5,7 @@ import { NewDocument } from './types'
 export class DocumentCreatePopup extends CommonPage {
   readonly page: Page
 
-  constructor(page: Page) {
+  constructor (page: Page) {
     super()
     this.page = page
   }
@@ -18,7 +18,7 @@ export class DocumentCreatePopup extends CommonPage {
   readonly inputTitle = (): Locator => this.form().locator('input')
   readonly buttonSubmit = (): Locator => this.form().locator('button[type="submit"]')
 
-  async createDocument(data: NewDocument): Promise<void> {
+  async createDocument (data: NewDocument): Promise<void> {
     await this.inputTitle().fill(data.title)
 
     if (data.space != null) {

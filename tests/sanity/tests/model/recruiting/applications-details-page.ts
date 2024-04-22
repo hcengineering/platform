@@ -4,7 +4,7 @@ import { CommonRecruitingPage } from './common-recruiting-page'
 export class ApplicationsDetailsPage extends CommonRecruitingPage {
   readonly page: Page
 
-  constructor(page: Page) {
+  constructor (page: Page) {
     super(page)
     this.page = page
   }
@@ -19,19 +19,19 @@ export class ApplicationsDetailsPage extends CommonRecruitingPage {
   readonly buttonSelectCollaborators = (): Locator =>
     this.page.locator('xpath=//span[text()="Collaborators"]/..//button')
 
-  async getApplicationId(): Promise<string> {
+  async getApplicationId (): Promise<string> {
     const applicationId = await this.textApplicationId().textContent()
     expect(applicationId !== null).toBeTruthy()
     return applicationId ?? ''
   }
 
-  async changeState(status: string): Promise<void> {
+  async changeState (status: string): Promise<void> {
     await this.buttonState().click()
     await this.selectFromDropdown(this.page, status)
     await expect(this.buttonState()).toContainText(status)
   }
 
-  async addCollaborators(name: string): Promise<void> {
+  async addCollaborators (name: string): Promise<void> {
     await this.buttonSelectCollaborators().click()
     if (name === 'all') {
       const checks = this.page.locator('div.popup button.menu-item')
@@ -45,7 +45,7 @@ export class ApplicationsDetailsPage extends CommonRecruitingPage {
     await this.buttonSelectCollaborators().press('Escape')
   }
 
-  async waitApplicationDetailsOpened(applicationId: string): Promise<void> {
+  async waitApplicationDetailsOpened (applicationId: string): Promise<void> {
     await expect(this.textApplicationId()).toHaveText(applicationId)
   }
 }

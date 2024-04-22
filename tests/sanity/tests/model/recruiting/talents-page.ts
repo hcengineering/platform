@@ -6,7 +6,7 @@ import { CommonRecruitingPage } from './common-recruiting-page'
 export class TalentsPage extends CommonRecruitingPage {
   readonly page: Page
 
-  constructor(page: Page) {
+  constructor (page: Page) {
     super(page)
     this.page = page
   }
@@ -25,7 +25,7 @@ export class TalentsPage extends CommonRecruitingPage {
 
   readonly inputSearchTalent = (): Locator => this.page.locator('div[class*="header"] input')
 
-  async createNewTalent(): Promise<TalentName> {
+  async createNewTalent (): Promise<TalentName> {
     const talentName: TalentName = {
       firstName: `TestFirst-${generateId(4)}`,
       lastName: `TestLast-${generateId(4)}`
@@ -34,35 +34,35 @@ export class TalentsPage extends CommonRecruitingPage {
     return talentName
   }
 
-  async createNewTalentWithName(firstName: string, lastName: string): Promise<void> {
+  async createNewTalentWithName (firstName: string, lastName: string): Promise<void> {
     await this.buttonCreateTalent().click()
     await this.createNewTalentPopup(this.page, firstName, lastName)
   }
 
-  async openTalentByTalentName(talentName: TalentName): Promise<void> {
+  async openTalentByTalentName (talentName: TalentName): Promise<void> {
     await this.page
       .locator('tr', { hasText: `${talentName.lastName} ${talentName.firstName}` })
       .locator('a.noOverflow')
       .click()
   }
 
-  async checkTalentNotExist(talentName: TalentName): Promise<void> {
+  async checkTalentNotExist (talentName: TalentName): Promise<void> {
     await expect(this.page.locator('tr', { hasText: `${talentName.lastName} ${talentName.firstName}` })).toHaveCount(0)
   }
 
-  async rightClickAction(talentName: TalentName, action: string): Promise<void> {
+  async rightClickAction (talentName: TalentName, action: string): Promise<void> {
     await this.page
       .locator('tr', { hasText: `${talentName.lastName} ${talentName.firstName}` })
       .click({ button: 'right' })
     await this.selectFromDropdown(this.page, action)
   }
 
-  async checkMatchVacancy(talentName: string, score: string): Promise<void> {
+  async checkMatchVacancy (talentName: string, score: string): Promise<void> {
     await expect(this.textVacancyMatchingTalent()).toContainText(talentName, { ignoreCase: true })
     await expect(this.textVacancyMatchingScore()).toContainText(score)
   }
 
-  async searchTalentByTalentName(talentName: TalentName): Promise<void> {
+  async searchTalentByTalentName (talentName: TalentName): Promise<void> {
     await this.inputSearchTalent().fill(`${talentName.lastName} ${talentName.firstName}`)
     await this.inputSearchTalent().press('Enter')
     await expect(this.page.locator('tr', { hasText: `${talentName.lastName} ${talentName.firstName}` })).toBeVisible()

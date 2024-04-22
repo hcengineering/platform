@@ -3,7 +3,7 @@ import { type Locator, type Page } from '@playwright/test'
 export class ChunterPage {
   readonly page: Page
 
-  constructor(page: Page) {
+  constructor (page: Page) {
     this.page = page
   }
 
@@ -18,15 +18,15 @@ export class ChunterPage {
 
   // ACTIONS
 
-  async clickChannelBrowser(): Promise<void> {
+  async clickChannelBrowser (): Promise<void> {
     await this.buttonChannelBrowser().click()
   }
 
-  async clickNewChannelHeader(): Promise<void> {
+  async clickNewChannelHeader (): Promise<void> {
     await this.buttonNewChannelHeader().click()
   }
 
-  async createPrivateChannel(channelName: string, privateChannel: boolean): Promise<void> {
+  async createPrivateChannel (channelName: string, privateChannel: boolean): Promise<void> {
     await this.inputNewChannelName().fill(channelName)
     if (privateChannel) {
       await this.checkboxMakePublic().click()
@@ -35,7 +35,7 @@ export class ChunterPage {
     await this.buttonCreateChannel().click()
   }
 
-  async openChannel(channelName: string): Promise<void> {
+  async openChannel (channelName: string): Promise<void> {
     await this.buttonOpenChannel().filter({ hasText: channelName }).click()
   }
 }

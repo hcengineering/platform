@@ -5,7 +5,7 @@ import { CommonRecruitingPage } from './common-recruiting-page'
 export class CompaniesPage extends CommonRecruitingPage {
   readonly page: Page
 
-  constructor(page: Page) {
+  constructor (page: Page) {
     super(page)
     this.page = page
   }
@@ -22,7 +22,7 @@ export class CompaniesPage extends CommonRecruitingPage {
 
   readonly companyByName = (companyName: string): Locator => this.page.locator('tr a', { hasText: companyName })
 
-  async createNewCompany(data: NewCompany): Promise<void> {
+  async createNewCompany (data: NewCompany): Promise<void> {
     await expect(this.pageHeader()).toBeVisible()
     await this.buttonCreateNewCompanies().click()
 
@@ -37,11 +37,11 @@ export class CompaniesPage extends CommonRecruitingPage {
     await this.inputCreateOrganizationModalCreate().click()
   }
 
-  async openCompanyByName(companyName: string): Promise<void> {
+  async openCompanyByName (companyName: string): Promise<void> {
     await this.companyByName(companyName).click()
   }
 
-  async checkCompanyNotExist(companyName: string): Promise<void> {
+  async checkCompanyNotExist (companyName: string): Promise<void> {
     await expect(this.companyByName(companyName)).toHaveCount(0)
   }
 }

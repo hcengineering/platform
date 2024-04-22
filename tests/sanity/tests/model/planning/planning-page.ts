@@ -5,7 +5,7 @@ import { CalendarPage } from '../calendar-page'
 export class PlanningPage extends CalendarPage {
   readonly page: Page
 
-  constructor(page: Page) {
+  constructor (page: Page) {
     super(page)
     this.page = page
   }
@@ -66,20 +66,20 @@ export class PlanningPage extends CalendarPage {
   readonly buttonPopupSelectDateNextMonth = (): Locator =>
     this.popup().locator('div.header > div:last-child > button:last-child')
 
-  async clickButtonCreateAddSlot(): Promise<void> {
+  async clickButtonCreateAddSlot (): Promise<void> {
     await this.buttonPanelCreateAddSlot().click({ force: true })
   }
 
-  async clickButtonCardClose(): Promise<void> {
+  async clickButtonCardClose (): Promise<void> {
     await this.buttonCardClose().click()
   }
 
-  async createNewToDoFromInput(title: string): Promise<void> {
+  async createNewToDoFromInput (title: string): Promise<void> {
     await this.inputCreateToDoTitle().fill(title)
     await this.page.keyboard.press('Enter')
   }
 
-  async createNewToDo(data: NewToDo): Promise<void> {
+  async createNewToDo (data: NewToDo): Promise<void> {
     await this.buttonCreateNewToDo().click()
 
     await this.inputPopupCreateTitle().fill(data.title)
@@ -88,7 +88,7 @@ export class PlanningPage extends CalendarPage {
     await this.buttonCreateToDo().click()
   }
 
-  async updateToDo(data: NewToDo, popup: boolean = false): Promise<void> {
+  async updateToDo (data: NewToDo, popup: boolean = false): Promise<void> {
     if (data.description != null) {
       await (popup
         ? this.inputPopupCreateDescription().fill(data.description)
@@ -132,7 +132,7 @@ export class PlanningPage extends CalendarPage {
     }
   }
 
-  public async setTimeSlot(rowNumber: number, slot: Slot, popup: boolean = false): Promise<void> {
+  public async setTimeSlot (rowNumber: number, slot: Slot, popup: boolean = false): Promise<void> {
     const p = popup
       ? 'div.popup div.horizontalBox div.end div.scroller-container div.box div.flex-between.min-w-full'
       : 'div.hulyModal-container div.slots-content div.scroller-container div.box div.flex-between.min-w-full'
@@ -172,7 +172,7 @@ export class PlanningPage extends CalendarPage {
     await this.fillSelectDatePopup(slot.dateEnd.day, slot.dateEnd.month, slot.dateEnd.year, slot.timeEnd)
   }
 
-  private async checkTimeSlot(rowNumber: number, slot: Slot, popup: boolean = false): Promise<void> {
+  private async checkTimeSlot (rowNumber: number, slot: Slot, popup: boolean = false): Promise<void> {
     const p = popup
       ? 'div.popup div.horizontalBox div.end div.scroller-container div.box div.flex-between.min-w-full'
       : 'div.hulyModal-container div.slots-content div.scroller-container div.box div.flex-between.min-w-full'
@@ -185,23 +185,23 @@ export class PlanningPage extends CalendarPage {
     await expect(row.locator('div.dateEditor-container.difference button > div:first-child')).toHaveText(slot.timeEnd)
   }
 
-  async openToDoByName(toDoName: string): Promise<void> {
+  async openToDoByName (toDoName: string): Promise<void> {
     await this.page.locator('button.hulyToDoLine-container div[class$="overflow-label"]', { hasText: toDoName }).click()
   }
 
-  async checkToDoNotExist(toDoName: string): Promise<void> {
+  async checkToDoNotExist (toDoName: string): Promise<void> {
     await expect(
       this.page.locator('button.hulyToDoLine-container div[class$="overflow-label"]', { hasText: toDoName })
     ).toHaveCount(0)
   }
 
-  async checkToDoExist(toDoName: string): Promise<void> {
+  async checkToDoExist (toDoName: string): Promise<void> {
     await expect(
       this.page.locator('button.hulyToDoLine-container div[class$="overflow-label"]', { hasText: toDoName })
     ).toHaveCount(1)
   }
 
-  async checkToDo(data: NewToDo): Promise<void> {
+  async checkToDo (data: NewToDo): Promise<void> {
     await expect(this.textPanelToDoTitle()).toHaveValue(data.title)
     if (data.description != null) {
       await expect(this.textPanelToDoDescription()).toHaveText(data.description)
@@ -230,7 +230,7 @@ export class PlanningPage extends CalendarPage {
     }
   }
 
-  async deleteToDoByName(toDoName: string): Promise<void> {
+  async deleteToDoByName (toDoName: string): Promise<void> {
     await this.page.locator('button.hulyToDoLine-container div[class$="overflow-label"]', { hasText: toDoName }).hover()
     await this.page
       .locator('button.hulyToDoLine-container div[class$="overflow-label"]', { hasText: toDoName })
@@ -241,7 +241,7 @@ export class PlanningPage extends CalendarPage {
     await this.pressYesDeletePopup(this.page)
   }
 
-  async selectToDoByName(toDoName: string): Promise<void> {
+  async selectToDoByName (toDoName: string): Promise<void> {
     await this.page
       .locator('button.hulyToDoLine-container div[class$="overflow-label"]', { hasText: toDoName })
       .locator('xpath=..')
@@ -249,13 +249,13 @@ export class PlanningPage extends CalendarPage {
       .click()
   }
 
-  async checkToDoExistInCalendar(toDoName: string, count: number): Promise<void> {
+  async checkToDoExistInCalendar (toDoName: string, count: number): Promise<void> {
     await expect(
       this.page.locator('div.calendar-element > div.event-container >> div[class*="label"]', { hasText: toDoName })
     ).toHaveCount(count)
   }
 
-  public async deleteTimeSlot(rowNumber: number): Promise<void> {
+  public async deleteTimeSlot (rowNumber: number): Promise<void> {
     const row = this.page
       .locator(
         'div.hulyModal-container div.slots-content div.scroller-container div.box div.flex-between.min-w-full div.tool'
@@ -266,7 +266,7 @@ export class PlanningPage extends CalendarPage {
     await this.pressYesDeletePopup(this.page)
   }
 
-  public async checkTimeSlotEndDate(rowNumber: number, dateEnd: string): Promise<void> {
+  public async checkTimeSlotEndDate (rowNumber: number, dateEnd: string): Promise<void> {
     const row = this.page
       .locator('div.hulyModal-container div.slots-content div.scroller-container div.box div.flex-between.min-w-full')
       .nth(rowNumber)

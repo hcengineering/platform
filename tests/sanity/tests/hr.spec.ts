@@ -5,7 +5,7 @@ test.use({
   storageState: PlatformSetting
 })
 
-export async function createDepartment(page: Page, departmentName: string): Promise<void> {
+export async function createDepartment (page: Page, departmentName: string): Promise<void> {
   await page.click('button:has-text("Department")')
   const departmentNameField = page.locator('[placeholder="Department"]')
   await departmentNameField.click()

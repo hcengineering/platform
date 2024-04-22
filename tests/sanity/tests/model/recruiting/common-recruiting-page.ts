@@ -6,7 +6,7 @@ import { SocialLink } from './types'
 export class CommonRecruitingPage extends CalendarPage {
   readonly page: Page
 
-  constructor(page: Page) {
+  constructor (page: Page) {
     super(page)
     this.page = page
   }
@@ -53,54 +53,54 @@ export class CommonRecruitingPage extends CalendarPage {
   readonly submitNewReview = (): Locator =>
     this.page.locator('div.popup form[id="recruit:string:CreateReviewParams"] button[type="submit"]')
 
-  async addComment(comment: string): Promise<void> {
+  async addComment (comment: string): Promise<void> {
     await this.inputComment().fill(comment)
     await this.buttonSendComment().click()
   }
 
-  async checkCommentExist(comment: string): Promise<void> {
+  async checkCommentExist (comment: string): Promise<void> {
     await expect(this.textComment().filter({ hasText: comment })).toBeVisible()
   }
 
-  async addAttachments(filePath: string): Promise<void> {
+  async addAttachments (filePath: string): Promise<void> {
     await this.inputAddAttachment().setInputFiles(path.join(__dirname, `../../files/${filePath}`))
     await expect(this.textAttachmentName().filter({ hasText: filePath }).first()).toBeVisible()
   }
 
-  async addFirstReview(reviewTitle: string, reviewDescription: string): Promise<void> {
+  async addFirstReview (reviewTitle: string, reviewDescription: string): Promise<void> {
     await this.buttonCreateFirstReview().click()
     await this.createNewReviewPopup(this.page, reviewTitle, reviewDescription)
   }
 
-  async createNewTalentPopup(page: Page, firstName: string, lastName: string): Promise<void> {
+  async createNewTalentPopup (page: Page, firstName: string, lastName: string): Promise<void> {
     await this.newTalentFirstName().fill(firstName)
     await this.newTalentLastName().fill(lastName)
     await this.submitNewTalent().click()
   }
 
-  async createNewReviewPopup(page: Page, title: string, description: string): Promise<void> {
+  async createNewReviewPopup (page: Page, title: string, description: string): Promise<void> {
     await this.newReviewTitle().fill(title)
     await this.newReviewDescription().fill(description)
     await this.submitNewReview().click()
   }
 
-  async deleteEntity(): Promise<void> {
+  async deleteEntity (): Promise<void> {
     await this.buttonMoreActions().click()
     await this.buttonDelete().click()
     await this.pressYesDeletePopup(this.page)
   }
 
-  async addSocialLinks(link: string, linkDescription: string): Promise<void> {
+  async addSocialLinks (link: string, linkDescription: string): Promise<void> {
     await this.buttonAddSocialLinks().click()
     await this.selectFromDropdown(this.page, link)
     await this.fillToDropdown(this.page, linkDescription)
   }
 
-  async addSocialLink(social: SocialLink): Promise<void> {
+  async addSocialLink (social: SocialLink): Promise<void> {
     await this.addSocialLinks(social.type, social.value)
   }
 
-  async checkSocialLinks(link: string, value: string): Promise<void> {
+  async checkSocialLinks (link: string, value: string): Promise<void> {
     switch (link) {
       case 'Phone':
         await expect(this.buttonContactPhone()).toBeEnabled()
@@ -125,16 +125,16 @@ export class CommonRecruitingPage extends CalendarPage {
     }
   }
 
-  async moreActionOn(action: string): Promise<void> {
+  async moreActionOn (action: string): Promise<void> {
     await this.buttonMoreActions().click()
     await this.selectFromDropdown(this.page, action)
   }
 
-  async checkActivityExist(activity: string): Promise<void> {
+  async checkActivityExist (activity: string): Promise<void> {
     await expect(this.textActivity().filter({ hasText: activity })).toBeVisible()
   }
 
-  async checkCannotDelete(): Promise<void> {
+  async checkCannotDelete (): Promise<void> {
     await this.buttonMoreActions().click()
 
     await expect(this.buttonDelete()).not.toBeVisible()

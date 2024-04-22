@@ -3,7 +3,7 @@ import { expect, type Locator, type Page } from '@playwright/test'
 export class ChannelPage {
   readonly page: Page
 
-  constructor(page: Page) {
+  constructor (page: Page) {
     this.page = page
   }
 
@@ -11,12 +11,12 @@ export class ChannelPage {
   readonly buttonSendMessage = (): Locator => this.page.locator('g#Send')
   readonly textMessage = (): Locator => this.page.getByText('Test message')
 
-  async sendMessage(message: string): Promise<void> {
+  async sendMessage (message: string): Promise<void> {
     await this.inputMessage().fill(message)
     await this.buttonSendMessage().click()
   }
 
-  async checkMessageExist(message: string): Promise<void> {
+  async checkMessageExist (message: string): Promise<void> {
     await expect(this.textMessage().filter({ hasText: message })).toBeVisible()
   }
 }

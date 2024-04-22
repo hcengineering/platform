@@ -5,7 +5,7 @@ import { CommonRecruitingPage } from './common-recruiting-page'
 export class VacanciesPage extends CommonRecruitingPage {
   readonly page: Page
 
-  constructor(page: Page) {
+  constructor (page: Page) {
     super(page)
     this.page = page
   }
@@ -37,7 +37,7 @@ export class VacanciesPage extends CommonRecruitingPage {
   readonly vacancyByName = (vacancyName: string): Locator =>
     this.page.locator('tr', { hasText: vacancyName }).locator('div[class$="firstCell"]')
 
-  async createNewVacancy({ title, description, location }: NewVacancy): Promise<void> {
+  async createNewVacancy ({ title, description, location }: NewVacancy): Promise<void> {
     await this.buttonCreateNewVacancy().click()
 
     await this.inputCreateVacancyTitle().fill(title)
@@ -50,19 +50,19 @@ export class VacanciesPage extends CommonRecruitingPage {
     await this.buttonCreateVacancy().click()
   }
 
-  async openVacancyByName(vacancyName: string): Promise<void> {
+  async openVacancyByName (vacancyName: string): Promise<void> {
     await this.vacancyByName(vacancyName).click()
   }
 
-  async clickOnHideArchivedVacancies(): Promise<void> {
+  async clickOnHideArchivedVacancies (): Promise<void> {
     await this.buttonHideArchivedVacancies().click()
   }
 
-  async rightClickVacancyByName(vacancyName: string): Promise<void> {
+  async rightClickVacancyByName (vacancyName: string): Promise<void> {
     await this.vacancyByName(vacancyName).click({ button: 'right' })
   }
 
-  async archiveVacancyByName(vacancyName: string): Promise<void> {
+  async archiveVacancyByName (vacancyName: string): Promise<void> {
     await this.rightClickVacancyByName(vacancyName)
     await expect(this.popupArchivedVacancy()).toBeVisible({ timeout: 15000 })
     await this.popupArchivedVacancy().click()
@@ -70,15 +70,15 @@ export class VacanciesPage extends CommonRecruitingPage {
     await this.popupOk().click()
   }
 
-  async checkVacancyNotExist(vacancyName: string, message: string): Promise<void> {
+  async checkVacancyNotExist (vacancyName: string, message: string): Promise<void> {
     await expect(this.page.locator('tr', { hasText: vacancyName }), message).toHaveCount(0)
   }
 
-  async checkVacancyExist(vacancyName: string, message: string): Promise<void> {
+  async checkVacancyExist (vacancyName: string, message: string): Promise<void> {
     await expect(this.page.locator('tr', { hasText: vacancyName }), message).toHaveCount(1)
   }
 
-  async selectAll(): Promise<void> {
+  async selectAll (): Promise<void> {
     const count = await this.rows().count()
     for (let i = 0; i < count; i++) {
       await this.rows().nth(i).hover()
@@ -86,7 +86,7 @@ export class VacanciesPage extends CommonRecruitingPage {
     }
   }
 
-  async exportVacanciesWithCheck(textToCheck: string, timeout: number): Promise<void> {
+  async exportVacanciesWithCheck (textToCheck: string, timeout: number): Promise<void> {
     let expired = 2
     while (true) {
       let shouldExit = false
@@ -124,7 +124,7 @@ export class VacanciesPage extends CommonRecruitingPage {
     }
   }
 
-  async showArchivedVacancy(): Promise<void> {
+  async showArchivedVacancy (): Promise<void> {
     await this.buttonView().click()
     await this.buttonHideArchivedVacancies().click()
   }

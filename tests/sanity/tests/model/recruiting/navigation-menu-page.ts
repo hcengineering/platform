@@ -3,7 +3,7 @@ import { type Locator, type Page } from '@playwright/test'
 export class NavigationMenuPage {
   readonly page: Page
 
-  constructor(page: Page) {
+  constructor (page: Page) {
     this.page = page
   }
 
@@ -17,23 +17,23 @@ export class NavigationMenuPage {
   readonly buttonCompanies = (): Locator => this.page.locator('a[href$="organizations"]', { hasText: 'Companies' })
 
   // Action methods to click on each button
-  async clickButtonApplications(): Promise<void> {
+  async clickButtonApplications (): Promise<void> {
     await this.buttonApplications().click()
   }
 
-  async clickButtonMyApplications(): Promise<void> {
+  async clickButtonMyApplications (): Promise<void> {
     await this.buttonMyApplications().click()
   }
 
-  async clickButtonTalents(): Promise<void> {
+  async clickButtonTalents (): Promise<void> {
     await this.buttonTalents().click()
   }
 
-  async clickButtonVacancies(): Promise<void> {
+  async clickButtonVacancies (): Promise<void> {
     await this.buttonVacancies().click()
   }
 
-  async clickButtonCompanies(): Promise<void> {
+  async clickButtonCompanies (): Promise<void> {
     await this.buttonCompanies().click()
   }
 }

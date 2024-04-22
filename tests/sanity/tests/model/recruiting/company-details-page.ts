@@ -5,7 +5,7 @@ import { CommonRecruitingPage } from './common-recruiting-page'
 export class CompanyDetailsPage extends CommonRecruitingPage {
   readonly page: Page
 
-  constructor(page: Page) {
+  constructor (page: Page) {
     super(page)
     this.page = page
   }
@@ -15,7 +15,7 @@ export class CompanyDetailsPage extends CommonRecruitingPage {
   readonly buttonLocation = (): Locator =>
     this.page.locator('//span[text()="Location"]/following-sibling::div[1]/button/span')
 
-  async checkCompany(data: NewCompany): Promise<void> {
+  async checkCompany (data: NewCompany): Promise<void> {
     await expect(this.inputName()).toHaveValue(data.name)
     if (data.socials != null) {
       for (const social of data.socials) {
@@ -27,7 +27,7 @@ export class CompanyDetailsPage extends CommonRecruitingPage {
     }
   }
 
-  async editCompany(data: NewCompany): Promise<void> {
+  async editCompany (data: NewCompany): Promise<void> {
     await this.inputName().fill(data.name)
     if (data.socials != null && data.socials.length !== 0) {
       for (const social of data.socials) {
