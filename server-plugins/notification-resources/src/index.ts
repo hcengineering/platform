@@ -1235,9 +1235,13 @@ async function OnActivityNotificationViewed (
   }
 
   const inboxNotification = (
-    await control.findAll(notification.class.ActivityInboxNotification, {
-      _id: tx.objectId as Ref<ActivityInboxNotification>
-    })
+    await control.findAll(
+      notification.class.ActivityInboxNotification,
+      {
+        _id: tx.objectId as Ref<ActivityInboxNotification>
+      },
+      { projection: { _id: 1, attachedTo: 1, user: 1 } }
+    )
   )[0]
 
   if (inboxNotification === undefined) {
@@ -1247,19 +1251,27 @@ async function OnActivityNotificationViewed (
   // Read reactions notifications when message is read
   const { attachedTo, user } = inboxNotification
 
-  const reactionMessages = await control.findAll(activity.class.DocUpdateMessage, {
-    attachedTo,
-    objectClass: activity.class.Reaction
-  })
+  const reactionMessages = await control.findAll(
+    activity.class.DocUpdateMessage,
+    {
+      attachedTo,
+      objectClass: activity.class.Reaction
+    },
+    { projection: { _id: 1 } }
+  )
 
   if (reactionMessages.length === 0) {
     return []
   }
 
-  const reactionNotifications = await control.findAll(notification.class.ActivityInboxNotification, {
-    attachedTo: { $in: reactionMessages.map(({ _id }) => _id) },
-    user
-  })
+  const reactionNotifications = await control.findAll(
+    notification.class.ActivityInboxNotification,
+    {
+      attachedTo: { $in: reactionMessages.map(({ _id }) => _id) },
+      user
+    },
+    { projection: { _id: 1, _class: 1, space: 1 } }
+  )
 
   return reactionNotifications.map(({ _id, _class, space }) =>
     control.txFactory.createTxUpdateDoc(_class, space, _id, { isViewed: true })

@@ -145,18 +145,16 @@ async function OnThreadMessageCreated (tx: Tx, control: TriggerControl): Promise
 
 async function OnChatMessageCreated (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
   const hierarchy = control.hierarchy
-  const actualTx = TxProcessor.extractTx(tx)
+  const actualTx = TxProcessor.extractTx(tx) as TxCreateDoc<ChatMessage>
 
-  if (actualTx._class !== core.class.TxCreateDoc) {
+  if (
+    actualTx._class !== core.class.TxCreateDoc ||
+    !hierarchy.isDerived(actualTx.objectClass, chunter.class.ChatMessage)
+  ) {
     return []
   }
 
-  const chatMessage = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<ChatMessage>)
-
-  if (!hierarchy.isDerived(chatMessage._class, chunter.class.ChatMessage)) {
-    return []
-  }
-
+  const chatMessage = TxProcessor.createDoc2Doc(actualTx)
   const mixin = hierarchy.classHierarchyMixin(chatMessage.attachedToClass, notification.mixin.ClassCollaborators)
 
   if (mixin === undefined) {
