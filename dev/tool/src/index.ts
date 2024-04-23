@@ -778,7 +778,7 @@ export function devTool (
         const workspaces = await listWorkspacesRaw(db, productId)
         for (const ws of workspaces) {
           console.log('configure', ws.workspaceName ?? ws.workspace)
-          await changeConfiguration(getWorkspaceId(ws.workspaceUrl ?? ws.workspace, productId), transactorUrl, cmd)
+          await changeConfiguration(getWorkspaceId(ws.workspace, productId), transactorUrl, cmd)
         }
       })
     })
