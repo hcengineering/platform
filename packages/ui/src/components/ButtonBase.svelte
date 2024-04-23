@@ -138,6 +138,9 @@
         animation: rotate 2s linear infinite;
       }
     }
+    span {
+      white-space: nowrap;
+    }
 
     &:focus {
       outline: 2px solid var(--global-focus-BorderColor);

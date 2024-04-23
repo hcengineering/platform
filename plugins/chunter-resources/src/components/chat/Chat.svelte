@@ -115,9 +115,7 @@
 
 <div class="flex-row-top h-full">
   {#if visibleNav}
-    <div
-      class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'} background-surface-color"
-    >
+    <div class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'}">
       <div class="antiPanel-wrap__content">
         <ChatNavigator objectId={selectedData?._id} {object} {currentSpecial} on:select={handleChannelSelected} />
       </div>
