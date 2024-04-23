@@ -46,10 +46,10 @@
     themeStore
   } from '@hcengineering/ui'
   import { onMount } from 'svelte'
-  import { UserStatus } from '@hcengineering/view-resources'
   import { Account } from '@hcengineering/core'
 
   import AvatarIcon from './icons/Avatar.svelte'
+  import UserStatus from './UserStatus.svelte'
 
   export let avatar: string | null | undefined = undefined
   export let name: string | null | undefined = undefined

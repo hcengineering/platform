@@ -13,33 +13,27 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery } from '@hcengineering/presentation'
-  import core, { Account, Ref, UserStatus } from '@hcengineering/core'
+  import { Account, Ref } from '@hcengineering/core'
+  import { onMount } from 'svelte'
+  import { loadUsersStatus, statusByUserStore } from '../utils'
 
   export let user: Ref<Account>
   export let size: 'small' | 'medium' = 'small'
   export let background: string = 'red'
 
-  const query = createQuery()
+  onMount(() => {
+    loadUsersStatus()
+  })
 
-  let status: UserStatus | undefined = undefined
-
-  $: query.query(
-    core.class.UserStatus,
-    { user },
-    (res) => {
-      status = res[0]
-    },
-    { limit: 1 }
-  )
+  $: userStatus = $statusByUserStore.get(user)
 </script>
 
 <div class="container {size}" style="background-color: {background}">
   <div
     class="status {size}"
     style="background-color: {background}"
-    class:online={status?.online}
-    class:offline={!status?.online}
+    class:online={userStatus?.online}
+    class:offline={!userStatus?.online}
   />
 </div>
 
