@@ -40,7 +40,8 @@ import core, {
   type TxUpdateDoc,
   type TxCollectionCUD,
   type Class,
-  type Space
+  type Space,
+  type Attribute
 } from '@hcengineering/core'
 import { getWorkspaceDB } from '@hcengineering/mongo'
 import recruit, { type Applicant } from '@hcengineering/recruit'
@@ -849,10 +850,17 @@ export async function migrateTrackerDefaultStatuses (
     const defaultTaskTypeId = trackerModel.taskTypes.Issue
     const taskTypeClass = task.class.TaskType
     const baseTaskClass = tracker.class.Issue
+    const statusAttributeOf = tracker.attribute.IssueStatus
+    const statusClass = tracker.class.IssueStatus
     const getDefaultStatus = (oldStatus: Status): Ref<Status> | undefined => {
-      const classicStatus = classicIssueTaskStatuses.find((c) => c.category === oldStatus.category)
+      const classicCategory = classicIssueTaskStatuses.find((c) => c.category === oldStatus.category)
+      if (classicCategory === undefined) {
+        return
+      }
 
-      return classicStatus?.statuses[0][2] as Ref<Status>
+      const classicStatus = classicCategory.statuses.find((s) => s[0].toLowerCase() === oldStatus.name.trim().toLowerCase())
+
+      return classicStatus?.[2] as Ref<Status>
     }
     const migrateProjects = async (getNewStatus: (oldStatus: Ref<Status>) => Ref<Status>): Promise<void> => {
       // Find projects of the default type
@@ -902,6 +910,8 @@ export async function migrateTrackerDefaultStatuses (
       defaultTaskTypeId,
       taskTypeClass,
       baseTaskClass,
+      statusAttributeOf,
+      statusClass,
       getDefaultStatus,
       migrateProjects
     })
@@ -934,9 +944,11 @@ export async function migrateRecruitingDefaultStatuses (
     const defaultTaskTypeId = recruit.taskTypes.Applicant
     const taskTypeClass = task.class.TaskType
     const baseTaskClass = recruit.class.Applicant
+    const statusAttributeOf = recruit.attribute.State
+    const statusClass = core.class.Status
     const getDefaultStatus = (oldStatus: Status): Ref<Status> | undefined => {
       return defaultApplicantStatuses.find(
-        (defStatus) => defStatus.category === oldStatus.category && defStatus.name === oldStatus.name
+        (defStatus) => defStatus.category === oldStatus.category && defStatus.name.toLowerCase() === oldStatus.name.trim().toLowerCase()
       )?.id
     }
 
@@ -947,6 +959,8 @@ export async function migrateRecruitingDefaultStatuses (
       defaultTaskTypeId,
       taskTypeClass,
       baseTaskClass,
+      statusAttributeOf,
+      statusClass,
       getDefaultStatus
     })
   } catch (err: any) {
@@ -978,11 +992,13 @@ export async function migrateLeadsDefaultStatuses (
     const defaultTaskTypeId = leadModel.taskType.Lead
     const taskTypeClass = task.class.TaskType
     const baseTaskClass = lead.class.Lead
+    const statusAttributeOf = lead.attribute.State
+    const statusClass = core.class.Status
     const getDefaultStatus = (oldStatus: Status): Ref<Status> | undefined => {
       return defaultLeadStatuses.find(
         (defStatus) =>
           defStatus.category === oldStatus.category &&
-          (defStatus.name === oldStatus.name || (defStatus.name === 'Negotiation' && oldStatus.name === 'Negotation'))
+          (defStatus.name.toLowerCase() === oldStatus.name.trim().toLowerCase() || (defStatus.name === 'Negotiation' && oldStatus.name === 'Negotation'))
       )?.id
     }
 
@@ -993,6 +1009,8 @@ export async function migrateLeadsDefaultStatuses (
       defaultTaskTypeId,
       taskTypeClass,
       baseTaskClass,
+      statusAttributeOf,
+      statusClass,
       getDefaultStatus
     })
   } catch (err: any) {
@@ -1014,6 +1032,8 @@ async function migrateDefaultStatuses<T extends Task> (
     defaultTaskTypeId: Ref<TaskType>
     taskTypeClass: Ref<Class<TaskType>>
     baseTaskClass: Ref<Class<T>>
+    statusAttributeOf: Ref<Attribute<Status>>
+    statusClass: Ref<Class<Status>>
     getDefaultStatus: (oldStatus: Status) => Ref<Status> | undefined
     migrateProjects?: (getNewStatus: (oldStatus: Ref<Status>) => Ref<Status>) => Promise<void>
   }
@@ -1025,6 +1045,8 @@ async function migrateDefaultStatuses<T extends Task> (
     defaultTaskTypeId,
     taskTypeClass,
     baseTaskClass,
+    statusAttributeOf,
+    statusClass,
     getDefaultStatus,
     migrateProjects
   } = options
@@ -1155,66 +1177,41 @@ async function migrateDefaultStatuses<T extends Task> (
           $set: { type: newId }
         }
       )
-      return
     }
   }
 
-  // Find statuses for the default task type
-  const existingTypeStatuses = defaultType.attributes.statuses.filter((s) => s.taskType === defaultTaskTypeId)
-
-  if (existingTypeStatuses.length === 0) {
-    console.log('No statuses found for the default task type')
-    return
-  }
-
-  let oldStatusesIds = existingTypeStatuses.map((s) => (s as any).__oldId ?? s._id)
-
-  // For each status find it's category and check if it's already been migrated
+  // Check all statuses that haven't been already migrated
   const oldStatuses = await connection.findAll<Status>(core.class.Status, {
-    _id: { $in: oldStatusesIds },
+    ofAttribute: statusAttributeOf,
     __superseded: { $exists: false }
   })
 
-  oldStatusesIds = oldStatusesIds.filter((s) => oldStatuses.find((os) => os._id === s) !== undefined)
-
-  // Return if all statuses are the same
-  if (oldStatusesIds.length === 0) {
-    console.log('All statuses have been already migrated?')
-    return
-  }
-
-  console.log('Old statuses')
-  console.log(oldStatuses)
-
   // Build statuses mapping oldId -> {category, newId}
-  const statusMapping: Record<Ref<Status>, any> = {}
+  const statusMapping: Record<Ref<Status>, Ref<Status>> = {}
   for (const s of oldStatuses) {
     const defaultStatusId = getDefaultStatus(s)
 
-    if (defaultStatusId === undefined) {
-      console.log('No default status found for the status being migrated: ' + s._id)
-      console.log('EXITING')
-      return
+    if (defaultStatusId === undefined || defaultStatusId === s._id) {
+      continue
     }
 
-    statusMapping[s._id] = {
-      category: s.category,
-      newId: defaultStatusId
-    }
+    statusMapping[s._id] = defaultStatusId
   }
 
   console.log('Status mapping')
   console.log(statusMapping)
 
-  if (Object.entries(statusMapping).every(([oldId, { newId }]) => oldId === newId)) {
+  if (Object.entries(statusMapping).length === 0) {
     console.log('All statuses have been already migrated or running on upgraded workspace')
     return
   }
 
+  const statusIdsBeingMigrated = Object.keys(statusMapping) as Ref<Status>[]
+
   // Migration
 
   function getNewProjectStatus (status: ProjectStatus): ProjectStatus {
-    const newId = statusMapping[status._id]?.newId
+    const newId = statusMapping[status._id]
 
     if (newId === undefined) {
       return status
@@ -1224,83 +1221,24 @@ async function migrateDefaultStatuses<T extends Task> (
   }
 
   function getNewStatus (status: Ref<Status>): Ref<Status> {
-    return statusMapping[status]?.newId ?? status
+    return statusMapping[status] ?? status
   }
 
-  // For default type
-  // 1. Update create TX as it contains all the statuses right away
-  // 2. Update all update TXes with statuses
-
-  const newProjTypeStatuses = defaultType.attributes.statuses.map((ps) => {
-    const newPs = getNewProjectStatus(ps)
-
-    if (ps._id === newPs._id) {
-      return {
-        ...ps
-      }
-    }
-
-    return {
-      ...newPs,
-      __oldId: ps._id
-    }
-  })
-
-  console.log('newProjTypeStatuses')
-  console.log(newProjTypeStatuses)
-
-  if (
-    !areSameArrays(
-      oldStatuses.map((s) => s._id),
-      newProjTypeStatuses.map((s) => s._id)
-    )
-  ) {
-    await db
-      .collection(DOMAIN_TX)
-      .updateOne({ _id: defaultType._id }, { $set: { 'attributes.statuses': newProjTypeStatuses } })
-  } else {
-    console.log('No need to update default type statuses')
-  }
-
-  const defaultTypeStatusesUpdates = await connection.findAll<TxUpdateDoc<ProjectType>>(core.class.TxUpdateDoc, {
-    objectId: defaultTypeId,
-    objectSpace: core.space.Model,
-    'operations.statuses': { $exists: true }
-  })
-
-  console.log('defaultTypeStatusesUpdates: ' + defaultTypeStatusesUpdates.length)
-
-  counter = 0
-  for (const ptsUpdate of defaultTypeStatusesUpdates) {
-    const newUpdateStatuses = ptsUpdate.operations.statuses?.map(getNewProjectStatus)
-
-    if (areSameArrays(newUpdateStatuses, ptsUpdate.operations.statuses)) {
-      continue
-    }
-
-    counter++
-    await db
-      .collection(DOMAIN_TX)
-      .updateOne({ _id: ptsUpdate._id }, { $set: { 'operations.statuses': newUpdateStatuses } })
-  }
-  console.log('defaultTypeStatusesUpdates updated: ' + counter)
-
-  // For other types with the same descriptor
+  // For project types with the same descriptor
   // 1. Update all create TXes with statuses
   // 1. Update all update TXes with statuses
   // 2. Update all push TXes with statuses
 
-  const otherTypeStatusesCreates = await connection.findAll<TxCreateDoc<ProjectType>>(core.class.TxCreateDoc, {
-    objectId: { $ne: defaultTypeId },
+  const projectTypeStatusesCreates = await connection.findAll<TxCreateDoc<ProjectType>>(core.class.TxCreateDoc, {
     objectClass: task.class.ProjectType,
     objectSpace: core.space.Model,
     'attributes.descriptor': typeDescriptor
   })
 
-  console.log('otherTypeStatusesCreates: ' + otherTypeStatusesCreates.length)
+  console.log('projectTypeStatusesCreates: ' + projectTypeStatusesCreates.length)
 
   counter = 0
-  for (const ptsCreate of otherTypeStatusesCreates) {
+  for (const ptsCreate of projectTypeStatusesCreates) {
     const newUpdateStatuses = ptsCreate.attributes.statuses?.map(getNewProjectStatus)
 
     if (areSameArrays(newUpdateStatuses, ptsCreate.attributes.statuses)) {
@@ -1312,18 +1250,18 @@ async function migrateDefaultStatuses<T extends Task> (
       .collection(DOMAIN_TX)
       .updateOne({ _id: ptsCreate._id }, { $set: { 'attributes.statuses': newUpdateStatuses } })
   }
-  console.log('otherTypeStatusesCreates updated: ' + counter)
+  console.log('projectTypeStatusesCreates updated: ' + counter)
 
-  const otherTypeStatusesUpdates = await connection.findAll<TxUpdateDoc<ProjectType>>(core.class.TxUpdateDoc, {
-    objectId: { $in: otherTypeStatusesCreates.map((sc) => sc.objectId) },
+  const projectTypeStatusesUpdates = await connection.findAll<TxUpdateDoc<ProjectType>>(core.class.TxUpdateDoc, {
+    objectId: { $in: projectTypeStatusesCreates.map((sc) => sc.objectId) },
     objectClass: task.class.ProjectType,
     objectSpace: core.space.Model,
     'operations.statuses': { $exists: true }
   })
-  console.log('otherTypeStatusesUpdates: ' + otherTypeStatusesUpdates.length)
+  console.log('projectTypeStatusesUpdates: ' + projectTypeStatusesUpdates.length)
 
   counter = 0
-  for (const ptsUpdate of otherTypeStatusesUpdates) {
+  for (const ptsUpdate of projectTypeStatusesUpdates) {
     const newUpdateStatuses = ptsUpdate.operations.statuses?.map(getNewProjectStatus)
 
     if (areSameArrays(newUpdateStatuses, ptsUpdate.operations.statuses)) {
@@ -1335,19 +1273,19 @@ async function migrateDefaultStatuses<T extends Task> (
       .collection(DOMAIN_TX)
       .updateOne({ _id: ptsUpdate._id }, { $set: { 'operations.statuses': newUpdateStatuses } })
   }
-  console.log('otherTypeStatusesUpdates updated: ' + counter)
+  console.log('projectTypeStatusesUpdates updated: ' + counter)
 
-  const otherTypeStatusesPushes = await connection.findAll<TxUpdateDoc<ProjectType>>(core.class.TxUpdateDoc, {
-    objectId: { $in: otherTypeStatusesCreates.map((sc) => sc.objectId) },
+  const projectTypeStatusesPushes = await connection.findAll<TxUpdateDoc<ProjectType>>(core.class.TxUpdateDoc, {
+    objectId: { $in: projectTypeStatusesCreates.map((sc) => sc.objectId) },
     objectClass: task.class.ProjectType,
     objectSpace: core.space.Model,
     'operations.$push.statuses': { $exists: true }
   })
 
-  console.log('otherTypeStatusesPushes: ' + otherTypeStatusesPushes.length)
+  console.log('projectTypeStatusesPushes: ' + projectTypeStatusesPushes.length)
 
   counter = 0
-  for (const ptsUpdate of otherTypeStatusesPushes) {
+  for (const ptsUpdate of projectTypeStatusesPushes) {
     const pushedProjectStatus = ptsUpdate.operations.$push?.statuses
     if (pushedProjectStatus === undefined) {
       continue
@@ -1364,7 +1302,7 @@ async function migrateDefaultStatuses<T extends Task> (
       .collection(DOMAIN_TX)
       .updateOne({ _id: ptsUpdate._id }, { $set: { 'operations.$push.statuses': newPushStatus } })
   }
-  console.log('otherTypeStatusesPushes updated: ' + counter)
+  console.log('projectTypeStatusesPushes updated: ' + counter)
 
   // All task types
   // 1. Update create TX
@@ -1428,7 +1366,7 @@ async function migrateDefaultStatuses<T extends Task> (
   // 3. DocUpdateMessage:action:update&attributeUpdates:attrKey:status
 
   const affectedBaseTasks = await connection.findAll<T>(baseTaskClass, {
-    status: { $in: oldStatusesIds }
+    status: { $in: statusIdsBeingMigrated as any } // Not clear why TS is unhappy about this w/o cast to any???
   })
 
   console.log('affectedBaseTasks: ' + affectedBaseTasks.length)
@@ -1447,7 +1385,7 @@ async function migrateDefaultStatuses<T extends Task> (
   const baseTaskCreateTxes = await connection.findAll<TxCollectionCUD<T, T>>(core.class.TxCollectionCUD, {
     'tx._class': core.class.TxCreateDoc,
     'tx.objectClass': { $in: baseTaskClasses },
-    'tx.attributes.status': { $in: oldStatusesIds }
+    'tx.attributes.status': { $in: statusIdsBeingMigrated }
   })
 
   console.log('Base task create TXes: ', baseTaskCreateTxes.length)
@@ -1469,7 +1407,7 @@ async function migrateDefaultStatuses<T extends Task> (
   const baseTaskUpdateTxes = await connection.findAll<TxCollectionCUD<T, T>>(core.class.TxCollectionCUD, {
     'tx._class': core.class.TxUpdateDoc,
     'tx.objectClass': { $in: baseTaskClasses },
-    'tx.operations.status': { $in: oldStatusesIds }
+    'tx.operations.status': { $in: statusIdsBeingMigrated }
   })
 
   console.log('Base task update TXes: ' + baseTaskUpdateTxes.length)
@@ -1492,7 +1430,7 @@ async function migrateDefaultStatuses<T extends Task> (
     action: 'update',
     objectClass: { $in: baseTaskClasses },
     'attributeUpdates.attrKey': 'status',
-    'attributeUpdates.set.0.': { $in: oldStatusesIds }
+    'attributeUpdates.set.0.': { $in: statusIdsBeingMigrated }
   })
 
   console.log('Base task update messages: ' + baseTaskUpdateMessages.length)
@@ -1512,23 +1450,32 @@ async function migrateDefaultStatuses<T extends Task> (
   console.log('Base task update messages updated: ' + counter)
 
   console.log('Updating statuses themselves:')
-  counter = 0
-  for (const oldStatus of oldStatuses) {
-    const newStatus = getNewStatus(oldStatus._id)
+  const createdStatuses = new Set<Ref<Status>>()
+  for (const statusIdBeingMigrated of statusIdsBeingMigrated) {
+    const newStatus = getNewStatus(statusIdBeingMigrated)
 
-    if (newStatus !== oldStatus._id) {
-      console.log('Updating status from ' + oldStatus._id + ' to ' + newStatus)
+    console.log('Updating status from ' + statusIdBeingMigrated + ' to ' + newStatus)
 
-      counter++
-      await db.collection(DOMAIN_STATUS).updateOne({ _id: oldStatus._id }, { $set: { __superseded: true } })
+    await db.collection(DOMAIN_STATUS).updateOne({ _id: statusIdBeingMigrated }, { $set: { __superseded: true } })
+
+    if (!createdStatuses.has(newStatus)) {
+      const oldStatus = oldStatuses.find((s) => s._id === statusIdBeingMigrated)
+      if (oldStatus === undefined) {
+        console.log('Old status not found: ' + statusIdBeingMigrated)
+        continue
+      }
+
+      createdStatuses.add(newStatus)
       await db.collection(DOMAIN_STATUS).insertOne({
         ...oldStatus,
+        _class: statusClass,
         _id: newStatus as any,
-        __migratedFrom: oldStatus._id
+        __migratedFrom: statusIdBeingMigrated
       })
     }
   }
-  console.log('Statuses updated: ' + counter)
+  console.log('Statuses created: ' + createdStatuses.size)
+  console.log('Statuses updated: ' + statusIdsBeingMigrated.length)
 }
 
 function areSameArrays (arr1: any[] | undefined, arr2: any[] | undefined): boolean {
