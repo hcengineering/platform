@@ -858,7 +858,9 @@ export async function migrateTrackerDefaultStatuses (
         return
       }
 
-      const classicStatus = classicCategory.statuses.find((s) => s[0].toLowerCase() === oldStatus.name.trim().toLowerCase())
+      const classicStatus = classicCategory.statuses.find(
+        (s) => s[0].toLowerCase() === oldStatus.name.trim().toLowerCase()
+      )
 
       return classicStatus?.[2] as Ref<Status>
     }
@@ -948,7 +950,9 @@ export async function migrateRecruitingDefaultStatuses (
     const statusClass = core.class.Status
     const getDefaultStatus = (oldStatus: Status): Ref<Status> | undefined => {
       return defaultApplicantStatuses.find(
-        (defStatus) => defStatus.category === oldStatus.category && defStatus.name.toLowerCase() === oldStatus.name.trim().toLowerCase()
+        (defStatus) =>
+          defStatus.category === oldStatus.category &&
+          defStatus.name.toLowerCase() === oldStatus.name.trim().toLowerCase()
       )?.id
     }
 
@@ -998,7 +1002,8 @@ export async function migrateLeadsDefaultStatuses (
       return defaultLeadStatuses.find(
         (defStatus) =>
           defStatus.category === oldStatus.category &&
-          (defStatus.name.toLowerCase() === oldStatus.name.trim().toLowerCase() || (defStatus.name === 'Negotiation' && oldStatus.name === 'Negotation'))
+          (defStatus.name.toLowerCase() === oldStatus.name.trim().toLowerCase() ||
+            (defStatus.name === 'Negotiation' && oldStatus.name === 'Negotation'))
       )?.id
     }
 
