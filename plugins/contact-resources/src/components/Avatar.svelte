@@ -395,7 +395,7 @@
 
   .status {
     position: absolute;
-    bottom: -0.125ren;
+    bottom: -0.125rem;
     right: -0.25rem;
   }
 </style>
