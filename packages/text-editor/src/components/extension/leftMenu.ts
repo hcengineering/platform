@@ -73,6 +73,7 @@ function LeftMenu (options: LeftMenuOptions): Plugin {
       leftMenuElement = document.createElement('div')
       leftMenuElement.classList.add(options.className) // Style externally with CSS
       leftMenuElement.style.position = 'absolute'
+      hideLeftMenu()
 
       const svgNs = 'http://www.w3.org/2000/svg'
       const icon = document.createElementNS(svgNs, 'svg')
@@ -132,7 +133,7 @@ function LeftMenu (options: LeftMenuOptions): Plugin {
             y: event.clientY
           })
 
-          if (!(node instanceof HTMLElement)) {
+          if (!(node instanceof HTMLElement) || node.nodeName === 'HR') {
             hideLeftMenu()
             return
           }
@@ -174,6 +175,26 @@ function LeftMenu (options: LeftMenuOptions): Plugin {
         },
         mousewheel: () => {
           hideLeftMenu()
+        },
+        mouseleave: (view, event) => {
+          if (!view.editable) {
+            return
+          }
+
+          const node = nodeDOMAtCoords({
+            x: event.clientX + offsetX,
+            y: event.clientY
+          })
+
+          if (!(node instanceof HTMLElement) || node.nodeName === 'HR') {
+            hideLeftMenu()
+            return
+          }
+
+          const parent = node?.parentElement
+          if (!(parent instanceof HTMLElement)) {
+            hideLeftMenu()
+          }
         }
       }
     }
