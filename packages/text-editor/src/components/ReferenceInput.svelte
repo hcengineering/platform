@@ -64,7 +64,8 @@
   $: devSize = $deviceInfo.size
   $: shrinkButtons = checkAdaptiveMatching(devSize, 'sm')
 
-  $: canSubmit = (!isEmpty || haveAttachment) && !isEmptyMarkup(content) && !loading
+  $: isEmptyContent = isEmpty || isEmptyMarkup(content)
+  $: canSubmit = (haveAttachment || !isEmptyContent) && !loading
 
   function setContent (content: Markup): void {
     textEditor?.setContent(content)
