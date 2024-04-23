@@ -783,7 +783,7 @@ function defineSpaceType (builder: Builder): void {
       kind: 'both',
       ofClass: tracker.class.Issue,
       targetClass: tracker.mixin.IssueTypeData,
-      statusClass: core.class.Status,
+      statusClass: tracker.class.IssueStatus,
       statusCategories: classicIssueTaskStatuses.map((it) => it.category),
       allowedAsChildOf: [tracker.taskTypes.Issue],
       icon: tracker.icon.Issue
