@@ -34,7 +34,7 @@ test.describe('Tracker duplicate issue tests', () => {
     await trackerNavigationMenuPage.openIssuesForProject('Default')
 
     const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
+    await issuesPage.modelSelectorAll().click()
     await issuesPage.createNewIssue(firstIssue)
     // TODO need to delete if issue created successfully
     await trackerNavigationMenuPage.openTemplateForProject('Default')

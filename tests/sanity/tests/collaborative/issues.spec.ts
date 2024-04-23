@@ -42,8 +42,8 @@ test.describe('Collaborative test for issue', () => {
 
       const issuesPage = new IssuesPage(page)
       await issuesPage.createNewIssue(newIssue)
-      await issuesPage.linkSidebarAll.click()
-      await issuesPage.modelSelectorAll.click()
+      await issuesPage.linkSidebarAll().click()
+      await issuesPage.modelSelectorAll().click()
       await issuesPage.searchIssueByName(newIssue.title)
       await issuesPage.openIssueByName(newIssue.title)
 
@@ -52,8 +52,8 @@ test.describe('Collaborative test for issue', () => {
       await userSecondPage.evaluate(() => {
         localStorage.setItem('platform.activity.threshold', '0')
       })
-      await issuesPageSecond.linkSidebarAll.click()
-      await issuesPageSecond.modelSelectorAll.click()
+      await issuesPageSecond.linkSidebarAll().click()
+      await issuesPageSecond.modelSelectorAll().click()
       await issuesPageSecond.searchIssueByName(newIssue.title)
       await issuesPageSecond.openIssueByName(newIssue.title)
 
@@ -84,13 +84,13 @@ test.describe('Collaborative test for issue', () => {
       }
 
       const issuesPageSecond = new IssuesPage(userSecondPage)
-      await issuesPageSecond.linkSidebarAll.click()
-      await issuesPageSecond.modelSelectorAll.click()
+      await issuesPageSecond.linkSidebarAll().click()
+      await issuesPageSecond.modelSelectorAll().click()
 
       // change status
       const issuesPage = new IssuesPage(page)
-      await issuesPage.linkSidebarAll.click()
-      await issuesPage.modelSelectorBacklog.click()
+      await issuesPage.linkSidebarAll().click()
+      await issuesPage.modelSelectorBacklog().click()
       await issuesPage.searchIssueByName(issue.title)
       await issuesPage.openIssueByName(issue.title)
 
@@ -98,11 +98,11 @@ test.describe('Collaborative test for issue', () => {
       await issuesDetailsPage.editIssue({ status: 'In Progress' })
 
       // check by another user
-      await issuesPageSecond.modelSelectorBacklog.click()
+      await issuesPageSecond.modelSelectorBacklog().click()
       // not active for another user
       await issuesPageSecond.checkIssueNotExist(issue.title)
 
-      await issuesPageSecond.modelSelectorActive.click()
+      await issuesPageSecond.modelSelectorActive().click()
       await issuesPageSecond.searchIssueByName(issue.title)
       await issuesPageSecond.openIssueByName(issue.title)
 
@@ -135,8 +135,8 @@ test.describe('Collaborative test for issue', () => {
       await test.step(`user1. change assignee to ${newAssignee}`, async () => {
         await (await page.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
         const issuesPage = new IssuesPage(page)
-        await issuesPage.linkSidebarAll.click()
-        await issuesPage.modelSelectorBacklog.click()
+        await issuesPage.linkSidebarAll().click()
+        await issuesPage.modelSelectorBacklog().click()
         await issuesPage.searchIssueByName(issue.title)
         await issuesPage.openIssueByName(issue.title)
 
@@ -158,8 +158,8 @@ test.describe('Collaborative test for issue', () => {
 
       await test.step('user2. check issue assignee', async () => {
         const issuesPageSecond = new IssuesPage(userSecondPage)
-        await issuesPageSecond.linkSidebarMyIssue.click()
-        await issuesPageSecond.modelSelectorBacklog.click()
+        await issuesPageSecond.linkSidebarMyIssue().click()
+        await issuesPageSecond.modelSelectorBacklog().click()
 
         await issuesPageSecond.searchIssueByName(issue.title)
         await issuesPageSecond.openIssueByName(issue.title)

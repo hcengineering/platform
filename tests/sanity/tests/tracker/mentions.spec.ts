@@ -25,7 +25,7 @@ test.describe('Mentions issue tests', () => {
     await leftSideMenuPage.buttonTracker.click()
 
     const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
+    await issuesPage.modelSelectorAll().click()
     await issuesPage.createNewIssue(mentionIssue)
     await issuesPage.searchIssueByName(mentionIssue.title)
     await issuesPage.openIssueByName(mentionIssue.title)
@@ -47,7 +47,7 @@ test.describe('Mentions issue tests', () => {
     await leftSideMenuPage.buttonTracker.click()
 
     const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
+    await issuesPage.modelSelectorAll().click()
     await issuesPage.createNewIssue(mentionIssue)
     await issuesPage.searchIssueByName(mentionIssue.title)
     await issuesPage.openIssueByName(mentionIssue.title)
@@ -75,7 +75,7 @@ test.describe('Mentions issue tests', () => {
     await leftSideMenuPage.buttonTracker.click()
 
     const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
+    await issuesPage.modelSelectorAll().click()
     await issuesPage.createNewIssue(backlinkIssue)
     await issuesPage.searchIssueByName(backlinkIssue.title)
     await issuesPage.openIssueByName(backlinkIssue.title)

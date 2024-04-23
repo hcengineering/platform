@@ -79,7 +79,7 @@ test.describe('Planning ToDo tests', () => {
     const planningPage = new PlanningPage(page)
     await planningPage.openToDoByName(editToDo.title)
     await planningPage.updateToDo(editToDo)
-    await planningPage.buttonCardClose.click()
+    await planningPage.clickButtonCardClose()
 
     await planningPage.openToDoByName(editToDo.title)
     await planningPage.checkToDo({

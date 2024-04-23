@@ -32,7 +32,7 @@ test.describe('Application tests', () => {
     const vacanciesPage = new VacanciesPage(page)
     await vacanciesPage.openVacancyByName(vacancyId)
     const vacancyDetailsPage = new VacancyDetailsPage(page)
-    await expect(vacancyDetailsPage.inputComment).toBeVisible()
+    await expect(vacancyDetailsPage.inputComment()).toBeVisible()
 
     const navigationMenuPage = new NavigationMenuPage(page)
     await navigationMenuPage.clickButtonTalents()
@@ -107,7 +107,7 @@ test.describe('Application tests', () => {
 
     await navigationMenuPage.clickButtonMyApplications()
     applicationsPage = new ApplicationsPage(page)
-    await applicationsPage.buttonTabCreated.click()
+    await applicationsPage.buttonTabCreated().click()
     await applicationsPage.checkApplicationState(talentName, 'Lost')
     await applicationsPage.openApplicationByTalentName(talentName)
 
@@ -116,7 +116,7 @@ test.describe('Application tests', () => {
 
     await navigationMenuPage.clickButtonMyApplications()
     applicationsPage = new ApplicationsPage(page)
-    await applicationsPage.buttonTabCreated.click()
+    await applicationsPage.buttonTabCreated().click()
     await applicationsPage.checkApplicationState(talentName, 'Won')
   })
 

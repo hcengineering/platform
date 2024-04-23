@@ -106,7 +106,7 @@ test.describe('Tracker issue tests', () => {
     }
 
     const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
+    await issuesPage.modelSelectorAll().click()
     await issuesPage.createNewIssue(parentIssue)
 
     await test.step('Set parent issue during creation', async () => {
@@ -116,7 +116,7 @@ test.describe('Tracker issue tests', () => {
         parentIssue: parentIssue.title
       }
 
-      await issuesPage.modelSelectorAll.click()
+      await issuesPage.modelSelectorAll().click()
       await issuesPage.createNewIssue(newIssue)
       await issuesPage.searchIssueByName(newIssue.title)
 
@@ -137,7 +137,7 @@ test.describe('Tracker issue tests', () => {
         title: `Set parent issue from issues page-${generateId(2)}`,
         description: 'Set parent issue from issues page'
       }
-      await issuesPage.modelSelectorAll.click()
+      await issuesPage.modelSelectorAll().click()
       await issuesPage.createNewIssue(newIssue)
       await issuesPage.searchIssueByName(newIssue.title)
 
@@ -163,7 +163,7 @@ test.describe('Tracker issue tests', () => {
         title: `Set parent issue from issue details page-${generateId(2)}`,
         description: 'Set parent issue from issue details page'
       }
-      await issuesPage.modelSelectorAll.click()
+      await issuesPage.modelSelectorAll().click()
       await issuesPage.createNewIssue(newIssue)
       await issuesPage.searchIssueByName(newIssue.title)
       await issuesPage.openIssueByName(newIssue.title)
@@ -236,12 +236,12 @@ test.describe('Tracker issue tests', () => {
       milestone: 'Edit Milestone'
     }
     const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
-    await issuesPage.buttonCreateNewIssue.click()
+    await issuesPage.modelSelectorAll().click()
+    await issuesPage.buttonCreateNewIssue().click()
     await issuesPage.selectTemplate(templateName)
-    await expect(issuesPage.buttonPopupCreateNewIssueTemplate).toHaveText(templateName)
+    await expect(issuesPage.buttonPopupCreateNewIssueTemplate()).toHaveText(templateName)
     await issuesPage.fillNewIssueForm({ description: newIssue.description, title: newIssue.title })
-    await issuesPage.buttonCreateIssue.click()
+    await issuesPage.buttonCreateIssue().click()
 
     await issuesPage.searchIssueByName(newIssue.title)
     await issuesPage.openIssueByName(newIssue.title)
@@ -256,7 +256,7 @@ test.describe('Tracker issue tests', () => {
       description: 'Description Issue for deletion'
     }
     const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
+    await issuesPage.modelSelectorAll().click()
     await issuesPage.searchIssueByName(deleteIssue.title)
     await issuesPage.openIssueByName(deleteIssue.title)
 
@@ -326,7 +326,7 @@ test.describe('Tracker issue tests', () => {
     await issueCommentPopup.checkCommentWithImageExist('left a comment', 'cat2.jpeg')
     await issueCommentPopup.checkCommentExist(commentPopup)
 
-    await issuesPage.modelSelectorAll.click()
+    await issuesPage.modelSelectorAll().click()
 
     await issuesPage.searchIssueByName(commentIssue.title)
     await issuesPage.checkCommentsCount(commentIssue.title, '2')

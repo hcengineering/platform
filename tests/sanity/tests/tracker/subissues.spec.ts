@@ -37,7 +37,7 @@ test.describe('Tracker sub-issues tests', () => {
     await page.click('text="Issues"')
 
     const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
+    await issuesPage.modelSelectorAll().click()
     await issuesPage.searchIssueByName(props.name)
     await issuesPage.openIssueByName(props.name)
 
@@ -78,7 +78,7 @@ test.describe('Tracker sub-issues tests', () => {
     await leftSideMenuPage.buttonTracker.click()
 
     const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
+    await issuesPage.modelSelectorAll().click()
     await issuesPage.createNewIssue(newIssue)
     await issuesPage.searchIssueByName(newIssue.title)
     await issuesPage.openIssueByName(newIssue.title)
@@ -87,7 +87,7 @@ test.describe('Tracker sub-issues tests', () => {
     await issuesDetailsPage.clickButtonAddSubIssue()
 
     await issuesPage.fillNewIssueForm(newSubIssue)
-    await issuesPage.buttonCreateIssue.click()
+    await issuesPage.buttonCreateIssue().click()
     await issuesDetailsPage.openSubIssueByName(newSubIssue.title)
 
     await issuesDetailsPage.waitDetailsOpened(newSubIssue.title)
@@ -115,7 +115,7 @@ test.describe('Tracker sub-issues tests', () => {
     await leftSideMenuPage.buttonTracker.click()
 
     const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
+    await issuesPage.modelSelectorAll().click()
     await issuesPage.createNewIssue(deleteIssue)
     await issuesPage.searchIssueByName(deleteIssue.title)
     await issuesPage.openIssueByName(deleteIssue.title)
@@ -124,7 +124,7 @@ test.describe('Tracker sub-issues tests', () => {
     await issuesDetailsPage.clickButtonAddSubIssue()
 
     await issuesPage.fillNewIssueForm(deleteSubIssue)
-    await issuesPage.buttonCreateIssue.click()
+    await issuesPage.buttonCreateIssue().click()
     await issuesDetailsPage.openSubIssueByName(deleteSubIssue.title)
 
     await issuesDetailsPage.waitDetailsOpened(deleteSubIssue.title)
@@ -155,7 +155,7 @@ test.describe('Tracker sub-issues tests', () => {
     await leftSideMenuPage.buttonTracker.click()
 
     const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
+    await issuesPage.modelSelectorAll().click()
     await issuesPage.createNewIssue(parentIssue)
     await issuesPage.searchIssueByName(parentIssue.title)
     await issuesPage.openIssueByName(parentIssue.title)
@@ -163,9 +163,9 @@ test.describe('Tracker sub-issues tests', () => {
     const issuesDetailsPage = new IssuesDetailsPage(page)
     await issuesDetailsPage.moreActionOnIssue('Add sub-issue...')
     await issuesPage.selectTemplate(templateName)
-    await expect(issuesPage.buttonPopupCreateNewIssueTemplate).toHaveText(templateName)
+    await expect(issuesPage.buttonPopupCreateNewIssueTemplate()).toHaveText(templateName)
     await issuesPage.fillNewIssueForm(subIssue)
-    await issuesPage.buttonCreateIssue.click()
+    await issuesPage.buttonCreateIssue().click()
 
     await issuesDetailsPage.openSubIssueByName(subIssue.title)
     await issuesDetailsPage.waitDetailsOpened(subIssue.title)
