@@ -101,7 +101,7 @@
 
   async function onMessage (event: CustomEvent) {
     loading = true
-
+    const doneOp = await getClient().measure(`chunter.create.${_class}`)
     try {
       draftController.remove()
       inputRef.removeDraft(false)
@@ -115,7 +115,12 @@
       // Remove draft from Local Storage
       currentMessage = getDefault()
       _id = currentMessage._id
+      const d1 = Date.now()
+      void doneOp().then((res) => {
+        console.log(`create.${_class} measure`, res, Date.now() - d1)
+      })
     } catch (err: any) {
+      void doneOp()
       Analytics.handleError(err)
       console.error(err)
     }
@@ -125,11 +130,12 @@
 
   async function createMessage (event: CustomEvent) {
     const { message, attachments } = event.detail
+    const operations = client.apply(_id)
 
     if (_class === chunter.class.ThreadMessage) {
       const parentMessage = object as ActivityMessage
 
-      await client.addCollection<ActivityMessage, ThreadMessage>(
+      await operations.addCollection<ActivityMessage, ThreadMessage>(
         chunter.class.ThreadMessage,
         parentMessage.space,
         parentMessage._id,
@@ -146,15 +152,15 @@
 
       clear()
 
-      await client.update(parentMessage, { lastReply: Date.now() })
+      await operations.update(parentMessage, { lastReply: Date.now() })
 
       const hasPerson = !!parentMessage.repliedPersons?.includes(account.person)
 
       if (!hasPerson) {
-        await client.update(parentMessage, { $push: { repliedPersons: account.person } })
+        await operations.update(parentMessage, { $push: { repliedPersons: account.person } })
       }
     } else {
-      await client.addCollection<Doc, ChatMessage>(
+      await operations.addCollection<Doc, ChatMessage>(
         _class,
         object.space,
         object._id,
@@ -165,6 +171,7 @@
       )
       clear()
     }
+    await operations.commit()
   }
 
   async function editMessage (event: CustomEvent) {
