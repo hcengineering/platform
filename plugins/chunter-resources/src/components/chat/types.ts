@@ -36,6 +36,7 @@ export interface ChatNavItemModel {
   description?: string
   icon: Asset | AnySvelteComponent | undefined
   iconSize?: IconSize
+  iconProps: Record<string, any>
   isSecondary: boolean
   withIconBackground: boolean
 }

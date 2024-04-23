@@ -28,7 +28,7 @@ import {
   type Person,
   type PersonAccount
 } from '@hcengineering/contact'
-import {
+import core, {
   getCurrentAccount,
   toIdMap,
   type Class,
@@ -38,7 +38,9 @@ import {
   type ObjQueryType,
   type Ref,
   type Timestamp,
-  type TxOperations
+  type TxOperations,
+  type Account,
+  type UserStatus
 } from '@hcengineering/core'
 import notification, { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
 import { getEmbeddedLabel, getResource, translate } from '@hcengineering/platform'
@@ -294,6 +296,8 @@ export const channelProviders = writable<ChannelProvider[]>([])
 
 export const personAccountPersonByIdStore = writable<IdMap<Person>>(new Map())
 
+export const statusByUserStore = writable<Map<Ref<Account>, UserStatus>>(new Map())
+
 export const personByIdStore = derived([personAccountPersonByIdStore, employeeByIdStore], (vals) => {
   const m1 = Array.from(vals[0].entries())
   const m2 = Array.from(vals[1].entries())
@@ -339,6 +343,14 @@ function fillStores (): void {
 }
 
 fillStores()
+
+const userStatusesQuery = createQuery(true)
+
+export function loadUsersStatus (): void {
+  userStatusesQuery.query(core.class.UserStatus, {}, (res) => {
+    statusByUserStore.set(new Map(res.map((it) => [it.user, it])))
+  })
+}
 
 export function getAvatarTypeDropdownItems (hasGravatar: boolean, imageOnly?: boolean): TabItem[] {
   if (imageOnly === true) {

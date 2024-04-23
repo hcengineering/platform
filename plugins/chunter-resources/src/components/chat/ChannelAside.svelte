@@ -103,7 +103,8 @@
       {
         okLabel: presentation.string.Add,
         disableDeselectFor: disabledRemoveFor,
-        selected: members
+        selected: members,
+        showStatus: true
       },
       'top',
       (result?: Ref<Person>[]) => {

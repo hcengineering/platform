@@ -30,6 +30,8 @@
   export let selected: Ref<Employee>[] = []
   export let skipCurrentAccount = false
   export let disableDeselectFor: Ref<Employee>[] = []
+  export let showStatus = false
+  export let background: string | undefined = undefined
 
   const dispatch = createEventDispatcher()
   const query = createQuery()
@@ -114,7 +116,7 @@
           handleSelection(persons, index)
         }}
       >
-        <UserDetails avatarSize="small" {person} />
+        <UserDetails avatarSize="small" {person} {showStatus} {background} />
         <CheckBox
           checked={selectedItems.has(person._id)}
           readonly={disabled}

@@ -80,6 +80,7 @@
         title: (await getChannelName(object._id, object._class, object)) ?? (await translate(titleIntl, {})),
         description: isDocChat && !isPerson ? await getDocTitle(client, object._id, object._class, object) : undefined,
         icon: icon ?? getObjectIcon(_class),
+        iconProps: { showStatus: true, background: 'var(--global-surface-01-BackgroundColor)' },
         iconSize,
         withIconBackground: !isDirect && !isPerson,
         isSecondary: isDocChat && !isPerson

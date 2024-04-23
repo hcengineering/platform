@@ -32,21 +32,22 @@
   export let selected: Ref<Employee>[] = []
   export let skipCurrentAccount = false
   export let disableDeselectFor: Ref<Employee>[] = []
+  export let showStatus = false
 
   const dispatch = createEventDispatcher()
 
   let search: string = ''
   let selectedIds: Ref<Employee>[] = selected
 
-  function handleCancel () {
+  function handleCancel (): void {
     dispatch('close')
   }
 
-  function okAction () {
+  function okAction (): void {
     dispatch('close', selectedIds)
   }
 
-  function handleSelectionChanged (event: CustomEvent) {
+  function handleSelectionChanged (event: CustomEvent): void {
     selectedIds = event.detail ?? []
   }
 </script>
@@ -86,8 +87,10 @@
           {search}
           {groupBy}
           selected={selectedIds}
+          {showStatus}
           {disableDeselectFor}
           {skipCurrentAccount}
+          background="var(--theme-popup-color)"
           on:select={handleSelectionChanged}
         />
       </Scroller>

@@ -122,6 +122,9 @@
   --love-active-call-color-2: #F47758;
   --love-active-call-transform: scaleY(0.25) scaleX(0.4);
   --love-active-call-filter: blur(17px);
+
+  --global-online-color: #49a26b;
+  --global-offline-color: #d1d5de;
 }
 
 /* Light Theme */
@@ -213,4 +216,7 @@
   --love-active-call-color-2: #e34748;
   --love-active-call-filter: blur(10px);
   --love-active-call-transform: scaleY(0.3) scaleX(0.42);
+
+  --global-online-color: #49a26b;
+  --global-offline-color: #5A667E;
 }

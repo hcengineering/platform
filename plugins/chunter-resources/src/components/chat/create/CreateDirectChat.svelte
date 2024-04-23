@@ -115,7 +115,8 @@
       {
         okLabel: presentation.string.Next,
         skipCurrentAccount: true,
-        selected: employeeIds
+        selected: employeeIds,
+        showStatus: true
       },
       'top',
       (result?: Ref<Employee>[]) => {
