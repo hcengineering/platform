@@ -13,7 +13,7 @@ export function decodeChannelURI (value: string): [Ref<Doc>, Ref<Class<Doc>>] {
 }
 
 function encodeChannelURI (_id: Ref<Doc>, _class: Ref<Class<Doc>>): string {
-  return encodeURIComponent([_id, _class].join('|'))
+  return [_id, _class].join('|')
 }
 
 export function openChannel (_id: Ref<Doc>, _class: Ref<Class<Doc>>): void {
