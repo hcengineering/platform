@@ -46,6 +46,9 @@
     themeStore
   } from '@hcengineering/ui'
   import { onMount } from 'svelte'
+  import { UserStatus } from '@hcengineering/view-resources'
+  import { Account } from '@hcengineering/core'
+
   import AvatarIcon from './icons/Avatar.svelte'
 
   export let avatar: string | null | undefined = undefined
@@ -56,6 +59,9 @@
   export let variant: 'circle' | 'roundedRect' | 'none' = 'roundedRect'
   export let borderColor: number | undefined = undefined
   export let standby: boolean = false
+  export let showStatus = false
+  export let account: Ref<Account> | undefined = undefined
+  export let background: string | undefined = undefined
 
   export function pulse (): void {
     if (element) element.animate(pulsating, { duration: 150, easing: 'ease-out' })
@@ -136,6 +142,24 @@
       fontSize = element.clientWidth * 0.6
     }
   })
+
+  function getStatusSize (avaSize: IconSize): 'small' | 'medium' {
+    switch (avaSize) {
+      case 'inline':
+      case 'tiny':
+      case 'card':
+      case 'x-small':
+        return 'small'
+      case 'small':
+      case 'medium':
+      case 'large':
+      case 'x-large':
+      case '2x-large':
+        return 'medium'
+      default:
+        return 'small'
+    }
+  }
 </script>
 
 {#if size === 'full' && !url && name && displayName && displayName !== ''}
@@ -185,6 +209,11 @@
         <Icon icon={icon ?? AvatarIcon} size={'full'} />
       </div>
     {/if}
+    {#if showStatus && account}
+      <span class="status">
+        <UserStatus user={account} size={getStatusSize(size)} {background} />
+      </span>
+    {/if}
   </div>
 {/if}
 
@@ -192,7 +221,6 @@
   .avatar-container {
     flex-shrink: 0;
     position: relative;
-    overflow: hidden;
     background-color: var(--theme-button-default);
     pointer-events: none;
 
@@ -363,5 +391,11 @@
     .ava-text {
       font-size: inherit;
     }
+  }
+
+  .status {
+    position: absolute;
+    bottom: -0.125ren;
+    right: -0.25rem;
   }
 </style>
