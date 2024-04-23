@@ -93,12 +93,12 @@
     color={'var(--theme-navpanel-border)'}
   />
 {/if}
-<div class="flex-col clear-mins" class:left-divider={!visibleNav} bind:this={mainPanel}>
+<div class="flex-col w-full clear-mins" class:left-divider={!visibleNav} bind:this={mainPanel}>
   <ToDos {mode} {tag} bind:visibleNav bind:currentDate />
 </div>
 {#if visibleCalendar}
   <Separator name={'time'} index={1} color={'transparent'} separatorSize={0} short />
-  <div class="w-full clear-mins" bind:this={replacedPanel}>
+  <div class="flex-col clear-mins" bind:this={replacedPanel}>
     <PlanningCalendar
       {dragItem}
       bind:currentDate
