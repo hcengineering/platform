@@ -632,7 +632,11 @@
   </div>
   {#if object}
     <div class="ref-input">
-      <ActivityExtensionComponent kind="input" {extensions} props={{ object, boundary: scrollElement, collection }} />
+      <ActivityExtensionComponent
+        kind="input"
+        {extensions}
+        props={{ object, boundary: scrollElement, collection, autofocus: true }}
+      />
     </div>
   {/if}
 {/if}
