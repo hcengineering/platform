@@ -14,14 +14,9 @@
 //
 
 import core, {
+  type Account,
   AccountRole,
   type BulkUpdateEvent,
-  TxFactory,
-  TxProcessor,
-  type TxWorkspaceEvent,
-  WorkspaceEvent,
-  generateId,
-  type Account,
   type Class,
   type Doc,
   type DocumentQuery,
@@ -38,7 +33,12 @@ import core, {
   type TxApplyIf,
   type TxApplyResult,
   type TxCUD,
-  type TxResult
+  TxFactory,
+  TxProcessor,
+  type TxResult,
+  type TxWorkspaceEvent,
+  WorkspaceEvent,
+  generateId
 } from '@hcengineering/core'
 import { type Pipeline, type SessionContext } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
@@ -69,6 +69,14 @@ export class ClientSession implements Session {
 
   getUser (): string {
     return this.token.email
+  }
+
+  isUpgradeClient (): boolean {
+    return this.token.extra?.model === 'upgrade'
+  }
+
+  getMode (): string {
+    return this.token.extra?.mode ?? 'normal'
   }
 
   pipeline (): Pipeline {

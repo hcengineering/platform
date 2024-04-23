@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Plugin, addLocation, addStringsLoader, platformId } from '@hcengineering/platform'
+import platform, { Plugin, addLocation, addStringsLoader, platformId } from '@hcengineering/platform'
 
 import { activityId } from '@hcengineering/activity'
 import { attachmentId } from '@hcengineering/attachment'
@@ -86,6 +86,8 @@ import { preferenceId } from '@hcengineering/preference'
 import { setDefaultLanguage } from '@hcengineering/theme'
 import { uiId } from '@hcengineering/ui/src/plugin'
 
+import { Analytics } from '@hcengineering/analytics'
+
 interface Config {
   ACCOUNTS_URL: string
   UPLOAD_URL: string
@@ -143,6 +145,19 @@ function configureI18n(): void {
 }
 
 export async function configurePlatform() {
+  setMetadata(platform.metadata.LoadHelper, async (loader) => {
+    for (let i = 0; i < 3; i++) {
+      try {
+        return loader()
+      } catch (err: any) {
+        if (err.message.includes('Loading chunk') && i != 2) {
+          continue
+        }
+        Analytics.handleError(err)
+      }
+    }
+  })
+
   configureI18n()
 
   const config: Config = await (await fetch(devConfig? '/config-dev.json' : '/config.json')).json()

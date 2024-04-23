@@ -127,6 +127,13 @@ export function startHttpServer (
           res.end()
           return
         }
+        case 'force-close': {
+          const wsId = req.query.wsId as string
+          void sessions.forceClose(wsId)
+          res.writeHead(200)
+          res.end()
+          return
+        }
         case 'reboot': {
           process.exit(0)
         }
@@ -227,11 +234,7 @@ export function startHttpServer (
         void ctx.error('error', { error: session.error?.message, stack: session.error?.stack })
       }
       await cs.send(ctx, { id: -1, result: { state: 'upgrading', stats: (session as any).upgradeInfo } }, false, false)
-
-      // Wait 1 second before closing the connection
-      setTimeout(() => {
-        cs.close()
-      }, 10000)
+      cs.close()
       return
     }
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -244,7 +247,7 @@ export function startHttpServer (
           buff = Buffer.concat(msg).toString()
         }
         if (buff !== undefined) {
-          void handleRequest(session.context, session.session, cs, buff, session.workspaceName)
+          void handleRequest(session.context, session.session, cs, buff, session.workspaceId)
         }
       } catch (err: any) {
         Analytics.handleError(err)
@@ -259,12 +262,12 @@ export function startHttpServer (
         return
       }
       // remove session after 1seconds, give a time to reconnect.
-      void sessions.close(cs, token.workspace, code, reason.toString())
+      void sessions.close(cs, token.workspace)
     })
     const b = buffer
     buffer = undefined
     for (const msg of b) {
-      await handleRequest(session.context, session.session, cs, msg, session.workspaceName)
+      await handleRequest(session.context, session.session, cs, msg, session.workspaceId)
     }
   }
   wss.on('connection', handleConnection as any)

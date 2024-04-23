@@ -215,7 +215,9 @@ export async function cloneWorkspace (
     mode: 'backup'
   })) as unknown as CoreClient & BackupClient
   const targetConnection = (await connect(transactorUrl, targetWorkspaceId, undefined, {
-    mode: 'backup'
+    mode: 'backup',
+    model: 'upgrade',
+    admin: 'true'
   })) as unknown as CoreClient & BackupClient
   try {
     const domains = sourceConnection
@@ -338,6 +340,7 @@ export async function cloneWorkspace (
   } finally {
     console.log('end clone')
     await sourceConnection.close()
+    await targetConnection.sendForceClose()
     await targetConnection.close()
   }
 }
@@ -997,6 +1000,7 @@ export async function restore (
       }
     }
   } finally {
+    await connection.sendForceClose()
     await connection.close()
   }
 }

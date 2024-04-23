@@ -839,8 +839,9 @@ export async function createWorkspace (
   email: string,
   workspaceName: string,
   workspace?: string,
-  notifyHandler?: (workspace: Workspace) => void
-): Promise<{ workspaceInfo: Workspace, err?: any, client?: Client }> {
+  notifyHandler?: (workspace: Workspace) => void,
+  postInitHandler?: (workspace: Workspace, model: Tx[]) => Promise<void>
+): Promise<{ workspaceInfo: Workspace, err?: any, model?: Tx[] }> {
   return await rateLimiter.exec(async () => {
     // We need to search for duplicate workspaceUrl
     await searchPromise
@@ -861,7 +862,6 @@ export async function createWorkspace (
 
     await updateInfo({ createProgress: 10 })
 
-    let client: Client | undefined
     const childLogger = ctx.newChild('createWorkspace', { workspace: workspaceInfo.workspace })
     const ctxModellogger: ModelLogger = {
       log: (msg, data) => {
@@ -871,6 +871,7 @@ export async function createWorkspace (
         void childLogger.error(msg, data)
       }
     }
+    let model: Tx[] = []
     try {
       const initWS = getMetadata(toolPlugin.metadata.InitWorkspace)
       const wsId = getWorkspaceId(workspaceInfo.workspace, productId)
@@ -882,11 +883,10 @@ export async function createWorkspace (
         initWS !== workspaceInfo.workspace
       ) {
         // Just any valid model for transactor to be able to function
-        await (
-          await initModel(ctx, getTransactor(), wsId, txes, [], ctxModellogger, async (value) => {
-            await updateInfo({ createProgress: Math.round((Math.min(value, 100) / 100) * 20) })
-          })
-        ).close()
+        await initModel(ctx, getTransactor(), wsId, txes, [], ctxModellogger, async (value) => {
+          await updateInfo({ createProgress: Math.round((Math.min(value, 100) / 100) * 20) })
+        })
+
         await updateInfo({ createProgress: 20 })
         // Clone init workspace.
         await cloneWorkspace(
@@ -899,7 +899,7 @@ export async function createWorkspace (
           }
         )
         await updateInfo({ createProgress: 50 })
-        client = await upgradeModel(
+        model = await upgradeModel(
           ctx,
           getTransactor(),
           wsId,
@@ -913,26 +913,23 @@ export async function createWorkspace (
         )
         await updateInfo({ createProgress: 90 })
       } else {
-        client = await initModel(
-          ctx,
-          getTransactor(),
-          wsId,
-          txes,
-          migrationOperation,
-          ctxModellogger,
-          async (value) => {
-            await updateInfo({ createProgress: Math.round(Math.min(value, 100)) })
-          }
-        )
+        await initModel(ctx, getTransactor(), wsId, txes, migrationOperation, ctxModellogger, async (value) => {
+          await updateInfo({ createProgress: Math.round(Math.min(value, 100)) })
+        })
       }
     } catch (err: any) {
       Analytics.handleError(err)
       return { workspaceInfo, err, client: null as any }
     }
+
+    if (postInitHandler !== undefined) {
+      await postInitHandler?.(workspaceInfo, model)
+    }
+
     childLogger.end()
     // Workspace is created, we need to clear disabled flag.
     await updateInfo({ createProgress: 100, disabled: false, creating: false })
-    return { workspaceInfo, client }
+    return { workspaceInfo, model }
   })
 }
 
@@ -970,18 +967,16 @@ export async function upgradeWorkspace (
     toVersion: versionStr,
     workspace: ws.workspace
   })
-  await (
-    await upgradeModel(
-      ctx,
-      getTransactor(),
-      getWorkspaceId(ws.workspace, productId),
-      txes,
-      migrationOperation,
-      logger,
-      false,
-      async (value) => {}
-    )
-  ).close()
+  await upgradeModel(
+    ctx,
+    getTransactor(),
+    getWorkspaceId(ws.workspace, productId),
+    txes,
+    migrationOperation,
+    logger,
+    false,
+    async (value) => {}
+  )
 
   await db.collection(WORKSPACE_COLLECTION).updateOne(
     { _id: ws._id },
@@ -1020,7 +1015,7 @@ export const createUserWorkspace =
       }
 
       async function doCreate (info: Account, notifyHandler: (workspace: Workspace) => void): Promise<void> {
-        const { workspaceInfo, err, client } = await createWorkspace(
+        const { workspaceInfo, err } = await createWorkspace(
           ctx,
           version,
           txes,
@@ -1030,7 +1025,29 @@ export const createUserWorkspace =
           email,
           workspaceName,
           undefined,
-          notifyHandler
+          notifyHandler,
+          async (workspace, model) => {
+            const initWS = getMetadata(toolPlugin.metadata.InitWorkspace)
+            const shouldUpdateAccount = initWS !== undefined && (await getWorkspaceById(db, productId, initWS)) !== null
+            const client = await connect(
+              getTransactor(),
+              getWorkspaceId(workspace.workspace, productId),
+              undefined,
+              {
+                admin: 'true'
+              },
+              model
+            )
+            try {
+              await assignWorkspace(ctx, db, productId, email, workspace.workspace, shouldUpdateAccount, client)
+              await setRole(email, workspace.workspace, productId, AccountRole.Owner, client)
+              await ctx.info('Creating server side done', { workspaceName, email })
+            } catch (err: any) {
+              Analytics.handleError(err)
+            } finally {
+              await client.close()
+            }
+          }
         )
 
         if (err != null) {
@@ -1045,20 +1062,10 @@ export const createUserWorkspace =
           )
           throw err
         }
-        try {
-          info.lastWorkspace = Date.now()
+        info.lastWorkspace = Date.now()
 
-          // Update last workspace time.
-          await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: info._id }, { $set: { lastWorkspace: Date.now() } })
-
-          const initWS = getMetadata(toolPlugin.metadata.InitWorkspace)
-          const shouldUpdateAccount = initWS !== undefined && (await getWorkspaceById(db, productId, initWS)) !== null
-          await assignWorkspace(ctx, db, productId, email, workspaceInfo.workspace, shouldUpdateAccount, client)
-          await setRole(email, workspaceInfo.workspace, productId, AccountRole.Owner, client)
-          await ctx.info('Creating server side done', { workspaceName, email })
-        } finally {
-          await client?.close()
-        }
+        // Update last workspace time.
+        await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: info._id }, { $set: { lastWorkspace: Date.now() } })
       }
 
       const workspaceInfo = await new Promise<Workspace>((resolve) => {

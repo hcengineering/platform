@@ -1,5 +1,4 @@
 import {
-  type WorkspaceIdWithUrl,
   type Class,
   type Doc,
   type DocumentQuery,
@@ -9,7 +8,8 @@ import {
   type Ref,
   type Tx,
   type TxResult,
-  type WorkspaceId
+  type WorkspaceId,
+  type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 import { type Response } from '@hcengineering/rpc'
 import { type BroadcastFunc, type Pipeline } from '@hcengineering/server-core'
@@ -65,6 +65,10 @@ export interface Session {
   measureCtx?: { ctx: MeasureContext, time: number }
 
   lastRequest: number
+
+  isUpgradeClient: () => boolean
+
+  getMode: () => string
 }
 
 /**
@@ -118,9 +122,10 @@ export interface Workspace {
   pipeline: Promise<Pipeline>
   sessions: Map<string, { session: Session, socket: ConnectionSocket }>
   upgrade: boolean
+  backup: boolean
 
   closing?: Promise<void>
-  closeTimeout?: any
+  softShutdown: number
 
   workspaceId: WorkspaceId
   workspaceName: string
@@ -144,15 +149,21 @@ export interface SessionManager {
     productId: string,
     sessionId: string | undefined,
     accountsUrl: string
-  ) => Promise<
-  { session: Session, context: MeasureContext, workspaceName: string } | { upgrade: true } | { error: any }
-  >
+  ) => Promise<{ session: Session, context: MeasureContext, workspaceId: string } | { upgrade: true } | { error: any }>
 
   broadcastAll: (workspace: Workspace, tx: Tx[], targets?: string[]) => void
 
-  close: (ws: ConnectionSocket, workspaceId: WorkspaceId, code: number, reason: string) => Promise<void>
+  close: (ws: ConnectionSocket, workspaceId: WorkspaceId) => Promise<void>
 
-  closeAll: (wsId: string, workspace: Workspace, code: number, reason: 'upgrade' | 'shutdown') => Promise<void>
+  closeAll: (
+    wsId: string,
+    workspace: Workspace,
+    code: number,
+    reason: 'upgrade' | 'shutdown',
+    ignoreSocket?: ConnectionSocket
+  ) => Promise<void>
+
+  forceClose: (wsId: string, ignoreSocket?: ConnectionSocket) => Promise<void>
 
   closeWorkspaces: (ctx: MeasureContext) => Promise<void>
 
@@ -169,7 +180,7 @@ export type HandleRequestFunction = <S extends Session>(
   service: S,
   ws: ConnectionSocket,
   msg: Buffer,
-  workspace: string
+  workspaceId: string
 ) => Promise<void>
 
 /**

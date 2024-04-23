@@ -123,7 +123,8 @@ describe('client', () => {
         getAccount: async () => null as unknown as Account,
         measure: async () => {
           return async () => ({ time: 0, serverTime: 0 })
-        }
+        },
+        sendForceClose: async () => {}
       }
     }
     const spyCreate = jest.spyOn(TxProcessor, 'createDoc2Doc')

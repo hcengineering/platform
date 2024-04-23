@@ -96,6 +96,7 @@
 <style lang="scss">
   .version-wrapper {
     height: 100%;
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -108,5 +109,6 @@
     align-items: center;
     justify-content: center;
     padding: 2rem;
+    flex-grow: 1;
   }
 </style>

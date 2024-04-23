@@ -30,8 +30,8 @@ import {
   replacePassword,
   setAccountAdmin,
   setRole,
-  upgradeWorkspace,
-  UpgradeWorker
+  UpgradeWorker,
+  upgradeWorkspace
 } from '@hcengineering/account'
 import { setMetadata } from '@hcengineering/platform'
 import {
@@ -264,7 +264,7 @@ export function devTool (
     .action(async (workspace, cmd) => {
       const { mongodbUri, txes, version, migrateOperations } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
-        const { client } = await createWorkspace(
+        await createWorkspace(
           toolCtx,
           version,
           txes,
@@ -275,7 +275,6 @@ export function devTool (
           cmd.workspaceName,
           workspace
         )
-        await client?.close()
       })
     })
 

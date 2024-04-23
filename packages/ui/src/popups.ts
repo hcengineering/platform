@@ -30,6 +30,9 @@ export interface CompAndProps {
     refId?: string
   }
   dock?: boolean
+
+  // Internal
+  closing?: boolean
 }
 
 export interface PopupResult {
@@ -116,7 +119,13 @@ export function closePopup (category?: string): void {
     } else {
       for (let i = popups.length - 1; i >= 0; i--) {
         if (popups[i].options.fixed !== true) {
-          popups[i].onClose?.(undefined)
+          const isClosing = popups[i].closing ?? false
+          popups[i].closing = true
+          if (!isClosing) {
+            // To prevent possible recursion, we need to check if we call some code from popup close, to do close.
+            popups[i].onClose?.(undefined)
+          }
+          popups[i].closing = false
           popups.splice(i, 1)
           break
         }

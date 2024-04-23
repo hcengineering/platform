@@ -207,6 +207,10 @@ class ClientImpl implements AccountClient, BackupClient, MeasureClient {
   async getAccount (): Promise<Account> {
     return await this.conn.getAccount()
   }
+
+  async sendForceClose (): Promise<void> {
+    await this.conn.sendForceClose()
+  }
 }
 
 /**
