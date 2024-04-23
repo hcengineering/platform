@@ -25,11 +25,11 @@ export class TalentsPage extends CommonRecruitingPage {
   inputSearchTalent = (): Locator => this.page.locator('div[class*="header"] input')
   andreyTalet = (): Locator => this.page.locator('text=P. Andrey')
 
-  addApplicationButton = (): Locator => this.page.locator('button[id="appls.add"]')
-  spaceSelector = (): Locator => this.page.locator('[id="space.selector"]')
-  searchInput = (): Locator => this.page.locator('[placeholder="Search..."]')
-  hrInterviewButton = (): Locator =>
-    this.page.locator('[id="recruit:string:CreateApplication"] button:has-text("HR Interview")')
+  readonly addApplicationButton = (): Locator => this.page.locator('button[id="appls.add"]')
+  readonly spaceSelector = (): Locator => this.page.locator('[id="space.selector"]')
+  readonly searchInput = (): Locator => this.page.locator('[placeholder="Search..."]')
+  readonly backlogButton = (): Locator =>
+    this.page.locator('[id="recruit:string:CreateApplication"] button:has-text("Backlog")')
 
   createButton = (): Locator => this.page.locator('button:has-text("Create")')
   assignedRecruiterButton = (): Locator => this.page.locator('button:has-text("Assigned recruiter")')
@@ -74,8 +74,8 @@ export class TalentsPage extends CommonRecruitingPage {
     await this.page.waitForSelector('space.selector', { state: 'detached' })
   }
 
-  async waitForHRInterviewVisible (): Promise<void> {
-    await this.hrInterviewButton().isVisible()
+  async waitForBacklogVisible (): Promise<void> {
+    await this.backlogButton().isVisible()
   }
 
   async waitForTimeout (): Promise<void> {
