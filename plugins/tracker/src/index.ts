@@ -555,7 +555,7 @@ export const classicIssueTaskStatuses: TaskStatusFactory[] = [
   { category: task.statusCategory.ToDo, statuses: [['Todo', PaletteColorIndexes.Porpoise, pluginState.status.Todo]] },
   {
     category: task.statusCategory.Active,
-    statuses: [['In progress', PaletteColorIndexes.Cerulean, pluginState.status.InProgress]]
+    statuses: [['In Progress', PaletteColorIndexes.Cerulean, pluginState.status.InProgress]]
   },
   { category: task.statusCategory.Won, statuses: [['Done', PaletteColorIndexes.Grass, pluginState.status.Done]] },
   {

@@ -864,26 +864,21 @@ export async function migrateTrackerDefaultStatuses (
       return classicStatus?.[2] as Ref<Status>
     }
     const migrateProjects = async (getNewStatus: (oldStatus: Ref<Status>) => Ref<Status>): Promise<void> => {
-      // Find projects of the default type
-      // Default statuses in tracker are not reused anywhere else because they are created
-      // with core.class.Status class while all other statuses are created with
-      // tracker.class.IssueStatus class. So no need to account for these statuses to be
-      // used anywhere else except the default project and task types.
-      const affectedProjects = await connection.findAll<Project>(tracker.class.Project, {
-        type: trackerModel.ids.ClassingProjectType
-      })
+      const projects = await connection.findAll<Project>(tracker.class.Project, {})
 
-      console.log('affectedProjects: ' + affectedProjects.length)
+      console.log('projects: ' + projects.length)
 
       // Project:
       // 1. defaultIssueStatus
       // 2. DocUpdateMessage:update:defaultIssueStatus
-      for (const project of affectedProjects) {
+      for (const project of projects) {
         const newDefaultIssueStatus = getNewStatus(project.defaultIssueStatus)
 
-        await db
-          .collection(DOMAIN_SPACE)
-          .updateOne({ _id: project._id }, { $set: { defaultIssueStatus: newDefaultIssueStatus } })
+        if (project.defaultIssueStatus !== newDefaultIssueStatus) {
+          await db
+            .collection(DOMAIN_SPACE)
+            .updateOne({ _id: project._id }, { $set: { defaultIssueStatus: newDefaultIssueStatus } })
+        }
 
         const projectUpdateMessages = await connection.findAll<DocUpdateMessage>(activity.class.DocUpdateMessage, {
           action: 'update',

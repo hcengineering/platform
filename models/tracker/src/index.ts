@@ -756,7 +756,7 @@ function defineSpaceType (builder: Builder): void {
       classicStatuses.push(statusId)
 
       builder.createDoc(
-        core.class.Status,
+        tracker.class.IssueStatus,
         core.space.Model,
         {
           ofAttribute: tracker.attribute.IssueStatus,

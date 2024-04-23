@@ -45,7 +45,7 @@ test.describe('Workspace tests', () => {
     const newIssue: NewIssue = {
       title: `Issue with all parameters and attachments-${generateId()}`,
       description: 'Created issue with all parameters and attachments description',
-      status: 'In progress',
+      status: 'In Progress',
       priority: 'Urgent',
       assignee: `${newUser.lastName} ${newUser.firstName}`,
       createLabel: true,

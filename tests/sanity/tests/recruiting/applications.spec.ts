@@ -51,7 +51,7 @@ test.describe('Application tests', () => {
     await talentsPage.clickAddApplication()
     await talentsPage.selectSpace()
     await talentsPage.searchAndSelectVacancy(vacancyId)
-    await talentsPage.waitForBacklogVisible()
+    await talentsPage.waitForHRInterviewVisible()
     // We need to be sure state is proper one, no other way to do it.
     await page.waitForTimeout(100)
     await talentsPage.createApplication()
