@@ -323,8 +323,12 @@
     if (startSizeMax !== -1 && parentCoord > startSizeMax) parentCoord = startSizeMax
     const endSizeMin = containers.minEnd + separatorsWide.after
     const endSizeMax = containers.maxEnd === -1 ? -1 : containers.maxEnd + separatorsWide.after
-    if (parentCoord > parentSize.size - endSizeMin - separatorSize) { parentCoord = parentSize.size - endSizeMin - separatorSize }
-    if (endSizeMax !== -1 && parentCoord < parentSize.size - endSizeMax - separatorSize) { parentCoord = parentSize.size - endSizeMax - separatorSize }
+    if (parentCoord > parentSize.size - endSizeMin - separatorSize) {
+      parentCoord = parentSize.size - endSizeMin - separatorSize
+    }
+    if (endSizeMax !== -1 && parentCoord < parentSize.size - endSizeMax - separatorSize) {
+      parentCoord = parentSize.size - endSizeMax - separatorSize
+    }
     const diff = prevCoord - parentCoord // + <-  - ->
     let remains = diff
     if (remains !== 0) {
@@ -491,7 +495,10 @@
         const hasSep: string[] = []
         children.forEach((ch) => {
           const rect = ch.getBoundingClientRect()
-          if (!ch.classList.contains('antiSeparator') && (ch.hasAttribute('data-size') || ch.hasAttribute('data-auto'))) {
+          if (
+            !ch.classList.contains('antiSeparator') &&
+            (ch.hasAttribute('data-size') || ch.hasAttribute('data-auto'))
+          ) {
             rects.set(ind++, {
               size: direction === 'horizontal' ? rect.width : rect.height,
               element: ch as HTMLElement
