@@ -302,6 +302,11 @@ export interface ReplyProvider extends Doc {
   function: Resource<(message: ActivityMessage) => Promise<void>>
 }
 
+export interface UserMentionInfo extends AttachedDoc {
+  user: Ref<Person>
+  content: string
+}
+
 /**
  * @public
  */
@@ -328,7 +333,8 @@ export default plugin(activityId, {
     Reaction: '' as Ref<Class<Reaction>>,
     SavedMessage: '' as Ref<Class<SavedMessage>>,
     ActivityReference: '' as Ref<Class<ActivityReference>>,
-    ReplyProvider: '' as Ref<Class<ReplyProvider>>
+    ReplyProvider: '' as Ref<Class<ReplyProvider>>,
+    UserMentionInfo: '' as Ref<Class<UserMentionInfo>>
   },
   icon: {
     Activity: '' as Asset,
