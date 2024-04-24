@@ -188,6 +188,7 @@
 
 {#each sections as section (section.id)}
   <ChatNavSection
+    id={section.id}
     objects={section.objects}
     {contexts}
     {objectId}

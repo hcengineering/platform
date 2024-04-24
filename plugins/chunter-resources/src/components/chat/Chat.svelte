@@ -28,10 +28,12 @@
   import { NavigatorModel, SpecialNavModel } from '@hcengineering/workbench'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { onMount } from 'svelte'
+  import { chunterId } from '@hcengineering/chunter'
+  import { ActivityMessage } from '@hcengineering/activity'
 
   import ChatNavigator from './navigator/ChatNavigator.svelte'
   import ChannelView from '../ChannelView.svelte'
-  import { chatSpecials, loadSavedAttachments } from './utils'
+  import { chatSpecials, loadSavedAttachments, storeChannel, openedChannelStore, clearChannel } from './utils'
   import { SelectChannelEvent } from './types'
   import { decodeChannelURI, openChannel } from '../../navigation'
 
@@ -58,6 +60,13 @@
     syncLocation(loc)
   })
 
+  openedChannelStore.subscribe((data) => {
+    if (data && selectedData?._id !== data._id) {
+      selectedData = data
+      openChannel(data._id, data._class, data.thread)
+    }
+  })
+
   $: void loadObject(selectedData?._id, selectedData?._class)
 
   async function loadObject (_id?: Ref<Doc>, _class?: Ref<Class<Doc>>): Promise<void> {
@@ -77,17 +86,25 @@
     )
   }
 
-  function syncLocation (loc: Location) {
-    const specialId = loc.path[3]
+  function syncLocation (loc: Location): void {
+    if (loc.path[2] !== chunterId) {
+      return
+    }
 
-    currentSpecial = navigatorModel?.specials?.find((special) => special.id === specialId)
+    const id = loc.path[3]
+
+    if (!id) {
+      return
+    }
+
+    currentSpecial = navigatorModel?.specials?.find((special) => special.id === id)
 
     if (currentSpecial !== undefined) {
-      selectedData = undefined
+      clearChannel()
     } else {
       const [_id, _class] = decodeChannelURI(loc.path[3])
 
-      selectedData = { _id, _class }
+      storeChannel(_id, _class, loc.path[4] as Ref<ActivityMessage>)
     }
   }
 

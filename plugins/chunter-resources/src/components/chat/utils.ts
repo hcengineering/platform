@@ -13,13 +13,13 @@
 // limitations under the License.
 //
 import notification, { type DocNotifyContext } from '@hcengineering/notification'
-import { generateId, SortingOrder, type WithLookup } from '@hcengineering/core'
+import { type Class, type Doc, generateId, type Ref, SortingOrder, type WithLookup } from '@hcengineering/core'
 import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
 import { get, writable } from 'svelte/store'
 import view from '@hcengineering/view'
 import { type SpecialNavModel } from '@hcengineering/workbench'
 import attachment, { type SavedAttachments } from '@hcengineering/attachment'
-import activity from '@hcengineering/activity'
+import activity, { type ActivityMessage } from '@hcengineering/activity'
 import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
 import { type Action, showPopup } from '@hcengineering/ui'
 import contact from '@hcengineering/contact'
@@ -27,7 +27,69 @@ import contact from '@hcengineering/contact'
 import { type ChatNavGroupModel, type ChatNavItemModel } from './types'
 import chunter from '../../plugin'
 
+const channelStorageKey = 'chunter.openedChannel'
+const navigatorStateStorageKey = 'chunter.navigatorState'
+
+interface ChannelMetadata {
+  _id: Ref<Doc>
+  _class: Ref<Class<Doc>>
+  thread?: Ref<ActivityMessage>
+}
+interface NavigatorState {
+  collapsedSections: string[]
+}
+
 export const savedAttachmentsStore = writable<Array<WithLookup<SavedAttachments>>>([])
+export const openedChannelStore = writable<ChannelMetadata | undefined>(restoreChannel())
+export const navigatorStateStore = writable<NavigatorState>(restoreNavigatorState())
+
+function restoreChannel (): ChannelMetadata | undefined {
+  const raw = localStorage.getItem(channelStorageKey)
+
+  if (raw == null) return undefined
+
+  try {
+    return JSON.parse(raw) as ChannelMetadata
+  } catch (e) {
+    return undefined
+  }
+}
+
+function restoreNavigatorState (): NavigatorState {
+  const raw = localStorage.getItem(navigatorStateStorageKey)
+
+  if (raw == null) return { collapsedSections: [] }
+
+  try {
+    return JSON.parse(raw) as NavigatorState
+  } catch (e) {
+    return { collapsedSections: [] }
+  }
+}
+
+export function toggleSections (_id: string): void {
+  const navState = get(navigatorStateStore)
+  const result: NavigatorState = navState.collapsedSections.includes(_id)
+    ? {
+        collapsedSections: navState.collapsedSections.filter((id) => id !== _id)
+      }
+    : { collapsedSections: [...navState.collapsedSections, _id] }
+
+  localStorage.setItem(navigatorStateStorageKey, JSON.stringify(result))
+  navigatorStateStore.set(result)
+}
+
+export function clearChannel (): void {
+  localStorage.removeItem(channelStorageKey)
+  openedChannelStore.set(undefined)
+}
+
+export function storeChannel (_id: Ref<Doc>, _class: Ref<Class<Doc>>, thread?: Ref<ActivityMessage>): void {
+  const data: ChannelMetadata = { _id, _class, thread }
+
+  localStorage.setItem(channelStorageKey, JSON.stringify(data))
+  openedChannelStore.set(data)
+}
 
 export const chatSpecials: SpecialNavModel[] = [
   {
