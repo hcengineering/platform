@@ -10,7 +10,4 @@ export default async (): Promise<Resources> => ({
   }
 })
 
-export const workbenchGuestSeparators: DefSeparators = [
-  null,
-  { minSize: 20, size: 30, maxSize: 50, float: 'aside' }
-]
+export const workbenchGuestSeparators: DefSeparators = [null, { minSize: 20, size: 30, maxSize: 50, float: 'aside' }]
