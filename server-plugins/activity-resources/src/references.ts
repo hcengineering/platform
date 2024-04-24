@@ -36,16 +36,34 @@ import core, {
   Type
 } from '@hcengineering/core'
 import notification, { MentionInboxNotification } from '@hcengineering/notification'
-import { extractReferences, markupToPmNode, pmNodeToMarkup, yDocContentToNodes } from '@hcengineering/text'
+import {
+  extractReferences,
+  markupToPmNode,
+  pmNodeToMarkup,
+  yDocContentToNodes,
+  areEqualJson
+} from '@hcengineering/text'
 import { StorageAdapter, TriggerControl } from '@hcengineering/server-core'
-import activity, { ActivityMessage, ActivityReference } from '@hcengineering/activity'
+import activity, { ActivityMessage, ActivityReference, UserMentionInfo } from '@hcengineering/activity'
 import contact, { Person, PersonAccount } from '@hcengineering/contact'
 import {
-  getPushCollaboratorTx,
   getCommonNotificationTxes,
+  getPushCollaboratorTx,
   isMessageAlreadyNotified,
   shouldNotifyCommon
 } from '@hcengineering/server-notification-resources'
+
+async function getPersonAccount (person: Ref<Person>, control: TriggerControl): Promise<PersonAccount | undefined> {
+  return (
+    await control.modelDb.findAll(
+      contact.class.PersonAccount,
+      {
+        person
+      },
+      { limit: 1 }
+    )
+  )[0]
+}
 
 export function isDocMentioned (doc: Ref<Doc>, content: string | Buffer): boolean {
   const references = []
@@ -76,15 +94,8 @@ export async function getPersonNotificationTxes (
   space: Ref<Space>,
   originTx: TxCUD<Doc>
 ): Promise<Tx[]> {
-  const receiver = (
-    await control.modelDb.findAll(
-      contact.class.PersonAccount,
-      {
-        person: reference.attachedTo as Ref<Person>
-      },
-      { limit: 1 }
-    )
-  )[0]
+  const receiverPerson = reference.attachedTo as Ref<Person>
+  const receiver = await getPersonAccount(receiverPerson, control)
 
   if (receiver === undefined) {
     return []
@@ -109,6 +120,31 @@ export async function getPersonNotificationTxes (
 
   if (doc === undefined) {
     return res
+  }
+
+  const info = (
+    await control.findAll<UserMentionInfo>(activity.class.UserMentionInfo, {
+      user: receiverPerson,
+      attachedTo: reference.attachedDocId
+    })
+  )[0]
+
+  if (info === undefined) {
+    res.push(
+      control.txFactory.createTxCreateDoc(activity.class.UserMentionInfo, space, {
+        attachedTo: reference.attachedDocId ?? reference.srcDocId,
+        attachedToClass: reference.attachedDocClass ?? reference.srcDocClass,
+        user: receiverPerson,
+        content: reference.message,
+        collection: 'mentions'
+      })
+    )
+  } else {
+    res.push(
+      control.txFactory.createTxUpdateDoc(info._class, info.space, info._id, {
+        content: reference.message
+      })
+    )
   }
 
   const data: Partial<Data<MentionInboxNotification>> = {
@@ -274,7 +310,7 @@ async function getCreateReferencesTxes (
     ? (srcDocId as Ref<Space>)
     : srcDocSpace
 
-  return await getReferencesTxes(control, txFactory, refs, refSpace, [], originTx)
+  return await getReferencesTxes(control, txFactory, refs, refSpace, [], [], originTx)
 }
 
 async function getUpdateReferencesTxes (
@@ -330,12 +366,15 @@ async function getUpdateReferencesTxes (
       attachedDocId,
       collection: 'references'
     })
+    const userMentions = await control.findAll(activity.class.UserMentionInfo, {
+      attachedTo: attachedDocId
+    })
 
     const refSpace: Ref<Space> = control.hierarchy.isDerived(srcDocClass, core.class.Space)
       ? (srcDocId as Ref<Space>)
       : srcDocSpace
 
-    return await getReferencesTxes(control, txFactory, references, refSpace, current, originTx)
+    return await getReferencesTxes(control, txFactory, references, refSpace, current, userMentions, originTx)
   }
 
   return []
@@ -402,6 +441,7 @@ async function getReferencesTxes (
   references: Data<ActivityReference>[],
   space: Ref<Space>,
   current: ActivityReference[],
+  mentions: UserMentionInfo[],
   originTx: TxCUD<Doc>
 ): Promise<Tx[]> {
   const txes: Tx[] = []
@@ -428,6 +468,24 @@ async function getReferencesTxes (
     }
   }
 
+  for (const mention of mentions) {
+    const refIndex = references.findIndex(
+      (r) => mention.user === r.attachedTo && mention.attachedTo === r.attachedDocId
+    )
+
+    const ref = references[refIndex]
+
+    if (refIndex !== -1) {
+      const alreadyProcessed = areEqualJson(JSON.parse(mention.content), JSON.parse(ref.message))
+
+      if (alreadyProcessed) {
+        references.splice(refIndex, 1)
+      }
+    } else {
+      txes.push(txFactory.createTxRemoveDoc(mention._class, mention.space, mention._id))
+    }
+  }
+
   // Add missing references
   for (const ref of references) {
     txes.push(...(await createReferenceTxes(control, txFactory, ref, space, originTx)))
@@ -447,9 +505,26 @@ async function getRemoveActivityReferenceTxes (
     collection: 'references'
   })
 
+  const mentions = await control.findAll(activity.class.UserMentionInfo, {
+    attachedTo: removedDocId
+  })
+
   for (const ref of refs) {
     const removeTx = txFactory.createTxRemoveDoc(ref._class, ref.space, ref._id)
     txes.push(txFactory.createTxCollectionCUD(ref.attachedToClass, ref.attachedTo, ref.space, ref.collection, removeTx))
+  }
+
+  for (const mention of mentions) {
+    const removeTx = txFactory.createTxRemoveDoc(mention._class, mention.space, mention._id)
+    txes.push(
+      txFactory.createTxCollectionCUD(
+        mention.attachedToClass,
+        mention.attachedTo,
+        mention.space,
+        mention.collection,
+        removeTx
+      )
+    )
   }
 
   return txes
@@ -559,7 +634,7 @@ async function ActivityReferenceRemove (tx: Tx, control: TriggerControl): Promis
   let hasMarkdown = false
 
   for (const attr of attributes.values()) {
-    if (isMarkupType(attr.type._class)) {
+    if (isMarkupType(attr.type._class) || isCollaborativeType(attr.type._class)) {
       hasMarkdown = true
       break
     }

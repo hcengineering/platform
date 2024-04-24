@@ -259,6 +259,12 @@ export class TReplyProvider extends TDoc implements ReplyProvider {
   function!: Resource<(message: ActivityMessage) => Promise<void>>
 }
 
+@Model(activity.class.UserMentionInfo, core.class.AttachedDoc, DOMAIN_ACTIVITY)
+export class TUserMentionInfo extends TAttachedDoc {
+  user!: Ref<Person>
+  content!: string
+}
+
 export function createModel (builder: Builder): void {
   builder.createModel(
     TTxViewlet,
@@ -276,7 +282,8 @@ export function createModel (builder: Builder): void {
     TIgnoreActivity,
     TActivityReference,
     TActivityMessagePreview,
-    TReplyProvider
+    TReplyProvider,
+    TUserMentionInfo
   )
 
   builder.mixin(activity.class.DocUpdateMessage, core.class.Class, view.mixin.ObjectPresenter, {
