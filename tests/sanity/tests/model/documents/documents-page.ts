@@ -8,7 +8,7 @@ export class DocumentsPage extends CommonPage {
   readonly page: Page
 
   constructor (page: Page) {
-    super()
+    super(page)
     this.page = page
     this.popupCreateDocument = new DocumentCreatePopup(page)
     this.popupMoveDocument = new DocumentMovePopup(page)

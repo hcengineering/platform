@@ -46,6 +46,6 @@ export class VacancyDetailsPage extends CommonRecruitingPage {
 
   async addDueDateToday (): Promise<void> {
     await this.buttonInputDueDate().click()
-    await this.buttonDatePopupToday.click()
+    await this.clickButtonDatePopupToday()
   }
 }

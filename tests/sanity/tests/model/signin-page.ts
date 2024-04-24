@@ -4,22 +4,20 @@ import { SignUpData } from './common-types'
 
 export class SignInJoinPage extends CommonPage {
   readonly page: Page
-  readonly inputEmail: Locator
-  readonly inputPassword: Locator
-  readonly buttonJoin: Locator
 
   constructor (page: Page) {
-    super()
+    super(page)
     this.page = page
-    this.inputEmail = page.locator('input[name="email"]')
-    this.inputPassword = page.locator('//div[text()="Password"]/../input')
-    this.buttonJoin = page.locator('button', { hasText: 'Join' })
   }
 
+  inputEmail = (): Locator => this.page.locator('input[name="email"]')
+  inputPassword = (): Locator => this.page.locator('//div[text()="Password"]/../input')
+  buttonJoin = (): Locator => this.page.locator('button', { hasText: 'Join' })
+
   async join (data: Pick<SignUpData, 'email' | 'password'>): Promise<void> {
-    await this.inputEmail.fill(data.email)
-    await this.inputPassword.fill(data.password)
-    expect(await this.buttonJoin.isEnabled()).toBe(true)
-    await this.buttonJoin.click()
+    await this.inputEmail().fill(data.email)
+    await this.inputPassword().fill(data.password)
+    expect(await this.buttonJoin().isEnabled()).toBe(true)
+    await this.buttonJoin().click()
   }
 }

@@ -22,7 +22,7 @@ test.describe('Mentions issue tests', () => {
     }
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
     const issuesPage = new IssuesPage(page)
     await issuesPage.modelSelectorAll().click()
@@ -44,7 +44,7 @@ test.describe('Mentions issue tests', () => {
     }
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
     const issuesPage = new IssuesPage(page)
     await issuesPage.modelSelectorAll().click()
@@ -72,7 +72,7 @@ test.describe('Mentions issue tests', () => {
     }
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
     const issuesPage = new IssuesPage(page)
     await issuesPage.modelSelectorAll().click()

@@ -27,7 +27,7 @@ test.describe('Fulltext index', () => {
   test.describe('Documents', () => {
     test.beforeEach(async ({ page }) => {
       const leftSideMenuPage = new LeftSideMenuPage(page)
-      await leftSideMenuPage.buttonDocuments.click()
+      await leftSideMenuPage.clickDocuments()
     })
 
     test('Search created document', async ({ page }) => {
@@ -60,7 +60,7 @@ test.describe('Fulltext index', () => {
 
       await test.step('close document', async () => {
         // Go to inbox to close the document and trigger indexation
-        await leftSideMenuPage.buttonNotification.click()
+        await leftSideMenuPage.clickNotification()
       })
 
       await test.step('search by title', async () => {
@@ -124,7 +124,7 @@ test.describe('Fulltext index', () => {
 
       await test.step('close document', async () => {
         // Go to inbox to close the document and trigger indexation
-        await leftSideMenuPage.buttonNotification.click()
+        await leftSideMenuPage.clickNotification()
       })
 
       await test.step('search by old title', async () => {
@@ -196,7 +196,7 @@ test.describe('Fulltext index', () => {
         await documentContentPage.executeMoreAction('Delete')
         await documentContentPage.pressYesForPopup(page)
         // Go to inbox to close the document and trigger indexation
-        await leftSideMenuPage.buttonNotification.click()
+        await leftSideMenuPage.clickNotification()
       })
 
       await test.step('search by title', async () => {
@@ -213,7 +213,7 @@ test.describe('Fulltext index', () => {
   test.describe('Issues', () => {
     test.beforeEach(async ({ page }) => {
       const leftSideMenuPage = new LeftSideMenuPage(page)
-      await leftSideMenuPage.buttonTracker.click()
+      await leftSideMenuPage.clickTracker()
     })
 
     test('Search created issue', async ({ page }) => {
@@ -388,7 +388,7 @@ test.describe('Fulltext index', () => {
       const spotlight = new SpotlightPopup(page)
 
       await test.step('create issue', async () => {
-        await leftSideMenuPage.buttonTracker.click()
+        await leftSideMenuPage.clickTracker()
         await issuesPage.createNewIssue(newIssue)
       })
 
@@ -411,14 +411,14 @@ test.describe('Fulltext index', () => {
         const newWorkspaceName = `New Workspace Name - ${generateId(2)}`
 
         await loginPage.goto()
-        await loginPage.linkSignUp.click()
+        await loginPage.clickSignUp()
         await signUpPage.signUp(newUser)
 
         await selectWorkspacePage.createWorkspace(newWorkspaceName)
       })
 
       await test.step('search by title', async () => {
-        await leftSideMenuPage.buttonTracker.click()
+        await leftSideMenuPage.clickTracker()
         await expect(async () => {
           await spotlight.open()
           await spotlight.fillSearchInput(titleId)

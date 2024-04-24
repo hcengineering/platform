@@ -43,8 +43,8 @@ test.describe('Collaborative tests for Application', () => {
         await (await userSecondPage.goto(`${PlatformURI}/workbench/sanity-ws/recruit`))?.finished()
 
         const leftSideMenuPageSecond = new LeftSideMenuPage(userSecondPage)
-        await leftSideMenuPageSecond.checkExistNewNotification(userSecondPage)
-        await leftSideMenuPageSecond.buttonNotification.click()
+        await leftSideMenuPageSecond.checkExistNewNotification()
+        await leftSideMenuPageSecond.clickNotification()
 
         // TODO: rewrite checkNotificationCollaborators and uncomment
         // const notificationPageSecond = new NotificationPage(userSecondPage)
@@ -68,8 +68,8 @@ test.describe('Collaborative tests for Application', () => {
 
       await test.step('User1. Check notification and check comment from user1', async () => {
         const leftSideMenuPage = new LeftSideMenuPage(page)
-        await leftSideMenuPage.checkExistNewNotification(page)
-        await leftSideMenuPage.buttonNotification.click()
+        await leftSideMenuPage.checkExistNewNotification()
+        await leftSideMenuPage.clickNotification()
 
         // TODO: rewrite checkNotificationCollaborators and uncomment
         // const notificationPage = new NotificationPage(page)

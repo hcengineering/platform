@@ -5,7 +5,7 @@ export class TrackerNavigationMenuPage extends CommonPage {
   page: Page
 
   constructor (page: Page) {
-    super()
+    super(page)
     this.page = page
   }
 

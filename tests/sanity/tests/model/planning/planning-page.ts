@@ -97,18 +97,18 @@ export class PlanningPage extends CalendarPage {
     if (data.duedate != null) {
       await (popup ? this.buttonPopupCreateDueDate().click() : this.buttonPanelCreateDueDate().click())
       if (data.duedate === 'today') {
-        await this.buttonDatePopupToday.click()
+        await this.clickButtonDatePopupToday()
       } else {
         await this.selectMenuItem(this.page, data.duedate)
       }
     }
     if (data.priority != null) {
       await (popup ? this.buttonPopupCreatePriority().click() : this.buttonPanelCreatePriority().click())
-      await this.selectListItem(this.page, data.priority)
+      await this.selectListItem(data.priority)
     }
     if (data.visible != null) {
       await (popup ? this.buttonPopupCreateVisible().click() : this.buttonPanelCreateVisible().click())
-      await this.selectPopupItem(this.page, data.visible)
+      await this.selectPopupItem(data.visible)
     }
     if (data.labels != null && data.createLabel != null) {
       await (popup ? this.buttonPopupCreateAddLabel().click() : this.buttonPanelCreateAddLabel().click())
@@ -218,7 +218,7 @@ export class PlanningPage extends CalendarPage {
     }
     if (data.labels != null) {
       await this.buttonPanelLabelFirst().click()
-      await this.checkPopupItem(this.page, data.labels)
+      await this.checkPopupItem(data.labels)
       await this.buttonPanelLabelFirst().click({ force: true })
     }
     if (data.slots != null) {

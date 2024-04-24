@@ -21,7 +21,7 @@ test.describe('Tracker public link issues tests', () => {
         await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
 
         const leftSideMenuPage = new LeftSideMenuPage(page)
-        await leftSideMenuPage.buttonTracker.click()
+        await leftSideMenuPage.clickTracker()
         await prepareNewIssueWithOpenStep(page, publicLinkIssue)
 
         const issuesDetailsPage = new IssuesDetailsPage(page)
@@ -72,7 +72,7 @@ test.describe('Tracker public link issues tests', () => {
         await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
 
         const leftSideMenuPage = new LeftSideMenuPage(page)
-        await leftSideMenuPage.buttonTracker.click()
+        await leftSideMenuPage.clickTracker()
         await prepareNewIssueWithOpenStep(page, publicLinkIssue)
 
         const issuesDetailsPage = new IssuesDetailsPage(page)

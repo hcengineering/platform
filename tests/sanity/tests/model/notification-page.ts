@@ -1,4 +1,4 @@
-import { expect, type Page } from '@playwright/test'
+import { expect, type Page, Locator } from '@playwright/test'
 
 export class NotificationPage {
   readonly page: Page
@@ -7,15 +7,16 @@ export class NotificationPage {
     this.page = page
   }
 
-  // TODO: rewrite functions according to new inbox
+  notificationLocator = (name: string): Locator =>
+    this.page.locator('div[class*="inbox-activity"] span', { hasText: name })
 
   async checkNotificationIssue (name: string, assignee: string): Promise<void> {
-    const notification = this.page.locator('div[class*="inbox-activity"] span', { hasText: name })
+    const notification = this.notificationLocator(name)
     await expect(notification.locator('xpath=../../..').locator('a span.ap-label')).toHaveText(assignee)
   }
 
   async checkNotificationCollaborators (name: string, text: string): Promise<void> {
-    const notification = this.page.locator('div[class*="inbox-activity"] span', { hasText: name })
+    const notification = this.notificationLocator(name)
     await expect(notification.locator('xpath=../../..').locator('div[class*="title"]')).toHaveText(text)
   }
 }

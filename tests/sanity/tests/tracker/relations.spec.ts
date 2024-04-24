@@ -25,7 +25,7 @@ test.describe('Relations', () => {
       description: 'Second. Mark as blocked by'
     }
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
     const secondIssueId = await prepareNewIssueStep(page, secondIssue)
     const firstIssueId = await prepareNewIssueStep(page, firstIssue)
@@ -71,7 +71,7 @@ test.describe('Relations', () => {
       description: 'Second. Mark as blocked by'
     }
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
     const secondIssueId = await prepareNewIssueStep(page, secondIssue)
     const firstIssueId = await prepareNewIssueStep(page, firstIssue)
@@ -119,7 +119,7 @@ test.describe('Relations', () => {
       description: 'Second. Reference another issue'
     }
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
     const secondIssueId = await prepareNewIssueStep(page, secondIssue)
     const firstIssueId = await prepareNewIssueStep(page, firstIssue)
@@ -165,7 +165,7 @@ test.describe('Relations', () => {
       description: 'Second. Remove relation be editing issue details'
     }
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
     const secondIssueId = await prepareNewIssueStep(page, secondIssue)
     await prepareNewIssueStep(page, firstIssue)

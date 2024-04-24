@@ -179,7 +179,7 @@ export class CommonTrackerPage extends CalendarPage {
 
   async addMentions (mention: string): Promise<void> {
     await this.inputComment().fill(`@${mention}`)
-    await this.selectMention(this.page, mention)
+    await this.selectMention(mention)
     await this.buttonSendComment().click()
   }
 
