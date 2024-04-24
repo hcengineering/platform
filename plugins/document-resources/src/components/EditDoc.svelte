@@ -66,8 +66,6 @@
 
   $: readonly = $restrictionStore.readonly
 
-  let useMaxWidth = true
-
   export function canClose (): boolean {
     return false
   }
@@ -241,7 +239,6 @@
     {kind}
     bind:content
     bind:innerWidth
-    bind:useMaxWidth
     floatAside={false}
     on:open
     on:close={() => dispatch('close')}
@@ -272,7 +269,7 @@
       {/if}
     </svelte:fragment>
 
-    <div class="container" class:container-max-width={useMaxWidth}>
+    <div class="container">
       <div class="title flex-row-center">
         <div class="icon">
           <Button
@@ -389,10 +386,6 @@
     flex-direction: column;
     width: 100%;
     margin: auto;
-  }
-
-  .container-max-width {
-    max-width: 700px;
   }
 
   .toc-container {
