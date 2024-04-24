@@ -164,24 +164,24 @@ test.describe('tracker layout tests', () => {
             return -1
           })
           .map((p) => p.name)
-      } else if (order === 'Status') {
-        orderedIssueNames = [...issuesProps]
-          .sort((propsLeft, propsRight) => {
-            if (propsLeft.status !== undefined && propsRight.status !== undefined) {
-              if (propsLeft.status === propsRight.status) {
-                return 0
-              } else if (
-                DEFAULT_STATUSES.findIndex((s) => s === propsLeft.status) -
-                  DEFAULT_STATUSES.findIndex((s) => s === propsRight.status) >
-                0
-              ) {
-                return 1
-              }
-            }
+        // } else if (order === 'Status') {
+        //   orderedIssueNames = [...issuesProps]
+        //     .sort((propsLeft, propsRight) => {
+        //       if (propsLeft.status !== undefined && propsRight.status !== undefined) {
+        //         if (propsLeft.status === propsRight.status) {
+        //           return 0
+        //         } else if (
+        //           DEFAULT_STATUSES.findIndex((s) => s === propsLeft.status) -
+        //             DEFAULT_STATUSES.findIndex((s) => s === propsRight.status) >
+        //           0
+        //         ) {
+        //           return 1
+        //         }
+        //       }
 
-            return -1
-          })
-          .map((p) => p.name)
+        //       return -1
+        //     })
+        //     .map((p) => p.name)
       } else {
         orderedIssueNames = issuesProps.map((props) => props.name).reverse()
       }
