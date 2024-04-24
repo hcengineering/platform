@@ -120,7 +120,7 @@
   isSecondary={item.isSecondary}
   iconSize={item.iconSize}
   {isSelected}
-  iconProps={{ value: item.object }}
+  iconProps={{ ...item.iconProps, value: item.object }}
   {notificationsCount}
   title={item.title}
   description={item.description}

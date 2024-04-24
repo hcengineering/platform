@@ -54,7 +54,7 @@
   let correctedIndex: number = index
   let offset: number = 0
   let separatorsSizes: number[] | null = null
-  const separatorsWide: { start: number, end: number, total: number } = { start: 0, end: 0, total: 0 }
+  const separatorsWide: { before: number, after: number, total: number } = { before: 0, after: 0, total: 0 }
   const containers: { minStart: number, minEnd: number, maxStart: number, maxEnd: number } = {
     minStart: -1,
     minEnd: -1,
@@ -105,7 +105,8 @@
       element.style.maxHeight = s
       element.style.height = s
     }
-    const sizePx = direction === 'horizontal' ? element.clientWidth : element.clientHeight
+    const rect = element.getBoundingClientRect()
+    const sizePx = direction === 'horizontal' ? rect.width : rect.height
     element.setAttribute('data-size', `${sizePx}`)
     if (sState === SeparatorState.NORMAL) {
       if (separators) separators[index + (next ? 1 : 0)].size = pxToRem(sizePx)
@@ -146,7 +147,8 @@
             .forEach((st) => styles.set(st.split(':')[0], st.split(':')[1]))
           dropStyles.forEach((key) => styles.delete(key))
         }
-        const size = direction === 'horizontal' ? elements[i].clientWidth : elements[i].clientHeight
+        const rect = element.getBoundingClientRect()
+        const size = direction === 'horizontal' ? rect.width : rect.height
         if (separators) {
           sm.push({
             id: ind,
@@ -190,16 +192,17 @@
       setSize(element, remToPx(props.size), next)
       return
     }
+    const rect = element.getBoundingClientRect()
     if (direction === 'horizontal') {
       element.style.minWidth = minSizePx
       element.style.maxWidth = maxSizePx
       element.style.width = sizePx
-      element.setAttribute('data-auto', `${element.clientWidth}`)
+      element.setAttribute('data-auto', `${rect.width}`)
     } else {
       element.style.minHeight = minSizePx
       element.style.maxHeight = maxSizePx
       element.style.height = sizePx
-      element.setAttribute('data-auto', `${element.clientHeight}`)
+      element.setAttribute('data-auto', `${rect.height}`)
     }
   }
 
@@ -233,6 +236,13 @@
         }
         if (isSeparate) style += 'pointer-events:none;'
         item.element.setAttribute('style', style)
+        if (final) {
+          const rect = item.element.getBoundingClientRect()
+          item.element.setAttribute(
+            item.maxSize === -1 ? 'data-auto' : 'data-size',
+            `${direction === 'horizontal' ? rect.width : rect.height}`
+          )
+        }
         item.resize = false
       }
     })
@@ -306,15 +316,19 @@
       .filter((f) => f.begin)
       .map((m) => m.size)
       .reduce((prev, a) => prev + a, 0)
-    for (let i = 0; i < correctedIndex; i++) prevCoord += separatorsSizes[i]
-    const startSizeMin = containers.minStart + separatorsWide.start
-    const startSizeMax = containers.maxStart === -1 ? -1 : containers.maxStart + separatorsWide.start
+    prevCoord += separatorsWide.before
+    const startSizeMin = containers.minStart + separatorsWide.before
+    const startSizeMax = containers.maxStart === -1 ? -1 : containers.maxStart + separatorsWide.before
     if (parentCoord <= startSizeMin) parentCoord = startSizeMin + 1
     if (startSizeMax !== -1 && parentCoord > startSizeMax) parentCoord = startSizeMax
-    const endSizeMin = containers.minEnd + separatorsWide.end
-    const endSizeMax = containers.maxEnd === -1 ? -1 : containers.maxEnd + separatorsWide.end
-    if (parentCoord > parentSize.size - endSizeMin) parentCoord = parentSize.size - endSizeMin - 1
-    if (endSizeMax !== -1 && parentCoord < parentSize.size - endSizeMax) parentCoord = parentSize.size - endSizeMax - 1
+    const endSizeMin = containers.minEnd + separatorsWide.after
+    const endSizeMax = containers.maxEnd === -1 ? -1 : containers.maxEnd + separatorsWide.after
+    if (parentCoord > parentSize.size - endSizeMin - separatorSize) {
+      parentCoord = parentSize.size - endSizeMin - separatorSize
+    }
+    if (endSizeMax !== -1 && parentCoord < parentSize.size - endSizeMax - separatorSize) {
+      parentCoord = parentSize.size - endSizeMax - separatorSize
+    }
     const diff = prevCoord - parentCoord // + <-  - ->
     let remains = diff
     if (remains !== 0) {
@@ -427,6 +441,7 @@
         ? { start: p.left, end: p.right, size: p.width }
         : { start: p.top, end: p.bottom, size: p.height }
     if (sState === SeparatorState.NORMAL) {
+      calculateSeparators()
       generateMap()
       applyStyles(true)
     } else if (sState === SeparatorState.FLOAT) preparePanel()
@@ -462,9 +477,73 @@
         .filter((el) => el.classList.contains('antiSeparator'))
         .map((el) => parseInt(el.getAttribute('data-size') ?? '0', 10))
       separatorsWide.total = separatorsSizes.reduce((prev, a) => prev + a, 0)
-      separatorsWide.start = separatorsSizes.slice(0, index).reduce((prev, a) => prev + a, 0)
-      separatorsWide.end = separatorsSizes.slice(index + 1, separatorsSizes.length).reduce((prev, a) => prev + a, 0)
+      separatorsWide.before = separatorsSizes.slice(0, index).reduce((prev, a) => prev + a, 0)
+      separatorsWide.after = separatorsSizes.slice(index + 1, separatorsSizes.length).reduce((prev, a) => prev + a, 0)
     }
+  }
+
+  let checkElements: boolean = false
+  const resizeDocument = (): void => {
+    if (parentElement == null || checkElements || sState !== SeparatorState.NORMAL) return
+    checkElements = true
+    setTimeout(() => {
+      if (parentElement != null && separators) {
+        const children: Element[] = Array.from(parentElement.children)
+        let totalSize: number = 0
+        let ind: number = 0
+        const rects = new Map<number, { size: number, element: HTMLElement }>()
+        const hasSep: string[] = []
+        children.forEach((ch) => {
+          const rect = ch.getBoundingClientRect()
+          if (
+            !ch.classList.contains('antiSeparator') &&
+            (ch.hasAttribute('data-size') || ch.hasAttribute('data-auto'))
+          ) {
+            rects.set(ind++, {
+              size: direction === 'horizontal' ? rect.width : rect.height,
+              element: ch as HTMLElement
+            })
+          }
+          if (ch.hasAttribute('data-float')) hasSep.push(ch.getAttribute('data-float') ?? '')
+          totalSize += direction === 'horizontal' ? rect.width : rect.height
+        })
+        const parentRect = parentElement.getBoundingClientRect()
+        let diff = totalSize - (direction === 'horizontal' ? parentRect.width : parentRect.height)
+        if (diff > 0) {
+          const excluded = separators
+            .filter((separ) => separ.float !== undefined && !hasSep.includes(separ.float))
+            .map((separ) => separ.float)
+          const reverseSep = [...separators].reverse()
+          let ind: number = 0
+          reverseSep.forEach((separ, i) => {
+            const pass = excluded.includes(separ.float)
+            if (diff > 0 && !pass && separators) {
+              const box = rects.get(reverseSep.length - ind - 1)
+              if (box) {
+                const minSize: number = remToPx(separ.minSize === 'auto' ? 20 : separ.minSize)
+                const forCrop = box.size - minSize
+                if (forCrop > 0) {
+                  const newSize = forCrop - diff < 0 ? minSize : box.size - diff
+                  diff -= forCrop
+                  if (direction === 'horizontal') {
+                    box.element.style.width = `${newSize}px`
+                    box.element.style.minWidth = `${newSize}px`
+                    box.element.style.maxWidth = `${newSize}px`
+                  } else {
+                    box.element.style.height = `${newSize}px`
+                    box.element.style.minHeight = `${newSize}px`
+                    box.element.style.maxHeight = `${newSize}px`
+                  }
+                  separators[separators.length - i - 1].size = newSize
+                }
+              }
+              ind++
+            }
+          })
+        }
+      }
+      checkElements = false
+    }, 100)
   }
 
   onMount(() => {
@@ -478,13 +557,13 @@
       checkSizes()
       mounted = true
     }
-    document.addEventListener('resize', checkSizes)
+    window.addEventListener('resize', resizeDocument)
     if (sState !== SeparatorState.FLOAT && $separatorsStore.filter((f) => f === name).length === 0) {
       $separatorsStore = [...$separatorsStore, name]
     }
   })
   onDestroy(() => {
-    document.removeEventListener('resize', checkSizes)
+    window.removeEventListener('resize', resizeDocument)
     if (sState !== SeparatorState.FLOAT && $separatorsStore.filter((f) => f === name).length > 0) {
       $separatorsStore = $separatorsStore.filter((f) => f !== name)
     }

@@ -501,9 +501,21 @@ async function changeIssueAssigneeHandler (
   if (issue !== undefined) {
     const status = (await control.findAll(core.class.Status, { _id: issue.status }))[0]
     if (status === undefined) return []
-    if (status.category === task.statusCategory.Active) {
+    if (status.category === task.statusCategory.Active || status.category === task.statusCategory.ToDo) {
+      const res: Tx[] = []
+      const todos = await control.findAll(time.class.ToDo, {
+        attachedTo: issue._id
+      })
+      const now = Date.now()
+      for (const todo of todos) {
+        if (todo.doneOn != null) continue
+        res.push(control.txFactory.createTxUpdateDoc(todo._class, todo.space, todo._id, { doneOn: now }))
+      }
       const tx = await getCreateToDoTx(issue, newAssignee, control)
-      if (tx !== undefined) return [tx]
+      if (tx !== undefined) {
+        res.push(tx)
+      }
+      return res
     }
   }
   return []

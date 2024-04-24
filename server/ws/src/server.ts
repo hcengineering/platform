@@ -23,8 +23,6 @@ import core, {
   versionToString,
   type BaseWorkspaceInfo,
   type MeasureContext,
-  type Ref,
-  type Space,
   type Tx,
   type TxWorkspaceEvent,
   type WorkspaceId
@@ -524,7 +522,7 @@ class TSessionManager implements SessionManager {
       const status = (await session.findAll(ctx, core.class.UserStatus, { user: user._id }, { limit: 1 }))[0]
       const txFactory = new TxFactory(user._id, true)
       if (status === undefined) {
-        const tx = txFactory.createTxCreateDoc(core.class.UserStatus, user._id as string as Ref<Space>, {
+        const tx = txFactory.createTxCreateDoc(core.class.UserStatus, core.space.Space, {
           online,
           user: user._id
         })

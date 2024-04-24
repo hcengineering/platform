@@ -41,6 +41,7 @@
 
 <style lang="scss">
   .dock {
+    box-sizing: content-box;
     display: flex;
     flex-shrink: 0;
     flex-direction: column;

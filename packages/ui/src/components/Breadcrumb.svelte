@@ -70,6 +70,7 @@
       }
     }
     .hulyBreadcrumb-label {
+      padding: var(--spacing-0_5) 0;
       color: var(--global-secondary-TextColor);
     }
     &.current .hulyBreadcrumb-label {

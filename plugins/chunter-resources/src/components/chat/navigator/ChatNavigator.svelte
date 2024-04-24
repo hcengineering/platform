@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Doc, Ref } from '@hcengineering/core'
-  import { Scroller, SearchEdit, Label, Button, IconAdd, showPopup, Menu } from '@hcengineering/ui'
+  import { Scroller, SearchEdit, Label, ButtonIcon, IconAdd, showPopup, Menu } from '@hcengineering/ui'
   import { DocNotifyContext } from '@hcengineering/notification'
   import { SpecialNavModel } from '@hcengineering/workbench'
   import { NavLink } from '@hcengineering/view-resources'
@@ -70,46 +70,44 @@
   }
 </script>
 
-<Scroller shrink>
-  <div class="header">
-    <div class="overflow-label">
-      <Label label={chunter.string.Chat} />
-    </div>
-    <Button icon={IconAdd} kind="primary" size="medium" iconProps={{ size: 'small' }} on:click={addButtonClicked} />
+<div class="header">
+  <div class="overflow-label">
+    <Label label={chunter.string.Chat} />
   </div>
+  <ButtonIcon icon={IconAdd} kind={'primary'} size={'small'} on:click={addButtonClicked} />
+</div>
 
-  {#each chatSpecials as special, row}
-    {#if row > 0 && chatSpecials[row].position !== chatSpecials[row - 1].position}
-      <TreeSeparator line />
+{#each chatSpecials as special, row}
+  {#if row > 0 && chatSpecials[row].position !== chatSpecials[row - 1].position}
+    <TreeSeparator line />
+  {/if}
+  {#await isSpecialVisible(special, $contextsStore) then isVisible}
+    {#if isVisible}
+      <NavLink space={special.id}>
+        <ChatSpecialElement {special} {currentSpecial} />
+      </NavLink>
     {/if}
-    {#await isSpecialVisible(special, $contextsStore) then isVisible}
-      {#if isVisible}
-        <NavLink space={special.id}>
-          <ChatSpecialElement {special} {currentSpecial} />
-        </NavLink>
-      {/if}
-    {/await}
+  {/await}
+{/each}
+
+<div class="search">
+  <SearchEdit
+    value={searchValue}
+    width="auto"
+    on:change={(ev) => {
+      userSearch.set(ev.detail)
+
+      if (ev.detail !== '') {
+        navigateToSpecial('chunterBrowser')
+      }
+    }}
+  />
+</div>
+<Scroller>
+  {#each chatNavGroupModels as model}
+    <ChatNavGroup {object} {objectId} {model} on:select />
   {/each}
-
-  <div class="search">
-    <SearchEdit
-      value={searchValue}
-      width="auto"
-      on:change={(ev) => {
-        userSearch.set(ev.detail)
-
-        if (ev.detail !== '') {
-          navigateToSpecial('chunterBrowser')
-        }
-      }}
-    />
-  </div>
-  <Scroller>
-    {#each chatNavGroupModels as model}
-      <ChatNavGroup {object} {objectId} {model} on:select />
-    {/each}
-    <div class="antiNav-space" />
-  </Scroller>
+  <div class="antiNav-space" />
 </Scroller>
 
 <style lang="scss">
@@ -117,14 +115,13 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin: 0.75rem;
-    margin-left: 1.25rem;
+    padding: var(--spacing-1_5) var(--spacing-1_5) var(--spacing-3) var(--spacing-2_5);
     font-weight: 700;
     font-size: 1.25rem;
     color: var(--global-primary-TextColor);
   }
   .search {
     padding: var(--spacing-1_5);
-    border-bottom: 1px solid var(--global-surface-02-BorderColor);
+    border-bottom: 1px solid var(--theme-navpanel-divider);
   }
 </style>
