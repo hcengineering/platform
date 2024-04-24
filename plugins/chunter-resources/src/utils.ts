@@ -74,6 +74,7 @@ export async function buildDmName (client: Client, employeeAccounts: PersonAccou
     })
   })
 
+  const me = getCurrentAccount() as PersonAccount
   const map = await promise
 
   unsub?.()
@@ -88,7 +89,7 @@ export async function buildDmName (client: Client, employeeAccounts: PersonAccou
 
     const employee = map.get(acc.person as unknown as Ref<Employee>)
 
-    if (employee !== undefined) {
+    if (employee !== undefined && me.person !== employee._id) {
       names.push(getName(client.getHierarchy(), employee))
       processedPersons.push(acc.person)
     }
@@ -156,13 +157,14 @@ async function getDmAccounts (client: Client, space?: Space): Promise<PersonAcco
 
 export async function getDmPersons (client: Client, space: Space): Promise<Person[]> {
   const personAccounts: PersonAccount[] = await getDmAccounts(client, space)
+  const me = getCurrentAccount() as PersonAccount
   const persons: Person[] = []
 
   const personRefs = new Set(personAccounts.map(({ person }) => person))
 
   for (const personRef of personRefs) {
     const person = await client.findOne(contact.class.Person, { _id: personRef })
-    if (person !== undefined) {
+    if (person !== undefined && me.person !== person._id) {
       persons.push(person)
     }
   }
