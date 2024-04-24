@@ -1180,10 +1180,33 @@ async function migrateDefaultStatuses<T extends Task> (
   }
 
   // Check all statuses that haven't been already migrated
-  const oldStatuses = await connection.findAll<Status>(core.class.Status, {
+  // Check statuses of specific attribute
+  const oldStatusesSpecific = await connection.findAll<Status>(core.class.Status, {
     ofAttribute: statusAttributeOf,
     __superseded: { $exists: false }
   })
+
+  // Also, check all statuses in the projects with generic task attribute
+  const projectTypes = await connection.findAll<ProjectType>(task.class.ProjectType, {
+    space: core.space.Model,
+    descriptor: typeDescriptor
+  })
+
+  const projectStatuses = new Set<Ref<Status>>()
+
+  for (const pt of projectTypes) {
+    for (const status of pt.statuses) {
+      projectStatuses.add(status._id)
+    }
+  }
+
+  const oldStatusesGenericProjects = await connection.findAll<Status>(core.class.Status, {
+    _id: { $in: [...projectStatuses] },
+    ofAttribute: task.attribute.State,
+    __superseded: { $exists: false }
+  })
+
+  const oldStatuses = [...oldStatusesSpecific, ...oldStatusesGenericProjects]
 
   // Build statuses mapping oldId -> {category, newId}
   const statusMapping: Record<Ref<Status>, Ref<Status>> = {}
@@ -1464,13 +1487,19 @@ async function migrateDefaultStatuses<T extends Task> (
         continue
       }
 
-      createdStatuses.add(newStatus)
-      await db.collection(DOMAIN_STATUS).insertOne({
-        ...oldStatus,
-        _class: statusClass,
-        _id: newStatus as any,
-        __migratedFrom: statusIdBeingMigrated
-      })
+      try {
+        createdStatuses.add(newStatus)
+        await db.collection(DOMAIN_STATUS).insertOne({
+          ...oldStatus,
+          _class: statusClass,
+          _id: newStatus as any,
+          ofAttribute: statusAttributeOf,
+          __migratedFrom: statusIdBeingMigrated
+        })
+      } catch (e: any) {
+        console.log('Could not create new status: ' + e.message)
+        // Might be already created
+      }
     }
   }
   console.log('Statuses created: ' + createdStatuses.size)
