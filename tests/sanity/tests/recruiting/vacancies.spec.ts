@@ -33,7 +33,7 @@ test.describe('Vacancy tests', () => {
     await page.click('button:has-text("Application")')
     await page.click('form[id="recruit:string:CreateApplication"] [id="vacancy.talant.selector"]')
 
-    await new CommonPage().selectAssignee(page, 'Alex')
+    await new CommonPage(page).selectAssignee(page, 'Alex')
     await page.click('form[id="recruit:string:CreateApplication"] button:has-text("Create")')
     await page.waitForSelector('form.antiCard', { state: 'detached' })
 

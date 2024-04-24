@@ -67,7 +67,7 @@ export class TemplateDetailsPage extends CommonTrackerPage {
     if (data.duedate != null) {
       if (data.duedate === 'today') {
         await this.buttonDueDate().click()
-        await this.buttonDatePopupToday.click()
+        await this.buttonDatePopupToday().click()
       } else {
         await this.buttonDueDate().click()
         await this.buttonSaveDueDate().click()

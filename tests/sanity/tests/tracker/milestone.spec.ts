@@ -24,7 +24,7 @@ test.describe('Tracker milestone tests', () => {
     }
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
     const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
     await trackerNavigationMenuPage.openMilestonesForProject('Default')
@@ -47,7 +47,7 @@ test.describe('Tracker milestone tests', () => {
     }
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
     const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
     await trackerNavigationMenuPage.openMilestonesForProject('Default')
@@ -75,7 +75,7 @@ test.describe('Tracker milestone tests', () => {
     }
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
     const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
     await trackerNavigationMenuPage.openMilestonesForProject('Default')

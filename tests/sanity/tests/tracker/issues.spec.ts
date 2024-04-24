@@ -17,7 +17,7 @@ test.describe('Tracker issue tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
   })
 
   test('Create an issue with all parameters and attachments', async ({ page }) => {

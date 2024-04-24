@@ -20,7 +20,7 @@ test.describe('channel tests', () => {
   })
 
   test('create new private channel tests', async () => {
-    await leftSideMenuPage.buttonChunter.click()
+    await leftSideMenuPage.clickChunter()
     await chunterPage.clickChannelBrowser()
     await chunterPage.clickNewChannelHeader()
     const channel = 'channel-' + generateId()

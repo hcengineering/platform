@@ -19,7 +19,7 @@ test.describe('Documents link tests', () => {
       await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
 
       const leftSideMenuPage = new LeftSideMenuPage(page)
-      await leftSideMenuPage.buttonDocuments.click()
+      await leftSideMenuPage.clickDocuments()
 
       const documentsPage = new DocumentsPage(page)
       await documentsPage.clickOnButtonCreateDocument()
@@ -31,7 +31,7 @@ test.describe('Documents link tests', () => {
       await documentContentPage.executeMoreAction('Public link')
 
       // remove after UBERF-5994 fixed
-      await documentContentPage.closePopup(page)
+      await documentContentPage.closePopup()
       await page.reload({ waitUntil: 'commit' })
       await documentContentPage.executeMoreAction('Public link')
 

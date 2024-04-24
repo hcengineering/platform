@@ -32,7 +32,7 @@ test.describe('Tracker filters tests', () => {
     }
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
     const issuesPage = new IssuesPage(page)
     await issuesPage.modelSelectorAll().click()
@@ -130,7 +130,7 @@ test.describe('Tracker filters tests', () => {
     }
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
     const issuesPage = new IssuesPage(page)
     await issuesPage.modelSelectorAll().click()
@@ -232,7 +232,7 @@ test.describe('Tracker filters tests', () => {
 
   test('Status filter', async ({ page }) => {
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
     const issuesPage = new IssuesPage(page)
     await issuesPage.linkSidebarAll().click()
@@ -252,7 +252,7 @@ test.describe('Tracker filters tests', () => {
 
   test('Priority filter', async ({ page }) => {
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
     const issuesPage = new IssuesPage(page)
     await issuesPage.modelSelectorAll().click()
@@ -272,7 +272,7 @@ test.describe('Tracker filters tests', () => {
   test('Created by filter', async ({ page }) => {
     const createdBy = 'Appleseed John'
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
     const issuesPage = new IssuesPage(page)
     await issuesPage.modelSelectorAll().click()
@@ -293,7 +293,7 @@ test.describe('Tracker filters tests', () => {
   test('Component filter', async ({ page }) => {
     const defaultComponent = 'Default component'
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
     const issuesPage = new IssuesPage(page)
     await issuesPage.modelSelectorAll().click()
@@ -316,7 +316,7 @@ test.describe('Tracker filters tests', () => {
     const firstSearch = 'issue'
     const secondSearch = 'done'
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
     const issuesPage = new IssuesPage(page)
     await issuesPage.modelSelectorAll().click()
@@ -344,7 +344,7 @@ test.describe('Tracker filters tests', () => {
   test('Modified by filter', async ({ page }) => {
     const modifierName = 'Appleseed John'
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
     const issuesPage = new IssuesPage(page)
     await issuesPage.modelSelectorAll().click()
@@ -373,7 +373,7 @@ test.describe('Tracker filters tests', () => {
     }
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
     const issuesPage = new IssuesPage(page)
     await issuesPage.modelSelectorAll().click()
@@ -416,7 +416,7 @@ test.describe('Tracker filters tests', () => {
     }
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
     const issuesPage = new IssuesPage(page)
     await issuesPage.modelSelectorAll().click()
@@ -461,7 +461,7 @@ test.describe('Tracker filters tests', () => {
     }
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
     const issuesPage = new IssuesPage(page)
     await issuesPage.modelSelectorAll().click()

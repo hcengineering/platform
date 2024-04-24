@@ -75,7 +75,7 @@ test.describe('Tracker sub-issues tests', () => {
     }
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
     const issuesPage = new IssuesPage(page)
     await issuesPage.modelSelectorAll().click()
@@ -112,7 +112,7 @@ test.describe('Tracker sub-issues tests', () => {
     }
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
     const issuesPage = new IssuesPage(page)
     await issuesPage.modelSelectorAll().click()
@@ -152,7 +152,7 @@ test.describe('Tracker sub-issues tests', () => {
     const templateName = 'New Issue'
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
     const issuesPage = new IssuesPage(page)
     await issuesPage.modelSelectorAll().click()

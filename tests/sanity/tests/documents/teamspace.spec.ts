@@ -21,7 +21,7 @@ test.describe('Teamspace tests', () => {
     }
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonDocuments.click()
+    await leftSideMenuPage.clickDocuments()
 
     const documentsPage = new DocumentsPage(page)
     await documentsPage.checkTeamspaceNotExist(newTeamspace.title)
@@ -35,7 +35,7 @@ test.describe('Teamspace tests', () => {
     }
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonDocuments.click()
+    await leftSideMenuPage.clickDocuments()
 
     const documentsPage = new DocumentsPage(page)
     await documentsPage.checkTeamspaceExist(archiveTeamspace.title)
@@ -59,7 +59,7 @@ test.describe('Teamspace tests', () => {
     }
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonDocuments.click()
+    await leftSideMenuPage.clickDocuments()
 
     const documentsPage = new DocumentsPage(page)
     await documentsPage.checkTeamspaceNotExist(editTeamspace.title)

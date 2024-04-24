@@ -38,7 +38,7 @@ test.describe('Collaborative test for issue', () => {
       // create a new issue by first user
       await (await page.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
       const leftSideMenuPage = new LeftSideMenuPage(page)
-      await leftSideMenuPage.buttonTracker.click()
+      await leftSideMenuPage.clickTracker()
 
       const issuesPage = new IssuesPage(page)
       await issuesPage.createNewIssue(newIssue)
@@ -153,7 +153,7 @@ test.describe('Collaborative test for issue', () => {
       //   const notificationPageSecond = new NotificationPage(userSecondPage)
       //   await notificationPageSecond.checkNotificationIssue(issue.title, newAssignee)
       //
-      //   await leftSideMenuPageSecond.buttonTracker.click()
+      //   await leftSideMenuPageSecond.clickTracker()
       // })
 
       await test.step('user2. check issue assignee', async () => {

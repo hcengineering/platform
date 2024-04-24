@@ -23,7 +23,7 @@ test.describe('Workspace tests', () => {
 
     const loginPage = new LoginPage(page)
     await loginPage.goto()
-    await loginPage.linkSignUp.click()
+    await loginPage.clickSignUp()
 
     const signUpPage = new SignUpPage(page)
     await signUpPage.signUp(newUser)
@@ -32,7 +32,7 @@ test.describe('Workspace tests', () => {
     await selectWorkspacePage.createWorkspace(newWorkspaceName)
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
   })
 
   test('Create a new issue in the workspace with a custom name', async ({ page }) => {
@@ -60,7 +60,7 @@ test.describe('Workspace tests', () => {
 
     const loginPage = new LoginPage(page)
     await loginPage.goto()
-    await loginPage.linkSignUp.click()
+    await loginPage.clickSignUp()
 
     const signUpPage = new SignUpPage(page)
     await signUpPage.signUp(newUser)
@@ -69,7 +69,7 @@ test.describe('Workspace tests', () => {
     await selectWorkspacePage.createWorkspace(newWorkspaceName)
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
     const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
     await trackerNavigationMenuPage.openIssuesForProject('Default')
@@ -99,25 +99,24 @@ test.describe('Workspace tests', () => {
 
     const loginPage = new LoginPage(page)
     await loginPage.goto()
-    await loginPage.linkSignUp.click()
+    await loginPage.clickSignUp()
 
     const signUpPage = new SignUpPage(page)
     await signUpPage.checkInfo(page, 'Required field First name')
-    await signUpPage.inputFirstName.fill(newUser.firstName)
+    await signUpPage.enterFirstName(newUser.firstName)
     await signUpPage.checkInfo(page, 'Required field Last name')
-    await signUpPage.inputLastName.fill(newUser.lastName)
+    await signUpPage.enterLastName(newUser.lastName)
     await signUpPage.checkInfo(page, 'Required field Email')
-    await signUpPage.inputEmail.fill(newUser.email)
+    await signUpPage.enterEmail(newUser.email)
     await signUpPage.checkInfo(page, 'Required field Password')
-    await signUpPage.inputNewPassword.fill(newUser.password)
+    await signUpPage.enterPassword(newUser.password)
     await signUpPage.checkInfo(page, "Repeat password don't match Password")
-    await signUpPage.inputRepeatPassword.fill(newUser.password)
+    await signUpPage.enterRepeatPassword(newUser.password)
     await signUpPage.checkInfoSectionNotExist(page)
-    await signUpPage.buttonSignUp.click()
-
+    await signUpPage.clickSignUp()
     const selectWorkspacePage = new SelectWorkspacePage(page)
     await selectWorkspacePage.checkInfo(page, 'Required field Workspace name')
-    await selectWorkspacePage.buttonWorkspaceName.fill(newWorkspaceName)
+    await selectWorkspacePage.enterWorkspaceName(newWorkspaceName)
     await selectWorkspacePage.checkInfoSectionNotExist(page)
   })
 
@@ -132,7 +131,7 @@ test.describe('Workspace tests', () => {
 
     const loginPage = new LoginPage(page)
     await loginPage.goto()
-    await loginPage.linkSignUp.click()
+    await loginPage.clickSignUp()
 
     const signUpPage = new SignUpPage(page)
     await signUpPage.signUp(newUser)
@@ -141,7 +140,7 @@ test.describe('Workspace tests', () => {
     await selectWorkspacePage.createWorkspace(newWorkspaceName)
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
     // Generate invite link
 
@@ -167,7 +166,7 @@ test.describe('Workspace tests', () => {
     await signUpPage2.signUp(newUser2, 'join')
 
     const leftSideMenuPage2 = new LeftSideMenuPage(page2)
-    await leftSideMenuPage2.buttonTracker.click()
+    await leftSideMenuPage2.clickTracker()
   })
 
   test('Create a workspace with join link - existing account', async ({ page, browser }) => {
@@ -181,7 +180,7 @@ test.describe('Workspace tests', () => {
 
     const loginPage = new LoginPage(page)
     await loginPage.goto()
-    await loginPage.linkSignUp.click()
+    await loginPage.clickSignUp()
 
     const signUpPage = new SignUpPage(page)
     await signUpPage.signUp(newUser)
@@ -190,7 +189,7 @@ test.describe('Workspace tests', () => {
     await selectWorkspacePage.createWorkspace(newWorkspaceName)
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
     // Generate invite link
 
@@ -204,7 +203,7 @@ test.describe('Workspace tests', () => {
 
     const loginPage2 = new LoginPage(page2)
     await loginPage2.goto()
-    await loginPage2.linkSignUp.click()
+    await loginPage2.clickSignUp()
 
     const newUser2: SignUpData = {
       firstName: `FirstName2-${generateId()}`,
@@ -224,7 +223,7 @@ test.describe('Workspace tests', () => {
     await joinPage.join(newUser2)
 
     const leftSideMenuPage2 = new LeftSideMenuPage(page2)
-    await leftSideMenuPage2.buttonTracker.click()
+    await leftSideMenuPage2.clickTracker()
   })
 
   test('Create workspace with LastToken in the localStorage', async ({ page, browser }) => {
@@ -236,7 +235,7 @@ test.describe('Workspace tests', () => {
     await selectWorkspacePage.selectWorkspace(DefaultWorkspace)
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
     const lastToken = await page.evaluate(() => localStorage.getItem('login:metadata:LastToken') ?? '')
     expect(lastToken).not.toEqual('')
@@ -255,7 +254,7 @@ test.describe('Workspace tests', () => {
       await selectWorkspacePageSecond.createWorkspace(newWorkspaceName)
 
       const leftSideMenuPageSecond = new LeftSideMenuPage(pageSecond)
-      await leftSideMenuPageSecond.buttonTracker.click()
+      await leftSideMenuPageSecond.clickTracker()
     })
   })
 })

@@ -21,7 +21,7 @@ test.describe('Documents tests', () => {
     }
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonDocuments.click()
+    await leftSideMenuPage.clickDocuments()
 
     const documentsPage = new DocumentsPage(page)
     await documentsPage.clickOnButtonCreateDocument()
@@ -43,7 +43,7 @@ test.describe('Documents tests', () => {
     }
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonDocuments.click()
+    await leftSideMenuPage.clickDocuments()
 
     const documentsPage = new DocumentsPage(page)
     await documentsPage.clickOnButtonCreateDocument()
@@ -77,7 +77,7 @@ test.describe('Documents tests', () => {
     }
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonDocuments.click()
+    await leftSideMenuPage.clickDocuments()
 
     const documentsPage = new DocumentsPage(page)
     await documentsPage.checkTeamspaceNotExist(moveTeamspace.title)
@@ -112,7 +112,7 @@ test.describe('Documents tests', () => {
     }
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonDocuments.click()
+    await leftSideMenuPage.clickDocuments()
 
     const documentsPage = new DocumentsPage(page)
     await documentsPage.openTeamspace(colDocument.space)
@@ -135,7 +135,7 @@ test.describe('Documents tests', () => {
         await (await userSecondPage.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
 
         const leftSideMenuPageSecond = new LeftSideMenuPage(userSecondPage)
-        await leftSideMenuPageSecond.buttonDocuments.click()
+        await leftSideMenuPageSecond.clickDocuments()
 
         const documentsPageSecond = new DocumentsPage(userSecondPage)
         await documentsPageSecond.openTeamspace(colDocument.space)
@@ -168,7 +168,7 @@ test.describe('Documents tests', () => {
     }
 
     const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonDocuments.click()
+    await leftSideMenuPage.clickDocuments()
 
     const documentsPage = new DocumentsPage(page)
     await documentsPage.clickOnButtonCreateDocument()
