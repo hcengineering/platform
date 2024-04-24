@@ -6,7 +6,7 @@ export class EmployeeDetailsPage extends CommonPage {
   readonly page: Page
 
   constructor (page: Page) {
-    super()
+    super(page)
     this.page = page
   }
 
