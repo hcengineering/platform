@@ -6,6 +6,8 @@ export class StatusBar {
   readonly buttonBack: Locator
   readonly buttonForward: Locator
   readonly buttonSearch: Locator
+  readonly buttonSearchTest: Locator
+
 
   constructor (page: Page) {
     this.page = page
@@ -13,6 +15,8 @@ export class StatusBar {
     this.buttonBack = this.statusbar.locator('button[id="statusbar-back"]')
     this.buttonForward = this.statusbar.locator('button[id="statusbar-forward"]')
     this.buttonSearch = this.statusbar.locator('button[id="statusbar-search"]')
+    this.buttonSearchTest = this.statusbar.locator('button[id="statusbar-search"]')
+
   }
 
   async clickButtonBack (): Promise<void> {
