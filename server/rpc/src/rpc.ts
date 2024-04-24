@@ -63,6 +63,8 @@ export interface Response<R> {
     index: number
     final: boolean
   }
+  time?: number // Server time to perform operation
+  queue?: number
 }
 
 /**

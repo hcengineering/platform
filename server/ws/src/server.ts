@@ -834,7 +834,12 @@ class TSessionManager implements SessionManager {
               ? await f.apply(service, [service.measureCtx?.ctx, ...params])
               : await ctx.with('🧨 process', {}, async (callTx) => f.apply(service, [callTx, ...params]))
 
-          const resp: Response<any> = { id: request.id, result }
+          const resp: Response<any> = {
+            id: request.id,
+            result,
+            time: Date.now() - st,
+            queue: service.requests.size
+          }
 
           await handleSend(
             ctx,

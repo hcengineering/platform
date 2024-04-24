@@ -1275,6 +1275,26 @@ export async function setRole (
 /**
  * @public
  */
+export async function createMissingEmployee (
+  ctx: MeasureContext,
+  db: Db,
+  productId: string,
+  token: string
+): Promise<void> {
+  const { email } = decodeToken(token)
+  const wsInfo = await getWorkspaceInfo(ctx, db, productId, token)
+  const account = await getAccount(db, email)
+
+  if (account === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
+  }
+
+  await createPersonAccount(account, productId, wsInfo.workspaceId, true)
+}
+
+/**
+ * @public
+ */
 export async function assignWorkspace (
   ctx: MeasureContext,
   db: Db,
@@ -1970,7 +1990,8 @@ export function getMethods (
     restorePassword: wrap(restorePassword),
     sendInvite: wrap(sendInvite),
     confirm: wrap(confirm),
-    getAccountInfoByToken: wrap(getAccountInfoByToken)
+    getAccountInfoByToken: wrap(getAccountInfoByToken),
+    createMissingEmployee: wrap(createMissingEmployee)
     // updateAccount: wrap(updateAccount)
   }
 }

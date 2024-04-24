@@ -24,7 +24,8 @@ import {
   selectWorkspace,
   sendInvite,
   getEnpoint,
-  fetchWorkspace
+  fetchWorkspace,
+  createMissingEmployee
 } from './utils'
 /*!
  * Anticrm Platform™ Login Plugin
@@ -43,6 +44,7 @@ export default async () => ({
     ChangePassword: changePassword,
     SelectWorkspace: selectWorkspace,
     FetchWorkspace: fetchWorkspace,
+    CreateEmployee: createMissingEmployee,
     GetWorkspaces: getWorkspaces,
     SendInvite: sendInvite,
     GetEndpoint: getEnpoint

@@ -50,9 +50,11 @@ import { HelloRequest, HelloResponse, ReqId, readResponse, serialize } from '@hc
 const SECOND = 1000
 const pingTimeout = 10 * SECOND
 const hangTimeout = 5 * 60 * SECOND
-const dialTimeout = 60 * SECOND
+const dialTimeout = 30 * SECOND
 
 class RequestPromise {
+  startTime: number = Date.now()
+  handleTime?: (diff: number, result: any, serverTime: number, queue: number) => void
   readonly promise: Promise<any>
   resolve!: (value?: any) => void
   reject!: (reason?: any) => void
@@ -72,7 +74,7 @@ class RequestPromise {
 }
 
 class Connection implements ClientConnection {
-  private websocket: ClientSocket | Promise<ClientSocket> | null = null
+  private websocket: ClientSocket | null = null
   private readonly requests = new Map<ReqId, RequestPromise>()
   private lastId = 0
   private interval: number | undefined
@@ -93,42 +95,43 @@ class Connection implements ClientConnection {
     readonly onConnect?: (event: ClientConnectEvent, data?: any) => Promise<void>
   ) {}
 
-  private schedulePing (): void {
+  private schedulePing (socketId: number): void {
     clearInterval(this.interval)
     this.pingResponse = Date.now()
-    this.interval = setInterval(() => {
+    const wsocket = this.websocket
+    const interval = setInterval(() => {
+      if (wsocket !== this.websocket) {
+        clearInterval(interval)
+        return
+      }
       if (!this.upgrading && this.pingResponse !== 0 && Date.now() - this.pingResponse > hangTimeout) {
         // No ping response from server.
-        const s = this.websocket
 
-        if (!(s instanceof Promise)) {
-          console.log(
-            'no ping response from server. Closing socket.',
-            this.workspace,
-            this.email,
-            s,
-            (s as any)?.readyState
-          )
-          // Trying to close connection and re-establish it.
-          s?.close(1000)
-        } else {
-          console.log('no ping response from server. Closing socket.', this.workspace, this.email, s)
-          void s.then((s) => {
-            s.close(1000)
-          })
+        if (this.websocket !== null) {
+          console.log('no ping response from server. Closing socket.', socketId, this.workspace, this.email)
+          clearInterval(this.interval)
+          this.websocket.close(1000)
+          return
         }
-        this.websocket = null
       }
 
       if (!this.closed) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        void this.sendRequest({ method: 'ping', params: [] }).then((result) => {
-          this.pingResponse = Date.now()
+        void this.sendRequest({
+          method: 'ping',
+          params: [],
+          once: true,
+          handleResult: async (result) => {
+            if (this.websocket === wsocket) {
+              this.pingResponse = Date.now()
+            }
+          }
         })
       } else {
         clearInterval(this.interval)
       }
     }, pingTimeout)
+    this.interval = interval
   }
 
   async close (): Promise<void> {
@@ -147,257 +150,287 @@ class Connection implements ClientConnection {
   }
 
   delay = 0
-  pending: Promise<ClientSocket> | undefined
+  onConnectHandlers: (() => void)[] = []
 
-  private async waitOpenConnection (): Promise<ClientSocket> {
-    while (true) {
-      try {
-        const socket = await this.pending
-        if (socket != null && socket.readyState === ClientSocketReadyState.OPEN) {
-          return socket
-        }
-        this.pending = this.openConnection()
-        await this.pending
-        this.delay = 0
-        return await this.pending
-      } catch (err: any) {
-        if (this.closed) {
-          throw new Error('connection closed + ' + this.workspace + ' user: ' + this.email)
-        }
-        this.pending = undefined
-        if (!this.upgrading) {
-          console.log('connection: failed to connect', `requests: ${this.lastId}`, this.workspace, this.email)
-        } else {
-          console.log('connection: workspace during upgrade', `requests: ${this.lastId}`, this.workspace, this.email)
-        }
-        if (err?.code === UNAUTHORIZED.code) {
-          Analytics.handleError(err)
-          this.onUnauthorized?.()
-          throw err
-        }
-        await new Promise((resolve) => {
-          setTimeout(() => {
-            if (!this.upgrading) {
-              console.log(`delay ${this.delay} second`, this.workspace, this.email)
-            }
-            resolve(null)
-            if (this.delay < 5) {
-              this.delay++
-            }
-          }, this.delay * SECOND)
-        })
-      }
+  private waitOpenConnection (): Promise<void> | undefined {
+    if (this.websocket != null && this.websocket.readyState === ClientSocketReadyState.OPEN) {
+      return undefined
     }
+
+    return new Promise((resolve) => {
+      this.onConnectHandlers.push(() => {
+        resolve()
+      })
+      // Websocket is null for first time
+      this.scheduleOpen(false)
+    })
   }
 
   sockets = 0
 
   incomingTimer: any
 
-  private openConnection (): Promise<ClientSocket> {
-    return new Promise((resolve, reject) => {
-      // Use defined factory or browser default one.
-      const clientSocketFactory =
-        getMetadata(client.metadata.ClientSocketFactory) ??
-        ((url: string) => {
-          const s = new WebSocket(url)
-          s.binaryType = 'arraybuffer'
-          return s as ClientSocket
-        })
+  openAction: any
 
-      if (this.sessionId === undefined) {
-        // Find local session id in session storage.
-        this.sessionId =
-          typeof sessionStorage !== 'undefined'
-            ? sessionStorage.getItem('session.id.' + this.url) ?? undefined
-            : undefined
-        this.sessionId = this.sessionId ?? generateId()
-        if (typeof sessionStorage !== 'undefined') {
-          sessionStorage.setItem('session.id.' + this.url, this.sessionId)
-        }
+  scheduleOpen (force: boolean): void {
+    if (force) {
+      if (this.websocket !== null) {
+        this.websocket.close()
+        this.websocket = null
       }
-      const websocket = clientSocketFactory(this.url + `?sessionId=${this.sessionId}`)
-      const opened = false
-      const socketId = this.sockets++
-      let binaryResponse = false
-
-      const dialTimer = setTimeout(() => {
-        if (!opened) {
-          websocket.close()
-          reject(new PlatformError(unknownError('timeout')))
-        }
-      }, dialTimeout)
-
-      websocket.onmessage = (event: MessageEvent) => {
-        const resp = readResponse<any>(event.data, binaryResponse)
-        if (resp.id === -1) {
-          if (resp.result?.state === 'upgrading') {
-            void this.onConnect?.(ClientConnectEvent.Maintenance, resp.result.stats)
-            this.upgrading = true
-            return
-          }
-          if (resp.result === 'hello') {
-            if (this.upgrading) {
-              // We need to call upgrade since connection is upgraded
-              this.onUpgrade?.()
-            }
-
-            console.log('connection established', this.workspace, this.email)
-
-            this.upgrading = false
-            if ((resp as HelloResponse).alreadyConnected === true) {
-              this.sessionId = generateId()
-              if (typeof sessionStorage !== 'undefined') {
-                sessionStorage.setItem('session.id.' + this.url, this.sessionId)
-              }
-              reject(new Error('alreadyConnected'))
-            }
-            if ((resp as HelloResponse).binary) {
-              binaryResponse = true
-            }
-            if (resp.error !== undefined) {
-              reject(resp.error)
-              return
-            }
-            for (const [, v] of this.requests.entries()) {
-              v.reconnect?.()
-            }
-            resolve(websocket)
-
-            void this.onConnect?.(
-              (resp as HelloResponse).reconnect === true ? ClientConnectEvent.Reconnected : ClientConnectEvent.Connected
-            )
-            return
-          } else {
-            Analytics.handleError(new Error(`unexpected response: ${JSON.stringify(resp)}`))
-          }
-          return
-        }
-        if (resp.result === 'ping') {
-          void this.sendRequest({ method: 'ping', params: [] })
-          return
-        }
-        if (resp.id !== undefined) {
-          const promise = this.requests.get(resp.id)
-          if (promise === undefined) {
-            throw new Error(`unknown response id: ${resp.id as string} ${this.workspace} ${this.email}`)
-          }
-
-          if (resp.chunk !== undefined) {
-            promise.chunks = [
-              ...(promise.chunks ?? []),
-              {
-                index: resp.chunk.index,
-                data: resp.result as []
-              }
-            ]
-            // console.log(socketId, 'chunk', promise.chunks.length, resp.chunk.total)
-            if (resp.chunk.final) {
-              promise.chunks.sort((a, b) => a.index - b.index)
-              let result: any[] = []
-              for (const c of promise.chunks) {
-                result = result.concat(c.data)
-              }
-              resp.result = result
-              resp.chunk = undefined
-            } else {
-              // Not all chunks are available yet.
-              return
-            }
-          }
-
-          const request = this.requests.get(resp.id)
-          this.requests.delete(resp.id)
-          if (resp.error !== undefined) {
-            console.log(
-              'ERROR',
-              'request:',
-              request?.method,
-              'response-id:',
-              resp.id,
-              'error: ',
-              resp.error,
-              'result: ',
-              resp.result,
-              this.workspace,
-              this.email
-            )
-            promise.reject(new PlatformError(resp.error))
-          } else {
-            if (request?.handleResult !== undefined) {
-              void request.handleResult(resp.result).then(() => {
-                promise.resolve(resp.result)
-              })
-            } else {
-              promise.resolve(resp.result)
-            }
-          }
-          void broadcastEvent(client.event.NetworkRequests, this.requests.size)
+      clearTimeout(this.openAction)
+      this.openAction = undefined
+    }
+    if (!this.closed && this.openAction === undefined) {
+      if (this.websocket === null) {
+        const socketId = ++this.sockets
+        // Re create socket in case of error, if not closed
+        if (this.delay === 0) {
+          this.openConnection(socketId)
         } else {
-          const txArr = Array.isArray(resp.result) ? (resp.result as Tx[]) : [resp.result as Tx]
+          this.openAction = setTimeout(() => {
+            this.openAction = undefined
+            this.openConnection(socketId)
+          }, this.delay * 1000)
+        }
+      }
+    }
+  }
 
-          for (const tx of txArr) {
-            if (
-              (tx?._class === core.class.TxWorkspaceEvent &&
-                (tx as TxWorkspaceEvent).event === WorkspaceEvent.Upgrade) ||
-              tx?._class === core.class.TxModelUpgrade
-            ) {
-              console.log('Processing upgrade', this.workspace, this.email)
-              websocket.send(
-                serialize(
-                  {
-                    method: '#upgrading',
-                    params: [],
-                    id: -1
-                  },
-                  false
-                )
-              )
-              this.onUpgrade?.()
-              return
-            }
+  private openConnection (socketId: number): void {
+    // Use defined factory or browser default one.
+    const clientSocketFactory =
+      getMetadata(client.metadata.ClientSocketFactory) ??
+      ((url: string) => {
+        const s = new WebSocket(url)
+        s.binaryType = 'arraybuffer'
+        return s as ClientSocket
+      })
+
+    if (this.sessionId === undefined) {
+      // Find local session id in session storage.
+      this.sessionId =
+        typeof sessionStorage !== 'undefined'
+          ? sessionStorage.getItem('session.id.' + this.url) ?? undefined
+          : undefined
+      this.sessionId = this.sessionId ?? generateId()
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.setItem('session.id.' + this.url, this.sessionId)
+      }
+    }
+    if (socketId !== this.sockets) {
+      return
+    }
+    const wsocket = clientSocketFactory(this.url + `?sessionId=${this.sessionId}`)
+
+    if (socketId !== this.sockets) {
+      wsocket.close()
+      return
+    }
+    this.websocket = wsocket
+    const opened = false
+    let binaryResponse = false
+
+    const dialTimer = setTimeout(() => {
+      if (!opened && !this.closed) {
+        this.scheduleOpen(true)
+      }
+    }, dialTimeout)
+
+    wsocket.onmessage = (event: MessageEvent) => {
+      if (this.websocket !== wsocket) {
+        return
+      }
+      const resp = readResponse<any>(event.data, binaryResponse)
+
+      if (resp.error !== undefined) {
+        if (resp.error?.code === UNAUTHORIZED.code) {
+          Analytics.handleError(new PlatformError(resp.error))
+          this.closed = true
+          this.websocket.close()
+          this.onUnauthorized?.()
+        }
+        console.error(resp.error)
+        return
+      }
+
+      if (resp.id === -1) {
+        this.delay = 0
+        if (resp.result?.state === 'upgrading') {
+          void this.onConnect?.(ClientConnectEvent.Maintenance, resp.result.stats)
+          this.upgrading = true
+          this.delay = 3
+          return
+        }
+        if (resp.result === 'hello') {
+          if (this.upgrading) {
+            // We need to call upgrade since connection is upgraded
+            this.onUpgrade?.()
           }
-          this.handler(...txArr)
 
-          clearTimeout(this.incomingTimer)
-          void broadcastEvent(client.event.NetworkRequests, this.requests.size + 1)
+          console.log('connection established', socketId, this.workspace, this.email)
 
-          this.incomingTimer = setTimeout(() => {
-            void broadcastEvent(client.event.NetworkRequests, this.requests.size)
-          }, 500)
+          this.upgrading = false
+          if ((resp as HelloResponse).alreadyConnected === true) {
+            this.sessionId = generateId()
+            if (typeof sessionStorage !== 'undefined') {
+              sessionStorage.setItem('session.id.' + this.url, this.sessionId)
+            }
+            console.log('Connection: alreadyConnected, reconnect with new Id')
+            clearTimeout(dialTimeout)
+            this.scheduleOpen(true)
+            return
+          }
+          if ((resp as HelloResponse).binary) {
+            binaryResponse = true
+          }
+          // Notify all waiting connection listeners
+          const handlers = this.onConnectHandlers.splice(0, this.onConnectHandlers.length)
+          for (const h of handlers) {
+            h()
+          }
+
+          for (const [, v] of this.requests.entries()) {
+            v.reconnect?.()
+          }
+
+          void this.onConnect?.(
+            (resp as HelloResponse).reconnect === true ? ClientConnectEvent.Reconnected : ClientConnectEvent.Connected
+          )
+          this.schedulePing(socketId)
+          return
+        } else {
+          Analytics.handleError(new Error(`unexpected response: ${JSON.stringify(resp)}`))
         }
+        return
       }
-      websocket.onclose = (ev) => {
-        // console.log('client websocket closed', socketId, ev?.reason)
-
-        if (!(this.websocket instanceof Promise)) {
-          this.websocket = null
+      if (resp.result === 'ping') {
+        void this.sendRequest({ method: 'ping', params: [] })
+        return
+      }
+      if (resp.id !== undefined) {
+        const promise = this.requests.get(resp.id)
+        if (promise === undefined) {
+          throw new Error(`unknown response id: ${resp.id as string} ${this.workspace} ${this.email}`)
         }
-        void broadcastEvent(client.event.NetworkRequests, -1)
-        reject(new Error('websocket error'))
+
+        if (resp.chunk !== undefined) {
+          promise.chunks = [
+            ...(promise.chunks ?? []),
+            {
+              index: resp.chunk.index,
+              data: resp.result as []
+            }
+          ]
+          // console.log(socketId, 'chunk', promise.chunks.length, resp.chunk.total)
+          if (resp.chunk.final) {
+            promise.chunks.sort((a, b) => a.index - b.index)
+            let result: any[] = []
+            for (const c of promise.chunks) {
+              result = result.concat(c.data)
+            }
+            resp.result = result
+            resp.chunk = undefined
+          } else {
+            // Not all chunks are available yet.
+            return
+          }
+        }
+
+        const request = this.requests.get(resp.id)
+        promise.handleTime?.(Date.now() - promise.startTime, resp.result, resp.time ?? 0, resp.queue ?? 0)
+        this.requests.delete(resp.id)
+        if (resp.error !== undefined) {
+          console.log(
+            'ERROR',
+            'request:',
+            request?.method,
+            'response-id:',
+            resp.id,
+            'error: ',
+            resp.error,
+            'result: ',
+            resp.result,
+            this.workspace,
+            this.email
+          )
+          promise.reject(new PlatformError(resp.error))
+        } else {
+          if (request?.handleResult !== undefined) {
+            void request.handleResult(resp.result).then(() => {
+              promise.resolve(resp.result)
+            })
+          } else {
+            promise.resolve(resp.result)
+          }
+        }
+        void broadcastEvent(client.event.NetworkRequests, this.requests.size)
+      } else {
+        const txArr = Array.isArray(resp.result) ? (resp.result as Tx[]) : [resp.result as Tx]
+
+        for (const tx of txArr) {
+          if (
+            (tx?._class === core.class.TxWorkspaceEvent && (tx as TxWorkspaceEvent).event === WorkspaceEvent.Upgrade) ||
+            tx?._class === core.class.TxModelUpgrade
+          ) {
+            console.log('Processing upgrade', this.workspace, this.email)
+            this.onUpgrade?.()
+            return
+          }
+        }
+        this.handler(...txArr)
+
+        clearTimeout(this.incomingTimer)
+        void broadcastEvent(client.event.NetworkRequests, this.requests.size + 1)
+
+        this.incomingTimer = setTimeout(() => {
+          void broadcastEvent(client.event.NetworkRequests, this.requests.size)
+        }, 500)
       }
-      websocket.onopen = () => {
-        const useBinary = getMetadata(client.metadata.UseBinaryProtocol) ?? true
-        const useCompression = getMetadata(client.metadata.UseProtocolCompression) ?? false
+    }
+    wsocket.onclose = (ev) => {
+      clearTimeout(dialTimer)
+      if (this.websocket !== wsocket) {
+        wsocket.close()
         clearTimeout(dialTimer)
-        const helloRequest: HelloRequest = {
-          method: 'hello',
-          params: [],
-          id: -1,
-          binary: useBinary,
-          compression: useCompression,
-          broadcast: true
-        }
-        websocket.send(serialize(helloRequest, false))
-        // Ok we connected, let's schedule ping
-        this.schedulePing()
+        return
       }
-      websocket.onerror = (event: any) => {
-        console.error('client websocket error:', socketId, event, this.workspace, this.email)
-        void broadcastEvent(client.event.NetworkRequests, -1)
-        reject(new Error(`websocket error:${socketId}`))
+      // console.log('client websocket closed', socketId, ev?.reason)
+      void broadcastEvent(client.event.NetworkRequests, -1)
+      this.scheduleOpen(true)
+    }
+    wsocket.onopen = () => {
+      if (this.websocket !== wsocket) {
+        return
       }
-    })
+      console.log('connection opened', socketId, this.email, new URL(this.url).host)
+      const useBinary = getMetadata(client.metadata.UseBinaryProtocol) ?? true
+      const useCompression = getMetadata(client.metadata.UseProtocolCompression) ?? false
+      clearTimeout(dialTimer)
+      const helloRequest: HelloRequest = {
+        method: 'hello',
+        params: [],
+        id: -1,
+        binary: useBinary,
+        compression: useCompression,
+        broadcast: true
+      }
+      this.websocket?.send(serialize(helloRequest, false))
+    }
+
+    wsocket.onerror = (event: any) => {
+      clearTimeout(dialTimer)
+      if (this.websocket !== wsocket) {
+        return
+      }
+      if (this.delay < 3) {
+        this.delay += 1
+      }
+      if (opened) {
+        console.error('client websocket error:', socketId, this.url, this.workspace, this.email)
+      }
+      void broadcastEvent(client.event.NetworkRequests, -1)
+    }
   }
 
   private async sendRequest (data: {
@@ -406,43 +439,56 @@ class Connection implements ClientConnection {
     // If not defined, on reconnect with timeout, will retry automatically.
     retry?: () => Promise<boolean>
     handleResult?: (result: any) => Promise<void>
+    once?: boolean // Require handleResult to retrieve result
+    measure?: (time: number, result: any, serverTime: number, queue: number) => void
   }): Promise<any> {
     if (this.closed) {
       throw new PlatformError(unknownError('connection closed'))
     }
 
+    if (data.once === true) {
+      // Check if has same request already then skip
+      for (const [, v] of this.requests) {
+        if (v.method === data.method && JSON.stringify(v.params) === JSON.stringify(data.params)) {
+          // We have same unanswered, do not add one more.
+          return
+        }
+      }
+    }
+
     const id = this.lastId++
     const promise = new RequestPromise(data.method, data.params, data.handleResult)
+    promise.handleTime = data.measure
 
-    const sendData = async (): Promise<void> => {
-      if (this.websocket instanceof Promise) {
-        this.websocket = await this.websocket
-      }
-      if (this.websocket === null) {
-        this.websocket = this.waitOpenConnection()
-        this.websocket = await this.websocket
-      }
-      this.requests.set(id, promise)
-      this.websocket.send(
-        serialize(
-          {
-            method: data.method,
-            params: data.params,
-            id
-          },
-          false
+    const w = this.waitOpenConnection()
+    if (w instanceof Promise) {
+      await w
+    }
+    this.requests.set(id, promise)
+    const sendData = (): void => {
+      if (this.websocket?.readyState === ClientSocketReadyState.OPEN) {
+        promise.startTime = Date.now()
+        this.websocket?.send(
+          serialize(
+            {
+              method: data.method,
+              params: data.params,
+              id
+            },
+            false
+          )
         )
-      )
+      }
     }
     promise.reconnect = () => {
       setTimeout(async () => {
         // In case we don't have response yet.
         if (this.requests.has(id) && ((await data.retry?.()) ?? true)) {
-          await sendData()
+          sendData()
         }
       }, 500)
     }
-    await sendData()
+    sendData()
     void broadcastEvent(client.event.NetworkRequests, this.requests.size)
     return await promise.promise
   }
@@ -480,11 +526,15 @@ class Connection implements ClientConnection {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
-    const st = Date.now()
-    const result = await this.sendRequest({ method: 'findAll', params: [_class, query, options] })
-    if (Date.now() - st > 1000) {
-      console.error('measure slow findAll', Date.now() - st, _class, query, options, result)
-    }
+    const result = await this.sendRequest({
+      method: 'findAll',
+      params: [_class, query, options],
+      measure: (time, result, serverTime, queue) => {
+        if (time > 1000) {
+          console.error('measure slow findAll', time, serverTime, queue, _class, query, options, result)
+        }
+      }
+    })
     return result
   }
 

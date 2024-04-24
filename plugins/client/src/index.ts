@@ -46,6 +46,8 @@ export interface ClientSocket {
   close: (code?: number) => void
 
   readyState: ClientSocketReadyState
+
+  bufferedAmount?: number
 }
 
 /**
