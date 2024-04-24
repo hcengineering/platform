@@ -1242,8 +1242,8 @@ dependencies:
     specifier: ^4.2.12
     version: 4.2.12
   svelte-check:
-    specifier: ^3.6.7
-    version: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+    specifier: ^3.6.9
+    version: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
   svelte-eslint-parser:
     specifier: ^0.33.1
     version: 0.33.1(svelte@4.2.12)
@@ -15393,8 +15393,8 @@ packages:
     engines: {node: '>= 0.4'}
     dev: false
 
-  /svelte-check@3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12):
-    resolution: {integrity: sha512-tKEjemK9FYCySAseCaIt+ps5o0XRvLC7ECjyJXXtO7vOQhR9E6JavgoUbGP1PCulD2OTcB/fi9RjV3nyF1AROw==}
+  /svelte-check@3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12):
+    resolution: {integrity: sha512-hDQrk3L0osX07djQyMiXocKysTLfusqi8AriNcCiQxhQR49/LonYolcUGMtZ0fbUR8HTR198Prrgf52WWU9wEg==}
     hasBin: true
     peerDependencies:
       svelte: ^3.55.0 || ^4.0.0-next.0 || ^4.0.0 || ^5.0.0-next.0
@@ -17190,7 +17190,7 @@ packages:
     dev: false
 
   file:projects/activity-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-CWMQG4ARK+tkN2nxFphlOBnSzy4afqvMbPHlBC1rEQNaLc+5C7a6s5DMhHfjfd+0PMMGpl3F9+HSIHSKhZF7JQ==, tarball: file:projects/activity-resources.tgz}
+    resolution: {integrity: sha512-EZCXxJDT4hYcLl6Kaw+rwwe5l02FzhWI6dKfh8l2vYSoh+BhA7lRc2Q9kZy/0CUrbhDzmUeDYI/LToNlgXz3ZA==, tarball: file:projects/activity-resources.tgz}
     id: file:projects/activity-resources.tgz
     name: '@rush-temp/activity-resources'
     version: 0.0.0
@@ -17209,7 +17209,7 @@ packages:
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       sass: 1.71.1
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -17362,7 +17362,7 @@ packages:
     dev: false
 
   file:projects/attachment-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-3wnq+kHLWFrkIBYYPK2ZMitO/+JvPJm0DnTQM6XwgZq36CdNhbO/Jow0PqH62cb8AjB8l3rFrjlVaJEVZqiFtA==, tarball: file:projects/attachment-resources.tgz}
+    resolution: {integrity: sha512-ltIP6l8mnZ9RRs6owED3UbIzouRna52vqDeY258xO6klD8NTfNGlJAhtdMnbCqvJ7isi7UHNTkfMmRZ3mMvzYQ==, tarball: file:projects/attachment-resources.tgz}
     id: file:projects/attachment-resources.tgz
     name: '@rush-temp/attachment-resources'
     version: 0.0.0
@@ -17382,7 +17382,7 @@ packages:
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       sass: 1.71.1
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -17555,7 +17555,7 @@ packages:
     dev: false
 
   file:projects/bitrix-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-cUK3DRpGUYhwsppaNx1yFQEZP5agjMZ3SMQ1mwSSNPo1J3AsKgx7CXV+HmEYTEwmGqlyfSIZyTC49RC3StEdsw==, tarball: file:projects/bitrix-resources.tgz}
+    resolution: {integrity: sha512-+Tj/aZ9XNTfTaCTshcx1aQcewNwhpkOaAOA8aBRLEciarljayEWhFgeGjNLSgZHkMBtOiNjgZ1JIr6A+tspn8A==, tarball: file:projects/bitrix-resources.tgz}
     id: file:projects/bitrix-resources.tgz
     name: '@rush-temp/bitrix-resources'
     version: 0.0.0
@@ -17578,7 +17578,7 @@ packages:
       qs: 6.11.2
       sass: 1.71.1
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -17669,7 +17669,7 @@ packages:
     dev: false
 
   file:projects/board-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-tfRb4qjEYTdacVfzl0Vum4bpC6Eu5pApo2cYe7In2JRCuWueybhYgFHomKKHKxhsM/GCgv38Y0bvQl+JUvq54g==, tarball: file:projects/board-resources.tgz}
+    resolution: {integrity: sha512-fFSEHR0ZyGJyFva47sPeWogygfzQF1OxX43+FnRImst6Y4TL9u3qnTmT/2g0h+ORMhu2TRrsVvzIUuq+cwZfqw==, tarball: file:projects/board-resources.tgz}
     id: file:projects/board-resources.tgz
     name: '@rush-temp/board-resources'
     version: 0.0.0
@@ -17688,7 +17688,7 @@ packages:
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       sass: 1.71.1
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -17776,7 +17776,7 @@ packages:
     dev: false
 
   file:projects/calendar-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-KEgUsxx5OPssVA4dCTFcT99uA9JCm7f35a1l5+8kiuTd1mVzabZ7JEdDVVFCWIArNQzafTEc9Wux4/OyzYAd1w==, tarball: file:projects/calendar-resources.tgz}
+    resolution: {integrity: sha512-AdHrZnEzsyYu+DLP23FNwUD1M3MYd0jKxlIeKrYX/8BWObiXkkP81wAQAg/r3UEuAgwVsCt5NyuEayzOlnHkHw==, tarball: file:projects/calendar-resources.tgz}
     id: file:projects/calendar-resources.tgz
     name: '@rush-temp/calendar-resources'
     version: 0.0.0
@@ -17798,7 +17798,7 @@ packages:
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       sass: 1.71.1
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -17886,7 +17886,7 @@ packages:
     dev: false
 
   file:projects/chunter-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-TlZtHog4swrIxwXk4kWTriQcX1FZn2PkCmoaiELcdrsCLnDcs3V07L1WO0aB20H1uIxT1NrcgAwjMJSyXGG6uQ==, tarball: file:projects/chunter-resources.tgz}
+    resolution: {integrity: sha512-6U+UBopNecWJEVe3ISH+ZGjJOtK1wbLTr3CHoiWW+ANEnHrG0KvhL51wcXwvMhPiC923EmyGw9Yhgyw+TWEKOw==, tarball: file:projects/chunter-resources.tgz}
     id: file:projects/chunter-resources.tgz
     name: '@rush-temp/chunter-resources'
     version: 0.0.0
@@ -17908,7 +17908,7 @@ packages:
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       sass: 1.71.1
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -18188,7 +18188,7 @@ packages:
     dev: false
 
   file:projects/contact-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-IFjZO0UGQ83ccZ4ki0quTRNpYBaVMpRyv5gf7QoOm85RbUzxhBm7jJOH2HXGBfL+XSSlmgt8TFxhLJDoGBLw0g==, tarball: file:projects/contact-resources.tgz}
+    resolution: {integrity: sha512-eDKp4Qz4k2yUuPPc/VSkypf/KhoUO15fzcroIXEUwFCZeSFXsXq0LI0tayRZlVLeM4sUTc1/NzQLzQE0oor7Qw==, tarball: file:projects/contact-resources.tgz}
     id: file:projects/contact-resources.tgz
     name: '@rush-temp/contact-resources'
     version: 0.0.0
@@ -18207,7 +18207,7 @@ packages:
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       sass: 1.71.1
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -18427,7 +18427,7 @@ packages:
     dev: false
 
   file:projects/devmodel-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-xPv8kGzbqrOdF9M5mMSTfsZ0IkLwhjKXMT+dFSYTLl60ZJCdAxwOCrK+pSGFGUX+sAFzNfgc0bZGuiEgL063XA==, tarball: file:projects/devmodel-resources.tgz}
+    resolution: {integrity: sha512-NDdNczJE2bG7cuAqbD38xHMKXFndVeF3z0tvfBKVs6sVWauXThe448YkAMVY6NxEIczGqAqmyPHK0IHbuvEqgg==, tarball: file:projects/devmodel-resources.tgz}
     id: file:projects/devmodel-resources.tgz
     name: '@rush-temp/devmodel-resources'
     version: 0.0.0
@@ -18446,7 +18446,7 @@ packages:
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       sass: 1.71.1
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -18534,7 +18534,7 @@ packages:
     dev: false
 
   file:projects/document-resources.tgz(@tiptap/pm@2.2.4)(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-lq3P4ssvoWdkmr1IEG4g/B3ABSwm/IeLOEYZ4tKW9uYbh9J48Y0kwJzX5CStrFEt/OjsMnC53NMj0OmKe2NH+w==, tarball: file:projects/document-resources.tgz}
+    resolution: {integrity: sha512-uNqIxHd00VBdgMnF0VyG3vmMXr/sp5rESoeXtnabt/psakmliORjWHSjnhf8+HZqfny6Zspacf8j6GshoEMWQg==, tarball: file:projects/document-resources.tgz}
     id: file:projects/document-resources.tgz
     name: '@rush-temp/document-resources'
     version: 0.0.0
@@ -18556,7 +18556,7 @@ packages:
       sass: 1.71.1
       slugify: 1.6.6
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -18732,7 +18732,7 @@ packages:
     dev: false
 
   file:projects/gmail-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-7sWVrlH+dMj54nZkK0MvfrO+LMd2TD+78F0IOYdWjJ9KaVNRE7OZ9pTqs3RwNZlf6WOZRDQSNJeVTAMYz3cw5g==, tarball: file:projects/gmail-resources.tgz}
+    resolution: {integrity: sha512-temIpTmZ+e602fu4NiqttPtjgAD5C3W70R663nTrHoXDMF1Zy/Ctb8CEdt4HU5TdlQVDvxc+einoDJaLV9YB0Q==, tarball: file:projects/gmail-resources.tgz}
     id: file:projects/gmail-resources.tgz
     name: '@rush-temp/gmail-resources'
     version: 0.0.0
@@ -18751,7 +18751,7 @@ packages:
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       sass: 1.71.1
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -18839,7 +18839,7 @@ packages:
     dev: false
 
   file:projects/guest-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-yth1jutVnZ4LsmbuSiG/l4yC0Tz+Xv9108g96Ntn/bMjhAUldAbto77TRq33nJHP2CkNELJX+m3fnworDMUSSw==, tarball: file:projects/guest-resources.tgz}
+    resolution: {integrity: sha512-4EGfEUfm77l+3tj+YwUum6UY4f7nL99d92OA1WDKnDug591QCCK516dNdRJvZ0AiPFNBLovMmu8hK8MCLMndww==, tarball: file:projects/guest-resources.tgz}
     id: file:projects/guest-resources.tgz
     name: '@rush-temp/guest-resources'
     version: 0.0.0
@@ -18859,7 +18859,7 @@ packages:
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       sass: 1.71.1
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -18947,7 +18947,7 @@ packages:
     dev: false
 
   file:projects/hr-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-qkvCJBEeNFe/BPRkLU3SasE4DMHQBxotTd4FahDfLz8x/gDDbphklWmXIJh5rOdV+XLiCfpKGyWg9yYUELcuRg==, tarball: file:projects/hr-resources.tgz}
+    resolution: {integrity: sha512-tju5jEI862hhNIqu5wlYfmhOHIXZzc/CDwjc0zPgX4c5QfAiM2UwKpJV9wgeOIqUYGaJxr0RI2g3W6CIfu+HJg==, tarball: file:projects/hr-resources.tgz}
     id: file:projects/hr-resources.tgz
     name: '@rush-temp/hr-resources'
     version: 0.0.0
@@ -18966,7 +18966,7 @@ packages:
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       sass: 1.71.1
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -19023,7 +19023,7 @@ packages:
     dev: false
 
   file:projects/image-cropper-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-YKKfXSY2/TJrj2Q6Ith9e8WGnRyo3laxLZUvN4/LZGG5U8I+5B1NyoDIGFKSd5wbxyAI6zNjiWvYyqQYN9d9dQ==, tarball: file:projects/image-cropper-resources.tgz}
+    resolution: {integrity: sha512-ZN1r8I0ZeIxUv/zDew7bPpvIiaA61SfaG+qLDc3mWl4r/WNNSxq0K9LhufVjYInfsvvNtcuX+oy0xfCv6tHfdA==, tarball: file:projects/image-cropper-resources.tgz}
     id: file:projects/image-cropper-resources.tgz
     name: '@rush-temp/image-cropper-resources'
     version: 0.0.0
@@ -19044,7 +19044,7 @@ packages:
       sass: 1.71.1
       smartcrop: 2.0.5
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -19132,7 +19132,7 @@ packages:
     dev: false
 
   file:projects/inventory-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-AhInSwlJYpEwbkRSe62ysP5sh7Bp8ic2H9M1sQQfORevl3MicRcUVxPwQ9fn7JE9GC8MjdlpXGSml+6wU9huYw==, tarball: file:projects/inventory-resources.tgz}
+    resolution: {integrity: sha512-4w+7HTZ896UVT+PdxAwHMucH0Ae4I63Zzp+wJKU0qCl9WgeaKdwAAKUnG1IqZBmKrrsF6vQyKYQ/bmAceUvD0A==, tarball: file:projects/inventory-resources.tgz}
     id: file:projects/inventory-resources.tgz
     name: '@rush-temp/inventory-resources'
     version: 0.0.0
@@ -19151,7 +19151,7 @@ packages:
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       sass: 1.71.1
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -19208,7 +19208,7 @@ packages:
     dev: false
 
   file:projects/kanban.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-n/dP2T56Ax0ZaVIrGusLQxlfCLC53UjHLXomm8jjue2ZEij+JFanuRhd2tzgPD4LcGjXCNtBeLr9luWI7mgung==, tarball: file:projects/kanban.tgz}
+    resolution: {integrity: sha512-0QjJ+i/3Th5/lzE9jcr/XvoT3k4j1UfRSVV0w2jU0sOYDWM1JcCZB78qTKsE08ueAqiKwz9NyT2BUNhVKa5mQg==, tarball: file:projects/kanban.tgz}
     id: file:projects/kanban.tgz
     name: '@rush-temp/kanban'
     version: 0.0.0
@@ -19228,7 +19228,7 @@ packages:
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       sass: 1.71.1
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -19285,7 +19285,7 @@ packages:
     dev: false
 
   file:projects/lead-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-UGK8wET5IeEzE1T3vEB9yAbRKc1A0xqYihHDE037/tuxY+uOixfEL9nYq80hGmVDd2JUkincH9b4yZiUrKoCQA==, tarball: file:projects/lead-resources.tgz}
+    resolution: {integrity: sha512-+g0wYwSYXrjStg/kjA/fvIJlqzZDm95HbBcxzbnhyh9e5VP6Xl42FgxBhoRqkDIHXqcCOhlIjxePAbkbn2e1kA==, tarball: file:projects/lead-resources.tgz}
     id: file:projects/lead-resources.tgz
     name: '@rush-temp/lead-resources'
     version: 0.0.0
@@ -19305,7 +19305,7 @@ packages:
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       sass: 1.71.1
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -19393,7 +19393,7 @@ packages:
     dev: false
 
   file:projects/login-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(file-loader@6.2.0)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)(webpack@5.90.3):
-    resolution: {integrity: sha512-xzZHLoNNKPUuPgXGGWsm0RFJ/T+R/Ry5LKgFDI9HuFUhar07xqVqOPcvORS+YMYaJAN5evd8mwdb4YKlwuiJ2w==, tarball: file:projects/login-resources.tgz}
+    resolution: {integrity: sha512-yX/2HEek9rsn6KMSseMqN0mDB3j32OnnbzCJ2mLlFg3PlmG09h4oQJnHi7BFN225pabykrI9D3M6IhEZFe7FlQ==, tarball: file:projects/login-resources.tgz}
     id: file:projects/login-resources.tgz
     name: '@rush-temp/login-resources'
     version: 0.0.0
@@ -19412,7 +19412,7 @@ packages:
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       sass: 1.71.1
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -20733,7 +20733,7 @@ packages:
     dev: false
 
   file:projects/notification-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-D1CL9lg5xd7hZJxBvzOd3SwHTPH4Up4mREwFPvf1v5GyQUiKqZMW/RKCop1G81hwh4pje5De7cz/TBxa5bc24Q==, tarball: file:projects/notification-resources.tgz}
+    resolution: {integrity: sha512-1ZVz3FeRWm8TKzrIbXdi37Px7lU1bbDzMp14QcQDXX+k8gUp7ZNRXsY7ZHcLGVnv5PJvJX4hBgZXFUC3qhwRnw==, tarball: file:projects/notification-resources.tgz}
     id: file:projects/notification-resources.tgz
     name: '@rush-temp/notification-resources'
     version: 0.0.0
@@ -20752,7 +20752,7 @@ packages:
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       sass: 1.71.1
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -20845,7 +20845,7 @@ packages:
     dev: false
 
   file:projects/panel.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-cFoTjnZ6mHJtNSppmfDuDx2wE5B4xGLxee96kAfHWSufWMYuHF69977P0VSlDEen1iXSNu2jQAWUux7wiEaKQQ==, tarball: file:projects/panel.tgz}
+    resolution: {integrity: sha512-wbZgOBSS9jzyOxpkxOZS/CRq5Ww0R9Uo7AV9I2Q8HJtqBXLNyfipcw2ehQYdmVl0yEohtp2iU+sHktRH7zsMLA==, tarball: file:projects/panel.tgz}
     id: file:projects/panel.tgz
     name: '@rush-temp/panel'
     version: 0.0.0
@@ -20864,7 +20864,7 @@ packages:
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       sass: 1.71.1
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -21207,7 +21207,7 @@ packages:
     dev: false
 
   file:projects/presentation.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-k8w+ycKPm5V73wCFHxNGgC/D8uMG3rUW9qTTzE2nnQSkQ1Ra7WYz3tY2e05dapAIJCXSdHfe2VKXyW7Kfp1Ifw==, tarball: file:projects/presentation.tgz}
+    resolution: {integrity: sha512-8IBrBcVE4UfO21SGnnpgOyAtVnJdNjcKMdQiVzvhx/vB3igWxoY+3n57f8rXQl28VmNHvMqA23oE1sfaORz77g==, tarball: file:projects/presentation.tgz}
     id: file:projects/presentation.tgz
     name: '@rush-temp/presentation'
     version: 0.0.0
@@ -21229,7 +21229,7 @@ packages:
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       sass: 1.71.1
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -21255,7 +21255,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz(bufferutil@4.0.8)(sass@1.71.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-FxY2AYXMPI00WmnLEIUmyrcnb4zOaPlvNTa8If3Ch5g45erv2Xwff2Ups7I5M6sXkop6Xv7lwsSJhaCYF1imzw==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-/CKLzPjaTfkDNjT0evklXES1ISDy11ikLCJKFuyI4OQ6nfbt84wTqkO80Egr9IZScuNA0M0MEeJP+01pO2LNdA==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
@@ -21409,7 +21409,7 @@ packages:
     dev: false
 
   file:projects/recruit-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-kaAbBS5v4DNzUBmnSM/4mi22xE0rHdi2XZXyIE2cece4lUldEl/K2sqSPN16UGjPT+6G8+Fp/T4YnjdbZzzKsw==, tarball: file:projects/recruit-resources.tgz}
+    resolution: {integrity: sha512-BTDdjpsxI/DgHKcZUkxbzHIhYzZ2FgdoTv1kjYotkUMDtormr3q+KkuMG7CrbeTt1eEYcXWBClsdWdgJOntrsQ==, tarball: file:projects/recruit-resources.tgz}
     id: file:projects/recruit-resources.tgz
     name: '@rush-temp/recruit-resources'
     version: 0.0.0
@@ -21428,7 +21428,7 @@ packages:
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       sass: 1.71.1
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -21547,7 +21547,7 @@ packages:
     dev: false
 
   file:projects/request-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-FFVbI3No6inHxXhNfTVN6l2J7F8TQyyEJbkpI48/yE0g3vwuBxMWKMt6sx3veHPGRi6+JK6P8sEkvab9pFQLrQ==, tarball: file:projects/request-resources.tgz}
+    resolution: {integrity: sha512-upxa0tNVFY+Xk5r0CmL1cchkpcTrIbAvWuabtqGHTZjrmg8XDgBtOR/2ZnQYLoJ14KTxQG1A5MxA71DRymnqTA==, tarball: file:projects/request-resources.tgz}
     id: file:projects/request-resources.tgz
     name: '@rush-temp/request-resources'
     version: 0.0.0
@@ -21566,7 +21566,7 @@ packages:
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       sass: 1.71.1
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -23340,7 +23340,7 @@ packages:
     dev: false
 
   file:projects/setting-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-0yJ4W073ehUgiKI//v5o/o99jP5ZIlIR4letvTleSuTtQZJ39fFXnY2HKhxdKYrDC60S0QM8Bphpq50SrHoMgA==, tarball: file:projects/setting-resources.tgz}
+    resolution: {integrity: sha512-vk5XfmSBbgDEcj7zGKe8oCjtH2YlySFKvf0OfBqc2lcZJnav+iRGuwEMnfUkG5F8t05sFErrB3fL/hEYpmO32A==, tarball: file:projects/setting-resources.tgz}
     id: file:projects/setting-resources.tgz
     name: '@rush-temp/setting-resources'
     version: 0.0.0
@@ -23359,7 +23359,7 @@ packages:
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       sass: 1.71.1
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -23499,7 +23499,7 @@ packages:
     dev: false
 
   file:projects/support-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-5bm22VjB93zIzQx2TKSr0vxm/EueUspDLb7bFOFQE1K5odpLKBqXIC+bcsVp9LK9OL2zbG1w1AAfVjkWQUmCNQ==, tarball: file:projects/support-resources.tgz}
+    resolution: {integrity: sha512-yYzVRuVvRlWDLmgFcbnfzzD5EjAxlKBWqp8tslTGxDuaax8y5FzG8kzmC+tJviyFSsTiXX03uhO+xe8bn+c+Sg==, tarball: file:projects/support-resources.tgz}
     id: file:projects/support-resources.tgz
     name: '@rush-temp/support-resources'
     version: 0.0.0
@@ -23518,7 +23518,7 @@ packages:
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       sass: 1.71.1
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -23606,7 +23606,7 @@ packages:
     dev: false
 
   file:projects/tags-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-jFEY6NEHRDXguy8Ha+IMywtxrDkvLrANcOlY/pVlywMMM612dhrNXblV9G14fjBt69hTbxAL3u/Yny9Ow84mEw==, tarball: file:projects/tags-resources.tgz}
+    resolution: {integrity: sha512-YdAu5ErgY7nAWu+Vabb95akqmSzi0yBTjiPEWS3jz68Omjwsw1PnlPUl1h1RPRWS9Ski4zfWTKWr6YQy9NVW6w==, tarball: file:projects/tags-resources.tgz}
     id: file:projects/tags-resources.tgz
     name: '@rush-temp/tags-resources'
     version: 0.0.0
@@ -23625,7 +23625,7 @@ packages:
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       sass: 1.71.1
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -23714,7 +23714,7 @@ packages:
     dev: false
 
   file:projects/task-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-hcM0+HmmvMW1RbuJAPVKwvq0w7YwGB5hAd6g//8gfTCqVn+6zP/AB8phOSTEsvtfeLC5BBLF+pKKyL1MXaWvhQ==, tarball: file:projects/task-resources.tgz}
+    resolution: {integrity: sha512-vNfjLSW/07EVzq2Y1Yp5qIUsdzQIY2ig+OuR8CDzmH3ls5JR+6SoZEeCqkWuCX9v+PpUsadJZp8EIwzfqzBq0g==, tarball: file:projects/task-resources.tgz}
     id: file:projects/task-resources.tgz
     name: '@rush-temp/task-resources'
     version: 0.0.0
@@ -23733,7 +23733,7 @@ packages:
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       sass: 1.71.1
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -23821,7 +23821,7 @@ packages:
     dev: false
 
   file:projects/telegram-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-bed0EmIjxpVbP3XF4bULlKwjgcnKa59rfkdCYIVbtFkzD1mR9uIZiyI+e9VCSRAdd5f/IVM/dbiwcubC6Z9qsA==, tarball: file:projects/telegram-resources.tgz}
+    resolution: {integrity: sha512-EO5qC5dovR+SLCD8un4vTPp17h45sZPuKJB54CABmS7MBs9aqs7XU5PT2A4YuOIWgqmwbt3y/Ubmy8sYYRusrw==, tarball: file:projects/telegram-resources.tgz}
     id: file:projects/telegram-resources.tgz
     name: '@rush-temp/telegram-resources'
     version: 0.0.0
@@ -23840,7 +23840,7 @@ packages:
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       sass: 1.71.1
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -23928,7 +23928,7 @@ packages:
     dev: false
 
   file:projects/templates-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-Tdq+tg2BNhYrxm/MXNCca4tuEpZyRt2m6KPGWQGOpJejnJtg2MMnMo3qEsmvNgprhJfKb12OinGc+ycZsVIjgA==, tarball: file:projects/templates-resources.tgz}
+    resolution: {integrity: sha512-Y7gLYMUPkYO55p1rQqCKK1tRuH6Q0KJ9E1Vvo89MLeoF+ZDKW4k4fsfOE4Ac0+uVeeN7r156DvfBzIf3ajypfw==, tarball: file:projects/templates-resources.tgz}
     id: file:projects/templates-resources.tgz
     name: '@rush-temp/templates-resources'
     version: 0.0.0
@@ -23947,7 +23947,7 @@ packages:
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       sass: 1.71.1
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -24029,7 +24029,7 @@ packages:
     dev: false
 
   file:projects/text-editor.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(prosemirror-model@1.19.4)(ts-node@10.9.2):
-    resolution: {integrity: sha512-G6/SsJ7NNINfdGwdI+6F9alZ+ow8Kmv+48UNx08Jh7Xz6lwvHuXWKRgh16LpzR7b5IPZJLyK3uz4zFo50JMTxA==, tarball: file:projects/text-editor.tgz}
+    resolution: {integrity: sha512-HrOMU/Hpc05gePqahXl1WJ/jZC+FUOTC4qbSeK9whq4PYxp6A7Uy5apkN8ww5gDlHs7TW5c69rVGBnbHnqJhsw==, tarball: file:projects/text-editor.tgz}
     id: file:projects/text-editor.tgz
     name: '@rush-temp/text-editor'
     version: 0.0.0
@@ -24084,7 +24084,7 @@ packages:
       sass: 1.71.1
       slugify: 1.6.6
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -24181,7 +24181,7 @@ packages:
     dev: false
 
   file:projects/theme.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-pYXGYlELLOv88Qf2USBuk8OvSyLAmS9765YUsYm1euMG8fVpDAT5H5I4CwnLeSkc87oS4xKlcy7DUCndiidJ9A==, tarball: file:projects/theme.tgz}
+    resolution: {integrity: sha512-m3jBcQTnfZCeHUynaU2FNoqsJ/eUnwV79U6WgotwQPs0BUJMfiRpBrMqVpGmEEPONVswVdsqTGa3y9c1wgRK2w==, tarball: file:projects/theme.tgz}
     id: file:projects/theme.tgz
     name: '@rush-temp/theme'
     version: 0.0.0
@@ -24200,7 +24200,7 @@ packages:
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       sass: 1.71.1
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -24257,7 +24257,7 @@ packages:
     dev: false
 
   file:projects/time-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-jFJhdhEj33cRIOSEL2Fr2T32bWpKifEmwCTiSbBuNBG7mDhvFFD3LFVqIN1QCXfGlGU4DAjL6d5/DHXe6KXb7Q==, tarball: file:projects/time-resources.tgz}
+    resolution: {integrity: sha512-6OgwBZ+S0KTFo4xTDlovoLacpLfhb+RrS2RGk/s4DbRlCLg8jHpUoCYh4oHaXM51wUd9QGCPiVoewGctBz1wlQ==, tarball: file:projects/time-resources.tgz}
     id: file:projects/time-resources.tgz
     name: '@rush-temp/time-resources'
     version: 0.0.0
@@ -24277,7 +24277,7 @@ packages:
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       sass: 1.71.1
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -24422,7 +24422,7 @@ packages:
     dev: false
 
   file:projects/tracker-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-7BBFEYPBl6fH5eqy+QwRcUetnmw64hiQbP6uMGruSDJR5AS4EzDpa8YB9xHLWFwyp0SnCLCZXunLkaYNtaTcug==, tarball: file:projects/tracker-resources.tgz}
+    resolution: {integrity: sha512-l8fnwZ92T6qHQ++hWU5TQGIF6fETCdZ2LBuSwx2bTVRKULu+JeNimXGlA+Z0Uie334ix4q/fuHxVxJZj+FzJiA==, tarball: file:projects/tracker-resources.tgz}
     id: file:projects/tracker-resources.tgz
     name: '@rush-temp/tracker-resources'
     version: 0.0.0
@@ -24442,7 +24442,7 @@ packages:
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       sass: 1.71.1
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -24532,7 +24532,7 @@ packages:
     dev: false
 
   file:projects/ui.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-GJx3NNFCi0LxO874CYl32IFBnFnX0YIQQ02PY5akpHXjjayRV2GLNFTHMlZF0FBGo9QissArVITnPsMYlqSeOw==, tarball: file:projects/ui.tgz}
+    resolution: {integrity: sha512-enFKt7hmHGGXLoMYlHqE354wMdlO573f7syNQ2s25PgJBIbBVbNWGhjPyBQKjMAdpN+wCCI9nBYEAC/Yw74yFw==, tarball: file:projects/ui.tgz}
     id: file:projects/ui.tgz
     name: '@rush-temp/ui'
     version: 0.0.0
@@ -24557,7 +24557,7 @@ packages:
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       sass: 1.71.1
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -24614,7 +24614,7 @@ packages:
     dev: false
 
   file:projects/view-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-lLrDKJ7LC57uC3cDvJWyCANN7xPWPrYrJgFzhHVC8Py/lRueG0oGBSvud44ezxw0Y1frKQceECacfmNCJdMF5g==, tarball: file:projects/view-resources.tgz}
+    resolution: {integrity: sha512-0jN9IbDgg2xMu8MWOh1dblwdTVpOgtaGzr0fyWcJMjfaRAgTgYAR9tmH7aRsgNPNvJizXABWlGgKkJSl8EYhTA==, tarball: file:projects/view-resources.tgz}
     id: file:projects/view-resources.tgz
     name: '@rush-temp/view-resources'
     version: 0.0.0
@@ -24634,7 +24634,7 @@ packages:
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       sass: 1.71.1
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
@@ -24722,7 +24722,7 @@ packages:
     dev: false
 
   file:projects/workbench-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-PGknI/ZpgI8RDtL2W8e37XouYjGtfcLbgRmIrVfnm9nT26M6wbrDy/oNrXifpTVz3pIRKpcA3G8izNxBJRT1Fw==, tarball: file:projects/workbench-resources.tgz}
+    resolution: {integrity: sha512-PsO2+Y9MAO/lcZeW3cmChPhLN+sZAXiLS+o3WK0hJbgSi8UQFEpdUl0nc3betE3a/wxyRkRLNJ6AFVQrS6JcZQ==, tarball: file:projects/workbench-resources.tgz}
     id: file:projects/workbench-resources.tgz
     name: '@rush-temp/workbench-resources'
     version: 0.0.0
@@ -24742,7 +24742,7 @@ packages:
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       sass: 1.71.1
       svelte: 4.2.12
-      svelte-check: 3.6.7(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
       svelte-eslint-parser: 0.33.1(svelte@4.2.12)
       svelte-loader: 3.2.0(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
