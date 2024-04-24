@@ -21,6 +21,10 @@ export class NavigationMenuPage {
     await this.buttonApplications().click()
   }
 
+  async clickButtonApplicationsTwo (): Promise<void> {
+    await this.buttonApplications().click()
+  }
+
   async clickButtonMyApplications (): Promise<void> {
     await this.buttonMyApplications().click()
   }

@@ -93,7 +93,7 @@ test.describe('Application tests', () => {
 
   test('Change Done status', async ({ page }) => {
     const navigationMenuPage = new NavigationMenuPage(page)
-    await navigationMenuPage.clickButtonApplications()
+    await navigationMenuPage.clickButtonApplicationsTwo()
 
     let applicationsPage = new ApplicationsPage(page)
     const talentName = await applicationsPage.createNewApplicationWithNewTalent({
