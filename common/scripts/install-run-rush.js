@@ -8,6 +8,9 @@
 //    node common/scripts/install-run-rush.js install
 //
 // For more information, see: https://rushjs.io/pages/maintainer/setup_new_repo/
+//
+// Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
+// See the @microsoft/rush package's LICENSE file for details.
 
 /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
@@ -137,8 +140,8 @@ function _getRushVersion(logger) {
         return rushJsonMatches[1];
     }
     catch (e) {
-        throw new Error(`Unable to determine the required version of Rush from rush.json (${rushJsonFolder}). ` +
-            "The 'rushVersion' field is either not assigned in rush.json or was specified " +
+        throw new Error(`Unable to determine the required version of Rush from ${RUSH_JSON_FILENAME} (${rushJsonFolder}). ` +
+            `The 'rushVersion' field is either not assigned in ${RUSH_JSON_FILENAME} or was specified ` +
             'using an unexpected syntax.');
     }
 }
@@ -197,7 +200,7 @@ function _run() {
     }
     runWithErrorAndStatusCode(logger, () => {
         const version = _getRushVersion(logger);
-        logger.info(`The rush.json configuration requests Rush version ${version}`);
+        logger.info(`The ${RUSH_JSON_FILENAME} configuration requests Rush version ${version}`);
         const lockFilePath = process.env[INSTALL_RUN_RUSH_LOCKFILE_PATH_VARIABLE];
         if (lockFilePath) {
             logger.info(`Found ${INSTALL_RUN_RUSH_LOCKFILE_PATH_VARIABLE}="${lockFilePath}", installing with lockfile.`);

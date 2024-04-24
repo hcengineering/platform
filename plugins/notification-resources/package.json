@@ -30,7 +30,7 @@
     "prettier": "^3.1.0",
     "prettier-plugin-svelte": "^3.2.2",
     "sass": "^1.53.0",
-    "svelte-check": "^3.6.7",
+    "svelte-check": "^3.6.9",
     "svelte-eslint-parser": "^0.33.1",
     "svelte-loader": "^3.2.0",
     "svelte-preprocess": "^5.1.3",
