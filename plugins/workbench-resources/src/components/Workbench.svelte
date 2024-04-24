@@ -92,7 +92,6 @@
   import TopMenu from './icons/TopMenu.svelte'
 
   let contentPanel: HTMLElement
-  let replacedPanel: HTMLElement | undefined
 
   const { setTheme } = getContext<{ setTheme: (theme: string) => void }>('theme')
 
@@ -839,6 +838,7 @@
       {/if}
     </div>
   </div>
+  <Dock />
   <div bind:this={cover} class="cover" />
   <TooltipInstance />
   <PanelInstance bind:this={panelInstance} contentPanel={elementPanel} kind={modern ? 'modern' : 'default'}>
@@ -853,7 +853,6 @@
   </Popup>
   <ComponentExtensions extension={workbench.extensions.WorkbenchExtensions} />
   <BrowserNotificatator />
-  <Dock />
 {/if}
 
 <style lang="scss">
@@ -868,14 +867,15 @@
     &:not(.modern-app, .inner) {
       border-top: 1px solid var(--theme-navpanel-divider);
       border-left: 1px solid var(--theme-navpanel-color);
-    }
-    &.modern-app {
-      border-top: 1px solid transparent;
+
+      & + :global(.dock) {
+        border-left: 1px solid var(--theme-navpanel-divider);
+      }
     }
     &.modern-app {
       position: relative;
       background-color: var(--theme-statusbar-color);
-      border-radius: var(--medium-BorderRadius);
+      border-top: 1px solid transparent;
 
       &::after {
         position: absolute;
