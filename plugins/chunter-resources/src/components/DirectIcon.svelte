@@ -27,7 +27,6 @@
   export let value: DirectMessage | undefined
   export let size: IconSize = 'small'
   export let showStatus = false
-  export let background: string = 'var(--global-ui-BackgroundColor)'
 
   const visiblePersons = 4
   const client = getClient()
@@ -61,7 +60,6 @@
     name={persons[0].name}
     {showStatus}
     account={getAccountByPerson($personAccountByIdStore, persons[0])?._id}
-    {background}
   />
 {/if}
 

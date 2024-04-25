@@ -66,7 +66,7 @@
     bind:filters
     {object}
     icon={getObjectIcon(_class)}
-    iconProps={{ value: object, showStatus: true, background: 'var(--theme-comp-header-color)' }}
+    iconProps={{ value: object, showStatus: true }}
     label={title}
     intlLabel={chunter.string.Channel}
     {description}

@@ -50,6 +50,7 @@
 
   import AvatarIcon from './icons/Avatar.svelte'
   import UserStatus from './UserStatus.svelte'
+  import { UserStatusSize } from '@hcengineering/contact/lib'
 
   export let avatar: string | null | undefined = undefined
   export let name: string | null | undefined = undefined
@@ -59,9 +60,8 @@
   export let variant: 'circle' | 'roundedRect' | 'none' = 'roundedRect'
   export let borderColor: number | undefined = undefined
   export let standby: boolean = false
-  export let showStatus = false
+  export let showStatus = true
   export let account: Ref<Account> | undefined = undefined
-  export let background: string | undefined = undefined
 
   export function pulse (): void {
     if (element) element.animate(pulsating, { duration: 150, easing: 'ease-out' })
@@ -143,21 +143,22 @@
     }
   })
 
-  function getStatusSize (avaSize: IconSize): 'small' | 'medium' {
+  function getStatusSize (avaSize: IconSize): UserStatusSize | undefined {
     switch (avaSize) {
       case 'inline':
       case 'tiny':
       case 'card':
       case 'x-small':
+        return 'x-small'
+      case 'smaller':
         return 'small'
       case 'small':
+        return 'medium'
       case 'medium':
       case 'large':
       case 'x-large':
       case '2x-large':
-        return 'medium'
-      default:
-        return 'small'
+        return undefined
     }
   }
 </script>
@@ -185,36 +186,42 @@
     />
   </div>
 {:else}
-  <div
-    bind:this={element}
-    class="ava-{size} flex-center avatar-container {variant}"
-    class:no-img={!url && color}
-    class:bordered={!url && color === undefined}
-    class:border={bColor !== undefined}
-    class:standby
-    class:standbyOn={standby && !standbyMode}
-    style:--border-color={bColor ?? 'var(--primary-button-default)'}
-    style:background-color={color && !url ? color.icon : 'var(--theme-button-default)'}
-  >
-    {#if url}
-      <img class="ava-{size} ava-image" src={url[0]} {srcset} alt={''} />
-    {:else if name && displayName && displayName !== ''}
-      <div
-        class="ava-text"
-        style:color={color ? color.iconText : 'var(--primary-button-color)'}
-        data-name={displayName.toLocaleUpperCase()}
-      />
-    {:else}
-      <div class="icon">
-        <Icon icon={icon ?? AvatarIcon} size={'full'} />
-      </div>
-    {/if}
+  <span class="relative">
+    <div
+      bind:this={element}
+      class="ava-{size} flex-center avatar-container {variant}"
+      class:no-img={!url && color}
+      class:bordered={!url && color === undefined}
+      class:border={bColor !== undefined}
+      class:standby
+      class:withStatus={showStatus && account}
+      class:standbyOn={standby && !standbyMode}
+      style:--border-color={bColor ?? 'var(--primary-button-default)'}
+      style:background-color={color && !url ? color.icon : 'var(--theme-button-default)'}
+    >
+      {#if url}
+        <img class="ava-{size} ava-image" src={url[0]} {srcset} alt={''} />
+      {:else if name && displayName && displayName !== ''}
+        <div
+          class="ava-text"
+          style:color={color ? color.iconText : 'var(--primary-button-color)'}
+          data-name={displayName.toLocaleUpperCase()}
+        />
+      {:else}
+        <div class="icon">
+          <Icon icon={icon ?? AvatarIcon} size={'full'} />
+        </div>
+      {/if}
+    </div>
     {#if showStatus && account}
-      <span class="status">
-        <UserStatus user={account} size={getStatusSize(size)} {background} />
-      </span>
+      {@const statusSize = getStatusSize(size)}
+      {#if statusSize}
+        <span class="status {size}">
+          <UserStatus user={account} size={statusSize} />
+        </span>
+      {/if}
     {/if}
-  </div>
+  </span>
 {/if}
 
 <style lang="scss">
@@ -223,6 +230,27 @@
     position: relative;
     background-color: var(--theme-button-default);
     pointer-events: none;
+
+    &.withStatus {
+      position: relative;
+      &:not(.circle) {
+        //.ava-inline,
+        //.ava-tiny,
+        //.ava-card,
+        //.ava-x-small {
+        //  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3Cpath d='M1,0 H0 V1 H0.713 C0.692,0.968,0.681,0.93,0.681,0.889 C0.681,0.795,0.742,0.716,0.827,0.69 C0.843,0.652,0.88,0.625,0.924,0.625 H1 V0'/%3E%3C/svg%3E%0A") no-repeat;
+        //}
+        //
+        //.ava-small,
+        //.ava-medium,
+        //.ava-large,
+        //.ava-x-large,
+        //.ava-2x-large {
+        mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3Cpath d='M1,0 H0 V1 H0.713 C0.692,0.968,0.681,0.93,0.681,0.889 C0.681,0.774,0.774,0.681,0.889,0.681 C0.93,0.681,0.968,0.692,1,0.713 V0'/%3E%3C/svg%3E%0A")
+          no-repeat;
+        //}
+      }
+    }
 
     &.circle,
     &.circle img.ava-image {
@@ -323,7 +351,6 @@
       font-size: 0.75rem;
     }
   }
-
   .ava-x-small {
     width: 1.5rem; // 24
     height: 1.5rem;
@@ -395,7 +422,21 @@
 
   .status {
     position: absolute;
-    bottom: -0.125rem;
-    right: -0.25rem;
+    bottom: 0;
+    right: 0;
+
+    &.inline,
+    &.tiny,
+    &.smaller,
+    &.x-small {
+      bottom: -0.313rem;
+      right: -0.313rem;
+    }
+
+    &.card,
+    &.small {
+      bottom: -0.375rem;
+      right: -0.375rem;
+    }
   }
 </style>

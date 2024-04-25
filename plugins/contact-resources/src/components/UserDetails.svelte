@@ -23,8 +23,7 @@
 
   export let person: Person
   export let avatarSize: IconSize = 'x-small'
-  export let showStatus = false
-  export let background: string | undefined = undefined
+  export let showStatus = true
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -44,7 +43,6 @@
     on:accent-color
     {showStatus}
     account={getAccountByPerson($personAccountByIdStore, person)?._id}
-    {background}
   />
   <div class="flex-col min-w-0 {avatarSize === 'tiny' || avatarSize === 'inline' ? 'ml-1' : 'ml-3'}">
     <div class="label overflow-label text-left">{getName(hierarchy, person)}</div>
