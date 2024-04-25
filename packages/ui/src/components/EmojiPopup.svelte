@@ -105,7 +105,7 @@
 
   let currentCategory = categories[0]
 
-  function getEmojis(startCode: number, endCode: number, postfix?: number[]): Array<string | undefined> {
+  function getEmojis(startCode: number, endCode: number, postfix?: number[]): Array<string> {
     const result = []
     for (let i = startCode; i <= endCode; i++) {
       const codePoints = [i, ...(postfix || [])]
