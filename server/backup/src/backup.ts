@@ -229,6 +229,9 @@ export async function cloneWorkspace (
     for (const c of domains) {
       console.log('clone domain...', c)
 
+      // We need to clean target connection before copying something.
+      await cleanDomain(targetConnection, c)
+
       const changes: Snapshot = {
         added: new Map(),
         updated: new Map(),
@@ -291,9 +294,6 @@ export async function cloneWorkspace (
         console.log('Retrieve chunk:', needRetrieve.length)
         let docs: Doc[] = []
         try {
-          // We need to clean target connection before copying something.
-          await cleanDomain(targetConnection, c)
-
           docs = await sourceConnection.loadDocs(c, needRetrieve)
           if (clearTime) {
             docs = docs.map((p) => {
