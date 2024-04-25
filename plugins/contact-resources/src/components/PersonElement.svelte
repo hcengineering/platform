@@ -13,11 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Employee, Person } from '@hcengineering/contact'
+  import contact, { Employee, Person } from '@hcengineering/contact'
   import { IconSize, LabelAndProps, tooltip } from '@hcengineering/ui'
   import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
   import { ObjectPresenterType } from '@hcengineering/view'
+
   import Avatar from './Avatar.svelte'
+  import { personAccountByIdStore } from '../utils'
+  import { getClient } from '@hcengineering/presentation'
 
   export let value: Person | Employee | undefined | null
   export let name: string
@@ -34,6 +37,13 @@
   export let accent: boolean = false
   export let maxWidth: string = ''
   export let type: ObjectPresenterType = 'link'
+  export let showStatus = true
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  $: showStatus = showStatus && !!value && hierarchy.hasMixin(value, contact.mixin.Employee)
+  $: account = value && Array.from($personAccountByIdStore.values()).find((account) => account.person === value?._id)
 </script>
 
 {#if value}
@@ -53,7 +63,7 @@
             class:mr-2={shouldShowName && !enlargedText}
             class:mr-3={shouldShowName && enlargedText}
           >
-            <Avatar size={avatarSize} avatar={value.avatar} name={value.name} />
+            <Avatar size={avatarSize} avatar={value.avatar} name={value.name} {showStatus} account={account?._id} />
           </span>
         {/if}
         {#if shouldShowName}
