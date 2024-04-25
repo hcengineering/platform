@@ -123,7 +123,6 @@ export default plugin(coreId, {
     TypeDate: '' as Ref<Class<Type<Timestamp | Date>>>,
     TypeCollaborativeDoc: '' as Ref<Class<Type<CollaborativeDoc>>>,
     TypeCollaborativeDocVersion: '' as Ref<Class<Type<CollaborativeDoc>>>,
-    TypeCollaborativeMarkup: '' as Ref<Class<Type<Markup>>>,
     RefTo: '' as Ref<Class<RefTo<Doc>>>,
     ArrOf: '' as Ref<Class<ArrOf<Doc>>>,
     Enum: '' as Ref<Class<Enum>>,

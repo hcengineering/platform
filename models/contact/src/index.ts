@@ -42,6 +42,7 @@ import {
   type Markup,
   type Ref,
   type Timestamp
+  type CollaborativeDoc
 } from '@hcengineering/core'
 import {
   Collection,
@@ -53,7 +54,7 @@ import {
   ReadOnly,
   TypeBlob,
   TypeBoolean,
-  TypeCollaborativeMarkup,
+  TypeCollaborativeDoc,
   TypeDate,
   TypeRecord,
   TypeRef,
@@ -172,9 +173,9 @@ export class TMember extends TAttachedDoc implements Member {
 @Model(contact.class.Organization, contact.class.Contact)
 @UX(contact.string.Organization, contact.icon.Company, 'ORG', 'name', undefined, contact.string.Organizations)
 export class TOrganization extends TContact implements Organization {
-  @Prop(TypeCollaborativeMarkup(), core.string.Description)
+  @Prop(TypeCollaborativeDoc(), core.string.Description)
   @Index(IndexKind.FullText)
-    description?: Markup
+    description?: CollaborativeDoc
 
   @Prop(Collection(contact.class.Member), contact.string.Members)
     members!: number

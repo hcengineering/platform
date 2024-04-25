@@ -318,7 +318,7 @@ async function getMessageNotifyResult (
 }
 
 function isMarkupType (type: Ref<Class<Type<any>>>): boolean {
-  return type === core.class.TypeMarkup || type === core.class.TypeCollaborativeMarkup
+  return type === core.class.TypeMarkup
 }
 
 function isCollaborativeType (type: Ref<Class<Type<any>>>): boolean {

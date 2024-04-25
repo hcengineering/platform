@@ -279,7 +279,7 @@ export async function extractIndexedValues (
         continue
       }
 
-      if (keyAttr.type._class === core.class.TypeMarkup || keyAttr.type._class === core.class.TypeCollaborativeMarkup) {
+      if (keyAttr.type._class === core.class.TypeMarkup) {
         sourceContent = jsonToText(markupToJSON(sourceContent))
       }
 

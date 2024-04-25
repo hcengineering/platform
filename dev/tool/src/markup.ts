@@ -38,10 +38,7 @@ export async function fixJsonMarkup (
 
       const attributes = hierarchy.getAllAttributes(_class)
       const filtered = Array.from(attributes.values()).filter((attribute) => {
-        return (
-          hierarchy.isDerived(attribute.type._class, core.class.TypeMarkup) ||
-          hierarchy.isDerived(attribute.type._class, core.class.TypeCollaborativeMarkup)
-        )
+        return hierarchy.isDerived(attribute.type._class, core.class.TypeMarkup)
       })
       if (filtered.length === 0) continue
 

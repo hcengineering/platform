@@ -136,10 +136,7 @@ export function getIsTextType (attributeModel?: AttributeModel): boolean {
     return false
   }
 
-  return (
-    attributeModel.attribute?.type?._class === core.class.TypeMarkup ||
-    attributeModel.attribute?.type?._class === core.class.TypeCollaborativeMarkup
-  )
+  return attributeModel.attribute?.type?._class === core.class.TypeMarkup
 }
 
 const groupMessagesThresholdMs = 15 * 60 * 1000

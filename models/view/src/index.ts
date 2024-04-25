@@ -483,19 +483,6 @@ export function createModel (builder: Builder): void {
     editor: view.component.HTMLEditor
   })
 
-  classPresenter(
-    builder,
-    core.class.TypeCollaborativeMarkup,
-    view.component.MarkupPresenter,
-    undefined,
-    undefined,
-    view.component.MarkupDiffPresenter
-  )
-
-  builder.mixin(core.class.TypeCollaborativeMarkup, core.class.Class, view.mixin.InlineAttributEditor, {
-    editor: view.component.CollaborativeHTMLEditor
-  })
-
   builder.mixin(core.class.TypeCollaborativeDoc, core.class.Class, view.mixin.InlineAttributEditor, {
     editor: view.component.CollaborativeDocEditor
   })

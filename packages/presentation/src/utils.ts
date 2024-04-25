@@ -474,9 +474,6 @@ export function getAttributePresenterClass (
   if (hierarchy.isDerived(attrClass, core.class.TypeMarkup)) {
     category = 'inplace'
   }
-  if (hierarchy.isDerived(attrClass, core.class.TypeCollaborativeMarkup)) {
-    category = 'inplace'
-  }
   if (hierarchy.isDerived(attrClass, core.class.TypeCollaborativeDoc)) {
     category = 'inplace'
   }

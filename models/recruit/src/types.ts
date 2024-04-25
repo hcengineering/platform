@@ -17,6 +17,7 @@ import type { Employee, Organization } from '@hcengineering/contact'
 import {
   Account,
   IndexKind,
+  type CollaborativeDoc,
   type Domain,
   type Markup,
   type Ref,
@@ -34,7 +35,7 @@ import {
   Prop,
   ReadOnly,
   TypeBoolean,
-  TypeCollaborativeMarkup,
+  TypeCollaborativeDoc,
   TypeDate,
   TypeMarkup,
   TypeRef,
@@ -63,9 +64,9 @@ import recruit from './plugin'
 @Model(recruit.class.Vacancy, task.class.Project)
 @UX(recruit.string.Vacancy, recruit.icon.Vacancy, 'VCN', 'name', undefined, recruit.string.Vacancies)
 export class TVacancy extends TProject implements Vacancy {
-  @Prop(TypeCollaborativeMarkup(), recruit.string.FullDescription)
+  @Prop(TypeCollaborativeDoc(), recruit.string.FullDescription)
   @Index(IndexKind.FullText)
-    fullDescription?: string
+    fullDescription?: CollaborativeDoc
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number

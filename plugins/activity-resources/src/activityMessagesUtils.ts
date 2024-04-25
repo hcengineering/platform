@@ -58,7 +58,6 @@ const valueTypes: ReadonlyArray<Ref<Class<Doc>>> = [
   core.class.TypeNumber,
   core.class.TypeDate,
   core.class.TypeMarkup,
-  core.class.TypeCollaborativeMarkup,
   core.class.TypeHyperlink
 ]
 

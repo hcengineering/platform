@@ -18,6 +18,7 @@ import {
   AttachedDoc,
   Attribute,
   Class,
+  CollaborativeDoc,
   CollectionSize,
   Data,
   Doc,
@@ -181,7 +182,7 @@ export interface Milestone extends Doc {
 export interface Issue extends Task {
   attachedTo: Ref<Issue>
   title: string
-  description: Markup
+  description: CollaborativeDoc
   status: Ref<IssueStatus>
   priority: IssuePriority
 
