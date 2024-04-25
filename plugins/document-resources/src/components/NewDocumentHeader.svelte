@@ -15,7 +15,15 @@
 <script lang="ts">
   import { Ref, Space } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Button, ButtonWithDropdown, IconAdd, IconDropdown, Loading, SelectPopupValueType, showPopup } from '@hcengineering/ui'
+  import {
+    Button,
+    ButtonWithDropdown,
+    IconAdd,
+    IconDropdown,
+    Loading,
+    SelectPopupValueType,
+    showPopup
+  } from '@hcengineering/ui'
   import { openDoc } from '@hcengineering/view-resources'
   import document from '../plugin'
   import { getDocumentIdFromFragment } from '../utils'
