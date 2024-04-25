@@ -31,7 +31,7 @@ export class CommonRecruitingPage extends CalendarPage {
   readonly inputSocialValue = (): Locator => this.page.locator('div.popup input.search')
   readonly buttonSocialCancel = (): Locator => this.page.locator('div.popup button[type="button"]:not([id])')
   readonly buttonSocialSave = (): Locator => this.page.locator('button#channel-ok')
-  readonly textActivity = (): Locator => this.page.locator('div.header')
+  readonly textActivity = (): Locator => this.page.locator('div.content')
   readonly buttonContactLinkedIn = (): Locator =>
     this.page.locator('div[class^="popupPanel-body"] div.horizontal button[id="contact:string:LinkedIn"]')
 
