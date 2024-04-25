@@ -22,15 +22,14 @@
 
   import { LinkData, getLinkData } from '../../activityMessagesUtils'
   import ActivityDocLink from '../ActivityDocLink.svelte'
+  import { getIsTextType } from '../../utils'
 
   export let message: DisplayDocUpdateMessage
   export let viewlet: DocUpdateMessageViewlet | undefined
   export let person: Person | undefined
-  export let objectName: IntlString | undefined = undefined
   export let object: Doc | undefined
   export let parentObject: Doc | undefined
   export let attributeModel: AttributeModel | undefined = undefined
-  export let collectionName: IntlString | undefined = undefined
   export let hideLink = false
 
   const isOwn = message.objectId === message.attachedTo
@@ -42,7 +41,13 @@
       linkData = data
     })
 
-  function getTitle (): IntlString {
+  function getTitle (attributeModel: AttributeModel): IntlString | undefined {
+    const isTextType = getIsTextType(attributeModel)
+
+    if (!isTextType) {
+      return undefined
+    }
+
     const { attributeUpdates } = message
     const added = attributeUpdates?.added ?? []
     const removed = attributeUpdates?.removed ?? []
@@ -60,35 +65,12 @@
 
 {#if viewlet?.label}
   <span class="text-sm lower"> <Label label={viewlet.label} /></span>
-{:else if message.previousMessages?.some(({ action }) => action !== message.action)}
-  {@const name = collectionName ?? objectName}
-  <span class="text-sm lower">
-    <Label label={activity.string.Updated} />
-    {#if name}
-      <Label label={name} />
-    {/if}
-  </span>
-{:else if message.action === 'create' && objectName}
-  <span class="text-sm lower">
-    <Label label={isOwn ? activity.string.Created : activity.string.Added} />
-    {#if collectionName && (!isOwn || message.previousMessages?.length)}
-      <Label label={collectionName} />
-    {:else}
-      <Label label={objectName} />
-    {/if}
-  </span>
-{:else if message.action === 'remove' && objectName}
-  <span class="text-sm lower">
-    <Label label={activity.string.Removed} />
-    {#if collectionName && message.previousMessages?.length}
-      <Label label={collectionName} />
-    {:else}
-      <Label label={objectName} />
-    {/if}
-  </span>
 {:else if attributeModel}
-  <span class="text-sm lower"><Label label={getTitle()} /></span>
-  <span class="text-sm lower"> <Label label={attributeModel.label} /></span>
+  {@const title = getTitle(attributeModel)}
+  {#if title}
+    <span class="text-sm lower"><Label label={title} /></span>
+    <span class="text-sm lower"> <Label label={attributeModel.label} /></span>
+  {/if}
 {/if}
 
 {#if linkData}

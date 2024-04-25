@@ -61,9 +61,9 @@ test.describe('Tracker milestone tests', () => {
 
     await milestonesDetailsPage.addComment(commentText)
     await milestonesDetailsPage.checkCommentExist(commentText)
-    await milestonesDetailsPage.checkActivityExist('created milestone')
-    await milestonesDetailsPage.checkActivityExist('changed target date at')
-    await milestonesDetailsPage.checkActivityExist('changed status at')
+
+    await milestonesDetailsPage.checkActivityContentExist(`New milestone: ${editMilestone.name}`)
+    await milestonesDetailsPage.checkActivityContentExist(`Status set to ${editMilestone.status}`)
     await milestonesDetailsPage.checkActivityExist('changed description at')
   })
 

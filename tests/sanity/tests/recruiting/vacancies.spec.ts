@@ -165,7 +165,7 @@ test.describe('Vacancy tests', () => {
     const vacancyDetailsPage = new VacancyDetailsPage(page)
     await vacancyDetailsPage.moreActionOn('Archive')
     await vacancyDetailsPage.pressYesForPopup(page)
-    await vacancyDetailsPage.checkActivityExist('changed archived at')
+    await vacancyDetailsPage.checkActivityExist('Archived set to Yes')
 
     await navigationMenuPage.clickButtonVacancies()
     await vacanciesPage.checkVacancyNotExist(

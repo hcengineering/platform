@@ -15,10 +15,10 @@
 <script lang="ts">
   import ui, { Icon, Label, IconEdit } from '@hcengineering/ui'
   import { AttributeModel } from '@hcengineering/view'
-  import core from '@hcengineering/core'
   import activity, { DocAttributeUpdates, DocUpdateMessageViewlet } from '@hcengineering/activity'
 
   import ChangeAttributesTemplate from './ChangeAttributesTemplate.svelte'
+  import { getIsTextType } from '../../../utils'
 
   export let viewlet: DocUpdateMessageViewlet | undefined
   export let attributeModel: AttributeModel
@@ -31,13 +31,6 @@
   $: isUnset = values.length > 0 && !values.some((value) => value !== null && value !== '')
 
   $: isTextType = getIsTextType(attributeModel)
-
-  function getIsTextType (attributeModel: AttributeModel): boolean {
-    return (
-      attributeModel.attribute?.type?._class === core.class.TypeMarkup ||
-      attributeModel.attribute?.type?._class === core.class.TypeCollaborativeMarkup
-    )
-  }
 
   let isDiffShown = false
 
