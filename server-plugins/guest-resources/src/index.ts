@@ -21,7 +21,7 @@ import {
   TxCreateDoc,
   TxOperations,
   TxProcessor,
-  WorkspaceId,
+  WorkspaceIdWithUrl,
   concatLink,
   generateId
 } from '@hcengineering/core'
@@ -54,13 +54,13 @@ export async function OnPublicLinkCreate (tx: Tx, control: TriggerControl): Prom
   return res
 }
 
-export function getPublicLinkUrl (workspace: WorkspaceId): string {
+export function getPublicLinkUrl (workspace: WorkspaceIdWithUrl): string {
   const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const path = `${guestId}/${workspace.name}`
+  const path = `${guestId}/${workspace.workspaceUrl}`
   return concatLink(front, path)
 }
 
-function generateUrl (linkId: Ref<PublicLink>, workspace: WorkspaceId): string {
+function generateUrl (linkId: Ref<PublicLink>, workspace: WorkspaceIdWithUrl): string {
   const token = generateToken(guestAccountEmail, workspace, { linkId, guest: 'true' })
   return `${getPublicLinkUrl(workspace)}?token=${token}`
 }
@@ -68,7 +68,7 @@ function generateUrl (linkId: Ref<PublicLink>, workspace: WorkspaceId): string {
 export async function getPublicLink (
   doc: Doc,
   client: TxOperations,
-  workspace: WorkspaceId,
+  workspace: WorkspaceIdWithUrl,
   revokable: boolean = true
 ): Promise<string> {
   const current = await client.findOne(guest.class.PublicLink, { attachedTo: doc._id })
