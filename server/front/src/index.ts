@@ -49,7 +49,7 @@ async function minioUpload (
     { file: file.name, contentType: file.mimetype }
   )
 
-  await ctx.info('minio upload', resp)
+  ctx.info('minio upload', resp)
   return id
 }
 
@@ -81,7 +81,7 @@ async function getFileRange (
 ): Promise<void> {
   const stat = await ctx.with('stats', {}, async () => await client.stat(ctx, workspace, uuid))
   if (stat === undefined) {
-    await ctx.error('No such key', { file: uuid })
+    ctx.error('No such key', { file: uuid })
     res.status(404).send()
     return
   }
@@ -127,7 +127,7 @@ async function getFileRange (
             resolve()
           })
           dataStream.on('error', (err) => {
-            void ctx.error('error receive stream', { workspace: workspace.name, uuid, error: err })
+            ctx.error('error receive stream', { workspace: workspace.name, uuid, error: err })
             Analytics.handleError(err)
             res.end()
             reject(err)
@@ -138,12 +138,12 @@ async function getFileRange (
         })
       } catch (err: any) {
         if (err?.code === 'NoSuchKey' || err?.code === 'NotFound') {
-          await ctx.info('No such key', { workspace: workspace.name, uuid })
+          ctx.info('No such key', { workspace: workspace.name, uuid })
           res.status(404).send()
           return
         } else {
           Analytics.handleError(err)
-          void ctx.error(err)
+          ctx.error(err)
         }
         res.status(500).send()
       }
@@ -162,7 +162,7 @@ async function getFile (
 ): Promise<void> {
   const stat = await ctx.with('stat', {}, async () => await client.stat(ctx, workspace, uuid))
   if (stat === undefined) {
-    await ctx.error('No such key', { file: req.query.file })
+    ctx.error('No such key', { file: req.query.file })
     res.status(404).send()
     return
   }
@@ -211,12 +211,12 @@ async function getFile (
           dataStream.on('error', function (err) {
             res.status(500).send()
             Analytics.handleError(err)
-            void ctx.error('error', { err })
+            ctx.error('error', { err })
             reject(err)
           })
         })
       } catch (err: any) {
-        await ctx.error('get-file-error', { workspace: workspace.name, err })
+        ctx.error('get-file-error', { workspace: workspace.name, err })
         Analytics.handleError(err)
         res.status(500).send()
       }
@@ -261,7 +261,7 @@ export function start (
 
   class MyStream {
     write (text: string): void {
-      void ctx.info(text)
+      ctx.info(text)
     }
   }
 
@@ -310,7 +310,7 @@ export function start (
       })
       res.end(json)
     } catch (err: any) {
-      void ctx.error('statistics error', { err })
+      ctx.error('statistics error', { err })
       Analytics.handleError(err)
       res.writeHead(404, {})
       res.end()
@@ -348,7 +348,7 @@ export function start (
       uuid = await getResizeID(ctx, size, uuid, config, payload)
       const stat = await config.storageAdapter.stat(ctx, payload.workspace, uuid)
       if (stat === undefined) {
-        await ctx.error('No such key', { file: req.query.file })
+        ctx.error('No such key', { file: req.query.file })
         res.status(404).send()
         return
       }
@@ -366,11 +366,11 @@ export function start (
       res.end()
     } catch (error: any) {
       if (error?.code === 'NoSuchKey' || error?.code === 'NotFound') {
-        await ctx.error('No such key', { file: req.query.file })
+        ctx.error('No such key', { file: req.query.file })
         res.status(404).send()
         return
       } else {
-        await ctx.error('error-handle-files', error)
+        ctx.error('error-handle-files', error)
       }
       res.status(500).send()
     }
@@ -447,11 +447,11 @@ export function start (
       }
     } catch (error: any) {
       if (error?.code === 'NoSuchKey' || error?.code === 'NotFound') {
-        await ctx.error('No such key', { file: req.query.file })
+        ctx.error('No such key', { file: req.query.file })
         res.status(404).send()
         return
       } else {
-        await ctx.error('error-handle-files', error)
+        ctx.error('error-handle-files', error)
       }
       res.status(500).send()
     }
@@ -507,7 +507,7 @@ export function start (
 
           res.status(200).send(uuid)
         } catch (error: any) {
-          await ctx.error('error-post-files', error)
+          ctx.error('error-post-files', error)
           res.status(500).send()
         }
       },
@@ -548,7 +548,7 @@ export function start (
       res.status(200).send()
     } catch (error: any) {
       Analytics.handleError(error)
-      await ctx.error('failed to delete', { url: req.url })
+      ctx.error('failed to delete', { url: req.url })
       res.status(500).send()
     }
   }
@@ -617,25 +617,25 @@ export function start (
                 .catch((err: any) => {
                   if (err !== null) {
                     Analytics.handleError(err)
-                    void ctx.error('error', { err })
+                    ctx.error('error', { err })
                     res.status(500).send(err)
                   }
                 })
             })
             .on('error', function (err) {
               Analytics.handleError(err)
-              void ctx.error('error', { err })
+              ctx.error('error', { err })
               res.status(500).send(err)
             })
         })
         .on('error', (e) => {
           Analytics.handleError(e)
-          void ctx.error('error', { e })
+          ctx.error('error', { e })
           res.status(500).send(e)
         })
     } catch (error: any) {
       Analytics.handleError(error)
-      void ctx.error('error', { error })
+      ctx.error('error', { error })
       res.status(500).send()
     }
   })
@@ -695,19 +695,19 @@ export function start (
               })
               .catch((err: any) => {
                 Analytics.handleError(err)
-                void ctx.error('error', { err })
+                ctx.error('error', { err })
                 res.status(500).send(err)
               })
           })
           .on('error', function (err) {
             Analytics.handleError(err)
-            void ctx.error('error', { err })
+            ctx.error('error', { err })
             res.status(500).send(err)
           })
       })
     } catch (error: any) {
       Analytics.handleError(error)
-      void ctx.error('error', { error })
+      ctx.error('error', { error })
       res.status(500).send()
     }
   })

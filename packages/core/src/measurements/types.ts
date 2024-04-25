@@ -40,6 +40,8 @@ export interface MeasureLogger {
   info: (message: string, obj?: Record<string, any>) => void
   error: (message: string, obj?: Record<string, any>) => void
 
+  warn: (message: string, obj?: Record<string, any>) => void
+
   logOperation: (operation: string, time: number, params: ParamsType) => void
 
   childLogger?: (name: string, params: Record<string, any>) => MeasureLogger
@@ -69,11 +71,14 @@ export interface MeasureContext {
 
   logger: MeasureLogger
 
+  parent?: MeasureContext
+
   measure: (name: string, value: number) => void
 
   // Capture error
-  error: (message: string, obj?: Record<string, any>) => Promise<void>
-  info: (message: string, obj?: Record<string, any>) => Promise<void>
+  error: (message: string, obj?: Record<string, any>) => void
+  info: (message: string, obj?: Record<string, any>) => void
+  warn: (message: string, obj?: Record<string, any>) => void
 
   // Mark current context as complete
   // If no value is passed, time difference will be used.

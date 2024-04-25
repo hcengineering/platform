@@ -839,7 +839,7 @@ abstract class MongoAdapterBase implements DbAdapter {
             )
           })
         } catch (err: any) {
-          await ctx.error('failed on bulk write', { error: err, skip })
+          ctx.error('failed on bulk write', { error: err, skip })
           if (skip !== 1) {
             ops.push(...part)
             skip = 1 // Let's update one by one, to loose only one failed variant.

@@ -50,15 +50,15 @@ export async function startCollaborator (): Promise<void> {
     void shutdown().then(() => {
       void mongoClient.close()
     })
-    void metricsContext.info('closed')
+    metricsContext.info('closed')
   }
 
   process.on('uncaughtException', (e) => {
-    void metricsContext.error('UncaughtException', { error: e })
+    metricsContext.error('UncaughtException', { error: e })
   })
 
   process.on('unhandledRejection', (reason, promise) => {
-    void metricsContext.error('Unhandled Rejection at:', { promise, reason })
+    metricsContext.error('Unhandled Rejection at:', { promise, reason })
   })
 
   process.on('SIGINT', close)

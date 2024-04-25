@@ -64,7 +64,7 @@ export function registerGithub (
           // Successful authentication, redirect to your application
           ctx.redirect(concatLink(frontUrl, '/login/auth'))
         } catch (err: any) {
-          await measureCtx.error('failed to auth', err)
+          measureCtx.error('failed to auth', err)
         }
       }
       await next()

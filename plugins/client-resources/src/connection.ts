@@ -268,8 +268,6 @@ class Connection implements ClientConnection {
             this.onUpgrade?.()
           }
 
-          console.log('connection established', socketId, this.workspace, this.email)
-
           this.upgrading = false
           if ((resp as HelloResponse).alreadyConnected === true) {
             this.sessionId = generateId()
@@ -403,7 +401,6 @@ class Connection implements ClientConnection {
       if (this.websocket !== wsocket) {
         return
       }
-      console.log('connection opened', socketId, this.email, new URL(this.url).host)
       const useBinary = getMetadata(client.metadata.UseBinaryProtocol) ?? true
       const useCompression = getMetadata(client.metadata.UseProtocolCompression) ?? false
       clearTimeout(dialTimer)
@@ -530,7 +527,7 @@ class Connection implements ClientConnection {
       method: 'findAll',
       params: [_class, query, options],
       measure: (time, result, serverTime, queue) => {
-        if (time > 1000) {
+        if (typeof window !== 'undefined' && time > 1000) {
           console.error('measure slow findAll', time, serverTime, queue, _class, query, options, result)
         }
       }

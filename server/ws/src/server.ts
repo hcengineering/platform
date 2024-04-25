@@ -21,6 +21,7 @@ import core, {
   systemAccountEmail,
   toWorkspaceString,
   versionToString,
+  withContext,
   type BaseWorkspaceInfo,
   type MeasureContext,
   type Tx,
@@ -160,7 +161,7 @@ class TSessionManager implements SessionManager {
         }
 
         if (diff > timeout && this.ticks % 10 === 0) {
-          void this.ctx.error('session hang, closing...', { wsId, user: s[1].session.getUser() })
+          this.ctx.warn('session hang, closing...', { wsId, user: s[1].session.getUser() })
 
           // Force close workspace if only one client and it hang.
           void this.close(s[1].socket, workspace.workspaceId)
@@ -177,7 +178,7 @@ class TSessionManager implements SessionManager {
 
         for (const r of s[1].session.requests.values()) {
           if (now - r.start > 30000) {
-            void this.ctx.info('request hang found, 30sec', {
+            this.ctx.warn('request hang found, 30sec', {
               wsId,
               user: s[1].session.getUser(),
               ...r.params
@@ -190,7 +191,7 @@ class TSessionManager implements SessionManager {
       if (workspace.sessions.size === 0 && workspace.closing === undefined) {
         workspace.softShutdown--
         if (workspace.softShutdown <= 0) {
-          void this.ctx.info('closing workspace, no users', {
+          this.ctx.warn('closing workspace, no users', {
             workspace: workspace.workspaceId.name,
             wsId,
             upgrade: workspace.upgrade,
@@ -209,7 +210,8 @@ class TSessionManager implements SessionManager {
     return this.sessionFactory(token, pipeline, this.broadcast.bind(this))
   }
 
-  async getWorkspaceInfo (accounts: string, token: string): Promise<WorkspaceLoginInfo> {
+  @withContext('get-workspace-info')
+  async getWorkspaceInfo (ctx: MeasureContext, accounts: string, token: string): Promise<WorkspaceLoginInfo> {
     const userInfo = await (
       await fetch(accounts, {
         method: 'POST',
@@ -224,15 +226,16 @@ class TSessionManager implements SessionManager {
       })
     ).json()
     if (userInfo.error !== undefined) {
-      await this.ctx.error('Error response from account service', { error: JSON.stringify(userInfo) })
+      ctx.error('Error response from account service', { error: JSON.stringify(userInfo) })
       throw new Error(JSON.stringify(userInfo.error))
     }
 
     return { ...userInfo.result, upgrade: userInfo.upgrade }
   }
 
+  @withContext('📲 add-session')
   async addSession (
-    baseCtx: MeasureContext,
+    ctx: MeasureContext,
     ws: ConnectionSocket,
     token: Token,
     rawToken: string,
@@ -245,134 +248,127 @@ class TSessionManager implements SessionManager {
     | { upgrade: true, upgradeInfo?: WorkspaceLoginInfo['upgrade'] }
     | { error: any }
     > {
-    return await baseCtx.with('📲 add-session', {}, async (ctx) => {
-      const wsString = toWorkspaceString(token.workspace, '@')
+    const wsString = toWorkspaceString(token.workspace, '@')
 
-      let workspaceInfo = await ctx.with('check-token', {}, async (ctx) =>
-        accountsUrl !== '' ? await this.getWorkspaceInfo(accountsUrl, rawToken) : this.wsFromToken(token)
+    let workspaceInfo =
+      accountsUrl !== '' ? await this.getWorkspaceInfo(ctx, accountsUrl, rawToken) : this.wsFromToken(token)
+
+    if (workspaceInfo?.creating === true && token.email !== systemAccountEmail) {
+      // No access to workspace for token.
+      return { error: new Error(`Workspace during creation phase ${token.email} ${token.workspace.name}`) }
+    }
+    if (workspaceInfo === undefined && token.extra?.admin !== 'true') {
+      // No access to workspace for token.
+      return { error: new Error(`No access to workspace for token ${token.email} ${token.workspace.name}`) }
+    } else if (workspaceInfo === undefined) {
+      workspaceInfo = this.wsFromToken(token)
+    }
+
+    if (
+      this.modelVersion !== '' &&
+      workspaceInfo.version !== undefined &&
+      this.modelVersion !== versionToString(workspaceInfo.version) &&
+      token.extra?.model !== 'upgrade' &&
+      token.extra?.mode !== 'backup'
+    ) {
+      ctx.warn('model version mismatch', {
+        version: this.modelVersion,
+        workspaceVersion: versionToString(workspaceInfo.version)
+      })
+      // Version mismatch, return upgrading.
+      return { upgrade: true, upgradeInfo: workspaceInfo.upgrade }
+    }
+
+    let workspace = this.workspaces.get(wsString)
+    if (workspace?.closing !== undefined) {
+      await workspace?.closing
+    }
+    workspace = this.workspaces.get(wsString)
+    if (sessionId !== undefined && workspace?.sessions?.has(sessionId) === true) {
+      const helloResponse: HelloResponse = {
+        id: -1,
+        result: 'hello',
+        binary: false,
+        reconnect: false,
+        alreadyConnected: true
+      }
+      await ws.send(ctx, helloResponse, false, false)
+      return { error: new Error('Session already exists') }
+    }
+    const workspaceName = workspaceInfo.workspaceName ?? workspaceInfo.workspaceUrl ?? workspaceInfo.workspaceId
+
+    if (workspace === undefined) {
+      ctx.warn('open workspace', {
+        email: token.email,
+        workspace: workspaceInfo.workspaceId,
+        wsUrl: workspaceInfo.workspaceUrl,
+        ...token.extra
+      })
+      workspace = this.createWorkspace(
+        ctx.parent ?? ctx,
+        pipelineFactory,
+        token,
+        workspaceInfo.workspaceUrl ?? workspaceInfo.workspaceId,
+        workspaceName
       )
-      if (workspaceInfo?.creating === true && token.email !== systemAccountEmail) {
-        // No access to workspace for token.
-        return { error: new Error(`Workspace during creation phase ${token.email} ${token.workspace.name}`) }
-      }
-      if (workspaceInfo === undefined && token.extra?.admin !== 'true') {
-        // No access to workspace for token.
-        return { error: new Error(`No access to workspace for token ${token.email} ${token.workspace.name}`) }
-      } else if (workspaceInfo === undefined) {
-        workspaceInfo = this.wsFromToken(token)
-      }
+    }
 
-      if (
-        this.modelVersion !== '' &&
-        workspaceInfo.version !== undefined &&
-        this.modelVersion !== versionToString(workspaceInfo.version) &&
-        token.extra?.model !== 'upgrade' &&
-        token.extra?.mode !== 'backup'
-      ) {
-        await ctx.info('model version mismatch', {
-          version: this.modelVersion,
-          workspaceVersion: versionToString(workspaceInfo.version)
-        })
-        // Version mismatch, return upgrading.
-        return { upgrade: true, upgradeInfo: workspaceInfo.upgrade }
-      }
-
-      let workspace = this.workspaces.get(wsString)
-      if (workspace?.closing !== undefined) {
-        await workspace?.closing
-      }
-      workspace = this.workspaces.get(wsString)
-      if (sessionId !== undefined && workspace?.sessions?.has(sessionId) === true) {
-        const helloResponse: HelloResponse = {
-          id: -1,
-          result: 'hello',
-          binary: false,
-          reconnect: false,
-          alreadyConnected: true
-        }
-        await ws.send(ctx, helloResponse, false, false)
-        return { error: new Error('Session already exists') }
-      }
-      const workspaceName = workspaceInfo.workspaceName ?? workspaceInfo.workspaceUrl ?? workspaceInfo.workspaceId
-
-      if (workspace === undefined) {
-        await ctx.info('open workspace', {
+    let pipeline: Pipeline
+    if (token.extra?.model === 'upgrade') {
+      if (workspace.upgrade) {
+        ctx.warn('reconnect workspace in upgrade', {
           email: token.email,
           workspace: workspaceInfo.workspaceId,
-          wsUrl: workspaceInfo.workspaceUrl,
-          ...token.extra
+          wsUrl: workspaceInfo.workspaceUrl
         })
-        workspace = this.createWorkspace(
-          baseCtx,
-          pipelineFactory,
+        pipeline = await ctx.with('💤 wait', { workspaceName }, async () => await (workspace as Workspace).pipeline)
+      } else {
+        ctx.warn('reconnect workspace in upgrade switch', {
+          email: token.email,
+          workspace: workspaceInfo.workspaceId,
+          wsUrl: workspaceInfo.workspaceUrl
+        })
+        // We need to wait in case previous upgeade connection is already closing.
+        pipeline = await this.switchToUpgradeSession(
           token,
+          sessionId,
+          ctx.parent ?? ctx,
+          wsString,
+          workspace,
+          pipelineFactory,
+          ws,
           workspaceInfo.workspaceUrl ?? workspaceInfo.workspaceId,
           workspaceName
         )
       }
-
-      let pipeline: Pipeline
-      if (token.extra?.model === 'upgrade') {
-        if (workspace.upgrade) {
-          await ctx.info('reconnect workspace in upgrade', {
-            email: token.email,
-            workspace: workspaceInfo.workspaceId,
-            wsUrl: workspaceInfo.workspaceUrl
-          })
-          pipeline = await ctx.with('💤 wait', { workspaceName }, async () => await (workspace as Workspace).pipeline)
-        } else {
-          await ctx.info('reconnect workspace in upgrade switch', {
-            email: token.email,
-            workspace: workspaceInfo.workspaceId,
-            wsUrl: workspaceInfo.workspaceUrl
-          })
-          // We need to wait in case previous upgeade connection is already closing.
-          pipeline = await this.switchToUpgradeSession(
-            token,
-            sessionId,
-            ctx,
-            wsString,
-            workspace,
-            pipelineFactory,
-            ws,
-            workspaceInfo.workspaceUrl ?? workspaceInfo.workspaceId,
-            workspaceName
-          )
-        }
-      } else {
-        if (workspace.upgrade) {
-          await ctx.info('connect during upgrade', {
-            email: token.email,
-            workspace: workspace.workspaceId.name,
-            sessionUsers: Array.from(workspace.sessions.values()).map((it) => it.session.getUser()),
-            sessionData: Array.from(workspace.sessions.values()).map((it) => it.socket.data())
-          })
-          return { upgrade: true }
-        }
-        pipeline = await ctx.with('💤 wait', { workspaceName }, async () => await (workspace as Workspace).pipeline)
+    } else {
+      if (workspace.upgrade) {
+        ctx.warn('connect during upgrade', {
+          email: token.email,
+          workspace: workspace.workspaceId.name,
+          sessionUsers: Array.from(workspace.sessions.values()).map((it) => it.session.getUser()),
+          sessionData: Array.from(workspace.sessions.values()).map((it) => it.socket.data())
+        })
+        return { upgrade: true }
       }
+      pipeline = await ctx.with('💤 wait', { workspaceName }, async () => await (workspace as Workspace).pipeline)
+    }
 
-      const session = this.createSession(token, pipeline)
+    const session = this.createSession(token, pipeline)
 
-      session.sessionId = sessionId !== undefined && (sessionId ?? '').trim().length > 0 ? sessionId : generateId()
-      session.sessionInstanceId = generateId()
-      this.sessions.set(ws.id, { session, socket: ws })
-      // We need to delete previous session with Id if found.
-      workspace.sessions.set(session.sessionId, { session, socket: ws })
+    session.sessionId = sessionId !== undefined && (sessionId ?? '').trim().length > 0 ? sessionId : generateId()
+    session.sessionInstanceId = generateId()
+    this.sessions.set(ws.id, { session, socket: ws })
+    // We need to delete previous session with Id if found.
+    workspace.sessions.set(session.sessionId, { session, socket: ws })
 
-      // We do not need to wait for set-status, just return session to client
-      void ctx.with('set-status', {}, (ctx) => this.trySetStatus(ctx, session, true))
+    // We do not need to wait for set-status, just return session to client
+    void ctx.with('set-status', {}, (ctx) => this.trySetStatus(ctx, session, true))
 
-      if (this.timeMinutes > 0) {
-        void ws.send(
-          ctx,
-          { result: this.createMaintenanceWarning() },
-          session.binaryResponseMode,
-          session.useCompression
-        )
-      }
-      return { session, context: workspace.context, workspaceId: wsString }
-    })
+    if (this.timeMinutes > 0) {
+      void ws.send(ctx, { result: this.createMaintenanceWarning() }, session.binaryResponseMode, session.useCompression)
+    }
+    return { session, context: workspace.context, workspaceId: wsString }
   }
 
   private wsFromToken (token: Token): WorkspaceLoginInfo {
@@ -402,7 +398,7 @@ class TSessionManager implements SessionManager {
     workspaceName: string
   ): Promise<Pipeline> {
     if (LOGGING_ENABLED) {
-      await ctx.info('reloading workspace', { workspaceName, token: JSON.stringify(token) })
+      ctx.info('reloading workspace', { workspaceName, token: JSON.stringify(token) })
     }
 
     // Mark as upgrade, to prevent any new clients to connect during close
@@ -450,7 +446,7 @@ class TSessionManager implements SessionManager {
             )
           } catch (err: any) {
             Analytics.handleError(err)
-            void ctx.error('error during send', { error: err })
+            ctx.error('error during send', { error: err })
           }
         }
       }
@@ -582,7 +578,7 @@ class TSessionManager implements SessionManager {
     ignoreSocket?: ConnectionSocket
   ): Promise<void> {
     if (LOGGING_ENABLED) {
-      await this.ctx.info('closing workspace', {
+      this.ctx.warn('closing workspace', {
         workspace: workspace.id,
         wsName: workspace.workspaceName,
         code,
@@ -604,7 +600,7 @@ class TSessionManager implements SessionManager {
     }
 
     if (LOGGING_ENABLED) {
-      await this.ctx.info('Clients disconnected. Closing Workspace...', {
+      this.ctx.warn('Clients disconnected. Closing Workspace...', {
         wsId,
         workspace: workspace.id,
         wsName: workspace.workspaceName
@@ -621,14 +617,14 @@ class TSessionManager implements SessionManager {
         })
       } catch (err: any) {
         Analytics.handleError(err)
-        await this.ctx.error('close-pipeline-error', { error: err })
+        this.ctx.error('close-pipeline-error', { error: err })
       }
     }
     await this.ctx.with('closing', {}, async () => {
       await Promise.race([closePipeline(), timeoutPromise(120000)])
     })
     if (LOGGING_ENABLED) {
-      await this.ctx.info('Workspace closed...', { workspace: workspace.id, wsId, wsName: workspace.workspaceName })
+      this.ctx.warn('Workspace closed...', { workspace: workspace.id, wsId, wsName: workspace.workspaceName })
     }
   }
 
@@ -663,7 +659,7 @@ class TSessionManager implements SessionManager {
     const logParams = { wsid, workspace: workspace.id, wsName: workspaceId.name }
     if (workspace.sessions.size === 0) {
       if (LOGGING_ENABLED) {
-        await this.ctx.info('no sessions for workspace', logParams)
+        this.ctx.warn('no sessions for workspace', logParams)
       }
       try {
         if (workspace.sessions.size === 0) {
@@ -676,19 +672,19 @@ class TSessionManager implements SessionManager {
           }
           workspace.context.end()
           if (LOGGING_ENABLED) {
-            await this.ctx.info('Closed workspace', logParams)
+            this.ctx.warn('Closed workspace', logParams)
           }
         }
       } catch (err: any) {
         Analytics.handleError(err)
         this.workspaces.delete(wsid)
         if (LOGGING_ENABLED) {
-          await this.ctx.error('failed', { ...logParams, error: err })
+          this.ctx.error('failed', { ...logParams, error: err })
         }
       }
     } else {
       if (LOGGING_ENABLED) {
-        await this.ctx.info('few sessions for workspace, close skipped', {
+        this.ctx.info('few sessions for workspace, close skipped', {
           ...logParams,
           sessions: workspace.sessions.size
         })
@@ -699,7 +695,7 @@ class TSessionManager implements SessionManager {
   broadcast (from: Session | null, workspaceId: WorkspaceId, resp: Response<any>, target?: string[]): void {
     const workspace = this.workspaces.get(toWorkspaceString(workspaceId))
     if (workspace === undefined) {
-      void this.ctx.error('internal: cannot find sessions', {
+      this.ctx.error('internal: cannot find sessions', {
         workspaceId: workspaceId.name,
         target,
         userId: from?.getUser() ?? '$unknown'
@@ -710,7 +706,7 @@ class TSessionManager implements SessionManager {
       return
     }
     if (LOGGING_ENABLED) {
-      void this.ctx.info('server broadcasting to clients...', {
+      this.ctx.info('server broadcasting to clients...', {
         workspace: workspaceId.name,
         count: workspace.sessions.size
       })
@@ -792,7 +788,7 @@ class TSessionManager implements SessionManager {
           service.useBroadcast = hello.broadcast ?? false
 
           if (LOGGING_ENABLED) {
-            await ctx.info('hello happen', {
+            ctx.info('hello happen', {
               workspace,
               user: service.getUser(),
               binary: service.binaryResponseMode,
@@ -852,7 +848,7 @@ class TSessionManager implements SessionManager {
         } catch (err: any) {
           Analytics.handleError(err)
           if (LOGGING_ENABLED) {
-            await this.ctx.error('error handle request', { error: err, request })
+            this.ctx.error('error handle request', { error: err, request })
           }
           const resp: Response<any> = {
             id: request.id,
@@ -897,7 +893,7 @@ class TSessionManager implements SessionManager {
     } catch (err: any) {
       Analytics.handleError(err)
       if (LOGGING_ENABLED) {
-        await ctx.error('error handle measure', { error: err, request })
+        ctx.error('error handle measure', { error: err, request })
       }
       const resp: Response<any> = {
         id: request.id,

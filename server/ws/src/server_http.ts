@@ -49,7 +49,7 @@ export function startHttpServer (
   accountsUrl: string
 ): () => Promise<void> {
   if (LOGGING_ENABLED) {
-    void ctx.info('starting server on', { port, productId, enableCompression, accountsUrl })
+    ctx.info('starting server on', { port, productId, enableCompression, accountsUrl })
   }
 
   const app = express()
@@ -157,15 +157,18 @@ export function startHttpServer (
       ? {
           zlibDeflateOptions: {
             // See zlib defaults.
-            chunkSize: 16 * 1024,
-            level: 6
+            chunkSize: 10 * 1024,
+            memLevel: 7,
+            level: 3
           },
           zlibInflateOptions: {
-            chunkSize: 16 * 1024,
-            level: 6
+            chunkSize: 10 * 1024,
+            level: 3
           },
-          threshold: 1024, // Size (in bytes) below which messages, should not be compressed if context takeover is disabled.
-          concurrencyLimit: 100
+          // Below options specified as default values.
+          concurrencyLimit: 20, // Limits zlib concurrency for perf.
+          threshold: 1024 // Size (in bytes) below which messages
+          // should not be compressed if context takeover is disabled.
         }
       : false,
     skipUTF8Validation: true
@@ -231,7 +234,7 @@ export function startHttpServer (
     )
     if ('upgrade' in session || 'error' in session) {
       if ('error' in session) {
-        void ctx.error('error', { error: session.error?.message, stack: session.error?.stack })
+        ctx.error('error', { error: session.error?.message, stack: session.error?.stack })
       }
       await cs.send(ctx, { id: -1, result: { state: 'upgrading', stats: (session as any).upgradeInfo } }, false, false)
       cs.close()
@@ -252,7 +255,7 @@ export function startHttpServer (
       } catch (err: any) {
         Analytics.handleError(err)
         if (LOGGING_ENABLED) {
-          void ctx.error('message error', err)
+          ctx.error('message error', err)
         }
       }
     })
@@ -282,7 +285,7 @@ export function startHttpServer (
 
       if (payload.workspace.productId !== productId) {
         if (LOGGING_ENABLED) {
-          void ctx.error('invalid product', { required: payload.workspace.productId, productId })
+          ctx.error('invalid product', { required: payload.workspace.productId, productId })
         }
         throw new Error('Invalid workspace product')
       }
@@ -291,7 +294,7 @@ export function startHttpServer (
     } catch (err: any) {
       Analytics.handleError(err)
       if (LOGGING_ENABLED) {
-        void ctx.error('invalid token', err)
+        ctx.error('invalid token', err)
       }
       wss.handleUpgrade(request, socket, head, (ws) => {
         const resp: Response<any> = {
@@ -311,7 +314,7 @@ export function startHttpServer (
   })
   httpServer.on('error', (err) => {
     if (LOGGING_ENABLED) {
-      void ctx.error('server error', err)
+      ctx.error('server error', err)
     }
   })
 

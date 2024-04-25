@@ -91,7 +91,7 @@ class StorageBlobAdapter implements DbAdapter {
     for (const item of docs) {
       const stat = await this.client.stat(this.ctx, this.workspaceId, item)
       if (stat === undefined) {
-        await ctx.error('Could not find blob', { domain, item, allDocs: cutObjectArray(docs) })
+        ctx.error('Could not find blob', { domain, item, allDocs: cutObjectArray(docs) })
         continue
       }
       const chunks: Buffer[] = await this.client.read(this.ctx, this.workspaceId, item)

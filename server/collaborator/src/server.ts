@@ -51,7 +51,7 @@ export async function start (
 ): Promise<Shutdown> {
   const port = config.Port
 
-  await ctx.info('Starting collaborator server', { port })
+  ctx.info('Starting collaborator server', { port })
 
   const app = express()
   app.use(cors())
@@ -210,7 +210,7 @@ export async function start (
 
   server.listen(port)
 
-  await ctx.info('Running collaborator server', { port })
+  ctx.info('Running collaborator server', { port })
 
   return async () => {
     server.close()

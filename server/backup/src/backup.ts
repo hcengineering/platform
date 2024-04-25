@@ -147,7 +147,7 @@ async function loadDigest (
           result.delete(k as Ref<Doc>)
         }
       } catch (err: any) {
-        await ctx.error('digest is broken, will do full backup for', { domain })
+        ctx.error('digest is broken, will do full backup for', { domain })
       }
     }
     // Stop if stop date is matched and provided
@@ -392,14 +392,14 @@ export async function backup (
         mode: 'backup'
       })) as unknown as CoreClient & BackupClient
   )
-  await ctx.info('starting backup', { workspace: workspaceId.name })
+  ctx.info('starting backup', { workspace: workspaceId.name })
 
   let canceled = false
   let timer: any
 
   if (timeout > 0) {
     timer = setTimeout(() => {
-      void ctx.error('Timeout during backup', { workspace: workspaceId.name, timeout: timeout / 1000 })
+      ctx.error('Timeout during backup', { workspace: workspaceId.name, timeout: timeout / 1000 })
       canceled = true
     }, timeout)
   }
@@ -411,7 +411,7 @@ export async function backup (
         .domains()
         .filter((it) => it !== DOMAIN_TRANSIENT && it !== DOMAIN_MODEL && !skipDomains.includes(it))
     ]
-    await ctx.info('domains for dump', { domains: domains.length })
+    ctx.info('domains for dump', { domains: domains.length })
 
     let backupInfo: BackupInfo = {
       workspace: workspaceId.name,
@@ -440,7 +440,7 @@ export async function backup (
     )
     if (lastTx !== undefined) {
       if (lastTx._id === backupInfo.lastTxId && !force) {
-        await ctx.info('No transaction changes. Skipping backup.', { workspace: workspaceId.name })
+        ctx.info('No transaction changes. Skipping backup.', { workspace: workspaceId.name })
         return
       }
     }
@@ -481,7 +481,7 @@ export async function backup (
           for (const { id, hash, size } of currentChunk.docs) {
             processed++
             if (Date.now() - st > 2500) {
-              await ctx.info('processed', {
+              ctx.info('processed', {
                 processed,
                 digest: digest.size,
                 time: Date.now() - st,
@@ -522,7 +522,7 @@ export async function backup (
           }
         } catch (err: any) {
           console.error(err)
-          await ctx.error('failed to load chunks', { error: err })
+          ctx.error('failed to load chunks', { error: err })
           if (idx !== undefined) {
             await ctx.with('loadChunk', {}, async () => {
               await connection.closeChunk(idx as number)
@@ -577,7 +577,7 @@ export async function backup (
       )
 
       if (needRetrieveChunks.length > 0) {
-        await ctx.info('dumping domain...', { workspace: workspaceId.name, domain })
+        ctx.info('dumping domain...', { workspace: workspaceId.name, domain })
       }
 
       while (needRetrieveChunks.length > 0) {
@@ -586,7 +586,7 @@ export async function backup (
         }
         const needRetrieve = needRetrieveChunks.shift() as Ref<Doc>[]
 
-        await ctx.info('Retrieve chunk', {
+        ctx.info('Retrieve chunk', {
           needRetrieve: needRetrieveChunks.reduce((v, docs) => v + docs.length, 0),
           toLoad: needRetrieve.length,
           workspace: workspaceId.name
@@ -595,7 +595,7 @@ export async function backup (
         try {
           docs = await ctx.with('load-docs', {}, async (ctx) => await connection.loadDocs(domain, needRetrieve))
         } catch (err: any) {
-          await ctx.error('error loading docs', { domain, err, workspace: workspaceId.name })
+          ctx.error('error loading docs', { domain, err, workspace: workspaceId.name })
           // Put back.
           needRetrieveChunks.push(needRetrieve)
           continue
@@ -631,7 +631,7 @@ export async function backup (
           _pack = pack()
           stIndex++
           const storageFile = join(backupIndex, `${domain}-data-${snapshot.date}-${stIndex}.tar.gz`)
-          await ctx.info('storing from domain', { domain, storageFile, workspace: workspaceId.name })
+          ctx.info('storing from domain', { domain, storageFile, workspace: workspaceId.name })
           domainInfo.storage = [...(domainInfo.storage ?? []), storageFile]
           const dataStream = await storage.write(storageFile)
           const storageZip = createGzip({ level: defaultLevel })
@@ -718,9 +718,9 @@ export async function backup (
       await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel }))
     }
   } catch (err: any) {
-    await ctx.error('backup error', { err, workspace: workspaceId.name })
+    ctx.error('backup error', { err, workspace: workspaceId.name })
   } finally {
-    await ctx.info('end backup', { workspace: workspaceId.name })
+    ctx.info('end backup', { workspace: workspaceId.name })
     await connection.close()
     ctx.end()
     if (timeout !== -1) {
