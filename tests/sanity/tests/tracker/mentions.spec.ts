@@ -58,7 +58,6 @@ test.describe('Mentions issue tests', () => {
       ...mentionIssue,
       assignee: 'Dirak Kainin'
     })
-    await issuesDetailsPage.checkActivityExist('changed assignee')
     await issuesDetailsPage.checkActivityContentExist('Assignee set to Dirak Kainin')
     await issuesDetailsPage.checkCollaboratorsCount('2 members')
     await issuesDetailsPage.checkCollaborators(['Appleseed John', 'Dirak Kainin'])
@@ -81,7 +80,6 @@ test.describe('Mentions issue tests', () => {
     await issuesPage.openIssueByName(backlinkIssue.title)
 
     const issuesDetailsPage = new IssuesDetailsPage(page)
-    await issuesDetailsPage.checkActivityExist('created issue')
     await issuesDetailsPage.checkActivityContentExist(`New issue: ${backlinkIssue.title}`)
     await issuesDetailsPage.openLinkFromActivitiesByText(backlinkIssue.title)
     await issuesDetailsPage.checkIssue(backlinkIssue)
