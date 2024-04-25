@@ -321,10 +321,11 @@ async function createEmployee (
   for (let i = 0; i < 5; i++) {
     me = await ctx.with('get-account', {}, async () => await newClient.getAccount())
     if (me !== undefined) {
-      await new Promise((resolve) => {
-        setTimeout(resolve, 100)
-      })
+      break
     }
+    await new Promise((resolve) => {
+      setTimeout(resolve, 100)
+    })
   }
   return me
 }
