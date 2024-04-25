@@ -77,7 +77,7 @@ class BackupWorker {
         return
       }
       index++
-      await ctx.info('\n\nBACKUP WORKSPACE ', {
+      ctx.info('\n\nBACKUP WORKSPACE ', {
         workspace: ws.workspace,
         productId: ws.productId,
         index,
@@ -102,7 +102,7 @@ class BackupWorker {
           )
         })
       } catch (err: any) {
-        await ctx.error('\n\nFAILED to BACKUP', { workspace: ws.workspace, err })
+        ctx.error('\n\nFAILED to BACKUP', { workspace: ws.workspace, err })
       }
     }
   }

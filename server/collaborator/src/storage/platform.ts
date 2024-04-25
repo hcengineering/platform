@@ -54,51 +54,51 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     try {
       // try to load document content
       try {
-        await ctx.info('load document content', { documentId })
+        ctx.info('load document content', { documentId })
         const ydoc = await this.loadDocumentFromStorage(ctx, documentId, context)
 
         if (ydoc !== undefined) {
           return ydoc
         }
       } catch (err) {
-        await ctx.error('failed to load document content', { documentId, error: err })
+        ctx.error('failed to load document content', { documentId, error: err })
       }
 
       // then try to load from inital content
       const { initialContentId } = context
       if (initialContentId !== undefined && initialContentId.length > 0) {
         try {
-          await ctx.info('load document initial content', { documentId, initialContentId })
+          ctx.info('load document initial content', { documentId, initialContentId })
           const ydoc = await this.loadDocumentFromStorage(ctx, initialContentId, context)
 
           // if document was loaded from the initial content or storage we need to save
           // it to ensure the next time we load it from the ydoc document
           if (ydoc !== undefined) {
-            await ctx.info('save document content', { documentId, initialContentId })
+            ctx.info('save document content', { documentId, initialContentId })
             await this.saveDocumentToStorage(ctx, documentId, ydoc, context)
             return ydoc
           }
         } catch (err) {
-          await ctx.error('failed to load initial document content', { documentId, initialContentId, error: err })
+          ctx.error('failed to load initial document content', { documentId, initialContentId, error: err })
         }
       }
 
       // finally try to load from the platform
       const { platformDocumentId } = context
       if (platformDocumentId !== undefined) {
-        await ctx.info('load document platform content', { documentId, platformDocumentId })
+        ctx.info('load document platform content', { documentId, platformDocumentId })
         const ydoc = await ctx.with('load-document', { storage: 'platform' }, async (ctx) => {
           try {
             return await this.loadDocumentFromPlatform(ctx, platformDocumentId, context)
           } catch (err) {
-            await ctx.error('failed to load platform document', { documentId, platformDocumentId, error: err })
+            ctx.error('failed to load platform document', { documentId, platformDocumentId, error: err })
           }
         })
 
         // if document was loaded from the initial content or storage we need to save
         // it to ensure the next time we load it from the ydoc document
         if (ydoc !== undefined) {
-          await ctx.info('save document content', { documentId, platformDocumentId })
+          ctx.info('save document content', { documentId, platformDocumentId })
           await this.saveDocumentToStorage(ctx, documentId, ydoc, context)
           return ydoc
         }
@@ -107,29 +107,29 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
       // nothing found
       return undefined
     } catch (err) {
-      await ctx.error('failed to load document', { documentId, error: err })
+      ctx.error('failed to load document', { documentId, error: err })
     }
   }
 
   async saveDocument (ctx: MeasureContext, documentId: DocumentId, document: YDoc, context: Context): Promise<void> {
     let snapshot: YDocVersion | undefined
     try {
-      await ctx.info('take document snapshot', { documentId })
+      ctx.info('take document snapshot', { documentId })
       snapshot = await this.takeSnapshot(ctx, documentId, document, context)
     } catch (err) {
-      await ctx.error('failed to take document snapshot', { documentId, error: err })
+      ctx.error('failed to take document snapshot', { documentId, error: err })
     }
 
     try {
-      await ctx.info('save document content', { documentId })
+      ctx.info('save document content', { documentId })
       await this.saveDocumentToStorage(ctx, documentId, document, context)
     } catch (err) {
-      await ctx.error('failed to save document', { documentId, error: err })
+      ctx.error('failed to save document', { documentId, error: err })
     }
 
     const { platformDocumentId } = context
     if (platformDocumentId !== undefined) {
-      await ctx.info('save document content to platform', { documentId, platformDocumentId })
+      ctx.info('save document content to platform', { documentId, platformDocumentId })
       await ctx.with('save-document', { storage: 'platform' }, async (ctx) => {
         await this.saveDocumentToPlatform(ctx, documentId, platformDocumentId, document, snapshot, context)
       })
@@ -158,7 +158,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
       try {
         return await loadCollaborativeDoc(adapter, context.workspaceId, collaborativeDoc, ctx)
       } catch (err) {
-        await ctx.error('failed to load storage document', { documentId, collaborativeDoc, error: err })
+        ctx.error('failed to load storage document', { documentId, collaborativeDoc, error: err })
         return undefined
       }
     })
@@ -249,7 +249,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
 
     const attribute = client.getHierarchy().findAttribute(objectClass, objectAttr)
     if (attribute === undefined) {
-      await ctx.info('attribute not found', { documentName, objectClass, objectAttr })
+      ctx.info('attribute not found', { documentName, objectClass, objectAttr })
       return
     }
 

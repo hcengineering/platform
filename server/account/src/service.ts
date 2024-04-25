@@ -28,6 +28,8 @@ export interface UpgradeOptions {
   console: boolean
   logs: string
   parallel: number
+
+  ignore?: string
 }
 
 export class UpgradeWorker {
@@ -61,17 +63,17 @@ export class UpgradeWorker {
   }
 
   private async _upgradeWorkspace (ctx: MeasureContext, ws: WorkspaceInfo, opt: UpgradeOptions): Promise<void> {
-    if (ws.disabled === true) {
+    if (ws.disabled === true || (opt.ignore ?? '').includes(ws.workspace)) {
       return
     }
     const t = Date.now()
 
     const ctxModelLogger: ModelLogger = {
       log (msg: string, data: any): void {
-        void ctx.info(msg, data)
+        ctx.info(msg, data)
       },
       error (msg: string, data: any): void {
-        void ctx.error(msg, data)
+        ctx.error(msg, data)
       }
     }
 
@@ -79,7 +81,7 @@ export class UpgradeWorker {
 
     const avgTime = (Date.now() - this.st) / (this.total - this.toProcess + 1)
     this.eta = Math.floor(avgTime * this.toProcess)
-    await ctx.info('----------------------------------------------------------\n---UPGRADING----', {
+    ctx.info('----------------------------------------------------------\n---UPGRADING----', {
       pending: this.toProcess,
       eta: this.eta,
       workspace: ws.workspace
@@ -97,7 +99,7 @@ export class UpgradeWorker {
         logger,
         opt.force
       )
-      await ctx.info('---done---------', {
+      ctx.info('---done---------', {
         pending: this.toProcess,
         time: Date.now() - t,
         workspace: ws.workspace,
@@ -109,10 +111,10 @@ export class UpgradeWorker {
       logger.log('error', err)
 
       if (!opt.console) {
-        await ctx.error('error', err)
+        ctx.error('error', err)
       }
 
-      await ctx.info('---failed---------', {
+      ctx.info('---failed---------', {
         pending: this.toProcess,
         time: Date.now() - t,
         workspace: ws.workspace
@@ -149,7 +151,7 @@ export class UpgradeWorker {
     if (opt.parallel !== 0) {
       const parallel = opt.parallel
       const rateLimit = new RateLimiter(parallel)
-      await ctx.info('parallel upgrade', { parallel })
+      ctx.info('parallel upgrade', { parallel })
       await Promise.all(
         workspaces.map((it) =>
           rateLimit.add(async () => {
@@ -159,14 +161,14 @@ export class UpgradeWorker {
           })
         )
       )
-      await ctx.info('Upgrade done')
+      ctx.info('Upgrade done')
     } else {
-      await ctx.info('UPGRADE write logs at:', { logs: opt.logs })
+      ctx.info('UPGRADE write logs at:', { logs: opt.logs })
       for (const ws of workspaces) {
         await this._upgradeWorkspace(ctx, ws, opt)
       }
       if (withError.length > 0) {
-        await ctx.info('Failed workspaces', withError)
+        ctx.info('Failed workspaces', withError)
       }
     }
   }

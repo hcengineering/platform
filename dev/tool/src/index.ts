@@ -66,7 +66,7 @@ import { getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
 import { openAIConfigDefaults } from '@hcengineering/openai'
 import { type StorageAdapter } from '@hcengineering/server-core'
 import { deepEqual } from 'fast-equals'
-import { benchmark } from './benchmark'
+import { benchmark, benchmarkWorker } from './benchmark'
 import {
   cleanArchivedSpaces,
   cleanRemovedTransactions,
@@ -332,25 +332,36 @@ export function devTool (
     .option('-p|--parallel <parallel>', 'Parallel upgrade', '0')
     .option('-l|--logs <logs>', 'Default logs folder', './logs')
     .option('-r|--retry <retry>', 'Number of apply retries', '0')
+    .option('-i|--ignore [ignore]', 'Ignore workspaces', '')
     .option(
       '-c|--console',
       'Display all information into console(default will create logs folder with {workspace}.log files',
       false
     )
     .option('-f|--force [force]', 'Force update', false)
-    .action(async (cmd: { parallel: string, logs: string, retry: string, force: boolean, console: boolean }) => {
-      const { mongodbUri, version, txes, migrateOperations } = prepareTools()
-      await withDatabase(mongodbUri, async (db, client) => {
-        const worker = new UpgradeWorker(db, client, version, txes, migrateOperations, productId)
-        await worker.upgradeAll(toolCtx, {
-          errorHandler: async (ws, err) => {},
-          force: cmd.force,
-          console: cmd.console,
-          logs: cmd.logs,
-          parallel: parseInt(cmd.parallel ?? '1')
+    .action(
+      async (cmd: {
+        parallel: string
+        logs: string
+        retry: string
+        force: boolean
+        console: boolean
+        ignore: string
+      }) => {
+        const { mongodbUri, version, txes, migrateOperations } = prepareTools()
+        await withDatabase(mongodbUri, async (db, client) => {
+          const worker = new UpgradeWorker(db, client, version, txes, migrateOperations, productId)
+          await worker.upgradeAll(toolCtx, {
+            errorHandler: async (ws, err) => {},
+            force: cmd.force,
+            console: cmd.console,
+            logs: cmd.logs,
+            parallel: parseInt(cmd.parallel ?? '1'),
+            ignore: cmd.ignore
+          })
         })
-      })
-    })
+      }
+    )
 
   program
     .command('remove-unused-workspaces')
@@ -826,6 +837,13 @@ export function devTool (
         )
       }
     )
+  program
+    .command('benchmarkWorker')
+    .description('benchmarkWorker')
+    .action(async (cmd: any) => {
+      console.log(JSON.stringify(cmd))
+      benchmarkWorker()
+    })
 
   program
     .command('fix-skills <workspace> <step>')

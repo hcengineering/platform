@@ -396,6 +396,53 @@ export async function fetchWorkspace (workspace: string): Promise<[Status, Works
     return [unknownError(err), undefined]
   }
 }
+export async function createMissingEmployee (workspace: string): Promise<[Status]> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
+  if (overrideToken !== undefined) {
+    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
+    if (endpoint !== undefined) {
+      return [OK]
+    }
+  }
+
+  const token = getMetadata(presentation.metadata.Token)
+  if (token === undefined) {
+    return [unknownStatus('Please login')]
+  }
+
+  const request = {
+    method: 'createMissingEmployee',
+    params: [token]
+  }
+
+  try {
+    const response = await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request)
+    })
+    const result = await response.json()
+    if (result.error == null) {
+      Analytics.handleEvent('Create missing employee')
+      Analytics.setTag('workspace', workspace)
+    } else {
+      await handleStatusError('Fetch workspace error', result.error)
+    }
+    return [result.error ?? OK]
+  } catch (err: any) {
+    Analytics.handleError(err)
+    return [unknownError(err)]
+  }
+}
 
 export function setLoginInfo (loginInfo: WorkspaceLoginInfo): void {
   const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}

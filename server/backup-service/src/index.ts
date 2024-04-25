@@ -50,9 +50,9 @@ export function startBackup (ctx: MeasureContext): void {
   process.on('SIGINT', shutdown)
   process.on('SIGTERM', shutdown)
   process.on('uncaughtException', (e) => {
-    void ctx.error('uncaughtException', { err: e })
+    ctx.error('uncaughtException', { err: e })
   })
   process.on('unhandledRejection', (e) => {
-    void ctx.error('unhandledRejection', { err: e })
+    ctx.error('unhandledRejection', { err: e })
   })
 }

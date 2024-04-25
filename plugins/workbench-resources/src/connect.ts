@@ -7,6 +7,7 @@ import core, {
   metricsToString,
   setCurrentAccount,
   versionToString,
+  type Account,
   type AccountClient,
   type Client,
   type Version
@@ -216,7 +217,10 @@ export async function connect (title: string): Promise<Client | undefined> {
   _client = newClient
   console.log('logging in as', email)
 
-  const me = await ctx.with('get-account', {}, async () => await newClient.getAccount())
+  let me: Account | undefined = await ctx.with('get-account', {}, async () => await newClient.getAccount())
+  if (me === undefined) {
+    me = await createEmployee(ctx, ws, me, newClient)
+  }
   if (me !== undefined) {
     Analytics.setUser(me.email)
     Analytics.setTag('workspace', ws)
@@ -224,6 +228,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     setCurrentAccount(me)
   } else {
     console.error('WARNING: no employee account found.')
+
     clearMetadata(ws)
     navigate({
       path: [loginId],
@@ -301,6 +306,28 @@ export async function connect (title: string): Promise<Client | undefined> {
   })
   console.log(metricsToString(ctx.metrics, 'connect', 50))
   return newClient
+}
+
+async function createEmployee (
+  ctx: MeasureMetricsContext,
+  ws: string,
+  me: Account,
+  newClient: AccountClient
+): Promise<Account | undefined> {
+  const createEmployee = await getResource(login.function.CreateEmployee)
+  await ctx.with('create-missing-employee', {}, async () => {
+    await createEmployee(ws)
+  })
+  for (let i = 0; i < 5; i++) {
+    me = await ctx.with('get-account', {}, async () => await newClient.getAccount())
+    if (me !== undefined) {
+      break
+    }
+    await new Promise((resolve) => {
+      setTimeout(resolve, 100)
+    })
+  }
+  return me
 }
 
 function clearMetadata (ws: string): void {

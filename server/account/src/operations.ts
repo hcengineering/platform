@@ -251,7 +251,7 @@ async function getAccountInfoByToken (
     email = decodeToken(token)?.email
   } catch (err: any) {
     Analytics.handleError(err)
-    await ctx.error('Invalid token', { token })
+    ctx.error('Invalid token', { token })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Unauthorized, {}))
   }
   const account = await getAccount(db, email)
@@ -292,11 +292,11 @@ export async function login (
       confirmed: info.confirmed ?? true,
       token: generateToken(email, getWorkspaceId('', productId), getExtra(info))
     }
-    await ctx.info('login success', { email, productId })
+    ctx.info('login success', { email, productId })
     return result
   } catch (err: any) {
     Analytics.handleError(err)
-    await ctx.error('login failed', { email, productId, _email, err })
+    ctx.error('login failed', { email, productId, _email, err })
     throw err
   }
 }
@@ -349,7 +349,7 @@ export async function selectWorkspace (
 
   if (workspaceInfo !== null) {
     if (workspaceInfo.disabled === true && workspaceInfo.creating !== true) {
-      await ctx.error('workspace disabled', { workspaceUrl, email })
+      ctx.error('workspace disabled', { workspaceUrl, email })
       throw new PlatformError(
         new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspaceUrl })
       )
@@ -371,7 +371,7 @@ export async function selectWorkspace (
       }
     }
   }
-  await ctx.error('workspace error', { workspaceUrl, email })
+  ctx.error('workspace error', { workspaceUrl, email })
   throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
 }
 
@@ -387,17 +387,17 @@ export async function getInvite (db: Db, inviteId: ObjectId): Promise<Invite | n
  */
 export async function checkInvite (ctx: MeasureContext, invite: Invite | null, email: string): Promise<WorkspaceId> {
   if (invite === null || invite.limit === 0) {
-    void ctx.error('invite', { email, state: 'no invite or limit exceed' })
+    ctx.error('invite', { email, state: 'no invite or limit exceed' })
     Analytics.handleError(new Error(`no invite or invite limit exceed ${email}`))
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
   if (invite.exp < Date.now()) {
-    void ctx.error('invite', { email, state: 'link expired' })
+    ctx.error('invite', { email, state: 'link expired' })
     Analytics.handleError(new Error(`invite link expired ${invite._id.toString()} ${email}`))
     throw new PlatformError(new Status(Severity.ERROR, platform.status.ExpiredLink, {}))
   }
   if (invite.emailMask != null && invite.emailMask.trim().length > 0 && !new RegExp(invite.emailMask).test(email)) {
-    void ctx.error('invite', { email, state: 'mask to match', mask: invite.emailMask })
+    ctx.error('invite', { email, state: 'mask to match', mask: invite.emailMask })
     Analytics.handleError(new Error(`invite link mask failed ${invite._id.toString()} ${email} ${invite.emailMask}`))
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
@@ -426,7 +426,7 @@ export async function join (
   const email = cleanEmail(_email)
   const invite = await getInvite(db, inviteId)
   const workspace = await checkInvite(ctx, invite, email)
-  await ctx.info(`join attempt:${email}, ${workspace.name}`)
+  ctx.info(`join attempt:${email}, ${workspace.name}`)
   const ws = await assignWorkspace(ctx, db, productId, email, workspace.name)
 
   const token = (await login(ctx, db, productId, email, password)).token
@@ -462,7 +462,7 @@ export async function confirm (ctx: MeasureContext, db: Db, productId: string, t
   const decode = decodeToken(token)
   const _email = decode.extra?.confirm
   if (_email === undefined) {
-    await ctx.error('confirm email invalid', { token: decode })
+    ctx.error('confirm email invalid', { token: decode })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: _email }))
   }
   const email = cleanEmail(_email)
@@ -473,7 +473,7 @@ export async function confirm (ctx: MeasureContext, db: Db, productId: string, t
     email,
     token: generateToken(email, getWorkspaceId('', productId), getExtra(account))
   }
-  await ctx.info('confirm success', { email, productId })
+  ctx.info('confirm success', { email, productId })
   return result
 }
 
@@ -576,7 +576,7 @@ export async function createAcc (
 
   const systemEmails = [systemAccountEmail]
   if (systemEmails.includes(email)) {
-    await ctx.error('system email used for account', { email })
+    ctx.error('system email used for account', { email })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountAlreadyExists, { account: email }))
   }
 
@@ -607,11 +607,11 @@ export async function createAcc (
     if (sesURL !== undefined && sesURL !== '') {
       await sendConfirmation(productId, newAccount)
     } else {
-      await ctx.info('Please provide email service url to enable email confirmations.')
+      ctx.info('Please provide email service url to enable email confirmations.')
       await confirmEmail(db, email)
     }
   }
-  await ctx.info('account created', { account: email })
+  ctx.info('account created', { account: email })
   return newAccount
 }
 
@@ -865,10 +865,10 @@ export async function createWorkspace (
     const childLogger = ctx.newChild('createWorkspace', { workspace: workspaceInfo.workspace })
     const ctxModellogger: ModelLogger = {
       log: (msg, data) => {
-        void childLogger.info(msg, data)
+        childLogger.info(msg, data)
       },
       error: (msg, data) => {
-        void childLogger.error(msg, data)
+        childLogger.error(msg, data)
       }
     }
     let model: Tx[] = []
@@ -961,7 +961,7 @@ export async function upgradeWorkspace (
   if (ws?.version !== undefined && !forceUpdate && versionStr === versionToString(ws.version)) {
     return versionStr
   }
-  await ctx.info('upgrading', {
+  ctx.info('upgrading', {
     force: forceUpdate,
     currentVersion: ws?.version !== undefined ? versionToString(ws.version) : '',
     toVersion: versionStr,
@@ -995,7 +995,7 @@ export const createUserWorkspace =
     async (ctx: MeasureContext, db: Db, productId: string, token: string, workspaceName: string): Promise<LoginInfo> => {
       const { email } = decodeToken(token)
 
-      await ctx.info('Creating workspace', { workspaceName, email })
+      ctx.info('Creating workspace', { workspaceName, email })
 
       const info = await getAccount(db, email)
 
@@ -1041,7 +1041,7 @@ export const createUserWorkspace =
             try {
               await assignWorkspace(ctx, db, productId, email, workspace.workspace, shouldUpdateAccount, client)
               await setRole(email, workspace.workspace, productId, AccountRole.Owner, client)
-              await ctx.info('Creating server side done', { workspaceName, email })
+              ctx.info('Creating server side done', { workspaceName, email })
             } catch (err: any) {
               Analytics.handleError(err)
             } finally {
@@ -1051,7 +1051,7 @@ export const createUserWorkspace =
         )
 
         if (err != null) {
-          await ctx.error('failed to create workspace', { err, workspaceName, email })
+          ctx.error('failed to create workspace', { err, workspaceName, email })
           // We need to drop workspace, to prevent wrong data usage.
 
           await db.collection(WORKSPACE_COLLECTION).updateOne(
@@ -1083,7 +1083,7 @@ export const createUserWorkspace =
         productId,
         workspace: workspaceInfo.workspaceUrl
       }
-      await ctx.info('Creating user side done', { workspaceName, email })
+      ctx.info('Creating user side done', { workspaceName, email })
       return result
     }
 
@@ -1102,12 +1102,12 @@ export async function getInviteLink (
   const { workspace, email } = decodeToken(token)
   const wsPromise = await getWorkspaceById(db, productId, workspace.name)
   if (wsPromise === null) {
-    await ctx.error('workspace not found', { workspace, email })
+    ctx.error('workspace not found', { workspace, email })
     throw new PlatformError(
       new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspace.name })
     )
   }
-  await ctx.info('Getting invite link', { workspace: workspace.name, emailMask, limit })
+  ctx.info('Getting invite link', { workspace: workspace.name, emailMask, limit })
   const result = await db.collection(INVITE_COLLECTION).insertOne({
     workspace,
     exp: Date.now() + exp,
@@ -1149,7 +1149,7 @@ export async function getUserWorkspaces (
   const { email } = decodeToken(token)
   const account = await getAccount(db, email)
   if (account === null) {
-    await ctx.error('account not found', { email })
+    ctx.error('account not found', { email })
     return []
   }
   return (
@@ -1275,6 +1275,26 @@ export async function setRole (
 /**
  * @public
  */
+export async function createMissingEmployee (
+  ctx: MeasureContext,
+  db: Db,
+  productId: string,
+  token: string
+): Promise<void> {
+  const { email } = decodeToken(token)
+  const wsInfo = await getWorkspaceInfo(ctx, db, productId, token)
+  const account = await getAccount(db, email)
+
+  if (account === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
+  }
+
+  await createPersonAccount(account, productId, wsInfo.workspaceId, true)
+}
+
+/**
+ * @public
+ */
 export async function assignWorkspace (
   ctx: MeasureContext,
   db: Db,
@@ -1289,7 +1309,7 @@ export async function assignWorkspace (
   const initWS = getMetadata(toolPlugin.metadata.InitWorkspace)
   if (initWS !== undefined && initWS === workspaceId) {
     Analytics.handleError(new Error(`assign-workspace failed ${email} ${workspaceId}`))
-    await ctx.error('assign-workspace failed', { email, workspaceId, reason: 'initWs === workspaceId' })
+    ctx.error('assign-workspace failed', { email, workspaceId, reason: 'initWs === workspaceId' })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
   const workspaceInfo = await getWorkspaceAndAccount(ctx, db, productId, email, workspaceId)
@@ -1308,7 +1328,7 @@ export async function assignWorkspace (
   // Add account into workspace.
   await assignWorkspaceRaw(db, workspaceInfo)
 
-  await ctx.info('assign-workspace success', { email, workspaceId })
+  ctx.info('assign-workspace success', { email, workspaceId })
   return workspaceInfo.workspace
 }
 
@@ -1482,7 +1502,7 @@ export async function changePassword (
   const hash = hashWithSalt(password, salt)
 
   await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { salt, hash } })
-  await ctx.info('change-password success', { email })
+  ctx.info('change-password success', { email })
 }
 
 /**
@@ -1490,7 +1510,7 @@ export async function changePassword (
  */
 export async function changeEmail (ctx: MeasureContext, db: Db, account: Account, newEmail: string): Promise<void> {
   await db.collection<Account>(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { email: newEmail } })
-  await ctx.info('change-email success', { email: newEmail })
+  ctx.info('change-email success', { email: newEmail })
 }
 
 /**
@@ -1516,7 +1536,7 @@ export async function requestPassword (ctx: MeasureContext, db: Db, productId: s
   const account = await getAccount(db, email)
 
   if (account === null) {
-    await ctx.info('account not found', { email })
+    ctx.info('account not found', { email })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
   }
 
@@ -1556,7 +1576,7 @@ export async function requestPassword (ctx: MeasureContext, db: Db, productId: s
       to
     })
   })
-  await ctx.info('recovery email sent', { email, accountEmail: account.email })
+  ctx.info('recovery email sent', { email, accountEmail: account.email })
 }
 
 /**
@@ -1609,7 +1629,7 @@ export async function removeWorkspace (
 
   // Add account a workspace
   await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $pull: { workspaces: workspace._id } })
-  await ctx.info('Workspace removed', { email, workspace })
+  ctx.info('Workspace removed', { email, workspace })
 }
 
 /**
@@ -1627,7 +1647,7 @@ export async function checkJoin (
   const workspace = await checkInvite(ctx, invite, email)
   const ws = await getWorkspaceById(db, productId, workspace.name)
   if (ws === null) {
-    await ctx.error('workspace not found', { name: workspace.name, email, inviteId })
+    ctx.error('workspace not found', { name: workspace.name, email, inviteId })
     throw new PlatformError(
       new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspace.name })
     )
@@ -1653,7 +1673,7 @@ export async function dropWorkspace (
     .collection<Account>(ACCOUNT_COLLECTION)
     .updateMany({ _id: { $in: ws.accounts ?? [] } }, { $pull: { workspaces: ws._id } })
 
-  await ctx.info('Workspace dropped', { workspace: ws.workspace })
+  ctx.info('Workspace dropped', { workspace: ws.workspace })
 }
 
 /**
@@ -1680,7 +1700,7 @@ export async function dropAccount (ctx: MeasureContext, db: Db, productId: strin
   await db
     .collection<Workspace>(WORKSPACE_COLLECTION)
     .updateMany({ _id: { $in: account.workspaces } }, { $pull: { accounts: account._id } })
-  await ctx.info('Account Dropped', { email, account })
+  ctx.info('Account Dropped', { email, account })
 }
 
 /**
@@ -1718,7 +1738,7 @@ export async function leaveWorkspace (
       .collection<Account>(ACCOUNT_COLLECTION)
       .updateOne({ _id: account._id }, { $pull: { workspaces: workspace._id } })
   }
-  await ctx.info('Account removed from workspace', { email, workspace })
+  ctx.info('Account removed from workspace', { email, workspace })
 }
 
 /**
@@ -1781,7 +1801,7 @@ export async function sendInvite (
       to
     })
   })
-  await ctx.info('Invite sent', { email, workspace, link })
+  ctx.info('Invite sent', { email, workspace, link })
 }
 
 async function deactivatePersonAccount (
@@ -1803,7 +1823,7 @@ async function deactivatePersonAccount (
           active: false
         })
       }
-      await ctx.info('account deactivated', { email, workspace })
+      ctx.info('account deactivated', { email, workspace })
     }
   } finally {
     await connection.close()
@@ -1835,9 +1855,9 @@ function wrap (
             : new Status(Severity.ERROR, platform.status.InternalServerError, {})
         if (status.code === platform.status.InternalServerError) {
           Analytics.handleError(err)
-          void ctx.error('error', { status, err })
+          ctx.error('error', { status, err })
         } else {
-          void ctx.error('error', { status })
+          ctx.error('error', { status })
         }
         return {
           error: status
@@ -1970,7 +1990,8 @@ export function getMethods (
     restorePassword: wrap(restorePassword),
     sendInvite: wrap(sendInvite),
     confirm: wrap(confirm),
-    getAccountInfoByToken: wrap(getAccountInfoByToken)
+    getAccountInfoByToken: wrap(getAccountInfoByToken),
+    createMissingEmployee: wrap(createMissingEmployee)
     // updateAccount: wrap(updateAccount)
   }
 }

@@ -97,7 +97,7 @@ export function serveAccount (
 
   class MyStream {
     write (text: string): void {
-      void measureCtx.info(text)
+      measureCtx.info(text)
     }
   }
 
@@ -181,12 +181,11 @@ export function serveAccount (
   }
 
   process.on('uncaughtException', (e) => {
-    void measureCtx.error('uncaughtException', { error: e })
+    measureCtx.error('uncaughtException', { error: e })
   })
 
   process.on('unhandledRejection', (reason, promise) => {
-    console.error('Unhandled Rejection at:', promise, 'reason:', reason)
-    void measureCtx.error('Unhandled Rejection at:', { reason, promise })
+    measureCtx.error('Unhandled Rejection at:', { reason, promise })
   })
   process.on('SIGINT', close)
   process.on('SIGTERM', close)
