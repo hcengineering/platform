@@ -15,11 +15,12 @@
 <script lang="ts">
   import { Account, Ref } from '@hcengineering/core'
   import { onMount } from 'svelte'
+  import { UserStatusSize } from '@hcengineering/contact'
+
   import { loadUsersStatus, statusByUserStore } from '../utils'
 
   export let user: Ref<Account>
-  export let size: 'small' | 'medium' = 'small'
-  export let background: string = 'red'
+  export let size: UserStatusSize = 'x-small'
 
   onMount(() => {
     loadUsersStatus()
@@ -28,13 +29,8 @@
   $: userStatus = $statusByUserStore.get(user)
 </script>
 
-<div class="container {size}" style="background-color: {background}">
-  <div
-    class="status {size}"
-    style="background-color: {background}"
-    class:online={userStatus?.online}
-    class:offline={!userStatus?.online}
-  />
+<div class="container {size}">
+  <div class="status {size}" class:online={userStatus?.online} class:offline={!userStatus?.online} />
 </div>
 
 <style lang="scss">
@@ -42,33 +38,38 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
 
+
+    &.x-small,
     &.small {
-      width: 0.625rem;
-      height: 0.625rem;
+      width: 1rem;
+      height: 1rem;
     }
 
     &.medium {
-      width: 0.875rem;
-      height: 0.875rem;
+      width: 1.25rem;
+      height: 1.25rem;
     }
   }
   .status {
-    width: 0.4rem;
-    height: 0.4rem;
     border-radius: 50%;
 
     &.online {
-      background-color: var(--global-online-color) !important;
+      background-color: var(--global-online-color);
     }
 
     &.offline {
       border: 1px solid var(--global-offline-color);
     }
-    &.small {
+
+    &.x-small {
       width: 0.375rem;
       height: 0.375rem;
+    }
+
+    &.small {
+      width: 0.5rem;
+      height: 0.5rem;
     }
 
     &.medium {

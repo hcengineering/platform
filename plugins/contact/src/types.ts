@@ -45,3 +45,5 @@ export const AVATAR_COLORS: ColorDefinition[] = [
   { name: 'teal', color: '#57b1be' }, // teal
   { name: 'gray', color: '#847a8c' } // gray
 ]
+
+export type UserStatusSize = 'x-small' | 'small' | 'medium'
