@@ -257,7 +257,6 @@ async function updateMeInCollaborators (
 export async function unsubscribe (object: DocNotifyContext): Promise<void> {
   const client = getClient()
   await updateMeInCollaborators(client, object.attachedToClass, object.attachedTo, OpWithMe.Remove)
-  await client.remove(object)
 }
 
 /**
