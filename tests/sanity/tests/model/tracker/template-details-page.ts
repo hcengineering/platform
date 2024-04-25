@@ -13,7 +13,7 @@ export class TemplateDetailsPage extends CommonTrackerPage {
   buttonEstimation = (): Locator => this.page.locator('(//span[text()="Estimation"]/../div/button)[3]')
   buttonDueDate = (): Locator => this.page.locator('(//span[text()="Due date"]/../div/button)[2]')
   buttonSaveDueDate = (): Locator => this.page.locator('div.footer > button')
-  textComment = (): Locator => this.page.locator('div.grid div.header')
+  activityContent = (): Locator => this.page.locator('div.grid div.content')
   buttonDelete = (): Locator => this.page.locator('button[class*="menuItem"] > span', { hasText: 'Delete' })
 
   async checkTemplate (data: NewIssue): Promise<void> {
@@ -75,8 +75,8 @@ export class TemplateDetailsPage extends CommonTrackerPage {
     }
   }
 
-  async checkCommentExist (comment: string): Promise<void> {
-    await expect(this.textComment().filter({ hasText: comment })).toBeVisible()
+  async checkActivityContent (comment: string): Promise<void> {
+    await expect(this.activityContent().filter({ hasText: comment })).toBeVisible()
   }
 
   async deleteTemplate (): Promise<void> {
