@@ -27,7 +27,9 @@
   import { ChatNavItemModel } from '../types'
   import { getObjectIcon, getChannelName } from '../../../utils'
   import ChatSectionHeader from './ChatSectionHeader.svelte'
+  import { navigatorStateStore, toggleSections } from '../utils'
 
+  export let id: string
   export let header: string
   export let objects: Doc[]
   export let contexts: DocNotifyContext[]
@@ -45,6 +47,8 @@
   let isCollapsed = false
   let canShowMore = false
   let isShownMore = false
+
+  $: isCollapsed = $navigatorStateStore.collapsedSections.includes(id)
 
   $: void getChatNavItems(objects).then((res) => {
     items = sortFn(res, contexts)
@@ -136,7 +140,7 @@
       {actions}
       {isCollapsed}
       on:collapse={() => {
-        isCollapsed = !isCollapsed
+        toggleSections(id)
       }}
     />
     {#if !isCollapsed}
@@ -154,6 +158,12 @@
             on:click={onShowMore}
           />
         </div>
+      {/if}
+    {:else if objectId}
+      {@const item = items.find(({ id }) => id === objectId)}
+      {#if item}
+        {@const context = contexts.find(({ attachedTo }) => attachedTo === item.id)}
+        <ChatNavItem {context} isSelected {item} on:select />
       {/if}
     {/if}
   </div>

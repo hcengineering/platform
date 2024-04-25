@@ -16,7 +16,7 @@ function encodeChannelURI (_id: Ref<Doc>, _class: Ref<Class<Doc>>): string {
   return [_id, _class].join('|')
 }
 
-export function openChannel (_id: Ref<Doc>, _class: Ref<Class<Doc>>): void {
+export function openChannel (_id: Ref<Doc>, _class: Ref<Class<Doc>>, thread?: Ref<ActivityMessage>): void {
   const loc = getCurrentLocation()
 
   const id = encodeChannelURI(_id, _class)
@@ -26,9 +26,15 @@ export function openChannel (_id: Ref<Doc>, _class: Ref<Class<Doc>>): void {
   }
 
   loc.path[3] = id
-  loc.path[4] = ''
   loc.query = { ...loc.query, message: null }
-  loc.path.length = 4
+
+  if (thread !== undefined) {
+    loc.path[4] = thread
+    loc.path.length = 5
+  } else {
+    loc.path[4] = ''
+    loc.path.length = 4
+  }
 
   navigate(loc)
 }
