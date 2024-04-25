@@ -80,11 +80,11 @@
   getActions()
 
   interface HelpCard {
-    icon: Asset | AnySvelteComponent,
-    title: IntlString,
-    description: IntlString,
-    onClick: () => void,
-    disabled?: boolean,
+    icon: Asset | AnySvelteComponent
+    title: IntlString
+    description: IntlString
+    onClick: () => void
+    disabled?: boolean
   }
 
   const cards: HelpCard[] = [
