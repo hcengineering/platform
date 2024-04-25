@@ -133,7 +133,7 @@ export async function start (
       }),
       new StorageExtension({
         ctx: extensionsCtx.newChild('storage', {}),
-        adapter: new PlatformStorageAdapter({ minio }, mongo, transformer)
+        adapter: new PlatformStorageAdapter({ minio }, transformer)
       })
     ]
   })
