@@ -519,3 +519,10 @@ export async function unpinMessage (message?: ActivityMessage): Promise<void> {
 
   await client.update(message, { isPinned: false })
 }
+
+export function getIsTextType (attributeModel: AttributeModel): boolean {
+  return (
+    attributeModel.attribute?.type?._class === core.class.TypeMarkup ||
+    attributeModel.attribute?.type?._class === core.class.TypeCollaborativeMarkup
+  )
+}
