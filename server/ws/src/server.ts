@@ -535,13 +535,13 @@ class TSessionManager implements SessionManager {
   async close (ws: ConnectionSocket, workspaceId: WorkspaceId): Promise<void> {
     const wsid = toWorkspaceString(workspaceId)
     const workspace = this.workspaces.get(wsid)
-    if (workspace === undefined) {
-      return
-    }
+
     const sessionRef = this.sessions.get(ws.id)
     if (sessionRef !== undefined) {
       this.sessions.delete(ws.id)
-      workspace.sessions.delete(sessionRef.session.sessionId)
+      if (workspace !== undefined) {
+        workspace.sessions.delete(sessionRef.session.sessionId)
+      }
       this.reconnectIds.add(sessionRef.session.sessionId)
 
       setTimeout(() => {
@@ -553,9 +553,11 @@ class TSessionManager implements SessionManager {
         // Ignore if closed
       }
       const user = sessionRef.session.getUser()
-      const another = Array.from(workspace.sessions.values()).findIndex((p) => p.session.getUser() === user)
-      if (another === -1 && !workspace.upgrade) {
-        await this.trySetStatus(workspace.context, sessionRef.session, false)
+      if (workspace !== undefined) {
+        const another = Array.from(workspace.sessions.values()).findIndex((p) => p.session.getUser() === user)
+        if (another === -1 && !workspace.upgrade) {
+          await this.trySetStatus(workspace.context, sessionRef.session, false)
+        }
       }
     }
   }
