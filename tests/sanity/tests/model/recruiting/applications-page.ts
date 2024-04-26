@@ -25,6 +25,11 @@ export class ApplicationsPage extends CommonRecruitingPage {
   readonly textTableFirstCell = (): Locator => this.page.locator('div[class$="firstCell"]')
   readonly buttonTypeSelector = (): Locator => this.page.locator('div[class*="header"] div[class*="title"] button')
 
+  // ACTIONS
+  async clickButtonTabCreated (): Promise<void> {
+    await this.buttonTabCreated().click()
+  }
+
   async createNewApplication (data: NewApplication): Promise<void> {
     await this.buttonCreateApplication().click()
     await this.selectTalent(data.talentsName ?? 'first')

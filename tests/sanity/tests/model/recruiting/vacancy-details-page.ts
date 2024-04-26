@@ -48,4 +48,16 @@ export class VacancyDetailsPage extends CommonRecruitingPage {
     await this.buttonInputDueDate().click()
     await this.clickButtonDatePopupToday()
   }
+
+  async fillInputDescription (description: string): Promise<void> {
+    await this.inputDescription().fill(description)
+  }
+
+  async checkIfVacancyInputComentIsVisible (): Promise<void> {
+    await expect(this.inputComment()).toBeVisible()
+  }
+
+  async checkIfInputDescriptionHasText (description: string): Promise<void> {
+    await expect(this.inputDescription()).toHaveText(description)
+  }
 }

@@ -47,11 +47,63 @@ export class CommonRecruitingPage extends CalendarPage {
   readonly newReviewTitle = (): Locator =>
     this.page.locator('div.popup form[id="recruit:string:CreateReviewParams"] input[placeholder="Title"]')
 
+  readonly title = (): Locator => this.page.locator('[placeholder="Title"]')
+
   readonly newReviewDescription = (): Locator =>
     this.page.locator('div.popup form[id="recruit:string:CreateReviewParams"] div.text-editor-view')
 
   readonly submitNewReview = (): Locator =>
     this.page.locator('div.popup form[id="recruit:string:CreateReviewParams"] button[type="submit"]')
+
+  readonly appleseedJohnButton = (): Locator => this.page.locator('button:has-text("Appleseed John")')
+  readonly chenRosamundButton = (): Locator => this.page.locator('button:has-text("Chen Rosamund")')
+  readonly searchInput = (): Locator => this.page.locator('[placeholder="Search\\.\\.\\."]')
+  readonly talentButton = (): Locator => this.page.locator('form button:has-text("Talent")')
+  readonly createButton = (): Locator => this.page.locator('button:has-text("Create")')
+  readonly reviewItemLink = (reviewId: string): Locator => this.page.locator(`tr:has-text('${reviewId}') td a`)
+  readonly twoMembersButton = (): Locator => this.page.locator('button:has-text("2 members")')
+  readonly chenRosamundPopupButton = (): Locator => this.page.locator('.popup button:has-text("Chen Rosamund")')
+
+  async clickOnTitle (): Promise<void> {
+    await this.title().click()
+  }
+
+  async fillTitle (title: string): Promise<void> {
+    await this.title().fill(title)
+  }
+
+  async clickAppleseedJohn (): Promise<void> {
+    await this.appleseedJohnButton().click()
+  }
+
+  async clickChenRosamund (): Promise<void> {
+    await this.chenRosamundButton().click()
+  }
+
+  async pressEscapeInSearch (): Promise<void> {
+    await this.searchInput().press('Escape')
+  }
+
+  async clickTalent (): Promise<void> {
+    await this.talentButton().click()
+  }
+
+  async createApplication (): Promise<void> {
+    await this.createButton().click()
+    await this.page.waitForSelector('form.antiCard', { state: 'detached' })
+  }
+
+  async selectReviewItem (reviewId: string): Promise<void> {
+    await this.reviewItemLink(reviewId).first().click()
+  }
+
+  async clickTwoMembers (): Promise<void> {
+    await this.twoMembersButton().click()
+  }
+
+  async clickChenRosamundInPopup (): Promise<void> {
+    await this.chenRosamundPopupButton().click()
+  }
 
   async addComment (comment: string): Promise<void> {
     await this.inputComment().fill(comment)

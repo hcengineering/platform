@@ -17,6 +17,8 @@ export class DocumentContentPage extends CommonPage {
     this.page.locator('form[id="text-editor:string:Link"] button[type="submit"]')
 
   readonly buttonMoreActions = (): Locator => this.page.locator('div.popupPanel-title button#btn-doc-title-open-more')
+  readonly popupPanel = (): Locator => this.page.locator('div.popupPanel-title')
+  readonly popupPanelH1 = (): Locator => this.page.locator('div.antiPopup > h1')
 
   async checkDocumentTitle (title: string): Promise<void> {
     await expect(this.buttonDocumentTitle()).toHaveValue(title)
@@ -63,5 +65,9 @@ export class DocumentContentPage extends CommonPage {
   async executeMoreAction (action: string): Promise<void> {
     await this.buttonMoreActions().click()
     await this.selectFromDropdown(this.page, action)
+  }
+
+  async checkIfPopupHasText (text: string): Promise<void> {
+    await expect(this.popupPanelH1()).toHaveText(text)
   }
 }

@@ -37,6 +37,87 @@ export class VacanciesPage extends CommonRecruitingPage {
   readonly vacancyByName = (vacancyName: string): Locator =>
     this.page.locator('tr', { hasText: vacancyName }).locator('div[class$="firstCell"]')
 
+  readonly vacancy = (): Locator => this.page.locator('has-text("Vacancy")')
+  readonly vacancyButton = (): Locator => this.page.locator('button:has-text("Vacancy")')
+  readonly softwareEngineerInput = (): Locator => this.page.locator('[placeholder="Software\\ Engineer"]')
+  readonly vacanciesCreateButton = (): Locator => this.page.locator('button:has-text("Create")')
+  readonly recruitApplicationButton = (): Locator =>
+    this.page.locator('[id="app-recruit\\:string\\:RecruitApplication"]')
+
+  readonly vacanciesMenuLink = (): Locator => this.page.locator('text=Vacancies')
+  readonly createVacancyButton = (): Locator => this.page.locator('button:has-text("Vacancy")')
+  readonly vacancyInputField = (): Locator => this.page.locator('form [placeholder="Software\\ Engineer"]')
+  readonly createButton = (): Locator => this.page.locator('form button:has-text("Create")')
+  readonly vacancyRow = (vacancyId: string): Locator =>
+    this.page.locator(`tr:has-text("${vacancyId}") > td:nth-child(3) >> .sm-tool-icon`)
+
+  readonly applicationButton = (): Locator => this.page.locator('button:has-text("Application")')
+  readonly talentSelector = (): Locator =>
+    this.page.locator('form[id="recruit:string:CreateApplication"] [id="vacancy.talant.selector"]')
+
+  readonly softwareEngineerLink = (): Locator => this.page.locator('text=Software Engineer')
+  readonly applicationsTabHeader = (): Locator => this.page.locator('.antiSection-header >> text=Applications')
+  readonly secondTab = (): Locator => this.page.locator('.tablist-container div:nth-child(2)')
+  readonly applicantMarina = (): Locator => this.page.locator('text=M. Marina').first()
+  readonly applicantJohn = (): Locator => this.page.locator('text=Multiseed John').first()
+  readonly applicantAlex = (): Locator => this.page.locator('text=P. Alex').first()
+
+  async clickOnVacancy (): Promise<void> {
+    await this.vacanciesMenuLink().click()
+  }
+
+  async clickOnVacancyButton (): Promise<void> {
+    await this.vacancyButton().click()
+  }
+
+  async fillSoftwareEngineerInput (vacancyId: string): Promise<void> {
+    await this.softwareEngineerInput().fill(vacancyId)
+  }
+
+  async clickOnVacanciesCreateButton (): Promise<void> {
+    await this.vacanciesCreateButton().click()
+  }
+
+  async createVacancy (vacancyId: string): Promise<void> {
+    await this.recruitApplicationButton().click()
+    await this.vacanciesMenuLink().click()
+    await this.createVacancyButton().click()
+    await this.vacancyInputField().fill(vacancyId)
+    await this.createButton().click()
+    await this.page.waitForSelector('form.antiCard', { state: 'detached' })
+  }
+
+  async modifyVacancy (vacancyId: string): Promise<void> {
+    await this.vacancyRow(vacancyId).click()
+  }
+
+  async createApplicationVacencies (assigneeName: string): Promise<void> {
+    await this.applicationButton().click()
+    await this.talentSelector().click()
+    await this.selectAssignee(this.page, assigneeName)
+    await this.createButton().click()
+    await this.page.waitForSelector('form.antiCard', { state: 'detached' })
+    await expect(this.page.locator('text=APP-').first()).toBeVisible()
+    await expect(this.page.locator(`text=P. ${assigneeName}`).first()).toBeVisible()
+  }
+
+  async navigateToSoftwareEngineerVacancies (): Promise<void> {
+    await this.recruitApplicationButton().click()
+    await this.vacanciesMenuLink().click()
+    await this.softwareEngineerLink().click()
+  }
+
+  async selectApplicationsTab (): Promise<void> {
+    await this.applicationsTabHeader().click()
+    await this.secondTab().click()
+  }
+
+  async verifyApplicantsVisibility (): Promise<void> {
+    await expect(this.applicantMarina()).toBeVisible()
+    await expect(this.applicantJohn()).toBeVisible()
+    await expect(this.applicantAlex()).toBeVisible()
+  }
+
   async createNewVacancy ({ title, description, location }: NewVacancy): Promise<void> {
     await this.buttonCreateNewVacancy().click()
 
