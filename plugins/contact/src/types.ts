@@ -46,4 +46,4 @@ export const AVATAR_COLORS: ColorDefinition[] = [
   { name: 'gray', color: '#847a8c' } // gray
 ]
 
-export type UserStatusSize = 'x-small' | 'small' | 'medium'
+export type UserStatusSize = 'x-small' | 'small' | 'medium' | 'auto'

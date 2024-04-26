@@ -41,6 +41,6 @@
   <Avatar avatar={value.avatar} {size} {icon} name={value.name} on:accent-color {showStatus} account={account?._id} />
   <div class="flex-col min-w-0 {size === 'tiny' || size === 'inline' ? 'ml-1' : 'ml-2'}" class:max-w-20={short}>
     {#if subtitle}<div class="content-dark-color text-sm">{subtitle}</div>{/if}
-    <div class="label overflow-label text-left">{getName(client.getHierarchy(), value)}</div>
+    <div class="label text-left">{getName(client.getHierarchy(), value)}</div>
   </div>
 </div>
