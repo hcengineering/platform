@@ -31,26 +31,28 @@
 </script>
 
 <script lang="ts">
-  import { AvatarType, getAvatarProviderId, getFirstName, getLastName } from '@hcengineering/contact'
+  import {
+    AvatarType,
+    getAvatarProviderId,
+    getFirstName,
+    getLastName,
+    type UserStatusSize
+  } from '@hcengineering/contact'
   import { Asset, getMetadata, getResource } from '@hcengineering/platform'
   import { getBlobURL, reduceCalls } from '@hcengineering/presentation'
   import {
     AnySvelteComponent,
     ColorDefinition,
-    Icon,
     IconSize,
     getPlatformAvatarColorByName,
     getPlatformAvatarColorForTextDef,
     getPlatformColor,
-    resizeObserver,
     themeStore
   } from '@hcengineering/ui'
   import { onMount } from 'svelte'
   import { Account } from '@hcengineering/core'
-
-  import AvatarIcon from './icons/Avatar.svelte'
-  import UserStatus from './UserStatus.svelte'
-  import { UserStatusSize } from '@hcengineering/contact/lib'
+  import AvatarInstance from './AvatarInstance.svelte'
+  import { loadUsersStatus, statusByUserStore } from '../utils'
 
   export let avatar: string | null | undefined = undefined
   export let name: string | null | undefined = undefined
@@ -64,27 +66,15 @@
   export let account: Ref<Account> | undefined = undefined
 
   export function pulse (): void {
-    if (element) element.animate(pulsating, { duration: 150, easing: 'ease-out' })
-    if (standby) {
-      standbyMode = false
-      if (timer) clearTimeout(timer)
-      timer = setTimeout(() => {
-        standbyMode = true
-      }, 2000)
-    }
+    avatarInst.pulse()
   }
 
   let url: string[] | undefined
   let avatarProvider: AvatarProvider | undefined
   let color: ColorDefinition | undefined = undefined
-  let standbyMode: boolean = standby
-  let timer: any | undefined = undefined
   let fontSize: number = 16
   let element: HTMLElement
-  const pulsating: Keyframe[] = [
-    { boxShadow: '0 0 .125rem 0 var(--theme-bg-color), 0 0 0 .125rem var(--border-color)' },
-    { boxShadow: '0 0 .375rem .375rem var(--theme-bg-color), 0 0 0 .25rem var(--border-color)' }
-  ]
+  let avatarInst: AvatarInstance
 
   $: displayName = getDisplayName(name)
   $: bColor = borderColor !== undefined ? getPlatformColor(borderColor, $themeStore.dark) : undefined
@@ -141,302 +131,112 @@
     if (size === 'full' && !url && name && displayName && displayName !== '' && element) {
       fontSize = element.clientWidth * 0.6
     }
+    loadUsersStatus()
   })
 
-  function getStatusSize (avaSize: IconSize): UserStatusSize | undefined {
+  function getStatusSize (avaSize: IconSize): UserStatusSize {
     switch (avaSize) {
+      case 'xx-small':
       case 'inline':
       case 'tiny':
       case 'card':
-      case 'x-small':
         return 'x-small'
-      case 'smaller':
+      case 'x-small':
         return 'small'
-      case 'small':
+      case 'smaller':
         return 'medium'
-      case 'medium':
-      case 'large':
-      case 'x-large':
-      case '2x-large':
-        return undefined
+      default:
+        return 'auto'
     }
   }
+  $: userStatus = account ? $statusByUserStore.get(account) : undefined
 </script>
 
-{#if size === 'full' && !url && name && displayName && displayName !== ''}
-  <div
-    bind:this={element}
-    class="ava-{size} flex-center avatar-container {variant}"
-    class:no-img={!url && color}
-    class:bordered={!url && color === undefined}
-    class:border={bColor !== undefined}
-    class:standby
-    class:standbyOn={standby && !standbyMode}
-    style:--border-color={bColor ?? 'var(--primary-button-default)'}
-    style:background-color={color && !url ? color.icon : 'var(--theme-button-default)'}
-    use:resizeObserver={(element) => {
-      fontSize = element.clientWidth * 0.6
-    }}
-  >
-    <div
-      class="ava-text"
-      style:color={color ? color.iconText : 'var(--primary-button-color)'}
-      style:font-size={`${fontSize}px`}
-      data-name={displayName.toLocaleUpperCase()}
+{#if showStatus && account}
+  <div class="relative">
+    <AvatarInstance
+      bind:this={avatarInst}
+      {url}
+      {srcset}
+      {displayName}
+      {size}
+      {icon}
+      {variant}
+      {color}
+      {bColor}
+      {standby}
+      bind:element
+      withStatus={getStatusSize(size)}
     />
-  </div>
-{:else}
-  <span class="relative">
-    <div
-      bind:this={element}
-      class="ava-{size} flex-center avatar-container {variant}"
-      class:no-img={!url && color}
-      class:bordered={!url && color === undefined}
-      class:border={bColor !== undefined}
-      class:standby
-      class:withStatus={showStatus && account}
-      class:standbyOn={standby && !standbyMode}
-      style:--border-color={bColor ?? 'var(--primary-button-default)'}
-      style:background-color={color && !url ? color.icon : 'var(--theme-button-default)'}
-    >
-      {#if url}
-        <img class="ava-{size} ava-image" src={url[0]} {srcset} alt={''} />
-      {:else if name && displayName && displayName !== ''}
-        <div
-          class="ava-text"
-          style:color={color ? color.iconText : 'var(--primary-button-color)'}
-          data-name={displayName.toLocaleUpperCase()}
-        />
-      {:else}
-        <div class="icon">
-          <Icon icon={icon ?? AvatarIcon} size={'full'} />
-        </div>
-      {/if}
-    </div>
     {#if showStatus && account}
       {@const statusSize = getStatusSize(size)}
       {#if statusSize}
-        <span class="status {size}">
-          <UserStatus user={account} size={statusSize} />
-        </span>
+        <div
+          class="status-marker {statusSize}-hole {size}"
+          class:online={userStatus?.online}
+          class:offline={!userStatus?.online}
+        />
       {/if}
     {/if}
-  </span>
+  </div>
+{:else}
+  <AvatarInstance
+    bind:this={avatarInst}
+    {url}
+    {srcset}
+    {displayName}
+    {size}
+    {icon}
+    {variant}
+    {color}
+    {bColor}
+    {standby}
+    bind:element
+  />
 {/if}
 
 <style lang="scss">
-  .avatar-container {
-    flex-shrink: 0;
-    position: relative;
-    background-color: var(--theme-button-default);
-    pointer-events: none;
+  .status-marker {
+    position: absolute;
+    right: -4%;
+    bottom: -4%;
+    width: 38%;
+    height: 38%;
+    border-radius: 50%;
 
-    &.withStatus {
-      position: relative;
-      &:not(.circle) {
-        //.ava-inline,
-        //.ava-tiny,
-        //.ava-card,
-        //.ava-x-small {
-        //  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3Cpath d='M1,0 H0 V1 H0.713 C0.692,0.968,0.681,0.93,0.681,0.889 C0.681,0.795,0.742,0.716,0.827,0.69 C0.843,0.652,0.88,0.625,0.924,0.625 H1 V0'/%3E%3C/svg%3E%0A") no-repeat;
-        //}
-        //
-        //.ava-small,
-        //.ava-medium,
-        //.ava-large,
-        //.ava-x-large,
-        //.ava-2x-large {
-        mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3Cpath d='M1,0 H0 V1 H0.713 C0.692,0.968,0.681,0.93,0.681,0.889 C0.681,0.774,0.774,0.681,0.889,0.681 C0.93,0.681,0.968,0.692,1,0.713 V0'/%3E%3C/svg%3E%0A")
-          no-repeat;
-        //}
+    &.x-small-hole {
+      width: 45%;
+      height: 45%;
+
+      &.inline {
+        width: 48%;
+        height: 48%;
+      }
+
+      :global(.normal-font) &.card {
+        right: -2%;
+        bottom: -2%;
       }
     }
+    &.small-hole {
+      right: -3%;
+      bottom: -3%;
+      width: 35%;
+      height: 35%;
+    }
+    :global(.small-font) &.medium-hole.smaller {
+      width: 35%;
+      height: 35%;
+    }
+    &.online {
+      background-color: var(--global-online-color);
+    }
+    &.offline {
+      border: 1px solid var(--global-offline-color);
 
-    &.circle,
-    &.circle img.ava-image {
-      border-radius: 50%;
-    }
-    &.roundedRect,
-    &.roundedRect img.ava-image {
-      border-radius: 20%;
-    }
-    &.standby {
-      opacity: 0.5;
-      transition: opacity 0.5s ease-in-out;
-      pointer-events: all;
-
-      &:hover,
-      &.standbyOn {
-        opacity: 1;
-      }
-      &:hover {
-        transition-duration: 0.1s;
-      }
-    }
-
-    &.no-img {
-      color: var(--primary-button-color);
-      border-color: transparent;
-    }
-    &.bordered {
-      color: var(--theme-dark-color);
-      border: 1px solid var(--theme-button-border);
-    }
-    &.border {
-      border: 1px solid var(--theme-bg-color);
-      outline: 2px solid var(--border-color);
-
-      &.ava-inline,
-      &.ava-tiny,
-      &.ava-card,
-      &.ava-x-small {
-        outline-width: 1px;
-      }
-      &.ava-large,
-      &.ava-x-large,
-      &.ava-2x-large {
+      &.auto-hole:not(.small, .medium) {
         border-width: 2px;
       }
-    }
-    img {
-      object-fit: cover;
-    }
-    .icon,
-    .ava-text::after {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-    }
-    .icon {
-      width: 100%;
-      height: 100%;
-      color: inherit;
-      transform-origin: center;
-      transform: translate(-50%, -50%) scale(0.6);
-    }
-    .ava-text {
-      font-weight: 500;
-      letter-spacing: -0.05em;
-
-      &::after {
-        content: attr(data-name);
-        transform: translate(-50%, -50%);
-      }
-    }
-  }
-
-  .ava-inline {
-    width: 0.875rem; // 24
-    height: 0.875rem;
-
-    .ava-text {
-      font-size: 0.525rem;
-    }
-  }
-
-  .ava-tiny {
-    width: 1.13rem; // ~18
-    height: 1.13rem;
-
-    .ava-text {
-      font-size: 0.625rem;
-    }
-  }
-
-  .ava-card {
-    width: 1.25rem; // 20
-    height: 1.25rem;
-
-    .ava-text {
-      font-size: 0.75rem;
-    }
-  }
-  .ava-x-small {
-    width: 1.5rem; // 24
-    height: 1.5rem;
-
-    .ava-text {
-      font-size: 0.875rem;
-    }
-  }
-  .ava-smaller {
-    width: 1.75rem; // 28
-    height: 1.75rem;
-
-    .ava-text {
-      font-size: 1rem;
-    }
-  }
-  .ava-small {
-    width: 2rem; // 32
-    height: 2rem;
-
-    .ava-text {
-      font-size: 1.125rem;
-    }
-  }
-  .ava-medium {
-    width: 2.5rem; // 40
-    height: 2.5rem;
-
-    .ava-text {
-      font-size: 1.375rem;
-    }
-  }
-  .ava-large {
-    width: 4.5rem; // 72
-    height: 4.5rem;
-
-    .ava-text {
-      font-size: 2.75rem;
-    }
-  }
-
-  .ava-x-large {
-    width: 7.5rem; // 120
-    height: 7.5rem;
-
-    .ava-text {
-      font-size: 4.5rem;
-    }
-  }
-
-  .ava-2x-large {
-    width: 10rem; // 120
-    height: 10rem;
-
-    .ava-text {
-      font-size: 6rem;
-    }
-  }
-
-  .ava-full {
-    width: 100%;
-    height: 100%;
-    aspect-ratio: 1;
-
-    .ava-text {
-      font-size: inherit;
-    }
-  }
-
-  .status {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-
-    &.inline,
-    &.tiny,
-    &.smaller,
-    &.x-small {
-      bottom: -0.313rem;
-      right: -0.313rem;
-    }
-
-    &.card,
-    &.small {
-      bottom: -0.375rem;
-      right: -0.375rem;
     }
   }
 </style>

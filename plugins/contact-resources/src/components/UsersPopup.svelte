@@ -69,6 +69,7 @@
   {allowDeselect}
   {titleDeselect}
   {placeholder}
+  type={'object'}
   docQuery={readonly ? { ...docQuery, _id: { $in: selectedUsers } } : docQuery}
   {filter}
   groupBy={'_class'}
@@ -83,7 +84,7 @@
   {readonly}
 >
   <svelte:fragment slot="item" let:item={person}>
-    <div class="flex flex-grow overflow-label">
+    <div class="flex-row-center flex-grow">
       <UserInfo size={'smaller'} value={person} {icon} />
     </div>
   </svelte:fragment>
