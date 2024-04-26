@@ -153,7 +153,7 @@ class ElasticAdapter implements FullTextAdapter {
         }
         if (k === 'workspaceId') {
           if (va?.type !== 'keyword') {
-            void this.metrics().info('Force index-recreate, since wrong index type was used')
+            this.metrics().info('Force index-recreate, since wrong index type was used')
             await this.client.indices.delete({
               index: indexName
             })
