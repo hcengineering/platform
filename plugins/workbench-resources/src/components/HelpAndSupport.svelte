@@ -13,21 +13,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Asset, IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
-  import support, { supportLink, reportBugLink } from '@hcengineering/support'
+  import support, { docsLink, reportBugLink, supportLink } from '@hcengineering/support'
   import {
+    AnySvelteComponent,
     Button,
-    capitalizeFirstLetter,
-    closePopup,
-    formatKey,
-    getCurrentResolvedLocation,
     Icon,
     IconArrowLeft,
     Label,
     ListView,
-    navigate,
     Scroller,
+    capitalizeFirstLetter,
+    closePopup,
+    formatKey,
+    getCurrentResolvedLocation,
+    navigate,
     topSP
   } from '@hcengineering/ui'
   import view, { Action, ActionCategory } from '@hcengineering/view'
@@ -77,12 +79,22 @@
   }
   getActions()
 
-  const cards = [
+  interface HelpCard {
+    icon: Asset | AnySvelteComponent
+    title: IntlString
+    description: IntlString
+    onClick: () => void
+    disabled?: boolean
+  }
+
+  const cards: HelpCard[] = [
     {
       icon: DocumentationIcon,
       title: workbench.string.Documentation,
       description: workbench.string.OpenPlatformGuide,
-      disabled: true
+      onClick: () => {
+        window.open(docsLink, '_blank')
+      }
     },
     {
       icon: view.icon.Setting,
