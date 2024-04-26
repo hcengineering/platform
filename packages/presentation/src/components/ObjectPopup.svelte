@@ -54,7 +54,8 @@
   export let readonly = false
   export let disallowDeselect: Ref<Doc>[] | undefined = undefined
   export let embedded: boolean = false
-  export let loading = false
+  export let loading: boolean = false
+  export let type: 'text' | 'object' = 'text'
 
   export let filter: (it: Doc) => boolean = () => {
     return true
@@ -119,6 +120,7 @@
   {disallowDeselect}
   {embedded}
   {loading}
+  {type}
   on:update
   on:close
   on:changeContent
