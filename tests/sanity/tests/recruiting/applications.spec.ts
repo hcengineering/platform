@@ -59,7 +59,7 @@ test.describe('Application tests', () => {
     await talentsPage.clickVacancyApplication(vacancyId)
     await talentsPage.assignRecruiter()
     await talentsPage.selectChenRosamund()
-    // ADD ASSERTION HERE 
+    // ADD ASSERTION HERE
   })
 
   test.skip('Edit an Application', async ({ page }) => {
