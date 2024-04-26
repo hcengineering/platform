@@ -235,6 +235,7 @@
     isHeader={false}
     isCustomAttr={false}
     isSub={false}
+    useMaxWidth={false}
     {embedded}
     {kind}
     bind:content
