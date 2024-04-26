@@ -1289,7 +1289,7 @@ export async function createMissingEmployee (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
   }
 
-  await createPersonAccount(account, productId, wsInfo.workspaceId, true)
+  await createPersonAccount(account, productId, wsInfo.workspaceId, false)
 }
 
 /**
