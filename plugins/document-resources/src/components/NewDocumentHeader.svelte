@@ -15,7 +15,15 @@
 <script lang="ts">
   import { Ref, Space } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Button, showPopup, IconAdd, ButtonWithDropdown, SelectPopupValueType, IconDropdown } from '@hcengineering/ui'
+  import {
+    Button,
+    ButtonWithDropdown,
+    IconAdd,
+    IconDropdown,
+    Loading,
+    SelectPopupValueType,
+    showPopup
+  } from '@hcengineering/ui'
   import { openDoc } from '@hcengineering/view-resources'
   import document from '../plugin'
   import { getDocumentIdFromFragment } from '../utils'
@@ -28,12 +36,14 @@
   const client = getClient()
   const query = createQuery()
 
+  let loading = true
   let hasTeamspace = false
   query.query(
     document.class.Teamspace,
     { archived: false },
     (res) => {
       hasTeamspace = res.length > 0
+      loading = false
     },
     { limit: 1, projection: { _id: 1 } }
   )
@@ -64,34 +74,38 @@
   }
 </script>
 
-<div class="antiNav-subheader">
-  {#if hasTeamspace}
-    <ButtonWithDropdown
-      icon={IconAdd}
-      justify={'left'}
-      kind={'primary'}
-      label={document.string.CreateDocument}
-      on:click={newDocument}
-      mainButtonId={'new-document'}
-      dropdownIcon={IconDropdown}
-      dropdownItems={[
-        { id: document.string.CreateDocument, label: document.string.CreateDocument },
-        { id: document.string.CreateTeamspace, label: document.string.CreateTeamspace }
-      ]}
-      on:dropdown-selected={(ev) => {
-        void dropdownItemSelected(ev.detail)
-      }}
-    />
-  {:else}
-    <Button
-      id={'new-teamspace'}
-      icon={IconAdd}
-      label={document.string.CreateTeamspace}
-      justify={'left'}
-      width={'100%'}
-      kind={'primary'}
-      gap={'large'}
-      on:click={newTeamspace}
-    />
-  {/if}
-</div>
+{#if loading}
+  <Loading shrink />
+{:else}
+  <div class="antiNav-subheader">
+    {#if hasTeamspace}
+      <ButtonWithDropdown
+        icon={IconAdd}
+        justify={'left'}
+        kind={'primary'}
+        label={document.string.CreateDocument}
+        on:click={newDocument}
+        mainButtonId={'new-document'}
+        dropdownIcon={IconDropdown}
+        dropdownItems={[
+          { id: document.string.CreateDocument, label: document.string.CreateDocument },
+          { id: document.string.CreateTeamspace, label: document.string.CreateTeamspace }
+        ]}
+        on:dropdown-selected={(ev) => {
+          void dropdownItemSelected(ev.detail)
+        }}
+      />
+    {:else}
+      <Button
+        id={'new-teamspace'}
+        icon={IconAdd}
+        label={document.string.CreateTeamspace}
+        justify={'left'}
+        width={'100%'}
+        kind={'primary'}
+        gap={'large'}
+        on:click={newTeamspace}
+      />
+    {/if}
+  </div>
+{/if}
