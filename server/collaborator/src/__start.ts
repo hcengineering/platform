@@ -14,5 +14,9 @@
 // limitations under the License.
 //
 
+import { MeasureMetricsContext, newMetrics } from '@hcengineering/core'
 import { startCollaborator } from './starter'
-void startCollaborator()
+
+const ctx = new MeasureMetricsContext('collaborator', {}, {}, newMetrics())
+
+void startCollaborator(ctx)

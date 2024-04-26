@@ -13,7 +13,8 @@
 // limitations under the License.
 //
 
-import { MeasureContext, generateId } from '@hcengineering/core'
+import { Analytics } from '@hcengineering/analytics'
+import { MeasureContext, generateId, metricsAggregate } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { Token, decodeToken } from '@hcengineering/server-token'
 import { ServerKit } from '@hcengineering/text'
@@ -145,6 +146,31 @@ export async function start (
       clientFactory: getClientFactory(token, controller)
     }
   }
+
+  app.get('/api/v1/statistics', (req, res) => {
+    try {
+      const token = req.query.token as string
+      const payload = decodeToken(token)
+      const admin = payload.extra?.admin === 'true'
+      res.status(200)
+      res.setHeader('Content-Type', 'application/json')
+      res.setHeader('Cache-Control', 'public, no-store, no-cache, must-revalidate, max-age=0')
+
+      const json = JSON.stringify({
+        metrics: metricsAggregate((ctx as any).metrics),
+        statistics: {
+          activeSessions: {}
+        },
+        admin
+      })
+      res.end(json)
+    } catch (err: any) {
+      ctx.error('statistics error', { err })
+      Analytics.handleError(err)
+      res.writeHead(404, {})
+      res.end()
+    }
+  })
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   app.post('/rpc', async (req, res) => {
