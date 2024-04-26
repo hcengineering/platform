@@ -36,6 +36,7 @@ import type {
   SearchStringResult
 } from '@hcengineering/server-core'
 import serverCore from '@hcengineering/server-core'
+import { Analytics } from '@hcengineering/analytics'
 
 import { Client, errors as esErr } from '@elastic/elasticsearch'
 import { getMetadata } from '@hcengineering/platform'
@@ -79,10 +80,17 @@ class ElasticAdapter implements FullTextAdapter {
     const indexName = this.indexName
     const result: Record<string, number> = {}
     try {
-      const existingBaseIndices = await this.client.indices.get({
-        index: [this.indexBaseName, `${this.indexBaseName}_*`]
+      const baseIndexExists = await this.client.indices.exists({
+        index: this.indexBaseName
       })
-      const existingOldVersionIndices = Object.keys(existingBaseIndices.body).filter((name) => name !== indexName)
+      const existingVersions = await this.client.indices.get({
+        index: [`${this.indexBaseName}_*`]
+      })
+      const existingOldVersionIndices = Object.keys(existingVersions.body).filter((name) => name !== indexName)
+      if (baseIndexExists.body) {
+        existingOldVersionIndices.push(this.indexBaseName)
+      }
+
       if (existingOldVersionIndices.length > 0) {
         await this.client.indices.delete({
           index: existingOldVersionIndices
@@ -187,6 +195,7 @@ class ElasticAdapter implements FullTextAdapter {
         }
       }
     } catch (err: any) {
+      Analytics.handleError(err)
       console.error(err)
     }
     return result
