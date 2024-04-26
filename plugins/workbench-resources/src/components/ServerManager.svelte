@@ -49,15 +49,26 @@
         console.error(err)
       })
   }
+  async function fetchCollabStats (): Promise<void> {
+    const collaborator = getMetadata(presentation.metadata.CollaboratorApiUrl)
+    await fetch(collaborator + `/api/v1/statistics?token=${token}`, {})
+      .then(async (json) => {
+        dataCollab = await json.json()
+      })
+      .catch((err) => {
+        console.error(err)
+      })
+  }
 
   let data: any
   let dataFront: any
+  let dataCollab: any
   let admin = false
   onDestroy(
     ticker.subscribe(() => {
       void fetchStats()
-
       void fetchUIStats()
+      void fetchCollabStats()
     })
   )
   const tabs: TabItem[] = [
@@ -72,6 +83,10 @@
     {
       id: 'statistics-front',
       labelIntl: getEmbeddedLabel('Front')
+    },
+    {
+      id: 'statistics-collab',
+      labelIntl: getEmbeddedLabel('Collaborator')
     },
     {
       id: 'users',
@@ -120,6 +135,8 @@
   $: metricsData = data?.metrics as Metrics | undefined
 
   $: metricsDataFront = dataFront?.metrics as Metrics | undefined
+
+  $: metricsDataCollab = dataCollab?.metrics as Metrics | undefined
 
   $: totalStats = Array.from(Object.entries(activeSessions).values()).reduce(
     (cur, it) => {
@@ -328,6 +345,12 @@
       <div class="flex-column p-3 h-full" style:overflow="auto">
         {#if metricsDataFront !== undefined}
           <MetricsInfo metrics={metricsDataFront} />
+        {/if}
+      </div>
+    {:else if selectedTab === 'statistics-collab'}
+      <div class="flex-column p-3 h-full" style:overflow="auto">
+        {#if metricsDataCollab !== undefined}
+          <MetricsInfo metrics={metricsDataCollab} />
         {/if}
       </div>
     {/if}

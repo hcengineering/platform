@@ -50,9 +50,7 @@ export class StorageExtension implements Extension {
 
   async onLoadDocument ({ context, documentName }: withContext<onLoadDocumentPayload>): Promise<any> {
     this.configuration.ctx.info('load document', { documentName })
-    return await this.configuration.ctx.with('load-document', {}, async () => {
-      return await this.loadDocument(documentName as DocumentId, context)
-    })
+    return await this.loadDocument(documentName as DocumentId, context)
   }
 
   async onStoreDocument ({ context, documentName, document }: withContext<onStoreDocumentPayload>): Promise<void> {
@@ -67,9 +65,7 @@ export class StorageExtension implements Extension {
     }
 
     this.collaborators.delete(documentName)
-    await ctx.with('store-document', {}, async () => {
-      await this.storeDocument(documentName as DocumentId, document, context)
-    })
+    await this.storeDocument(documentName as DocumentId, document, context)
   }
 
   async onConnect ({ context, documentName, instance }: withContext<onConnectPayload>): Promise<any> {
@@ -92,9 +88,7 @@ export class StorageExtension implements Extension {
     }
 
     this.collaborators.delete(documentName)
-    await ctx.with('store-document', {}, async () => {
-      await this.storeDocument(documentName as DocumentId, document, context)
-    })
+    await this.storeDocument(documentName as DocumentId, document, context)
   }
 
   async afterUnloadDocument ({ documentName }: afterUnloadDocumentPayload): Promise<any> {
