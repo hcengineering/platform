@@ -109,12 +109,14 @@
 
   $: if (lastLevel) {
     void limiter.add(async () => {
+      // console.log('category Query', _class, { ...resultQuery, ...docKeys })
       loading = docsQuery.query(
         _class,
         { ...resultQuery, ...docKeys },
         (res) => {
           items = res
           loading = false
+          console.log({ docKeys }, res)
           const focusDoc = items.find((it) => it._id === $focusStore.focus?._id)
           if (focusDoc) {
             handleRowFocused(focusDoc)

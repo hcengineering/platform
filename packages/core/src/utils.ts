@@ -306,29 +306,36 @@ export class AggregateValue {
  */
 export type CategoryType = number | string | undefined | Ref<Doc> | AggregateValue
 
+export interface IDocManager<T extends Doc> {
+  get: (ref: Ref<T>) => T | undefined
+  getDocs: () => T[]
+  getIdMap: () => IdMap<T>
+  filter: (predicate: (value: T) => boolean) => T[]
+}
+
 /**
  * @public
  */
-export class DocManager {
-  protected readonly byId: IdMap<Doc>
+export class DocManager<T extends Doc> implements IDocManager<T> {
+  protected readonly byId: IdMap<T>
 
-  constructor (protected readonly docs: Doc[]) {
+  constructor (protected readonly docs: T[]) {
     this.byId = toIdMap(docs)
   }
 
-  get (ref: Ref<Doc>): Doc | undefined {
+  get (ref: Ref<T>): T | undefined {
     return this.byId.get(ref)
   }
 
-  getDocs (): Doc[] {
+  getDocs (): T[] {
     return this.docs
   }
 
-  getIdMap (): IdMap<Doc> {
+  getIdMap (): IdMap<T> {
     return this.byId
   }
 
-  filter (predicate: (value: Doc) => boolean): Doc[] {
+  filter (predicate: (value: T) => boolean): T[] {
     return this.docs.filter(predicate)
   }
 }

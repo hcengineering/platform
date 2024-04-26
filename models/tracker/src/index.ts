@@ -94,7 +94,13 @@ function defineSortAndGrouping (builder: Builder): void {
   })
 
   builder.mixin(tracker.class.Component, core.class.Class, view.mixin.Aggregation, {
-    createAggregationManager: tracker.aggregation.CreateComponentAggregationManager
+    createAggregationManager: tracker.aggregation.CreateComponentAggregationManager,
+    setStoreFunc: tracker.function.SetComponentStore,
+    filterFunc: tracker.function.ComponentFilterFunction
+  })
+
+  builder.mixin(tracker.class.Component, core.class.Class, view.mixin.Groupping, {
+    grouppingManager: tracker.aggregation.GrouppingComponentManager
   })
 
   builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.AllValuesFunc, {

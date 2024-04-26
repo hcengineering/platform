@@ -21,8 +21,6 @@ import {
   CollectionSize,
   Data,
   Doc,
-  DocManager,
-  IdMap,
   Markup,
   Mixin,
   Ref,
@@ -30,8 +28,7 @@ import {
   Space,
   Status,
   Timestamp,
-  Type,
-  WithLookup
+  Type
 } from '@hcengineering/core'
 import { Asset, IntlString, Plugin, Resource, plugin } from '@hcengineering/platform'
 import { Preference } from '@hcengineering/preference'
@@ -351,28 +348,28 @@ export interface Component extends Doc {
   attachments?: number
 }
 
-/**
- * @public
- *
- * Allow to query for status keys/values.
- */
-export class ComponentManager extends DocManager {
-  get (ref: Ref<WithLookup<Component>>): WithLookup<Component> | undefined {
-    return this.getIdMap().get(ref) as WithLookup<Component>
-  }
+// /**
+//  * @public
+//  *
+//  * Allow to query for status keys/values.
+//  */
+// export class ComponentManager extends DocManager {
+//   get (ref: Ref<WithLookup<Component>>): WithLookup<Component> | undefined {
+//     return this.getIdMap().get(ref) as WithLookup<Component>
+//   }
 
-  getDocs (): Array<WithLookup<Component>> {
-    return this.docs as Component[]
-  }
+//   getDocs (): Array<WithLookup<Component>> {
+//     return this.docs as Component[]
+//   }
 
-  getIdMap (): IdMap<WithLookup<Component>> {
-    return this.byId as IdMap<WithLookup<Component>>
-  }
+//   getIdMap (): IdMap<WithLookup<Component>> {
+//     return this.byId as IdMap<WithLookup<Component>>
+//   }
 
-  filter (predicate: (value: Component) => boolean): Component[] {
-    return this.getDocs().filter(predicate)
-  }
-}
+//   filter (predicate: (value: Component) => boolean): Component[] {
+//     return this.getDocs().filter(predicate)
+//   }
+// }
 
 /**
  * @public

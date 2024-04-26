@@ -97,6 +97,7 @@
     queryNoLookup,
     (res) => {
       fastDocs = res
+      // console.log('query, res', queryNoLookup, res)
       fastQueryIds = new Set(res.map((it) => it._id))
     },
     { ...categoryQueryOptions, limit: 1000 }

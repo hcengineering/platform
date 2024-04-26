@@ -30,12 +30,13 @@ import core, {
   type Ref,
   type RelatedDocument,
   type TxOperations,
+  type DocManager
   AccountRole
 } from '@hcengineering/core'
 import chunter, { type ChatMessage } from '@hcengineering/chunter'
 import { type Status, translate, type Resources } from '@hcengineering/platform'
 import { getClient, MessageBox, type ObjectSearchResult } from '@hcengineering/presentation'
-import { type Issue, type Milestone, type Project } from '@hcengineering/tracker'
+import { type Component, type Issue, type Milestone, type Project } from '@hcengineering/tracker'
 import { getCurrentLocation, navigate, showPopup, themeStore } from '@hcengineering/ui'
 import ComponentEditor from './components/components/ComponentEditor.svelte'
 import ComponentFilterValuePresenter from './components/components/ComponentFilterValuePresenter.svelte'
@@ -142,7 +143,7 @@ import {
   subIssueQuery
 } from './utils'
 
-import { ComponentAggregationManager, grouppingComponentManager } from './component'
+import { AggregationManager, componentStore, grouppingComponentManager } from './component'
 import PriorityIcon from './components/activity/PriorityIcon.svelte'
 import StatusIcon from './components/activity/StatusIcon.svelte'
 import DeleteComponentPresenter from './components/components/DeleteComponentPresenter.svelte'
@@ -590,6 +591,14 @@ export async function importTasks (tasks: File, space: Ref<Project>): Promise<vo
   }
 }
 
+function filterComponents (doc: Component, target: Component): boolean {
+  return doc.label.toLowerCase().trim() === target.label.toLowerCase().trim() && doc._id !== target._id
+}
+
+function setStore (manager: DocManager<Component>): void {
+  componentStore.set(manager)
+}
+
 export default async (): Promise<Resources> => ({
   activity: {
     PriorityIcon,
@@ -708,7 +717,9 @@ export default async (): Promise<Resources> => ({
     GetVisibleFilters: getVisibleFilters,
     IssueChatTitleProvider: getIssueChatTitle,
     IsProjectJoined: async (project: Project) => project.members.includes(getCurrentAccount()._id),
-    GetIssueStatusCategories: getIssueStatusCategories
+    GetIssueStatusCategories: getIssueStatusCategories,
+    SetComponentStore: setStore,
+    ComponentFilterFunction: filterComponents
   },
   actionImpl: {
     Move: move,
@@ -724,7 +735,7 @@ export default async (): Promise<Resources> => ({
   },
   aggregation: {
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    CreateComponentAggregationManager: ComponentAggregationManager.create,
+    CreateComponentAggregationManager: AggregationManager.create,
     GrouppingComponentManager: grouppingComponentManager
   }
 })

@@ -20,6 +20,7 @@ import {
   type Class,
   type Client,
   type Doc,
+  DocManager,
   type DocumentQuery,
   type Hierarchy,
   type Ref,
@@ -30,47 +31,67 @@ import {
   matchQuery
 } from '@hcengineering/core'
 import { LiveQuery } from '@hcengineering/query'
-import tracker, { type Component, ComponentManager } from '@hcengineering/tracker'
-import { type AggregationManager, type GrouppingManager } from '@hcengineering/view'
+import { type Component } from '@hcengineering/tracker'
+import { type IAggregationManager, type GrouppingManager } from '@hcengineering/view'
 import { get, writable } from 'svelte/store'
 
-export const componentStore = writable<ComponentManager>(new ComponentManager([]))
+export const componentStore = writable<DocManager<Component>>(new DocManager([]))
 
 /**
  * @public
  */
-export class ComponentAggregationManager implements AggregationManager {
-  docs: Doc[] | undefined
-  mgr: ComponentManager | Promise<ComponentManager> | undefined
+export class AggregationManager<T extends Doc> implements IAggregationManager<T> {
+  docs: T[] | undefined
+  mgr: DocManager<T> | Promise<DocManager<T>> | undefined
   query: (() => void) | undefined
   lq: LiveQuery
   lqCallback: () => void
+  private readonly setStore: (manager: DocManager<T>) => void
+  private readonly filter: (doc: T, target: T) => boolean
+  private readonly _class: Ref<Class<T>>
 
-  private constructor (client: Client, lqCallback: () => void) {
+  private constructor (
+    client: Client,
+    lqCallback: () => void,
+    setStore: (manager: DocManager<T>) => void,
+    categorizingFunc: (doc: T, target: T) => boolean,
+    _class: Ref<Class<T>>
+  ) {
     this.lq = new LiveQuery(client)
     this.lqCallback = lqCallback ?? (() => {})
+    this.setStore = setStore
+    this.filter = categorizingFunc
+    this._class = _class
+    void this.getManager()
   }
 
-  static create (client: Client, lqCallback: () => void): ComponentAggregationManager {
-    return new ComponentAggregationManager(client, lqCallback)
+  static create<T extends Doc>(
+    client: Client,
+    lqCallback: () => void,
+    setStore: (manager: DocManager<T>) => void,
+    categorizingFunc: (doc: T, target: T) => boolean,
+    _class: Ref<Class<T>>
+  ): AggregationManager<T> {
+    return new AggregationManager<T>(client, lqCallback, setStore, categorizingFunc, _class)
   }
 
-  private async getManager (): Promise<ComponentManager> {
+  private async getManager (): Promise<DocManager<T>> {
     if (this.mgr !== undefined) {
       if (this.mgr instanceof Promise) {
         this.mgr = await this.mgr
       }
       return this.mgr
     }
-    this.mgr = new Promise<ComponentManager>((resolve) => {
+    this.mgr = new Promise<DocManager<T>>((resolve) => {
       this.query = this.lq.query(
-        tracker.class.Component,
+        this._class,
         {},
         (res) => {
           const first = this.docs === undefined
           this.docs = res
-          this.mgr = new ComponentManager(res)
-          componentStore.set(this.mgr)
+          this.mgr = new DocManager<T>(res as T[]) // Fix: Specify the type as `Component`
+          this.setStore(this.mgr)
+          // store.set(this.mgr as DocManager<any>)
           if (!first) {
             this.lqCallback()
           }
@@ -95,19 +116,21 @@ export class ComponentAggregationManager implements AggregationManager {
     await this.lq.tx(...tx)
   }
 
-  getAttrClass (): Ref<Class<Doc>> {
-    return tracker.class.Component
+  getAttrClass (): Ref<Class<T>> {
+    return this._class
   }
 
-  async categorize (target: Array<Ref<Doc>>, attr: AnyAttribute): Promise<Array<Ref<Doc>>> {
+  async categorize (target: Array<Ref<T>>, attr: AnyAttribute): Promise<Array<Ref<T>>> {
     const mgr = await this.getManager()
     for (const sid of [...target]) {
-      const c = mgr.getIdMap().get(sid as Ref<Component>) as WithLookup<Component>
+      const c = mgr.getIdMap().get(sid) as WithLookup<T>
       if (c !== undefined) {
         let components = mgr.getDocs()
-        components = components.filter(
-          (it) => it.label.toLowerCase().trim() === c.label.toLowerCase().trim() && it._id !== c._id
-        )
+
+        // components = components.filter(
+        // (it: T) => it.label.toLowerCase().trim() === c.label.toLowerCase().trim() && it._id !== c._id
+        // )
+        components = components.filter((it: T) => this.filter(it, c))
         target.push(...components.map((it) => it._id))
       }
     }
@@ -136,6 +159,7 @@ export function groupByComponentCategories (categories: any[]): AggregateValue[]
 
   const usedSpaces = new Set<Ref<Space>>()
   const componentsList: Array<WithLookup<Component>> = []
+  // console.log('mgr docs', mgr.getDocs())
   for (const v of categories) {
     const component = mgr.getIdMap().get(v)
     if (component !== undefined) {

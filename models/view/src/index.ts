@@ -20,6 +20,7 @@ import {
   DOMAIN_MODEL,
   type Data,
   type Doc,
+  type DocManager,
   type DocumentQuery,
   type Domain,
   type Ref,
@@ -273,6 +274,8 @@ export class TGroupping extends TClass implements Groupping {
 @Mixin(view.mixin.Aggregation, core.class.Class)
 export class TAggregation extends TClass implements Aggregation {
   createAggregationManager!: CreateAggregationManagerFunc
+  setStoreFunc!: Resource<(manager: DocManager<any>) => void>
+  filterFunc!: Resource<(doc: Doc, target: Doc) => boolean>
 }
 
 @Mixin(view.mixin.ObjectIcon, core.class.Class)
