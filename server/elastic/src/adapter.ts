@@ -36,6 +36,7 @@ import type {
   SearchStringResult
 } from '@hcengineering/server-core'
 import serverCore from '@hcengineering/server-core'
+import { Analytics } from '@hcengineering/analytics'
 
 import { Client, errors as esErr } from '@elastic/elasticsearch'
 import { getMetadata } from '@hcengineering/platform'
@@ -194,6 +195,7 @@ class ElasticAdapter implements FullTextAdapter {
         }
       }
     } catch (err: any) {
+      Analytics.handleError(err)
       console.error(err)
     }
     return result
