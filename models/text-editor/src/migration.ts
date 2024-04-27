@@ -144,10 +144,17 @@ async function processFixMigrateMarkupFor (
         try {
           const value = (doc as any)[attribute.name]
           if (value != null) {
-            const text = jsonToText(value)
-            // check if it still json
-            JSON.parse(text)
-            update[attribute.name] = text
+            let res = value
+            while (true) {
+              try {
+                res = jsonToText(res)
+              } catch {
+                break
+              }
+            }
+            if (res !== value) {
+              update[attribute.name] = res
+            }
           }
         } catch {}
       }
