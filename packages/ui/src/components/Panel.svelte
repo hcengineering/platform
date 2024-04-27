@@ -132,7 +132,18 @@
     }
     dispatch('select', result.detail)
   }
+
+  let isPrinting = false
 </script>
+
+<svelte:window
+  on:beforeprint={() => {
+    isPrinting = true
+  }}
+  on:afterprint={() => {
+    isPrinting = false
+  }}
+/>
 
 <div
   bind:this={el}
@@ -248,7 +259,7 @@
           </div>
         {/if}
         <slot />
-        {#if printAside}
+        {#if isPrinting && printAside}
           <div class="only-print pagebreak">
             <slot name="aside" />
           </div>
