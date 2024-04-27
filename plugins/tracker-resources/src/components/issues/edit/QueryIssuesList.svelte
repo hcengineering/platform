@@ -132,7 +132,7 @@
       </Button>
     {/if}
   {/if}
-  <div class="flex-row-center gap-2">
+  <div class="flex-row-center gap-2 no-print">
     {#if hasSubIssues}
       <ViewletsSettingButton bind:viewOptions viewletQuery={{ _id: viewletId }} kind={'ghost'} bind:viewlet />
     {/if}

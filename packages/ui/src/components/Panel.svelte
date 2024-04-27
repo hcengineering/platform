@@ -45,6 +45,8 @@
   export let customAside: ButtonItem[] | undefined = undefined
   export let selectedAside: string | boolean = customAside ? customAside[0].id : isAside
   export let kind: 'default' | 'modern' = 'default'
+  export let printHeader = true
+  export let printAside = false
 
   export function getAside (): string | boolean {
     if (customAside) return selectedAside
@@ -135,31 +137,35 @@
 <div
   bind:this={el}
   class="popupPanel panel {kind}"
+  class:withPageHeader={$$slots['page-header'] !== undefined}
+  class:withPageFooter={$$slots['page-footer'] !== undefined}
   class:embedded
   use:resizeObserver={(element) => {
     panelWidth = element.clientWidth
     checkPanel()
   }}
 >
-  <div class="popupPanel-title" class:indent={allowClose}>
+  <div class="popupPanel-title" class:no-print={!printHeader} class:indent={allowClose}>
     {#if allowClose}
-      <Button
-        id={'btnPClose'}
-        focusIndex={10001}
-        icon={IconClose}
-        iconProps={{ size: 'medium' }}
-        kind={'icon'}
-        on:click={() => {
-          dispatch('close')
-        }}
-      />
-      <div class="antiHSpacer x2" />
+      <div class="no-print">
+        <Button
+          id={'btnPClose'}
+          focusIndex={10001}
+          icon={IconClose}
+          iconProps={{ size: 'medium' }}
+          kind={'icon'}
+          on:click={() => {
+            dispatch('close')
+          }}
+        />
+        <div class="antiHSpacer x2" />
+      </div>
     {/if}
     <div class="popupPanel-title__content">
       {#if !withoutTitle}<slot name="title" />{/if}
     </div>
     <slot name="pre-utils" />
-    <div class="flex-row-center ml-3">
+    <div class="flex-row-center ml-3 no-print">
       <slot name="utils" />
       {#if $$slots.aside && isAside}
         {#if customAside}
@@ -242,16 +248,28 @@
           </div>
         {/if}
         <slot />
+        {#if printAside}
+          <div class="only-print pagebreak">
+            <slot name="aside" />
+          </div>
+        {/if}
       </div>
     {/if}
+
     {#if $$slots.aside && isAside && asideShown}
       <Separator name={'panel-aside'} float={asideFloat} index={0} />
-      <div class="popupPanel-body__aside" class:float={asideFloat} class:shown={asideShown}>
+      <div class="popupPanel-body__aside no-print" class:float={asideFloat} class:shown={asideShown}>
         <Separator name={'panel-aside'} float={asideFloat ? 'aside' : true} index={0} />
         <div class="antiPanel-wrap__content">
           <slot name="aside" />
         </div>
       </div>
     {/if}
+  </div>
+  <div class="popupPanel-pageHeader only-print" id="page-header">
+    <slot name="page-header" />
+  </div>
+  <div class="popupPanel-pageFooter only-print" id="page-footer">
+    <slot name="page-footer" />
   </div>
 </div>
