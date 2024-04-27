@@ -23,7 +23,7 @@ import {
   type MigrationIterator,
   type MigrationUpgradeClient
 } from '@hcengineering/model'
-import { htmlToMarkup, jsonToPmNode, jsonToText } from '@hcengineering/text'
+import { htmlToMarkup, jsonToPmNode } from '@hcengineering/text'
 
 async function migrateMarkup (client: MigrationClient): Promise<void> {
   const hierarchy = client.hierarchy
@@ -145,9 +145,11 @@ async function processFixMigrateMarkupFor (
           const value = (doc as any)[attribute.name]
           if (value != null) {
             let res = value
-            while (true) {
+            while ((res as string).includes('\\"type\\"')) {
               try {
-                res = jsonToText(res)
+                const textOrJson = JSON.parse(res)
+                JSON.parse(textOrJson)
+                res = textOrJson
               } catch {
                 break
               }
