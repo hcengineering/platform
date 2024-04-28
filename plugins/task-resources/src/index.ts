@@ -238,8 +238,10 @@ async function statusSort (
         const aIndex = getStatusIndex(type, taskTypes, a)
         const bIndex = getStatusIndex(type, taskTypes, b)
         return aIndex - bIndex
-      } else {
+      } else if (aVal != null && bVal != null) {
         return aVal.name.localeCompare(bVal.name)
+      } else {
+        return 0
       }
     })
   } else {

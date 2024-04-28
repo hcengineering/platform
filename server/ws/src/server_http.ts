@@ -14,7 +14,7 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { generateId, type MeasureContext } from '@hcengineering/core'
+import { generateId, toWorkspaceString, type MeasureContext } from '@hcengineering/core'
 import { UNAUTHORIZED } from '@hcengineering/platform'
 import { serialize, type Response } from '@hcengineering/rpc'
 import { decodeToken, type Token } from '@hcengineering/server-token'
@@ -22,15 +22,20 @@ import compression from 'compression'
 import cors from 'cors'
 import express from 'express'
 import http, { type IncomingMessage } from 'http'
+import os from 'os'
 import { WebSocketServer, type RawData, type WebSocket } from 'ws'
 import { getStatistics, wipeStatistics } from './stats'
 import {
   LOGGING_ENABLED,
+  type AddSessionResponse,
   type ConnectionSocket,
   type HandleRequestFunction,
   type PipelineFactory,
   type SessionManager
 } from './types'
+
+import 'bufferutil'
+import 'utf-8-validate'
 
 /**
  * @public
@@ -49,7 +54,13 @@ export function startHttpServer (
   accountsUrl: string
 ): () => Promise<void> {
   if (LOGGING_ENABLED) {
-    ctx.info('starting server on', { port, productId, enableCompression, accountsUrl })
+    ctx.info('starting server on', {
+      port,
+      productId,
+      enableCompression,
+      accountsUrl,
+      parallel: os.availableParallelism()
+    })
   }
 
   const app = express()
@@ -65,7 +76,8 @@ export function startHttpServer (
         // fallback to standard filter function
         return compression.filter(req, res)
       },
-      level: 6
+      level: 1,
+      memLevel: 9
     })
   )
 
@@ -157,16 +169,19 @@ export function startHttpServer (
       ? {
           zlibDeflateOptions: {
             // See zlib defaults.
-            chunkSize: 10 * 1024,
-            memLevel: 7,
-            level: 3
+            chunkSize: 32 * 1024,
+            memLevel: 9,
+            level: 1
           },
           zlibInflateOptions: {
-            chunkSize: 10 * 1024,
-            level: 3
+            chunkSize: 32 * 1024,
+            level: 1,
+            memLevel: 9
           },
+          serverNoContextTakeover: true,
+          clientNoContextTakeover: true,
           // Below options specified as default values.
-          concurrencyLimit: 20, // Limits zlib concurrency for perf.
+          concurrencyLimit: Math.max(10, os.availableParallelism()), // Limits zlib concurrency for perf.
           threshold: 1024 // Size (in bytes) below which messages
           // should not be compressed if context takeover is disabled.
         }
@@ -181,8 +196,6 @@ export function startHttpServer (
     rawToken: string,
     sessionId?: string
   ): Promise<void> => {
-    let buffer: Buffer[] | undefined = []
-
     const data = {
       remoteAddress: request.socket.remoteAddress ?? '',
       userAgent: request.headers['user-agent'] ?? '',
@@ -193,36 +206,38 @@ export function startHttpServer (
     }
     const cs: ConnectionSocket = {
       id: generateId(),
+      isClosed: false,
       close: () => {
+        cs.isClosed = true
         ws.close()
       },
       data: () => data,
       send: async (ctx: MeasureContext, msg, binary, compression) => {
-        if (ws.readyState !== ws.OPEN) {
-          return
+        if (ws.readyState !== ws.OPEN && !cs.isClosed) {
+          return 0
         }
-        const smsg = await ctx.with('📦 serialize', {}, async () => serialize(msg, binary))
+        const smsg = serialize(msg, binary)
 
         ctx.measure('send-data', smsg.length)
 
-        await ctx.with('📤 socket-send', {}, async (ctx) => {
-          await new Promise<void>((resolve, reject) => {
-            ws.send(smsg, { binary, compress: compression }, (err) => {
-              if (err != null) {
-                reject(err)
-              } else {
-                resolve()
-              }
-            })
+        while (ws.bufferedAmount > 128 && ws.readyState === ws.OPEN) {
+          await new Promise<void>((resolve) => {
+            setImmediate(resolve)
+          })
+        }
+        await new Promise<void>((resolve, reject) => {
+          ws.send(smsg, { binary: true, compress: compression }, (err) => {
+            if (err != null) {
+              reject(err)
+            }
+            resolve()
           })
         })
+        return smsg.length
       }
     }
 
-    ws.on('message', (msg: Buffer) => {
-      buffer?.push(msg)
-    })
-    const session = await sessions.addSession(
+    let session: AddSessionResponse | Promise<AddSessionResponse> = sessions.addSession(
       ctx,
       cs,
       token,
@@ -232,25 +247,41 @@ export function startHttpServer (
       sessionId,
       accountsUrl
     )
-    if ('upgrade' in session || 'error' in session) {
-      if ('error' in session) {
-        ctx.error('error', { error: session.error?.message, stack: session.error?.stack })
+
+    void session.then((s) => {
+      if ('upgrade' in s || 'error' in s) {
+        if ('error' in s) {
+          ctx.error('error', { error: s.error?.message, stack: s.error?.stack })
+        }
+        void cs
+          .send(ctx, { id: -1, result: { state: 'upgrading', stats: (s as any).upgradeInfo } }, false, false)
+          .then(() => {
+            cs.close()
+          })
       }
-      await cs.send(ctx, { id: -1, result: { state: 'upgrading', stats: (session as any).upgradeInfo } }, false, false)
-      cs.close()
-      return
-    }
+    })
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     ws.on('message', (msg: RawData) => {
       try {
         let buff: any | undefined
         if (msg instanceof Buffer) {
-          buff = msg?.toString()
+          buff = msg
         } else if (Array.isArray(msg)) {
-          buff = Buffer.concat(msg).toString()
+          buff = Buffer.concat(msg)
         }
         if (buff !== undefined) {
-          void handleRequest(session.context, session.session, cs, buff, session.workspaceId)
+          if (session instanceof Promise) {
+            void session.then((_session) => {
+              session = _session
+              if ('session' in _session) {
+                void handleRequest(_session.context, _session.session, cs, buff, _session.workspaceId)
+              }
+            })
+          } else {
+            if ('session' in session) {
+              void handleRequest(session.context, session.session, cs, buff, session.workspaceId)
+            }
+          }
         }
       } catch (err: any) {
         Analytics.handleError(err)
@@ -260,18 +291,30 @@ export function startHttpServer (
       }
     })
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    ws.on('close', (code: number, reason: Buffer) => {
-      if (session.session.workspaceClosed ?? false) {
-        return
+    ws.on('close', async (code: number, reason: Buffer) => {
+      if (session instanceof Promise) {
+        session = await session
       }
-      // remove session after 1seconds, give a time to reconnect.
-      void sessions.close(cs, token.workspace)
+      if ('session' in session) {
+        if (!(session.session.workspaceClosed ?? false)) {
+          // remove session after 1seconds, give a time to reconnect.
+          void sessions.close(cs, toWorkspaceString(token.workspace))
+        }
+      }
     })
-    const b = buffer
-    buffer = undefined
-    for (const msg of b) {
-      await handleRequest(session.context, session.session, cs, msg, session.workspaceId)
-    }
+
+    ws.on('error', (err) => {
+      if (session instanceof Promise) {
+        void session.then((s) => {
+          if ('session' in session) {
+            console.error(session.session.getUser(), 'error', err)
+          }
+        })
+      }
+      if ('session' in session) {
+        console.error(session.session.getUser(), 'error', err)
+      }
+    })
   }
   wss.on('connection', handleConnection as any)
 
@@ -290,7 +333,10 @@ export function startHttpServer (
         throw new Error('Invalid workspace product')
       }
 
-      wss.handleUpgrade(request, socket, head, (ws) => wss.emit('connection', ws, request, payload, token, sessionId))
+      wss.handleUpgrade(request, socket, head, (ws) => {
+        void handleConnection(ws, request, payload, token, sessionId ?? undefined)
+        // wss.emit('connection', ws, request, payload, token, sessionId)
+      })
     } catch (err: any) {
       Analytics.handleError(err)
       if (LOGGING_ENABLED) {
@@ -320,7 +366,22 @@ export function startHttpServer (
 
   httpServer.listen(port)
   return async () => {
-    httpServer.close()
     await sessions.closeWorkspaces(ctx)
+    await new Promise<void>((resolve, reject) => {
+      wss.close((err) => {
+        if (err != null) {
+          reject(err)
+        }
+        resolve()
+      })
+    })
+    await new Promise<void>((resolve, reject) =>
+      httpServer.close((err) => {
+        if (err != null) {
+          reject(err)
+        }
+        resolve()
+      })
+    )
   }
 }

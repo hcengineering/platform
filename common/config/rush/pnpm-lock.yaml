@@ -13,10 +13,10 @@ dependencies:
     version: 7.17.13
   '@hocuspocus/provider':
     specifier: ^2.9.0
-    version: 2.11.2(bufferutil@4.0.8)(yjs@13.6.12)
+    version: 2.11.2(bufferutil@4.0.8)(utf-8-validate@6.0.3)(yjs@13.6.12)
   '@hocuspocus/server':
     specifier: ^2.9.0
-    version: 2.11.2(bufferutil@4.0.8)(yjs@13.6.12)
+    version: 2.11.2(bufferutil@4.0.8)(utf-8-validate@6.0.3)(yjs@13.6.12)
   '@hocuspocus/transformer':
     specifier: ^2.9.0
     version: 2.11.2(@tiptap/pm@2.2.4)(y-prosemirror@1.2.2)(yjs@13.6.12)
@@ -28,7 +28,7 @@ dependencies:
     version: 1.41.2
   '@rush-temp/account':
     specifier: file:./projects/account.tgz
-    version: file:projects/account.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)
+    version: file:projects/account.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)(utf-8-validate@6.0.3)
   '@rush-temp/account-service':
     specifier: file:./projects/account-service.tgz
     version: file:projects/account-service.tgz
@@ -109,7 +109,7 @@ dependencies:
     version: file:projects/collaboration.tgz(esbuild@0.20.1)(ts-node@10.9.2)
   '@rush-temp/collaborator':
     specifier: file:./projects/collaborator.tgz
-    version: file:projects/collaborator.tgz(@tiptap/pm@2.2.4)(bufferutil@4.0.8)(prosemirror-model@1.19.4)
+    version: file:projects/collaborator.tgz(@tiptap/pm@2.2.4)(bufferutil@4.0.8)(prosemirror-model@1.19.4)(utf-8-validate@6.0.3)
   '@rush-temp/collaborator-client':
     specifier: file:./projects/collaborator-client.tgz
     version: file:projects/collaborator-client.tgz(ts-node@10.9.2)
@@ -451,7 +451,7 @@ dependencies:
     version: file:projects/presentation.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
   '@rush-temp/prod':
     specifier: file:./projects/prod.tgz
-    version: file:projects/prod.tgz(bufferutil@4.0.8)(sass@1.71.1)(ts-node@10.9.2)
+    version: file:projects/prod.tgz(bufferutil@4.0.8)(sass@1.71.1)(ts-node@10.9.2)(utf-8-validate@6.0.3)
   '@rush-temp/query':
     specifier: file:./projects/query.tgz
     version: file:projects/query.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2)
@@ -622,7 +622,7 @@ dependencies:
     version: file:projects/server-token.tgz(esbuild@0.20.1)(ts-node@10.9.2)
   '@rush-temp/server-tool':
     specifier: file:./projects/server-tool.tgz
-    version: file:projects/server-tool.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)
+    version: file:projects/server-tool.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)(utf-8-validate@6.0.3)
   '@rush-temp/server-tracker':
     specifier: file:./projects/server-tracker.tgz
     version: file:projects/server-tracker.tgz(esbuild@0.20.1)(ts-node@10.9.2)
@@ -649,7 +649,7 @@ dependencies:
     version: file:projects/setting-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
   '@rush-temp/storybook':
     specifier: file:./projects/storybook.tgz
-    version: file:projects/storybook.tgz(bufferutil@4.0.8)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(svelte-loader@3.2.0)(svelte@4.2.12)(typescript@5.3.3)(webpack-cli@5.1.4)(webpack@5.90.3)
+    version: file:projects/storybook.tgz(bufferutil@4.0.8)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(svelte-loader@3.2.0)(svelte@4.2.12)(typescript@5.3.3)(utf-8-validate@6.0.3)(webpack-cli@5.1.4)(webpack@5.90.3)
   '@rush-temp/support':
     specifier: file:./projects/support.tgz
     version: file:projects/support.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2)
@@ -700,10 +700,10 @@ dependencies:
     version: file:projects/tests-sanity.tgz
   '@rush-temp/text':
     specifier: file:./projects/text.tgz
-    version: file:projects/text.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)
+    version: file:projects/text.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)(utf-8-validate@6.0.3)
   '@rush-temp/text-editor':
     specifier: file:./projects/text-editor.tgz
-    version: file:projects/text-editor.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(prosemirror-model@1.19.4)(ts-node@10.9.2)
+    version: file:projects/text-editor.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(prosemirror-model@1.19.4)(ts-node@10.9.2)(utf-8-validate@6.0.3)
   '@rush-temp/theme':
     specifier: file:./projects/theme.tgz
     version: file:projects/theme.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
@@ -718,7 +718,7 @@ dependencies:
     version: file:projects/time-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
   '@rush-temp/tool':
     specifier: file:./projects/tool.tgz
-    version: file:projects/tool.tgz(bufferutil@4.0.8)
+    version: file:projects/tool.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.3)
   '@rush-temp/tracker':
     specifier: file:./projects/tracker.tgz
     version: file:projects/tracker.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2)
@@ -1111,7 +1111,7 @@ dependencies:
     version: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
   jest-environment-jsdom:
     specifier: 29.7.0
-    version: 29.7.0(bufferutil@4.0.8)
+    version: 29.7.0(bufferutil@4.0.8)(utf-8-validate@6.0.3)
   jwt-simple:
     specifier: ^0.5.6
     version: 0.5.6
@@ -1231,7 +1231,7 @@ dependencies:
     version: 2.0.5
   storybook:
     specifier: ^7.0.6
-    version: 7.6.17(bufferutil@4.0.8)
+    version: 7.6.17(bufferutil@4.0.8)(utf-8-validate@6.0.3)
   storybook-addon-themes:
     specifier: ^6.1.0
     version: 6.1.0(react-dom@18.2.0)(react@18.2.0)(svelte@4.2.12)
@@ -1280,6 +1280,9 @@ dependencies:
   url-loader:
     specifier: ~4.1.1
     version: 4.1.1(file-loader@6.2.0)(webpack@5.90.3)
+  utf-8-validate:
+    specifier: ^6.0.3
+    version: 6.0.3
   uuid:
     specifier: ^8.3.2
     version: 8.3.2
@@ -1291,16 +1294,16 @@ dependencies:
     version: 5.90.3(esbuild@0.20.1)(webpack-cli@5.1.4)
   webpack-bundle-analyzer:
     specifier: ^4.7.0
-    version: 4.10.1(bufferutil@4.0.8)
+    version: 4.10.1(bufferutil@4.0.8)(utf-8-validate@6.0.3)
   webpack-cli:
     specifier: ^5.0.1
     version: 5.1.4(webpack-bundle-analyzer@4.10.1)(webpack-dev-server@4.15.1)(webpack@5.90.3)
   webpack-dev-server:
     specifier: ^4.11.1
-    version: 4.15.1(bufferutil@4.0.8)(webpack-cli@5.1.4)(webpack@5.90.3)
+    version: 4.15.1(bufferutil@4.0.8)(utf-8-validate@6.0.3)(webpack-cli@5.1.4)(webpack@5.90.3)
   ws:
-    specifier: ^8.10.0
-    version: 8.16.0(bufferutil@4.0.8)
+    specifier: ^8.16.0
+    version: 8.16.0(bufferutil@4.0.8)(utf-8-validate@6.0.3)
   y-prosemirror:
     specifier: ^1.2.1
     version: 1.2.2(prosemirror-model@1.19.4)(yjs@13.6.12)
@@ -3396,7 +3399,7 @@ packages:
       lib0: 0.2.89
     dev: false
 
-  /@hocuspocus/provider@2.11.2(bufferutil@4.0.8)(yjs@13.6.12):
+  /@hocuspocus/provider@2.11.2(bufferutil@4.0.8)(utf-8-validate@6.0.3)(yjs@13.6.12):
     resolution: {integrity: sha512-h6/2KZC8Z3Wz+rP17WQ5eqxdgtsq5JZ4iC72WSXdIOJn3RO4sv63ZvT+EWc4aA1YM7UVDBYVjdOjMtEYZF0Flg==}
     peerDependencies:
       y-protocols: ^1.0.6
@@ -3405,14 +3408,14 @@ packages:
       '@hocuspocus/common': 2.11.2
       '@lifeomic/attempt': 3.0.3
       lib0: 0.2.89
-      ws: 8.16.0(bufferutil@4.0.8)
+      ws: 8.16.0(bufferutil@4.0.8)(utf-8-validate@6.0.3)
       yjs: 13.6.12
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
     dev: false
 
-  /@hocuspocus/server@2.11.2(bufferutil@4.0.8)(yjs@13.6.12):
+  /@hocuspocus/server@2.11.2(bufferutil@4.0.8)(utf-8-validate@6.0.3)(yjs@13.6.12):
     resolution: {integrity: sha512-/djaNUSS9vYmz5H/bformB9BXKVhSXS10WIURT1OqFLnN0dZnOB0gxL/IyGCZgXCNyiD8U03n7FIgad9MckV8g==}
     peerDependencies:
       y-protocols: ^1.0.6
@@ -3423,7 +3426,7 @@ packages:
       kleur: 4.1.5
       lib0: 0.2.89
       uuid: 9.0.1
-      ws: 8.16.0(bufferutil@4.0.8)
+      ws: 8.16.0(bufferutil@4.0.8)(utf-8-validate@6.0.3)
       yjs: 13.6.12
     transitivePeerDependencies:
       - bufferutil
@@ -4889,7 +4892,7 @@ packages:
       tiny-invariant: 1.3.1
     dev: false
 
-  /@storybook/cli@7.6.17(bufferutil@4.0.8):
+  /@storybook/cli@7.6.17(bufferutil@4.0.8)(utf-8-validate@6.0.3):
     resolution: {integrity: sha512-1sCo+nCqyR+nKfTcEidVu8XzNoECC7Y1l+uW38/r7s2f/TdDorXaIGAVrpjbSaXSoQpx5DxYJVaKCcQuOgqwcA==}
     hasBin: true
     dependencies:
@@ -4900,7 +4903,7 @@ packages:
       '@storybook/codemod': 7.6.17
       '@storybook/core-common': 7.6.17
       '@storybook/core-events': 7.6.17
-      '@storybook/core-server': 7.6.17(bufferutil@4.0.8)
+      '@storybook/core-server': 7.6.17(bufferutil@4.0.8)(utf-8-validate@6.0.3)
       '@storybook/csf-tools': 7.6.17
       '@storybook/node-logger': 7.6.17
       '@storybook/telemetry': 7.6.17
@@ -5065,7 +5068,7 @@ packages:
       ts-dedent: 2.2.0
     dev: false
 
-  /@storybook/core-server@7.6.17(bufferutil@4.0.8):
+  /@storybook/core-server@7.6.17(bufferutil@4.0.8)(utf-8-validate@6.0.3):
     resolution: {integrity: sha512-KWGhTTaL1Q14FolcoKKZgytlPJUbH6sbJ1Ptj/84EYWFewcnEgVs0Zlnh1VStRZg+Rd1WC1V4yVd/bbDzxrvQA==}
     dependencies:
       '@aw-web-design/x-default-browser': 1.4.126
@@ -5108,7 +5111,7 @@ packages:
       util: 0.12.5
       util-deprecate: 1.0.2
       watchpack: 2.4.0
-      ws: 8.16.0(bufferutil@4.0.8)
+      ws: 8.16.0(bufferutil@4.0.8)(utf-8-validate@6.0.3)
     transitivePeerDependencies:
       - bufferutil
       - encoding
@@ -6900,7 +6903,7 @@ packages:
     dependencies:
       webpack: 5.90.3(esbuild@0.20.1)(webpack-cli@5.1.4)
       webpack-cli: 5.1.4(webpack-bundle-analyzer@4.10.1)(webpack-dev-server@4.15.1)(webpack@5.90.3)
-      webpack-dev-server: 4.15.1(bufferutil@4.0.8)(webpack-cli@5.1.4)(webpack@5.90.3)
+      webpack-dev-server: 4.15.1(bufferutil@4.0.8)(utf-8-validate@6.0.3)(webpack-cli@5.1.4)(webpack@5.90.3)
     dev: false
 
   /@xtuc/ieee754@1.2.0:
@@ -9998,6 +10001,10 @@ packages:
     resolution: {integrity: sha512-3yurQZ2hD9VISAhJJP9bpYFNQrHHBXE2JxxjY5aLEcDi46RmAzJE2OC9FAde0yis5ElW0jTTzs0zfg/Cca4XqQ==}
     dev: false
 
+  /fflate@0.8.2:
+    resolution: {integrity: sha512-cPJU47OaAoCbg0pBvzsgpTPhmhqI5eJjh/JIu8tPj5q+T7iLvW/JAYUqmE7KOB4R1ZyEhzBaIQpQpardBF5z8A==}
+    dev: false
+
   /file-entry-cache@6.0.1:
     resolution: {integrity: sha512-7Gps/XWymbLk2QLYK4NzpMOrYjMhdIxXuIvy2QBsLE6ljuodKvdkWs/cpyJJ3CVIVpH0Oi1Hvg1ovbMzLdFBBg==}
     engines: {node: ^10.12.0 || >=12.0.0}
@@ -11584,7 +11591,7 @@ packages:
       pretty-format: 29.7.0
     dev: false
 
-  /jest-environment-jsdom@29.7.0(bufferutil@4.0.8):
+  /jest-environment-jsdom@29.7.0(bufferutil@4.0.8)(utf-8-validate@6.0.3):
     resolution: {integrity: sha512-k9iQbsf9OyOfdzWH8HDmrRT0gSIcX+FLNW7IQq94tFX0gynPwqDTW0Ho6iMVNjGz/nb+l/vW3dWM2bbLLpkbXA==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
     peerDependencies:
@@ -11600,7 +11607,7 @@ packages:
       '@types/node': 20.11.19
       jest-mock: 29.7.0
       jest-util: 29.7.0
-      jsdom: 20.0.3(bufferutil@4.0.8)
+      jsdom: 20.0.3(bufferutil@4.0.8)(utf-8-validate@6.0.3)
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -11958,7 +11965,7 @@ packages:
       - supports-color
     dev: false
 
-  /jsdom@20.0.3(bufferutil@4.0.8):
+  /jsdom@20.0.3(bufferutil@4.0.8)(utf-8-validate@6.0.3):
     resolution: {integrity: sha512-SYhBvTh89tTfCD/CRdSOm13mOBa42iTaTyfyEWBdKcGdPxPtLFBXuHR8XHb33YNYaP+lLbmSvBTsnoesCNJEsQ==}
     engines: {node: '>=14'}
     peerDependencies:
@@ -11991,7 +11998,7 @@ packages:
       whatwg-encoding: 2.0.0
       whatwg-mimetype: 3.0.0
       whatwg-url: 11.0.0
-      ws: 8.16.0(bufferutil@4.0.8)
+      ws: 8.16.0(bufferutil@4.0.8)(utf-8-validate@6.0.3)
       xml-name-validator: 4.0.0
     transitivePeerDependencies:
       - bufferutil
@@ -15192,11 +15199,11 @@ packages:
       - react-dom
     dev: false
 
-  /storybook@7.6.17(bufferutil@4.0.8):
+  /storybook@7.6.17(bufferutil@4.0.8)(utf-8-validate@6.0.3):
     resolution: {integrity: sha512-8+EIo91bwmeFWPg1eysrxXlhIYv3OsXrznTr4+4Eq0NikqAoq6oBhtlN5K2RGS2lBVF537eN+9jTCNbR+WrzDA==}
     hasBin: true
     dependencies:
-      '@storybook/cli': 7.6.17(bufferutil@4.0.8)
+      '@storybook/cli': 7.6.17(bufferutil@4.0.8)(utf-8-validate@6.0.3)
     transitivePeerDependencies:
       - bufferutil
       - encoding
@@ -16333,6 +16340,14 @@ packages:
       tslib: 2.6.2
     dev: false
 
+  /utf-8-validate@6.0.3:
+    resolution: {integrity: sha512-uIuGf9TWQ/y+0Lp+KGZCMuJWc3N9BHA+l/UmHd/oUHwJJDeysyTRxNQVkbzsIWfGFbRe3OcgML/i0mvVRPOyDA==}
+    engines: {node: '>=6.14.2'}
+    requiresBuild: true
+    dependencies:
+      node-gyp-build: 4.8.0
+    dev: false
+
   /util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
     dev: false
@@ -16463,7 +16478,7 @@ packages:
     engines: {node: '>=12'}
     dev: false
 
-  /webpack-bundle-analyzer@4.10.1(bufferutil@4.0.8):
+  /webpack-bundle-analyzer@4.10.1(bufferutil@4.0.8)(utf-8-validate@6.0.3):
     resolution: {integrity: sha512-s3P7pgexgT/HTUSYgxJyn28A+99mmLq4HsJepMPzu0R8ImJc52QNqaFYW1Z2z2uIb1/J3eYgaAWVpaC+v/1aAQ==}
     engines: {node: '>= 10.13.0'}
     hasBin: true
@@ -16480,7 +16495,7 @@ packages:
       opener: 1.5.2
       picocolors: 1.0.0
       sirv: 2.0.4
-      ws: 7.5.9(bufferutil@4.0.8)
+      ws: 7.5.9(bufferutil@4.0.8)(utf-8-validate@6.0.3)
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -16516,8 +16531,8 @@ packages:
       interpret: 3.1.1
       rechoir: 0.8.0
       webpack: 5.90.3(esbuild@0.20.1)(webpack-cli@5.1.4)
-      webpack-bundle-analyzer: 4.10.1(bufferutil@4.0.8)
-      webpack-dev-server: 4.15.1(bufferutil@4.0.8)(webpack-cli@5.1.4)(webpack@5.90.3)
+      webpack-bundle-analyzer: 4.10.1(bufferutil@4.0.8)(utf-8-validate@6.0.3)
+      webpack-dev-server: 4.15.1(bufferutil@4.0.8)(utf-8-validate@6.0.3)(webpack-cli@5.1.4)(webpack@5.90.3)
       webpack-merge: 5.10.0
     dev: false
 
@@ -16552,7 +16567,7 @@ packages:
       webpack: 5.90.3(@swc/core@1.4.2)(esbuild@0.20.1)(webpack-cli@5.1.4)
     dev: false
 
-  /webpack-dev-server@4.15.1(bufferutil@4.0.8)(webpack-cli@5.1.4)(webpack@5.90.3):
+  /webpack-dev-server@4.15.1(bufferutil@4.0.8)(utf-8-validate@6.0.3)(webpack-cli@5.1.4)(webpack@5.90.3):
     resolution: {integrity: sha512-5hbAst3h3C3L8w6W4P96L5vaV0PxSmJhxZvWKYIdgxOQm8pNZ5dEOmmSLBVpP85ReeyRt6AS1QJNyo/oFFPeVA==}
     engines: {node: '>= 12.13.0'}
     hasBin: true
@@ -16596,7 +16611,7 @@ packages:
       webpack: 5.90.3(esbuild@0.20.1)(webpack-cli@5.1.4)
       webpack-cli: 5.1.4(webpack-bundle-analyzer@4.10.1)(webpack-dev-server@4.15.1)(webpack@5.90.3)
       webpack-dev-middleware: 5.3.3(webpack@5.90.3)
-      ws: 8.16.0(bufferutil@4.0.8)
+      ws: 8.16.0(bufferutil@4.0.8)(utf-8-validate@6.0.3)
     transitivePeerDependencies:
       - bufferutil
       - debug
@@ -16862,7 +16877,7 @@ packages:
       async-limiter: 1.0.1
     dev: false
 
-  /ws@7.5.9(bufferutil@4.0.8):
+  /ws@7.5.9(bufferutil@4.0.8)(utf-8-validate@6.0.3):
     resolution: {integrity: sha512-F+P9Jil7UiSKSkppIiD94dN07AwvFixvLIj1Og1Rl9GGMuNipJnV9JzjD6XuqmAeiswGvUmNLjr5cFuXwNS77Q==}
     engines: {node: '>=8.3.0'}
     peerDependencies:
@@ -16875,9 +16890,10 @@ packages:
         optional: true
     dependencies:
       bufferutil: 4.0.8
+      utf-8-validate: 6.0.3
     dev: false
 
-  /ws@8.16.0(bufferutil@4.0.8):
+  /ws@8.16.0(bufferutil@4.0.8)(utf-8-validate@6.0.3):
     resolution: {integrity: sha512-HS0c//TP7Ina87TfiPUz1rQzMhHrl/SG2guqRcTOIUYD2q8uhUdNHZYJUaQ8aTGPzCh+c6oawMKW35nFl1dxyQ==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
@@ -16890,6 +16906,7 @@ packages:
         optional: true
     dependencies:
       bufferutil: 4.0.8
+      utf-8-validate: 6.0.3
     dev: false
 
   /xml-name-validator@4.0.0:
@@ -17112,8 +17129,8 @@ packages:
       - supports-color
     dev: false
 
-  file:projects/account.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-9RuPhqNNHTYjQwezirzcJ6WZpMJTzbjc72jZSJC6dQFG7WqW0a2QZ8VTaa32IM902stPP950kaRUDGGEKlxEwg==, tarball: file:projects/account.tgz}
+  file:projects/account.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)(utf-8-validate@6.0.3):
+    resolution: {integrity: sha512-5tvVeDuogAFbWW1kdbXHh0UYCEuA4w0d5mv1euYiTTq6Wrw+MUMCHVGylKlbc5DCApvmkjGYyGTBEQ6gtVDGSg==, tarball: file:projects/account.tgz}
     id: file:projects/account.tgz
     name: '@rush-temp/account'
     version: 0.0.0
@@ -17132,10 +17149,9 @@ packages:
       mongodb: 6.3.0
       node-fetch: 2.7.0
       prettier: 3.2.5
-      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
-      ws: 8.16.0(bufferutil@4.0.8)
+      ws: 8.16.0(bufferutil@4.0.8)(utf-8-validate@6.0.3)
     transitivePeerDependencies:
       - '@aws-sdk/credential-providers'
       - '@babel/core'
@@ -18092,13 +18108,13 @@ packages:
       - ts-node
     dev: false
 
-  file:projects/collaborator.tgz(@tiptap/pm@2.2.4)(bufferutil@4.0.8)(prosemirror-model@1.19.4):
-    resolution: {integrity: sha512-dz9Gj6jr2YoZbl+ZbR3XtYsHqcVRA0qjQ318BwKD+SjgiETupwiFVay/ltHyc+l2V0Ai7m6qSY5ymedU0EevPg==, tarball: file:projects/collaborator.tgz}
+  file:projects/collaborator.tgz(@tiptap/pm@2.2.4)(bufferutil@4.0.8)(prosemirror-model@1.19.4)(utf-8-validate@6.0.3):
+    resolution: {integrity: sha512-r+sgjj6JmjY8Lkk/dYVeEm7AJtq3uCZDosWdJZPNIhtJo4fDeVYnMZQEawUKkjW0YcGE/KRnLvS6TCjFMH3ugw==, tarball: file:projects/collaborator.tgz}
     id: file:projects/collaborator.tgz
     name: '@rush-temp/collaborator'
     version: 0.0.0
     dependencies:
-      '@hocuspocus/server': 2.11.2(bufferutil@4.0.8)(yjs@13.6.12)
+      '@hocuspocus/server': 2.11.2(bufferutil@4.0.8)(utf-8-validate@6.0.3)(yjs@13.6.12)
       '@hocuspocus/transformer': 2.11.2(@tiptap/pm@2.2.4)(y-prosemirror@1.2.2)(yjs@13.6.12)
       '@tiptap/core': 2.2.4(@tiptap/pm@2.2.4)
       '@tiptap/html': 2.2.4(@tiptap/core@2.2.4)(@tiptap/pm@2.2.4)
@@ -18128,7 +18144,7 @@ packages:
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
       typescript: 5.3.3
-      ws: 8.16.0(bufferutil@4.0.8)
+      ws: 8.16.0(bufferutil@4.0.8)(utf-8-validate@6.0.3)
       y-prosemirror: 1.2.2(prosemirror-model@1.19.4)(yjs@13.6.12)
       yjs: 13.6.12
     transitivePeerDependencies:
@@ -18614,7 +18630,7 @@ packages:
     dev: false
 
   file:projects/elastic.tgz(@types/node@20.11.19)(esbuild@0.20.1):
-    resolution: {integrity: sha512-X3dHb4JxiTeFuXt6bUwzCBklB8BipruxEhhtGWhFbRxvTx689V0bfzoO62QUwc+Kqmz2Q9Df8IPYy51tCKyMvQ==, tarball: file:projects/elastic.tgz}
+    resolution: {integrity: sha512-iUKt8+1LhjnXTCYZv0DssFNwm1pHB+ioIePMutpYZrtO7HvwaZN4kHVneHjk5hA0EeE96JOkCwgYcPka35UvuA==, tarball: file:projects/elastic.tgz}
     id: file:projects/elastic.tgz
     name: '@rush-temp/elastic'
     version: 0.0.0
@@ -21254,7 +21270,7 @@ packages:
       - ts-node
     dev: false
 
-  file:projects/prod.tgz(bufferutil@4.0.8)(sass@1.71.1)(ts-node@10.9.2):
+  file:projects/prod.tgz(bufferutil@4.0.8)(sass@1.71.1)(ts-node@10.9.2)(utf-8-validate@6.0.3):
     resolution: {integrity: sha512-/CKLzPjaTfkDNjT0evklXES1ISDy11ikLCJKFuyI4OQ6nfbt84wTqkO80Egr9IZScuNA0M0MEeJP+01pO2LNdA==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
@@ -21286,9 +21302,9 @@ packages:
       typescript: 5.3.3
       update-browserslist-db: 1.0.13(browserslist@4.21.5)
       webpack: 5.90.3(esbuild@0.20.1)(webpack-cli@5.1.4)
-      webpack-bundle-analyzer: 4.10.1(bufferutil@4.0.8)
+      webpack-bundle-analyzer: 4.10.1(bufferutil@4.0.8)(utf-8-validate@6.0.3)
       webpack-cli: 5.1.4(webpack-bundle-analyzer@4.10.1)(webpack-dev-server@4.15.1)(webpack@5.90.3)
-      webpack-dev-server: 4.15.1(bufferutil@4.0.8)(webpack-cli@5.1.4)(webpack@5.90.3)
+      webpack-dev-server: 4.15.1(bufferutil@4.0.8)(utf-8-validate@6.0.3)(webpack-cli@5.1.4)(webpack@5.90.3)
     transitivePeerDependencies:
       - '@babel/core'
       - '@rspack/core'
@@ -23062,8 +23078,8 @@ packages:
       - ts-node
     dev: false
 
-  file:projects/server-tool.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-La/JqbJn8mFb4MYQ5DKwjn5sxUJ0VYBI8UEcP2iC3KIcvjRrQ0Rcy6q5QBeVpYRpfnAcvUvFCuwR8i1TklseZw==, tarball: file:projects/server-tool.tgz}
+  file:projects/server-tool.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)(utf-8-validate@6.0.3):
+    resolution: {integrity: sha512-dPn+fdjcD0BlDVCQ4DZD7zT16BfgObaomZEf+3r/ZpLxZTI+OiEpZUIQlEjgPkW6mgFui74nIcW5MFNO5uJnNA==, tarball: file:projects/server-tool.tgz}
     id: file:projects/server-tool.tgz
     name: '@rush-temp/server-tool'
     version: 0.0.0
@@ -23081,10 +23097,9 @@ packages:
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       mongodb: 6.3.0
       prettier: 3.2.5
-      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
-      ws: 8.16.0(bufferutil@4.0.8)
+      ws: 8.16.0(bufferutil@4.0.8)(utf-8-validate@6.0.3)
     transitivePeerDependencies:
       - '@aws-sdk/credential-providers'
       - '@babel/core'
@@ -23231,7 +23246,7 @@ packages:
     dev: false
 
   file:projects/server-ws.tgz(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-U8RVqOkhC0aFRzjZzXrGwKzS+keJrlDuQOtap4w7XOXaHaZO+/dWWw2u3cTTRWdt3xKDFwDAAwiHaBkviaGGtg==, tarball: file:projects/server-ws.tgz}
+    resolution: {integrity: sha512-H+LX8du8Fflohly6Uv20gI7fhm+T6RRerOESTho9L1Dxgn0E8zXqD3XGrjEblNm94HR9/09uHrs2a7CWPaRAig==, tarball: file:projects/server-ws.tgz}
     id: file:projects/server-ws.tgz
     name: '@rush-temp/server-ws'
     version: 0.0.0
@@ -23253,12 +23268,14 @@ packages:
       eslint-plugin-n: 15.7.0(eslint@8.56.0)
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       express: 4.18.3
+      fflate: 0.8.2
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       typescript: 5.3.3
-      ws: 8.16.0(bufferutil@4.0.8)
+      utf-8-validate: 6.0.3
+      ws: 8.16.0(bufferutil@4.0.8)(utf-8-validate@6.0.3)
     transitivePeerDependencies:
       - '@babel/core'
       - '@jest/types'
@@ -23268,7 +23285,6 @@ packages:
       - node-notifier
       - supports-color
       - ts-node
-      - utf-8-validate
     dev: false
 
   file:projects/server.tgz(esbuild@0.20.1):
@@ -23415,7 +23431,7 @@ packages:
       - ts-node
     dev: false
 
-  file:projects/storybook.tgz(bufferutil@4.0.8)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(svelte-loader@3.2.0)(svelte@4.2.12)(typescript@5.3.3)(webpack-cli@5.1.4)(webpack@5.90.3):
+  file:projects/storybook.tgz(bufferutil@4.0.8)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(svelte-loader@3.2.0)(svelte@4.2.12)(typescript@5.3.3)(utf-8-validate@6.0.3)(webpack-cli@5.1.4)(webpack@5.90.3):
     resolution: {integrity: sha512-7yMMWo7RZ6G1yC1wGli2iB6twTB9Tz0cGGgH8xxK/nAbiXdU6CVsv/qdxV/aCnLq9hvLMJY9CaOrFMrqskV3mA==, tarball: file:projects/storybook.tgz}
     id: file:projects/storybook.tgz
     name: '@rush-temp/storybook'
@@ -23434,7 +23450,7 @@ packages:
       resolve-url-loader: 5.0.0
       sass: 1.71.1
       sass-loader: 13.3.3(sass@1.71.1)(webpack@5.90.3)
-      storybook: 7.6.17(bufferutil@4.0.8)
+      storybook: 7.6.17(bufferutil@4.0.8)(utf-8-validate@6.0.3)
       storybook-addon-themes: 6.1.0(react-dom@18.2.0)(react@18.2.0)(svelte@4.2.12)
       svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
     transitivePeerDependencies:
@@ -24028,13 +24044,13 @@ packages:
       - supports-color
     dev: false
 
-  file:projects/text-editor.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(prosemirror-model@1.19.4)(ts-node@10.9.2):
+  file:projects/text-editor.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(prosemirror-model@1.19.4)(ts-node@10.9.2)(utf-8-validate@6.0.3):
     resolution: {integrity: sha512-HrOMU/Hpc05gePqahXl1WJ/jZC+FUOTC4qbSeK9whq4PYxp6A7Uy5apkN8ww5gDlHs7TW5c69rVGBnbHnqJhsw==, tarball: file:projects/text-editor.tgz}
     id: file:projects/text-editor.tgz
     name: '@rush-temp/text-editor'
     version: 0.0.0
     dependencies:
-      '@hocuspocus/provider': 2.11.2(bufferutil@4.0.8)(yjs@13.6.12)
+      '@hocuspocus/provider': 2.11.2(bufferutil@4.0.8)(utf-8-validate@6.0.3)(yjs@13.6.12)
       '@tiptap/core': 2.2.4(@tiptap/pm@2.2.4)
       '@tiptap/extension-bubble-menu': 2.2.4(@tiptap/core@2.2.4)(@tiptap/pm@2.2.4)
       '@tiptap/extension-code': 2.2.4(@tiptap/core@2.2.4)
@@ -24062,7 +24078,6 @@ packages:
       '@tiptap/suggestion': 2.2.4(@tiptap/core@2.2.4)(@tiptap/pm@2.2.4)
       '@types/diff': 5.0.9
       '@types/jest': 29.5.12
-      '@types/png-chunks-extract': 1.0.2
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
       diff: 5.2.0
@@ -24076,7 +24091,6 @@ packages:
       filesize: 8.0.7
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
       lib0: 0.2.89
-      png-chunks-extract: 1.0.0
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
       prosemirror-codemark: 0.4.2(prosemirror-model@1.19.4)
@@ -24119,7 +24133,7 @@ packages:
       - y-protocols
     dev: false
 
-  file:projects/text.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2):
+  file:projects/text.tgz(@types/node@20.11.19)(bufferutil@4.0.8)(esbuild@0.20.1)(ts-node@10.9.2)(utf-8-validate@6.0.3):
     resolution: {integrity: sha512-+71BisKHNmsLjMHsBChfyRUJXOP7P2gOAIHC1JP8z/AHvuGfWZirZRyYtRBY1E5PFu7qaI6G4SM2ARIvKBAaxw==, tarball: file:projects/text.tgz}
     id: file:projects/text.tgz
     name: '@rush-temp/text'
@@ -24155,7 +24169,7 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       fast-equals: 5.0.1
       jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      jest-environment-jsdom: 29.7.0(bufferutil@4.0.8)
+      jest-environment-jsdom: 29.7.0(bufferutil@4.0.8)(utf-8-validate@6.0.3)
       prettier: 3.2.5
       prosemirror-model: 1.19.4
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
@@ -24333,8 +24347,8 @@ packages:
       - ts-node
     dev: false
 
-  file:projects/tool.tgz(bufferutil@4.0.8):
-    resolution: {integrity: sha512-46NgBZuhcTT7XEc+NxbKu9abwTd63lNVTDR8WrDt8aLuSxorolUYMJSiZcaagz85/eGcn21Q25yvzvhEt2N0Sw==, tarball: file:projects/tool.tgz}
+  file:projects/tool.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.3):
+    resolution: {integrity: sha512-FapBriQDbhOPHpCCh3hiJAY68tHjzbF6r94xISTJxwsOsJNijAV9v7RFhTUnLiLcCuBSj9eovI7Mljd3CDZrAw==, tarball: file:projects/tool.tgz}
     id: file:projects/tool.tgz
     name: '@rush-temp/tool'
     version: 0.0.0
@@ -24365,11 +24379,10 @@ packages:
       mime-types: 2.1.35
       mongodb: 6.3.0
       prettier: 3.2.5
-      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
       ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
       ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
       typescript: 5.3.3
-      ws: 8.16.0(bufferutil@4.0.8)
+      ws: 8.16.0(bufferutil@4.0.8)(utf-8-validate@6.0.3)
     transitivePeerDependencies:
       - '@aws-sdk/credential-providers'
       - '@babel/core'

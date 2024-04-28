@@ -196,6 +196,7 @@ export type WithLookup<T extends Doc> = T & {
  */
 export type FindResult<T extends Doc> = WithLookup<T>[] & {
   total: number
+  lookupMap?: Record<string, Doc>
 }
 
 /**

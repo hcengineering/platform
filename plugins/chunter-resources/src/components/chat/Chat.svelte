@@ -70,7 +70,7 @@
   $: void loadObject(selectedData?._id, selectedData?._class)
 
   async function loadObject (_id?: Ref<Doc>, _class?: Ref<Class<Doc>>): Promise<void> {
-    if (_id === undefined || _class === undefined) {
+    if (_id == null || _class == null || _class === '') {
       object = undefined
       objectQuery.unsubscribe()
       return

@@ -106,9 +106,9 @@ export function escapeLikeForRegexp (value: string): string {
 /**
  * @public
  */
-export function toFindResult<T extends Doc> (docs: T[], total?: number): FindResult<T> {
+export function toFindResult<T extends Doc> (docs: T[], total?: number, lookupMap?: Record<string, Doc>): FindResult<T> {
   const length = total ?? docs.length
-  return Object.assign(docs, { total: length })
+  return Object.assign(docs, { total: length, lookupMap })
 }
 
 /**
@@ -370,7 +370,7 @@ export class RateLimiter {
   }
 
   async waitProcessing (): Promise<void> {
-    await Promise.race(this.processingQueue.values())
+    await Promise.all(this.processingQueue.values())
   }
 }
 
@@ -447,6 +447,14 @@ function mergeField (field1: any, field2: any): any | undefined {
 
     for (const x in predicate) {
       const result = mergePredicateWithValue(x, predicate[x], value)
+      if (
+        Array.isArray(result?.$in) &&
+        result.$in.length > 0 &&
+        Array.isArray(result?.$nin) &&
+        result.$nin.length === 0
+      ) {
+        delete result.$nin
+      }
       if (result !== undefined) {
         return result
       }
@@ -713,4 +721,43 @@ export function isClassIndexable (hierarchy: Hierarchy, c: Ref<Class<Doc>>): boo
   }
   hierarchy.setClassifierProp(c, 'class_indexed', result)
   return result
+}
+
+type ReduceParameters<T extends (...args: any) => any> = T extends (...args: infer P) => any ? P : never
+
+interface NextCall {
+  op: () => Promise<void>
+}
+
+/**
+ * Utility method to skip middle update calls, optimistically if update function is called multiple times with few different parameters, only the last variant will be executed.
+ * The last invocation is executed after a few cycles, allowing to skip middle ones.
+ *
+ * This method can be used inside Svelte components to collapse complex update logic and handle interactions.
+ */
+export function reduceCalls<T extends (...args: ReduceParameters<T>) => Promise<void>> (
+  operation: T
+): (...args: ReduceParameters<T>) => Promise<void> {
+  let nextCall: NextCall | undefined
+  let currentCall: NextCall | undefined
+
+  const next = (): void => {
+    currentCall = nextCall
+    nextCall = undefined
+    if (currentCall !== undefined) {
+      void currentCall.op()
+    }
+  }
+  return async function (...args: ReduceParameters<T>): Promise<void> {
+    const myOp = async (): Promise<void> => {
+      await operation(...args)
+      next()
+    }
+
+    nextCall = { op: myOp }
+    await Promise.resolve()
+    if (currentCall === undefined) {
+      next()
+    }
+  }
 }

@@ -69,6 +69,7 @@ import type {
   TxUpdateDoc,
   TxWorkspaceEvent
 } from './tx'
+import type { BenchmarkDoc } from './benchmark'
 
 /**
  * @public
@@ -142,7 +143,9 @@ export default plugin(coreId, {
 
     Status: '' as Ref<Class<Status>>,
     StatusCategory: '' as Ref<Class<StatusCategory>>,
-    MigrationState: '' as Ref<Class<MigrationState>>
+    MigrationState: '' as Ref<Class<MigrationState>>,
+
+    BenchmarkDoc: '' as Ref<Class<BenchmarkDoc>>
   },
   mixin: {
     FullTextSearchContext: '' as Ref<Mixin<FullTextSearchContext>>,

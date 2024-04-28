@@ -135,7 +135,8 @@ class ModelClient implements AccountClient {
         ' =>model',
         this.client.getModel(),
         getMetadata(devmodel.metadata.DevModel),
-        Date.now() - startTime
+        Date.now() - startTime,
+        JSON.stringify(result).length
       )
     }
     return result

@@ -30,6 +30,8 @@ export interface Request<P extends any[]> {
   id?: ReqId
   method: string
   params: P
+
+  time?: number // Server time to perform operation
 }
 
 /**
@@ -86,7 +88,12 @@ export function protoSerialize (object: object, binary: boolean): any {
  */
 export function protoDeserialize (data: any, binary: boolean): any {
   if (!binary) {
-    return JSON.parse(data, receiver)
+    let _data = data
+    if (_data instanceof ArrayBuffer) {
+      const decoder = new TextDecoder()
+      _data = decoder.decode(_data)
+    }
+    return JSON.parse(_data.toString(), receiver)
   }
   return packr.unpack(new Uint8Array(replacer('', data)))
 }
@@ -117,10 +124,11 @@ export function readResponse<D> (response: any, binary: boolean): Response<D> {
 }
 
 function replacer (key: string, value: any): any {
-  if (Array.isArray(value) && (value as any).total !== undefined) {
+  if (Array.isArray(value) && ((value as any).total !== undefined || (value as any).lookupMap !== undefined)) {
     return {
       dataType: 'TotalArray',
       total: (value as any).total,
+      lookupMap: (value as any).lookupMap,
       value: [...value]
     }
   } else {
@@ -131,7 +139,7 @@ function replacer (key: string, value: any): any {
 function receiver (key: string, value: any): any {
   if (typeof value === 'object' && value !== null) {
     if (value.dataType === 'TotalArray') {
-      return Object.assign(value.value, { total: value.total })
+      return Object.assign(value.value, { total: value.total, lookupMap: value.lookupMap })
     }
   }
   return value

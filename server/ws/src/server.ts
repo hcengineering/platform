@@ -19,10 +19,12 @@ import core, {
   WorkspaceEvent,
   generateId,
   systemAccountEmail,
+  toFindResult,
   toWorkspaceString,
   versionToString,
   withContext,
   type BaseWorkspaceInfo,
+  type FindResult,
   type MeasureContext,
   type Tx,
   type TxWorkspaceEvent,
@@ -54,9 +56,25 @@ interface WorkspaceLoginInfo extends Omit<BaseWorkspaceInfo, 'workspace'> {
   workspaceId: string
 }
 
-function timeoutPromise (time: number): Promise<void> {
-  return new Promise((resolve) => {
-    setTimeout(resolve, time)
+function timeoutPromise (time: number): { promise: Promise<void>, cancelHandle: () => void } {
+  let timer: any
+  return {
+    promise: new Promise((resolve) => {
+      timer = setTimeout(resolve, time)
+    }),
+    cancelHandle: () => {
+      clearTimeout(timer)
+    }
+  }
+}
+
+function onNextTick (op: () => void): void {
+  setImmediate(op)
+}
+
+function waitNextTick (): Promise<void> {
+  return new Promise<void>((resolve) => {
+    setImmediate(resolve)
   })
 }
 
@@ -75,7 +93,7 @@ class TSessionManager implements SessionManager {
   checkInterval: any
 
   sessions = new Map<string, { session: Session, socket: ConnectionSocket }>()
-  reconnectIds = new Set<string>()
+  reconnectIds = new Map<string, any>()
 
   maintenanceTimer: any
   timeMinutes = 0
@@ -164,14 +182,14 @@ class TSessionManager implements SessionManager {
           this.ctx.warn('session hang, closing...', { wsId, user: s[1].session.getUser() })
 
           // Force close workspace if only one client and it hang.
-          void this.close(s[1].socket, workspace.workspaceId)
+          void this.close(s[1].socket, wsId)
           continue
         }
         if (diff > 20000 && diff < 60000 && this.ticks % 10 === 0) {
           void s[1].socket.send(
             workspace.context,
             { result: 'ping' },
-            s[1].session.binaryResponseMode,
+            s[1].session.binaryMode,
             s[1].session.useCompression
           )
         }
@@ -366,7 +384,7 @@ class TSessionManager implements SessionManager {
     void ctx.with('set-status', {}, (ctx) => this.trySetStatus(ctx, session, true))
 
     if (this.timeMinutes > 0) {
-      void ws.send(ctx, { result: this.createMaintenanceWarning() }, session.binaryResponseMode, session.useCompression)
+      void ws.send(ctx, { result: this.createMaintenanceWarning() }, session.binaryMode, session.useCompression)
     }
     return { session, context: workspace.context, workspaceId: wsString }
   }
@@ -438,12 +456,7 @@ class TSessionManager implements SessionManager {
         if (targets !== undefined && !targets.includes(session.session.getUser())) continue
         for (const _tx of tx) {
           try {
-            void session.socket.send(
-              ctx,
-              { result: _tx },
-              session.session.binaryResponseMode,
-              session.session.useCompression
-            )
+            void session.socket.send(ctx, { result: _tx }, session.session.binaryMode, session.session.useCompression)
           } catch (err: any) {
             Analytics.handleError(err)
             ctx.error('error during send', { error: err })
@@ -451,12 +464,17 @@ class TSessionManager implements SessionManager {
         }
       }
       if (sessions.length > 0) {
-        setImmediate(send)
+        onNextTick(send)
       } else {
         ctx.end()
       }
     }
-    send()
+    if (sessions.length > 0) {
+      // We need to send broadcast after our client response so put it after all IO
+      onNextTick(send)
+    } else {
+      ctx.end()
+    }
   }
 
   private createWorkspace (
@@ -532,8 +550,7 @@ class TSessionManager implements SessionManager {
     } catch {}
   }
 
-  async close (ws: ConnectionSocket, workspaceId: WorkspaceId): Promise<void> {
-    const wsid = toWorkspaceString(workspaceId)
+  async close (ws: ConnectionSocket, wsid: string): Promise<void> {
     const workspace = this.workspaces.get(wsid)
 
     const sessionRef = this.sessions.get(ws.id)
@@ -542,22 +559,24 @@ class TSessionManager implements SessionManager {
       if (workspace !== undefined) {
         workspace.sessions.delete(sessionRef.session.sessionId)
       }
-      this.reconnectIds.add(sessionRef.session.sessionId)
+      this.reconnectIds.set(
+        sessionRef.session.sessionId,
+        setTimeout(() => {
+          this.reconnectIds.delete(sessionRef.session.sessionId)
 
-      setTimeout(() => {
-        this.reconnectIds.delete(sessionRef.session.sessionId)
-      }, this.timeouts.reconnectTimeout)
+          const user = sessionRef.session.getUser()
+          if (workspace !== undefined) {
+            const another = Array.from(workspace.sessions.values()).findIndex((p) => p.session.getUser() === user)
+            if (another === -1 && !workspace.upgrade) {
+              void this.trySetStatus(workspace.context, sessionRef.session, false)
+            }
+          }
+        }, this.timeouts.reconnectTimeout)
+      )
       try {
         sessionRef.socket.close()
       } catch (err) {
         // Ignore if closed
-      }
-      const user = sessionRef.session.getUser()
-      if (workspace !== undefined) {
-        const another = Array.from(workspace.sessions.values()).findIndex((p) => p.session.getUser() === user)
-        if (another === -1 && !workspace.upgrade) {
-          await this.trySetStatus(workspace.context, sessionRef.session, false)
-        }
       }
     }
   }
@@ -596,7 +615,7 @@ class TSessionManager implements SessionManager {
       s.workspaceClosed = true
       if (reason === 'upgrade' || reason === 'force-close') {
         // Override message handler, to wait for upgrading response from clients.
-        await this.sendUpgrade(workspace.context, webSocket, s.binaryResponseMode)
+        this.sendUpgrade(workspace.context, webSocket, s.binaryMode)
       }
       webSocket.close()
     }
@@ -623,15 +642,17 @@ class TSessionManager implements SessionManager {
       }
     }
     await this.ctx.with('closing', {}, async () => {
-      await Promise.race([closePipeline(), timeoutPromise(120000)])
+      const to = timeoutPromise(120000)
+      await Promise.race([closePipeline(), to.promise])
+      to.cancelHandle()
     })
     if (LOGGING_ENABLED) {
       this.ctx.warn('Workspace closed...', { workspace: workspace.id, wsId, wsName: workspace.workspaceName })
     }
   }
 
-  private async sendUpgrade (ctx: MeasureContext, webSocket: ConnectionSocket, binary: boolean): Promise<void> {
-    await webSocket.send(
+  private sendUpgrade (ctx: MeasureContext, webSocket: ConnectionSocket, binary: boolean): void {
+    void webSocket.send(
       ctx,
       {
         result: {
@@ -644,9 +665,7 @@ class TSessionManager implements SessionManager {
   }
 
   async closeWorkspaces (ctx: MeasureContext): Promise<void> {
-    if (this.checkInterval !== undefined) {
-      clearInterval(this.checkInterval)
-    }
+    clearInterval(this.checkInterval)
     for (const w of this.workspaces) {
       await this.closeAll(w[0], w[1], 1, 'shutdown')
     }
@@ -666,8 +685,12 @@ class TSessionManager implements SessionManager {
       try {
         if (workspace.sessions.size === 0) {
           const pl = await workspace.pipeline
-          await Promise.race([pl, timeoutPromise(60000)])
-          await Promise.race([pl.close(), timeoutPromise(60000)])
+          let to = timeoutPromise(60000)
+          await Promise.race([pl, to.promise])
+          to.cancelHandle()
+          to = timeoutPromise(60000)
+          await Promise.race([pl.close(), to])
+          to.cancelHandle()
 
           if (this.workspaces.get(wsid)?.id === wsUID) {
             this.workspaces.delete(wsid)
@@ -719,30 +742,23 @@ class TSessionManager implements SessionManager {
     function send (): void {
       for (const sessionRef of sessions.splice(0, 1)) {
         if (sessionRef.session.sessionId !== from?.sessionId) {
-          if (target === undefined) {
-            void sessionRef.socket.send(
-              ctx,
-              resp,
-              sessionRef.session.binaryResponseMode,
-              sessionRef.session.useCompression
-            )
-          } else if (target.includes(sessionRef.session.getUser())) {
-            void sessionRef.socket.send(
-              ctx,
-              resp,
-              sessionRef.session.binaryResponseMode,
-              sessionRef.session.useCompression
-            )
+          if (target === undefined || target.includes(sessionRef.session.getUser())) {
+            void sessionRef.socket.send(ctx, resp, sessionRef.session.binaryMode, sessionRef.session.useCompression)
           }
         }
       }
       if (sessions.length > 0) {
-        setImmediate(send)
+        onNextTick(send)
       } else {
         ctx.end()
       }
     }
-    send()
+    if (sessions.length > 0) {
+      // We need to send broadcast after our client response so put it after all IO
+      onNextTick(send)
+    } else {
+      ctx.end()
+    }
   }
 
   async handleRequest<S extends Session>(
@@ -764,7 +780,12 @@ class TSessionManager implements SessionManager {
     try {
       const backupMode = 'loadChunk' in service
       await userCtx.with(`🧭 ${backupMode ? 'handleBackup' : 'handleRequest'}`, {}, async (ctx) => {
-        const request = await ctx.with('📥 read', {}, async () => readRequest(msg, false))
+        const request = readRequest(msg, service.binaryMode)
+
+        if (request.time != null) {
+          const delta = Date.now() - request.time
+          userCtx.measure('receive msg', delta)
+        }
         if (request.method === 'forceClose') {
           const wsRef = this.workspaces.get(workspace)
           let done = false
@@ -780,12 +801,12 @@ class TSessionManager implements SessionManager {
             id: request.id,
             result: done
           }
-          await ws.send(ctx, forceCloseResponse, service.binaryResponseMode, service.useCompression)
+          await ws.send(ctx, forceCloseResponse, service.binaryMode, service.useCompression)
           return
         }
         if (request.id === -1 && request.method === 'hello') {
           const hello = request as HelloRequest
-          service.binaryResponseMode = hello.binary ?? false
+          service.binaryMode = hello.binary ?? false
           service.useCompression = hello.compression ?? false
           service.useBroadcast = hello.broadcast ?? false
 
@@ -793,18 +814,24 @@ class TSessionManager implements SessionManager {
             ctx.info('hello happen', {
               workspace,
               user: service.getUser(),
-              binary: service.binaryResponseMode,
+              binary: service.binaryMode,
               compression: service.useCompression,
               timeToHello: Date.now() - service.createTime,
               workspaceUsers: this.workspaces.get(workspace)?.sessions?.size,
               totalUsers: this.sessions.size
             })
           }
+          const reconnect = this.reconnectIds.has(service.sessionId)
+          if (reconnect) {
+            const reconnectTimeout = this.reconnectIds.get(service.sessionId)
+            clearTimeout(reconnectTimeout)
+            this.reconnectIds.delete(service.sessionId)
+          }
           const helloResponse: HelloResponse = {
             id: -1,
             result: 'hello',
-            binary: service.binaryResponseMode,
-            reconnect: this.reconnectIds.has(service.sessionId)
+            binary: service.binaryMode,
+            reconnect
           }
           await ws.send(ctx, helloResponse, false, false)
           return
@@ -839,14 +866,7 @@ class TSessionManager implements SessionManager {
             queue: service.requests.size
           }
 
-          await handleSend(
-            ctx,
-            ws,
-            resp,
-            this.sessions.size < 100 ? 10000 : 1001,
-            service.binaryResponseMode,
-            service.useCompression
-          )
+          await handleSend(ctx, ws, resp, 32 * 1024, service.binaryMode, service.useCompression)
         } catch (err: any) {
           Analytics.handleError(err)
           if (LOGGING_ENABLED) {
@@ -857,7 +877,7 @@ class TSessionManager implements SessionManager {
             error: unknownError(err),
             result: JSON.parse(JSON.stringify(err?.stack))
           }
-          await ws.send(ctx, resp, service.binaryResponseMode, service.useCompression)
+          await ws.send(ctx, resp, service.binaryMode, service.useCompression)
         }
       })
     } finally {
@@ -884,14 +904,7 @@ class TSessionManager implements SessionManager {
     try {
       const resp: Response<any> = { id: request.id, result: request.method === 'measure' ? 'started' : serverTime }
 
-      await handleSend(
-        ctx,
-        ws,
-        resp,
-        this.sessions.size < 100 ? 10000 : 1001,
-        service.binaryResponseMode,
-        service.useCompression
-      )
+      await handleSend(ctx, ws, resp, 32 * 1024, service.binaryMode, service.useCompression)
     } catch (err: any) {
       Analytics.handleError(err)
       if (LOGGING_ENABLED) {
@@ -902,7 +915,7 @@ class TSessionManager implements SessionManager {
         error: unknownError(err),
         result: JSON.parse(JSON.stringify(err?.stack))
       }
-      await ws.send(ctx, resp, service.binaryResponseMode, service.useCompression)
+      await ws.send(ctx, resp, service.binaryMode, service.useCompression)
     }
   }
 }
@@ -916,13 +929,26 @@ async function handleSend (
   useCompression: boolean
 ): Promise<void> {
   // ws.send(msg)
-  if (Array.isArray(msg.result) && chunkLimit > 0 && msg.result.length > chunkLimit) {
+  if (Array.isArray(msg.result) && msg.result.length > 1 && chunkLimit > 0) {
     // Split and send by chunks
     const data = [...msg.result]
 
     let cid = 1
-    while (data.length > 0) {
-      const chunk = data.splice(0, chunkLimit)
+    const dataSize = JSON.stringify(data).length
+    const avg = Math.round(dataSize / data.length)
+    const itemChunk = Math.round(chunkLimit / avg) + 1
+
+    while (data.length > 0 && !ws.isClosed) {
+      let itemChunkCurrent = itemChunk
+      if (data.length - itemChunk < itemChunk / 2) {
+        itemChunkCurrent = data.length
+      }
+      const chunk: FindResult<any> = toFindResult(data.splice(0, itemChunkCurrent))
+      if (data.length === 0) {
+        const orig = msg.result as FindResult<any>
+        chunk.total = orig.total ?? 0
+        chunk.lookupMap = orig.lookupMap
+      }
       if (chunk !== undefined) {
         await ws.send(
           ctx,
@@ -932,6 +958,10 @@ async function handleSend (
         )
       }
       cid++
+
+      if (data.length > 0 && !ws.isClosed) {
+        await waitNextTick()
+      }
     }
   } else {
     await ws.send(ctx, msg, useBinary, useCompression)

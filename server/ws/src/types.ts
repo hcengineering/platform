@@ -54,7 +54,7 @@ export interface Session {
 
   requests: Map<string, SessionRequest>
 
-  binaryResponseMode: boolean
+  binaryMode: boolean
   useCompression: boolean
   useBroadcast: boolean
 
@@ -96,8 +96,9 @@ export type PipelineFactory = (
  */
 export interface ConnectionSocket {
   id: string
+  isClosed: boolean
   close: () => void
-  send: (ctx: MeasureContext, msg: Response<any>, binary: boolean, compression: boolean) => Promise<void>
+  send: (ctx: MeasureContext, msg: Response<any>, binary: boolean, compression: boolean) => Promise<number>
   data: () => Record<string, any>
 }
 
@@ -131,6 +132,11 @@ export interface Workspace {
   workspaceName: string
 }
 
+export type AddSessionResponse =
+  | { session: Session, context: MeasureContext, workspaceId: string }
+  | { upgrade: true }
+  | { error: any }
+
 /**
  * @public
  */
@@ -149,11 +155,11 @@ export interface SessionManager {
     productId: string,
     sessionId: string | undefined,
     accountsUrl: string
-  ) => Promise<{ session: Session, context: MeasureContext, workspaceId: string } | { upgrade: true } | { error: any }>
+  ) => Promise<AddSessionResponse>
 
   broadcastAll: (workspace: Workspace, tx: Tx[], targets?: string[]) => void
 
-  close: (ws: ConnectionSocket, workspaceId: WorkspaceId) => Promise<void>
+  close: (ws: ConnectionSocket, workspaceId: string) => Promise<void>
 
   closeAll: (
     wsId: string,
