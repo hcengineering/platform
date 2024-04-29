@@ -350,4 +350,10 @@
     justify-content: center;
     padding: 2rem;
   }
+
+  @media print {
+    .workbench-container:has(~ .panel-instance) {
+      display: none;
+    }
+  }
 </style>

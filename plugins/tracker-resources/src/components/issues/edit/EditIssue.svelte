@@ -183,6 +183,7 @@
     {embedded}
     {kind}
     withoutActivity={false}
+    printAside={true}
     bind:content
     bind:innerWidth
     on:open

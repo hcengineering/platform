@@ -562,7 +562,7 @@
   </div>
 
   {#if refActions.length > 0}
-    <div class="buttons-panel flex-between clear-mins">
+    <div class="buttons-panel flex-between clear-mins no-print">
       <div class="buttons-group xsmall-gap mt-3">
         {#each refActions as a}
           <Button

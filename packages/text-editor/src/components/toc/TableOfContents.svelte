@@ -54,7 +54,7 @@
   }
 </script>
 
-<div class="root">
+<div class="root no-print">
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class="toc" class:hovered on:click={handleOpenToc}>

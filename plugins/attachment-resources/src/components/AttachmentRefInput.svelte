@@ -265,7 +265,7 @@
   }
 </script>
 
-<div bind:this={refContainer} on:paste={pasteAction}>
+<div class="no-print" bind:this={refContainer} on:paste={pasteAction}>
   <input
     bind:this={inputFile}
     multiple

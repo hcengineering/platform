@@ -372,10 +372,30 @@
       }
     }
 
+    @media print {
+      border: none;
+    }
+
     // &.asideShown .popupPanel-body__main {
     //   border: 1px solid var(--divider-color);
     //   border-radius: 0 0 .5rem .5rem;
     // }
+  }
+
+  .popupPanel-pageHeader {
+    @include watermark;
+
+    top: 0;
+    width: 100%;
+    visibility: hidden;
+  }
+  
+  .popupPanel-pageFooter {
+    @include watermark;
+
+    bottom: 0;
+    width: 100%;
+    visibility: hidden;
   }
 
   &.modern {
@@ -385,6 +405,10 @@
     .popupPanel-title {
       min-height: 3.5rem;
     }
+  }
+
+  @media print {
+    overflow: visible;
   }
 }
 

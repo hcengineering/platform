@@ -1,0 +1,21 @@
+@media print {
+  .no-print { 
+    display: none !important;
+  }
+
+  .pagebreak { 
+    page-break-before: always; 
+  }
+}
+
+@media not print {
+  .only-print {
+    display: none !important;
+  }
+}
+
+@mixin watermark {
+  position: fixed;
+  z-index: 9999;
+  page-break-after: always;
+}

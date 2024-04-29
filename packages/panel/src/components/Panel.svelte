@@ -45,6 +45,8 @@
   export let customAside: ButtonItem[] | undefined = undefined
   export let selectedAside: string | boolean = customAside ? customAside[0].id : isAside
   export let kind: 'default' | 'modern' = 'default'
+  export let printHeader = true
+  export let printAside = false
 
   export function getAside (): string | boolean {
     return panel.getAside()
@@ -109,6 +111,8 @@
   bind:useMaxWidth
   {isFullSize}
   {customAside}
+  {printHeader}
+  {printAside}
   bind:selectedAside
   on:select={(result) => {
     selectedAside = result.detail
@@ -131,7 +135,7 @@
   <svelte:fragment slot="utils">
     {#if isUtils && $$slots.utils}
       <slot name="utils" />
-      <div class="buttons-divider max-h-7 h-7 mx-2" />
+      <div class="buttons-divider max-h-7 h-7 mx-2 no-print" />
     {/if}
   </svelte:fragment>
 
@@ -181,6 +185,14 @@
 
   <svelte:fragment slot="post-utils">
     <slot name="post-utils" />
+  </svelte:fragment>
+
+  <svelte:fragment slot="page-header">
+    <slot name="page-header" />
+  </svelte:fragment>
+
+  <svelte:fragment slot="page-footer">
+    <slot name="page-footer" />
   </svelte:fragment>
 
   {#if $deviceInfo.isMobile}

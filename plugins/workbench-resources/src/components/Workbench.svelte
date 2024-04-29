@@ -646,7 +646,7 @@
     class:modern-app={modern}
     style:flex-direction={appsDirection === 'horizontal' ? 'column-reverse' : 'row'}
   >
-    <div class="antiPanel-application {appsDirection}" class:lastDivider={!visibleNav}>
+    <div class="antiPanel-application {appsDirection} no-print" class:lastDivider={!visibleNav}>
       <div
         class="hamburger-container clear-mins"
         class:portrait={appsDirection === 'horizontal'}
@@ -750,7 +750,7 @@
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->
         {#if navFloat}<div class="cover shown" on:click={() => (visibleNav = false)} />{/if}
-        <div class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'}">
+        <div class="antiPanel-navigator no-print {appsDirection === 'horizontal' ? 'portrait' : 'landscape'}">
           <div class="antiPanel-wrap__content">
             {#if currentApplication}
               <NavHeader label={currentApplication.label} />
@@ -1015,6 +1015,12 @@
         transition-duration: 0;
         border-left: 2px solid var(--primary-bg-color);
       }
+    }
+  }
+
+  @media print {
+    .workbench-container:has(~ .panel-instance) {
+      display: none;
     }
   }
 </style>

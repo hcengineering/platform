@@ -247,10 +247,15 @@
       .clock {
         margin: 0 12px 0 8px;
       }
+
+      @media print {
+        display: none;
+      }
     }
 
     .app {
       display: flex;
+      flex-direction: column;
       height: calc(100% - var(--status-bar-height));
 
       .error {
