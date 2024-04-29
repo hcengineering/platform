@@ -9,7 +9,12 @@ test.use({
 })
 
 test.describe('Teamspace tests', () => {
+  let leftSideMenuPage: LeftSideMenuPage
+  let documentsPage: DocumentsPage
+
   test.beforeEach(async ({ page }) => {
+    leftSideMenuPage = new LeftSideMenuPage(page)
+    documentsPage = new DocumentsPage(page)
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
@@ -20,10 +25,7 @@ test.describe('Teamspace tests', () => {
       private: false
     }
 
-    const leftSideMenuPage = new LeftSideMenuPage(page)
     await leftSideMenuPage.clickDocuments()
-
-    const documentsPage = new DocumentsPage(page)
     await documentsPage.checkTeamspaceNotExist(newTeamspace.title)
     await documentsPage.createNewTeamspace(newTeamspace)
     await documentsPage.checkTeamspaceExist(newTeamspace.title)
@@ -34,15 +36,10 @@ test.describe('Teamspace tests', () => {
       title: 'Teamspace for archive'
     }
 
-    const leftSideMenuPage = new LeftSideMenuPage(page)
     await leftSideMenuPage.clickDocuments()
-
-    const documentsPage = new DocumentsPage(page)
     await documentsPage.checkTeamspaceExist(archiveTeamspace.title)
-
     await documentsPage.moreActionTeamspace(archiveTeamspace.title, 'Archive')
     await documentsPage.pressYesForPopup(page)
-
     await documentsPage.checkTeamspaceNotExist(archiveTeamspace.title)
   })
 
@@ -58,18 +55,12 @@ test.describe('Teamspace tests', () => {
       private: false
     }
 
-    const leftSideMenuPage = new LeftSideMenuPage(page)
     await leftSideMenuPage.clickDocuments()
-
-    const documentsPage = new DocumentsPage(page)
     await documentsPage.checkTeamspaceNotExist(editTeamspace.title)
     await documentsPage.createNewTeamspace(editTeamspace)
     await documentsPage.checkTeamspaceExist(editTeamspace.title)
-
     await documentsPage.moreActionTeamspace(editTeamspace.title, 'Edit teamspace')
-
     await documentsPage.editTeamspace(updateEditTeamspace)
-
     await documentsPage.moreActionTeamspace(updateEditTeamspace.title, 'Edit teamspace')
     await documentsPage.checkTeamspace(updateEditTeamspace)
   })

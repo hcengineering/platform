@@ -25,7 +25,8 @@ export class TalentDetailsPage extends CommonRecruitingPage {
   readonly buttonPopupMergeContacts = (): Locator =>
     this.page.locator('form[id="contact:string:MergePersons"] button > span', { hasText: 'Merge contacts' })
 
-  readonly textAttachmentName = (): Locator => this.page.locator('div.name a') // Assuming this locator is also used appropriately
+  readonly textAttachmentName = (): Locator => this.page.locator('div.name a')
+  readonly titleAndSourceTalent = (title: string): Locator => this.page.locator('button > span', { hasText: title })
 
   async addSkill (skillTag: string, skillDescription: string): Promise<void> {
     await this.buttonAddSkill().click()
@@ -89,5 +90,11 @@ export class TalentDetailsPage extends CommonRecruitingPage {
     if (applicationLastName != null) {
       await this.page.waitForSelector(`div[class*="header"] div.name:nth-child(2) :has-text("${applicationFirstName}")`)
     }
+  }
+
+  async checkMergeContacts (talentName: string, title: string, source: string): Promise<void> {
+    await expect(this.page.locator('div.location input')).toHaveValue(talentName)
+    await expect(this.titleAndSourceTalent(title)).toBeVisible()
+    await expect(this.titleAndSourceTalent(source)).toBeVisible()
   }
 }

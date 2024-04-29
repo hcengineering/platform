@@ -10,26 +10,28 @@ test.use({
 })
 // ADDED NEW
 test.describe('Documents tests', () => {
+  let leftSideMenuPage: LeftSideMenuPage
+  let documentsPage: DocumentsPage
+  let documentContentPage: DocumentContentPage
+
   test.beforeEach(async ({ page }) => {
+    leftSideMenuPage = new LeftSideMenuPage(page)
+    documentsPage = new DocumentsPage(page)
+    documentContentPage = new DocumentContentPage(page)
+
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
-  test('Create a document', async ({ page }) => {
+  test('Create a document', async () => {
     const newDocument: NewDocument = {
       title: `New Document-${generateId()}`,
       space: 'Default'
     }
 
-    const leftSideMenuPage = new LeftSideMenuPage(page)
     await leftSideMenuPage.clickDocuments()
-
-    const documentsPage = new DocumentsPage(page)
     await documentsPage.clickOnButtonCreateDocument()
-
     await documentsPage.createDocument(newDocument)
     await documentsPage.openDocument(newDocument.title)
-
-    const documentContentPage = new DocumentContentPage(page)
     await documentContentPage.checkDocumentTitle(newDocument.title)
   })
 
@@ -41,25 +43,15 @@ test.describe('Documents tests', () => {
       title: `Edit Document Title-${generateId()}`,
       space: 'Default'
     }
-
-    const leftSideMenuPage = new LeftSideMenuPage(page)
     await leftSideMenuPage.clickDocuments()
-
-    const documentsPage = new DocumentsPage(page)
     await documentsPage.clickOnButtonCreateDocument()
-
     await documentsPage.createDocument(editDocument)
     await documentsPage.openDocument(editDocument.title)
-
-    const documentContentPage = new DocumentContentPage(page)
     await documentContentPage.checkDocumentTitle(editDocument.title)
-
     let content = await documentContentPage.addContentToTheNewLine(contentOne)
     await documentContentPage.checkContent(content)
-
     content = await documentContentPage.addContentToTheNewLine(contentTwo)
     await documentContentPage.checkContent(content)
-
     await documentContentPage.updateDocumentTitle(newDocumentTitle)
     await documentContentPage.checkDocumentTitle(newDocumentTitle)
   })
@@ -76,27 +68,18 @@ test.describe('Documents tests', () => {
       private: false
     }
 
-    const leftSideMenuPage = new LeftSideMenuPage(page)
     await leftSideMenuPage.clickDocuments()
-
-    const documentsPage = new DocumentsPage(page)
     await documentsPage.checkTeamspaceNotExist(moveTeamspace.title)
     await documentsPage.createNewTeamspace(moveTeamspace)
     await documentsPage.checkTeamspaceExist(moveTeamspace.title)
     await documentsPage.clickOnButtonCreateDocument()
-
     await documentsPage.createDocument(moveDocument)
     await documentsPage.openDocument(moveDocument.title)
-
-    const documentContentPage = new DocumentContentPage(page)
     await documentContentPage.checkDocumentTitle(moveDocument.title)
-
     const content = await documentContentPage.addContentToTheNewLine(contentFirst)
     await documentContentPage.checkContent(content)
-
     await documentsPage.moreActionsOnDocument(moveDocument.title, 'Move')
     await documentsPage.fillMoveDocumentForm(moveTeamspace.title)
-
     await documentsPage.openTeamspace(moveTeamspace.title)
     await documentsPage.openDocumentForTeamspace(moveTeamspace.title, moveDocument.title)
     await documentContentPage.checkDocumentTitle(moveDocument.title)
@@ -111,20 +94,13 @@ test.describe('Documents tests', () => {
       space: 'Default'
     }
 
-    const leftSideMenuPage = new LeftSideMenuPage(page)
     await leftSideMenuPage.clickDocuments()
-
-    const documentsPage = new DocumentsPage(page)
     await documentsPage.openTeamspace(colDocument.space)
     await documentsPage.clickOnButtonCreateDocument()
-
     await documentsPage.createDocument(colDocument)
     await documentsPage.openDocument(colDocument.title)
-
     await test.step('User1. Add content first user', async () => {
-      const documentContentPage = new DocumentContentPage(page)
       await documentContentPage.checkDocumentTitle(colDocument.title)
-
       content = await documentContentPage.addContentToTheNewLine(contentFirstUser)
       await documentContentPage.checkContent(content)
     })
@@ -136,15 +112,12 @@ test.describe('Documents tests', () => {
 
         const leftSideMenuPageSecond = new LeftSideMenuPage(userSecondPage)
         await leftSideMenuPageSecond.clickDocuments()
-
         const documentsPageSecond = new DocumentsPage(userSecondPage)
         await documentsPageSecond.openTeamspace(colDocument.space)
         await documentsPageSecond.openDocument(colDocument.title)
-
         const documentContentPageSecond = new DocumentContentPage(page)
         await documentContentPageSecond.checkDocumentTitle(colDocument.title)
         await documentContentPageSecond.checkContent(content)
-
         content = await documentContentPageSecond.addContentToTheNewLine(contentSecondUser)
         await documentContentPageSecond.checkContent(content)
       } finally {
@@ -154,7 +127,6 @@ test.describe('Documents tests', () => {
     })
 
     await test.step('User1. Check final content', async () => {
-      const documentContentPage = new DocumentContentPage(page)
       await documentContentPage.checkDocumentTitle(colDocument.title)
       await documentContentPage.checkContent(content)
     })
@@ -167,22 +139,14 @@ test.describe('Documents tests', () => {
       space: 'Default'
     }
 
-    const leftSideMenuPage = new LeftSideMenuPage(page)
     await leftSideMenuPage.clickDocuments()
-
-    const documentsPage = new DocumentsPage(page)
     await documentsPage.clickOnButtonCreateDocument()
-
     await documentsPage.createDocument(linkDocument)
     await documentsPage.openDocument(linkDocument.title)
-
-    const documentContentPage = new DocumentContentPage(page)
     await documentContentPage.checkDocumentTitle(linkDocument.title)
-
     await documentContentPage.addRandomLines(5)
     await documentContentPage.addContentToTheNewLine(contentLink)
     await documentContentPage.addRandomLines(5)
-
     await documentContentPage.addLinkToText(contentLink, 'test/link/123456')
     await documentContentPage.checkLinkInTheText(contentLink, 'test/link/123456')
   })

@@ -92,6 +92,28 @@ export class IssuesPage extends CommonTrackerPage {
   commentCountLocator = (issueName: string): Locator =>
     this.commonAncestorForOperations(issueName).locator('button > div[slot="content"]').first()
 
+  // ACTIONS
+
+  async clickLinkSidebarAll (): Promise<void> {
+    await this.linkSidebarAll().click()
+  }
+
+  async clickModelSelectorAll (): Promise<void> {
+    await this.modelSelectorAll().click()
+  }
+
+  async clickMdelSelectorBacklog (): Promise<void> {
+    await this.modelSelectorBacklog().click()
+  }
+
+  async clickModalSelectorActive (): Promise<void> {
+    await this.modelSelectorActive().click()
+  }
+
+  async clickLinkSidebarMyIssue (): Promise<void> {
+    await this.linkSidebarMyIssue().click()
+  }
+
   async createNewIssue (data: NewIssue, closeNotification: boolean = false): Promise<void> {
     await this.buttonCreateNewIssue().click()
     await this.fillNewIssueForm(data)
