@@ -36,6 +36,7 @@ export { default as TextEditorStyleToolbar } from './components/TextEditorStyleT
 export { default as AttachIcon } from './components/icons/Attach.svelte'
 export { default as TableIcon } from './components/icons/Table.svelte'
 export { default as TableOfContents } from './components/toc/TableOfContents.svelte'
+export { default as TableOfContentsContent } from './components/toc/TableOfContentsContent.svelte'
 export * from './components/node-view'
 export { default } from './plugin'
 export * from './types'
