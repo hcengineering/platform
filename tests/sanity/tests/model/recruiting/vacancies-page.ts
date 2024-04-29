@@ -57,7 +57,7 @@ export class VacanciesPage extends CommonRecruitingPage {
 
   readonly softwareEngineerLink = (): Locator => this.page.locator('text=Software Engineer')
   readonly applicationsTabHeader = (): Locator => this.page.locator('.antiSection-header >> text=Applications')
-  readonly secondTab = (): Locator => this.page.locator('.tablist-container div:nth-child(2)')
+  readonly secondTab = (): Locator => this.page.getByText('Done states')
   readonly applicantMarina = (): Locator => this.page.locator('text=M. Marina').first()
   readonly applicantJohn = (): Locator => this.page.locator('text=Multiseed John').first()
   readonly applicantAlex = (): Locator => this.page.locator('text=P. Alex').first()
