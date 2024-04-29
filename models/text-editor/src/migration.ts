@@ -15,15 +15,15 @@
 
 import core, { type AnyAttribute, type Doc, type Domain } from '@hcengineering/core'
 import {
+  tryMigrate,
   type MigrateOperation,
   type MigrateUpdate,
   type MigrationClient,
   type MigrationDocumentQuery,
   type MigrationIterator,
-  type MigrationUpgradeClient,
-  tryMigrate
+  type MigrationUpgradeClient
 } from '@hcengineering/model'
-import { htmlToMarkup } from '@hcengineering/text'
+import { htmlToMarkup, jsonToPmNode } from '@hcengineering/text'
 
 async function migrateMarkup (client: MigrationClient): Promise<void> {
   const hierarchy = client.hierarchy
@@ -71,8 +71,94 @@ async function processMigrateMarkupFor (
       for (const attribute of attributes) {
         const value = (doc as any)[attribute.name]
         if (value != null) {
-          update[attribute.name] = htmlToMarkup(value)
+          // check if it is already json just skip it
+          try {
+            const node = jsonToPmNode(value)
+            if (node.type === undefined) {
+              throw new Error('Not a valid json node')
+            }
+          } catch {
+            update[attribute.name] = htmlToMarkup(value)
+          }
         }
+      }
+
+      if (Object.keys(update).length > 0) {
+        operations.push({ filter: { _id: doc._id }, update })
+      }
+    }
+
+    if (operations.length > 0) {
+      await client.bulk(domain, operations)
+    }
+
+    processed += docs.length
+    console.log('...processed', processed)
+  }
+}
+
+async function fixMigrateMarkup (client: MigrationClient): Promise<void> {
+  const hierarchy = client.hierarchy
+  const classes = hierarchy.getDescendants(core.class.Doc)
+  for (const _class of classes) {
+    const domain = hierarchy.findDomain(_class)
+    if (domain === undefined) continue
+
+    const attributes = hierarchy.getAllAttributes(_class)
+    const filtered = Array.from(attributes.values()).filter((attribute) => {
+      return (
+        hierarchy.isDerived(attribute.type._class, core.class.TypeMarkup) ||
+        hierarchy.isDerived(attribute.type._class, core.class.TypeCollaborativeMarkup)
+      )
+    })
+    if (filtered.length === 0) continue
+
+    const iterator = await client.traverse(domain, { _class })
+    try {
+      await processFixMigrateMarkupFor(domain, filtered, client, iterator)
+    } finally {
+      await iterator.close()
+    }
+  }
+}
+
+async function processFixMigrateMarkupFor (
+  domain: Domain,
+  attributes: AnyAttribute[],
+  client: MigrationClient,
+  iterator: MigrationIterator<Doc>
+): Promise<void> {
+  let processed = 0
+  while (true) {
+    const docs = await iterator.next(1000)
+    if (docs === null || docs.length === 0) {
+      break
+    }
+
+    const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
+
+    for (const doc of docs) {
+      const update: MigrateUpdate<Doc> = {}
+
+      for (const attribute of attributes) {
+        try {
+          const value = (doc as any)[attribute.name]
+          if (value != null) {
+            let res = value
+            while ((res as string).includes('\\"type\\"')) {
+              try {
+                const textOrJson = JSON.parse(res)
+                JSON.parse(textOrJson)
+                res = textOrJson
+              } catch {
+                break
+              }
+            }
+            if (res !== value) {
+              update[attribute.name] = res
+            }
+          }
+        } catch {}
       }
 
       if (Object.keys(update).length > 0) {
@@ -95,6 +181,10 @@ export const textEditorOperation: MigrateOperation = {
       {
         state: 'markup',
         func: migrateMarkup
+      },
+      {
+        state: 'fix-markup',
+        func: fixMigrateMarkup
       }
     ])
   },
