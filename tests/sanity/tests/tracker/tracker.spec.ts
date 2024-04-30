@@ -17,7 +17,6 @@ test.use({
   storageState: PlatformSetting
 })
 
-// const getIssueName = (postfix: string = generateId()): string => `issue-${postfix}`
 
 const panelStatusMap = new Map([
   ['Issues/All', DEFAULT_STATUSES],
@@ -66,7 +65,7 @@ test.describe('Tracker tests', () => {
 
   test('report-time-from-issue-card', async ({ page }) => {
     const issuesPage = new IssuesPage(page)
-    await navigate(page) // Assume navigate is defined elsewhere
+    await navigate(page)
     const assignee = 'Chen Rosamund'
     const status = 'In Progress'
     const values = [2, 4, 6, 8]
@@ -74,7 +73,7 @@ test.describe('Tracker tests', () => {
     for (let i = 0; i < 5; i++) {
       const random = Math.floor(Math.random() * values.length)
       const time = values[random]
-      const name = getIssueName() // Assume getIssueName is defined elsewhere
+      const name = getIssueName()
 
       await issuesPage.createAndOpenIssue(name, assignee, status)
       await issuesPage.reportTime(time)
