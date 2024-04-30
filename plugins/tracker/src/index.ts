@@ -410,6 +410,8 @@ const pluginState = plugin(trackerId, {
     Backlog: '' as Ref<Status>,
     Todo: '' as Ref<Status>,
     InProgress: '' as Ref<Status>,
+    Coding: '' as Ref<Status>,
+    UnderReview: '' as Ref<Status>,
     Done: '' as Ref<Status>,
     Canceled: '' as Ref<Status>
   },
@@ -568,16 +570,22 @@ export const classicIssueTaskStatuses: TaskStatusFactory[] = [
  * @public
  */
 export const baseIssueTaskStatuses: TaskStatusFactory[] = [
-  { category: task.statusCategory.UnStarted, statuses: [['Backlog', PaletteColorIndexes.Cloud]] },
+  {
+    category: task.statusCategory.UnStarted,
+    statuses: [['Backlog', PaletteColorIndexes.Cloud, pluginState.status.Backlog]]
+  },
   {
     category: task.statusCategory.Active,
     statuses: [
-      ['Coding', PaletteColorIndexes.Porpoise],
-      ['Under review', PaletteColorIndexes.Cerulean]
+      ['Coding', PaletteColorIndexes.Porpoise, pluginState.status.Coding],
+      ['Under review', PaletteColorIndexes.Cerulean, pluginState.status.UnderReview]
     ]
   },
-  { category: task.statusCategory.Won, statuses: [['Done', PaletteColorIndexes.Grass]] },
-  { category: task.statusCategory.Lost, statuses: [['Canceled', PaletteColorIndexes.Coin]] }
+  { category: task.statusCategory.Won, statuses: [['Done', PaletteColorIndexes.Grass, pluginState.status.Done]] },
+  {
+    category: task.statusCategory.Lost,
+    statuses: [['Canceled', PaletteColorIndexes.Coin, pluginState.status.Canceled]]
+  }
 ]
 
 /**

@@ -46,6 +46,9 @@ async function createDefaultProject (tx: TxOperations): Promise<void> {
   })
 
   // temporary disabled until nice automation
+  // NOTE: when it will be restored !!!
+  // 1. Move to static model
+  // 2. Use well-known IDs for all the objects
   // if ((await tx.findOne(task.class.ProjectType, { _id: tracker.ids.BaseProjectType })) === undefined) {
   //   const issueId: Ref<TaskType> = generateId()
 
