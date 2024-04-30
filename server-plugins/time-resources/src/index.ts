@@ -85,7 +85,7 @@ export async function OnWorkSlotCreate (tx: Tx, control: TriggerControl): Promis
     if (type?.classic) {
       const taskType = (await control.modelDb.findAll(task.class.TaskType, { _id: issue.kind }))[0]
       if (taskType !== undefined) {
-        const statuses = await control.findAll(core.class.Status, { _id: { $in: taskType.statuses } })
+        const statuses = await control.modelDb.findAll(core.class.Status, { _id: { $in: taskType.statuses } })
         const statusMap = toIdMap(statuses)
         const typeStatuses = taskType.statuses.map((p) => statusMap.get(p)).filter((p) => p !== undefined) as Status[]
         const current = statusMap.get(issue.status)
@@ -134,7 +134,7 @@ export async function OnToDoRemove (tx: Tx, control: TriggerControl): Promise<Tx
       const factory = new TxFactory(control.txFactory.account)
       const taskType = (await control.modelDb.findAll(task.class.TaskType, { _id: issue.kind }))[0]
       if (taskType !== undefined) {
-        const statuses = await control.findAll(core.class.Status, { _id: { $in: taskType.statuses } })
+        const statuses = await control.modelDb.findAll(core.class.Status, { _id: { $in: taskType.statuses } })
         const statusMap = toIdMap(statuses)
         const typeStatuses = taskType.statuses.map((p) => statusMap.get(p)).filter((p) => p !== undefined) as Status[]
         const current = statusMap.get(issue.status)
@@ -366,8 +366,8 @@ export async function IssueToDoDone (control: TriggerControl, workslots: WorkSlo
             const nextStatus = taskType.statuses[index + 1]
             if (nextStatus !== undefined) {
               const currentStatus = taskType.statuses[index]
-              const current = (await control.findAll(core.class.Status, { _id: currentStatus }))[0]
-              const next = (await control.findAll(core.class.Status, { _id: nextStatus }))[0]
+              const current = (await control.modelDb.findAll(core.class.Status, { _id: currentStatus }))[0]
+              const next = (await control.modelDb.findAll(core.class.Status, { _id: nextStatus }))[0]
               if (
                 current.category !== task.statusCategory.Lost &&
                 next.category !== task.statusCategory.Lost &&
@@ -419,7 +419,7 @@ async function createIssueHandler (issue: Issue, control: TriggerControl): Promi
     if (project === undefined) return []
     const type = (await control.modelDb.findAll(task.class.ProjectType, { _id: project.type }))[0]
     if (!type?.classic) return []
-    const status = (await control.findAll(core.class.Status, { _id: issue.status }))[0]
+    const status = (await control.modelDb.findAll(core.class.Status, { _id: issue.status }))[0]
     if (status === undefined) return []
     if (status.category === task.statusCategory.Active || status.category === task.statusCategory.ToDo) {
       const tx = await getCreateToDoTx(issue, issue.assignee, control)
@@ -499,7 +499,7 @@ async function changeIssueAssigneeHandler (
 ): Promise<Tx[]> {
   const issue = (await control.findAll(tracker.class.Issue, { _id: issueId }))[0]
   if (issue !== undefined) {
-    const status = (await control.findAll(core.class.Status, { _id: issue.status }))[0]
+    const status = (await control.modelDb.findAll(core.class.Status, { _id: issue.status }))[0]
     if (status === undefined) return []
     if (status.category === task.statusCategory.Active || status.category === task.statusCategory.ToDo) {
       const res: Tx[] = []
@@ -526,7 +526,7 @@ async function changeIssueStatusHandler (
   newStatus: Ref<IssueStatus>,
   issueId: Ref<Issue>
 ): Promise<Tx[]> {
-  const status = (await control.findAll(core.class.Status, { _id: newStatus }))[0]
+  const status = (await control.modelDb.findAll(core.class.Status, { _id: newStatus }))[0]
   if (status === undefined) return []
   if (status.category === task.statusCategory.Active || status.category === task.statusCategory.ToDo) {
     const issue = (await control.findAll(tracker.class.Issue, { _id: issueId }))[0]
