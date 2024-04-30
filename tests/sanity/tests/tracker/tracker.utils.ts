@@ -1,5 +1,6 @@
 import { expect, Page } from '@playwright/test'
-import { PlatformURI } from '../utils'
+import { generateId, PlatformURI } from '../utils'
+import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
 
 export interface IssueProps {
   name: string
@@ -237,4 +238,30 @@ export async function toTime (value: number): Promise<string> {
     ...(hours > 0 ? [`${hours}h`] : []),
     ...(minutes > 0 ? [`${minutes}m`] : [])
   ].join(' ')
+}
+export const getIssueName = (postfix: string = generateId()): string => `issue-${postfix}`
+export async function performPanelTest (page: Page, statuses: string[], panel: string, mode: string): Promise<void> {
+  const locator = page.locator('.list-container')
+  const excluded = DEFAULT_STATUSES.filter((status) => !statuses.includes(status))
+  await new TrackerNavigationMenuPage(page).openIssuesForProject('Default')
+  await page.locator(`.ac-header .overflow-label:has-text("${mode}")`).click()
+  await page.click(ViewletSelectors.Table)
+  for (const s of statuses) {
+    await expect(locator).toContainText(s)
+  }
+  if (excluded.length > 0) {
+    await expect(locator).not.toContainText(excluded)
+  }
+  await page.click(ViewletSelectors.Board)
+
+  if (excluded.length > 0) {
+    await expect(locator).not.toContainText(excluded)
+  }
+  for (const status of statuses) {
+    await expect(
+      page.locator('.panel-container', {
+        has: page.locator(`.header:has-text("${status}")`)
+      })
+    ).toContainText(getIssueName(status), { timeout: 15000 })
+  }
 }

@@ -75,7 +75,7 @@ test.describe('Workspace tests', () => {
     await trackerNavigationMenuPage.openIssuesForProject('Default')
 
     const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll().click()
+    await issuesPage.clickModelSelectorAll()
     await issuesPage.createNewIssue(newIssue)
     await issuesPage.searchIssueByName(newIssue.title)
     await issuesPage.openIssueByName(newIssue.title)

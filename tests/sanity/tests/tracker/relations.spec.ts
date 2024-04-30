@@ -11,7 +11,16 @@ test.use({
   storageState: PlatformSetting
 })
 test.describe('Relations', () => {
+  let leftSideMenuPage: LeftSideMenuPage
+  let issuesPage: IssuesPage
+  let issuesDetailsPage: IssuesDetailsPage
+  let trackerNavigationMenuPage: TrackerNavigationMenuPage
+
   test.beforeEach(async ({ page }) => {
+    leftSideMenuPage = new LeftSideMenuPage(page)
+    issuesPage = new IssuesPage(page)
+    issuesDetailsPage = new IssuesDetailsPage(page)
+    trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
@@ -24,21 +33,17 @@ test.describe('Relations', () => {
       title: `Second. Mark as blocked by-${generateId()}`,
       description: 'Second. Mark as blocked by'
     }
-    const leftSideMenuPage = new LeftSideMenuPage(page)
     await leftSideMenuPage.clickTracker()
 
     const secondIssueId = await prepareNewIssueStep(page, secondIssue)
     const firstIssueId = await prepareNewIssueStep(page, firstIssue)
 
-    const issuesPage = new IssuesPage(page)
     await issuesPage.openIssueByName(firstIssue.title)
 
-    const issuesDetailsPage = new IssuesDetailsPage(page)
     await test.step('Set blocked by and check issue description', async () => {
       await issuesDetailsPage.waitDetailsOpened(firstIssue.title)
       await issuesDetailsPage.moreActionOnIssueWithSecondLevel('Relations', 'Mark as blocked by...')
       await issuesDetailsPage.fillSearchForIssueModal(secondIssue.title)
-
       await issuesDetailsPage.checkIssue({
         ...firstIssue,
         blockedBy: secondIssueId
@@ -47,12 +52,9 @@ test.describe('Relations', () => {
     })
 
     await test.step('Check the second issue description', async () => {
-      const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
       await trackerNavigationMenuPage.openIssuesForProject('Default')
-
       await issuesPage.searchIssueByName(secondIssue.title)
       await issuesPage.openIssueByName(secondIssue.title)
-
       await issuesDetailsPage.waitDetailsOpened(secondIssue.title)
       await issuesDetailsPage.checkIssue({
         ...secondIssue,
@@ -70,16 +72,11 @@ test.describe('Relations', () => {
       title: `Second. Mark as blocked by-${generateId()}`,
       description: 'Second. Mark as blocked by'
     }
-    const leftSideMenuPage = new LeftSideMenuPage(page)
     await leftSideMenuPage.clickTracker()
 
     const secondIssueId = await prepareNewIssueStep(page, secondIssue)
     const firstIssueId = await prepareNewIssueStep(page, firstIssue)
-
-    const issuesPage = new IssuesPage(page)
     await issuesPage.openIssueByName(firstIssue.title)
-
-    const issuesDetailsPage = new IssuesDetailsPage(page)
     await test.step('Mark as blocking... and check issue description', async () => {
       await issuesDetailsPage.waitDetailsOpened(firstIssue.title)
       await issuesDetailsPage.moreActionOnIssueWithSecondLevel('Relations', 'Mark as blocking...')
@@ -95,12 +92,9 @@ test.describe('Relations', () => {
     })
 
     await test.step('Check the second issue description', async () => {
-      const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
       await trackerNavigationMenuPage.openIssuesForProject('Default')
-
       await issuesPage.searchIssueByName(secondIssue.title)
       await issuesPage.openIssueByName(secondIssue.title)
-
       await issuesDetailsPage.waitDetailsOpened(secondIssue.title)
       await issuesDetailsPage.checkIssue({
         ...secondIssue,
@@ -118,16 +112,11 @@ test.describe('Relations', () => {
       title: `Second. Reference another issue-${generateId()}`,
       description: 'Second. Reference another issue'
     }
-    const leftSideMenuPage = new LeftSideMenuPage(page)
     await leftSideMenuPage.clickTracker()
 
     const secondIssueId = await prepareNewIssueStep(page, secondIssue)
     const firstIssueId = await prepareNewIssueStep(page, firstIssue)
-
-    const issuesPage = new IssuesPage(page)
     await issuesPage.openIssueByName(firstIssue.title)
-
-    const issuesDetailsPage = new IssuesDetailsPage(page)
     await test.step('Reference another issue... and check issue description', async () => {
       await issuesDetailsPage.waitDetailsOpened(firstIssue.title)
       await issuesDetailsPage.moreActionOnIssueWithSecondLevel('Relations', 'Reference another issue...')
@@ -141,12 +130,9 @@ test.describe('Relations', () => {
     })
 
     await test.step('Check the second issue description', async () => {
-      const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
       await trackerNavigationMenuPage.openIssuesForProject('Default')
-
       await issuesPage.searchIssueByName(secondIssue.title)
       await issuesPage.openIssueByName(secondIssue.title)
-
       await issuesDetailsPage.waitDetailsOpened(secondIssue.title)
       await issuesDetailsPage.checkIssue({
         ...secondIssue,
@@ -164,16 +150,10 @@ test.describe('Relations', () => {
       title: `Second. Remove relation be editing issue details-${generateId()}`,
       description: 'Second. Remove relation be editing issue details'
     }
-    const leftSideMenuPage = new LeftSideMenuPage(page)
     await leftSideMenuPage.clickTracker()
-
     const secondIssueId = await prepareNewIssueStep(page, secondIssue)
     await prepareNewIssueStep(page, firstIssue)
-
-    const issuesPage = new IssuesPage(page)
     await issuesPage.openIssueByName(firstIssue.title)
-
-    const issuesDetailsPage = new IssuesDetailsPage(page)
     await test.step('Reference another issue... and check issue description', async () => {
       await issuesDetailsPage.waitDetailsOpened(firstIssue.title)
       await issuesDetailsPage.moreActionOnIssueWithSecondLevel('Relations', 'Mark as blocked by...')
@@ -191,9 +171,7 @@ test.describe('Relations', () => {
     })
 
     await test.step('Check the second issue description', async () => {
-      const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
       await trackerNavigationMenuPage.openIssuesForProject('Default')
-
       await issuesPage.searchIssueByName(secondIssue.title)
       await issuesPage.openIssueByName(secondIssue.title)
       await issuesDetailsPage.waitDetailsOpened(secondIssue.title)

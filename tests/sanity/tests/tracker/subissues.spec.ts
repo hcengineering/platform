@@ -13,18 +13,27 @@ import {
 import { Issue, NewIssue } from '../model/tracker/types'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
+import { CommonTrackerPage } from '../model/tracker/common-tracker-page'
 
 test.use({
   storageState: PlatformSetting
 })
 test.describe('Tracker sub-issues tests', () => {
+  let issuesPage: IssuesPage
+  let leftSideMenuPage: LeftSideMenuPage
+  let issuesDetailsPage: IssuesDetailsPage
+  let commonTrackerPage: CommonTrackerPage
+
   test.beforeEach(async ({ page }) => {
+    issuesPage = new IssuesPage(page)
+    leftSideMenuPage = new LeftSideMenuPage(page)
+    issuesDetailsPage = new IssuesDetailsPage(page)
+    commonTrackerPage = new CommonTrackerPage(page)
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
   test('create sub-issue', async ({ page }) => {
-    await page.click('[id="app-tracker\\:string\\:TrackerApplication"]')
-
+    await commonTrackerPage.clickOnApplicationButton()
     const props = {
       name: `issue-${generateId(5)}`,
       description: 'description',
@@ -34,25 +43,20 @@ test.describe('Tracker sub-issues tests', () => {
     }
     await navigate(page)
     await createIssue(page, props)
-    await page.click('text="Issues"')
-
-    const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll().click()
+    await issuesPage.clickModelSelectorAll()
     await issuesPage.searchIssueByName(props.name)
     await issuesPage.openIssueByName(props.name)
-
     await checkIssue(page, props)
     props.name = `sub${props.name}`
-    await page.click('button:has-text("Add sub-issue")')
+    await issuesPage.clickOnSubIssues()
     await fillIssueForm(page, props)
     await page.keyboard.press('Escape')
     await page.keyboard.press('Escape')
-
-    await page.locator('#new-issue').click()
+    await issuesPage.clickOnNewIssue()
     await checkIssueDraft(page, props)
   })
 
-  test('Edit a sub-issue', async ({ page }) => {
+  test('Edit a sub-issue', async () => {
     const newIssue: NewIssue = {
       title: `Issue for the sub-issue-${generateId()}`,
       description: 'Description Issue for the sub-issue'
@@ -74,20 +78,15 @@ test.describe('Tracker sub-issues tests', () => {
       filePath: 'cat.jpeg'
     }
 
-    const leftSideMenuPage = new LeftSideMenuPage(page)
     await leftSideMenuPage.clickTracker()
-
-    const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll().click()
+    await issuesPage.clickModelSelectorAll()
     await issuesPage.createNewIssue(newIssue)
     await issuesPage.searchIssueByName(newIssue.title)
     await issuesPage.openIssueByName(newIssue.title)
-
-    const issuesDetailsPage = new IssuesDetailsPage(page)
     await issuesDetailsPage.clickButtonAddSubIssue()
 
     await issuesPage.fillNewIssueForm(newSubIssue)
-    await issuesPage.buttonCreateIssue().click()
+    await issuesPage.clickButtonCreateIssue()
     await issuesDetailsPage.openSubIssueByName(newSubIssue.title)
 
     await issuesDetailsPage.waitDetailsOpened(newSubIssue.title)
@@ -110,21 +109,15 @@ test.describe('Tracker sub-issues tests', () => {
       title: `Delete Sub-Issue with parameter-${generateId()}`,
       description: 'Delete Description Sub-Issue with parameter'
     }
-
-    const leftSideMenuPage = new LeftSideMenuPage(page)
     await leftSideMenuPage.clickTracker()
-
-    const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll().click()
+    await issuesPage.clickModelSelectorAll()
     await issuesPage.createNewIssue(deleteIssue)
     await issuesPage.searchIssueByName(deleteIssue.title)
     await issuesPage.openIssueByName(deleteIssue.title)
-
-    const issuesDetailsPage = new IssuesDetailsPage(page)
     await issuesDetailsPage.clickButtonAddSubIssue()
 
     await issuesPage.fillNewIssueForm(deleteSubIssue)
-    await issuesPage.buttonCreateIssue().click()
+    await issuesPage.clickButtonCreateIssue()
     await issuesDetailsPage.openSubIssueByName(deleteSubIssue.title)
 
     await issuesDetailsPage.waitDetailsOpened(deleteSubIssue.title)
@@ -150,22 +143,16 @@ test.describe('Tracker sub-issues tests', () => {
       description: 'Create sub-issue from template'
     }
     const templateName = 'New Issue'
-
-    const leftSideMenuPage = new LeftSideMenuPage(page)
     await leftSideMenuPage.clickTracker()
-
-    const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll().click()
+    await issuesPage.clickModelSelectorAll()
     await issuesPage.createNewIssue(parentIssue)
     await issuesPage.searchIssueByName(parentIssue.title)
     await issuesPage.openIssueByName(parentIssue.title)
-
-    const issuesDetailsPage = new IssuesDetailsPage(page)
     await issuesDetailsPage.moreActionOnIssue('Add sub-issue...')
     await issuesPage.selectTemplate(templateName)
     await expect(issuesPage.buttonPopupCreateNewIssueTemplate()).toHaveText(templateName)
     await issuesPage.fillNewIssueForm(subIssue)
-    await issuesPage.buttonCreateIssue().click()
+    await issuesPage.clickButtonCreateIssue()
 
     await issuesDetailsPage.openSubIssueByName(subIssue.title)
     await issuesDetailsPage.waitDetailsOpened(subIssue.title)

@@ -11,26 +11,33 @@ test.use({
 })
 
 test.describe('Mentions issue tests', () => {
+  let leftSideMenuPage: LeftSideMenuPage
+  let issuesPage: IssuesPage
+  let issuesDetailsPage: IssuesDetailsPage
+  let employeeDetailsPage: EmployeeDetailsPage
+
   test.beforeEach(async ({ page }) => {
+    leftSideMenuPage = new LeftSideMenuPage(page)
+    issuesPage = new IssuesPage(page)
+    issuesDetailsPage = new IssuesDetailsPage(page)
+    employeeDetailsPage = new EmployeeDetailsPage(page)
+
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
-  test('If user mentioned in the issue than he should be added as Collaborators', async ({ page }) => {
+  test('If user mentioned in the issue than he should be added as Collaborators', async () => {
     const mentionIssue: NewIssue = {
       title: `Issue user mentioned as Collaborators-${generateId()}`,
       description: 'Issue user mentioned as Collaborators description'
     }
 
-    const leftSideMenuPage = new LeftSideMenuPage(page)
     await leftSideMenuPage.clickTracker()
 
-    const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll().click()
+    await issuesPage.clickModelSelectorAll()
     await issuesPage.createNewIssue(mentionIssue)
     await issuesPage.searchIssueByName(mentionIssue.title)
     await issuesPage.openIssueByName(mentionIssue.title)
 
-    const issuesDetailsPage = new IssuesDetailsPage(page)
     await issuesDetailsPage.addMentions('Dirak Kainin')
     await issuesDetailsPage.checkCommentExist('@Dirak Kainin')
 
@@ -43,16 +50,13 @@ test.describe('Mentions issue tests', () => {
       description: 'When Change assigner user should be added as Collaborators description'
     }
 
-    const leftSideMenuPage = new LeftSideMenuPage(page)
     await leftSideMenuPage.clickTracker()
 
-    const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll().click()
+    await issuesPage.clickModelSelectorAll()
     await issuesPage.createNewIssue(mentionIssue)
     await issuesPage.searchIssueByName(mentionIssue.title)
     await issuesPage.openIssueByName(mentionIssue.title)
 
-    const issuesDetailsPage = new IssuesDetailsPage(page)
     await issuesDetailsPage.editIssue({ assignee: 'Dirak Kainin' })
     await issuesDetailsPage.checkIssue({
       ...mentionIssue,
@@ -69,17 +73,12 @@ test.describe('Mentions issue tests', () => {
       title: `Check that the backlink shown in the Contact activity-${generateId()}`,
       description: 'Check that the backlink shown in the Contact activity description'
     }
-
-    const leftSideMenuPage = new LeftSideMenuPage(page)
     await leftSideMenuPage.clickTracker()
-
-    const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll().click()
+    await issuesPage.clickModelSelectorAll()
     await issuesPage.createNewIssue(backlinkIssue)
     await issuesPage.searchIssueByName(backlinkIssue.title)
     await issuesPage.openIssueByName(backlinkIssue.title)
 
-    const issuesDetailsPage = new IssuesDetailsPage(page)
     await issuesDetailsPage.checkActivityContentExist(`New issue: ${backlinkIssue.title}`)
     await issuesDetailsPage.openLinkFromActivitiesByText(backlinkIssue.title)
     await issuesDetailsPage.checkIssue(backlinkIssue)
@@ -88,7 +87,6 @@ test.describe('Mentions issue tests', () => {
     await issuesDetailsPage.checkCommentExist(`@${mentionName}`)
     await issuesDetailsPage.openLinkFromActivitiesByText(mentionName)
 
-    const employeeDetailsPage = new EmployeeDetailsPage(page)
     await employeeDetailsPage.checkEmployee({
       firstName: mentionName.split(' ')[1],
       lastName: mentionName.split(' ')[0]
