@@ -70,7 +70,10 @@ jobs:
 
       - name: Model version from git tags
         run: node common/scripts/install-run-rush.js model-version
-      
+
+      - name: Linting
+        run: node common/scripts/install-run-rush.js lint
+
       - name: Building...
         run: node common/scripts/install-run-rush.js build -p 20
 

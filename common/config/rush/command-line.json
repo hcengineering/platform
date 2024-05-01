@@ -136,6 +136,14 @@
     },
     {
       "commandKind": "phased",
+      "name": "lint",
+      "summary": "Perform linting across all projects",
+      "phases": ["_phase:lint"],
+      "enableParallelism": true,
+      "incremental": true
+    },
+    {
+      "commandKind": "phased",
       "name": "rebuild",
       "summary": "ReBuild and test all projects.",
       "phases": ["_phase:build"],
