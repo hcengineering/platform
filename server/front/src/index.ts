@@ -607,7 +607,7 @@ export function start (
               const buffer = Buffer.concat(data)
               config.storageAdapter
                 .put(ctx, payload.workspace, id, buffer, contentType, buffer.length)
-                .then(async (objInfo) => {
+                .then(async () => {
                   res.status(200).send({
                     id,
                     contentType,

@@ -44,24 +44,21 @@ class StorageBlobAdapter implements DbAdapter {
   ) {}
 
   async findAll<T extends Doc>(
-    ctx: MeasureContext,
-    _class: Ref<Class<T>>,
-    query: DocumentQuery<T>,
-    options?: FindOptions<T>
+    _class: Ref<Class<T>>
   ): Promise<FindResult<T>> {
     return Object.assign([], { total: 0 })
   }
 
-  async tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {
+  async tx (): Promise<TxResult[]> {
     return []
   }
 
-  async createIndexes (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>): Promise<void> {}
-  async removeOldIndex (domain: Domain, deletePattern: RegExp, keepPattern: RegExp): Promise<void> {}
+  async createIndexes (): Promise<void> {}
+  async removeOldIndex (): Promise<void> {}
 
   async close (): Promise<void> {}
 
-  find (ctx: MeasureContext, domain: Domain): StorageIterator {
+  find (): StorageIterator {
     let listReceived = false
     let items: ListBlobResult[] = []
     let pos = 0
@@ -137,7 +134,7 @@ class StorageBlobAdapter implements DbAdapter {
     await this.client.remove(this.ctx, this.workspaceId, docs)
   }
 
-  async update (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {
+  async update (): Promise<void> {
     throw new Error('Method not implemented.')
   }
 }

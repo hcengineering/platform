@@ -16,6 +16,6 @@
 import { type MigrateOperation, type MigrationClient, type MigrationUpgradeClient } from '@hcengineering/model'
 
 export const attachmentOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {}
+  async migrate (): Promise<void> {},
+  async upgrade (): Promise<void> {}
 }

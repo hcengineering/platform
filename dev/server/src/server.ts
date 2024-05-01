@@ -31,7 +31,7 @@ async function createNullFullTextAdapter (): Promise<FullTextAdapter> {
 }
 async function createNullContentTextAdapter (): Promise<ContentTextAdapter> {
   return {
-    async content (name: string, type: string, doc) {
+    async content () {
       return ''
     },
     metrics: () => new MeasureMetricsContext('', {})
@@ -41,7 +41,7 @@ async function createNullContentTextAdapter (): Promise<ContentTextAdapter> {
 /**
  * @public
  */
-export async function start (port: number, host?: string): Promise<void> {
+export async function start (port: number): Promise<void> {
   const ctx = new MeasureMetricsContext('server', {})
   startJsonRpc(ctx, {
     pipelineFactory: (ctx, workspaceId) => {

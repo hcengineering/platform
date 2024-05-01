@@ -119,45 +119,6 @@ export class LiveQuery implements WithTx, Client {
   }
 
   // Perform refresh of content since connection established.
-  async refreshConnect (clean: boolean): Promise<void> {
-    for (const q of [...this.queue]) {
-      if (!this.removeFromQueue(q)) {
-        try {
-          if (clean) {
-            this.cleanQuery(q)
-          }
-          void this.refresh(q)
-        } catch (err: any) {
-          if (err instanceof PlatformError) {
-            if (err.message === 'connection closed') {
-              continue
-            }
-          }
-          Analytics.handleError(err)
-          console.error(err)
-        }
-      }
-    }
-    for (const v of this.queries.values()) {
-      for (const q of v) {
-        try {
-          if (clean) {
-            this.cleanQuery(q)
-          }
-          void this.refresh(q)
-        } catch (err: any) {
-          if (err instanceof PlatformError) {
-            if (err.message === 'connection closed') {
-              continue
-            }
-          }
-          Analytics.handleError(err)
-          console.error(err)
-        }
-      }
-    }
-  }
-
   private cleanQuery (q: Query): void {
     q.callbacks.forEach((callback) => {
       callback(toFindResult([], 0))
@@ -1000,7 +961,7 @@ export class LiveQuery implements WithTx, Client {
     return {}
   }
 
-  private async handleDocAdd (q: Query, doc: Doc, handleLookup = true, docCache: Map<string, Doc>): Promise<void> {
+  private async handleDocAdd (q: Query, doc: Doc, handleLookup = true): Promise<void> {
     if (this.match(q, doc, q.options?.lookup !== undefined)) {
       let needPush = true
       if (q.result instanceof Promise) {

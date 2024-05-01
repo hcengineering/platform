@@ -61,7 +61,7 @@ async function createSpace (tx: TxOperations): Promise<void> {
 }
 
 export const inventoryOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
+  async migrate (): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     await tryUpgrade(client, inventoryId, [
       {

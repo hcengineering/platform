@@ -264,7 +264,7 @@ test.describe('Tracker issue tests', () => {
     await issuesDetailsPage.waitDetailsOpened(deleteIssue.title)
 
     await issuesDetailsPage.moreActionOnIssue('Delete')
-    await issuesDetailsPage.pressYesForPopup(page)
+    await issuesDetailsPage.pressYesForPopup()
 
     await issuesPage.searchIssueByName(deleteIssue.title)
     await issuesPage.checkIssueNotExist(deleteIssue.title)

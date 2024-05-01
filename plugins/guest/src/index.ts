@@ -19,9 +19,6 @@ export interface Restrictions {
   disableNavigation: boolean
   disableActions: boolean
 }
-
-export const guestAccountEmail = '#guest@hc.engineering'
-
 export const guestId = 'guest' as Plugin
 export default plugin(guestId, {
   class: {

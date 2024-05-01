@@ -30,14 +30,6 @@ export class ApplicationsPage extends CommonRecruitingPage {
     await this.buttonTabCreated().click()
   }
 
-  async createNewApplication (data: NewApplication): Promise<void> {
-    await this.buttonCreateApplication().click()
-    await this.selectTalent(data.talentsName ?? 'first')
-    await this.selectVacancy(data.vacancy)
-    await this.selectRecruiter(data.recruiterName)
-    await this.buttonCreateNewApplication().click()
-  }
-
   async createNewApplicationWithNewTalent (data: NewApplication): Promise<TalentName> {
     const talentName: TalentName = {
       firstName: `TestFirst-${generateId(2)}`,
@@ -47,7 +39,7 @@ export class ApplicationsPage extends CommonRecruitingPage {
     await this.selectType('Default vacancy')
     await this.buttonCreateApplication().click()
     await this.buttonTalentSelector().click()
-    await this.pressCreateButtonSelectPopup(this.page)
+    await this.pressCreateButtonSelectPopup()
     await this.createNewTalentPopup(this.page, talentName.firstName, talentName.lastName)
     await this.selectVacancy(data.vacancy)
     await this.selectRecruiter(data.recruiterName)

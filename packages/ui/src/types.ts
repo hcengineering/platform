@@ -92,16 +92,6 @@ export interface Action {
 
   group?: string
 }
-
-export interface IPopupItem {
-  _id?: number
-  title?: IntlString | undefined
-  component?: AnySvelteComponent | undefined
-  props?: Record<string, any>
-  selected?: boolean
-  action?: () => void
-}
-
 export interface TabBase {
   label: IntlString
   icon?: Asset
@@ -351,7 +341,6 @@ export const tableSP: FadeOptions = { multipler: { top: 3, bottom: 2.5 } }
 export const topSP: FadeOptions = { multipler: { top: 2.5, bottom: 0 } }
 export const todosSP: FadeOptions = { multipler: { top: 3.5, bottom: 0 } }
 export const tableHRscheduleY: FadeOptions = { multipler: { top: 5, bottom: 0 } }
-export const issueSP: FadeOptions = { multipler: { top: 2.75, bottom: 0 } }
 export const emojiSP: FadeOptions = { multipler: { top: 1.5, bottom: 0 } }
 
 export type WidthType = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl'

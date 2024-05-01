@@ -228,7 +228,7 @@ export function stripTags (markup: Markup, textLimit = 0, extensions: Extensions
   let charCount = 0
   let isHardStop = false
 
-  parsed.descendants((node, _pos, parent): boolean => {
+  parsed.descendants((node, _pos): boolean => {
     if (isHardStop) {
       return false
     }

@@ -70,41 +70,6 @@ export interface TxViewlet extends Doc {
 
 // TODO: remove DisplayTx
 /**
- * Transaction being displayed.
- * @public
- */
-export interface DisplayTx {
-  // Source tx
-  tx: TxCUD<Doc>
-
-  // A set of collapsed transactions.
-  txes: DisplayTx[]
-  txDocIds?: Set<Ref<Doc>>
-
-  // type check for createTx
-  createTx?: TxCreateDoc<Doc>
-
-  // Type check for updateTx
-  updateTx?: TxUpdateDoc<Doc>
-
-  // Type check for updateTx
-  mixinTx?: TxMixin<Doc, Doc>
-
-  // Document in case it is required.
-  doc?: Doc
-  // Previous document in case it is required.
-  prevDoc?: Doc
-
-  updated: boolean
-  mixin: boolean
-  removed: boolean
-  isOwnTx: boolean
-
-  collectionAttribute?: Attribute<Collection<AttachedDoc>>
-  originTx: TxCUD<Doc>
-}
-
-/**
  * @public
  */
 export interface ActivityMessage extends AttachedDoc {
@@ -311,9 +276,6 @@ export interface UserMentionInfo extends AttachedDoc {
  * @public
  */
 export interface IgnoreActivity extends Class<Doc> {}
-
-export type ActivityMessagePreviewType = 'full' | 'content-only'
-
 export default plugin(activityId, {
   mixin: {
     ActivityDoc: '' as Ref<Mixin<ActivityDoc>>,

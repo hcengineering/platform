@@ -330,7 +330,7 @@ async function createEmployee (
   return me
 }
 
-function clearMetadata (ws: string): void {
+function clearMetadata (): void {
   const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokens)
   if (tokens !== null) {
     const loc = getCurrentLocation()

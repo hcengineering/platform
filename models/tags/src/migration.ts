@@ -9,7 +9,7 @@ import tags from './plugin'
 import { tagsId } from '@hcengineering/tags'
 
 export const tagsOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
+  async migrate (): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     await tryUpgrade(client, tagsId, [
       {

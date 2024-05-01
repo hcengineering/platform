@@ -44,41 +44,17 @@ export interface UpdateContentRequest {
   field: string
   html: string
 }
-
-/** @public */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface UpdateContentResponse {}
-
 /** @public */
 export interface CopyContentRequest {
   documentId: DocumentId
   sourceField: string
   targetField: string
 }
-
-/** @public */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface CopyContentResponse {}
-
 /** @public */
 export interface BranchDocumentRequest {
   sourceDocumentId: DocumentId
   targetDocumentId: DocumentId
 }
-
-/** @public */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface BranchDocumentResponse {}
-
-/** @public */
-export interface RemoveDocumentRequest {
-  documentId: DocumentId
-}
-
-/** @public */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface RemoveDocumentResponse {}
-
 /** @public */
 export interface TakeSnapshotRequest {
   documentId: DocumentId

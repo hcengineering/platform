@@ -47,15 +47,6 @@ export interface TaskEstimate extends AttachedDoc {
   rom: number // in hours
   eta: number // in hours
 }
-
-export interface TaskMixin extends Task {
-  textValue?: string
-}
-
-export interface TaskWithSecond extends Task {
-  secondTask: string | null
-}
-
 const taskIds = 'taskIds' as Plugin
 
 export const taskPlugin = plugin(taskIds, {

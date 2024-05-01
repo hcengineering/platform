@@ -20,7 +20,7 @@ let newHash = {}
 
 function calcFileHash(sourceFile, msg, addCheck) {
   const hasher = crypto.createHash('md5')
-  hasher.update(readFileSync(sourceFile))      
+  hasher.update()
   let digest = hasher.digest('hex')
   if( hash[sourceFile] !== digest ) {
     if( addCheck ){

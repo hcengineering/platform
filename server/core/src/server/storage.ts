@@ -128,7 +128,7 @@ export class TServerStorage implements ServerStorage {
           })
         )[0]
       },
-      tx: async (tx) => {
+      tx: async () => {
         return {}
       },
       searchFulltext: async (query: SearchQuery, options: SearchOptions) => {
@@ -481,7 +481,7 @@ export class TServerStorage implements ServerStorage {
     return result
   }
 
-  private deleteObject (ctx: MeasureContext, object: Doc, removedMap: Map<Ref<Doc>, Doc>): Tx[] {
+  private deleteObject (object: Doc, removedMap: Map<Ref<Doc>, Doc>): Tx[] {
     const result: Tx[] = []
     const factory = new TxFactory(object.modifiedBy, true)
     if (this.hierarchy.isDerived(object._class, core.class.AttachedDoc)) {

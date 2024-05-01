@@ -157,15 +157,6 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
 
   addCommands () {
     return {
-      setImage:
-        (options) =>
-          ({ commands }) => {
-            return commands.insertContent({
-              type: this.name,
-              attrs: options
-            })
-          },
-
       setImageAlignment:
         (options) =>
           ({ chain, tr }) => {
@@ -285,7 +276,7 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
       new Plugin({
         key: new PluginKey('handle-image-open'),
         props: {
-          handleDoubleClickOn (view, pos, node, nodePos, event) {
+          handleDoubleClickOn (view, pos, node) {
             if (node.type.name !== 'image') {
               return
             }

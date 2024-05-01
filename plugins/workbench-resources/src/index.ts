@@ -52,7 +52,7 @@ export default async (): Promise<Resources> => ({
   },
   function: {
     HasArchiveSpaces: hasArchiveSpaces,
-    IsOwner: async (docs: Space[]) => getCurrentAccount().role === AccountRole.Owner || isAdminUser()
+    IsOwner: async () => getCurrentAccount().role === AccountRole.Owner || isAdminUser()
   },
   actionImpl: {
     Navigate: doNavigate

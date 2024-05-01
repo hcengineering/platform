@@ -141,7 +141,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     }
   }
 
-  async tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {
+  async tx (): Promise<TxResult[]> {
     return []
   }
 
@@ -469,7 +469,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     let result: WithLookup<T>[] = []
     let total = options?.total === true ? 0 : -1
     try {
-      result = (await ctx.with('toArray', {}, async (ctx) => await toArray(cursor), {
+      result = (await ctx.with('toArray', {}, async () => await toArray(cursor), {
         domain,
         pipeline
       })) as any[]
@@ -618,7 +618,7 @@ abstract class MongoAdapterBase implements DbAdapter {
 
     // Error in case of timeout
     try {
-      const res: T[] = await ctx.with('toArray', {}, async (ctx) => await toArray(cursor), {
+      const res: T[] = await ctx.with('toArray', {}, async () => await toArray(cursor), {
         mongoQuery,
         options,
         domain

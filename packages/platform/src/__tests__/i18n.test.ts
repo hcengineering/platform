@@ -67,12 +67,12 @@ describe('i18n', () => {
     const plugin = 'component-for-bad-loader'
     const message = `${plugin}:string:id`
     const errorMessage = 'bad loader'
-    addStringsLoader(plugin as Plugin, (locale: string) => {
+    addStringsLoader(plugin as Plugin, () => {
       throw new Error(errorMessage)
     })
 
     const checkStatus = new Status(Severity.ERROR, platform.status.UnknownError, { message: errorMessage })
-    const eventListener = async (event: string, data: any): Promise<void> => {
+    const eventListener = async (data: any): Promise<void> => {
       expect(data).toEqual(checkStatus)
     }
     addEventListener(PlatformEvent, eventListener)
@@ -87,7 +87,7 @@ describe('i18n', () => {
 
     const checkStatus = new Status(Severity.ERROR, platform.status.NoLoaderForStrings, { plugin })
     let calls = 0
-    const eventListener = async (event: string, data: any): Promise<void> => {
+    const eventListener = async (data: any): Promise<void> => {
       ++calls
       expect(data).toEqual(checkStatus)
     }
@@ -104,7 +104,7 @@ describe('i18n', () => {
     expect.assertions(2)
     const message = 'testMessage' as IntlString
     const checkStatus = new Status(Severity.ERROR, platform.status.InvalidId, { id: message })
-    const eventListener = async (event: string, data: any): Promise<void> => {
+    const eventListener = async (data: any): Promise<void> => {
       expect(data).toEqual(checkStatus)
     }
     addEventListener(PlatformEvent, eventListener)

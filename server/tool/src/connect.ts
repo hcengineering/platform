@@ -65,7 +65,7 @@ export async function connect (
         transactions: model,
         full: true
       }),
-      store: async (model: LoadModelResponse) => {}
+      store: async () => {}
     })
   }
 

@@ -112,12 +112,12 @@ test.describe('Workspace tests', () => {
     await signUpPage.enterPassword(newUser.password)
     await signUpPage.checkInfo(page, "Repeat password don't match Password")
     await signUpPage.enterRepeatPassword(newUser.password)
-    await signUpPage.checkInfoSectionNotExist(page)
+    await signUpPage.checkInfoSectionNotExist()
     await signUpPage.clickSignUp()
     const selectWorkspacePage = new SelectWorkspacePage(page)
     await selectWorkspacePage.checkInfo(page, 'Required field Workspace name')
     await selectWorkspacePage.enterWorkspaceName(newWorkspaceName)
-    await selectWorkspacePage.checkInfoSectionNotExist(page)
+    await selectWorkspacePage.checkInfoSectionNotExist()
   })
 
   test('Create a workspace with join link', async ({ page, browser }) => {

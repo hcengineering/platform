@@ -499,9 +499,9 @@ export class TxBuilder extends TxOperations {
       getHierarchy: () => this.hierarchy,
       getModel: () => this.modelDb,
       close: async () => {},
-      findOne: async (_class, query, options?) => undefined,
-      findAll: async (_class, query, options?) => toFindResult([]),
-      searchFulltext: async (query, options) => ({ docs: [] }),
+      findOne: async (_class) => undefined,
+      findAll: async (_class) => toFindResult([]),
+      searchFulltext: async () => ({ docs: [] }),
       tx: async (tx): Promise<TxResult> => {
         if (this.hierarchy.isDerived(tx._class, core.class.TxCUD)) {
           this.txes.push(tx as TxCUD<Doc>)

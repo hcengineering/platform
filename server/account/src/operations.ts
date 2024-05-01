@@ -60,7 +60,6 @@ const INVITE_COLLECTION = 'invite'
 /**
  * @public
  */
-export const ACCOUNT_DB = 'account'
 
 const getEndpoint = (): string => {
   const endpoint = getMetadata(toolPlugin.metadata.Endpoint)
@@ -975,7 +974,7 @@ export async function upgradeWorkspace (
     migrationOperation,
     logger,
     false,
-    async (value) => {}
+    async () => {}
   )
 
   await db.collection(WORKSPACE_COLLECTION).updateOne(

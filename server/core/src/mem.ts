@@ -39,39 +39,36 @@ import { type DbAdapter } from './adapter'
  */
 export class DummyDbAdapter implements DbAdapter {
   async findAll<T extends Doc>(
-    ctx: MeasureContext,
-    _class: Ref<Class<T>>,
-    query: DocumentQuery<T>,
-    options?: FindOptions<T> | undefined
+    _class: Ref<Class<T>>
   ): Promise<FindResult<T>> {
     return toFindResult([])
   }
 
-  async createIndexes (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>): Promise<void> {}
-  async removeOldIndex (domain: Domain, deletePattern: RegExp, keepPattern: RegExp): Promise<void> {}
+  async createIndexes (): Promise<void> {}
+  async removeOldIndex (): Promise<void> {}
 
-  async tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {
+  async tx (): Promise<TxResult[]> {
     return []
   }
 
   async close (): Promise<void> {}
 
-  find (ctx: MeasureContext, domain: Domain): StorageIterator {
+  find (): StorageIterator {
     return {
       next: async () => undefined,
       close: async () => {}
     }
   }
 
-  async load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+  async load (): Promise<Doc[]> {
     return []
   }
 
-  async upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {}
+  async upload (): Promise<void> {}
 
-  async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
+  async clean (): Promise<void> {}
 
-  async update (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {}
+  async update (): Promise<void> {}
 }
 
 class InMemoryAdapter extends DummyDbAdapter implements DbAdapter {
@@ -104,10 +101,7 @@ class InMemoryAdapter extends DummyDbAdapter implements DbAdapter {
  * @public
  */
 export async function createInMemoryAdapter (
-  ctx: MeasureContext,
   hierarchy: Hierarchy,
-  url: string,
-  workspaceId: WorkspaceId
 ): Promise<DbAdapter> {
   return new InMemoryAdapter(hierarchy)
 }

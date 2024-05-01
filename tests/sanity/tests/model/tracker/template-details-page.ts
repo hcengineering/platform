@@ -50,7 +50,7 @@ export class TemplateDetailsPage extends CommonTrackerPage {
     if (data.labels != null && data.createLabel != null) {
       if (data.createLabel) {
         await this.buttonAddLabel().click()
-        await this.pressCreateButtonSelectPopup(this.page)
+        await this.pressCreateButtonSelectPopup()
         await this.addNewTagPopup(this.page, data.labels, 'Tag from edit template')
       }
       await this.checkFromDropdown(this.page, data.labels)
@@ -82,6 +82,6 @@ export class TemplateDetailsPage extends CommonTrackerPage {
   async deleteTemplate (): Promise<void> {
     await this.buttonMoreActions().click()
     await this.buttonDelete().click()
-    await this.pressYesDeletePopup(this.page)
+    await this.pressYesDeletePopup()
   }
 }

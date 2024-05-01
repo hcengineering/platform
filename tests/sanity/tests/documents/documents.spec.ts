@@ -35,7 +35,7 @@ test.describe('Documents tests', () => {
     await documentContentPage.checkDocumentTitle(newDocument.title)
   })
 
-  test('Edit document', async ({ page }) => {
+  test('Edit document', async () => {
     const contentOne = ' * Text first line'
     const contentTwo = ' * Text second line'
     const newDocumentTitle = `Edit Updated Document Title-${generateId()}`
@@ -56,7 +56,7 @@ test.describe('Documents tests', () => {
     await documentContentPage.checkDocumentTitle(newDocumentTitle)
   })
 
-  test('Move document', async ({ page }) => {
+  test('Move document', async () => {
     const contentFirst = 'Text first line'
     const moveDocument: NewDocument = {
       title: `Move Document Title-${generateId()}`,
@@ -132,7 +132,7 @@ test.describe('Documents tests', () => {
     })
   })
 
-  test('Add Link to the Document', async ({ page }) => {
+  test('Add Link to the Document', async () => {
     const contentLink = 'Lineforthelink'
     const linkDocument: NewDocument = {
       title: `Links Document Title-${generateId()}`,

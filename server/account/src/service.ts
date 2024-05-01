@@ -19,9 +19,6 @@ import { FileModelLogger } from '@hcengineering/server-tool'
 import { Db, MongoClient } from 'mongodb'
 import path from 'path'
 import { listWorkspacesRaw, updateWorkspace, upgradeWorkspace, Workspace, WorkspaceInfo } from './operations'
-
-export type UpgradeErrorHandler = (workspace: BaseWorkspaceInfo, error: any) => Promise<void>
-
 export interface UpgradeOptions {
   errorHandler: (workspace: BaseWorkspaceInfo, error: any) => Promise<void>
   force: boolean
@@ -122,53 +119,6 @@ export class UpgradeWorker {
     } finally {
       if (!opt.console) {
         ;(logger as FileModelLogger).close()
-      }
-    }
-  }
-
-  async upgradeAll (ctx: MeasureContext, opt: UpgradeOptions): Promise<void> {
-    const workspaces = await listWorkspacesRaw(this.db, this.productId)
-    workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
-
-    // We need to update workspaces with missing workspaceUrl
-    for (const ws of workspaces) {
-      if (ws.workspaceUrl == null) {
-        const upd: Partial<Workspace> = {
-          workspaceUrl: ws.workspace
-        }
-        if (ws.workspaceName == null) {
-          upd.workspaceName = ws.workspace
-        }
-        await updateWorkspace(this.db, this.productId, ws, upd)
-      }
-    }
-
-    const withError: string[] = []
-    this.toProcess = workspaces.length
-    this.st = Date.now()
-    this.total = workspaces.length
-
-    if (opt.parallel !== 0) {
-      const parallel = opt.parallel
-      const rateLimit = new RateLimiter(parallel)
-      ctx.info('parallel upgrade', { parallel })
-      await Promise.all(
-        workspaces.map((it) =>
-          rateLimit.add(async () => {
-            await ctx.with('do-upgrade', {}, async () => {
-              await this._upgradeWorkspace(ctx, it, opt)
-            })
-          })
-        )
-      )
-      ctx.info('Upgrade done')
-    } else {
-      ctx.info('UPGRADE write logs at:', { logs: opt.logs })
-      for (const ws of workspaces) {
-        await this._upgradeWorkspace(ctx, ws, opt)
-      }
-      if (withError.length > 0) {
-        ctx.info('Failed workspaces', withError)
       }
     }
   }

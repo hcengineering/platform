@@ -16,7 +16,6 @@ export class VacancyDetailsPage extends CommonRecruitingPage {
   readonly inputAttachFile = (): Locator => this.page.locator('div[class*="full"] input[name="file"]#fileInput')
   readonly buttonInputCompany = (): Locator => this.page.locator('button > div', { hasText: 'Company' })
   readonly buttonInputDueDate = (): Locator => this.page.locator('button > div', { hasText: 'Due date' })
-  readonly buttonDatePopupSave = (): Locator => this.page.locator('div.popup button[type="submit"]')
   readonly inputComment = (): Locator => this.page.locator('div.text-input div.tiptap')
 
   async addComment (comment: string): Promise<void> {

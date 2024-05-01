@@ -16,7 +16,7 @@ export const InlineStyleToolbarExtension = Extension.create<InlineStyleToolbarOp
     return [
       InlinePopupExtension.configure({
         ...options,
-        shouldShow: ({ editor, view, state, oldState, from, to }) => {
+        shouldShow: ({ editor, view, state, from, to }) => {
           if (!this.options.isSupported()) {
             return false
           }

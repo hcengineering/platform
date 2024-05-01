@@ -32,18 +32,6 @@ import { type Readable } from 'stream'
 export function getBucketId (workspaceId: WorkspaceId): string {
   return toWorkspaceString(workspaceId, '.')
 }
-
-export interface MinioConfig extends StorageConfig {
-  kind: 'minio'
-  region: string
-  endpoint: string
-  accessKeyId: string
-  secretAccessKey: string
-
-  port: number
-  useSSL: boolean
-}
-
 /**
  * @public
  */
@@ -54,9 +42,9 @@ export class MinioService implements StorageAdapter {
     this.client = new Client(opt)
   }
 
-  async initialize (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {}
+  async initialize (): Promise<void> {}
 
-  async exists (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<boolean> {
+  async exists (workspaceId: WorkspaceId): Promise<boolean> {
     return await this.client.bucketExists(getBucketId(workspaceId))
   }
 

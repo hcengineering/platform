@@ -84,11 +84,6 @@ export function getColDragMarker (): DragMarkerHTMLElement | null {
 export function getRowDragMarker (): DragMarkerHTMLElement | null {
   return document.getElementById(rowDragMarkerId) as DragMarkerHTMLElement
 }
-
-export function getDragMarker (element: DragMarkerHTMLElement): void {
-  element.style.display = 'none'
-}
-
 export function hideDragMarker (element: DragMarkerHTMLElement): void {
   element.style.display = 'none'
 }

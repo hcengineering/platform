@@ -24,7 +24,7 @@ import templates from './plugin'
 import { templatesId } from '@hcengineering/templates'
 
 export const templatesOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
+  async migrate (): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     await tryUpgrade(client, templatesId, [
       {

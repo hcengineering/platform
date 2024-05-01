@@ -24,7 +24,7 @@ import gmail from './plugin'
 import { gmailId } from '@hcengineering/gmail'
 
 export const gmailOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
+  async migrate (): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     await tryUpgrade(client, gmailId, [
       {

@@ -20,12 +20,6 @@ import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
  * @public
  */
 export type Ref<T extends Doc> = string & { __ref: T }
-
-/**
- * @public
- */
-export type PrimitiveType = number | string | boolean | undefined | Ref<Doc>
-
 /**
  * @public
  */
@@ -411,13 +405,6 @@ export interface Role extends AttachedDoc<SpaceType, 'roles'> {
   name: string
   permissions: Ref<Permission>[]
 }
-
-/**
- * @public
- * Defines assignment of employees to a role within a space
- */
-export type RolesAssignment = Record<Ref<Role>, Ref<Account>[] | undefined>
-
 /**
  * @public
  * Permission is a basic access control item in the system
@@ -649,21 +636,4 @@ export interface DomainIndexConfiguration extends Doc {
   indexes?: (FieldIndex<Doc> | string)[]
 
   skip?: string[]
-}
-
-export interface BaseWorkspaceInfo {
-  workspace: string // An uniq workspace name, Database names
-  productId: string
-  disabled?: boolean
-  version?: Data<Version>
-
-  workspaceUrl?: string | null // An optional url to the workspace, if not set workspace will be used
-  workspaceName?: string // An displayed workspace name
-  createdOn: number
-  lastVisit: number
-
-  createdBy: string
-
-  creating?: boolean
-  createProgress?: number // Some progress
 }

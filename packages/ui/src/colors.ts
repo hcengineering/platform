@@ -216,26 +216,15 @@ export function defaultBackground (dark: boolean): string {
 }
 
 export const FeijoaColor = '#A5D179'
-export const DeYorkColor = '#77C07B'
 export const FernColor = '#60B96E' // green
-export const PuertoRicoColor = '#45AEA3'
 export const MediumTurquoiseColor = '#46CBDE'
-export const SummerSkyColor = '#47BDF6'
 export const MalibuColor = '#5AADF6'
 export const SeagullColor = '#73A6CD'
 export const EastSideColor = '#B977CB' // purple
 export const MoodyBlueColor = '#7C6FCD' // violet
-export const ChetwodeBlueColor = '#6F7BC5' // dark blue
 export const SalmonColor = '#F28469' // salmon
 export const SeaBuckthornColor = '#F2994A' // orange (warning)
 export const FlamingoColor = '#EB5757' // red (error)
-export const LinkWaterColor = '#C9CBCD'
-
-export const SilverSandColor = '#BEC2C8'
-export const PlatinumColor = '#E2E2E2'
-export const CrayolaColor = '#F2C94C'
-export const SlateBlueColor = '#5E6AD2'
-export const CadetGreyColor = '#95A2B3'
 
 /**
  * @public
@@ -346,17 +335,6 @@ export function hexToRgb (color: string): RGBColor {
     b: parseInt(color.slice(4, 6), 16)
   }
 }
-
-/**
- * @public
- */
-export function hexHSLToRgb (color: string, percent = 100): RGBColor {
-  const h = parseInt(color.slice(0, 2), 16)
-  const s = parseInt(color.slice(2, 4), 16)
-  const l = parseInt(color.slice(4, 6), 16)
-  return hslToRgb(h, s, (l / 100) * percent)
-}
-
 function addZero (d: string): string {
   if (d.length < 2) {
     return '0' + d
@@ -453,21 +431,6 @@ export function rgbToHex (color: RGBColor): string {
     addZero((Math.round(color.b) % 255).toString(16))
   )
 }
-
-export async function svgToColor (img: SVGSVGElement): Promise<RGBColor | undefined> {
-  const outerHTML = img.outerHTML
-  const blob = new Blob([outerHTML], { type: 'image/svg+xml;charset=utf-8' })
-  const blobURL = URL.createObjectURL(blob)
-  const image = new Image()
-  return await new Promise((resolve) => {
-    image.setAttribute('crossOrigin', '')
-    image.src = blobURL
-    image.onload = () => {
-      resolve(imageToColor(image))
-    }
-  })
-}
-
 /**
  * @public
  */

@@ -132,7 +132,7 @@ export async function start (
       })
     ],
 
-    async onDestroy (data: onDestroyPayload): Promise<void> {
+    async onDestroy (): Promise<void> {
       await controller.close()
     }
   })

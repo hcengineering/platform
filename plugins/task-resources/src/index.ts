@@ -78,7 +78,7 @@ export { default as TypeSelector } from './components/TypeSelector.svelte'
 export * from './utils'
 export { StatePresenter, StateRefPresenter, TaskKindSelector, TypeStatesPopup }
 
-async function editStatuses (object: Project, ev: Event): Promise<void> {
+async function editStatuses (object: Project: Promise<void> {
   const loc = getCurrentLocation()
   loc.path[2] = 'setting'
   loc.path[3] = 'statuses'
@@ -173,10 +173,10 @@ export async function getAllStates (
     }
     const _space = query?.space
     if (_space !== undefined) {
-      const promise = new Promise<Array<Ref<Doc>>>((resolve, reject) => {
+      const promise = new Promise<Array<Ref<Doc>>>((resolve) => {
         let refresh: boolean = false
         const lq = CategoryQuery.getLiveQuery(queryId)
-        refresh = lq.query(task.class.Project, { _id: _space as Ref<Project> }, (res) => {
+        refresh = lq.query(task.class.Project, { _id: _space as Ref<Project> }, () => {
           const statusMap = get(statusStore).byId
           const statuses = (taskType.statuses.map((p) => statusMap.get(p)) as Status[]) ?? []
           let result: Array<Ref<Status>> = []
@@ -222,8 +222,6 @@ export async function getAllStates (
 async function statusSort (
   client: TxOperations,
   value: Array<Ref<Status>>,
-  space: Ref<Project> | undefined,
-  viewletDescriptorId?: Ref<ViewletDescriptor>
 ): Promise<Array<Ref<Status>>> {
   const typeId = get(selectedTypeStore)
   const type = typeId !== undefined ? get(typeStore).get(typeId) : undefined

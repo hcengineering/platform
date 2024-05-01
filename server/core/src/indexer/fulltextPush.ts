@@ -69,19 +69,19 @@ export class FullTextPushStage implements FullTextPipelineStage {
     readonly workspace: WorkspaceId
   ) {}
 
-  async initialize (ctx: MeasureContext, storage: DbAdapter, pipeline: FullTextPipeline): Promise<void> {
+  async initialize (): Promise<void> {
     // Just do nothing
     try {
       const r = await this.fulltextAdapter.initMapping()
       for (const [k, v] of Object.entries(r)) {
-        this.dimmVectors[k] = Array.from(Array(v).keys()).map((it) => 0)
+        this.dimmVectors[k] = Array.from(Array(v).keys()).map(() => 0)
       }
     } catch (err: any) {
       console.error(err)
     }
   }
 
-  async update (doc: DocIndexState, update: DocumentUpdate<DocIndexState>): Promise<void> {}
+  async update (): Promise<void> {}
 
   checkIntegrity (indexedDoc: IndexedDoc): void {
     for (const [k, dimms] of Object.entries(this.dimmVectors)) {
@@ -94,9 +94,6 @@ export class FullTextPushStage implements FullTextPipelineStage {
 
   async search (
     _classes: Ref<Class<Doc>>[],
-    search: DocumentQuery<Doc>,
-    size?: number,
-    from?: number
   ): Promise<{ docs: IndexedDoc[], pass: boolean }> {
     return { docs: [], pass: true }
   }

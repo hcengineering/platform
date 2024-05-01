@@ -18,7 +18,7 @@ test.describe('review tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/recruit`))?.finished()
   })
 
-  test('create-review', async ({ page }) => {
+  test('create-review', async () => {
     const reviewId = 'review-' + generateId()
     await recruitingPage.clickRecruitApplication()
     await recruitingPage.clickOnReviews()

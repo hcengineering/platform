@@ -122,9 +122,6 @@ export async function OnMessageCreate (tx: Tx, control: TriggerControl): Promise
 export async function IsIncomingMessage (
   tx: Tx,
   doc: Doc,
-  user: Ref<Account>,
-  type: NotificationType,
-  control: TriggerControl
 ): Promise<boolean> {
   const message = TxProcessor.createDoc2Doc(TxProcessor.extractTx(tx) as TxCreateDoc<TelegramMessage>)
   return message.incoming && message.sendOn > (doc.createdOn ?? doc.modifiedOn)
@@ -132,7 +129,6 @@ export async function IsIncomingMessage (
 
 export async function GetCurrentEmployeeTG (
   control: TriggerControl,
-  context: Record<string, Doc>
 ): Promise<string | undefined> {
   const account = await control.modelDb.findOne(contact.class.PersonAccount, {
     _id: control.txFactory.account as Ref<PersonAccount>

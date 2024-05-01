@@ -52,7 +52,7 @@ class ClientModel extends ModelDb implements Client {
     return (await this.findAll(_class, query, options)).shift()
   }
 
-  async searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
+  async searchFulltext (): Promise<SearchResult> {
     return { docs: [] }
   }
 

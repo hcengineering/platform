@@ -15,7 +15,7 @@ test.describe('recruit tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
-  test('org-add-member', async ({ page }) => {
+  test('org-add-member', async () => {
     const orgId = 'Company-' + generateId()
     await contractPage.clickAppContact()
     await contractPage.clickEmployeeNavElement('Company')

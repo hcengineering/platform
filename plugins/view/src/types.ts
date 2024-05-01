@@ -379,12 +379,6 @@ export interface AggregationManager {
   getAttrClass: () => Ref<Class<Doc>>
   updateSorting?: (finalOptions: FindOptions<Doc>, attr: AnyAttribute) => Promise<void>
 }
-
-/**
- * @public
- */
-export type AggregationManagerResource = Resource<AggregationManager>
-
 /**
  * @public
  */
@@ -629,18 +623,6 @@ export interface AttributeModel {
 
   castRequest?: Ref<Mixin<Doc>>
 }
-
-/**
- * @public
- */
-export interface BuildModelOptions {
-  client: Client
-  _class: Ref<Class<Obj>>
-  keys: (BuildModelKey | string)[]
-  lookup?: Lookup<Doc>
-  ignoreMissing?: boolean
-}
-
 /**
  * Define document create popup widget
  *
@@ -696,30 +678,12 @@ export type ViewCategoryActionFunc = (
  * @public
  */
 export type ViewCategoryAction = Resource<ViewCategoryActionFunc>
-
-/**
- * @public
- */
-export interface CategoryOption extends ViewOption {
-  actionTarget: 'category'
-  action: ViewCategoryAction
-}
-
 /**
  * @public
  */
 export type ViewQueryAction = Resource<
 (value: any, query: DocumentQuery<Doc>) => DocumentQuery<Doc> | Promise<DocumentQuery<Doc>>
 >
-
-/**
- * @public
- */
-export interface ViewQueryOption extends ViewOption {
-  actionTarget: 'query'
-  action: ViewQueryAction
-}
-
 /**
  * @public
  */

@@ -18,7 +18,7 @@ test.describe('Teamspace tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
-  test('Create a teamspace', async ({ page }) => {
+  test('Create a teamspace', async () => {
     const newTeamspace: NewTeamspace = {
       title: `New Teamspace-${generateId()}`,
       description: 'New Teamspace description',
@@ -39,11 +39,11 @@ test.describe('Teamspace tests', () => {
     await leftSideMenuPage.clickDocuments()
     await documentsPage.checkTeamspaceExist(archiveTeamspace.title)
     await documentsPage.moreActionTeamspace(archiveTeamspace.title, 'Archive')
-    await documentsPage.pressYesForPopup(page)
+    await documentsPage.pressYesForPopup()
     await documentsPage.checkTeamspaceNotExist(archiveTeamspace.title)
   })
 
-  test('Edit teamspace', async ({ page }) => {
+  test('Edit teamspace', async () => {
     const editTeamspace: NewTeamspace = {
       title: `Edit Teamspace-${generateId()}`,
       description: 'Edit Teamspace description',

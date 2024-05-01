@@ -305,8 +305,7 @@ export class TActivityNotificationViewlet extends TDoc implements ActivityNotifi
 
   presenter!: AnyComponent
 }
-
-export const notificationActionTemplates = template({
+template({
   pinContext: {
     action: notification.actionImpl.PinDocNotifyContext,
     label: notification.string.StarDocument,
@@ -328,7 +327,6 @@ export const notificationActionTemplates = template({
     context: { mode: ['context', 'browser'], group: 'edit' }
   }
 })
-
 export function createModel (builder: Builder): void {
   builder.createModel(
     TBrowserNotification,

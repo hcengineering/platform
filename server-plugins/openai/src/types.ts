@@ -10,22 +10,6 @@ export interface OpenAIConfiguration extends Configuration {
   tokenLimit: number
   embeddings: boolean
 }
-
-/**
- * @public
- */
-export const openAIConfigDefaults: {
-  [key in keyof Pick<
-  OpenAIConfiguration,
-  'enabled' | 'endpoint' | 'tokenLimit' | 'embeddings'
-  >]: OpenAIConfiguration[key]
-} = {
-  endpoint: 'https://api.openai.com/v1',
-  tokenLimit: 8191,
-  embeddings: false,
-  enabled: true
-}
-
 /**
  * @public
  *

@@ -188,5 +188,5 @@ export const textEditorOperation: MigrateOperation = {
       }
     ])
   },
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {}
+  async upgrade (): Promise<void> {}
 }

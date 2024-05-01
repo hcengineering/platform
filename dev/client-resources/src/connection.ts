@@ -66,7 +66,7 @@ class ServerStorageWrapper implements ClientConnection {
     return this.storage.findAll(this.measureCtx, c, q, o)
   }
 
-  async searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
+  async searchFulltext (): Promise<SearchResult> {
     return { docs: [] }
   }
 
@@ -92,21 +92,21 @@ class ServerStorageWrapper implements ClientConnection {
 
   async close (): Promise<void> {}
 
-  async loadChunk (domain: Domain, idx?: number): Promise<DocChunk> {
+  async loadChunk (): Promise<DocChunk> {
     return { idx: -1, docs: [], finished: true }
   }
 
-  async closeChunk (idx: number): Promise<void> {}
+  async closeChunk (): Promise<void> {}
 
-  async loadDocs (domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+  async loadDocs (): Promise<Doc[]> {
     return []
   }
 
-  async upload (domain: Domain, docs: Doc[]): Promise<void> {}
+  async upload (): Promise<void> {}
 
-  async clean (domain: Domain, docs: Ref<Doc>[]): Promise<void> {}
+  async clean (): Promise<void> {}
 
-  async measure (operationName: string): Promise<MeasureDoneOperation> {
+  async measure (): Promise<MeasureDoneOperation> {
     return async () => ({ time: 0, serverTime: 0 })
   }
 
@@ -118,7 +118,7 @@ async function createNullFullTextAdapter (): Promise<FullTextAdapter> {
 }
 async function createNullContentTextAdapter (): Promise<ContentTextAdapter> {
   return {
-    async content (name: string, type: string, doc) {
+    async content () {
       return ''
     },
     metrics () {

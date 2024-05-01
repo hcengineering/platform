@@ -97,7 +97,7 @@ export class IssuesDetailsPage extends CommonTrackerPage {
     if (data.labels != null && data.createLabel != null) {
       if (data.createLabel) {
         await this.buttonAddLabel().click()
-        await this.pressCreateButtonSelectPopup(this.page)
+        await this.pressCreateButtonSelectPopup()
         await this.addNewTagPopup(this.page, data.labels, 'Tag from editIssue')
       } else {
         await this.checkFromDropdownWithSearch(this.page, data.labels)
@@ -191,7 +191,7 @@ export class IssuesDetailsPage extends CommonTrackerPage {
     await this.inputDescription().fill(`${existDescription}\n${description}`)
   }
 
-  async openShowMoreLink (activityHeader: string, position: number = 0): Promise<void> {
+  async openShowMoreLink (activityHeader: string): Promise<void> {
     await this.textActivity().filter({ hasText: activityHeader }).locator('xpath=..').locator('div.showMore').click()
   }
 

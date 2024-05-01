@@ -31,24 +31,6 @@ export interface Request<P extends any[]> {
   method: string
   params: P
 }
-
-/**
- * @public
- */
-export interface HelloRequest extends Request<any[]> {
-  binary?: boolean
-  compression?: boolean
-  broadcast?: boolean
-}
-/**
- * @public
- */
-export interface HelloResponse extends Response<any> {
-  binary: boolean
-  reconnect?: boolean
-  alreadyConnected?: boolean
-}
-
 /**
  * Response object define a server response on transaction request.
  * Also used to inform other clients about operations being performed by server.

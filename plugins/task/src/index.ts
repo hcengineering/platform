@@ -103,15 +103,6 @@ export interface TaskTypeDescriptor extends Doc {
   allowCreate: boolean
   statusCategoriesFunc?: Resource<(project: ProjectType) => Ref<StatusCategory>[]>
 }
-
-/**
- * @public
- */
-export interface TaskStatusFactory {
-  category: Ref<StatusCategory>
-  statuses: (string | [string, number])[]
-}
-
 /**
  * @public
  */
@@ -183,26 +174,6 @@ export interface ProjectTypeDescriptor extends SpaceTypeDescriptor {
   baseClass: Ref<Class<Project>>
   editor?: AnyComponent
 }
-
-/**
- * @public
- */
-export enum TaskGrouping {
-  State = 'state',
-  Assignee = 'assignee',
-  NoGrouping = '#no_category'
-}
-
-/**
- * @public
- */
-export enum TaskOrdering {
-  State = 'state',
-  LastUpdated = 'modifiedOn',
-  DueDate = 'dueDate',
-  Manual = 'rank'
-}
-
 /**
  * @public
  */

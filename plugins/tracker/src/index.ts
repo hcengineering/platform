@@ -73,9 +73,6 @@ export interface ProjectTargetPreference extends Preference {
 
   props?: { key: string, value: any }[]
 }
-
-export type RelatedIssueKind = 'classRule' | 'spaceRule'
-
 export interface RelatedClassRule {
   kind: 'classRule'
   ofClass: Ref<Class<Doc>>
@@ -115,39 +112,6 @@ export enum IssuePriority {
   Medium,
   Low
 }
-
-/**
- * @public
- */
-export enum IssuesGrouping {
-  Status = 'status',
-  Assignee = 'assignee',
-  Priority = 'priority',
-  Component = 'component',
-  Milestone = 'milestone',
-  NoGrouping = '#no_category'
-}
-
-/**
- * @public
- */
-export enum IssuesOrdering {
-  Status = 'status',
-  Priority = 'priority',
-  LastUpdated = 'modifiedOn',
-  DueDate = 'dueDate',
-  Manual = 'rank'
-}
-
-/**
- * @public
- */
-export enum IssuesDateModificationPeriod {
-  All = 'all',
-  PastWeek = 'pastWeek',
-  PastMonth = 'pastMonth'
-}
-
 /**
  * @public
  */
@@ -373,37 +337,6 @@ export class ComponentManager extends DocManager {
     return this.getDocs().filter(predicate)
   }
 }
-
-/**
- * @public
- */
-export const classicIssueTaskStatuses: TaskStatusFactory[] = [
-  { category: task.statusCategory.UnStarted, statuses: [['Backlog', PaletteColorIndexes.Cloud]] },
-  { category: task.statusCategory.ToDo, statuses: [['Todo', PaletteColorIndexes.Porpoise]] },
-  {
-    category: task.statusCategory.Active,
-    statuses: [['In progress', PaletteColorIndexes.Cerulean]]
-  },
-  { category: task.statusCategory.Won, statuses: [['Done', PaletteColorIndexes.Grass]] },
-  { category: task.statusCategory.Lost, statuses: [['Canceled', PaletteColorIndexes.Coin]] }
-]
-
-/**
- * @public
- */
-export const baseIssueTaskStatuses: TaskStatusFactory[] = [
-  { category: task.statusCategory.UnStarted, statuses: [['Backlog', PaletteColorIndexes.Cloud]] },
-  {
-    category: task.statusCategory.Active,
-    statuses: [
-      ['Coding', PaletteColorIndexes.Porpoise],
-      ['Under review', PaletteColorIndexes.Cerulean]
-    ]
-  },
-  { category: task.statusCategory.Won, statuses: [['Done', PaletteColorIndexes.Grass]] },
-  { category: task.statusCategory.Lost, statuses: [['Canceled', PaletteColorIndexes.Coin]] }
-]
-
 /**
  * @public
  */

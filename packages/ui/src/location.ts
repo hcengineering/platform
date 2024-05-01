@@ -132,12 +132,7 @@ if (!embeddedPlatform) {
 }
 
 export const location = derived(locationWritable, (loc) => clone(loc))
-
-/**
- * Unlike {@link location}, exposes raw browser location as seen in URL
- */
-export const rawLocation = derived(locationWritable, () => getCurrentLocation())
-
+derived(locationWritable, () => getCurrentLocation())
 export const workspaceId = derived(location, (loc) => loc.path[1])
 
 /**

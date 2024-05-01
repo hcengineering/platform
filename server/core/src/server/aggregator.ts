@@ -24,9 +24,7 @@ export class AggregatorStorageAdapter implements StorageAdapter {
     readonly dbAdapter: RawDBAdapter
   ) {}
 
-  async initialize (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {
-    // We need to initialize internal table if it miss documents.
-  }
+  async initialize (): Promise<void> {} // ToDo: We need to initialize internal table if it miss documents.
 
   async exists (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<boolean> {
     for (const a of this.adapters.values()) {

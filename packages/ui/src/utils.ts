@@ -57,14 +57,6 @@ export function fetchMetadataLocalStorage<T> (id: Metadata<T>): T | null {
 export function checkMobile (): boolean {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|Mobile|Opera Mini/i.test(navigator.userAgent)
 }
-
-/**
- * @public
- */
-export function isSafari (): boolean {
-  return navigator.userAgent.toLowerCase().includes('safari/')
-}
-
 /**
  * @public
  */

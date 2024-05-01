@@ -85,7 +85,7 @@ export async function createServerStorage (
   const fulltextAdapter = await ctx.with(
     'create full text adapter',
     {},
-    async (ctx) =>
+    async () =>
       await conf.fulltextAdapter.factory(
         conf.fulltextAdapter.url,
         conf.workspace,
@@ -98,7 +98,7 @@ export async function createServerStorage (
   const contentAdapter = await ctx.with(
     'create content adapter',
     {},
-    async (ctx) =>
+    async () =>
       await createContentAdapter(
         conf.contentAdapters,
         conf.defaultContentAdapter,
@@ -180,20 +180,20 @@ export async function createServerStorage (
  */
 export function createNullStorageFactory (): StorageAdapter {
   return {
-    initialize: async (ctx, workspaceId) => {},
-    exists: async (ctx, workspaceId: WorkspaceId) => {
+    initialize: async () => {},
+    exists: async () => {
       return false
     },
-    make: async (ctx, workspaceId: WorkspaceId) => {},
-    remove: async (ctx, workspaceId: WorkspaceId, objectNames: string[]) => {},
-    delete: async (ctx, workspaceId: WorkspaceId) => {},
-    list: async (ctx, workspaceId: WorkspaceId, prefix?: string) => [],
-    stat: async (ctx, workspaceId: WorkspaceId, objectName: string) => ({}) as any,
-    get: async (ctx, workspaceId: WorkspaceId, objectName: string) => ({}) as any,
-    put: async (ctx, workspaceId: WorkspaceId, objectName: string, stream: any, contentType: string, size?: number) =>
+    make: async () => {},
+    remove: async () => {},
+    delete: async () => {},
+    list: async () => [],
+    stat: async () => ({}) as any,
+    get: async () => ({}) as any,
+    put: async () =>
       ({}) as any,
-    read: async (ctx, workspaceId: WorkspaceId, name: string) => ({}) as any,
-    partial: async (ctx, workspaceId: WorkspaceId, objectName: string, offset: number, length?: number) => ({}) as any
+    read: async () => ({}) as any,
+    partial: async () => ({}) as any
   }
 }
 

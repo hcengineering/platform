@@ -53,13 +53,7 @@ const txes = genMinModel()
 
 createTaskModel(txes)
 
-async function createNullAdapter (
-  ctx: MeasureContext,
-  hierarchy: Hierarchy,
-  url: string,
-  db: WorkspaceId,
-  modelDb: ModelDb
-): Promise<DbAdapter> {
+async function createNullAdapter (): Promise<DbAdapter> {
   return new DummyDbAdapter()
 }
 
@@ -69,7 +63,7 @@ async function createNullFullTextAdapter (): Promise<FullTextAdapter> {
 
 async function createNullContentTextAdapter (): Promise<ContentTextAdapter> {
   return {
-    async content (name: string, type: string, doc) {
+    async content () {
       return ''
     },
     metrics (): MeasureContext {
@@ -170,17 +164,17 @@ describe('mongo operations', () => {
     }
     const ctx = new MeasureMetricsContext('client', {})
     const serverStorage = await createServerStorage(ctx, conf, { upgrade: false })
-    client = await createClient(async (handler) => {
+    client = await createClient(async () => {
       const st: ClientConnection = {
         findAll: async (_class, query, options) => await serverStorage.findAll(ctx, _class, query, options),
         tx: async (tx) => (await serverStorage.tx(ctx, tx))[0],
         searchFulltext: async () => ({ docs: [] }),
         close: async () => {},
-        loadChunk: async (domain): Promise<DocChunk> => await Promise.reject(new Error('unsupported')),
-        closeChunk: async (idx) => {},
-        loadDocs: async (domain: Domain, docs: Ref<Doc>[]) => [],
-        upload: async (domain: Domain, docs: Doc[]) => {},
-        clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
+        loadChunk: async (): Promise<DocChunk> => await Promise.reject(new Error('unsupported')),
+        closeChunk: async () => {},
+        loadDocs: async () => [],
+        upload: async () => {},
+        clean: async () => {},
         loadModel: async () => txes,
         getAccount: async () => ({}) as any,
         measure: async () => async () => ({ time: 0, serverTime: 0 }),

@@ -49,7 +49,7 @@ export function getBoardAvailableColors (): string[] {
     SeagullColor
   ]
 }
-export const commonBoardPreference = readable<CommonBoardPreference>(undefined, (set) => {
+readable<CommonBoardPreference>(undefined, (set) => {
   createQuery().query(board.class.CommonBoardPreference, { attachedTo: board.app.Board }, (result) => {
     if (result.length > 0) {
       set(result[0])

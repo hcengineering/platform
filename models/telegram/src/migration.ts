@@ -24,7 +24,7 @@ import telegram from './plugin'
 import { telegramId } from '@hcengineering/telegram'
 
 export const telegramOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
+  async migrate (): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     await tryUpgrade(client, telegramId, [
       {

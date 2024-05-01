@@ -4,10 +4,3 @@ export interface DocObjectCache {
   docs: Map<Ref<Doc>, Doc | null>
   transactions: Map<Ref<Doc>, TxCUD<Doc>[]>
 }
-
-export interface ActivityControl {
-  findAll: Storage['findAll']
-  hierarchy: Hierarchy
-  txFactory: TxFactory
-  modelDb: ModelDb
-}

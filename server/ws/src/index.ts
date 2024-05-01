@@ -22,11 +22,3 @@ export { start } from './server'
 export * from './types'
 export * from './client'
 export * from './server_http'
-
-/**
- * @public
- */
-export const serverFactories: Record<string, ServerFactory> = {
-  ws: startHttpServer
-  // uweb: startUWebsocketServer
-}

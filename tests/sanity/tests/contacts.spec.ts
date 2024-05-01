@@ -88,7 +88,7 @@ test.describe('contact tests', () => {
     await contractPage.expectKickEmployeeShowsInactiveStatus(first, last)
   })
 
-  test('add new application', async ({ page }) => {
+  test('add new application', async () => {
     await contractPage.clickAppContact()
     await contractPage.clickEmployeeNavElement('Person')
     await contractPage.clickEmployeeButton('Person')

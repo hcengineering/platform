@@ -141,20 +141,6 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
   private throwForbidden (): void {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
-
-  /**
-   * @private
-   *
-   * Throws if the required permission is missing in the space for the given context
-   */
-  private async needPermission (ctx: SessionContext, space: Ref<TypedSpace>, id: Ref<Permission>): Promise<void> {
-    if (await this.checkPermission(ctx, space, id)) {
-      return
-    }
-
-    this.throwForbidden()
-  }
-
   private async handleCreate (tx: TxCUD<Space>): Promise<void> {
     const createTx = tx as TxCreateDoc<Space>
     if (!this.storage.hierarchy.isDerived(createTx.objectClass, core.class.Space)) return
@@ -227,7 +213,7 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
     return this.storage.hierarchy.isDerived(tx.objectClass, core.class.Role)
   }
 
-  private async handlePermissionsUpdatesFromRoleTx (ctx: SessionContext, tx: TxCUD<Doc>): Promise<void> {
+  private async handlePermissionsUpdatesFromRoleTx (tx: TxCUD<Doc>): Promise<void> {
     if (!this.isTxCollectionCUD(tx)) {
       return
     }

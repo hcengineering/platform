@@ -416,13 +416,7 @@ export const actionTemplates = template({
   }
 })
 
-export const showColorsViewOption: ViewOptionModel = {
-  key: 'shouldShowColors',
-  type: 'toggle',
-  defaultValue: true,
-  actionTarget: 'display',
-  label: view.string.ShowColors
-}
+
 
 export function createModel (builder: Builder): void {
   builder.createModel(

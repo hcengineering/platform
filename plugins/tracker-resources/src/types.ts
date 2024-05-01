@@ -32,30 +32,6 @@ export const issuePriorities: Record<IssuePriority, { icon: Asset, label: IntlSt
   [IssuePriority.Medium]: { icon: tracker.icon.PriorityMedium, label: tracker.string.Medium },
   [IssuePriority.Low]: { icon: tracker.icon.PriorityLow, label: tracker.string.Low }
 }
-
-export const issuesGroupByOptions: Record<IssuesGrouping, IntlString> = {
-  [IssuesGrouping.Status]: tracker.string.Status,
-  [IssuesGrouping.Assignee]: tracker.string.Assignee,
-  [IssuesGrouping.Priority]: tracker.string.Priority,
-  [IssuesGrouping.Component]: tracker.string.Component,
-  [IssuesGrouping.Milestone]: tracker.string.Milestone,
-  [IssuesGrouping.NoGrouping]: tracker.string.NoGrouping
-}
-
-export const issuesOrderByOptions: Record<IssuesOrdering, IntlString> = {
-  [IssuesOrdering.Status]: tracker.string.Status,
-  [IssuesOrdering.Priority]: tracker.string.Priority,
-  [IssuesOrdering.LastUpdated]: tracker.string.LastUpdated,
-  [IssuesOrdering.DueDate]: tracker.string.DueDate,
-  [IssuesOrdering.Manual]: tracker.string.Manual
-}
-
-export const issuesDateModificationPeriodOptions: Record<IssuesDateModificationPeriod, IntlString> = {
-  [IssuesDateModificationPeriod.All]: tracker.string.All,
-  [IssuesDateModificationPeriod.PastWeek]: tracker.string.PastWeek,
-  [IssuesDateModificationPeriod.PastMonth]: tracker.string.PastMonth
-}
-
 export const defaultMilestoneStatuses = [
   MilestoneStatus.Planned,
   MilestoneStatus.InProgress,
@@ -77,12 +53,3 @@ export const defaultPriorities = [
   IssuePriority.High,
   IssuePriority.Urgent
 ]
-
-export const issuesGroupBySorting: Record<IssuesGrouping, SortingQuery<Issue>> = {
-  [IssuesGrouping.Status]: { '$lookup.status.rank': SortingOrder.Ascending },
-  [IssuesGrouping.Assignee]: { assignee: SortingOrder.Ascending },
-  [IssuesGrouping.Priority]: { priority: SortingOrder.Ascending },
-  [IssuesGrouping.Component]: { '$lookup.component.label': SortingOrder.Ascending },
-  [IssuesGrouping.Milestone]: { '$lookup.milestone.label': SortingOrder.Ascending },
-  [IssuesGrouping.NoGrouping]: { rank: SortingOrder.Ascending }
-}

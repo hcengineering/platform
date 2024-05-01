@@ -43,20 +43,6 @@ import view from '@hcengineering/view'
 import workbench from '@hcengineering/workbench'
 import ModelView from './components/ModelView.svelte'
 import devmodel from './plugin'
-
-export interface TxWitHResult {
-  tx: Tx
-  result: TxResult
-}
-
-export interface QueryWithResult {
-  _class: Ref<Class<Doc>>
-  query: DocumentQuery<Doc>
-  options?: FindOptions<Doc>
-  result: FindResult<Doc>
-  findOne: boolean
-}
-
 class ModelClient implements AccountClient {
   notifyEnabled = true
   constructor (readonly client: AccountClient) {

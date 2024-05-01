@@ -173,7 +173,7 @@ export async function connect (title: string): Promise<Client | undefined> {
   return _client
 }
 
-function clearMetadata (ws: string): void {
+function clearMetadata (): void {
   const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokens)
   if (tokens !== null) {
     const loc = getCurrentLocation()

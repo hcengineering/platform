@@ -283,7 +283,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       if (updateDoc.operations.$pull?.members !== undefined) {
         await this.pullMembersHandle(updateDoc.operations.$pull.members, space._id)
       }
-      space = TxProcessor.updateDoc2Doc(space as any, updateDoc)
+      TxProcessor.updateDoc2Doc(space as any, updateDoc)
     }
   }
 

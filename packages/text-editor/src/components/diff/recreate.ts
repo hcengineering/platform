@@ -172,7 +172,7 @@ export class StepTransform {
       // collect operations until we receive a valid document:
       // apply ops-patches until a valid prosemirror document is retrieved,
       // then try to create a transformation step or retry with next operation
-      while (toDoc == null) {
+      while () {
         applyPatch(afterStepJSON, [op])
 
         try {

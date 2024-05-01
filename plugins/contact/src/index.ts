@@ -57,18 +57,6 @@ export interface Channel extends AttachedDoc {
   items?: number
   lastMessage?: Timestamp
 }
-
-/**
- * @public
- */
-export interface ChannelItem extends AttachedDoc {
-  attachedTo: Ref<Channel>
-  attachedToClass: Ref<Class<Channel>>
-  incoming: boolean
-  sendOn: Timestamp
-  attachments?: number
-}
-
 /**
  * @public
  */

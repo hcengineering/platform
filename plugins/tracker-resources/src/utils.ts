@@ -80,67 +80,12 @@ export const activeProjects = derived(taskActiveProjects, (projects) => {
   ) as Map<Ref<Project>, Project>
 })
 export * from './types'
-
-export const UNSET_COLOR = -1
-
-export interface NavigationItem {
-  id: string
-  label: IntlString
-  icon: Asset
-  component: AnyComponent
-  componentProps?: Record<string, string>
-  top: boolean
-}
-
 export interface Selection {
   currentProject?: Ref<Project>
   currentSpecial?: string
 }
 
 export type IssuesGroupByKeys = keyof Pick<Issue, 'status' | 'priority' | 'assignee' | 'component' | 'milestone'>
-export type IssuesOrderByKeys = keyof Pick<Issue, 'status' | 'priority' | 'modifiedOn' | 'dueDate' | 'rank'>
-
-export const issuesGroupKeyMap: Record<IssuesGrouping, IssuesGroupByKeys | undefined> = {
-  [IssuesGrouping.Status]: 'status',
-  [IssuesGrouping.Priority]: 'priority',
-  [IssuesGrouping.Assignee]: 'assignee',
-  [IssuesGrouping.Component]: 'component',
-  [IssuesGrouping.Milestone]: 'milestone',
-  [IssuesGrouping.NoGrouping]: undefined
-}
-
-export const issuesOrderKeyMap: Record<IssuesOrdering, IssuesOrderByKeys> = {
-  [IssuesOrdering.Status]: 'status',
-  [IssuesOrdering.Priority]: 'priority',
-  [IssuesOrdering.LastUpdated]: 'modifiedOn',
-  [IssuesOrdering.DueDate]: 'dueDate',
-  [IssuesOrdering.Manual]: 'rank'
-}
-
-export const issuesGroupEditorMap: Record<'status' | 'priority' | 'component' | 'milestone', AnyComponent | undefined> =
-  {
-    status: tracker.component.StatusEditor,
-    priority: tracker.component.PriorityEditor,
-    component: tracker.component.ComponentEditor,
-    milestone: tracker.component.MilestoneEditor
-  }
-
-export const getIssuesModificationDatePeriodTime = (period: IssuesDateModificationPeriod | null): number => {
-  const today = new Date(Date.now())
-
-  switch (period) {
-    case IssuesDateModificationPeriod.PastWeek: {
-      return today.getTime() - MILLISECONDS_IN_WEEK
-    }
-    case IssuesDateModificationPeriod.PastMonth: {
-      return today.getTime() - getMillisecondsInMonth(today)
-    }
-    default: {
-      return 0
-    }
-  }
-}
-
 export interface FilterAction {
   icon?: Asset | AnySvelteComponent
   label?: IntlString
@@ -152,93 +97,6 @@ export interface FilterSectionElement extends Omit<FilterAction, 'label'> {
   count?: number
   isSelected?: boolean
 }
-
-export interface IssueFilter {
-  mode: '$in' | '$nin'
-  query: DocumentQuery<Issue>
-}
-
-export const getGroupedIssues = (
-  key: IssuesGroupByKeys | undefined,
-  elements: Issue[],
-  orderedCategories?: any[]
-): Record<string, Issue[]> => {
-  if (key === undefined) {
-    return { [undefined as any]: elements }
-  }
-
-  const unorderedIssues = groupBy(elements, key)
-
-  if (orderedCategories === undefined || orderedCategories.length === 0) {
-    return unorderedIssues
-  }
-
-  return Object.keys(unorderedIssues)
-    .sort((o1, o2) => {
-      const key1 = o1 === 'null' ? null : o1
-      const key2 = o2 === 'null' ? null : o2
-
-      const i1 = orderedCategories.findIndex((x) => x === key1)
-      const i2 = orderedCategories.findIndex((x) => x === key2)
-
-      return i1 - i2
-    })
-    .reduce((obj: Record<string, any[]>, objKey) => {
-      obj[objKey] = unorderedIssues[objKey]
-      return obj
-    }, {})
-}
-
-export const getIssueFilterAssetsByType = (type: string): { icon: Asset, label: IntlString } | undefined => {
-  switch (type) {
-    case 'status': {
-      return {
-        icon: tracker.icon.CategoryBacklog,
-        label: tracker.string.Status
-      }
-    }
-    case 'priority': {
-      return {
-        icon: tracker.icon.PriorityHigh,
-        label: tracker.string.Priority
-      }
-    }
-    case 'component': {
-      return {
-        icon: tracker.icon.Component,
-        label: tracker.string.Component
-      }
-    }
-    case 'milestone': {
-      return {
-        icon: tracker.icon.Milestone,
-        label: tracker.string.Milestone
-      }
-    }
-    default: {
-      return undefined
-    }
-  }
-}
-
-export const getArraysIntersection = (a: any[], b: any[]): any[] => {
-  const setB = new Set(b)
-  const intersection = new Set(a.filter((x) => setB.has(x)))
-
-  return Array.from(intersection)
-}
-
-export const getArraysUnion = (a: any[], b: any[]): any[] => {
-  const setB = new Set(b)
-  const union = new Set(a)
-
-  for (const element of setB) {
-    union.add(element)
-  }
-
-  return Array.from(union)
-}
-
 export type ComponentsFilterMode = 'all' | 'backlog' | 'active' | 'closed'
 
 export type MilestoneViewMode = 'all' | 'planned' | 'active' | 'closed'
@@ -452,7 +310,7 @@ async function getAllSomething (
   onUpdate: () => void,
   queryId: Ref<Doc>
 ): Promise<any[] | undefined> {
-  const promise = new Promise<Array<Ref<Doc>>>((resolve, reject) => {
+  const promise = new Promise<Array<Ref<Doc>>>((resolve) => {
     let refresh: boolean = false
     const lq = CategoryQuery.getLiveQuery(queryId)
     refresh = lq.query(_class, query ?? {}, (res) => {
@@ -470,9 +328,7 @@ async function getAllSomething (
 }
 
 export async function getAllPriority (
-  query: DocumentQuery<Doc> | undefined,
-  onUpdate: () => void,
-  queryId: Ref<Doc>
+
 ): Promise<any[] | undefined> {
   return defaultPriorities
 }
@@ -671,15 +527,6 @@ export async function collectIssues (client: TxOperations, docs: Doc[]): Promise
   }
   return result
 }
-
-/**
- * @public
- */
-export function issueToAttachedData (issue: Issue): AttachedData<Issue> {
-  const { _id, _class, space, ...data } = issue
-  return { ...data }
-}
-
 /**
  * @public
  */

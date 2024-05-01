@@ -23,7 +23,7 @@ export class CSVWriter<T extends Record<string, string | number>> {
   add (record: T, print: boolean = true): void {
     this.data.push(
       Object.entries(this.fields)
-        .map(([key, value]) => this.toStr(record[key]))
+        .map(([key]) => this.toStr(record[key]))
         .join(',')
     )
     if (print) {

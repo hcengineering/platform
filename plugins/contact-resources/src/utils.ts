@@ -137,7 +137,7 @@ export async function getRefs (
   const client = getClient()
   const mode = await client.findOne(view.class.FilterMode, { _id: filter.mode })
   if (mode === undefined) return []
-  const promise = new Promise<Array<Ref<Doc>>>((resolve, reject) => {
+  const promise = new Promise<Array<Ref<Doc>>>((resolve) => {
     const hasMessagesQuery = hasMessages === true ? { items: { $gt: 0 } } : {}
     const refresh = lq.query(
       contact.class.Channel,

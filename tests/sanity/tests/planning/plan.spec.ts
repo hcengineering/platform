@@ -13,7 +13,7 @@ test.describe('Planning ToDo tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/time`))?.finished()
   })
 
-  test('Add several slots for the same day', async ({ browser, page }) => {
+  test('Add several slots for the same day', async () => {
     const dateEnd = new Date()
     const toDoSeveralSlots: NewToDo = {
       title: 'Add several slots for the same day',

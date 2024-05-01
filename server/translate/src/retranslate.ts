@@ -65,7 +65,7 @@ export class LibRetranslateStage implements TranslationStage {
 
   constructor (readonly workspaceId: WorkspaceId) {}
 
-  async initialize (ctx: MeasureContext, storage: DbAdapter, pipeline: FullTextPipeline): Promise<void> {
+  async initialize (ctx: MeasureContext, storage: DbAdapter): Promise<void> {
     // Just do nothing
     try {
       const config = await storage.findAll(ctx, translatePlugin.class.TranslateConfiguration, {})
@@ -94,12 +94,7 @@ export class LibRetranslateStage implements TranslationStage {
     )
   }
 
-  async search (
-    _classes: Ref<Class<Doc>>[],
-    query: DocumentQuery<Doc>,
-    size: number | undefined,
-    from?: number
-  ): Promise<{ docs: IndexedDoc[], pass: boolean }> {
+  async search (_classes: Ref<Class<Doc>>[]): Promise<{ docs: IndexedDoc[], pass: boolean }> {
     return { docs: [], pass: true }
   }
 
@@ -113,7 +108,7 @@ export class LibRetranslateStage implements TranslationStage {
     }
   }
 
-  async collect (toIndex: DocIndexState[], pipeline: FullTextPipeline, metrics: MeasureContext): Promise<void> {
+  async collect (toIndex: DocIndexState[], pipeline: FullTextPipeline): Promise<void> {
     if (!this.enabled) {
       return
     }

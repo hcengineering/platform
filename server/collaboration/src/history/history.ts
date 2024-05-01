@@ -71,7 +71,7 @@ export function addVersion (ydoc: YDoc, version: YDocVersion, update: Uint8Array
     throw Error('history item already exists')
   }
 
-  ydoc.transact((tr) => {
+  ydoc.transact(() => {
     history.push([version])
     updates.set(versionId, fromByteArray(update))
   })
@@ -100,7 +100,7 @@ export function deleteVersion (ydoc: YDoc, versionId: string): void {
   const history = getHistory(ydoc)
   const updates = getUpdates(ydoc)
 
-  ydoc.transact((tr) => {
+  ydoc.transact(() => {
     const index = history.toArray().findIndex((p) => p.versionId === versionId)
     if (index !== -1) {
       history.delete(index, 1)

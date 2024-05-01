@@ -71,7 +71,7 @@ export function startHttpServer (
 
   const getUsers = (): any => Array.from(sessions.sessions.entries()).map(([k, v]) => v.session.getUser())
 
-  app.get('/api/v1/version', (req, res) => {
+  app.get('/api/v1/version', ( res) => {
     res.writeHead(200, { 'Content-Type': 'application/json' })
     res.end(
       JSON.stringify({
@@ -205,7 +205,7 @@ export function startHttpServer (
 
         ctx.measure('send-data', smsg.length)
 
-        await ctx.with('📤 socket-send', {}, async (ctx) => {
+        await ctx.with('📤 socket-send', {}, async () => {
           await new Promise<void>((resolve, reject) => {
             ws.send(smsg, { binary, compress: compression }, (err) => {
               if (err != null) {
@@ -259,8 +259,7 @@ export function startHttpServer (
         }
       }
     })
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    ws.on('close', (code: number, reason: Buffer) => {
+    ws.on('close', () => {
       if (session.session.workspaceClosed ?? false) {
         return
       }
@@ -303,7 +302,7 @@ export function startHttpServer (
           result: 'hello'
         }
         ws.send(serialize(resp, false), { binary: false })
-        ws.onmessage = (msg) => {
+        ws.onmessage = () => {
           const resp: Response<any> = {
             error: UNAUTHORIZED
           }

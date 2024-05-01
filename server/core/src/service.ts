@@ -22,11 +22,6 @@ export class ServiceAdaptersManager {
     private readonly adapters: Map<string, ServiceAdapter>,
     private readonly context: MeasureContext
   ) {}
-
-  getAdapter (adapterId: string): ServiceAdapter | undefined {
-    return this.adapters.get(adapterId)
-  }
-
   async close (): Promise<void> {
     for (const adapter of this.adapters.values()) {
       await adapter.close()

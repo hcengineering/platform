@@ -388,12 +388,10 @@ class TSessionManager implements SessionManager {
 
   private async switchToUpgradeSession (
     token: Token,
-    sessionId: string | undefined,
     ctx: MeasureContext,
     wsString: string,
     workspace: Workspace,
     pipelineFactory: PipelineFactory,
-    ws: ConnectionSocket,
     workspaceUrl: string,
     workspaceName: string
   ): Promise<Pipeline> {
@@ -643,7 +641,7 @@ class TSessionManager implements SessionManager {
     )
   }
 
-  async closeWorkspaces (ctx: MeasureContext): Promise<void> {
+  async closeWorkspaces (): Promise<void> {
     if (this.checkInterval !== undefined) {
       clearInterval(this.checkInterval)
     }

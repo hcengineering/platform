@@ -68,15 +68,3 @@ const errorPrinter = ({ message, stack, ...rest }: Error): object => ({
 function replacer (value: any): any {
   return value instanceof Error ? errorPrinter(value) : value
 }
-
-/**
- * @public
- */
-export const consoleModelLogger: ModelLogger = {
-  log (msg: string, data: any): void {
-    console.log(msg, data)
-  },
-  error (msg: string, data: any): void {
-    console.error(msg, replacer(data))
-  }
-}

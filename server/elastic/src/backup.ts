@@ -66,26 +66,23 @@ class ElasticDataAdapter implements DbAdapter {
   }
 
   async findAll<T extends Doc>(
-    ctx: MeasureContext,
     _class: Ref<Class<T>>,
-    query: DocumentQuery<T>,
-    options?: FindOptions<T>
   ): Promise<FindResult<T>> {
     return Object.assign([], { total: 0 })
   }
 
-  async tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {
+  async tx (): Promise<TxResult[]> {
     return []
   }
 
-  async createIndexes (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>): Promise<void> {}
-  async removeOldIndex (domain: Domain, deletePattern: RegExp, keepPattern: RegExp): Promise<void> {}
+  async createIndexes (): Promise<void> {}
+  async removeOldIndex (): Promise<void> {}
 
   async close (): Promise<void> {
     await this.client.close()
   }
 
-  find (ctx: MeasureContext, domain: Domain): StorageIterator {
+  find (): StorageIterator {
     let listRecieved = false
     let pos = 0
     let buffer: { _id: string, data: IndexedDoc }[] = []
@@ -277,7 +274,7 @@ class ElasticDataAdapter implements DbAdapter {
     }
   }
 
-  async update (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {
+  async update (): Promise<void> {
     throw new Error('Method not implemented.')
   }
 

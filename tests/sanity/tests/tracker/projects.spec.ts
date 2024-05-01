@@ -90,7 +90,7 @@ test.describe('Tracker Projects tests', () => {
     await trackerNavigationMenuPage.checkProjectExist(archiveProjectData.title)
 
     await trackerNavigationMenuPage.makeActionWithProject(archiveProjectData.title, 'Archive')
-    await trackerNavigationMenuPage.pressYesForPopup(page)
+    await trackerNavigationMenuPage.pressYesForPopup()
 
     await trackerNavigationMenuPage.checkProjectNotExist(archiveProjectData.title)
   })

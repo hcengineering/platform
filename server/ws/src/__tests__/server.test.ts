@@ -64,22 +64,20 @@ describe('server', () => {
       modelDb: await getModelDb(),
       findAll: async <T extends Doc>(
         ctx: SessionContext,
-        _class: Ref<Class<T>>,
-        query: DocumentQuery<T>,
-        options?: FindOptions<T>
+        _class: Ref<Class<T>>
       ): Promise<FindResult<T>> => toFindResult([]),
-      tx: async (ctx: SessionContext, tx: Tx): Promise<[TxResult, Tx[], string[] | undefined]> => [{}, [], undefined],
+      tx: async (): Promise<[TxResult, Tx[], string[] | undefined]> => [{}, [], undefined],
       close: async () => {},
       storage: {} as unknown as ServerStorage,
       domains: async () => [],
-      find: (ctx: MeasureContext, domain: Domain) => ({
-        next: async (ctx: MeasureContext) => undefined,
-        close: async (ctx: MeasureContext) => {}
+      find: () => ({
+        next: async () => undefined,
+        close: async () => {}
       }),
-      load: async (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => [],
-      upload: async (ctx: MeasureContext, domain: Domain, docs: Doc[]) => {},
-      clean: async (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => {},
-      searchFulltext: async (ctx, query, options) => {
+      load: async () => [],
+      upload: async () => {},
+      clean: async () => {},
+      searchFulltext: async () => {
         return { docs: [] }
       }
     }),
@@ -154,8 +152,6 @@ describe('server', () => {
         findAll: async <T extends Doc>(
           ctx: SessionContext,
           _class: Ref<Class<T>>,
-          query: DocumentQuery<T>,
-          options?: FindOptions<T>
         ): Promise<FindResult<T>> => {
           const d: Doc & { sessionId: string } = {
             _class: 'result' as Ref<Class<Doc>>,
@@ -167,18 +163,18 @@ describe('server', () => {
           }
           return toFindResult([d as unknown as T])
         },
-        tx: async (ctx: SessionContext, tx: Tx): Promise<[TxResult, Tx[], string[] | undefined]> => [{}, [], undefined],
+        tx: async (): Promise<[TxResult, Tx[], string[] | undefined]> => [{}, [], undefined],
         close: async () => {},
         storage: {} as unknown as ServerStorage,
         domains: async () => [],
-        find: (ctx: MeasureContext, domain: Domain) => ({
-          next: async (ctx: MeasureContext) => undefined,
-          close: async (ctx: MeasureContext) => {}
+        find: () => ({
+          next: async () => undefined,
+          close: async () => {}
         }),
-        load: async (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => [],
-        upload: async (ctx: MeasureContext, domain: Domain, docs: Doc[]) => {},
-        clean: async (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => {},
-        searchFulltext: async (ctx, query, options) => {
+        load: async () => [],
+        upload: async () => {},
+        clean: async () => {},
+        searchFulltext: async () => {
           return { docs: [] }
         }
       }),

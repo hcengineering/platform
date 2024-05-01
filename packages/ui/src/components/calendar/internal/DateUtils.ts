@@ -95,7 +95,7 @@ export interface ICell {
   style: TCellStyle
 }
 
-export function getMonday (d: Date, mondayStart: boolean): Date {
+export function getMonday (d: Date): Date {
   d = new Date(new Date(d).setHours(0, 0, 0, 0))
   const day = d.getDay()
   const diff = d.getDate() - day + (day === 0 ? -6 : 1) // adjust when day is sunday

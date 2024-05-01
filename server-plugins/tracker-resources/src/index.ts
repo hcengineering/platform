@@ -336,7 +336,6 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control:
 async function doIssueUpdate (
   updateTx: TxUpdateDoc<Issue>,
   control: TriggerControl,
-  tx: TxCollectionCUD<Issue, AttachedDoc>
 ): Promise<Tx[]> {
   const res: Tx[] = []
 

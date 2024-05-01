@@ -37,13 +37,6 @@ export declare type Updater<T> = (value: T) => T
 export declare type Invalidator<T> = (value?: T) => void
 /**
  * @public
- * Start and stop notification callbacks.
- */
-// eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-export declare type StartStopNotifier<T> = (set: Subscriber<T>) => Unsubscriber | void
-
-/**
- * @public
  * Readable interface for subscribing.
  */
 export interface Readable<T> {

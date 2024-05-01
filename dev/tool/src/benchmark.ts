@@ -241,7 +241,7 @@ export async function benchmark (
           'avg',
           {},
           async () =>
-            await monitorConnection?.findAll(contact.mixin.Employee, {}).then((res) => {
+            await monitorConnection?.findAll(contact.mixin.Employee, {}).then(() => {
               const cur = Date.now() - st
               opTime += cur
               moment = cur
