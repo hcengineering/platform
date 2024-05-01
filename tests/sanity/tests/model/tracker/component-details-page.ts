@@ -33,6 +33,6 @@ export class ComponentsDetailsPage extends CommonTrackerPage {
   async deleteComponent (): Promise<void> {
     await this.buttonMoreActions().click()
     await this.selectFromDropdown(this.page, 'Delete')
-    await this.pressYesDeletePopup(this.page)
+    await this.pressYesDeletePopup()
   }
 }

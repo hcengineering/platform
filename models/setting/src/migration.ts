@@ -44,7 +44,7 @@ async function createSpace (tx: TxOperations): Promise<void> {
 }
 
 export const settingOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
+  async migrate (): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     await tryUpgrade(client, settingId, [
       {

@@ -119,7 +119,7 @@ test.describe('Vacancy tests', () => {
     await vacanciesPage.createNewVacancy(archiveVacancy)
     await vacanciesPage.openVacancyByName(archiveVacancy.title)
     await vacancyDetailsPage.moreActionOn('Archive')
-    await vacancyDetailsPage.pressYesForPopup(page)
+    await vacancyDetailsPage.pressYesForPopup()
     await vacancyDetailsPage.checkActivityExist('Archived set to Yes')
     await navigationMenuPage.clickButtonVacancies()
     await vacanciesPage.checkVacancyNotExist(

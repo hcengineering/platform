@@ -182,7 +182,7 @@ export const FileExtension = FileNode.extend<FileOptions>({
               return handleDrop(view, view.posAtCoords({ left: event.x, top: event.y }), dataTransfer)
             }
           },
-          handleDoubleClickOn (view, pos, node, nodePos, event) {
+          handleDoubleClickOn (view, pos, node) {
             const fileId = node.attrs['file-id'] ?? ''
             if (fileId === '') return
             const fileName = node.attrs['data-file-name'] ?? ''

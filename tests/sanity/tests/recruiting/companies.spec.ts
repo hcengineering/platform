@@ -21,7 +21,7 @@ test.describe('Companies tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/recruit`))?.finished()
   })
 
-  test('Create a new Company', async ({ page }) => {
+  test('Create a new Company', async () => {
     const newCompany: NewCompany = {
       name: `Create a new Company test-${generateId()}`,
       socials: [
@@ -42,7 +42,7 @@ test.describe('Companies tests', () => {
     await companyDetailsPage.checkCompany(newCompany)
   })
 
-  test('Edit a Company', async ({ page }) => {
+  test('Edit a Company', async () => {
     const createdCompany = `Edit Company--${generateId()}`
     const editCompany: NewCompany = {
       name: `Updated Edit Company-${generateId()}`,
@@ -74,7 +74,7 @@ test.describe('Companies tests', () => {
     await companyDetailsPage.checkCompany(editCompany)
   })
 
-  test('Delete a Company', async ({ page }) => {
+  test('Delete a Company', async () => {
     const deleteCompany: NewCompany = {
       name: `Delete Company-${generateId()}`
     }

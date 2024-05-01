@@ -211,7 +211,7 @@ export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<T
   if (actualTx._class === core.class.TxUpdateDoc) {
     const updateTx = actualTx as TxUpdateDoc<Issue>
     if (control.hierarchy.isDerived(updateTx.objectClass, tracker.class.Issue)) {
-      return await doIssueUpdate(updateTx, control, tx as TxCollectionCUD<Issue, AttachedDoc>)
+      return await doIssueUpdate(updateTx, control)
     }
   }
   if (actualTx._class === core.class.TxRemoveDoc) {
@@ -335,8 +335,7 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control:
 
 async function doIssueUpdate (
   updateTx: TxUpdateDoc<Issue>,
-  control: TriggerControl,
-  tx: TxCollectionCUD<Issue, AttachedDoc>
+  control: TriggerControl
 ): Promise<Tx[]> {
   const res: Tx[] = []
 

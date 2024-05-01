@@ -134,7 +134,7 @@ test.describe('Tracker sub-issues tests', () => {
     })
 
     await issuesDetailsPage.moreActionOnIssue('Delete')
-    await issuesDetailsPage.pressYesForPopup(page)
+    await issuesDetailsPage.pressYesForPopup()
 
     await issuesPage.searchIssueByName(deleteSubIssue.title)
     await issuesPage.checkIssueNotExist(deleteSubIssue.title)

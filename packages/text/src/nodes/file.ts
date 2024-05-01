@@ -87,7 +87,7 @@ export const FileNode = Node.create<FileOptions>({
     ]
   },
 
-  renderHTML ({ node, HTMLAttributes }) {
+  renderHTML ({HTMLAttributes }) {
     const nodeAttributes = {
       'data-type': this.name
     }

@@ -119,7 +119,7 @@ export class IssuesPage extends CommonTrackerPage {
     await this.fillNewIssueForm(data)
     await this.buttonCreateIssue().click()
     if (closeNotification) {
-      await this.closeNotification(this.page)
+      await this.closeNotification()
     }
     await attachScreenshot(`createdNewIssue-${data.title}.png`, this.page)
   }
@@ -142,7 +142,7 @@ export class IssuesPage extends CommonTrackerPage {
     if (data.labels != null && data.createLabel != null) {
       await this.buttonPopupCreateNewIssueLabels().click()
       if (data.createLabel) {
-        await this.pressCreateButtonSelectPopup(this.page)
+        await this.pressCreateButtonSelectPopup()
         await this.addNewTagPopup(this.page, data.labels, 'Tag from createNewIssue')
         await this.pupupTagsPopup().press('Escape')
       } else {

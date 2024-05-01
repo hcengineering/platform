@@ -31,7 +31,7 @@
   const todayDate = new Date()
 
   $: weekMonday = startFromWeekStart
-    ? getMonday(currentDate, mondayStart)
+    ? getMonday(currentDate)
     : new Date(new Date(currentDate).setHours(0, 0, 0, 0))
 
   function getDate (startDate: Date, dayIndex: number, minutes: number): Date {

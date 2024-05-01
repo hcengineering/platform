@@ -48,26 +48,6 @@ export interface Candidate extends Person {
   skills?: number
   reviews?: number
 }
-
-/** @public */
-export interface CandidateDraft {
-  _id: Ref<Candidate>
-  firstName?: string
-  lastName?: string
-  title?: string
-  city: string
-  resumeUuid?: string
-  resumeName?: string
-  resumeSize?: number
-  resumeType?: string
-  resumeLastModified?: number
-  avatar?: File | undefined
-  channels: AttachedData<Channel>[]
-  onsite?: boolean
-  remote?: boolean
-  skills: TagReference[]
-}
-
 /** @public */
 export interface Applicant extends Task {
   space: Ref<Vacancy>

@@ -124,5 +124,5 @@ export const activityOperation: MigrateOperation = {
       }
     ])
   },
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {}
+  async upgrade (): Promise<void> {}
 }

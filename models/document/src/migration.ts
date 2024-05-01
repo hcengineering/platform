@@ -322,7 +322,7 @@ export const documentOperation: MigrateOperation = {
     await tryUpgrade(client, documentId, [
       {
         state: 'u-default-project',
-        func: async (client) => {
+        func: async () => {
           await createSpace(tx)
         }
       }

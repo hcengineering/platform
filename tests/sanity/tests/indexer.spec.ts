@@ -194,7 +194,7 @@ test.describe('Fulltext index', () => {
 
       await test.step('remove document', async () => {
         await documentContentPage.executeMoreAction('Delete')
-        await documentContentPage.pressYesForPopup(page)
+        await documentContentPage.pressYesForPopup()
         // Go to inbox to close the document and trigger indexation
         await leftSideMenuPage.clickNotification()
       })
@@ -355,7 +355,7 @@ test.describe('Fulltext index', () => {
         await issuesPage.searchIssueByName(newIssue.title)
         await issuesPage.openIssueByName(newIssue.title)
         await issuesDetailsPage.moreActionOnIssue('Delete')
-        await issuesDetailsPage.pressYesForPopup(page)
+        await issuesDetailsPage.pressYesForPopup()
       })
 
       await test.step('search by title', async () => {

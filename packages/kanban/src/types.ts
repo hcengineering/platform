@@ -9,16 +9,6 @@ export interface DocWithRank extends Doc {
 }
 
 export type StateType = any
-
-/**
- * @public
- */
-export interface TypeState {
-  _id: StateType
-  title: string
-  color: number
-  icon?: Asset
-}
 /**
  * @public
  */

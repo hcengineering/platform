@@ -25,11 +25,10 @@ declare module '@tiptap/core' {
     }
   }
 }
-
-export const ChangeHighlight = Mark.create<ChangeHighlightOptions>({
+Mark.create<ChangeHighlightOptions>({
   name: 'changeHighlight',
 
-  addOptions () {
+  addOptions() {
     return {
       multicolor: true,
       HTMLAttributes: {
@@ -38,7 +37,7 @@ export const ChangeHighlight = Mark.create<ChangeHighlightOptions>({
     }
   },
 
-  addAttributes () {
+  addAttributes() {
     if (!this.options.multicolor) {
       return {}
     }
@@ -64,7 +63,7 @@ export const ChangeHighlight = Mark.create<ChangeHighlightOptions>({
     }
   },
 
-  parseHTML () {
+  parseHTML() {
     return [
       {
         tag: 'cmark'
@@ -72,11 +71,11 @@ export const ChangeHighlight = Mark.create<ChangeHighlightOptions>({
     ]
   },
 
-  renderHTML ({ HTMLAttributes }) {
+  renderHTML({ HTMLAttributes }) {
     return ['cmark', mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0]
   },
 
-  addCommands () {
+  addCommands() {
     return {
       setChangeHighlight:
         (attributes) =>
@@ -96,16 +95,14 @@ export const ChangeHighlight = Mark.create<ChangeHighlightOptions>({
     }
   }
 })
-
 export interface ChangesetExtensionOptions {
   isSuggestMode: () => boolean
 }
-
-export const ChangesetExtension = Extension.create<ChangesetExtensionOptions>({
+Extension.create<ChangesetExtensionOptions>({
   // addInputRules () {
   //   return [changeSetRule]
   // },
-  addProseMirrorPlugins () {
+  addProseMirrorPlugins() {
     return [
       new Plugin({
         appendTransaction: (_transactions, oldState, newState) => {
@@ -144,25 +141,25 @@ export const ChangesetExtension = Extension.create<ChangesetExtensionOptions>({
       })
     ]
   },
-  onCreate () {
+  onCreate() {
     // The editor is ready.
   },
-  onUpdate () {
+  onUpdate() {
     // The content has changed.
   },
   // onSelectionUpdate ({ editor }) {
   //   // The selection has changed.
   // },
-  onTransaction ({ transaction }) {
+  onTransaction() {
     // The editor state has changed.
   },
-  onFocus ({ event }) {
+  onFocus() {
     // The editor is focused.
   },
-  onBlur ({ event }) {
+  onBlur() {
     // The editor isn’t focused anymore.
   },
-  onDestroy () {
+  onDestroy() {
     // The editor is being destroyed.
   }
 })

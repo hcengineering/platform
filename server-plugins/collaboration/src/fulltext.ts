@@ -69,15 +69,12 @@ export class CollaborativeContentRetrievalStage implements FullTextPipelineStage
     private readonly contentAdapter: ContentTextAdapter
   ) {}
 
-  async initialize (ctx: MeasureContext, storage: DbAdapter, pipeline: FullTextPipeline): Promise<void> {
+  async initialize (): Promise<void> {
     // Just do nothing
   }
 
   async search (
     _classes: Ref<Class<Doc>>[],
-    search: DocumentQuery<Doc>,
-    size?: number,
-    from?: number
   ): Promise<{ docs: IndexedDoc[], pass: boolean }> {
     return { docs: [], pass: true }
   }

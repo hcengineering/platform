@@ -76,7 +76,7 @@ describe('client', () => {
       )
     )
 
-    async function connectPlugin (handler: (tx: Tx) => void): Promise<ClientConnection> {
+    async function connectPlugin (): Promise<ClientConnection> {
       const hierarchy = new Hierarchy()
 
       for (const tx of txes) hierarchy.tx(tx)
@@ -95,7 +95,7 @@ describe('client', () => {
       return {
         findAll,
 
-        searchFulltext: async (query: SearchQuery, options: SearchOptions): Promise<SearchResult> => {
+        searchFulltext: async (): Promise<SearchResult> => {
           return { docs: [] }
         },
 
@@ -108,18 +108,18 @@ describe('client', () => {
         },
         close: async () => {},
 
-        loadChunk: async (domain: Domain, idx?: number) => ({
+        loadChunk: async () => ({
           idx: -1,
           index: -1,
           docs: [],
           finished: true,
           digest: ''
         }),
-        closeChunk: async (idx: number) => {},
-        loadDocs: async (domain: Domain, docs: Ref<Doc>[]) => [],
-        upload: async (domain: Domain, docs: Doc[]) => {},
-        clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
-        loadModel: async (last: Timestamp) => clone(txes),
+        closeChunk: async () => {},
+        loadDocs: async () => [],
+        upload: async () => {},
+        clean: async () => {},
+        loadModel: async () => clone(txes),
         getAccount: async () => null as unknown as Account,
         measure: async () => {
           return async () => ({ time: 0, serverTime: 0 })

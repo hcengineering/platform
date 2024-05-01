@@ -364,7 +364,7 @@ export default async (): Promise<Resources> => ({
         getFileUrl(file, getIconSize2x(size), fileName) + ' 2x'
       ]
     },
-    GetGravatarUrl: (file: string, size: IconSize, fileName?: string) => [
+    GetGravatarUrl: (file: string, size: IconSize) => [
       getGravatarUrl(file, size),
       getGravatarUrl(file, size) + ' 1x',
       getGravatarUrl(file, getIconSize2x(size)) + ' 2x'

@@ -65,15 +65,10 @@ export class ContentRetrievalStage implements FullTextPipelineStage {
     private readonly contentAdapter: ContentTextAdapter
   ) {}
 
-  async initialize (ctx: MeasureContext, storage: DbAdapter, pipeline: FullTextPipeline): Promise<void> {
-    // Just do nothing
-  }
+  async initialize (): Promise<void> {}
 
   async search (
     _classes: Ref<Class<Doc>>[],
-    search: DocumentQuery<Doc>,
-    size?: number,
-    from?: number
   ): Promise<{ docs: IndexedDoc[], pass: boolean }> {
     return { docs: [], pass: true }
   }

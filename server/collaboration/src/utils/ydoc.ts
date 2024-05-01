@@ -37,7 +37,7 @@ export function yDocCopyXmlField (ydoc: YDoc, source: string, target: string): v
   const srcField = ydoc.getXmlFragment(source)
   const dstField = ydoc.getXmlFragment(target)
 
-  ydoc.transact((tr) => {
+  ydoc.transact(() => {
     // similar to XmlFragment's clone method
     dstField.delete(0, dstField.length)
     dstField.insert(0, srcField.toArray().map((item) => (item instanceof YAbstractType ? item.clone() : item)) as any)

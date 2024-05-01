@@ -142,7 +142,7 @@ export async function connect (title: string): Promise<Client | undefined> {
           location.reload()
         },
         () => {
-          clearMetadata(ws)
+          clearMetadata()
           navigate({
             path: [loginId],
             query: {}
@@ -229,7 +229,7 @@ export async function connect (title: string): Promise<Client | undefined> {
   } else {
     console.error('WARNING: no employee account found.')
 
-    clearMetadata(ws)
+    clearMetadata()
     navigate({
       path: [loginId],
       query: { navigateUrl: encodeURIComponent(JSON.stringify(getCurrentLocation())) }
@@ -330,7 +330,7 @@ async function createEmployee (
   return me
 }
 
-function clearMetadata (ws: string): void {
+function clearMetadata (): void {
   const tokens = fetchMetadataLocalStorage(login.metadata.LoginTokens)
   if (tokens !== null) {
     const loc = getCurrentLocation()

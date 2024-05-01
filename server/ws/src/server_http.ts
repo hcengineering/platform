@@ -156,7 +156,7 @@ export function startHttpServer (
     perMessageDeflate: enableCompression
       ? {
           zlibDeflateOptions: {
-            // See zlib defaults.
+          // See zlib defaults.
             chunkSize: 10 * 1024,
             memLevel: 7,
             level: 3
@@ -168,7 +168,7 @@ export function startHttpServer (
           // Below options specified as default values.
           concurrencyLimit: 20, // Limits zlib concurrency for perf.
           threshold: 1024 // Size (in bytes) below which messages
-          // should not be compressed if context takeover is disabled.
+        // should not be compressed if context takeover is disabled.
         }
       : false,
     skipUTF8Validation: true
@@ -259,8 +259,7 @@ export function startHttpServer (
         }
       }
     })
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    ws.on('close', (code: number, reason: Buffer) => {
+    ws.on('close', () => {
       if (session.session.workspaceClosed ?? false) {
         return
       }
@@ -303,7 +302,7 @@ export function startHttpServer (
           result: 'hello'
         }
         ws.send(serialize(resp, false), { binary: false })
-        ws.onmessage = (msg) => {
+        ws.onmessage = () => {
           const resp: Response<any> = {
             error: UNAUTHORIZED
           }

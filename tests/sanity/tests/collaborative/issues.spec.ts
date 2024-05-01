@@ -75,7 +75,7 @@ test.describe('Collaborative test for issue', () => {
     }
   })
 
-  test('Issues status can be changed by another users', async ({ page, browser }) => {
+  test('Issues status can be changed by another users', async ({ browser }) => {
     const issue: NewIssue = {
       title: 'Issues status can be changed by another users',
       description: 'Collaborative test for issue'

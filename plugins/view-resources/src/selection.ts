@@ -80,7 +80,7 @@ export const selectionStore = writable<SelectionStore>({ docs: [] })
  */
 export const previewDocument = writable<Doc | undefined>()
 
-panelstore.subscribe((val) => {
+panelstore.subscribe(() => {
   previewDocument.set(undefined)
 })
 

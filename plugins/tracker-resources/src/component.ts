@@ -99,7 +99,7 @@ export class ComponentAggregationManager implements AggregationManager {
     return tracker.class.Component
   }
 
-  async categorize (target: Array<Ref<Doc>>, attr: AnyAttribute): Promise<Array<Ref<Doc>>> {
+  async categorize (target: Array<Ref<Doc>>): Promise<Array<Ref<Doc>>> {
     const mgr = await this.getManager()
     for (const sid of [...target]) {
       const c = mgr.getIdMap().get(sid as Ref<Component>) as WithLookup<Component>

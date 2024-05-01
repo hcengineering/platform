@@ -121,7 +121,7 @@ class Connection implements ClientConnection {
           method: 'ping',
           params: [],
           once: true,
-          handleResult: async (result) => {
+          handleResult: async () => {
             if (this.websocket === wsocket) {
               this.pingResponse = Date.now()
             }
@@ -386,7 +386,7 @@ class Connection implements ClientConnection {
         }, 500)
       }
     }
-    wsocket.onclose = (ev) => {
+    wsocket.onclose = () => {
       clearTimeout(dialTimer)
       if (this.websocket !== wsocket) {
         wsocket.close()
@@ -415,7 +415,7 @@ class Connection implements ClientConnection {
       this.websocket?.send(serialize(helloRequest, false))
     }
 
-    wsocket.onerror = (event: any) => {
+    wsocket.onerror = () => {
       clearTimeout(dialTimer)
       if (this.websocket !== wsocket) {
         return

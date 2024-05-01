@@ -142,28 +142,3 @@ export function getReferences (
     doc.childNodes as NodeListOf<HTMLElement>
   )
 }
-
-/**
- * @public
- */
-export async function createReferences (
-  client: TxOperations,
-  srcDocId: Ref<Doc>,
-  srcDocClass: Ref<Class<Doc>>,
-  attachedDocId: Ref<Doc> | undefined,
-  attachedDocClass: Ref<Class<Doc>> | undefined,
-  content: string,
-  space: Ref<Space>
-): Promise<void> {
-  const hierarchy = client.getHierarchy()
-
-  const references = getReferences(srcDocId, srcDocClass, attachedDocId, attachedDocClass, content)
-  for (const ref of references) {
-    if (hierarchy.isDerived(ref.attachedToClass, contact.class.Person)) {
-      continue
-    }
-
-    const { attachedTo, attachedToClass, collection, ...adata } = ref
-    await client.addCollection(activity.class.ActivityReference, space, attachedTo, attachedToClass, collection, adata)
-  }
-}

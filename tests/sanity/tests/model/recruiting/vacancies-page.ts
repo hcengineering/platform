@@ -12,7 +12,6 @@ export class VacanciesPage extends CommonRecruitingPage {
 
   readonly pageHeader = (): Locator => this.page.locator('span[class*="header"]', { hasText: 'Vacancies' })
   readonly buttonCreateNewVacancy = (): Locator => this.page.locator('button > span', { hasText: 'Vacancy' })
-  readonly textTableFirstCell = (): Locator => this.page.locator('div[class$="firstCell"]')
   readonly inputCreateVacancyTitle = (): Locator =>
     this.page.locator('form[id="recruit:string:CreateVacancy"] input[type="text"]')
 

@@ -203,12 +203,12 @@ export interface DocAttributeUpdates {
 export type DocUpdateAction = 'create' | 'update' | 'remove'
 
 export type DocUpdateMessageViewletAttributesConfig = Record<
-string,
-{
-  presenter?: AnyComponent
-  icon?: Asset
-  iconPresenter?: AnyComponent
-}
+  string,
+  {
+    presenter?: AnyComponent
+    icon?: Asset
+    iconPresenter?: AnyComponent
+  }
 >
 
 /**

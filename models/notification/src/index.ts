@@ -196,7 +196,7 @@ export class TDocUpdates extends TDoc implements DocUpdates {
     attachedTo!: Ref<Doc>
 
   @Prop(TypeRef(core.class.Account), getEmbeddedLabel('Hidden'))
-  // @Index(IndexKind.Indexed)
+    // @Index(IndexKind.Indexed)
     hidden!: boolean
 
   attachedToClass!: Ref<Class<Doc>>
@@ -243,7 +243,7 @@ export class TInboxNotification extends TDoc implements InboxNotification {
     user!: Ref<Account>
 
   @Prop(TypeBoolean(), core.string.Boolean)
-  // @Index(IndexKind.Indexed)
+    // @Index(IndexKind.Indexed)
     isViewed!: boolean
 
   @Prop(TypeBoolean(), core.string.Boolean)

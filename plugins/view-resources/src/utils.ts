@@ -900,7 +900,7 @@ export function cosinesim (A: number[], B: number[]): number {
 /**
  * Calculate Sørensen–Dice coefficient
  */
-export function calcSørensenDiceCoefficient (a: string, b: string): number {
+export function calcSorensenDiceCoefficient (a: string, b: string): number {
   const first = a.replace(/\s+/g, '')
   const second = b.replace(/\s+/g, '')
 
@@ -1341,11 +1341,6 @@ export interface PermissionsStore {
   ap: AccountsByPermission
   whitelist: Set<Ref<Space>>
 }
-
-export function checkMyPermission (_id: Ref<Permission>, space: Ref<TypedSpace>, store: PermissionsStore): boolean {
-  return (store.whitelist.has(space) || store.ps[space]?.has(_id)) ?? false
-}
-
 export const permissionsStore = writable<PermissionsStore>({
   ps: {},
   ap: {},

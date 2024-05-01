@@ -2,21 +2,6 @@ import { ChannelProvider } from '@hcengineering/contact'
 import { AnyAttribute, AttachedDoc, Class, Doc, Mixin, Ref } from '@hcengineering/core'
 import { ExpertKnowledge, InitialKnowledge, MeaningfullKnowledge } from '@hcengineering/tags'
 import { ProjectType } from '@hcengineering/task'
-
-/**
- * @public
- */
-export interface BitrixProfile {
-  ID: string
-  ADMIN: boolean
-  NAME: string
-  LAST_NAME: string
-  PERSONAL_GENDER: string
-  PERSONAL_PHOTO: string
-  TIME_ZONE: string
-  TIME_ZONE_OFFSET: number
-}
-
 /**
  * @public
  */
@@ -28,42 +13,12 @@ export type ISODate = string
 /**
  * @public
  */
-export type BoolString = 'Y' | 'N'
-/**
- * @public
- */
-export type GenderString = 'M' | 'F' | ''
-
-/**
- * @public
- */
 export interface MultiField {
   readonly ID: NumberString
   readonly VALUE_TYPE: string
   readonly VALUE: string
   readonly TYPE_ID: string
 }
-/**
- * @public
- */
-export type MultiFieldArray = ReadonlyArray<Pick<MultiField, 'VALUE' | 'VALUE_TYPE'>>
-
-/**
- * @public
- */
-export interface StatusValue {
-  CATEGORY_ID: string | null
-  COLOR: string | null
-  ENTITY_ID: string | null
-  ID: number
-  NAME: string
-  NAME_INIT: string | null
-  SEMANTICS: string | null
-  SORT: string | null
-  STATUS_ID: string | null
-  SYSTEM: 'Y' | 'N'
-}
-
 /**
  * @public
  */
@@ -112,16 +67,6 @@ export interface BitrixOwnerType {
   NAME: string
   SYMBOL_CODE: string
 }
-
-/**
- * @public
- */
-export const mappingTypes = [
-  { label: 'Leads', id: BitrixEntityType.Lead },
-  { label: 'Company', id: BitrixEntityType.Company },
-  { label: 'Contacts', id: BitrixEntityType.Contact }
-]
-
 /**
  * @public
  */
@@ -251,24 +196,6 @@ export interface FindReferenceOperation {
 
   referenceClass: Ref<Class<Doc>>
 }
-
-/**
- * @public
- */
-export interface CreateAttachedField {
-  match: boolean // We should match type and pass if exists.
-
-  // Original document field to use value from.
-  sourceField: string
-  valueField: string // final value should go into valueField, field name to match, like `space`
-
-  // If reference is defined, we should find for some existing document by matching field with sourceField value.
-  // Document we should match value against.
-  referenceClass: Ref<Class<Doc>>
-  // Field to check for matched value against.
-  referenceField?: string
-}
-
 /**
  * @public
  */

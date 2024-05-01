@@ -14,7 +14,7 @@
   import { Button, IconActivity, IconAdd, Label, resizeObserver, showPopup, Spinner, tooltip } from '@hcengineering/ui'
   import Scroller from '@hcengineering/ui/src/components/Scroller.svelte'
   import { MarkupPreviewPopup, ObjectPresenter } from '@hcengineering/view-resources'
-  import { calcSørensenDiceCoefficient, cosinesim } from '@hcengineering/view-resources/src/utils'
+  import { calcSorensenDiceCoefficient, cosinesim } from '@hcengineering/view-resources/src/utils'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
   import CreateApplication from './CreateApplication.svelte'
@@ -58,7 +58,7 @@
     _objects.map((it) => [
       it._id,
       Math.round(
-        calcSørensenDiceCoefficient(state.get(it._id)?.fullSummary ?? '', vacancyState?.fullSummary ?? '') * 100
+        calcSorensenDiceCoefficient(state.get(it._id)?.fullSummary ?? '', vacancyState?.fullSummary ?? '') * 100
       ) / 100
     ])
   )

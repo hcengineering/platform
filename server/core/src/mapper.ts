@@ -29,8 +29,7 @@ function createIndexedReader (
   _class: Ref<Class<Doc>>,
   hierarchy: Hierarchy,
   doc: DocIndexState,
-  otherDocs?: Record<string, DocIndexState | undefined>,
-  refAttribute?: string
+  otherDocs?: Record<string, DocIndexState | undefined>
 ): IndexedReader {
   return {
     get: (attr: string) => {
@@ -46,7 +45,7 @@ function createIndexedReader (
         const anotherDoc = otherDocs?.[attr]
         if (anotherDoc !== undefined) {
           const refAtrr = realAttr.type as RefTo<Doc>
-          return createIndexedReader(refAtrr.to, hierarchy, anotherDoc, otherDocs, docKey(attr, { _class }))
+          return createIndexedReader(refAtrr.to, hierarchy, anotherDoc, otherDocs)
         }
       }
       return undefined

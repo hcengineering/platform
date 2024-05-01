@@ -139,7 +139,7 @@ export class CommonRecruitingPage extends CalendarPage {
   async deleteEntity (): Promise<void> {
     await this.buttonMoreActions().click()
     await this.buttonDelete().click()
-    await this.pressYesDeletePopup(this.page)
+    await this.pressYesDeletePopup()
   }
 
   async addSocialLinks (link: string, linkDescription: string): Promise<void> {

@@ -208,7 +208,7 @@ async function getActiveTalants (filter: Filter, onUpdate: () => void): Promise<
   const doneStates = get(statusStore)
     .array.filter((p) => p.category === task.statusCategory.Lost || p.category === task.statusCategory.Won)
     .map((p) => p._id)
-  const promise = new Promise<Array<Ref<Doc>>>((resolve, reject) => {
+  const promise = new Promise<Array<Ref<Doc>>>((resolve) => {
     let refresh: boolean = false
     const lq = FilterQuery.getLiveQuery(filter.index)
     refresh = lq.query(
@@ -239,7 +239,7 @@ async function getActiveTalants (filter: Filter, onUpdate: () => void): Promise<
 }
 
 async function getNoApplicantCandidates (filter: Filter, onUpdate: () => void): Promise<Array<Ref<Doc>>> {
-  const promise = new Promise<Array<Ref<Doc>>>((resolve, reject) => {
+  const promise = new Promise<Array<Ref<Doc>>>((resolve) => {
     let refresh: boolean = false
     const lq = FilterQuery.getLiveQuery(filter.index)
     refresh = lq.query(

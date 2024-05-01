@@ -82,7 +82,7 @@ export const recruitOperation: MigrateOperation = {
     await tryUpgrade(client, recruitId, [
       {
         state: 'create-default-project',
-        func: async (client) => {
+        func: async () => {
           await createDefaults(tx)
         }
       },

@@ -56,11 +56,11 @@ export class CommonPage {
     await this.selectPopupListItemFirst().first().click()
   }
 
-  async pressCreateButtonSelectPopup (page: Page): Promise<void> {
+  async pressCreateButtonSelectPopup (): Promise<void> {
     await this.selectPopupHeaderButtonLast().click()
   }
 
-  async pressShowAllButtonSelectPopup (page: Page): Promise<void> {
+  async pressShowAllButtonSelectPopup (): Promise<void> {
     await this.selectPopupHeaderButtonFirst().click()
   }
 
@@ -87,7 +87,7 @@ export class CommonPage {
     await this.selectPopupSpanLines(point).first().click()
   }
 
-  async pressYesDeletePopup (page: Page): Promise<void> {
+  async pressYesDeletePopup (): Promise<void> {
     await this.viewStringDeleteObjectButtonPrimary().click()
   }
 
@@ -110,12 +110,12 @@ export class CommonPage {
     await expect(this.inboxNotyButton()).toBeVisible()
   }
 
-  async pressYesForPopup (page: Page): Promise<void> {
+  async pressYesForPopup (): Promise<void> {
     await expect(this.popupSubmitButton()).toBeVisible()
     await this.popupSubmitButton().click()
   }
 
-  async pressButtonBack (page: Page): Promise<void> {
+  async pressButtonBack (): Promise<void> {
     await this.historyBoxButtonFirst().click()
   }
 
@@ -124,7 +124,7 @@ export class CommonPage {
     await this.selectPopupSpanLines(point).click()
   }
 
-  async closeNotification (page: Page): Promise<void> {
+  async closeNotification (): Promise<void> {
     await this.notifyContainerButton().click()
   }
 
@@ -136,7 +136,7 @@ export class CommonPage {
     await expect(this.infoSpan()).toHaveText(errorMessage)
   }
 
-  async checkInfoSectionNotExist (page: Page): Promise<void> {
+  async checkInfoSectionNotExist (): Promise<void> {
     await expect(this.infoSpan()).not.toBeAttached()
   }
 

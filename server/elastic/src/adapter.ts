@@ -19,7 +19,6 @@ import {
   Doc,
   DocumentQuery,
   FullTextData,
-  IndexingConfiguration,
   MeasureContext,
   Ref,
   SearchOptions,
@@ -71,7 +70,7 @@ class ElasticAdapter implements FullTextAdapter {
     this.getDocId = (fulltext) => fulltext.slice(0, -1 * (this.workspaceString.length + 1)) as Ref<Doc>
   }
 
-  async createIndexes (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>): Promise<void> {}
+  async createIndexes (): Promise<void> {}
 
   async initMapping (field?: { key: string, dims: number }): Promise<Record<string, number>> {
     // const current = await this.client.indices.getMapping({})

@@ -128,7 +128,7 @@ export class TServerStorage implements ServerStorage {
           })
         )[0]
       },
-      tx: async (tx) => {
+      tx: async () => {
         return {}
       },
       searchFulltext: async (query: SearchQuery, options: SearchOptions) => {

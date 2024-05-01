@@ -186,11 +186,11 @@ export async function setAccountAdmin (db: Db, email: string, admin: boolean): P
 function withProductId (productId: string, query: Filter<Workspace>): Filter<Workspace> {
   return productId === ''
     ? {
-        $or: [
-          { productId: '', ...query },
-          { productId: { $exists: false }, ...query }
-        ]
-      }
+      $or: [
+        { productId: '', ...query },
+        { productId: { $exists: false }, ...query }
+      ]
+    }
     : { productId, ...query }
 }
 /**

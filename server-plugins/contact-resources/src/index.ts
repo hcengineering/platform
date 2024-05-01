@@ -38,7 +38,7 @@ import { workbenchId } from '@hcengineering/workbench'
  */
 export async function OnContactDelete (
   tx: Tx,
-  { findAll, hierarchy, storageFx, removedMap, txFactory, ctx }: TriggerControl
+  { findAll, storageFx, removedMap, txFactory, ctx }: TriggerControl
 ): Promise<Tx[]> {
   const rmTx = tx as TxRemoveDoc<Contact>
 
@@ -179,7 +179,7 @@ export function contactNameProvider (hierarchy: Hierarchy, props: Record<string,
   return formatContactName(hierarchy, _class, props.name ?? '')
 }
 
-export async function getCurrentEmployeeName (control: TriggerControl, context: Record<string, Doc>): Promise<string> {
+export async function getCurrentEmployeeName (control: TriggerControl): Promise<string> {
   const account = await control.modelDb.findOne(contact.class.PersonAccount, {
     _id: control.txFactory.account as Ref<PersonAccount>
   })
@@ -188,7 +188,7 @@ export async function getCurrentEmployeeName (control: TriggerControl, context: 
   return employee !== undefined ? formatName(employee.name) : ''
 }
 
-export async function getCurrentEmployeeEmail (control: TriggerControl, context: Record<string, Doc>): Promise<string> {
+export async function getCurrentEmployeeEmail (control: TriggerControl): Promise<string> {
   const account = await control.modelDb.findOne(contact.class.PersonAccount, {
     _id: control.txFactory.account as Ref<PersonAccount>
   })
@@ -198,7 +198,6 @@ export async function getCurrentEmployeeEmail (control: TriggerControl, context:
 
 export async function getCurrentEmployeePosition (
   control: TriggerControl,
-  context: Record<string, Doc>
 ): Promise<string | undefined> {
   const account = await control.modelDb.findOne(contact.class.PersonAccount, {
     _id: control.txFactory.account as Ref<PersonAccount>

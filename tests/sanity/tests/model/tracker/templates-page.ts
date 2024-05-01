@@ -47,7 +47,7 @@ export class TemplatePage extends CommonTrackerPage {
     if (data.labels != null && data.createLabel != null) {
       await this.buttonPopupCreateNewTemplateLabels().click()
       if (data.createLabel) {
-        await this.pressCreateButtonSelectPopup(this.page)
+        await this.pressCreateButtonSelectPopup()
         await this.addNewTagPopup(this.page, data.labels, 'Tag from templateNewIssue')
       }
       await this.checkFromDropdown(this.page, data.labels)

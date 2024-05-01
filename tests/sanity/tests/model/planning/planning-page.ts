@@ -113,7 +113,7 @@ export class PlanningPage extends CalendarPage {
     if (data.labels != null && data.createLabel != null) {
       await (popup ? this.buttonPopupCreateAddLabel().click() : this.buttonPanelCreateAddLabel().click())
       if (data.createLabel) {
-        await this.pressCreateButtonSelectPopup(this.page)
+        await this.pressCreateButtonSelectPopup()
         await this.addNewTagPopup(this.page, data.labels, 'Tag from createNewIssue')
         await this.page.locator('.popup#TagsPopup').press('Escape')
       } else {
@@ -238,7 +238,7 @@ export class PlanningPage extends CalendarPage {
       .locator('div.hulyToDoLine-statusPriority button.hulyToDoLine-dragbox')
       .click({ button: 'right' })
     await this.buttonMenuDelete().click()
-    await this.pressYesDeletePopup(this.page)
+    await this.pressYesDeletePopup()
   }
 
   async selectToDoByName (toDoName: string): Promise<void> {
@@ -263,7 +263,7 @@ export class PlanningPage extends CalendarPage {
       .nth(rowNumber)
     await row.locator('xpath=..').hover()
     await row.locator('button').click()
-    await this.pressYesDeletePopup(this.page)
+    await this.pressYesDeletePopup()
   }
 
   public async checkTimeSlotEndDate (rowNumber: number, dateEnd: string): Promise<void> {

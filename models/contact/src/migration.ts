@@ -85,7 +85,7 @@ async function createEmployeeEmail (client: TxOperations): Promise<void> {
 }
 
 export const contactOperation: MigrateOperation = {
-  async migrate (client: MigrationClient, logger: ModelLogger): Promise<void> {
+  async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, contactId, [
       {
         state: 'employees',

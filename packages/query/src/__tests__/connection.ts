@@ -80,20 +80,20 @@ FulltextStorage & {
       return {}
     },
     close: async () => {},
-    loadChunk: async (domain: Domain, idx?: number) => ({
+    loadChunk: async () => ({
       idx: -1,
       index: -1,
       docs: [],
       finished: true,
       digest: ''
     }),
-    loadModel: async (lastTxTime) => txes,
-    closeChunk: async (idx: number) => {},
-    loadDocs: async (domain: Domain, docs: Ref<Doc>[]) => [],
-    upload: async (domain: Domain, docs: Doc[]) => {},
-    clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
+    loadModel: async () => txes,
+    closeChunk: async () => {},
+    loadDocs: async () => [],
+    upload: async () => {},
+    clean: async () => {},
 
-    searchFulltext: async (query: SearchQuery, options: SearchOptions): Promise<SearchResult> => {
+    searchFulltext: async (): Promise<SearchResult> => {
       return { docs: [] }
     },
     measure: async () => async () => ({ time: 0, serverTime: 0 }),

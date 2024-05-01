@@ -13,17 +13,17 @@
 // limitations under the License.
 //
 
-import type { Account, Class, Doc, Domain, Ref, Timestamp } from '../classes'
+import type { Account, Class, Doc, Ref } from '../classes'
 import { ClientConnection } from '../client'
 import core from '../component'
 import { Hierarchy } from '../hierarchy'
 import { ModelDb, TxDb } from '../memdb'
-import type { DocumentQuery, FindResult, TxResult, SearchQuery, SearchOptions, SearchResult } from '../storage'
+import type { DocumentQuery, FindResult, TxResult, SearchResult } from '../storage'
 import type { Tx } from '../tx'
 import { DOMAIN_TX } from '../tx'
 import { genMinModel } from './minmodel'
 
-export async function connect (handler: (tx: Tx) => void): Promise<ClientConnection> {
+export async function connect (): Promise<ClientConnection> {
   const txes = genMinModel()
 
   const hierarchy = new Hierarchy()
@@ -45,7 +45,7 @@ export async function connect (handler: (tx: Tx) => void): Promise<ClientConnect
   return {
     findAll,
 
-    searchFulltext: async (query: SearchQuery, options: SearchOptions): Promise<SearchResult> => {
+    searchFulltext: async (): Promise<SearchResult> => {
       return { docs: [] }
     },
 
@@ -59,18 +59,18 @@ export async function connect (handler: (tx: Tx) => void): Promise<ClientConnect
     },
     close: async () => {},
 
-    loadChunk: async (domain: Domain, idx?: number) => ({
+    loadChunk: async () => ({
       idx: -1,
       index: -1,
       docs: [],
       finished: true,
       digest: ''
     }),
-    closeChunk: async (idx: number) => {},
-    loadDocs: async (domain: Domain, docs: Ref<Doc>[]) => [],
-    upload: async (domain: Domain, docs: Doc[]) => {},
-    clean: async (domain: Domain, docs: Ref<Doc>[]) => {},
-    loadModel: async (last: Timestamp) => txes,
+    closeChunk: async () => {},
+    loadDocs: async () => [],
+    upload: async () => {},
+    clean: async () => {},
+    loadModel: async () => txes,
     getAccount: async () => null as unknown as Account,
     measure: async () => async () => ({ time: 0, serverTime: 0 }),
     sendForceClose: async () => {}

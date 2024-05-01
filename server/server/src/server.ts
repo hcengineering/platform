@@ -19,12 +19,6 @@ import { DbAdapter, DummyDbAdapter } from '@hcengineering/server-core'
 /**
  * @public
  */
-export async function createNullAdapter (
-  ctx: MeasureContext,
-  hierarchy: Hierarchy,
-  url: string,
-  workspaceId: WorkspaceId,
-  modelDb: ModelDb
-): Promise<DbAdapter> {
+export async function createNullAdapter (): Promise<DbAdapter> {
   return new DummyDbAdapter()
 }

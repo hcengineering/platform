@@ -64,16 +64,6 @@ export function selectRow (table: TableNodeLocation, index: number, tr: Transact
 
   return tr.setSelection(CellSelection.rowSelection($anchor))
 }
-
-export function selectTable (table: TableNodeLocation, tr: Transaction): Transaction {
-  const { map } = TableMap.get(table.node)
-
-  const $head = tr.doc.resolve(table.start + map[0])
-  const $anchor = tr.doc.resolve(table.start + map[map.length - 1])
-
-  return tr.setSelection(new CellSelection($anchor, $head))
-}
-
 export const isColumnSelected = (columnIndex: number, selection: Selection): boolean => {
   if (selection instanceof CellSelection) {
     const { height } = TableMap.get(selection.$anchorCell.node(-1))
@@ -93,17 +83,6 @@ export const isRowSelected = (rowIndex: number, selection: Selection): boolean =
 
   return false
 }
-
-export const isTableSelected = (selection: Selection): boolean => {
-  if (selection instanceof CellSelection) {
-    const { height, width } = TableMap.get(selection.$anchorCell.node(-1))
-    const rect = { left: 0, top: 0, right: width, bottom: height }
-    return isRectSelected(rect, selection)
-  }
-
-  return false
-}
-
 export const isRectSelected = (rect: Rect, selection: CellSelection): boolean => {
   const map = TableMap.get(selection.$anchorCell.node(-1))
   const start = selection.$anchorCell.start(-1)

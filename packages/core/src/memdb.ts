@@ -235,19 +235,19 @@ export abstract class MemDb extends TxProcessor implements Storage {
  * @public
  */
 export class TxDb extends MemDb {
-  protected txCreateDoc (tx: TxCreateDoc<Doc>): Promise<TxResult> {
+  protected txCreateDoc (): Promise<TxResult> {
     throw new Error('Method not implemented.')
   }
 
-  protected txUpdateDoc (tx: TxUpdateDoc<Doc>): Promise<TxResult> {
+  protected txUpdateDoc (): Promise<TxResult> {
     throw new Error('Method not implemented.')
   }
 
-  protected txRemoveDoc (tx: TxRemoveDoc<Doc>): Promise<TxResult> {
+  protected txRemoveDoc (): Promise<TxResult> {
     throw new Error('Method not implemented.')
   }
 
-  protected txMixin (tx: TxMixin<Doc, Doc>): Promise<TxResult> {
+  protected txMixin (): Promise<TxResult> {
     throw new Error('Method not implemented.')
   }
 

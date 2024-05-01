@@ -46,7 +46,7 @@ export class APMMeasureContext implements MeasureContext {
       warn: (msg, args) => {
         agent.logger.warn({ message: msg, ...args })
       },
-      logOperation (operation, time, params) {},
+      logOperation () {},
       close: async () => {}
     }
     if (!(noTransaction ?? false)) {
@@ -65,13 +65,12 @@ export class APMMeasureContext implements MeasureContext {
     return new APMMeasureContext(this.agent, name, params, this.transaction, undefined, this)
   }
 
-  measure (name: string, value: number): void {}
+  measure (): void {}
 
   async with<T>(
     name: string,
     params: ParamsType,
-    op: (ctx: MeasureContext) => T | Promise<T>,
-    fullParams?: ParamsType
+    op: (ctx: MeasureContext) => T | Promise<T>
   ): Promise<T> {
     const c = this.newChild(name, params)
     try {
@@ -94,7 +93,7 @@ export class APMMeasureContext implements MeasureContext {
     fullParams?: ParamsType
   ): Promise<T> {
     const st = Date.now()
-    const r = await this.with(name, params, op, fullParams)
+    const r = await this.with(name, params, op)
     this.logger.logOperation(name, Date.now() - st, { ...params, ...fullParams })
     return r
   }

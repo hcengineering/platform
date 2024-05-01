@@ -16,8 +16,8 @@ export interface OpenAIConfiguration extends Configuration {
  */
 export const openAIConfigDefaults: {
   [key in keyof Pick<
-  OpenAIConfiguration,
-  'enabled' | 'endpoint' | 'tokenLimit' | 'embeddings'
+    OpenAIConfiguration,
+    'enabled' | 'endpoint' | 'tokenLimit' | 'embeddings'
   >]: OpenAIConfiguration[key]
 } = {
   endpoint: 'https://api.openai.com/v1',

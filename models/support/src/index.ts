@@ -27,9 +27,6 @@ import { type Resource } from '@hcengineering/platform'
 
 export { supportId } from '@hcengineering/support'
 export { support as default }
-
-export const DOMAIN_SUPPORT = 'support' as Domain
-
 @Model(support.class.SupportConversation, preference.class.Preference)
 export class TSupportConversation extends TPreference implements SupportConversation {
   @Index(IndexKind.Indexed)

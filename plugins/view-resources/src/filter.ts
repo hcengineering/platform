@@ -103,24 +103,24 @@ export async function nestedDontMatchResult (filter: Filter, onUpdate: () => voi
   return { $nin: result }
 }
 
-export async function dateOutdated (filter: Filter): Promise<ObjQueryType<any>> {
+export async function dateOutdated (): Promise<ObjQueryType<any>> {
   return { $lt: Date.now() }
 }
 
-export async function dateToday (filter: Filter): Promise<ObjQueryType<any>> {
+export async function dateToday (): Promise<ObjQueryType<any>> {
   const todayStart = new Date().setHours(0, 0, 0, 0)
   const todayEnd = new Date().setHours(23, 59, 59, 999)
   return { $gte: todayStart, $lte: todayEnd }
 }
 
-export async function dateYesterday (filter: Filter): Promise<ObjQueryType<any>> {
+export async function dateYesterday (): Promise<ObjQueryType<any>> {
   const yesterday = new Date(new Date().setDate(new Date().getDate() - 1))
   const yesterdayStart = new Date(yesterday).setHours(0, 0, 0, 0)
   const yesterdayEnd = new Date(yesterday).setHours(23, 59, 59, 999)
   return { $gte: yesterdayStart, $lte: yesterdayEnd }
 }
 
-export async function dateWeek (filter: Filter): Promise<ObjQueryType<any>> {
+export async function dateWeek (): Promise<ObjQueryType<any>> {
   const day = new Date().getDay()
   const startDayDiff = day === 0 ? 6 : day - 1
   const endDayDiff = 7 - startDayDiff
@@ -129,7 +129,7 @@ export async function dateWeek (filter: Filter): Promise<ObjQueryType<any>> {
   return { $gte: weekStart, $lte: weekEnd }
 }
 
-export async function dateNextWeek (filter: Filter): Promise<ObjQueryType<any>> {
+export async function dateNextWeek (): Promise<ObjQueryType<any>> {
   const day = new Date().getDay()
   const startDayDiff = day === 0 ? 6 : day - 1
   const endDayDiff = 7 - startDayDiff
@@ -138,7 +138,7 @@ export async function dateNextWeek (filter: Filter): Promise<ObjQueryType<any>> 
   return { $gte: weekStart, $lte: weekEnd }
 }
 
-export async function dateMonth (filter: Filter): Promise<ObjQueryType<any>> {
+export async function dateMonth (): Promise<ObjQueryType<any>> {
   const today = new Date()
   const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0)
   const monthStart = new Date(new Date().setDate(1)).setHours(0, 0, 0, 0)
@@ -146,7 +146,7 @@ export async function dateMonth (filter: Filter): Promise<ObjQueryType<any>> {
   return { $gte: monthStart, $lte: monthEnd }
 }
 
-export async function dateNextMonth (filter: Filter): Promise<ObjQueryType<any>> {
+export async function dateNextMonth (): Promise<ObjQueryType<any>> {
   const today = new Date()
   const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 2, 0)
   const monthStart = new Date(new Date().setMonth(new Date().getMonth() + 1, 1)).setHours(0, 0, 0, 0)
@@ -154,7 +154,7 @@ export async function dateNextMonth (filter: Filter): Promise<ObjQueryType<any>>
   return { $gte: monthStart, $lte: monthEnd }
 }
 
-export async function dateNotSpecified (filter: Filter): Promise<ObjQueryType<any>> {
+export async function dateNotSpecified (): Promise<ObjQueryType<any>> {
   return { $in: [undefined, null] }
 }
 
@@ -169,7 +169,7 @@ export async function dateCustom (filter: Filter): Promise<ObjQueryType<any>> {
     const todayEnd = new Date(filter.value[1]).setHours(23, 59, 59, 999)
     return { $gte: todayStart, $lte: todayEnd }
   }
-  return await dateNotSpecified(filter)
+  return await dateNotSpecified()
 }
 
 /**
@@ -201,7 +201,7 @@ export async function getRefs (filter: Filter, onUpdate: () => void): Promise<Ar
   if (mode === undefined) return []
   const result = await getResource(mode.result)
   const newValue = await result(filter, () => {})
-  const promise = new Promise<Array<Ref<Doc>>>((resolve, reject) => {
+  const promise = new Promise<Array<Ref<Doc>>>((resolve) => {
     const refresh = lq.query(
       filter.key._class,
       {

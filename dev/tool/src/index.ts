@@ -182,7 +182,7 @@ export function devTool (
   program
     .command('reset-email <email> <newEmail>')
     .description('rename account in accounts and all workspaces')
-    .action(async (email: string, newEmail: string, cmd) => {
+    .action(async (email: string, newEmail: string) => {
       const { mongodbUri } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
         console.log(`update account ${email} to ${newEmail}`)
@@ -193,7 +193,7 @@ export function devTool (
   program
     .command('fix-email <email> <newEmail>')
     .description('fix email in all workspaces to be proper one')
-    .action(async (email: string, newEmail: string, cmd) => {
+    .action(async (email: string, newEmail: string) => {
       const { mongodbUri } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
         console.log(`update account ${email} to ${newEmail}`)
@@ -204,9 +204,9 @@ export function devTool (
   program
     .command('assign-workspace <email> <workspace>')
     .description('assign workspace')
-    .action(async (email: string, workspace: string, cmd) => {
+    .action(async (email: string, workspace: string) => {
       const { mongodbUri } = prepareTools()
-      await withDatabase(mongodbUri, async (db, client) => {
+      await withDatabase(mongodbUri, async (db) => {
         console.log(`assigning user ${email} to ${workspace}...`)
         const workspaceInfo = await getWorkspaceById(db, productId, workspace)
         if (workspaceInfo === null) {
@@ -281,7 +281,7 @@ export function devTool (
   program
     .command('set-user-role <email> <workspace> <role>')
     .description('set user role')
-    .action(async (email: string, workspace: string, role: AccountRole, cmd) => {
+    .action(async (email: string, workspace: string, role: AccountRole) => {
       console.log(`set user ${email} role for ${workspace}...`)
       await setRole(email, workspace, productId, role)
     })
@@ -352,7 +352,7 @@ export function devTool (
         await withDatabase(mongodbUri, async (db, client) => {
           const worker = new UpgradeWorker(db, client, version, txes, migrateOperations, productId)
           await worker.upgradeAll(toolCtx, {
-            errorHandler: async (ws, err) => {},
+            errorHandler: async () => {},
             force: cmd.force,
             console: cmd.console,
             logs: cmd.logs,
@@ -394,7 +394,7 @@ export function devTool (
   program
     .command('drop-workspace <name>')
     .description('drop workspace')
-    .action(async (workspace, cmd) => {
+    .action(async (workspace) => {
       const { mongodbUri } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
         const ws = await getWorkspaceById(db, productId, workspace)
@@ -491,7 +491,7 @@ export function devTool (
   program
     .command('drop-account <name>')
     .description('drop account')
-    .action(async (email: string, cmd) => {
+    .action(async (email: string) => {
       const { mongodbUri } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
         await dropAccount(toolCtx, db, productId, email)
@@ -543,7 +543,7 @@ export function devTool (
   program
     .command('backup-list <dirName>')
     .description('list snaphost ids for backup')
-    .action(async (dirName: string, cmd) => {
+    .action(async (dirName: string) => {
       const storage = await createFileBackupStorage(dirName)
       await backupList(storage)
     })
@@ -551,7 +551,7 @@ export function devTool (
   program
     .command('backup-s3 <bucketName> <dirName> <workspace>')
     .description('dump workspace transactions and minio resources')
-    .action(async (bucketName: string, dirName: string, workspace: string, cmd) => {
+    .action(async (bucketName: string, dirName: string, workspace: string) => {
       const { storageAdapter } = prepareTools()
       const storage = await createStorageBackupStorage(
         toolCtx,
@@ -602,7 +602,7 @@ export function devTool (
   program
     .command('backup-s3-restore <bucketName> <dirName> <workspace> [date]')
     .description('dump workspace transactions and minio resources')
-    .action(async (bucketName: string, dirName: string, workspace: string, date, cmd) => {
+    .action(async (bucketName: string, dirName: string, workspace: string, date) => {
       const { storageAdapter } = prepareTools()
       const storage = await createStorageBackupStorage(toolCtx, storageAdapter, getWorkspaceId(bucketName), dirName)
       await restore(toolCtx, transactorUrl, getWorkspaceId(workspace, productId), storage, parseInt(date ?? '-1'))
@@ -610,7 +610,7 @@ export function devTool (
   program
     .command('backup-s3-list <bucketName> <dirName>')
     .description('list snaphost ids for backup')
-    .action(async (bucketName: string, dirName: string, cmd) => {
+    .action(async (bucketName: string, dirName: string) => {
       const { storageAdapter } = prepareTools()
 
       const storage = await createStorageBackupStorage(
@@ -625,7 +625,7 @@ export function devTool (
   program
     .command('confirm-email <email>')
     .description('confirm user email')
-    .action(async (email: string, cmd) => {
+    .action(async (email: string) => {
       const { mongodbUri } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
         const account = await getAccount(db, email)
@@ -640,7 +640,7 @@ export function devTool (
   program
     .command('diff-workspace <workspace>')
     .description('restore workspace transactions and minio resources from previous dump.')
-    .action(async (workspace: string, cmd) => {
+    .action(async (workspace: string) => {
       const { mongodbUri, txes } = prepareTools()
       await diffWorkspace(mongodbUri, getWorkspaceId(workspace, productId), txes)
     })
@@ -649,9 +649,9 @@ export function devTool (
     .command('clear-telegram-history <workspace>')
     .description('clear telegram history')
     .option('-w, --workspace <workspace>', 'target workspace')
-    .action(async (workspace: string, cmd) => {
+    .action(async (workspace: string) => {
       const { mongodbUri, storageAdapter: minio } = prepareTools()
-      await withDatabase(mongodbUri, async (db) => {
+      await withDatabase(mongodbUri, async () => {
         const telegramDB = process.env.TELEGRAM_DATABASE
         if (telegramDB === undefined) {
           console.error('please provide TELEGRAM_DATABASE.')
@@ -666,7 +666,7 @@ export function devTool (
   program
     .command('clear-telegram-all-history')
     .description('clear telegram history')
-    .action(async (cmd) => {
+    .action(async () => {
       const { mongodbUri, storageAdapter: minio } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
         const telegramDB = process.env.TELEGRAM_DATABASE
@@ -705,7 +705,7 @@ export function devTool (
     .option('--removedTx', 'Clean removed transactions', false)
     .action(async (workspace: string, cmd: { recruit: boolean, tracker: boolean, removedTx: boolean }) => {
       const { mongodbUri, storageAdapter: minio } = prepareTools()
-      await withDatabase(mongodbUri, async (db) => {
+      await withDatabase(mongodbUri, async () => {
         await cleanWorkspace(
           toolCtx,
           mongodbUri,
@@ -726,21 +726,21 @@ export function devTool (
   program
     .command('clean-removed-transactions <workspace>')
     .description('clean removed transactions')
-    .action(async (workspace: string, cmd: any) => {
+    .action(async (workspace: string) => {
       await cleanRemovedTransactions(getWorkspaceId(workspace, productId), transactorUrl)
     })
 
   program
     .command('clean-archived-spaces <workspace>')
     .description('clean archived spaces')
-    .action(async (workspace: string, cmd: any) => {
+    .action(async (workspace: string) => {
       await cleanArchivedSpaces(getWorkspaceId(workspace, productId), transactorUrl)
     })
 
   program
     .command('chunter-fix-comments <workspace>')
     .description('chunter-fix-comments')
-    .action(async (workspace: string, cmd: any) => {
+    .action(async (workspace: string) => {
       await fixCommentDoubleIdCreate(getWorkspaceId(workspace, productId), transactorUrl)
     })
 
@@ -856,7 +856,7 @@ export function devTool (
   program
     .command('restore-ats-types <workspace>')
     .description('Restore recruiting task types for workspace')
-    .action(async (workspace: string, step: string) => {
+    .action(async (workspace: string) => {
       const { mongodbUri } = prepareTools()
       console.log('Restoring recruiting task types in workspace ', workspace, '...')
       await restoreRecruitingTaskTypes(mongodbUri, getWorkspaceId(workspace, productId), transactorUrl)

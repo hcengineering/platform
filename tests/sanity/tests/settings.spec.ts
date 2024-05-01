@@ -9,7 +9,7 @@ test.describe('contact tests', () => {
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
-  test('update-profile', async ({ page, context }) => {
+  test('update-profile', async ({ page }) => {
     // Go to http://localhost:8083/workbench/sanity-ws
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
     // Click #profile-button

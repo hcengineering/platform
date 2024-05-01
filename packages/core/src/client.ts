@@ -356,7 +356,7 @@ async function tryLoadModel (
   const result = await ctx.with(
     'connection-load-model',
     { hash: current.hash !== '' },
-    async (ctx) => await conn.loadModel(lastTxTime, current.hash)
+    async () => await conn.loadModel(lastTxTime, current.hash)
   )
 
   if (Array.isArray(result)) {
@@ -372,7 +372,7 @@ async function tryLoadModel (
   void (await ctx.with(
     'persistence-store',
     {},
-    async (ctx) =>
+    async () =>
       await persistence?.store({
         ...result,
         transactions: !result.full ? current.transactions.concat(result.transactions) : result.transactions

@@ -40,9 +40,11 @@ class InMemoryTxAdapter extends DummyDbAdapter implements TxAdapter {
   async findAll<T extends Doc>(
     ctx: MeasureContext,
     _class: Ref<Class<T>>,
-    query: DocumentQuery<T>,
+    query?: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
+    if (query == null) query = {}
+
     return await this.txdb.findAll(_class, query, options)
   }
 

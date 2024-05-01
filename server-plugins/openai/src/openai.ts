@@ -116,7 +116,7 @@ export class OpenAIEmbeddingsStage implements FullTextPipelineStage {
     })
   }
 
-  async initialize (ctx: MeasureContext, storage: DbAdapter, pipeline: FullTextPipeline): Promise<void> {
+  async initialize (ctx: MeasureContext, storage: DbAdapter): Promise<void> {
     try {
       // Just do nothing
       const config = await storage.findAll(ctx, openaiPlugin.class.OpenAIConfiguration, {})

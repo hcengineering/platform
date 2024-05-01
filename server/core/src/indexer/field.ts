@@ -17,7 +17,6 @@ import core, {
   type Class,
   type Doc,
   type DocIndexState,
-  type DocumentQuery,
   type DocumentUpdate,
   extractDocKey,
   type IndexStageState,
@@ -55,9 +54,6 @@ export class IndexedFieldStage implements FullTextPipelineStage {
   stageId = fieldStateId
   // Do not clear downloaded content
   clearExcept: string[] = [contentStageId]
-
-  clearField: string[] = []
-
   updateFields: DocUpdateHandler[] = []
 
   enabled = true
@@ -104,9 +100,6 @@ export class IndexedFieldStage implements FullTextPipelineStage {
 
   async search (
     _classes: Ref<Class<Doc>>[],
-    search: DocumentQuery<Doc>,
-    size?: number,
-    from?: number
   ): Promise<{ docs: IndexedDoc[], pass: boolean }> {
     return { docs: [], pass: true }
   }

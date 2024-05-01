@@ -57,6 +57,14 @@ export interface Channel extends AttachedDoc {
   items?: number
   lastMessage?: Timestamp
 }
+/**
+ * @public
+ */
+export enum AvatarType {
+  COLOR = 'color',
+  IMAGE = 'image',
+  GRAVATAR = 'gravatar'
+}
 
 /**
  * @public
@@ -67,15 +75,6 @@ export interface ChannelItem extends AttachedDoc {
   incoming: boolean
   sendOn: Timestamp
   attachments?: number
-}
-
-/**
- * @public
- */
-export enum AvatarType {
-  COLOR = 'color',
-  IMAGE = 'image',
-  GRAVATAR = 'gravatar'
 }
 
 /**

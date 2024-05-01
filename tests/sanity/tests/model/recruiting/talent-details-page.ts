@@ -30,10 +30,10 @@ export class TalentDetailsPage extends CommonRecruitingPage {
 
   async addSkill (skillTag: string, skillDescription: string): Promise<void> {
     await this.buttonAddSkill().click()
-    await this.pressCreateButtonSelectPopup(this.page)
+    await this.pressCreateButtonSelectPopup()
     await this.addNewTagPopup(this.page, skillTag, skillDescription)
 
-    await this.pressShowAllButtonSelectPopup(this.page)
+    await this.pressShowAllButtonSelectPopup()
     await this.page.keyboard.press('Escape')
   }
 
@@ -84,14 +84,6 @@ export class TalentDetailsPage extends CommonRecruitingPage {
 
     await this.buttonPopupMergeContacts().click()
   }
-
-  async waitTalentDetailsOpened (applicationFirstName: string, applicationLastName?: string): Promise<void> {
-    await this.page.waitForSelector(`div[class*="header"] div.name:first-child :has-text("${applicationFirstName}")`)
-    if (applicationLastName != null) {
-      await this.page.waitForSelector(`div[class*="header"] div.name:nth-child(2) :has-text("${applicationFirstName}")`)
-    }
-  }
-
   async checkMergeContacts (talentName: string, title: string, source: string): Promise<void> {
     await expect(this.page.locator('div.location input')).toHaveValue(talentName)
     await expect(this.titleAndSourceTalent(title)).toBeVisible()

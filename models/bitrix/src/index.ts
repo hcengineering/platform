@@ -95,8 +95,6 @@ export class TBitrixFieldMapping extends TAttachedDoc implements BitrixFieldMapp
   @Prop(TypeString(), core.string.ClassPropertyLabel)
     attributeName!: Ref<AnyAttribute>
 
-  bitrixTitle!: string
-  bitrixType!: string
   operation!: any
 }
 

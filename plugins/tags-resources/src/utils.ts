@@ -20,7 +20,7 @@ export function getTagStyle (color: ColorDefinition, selected = false): string {
 
 export async function getRefs (filter: Filter, onUpdate: () => void): Promise<Array<Ref<Doc>>> {
   const lq = FilterQuery.getLiveQuery(filter.index)
-  const promise = new Promise<Array<Ref<Doc>>>((resolve, reject) => {
+  const promise = new Promise<Array<Ref<Doc>>>((resolve) => {
     const level = filter.props?.level ?? 0
     const q: DocumentQuery<TagReference> = {
       tag: { $in: filter.value },

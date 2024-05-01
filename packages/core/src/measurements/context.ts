@@ -48,7 +48,7 @@ export class MeasureMetricsContext implements MeasureContext {
         console.warn(msg, ...Object.entries(args ?? {}).map((it) => `${it[0]}=${JSON.stringify(replacer(it[1]))}`))
       },
       close: async () => {},
-      logOperation: (operation, time, params) => {}
+      logOperation: () => {}
     }
   }
 

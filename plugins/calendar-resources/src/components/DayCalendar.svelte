@@ -154,7 +154,7 @@
   $: docHeight = $deviceInfo.docHeight
   $: cellHeight = 4 * fontSize
   $: weekMonday = startFromWeekStart
-    ? getMonday(currentDate, mondayStart)
+    ? getMonday(currentDate)
     : new Date(new Date(currentDate).setHours(0, 0, 0, 0))
 
   let timer: any

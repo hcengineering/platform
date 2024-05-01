@@ -266,7 +266,7 @@ export async function upgradeModel (
     const connection = (await ctx.with(
       'connect-platform',
       {},
-      async (ctx) =>
+      async () =>
         await connect(
           transactorUrl,
           workspaceId,

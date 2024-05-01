@@ -171,7 +171,7 @@ async function write (chunk: any, stream: Writable): Promise<void> {
     })
   })
   if (needDrain) {
-    await new Promise((resolve, reject) => stream.once('drain', resolve))
+    await new Promise((resolve) => stream.once('drain', resolve))
   }
 }
 
@@ -248,7 +248,7 @@ export async function cloneWorkspace (
       // Load all digest from collection.
       while (true) {
         try {
-          const it = await sourceConnection.loadChunk(c, idx)
+          const it = await sourceConnection.loadChunk(c)
           idx = it.idx
 
           let needRetrieve: Ref<Doc>[] = []
@@ -351,7 +351,7 @@ async function cleanDomain (connection: CoreClient & BackupClient, domain: Domai
   const ids: Ref<Doc>[] = []
   while (true) {
     try {
-      const it = await connection.loadChunk(domain, idx)
+      const it = await connection.loadChunk(domain)
       idx = it.idx
 
       ids.push(...it.docs.map((it) => it.id as Ref<Doc>))
@@ -593,7 +593,7 @@ export async function backup (
         })
         let docs: Doc[] = []
         try {
-          docs = await ctx.with('load-docs', {}, async (ctx) => await connection.loadDocs(domain, needRetrieve))
+          docs = await ctx.with('load-docs', {}, async () => await connection.loadDocs(domain, needRetrieve))
         } catch (err: any) {
           ctx.error('error loading docs', { domain, err, workspace: workspaceId.name })
           // Put back.
@@ -807,7 +807,7 @@ export async function restore (
     try {
       while (true) {
         const st = Date.now()
-        const it = await connection.loadChunk(c, idx)
+        const it = await connection.loadChunk(c)
         chunks++
 
         idx = it.idx

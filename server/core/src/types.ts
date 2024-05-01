@@ -245,44 +245,41 @@ export interface FullTextAdapter {
  * @public
  */
 export class DummyFullTextAdapter implements FullTextAdapter {
-  async initMapping (field?: { key: string, dims: number }): Promise<Record<string, number>> {
+  async initMapping (): Promise<Record<string, number>> {
     return {}
   }
 
-  async index (doc: IndexedDoc): Promise<TxResult> {
+  async index (): Promise<TxResult> {
     return {}
   }
 
-  async load (docs: Ref<Doc>[]): Promise<IndexedDoc[]> {
+  async load (): Promise<IndexedDoc[]> {
     return []
   }
 
-  async update (id: Ref<Doc>, update: Record<string, any>): Promise<TxResult> {
+  async update (): Promise<TxResult> {
     return {}
   }
 
-  async updateMany (docs: IndexedDoc[]): Promise<TxResult[]> {
+  async updateMany (): Promise<TxResult[]> {
     return []
   }
 
-  async searchString (query: SearchQuery, options: SearchOptions): Promise<SearchStringResult> {
+  async searchString (): Promise<SearchStringResult> {
     return { docs: [] }
   }
 
-  async search (query: any): Promise<IndexedDoc[]> {
+  async search (): Promise<IndexedDoc[]> {
     return []
   }
 
   async searchEmbedding (
-    _classes: Ref<Class<Doc>>[],
-    search: DocumentQuery<Doc>,
-    embedding: number[],
-    options: EmbeddingSearchOption
+    _classes: Ref<Class<Doc>>[]
   ): Promise<IndexedDoc[]> {
     return []
   }
 
-  async remove (id: Ref<Doc>[]): Promise<void> {}
+  async remove (): Promise<void> {}
 
   async close (): Promise<void> {}
 

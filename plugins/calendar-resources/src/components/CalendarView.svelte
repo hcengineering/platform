@@ -79,7 +79,7 @@
         return new Date(date).setHours(0, 0, 0, 0)
       }
       case CalendarMode.Week: {
-        return getMonday(date, mondayStart).setHours(0, 0, 0, 0)
+        return getMonday(date).setHours(0, 0, 0, 0)
       }
       case CalendarMode.Month: {
         return new Date(new Date(date).setDate(-7)).setHours(0, 0, 0, 0)
@@ -99,7 +99,7 @@
         return new Date(date).setDate(date.getDate() + 1)
       }
       case CalendarMode.Week: {
-        const monday = getMonday(date, mondayStart)
+        const monday = getMonday(date)
         return new Date(monday.setDate(monday.getDate() + 7)).setHours(0, 0, 0, 0)
       }
       case CalendarMode.Month: {

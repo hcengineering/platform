@@ -62,7 +62,7 @@ test.describe('Application tests', () => {
     // ADD ASSERTION HERE
   })
 
-  test.skip('Edit an Application', async ({ page }) => {
+  test.skip('Edit an Application', async () => {
     const vacancyName = 'Edit an Application Vacancy ' + generateId(4)
     await navigationMenuPage.clickButtonVacancies()
     await vacanciesPage.createNewVacancy({
@@ -82,7 +82,7 @@ test.describe('Application tests', () => {
     await applicationsDetailsPage.addFirstReview('First Application Review', 'First Application review description')
   })
 
-  test('Change Done status', async ({ page }) => {
+  test('Change Done status', async () => {
     await navigationMenuPage.clickButtonApplications()
 
     const talentName = await applicationsPage.createNewApplicationWithNewTalent({
@@ -115,7 +115,7 @@ test.describe('Application tests', () => {
     await applicationsPage.checkApplicationNotExist(applicationId)
   })
 
-  test('Change & Save all States', async ({ page }) => {
+  test('Change & Save all States', async () => {
     await navigationMenuPage.clickButtonApplications()
 
     const talentName = await applicationsPage.createNewApplicationWithNewTalent({
