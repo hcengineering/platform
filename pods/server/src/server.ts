@@ -33,8 +33,7 @@ import {
   PrivateMiddleware,
   QueryJoinMiddleware,
   SpacePermissionsMiddleware,
-  SpaceSecurityMiddleware,
-  SpaceOwnersMiddleware
+  SpaceSecurityMiddleware
 } from '@hcengineering/middleware'
 import { createMongoAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
 import { OpenAIEmbeddingsStage, openAIId, openAIPluginImpl } from '@hcengineering/openai'
@@ -232,7 +231,6 @@ export function start (
   const middlewares: MiddlewareCreator[] = [
     LookupMiddleware.create,
     ModifiedMiddleware.create,
-    SpaceOwnersMiddleware.create,
     PrivateMiddleware.create,
     SpaceSecurityMiddleware.create,
     SpacePermissionsMiddleware.create,
