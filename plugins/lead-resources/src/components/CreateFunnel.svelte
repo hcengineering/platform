@@ -156,10 +156,11 @@
     rolesAssignment[roleId] = newMembers
   }
 
-  $: canSave = name.trim().length > 0 &&
+  $: canSave =
+    name.trim().length > 0 &&
     !(members.length === 0 && isPrivate) &&
-      owners.length > 0 &&
-      (!isPrivate || owners.some((o) => members.includes(o)))
+    owners.length > 0 &&
+    (!isPrivate || owners.some((o) => members.includes(o)))
 </script>
 
 <SpaceCreateCard

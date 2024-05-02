@@ -366,7 +366,7 @@ export interface Space extends Doc {
   private: boolean
   members: Arr<Ref<Account>>
   archived: boolean
-  owners?: Ref<Account>[] // Marked as optional since it will be filled by platform.
+  owners?: Ref<Account>[]
 }
 
 /**

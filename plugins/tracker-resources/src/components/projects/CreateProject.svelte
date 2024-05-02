@@ -318,7 +318,8 @@
     rolesAssignment[roleId] = newMembers
   }
 
-  $: canSave = name.trim().length > 0 &&
+  $: canSave =
+    name.trim().length > 0 &&
     identifier.trim().length > 0 &&
     !projectsIdentifiers.has(identifier.toUpperCase()) &&
     !(members.length === 0 && isPrivate) &&
