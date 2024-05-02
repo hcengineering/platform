@@ -20,7 +20,7 @@ import { BaseMiddleware } from './base'
 /**
  * @public
  */
-export class SpaceOwnerMiddleware extends BaseMiddleware implements Middleware {
+export class SpaceOwnersMiddleware extends BaseMiddleware implements Middleware {
   private constructor (storage: ServerStorage, next?: Middleware) {
     super(storage, next)
   }
@@ -30,8 +30,8 @@ export class SpaceOwnerMiddleware extends BaseMiddleware implements Middleware {
     broadcast: BroadcastFunc,
     storage: ServerStorage,
     next?: Middleware
-  ): Promise<SpaceOwnerMiddleware> {
-    return new SpaceOwnerMiddleware(storage, next)
+  ): Promise<SpaceOwnersMiddleware> {
+    return new SpaceOwnersMiddleware(storage, next)
   }
 
   handleBroadcast (tx: Tx[], targets?: string[]): Tx[] {
@@ -58,7 +58,7 @@ export class SpaceOwnerMiddleware extends BaseMiddleware implements Middleware {
 
     const createTx = actualTx as TxCreateDoc<Space>
 
-    if (!this.storage.hierarchy.isDerived(createTx.objectClass, core.class.Space)) {
+    if (createTx.attributes.owners !== undefined || !this.storage.hierarchy.isDerived(createTx.objectClass, core.class.Space)) {
       return
     }
 

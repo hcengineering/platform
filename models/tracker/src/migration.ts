@@ -21,7 +21,8 @@ import core, {
   toIdMap,
   DOMAIN_TX,
   type Status,
-  type Ref
+  type Ref,
+  AccountRole
 } from '@hcengineering/core'
 import {
   type ModelLogger,
@@ -48,6 +49,7 @@ import {
 } from '@hcengineering/tracker'
 
 import tracker from './plugin'
+import contact from '@hcengineering/model-contact'
 
 async function createDefaultProject (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(tracker.class.Project, {
@@ -333,6 +335,20 @@ async function migrateDefaultTypeMixins (client: MigrationClient): Promise<void>
   )
 }
 
+async function migrateDefaultProjectOwners (client: MigrationClient): Promise<void> {
+  const workspaceOwners = await client.model.findAll(contact.class.PersonAccount, {
+    role: AccountRole.Owner
+  })
+
+  await client.update(DOMAIN_SPACE, {
+    _id: tracker.project.DefaultProject
+  }, {
+    $set: {
+      owners: workspaceOwners.map((it) => it._id)
+    }
+  })
+}
+
 export const trackerOperation: MigrateOperation = {
   async preMigrate (client: MigrationClient, logger: ModelLogger): Promise<void> {
     await tryMigrate(client, trackerId, [
@@ -359,6 +375,10 @@ export const trackerOperation: MigrateOperation = {
       {
         state: 'migrateDefaultTypeMixins',
         func: migrateDefaultTypeMixins
+      },
+      {
+        state: 'migrateDefaultProjectOwners',
+        func: migrateDefaultProjectOwners
       }
     ])
   },
