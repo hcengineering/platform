@@ -222,11 +222,15 @@ export default plugin(coreId, {
     CreateObject: '' as IntlString,
     UpdateObject: '' as IntlString,
     DeleteObject: '' as IntlString,
+    ForbidDeleteObject: '' as IntlString,
+    UpdateSpace: '' as IntlString,
+    ArchiveSpace: '' as IntlString,
     CreateObjectDescription: '' as IntlString,
     UpdateObjectDescription: '' as IntlString,
     DeleteObjectDescription: '' as IntlString,
-    ForbidDeleteObject: '' as IntlString,
-    ForbidDeleteObjectDescription: '' as IntlString
+    ForbidDeleteObjectDescription: '' as IntlString,
+    UpdateSpaceDescription: '' as IntlString,
+    ArchiveSpaceDescription: '' as IntlString
   },
   descriptor: {
     SpacesType: '' as Ref<SpaceTypeDescriptor>
@@ -238,7 +242,9 @@ export default plugin(coreId, {
     CreateObject: '' as Ref<Permission>,
     UpdateObject: '' as Ref<Permission>,
     DeleteObject: '' as Ref<Permission>,
-    ForbidDeleteObject: '' as Ref<Permission>
+    ForbidDeleteObject: '' as Ref<Permission>,
+    UpdateSpace: '' as Ref<Permission>,
+    ArchiveSpace: '' as Ref<Permission>
   },
   role: {
     Admin: '' as Ref<Role>

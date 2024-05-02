@@ -82,7 +82,11 @@ export function defineSpaceType (builder: Builder): void {
       icon: plugin.icon.RecruitApplication,
       editor: plugin.component.VacancyTemplateEditor,
       baseClass: plugin.class.Vacancy,
-      availablePermissions: [core.permission.ForbidDeleteObject],
+      availablePermissions: [
+        core.permission.UpdateSpace,
+        core.permission.ArchiveSpace,
+        core.permission.ForbidDeleteObject
+      ],
       allowedTaskTypeDescriptors: [plugin.descriptors.Application]
     },
     plugin.descriptors.VacancyType

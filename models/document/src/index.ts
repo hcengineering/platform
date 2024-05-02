@@ -180,7 +180,11 @@ function defineTeamspace (builder: Builder): void {
       description: document.string.Description,
       icon: document.icon.Document,
       baseClass: document.class.Teamspace,
-      availablePermissions: [core.permission.ForbidDeleteObject]
+      availablePermissions: [
+        core.permission.UpdateSpace,
+        core.permission.ArchiveSpace,
+        core.permission.ForbidDeleteObject
+      ]
     },
     document.descriptor.TeamspaceType
   )

@@ -50,10 +50,14 @@
     "CreateObject": "Создавать объект",
     "UpdateObject": "Обновлять объект",
     "DeleteObject": "Удалять объект",
+    "ForbidDeleteObject": "Запретить удалять объект",
+    "UpdateSpace": "Обновлять пространство",
+    "ArchiveSpace": "Архивировать пространство",
     "CreateObjectDescription": "Дает пользователям разрешение создавать объекты в пространстве",
     "UpdateObjectDescription": "Дает пользователям разрешение обновлять объекты в пространстве",
     "DeleteObjectDescription": "Дает пользователям разрешение удалять объекты в пространстве",
-    "ForbidDeleteObject": "Запретить удалять объект",
-    "ForbidDeleteObjectDescription": "Запрещает пользователям удалять объекты в пространстве"
+    "ForbidDeleteObjectDescription": "Запрещает пользователям удалять объекты в пространстве",
+    "UpdateSpaceDescription": "Дает пользователям разрешение обновлять пространство",
+    "ArchiveSpaceDescription": "Дает пользователям разрешение архивировать пространство"
   }
 }

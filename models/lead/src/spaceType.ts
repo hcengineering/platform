@@ -88,7 +88,11 @@ export function defineSpaceType (builder: Builder): void {
       description: plugin.string.ManageFunnelStatuses,
       icon: plugin.icon.LeadApplication,
       baseClass: plugin.class.Funnel,
-      availablePermissions: [core.permission.ForbidDeleteObject],
+      availablePermissions: [
+        core.permission.UpdateSpace,
+        core.permission.ArchiveSpace,
+        core.permission.ForbidDeleteObject
+      ],
       allowedTaskTypeDescriptors: [plugin.descriptors.Lead]
     },
     plugin.descriptors.FunnelType

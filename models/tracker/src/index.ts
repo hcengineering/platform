@@ -721,7 +721,11 @@ function defineSpaceType (builder: Builder): void {
       description: tracker.string.ManageWorkflowStatuses,
       icon: task.icon.Task,
       baseClass: tracker.class.Project,
-      availablePermissions: [core.permission.ForbidDeleteObject],
+      availablePermissions: [
+        core.permission.UpdateSpace,
+        core.permission.ArchiveSpace,
+        core.permission.ForbidDeleteObject
+      ],
       allowedClassic: true,
       allowedTaskTypeDescriptors: [tracker.descriptors.Issue]
     },
