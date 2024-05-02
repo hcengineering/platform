@@ -31,6 +31,7 @@ import {
   type MigrationClient,
   type MigrationUpgradeClient
 } from '@hcengineering/model'
+import { DOMAIN_SPACE } from './security'
 
 async function migrateStatusesToModel (client: MigrationClient): Promise<void> {
   // Move statuses to model:
@@ -75,6 +76,22 @@ async function migrateStatusesToModel (client: MigrationClient): Promise<void> {
   }
 }
 
+async function migrateAllSpaceToTyped (client: MigrationClient): Promise<void> {
+  await client.update(
+    DOMAIN_SPACE,
+    {
+      _id: core.space.Space,
+      _class: core.class.Space
+    },
+    {
+      $set: {
+        _class: core.class.TypedSpace,
+        type: core.spaceType.SpacesType
+      }
+    }
+  )
+}
+
 export const coreOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     // We need to delete all documents in doc index state for missing classes
@@ -95,6 +112,10 @@ export const coreOperation: MigrateOperation = {
       {
         state: 'statuses-to-model',
         func: migrateStatusesToModel
+      },
+      {
+        state: 'all-space-to-typed',
+        func: migrateAllSpaceToTyped
       }
     ])
   },
@@ -110,14 +131,15 @@ export const coreOperation: MigrateOperation = {
           })
           if (spaceSpace === undefined) {
             await tx.createDoc(
-              core.class.Space,
+              core.class.TypedSpace,
               core.space.Space,
               {
                 name: 'Space for all spaces',
                 description: 'Spaces',
                 private: false,
                 archived: false,
-                members: []
+                members: [],
+                type: core.spaceType.SpacesType
               },
               core.space.Space
             )

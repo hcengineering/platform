@@ -31,5 +31,6 @@ loadMetadata(setting.icon, {
   Clazz: `${icons}#clazz`,
   Enums: `${icons}#enums`,
   InviteSettings: `${icons}#inviteSettings`,
-  InviteWorkspace: `${icons}#inviteWorkspace`
+  InviteWorkspace: `${icons}#inviteWorkspace`,
+  Views: `${icons}#views`
 })

@@ -2,6 +2,8 @@
   "string": {
     "Id": "Id",
     "Space": "Space",
+    "Spaces": "Spaces",
+    "SpacesDescription": "Manage all spaces' space type",
     "TypedSpace": "Typed space",
     "SpaceType": "Space type",
     "Modified": "Modified",
@@ -47,6 +49,8 @@
     "CreateObject": "Create object",
     "UpdateObject": "Update object",
     "DeleteObject": "Delete object",
+    "CreateObjectDescription": "Grants users ability to create objects in the space",
+    "UpdateObjectDescription": "Grants users ability to update objects in the space",
     "DeleteObjectDescription": "Grants users ability to delete objects in the space",
     "ForbidDeleteObject": "Forbid delete object",
     "ForbidDeleteObjectDescription": "Forbid users deleting objects in the space"

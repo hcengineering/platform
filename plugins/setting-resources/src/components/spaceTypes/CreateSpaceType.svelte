@@ -54,7 +54,7 @@
 
   const descriptors = client
     .getModel()
-    .findAllSync(core.class.SpaceTypeDescriptor, {})
+    .findAllSync(core.class.SpaceTypeDescriptor, { system: { $ne: true }})
     .filter((descriptor) => hasResource(descriptor._id as any as Resource<any>))
 
   descriptor = descriptors[0]
@@ -101,6 +101,7 @@
     <ObjectBox
       _class={core.class.SpaceTypeDescriptor}
       value={descriptor?._id}
+      docQuery={{ system: { $ne: true } }}
       on:change={handleDescriptorSelected}
       kind="regular"
       size="small"

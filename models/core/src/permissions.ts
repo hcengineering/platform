@@ -22,7 +22,8 @@ export function definePermissions (builder: Builder): void {
     core.class.Permission,
     core.space.Model,
     {
-      label: core.string.CreateObject
+      label: core.string.CreateObject,
+      description: core.string.CreateObjectDescription
     },
     core.permission.CreateObject
   )
@@ -31,7 +32,8 @@ export function definePermissions (builder: Builder): void {
     core.class.Permission,
     core.space.Model,
     {
-      label: core.string.UpdateObject
+      label: core.string.UpdateObject,
+      description: core.string.UpdateObjectDescription
     },
     core.permission.UpdateObject
   )

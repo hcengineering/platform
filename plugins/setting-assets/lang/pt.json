@@ -1,6 +1,7 @@
 {
   "string": {
     "Setting": "Configuração",
+    "Spaces": "Espaços",
     "Integrations": "Integrações",
     "Support": "Suporte",
     "Privacy": "Privacidade",
@@ -100,6 +101,7 @@
     "Automations": "Automações",
     "Collections": "Coleções",
     "ClassColon": "Classe:",
-    "Branding": "Marca"
+    "Branding": "Marca",
+    "Assignees": ""
   }
 }

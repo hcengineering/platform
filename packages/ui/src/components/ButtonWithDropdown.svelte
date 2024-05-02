@@ -42,6 +42,7 @@
   export let disabled: boolean = false
   export let loading: boolean = false
   export let focusIndex: number | undefined = undefined
+  export let hasDropdown: boolean = true
 
   const dispatch = createEventDispatcher()
 
@@ -61,7 +62,7 @@
       {size}
       {kind}
       disabled={disabled || loading}
-      shape="rectangle-right"
+      shape={hasDropdown ? 'rectangle-right' : undefined}
       {justify}
       borderStyle="none"
       on:click
@@ -79,23 +80,25 @@
       </div>
     </Button>
   </div>
-  <Button
-    width="1.75rem"
-    {kind}
-    shape="rectangle-left"
-    justify="center"
-    borderStyle="none"
-    on:click={openDropdown}
-    {size}
-    {disabled}
-    {loading}
-  >
-    <div slot="icon">
-      {#if dropdownIcon}
-        <Icon icon={dropdownIcon} size="small" />
-      {/if}
-    </div>
-  </Button>
+  {#if hasDropdown}
+    <Button
+      width="1.75rem"
+      {kind}
+      shape="rectangle-left"
+      justify="center"
+      borderStyle="none"
+      on:click={openDropdown}
+      {size}
+      {disabled}
+      {loading}
+    >
+      <div slot="icon">
+        {#if dropdownIcon}
+          <Icon icon={dropdownIcon} size="small" />
+        {/if}
+      </div>
+    </Button>
+  {/if}
 </div>
 
 <style lang="scss">

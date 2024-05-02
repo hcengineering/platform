@@ -2,6 +2,8 @@
   "string": {
     "Id": "Id",
     "Space": "Espaço",
+    "Spaces": "Espaços",
+    "SpacesDescription": "Gestão do tipo de espaço para todas as espaços",
     "Modified": "Modificado",
     "ModifiedDate": "Data de modificação",
     "ModifiedBy": "Modificado por",

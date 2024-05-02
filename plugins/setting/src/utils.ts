@@ -25,7 +25,8 @@ import core, {
   Space,
   SpaceType,
   TxOperations,
-  TypeAny as TypeAnyType
+  TypeAny as TypeAnyType,
+  getRoleAttributeBaseProps
 } from '@hcengineering/core'
 import { TypeAny } from '@hcengineering/model'
 import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
@@ -74,12 +75,10 @@ export interface RoleAttributeProps {
 }
 
 export function getRoleAttributeProps (data: AttachedData<Role>, roleId: Ref<Role>): RoleAttributeProps {
-  const name = data.name.trim()
-  const label = getEmbeddedLabel(`Role: ${name}`)
-  const roleType = TypeAny(setting.component.RoleAssignmentEditor, label, setting.component.RoleAssignmentEditor)
-  const id = `role-${roleId}` as Ref<Attribute<PropertyType>>
+  const baseProps = getRoleAttributeBaseProps(data, roleId)
+  const roleType = TypeAny(setting.component.RoleAssignmentEditor, baseProps.label, setting.component.RoleAssignmentEditor)
 
-  return { label, roleType, id }
+  return { ...baseProps, roleType }
 }
 
 export async function createSpaceTypeRole (

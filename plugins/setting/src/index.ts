@@ -128,7 +128,8 @@ export default plugin(settingId, {
     Owners: '' as Ref<Doc>,
     InviteSettings: '' as Ref<Doc>,
     WorkspaceSetting: '' as Ref<Doc>,
-    ManageSpaces: '' as Ref<Doc>
+    ManageSpaces: '' as Ref<Doc>,
+    Spaces: '' as Ref<Doc>
   },
   mixin: {
     Editable: '' as Ref<Mixin<Editable>>,
@@ -169,6 +170,7 @@ export default plugin(settingId, {
   string: {
     Settings: '' as IntlString,
     Setting: '' as IntlString,
+    Spaces: '' as IntlString,
     WorkspaceSettings: '' as IntlString,
     Branding: '' as IntlString,
     Integrations: '' as IntlString,
@@ -219,7 +221,8 @@ export default plugin(settingId, {
     Clazz: '' as Asset,
     Enums: '' as Asset,
     InviteSettings: '' as Asset,
-    InviteWorkspace: '' as Asset
+    InviteWorkspace: '' as Asset,
+    Views: '' as Asset
   },
   templateFieldCategory: {
     Integration: '' as Ref<TemplateFieldCategory>
