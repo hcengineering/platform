@@ -15,11 +15,13 @@
 
 import { type Builder } from '@hcengineering/model'
 
-import core from '@hcengineering/core'
+import core, { AccountRole } from '@hcengineering/core'
 import lead from '@hcengineering/model-lead'
 import notification from '@hcengineering/notification'
+import serverCore from '@hcengineering/server-core'
 import serverLead from '@hcengineering/server-lead'
 import serverNotification from '@hcengineering/server-notification'
+import contact from '@hcengineering/contact'
 
 export { serverLeadId } from '@hcengineering/server-lead'
 
@@ -40,4 +42,13 @@ export function createModel (builder: Builder): void {
       func: serverNotification.function.IsUserEmployeeInFieldValue
     }
   )
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverLead.trigger.OnWorkspaceOwnerAdded,
+    txMatch: {
+      _class: core.class.TxUpdateDoc,
+      objectClass: contact.class.PersonAccount,
+      'operations.role': AccountRole.Owner
+    }
+  })
 }

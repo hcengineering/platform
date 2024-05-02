@@ -45,9 +45,6 @@ export default mergeIds(leadId, lead, {
     Leads: '' as AnyComponent,
     NewItemsHeader: '' as AnyComponent
   },
-  space: {
-    DefaultFunnel: '' as Ref<Funnel>
-  },
   viewlet: {
     TableCustomer: '' as Ref<Viewlet>,
     TableLead: '' as Ref<Viewlet>,

@@ -182,6 +182,31 @@ export async function OnComponentRemove (tx: Tx, control: TriggerControl): Promi
 /**
  * @public
  */
+export async function OnWorkspaceOwnerAdded (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const targetProject = (await control.findAll(tracker.class.Project, {
+    _id: tracker.project.DefaultProject
+  }))[0]
+
+  if (targetProject === undefined) {
+    return []
+  }
+
+  const res: Tx[] = []
+  const actualTx = tx as TxUpdateDoc<PersonAccount>
+
+  if (targetProject.owners === undefined || targetProject.owners.length === 0 || targetProject.owners[0] === core.account.System) {
+    const updTx = control.txFactory.createTxUpdateDoc(tracker.class.Project, targetProject.space, targetProject._id, {
+      owners: [actualTx.objectId]
+    })
+    res.push(updTx)
+  }
+
+  return res
+}
+
+/**
+ * @public
+ */
 export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const actualTx = TxProcessor.extractTx(tx)
 
@@ -244,19 +269,6 @@ export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<T
   }
   return []
 }
-
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export default async () => ({
-  function: {
-    IssueHTMLPresenter: issueHTMLPresenter,
-    IssueTextPresenter: issueTextPresenter,
-    IssueNotificationContentProvider: getIssueNotificationContent
-  },
-  trigger: {
-    OnIssueUpdate,
-    OnComponentRemove
-  }
-})
 
 async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const parentTx = tx as TxCollectionCUD<Issue, TimeSpendReport>
@@ -465,3 +477,17 @@ function updateIssueParentEstimations (
     )
   }
 }
+
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export default async () => ({
+  function: {
+    IssueHTMLPresenter: issueHTMLPresenter,
+    IssueTextPresenter: issueTextPresenter,
+    IssueNotificationContentProvider: getIssueNotificationContent
+  },
+  trigger: {
+    OnIssueUpdate,
+    OnComponentRemove,
+    OnWorkspaceOwnerAdded
+  }
+})
