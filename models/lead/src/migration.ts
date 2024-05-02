@@ -154,13 +154,17 @@ async function migrateDefaultProjectOwners (client: MigrationClient): Promise<vo
     role: AccountRole.Owner
   })
 
-  await client.update(DOMAIN_SPACE, {
-    _id: lead.space.DefaultFunnel
-  }, {
-    $set: {
-      owners: workspaceOwners.map((it) => it._id)
+  await client.update(
+    DOMAIN_SPACE,
+    {
+      _id: lead.space.DefaultFunnel
+    },
+    {
+      $set: {
+        owners: workspaceOwners.map((it) => it._id)
+      }
     }
-  })
+  )
 }
 
 export const leadOperation: MigrateOperation = {

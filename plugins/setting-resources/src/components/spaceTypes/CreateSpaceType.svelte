@@ -54,7 +54,7 @@
 
   const descriptors = client
     .getModel()
-    .findAllSync(core.class.SpaceTypeDescriptor, { system: { $ne: true }})
+    .findAllSync(core.class.SpaceTypeDescriptor, { system: { $ne: true } })
     .filter((descriptor) => hasResource(descriptor._id as any as Resource<any>))
 
   descriptor = descriptors[0]

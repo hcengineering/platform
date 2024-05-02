@@ -64,7 +64,8 @@
   let isColorSelected = false
   let members: Ref<Account>[] =
     teamspace?.members !== undefined ? hierarchy.clone(teamspace.members) : [getCurrentAccount()._id]
-  let owners: Ref<Account>[] = teamspace?.owners !== undefined ? hierarchy.clone(teamspace.owners) : [getCurrentAccount()._id]
+  const owners: Ref<Account>[] =
+    teamspace?.owners !== undefined ? hierarchy.clone(teamspace.owners) : [getCurrentAccount()._id]
   let rolesAssignment: RolesAssignment = {}
 
   $: isNew = teamspace === undefined

@@ -36,9 +36,9 @@
     {
       _id: core.space.Space
     },
-    ((res) => {
+    (res) => {
       space = res[0]
-    })
+    }
   )
 
   const typeQuery = createQuery()
@@ -48,9 +48,9 @@
       {
         _id: core.spaceType.SpacesType
       },
-      ((res) => {
+      (res) => {
         spaceType = res[0]
-      }),
+      },
       {
         lookup: {
           _id: { roles: core.class.Role }
@@ -66,7 +66,7 @@
       const asMixin = hierarchy.as(space, spaceType?.targetClass)
 
       rolesAssignment = roles.reduce<RolesAssignment>((prev, { _id }) => {
-        prev[_id as Ref<Role>] = (asMixin as any)[_id] ?? []
+        prev[_id] = (asMixin as any)[_id] ?? []
 
         return prev
       }, {})
@@ -74,15 +74,9 @@
   }
 
   async function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: Ref<Account>[]): Promise<void> {
-    await client.updateMixin(
-      space._id,
-      space._class,
-      core.space.Space,
-      spaceType.targetClass,
-      {
-        [roleId]: newMembers
-      }
-    )
+    await client.updateMixin(space._id, space._class, core.space.Space, spaceType.targetClass, {
+      [roleId]: newMembers
+    })
   }
 </script>
 

@@ -44,9 +44,11 @@ export async function leadTextPresenter (doc: Doc): Promise<string> {
  * @public
  */
 export async function OnWorkspaceOwnerAdded (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const targetFunnel = (await control.findAll(lead.class.Funnel, {
-    _id: lead.space.DefaultFunnel
-  }))[0]
+  const targetFunnel = (
+    await control.findAll(lead.class.Funnel, {
+      _id: lead.space.DefaultFunnel
+    })
+  )[0]
 
   if (targetFunnel === undefined) {
     return []
@@ -55,7 +57,11 @@ export async function OnWorkspaceOwnerAdded (tx: Tx, control: TriggerControl): P
   const res: Tx[] = []
   const actualTx = tx as TxUpdateDoc<PersonAccount>
 
-  if (targetFunnel.owners === undefined || targetFunnel.owners.length === 0 || targetFunnel.owners[0] === core.account.System) {
+  if (
+    targetFunnel.owners === undefined ||
+    targetFunnel.owners.length === 0 ||
+    targetFunnel.owners[0] === core.account.System
+  ) {
     const updTx = control.txFactory.createTxUpdateDoc(lead.class.Funnel, targetFunnel.space, targetFunnel._id, {
       owners: [actualTx.objectId]
     })

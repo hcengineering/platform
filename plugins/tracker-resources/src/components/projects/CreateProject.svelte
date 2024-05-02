@@ -69,7 +69,8 @@
   let defaultAssignee: Ref<Employee> | null | undefined = project?.defaultAssignee ?? null
   let members: Ref<Account>[] =
     project?.members !== undefined ? hierarchy.clone(project.members) : [getCurrentAccount()._id]
-  let owners: Ref<Account>[] = project?.owners !== undefined ? hierarchy.clone(project.owners) : [getCurrentAccount()._id]
+  const owners: Ref<Account>[] =
+    project?.owners !== undefined ? hierarchy.clone(project.owners) : [getCurrentAccount()._id]
   let projectsIdentifiers = new Set<string>()
   let isSaving = false
   let defaultStatus: Ref<IssueStatus> | undefined = project?.defaultIssueStatus

@@ -148,7 +148,7 @@ export class TPermission extends TDoc implements Permission {
 }
 
 @Mixin(core.mixin.SpacesTypeData, core.class.Space)
-@UX(getEmbeddedLabel('All spaces\' type')) // TODO: add icon?
+@UX(getEmbeddedLabel("All spaces' type")) // TODO: add icon?
 export class TSpacesTypeData extends TSpace implements RolesAssignment {
   [key: Ref<Role>]: Ref<Account>[]
 }

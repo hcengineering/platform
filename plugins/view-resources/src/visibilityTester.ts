@@ -58,7 +58,7 @@ export async function canEditSpace (doc?: Doc | Doc[]): Promise<boolean> {
     return true
   }
 
-  if (isTypedSpace(space) && await checkPermission(client, core.permission.UpdateSpace, space._id)) {
+  if (isTypedSpace(space) && (await checkPermission(client, core.permission.UpdateSpace, space._id))) {
     return true
   }
 
@@ -82,7 +82,7 @@ export async function canArchiveSpace (doc?: Doc | Doc[]): Promise<boolean> {
     return true
   }
 
-  if (isTypedSpace(space) && await checkPermission(client, core.permission.ArchiveSpace, space._id)) {
+  if (isTypedSpace(space) && (await checkPermission(client, core.permission.ArchiveSpace, space._id))) {
     return true
   }
 

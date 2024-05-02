@@ -13,7 +13,15 @@
 // limitations under the License.
 //
 
-import core, { MeasureContext, ServerStorage, Tx, TxCreateDoc, Space, TxApplyIf, TxProcessor } from '@hcengineering/core'
+import core, {
+  MeasureContext,
+  ServerStorage,
+  Tx,
+  TxCreateDoc,
+  Space,
+  TxApplyIf,
+  TxProcessor
+} from '@hcengineering/core'
 import { BroadcastFunc, Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
 import { BaseMiddleware } from './base'
 
@@ -46,7 +54,7 @@ export class SpaceOwnersMiddleware extends BaseMiddleware implements Middleware 
 
   processTx = (tx: Tx): void => {
     if (tx._class === core.class.TxApplyIf) {
-      (tx as TxApplyIf).txes.forEach(this.processTx)
+      ;(tx as TxApplyIf).txes.forEach(this.processTx)
       return
     }
 
@@ -58,7 +66,10 @@ export class SpaceOwnersMiddleware extends BaseMiddleware implements Middleware 
 
     const createTx = actualTx as TxCreateDoc<Space>
 
-    if (createTx.attributes.owners !== undefined || !this.storage.hierarchy.isDerived(createTx.objectClass, core.class.Space)) {
+    if (
+      createTx.attributes.owners !== undefined ||
+      !this.storage.hierarchy.isDerived(createTx.objectClass, core.class.Space)
+    ) {
       return
     }
 

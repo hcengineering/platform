@@ -76,7 +76,11 @@ export interface RoleAttributeProps {
 
 export function getRoleAttributeProps (data: AttachedData<Role>, roleId: Ref<Role>): RoleAttributeProps {
   const baseProps = getRoleAttributeBaseProps(data, roleId)
-  const roleType = TypeAny(setting.component.RoleAssignmentEditor, baseProps.label, setting.component.RoleAssignmentEditor)
+  const roleType = TypeAny(
+    setting.component.RoleAssignmentEditor,
+    baseProps.label,
+    setting.component.RoleAssignmentEditor
+  )
 
   return { ...baseProps, roleType }
 }

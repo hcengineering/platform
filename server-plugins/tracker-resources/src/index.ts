@@ -183,9 +183,11 @@ export async function OnComponentRemove (tx: Tx, control: TriggerControl): Promi
  * @public
  */
 export async function OnWorkspaceOwnerAdded (tx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const targetProject = (await control.findAll(tracker.class.Project, {
-    _id: tracker.project.DefaultProject
-  }))[0]
+  const targetProject = (
+    await control.findAll(tracker.class.Project, {
+      _id: tracker.project.DefaultProject
+    })
+  )[0]
 
   if (targetProject === undefined) {
     return []
@@ -194,7 +196,11 @@ export async function OnWorkspaceOwnerAdded (tx: Tx, control: TriggerControl): P
   const res: Tx[] = []
   const actualTx = tx as TxUpdateDoc<PersonAccount>
 
-  if (targetProject.owners === undefined || targetProject.owners.length === 0 || targetProject.owners[0] === core.account.System) {
+  if (
+    targetProject.owners === undefined ||
+    targetProject.owners.length === 0 ||
+    targetProject.owners[0] === core.account.System
+  ) {
     const updTx = control.txFactory.createTxUpdateDoc(tracker.class.Project, targetProject.space, targetProject._id, {
       owners: [actualTx.objectId]
     })

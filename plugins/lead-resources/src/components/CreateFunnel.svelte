@@ -51,7 +51,7 @@
 
   let members: Ref<Account>[] =
     funnel?.members !== undefined ? hierarchy.clone(funnel.members) : [getCurrentAccount()._id]
-  let owners: Ref<Account>[] = funnel?.owners !== undefined ? hierarchy.clone(funnel.owners) : [getCurrentAccount()._id]
+  const owners: Ref<Account>[] = funnel?.owners !== undefined ? hierarchy.clone(funnel.owners) : [getCurrentAccount()._id]
 
   $: void loadSpaceType(typeId)
   async function loadSpaceType (id: typeof typeId): Promise<void> {
