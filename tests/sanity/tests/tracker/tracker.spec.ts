@@ -17,7 +17,6 @@ test.use({
   storageState: PlatformSetting
 })
 
-
 const panelStatusMap = new Map([
   ['Issues/All', DEFAULT_STATUSES],
   ['Issues/Active', ['Todo', 'In Progress']],
