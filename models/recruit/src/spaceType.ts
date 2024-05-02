@@ -83,7 +83,6 @@ export function defineSpaceType (builder: Builder): void {
       editor: plugin.component.VacancyTemplateEditor,
       baseClass: plugin.class.Vacancy,
       availablePermissions: [
-        core.permission.UpdateSpace,
         core.permission.ArchiveSpace,
         core.permission.ForbidDeleteObject
       ],

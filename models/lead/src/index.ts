@@ -599,6 +599,7 @@ export function createModel (builder: Builder): void {
     input: 'focus',
     category: lead.category.Lead,
     target: lead.class.Funnel,
+    visibilityTester: view.function.CanEditSpace,
     override: [view.action.Open],
     context: {
       mode: ['context', 'browser'],

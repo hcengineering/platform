@@ -137,7 +137,7 @@
 
     <svelte:fragment slot="attributes" let:direction={dir}>
       {#if dir === 'column'}
-        <DocAttributeBar {object} {mixins} ignoreKeys={['name', 'fullDescription', 'private', 'archived', 'type']} />
+        <DocAttributeBar {object} {mixins} ignoreKeys={['name', 'fullDescription', 'private', 'archived', 'type', 'owners']} />
       {/if}
     </svelte:fragment>
 

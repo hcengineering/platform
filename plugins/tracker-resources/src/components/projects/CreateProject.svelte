@@ -69,6 +69,7 @@
   let defaultAssignee: Ref<Employee> | null | undefined = project?.defaultAssignee ?? null
   let members: Ref<Account>[] =
     project?.members !== undefined ? hierarchy.clone(project.members) : [getCurrentAccount()._id]
+  let owners: Ref<Account>[] = project?.owners !== undefined ? hierarchy.clone(project.owners) : [getCurrentAccount()._id]
   let projectsIdentifiers = new Set<string>()
   let isSaving = false
   let defaultStatus: Ref<IssueStatus> | undefined = project?.defaultIssueStatus
@@ -410,14 +411,6 @@
     </div>
 
     <div class="antiGrid-row">
-      <div class="antiGrid-row__header withDesciption">
-        <Label label={presentation.string.MakePrivate} />
-        <span><Label label={presentation.string.MakePrivateDescription} /></span>
-      </div>
-      <Toggle bind:on={isPrivate} disabled={!isPrivate && members.length === 0} />
-    </div>
-
-    <div class="antiGrid-row">
       <div class="antiGrid-row__header">
         <Label label={tracker.string.DefaultAssignee} />
       </div>
@@ -446,6 +439,30 @@
           size={'large'}
         />
       {/if}
+    </div>
+
+    {#if !isNew}
+      <div class="antiGrid-row">
+        <div class="antiGrid-row__header">
+          <Label label={core.string.Owners} />
+        </div>
+        <AccountArrayEditor
+          value={owners}
+          label={core.string.Owners}
+          onChange={undefined}
+          readonly={true}
+          kind={'regular'}
+          size={'large'}
+        />
+      </div>
+    {/if}
+
+    <div class="antiGrid-row">
+      <div class="antiGrid-row__header withDesciption">
+        <Label label={presentation.string.MakePrivate} />
+        <span><Label label={presentation.string.MakePrivateDescription} /></span>
+      </div>
+      <Toggle bind:on={isPrivate} disabled={!isPrivate && members.length === 0} />
     </div>
 
     <div class="antiGrid-row">

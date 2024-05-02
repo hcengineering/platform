@@ -64,6 +64,7 @@
   let isColorSelected = false
   let members: Ref<Account>[] =
     teamspace?.members !== undefined ? hierarchy.clone(teamspace.members) : [getCurrentAccount()._id]
+  let owners: Ref<Account>[] = teamspace?.owners !== undefined ? hierarchy.clone(teamspace.owners) : [getCurrentAccount()._id]
   let rolesAssignment: RolesAssignment = {}
 
   $: isNew = teamspace === undefined
@@ -323,6 +324,22 @@
         on:click={chooseIcon}
       />
     </div>
+
+    {#if !isNew}
+      <div class="antiGrid-row">
+        <div class="antiGrid-row__header">
+          <Label label={core.string.Owners} />
+        </div>
+        <AccountArrayEditor
+          value={owners}
+          label={core.string.Owners}
+          onChange={undefined}
+          readonly={true}
+          kind={'regular'}
+          size={'large'}
+        />
+      </div>
+    {/if}
 
     <div class="antiGrid-row">
       <div class="antiGrid-row__header withDesciption">

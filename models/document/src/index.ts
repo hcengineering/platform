@@ -222,6 +222,7 @@ function defineTeamspace (builder: Builder): void {
       input: 'focus',
       category: document.category.Document,
       target: document.class.Teamspace,
+      visibilityTester: view.function.CanEditSpace,
       query: {},
       context: {
         mode: ['context', 'browser'],

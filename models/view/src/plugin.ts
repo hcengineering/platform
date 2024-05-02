@@ -125,7 +125,10 @@ export default mergeIds(viewId, view, {
     FilterDateNotSpecified: '' as FilterFunction,
     FilterDateCustom: '' as FilterFunction,
     ShowEmptyGroups: '' as ViewCategoryAction,
-    CanDeleteObject: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
+    CanDeleteObject: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    CanEditSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    CanArchiveSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    CanDeleteSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
   },
   pipeline: {
     PresentationMiddleware: '' as Ref<PresentationMiddlewareFactory>,

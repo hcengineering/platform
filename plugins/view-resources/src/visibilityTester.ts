@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import core, { checkPermission, type Space, type Doc, type TypedSpace } from '@hcengineering/core'
+import core, { checkPermission, type Space, type Doc, type TypedSpace, getCurrentAccount } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 
 function isTypedSpace (space: Space): space is TypedSpace {
@@ -39,4 +39,72 @@ export async function canDeleteObject (doc?: Doc | Doc[]): Promise<boolean> {
       )
     )
   ).some((r) => r)
+}
+
+export async function canEditSpace (doc?: Doc | Doc[]): Promise<boolean> {
+  if (doc === undefined || Array.isArray(doc)) {
+    return false
+  }
+
+  const space = doc as Space
+
+  if (space.owners?.includes(getCurrentAccount()._id) ?? false) {
+    return true
+  }
+
+  const client = getClient()
+
+  if (await checkPermission(client, core.permission.UpdateObject, core.space.Space)) {
+    return true
+  }
+
+  if (isTypedSpace(space) && await checkPermission(client, core.permission.UpdateSpace, space._id)) {
+    return true
+  }
+
+  return false
+}
+
+export async function canArchiveSpace (doc?: Doc | Doc[]): Promise<boolean> {
+  if (doc === undefined || Array.isArray(doc)) {
+    return false
+  }
+
+  const space = doc as Space
+
+  if (space.owners?.includes(getCurrentAccount()._id) ?? false) {
+    return true
+  }
+
+  const client = getClient()
+
+  if (await checkPermission(client, core.permission.DeleteObject, core.space.Space)) {
+    return true
+  }
+
+  if (isTypedSpace(space) && await checkPermission(client, core.permission.ArchiveSpace, space._id)) {
+    return true
+  }
+
+  return false
+}
+
+export async function canDeleteSpace (doc?: Doc | Doc[]): Promise<boolean> {
+  if (doc === undefined || Array.isArray(doc)) {
+    return false
+  }
+
+  const space = doc as Space
+
+  if (space.owners?.includes(getCurrentAccount()._id) ?? false) {
+    return true
+  }
+
+  const client = getClient()
+
+  if (await checkPermission(client, core.permission.DeleteObject, core.space.Space)) {
+    return true
+  }
+
+  return false
 }

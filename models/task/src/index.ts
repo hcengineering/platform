@@ -266,6 +266,7 @@ export const actionTemplates = template({
       label: task.string.Archive,
       message: task.string.ArchiveConfirm
     },
+    visibilityTester: view.function.CanArchiveSpace,
     input: 'any',
     category: task.category.Task,
     query: {
@@ -288,6 +289,7 @@ export const actionTemplates = template({
       label: task.string.Unarchive,
       message: task.string.UnarchiveConfirm
     },
+    visibilityTester: view.function.CanArchiveSpace,
     input: 'any',
     category: task.category.Task,
     query: {

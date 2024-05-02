@@ -51,6 +51,7 @@
 
   let members: Ref<Account>[] =
     funnel?.members !== undefined ? hierarchy.clone(funnel.members) : [getCurrentAccount()._id]
+  let owners: Ref<Account>[] = funnel?.owners !== undefined ? hierarchy.clone(funnel.owners) : [getCurrentAccount()._id]
 
   $: void loadSpaceType(typeId)
   async function loadSpaceType (id: typeof typeId): Promise<void> {
@@ -178,6 +179,22 @@
       }}
     />
   </Grid>
+  {#if !isNew}
+    <div class="antiGrid-row">
+      <div class="antiGrid-row__header">
+        <Label label={core.string.Owners} />
+      </div>
+      <AccountArrayEditor
+        value={owners}
+        label={core.string.Owners}
+        onChange={undefined}
+        readonly={true}
+        kind={'regular'}
+        size={'large'}
+      />
+    </div>
+  {/if}
+
   <div class="antiGrid-row mt-4">
     <div class="antiGrid-row__header">
       <Label label={leadRes.string.Members} />
