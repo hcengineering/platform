@@ -69,7 +69,7 @@
   let defaultAssignee: Ref<Employee> | null | undefined = project?.defaultAssignee ?? null
   let members: Ref<Account>[] =
     project?.members !== undefined ? hierarchy.clone(project.members) : [getCurrentAccount()._id]
-  const owners: Ref<Account>[] =
+  let owners: Ref<Account>[] =
     project?.owners !== undefined ? hierarchy.clone(project.owners) : [getCurrentAccount()._id]
   let projectsIdentifiers = new Set<string>()
   let isSaving = false
@@ -98,6 +98,7 @@
       description,
       private: isPrivate,
       members,
+      owners,
       archived: false,
       identifier: identifier.toUpperCase(),
       sequence: 0,
@@ -160,6 +161,16 @@
       for (const member of projectData.members) {
         if (project.members.findIndex((p) => p === member) === -1) {
           update.members = projectData.members
+          break
+        }
+      }
+    }
+    if (projectData.owners?.length !== project?.owners?.length) {
+      update.owners = projectData.owners
+    } else {
+      for (const owner of projectData?.owners || []) {
+        if (project.owners?.findIndex((p) => p === owner) === -1) {
+          update.owners = projectData.owners
           break
         }
       }
@@ -277,6 +288,13 @@
     rolesQuery.unsubscribe()
   }
 
+  function handleOwnersChanged (newOwners: Ref<Account>[]): void {
+    owners = newOwners
+
+    const newMembersSet = new Set([...members, ...newOwners])
+    members = Array.from(newMembersSet)
+  }
+
   function handleMembersChanged (newMembers: Ref<Account>[]): void {
     // If a member was removed we need to remove it from any roles assignments as well
     const newMembersSet = new Set(newMembers)
@@ -299,16 +317,20 @@
 
     rolesAssignment[roleId] = newMembers
   }
+
+  $: canSave = name.trim().length > 0 &&
+    identifier.trim().length > 0 &&
+    !projectsIdentifiers.has(identifier.toUpperCase()) &&
+    !(members.length === 0 && isPrivate) &&
+    owners.length > 0 &&
+    (!isPrivate || owners.some((o) => members.includes(o)))
 </script>
 
 <Card
   label={isNew ? tracker.string.NewProject : tracker.string.EditProject}
   okLabel={isNew ? presentation.string.Create : presentation.string.Save}
   okAction={handleSave}
-  canSave={name.trim().length > 0 &&
-    identifier.trim().length > 0 &&
-    !projectsIdentifiers.has(identifier.toUpperCase()) &&
-    !(members.length === 0 && isPrivate)}
+  {canSave}
   accentHeader
   width={'medium'}
   gap={'gapV-6'}
@@ -442,21 +464,18 @@
       {/if}
     </div>
 
-    {#if !isNew}
-      <div class="antiGrid-row">
-        <div class="antiGrid-row__header">
-          <Label label={core.string.Owners} />
-        </div>
-        <AccountArrayEditor
-          value={owners}
-          label={core.string.Owners}
-          onChange={undefined}
-          readonly={true}
-          kind={'regular'}
-          size={'large'}
-        />
+    <div class="antiGrid-row">
+      <div class="antiGrid-row__header">
+        <Label label={core.string.Owners} />
       </div>
-    {/if}
+      <AccountArrayEditor
+        value={owners}
+        label={core.string.Owners}
+        onChange={handleOwnersChanged}
+        kind={'regular'}
+        size={'large'}
+      />
+    </div>
 
     <div class="antiGrid-row">
       <div class="antiGrid-row__header withDesciption">
