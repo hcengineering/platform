@@ -37,6 +37,7 @@
     "Status": "Estado",
     "StatusCategory": "Categoría de estado",
     "Account": "Cuenta",
-    "Rank": "Rango"
+    "Rank": "Rango",
+    "Owner": "Propietarios"
   }
 }

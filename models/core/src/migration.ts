@@ -22,7 +22,8 @@ import core, {
   TxOperations,
   generateId,
   DOMAIN_TX,
-  type TxCreateDoc
+  type TxCreateDoc,
+  type Space
 } from '@hcengineering/core'
 import {
   tryMigrate,
@@ -92,6 +93,28 @@ async function migrateAllSpaceToTyped (client: MigrationClient): Promise<void> {
   )
 }
 
+async function migrateSpacesOwner (client: MigrationClient): Promise<void> {
+  const targetClasses = client.hierarchy.getDescendants(core.class.Space)
+  const targetSpaces = await client.find<Space>(DOMAIN_SPACE, {
+    _class: { $in: targetClasses },
+    owners: { $exists: false }
+  })
+
+  for (const space of targetSpaces) {
+    await client.update(
+      DOMAIN_SPACE,
+      {
+        _id: space._id
+      },
+      {
+        $set: {
+          owners: [space.createdBy]
+        }
+      }
+    )
+  }
+}
+
 export const coreOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     // We need to delete all documents in doc index state for missing classes
@@ -116,6 +139,10 @@ export const coreOperation: MigrateOperation = {
       {
         state: 'all-space-to-typed',
         func: migrateAllSpaceToTyped
+      },
+      {
+        state: 'add-spaces-owner',
+        func: migrateSpacesOwner
       }
     ])
   },
