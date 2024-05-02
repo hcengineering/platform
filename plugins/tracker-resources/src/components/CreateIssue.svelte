@@ -27,6 +27,7 @@
     SortingOrder,
     fillDefaults,
     generateId,
+    makeCollaborativeDoc,
     toIdMap
   } from '@hcengineering/core'
   import { getResource, translate } from '@hcengineering/platform'

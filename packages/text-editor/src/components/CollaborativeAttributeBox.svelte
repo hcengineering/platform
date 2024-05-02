@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { CollaborativeDoc, Doc, getCollaborativeDoc, getCollaborativeDocId } from '@hcengineering/core'
+  import core, { CollaborativeDoc, Doc, makeCollaborativeDoc } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { KeyedAttribute, getAttribute, getClient } from '@hcengineering/presentation'
   import { AnySvelteComponent, registerFocus } from '@hcengineering/ui'
@@ -58,8 +58,7 @@
       return value as CollaborativeDoc
     } else {
       // TODO Remove this when we migrate to minio
-      const collaborativeDocId = getCollaborativeDocId(object._id, key.key)
-      return getCollaborativeDoc(collaborativeDocId)
+      return makeCollaborativeDoc(object._id, key.key)
     }
   }
 

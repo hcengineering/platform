@@ -7,7 +7,7 @@ import core, {
   type MeasureContext,
   type Ref,
   type WorkspaceId,
-  getCollaborativeDocId
+  makeCollaborativeDoc
 } from '@hcengineering/core'
 import { getWorkspaceDB } from '@hcengineering/mongo'
 import { type StorageAdapter } from '@hcengineering/server-core'
@@ -84,7 +84,7 @@ async function processFixJsonMarkupFor (
           }
           if (res !== value) {
             update[attribute.name] = res
-            remove.push(getCollaborativeDocId(doc._id, attribute.name))
+            remove.push(makeCollaborativeDoc(doc._id, attribute.name))
           }
         }
       } catch {}

@@ -38,11 +38,10 @@ import {
   IndexKind,
   type Blob,
   type Class,
+  type CollaborativeDoc,
   type Domain,
-  type Markup,
   type Ref,
   type Timestamp
-  type CollaborativeDoc
 } from '@hcengineering/core'
 import {
   Collection,
