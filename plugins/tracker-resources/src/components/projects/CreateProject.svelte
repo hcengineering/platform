@@ -168,7 +168,7 @@
     if (projectData.owners?.length !== project?.owners?.length) {
       update.owners = projectData.owners
     } else {
-      for (const owner of projectData?.owners || []) {
+      for (const owner of projectData.owners || []) {
         if (project.owners?.findIndex((p) => p === owner) === -1) {
           update.owners = projectData.owners
           break
