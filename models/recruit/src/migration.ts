@@ -33,7 +33,7 @@ import { DOMAIN_SPACE } from '@hcengineering/model-core'
 import { defaultApplicantStatuses } from './spaceType'
 
 export const recruitOperation: MigrateOperation = {
-  async preMigrate  (client: MigrationClient, logger: ModelLogger): Promise<void> {
+  async preMigrate (client: MigrationClient, logger: ModelLogger): Promise<void> {
     await tryMigrate(client, recruitId, [
       {
         state: 'migrate-default-statuses',

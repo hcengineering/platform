@@ -13,7 +13,20 @@
 // limitations under the License.
 //
 
-import { type Attribute, type Space, type Status, type TxCreateDoc, TxOperations, type Class, type Doc, type Ref, DOMAIN_TX, DOMAIN_STATUS, type TxUpdateDoc, type TxCollectionCUD } from '@hcengineering/core'
+import {
+  type Attribute,
+  type Space,
+  type Status,
+  type TxCreateDoc,
+  TxOperations,
+  type Class,
+  type Doc,
+  type Ref,
+  DOMAIN_TX,
+  DOMAIN_STATUS,
+  type TxUpdateDoc,
+  type TxCollectionCUD
+} from '@hcengineering/core'
 import {
   type ModelLogger,
   createOrUpdate,
@@ -27,7 +40,14 @@ import activity, { type DocUpdateMessage } from '@hcengineering/activity'
 import { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 import tags from '@hcengineering/model-tags'
-import { type ProjectType, type ProjectTypeDescriptor, type Task, type TaskType, taskId, type ProjectStatus } from '@hcengineering/task'
+import {
+  type ProjectType,
+  type ProjectTypeDescriptor,
+  type Task,
+  type TaskType,
+  taskId,
+  type ProjectStatus
+} from '@hcengineering/task'
 import task from './plugin'
 import { DOMAIN_TASK } from '.'
 
@@ -124,7 +144,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
 
   if (defaultTypes.length === 2) {
     logger.log('Are you running the tool after the workspace has been upgraded?', '')
-    logger.log('NOT SUPPORTED. EXITING.', '')
+    logger.error('NOT SUPPORTED. EXITING.', '')
     return
   } else if (defaultTypes.length === 0) {
     logger.log('No default type found. Was custom and already migrated? Nothing to do.', '')
@@ -140,17 +160,20 @@ export async function migrateDefaultStatusesBase<T extends Task> (
       // Can only move to system if the task is with the system id
       // and not modified by user
       if (defaultType.attributes.tasks.length === 1 && defaultType.attributes.tasks[0] === defaultTaskTypeId) {
-        const defaultTaskType = (await client.find<TxCreateDoc<TaskType>>(DOMAIN_TX, {
-          _class: core.class.TxCreateDoc,
-          objectId: defaultTaskTypeId,
-          objectSpace: core.space.Model,
-          'attributes.parent': defaultTypeId
-        }))[0]
+        const defaultTaskType = (
+          await client.find<TxCreateDoc<TaskType>>(DOMAIN_TX, {
+            _class: core.class.TxCreateDoc,
+            objectId: defaultTaskTypeId,
+            objectSpace: core.space.Model,
+            'attributes.parent': defaultTypeId
+          })
+        )[0]
 
         if (defaultTaskType?.modifiedBy === core.account.ConfigUser) {
           logger.log('Moving the existing default type created by ConfigUser to a system one', '')
           logger.log('Moving the existing default task type created by ConfigUser to a system one', '')
-          await client.update(DOMAIN_TX,
+          await client.update(
+            DOMAIN_TX,
             { _id: defaultTaskType._id },
             {
               $set: {
@@ -159,7 +182,8 @@ export async function migrateDefaultStatusesBase<T extends Task> (
             }
           )
 
-          await client.update(DOMAIN_TX,
+          await client.update(
+            DOMAIN_TX,
             { _id: defaultType._id },
             {
               $set: {
@@ -169,7 +193,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
           )
         } else if (defaultTaskType?.modifiedBy !== core.account.System) {
           logger.log('Default task type has been modified by user.', '')
-          logger.log('NOT SUPPORTED. EXITING.', '')
+          logger.error('NOT SUPPORTED. EXITING.', '')
           return
         }
       } else {
@@ -182,13 +206,14 @@ export async function migrateDefaultStatusesBase<T extends Task> (
       // Update to use the new ID of the type if no default task type
       if (defaultType.attributes.tasks.includes(defaultTaskTypeId)) {
         logger.log('Default type has been modified by user and it contains default task type', '')
-        logger.log('NOT SUPPORTED. EXITING.', '')
+        logger.error('NOT SUPPORTED. EXITING.', '')
         return
       }
 
       logger.log('Moving the existing default type to a custom one', '')
       const newId = defaultType.objectId + '-custom'
-      await client.update(DOMAIN_TX,
+      await client.update(
+        DOMAIN_TX,
         { _id: defaultType._id },
         {
           $set: {
@@ -197,7 +222,8 @@ export async function migrateDefaultStatusesBase<T extends Task> (
           }
         }
       )
-      await client.update(DOMAIN_TX,
+      await client.update(
+        DOMAIN_TX,
         {
           objectId: defaultType.objectId,
           objectSpace: core.space.Model
@@ -208,7 +234,8 @@ export async function migrateDefaultStatusesBase<T extends Task> (
           }
         }
       )
-      await client.update(DOMAIN_TX,
+      await client.update(
+        DOMAIN_TX,
         {
           objectId: { $in: defaultType.attributes.tasks },
           objectSpace: core.space.Model,
@@ -220,7 +247,8 @@ export async function migrateDefaultStatusesBase<T extends Task> (
           }
         }
       )
-      await client.update(DOMAIN_SPACE,
+      await client.update(
+        DOMAIN_SPACE,
         {
           _class: baseClass,
           type: defaultTypeId
@@ -425,7 +453,11 @@ export async function migrateDefaultStatusesBase<T extends Task> (
     }
 
     counter++
-    await client.update(DOMAIN_TX, { _id: ttsUpdate._id }, { $set: { 'operations.statuses': newTaskTypeUpdateStatuses } })
+    await client.update(
+      DOMAIN_TX,
+      { _id: ttsUpdate._id },
+      { $set: { 'operations.statuses': newTaskTypeUpdateStatuses } }
+    )
   }
   logger.log('allTaskTypeStatusesUpdates updated: ', counter)
 
@@ -514,7 +546,11 @@ export async function migrateDefaultStatusesBase<T extends Task> (
 
     if (statusSet !== newStatusSet) {
       counter++
-      await client.update(DOMAIN_ACTIVITY, { _id: updateMessage._id }, { $set: { 'attributeUpdates.set.0': newStatusSet } })
+      await client.update(
+        DOMAIN_ACTIVITY,
+        { _id: updateMessage._id },
+        { $set: { 'attributeUpdates.set.0': newStatusSet } }
+      )
     }
   }
   logger.log('Base task update messages updated: ', counter)

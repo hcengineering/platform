@@ -38,7 +38,14 @@ import { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 import { DOMAIN_TASK, migrateDefaultStatusesBase } from '@hcengineering/model-task'
 import tags from '@hcengineering/tags'
 import task from '@hcengineering/task'
-import { type IssueStatus, TimeReportDayType, trackerId, type Issue, type Project, classicIssueTaskStatuses } from '@hcengineering/tracker'
+import {
+  type IssueStatus,
+  TimeReportDayType,
+  trackerId,
+  type Issue,
+  type Project,
+  classicIssueTaskStatuses
+} from '@hcengineering/tracker'
 import tracker from './plugin'
 
 async function createDefaultProject (tx: TxOperations): Promise<void> {
@@ -210,7 +217,11 @@ async function migrateDefaultStatuses (client: MigrationClient, logger: ModelLog
         const newStatusSet = statusSet != null ? getNewStatus(statusSet as Ref<Status>) : statusSet
 
         if (statusSet !== newStatusSet) {
-          await client.update(DOMAIN_ACTIVITY, { _id: updateMessage._id }, { $set: { 'attributeUpdates.set.0': newStatusSet } })
+          await client.update(
+            DOMAIN_ACTIVITY,
+            { _id: updateMessage._id },
+            { $set: { 'attributeUpdates.set.0': newStatusSet } }
+          )
         }
       }
     }
@@ -322,7 +333,7 @@ async function migrateDefaultTypeMixins (client: MigrationClient): Promise<void>
 }
 
 export const trackerOperation: MigrateOperation = {
-  async preMigrate  (client: MigrationClient, logger: ModelLogger): Promise<void> {
+  async preMigrate (client: MigrationClient, logger: ModelLogger): Promise<void> {
     await tryMigrate(client, trackerId, [
       {
         state: 'migrate-default-statuses',

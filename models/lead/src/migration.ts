@@ -148,7 +148,7 @@ async function migrateDefaultTypeMixins (client: MigrationClient): Promise<void>
 }
 
 export const leadOperation: MigrateOperation = {
-  async preMigrate  (client: MigrationClient, logger: ModelLogger): Promise<void> {
+  async preMigrate (client: MigrationClient, logger: ModelLogger): Promise<void> {
     await tryMigrate(client, leadId, [
       {
         state: 'migrate-default-statuses',

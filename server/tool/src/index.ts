@@ -212,7 +212,12 @@ export async function upgradeModel (
     const db = getWorkspaceDB(client, workspaceId)
 
     const prevModel = await fetchModelFromMongo(ctx, mongodbUri, workspaceId)
-    const { migrateClient: preMigrateClient } = await prepareMigrationClient(db, prevModel.hierarchy, prevModel.modelDb, logger)
+    const { migrateClient: preMigrateClient } = await prepareMigrationClient(
+      db,
+      prevModel.hierarchy,
+      prevModel.modelDb,
+      logger
+    )
 
     await progress(0)
     await ctx.with('pre-migrate', {}, async () => {
@@ -329,10 +334,15 @@ export async function upgradeModel (
   }
 }
 
-async function prepareMigrationClient (db: Db, hierarchy: Hierarchy, model: ModelDb, logger: ModelLogger): Promise<{
-  migrateClient: MigrateClientImpl
-  migrateState: Map<string, Set<string>>
-}> {
+async function prepareMigrationClient (
+  db: Db,
+  hierarchy: Hierarchy,
+  model: ModelDb,
+  logger: ModelLogger
+): Promise<{
+    migrateClient: MigrateClientImpl
+    migrateState: Map<string, Set<string>>
+  }> {
   const migrateClient = new MigrateClientImpl(db, hierarchy, model, logger)
   const states = await migrateClient.find<MigrationState>(DOMAIN_MIGRATION, { _class: core.class.MigrationState })
   const sts = Array.from(groupByArray(states, (it) => it.plugin).entries())
