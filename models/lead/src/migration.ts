@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { DOMAIN_TX, TxOperations } from '@hcengineering/core'
+import { DOMAIN_TX, type Ref, type Status, TxOperations } from '@hcengineering/core'
 import { type Lead, leadId } from '@hcengineering/lead'
 import {
   tryMigrate,
@@ -23,9 +23,10 @@ import {
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
-import { DOMAIN_TASK, createSequence } from '@hcengineering/model-task'
+import task, { DOMAIN_TASK, createSequence, migrateDefaultStatusesBase } from '@hcengineering/model-task'
 
 import lead from './plugin'
+import { defaultLeadStatuses } from './spaceType'
 
 async function createSpace (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(core.class.Space, {
@@ -64,6 +65,38 @@ async function migrateIdentifiers (client: MigrationClient): Promise<void> {
       }
     )
   }
+}
+
+async function migrateDefaultStatuses (client: MigrationClient): Promise<void> {
+  const defaultTypeId = lead.template.DefaultFunnel
+  const typeDescriptor = lead.descriptors.FunnelType
+  const baseClass = lead.class.Funnel
+  const defaultTaskTypeId = lead.taskType.Lead
+  const taskTypeClass = task.class.TaskType
+  const baseTaskClass = lead.class.Lead
+  const statusAttributeOf = lead.attribute.State
+  const statusClass = core.class.Status
+  const getDefaultStatus = (oldStatus: Status): Ref<Status> | undefined => {
+    return defaultLeadStatuses.find(
+      (defStatus) =>
+        defStatus.category === oldStatus.category &&
+        (defStatus.name.toLowerCase() === oldStatus.name.trim().toLowerCase() ||
+          (defStatus.name === 'Negotiation' && oldStatus.name === 'Negotation'))
+    )?.id
+  }
+
+  await migrateDefaultStatusesBase<Lead>(
+    client,
+    defaultTypeId,
+    typeDescriptor,
+    baseClass,
+    defaultTaskTypeId,
+    taskTypeClass,
+    baseTaskClass,
+    statusAttributeOf,
+    statusClass,
+    getDefaultStatus
+  )
 }
 
 async function migrateDefaultTypeMixins (client: MigrationClient): Promise<void> {
@@ -113,6 +146,14 @@ async function migrateDefaultTypeMixins (client: MigrationClient): Promise<void>
 }
 
 export const leadOperation: MigrateOperation = {
+  async preMigrate  (client: MigrationClient): Promise<void> {
+    await tryMigrate(client, leadId, [
+      {
+        state: 'migrate-default-statuses',
+        func: migrateDefaultStatuses
+      }
+    ])
+  },
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, leadId, [
       {

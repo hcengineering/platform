@@ -14,7 +14,7 @@
 //
 
 import { getCategories } from '@anticrm/skillset'
-import core, { DOMAIN_TX, TxOperations, type Ref } from '@hcengineering/core'
+import core, { DOMAIN_TX, type Status, TxOperations, type Ref } from '@hcengineering/core'
 import {
   createOrUpdate,
   tryMigrate,
@@ -24,13 +24,22 @@ import {
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import tags, { type TagCategory } from '@hcengineering/model-tags'
-import { DOMAIN_TASK, createSequence } from '@hcengineering/model-task'
+import task, { DOMAIN_TASK, createSequence, migrateDefaultStatusesBase } from '@hcengineering/model-task'
 import { type Applicant, recruitId } from '@hcengineering/recruit'
 
 import recruit from './plugin'
 import { DOMAIN_SPACE } from '@hcengineering/model-core'
+import { defaultApplicantStatuses } from './spaceType'
 
 export const recruitOperation: MigrateOperation = {
+  async preMigrate  (client: MigrationClient): Promise<void> {
+    await tryMigrate(client, recruitId, [
+      {
+        state: 'migrate-default-statuses',
+        func: migrateDefaultStatuses
+      }
+    ])
+  },
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, recruitId, [
       {
@@ -82,6 +91,37 @@ async function migrateIdentifiers (client: MigrationClient): Promise<void> {
       }
     )
   }
+}
+
+async function migrateDefaultStatuses (client: MigrationClient): Promise<void> {
+  const defaultTypeId = recruit.template.DefaultVacancy
+  const typeDescriptor = recruit.descriptors.VacancyType
+  const baseClass = recruit.class.Vacancy
+  const defaultTaskTypeId = recruit.taskTypes.Applicant
+  const taskTypeClass = task.class.TaskType
+  const baseTaskClass = recruit.class.Applicant
+  const statusAttributeOf = recruit.attribute.State
+  const statusClass = core.class.Status
+  const getDefaultStatus = (oldStatus: Status): Ref<Status> | undefined => {
+    return defaultApplicantStatuses.find(
+      (defStatus) =>
+        defStatus.category === oldStatus.category &&
+        defStatus.name.toLowerCase() === oldStatus.name.trim().toLowerCase()
+    )?.id
+  }
+
+  await migrateDefaultStatusesBase<Applicant>(
+    client,
+    defaultTypeId,
+    typeDescriptor,
+    baseClass,
+    defaultTaskTypeId,
+    taskTypeClass,
+    baseTaskClass,
+    statusAttributeOf,
+    statusClass,
+    getDefaultStatus
+  )
 }
 
 async function migrateDefaultTypeMixins (client: MigrationClient): Promise<void> {

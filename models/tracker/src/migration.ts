@@ -19,7 +19,9 @@ import core, {
   TxOperations,
   generateId,
   toIdMap,
-  DOMAIN_TX
+  DOMAIN_TX,
+  type Status,
+  type Ref
 } from '@hcengineering/core'
 import {
   createOrUpdate,
@@ -30,10 +32,12 @@ import {
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import { DOMAIN_SPACE } from '@hcengineering/model-core'
-import { DOMAIN_TASK } from '@hcengineering/model-task'
+import activity, { type DocUpdateMessage } from '@hcengineering/activity'
+import { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
+import { DOMAIN_TASK, migrateDefaultStatusesBase } from '@hcengineering/model-task'
 import tags from '@hcengineering/tags'
 import task from '@hcengineering/task'
-import { type IssueStatus, TimeReportDayType, trackerId, type Issue, type Project } from '@hcengineering/tracker'
+import { type IssueStatus, TimeReportDayType, trackerId, type Issue, type Project, classicIssueTaskStatuses } from '@hcengineering/tracker'
 import tracker from './plugin'
 
 async function createDefaultProject (tx: TxOperations): Promise<void> {
@@ -157,6 +161,75 @@ async function migrateIdentifiers (client: MigrationClient): Promise<void> {
   }
 }
 
+async function migrateDefaultStatuses (client: MigrationClient): Promise<void> {
+  const defaultTypeId = tracker.ids.ClassingProjectType
+  const typeDescriptor = tracker.descriptors.ProjectType
+  const baseClass = tracker.class.Project
+  const defaultTaskTypeId = tracker.taskTypes.Issue
+  const taskTypeClass = task.class.TaskType
+  const baseTaskClass = tracker.class.Issue
+  const statusAttributeOf = tracker.attribute.IssueStatus
+  const statusClass = tracker.class.IssueStatus
+  const getDefaultStatus = (oldStatus: Status): Ref<Status> | undefined => {
+    const classicCategory = classicIssueTaskStatuses.find((c) => c.category === oldStatus.category)
+    if (classicCategory === undefined) {
+      return
+    }
+
+    const classicStatus = classicCategory.statuses.find(
+      (s) => s[0].toLowerCase() === oldStatus.name.trim().toLowerCase()
+    )
+
+    return classicStatus?.[2] as Ref<Status>
+  }
+  const migrateProjects = async (getNewStatus: (oldStatus: Ref<Status>) => Ref<Status>): Promise<void> => {
+    const projects = await client.find<Project>(DOMAIN_SPACE, { _class: tracker.class.Project })
+
+    console.log('projects: ' + projects.length)
+
+    // Project:
+    // 1. defaultIssueStatus
+    // 2. DocUpdateMessage:update:defaultIssueStatus
+    for (const project of projects) {
+      const newDefaultIssueStatus = getNewStatus(project.defaultIssueStatus)
+
+      if (project.defaultIssueStatus !== newDefaultIssueStatus) {
+        await client.update(DOMAIN_SPACE, { _id: project._id }, { $set: { defaultIssueStatus: newDefaultIssueStatus } })
+      }
+
+      const projectUpdateMessages = await client.find<DocUpdateMessage>(DOMAIN_ACTIVITY, {
+        _class: activity.class.DocUpdateMessage,
+        action: 'update',
+        objectId: project._id,
+        'attributeUpdates.attrKey': 'defaultIssueStatus'
+      })
+
+      for (const updateMessage of projectUpdateMessages) {
+        const statusSet = updateMessage.attributeUpdates?.set[0]
+        const newStatusSet = statusSet != null ? getNewStatus(statusSet as Ref<Status>) : statusSet
+
+        if (statusSet !== newStatusSet) {
+          await client.update(DOMAIN_ACTIVITY, { _id: updateMessage._id }, { $set: { 'attributeUpdates.set.0': newStatusSet } })
+        }
+      }
+    }
+  }
+
+  await migrateDefaultStatusesBase<Issue>(
+    client,
+    defaultTypeId,
+    typeDescriptor,
+    baseClass,
+    defaultTaskTypeId,
+    taskTypeClass,
+    baseTaskClass,
+    statusAttributeOf,
+    statusClass,
+    getDefaultStatus,
+    migrateProjects
+  )
+}
+
 async function migrateStatusesToModel (client: MigrationClient): Promise<void> {
   // Move statuses to model:
   // Migrate the default ones with well-known ids as system's model
@@ -247,6 +320,14 @@ async function migrateDefaultTypeMixins (client: MigrationClient): Promise<void>
 }
 
 export const trackerOperation: MigrateOperation = {
+  async preMigrate  (client: MigrationClient): Promise<void> {
+    await tryMigrate(client, trackerId, [
+      {
+        state: 'migrate-default-statuses',
+        func: migrateDefaultStatuses
+      }
+    ])
+  },
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, trackerId, [
       {

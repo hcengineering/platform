@@ -85,7 +85,7 @@ import { createPublicLinkAction } from '@hcengineering/model-guest'
 import task from './plugin'
 
 export { createProjectType, taskId } from '@hcengineering/task'
-export { createSequence, taskOperation } from './migration'
+export { createSequence, taskOperation, migrateDefaultStatusesBase } from './migration'
 export { default } from './plugin'
 
 export const DOMAIN_TASK = 'task' as Domain
