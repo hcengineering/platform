@@ -15,6 +15,7 @@
 
 import {
   AccountRole,
+  DOMAIN_BENCHMARK,
   DOMAIN_BLOB,
   DOMAIN_BLOB_DATA,
   DOMAIN_CONFIGURATION,
@@ -32,6 +33,7 @@ import {
   type TxCollectionCUD
 } from '@hcengineering/core'
 import { type Builder } from '@hcengineering/model'
+import { TBenchmarkDoc } from './benchmark'
 import core from './component'
 import {
   TArrOf,
@@ -172,7 +174,8 @@ export function createModel (builder: Builder): void {
     TStatusCategory,
     TMigrationState,
     TBlob,
-    TDomainIndexConfiguration
+    TDomainIndexConfiguration,
+    TBenchmarkDoc
   )
 
   builder.createDoc(
@@ -224,6 +227,12 @@ export function createModel (builder: Builder): void {
       { createdBy: -1 },
       { createdOn: -1 }
     ]
+  })
+
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_BENCHMARK,
+    disableCollection: true,
+    disabled: []
   })
 
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {

@@ -21,6 +21,11 @@ import WebSocket from 'ws'
 import { start } from '../server'
 
 import {
+  Hierarchy,
+  MeasureMetricsContext,
+  ModelDb,
+  getWorkspaceId,
+  toFindResult,
   type Account,
   type Class,
   type Doc,
@@ -28,15 +33,10 @@ import {
   type Domain,
   type FindOptions,
   type FindResult,
-  getWorkspaceId,
-  Hierarchy,
   type MeasureContext,
-  MeasureMetricsContext,
-  ModelDb,
   type Ref,
   type ServerStorage,
   type Space,
-  toFindResult,
   type Tx,
   type TxResult
 } from '@hcengineering/core'
@@ -239,13 +239,15 @@ describe('server', () => {
     try {
       //
       const token: string = generateToken('my@email.com', getWorkspaceId('latest', ''))
+      let clearTo: any
       const timeoutPromise = new Promise<void>((resolve) => {
-        setTimeout(resolve, 4000)
+        clearTo = setTimeout(resolve, 4000)
       })
       const t1 = await findClose(token, timeoutPromise, 1005)
       const t2 = await findClose(token, timeoutPromise, 1000)
 
       expect(t1).toBe(t2)
+      clearTimeout(clearTo)
     } catch (err: any) {
       console.error(err)
     } finally {

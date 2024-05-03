@@ -68,7 +68,8 @@ export async function start (
         // fallback to standard filter function
         return compression.filter(req, res)
       },
-      level: 6
+      level: 1,
+      memLevel: 9
     })
   )
 
@@ -206,13 +207,14 @@ export async function start (
     noServer: true,
     perMessageDeflate: {
       zlibDeflateOptions: {
-        // See zlib defaults.
-        chunkSize: 1024,
-        memLevel: 7,
-        level: 3
+        chunkSize: 32 * 1024,
+        memLevel: 9,
+        level: 1
       },
       zlibInflateOptions: {
-        chunkSize: 10 * 1024
+        chunkSize: 32 * 1024,
+        memLevel: 9,
+        level: 1
       },
       // Below options specified as default values.
       concurrencyLimit: 10, // Limits zlib concurrency for perf.

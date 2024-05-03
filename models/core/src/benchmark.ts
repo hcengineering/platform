@@ -1,5 +1,5 @@
 //
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2023 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,11 +13,15 @@
 // limitations under the License.
 //
 
-export * from './base'
-export * from './configuration'
-export * from './modified'
-export * from './private'
-export * from './queryJoin'
-export * from './spaceSecurity'
-export * from './spacePermissions'
-export * from './lookup'
+import type { BenchmarkDoc } from '@hcengineering/core'
+import { DOMAIN_BENCHMARK } from '@hcengineering/core'
+import { Model, UX } from '@hcengineering/model'
+import { getEmbeddedLabel } from '@hcengineering/platform'
+import core from './component'
+import { TDoc } from './core'
+
+// B E N C H M A R K
+
+@Model(core.class.BenchmarkDoc, core.class.Doc, DOMAIN_BENCHMARK)
+@UX(getEmbeddedLabel('Benchmark'), undefined, undefined, undefined, 'name')
+export class TBenchmarkDoc extends TDoc implements BenchmarkDoc {}

@@ -71,7 +71,7 @@
         subscribed = { _id: { $in: newSub } }
       }
     },
-    { sort: { _id: 1 } }
+    { sort: { _id: 1 }, projection: { _id: 1 } }
   )
 
   const archivedProjectQuery = createQuery()

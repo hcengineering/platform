@@ -14,8 +14,12 @@
 //
 
 import core, {
-  type Account,
   AccountRole,
+  TxFactory,
+  TxProcessor,
+  WorkspaceEvent,
+  generateId,
+  type Account,
   type BulkUpdateEvent,
   type Class,
   type Doc,
@@ -33,12 +37,8 @@ import core, {
   type TxApplyIf,
   type TxApplyResult,
   type TxCUD,
-  TxFactory,
-  TxProcessor,
   type TxResult,
-  type TxWorkspaceEvent,
-  WorkspaceEvent,
-  generateId
+  type TxWorkspaceEvent
 } from '@hcengineering/core'
 import { type Pipeline, type SessionContext } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
@@ -50,7 +50,7 @@ import { type BroadcastCall, type Session, type SessionRequest, type StatisticsE
 export class ClientSession implements Session {
   createTime = Date.now()
   requests = new Map<string, SessionRequest>()
-  binaryResponseMode: boolean = false
+  binaryMode: boolean = false
   useCompression: boolean = true
   useBroadcast: boolean = false
   sessionId = ''
@@ -190,17 +190,23 @@ export class ClientSession implements Session {
           if (tx._class === core.class.TxApplyIf) {
             ;(result as TxApplyResult).derived.push(...derived)
           }
-          while (derived.length > 0) {
-            const part = derived.splice(0, 250)
-            console.log('Broadcasting part', part.length, derived.length)
-            this.broadcast(null, this.token.workspace, { result: part }, target)
-          }
+          // Let's send after our response will go out
+          setImmediate(() => {
+            while (derived.length > 0) {
+              const part = derived.splice(0, 250)
+              console.log('Broadcasting part', part.length, derived.length)
+              this.broadcast(null, this.token.workspace, { result: part }, target)
+            }
+          })
         }
       } else {
-        while (derived.length > 0) {
-          const part = derived.splice(0, 250)
-          this.broadcast(null, this.token.workspace, { result: part }, target)
-        }
+        // Let's send after our response will go out
+        setImmediate(() => {
+          while (derived.length > 0) {
+            const part = derived.splice(0, 250)
+            this.broadcast(null, this.token.workspace, { result: part }, target)
+          }
+        })
       }
     }
     if (tx._class === core.class.TxApplyIf) {

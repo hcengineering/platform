@@ -41,7 +41,8 @@ import core, {
   TxResult,
   TxWorkspaceEvent,
   WorkspaceEvent,
-  generateId
+  generateId,
+  toFindResult
 } from '@hcengineering/core'
 import { PlatformError, UNAUTHORIZED, broadcastEvent, getMetadata, unknownError } from '@hcengineering/platform'
 
@@ -70,14 +71,23 @@ class RequestPromise {
     })
   }
 
-  chunks?: { index: number, data: any[] }[]
+  chunks?: { index: number, data: FindResult<any> }[]
 }
 
 class Connection implements ClientConnection {
   private websocket: ClientSocket | null = null
+  binaryMode = false
   private readonly requests = new Map<ReqId, RequestPromise>()
   private lastId = 0
   private interval: number | undefined
+  private dialTimer: any | undefined
+
+  private sockets = 0
+
+  private incomingTimer: any
+
+  private openAction: any
+
   private sessionId: string | undefined
   private closed = false
 
@@ -136,15 +146,11 @@ class Connection implements ClientConnection {
 
   async close (): Promise<void> {
     this.closed = true
+    clearTimeout(this.openAction)
+    clearTimeout(this.dialTimer)
     clearInterval(this.interval)
     if (this.websocket !== null) {
-      if (this.websocket instanceof Promise) {
-        await this.websocket.then((ws) => {
-          ws.close(1000)
-        })
-      } else {
-        this.websocket.close(1000)
-      }
+      this.websocket.close(1000)
       this.websocket = null
     }
   }
@@ -166,12 +172,6 @@ class Connection implements ClientConnection {
     })
   }
 
-  sockets = 0
-
-  incomingTimer: any
-
-  openAction: any
-
   scheduleOpen (force: boolean): void {
     if (force) {
       if (this.websocket !== null) {
@@ -181,6 +181,7 @@ class Connection implements ClientConnection {
       clearTimeout(this.openAction)
       this.openAction = undefined
     }
+    clearInterval(this.interval)
     if (!this.closed && this.openAction === undefined) {
       if (this.websocket === null) {
         const socketId = ++this.sockets
@@ -198,6 +199,7 @@ class Connection implements ClientConnection {
   }
 
   private openConnection (socketId: number): void {
+    this.binaryMode = false
     // Use defined factory or browser default one.
     const clientSocketFactory =
       getMetadata(client.metadata.ClientSocketFactory) ??
@@ -229,19 +231,21 @@ class Connection implements ClientConnection {
     }
     this.websocket = wsocket
     const opened = false
-    let binaryResponse = false
 
-    const dialTimer = setTimeout(() => {
+    this.dialTimer = setTimeout(() => {
       if (!opened && !this.closed) {
         this.scheduleOpen(true)
       }
     }, dialTimeout)
 
     wsocket.onmessage = (event: MessageEvent) => {
+      if (this.closed) {
+        return
+      }
       if (this.websocket !== wsocket) {
         return
       }
-      const resp = readResponse<any>(event.data, binaryResponse)
+      const resp = readResponse<any>(event.data, this.binaryMode)
 
       if (resp.error !== undefined) {
         if (resp.error?.code === UNAUTHORIZED.code) {
@@ -280,7 +284,7 @@ class Connection implements ClientConnection {
             return
           }
           if ((resp as HelloResponse).binary) {
-            binaryResponse = true
+            this.binaryMode = true
           }
           // Notify all waiting connection listeners
           const handlers = this.onConnectHandlers.splice(0, this.onConnectHandlers.length)
@@ -309,7 +313,11 @@ class Connection implements ClientConnection {
       if (resp.id !== undefined) {
         const promise = this.requests.get(resp.id)
         if (promise === undefined) {
-          throw new Error(`unknown response id: ${resp.id as string} ${this.workspace} ${this.email}`)
+          console.error(
+            new Error(`unknown response id: ${resp.id as string} ${this.workspace} ${this.email}`),
+            JSON.stringify(this.requests)
+          )
+          return
         }
 
         if (resp.chunk !== undefined) {
@@ -317,17 +325,26 @@ class Connection implements ClientConnection {
             ...(promise.chunks ?? []),
             {
               index: resp.chunk.index,
-              data: resp.result as []
+              data: resp.result as FindResult<any>
             }
           ]
-          // console.log(socketId, 'chunk', promise.chunks.length, resp.chunk.total)
+          // console.log(socketId, 'chunk', promise.method, promise.params, promise.chunks.length, (resp.result as []).length)
           if (resp.chunk.final) {
             promise.chunks.sort((a, b) => a.index - b.index)
             let result: any[] = []
+            let total = -1
+            let lookupMap: Record<string, Doc> | undefined
+
             for (const c of promise.chunks) {
+              if (c.data.total !== 0) {
+                total = c.data.total
+              }
+              if (c.data.lookupMap !== undefined) {
+                lookupMap = c.data.lookupMap
+              }
               result = result.concat(c.data)
             }
-            resp.result = result
+            resp.result = toFindResult(result, total, lookupMap)
             resp.chunk = undefined
           } else {
             // Not all chunks are available yet.
@@ -387,10 +404,10 @@ class Connection implements ClientConnection {
       }
     }
     wsocket.onclose = (ev) => {
-      clearTimeout(dialTimer)
+      clearTimeout(this.dialTimer)
       if (this.websocket !== wsocket) {
         wsocket.close()
-        clearTimeout(dialTimer)
+        clearTimeout(this.dialTimer)
         return
       }
       // console.log('client websocket closed', socketId, ev?.reason)
@@ -403,7 +420,7 @@ class Connection implements ClientConnection {
       }
       const useBinary = getMetadata(client.metadata.UseBinaryProtocol) ?? true
       const useCompression = getMetadata(client.metadata.UseProtocolCompression) ?? false
-      clearTimeout(dialTimer)
+      clearTimeout(this.dialTimer)
       const helloRequest: HelloRequest = {
         method: 'hello',
         params: [],
@@ -416,7 +433,7 @@ class Connection implements ClientConnection {
     }
 
     wsocket.onerror = (event: any) => {
-      clearTimeout(dialTimer)
+      clearTimeout(this.dialTimer)
       if (this.websocket !== wsocket) {
         return
       }
@@ -438,6 +455,7 @@ class Connection implements ClientConnection {
     handleResult?: (result: any) => Promise<void>
     once?: boolean // Require handleResult to retrieve result
     measure?: (time: number, result: any, serverTime: number, queue: number) => void
+    allowReconnect?: boolean
   }): Promise<any> {
     if (this.closed) {
       throw new PlatformError(unknownError('connection closed'))
@@ -462,7 +480,7 @@ class Connection implements ClientConnection {
       await w
     }
     this.requests.set(id, promise)
-    const sendData = (): void => {
+    const sendData = async (): Promise<void> => {
       if (this.websocket?.readyState === ClientSocketReadyState.OPEN) {
         promise.startTime = Date.now()
         this.websocket?.send(
@@ -470,22 +488,25 @@ class Connection implements ClientConnection {
             {
               method: data.method,
               params: data.params,
-              id
+              id,
+              time: Date.now()
             },
-            false
+            this.binaryMode
           )
         )
       }
     }
-    promise.reconnect = () => {
-      setTimeout(async () => {
-        // In case we don't have response yet.
-        if (this.requests.has(id) && ((await data.retry?.()) ?? true)) {
-          sendData()
-        }
-      }, 500)
+    if (data.allowReconnect ?? true) {
+      promise.reconnect = () => {
+        setTimeout(async () => {
+          // In case we don't have response yet.
+          if (this.requests.has(id) && ((await data.retry?.()) ?? true)) {
+            void sendData()
+          }
+        }, 50)
+      }
     }
-    sendData()
+    void sendData()
     void broadcastEvent(client.event.NetworkRequests, this.requests.size)
     return await promise.promise
   }
@@ -527,11 +548,52 @@ class Connection implements ClientConnection {
       method: 'findAll',
       params: [_class, query, options],
       measure: (time, result, serverTime, queue) => {
-        if (typeof window !== 'undefined' && time > 1000) {
-          console.error('measure slow findAll', time, serverTime, queue, _class, query, options, result)
+        if (typeof window !== 'undefined' && (time > 1000 || serverTime > 500)) {
+          console.error(
+            'measure slow findAll',
+            time,
+            serverTime,
+            queue,
+            _class,
+            query,
+            options,
+            result,
+            JSON.stringify(result).length
+          )
         }
       }
     })
+    if (result.lookupMap !== undefined) {
+      // We need to extract lookup map to document lookups
+      for (const d of result) {
+        if (d.$lookup !== undefined) {
+          for (const [k, v] of Object.entries(d.$lookup)) {
+            if (!Array.isArray(v)) {
+              d.$lookup[k] = result.lookupMap[v as any]
+            } else {
+              d.$lookup[k] = v.map((it) => result.lookupMap?.[it])
+            }
+          }
+        }
+      }
+      delete result.lookupMap
+    }
+
+    // We need to revert deleted query simple values.
+    // We need to get rid of simple query parameters matched in documents
+    for (const doc of result) {
+      if (doc._class == null) {
+        doc._class = _class
+      }
+      for (const [k, v] of Object.entries(query)) {
+        if (typeof v === 'string' || typeof v === 'number') {
+          if (doc[k] == null) {
+            doc[k] = v
+          }
+        }
+      }
+    }
+
     return result
   }
 
@@ -586,7 +648,7 @@ class Connection implements ClientConnection {
   }
 
   sendForceClose (): Promise<void> {
-    return this.sendRequest({ method: 'forceClose', params: [] })
+    return this.sendRequest({ method: 'forceClose', params: [], allowReconnect: false })
   }
 }
 

@@ -229,7 +229,8 @@ abstract class MongoAdapterBase implements DbAdapter {
             from: domain,
             localField: fullKey,
             foreignField: '_id',
-            as: fullKey.split('.').join('') + '_lookup'
+            as: fullKey.split('.').join('') + '_lookup',
+            pipeline: [{ $project: { '%hash%': 0 } }]
           })
         }
         await this.getLookupValue(_class, nested, result, fullKey + '_lookup')
@@ -243,7 +244,8 @@ abstract class MongoAdapterBase implements DbAdapter {
             from: domain,
             localField: fullKey,
             foreignField: '_id',
-            as: fullKey.split('.').join('') + '_lookup'
+            as: fullKey.split('.').join('') + '_lookup',
+            pipeline: [{ $project: { '%hash%': 0 } }]
           })
         }
       }
@@ -283,7 +285,8 @@ abstract class MongoAdapterBase implements DbAdapter {
               $match: {
                 _class: { $in: desc }
               }
-            }
+            },
+            { $project: { '%hash%': 0 } }
           ],
           as: asVal
         }

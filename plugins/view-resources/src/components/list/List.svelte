@@ -101,14 +101,17 @@
     },
     { ...categoryQueryOptions, limit: 1000 }
   )
-  $: docsQuerySlow.query(
-    _class,
-    queryNoLookup,
-    (res) => {
-      slowDocs = res
-    },
-    categoryQueryOptions
-  )
+
+  $: if (fastDocs.length === 1000) {
+    docsQuerySlow.query(
+      _class,
+      queryNoLookup,
+      (res) => {
+        slowDocs = res
+      },
+      categoryQueryOptions
+    )
+  }
 
   $: docs = [...fastDocs, ...slowDocs.filter((it) => !fastQueryIds.has(it._id))]
 

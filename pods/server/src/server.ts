@@ -28,6 +28,7 @@ import {
 import { createElasticAdapter, createElasticBackupDataAdapter } from '@hcengineering/elastic'
 import {
   ConfigurationMiddleware,
+  LookupMiddleware,
   ModifiedMiddleware,
   PrivateMiddleware,
   QueryJoinMiddleware,
@@ -60,14 +61,14 @@ import {
   FullTextPushStage,
   globalIndexer,
   IndexedFieldStage,
-  type StorageConfiguration,
   type ContentTextAdapter,
   type DbConfiguration,
   type FullTextAdapter,
   type FullTextPipelineStage,
   type MiddlewareCreator,
   type Pipeline,
-  type StorageAdapter
+  type StorageAdapter,
+  type StorageConfiguration
 } from '@hcengineering/server-core'
 import { serverDocumentId } from '@hcengineering/server-document'
 import { serverGmailId } from '@hcengineering/server-gmail'
@@ -228,12 +229,13 @@ export function start (
   addLocation(serverTimeId, () => import('@hcengineering/server-time-resources'))
 
   const middlewares: MiddlewareCreator[] = [
+    LookupMiddleware.create,
     ModifiedMiddleware.create,
     PrivateMiddleware.create,
     SpaceSecurityMiddleware.create,
     SpacePermissionsMiddleware.create,
     ConfigurationMiddleware.create,
-    QueryJoinMiddleware.create // Should be last one
+    QueryJoinMiddleware.create
   ]
 
   const metrics = getMetricsContext()
