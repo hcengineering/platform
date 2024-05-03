@@ -42,6 +42,7 @@
   export let maxWidth = ''
   export let compact = false
   export let type: ObjectPresenterType = 'link'
+  export let showStatus: boolean = true
 
   const client = getClient()
   $: personValue = typeof value === 'string' ? $personByIdStore.get(value) : value
@@ -97,6 +98,7 @@
     {maxWidth}
     {compact}
     {type}
+    {showStatus}
     on:accent-color
   />
 {/if}
