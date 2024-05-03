@@ -25,8 +25,17 @@ test.describe('Fulltext index', () => {
   })
 
   test.describe('Documents', () => {
+    let leftSideMenuPage: LeftSideMenuPage
+    let documentsPage: DocumentsPage
+    let documentContentPage: DocumentContentPage
+    let spotlight: SpotlightPopup
+
     test.beforeEach(async ({ page }) => {
-      const leftSideMenuPage = new LeftSideMenuPage(page)
+      leftSideMenuPage = new LeftSideMenuPage(page)
+       documentsPage = new DocumentsPage(page)
+       documentContentPage = new DocumentContentPage(page)
+       spotlight = new SpotlightPopup(page)
+
       await leftSideMenuPage.clickDocuments()
     })
 
@@ -41,19 +50,12 @@ test.describe('Fulltext index', () => {
 
       const content = `Indexable document content ${contentId}`
 
-      const leftSideMenuPage = new LeftSideMenuPage(page)
-      const documentsPage = new DocumentsPage(page)
-      const documentContentPage = new DocumentContentPage(page)
-      const spotlight = new SpotlightPopup(page)
 
       await test.step('create document', async () => {
         await documentsPage.clickOnButtonCreateDocument()
-
         await documentsPage.createDocument(newDocument)
         await documentsPage.openDocument(newDocument.title)
-
         await documentContentPage.checkDocumentTitle(newDocument.title)
-
         await documentContentPage.addContentToTheNewLine(content)
         await documentContentPage.checkContent(content)
       })
@@ -98,20 +100,11 @@ test.describe('Fulltext index', () => {
 
       const updatedContentId = generateId()
       const updatedContent = `Indexable document content ${updatedContentId}`
-
-      const leftSideMenuPage = new LeftSideMenuPage(page)
-      const documentsPage = new DocumentsPage(page)
-      const documentContentPage = new DocumentContentPage(page)
-      const spotlight = new SpotlightPopup(page)
-
       await test.step('create document', async () => {
         await documentsPage.clickOnButtonCreateDocument()
-
         await documentsPage.createDocument(newDocument)
         await documentsPage.openDocument(newDocument.title)
-
         await documentContentPage.checkDocumentTitle(newDocument.title)
-
         await documentContentPage.addContentToTheNewLine(content)
         await documentContentPage.checkContent(content)
       })
@@ -163,14 +156,7 @@ test.describe('Fulltext index', () => {
         title: `Indexable Document ${titleId}`,
         space: 'Default'
       }
-
       const content = `Indexable document content ${contentId}`
-
-      const leftSideMenuPage = new LeftSideMenuPage(page)
-      const documentsPage = new DocumentsPage(page)
-      const documentContentPage = new DocumentContentPage(page)
-      const spotlight = new SpotlightPopup(page)
-
       await test.step('create document', async () => {
         await documentsPage.clickOnButtonCreateDocument()
 
@@ -211,8 +197,16 @@ test.describe('Fulltext index', () => {
   })
 
   test.describe('Issues', () => {
+    let leftSideMenuPage: LeftSideMenuPage
+    let issuesPage: IssuesPage
+    let spotlight: SpotlightPopup
+    let issuesDetailsPage: IssuesDetailsPage
+
     test.beforeEach(async ({ page }) => {
-      const leftSideMenuPage = new LeftSideMenuPage(page)
+      leftSideMenuPage = new LeftSideMenuPage(page)
+      issuesPage = new IssuesPage(page)
+      spotlight = new SpotlightPopup(page)
+      issuesDetailsPage = new IssuesDetailsPage(page)
       await leftSideMenuPage.clickTracker()
     })
 
@@ -225,9 +219,6 @@ test.describe('Fulltext index', () => {
         description: `Indexable issue content ${contentId}`,
         status: 'Backlog'
       }
-
-      const issuesPage = new IssuesPage(page)
-      const spotlight = new SpotlightPopup(page)
 
       await test.step('create issue', async () => {
         await issuesPage.createNewIssue(newIssue)
@@ -266,10 +257,6 @@ test.describe('Fulltext index', () => {
         description: `Indexable issue content ${contentId}`,
         status: 'Backlog'
       }
-
-      const issuesPage = new IssuesPage(page)
-      const issuesDetailsPage = new IssuesDetailsPage(page)
-      const spotlight = new SpotlightPopup(page)
 
       await test.step('create issue', async () => {
         await issuesPage.createNewIssue(newIssue)
@@ -331,10 +318,6 @@ test.describe('Fulltext index', () => {
         description: `Indexable issue content ${contentId}`,
         status: 'Backlog'
       }
-
-      const issuesPage = new IssuesPage(page)
-      const issuesDetailsPage = new IssuesDetailsPage(page)
-      const spotlight = new SpotlightPopup(page)
 
       await test.step('create issue', async () => {
         await issuesPage.createNewIssue(newIssue)
