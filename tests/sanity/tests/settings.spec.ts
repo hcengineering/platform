@@ -9,41 +9,41 @@ test.use({
 test.describe('contact tests', () => {
   let userProfilePage: UserProfilePage
   let templatePage: TemplatePage
-  let platformUri = `${PlatformURI}/workbench/sanity-ws`;
-  let expectedProfileUrl = `${PlatformURI}/workbench/sanity-ws/setting/profile`;
+  const platformUri = `${PlatformURI}/workbench/sanity-ws`
+  const expectedProfileUrl = `${PlatformURI}/workbench/sanity-ws/setting/profile`
 
   test.beforeEach(async ({ page }) => {
-    userProfilePage = new UserProfilePage(page);
-    templatePage = new TemplatePage(page);
+    userProfilePage = new UserProfilePage(page)
+    templatePage = new TemplatePage(page)
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
   test('update-profile', async () => {
-    await userProfilePage.gotoProfile(platformUri);
-    await userProfilePage.openProfileMenu();
-    await userProfilePage.selectProfileByName('Appleseed John');
-    await userProfilePage.verifyProfilePageUrl(expectedProfileUrl);
-    await userProfilePage.updateLocation('LoPlaza');
-    await userProfilePage.addOrEditPhone();
-    await userProfilePage.applyChanges();
-});
+    await userProfilePage.gotoProfile(platformUri)
+    await userProfilePage.openProfileMenu()
+    await userProfilePage.selectProfileByName('Appleseed John')
+    await userProfilePage.verifyProfilePageUrl(expectedProfileUrl)
+    await userProfilePage.updateLocation('LoPlaza')
+    await userProfilePage.addOrEditPhone()
+    await userProfilePage.applyChanges()
+  })
 
   test('create-template', async () => {
-    await templatePage.navigateToWorkspace(platformUri);
-    await templatePage.openProfileMenu();
-    await templatePage.openSettings();
-    await templatePage.goToNotifications();
-    await templatePage.selectTextTemplates();
-    await templatePage.createTemplate('t1', 'some text value');
-    await templatePage.editTemplate('some more2 value');
+    await templatePage.navigateToWorkspace(platformUri)
+    await templatePage.openProfileMenu()
+    await templatePage.openSettings()
+    await templatePage.goToNotifications()
+    await templatePage.selectTextTemplates()
+    await templatePage.createTemplate('t1', 'some text value')
+    await templatePage.editTemplate('some more2 value')
   })
 
   test('manage-templates', async () => {
-    await templatePage.navigateToWorkspace(platformUri);
-    await templatePage.openProfileMenu();
-    await templatePage.openSettings();
-    await templatePage.goToNotifications();
-    await templatePage.selectVacancies();
+    await templatePage.navigateToWorkspace(platformUri)
+    await templatePage.openProfileMenu()
+    await templatePage.openSettings()
+    await templatePage.goToNotifications()
+    await templatePage.selectVacancies()
 
     // TODO: Need rework.
     // await page.getByRole('button', { name: 'Recruiting', exact: true }).click()

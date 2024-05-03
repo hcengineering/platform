@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test } from '@playwright/test'
 import { LoginPage } from '../model/login-page'
 import { DefaultWorkspace, generateId, PlatformURI, PlatformUser } from '../utils'
 import { SelectWorkspacePage } from '../model/select-workspace-page'
@@ -26,8 +26,7 @@ test.describe('Workspace tests', () => {
     leftSideMenuPage = new LeftSideMenuPage(page)
     trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
     issuesPage = new IssuesPage(page)
-    })
-
+  })
 
   test('Create a workspace with a custom name', async () => {
     const newUser: SignUpData = {
@@ -71,7 +70,6 @@ test.describe('Workspace tests', () => {
     await signUpPage.signUp(newUser)
     await selectWorkspacePage.createWorkspace(newWorkspaceName)
     await leftSideMenuPage.clickTracker()
-
 
     await trackerNavigationMenuPage.openIssuesForProject('Default')
     await issuesPage.clickModelSelectorAll()
@@ -132,9 +130,9 @@ test.describe('Workspace tests', () => {
 
     // Generate invite link
 
-    await leftSideMenuPage.openProfileMenu();
-    await leftSideMenuPage.inviteToWorkspace();
-    await leftSideMenuPage.getInviteLink();
+    await leftSideMenuPage.openProfileMenu()
+    await leftSideMenuPage.inviteToWorkspace()
+    await leftSideMenuPage.getInviteLink()
 
     const linkText = await page.locator('.antiPopup .link').textContent()
     const page2 = await browser.newPage()
@@ -169,9 +167,9 @@ test.describe('Workspace tests', () => {
     await leftSideMenuPage.clickTracker()
 
     // Generate invite link
-    await leftSideMenuPage.openProfileMenu();
-    await leftSideMenuPage.inviteToWorkspace();
-    await leftSideMenuPage.getInviteLink();
+    await leftSideMenuPage.openProfileMenu()
+    await leftSideMenuPage.inviteToWorkspace()
+    await leftSideMenuPage.getInviteLink()
 
     const linkText = await page.locator('.antiPopup .link').textContent()
     const page2 = await browser.newPage()
@@ -199,30 +197,30 @@ test.describe('Workspace tests', () => {
   })
 
   test('Create workspace with LastToken in the localStorage', async ({ page, browser }) => {
-    await loginPage.goto();
-    await loginPage.login(PlatformUser, '1234');
-    await selectWorkspacePage.selectWorkspace(DefaultWorkspace);
-    await leftSideMenuPage.clickTracker();
+    await loginPage.goto()
+    await loginPage.login(PlatformUser, '1234')
+    await selectWorkspacePage.selectWorkspace(DefaultWorkspace)
+    await leftSideMenuPage.clickTracker()
 
     // Get and check the last token
-    await leftSideMenuPage.verifyLastTokenNotEmpty();
+    await leftSideMenuPage.verifyLastTokenNotEmpty()
 
     await test.step('Check create workspace action', async () => {
-        const newWorkspaceName = `Some HULY #@$ WS - ${generateId(12)}`;
-        const pageSecond = await browser.newPage();
+      const newWorkspaceName = `Some HULY #@$ WS - ${generateId(12)}`
+      const pageSecond = await browser.newPage()
 
-        // Authenticate in new browser context
-        await pageSecond.goto(`${PlatformURI}/login/login`);
-        await leftSideMenuPage.setLastTokenOnPage(pageSecond, await leftSideMenuPage.getLastToken());
-        await pageSecond.goto(`${PlatformURI}/login/createWorkspace`);
+      // Authenticate in new browser context
+      await pageSecond.goto(`${PlatformURI}/login/login`)
+      await leftSideMenuPage.setLastTokenOnPage(pageSecond, await leftSideMenuPage.getLastToken())
+      await pageSecond.goto(`${PlatformURI}/login/createWorkspace`)
 
-        // Create workspace in the second context
-        const selectWorkspacePageSecond = new SelectWorkspacePage(pageSecond);
-        await selectWorkspacePageSecond.createWorkspace(newWorkspaceName);
+      // Create workspace in the second context
+      const selectWorkspacePageSecond = new SelectWorkspacePage(pageSecond)
+      await selectWorkspacePageSecond.createWorkspace(newWorkspaceName)
 
-        // Use the tracker in the second context
-        const leftSideMenuPageSecond = new LeftSideMenuPage(pageSecond);
-        await leftSideMenuPageSecond.clickTracker();
-    });
+      // Use the tracker in the second context
+      const leftSideMenuPageSecond = new LeftSideMenuPage(pageSecond)
+      await leftSideMenuPageSecond.clickTracker()
+    })
   })
 })

@@ -32,9 +32,9 @@ test.describe('Fulltext index', () => {
 
     test.beforeEach(async ({ page }) => {
       leftSideMenuPage = new LeftSideMenuPage(page)
-       documentsPage = new DocumentsPage(page)
-       documentContentPage = new DocumentContentPage(page)
-       spotlight = new SpotlightPopup(page)
+      documentsPage = new DocumentsPage(page)
+      documentContentPage = new DocumentContentPage(page)
+      spotlight = new SpotlightPopup(page)
 
       await leftSideMenuPage.clickDocuments()
     })
@@ -49,7 +49,6 @@ test.describe('Fulltext index', () => {
       }
 
       const content = `Indexable document content ${contentId}`
-
 
       await test.step('create document', async () => {
         await documentsPage.clickOnButtonCreateDocument()

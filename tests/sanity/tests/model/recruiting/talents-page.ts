@@ -12,8 +12,7 @@ export class TalentsPage extends CommonRecruitingPage {
   }
 
   pageHeader = (): Locator => this.page.locator('span[class*="header"]', { hasText: 'Talents' })
-  buttonCreateTalent = (): Locator =>
-    this.page.locator('div[class*="ac-header"] button > span', { hasText: 'Talent' })
+  buttonCreateTalent = (): Locator => this.page.locator('div[class*="ac-header"] button > span', { hasText: 'Talent' })
 
   textVacancyMatchingTalent = (): Locator =>
     this.page.locator(
@@ -35,11 +34,9 @@ export class TalentsPage extends CommonRecruitingPage {
   createButton = (): Locator => this.page.locator('button:has-text("Create")')
   assignedRecruiterButton = (): Locator => this.page.locator('button:has-text("Assigned recruiter")')
   chenRosamundButton = (): Locator => this.page.locator('button:has-text("Chen Rosamund")')
-  vacancyApplicatio = (vacancyId: string): Locator =>
-    this.page.locator(`tr:has-text("${vacancyId}") >> text=APP-`)
+  vacancyApplicatio = (vacancyId: string): Locator => this.page.locator(`tr:has-text("${vacancyId}") >> text=APP-`)
 
-  recruitApplicationButton = (): Locator =>
-    this.page.locator('[id="app-recruit\\:string\\:RecruitApplication"]')
+  recruitApplicationButton = (): Locator => this.page.locator('[id="app-recruit\\:string\\:RecruitApplication"]')
 
   talentsTab = (): Locator => this.page.locator('text=Talents')
   newTalentButton = (): Locator => this.page.locator('button:has-text("New Talent")')
@@ -48,21 +45,20 @@ export class TalentsPage extends CommonRecruitingPage {
   confirmEmailButton = (): Locator => this.page.locator('#channel-ok.antiButton')
   createTalentButton = (): Locator => this.page.locator('.antiCard button:has-text("Create")')
   popupPanel = (): Locator => this.page.locator('.popupPanel')
-  talentsLink = (): Locator => this.page.locator('text=Talents');
-  firstNameInput = (): Locator => this.page.locator('[placeholder="First name"]');
-  lastNameInput = (): Locator => this.page.locator('[placeholder="Last name"]');
-  skillsButton = (): Locator => this.page.locator('button:has-text("Skills")');
-  addSkillButton = (): Locator => this.page.locator('.header > button:nth-child(3)');
+  talentsLink = (): Locator => this.page.locator('text=Talents')
+  firstNameInput = (): Locator => this.page.locator('[placeholder="First name"]')
+  lastNameInput = (): Locator => this.page.locator('[placeholder="Last name"]')
+  skillsButton = (): Locator => this.page.locator('button:has-text("Skills")')
+  addSkillButton = (): Locator => this.page.locator('.header > button:nth-child(3)')
   skillTitleInput = (): Locator => this.page.getByPlaceholder('Please type  title')
   createSkillInput = (): Locator => this.page.getByPlaceholder('Please type skill title')
 
-  createSkillButton = (): Locator => this.page.locator('form[id="tags:string:AddTag"]  button:has-text("Create")');
-  selectSkillButton = (skillName: string): Locator => this.page.locator(`button:has-text("${skillName}") .check`);
-  createCandidateButton = (): Locator => this.page.locator('button:has-text("Create")');
-  openOtherSkills = (): Locator => this.page.getByText('Other');
-  skillsLink = (): Locator => this.page.locator('text=Skills');
-  newSkillButton = (): Locator => this.page.locator('button:has-text("Skill")');
-
+  createSkillButton = (): Locator => this.page.locator('form[id="tags:string:AddTag"]  button:has-text("Create")')
+  selectSkillButton = (skillName: string): Locator => this.page.locator(`button:has-text("${skillName}") .check`)
+  createCandidateButton = (): Locator => this.page.locator('button:has-text("Create")')
+  openOtherSkills = (): Locator => this.page.getByText('Other')
+  skillsLink = (): Locator => this.page.locator('text=Skills')
+  newSkillButton = (): Locator => this.page.locator('button:has-text("Skill")')
 
   async clickAddApplication (): Promise<void> {
     await this.addApplicationButton().click()
@@ -224,91 +220,90 @@ export class TalentsPage extends CommonRecruitingPage {
     await expect(this.page.locator('tr', { hasText: `${talentName.lastName} ${talentName.firstName}` })).toBeVisible()
   }
 
-  async navigateToPage(workspaceUrl: string): Promise<void> {
-    const response = await this.page.goto(workspaceUrl);
-    if (!response) {
-        throw new Error(`Failed to navigate to ${workspaceUrl}`);
+  async navigateToPage (workspaceUrl: string): Promise<void> {
+    const response = await this.page.goto(workspaceUrl)
+    if (response === null || response === undefined) {
+      throw new Error(`Failed to navigate to ${workspaceUrl}`)
     }
-    await response.finished();
-}
-
-async openRecruitApplication(): Promise<void> {
-    await this.recruitApplicationButton().click();
-}
-
-async selectTalentsSection(PlatformURI: string): Promise<void> {
-    await this.talentsLink().click();
-    await expect(this.page).toHaveURL(PlatformURI);
-}
-
-// async createNewTalent(firstName: string, lastName: string): Promise<void> {
-//     await this.newTalentButton().click();
-//     await this.firstNameInput().fill(firstName);
-//     await this.lastNameInput().click();
-//     await this.lastNameInput().fill(lastName);
-// }
-
-async inputNewTallent(firstName: string, lastName: string): Promise<void> {
-  await this.newTalentButton().click();
-  await this.firstNameInput().fill(firstName);
-  await this.lastNameInput().click();
-  await this.lastNameInput().fill(lastName);
-}
-
-
-async addSkill(skillName: string): Promise<void> {
-    await this.skillsButton().click();
-    await this.addSkillButton().click();
-    await this.skillTitleInput().fill(skillName);
-    await this.createSkillButton().click();
-    await this.page.waitForSelector('form[id="tags:string:AddTag"]', { state: 'detached' });
-}
-
-async clickOpenOtherSkills(): Promise<void> {
-    await this.openOtherSkills().click();
-}
-
-async selectSkill(skillName: string): Promise<void> {
-    await this.selectSkillButton(skillName).click();
-    await this.page.keyboard.press('Escape');
-}
-
-async createCandidate(): Promise<void> {
-    await this.createCandidateButton().click();
-    await this.page.waitForSelector('form.antiCard', { state: 'detached' });
+    await response.finished()
   }
 
-  async clickSkillsLink(): Promise<void> {
-    await this.skillsLink().click();
+  async openRecruitApplication (): Promise<void> {
+    await this.recruitApplicationButton().click()
   }
 
-  async createSkill(PlatformURI: string, skillName: string): Promise<void> {
-    await expect(this.page).toHaveURL(PlatformURI);
-    await this.newSkillButton().click();
-    await this.createSkillInput().click();
-    await this.createSkillInput().fill(skillName);
-    await this.createSkillButton().click();
-    await this.page.waitForSelector('form.antiCard', { state: 'detached' });
-}
+  async selectTalentsSection (PlatformURI: string): Promise<void> {
+    await this.talentsLink().click()
+    await expect(this.page).toHaveURL(PlatformURI)
+  }
 
-async createCandidateWithSkills(firstName: string, lastName: string, skills: string[]): Promise<void> {
-    await this.talentsLink().click();
-    await this.newTalentButton().click();
-    await this.firstNameInput().click();
-    await this.firstNameInput().fill(firstName);
-    await this.lastNameInput().click();
-    await this.lastNameInput().fill(lastName);
-    await this.skillsButton().click();
-    await this.clickOpenOtherSkills();
+  // async createNewTalent(firstName: string, lastName: string): Promise<void> {
+  //     await this.newTalentButton().click();
+  //     await this.firstNameInput().fill(firstName);
+  //     await this.lastNameInput().click();
+  //     await this.lastNameInput().fill(lastName);
+  // }
+
+  async inputNewTallent (firstName: string, lastName: string): Promise<void> {
+    await this.newTalentButton().click()
+    await this.firstNameInput().fill(firstName)
+    await this.lastNameInput().click()
+    await this.lastNameInput().fill(lastName)
+  }
+
+  async addSkill (skillName: string): Promise<void> {
+    await this.skillsButton().click()
+    await this.addSkillButton().click()
+    await this.skillTitleInput().fill(skillName)
+    await this.createSkillButton().click()
+    await this.page.waitForSelector('form[id="tags:string:AddTag"]', { state: 'detached' })
+  }
+
+  async clickOpenOtherSkills (): Promise<void> {
+    await this.openOtherSkills().click()
+  }
+
+  async selectSkill (skillName: string): Promise<void> {
+    await this.selectSkillButton(skillName).click()
+    await this.page.keyboard.press('Escape')
+  }
+
+  async createCandidate (): Promise<void> {
+    await this.createCandidateButton().click()
+    await this.page.waitForSelector('form.antiCard', { state: 'detached' })
+  }
+
+  async clickSkillsLink (): Promise<void> {
+    await this.skillsLink().click()
+  }
+
+  async createSkill (PlatformURI: string, skillName: string): Promise<void> {
+    await expect(this.page).toHaveURL(PlatformURI)
+    await this.newSkillButton().click()
+    await this.createSkillInput().click()
+    await this.createSkillInput().fill(skillName)
+    await this.createSkillButton().click()
+    await this.page.waitForSelector('form.antiCard', { state: 'detached' })
+  }
+
+  async createCandidateWithSkills (firstName: string, lastName: string, skills: string[]): Promise<void> {
+    await this.talentsLink().click()
+    await this.newTalentButton().click()
+    await this.firstNameInput().click()
+    await this.firstNameInput().fill(firstName)
+    await this.lastNameInput().click()
+    await this.lastNameInput().fill(lastName)
+    await this.skillsButton().click()
+    await this.clickOpenOtherSkills()
     for (const skill of skills) {
-        await this.page.click(`text=${skill}`);
+      await this.page.click(`text=${skill}`)
     }
-    await this.page.keyboard.press('Escape');
-    await this.createCandidateButton().click();
-    await this.page.waitForSelector('form.antiCard', { state: 'detached' });
-    await this.page.click(`tr > :has-text("${lastName} ${firstName}")`);
+    await this.page.keyboard.press('Escape')
+    await this.createCandidateButton().click()
+    await this.page.waitForSelector('form.antiCard', { state: 'detached' })
+    await this.page.click(`tr > :has-text("${lastName} ${firstName}")`)
     for (const skill of skills) {
-        await expect(this.page.locator(`text=${skill}`).first()).toBeVisible();
+      await expect(this.page.locator(`text=${skill}`).first()).toBeVisible()
     }
   }
 }

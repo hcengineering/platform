@@ -13,12 +13,10 @@ export class RecruitingPage {
   reviewButton = (): Locator => this.page.locator('button:has-text("Review")')
 
   frontendEngineerOption = (): Locator => this.page.locator('td:has-text("Frontend Engineer")')
-  searchOrRunCommandInput = (): Locator =>
-    this.page.locator('[placeholder="Search\\ or\\ run\\ a\\ command\\.\\.\\."]')
+  searchOrRunCommandInput = (): Locator => this.page.locator('[placeholder="Search\\ or\\ run\\ a\\ command\\.\\.\\."]')
 
   newTalentPopupOption = (): Locator => this.page.locator('div.selectPopup :text("New Talent")')
-  goToVacanciesPopupOption = (): Locator =>
-    this.page.locator('div.selectPopup div.list-item :text("Go To Vacancies")')
+  goToVacanciesPopupOption = (): Locator => this.page.locator('div.selectPopup div.list-item :text("Go To Vacancies")')
 
   goToApplicationsPopupOption = (): Locator => this.page.locator('div.selectPopup :text("Go To Applications")')
   cardCloseButton = (): Locator => this.page.locator('button#card-close')
@@ -27,16 +25,18 @@ export class RecruitingPage {
   newTalentFirstName = (): Locator => this.page.getByPlaceholder('First name')
   newTalentLastName = (): Locator => this.page.getByPlaceholder('Last name')
   newTalentModalPath = (): Locator => this.page.getByText('Person New Talent')
-  recruitApplicationButton = (): Locator => this.page.locator('[id="app-recruit\\:string\\:RecruitApplication"]');
-  applicationsLink = (): Locator => this.page.locator('text=/^Applications/');
-  talentsLink = (): Locator => this.page.locator('text=Talents');
-  vacanciesLink = (): Locator => this.page.locator('text=Vacancies');
-  softwareEngineerLink = (): Locator => this.page.locator('text=Software Engineer');
-  applicationLabelChunterButton = (): Locator => this.page.locator('[id="app-chunter\\:string\\:ApplicationLabelChunter"]');
-  generalChatLink = (): Locator => this.page.locator('text=general');
-  contactsButton = (): Locator => this.page.locator('[id="app-contact\\:string\\:Contacts"]');
-  employeeSection = (): Locator => this.page.locator('.antiNav-element:has-text("Employee")');
-  johnAppleseed = (): Locator => this.page.locator('text=Appleseed John');
+  recruitApplicationButton = (): Locator => this.page.locator('[id="app-recruit\\:string\\:RecruitApplication"]')
+  applicationsLink = (): Locator => this.page.locator('text=/^Applications/')
+  talentsLink = (): Locator => this.page.locator('text=Talents')
+  vacanciesLink = (): Locator => this.page.locator('text=Vacancies')
+  softwareEngineerLink = (): Locator => this.page.locator('text=Software Engineer')
+  applicationLabelChunterButton = (): Locator =>
+    this.page.locator('[id="app-chunter\\:string\\:ApplicationLabelChunter"]')
+
+  generalChatLink = (): Locator => this.page.locator('text=general')
+  contactsButton = (): Locator => this.page.locator('[id="app-contact\\:string\\:Contacts"]')
+  employeeSection = (): Locator => this.page.locator('.antiNav-element:has-text("Employee")')
+  johnAppleseed = (): Locator => this.page.locator('text=Appleseed John')
 
   async clickRecruitApplication (): Promise<void> {
     await this.recruitApplication().click()
@@ -107,38 +107,38 @@ export class RecruitingPage {
     expect(await this.newTalentModalPath().isHidden())
   }
 
-  async navigateToRecruitApplication(workspaceUrl: string): Promise<void> {
-    await this.page.goto(workspaceUrl);
-}
+  async navigateToRecruitApplication (workspaceUrl: string): Promise<void> {
+    await this.page.goto(workspaceUrl)
+  }
 
-async openRecruitApplication(): Promise<void> {
-    await this.recruitApplicationButton().click();
-}
+  async openRecruitApplication (): Promise<void> {
+    await this.recruitApplicationButton().click()
+  }
 
-async checkApplicationsVisibility(): Promise<void> {
-    await this.applicationsLink().click();
-    await expect(this.page.locator('text=Applications >> nth=1')).toBeVisible();
-    expect(this.page.locator('text="APP-1"')).toBeDefined();
-}
+  async checkApplicationsVisibility (): Promise<void> {
+    await this.applicationsLink().click()
+    await expect(this.page.locator('text=Applications >> nth=1')).toBeVisible()
+    expect(this.page.locator('text="APP-1"')).toBeDefined()
+  }
 
-async verifyTalentSection(): Promise<void> {
-    await this.talentsLink().click();
-    await expect(this.page.locator('text=P. Andrey')).toBeVisible();
-}
+  async verifyTalentSection (): Promise<void> {
+    await this.talentsLink().click()
+    await expect(this.page.locator('text=P. Andrey')).toBeVisible()
+  }
 
-async navigateToVacanciesAndCheckSoftwareEngineer(): Promise<void> {
-    await this.vacanciesLink().click();
-    await this.softwareEngineerLink().click();
-    expect(this.page.locator('text=Software Engineer')).toBeDefined();
-    expect(this.page.locator('text="APP-1"')).toBeDefined();
-}
+  async navigateToVacanciesAndCheckSoftwareEngineer (): Promise<void> {
+    await this.vacanciesLink().click()
+    await this.softwareEngineerLink().click()
+    expect(this.page.locator('text=Software Engineer')).toBeDefined()
+    expect(this.page.locator('text="APP-1"')).toBeDefined()
+  }
 
-async navigateToGeneralChatAndContacts(): Promise<void> {
-    await this.applicationLabelChunterButton().click();
-    await this.generalChatLink().click();
-    await expect(this.page.locator('.text-input')).toBeVisible();
-    await this.contactsButton().click();
-    await this.employeeSection().click();
-    await expect(this.johnAppleseed()).toBeVisible();
+  async navigateToGeneralChatAndContacts (): Promise<void> {
+    await this.applicationLabelChunterButton().click()
+    await this.generalChatLink().click()
+    await expect(this.page.locator('.text-input')).toBeVisible()
+    await this.contactsButton().click()
+    await this.employeeSection().click()
+    await expect(this.johnAppleseed()).toBeVisible()
   }
 }

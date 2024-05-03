@@ -13,14 +13,14 @@ test.describe('workbench tests', () => {
   })
 
   test('navigator', async ({ page }) => {
-    const platformUri = `${PlatformURI}/workbench/sanity-ws`;
+    const platformUri = `${PlatformURI}/workbench/sanity-ws`
 
-    await recruitingPage.navigateToRecruitApplication(platformUri);
-    await recruitingPage.openRecruitApplication();
-    await recruitingPage.checkApplicationsVisibility();
-    await recruitingPage.verifyTalentSection();
-    await recruitingPage.navigateToVacanciesAndCheckSoftwareEngineer();
-    await recruitingPage.navigateToGeneralChatAndContacts();
+    await recruitingPage.navigateToRecruitApplication(platformUri)
+    await recruitingPage.openRecruitApplication()
+    await recruitingPage.checkApplicationsVisibility()
+    await recruitingPage.verifyTalentSection()
+    await recruitingPage.navigateToVacanciesAndCheckSoftwareEngineer()
+    await recruitingPage.navigateToGeneralChatAndContacts()
   })
   test('check-for-last-loc', async ({ page }) => {
     await page.click('[id="app-recruit\\:string\\:RecruitApplication"]')
