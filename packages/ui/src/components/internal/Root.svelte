@@ -255,12 +255,15 @@
 
     .app {
       display: flex;
-      flex-direction: column;
       height: calc(100% - var(--status-bar-height));
 
       .error {
         margin-top: 45vh;
         text-align: center;
+      }
+
+      @media print {
+        flex-direction: column;
       }
     }
   }
