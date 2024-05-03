@@ -1,7 +1,6 @@
 import { MinioConfig, MinioService } from '@hcengineering/minio'
 import { createRawMongoDBAdapter } from '@hcengineering/mongo'
-import { buildStorage, StorageAdapter, StorageConfiguration } from '@hcengineering/server-core'
-import { serverFactories, ServerFactory } from '@hcengineering/server-ws'
+import { StorageAdapter, StorageConfiguration, buildStorage } from '@hcengineering/server-core'
 
 export function storageConfigFromEnv (): StorageConfiguration {
   const storageConfig: StorageConfiguration = JSON.parse(
@@ -60,7 +59,6 @@ export interface ServerEnv {
   sesUrl: string | undefined
   accountsUrl: string
   serverPort: number
-  serverFactory: ServerFactory
   enableCompression: boolean
   elasticIndexName: string
   pushPublicKey: string | undefined
@@ -70,7 +68,6 @@ export interface ServerEnv {
 
 export function serverConfigFromEnv (): ServerEnv {
   const serverPort = parseInt(process.env.SERVER_PORT ?? '3333')
-  const serverFactory = serverFactories[(process.env.SERVER_PROVIDER as string) ?? 'ws'] ?? serverFactories.ws
   const enableCompression = (process.env.ENABLE_COMPRESSION ?? 'true') === 'true'
 
   const url = process.env.MONGO_URL
@@ -136,7 +133,6 @@ export function serverConfigFromEnv (): ServerEnv {
     sesUrl,
     accountsUrl,
     serverPort,
-    serverFactory,
     enableCompression,
     pushPublicKey,
     pushPrivateKey,

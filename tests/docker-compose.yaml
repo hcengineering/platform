@@ -91,6 +91,7 @@ services:
     ports:
       - 3334:3334
     environment:
+      - SERVER_PROVIDER=${SERVER_PROVIDER}
       - SERVER_PORT=3334
       - SERVER_SECRET=secret
       - ELASTIC_URL=http://elastic:9200

@@ -46,6 +46,10 @@ function calcHash(source, msg, addCheck) {
       if( !ext.endsWith('.ts') && !ext.endsWith('.js') && !ext.endsWith('.svelte')) {
         continue
       }
+      if( sourceFile.endsWith('.d.ts') ) {
+        // Skip declaration files
+        continue
+      }
       calcFileHash(sourceFile, msg, addCheck)
     }
   }
@@ -75,6 +79,7 @@ if( process.argv.includes('-f') || process.argv.includes('--force')) {
   console.log('force checking')
   filesToCheck = allFiles
 }
+
 
 if( filesToCheck.length > 0 ) {
   console.info(`running prettier ${filesToCheck.length}`)
