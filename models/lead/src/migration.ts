@@ -16,6 +16,7 @@
 import { DOMAIN_TX, type Ref, type Status, TxOperations } from '@hcengineering/core'
 import { type Lead, leadId } from '@hcengineering/lead'
 import {
+  type ModelLogger,
   tryMigrate,
   tryUpgrade,
   type MigrateOperation,
@@ -67,7 +68,7 @@ async function migrateIdentifiers (client: MigrationClient): Promise<void> {
   }
 }
 
-async function migrateDefaultStatuses (client: MigrationClient): Promise<void> {
+async function migrateDefaultStatuses (client: MigrationClient, logger: ModelLogger): Promise<void> {
   const defaultTypeId = lead.template.DefaultFunnel
   const typeDescriptor = lead.descriptors.FunnelType
   const baseClass = lead.class.Funnel

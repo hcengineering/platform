@@ -16,6 +16,7 @@
 import { getCategories } from '@anticrm/skillset'
 import core, { DOMAIN_TX, type Status, TxOperations, type Ref } from '@hcengineering/core'
 import {
+  type ModelLogger,
   createOrUpdate,
   tryMigrate,
   tryUpgrade,
@@ -93,7 +94,7 @@ async function migrateIdentifiers (client: MigrationClient): Promise<void> {
   }
 }
 
-async function migrateDefaultStatuses (client: MigrationClient): Promise<void> {
+async function migrateDefaultStatuses (client: MigrationClient, logger: ModelLogger): Promise<void> {
   const defaultTypeId = recruit.template.DefaultVacancy
   const typeDescriptor = recruit.descriptors.VacancyType
   const baseClass = recruit.class.Vacancy

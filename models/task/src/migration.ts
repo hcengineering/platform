@@ -15,6 +15,7 @@
 
 import { type Attribute, type Space, type Status, type TxCreateDoc, TxOperations, type Class, type Doc, type Ref, DOMAIN_TX, DOMAIN_STATUS, type TxUpdateDoc, type TxCollectionCUD } from '@hcengineering/core'
 import {
+  type ModelLogger,
   createOrUpdate,
   tryMigrate,
   tryUpgrade,
@@ -89,6 +90,7 @@ async function createDefaults (tx: TxOperations): Promise<void> {
 
 export async function migrateDefaultStatusesBase<T extends Task> (
   client: MigrationClient,
+  logger: ModelLogger,
   defaultTypeId: Ref<ProjectType>,
   typeDescriptor: Ref<ProjectTypeDescriptor>,
   baseClass: Ref<Class<Space>>,
@@ -121,19 +123,16 @@ export async function migrateDefaultStatusesBase<T extends Task> (
   })
 
   if (defaultTypes.length === 2) {
-    console.log('Are you running the tool after the workspace has been upgraded?')
-    console.log('NOT SUPPORTED. EXITING.')
+    logger.log('Are you running the tool after the workspace has been upgraded?', '')
+    logger.log('NOT SUPPORTED. EXITING.', '')
     return
   } else if (defaultTypes.length === 0) {
-    console.log('No default type found. Was custom and already migrated? Nothing to do.')
+    logger.log('No default type found. Was custom and already migrated? Nothing to do.', '')
     return
   }
 
   const defaultType = defaultTypes[0]
-
-  console.log('**********************')
-  console.log('Default type')
-  console.log(defaultType)
+  logger.log('Default type', defaultType)
 
   if (defaultType.modifiedBy !== core.account.System) {
     let moveToCustom = false
@@ -149,8 +148,8 @@ export async function migrateDefaultStatusesBase<T extends Task> (
         }))[0]
 
         if (defaultTaskType?.modifiedBy === core.account.ConfigUser) {
-          console.log('Moving the existing default type created by ConfigUser to a system one')
-          console.log('Moving the existing default task type created by ConfigUser to a system one')
+          logger.log('Moving the existing default type created by ConfigUser to a system one', '')
+          logger.log('Moving the existing default task type created by ConfigUser to a system one', '')
           await client.update(DOMAIN_TX,
             { _id: defaultTaskType._id },
             {
@@ -169,8 +168,8 @@ export async function migrateDefaultStatusesBase<T extends Task> (
             }
           )
         } else if (defaultTaskType?.modifiedBy !== core.account.System) {
-          console.log('Default task type has been modified by user.')
-          console.log('NOT SUPPORTED. EXITING.')
+          logger.log('Default task type has been modified by user.', '')
+          logger.log('NOT SUPPORTED. EXITING.', '')
           return
         }
       } else {
@@ -182,11 +181,12 @@ export async function migrateDefaultStatusesBase<T extends Task> (
       // modified by user
       // Update to use the new ID of the type if no default task type
       if (defaultType.attributes.tasks.includes(defaultTaskTypeId)) {
-        console.log('Default type has been modified by user and it contains default task type')
-        console.log('NOT SUPPORTED. EXITING.')
+        logger.log('Default type has been modified by user and it contains default task type', '')
+        logger.log('NOT SUPPORTED. EXITING.', '')
         return
       }
-      console.log('Moving the existing default type to a custom one')
+
+      logger.log('Moving the existing default type to a custom one', '')
       const newId = defaultType.objectId + '-custom'
       await client.update(DOMAIN_TX,
         { _id: defaultType._id },
@@ -277,11 +277,10 @@ export async function migrateDefaultStatusesBase<T extends Task> (
     statusMapping[s._id] = defaultStatusId
   }
 
-  console.log('Status mapping')
-  console.log(statusMapping)
+  logger.log('Status mapping', statusMapping)
 
   if (Object.entries(statusMapping).length === 0) {
-    console.log('All statuses have been already migrated or running on upgraded workspace')
+    logger.log('All statuses have been already migrated or running on upgraded workspace', '')
     return
   }
 
@@ -315,7 +314,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
     'attributes.descriptor': typeDescriptor
   })
 
-  console.log('projectTypeStatusesCreates: ' + projectTypeStatusesCreates.length)
+  logger.log('projectTypeStatusesCreates: ', projectTypeStatusesCreates.length)
 
   counter = 0
   for (const ptsCreate of projectTypeStatusesCreates) {
@@ -328,7 +327,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
     counter++
     await client.update(DOMAIN_TX, { _id: ptsCreate._id }, { $set: { 'attributes.statuses': newUpdateStatuses } })
   }
-  console.log('projectTypeStatusesCreates updated: ' + counter)
+  logger.log('projectTypeStatusesCreates updated: ', counter)
 
   const projectTypeStatusesUpdates = await client.find<TxUpdateDoc<ProjectType>>(DOMAIN_TX, {
     _class: core.class.TxUpdateDoc,
@@ -337,7 +336,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
     objectSpace: core.space.Model,
     'operations.statuses': { $exists: true }
   })
-  console.log('projectTypeStatusesUpdates: ' + projectTypeStatusesUpdates.length)
+  logger.log('projectTypeStatusesUpdates: ', projectTypeStatusesUpdates.length)
 
   counter = 0
   for (const ptsUpdate of projectTypeStatusesUpdates) {
@@ -350,7 +349,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
     counter++
     await client.update(DOMAIN_TX, { _id: ptsUpdate._id }, { $set: { 'operations.statuses': newUpdateStatuses } })
   }
-  console.log('projectTypeStatusesUpdates updated: ' + counter)
+  logger.log('projectTypeStatusesUpdates updated: ', counter)
 
   const projectTypeStatusesPushes = await client.find<TxUpdateDoc<ProjectType>>(DOMAIN_TX, {
     _class: core.class.TxUpdateDoc,
@@ -360,7 +359,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
     'operations.$push.statuses': { $exists: true }
   })
 
-  console.log('projectTypeStatusesPushes: ' + projectTypeStatusesPushes.length)
+  logger.log('projectTypeStatusesPushes: ', projectTypeStatusesPushes.length)
 
   counter = 0
   for (const ptsUpdate of projectTypeStatusesPushes) {
@@ -378,7 +377,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
     counter++
     await client.update(DOMAIN_TX, { _id: ptsUpdate._id }, { $set: { 'operations.$push.statuses': newPushStatus } })
   }
-  console.log('projectTypeStatusesPushes updated: ' + counter)
+  logger.log('projectTypeStatusesPushes updated: ', counter)
 
   // All task types
   // 1. Update create TX
@@ -390,7 +389,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
     'attributes.ofClass': { $in: baseTaskClasses }
   })
 
-  console.log('allTaskTypes: ' + allTaskTypes.length)
+  logger.log('allTaskTypes: ', allTaskTypes.length)
 
   counter = 0
   for (const taskType of allTaskTypes) {
@@ -403,7 +402,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
     counter++
     await client.update(DOMAIN_TX, { _id: taskType._id }, { $set: { 'attributes.statuses': newTaskTypeStatuses } })
   }
-  console.log('allTaskTypes updated: ' + counter)
+  logger.log('allTaskTypes updated: ', counter)
 
   const allTaskTypeStatusesUpdates = await client.find<TxUpdateDoc<TaskType>>(DOMAIN_TX, {
     _class: core.class.TxUpdateDoc,
@@ -412,24 +411,23 @@ export async function migrateDefaultStatusesBase<T extends Task> (
     'operations.statuses': { $exists: true }
   })
 
-  console.log('allTaskTypeStatusesUpdates: ' + allTaskTypeStatusesUpdates.length)
+  logger.log('allTaskTypeStatusesUpdates: ', allTaskTypeStatusesUpdates.length)
 
   counter = 0
   for (const ttsUpdate of allTaskTypeStatusesUpdates) {
     const newTaskTypeUpdateStatuses = ttsUpdate.operations.statuses?.map(getNewStatus)
 
-    console.log('newTaskTypeUpdateStatuses for ' + ttsUpdate._id)
-    console.log(newTaskTypeUpdateStatuses)
+    logger.log('newTaskTypeUpdateStatuses for ' + ttsUpdate._id, newTaskTypeUpdateStatuses)
 
     if (areSameArrays(newTaskTypeUpdateStatuses, ttsUpdate.operations.statuses)) {
-      console.log('Nothing to update')
+      logger.log('Nothing to update', '')
       continue
     }
 
     counter++
     await client.update(DOMAIN_TX, { _id: ttsUpdate._id }, { $set: { 'operations.statuses': newTaskTypeUpdateStatuses } })
   }
-  console.log('allTaskTypeStatusesUpdates updated: ' + counter)
+  logger.log('allTaskTypeStatusesUpdates updated: ', counter)
 
   await migrateProjects?.(getNewStatus)
 
@@ -444,7 +442,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
     status: { $in: statusIdsBeingMigrated }
   })
 
-  console.log('affectedBaseTasks: ' + affectedBaseTasks.length)
+  logger.log('affectedBaseTasks: ', affectedBaseTasks.length)
 
   counter = 0
   for (const baseTask of affectedBaseTasks) {
@@ -455,7 +453,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
       await client.update(DOMAIN_TASK, { _id: baseTask._id }, { $set: { status: newStatus } })
     }
   }
-  console.log('affectedBaseTasks updated: ' + counter)
+  logger.log('affectedBaseTasks updated: ', counter)
 
   const baseTaskCreateTxes = await client.find<TxCollectionCUD<T, T>>(DOMAIN_TX, {
     _class: core.class.TxCollectionCUD,
@@ -464,7 +462,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
     'tx.attributes.status': { $in: statusIdsBeingMigrated }
   })
 
-  console.log('Base task create TXes: ', baseTaskCreateTxes.length)
+  logger.log('Base task create TXes: ', baseTaskCreateTxes.length)
 
   counter = 0
   for (const baseTaskCreateTx of baseTaskCreateTxes) {
@@ -476,7 +474,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
       await client.update(DOMAIN_TX, { _id: baseTaskCreateTx._id }, { $set: { 'tx.attributes.status': newStatus } })
     }
   }
-  console.log('Base task create TXes updated: ' + counter)
+  logger.log('Base task create TXes updated: ', counter)
 
   const baseTaskUpdateTxes = await client.find<TxCollectionCUD<T, T>>(DOMAIN_TX, {
     _class: core.class.TxCollectionCUD,
@@ -485,7 +483,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
     'tx.operations.status': { $in: statusIdsBeingMigrated }
   })
 
-  console.log('Base task update TXes: ' + baseTaskUpdateTxes.length)
+  logger.log('Base task update TXes: ', baseTaskUpdateTxes.length)
 
   counter = 0
   for (const baseTaskUpdateTx of baseTaskUpdateTxes) {
@@ -497,7 +495,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
       await client.update(DOMAIN_TX, { _id: baseTaskUpdateTx._id }, { $set: { 'tx.operations.status': newStatus } })
     }
   }
-  console.log('Base task update TXes updated: ' + counter)
+  logger.log('Base task update TXes updated: ', counter)
 
   const baseTaskUpdateMessages = await client.find<DocUpdateMessage>(DOMAIN_ACTIVITY, {
     _class: activity.class.DocUpdateMessage,
@@ -507,7 +505,7 @@ export async function migrateDefaultStatusesBase<T extends Task> (
     'attributeUpdates.set.0.': { $in: statusIdsBeingMigrated }
   })
 
-  console.log('Base task update messages: ' + baseTaskUpdateMessages.length)
+  logger.log('Base task update messages: ', baseTaskUpdateMessages.length)
 
   counter = 0
   for (const updateMessage of baseTaskUpdateMessages) {
@@ -519,21 +517,21 @@ export async function migrateDefaultStatusesBase<T extends Task> (
       await client.update(DOMAIN_ACTIVITY, { _id: updateMessage._id }, { $set: { 'attributeUpdates.set.0': newStatusSet } })
     }
   }
-  console.log('Base task update messages updated: ' + counter)
+  logger.log('Base task update messages updated: ', counter)
 
-  console.log('Updating statuses themselves:')
+  logger.log('Updating statuses themselves:', '')
   const createdStatuses = new Set<Ref<Status>>()
   for (const statusIdBeingMigrated of statusIdsBeingMigrated) {
     const newStatus = getNewStatus(statusIdBeingMigrated)
 
-    console.log('Updating status from ' + statusIdBeingMigrated + ' to ' + newStatus)
+    logger.log('Updating status from ' + statusIdBeingMigrated + ' to ' + newStatus, '')
 
     await client.update(DOMAIN_STATUS, { _id: statusIdBeingMigrated }, { $set: { __superseded: true } })
 
     if (!createdStatuses.has(newStatus)) {
       const oldStatus = oldStatuses.find((s) => s._id === statusIdBeingMigrated)
       if (oldStatus === undefined) {
-        console.log('Old status not found: ' + statusIdBeingMigrated)
+        logger.log('Old status not found: ', statusIdBeingMigrated)
         continue
       }
 
@@ -547,13 +545,13 @@ export async function migrateDefaultStatusesBase<T extends Task> (
           __migratedFrom: statusIdBeingMigrated
         })
       } catch (e: any) {
-        console.log('Could not create new status: ' + e.message)
+        logger.log('Could not create new status: ', e.message)
         // Might be already created
       }
     }
   }
-  console.log('Statuses created: ' + createdStatuses.size)
-  console.log('Statuses updated: ' + statusIdsBeingMigrated.length)
+  logger.log('Statuses created: ', createdStatuses.size)
+  logger.log('Statuses updated: ', statusIdsBeingMigrated.length)
 }
 
 function areSameArrays (arr1: any[] | undefined, arr2: any[] | undefined): boolean {

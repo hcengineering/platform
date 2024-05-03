@@ -24,6 +24,7 @@ import core, {
   type Ref
 } from '@hcengineering/core'
 import {
+  type ModelLogger,
   createOrUpdate,
   tryMigrate,
   tryUpgrade,
@@ -161,7 +162,7 @@ async function migrateIdentifiers (client: MigrationClient): Promise<void> {
   }
 }
 
-async function migrateDefaultStatuses (client: MigrationClient): Promise<void> {
+async function migrateDefaultStatuses (client: MigrationClient, logger: ModelLogger): Promise<void> {
   const defaultTypeId = tracker.ids.ClassingProjectType
   const typeDescriptor = tracker.descriptors.ProjectType
   const baseClass = tracker.class.Project
@@ -185,7 +186,7 @@ async function migrateDefaultStatuses (client: MigrationClient): Promise<void> {
   const migrateProjects = async (getNewStatus: (oldStatus: Ref<Status>) => Ref<Status>): Promise<void> => {
     const projects = await client.find<Project>(DOMAIN_SPACE, { _class: tracker.class.Project })
 
-    console.log('projects: ' + projects.length)
+    logger.log('projects: ', projects.length)
 
     // Project:
     // 1. defaultIssueStatus
