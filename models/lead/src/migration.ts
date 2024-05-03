@@ -88,6 +88,7 @@ async function migrateDefaultStatuses (client: MigrationClient, logger: ModelLog
 
   await migrateDefaultStatusesBase<Lead>(
     client,
+    logger,
     defaultTypeId,
     typeDescriptor,
     baseClass,
@@ -147,11 +148,11 @@ async function migrateDefaultTypeMixins (client: MigrationClient): Promise<void>
 }
 
 export const leadOperation: MigrateOperation = {
-  async preMigrate  (client: MigrationClient): Promise<void> {
+  async preMigrate  (client: MigrationClient, logger: ModelLogger): Promise<void> {
     await tryMigrate(client, leadId, [
       {
         state: 'migrate-default-statuses',
-        func: migrateDefaultStatuses
+        func: (client) => migrateDefaultStatuses(client, logger)
       }
     ])
   },
