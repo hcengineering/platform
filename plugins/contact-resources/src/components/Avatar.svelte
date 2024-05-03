@@ -62,7 +62,7 @@
   export let variant: 'circle' | 'roundedRect' | 'none' = 'roundedRect'
   export let borderColor: number | undefined = undefined
   export let standby: boolean = false
-  export let showStatus = true
+  export let showStatus: boolean = true
   export let account: Ref<Account> | undefined = undefined
 
   export function pulse (): void {
@@ -172,7 +172,7 @@
       {@const statusSize = getStatusSize(size)}
       {#if statusSize}
         <div
-          class="status-marker {statusSize}-hole {size}"
+          class="hulyAvatar-statusMarker {statusSize}-hole {size}"
           class:online={userStatus?.online}
           class:offline={!userStatus?.online}
         />
@@ -194,49 +194,3 @@
     bind:element
   />
 {/if}
-
-<style lang="scss">
-  .status-marker {
-    position: absolute;
-    right: -4%;
-    bottom: -4%;
-    width: 38%;
-    height: 38%;
-    border-radius: 50%;
-
-    &.x-small-hole {
-      width: 45%;
-      height: 45%;
-
-      &.inline {
-        width: 48%;
-        height: 48%;
-      }
-
-      :global(.normal-font) &.card {
-        right: -2%;
-        bottom: -2%;
-      }
-    }
-    &.small-hole {
-      right: -3%;
-      bottom: -3%;
-      width: 35%;
-      height: 35%;
-    }
-    :global(.small-font) &.medium-hole.smaller {
-      width: 35%;
-      height: 35%;
-    }
-    &.online {
-      background-color: var(--global-online-color);
-    }
-    &.offline {
-      border: 1px solid var(--global-offline-color);
-
-      &.auto-hole:not(.small, .medium) {
-        border-width: 2px;
-      }
-    }
-  }
-</style>
