@@ -84,7 +84,7 @@ async function initIssues (prefix: string, page: Page): Promise<IssueProps[]> {
   await page.click('text="Issues"')
 
   const issuesPage = new IssuesPage(page)
-  await issuesPage.modelSelectorAll().click()
+  await issuesPage.clickModelSelectorAll()
 
   return issuesProps
 }
@@ -126,7 +126,7 @@ test.describe('tracker layout tests', () => {
       const issueNames = issuesProps.map((props) => props.name)
 
       const issuesPage = new IssuesPage(page)
-      await issuesPage.modelSelectorAll().click()
+      await issuesPage.clickModelSelectorAll()
       await page.click(ViewletSelectors.Table)
       for (const g of groupLabels) {
         await expect(locator).toContainText(g)
@@ -184,7 +184,7 @@ test.describe('tracker layout tests', () => {
         orderedIssueNames = issuesProps.map((props) => props.name).reverse()
       }
       const issuesPage = new IssuesPage(page)
-      await issuesPage.modelSelectorAll().click()
+      await issuesPage.clickModelSelectorAll()
       await page.click(ViewletSelectors.Board)
       await setViewGroup(page, 'No grouping')
       await setViewOrder(page, order)

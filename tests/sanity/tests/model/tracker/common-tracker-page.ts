@@ -79,6 +79,76 @@ export class CommonTrackerPage extends CalendarPage {
 
   submitButton = (): Locator => this.page.locator('div.date-popup-container button[type="submit"]')
 
+  trackerApplicationButton = (): Locator => this.page.locator('[id="app-tracker\\:string\\:TrackerApplication"]')
+  componentsLink = (): Locator => this.page.locator('text=Components')
+  createComponentButton = (): Locator => this.page.locator('button:has-text("Component")')
+  componentNameInput = (): Locator => this.page.locator('[placeholder="Component\\ name"]')
+  createComponentConfirmButton = (): Locator => this.page.locator('button:has-text("Create component")')
+  newIssueButton = (): Locator => this.page.locator('button:has-text("New issue")')
+  issueTitleInput = (): Locator => this.page.locator('[placeholder="Issue\\ title"]')
+  componentIssueButton = (): Locator => this.page.locator('form button:has-text("Component")')
+  createIssueButton = (): Locator => this.page.locator('form button:has-text("Create issue")')
+  componentName = (componentName: string): Locator => this.page.locator(`text=${componentName}`)
+  panelSelector = (panel: string): Locator => this.page.locator(`text="${panel}"`)
+  viewButton = (): Locator => this.page.locator('button:has-text("View")')
+  firstOptionButton = (): Locator => this.page.locator('.antiCard >> button >> nth=0')
+  assigneeMenuItem = (): Locator => this.page.locator('.menu-item:has-text("Assignee")')
+
+  // Actions
+  async selectPanelAndViewlet (panel: string, viewletSelector: string): Promise<void> {
+    await this.page.click(`text="${panel}"`)
+    await this.page.click(viewletSelector)
+  }
+
+  async openViewOptionsAndSelectAssignee (): Promise<void> {
+    await this.viewButton().click()
+    await this.firstOptionButton().click()
+    await this.assigneeMenuItem().click()
+    await this.page.keyboard.press('Escape')
+  }
+
+  async verifyViewOption (panel: string, viewletSelector: string): Promise<void> {
+    await this.page.click(`text="${panel}"`)
+    const viewlet = this.page.locator(viewletSelector)
+    await expect(viewlet).toHaveClass(/selected/)
+    await this.viewButton().click()
+    await expect(this.firstOptionButton()).toContainText('Assignee')
+    await this.page.keyboard.press('Escape')
+  }
+
+  async navigateToComponents (PlatformURI: string): Promise<void> {
+    await this.trackerApplicationButton().click()
+    await this.componentsLink().first().click()
+    await expect(this.page).toHaveURL(
+      `${PlatformURI}/workbench/sanity-ws/tracker/tracker%3Aproject%3ADefaultProject/components`
+    )
+  }
+
+  async clickOnApplicationButton (): Promise<void> {
+    await this.trackerApplicationButton().click()
+  }
+
+  async createComponent (componentName: string): Promise<void> {
+    await this.createComponentButton().click()
+    await this.componentNameInput().click()
+    await this.componentNameInput().fill(componentName)
+    await this.createComponentConfirmButton().click()
+    await this.page.click(`text=${componentName}`)
+  }
+
+  async clickOnComponent (componentName: string): Promise<void> {
+    await this.componentName(componentName).click()
+  }
+
+  async createIssueForComponent (componentName: string): Promise<void> {
+    await this.newIssueButton().click()
+    await this.issueTitleInput().fill('issue')
+    await this.componentIssueButton().click()
+    await this.page.click(`.selectPopup button:has-text("${componentName}")`)
+    await this.createIssueButton().click()
+    await this.page.waitForSelector('form.antiCard', { state: 'detached' })
+  }
+
   async selectFilter (filter: string, filterSecondLevel?: string): Promise<void> {
     await this.buttonFilter().click()
     await this.selectPopupMenu(filter).click()
