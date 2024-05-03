@@ -214,7 +214,8 @@
   .ava-text { font-size: .75rem; }
 }
 .hulyAvatarSize-x-small {
-  width: 1.5rem; // 24 - 21
+  width: 1.5rem; // 24 - 22
+  .small-font & { width: 22px; }
 
   .ava-text { font-size: .875rem; }
 }
@@ -258,9 +259,9 @@
 /* Avatar status marker */
 .hulyAvatar-statusMarker {
   position: absolute;
-  right: -3.5%;
-  bottom: -3.5%;
-  width: 38%;
+  right: -4%;
+  bottom: -4%;
+  width: 39%;
   aspect-ratio: 1;
   border-radius: 50%;
 
@@ -275,9 +276,15 @@
     .small-font &.tiny { width: 7px; }
   }
   &.small-hole {
-    right: -3%;
-    bottom: -3%;
-    width: 35%;
+    right: -2.5%;
+    bottom: -2.5%;
+    width: 34.5%;
+    
+    .small-font & {
+      right: 0;
+      bottom: 0;
+      width: 7px;
+    }
   }
   &.medium-hole {
     right: -2%;
@@ -295,11 +302,13 @@
       right: -1px;
       bottom: -1px;
       width: 36%;
+
+      .small-font & { width: 10px; }
     }
     &.medium {
       right: -1%;
       bottom: -1%;
-      width: .875rem;
+      width: 34%;
       
       .small-font & { width: 12px; }
     }
@@ -311,6 +320,7 @@
       .small-font & { 
         right: -2px;
         bottom: -2px;
+        width: 37%;
       }
     }
   }
