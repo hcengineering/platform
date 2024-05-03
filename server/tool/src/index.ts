@@ -211,6 +211,30 @@ export async function upgradeModel (
   try {
     const db = getWorkspaceDB(client, workspaceId)
 
+    const prevModel = await fetchModelFromMongo(ctx, mongodbUri, workspaceId)
+    const { migrateClient: preMigrateClient } = await prepareMigrationClient(db, prevModel.hierarchy, prevModel.modelDb, logger)
+
+    await progress(0)
+    await ctx.with('pre-migrate', {}, async () => {
+      let i = 0
+      for (const op of migrateOperations) {
+        if (op[1].preMigrate === undefined) {
+          continue
+        }
+
+        const t = Date.now()
+        try {
+          await op[1].preMigrate(preMigrateClient, logger)
+        } catch (err: any) {
+          logger.error(`error during pre-migrate: ${op[0]} ${err.message}`, err)
+          throw err
+        }
+        logger.log('pre-migrate:', { workspaceId: workspaceId.name, operation: op[0], time: Date.now() - t })
+        await progress(((100 / migrateOperations.length) * i * 10) / 100)
+        i++
+      }
+    })
+
     if (!skipTxUpdate) {
       logger.log('removing model...', { workspaceId: workspaceId.name })
       await progress(10)
@@ -239,12 +263,7 @@ export async function upgradeModel (
     }
 
     const { hierarchy, modelDb, model } = await fetchModelFromMongo(ctx, mongodbUri, workspaceId)
-    const migrateClient = new MigrateClientImpl(db, hierarchy, modelDb, logger)
-
-    const states = await migrateClient.find<MigrationState>(DOMAIN_MIGRATION, { _class: core.class.MigrationState })
-    const sts = Array.from(groupByArray(states, (it) => it.plugin).entries())
-    const migrateState = new Map(sts.map((it) => [it[0], new Set(it[1].map((q) => q.state))]))
-    migrateClient.migrateState = migrateState
+    const { migrateClient, migrateState } = await prepareMigrationClient(db, hierarchy, modelDb, logger)
 
     await ctx.with('migrate', {}, async () => {
       let i = 0
@@ -308,6 +327,19 @@ export async function upgradeModel (
   } finally {
     _client.close()
   }
+}
+
+async function prepareMigrationClient (db: Db, hierarchy: Hierarchy, model: ModelDb, logger: ModelLogger): Promise<{
+  migrateClient: MigrateClientImpl
+  migrateState: Map<string, Set<string>>
+}> {
+  const migrateClient = new MigrateClientImpl(db, hierarchy, model, logger)
+  const states = await migrateClient.find<MigrationState>(DOMAIN_MIGRATION, { _class: core.class.MigrationState })
+  const sts = Array.from(groupByArray(states, (it) => it.plugin).entries())
+  const migrateState = new Map(sts.map((it) => [it[0], new Set(it[1].map((q) => q.state))]))
+  migrateClient.migrateState = migrateState
+
+  return { migrateClient, migrateState }
 }
 
 async function fetchModelFromMongo (
