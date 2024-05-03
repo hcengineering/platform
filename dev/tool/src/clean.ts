@@ -41,10 +41,7 @@ import recruitModel from '@hcengineering/model-recruit'
 import { type StorageAdapter } from '@hcengineering/server-core'
 import { connect } from '@hcengineering/server-tool'
 import tags, { type TagCategory, type TagElement, type TagReference } from '@hcengineering/tags'
-import task, {
-  type ProjectType,
-  type TaskType
-} from '@hcengineering/task'
+import task, { type ProjectType, type TaskType } from '@hcengineering/task'
 import tracker from '@hcengineering/tracker'
 import { deepEqual } from 'fast-equals'
 import { MongoClient } from 'mongodb'
