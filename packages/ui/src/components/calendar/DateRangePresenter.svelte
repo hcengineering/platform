@@ -521,7 +521,7 @@
     line-height: 1.5rem;
     color: var(--theme-content-color);
     border: 1px solid transparent;
-    border-radius: 0.25rem;
+    border-radius: 0.375rem;
     transition-property: border, background-color, color, box-shadow;
     transition-duration: 0.15s;
     cursor: pointer;
@@ -660,7 +660,7 @@
     }
 
     &.link {
-      padding: 0 0.875rem;
+      padding: 0 0.75rem;
       width: 100%;
       color: var(--theme-caption-color);
 
@@ -679,7 +679,7 @@
     }
 
     &.regular {
-      padding: 0 0.625rem;
+      padding: 0 0.75rem;
       color: var(--theme-caption-color);
       background-color: var(--theme-button-default);
       border-color: var(--theme-button-border);

@@ -179,7 +179,7 @@
       min-width: 1.5rem;
       background-color: var(--noborder-bg-color);
       border: 1px solid transparent;
-      border-radius: 0.25rem;
+      border-radius: 0.375rem;
       box-shadow: var(--button-shadow);
       transition-property: border, background-color, color, box-shadow;
       transition-duration: 0.15s;
@@ -332,7 +332,7 @@
       color: var(--theme-caption-color);
       background-color: var(--theme-button-default);
       border-color: var(--theme-button-border);
-      border-radius: 0.25rem;
+      border-radius: 0.375rem;
 
       &.withIcon {
         padding: 0 1rem 0 0.75rem;
