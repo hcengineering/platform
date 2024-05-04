@@ -180,7 +180,11 @@ function defineTeamspace (builder: Builder): void {
       description: document.string.Description,
       icon: document.icon.Document,
       baseClass: document.class.Teamspace,
-      availablePermissions: [core.permission.ForbidDeleteObject]
+      availablePermissions: [
+        core.permission.UpdateSpace,
+        core.permission.ArchiveSpace,
+        core.permission.ForbidDeleteObject
+      ]
     },
     document.descriptor.TeamspaceType
   )
@@ -218,6 +222,7 @@ function defineTeamspace (builder: Builder): void {
       input: 'focus',
       category: document.category.Document,
       target: document.class.Teamspace,
+      visibilityTester: view.function.CanEditSpace,
       query: {},
       context: {
         mode: ['context', 'browser'],

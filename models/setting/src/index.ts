@@ -218,11 +218,24 @@ export function createModel (builder: Builder): void {
     setting.class.WorkspaceSettingCategory,
     core.space.Model,
     {
+      name: 'allSpaces',
+      label: setting.string.Spaces,
+      icon: setting.icon.Views,
+      component: setting.component.Spaces,
+      order: 1100,
+      secured: true
+    },
+    setting.ids.Spaces
+  )
+  builder.createDoc(
+    setting.class.WorkspaceSettingCategory,
+    core.space.Model,
+    {
       name: 'configuration',
       label: setting.string.Configure,
       icon: setting.icon.Setting,
       component: setting.component.Configure,
-      order: 1001,
+      order: 1200,
       secured: true,
       adminOnly: true
     },
@@ -236,7 +249,7 @@ export function createModel (builder: Builder): void {
       label: setting.string.Branding,
       icon: setting.icon.AccountSettings,
       component: setting.component.WorkspaceSetting,
-      order: 1002,
+      order: 1300,
       secured: true
     },
     setting.ids.WorkspaceSetting

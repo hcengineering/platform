@@ -35,6 +35,7 @@
     "@hcengineering/notification": "^0.6.16",
     "@hcengineering/server-notification": "^0.6.1",
     "@hcengineering/model-tracker": "^0.6.0",
-    "@hcengineering/server-tracker": "^0.6.0"
+    "@hcengineering/server-tracker": "^0.6.0",
+    "@hcengineering/contact": "^0.6.20"
   }
 }

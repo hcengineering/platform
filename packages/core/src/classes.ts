@@ -366,6 +366,7 @@ export interface Space extends Doc {
   private: boolean
   members: Arr<Ref<Account>>
   archived: boolean
+  owners?: Ref<Account>[]
 }
 
 /**
@@ -388,6 +389,7 @@ export interface SpaceTypeDescriptor extends Doc {
   icon: Asset
   baseClass: Ref<Class<Space>> // Child class of Space for which the space type can be defined
   availablePermissions: Ref<Permission>[]
+  system?: boolean
 }
 
 /**

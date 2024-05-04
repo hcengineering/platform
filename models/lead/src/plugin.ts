@@ -16,7 +16,7 @@
 
 import { type ChatMessageViewlet } from '@hcengineering/chunter'
 import type { Doc, Ref, Status } from '@hcengineering/core'
-import { type Funnel, leadId } from '@hcengineering/lead'
+import { leadId } from '@hcengineering/lead'
 import lead from '@hcengineering/lead-resources/src/plugin'
 import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
 import type { IntlString } from '@hcengineering/platform'
@@ -44,9 +44,6 @@ export default mergeIds(leadId, lead, {
     TemplatesIcon: '' as AnyComponent,
     Leads: '' as AnyComponent,
     NewItemsHeader: '' as AnyComponent
-  },
-  space: {
-    DefaultFunnel: '' as Ref<Funnel>
   },
   viewlet: {
     TableCustomer: '' as Ref<Viewlet>,

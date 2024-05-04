@@ -25,10 +25,10 @@ export class TalentsPage extends CommonRecruitingPage {
   inputSearchTalent = (): Locator => this.page.locator('div[class*="header"] input')
   andreyTalet = (): Locator => this.page.locator('text=P. Andrey')
 
-  addApplicationButton = (): Locator => this.page.locator('button[id="appls.add"]')
-  spaceSelector = (): Locator => this.page.locator('[id="space.selector"]')
-  searchInput = (): Locator => this.page.locator('[placeholder="Search..."]')
-  hrInterviewButton = (): Locator =>
+  readonly addApplicationButton = (): Locator => this.page.locator('button[id="appls.add"]')
+  readonly spaceSelector = (): Locator => this.page.locator('[id="space.selector"]')
+  readonly searchInput = (): Locator => this.page.locator('[placeholder="Search..."]')
+  readonly hrInterviewButton = (): Locator =>
     this.page.locator('[id="recruit:string:CreateApplication"] button:has-text("HR Interview")')
 
   createButton = (): Locator => this.page.locator('button:has-text("Create")')

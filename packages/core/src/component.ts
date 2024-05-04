@@ -150,13 +150,14 @@ export default plugin(coreId, {
   mixin: {
     FullTextSearchContext: '' as Ref<Mixin<FullTextSearchContext>>,
     ConfigurationElement: '' as Ref<Mixin<ConfigurationElement>>,
-    IndexConfiguration: '' as Ref<Mixin<IndexingConfiguration<Doc>>>
+    IndexConfiguration: '' as Ref<Mixin<IndexingConfiguration<Doc>>>,
+    SpacesTypeData: '' as Ref<Mixin<Space>>
   },
   space: {
     Tx: '' as Ref<Space>,
     DerivedTx: '' as Ref<Space>,
     Model: '' as Ref<Space>,
-    Space: '' as Ref<Space>,
+    Space: '' as Ref<TypedSpace>,
     Configuration: '' as Ref<Space>
   },
   account: {
@@ -174,6 +175,8 @@ export default plugin(coreId, {
   string: {
     Id: '' as IntlString,
     Space: '' as IntlString,
+    Spaces: '' as IntlString,
+    SpacesDescription: '' as IntlString,
     TypedSpace: '' as IntlString,
     SpaceType: '' as IntlString,
     Modified: '' as IntlString,
@@ -214,18 +217,36 @@ export default plugin(coreId, {
     Account: '' as IntlString,
     StatusCategory: '' as IntlString,
     Rank: '' as IntlString,
+    Owners: '' as IntlString,
     Permission: '' as IntlString,
     CreateObject: '' as IntlString,
     UpdateObject: '' as IntlString,
     DeleteObject: '' as IntlString,
-    DeleteObjectDescription: '' as IntlString,
     ForbidDeleteObject: '' as IntlString,
-    ForbidDeleteObjectDescription: '' as IntlString
+    UpdateSpace: '' as IntlString,
+    ArchiveSpace: '' as IntlString,
+    CreateObjectDescription: '' as IntlString,
+    UpdateObjectDescription: '' as IntlString,
+    DeleteObjectDescription: '' as IntlString,
+    ForbidDeleteObjectDescription: '' as IntlString,
+    UpdateSpaceDescription: '' as IntlString,
+    ArchiveSpaceDescription: '' as IntlString
+  },
+  descriptor: {
+    SpacesType: '' as Ref<SpaceTypeDescriptor>
+  },
+  spaceType: {
+    SpacesType: '' as Ref<SpaceType>
   },
   permission: {
     CreateObject: '' as Ref<Permission>,
     UpdateObject: '' as Ref<Permission>,
     DeleteObject: '' as Ref<Permission>,
-    ForbidDeleteObject: '' as Ref<Permission>
+    ForbidDeleteObject: '' as Ref<Permission>,
+    UpdateSpace: '' as Ref<Permission>,
+    ArchiveSpace: '' as Ref<Permission>
+  },
+  role: {
+    Admin: '' as Ref<Role>
   }
 })

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { DOMAIN_TX, type Ref, type Status, TxOperations } from '@hcengineering/core'
+import { AccountRole, DOMAIN_TX, type Ref, type Status, TxOperations } from '@hcengineering/core'
 import { type Lead, leadId } from '@hcengineering/lead'
 import {
   type ModelLogger,
@@ -24,7 +24,9 @@ import {
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
+
 import task, { DOMAIN_TASK, createSequence, migrateDefaultStatusesBase } from '@hcengineering/model-task'
+import contact from '@hcengineering/model-contact'
 
 import lead from './plugin'
 import { defaultLeadStatuses } from './spaceType'
@@ -147,6 +149,24 @@ async function migrateDefaultTypeMixins (client: MigrationClient): Promise<void>
   )
 }
 
+async function migrateDefaultProjectOwners (client: MigrationClient): Promise<void> {
+  const workspaceOwners = await client.model.findAll(contact.class.PersonAccount, {
+    role: AccountRole.Owner
+  })
+
+  await client.update(
+    DOMAIN_SPACE,
+    {
+      _id: lead.space.DefaultFunnel
+    },
+    {
+      $set: {
+        owners: workspaceOwners.map((it) => it._id)
+      }
+    }
+  )
+}
+
 export const leadOperation: MigrateOperation = {
   async preMigrate (client: MigrationClient, logger: ModelLogger): Promise<void> {
     await tryMigrate(client, leadId, [
@@ -167,6 +187,10 @@ export const leadOperation: MigrateOperation = {
         func: async (client) => {
           await migrateDefaultTypeMixins(client)
         }
+      },
+      {
+        state: 'migrateDefaultProjectOwners',
+        func: migrateDefaultProjectOwners
       }
     ])
   },

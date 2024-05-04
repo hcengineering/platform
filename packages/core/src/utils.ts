@@ -17,7 +17,9 @@ import { deepEqual } from 'fast-equals'
 import {
   Account,
   AnyAttribute,
+  AttachedData,
   AttachedDoc,
+  Attribute,
   Class,
   ClassifierKind,
   Collection,
@@ -33,6 +35,7 @@ import {
   IndexKind,
   Obj,
   Permission,
+  PropertyType,
   Ref,
   Role,
   Space,
@@ -44,6 +47,7 @@ import { TxOperations } from './operations'
 import { isPredicate } from './predicate'
 import { DocumentQuery, FindResult } from './storage'
 import { DOMAIN_TX } from './tx'
+import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
 
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
@@ -599,6 +603,25 @@ export async function checkPermission (
   const myPermissions = new Set(myRoles.flatMap((role) => role.permissions))
 
   return myPermissions.has(_id)
+}
+
+/**
+ * @public
+ */
+export interface RoleAttributeBaseProps {
+  label: IntlString
+  id: Ref<Attribute<PropertyType>>
+}
+
+/**
+ * @public
+ */
+export function getRoleAttributeBaseProps (data: AttachedData<Role>, roleId: Ref<Role>): RoleAttributeBaseProps {
+  const name = data.name.trim()
+  const label = getEmbeddedLabel(`Role: ${name}`)
+  const id = `role-${roleId}` as Ref<Attribute<PropertyType>>
+
+  return { label, id }
 }
 
 /**

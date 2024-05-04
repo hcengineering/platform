@@ -23,7 +23,8 @@ export default mergeIds(settingId, setting, {
     EditEnum: '' as AnyComponent,
     ManageSpaceTypes: '' as AnyComponent,
     ManageSpaceTypesTools: '' as AnyComponent,
-    ManageSpaceTypeContent: '' as AnyComponent
+    ManageSpaceTypeContent: '' as AnyComponent,
+    Spaces: '' as AnyComponent
   },
   string: {
     IntegrationDisabled: '' as IntlString,
@@ -97,6 +98,7 @@ export default mergeIds(settingId, setting, {
     Description: '' as IntlString,
     CountSpaces: '' as IntlString,
     RoleName: '' as IntlString,
-    Permissions: '' as IntlString
+    Permissions: '' as IntlString,
+    Assignees: '' as IntlString
   }
 })

@@ -13,13 +13,14 @@
 // limitations under the License.
 //
 
-import core from '@hcengineering/core'
+import core, { AccountRole } from '@hcengineering/core'
 import { type Builder } from '@hcengineering/model'
 import tracker from '@hcengineering/model-tracker'
 import notification from '@hcengineering/notification'
 import serverCore from '@hcengineering/server-core'
 import serverNotification from '@hcengineering/server-notification'
 import serverTracker from '@hcengineering/server-tracker'
+import contact from '@hcengineering/contact'
 
 export { serverTrackerId } from '@hcengineering/server-tracker'
 
@@ -56,6 +57,15 @@ export function createModel (builder: Builder): void {
     txMatch: {
       _class: core.class.TxRemoveDoc,
       objectClass: tracker.class.Component
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverTracker.trigger.OnWorkspaceOwnerAdded,
+    txMatch: {
+      _class: core.class.TxUpdateDoc,
+      objectClass: contact.class.PersonAccount,
+      'operations.role': AccountRole.Owner
     }
   })
 

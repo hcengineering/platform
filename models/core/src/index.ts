@@ -103,6 +103,7 @@ import {
   TTxUpdateDoc,
   TTxWorkspaceEvent
 } from './tx'
+import { defineSpaceType } from './spaceType'
 
 export { coreId } from '@hcengineering/core'
 export * from './core'
@@ -328,4 +329,5 @@ export function createModel (builder: Builder): void {
   })
 
   definePermissions(builder)
+  defineSpaceType(builder)
 }

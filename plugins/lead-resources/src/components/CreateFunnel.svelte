@@ -51,6 +51,7 @@
 
   let members: Ref<Account>[] =
     funnel?.members !== undefined ? hierarchy.clone(funnel.members) : [getCurrentAccount()._id]
+  let owners: Ref<Account>[] = funnel?.owners !== undefined ? hierarchy.clone(funnel.owners) : [getCurrentAccount()._id]
 
   $: void loadSpaceType(typeId)
   async function loadSpaceType (id: typeof typeId): Promise<void> {
@@ -99,6 +100,7 @@
       private: isPrivate,
       archived: false,
       members,
+      owners,
       type: typeId
     })
 
@@ -110,7 +112,7 @@
     if (isNew) {
       await createFunnel()
     } else if (funnel !== undefined && spaceType?.targetClass !== undefined) {
-      await client.diffUpdate<Funnel>(funnel, { name, description, members, private: isPrivate }, Date.now())
+      await client.diffUpdate<Funnel>(funnel, { name, description, members, owners, private: isPrivate }, Date.now())
 
       if (!deepEqual(rolesAssignment, getRolesAssignment())) {
         await client.updateMixin(
@@ -122,6 +124,13 @@
         )
       }
     }
+  }
+
+  function handleOwnersChanged (newOwners: Ref<Account>[]): void {
+    owners = newOwners
+
+    const newMembersSet = new Set([...members, ...newOwners])
+    members = Array.from(newMembersSet)
   }
 
   function handleMembersChanged (newMembers: Ref<Account>[]): void {
@@ -146,13 +155,19 @@
 
     rolesAssignment[roleId] = newMembers
   }
+
+  $: canSave =
+    name.trim().length > 0 &&
+    !(members.length === 0 && isPrivate) &&
+    owners.length > 0 &&
+    (!isPrivate || owners.some((o) => members.includes(o)))
 </script>
 
 <SpaceCreateCard
   label={leadRes.string.CreateFunnel}
   okAction={save}
   okLabel={!isNew ? ui.string.Save : undefined}
-  canSave={name.trim().length > 0}
+  {canSave}
   on:close={() => {
     dispatch('close')
   }}
@@ -178,6 +193,19 @@
       }}
     />
   </Grid>
+  <div class="antiGrid-row">
+    <div class="antiGrid-row__header">
+      <Label label={core.string.Owners} />
+    </div>
+    <AccountArrayEditor
+      value={owners}
+      label={core.string.Owners}
+      onChange={handleOwnersChanged}
+      kind={'regular'}
+      size={'large'}
+    />
+  </div>
+
   <div class="antiGrid-row mt-4">
     <div class="antiGrid-row__header">
       <Label label={leadRes.string.Members} />

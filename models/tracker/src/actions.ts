@@ -97,6 +97,7 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
       input: 'focus',
       category: tracker.category.Tracker,
       target: tracker.class.Project,
+      visibilityTester: view.function.CanEditSpace,
       query: {},
       context: {
         mode: ['context', 'browser'],
@@ -115,6 +116,7 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
       input: 'focus',
       category: tracker.category.Tracker,
       target: tracker.class.Project,
+      visibilityTester: view.function.CanArchiveSpace,
       query: {
         archived: false
       },
@@ -135,6 +137,7 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
       input: 'focus',
       category: tracker.category.Tracker,
       target: tracker.class.Project,
+      visibilityTester: view.function.CanDeleteSpace,
       query: {
         archived: true
       },
@@ -159,6 +162,7 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
     },
     input: 'any',
     category: tracker.category.Tracker,
+    visibilityTester: view.function.CanArchiveSpace,
     query: {
       archived: true
     },

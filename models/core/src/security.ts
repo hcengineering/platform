@@ -28,13 +28,15 @@ import {
   type Role,
   type Class,
   type Permission,
-  type CollectionSize
+  type CollectionSize,
+  type RolesAssignment
 } from '@hcengineering/core'
 import {
   ArrOf,
   Collection,
   Hidden,
   Index,
+  Mixin,
   Model,
   Prop,
   TypeBoolean,
@@ -42,7 +44,7 @@ import {
   TypeString,
   UX
 } from '@hcengineering/model'
-import type { Asset, IntlString } from '@hcengineering/platform'
+import { getEmbeddedLabel, type Asset, type IntlString } from '@hcengineering/platform'
 import core from './component'
 import { TDoc, TAttachedDoc } from './core'
 
@@ -70,6 +72,9 @@ export class TSpace extends TDoc implements Space {
   @Prop(ArrOf(TypeRef(core.class.Account)), core.string.Members)
   @Hidden()
     members!: Arr<Ref<Account>>
+
+  @Prop(ArrOf(TypeRef(core.class.Account)), core.string.Owners)
+    owners?: Ref<Account>[]
 }
 
 @Model(core.class.TypedSpace, core.class.Space)
@@ -86,6 +91,7 @@ export class TSpaceTypeDescriptor extends TDoc implements SpaceTypeDescriptor {
   icon!: Asset
   baseClass!: Ref<Class<Space>>
   availablePermissions!: Ref<Permission>[]
+  system?: boolean
 }
 
 @Model(core.class.SpaceType, core.class.Doc, DOMAIN_MODEL)
@@ -139,6 +145,12 @@ export class TPermission extends TDoc implements Permission {
   label!: IntlString
   description?: IntlString
   icon?: Asset
+}
+
+@Mixin(core.mixin.SpacesTypeData, core.class.Space)
+@UX(getEmbeddedLabel("All spaces' type")) // TODO: add icon?
+export class TSpacesTypeData extends TSpace implements RolesAssignment {
+  [key: Ref<Role>]: Ref<Account>[]
 }
 
 @Model(core.class.Account, core.class.Doc, DOMAIN_MODEL)

@@ -92,6 +92,9 @@ const lead = plugin(leadId, {
   },
   template: {
     DefaultFunnel: '' as Ref<ProjectType>
+  },
+  space: {
+    DefaultFunnel: '' as Ref<Funnel>
   }
 })
 
