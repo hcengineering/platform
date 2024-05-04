@@ -586,7 +586,7 @@ class Connection implements ClientConnection {
         doc._class = _class
       }
       for (const [k, v] of Object.entries(query)) {
-        if (typeof v === 'string' || typeof v === 'number') {
+        if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') {
           if (doc[k] == null) {
             doc[k] = v
           }
