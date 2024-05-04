@@ -82,6 +82,7 @@ import { changeConfiguration } from './configuration'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { openAIConfig } from './openai'
 import { fixAccountEmails, renameAccount } from './renameAccount'
+import { fixJsonMarkup } from './markup'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -880,6 +881,14 @@ export function devTool (
         await updateField(mongodbUri, getWorkspaceId(workspace, productId), transactorUrl, cmd)
       }
     )
+
+  program
+    .command('fix-json-markup <workspace>')
+    .description('fixes double converted json markup')
+    .action(async (workspace: string) => {
+      const { mongodbUri, storageAdapter } = prepareTools()
+      await fixJsonMarkup(toolCtx, mongodbUri, storageAdapter, getWorkspaceId(workspace, productId), transactorUrl)
+    })
 
   extendProgram?.(program)
 
