@@ -556,9 +556,11 @@
 
   <div class="textInput">
     <div class="select-text" class:hidden={loading} style="width: 100%;" bind:this={element} />
-    {#if remoteProvider && editor && userComponent}
-      <CollaborationUsers provider={remoteProvider} {editor} component={userComponent} />
-    {/if}
+    <div class="collaborationUsers-container flex-col flex-gap-2 pt-2">
+      {#if remoteProvider && editor && userComponent}
+        <CollaborationUsers provider={remoteProvider} {editor} component={userComponent} />
+      {/if}
+    </div>
   </div>
 
   {#if refActions.length > 0}
@@ -629,6 +631,11 @@
         background-color: var(--theme-button-pressed);
       }
     }
+  }
+  .collaborationUsers-container {
+    position: sticky;
+    top: 0;
+    min-width: 1.5rem;
   }
 
   .hidden {

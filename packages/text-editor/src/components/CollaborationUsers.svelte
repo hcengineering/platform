@@ -66,32 +66,22 @@
 </script>
 
 {#if states.length > 0}
-  <div class="container flex-col flex-gap-2 pt-2">
-    {#each states as state}
-      <Button
-        kind="icon"
-        shape="round-small"
-        padding="0"
-        size="x-small"
-        noFocus
-        on:click={(e) => {
-          e.preventDefault()
-          e.stopPropagation()
-          goToCursor(state)
-        }}
-      >
-        <svelte:fragment slot="icon">
-          <svelte:component this={component} user={state.user} lastUpdate={state.lastUpdate ?? 0} size={'x-small'} />
-        </svelte:fragment>
-      </Button>
-    {/each}
-  </div>
+  {#each states as state}
+    <Button
+      kind="icon"
+      shape="round-small"
+      padding="0"
+      size="x-small"
+      noFocus
+      on:click={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        goToCursor(state)
+      }}
+    >
+      <svelte:fragment slot="icon">
+        <svelte:component this={component} user={state.user} lastUpdate={state.lastUpdate ?? 0} size={'x-small'} />
+      </svelte:fragment>
+    </Button>
+  {/each}
 {/if}
-
-<style lang="scss">
-  .container {
-    position: sticky;
-    top: 0;
-    width: 1.5rem;
-  }
-</style>
