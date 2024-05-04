@@ -193,7 +193,7 @@
     class:unassigned={userId == null}
     class:hovered
   >
-    <div class="assignee" contenteditable="false">
+    <div class="flex-center assignee" contenteditable="false">
       <EmployeePresenter
         value={userId}
         disabled={readonly}
@@ -204,7 +204,7 @@
       />
     </div>
 
-    <div contenteditable="false">
+    <div class="flex-center todo-check" contenteditable="false">
       <CheckBox {readonly} {checked} on:value={markDone} kind={'positive'} size={'medium'} />
     </div>
 
@@ -216,6 +216,10 @@
   .todo-item {
     .assignee {
       cursor: pointer;
+    }
+    .assignee,
+    .todo-check {
+      height: 1.5em;
     }
 
     &.unassigned {
