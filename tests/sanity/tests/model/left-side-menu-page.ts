@@ -1,4 +1,4 @@
-import { type Locator, type Page } from '@playwright/test'
+import { type Locator, type Page, expect } from '@playwright/test'
 import { CommonPage } from './common-page'
 
 export class LeftSideMenuPage extends CommonPage {
@@ -14,6 +14,22 @@ export class LeftSideMenuPage extends CommonPage {
   buttonTracker = (): Locator => this.page.locator('button[id$="TrackerApplication"]')
   buttonNotification = (): Locator => this.page.locator('button[id$="Inbox"]')
   buttonDocuments = (): Locator => this.page.locator('button[id$="DocumentApplication"]')
+  profileButton = (): Locator => this.page.locator('#profile-button')
+  inviteToWorkspaceButton = (): Locator => this.page.locator('button:has-text("Invite to workspace")')
+  getInviteLinkButton = (): Locator => this.page.locator('button:has-text("Get invite link")')
+
+  // Actions
+  async openProfileMenu (): Promise<void> {
+    await this.profileButton().click()
+  }
+
+  async inviteToWorkspace (): Promise<void> {
+    await this.inviteToWorkspaceButton().click()
+  }
+
+  async getInviteLink (): Promise<void> {
+    await this.getInviteLinkButton().click()
+  }
 
   async clickChunter (): Promise<void> {
     await this.buttonChunter().click()
@@ -33,5 +49,30 @@ export class LeftSideMenuPage extends CommonPage {
 
   async clickDocuments (): Promise<void> {
     await this.buttonDocuments().click()
+  }
+
+  // Retrieve the last token from local storage
+  async getLastToken (): Promise<string> {
+    return await this.page.evaluate(() => localStorage.getItem('login:metadata:LastToken') ?? '')
+  }
+
+  // Set the last token in local storage on the same page
+  async setLastToken (lastToken: string): Promise<void> {
+    await this.page.evaluate((token) => {
+      localStorage.setItem('login:metadata:LastToken', token)
+    }, lastToken)
+  }
+
+  // Set the last token in local storage on any specified page
+  async setLastTokenOnPage (targetPage: Page, lastToken: string): Promise<void> {
+    await targetPage.evaluate((token) => {
+      localStorage.setItem('login:metadata:LastToken', token)
+    }, lastToken)
+  }
+
+  // Assert that the last token is not empty
+  async verifyLastTokenNotEmpty (): Promise<void> {
+    const lastToken = await this.getLastToken()
+    expect(lastToken).not.toEqual('')
   }
 }
