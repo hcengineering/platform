@@ -856,7 +856,7 @@ export function devTool (
   program
     .command('restore-ats-types <workspace>')
     .description('Restore recruiting task types for workspace')
-    .action(async (workspace: string, step: string) => {
+    .action(async (workspace: string) => {
       const { mongodbUri } = prepareTools()
       console.log('Restoring recruiting task types in workspace ', workspace, '...')
       await restoreRecruitingTaskTypes(mongodbUri, getWorkspaceId(workspace, productId), transactorUrl)

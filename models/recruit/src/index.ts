@@ -46,11 +46,13 @@ import {
   TVacancy,
   TVacancyList
 } from './types'
+import { defineSpaceType } from './spaceType'
 
 export { recruitId } from '@hcengineering/recruit'
 export { recruitOperation } from './migration'
 export { default } from './plugin'
 export * from './types'
+export * from './spaceType'
 
 export function createModel (builder: Builder): void {
   builder.createModel(TVacancy, TCandidates, TCandidate, TApplicant, TReview, TOpinion, TVacancyList, TApplicantMatch)
@@ -1558,31 +1560,5 @@ export function createModel (builder: Builder): void {
     recruit.action.GetTalentIds
   )
 
-  builder.createDoc(
-    task.class.ProjectTypeDescriptor,
-    core.space.Model,
-    {
-      name: recruit.string.RecruitApplication,
-      description: recruit.string.ManageVacancyStatuses,
-      icon: recruit.icon.RecruitApplication,
-      editor: recruit.component.VacancyTemplateEditor,
-      baseClass: recruit.class.Vacancy,
-      availablePermissions: [core.permission.ForbidDeleteObject],
-      allowedTaskTypeDescriptors: [recruit.descriptors.Application]
-    },
-    recruit.descriptors.VacancyType
-  )
-
-  builder.createDoc(
-    task.class.TaskTypeDescriptor,
-    core.space.Model,
-    {
-      baseClass: recruit.class.Applicant,
-      allowCreate: true,
-      description: recruit.string.Application,
-      icon: recruit.icon.Application,
-      name: recruit.string.Application
-    },
-    recruit.descriptors.Application
-  )
+  defineSpaceType(builder)
 }

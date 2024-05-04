@@ -48,7 +48,9 @@ const recruit = plugin(recruitId, {
   },
   mixin: {
     Candidate: '' as Ref<Mixin<Candidate>>,
-    VacancyList: '' as Ref<Mixin<VacancyList>>
+    VacancyList: '' as Ref<Mixin<VacancyList>>,
+    DefaultVacancyTypeData: '' as Ref<Mixin<Vacancy>>,
+    ApplicantTypeData: '' as Ref<Mixin<Applicant>>
   },
   attribute: {
     State: '' as Ref<Attribute<Status>>

@@ -113,6 +113,8 @@ export type MigrationUpgradeClient = Client & {
  * @public
  */
 export interface MigrateOperation {
+  // Perform low level migration prior to the model update
+  preMigrate?: (client: MigrationClient, logger: ModelLogger) => Promise<void>
   // Perform low level migration
   migrate: (client: MigrationClient, logger: ModelLogger) => Promise<void>
   // Perform high level upgrade operations.

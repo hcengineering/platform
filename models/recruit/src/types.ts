@@ -14,7 +14,17 @@
 //
 
 import type { Employee, Organization } from '@hcengineering/contact'
-import { type Domain, IndexKind, type Markup, type Ref, type Status, type Timestamp } from '@hcengineering/core'
+import {
+  type Domain,
+  IndexKind,
+  type Markup,
+  type Ref,
+  type Status,
+  type Timestamp,
+  type RolesAssignment,
+  type Role,
+  Account
+} from '@hcengineering/core'
 import {
   Collection,
   Hidden,
@@ -226,3 +236,13 @@ export class TOpinion extends TAttachedDoc implements Opinion {
   @Prop(TypeString(), recruit.string.OpinionValue)
     value!: string
 }
+
+@Mixin(recruit.mixin.DefaultVacancyTypeData, recruit.class.Vacancy)
+@UX(getEmbeddedLabel('Default vacancy'), recruit.icon.Vacancy)
+export class TDefaultVacancyTypeData extends TVacancy implements RolesAssignment {
+  [key: Ref<Role>]: Ref<Account>[]
+}
+
+@Mixin(recruit.mixin.ApplicantTypeData, recruit.class.Applicant)
+@UX(getEmbeddedLabel('Applicant'), recruit.icon.Application)
+export class TApplicantTypeData extends TApplicant {}
