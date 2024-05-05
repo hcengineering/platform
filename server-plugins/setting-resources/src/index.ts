@@ -14,8 +14,8 @@
 //
 
 import contact, { Person, PersonAccount, getFirstName, getLastName } from '@hcengineering/contact'
-import { Account, Doc, Ref } from '@hcengineering/core'
-import { translate } from '@hcengineering/platform'
+import core, { Account, Doc, Ref, Role, Tx, TxProcessor, TxUpdateDoc, getRoleAttributeId } from '@hcengineering/core'
+import { getEmbeddedLabel, translate } from '@hcengineering/platform'
 import type { TriggerControl } from '@hcengineering/server-core'
 import setting, { Integration } from '@hcengineering/setting'
 
@@ -91,6 +91,24 @@ export async function getOwnerPosition (
   }
 }
 
+/**
+ * @public
+ */
+export async function OnRoleNameUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const actualTx = TxProcessor.extractTx(tx)
+  const updateTx = actualTx as TxUpdateDoc<Role>
+
+  if (updateTx.operations?.name === undefined) return []
+
+  // Update the related mixin attribute
+  const roleAttrId = getRoleAttributeId(updateTx.objectId)
+  const updAttrTx = control.txFactory.createTxUpdateDoc(core.class.Attribute, core.space.Model, roleAttrId, {
+    label: getEmbeddedLabel(updateTx.operations.name)
+  })
+
+  return [updAttrTx]
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   function: {
@@ -100,5 +118,8 @@ export default async () => ({
     GetFirstName: getOwnerFirstName,
     GetLastName: getOwnerLastName,
     GetOwnerPosition: getOwnerPosition
+  },
+  trigger: {
+    OnRoleNameUpdate
   }
 })

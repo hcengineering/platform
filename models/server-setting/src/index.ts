@@ -15,7 +15,7 @@
 //
 
 import { type Builder } from '@hcengineering/model'
-
+import serverCore from '@hcengineering/server-core'
 import core from '@hcengineering/core'
 import serverNotification from '@hcengineering/server-notification'
 import serverSetting from '@hcengineering/server-setting'
@@ -64,4 +64,15 @@ export function createModel (builder: Builder): void {
       serverFunc: serverSetting.function.GetOwnerPosition
     }
   )
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverSetting.trigger.OnRoleNameUpdate,
+    txMatch: {
+      _class: core.class.TxCollectionCUD,
+      objectSpace: core.space.Model,
+      collection: 'roles',
+      'tx._class': core.class.TxUpdateDoc,
+      'tx.objectClass': core.class.Role
+    }
+  })
 }

@@ -16,6 +16,7 @@
 import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { Presenter } from '@hcengineering/server-notification'
+import { TriggerFunc } from '@hcengineering/server-core'
 import { TemplateFieldServerFunc } from '@hcengineering/server-templates'
 
 /**
@@ -34,5 +35,8 @@ export default plugin(serverSettingId, {
     GetFirstName: '' as Resource<TemplateFieldServerFunc>,
     GetLastName: '' as Resource<TemplateFieldServerFunc>,
     GetOwnerPosition: '' as Resource<TemplateFieldServerFunc>
+  },
+  trigger: {
+    OnRoleNameUpdate: '' as Resource<TriggerFunc>
   }
 })
