@@ -13,13 +13,26 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttributeEditor, createQuery, getClient } from '@hcengineering/presentation'
-  import core, { Permission, Ref, Role, SpaceType, SpaceTypeDescriptor, WithLookup } from '@hcengineering/core'
-  import { ButtonIcon, Icon, IconEdit, IconSettings, Label, Scroller, showPopup } from '@hcengineering/ui'
+  import { AttributeEditor, MessageBox, createQuery, getClient } from '@hcengineering/presentation'
+  import core, { Permission, Ref, Role, SpaceType, SpaceTypeDescriptor } from '@hcengineering/core'
+  import {
+    ButtonIcon,
+    Icon,
+    IconDelete,
+    IconEdit,
+    IconSettings,
+    Label,
+    Scroller,
+    getCurrentResolvedLocation,
+    navigate,
+    showPopup
+  } from '@hcengineering/ui'
   import { ObjectBoxPopup } from '@hcengineering/view-resources'
+  import { deleteSpaceTypeRole } from '@hcengineering/setting'
 
   import PersonIcon from '../icons/Person.svelte'
   import settingRes from '../../plugin'
+  import { clearSettingsStore } from '../../store'
 
   export let spaceType: SpaceType
   export let descriptor: SpaceTypeDescriptor
@@ -79,6 +92,36 @@
       }
     )
   }
+
+  async function handleDeleteRole (): Promise<void> {
+    showPopup(
+      MessageBox,
+      {
+        label: settingRes.string.DeleteRole,
+        message: settingRes.string.DeleteRoleConfirmation
+      },
+      'top',
+      (result?: boolean) => {
+        if (result === true) {
+          void performDeleteRole()
+        }
+      }
+    )
+  }
+
+  async function performDeleteRole (): Promise<void> {
+    if (role === undefined) {
+      return
+    }
+
+    await deleteSpaceTypeRole(client, role, spaceType.targetClass)
+
+    const loc = getCurrentResolvedLocation()
+    loc.path.length = 5
+
+    clearSettingsStore()
+    navigate(loc)
+  }
 </script>
 
 {#if role !== undefined}
@@ -87,7 +130,14 @@
       <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
         <div class="hulyComponent-content gap">
           <div class="hulyComponent-content__column-group mt-4">
-            <div class="hulyComponent-content__header mb-6">
+            <div class="hulyComponent-content__header mb-6 gap-2">
+              <ButtonIcon
+                icon={IconDelete}
+                size="large"
+                kind="secondary"
+                disabled={readonly}
+                on:click={handleDeleteRole}
+              />
               <ButtonIcon
                 icon={PersonIcon}
                 size="large"

@@ -111,6 +111,8 @@
     "Roles": "Roles",
     "RoleName": "Role name",
     "Permissions": "Permissions",
-    "Assignees": "Assignees"
+    "Assignees": "Assignees",
+    "DeleteRole": "Delete role",
+    "DeleteRoleConfirmation": "Are you sure you want to delete this role? All users with this role will lose their permissions."
   }
 }
