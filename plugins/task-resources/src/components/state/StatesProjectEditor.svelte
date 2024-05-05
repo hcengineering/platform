@@ -26,6 +26,7 @@
   export let taskType: TaskType
   export let type: ProjectType
   export let states: Status[] = []
+  export let readonly: boolean = true
 
   const dispatch = createEventDispatcher()
 
@@ -35,6 +36,7 @@
   let opened: Ref<Status> | undefined
 
   function dragswap (ev: MouseEvent, i: number): boolean {
+    if (readonly) return false
     const s = selected as number
     if (i < s) {
       return ev.offsetY < elements[i].offsetHeight / 2
@@ -45,6 +47,7 @@
   }
 
   function dragover (ev: MouseEvent, i: number): void {
+    if (readonly) return
     const s = selected as number
     if (dragswap(ev, i)) {
       ;[states[i], states[s]] = [states[s], states[i]]
@@ -53,6 +56,7 @@
   }
 
   function onMove (to: number): void {
+    if (readonly) return
     dispatch('move', {
       stateID: dragState,
       position: to
@@ -130,7 +134,8 @@
           color,
           icons,
           canDelete: sameCategory.length > 1,
-          selectableStates: sameCategory.filter((it) => it._id !== _status._id)
+          selectableStates: sameCategory.filter((it) => it._id !== _status._id),
+          readonly
         }
       }
     }
@@ -151,7 +156,7 @@
           bind:this={elements[prevIndex + i]}
           class="hulyTableAttr-content__row"
           class:selected={state._id === opened}
-          draggable={true}
+          draggable={!readonly}
           on:click={() => {
             handleSelect(state)
           }}

@@ -53,6 +53,7 @@
   export let enableInlineCommands: boolean = true
   export let isScrollable: boolean = true
   export let boundary: HTMLElement | undefined = undefined
+  export let readonly: boolean = false
 
   export let attachFile: FileAttachFunction | undefined = undefined
 
@@ -98,6 +99,8 @@
   }
   $: if (!modified && rawValue !== content) modified = true
   $: dispatch('change', modified)
+
+  $: textEditor?.setEditable(!readonly)
 
   export function submit (): void {
     textEditor.submit()
@@ -292,6 +295,7 @@
   id="imageInput"
   accept="image/*"
   style="display: none"
+  disabled={readonly}
   on:change={fileSelected}
 />
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -302,7 +306,7 @@
   class:antiIndented={kind === 'indented'}
   class:focusable={(mode === Mode.Edit || alwaysEdit) && focused}
   on:click={() => {
-    if (alwaysEdit && focused) {
+    if (alwaysEdit && focused && !readonly) {
       textEditor?.focus()
     }
   }}
@@ -313,7 +317,7 @@
   {#if label}
     <div class="label"><Label {label} /></div>
   {/if}
-  {#if mode !== Mode.View || alwaysEdit}
+  {#if (mode !== Mode.View || alwaysEdit) && !readonly}
     <StyledTextEditor
       {placeholder}
       {showButtons}
@@ -362,7 +366,7 @@
         </ShowMore>
       {/if}
     </div>
-    {#if !alwaysEdit && !hideExtraButtons}
+    {#if !alwaysEdit && !hideExtraButtons && !readonly}
       <div class="flex flex-reverse">
         <ActionIcon
           size={'medium'}

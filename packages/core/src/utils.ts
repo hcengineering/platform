@@ -16,6 +16,7 @@
 import { deepEqual } from 'fast-equals'
 import {
   Account,
+  AccountRole,
   AnyAttribute,
   AttachedData,
   AttachedDoc,
@@ -783,4 +784,10 @@ export function reduceCalls<T extends (...args: ReduceParameters<T>) => Promise<
       next()
     }
   }
+}
+
+export function isOwnerOrMaintainer (): boolean {
+  const account = getCurrentAccount()
+
+  return [AccountRole.Owner, AccountRole.Maintainer].includes(account.role)
 }

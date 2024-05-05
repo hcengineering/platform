@@ -16,10 +16,13 @@
 <script lang="ts">
   import { Button, IconAdd, showPopup } from '@hcengineering/ui'
   import CreateSpaceType from './CreateSpaceType.svelte'
+  import { isOwnerOrMaintainer } from '@hcengineering/core'
 
   function handleAdd (): void {
     showPopup(CreateSpaceType, {}, 'top')
   }
 </script>
 
-<Button id="new-space-type" icon={IconAdd} kind="link" size="small" on:click={handleAdd} />
+{#if isOwnerOrMaintainer()}
+  <Button id="new-space-type" icon={IconAdd} kind="link" size="small" on:click={handleAdd} />
+{/if}

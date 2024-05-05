@@ -32,6 +32,7 @@
   export let descriptor: SpaceTypeDescriptor | undefined
   export let editorDescriptor: SpaceTypeEditor
   export let visibleSecondNav: boolean = true
+  export let readonly: boolean = true
 
   const client = getClient()
 
@@ -88,6 +89,7 @@
               <div bind:this={sectionRefs[section.id]} class:hulyTableAttr-container={!section.withoutContainer}>
                 <Component
                   is={section.component}
+                  disabled={readonly}
                   props={{
                     type,
                     descriptor

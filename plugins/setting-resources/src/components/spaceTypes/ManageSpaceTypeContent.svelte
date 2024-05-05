@@ -15,7 +15,16 @@
 -->
 <script lang="ts">
   import { createEventDispatcher, onDestroy } from 'svelte'
-  import core, { Class, Doc, IdMap, Ref, SpaceType, WithLookup, toIdMap } from '@hcengineering/core'
+  import core, {
+    Class,
+    Doc,
+    IdMap,
+    Ref,
+    SpaceType,
+    WithLookup,
+    isOwnerOrMaintainer,
+    toIdMap
+  } from '@hcengineering/core'
   import {
     Location,
     resolvedLocationStore,
@@ -43,6 +52,7 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
   const hierarchy = client.getHierarchy()
+  const canEdit = isOwnerOrMaintainer()
 
   let visibleSecondNav: boolean = true
   let type: WithLookup<SpaceType> | undefined
@@ -134,32 +144,34 @@
 >
   {#if type !== undefined && descriptor !== undefined}
     <Header minimize={!visibleNav} on:resize={(event) => dispatch('change', event.detail)}>
-      <ButtonIcon
-        icon={IconCopy}
-        size={'small'}
-        kind={'secondary'}
-        disabled
-        on:click={(ev) => {
-          // TODO: copy space type
-        }}
-      />
-      <ButtonIcon
-        icon={IconDelete}
-        size={'small'}
-        kind={'secondary'}
-        disabled
-        on:click={(ev) => {
-          // TODO: delete space type
-        }}
-      />
-      <ButtonIcon
-        icon={IconMoreV}
-        size={'small'}
-        kind={'secondary'}
-        on:click={(ev) => {
-          showMenu(ev, { object: type })
-        }}
-      />
+      {#if canEdit}
+        <ButtonIcon
+          icon={IconCopy}
+          size={'small'}
+          kind={'secondary'}
+          disabled
+          on:click={(ev) => {
+            // TODO: copy space type
+          }}
+        />
+        <ButtonIcon
+          icon={IconDelete}
+          size={'small'}
+          kind={'secondary'}
+          disabled
+          on:click={(ev) => {
+            // TODO: delete space type
+          }}
+        />
+        <ButtonIcon
+          icon={IconMoreV}
+          size={'small'}
+          kind={'secondary'}
+          on:click={(ev) => {
+            showMenu(ev, { object: type })
+          }}
+        />
+      {/if}
       <Breadcrumbs
         items={bcItems}
         size="large"
@@ -170,13 +182,21 @@
     {#if editorDescriptor !== undefined}
       {#if subEditor === undefined}
         {#key type._id}
-          <SpaceTypeEditorComponent {type} {descriptor} {editorDescriptor} {visibleSecondNav} on:change />
+          <SpaceTypeEditorComponent
+            {type}
+            {descriptor}
+            {editorDescriptor}
+            {visibleSecondNav}
+            readonly={!canEdit}
+            on:change
+          />
         {/key}
       {:else}
         <svelte:component
           this={subEditor}
           bind:name={subItemName}
           bind:icon={subItemIcon}
+          readonly={!canEdit}
           spaceType={type}
           {descriptor}
           objectId={selectedSubObjectId}

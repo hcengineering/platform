@@ -25,6 +25,7 @@
   export let descriptor: SpaceTypeDescriptor
   export let objectId: Ref<Role>
   export let name: string | undefined
+  export let readonly: boolean = true
 
   const client = getClient()
 
@@ -44,7 +45,7 @@
   }
 
   function handleEditPermissions (evt: Event): void {
-    if (role === undefined || descriptor === undefined) {
+    if (role === undefined || descriptor === undefined || readonly) {
       return
     }
 
@@ -87,15 +88,35 @@
         <div class="hulyComponent-content gap">
           <div class="hulyComponent-content__column-group mt-4">
             <div class="hulyComponent-content__header mb-6">
-              <ButtonIcon icon={PersonIcon} size="large" iconProps={{ size: 'small' }} kind="secondary" />
-              <AttributeEditor _class={core.class.Role} object={role} key="name" editKind="modern-ghost-large" />
+              <ButtonIcon
+                icon={PersonIcon}
+                size="large"
+                iconProps={{ size: 'small' }}
+                kind="secondary"
+                disabled={readonly}
+              />
+              <div class="name" class:editable={!readonly}>
+                <AttributeEditor
+                  _class={core.class.Role}
+                  object={role}
+                  key="name"
+                  editKind="modern-ghost-large"
+                  editable={!readonly}
+                />
+              </div>
             </div>
 
             <div class="hulyTableAttr-container">
               <div class="hulyTableAttr-header font-medium-12">
                 <IconSettings size="small" />
                 <span><Label label={settingRes.string.Permissions} /></span>
-                <ButtonIcon kind="primary" icon={IconEdit} size="small" on:click={handleEditPermissions} />
+                <ButtonIcon
+                  kind="primary"
+                  icon={IconEdit}
+                  size="small"
+                  on:click={handleEditPermissions}
+                  disabled={readonly}
+                />
               </div>
 
               {#if permissions.length > 0}
@@ -128,3 +149,18 @@
     </div>
   </div>
 {/if}
+
+<style lang="scss">
+  .name {
+    width: 100%;
+    font-weight: 500;
+    margin-left: 1rem;
+    display: flex;
+    align-items: center;
+    font-size: 1.5rem;
+
+    &.editable {
+      margin-left: 0;
+    }
+  }
+</style>
