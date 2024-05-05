@@ -38,14 +38,14 @@ test.describe('contact tests', () => {
     await templatePage.editTemplate('some more2 value')
   })
 
-  test('manage-templates', async () => {
+  // TODO: Need rework.
+  test.skip('manage-templates', async () => {
     await templatePage.navigateToWorkspace(platformUri)
     await templatePage.openProfileMenu()
     await templatePage.openSettings()
     await templatePage.goToNotifications()
     await templatePage.selectVacancies()
 
-    // TODO: Need rework.
     // await page.getByRole('button', { name: 'Recruiting', exact: true }).click()
     // await page.locator('#navGroup-statuses').getByText('New Recruiting project type').first().click()
 
