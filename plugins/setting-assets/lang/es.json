@@ -102,6 +102,8 @@
     "Collections": "Colecciones",
     "ClassColon": "Clase:",
     "Branding": "Marca",
-    "Assignees": "Atribuídos"
+    "Assignees": "Atribuídos",
+    "DeleteRole": "Eliminar función",
+    "DeleteRoleConfirmation": "¿Está seguro de que desea eliminar esta función? Todos los usuarios con este rol perderán sus permisos"
   }
 }
