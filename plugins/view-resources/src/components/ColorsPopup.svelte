@@ -24,6 +24,7 @@
   export let selected: string | undefined = undefined
   export let key: 'color' | 'icon' = 'color'
   export let embedded: boolean = false
+  export let disabled: boolean = false
 
   const dispatch = createEventDispatcher()
 </script>
@@ -36,9 +37,11 @@
       <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div
         class="color"
+        class:disabled
         class:selected={selected === color.name}
         style="background-color: {col}"
         on:click={() => {
+          if (disabled) return
           dispatch('close', i)
         }}
       />
@@ -53,9 +56,11 @@
         <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div
           class="color"
+          class:disabled
           class:selected={selected === color.name}
           style="background-color: {col}"
           on:click={() => {
+            if (disabled) return
             dispatch('close', i)
           }}
         />
@@ -88,6 +93,9 @@
         position: absolute;
         inset: 0;
         background-image: url("data:image/svg+xml,%3C%3Fxml version='1.0' encoding='utf-8'%3F%3E%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' viewBox='0 0 32 32'%3E%3Cpath fill='%23FFFFFF' d='M23.6,10.9c-0.6-0.6-1.5-0.6-2.1,0l-6.9,6.9l-3.4-3.4c-0.6-0.6-1.5-0.6-2.1,0c-0.6,0.6-0.6,1.5,0,2.1l5.6,5.6l9.1-9.1C24.1,12.5,24.1,11.5,23.6,10.9z'/%3E%3C/svg%3E%0A");
+      }
+      &.disabled {
+        cursor: default;
       }
     }
   }

@@ -19,12 +19,13 @@
 
   export let type: ProjectType | undefined
   export let descriptor: ProjectTypeDescriptor | undefined
+  export let disabled: boolean = true
 </script>
 
-<SpaceTypeGeneralSectionEditor {type} {descriptor}>
+<SpaceTypeGeneralSectionEditor {type} {descriptor} {disabled}>
   <svelte:fragment slot="extra">
     {#if descriptor?.editor}
-      <Component is={descriptor.editor} props={{ type }} />
+      <Component is={descriptor.editor} props={{ type }} {disabled} />
     {/if}
   </svelte:fragment>
 </SpaceTypeGeneralSectionEditor>

@@ -21,6 +21,7 @@
 
   export let type: SpaceType | undefined
   export let descriptor: SpaceTypeDescriptor | undefined
+  export let disabled: boolean = true
 
   const client = getClient()
   let shortDescription = type?.shortDescription ?? ''
@@ -43,7 +44,7 @@
   }
 
   async function attributeUpdated<T extends keyof SpaceType> (field: T, value: SpaceType[T]): Promise<void> {
-    if (type === undefined || type[field] === value) {
+    if (disabled || type === undefined || type[field] === value) {
       return
     }
 
@@ -61,6 +62,7 @@
           size="large"
           label={settingRes.string.SpaceTypeTitle}
           value={type?.name ?? ''}
+          {disabled}
           on:blur={(evt) => {
             attributeUpdated('name', evt.detail)
           }}
@@ -82,6 +84,7 @@
       height="4.5rem"
       margin="var(--spacing-2) 0"
       noFocusBorder
+      {disabled}
       bind:value={shortDescription}
       on:change={() => {
         attributeUpdated('shortDescription', shortDescription)

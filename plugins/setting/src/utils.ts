@@ -130,3 +130,34 @@ export async function createSpaceTypeRoles (
     await createSpaceTypeRole(tx, spaceType, { name, permissions }, _id)
   }
 }
+
+export async function deleteSpaceTypeRole (
+  client: TxOperations,
+  role: Role,
+  targetClass: Ref<Class<Space>>
+): Promise<void> {
+  const attribute = await client.findOne(core.class.Attribute, { name: role._id, attributeOf: targetClass })
+  const ops = client.apply(role._id)
+
+  await ops.removeCollection(
+    core.class.Role,
+    core.space.Model,
+    role._id,
+    role.attachedTo,
+    role.attachedToClass,
+    'roles'
+  )
+  if (attribute !== undefined) {
+    const mixins = await client.findAll(targetClass, {})
+    for (const mixin of mixins) {
+      await ops.updateMixin(mixin._id, mixin._class, mixin.space, targetClass, {
+        [attribute.name]: undefined
+      })
+    }
+
+    await ops.remove(attribute)
+  }
+
+  // remove all the assignments
+  await ops.commit()
+}

@@ -57,6 +57,7 @@
   export let icon: Asset | undefined
   export let canDelete: boolean = true
   export let selectableStates: Status[] = []
+  export let readonly: boolean = true
 
   $: _taskType = $taskTypeStore.get(taskType._id) as TaskType
   $: _type = $typeStore.get(type._id) as ProjectType
@@ -96,6 +97,7 @@
     !selectableStates.some((it) => it.name === value)
 
   async function save (): Promise<void> {
+    if (readonly) return
     if (total > 0 && value.trim() !== status?.name?.trim()) {
       // We should ask for changes approve.
       showPopup(
@@ -226,6 +228,7 @@
     oldStatus: Ref<Status>,
     newStatus: Ref<Status>
   ): Promise<void> {
+    if (readonly) return
     const projects = await client.findAll(task.class.Project, { type: type._id })
     while (true) {
       const docs = await client.findAll(
@@ -250,7 +253,7 @@
   }
 
   function onDelete (): void {
-    if (status === undefined) return
+    if (status === undefined || readonly) return
     const estatus = status
     showPopup(
       DeleteStateConfirmationPopup,
@@ -293,6 +296,7 @@
   }
 
   function onDuplicate (): void {
+    if (readonly) return
     let pattern = ''
     let inc = 2
 
@@ -336,35 +340,38 @@
   type={'type-aside'}
   okLabel={status === undefined ? presentation.string.Create : presentation.string.Save}
   okAction={save}
-  canSave={needUpdate}
+  canSave={needUpdate && !readonly}
   onCancel={() => {
     clearSettingsStore()
   }}
 >
   <svelte:fragment slot="actions">
-    <ButtonIcon
-      icon={IconDelete}
-      size={'small'}
-      kind={'tertiary'}
-      disabled={status === undefined || !canDelete}
-      on:click={onDelete}
-    />
-    <ButtonIcon
-      icon={IconCopy}
-      size={'small'}
-      kind={'tertiary'}
-      disabled={status === undefined}
-      on:click={onDuplicate}
-    />
+    {#if !readonly}
+      <ButtonIcon
+        icon={IconDelete}
+        size={'small'}
+        kind={'tertiary'}
+        disabled={status === undefined || !canDelete || readonly}
+        on:click={onDelete}
+      />
+      <ButtonIcon
+        icon={IconCopy}
+        size={'small'}
+        kind={'tertiary'}
+        disabled={status === undefined || readonly}
+        on:click={onDuplicate}
+      />
+    {/if}
   </svelte:fragment>
   <div class="hulyModal-content__titleGroup">
-    <ModernEditbox bind:value label={task.string.StatusName} size={'large'} kind={'ghost'} />
+    <ModernEditbox bind:value label={task.string.StatusName} size={'large'} kind={'ghost'} disabled={readonly} />
     <TextArea
       placeholder={task.string.Description}
       width={'100%'}
       height={'4.5rem'}
       margin={'var(--spacing-1) var(--spacing-2)'}
       noFocusBorder
+      disabled={readonly}
       bind:value={description}
     />
   </div>
@@ -374,7 +381,7 @@
       <ButtonMenu
         items={categories}
         selected={category}
-        disabled={!allowEditCategory}
+        disabled={!allowEditCategory || readonly}
         icon={categories.find((it) => it.id === category)?.icon}
         label={categories.find((it) => it.id === category)?.label}
         kind={'secondary'}
@@ -395,6 +402,7 @@
           label={items[selected].label}
           kind={'secondary'}
           size={'small'}
+          disabled={readonly}
           on:selected={(event) => {
             if (event.detail) {
               selected = items.findIndex((it) => it.id === event.detail)
@@ -413,8 +421,10 @@
           <ColorsPopup
             selected={getPlatformColorDef(color ?? 0, $themeStore.dark).name}
             embedded
+            disabled={readonly}
             columns={'auto'}
             on:close={(evt) => {
+              if (readonly) return
               color = evt.detail
               icon = undefined
             }}
@@ -423,7 +433,9 @@
           <EmojiPopup
             embedded
             selected={fromCodePoint(color ?? 0)}
+            disabled={readonly}
             on:close={(evt) => {
+              if (readonly) return
               color = evt.detail.codePointAt(0)
               icon = iconWithEmoji
             }}

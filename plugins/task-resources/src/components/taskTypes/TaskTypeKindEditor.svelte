@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { getEmbeddedLabel } from '@hcengineering/platform'
   import { TaskTypeKind } from '@hcengineering/task'
   import { Label, ButtonMenu } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'

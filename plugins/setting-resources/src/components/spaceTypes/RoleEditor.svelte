@@ -13,18 +13,32 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttributeEditor, createQuery, getClient } from '@hcengineering/presentation'
-  import core, { Permission, Ref, Role, SpaceType, SpaceTypeDescriptor, WithLookup } from '@hcengineering/core'
-  import { ButtonIcon, Icon, IconEdit, IconSettings, Label, Scroller, showPopup } from '@hcengineering/ui'
+  import { AttributeEditor, MessageBox, createQuery, getClient } from '@hcengineering/presentation'
+  import core, { Permission, Ref, Role, SpaceType, SpaceTypeDescriptor } from '@hcengineering/core'
+  import {
+    ButtonIcon,
+    Icon,
+    IconDelete,
+    IconEdit,
+    IconSettings,
+    Label,
+    Scroller,
+    getCurrentResolvedLocation,
+    navigate,
+    showPopup
+  } from '@hcengineering/ui'
   import { ObjectBoxPopup } from '@hcengineering/view-resources'
+  import { deleteSpaceTypeRole } from '@hcengineering/setting'
 
   import PersonIcon from '../icons/Person.svelte'
   import settingRes from '../../plugin'
+  import { clearSettingsStore } from '../../store'
 
   export let spaceType: SpaceType
   export let descriptor: SpaceTypeDescriptor
   export let objectId: Ref<Role>
   export let name: string | undefined
+  export let readonly: boolean = true
 
   const client = getClient()
 
@@ -44,7 +58,7 @@
   }
 
   function handleEditPermissions (evt: Event): void {
-    if (role === undefined || descriptor === undefined) {
+    if (role === undefined || descriptor === undefined || readonly) {
       return
     }
 
@@ -78,6 +92,36 @@
       }
     )
   }
+
+  async function handleDeleteRole (): Promise<void> {
+    showPopup(
+      MessageBox,
+      {
+        label: settingRes.string.DeleteRole,
+        message: settingRes.string.DeleteRoleConfirmation
+      },
+      'top',
+      (result?: boolean) => {
+        if (result === true) {
+          void performDeleteRole()
+        }
+      }
+    )
+  }
+
+  async function performDeleteRole (): Promise<void> {
+    if (role === undefined) {
+      return
+    }
+
+    await deleteSpaceTypeRole(client, role, spaceType.targetClass)
+
+    const loc = getCurrentResolvedLocation()
+    loc.path.length = 5
+
+    clearSettingsStore()
+    navigate(loc)
+  }
 </script>
 
 {#if role !== undefined}
@@ -86,16 +130,43 @@
       <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
         <div class="hulyComponent-content gap">
           <div class="hulyComponent-content__column-group mt-4">
-            <div class="hulyComponent-content__header mb-6">
-              <ButtonIcon icon={PersonIcon} size="large" iconProps={{ size: 'small' }} kind="secondary" />
-              <AttributeEditor _class={core.class.Role} object={role} key="name" editKind="modern-ghost-large" />
+            <div class="hulyComponent-content__header mb-6 gap-2">
+              <ButtonIcon
+                icon={IconDelete}
+                size="large"
+                kind="secondary"
+                disabled={readonly}
+                on:click={handleDeleteRole}
+              />
+              <ButtonIcon
+                icon={PersonIcon}
+                size="large"
+                iconProps={{ size: 'small' }}
+                kind="secondary"
+                disabled={readonly}
+              />
+              <div class="name" class:editable={!readonly}>
+                <AttributeEditor
+                  _class={core.class.Role}
+                  object={role}
+                  key="name"
+                  editKind="modern-ghost-large"
+                  editable={!readonly}
+                />
+              </div>
             </div>
 
             <div class="hulyTableAttr-container">
               <div class="hulyTableAttr-header font-medium-12">
                 <IconSettings size="small" />
                 <span><Label label={settingRes.string.Permissions} /></span>
-                <ButtonIcon kind="primary" icon={IconEdit} size="small" on:click={handleEditPermissions} />
+                <ButtonIcon
+                  kind="primary"
+                  icon={IconEdit}
+                  size="small"
+                  on:click={handleEditPermissions}
+                  disabled={readonly}
+                />
               </div>
 
               {#if permissions.length > 0}
@@ -128,3 +199,18 @@
     </div>
   </div>
 {/if}
+
+<style lang="scss">
+  .name {
+    width: 100%;
+    font-weight: 500;
+    margin-left: 1rem;
+    display: flex;
+    align-items: center;
+    font-size: 1.5rem;
+
+    &.editable {
+      margin-left: 0;
+    }
+  }
+</style>

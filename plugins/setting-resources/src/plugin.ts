@@ -99,6 +99,8 @@ export default mergeIds(settingId, setting, {
     CountSpaces: '' as IntlString,
     RoleName: '' as IntlString,
     Permissions: '' as IntlString,
-    Assignees: '' as IntlString
+    Assignees: '' as IntlString,
+    DeleteRole: '' as IntlString,
+    DeleteRoleConfirmation: '' as IntlString
   }
 })

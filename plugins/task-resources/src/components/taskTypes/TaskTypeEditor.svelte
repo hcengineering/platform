@@ -41,6 +41,7 @@
   export let objectId: Ref<TaskType>
   export let name: string | undefined
   export let icon: Asset | undefined
+  export let readonly: boolean = true
 
   const client = getClient()
 
@@ -79,6 +80,9 @@
   }
 
   function selectIcon (el: MouseEvent): void {
+    if (readonly) {
+      return
+    }
     const icons: Asset[] = [descriptor[0].icon]
 
     showPopup(
@@ -94,7 +98,7 @@
   }
 
   function handleAddStatus (): void {
-    if (taskType === undefined) {
+    if (taskType === undefined || readonly) {
       return
     }
 
@@ -134,14 +138,18 @@
                     }
                     void client.diffUpdate(taskType, { kind: evt.detail })
                   }}
+                  {readonly}
                 />
-                <ButtonIcon
-                  icon={TaskTypeIcon}
-                  iconProps={{ value: taskType }}
-                  size={'large'}
-                  kind={'secondary'}
-                  on:click={selectIcon}
-                />
+                {#if !readonly}
+                  <ButtonIcon
+                    icon={TaskTypeIcon}
+                    iconProps={{ value: taskType }}
+                    size={'large'}
+                    kind={'secondary'}
+                    disabled={readonly}
+                    on:click={selectIcon}
+                  />
+                {/if}
               </div>
               <ModernButton
                 icon={IconSquareExpand}
@@ -154,12 +162,15 @@
               />
             </div>
 
-            <AttributeEditor
-              _class={task.class.TaskType}
-              object={taskType}
-              key="name"
-              editKind={'modern-ghost-large'}
-            />
+            <div class="name" class:editable={!readonly}>
+              <AttributeEditor
+                _class={task.class.TaskType}
+                object={taskType}
+                key="name"
+                editKind={'modern-ghost-large'}
+                editable={!readonly}
+              />
+            </div>
 
             <div class="flex-row-center mt-4 ml-4 mr-4 gap-4">
               <div class="flex-no-shrink trans-title uppercase">
@@ -185,12 +196,19 @@
             <div class="hulyTableAttr-header font-medium-12">
               <Icon icon={task.icon.ManageTemplates} size={'small'} />
               <span><Label label={plugin.string.ProcessStates} /></span>
-              <ButtonIcon kind={'primary'} icon={IconAdd} size={'small'} on:click={handleAddStatus} />
+              <ButtonIcon
+                kind={'primary'}
+                icon={IconAdd}
+                size={'small'}
+                on:click={handleAddStatus}
+                disabled={readonly}
+              />
             </div>
             <StatesProjectEditor
               {taskType}
               type={spaceType}
               {states}
+              {readonly}
               on:delete={async (evt) => {
                 if (taskType === undefined) {
                   return
@@ -207,7 +225,7 @@
                 })
               }}
               on:move={async (evt) => {
-                if (taskType === undefined) {
+                if (taskType === undefined || readonly) {
                   return
                 }
                 const index = taskType.statuses.findIndex((p) => p === evt.detail.stateID)
@@ -229,9 +247,24 @@
             />
           </div>
 
-          <ClassAttributes ofClass={taskType.ofClass} _class={taskType.targetClass} showHierarchy />
+          <ClassAttributes ofClass={taskType.ofClass} _class={taskType.targetClass} showHierarchy disabled={readonly} />
         </div>
       </Scroller>
     </div>
   </div>
 {/if}
+
+<style lang="scss">
+  .name {
+    width: 100%;
+    font-weight: 500;
+    margin-left: 1rem;
+    display: flex;
+    align-items: center;
+    font-size: 1.5rem;
+
+    &.editable {
+      margin-left: 0;
+    }
+  }
+</style>
