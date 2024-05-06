@@ -31,3 +31,9 @@ export interface NotifyResult {
   push: boolean
   emails: BaseNotificationType[]
 }
+
+export interface NotifyParams {
+  isOwn: boolean
+  isSpace: boolean
+  shouldUpdateTimestamp: boolean
+}

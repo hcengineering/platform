@@ -78,7 +78,7 @@ import serverNotification, {
 import { stripTags } from '@hcengineering/text'
 import { workbenchId } from '@hcengineering/workbench'
 import webpush, { WebPushError } from 'web-push'
-import { Content, NotifyResult } from './types'
+import { Content, NotifyResult, NotifyParams } from './types'
 import {
   getHTMLPresenter,
   getNotificationContent,
@@ -718,13 +718,27 @@ export async function getNotificationTxes (
     )
   }
 
-  return res
-}
+  if (notifyResult.emails.length === 0) {
+    return res
+  }
+  const acc = await getPersonAccountById(target, control)
+  if (acc === undefined) {
+    return res
+  }
+  const emp = await getEmployee(acc.person as Ref<Employee>, control)
+  if (emp?.active === true) {
+    for (const type of notifyResult.emails) {
+      await notifyByEmail(
+        control,
+        type._id,
+        object,
+        originTx.modifiedBy as Ref<PersonAccount>,
+        target as Ref<PersonAccount>
+      )
+    }
+  }
 
-interface NotifyParams {
-  isOwn: boolean
-  isSpace: boolean
-  shouldUpdateTimestamp: boolean
+  return res
 }
 
 export async function createCollabDocInfo (
