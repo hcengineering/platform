@@ -620,9 +620,16 @@ export interface RoleAttributeBaseProps {
 export function getRoleAttributeBaseProps (data: AttachedData<Role>, roleId: Ref<Role>): RoleAttributeBaseProps {
   const name = data.name.trim()
   const label = getEmbeddedLabel(`Role: ${name}`)
-  const id = `role-${roleId}` as Ref<Attribute<PropertyType>>
+  const id = getRoleAttributeId(roleId)
 
   return { label, id }
+}
+
+/**
+ * @public
+ */
+export function getRoleAttributeId (roleId: Ref<Role>): Ref<Attribute<PropertyType>> {
+  return `role-${roleId}` as Ref<Attribute<PropertyType>>
 }
 
 /**
