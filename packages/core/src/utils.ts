@@ -18,9 +18,7 @@ import {
   Account,
   AccountRole,
   AnyAttribute,
-  AttachedData,
   AttachedDoc,
-  Attribute,
   Class,
   ClassifierKind,
   Collection,
@@ -36,7 +34,6 @@ import {
   IndexKind,
   Obj,
   Permission,
-  PropertyType,
   Ref,
   Role,
   Space,
@@ -609,27 +606,8 @@ export async function checkPermission (
 /**
  * @public
  */
-export interface RoleAttributeBaseProps {
-  label: IntlString
-  id: Ref<Attribute<PropertyType>>
-}
-
-/**
- * @public
- */
-export function getRoleAttributeBaseProps (data: AttachedData<Role>, roleId: Ref<Role>): RoleAttributeBaseProps {
-  const name = data.name.trim()
-  const label = getEmbeddedLabel(`Role: ${name}`)
-  const id = getRoleAttributeId(roleId)
-
-  return { label, id }
-}
-
-/**
- * @public
- */
-export function getRoleAttributeId (roleId: Ref<Role>): Ref<Attribute<PropertyType>> {
-  return `role-${roleId}` as Ref<Attribute<PropertyType>>
+export function getRoleAttributeLabel (roleName: string): IntlString {
+  return getEmbeddedLabel(`Role: ${roleName.trim()}`)
 }
 
 /**
