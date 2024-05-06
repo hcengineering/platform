@@ -52,6 +52,11 @@ export interface DomainHelper {
   ) => Promise<boolean>
 }
 
+export interface RawDBAdapterStream<T extends Doc> {
+  next: () => Promise<T | undefined>
+  close: () => Promise<void>
+}
+
 /**
  * @public
  */
@@ -63,7 +68,16 @@ export interface RawDBAdapter {
     query: DocumentQuery<T>,
     options?: Omit<FindOptions<T>, 'projection' | 'lookup'>
   ) => Promise<FindResult<T>>
+  findStream: <T extends Doc>(
+    ctx: MeasureContext,
+    workspace: WorkspaceId,
+    domain: Domain,
+    query: DocumentQuery<T>,
+    options?: Omit<FindOptions<T>, 'projection' | 'lookup'>
+  ) => Promise<RawDBAdapterStream<T>>
   upload: <T extends Doc>(ctx: MeasureContext, workspace: WorkspaceId, domain: Domain, docs: T[]) => Promise<void>
+  clean: <T extends Doc>(ctx: MeasureContext, workspace: WorkspaceId, domain: Domain, docs: Ref<T>[]) => Promise<void>
+  close: () => Promise<void>
 }
 
 /**

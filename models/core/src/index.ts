@@ -17,7 +17,6 @@ import {
   AccountRole,
   DOMAIN_BENCHMARK,
   DOMAIN_BLOB,
-  DOMAIN_BLOB_DATA,
   DOMAIN_CONFIGURATION,
   DOMAIN_DOC_INDEX_STATE,
   DOMAIN_MIGRATION,
@@ -40,7 +39,6 @@ import {
   TAttachedDoc,
   TAttribute,
   TBlob,
-  TBlobData,
   TClass,
   TCollection,
   TConfiguration,
@@ -164,7 +162,6 @@ export function createModel (builder: Builder): void {
     TUserStatus,
     TEnum,
     TTypeAny,
-    TBlobData,
     TFulltextData,
     TTypeRelatedDocument,
     TDocIndexState,
@@ -276,11 +273,6 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_BLOB,
-    disabled: [{ _class: 1 }, { space: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { createdBy: -1 }, { createdOn: -1 }]
-  })
-  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
-    domain: DOMAIN_BLOB_DATA,
-    disableCollection: true,
     disabled: [{ _class: 1 }, { space: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { createdBy: -1 }, { createdOn: -1 }]
   })
 

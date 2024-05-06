@@ -51,7 +51,7 @@
     "cors": "^2.8.5",
     "@hcengineering/elastic": "^0.6.0",
     "@hcengineering/server-core": "^0.6.1",
-    "@hcengineering/server": "^0.6.4",
+    "@hcengineering/server-storage": "^0.6.0",
     "@hcengineering/server-token": "^0.6.7",
     "@hcengineering/attachment": "^0.6.9",
     "body-parser": "^1.20.2",

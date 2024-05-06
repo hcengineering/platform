@@ -55,7 +55,7 @@ export async function createServerStorage (
   const adapters = new Map<string, DbAdapter>()
   const modelDb = new ModelDb(hierarchy)
 
-  const storageAdapter = conf.storageFactory()
+  const storageAdapter = conf.storageFactory
 
   await ctx.with('create-adapters', {}, async (ctx) => {
     for (const key in conf.adapters) {
@@ -198,12 +198,19 @@ export function createNullStorageFactory (): StorageAdapter {
     remove: async (ctx, workspaceId: WorkspaceId, objectNames: string[]) => {},
     delete: async (ctx, workspaceId: WorkspaceId) => {},
     list: async (ctx, workspaceId: WorkspaceId, prefix?: string) => [],
+    listStream: async (ctx, workspaceId, prefix) => {
+      return {
+        next: async () => undefined,
+        close: async () => {}
+      }
+    },
     stat: async (ctx, workspaceId: WorkspaceId, objectName: string) => ({}) as any,
     get: async (ctx, workspaceId: WorkspaceId, objectName: string) => ({}) as any,
     put: async (ctx, workspaceId: WorkspaceId, objectName: string, stream: any, contentType: string, size?: number) =>
       ({}) as any,
     read: async (ctx, workspaceId: WorkspaceId, name: string) => ({}) as any,
-    partial: async (ctx, workspaceId: WorkspaceId, objectName: string, offset: number, length?: number) => ({}) as any
+    partial: async (ctx, workspaceId: WorkspaceId, objectName: string, offset: number, length?: number) => ({}) as any,
+    close: async () => {}
   }
 }
 

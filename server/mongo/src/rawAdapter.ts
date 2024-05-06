@@ -1,5 +1,4 @@
 import {
-  type MeasureContext,
   SortingOrder,
   cutObjectArray,
   toFindResult,
@@ -8,10 +7,11 @@ import {
   type Domain,
   type FindOptions,
   type FindResult,
+  type MeasureContext,
   type WorkspaceId
 } from '@hcengineering/core'
-import type { RawDBAdapter } from '@hcengineering/server-core'
-import { type Document, type Filter, type Sort } from 'mongodb'
+import type { RawDBAdapter, RawDBAdapterStream } from '@hcengineering/server-core'
+import { type Document, type Filter, type FindCursor, type Sort } from 'mongodb'
 import { toArray, uploadDocuments } from './storage'
 import { getMongoClient, getWorkspaceDB } from './utils'
 
@@ -34,6 +34,40 @@ export function createRawMongoDBAdapter (url: string): RawDBAdapter {
     }
     return sort
   }
+
+  async function getCursor<T extends Doc> (
+    workspace: WorkspaceId,
+    domain: Domain,
+    query: DocumentQuery<T>,
+    options?: Omit<FindOptions<T>, 'projection' | 'lookup'>
+  ): Promise<{
+      cursor: FindCursor<T>
+      total: number
+    }> {
+    const db = getWorkspaceDB(await client.getClient(), workspace)
+    const coll = db.collection(domain)
+    let cursor = coll.find<T>(query as Filter<Document>, {
+      checkKeys: false
+    })
+
+    let total: number = -1
+    if (options != null) {
+      if (options.sort !== undefined) {
+        const sort = collectSort(options)
+        if (sort !== undefined) {
+          cursor = cursor.sort(sort)
+        }
+      }
+      if (options.limit !== undefined || typeof query._id === 'string') {
+        if (options.total === true) {
+          total = await coll.countDocuments(query)
+        }
+        cursor = cursor.limit(options.limit ?? 1)
+      }
+    }
+    return { cursor, total }
+  }
+
   return {
     find: async function <T extends Doc>(
       ctx: MeasureContext,
@@ -42,27 +76,7 @@ export function createRawMongoDBAdapter (url: string): RawDBAdapter {
       query: DocumentQuery<T>,
       options?: Omit<FindOptions<T>, 'projection' | 'lookup'>
     ): Promise<FindResult<T>> {
-      const db = getWorkspaceDB(await client.getClient(), workspace)
-      const coll = db.collection(domain)
-      let cursor = coll.find<T>(query as Filter<Document>, {
-        checkKeys: false
-      })
-
-      let total: number = -1
-      if (options != null) {
-        if (options.sort !== undefined) {
-          const sort = collectSort(options)
-          if (sort !== undefined) {
-            cursor = cursor.sort(sort)
-          }
-        }
-        if (options.limit !== undefined || typeof query._id === 'string') {
-          if (options.total === true) {
-            total = await coll.countDocuments(query)
-          }
-          cursor = cursor.limit(options.limit ?? 1)
-        }
-      }
+      let { cursor, total } = await getCursor(workspace, domain, query, options)
 
       // Error in case of timeout
       try {
@@ -76,10 +90,34 @@ export function createRawMongoDBAdapter (url: string): RawDBAdapter {
         throw e
       }
     },
+    findStream: async function <T extends Doc>(
+      ctx: MeasureContext,
+      workspace: WorkspaceId,
+      domain: Domain,
+      query: DocumentQuery<T>,
+      options?: Omit<FindOptions<T>, 'projection' | 'lookup'>
+    ): Promise<RawDBAdapterStream<T>> {
+      const { cursor } = await getCursor(workspace, domain, query, options)
+
+      return {
+        next: async () => (await cursor.next()) ?? undefined,
+        close: async () => {
+          await cursor.close()
+        }
+      }
+    },
     upload: async (ctx: MeasureContext, workspace, domain, docs) => {
       const db = getWorkspaceDB(await client.getClient(), workspace)
       const coll = db.collection(domain)
       await uploadDocuments(ctx, docs, coll)
+    },
+    close: async () => {
+      client.close()
+    },
+    clean: async (ctx, workspace, domain, docs) => {
+      const db = getWorkspaceDB(await client.getClient(), workspace)
+      const coll = db.collection<Doc>(domain)
+      await coll.deleteMany({ _id: { $in: docs } })
     }
   }
 }

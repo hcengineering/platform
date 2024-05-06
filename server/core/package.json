@@ -40,6 +40,8 @@
     "@hcengineering/text": "^0.6.1",
     "@hcengineering/query": "^0.6.8",
     "fast-equals": "^5.0.1",
+    "@hcengineering/storage": "^0.6.0",
+    "html-to-text": "^9.0.3",
     "uuid": "^8.3.2"
   }
 }

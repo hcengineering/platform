@@ -19,13 +19,14 @@ export class MeasureMetricsContext implements MeasureContext {
     fullParams: FullParamsType = {},
     metrics: Metrics = newMetrics(),
     logger?: MeasureLogger,
-    readonly parent?: MeasureContext
+    readonly parent?: MeasureContext,
+    readonly logParams?: ParamsType
   ) {
     this.name = name
     this.params = params
     this.metrics = metrics
     this.done = measure(metrics, params, fullParams, (spend) => {
-      this.logger.logOperation(this.name, spend, { ...params, ...fullParams })
+      this.logger.logOperation(this.name, spend, { ...params, ...fullParams, ...(this.logParams ?? {}) })
     })
 
     const errorPrinter = ({ message, stack, ...rest }: Error): object => ({
@@ -39,10 +40,20 @@ export class MeasureMetricsContext implements MeasureContext {
 
     this.logger = logger ?? {
       info: (msg, args) => {
-        console.info(msg, ...Object.entries(args ?? {}).map((it) => `${it[0]}=${JSON.stringify(replacer(it[1]))}`))
+        console.info(
+          msg,
+          ...Object.entries({ ...(args ?? {}), ...(this.logParams ?? {}) }).map(
+            (it) => `${it[0]}=${JSON.stringify(replacer(it[1]))}`
+          )
+        )
       },
       error: (msg, args) => {
-        console.error(msg, ...Object.entries(args ?? {}).map((it) => `${it[0]}=${JSON.stringify(replacer(it[1]))}`))
+        console.error(
+          msg,
+          ...Object.entries({ ...(args ?? {}), ...(this.logParams ?? {}) }).map(
+            (it) => `${it[0]}=${JSON.stringify(replacer(it[1]))}`
+          )
+        )
       },
       warn: (msg, args) => {
         console.warn(msg, ...Object.entries(args ?? {}).map((it) => `${it[0]}=${JSON.stringify(replacer(it[1]))}`))
@@ -64,7 +75,8 @@ export class MeasureMetricsContext implements MeasureContext {
       fullParams ?? {},
       childMetrics(this.metrics, [name]),
       logger ?? this.logger,
-      this
+      this,
+      this.logParams
     )
   }
 
@@ -83,7 +95,7 @@ export class MeasureMetricsContext implements MeasureContext {
       c.end()
       return value
     } catch (err: any) {
-      c.error('Error during:' + name, { err })
+      c.error('Error during:' + name, { err, ...(this.logParams ?? {}) })
       throw err
     }
   }
@@ -101,15 +113,15 @@ export class MeasureMetricsContext implements MeasureContext {
   }
 
   error (message: string, args?: Record<string, any>): void {
-    this.logger.error(message, { ...this.params, ...args })
+    this.logger.error(message, { ...this.params, ...args, ...(this.logParams ?? {}) })
   }
 
   info (message: string, args?: Record<string, any>): void {
-    this.logger.info(message, { ...this.params, ...args })
+    this.logger.info(message, { ...this.params, ...args, ...(this.logParams ?? {}) })
   }
 
   warn (message: string, args?: Record<string, any>): void {
-    this.logger.warn(message, { ...this.params, ...args })
+    this.logger.warn(message, { ...this.params, ...args, ...(this.logParams ?? {}) })
   }
 
   end (): void {

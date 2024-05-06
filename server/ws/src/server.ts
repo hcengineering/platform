@@ -30,7 +30,7 @@ import core, {
 } from '@hcengineering/core'
 import { unknownError, type Status } from '@hcengineering/platform'
 import { type HelloRequest, type HelloResponse, type Request, type Response } from '@hcengineering/rpc'
-import type { Pipeline } from '@hcengineering/server-core'
+import type { Pipeline, StorageAdapter } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
 
 import {
@@ -979,6 +979,7 @@ export function start (
     serverFactory: ServerFactory
     enableCompression?: boolean
     accountsUrl: string
+    externalStorage: StorageAdapter
   } & Partial<Timeouts>
 ): () => Promise<void> {
   const sessions = new TSessionManager(ctx, opt.sessionFactory, {
@@ -995,6 +996,7 @@ export function start (
     opt.port,
     opt.productId,
     opt.enableCompression ?? true,
-    opt.accountsUrl
+    opt.accountsUrl,
+    opt.externalStorage
   )
 }

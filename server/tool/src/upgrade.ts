@@ -7,9 +7,11 @@ import {
   isOperator,
   ModelDb,
   Ref,
-  SortingOrder
+  SortingOrder,
+  WorkspaceId
 } from '@hcengineering/core'
 import { MigrateUpdate, MigrationClient, MigrationIterator, MigrationResult, ModelLogger } from '@hcengineering/model'
+import { StorageAdapter } from '@hcengineering/server-core'
 import { Db, Document, Filter, Sort, UpdateFilter } from 'mongodb'
 
 /**
@@ -20,7 +22,9 @@ export class MigrateClientImpl implements MigrationClient {
     readonly db: Db,
     readonly hierarchy: Hierarchy,
     readonly model: ModelDb,
-    readonly logger: ModelLogger
+    readonly logger: ModelLogger,
+    readonly storageAdapter: StorageAdapter,
+    readonly workspaceId: WorkspaceId
   ) {}
 
   migrateState = new Map<string, Set<string>>()

@@ -307,7 +307,7 @@ export function start (
       domains: {
         [DOMAIN_TX]: 'MongoTx',
         [DOMAIN_TRANSIENT]: 'InMemory',
-        [DOMAIN_BLOB]: 'MinioData',
+        [DOMAIN_BLOB]: 'Blob',
         [DOMAIN_FULLTEXT_BLOB]: 'FullTextBlob',
         [DOMAIN_MODEL]: 'Null'
       },
@@ -330,9 +330,9 @@ export function start (
           factory: createInMemoryAdapter,
           url: ''
         },
-        MinioData: {
+        Blob: {
           factory: createStorageDataAdapter,
-          url: ''
+          url: dbUrl
         },
         FullTextBlob: {
           factory: createElasticBackupDataAdapter,
@@ -366,7 +366,7 @@ export function start (
       },
       serviceAdapters: {},
       defaultContentAdapter: 'Rekoni',
-      storageFactory: () => externalStorage,
+      storageFactory: externalStorage,
       workspace
     }
     return createPipeline(ctx, conf, middlewares, upgrade, broadcast)
@@ -379,13 +379,18 @@ export function start (
     return new ClientSession(token, pipeline)
   }
 
-  return startJsonRpc(getMetricsContext(), {
+  const onClose = startJsonRpc(getMetricsContext(), {
     pipelineFactory,
     sessionFactory,
     port: opt.port,
     productId: opt.productId,
     serverFactory: opt.serverFactory,
     enableCompression: opt.enableCompression,
-    accountsUrl: opt.accountsUrl
+    accountsUrl: opt.accountsUrl,
+    externalStorage
   })
+  return async () => {
+    await externalStorage.close()
+    await onClose()
+  }
 }

@@ -16,7 +16,7 @@
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { Packr } from 'msgpackr'
 
-const packr = new Packr({ structuredClone: true, bundleStrings: true })
+const packr = new Packr({ structuredClone: true, bundleStrings: true, copyBuffers: true })
 
 /**
  * @public
@@ -167,74 +167,3 @@ export function readRequest<P extends any[]> (request: any, binary: boolean): Re
 export function fromStatus (status: Status, id?: ReqId): Response<any> {
   return { id, error: status }
 }
-
-// class DeferredPromise {
-//   promise: Promise<any>
-//   resolve!: <T>(value: T) => void
-//   reject!: (reason?: any) => void
-//   constructor () {
-//     // eslint-disable-next-line promise/param-names
-//     this.promise = new Promise((resolve, reject) => {
-//       this.resolve = resolve
-//       this.reject = reject
-//     })
-//   }
-// }
-
-// /**
-//  * Process requests and handle responses.
-//  * Also allow to handle non identified results passed from other side.
-//  *
-//  * Hold operations in progress and allow to retry them if required.
-//  */
-// export abstract class RequestProcessor {
-//   private reqIndex: number = 0
-//   private readonly requests = new Map<ReqId, DeferredPromise>()
-
-//   protected abstract send (request: Request<any>): void
-//   protected abstract notify (response: Response<any>): void
-
-//   protected process (response: Response<any>): void {
-//     if (response.id !== undefined) {
-//       const req = this.requests.get(response.id)
-//       if (req !== undefined) {
-//         if (response.error !== undefined) {
-//           req.reject(new PlatformError(response.error))
-//           return
-//         } else {
-//           req.resolve(response.result)
-//           return
-//         }
-//       }
-//     }
-//     this.notify(response)
-//   }
-
-//   /**
-//    * Reject all waited pending operations.
-//    *
-//    * This method is intended to be executed by protocol listening parts to
-//    * cancal any pending requests to control UI is not hang.
-//    *
-//    * @param reason - Why request was rejected.
-//    */
-//   protected reject (status: Status): void {
-//     // We need to reply requests in case they are missed.
-//     for (const op of this.requests.entries()) {
-//       op[1].reject(new PlatformError(status))
-//     }
-//     this.requests.clear()
-//   }
-
-//   protected async request (method: string, ...params: any[]): Promise<any> {
-//     const id = ++this.reqIndex
-//     const promise = new DeferredPromise()
-//     this.requests.set(id, promise)
-
-//     // Send request
-//     this.send({ id, method, params })
-
-//     // Waiting to be complete.
-//     return await promise.promise
-//   }
-// }
