@@ -15,18 +15,16 @@
 
 import core, {
   AttachedData,
-  Attribute,
   Class,
   ClassifierKind,
   Data,
-  PropertyType,
   Ref,
   Role,
   Space,
   SpaceType,
   TxOperations,
   TypeAny as TypeAnyType,
-  getRoleAttributeBaseProps
+  getRoleAttributeLabel
 } from '@hcengineering/core'
 import { TypeAny } from '@hcengineering/model'
 import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
@@ -71,18 +69,13 @@ export async function createSpaceType<T extends SpaceType> (
 export interface RoleAttributeProps {
   label: IntlString
   roleType: TypeAnyType
-  id: Ref<Attribute<PropertyType>>
 }
 
-export function getRoleAttributeProps (data: AttachedData<Role>, roleId: Ref<Role>): RoleAttributeProps {
-  const baseProps = getRoleAttributeBaseProps(data, roleId)
-  const roleType = TypeAny(
-    setting.component.RoleAssignmentEditor,
-    baseProps.label,
-    setting.component.RoleAssignmentEditor
-  )
+export function getRoleAttributeProps (name: string): RoleAttributeProps {
+  const label = getRoleAttributeLabel(name)
+  const roleType = TypeAny(setting.component.RoleAssignmentEditor, label, setting.component.RoleAssignmentEditor)
 
-  return { ...baseProps, roleType }
+  return { label, roleType }
 }
 
 export async function createSpaceTypeRole (
@@ -101,19 +94,14 @@ export async function createSpaceTypeRole (
     _id
   )
 
-  const { label, roleType, id } = getRoleAttributeProps(data, roleId)
+  const { label, roleType } = getRoleAttributeProps(data.name)
 
-  await client.createDoc(
-    core.class.Attribute,
-    core.space.Model,
-    {
-      name: roleId,
-      attributeOf: type.targetClass,
-      type: roleType,
-      label
-    },
-    id
-  )
+  await client.createDoc(core.class.Attribute, core.space.Model, {
+    name: roleId,
+    attributeOf: type.targetClass,
+    type: roleType,
+    label
+  })
 
   return roleId
 }
