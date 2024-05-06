@@ -14,7 +14,7 @@
 //
 
 import contact, { Person, PersonAccount, getFirstName, getLastName } from '@hcengineering/contact'
-import core, { Account, Doc, Ref, Role, Tx, TxProcessor, TxUpdateDoc, getRoleAttributeId } from '@hcengineering/core'
+import core, { Account, Doc, Ref, Role, Tx, TxProcessor, TxUpdateDoc } from '@hcengineering/core'
 import { getEmbeddedLabel, translate } from '@hcengineering/platform'
 import type { TriggerControl } from '@hcengineering/server-core'
 import setting, { Integration } from '@hcengineering/setting'
@@ -101,8 +101,12 @@ export async function OnRoleNameUpdate (tx: Tx, control: TriggerControl): Promis
   if (updateTx.operations?.name === undefined) return []
 
   // Update the related mixin attribute
-  const roleAttrId = getRoleAttributeId(updateTx.objectId)
-  const updAttrTx = control.txFactory.createTxUpdateDoc(core.class.Attribute, core.space.Model, roleAttrId, {
+  const roleAttribute = await control.modelDb.findOne(core.class.Attribute, {
+    name: updateTx.objectId
+  })
+  if (roleAttribute === undefined) return []
+
+  const updAttrTx = control.txFactory.createTxUpdateDoc(core.class.Attribute, core.space.Model, roleAttribute._id, {
     label: getEmbeddedLabel(updateTx.operations.name)
   })
 

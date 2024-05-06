@@ -15,7 +15,7 @@
 
 import { ArrOf, Prop, TypeRef, type Builder } from '@hcengineering/model'
 import { type Asset } from '@hcengineering/platform'
-import { getRoleAttributeBaseProps } from '@hcengineering/core'
+import { getRoleAttributeLabel } from '@hcengineering/core'
 
 import { TSpacesTypeData } from './security'
 import core from './component'
@@ -30,10 +30,10 @@ const roles = [
 
 export function defineSpaceType (builder: Builder): void {
   for (const role of roles) {
-    const { label, id } = getRoleAttributeBaseProps(role, role._id)
+    const label = getRoleAttributeLabel(role.name)
     const roleAssgtType = ArrOf(TypeRef(core.class.Account))
 
-    Prop(roleAssgtType, label)(TSpacesTypeData.prototype, id)
+    Prop(roleAssgtType, label)(TSpacesTypeData.prototype, role._id)
   }
 
   builder.createModel(TSpacesTypeData)
