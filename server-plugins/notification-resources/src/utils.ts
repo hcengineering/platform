@@ -309,7 +309,8 @@ export function getTextPresenter (_class: Ref<Class<Doc>>, hierarchy: Hierarchy)
 async function getFallbackNotificationFullfillment (
   object: Doc,
   originTx: TxCUD<Doc>,
-  control: TriggerControl
+  control: TriggerControl,
+  cache: Map<Ref<Doc>, Doc>
 ): Promise<NotificationContent> {
   const title: IntlString = notification.string.CommonNotificationTitle
   let body: IntlString = notification.string.CommonNotificationBody
@@ -324,9 +325,10 @@ async function getFallbackNotificationFullfillment (
 
   const account = control.modelDb.getObject(originTx.modifiedBy) as PersonAccount
   if (account !== undefined) {
-    const senderPerson = await findPersonForAccount(control, account.person)
+    const senderPerson = (cache.get(account.person) as Person) ?? (await findPersonForAccount(control, account.person))
     if (senderPerson !== undefined) {
       intlParams.senderName = formatName(senderPerson.name)
+      cache.set(senderPerson._id, senderPerson)
     }
   }
 
@@ -364,12 +366,14 @@ export async function getNotificationContent (
   originTx: TxCUD<Doc>,
   targetUser: Ref<Account>,
   object: Doc,
-  control: TriggerControl
+  control: TriggerControl,
+  cache: Map<Ref<Doc>, Doc> = new Map<Ref<Doc>, Doc>()
 ): Promise<NotificationContent> {
   let { title, body, intlParams, intlParamsNotLocalized } = await getFallbackNotificationFullfillment(
     object,
     originTx,
-    control
+    control,
+    cache
   )
 
   const actualTx = TxProcessor.extractTx(originTx)
