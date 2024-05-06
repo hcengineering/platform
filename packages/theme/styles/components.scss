@@ -265,9 +265,15 @@
   aspect-ratio: 1;
   border-radius: 50%;
 
-  &.x-small-hole {
+  &.x-small-hole,
+  &.small-hole,
+  &.medium-hole,
+  &.auto-hole.small,
+  &.auto-hole.medium {
     right: 0;
     bottom: 0;
+  }
+  &.x-small-hole {
     width: 43%;
 
     .normal-font &.xx-small,
@@ -275,43 +281,15 @@
     .small-font &.xx-small { width: 4px; }
     .small-font &.tiny { width: 7px; }
   }
-  &.small-hole {
-    right: -2.5%;
-    bottom: -2.5%;
-    width: 34.5%;
-    
-    .small-font & {
-      right: 0;
-      bottom: 0;
-      width: 7px;
-    }
-  }
-  &.medium-hole {
-    right: -2%;
-    bottom: -2%;
-    width: 34%;
-
-    .small-font &.smaller {
-      right: 0;
-      bottom: 0;
-      width: 8px;
-    }
-  }
+  &.small-hole,
+  .small-font &.small-hole { width: 7px; }
+  &.medium-hole { width: 9px; }
+  .small-font &.medium-hole { width: 8px; }
+  &.auto-hole.small { width: 10px; }
+  .small-font &.auto-hole.small { width: 9px; }
+  &.auto-hole.medium { width: 13px; }
+  .small-font &.auto-hole.medium { width: 11px; }
   &.auto-hole {
-    &.small {
-      right: -1px;
-      bottom: -1px;
-      width: 36%;
-
-      .small-font & { width: 10px; }
-    }
-    &.medium {
-      right: -1%;
-      bottom: -1%;
-      width: 34%;
-      
-      .small-font & { width: 12px; }
-    }
     &.large {
       right: -.125rem;
       bottom: -.125rem;
