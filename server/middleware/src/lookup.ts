@@ -85,9 +85,9 @@ export class LookupMiddleware extends BaseMiddleware implements Middleware {
           newResult.push(newDoc)
           for (const [k, v] of Object.entries(d.$lookup)) {
             if (!Array.isArray(v)) {
-              newDoc.$lookup[k] = mapDoc(v)
+              newDoc.$lookup[k] = v != null ? mapDoc(v) : v
             } else {
-              newDoc.$lookup[k] = v.map((it) => mapDoc(it))
+              newDoc.$lookup[k] = v.map((it) => it != null ? mapDoc(it) : it)
             }
           }
         }
