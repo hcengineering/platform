@@ -19,19 +19,17 @@ import core, {
   WorkspaceEvent,
   generateId,
   systemAccountEmail,
-  toFindResult,
   toWorkspaceString,
   versionToString,
   withContext,
   type BaseWorkspaceInfo,
-  type FindResult,
   type MeasureContext,
   type Tx,
   type TxWorkspaceEvent,
   type WorkspaceId
 } from '@hcengineering/core'
 import { unknownError } from '@hcengineering/platform'
-import { readRequest, type HelloRequest, type HelloResponse, type Request, type Response } from '@hcengineering/rpc'
+import { type HelloRequest, type HelloResponse, type Request, type Response } from '@hcengineering/rpc'
 import type { Pipeline, SessionContext } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
 
@@ -45,6 +43,7 @@ import {
   type SessionManager,
   type Workspace
 } from './types'
+import { sendResponse } from './utils'
 
 interface WorkspaceLoginInfo extends Omit<BaseWorkspaceInfo, 'workspace'> {
   upgrade?: {
@@ -70,12 +69,6 @@ function timeoutPromise (time: number): { promise: Promise<void>, cancelHandle: 
 
 function onNextTick (op: () => void): void {
   setImmediate(op)
-}
-
-function waitNextTick (): Promise<void> {
-  return new Promise<void>((resolve) => {
-    setImmediate(resolve)
-  })
 }
 
 /**
@@ -450,24 +443,19 @@ class TSessionManager implements SessionManager {
       return
     }
     const ctx = this.ctx.newChild('📬 broadcast-all', {})
-    const sessions = [...workspace.sessions.values()]
+    const sessions = [...workspace.sessions.values()].filter((it) => {
+      return it !== undefined && (targets === undefined || targets.includes(it.session.getUser()))
+    })
     function send (): void {
-      for (const session of sessions.splice(0, 1)) {
-        if (targets !== undefined && !targets.includes(session.session.getUser())) continue
-        for (const _tx of tx) {
-          try {
-            void session.socket.send(ctx, { result: _tx }, session.session.binaryMode, session.session.useCompression)
-          } catch (err: any) {
-            Analytics.handleError(err)
-            ctx.error('error during send', { error: err })
-          }
+      for (const session of sessions) {
+        try {
+          sendResponse(ctx, session.session, session.socket, { result: tx })
+        } catch (err: any) {
+          Analytics.handleError(err)
+          ctx.error('error during send', { error: err })
         }
       }
-      if (sessions.length > 0) {
-        onNextTick(send)
-      } else {
-        ctx.end()
-      }
+      ctx.end()
     }
     if (sessions.length > 0) {
       // We need to send broadcast after our client response so put it after all IO
@@ -740,18 +728,14 @@ class TSessionManager implements SessionManager {
     const sessions = [...workspace.sessions.values()]
     const ctx = this.ctx.newChild('📭 broadcast', {})
     function send (): void {
-      for (const sessionRef of sessions.splice(0, 1)) {
-        if (sessionRef.session.sessionId !== from?.sessionId) {
+      for (const sessionRef of sessions) {
+        if (sessionRef !== undefined && sessionRef.session.sessionId !== from?.sessionId) {
           if (target === undefined || target.includes(sessionRef.session.getUser())) {
-            void sessionRef.socket.send(ctx, resp, sessionRef.session.binaryMode, sessionRef.session.useCompression)
+            sendResponse(ctx, sessionRef.session, sessionRef.socket, resp)
           }
         }
       }
-      if (sessions.length > 0) {
-        onNextTick(send)
-      } else {
-        ctx.end()
-      }
+      ctx.end()
     }
     if (sessions.length > 0) {
       // We need to send broadcast after our client response so put it after all IO
@@ -765,9 +749,9 @@ class TSessionManager implements SessionManager {
     requestCtx: MeasureContext,
     service: S,
     ws: ConnectionSocket,
-    msg: any,
+    request: Request<any>,
     workspace: string
-  ): Promise<void> {
+  ): Promise<Response<any> | undefined> {
     const userCtx = requestCtx.newChild('📞 client', {
       workspace: '🧲 ' + workspace
     }) as SessionContext
@@ -779,9 +763,7 @@ class TSessionManager implements SessionManager {
     const st = Date.now()
     try {
       const backupMode = 'loadChunk' in service
-      await userCtx.with(`🧭 ${backupMode ? 'handleBackup' : 'handleRequest'}`, {}, async (ctx) => {
-        const request = readRequest(msg, service.binaryMode)
-
+      return await userCtx.with(`🧭 ${backupMode ? 'handleBackup' : 'handleRequest'}`, {}, async (ctx) => {
         if (request.time != null) {
           const delta = Date.now() - request.time
           userCtx.measure('receive msg', delta)
@@ -837,8 +819,7 @@ class TSessionManager implements SessionManager {
           return
         }
         if (request.method === 'measure' || request.method === 'measure-done') {
-          await this.handleMeasure<S>(service, request, ctx, ws)
-          return
+          return await this.handleMeasure<S>(service, request, ctx, ws)
         }
         service.requests.set(reqId, {
           id: reqId,
@@ -859,25 +840,23 @@ class TSessionManager implements SessionManager {
               ? await f.apply(service, [service.measureCtx?.ctx, ...params])
               : await ctx.with('🧨 process', {}, async (callTx) => f.apply(service, [callTx, ...params]))
 
-          const resp: Response<any> = {
+          return {
             id: request.id,
             result,
             time: Date.now() - st,
+            bfst: Date.now(),
             queue: service.requests.size
           }
-
-          await handleSend(ctx, ws, resp, 32 * 1024, service.binaryMode, service.useCompression)
         } catch (err: any) {
           Analytics.handleError(err)
           if (LOGGING_ENABLED) {
             this.ctx.error('error handle request', { error: err, request })
           }
-          const resp: Response<any> = {
+          return {
             id: request.id,
             error: unknownError(err),
             result: JSON.parse(JSON.stringify(err?.stack))
           }
-          await ws.send(ctx, resp, service.binaryMode, service.useCompression)
         }
       })
     } finally {
@@ -891,7 +870,7 @@ class TSessionManager implements SessionManager {
     request: Request<any[]>,
     ctx: MeasureContext,
     ws: ConnectionSocket
-  ): Promise<void> {
+  ): Promise<Response<any> | undefined> {
     let serverTime = 0
     if (request.method === 'measure') {
       service.measureCtx = { ctx: ctx.newChild('📶 ' + request.params[0], {}), time: Date.now() }
@@ -902,69 +881,18 @@ class TSessionManager implements SessionManager {
       }
     }
     try {
-      const resp: Response<any> = { id: request.id, result: request.method === 'measure' ? 'started' : serverTime }
-
-      await handleSend(ctx, ws, resp, 32 * 1024, service.binaryMode, service.useCompression)
+      return { id: request.id, result: request.method === 'measure' ? 'started' : serverTime }
     } catch (err: any) {
       Analytics.handleError(err)
       if (LOGGING_ENABLED) {
         ctx.error('error handle measure', { error: err, request })
       }
-      const resp: Response<any> = {
+      return {
         id: request.id,
         error: unknownError(err),
         result: JSON.parse(JSON.stringify(err?.stack))
       }
-      await ws.send(ctx, resp, service.binaryMode, service.useCompression)
     }
-  }
-}
-
-async function handleSend (
-  ctx: MeasureContext,
-  ws: ConnectionSocket,
-  msg: Response<any>,
-  chunkLimit: number,
-  useBinary: boolean,
-  useCompression: boolean
-): Promise<void> {
-  // ws.send(msg)
-  if (Array.isArray(msg.result) && msg.result.length > 1 && chunkLimit > 0) {
-    // Split and send by chunks
-    const data = [...msg.result]
-
-    let cid = 1
-    const dataSize = JSON.stringify(data).length
-    const avg = Math.round(dataSize / data.length)
-    const itemChunk = Math.round(chunkLimit / avg) + 1
-
-    while (data.length > 0 && !ws.isClosed) {
-      let itemChunkCurrent = itemChunk
-      if (data.length - itemChunk < itemChunk / 2) {
-        itemChunkCurrent = data.length
-      }
-      const chunk: FindResult<any> = toFindResult(data.splice(0, itemChunkCurrent))
-      if (data.length === 0) {
-        const orig = msg.result as FindResult<any>
-        chunk.total = orig.total ?? 0
-        chunk.lookupMap = orig.lookupMap
-      }
-      if (chunk !== undefined) {
-        await ws.send(
-          ctx,
-          { ...msg, result: chunk, chunk: { index: cid, final: data.length === 0 } },
-          useBinary,
-          useCompression
-        )
-      }
-      cid++
-
-      if (data.length > 0 && !ws.isClosed) {
-        await waitNextTick()
-      }
-    }
-  } else {
-    await ws.send(ctx, msg, useBinary, useCompression)
   }
 }
 

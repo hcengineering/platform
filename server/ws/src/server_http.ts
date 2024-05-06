@@ -27,7 +27,6 @@ import { WebSocketServer, type RawData, type WebSocket } from 'ws'
 import { getStatistics, wipeStatistics } from './stats'
 import {
   LOGGING_ENABLED,
-  type AddSessionResponse,
   type ConnectionSocket,
   type HandleRequestFunction,
   type PipelineFactory,
@@ -36,6 +35,7 @@ import {
 
 import 'bufferutil'
 import 'utf-8-validate'
+import { doSessionOp, processRequest, type WebsocketData } from './utils'
 
 /**
  * @public
@@ -204,62 +204,31 @@ export function startHttpServer (
       mode: token.extra?.mode,
       model: token.extra?.model
     }
-    const cs: ConnectionSocket = {
-      id: generateId(),
-      isClosed: false,
-      close: () => {
-        cs.isClosed = true
-        ws.close()
-      },
-      data: () => data,
-      send: async (ctx: MeasureContext, msg, binary, compression) => {
-        if (ws.readyState !== ws.OPEN && !cs.isClosed) {
-          return 0
-        }
-        const smsg = serialize(msg, binary)
+    const cs: ConnectionSocket = createWebsocketClientSocket(ws, data)
 
-        ctx.measure('send-data', smsg.length)
-
-        while (ws.bufferedAmount > 128 && ws.readyState === ws.OPEN) {
-          await new Promise<void>((resolve) => {
-            setImmediate(resolve)
-          })
-        }
-        await new Promise<void>((resolve, reject) => {
-          ws.send(smsg, { binary: true, compress: compression }, (err) => {
-            if (err != null) {
-              reject(err)
-            }
-            resolve()
-          })
-        })
-        return smsg.length
-      }
+    const webSocketData: WebsocketData = {
+      connectionSocket: cs,
+      payload: token,
+      token: rawToken,
+      session: sessions.addSession(ctx, cs, token, rawToken, pipelineFactory, productId, sessionId, accountsUrl),
+      url: ''
     }
 
-    let session: AddSessionResponse | Promise<AddSessionResponse> = sessions.addSession(
-      ctx,
-      cs,
-      token,
-      rawToken,
-      pipelineFactory,
-      productId,
-      sessionId,
-      accountsUrl
-    )
-
-    void session.then((s) => {
-      if ('upgrade' in s || 'error' in s) {
-        if ('error' in s) {
-          ctx.error('error', { error: s.error?.message, stack: s.error?.stack })
+    if (webSocketData.session instanceof Promise) {
+      void webSocketData.session.then((s) => {
+        if ('upgrade' in s || 'error' in s) {
+          if ('error' in s) {
+            ctx.error('error', { error: s.error?.message, stack: s.error?.stack })
+          }
+          void cs
+            .send(ctx, { id: -1, result: { state: 'upgrading', stats: (s as any).upgradeInfo } }, false, false)
+            .then(() => {
+              cs.close()
+            })
         }
-        void cs
-          .send(ctx, { id: -1, result: { state: 'upgrading', stats: (s as any).upgradeInfo } }, false, false)
-          .then(() => {
-            cs.close()
-          })
-      }
-    })
+      })
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     ws.on('message', (msg: RawData) => {
       try {
@@ -270,18 +239,9 @@ export function startHttpServer (
           buff = Buffer.concat(msg)
         }
         if (buff !== undefined) {
-          if (session instanceof Promise) {
-            void session.then((_session) => {
-              session = _session
-              if ('session' in _session) {
-                void handleRequest(_session.context, _session.session, cs, buff, _session.workspaceId)
-              }
-            })
-          } else {
-            if ('session' in session) {
-              void handleRequest(session.context, session.session, cs, buff, session.workspaceId)
-            }
-          }
+          doSessionOp(webSocketData, (s) => {
+            processRequest(s.session, cs, s.context, s.workspaceId, buff, handleRequest)
+          })
         }
       } catch (err: any) {
         Analytics.handleError(err)
@@ -292,28 +252,18 @@ export function startHttpServer (
     })
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     ws.on('close', async (code: number, reason: Buffer) => {
-      if (session instanceof Promise) {
-        session = await session
-      }
-      if ('session' in session) {
-        if (!(session.session.workspaceClosed ?? false)) {
+      doSessionOp(webSocketData, (s) => {
+        if (!(s.session.workspaceClosed ?? false)) {
           // remove session after 1seconds, give a time to reconnect.
           void sessions.close(cs, toWorkspaceString(token.workspace))
         }
-      }
+      })
     })
 
     ws.on('error', (err) => {
-      if (session instanceof Promise) {
-        void session.then((s) => {
-          if ('session' in session) {
-            console.error(session.session.getUser(), 'error', err)
-          }
-        })
-      }
-      if ('session' in session) {
-        console.error(session.session.getUser(), 'error', err)
-      }
+      doSessionOp(webSocketData, (s) => {
+        console.error(s.session.getUser(), 'error', err)
+      })
     })
   }
   wss.on('connection', handleConnection as any)
@@ -335,7 +285,6 @@ export function startHttpServer (
 
       wss.handleUpgrade(request, socket, head, (ws) => {
         void handleConnection(ws, request, payload, token, sessionId ?? undefined)
-        // wss.emit('connection', ws, request, payload, token, sessionId)
       })
     } catch (err: any) {
       Analytics.handleError(err)
@@ -384,4 +333,41 @@ export function startHttpServer (
       })
     )
   }
+}
+function createWebsocketClientSocket (
+  ws: WebSocket,
+  data: { remoteAddress: string, userAgent: string, language: string, email: string, mode: any, model: any }
+): ConnectionSocket {
+  const cs: ConnectionSocket = {
+    id: generateId(),
+    isClosed: false,
+    close: () => {
+      cs.isClosed = true
+      ws.close()
+    },
+    data: () => data,
+    send: async (ctx: MeasureContext, msg, binary, compression) => {
+      if (ws.readyState !== ws.OPEN && !cs.isClosed) {
+        return 0
+      }
+      const smsg = serialize(msg, binary)
+
+      while (ws.bufferedAmount > 128 && ws.readyState === ws.OPEN) {
+        await new Promise<void>((resolve) => {
+          setImmediate(resolve)
+        })
+      }
+      ctx.measure('send-data', smsg.length)
+      await new Promise<void>((resolve, reject) => {
+        ws.send(smsg, { binary: true, compress: compression }, (err) => {
+          if (err != null) {
+            reject(err)
+          }
+          resolve()
+        })
+      })
+      return smsg.length
+    }
+  }
+  return cs
 }

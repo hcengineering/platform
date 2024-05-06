@@ -11,7 +11,7 @@ import {
   type WorkspaceId,
   type WorkspaceIdWithUrl
 } from '@hcengineering/core'
-import { type Response } from '@hcengineering/rpc'
+import { type Request, type Response } from '@hcengineering/rpc'
 import { type BroadcastFunc, type Pipeline } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
 
@@ -132,10 +132,12 @@ export interface Workspace {
   workspaceName: string
 }
 
-export type AddSessionResponse =
-  | { session: Session, context: MeasureContext, workspaceId: string }
-  | { upgrade: true }
-  | { error: any }
+export interface AddSessionActive {
+  session: Session
+  context: MeasureContext
+  workspaceId: string
+}
+export type AddSessionResponse = AddSessionActive | { upgrade: true } | { error: any }
 
 /**
  * @public
@@ -185,9 +187,9 @@ export type HandleRequestFunction = <S extends Session>(
   rctx: MeasureContext,
   service: S,
   ws: ConnectionSocket,
-  msg: Buffer,
+  msg: Request<any>,
   workspaceId: string
-) => Promise<void>
+) => Promise<Response<any> | undefined>
 
 /**
  * @public

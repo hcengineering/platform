@@ -46,7 +46,7 @@ import core, {
 } from '@hcengineering/core'
 import { PlatformError, UNAUTHORIZED, broadcastEvent, getMetadata, unknownError } from '@hcengineering/platform'
 
-import { HelloRequest, HelloResponse, ReqId, readResponse, serialize } from '@hcengineering/rpc'
+import { HelloRequest, HelloResponse, ReqId, readResponse, serialize, type Response } from '@hcengineering/rpc'
 
 const SECOND = 1000
 const pingTimeout = 10 * SECOND
@@ -55,7 +55,7 @@ const dialTimeout = 30 * SECOND
 
 class RequestPromise {
   startTime: number = Date.now()
-  handleTime?: (diff: number, result: any, serverTime: number, queue: number) => void
+  handleTime?: (diff: number, result: any, serverTime: number, queue: number, toRecieve: number) => void
   readonly promise: Promise<any>
   resolve!: (value?: any) => void
   reject!: (reason?: any) => void
@@ -198,6 +198,170 @@ class Connection implements ClientConnection {
     }
   }
 
+  handleMsg (socketId: number, resp: Response<any>): void {
+    if (resp.error !== undefined) {
+      if (resp.error?.code === UNAUTHORIZED.code) {
+        Analytics.handleError(new PlatformError(resp.error))
+        this.closed = true
+        this.websocket?.close()
+        this.onUnauthorized?.()
+      }
+      console.error(resp.error)
+      return
+    }
+
+    if (resp.id === -1) {
+      this.delay = 0
+      if (resp.result?.state === 'upgrading') {
+        void this.onConnect?.(ClientConnectEvent.Maintenance, resp.result.stats)
+        this.upgrading = true
+        this.delay = 3
+        return
+      }
+      if (resp.result === 'hello') {
+        if (this.upgrading) {
+          // We need to call upgrade since connection is upgraded
+          this.onUpgrade?.()
+        }
+
+        this.upgrading = false
+        if ((resp as HelloResponse).alreadyConnected === true) {
+          this.sessionId = generateId()
+          if (typeof sessionStorage !== 'undefined') {
+            sessionStorage.setItem('session.id.' + this.url, this.sessionId)
+          }
+          console.log('Connection: alreadyConnected, reconnect with new Id')
+          clearTimeout(dialTimeout)
+          this.scheduleOpen(true)
+          return
+        }
+        if ((resp as HelloResponse).binary) {
+          this.binaryMode = true
+        }
+        // Notify all waiting connection listeners
+        const handlers = this.onConnectHandlers.splice(0, this.onConnectHandlers.length)
+        for (const h of handlers) {
+          h()
+        }
+
+        for (const [, v] of this.requests.entries()) {
+          v.reconnect?.()
+        }
+
+        void this.onConnect?.(
+          (resp as HelloResponse).reconnect === true ? ClientConnectEvent.Reconnected : ClientConnectEvent.Connected
+        )
+        this.schedulePing(socketId)
+        return
+      } else {
+        Analytics.handleError(new Error(`unexpected response: ${JSON.stringify(resp)}`))
+      }
+      return
+    }
+    if (resp.result === 'ping') {
+      void this.sendRequest({ method: 'ping', params: [] })
+      return
+    }
+    if (resp.id !== undefined) {
+      const promise = this.requests.get(resp.id)
+      if (promise === undefined) {
+        console.error(
+          new Error(`unknown response id: ${resp.id as string} ${this.workspace} ${this.email}`),
+          JSON.stringify(this.requests)
+        )
+        return
+      }
+
+      if (resp.chunk !== undefined) {
+        promise.chunks = [
+          ...(promise.chunks ?? []),
+          {
+            index: resp.chunk.index,
+            data: resp.result as FindResult<any>
+          }
+        ]
+        // console.log(socketId, 'chunk', promise.method, promise.params, promise.chunks.length, (resp.result as []).length)
+        if (resp.chunk.final) {
+          promise.chunks.sort((a, b) => a.index - b.index)
+          let result: any[] = []
+          let total = -1
+          let lookupMap: Record<string, Doc> | undefined
+
+          for (const c of promise.chunks) {
+            if (c.data.total !== 0) {
+              total = c.data.total
+            }
+            if (c.data.lookupMap !== undefined) {
+              lookupMap = c.data.lookupMap
+            }
+            result = result.concat(c.data)
+          }
+          resp.result = toFindResult(result, total, lookupMap)
+          resp.chunk = undefined
+        } else {
+          // Not all chunks are available yet.
+          return
+        }
+      }
+
+      const request = this.requests.get(resp.id)
+      promise.handleTime?.(
+        Date.now() - promise.startTime,
+        resp.result,
+        resp.time ?? 0,
+        resp.queue ?? 0,
+        Date.now() - (resp.bfst ?? 0)
+      )
+      this.requests.delete(resp.id)
+      if (resp.error !== undefined) {
+        console.log(
+          'ERROR',
+          'request:',
+          request?.method,
+          'response-id:',
+          resp.id,
+          'error: ',
+          resp.error,
+          'result: ',
+          resp.result,
+          this.workspace,
+          this.email
+        )
+        promise.reject(new PlatformError(resp.error))
+      } else {
+        if (request?.handleResult !== undefined) {
+          void request.handleResult(resp.result).then(() => {
+            promise.resolve(resp.result)
+          })
+        } else {
+          promise.resolve(resp.result)
+        }
+      }
+      void broadcastEvent(client.event.NetworkRequests, this.requests.size)
+    } else {
+      const txArr = Array.isArray(resp.result) ? (resp.result as Tx[]) : [resp.result as Tx]
+
+      for (const tx of txArr) {
+        if (
+          (tx?._class === core.class.TxWorkspaceEvent && (tx as TxWorkspaceEvent).event === WorkspaceEvent.Upgrade) ||
+          tx?._class === core.class.TxModelUpgrade
+        ) {
+          console.log('Processing upgrade', this.workspace, this.email)
+          this.onUpgrade?.()
+          return
+        }
+      }
+      this.handler(...txArr)
+
+      clearTimeout(this.incomingTimer)
+      void broadcastEvent(client.event.NetworkRequests, this.requests.size + 1)
+
+      this.incomingTimer = setTimeout(() => {
+        void broadcastEvent(client.event.NetworkRequests, this.requests.size)
+      }, 500)
+    }
+  }
+
   private openConnection (socketId: number): void {
     this.binaryMode = false
     // Use defined factory or browser default one.
@@ -205,7 +369,7 @@ class Connection implements ClientConnection {
       getMetadata(client.metadata.ClientSocketFactory) ??
       ((url: string) => {
         const s = new WebSocket(url)
-        s.binaryType = 'arraybuffer'
+        // s.binaryType = 'arraybuffer'
         return s as ClientSocket
       })
 
@@ -245,162 +409,14 @@ class Connection implements ClientConnection {
       if (this.websocket !== wsocket) {
         return
       }
-      const resp = readResponse<any>(event.data, this.binaryMode)
-
-      if (resp.error !== undefined) {
-        if (resp.error?.code === UNAUTHORIZED.code) {
-          Analytics.handleError(new PlatformError(resp.error))
-          this.closed = true
-          this.websocket.close()
-          this.onUnauthorized?.()
-        }
-        console.error(resp.error)
-        return
-      }
-
-      if (resp.id === -1) {
-        this.delay = 0
-        if (resp.result?.state === 'upgrading') {
-          void this.onConnect?.(ClientConnectEvent.Maintenance, resp.result.stats)
-          this.upgrading = true
-          this.delay = 3
-          return
-        }
-        if (resp.result === 'hello') {
-          if (this.upgrading) {
-            // We need to call upgrade since connection is upgraded
-            this.onUpgrade?.()
-          }
-
-          this.upgrading = false
-          if ((resp as HelloResponse).alreadyConnected === true) {
-            this.sessionId = generateId()
-            if (typeof sessionStorage !== 'undefined') {
-              sessionStorage.setItem('session.id.' + this.url, this.sessionId)
-            }
-            console.log('Connection: alreadyConnected, reconnect with new Id')
-            clearTimeout(dialTimeout)
-            this.scheduleOpen(true)
-            return
-          }
-          if ((resp as HelloResponse).binary) {
-            this.binaryMode = true
-          }
-          // Notify all waiting connection listeners
-          const handlers = this.onConnectHandlers.splice(0, this.onConnectHandlers.length)
-          for (const h of handlers) {
-            h()
-          }
-
-          for (const [, v] of this.requests.entries()) {
-            v.reconnect?.()
-          }
-
-          void this.onConnect?.(
-            (resp as HelloResponse).reconnect === true ? ClientConnectEvent.Reconnected : ClientConnectEvent.Connected
-          )
-          this.schedulePing(socketId)
-          return
-        } else {
-          Analytics.handleError(new Error(`unexpected response: ${JSON.stringify(resp)}`))
-        }
-        return
-      }
-      if (resp.result === 'ping') {
-        void this.sendRequest({ method: 'ping', params: [] })
-        return
-      }
-      if (resp.id !== undefined) {
-        const promise = this.requests.get(resp.id)
-        if (promise === undefined) {
-          console.error(
-            new Error(`unknown response id: ${resp.id as string} ${this.workspace} ${this.email}`),
-            JSON.stringify(this.requests)
-          )
-          return
-        }
-
-        if (resp.chunk !== undefined) {
-          promise.chunks = [
-            ...(promise.chunks ?? []),
-            {
-              index: resp.chunk.index,
-              data: resp.result as FindResult<any>
-            }
-          ]
-          // console.log(socketId, 'chunk', promise.method, promise.params, promise.chunks.length, (resp.result as []).length)
-          if (resp.chunk.final) {
-            promise.chunks.sort((a, b) => a.index - b.index)
-            let result: any[] = []
-            let total = -1
-            let lookupMap: Record<string, Doc> | undefined
-
-            for (const c of promise.chunks) {
-              if (c.data.total !== 0) {
-                total = c.data.total
-              }
-              if (c.data.lookupMap !== undefined) {
-                lookupMap = c.data.lookupMap
-              }
-              result = result.concat(c.data)
-            }
-            resp.result = toFindResult(result, total, lookupMap)
-            resp.chunk = undefined
-          } else {
-            // Not all chunks are available yet.
-            return
-          }
-        }
-
-        const request = this.requests.get(resp.id)
-        promise.handleTime?.(Date.now() - promise.startTime, resp.result, resp.time ?? 0, resp.queue ?? 0)
-        this.requests.delete(resp.id)
-        if (resp.error !== undefined) {
-          console.log(
-            'ERROR',
-            'request:',
-            request?.method,
-            'response-id:',
-            resp.id,
-            'error: ',
-            resp.error,
-            'result: ',
-            resp.result,
-            this.workspace,
-            this.email
-          )
-          promise.reject(new PlatformError(resp.error))
-        } else {
-          if (request?.handleResult !== undefined) {
-            void request.handleResult(resp.result).then(() => {
-              promise.resolve(resp.result)
-            })
-          } else {
-            promise.resolve(resp.result)
-          }
-        }
-        void broadcastEvent(client.event.NetworkRequests, this.requests.size)
+      if (event.data instanceof Blob) {
+        void event.data.arrayBuffer().then((data) => {
+          const resp = readResponse<any>(data, this.binaryMode)
+          this.handleMsg(socketId, resp)
+        })
       } else {
-        const txArr = Array.isArray(resp.result) ? (resp.result as Tx[]) : [resp.result as Tx]
-
-        for (const tx of txArr) {
-          if (
-            (tx?._class === core.class.TxWorkspaceEvent && (tx as TxWorkspaceEvent).event === WorkspaceEvent.Upgrade) ||
-            tx?._class === core.class.TxModelUpgrade
-          ) {
-            console.log('Processing upgrade', this.workspace, this.email)
-            this.onUpgrade?.()
-            return
-          }
-        }
-        this.handler(...txArr)
-
-        clearTimeout(this.incomingTimer)
-        void broadcastEvent(client.event.NetworkRequests, this.requests.size + 1)
-
-        this.incomingTimer = setTimeout(() => {
-          void broadcastEvent(client.event.NetworkRequests, this.requests.size)
-        }, 500)
+        const resp = readResponse<any>(event.data, this.binaryMode)
+        this.handleMsg(socketId, resp)
       }
     }
     wsocket.onclose = (ev) => {
@@ -454,7 +470,7 @@ class Connection implements ClientConnection {
     retry?: () => Promise<boolean>
     handleResult?: (result: any) => Promise<void>
     once?: boolean // Require handleResult to retrieve result
-    measure?: (time: number, result: any, serverTime: number, queue: number) => void
+    measure?: (time: number, result: any, serverTime: number, queue: number, toRecieve: number) => void
     allowReconnect?: boolean
   }): Promise<any> {
     if (this.closed) {
@@ -547,12 +563,13 @@ class Connection implements ClientConnection {
     const result = await this.sendRequest({
       method: 'findAll',
       params: [_class, query, options],
-      measure: (time, result, serverTime, queue) => {
+      measure: (time, result, serverTime, queue, toReceive) => {
         if (typeof window !== 'undefined' && (time > 1000 || serverTime > 500)) {
           console.error(
             'measure slow findAll',
             time,
             serverTime,
+            toReceive,
             queue,
             _class,
             query,
