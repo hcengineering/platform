@@ -502,6 +502,16 @@ export function createModel (builder: Builder): void {
     pinned: true
   })
 
+  builder.mixin(core.class.Account, core.class.Class, view.mixin.Aggregation, {
+    createAggregationManager: contact.aggregation.CreatePersonAggregationManager,
+    setStoreFunc: contact.function.SetPersonStore,
+    filterFunc: contact.function.PersonFilterFunction
+  })
+
+  builder.mixin(core.class.Account, core.class.Class, view.mixin.Groupping, {
+    grouppingManager: contact.aggregation.GrouppingPersonManager
+  })
+
   builder.mixin(contact.mixin.Employee, core.class.Class, view.mixin.ObjectEditor, {
     editor: contact.component.EditEmployee,
     pinned: true

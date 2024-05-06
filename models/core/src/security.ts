@@ -166,7 +166,7 @@ export class TSpacesTypeData extends TSpace implements RolesAssignment {
 }
 
 @Model(core.class.Account, core.class.Doc, DOMAIN_MODEL)
-@UX(core.string.Account)
+@UX(core.string.Account, undefined, undefined, 'name')
 export class TAccount extends TDoc implements Account {
   email!: string
   role!: AccountRole

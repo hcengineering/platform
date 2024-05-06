@@ -16,7 +16,7 @@
 
 import { contactId } from '@hcengineering/contact'
 import contact from '@hcengineering/contact-resources/src/plugin'
-import type { Client, Doc, Ref } from '@hcengineering/core'
+import type { Client, Doc, DocManager, Ref } from '@hcengineering/core'
 import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/model-presentation'
 import { type NotificationGroup } from '@hcengineering/notification'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
@@ -139,6 +139,8 @@ export default mergeIds(contactId, contact, {
     GetContactLastName: '' as Resource<TemplateFieldFunc>,
     ContactTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
     ChannelTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
-    ChannelIdentifierProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>
+    ChannelIdentifierProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
+    SetPersonStore: '' as Resource<(manager: DocManager<any>) => void>,
+    PersonFilterFunction: '' as Resource<(doc: Doc, target: Doc) => boolean>
   }
 })
