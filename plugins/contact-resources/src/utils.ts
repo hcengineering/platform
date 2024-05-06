@@ -474,7 +474,9 @@ export function groupByPersonAccountCategories (categories: any[]): AggregateVal
       if (fst === undefined) {
         const components = mgr
           .getDocs()
-          .filter((it) => it.person === personAccount.person && (categories.includes(it._id) || usedSpaces.has(it.space)))
+          .filter(
+            (it) => it.person === personAccount.person && (categories.includes(it._id) || usedSpaces.has(it.space))
+          )
           .sort((a, b) => a.email.localeCompare(b.email))
           .map((it) => new AggregateValueData(it.person, it._id, it.space))
         fst = new AggregateValue(personAccount.person, components)
