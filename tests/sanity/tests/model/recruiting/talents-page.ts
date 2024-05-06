@@ -60,7 +60,7 @@ export class TalentsPage extends CommonRecruitingPage {
   skillsLink = (): Locator => this.page.locator('text=Skills')
   newSkillButton = (): Locator => this.page.locator('button:has-text("Skill")')
   emailContact = (): Locator =>
-    this.page.locator('div[class^="popupPanel-body"] div.horizontal button[id="gmail:string:Email"]')
+    this.page.locator('div[class^="popupPanel-body__header"] button[id="gmail:string:Email"]')
 
   async clickAddApplication (): Promise<void> {
     await this.addApplicationButton().click()
