@@ -113,11 +113,11 @@ export async function connect (title: string): Promise<Client | undefined> {
   )
   console.log('logging in as guest')
   Analytics.handleEvent('GUEST LOGIN')
-  Analytics.setTag('workspace', ws)
+  Analytics.setWorkspace(ws)
   const me = await _client?.getAccount()
   if (me !== undefined) {
     Analytics.setUser(me.email)
-    Analytics.setTag('workspace', ws)
+    Analytics.setWorkspace(ws)
     console.log('login: employee account', me)
     setCurrentAccount(me)
   }

@@ -179,7 +179,7 @@ export async function createWorkspace (
     const result = await response.json()
     if (result.error == null) {
       Analytics.handleEvent('create workspace')
-      Analytics.setTag('workspace', workspaceName)
+      Analytics.setWorkspace(workspaceName)
     } else {
       await handleStatusError('Create workspace error', result.error)
     }
@@ -337,7 +337,7 @@ export async function selectWorkspace (workspace: string): Promise<[Status, Work
     const result = await response.json()
     if (result.error == null) {
       Analytics.handleEvent('Select workspace')
-      Analytics.setTag('workspace', workspace)
+      Analytics.setWorkspace(workspace)
     } else {
       await handleStatusError('Select workspace error', result.error)
     }
@@ -386,7 +386,7 @@ export async function fetchWorkspace (workspace: string): Promise<[Status, Works
     const result = await response.json()
     if (result.error == null) {
       Analytics.handleEvent('Fetch workspace')
-      Analytics.setTag('workspace', workspace)
+      Analytics.setWorkspace(workspace)
     } else {
       await handleStatusError('Fetch workspace error', result.error)
     }
@@ -433,7 +433,7 @@ export async function createMissingEmployee (workspace: string): Promise<[Status
     const result = await response.json()
     if (result.error == null) {
       Analytics.handleEvent('Create missing employee')
-      Analytics.setTag('workspace', workspace)
+      Analytics.setWorkspace(workspace)
     } else {
       await handleStatusError('Fetch workspace error', result.error)
     }
