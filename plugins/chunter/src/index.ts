@@ -17,7 +17,7 @@ import { ActivityMessage, ActivityMessageViewlet } from '@hcengineering/activity
 import type { Person } from '@hcengineering/contact'
 import type { Account, AttachedDoc, Class, Doc, Markup, Mixin, Ref, Space, Timestamp } from '@hcengineering/core'
 import { NotificationType } from '@hcengineering/notification'
-import type { Asset, Plugin, Resource } from '@hcengineering/platform'
+import type { Asset, Plugin } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
 import { Action } from '@hcengineering/view'
@@ -83,7 +83,6 @@ export interface DirectMessageInput extends Class<Doc> {
  */
 export interface ObjectChatPanel extends Class<Doc> {
   ignoreKeys: string[]
-  titleProvider: Resource<(object: Doc) => string>
 }
 
 /**
@@ -131,7 +130,6 @@ export default plugin(chunterId, {
   },
   component: {
     DmHeader: '' as AnyComponent,
-    ChannelView: '' as AnyComponent,
     ThreadView: '' as AnyComponent,
     Thread: '' as AnyComponent,
     Reactions: '' as AnyComponent,
@@ -140,8 +138,6 @@ export default plugin(chunterId, {
     ChatMessagePresenter: '' as AnyComponent,
     ThreadMessagePresenter: '' as AnyComponent,
     ChatAside: '' as AnyComponent,
-    Replies: '' as AnyComponent,
-    ReplyToThreadAction: '' as AnyComponent,
     ChatMessagePreview: '' as AnyComponent,
     ThreadMessagePreview: '' as AnyComponent
   },
@@ -175,10 +171,12 @@ export default plugin(chunterId, {
     ConvertToPrivate: '' as IntlString,
     DirectNotificationTitle: '' as IntlString,
     DirectNotificationBody: '' as IntlString,
+    MessageNotificationBody: '' as IntlString,
     AddCommentPlaceholder: '' as IntlString,
     LeftComment: '' as IntlString,
     Docs: '' as IntlString,
     Chat: '' as IntlString,
+    Thread: '' as IntlString,
     ThreadMessage: '' as IntlString,
     ReplyToThread: '' as IntlString,
     Channels: '' as IntlString,
@@ -212,7 +210,6 @@ export default plugin(chunterId, {
   },
   action: {
     DeleteChatMessage: '' as Ref<Action>,
-    OpenChannel: '' as Ref<Action>,
     LeaveChannel: '' as Ref<Action>,
     RemoveChannel: '' as Ref<Action>,
     CloseConversation: '' as Ref<Action>

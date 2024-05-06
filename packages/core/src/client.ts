@@ -82,7 +82,8 @@ export enum ClientConnectEvent {
 
   // Client could cause back a few more states.
   Upgraded, // In case client code receive a full new model and need to be rebuild.
-  Refresh // In case we detect query refresh is required
+  Refresh, // In case we detect query refresh is required
+  Maintenance // In case workspace are in maintenance mode
 }
 /**
  * @public
@@ -205,6 +206,10 @@ class ClientImpl implements AccountClient, BackupClient, MeasureClient {
 
   async getAccount (): Promise<Account> {
     return await this.conn.getAccount()
+  }
+
+  async sendForceClose (): Promise<void> {
+    await this.conn.sendForceClose()
   }
 }
 
@@ -517,6 +522,7 @@ function pluginFilterTx (
 ): Tx[] {
   const stx = toIdMap(systemTx)
   const totalExcluded = new Set<Ref<Tx>>()
+  let msg = ''
   for (const a of excludedPlugins) {
     for (const c of configs.values()) {
       if (a.pluginId === c.pluginId) {
@@ -538,10 +544,11 @@ function pluginFilterTx (
             totalExcluded.add(id as Ref<Tx>)
           }
         }
-        console.log('exclude plugin', c.pluginId, c.transactions.length)
+        msg += ` ${c.pluginId}:${c.transactions.length}`
       }
     }
   }
+  console.log('exclude plugin', msg)
   systemTx = systemTx.filter((t) => !totalExcluded.has(t._id))
   return systemTx
 }

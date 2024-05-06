@@ -18,6 +18,7 @@ import {
   Class,
   Doc,
   DocumentQuery,
+  FullTextData,
   IndexingConfiguration,
   MeasureContext,
   Ref,
@@ -35,34 +36,73 @@ import type {
   SearchStringResult
 } from '@hcengineering/server-core'
 import serverCore from '@hcengineering/server-core'
+import { Analytics } from '@hcengineering/analytics'
 
 import { Client, errors as esErr } from '@elastic/elasticsearch'
 import { getMetadata } from '@hcengineering/platform'
 import { Domain } from 'node:domain'
 
 const DEFAULT_LIMIT = 200
-const indexName = getMetadata(serverCore.metadata.ElasticIndexName) ?? 'storage_index'
+
+function getIndexName (): string {
+  return getMetadata(serverCore.metadata.ElasticIndexName) ?? 'storage_index'
+}
+
+function getIndexVersion (): string {
+  return getMetadata(serverCore.metadata.ElasticIndexVersion) ?? 'v1'
+}
+
 class ElasticAdapter implements FullTextAdapter {
+  private readonly workspaceString: string
+  private readonly getFulltextDocId: (doc: Ref<Doc>) => Ref<FullTextData>
+  private readonly getDocId: (fulltext: Ref<FullTextData>) => Ref<Doc>
+  private readonly indexName: string
+
   constructor (
     private readonly client: Client,
-    private readonly workspaceId: WorkspaceId,
+    readonly workspaceId: WorkspaceId,
+    private readonly indexBaseName: string,
+    readonly indexVersion: string,
     private readonly _metrics: MeasureContext
-  ) {}
+  ) {
+    this.indexName = `${indexBaseName}_${indexVersion}`
+    this.workspaceString = toWorkspaceString(workspaceId)
+    this.getFulltextDocId = (doc) => `${doc}@${this.workspaceString}` as Ref<FullTextData>
+    this.getDocId = (fulltext) => fulltext.slice(0, -1 * (this.workspaceString.length + 1)) as Ref<Doc>
+  }
 
   async createIndexes (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>): Promise<void> {}
 
   async initMapping (field?: { key: string, dims: number }): Promise<Record<string, number>> {
     // const current = await this.client.indices.getMapping({})
     // console.log('Mappings', current)
-    // const mappings = current.body[toWorkspaceString(this.workspaceId)]
+    // const mappings = current.body[this.workspaceString]
+    const indexName = this.indexName
     const result: Record<string, number> = {}
     try {
+      const baseIndexExists = await this.client.indices.exists({
+        index: this.indexBaseName
+      })
+      const existingVersions = await this.client.indices.get({
+        index: [`${this.indexBaseName}_*`]
+      })
+      const existingOldVersionIndices = Object.keys(existingVersions.body).filter((name) => name !== indexName)
+      if (baseIndexExists.body) {
+        existingOldVersionIndices.push(this.indexBaseName)
+      }
+
+      if (existingOldVersionIndices.length > 0) {
+        await this.client.indices.delete({
+          index: existingOldVersionIndices
+        })
+      }
+
       const existsOldIndex = await this.client.indices.exists({
-        index: toWorkspaceString(this.workspaceId)
+        index: this.workspaceString
       })
       if (existsOldIndex.body) {
         await this.client.indices.delete({
-          index: toWorkspaceString(this.workspaceId)
+          index: this.workspaceString
         })
       }
       const existsIndex = await this.client.indices.exists({
@@ -114,7 +154,7 @@ class ElasticAdapter implements FullTextAdapter {
         }
         if (k === 'workspaceId') {
           if (va?.type !== 'keyword') {
-            await this.metrics().info('Force index-recreate, since wrong index type was used')
+            this.metrics().info('Force index-recreate, since wrong index type was used')
             await this.client.indices.delete({
               index: indexName
             })
@@ -155,6 +195,7 @@ class ElasticAdapter implements FullTextAdapter {
         }
       }
     } catch (err: any) {
+      Analytics.handleError(err)
       console.error(err)
     }
     return result
@@ -194,7 +235,7 @@ class ElasticAdapter implements FullTextAdapter {
                   },
                   {
                     match: {
-                      workspaceId: { query: toWorkspaceString(this.workspaceId), operator: 'and' }
+                      workspaceId: { query: this.workspaceString, operator: 'and' }
                     }
                   }
                 ]
@@ -260,7 +301,7 @@ class ElasticAdapter implements FullTextAdapter {
       }
 
       const result = await this.client.search({
-        index: indexName,
+        index: this.indexName,
         body: elasticQuery
       })
 
@@ -299,7 +340,7 @@ class ElasticAdapter implements FullTextAdapter {
           },
           {
             match: {
-              workspaceId: { query: toWorkspaceString(this.workspaceId), operator: 'and' }
+              workspaceId: { query: this.workspaceString, operator: 'and' }
             }
           }
         ],
@@ -344,7 +385,7 @@ class ElasticAdapter implements FullTextAdapter {
 
     try {
       const result = await this.client.search({
-        index: indexName,
+        index: this.indexName,
         body: {
           query: request,
           size: size ?? 200,
@@ -407,7 +448,7 @@ class ElasticAdapter implements FullTextAdapter {
         ],
         must: {
           match: {
-            workspaceId: { query: toWorkspaceString(this.workspaceId), operator: 'and' }
+            workspaceId: { query: this.workspaceString, operator: 'and' }
           }
         },
         filter: [
@@ -422,7 +463,7 @@ class ElasticAdapter implements FullTextAdapter {
 
     try {
       const result = await this.client.search({
-        index: indexName,
+        index: this.indexName,
         body: {
           query: request,
           size: options?.size ?? 200,
@@ -444,20 +485,21 @@ class ElasticAdapter implements FullTextAdapter {
 
   async index (doc: IndexedDoc): Promise<TxResult> {
     const wsDoc = {
-      workspaceId: toWorkspaceString(this.workspaceId),
+      workspaceId: this.workspaceString,
       ...doc
     }
+    const fulltextId = this.getFulltextDocId(doc.id)
     if (doc.data === undefined) {
       await this.client.index({
-        index: indexName,
-        id: doc.id,
+        index: this.indexName,
+        id: fulltextId,
         type: '_doc',
         body: wsDoc
       })
     } else {
       await this.client.index({
-        index: indexName,
-        id: doc.id,
+        index: this.indexName,
+        id: fulltextId,
         type: '_doc',
         pipeline: 'attachment',
         body: wsDoc
@@ -468,8 +510,8 @@ class ElasticAdapter implements FullTextAdapter {
 
   async update (id: Ref<Doc>, update: Record<string, any>): Promise<TxResult> {
     await this.client.update({
-      index: indexName,
-      id,
+      index: this.indexName,
+      id: this.getFulltextDocId(id),
       body: {
         doc: update
       }
@@ -484,8 +526,8 @@ class ElasticAdapter implements FullTextAdapter {
       const part = parts.splice(0, 1000)
 
       const operations = part.flatMap((doc) => {
-        const wsDoc = { workspaceId: toWorkspaceString(this.workspaceId), ...doc }
-        return [{ index: { _index: indexName, _id: doc.id } }, { ...wsDoc, type: '_doc' }]
+        const wsDoc = { workspaceId: this.workspaceString, ...doc }
+        return [{ index: { _index: this.indexName, _id: this.getFulltextDocId(doc.id) } }, { ...wsDoc, type: '_doc' }]
       })
 
       const response = await this.client.bulk({ refresh: true, body: operations })
@@ -513,20 +555,20 @@ class ElasticAdapter implements FullTextAdapter {
         await this.client.deleteByQuery(
           {
             type: '_doc',
-            index: indexName,
+            index: this.indexName,
             body: {
               query: {
                 bool: {
                   must: [
                     {
                       terms: {
-                        _id: part,
+                        _id: part.map(this.getFulltextDocId),
                         boost: 1.0
                       }
                     },
                     {
                       match: {
-                        workspaceId: { query: toWorkspaceString(this.workspaceId), operator: 'and' }
+                        workspaceId: { query: this.workspaceString, operator: 'and' }
                       }
                     }
                   ]
@@ -548,7 +590,7 @@ class ElasticAdapter implements FullTextAdapter {
 
   async load (docs: Ref<Doc>[]): Promise<IndexedDoc[]> {
     const resp = await this.client.search({
-      index: indexName,
+      index: this.indexName,
       type: '_doc',
       body: {
         query: {
@@ -556,13 +598,13 @@ class ElasticAdapter implements FullTextAdapter {
             must: [
               {
                 terms: {
-                  _id: docs,
+                  _id: docs.map(this.getFulltextDocId),
                   boost: 1.0
                 }
               },
               {
                 match: {
-                  workspaceId: { query: toWorkspaceString(this.workspaceId), operator: 'and' }
+                  workspaceId: { query: this.workspaceString, operator: 'and' }
                 }
               }
             ]
@@ -571,7 +613,7 @@ class ElasticAdapter implements FullTextAdapter {
         size: docs.length
       }
     })
-    return Array.from(resp.body.hits.hits.map((hit: any) => ({ ...hit._source, id: hit._id })))
+    return Array.from(resp.body.hits.hits.map((hit: any) => ({ ...hit._source, id: this.getDocId(hit._id) })))
   }
 }
 
@@ -586,6 +628,8 @@ export async function createElasticAdapter (
   const client = new Client({
     node: url
   })
+  const indexBaseName = getIndexName()
+  const indexVersion = getIndexVersion()
 
-  return new ElasticAdapter(client, workspaceId, metrics)
+  return new ElasticAdapter(client, workspaceId, indexBaseName, indexVersion, metrics)
 }

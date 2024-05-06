@@ -1,6 +1,7 @@
 {
   "string": {
     "Setting": "Configuración",
+    "Spaces": "Espacios",
     "Integrations": "Integraciones",
     "Support": "Soporte",
     "Privacy": "Privacidad",
@@ -100,6 +101,9 @@
     "Automations": "Automatizaciones",
     "Collections": "Colecciones",
     "ClassColon": "Clase:",
-    "Branding": "Marca"
+    "Branding": "Marca",
+    "Assignees": "Atribuídos",
+    "DeleteRole": "Eliminar función",
+    "DeleteRoleConfirmation": "¿Está seguro de que desea eliminar esta función? Todos los usuarios con este rol perderán sus permisos"
   }
 }

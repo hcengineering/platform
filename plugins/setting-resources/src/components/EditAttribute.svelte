@@ -35,6 +35,8 @@
 
   export let attribute: AnyAttribute
   export let exist: boolean
+  export let disabled: boolean = true
+
   let name: string
   let type: Type<PropertyType> | undefined = attribute.type
   let index: IndexKind | undefined = attribute.index
@@ -47,6 +49,10 @@
   translate(attribute.label, {}, $themeStore.language).then((p) => (name = p))
 
   async function save (): Promise<void> {
+    if (disabled) {
+      return
+    }
+
     const update: DocumentUpdate<AnyAttribute> = {}
     const newLabel = getEmbeddedLabel(name)
     if (newLabel !== attribute.label) {
@@ -98,6 +104,7 @@
     selectType(e.detail)
   }
   const handleChange = (e: any) => {
+    if (disabled) return
     type = e.detail?.type
     index = e.detail?.index
     defaultValue = e.detail?.defaultValue
@@ -109,14 +116,16 @@
   type={'type-aside'}
   okLabel={presentation.string.Save}
   okAction={save}
-  canSave={!(name === undefined || name.trim().length === 0)}
+  canSave={!(name === undefined || name.trim().length === 0) && !disabled}
   onCancel={() => {
     clearSettingsStore()
   }}
 >
   <svelte:fragment slot="actions">
-    <ButtonIcon icon={IconDelete} size={'small'} kind={'tertiary'} />
-    <ButtonIcon icon={IconCopy} size={'small'} kind={'tertiary'} />
+    {#if !disabled}
+      <ButtonIcon icon={IconDelete} size={'small'} kind={'tertiary'} {disabled} />
+      <ButtonIcon icon={IconCopy} size={'small'} kind={'tertiary'} {disabled} />
+    {/if}
   </svelte:fragment>
   <div class="hulyModal-content__titleGroup">
     {#if attribute.isCustom}
@@ -124,7 +133,7 @@
         <Label label={setting.string.Custom} />
       </div>
     {/if}
-    <ModernEditbox bind:value={name} label={core.string.Name} size={'large'} kind={'ghost'} />
+    <ModernEditbox bind:value={name} label={core.string.Name} size={'large'} kind={'ghost'} {disabled} />
   </div>
   <div class="hulyModal-content__settingsSet">
     <div class="hulyModal-content__settingsSet-line">
@@ -141,6 +150,7 @@
           width="8rem"
           bind:selected={selectedType}
           on:selected={handleSelect}
+          {disabled}
         />
       {/if}
     </div>
@@ -150,10 +160,11 @@
         props={{
           type,
           defaultValue,
-          editable: !exist,
+          editable: !exist && !disabled,
           kind: 'regular',
           size: 'large'
         }}
+        {disabled}
         on:change={handleChange}
       />
     {/if}

@@ -15,30 +15,14 @@
 
 // To help typescript locate view plugin properly
 import activity from '@hcengineering/activity'
-import type { Employee } from '@hcengineering/contact'
-import { type FindOptions, IndexKind, type Ref, SortingOrder, type Status, type Timestamp } from '@hcengineering/core'
-import { type Customer, type Funnel, type Lead, leadId } from '@hcengineering/lead'
-import {
-  type Builder,
-  Collection,
-  Index,
-  Mixin,
-  Model,
-  Prop,
-  ReadOnly,
-  TypeCollaborativeMarkup,
-  TypeDate,
-  TypeMarkup,
-  TypeRef,
-  TypeString,
-  UX
-} from '@hcengineering/model'
-import attachment from '@hcengineering/model-attachment'
+import { type FindOptions, SortingOrder } from '@hcengineering/core'
+import { type Lead, leadId } from '@hcengineering/lead'
+import { type Builder } from '@hcengineering/model'
 import chunter from '@hcengineering/model-chunter'
-import contact, { TContact } from '@hcengineering/model-contact'
+import contact from '@hcengineering/model-contact'
 import core from '@hcengineering/model-core'
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
-import task, { TProject, TTask, actionTemplates } from '@hcengineering/model-task'
+import task, { actionTemplates } from '@hcengineering/model-task'
 import tracker from '@hcengineering/model-tracker'
 import view, { createAction, actionTemplates as viewTemplates } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
@@ -46,59 +30,15 @@ import notification from '@hcengineering/notification'
 import setting from '@hcengineering/setting'
 import { type ViewOptionsModel } from '@hcengineering/view'
 
+import { TFunnel, TLead, TCustomer } from './types'
 import lead from './plugin'
+import { defineSpaceType } from './spaceType'
 
 export { leadId } from '@hcengineering/lead'
 export { leadOperation } from './migration'
 export { default } from './plugin'
-
-@Model(lead.class.Funnel, task.class.Project)
-@UX(lead.string.Funnel, lead.icon.Funnel)
-export class TFunnel extends TProject implements Funnel {
-  @Prop(TypeMarkup(), lead.string.FullDescription)
-  @Index(IndexKind.FullText)
-    fullDescription?: string
-
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
-    attachments?: number
-
-  @Prop(Collection(chunter.class.ChatMessage), chunter.string.Comments)
-    comments?: number
-}
-
-@Model(lead.class.Lead, task.class.Task)
-@UX(lead.string.Lead, lead.icon.Lead, 'LEAD', 'title', undefined, lead.string.Leads)
-export class TLead extends TTask implements Lead {
-  @Prop(TypeRef(contact.class.Contact), lead.string.Customer)
-  @ReadOnly()
-  declare attachedTo: Ref<Customer>
-
-  @Prop(TypeDate(), task.string.StartDate)
-    startDate!: Timestamp | null
-
-  @Prop(TypeString(), lead.string.Title)
-  @Index(IndexKind.FullText)
-    title!: string
-
-  @Prop(TypeRef(contact.mixin.Employee), lead.string.Assignee)
-  declare assignee: Ref<Employee> | null
-
-  @Prop(TypeRef(core.class.Status), task.string.TaskState, { _id: lead.attribute.State })
-  declare status: Ref<Status>
-
-  declare space: Ref<Funnel>
-}
-
-@Mixin(lead.mixin.Customer, contact.class.Contact)
-@UX(lead.string.Customer, lead.icon.LeadApplication, undefined, undefined, undefined, lead.string.Customers)
-export class TCustomer extends TContact implements Customer {
-  @Prop(Collection(lead.class.Lead), lead.string.Leads)
-    leads?: number
-
-  @Prop(TypeCollaborativeMarkup(), core.string.Description)
-  @Index(IndexKind.FullText)
-    description!: string
-}
+export * from './types'
+export * from './spaceType'
 
 export function createModel (builder: Builder): void {
   const archiveId = 'archive'
@@ -659,6 +599,7 @@ export function createModel (builder: Builder): void {
     input: 'focus',
     category: lead.category.Lead,
     target: lead.class.Funnel,
+    visibilityTester: view.function.CanEditSpace,
     override: [view.action.Open],
     context: {
       mode: ['context', 'browser'],
@@ -666,29 +607,5 @@ export function createModel (builder: Builder): void {
     }
   })
 
-  builder.createDoc(
-    task.class.ProjectTypeDescriptor,
-    core.space.Model,
-    {
-      name: lead.string.LeadApplication,
-      description: lead.string.ManageFunnelStatuses,
-      icon: lead.icon.LeadApplication,
-      baseClass: lead.class.Funnel,
-      availablePermissions: [core.permission.ForbidDeleteObject],
-      allowedTaskTypeDescriptors: [lead.descriptors.Lead]
-    },
-    lead.descriptors.FunnelType
-  )
-  builder.createDoc(
-    task.class.TaskTypeDescriptor,
-    core.space.Model,
-    {
-      baseClass: lead.class.Lead,
-      allowCreate: true,
-      description: lead.string.Lead,
-      icon: lead.icon.Lead,
-      name: lead.string.Lead
-    },
-    lead.descriptors.Lead
-  )
+  defineSpaceType(builder)
 }

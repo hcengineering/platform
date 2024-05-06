@@ -78,6 +78,8 @@ export default plugin(textEditorId, {
     TableOptions: '' as IntlString,
     Width: '' as IntlString,
     Height: '' as IntlString,
-    Unset: '' as IntlString
+    Unset: '' as IntlString,
+    Image: '' as IntlString,
+    SeparatorLine: '' as IntlString
   }
 })

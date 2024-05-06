@@ -50,7 +50,6 @@
   export let hideLink = false
   export let compact = false
   export let onClick: (() => void) | undefined = undefined
-  export let onReply: (() => void) | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -183,7 +182,6 @@
     {skipLabel}
     showDatePreposition={hideLink}
     {onClick}
-    {onReply}
   >
     <svelte:fragment slot="header">
       <ChatMessageHeader {object} {parentObject} message={value} {viewlet} {person} {skipLabel} {hideLink} />

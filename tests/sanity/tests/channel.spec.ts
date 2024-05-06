@@ -9,23 +9,22 @@ test.use({
 })
 
 test.describe('channel tests', () => {
+  let leftSideMenuPage: LeftSideMenuPage
+  let chunterPage: ChunterPage
+  let channelPage: ChannelPage
   test.beforeEach(async ({ page }) => {
+    leftSideMenuPage = new LeftSideMenuPage(page)
+    chunterPage = new ChunterPage(page)
+    channelPage = new ChannelPage(page)
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
-  test.skip('create new private channel tests', async ({ page }) => {
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonChunter.click()
-
-    const chunterPage = new ChunterPage(page)
-    await chunterPage.buttonChannelBrowser.click()
-    await chunterPage.buttonNewChannelHeader.click()
-
+  test('create new private channel tests', async () => {
+    await leftSideMenuPage.clickChunter()
+    await chunterPage.clickChannelBrowser()
+    await chunterPage.clickNewChannelHeader()
     const channel = 'channel-' + generateId()
-    await chunterPage.createNewChannel(channel, true)
-    await chunterPage.openChannel(channel)
-
-    const channelPage = new ChannelPage(page)
+    await chunterPage.createPrivateChannel(channel, true)
     await channelPage.sendMessage('Test message')
     await channelPage.checkMessageExist('Test message')
   })

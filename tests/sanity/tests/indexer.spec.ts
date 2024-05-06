@@ -25,9 +25,18 @@ test.describe('Fulltext index', () => {
   })
 
   test.describe('Documents', () => {
+    let leftSideMenuPage: LeftSideMenuPage
+    let documentsPage: DocumentsPage
+    let documentContentPage: DocumentContentPage
+    let spotlight: SpotlightPopup
+
     test.beforeEach(async ({ page }) => {
-      const leftSideMenuPage = new LeftSideMenuPage(page)
-      await leftSideMenuPage.buttonDocuments.click()
+      leftSideMenuPage = new LeftSideMenuPage(page)
+      documentsPage = new DocumentsPage(page)
+      documentContentPage = new DocumentContentPage(page)
+      spotlight = new SpotlightPopup(page)
+
+      await leftSideMenuPage.clickDocuments()
     })
 
     test('Search created document', async ({ page }) => {
@@ -41,26 +50,18 @@ test.describe('Fulltext index', () => {
 
       const content = `Indexable document content ${contentId}`
 
-      const leftSideMenuPage = new LeftSideMenuPage(page)
-      const documentsPage = new DocumentsPage(page)
-      const documentContentPage = new DocumentContentPage(page)
-      const spotlight = new SpotlightPopup(page)
-
       await test.step('create document', async () => {
-        await documentsPage.buttonCreateDocument.click()
-
+        await documentsPage.clickOnButtonCreateDocument()
         await documentsPage.createDocument(newDocument)
         await documentsPage.openDocument(newDocument.title)
-
         await documentContentPage.checkDocumentTitle(newDocument.title)
-
         await documentContentPage.addContentToTheNewLine(content)
         await documentContentPage.checkContent(content)
       })
 
       await test.step('close document', async () => {
         // Go to inbox to close the document and trigger indexation
-        await leftSideMenuPage.buttonNotification.click()
+        await leftSideMenuPage.clickNotification()
       })
 
       await test.step('search by title', async () => {
@@ -98,20 +99,11 @@ test.describe('Fulltext index', () => {
 
       const updatedContentId = generateId()
       const updatedContent = `Indexable document content ${updatedContentId}`
-
-      const leftSideMenuPage = new LeftSideMenuPage(page)
-      const documentsPage = new DocumentsPage(page)
-      const documentContentPage = new DocumentContentPage(page)
-      const spotlight = new SpotlightPopup(page)
-
       await test.step('create document', async () => {
-        await documentsPage.buttonCreateDocument.click()
-
+        await documentsPage.clickOnButtonCreateDocument()
         await documentsPage.createDocument(newDocument)
         await documentsPage.openDocument(newDocument.title)
-
         await documentContentPage.checkDocumentTitle(newDocument.title)
-
         await documentContentPage.addContentToTheNewLine(content)
         await documentContentPage.checkContent(content)
       })
@@ -124,7 +116,7 @@ test.describe('Fulltext index', () => {
 
       await test.step('close document', async () => {
         // Go to inbox to close the document and trigger indexation
-        await leftSideMenuPage.buttonNotification.click()
+        await leftSideMenuPage.clickNotification()
       })
 
       await test.step('search by old title', async () => {
@@ -163,16 +155,9 @@ test.describe('Fulltext index', () => {
         title: `Indexable Document ${titleId}`,
         space: 'Default'
       }
-
       const content = `Indexable document content ${contentId}`
-
-      const leftSideMenuPage = new LeftSideMenuPage(page)
-      const documentsPage = new DocumentsPage(page)
-      const documentContentPage = new DocumentContentPage(page)
-      const spotlight = new SpotlightPopup(page)
-
       await test.step('create document', async () => {
-        await documentsPage.buttonCreateDocument.click()
+        await documentsPage.clickOnButtonCreateDocument()
 
         await documentsPage.createDocument(newDocument)
         await documentsPage.openDocument(newDocument.title)
@@ -196,7 +181,7 @@ test.describe('Fulltext index', () => {
         await documentContentPage.executeMoreAction('Delete')
         await documentContentPage.pressYesForPopup(page)
         // Go to inbox to close the document and trigger indexation
-        await leftSideMenuPage.buttonNotification.click()
+        await leftSideMenuPage.clickNotification()
       })
 
       await test.step('search by title', async () => {
@@ -211,9 +196,17 @@ test.describe('Fulltext index', () => {
   })
 
   test.describe('Issues', () => {
+    let leftSideMenuPage: LeftSideMenuPage
+    let issuesPage: IssuesPage
+    let spotlight: SpotlightPopup
+    let issuesDetailsPage: IssuesDetailsPage
+
     test.beforeEach(async ({ page }) => {
-      const leftSideMenuPage = new LeftSideMenuPage(page)
-      await leftSideMenuPage.buttonTracker.click()
+      leftSideMenuPage = new LeftSideMenuPage(page)
+      issuesPage = new IssuesPage(page)
+      spotlight = new SpotlightPopup(page)
+      issuesDetailsPage = new IssuesDetailsPage(page)
+      await leftSideMenuPage.clickTracker()
     })
 
     test('Search created issue', async ({ page }) => {
@@ -225,9 +218,6 @@ test.describe('Fulltext index', () => {
         description: `Indexable issue content ${contentId}`,
         status: 'Backlog'
       }
-
-      const issuesPage = new IssuesPage(page)
-      const spotlight = new SpotlightPopup(page)
 
       await test.step('create issue', async () => {
         await issuesPage.createNewIssue(newIssue)
@@ -267,10 +257,6 @@ test.describe('Fulltext index', () => {
         status: 'Backlog'
       }
 
-      const issuesPage = new IssuesPage(page)
-      const issuesDetailsPage = new IssuesDetailsPage(page)
-      const spotlight = new SpotlightPopup(page)
-
       await test.step('create issue', async () => {
         await issuesPage.createNewIssue(newIssue)
       })
@@ -285,13 +271,13 @@ test.describe('Fulltext index', () => {
       })
 
       await test.step('update issue', async () => {
-        await issuesPage.linkSidebarAll.click()
-        await issuesPage.modelSelectorAll.click()
+        await issuesPage.linkSidebarAll().click()
+        await issuesPage.clickModelSelectorAll()
         await issuesPage.searchIssueByName(newIssue.title)
         await issuesPage.openIssueByName(newIssue.title)
         await issuesDetailsPage.editIssue({ title: updatedTitle })
         await issuesDetailsPage.addToDescription(updatedContent)
-        await issuesDetailsPage.buttonCloseIssue.click()
+        await issuesDetailsPage.clickCloseIssueButton()
       })
 
       await test.step('search by old title', async () => {
@@ -332,10 +318,6 @@ test.describe('Fulltext index', () => {
         status: 'Backlog'
       }
 
-      const issuesPage = new IssuesPage(page)
-      const issuesDetailsPage = new IssuesDetailsPage(page)
-      const spotlight = new SpotlightPopup(page)
-
       await test.step('create issue', async () => {
         await issuesPage.createNewIssue(newIssue)
       })
@@ -350,8 +332,8 @@ test.describe('Fulltext index', () => {
       })
 
       await test.step('remove issue', async () => {
-        await issuesPage.linkSidebarAll.click()
-        await issuesPage.modelSelectorAll.click()
+        await issuesPage.linkSidebarAll().click()
+        await issuesPage.clickModelSelectorAll()
         await issuesPage.searchIssueByName(newIssue.title)
         await issuesPage.openIssueByName(newIssue.title)
         await issuesDetailsPage.moreActionOnIssue('Delete')
@@ -388,7 +370,7 @@ test.describe('Fulltext index', () => {
       const spotlight = new SpotlightPopup(page)
 
       await test.step('create issue', async () => {
-        await leftSideMenuPage.buttonTracker.click()
+        await leftSideMenuPage.clickTracker()
         await issuesPage.createNewIssue(newIssue)
       })
 
@@ -411,14 +393,14 @@ test.describe('Fulltext index', () => {
         const newWorkspaceName = `New Workspace Name - ${generateId(2)}`
 
         await loginPage.goto()
-        await loginPage.linkSignUp.click()
+        await loginPage.clickSignUp()
         await signUpPage.signUp(newUser)
 
         await selectWorkspacePage.createWorkspace(newWorkspaceName)
       })
 
       await test.step('search by title', async () => {
-        await leftSideMenuPage.buttonTracker.click()
+        await leftSideMenuPage.clickTracker()
         await expect(async () => {
           await spotlight.open()
           await spotlight.fillSearchInput(titleId)

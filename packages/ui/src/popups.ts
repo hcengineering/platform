@@ -1,6 +1,6 @@
 import { getResource } from '@hcengineering/platform'
 import { type ComponentType } from 'svelte'
-import { writable } from 'svelte/store'
+import { derived, writable } from 'svelte/store'
 import type {
   AnyComponent,
   AnySvelteComponent,
@@ -22,25 +22,36 @@ export interface CompAndProps {
   onClose?: (result: any) => void
   onUpdate?: (result: any) => void
   close: () => void
+  update?: (props: Record<string, any>) => void
   options: {
     category: string
     overlay: boolean
     fixed?: boolean
+    refId?: string
   }
+  dock?: boolean
+
+  // Internal
+  closing?: boolean
 }
 
 export interface PopupResult {
   id: string
   close: () => void
+  update: (props: Record<string, any>) => void
 }
 
 export const popupstore = writable<CompAndProps[]>([])
+
+export const dockStore = derived(popupstore, (popups) => {
+  return popups.find((popup) => popup.dock)
+})
 
 export function updatePopup (id: string, props: Partial<CompAndProps>): void {
   popupstore.update((popups) => {
     const popupIndex = popups.findIndex((p) => p.id === id)
     if (popupIndex !== -1) {
-      popups[popupIndex] = { ...popups[popupIndex], ...props }
+      popups[popupIndex].update?.(props)
     }
     return popups
   })
@@ -63,7 +74,11 @@ export function showPopup (
     category: string
     overlay: boolean
     fixed?: boolean
-  } = { category: 'popup', overlay: true }
+    refId?: string
+  } = {
+    category: 'popup',
+    overlay: true
+  }
 ): PopupResult {
   const id = `${popupId++}`
   const closePopupOp = (): void => {
@@ -90,7 +105,10 @@ export function showPopup (
   }
   return {
     id,
-    close: closePopupOp
+    close: closePopupOp,
+    update: (props) => {
+      updatePopup(id, props)
+    }
   }
 }
 
@@ -101,6 +119,13 @@ export function closePopup (category?: string): void {
     } else {
       for (let i = popups.length - 1; i >= 0; i--) {
         if (popups[i].options.fixed !== true) {
+          const isClosing = popups[i].closing ?? false
+          popups[i].closing = true
+          if (!isClosing) {
+            // To prevent possible recursion, we need to check if we call some code from popup close, to do close.
+            popups[i].onClose?.(undefined)
+          }
+          popups[i].closing = false
           popups.splice(i, 1)
           break
         }
@@ -397,4 +422,18 @@ export function getEventPositionElement (evt: MouseEvent): PopupAlignment | unde
   return {
     getBoundingClientRect: () => rect
   }
+}
+
+export function pin (id: string): void {
+  popupstore.update((popups) => {
+    popups.forEach((p) => (p.dock = p.id === id))
+    return popups
+  })
+}
+
+export function unpin (): void {
+  popupstore.update((popups) => {
+    popups.forEach((p) => (p.dock = false))
+    return popups
+  })
 }

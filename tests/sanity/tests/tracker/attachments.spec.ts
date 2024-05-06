@@ -11,31 +11,33 @@ test.use({
 })
 
 test.describe('Attachments tests', () => {
+  let leftSideMenuPage: LeftSideMenuPage
+  let trackerNavigationMenuPage: TrackerNavigationMenuPage
+  let issuesPage: IssuesPage
+  let issuesDetailsPage: IssuesDetailsPage
+
   test.beforeEach(async ({ page }) => {
+    leftSideMenuPage = new LeftSideMenuPage(page)
+    trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
+    issuesPage = new IssuesPage(page)
+    issuesDetailsPage = new IssuesDetailsPage(page)
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
-  test('Create issue with several attachment test', async ({ page }) => {
+  test('Create issue with several attachment test', async () => {
     const newIssue: NewIssue = {
       title: `Create issue with several attachment tests-${generateId()}`,
       description: 'Create issue with several attachment tests description'
     }
 
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
-
-    const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
+    await leftSideMenuPage.clickTracker()
     await trackerNavigationMenuPage.openIssuesForProject('Default')
-
-    const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
-
-    await issuesPage.buttonCreateNewIssue.click()
+    await issuesPage.clickModelSelectorAll()
+    await issuesPage.clickButtonCreateNewIssue()
     await issuesPage.fillNewIssueForm(newIssue)
     await issuesPage.attachFileToNewIssueForm('cat.jpeg')
     await issuesPage.attachFileToNewIssueForm('cat2.jpeg')
-    await issuesPage.buttonCreateIssue.click()
-
+    await issuesPage.clickButtonCreateIssue()
     await issuesPage.searchIssueByName(newIssue.title)
     await issuesPage.checkAttachmentsCount(newIssue.title, '2')
 
@@ -57,10 +59,7 @@ test.describe('Attachments tests', () => {
 
       await issuesPage.checkAttachmentsCount(newIssue.title, '2')
     })
-
     await issuesPage.openIssueByName(newIssue.title)
-
-    const issuesDetailsPage = new IssuesDetailsPage(page)
     await issuesDetailsPage.checkIssueContainsAttachment('cat.jpeg')
     await issuesDetailsPage.checkIssueContainsAttachment('cat3.jpeg')
     await issuesDetailsPage.checkActivityExist('uploaded an attachment')

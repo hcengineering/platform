@@ -34,6 +34,7 @@
     getLocation,
     navigate,
     openPanel,
+    defineSeparators,
     setResolvedLocation
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
@@ -42,6 +43,7 @@
   import { SpaceView, buildNavModel } from '@hcengineering/workbench-resources'
   import guest from '../plugin'
   import { checkAccess } from '../utils'
+  import { workbenchGuestSeparators } from '..'
 
   const excludedApps = getMetadata(workbench.metadata.ExcludedApplications) ?? []
 
@@ -263,14 +265,16 @@
     }
   }
 
+  defineSeparators('workbenchGuest', workbenchGuestSeparators)
+
   let aside: HTMLElement
   let cover: HTMLElement
 </script>
 
 {#await load() then res}
   {#if res}
-    <div class="workbench-container h-full" style:flex-direction={'row'}>
-      <div class="workbench-container inner h-full">
+    <div class="workbench-container" style:flex-direction={'row'}>
+      <div class="workbench-container inner">
         <div class="antiPanel-component antiComponent" bind:this={contentPanel}>
           {#if currentApplication && currentApplication.component}
             <Component is={currentApplication.component} props={{ currentSpace, visibleNav: false }} />
@@ -296,7 +300,7 @@
         {#if asideId}
           {@const asideComponent = navigatorModel?.aside ?? currentApplication?.aside}
           {#if asideComponent !== undefined}
-            <Separator name={'workbench'} index={1} />
+            <Separator name={'workbenchGuest'} index={0} />
             <div class="antiPanel-component antiComponent aside" bind:this={aside}>
               <Component is={asideComponent} props={{ currentSpace, _id: asideId }} on:close={closeAside} />
             </div>
@@ -326,6 +330,14 @@
 {/await}
 
 <style lang="scss">
+  .workbench-container {
+    display: flex;
+    min-width: 0;
+    min-height: 0;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+  }
   .version-wrapper {
     height: 100%;
     display: flex;
@@ -337,5 +349,11 @@
     align-items: center;
     justify-content: center;
     padding: 2rem;
+  }
+
+  @media print {
+    .workbench-container:has(~ .panel-instance) {
+      display: none;
+    }
   }
 </style>

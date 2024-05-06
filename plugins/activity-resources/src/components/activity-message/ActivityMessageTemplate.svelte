@@ -13,26 +13,21 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import activity, {
-    ActivityMessageExtension,
-    ActivityMessageViewlet,
-    DisplayActivityMessage
-  } from '@hcengineering/activity'
+  import activity, { ActivityMessageViewlet, DisplayActivityMessage } from '@hcengineering/activity'
   import { Person } from '@hcengineering/contact'
   import { Avatar, EmployeePresenter, SystemAvatar } from '@hcengineering/contact-resources'
   import core from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Action, Label } from '@hcengineering/ui'
-  import { getActions, restrictionStore } from '@hcengineering/view-resources'
+  import { Action, Icon, Label } from '@hcengineering/ui'
+  import { getActions, restrictionStore, showMenu } from '@hcengineering/view-resources'
 
   import ReactionsPresenter from '../reactions/ReactionsPresenter.svelte'
-  import ActivityMessageExtensionComponent from './ActivityMessageExtension.svelte'
   import ActivityMessagePresenter from './ActivityMessagePresenter.svelte'
   import ActivityMessageActions from '../ActivityMessageActions.svelte'
   import { isReactionMessage } from '../../activityMessagesUtils'
-  import Bookmark from '../icons/Bookmark.svelte'
   import { savedMessagesStore } from '../../activity'
   import MessageTimestamp from '../MessageTimestamp.svelte'
+  import Replies from '../Replies.svelte'
 
   export let message: DisplayActivityMessage
   export let parentMessage: DisplayActivityMessage | undefined = undefined
@@ -53,14 +48,12 @@
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
   export let showDatePreposition = false
   export let onClick: (() => void) | undefined = undefined
-  export let onReply: (() => void) | undefined = undefined
 
   const client = getClient()
 
   let menuActionIds: string[] = []
 
   let element: HTMLDivElement | undefined = undefined
-  let extensions: ActivityMessageExtension[] = []
   let isActionsOpened = false
 
   let isSaved = false
@@ -84,12 +77,6 @@
   $: if (element != null && shouldScroll) {
     setTimeout(scrollToMessage, 100)
   }
-
-  void client
-    .findAll(activity.class.ActivityMessageExtension, { ofMessage: message._class })
-    .then((res: ActivityMessageExtension[]) => {
-      extensions = res
-    })
 
   function handleActionsOpened (): void {
     isActionsOpened = true
@@ -125,6 +112,12 @@
       class:borderedHover={hoverStyles === 'borderedHover'}
       class:filledHover={hoverStyles === 'filledHover'}
       on:click={onClick}
+      on:contextmenu={(evt) => {
+        showMenu(evt, { object: message, baseMenuClass: activity.class.ActivityMessage }, () => {
+          isActionsOpened = false
+        })
+        isActionsOpened = true
+      }}
     >
       {#if showNotify && !embedded}
         <div class="notify" />
@@ -140,7 +133,7 @@
           {/if}
           {#if isSaved}
             <div class="saveMarker">
-              <Bookmark size="xx-small" />
+              <Icon icon={activity.icon.BookmarkFilled} size="xx-small" />
             </div>
           {/if}
         </div>
@@ -175,11 +168,7 @@
         <slot name="content" />
 
         {#if !hideFooter}
-          <ActivityMessageExtensionComponent
-            kind="footer"
-            {extensions}
-            props={{ object: message, embedded, onReply }}
-          />
+          <Replies {embedded} object={message} />
         {/if}
         <ReactionsPresenter object={message} {readonly} />
         {#if parentMessage && showEmbedded}
@@ -192,11 +181,10 @@
         <div class="actions" class:opened={isActionsOpened}>
           <ActivityMessageActions
             message={isReactionMessage(message) ? parentMessage : message}
-            {extensions}
             {actions}
             {withActionMenu}
-            on:open={handleActionsOpened}
-            on:close={handleActionsClosed}
+            onOpen={handleActionsOpened}
+            onClose={handleActionsClosed}
           />
         </div>
       {/if}

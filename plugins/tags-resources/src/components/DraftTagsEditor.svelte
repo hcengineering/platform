@@ -34,10 +34,21 @@
   }
 
   function click (evt: MouseEvent) {
-    showPopup(DraftTagsPopup, { targetClass, tags }, getEventPopupPositionElement(evt), undefined, (res) => {
-      tags = res
-      dispatch('change', tags)
-    })
+    showPopup(
+      DraftTagsPopup,
+      { targetClass, tags },
+      getEventPopupPositionElement(evt),
+      undefined,
+      (res) => {
+        tags = res
+        dispatch('change', tags)
+      },
+      {
+        refId: 'TagsPopup',
+        category: 'popup',
+        overlay: true
+      }
+    )
   }
 </script>
 

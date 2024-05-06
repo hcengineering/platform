@@ -17,6 +17,7 @@ import activity from '@hcengineering/activity'
 import chunter from '@hcengineering/chunter'
 import { type Builder } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
+import { type Ref, type Status } from '@hcengineering/core'
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 import presentation from '@hcengineering/model-presentation'
 import task from '@hcengineering/model-task'
@@ -24,7 +25,7 @@ import view from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import setting from '@hcengineering/setting'
-import { trackerId } from '@hcengineering/tracker'
+import { classicIssueTaskStatuses, trackerId } from '@hcengineering/tracker'
 
 import { createActions as defineActions } from './actions'
 import tracker from './plugin'
@@ -44,7 +45,9 @@ import {
   TTypeIssuePriority,
   TTypeMilestoneStatus,
   TTypeRemainingTime,
-  TTypeReportedTime
+  TTypeReportedTime,
+  TClassicProjectTypeData,
+  TIssueTypeData
 } from './types'
 import { defineViewlets } from './viewlets'
 
@@ -182,8 +185,7 @@ function defineFilters (builder: Builder): void {
       'description',
       'remainingTime',
       'reportedTime'
-    ],
-    titleProvider: tracker.function.IssueChatTitleProvider
+    ]
   })
 
   //
@@ -681,35 +683,6 @@ export function createModel (builder: Builder): void {
     tracker.ids.MilestoneChatMessageViewlet
   )
 
-  builder.createDoc(
-    task.class.ProjectTypeDescriptor,
-    core.space.Model,
-    {
-      name: tracker.string.TrackerApplication,
-      description: tracker.string.ManageWorkflowStatuses,
-      icon: task.icon.Task,
-      baseClass: tracker.class.Project,
-      availablePermissions: [core.permission.ForbidDeleteObject],
-      allowedClassic: true,
-      allowedTaskTypeDescriptors: [tracker.descriptors.Issue]
-    },
-    tracker.descriptors.ProjectType
-  )
-
-  builder.createDoc(
-    task.class.TaskTypeDescriptor,
-    core.space.Model,
-    {
-      baseClass: tracker.class.Issue,
-      allowCreate: true,
-      description: tracker.string.Issue,
-      icon: tracker.icon.Issue,
-      name: tracker.string.Issue,
-      statusCategoriesFunc: tracker.function.GetIssueStatusCategories
-    },
-    tracker.descriptors.Issue
-  )
-
   builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.ObjectIcon, {
     component: tracker.component.IssueStatusPresenter
   })
@@ -734,4 +707,107 @@ export function createModel (builder: Builder): void {
       { createdOn: -1 }
     ]
   })
+
+  defineSpaceType(builder)
+}
+
+function defineSpaceType (builder: Builder): void {
+  builder.createModel(TClassicProjectTypeData)
+  builder.createDoc(
+    task.class.ProjectTypeDescriptor,
+    core.space.Model,
+    {
+      name: tracker.string.TrackerApplication,
+      description: tracker.string.ManageWorkflowStatuses,
+      icon: task.icon.Task,
+      baseClass: tracker.class.Project,
+      availablePermissions: [
+        core.permission.UpdateSpace,
+        core.permission.ArchiveSpace,
+        core.permission.ForbidDeleteObject
+      ],
+      allowedClassic: true,
+      allowedTaskTypeDescriptors: [tracker.descriptors.Issue]
+    },
+    tracker.descriptors.ProjectType
+  )
+
+  builder.createDoc(
+    task.class.TaskTypeDescriptor,
+    core.space.Model,
+    {
+      baseClass: tracker.class.Issue,
+      allowCreate: true,
+      description: tracker.string.Issue,
+      icon: tracker.icon.Issue,
+      name: tracker.string.Issue,
+      statusCategoriesFunc: tracker.function.GetIssueStatusCategories
+    },
+    tracker.descriptors.Issue
+  )
+
+  const classicStatuses: Ref<Status>[] = []
+
+  // Create statuses for the default task type
+  for (const { category, statuses } of classicIssueTaskStatuses) {
+    for (const status of statuses) {
+      const [name, color, statusId] = Array.isArray(status) ? status : [status, undefined, undefined]
+
+      if (statusId === undefined) {
+        throw new Error('Status id is required when creating in static model. Missing for: ' + name)
+      }
+
+      classicStatuses.push(statusId)
+
+      builder.createDoc(
+        tracker.class.IssueStatus,
+        core.space.Model,
+        {
+          ofAttribute: tracker.attribute.IssueStatus,
+          name,
+          color,
+          category
+        },
+        statusId
+      )
+    }
+  }
+
+  // Create default task type
+  builder.createModel(TIssueTypeData)
+
+  builder.createDoc(
+    task.class.TaskType,
+    core.space.Model,
+    {
+      parent: tracker.ids.ClassingProjectType,
+      statuses: classicStatuses,
+      descriptor: tracker.descriptors.Issue,
+      name: 'Issue',
+      kind: 'both',
+      ofClass: tracker.class.Issue,
+      targetClass: tracker.mixin.IssueTypeData,
+      statusClass: tracker.class.IssueStatus,
+      statusCategories: classicIssueTaskStatuses.map((it) => it.category),
+      allowedAsChildOf: [tracker.taskTypes.Issue],
+      icon: tracker.icon.Issue
+    },
+    tracker.taskTypes.Issue
+  )
+
+  builder.createDoc(
+    task.class.ProjectType,
+    core.space.Model,
+    {
+      name: 'Classic project',
+      descriptor: tracker.descriptors.ProjectType,
+      description: '',
+      tasks: [tracker.taskTypes.Issue],
+      roles: 0,
+      classic: true,
+      statuses: classicStatuses.map((s) => ({ _id: s, taskType: tracker.taskTypes.Issue })),
+      targetClass: tracker.mixin.ClassicProjectTypeData
+    },
+    tracker.ids.ClassingProjectType
+  )
 }

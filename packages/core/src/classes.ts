@@ -366,6 +366,7 @@ export interface Space extends Doc {
   private: boolean
   members: Arr<Ref<Account>>
   archived: boolean
+  owners?: Ref<Account>[]
 }
 
 /**
@@ -388,6 +389,7 @@ export interface SpaceTypeDescriptor extends Doc {
   icon: Asset
   baseClass: Ref<Class<Space>> // Child class of Space for which the space type can be defined
   availablePermissions: Ref<Permission>[]
+  system?: boolean
 }
 
 /**
@@ -649,4 +651,21 @@ export interface DomainIndexConfiguration extends Doc {
   indexes?: (FieldIndex<Doc> | string)[]
 
   skip?: string[]
+}
+
+export interface BaseWorkspaceInfo {
+  workspace: string // An uniq workspace name, Database names
+  productId: string
+  disabled?: boolean
+  version?: Data<Version>
+
+  workspaceUrl?: string | null // An optional url to the workspace, if not set workspace will be used
+  workspaceName?: string // An displayed workspace name
+  createdOn: number
+  lastVisit: number
+
+  createdBy: string
+
+  creating?: boolean
+  createProgress?: number // Some progress
 }

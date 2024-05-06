@@ -19,8 +19,9 @@
 
   export let type: SpaceType | undefined
   export let descriptor: SpaceTypeDescriptor | undefined
+  export let disabled: boolean = true
 </script>
 
 {#if type !== undefined && descriptor !== undefined}
-  <ClassAttributes ofClass={descriptor.baseClass} _class={type.targetClass} showHierarchy />
+  <ClassAttributes ofClass={descriptor.baseClass} _class={type.targetClass} {disabled} showHierarchy />
 {/if}

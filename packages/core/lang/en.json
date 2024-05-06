@@ -2,6 +2,8 @@
   "string": {
     "Id": "Id",
     "Space": "Space",
+    "Spaces": "Spaces",
+    "SpacesDescription": "Manage all spaces' space type",
     "TypedSpace": "Typed space",
     "SpaceType": "Space type",
     "Modified": "Modified",
@@ -43,12 +45,19 @@
     "StatusCategory": "Status category",
     "Account": "Account",
     "Rank": "Rank",
+    "Owners": "Owners",
     "Permission": "Permission",
     "CreateObject": "Create object",
     "UpdateObject": "Update object",
     "DeleteObject": "Delete object",
-    "DeleteObjectDescription": "Grants users ability to delete objects in the space",
     "ForbidDeleteObject": "Forbid delete object",
-    "ForbidDeleteObjectDescription": "Forbid users deleting objects in the space"
+    "UpdateSpace": "Update space",
+    "ArchiveSpace": "Archive space",
+    "CreateObjectDescription": "Grants users ability to create objects in the space",
+    "UpdateObjectDescription": "Grants users ability to update objects in the space",
+    "DeleteObjectDescription": "Grants users ability to delete objects in the space",
+    "ForbidDeleteObjectDescription": "Forbid users deleting objects in the space",
+    "UpdateSpaceDescription": "Grants users ability to update the space",
+    "ArchiveSpaceDescription": "Grants users ability to archive the space"
   }
 }

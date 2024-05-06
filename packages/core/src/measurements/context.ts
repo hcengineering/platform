@@ -18,7 +18,8 @@ export class MeasureMetricsContext implements MeasureContext {
     params: ParamsType,
     fullParams: FullParamsType = {},
     metrics: Metrics = newMetrics(),
-    logger?: MeasureLogger
+    logger?: MeasureLogger,
+    readonly parent?: MeasureContext
   ) {
     this.name = name
     this.params = params
@@ -27,12 +28,24 @@ export class MeasureMetricsContext implements MeasureContext {
       this.logger.logOperation(this.name, spend, { ...params, ...fullParams })
     })
 
+    const errorPrinter = ({ message, stack, ...rest }: Error): object => ({
+      message,
+      stack,
+      ...rest
+    })
+    function replacer (value: any): any {
+      return value instanceof Error ? errorPrinter(value) : value
+    }
+
     this.logger = logger ?? {
       info: (msg, args) => {
-        console.info(msg, ...Object.entries(args ?? {}).map((it) => `${it[0]}=${JSON.stringify(it[1])}`))
+        console.info(msg, ...Object.entries(args ?? {}).map((it) => `${it[0]}=${JSON.stringify(replacer(it[1]))}`))
       },
       error: (msg, args) => {
-        console.error(msg, ...Object.entries(args ?? {}).map((it) => `${it[0]}=${JSON.stringify(it[1])}`))
+        console.error(msg, ...Object.entries(args ?? {}).map((it) => `${it[0]}=${JSON.stringify(replacer(it[1]))}`))
+      },
+      warn: (msg, args) => {
+        console.warn(msg, ...Object.entries(args ?? {}).map((it) => `${it[0]}=${JSON.stringify(replacer(it[1]))}`))
       },
       close: async () => {},
       logOperation: (operation, time, params) => {}
@@ -40,7 +53,7 @@ export class MeasureMetricsContext implements MeasureContext {
   }
 
   measure (name: string, value: number): void {
-    const c = new MeasureMetricsContext('#' + name, {}, {}, childMetrics(this.metrics, ['#' + name]), this.logger)
+    const c = new MeasureMetricsContext('#' + name, {}, {}, childMetrics(this.metrics, ['#' + name]), this.logger, this)
     c.done(value)
   }
 
@@ -50,7 +63,8 @@ export class MeasureMetricsContext implements MeasureContext {
       params,
       fullParams ?? {},
       childMetrics(this.metrics, [name]),
-      logger ?? this.logger
+      logger ?? this.logger,
+      this
     )
   }
 
@@ -69,7 +83,7 @@ export class MeasureMetricsContext implements MeasureContext {
       c.end()
       return value
     } catch (err: any) {
-      await c.error('Error during:' + name, { err })
+      c.error('Error during:' + name, { err })
       throw err
     }
   }
@@ -86,15 +100,37 @@ export class MeasureMetricsContext implements MeasureContext {
     return r
   }
 
-  async error (message: string, args?: Record<string, any>): Promise<void> {
+  error (message: string, args?: Record<string, any>): void {
     this.logger.error(message, { ...this.params, ...args })
   }
 
-  async info (message: string, args?: Record<string, any>): Promise<void> {
+  info (message: string, args?: Record<string, any>): void {
     this.logger.info(message, { ...this.params, ...args })
+  }
+
+  warn (message: string, args?: Record<string, any>): void {
+    this.logger.warn(message, { ...this.params, ...args })
   }
 
   end (): void {
     this.done()
+  }
+}
+
+/**
+ * Allow to use decorator for context enabled functions
+ */
+export function withContext (name: string, params: ParamsType = {}): any {
+  return (target: any, propertyKey: string, descriptor: PropertyDescriptor): PropertyDescriptor => {
+    const originalMethod = descriptor.value
+    descriptor.value = async function (...args: any[]): Promise<any> {
+      const ctx = args[0] as MeasureContext
+      return await ctx.with(
+        name,
+        params,
+        async (ctx) => await (originalMethod.apply(this, [ctx, ...args.slice(1)]) as Promise<any>)
+      )
+    }
+    return descriptor
   }
 }

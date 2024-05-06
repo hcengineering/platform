@@ -54,7 +54,6 @@ export default mergeIds(chunterId, chunter, {
     UnsubscribeMessage: '' as ViewAction,
     SubscribeComment: '' as ViewAction,
     UnsubscribeComment: '' as ViewAction,
-    OpenChannel: '' as ViewAction,
     LeaveChannel: '' as ViewAction,
     RemoveChannel: '' as ViewAction
   },
@@ -73,7 +72,6 @@ export default mergeIds(chunterId, chunter, {
     In: '' as IntlString,
     Replies: '' as IntlString,
     Topic: '' as IntlString,
-    Thread: '' as IntlString,
     Threads: '' as IntlString,
     New: '' as IntlString,
     GetNewReplies: '' as IntlString,

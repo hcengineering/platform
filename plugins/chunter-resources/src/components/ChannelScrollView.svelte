@@ -29,6 +29,7 @@
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { get } from 'svelte/store'
   import { tick, beforeUpdate, afterUpdate } from 'svelte'
+  import { getResource } from '@hcengineering/platform'
 
   import ActivityMessagesSeparator from './ChannelMessagesSeparator.svelte'
   import { filterChatMessages, getClosestDate, readChannelMessages } from '../utils'
@@ -58,7 +59,12 @@
   const client = getClient()
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const contextByDocStore = inboxClient.contextByDoc
-  const filters = client.getModel().findAllSync(activity.class.ActivityMessagesFilter, {})
+
+  let filters: ActivityMessagesFilter[] = []
+  const filterResources = new Map<
+  Ref<ActivityMessagesFilter>,
+  (message: ActivityMessage, _class?: Ref<Doc>) => boolean
+  >()
 
   const messagesStore = provider.messagesStore
   const isLoadingStore = provider.isLoadingStore
@@ -93,15 +99,23 @@
 
   $: notifyContext = $contextByDocStore.get(objectId)
 
-  $: void filterChatMessages(messages, filters, objectClass, selectedFilters).then((filteredMessages) => {
-    displayMessages = filteredMessages
-  })
+  void client
+    .getModel()
+    .findAll(activity.class.ActivityMessagesFilter, {})
+    .then(async (res) => {
+      filters = res
+      for (const filter of filters) {
+        filterResources.set(filter._id, await getResource(filter.filter))
+      }
+    })
+
+  $: displayMessages = filterChatMessages(messages, filters, filterResources, objectClass, selectedFilters)
 
   inboxClient.inboxNotificationsByContext.subscribe(() => {
     readViewportMessages()
   })
 
-  function scrollToBottom (afterScrollFn?: () => void) {
+  function scrollToBottom (afterScrollFn?: () => void): void {
     if (scroller !== undefined && scrollElement !== undefined) {
       scroller.scrollBy(scrollElement.scrollHeight)
       updateSelectedDate()
@@ -109,9 +123,19 @@
     }
   }
 
-  function scrollToSeparator () {
-    if (separatorElement) {
+  function scrollToSeparator (): void {
+    if (separatorElement && scrollElement) {
+      const messagesElements = scrollContentBox?.getElementsByClassName('activityMessage')
+      const messagesHeight = displayMessages
+        .slice(separatorIndex)
+        .reduce((res, msg) => res + (messagesElements?.[msg._id as any]?.clientHeight ?? 0), 0)
+
       separatorElement.scrollIntoView()
+
+      if (messagesHeight >= scrollElement.clientHeight) {
+        scroller?.scrollBy(-50)
+      }
+
       updateShouldScrollToNew()
       readViewportMessages()
     }
@@ -140,13 +164,13 @@
     readViewportMessages()
   }
 
-  function isDateRendered (date: Timestamp) {
+  function isDateRendered (date: Timestamp): boolean {
     const day = getDay(date)
 
     return document.getElementById(day.toString()) != null
   }
 
-  async function jumpToDate (e: CustomEvent) {
+  function jumpToDate (e: CustomEvent): void {
     const date = e.detail.date
 
     if (!date || !scrollElement) {
@@ -167,7 +191,7 @@
     }
   }
 
-  function scrollToDate (date: Timestamp) {
+  function scrollToDate (date: Timestamp): void {
     autoscroll = false
     dateToJump = undefined
     shouldWaitAndRead = false
@@ -186,7 +210,7 @@
     scroller?.scroll(offset)
   }
 
-  function updateShouldScrollToNew () {
+  function updateShouldScrollToNew (): void {
     if (scrollElement) {
       const { offsetHeight, scrollHeight, scrollTop } = scrollElement
       const offset = 100
@@ -195,7 +219,7 @@
     }
   }
 
-  function shouldLoadMoreUp () {
+  function shouldLoadMoreUp (): boolean {
     if (!scrollElement) {
       return false
     }
@@ -203,7 +227,7 @@
     return scrollElement.scrollTop === 0
   }
 
-  function shouldLoadMoreDown () {
+  function shouldLoadMoreDown (): boolean {
     if (!scrollElement) {
       return false
     }
@@ -215,7 +239,7 @@
 
   let scrollToRestore = 0
 
-  function loadMore () {
+  function loadMore (): void {
     if (!loadMoreAllowed || $isLoadingMoreStore || !scrollElement || isInitialScrolling) {
       return
     }
@@ -235,7 +259,7 @@
     }
   }
 
-  function handleScroll ({ autoScrolling }: ScrollParams) {
+  function handleScroll ({ autoScrolling }: ScrollParams): void {
     saveScrollPosition()
     if (autoScrolling) {
       return
@@ -278,7 +302,7 @@
     return messageRect.top >= containerRect.top && messageRect.bottom - messageRect.height / 2 <= containerRect.bottom
   }
 
-  function readViewportMessages () {
+  function readViewportMessages (): void {
     if (!scrollElement || !scrollContentBox) {
       return
     }
@@ -303,7 +327,7 @@
     void readChannelMessages(messagesToRead, notifyContext)
   }
 
-  function updateSelectedDate () {
+  function updateSelectedDate (): void {
     if (!withDates) {
       return
     }
@@ -373,7 +397,7 @@
     newTimestamp !== undefined
       ? displayMessages.findIndex((message) => (message.createdOn ?? 0) >= (newTimestamp ?? 0))
       : -1
-  $: void initializeScroll($isLoadingStore, separatorElement, separatorIndex)
+  $: void initializeScroll(isLoading, separatorElement, separatorIndex)
 
   let isInitialScrolling = true
   async function initializeScroll (isLoading: boolean, separatorElement?: HTMLDivElement, separatorIndex?: number) {
@@ -389,6 +413,7 @@
       scrollToMessage()
       isInitialScrolling = false
     } else if (separatorIndex === -1) {
+      await wait()
       isScrollInitialized = true
       shouldWaitAndRead = true
       autoscroll = true
@@ -421,33 +446,16 @@
     }
   }
 
-  let scrollToLastMessage = false
-
-  function scrollUntilSeeLastMessage () {
-    if (isLastMessageViewed()) {
-      readViewportMessages()
-      shouldScrollToNew = true
-      scrollToLastMessage = false
-    } else if (scrollToLastMessage && shouldScrollToNew) {
-      setTimeout(() => {
-        scrollToBottom(scrollUntilSeeLastMessage)
-      }, 50)
-    } else {
-      scrollToLastMessage = false
-    }
-  }
-
-  function scrollToNewMessages () {
+  function scrollToNewMessages (): void {
     if (!scrollElement || !shouldScrollToNew) {
       return
     }
 
-    scrollToLastMessage = true
     scrollToBottom()
-    scrollUntilSeeLastMessage()
+    readViewportMessages()
   }
 
-  async function wait () {
+  async function wait (): Promise<void> {
     // One tick is not enough for messages to be rendered,
     // I think this is due to the fact that we are using a Component, which takes some time to load,
     // because after one tick I see spinners from Component
@@ -473,7 +481,7 @@
     shouldWaitAndRead = false
   }
 
-  async function handleMessagesUpdated (newCount: number) {
+  async function handleMessagesUpdated (newCount: number): Promise<void> {
     if (newCount === messagesCount) {
       return
     }
@@ -491,11 +499,17 @@
     messagesCount = newCount
   }
 
-  $: handleMessagesUpdated(displayMessages.length)
-  function handleResize () {
-    if (!isInitialScrolling && isScrollInitialized) {
-      loadMore()
+  $: void handleMessagesUpdated(displayMessages.length)
+  function handleResize (): void {
+    if (isInitialScrolling || !isScrollInitialized) {
+      return
     }
+
+    if (shouldScrollToNew) {
+      scrollToBottom()
+    }
+
+    loadMore()
   }
 
   let prevScrollHeight = 0
@@ -607,7 +621,11 @@
   </div>
   {#if object}
     <div class="ref-input">
-      <ActivityExtensionComponent kind="input" {extensions} props={{ object, boundary: scrollElement, collection }} />
+      <ActivityExtensionComponent
+        kind="input"
+        {extensions}
+        props={{ object, boundary: scrollElement, collection, autofocus: true }}
+      />
     </div>
   {/if}
 {/if}

@@ -15,21 +15,23 @@
 //
 
 import {
-  type AvatarProvider,
   AvatarType,
-  type ChannelProvider,
-  type Contact,
-  type Employee,
-  type Person,
-  type PersonAccount,
   contactId,
   formatName,
   getFirstName,
   getLastName,
   getName,
-  type Channel
+  type Channel,
+  type ChannelProvider,
+  type Contact,
+  type Employee,
+  type Person,
+  type PersonAccount
 } from '@hcengineering/contact'
-import {
+import core, {
+  getCurrentAccount,
+  toIdMap,
+  type Class,
   type Client,
   type Doc,
   type IdMap,
@@ -37,21 +39,20 @@ import {
   type Ref,
   type Timestamp,
   type TxOperations,
-  getCurrentAccount,
-  toIdMap,
-  type Class
+  type Account,
+  type UserStatus
 } from '@hcengineering/core'
 import notification, { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
 import { getEmbeddedLabel, getResource, translate } from '@hcengineering/platform'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { type TemplateDataProvider } from '@hcengineering/templates'
 import {
-  type Location,
-  type ResolvedLocation,
-  type TabItem,
   getCurrentResolvedLocation,
   getPanelURI,
-  type LabelAndProps
+  type LabelAndProps,
+  type Location,
+  type ResolvedLocation,
+  type TabItem
 } from '@hcengineering/ui'
 import view, { type Filter } from '@hcengineering/view'
 import { FilterQuery } from '@hcengineering/view-resources'
@@ -295,6 +296,8 @@ export const channelProviders = writable<ChannelProvider[]>([])
 
 export const personAccountPersonByIdStore = writable<IdMap<Person>>(new Map())
 
+export const statusByUserStore = writable<Map<Ref<Account>, UserStatus>>(new Map())
+
 export const personByIdStore = derived([personAccountPersonByIdStore, employeeByIdStore], (vals) => {
   const m1 = Array.from(vals[0].entries())
   const m2 = Array.from(vals[1].entries())
@@ -341,6 +344,14 @@ function fillStores (): void {
 
 fillStores()
 
+const userStatusesQuery = createQuery(true)
+
+export function loadUsersStatus (): void {
+  userStatusesQuery.query(core.class.UserStatus, {}, (res) => {
+    statusByUserStore.set(new Map(res.map((it) => [it.user, it])))
+  })
+}
+
 export function getAvatarTypeDropdownItems (hasGravatar: boolean, imageOnly?: boolean): TabItem[] {
   if (imageOnly === true) {
     return [
@@ -368,24 +379,6 @@ export function getAvatarTypeDropdownItems (hasGravatar: boolean, imageOnly?: bo
         ]
       : [])
   ]
-}
-
-export function getAvatarProviderId (avatar?: string | null): Ref<AvatarProvider> | undefined {
-  if (avatar === null || avatar === undefined || avatar === '') {
-    return
-  }
-  if (!avatar.includes('://')) {
-    return contact.avatarProvider.Image
-  }
-  const [schema] = avatar.split('://')
-
-  switch (schema) {
-    case AvatarType.GRAVATAR:
-      return contact.avatarProvider.Gravatar
-    case AvatarType.COLOR:
-      return contact.avatarProvider.Color
-  }
-  return contact.avatarProvider.Image
 }
 
 export async function contactTitleProvider (client: Client, ref: Ref<Contact>, doc?: Contact): Promise<string> {

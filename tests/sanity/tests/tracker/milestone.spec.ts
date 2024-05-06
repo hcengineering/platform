@@ -11,33 +11,34 @@ test.use({
 })
 
 test.describe('Tracker milestone tests', () => {
+  let leftSideMenuPage: LeftSideMenuPage
+  let trackerNavigationMenuPage: TrackerNavigationMenuPage
+  let milestonesPage: MilestonesPage
+  let milestonesDetailsPage: MilestonesDetailsPage
+
   test.beforeEach(async ({ page }) => {
+    leftSideMenuPage = new LeftSideMenuPage(page)
+    trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
+    milestonesPage = new MilestonesPage(page)
+    milestonesDetailsPage = new MilestonesDetailsPage(page)
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
-  test('Create a Milestone', async ({ page }) => {
+  test('Create a Milestone', async () => {
     const newMilestone: NewMilestone = {
       name: `Created Milestone-${generateId()}`,
       description: 'Create a Milestone',
       status: 'In progress',
       targetDateInDays: 'in 3 days'
     }
-
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
-
-    const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
+    await leftSideMenuPage.clickTracker()
     await trackerNavigationMenuPage.openMilestonesForProject('Default')
-
-    const milestonesPage = new MilestonesPage(page)
     await milestonesPage.createNewMilestone(newMilestone)
     await milestonesPage.openMilestoneByName(newMilestone.name)
-
-    const milestonesDetailsPage = new MilestonesDetailsPage(page)
     await milestonesDetailsPage.checkIssue(newMilestone)
   })
 
-  test('Edit a Milestone', async ({ page }) => {
+  test('Edit a Milestone', async () => {
     const commentText = 'Edit Milestone comment'
     const editMilestone: NewMilestone = {
       name: 'Edit Milestone',
@@ -45,48 +46,29 @@ test.describe('Tracker milestone tests', () => {
       status: 'Completed',
       targetDateInDays: 'in 30 days'
     }
-
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
-
-    const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
+    await leftSideMenuPage.clickTracker()
     await trackerNavigationMenuPage.openMilestonesForProject('Default')
-
-    const milestonesPage = new MilestonesPage(page)
     await milestonesPage.openMilestoneByName(editMilestone.name)
-
-    const milestonesDetailsPage = new MilestonesDetailsPage(page)
     await milestonesDetailsPage.editIssue(editMilestone)
     await milestonesDetailsPage.checkIssue(editMilestone)
-
     await milestonesDetailsPage.addComment(commentText)
     await milestonesDetailsPage.checkCommentExist(commentText)
-    await milestonesDetailsPage.checkActivityExist('created milestone')
-    await milestonesDetailsPage.checkActivityExist('changed target date at')
-    await milestonesDetailsPage.checkActivityExist('changed status at')
+    await milestonesDetailsPage.checkActivityContentExist(`New milestone: ${editMilestone.name}`)
+    await milestonesDetailsPage.checkActivityContentExist(`Status set to ${editMilestone.status}`)
     await milestonesDetailsPage.checkActivityExist('changed description at')
   })
 
-  test('Delete a Milestone', async ({ page }) => {
+  test('Delete a Milestone', async () => {
     const deleteMilestone: NewMilestone = {
       name: 'Delete Milestone',
       description: 'Delete Milestone Description',
       status: 'Canceled'
     }
-
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
-
-    const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
+    await leftSideMenuPage.clickTracker()
     await trackerNavigationMenuPage.openMilestonesForProject('Default')
-
-    const milestonesPage = new MilestonesPage(page)
     await milestonesPage.openMilestoneByName(deleteMilestone.name)
-
-    const milestonesDetailsPage = new MilestonesDetailsPage(page)
     await milestonesDetailsPage.checkIssue(deleteMilestone)
     await milestonesDetailsPage.deleteMilestone()
-
     await milestonesPage.checkMilestoneNotExist(deleteMilestone.name)
   })
 })

@@ -2,18 +2,19 @@ import { Analytics } from '@hcengineering/analytics'
 import client from '@hcengineering/client'
 import core, {
   ClientConnectEvent,
+  setCurrentAccount,
   versionToString,
   type AccountClient,
   type Client,
-  type Version,
-  setCurrentAccount
+  type Version
 } from '@hcengineering/core'
 import login, { loginId } from '@hcengineering/login'
 import { getMetadata, getResource, setMetadata } from '@hcengineering/platform'
 import presentation, { closeClient, refreshClient, setClient } from '@hcengineering/presentation'
 import { fetchMetadataLocalStorage, getCurrentLocation, navigate, setMetadataLocalStorage } from '@hcengineering/ui'
+import { writable } from 'svelte/store'
 
-export let versionError: string | undefined = ''
+export const versionError = writable<string | undefined>(undefined)
 
 let _token: string | undefined
 let _client: AccountClient | undefined
@@ -93,7 +94,7 @@ export async function connect (title: string): Promise<Client | undefined> {
             if (currentVersionStr !== reconnectVersionStr) {
               // It seems upgrade happened
               // location.reload()
-              versionError = `${currentVersionStr} != ${reconnectVersionStr}`
+              versionError.set(`${currentVersionStr} != ${reconnectVersionStr}`)
             }
             const serverVersion: { version: string } = await (
               await fetch(serverEndpoint + '/api/v1/version', {})
@@ -101,7 +102,7 @@ export async function connect (title: string): Promise<Client | undefined> {
 
             console.log('Server version', serverVersion.version)
             if (serverVersion.version !== '' && serverVersion.version !== currentVersionStr) {
-              versionError = `${currentVersionStr} => ${serverVersion.version}`
+              versionError.set(`${currentVersionStr} => ${serverVersion.version}`)
             }
           }
         })()
@@ -112,11 +113,11 @@ export async function connect (title: string): Promise<Client | undefined> {
   )
   console.log('logging in as guest')
   Analytics.handleEvent('GUEST LOGIN')
-  Analytics.setTag('workspace', ws)
+  Analytics.setWorkspace(ws)
   const me = await _client?.getAccount()
   if (me !== undefined) {
     Analytics.setUser(me.email)
-    Analytics.setTag('workspace', ws)
+    Analytics.setWorkspace(ws)
     console.log('login: employee account', me)
     setCurrentAccount(me)
   }
@@ -131,7 +132,7 @@ export async function connect (title: string): Promise<Client | undefined> {
       const versionStr = versionToString(version)
 
       if (version === undefined || requiredVersion !== versionStr) {
-        versionError = `${versionStr} => ${requiredVersion}`
+        versionError.set(`${versionStr} => ${requiredVersion}`)
         return undefined
       }
     }
@@ -139,17 +140,17 @@ export async function connect (title: string): Promise<Client | undefined> {
     try {
       const serverVersion: { version: string } = await (await fetch(serverEndpoint + '/api/v1/version', {})).json()
 
-      console.log('Server version', serverVersion.version)
+      console.log('Server version', serverVersion.version, version !== undefined ? versionToString(version) : '')
       if (
         serverVersion.version !== '' &&
         (version === undefined || serverVersion.version !== versionToString(version))
       ) {
         const versionStr = version !== undefined ? versionToString(version) : 'unknown'
-        versionError = `${versionStr} => ${serverVersion.version}`
+        versionError.set(`${versionStr} => ${serverVersion.version}`)
         return
       }
     } catch (err: any) {
-      versionError = 'server version not available'
+      versionError.set('server version not available')
       return
     }
   } catch (err: any) {
@@ -158,11 +159,12 @@ export async function connect (title: string): Promise<Client | undefined> {
     const requirdVersion = getMetadata(presentation.metadata.RequiredVersion)
     console.log('checking min model version', requirdVersion)
     if (requirdVersion !== undefined) {
-      versionError = `'unknown' => ${requirdVersion}`
+      versionError.set(`'unknown' => ${requirdVersion}`)
       return undefined
     }
   }
 
+  versionError.set(undefined)
   // Update window title
   document.title = [ws, title].filter((it) => it).join(' - ')
   _clientSet = true

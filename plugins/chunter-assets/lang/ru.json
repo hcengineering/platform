@@ -76,6 +76,7 @@
     "NoMessages": "Сообщений пока нет",
     "DirectNotificationTitle": "{senderName}",
     "DirectNotificationBody": "{message}",
+    "MessageNotificationBody": "{senderName}: {message}",
     "AddCommentPlaceholder": "Добавить комментарий...",
     "Reacted": "Отреагировал(а)",
     "Docs": "Documents",

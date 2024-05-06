@@ -49,6 +49,7 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
+    "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/core": "^0.6.28",
     "@hcengineering/account": "^0.6.0",
     "@hcengineering/platform": "^0.6.9",
@@ -72,6 +73,6 @@
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
     "compression": "~1.7.4",
-    "ws": "^8.10.0"
+    "ws": "^8.16.0"
   }
 }

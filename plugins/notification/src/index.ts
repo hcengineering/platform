@@ -30,7 +30,7 @@ import {
   TxCUD,
   TxOperations
 } from '@hcengineering/core'
-import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
+import type { Asset, IntlString, Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { Preference } from '@hcengineering/preference'
 import { IntegrationType } from '@hcengineering/setting'
@@ -49,6 +49,28 @@ export interface BrowserNotification extends Doc {
   title: string
   body: string
   onClickLocation?: Location
+  senderId?: Ref<Account>
+  tag: Ref<Doc>
+}
+
+export interface PushData {
+  tag?: string
+  title: string
+  body: string
+  icon?: string
+  domain?: string
+  url?: string
+}
+
+export interface PushSubscriptionKeys {
+  p256dh: string
+  auth: string
+}
+
+export interface PushSubscription extends Doc {
+  user: Ref<Account>
+  endpoint: string
+  keys: PushSubscriptionKeys
 }
 
 /**
@@ -232,6 +254,7 @@ export interface InboxNotification extends Doc {
   body?: IntlString
   intlParams?: Record<string, string | number>
   intlParamsNotLocalized?: Record<string, IntlString>
+  archived?: boolean
 }
 
 export interface ActivityInboxNotification extends InboxNotification {
@@ -258,6 +281,7 @@ export interface MentionInboxNotification extends CommonInboxNotification {
 
 export interface DisplayActivityInboxNotification extends ActivityInboxNotification {
   combinedIds: Ref<ActivityInboxNotification>[]
+  combinedMessages: ActivityMessage[]
 }
 
 export type DisplayInboxNotification = DisplayActivityInboxNotification | InboxNotification
@@ -295,8 +319,8 @@ export interface InboxNotificationsClient {
   readMessages: (client: TxOperations, ids: Ref<ActivityMessage>[]) => Promise<void>
   readNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>
   unreadNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>
-  deleteNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>
-  deleteAllNotifications: () => Promise<void>
+  archiveNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>
+  archiveAllNotifications: () => Promise<void>
   readAllNotifications: () => Promise<void>
   unreadAllNotifications: () => Promise<void>
 }
@@ -332,6 +356,7 @@ const notification = plugin(notificationId, {
   },
   class: {
     BrowserNotification: '' as Ref<Class<BrowserNotification>>,
+    PushSubscription: '' as Ref<Class<PushSubscription>>,
     BaseNotificationType: '' as Ref<Class<BaseNotificationType>>,
     NotificationType: '' as Ref<Class<NotificationType>>,
     CommonNotificationType: '' as Ref<Class<CommonNotificationType>>,
@@ -352,6 +377,9 @@ const notification = plugin(notificationId, {
     NotificationGroup: '' as Ref<NotificationGroup>,
     CollaboratoAddNotification: '' as Ref<NotificationType>,
     MentionCommonNotificationType: '' as Ref<CommonNotificationType>
+  },
+  metadata: {
+    PushPublicKey: '' as Metadata<string>
   },
   providers: {
     PlatformNotification: '' as Ref<NotificationProvider>,
@@ -377,7 +405,8 @@ const notification = plugin(notificationId, {
     UnpinDocNotifyContext: '' as Ref<Action>,
     UnReadNotifyContext: '' as Ref<Action>,
     ReadNotifyContext: '' as Ref<Action>,
-    DeleteContextNotifications: '' as Ref<Action>
+    ArchiveContextNotifications: '' as Ref<Action>,
+    UnarchiveContextNotifications: '' as Ref<Action>
   },
   icon: {
     Notifications: '' as Asset,
@@ -394,6 +423,8 @@ const notification = plugin(notificationId, {
     Inbox: '' as IntlString,
     CommonNotificationTitle: '' as IntlString,
     CommonNotificationBody: '' as IntlString,
+    CommonNotificationChanged: '' as IntlString,
+    CommonNotificationChangedProperty: '' as IntlString,
     ChangedCollaborators: '' as IntlString,
     NewCollaborators: '' as IntlString,
     RemovedCollaborators: '' as IntlString,
@@ -422,4 +453,5 @@ const notification = plugin(notificationId, {
   }
 })
 
+export * from './utils'
 export default notification

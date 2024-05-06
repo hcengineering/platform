@@ -18,11 +18,11 @@
   import { AccountArrayEditor, UserBox } from '@hcengineering/contact-resources'
   import core, {
     Account,
-    Class,
     Data,
     fillDefaults,
     FindResult,
     generateId,
+    getCurrentAccount,
     Ref,
     Role,
     RolesAssignment,
@@ -217,6 +217,7 @@
         number: (incResult as any).object.sequence,
         company,
         members: [],
+        owners: [getCurrentAccount()._id],
         type: typeId
       },
       objectId

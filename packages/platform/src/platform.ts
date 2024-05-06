@@ -14,7 +14,7 @@
 // limitations under the License.
 */
 
-import { Metadata } from '.'
+import { Metadata, PluginLoader, PluginModule, Resources } from '.'
 
 /**
  * Id in format 'plugin.resource-kind.id'
@@ -156,6 +156,7 @@ export default plugin(platformId, {
     ProductIdMismatch: '' as StatusCode<{ productId: string }>
   },
   metadata: {
-    locale: '' as Metadata<string>
+    locale: '' as Metadata<string>,
+    LoadHelper: '' as Metadata<<T extends Resources>(loader: PluginLoader<T>) => Promise<PluginModule<T>>>
   }
 })

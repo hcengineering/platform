@@ -16,22 +16,15 @@
 import type { Person } from '@hcengineering/contact'
 import contact from '@hcengineering/contact'
 import {
-  ClassifierKind,
   DOMAIN_MODEL,
-  DOMAIN_STATUS,
-  DOMAIN_TX,
   IndexKind,
-  generateId,
   type Class,
-  type Data,
   type Doc,
   type Domain,
   type Ref,
   type Status,
   type StatusCategory,
-  type Timestamp,
-  type TxCreateDoc,
-  type TxMixin
+  type Timestamp
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -48,13 +41,11 @@ import {
   TypeRef,
   TypeString,
   UX,
-  type Builder,
-  type MigrationClient
+  type Builder
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
 import core, {
-  DOMAIN_SPACE,
   TAttachedDoc,
   TClass,
   TDoc,
@@ -72,8 +63,6 @@ import { getEmbeddedLabel, type Asset, type IntlString, type Resource } from '@h
 import setting from '@hcengineering/setting'
 import tags from '@hcengineering/tags'
 import {
-  calculateStatuses,
-  findStatusAttr,
   type KanbanCard,
   type Project,
   type ProjectStatus,
@@ -83,7 +72,6 @@ import {
   type Rank,
   type Sequence,
   type Task,
-  type TaskStatusFactory,
   type TaskType,
   type TaskTypeClass,
   type TaskTypeDescriptor,
@@ -97,7 +85,7 @@ import { createPublicLinkAction } from '@hcengineering/model-guest'
 import task from './plugin'
 
 export { createProjectType, taskId } from '@hcengineering/task'
-export { createSequence, taskOperation } from './migration'
+export { createSequence, taskOperation, migrateDefaultStatusesBase } from './migration'
 export { default } from './plugin'
 
 export const DOMAIN_TASK = 'task' as Domain
@@ -278,6 +266,7 @@ export const actionTemplates = template({
       label: task.string.Archive,
       message: task.string.ArchiveConfirm
     },
+    visibilityTester: view.function.CanArchiveSpace,
     input: 'any',
     category: task.category.Task,
     query: {
@@ -300,6 +289,7 @@ export const actionTemplates = template({
       label: task.string.Unarchive,
       message: task.string.UnarchiveConfirm
     },
+    visibilityTester: view.function.CanArchiveSpace,
     input: 'any',
     category: task.category.Task,
     query: {
@@ -616,279 +606,4 @@ export function createModel (builder: Builder): void {
       { attachedToClass: 1 }
     ]
   })
-}
-
-/**
- * @public
- */
-export type FixTaskData = Omit<Data<TaskType>, 'space' | 'statuses' | 'statusCategories' | 'parent'> & {
-  _id?: TaskType['_id']
-  statusCategories: TaskType['statusCategories'] | TaskStatusFactory[]
-}
-export interface FixTaskResult {
-  taskTypes: TaskType[]
-  projectTypes: ProjectType[]
-  projects: Project[]
-}
-/**
- * @public
- */
-export async function fixTaskTypes (
-  client: MigrationClient,
-  descriptor: Ref<ProjectTypeDescriptor>,
-  dataFactory: (t: ProjectType) => Promise<FixTaskData[]>,
-  migrateTasks?: (projects: Project[], taskType: TaskType) => Promise<void>
-): Promise<FixTaskResult> {
-  const categoryObj = client.model.findObject(descriptor)
-  if (categoryObj === undefined) {
-    throw new Error('category is not found in model')
-  }
-
-  const projectTypes = await client.model.findAll(task.class.ProjectType, {
-    descriptor
-  })
-  const baseClassClass = client.hierarchy.getClass(categoryObj.baseClass)
-
-  const resultTaskTypes: TaskType[] = []
-  const resultProjects: Project[] = []
-
-  for (const t of projectTypes) {
-    t.tasks = [...(t.tasks ?? [])]
-    if (t.targetClass === undefined) {
-      const targetProjectClassId: Ref<Class<Doc>> = generateId()
-      t.targetClass = targetProjectClassId
-
-      await client.create<TxCreateDoc<Doc>>(DOMAIN_TX, {
-        _id: generateId(),
-        objectId: targetProjectClassId,
-        _class: core.class.TxCreateDoc,
-        objectClass: core.class.Class,
-        objectSpace: core.space.Model,
-        modifiedBy: core.account.ConfigUser,
-        modifiedOn: Date.now(),
-        space: core.space.Model,
-        attributes: {
-          extends: categoryObj.baseClass,
-          kind: ClassifierKind.MIXIN,
-          label: baseClassClass.label,
-          icon: baseClassClass.icon
-        }
-      })
-
-      await client.create<TxMixin<Class<ProjectType>, ProjectTypeClass>>(DOMAIN_TX, {
-        _class: core.class.TxMixin,
-        _id: generateId(),
-        space: core.space.Model,
-        modifiedBy: core.account.ConfigUser,
-        modifiedOn: Date.now(),
-        objectId: targetProjectClassId,
-        objectClass: core.class.Class,
-        objectSpace: core.space.Model,
-        mixin: task.mixin.ProjectTypeClass,
-        attributes: {
-          projectType: t._id
-        }
-      })
-      await client.update(
-        DOMAIN_SPACE,
-        {
-          _id: t._id
-        },
-        { $set: { targetClass: targetProjectClassId } }
-      )
-    }
-
-    const newTaskTypes = await dataFactory(t)
-
-    const projects = await client.find<Project>(DOMAIN_SPACE, { type: t._id })
-    resultProjects.push(...projects)
-
-    for (const data of newTaskTypes) {
-      // Check and skip if already had task type for same class
-      const tt = await client.find<TaskType>(DOMAIN_TASK, {
-        _class: task.class.TaskType,
-        ofClass: data.ofClass,
-        parent: t._id
-      })
-      if (tt.length > 0) {
-        continue
-      }
-
-      const taskTypeId: Ref<TaskType> = data._id ?? generateId()
-      const descr = client.model.getObject(data.descriptor)
-
-      const statuses = await client.find<Status>(DOMAIN_STATUS, {
-        _id: { $in: t.statuses.map((it) => it._id) },
-        _class: data.statusClass
-      })
-
-      const dStatuses: Ref<Status>[] = []
-      const statusAttr = findStatusAttr(client.hierarchy, data.ofClass)
-      // Ensure we have at leas't one item in every category.
-      for (const c of data.statusCategories) {
-        const category = typeof c === 'string' ? c : c.category
-        const cat = await client.model.findOne(core.class.StatusCategory, { _id: category })
-
-        const st = statuses.filter((it) => it.category === category)
-        const newStatuses: Ref<Status>[] = []
-        if (st.length === 0 || typeof c === 'object') {
-          if (typeof c === 'string') {
-            // We need to add new status into missing category
-            const statusId: Ref<Status> = generateId()
-            await client.create<Status>(DOMAIN_STATUS, {
-              _id: statusId,
-              _class: data.statusClass,
-              category,
-              modifiedBy: core.account.ConfigUser,
-              modifiedOn: Date.now(),
-              name: cat?.defaultStatusName ?? 'New state',
-              space: task.space.Statuses,
-              ofAttribute: statusAttr._id
-            })
-            newStatuses.push(statusId)
-            dStatuses.push(statusId)
-
-            await client.update(
-              DOMAIN_SPACE,
-              {
-                _id: t._id
-              },
-              { $push: { statuses: newStatuses.map((it) => ({ _id: it })) } }
-            )
-            t.statuses.push(...newStatuses.map((it) => ({ _id: it, taskType: taskTypeId })))
-          } else {
-            for (const sts of c.statuses) {
-              const stsName = Array.isArray(sts) ? sts[0] : sts
-              const color = Array.isArray(sts) ? sts[1] : undefined
-              const st = statuses.find((it) => it.name.toLowerCase() === stsName.toLowerCase())
-              if (st === undefined) {
-                // We need to add new status into missing category
-                const statusId: Ref<Status> = generateId()
-                await client.create<Status>(DOMAIN_STATUS, {
-                  _id: statusId,
-                  _class: data.statusClass,
-                  category,
-                  modifiedBy: core.account.ConfigUser,
-                  modifiedOn: Date.now(),
-                  name: stsName,
-                  color,
-                  space: task.space.Statuses,
-                  ofAttribute: statusAttr._id
-                })
-                newStatuses.push(statusId)
-                dStatuses.push(statusId)
-              } else {
-                dStatuses.push(st._id)
-              }
-
-              await client.update(
-                DOMAIN_SPACE,
-                {
-                  _id: t._id
-                },
-                { $push: { statuses: newStatuses.map((it) => ({ _id: it })) } }
-              )
-              t.statuses.push(...newStatuses.map((it) => ({ _id: it, taskType: taskTypeId })))
-            }
-          }
-        } else {
-          for (const sss of st.map((it) => it._id)) {
-            if (!dStatuses.includes(sss)) {
-              dStatuses.push(sss)
-            }
-          }
-        }
-      }
-      const taskType: TaskType = {
-        ...data,
-        statusCategories: data.statusCategories.map((it) => (typeof it === 'string' ? it : it.category)),
-        parent: t._id,
-        _id: taskTypeId,
-        _class: task.class.TaskType,
-        space: core.space.Model,
-        statuses: dStatuses,
-        modifiedBy: core.account.System,
-        modifiedOn: Date.now(),
-        kind: 'both',
-        icon: data.icon ?? descr.icon
-      }
-
-      const ofClassClass = client.hierarchy.getClass(data.ofClass)
-
-      taskType.icon = ofClassClass.icon
-
-      // Create target class for custom field.
-      const targetClassId: Ref<Class<Doc>> = generateId()
-      taskType.targetClass = targetClassId
-
-      await client.create<TxCreateDoc<Doc>>(DOMAIN_TX, {
-        _id: generateId(),
-        objectId: targetClassId,
-        _class: core.class.TxCreateDoc,
-        objectClass: core.class.Class,
-        objectSpace: core.space.Model,
-        modifiedBy: core.account.ConfigUser,
-        modifiedOn: Date.now(),
-        space: core.space.Model,
-        attributes: {
-          extends: data.ofClass,
-          kind: ClassifierKind.MIXIN,
-          label: getEmbeddedLabel(data.name),
-          icon: ofClassClass.icon
-        }
-      })
-
-      await client.create<TxMixin<Class<TaskType>, TaskTypeClass>>(DOMAIN_TX, {
-        _class: core.class.TxMixin,
-        _id: generateId(),
-        space: core.space.Model,
-        modifiedBy: core.account.ConfigUser,
-        modifiedOn: Date.now(),
-        objectId: targetClassId,
-        objectClass: core.class.Class,
-        objectSpace: core.space.Model,
-        mixin: task.mixin.TaskTypeClass,
-        attributes: {
-          taskType: taskTypeId,
-          projectType: t._id
-        }
-      })
-
-      await client.create(DOMAIN_TASK, taskType)
-      resultTaskTypes.push(taskType)
-
-      await client.update(
-        DOMAIN_SPACE,
-        {
-          _id: t._id
-        },
-        { $push: { tasks: taskTypeId } }
-      )
-      t.tasks.push(taskTypeId)
-      // Update kind and target classId
-      const projectsToUpdate = projects.filter((it) => it.type === t._id)
-      await client.update(
-        DOMAIN_TASK,
-        { space: { $in: projectsToUpdate.map((it) => it._id) }, _class: data.ofClass },
-        { $set: { kind: taskTypeId } }
-      )
-      await migrateTasks?.(projectsToUpdate, taskType)
-    }
-
-    // We need to fix project statuses field, for proper icon calculation.
-  }
-  for (const t of projectTypes) {
-    const ttypes = await client.find<TaskType>(DOMAIN_TASK, { _id: { $in: t.tasks } })
-    const newStatuses = calculateStatuses(t, new Map(ttypes.map((it) => [it._id, it])), [])
-    await client.update(
-      DOMAIN_SPACE,
-      { _id: t._id },
-      {
-        $set: {
-          statuses: newStatuses
-        }
-      }
-    )
-  }
-  return { taskTypes: resultTaskTypes, projectTypes, projects: resultProjects }
 }

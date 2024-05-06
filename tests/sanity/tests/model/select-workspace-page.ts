@@ -3,28 +3,31 @@ import { CommonPage } from './common-page'
 
 export class SelectWorkspacePage extends CommonPage {
   readonly page: Page
-  readonly buttonWorkspace: Locator
-  readonly buttonCreateWorkspace: Locator
-  readonly buttonWorkspaceName: Locator
-  readonly buttonCreateNewWorkspace: Locator
 
   constructor (page: Page) {
-    super()
+    super(page)
     this.page = page
-    this.buttonWorkspace = page.locator('div[class*="workspace"]')
-    this.buttonCreateWorkspace = page.locator('button > span', { hasText: 'Create workspace' })
-    this.buttonWorkspaceName = page.locator('input')
-    this.buttonCreateNewWorkspace = page.locator('div.form-row button')
   }
 
+  buttonWorkspace = (): Locator => this.page.locator('div[class*="workspace"]')
+  buttonCreateWorkspace = (): Locator => this.page.locator('button > span', { hasText: 'Create workspace' })
+  buttonWorkspaceName = (): Locator => this.page.locator('input')
+  buttonCreateNewWorkspace = (): Locator => this.page.locator('div.form-row button')
+
+  workspaceButtonByName = (workspace: string): Locator => this.buttonWorkspace().filter({ hasText: workspace })
+
   async selectWorkspace (workspace: string): Promise<void> {
-    await this.buttonWorkspace.filter({ hasText: workspace }).click()
+    await this.workspaceButtonByName(workspace).click()
+  }
+
+  async enterWorkspaceName (workspaceName: string): Promise<void> {
+    await this.buttonWorkspaceName().fill(workspaceName)
   }
 
   async createWorkspace (workspaceName: string): Promise<void> {
-    await this.buttonCreateWorkspace.waitFor({ state: 'visible' })
-    await this.buttonWorkspaceName.fill(workspaceName)
-    expect(await this.buttonCreateNewWorkspace.isEnabled()).toBe(true)
-    await this.buttonCreateNewWorkspace.click()
+    await this.buttonCreateWorkspace().waitFor({ state: 'visible' })
+    await this.enterWorkspaceName(workspaceName)
+    expect(await this.buttonCreateNewWorkspace().isEnabled()).toBe(true)
+    await this.buttonCreateNewWorkspace().click()
   }
 }

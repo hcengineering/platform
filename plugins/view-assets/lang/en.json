@@ -67,6 +67,7 @@
     "View": "View",
     "MarkupEditor": "Edit of rich content field",
     "List": "List",
+    "Grid": "Grid",
     "Timeline": "Timeline",
     "Select": "Select",
     "NoGrouping": "No grouping",
@@ -118,6 +119,8 @@
     "ToViewCommands": "to view available commands",
     "UnArchive": "Unarchive",
     "Pin": "Pin",
-    "Unpin": "Unpin"
+    "Unpin": "Unpin",
+    "Archived": "Archived",
+    "MoreActions": "More actions"
   }
 }

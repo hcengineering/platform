@@ -20,6 +20,7 @@ import {
   DOMAIN_MODEL,
   Hierarchy,
   IndexKind,
+  type Space,
   type Account,
   type AttachedDoc,
   type Class,
@@ -60,8 +61,8 @@ import {
   type CommonInboxNotification,
   type CommonNotificationType,
   type DocNotifyContext,
-  type DocUpdates,
   type DocUpdateTx,
+  type DocUpdates,
   type InboxNotification,
   type MentionInboxNotification,
   type NotificationContextPresenter,
@@ -73,7 +74,9 @@ import {
   type NotificationSetting,
   type NotificationStatus,
   type NotificationTemplate,
-  type NotificationType
+  type NotificationType,
+  type PushSubscription,
+  type PushSubscriptionKeys
 } from '@hcengineering/notification'
 import { getEmbeddedLabel, type Asset, type IntlString, type Resource } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
@@ -89,11 +92,20 @@ export const DOMAIN_NOTIFICATION = 'notification' as Domain
 
 @Model(notification.class.BrowserNotification, core.class.Doc, DOMAIN_NOTIFICATION)
 export class TBrowserNotification extends TDoc implements BrowserNotification {
+  senderId?: Ref<Account> | undefined
+  tag!: Ref<Doc<Space>>
   title!: string
   body!: string
   onClickLocation?: Location | undefined
   user!: Ref<Account>
   status!: NotificationStatus
+}
+
+@Model(notification.class.PushSubscription, core.class.Doc, DOMAIN_NOTIFICATION)
+export class TPushSubscription extends TDoc implements PushSubscription {
+  user!: Ref<Account>
+  endpoint!: string
+  keys!: PushSubscriptionKeys
 }
 
 @Model(notification.class.BaseNotificationType, core.class.Doc, DOMAIN_MODEL)
@@ -234,6 +246,9 @@ export class TInboxNotification extends TDoc implements InboxNotification {
   // @Index(IndexKind.Indexed)
     isViewed!: boolean
 
+  @Prop(TypeBoolean(), core.string.Boolean)
+    archived?: boolean
+
   title?: IntlString
   body?: IntlString
   intlParams?: Record<string, string | number>
@@ -335,7 +350,8 @@ export function createModel (builder: Builder): void {
     TActivityNotificationViewlet,
     TBaseNotificationType,
     TCommonNotificationType,
-    TMentionInboxNotification
+    TMentionInboxNotification,
+    TPushSubscription
   )
 
   builder.createDoc(
@@ -352,8 +368,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       label: notification.string.Push,
-      depends: notification.providers.PlatformNotification,
-      onChange: notification.function.CheckPushPermission
+      depends: notification.providers.PlatformNotification
     },
     notification.providers.BrowserNotification
   )
@@ -527,15 +542,29 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
-      action: notification.actionImpl.DeleteContextNotifications,
-      label: notification.string.Archive,
+      action: notification.actionImpl.ArchiveContextNotifications,
+      label: view.string.Archive,
       icon: view.icon.CheckCircle,
       input: 'focus',
       category: notification.category.Notification,
       target: notification.class.DocNotifyContext,
       context: { mode: ['panel'], application: notification.app.Notification, group: 'remove' }
     },
-    notification.action.DeleteContextNotifications
+    notification.action.ArchiveContextNotifications
+  )
+
+  createAction(
+    builder,
+    {
+      action: notification.actionImpl.UnarchiveContextNotifications,
+      label: view.string.UnArchive,
+      icon: view.icon.Circle,
+      input: 'focus',
+      category: notification.category.Notification,
+      target: notification.class.DocNotifyContext,
+      context: { mode: ['panel'], application: notification.app.Notification, group: 'remove' }
+    },
+    notification.action.UnarchiveContextNotifications
   )
 
   createAction(
@@ -659,6 +688,7 @@ export function createModel (builder: Builder): void {
   })
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_NOTIFICATION,
+    indexes: [{ user: 1, archived: 1 }],
     disabled: [{ modifiedOn: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { isViewed: 1 }, { hidden: 1 }]
   })
 }

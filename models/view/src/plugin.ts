@@ -101,9 +101,7 @@ export default mergeIds(viewId, view, {
     General: '' as IntlString,
     Navigation: '' as IntlString,
     Editor: '' as IntlString,
-    MarkdownFormatting: '' as IntlString,
-    Pin: '' as IntlString,
-    Unpin: '' as IntlString
+    MarkdownFormatting: '' as IntlString
   },
   function: {
     FilterArrayAllResult: '' as FilterFunction,
@@ -127,7 +125,10 @@ export default mergeIds(viewId, view, {
     FilterDateNotSpecified: '' as FilterFunction,
     FilterDateCustom: '' as FilterFunction,
     ShowEmptyGroups: '' as ViewCategoryAction,
-    CanDeleteObject: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
+    CanDeleteObject: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    CanEditSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    CanArchiveSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    CanDeleteSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
   },
   pipeline: {
     PresentationMiddleware: '' as Ref<PresentationMiddlewareFactory>,

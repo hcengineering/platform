@@ -41,7 +41,8 @@
     "prettier": "^3.1.0",
     "typescript": "^5.3.3",
     "@playwright/test": "^1.41.2",
-    "allure-playwright": "^2.9.2"
+    "allure-playwright": "^2.9.2",
+    "@faker-js/faker": "^8.4.1"
   },
   "dependencies": {
     "dotenv": "~16.0.0",

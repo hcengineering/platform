@@ -13,24 +13,20 @@
 // limitations under the License.
 //
 
-import contact from '@hcengineering/contact'
 import core, {
-  type Account,
-  type BackupClient,
-  ClassifierKind,
-  type Client,
-  DOMAIN_TX,
-  type Doc,
-  type DocumentUpdate,
   MeasureMetricsContext,
-  type Metrics,
-  type Ref,
+  RateLimiter,
   TxOperations,
-  type WorkspaceId,
-  generateId,
   metricsToString,
   newMetrics,
-  systemAccountEmail
+  systemAccountEmail,
+  type Account,
+  type BackupClient,
+  type BenchmarkDoc,
+  type Client,
+  type Metrics,
+  type Ref,
+  type WorkspaceId
 } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 import { connect } from '@hcengineering/server-tool'
@@ -48,8 +44,9 @@ interface StartMessage {
   idd: number
   workId: string
   options: {
-    readRequests: number
-    modelRequests: number
+    smallRequests: number
+    rate: number
+    bigRequests: number
     limit: {
       min: number
       rand: number
@@ -62,7 +59,7 @@ interface StartMessage {
   compression: boolean
 }
 interface Msg {
-  type: 'complete' | 'operate'
+  type: 'complete' | 'operate' | 'pending'
 }
 
 interface CompleteMsg extends Msg {
@@ -70,19 +67,18 @@ interface CompleteMsg extends Msg {
   workId: string
 }
 
-// interface OperatingMsg extends Msg {
-//   type: 'operate'
-//   workId: string
-// }
-
-const benchAccount = (core.account.System + '_benchmark') as Ref<Account>
+interface PendingMsg extends Msg {
+  type: 'pending'
+  workId: string
+  pending: number
+}
 
 export async function benchmark (
   workspaceId: WorkspaceId[],
   transactorUrl: string,
   cmd: { from: number, steps: number, sleep: number, binary: boolean, write: boolean, compression: boolean }
 ): Promise<void> {
-  let operating = 0
+  const operating = new Set<string>()
   const workers: Worker[] = []
 
   const works = new Map<string, () => void>()
@@ -92,20 +88,28 @@ export async function benchmark (
 
   os.cpus().forEach(() => {
     /* Spawn a new thread running this source file */
-    const worker = new Worker(__filename)
+    const worker = new Worker(__filename, {
+      argv: ['benchmarkWorker']
+    })
     workers.push(worker)
     worker.on('message', (data: Msg) => {
       if (data === undefined) {
         return
       }
       if (data.type === 'operate') {
-        operating += 1
+        operating.add((data as any).workId)
+      }
+      if (data.type === 'pending') {
+        const msg = data as PendingMsg
+        console.log('info', `worker:${msg.workId}`, msg.pending)
       }
       if (data.type === 'complete') {
         const resolve = works.get((data as CompleteMsg).workId)
         if (resolve != null) {
           resolve()
-          operating -= 1
+          operating.delete((data as any).workId)
+        } else {
+          console.log('Worker failed to done', (data as CompleteMsg).workId)
         }
       }
     })
@@ -147,7 +151,9 @@ export async function benchmark (
   let elapsed = 0
   let requestTime: number = 0
   let operations = 0
+  let oldOperations = 0
   let transfer: number = 0
+  let oldTransfer: number = 0
 
   const token = generateToken(systemAccountEmail, workspaceId[0])
 
@@ -158,16 +164,6 @@ export async function benchmark (
         async () => await connect(transactorUrl, workspaceId[0], undefined, { mode: 'backup' })
       )) as BackupClient & Client)
     : undefined
-
-  if (monitorConnection !== undefined) {
-    // We need to cleanup all transactions from our benchmark account.
-    const txes = await monitorConnection.findAll(
-      core.class.Tx,
-      { modifiedBy: benchAccount },
-      { projection: { _id: 1 } }
-    )
-    await monitorConnection.clean(DOMAIN_TX, Array.from(txes.map((it) => it._id)))
-  }
 
   let running = false
 
@@ -190,7 +186,7 @@ export async function benchmark (
   }
 
   let timer: any
-  if (isMainThread) {
+  if (isMainThread && monitorConnection !== undefined) {
     timer = setInterval(() => {
       const st = Date.now()
 
@@ -204,9 +200,9 @@ export async function benchmark (
                 memUsed = json.statistics.memoryUsed
                 memTotal = json.statistics.memoryTotal
                 cpu = json.statistics.cpuUsage
-                operations = 0
+                // operations = 0
                 requestTime = 0
-                transfer = 0
+                // transfer = 0
                 const r = extract(
                   json.metrics as Metrics,
                   '🧲 session',
@@ -215,11 +211,14 @@ export async function benchmark (
                   'process',
                   'find-all'
                 )
-                operations += r?.operations ?? 0
-                requestTime += (r?.value ?? 0) / (((r?.operations as number) ?? 0) + 1)
+                operations = (r?.operations ?? 0) - oldOperations
+                oldOperations = r?.operations ?? 0
+
+                requestTime = (r?.value ?? 0) / (((r?.operations as number) ?? 0) + 1)
 
                 const tr = extract(json.metrics as Metrics, '🧲 session', 'client', 'handleRequest', '#send-data')
-                transfer += tr?.value ?? 0
+                transfer = (tr?.value ?? 0) - oldTransfer
+                oldTransfer = tr?.value ?? 0
               })
               .catch((err) => {
                 console.log(err)
@@ -234,83 +233,89 @@ export async function benchmark (
 
       if (!running) {
         running = true
-        void ctx.with(
-          'avg',
-          {},
-          async () =>
-            await monitorConnection?.findAll(contact.mixin.Employee, {}).then((res) => {
+        void ctx.with('avg', {}, async () => {
+          await monitorConnection
+            ?.findAll(core.class.BenchmarkDoc, {
+              source: 'monitor',
+              request: {
+                documents: 1,
+                size: 1
+              }
+            })
+            .then((res) => {
               const cur = Date.now() - st
               opTime += cur
               moment = cur
               ops++
               running = false
             })
-        )
+        })
       }
       elapsed++
+      // console.log('Sheduled', scheduled)
       csvWriter.add(
         {
           time: elapsed,
-          clients: operating,
+          clients: operating.size,
           moment,
           average: Math.round(opTime / (ops + 1)),
           mem: memUsed,
           memTotal,
           cpu,
           requestTime,
-          operations: Math.round(operations / (elapsed + 1)),
-          transfer: Math.round(transfer / (elapsed + 1)) / 1024
+          operations,
+          transfer: transfer / 1024
         },
         true
       )
-      void csvWriter.write(`report${cmd.binary ? '-bin' : ''}${cmd.write ? '-wr' : ''}.csv`)
     }, 1000)
-  }
-  for (let i = cmd.from; i < cmd.from + cmd.steps; i++) {
-    await ctx.with('iteration', { i }, async () => {
-      await Promise.all(
-        Array.from(Array(i))
-          .map((it, idx) => idx)
-          .map((it) => {
-            const wsid = workspaceId[randNum(workspaceId.length)]
-            const workId = generateId()
-            const msg: StartMessage = {
-              workspaceId: wsid,
-              transactorUrl,
-              id: i,
-              idd: it,
-              workId,
-              options: {
-                readRequests: 100,
-                modelRequests: 0,
-                limit: {
-                  min: 10,
-                  rand: 1000
-                },
-                sleep: cmd.sleep,
-                write: cmd.write
-              },
-              binary: cmd.binary,
-              compression: cmd.compression
-            }
-            workers[i % workers.length].postMessage(msg)
 
-            return new Promise((resolve) => {
-              works.set(workId, () => {
-                resolve(null)
+    for (let i = cmd.from; i < cmd.from + cmd.steps; i++) {
+      await ctx.with('iteration', { i }, async () => {
+        await Promise.all(
+          Array.from(Array(i))
+            .map((it, idx) => idx)
+            .map((it) => {
+              const wsid = workspaceId[randNum(workspaceId.length)]
+              const workId = 'w-' + i + '-' + it
+              const msg: StartMessage = {
+                workspaceId: wsid,
+                transactorUrl,
+                id: i,
+                idd: it,
+                workId,
+                options: {
+                  smallRequests: 100,
+                  rate: 1,
+                  bigRequests: 0,
+                  limit: {
+                    min: 64,
+                    rand: 512
+                  },
+                  sleep: cmd.sleep,
+                  write: cmd.write
+                },
+                binary: cmd.binary,
+                compression: cmd.compression
+              }
+              workers[i % workers.length].postMessage(msg)
+
+              return new Promise((resolve) => {
+                works.set(workId, () => {
+                  resolve(null)
+                })
               })
             })
-          })
-      )
-    })
-    console.log(metricsToString(m, `iteration-${i}`, 120))
-  }
+        )
+      })
+      console.log(metricsToString(m, `iteration-${i}`, 120))
+    }
 
-  if (isMainThread) {
     for (const w of workers) {
       await w.terminate()
     }
     clearInterval(timer)
+    await csvWriter.write(`report${cmd.binary ? '-bin' : ''}${cmd.write ? '-wr' : ''}.csv`)
     await monitorConnection?.close()
   }
 }
@@ -319,89 +324,112 @@ function randNum (value = 2): number {
   return Math.round(Math.random() * value) % value
 }
 
-if (!isMainThread) {
-  parentPort?.on('message', (msg: StartMessage) => {
-    console.log('starting worker', msg.workId)
-    void perform(msg)
-  })
-}
-
-async function perform (msg: StartMessage): Promise<void> {
-  let connection: Client | undefined
-  try {
-    setMetadata(client.metadata.UseBinaryProtocol, msg.binary)
-    setMetadata(client.metadata.UseProtocolCompression, msg.compression)
-    console.log('connecting to', msg.workspaceId)
-
-    connection = await connect(msg.transactorUrl, msg.workspaceId, undefined)
-    const opt = new TxOperations(connection, (core.account.System + '_benchmark') as Ref<Account>)
-    parentPort?.postMessage({
-      type: 'operate',
-      workId: msg.workId
+export function benchmarkWorker (): void {
+  if (!isMainThread) {
+    parentPort?.on('message', (msg: StartMessage) => {
+      console.log('starting worker', msg.workId)
+      void perform(msg)
     })
+  }
 
-    const h = connection.getHierarchy()
-    const allClasses = await connection.getModel().findAll(core.class.Class, {})
-    const classes = allClasses.filter((it) => it.kind === ClassifierKind.CLASS && h.findDomain(it._id) !== undefined)
-    while (msg.options.readRequests + msg.options.modelRequests > 0) {
-      if (msg.options.modelRequests > 0) {
-        await connection?.findAll(core.class.Tx, {}, { sort: { _id: -1 } })
-        msg.options.modelRequests--
-      }
-      let doc: Doc | undefined
-      if (msg.options.readRequests > 0) {
-        const cl = classes[randNum(classes.length - 1)]
-        if (cl !== undefined) {
-          const docs = await connection?.findAll(
-            cl._id,
-            {},
-            {
-              sort: { _id: -1 },
-              limit: msg.options.limit.min + randNum(msg.options.limit.rand)
-            }
-          )
-          if (docs.length > 0) {
-            doc = docs[randNum(docs.length - 1)]
-          }
-          msg.options.readRequests--
-        }
-        if (msg.options.write && doc !== undefined) {
-          const attrs = connection.getHierarchy().getAllAttributes(doc._class)
-          const upd: DocumentUpdate<Doc> = {}
-          for (const [key, value] of attrs.entries()) {
-            if (value.type._class === core.class.TypeString || value.type._class === core.class.TypeBoolean) {
-              if (
-                key !== '_id' &&
-                key !== '_class' &&
-                key !== 'space' &&
-                key !== 'attachedTo' &&
-                key !== 'attachedToClass'
-              ) {
-                const v = (doc as any)[key]
-                if (v != null) {
-                  ;(upd as any)[key] = v
+  async function perform (msg: StartMessage): Promise<void> {
+    let connection: Client | undefined
+    try {
+      setMetadata(client.metadata.UseBinaryProtocol, msg.binary)
+      setMetadata(client.metadata.UseProtocolCompression, msg.compression)
+      console.log('connecting to', msg.workspaceId)
+
+      connection = await connect(msg.transactorUrl, msg.workspaceId, undefined)
+      const opt = new TxOperations(connection, (core.account.System + '_benchmark') as Ref<Account>)
+      parentPort?.postMessage({
+        type: 'operate',
+        workId: msg.workId
+      })
+
+      const rateLimiter = new RateLimiter(msg.options.rate)
+
+      let bigRunning = 0
+
+      while (msg.options.smallRequests + msg.options.bigRequests > 0) {
+        const variant = Math.random()
+        // console.log(`Thread ${msg.workId} ${msg.options.smallRequests} ${msg.options.bigRequests}`)
+        if (msg.options.bigRequests > 0 && variant < 0.5 && bigRunning === 0) {
+          await rateLimiter.add(async () => {
+            bigRunning = 1
+            await connection?.findAll(core.class.BenchmarkDoc, {
+              source: msg.workId,
+              request: {
+                documents: {
+                  from: 1024,
+                  to: 1000
+                },
+                size: {
+                  // 1kb to 5kb
+                  from: 1 * 1024,
+                  to: 4 * 1024
                 }
               }
-            }
-          }
-          if (Object.keys(upd).length > 0) {
-            await opt.update(doc, upd)
-          }
+            })
+          })
+          bigRunning = 0
+          msg.options.bigRequests--
+        }
+        if (msg.options.smallRequests > 0 && variant > 0.5) {
+          await rateLimiter.add(async () => {
+            await connection?.findAll(core.class.BenchmarkDoc, {
+              source: msg.workId,
+              request: {
+                documents: {
+                  from: msg.options.limit.min,
+                  to: msg.options.limit.min + msg.options.limit.rand
+                },
+                size: {
+                  from: 4,
+                  to: 16
+                }
+              }
+            })
+          })
+          msg.options.smallRequests--
+        }
+        if (msg.options.write) {
+          await opt.updateDoc(core.class.BenchmarkDoc, core.space.DerivedTx, '' as Ref<BenchmarkDoc>, {
+            response: 'qwe'
+          })
+        }
+        if (msg.options.sleep > 0) {
+          await new Promise((resolve) => setTimeout(resolve, randNum(msg.options.sleep)))
         }
       }
-      if (msg.options.sleep > 0) {
-        await new Promise((resolve) => setTimeout(resolve, randNum(msg.options.sleep)))
-      }
+
+      // clearInterval(infoInterval)
+      await rateLimiter.waitProcessing()
+      const to1 = setTimeout(() => {
+        parentPort?.postMessage({
+          type: 'log',
+          workId: msg.workId,
+          msg: `timeout waiting processing${msg.workId}`
+        })
+      }, 5000)
+      clearTimeout(to1)
+      //
+      // console.log(`${msg.idd} perform complete`)
+    } catch (err: any) {
+      console.error(msg.workspaceId, err)
+    } finally {
+      const to = setTimeout(() => {
+        parentPort?.postMessage({
+          type: 'log',
+          workId: msg.workId,
+          msg: `timeout closing connection${msg.workId}`
+        })
+      }, 5000)
+      await connection?.close()
+      clearTimeout(to)
     }
-    //
-    // console.log(`${msg.idd} perform complete`)
-  } catch (err: any) {
-    console.error(msg.workspaceId, err)
-  } finally {
-    await connection?.close()
+    parentPort?.postMessage({
+      type: 'complete',
+      workId: msg.workId
+    })
   }
-  parentPort?.postMessage({
-    type: 'complete',
-    workId: msg.workId
-  })
 }

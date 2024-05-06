@@ -23,7 +23,7 @@
   export let size: 'small' | 'medium' = 'medium'
 </script>
 
-<div class="flex-stretch tabs-container" class:small={size === 'small'} style:padding class:noMargin>
+<div class="flex-stretch tabs-container no-print" class:small={size === 'small'} style:padding class:noMargin>
   {#each model as tab, i}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-static-element-interactions -->

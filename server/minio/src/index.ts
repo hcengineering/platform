@@ -128,7 +128,7 @@ export class MinioService implements StorageAdapter {
         version: result.versionId ?? null
       }
     } catch (err: any) {
-      await ctx.error('no object found', err)
+      ctx.error('no object found', { error: err, objectName, workspaceId: workspaceId.name })
     }
   }
 

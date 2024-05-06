@@ -34,6 +34,9 @@ export default mergeIds(notificationId, notification, {
     Activity: '' as IntlString,
     People: '' as IntlString,
     Read: '' as IntlString,
-    Unread: '' as IntlString
+    Unread: '' as IntlString,
+    Unreads: '' as IntlString,
+    EnablePush: '' as IntlString,
+    NotificationBlockedInBrowser: '' as IntlString
   }
 })

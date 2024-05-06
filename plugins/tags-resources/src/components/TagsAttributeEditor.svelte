@@ -24,7 +24,11 @@
   })
   async function tagsHandler (evt: MouseEvent): Promise<void> {
     if (readonly) return
-    showPopup(TagsEditorPopup, { object, targetClass }, getEventPopupPositionElement(evt))
+    showPopup(TagsEditorPopup, { object, targetClass }, getEventPopupPositionElement(evt), undefined, undefined, {
+      refId: 'TagsPopup',
+      category: 'popup',
+      overlay: true
+    })
   }
   async function removeTag (tag: TagReference): Promise<void> {
     if (tag !== undefined) await client.remove(tag)

@@ -13,19 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import notification, {
+  import {
     ActivityInboxNotification,
+    decodeObjectURI,
     DocNotifyContext,
     InboxNotification
   } from '@hcengineering/notification'
-  import { ActionContext, getClient } from '@hcengineering/presentation'
+  import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import view from '@hcengineering/view'
   import {
     AnyComponent,
-    ButtonWithDropdown,
     Component,
     defineSeparators,
-    IconDropdown,
     Label,
     location as locationStore,
     Location,
@@ -35,25 +34,19 @@
     TabList
   } from '@hcengineering/ui'
   import chunter, { ThreadMessage } from '@hcengineering/chunter'
-  import { IdMap, Ref } from '@hcengineering/core'
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import { isActivityMessageClass, isReactionMessage } from '@hcengineering/activity-resources'
   import { get } from 'svelte/store'
   import { translate } from '@hcengineering/platform'
+  import { getCurrentAccount, groupByArray, IdMap, Ref, SortingOrder } from '@hcengineering/core'
 
   import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
-  import Filter from '../Filter.svelte'
-  import {
-    archiveAll,
-    getDisplayInboxData,
-    isMentionNotification,
-    openInboxDoc,
-    readAll,
-    resolveLocation,
-    unreadAll
-  } from '../../utils'
+  import SettingsButton from './SettingsButton.svelte'
+  import { getDisplayInboxData, isMentionNotification, openInboxDoc, resolveLocation } from '../../utils'
   import { InboxData, InboxNotificationsFilter } from '../../types'
   import InboxGroupedListView from './InboxGroupedListView.svelte'
+  import notification from '../../plugin'
+  import InboxMenuButton from './InboxMenuButton.svelte'
 
   export let visibleNav: boolean = true
   export let navFloat: boolean = false
@@ -61,21 +54,31 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
+  const me = getCurrentAccount()
 
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const notificationsByContextStore = inboxClient.inboxNotificationsByContext
   const contextByIdStore = inboxClient.contextById
+  const contextByDocStore = inboxClient.contextByDoc
   const contextsStore = inboxClient.contexts
+
+  const archivedActivityNotificationsQuery = createQuery()
+  const archivedOtherNotificationsQuery = createQuery()
 
   const allTab: TabItem = {
     id: 'all',
     labelIntl: notification.string.All
   }
 
+  let showArchive = false
+  let archivedActivityNotifications: InboxNotification[] = []
+  let archivedOtherNotifications: InboxNotification[] = []
+  let archivedNotifications: InboxNotification[] = []
+
   let inboxData: InboxData = new Map()
 
   let filteredData: InboxData = new Map()
-  let filter: InboxNotificationsFilter = 'all'
+  let filter: InboxNotificationsFilter = (localStorage.getItem('inbox-filter') as InboxNotificationsFilter) ?? 'all'
 
   let tabItems: TabItem[] = []
   let selectedTabId: string = allTab.id
@@ -86,9 +89,55 @@
 
   let selectedMessage: ActivityMessage | undefined = undefined
 
-  $: void getDisplayInboxData($notificationsByContextStore).then((res) => {
-    inboxData = res
-  })
+  $: if (showArchive) {
+    archivedActivityNotificationsQuery.query(
+      notification.class.ActivityInboxNotification,
+      { archived: true, user: me._id },
+      (res) => {
+        archivedActivityNotifications = res
+      },
+      {
+        lookup: {
+          attachedTo: activity.class.ActivityMessage
+        },
+        sort: {
+          createdOn: SortingOrder.Descending
+        },
+        limit: 1000
+      }
+    )
+
+    archivedOtherNotificationsQuery.query(
+      notification.class.InboxNotification,
+      { _class: { $nin: [notification.class.ActivityInboxNotification] }, archived: true, user: me._id },
+      (res) => {
+        archivedOtherNotifications = res
+      },
+      {
+        sort: {
+          createdOn: SortingOrder.Descending
+        },
+        limit: 500
+      }
+    )
+  }
+
+  $: archivedNotifications = [...archivedActivityNotifications, ...archivedOtherNotifications].sort(
+    (n1, n2) => (n2.createdOn ?? n2.modifiedOn) - (n1.createdOn ?? n1.modifiedOn)
+  )
+  $: void updateInboxData($notificationsByContextStore, archivedNotifications, showArchive)
+
+  async function updateInboxData (
+    notificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>,
+    archivedNotifications: InboxNotification[],
+    showArchive: boolean
+  ): Promise<void> {
+    if (showArchive) {
+      inboxData = await getDisplayInboxData(groupByArray(archivedNotifications, (it) => it.docNotifyContext))
+    } else {
+      inboxData = await getDisplayInboxData(notificationsByContext)
+    }
+  }
 
   $: filteredData = filterData(filter, selectedTabId, inboxData, $contextByIdStore)
 
@@ -98,8 +147,10 @@
 
   async function syncLocation (newLocation: Location): Promise<void> {
     const loc = await resolveLocation(newLocation)
+    const [_id] = decodeObjectURI(loc?.loc.path[3] ?? '')
+    const context = $contextByDocStore.get(_id)
 
-    selectedContextId = loc?.loc.path[3] as Ref<DocNotifyContext> | undefined
+    selectedContextId = context?._id
 
     if (selectedContextId !== selectedContext?._id) {
       selectedContext = undefined
@@ -179,7 +230,8 @@
       const selectedMsg = selectedNotification.mentionedIn as Ref<ActivityMessage>
 
       openInboxDoc(
-        selectedContext._id,
+        selectedContext.attachedTo,
+        selectedContext.attachedToClass,
         isActivityMessageClass(selectedContext.attachedToClass)
           ? (selectedContext.attachedTo as Ref<ActivityMessage>)
           : undefined,
@@ -192,20 +244,31 @@
         const thread = await client.findOne(chunter.class.ThreadMessage, {
           _id: selectedContext.attachedTo as Ref<ThreadMessage>
         })
-        openInboxDoc(selectedContext._id, thread?.attachedTo, thread?._id)
+        openInboxDoc(selectedContext.attachedTo, selectedContext.attachedToClass, thread?.attachedTo, thread?._id)
       } else if (isReactionMessage(message)) {
-        openInboxDoc(selectedContext._id, undefined, selectedContext.attachedTo as Ref<ActivityMessage>)
+        openInboxDoc(
+          selectedContext.attachedTo,
+          selectedContext.attachedToClass,
+          undefined,
+          selectedContext.attachedTo as Ref<ActivityMessage>
+        )
       } else {
         const selectedMsg = (selectedNotification as ActivityInboxNotification)?.attachedTo
 
         openInboxDoc(
-          selectedContext._id,
+          selectedContext.attachedTo,
+          selectedContext.attachedToClass,
           selectedMsg ? (selectedContext.attachedTo as Ref<ActivityMessage>) : undefined,
           selectedMsg ?? (selectedContext.attachedTo as Ref<ActivityMessage>)
         )
       }
     } else {
-      openInboxDoc(selectedContext._id, undefined, (selectedNotification as ActivityInboxNotification)?.attachedTo)
+      openInboxDoc(
+        selectedContext.attachedTo,
+        selectedContext.attachedToClass,
+        undefined,
+        (selectedNotification as ActivityInboxNotification)?.attachedTo
+      )
     }
   }
 
@@ -246,8 +309,6 @@
     switch (filter) {
       case 'unread':
         return notifications.filter(({ isViewed }) => !isViewed)
-      case 'read':
-        return notifications.filter(({ isViewed }) => isViewed)
       case 'all':
         return notifications
     }
@@ -301,21 +362,30 @@
     { size: 'auto', minSize: 30, maxSize: 'auto', float: undefined }
   ])
 
-  async function dropdownItemSelected (id: 'archive' | 'read' | 'unread'): Promise<void> {
-    if (id == null) return
-
-    if (id === 'archive') {
-      void archiveAll()
-    }
-
-    if (id === 'read') {
-      void readAll()
-    }
-
-    if (id === 'unread') {
-      void unreadAll()
-    }
+  function onArchiveToggled (): void {
+    showArchive = !showArchive
+    selectedTabId = allTab.id
   }
+
+  function onUnreadsToggled (): void {
+    filter = filter === 'unread' ? 'all' : 'unread'
+    localStorage.setItem('inbox-filter', filter)
+  }
+
+  $: items = [
+    {
+      id: 'unread',
+      on: filter === 'unread',
+      label: notification.string.Unreads,
+      onToggle: onUnreadsToggled
+    },
+    {
+      id: 'archive',
+      on: showArchive,
+      label: view.string.Archived,
+      onToggle: onArchiveToggled
+    }
+  ]
 </script>
 
 <ActionContext
@@ -337,35 +407,8 @@
             <span class="title"><Label label={notification.string.Inbox} /></span>
           </div>
           <div class="flex flex-gap-2">
-            {#if inboxData.size > 0}
-              <ButtonWithDropdown
-                justify="left"
-                kind="regular"
-                label={notification.string.MarkReadAll}
-                icon={view.icon.Eye}
-                on:click={readAll}
-                dropdownItems={[
-                  {
-                    id: 'read',
-                    icon: view.icon.Eye,
-                    label: notification.string.MarkReadAll
-                  },
-                  {
-                    id: 'unread',
-                    icon: view.icon.EyeCrossed,
-                    label: notification.string.MarkUnreadAll
-                  },
-                  {
-                    id: 'archive',
-                    icon: view.icon.CheckCircle,
-                    label: notification.string.ArchiveAll
-                  }
-                ]}
-                dropdownIcon={IconDropdown}
-                on:dropdown-selected={(ev) => dropdownItemSelected(ev.detail)}
-              />
-            {/if}
-            <Filter bind:filter />
+            <SettingsButton {items} />
+            <InboxMenuButton />
           </div>
         </div>
 
@@ -374,7 +417,12 @@
         </div>
 
         <Scroller padding="0">
-          <InboxGroupedListView data={filteredData} selectedContext={selectedContextId} on:click={selectContext} />
+          <InboxGroupedListView
+            data={filteredData}
+            selectedContext={selectedContextId}
+            archived={showArchive}
+            on:click={selectContext}
+          />
         </Scroller>
       </div>
       <Separator name="inbox" float={navFloat ? 'navigator' : true} index={0} />

@@ -42,7 +42,7 @@
   export let ofClass: Ref<Class<Doc>> | undefined = undefined
   export let showHierarchy: boolean = false
   export let showTitle: boolean = !showHierarchy
-
+  export let disabled: boolean = true
   export let attributeMapper:
   | {
     component: AnySvelteComponent
@@ -73,12 +73,20 @@
   }
 
   export function createAttribute (ev: MouseEvent): void {
+    if (disabled) {
+      return
+    }
+
     showPopup(TypesPopup, { _class }, getEventPositionElement(ev), (_id) => {
       if (_id !== undefined) $settingsStore = { component: CreateAttribute, props: { selectedType: _id, _class } }
     })
   }
 
   function editLabel (evt: MouseEvent): void {
+    if (disabled) {
+      return
+    }
+
     showPopup(EditClassLabel, { clazz }, getEventPositionElement(evt))
   }
 
@@ -113,7 +121,7 @@
   const handleSelect = async (event: CustomEvent): Promise<void> => {
     selected = event.detail as AnyAttribute
     const exist = (await client.findOne(selected.attributeOf, { [selected.name]: { $exists: true } })) !== undefined
-    $settingsStore = { id: selected._id, component: EditAttribute, props: { attribute: selected, exist } }
+    $settingsStore = { id: selected._id, component: EditAttribute, props: { attribute: selected, exist, disabled } }
   }
   onDestroy(() => {
     if (selected !== undefined) clearSettingsStore()
@@ -128,7 +136,7 @@
       </div>
       {#if clazz.kind === ClassifierKind.MIXIN && hierarchy.hasMixin(clazz, settings.mixin.UserMixin)}
         <div class="ml-2">
-          <ActionIcon icon={IconEdit} size="small" action={editLabel} />
+          <ActionIcon icon={IconEdit} size="small" action={editLabel} {disabled} />
         </div>
       {/if}
     </div>
@@ -137,7 +145,7 @@
 <div class="hulyTableAttr-container">
   <div class="hulyTableAttr-header font-medium-12" class:withButton={showHierarchy}>
     {#if showHierarchy}
-      <ModernButton icon={IconSettings} kind={'secondary'} size={'small'} hasMenu>
+      <ModernButton icon={IconSettings} kind={'secondary'} size={'small'} {disabled} hasMenu>
         <Label label={settings.string.ClassColon} />
         <ObjectPresenter _class={clazzHierarchy._class} objectId={clazzHierarchy._id} value={clazzHierarchy} />
       </ModernButton>
@@ -149,6 +157,7 @@
       kind={'primary'}
       icon={IconAdd}
       size={'small'}
+      {disabled}
       on:click={(ev) => {
         createAttribute(ev)
       }}

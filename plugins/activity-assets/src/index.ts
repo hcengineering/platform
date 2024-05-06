@@ -20,5 +20,6 @@ const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(activity.icon, {
   Activity: `${icons}#activity`,
   Emoji: `${icons}#emoji`,
-  Bookmark: `${icons}#bookmark`
+  Bookmark: `${icons}#bookmark`,
+  BookmarkFilled: `${icons}#bookmark-filled`
 })

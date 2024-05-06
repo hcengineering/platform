@@ -27,13 +27,15 @@
   import { ChatNavItemModel } from '../types'
   import { getObjectIcon, getChannelName } from '../../../utils'
   import ChatSectionHeader from './ChatSectionHeader.svelte'
+  import { navigatorStateStore, toggleSections } from '../utils'
 
+  export let id: string
   export let header: string
   export let objects: Doc[]
   export let contexts: DocNotifyContext[]
   export let actions: Action[] = []
   export let maxItems: number | undefined = undefined
-  export let selectedContextId: Ref<DocNotifyContext> | undefined = undefined
+  export let objectId: Ref<Doc> | undefined
   export let sortFn: (items: ChatNavItemModel[], contexts: DocNotifyContext[]) => ChatNavItemModel[]
 
   const client = getClient()
@@ -46,13 +48,15 @@
   let canShowMore = false
   let isShownMore = false
 
+  $: isCollapsed = $navigatorStateStore.collapsedSections.includes(id)
+
   $: void getChatNavItems(objects).then((res) => {
     items = sortFn(res, contexts)
   })
 
   $: canShowMore = !!maxItems && items.length > maxItems
 
-  $: visibleItems = getVisibleItems(canShowMore, isShownMore, maxItems, items, selectedContextId, contexts)
+  $: visibleItems = getVisibleItems(canShowMore, isShownMore, maxItems, items, objectId)
 
   async function getChatNavItems (objects: Doc[]): Promise<ChatNavItemModel[]> {
     const items: ChatNavItemModel[] = []
@@ -80,6 +84,7 @@
         title: (await getChannelName(object._id, object._class, object)) ?? (await translate(titleIntl, {})),
         description: isDocChat && !isPerson ? await getDocTitle(client, object._id, object._class, object) : undefined,
         icon: icon ?? getObjectIcon(_class),
+        iconProps: { showStatus: true, background: 'var(--global-surface-01-BackgroundColor)' },
         iconSize,
         withIconBackground: !isDirect && !isPerson,
         isSecondary: isDocChat && !isPerson
@@ -98,8 +103,7 @@
     isShownMore: boolean,
     maxItems: number | undefined,
     items: ChatNavItemModel[],
-    selectedContextId: Ref<DocNotifyContext> | undefined,
-    contexts: DocNotifyContext[]
+    selectedObjectId: Ref<Doc> | undefined
   ): ChatNavItemModel[] {
     if (!canShowMore || isShownMore) {
       return items
@@ -107,23 +111,17 @@
 
     const result = items.slice(0, maxItems)
 
-    if (selectedContextId === undefined) {
+    if (selectedObjectId === undefined) {
       return result
     }
 
-    const context = contexts.find(({ _id }) => _id === selectedContextId)
-
-    if (context === undefined) {
-      return result
-    }
-
-    const exists = result.some(({ id }) => id === context.attachedTo)
+    const exists = result.some(({ id }) => id === selectedObjectId)
 
     if (exists) {
       return result
     }
 
-    const selectedItem = items.find(({ id }) => id === context?.attachedTo)
+    const selectedItem = items.find(({ id }) => id === selectedObjectId)
 
     if (selectedItem === undefined) {
       return result
@@ -142,15 +140,13 @@
       {actions}
       {isCollapsed}
       on:collapse={() => {
-        isCollapsed = !isCollapsed
+        toggleSections(id)
       }}
     />
     {#if !isCollapsed}
       {#each visibleItems as item (item.id)}
         {@const context = contexts.find(({ attachedTo }) => attachedTo === item.id)}
-        {#if context}
-          <ChatNavItem {context} isSelected={selectedContextId === context._id} {item} on:select />
-        {/if}
+        <ChatNavItem {context} isSelected={objectId === item.id} {item} on:select />
       {/each}
       {#if canShowMore}
         <div class="showMore">
@@ -162,6 +158,12 @@
             on:click={onShowMore}
           />
         </div>
+      {/if}
+    {:else if objectId}
+      {@const item = items.find(({ id }) => id === objectId)}
+      {#if item}
+        {@const context = contexts.find(({ attachedTo }) => attachedTo === item.id)}
+        <ChatNavItem {context} isSelected {item} on:select />
       {/if}
     {/if}
   </div>

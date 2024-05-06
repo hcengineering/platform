@@ -17,8 +17,10 @@ import { type Doc, type DocumentQuery, type Ref } from '@hcengineering/core'
 import { type DocNotifyContext } from '@hcengineering/notification'
 import { type AnySvelteComponent, type IconSize, type Action } from '@hcengineering/ui'
 
+export type ChatGroup = 'activity' | 'direct' | 'channels' | 'starred'
+
 export interface ChatNavGroupModel {
-  id: string
+  id: ChatGroup
   label?: IntlString
   query: DocumentQuery<DocNotifyContext>
   sortFn: (items: ChatNavItemModel[], contexts: DocNotifyContext[]) => ChatNavItemModel[]
@@ -34,6 +36,11 @@ export interface ChatNavItemModel {
   description?: string
   icon: Asset | AnySvelteComponent | undefined
   iconSize?: IconSize
+  iconProps: Record<string, any>
   isSecondary: boolean
   withIconBackground: boolean
+}
+
+export interface SelectChannelEvent {
+  object: Doc
 }

@@ -129,12 +129,16 @@ export interface NotificationPresenter extends Class<Doc> {
   presenter: Resource<NotificationContentProvider>
 }
 
+export const NOTIFICATION_BODY_SIZE = 50
+
 /**
  * @public
  */
 export default plugin(serverNotificationId, {
   metadata: {
-    SesUrl: '' as Metadata<string>
+    SesUrl: '' as Metadata<string>,
+    PushPrivateKey: '' as Metadata<string>,
+    PushSubject: '' as Metadata<string>
   },
   mixin: {
     HTMLPresenter: '' as Ref<Mixin<HTMLPresenter>>,

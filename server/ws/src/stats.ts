@@ -3,7 +3,8 @@ import {
   MeasureMetricsContext,
   type Metrics,
   metricsAggregate,
-  type MetricsData
+  type MetricsData,
+  toWorkspaceString
 } from '@hcengineering/core'
 import os from 'os'
 import { type SessionManager } from './types'
@@ -20,14 +21,22 @@ export function getStatistics (ctx: MeasureContext, sessions: SessionManager, ad
   }
   data.statistics.totalClients = sessions.sessions.size
   if (admin) {
-    for (const [k, v] of sessions.workspaces) {
-      data.statistics.activeSessions[k] = Array.from(v.sessions.entries()).map(([k, v]) => ({
-        userId: v.session.getUser(),
-        data: v.socket.data(),
-        mins5: v.session.mins5,
-        total: v.session.total,
-        current: v.session.current
-      }))
+    for (const [k, vv] of sessions.workspaces) {
+      data.statistics.activeSessions[k] = {
+        sessions: Array.from(vv.sessions.entries()).map(([k, v]) => ({
+          userId: v.session.getUser(),
+          data: v.socket.data(),
+          mins5: v.session.mins5,
+          total: v.session.total,
+          current: v.session.current,
+          upgrade: v.session.isUpgradeClient()
+        })),
+        name: vv.workspaceName,
+        wsId: toWorkspaceString(vv.workspaceId),
+        sessionsTotal: vv.sessions.size,
+        upgrading: vv.upgrade,
+        closing: vv.closing !== undefined
+      }
     }
   }
 

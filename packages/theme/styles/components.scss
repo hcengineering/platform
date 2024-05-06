@@ -152,6 +152,7 @@
     display: flex;
     align-items: center;
     min-width: 0;
+    min-height: 0;
   }
   .hulyHeader-titleGroup {
     flex-grow: 1;
@@ -457,7 +458,7 @@
     }
     &.medium {
       padding: var(--spacing-1_5) var(--spacing-2);
-      min-height: var(--global-large-Size);
+      min-height: var(--global-medium-Size);
       
       .hulyAccordionItem-header__label-wrapper {
         &.withIcon {
@@ -573,7 +574,7 @@
 .hulyToDoLine-container {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--spacing-1);
   margin: 0;
   padding: var(--spacing-0_75) var(--spacing-1) var(--spacing-0_75) var(--spacing-0_75);
@@ -584,6 +585,7 @@
   border-radius: var(--medium-BorderRadius);
   outline: none;
 
+  .hulyToDoLine-title { color: var(--global-primary-TextColor); }
   &.isDone {
     .hulyToDoLine-title {
       color: var(--global-tertiary-TextColor);
@@ -611,7 +613,6 @@
   .hulyToDoLine-statusPriority {
     position: relative;
     margin-right: var(--spacing-0_25);
-    padding-top: var(--spacing-0_5);
     min-width: var(--global-min-Size);
 
     &.isNew::after {
@@ -630,16 +631,6 @@
     width: var(--global-extra-small-Size);
     height: var(--global-extra-small-Size);
   }
-  .hulyToDoLine-top-align {
-    color: var(--global-primary-TextColor);
-
-    &.top-12 {
-      padding-top: 0.25rem;
-    }
-    &.top-14 {
-      padding-top: 0.175rem;
-    }
-  }
   .hulyToDoLine-icon {
     display: flex;
     justify-content: center;
@@ -651,21 +642,10 @@
   .hulyToDoLine-label {
     flex-grow: 1;
     flex-shrink: 1;
-    padding-top: var(--spacing-0_5);
     color: var(--global-secondary-TextColor);
 
     &:not(.large) {
       height: var(--global-extra-small-Size);
-    }
-  }
-  .hulyToDoLine-reference {
-    padding: 0 var(--spacing-1) 0 var(--spacing-0_75);
-    box-shadow: inset 0 0 0 1px var(--global-subtle-ui-BorderColor);
-    border-radius: var(--extra-small-BorderRadius);
-    background-color: var(--tag-nuance-SkyBackground);
-
-    &:hover {
-      box-shadow: inset 0 0 0 1px var(--global-ui-BorderColor);
     }
   }
 

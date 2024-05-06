@@ -16,7 +16,7 @@
   import { Analytics } from '@hcengineering/analytics'
   import core, { Doc, Hierarchy, Ref, Space, TxRemoveDoc } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
-  import { addTxListener, contextStore, getClient } from '@hcengineering/presentation'
+  import { addTxListener, contextStore, getClient, reduceCalls } from '@hcengineering/presentation'
   import { AnyComponent, Component } from '@hcengineering/ui'
   import { Action, ViewContextType } from '@hcengineering/view'
   import { fly } from 'svelte/transition'
@@ -237,11 +237,12 @@
   }
 
   let presenter: AnyComponent | undefined
-  async function updatePreviewPresenter (doc?: Doc): Promise<void> {
-    presenter = doc !== undefined ? await getObjectPreview(client, Hierarchy.mixinOrClass(doc)) : undefined
-  }
+  const updatePreviewPresenter = reduceCalls(async function (doc?: Doc): Promise<void> {
+    const r = doc !== undefined ? await getObjectPreview(client, Hierarchy.mixinOrClass(doc)) : undefined
+    presenter = r
+  })
 
-  $: updatePreviewPresenter($previewDocument)
+  $: void updatePreviewPresenter($previewDocument)
 </script>
 
 <svelte:window on:keydown={handleKeys} />

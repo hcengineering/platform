@@ -16,7 +16,7 @@
 <script lang="ts">
   import core, { IdMap, Ref, Status, StatusCategory } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
-  import { getClient } from '@hcengineering/presentation'
+  import { getClient, reduceCalls } from '@hcengineering/presentation'
   import task, { Project, ProjectType, TaskType } from '@hcengineering/task'
   import {
     ColorDefinition,
@@ -91,13 +91,13 @@
   )
   $: void updateCategory(value)
 
-  async function updateCategory (value: Status | undefined): Promise<void> {
+  const updateCategory = reduceCalls(async function (value: Status | undefined): Promise<void> {
     if (value === undefined) {
       category = undefined
       return
     }
     category = await client.findOne(core.class.StatusCategory, { _id: value.category })
-  }
+  })
 
   const categoryIcons = {
     [task.statusCategory.UnStarted]: IconBacklog,

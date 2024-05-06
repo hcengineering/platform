@@ -30,7 +30,7 @@
 
   $: updatePersons(ids)
 
-  function updatePersons (ids: Ref<Person>[]) {
+  function updatePersons (ids: Ref<Person>[]): void {
     persons = ids.map((_id) => $personByIdStore.get(_id)).filter((person): person is Person => !!person)
   }
 </script>
@@ -50,7 +50,7 @@
     {#each persons as person, index}
       <div class="item" class:withoutBorder={index === persons.length - 1}>
         <div class="item__content" class:disabled={disableRemoveFor.includes(person._id)}>
-          <UserDetails {person} />
+          <UserDetails {person} showStatus background="var(--global-surface-01-BackgroundColor)" />
           {#if !disableRemoveFor.includes(person._id)}
             <div class="item__action">
               <ButtonIcon

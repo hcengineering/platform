@@ -26,9 +26,11 @@
   import core, { Account, Doc, Ref, Timestamp } from '@hcengineering/core'
   import { Icon, Label, resizeObserver, TimeSince, tooltip } from '@hcengineering/ui'
   import { Asset, getEmbeddedLabel, IntlString } from '@hcengineering/platform'
-  import activity, { ActivityMessagePreviewType } from '@hcengineering/activity'
-  import { classIcon, DocNavLink } from '@hcengineering/view-resources'
+  import activity, { ActivityMessage, ActivityMessagePreviewType } from '@hcengineering/activity'
+  import { classIcon, DocNavLink, showMenu } from '@hcengineering/view-resources'
+  import { markupToText } from '@hcengineering/text'
 
+  export let message: ActivityMessage | undefined = undefined
   export let text: string | undefined = undefined
   export let intlLabel: IntlString | undefined = undefined
   export let readonly = false
@@ -99,6 +101,12 @@
     width = element.clientWidth
   }}
   on:click
+  on:contextmenu={(evt) => {
+    showMenu(evt, { object: message, baseMenuClass: activity.class.ActivityMessage }, () => {
+      isActionsOpened = false
+    })
+    isActionsOpened = true
+  }}
 >
   <span class="left overflow-label">
     {#if type === 'full'}
@@ -119,7 +127,7 @@
               <Label label={header ?? client.getHierarchy().getClass(headerObject._class).label} />
             </DocNavLink>
           {:else if person}
-            <EmployeePresenter value={person} shouldShowAvatar={false} compact />
+            <EmployeePresenter value={person} shouldShowAvatar={false} compact showStatus={false} />
           {:else}
             <Label label={core.string.System} />
           {/if}
@@ -129,7 +137,11 @@
     {/if}
 
     {#if text || intlLabel}
-      <span class="textContent overflow-label font-normal" class:contentOnly={type === 'content-only'}>
+      <span
+        class="textContent overflow-label font-normal"
+        class:contentOnly={type === 'content-only'}
+        use:tooltip={{ label: text ? getEmbeddedLabel(markupToText(text)) : intlLabel }}
+      >
         {#if intlLabel}
           <Label label={intlLabel} />
         {/if}

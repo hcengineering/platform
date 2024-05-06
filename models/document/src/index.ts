@@ -14,8 +14,8 @@
 //
 
 import activity from '@hcengineering/activity'
-import type { Class, CollaborativeDoc, CollectionSize, Domain, Ref } from '@hcengineering/core'
-import { IndexKind } from '@hcengineering/core'
+import type { Class, CollaborativeDoc, CollectionSize, Domain, Role, RolesAssignment } from '@hcengineering/core'
+import { IndexKind, Account, Ref } from '@hcengineering/core'
 import {
   type Document,
   type DocumentEmbedding,
@@ -36,7 +36,8 @@ import {
   TypeString,
   UX,
   TypeCollaborativeDoc,
-  TypeCollaborativeDocVersion
+  TypeCollaborativeDocVersion,
+  Mixin
 } from '@hcengineering/model'
 import attachment, { TAttachment } from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
@@ -49,7 +50,7 @@ import tracker from '@hcengineering/model-tracker'
 import view, { actionTemplates, createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
-import { type Asset } from '@hcengineering/platform'
+import { getEmbeddedLabel, type Asset } from '@hcengineering/platform'
 import tags from '@hcengineering/tags'
 import time from '@hcengineering/time'
 import document from './plugin'
@@ -162,6 +163,12 @@ export class TSavedDocument extends TPreference implements SavedDocument {
 @UX(document.string.Teamspace, document.icon.Teamspace, 'Teamspace', 'name')
 export class TTeamspace extends TTypedSpace implements Teamspace {}
 
+@Mixin(document.mixin.DefaultTeamspaceTypeData, document.class.Teamspace)
+@UX(getEmbeddedLabel('Default teamspace type'), document.icon.Document)
+export class TDefaultTeamspaceTypeData extends TTeamspace implements RolesAssignment {
+  [key: Ref<Role>]: Ref<Account>[]
+}
+
 function defineTeamspace (builder: Builder): void {
   builder.createModel(TTeamspace)
 
@@ -173,9 +180,25 @@ function defineTeamspace (builder: Builder): void {
       description: document.string.Description,
       icon: document.icon.Document,
       baseClass: document.class.Teamspace,
-      availablePermissions: [core.permission.ForbidDeleteObject]
+      availablePermissions: [
+        core.permission.UpdateSpace,
+        core.permission.ArchiveSpace,
+        core.permission.ForbidDeleteObject
+      ]
     },
     document.descriptor.TeamspaceType
+  )
+
+  builder.createDoc(
+    core.class.SpaceType,
+    core.space.Model,
+    {
+      name: 'Default teamspace type',
+      descriptor: document.descriptor.TeamspaceType,
+      roles: 0,
+      targetClass: document.mixin.DefaultTeamspaceTypeData
+    },
+    document.spaceType.DefaultTeamspaceType
   )
 
   // Navigator
@@ -199,6 +222,7 @@ function defineTeamspace (builder: Builder): void {
       input: 'focus',
       category: document.category.Document,
       target: document.class.Teamspace,
+      visibilityTester: view.function.CanEditSpace,
       query: {},
       context: {
         mode: ['context', 'browser'],
@@ -231,7 +255,7 @@ function defineTeamspace (builder: Builder): void {
 }
 
 function defineDocument (builder: Builder): void {
-  builder.createModel(TDocument, TDocumentSnapshot, TDocumentEmbedding, TSavedDocument)
+  builder.createModel(TDocument, TDocumentSnapshot, TDocumentEmbedding, TSavedDocument, TDefaultTeamspaceTypeData)
 
   builder.mixin(document.class.Document, core.class.Class, time.mixin.ItemPresenter, {
     presenter: document.component.DocumentToDoPresenter
@@ -255,6 +279,10 @@ function defineDocument (builder: Builder): void {
 
   builder.mixin(document.class.Document, core.class.Class, view.mixin.LinkProvider, {
     encode: document.function.GetObjectLinkFragment
+  })
+
+  builder.mixin(document.class.Document, core.class.Class, view.mixin.ObjectIcon, {
+    component: document.component.DocumentIcon
   })
 
   // Actions
@@ -388,6 +416,11 @@ function defineDocument (builder: Builder): void {
 
   builder.mixin(document.class.Document, core.class.Class, view.mixin.ObjectTitle, {
     titleProvider: document.function.DocumentTitleProvider
+  })
+
+  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
+    ofClass: document.class.Document,
+    components: { input: chunter.component.ChatMessageInput }
   })
 
   // Search

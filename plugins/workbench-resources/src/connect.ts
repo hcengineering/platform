@@ -7,6 +7,7 @@ import core, {
   metricsToString,
   setCurrentAccount,
   versionToString,
+  type Account,
   type AccountClient,
   type Client,
   type Version
@@ -22,10 +23,11 @@ import {
   networkStatus,
   setMetadataLocalStorage
 } from '@hcengineering/ui'
+import { writable } from 'svelte/store'
 import plugin from './plugin'
 import { workspaceCreating } from './utils'
 
-export let versionError: string | undefined = ''
+export const versionError = writable<string | undefined>(undefined)
 
 let _token: string | undefined
 let _client: AccountClient | undefined
@@ -147,8 +149,16 @@ export async function connect (title: string): Promise<Client | undefined> {
           })
         },
         // We need to refresh all active live queries and clear old queries.
-        (event: ClientConnectEvent) => {
+        (event: ClientConnectEvent, data: any) => {
           console.log('WorkbenchClient: onConnect', event)
+          if (event === ClientConnectEvent.Maintenance) {
+            if (data != null && data.total !== 0) {
+              versionError.set(`Maintenance ${Math.floor((100 / data.total) * (data.total - data.toProcess))}%`)
+            } else {
+              versionError.set('Maintenance...')
+            }
+            return
+          }
           try {
             if ((_clientSet && event === ClientConnectEvent.Connected) || event === ClientConnectEvent.Refresh) {
               void ctx.with('refresh client', {}, async () => {
@@ -176,7 +186,7 @@ export async function connect (title: string): Promise<Client | undefined> {
                 if (currentVersionStr !== reconnectVersionStr) {
                   // It seems upgrade happened
                   // location.reload()
-                  versionError = `${currentVersionStr} != ${reconnectVersionStr}`
+                  versionError.set(`${currentVersionStr} != ${reconnectVersionStr}`)
                 }
                 const serverVersion: { version: string } = await ctx.with(
                   'fetch-server-version',
@@ -184,9 +194,15 @@ export async function connect (title: string): Promise<Client | undefined> {
                   async () => await (await fetch(serverEndpoint + '/api/v1/version', {})).json()
                 )
 
-                console.log('Server version', serverVersion.version)
+                console.log(
+                  'Server version',
+                  serverVersion.version,
+                  version !== undefined ? versionToString(version) : ''
+                )
                 if (serverVersion.version !== '' && serverVersion.version !== currentVersionStr) {
-                  versionError = `${currentVersionStr} => ${serverVersion.version}`
+                  versionError.set(`${currentVersionStr} => ${serverVersion.version}`)
+                } else {
+                  versionError.set(undefined)
                 }
               }
             })()
@@ -201,7 +217,10 @@ export async function connect (title: string): Promise<Client | undefined> {
   _client = newClient
   console.log('logging in as', email)
 
-  const me = await ctx.with('get-account', {}, async () => await newClient.getAccount())
+  let me: Account | undefined = await ctx.with('get-account', {}, async () => await newClient.getAccount())
+  if (me === undefined) {
+    me = await createEmployee(ctx, ws, me, newClient)
+  }
   if (me !== undefined) {
     Analytics.setUser(me.email)
     Analytics.setTag('workspace', ws)
@@ -209,6 +228,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     setCurrentAccount(me)
   } else {
     console.error('WARNING: no employee account found.')
+
     clearMetadata(ws)
     navigate({
       path: [loginId],
@@ -237,7 +257,7 @@ export async function connect (title: string): Promise<Client | undefined> {
       const versionStr = versionToString(version)
 
       if (version === undefined || requiredVersion !== versionStr) {
-        versionError = `${versionStr} => ${requiredVersion}`
+        versionError.set(`${versionStr} => ${requiredVersion}`)
         return undefined
       }
     }
@@ -249,29 +269,31 @@ export async function connect (title: string): Promise<Client | undefined> {
         async () => await (await fetch(serverEndpoint + '/api/v1/version', {})).json()
       )
 
-      console.log('Server version', serverVersion.version)
+      console.log('Server version', serverVersion.version, version !== undefined ? versionToString(version) : '')
       if (
         serverVersion.version !== '' &&
         (version === undefined || serverVersion.version !== versionToString(version))
       ) {
         const versionStr = version !== undefined ? versionToString(version) : 'unknown'
-        versionError = `${versionStr} => ${serverVersion.version}`
+        versionError.set(`${versionStr} => ${serverVersion.version}`)
         return
       }
     } catch (err: any) {
-      versionError = 'server version not available'
+      versionError.set('server version not available')
       return
     }
   } catch (err: any) {
     console.error(err)
     Analytics.handleError(err)
-    const requirdVersion = getMetadata(presentation.metadata.RequiredVersion)
-    console.log('checking min model version', requirdVersion)
-    if (requirdVersion !== undefined) {
-      versionError = `'unknown' => ${requirdVersion}`
+    const requiredVersion = getMetadata(presentation.metadata.RequiredVersion)
+    console.log('checking min model version', requiredVersion)
+    if (requiredVersion !== undefined) {
+      versionError.set(`'unknown' => ${requiredVersion}`)
       return undefined
     }
   }
+
+  versionError.set(undefined)
 
   // Update window title
   document.title = [ws, title].filter((it) => it).join(' - ')
@@ -284,6 +306,28 @@ export async function connect (title: string): Promise<Client | undefined> {
   })
   console.log(metricsToString(ctx.metrics, 'connect', 50))
   return newClient
+}
+
+async function createEmployee (
+  ctx: MeasureMetricsContext,
+  ws: string,
+  me: Account,
+  newClient: AccountClient
+): Promise<Account | undefined> {
+  const createEmployee = await getResource(login.function.CreateEmployee)
+  await ctx.with('create-missing-employee', {}, async () => {
+    await createEmployee(ws)
+  })
+  for (let i = 0; i < 5; i++) {
+    me = await ctx.with('get-account', {}, async () => await newClient.getAccount())
+    if (me !== undefined) {
+      break
+    }
+    await new Promise((resolve) => {
+      setTimeout(resolve, 100)
+    })
+  }
+  return me
 }
 
 function clearMetadata (ws: string): void {

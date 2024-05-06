@@ -38,6 +38,7 @@ import { NotificationContent } from '@hcengineering/notification'
 import { workbenchId } from '@hcengineering/workbench'
 import { stripTags } from '@hcengineering/text'
 import chunter, { ChatMessage } from '@hcengineering/chunter'
+import { NOTIFICATION_BODY_SIZE } from '@hcengineering/server-notification'
 
 async function updateSubIssues (
   updateTx: TxUpdateDoc<Issue>,
@@ -85,7 +86,6 @@ function isSamePerson (control: TriggerControl, assignee: Ref<Person>, target: R
   return assignee === targetAccount?.person
 }
 
-const NOTIFICATION_BODY_SIZE = 50
 /**
  * @public
  */
@@ -97,8 +97,7 @@ export async function getIssueNotificationContent (
 ): Promise<NotificationContent> {
   const issue = doc as Issue
 
-  const issueShortName = await issueTextPresenter(doc)
-  const issueTitle = `${issueShortName}: ${issue.title}`
+  const issueTitle = await issueTextPresenter(doc)
 
   const title = tracker.string.IssueNotificationTitle
   let body = tracker.string.IssueNotificationBody
@@ -183,6 +182,37 @@ export async function OnComponentRemove (tx: Tx, control: TriggerControl): Promi
 /**
  * @public
  */
+export async function OnWorkspaceOwnerAdded (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const targetProject = (
+    await control.findAll(tracker.class.Project, {
+      _id: tracker.project.DefaultProject
+    })
+  )[0]
+
+  if (targetProject === undefined) {
+    return []
+  }
+
+  const res: Tx[] = []
+  const actualTx = tx as TxUpdateDoc<PersonAccount>
+
+  if (
+    targetProject.owners === undefined ||
+    targetProject.owners.length === 0 ||
+    targetProject.owners[0] === core.account.System
+  ) {
+    const updTx = control.txFactory.createTxUpdateDoc(tracker.class.Project, targetProject.space, targetProject._id, {
+      owners: [actualTx.objectId]
+    })
+    res.push(updTx)
+  }
+
+  return res
+}
+
+/**
+ * @public
+ */
 export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const actualTx = TxProcessor.extractTx(tx)
 
@@ -245,19 +275,6 @@ export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<T
   }
   return []
 }
-
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export default async () => ({
-  function: {
-    IssueHTMLPresenter: issueHTMLPresenter,
-    IssueTextPresenter: issueTextPresenter,
-    IssueNotificationContentProvider: getIssueNotificationContent
-  },
-  trigger: {
-    OnIssueUpdate,
-    OnComponentRemove
-  }
-})
 
 async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const parentTx = tx as TxCollectionCUD<Issue, TimeSpendReport>
@@ -466,3 +483,17 @@ function updateIssueParentEstimations (
     )
   }
 }
+
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export default async () => ({
+  function: {
+    IssueHTMLPresenter: issueHTMLPresenter,
+    IssueTextPresenter: issueTextPresenter,
+    IssueNotificationContentProvider: getIssueNotificationContent
+  },
+  trigger: {
+    OnIssueUpdate,
+    OnComponentRemove,
+    OnWorkspaceOwnerAdded
+  }
+})

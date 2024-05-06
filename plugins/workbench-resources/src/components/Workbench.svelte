@@ -20,7 +20,14 @@
   import notification, { DocNotifyContext, InboxNotification, notificationId } from '@hcengineering/notification'
   import { BrowserNotificatator, InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { IntlString, broadcastEvent, getMetadata, getResource } from '@hcengineering/platform'
-  import { ActionContext, ComponentExtensions, createQuery, getClient, isAdminUser } from '@hcengineering/presentation'
+  import {
+    ActionContext,
+    ComponentExtensions,
+    createQuery,
+    getClient,
+    isAdminUser,
+    reduceCalls
+  } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
   import support, { SupportStatus, supportLink } from '@hcengineering/support'
   import {
@@ -28,6 +35,7 @@
     Button,
     CompAndProps,
     Component,
+    Dock,
     IconSettings,
     Label,
     Location,
@@ -84,7 +92,6 @@
   import TopMenu from './icons/TopMenu.svelte'
 
   let contentPanel: HTMLElement
-  let replacedPanel: HTMLElement | undefined
 
   const { setTheme } = getContext<{ setTheme: (theme: string) => void }>('theme')
 
@@ -163,18 +170,16 @@
   let hasNotificationsFn: ((data: Map<Ref<DocNotifyContext>, InboxNotification[]>) => Promise<boolean>) | undefined =
     undefined
   let hasInboxNotifications = false
-  let syncPromise: Promise<void> | undefined = undefined
-  let locUpdate = 0
 
-  getResource(notification.function.HasInboxNotifications).then((f) => {
+  void getResource(notification.function.HasInboxNotifications).then((f) => {
     hasNotificationsFn = f
   })
 
-  $: hasNotificationsFn?.($inboxNotificationsByContextStore).then((res) => {
+  $: void hasNotificationsFn?.($inboxNotificationsByContextStore).then((res) => {
     hasInboxNotifications = res
   })
 
-  const doSyncLoc = async (loc: Location, iteration: number): Promise<void> => {
+  const doSyncLoc = reduceCalls(async (loc: Location): Promise<void> => {
     if (workspaceId !== $location.path[1]) {
       // Switch of workspace
       return
@@ -182,19 +187,14 @@
     closeTooltip()
     closePopup()
 
-    await syncLoc(loc, iteration)
+    await syncLoc(loc)
     await updateWindowTitle(loc)
     checkOnHide()
-    syncPromise = undefined
-  }
+  })
+
   onDestroy(
     location.subscribe((loc) => {
-      locUpdate++
-      if (syncPromise !== undefined) {
-        void syncPromise.then(() => doSyncLoc(loc, locUpdate))
-      } else {
-        syncPromise = doSyncLoc(loc, locUpdate)
-      }
+      void doSyncLoc(loc)
     })
   )
 
@@ -294,15 +294,12 @@
     return loc
   }
 
-  async function syncLoc (loc: Location, iteration: number): Promise<void> {
+  async function syncLoc (loc: Location): Promise<void> {
     const originalLoc = JSON.stringify(loc)
 
     if (loc.path.length > 3 && getSpecialComponent(loc.path[3]) === undefined) {
       // resolve short links
       const resolvedLoc = await resolveShortLink(loc)
-      if (locUpdate !== iteration) {
-        return
-      }
       if (resolvedLoc !== undefined && !areLocationsEqual(loc, resolvedLoc.loc)) {
         loc = mergeLoc(loc, resolvedLoc)
       }
@@ -334,9 +331,6 @@
           let len = 3
           if (spaceRef !== undefined && specialRef !== undefined) {
             const spaceObj = await client.findOne<Space>(core.class.Space, { _id: spaceRef })
-            if (locUpdate !== iteration) {
-              return
-            }
             if (spaceObj !== undefined) {
               loc.path[3] = spaceRef
               loc.path[4] = specialRef
@@ -355,13 +349,7 @@
       clear(1)
       currentAppAlias = app
       currentApplication = await client.findOne<Application>(workbench.class.Application, { alias: app })
-      if (locUpdate !== iteration) {
-        return
-      }
       navigatorModel = await buildNavModel(client, currentApplication)
-      if (locUpdate !== iteration) {
-        return
-      }
     }
 
     if (
@@ -395,9 +383,6 @@
         currentSpecial = space
       } else {
         await updateSpace(space)
-        if (locUpdate !== iteration) {
-          return
-        }
         setSpaceSpecial(special)
       }
     }
@@ -425,6 +410,7 @@
 
     if (props.length >= 3) {
       const doc = await client.findOne<Doc>(props[2] as Ref<Class<Doc>>, { _id: props[1] as Ref<Doc> })
+
       if (doc !== undefined) {
         const provider = ListSelectionProvider.Find(doc._id)
         updateFocus({
@@ -660,7 +646,7 @@
     class:modern-app={modern}
     style:flex-direction={appsDirection === 'horizontal' ? 'column-reverse' : 'row'}
   >
-    <div class="antiPanel-application {appsDirection}" class:lastDivider={!visibleNav}>
+    <div class="antiPanel-application {appsDirection} no-print" class:lastDivider={!visibleNav}>
       <div
         class="hamburger-container clear-mins"
         class:portrait={appsDirection === 'horizontal'}
@@ -715,7 +701,7 @@
           size={appsMini ? 'small' : 'large'}
           on:click={() => showPopup(AppSwitcher, { apps }, popupPosition)}
         />
-        <a href={supportLink}>
+        <a href={supportLink} target="_blank" rel="noopener noreferrer">
           <AppItem
             icon={support.icon.Support}
             label={support.string.ContactUs}
@@ -764,7 +750,7 @@
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->
         {#if navFloat}<div class="cover shown" on:click={() => (visibleNav = false)} />{/if}
-        <div class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'}">
+        <div class="antiPanel-navigator no-print {appsDirection === 'horizontal' ? 'portrait' : 'landscape'}">
           <div class="antiPanel-wrap__content">
             {#if currentApplication}
               <NavHeader label={currentApplication.label} />
@@ -852,6 +838,7 @@
       {/if}
     </div>
   </div>
+  <Dock />
   <div bind:this={cover} class="cover" />
   <TooltipInstance />
   <PanelInstance bind:this={panelInstance} contentPanel={elementPanel} kind={modern ? 'modern' : 'default'}>
@@ -880,14 +867,15 @@
     &:not(.modern-app, .inner) {
       border-top: 1px solid var(--theme-navpanel-divider);
       border-left: 1px solid var(--theme-navpanel-color);
-    }
-    &.modern-app {
-      border-top: 1px solid transparent;
+
+      & + :global(.dock) {
+        border-left: 1px solid var(--theme-navpanel-divider);
+      }
     }
     &.modern-app {
       position: relative;
       background-color: var(--theme-statusbar-color);
-      border-radius: var(--medium-BorderRadius);
+      border-top: 1px solid transparent;
 
       &::after {
         position: absolute;
@@ -1027,6 +1015,12 @@
         transition-duration: 0;
         border-left: 2px solid var(--primary-bg-color);
       }
+    }
+  }
+
+  @media print {
+    .workbench-container:has(~ .panel-instance) {
+      display: none;
     }
   }
 </style>

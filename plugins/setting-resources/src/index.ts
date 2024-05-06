@@ -44,6 +44,7 @@ import WorkspaceSetting from './components/WorkspaceSetting.svelte'
 import WorkspaceSettings from './components/WorkspaceSettings.svelte'
 import InviteSetting from './components/InviteSetting.svelte'
 import Configure from './components/Configure.svelte'
+import Spaces from './components/Spaces.svelte'
 import setting from './plugin'
 import IntegrationPanel from './components/IntegrationPanel.svelte'
 import { getOwnerFirstName, getOwnerLastName, getOwnerPosition, getValue, filterDescendants } from './utils'
@@ -93,6 +94,7 @@ export default async (): Promise<Resources> => ({
   },
   component: {
     Settings,
+    Spaces,
     Profile,
     Password,
     WorkspaceSetting,

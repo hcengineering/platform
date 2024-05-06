@@ -14,8 +14,16 @@
 // limitations under the License.
 //
 
+import activity, { ActivityMessage } from '@hcengineering/activity'
 import chunter, { ChatMessage } from '@hcengineering/chunter'
-import contact, { Employee, formatName, Person, PersonAccount } from '@hcengineering/contact'
+import contact, {
+  Employee,
+  formatName,
+  getAvatarProviderId,
+  getGravatarUrl,
+  Person,
+  PersonAccount
+} from '@hcengineering/contact'
 import core, {
   Account,
   AnyAttribute,
@@ -45,25 +53,31 @@ import core, {
 import notification, {
   ActivityInboxNotification,
   BaseNotificationType,
-  BrowserNotification,
   ClassCollaborators,
   Collaborators,
   CommonInboxNotification,
   DocNotifyContext,
+  encodeObjectURI,
   InboxNotification,
+  MentionInboxNotification,
   notificationId,
   NotificationStatus,
-  NotificationType
+  PushSubscription,
+  NotificationType,
+  PushData
 } from '@hcengineering/notification'
 import { getMetadata, getResource, translate } from '@hcengineering/platform'
 import type { TriggerControl } from '@hcengineering/server-core'
+import serverCore from '@hcengineering/server-core'
 import serverNotification, {
   getEmployee,
   getPersonAccount,
-  getPersonAccountById
+  getPersonAccountById,
+  NOTIFICATION_BODY_SIZE
 } from '@hcengineering/server-notification'
-import activity, { ActivityMessage } from '@hcengineering/activity'
-
+import { stripTags } from '@hcengineering/text'
+import { workbenchId } from '@hcengineering/workbench'
+import webpush, { WebPushError } from 'web-push'
 import { Content, NotifyResult } from './types'
 import {
   getHTMLPresenter,
@@ -139,6 +153,7 @@ export async function getCommonNotificationTxes (
       data,
       _class,
       modifiedOn,
+      sender as Ref<PersonAccount>,
       notifyResult.push
     )
   }
@@ -369,6 +384,7 @@ export async function pushInboxNotifications (
   data: Partial<Data<InboxNotification>>,
   _class: Ref<Class<InboxNotification>>,
   modifiedOn: Timestamp,
+  senderId: Ref<PersonAccount>,
   shouldPush: boolean,
   shouldUpdateTimestamp = true
 ): Promise<void> {
@@ -387,15 +403,14 @@ export async function pushInboxNotifications (
       hidden: false,
       lastUpdateTimestamp: shouldUpdateTimestamp ? modifiedOn : undefined
     })
-    res.push(createContextTx)
+    await control.apply([createContextTx], true)
     docNotifyContextId = createContextTx.objectId
   } else {
     if (shouldUpdateTimestamp) {
-      res.push(
-        control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, {
-          lastUpdateTimestamp: modifiedOn
-        })
-      )
+      const updateTx = control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, {
+        lastUpdateTimestamp: modifiedOn
+      })
+      await control.apply([updateTx], true)
     }
     docNotifyContextId = context._id
   }
@@ -410,7 +425,18 @@ export async function pushInboxNotifications (
     const notificationTx = control.txFactory.createTxCreateDoc(_class, space, notificationData)
     res.push(notificationTx)
     if (shouldPush) {
-      const pushTx = await createPushFromInbox(control, targetUser, space, docNotifyContextId, notificationData, _class)
+      const now = Date.now()
+      const pushTx = await createPushFromInbox(
+        control,
+        targetUser,
+        attachedTo,
+        attachedToClass,
+        notificationData,
+        _class,
+        senderId,
+        notificationTx.objectId
+      )
+      console.log('Push takes', Date.now() - now, 'ms')
       if (pushTx !== undefined) {
         res.push(pushTx)
       }
@@ -456,7 +482,7 @@ async function commonInboxNotificationToText (doc: Data<CommonInboxNotification>
     title = await translate(doc.header, params)
   }
   if (doc.messageHtml != null) {
-    body = doc.messageHtml
+    body = stripTags(doc.messageHtml, NOTIFICATION_BODY_SIZE)
   }
   if (doc.message != null) {
     body = await translate(doc.message, params)
@@ -464,53 +490,152 @@ async function commonInboxNotificationToText (doc: Data<CommonInboxNotification>
   return [title, body]
 }
 
+async function mentionInboxNotificationToText (
+  doc: Data<MentionInboxNotification>,
+  control: TriggerControl
+): Promise<[string, string]> {
+  let obj = (await control.findAll(doc.mentionedInClass, { _id: doc.mentionedIn }, { limit: 1 }))[0]
+  if (obj !== undefined) {
+    if (control.hierarchy.isDerived(obj._class, chunter.class.ChatMessage)) {
+      obj = (
+        await control.findAll(
+          (obj as ChatMessage).attachedToClass,
+          { _id: (obj as ChatMessage).attachedTo },
+          { limit: 1 }
+        )
+      )[0]
+    }
+    if (obj !== undefined) {
+      const textPresenter = getTextPresenter(obj._class, control.hierarchy)
+      if (textPresenter !== undefined) {
+        const textPresenterFunc = await getResource(textPresenter.presenter)
+        const title = await textPresenterFunc(obj, control)
+        doc.intlParams = {
+          ...doc.intlParams,
+          title
+        }
+      }
+    }
+  }
+  return await commonInboxNotificationToText(doc)
+}
+
 export async function createPushFromInbox (
   control: TriggerControl,
   targetUser: Ref<Account>,
-  space: Ref<Space>,
-  docNotifyContextId: Ref<DocNotifyContext>,
+  attachedTo: Ref<Doc>,
+  attachedToClass: Ref<Class<Doc>>,
   data: Data<InboxNotification>,
-  _class: Ref<Class<InboxNotification>>
+  _class: Ref<Class<InboxNotification>>,
+  senderId: Ref<PersonAccount>,
+  _id: Ref<Doc>
 ): Promise<Tx | undefined> {
   let title: string = ''
   let body: string = ''
   if (control.hierarchy.isDerived(_class, notification.class.ActivityInboxNotification)) {
     ;[title, body] = await activityInboxNotificationToText(data as Data<ActivityInboxNotification>)
+  } else if (control.hierarchy.isDerived(_class, notification.class.MentionInboxNotification)) {
+    ;[title, body] = await mentionInboxNotificationToText(data as Data<MentionInboxNotification>, control)
   } else if (control.hierarchy.isDerived(_class, notification.class.CommonInboxNotification)) {
     ;[title, body] = await commonInboxNotificationToText(data as Data<CommonInboxNotification>)
   }
   if (title === '' || body === '') {
     return
   }
-  return await createPushNotification(control, targetUser, space, title, body, [
-    '',
-    '',
+  const sender = (await control.modelDb.findAll(contact.class.PersonAccount, { _id: senderId }))[0]
+
+  let senderPerson: Person | undefined
+
+  if (sender !== undefined) {
+    senderPerson = (await control.findAll(contact.class.Person, { _id: sender.person }))[0]
+  }
+  const path = [
+    workbenchId,
+    control.workspace.workspaceUrl,
     notificationId,
-    docNotifyContextId
-  ])
+    encodeObjectURI(attachedTo, attachedToClass)
+  ]
+  await createPushNotification(control, targetUser, title, body, _id, senderPerson?.avatar, path)
+  return control.txFactory.createTxCreateDoc(notification.class.BrowserNotification, notification.space.Notifications, {
+    user: targetUser,
+    status: NotificationStatus.New,
+    title,
+    body,
+    senderId,
+    tag: _id,
+    onClickLocation: {
+      path
+    }
+  })
 }
 
 export async function createPushNotification (
   control: TriggerControl,
   targetUser: Ref<Account>,
-  space: Ref<Space>,
   title: string,
   body: string,
-  onClick?: string[]
-): Promise<TxCreateDoc<BrowserNotification>> {
-  const data: Data<BrowserNotification> = {
-    user: targetUser,
-    status: NotificationStatus.New,
+  _id: string,
+  senderAvatar?: string | null,
+  path?: string[]
+): Promise<void> {
+  const publicKey = getMetadata(notification.metadata.PushPublicKey)
+  const privateKey = getMetadata(serverNotification.metadata.PushPrivateKey)
+  const subject = getMetadata(serverNotification.metadata.PushSubject) ?? 'mailto:hey@huly.io'
+  if (privateKey === undefined || publicKey === undefined) return
+  const subscriptions = (await control.queryFind(notification.class.PushSubscription, {})).filter(
+    (p) => p.user === targetUser
+  )
+  const data: PushData = {
     title,
     body
   }
-  if (onClick !== undefined) {
-    data.onClickLocation = {
-      path: onClick
+  if (_id !== undefined) {
+    data.tag = _id
+  }
+  const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
+  const uploadUrl = getMetadata(serverCore.metadata.UploadURL) ?? ''
+  const domainPath = `${workbenchId}/${control.workspace.workspaceUrl}`
+  const domain = concatLink(front, domainPath)
+  data.domain = domain
+  if (path !== undefined) {
+    const url = concatLink(front, path.join('/'))
+    data.url = url
+  }
+  if (senderAvatar != null) {
+    const provider = getAvatarProviderId(senderAvatar)
+    if (provider === contact.avatarProvider.Image) {
+      if (senderAvatar.includes('://')) {
+        data.icon = senderAvatar
+      } else {
+        data.icon = concatLink(uploadUrl, `?file=${senderAvatar}`)
+      }
+    } else if (provider === contact.avatarProvider.Gravatar) {
+      data.icon = getGravatarUrl(senderAvatar.split('://')[1], 'medium')
     }
   }
-  const res = control.txFactory.createTxCreateDoc(notification.class.BrowserNotification, space, data)
-  return res
+
+  webpush.setVapidDetails(subject, publicKey, privateKey)
+
+  for (const subscription of subscriptions) {
+    void sendPushToSubscription(control, targetUser, subscription, data)
+  }
+}
+
+async function sendPushToSubscription (
+  control: TriggerControl,
+  targetUser: Ref<Account>,
+  subscription: PushSubscription,
+  data: PushData
+): Promise<void> {
+  try {
+    await webpush.sendNotification(subscription, JSON.stringify(data))
+  } catch (err) {
+    console.log('Cannot send push notification to', targetUser, err)
+    if (err instanceof WebPushError && err.body.includes('expired')) {
+      const tx = control.txFactory.createTxRemoveDoc(subscription._class, subscription.space, subscription._id)
+      await control.apply([tx], true)
+    }
+  }
 }
 
 /**
@@ -555,6 +680,7 @@ export async function pushActivityInboxNotifications (
       data,
       notification.class.ActivityInboxNotification,
       activityMessage.modifiedOn,
+      originTx.modifiedBy as Ref<PersonAccount>,
       shouldPush,
       shouldUpdateTimestamp
     )
@@ -1109,9 +1235,13 @@ async function OnActivityNotificationViewed (
   }
 
   const inboxNotification = (
-    await control.findAll(notification.class.ActivityInboxNotification, {
-      _id: tx.objectId as Ref<ActivityInboxNotification>
-    })
+    await control.findAll(
+      notification.class.ActivityInboxNotification,
+      {
+        _id: tx.objectId as Ref<ActivityInboxNotification>
+      },
+      { projection: { _id: 1, attachedTo: 1, user: 1 } }
+    )
   )[0]
 
   if (inboxNotification === undefined) {
@@ -1121,19 +1251,27 @@ async function OnActivityNotificationViewed (
   // Read reactions notifications when message is read
   const { attachedTo, user } = inboxNotification
 
-  const reactionMessages = await control.findAll(activity.class.DocUpdateMessage, {
-    attachedTo,
-    objectClass: activity.class.Reaction
-  })
+  const reactionMessages = await control.findAll(
+    activity.class.DocUpdateMessage,
+    {
+      attachedTo,
+      objectClass: activity.class.Reaction
+    },
+    { projection: { _id: 1 } }
+  )
 
   if (reactionMessages.length === 0) {
     return []
   }
 
-  const reactionNotifications = await control.findAll(notification.class.ActivityInboxNotification, {
-    attachedTo: { $in: reactionMessages.map(({ _id }) => _id) },
-    user
-  })
+  const reactionNotifications = await control.findAll(
+    notification.class.ActivityInboxNotification,
+    {
+      attachedTo: { $in: reactionMessages.map(({ _id }) => _id) },
+      user
+    },
+    { projection: { _id: 1, _class: 1, space: 1 } }
+  )
 
   return reactionNotifications.map(({ _id, _class, space }) =>
     control.txFactory.createTxUpdateDoc(_class, space, _id, { isViewed: true })

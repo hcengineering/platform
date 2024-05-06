@@ -11,11 +11,20 @@ test.use({
 })
 
 test.describe('Tracker template tests', () => {
+  let leftSideMenuPage: LeftSideMenuPage
+  let trackerNavigationMenuPage: TrackerNavigationMenuPage
+  let templatePage: TemplatePage
+  let templateDetailsPage: TemplateDetailsPage
+
   test.beforeEach(async ({ page }) => {
+    leftSideMenuPage = new LeftSideMenuPage(page)
+    trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
+    templatePage = new TemplatePage(page)
+    templateDetailsPage = new TemplateDetailsPage(page)
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
-  test('Create a Template', async ({ page }) => {
+  test('Create a Template', async () => {
     const newTemplate: NewIssue = {
       title: `Template with all parameters-${generateId()}`,
       description: 'Created template with all parameters',
@@ -28,17 +37,10 @@ test.describe('Tracker template tests', () => {
       milestone: 'No Milestone'
     }
 
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
-
-    const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
+    await leftSideMenuPage.clickTracker()
     await trackerNavigationMenuPage.openTemplateForProject('Default')
-
-    const templatePage = new TemplatePage(page)
     await templatePage.createNewTemplate(newTemplate)
     await templatePage.openTemplate(newTemplate.title)
-
-    const templateDetailsPage = new TemplateDetailsPage(page)
     await templateDetailsPage.checkTemplate({
       ...newTemplate,
       estimation: '2h'
@@ -60,27 +62,18 @@ test.describe('Tracker template tests', () => {
       estimation: '8',
       duedate: 'today'
     }
-
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
-
-    const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
+    await leftSideMenuPage.clickTracker()
     await trackerNavigationMenuPage.openTemplateForProject('Default')
-
-    const templatePage = new TemplatePage(page)
     await templatePage.createNewTemplate(newTemplate)
     await templatePage.openTemplate(newTemplate.title)
-
-    const templateDetailsPage = new TemplateDetailsPage(page)
     await templateDetailsPage.editTemplate(editTemplate)
-
     await templateDetailsPage.checkTemplate({
       ...newTemplate,
       ...editTemplate,
       estimation: '1d'
     })
 
-    await templateDetailsPage.checkCommentExist('Appleseed John created template')
+    await templateDetailsPage.checkActivityContent(`New template: ${newTemplate.title}`)
 
     const estimations = new Map([
       ['0', '0h'],
@@ -110,27 +103,16 @@ test.describe('Tracker template tests', () => {
     }
   })
 
-  test('Delete a Template', async ({ page }) => {
+  test('Delete a Template', async () => {
     const deleteTemplate: NewIssue = {
       title: `Template for delete-${generateId()}`,
       description: 'Created template for delete'
     }
-
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
-
-    const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
+    await leftSideMenuPage.clickTracker()
     await trackerNavigationMenuPage.openTemplateForProject('Default')
-
-    let templatePage = new TemplatePage(page)
     await templatePage.createNewTemplate(deleteTemplate)
     await templatePage.openTemplate(deleteTemplate.title)
-
-    const templateDetailsPage = new TemplateDetailsPage(page)
-
     await templateDetailsPage.deleteTemplate()
-
-    templatePage = new TemplatePage(page)
     await templatePage.checkTemplateNotExist(deleteTemplate.title)
   })
 })

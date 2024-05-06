@@ -27,7 +27,7 @@
   import chunter from '../../../plugin'
   import { buildDmName } from '../../../utils'
   import ChannelMembers from '../../ChannelMembers.svelte'
-  import { openChannel } from '../../../index'
+  import { openChannel } from '../../../navigation'
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -64,21 +64,6 @@
       }
     }
 
-    const context = direct
-      ? await client.findOne(notification.class.DocNotifyContext, {
-        user: myAccId,
-        attachedTo: direct._id,
-        attachedToClass: chunter.class.DirectMessage
-      })
-      : undefined
-
-    if (context !== undefined) {
-      await client.diffUpdate(context, { hidden: false })
-      await openChannel(context)
-
-      return
-    }
-
     const dmId =
       direct?._id ??
       (await client.createDoc(chunter.class.DirectMessage, core.space.Space, {
@@ -89,14 +74,27 @@
         members: accIds
       }))
 
-    const notifyContextId = await client.createDoc(notification.class.DocNotifyContext, core.space.Space, {
+    const context = await client.findOne(notification.class.DocNotifyContext, {
+      user: myAccId,
+      attachedTo: dmId,
+      attachedToClass: chunter.class.DirectMessage
+    })
+
+    if (context !== undefined) {
+      await client.diffUpdate(context, { hidden: false })
+      openChannel(dmId, chunter.class.DirectMessage)
+
+      return
+    }
+
+    await client.createDoc(notification.class.DocNotifyContext, core.space.Space, {
       user: myAccId,
       attachedTo: dmId,
       attachedToClass: chunter.class.DirectMessage,
       hidden: false
     })
 
-    await openChannel(undefined, undefined, { _id: notifyContextId })
+    openChannel(dmId, chunter.class.DirectMessage)
   }
 
   function handleCancel (): void {
@@ -117,7 +115,8 @@
       {
         okLabel: presentation.string.Next,
         skipCurrentAccount: true,
-        selected: employeeIds
+        selected: employeeIds,
+        showStatus: true
       },
       'top',
       (result?: Ref<Employee>[]) => {

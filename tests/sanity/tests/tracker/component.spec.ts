@@ -1,45 +1,39 @@
-import { expect, test } from '@playwright/test'
-import { navigate } from './tracker.utils'
+import { test } from '@playwright/test'
 import { generateId, PlatformSetting, PlatformURI, fillSearch } from '../utils'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { TrackerNavigationMenuPage } from '../model/tracker/tracker-navigation-menu-page'
 import { ComponentsPage } from '../model/tracker/components-page'
 import { NewComponent } from '../model/tracker/types'
 import { ComponentsDetailsPage } from '../model/tracker/component-details-page'
+import { CommonTrackerPage } from '../model/tracker/common-tracker-page'
 
 test.use({
   storageState: PlatformSetting
 })
 
 test.describe('Tracker component tests', () => {
+  let commonTrackerPage: CommonTrackerPage
+  let leftSideMenuPage: LeftSideMenuPage
+  let trackerNavigationMenuPage: TrackerNavigationMenuPage
+  let componentsPage: ComponentsPage
+  let componentsDetailsPage: ComponentsDetailsPage
+
   test.beforeEach(async ({ page }) => {
+    commonTrackerPage = new CommonTrackerPage(page)
+    leftSideMenuPage = new LeftSideMenuPage(page)
+    trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
+    componentsPage = new ComponentsPage(page)
+    componentsDetailsPage = new ComponentsDetailsPage(page)
+
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
   test('create-component-issue', async ({ page }) => {
-    await page.click('[id="app-tracker\\:string\\:TrackerApplication"]')
-
-    await navigate(page)
-    await page.click('text=Components')
-    await expect(page).toHaveURL(
-      `${PlatformURI}/workbench/sanity-ws/tracker/tracker%3Aproject%3ADefaultProject/components`
-    )
-    await page.click('button:has-text("Component")')
-    await page.click('[placeholder="Component\\ name"]')
+    await commonTrackerPage.navigateToComponents(PlatformURI)
     const componentName = 'component-' + generateId()
-    await page.fill('[placeholder="Component\\ name"]', componentName)
-
-    await page.click('button:has-text("Create component")')
-
+    await commonTrackerPage.createComponent(componentName)
     await fillSearch(page, componentName)
-
-    await page.click(`text=${componentName}`)
-    await page.click('button:has-text("New issue")')
-    await page.fill('[placeholder="Issue\\ title"]', 'issue')
-    await page.click('form button:has-text("Component")')
-    await page.click(`.selectPopup button:has-text("${componentName}")`)
-    await page.click('form button:has-text("Create issue")')
-    await page.waitForSelector('form.antiCard', { state: 'detached' })
+    await commonTrackerPage.createIssueForComponent(componentName)
   })
 
   test('Edit a component', async ({ page }) => {
@@ -53,47 +47,28 @@ test.describe('Tracker component tests', () => {
       description: 'Edit component test description update',
       lead: 'Appleseed John'
     }
-
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
-
-    const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
+    await leftSideMenuPage.clickTracker()
     await trackerNavigationMenuPage.openComponentsForProject('Default')
-
-    const componentsPage = new ComponentsPage(page)
     await componentsPage.createNewComponent(newComponent)
     await componentsPage.openComponentByName(newComponent.name)
-
-    const componentsDetailsPage = new ComponentsDetailsPage(page)
     await componentsDetailsPage.checkComponent(newComponent)
-
     await componentsDetailsPage.editComponent(editComponent)
     await trackerNavigationMenuPage.openComponentsForProject('Default')
-
     await componentsPage.openComponentByName(editComponent.name)
     await componentsDetailsPage.checkComponent(editComponent)
   })
 
-  test('Delete a component', async ({ page }) => {
+  test('Delete a component', async () => {
     const newComponent: NewComponent = {
       name: 'Delete component test',
       description: 'Delete component test description'
     }
 
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
-
-    const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
+    await leftSideMenuPage.clickTracker()
     await trackerNavigationMenuPage.openComponentsForProject('Default')
-
-    const componentsPage = new ComponentsPage(page)
     await componentsPage.openComponentByName(newComponent.name)
-
-    const componentsDetailsPage = new ComponentsDetailsPage(page)
-
     await componentsDetailsPage.checkComponent(newComponent)
     await componentsDetailsPage.deleteComponent()
-
     await componentsPage.checkComponentNotExist(newComponent.name)
   })
 })

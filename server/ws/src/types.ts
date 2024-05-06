@@ -1,5 +1,4 @@
 import {
-  type WorkspaceIdWithUrl,
   type Class,
   type Doc,
   type DocumentQuery,
@@ -9,9 +8,10 @@ import {
   type Ref,
   type Tx,
   type TxResult,
-  type WorkspaceId
+  type WorkspaceId,
+  type WorkspaceIdWithUrl
 } from '@hcengineering/core'
-import { type Response } from '@hcengineering/rpc'
+import { type Request, type Response } from '@hcengineering/rpc'
 import { type BroadcastFunc, type Pipeline } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
 
@@ -54,7 +54,7 @@ export interface Session {
 
   requests: Map<string, SessionRequest>
 
-  binaryResponseMode: boolean
+  binaryMode: boolean
   useCompression: boolean
   useBroadcast: boolean
 
@@ -65,6 +65,10 @@ export interface Session {
   measureCtx?: { ctx: MeasureContext, time: number }
 
   lastRequest: number
+
+  isUpgradeClient: () => boolean
+
+  getMode: () => string
 }
 
 /**
@@ -92,8 +96,9 @@ export type PipelineFactory = (
  */
 export interface ConnectionSocket {
   id: string
+  isClosed: boolean
   close: () => void
-  send: (ctx: MeasureContext, msg: Response<any>, binary: boolean, compression: boolean) => Promise<void>
+  send: (ctx: MeasureContext, msg: Response<any>, binary: boolean, compression: boolean) => Promise<number>
   data: () => Record<string, any>
 }
 
@@ -118,13 +123,21 @@ export interface Workspace {
   pipeline: Promise<Pipeline>
   sessions: Map<string, { session: Session, socket: ConnectionSocket }>
   upgrade: boolean
+  backup: boolean
 
   closing?: Promise<void>
-  closeTimeout?: any
+  softShutdown: number
 
   workspaceId: WorkspaceId
   workspaceName: string
 }
+
+export interface AddSessionActive {
+  session: Session
+  context: MeasureContext
+  workspaceId: string
+}
+export type AddSessionResponse = AddSessionActive | { upgrade: true } | { error: any }
 
 /**
  * @public
@@ -144,15 +157,21 @@ export interface SessionManager {
     productId: string,
     sessionId: string | undefined,
     accountsUrl: string
-  ) => Promise<
-  { session: Session, context: MeasureContext, workspaceName: string } | { upgrade: true } | { error: any }
-  >
+  ) => Promise<AddSessionResponse>
 
   broadcastAll: (workspace: Workspace, tx: Tx[], targets?: string[]) => void
 
-  close: (ws: ConnectionSocket, workspaceId: WorkspaceId, code: number, reason: string) => Promise<void>
+  close: (ws: ConnectionSocket, workspaceId: string) => Promise<void>
 
-  closeAll: (wsId: string, workspace: Workspace, code: number, reason: 'upgrade' | 'shutdown') => Promise<void>
+  closeAll: (
+    wsId: string,
+    workspace: Workspace,
+    code: number,
+    reason: 'upgrade' | 'shutdown',
+    ignoreSocket?: ConnectionSocket
+  ) => Promise<void>
+
+  forceClose: (wsId: string, ignoreSocket?: ConnectionSocket) => Promise<void>
 
   closeWorkspaces: (ctx: MeasureContext) => Promise<void>
 
@@ -168,9 +187,9 @@ export type HandleRequestFunction = <S extends Session>(
   rctx: MeasureContext,
   service: S,
   ws: ConnectionSocket,
-  msg: Buffer,
-  workspace: string
-) => Promise<void>
+  msg: Request<any>,
+  workspaceId: string
+) => Promise<Response<any> | undefined>
 
 /**
  * @public

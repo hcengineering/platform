@@ -19,12 +19,13 @@
 
   export let type: ProjectType | undefined
   export let descriptor: ProjectTypeDescriptor | undefined
+  export let disabled: boolean = true
 </script>
 
 {#if descriptor !== undefined}
   <div class="hulyTableAttr-header font-medium-12">
     <IconFolder size="small" />
     <span><Label label={task.string.Collections} /></span>
-    <ButtonIcon kind="primary" icon={IconAdd} size="small" on:click={() => {}} />
+    <ButtonIcon kind="primary" icon={IconAdd} size="small" {disabled} on:click={() => {}} />
   </div>
 {/if}

@@ -11,11 +11,21 @@ test.use({
 })
 
 test.describe('Tracker duplicate issue tests', () => {
+  let leftSideMenuPage: LeftSideMenuPage
+  let trackerNavigationMenuPage: TrackerNavigationMenuPage
+  let issuesPage: IssuesPage
+  let issuesDetailsPage: IssuesDetailsPage
+
   test.beforeEach(async ({ page }) => {
+    leftSideMenuPage = new LeftSideMenuPage(page)
+    trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
+    issuesPage = new IssuesPage(page)
+    issuesDetailsPage = new IssuesDetailsPage(page)
+
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
-  test('Create duplicate issues with the same title', async ({ page }) => {
+  test('Create duplicate issues with the same title', async () => {
     const generatedId = generateId()
 
     const firstIssue: NewIssue = {
@@ -26,15 +36,9 @@ test.describe('Tracker duplicate issue tests', () => {
       title: `Duplicate issue-${generatedId}`,
       description: 'Second Duplicate issue'
     }
-
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
-
-    const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
+    await leftSideMenuPage.clickTracker()
     await trackerNavigationMenuPage.openIssuesForProject('Default')
-
-    const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
+    await issuesPage.clickModelSelectorAll()
     await issuesPage.createNewIssue(firstIssue)
     // TODO need to delete if issue created successfully
     await trackerNavigationMenuPage.openTemplateForProject('Default')
@@ -56,9 +60,7 @@ test.describe('Tracker duplicate issue tests', () => {
     await test.step('Update the first issue title', async () => {
       const newIssueTitle = `Duplicate Update issue-${generateId()}`
       await issuesPage.openIssueById(firstIssueId)
-
-      const issuesDetailsPage = new IssuesDetailsPage(page)
-      await issuesDetailsPage.inputTitle.fill(newIssueTitle)
+      await issuesDetailsPage.inputTitle().fill(newIssueTitle)
       await issuesDetailsPage.checkIssue({
         ...firstIssue,
         title: newIssueTitle
@@ -70,8 +72,6 @@ test.describe('Tracker duplicate issue tests', () => {
 
       await issuesPage.searchIssueByName(secondIssue.title)
       await issuesPage.openIssueById(secondIssueId)
-
-      const issuesDetailsPage = new IssuesDetailsPage(page)
       await issuesDetailsPage.checkIssue({
         ...secondIssue
       })

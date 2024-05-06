@@ -16,7 +16,7 @@
    * path segment in the "$schema" field for all your Rush config files.  This will ensure
    * correct error-underlining and tab-completion for editors such as VS Code.
    */
-  "rushVersion": "5.115.0",
+  "rushVersion": "5.121.0",
 
   /**
    * The next field selects which package manager should be installed and determines its version.
@@ -822,6 +822,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/account-service",
+      "projectFolder": "server/account-service",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/collaborator",
       "projectFolder": "server/collaborator",
       "shouldPublish": false
@@ -1365,6 +1370,11 @@
     {
       "packageName": "@hcengineering/server-backup",
       "projectFolder": "server/backup",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/backup-service",
+      "projectFolder": "server/backup-service",
       "shouldPublish": false
     },
     {

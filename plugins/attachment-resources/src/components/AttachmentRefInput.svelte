@@ -18,7 +18,7 @@
   import { Account, Class, Doc, generateId, IdMap, Markup, Ref, Space, toIdMap } from '@hcengineering/core'
   import { IntlString, setPlatformStatus, unknownError, Asset } from '@hcengineering/platform'
   import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
-  import textEditor, { AttachIcon, type RefAction, ReferenceInput } from '@hcengineering/text-editor'
+  import textEditor, { AttachIcon, EmptyMarkup, type RefAction, ReferenceInput } from '@hcengineering/text-editor'
   import { Loading, type AnySvelteComponent } from '@hcengineering/ui'
   import { deleteFile, getAttachmentMetadata, uploadFile } from '../utils'
   import attachment from '../plugin'
@@ -27,7 +27,7 @@
   export let objectId: Ref<Doc>
   export let space: Ref<Space>
   export let _class: Ref<Class<Doc>>
-  export let content: Markup = ''
+  export let content: Markup = EmptyMarkup
   export let iconSend: Asset | AnySvelteComponent | undefined = undefined
   export let labelSend: IntlString | undefined = undefined
   export let showSend = true
@@ -265,7 +265,7 @@
   }
 </script>
 
-<div bind:this={refContainer} on:paste={pasteAction}>
+<div class="no-print" bind:this={refContainer} on:paste={pasteAction}>
   <input
     bind:this={inputFile}
     multiple

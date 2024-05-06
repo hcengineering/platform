@@ -38,7 +38,7 @@
   export let mode: ToDosMode
   export let tag: Ref<TagElement> | undefined
   export let currentDate: Date
-  export let isVisiblePlannerNav: boolean = true
+  export let visibleNav: boolean = true
 
   const acc = getCurrentAccount() as PersonAccount
   const user = acc.person
@@ -59,7 +59,7 @@
   $: updateTags(mode, tag)
 
   function togglePlannerNav (): void {
-    isVisiblePlannerNav = !isVisiblePlannerNav
+    visibleNav = !visibleNav
   }
 
   function updateTags (mode: ToDosMode, tag: Ref<TagElement> | undefined): void {
@@ -269,7 +269,7 @@
       time.string.Scheduled,
       scheduled.map((p) => p.todo)
     )
-    return Array.from(groups).filter((p) => p[1].length > 0)
+    return Array.from(groups)
   }
   const getDateStr = (date: Date): string => {
     return date.toLocaleDateString('default', { month: 'long', day: 'numeric', year: 'numeric' })
@@ -279,10 +279,10 @@
 <div class="toDos-container">
   <Header type={'type-panel'} hideSeparator>
     <ButtonIcon
-      icon={isVisiblePlannerNav ? MenuClose : MenuOpen}
+      icon={visibleNav ? MenuClose : MenuOpen}
       kind={'tertiary'}
       size={'small'}
-      pressed={!isVisiblePlannerNav}
+      pressed={!visibleNav}
       on:click={togglePlannerNav}
     />
     <div class="heading-bold-20 ml-4">

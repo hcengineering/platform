@@ -19,8 +19,9 @@
 
   export let type: ProjectType | undefined
   export let descriptor: ProjectTypeDescriptor | undefined
+  export let disabled: boolean = true
 </script>
 
 {#if descriptor !== undefined && type !== undefined}
-  <ComponentExtensions extension={task.extensions.ProjectEditorExtension} props={{ type }} />
+  <ComponentExtensions extension={task.extensions.ProjectEditorExtension} props={{ type, disabled }} />
 {/if}

@@ -19,8 +19,9 @@ import { generateHTML, generateJSON } from '@tiptap/html'
 import { Node as ProseMirrorNode, Schema } from '@tiptap/pm/model'
 
 import { defaultExtensions } from '../extensions'
-import { MarkupNode, emptyMarkupNode } from './model'
+import { MarkupMark, MarkupNode, MarkupNodeType, emptyMarkupNode } from './model'
 import { nodeDoc, nodeParagraph, nodeText } from './dsl'
+import { deepEqual } from 'fast-equals'
 
 /** @public */
 export const EmptyMarkup: Markup = jsonToMarkup(emptyMarkupNode())
@@ -35,8 +36,7 @@ export function isEmptyMarkup (markup: Markup | undefined): boolean {
   if (markup === undefined || markup === null || markup === '') {
     return true
   }
-  const node = markupToPmNode(markup)
-  return node.textContent.trim() === ''
+  return isEmptyNode(markupToJSON(markup))
 }
 
 /** @public */
@@ -44,10 +44,66 @@ export function areEqualMarkups (markup1: Markup, markup2: Markup): boolean {
   if (markup1 === markup2) {
     return true
   }
-  const node1 = markupToPmNode(markup1)
-  const node2 = markupToPmNode(markup2)
 
-  return node1.textContent.trim() === node2.textContent.trim()
+  return equalNodes(markupToJSON(markup1), markupToJSON(markup2))
+}
+
+/** @public */
+export function areEqualJson (json1: MarkupNode, json2: MarkupNode): boolean {
+  return equalNodes(json1, json2)
+}
+
+function equalNodes (node1: MarkupNode, node2: MarkupNode): boolean {
+  if (node1.type !== node2.type) return false
+
+  const text1 = node1.text ?? ''
+  const text2 = node2.text ?? ''
+  if (text1 !== text2) return false
+
+  if (!equalArrays(node1.content, node2.content, equalNodes)) return false
+  if (!equalArrays(node1.marks, node2.marks, equalMarks)) return false
+  if (!equalRecords(node1.attrs, node2.attrs)) return false
+
+  return true
+}
+
+function equalArrays<T> (a: T[] | undefined, b: T[] | undefined, equal: (a: T, b: T) => boolean): boolean {
+  if (a === b) return true
+  const arr1 = a ?? []
+  const arr2 = b ?? []
+  if (arr1.length !== arr2.length) return false
+  return arr1.every((item1, i) => equal(item1, arr2[i]))
+}
+
+function equalRecords (a: Record<string, any> | undefined, b: Record<string, any> | undefined): boolean {
+  if (a === b) return true
+  a = Object.fromEntries(Object.entries(a ?? {}).filter(([_, v]) => v != null))
+  b = Object.fromEntries(Object.entries(b ?? {}).filter(([_, v]) => v != null))
+  return deepEqual(a, b)
+}
+
+function equalMarks (a: MarkupMark, b: MarkupMark): boolean {
+  return a.type === b.type && equalRecords(a.attrs, b.attrs)
+}
+
+const emptyNodes = [MarkupNodeType.hard_break]
+
+const nonEmptyNodes = [
+  MarkupNodeType.horizontal_rule,
+  MarkupNodeType.image,
+  MarkupNodeType.reference,
+  MarkupNodeType.sub,
+  MarkupNodeType.table
+]
+
+/** @public */
+export function isEmptyNode (node: MarkupNode): boolean {
+  if (emptyNodes.includes(node.type)) return true
+  if (nonEmptyNodes.includes(node.type)) return false
+  if (node.text !== undefined && node.text?.trim().length > 0) return false
+
+  const content = node.content ?? []
+  return content.every(isEmptyNode)
 }
 
 // Markup
@@ -112,6 +168,11 @@ export function jsonToText (node: MarkupNode, schema?: Schema, extensions?: Exte
 /** @public */
 export function pmNodeToText (node: ProseMirrorNode): string {
   return jsonToText(node.toJSON())
+}
+
+export function markupToText (markup: Markup, schema?: Schema, extensions?: Extensions): string {
+  const pmNode = markupToPmNode(markup, schema, extensions)
+  return pmNode.textBetween(0, pmNode.content.size, '\n', '')
 }
 
 // HTML

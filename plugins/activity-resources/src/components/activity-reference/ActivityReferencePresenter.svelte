@@ -43,7 +43,6 @@
   export let hideLink = false
   export let compact = false
   export let onClick: (() => void) | undefined = undefined
-  export let onReply: (() => void) | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -110,8 +109,8 @@
   {skipLabel}
   {hoverable}
   {hoverStyles}
+  showDatePreposition
   {onClick}
-  {onReply}
 >
   <svelte:fragment slot="header">
     <span class="header">
@@ -131,13 +130,8 @@
       {/if}
       {#if srcDoc}
         <span class="text-sm lower"><Label label={activity.string.In} /></span>
-        <DocNavLink object={srcDoc} component={srcDocPanel?.component ?? view.component.EditDoc} shrink={0}>
-          <span class="text-sm">
-            <ReferenceSrcPresenter
-              {value}
-              inline={hierarchy.isDerived(srcDoc._class, activity.class.ActivityMessage)}
-            />
-          </span>
+        <DocNavLink object={srcDoc} component={srcDocPanel?.component ?? view.component.EditDoc} shrink={0} noUnderline>
+          <ReferenceSrcPresenter value={srcDoc} />
         </DocNavLink>
       {/if}
     </span>
@@ -151,6 +145,8 @@
 
 <style lang="scss">
   .header {
-    gap: var(--global-spacing-1);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-0_5);
   }
 </style>

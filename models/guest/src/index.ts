@@ -51,7 +51,8 @@ export function createModel (builder: Builder): void {
     core.class.Class,
     core.mixin.IndexConfiguration,
     {
-      searchDisabled: true
+      searchDisabled: true,
+      indexes: []
     }
   )
 }

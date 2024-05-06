@@ -24,10 +24,13 @@ import core, {
   Role,
   Space,
   SpaceType,
-  TxOperations
+  TxOperations,
+  TypeAny as TypeAnyType,
+  getRoleAttributeBaseProps
 } from '@hcengineering/core'
-import { ArrOf, TypeRef } from '@hcengineering/model'
-import { getEmbeddedLabel } from '@hcengineering/platform'
+import { TypeAny } from '@hcengineering/model'
+import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
+
 import setting from './index'
 
 export async function createSpaceType<T extends SpaceType> (
@@ -65,14 +68,29 @@ export async function createSpaceType<T extends SpaceType> (
   )
 }
 
+export interface RoleAttributeProps {
+  label: IntlString
+  roleType: TypeAnyType
+  id: Ref<Attribute<PropertyType>>
+}
+
+export function getRoleAttributeProps (data: AttachedData<Role>, roleId: Ref<Role>): RoleAttributeProps {
+  const baseProps = getRoleAttributeBaseProps(data, roleId)
+  const roleType = TypeAny(
+    setting.component.RoleAssignmentEditor,
+    baseProps.label,
+    setting.component.RoleAssignmentEditor
+  )
+
+  return { ...baseProps, roleType }
+}
+
 export async function createSpaceTypeRole (
   client: TxOperations,
   type: Pick<SpaceType, '_id' | '_class' | 'targetClass'>,
   data: AttachedData<Role>,
   _id?: Ref<Role> | undefined
 ): Promise<Ref<Role>> {
-  const name = data.name.trim()
-
   const roleId = await client.addCollection(
     core.class.Role,
     core.space.Model,
@@ -83,17 +101,18 @@ export async function createSpaceTypeRole (
     _id
   )
 
+  const { label, roleType, id } = getRoleAttributeProps(data, roleId)
+
   await client.createDoc(
     core.class.Attribute,
     core.space.Model,
     {
       name: roleId,
       attributeOf: type.targetClass,
-      type: ArrOf(TypeRef(core.class.Account)),
-      label: getEmbeddedLabel(`Role: ${name}`),
-      editor: setting.component.RoleAssignmentEditor
+      type: roleType,
+      label
     },
-    `role-${roleId}` as Ref<Attribute<PropertyType>>
+    id
   )
 
   return roleId
@@ -110,4 +129,35 @@ export async function createSpaceTypeRoles (
   for (const { _id, name, permissions } of roles) {
     await createSpaceTypeRole(tx, spaceType, { name, permissions }, _id)
   }
+}
+
+export async function deleteSpaceTypeRole (
+  client: TxOperations,
+  role: Role,
+  targetClass: Ref<Class<Space>>
+): Promise<void> {
+  const attribute = await client.findOne(core.class.Attribute, { name: role._id, attributeOf: targetClass })
+  const ops = client.apply(role._id)
+
+  await ops.removeCollection(
+    core.class.Role,
+    core.space.Model,
+    role._id,
+    role.attachedTo,
+    role.attachedToClass,
+    'roles'
+  )
+  if (attribute !== undefined) {
+    const mixins = await client.findAll(targetClass, {})
+    for (const mixin of mixins) {
+      await ops.updateMixin(mixin._id, mixin._class, mixin.space, targetClass, {
+        [attribute.name]: undefined
+      })
+    }
+
+    await ops.remove(attribute)
+  }
+
+  // remove all the assignments
+  await ops.commit()
 }

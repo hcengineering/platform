@@ -6,58 +6,59 @@ import { DocumentMovePopup } from './document-move-popup'
 
 export class DocumentsPage extends CommonPage {
   readonly page: Page
-  readonly buttonCreateDocument: Locator
-  readonly divTeamspacesParent: Locator
-  readonly buttonCreateTeamspace: Locator
-  readonly inputModalNewTeamspaceTitle: Locator
-  readonly inputModalNewTeamspaceDescription: Locator
-  readonly inputModalNewTeamspacePrivate: Locator
-  readonly buttonModalNewTeamspaceCreate: Locator
-  readonly buttonModalEditTeamspaceTitle: Locator
-  readonly buttonModalEditTeamspaceDescription: Locator
-  readonly buttonModalEditTeamspacePrivate: Locator
-  readonly buttonModalEditTeamspaceSave: Locator
-  readonly buttonModalEditTeamspaceClose: Locator
-  readonly popupCreateDocument: DocumentCreatePopup
-  readonly popupMoveDocument: DocumentMovePopup
 
   constructor (page: Page) {
-    super()
+    super(page)
     this.page = page
     this.popupCreateDocument = new DocumentCreatePopup(page)
     this.popupMoveDocument = new DocumentMovePopup(page)
+  }
 
-    const newForm = page.locator('form[id="document:string:NewTeamspace"]')
-    const editForm = page.locator('form[id="document:string:EditTeamspace"]')
+  readonly popupCreateDocument: DocumentCreatePopup
+  readonly popupMoveDocument: DocumentMovePopup
 
-    this.buttonCreateDocument = page.locator('div[data-float="navigator"] button[id="new-document"]')
-    this.divTeamspacesParent = page.locator('div#tree-teamspaces').locator('xpath=..')
-    this.buttonCreateTeamspace = page.locator('div#tree-teamspaces > button')
-    this.inputModalNewTeamspaceTitle = newForm.locator('div[id="teamspace-title"] input')
-    this.inputModalNewTeamspaceDescription = newForm.locator('div[id="teamspace-description"] input')
-    this.inputModalNewTeamspacePrivate = newForm.locator('div.antiGrid label.toggle')
-    this.buttonModalNewTeamspaceCreate = newForm.locator('button[type="submit"]')
+  readonly buttonCreateDocument = (): Locator =>
+    this.page.locator('div[data-float="navigator"] button[id="new-document"]')
 
-    this.buttonModalEditTeamspaceTitle = editForm.locator('div[id="teamspace-title"] input')
-    this.buttonModalEditTeamspaceDescription = editForm.locator('div[id="teamspace-description"] input')
-    this.buttonModalEditTeamspacePrivate = editForm.locator('div.antiGrid label.toggle')
-    this.buttonModalEditTeamspaceSave = editForm.locator('button[type="submit"]')
-    this.buttonModalEditTeamspaceClose = editForm.locator('button#card-close')
+  readonly divTeamspacesParent = (): Locator => this.page.locator('div#tree-teamspaces').locator('xpath=..')
+  readonly buttonCreateTeamspace = (): Locator => this.page.locator('div#tree-teamspaces > button')
+  readonly formNewTeamspace = (): Locator => this.page.locator('form[id="document:string:NewTeamspace"]')
+  readonly formEditTeamspace = (): Locator => this.page.locator('form[id="document:string:EditTeamspace"]')
+  readonly inputModalNewTeamspaceTitle = (): Locator =>
+    this.formNewTeamspace().locator('div[id="teamspace-title"] input')
+
+  readonly inputModalNewTeamspaceDescription = (): Locator =>
+    this.formNewTeamspace().locator('div[id="teamspace-description"] input')
+
+  readonly inputModalNewTeamspacePrivate = (): Locator => this.formNewTeamspace().locator('div.antiGrid label.toggle')
+  readonly buttonModalNewTeamspaceCreate = (): Locator => this.formNewTeamspace().locator('button[type="submit"]')
+  readonly buttonModalEditTeamspaceTitle = (): Locator =>
+    this.formEditTeamspace().locator('div[id="teamspace-title"] input')
+
+  readonly buttonModalEditTeamspaceDescription = (): Locator =>
+    this.formEditTeamspace().locator('div[id="teamspace-description"] input')
+
+  readonly buttonModalEditTeamspacePrivate = (): Locator =>
+    this.formEditTeamspace().locator('div.antiGrid label.toggle')
+
+  readonly buttonModalEditTeamspaceSave = (): Locator => this.formEditTeamspace().locator('button[type="submit"]')
+  readonly buttonModalEditTeamspaceClose = (): Locator => this.formEditTeamspace().locator('button#card-close')
+
+  async clickOnButtonCreateDocument (): Promise<void> {
+    await this.buttonCreateDocument().click()
   }
 
   async createNewTeamspace (data: NewTeamspace): Promise<void> {
-    await this.divTeamspacesParent.hover()
-    await this.buttonCreateTeamspace.click()
-
-    await this.inputModalNewTeamspaceTitle.fill(data.title)
+    await this.divTeamspacesParent().hover()
+    await this.buttonCreateTeamspace().click()
+    await this.inputModalNewTeamspaceTitle().fill(data.title)
     if (data.description != null) {
-      await this.inputModalNewTeamspaceDescription.fill(data.description)
+      await this.inputModalNewTeamspaceDescription().fill(data.description)
     }
     if (data.private != null) {
-      await this.inputModalNewTeamspacePrivate.click()
+      await this.inputModalNewTeamspacePrivate().click()
     }
-
-    await this.buttonModalNewTeamspaceCreate.click()
+    await this.buttonModalNewTeamspaceCreate().click()
   }
 
   async openTeamspace (name: string): Promise<void> {
@@ -101,23 +102,22 @@ export class DocumentsPage extends CommonPage {
   }
 
   async editTeamspace (data: NewTeamspace): Promise<void> {
-    await this.buttonModalEditTeamspaceTitle.fill(data.title)
+    await this.buttonModalEditTeamspaceTitle().fill(data.title)
     if (data.description != null) {
-      await this.buttonModalEditTeamspaceDescription.fill(data.description)
+      await this.buttonModalEditTeamspaceDescription().fill(data.description)
     }
     if (data.private != null) {
-      await this.buttonModalEditTeamspacePrivate.click()
+      await this.buttonModalEditTeamspacePrivate().click()
     }
-
-    await this.buttonModalEditTeamspaceSave.click()
+    await this.buttonModalEditTeamspaceSave().click()
   }
 
   async checkTeamspace (data: NewTeamspace): Promise<void> {
-    await expect(this.buttonModalEditTeamspaceTitle).toHaveValue(data.title)
+    await expect(this.buttonModalEditTeamspaceTitle()).toHaveValue(data.title)
     if (data.description != null) {
-      await expect(this.buttonModalEditTeamspaceDescription).toHaveValue(data.description)
+      await expect(this.buttonModalEditTeamspaceDescription()).toHaveValue(data.description)
     }
-    await this.buttonModalEditTeamspaceClose.click()
+    await this.buttonModalEditTeamspaceClose().click()
   }
 
   async moreActionsOnDocument (documentName: string, action: string): Promise<void> {

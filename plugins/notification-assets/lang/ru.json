@@ -29,6 +29,8 @@
     "Unread": "Не прочитанное",
     "CommonNotificationTitle": "{title}",
     "CommonNotificationBody": "Обновление от {senderName}",
+    "CommonNotificationChanged": "{senderName} изменил {property}",
+    "CommonNotificationChangedProperty": "{senderName} изменил {property} на \"{newValue}\"",
     "ChangedCollaborators": "Изменены участники",
     "NewCollaborators": "Новые участники",
     "RemovedCollaborators": "Удалены участники",
@@ -43,6 +45,9 @@
     "StarDocument": "Добавить в избранное",
     "UnstarDocument": "Удалить из избранного",
     "Unsubscribe": "Отписаться",
-    "Push": "Push"
+    "Push": "Push",
+    "Unreads": "Непрочитанные",
+    "EnablePush": "Включить Push-уведомления",
+    "NotificationBlockedInBrowser": "Уведомления заблокированы в вашем браузере. Пожалуйста, включите уведомления в настройках браузера"
   }
 }

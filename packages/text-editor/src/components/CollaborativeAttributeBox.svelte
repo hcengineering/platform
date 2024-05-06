@@ -16,18 +16,21 @@
   import core, { CollaborativeDoc, Doc, getCollaborativeDoc, getCollaborativeDocId } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { KeyedAttribute, getAttribute, getClient } from '@hcengineering/presentation'
-  import { registerFocus } from '@hcengineering/ui'
+  import { AnySvelteComponent, registerFocus } from '@hcengineering/ui'
   import CollaborativeTextEditor from './CollaborativeTextEditor.svelte'
   import { FocusExtension } from './extension/focus'
   import { type FileAttachFunction } from './extension/types'
   import textEditorPlugin from '../plugin'
-  import { RefAction, TextNodeAction } from '../types'
+  import { CollaborationUser, RefAction, TextNodeAction } from '../types'
 
   export let object: Doc
   export let key: KeyedAttribute
   export let readonly = false
   export let textNodeActions: TextNodeAction[] = []
   export let refActions: RefAction[] = []
+
+  export let user: CollaborationUser
+  export let userComponent: AnySvelteComponent | undefined = undefined
 
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
   export let attachFile: FileAttachFunction | undefined = undefined
@@ -105,6 +108,8 @@
   objectClass={object._class}
   objectId={object._id}
   objectAttr={key.key}
+  {user}
+  {userComponent}
   {textNodeActions}
   {refActions}
   {extensions}
@@ -114,6 +119,7 @@
   {readonly}
   field={key.key}
   canEmbedFiles={false}
+  withSideMenu={false}
   on:focus
   on:blur
   on:update

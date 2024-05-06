@@ -10,7 +10,14 @@ test.use({
 })
 
 test.describe('Companies tests', () => {
+  let navigationMenuPage: NavigationMenuPage
+  let companiesPage: CompaniesPage
+  let companyDetailsPage: CompanyDetailsPage
+
   test.beforeEach(async ({ page }) => {
+    navigationMenuPage = new NavigationMenuPage(page)
+    companiesPage = new CompaniesPage(page)
+    companyDetailsPage = new CompanyDetailsPage(page)
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/recruit`))?.finished()
   })
 
@@ -29,14 +36,9 @@ test.describe('Companies tests', () => {
       ]
     }
 
-    const navigationMenuPage = new NavigationMenuPage(page)
-    await navigationMenuPage.buttonCompanies.click()
-
-    const companiesPage = new CompaniesPage(page)
+    await navigationMenuPage.clickButtonCompanies()
     await companiesPage.createNewCompany(newCompany)
     await companiesPage.openCompanyByName(newCompany.name)
-
-    const companyDetailsPage = new CompanyDetailsPage(page)
     await companyDetailsPage.checkCompany(newCompany)
   })
 
@@ -61,14 +63,9 @@ test.describe('Companies tests', () => {
       location: 'London'
     }
 
-    const navigationMenuPage = new NavigationMenuPage(page)
-    await navigationMenuPage.buttonCompanies.click()
-
-    const companiesPage = new CompaniesPage(page)
+    await navigationMenuPage.clickButtonCompanies()
     await companiesPage.createNewCompany({ name: createdCompany })
     await companiesPage.openCompanyByName(createdCompany)
-
-    const companyDetailsPage = new CompanyDetailsPage(page)
     await companyDetailsPage.checkCompany({
       name: createdCompany
     })
@@ -81,19 +78,12 @@ test.describe('Companies tests', () => {
     const deleteCompany: NewCompany = {
       name: `Delete Company-${generateId()}`
     }
-
-    const navigationMenuPage = new NavigationMenuPage(page)
-    await navigationMenuPage.buttonCompanies.click()
-
-    const companiesPage = new CompaniesPage(page)
+    await navigationMenuPage.clickButtonCompanies()
     await companiesPage.createNewCompany(deleteCompany)
     await companiesPage.openCompanyByName(deleteCompany.name)
-
-    const companyDetailsPage = new CompanyDetailsPage(page)
     await companyDetailsPage.checkCompany(deleteCompany)
     await companyDetailsPage.deleteEntity()
-
-    await navigationMenuPage.buttonCompanies.click()
+    await navigationMenuPage.clickButtonCompanies()
     await companiesPage.checkCompanyNotExist(deleteCompany.name)
   })
 })

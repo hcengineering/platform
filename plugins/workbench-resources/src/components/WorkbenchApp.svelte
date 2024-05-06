@@ -62,9 +62,14 @@
               {$workspaceCreating} %
             </div>
           {/if}
+          {#if $versionError}
+            <div class="ml-1">
+              {$versionError}
+            </div>
+          {/if}
         </Loading>
       {:then client}
-        {#if !client && versionError}
+        {#if $versionError}
           <div class="version-wrapper">
             <div class="antiPopup version-popup">
               {#if isNeedUpgrade}
@@ -73,7 +78,7 @@
               {:else}
                 <h1><Label label={workbench.string.ServerUnderMaintenance} /></h1>
               {/if}
-              {versionError}
+              {$versionError}
             </div>
           </div>
         {:else if client}
@@ -91,6 +96,7 @@
 <style lang="scss">
   .version-wrapper {
     height: 100%;
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -103,5 +109,6 @@
     align-items: center;
     justify-content: center;
     padding: 2rem;
+    flex-grow: 1;
   }
 </style>

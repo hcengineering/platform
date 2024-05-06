@@ -22,7 +22,8 @@ export function definePermissions (builder: Builder): void {
     core.class.Permission,
     core.space.Model,
     {
-      label: core.string.CreateObject
+      label: core.string.CreateObject,
+      description: core.string.CreateObjectDescription
     },
     core.permission.CreateObject
   )
@@ -31,7 +32,8 @@ export function definePermissions (builder: Builder): void {
     core.class.Permission,
     core.space.Model,
     {
-      label: core.string.UpdateObject
+      label: core.string.UpdateObject,
+      description: core.string.UpdateObjectDescription
     },
     core.permission.UpdateObject
   )
@@ -54,5 +56,45 @@ export function definePermissions (builder: Builder): void {
       description: core.string.ForbidDeleteObjectDescription
     },
     core.permission.ForbidDeleteObject
+  )
+
+  builder.createDoc(
+    core.class.Permission,
+    core.space.Model,
+    {
+      label: core.string.UpdateObject,
+      description: core.string.UpdateObjectDescription
+    },
+    core.permission.UpdateObject
+  )
+
+  builder.createDoc(
+    core.class.Permission,
+    core.space.Model,
+    {
+      label: core.string.DeleteObject,
+      description: core.string.DeleteObjectDescription
+    },
+    core.permission.DeleteObject
+  )
+
+  builder.createDoc(
+    core.class.Permission,
+    core.space.Model,
+    {
+      label: core.string.UpdateSpace,
+      description: core.string.UpdateSpaceDescription
+    },
+    core.permission.UpdateSpace
+  )
+
+  builder.createDoc(
+    core.class.Permission,
+    core.space.Model,
+    {
+      label: core.string.ArchiveSpace,
+      description: core.string.ArchiveSpaceDescription
+    },
+    core.permission.ArchiveSpace
   )
 }

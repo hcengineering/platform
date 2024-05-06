@@ -16,8 +16,11 @@
 import { deepEqual } from 'fast-equals'
 import {
   Account,
+  AccountRole,
   AnyAttribute,
+  AttachedData,
   AttachedDoc,
+  Attribute,
   Class,
   ClassifierKind,
   Collection,
@@ -33,6 +36,7 @@ import {
   IndexKind,
   Obj,
   Permission,
+  PropertyType,
   Ref,
   Role,
   Space,
@@ -44,6 +48,7 @@ import { TxOperations } from './operations'
 import { isPredicate } from './predicate'
 import { DocumentQuery, FindResult } from './storage'
 import { DOMAIN_TX } from './tx'
+import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
 
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
@@ -106,9 +111,9 @@ export function escapeLikeForRegexp (value: string): string {
 /**
  * @public
  */
-export function toFindResult<T extends Doc> (docs: T[], total?: number): FindResult<T> {
+export function toFindResult<T extends Doc> (docs: T[], total?: number, lookupMap?: Record<string, Doc>): FindResult<T> {
   const length = total ?? docs.length
-  return Object.assign(docs, { total: length })
+  return Object.assign(docs, { total: length, lookupMap })
 }
 
 /**
@@ -370,7 +375,7 @@ export class RateLimiter {
   }
 
   async waitProcessing (): Promise<void> {
-    await Promise.race(this.processingQueue.values())
+    await Promise.all(this.processingQueue.values())
   }
 }
 
@@ -447,6 +452,14 @@ function mergeField (field1: any, field2: any): any | undefined {
 
     for (const x in predicate) {
       const result = mergePredicateWithValue(x, predicate[x], value)
+      if (
+        Array.isArray(result?.$in) &&
+        result.$in.length > 0 &&
+        Array.isArray(result?.$nin) &&
+        result.$nin.length === 0
+      ) {
+        delete result.$nin
+      }
       if (result !== undefined) {
         return result
       }
@@ -596,6 +609,32 @@ export async function checkPermission (
 /**
  * @public
  */
+export interface RoleAttributeBaseProps {
+  label: IntlString
+  id: Ref<Attribute<PropertyType>>
+}
+
+/**
+ * @public
+ */
+export function getRoleAttributeBaseProps (data: AttachedData<Role>, roleId: Ref<Role>): RoleAttributeBaseProps {
+  const name = data.name.trim()
+  const label = getEmbeddedLabel(`Role: ${name}`)
+  const id = getRoleAttributeId(roleId)
+
+  return { label, id }
+}
+
+/**
+ * @public
+ */
+export function getRoleAttributeId (roleId: Ref<Role>): Ref<Attribute<PropertyType>> {
+  return `role-${roleId}` as Ref<Attribute<PropertyType>>
+}
+
+/**
+ * @public
+ */
 export function getFullTextIndexableAttributes (
   hierarchy: Hierarchy,
   clazz: Ref<Class<Obj>>,
@@ -713,4 +752,49 @@ export function isClassIndexable (hierarchy: Hierarchy, c: Ref<Class<Doc>>): boo
   }
   hierarchy.setClassifierProp(c, 'class_indexed', result)
   return result
+}
+
+type ReduceParameters<T extends (...args: any) => any> = T extends (...args: infer P) => any ? P : never
+
+interface NextCall {
+  op: () => Promise<void>
+}
+
+/**
+ * Utility method to skip middle update calls, optimistically if update function is called multiple times with few different parameters, only the last variant will be executed.
+ * The last invocation is executed after a few cycles, allowing to skip middle ones.
+ *
+ * This method can be used inside Svelte components to collapse complex update logic and handle interactions.
+ */
+export function reduceCalls<T extends (...args: ReduceParameters<T>) => Promise<void>> (
+  operation: T
+): (...args: ReduceParameters<T>) => Promise<void> {
+  let nextCall: NextCall | undefined
+  let currentCall: NextCall | undefined
+
+  const next = (): void => {
+    currentCall = nextCall
+    nextCall = undefined
+    if (currentCall !== undefined) {
+      void currentCall.op()
+    }
+  }
+  return async function (...args: ReduceParameters<T>): Promise<void> {
+    const myOp = async (): Promise<void> => {
+      await operation(...args)
+      next()
+    }
+
+    nextCall = { op: myOp }
+    await Promise.resolve()
+    if (currentCall === undefined) {
+      next()
+    }
+  }
+}
+
+export function isOwnerOrMaintainer (): boolean {
+  const account = getCurrentAccount()
+
+  return [AccountRole.Owner, AccountRole.Maintainer].includes(account.role)
 }

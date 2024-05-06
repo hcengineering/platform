@@ -19,7 +19,7 @@
   import { AttachedData, getCurrentAccount, Markup, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Request, RequestStatus } from '@hcengineering/request'
-  import { type RefAction, isEmptyMarkup } from '@hcengineering/text-editor'
+  import { type RefAction, EmptyMarkup, isEmptyMarkup } from '@hcengineering/text-editor'
   import { Button } from '@hcengineering/ui'
 
   import request from '../plugin'
@@ -53,7 +53,7 @@
     })
   }
 
-  let message: Markup = ''
+  let message: Markup = EmptyMarkup
   let attachments: number | undefined = 0
 
   async function onUpdate (event: CustomEvent<AttachedData<ChatMessage>>) {

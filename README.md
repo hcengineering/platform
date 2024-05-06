@@ -39,13 +39,19 @@ This project offers a convenient method to host Huly using `docker`, designed fo
 
 ## Pre-requisites
 
-- Make sure you have the following installed on your system:
-  - [Node.js](https://nodejs.org/en/download/) (v20 is required)
+- Before proceeding, ensure that your system meets the following requirements:
+  - [Node.js](https://nodejs.org/en/download/) (v20.11.0 is required)
   - [Docker](https://docs.docker.com/get-docker/)
   - [Docker Compose](https://docs.docker.com/compose/install/)
-- Make sure that `docker` and `docker compose` commands are available in your terminal (e.g. `docker --version` and `docker compose version`).
-- Make sure that `docker` and `docker compose` commands can be executed without sudo (e.g. `docker run hello-world` and `docker compose version`).
 
+## Verification
+
+To verify the installation, perform the following checks in your terminal:
+
+- Ensure that the `docker` commands are available:
+  ```bash
+  docker --version
+  docker compose version
 ## Fast start
 
 ```bash
@@ -56,7 +62,14 @@ sh ./scripts/fast-start.sh
 
 You need Microsoft's [rush](https://rushjs.io) to install application.
 
-Install [rush](https://rushjs.io) with `$ npm install -g @microsoft/rush` command and run `$ rush install` from the repository root, followed by `$ rush build` or just:
+1. Install Rush globally using the command:
+   ```bash
+   npm install -g @microsoft/rush
+2. Navigate to the repository root and run the following commands:
+   ```bash
+   rush install
+   rush build
+Alternatively, you can just execute:
 
 ```bash
 sh ./scripts/presetup-rush.sh
@@ -82,7 +95,7 @@ rush docker:up # Will set up all the containers
 
 Be aware `rush docker:build` will automatically execute all required phases like build, bundle, package.
 
-or just:
+Alternatively, you can just execute:
 
 ```bash
 sh ./scripts/build.sh
@@ -102,7 +115,7 @@ rushx run-local confirm-email user1 # To allow the creation of additional test w
 
 ```
 
-or just:
+Alternatively, you can just execute:
 
 ```bash
 sh ./scripts/create-workspace.sh
@@ -112,8 +125,8 @@ Accessing the URL http://localhost:8087 will lead you to the app in production m
 
 Limitations:
 
-- Local installation does not allow sending emails, so password recovery and notification to email functionalities are not working.
-- Integrations with Telegram, Gmail, and other content sources are available only as Docker containers, built from private repository sources. However, these integrations can be used with the platform.
+- Local installation does not support sending emails, thus disabling functionalities such as password recovery and email notifications.
+- Integrations with Telegram, Gmail, and other content sources are exclusively available as Docker containers, sourced from private repositories. However, these integrations are fully functional and can be utilized with the platform.
 
 ## Run in development mode
 
@@ -152,14 +165,12 @@ rushx upgrade -f
 
 ## Troubleshooting
 
-If a build fails, but the code is correct, try to delete the [build cache](https://rushjs.io/pages/maintainer/build_cache/)
+If a build fails, but the code is correct, try to delete the [build cache](https://rushjs.io/pages/maintainer/build_cache/) and retry.
 
 ```bash
 # from the project root
 rm -rf common/temp/build-cache
 ```
-
-and retry.
 
 ## Build & Watch
 

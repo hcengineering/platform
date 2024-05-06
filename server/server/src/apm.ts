@@ -26,15 +26,16 @@ export function createAPMAgent (apmUrl: string): Agent {
 export class APMMeasureContext implements MeasureContext {
   logger: MeasureLogger
   private readonly transaction?: Transaction | Span
-  private readonly parent?: Transaction | Span
+  private readonly parentTx?: Transaction | Span
   constructor (
     private readonly agent: Agent,
     name: string,
     params: Record<string, ParamType>,
-    parent?: Transaction | Span,
-    noTransaction?: boolean
+    parentTx?: Transaction | Span,
+    noTransaction?: boolean,
+    readonly parent?: MeasureContext
   ) {
-    this.parent = parent
+    this.parentTx = parentTx
     this.logger = {
       info: (msg, args) => {
         agent.logger.info({ message: msg, ...args })
@@ -42,14 +43,17 @@ export class APMMeasureContext implements MeasureContext {
       error: (msg, args) => {
         agent.logger.error({ message: msg, ...args })
       },
+      warn: (msg, args) => {
+        agent.logger.warn({ message: msg, ...args })
+      },
       logOperation (operation, time, params) {},
       close: async () => {}
     }
     if (!(noTransaction ?? false)) {
-      if (this.parent === undefined) {
+      if (this.parentTx === undefined) {
         this.transaction = agent.startTransaction(name) ?? undefined
       } else {
-        this.transaction = agent.startSpan(name, { childOf: this.parent }) ?? undefined
+        this.transaction = agent.startSpan(name, { childOf: this.parentTx }) ?? undefined
       }
       for (const [k, v] of Object.entries(params)) {
         this.transaction?.setLabel(k, v)
@@ -58,7 +62,7 @@ export class APMMeasureContext implements MeasureContext {
   }
 
   newChild (name: string, params: Record<string, ParamType>): MeasureContext {
-    return new APMMeasureContext(this.agent, name, params, this.transaction)
+    return new APMMeasureContext(this.agent, name, params, this.transaction, undefined, this)
   }
 
   measure (name: string, value: number): void {}
@@ -78,7 +82,7 @@ export class APMMeasureContext implements MeasureContext {
       c.end()
       return value
     } catch (err: any) {
-      await c.error(err)
+      c.error(err)
       throw err
     }
   }
@@ -95,18 +99,17 @@ export class APMMeasureContext implements MeasureContext {
     return r
   }
 
-  async error (message: string, ...args: any[]): Promise<void> {
+  error (message: string, ...args: any[]): void {
     this.logger.error(message, args)
-
-    await new Promise<void>((resolve) => {
-      this.agent.captureError({ message, params: args }, () => {
-        resolve()
-      })
-    })
+    this.agent.captureError({ message, params: args })
   }
 
-  async info (message: string, ...args: any[]): Promise<void> {
+  info (message: string, ...args: any[]): void {
     this.logger.info(message, args)
+  }
+
+  warn (message: string, ...args: any[]): void {
+    this.logger.warn(message, args)
   }
 
   end (): void {

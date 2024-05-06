@@ -25,6 +25,7 @@
 
   export let type: SpaceType | undefined
   export let descriptor: SpaceTypeDescriptor | undefined
+  export let disabled: boolean = true
 
   let roles: Role[] = []
   const rolesQuery = createQuery()
@@ -62,6 +63,7 @@
       kind="primary"
       icon={IconAdd}
       size="small"
+      {disabled}
       on:click={(ev) => {
         $settingsStore = { id: 'createRole', component: CreateRole, props: { type, descriptor } }
       }}

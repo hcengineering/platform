@@ -43,6 +43,6 @@
 
 {#if threadId}
   <ThreadView _id={threadId} on:close />
-{:else if context}
+{:else if object}
   <ChannelView {object} {context} allowClose embedded on:close />
 {/if}

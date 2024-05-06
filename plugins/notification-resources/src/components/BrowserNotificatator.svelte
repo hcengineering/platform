@@ -16,58 +16,48 @@
   import { getCurrentAccount } from '@hcengineering/core'
   import notification, { BrowserNotification, NotificationStatus } from '@hcengineering/notification'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { getCurrentLocation, navigate } from '@hcengineering/ui'
-  import { askPermission } from '../utils'
+  import { checkPermission, pushAllowed, subscribePush } from '../utils'
+  import { NotificationSeverity, addNotification } from '@hcengineering/ui'
+  import Notification from './Notification.svelte'
 
-  let notifications: BrowserNotification[] = []
-
-  const query = createQuery()
-  query.query(
-    notification.class.BrowserNotification,
-    {
-      user: getCurrentAccount()._id,
-      status: NotificationStatus.New
-    },
-    (res) => {
-      notifications = res
+  async function check (allowed: boolean) {
+    if (allowed) {
+      query.unsubscribe()
+      return
     }
-  )
+    const res = await checkPermission(true)
+    if (res) {
+      query.unsubscribe()
+      return
+    }
+    const isSubscribed = await subscribePush()
+    if (isSubscribed) {
+      query.unsubscribe()
+      return
+    }
+    query.query(
+      notification.class.BrowserNotification,
+      {
+        user: getCurrentAccount()._id,
+        status: NotificationStatus.New,
+        createdOn: { $gt: Date.now() }
+      },
+      (res) => {
+        if (res.length > 0) {
+          notify(res[0])
+        }
+      }
+    )
+  }
 
   const client = getClient()
 
-  $: process(notifications)
-
-  async function process (notifications: BrowserNotification[]): Promise<void> {
-    if (notifications.length === 0) return
-    await askPermission()
-    if ('Notification' in window && Notification?.permission === 'granted') {
-      for (const value of notifications) {
-        const req: NotificationOptions = {
-          body: value.body,
-          tag: value._id,
-          silent: false
-        }
-        const notification = new Notification(value.title, req)
-        if (value.onClickLocation !== undefined) {
-          const loc = getCurrentLocation()
-          loc.path.length = 3
-          loc.path[2] = value.onClickLocation.path[2]
-          if (value.onClickLocation.path[3]) {
-            loc.path[3] = value.onClickLocation.path[3]
-            if (value.onClickLocation.path[4]) {
-              loc.path[4] = value.onClickLocation.path[4]
-            }
-          }
-          loc.query = value.onClickLocation.query
-          loc.fragment = value.onClickLocation.fragment
-          const onClick = () => {
-            navigate(loc)
-            window.parent.parent.focus()
-          }
-          notification.onclick = onClick
-        }
-        await client.update(value, { status: NotificationStatus.Notified })
-      }
-    }
+  async function notify (value: BrowserNotification): Promise<void> {
+    addNotification(value.title, value.body, Notification, { value }, NotificationSeverity.Info)
+    await client.update(value, { status: NotificationStatus.Notified })
   }
+
+  const query = createQuery()
+
+  $: check($pushAllowed)
 </script>

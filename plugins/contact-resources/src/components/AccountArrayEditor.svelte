@@ -50,6 +50,7 @@
       timer = null
       update = undefined
     }
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     timer = setTimeout(() => update?.(), 500)
   }
 

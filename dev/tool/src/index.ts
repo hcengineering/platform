@@ -25,16 +25,13 @@ import {
   getAccount,
   getWorkspaceById,
   listAccounts,
-  listWorkspaces,
   listWorkspacesPure,
   listWorkspacesRaw,
   replacePassword,
   setAccountAdmin,
   setRole,
-  updateWorkspace,
-  upgradeWorkspace,
-  type Workspace,
-  type WorkspaceInfo
+  UpgradeWorker,
+  upgradeWorkspace
 } from '@hcengineering/account'
 import { setMetadata } from '@hcengineering/platform'
 import {
@@ -46,7 +43,7 @@ import {
   restore
 } from '@hcengineering/server-backup'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
-import toolPlugin, { FileModelLogger } from '@hcengineering/server-tool'
+import toolPlugin from '@hcengineering/server-tool'
 
 import { program, type Command } from 'commander'
 import { type Db, type MongoClient } from 'mongodb'
@@ -57,7 +54,7 @@ import core, {
   getWorkspaceId,
   MeasureMetricsContext,
   metricsToString,
-  RateLimiter,
+  versionToString,
   type AccountRole,
   type Data,
   type Tx,
@@ -68,8 +65,8 @@ import contact from '@hcengineering/model-contact'
 import { getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
 import { openAIConfigDefaults } from '@hcengineering/openai'
 import { type StorageAdapter } from '@hcengineering/server-core'
-import path from 'path'
-import { benchmark } from './benchmark'
+import { deepEqual } from 'fast-equals'
+import { benchmark, benchmarkWorker } from './benchmark'
 import {
   cleanArchivedSpaces,
   cleanRemovedTransactions,
@@ -85,6 +82,19 @@ import { changeConfiguration } from './configuration'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { openAIConfig } from './openai'
 import { fixAccountEmails, renameAccount } from './renameAccount'
+import { fixJsonMarkup } from './markup'
+
+const colorConstants = {
+  colorRed: '\u001b[31m',
+  colorBlue: '\u001b[34m',
+  colorWhiteCyan: '\u001b[37;46m',
+  colorRedYellow: '\u001b[31;43m',
+  colorPing: '\u001b[38;5;201m',
+  colorLavander: '\u001b[38;5;147m',
+  colorAqua: '\u001b[38;2;145;231;255m',
+  colorPencil: '\u001b[38;2;253;182;0m',
+  reset: '\u001b[0m'
+}
 
 /**
  * @public
@@ -255,7 +265,7 @@ export function devTool (
     .action(async (workspace, cmd) => {
       const { mongodbUri, txes, version, migrateOperations } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
-        const { client } = await createWorkspace(
+        await createWorkspace(
           toolCtx,
           version,
           txes,
@@ -266,7 +276,6 @@ export function devTool (
           cmd.workspaceName,
           workspace
         )
-        await client?.close()
       })
     })
 
@@ -324,103 +333,36 @@ export function devTool (
     .option('-p|--parallel <parallel>', 'Parallel upgrade', '0')
     .option('-l|--logs <logs>', 'Default logs folder', './logs')
     .option('-r|--retry <retry>', 'Number of apply retries', '0')
+    .option('-i|--ignore [ignore]', 'Ignore workspaces', '')
     .option(
       '-c|--console',
       'Display all information into console(default will create logs folder with {workspace}.log files',
       false
     )
     .option('-f|--force [force]', 'Force update', false)
-    .action(async (cmd: { parallel: string, logs: string, retry: string, force: boolean, console: boolean }) => {
-      const { mongodbUri, version, txes, migrateOperations } = prepareTools()
-      await withDatabase(mongodbUri, async (db) => {
-        const workspaces = await listWorkspacesRaw(db, productId)
-        workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
-
-        // We need to update workspaces with missing workspaceUrl
-        for (const ws of workspaces) {
-          if (ws.workspaceUrl == null) {
-            const upd: Partial<Workspace> = {
-              workspaceUrl: ws.workspace
-            }
-            if (ws.workspaceName == null) {
-              upd.workspaceName = ws.workspace
-            }
-            await updateWorkspace(db, productId, ws, upd)
-          }
-        }
-
-        const withError: string[] = []
-        let toProcess = workspaces.length
-        const st = Date.now()
-
-        async function _upgradeWorkspace (ws: WorkspaceInfo): Promise<void> {
-          if (ws.disabled === true) {
-            return
-          }
-          const t = Date.now()
-          const logger = cmd.console
-            ? consoleModelLogger
-            : new FileModelLogger(path.join(cmd.logs, `${ws.workspace}.log`))
-
-          const avgTime = (Date.now() - st) / (workspaces.length - toProcess + 1)
-          console.log(
-            '----------------------------------------------------------\n---UPGRADING----',
-            'pending: ',
-            toProcess,
-            'ETA: ',
-            Math.floor(avgTime * toProcess),
-            ws.workspace
-          )
-          toProcess--
-          try {
-            await upgradeWorkspace(
-              toolCtx,
-              version,
-              txes,
-              migrateOperations,
-              productId,
-              db,
-              ws.workspaceUrl ?? ws.workspace,
-              logger,
-              cmd.force
-            )
-            console.log('---done---------', 'pending: ', toProcess, 'TIME:', Date.now() - t, ws.workspace)
-          } catch (err: any) {
-            withError.push(ws.workspace)
-            logger.log('error', JSON.stringify(err))
-            console.log('   FAILED-------', 'pending: ', toProcess, 'TIME:', Date.now() - t, ws.workspace)
-          } finally {
-            if (!cmd.console) {
-              ;(logger as FileModelLogger).close()
-            }
-          }
-        }
-        if (cmd.parallel !== '0') {
-          const parallel = parseInt(cmd.parallel) ?? 1
-          const rateLimit = new RateLimiter(parallel)
-          console.log('parallel upgrade', parallel, cmd.parallel)
-          await Promise.all(
-            workspaces.map((it) =>
-              rateLimit.add(() => {
-                return _upgradeWorkspace(it)
-              })
-            )
-          )
-          console.log('Upgrade done')
-          // console.log((process as any)._getActiveHandles())
-          // console.log((process as any)._getActiveRequests())
-          // process.exit()
-        } else {
-          console.log('UPGRADE write logs at:', cmd.logs)
-          for (const ws of workspaces) {
-            await _upgradeWorkspace(ws)
-          }
-          if (withError.length > 0) {
-            console.log('Failed workspaces', withError)
-          }
-        }
-      })
-    })
+    .action(
+      async (cmd: {
+        parallel: string
+        logs: string
+        retry: string
+        force: boolean
+        console: boolean
+        ignore: string
+      }) => {
+        const { mongodbUri, version, txes, migrateOperations } = prepareTools()
+        await withDatabase(mongodbUri, async (db, client) => {
+          const worker = new UpgradeWorker(db, client, version, txes, migrateOperations, productId)
+          await worker.upgradeAll(toolCtx, {
+            errorHandler: async (ws, err) => {},
+            force: cmd.force,
+            console: cmd.console,
+            logs: cmd.logs,
+            parallel: parseInt(cmd.parallel ?? '1'),
+            ignore: cmd.ignore
+          })
+        })
+      }
+    )
 
   program
     .command('remove-unused-workspaces')
@@ -468,11 +410,42 @@ export function devTool (
   program
     .command('list-workspaces')
     .description('List workspaces')
-    .action(async () => {
+    .option('-e|--expired [expired]', 'Show only expired', false)
+    .action(async (cmd: { expired: boolean }) => {
       const { mongodbUri, version } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
-        const workspacesJSON = JSON.stringify(await listWorkspaces(toolCtx, db, productId), null, 2)
-        console.info(workspacesJSON)
+        const workspacesJSON = await listWorkspacesPure(db, productId)
+        for (const ws of workspacesJSON) {
+          let lastVisit = Math.floor((Date.now() - ws.lastVisit) / 1000 / 3600 / 24)
+          if (cmd.expired && lastVisit <= 7) {
+            continue
+          }
+          console.log(
+            colorConstants.colorBlue +
+              '####################################################################################################' +
+              colorConstants.reset
+          )
+          console.log('id:', colorConstants.colorWhiteCyan + ws.workspace + colorConstants.reset)
+          console.log('url:', ws.workspaceUrl, 'name:', ws.workspaceName)
+          console.log(
+            'version:',
+            ws.version !== undefined ? versionToString(ws.version) : 'not-set',
+            !deepEqual(ws.version, version) ? `upgrade to ${versionToString(version)} is required` : ''
+          )
+          console.log('disabled:', ws.disabled)
+          console.log('created by:', ws.createdBy)
+          console.log('members:', (ws.accounts ?? []).length)
+          if (Number.isNaN(lastVisit)) {
+            lastVisit = 365
+          }
+          if (lastVisit > 30) {
+            console.log(colorConstants.colorRed + `last visit: ${lastVisit} days ago` + colorConstants.reset)
+          } else if (lastVisit > 7) {
+            console.log(colorConstants.colorRedYellow + `last visit: ${lastVisit} days ago` + colorConstants.reset)
+          } else {
+            console.log('last visit:', lastVisit, 'days ago')
+          }
+        }
 
         console.log('latest model version:', JSON.stringify(version))
       })
@@ -481,7 +454,7 @@ export function devTool (
   program.command('fix-person-accounts').action(async () => {
     const { mongodbUri, version } = prepareTools()
     await withDatabase(mongodbUri, async (db, client) => {
-      const ws = await listWorkspaces(toolCtx, db, productId)
+      const ws = await listWorkspacesPure(db, productId)
       for (const w of ws) {
         const wsDb = getWorkspaceDB(client, { name: w.workspace, productId })
         await wsDb.collection('tx').updateMany(
@@ -534,6 +507,7 @@ export function devTool (
     .action(async (dirName: string, workspace: string, cmd: { skip: string, force: boolean }) => {
       const storage = await createFileBackupStorage(dirName)
       await backup(
+        toolCtx,
         transactorUrl,
         getWorkspaceId(workspace, productId),
         storage,
@@ -548,7 +522,7 @@ export function devTool (
     .option('-f, --force', 'Force compact.', false)
     .action(async (dirName: string, cmd: { force: boolean }) => {
       const storage = await createFileBackupStorage(dirName)
-      await compactBackup(storage, cmd.force)
+      await compactBackup(toolCtx, storage, cmd.force)
     })
 
   program
@@ -557,7 +531,14 @@ export function devTool (
     .description('dump workspace transactions and minio resources')
     .action(async (dirName: string, workspace: string, date, cmd: { merge: boolean }) => {
       const storage = await createFileBackupStorage(dirName)
-      await restore(transactorUrl, getWorkspaceId(workspace, productId), storage, parseInt(date ?? '-1'), cmd.merge)
+      await restore(
+        toolCtx,
+        transactorUrl,
+        getWorkspaceId(workspace, productId),
+        storage,
+        parseInt(date ?? '-1'),
+        cmd.merge
+      )
     })
 
   program
@@ -579,7 +560,7 @@ export function devTool (
         getWorkspaceId(bucketName, productId),
         dirName
       )
-      await backup(transactorUrl, getWorkspaceId(workspace, productId), storage)
+      await backup(toolCtx, transactorUrl, getWorkspaceId(workspace, productId), storage)
     })
 
   program
@@ -594,7 +575,7 @@ export function devTool (
         getWorkspaceId(bucketName, productId),
         dirName
       )
-      await compactBackup(storage, cmd.force)
+      await compactBackup(toolCtx, storage, cmd.force)
     })
 
   program
@@ -611,11 +592,11 @@ export function devTool (
           getWorkspaceId(bucketName, productId),
           dirName
         )
-        const workspaces = await listWorkspaces(toolCtx, db, productId)
+        const workspaces = await listWorkspacesPure(db, productId)
 
         for (const w of workspaces) {
           console.log(`clearing ${w.workspace} history:`)
-          await compactBackup(storage, cmd.force)
+          await compactBackup(toolCtx, storage, cmd.force)
         }
       })
     })
@@ -625,7 +606,7 @@ export function devTool (
     .action(async (bucketName: string, dirName: string, workspace: string, date, cmd) => {
       const { storageAdapter } = prepareTools()
       const storage = await createStorageBackupStorage(toolCtx, storageAdapter, getWorkspaceId(bucketName), dirName)
-      await restore(transactorUrl, getWorkspaceId(workspace, productId), storage, parseInt(date ?? '-1'))
+      await restore(toolCtx, transactorUrl, getWorkspaceId(workspace, productId), storage, parseInt(date ?? '-1'))
     })
   program
     .command('backup-s3-list <bucketName> <dirName>')
@@ -695,7 +676,7 @@ export function devTool (
           process.exit(1)
         }
 
-        const workspaces = await listWorkspaces(toolCtx, db, productId)
+        const workspaces = await listWorkspacesPure(db, productId)
 
         for (const w of workspaces) {
           console.log(`clearing ${w.workspace} history:`)
@@ -809,7 +790,7 @@ export function devTool (
         const workspaces = await listWorkspacesRaw(db, productId)
         for (const ws of workspaces) {
           console.log('configure', ws.workspaceName ?? ws.workspace)
-          await changeConfiguration(getWorkspaceId(ws.workspaceUrl ?? ws.workspace, productId), transactorUrl, cmd)
+          await changeConfiguration(getWorkspaceId(ws.workspace, productId), transactorUrl, cmd)
         }
       })
     })
@@ -857,6 +838,13 @@ export function devTool (
         )
       }
     )
+  program
+    .command('benchmarkWorker')
+    .description('benchmarkWorker')
+    .action(async (cmd: any) => {
+      console.log(JSON.stringify(cmd))
+      benchmarkWorker()
+    })
 
   program
     .command('fix-skills <workspace> <step>')
@@ -869,7 +857,7 @@ export function devTool (
   program
     .command('restore-ats-types <workspace>')
     .description('Restore recruiting task types for workspace')
-    .action(async (workspace: string, step: string) => {
+    .action(async (workspace: string) => {
       const { mongodbUri } = prepareTools()
       console.log('Restoring recruiting task types in workspace ', workspace, '...')
       await restoreRecruitingTaskTypes(mongodbUri, getWorkspaceId(workspace, productId), transactorUrl)
@@ -893,6 +881,14 @@ export function devTool (
         await updateField(mongodbUri, getWorkspaceId(workspace, productId), transactorUrl, cmd)
       }
     )
+
+  program
+    .command('fix-json-markup <workspace>')
+    .description('fixes double converted json markup')
+    .action(async (workspace: string) => {
+      const { mongodbUri, storageAdapter } = prepareTools()
+      await fixJsonMarkup(toolCtx, mongodbUri, storageAdapter, getWorkspaceId(workspace, productId), transactorUrl)
+    })
 
   extendProgram?.(program)
 

@@ -30,6 +30,9 @@ import {
   type WithLookup
 } from '@hcengineering/core'
 import notification, {
+  NotificationStatus,
+  decodeObjectURI,
+  encodeObjectURI,
   notificationId,
   type ActivityInboxNotification,
   type Collaborators,
@@ -39,11 +42,20 @@ import notification, {
   type MentionInboxNotification
 } from '@hcengineering/notification'
 import { MessageBox, getClient } from '@hcengineering/presentation'
-import { getLocation, navigate, showPopup, type Location, type ResolvedLocation } from '@hcengineering/ui'
-import { get } from 'svelte/store'
+import {
+  getCurrentLocation,
+  getLocation,
+  navigate,
+  parseLocation,
+  showPopup,
+  type Location,
+  type ResolvedLocation
+} from '@hcengineering/ui'
+import { get, writable } from 'svelte/store'
 
 import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
 import { type InboxData, type InboxNotificationsFilter } from './types'
+import { getMetadata } from '@hcengineering/platform'
 
 export async function hasDocNotifyContextPinAction (docNotifyContext: DocNotifyContext): Promise<boolean> {
   if (docNotifyContext.hidden) {
@@ -141,25 +153,52 @@ export async function unReadNotifyContext (doc: DocNotifyContext): Promise<void>
 /**
  * @public
  */
-export async function deleteContextNotifications (doc?: DocNotifyContext): Promise<void> {
+export async function archiveContextNotifications (doc?: DocNotifyContext): Promise<void> {
   if (doc === undefined) {
     return
   }
 
-  const doneOp = await getClient().measure('deleteContextNotifications')
+  const doneOp = await getClient().measure('archiveContextNotifications')
   const ops = getClient().apply(doc._id)
 
   try {
     const notifications = await ops.findAll(
       notification.class.InboxNotification,
-      { docNotifyContext: doc._id },
+      { docNotifyContext: doc._id, archived: { $ne: true } },
       { projection: { _id: 1, _class: 1, space: 1 } }
     )
 
     for (const notification of notifications) {
-      await ops.removeDoc(notification._class, notification.space, notification._id)
+      await ops.updateDoc(notification._class, notification.space, notification._id, { archived: true, isViewed: true })
     }
     await ops.update(doc, { lastViewedTimestamp: Date.now() })
+  } finally {
+    await ops.commit()
+    await doneOp()
+  }
+}
+
+/**
+ * @public
+ */
+export async function unarchiveContextNotifications (doc?: DocNotifyContext): Promise<void> {
+  if (doc === undefined) {
+    return
+  }
+
+  const doneOp = await getClient().measure('unarchiveContextNotifications')
+  const ops = getClient().apply(doc._id)
+
+  try {
+    const notifications = await ops.findAll(
+      notification.class.InboxNotification,
+      { docNotifyContext: doc._id, archived: true },
+      { projection: { _id: 1, _class: 1, space: 1 } }
+    )
+
+    for (const notification of notifications) {
+      await ops.updateDoc(notification._class, notification.space, notification._id, { archived: false })
+    }
   } finally {
     await ops.commit()
     await doneOp()
@@ -218,7 +257,6 @@ async function updateMeInCollaborators (
 export async function unsubscribe (object: DocNotifyContext): Promise<void> {
   const client = getClient()
   await updateMeInCollaborators(client, object.attachedToClass, object.attachedTo, OpWithMe.Remove)
-  await client.remove(object)
 }
 
 /**
@@ -257,7 +295,7 @@ export async function archiveAll (): Promise<void> {
     'top',
     (result?: boolean) => {
       if (result === true) {
-        void client.deleteAllNotifications()
+        void client.archiveAllNotifications()
       }
     }
   )
@@ -295,10 +333,6 @@ export async function getDisplayInboxNotifications (
 
   for (const notification of notifications) {
     if (filter === 'unread' && notification.isViewed) {
-      continue
-    }
-
-    if (filter === 'read' && !notification.isViewed) {
       continue
     }
 
@@ -340,9 +374,14 @@ export async function getDisplayInboxNotifications (
         continue
       }
 
+      const combined = activityNotifications.filter(({ attachedTo }) => ids.includes(attachedTo))
+
       const displayNotification = {
         ...activityNotification,
-        combinedIds: activityNotifications.filter(({ attachedTo }) => ids.includes(attachedTo)).map(({ _id }) => _id)
+        combinedIds: combined.map(({ _id }) => _id),
+        combinedMessages: combined
+          .map((a) => a.$lookup?.attachedTo)
+          .filter((m): m is ActivityMessage => m !== undefined)
       }
 
       result.push(displayNotification)
@@ -351,7 +390,8 @@ export async function getDisplayInboxNotifications (
       if (activityNotification !== undefined) {
         result.push({
           ...activityNotification,
-          combinedIds: [activityNotification._id]
+          combinedIds: [activityNotification._id],
+          combinedMessages: [message]
         })
       }
     }
@@ -409,9 +449,9 @@ export async function resolveLocation (loc: Location): Promise<ResolvedLocation 
     return undefined
   }
 
-  const contextId = loc.path[3] as Ref<DocNotifyContext> | undefined
+  const [_id, _class] = decodeObjectURI(loc.path[3])
 
-  if (contextId === undefined) {
+  if (_id === undefined || _class === undefined) {
     return {
       loc: {
         path: [loc.path[0], loc.path[1], notificationId],
@@ -424,12 +464,13 @@ export async function resolveLocation (loc: Location): Promise<ResolvedLocation 
     }
   }
 
-  return await generateLocation(loc, contextId)
+  return await generateLocation(loc, _id, _class)
 }
 
 async function generateLocation (
   loc: Location,
-  contextId: Ref<DocNotifyContext>
+  _id: Ref<Doc>,
+  _class: Ref<Class<Doc>>
 ): Promise<ResolvedLocation | undefined> {
   const client = getClient()
 
@@ -437,35 +478,18 @@ async function generateLocation (
   const workspace = loc.path[1] ?? ''
   const threadId = loc.path[4] as Ref<ActivityMessage> | undefined
 
-  const contextNotification = await client.findOne(notification.class.InboxNotification, {
-    docNotifyContext: contextId
-  })
-
-  if (contextNotification === undefined) {
-    return {
-      loc: {
-        path: [loc.path[0], loc.path[1], notificationId],
-        fragment: undefined
-      },
-      defaultLocation: {
-        path: [loc.path[0], loc.path[1], notificationId],
-        fragment: undefined
-      }
-    }
-  }
-
   const thread =
     threadId !== undefined ? await client.findOne(activity.class.ActivityMessage, { _id: threadId }) : undefined
 
   if (thread === undefined) {
     return {
       loc: {
-        path: [appComponent, workspace, notificationId, contextId],
+        path: [appComponent, workspace, notificationId, encodeObjectURI(_id, _class)],
         fragment: undefined,
         query: { ...loc.query }
       },
       defaultLocation: {
-        path: [appComponent, workspace, notificationId, contextId],
+        path: [appComponent, workspace, notificationId, encodeObjectURI(_id, _class)],
         fragment: undefined,
         query: { ...loc.query }
       }
@@ -474,12 +498,12 @@ async function generateLocation (
 
   return {
     loc: {
-      path: [appComponent, workspace, notificationId, contextId, threadId as string],
+      path: [appComponent, workspace, notificationId, encodeObjectURI(_id, _class), threadId as string],
       fragment: undefined,
       query: { ...loc.query }
     },
     defaultLocation: {
-      path: [appComponent, workspace, notificationId, contextId, threadId as string],
+      path: [appComponent, workspace, notificationId, encodeObjectURI(_id, _class), threadId as string],
       fragment: undefined,
       query: { ...loc.query }
     }
@@ -487,7 +511,8 @@ async function generateLocation (
 }
 
 export function openInboxDoc (
-  contextId?: Ref<DocNotifyContext>,
+  _id?: Ref<Doc>,
+  _class?: Ref<Class<Doc>>,
   thread?: Ref<ActivityMessage>,
   message?: Ref<ActivityMessage>
 ): void {
@@ -497,14 +522,14 @@ export function openInboxDoc (
     return
   }
 
-  if (contextId === undefined) {
-    loc.query = { ...loc.query, message: null }
+  if (_id === undefined || _class === undefined) {
+    loc.query = { message: null }
     loc.path.length = 3
     navigate(loc)
     return
   }
 
-  loc.path[3] = contextId
+  loc.path[3] = encodeObjectURI(_id, _class)
 
   if (thread !== undefined) {
     loc.path[4] = thread
@@ -519,36 +544,131 @@ export function openInboxDoc (
   navigate(loc)
 }
 
+export const pushAllowed = writable<boolean>(false)
+
 export async function checkPermission (value: boolean): Promise<boolean> {
   if (!value) return true
-  if ('Notification' in window) {
-    if (Notification?.permission === 'denied') return false
-    if (Notification?.permission === 'granted') return true
-    if (Notification?.permission === 'default') {
-      const res = await Notification?.requestPermission()
-      return res === 'granted'
+  if ('serviceWorker' in navigator && 'PushManager' in window) {
+    try {
+      const loc = getCurrentLocation()
+      const registration = await navigator.serviceWorker.getRegistration(`/${loc.path[0]}/${loc.path[1]}`)
+      if (registration !== undefined) {
+        const current = await registration.pushManager.getSubscription()
+        const res = current !== null
+        pushAllowed.set(current !== null)
+        void registration.update()
+        addWorkerListener()
+        return res
+      }
+    } catch {
+      pushAllowed.set(false)
+      return false
     }
   }
+  pushAllowed.set(false)
   return false
 }
 
-export async function askPermission (): Promise<void> {
-  if ('Notification' in window && Notification?.permission === 'default') {
-    await Notification?.requestPermission()
+function addWorkerListener (): void {
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data !== undefined && event.data.type === 'notification-click') {
+      const { url, _id } = event.data
+      if (url !== undefined) {
+        navigate(parseLocation(new URL(url)))
+      }
+      if (_id !== undefined) {
+        void cleanTag(_id)
+      }
+    }
+  })
+}
+
+export function pushAvailable (): boolean {
+  const publicKey = getMetadata(notification.metadata.PushPublicKey)
+  return (
+    'serviceWorker' in navigator &&
+    'PushManager' in window &&
+    publicKey !== undefined &&
+    'Notification' in window &&
+    Notification.permission !== 'denied'
+  )
+}
+
+export async function subscribePush (): Promise<boolean> {
+  const client = getClient()
+  const publicKey = getMetadata(notification.metadata.PushPublicKey)
+  if ('serviceWorker' in navigator && 'PushManager' in window && publicKey !== undefined) {
+    try {
+      const loc = getCurrentLocation()
+      let registration = await navigator.serviceWorker.getRegistration(`/${loc.path[0]}/${loc.path[1]}`)
+      if (registration !== undefined) {
+        await registration.update()
+      } else {
+        registration = await navigator.serviceWorker.register('/serviceWorker.js', {
+          scope: `/${loc.path[0]}/${loc.path[1]}`
+        })
+      }
+      const current = await registration.pushManager.getSubscription()
+      if (current == null) {
+        const subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: publicKey
+        })
+        await client.createDoc(notification.class.PushSubscription, notification.space.Notifications, {
+          user: getCurrentAccount()._id,
+          endpoint: subscription.endpoint,
+          keys: {
+            p256dh: arrayBufferToBase64(subscription.getKey('p256dh')),
+            auth: arrayBufferToBase64(subscription.getKey('auth'))
+          }
+        })
+      } else {
+        const exists = await client.findOne(notification.class.PushSubscription, {
+          user: getCurrentAccount()._id,
+          endpoint: current.endpoint
+        })
+        if (exists === undefined) {
+          await client.createDoc(notification.class.PushSubscription, notification.space.Notifications, {
+            user: getCurrentAccount()._id,
+            endpoint: current.endpoint,
+            keys: {
+              p256dh: arrayBufferToBase64(current.getKey('p256dh')),
+              auth: arrayBufferToBase64(current.getKey('auth'))
+            }
+          })
+        }
+      }
+      addWorkerListener()
+      pushAllowed.set(true)
+      return true
+    } catch (err) {
+      console.error('Service Worker registration failed:', err)
+      pushAllowed.set(false)
+      return false
+    }
+  }
+  pushAllowed.set(false)
+  return false
+}
+
+async function cleanTag (_id: Ref<Doc>): Promise<void> {
+  const client = getClient()
+  const notifications = await client.findAll(notification.class.BrowserNotification, {
+    tag: _id,
+    status: NotificationStatus.New
+  })
+  for (const notification of notifications) {
+    await client.update(notification, { status: NotificationStatus.Notified })
   }
 }
 
-export function notify (title: string, body: string, _id?: string, onClick?: () => void): void {
-  if ('Notification' in window && Notification?.permission === 'granted') {
-    const req: NotificationOptions = {
-      body
-    }
-    if (_id !== undefined) {
-      req.tag = _id
-    }
-    const notification = new Notification(title, req)
-    if (onClick !== undefined) {
-      notification.onclick = onClick
-    }
+function arrayBufferToBase64 (buffer: ArrayBuffer | null): string {
+  if (buffer != null) {
+    const bytes = new Uint8Array(buffer)
+    const array = Array.from(bytes)
+    const binary = String.fromCharCode.apply(null, array)
+    return btoa(binary)
+  } else {
+    return ''
   }
 }

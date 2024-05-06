@@ -13,7 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts" context="module">
+  import contact, { AvatarProvider } from '@hcengineering/contact'
   import { Client, Ref } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
 
   const providers = new Map<string, AvatarProvider | null>()
 
@@ -29,9 +31,9 @@
 </script>
 
 <script lang="ts">
-  import contact, { AvatarProvider, AvatarType, getFirstName, getLastName } from '@hcengineering/contact'
+  import { AvatarType, getAvatarProviderId, getFirstName, getLastName } from '@hcengineering/contact'
   import { Asset, getMetadata, getResource } from '@hcengineering/platform'
-  import { getBlobURL, getClient } from '@hcengineering/presentation'
+  import { getBlobURL, reduceCalls } from '@hcengineering/presentation'
   import {
     AnySvelteComponent,
     ColorDefinition,
@@ -40,12 +42,14 @@
     getPlatformAvatarColorByName,
     getPlatformAvatarColorForTextDef,
     getPlatformColor,
-    themeStore,
-    resizeObserver
+    resizeObserver,
+    themeStore
   } from '@hcengineering/ui'
-  import { getAvatarProviderId } from '../utils'
-  import AvatarIcon from './icons/Avatar.svelte'
   import { onMount } from 'svelte'
+  import { Account } from '@hcengineering/core'
+
+  import AvatarIcon from './icons/Avatar.svelte'
+  import UserStatus from './UserStatus.svelte'
 
   export let avatar: string | null | undefined = undefined
   export let name: string | null | undefined = undefined
@@ -54,19 +58,32 @@
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let variant: 'circle' | 'roundedRect' | 'none' = 'roundedRect'
   export let borderColor: number | undefined = undefined
+  export let standby: boolean = false
+  export let showStatus = false
+  export let account: Ref<Account> | undefined = undefined
+  export let background: string | undefined = undefined
 
   export function pulse (): void {
-    if (element) element.animate(pulsating, { duration: 150, easing: 'ease-in' })
+    if (element) element.animate(pulsating, { duration: 150, easing: 'ease-out' })
+    if (standby) {
+      standbyMode = false
+      if (timer) clearTimeout(timer)
+      timer = setTimeout(() => {
+        standbyMode = true
+      }, 2000)
+    }
   }
 
   let url: string[] | undefined
   let avatarProvider: AvatarProvider | undefined
   let color: ColorDefinition | undefined = undefined
+  let standbyMode: boolean = standby
+  let timer: any | undefined = undefined
   let fontSize: number = 16
   let element: HTMLElement
   const pulsating: Keyframe[] = [
-    { boxShadow: '0 0 .75rem 0 var(--theme-bg-color), 0 0 .75rem .125rem var(--border-color)' },
-    { boxShadow: '0 0 0 0 var(--theme-bg-color), 0 0 0 0 var(--border-color)' }
+    { boxShadow: '0 0 .125rem 0 var(--theme-bg-color), 0 0 0 .125rem var(--border-color)' },
+    { boxShadow: '0 0 .375rem .375rem var(--theme-bg-color), 0 0 0 .25rem var(--border-color)' }
   ]
 
   $: displayName = getDisplayName(name)
@@ -84,12 +101,16 @@
     return lastFirst ? lname + fname : fname + lname
   }
 
-  async function update (size: IconSize, avatar?: string | null, direct?: Blob, name?: string | null) {
+  const update = reduceCalls(async function (
+    size: IconSize,
+    avatar?: string | null,
+    direct?: Blob,
+    name?: string | null
+  ) {
     if (direct !== undefined) {
-      getBlobURL(direct).then((blobURL) => {
-        url = [blobURL]
-        avatarProvider = undefined
-      })
+      const blobURL = await getBlobURL(direct)
+      url = [blobURL]
+      avatarProvider = undefined
     } else if (avatar) {
       const avatarProviderId = getAvatarProviderId(avatar)
       avatarProvider = avatarProviderId && (await getProvider(getClient(), avatarProviderId))
@@ -111,8 +132,8 @@
       url = undefined
       avatarProvider = undefined
     }
-  }
-  $: update(size, avatar, direct, name)
+  })
+  $: void update(size, avatar, direct, name)
 
   $: srcset = url?.slice(1)?.join(', ')
 
@@ -121,6 +142,24 @@
       fontSize = element.clientWidth * 0.6
     }
   })
+
+  function getStatusSize (avaSize: IconSize): 'small' | 'medium' {
+    switch (avaSize) {
+      case 'inline':
+      case 'tiny':
+      case 'card':
+      case 'x-small':
+        return 'small'
+      case 'small':
+      case 'medium':
+      case 'large':
+      case 'x-large':
+      case '2x-large':
+        return 'medium'
+      default:
+        return 'small'
+    }
+  }
 </script>
 
 {#if size === 'full' && !url && name && displayName && displayName !== ''}
@@ -130,6 +169,8 @@
     class:no-img={!url && color}
     class:bordered={!url && color === undefined}
     class:border={bColor !== undefined}
+    class:standby
+    class:standbyOn={standby && !standbyMode}
     style:--border-color={bColor ?? 'var(--primary-button-default)'}
     style:background-color={color && !url ? color.icon : 'var(--theme-button-default)'}
     use:resizeObserver={(element) => {
@@ -150,6 +191,8 @@
     class:no-img={!url && color}
     class:bordered={!url && color === undefined}
     class:border={bColor !== undefined}
+    class:standby
+    class:standbyOn={standby && !standbyMode}
     style:--border-color={bColor ?? 'var(--primary-button-default)'}
     style:background-color={color && !url ? color.icon : 'var(--theme-button-default)'}
   >
@@ -166,6 +209,11 @@
         <Icon icon={icon ?? AvatarIcon} size={'full'} />
       </div>
     {/if}
+    {#if showStatus && account}
+      <span class="status">
+        <UserStatus user={account} size={getStatusSize(size)} {background} />
+      </span>
+    {/if}
   </div>
 {/if}
 
@@ -173,7 +221,6 @@
   .avatar-container {
     flex-shrink: 0;
     position: relative;
-    overflow: hidden;
     background-color: var(--theme-button-default);
     pointer-events: none;
 
@@ -184,6 +231,19 @@
     &.roundedRect,
     &.roundedRect img.ava-image {
       border-radius: 20%;
+    }
+    &.standby {
+      opacity: 0.5;
+      transition: opacity 0.5s ease-in-out;
+      pointer-events: all;
+
+      &:hover,
+      &.standbyOn {
+        opacity: 1;
+      }
+      &:hover {
+        transition-duration: 0.1s;
+      }
     }
 
     &.no-img {
@@ -199,7 +259,9 @@
       outline: 2px solid var(--border-color);
 
       &.ava-inline,
-      &.ava-tiny {
+      &.ava-tiny,
+      &.ava-card,
+      &.ava-x-small {
         outline-width: 1px;
       }
       &.ava-large,
@@ -329,5 +391,11 @@
     .ava-text {
       font-size: inherit;
     }
+  }
+
+  .status {
+    position: absolute;
+    bottom: -0.125rem;
+    right: -0.25rem;
   }
 </style>

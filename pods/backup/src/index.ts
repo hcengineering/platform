@@ -13,24 +13,8 @@
 // limitations under the License.
 //
 
-import { PlatformWorker } from './platform'
+import { MeasureMetricsContext } from '@hcengineering/core'
+import { startBackup } from '@hcengineering/backup-service'
 
-const main = async (): Promise<void> => {
-  const platformWorker = await PlatformWorker.create()
-
-  const shutdown = (): void => {
-    void platformWorker.close().then(() => {
-      process.exit()
-    })
-  }
-
-  process.on('SIGINT', shutdown)
-  process.on('SIGTERM', shutdown)
-  process.on('uncaughtException', (e) => {
-    console.error(e)
-  })
-  process.on('unhandledRejection', (e) => {
-    console.error(e)
-  })
-}
-void main()
+const ctx = new MeasureMetricsContext('backup-service', {})
+startBackup(ctx)

@@ -73,7 +73,7 @@
 <Card
   label={contact.string.CreatePerson}
   okAction={createPerson}
-  canSave={firstName.length > 0 && lastName.length > 0 && matches.length === 0}
+  canSave={firstName.trim().length > 0 && lastName.trim().length > 0 && matches.length === 0}
   on:close={() => {
     dispatch('close')
   }}

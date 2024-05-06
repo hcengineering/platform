@@ -26,11 +26,12 @@
 
   import InboxNotificationPresenter from './inbox/InboxNotificationPresenter.svelte'
   import NotifyContextIcon from './NotifyContextIcon.svelte'
-  import { deleteContextNotifications } from '../utils'
+  import { archiveContextNotifications, unarchiveContextNotifications } from '../utils'
 
   export let value: DocNotifyContext
   export let notifications: WithLookup<DisplayInboxNotification>[]
   export let viewlets: ActivityNotificationViewlet[] = []
+  export let archived = false
 
   const maxNotifications = 3
 
@@ -67,6 +68,13 @@
       {
         object: value,
         baseMenuClass: notification.class.DocNotifyContext,
+        excludedActions: archived
+          ? [
+              notification.action.ArchiveContextNotifications,
+              notification.action.ReadNotifyContext,
+              notification.action.UnReadNotifyContext
+            ]
+          : [notification.action.UnarchiveContextNotifications],
         mode: 'panel'
       },
       ev.target as HTMLElement,
@@ -83,13 +91,13 @@
     isActionMenuOpened = false
   }
 
-  let deletingPromise: Promise<any> | undefined = undefined
+  let archivingPromise: Promise<any> | undefined = undefined
 
   async function checkContext (): Promise<void> {
-    await deletingPromise
-    deletingPromise = deleteContextNotifications(value)
-    await deletingPromise
-    deletingPromise = undefined
+    await archivingPromise
+    archivingPromise = archived ? unarchiveContextNotifications(value) : archiveContextNotifications(value)
+    await archivingPromise
+    archivingPromise = undefined
   }
 </script>
 
@@ -125,10 +133,10 @@
 
     <div class="actions clear-mins">
       <div class="flex-center">
-        {#if deletingPromise !== undefined}
+        {#if archivingPromise !== undefined}
           <Spinner size="small" />
         {:else}
-          <CheckBox checked={false} kind="todo" size="medium" on:value={checkContext} />
+          <CheckBox checked={archived} kind="todo" size="medium" on:value={checkContext} />
         {/if}
       </div>
       <ButtonIcon

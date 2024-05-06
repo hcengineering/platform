@@ -11,11 +11,21 @@ test.use({
 })
 
 test.describe('Tracker related issue tests', () => {
+  let leftSideMenuPage: LeftSideMenuPage
+  let issuesPage: IssuesPage
+  let issuesDetailsPage: IssuesDetailsPage
+  let trackerNavigationMenuPage: TrackerNavigationMenuPage
+
   test.beforeEach(async ({ page }) => {
+    leftSideMenuPage = new LeftSideMenuPage(page)
+    issuesPage = new IssuesPage(page)
+    issuesDetailsPage = new IssuesDetailsPage(page)
+    trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
+
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
-  test('New related issue', async ({ page }) => {
+  test('New related issue', async () => {
     const newIssue: NewIssue = {
       title: `New Issue with related issue-${generateId()}`,
       description: 'Description New Issue with related issue'
@@ -32,27 +42,17 @@ test.describe('Tracker related issue tests', () => {
       milestone: 'No Milestone',
       duedate: 'today'
     }
-
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
-
-    const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
+    await leftSideMenuPage.clickTracker()
+    await issuesPage.clickModelSelectorAll()
     await issuesPage.createNewIssue(newIssue)
     await issuesPage.searchIssueByName(newIssue.title)
     await issuesPage.openIssueByName(newIssue.title)
-
-    const issuesDetailsPage = new IssuesDetailsPage(page)
     await issuesDetailsPage.moreActionOnIssue('New related issue')
-
     await issuesPage.fillNewIssueForm(relatedIssue)
-    await issuesPage.buttonCreateIssue.click()
-
-    const trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
+    await issuesPage.clickButtonCreateIssue()
     await trackerNavigationMenuPage.openIssuesForProject('Default')
     await issuesPage.searchIssueByName(relatedIssue.title)
     await issuesPage.openIssueByName(relatedIssue.title)
-
     await issuesDetailsPage.waitDetailsOpened(relatedIssue.title)
     await issuesDetailsPage.checkIssue({
       ...newIssue,

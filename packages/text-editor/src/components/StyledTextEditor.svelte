@@ -13,19 +13,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import { AnyExtension, mergeAttributes } from '@tiptap/core'
+  import { Markup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
+  import { EmptyMarkup } from '@hcengineering/text'
   import { Button, ButtonSize, Scroller } from '@hcengineering/ui'
+  import { AnyExtension, mergeAttributes } from '@tiptap/core'
+  import { createEventDispatcher } from 'svelte'
   import textEditorPlugin from '../plugin'
   import { RefAction, TextEditorHandler, TextFormatCategory } from '../types'
   import { defaultRefActions, getModelRefActions } from './editor/actions'
   import TextEditor from './TextEditor.svelte'
-  import { Markup } from '@hcengineering/core'
 
   const dispatch = createEventDispatcher()
 
-  export let content: string = ''
+  export let content: Markup = EmptyMarkup
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
   export let showButtons: boolean = true
   export let buttonSize: ButtonSize = 'medium'
@@ -83,7 +84,7 @@
           ? 'max-content'
           : maxHeight
 
-  const editorHandler: TextEditorHandler = {
+  export const editorHandler: TextEditorHandler = {
     insertText: (text) => {
       textEditor?.insertText(text)
     },
@@ -93,6 +94,18 @@
     insertTemplate: (name, markup) => {
       textEditor?.insertMarkup(markup)
       dispatch('template', name)
+    },
+    insertTable (options: { rows?: number, cols?: number, withHeaderRow?: boolean }) {
+      textEditor?.insertTable(options)
+    },
+    insertCodeBlock: (pos?: number) => {
+      textEditor?.insertCodeBlock(pos)
+    },
+    insertSeparatorLine: () => {
+      textEditor?.insertSeparatorLine()
+    },
+    insertContent: (value, options) => {
+      textEditor?.insertContent(value, options)
     },
     focus: () => {
       textEditor?.focus()
@@ -168,7 +181,7 @@
             on:value
             on:content={(ev) => {
               dispatch('message', ev.detail)
-              content = ''
+              content = EmptyMarkup
               textEditor?.clear()
             }}
             on:blur
@@ -187,7 +200,7 @@
           on:value
           on:content={(ev) => {
             dispatch('message', ev.detail)
-            content = ''
+            content = EmptyMarkup
             textEditor?.clear()
           }}
           on:blur

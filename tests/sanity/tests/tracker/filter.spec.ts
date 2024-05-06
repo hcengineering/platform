@@ -11,12 +11,20 @@ test.use({
 })
 
 test.describe('Tracker filters tests', () => {
+  let leftSideMenuPage: LeftSideMenuPage
+  let issuesPage: IssuesPage
+  let issuesDetailsPage: IssuesDetailsPage
+
   test.beforeEach(async ({ page }) => {
+    leftSideMenuPage = new LeftSideMenuPage(page)
+    issuesPage = new IssuesPage(page)
+    issuesDetailsPage = new IssuesDetailsPage(page)
+
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   })
 
   // TODO: We need to split them into separate one's and fix.
-  test.skip('Modified date', async ({ page }) => {
+  test.skip('Modified date', async () => {
     const newIssue: NewIssue = {
       title: `Issue for the Modified filter-${generateId()}`,
       description: 'Issue for the Modified filter',
@@ -31,11 +39,9 @@ test.describe('Tracker filters tests', () => {
       filePath: 'cat.jpeg'
     }
 
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
-    const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
+    await issuesPage.clickModelSelectorAll()
     await issuesPage.createNewIssue(newIssue)
 
     await test.step('Check Filter Today', async () => {
@@ -113,7 +119,7 @@ test.describe('Tracker filters tests', () => {
   })
 
   // TODO: We need to split them into separate one's and fix.
-  test.skip('Created date', async ({ page }) => {
+  test.skip('Created date', async () => {
     const yesterdayIssueTitle = 'Issue for the Check Filter Yesterday'
     const newIssue: NewIssue = {
       title: `Issue for the Created filter-${generateId()}`,
@@ -129,11 +135,9 @@ test.describe('Tracker filters tests', () => {
       filePath: 'cat.jpeg'
     }
 
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
-    const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
+    await issuesPage.clickModelSelectorAll()
     await issuesPage.createNewIssue(newIssue)
 
     await test.step('Check Filter Today', async () => {
@@ -230,140 +234,125 @@ test.describe('Tracker filters tests', () => {
     })
   })
 
-  test('Status filter', async ({ page }) => {
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+  test('Status filter', async () => {
+    await leftSideMenuPage.clickTracker()
 
-    const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
+    await issuesPage.linkSidebarAll().click()
+    await issuesPage.clickModelSelectorAll()
 
     for (const status of DEFAULT_STATUSES) {
       await test.step(`Status Filter ${status}`, async () => {
         await issuesPage.selectFilter('Status', status)
-        await issuesPage.inputSearch.press('Escape')
+        await issuesPage.inputSearch().press('Escape')
 
         await issuesPage.checkFilter('Status', 'is')
         await issuesPage.checkAllIssuesInStatus(DEFAULT_STATUSES_ID.get(status), status)
-        await issuesPage.buttonClearFilers.click()
+        await issuesPage.buttonClearFilers().click()
       })
     }
   })
 
-  test('Priority filter', async ({ page }) => {
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+  test('Priority filter', async () => {
+    await leftSideMenuPage.clickTracker()
 
-    const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
+    await issuesPage.clickModelSelectorAll()
 
     for (const priority of PRIORITIES) {
       await test.step(`Priority Filter ${priority}`, async () => {
         await issuesPage.selectFilter('Priority', priority)
-        await issuesPage.inputSearch.press('Escape')
-
+        await issuesPage.inputSearch().press('Escape')
         await issuesPage.checkFilter('Priority', 'is')
         await issuesPage.checkAllIssuesByPriority(priority.toLowerCase().replaceAll(' ', ''))
-        await issuesPage.buttonClearFilers.click()
+        await issuesPage.buttonClearFilers().click()
       })
     }
   })
 
-  test('Created by filter', async ({ page }) => {
+  test('Created by filter', async () => {
     const createdBy = 'Appleseed John'
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
-    const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
+    await issuesPage.clickModelSelectorAll()
 
     await issuesPage.selectFilter('Created by', createdBy)
-    await issuesPage.inputSearch.press('Escape')
+    await issuesPage.inputSearch().press('Escape')
 
     await issuesPage.checkFilter('Created by', 'is')
-    for await (const issue of iterateLocator(issuesPage.issuesList)) {
+    for await (const issue of iterateLocator(issuesPage.issuesList())) {
       await issue.locator('span.list > a').click()
 
-      const issuesDetailsPage = new IssuesDetailsPage(page)
-      await expect(issuesDetailsPage.buttonCreatedBy).toHaveText(createdBy)
-      await issuesDetailsPage.buttonCloseIssue.click()
+      expect(issuesDetailsPage.checkIfButtonCbuttonCreatedByHaveTextCreatedBy(createdBy))
+      await issuesDetailsPage.clickCloseIssueButton()
     }
   })
 
-  test('Component filter', async ({ page }) => {
+  test('Component filter', async () => {
     const defaultComponent = 'Default component'
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
-    const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
+    await issuesPage.clickModelSelectorAll()
 
     await issuesPage.selectFilter('Component', defaultComponent)
-    await issuesPage.inputSearch.press('Escape')
+    await issuesPage.inputSearch().press('Escape')
 
     await issuesPage.checkFilter('Component', 'is')
-    for await (const issue of iterateLocator(issuesPage.issuesList)) {
+    for await (const issue of iterateLocator(issuesPage.issuesList())) {
       await issue.locator('span.list > a').click()
 
-      const issuesDetailsPage = new IssuesDetailsPage(page)
-      await expect(issuesDetailsPage.buttonComponent).toHaveText(defaultComponent)
+      expect(issuesDetailsPage.checkIfButtonComponentHasTextDefaultComponent(defaultComponent))
 
-      await issuesDetailsPage.buttonCloseIssue.click()
+      await issuesDetailsPage.clickCloseIssueButton()
     }
   })
 
-  test('Title filter', async ({ page }) => {
+  test('Title filter', async () => {
     const firstSearch = 'issue'
     const secondSearch = 'done'
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
-    const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
+    await issuesPage.clickModelSelectorAll()
 
     await test.step(`Check Title filter for ${firstSearch}`, async () => {
       await issuesPage.selectFilter('Title', firstSearch)
       await issuesPage.checkFilter('Title', 'contains', firstSearch)
 
-      for await (const issue of iterateLocator(issuesPage.issuesList)) {
+      for await (const issue of iterateLocator(issuesPage.issuesList())) {
         await expect(issue.locator('span.presenter-label > a')).toContainText(firstSearch, { ignoreCase: true })
       }
     })
 
     await test.step(`Check Title filter for ${secondSearch}`, async () => {
-      await issuesPage.buttonClearFilters.click()
+      await issuesPage.buttonClearFilters().click()
       await issuesPage.selectFilter('Title', secondSearch)
       await issuesPage.checkFilter('Title', 'contains', secondSearch)
 
-      for await (const issue of iterateLocator(issuesPage.issuesList)) {
+      for await (const issue of iterateLocator(issuesPage.issuesList())) {
         await expect(issue.locator('span.presenter-label > a')).toContainText(secondSearch, { ignoreCase: true })
       }
     })
   })
 
-  test('Modified by filter', async ({ page }) => {
+  test('Modified by filter', async () => {
     const modifierName = 'Appleseed John'
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
-    const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
+    await issuesPage.clickModelSelectorAll()
 
     await issuesPage.selectFilter('Modified by', modifierName)
-    await issuesPage.inputSearch.press('Escape')
+    await issuesPage.inputSearch().press('Escape')
     await issuesPage.checkFilter('Modified by', 'is')
 
-    for await (const issue of iterateLocator(issuesPage.issuesList)) {
+    for await (const issue of iterateLocator(issuesPage.issuesList())) {
       await issue.locator('span.list > a').click()
 
-      const issuesDetailsPage = new IssuesDetailsPage(page)
-      await expect(issuesDetailsPage.buttonCreatedBy).toHaveText(modifierName)
+      expect(issuesDetailsPage.checkIfButtonCreatedByHaveRealName(modifierName))
 
-      await issuesDetailsPage.buttonCloseIssue.click()
+      await issuesDetailsPage.clickCloseIssueButton()
     }
   })
 
   // TODO: We need to split them into separate one's and fix.
-  test.skip('Milestone filter', async ({ page }) => {
+  test.skip('Milestone filter', async () => {
     const filterMilestoneName = 'Filter Milestone'
     const milestoneIssue: NewIssue = {
       title: `Issue for the Milestone filter-${generateId()}`,
@@ -371,41 +360,37 @@ test.describe('Tracker filters tests', () => {
       milestone: filterMilestoneName
     }
 
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+    await leftSideMenuPage.clickTracker()
 
-    const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
+    await issuesPage.clickModelSelectorAll()
     await issuesPage.createNewIssue(milestoneIssue)
 
     await test.step('Check Milestone filter for Filter Milestone', async () => {
       await issuesPage.selectFilter('Milestone', filterMilestoneName)
-      await issuesPage.inputSearch.press('Escape')
+      await issuesPage.inputSearch().press('Escape')
       await issuesPage.checkFilter('Milestone', 'is', '1 state')
 
-      for await (const issue of iterateLocator(issuesPage.issuesList)) {
+      for await (const issue of iterateLocator(issuesPage.issuesList())) {
         await expect(issue.locator('div.compression-bar #milestone span.label')).toContainText(filterMilestoneName)
       }
     })
 
     await test.step('Check Milestone filter for Not selected', async () => {
-      await issuesPage.buttonClearFilters.click()
+      await issuesPage.buttonClearFilters().click()
       await issuesPage.selectFilter('Milestone', 'Not selected')
-      await issuesPage.inputSearch.press('Escape')
+      await issuesPage.inputSearch().press('Escape')
       await issuesPage.checkFilter('Milestone', 'is', '1 state')
 
-      for await (const issue of iterateLocator(issuesPage.issuesList)) {
+      for await (const issue of iterateLocator(issuesPage.issuesList())) {
         await issue.locator('span.list > a').click()
+        await expect(issuesDetailsPage.buttonMilestone()).toHaveText('Milestone')
 
-        const issuesDetailsPage = new IssuesDetailsPage(page)
-        await expect(issuesDetailsPage.buttonMilestone).toHaveText('Milestone')
-
-        await issuesDetailsPage.buttonCloseIssue.click()
+        issuesDetailsPage.buttonCloseIssue()
       }
     })
   })
 
-  test('Label filter', async ({ page }) => {
+  test('Label filter', async () => {
     const filterLabel = 'Filter Label'
     const labelIssue: NewIssue = {
       title: `Issue for the Label filter-${generateId()}`,
@@ -414,26 +399,22 @@ test.describe('Tracker filters tests', () => {
       createLabel: true
     }
 
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
-
-    const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
+    await leftSideMenuPage.clickTracker()
+    await issuesPage.clickModelSelectorAll()
     await issuesPage.createNewIssue(labelIssue)
 
     await test.step('Check Label filter for exist Label', async () => {
       await issuesPage.selectFilter('Labels', filterLabel)
-      await issuesPage.inputSearch.press('Escape')
+      await issuesPage.inputSearch().press('Escape')
       await issuesPage.checkFilter('Labels', 'is', filterLabel)
-
-      for await (const issue of iterateLocator(issuesPage.issuesList)) {
+      for await (const issue of iterateLocator(issuesPage.issuesList())) {
         await expect(issue.locator('div.compression-bar > div.label-box span.label')).toContainText(filterLabel)
       }
     })
   })
 
   // TODO: We need to split them into separate one's and fix.
-  test.skip('Due date filter', async ({ page }) => {
+  test.skip('Due date filter', async () => {
     const plusSevenDate = new Date()
     const currentMonth = plusSevenDate.getMonth()
     plusSevenDate.setDate(plusSevenDate.getDate() + 7)
@@ -459,11 +440,8 @@ test.describe('Tracker filters tests', () => {
       duedate: 'nextMonth'
     }
 
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
-
-    const issuesPage = new IssuesPage(page)
-    await issuesPage.modelSelectorAll.click()
+    await leftSideMenuPage.clickTracker()
+    await issuesPage.clickModelSelectorAll()
     await issuesPage.createNewIssue(dueDateOverdueIssue)
     await issuesPage.createNewIssue(dueDateTodayIssue)
     await issuesPage.createNewIssue(dueDateNextWeekIssue)
@@ -613,7 +591,6 @@ test.describe('Tracker filters tests', () => {
     await test.step('Check Filter Not specified', async () => {
       await issuesPage.updateFilterDimension('Not specified')
       await issuesPage.checkFilter('Due date', 'Not specified')
-
       await issuesPage.checkFilteredIssueNotExist(dueDateOverdueIssue.title)
       await issuesPage.checkFilteredIssueNotExist(dueDateTodayIssue.title)
       await issuesPage.checkFilteredIssueNotExist(dueDateNextWeekIssue.title)

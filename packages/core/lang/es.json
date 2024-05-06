@@ -2,6 +2,8 @@
   "string": {
     "Id": "Id.",
     "Space": "Espacio",
+    "Spaces": "Espacios",
+    "SpacesDescription": "Gestionar el tipo de espacio de todos los espacios",
     "Modified": "Modificado",
     "ModifiedDate": "Fecha de modificación",
     "ModifiedBy": "Modificado por",
@@ -35,6 +37,7 @@
     "Status": "Estado",
     "StatusCategory": "Categoría de estado",
     "Account": "Cuenta",
-    "Rank": "Rango"
+    "Rank": "Rango",
+    "Owners": "Propietarios"
   }
 }

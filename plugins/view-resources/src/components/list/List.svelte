@@ -18,13 +18,13 @@
     Doc,
     DocumentQuery,
     FindOptions,
+    RateLimiter,
     Ref,
     Space,
-    RateLimiter,
     mergeQueries
   } from '@hcengineering/core'
   import { IntlString, getResource } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient, reduceCalls } from '@hcengineering/presentation'
   import { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
   import { BuildModelKey, ViewOptionModel, ViewOptions, ViewQueryOption, Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
@@ -70,9 +70,12 @@
   $: resultOptions = { ...options, lookup, ...(orderBy !== undefined ? { sort: { [orderBy[0]]: orderBy[1] } } : {}) }
 
   let resultQuery: DocumentQuery<Doc> = query
-  $: void getResultQuery(query, viewOptionsConfig, viewOptions).then((p) => {
+
+  const update = reduceCalls(async function (query: DocumentQuery<Doc>, viewOptions: ViewOptions) {
+    const p = await getResultQuery(query, viewOptionsConfig, viewOptions)
     resultQuery = mergeQueries(p, query)
   })
+  $: void update(query, viewOptions)
 
   $: queryNoLookup = noLookup(resultQuery)
 
@@ -98,14 +101,17 @@
     },
     { ...categoryQueryOptions, limit: 1000 }
   )
-  $: docsQuerySlow.query(
-    _class,
-    queryNoLookup,
-    (res) => {
-      slowDocs = res
-    },
-    categoryQueryOptions
-  )
+
+  $: if (fastDocs.length === 1000) {
+    docsQuerySlow.query(
+      _class,
+      queryNoLookup,
+      (res) => {
+        slowDocs = res
+      },
+      categoryQueryOptions
+    )
+  }
 
   $: docs = [...fastDocs, ...slowDocs.filter((it) => !fastQueryIds.has(it._id))]
 

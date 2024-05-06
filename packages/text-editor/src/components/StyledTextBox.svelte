@@ -1,7 +1,8 @@
 <script lang="ts">
   import { Markup } from '@hcengineering/core'
   import { IntlString, getMetadata } from '@hcengineering/platform'
-  import presentation, { MessageViewer } from '@hcengineering/presentation'
+  import presentation, { MessageViewer, getFileUrl, getImageSize } from '@hcengineering/presentation'
+  import { EmptyMarkup } from '@hcengineering/text'
   import {
     ActionIcon,
     ButtonSize,
@@ -9,7 +10,10 @@
     IconClose,
     IconEdit,
     Label,
+    PopupAlignment,
     ShowMore,
+    getEventPositionElement,
+    getPopupPositionElement,
     registerFocus,
     resizeObserver
   } from '@hcengineering/ui'
@@ -20,12 +24,14 @@
   import textEditorPlugin from '../plugin'
   import StyledTextEditor from './StyledTextEditor.svelte'
 
-  import { completionConfig } from './extensions'
+  import { completionConfig, inlineCommandsConfig } from './extensions'
   import { EmojiExtension } from './extension/emoji'
   import { FocusExtension } from './extension/focus'
   import { ImageExtension } from './extension/imageExt'
+  import { InlineCommandsExtension } from './extension/inlineCommands'
   import { type FileAttachFunction } from './extension/types'
   import { RefAction } from '../types'
+  import { addTableHandler } from '../utils'
 
   export let label: IntlString | undefined = undefined
   export let content: Markup
@@ -44,8 +50,10 @@
   export let autofocus = false
   export let enableBackReferences: boolean = false
   export let enableEmojiReplace: boolean = true
+  export let enableInlineCommands: boolean = true
   export let isScrollable: boolean = true
   export let boundary: HTMLElement | undefined = undefined
+  export let readonly: boolean = false
 
   export let attachFile: FileAttachFunction | undefined = undefined
 
@@ -57,7 +65,7 @@
   export let mode = Mode.View
 
   export function startEdit (): void {
-    rawValue = content ?? ''
+    rawValue = content ?? EmptyMarkup
     needFocus = true
     mode = Mode.Edit
   }
@@ -76,7 +84,7 @@
   let canBlur = true
   let focused = false
   let rawValue: Markup
-  let oldContent: Markup = ''
+  let oldContent: Markup = EmptyMarkup
   let modified: boolean = false
 
   let textEditor: StyledTextEditor
@@ -91,6 +99,8 @@
   }
   $: if (!modified && rawValue !== content) modified = true
   $: dispatch('change', modified)
+
+  $: textEditor?.setEditable(!readonly)
 
   export function submit (): void {
     textEditor.submit()
@@ -191,12 +201,103 @@
       extensions.push(EmojiExtension.configure())
     }
 
+    if (enableInlineCommands) {
+      extensions.push(
+        InlineCommandsExtension.configure(
+          inlineCommandsConfig(handleCommandSelected, attachFile === undefined ? ['image'] : [])
+        )
+      )
+    }
+
     return extensions
+  }
+
+  async function handleCommandSelected (id: string, pos: number, targetItem?: MouseEvent | HTMLElement): Promise<void> {
+    switch (id) {
+      case 'image':
+        handleAttachImage()
+        break
+      case 'table': {
+        let position: PopupAlignment | undefined = undefined
+        if (targetItem !== undefined) {
+          position =
+            targetItem instanceof MouseEvent ? getEventPositionElement(targetItem) : getPopupPositionElement(targetItem)
+        }
+
+        addTableHandler(textEditor.editorHandler.insertTable, position)
+        break
+      }
+      case 'code-block':
+        textEditor.editorHandler.insertCodeBlock(pos)
+
+        break
+      case 'separator-line':
+        textEditor.editorHandler.insertSeparatorLine()
+        break
+    }
+  }
+
+  let inputImage: HTMLInputElement
+
+  export function handleAttachImage (): void {
+    inputImage.click()
+  }
+
+  async function createInlineImage (file: File): Promise<void> {
+    if (!file.type.startsWith('image/') || attachFile === undefined) {
+      return
+    }
+
+    const attached = await attachFile(file)
+    if (attached === undefined) {
+      return
+    }
+
+    const size = await getImageSize(
+      file,
+      getFileUrl(attached.file, 'full', getMetadata(presentation.metadata.UploadURL))
+    )
+
+    textEditor.editorHandler.insertContent(
+      {
+        type: 'image',
+        attrs: {
+          'file-id': attached.file,
+          width: Math.round(size.width / size.pixelRatio)
+        }
+      },
+      {
+        updateSelection: false
+      }
+    )
+  }
+
+  async function fileSelected (): Promise<void> {
+    const list = inputImage.files
+    if (list === null || list.length === 0) return
+    for (let index = 0; index < list.length; index++) {
+      const file = list.item(index)
+      if (file !== null) {
+        await createInlineImage(file)
+      }
+    }
+    inputImage.value = ''
   }
 
   const extensions = configureExtensions()
 </script>
 
+<input
+  bind:this={inputImage}
+  multiple
+  type="file"
+  name="file"
+  id="imageInput"
+  accept="image/*"
+  style="display: none"
+  disabled={readonly}
+  on:change={fileSelected}
+/>
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
@@ -205,7 +306,7 @@
   class:antiIndented={kind === 'indented'}
   class:focusable={(mode === Mode.Edit || alwaysEdit) && focused}
   on:click={() => {
-    if (alwaysEdit && focused) {
+    if (alwaysEdit && focused && !readonly) {
       textEditor?.focus()
     }
   }}
@@ -216,7 +317,7 @@
   {#if label}
     <div class="label"><Label {label} /></div>
   {/if}
-  {#if mode !== Mode.View || alwaysEdit}
+  {#if (mode !== Mode.View || alwaysEdit) && !readonly}
     <StyledTextEditor
       {placeholder}
       {showButtons}
@@ -265,7 +366,7 @@
         </ShowMore>
       {/if}
     </div>
-    {#if !alwaysEdit && !hideExtraButtons}
+    {#if !alwaysEdit && !hideExtraButtons && !readonly}
       <div class="flex flex-reverse">
         <ActionIcon
           size={'medium'}

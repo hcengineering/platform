@@ -14,18 +14,24 @@
 //
 
 import { type DecorationAttrs } from '@tiptap/pm/view'
-import { showTooltip } from '@hcengineering/ui'
+import { getPlatformColor, showTooltip } from '@hcengineering/ui'
 import { type CollaborationUser } from '../../types'
 import CollaborationUserPopup from '../CollaborationUserPopup.svelte'
 
 export const renderCursor = (user: CollaborationUser): HTMLElement => {
+  const color = getPlatformColor(user.color, false)
+
   const cursor = document.createElement('span')
+  cursor.classList.add('collaboration-cursor')
+  cursor.setAttribute('style', `border-color: ${color}`)
 
-  cursor.classList.add('collaboration-cursor__caret')
-  cursor.setAttribute('style', `border-color: ${user.color}`)
+  const caret = document.createElement('div')
+  caret.classList.add('collaboration-cursor__caret')
+  caret.setAttribute('style', `border-color: ${color}`)
+  cursor.appendChild(caret)
 
-  cursor.addEventListener('mousemove', () => {
-    showTooltip(undefined, cursor, 'top', CollaborationUserPopup, { user })
+  caret.addEventListener('mousemove', () => {
+    showTooltip(undefined, caret, 'top', CollaborationUserPopup, { user })
   })
 
   return cursor

@@ -179,7 +179,7 @@ export async function createWorkspace (
     const result = await response.json()
     if (result.error == null) {
       Analytics.handleEvent('create workspace')
-      Analytics.setTag('workspace', workspaceName)
+      Analytics.setWorkspace(workspaceName)
     } else {
       await handleStatusError('Create workspace error', result.error)
     }
@@ -337,7 +337,7 @@ export async function selectWorkspace (workspace: string): Promise<[Status, Work
     const result = await response.json()
     if (result.error == null) {
       Analytics.handleEvent('Select workspace')
-      Analytics.setTag('workspace', workspace)
+      Analytics.setWorkspace(workspace)
     } else {
       await handleStatusError('Select workspace error', result.error)
     }
@@ -386,7 +386,7 @@ export async function fetchWorkspace (workspace: string): Promise<[Status, Works
     const result = await response.json()
     if (result.error == null) {
       Analytics.handleEvent('Fetch workspace')
-      Analytics.setTag('workspace', workspace)
+      Analytics.setWorkspace(workspace)
     } else {
       await handleStatusError('Fetch workspace error', result.error)
     }
@@ -394,6 +394,53 @@ export async function fetchWorkspace (workspace: string): Promise<[Status, Works
   } catch (err: any) {
     Analytics.handleError(err)
     return [unknownError(err), undefined]
+  }
+}
+export async function createMissingEmployee (workspace: string): Promise<[Status]> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+
+  if (accountsUrl === undefined) {
+    throw new Error('accounts url not specified')
+  }
+
+  const overrideToken = getMetadata(login.metadata.OverrideLoginToken)
+  if (overrideToken !== undefined) {
+    const endpoint = getMetadata(login.metadata.OverrideEndpoint)
+    if (endpoint !== undefined) {
+      return [OK]
+    }
+  }
+
+  const token = getMetadata(presentation.metadata.Token)
+  if (token === undefined) {
+    return [unknownStatus('Please login')]
+  }
+
+  const request = {
+    method: 'createMissingEmployee',
+    params: [token]
+  }
+
+  try {
+    const response = await fetch(accountsUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request)
+    })
+    const result = await response.json()
+    if (result.error == null) {
+      Analytics.handleEvent('Create missing employee')
+      Analytics.setWorkspace(workspace)
+    } else {
+      await handleStatusError('Fetch workspace error', result.error)
+    }
+    return [result.error ?? OK]
+  } catch (err: any) {
+    Analytics.handleError(err)
+    return [unknownError(err)]
   }
 }
 

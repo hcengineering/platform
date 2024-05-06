@@ -14,9 +14,11 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import core, {
   TxOperations,
   getCurrentAccount,
+  reduceCalls,
   type AnyAttribute,
   type ArrOf,
   type AttachedDoc,
@@ -51,7 +53,7 @@ import { onDestroy } from 'svelte'
 import { type KeyedAttribute } from '..'
 import { OptimizeQueryMiddleware, PresentationPipelineImpl, type PresentationPipeline } from './pipeline'
 import plugin from './plugin'
-import { Analytics } from '@hcengineering/analytics'
+export { reduceCalls } from '@hcengineering/core'
 
 let liveQuery: LQ
 let client: TxOperations & MeasureClient
@@ -248,9 +250,21 @@ export class LiveQuery {
     // We need to prevent callback with old values to be happening
     // One time refresh in case of client recreation
     this.clientRecreated = false
-    this.doQuery<T>(++this.reqId, _class, query, callback, options)
+    void this.reducedDoQuery(++this.reqId, _class, query, callback as any, options)
     return true
   }
+
+  reducedDoQuery = reduceCalls(
+    async (
+      id: number,
+      _class: Ref<Class<Doc>>,
+      query: DocumentQuery<Doc>,
+      callback: (result: FindResult<Doc>) => void | Promise<void>,
+      options: FindOptions<Doc> | undefined
+    ) => {
+      this.doQuery(id, _class, query, callback, options)
+    }
+  )
 
   private doQuery<T extends Doc>(
     id: number,

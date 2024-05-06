@@ -55,6 +55,7 @@ import { Person, PersonAccount } from '@hcengineering/contact'
 import activity, { ActivityMessage, ActivityReference } from '@hcengineering/activity'
 
 import { IsChannelMessage, IsDirectMessage, IsThreadMessage } from './utils'
+import { NOTIFICATION_BODY_SIZE } from '@hcengineering/server-notification'
 
 /**
  * @public
@@ -144,18 +145,16 @@ async function OnThreadMessageCreated (tx: Tx, control: TriggerControl): Promise
 
 async function OnChatMessageCreated (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
   const hierarchy = control.hierarchy
-  const actualTx = TxProcessor.extractTx(tx)
+  const actualTx = TxProcessor.extractTx(tx) as TxCreateDoc<ChatMessage>
 
-  if (actualTx._class !== core.class.TxCreateDoc) {
+  if (
+    actualTx._class !== core.class.TxCreateDoc ||
+    !hierarchy.isDerived(actualTx.objectClass, chunter.class.ChatMessage)
+  ) {
     return []
   }
 
-  const chatMessage = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<ChatMessage>)
-
-  if (!hierarchy.isDerived(chatMessage._class, chunter.class.ChatMessage)) {
-    return []
-  }
-
+  const chatMessage = TxProcessor.createDoc2Doc(actualTx)
   const mixin = hierarchy.classHierarchyMixin(chatMessage.attachedToClass, notification.mixin.ClassCollaborators)
 
   if (mixin === undefined) {
@@ -345,22 +344,26 @@ export async function OnDirectMessageSent (originTx: Tx, control: TriggerControl
   return res
 }
 
-const NOTIFICATION_BODY_SIZE = 50
-
 /**
  * @public
  */
-export async function getChunterNotificationContent (_: Doc, tx: TxCUD<Doc>): Promise<NotificationContent> {
-  const title: IntlString = chunter.string.DirectNotificationTitle
+export async function getChunterNotificationContent (
+  _: Doc,
+  tx: TxCUD<Doc>,
+  target: Ref<Account>,
+  control: TriggerControl
+): Promise<NotificationContent> {
+  let title: IntlString = notification.string.CommonNotificationTitle
   let body: IntlString = chunter.string.Message
   const intlParams: Record<string, string | number> = {}
+  let intlParamsNotLocalized: Record<string, IntlString> | undefined
 
   let message: string | undefined
 
   if (tx._class === core.class.TxCollectionCUD) {
     const ptx = tx as TxCollectionCUD<Doc, AttachedDoc>
     if (ptx.tx._class === core.class.TxCreateDoc) {
-      if (ptx.tx.objectClass === chunter.class.ChatMessage) {
+      if (control.hierarchy.isDerived(ptx.tx.objectClass, chunter.class.ChatMessage)) {
         const createTx = ptx.tx as TxCreateDoc<ChatMessage>
         message = createTx.attributes.message
       } else if (ptx.tx.objectClass === activity.class.ActivityReference) {
@@ -372,13 +375,26 @@ export async function getChunterNotificationContent (_: Doc, tx: TxCUD<Doc>): Pr
 
   if (message !== undefined) {
     intlParams.message = stripTags(message, NOTIFICATION_BODY_SIZE)
-    body = chunter.string.DirectNotificationBody
+
+    body = chunter.string.MessageNotificationBody
+
+    if (control.hierarchy.isDerived(tx.objectClass, chunter.class.DirectMessage)) {
+      body = chunter.string.DirectNotificationBody
+      title = chunter.string.DirectNotificationTitle
+    }
+  }
+
+  if (control.hierarchy.isDerived(tx.objectClass, chunter.class.ChatMessage)) {
+    intlParamsNotLocalized = {
+      title: chunter.string.ThreadMessage
+    }
   }
 
   return {
     title,
     body,
-    intlParams
+    intlParams,
+    intlParamsNotLocalized
   }
 }
 
@@ -432,41 +448,43 @@ async function OnChannelMembersChanged (tx: TxUpdateDoc<Channel>, control: Trigg
     )
   }
 
+  if (added.length > 0) {
+    res.push(
+      control.txFactory.createTxMixin(tx.objectId, tx.objectClass, tx.objectSpace, notification.mixin.Collaborators, {
+        $push: {
+          collaborators: { $each: added, $position: 0 }
+        }
+      })
+    )
+  }
+
   for (const addedMember of added) {
     const context = allContexts.find(({ user }) => user === addedMember)
 
     if (context === undefined) {
-      res.push(
-        control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, tx.objectSpace, {
-          attachedTo: tx.objectId,
-          attachedToClass: tx.objectClass,
-          user: addedMember,
-          hidden: false,
-          lastViewedTimestamp: tx.modifiedOn
-        })
-      )
+      const createTx = control.txFactory.createTxCreateDoc(notification.class.DocNotifyContext, tx.objectSpace, {
+        attachedTo: tx.objectId,
+        attachedToClass: tx.objectClass,
+        user: addedMember,
+        hidden: false,
+        lastViewedTimestamp: tx.modifiedOn
+      })
+
+      await control.apply([createTx], true)
     } else {
-      res.push(
-        control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, {
-          hidden: false,
-          lastViewedTimestamp: tx.modifiedOn
-        })
-      )
+      const updateTx = control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, {
+        hidden: false,
+        lastViewedTimestamp: tx.modifiedOn
+      })
+
+      await control.apply([updateTx], true)
     }
   }
 
   const contextsToRemove = allContexts.filter(({ user }) => removed.includes(user))
 
-  if (contextsToRemove.length === 0) {
-    return res
-  }
-
-  const channel = (await control.findAll(chunter.class.Channel, { _id: tx.objectId }))[0]
-
-  if (channel !== undefined) {
-    for (const context of contextsToRemove) {
-      res.push(control.txFactory.createTxRemoveDoc(context._class, context.space, context._id))
-    }
+  for (const context of contextsToRemove) {
+    res.push(control.txFactory.createTxRemoveDoc(context._class, context.space, context._id))
   }
 
   return res

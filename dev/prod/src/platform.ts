@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Plugin, addLocation, addStringsLoader, platformId } from '@hcengineering/platform'
+import platform, { Plugin, addLocation, addStringsLoader, platformId } from '@hcengineering/platform'
 
 import { activityId } from '@hcengineering/activity'
 import { attachmentId } from '@hcengineering/attachment'
@@ -30,7 +30,7 @@ import { imageCropperId } from '@hcengineering/image-cropper'
 import { inventoryId } from '@hcengineering/inventory'
 import { leadId } from '@hcengineering/lead'
 import login, { loginId } from '@hcengineering/login'
-import { notificationId } from '@hcengineering/notification'
+import notification, { notificationId } from '@hcengineering/notification'
 import { recruitId } from '@hcengineering/recruit'
 import rekoni from '@hcengineering/rekoni'
 import { requestId } from '@hcengineering/request'
@@ -86,6 +86,8 @@ import { preferenceId } from '@hcengineering/preference'
 import { setDefaultLanguage } from '@hcengineering/theme'
 import { uiId } from '@hcengineering/ui/src/plugin'
 
+import { Analytics } from '@hcengineering/analytics'
+
 interface Config {
   ACCOUNTS_URL: string
   UPLOAD_URL: string
@@ -96,6 +98,7 @@ interface Config {
   CALENDAR_URL: string
   COLLABORATOR_URL: string
   COLLABORATOR_API_URL: string
+  PUSH_PUBLIC_KEY: string
   TITLE?: string
   LANGUAGES?: string
   DEFAULT_LANGUAGE?: string
@@ -142,6 +145,19 @@ function configureI18n(): void {
 }
 
 export async function configurePlatform() {
+  setMetadata(platform.metadata.LoadHelper, async (loader) => {
+    for (let i = 0; i < 3; i++) {
+      try {
+        return loader()
+      } catch (err: any) {
+        if (err.message.includes('Loading chunk') && i != 2) {
+          continue
+        }
+        Analytics.handleError(err)
+      }
+    }
+  })
+
   configureI18n()
 
   const config: Config = await (await fetch(devConfig? '/config-dev.json' : '/config.json')).json()
@@ -158,6 +174,7 @@ export async function configurePlatform() {
   setMetadata(telegram.metadata.TelegramURL, config.TELEGRAM_URL ?? 'http://localhost:8086')
   setMetadata(gmail.metadata.GmailURL, config.GMAIL_URL ?? 'http://localhost:8087')
   setMetadata(calendar.metadata.CalendarServiceURL, config.CALENDAR_URL ?? 'http://localhost:8095')
+  setMetadata(notification.metadata.PushPublicKey, config.PUSH_PUBLIC_KEY)
 
   setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT)
 

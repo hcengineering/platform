@@ -37,7 +37,8 @@
     "@hcengineering/core": "^0.6.28",
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/server-core": "^0.6.1",
-    "@elastic/elasticsearch": "^7.14.0"
+    "@elastic/elasticsearch": "^7.14.0",
+    "@hcengineering/analytics": "^0.6.0"
   },
   "repository": "https://github.com/hcengineering/anticrm",
   "publishConfig": {

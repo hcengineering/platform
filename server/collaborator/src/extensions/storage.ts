@@ -49,33 +49,29 @@ export class StorageExtension implements Extension {
   }
 
   async onLoadDocument ({ context, documentName }: withContext<onLoadDocumentPayload>): Promise<any> {
-    await this.configuration.ctx.info('load document', { documentName })
-    return await this.configuration.ctx.with('load-document', {}, async () => {
-      return await this.loadDocument(documentName as DocumentId, context)
-    })
+    this.configuration.ctx.info('load document', { documentName })
+    return await this.loadDocument(documentName as DocumentId, context)
   }
 
   async onStoreDocument ({ context, documentName, document }: withContext<onStoreDocumentPayload>): Promise<void> {
     const { ctx } = this.configuration
 
-    await ctx.info('store document', { documentName })
+    ctx.info('store document', { documentName })
 
     const collaborators = this.collaborators.get(documentName)
     if (collaborators === undefined || collaborators.size === 0) {
-      await ctx.info('no changes for document', { documentName })
+      ctx.info('no changes for document', { documentName })
       return
     }
 
     this.collaborators.delete(documentName)
-    await ctx.with('store-document', {}, async () => {
-      await this.storeDocument(documentName as DocumentId, document, context)
-    })
+    await this.storeDocument(documentName as DocumentId, document, context)
   }
 
   async onConnect ({ context, documentName, instance }: withContext<onConnectPayload>): Promise<any> {
     const connections = instance.documents.get(documentName)?.getConnectionsCount() ?? 0
     const params = { documentName, connectionId: context.connectionId, connections }
-    await this.configuration.ctx.info('connect to document', params)
+    this.configuration.ctx.info('connect to document', params)
   }
 
   async onDisconnect ({ context, documentName, document }: withContext<onDisconnectPayload>): Promise<any> {
@@ -83,22 +79,20 @@ export class StorageExtension implements Extension {
     const { connectionId } = context
 
     const params = { documentName, connectionId, connections: document.getConnectionsCount() }
-    await ctx.info('disconnect from document', params)
+    ctx.info('disconnect from document', params)
 
     const collaborators = this.collaborators.get(documentName)
     if (collaborators === undefined || !collaborators.has(connectionId)) {
-      await ctx.info('no changes for document', { documentName })
+      ctx.info('no changes for document', { documentName })
       return
     }
 
     this.collaborators.delete(documentName)
-    await ctx.with('store-document', {}, async () => {
-      await this.storeDocument(documentName as DocumentId, document, context)
-    })
+    await this.storeDocument(documentName as DocumentId, document, context)
   }
 
   async afterUnloadDocument ({ documentName }: afterUnloadDocumentPayload): Promise<any> {
-    await this.configuration.ctx.info('unload document', { documentName })
+    this.configuration.ctx.info('unload document', { documentName })
     this.collaborators.delete(documentName)
   }
 
@@ -110,7 +104,7 @@ export class StorageExtension implements Extension {
         return await adapter.loadDocument(ctx, documentId, context)
       })
     } catch (err) {
-      await ctx.error('failed to load document content', { documentId, error: err })
+      ctx.error('failed to load document content', { documentId, error: err })
       return undefined
     }
   }
@@ -123,7 +117,7 @@ export class StorageExtension implements Extension {
         await adapter.saveDocument(ctx, documentId, document, context)
       })
     } catch (err) {
-      await ctx.error('failed to save document content', { documentId, error: err })
+      ctx.error('failed to save document content', { documentId, error: err })
       return undefined
     }
   }

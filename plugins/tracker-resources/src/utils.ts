@@ -352,7 +352,7 @@ export async function issueStatusSort (
           const aIndex = getStatusIndex(type, taskTypes, a)
           const bIndex = getStatusIndex(type, taskTypes, b)
           return aIndex - bIndex
-        } else {
+        } else if (aVal != null && bVal != null) {
           return aVal.name.localeCompare(bVal.name)
         }
       }

@@ -17,7 +17,7 @@
   import { Person, PersonAccount } from '@hcengineering/contact'
   import { Class, Doc, Markup, Ref, getCurrentAccount } from '@hcengineering/core'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
-  import { StyledTextBox } from '@hcengineering/text-editor'
+  import { EmptyMarkup, StyledTextBox } from '@hcengineering/text-editor'
   import {
     Button,
     EditBox,
@@ -62,7 +62,7 @@
 
   let reminders = [30 * 60 * 1000]
 
-  let description: Markup = ''
+  let description: Markup = EmptyMarkup
   let visibility: Visibility = 'private'
   const me = getCurrentAccount()
   let space: Ref<Calendar> = `${me._id}_calendar` as Ref<Calendar>

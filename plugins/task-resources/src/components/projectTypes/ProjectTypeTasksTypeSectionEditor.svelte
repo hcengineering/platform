@@ -27,6 +27,7 @@
 
   export let type: ProjectType | undefined
   export let descriptor: ProjectTypeDescriptor | undefined
+  export let disabled: boolean = true
 
   let taskTypes: TaskType[] = []
   const taskTypesQuery = createQuery()
@@ -62,7 +63,11 @@
       kind="primary"
       icon={IconAdd}
       size="small"
+      {disabled}
       on:click={(ev) => {
+        if (disabled) {
+          return
+        }
         $settingsStore = { id: 'createTaskType', component: CreateTaskType, props: { type, descriptor } }
       }}
     />

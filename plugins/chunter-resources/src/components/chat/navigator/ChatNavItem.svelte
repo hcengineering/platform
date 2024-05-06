@@ -25,15 +25,20 @@
     isMentionNotification
   } from '@hcengineering/notification-resources'
   import { createEventDispatcher } from 'svelte'
+  import view from '@hcengineering/view'
+  import { Doc } from '@hcengineering/core'
 
   import NavItem from './NavItem.svelte'
   import { ChatNavItemModel } from '../types'
+  import { openChannel } from '../../../navigation'
+  import chunter from '../../../plugin'
 
-  export let context: DocNotifyContext
+  export let context: DocNotifyContext | undefined
   export let item: ChatNavItemModel
   export let isSelected = false
 
   const client = getClient()
+  const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
   const notificationClient = InboxNotificationsClientImpl.getClient()
 
@@ -43,21 +48,42 @@
   let actions: Action[] = []
 
   notificationClient.inboxNotificationsByContext.subscribe((res) => {
-    notifications = (res.get(context._id) ?? []).filter((n) => isMentionNotification(n) || isActivityNotification(n))
+    if (context === undefined) {
+      return
+    }
+
+    notifications = (res.get(context._id) ?? []).filter((n) => {
+      if (isActivityNotification(n)) return true
+
+      return isMentionNotification(n) && hierarchy.isDerived(n.mentionedInClass, chunter.class.ChatMessage)
+    })
   })
 
   $: void getNotificationsCount(context, notifications).then((res) => {
     notificationsCount = res
   })
 
-  $: void getChannelActions(context).then((res) => {
+  $: void getChannelActions(context, item.object).then((res) => {
     actions = res
   })
 
-  async function getChannelActions (context: DocNotifyContext): Promise<Action[]> {
-    const result = []
+  async function getChannelActions (context: DocNotifyContext | undefined, object: Doc): Promise<Action[]> {
+    const result: Action[] = []
+
+    if (context === undefined) {
+      return []
+    }
+
+    result.push({
+      icon: view.icon.Open,
+      label: view.string.Open,
+      action: async () => {
+        openChannel(object._id, object._class)
+      }
+    })
+
     const excludedActions = [
-      notification.action.DeleteContextNotifications,
+      notification.action.ArchiveContextNotifications,
       notification.action.UnReadNotifyContext,
       notification.action.ReadNotifyContext
     ]
@@ -94,12 +120,12 @@
   isSecondary={item.isSecondary}
   iconSize={item.iconSize}
   {isSelected}
-  iconProps={{ value: item.object }}
+  iconProps={{ ...item.iconProps, value: item.object }}
   {notificationsCount}
   title={item.title}
   description={item.description}
   {actions}
   on:click={() => {
-    dispatch('select', { doc: item.object, context })
+    dispatch('select', { object: item.object })
   }}
 />

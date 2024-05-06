@@ -642,6 +642,7 @@ export function createModel (builder: Builder): void {
         archived: false
       },
       target: core.class.Space,
+      visibilityTester: view.function.CanArchiveSpace,
       context: { mode: ['context', 'browser'], group: 'tools' },
       override: [view.action.Delete]
     },

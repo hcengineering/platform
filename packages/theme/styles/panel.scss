@@ -38,17 +38,20 @@
   margin-top: 0.75rem;
 }
 .hulyNavPanel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   flex-shrink: 0;
+  padding: var(--spacing-1_5) var(--spacing-1_5) var(--spacing-3) var(--spacing-2_5);
   font-weight: 700;
   font-size: 1.25rem;
   line-height: 1.5rem;
   color: var(--global-primary-TextColor);
 
-  &:not(.withButton) { padding: 1rem 1.25rem 1.5rem; }
+  &:not(.withButton) {
+    min-height: 4.25rem;
+  }
   &.withButton {
-    display: flex;
-    justify-content: space-between;
-    padding: .75rem .75rem 1.5rem 1.25rem;
     min-width: 0;
     min-height: 0;
   }
@@ -369,10 +372,30 @@
       }
     }
 
+    @media print {
+      border: none;
+    }
+
     // &.asideShown .popupPanel-body__main {
     //   border: 1px solid var(--divider-color);
     //   border-radius: 0 0 .5rem .5rem;
     // }
+  }
+
+  .popupPanel-pageHeader {
+    @include watermark;
+
+    top: 0;
+    width: 100%;
+    visibility: hidden;
+  }
+  
+  .popupPanel-pageFooter {
+    @include watermark;
+
+    bottom: 0;
+    width: 100%;
+    visibility: hidden;
   }
 
   &.modern {
@@ -382,6 +405,10 @@
     .popupPanel-title {
       min-height: 3.5rem;
     }
+  }
+
+  @media print {
+    overflow: visible;
   }
 }
 

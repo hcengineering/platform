@@ -29,8 +29,9 @@
 .heading-bold-20 {
   font-family: var(--font-family);
   font-style: normal;
-  line-height: 1rem;
   color: var(--global-primary-TextColor);
+
+  &:not(.line-height-auto) { line-height: 1rem; }
 }
 .font-regular-11,
 .font-medium-11 {
@@ -155,7 +156,6 @@
   flex-direction: column;
   flex-grow: 1;
 }
-.antiPanel-component:not(.aside) { background-color: var(--theme-bg-color); }
 .antiPanel-component.aside {
   min-width: 30rem;
   width: 30rem;

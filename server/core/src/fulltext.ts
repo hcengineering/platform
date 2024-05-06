@@ -37,10 +37,10 @@ import core, {
   type TxResult,
   type WorkspaceId,
   docKey,
+  isClassIndexable,
   isFullTextAttribute,
   isIndexedAttribute,
-  toFindResult,
-  isClassIndexable
+  toFindResult
 } from '@hcengineering/core'
 import { type FullTextIndexPipeline } from './indexer'
 import { createStateDoc } from './indexer/utils'
@@ -53,7 +53,6 @@ import type { FullTextAdapter, IndexedDoc, WithFind } from './types'
  */
 export class FullTextIndex implements WithFind {
   txFactory = new TxFactory(core.account.System, true)
-  consistency: Promise<void> | undefined
 
   constructor (
     private readonly hierarchy: Hierarchy,
@@ -72,7 +71,6 @@ export class FullTextIndex implements WithFind {
 
   async close (): Promise<void> {
     await this.indexer.cancel()
-    await this.consistency
   }
 
   async tx (ctx: MeasureContext, txes: Tx[]): Promise<TxResult> {
@@ -207,10 +205,19 @@ export class FullTextIndex implements WithFind {
     const indexedDocMap = new Map<Ref<Doc>, IndexedDoc>()
 
     for (const doc of docs) {
-      if (doc._class.some((cl) => this.hierarchy.isDerived(cl, baseClass))) {
+      if (
+        doc._class != null &&
+        Array.isArray(doc._class) &&
+        doc._class.some((cl) => this.hierarchy.isDerived(cl, baseClass))
+      ) {
         ids.add(doc.id)
         indexedDocMap.set(doc.id, doc)
       }
+      if (doc._class !== null && !Array.isArray(doc._class) && this.hierarchy.isDerived(doc._class, baseClass)) {
+        ids.add(doc.id)
+        indexedDocMap.set(doc.id, doc)
+      }
+
       if (doc.attachedTo != null) {
         if (doc.attachedToClass != null && this.hierarchy.isDerived(doc.attachedToClass, baseClass)) {
           if (this.hierarchy.isDerived(doc.attachedToClass, baseClass)) {

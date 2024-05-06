@@ -26,6 +26,7 @@
     tooltip
   } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
+  import { ObjectPresenterType } from '@hcengineering/view'
   import Avatar from './Avatar.svelte'
   import PersonElement from './PersonElement.svelte'
 
@@ -47,6 +48,7 @@
   export let accent: boolean = false
   export let maxWidth = ''
   export let compact = false
+  export let type: ObjectPresenterType = 'link'
 
   const client = getClient()
 
@@ -87,6 +89,7 @@
         {enlargedText}
         {colorInherit}
         {accent}
+        {type}
         {maxWidth}
       />
       <span class="status">
@@ -108,6 +111,7 @@
       {enlargedText}
       {colorInherit}
       {accent}
+      {type}
       {maxWidth}
     />
   {/if}

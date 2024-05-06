@@ -39,12 +39,31 @@ import { getMetadata, PlatformError, unknownStatus } from '@hcengineering/platfo
 import serverCore, { DbAdapter, IndexedDoc } from '@hcengineering/server-core'
 import { createHash } from 'node:crypto'
 
-const indexName = getMetadata(serverCore.metadata.ElasticIndexName) ?? 'storage_index'
+function getIndexName (): string {
+  return getMetadata(serverCore.metadata.ElasticIndexName) ?? 'storage_index'
+}
+
+function getIndexVersion (): string {
+  return getMetadata(serverCore.metadata.ElasticIndexVersion) ?? 'v1'
+}
+
 class ElasticDataAdapter implements DbAdapter {
+  private readonly workspaceString: string
+  private readonly getFulltextDocId: (doc: Ref<Doc>) => Ref<FullTextData>
+  private readonly getDocId: (fulltext: Ref<FullTextData>) => Ref<Doc>
+  private readonly indexName: string
+
   constructor (
     readonly workspaceId: WorkspaceId,
-    readonly client: Client
-  ) {}
+    private readonly client: Client,
+    readonly indexBaseName: string,
+    readonly indexVersion: string
+  ) {
+    this.indexName = `${indexBaseName}_${indexVersion}`
+    this.workspaceString = toWorkspaceString(workspaceId)
+    this.getFulltextDocId = (doc) => `${doc}@${this.workspaceString}` as Ref<FullTextData>
+    this.getDocId = (fulltext) => fulltext.slice(0, -1 * (this.workspaceString.length + 1)) as Ref<Doc>
+  }
 
   async findAll<T extends Doc>(
     ctx: MeasureContext,
@@ -80,7 +99,7 @@ class ElasticDataAdapter implements DbAdapter {
         try {
           if (!listRecieved) {
             const q = {
-              index: indexName,
+              index: this.indexName,
               type: '_doc',
               scroll: '23h',
               // search_type: 'scan', //if I use search_type then it requires size otherwise it shows 0 result
@@ -90,7 +109,7 @@ class ElasticDataAdapter implements DbAdapter {
                   bool: {
                     must: {
                       match: {
-                        workspaceId: { query: toWorkspaceString(this.workspaceId), operator: 'and' }
+                        workspaceId: { query: this.workspaceString, operator: 'and' }
                       }
                     }
                   }
@@ -138,7 +157,7 @@ class ElasticDataAdapter implements DbAdapter {
             hash.update(json)
             const digest = hash.digest('base64')
             const result = {
-              id: item._id,
+              id: this.getDocId(item._id as Ref<FullTextData>),
               hash: digest,
               size: json.length
             }
@@ -171,7 +190,7 @@ class ElasticDataAdapter implements DbAdapter {
     while (toLoad.length > 0) {
       const part = toLoad.splice(0, 5000)
       const resp = await this.client.search({
-        index: indexName,
+        index: this.indexName,
         type: '_doc',
         body: {
           query: {
@@ -179,13 +198,13 @@ class ElasticDataAdapter implements DbAdapter {
               must: [
                 {
                   terms: {
-                    _id: part,
+                    _id: part.map(this.getFulltextDocId),
                     boost: 1.0
                   }
                 },
                 {
                   match: {
-                    workspaceId: { query: toWorkspaceString(this.workspaceId), operator: 'and' }
+                    workspaceId: { query: this.workspaceString, operator: 'and' }
                   }
                 }
               ]
@@ -198,7 +217,7 @@ class ElasticDataAdapter implements DbAdapter {
 
       for (const item of buffer) {
         const dta: FullTextData = {
-          _id: item._id as Ref<FullTextData>,
+          _id: this.getDocId(item._id) as Ref<FullTextData>, // Export without workspace portion of ID
           _class: core.class.FulltextData,
           space: 'fulltext-blob' as Ref<Space>,
           modifiedOn: item.data.modifiedOn,
@@ -218,20 +237,20 @@ class ElasticDataAdapter implements DbAdapter {
         await this.client.deleteByQuery(
           {
             type: '_doc',
-            index: indexName,
+            index: this.indexName,
             body: {
               query: {
                 bool: {
                   must: [
                     {
                       terms: {
-                        _id: Array.from(part.map((it) => it._id)),
+                        _id: part.map((it) => this.getFulltextDocId(it._id)),
                         boost: 1.0
                       }
                     },
                     {
                       match: {
-                        workspaceId: { query: toWorkspaceString(this.workspaceId), operator: 'and' }
+                        workspaceId: { query: this.workspaceString, operator: 'and' }
                       }
                     }
                   ]
@@ -247,10 +266,10 @@ class ElasticDataAdapter implements DbAdapter {
       }
 
       const operations = part.flatMap((doc) => [
-        { index: { _index: indexName, _id: doc._id } },
+        { index: { _index: this.indexName, _id: this.getFulltextDocId(doc._id) } },
         {
-          workspaceId: toWorkspaceString(this.workspaceId),
-          ...(doc as FullTextData).data
+          ...(doc as FullTextData).data,
+          workspaceId: this.workspaceString
         }
       ])
 
@@ -268,20 +287,20 @@ class ElasticDataAdapter implements DbAdapter {
       await this.client.deleteByQuery(
         {
           type: '_doc',
-          index: indexName,
+          index: this.indexName,
           body: {
             query: {
               bool: {
                 must: [
                   {
                     terms: {
-                      _id: part,
+                      _id: part.map(this.getFulltextDocId),
                       boost: 1.0
                     }
                   },
                   {
                     match: {
-                      workspaceId: { query: toWorkspaceString(this.workspaceId), operator: 'and' }
+                      workspaceId: { query: this.workspaceString, operator: 'and' }
                     }
                   }
                 ]
@@ -308,5 +327,7 @@ export async function createElasticBackupDataAdapter (
   const client = new Client({
     node: url
   })
-  return new ElasticDataAdapter(workspaceId, client)
+  const indexBaseName = getIndexName()
+  const indexVersion = getIndexVersion()
+  return new ElasticDataAdapter(workspaceId, client, indexBaseName, indexVersion)
 }

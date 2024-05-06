@@ -157,16 +157,6 @@ export interface ActivityInfoMessage extends ActivityMessage {
   links?: { _class: Ref<Class<Doc>>, _id: Ref<Doc> }[]
 }
 
-export type ActivityMessageExtensionKind = 'action' | 'footer'
-
-/**
- * @public
- */
-export interface ActivityMessageExtension extends Doc {
-  ofMessage: Ref<Class<ActivityMessage>>
-  components: { kind: ActivityMessageExtensionKind, component: AnyComponent }[]
-}
-
 /**
  * @public
  */
@@ -308,6 +298,15 @@ export interface SavedMessage extends Preference {
   attachedTo: Ref<ActivityMessage>
 }
 
+export interface ReplyProvider extends Doc {
+  function: Resource<(message: ActivityMessage) => Promise<void>>
+}
+
+export interface UserMentionInfo extends AttachedDoc {
+  user: Ref<Person>
+  content: string
+}
+
 /**
  * @public
  */
@@ -329,17 +328,19 @@ export default plugin(activityId, {
     ActivityInfoMessage: '' as Ref<Class<ActivityInfoMessage>>,
     ActivityMessageControl: '' as Ref<Class<ActivityMessageControl>>,
     DocUpdateMessageViewlet: '' as Ref<Class<DocUpdateMessageViewlet>>,
-    ActivityMessageExtension: '' as Ref<Class<ActivityMessageExtension>>,
     ActivityMessagesFilter: '' as Ref<Class<ActivityMessagesFilter>>,
     ActivityExtension: '' as Ref<Class<ActivityExtension>>,
     Reaction: '' as Ref<Class<Reaction>>,
     SavedMessage: '' as Ref<Class<SavedMessage>>,
-    ActivityReference: '' as Ref<Class<ActivityReference>>
+    ActivityReference: '' as Ref<Class<ActivityReference>>,
+    ReplyProvider: '' as Ref<Class<ReplyProvider>>,
+    UserMentionInfo: '' as Ref<Class<UserMentionInfo>>
   },
   icon: {
     Activity: '' as Asset,
     Emoji: '' as Asset,
-    Bookmark: '' as Asset
+    Bookmark: '' as Asset,
+    BookmarkFilled: '' as Asset
   },
   string: {
     Activity: '' as IntlString,

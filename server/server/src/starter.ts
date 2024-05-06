@@ -1,7 +1,6 @@
 import { MinioConfig, MinioService } from '@hcengineering/minio'
 import { createRawMongoDBAdapter } from '@hcengineering/mongo'
-import { buildStorage, StorageAdapter, StorageConfiguration } from '@hcengineering/server-core'
-import { serverFactories, ServerFactory } from '@hcengineering/server-ws'
+import { StorageAdapter, StorageConfiguration, buildStorage } from '@hcengineering/server-core'
 
 export function storageConfigFromEnv (): StorageConfiguration {
   const storageConfig: StorageConfiguration = JSON.parse(
@@ -50,21 +49,25 @@ export function storageConfigFromEnv (): StorageConfiguration {
   return storageConfig
 }
 
-export function serverConfigFromEnv (): {
+export interface ServerEnv {
   url: string
   elasticUrl: string
   serverSecret: string
   rekoniUrl: string
   frontUrl: string
+  uploadUrl: string
   sesUrl: string | undefined
   accountsUrl: string
   serverPort: number
-  serverFactory: ServerFactory
   enableCompression: boolean
   elasticIndexName: string
-} {
+  pushPublicKey: string | undefined
+  pushPrivateKey: string | undefined
+  pushSubject: string | undefined
+}
+
+export function serverConfigFromEnv (): ServerEnv {
   const serverPort = parseInt(process.env.SERVER_PORT ?? '3333')
-  const serverFactory = serverFactories[(process.env.SERVER_PROVIDER as string) ?? 'ws'] ?? serverFactories.ws
   const enableCompression = (process.env.ENABLE_COMPRESSION ?? 'true') === 'true'
 
   const url = process.env.MONGO_URL
@@ -102,6 +105,12 @@ export function serverConfigFromEnv (): {
     process.exit(1)
   }
 
+  const uploadUrl = process.env.UPLOAD_URL
+  if (uploadUrl === undefined) {
+    console.log('Please provide UPLOAD_URL url')
+    process.exit(1)
+  }
+
   const sesUrl = process.env.SES_URL
 
   const accountsUrl = process.env.ACCOUNTS_URL
@@ -109,6 +118,10 @@ export function serverConfigFromEnv (): {
     console.log('Please provide ACCOUNTS_URL url')
     process.exit(1)
   }
+
+  const pushPublicKey = process.env.PUSH_PUBLIC_KEY
+  const pushPrivateKey = process.env.PUSH_PRIVATE_KEY
+  const pushSubject = process.env.PUSH_SUBJECT
   return {
     url,
     elasticUrl,
@@ -116,11 +129,14 @@ export function serverConfigFromEnv (): {
     serverSecret,
     rekoniUrl,
     frontUrl,
+    uploadUrl,
     sesUrl,
     accountsUrl,
     serverPort,
-    serverFactory,
-    enableCompression
+    enableCompression,
+    pushPublicKey,
+    pushPrivateKey,
+    pushSubject
   }
 }
 

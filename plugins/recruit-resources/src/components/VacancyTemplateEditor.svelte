@@ -22,6 +22,7 @@
   import recruit from '../plugin'
 
   export let type: ProjectType
+  export let disabled: boolean = true
 
   const client = getClient()
 
@@ -29,6 +30,9 @@
   const customKeys = getFiltredKeys(hierarchy, type._class, []).filter((key) => key.attr.isCustom)
 
   async function onDescriptionChange (value: string) {
+    if (disabled) {
+      return
+    }
     await client.diffUpdate(type, { description: value })
   }
 </script>
@@ -45,6 +49,8 @@
         maxHeight={'card'}
         showButtons={false}
         content={type.description ?? ''}
+        focusable={!disabled}
+        readonly={disabled}
         on:value={(evt) => onDescriptionChange(evt.detail)}
       />
     {/key}
@@ -58,18 +64,21 @@
     <span class="antiSection-header__title">
       <Label label={tracker.string.RelatedIssues} />
     </span>
-    <div class="buttons-group small-gap">
-      <Button
-        id="add-sub-issue"
-        width="min-content"
-        icon={IconAdd}
-        label={undefined}
-        labelParams={{ subIssues: 0 }}
-        kind={'ghost'}
-        size={'small'}
-        on:click={() => showPopup(tracker.component.CreateIssueTemplate, { relatedTo: type })}
-      />
-    </div>
+    {#if !disabled}
+      <div class="buttons-group small-gap">
+        <Button
+          id="add-sub-issue"
+          width="min-content"
+          icon={IconAdd}
+          label={undefined}
+          labelParams={{ subIssues: 0 }}
+          {disabled}
+          kind={'ghost'}
+          size={'small'}
+          on:click={() => showPopup(tracker.component.CreateIssueTemplate, { relatedTo: type })}
+        />
+      </div>
+    {/if}
   </div>
   <div class="flex-row">
     <Component is={tracker.component.RelatedIssueTemplates} props={{ object: type }} />
@@ -77,6 +86,6 @@
 </div>
 {#if customKeys && customKeys.length > 0}
   <div class="antiSection mb-9">
-    <AttributesBar object={type} _class={type._class} keys={customKeys} />
+    <AttributesBar object={type} _class={type._class} keys={customKeys} readonly={disabled} />
   </div>
 {/if}

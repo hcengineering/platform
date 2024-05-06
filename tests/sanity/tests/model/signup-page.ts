@@ -4,40 +4,58 @@ import { CommonPage } from './common-page'
 
 export class SignUpPage extends CommonPage {
   readonly page: Page
-  readonly inputFirstName: Locator
-  readonly inputLastName: Locator
-  readonly inputEmail: Locator
-  readonly inputNewPassword: Locator
-  readonly inputRepeatPassword: Locator
-  readonly buttonSignUp: Locator
-  readonly buttonJoin: Locator
 
   constructor (page: Page) {
-    super()
+    super(page)
     this.page = page
-    this.inputFirstName = page.locator('input[name="given-name"]')
-    this.inputLastName = page.locator('input[name="family-name"]')
-    this.inputEmail = page.locator('input[name="email"]')
-    this.inputNewPassword = page.locator('//div[text()="Password"]/../input')
-    this.inputRepeatPassword = page.locator('//div[text()="Repeat password"]/../input')
-    this.buttonSignUp = page.locator('button', { hasText: 'Sign Up' })
-    this.buttonJoin = page.locator('button', { hasText: 'Join' })
+  }
+
+  inputFirstName = (): Locator => this.page.locator('input[name="given-name"]')
+  inputLastName = (): Locator => this.page.locator('input[name="family-name"]')
+  inputEmail = (): Locator => this.page.locator('input[name="email"]')
+  inputNewPassword = (): Locator => this.page.locator('//div[text()="Password"]/../input')
+  inputRepeatPassword = (): Locator => this.page.locator('//div[text()="Repeat password"]/../input')
+  buttonSignUp = (): Locator => this.page.locator('button', { hasText: 'Sign Up' })
+  buttonJoin = (): Locator => this.page.locator('button', { hasText: 'Join' })
+
+  async enterFirstName (firstName: string): Promise<void> {
+    await this.inputFirstName().fill(firstName)
+  }
+
+  async enterLastName (lastName: string): Promise<void> {
+    await this.inputLastName().fill(lastName)
+  }
+
+  async enterEmail (email: string): Promise<void> {
+    await this.inputEmail().fill(email)
+  }
+
+  async enterPassword (password: string): Promise<void> {
+    await this.inputNewPassword().fill(password)
+  }
+
+  async enterRepeatPassword (password: string): Promise<void> {
+    await this.inputRepeatPassword().fill(password)
+  }
+
+  async clickSignUp (): Promise<void> {
+    await this.buttonSignUp().click()
   }
 
   async signUp (data: SignUpData, mode: 'join' | 'signup' = 'signup'): Promise<void> {
-    await this.inputFirstName.fill(data.firstName)
-    await this.inputLastName.fill(data.lastName)
-    await this.inputEmail.fill(data.email)
-    await this.inputNewPassword.fill(data.password)
-    await this.inputRepeatPassword.fill(data.password)
+    await this.enterFirstName(data.firstName)
+    await this.enterLastName(data.lastName)
+    await this.enterEmail(data.email)
+    await this.enterPassword(data.password)
+    await this.enterRepeatPassword(data.password)
     switch (mode) {
       case 'join':
-        expect(await this.buttonJoin.isEnabled()).toBe(true)
-        await this.buttonJoin.click()
+        expect(await this.buttonJoin().isEnabled()).toBe(true)
+        await this.buttonJoin().click()
         break
       case 'signup':
-        expect(await this.buttonSignUp.isEnabled()).toBe(true)
-        await this.buttonSignUp.click()
+        expect(await this.buttonSignUp().isEnabled()).toBe(true)
+        await this.buttonSignUp().click()
     }
   }
 }

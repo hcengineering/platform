@@ -28,6 +28,7 @@ import {
 import { createElasticAdapter, createElasticBackupDataAdapter } from '@hcengineering/elastic'
 import {
   ConfigurationMiddleware,
+  LookupMiddleware,
   ModifiedMiddleware,
   PrivateMiddleware,
   QueryJoinMiddleware,
@@ -36,7 +37,7 @@ import {
 } from '@hcengineering/middleware'
 import { createMongoAdapter, createMongoTxAdapter } from '@hcengineering/mongo'
 import { OpenAIEmbeddingsStage, openAIId, openAIPluginImpl } from '@hcengineering/openai'
-import { addLocation, addStringsLoader } from '@hcengineering/platform'
+import { addLocation, addStringsLoader, platformId } from '@hcengineering/platform'
 import {
   BackupClientSession,
   buildStorageFromConfig,
@@ -60,14 +61,14 @@ import {
   FullTextPushStage,
   globalIndexer,
   IndexedFieldStage,
-  type StorageConfiguration,
   type ContentTextAdapter,
   type DbConfiguration,
   type FullTextAdapter,
   type FullTextPipelineStage,
   type MiddlewareCreator,
   type Pipeline,
-  type StorageAdapter
+  type StorageAdapter,
+  type StorageConfiguration
 } from '@hcengineering/server-core'
 import { serverDocumentId } from '@hcengineering/server-document'
 import { serverGmailId } from '@hcengineering/server-gmail'
@@ -123,8 +124,8 @@ import { viewId } from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
 
 import coreEng from '@hcengineering/core/lang/en.json'
-
 import loginEng from '@hcengineering/login-assets/lang/en.json'
+import platformEng from '@hcengineering/platform/lang/en.json'
 
 import activityEn from '@hcengineering/activity-assets/lang/en.json'
 import attachmentEn from '@hcengineering/attachment-assets/lang/en.json'
@@ -154,6 +155,7 @@ import workbenchEn from '@hcengineering/workbench-assets/lang/en.json'
 
 addStringsLoader(coreId, async (lang: string) => coreEng)
 addStringsLoader(loginId, async (lang: string) => loginEng)
+addStringsLoader(platformId, async (lang: string) => platformEng)
 
 addStringsLoader(taskId, async (lang: string) => taskEn)
 addStringsLoader(viewId, async (lang: string) => viewEn)
@@ -227,12 +229,13 @@ export function start (
   addLocation(serverTimeId, () => import('@hcengineering/server-time-resources'))
 
   const middlewares: MiddlewareCreator[] = [
+    LookupMiddleware.create,
     ModifiedMiddleware.create,
     PrivateMiddleware.create,
     SpaceSecurityMiddleware.create,
     SpacePermissionsMiddleware.create,
     ConfigurationMiddleware.create,
-    QueryJoinMiddleware.create // Should be last one
+    QueryJoinMiddleware.create
   ]
 
   const metrics = getMetricsContext()

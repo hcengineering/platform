@@ -24,13 +24,13 @@
     instances.forEach((p) => p.fitPopupInstance())
   }
 
-  $: instances.length = $modal.length
+  $: instances.length = $modal.filter((p) => p.dock !== true).length
 </script>
 
 {#if $modal.length > 0}
   <slot name="popup-header" />
 {/if}
-{#each $modal as popup, i (popup.id)}
+{#each $modal.filter((p) => p.dock !== true) as popup, i (popup.id)}
   <PopupInstance
     bind:this={instances[i]}
     is={popup.is}
@@ -43,5 +43,6 @@
     close={popup.close}
     {contentPanel}
     overlay={popup.options.overlay}
+    {popup}
   />
 {/each}

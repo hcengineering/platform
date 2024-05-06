@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Person } from '@hcengineering/contact'
   import { AssigneePopup, EmployeePresenter } from '@hcengineering/contact-resources'
-  import { Doc, Ref, SortingOrder } from '@hcengineering/core'
+  import { Doc, Ref, SortingOrder, generateId } from '@hcengineering/core'
   import { MessageBox, createQuery, getClient } from '@hcengineering/presentation'
   import { NodeViewContent, NodeViewProps, NodeViewWrapper } from '@hcengineering/text-editor'
   import { CheckBox, getEventPositionElement, showPopup } from '@hcengineering/ui'
@@ -70,7 +70,7 @@
 
     const title = node.textBetween(0, node.content.size, undefined, ' ')
 
-    const ops = client.apply('todo')
+    const ops = client.apply('todo' + generateId())
 
     if (todo !== undefined) {
       await ops.remove(todo)
@@ -193,7 +193,7 @@
     class:unassigned={userId == null}
     class:hovered
   >
-    <div class="assignee" contenteditable="false">
+    <div class="flex-center assignee" contenteditable="false">
       <EmployeePresenter
         value={userId}
         disabled={readonly}
@@ -204,7 +204,7 @@
       />
     </div>
 
-    <div contenteditable="false">
+    <div class="flex-center todo-check" contenteditable="false">
       <CheckBox {readonly} {checked} on:value={markDone} kind={'positive'} size={'medium'} />
     </div>
 
@@ -216,6 +216,10 @@
   .todo-item {
     .assignee {
       cursor: pointer;
+    }
+    .assignee,
+    .todo-check {
+      height: 1.5em;
     }
 
     &.unassigned {

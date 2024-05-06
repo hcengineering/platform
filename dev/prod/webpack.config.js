@@ -36,7 +36,42 @@ const doValidate = !prod || (process.env.DO_VALIDATE === 'true')
 /**
  * @type {Configuration}
  */
-module.exports = {
+module.exports = [
+  {
+    mode: dev ? 'development' : mode,
+    entry: {
+      serviceWorker: '@hcengineering/notification/src/serviceWorker.ts'
+    },
+    module: {
+      rules: [
+        {
+          test: /\.ts$/,
+          exclude: /(node_modules|\.webpack)/,
+          use: {
+            loader: 'esbuild-loader',
+            options: {
+              target: 'es2021',
+              keepNames: true,
+              minify: !prod,
+              sourcemap: !prod
+            }
+          }
+        }
+      ]
+    },
+    output: {
+      path: __dirname + '/dist',
+      filename: '[name].js',
+      chunkFilename: '[name].js',
+      publicPath: '/',
+      pathinfo: false
+    },
+    resolve: {
+      extensions: ['.ts', '.js'],
+      conditionNames: ['svelte', 'browser', 'import']
+    }
+  },
+  {
   entry: {
     bundle: [
       '@hcengineering/theme/styles/global.scss',
@@ -278,4 +313,4 @@ module.exports = {
       }
     }
   }
-}
+}]

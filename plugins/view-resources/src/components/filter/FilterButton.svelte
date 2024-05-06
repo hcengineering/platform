@@ -35,7 +35,7 @@
     }
   })
 
-  function load (_class: Ref<Class<Doc>> | undefined) {
+  function load (_class: Ref<Class<Doc>> | undefined): void {
     const key = getFilterKey(_class)
     const items = localStorage.getItem(key)
     if (items !== null) {
@@ -43,7 +43,7 @@
     }
   }
 
-  function save (_class: Ref<Class<Doc>> | undefined, p: Filter[]) {
+  function save (_class: Ref<Class<Doc>> | undefined, p: Filter[]): void {
     const key = getFilterKey(_class)
     localStorage.setItem(key, JSON.stringify(p))
   }
@@ -52,7 +52,7 @@
     save(_class, p)
   })
 
-  function onChange (e: Filter | undefined) {
+  function onChange (e: Filter | undefined): void {
     if (e !== undefined) setFilters([e])
   }
 
@@ -60,7 +60,7 @@
     _class = undefined
   })
 
-  function add (e: MouseEvent) {
+  function add (e: MouseEvent): void {
     const target = eventToHTMLElement(e)
     showPopup(
       FilterTypePopup,

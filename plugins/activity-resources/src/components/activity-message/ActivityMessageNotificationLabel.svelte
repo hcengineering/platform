@@ -13,18 +13,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Icon, Label } from '@hcengineering/ui'
+  import { Label } from '@hcengineering/ui'
   import { DocNotifyContext } from '@hcengineering/notification'
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Doc, Ref } from '@hcengineering/core'
-  import { classIcon, getDocLinkTitle } from '@hcengineering/view-resources'
+  import { getDocLinkTitle, ObjectIcon } from '@hcengineering/view-resources'
+  import contact from '@hcengineering/contact'
 
   import ActivityMessagePreview from './ActivityMessagePreview.svelte'
 
   export let context: DocNotifyContext
 
   const client = getClient()
+  const hierarchy = client.getHierarchy()
   const parentQuery = createQuery()
 
   let parentMessage: ActivityMessage | undefined = undefined
@@ -54,11 +56,11 @@
         <Label label={activity.string.In} />
       </span>
       {#if object}
-        {@const icon = classIcon(client, object._class)}
         <span class="flex-presenter flex-gap-0-5">
-          {#if icon}
-            <Icon {icon} size="x-small" iconProps={{ value: object }} />
-          {/if}
+          <ObjectIcon
+            value={object}
+            size={hierarchy.isDerived(object._class, contact.class.Person) ? 'tiny' : 'small'}
+          />
           {title}
         </span>
       {/if}

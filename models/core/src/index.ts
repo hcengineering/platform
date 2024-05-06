@@ -15,6 +15,7 @@
 
 import {
   AccountRole,
+  DOMAIN_BENCHMARK,
   DOMAIN_BLOB,
   DOMAIN_BLOB_DATA,
   DOMAIN_CONFIGURATION,
@@ -32,6 +33,7 @@ import {
   type TxCollectionCUD
 } from '@hcengineering/core'
 import { type Builder } from '@hcengineering/model'
+import { TBenchmarkDoc } from './benchmark'
 import core from './component'
 import {
   TArrOf,
@@ -88,7 +90,7 @@ import {
   TSpaceTypeDescriptor,
   TTypedSpace
 } from './security'
-import { TStatus, TStatusCategory } from './status'
+import { TStatus, TStatusCategory, TDomainStatusPlaceholder } from './status'
 import { TUserStatus } from './transient'
 import {
   TTx,
@@ -101,6 +103,7 @@ import {
   TTxUpdateDoc,
   TTxWorkspaceEvent
 } from './tx'
+import { defineSpaceType } from './spaceType'
 
 export { coreId } from '@hcengineering/core'
 export * from './core'
@@ -169,10 +172,12 @@ export function createModel (builder: Builder): void {
     TConfigurationElement,
     TIndexConfiguration,
     TStatus,
+    TDomainStatusPlaceholder,
     TStatusCategory,
     TMigrationState,
     TBlob,
-    TDomainIndexConfiguration
+    TDomainIndexConfiguration,
+    TBenchmarkDoc
   )
 
   builder.createDoc(
@@ -224,6 +229,12 @@ export function createModel (builder: Builder): void {
       { createdBy: -1 },
       { createdOn: -1 }
     ]
+  })
+
+  builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
+    domain: DOMAIN_BENCHMARK,
+    disableCollection: true,
+    disabled: []
   })
 
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
@@ -318,4 +329,5 @@ export function createModel (builder: Builder): void {
   })
 
   definePermissions(builder)
+  defineSpaceType(builder)
 }

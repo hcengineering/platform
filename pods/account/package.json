@@ -51,6 +51,7 @@
   },
   "dependencies": {
     "@hcengineering/account": "^0.6.0",
+    "@hcengineering/account-service": "^0.6.0",
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/auth-providers": "^0.6.0",
     "@hcengineering/core": "^0.6.28",

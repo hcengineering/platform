@@ -5,7 +5,7 @@
     "All": "All",
     "AllActivity": "All activity",
     "Attributes": "Attributes",
-    "Changed": "changed",
+    "Changed": "Changed",
     "CollectionUpdated": "Update {collection}",
     "Created": "Created",
     "DocAdded": "added {_class}",
@@ -40,6 +40,9 @@
     "Mentions": "Mentions",
     "MentionedYouIn": "Mentioned you in",
     "Messages": "Messages",
-    "Thread": "Thread"
+    "Thread": "Thread",
+    "AddReaction": "Add reaction",
+    "SaveForLater": "Save for later",
+    "RemoveFromLater": "Remove from saved"
   }
 }

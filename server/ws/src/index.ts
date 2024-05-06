@@ -14,19 +14,7 @@
 // limitations under the License.
 //
 
-import { startHttpServer } from './server_http'
-// import { startUWebsocketServer } from './server_u'
-import { type ServerFactory } from './types'
-
-export { start } from './server'
-export * from './types'
 export * from './client'
+export { start } from './server'
 export * from './server_http'
-
-/**
- * @public
- */
-export const serverFactories: Record<string, ServerFactory> = {
-  ws: startHttpServer
-  // uweb: startUWebsocketServer
-}
+export * from './types'

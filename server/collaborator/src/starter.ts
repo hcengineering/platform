@@ -14,16 +14,16 @@
 // limitations under the License.
 //
 
+import { MeasureContext } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { setMetadata } from '@hcengineering/platform'
 import serverToken from '@hcengineering/server-token'
 import { MongoClient } from 'mongodb'
 
 import config from './config'
-import { metricsContext } from './metrics'
 import { start } from './server'
 
-export async function startCollaborator (): Promise<void> {
+export async function startCollaborator (ctx: MeasureContext, onClose?: () => void): Promise<void> {
   setMetadata(serverToken.metadata.Secret, config.Secret)
 
   let minioPort = 9000
@@ -44,21 +44,21 @@ export async function startCollaborator (): Promise<void> {
 
   const mongoClient = await MongoClient.connect(config.MongoUrl)
 
-  const shutdown = await start(metricsContext, config, minioClient, mongoClient)
+  const shutdown = await start(ctx, config, minioClient, mongoClient)
 
   const close = (): void => {
     void shutdown().then(() => {
       void mongoClient.close()
     })
-    void metricsContext.info('closed')
+    onClose?.()
   }
 
   process.on('uncaughtException', (e) => {
-    void metricsContext.error('UncaughtException', { error: e })
+    ctx.error('UncaughtException', { error: e })
   })
 
   process.on('unhandledRejection', (reason, promise) => {
-    void metricsContext.error('Unhandled Rejection at:', { promise, reason })
+    ctx.error('Unhandled Rejection at:', { promise, reason })
   })
 
   process.on('SIGINT', close)

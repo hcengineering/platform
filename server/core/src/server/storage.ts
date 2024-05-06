@@ -52,6 +52,7 @@ import core, {
   type TxResult,
   type TxUpdateDoc,
   type WorkspaceIdWithUrl,
+  cutObjectArray,
   toFindResult
 } from '@hcengineering/core'
 import { type Metadata, getResource } from '@hcengineering/platform'
@@ -195,7 +196,7 @@ export class TServerStorage implements ServerStorage {
       const txCUD = TxProcessor.extractTx(tx) as TxCUD<Doc>
       if (!this.hierarchy.isDerived(txCUD._class, core.class.TxCUD)) {
         // Skip unsupported tx
-        await ctx.error('Unsupported transaction', tx)
+        ctx.error('Unsupported transaction', tx)
         continue
       }
       const domain = this.hierarchy.getDomain(txCUD.objectClass)
@@ -393,7 +394,7 @@ export class TServerStorage implements ServerStorage {
       { clazz, query, options }
     )
     if (Date.now() - st > 1000) {
-      await ctx.error('FindAll', { time: Date.now() - st, clazz, query, options })
+      ctx.error('FindAll', { time: Date.now() - st, clazz, query: cutObjectArray(query), options })
     }
     return result
   }
@@ -790,7 +791,7 @@ export class TServerStorage implements ServerStorage {
         await fx()
       }
     } catch (err: any) {
-      await ctx.error('error process tx', { error: err })
+      ctx.error('error process tx', { error: err })
       throw err
     } finally {
       onEnds.forEach((p) => {

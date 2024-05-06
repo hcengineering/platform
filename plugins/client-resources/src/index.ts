@@ -60,6 +60,18 @@ if (typeof localStorage !== 'undefined') {
   })
 }
 
+/**
+ * @public
+ */
+function decodeTokenPayload (token: string): any {
+  try {
+    return JSON.parse(atob(token.split('.')[1]))
+  } catch (err: any) {
+    console.error(err)
+    return {}
+  }
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => {
   return {
@@ -69,7 +81,7 @@ export default async () => {
         endpoint: string,
         onUpgrade?: () => void,
         onUnauthorized?: () => void,
-        onConnect?: (event: ClientConnectEvent) => void,
+        onConnect?: (event: ClientConnectEvent, data: any) => void,
         ctx?: MeasureContext
       ): Promise<AccountClient> => {
         const filterModel = getMetadata(clientPlugin.metadata.FilterModel) ?? false
@@ -95,8 +107,16 @@ export default async () => {
               }
               handler(...txes)
             }
-
-            return connect(url.href, upgradeHandler, onUpgrade, onUnauthorized, onConnect)
+            const tokenPayload: { workspace: string, email: string } = decodeTokenPayload(token)
+            return connect(
+              url.href,
+              upgradeHandler,
+              tokenPayload.workspace,
+              tokenPayload.email,
+              onUpgrade,
+              onUnauthorized,
+              onConnect
+            )
           },
           filterModel ? [...getPlugins(), ...(getMetadata(clientPlugin.metadata.ExtraPlugins) ?? [])] : undefined,
           createModelPersistence(getWSFromToken(token)),

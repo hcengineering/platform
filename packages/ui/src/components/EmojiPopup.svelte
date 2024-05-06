@@ -20,6 +20,7 @@
 
   export let embedded = false
   export let selected: string | undefined
+  export let disabled: boolean = false
 
   interface Category {
     id: string
@@ -181,7 +182,16 @@
             {#if emoji !== undefined}
               <!-- svelte-ignore a11y-click-events-have-key-events -->
               <!-- svelte-ignore a11y-no-static-element-interactions -->
-              <div class="element" class:selected={emoji === selected} on:click={() => dispatch('close', emoji)}>
+              <div
+                class="element"
+                class:selected={emoji === selected}
+                class:disabled
+                on:click={() => {
+                  if (disabled) return
+
+                  dispatch('close', emoji)
+                }}
+              >
                 {emoji}
               </div>
             {/if}
@@ -248,13 +258,19 @@
     cursor: pointer;
 
     &:hover {
-      color: var(--theme-caption-color);
-      background-color: var(--theme-popup-hover);
+      &:not(&.disabled) {
+        color: var(--theme-caption-color);
+        background-color: var(--theme-popup-hover);
+      }
     }
 
     &.selected {
       background-color: var(--theme-popup-header);
       border: 1px solid var(--theme-popup-divider);
+    }
+
+    &.disabled {
+      cursor: default;
     }
   }
 </style>

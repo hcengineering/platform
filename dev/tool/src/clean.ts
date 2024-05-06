@@ -45,8 +45,7 @@ import task, { type ProjectType, type TaskType } from '@hcengineering/task'
 import tracker from '@hcengineering/tracker'
 import { deepEqual } from 'fast-equals'
 import { MongoClient } from 'mongodb'
-
-export const DOMAIN_ACTIVITY = 'activity' as Domain
+import { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 
 export async function cleanWorkspace (
   ctx: MeasureContext,

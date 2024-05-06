@@ -62,7 +62,7 @@ import notification, { notificationActionTemplates } from '@hcengineering/model-
 import view, { createAction, template, actionTemplates as viewTemplates } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
-import type { IntlString, Resource } from '@hcengineering/platform'
+import type { IntlString } from '@hcengineering/platform'
 import { TActivityMessage } from '@hcengineering/model-activity'
 
 import chunter from './plugin'
@@ -190,7 +190,6 @@ export class TChatMessageViewlet extends TDoc implements ChatMessageViewlet {
 @Mixin(chunter.mixin.ObjectChatPanel, core.class.Class)
 export class TObjectChatPanel extends TClass implements ObjectChatPanel {
   ignoreKeys!: string[]
-  titleProvider!: Resource<(object: Doc) => string>
 }
 
 const actionTemplates = template({
@@ -399,33 +398,36 @@ export function createModel (builder: Builder, options = { addApplication: true 
     )
   }
 
+  builder.mixin(activity.class.ActivityMessage, core.class.Class, view.mixin.LinkProvider, {
+    encode: chunter.function.GetMessageLink
+  })
+
   builder.mixin(chunter.class.ThreadMessage, core.class.Class, view.mixin.LinkProvider, {
     encode: chunter.function.GetThreadLink
   })
 
-  // Note: it is not working now, need to fix navigation by url UBERF-5686
-  // createAction(
-  //   builder,
-  //   {
-  //     action: view.actionImpl.CopyTextToClipboard,
-  //     actionProps: {
-  //       textProvider: chunter.function.GetLink
-  //     },
-  //     label: chunter.string.CopyLink,
-  //     icon: chunter.icon.Copy,
-  //     keyBinding: [],
-  //     input: 'none',
-  //     category: chunter.category.Chunter,
-  //     target: activity.class.ActivityMessage,
-  //     visibilityTester: chunter.function.CanCopyMessageLink,
-  //     context: {
-  //       mode: ['context', 'browser'],
-  //       application: chunter.app.Chunter,
-  //       group: 'copy'
-  //     }
-  //   },
-  //   chunter.action.CopyChatMessageLink
-  // )
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.CopyTextToClipboard,
+      actionProps: {
+        textProvider: chunter.function.GetLink
+      },
+      label: chunter.string.CopyLink,
+      icon: chunter.icon.Copy,
+      keyBinding: [],
+      input: 'none',
+      category: chunter.category.Chunter,
+      target: activity.class.ActivityMessage,
+      visibilityTester: chunter.function.CanCopyMessageLink,
+      context: {
+        mode: ['context', 'browser'],
+        application: chunter.app.Chunter,
+        group: 'copy'
+      }
+    },
+    chunter.action.CopyChatMessageLink
+  )
 
   builder.mixin(chunter.class.ChunterMessage, core.class.Class, view.mixin.ClassFilters, {
     filters: ['space', '_class']
@@ -603,20 +605,6 @@ export function createModel (builder: Builder, options = { addApplication: true 
     chunter.action.LeaveChannel
   )
 
-  createAction(
-    builder,
-    {
-      ...viewTemplates.open,
-      target: notification.class.DocNotifyContext,
-      context: {
-        mode: ['browser', 'context'],
-        group: 'create'
-      },
-      action: chunter.actionImpl.OpenChannel
-    },
-    chunter.action.OpenChannel
-  )
-
   createAction(builder, {
     ...notificationActionTemplates.pinContext,
     label: chunter.string.StarChannel,
@@ -689,46 +677,6 @@ export function createModel (builder: Builder, options = { addApplication: true 
     components: { input: chunter.component.ChatMessageInput }
   })
 
-  builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
-    ofMessage: chunter.class.ChatMessage,
-    components: [{ kind: 'footer', component: chunter.component.Replies }]
-  })
-
-  builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
-    ofMessage: activity.class.DocUpdateMessage,
-    components: [{ kind: 'footer', component: chunter.component.Replies }]
-  })
-
-  builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
-    ofMessage: activity.class.ActivityInfoMessage,
-    components: [{ kind: 'footer', component: chunter.component.Replies }]
-  })
-
-  builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
-    ofMessage: activity.class.ActivityReference,
-    components: [{ kind: 'footer', component: chunter.component.Replies }]
-  })
-
-  builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
-    ofMessage: chunter.class.ChatMessage,
-    components: [{ kind: 'action', component: chunter.component.ReplyToThreadAction }]
-  })
-
-  builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
-    ofMessage: activity.class.DocUpdateMessage,
-    components: [{ kind: 'action', component: chunter.component.ReplyToThreadAction }]
-  })
-
-  builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
-    ofMessage: activity.class.ActivityInfoMessage,
-    components: [{ kind: 'action', component: chunter.component.ReplyToThreadAction }]
-  })
-
-  builder.createDoc(activity.class.ActivityMessageExtension, core.space.Model, {
-    ofMessage: activity.class.ActivityReference,
-    components: [{ kind: 'action', component: chunter.component.ReplyToThreadAction }]
-  })
-
   builder.mixin(chunter.class.Channel, core.class.Class, chunter.mixin.ObjectChatPanel, {
     ignoreKeys: ['archived', 'collaborators', 'lastMessage', 'pinned', 'topic', 'description']
   })
@@ -749,6 +697,29 @@ export function createModel (builder: Builder, options = { addApplication: true 
     domain: DOMAIN_CHUNTER,
     disabled: [{ _class: 1 }, { space: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { createdOn: -1 }]
   })
+
+  builder.createDoc(activity.class.ReplyProvider, core.space.Model, {
+    function: chunter.function.ReplyToThread
+  })
+
+  createAction(
+    builder,
+    {
+      action: chunter.actionImpl.ReplyToThread,
+      label: chunter.string.ReplyToThread,
+      icon: chunter.icon.Thread,
+      input: 'focus',
+      category: chunter.category.Chunter,
+      target: activity.class.ActivityMessage,
+      visibilityTester: chunter.function.CanReplyToThread,
+      inline: true,
+      context: {
+        mode: 'context',
+        group: 'edit'
+      }
+    },
+    chunter.action.ReplyToThreadAction
+  )
 }
 
 export default chunter

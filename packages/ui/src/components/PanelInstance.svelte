@@ -148,6 +148,12 @@
   on:keydown={(evt) => {
     if (props) handleKeydown(evt)
   }}
+  on:beforeprint={() => {
+    if (props && contentPanel) fitPopup(props, contentPanel)
+  }}
+  on:afterprint={() => {
+    if (props && contentPanel) fitPopup(props, contentPanel)
+  }}
 />
 {#if props}
   {#if !component}
@@ -204,6 +210,13 @@
     z-index: 401;
     position: fixed;
     background-color: transparent;
+
+    @media print {
+      position: static;
+      z-index: initial;
+      width: auto !important;
+      height: auto !important;
+    }
   }
 
   .modal-overlay {

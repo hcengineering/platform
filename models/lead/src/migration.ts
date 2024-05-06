@@ -13,9 +13,10 @@
 // limitations under the License.
 //
 
-import { TxOperations } from '@hcengineering/core'
+import { AccountRole, DOMAIN_TX, type Ref, type Status, TxOperations } from '@hcengineering/core'
 import { type Lead, leadId } from '@hcengineering/lead'
 import {
+  type ModelLogger,
   tryMigrate,
   tryUpgrade,
   type MigrateOperation,
@@ -23,84 +24,18 @@ import {
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
-import task, { DOMAIN_TASK, createProjectType, createSequence, fixTaskTypes } from '@hcengineering/model-task'
-import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
+
+import task, { DOMAIN_TASK, createSequence, migrateDefaultStatusesBase } from '@hcengineering/model-task'
+import contact from '@hcengineering/model-contact'
+
 import lead from './plugin'
+import { defaultLeadStatuses } from './spaceType'
 
 async function createSpace (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(core.class.Space, {
     _id: lead.space.DefaultFunnel
   })
   if (current === undefined) {
-    const type = await createProjectType(
-      tx,
-      {
-        name: 'Default funnel',
-        descriptor: lead.descriptors.FunnelType,
-        description: '',
-        tasks: [],
-        roles: 0,
-        classic: false
-      },
-      [
-        {
-          _id: lead.taskType.Lead,
-          name: 'Lead',
-          descriptor: lead.descriptors.Lead,
-          ofClass: lead.class.Lead,
-          targetClass: lead.class.Lead,
-          statusClass: core.class.Status,
-          statusCategories: [
-            task.statusCategory.UnStarted,
-            task.statusCategory.Active,
-            task.statusCategory.Won,
-            task.statusCategory.Lost
-          ],
-          kind: 'task',
-          factory: [
-            {
-              color: PaletteColorIndexes.Coin,
-              name: 'Backlog',
-              ofAttribute: lead.attribute.State,
-              category: task.statusCategory.UnStarted
-            },
-            {
-              color: PaletteColorIndexes.Coin,
-              name: 'Incoming',
-              ofAttribute: lead.attribute.State,
-              category: task.statusCategory.Active
-            },
-            {
-              color: PaletteColorIndexes.Arctic,
-              name: 'Negotation',
-              ofAttribute: lead.attribute.State,
-              category: task.statusCategory.Active
-            },
-            {
-              color: PaletteColorIndexes.Watermelon,
-              name: 'Offer preparing',
-              ofAttribute: lead.attribute.State,
-              category: task.statusCategory.Active
-            },
-            {
-              color: PaletteColorIndexes.Orange,
-              name: 'Make a decision',
-              ofAttribute: lead.attribute.State,
-              category: task.statusCategory.Active
-            },
-            {
-              color: PaletteColorIndexes.Ocean,
-              name: 'Contract conclusion',
-              ofAttribute: lead.attribute.State,
-              category: task.statusCategory.Active
-            },
-            { name: 'Won', ofAttribute: lead.attribute.State, category: task.statusCategory.Won },
-            { name: 'Lost', ofAttribute: lead.attribute.State, category: task.statusCategory.Lost }
-          ]
-        }
-      ],
-      lead.template.DefaultFunnel
-    )
     await tx.createDoc(
       lead.class.Funnel,
       core.space.Space,
@@ -110,7 +45,7 @@ async function createSpace (tx: TxOperations): Promise<void> {
         private: false,
         archived: false,
         members: [],
-        type
+        type: lead.template.DefaultFunnel
       },
       lead.space.DefaultFunnel
     )
@@ -135,46 +70,127 @@ async function migrateIdentifiers (client: MigrationClient): Promise<void> {
   }
 }
 
+async function migrateDefaultStatuses (client: MigrationClient, logger: ModelLogger): Promise<void> {
+  const defaultTypeId = lead.template.DefaultFunnel
+  const typeDescriptor = lead.descriptors.FunnelType
+  const baseClass = lead.class.Funnel
+  const defaultTaskTypeId = lead.taskType.Lead
+  const taskTypeClass = task.class.TaskType
+  const baseTaskClass = lead.class.Lead
+  const statusAttributeOf = lead.attribute.State
+  const statusClass = core.class.Status
+  const getDefaultStatus = (oldStatus: Status): Ref<Status> | undefined => {
+    return defaultLeadStatuses.find(
+      (defStatus) =>
+        defStatus.category === oldStatus.category &&
+        (defStatus.name.toLowerCase() === oldStatus.name.trim().toLowerCase() ||
+          (defStatus.name === 'Negotiation' && oldStatus.name === 'Negotation'))
+    )?.id
+  }
+
+  await migrateDefaultStatusesBase<Lead>(
+    client,
+    logger,
+    defaultTypeId,
+    typeDescriptor,
+    baseClass,
+    defaultTaskTypeId,
+    taskTypeClass,
+    baseTaskClass,
+    statusAttributeOf,
+    statusClass,
+    getDefaultStatus
+  )
+}
+
+async function migrateDefaultTypeMixins (client: MigrationClient): Promise<void> {
+  const oldSpaceTypeMixin = `${lead.template.DefaultFunnel}:type:mixin`
+  const newSpaceTypeMixin = lead.mixin.DefaultFunnelTypeData
+  const oldTaskTypeMixin = `${lead.taskType.Lead}:type:mixin`
+  const newTaskTypeMixin = lead.mixin.LeadTypeData
+
+  await client.update(
+    DOMAIN_TX,
+    {
+      objectClass: core.class.Attribute,
+      'attributes.attributeOf': oldSpaceTypeMixin
+    },
+    {
+      $set: {
+        'attributes.attributeOf': newSpaceTypeMixin
+      }
+    }
+  )
+
+  await client.update(
+    DOMAIN_SPACE,
+    {
+      _class: lead.class.Funnel,
+      [oldSpaceTypeMixin]: { $exists: true }
+    },
+    {
+      $rename: {
+        [oldSpaceTypeMixin]: newSpaceTypeMixin
+      }
+    }
+  )
+
+  await client.update(
+    DOMAIN_TASK,
+    {
+      _class: lead.class.Lead,
+      [oldTaskTypeMixin]: { $exists: true }
+    },
+    {
+      $rename: {
+        [oldTaskTypeMixin]: newTaskTypeMixin
+      }
+    }
+  )
+}
+
+async function migrateDefaultProjectOwners (client: MigrationClient): Promise<void> {
+  const workspaceOwners = await client.model.findAll(contact.class.PersonAccount, {
+    role: AccountRole.Owner
+  })
+
+  await client.update(
+    DOMAIN_SPACE,
+    {
+      _id: lead.space.DefaultFunnel
+    },
+    {
+      $set: {
+        owners: workspaceOwners.map((it) => it._id)
+      }
+    }
+  )
+}
+
 export const leadOperation: MigrateOperation = {
+  async preMigrate (client: MigrationClient, logger: ModelLogger): Promise<void> {
+    await tryMigrate(client, leadId, [
+      {
+        state: 'migrate-default-statuses',
+        func: (client) => migrateDefaultStatuses(client, logger)
+      }
+    ])
+  },
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, leadId, [
       {
-        state: 'fix-category-descriptors',
-        func: async (client) => {
-          await client.update(
-            DOMAIN_SPACE,
-            { _class: task.class.ProjectType, category: 'lead:category:FunnelTypeCategory' },
-            {
-              $set: { descriptor: lead.descriptors.FunnelType },
-              $unset: { category: 1 }
-            }
-          )
-        }
-      },
-      {
-        state: 'fixTaskStatus',
-        func: async (client): Promise<void> => {
-          await fixTaskTypes(client, lead.descriptors.FunnelType, async () => [
-            {
-              name: 'Lead',
-              descriptor: lead.descriptors.Lead,
-              ofClass: lead.class.Lead,
-              targetClass: lead.class.Lead,
-              statusCategories: [
-                task.statusCategory.UnStarted,
-                task.statusCategory.Active,
-                task.statusCategory.Won,
-                task.statusCategory.Lost
-              ],
-              statusClass: core.class.Status,
-              kind: 'task'
-            }
-          ])
-        }
-      },
-      {
         state: 'identifier',
         func: migrateIdentifiers
+      },
+      {
+        state: 'migrate-default-type-mixins',
+        func: async (client) => {
+          await migrateDefaultTypeMixins(client)
+        }
+      },
+      {
+        state: 'migrateDefaultProjectOwners',
+        func: migrateDefaultProjectOwners
       }
     ])
   },
@@ -182,7 +198,7 @@ export const leadOperation: MigrateOperation = {
     await tryUpgrade(client, leadId, [
       {
         state: 'u-default-funnel',
-        func: async (client) => {
+        func: async () => {
           const ops = new TxOperations(client, core.account.System)
           await createDefaults(ops)
         }

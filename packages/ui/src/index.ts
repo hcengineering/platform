@@ -62,6 +62,7 @@ export { default as Toggle } from './components/Toggle.svelte'
 export { default as RadioButton } from './components/RadioButton.svelte'
 export { default as RadioGroup } from './components/RadioGroup.svelte'
 export { default as Dialog } from './components/Dialog.svelte'
+export { default as ModernToggle } from './components/ModernToggle.svelte'
 export { default as ToggleWithLabel } from './components/ToggleWithLabel.svelte'
 export { default as MiniToggle } from './components/MiniToggle.svelte'
 export { default as TooltipInstance } from './components/TooltipInstance.svelte'
@@ -250,6 +251,8 @@ export { default as SimpleTimePopup } from './components/calendar/SimpleTimePopu
 export { default as NumberInput } from './components/NumberInput.svelte'
 export { default as Lazy } from './components/Lazy.svelte'
 export { default as TimeZonesPopup } from './components/TimeZonesPopup.svelte'
+
+export { default as Dock } from './components/Dock.svelte'
 
 export * from './types'
 export * from './location'

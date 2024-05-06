@@ -13,7 +13,8 @@
 // limitations under the License.
 //
 
-import { MeasureContext, generateId } from '@hcengineering/core'
+import { Analytics } from '@hcengineering/analytics'
+import { MeasureContext, generateId, metricsAggregate } from '@hcengineering/core'
 import { MinioService } from '@hcengineering/minio'
 import { Token, decodeToken } from '@hcengineering/server-token'
 import { ServerKit } from '@hcengineering/text'
@@ -51,7 +52,7 @@ export async function start (
 ): Promise<Shutdown> {
   const port = config.Port
 
-  await ctx.info('Starting collaborator server', { port })
+  ctx.info('Starting collaborator server', { port })
 
   const app = express()
   app.use(cors())
@@ -67,7 +68,8 @@ export async function start (
         // fallback to standard filter function
         return compression.filter(req, res)
       },
-      level: 6
+      level: 1,
+      memLevel: 9
     })
   )
 
@@ -146,6 +148,31 @@ export async function start (
     }
   }
 
+  app.get('/api/v1/statistics', (req, res) => {
+    try {
+      const token = req.query.token as string
+      const payload = decodeToken(token)
+      const admin = payload.extra?.admin === 'true'
+      res.status(200)
+      res.setHeader('Content-Type', 'application/json')
+      res.setHeader('Cache-Control', 'public, no-store, no-cache, must-revalidate, max-age=0')
+
+      const json = JSON.stringify({
+        metrics: metricsAggregate((ctx as any).metrics),
+        statistics: {
+          activeSessions: {}
+        },
+        admin
+      })
+      res.end(json)
+    } catch (err: any) {
+      ctx.error('statistics error', { err })
+      Analytics.handleError(err)
+      res.writeHead(404, {})
+      res.end()
+    }
+  })
+
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   app.post('/rpc', async (req, res) => {
     const authHeader = req.headers.authorization
@@ -180,13 +207,14 @@ export async function start (
     noServer: true,
     perMessageDeflate: {
       zlibDeflateOptions: {
-        // See zlib defaults.
-        chunkSize: 1024,
-        memLevel: 7,
-        level: 3
+        chunkSize: 32 * 1024,
+        memLevel: 9,
+        level: 1
       },
       zlibInflateOptions: {
-        chunkSize: 10 * 1024
+        chunkSize: 32 * 1024,
+        memLevel: 9,
+        level: 1
       },
       // Below options specified as default values.
       concurrencyLimit: 10, // Limits zlib concurrency for perf.
@@ -210,7 +238,7 @@ export async function start (
 
   server.listen(port)
 
-  await ctx.info('Running collaborator server', { port })
+  ctx.info('Running collaborator server', { port })
 
   return async () => {
     server.close()

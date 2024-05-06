@@ -43,7 +43,7 @@
     return await getDocLinkTitle(client, object._id, object._class, object)
   }
 
-  async function loadObject (_id: Ref<Doc>, _class: Ref<Class<Doc>>) {
+  async function loadObject (_id: Ref<Doc>, _class: Ref<Class<Doc>>): Promise<void> {
     const isRemoved = await checkIsObjectRemoved(client, _id, _class)
 
     if (isRemoved) {
@@ -55,7 +55,7 @@
     }
   }
 
-  $: loadObject(message.objectId, message.objectClass)
+  $: void loadObject(message.objectId, message.objectClass)
 </script>
 
 {#if object}

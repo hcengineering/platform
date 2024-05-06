@@ -45,11 +45,11 @@
   {#if mark.type === MarkupMarkType.bold}
     <strong><slot /></strong>
   {:else if mark.type === MarkupMarkType.code}
-    <pre class="proseCode"><slot /></pre>
+    <code class="proseCode"><slot /></code>
   {:else if mark.type === MarkupMarkType.em}
     <em><slot /></em>
   {:else if mark.type === MarkupMarkType.link}
-    <a href={attrs.href} target={attrs.target} on:click={handleLink}>
+    <a href={attrs.href} target={attrs.target} on:click={handleLink} on:contextmenu|stopPropagation>
       <slot />
     </a>
   {:else if mark.type === MarkupMarkType.strike}

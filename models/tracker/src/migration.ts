@@ -15,20 +15,17 @@
 
 import core, {
   DOMAIN_STATUS,
-  DOMAIN_TX,
+  type TxCreateDoc,
   TxOperations,
-  TxProcessor,
   generateId,
   toIdMap,
-  type Data,
-  type Ref,
+  DOMAIN_TX,
   type Status,
-  type Tx,
-  type TxCreateDoc,
-  type StatusCategory,
-  type TxMixin
+  type Ref,
+  AccountRole
 } from '@hcengineering/core'
 import {
+  type ModelLogger,
   createOrUpdate,
   tryMigrate,
   tryUpgrade,
@@ -37,20 +34,22 @@ import {
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import { DOMAIN_SPACE } from '@hcengineering/model-core'
-import { DOMAIN_TASK, createProjectType, fixTaskTypes } from '@hcengineering/model-task'
+import activity, { type DocUpdateMessage } from '@hcengineering/activity'
+import { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
+import { DOMAIN_TASK, migrateDefaultStatusesBase } from '@hcengineering/model-task'
 import tags from '@hcengineering/tags'
-import task, { type ProjectType, type TaskType } from '@hcengineering/task'
+import task from '@hcengineering/task'
 import {
+  type IssueStatus,
   TimeReportDayType,
-  classicIssueTaskStatuses,
-  createStatesData,
   trackerId,
   type Issue,
-  type IssueStatus,
-  type Project
+  type Project,
+  classicIssueTaskStatuses
 } from '@hcengineering/tracker'
-import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
+
 import tracker from './plugin'
+import contact from '@hcengineering/model-contact'
 
 async function createDefaultProject (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(tracker.class.Project, {
@@ -61,37 +60,10 @@ async function createDefaultProject (tx: TxOperations): Promise<void> {
     objectId: tracker.project.DefaultProject
   })
 
-  if ((await tx.findOne(task.class.ProjectType, { _id: tracker.ids.ClassingProjectType })) === undefined) {
-    const states: Omit<Data<Status>, 'rank'>[] = createStatesData(classicIssueTaskStatuses)
-    await createProjectType(
-      tx,
-      {
-        name: 'Classic project',
-        descriptor: tracker.descriptors.ProjectType,
-        description: '',
-        tasks: [],
-        roles: 0,
-        classic: true
-      },
-      [
-        {
-          _id: tracker.taskTypes.Issue,
-          descriptor: tracker.descriptors.Issue,
-          name: 'Issue',
-          factory: states,
-          ofClass: tracker.class.Issue,
-          targetClass: tracker.class.Issue,
-          statusCategories: classicIssueTaskStatuses.map((it) => it.category),
-          statusClass: core.class.Status,
-          kind: 'both',
-          allowedAsChildOf: [tracker.taskTypes.Issue]
-        }
-      ],
-      tracker.ids.ClassingProjectType
-    )
-  }
-
   // temporary disabled until nice automation
+  // NOTE: when it will be restored !!!
+  // 1. Move to static model
+  // 2. Use well-known IDs for all the objects
   // if ((await tx.findOne(task.class.ProjectType, { _id: tracker.ids.BaseProjectType })) === undefined) {
   //   const issueId: Ref<TaskType> = generateId()
 
@@ -171,25 +143,6 @@ async function createDefaults (tx: TxOperations): Promise<void> {
   )
 }
 
-async function fixTrackerTaskTypes (client: MigrationClient): Promise<void> {
-  await fixTaskTypes(client, tracker.descriptors.ProjectType, async (t) => {
-    const typeId: Ref<TaskType> = generateId()
-    return [
-      {
-        _id: typeId,
-        name: 'Issue',
-        descriptor: tracker.descriptors.Issue,
-        ofClass: tracker.class.Issue,
-        targetClass: tracker.class.Issue,
-        statusCategories: classicIssueTaskStatuses,
-        statusClass: tracker.class.IssueStatus,
-        kind: 'task',
-        allowedAsChildOf: [typeId]
-      }
-    ]
-  })
-}
-
 async function passIdentifierToParentInfo (client: MigrationClient): Promise<void> {
   const issues = await client.find<Issue>(DOMAIN_TASK, { _class: tracker.class.Issue, 'parents.0': { $exists: true } })
   for (const issue of issues) {
@@ -202,156 +155,6 @@ async function passIdentifierToParentInfo (client: MigrationClient): Promise<voi
       parent.identifier = p.identifier
     }
     await client.update(DOMAIN_TASK, { _id: issue._id }, { $set: { parents: issue.parents } })
-  }
-}
-
-async function tryCreateStatus (client: MigrationClient): Promise<Ref<Status>> {
-  const exists = await client.find<Status>(DOMAIN_STATUS, {
-    _class: tracker.class.IssueStatus,
-    name: 'Todo',
-    ofAttribute: tracker.attribute.IssueStatus
-  })
-  if (exists.length > 0) return exists[0]._id
-  const newStatus: IssueStatus = {
-    ofAttribute: tracker.attribute.IssueStatus,
-    name: 'Todo',
-    _id: generateId(),
-    category: task.statusCategory.ToDo,
-    color: PaletteColorIndexes.Porpoise,
-    space: task.space.Statuses,
-    modifiedOn: Date.now(),
-    createdBy: core.account.System,
-    createdOn: Date.now(),
-    modifiedBy: core.account.System,
-    _class: tracker.class.IssueStatus
-  }
-  await client.create<Status>(DOMAIN_STATUS, newStatus)
-  const tx: TxCreateDoc<IssueStatus> = {
-    modifiedOn: Date.now(),
-    createdBy: core.account.System,
-    createdOn: Date.now(),
-    modifiedBy: core.account.System,
-    _id: generateId(),
-    objectClass: newStatus._class,
-    objectSpace: newStatus.space,
-    objectId: newStatus._id,
-    _class: core.class.TxCreateDoc,
-    space: core.space.Tx,
-    attributes: {
-      category: newStatus.category,
-      color: newStatus.color,
-      ofAttribute: newStatus.ofAttribute,
-      name: newStatus.name
-    }
-  }
-  await client.create(DOMAIN_TX, tx)
-  return newStatus._id
-}
-
-async function restoreToDoCategory (client: MigrationClient): Promise<void> {
-  const updatedStatus = new Set<Ref<Status>>()
-  const allStatuses = await client.find<Status>(
-    DOMAIN_STATUS,
-    { _class: tracker.class.IssueStatus },
-    { projection: { name: 1, _id: 1 } }
-  )
-  const statusMap = toIdMap(allStatuses)
-  const projects = await client.find<ProjectType>(DOMAIN_SPACE, {
-    _class: task.class.ProjectType,
-    descriptor: tracker.descriptors.ProjectType,
-    classic: true
-  })
-  for (const p of projects) {
-    const changed = new Map<Ref<Status>, Ref<Status>>()
-    const pushStatuses: {
-      _id: Ref<Status>
-      taskType: Ref<TaskType>
-    }[] = []
-    const taskTypes = await client.find<TaskType>(DOMAIN_TASK, {
-      _class: task.class.TaskType,
-      descriptor: tracker.descriptors.Issue,
-      _id: { $in: p.tasks ?? [] }
-    })
-    for (const taskType of taskTypes) {
-      if (taskType.statusCategories.includes(task.statusCategory.ToDo)) continue
-      const activeIndexes: number[] = []
-      for (let index = 0; index < taskType.statuses.length; index++) {
-        const status = taskType.statuses[index]
-        const st = statusMap.get(status)
-        if (st === undefined) continue
-        if (st.category !== task.statusCategory.Active) continue
-        activeIndexes.push(index)
-      }
-      if (activeIndexes.length < 2) {
-        // we should create new status
-        const newStatus = await tryCreateStatus(client)
-        pushStatuses.push({
-          _id: newStatus,
-          taskType: taskType._id
-        })
-        taskType.statuses.splice(activeIndexes[0] ?? 0, 0, newStatus)
-      } else {
-        // let's try to find ToDo status
-        let changed = false
-        for (const index of activeIndexes) {
-          const status = taskType.statuses[index]
-          const st = statusMap.get(status)
-          if (st === undefined) continue
-          const ownTxes = await client.find<Tx>(DOMAIN_TX, { objectId: status })
-          const attachedTxes = await client.find<Tx>(DOMAIN_TX, { 'tx.objectId': status })
-          const original = TxProcessor.buildDoc2Doc<Status>([...ownTxes, ...attachedTxes])
-          if (original === undefined) continue
-          if (original.category === tracker.issueStatusCategory.Unstarted) {
-            // We need to update status
-            if (!updatedStatus.has(status)) {
-              await client.update<Status>(
-                DOMAIN_STATUS,
-                { _id: status },
-                { $set: { category: task.statusCategory.ToDo } }
-              )
-              updatedStatus.add(status)
-            }
-            changed = true
-          }
-        }
-        if (!changed) {
-          // we should create new status
-          const newStatus = await tryCreateStatus(client)
-          pushStatuses.push({
-            _id: newStatus,
-            taskType: taskType._id
-          })
-          taskType.statuses.splice(activeIndexes[0] ?? 0, 0, newStatus)
-        }
-      }
-      await client.update(
-        DOMAIN_TASK,
-        { _id: taskType._id },
-        {
-          $set: {
-            statusCategories: [
-              task.statusCategory.UnStarted,
-              task.statusCategory.ToDo,
-              task.statusCategory.Active,
-              task.statusCategory.Won,
-              task.statusCategory.Lost
-            ],
-            statuses: taskType.statuses
-          }
-        }
-      )
-    }
-    if (changed.size > 0) {
-      const statuses = p.statuses
-        .map((it) => {
-          return {
-            ...it,
-            _id: changed.get(it._id) ?? it._id
-          }
-        })
-        .concat(pushStatuses)
-      await client.update(DOMAIN_SPACE, { _id: p._id }, { $set: { statuses } })
-    }
   }
 }
 
@@ -369,266 +172,198 @@ async function migrateIdentifiers (client: MigrationClient): Promise<void> {
   }
 }
 
-async function restoreTaskTypes (client: MigrationClient): Promise<void> {
-  // Query all tracker project types creations (in Model)
-  // We only update new project types in model here and not old ones in spaces
-  const projectTypes = (await client.find(DOMAIN_TX, {
-    _class: core.class.TxCreateDoc,
-    objectClass: task.class.ProjectType,
-    objectSpace: core.space.Model,
-    'attributes.descriptor': tracker.descriptors.ProjectType
-  })) as TxCreateDoc<ProjectType>[]
+async function migrateDefaultStatuses (client: MigrationClient, logger: ModelLogger): Promise<void> {
+  const defaultTypeId = tracker.ids.ClassingProjectType
+  const typeDescriptor = tracker.descriptors.ProjectType
+  const baseClass = tracker.class.Project
+  const defaultTaskTypeId = tracker.taskTypes.Issue
+  const taskTypeClass = task.class.TaskType
+  const baseTaskClass = tracker.class.Issue
+  const statusAttributeOf = tracker.attribute.IssueStatus
+  const statusClass = tracker.class.IssueStatus
+  const getDefaultStatus = (oldStatus: Status): Ref<Status> | undefined => {
+    const classicCategory = classicIssueTaskStatuses.find((c) => c.category === oldStatus.category)
+    if (classicCategory === undefined) {
+      return
+    }
 
-  if (projectTypes.length === 0) {
-    return
+    const classicStatus = classicCategory.statuses.find(
+      (s) => s[0].toLowerCase() === oldStatus.name.trim().toLowerCase()
+    )
+
+    return classicStatus?.[2] as Ref<Status>
   }
+  const migrateProjects = async (getNewStatus: (oldStatus: Ref<Status>) => Ref<Status>): Promise<void> => {
+    const projects = await client.find<Project>(DOMAIN_SPACE, { _class: tracker.class.Project })
 
-  const descr = client.model.getObject(tracker.descriptors.ProjectType)
-  const knownCategories = classicIssueTaskStatuses.map((c) => c.category)
+    logger.log('projects: ', projects.length)
 
-  function compareCategories (a: Ref<StatusCategory>, b: Ref<StatusCategory>): number {
-    const indexOfA = knownCategories.indexOf(a)
-    const indexOfB = knownCategories.indexOf(b)
+    // Project:
+    // 1. defaultIssueStatus
+    // 2. DocUpdateMessage:update:defaultIssueStatus
+    for (const project of projects) {
+      const newDefaultIssueStatus = getNewStatus(project.defaultIssueStatus)
 
-    return indexOfA - indexOfB
-  }
-
-  for (const projType of projectTypes) {
-    for (const taskTypeId of projType.attributes.tasks) {
-      // Check if task type create TX exists
-      const createTx = (
-        (await client.find(DOMAIN_TX, {
-          _class: core.class.TxCreateDoc,
-          objectClass: task.class.TaskType,
-          objectSpace: core.space.Model,
-          objectId: taskTypeId
-        })) as TxCreateDoc<TaskType>[]
-      )[0]
-
-      if (createTx !== undefined) {
-        continue
+      if (project.defaultIssueStatus !== newDefaultIssueStatus) {
+        await client.update(DOMAIN_SPACE, { _id: project._id }, { $set: { defaultIssueStatus: newDefaultIssueStatus } })
       }
 
-      // Restore create task type tx
-
-      // Get target class mixin
-
-      const typeMixin = (
-        await client.find(DOMAIN_TX, {
-          mixin: task.mixin.TaskTypeClass,
-          'attributes.projectType': projType.objectId,
-          'attributes.taskType': taskTypeId
-        })
-      )[0] as TxMixin<any, any>
-
-      if (typeMixin === undefined) {
-        console.error(new Error('No type mixin found for the task type being restored'))
-        continue
-      }
-
-      // Get statuses and categories
-      const statusesIds = projType.attributes.statuses.filter((s) => s.taskType === taskTypeId).map((s) => s._id)
-      if (statusesIds.length === 0) {
-        throw new Error('No statuses defined for the task type being restored')
-      }
-      const statuses = await client.find<Status>(DOMAIN_STATUS, {
-        _id: { $in: statusesIds }
+      const projectUpdateMessages = await client.find<DocUpdateMessage>(DOMAIN_ACTIVITY, {
+        _class: activity.class.DocUpdateMessage,
+        action: 'update',
+        objectId: project._id,
+        'attributeUpdates.attrKey': 'defaultIssueStatus'
       })
-      const categoriesIds = new Set<Ref<StatusCategory>>()
 
-      statuses.forEach((st) => {
-        if (st.category !== undefined) {
-          categoriesIds.add(st.category)
+      for (const updateMessage of projectUpdateMessages) {
+        const statusSet = updateMessage.attributeUpdates?.set[0]
+        const newStatusSet = statusSet != null ? getNewStatus(statusSet as Ref<Status>) : statusSet
+
+        if (statusSet !== newStatusSet) {
+          await client.update(
+            DOMAIN_ACTIVITY,
+            { _id: updateMessage._id },
+            { $set: { 'attributeUpdates.set.0': newStatusSet } }
+          )
         }
-      })
-
-      if (categoriesIds.size === 0) {
-        throw new Error('No categories found for the task type being restored')
-      }
-
-      const statusCategories = Array.from(categoriesIds)
-
-      statusCategories.sort(compareCategories)
-
-      const createTxNew: TxCreateDoc<TaskType> = {
-        _id: generateId(),
-        _class: core.class.TxCreateDoc,
-        space: core.space.Tx,
-        objectId: taskTypeId,
-        objectClass: task.class.TaskType,
-        objectSpace: core.space.Model,
-        modifiedBy: core.account.ConfigUser, // So it's not removed during the next migration
-        modifiedOn: projType.modifiedOn,
-        createdOn: projType.createdOn,
-        attributes: {
-          name: 'Issue',
-          descriptor: tracker.descriptors.Issue,
-          ofClass: tracker.class.Issue,
-          targetClass: typeMixin.objectId,
-          statusClass: tracker.class.IssueStatus,
-          allowedAsChildOf: [taskTypeId],
-          statuses: statusesIds,
-          statusCategories,
-          parent: projType.objectId,
-          kind: 'both',
-          icon: descr.icon
-        }
-      }
-
-      await client.create(DOMAIN_TX, createTxNew)
-
-      // If there were updates to the task type - move them to the model
-      // Check if task type create TX exists
-      const updateTxes = await client.find(DOMAIN_TX, {
-        _class: { $in: [core.class.TxUpdateDoc, core.class.TxRemoveDoc] },
-        objectClass: task.class.TaskType,
-        objectSpace: projType.objectId,
-        objectId: taskTypeId
-      })
-
-      for (const updTx of updateTxes) {
-        await client.create<Tx>(DOMAIN_TX, {
-          ...updTx,
-          _id: generateId(),
-          objectSpace: core.space.Model
-        })
       }
     }
   }
+
+  await migrateDefaultStatusesBase<Issue>(
+    client,
+    logger,
+    defaultTypeId,
+    typeDescriptor,
+    baseClass,
+    defaultTaskTypeId,
+    taskTypeClass,
+    baseTaskClass,
+    statusAttributeOf,
+    statusClass,
+    getDefaultStatus,
+    migrateProjects
+  )
+}
+
+async function migrateStatusesToModel (client: MigrationClient): Promise<void> {
+  // Move statuses to model:
+  // Migrate the default ones with well-known ids as system's model
+  // And the rest as user's model
+  // Skip __superseded statuses
+  const allStatuses = await client.find<IssueStatus>(DOMAIN_STATUS, {
+    _class: tracker.class.IssueStatus,
+    __superseded: { $exists: false }
+  })
+
+  for (const status of allStatuses) {
+    const isSystem = (status as any).__migratedFrom !== undefined
+    const modifiedBy =
+      status.modifiedBy === core.account.System
+        ? isSystem
+          ? core.account.System
+          : core.account.ConfigUser
+        : status.modifiedBy
+
+    const tx: TxCreateDoc<IssueStatus> = {
+      _id: generateId(),
+      _class: core.class.TxCreateDoc,
+      space: core.space.Tx,
+      objectId: status._id,
+      objectClass: status._class,
+      objectSpace: core.space.Model,
+      attributes: {
+        ofAttribute: status.ofAttribute,
+        category: status.category,
+        name: status.name,
+        color: status.color,
+        description: status.description
+      },
+      modifiedOn: status.modifiedOn,
+      createdBy: status.createdBy,
+      createdOn: status.createdOn,
+      modifiedBy
+    }
+
+    await client.create(DOMAIN_TX, tx)
+  }
+}
+
+async function migrateDefaultTypeMixins (client: MigrationClient): Promise<void> {
+  const oldSpaceTypeMixin = `${tracker.ids.ClassingProjectType}:type:mixin`
+  const newSpaceTypeMixin = tracker.mixin.ClassicProjectTypeData
+  const oldTaskTypeMixin = `${tracker.taskTypes.Issue}:type:mixin`
+  const newTaskTypeMixin = tracker.mixin.IssueTypeData
+
+  await client.update(
+    DOMAIN_TX,
+    {
+      objectClass: core.class.Attribute,
+      'attributes.attributeOf': oldSpaceTypeMixin
+    },
+    {
+      $set: {
+        'attributes.attributeOf': newSpaceTypeMixin
+      }
+    }
+  )
+
+  await client.update(
+    DOMAIN_SPACE,
+    {
+      _class: tracker.class.Project,
+      [oldSpaceTypeMixin]: { $exists: true }
+    },
+    {
+      $rename: {
+        [oldSpaceTypeMixin]: newSpaceTypeMixin
+      }
+    }
+  )
+
+  await client.update(
+    DOMAIN_TASK,
+    {
+      _class: tracker.class.Issue,
+      [oldTaskTypeMixin]: { $exists: true }
+    },
+    {
+      $rename: {
+        [oldTaskTypeMixin]: newTaskTypeMixin
+      }
+    }
+  )
+}
+
+async function migrateDefaultProjectOwners (client: MigrationClient): Promise<void> {
+  const workspaceOwners = await client.model.findAll(contact.class.PersonAccount, {
+    role: AccountRole.Owner
+  })
+
+  await client.update(
+    DOMAIN_SPACE,
+    {
+      _id: tracker.project.DefaultProject
+    },
+    {
+      $set: {
+        owners: workspaceOwners.map((it) => it._id)
+      }
+    }
+  )
 }
 
 export const trackerOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
+  async preMigrate (client: MigrationClient, logger: ModelLogger): Promise<void> {
     await tryMigrate(client, trackerId, [
       {
-        state: 'fix-category-descriptors',
-        func: async (client) => {
-          await client.update(
-            DOMAIN_SPACE,
-            { _class: task.class.ProjectType, category: 'tracker:category:ProjectTypeCategory' },
-            {
-              $set: { descriptor: tracker.descriptors.ProjectType },
-              $unset: { category: 1 }
-            }
-          )
-        }
-      },
-      {
-        state: 'migrate-category-types',
-        func: async (client) => {
-          //
-          await client.update<Status>(
-            DOMAIN_STATUS,
-            { _class: tracker.class.IssueStatus, category: tracker.issueStatusCategory.Backlog },
-            { $set: { category: task.statusCategory.UnStarted } }
-          )
-
-          await client.update<Status>(
-            DOMAIN_STATUS,
-            { _class: tracker.class.IssueStatus, category: tracker.issueStatusCategory.Unstarted },
-            { $set: { category: task.statusCategory.ToDo } }
-          )
-          await client.update<Status>(
-            DOMAIN_STATUS,
-            { _class: tracker.class.IssueStatus, category: tracker.issueStatusCategory.Started },
-            { $set: { category: task.statusCategory.Active } }
-          )
-
-          await client.update<Status>(
-            DOMAIN_STATUS,
-            { _class: tracker.class.IssueStatus, category: tracker.issueStatusCategory.Completed },
-            { $set: { category: task.statusCategory.Won } }
-          )
-          await client.update<Status>(
-            DOMAIN_STATUS,
-            { _class: tracker.class.IssueStatus, category: tracker.issueStatusCategory.Canceled },
-            { $set: { category: task.statusCategory.Lost } }
-          )
-
-          // We need to update Project and TaskTypes.
-          const projectTypes = await client.find<ProjectType>(DOMAIN_SPACE, { _class: task.class.ProjectType })
-
-          // We need to update Project and TaskTypes.
-          const taskTypes = await client.find<TaskType>(DOMAIN_TASK, { _class: task.class.TaskType })
-
-          const ptUpdate = new Map<Ref<ProjectType>, ProjectType>()
-          const ttUpdate = new Map<Ref<TaskType>, TaskType>()
-
-          for (const tt of taskTypes) {
-            if (tt.statusCategories.includes(tracker.issueStatusCategory.Backlog)) {
-              // We need to replace category
-              tt.statusCategories = [
-                task.statusCategory.UnStarted,
-                task.statusCategory.ToDo,
-                task.statusCategory.Active,
-                task.statusCategory.Won,
-                task.statusCategory.Lost
-              ]
-              ttUpdate.set(tt._id, tt)
-            }
-          }
-
-          // We need to fix duplicate statuses per category.
-          const toRemove: Ref<Status>[] = []
-          for (const c of [
-            task.statusCategory.UnStarted,
-            task.statusCategory.ToDo,
-            task.statusCategory.Active,
-            task.statusCategory.Won,
-            task.statusCategory.Lost
-          ]) {
-            const allStatuses = await client.find<Status>(
-              DOMAIN_STATUS,
-              { _class: tracker.class.IssueStatus, category: c },
-              { projection: { name: 1, _id: 1 } }
-            )
-            let idx = -1
-            for (const s of allStatuses) {
-              idx++
-              const sName = s.name.trim().toLowerCase()
-              const prev = allStatuses.findIndex((it) => it.name.trim().toLowerCase() === sName)
-              if (prev !== idx) {
-                const prevStatus = allStatuses[prev]
-
-                // We have a duplicate tasks
-                await client.update<Status>(DOMAIN_TASK, { status: s._id }, { $set: { status: prevStatus._id } })
-
-                for (const tt of taskTypes) {
-                  const pos = tt.statuses.indexOf(s._id)
-                  if (pos !== -1) {
-                    tt.statuses[pos] = prevStatus._id
-                    ttUpdate.set(tt._id, tt)
-                  }
-                }
-
-                for (const pt of projectTypes) {
-                  const pos = pt.statuses.findIndex((q) => q._id === s._id)
-                  if (pos !== -1) {
-                    pt.statuses[pos]._id = prevStatus._id
-                    ptUpdate.set(pt._id, pt)
-                  }
-                }
-
-                toRemove.push(s._id)
-              }
-            }
-          }
-          for (const v of ptUpdate.values()) {
-            await client.update(DOMAIN_SPACE, { _id: v._id }, { $set: { statuses: v.statuses } })
-          }
-          for (const v of ttUpdate.values()) {
-            await client.update(DOMAIN_TASK, { _id: v._id }, { $set: { statuses: v.statuses } })
-          }
-        }
-      },
-      {
-        state: 'fixTaskTypes',
-        func: fixTrackerTaskTypes
-      },
-      {
-        state: 'restoreToDoCategory',
-        func: restoreToDoCategory
-      },
+        state: 'migrate-default-statuses',
+        func: (client) => migrateDefaultStatuses(client, logger)
+      }
+    ])
+  },
+  async migrate (client: MigrationClient): Promise<void> {
+    await tryMigrate(client, trackerId, [
       {
         state: 'identifier',
         func: migrateIdentifiers
@@ -638,17 +373,25 @@ export const trackerOperation: MigrateOperation = {
         func: passIdentifierToParentInfo
       },
       {
-        state: 'restoreTaskTypes',
-        func: restoreTaskTypes
+        state: 'statusesToModel-2',
+        func: migrateStatusesToModel
+      },
+      {
+        state: 'migrateDefaultTypeMixins',
+        func: migrateDefaultTypeMixins
+      },
+      {
+        state: 'migrateDefaultProjectOwners',
+        func: migrateDefaultProjectOwners
       }
     ])
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
+    const tx = new TxOperations(client, core.account.System)
     await tryUpgrade(client, trackerId, [
       {
         state: 'create-defaults',
-        func: async (client) => {
-          const tx = new TxOperations(client, core.account.System)
+        func: async () => {
           await createDefaults(tx)
         }
       }

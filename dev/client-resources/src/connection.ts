@@ -25,17 +25,17 @@ import core, {
   FindOptions,
   FindResult,
   getWorkspaceId,
+  MeasureDoneOperation,
   MeasureMetricsContext,
   Ref,
+  SearchOptions,
+  SearchQuery,
+  SearchResult,
   ServerStorage,
   Timestamp,
   Tx,
   TxHandler,
-  TxResult,
-  SearchQuery,
-  SearchOptions,
-  SearchResult,
-  MeasureDoneOperation
+  TxResult
 } from '@hcengineering/core'
 import { createInMemoryTxAdapter } from '@hcengineering/dev-storage'
 import devmodel from '@hcengineering/devmodel'
@@ -109,6 +109,8 @@ class ServerStorageWrapper implements ClientConnection {
   async measure (operationName: string): Promise<MeasureDoneOperation> {
     return async () => ({ time: 0, serverTime: 0 })
   }
+
+  async sendForceClose (): Promise<void> {}
 }
 
 async function createNullFullTextAdapter (): Promise<FullTextAdapter> {

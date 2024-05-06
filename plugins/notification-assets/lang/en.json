@@ -29,6 +29,8 @@
     "Unread": "Unread",
     "CommonNotificationTitle": "{title}",
     "CommonNotificationBody": "Updated by {senderName}",
+    "CommonNotificationChanged": "{senderName} changed {property}",
+    "CommonNotificationChangedProperty": "{senderName} changed {property} to \"{newValue}\"",
     "ChangedCollaborators": "Changed collaborators",
     "NewCollaborators": "New collaborators",
     "RemovedCollaborators": "Removed collaborators",
@@ -43,6 +45,9 @@
     "StarDocument": "Star document",
     "UnstarDocument": "Unstar document",
     "Unsubscribe": "Unsubscribe",
-    "Push": "Push"
+    "Push": "Push",
+    "Unreads": "Unreads",
+    "EnablePush": "Enable push notifications",
+    "NotificationBlockedInBrowser": "Notifications are blocked in your browser. Please enable notifications in your browser settings"
   }
 }

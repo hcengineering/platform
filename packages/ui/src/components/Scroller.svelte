@@ -844,6 +844,10 @@
     &::-webkit-scrollbar:horizontal {
       height: 0;
     }
+
+    @media print {
+      overflow: visible !important;
+    }
   }
   .box {
     display: flex;

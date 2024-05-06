@@ -15,8 +15,8 @@
 //
 
 import { type ChatMessageViewlet } from '@hcengineering/chunter'
-import type { Doc, Ref } from '@hcengineering/core'
-import { type Funnel, leadId } from '@hcengineering/lead'
+import type { Doc, Ref, Status } from '@hcengineering/core'
+import { leadId } from '@hcengineering/lead'
 import lead from '@hcengineering/lead-resources/src/plugin'
 import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
 import type { IntlString } from '@hcengineering/platform'
@@ -45,9 +45,6 @@ export default mergeIds(leadId, lead, {
     Leads: '' as AnyComponent,
     NewItemsHeader: '' as AnyComponent
   },
-  space: {
-    DefaultFunnel: '' as Ref<Funnel>
-  },
   viewlet: {
     TableCustomer: '' as Ref<Viewlet>,
     TableLead: '' as Ref<Viewlet>,
@@ -72,5 +69,15 @@ export default mergeIds(leadId, lead, {
   },
   descriptors: {
     Lead: '' as Ref<TaskTypeDescriptor>
+  },
+  taskTypeStatus: {
+    Backlog: '' as Ref<Status>,
+    Incoming: '' as Ref<Status>,
+    Negotiation: '' as Ref<Status>,
+    OfferPreparing: '' as Ref<Status>,
+    MakeADecision: '' as Ref<Status>,
+    ContractConclusion: '' as Ref<Status>,
+    Won: '' as Ref<Status>,
+    Lost: '' as Ref<Status>
   }
 })

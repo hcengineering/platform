@@ -29,7 +29,7 @@
   } from '@hcengineering/core'
   import document, { Teamspace } from '@hcengineering/document'
   import { Asset } from '@hcengineering/platform'
-  import presentation, { Card, getClient } from '@hcengineering/presentation'
+  import presentation, { Card, getClient, reduceCalls } from '@hcengineering/presentation'
   import {
     Button,
     EditBox,
@@ -64,6 +64,8 @@
   let isColorSelected = false
   let members: Ref<Account>[] =
     teamspace?.members !== undefined ? hierarchy.clone(teamspace.members) : [getCurrentAccount()._id]
+  let owners: Ref<Account>[] =
+    teamspace?.owners !== undefined ? hierarchy.clone(teamspace.owners) : [getCurrentAccount()._id]
   let rolesAssignment: RolesAssignment = {}
 
   $: isNew = teamspace === undefined
@@ -72,7 +74,7 @@
   let spaceType: WithLookup<SpaceType> | undefined
 
   $: void loadSpaceType(typeId)
-  async function loadSpaceType (id: typeof typeId): Promise<void> {
+  const loadSpaceType = reduceCalls(async (id: typeof typeId): Promise<void> => {
     spaceType =
       id !== undefined
         ? await client
@@ -85,7 +87,7 @@
     }
 
     rolesAssignment = getRolesAssignment()
-  }
+  })
 
   function getRolesAssignment (): RolesAssignment {
     if (teamspace === undefined || spaceType?.targetClass === undefined || spaceType?.$lookup?.roles === undefined) {
@@ -95,7 +97,7 @@
     const asMixin = hierarchy.as(teamspace, spaceType?.targetClass)
 
     return spaceType.$lookup.roles.reduce<RolesAssignment>((prev, { _id }) => {
-      prev[_id as Ref<Role>] = (asMixin as any)[_id]
+      prev[_id as Ref<Role>] = (asMixin as any)[_id] ?? []
 
       return prev
     }, {})
@@ -115,6 +117,7 @@
       description,
       private: isPrivate,
       members,
+      owners,
       archived: false,
       icon,
       color
@@ -149,6 +152,16 @@
       for (const member of teamspaceData.members) {
         if (teamspace.members.findIndex((p) => p === member) === -1) {
           update.members = teamspaceData.members
+          break
+        }
+      }
+    }
+    if (teamspaceData.owners?.length !== teamspace?.owners?.length) {
+      update.owners = teamspaceData.owners
+    } else {
+      for (const owner of teamspaceData.owners ?? []) {
+        if (teamspace.owners?.findIndex((p) => p === owner) === -1) {
+          update.owners = teamspaceData.owners
           break
         }
       }
@@ -215,6 +228,13 @@
 
   $: roles = (spaceType?.$lookup?.roles ?? []) as Role[]
 
+  function handleOwnersChanged (newOwners: Ref<Account>[]): void {
+    owners = newOwners
+
+    const newMembersSet = new Set([...members, ...newOwners])
+    members = Array.from(newMembersSet)
+  }
+
   function handleMembersChanged (newMembers: Ref<Account>[]): void {
     // If a member was removed we need to remove it from any roles assignments as well
     const newMembersSet = new Set(newMembers)
@@ -237,13 +257,21 @@
 
     rolesAssignment[roleId] = newMembers
   }
+
+  $: canSave =
+    name.trim().length > 0 &&
+    !(members.length === 0 && isPrivate) &&
+    typeId !== undefined &&
+    spaceType?.targetClass !== undefined &&
+    owners.length > 0 &&
+    (!isPrivate || owners.some((o) => members.includes(o)))
 </script>
 
 <Card
   label={isNew ? documentRes.string.NewTeamspace : documentRes.string.EditTeamspace}
   okLabel={isNew ? presentation.string.Create : presentation.string.Save}
   okAction={handleSave}
-  canSave={name.length > 0 && !(members.length === 0 && isPrivate) && typeId !== undefined}
+  {canSave}
   accentHeader
   width={'medium'}
   gap={'gapV-6'}
@@ -318,6 +346,19 @@
             }}
         size={'large'}
         on:click={chooseIcon}
+      />
+    </div>
+
+    <div class="antiGrid-row">
+      <div class="antiGrid-row__header">
+        <Label label={core.string.Owners} />
+      </div>
+      <AccountArrayEditor
+        value={owners}
+        label={core.string.Owners}
+        onChange={handleOwnersChanged}
+        kind={'regular'}
+        size={'large'}
       />
     </div>
 

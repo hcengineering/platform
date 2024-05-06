@@ -109,7 +109,7 @@ export interface TaskTypeDescriptor extends Doc {
  */
 export interface TaskStatusFactory {
   category: Ref<StatusCategory>
-  statuses: (string | [string, number])[]
+  statuses: (string | [string, number, Ref<Status>?])[]
 }
 
 /**

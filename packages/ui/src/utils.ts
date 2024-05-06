@@ -85,14 +85,15 @@ export function addNotification (
   title: string,
   subTitle: string,
   component: AnyComponent | AnySvelteComponent,
-  params?: Record<string, any>
+  params?: Record<string, any>,
+  severity: NotificationSeverity = NotificationSeverity.Success
 ): void {
   const closeTimeout = parseInt(localStorage.getItem('#platform.notification.timeout') ?? '10000')
   const notification: Notification = {
     id: generateId(),
     title,
     subTitle,
-    severity: NotificationSeverity.Success,
+    severity,
     position: NotificationPosition.BottomRight,
     component,
     closeTimeout,
@@ -262,6 +263,22 @@ export class DelayedCaller {
       setTimeout(() => {
         this.op?.()
         this.op = undefined
+      }, this.delay)
+    }
+  }
+}
+
+/**
+ * @public
+ */
+export class ThrottledCaller {
+  timeout?: any
+  constructor (readonly delay: number = 10) {}
+  call (op: () => void): void {
+    if (this.timeout === undefined) {
+      op()
+      this.timeout = setTimeout(() => {
+        this.timeout = undefined
       }, this.delay)
     }
   }

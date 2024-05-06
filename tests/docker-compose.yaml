@@ -91,6 +91,7 @@ services:
     ports:
       - 3334:3334
     environment:
+      - SERVER_PROVIDER=${SERVER_PROVIDER}
       - SERVER_PORT=3334
       - SERVER_SECRET=secret
       - ELASTIC_URL=http://elastic:9200
@@ -102,6 +103,7 @@ services:
       - MINIO_SECRET_KEY=minioadmin  
       - REKONI_URL=http://rekoni:4005
       - FRONT_URL=http://localhost:8083
+      - UPLOAD_URL=http://localhost:8083/files
       - ACCOUNTS_URL=http://account:3003
       - LAST_NAME_FIRST=true
       - ELASTIC_INDEX_NAME=local_storage_index

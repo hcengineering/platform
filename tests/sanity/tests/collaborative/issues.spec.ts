@@ -1,16 +1,24 @@
 import { test } from '@playwright/test'
-import { generateId, getSecondPage, PlatformSetting, PlatformURI } from '../utils'
-import { NewIssue } from '../model/tracker/types'
-import { IssuesPage } from '../model/tracker/issues-page'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
+import { IssuesPage } from '../model/tracker/issues-page'
+import { NewIssue } from '../model/tracker/types'
+import { generateId, getSecondPage, PlatformSetting, PlatformURI } from '../utils'
 
 test.use({
   storageState: PlatformSetting
 })
-
+// ADDED NEW
 test.describe('Collaborative test for issue', () => {
+  let leftSideMenuPage: LeftSideMenuPage
+  let issuesPage: IssuesPage
+  let issuesDetailsPage: IssuesDetailsPage
+
   test.beforeEach(async ({ page }) => {
+    leftSideMenuPage = new LeftSideMenuPage(page)
+    issuesPage = new IssuesPage(page)
+    issuesDetailsPage = new IssuesDetailsPage(page)
+
     await (await page.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
   })
 
@@ -22,7 +30,7 @@ test.describe('Collaborative test for issue', () => {
       priority: 'Urgent',
       assignee: 'Appleseed John',
       createLabel: true,
-      labels: `CREATE-ISSUE-${generateId()}`,
+      labels: `CREATE-ISSUE-${generateId(5)}`,
       component: 'No component',
       estimation: '2',
       milestone: 'No Milestone',
@@ -31,38 +39,40 @@ test.describe('Collaborative test for issue', () => {
     }
 
     // open second page
-    const userSecondPage = await getSecondPage(browser)
-    await (await userSecondPage.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
+    const { page: userSecondPage, context } = await getSecondPage(browser)
+    try {
+      await (await userSecondPage.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
 
-    // create a new issue by first user
-    await (await page.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
-    const leftSideMenuPage = new LeftSideMenuPage(page)
-    await leftSideMenuPage.buttonTracker.click()
+      // create a new issue by first user
+      await (await page.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
+      await leftSideMenuPage.clickTracker()
 
-    const issuesPage = new IssuesPage(page)
-    await issuesPage.createNewIssue(newIssue)
-    await issuesPage.linkSidebarAll.click()
-    await issuesPage.modelSelectorAll.click()
-    await issuesPage.searchIssueByName(newIssue.title)
-    await issuesPage.openIssueByName(newIssue.title)
+      await issuesPage.createNewIssue(newIssue)
+      await issuesPage.clickLinkSidebarAll()
+      await issuesPage.clickModelSelectorAll()
+      await issuesPage.searchIssueByName(newIssue.title)
+      await issuesPage.openIssueByName(newIssue.title)
 
-    // check created issued by second user
-    const issuesPageSecond = new IssuesPage(userSecondPage)
-    await userSecondPage.evaluate(() => {
-      localStorage.setItem('platform.activity.threshold', '0')
-    })
-    await issuesPageSecond.linkSidebarAll.click()
-    await issuesPageSecond.modelSelectorAll.click()
-    await issuesPageSecond.searchIssueByName(newIssue.title)
-    await issuesPageSecond.openIssueByName(newIssue.title)
+      // check created issued by second user
+      const issuesPageSecond = new IssuesPage(userSecondPage)
+      await userSecondPage.evaluate(() => {
+        localStorage.setItem('platform.activity.threshold', '0')
+      })
+      await issuesPageSecond.clickLinkSidebarAll()
+      await issuesPageSecond.clickModelSelectorAll()
+      await issuesPageSecond.searchIssueByName(newIssue.title)
+      await issuesPageSecond.openIssueByName(newIssue.title)
 
-    const issuesDetailsPageSecond = new IssuesDetailsPage(userSecondPage)
-    await issuesDetailsPageSecond.checkIssue({
-      ...newIssue,
-      milestone: 'Milestone',
-      estimation: '2h'
-    })
-    await userSecondPage.close()
+      const issuesDetailsPageSecond = new IssuesDetailsPage(userSecondPage)
+      await issuesDetailsPageSecond.checkIssue({
+        ...newIssue,
+        milestone: 'Milestone',
+        estimation: '2h'
+      })
+    } finally {
+      await userSecondPage.close()
+      await context.close()
+    }
   })
 
   test('Issues status can be changed by another users', async ({ page, browser }) => {
@@ -72,42 +82,45 @@ test.describe('Collaborative test for issue', () => {
     }
 
     // open second page
-    const userSecondPage = await getSecondPage(browser)
-    await (await userSecondPage.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
+    const { page: userSecondPage, context } = await getSecondPage(browser)
 
-    const issuesPageSecond = new IssuesPage(userSecondPage)
-    await issuesPageSecond.linkSidebarAll.click()
-    await issuesPageSecond.modelSelectorAll.click()
+    try {
+      if (userSecondPage.url() !== `${PlatformURI}/workbench/sanity-ws/tracker/`) {
+        await (await userSecondPage.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
+      }
 
-    // change status
-    await (await page.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
-    const issuesPage = new IssuesPage(page)
-    await issuesPage.linkSidebarAll.click()
-    await issuesPage.modelSelectorBacklog.click()
-    await issuesPage.searchIssueByName(issue.title)
-    await issuesPage.openIssueByName(issue.title)
+      const issuesPageSecond = new IssuesPage(userSecondPage)
+      await issuesPageSecond.clickLinkSidebarAll()
+      await issuesPageSecond.clickModelSelectorAll()
 
-    const issuesDetailsPage = new IssuesDetailsPage(page)
-    await issuesDetailsPage.editIssue({ status: 'In Progress' })
+      // change status
+      await issuesPage.clickLinkSidebarAll()
+      await issuesPage.clickMdelSelectorBacklog()
+      await issuesPage.searchIssueByName(issue.title)
+      await issuesPage.openIssueByName(issue.title)
+      await issuesDetailsPage.editIssue({ status: 'In Progress' })
 
-    // check by another user
-    await issuesPageSecond.modelSelectorBacklog.click()
-    // not active for another user
-    await issuesPageSecond.checkIssueNotExist(issue.title)
+      // check by another user
+      await issuesPageSecond.clickMdelSelectorBacklog()
+      // not active for another user
+      await issuesPageSecond.checkIssueNotExist(issue.title)
 
-    await issuesPageSecond.modelSelectorActive.click()
-    await issuesPageSecond.searchIssueByName(issue.title)
-    await issuesPageSecond.openIssueByName(issue.title)
+      await issuesPageSecond.clickModalSelectorActive()
+      await issuesPageSecond.searchIssueByName(issue.title)
+      await issuesPageSecond.openIssueByName(issue.title)
 
-    const issuesDetailsPageSecond = new IssuesDetailsPage(userSecondPage)
-    await userSecondPage.evaluate(() => {
-      localStorage.setItem('platform.activity.threshold', '0')
-    })
-    await issuesDetailsPageSecond.checkIssue({
-      ...issue,
-      status: 'In Progress'
-    })
-    await userSecondPage.close()
+      const issuesDetailsPageSecond = new IssuesDetailsPage(userSecondPage)
+      await userSecondPage.evaluate(() => {
+        localStorage.setItem('platform.activity.threshold', '0')
+      })
+      await issuesDetailsPageSecond.checkIssue({
+        ...issue,
+        status: 'In Progress'
+      })
+    } finally {
+      await userSecondPage.close()
+      await context.close()
+    }
   })
 
   test('First user change assignee, second user should see assigned issue', async ({ page, browser }) => {
@@ -118,44 +131,46 @@ test.describe('Collaborative test for issue', () => {
     }
 
     // open second page
-    const userSecondPage = await getSecondPage(browser)
-    await (await userSecondPage.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
+    const { page: userSecondPage, context } = await getSecondPage(browser)
+    try {
+      await (await userSecondPage.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
 
-    await test.step(`user1. change assignee to ${newAssignee}`, async () => {
-      await (await page.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
-      const issuesPage = new IssuesPage(page)
-      await issuesPage.linkSidebarAll.click()
-      await issuesPage.modelSelectorBacklog.click()
-      await issuesPage.searchIssueByName(issue.title)
-      await issuesPage.openIssueByName(issue.title)
+      await test.step(`user1. change assignee to ${newAssignee}`, async () => {
+        await (await page.goto(`${PlatformURI}/workbench/sanity-ws/tracker/`))?.finished()
+        await issuesPage.clickLinkSidebarAll()
+        await issuesPage.clickMdelSelectorBacklog()
+        await issuesPage.searchIssueByName(issue.title)
+        await issuesPage.openIssueByName(issue.title)
 
-      const issuesDetailsPage = new IssuesDetailsPage(page)
-      await issuesDetailsPage.editIssue({ assignee: newAssignee })
-    })
+        await issuesDetailsPage.editIssue({ assignee: newAssignee })
+      })
 
-    // TODO: rewrite checkNotificationIssue and uncomment
-    // await test.step('user2. check notification', async () => {
-    //   const leftSideMenuPageSecond = new LeftSideMenuPage(userSecondPage)
-    //   await leftSideMenuPageSecond.checkExistNewNotification(userSecondPage)
-    //   await leftSideMenuPageSecond.buttonNotification.click()
-    //
-    //   const notificationPageSecond = new NotificationPage(userSecondPage)
-    //   await notificationPageSecond.checkNotificationIssue(issue.title, newAssignee)
-    //
-    //   await leftSideMenuPageSecond.buttonTracker.click()
-    // })
+      // TODO: rewrite checkNotificationIssue and uncomment
+      // await test.step('user2. check notification', async () => {
+      //   const leftSideMenuPageSecond = new LeftSideMenuPage(userSecondPage)
+      //   await leftSideMenuPageSecond.checkExistNewNotification(userSecondPage)
+      //   await leftSideMenuPageSecond.buttonNotification.click()
+      //
+      //   const notificationPageSecond = new NotificationPage(userSecondPage)
+      //   await notificationPageSecond.checkNotificationIssue(issue.title, newAssignee)
+      //
+      //   await leftSideMenuPageSecond.clickTracker()
+      // })
 
-    await test.step('user2. check issue assignee', async () => {
-      const issuesPageSecond = new IssuesPage(userSecondPage)
-      await issuesPageSecond.linkSidebarMyIssue.click()
-      await issuesPageSecond.modelSelectorBacklog.click()
+      await test.step('user2. check issue assignee', async () => {
+        const issuesPageSecond = new IssuesPage(userSecondPage)
+        await issuesPageSecond.clickLinkSidebarMyIssue()
+        await issuesPageSecond.clickMdelSelectorBacklog()
 
-      await issuesPageSecond.searchIssueByName(issue.title)
-      await issuesPageSecond.openIssueByName(issue.title)
+        await issuesPageSecond.searchIssueByName(issue.title)
+        await issuesPageSecond.openIssueByName(issue.title)
 
-      const issuesDetailsPageSecond = new IssuesDetailsPage(userSecondPage)
-      await issuesDetailsPageSecond.checkIssue({ ...issue })
-    })
-    await userSecondPage.close()
+        const issuesDetailsPageSecond = new IssuesDetailsPage(userSecondPage)
+        await issuesDetailsPageSecond.checkIssue({ ...issue })
+      })
+    } finally {
+      await userSecondPage.close()
+      await context.close()
+    }
   })
 })

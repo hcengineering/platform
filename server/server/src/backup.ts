@@ -40,6 +40,7 @@ export class BackupClientSession extends ClientSession implements BackupSession 
   chunkInfo = new Map<number, ChunkInfo>()
 
   async loadChunk (ctx: MeasureContext, domain: Domain, idx?: number): Promise<DocChunk> {
+    this.lastRequest = Date.now()
     return await ctx.with('load-chunk', { domain }, async (ctx) => {
       idx = idx ?? this.idIndex++
       let chunk: ChunkInfo | undefined = this.chunkInfo.get(idx)
@@ -79,6 +80,7 @@ export class BackupClientSession extends ClientSession implements BackupSession 
   }
 
   async closeChunk (ctx: MeasureContext, idx: number): Promise<void> {
+    this.lastRequest = Date.now()
     await ctx.with('close-chunk', {}, async () => {
       const chunk = this.chunkInfo.get(idx)
       this.chunkInfo.delete(idx)
@@ -89,14 +91,17 @@ export class BackupClientSession extends ClientSession implements BackupSession 
   }
 
   async loadDocs (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+    this.lastRequest = Date.now()
     return await this._pipeline.storage.load(ctx, domain, docs)
   }
 
   async upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
+    this.lastRequest = Date.now()
     await this._pipeline.storage.upload(ctx, domain, docs)
   }
 
   async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
+    this.lastRequest = Date.now()
     await this._pipeline.storage.clean(ctx, domain, docs)
   }
 }

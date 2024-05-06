@@ -24,13 +24,17 @@ import {
   type Ref,
   type RelatedDocument,
   type Timestamp,
-  type Type
+  type Type,
+  type RolesAssignment,
+  type Role,
+  Account
 } from '@hcengineering/core'
 import {
   ArrOf,
   Collection,
   Hidden,
   Index,
+  Mixin,
   Model,
   Prop,
   ReadOnly,
@@ -408,3 +412,13 @@ export class TProjectTargetPreference extends TPreference implements ProjectTarg
   @Prop(TypeRecord(), getEmbeddedLabel('Properties'))
     props?: { key: string, value: any }[]
 }
+
+@Mixin(tracker.mixin.ClassicProjectTypeData, tracker.class.Project)
+@UX(getEmbeddedLabel('Classic project'), tracker.icon.Issues)
+export class TClassicProjectTypeData extends TProject implements RolesAssignment {
+  [key: Ref<Role>]: Ref<Account>[]
+}
+
+@Mixin(tracker.mixin.IssueTypeData, tracker.class.Issue)
+@UX(getEmbeddedLabel('Issue'), tracker.icon.Issue)
+export class TIssueTypeData extends TIssue {}
