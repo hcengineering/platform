@@ -30,7 +30,7 @@
   async function save (): Promise<void> {
     await client.update(value, {
       space,
-      attachedTo: parent
+      attachedTo: parent ?? document.ids.NoParent
     })
   }
 
