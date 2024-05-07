@@ -349,21 +349,28 @@
 
   const listCategory: SvelteComponentTyped[] = []
   const listListCategory: ListCategory[] = []
+  function getGroupByKey (
+    docKeys: Partial<DocumentQuery<Doc<Space>>>,
+    category: CategoryType,
+    resultQuery: DocumentQuery<Doc<Space>>
+  ): Partial<DocumentQuery<Doc>> {
+    return {
+      ...docKeys,
+      [groupByKey]:
+        typeof category === 'object'
+          ? category.name !== undefined
+            ? { $in: category.values.flatMap((x) => x._id) }
+            : resultQuery[groupByKey]?.$in?.length !== 0
+              ? undefined
+              : []
+          : category
+    }
+  }
 </script>
 
 {#each categories as category, i (typeof category === 'object' ? category.name : category)}
   {@const items = groupByKey === noCategory ? docs : getGroupByValues(groupByDocs, category)}
-  {@const categoryDocKeys = {
-    ...docKeys,
-    [groupByKey]:
-      typeof category === 'object'
-        ? category.name !== undefined
-          ? { $in: category.values.flatMap((x) => x._id) }
-          : resultQuery[groupByKey]?.$in?.length !== 0
-            ? undefined
-            : []
-        : category
-  }}
+  {@const categoryDocKeys = getGroupByKey(docKeys, category, resultQuery)}
   {#if items.length !== 0}
     <ListCategory
       bind:this={listListCategory[i]}
