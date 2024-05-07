@@ -17,6 +17,7 @@ import { getCategories } from '@anticrm/skillset'
 import core, { DOMAIN_TX, type Status, TxOperations, type Ref } from '@hcengineering/core'
 import {
   type ModelLogger,
+  createDefaultSpace,
   createOrUpdate,
   tryMigrate,
   tryUpgrade,
@@ -58,10 +59,10 @@ export const recruitOperation: MigrateOperation = {
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     await tryUpgrade(client, recruitId, [
       {
-        state: 'create-default-project',
+        state: 'create-defaults-v2',
         func: async (client) => {
           const tx = new TxOperations(client, core.account.System)
-          await createDefaults(tx)
+          await createDefaults(client, tx)
         }
       },
       {
@@ -172,8 +173,8 @@ async function migrateDefaultTypeMixins (client: MigrationClient): Promise<void>
   )
 }
 
-async function createDefaults (tx: TxOperations): Promise<void> {
-  await createSpaces(tx)
+async function createDefaults (client: MigrationUpgradeClient, tx: TxOperations): Promise<void> {
+  await createDefaultSpace(client, recruit.space.Reviews, { name: 'Reviews' })
 
   await createOrUpdate(
     tx,
@@ -209,44 +210,4 @@ async function createDefaults (tx: TxOperations): Promise<void> {
   await createSequence(tx, recruit.class.Opinion)
   await createSequence(tx, recruit.class.Applicant)
   await createSequence(tx, recruit.class.Vacancy)
-}
-
-async function createSpaces (tx: TxOperations): Promise<void> {
-  const current = await tx.findOne(core.class.Space, {
-    _id: recruit.space.CandidatesPublic
-  })
-  if (current === undefined) {
-    await tx.createDoc(
-      recruit.class.Candidates,
-      core.space.Space,
-      {
-        name: 'public',
-        description: 'Public Candidates',
-        private: false,
-        members: [],
-        archived: false
-      },
-      recruit.space.CandidatesPublic
-    )
-  }
-
-  const currentReviews = await tx.findOne(core.class.Space, {
-    _id: recruit.space.Reviews
-  })
-  if (currentReviews === undefined) {
-    await tx.createDoc(
-      core.class.Space,
-      core.space.Space,
-      {
-        name: 'Reviews',
-        description: 'Public reviews',
-        private: false,
-        members: [],
-        archived: false
-      },
-      recruit.space.Reviews
-    )
-  } else if (currentReviews.private) {
-    await tx.update(currentReviews, { private: false })
-  }
 }

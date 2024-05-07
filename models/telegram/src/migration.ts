@@ -13,42 +13,30 @@
 // limitations under the License.
 //
 
-import core, { TxOperations } from '@hcengineering/core'
 import {
+  createDefaultSpace,
   tryUpgrade,
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient
 } from '@hcengineering/model'
-import telegram from './plugin'
 import { telegramId } from '@hcengineering/telegram'
+import telegram from './plugin'
+
+export async function createSpace (client: MigrationUpgradeClient): Promise<void> {
+  await createDefaultSpace(client, telegram.space.Telegram, {
+    name: 'Telegram',
+    description: 'Space for all telegram messages'
+  })
+}
 
 export const telegramOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     await tryUpgrade(client, telegramId, [
       {
-        state: 'create-defaults',
-        func: async (client) => {
-          const tx = new TxOperations(client, core.account.System)
-          const current = await tx.findOne(core.class.Space, {
-            _id: telegram.space.Telegram
-          })
-          if (current === undefined) {
-            await tx.createDoc(
-              core.class.Space,
-              core.space.Space,
-              {
-                name: 'Telegram',
-                description: 'Space for all telegram messages',
-                private: false,
-                archived: false,
-                members: []
-              },
-              telegram.space.Telegram
-            )
-          }
-        }
+        state: 'defaults-v2',
+        func: createSpace
       }
     ])
   }

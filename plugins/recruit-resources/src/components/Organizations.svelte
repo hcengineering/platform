@@ -104,7 +104,7 @@
   }
 
   function showCreateDialog () {
-    showPopup(CreateOrganization, { space: recruit.space.CandidatesPublic }, 'top')
+    showPopup(CreateOrganization, {}, 'top')
   }
   const applicationSorting = (a: Doc, b: Doc) =>
     (applications?.get(b._id as Ref<Organization>)?.count ?? 0) -

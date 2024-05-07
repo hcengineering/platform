@@ -33,8 +33,7 @@ export default mergeIds(leadId, lead, {
     Title: '' as IntlString,
     ManageFunnelStatuses: '' as IntlString,
     GotoLeadApplication: '' as IntlString,
-    ConfigDescription: '' as IntlString,
-    EditFunnel: '' as IntlString
+    ConfigDescription: '' as IntlString
   },
   component: {
     CreateLead: '' as AnyComponent,
@@ -47,6 +46,7 @@ export default mergeIds(leadId, lead, {
   },
   viewlet: {
     TableCustomer: '' as Ref<Viewlet>,
+    TableFunnel: '' as Ref<Viewlet>,
     TableLead: '' as Ref<Viewlet>,
     ListLead: '' as Ref<Viewlet>,
     DashboardLead: '' as Ref<Viewlet>,

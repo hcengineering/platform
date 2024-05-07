@@ -13,62 +13,31 @@
 // limitations under the License.
 //
 
-import core, { TxOperations } from '@hcengineering/core'
+import { inventoryId } from '@hcengineering/inventory'
 import {
+  createDefaultSpace,
   tryUpgrade,
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import inventory from './plugin'
-import { inventoryId } from '@hcengineering/inventory'
-
-async function createSpace (tx: TxOperations): Promise<void> {
-  const categories = await tx.findOne(core.class.Space, {
-    _id: inventory.space.Category
-  })
-  if (categories === undefined) {
-    await tx.createDoc(
-      core.class.Space,
-      core.space.Space,
-      {
-        name: 'Categories',
-        description: 'Categories',
-        private: false,
-        archived: false,
-        members: []
-      },
-      inventory.space.Category
-    )
-  }
-  const products = await tx.findOne(core.class.Space, {
-    _id: inventory.space.Products
-  })
-  if (products === undefined) {
-    await tx.createDoc(
-      core.class.Space,
-      core.space.Space,
-      {
-        name: 'Products',
-        description: 'Products',
-        private: false,
-        archived: false,
-        members: []
-      },
-      inventory.space.Products
-    )
-  }
-}
 
 export const inventoryOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     await tryUpgrade(client, inventoryId, [
       {
-        state: 'create-defaults',
+        state: 'create-defaults-v2',
         func: async (client) => {
-          const tx = new TxOperations(client, core.account.System)
-          await createSpace(tx)
+          await createDefaultSpace(client, inventory.space.Category, {
+            name: 'Categories',
+            description: 'Space for all inventory categories'
+          })
+          await createDefaultSpace(client, inventory.space.Products, {
+            name: 'Products',
+            description: 'Space for all inventory products'
+          })
         }
       }
     ])

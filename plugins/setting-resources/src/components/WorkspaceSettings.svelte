@@ -14,16 +14,16 @@
 -->
 <script lang="ts">
   import { PersonAccount } from '@hcengineering/contact'
-  import { AccountRole, getCurrentAccount, roleOrder } from '@hcengineering/core'
+  import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { createQuery, isAdminUser } from '@hcengineering/presentation'
   import setting, { SettingsCategory } from '@hcengineering/setting'
   import {
     Component,
     Location,
+    NavItem,
     getCurrentResolvedLocation,
     navigate,
-    resolvedLocationStore,
-    NavItem
+    resolvedLocationStore
   } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import { clearSettingsStore } from '../store'
@@ -45,7 +45,7 @@
     setting.class.WorkspaceSettingCategory,
     {},
     (res) => {
-      categories = roleOrder[account.role] > roleOrder[AccountRole.User] ? res : res.filter((p) => !p.secured)
+      categories = hasAccountRole(account, AccountRole.Maintainer) ? res : res.filter((p) => !p.secured)
       if (!admin) {
         categories = categories.filter((p) => !(p.adminOnly ?? false))
       }

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, Space } from '@hcengineering/core'
+  import { AccountRole, Ref, Space, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
     Button,
@@ -72,6 +72,13 @@
       await newTeamspace()
     }
   }
+
+  const dropdownItems = hasAccountRole(getCurrentAccount(), AccountRole.User)
+    ? [
+        { id: document.string.CreateDocument, label: document.string.CreateDocument },
+        { id: document.string.CreateTeamspace, label: document.string.CreateTeamspace }
+      ]
+    : [{ id: document.string.CreateDocument, label: document.string.CreateDocument }]
 </script>
 
 {#if loading}
@@ -87,10 +94,7 @@
         on:click={newDocument}
         mainButtonId={'new-document'}
         dropdownIcon={IconDropdown}
-        dropdownItems={[
-          { id: document.string.CreateDocument, label: document.string.CreateDocument },
-          { id: document.string.CreateTeamspace, label: document.string.CreateTeamspace }
-        ]}
+        {dropdownItems}
         on:dropdown-selected={(ev) => {
           void dropdownItemSelected(ev.detail)
         }}

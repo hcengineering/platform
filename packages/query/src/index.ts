@@ -1367,7 +1367,7 @@ export class LiveQuery implements WithTx, Client {
   private async changePrivateHandler (evt: TxWorkspaceEvent): Promise<void> {
     if (evt.event === WorkspaceEvent.SecurityChange) {
       for (const q of [...this.queue]) {
-        if (typeof q.query.space !== 'string') {
+        if (typeof q.query.space !== 'string' || q.query.space === evt.objectSpace) {
           if (!this.removeFromQueue(q)) {
             try {
               await this.refresh(q)
@@ -1380,7 +1380,7 @@ export class LiveQuery implements WithTx, Client {
       }
       for (const v of this.queries.values()) {
         for (const q of v) {
-          if (typeof q.query.space !== 'string') {
+          if (typeof q.query.space !== 'string' || q.query.space === evt.objectSpace) {
             try {
               await this.refresh(q)
             } catch (err: any) {

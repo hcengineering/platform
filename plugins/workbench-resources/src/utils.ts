@@ -14,8 +14,8 @@
 // limitations under the License.
 //
 
-import type { Class, Client, Doc, Ref, Space, TxOperations } from '@hcengineering/core'
-import core from '@hcengineering/core'
+import type { Account, Class, Client, Doc, Ref, Space, TxOperations } from '@hcengineering/core'
+import core, { hasAccountRole } from '@hcengineering/core'
 import type { Workspace } from '@hcengineering/login'
 import login, { loginId } from '@hcengineering/login'
 import { getResource, setMetadata } from '@hcengineering/platform'
@@ -131,6 +131,11 @@ export async function doNavigate (
       break
     }
   }
+}
+
+export function isAppAllowed (app: Application, acc: Account): boolean {
+  if (app.accessLevel === undefined) return true
+  return hasAccountRole(acc, app.accessLevel)
 }
 
 export async function hideApplication (app: Application): Promise<void> {

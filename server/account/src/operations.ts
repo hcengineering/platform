@@ -36,6 +36,7 @@ import core, {
   MeasureMetricsContext,
   RateLimiter,
   Ref,
+  roleOrder,
   systemAccountEmail,
   Tx,
   TxOperations,
@@ -135,6 +136,8 @@ export interface Invite {
   exp: number
   emailMask: string
   limit: number
+  role?: AccountRole
+  personId?: Ref<Person>
 }
 
 /**
@@ -427,7 +430,15 @@ export async function join (
   const invite = await getInvite(db, inviteId)
   const workspace = await checkInvite(ctx, invite, email)
   ctx.info(`join attempt:${email}, ${workspace.name}`)
-  const ws = await assignWorkspace(ctx, db, productId, email, workspace.name)
+  const ws = await assignWorkspace(
+    ctx,
+    db,
+    productId,
+    email,
+    workspace.name,
+    invite?.role ?? AccountRole.User,
+    invite?.personId
+  )
 
   const token = (await login(ctx, db, productId, email, password)).token
   const result = await selectWorkspace(ctx, db, productId, token, ws.workspaceUrl ?? ws.workspace)
@@ -546,9 +557,17 @@ export async function signUpJoin (
     password,
     first,
     last,
-    invite?.emailMask === email || sesURL === undefined || sesURL === ''
+    invite?.emailMask === email || invite?.personId !== undefined || sesURL === undefined || sesURL === ''
   )
-  const ws = await assignWorkspace(ctx, db, productId, email, workspace.name)
+  const ws = await assignWorkspace(
+    ctx,
+    db,
+    productId,
+    email,
+    workspace.name,
+    invite?.role ?? AccountRole.User,
+    invite?.personId
+  )
 
   const token = (await login(ctx, db, productId, email, password)).token
   const result = await selectWorkspace(ctx, db, productId, token, ws.workspaceUrl ?? ws.workspace)
@@ -1039,8 +1058,17 @@ export const createUserWorkspace =
               model
             )
             try {
-              await assignWorkspace(ctx, db, productId, email, workspace.workspace, shouldUpdateAccount, client)
-              await setRole(email, workspace.workspace, productId, AccountRole.Owner, client)
+              await assignWorkspace(
+                ctx,
+                db,
+                productId,
+                email,
+                workspace.workspace,
+                AccountRole.Owner,
+                undefined,
+                shouldUpdateAccount,
+                client
+              )
               ctx.info('Creating server side done', { workspaceName, email })
             } catch (err: any) {
               Analytics.handleError(err)
@@ -1097,7 +1125,9 @@ export async function getInviteLink (
   token: string,
   exp: number,
   emailMask: string,
-  limit: number
+  limit: number,
+  role?: AccountRole,
+  personId?: Ref<Person>
 ): Promise<ObjectId> {
   const { workspace, email } = decodeToken(token)
   const wsPromise = await getWorkspaceById(db, productId, workspace.name)
@@ -1108,12 +1138,17 @@ export async function getInviteLink (
     )
   }
   ctx.info('Getting invite link', { workspace: workspace.name, emailMask, limit })
-  const result = await db.collection(INVITE_COLLECTION).insertOne({
+  const data: Omit<Invite, '_id'> = {
     workspace,
     exp: Date.now() + exp,
     emailMask,
-    limit
-  })
+    limit,
+    role: role ?? AccountRole.User
+  }
+  if (personId !== undefined) {
+    data.personId = personId
+  }
+  const result = await db.collection(INVITE_COLLECTION).insertOne(data)
   return result.insertedId
 }
 
@@ -1289,7 +1324,7 @@ export async function createMissingEmployee (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
   }
 
-  await createPersonAccount(account, productId, wsInfo.workspaceId, false)
+  await createPersonAccount(account, productId, wsInfo.workspaceId, AccountRole.Guest)
 }
 
 /**
@@ -1301,6 +1336,8 @@ export async function assignWorkspace (
   productId: string,
   _email: string,
   workspaceId: string,
+  role: AccountRole,
+  personId?: Ref<Person>,
   shouldReplaceAccount: boolean = false,
   client?: Client,
   personAccountId?: Ref<PersonAccount>
@@ -1319,6 +1356,8 @@ export async function assignWorkspace (
       workspaceInfo.account,
       productId,
       workspaceId,
+      role,
+      personId,
       shouldReplaceAccount,
       client,
       personAccountId
@@ -1343,7 +1382,12 @@ async function assignWorkspaceRaw (db: Db, workspaceInfo: { account: Account, wo
     .updateOne({ _id: workspaceInfo.account._id }, { $addToSet: { workspaces: workspaceInfo.workspace._id } })
 }
 
-async function createEmployee (ops: TxOperations, name: string, _email: string): Promise<Ref<Person>> {
+async function createPerson (
+  ops: TxOperations,
+  name: string,
+  _email: string,
+  withEmployee: boolean
+): Promise<Ref<Person>> {
   const id = generateId<Person>()
   let avatar = `${AvatarType.COLOR}://${getAvatarColorForId(id)}`
   const email = cleanEmail(_email)
@@ -1357,7 +1401,7 @@ async function createEmployee (ops: TxOperations, name: string, _email: string):
 
   await ops.createDoc(
     contact.class.Person,
-    contact.space.Employee,
+    contact.space.Contacts,
     {
       name,
       city: '',
@@ -1365,9 +1409,11 @@ async function createEmployee (ops: TxOperations, name: string, _email: string):
     },
     id
   )
-  await ops.createMixin(id, contact.class.Person, contact.space.Contacts, contact.mixin.Employee, {
-    active: true
-  })
+  if (withEmployee) {
+    await ops.createMixin(id, contact.class.Person, contact.space.Contacts, contact.mixin.Employee, {
+      active: true
+    })
+  }
   if (isEmail(email)) {
     await ops.addCollection(contact.class.Channel, contact.space.Contacts, id, contact.mixin.Employee, 'channels', {
       provider: contact.channelProvider.Email,
@@ -1388,7 +1434,7 @@ async function replaceCurrentAccount (
   const employee = await ops.findOne(contact.mixin.Employee, { _id: currentAccount.person as Ref<Employee> })
   if (employee === undefined) {
     // Employee was deleted, let's restore it.
-    const employeeId = await createEmployee(ops, name, account.email)
+    const employeeId = await createPerson(ops, name, account.email, true)
 
     await ops.updateDoc(contact.class.PersonAccount, currentAccount.space, currentAccount._id, {
       person: employeeId
@@ -1431,6 +1477,8 @@ async function createPersonAccount (
   account: Account,
   productId: string,
   workspace: string,
+  role: AccountRole,
+  personId?: Ref<Person>,
   shouldReplaceCurrent: boolean = false,
   client?: Client,
   personAccountId?: Ref<PersonAccount>
@@ -1448,33 +1496,43 @@ async function createPersonAccount (
         return
       }
     }
+    const shouldCreateEmployee = roleOrder[role] >= roleOrder[AccountRole.User]
     const existingAccount = await ops.findOne(contact.class.PersonAccount, { email: account.email })
     if (existingAccount === undefined) {
-      const employee = await createEmployee(ops, name, account.email)
+      let person: Ref<Person> | undefined
+      if (personId !== undefined) {
+        person = (await ops.findOne(contact.class.Person, { _id: personId }))?._id
+      }
+      if (person === undefined) {
+        person = await createPerson(ops, name, account.email, shouldCreateEmployee)
+      }
 
       await ops.createDoc(
         contact.class.PersonAccount,
         core.space.Model,
         {
           email: account.email,
-          person: employee,
-          role: AccountRole.User
+          person,
+          role
         },
         personAccountId
       )
     } else {
-      const employee = await ops.findOne(contact.mixin.Employee, { _id: existingAccount.person as Ref<Employee> })
-      if (employee === undefined) {
+      const person = await ops.findOne(contact.class.Person, { _id: existingAccount.person })
+      if (person === undefined) {
         // Employee was deleted, let's restore it.
-        const employeeId = await createEmployee(ops, name, account.email)
+        const employeeId = await createPerson(ops, name, account.email, shouldCreateEmployee)
 
         await ops.updateDoc(contact.class.PersonAccount, existingAccount.space, existingAccount._id, {
           person: employeeId
         })
-      } else if (!employee.active) {
-        await ops.update(employee, {
-          active: true
-        })
+      } else if (ops.getHierarchy().hasMixin(person, contact.mixin.Employee)) {
+        const employee = ops.getHierarchy().as(person, contact.mixin.Employee)
+        if (!employee.active) {
+          await ops.update(employee, {
+            active: true
+          })
+        }
       }
     }
   } finally {
@@ -1749,7 +1807,9 @@ export async function sendInvite (
   db: Db,
   productId: string,
   token: string,
-  email: string
+  email: string,
+  personId?: Ref<Person>,
+  role?: AccountRole
 ): Promise<void> {
   const tokenData = decodeToken(token)
   const currentAccount = await getAccount(db, tokenData.email)
@@ -1904,7 +1964,15 @@ export async function joinWithProvider (
       return result
     }
 
-    const wsRes = await assignWorkspace(ctx, db, productId, email, workspace.name, false)
+    const wsRes = await assignWorkspace(
+      ctx,
+      db,
+      productId,
+      email,
+      workspace.name,
+      invite?.role ?? AccountRole.User,
+      invite?.personId
+    )
     const result = await selectWorkspace(ctx, db, productId, token, wsRes.workspaceUrl ?? wsRes.workspace, false)
 
     await useInvite(db, inviteId)
@@ -1913,7 +1981,15 @@ export async function joinWithProvider (
 
   const newAccount = await createAcc(ctx, db, productId, email, null, first, last, true, extra)
   const token = generateToken(email, getWorkspaceId('', productId), getExtra(newAccount))
-  const ws = await assignWorkspace(ctx, db, productId, email, workspace.name, false)
+  const ws = await assignWorkspace(
+    ctx,
+    db,
+    productId,
+    email,
+    workspace.name,
+    invite?.role ?? AccountRole.User,
+    invite?.personId
+  )
   const result = await selectWorkspace(ctx, db, productId, token, ws.workspaceUrl ?? ws.workspace, false)
 
   await useInvite(db, inviteId)

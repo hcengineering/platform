@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Channel, combineName, Employee, PersonAccount } from '@hcengineering/contact'
+  import { Channel, combineName, Person, PersonAccount } from '@hcengineering/contact'
   import core, { AccountRole, AttachedData, Data, generateId, Ref } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { getResource } from '@hcengineering/platform'
@@ -22,27 +22,18 @@
   import { createEventDispatcher } from 'svelte'
   import { ChannelsDropdown } from '..'
   import contact from '../plugin'
-  import EditableAvatar from './EditableAvatar.svelte'
 
   export let canSave: boolean = true
-  export let onCreate: ((id: Ref<Employee>) => Promise<void>) | undefined = undefined
-
-  let avatarEditor: EditableAvatar
+  export let onCreate: ((id: Ref<Person>) => Promise<void>) | undefined = undefined
 
   let firstName = ''
   let lastName = ''
   let email = ''
 
-  const id: Ref<Employee> = generateId()
+  const id: Ref<Person> = generateId()
 
   export function canClose (): boolean {
     return firstName === '' && lastName === '' && email === ''
-  }
-
-  const person: Data<Employee> = {
-    name: '',
-    city: '',
-    active: true
   }
 
   const dispatch = createEventDispatcher()
@@ -51,24 +42,23 @@
   async function createPerson () {
     changeEmail()
     const name = combineName(firstName, lastName)
-    person.name = name
-    person.avatar = await avatarEditor.createAvatar()
+    const person: Data<Person> = {
+      name,
+      city: ''
+    }
 
     await client.createDoc(contact.class.Person, contact.space.Contacts, person, id)
-    await client.createMixin(id, contact.class.Person, contact.space.Contacts, contact.mixin.Employee, {
-      active: true
-    })
 
     const mail = email.trim()
 
     await client.createDoc(contact.class.PersonAccount, core.space.Model, {
       email: mail,
       person: id,
-      role: AccountRole.User
+      role: AccountRole.Guest
     })
 
     const sendInvite = await getResource(login.function.SendInvite)
-    await sendInvite(email.trim(), id, AccountRole.User)
+    await sendInvite(email.trim(), id, AccountRole.Guest)
 
     for (const channel of channels) {
       await client.addCollection(contact.class.Channel, contact.space.Contacts, id, contact.class.Person, 'channels', {
@@ -115,7 +105,7 @@
 <FocusHandler {manager} />
 
 <Card
-  label={contact.string.CreateEmployee}
+  label={contact.string.AddGuest}
   okAction={createPerson}
   canSave={firstName.trim().length > 0 &&
     lastName.trim().length > 0 &&
@@ -162,15 +152,6 @@
         />
       </div>
       <slot name="extraControls" />
-    </div>
-    <div class="ml-4">
-      <EditableAvatar
-        avatar={person.avatar}
-        name={combineName(firstName, lastName)}
-        {email}
-        size={'large'}
-        bind:this={avatarEditor}
-      />
     </div>
   </div>
   <svelte:fragment slot="pool">

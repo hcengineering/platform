@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type Client, type Doc, type Ref, type Space } from '@hcengineering/core'
+import { type Client, type Doc, type Ref } from '@hcengineering/core'
 import type { IntlString, Resource, StatusCode } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/presentation'
@@ -134,9 +134,6 @@ export default mergeIds(recruitId, recruit, {
     Export: '' as IntlString,
     GetTalentIds: '' as IntlString,
     CreateNewSkills: '' as IntlString
-  },
-  space: {
-    CandidatesPublic: '' as Ref<Space>
   },
   category: {
     Other: '' as Ref<TagCategory>,

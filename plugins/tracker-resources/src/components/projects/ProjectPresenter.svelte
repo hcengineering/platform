@@ -13,22 +13,37 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import presentation from '@hcengineering/presentation'
   import { Project } from '@hcengineering/tracker'
   import {
     Icon,
     IconWithEmoji,
+    Label,
     getPlatformColorDef,
     getPlatformColorForTextDef,
-    themeStore,
-    Label
+    showPopup,
+    themeStore
   } from '@hcengineering/ui'
-  import tracker from '../../plugin'
   import view from '@hcengineering/view'
-  import presentation from '@hcengineering/presentation'
+  import { canEditSpace } from '@hcengineering/view-resources'
+  import { CreateProject } from '../..'
+  import tracker from '../../plugin'
 
   export let value: Project | undefined
   export let inline: boolean = false
   export let accent: boolean = false
+
+  $: editable = false
+
+  $: canEditSpace(value).then((result) => {
+    editable = result
+  })
+
+  async function click () {
+    if (await canEditSpace(value)) {
+      showPopup(CreateProject, { project: value })
+    }
+  }
 </script>
 
 {#if value}
@@ -47,7 +62,12 @@
         size="small"
       />
     </div>
-    <span class="label no-underline nowrap" class:fs-bold={accent}>
+    <span
+      class="label no-underline nowrap"
+      class:cursor-pointer={editable}
+      class:fs-bold={accent}
+      on:click|preventDefault={click}
+    >
       {value.name}
       {#if value.archived}
         <Label label={presentation.string.Archived} />

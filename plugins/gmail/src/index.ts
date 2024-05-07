@@ -107,6 +107,7 @@ export default plugin(gmailId, {
     EmailNotification: '' as Ref<NotificationType>
   },
   space: {
+    // todo remove, should be in contact
     Gmail: '' as Ref<Space>
   },
   metadata: {

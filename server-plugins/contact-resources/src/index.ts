@@ -17,6 +17,7 @@
 import contact, {
   Channel,
   Contact,
+  Employee,
   Organization,
   Person,
   PersonAccount,
@@ -27,11 +28,40 @@ import contact, {
   getLastName,
   getName
 } from '@hcengineering/contact'
-import { Class, Doc, Hierarchy, Ref, Tx, TxRemoveDoc, TxUpdateDoc, concatLink } from '@hcengineering/core'
+import core, {
+  Class,
+  Doc,
+  Hierarchy,
+  Ref,
+  Tx,
+  TxMixin,
+  TxRemoveDoc,
+  TxUpdateDoc,
+  concatLink
+} from '@hcengineering/core'
 import notification, { Collaborators } from '@hcengineering/notification'
 import { getMetadata } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import { workbenchId } from '@hcengineering/workbench'
+
+export async function OnEmployeeCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const mixinTx = tx as TxMixin<Person, Employee>
+  if (mixinTx.attributes.active !== true) return []
+  const acc = await control.modelDb.findOne(contact.class.PersonAccount, { person: mixinTx.objectId })
+  if (acc === undefined) return []
+  const spaces = await control.findAll(core.class.Space, { autoJoin: true })
+  const result: Tx[] = []
+  for (const space of spaces) {
+    if (space.members.includes(acc._id)) continue
+    const pushTx = control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, {
+      $push: {
+        members: acc._id
+      }
+    })
+    result.push(pushTx)
+  }
+  return result
+}
 
 /**
  * @public
@@ -252,6 +282,7 @@ export async function getContactFirstName (
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
+    OnEmployeeCreate,
     OnContactDelete,
     OnChannelUpdate
   },

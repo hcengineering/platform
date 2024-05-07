@@ -13,12 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee, PersonAccount } from '@hcengineering/contact'
+  import { Employee, PersonAccount } from '@hcengineering/contact'
   import core, { Account, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
+  import contact from '../plugin'
   import { personAccountByIdStore } from '../utils'
   import UserBoxList from './UserBoxList.svelte'
 
@@ -32,6 +33,7 @@
   export let includeItems: Ref<Account>[] | undefined = undefined
   export let excludeItems: Ref<Account>[] | undefined = undefined
   export let emptyLabel: IntlString | undefined = undefined
+  export let allowGuests: boolean = true
 
   let timer: any = null
   const client = getClient()
@@ -104,6 +106,7 @@
 </script>
 
 <UserBoxList
+  _class={!allowGuests ? contact.mixin.Employee : contact.class.Person}
   items={employees}
   {label}
   {emptyLabel}
@@ -114,4 +117,5 @@
   justify={'left'}
   width={width ?? 'min-content'}
   {kind}
+  create={allowGuests ? { component: contact.component.CreateGuest, label: contact.string.AddGuest } : undefined}
 />

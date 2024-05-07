@@ -15,8 +15,8 @@
 
 // To help typescript locate view plugin properly
 import activity from '@hcengineering/activity'
-import { type FindOptions, SortingOrder } from '@hcengineering/core'
-import { type Lead, leadId } from '@hcengineering/lead'
+import { AccountRole, SortingOrder, type FindOptions } from '@hcengineering/core'
+import { leadId, type Lead } from '@hcengineering/lead'
 import { type Builder } from '@hcengineering/model'
 import chunter from '@hcengineering/model-chunter'
 import contact from '@hcengineering/model-contact'
@@ -30,19 +30,17 @@ import notification from '@hcengineering/notification'
 import setting from '@hcengineering/setting'
 import { type ViewOptionsModel } from '@hcengineering/view'
 
-import { TFunnel, TLead, TCustomer } from './types'
 import lead from './plugin'
 import { defineSpaceType } from './spaceType'
+import { TCustomer, TFunnel, TLead } from './types'
 
 export { leadId } from '@hcengineering/lead'
 export { leadOperation } from './migration'
 export { default } from './plugin'
-export * from './types'
 export * from './spaceType'
+export * from './types'
 
 export function createModel (builder: Builder): void {
-  const archiveId = 'archive'
-
   builder.createModel(TFunnel, TLead, TCustomer)
 
   builder.mixin(lead.class.Lead, core.class.Class, activity.mixin.ActivityDoc, {})
@@ -116,6 +114,7 @@ export function createModel (builder: Builder): void {
             label: lead.string.Customers,
             icon: contact.icon.Person, // <-- Put contact general icon here.
             component: workbench.component.SpecialView,
+            accessLevel: AccountRole.User,
             componentProps: {
               _class: lead.mixin.Customer,
               icon: lead.icon.Lead,
@@ -124,18 +123,22 @@ export function createModel (builder: Builder): void {
             position: 'top'
           },
           {
-            id: archiveId,
-            component: workbench.component.Archive,
-            icon: view.icon.Archive,
-            label: workbench.string.Archive,
+            id: 'funnels',
+            component: workbench.component.SpecialView,
+            icon: view.icon.List,
+            label: lead.string.Funnels,
             position: 'bottom',
-            visibleIf: workbench.function.HasArchiveSpaces,
-            spaceClass: lead.class.Funnel
+            accessLevel: AccountRole.User,
+            componentProps: {
+              _class: lead.class.Funnel,
+              label: lead.string.Funnels,
+              createComponent: lead.component.CreateFunnel,
+              createLabel: lead.string.CreateFunnel
+            }
           }
         ],
         spaces: [
           {
-            id: 'funnels',
             label: lead.string.Funnels,
             spaceClass: lead.class.Funnel,
             addSpaceLabel: lead.string.CreateFunnel,
@@ -146,6 +149,21 @@ export function createModel (builder: Builder): void {
       navHeaderComponent: lead.component.NewItemsHeader
     },
     lead.app.Lead
+  )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: lead.class.Funnel,
+      descriptor: view.viewlet.Table,
+      configOptions: {
+        hiddenKeys: ['identifier', 'name', 'description'],
+        sortable: true
+      },
+      config: ['', 'members', 'private', 'archived']
+    },
+    lead.viewlet.TableFunnel
   )
 
   createAction(builder, { ...actionTemplates.archiveSpace, target: lead.class.Funnel })

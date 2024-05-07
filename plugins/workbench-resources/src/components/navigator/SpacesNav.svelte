@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import type { Doc, Ref, Space } from '@hcengineering/core'
-  import core from '@hcengineering/core'
+  import core, { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { IntlString, getResource } from '@hcengineering/platform'
   import preference from '@hcengineering/preference'
   import { getClient } from '@hcengineering/presentation'
@@ -129,7 +129,11 @@
 
   function getParentActions (): Action[] {
     const result = hasSpaceBrowser ? [browseSpaces] : []
-    if (model.addSpaceLabel !== undefined && model.createComponent !== undefined) {
+    if (
+      hasAccountRole(getCurrentAccount(), AccountRole.User) &&
+      model.addSpaceLabel !== undefined &&
+      model.createComponent !== undefined
+    ) {
       result.push(addSpace(model.addSpaceLabel, model.createComponent))
     }
     return result

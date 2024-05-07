@@ -14,23 +14,23 @@
 //
 
 import core, {
-  coreId,
   DOMAIN_DOC_INDEX_STATE,
   DOMAIN_STATUS,
-  isClassIndexable,
-  type Status,
-  TxOperations,
-  generateId,
   DOMAIN_TX,
-  type TxCreateDoc,
-  type Space
+  coreId,
+  generateId,
+  isClassIndexable,
+  type Space,
+  type Status,
+  type TxCreateDoc
 } from '@hcengineering/core'
 import {
-  tryMigrate,
-  tryUpgrade,
   type MigrateOperation,
   type MigrationClient,
-  type MigrationUpgradeClient
+  type MigrationUpgradeClient,
+  createDefaultSpace,
+  tryMigrate,
+  tryUpgrade
 } from '@hcengineering/model'
 import { DOMAIN_SPACE } from './security'
 
@@ -149,28 +149,14 @@ export const coreOperation: MigrateOperation = {
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     await tryUpgrade(client, coreId, [
       {
-        state: 'create-defaults',
+        state: 'create-defaults-v2',
         func: async (client) => {
-          const tx = new TxOperations(client, core.account.System)
-
-          const spaceSpace = await tx.findOne(core.class.Space, {
-            _id: core.space.Space
-          })
-          if (spaceSpace === undefined) {
-            await tx.createDoc(
-              core.class.TypedSpace,
-              core.space.Space,
-              {
-                name: 'Space for all spaces',
-                description: 'Spaces',
-                private: false,
-                archived: false,
-                members: [],
-                type: core.spaceType.SpacesType
-              },
-              core.space.Space
-            )
-          }
+          await createDefaultSpace(
+            client,
+            core.space.Space,
+            { name: 'Spaces', description: 'Space for all spaces', type: core.spaceType.SpacesType },
+            core.class.TypedSpace
+          )
         }
       }
     ])

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, Ref } from '@hcengineering/core'
+  import { AccountRole, Doc, Ref, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { Scroller, SearchEdit, Label, ButtonIcon, IconAdd, showPopup, Menu } from '@hcengineering/ui'
   import { DocNotifyContext } from '@hcengineering/notification'
   import { SpecialNavModel } from '@hcengineering/workbench'
@@ -74,7 +74,9 @@
   <div class="overflow-label">
     <Label label={chunter.string.Chat} />
   </div>
-  <ButtonIcon icon={IconAdd} kind={'primary'} size={'small'} on:click={addButtonClicked} />
+  {#if hasAccountRole(getCurrentAccount(), AccountRole.User)}
+    <ButtonIcon icon={IconAdd} kind={'primary'} size={'small'} on:click={addButtonClicked} />
+  {/if}
 </div>
 
 {#each chatSpecials as special, row}

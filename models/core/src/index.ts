@@ -88,7 +88,8 @@ import {
   TSpace,
   TSpaceType,
   TSpaceTypeDescriptor,
-  TTypedSpace
+  TTypedSpace,
+  TSystemSpace
 } from './security'
 import { TStatus, TStatusCategory, TDomainStatusPlaceholder } from './status'
 import { TUserStatus } from './transient'
@@ -131,6 +132,7 @@ export function createModel (builder: Builder): void {
     TTxApplyIf,
     TTxWorkspaceEvent,
     TSpace,
+    TSystemSpace,
     TTypedSpace,
     TSpaceType,
     TSpaceTypeDescriptor,

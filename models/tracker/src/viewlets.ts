@@ -523,37 +523,13 @@ export function defineViewlets (builder: Builder): void {
     core.space.Model,
     {
       attachTo: tracker.class.Project,
-      descriptor: view.viewlet.List,
-      viewOptions: {
-        groupBy: ['createdBy'],
-        orderBy: [
-          ['type', SortingOrder.Descending],
-          ['modifiedOn', SortingOrder.Descending],
-          ['createdOn', SortingOrder.Descending]
-        ],
-        other: [showColorsViewOption]
-      },
+      descriptor: view.viewlet.Table,
       configOptions: {
-        strict: true,
-        hiddenKeys: ['label', 'description']
+        hiddenKeys: ['identifier', 'name', 'description']
       },
       config: [
-        {
-          key: '',
-          props: { kind: 'list' }
-        },
-        { key: '', displayProps: { grow: true } },
-        {
-          key: '',
-          presenter: tracker.component.MembersArrayEditor,
-          sortingKey: 'members',
-          props: { readonly: true, kind: 'list' }
-        },
-        // TODO: Need return type in future
-        // {
-        //   key: 'type',
-        //   props: { kind: 'list' }
-        // },
+        '',
+        'members',
         {
           key: 'defaultAssignee',
           props: { kind: 'list' }

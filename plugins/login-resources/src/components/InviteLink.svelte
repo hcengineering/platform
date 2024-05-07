@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AccountRole, getCurrentAccount, roleOrder, Timestamp } from '@hcengineering/core'
+  import { AccountRole, getCurrentAccount, hasAccountRole, Timestamp } from '@hcengineering/core'
   import { loginId } from '@hcengineering/login'
   import { getMetadata } from '@hcengineering/platform'
   import presentation, { copyTextToClipboard, createQuery } from '@hcengineering/presentation'
@@ -22,17 +22,20 @@
     Button,
     EditBox,
     getCurrentLocation,
+    Grid,
     Label,
     Loading,
     locationToUrl,
     MiniToggle,
-    ticker,
-    Grid
+    ticker
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import login from '../plugin'
   import { getInviteLink } from '../utils'
   import InviteWorkspace from './icons/InviteWorkspace.svelte'
+
+  export let role: AccountRole = AccountRole.User
+  export let ignoreSettings: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -44,22 +47,23 @@
     limit: number | undefined
   }
 
-  $: query.query(setting.class.InviteSettings, {}, (set) => {
-    if (set !== undefined && set.length > 0) {
-      expHours = set[0].expirationTime
-      emailMask = set[0].emailMask
-      limit = set[0].limit
-    } else {
-      expHours = 48
-      limit = -1
-    }
-    if (limit === -1) noLimit = true
-    defaultValues = {
-      expirationTime: expHours,
-      emailMask,
-      limit
-    }
-  })
+  $: !ignoreSettings &&
+    query.query(setting.class.InviteSettings, {}, (set) => {
+      if (set !== undefined && set.length > 0) {
+        expHours = set[0].expirationTime
+        emailMask = set[0].emailMask
+        limit = set[0].limit
+      } else {
+        expHours = 48
+        limit = -1
+      }
+      if (limit === -1) noLimit = true
+      defaultValues = {
+        expirationTime: expHours,
+        emailMask,
+        limit
+      }
+    })
 
   function setToDefault (): void {
     expHours = defaultValues.expirationTime
@@ -67,9 +71,9 @@
     limit = defaultValues.limit
   }
 
-  async function getLink (expHours: number, mask: string, limit: number | undefined): Promise<void> {
+  async function getLink (expHours: number, mask: string, limit: number | undefined, role: AccountRole): Promise<void> {
     loading = true
-    const inviteId = await getInviteLink(expHours, mask, limit)
+    const inviteId = await getInviteLink(expHours, mask, limit, role)
     const loc = getCurrentLocation()
     loc.path[0] = loginId
     loc.path[1] = 'join'
@@ -103,14 +107,14 @@
     copiedTime = Date.now()
   }
 
-  let expHours: number = 1
+  let expHours: number = 48
   let emailMask: string = ''
   let limit: number | undefined = undefined
   let useDefault: boolean | undefined = true
   let noLimit: boolean = false
-  const isOwnerOrMaintainer: boolean = roleOrder[getCurrentAccount().role] > roleOrder[AccountRole.Maintainer]
+  const isOwnerOrMaintainer: boolean = hasAccountRole(getCurrentAccount(), AccountRole.Maintainer)
   let defaultValues: InviteParams = {
-    expirationTime: 1,
+    expirationTime: 48,
     emailMask: '',
     limit: undefined
   }
@@ -124,7 +128,7 @@
     <Label label={login.string.InviteDescription} />
     <InviteWorkspace size={'large'} />
   </div>
-  {#if isOwnerOrMaintainer}
+  {#if isOwnerOrMaintainer && !ignoreSettings}
     <Grid column={1} rowGap={1.5}>
       <MiniToggle
         bind:on={useDefault}
@@ -183,7 +187,7 @@
         size={'medium'}
         kind={'primary'}
         on:click={() => {
-          ;((limit !== undefined && limit > 0) || noLimit) && getLink(expHours, emailMask, limit)
+          ;((limit !== undefined && limit > 0) || noLimit) && getLink(expHours, emailMask, limit, role)
         }}
       />
     </div>

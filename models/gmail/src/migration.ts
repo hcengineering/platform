@@ -13,41 +13,27 @@
 // limitations under the License.
 //
 
-import core, { TxOperations } from '@hcengineering/core'
+import { gmailId } from '@hcengineering/gmail'
 import {
+  createDefaultSpace,
   tryUpgrade,
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import gmail from './plugin'
-import { gmailId } from '@hcengineering/gmail'
 
 export const gmailOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     await tryUpgrade(client, gmailId, [
       {
-        state: 'create-defaults',
+        state: 'create-defaults-v2',
         func: async (client) => {
-          const tx = new TxOperations(client, core.account.System)
-          const current = await tx.findOne(core.class.Space, {
-            _id: gmail.space.Gmail
+          await createDefaultSpace(client, gmail.space.Gmail, {
+            name: 'Gmail',
+            description: 'Space for all gmail messages'
           })
-          if (current === undefined) {
-            await tx.createDoc(
-              core.class.Space,
-              core.space.Space,
-              {
-                name: 'Gmail',
-                description: 'Space for all gmail messages',
-                private: false,
-                archived: false,
-                members: []
-              },
-              gmail.space.Gmail
-            )
-          }
         }
       }
     ])
