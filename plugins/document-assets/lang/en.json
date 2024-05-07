@@ -57,6 +57,7 @@
     "ReassignToDoConfirm": "Do you want to change Todo assignee? The Todo will be removed from the current assignee's planning.",
     "Icon": "Icon",
     "Color": "Color",
-    "RoleLabel": "Role: {role}"
+    "RoleLabel": "Role: {role}",
+    "Embeddings": "Embeddings"
   }
 }
