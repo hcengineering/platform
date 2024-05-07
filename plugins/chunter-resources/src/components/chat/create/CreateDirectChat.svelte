@@ -114,7 +114,7 @@
       SelectUsersPopup,
       {
         okLabel: presentation.string.Next,
-        skipCurrentAccount: true,
+        skipCurrentAccount: false,
         selected: employeeIds,
         showStatus: true
       },
