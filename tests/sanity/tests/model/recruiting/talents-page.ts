@@ -59,6 +59,8 @@ export class TalentsPage extends CommonRecruitingPage {
   openOtherSkills = (): Locator => this.page.getByText('Other')
   skillsLink = (): Locator => this.page.locator('text=Skills')
   newSkillButton = (): Locator => this.page.locator('button:has-text("Skill")')
+  emailContact = (): Locator =>
+    this.page.locator('div[class^="popupPanel-body__header"] button[id="gmail:string:Email"]')
 
   async clickAddApplication (): Promise<void> {
     await this.addApplicationButton().click()
@@ -170,9 +172,7 @@ export class TalentsPage extends CommonRecruitingPage {
   }
 
   async verifyEmailInPopup (email: string): Promise<void> {
-    const emailLocator = this.popupPanel().locator('[id="gmail\\:string\\:Email"]')
-    await emailLocator.scrollIntoViewIfNeeded()
-    await emailLocator.click()
+    await this.emailContact().click()
     const actualEmail = await this.page.locator('.cover-channel >> input').inputValue()
     expect(actualEmail).toEqual(email)
   }
