@@ -26,7 +26,7 @@
   export let color: ColorDefinition | undefined = undefined
   export let bColor: string | undefined = undefined
   export let standby: boolean = false
-  export let withStatus: string | undefined = undefined
+  export let withStatus: boolean = false
   export let element: HTMLElement
 
   export function pulse (): void {
@@ -75,7 +75,7 @@
 {:else}
   <div
     bind:this={element}
-    class="hulyAvatar-container hulyAvatarSize-{size} stat {variant}{withStatus ? ` ${withStatus}-hole` : ''}"
+    class="hulyAvatar-container hulyAvatarSize-{size} stat {variant}"
     class:no-img={!url && color}
     class:bordered={!url && color === undefined}
     class:border={bColor !== undefined}

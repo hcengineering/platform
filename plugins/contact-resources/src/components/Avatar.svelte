@@ -35,8 +35,7 @@
     AvatarType,
     getAvatarProviderId,
     getFirstName,
-    getLastName,
-    type UserStatusSize
+    getLastName
   } from '@hcengineering/contact'
   import { Asset, getMetadata, getResource } from '@hcengineering/platform'
   import { getBlobURL, reduceCalls } from '@hcengineering/presentation'
@@ -134,21 +133,21 @@
     loadUsersStatus()
   })
 
-  function getStatusSize (avaSize: IconSize): UserStatusSize {
-    switch (avaSize) {
-      case 'xx-small':
-      case 'inline':
-      case 'tiny':
-      case 'card':
-        return 'x-small'
-      case 'x-small':
-        return 'small'
-      case 'smaller':
-        return 'medium'
-      default:
-        return 'auto'
-    }
-  }
+  // function getStatusSize (avaSize: IconSize): UserStatusSize {
+  //   switch (avaSize) {
+  //     case 'xx-small':
+  //     case 'inline':
+  //     case 'tiny':
+  //     case 'card':
+  //       return 'x-small'
+  //     case 'x-small':
+  //       return 'small'
+  //     case 'smaller':
+  //       return 'medium'
+  //     default:
+  //       return 'auto'
+  //   }
+  // }
   $: userStatus = account ? $statusByUserStore.get(account) : undefined
 </script>
 
@@ -166,17 +165,14 @@
       {bColor}
       {standby}
       bind:element
-      withStatus={getStatusSize(size)}
+      withStatus
     />
     {#if showStatus && account}
-      {@const statusSize = getStatusSize(size)}
-      {#if statusSize}
-        <div
-          class="hulyAvatar-statusMarker {statusSize}-hole {size}"
-          class:online={userStatus?.online}
-          class:offline={!userStatus?.online}
-        />
-      {/if}
+      <div
+        class="hulyAvatar-statusMarker {size}"
+        class:online={userStatus?.online}
+        class:offline={!userStatus?.online}
+      />
     {/if}
   </div>
 {:else}
