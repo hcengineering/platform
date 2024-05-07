@@ -137,7 +137,7 @@
       text-align: left;
       min-width: 0;
       color: var(--global-primary-TextColor);
-      
+
       &.description {
         font-size: 0.875rem;
         font-weight: 400;
@@ -207,7 +207,7 @@
       .hulyNavItem-icon {
         width: var(--global-extra-small-Size);
         height: var(--global-extra-small-Size);
-        
+
         &:not(.right) {
           margin-right: var(--spacing-0_75);
           background-color: var(--global-ui-BackgroundColor);
