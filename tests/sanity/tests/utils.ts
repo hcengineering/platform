@@ -9,6 +9,8 @@ export const PlatformSetting = process.env.SETTING as string
 export const PlatformSettingSecond = process.env.SETTING_SECOND as string
 export const DefaultWorkspace = 'SanityTest'
 
+export const PlatformURILiveness = process.env.LIVENESS_URI as string
+
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
   if (result.length < chars) {
@@ -82,4 +84,12 @@ export async function attachScreenshot (name: string, page: Page): Promise<void>
     contentType: 'image/png'
   })
   await page.screenshot({ path: `screenshots/${name}` })
+}
+
+export async function checkIfUrlContains (page: Page, url: string): Promise<void> {
+  expect(page.url()).toContain(url)
+}
+
+export async function waitForNetworIdle (page: Page, timeout = 2000): Promise<void> {
+  await Promise.race([page.waitForLoadState('networkidle'), new Promise((resolve) => setTimeout(resolve, timeout))])
 }

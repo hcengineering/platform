@@ -36,7 +36,7 @@ test.describe('Workspace tests', () => {
       password: '1234'
     }
     const newWorkspaceName = `New Workspace Name - ${generateId(2)}`
-    await loginPage.goto()
+    await loginPage.goto(PlatformURI)
     await loginPage.clickSignUp()
     await signUpPage.signUp(newUser)
     await selectWorkspacePage.createWorkspace(newWorkspaceName)
@@ -65,7 +65,7 @@ test.describe('Workspace tests', () => {
       filePath: 'cat.jpeg'
     }
     const newWorkspaceName = `New Issue Name - ${generateId(2)}`
-    await loginPage.goto()
+    await loginPage.goto(PlatformURI)
     await loginPage.clickSignUp()
     await signUpPage.signUp(newUser)
     await selectWorkspacePage.createWorkspace(newWorkspaceName)
@@ -94,7 +94,7 @@ test.describe('Workspace tests', () => {
     }
     const newWorkspaceName = `New Workspace Name - ${generateId(2)}`
 
-    await loginPage.goto()
+    await loginPage.goto(PlatformURI)
     await loginPage.clickSignUp()
 
     await signUpPage.checkInfo(page, 'Required field First name')
@@ -122,7 +122,7 @@ test.describe('Workspace tests', () => {
       password: '1234'
     }
     const newWorkspaceName = `Some HULY #@$ WS - ${generateId(12)}`
-    await loginPage.goto()
+    await loginPage.goto(PlatformURI)
     await loginPage.clickSignUp()
     await signUpPage.signUp(newUser)
     await selectWorkspacePage.createWorkspace(newWorkspaceName)
@@ -160,7 +160,7 @@ test.describe('Workspace tests', () => {
       password: '1234'
     }
     const newWorkspaceName = `Some HULY #@$ WS - ${generateId(12)}`
-    await loginPage.goto()
+    await loginPage.goto(PlatformURI)
     await loginPage.clickSignUp()
     await signUpPage.signUp(newUser)
     await selectWorkspacePage.createWorkspace(newWorkspaceName)
@@ -174,7 +174,7 @@ test.describe('Workspace tests', () => {
     const linkText = await page.locator('.antiPopup .link').textContent()
     const page2 = await browser.newPage()
     const loginPage2 = new LoginPage(page2)
-    await loginPage2.goto()
+    await loginPage2.goto(PlatformURI)
     await loginPage2.clickSignUp()
 
     const newUser2: SignUpData = {
@@ -197,7 +197,7 @@ test.describe('Workspace tests', () => {
   })
 
   test('Create workspace with LastToken in the localStorage', async ({ page, browser }) => {
-    await loginPage.goto()
+    await loginPage.goto(PlatformURI)
     await loginPage.login(PlatformUser, '1234')
     await selectWorkspacePage.selectWorkspace(DefaultWorkspace)
     await leftSideMenuPage.clickTracker()

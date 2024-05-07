@@ -2,6 +2,7 @@ import { test } from '@playwright/test'
 import { PlatformUser } from './utils'
 import { LoginPage } from './model/login-page'
 import { SelectWorkspacePage } from './model/select-workspace-page'
+import { PlatformURI } from '../../sanity/tests/utils'
 
 test.describe('login test', () => {
   test('check login', async ({ page }) => {
@@ -10,7 +11,7 @@ test.describe('login test', () => {
       console.log(exception.message)
     })
     const loginPage = new LoginPage(page)
-    await loginPage.goto()
+    await loginPage.goto(PlatformURI)
     await loginPage.login(PlatformUser, '1234')
 
     const selectWorkspacePage = new SelectWorkspacePage(page)

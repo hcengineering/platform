@@ -11,6 +11,10 @@ export class UserProfilePage {
   applyChangesButton = (): Locator => this.page.locator('.editor-container button:nth-child(3)')
   addSocialLinksButton = (): Locator => this.page.locator('[id="presentation:string:AddSocialLinks"]')
   selectProfile = (name: string): Locator => this.page.locator(`text=${name}`)
+  leaveWorkspaceButton = (): Locator => this.page.getByRole('button', { name: 'Leave workspace' })
+  leaveWorkspaceCancelButton = (): Locator => this.page.getByRole('button', { name: 'Cancel' })
+  leaveWorkspaceConfirmButton = (): Locator => this.page.getByRole('button', { name: 'Ok' })
+  accountDissabledMessage = (): Locator => this.page.getByRole('heading')
 
   constructor (page: Page) {
     this.page = page
@@ -28,8 +32,21 @@ export class UserProfilePage {
     await this.profileButton().click()
   }
 
+  async clickLeaveWorkspaceButton (): Promise<void> {
+    await this.leaveWorkspaceButton().click()
+  }
+
+  async clickLeaveWorkspaceConfirmButton (): Promise<void> {
+    await this.leaveWorkspaceConfirmButton().click()
+  }
+
+  async clickLeaveWorkspaceCancelButton (): Promise<void> {
+    await this.leaveWorkspaceCancelButton().click()
+  }
+
   async selectProfileByName (name: string): Promise<void> {
     await this.selectProfile(name).click()
+    await this.page.waitForTimeout(1000)
   }
 
   async verifyProfilePageUrl (expectedUrl: string): Promise<void> {
@@ -53,5 +70,9 @@ export class UserProfilePage {
 
   async applyChanges (): Promise<void> {
     await this.applyChangesButton().click()
+  }
+
+  async checkIfAccountIsDisabled (): Promise<void> {
+    await expect(this.accountDissabledMessage()).toContainText('Account is disabled')
   }
 }

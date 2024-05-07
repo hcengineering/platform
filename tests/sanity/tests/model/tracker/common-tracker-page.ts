@@ -93,6 +93,15 @@ export class CommonTrackerPage extends CalendarPage {
   viewButton = (): Locator => this.page.locator('button:has-text("View")')
   firstOptionButton = (): Locator => this.page.locator('.antiCard >> button >> nth=0')
   assigneeMenuItem = (): Locator => this.page.locator('.menu-item:has-text("Assignee")')
+  header = (): Locator => this.page.getByText('Issues All Active Backlog')
+  filter = (): Locator => this.page.getByRole('button', { name: 'Filter' })
+  view = (): Locator => this.page.getByRole('button', { name: 'View' })
+  showMore = (): Locator => this.page.getByRole('button', { name: 'Show' })
+  task1 = (): Locator => this.page.getByRole('link', { name: 'Welcome to Huly! 🌟' })
+  task2 = (): Locator => this.page.getByRole('link', { name: 'Create your first Project 📌' })
+  task3 = (): Locator => this.page.getByRole('link', { name: 'Create your first Issue 📝' })
+  task4 = (): Locator => this.page.getByRole('link', { name: 'Schedule your first Todo 📆' })
+  task5 = (): Locator => this.page.getByRole('link', { name: 'Explore all Huly has to offer' })
 
   // Actions
   async selectPanelAndViewlet (panel: string, viewletSelector: string): Promise<void> {
@@ -281,5 +290,17 @@ export class CommonTrackerPage extends CalendarPage {
   async checkActionMissing (action: string): Promise<void> {
     await this.buttonMoreActions().click()
     await this.checkDropdownHasNo(this.page, action)
+  }
+
+  async checkIfMainPanelIsVisible (): Promise<void> {
+    await expect(this.header()).toBeVisible({ timeout: 60000 })
+    await expect(this.filter()).toBeVisible()
+    await expect(this.view()).toBeVisible()
+    await expect(this.showMore()).toBeVisible()
+    await expect(this.task1()).toBeVisible()
+    await expect(this.task2()).toBeVisible()
+    await expect(this.task3()).toBeVisible()
+    await expect(this.task4()).toBeVisible()
+    await expect(this.task5()).toBeVisible()
   }
 }
