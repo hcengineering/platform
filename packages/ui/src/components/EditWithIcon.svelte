@@ -29,6 +29,7 @@
   export let placeholder: IntlString = plugin.string.EditBoxPlaceholder
   export let placeholderParam: any | undefined = undefined
   export let autoFocus: boolean = false
+  export let kind: 'ghost' | 'secondary' = 'ghost'
   export let size: 'small' | 'medium' | 'large' = 'medium'
   export let loading = false
 
@@ -52,7 +53,7 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
-  class="flex-between editbox {size}"
+  class="flex-between editbox {kind} {size}"
   style={width != null ? 'width: ' + width : ''}
   on:click={() => {
     textHTML.focus()
@@ -115,6 +116,13 @@
       &::placeholder {
         color: var(--theme-dark-color);
       }
+    }
+
+    &.secondary {
+      padding: var(--spacing-1);
+      background-color: var(--theme-button-default);
+      border: 1px solid var(--theme-button-border);
+      border-radius: var(--small-BorderRadius);
     }
   }
 </style>

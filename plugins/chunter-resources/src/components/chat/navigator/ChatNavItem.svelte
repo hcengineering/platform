@@ -36,6 +36,7 @@
   export let context: DocNotifyContext | undefined
   export let item: ChatNavItemModel
   export let isSelected = false
+  export let type: 'type-link' | 'type-tag' | 'type-anchor-link' | 'type-object' = 'type-link'
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -44,7 +45,7 @@
 
   let notifications: InboxNotification[] = []
 
-  let notificationsCount = 0
+  let count: number | null = null
   let actions: Action[] = []
 
   notificationClient.inboxNotificationsByContext.subscribe((res) => {
@@ -60,7 +61,7 @@
   })
 
   $: void getNotificationsCount(context, notifications).then((res) => {
-    notificationsCount = res
+    count = res === 0 ? null : res
   })
 
   $: void getChannelActions(context, item.object).then((res) => {
@@ -121,10 +122,11 @@
   iconSize={item.iconSize}
   {isSelected}
   iconProps={{ ...item.iconProps, value: item.object }}
-  {notificationsCount}
+  {count}
   title={item.title}
   description={item.description}
   {actions}
+  {type}
   on:click={() => {
     dispatch('select', { object: item.object })
   }}

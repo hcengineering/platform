@@ -30,6 +30,14 @@
     border-radius: var(--small-focus-BorderRadius);
   }
 }
+.hulyNavPanel-container a.noUnderline {
+  display: inline-flex;
+  flex-shrink: 0;
+  min-width: 0;
+  min-height: 0;
+
+  button.type-link { width: 100%; }
+}
 .hulyNavPanel-container .hulyNavItem-container,
 .hulyNavPanel-container .hulyTaskNavLink-container {
   margin: 0 0.75rem;

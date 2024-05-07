@@ -27,15 +27,16 @@
 
   export let special: SpecialNavModel
   export let currentSpecial: SpecialNavModel | undefined = undefined
+  export let type: 'type-link' | 'type-tag' | 'type-anchor-link' | 'type-object' = 'type-link'
 
   const notificationsClient = InboxNotificationsClientImpl.getClient()
   const notificationsByContextStore = notificationsClient.inboxNotificationsByContext
 
-  let notificationsCount = 0
+  let count: number | null = null
   let elementsCount = 0
 
   $: void getNotificationsCount(special, $notificationsByContextStore).then((res) => {
-    notificationsCount = res
+    count = res === 0 ? null : res
   })
   $: elementsCount = getElementsCount(special, $savedMessagesStore, $savedAttachmentsStore)
 
@@ -65,17 +66,13 @@
   }
 </script>
 
-<div class="mr-2 ml-2">
-  <NavItem
-    id={special.id}
-    icon={special.icon}
-    iconPadding="0 0 0 0.375rem"
-    iconSize="small"
-    padding="var(--spacing-1) var(--spacing-0_5)"
-    intlTitle={special.label}
-    withIconBackground={false}
-    {notificationsCount}
-    {elementsCount}
-    isSelected={special.id === currentSpecial?.id}
-  />
-</div>
+<NavItem
+  id={special.id}
+  icon={special.icon}
+  intlTitle={special.label}
+  withIconBackground={false}
+  {count}
+  {elementsCount}
+  isSelected={special.id === currentSpecial?.id}
+  {type}
+/>
