@@ -31,12 +31,7 @@
 </script>
 
 <script lang="ts">
-  import {
-    AvatarType,
-    getAvatarProviderId,
-    getFirstName,
-    getLastName
-  } from '@hcengineering/contact'
+  import { AvatarType, getAvatarProviderId, getFirstName, getLastName } from '@hcengineering/contact'
   import { Asset, getMetadata, getResource } from '@hcengineering/platform'
   import { getBlobURL, reduceCalls } from '@hcengineering/presentation'
   import {
