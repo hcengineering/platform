@@ -14,19 +14,27 @@
 //
 
 import { chunterId } from '@hcengineering/chunter'
-import core, { type Class, type Doc, type Domain, type Ref, TxOperations, type Space } from '@hcengineering/core'
+import core, {
+  type Account,
+  TxOperations,
+  type Class,
+  type Doc,
+  type Domain,
+  type Ref,
+  type Space
+} from '@hcengineering/core'
 import {
+  tryMigrate,
+  tryUpgrade,
   type MigrateOperation,
   type MigrationClient,
-  type MigrationUpgradeClient,
-  tryMigrate,
-  tryUpgrade
+  type MigrationUpgradeClient
 } from '@hcengineering/model'
 import activity, { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 import notification from '@hcengineering/notification'
 
-import chunter from './plugin'
 import contactPlugin, { type PersonAccount } from '@hcengineering/contact'
+import chunter from './plugin'
 
 export const DOMAIN_COMMENT = 'comment' as Domain
 
@@ -104,15 +112,15 @@ async function getAllEmployeeAccounts (tx: TxOperations): Promise<Ref<PersonAcco
 
 async function joinEmployees (current: Space, tx: TxOperations): Promise<void> {
   const accs = await getAllEmployeeAccounts(tx)
+  const newMembers: Ref<Account>[] = [...current.members]
   for (const acc of accs) {
-    if (!current.members.includes(acc)) {
-      await tx.update(current, {
-        $push: {
-          members: acc
-        }
-      })
+    if (!newMembers.includes(acc)) {
+      newMembers.push(acc)
     }
   }
+  await tx.update(current, {
+    members: newMembers
+  })
 }
 
 export async function createRandom (client: MigrationUpgradeClient, tx: TxOperations): Promise<void> {

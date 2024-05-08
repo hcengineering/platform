@@ -32,18 +32,6 @@
   export let value: Project | undefined
   export let inline: boolean = false
   export let accent: boolean = false
-
-  $: editable = false
-
-  $: canEditSpace(value).then((result) => {
-    editable = result
-  })
-
-  async function click () {
-    if (await canEditSpace(value)) {
-      showPopup(CreateProject, { project: value })
-    }
-  }
 </script>
 
 {#if value}
@@ -64,9 +52,7 @@
     </div>
     <span
       class="label no-underline nowrap"
-      class:cursor-pointer={editable}
       class:fs-bold={accent}
-      on:click|preventDefault={click}
     >
       {value.name}
       {#if value.archived}

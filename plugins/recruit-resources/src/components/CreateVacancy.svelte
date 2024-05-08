@@ -67,7 +67,7 @@
   let vacancyData: Data<VacancyClass> = {
     archived: false,
     description: '',
-    members: [],
+    members: [getCurrentAccount()._id],
     name: '',
     number: 0,
     private: false,
@@ -219,7 +219,7 @@
         archived: false,
         number: (incResult as any).object.sequence,
         company,
-        members: [],
+        members: [getCurrentAccount()._id],
         owners: [getCurrentAccount()._id],
         type: typeId
       },
