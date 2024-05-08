@@ -9,8 +9,6 @@ export const PlatformSetting = process.env.SETTING as string
 export const PlatformSettingSecond = process.env.SETTING_SECOND as string
 export const DefaultWorkspace = 'SanityTest'
 
-export const PlatformURILiveness = process.env.LIVENESS_URI as string
-
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
   if (result.length < chars) {

@@ -392,7 +392,7 @@ test.describe('Fulltext index', () => {
         }
         const newWorkspaceName = `New Workspace Name - ${generateId(2)}`
 
-        await loginPage.goto(PlatformURI)
+        await loginPage.goto()
         await loginPage.clickSignUp()
         await signUpPage.signUp(newUser)
 

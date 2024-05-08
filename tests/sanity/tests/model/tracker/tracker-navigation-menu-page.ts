@@ -89,6 +89,9 @@ export class TrackerNavigationMenuPage extends CommonPage {
     await expect(this.myIssues()).toBeVisible()
     await expect(this.allIssues()).toBeVisible()
     await expect(this.allProjects()).toBeVisible()
+  }
+
+  async checkIfTrackerSidebarIsVisibleForLiveProject (): Promise<void> {
     await expect(this.issues()).toBeVisible()
     await expect(this.components()).toBeVisible()
     await expect(this.milestone()).toBeVisible()

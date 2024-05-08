@@ -1,4 +1,5 @@
 import { expect, type Locator, type Page } from '@playwright/test'
+import { PlatformURI } from '../utils'
 
 export class LoginPage {
   readonly page: Page
@@ -11,7 +12,7 @@ export class LoginPage {
   inputPassword = (): Locator => this.page.locator('input[name=current-password]')
   buttonLogin = (): Locator => this.page.locator('button', { hasText: 'Log In' })
   linkSignUp = (): Locator => this.page.locator('a.title', { hasText: 'Sign Up' })
-  invalidPasswordMessage = (): Locator => this.page.locator('form')
+  invalidPasswordMessage = (): Locator => this.page.getByText('Invalid password')
   recoverLink = (): Locator => this.page.getByRole('link', { name: 'Recover' })
   passwordRecovery = (): Locator => this.page.getByText('Password recovery')
   recoveryLoginText = (): Locator => this.page.getByText('Know your password? Log In')
@@ -20,7 +21,7 @@ export class LoginPage {
   recoverySignUp = (): Locator => this.page.getByRole('link', { name: 'Sign Up' })
 
   // ACTIONS
-  async goto (PlatformURI: string): Promise<void> {
+  async goto (): Promise<void> {
     await (await this.page.goto(`${PlatformURI}/login/login`))?.finished()
   }
 

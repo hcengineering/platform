@@ -297,6 +297,9 @@ export class CommonTrackerPage extends CalendarPage {
     await expect(this.filter()).toBeVisible()
     await expect(this.view()).toBeVisible()
     await expect(this.showMore()).toBeVisible()
+  }
+
+  async checkIfTasksAreVisable (): Promise<void> {
     await expect(this.task1()).toBeVisible()
     await expect(this.task2()).toBeVisible()
     await expect(this.task3()).toBeVisible()
