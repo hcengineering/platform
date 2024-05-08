@@ -491,7 +491,7 @@ async function OnChannelMembersChanged (tx: TxUpdateDoc<Channel>, control: Trigg
         lastViewedTimestamp: tx.modifiedOn
       })
 
-      await control.apply([updateTx], true)
+      res.push(updateTx)
     }
   }
 
