@@ -20,7 +20,6 @@ import chunter from '@hcengineering/chunter'
 import serverNotification from '@hcengineering/server-notification'
 import serverCore, { type ObjectDDParticipant } from '@hcengineering/server-core'
 import serverChunter from '@hcengineering/server-chunter'
-import notification from '@hcengineering/notification'
 
 export { serverChunterId } from '@hcengineering/server-chunter'
 
@@ -78,25 +77,12 @@ export function createModel (builder: Builder): void {
     }
   })
 
-  builder.mixin(chunter.ids.DMNotification, notification.class.NotificationType, serverNotification.mixin.TypeMatch, {
-    func: serverChunter.function.IsDirectMessage
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverChunter.trigger.OnChatMessageCreate,
+    txMatch: {
+      _class: core.class.TxCollectionCUD,
+      'tx._class': core.class.TxCreateDoc,
+      'tx.objectClass': chunter.class.ChatMessage
+    }
   })
-
-  builder.mixin(
-    chunter.ids.ThreadNotification,
-    notification.class.NotificationType,
-    serverNotification.mixin.TypeMatch,
-    {
-      func: serverChunter.function.IsThreadMessage
-    }
-  )
-
-  builder.mixin(
-    chunter.ids.ChannelNotification,
-    notification.class.NotificationType,
-    serverNotification.mixin.TypeMatch,
-    {
-      func: serverChunter.function.IsChannelMessage
-    }
-  )
 }

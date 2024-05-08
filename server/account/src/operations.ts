@@ -226,7 +226,13 @@ function toAccountInfo (account: Account): AccountInfo {
   return result
 }
 
-async function getAccountInfo (ctx: MeasureContext, db: Db, email: string, password: string): Promise<AccountInfo> {
+async function getAccountInfo (
+  ctx: MeasureContext,
+  db: Db,
+  productId: string,
+  email: string,
+  password: string
+): Promise<AccountInfo> {
   const account = await getAccount(db, email)
   if (account === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
@@ -285,7 +291,7 @@ export async function login (
 ): Promise<LoginInfo> {
   const email = cleanEmail(_email)
   try {
-    const info = await getAccountInfo(ctx, db, email, password)
+    const info = await getAccountInfo(ctx, db, productId, email, password)
     const result = {
       endpoint: getEndpoint(),
       email,
@@ -1496,7 +1502,7 @@ export async function changePassword (
   password: string
 ): Promise<void> {
   const { email } = decodeToken(token)
-  const account = await getAccountInfo(ctx, db, email, oldPassword)
+  const account = await getAccountInfo(ctx, db, productId, email, oldPassword)
 
   const salt = randomBytes(32)
   const hash = hashWithSalt(password, salt)

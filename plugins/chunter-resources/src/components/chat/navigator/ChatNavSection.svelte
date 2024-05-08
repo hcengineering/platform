@@ -16,7 +16,7 @@
   import { Doc, Ref } from '@hcengineering/core'
   import { DocNotifyContext } from '@hcengineering/notification'
   import { getClient } from '@hcengineering/presentation'
-  import ui, { Action, AnySvelteComponent, IconSize, ModernButton } from '@hcengineering/ui'
+  import ui, { Action, AnySvelteComponent, IconSize, ModernButton, NavGroup } from '@hcengineering/ui'
   import { getDocTitle } from '@hcengineering/view-resources'
   import contact from '@hcengineering/contact'
   import { getResource, translate } from '@hcengineering/platform'
@@ -26,7 +26,6 @@
   import chunter from '../../../plugin'
   import { ChatNavItemModel } from '../types'
   import { getObjectIcon, getChannelName } from '../../../utils'
-  import ChatSectionHeader from './ChatSectionHeader.svelte'
   import { navigatorStateStore, toggleSections } from '../utils'
 
   export let id: string
@@ -134,19 +133,21 @@
 </script>
 
 {#if items.length > 0 && contexts.length > 0}
-  <div class="section">
-    <ChatSectionHeader
-      {header}
-      {actions}
-      {isCollapsed}
-      on:collapse={() => {
-        toggleSections(id)
-      }}
-    />
+  <NavGroup
+    title={header}
+    categoryName={id}
+    {actions}
+    isOpen={!isCollapsed}
+    isFold
+    second
+    on:toggle={() => {
+      toggleSections(id)
+    }}
+  >
     {#if !isCollapsed}
       {#each visibleItems as item (item.id)}
         {@const context = contexts.find(({ attachedTo }) => attachedTo === item.id)}
-        <ChatNavItem {context} isSelected={objectId === item.id} {item} on:select />
+        <ChatNavItem {context} isSelected={objectId === item.id} {item} type={'type-object'} on:select />
       {/each}
       {#if canShowMore}
         <div class="showMore">
@@ -166,18 +167,10 @@
         <ChatNavItem {context} isSelected {item} on:select />
       {/if}
     {/if}
-  </div>
+  </NavGroup>
 {/if}
 
 <style lang="scss">
-  .section {
-    display: flex;
-    gap: 0.125rem;
-    flex-direction: column;
-    padding: 0 var(--spacing-1) var(--spacing-1_5) var(--spacing-1);
-    border-bottom: 1px solid var(--global-surface-02-BorderColor);
-  }
-
   .showMore {
     margin-top: var(--spacing-1);
     font-size: 0.75rem;

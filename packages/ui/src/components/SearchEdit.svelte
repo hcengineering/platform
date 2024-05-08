@@ -6,6 +6,7 @@
 
   export let value: string = ''
   export let width: string = '12rem'
+  export let kind: 'ghost' | 'secondary' = 'ghost'
 
   $: _search = value
   const dispatch = createEventDispatcher()
@@ -27,6 +28,7 @@
   icon={IconSearch}
   {width}
   placeholder={plugin.string.Search}
+  {kind}
   bind:value={_search}
   on:change={() => {
     restartTimer()

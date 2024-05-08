@@ -13,29 +13,56 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import type { IntlString } from '@hcengineering/platform'
   import type { AnyComponent } from '..'
-  import { Label, Component } from '..'
+  import { showPopup, Menu, Action, Label, Component, IconOpenedArrow } from '..'
 
   export let label: IntlString | undefined = undefined
   export let title: string | undefined = undefined
   export let categoryName: string
   export let tools: AnyComponent | undefined = undefined
   export let isOpen: boolean = true
+  export let isFold: boolean = false
   export let selected: boolean = false
   export let second: boolean = false
+  export let actions: Action[] = []
+
+  const dispatch = createEventDispatcher()
 
   $: id = `navGroup-${categoryName}`
+
+  const toggle = (): void => {
+    isOpen = !isOpen
+    dispatch('toggle', isOpen)
+  }
+
+  function handleMenuClicked (ev: MouseEvent): void {
+    if (actions.length === 0) return
+    showPopup(Menu, { actions }, ev.target as HTMLElement)
+  }
 </script>
 
 <div class="hulyAccordionItem-container" class:second>
-  <button class="hulyAccordionItem-header nav small" class:isOpen class:selected on:click={() => (isOpen = !isOpen)}>
+  <button class="hulyAccordionItem-header nav small" class:isOpen class:selected on:click={toggle}>
+    {#if isFold}
+      <button class="hulyAccordionItem-header__chevron" class:collapsed={!isOpen}>
+        <IconOpenedArrow size={'small'} />
+      </button>
+    {/if}
     <div class="hulyAccordionItem-header__label-wrapper font-medium-12">
-      <span class="hulyAccordionItem-header__label">
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <span
+        class="hulyAccordionItem-header__label"
+        class:cursor-default={actions.length === 0}
+        on:click|stopPropagation={handleMenuClicked}
+      >
         {#if label}<Label {label} />{/if}
         {#if title}{title}{/if}
       </span>
     </div>
+    {#if isFold}<div class="flex-grow" />{/if}
     {#if tools || $$slots.tools}
       <div class="hulyAccordionItem-header__tools">
         {#if tools}

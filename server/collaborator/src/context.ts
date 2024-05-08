@@ -17,7 +17,7 @@ import { type DocumentId, type PlatformDocumentId } from '@hcengineering/collabo
 import { WorkspaceId, generateId } from '@hcengineering/core'
 import { decodeToken } from '@hcengineering/server-token'
 import { onAuthenticatePayload } from '@hocuspocus/server'
-import { ClientFactory, Controller, getClientFactory } from './platform'
+import { ClientFactory, simpleClientFactory } from './platform'
 
 export interface Context {
   connectionId: string
@@ -36,7 +36,7 @@ export type withContext<T extends WithContext> = Omit<T, 'context'> & {
   context: Context
 }
 
-export function buildContext (data: onAuthenticatePayload, controller: Controller): Context {
+export function buildContext (data: onAuthenticatePayload): Context {
   const context = data.context as Partial<Context>
 
   const connectionId = context.connectionId ?? generateId()
@@ -48,7 +48,7 @@ export function buildContext (data: onAuthenticatePayload, controller: Controlle
   return {
     connectionId,
     workspaceId: decodedToken.workspace,
-    clientFactory: getClientFactory(decodedToken, controller),
+    clientFactory: simpleClientFactory(decodedToken),
     initialContentId,
     platformDocumentId
   }

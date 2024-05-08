@@ -16,7 +16,7 @@
 import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { ObjectDDParticipantFunc, TriggerFunc } from '@hcengineering/server-core'
-import { NotificationContentProvider, Presenter, TypeMatchFunc } from '@hcengineering/server-notification'
+import { NotificationContentProvider, Presenter } from '@hcengineering/server-notification'
 
 /**
  * @public
@@ -31,15 +31,13 @@ export default plugin(serverChunterId, {
     ChunterTrigger: '' as Resource<TriggerFunc>,
     OnDirectMessageSent: '' as Resource<TriggerFunc>,
     OnChatMessageRemoved: '' as Resource<TriggerFunc>,
-    OnChannelMembersChanged: '' as Resource<TriggerFunc>
+    OnChannelMembersChanged: '' as Resource<TriggerFunc>,
+    OnChatMessageCreate: '' as Resource<TriggerFunc>
   },
   function: {
     CommentRemove: '' as Resource<ObjectDDParticipantFunc>,
     ChannelHTMLPresenter: '' as Resource<Presenter>,
     ChannelTextPresenter: '' as Resource<Presenter>,
-    IsDirectMessage: '' as TypeMatchFunc,
-    IsChannelMessage: '' as TypeMatchFunc,
-    IsThreadMessage: '' as TypeMatchFunc,
     ChunterNotificationContentProvider: '' as Resource<NotificationContentProvider>
   }
 })
