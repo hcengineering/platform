@@ -58,4 +58,8 @@ export class SignUpPage extends CommonPage {
         await this.buttonSignUp().click()
     }
   }
+
+  async checkIfSignUpButtonIsDisabled (): Promise<void> {
+    await expect(this.buttonSignUp()).toBeDisabled()
+  }
 }
