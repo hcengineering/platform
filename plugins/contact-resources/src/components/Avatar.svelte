@@ -66,7 +66,6 @@
   let url: string[] | undefined
   let avatarProvider: AvatarProvider | undefined
   let color: ColorDefinition | undefined = undefined
-  let fontSize: number = 16
   let element: HTMLElement
   let avatarInst: AvatarInstance
 
@@ -122,27 +121,9 @@
   $: srcset = url?.slice(1)?.join(', ')
 
   onMount(() => {
-    if (size === 'full' && !url && name && displayName && displayName !== '' && element) {
-      fontSize = element.clientWidth * 0.6
-    }
     loadUsersStatus()
   })
 
-  // function getStatusSize (avaSize: IconSize): UserStatusSize {
-  //   switch (avaSize) {
-  //     case 'xx-small':
-  //     case 'inline':
-  //     case 'tiny':
-  //     case 'card':
-  //       return 'x-small'
-  //     case 'x-small':
-  //       return 'small'
-  //     case 'smaller':
-  //       return 'medium'
-  //     default:
-  //       return 'auto'
-  //   }
-  // }
   $: userStatus = account ? $statusByUserStore.get(account) : undefined
 </script>
 
