@@ -29,7 +29,7 @@ import core, {
   TxCUD
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { BroadcastFunc, Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
+import { Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
 import { BaseMiddleware } from './base'
 
 const configurationAccountEmail = '#configurator@hc.engineering'
@@ -45,7 +45,6 @@ export class ConfigurationMiddleware extends BaseMiddleware implements Middlewar
 
   static async create (
     ctx: MeasureContext,
-    broadcast: BroadcastFunc,
     storage: ServerStorage,
     next?: Middleware
   ): Promise<ConfigurationMiddleware> {
@@ -66,10 +65,6 @@ export class ConfigurationMiddleware extends BaseMiddleware implements Middlewar
       }
     }
     return await this.provideTx(ctx, tx)
-  }
-
-  handleBroadcast (tx: Tx[], targets?: string[]): Tx[] {
-    return this.provideHandleBroadcast(tx, targets)
   }
 
   override async findAll<T extends Doc>(

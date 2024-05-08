@@ -40,7 +40,6 @@ export interface Request<P extends any[]> {
 export interface HelloRequest extends Request<any[]> {
   binary?: boolean
   compression?: boolean
-  broadcast?: boolean
 }
 /**
  * @public

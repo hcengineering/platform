@@ -54,15 +54,7 @@ export abstract class BaseMiddleware {
     if (this.next !== undefined) {
       return await this.next.tx(ctx, tx)
     }
-    const res = await this.storage.tx(ctx, tx)
-    return [res[0], res[1], undefined]
-  }
-
-  provideHandleBroadcast (tx: Tx[], targets?: string[]): Tx[] {
-    if (this.next !== undefined) {
-      return this.next.handleBroadcast(tx, targets)
-    }
-    return tx
+    return await this.storage.tx(ctx, tx)
   }
 
   protected async provideFindAll<T extends Doc>(
@@ -74,7 +66,7 @@ export abstract class BaseMiddleware {
     if (this.next !== undefined) {
       return await this.next.findAll(ctx, _class, query, options)
     }
-    return await this.storage.findAll(ctx, _class, query, options)
+    return await this.storage.findAll(ctx.ctx, _class, query, options)
   }
 
   protected async provideSearchFulltext (
@@ -85,6 +77,6 @@ export abstract class BaseMiddleware {
     if (this.next !== undefined) {
       return await this.next.searchFulltext(ctx, query, options)
     }
-    return await this.storage.searchFulltext(ctx, query, options)
+    return await this.storage.searchFulltext(ctx.ctx, query, options)
   }
 }

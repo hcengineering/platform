@@ -90,7 +90,6 @@ import { serverViewId } from '@hcengineering/server-view'
 import {
   ClientSession,
   start as startJsonRpc,
-  type BroadcastCall,
   type PipelineFactory,
   type ServerFactory,
   type Session
@@ -373,11 +372,11 @@ export function start (
     return createPipeline(ctx, conf, middlewares, upgrade, broadcast)
   }
 
-  const sessionFactory = (token: Token, pipeline: Pipeline, broadcast: BroadcastCall): Session => {
+  const sessionFactory = (token: Token, pipeline: Pipeline): Session => {
     if (token.extra?.mode === 'backup') {
-      return new BackupClientSession(broadcast, token, pipeline)
+      return new BackupClientSession(token, pipeline)
     }
-    return new ClientSession(broadcast, token, pipeline)
+    return new ClientSession(token, pipeline)
   }
 
   return startJsonRpc(getMetricsContext(), {

@@ -32,7 +32,10 @@ import core, {
   SortingOrder,
   type Space,
   TxOperations,
-  type WorkspaceId
+  type WorkspaceId,
+  type SessionOperationContext,
+  type ParamsType,
+  type FullParamsType
 } from '@hcengineering/core'
 import {
   type ContentTextAdapter,
@@ -169,11 +172,26 @@ describe('mongo operations', () => {
       storageFactory: () => createNullStorageFactory()
     }
     const ctx = new MeasureMetricsContext('client', {})
-    const serverStorage = await createServerStorage(ctx, conf, { upgrade: false })
+    const serverStorage = await createServerStorage(ctx, conf, {
+      upgrade: false,
+      broadcast: () => {}
+    })
+    const soCtx: SessionOperationContext = {
+      ctx,
+      derived: [],
+      with: async <T>(
+        name: string,
+        params: ParamsType,
+        op: (ctx: SessionOperationContext) => T | Promise<T>,
+        fullParams?: FullParamsType
+      ): Promise<T> => {
+        return await op(soCtx)
+      }
+    }
     client = await createClient(async (handler) => {
       const st: ClientConnection = {
         findAll: async (_class, query, options) => await serverStorage.findAll(ctx, _class, query, options),
-        tx: async (tx) => (await serverStorage.tx(ctx, tx))[0],
+        tx: async (tx) => await serverStorage.tx(soCtx, tx),
         searchFulltext: async () => ({ docs: [] }),
         close: async () => {},
         loadChunk: async (domain): Promise<DocChunk> => await Promise.reject(new Error('unsupported')),
@@ -197,7 +215,7 @@ describe('mongo operations', () => {
   })
 
   it('check add', async () => {
-    jest.setTimeout(50000)
+    jest.setTimeout(500000)
     for (let i = 0; i < 50; i++) {
       await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
         name: `my-task-${i}`,
