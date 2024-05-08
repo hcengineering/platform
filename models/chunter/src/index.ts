@@ -456,6 +456,7 @@ export function createModel (builder: Builder, options = { addApplication: true 
       hidden: false,
       txClasses: [core.class.TxCreateDoc],
       objectClass: chunter.class.ChatMessage,
+      attachedToClass: chunter.class.DirectMessage,
       providers: {
         [notification.providers.EmailNotification]: false,
         [notification.providers.BrowserNotification]: true,
