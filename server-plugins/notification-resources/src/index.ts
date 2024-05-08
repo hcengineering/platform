@@ -110,20 +110,6 @@ export function getPushCollaboratorTx (
   return undefined
 }
 
-export async function isMessageAlreadyNotified (
-  _id: Ref<ActivityMessage>,
-  user: Ref<Account>,
-  control: TriggerControl
-): Promise<boolean> {
-  const exists = await control.findAll(
-    notification.class.ActivityInboxNotification,
-    { attachedTo: _id, user },
-    { limit: 1, projection: { _id: 1 } }
-  )
-
-  return exists.length > 0
-}
-
 export async function getCommonNotificationTxes (
   control: TriggerControl,
   doc: Doc,
@@ -531,7 +517,7 @@ export async function createPushFromInbox (
   _class: Ref<Class<InboxNotification>>,
   senderId: Ref<PersonAccount>,
   _id: Ref<Doc>,
-  cache: Map<Ref<Doc>, Doc>
+  cache: Map<Ref<Doc>, Doc> = new Map<Ref<Doc>, Doc>()
 ): Promise<Tx | undefined> {
   let title: string = ''
   let body: string = ''

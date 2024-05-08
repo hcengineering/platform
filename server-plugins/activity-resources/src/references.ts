@@ -49,8 +49,10 @@ import contact, { Person, PersonAccount } from '@hcengineering/contact'
 import {
   getCommonNotificationTxes,
   getPushCollaboratorTx,
-  isMessageAlreadyNotified,
-  shouldNotifyCommon
+  shouldNotifyCommon,
+  isShouldNotifyTx,
+  NotifyResult,
+  createPushFromInbox
 } from '@hcengineering/server-notification-resources'
 
 async function getPersonAccount (person: Ref<Person>, control: TriggerControl): Promise<PersonAccount | undefined> {
@@ -147,17 +149,26 @@ export async function getPersonNotificationTxes (
     )
   }
 
-  const data: Partial<Data<MentionInboxNotification>> = {
+  const data: Omit<Data<MentionInboxNotification>, 'docNotifyContext'> = {
     header: activity.string.MentionedYouIn,
     messageHtml: reference.message,
-    mentionedIn: reference.attachedDocId,
-    mentionedInClass: reference.attachedDocClass
+    mentionedIn: reference.attachedDocId ?? reference.srcDocId,
+    mentionedInClass: reference.attachedDocClass ?? reference.srcDocClass,
+    user: receiver._id,
+    isViewed: false
   }
 
   const notifyResult = await shouldNotifyCommon(control, receiver._id, notification.ids.MentionCommonNotificationType)
+  const messageNotifyResult = await getMessageNotifyResult(reference, receiver._id, control, originTx, doc)
 
-  if (await isReferenceAlreadyNotified(reference, receiver._id, control)) {
+  if (messageNotifyResult.allowed) {
     notifyResult.allowed = false
+  }
+  if (messageNotifyResult.push) {
+    notifyResult.push = false
+  }
+  if (messageNotifyResult.emails.length > 0) {
+    notifyResult.emails = []
   }
 
   const txes = await getCommonNotificationTxes(
@@ -174,6 +185,32 @@ export async function getPersonNotificationTxes (
     notification.class.MentionInboxNotification
   )
 
+  if (!notifyResult.allowed && notifyResult.push) {
+    const exists = (
+      await control.findAll(
+        notification.class.ActivityInboxNotification,
+        { attachedTo: reference.attachedDocId as Ref<ActivityMessage>, user: receiver._id },
+        { limit: 1, projection: { _id: 1 } }
+      )
+    )[0]
+
+    if (exists !== undefined) {
+      const pushTx = await createPushFromInbox(
+        control,
+        receiver._id,
+        reference.srcDocId,
+        reference.srcDocClass,
+        { ...data, docNotifyContext: exists.docNotifyContext },
+        notification.class.MentionInboxNotification,
+        senderId as Ref<PersonAccount>,
+        exists._id,
+        new Map()
+      )
+      if (pushTx !== undefined) {
+        res.push(pushTx)
+      }
+    }
+  }
   res.push(...txes)
   return res
 }
@@ -238,22 +275,29 @@ async function getCollaboratorsTxes (
   return res
 }
 
-async function isReferenceAlreadyNotified (
+async function getMessageNotifyResult (
   reference: Data<ActivityReference>,
   receiver: Ref<Account>,
-  control: TriggerControl
-): Promise<boolean> {
+  control: TriggerControl,
+  originTx: TxCUD<Doc>,
+  doc: Doc
+): Promise<NotifyResult> {
   const { hierarchy } = control
+  const tx = TxProcessor.extractTx(originTx) as TxCUD<Doc>
 
-  if (reference.attachedDocClass === undefined || reference.attachedDocId === undefined) {
-    return false
+  if (
+    reference.attachedDocClass === undefined ||
+    reference.attachedDocId === undefined ||
+    tx._class !== core.class.TxCreateDoc
+  ) {
+    return { allowed: false, emails: [], push: false }
   }
 
   if (!hierarchy.isDerived(reference.attachedDocClass, activity.class.ActivityMessage)) {
-    return false
+    return { allowed: false, emails: [], push: false }
   }
 
-  return await isMessageAlreadyNotified(reference.attachedDocId as Ref<ActivityMessage>, receiver, control)
+  return await isShouldNotifyTx(control, tx, originTx, doc, receiver, false, false, undefined)
 }
 
 function isMarkupType (type: Ref<Class<Type<any>>>): boolean {

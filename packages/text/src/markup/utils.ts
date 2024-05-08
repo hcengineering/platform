@@ -228,6 +228,19 @@ export function stripTags (markup: Markup, textLimit = 0, extensions: Extensions
   let charCount = 0
   let isHardStop = false
 
+  const pushText = (text: string): void => {
+    if (textLimit > 0 && charCount + text.length > textLimit) {
+      const toAddCount = textLimit - charCount
+      const textPart = text.substring(0, toAddCount)
+      textParts.push(textPart)
+      textParts.push(ELLIPSIS_CHAR)
+      isHardStop = true
+    } else {
+      textParts.push(text)
+      charCount += text.length
+    }
+  }
+
   parsed.descendants((node, _pos, parent): boolean => {
     if (isHardStop) {
       return false
@@ -235,22 +248,16 @@ export function stripTags (markup: Markup, textLimit = 0, extensions: Extensions
 
     if (node.type.isText) {
       const text = node.text ?? ''
-      if (textLimit > 0 && charCount + text.length > textLimit) {
-        const toAddCount = textLimit - charCount
-        const textPart = text.substring(0, toAddCount)
-        textParts.push(textPart)
-        textParts.push(ELLIPSIS_CHAR)
-        isHardStop = true
-      } else {
-        textParts.push(text)
-        charCount += text.length
-      }
+      pushText(text)
       return false
     } else if (node.type.isBlock) {
       if (textParts.length > 0 && textParts[textParts.length - 1] !== WHITESPACE) {
         textParts.push(WHITESPACE)
         charCount++
       }
+    } else if (node.type.name === 'reference') {
+      const label = node.attrs.label ?? ''
+      pushText(label.length > 0 ? `@${label}` : '')
     }
     return true
   })
