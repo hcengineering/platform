@@ -19,35 +19,34 @@
   import core, {
     Account,
     Data,
-    fillDefaults,
-    FindResult,
-    generateId,
-    getCurrentAccount,
     Ref,
     Role,
     RolesAssignment,
-    SortingOrder
+    SortingOrder,
+    fillDefaults,
+    generateId,
+    getCurrentAccount
   } from '@hcengineering/core'
-  import { Card, createQuery, getClient, InlineAttributeBar, MessageBox } from '@hcengineering/presentation'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
+  import { Card, InlineAttributeBar, MessageBox, createQuery, getClient } from '@hcengineering/presentation'
   import { Vacancy as VacancyClass } from '@hcengineering/recruit'
   import tags from '@hcengineering/tags'
-  import task, { makeRank, ProjectType } from '@hcengineering/task'
+  import task, { ProjectType, makeRank } from '@hcengineering/task'
+  import { selectedTypeStore, typeStore } from '@hcengineering/task-resources'
   import tracker, { Issue, IssueStatus, IssueTemplate, IssueTemplateData, Project } from '@hcengineering/tracker'
   import {
     Button,
     Component,
-    createFocusManager,
     EditBox,
     FocusHandler,
     IconAttachment,
+    createFocusManager,
     showPopup
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import recruit from '../plugin'
   import Company from './icons/Company.svelte'
   import Vacancy from './icons/Vacancy.svelte'
-  import { selectedTypeStore, typeStore } from '@hcengineering/task-resources'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
 
   const dispatch = createEventDispatcher()
 
@@ -59,7 +58,7 @@
 
   let appliedTemplateId: Ref<ProjectType> | undefined
   let objectId: Ref<VacancyClass> = generateId()
-  let issueTemplates: FindResult<IssueTemplate> = []
+  let issueTemplates: IssueTemplate[] = []
   let fullDescription: string = ''
 
   export let company: Ref<Organization> | undefined
@@ -68,7 +67,7 @@
   let vacancyData: Data<VacancyClass> = {
     archived: false,
     description: '',
-    members: [],
+    members: [getCurrentAccount()._id],
     name: '',
     number: 0,
     private: false,
@@ -157,13 +156,16 @@
     if (taskType === undefined) {
       return
     }
+    const number = (incResult as any).object.sequence
+
+    const identifier = `${project?.identifier}-${number}`
     const resId = await client.addCollection(tracker.class.Issue, space, parent, tracker.class.Issue, 'subIssues', {
       title: template.title + ` (${name})`,
       description: template.description,
       assignee: template.assignee,
       component: template.component,
       milestone: template.milestone,
-      number: (incResult as any).object.sequence,
+      number,
       status: project?.defaultIssueStatus as Ref<IssueStatus>,
       priority: template.priority,
       rank,
@@ -177,7 +179,8 @@
       reports: 0,
       relations: [{ _id: id, _class: recruit.class.Vacancy }],
       childInfo: [],
-      kind: taskType._id
+      kind: taskType._id,
+      identifier
     })
     if ((template.labels?.length ?? 0) > 0) {
       const tagElements = await client.findAll(tags.class.TagElement, { _id: { $in: template.labels } })
@@ -216,7 +219,7 @@
         archived: false,
         number: (incResult as any).object.sequence,
         company,
-        members: [],
+        members: [getCurrentAccount()._id],
         owners: [getCurrentAccount()._id],
         type: typeId
       },

@@ -51,11 +51,11 @@ import { clearTelegramHistory } from './telegram'
 import { diffWorkspace, updateField } from './workspace'
 
 import core, {
+  AccountRole,
   getWorkspaceId,
   MeasureMetricsContext,
   metricsToString,
   versionToString,
-  type AccountRole,
   type Data,
   type Tx,
   type Version
@@ -215,7 +215,7 @@ export function devTool (
         }
         console.log('assigning to workspace', workspaceInfo)
         try {
-          await assignWorkspace(toolCtx, db, productId, email, workspaceInfo.workspace)
+          await assignWorkspace(toolCtx, db, productId, email, workspaceInfo.workspace, AccountRole.User)
         } catch (err: any) {
           console.error(err)
         }

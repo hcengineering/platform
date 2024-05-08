@@ -17,9 +17,9 @@
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { Vacancy } from '@hcengineering/recruit'
   import { Icon, getPlatformAvatarColorForTextDef, themeStore, tooltip } from '@hcengineering/ui'
+  import { ObjectPresenterType } from '@hcengineering/view'
   import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'
-  import { ObjectPresenterType } from '@hcengineering/view'
 
   import recruit from '../plugin'
 
@@ -43,14 +43,16 @@
   {#if inline}
     <ObjectMention object={value} {disabled} {accent} {noUnderline} component={recruit.component.EditVacancy} />
   {:else if type === 'link'}
-    <DocNavLink {disabled} object={value} {accent} {noUnderline} component={recruit.component.EditVacancy}>
-      <div class="flex-presenter" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
-        <div class="icon"><Icon icon={recruit.icon.Vacancy} size={'small'} /></div>
-        <span class="label nowrap" class:no-underline={noUnderline || disabled} class:fs-bold={accent}>
-          {value.name}
-        </span>
-      </div>
-    </DocNavLink>
+    <div class="flex-between flex-gap-2 w-full">
+      <DocNavLink {disabled} object={value} {accent} {noUnderline} component={recruit.component.EditVacancy}>
+        <div class="flex-presenter" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
+          <div class="icon"><Icon icon={recruit.icon.Vacancy} size={'small'} /></div>
+          <span class="label nowrap" class:no-underline={noUnderline || disabled} class:fs-bold={accent}>
+            {value.name}
+          </span>
+        </div>
+      </DocNavLink>
+    </div>
   {:else if type === 'text'}
     <span class="overflow-label" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
       {value.name}

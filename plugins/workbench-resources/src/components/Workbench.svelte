@@ -14,8 +14,8 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import contact, { Employee, PersonAccount } from '@hcengineering/contact'
-  import core, { AccountRole, Class, Doc, Ref, Space, getCurrentAccount } from '@hcengineering/core'
+  import contact, { Employee, Person, PersonAccount } from '@hcengineering/contact'
+  import core, { AccountRole, Class, Doc, Ref, Space, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import notification, { DocNotifyContext, InboxNotification, notificationId } from '@hcengineering/notification'
   import { BrowserNotificatator, InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
@@ -148,17 +148,17 @@
 
   const account = getCurrentAccount() as PersonAccount
 
-  let employee: Employee | undefined
-  const employeeQ = createQuery()
+  let person: Person | undefined
+  const personQ = createQuery()
 
   $: account &&
-    employeeQ.query<Employee>(
-      contact.mixin.Employee,
+    personQ.query<Person>(
+      contact.class.Person,
       {
-        _id: account?.person as Ref<Employee>
+        _id: account?.person
       },
       (res) => {
-        employee = res[0]
+        person = res[0]
       },
       { limit: 1 }
     )
@@ -347,8 +347,8 @@
 
     if (currentAppAlias !== app) {
       clear(1)
-      currentAppAlias = app
       currentApplication = await client.findOne<Application>(workbench.class.Application, { alias: app })
+      currentAppAlias = currentApplication?.alias
       navigatorModel = await buildNavModel(client, currentApplication)
     }
 
@@ -493,6 +493,9 @@
   function getSpecialComponent (id: string): SpecialNavModel | undefined {
     const sp = navigatorModel?.specials?.find((x) => x.id === id)
     if (sp !== undefined) {
+      if (sp.accessLevel !== undefined && !hasAccountRole(account, sp.accessLevel)) {
+        return undefined
+      }
       return sp
     }
     for (const s of navigatorModel?.spaces ?? []) {
@@ -539,21 +542,6 @@
   onMount(() => {
     subscribeMobile(setTheme)
   })
-
-  async function checkIsHeaderHidden (currentApplication: Application | undefined) {
-    return (
-      currentApplication?.checkIsHeaderHidden && (await (await getResource(currentApplication.checkIsHeaderHidden))())
-    )
-  }
-
-  async function checkIsHeaderDisabled (currentApplication: Application | undefined) {
-    return (
-      currentApplication?.checkIsHeaderDisabled &&
-      (await (
-        await getResource(currentApplication.checkIsHeaderDisabled)
-      )())
-    )
-  }
 
   function checkInbox (popups: CompAndProps[]) {
     if (inboxPopup !== undefined) {
@@ -604,9 +592,14 @@
   let modern: boolean
   $: modern = currentApplication?.modern ?? false
   $: elementPanel = modern ? $deviceInfo.replacedPanel ?? contentPanel : contentPanel
+
+  $: deactivated =
+    person && client.getHierarchy().hasMixin(person, contact.mixin.Employee)
+      ? !client.getHierarchy().as(person, contact.mixin.Employee).active
+      : false
 </script>
 
-{#if employee && !employee.active && !isAdminUser()}
+{#if person && deactivated && !isAdminUser()}
   <div class="flex-col-center justify-center h-full flex-grow">
     <h1><Label label={workbench.string.AccountDisabled} /></h1>
     <Label label={workbench.string.AccountDisabledDescr} />
@@ -619,7 +612,7 @@
       }}
     />
   </div>
-{:else if employee?.active || account.role === AccountRole.Owner || isAdminUser()}
+{:else if person || account.role === AccountRole.Owner || isAdminUser()}
   <ActionHandler {currentSpace} />
   <svg class="svg-mask">
     <clipPath id="notify-normal">
@@ -734,7 +727,7 @@
             class="cursor-pointer"
             on:click|stopPropagation={() => showPopup(AccountPopup, {}, popupPosition)}
           >
-            <Component is={contact.component.Avatar} props={{ avatar: employee?.avatar, size: 'small' }} />
+            <Component is={contact.component.Avatar} props={{ avatar: person?.avatar, size: 'small' }} />
           </div>
         </div>
       </div>
@@ -755,22 +748,15 @@
             {#if currentApplication}
               <NavHeader label={currentApplication.label} />
               {#if currentApplication.navHeaderComponent}
-                {#await checkIsHeaderHidden(currentApplication) then isHidden}
-                  {#if !isHidden}
-                    {#await checkIsHeaderDisabled(currentApplication) then disabled}
-                      <Component
-                        is={currentApplication.navHeaderComponent}
-                        props={{
-                          currentSpace,
-                          currentSpecial,
-                          currentFragment,
-                          disabled
-                        }}
-                        shrink
-                      />
-                    {/await}
-                  {/if}
-                {/await}
+                <Component
+                  is={currentApplication.navHeaderComponent}
+                  props={{
+                    currentSpace,
+                    currentSpecial,
+                    currentFragment
+                  }}
+                  shrink
+                />
               {/if}
             {/if}
             <Navigator

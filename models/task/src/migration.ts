@@ -13,40 +13,41 @@
 // limitations under the License.
 //
 
+import activity, { type DocUpdateMessage } from '@hcengineering/activity'
 import {
-  type Attribute,
-  type Space,
-  type Status,
-  type TxCreateDoc,
+  DOMAIN_STATUS,
+  DOMAIN_TX,
   TxOperations,
+  type Attribute,
   type Class,
   type Doc,
   type Ref,
-  DOMAIN_TX,
-  DOMAIN_STATUS,
-  type TxUpdateDoc,
-  type TxCollectionCUD
+  type Space,
+  type Status,
+  type TxCollectionCUD,
+  type TxCreateDoc,
+  type TxUpdateDoc
 } from '@hcengineering/core'
 import {
-  type ModelLogger,
+  createDefaultSpace,
   createOrUpdate,
   tryMigrate,
   tryUpgrade,
   type MigrateOperation,
   type MigrationClient,
-  type MigrationUpgradeClient
+  type MigrationUpgradeClient,
+  type ModelLogger
 } from '@hcengineering/model'
-import activity, { type DocUpdateMessage } from '@hcengineering/activity'
 import { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 import tags from '@hcengineering/model-tags'
 import {
+  taskId,
+  type ProjectStatus,
   type ProjectType,
   type ProjectTypeDescriptor,
   type Task,
-  type TaskType,
-  taskId,
-  type ProjectStatus
+  type TaskType
 } from '@hcengineering/task'
 
 import task from './plugin'
@@ -64,49 +65,9 @@ export async function createSequence (tx: TxOperations, _class: Ref<Class<Doc>>)
   }
 }
 
-async function createDefaultSequence (tx: TxOperations): Promise<void> {
-  const current = await tx.findOne(core.class.Space, {
-    _id: task.space.Sequence
-  })
-  if (current === undefined) {
-    await tx.createDoc(
-      core.class.Space,
-      core.space.Space,
-      {
-        name: 'Sequences',
-        description: 'Internal space to store sequence numbers',
-        members: [],
-        private: false,
-        archived: false
-      },
-      task.space.Sequence
-    )
-  }
-}
-
-async function createDefaultStatesSpace (tx: TxOperations): Promise<void> {
-  const current = await tx.findOne(core.class.Space, {
-    _id: task.space.Statuses
-  })
-  if (current === undefined) {
-    await tx.createDoc(
-      core.class.Space,
-      core.space.Space,
-      {
-        name: 'Statuses',
-        description: 'Internal space to store all Statuses',
-        members: [],
-        private: false,
-        archived: false
-      },
-      task.space.Statuses
-    )
-  }
-}
-
-async function createDefaults (tx: TxOperations): Promise<void> {
-  await createDefaultSequence(tx)
-  await createDefaultStatesSpace(tx)
+async function createDefaults (client: MigrationUpgradeClient): Promise<void> {
+  await createDefaultSpace(client, task.space.Sequence, { name: 'Sequences' })
+  await createDefaultSpace(client, task.space.Statuses, { name: 'Statuses' })
 }
 
 export async function migrateDefaultStatusesBase<T extends Task> (
@@ -610,10 +571,13 @@ export const taskOperation: MigrateOperation = {
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     await tryUpgrade(client, taskId, [
       {
+        state: 'defaults-v2',
+        func: createDefaults
+      },
+      {
         state: 'u-task-001',
         func: async (client) => {
           const tx = new TxOperations(client, core.account.System)
-          await createDefaults(tx)
 
           await createOrUpdate(
             tx,

@@ -43,12 +43,15 @@ export const templatesOperation: MigrateOperation = {
                 description: 'Space for public templates',
                 private: false,
                 archived: false,
-                members: []
+                members: [],
+                autoJoin: true
               },
               templates.space.Templates
             )
           } else if (current.private) {
             await tx.update(current, { private: false })
+          } else if (current.autoJoin !== true) {
+            await tx.update(current, { autoJoin: true })
           }
         }
       }

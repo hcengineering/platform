@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, Mixin, Obj, Ref, Space } from '@hcengineering/core'
+import type { AccountRole, Class, Doc, Mixin, Obj, Ref, Space } from '@hcengineering/core'
 import { DocNotifyContext, InboxNotification } from '@hcengineering/notification'
 import type { Asset, IntlString, Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -41,8 +41,7 @@ export interface Application extends Doc {
   component?: AnyComponent
 
   navHeaderComponent?: AnyComponent
-  checkIsHeaderHidden?: Resource<() => Promise<boolean>>
-  checkIsHeaderDisabled?: Resource<() => Promise<boolean>>
+  accessLevel?: AccountRole
   navFooterComponent?: AnyComponent
   modern?: boolean
 }
@@ -98,6 +97,7 @@ export interface SpecialNavModel {
   id: string // Uniq id
   label: IntlString
   icon?: Asset
+  accessLevel?: AccountRole
   component: AnyComponent
   componentProps?: Record<string, any>
   // If not top and bottom, position will be sorted alphabetically.
@@ -149,14 +149,11 @@ export default plugin(workbenchId, {
     WorkbenchApp: '' as AnyComponent,
     InviteLink: '' as AnyComponent,
     Archive: '' as AnyComponent,
-    SpaceBrowser: '' as AnyComponent
+    SpecialView: '' as AnyComponent
   },
   string: {
     Archive: '' as IntlString,
-    Joined: '' as IntlString,
-    Leave: '' as IntlString,
     View: '' as IntlString,
-    Join: '' as IntlString,
     ServerUnderMaintenance: '' as IntlString
   },
   icon: {

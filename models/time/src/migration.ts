@@ -21,7 +21,8 @@ import {
   type MigrationUpgradeClient,
   createOrUpdate,
   tryMigrate,
-  tryUpgrade
+  tryUpgrade,
+  createDefaultSpace
 } from '@hcengineering/model'
 import { makeRank } from '@hcengineering/rank'
 import core from '@hcengineering/model-core'
@@ -149,26 +150,6 @@ async function migrateTodosRanks (client: TxOperations): Promise<void> {
   }
 }
 
-async function createDefaultSpace (tx: TxOperations): Promise<void> {
-  const current = await tx.findOne(core.class.Space, {
-    _id: time.space.ToDos
-  })
-  if (current === undefined) {
-    await tx.createDoc(
-      core.class.Space,
-      core.space.Space,
-      {
-        name: 'Todos',
-        description: 'Space for all todos',
-        private: false,
-        archived: false,
-        members: []
-      },
-      time.space.ToDos
-    )
-  }
-}
-
 async function fillProps (client: MigrationClient): Promise<void> {
   await client.update(
     DOMAIN_TIME,
@@ -197,10 +178,15 @@ export const timeOperation: MigrateOperation = {
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     await tryUpgrade(client, timeId, [
       {
+        state: 'create-defaults-v2',
+        func: async (client) => {
+          await createDefaultSpace(client, time.space.ToDos, { name: 'Todos', description: 'Space for all todos' })
+        }
+      },
+      {
         state: 'u-time-0001',
         func: async (client) => {
           const tx = new TxOperations(client, core.account.System)
-          await createDefaultSpace(tx)
           await createOrUpdate(
             tx,
             tags.class.TagCategory,

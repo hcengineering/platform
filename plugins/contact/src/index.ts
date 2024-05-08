@@ -24,16 +24,6 @@ import { Action, FilterMode, Viewlet } from '@hcengineering/view'
 /**
  * @public
  */
-export interface Organizations extends Space {}
-
-/**
- * @public
- */
-export interface Persons extends Space {}
-
-/**
- * @public
- */
 export interface ChannelProvider extends Doc, UXObject {
   // Placeholder
   placeholder: IntlString
@@ -174,10 +164,8 @@ export const contactPlugin = plugin(contactId, {
     Channel: '' as Ref<Class<Channel>>,
     Contact: '' as Ref<Class<Contact>>,
     Person: '' as Ref<Class<Person>>,
-    Persons: '' as Ref<Class<Persons>>,
     Member: '' as Ref<Class<Member>>,
     Organization: '' as Ref<Class<Organization>>,
-    Organizations: '' as Ref<Class<Organizations>>,
     PersonAccount: '' as Ref<Class<PersonAccount>>,
     Status: '' as Ref<Class<Status>>,
     ContactsTab: '' as Ref<Class<ContactsTab>>
@@ -199,7 +187,8 @@ export const contactPlugin = plugin(contactId, {
     AccountArrayEditor: '' as AnyComponent,
     PersonIcon: '' as AnyComponent,
     EditOrganizationPanel: '' as AnyComponent,
-    CollaborationUserAvatar: '' as AnyComponent
+    CollaborationUserAvatar: '' as AnyComponent,
+    CreateGuest: '' as AnyComponent
   },
   channelProvider: {
     Email: '' as Ref<ChannelProvider>,
@@ -251,7 +240,6 @@ export const contactPlugin = plugin(contactId, {
     KickUser: '' as Asset
   },
   space: {
-    Employee: '' as Ref<Space>,
     Contacts: '' as Ref<Space>
   },
   app: {

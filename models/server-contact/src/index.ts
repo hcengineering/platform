@@ -48,14 +48,7 @@ export function createModel (builder: Builder): void {
         component: contact.component.Avatar,
         props: ['avatar', 'name']
       },
-      title: { props: ['name'] },
-      scoring: [
-        {
-          attr: 'space',
-          value: contact.space.Employee as string,
-          boost: 2
-        }
-      ]
+      title: { props: ['name'] }
     },
     getSearchTitle: {
       name: serverContact.function.ContactNameProvider
@@ -75,6 +68,24 @@ export function createModel (builder: Builder): void {
     txMatch: {
       objectClass: contact.class.Channel,
       _class: core.class.TxUpdateDoc
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverContact.trigger.OnEmployeeCreate,
+    txMatch: {
+      objectClass: contact.class.Person,
+      _class: core.class.TxMixin,
+      mixin: contact.mixin.Employee,
+      'attributes.active': true
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverContact.trigger.OnPersonAccountCreate,
+    txMatch: {
+      objectClass: contact.class.PersonAccount,
+      _class: core.class.TxCreateDoc
     }
   })
 

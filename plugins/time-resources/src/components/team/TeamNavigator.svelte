@@ -16,7 +16,6 @@
   import { Ref, getCurrentAccount } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import task, { Project } from '@hcengineering/task'
-  import tracker, { Project as TrackerProject } from '@hcengineering/tracker'
   import { Label, Separator } from '@hcengineering/ui'
   import { ObjectPresenter, TreeNode } from '@hcengineering/view-resources'
   import time from '../../plugin'
@@ -25,36 +24,19 @@
   export let appsDirection: 'vertical' | 'horizontal' = 'horizontal'
   export let selected: Ref<Project> | undefined = (localStorage.getItem('team_last_mode') as Ref<Project>) ?? undefined
 
-  let memberProjects: Project[] = []
-  let projectsPublic: Project[] = []
+  let projects: Project[] = []
   const projectsQuery = createQuery()
 
-  const publicQuery = createQuery()
-
-  $: projectsQuery.query(
+  projectsQuery.query(
     task.class.Project,
     {
       archived: false,
       members: getCurrentAccount()._id
     },
     (result) => {
-      memberProjects = result
+      projects = result
     }
   )
-
-  $: publicQuery.query(
-    tracker.class.Project,
-    {
-      _id: { $nin: memberProjects.map((it) => it._id as Ref<TrackerProject>) },
-      archived: false,
-      private: { $ne: true }
-    },
-    (result) => {
-      projectsPublic = result
-    }
-  )
-
-  $: finalProjects = memberProjects.concat(projectsPublic)
 </script>
 
 <div class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'}">
@@ -64,7 +46,7 @@
       <Label label={time.string.Planner} />
     </div>
     <TreeNode _id={'projects-planning'} label={time.string.Team} node>
-      {#each finalProjects as _project}
+      {#each projects as _project}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           class="antiNav-element parent"

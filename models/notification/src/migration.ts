@@ -14,9 +14,8 @@
 //
 
 import activity, { type ActivityMessage, type DocUpdateMessage } from '@hcengineering/activity'
-import core, {
+import {
   DOMAIN_TX,
-  TxOperations,
   TxProcessor,
   generateId,
   type AttachedDoc,
@@ -29,6 +28,7 @@ import core, {
   type DocumentQuery
 } from '@hcengineering/core'
 import {
+  createDefaultSpace,
   tryMigrate,
   tryUpgrade,
   type MigrateOperation,
@@ -51,27 +51,6 @@ interface InboxData {
 }
 
 const DOMAIN_ACTIVITY = 'activity' as Domain
-
-async function createSpace (client: MigrationUpgradeClient): Promise<void> {
-  const txop = new TxOperations(client, core.account.System)
-  const currentTemplate = await txop.findOne(core.class.Space, {
-    _id: notification.space.Notifications
-  })
-  if (currentTemplate === undefined) {
-    await txop.createDoc(
-      core.class.Space,
-      core.space.Space,
-      {
-        name: 'Notification space',
-        description: 'Notification space',
-        private: false,
-        archived: false,
-        members: []
-      },
-      notification.space.Notifications
-    )
-  }
-}
 
 async function getActivityMessages (
   client: MigrationClient,
@@ -309,9 +288,12 @@ export const notificationOperation: MigrateOperation = {
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     await tryUpgrade(client, notificationId, [
       {
-        state: 'create-defaults',
+        state: 'create-defaults-v2',
         func: async (client) => {
-          await createSpace(client)
+          await createDefaultSpace(client, notification.space.Notifications, {
+            name: 'Notifications',
+            description: 'Space for all notifications'
+          })
         }
       }
     ])

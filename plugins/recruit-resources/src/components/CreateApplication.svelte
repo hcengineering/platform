@@ -30,7 +30,10 @@
     Space,
     fillDefaults,
     generateId,
-    Status as TaskStatus
+    Status as TaskStatus,
+    AccountRole,
+    getCurrentAccount,
+    hasAccountRole
   } from '@hcengineering/core'
   import { OK, Resource, Severity, Status, getResource } from '@hcengineering/platform'
   import presentation, {
@@ -318,10 +321,12 @@
         spaceOptions={orgOptions}
         readonly={preserveVacancy}
         label={recruit.string.Vacancy}
-        create={{
-          component: recruit.component.CreateVacancy,
-          label: recruit.string.CreateVacancy
-        }}
+        create={hasAccountRole(getCurrentAccount(), AccountRole.User)
+          ? {
+              component: recruit.component.CreateVacancy,
+              label: recruit.string.CreateVacancy
+            }
+          : undefined}
         bind:value={_space}
         component={VacancyOrgPresenter}
         componentProps={{ inline: true }}

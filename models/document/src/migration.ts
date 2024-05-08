@@ -14,40 +14,19 @@
 //
 
 import { type Attachment } from '@hcengineering/attachment'
-import { type Class, type Doc, type Ref, TxOperations, DOMAIN_TX, getCollaborativeDoc } from '@hcengineering/core'
+import { DOMAIN_TX, getCollaborativeDoc, type Class, type Doc, type Ref } from '@hcengineering/core'
 import { type Document, type Teamspace } from '@hcengineering/document'
 import {
+  tryMigrate,
   type MigrateOperation,
   type MigrationClient,
-  type MigrationUpgradeClient,
-  tryMigrate,
-  tryUpgrade
+  type MigrationUpgradeClient
 } from '@hcengineering/model'
 import { DOMAIN_ATTACHMENT } from '@hcengineering/model-attachment'
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 import { type Asset } from '@hcengineering/platform'
 
 import document, { documentId, DOMAIN_DOCUMENT } from './index'
-
-async function createSpace (tx: TxOperations): Promise<void> {
-  const documents = await tx.findOne(core.class.Space, {
-    _id: document.space.Documents
-  })
-  if (documents === undefined) {
-    await tx.createDoc(
-      core.class.Space,
-      core.space.Space,
-      {
-        name: 'Documents',
-        description: 'Documents',
-        private: false,
-        archived: false,
-        members: []
-      },
-      document.space.Documents
-    )
-  }
-}
 
 async function migrateCollaborativeContent (client: MigrationClient): Promise<void> {
   const attachedFiles = await client.find<Attachment>(DOMAIN_ATTACHMENT, {
@@ -330,15 +309,5 @@ export const documentOperation: MigrateOperation = {
     ])
   },
 
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    await tryUpgrade(client, documentId, [
-      {
-        state: 'u-default-project',
-        func: async (client) => {
-          const tx = new TxOperations(client, core.account.System)
-          await createSpace(tx)
-        }
-      }
-    ])
-  }
+  async upgrade (client: MigrationUpgradeClient): Promise<void> {}
 }

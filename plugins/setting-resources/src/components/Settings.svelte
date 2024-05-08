@@ -14,31 +14,31 @@
 -->
 <script lang="ts">
   import { PersonAccount } from '@hcengineering/contact'
-  import { AccountRole, getCurrentAccount, roleOrder } from '@hcengineering/core'
+  import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import login, { loginId } from '@hcengineering/login'
   import { setMetadata } from '@hcengineering/platform'
   import presentation, { closeClient, createQuery } from '@hcengineering/presentation'
   import setting, { SettingsCategory } from '@hcengineering/setting'
   import {
     Component,
+    Label,
+    NavGroup,
+    NavItem,
     Scroller,
     Separator,
     defineSeparators,
-    settingsSeparators,
     fetchMetadataLocalStorage,
     getCurrentResolvedLocation,
     navigate,
     resolvedLocationStore,
     setMetadataLocalStorage,
+    settingsSeparators,
     showPopup,
-    Label,
-    NavItem,
-    NavGroup,
     type AnyComponent
   } from '@hcengineering/ui'
   import { NavFooter } from '@hcengineering/workbench-resources'
   import { ComponentType, onDestroy } from 'svelte'
-  import { settingsStore, clearSettingsStore, type SettingsStore } from '../store'
+  import { clearSettingsStore, settingsStore, type SettingsStore } from '../store'
 
   export let visibleNav: boolean = true
   export let navFloat: boolean = false
@@ -57,7 +57,7 @@
     setting.class.SettingsCategory,
     {},
     (res) => {
-      categories = roleOrder[account.role] > roleOrder[AccountRole.User] ? res : res.filter((p) => !p.secured)
+      categories = hasAccountRole(account, AccountRole.Maintainer) ? res : res.filter((p) => !p.secured)
       category = findCategory(categoryId)
     },
     { sort: { order: 1 } }

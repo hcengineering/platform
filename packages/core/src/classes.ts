@@ -367,7 +367,13 @@ export interface Space extends Doc {
   members: Arr<Ref<Account>>
   archived: boolean
   owners?: Ref<Account>[]
+  autoJoin?: boolean
 }
+
+/**
+ * @public
+ */
+export interface SystemSpace extends Space {}
 
 /**
  * @public
@@ -442,6 +448,7 @@ export interface Account extends Doc {
  * @public
  */
 export enum AccountRole {
+  DocGuest = 'DocGuest',
   Guest = 'GUEST',
   User = 'USER',
   Maintainer = 'MAINTAINER',
@@ -452,6 +459,7 @@ export enum AccountRole {
  * @public
  */
 export const roleOrder: Record<AccountRole, number> = {
+  [AccountRole.DocGuest]: 0,
   [AccountRole.Guest]: 1,
   [AccountRole.User]: 2,
   [AccountRole.Maintainer]: 3,

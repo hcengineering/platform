@@ -13,15 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Ref } from '@hcengineering/core'
+  import { getCurrentAccount, type Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Scroller } from '@hcengineering/ui'
   import { NavLink } from '@hcengineering/view-resources'
   import type { Application } from '@hcengineering/workbench'
   import workbench from '@hcengineering/workbench'
 
-  import AppItem from './AppItem.svelte'
   import preference from '@hcengineering/preference'
+  import { isAppAllowed } from '../utils'
+  import AppItem from './AppItem.svelte'
 
   export let active: Ref<Application> | undefined
   export let apps: Application[] = []
@@ -41,7 +42,9 @@
     }
   )
 
-  $: filteredApps = apps.filter((it) => !hiddenAppsIds.includes(it._id))
+  const me = getCurrentAccount()
+
+  $: filteredApps = apps.filter((it) => !hiddenAppsIds.includes(it._id) && isAppAllowed(it, me))
   $: topApps = filteredApps.filter((it) => it.position === 'top')
   $: bottomdApps = filteredApps.filter((it) => it.position !== 'top')
 </script>

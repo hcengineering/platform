@@ -13,7 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Doc, DocumentQuery, Ref, WithLookup } from '@hcengineering/core'
+  import core, {
+    AccountRole,
+    Doc,
+    DocumentQuery,
+    Ref,
+    WithLookup,
+    getCurrentAccount,
+    hasAccountRole
+  } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Vacancy } from '@hcengineering/recruit'
   import { Button, Component, IconAdd, Label, Loading, SearchEdit, showPopup, tableToCSV } from '@hcengineering/ui'
@@ -59,7 +67,7 @@
   )
 
   function showCreateDialog () {
-    showPopup(CreateVacancy, { space: recruit.space.CandidatesPublic }, 'top')
+    showPopup(CreateVacancy, {}, 'top')
   }
   const applicationSorting = (a: Doc, b: Doc) =>
     (applications?.get(b._id as Ref<Vacancy>)?.count ?? 0) - (applications?.get(a._id as Ref<Vacancy>)?.count ?? 0) ?? 0
@@ -151,7 +159,9 @@
         }}
       />
     {/if}
-    <Button icon={IconAdd} label={recruit.string.VacancyCreateLabel} kind={'primary'} on:click={showCreateDialog} />
+    {#if hasAccountRole(getCurrentAccount(), AccountRole.User)}
+      <Button icon={IconAdd} label={recruit.string.VacancyCreateLabel} kind={'primary'} on:click={showCreateDialog} />
+    {/if}
   </div>
 </div>
 <div class="ac-header full divide search-start">

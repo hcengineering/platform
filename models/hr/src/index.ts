@@ -22,7 +22,8 @@ import {
   IndexKind,
   type Markup,
   type Ref,
-  type Type
+  type Type,
+  AccountRole
 } from '@hcengineering/core'
 import {
   type Department,
@@ -194,6 +195,7 @@ export function createModel (builder: Builder): void {
     {
       label: hr.string.HRApplication,
       icon: hr.icon.HR,
+      accessLevel: AccountRole.User,
       alias: hrId,
       hidden: false,
       component: hr.component.Schedule

@@ -14,17 +14,26 @@
 //
 
 import { chunterId } from '@hcengineering/chunter'
-import core, { type Class, type Doc, type Domain, type Ref, TxOperations } from '@hcengineering/core'
+import core, {
+  type Account,
+  TxOperations,
+  type Class,
+  type Doc,
+  type Domain,
+  type Ref,
+  type Space
+} from '@hcengineering/core'
 import {
+  tryMigrate,
+  tryUpgrade,
   type MigrateOperation,
   type MigrationClient,
-  type MigrationUpgradeClient,
-  tryMigrate,
-  tryUpgrade
+  type MigrationUpgradeClient
 } from '@hcengineering/model'
 import activity, { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 import notification from '@hcengineering/notification'
 
+import contactPlugin, { type PersonAccount } from '@hcengineering/contact'
 import chunter from './plugin'
 
 export const DOMAIN_COMMENT = 'comment' as Domain
@@ -59,48 +68,91 @@ export async function createDocNotifyContexts (
 }
 
 export async function createGeneral (client: MigrationUpgradeClient, tx: TxOperations): Promise<void> {
-  const createTx = await tx.findOne(core.class.TxCreateDoc, {
-    objectId: chunter.space.General
-  })
+  const current = await tx.findOne(chunter.class.Channel, { _id: chunter.space.General })
+  if (current !== undefined) {
+    if (current.autoJoin === undefined) {
+      await tx.update(current, {
+        autoJoin: true
+      })
+      await joinEmployees(current, tx)
+    }
+  } else {
+    const createTx = await tx.findOne(core.class.TxCreateDoc, {
+      objectId: chunter.space.General
+    })
 
-  if (createTx === undefined) {
-    await tx.createDoc(
-      chunter.class.Channel,
-      core.space.Space,
-      {
-        name: 'general',
-        description: 'General Channel',
-        topic: 'General Channel',
-        private: false,
-        archived: false,
-        members: []
-      },
-      chunter.space.General
-    )
+    if (createTx === undefined) {
+      await tx.createDoc(
+        chunter.class.Channel,
+        core.space.Space,
+        {
+          name: 'general',
+          description: 'General Channel',
+          topic: 'General Channel',
+          private: false,
+          archived: false,
+          members: await getAllEmployeeAccounts(tx),
+          autoJoin: true
+        },
+        chunter.space.General
+      )
+    }
   }
 
   await createDocNotifyContexts(client, tx, chunter.space.General, chunter.class.Channel)
 }
 
-export async function createRandom (client: MigrationUpgradeClient, tx: TxOperations): Promise<void> {
-  const createTx = await tx.findOne(core.class.TxCreateDoc, {
-    objectId: chunter.space.Random
+async function getAllEmployeeAccounts (tx: TxOperations): Promise<Ref<PersonAccount>[]> {
+  const employees = await tx.findAll(contactPlugin.mixin.Employee, { active: true })
+  const accounts = await tx.findAll(contactPlugin.class.PersonAccount, {
+    person: { $in: employees.map((it) => it._id) }
   })
+  return accounts.map((it) => it._id)
+}
 
-  if (createTx === undefined) {
-    await tx.createDoc(
-      chunter.class.Channel,
-      core.space.Space,
-      {
-        name: 'random',
-        description: 'Random Talks',
-        topic: 'Random Talks',
-        private: false,
-        archived: false,
-        members: []
-      },
-      chunter.space.Random
-    )
+async function joinEmployees (current: Space, tx: TxOperations): Promise<void> {
+  const accs = await getAllEmployeeAccounts(tx)
+  const newMembers: Ref<Account>[] = [...current.members]
+  for (const acc of accs) {
+    if (!newMembers.includes(acc)) {
+      newMembers.push(acc)
+    }
+  }
+  await tx.update(current, {
+    members: newMembers
+  })
+}
+
+export async function createRandom (client: MigrationUpgradeClient, tx: TxOperations): Promise<void> {
+  const current = await tx.findOne(chunter.class.Channel, { _id: chunter.space.Random })
+  if (current !== undefined) {
+    if (current.autoJoin === undefined) {
+      await tx.update(current, {
+        autoJoin: true
+      })
+      await joinEmployees(current, tx)
+    }
+  } else {
+    const createTx = await tx.findOne(core.class.TxCreateDoc, {
+      objectId: chunter.space.Random
+    })
+
+    if (createTx === undefined) {
+      await tx.createDoc(
+        chunter.class.Channel,
+        core.space.Space,
+        {
+          name: 'random',
+          description: 'Random Talks',
+          topic: 'Random Talks',
+          private: false,
+          archived: false,
+          members: await getAllEmployeeAccounts(tx),
+          autoJoin: true
+        },
+        chunter.space.Random
+      )
+    }
   }
 
   await createDocNotifyContexts(client, tx, chunter.space.Random, chunter.class.Channel)
@@ -139,7 +191,7 @@ export const chunterOperation: MigrateOperation = {
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     await tryUpgrade(client, chunterId, [
       {
-        state: 'create-defaults',
+        state: 'create-defaults-v2',
         func: async (client) => {
           const tx = new TxOperations(client, core.account.System)
           await createGeneral(client, tx)

@@ -81,6 +81,7 @@ import {
   type Location
 } from '@hcengineering/ui'
 import view, {
+  type AttributePresenter,
   type AttributeModel,
   type BuildModelKey,
   type BuildModelOptions,
@@ -189,7 +190,10 @@ export async function getAttributePresenter (
   const isCollectionAttr = presenterClass.category === 'collection'
   const mixin = isCollectionAttr ? view.mixin.CollectionPresenter : actualMixinClass
 
-  let presenterMixin = hierarchy.classHierarchyMixin(presenterClass.attrClass, mixin)
+  let presenterMixin: AttributePresenter | CollectionPresenter | undefined = hierarchy.classHierarchyMixin(
+    presenterClass.attrClass,
+    mixin
+  )
 
   if (presenterMixin?.presenter === undefined && mixinClass != null && mixin === mixinClass) {
     presenterMixin = hierarchy.classHierarchyMixin(presenterClass.attrClass, view.mixin.AttributePresenter)
@@ -197,7 +201,10 @@ export async function getAttributePresenter (
 
   let presenter: AnySvelteComponent
 
-  if (presenterMixin?.presenter !== undefined) {
+  const attributePresenter = presenterMixin as AttributePresenter
+  if (presenterClass.category === 'array' && attributePresenter.arrayPresenter !== undefined) {
+    presenter = await getResource(attributePresenter.arrayPresenter)
+  } else if (presenterMixin?.presenter !== undefined) {
     presenter = await getResource(presenterMixin.presenter)
   } else if (presenterClass.attrClass === core.class.TypeAny) {
     const typeAny = attribute.type as TypeAny

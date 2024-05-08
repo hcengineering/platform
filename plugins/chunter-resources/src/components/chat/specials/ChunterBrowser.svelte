@@ -17,7 +17,6 @@
   import { FileBrowser } from '@hcengineering/attachment-resources'
   import { AnySvelteComponent, Button, Scroller } from '@hcengineering/ui'
   import workbench from '@hcengineering/workbench'
-  import { SpaceBrowser } from '@hcengineering/workbench-resources'
   import contact from '@hcengineering/contact-resources/src/plugin'
   import { EmployeeBrowser } from '@hcengineering/contact-resources'
   import MessagesBrowser from './MessagesBrowser.svelte'
@@ -28,7 +27,6 @@
   import { SearchType } from '../../../utils'
   import plugin from '../../../plugin'
   import Header from '../../Header.svelte'
-  import ChannelBrowser from './ChannelBrowser.svelte'
 
   let userSearch_: string = ''
   userSearch.subscribe((v) => (userSearch_ = v))
@@ -42,16 +40,6 @@
     props?: Record<string, any>
   }[] = [
     { searchType: SearchType.Messages, component: MessagesBrowser },
-    {
-      searchType: SearchType.Channels,
-      component: ChannelBrowser,
-      filterClass: plugin.class.Channel,
-      props: {
-        _class: plugin.class.Channel,
-        label: plugin.string.ChannelBrowser,
-        withFilterButton: false
-      }
-    },
     {
       searchType: SearchType.Files,
       component: FileBrowser,
@@ -92,16 +80,6 @@
             kind="ghost"
             on:click={() => {
               searchType = SearchType.Messages
-            }}
-          />
-        </div>
-        <div class="ml-1 p-1 btn">
-          <Button
-            label={plugin.string.Channels}
-            kind="ghost"
-            selected={searchType === SearchType.Channels}
-            on:click={() => {
-              searchType = SearchType.Channels
             }}
           />
         </div>

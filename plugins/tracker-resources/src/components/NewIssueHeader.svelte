@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, Space } from '@hcengineering/core'
+  import { AccountRole, Ref, Space, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { MultipleDraftController, getClient } from '@hcengineering/presentation'
   import { ButtonWithDropdown, IconAdd, IconDropdown, SelectPopupValueType, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
@@ -41,16 +41,23 @@
   }
 
   $: label = draftExists || !closed ? tracker.string.ResumeDraft : tracker.string.NewIssue
-  $: dropdownItems = [
-    {
-      id: tracker.string.CreateProject,
-      label: tracker.string.CreateProject
-    },
-    {
-      id: tracker.string.NewIssue,
-      label
-    }
-  ]
+  $: dropdownItems = hasAccountRole(getCurrentAccount(), AccountRole.User)
+    ? [
+        {
+          id: tracker.string.CreateProject,
+          label: tracker.string.CreateProject
+        },
+        {
+          id: tracker.string.NewIssue,
+          label
+        }
+      ]
+    : [
+        {
+          id: tracker.string.NewIssue,
+          label
+        }
+      ]
   const client = getClient()
 
   let keys: string[] | undefined = undefined

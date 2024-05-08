@@ -13,13 +13,12 @@
 // limitations under the License.
 //
 
-import { Calendar } from '@hcengineering/calendar'
-import type { Attribute, Class, Doc, Mixin, Ref, Status } from '@hcengineering/core'
+import type { Attribute, Class, Doc, Mixin, Ref, Space, Status } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { ProjectTypeDescriptor, TaskType } from '@hcengineering/task'
 import { AnyComponent, ResolvedLocation } from '@hcengineering/ui'
-import type { Applicant, ApplicantMatch, Candidate, Candidates, Opinion, Review, Vacancy, VacancyList } from './types'
+import type { Applicant, ApplicantMatch, Candidate, Opinion, Review, Vacancy, VacancyList } from './types'
 
 export * from './types'
 
@@ -38,7 +37,6 @@ const recruit = plugin(recruitId, {
   class: {
     Applicant: '' as Ref<Class<Applicant>>,
     ApplicantMatch: '' as Ref<Class<ApplicantMatch>>,
-    Candidates: '' as Ref<Class<Candidates>>,
     Vacancy: '' as Ref<Class<Vacancy>>,
     Review: '' as Ref<Class<Review>>,
     Opinion: '' as Ref<Class<Opinion>>
@@ -82,7 +80,7 @@ const recruit = plugin(recruitId, {
     Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>
   },
   space: {
-    Reviews: '' as Ref<Calendar>
+    Reviews: '' as Ref<Space>
   },
   taskTypes: {
     Applicant: '' as Ref<TaskType>

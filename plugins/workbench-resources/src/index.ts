@@ -18,7 +18,6 @@ import { type Resources } from '@hcengineering/platform'
 import ApplicationPresenter from './components/ApplicationPresenter.svelte'
 import Archive from './components/Archive.svelte'
 import SpacePanel from './components/navigator/SpacePanel.svelte'
-import SpaceBrowser from './components/SpaceBrowser.svelte'
 import SpecialView from './components/SpecialView.svelte'
 import WorkbenchApp from './components/WorkbenchApp.svelte'
 import { doNavigate } from './utils'
@@ -29,7 +28,6 @@ import { isAdminUser } from '@hcengineering/presentation'
 async function hasArchiveSpaces (spaces: Space[]): Promise<boolean> {
   return spaces.find((sp) => sp.archived) !== undefined
 }
-export { default as SpaceBrowser } from './components/SpaceBrowser.svelte'
 export { default as StarredNav } from './components/navigator/StarredNav.svelte'
 export { default as NavFooter } from './components/NavFooter.svelte'
 export { default as NavHeader } from './components/NavHeader.svelte'
@@ -46,7 +44,6 @@ export default async (): Promise<Resources> => ({
     Archive,
     SpacePanel,
     SpecialView,
-    SpaceBrowser,
     Workbench,
     ServerManager
   },
