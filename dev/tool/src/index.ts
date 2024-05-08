@@ -417,18 +417,21 @@ export function devTool (
     .description('drop workspace')
     .option('--full [full]', 'Force remove all data', false)
     .action(async (workspace, cmd: { full: boolean }) => {
-      const { mongodbUri, storageAdapter } = prepareTools()
-      await withDatabase(mongodbUri, async (db, client) => {
-        const ws = await getWorkspaceById(db, productId, workspace)
-        if (ws === null) {
-          console.log('no workspace exists')
-          return
-        }
-        if (cmd.full) {
-          await dropWorkspaceFull(toolCtx, db, client, productId, workspace, storageAdapter)
-        } else {
-          await dropWorkspace(toolCtx, db, productId, workspace)
-        }
+      const { mongodbUri } = prepareTools()
+
+      await withStorage(mongodbUri, async (storageAdapter) => {
+        await withDatabase(mongodbUri, async (db, client) => {
+          const ws = await getWorkspaceById(db, productId, workspace)
+          if (ws === null) {
+            console.log('no workspace exists')
+            return
+          }
+          if (cmd.full) {
+            await dropWorkspaceFull(toolCtx, db, client, productId, workspace, storageAdapter)
+          } else {
+            await dropWorkspace(toolCtx, db, productId, workspace)
+          }
+        })
       })
     })
 
@@ -437,15 +440,17 @@ export function devTool (
     .description('drop workspace')
     .option('--full [full]', 'Force remove all data', false)
     .action(async (email, cmd: { full: boolean }) => {
-      const { mongodbUri, storageAdapter } = prepareTools()
-      await withDatabase(mongodbUri, async (db, client) => {
-        for (const workspace of await listWorkspacesByAccount(db, productId, email)) {
-          if (cmd.full) {
-            await dropWorkspaceFull(toolCtx, db, client, productId, workspace.workspace, storageAdapter)
-          } else {
-            await dropWorkspace(toolCtx, db, productId, workspace.workspace)
+      const { mongodbUri } = prepareTools()
+      await withStorage(mongodbUri, async (storageAdapter) => {
+        await withDatabase(mongodbUri, async (db, client) => {
+          for (const workspace of await listWorkspacesByAccount(db, productId, email)) {
+            if (cmd.full) {
+              await dropWorkspaceFull(toolCtx, db, client, productId, workspace.workspace, storageAdapter)
+            } else {
+              await dropWorkspace(toolCtx, db, productId, workspace.workspace)
+            }
           }
-        }
+        })
       })
     })
   program
@@ -465,15 +470,18 @@ export function devTool (
     .command('drop-workspace-last-visit')
     .description('drop old workspaces')
     .action(async (cmd: any) => {
-      const { mongodbUri, storageAdapter } = prepareTools()
-      await withDatabase(mongodbUri, async (db, client) => {
-        const workspacesJSON = await listWorkspacesPure(db, productId)
-        for (const ws of workspacesJSON) {
-          const lastVisit = Math.floor((Date.now() - ws.lastVisit) / 1000 / 3600 / 24)
-          if (lastVisit > 30) {
-            await dropWorkspaceFull(toolCtx, db, client, productId, ws.workspace, storageAdapter)
+      const { mongodbUri } = prepareTools()
+
+      await withStorage(mongodbUri, async (storageAdapter) => {
+        await withDatabase(mongodbUri, async (db, client) => {
+          const workspacesJSON = await listWorkspacesPure(db, productId)
+          for (const ws of workspacesJSON) {
+            const lastVisit = Math.floor((Date.now() - ws.lastVisit) / 1000 / 3600 / 24)
+            if (lastVisit > 30) {
+              await dropWorkspaceFull(toolCtx, db, client, productId, ws.workspace, storageAdapter)
+            }
           }
-        }
+        })
       })
     })
 
@@ -598,8 +606,9 @@ export function devTool (
   program
     .command('backup-restore <dirName> <workspace> [date]')
     .option('-m, --merge', 'Enable merge of remote and backup content.', false)
+    .option('-p, --parallel <parallel>', 'Enable merge of remote and backup content.', '1')
     .description('dump workspace transactions and minio resources')
-    .action(async (dirName: string, workspace: string, date, cmd: { merge: boolean }) => {
+    .action(async (dirName: string, workspace: string, date, cmd: { merge: boolean, parallel: string }) => {
       const storage = await createFileBackupStorage(dirName)
       await restore(
         toolCtx,
@@ -607,7 +616,8 @@ export function devTool (
         getWorkspaceId(workspace, productId),
         storage,
         parseInt(date ?? '-1'),
-        cmd.merge
+        cmd.merge,
+        parseInt(cmd.parallel ?? '1')
       )
     })
 

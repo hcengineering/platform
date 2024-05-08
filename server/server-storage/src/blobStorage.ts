@@ -29,7 +29,8 @@ import {
   StorageIterator,
   Tx,
   TxResult,
-  WorkspaceId
+  WorkspaceId,
+  type Blob
 } from '@hcengineering/core'
 import { createMongoAdapter } from '@hcengineering/mongo'
 import { PlatformError, unknownError } from '@hcengineering/platform'
@@ -104,6 +105,10 @@ export async function createStorageDataAdapter (
       await storage.make(ctx, workspaceId)
     }
   }
-  const blobAdapter = await createMongoAdapter(ctx, hierarchy, url, workspaceId, modelDb)
+  const blobAdapter = await createMongoAdapter(ctx, hierarchy, url, workspaceId, modelDb, undefined, {
+    calculateHash: (d) => {
+      return (d as Blob).etag
+    }
+  })
   return new StorageBlobAdapter(workspaceId, storage, ctx, blobAdapter)
 }

@@ -62,6 +62,7 @@ import {
   updateHashForDoc,
   type DbAdapter,
   type DomainHelperOperations,
+  type StorageAdapter,
   type TxAdapter
 } from '@hcengineering/server-core'
 import { calculateObjectSize } from 'bson'
@@ -112,6 +113,10 @@ export async function toArray<T> (cursor: AbstractCursor<T>): Promise<T[]> {
   return data
 }
 
+export interface DbAdapterOptions {
+  calculateHash?: (doc: Doc) => string
+}
+
 abstract class MongoAdapterBase implements DbAdapter {
   _db: DBCollectionHelper
 
@@ -119,7 +124,8 @@ abstract class MongoAdapterBase implements DbAdapter {
     protected readonly db: Db,
     protected readonly hierarchy: Hierarchy,
     protected readonly modelDb: ModelDb,
-    protected readonly client: MongoClientReference
+    protected readonly client: MongoClientReference,
+    protected readonly options?: DbAdapterOptions
   ) {
     this._db = new DBCollectionHelper(db)
   }
@@ -769,11 +775,13 @@ abstract class MongoAdapterBase implements DbAdapter {
           const size = estimateDocSize(d)
           cs.end()
 
-          const hashDoc = ctx.newChild('hash-doc', {})
-          const hash = createHash('sha256')
-          updateHashForDoc(hash, d)
-          digest = hash.digest('base64')
-          hashDoc.end()
+          if (this.options?.calculateHash !== undefined) {
+            digest = this.options.calculateHash(d)
+          } else {
+            const hash = createHash('sha256')
+            updateHashForDoc(hash, d)
+            digest = hash.digest('base64')
+          }
 
           bulkUpdate.set(d._id, `${digest}|${size.toString(16)}`)
 
@@ -1434,12 +1442,14 @@ export async function createMongoAdapter (
   hierarchy: Hierarchy,
   url: string,
   workspaceId: WorkspaceId,
-  modelDb: ModelDb
+  modelDb: ModelDb,
+  storage?: StorageAdapter,
+  options?: DbAdapterOptions
 ): Promise<DbAdapter> {
   const client = getMongoClient(url)
   const db = getWorkspaceDB(await client.getClient(), workspaceId)
 
-  return new MongoAdapter(db, hierarchy, modelDb, client)
+  return new MongoAdapter(db, hierarchy, modelDb, client, options)
 }
 
 /**

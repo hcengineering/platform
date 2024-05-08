@@ -1356,5 +1356,6 @@ function migradeBlobData (blob: Blob, etag: string): void {
     blob.etag = etag
     blob._class = core.class.Blob
     delete (blob as any).type
+    delete (blob as any).base64Data
   }
 }
