@@ -23,7 +23,6 @@ test.describe('login test', () => {
   })
 
   test('check login', async () => {
-    await loginPage.goto()
     await loginPage.login(PlatformUser, '1234')
     await selectWorkspacePage.selectWorkspace('SanityTest')
     await commonTrackerPage.checkIfMainPanelIsVisible()
@@ -31,14 +30,12 @@ test.describe('login test', () => {
   })
 
   test('check login with wrong user and if the button is disabled ', async ({ page }) => {
-    await loginPage.goto()
     await loginPage.checkIfLoginButtonIsDissaabled()
     await loginPage.login(PlatformUser, 'wrong-password')
     await loginPage.checkIfErrorMessageIsShown()
   })
 
   test('check if user is able to go to to recovery, then login and then signup', async ({ page }) => {
-    await loginPage.goto()
     await checkIfUrlContains(page, '/login')
     await loginPage.checkIfLoginButtonIsDissaabled()
     await loginPage.clickOnRecover()
