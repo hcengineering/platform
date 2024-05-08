@@ -34,6 +34,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
     border-radius: 50%;
     background-color: var(--global-higlight-Color);
     color: var(--global-on-accent-TextColor);

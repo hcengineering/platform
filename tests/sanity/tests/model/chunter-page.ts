@@ -7,7 +7,7 @@ export class ChunterPage {
     this.page = page
   }
 
-  readonly buttonChannelBrowser = (): Locator => this.page.locator('.header > button.type-button-icon')
+  readonly buttonChannelBrowser = (): Locator => this.page.locator('.hulyNavPanel-header > button.type-button-icon')
   readonly buttonNewChannelHeader = (): Locator => this.page.getByRole('button', { name: 'New channel' })
   readonly inputNewChannelName = (): Locator => this.page.getByPlaceholder('New channel')
   readonly inputDescription = (): Locator => this.page.getByPlaceholder('Description (optional)')

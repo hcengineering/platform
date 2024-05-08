@@ -18,7 +18,7 @@ import { MeasureContext, generateId, metricsAggregate } from '@hcengineering/cor
 import { MinioService } from '@hcengineering/minio'
 import { Token, decodeToken } from '@hcengineering/server-token'
 import { ServerKit } from '@hcengineering/text'
-import { Hocuspocus, onDestroyPayload } from '@hocuspocus/server'
+import { Hocuspocus } from '@hocuspocus/server'
 import bp from 'body-parser'
 import compression from 'compression'
 import cors from 'cors'
@@ -31,7 +31,7 @@ import { Config } from './config'
 import { Context } from './context'
 import { AuthenticationExtension } from './extensions/authentication'
 import { StorageExtension } from './extensions/storage'
-import { Controller, getClientFactory } from './platform'
+import { simpleClientFactory } from './platform'
 import { RpcErrorResponse, RpcRequest, RpcResponse, methods } from './rpc'
 import { PlatformStorageAdapter } from './storage/platform'
 import { MarkupTransformer } from './transformers/markup'
@@ -83,8 +83,6 @@ export async function start (
 
   const extensionsCtx = ctx.newChild('extensions', {})
 
-  const controller = new Controller()
-
   const transformer = new MarkupTransformer(extensions)
 
   const hocuspocus = new Hocuspocus({
@@ -124,18 +122,13 @@ export async function start (
 
     extensions: [
       new AuthenticationExtension({
-        ctx: extensionsCtx.newChild('authenticate', {}),
-        controller
+        ctx: extensionsCtx.newChild('authenticate', {})
       }),
       new StorageExtension({
         ctx: extensionsCtx.newChild('storage', {}),
         adapter: new PlatformStorageAdapter({ minio }, mongo, transformer)
       })
-    ],
-
-    async onDestroy (data: onDestroyPayload): Promise<void> {
-      await controller.close()
-    }
+    ]
   })
 
   const rpcCtx = ctx.newChild('rpc', {})
@@ -144,7 +137,7 @@ export async function start (
     return {
       connectionId: generateId(),
       workspaceId: token.workspace,
-      clientFactory: getClientFactory(token, controller)
+      clientFactory: simpleClientFactory(token)
     }
   }
 
@@ -192,9 +185,11 @@ export async function start (
       }
       res.status(400).send(response)
     } else {
-      await rpcCtx.withLog('/rpc', { method: request.method }, async (ctx) => {
+      await rpcCtx.with('/rpc', { method: request.method }, async (ctx) => {
         try {
-          const response: RpcResponse = await method(ctx, context, request.payload, { hocuspocus, minio, transformer })
+          const response: RpcResponse = await rpcCtx.with(request.method, {}, async (ctx) => {
+            return await method(ctx, context, request.payload, { hocuspocus, minio, transformer })
+          })
           res.status(200).send(response)
         } catch (err: any) {
           res.status(500).send({ error: err.message })

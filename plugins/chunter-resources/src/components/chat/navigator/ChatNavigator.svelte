@@ -70,10 +70,10 @@
   }
 </script>
 
-<div class="header">
-  <div class="overflow-label">
+<div class="hulyNavPanel-header">
+  <span class="overflow-label">
     <Label label={chunter.string.Chat} />
-  </div>
+  </span>
   {#if hasAccountRole(getCurrentAccount(), AccountRole.User)}
     <ButtonIcon icon={IconAdd} kind={'primary'} size={'small'} on:click={addButtonClicked} />
   {/if}
@@ -96,6 +96,7 @@
   <SearchEdit
     value={searchValue}
     width="auto"
+    kind={'secondary'}
     on:change={(ev) => {
       userSearch.set(ev.detail)
 
@@ -113,17 +114,8 @@
 </Scroller>
 
 <style lang="scss">
-  .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--spacing-1_5) var(--spacing-1_5) var(--spacing-3) var(--spacing-2_5);
-    font-weight: 700;
-    font-size: 1.25rem;
-    color: var(--global-primary-TextColor);
-  }
   .search {
-    padding: var(--spacing-1_5);
+    padding: var(--spacing-3) var(--spacing-1_5) var(--spacing-1_5);
     border-bottom: 1px solid var(--theme-navpanel-divider);
   }
 </style>
