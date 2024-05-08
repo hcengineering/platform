@@ -14,23 +14,23 @@
 //
 
 import { getCategories } from '@anticrm/skillset'
-import core, { DOMAIN_TX, type Status, TxOperations, type Ref } from '@hcengineering/core'
+import core, { DOMAIN_TX, TxOperations, type Ref, type Status } from '@hcengineering/core'
 import {
-  type ModelLogger,
   createDefaultSpace,
   createOrUpdate,
   tryMigrate,
   tryUpgrade,
   type MigrateOperation,
   type MigrationClient,
-  type MigrationUpgradeClient
+  type MigrationUpgradeClient,
+  type ModelLogger
 } from '@hcengineering/model'
 import tags, { type TagCategory } from '@hcengineering/model-tags'
 import task, { DOMAIN_TASK, createSequence, migrateDefaultStatusesBase } from '@hcengineering/model-task'
-import { type Applicant, recruitId } from '@hcengineering/recruit'
+import { recruitId, type Applicant } from '@hcengineering/recruit'
 
-import recruit from './plugin'
 import { DOMAIN_SPACE } from '@hcengineering/model-core'
+import recruit from './plugin'
 import { defaultApplicantStatuses } from './spaceType'
 
 export const recruitOperation: MigrateOperation = {
@@ -63,16 +63,6 @@ export const recruitOperation: MigrateOperation = {
         func: async (client) => {
           const tx = new TxOperations(client, core.account.System)
           await createDefaults(client, tx)
-        }
-      },
-      {
-        state: 'remove-members',
-        func: async (client): Promise<void> => {
-          const ops = new TxOperations(client, core.account.System)
-          const docs = await ops.findAll(recruit.class.Vacancy, { members: { $exists: true, $ne: [] } })
-          for (const d of docs) {
-            await ops.update(d, { members: [] })
-          }
         }
       }
     ])
