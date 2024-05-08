@@ -737,6 +737,9 @@ dependencies:
   '@rush-temp/ui':
     specifier: file:./projects/ui.tgz
     version: file:projects/ui.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
+  '@rush-temp/uws':
+    specifier: file:./projects/uws.tgz
+    version: file:projects/uws.tgz
   '@rush-temp/view':
     specifier: file:./projects/view.tgz
     version: file:projects/view.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2)
@@ -19465,7 +19468,7 @@ packages:
     dev: false
 
   file:projects/login.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-VYCM0fD7QjZglX1kp/CDjquuZvGDTwBFz9PmLsl3E347XTb465TANzyociaT619A6rTUQgFKPI7/rJ3575oOdA==, tarball: file:projects/login.tgz}
+    resolution: {integrity: sha512-D15IjHxENijzWEb3vfDRwT4UnLvNQ6OLXS1A4zDz7sESx1VTNqVugngYaiXlyiB39jvL6vgitbRerNdS5ZY+SQ==, tarball: file:projects/login.tgz}
     id: file:projects/login.tgz
     name: '@rush-temp/login'
     version: 0.0.0
@@ -20177,7 +20180,7 @@ packages:
     dev: false
 
   file:projects/model-server-lead.tgz:
-    resolution: {integrity: sha512-r6wm+ThuCo9qEUPFBf1+CUG9G6iFmSl3Azg0aRsBcudp3pGdPyih44ryGqZFKNMmlEr6Sp8k2vYq6Wzdmase5g==, tarball: file:projects/model-server-lead.tgz}
+    resolution: {integrity: sha512-kPDXfo9EMJDBdqL40UtgGuedn7iA3EFo4pAQGNBG2EPmhzl0khM432uTGS0qbkS42Pw+0+GtGWLN8Dmk0+LQFA==, tarball: file:projects/model-server-lead.tgz}
     name: '@rush-temp/model-server-lead'
     version: 0.0.0
     dependencies:
@@ -20386,7 +20389,7 @@ packages:
     dev: false
 
   file:projects/model-server-tracker.tgz:
-    resolution: {integrity: sha512-SqOOZxqJ6t5V35LVpzcQsMUnWB8seuLLHGy68XN8zBq/kE49oQ8+uPAw7UdMvP1gmw2jb1X0LdzE8iW1/T4vDQ==, tarball: file:projects/model-server-tracker.tgz}
+    resolution: {integrity: sha512-ARsXatu1A+oFcNAHxBHdmE0SknrsVKUVR0E/p+vPSZq10fgqBY4eX94GFb21IbZXcgXRpFte4YXrJstgb/fJUA==, tarball: file:projects/model-server-tracker.tgz}
     name: '@rush-temp/model-server-tracker'
     version: 0.0.0
     dependencies:
@@ -20500,7 +20503,7 @@ packages:
     dev: false
 
   file:projects/model-task.tgz:
-    resolution: {integrity: sha512-YZocNhXSv45yA2GYjG059U3vgSqE1U/8p0GmMxbCNVi+E/NYLib9tj+fCHNpqLkhw73iBYBgvYgx50SqqGSXBQ==, tarball: file:projects/model-task.tgz}
+    resolution: {integrity: sha512-E5o2lmz2SDx6psN2nz1FqyWiSN1Awe2adNfF1D+jJH4HMZ9Mg2Zbz6rlXOzh8nf30/X1MRXO6qRagpRet7WHBw==, tarball: file:projects/model-task.tgz}
     name: '@rush-temp/model-task'
     version: 0.0.0
     dependencies:
@@ -20595,7 +20598,7 @@ packages:
     dev: false
 
   file:projects/model-tracker.tgz:
-    resolution: {integrity: sha512-1yO1l+P72MnyqoZOk7ZdlC6piZLHTDHvdSzFniVsPrxQ7nbIVOCp0hmw+cjbYDQrhzJl8LMwUikfYPXP+auR7Q==, tarball: file:projects/model-tracker.tgz}
+    resolution: {integrity: sha512-7d48XWwnPlmsdBRqlswmRAIPegoB6Rh7t0Yqmx44gXMCYiexPkc0Tr38CecKGysMonJGP9453X+IP4SxUnQV/A==, tarball: file:projects/model-tracker.tgz}
     name: '@rush-temp/model-tracker'
     version: 0.0.0
     dependencies:
@@ -23254,7 +23257,7 @@ packages:
     dev: false
 
   file:projects/server-ws.tgz(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-H+LX8du8Fflohly6Uv20gI7fhm+T6RRerOESTho9L1Dxgn0E8zXqD3XGrjEblNm94HR9/09uHrs2a7CWPaRAig==, tarball: file:projects/server-ws.tgz}
+    resolution: {integrity: sha512-TnxxDdcG9/0ee0e84vQ7EQuB/xcR5Pvn+Kduf40XlG7ruHsgB/swombYUMlcr+hruvZ0zAYXxeQKFby3v69RnQ==, tarball: file:projects/server-ws.tgz}
     id: file:projects/server-ws.tgz
     name: '@rush-temp/server-ws'
     version: 0.0.0
@@ -24357,7 +24360,7 @@ packages:
     dev: false
 
   file:projects/tool.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.3):
-    resolution: {integrity: sha512-FapBriQDbhOPHpCCh3hiJAY68tHjzbF6r94xISTJxwsOsJNijAV9v7RFhTUnLiLcCuBSj9eovI7Mljd3CDZrAw==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-aCu871KUBezC10ng0g9MwVF4UdeqlKVlMvLH4r0eBFvZx/XkEPiP++bL5dDuYo9o4cU2bhj+7uTzLCePUQVDZQ==, tarball: file:projects/tool.tgz}
     id: file:projects/tool.tgz
     name: '@rush-temp/tool'
     version: 0.0.0
@@ -24602,6 +24605,12 @@ packages:
       - sugarss
       - supports-color
       - ts-node
+    dev: false
+
+  file:projects/uws.tgz:
+    resolution: {integrity: sha512-cJKrvv/9a935gnsLADANzT1ZcSe9j47NxbDaYX93htNBgTZRhke5VQ9zJ+hViufzd4u0aZNHRkdtnES7cPEHGw==, tarball: file:projects/uws.tgz}
+    name: '@rush-temp/uws'
+    version: 0.0.0
     dev: false
 
   file:projects/view-assets.tgz(esbuild@0.20.1)(ts-node@10.9.2):

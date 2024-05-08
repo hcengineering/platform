@@ -8,14 +8,14 @@
   "template": "@hcengineering/node-package-ws",
   "license": "EPL-2.0",
   "scripts": {
-    "build": "./uws.sh && compile && cp ./src/uws/*.node ./lib/uws",
-    "build:watch": "./uws.sh && compile && cp ./src/uws/*.node ./lib/uws",
+    "build": "compile",
+    "build:watch": "compile",
     "test": "jest --passWithNoTests --silent --forceExit",
     "format": "format src",
-    "_phase:build": "./uws.sh && compile transpile src && cp ./src/uws/*.node ./lib/uws",
+    "_phase:build": "compile transpile src",
     "_phase:test": "jest --passWithNoTests --silent --forceExit",
     "_phase:format": "format src",
-    "_phase:validate": "./uws.sh && compile validate"
+    "_phase:validate": "compile validate"
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "^0.6.0",
@@ -38,6 +38,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "@hcengineering/uws": "^0.6.0",
     "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/core": "^0.6.28",
     "@hcengineering/platform": "^0.6.9",

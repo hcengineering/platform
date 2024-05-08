@@ -31,7 +31,7 @@ import {
 } from './types'
 
 import { doSessionOp, processRequest, type WebsocketData } from './utils'
-import uWebSockets, { DISABLED, SHARED_COMPRESSOR, type HttpResponse, type WebSocket } from './uws'
+import uWebSockets, { DISABLED, SHARED_COMPRESSOR, type HttpResponse, type WebSocket } from '@hcengineering/uws'
 
 interface WebsocketUserData extends WebsocketData {
   backPressure?: Promise<void>
