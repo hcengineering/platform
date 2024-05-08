@@ -12,7 +12,7 @@
     "build:watch": "./uws.sh && compile && cp ./src/uws/*.node ./lib/uws",
     "test": "jest --passWithNoTests --silent --forceExit",
     "format": "format src",
-    "_phase:build": "./uws.sh && compile transpile src && cp ./src/uws/*.node ./lib/uws",
+    "_phase:build": "RUSH_BUILD_CACHE_ENABLED=0 ./uws.sh && compile transpile src && cp ./src/uws/*.node ./lib/uws",
     "_phase:test": "jest --passWithNoTests --silent --forceExit",
     "_phase:format": "format src",
     "_phase:validate": "./uws.sh && compile validate"
