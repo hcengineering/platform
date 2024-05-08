@@ -411,7 +411,7 @@ export async function pushInboxNotifications (
       const updateTx = control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, {
         lastUpdateTimestamp: modifiedOn
       })
-      await control.apply([updateTx], true)
+      res.push(updateTx)
     }
     docNotifyContextId = context._id
   }

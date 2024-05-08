@@ -17,7 +17,6 @@
   import { Doc, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Component, Grid, Label, Lazy, Spinner } from '@hcengineering/ui'
-  import { onMount } from 'svelte'
 
   import ActivityExtensionComponent from './ActivityExtension.svelte'
   import ActivityFilter from './ActivityFilter.svelte'
@@ -49,7 +48,7 @@
 
     const res = activityMessagesQuery.query(
       activity.class.ActivityMessage,
-      { attachedTo: objectId, hidden: { $ne: true } },
+      { attachedTo: objectId },
       (result: ActivityMessage[]) => {
         void combineActivityMessages(result, order).then((messages) => {
           activityMessages = messages

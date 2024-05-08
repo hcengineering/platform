@@ -159,7 +159,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
 
     this.metadataQuery.query(
       this.msgClass,
-      { attachedTo: this.chatId, hidden: { $ne: true } },
+      { attachedTo: this.chatId },
       (res) => {
         this.updatesDates(res)
         this.metadataStore.set(res)
@@ -235,7 +235,6 @@ export class ChannelDataProvider implements IChannelDataProvider {
       this.msgClass,
       {
         attachedTo: this.chatId,
-        hidden: { $ne: true },
         ...(this.tailStart !== undefined ? { createdOn: { $gte: this.tailStart } } : {})
       },
       async (res) => {
