@@ -310,7 +310,7 @@ export async function selectWorkspace (workspace: string): Promise<[Status, Work
     }
   }
 
-  const token = getMetadata(presentation.metadata.Token)
+  const token = getMetadata(presentation.metadata.Token) ?? fetchMetadataLocalStorage(login.metadata.LastToken)
   if (token === undefined) {
     const loc = getCurrentLocation()
     loc.path[0] = 'login'
