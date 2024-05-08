@@ -30,7 +30,6 @@ import serverNotification, {
   type TypeMatch,
   type NotificationContentProvider
 } from '@hcengineering/server-notification'
-import chunter from '@hcengineering/model-chunter'
 
 export { serverNotificationId } from '@hcengineering/server-notification'
 
@@ -64,15 +63,6 @@ export function createModel (builder: Builder): void {
     txMatch: {
       _class: core.class.TxUpdateDoc,
       objectClass: notification.class.ActivityInboxNotification
-    }
-  })
-
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverNotification.trigger.OnChatMessageCreate,
-    txMatch: {
-      _class: core.class.TxCollectionCUD,
-      'tx._class': core.class.TxCreateDoc,
-      'tx.objectClass': chunter.class.ChatMessage
     }
   })
 

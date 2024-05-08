@@ -13,49 +13,23 @@
 // limitations under the License.
 //
 
-import { TxOperations } from '@hcengineering/core'
 import {
+  createDefaultSpace,
   tryUpgrade,
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient
 } from '@hcengineering/model'
-import core from '@hcengineering/model-core'
 import preference, { preferenceId } from '@hcengineering/preference'
-
-async function createSpace (tx: TxOperations): Promise<void> {
-  const current = await tx.findOne(core.class.Space, {
-    _id: preference.space.Preference
-  })
-  if (current === undefined) {
-    await tx.createDoc(
-      core.class.Space,
-      core.space.Space,
-      {
-        name: 'Preference',
-        description: 'Preference space',
-        private: false,
-        archived: false,
-        members: []
-      },
-      preference.space.Preference
-    )
-  }
-}
-
-async function createDefaults (tx: TxOperations): Promise<void> {
-  await createSpace(tx)
-}
 
 export const preferenceOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     await tryUpgrade(client, preferenceId, [
       {
-        state: 'create-defaults',
+        state: 'create-defaults-v2',
         func: async (client) => {
-          const ops = new TxOperations(client, core.account.System)
-          await createDefaults(ops)
+          await createDefaultSpace(client, preference.space.Preference, { name: 'Preference' })
         }
       }
     ])

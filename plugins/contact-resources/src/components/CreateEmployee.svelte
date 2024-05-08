@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Channel, combineName, Employee, Person, PersonAccount } from '@hcengineering/contact'
+  import { Channel, combineName, Employee, PersonAccount } from '@hcengineering/contact'
   import core, { AccountRole, AttachedData, Data, generateId, Ref } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { getResource } from '@hcengineering/platform'
@@ -39,7 +39,11 @@
     return firstName === '' && lastName === '' && email === ''
   }
 
-  const object: Employee = {} as unknown as Employee
+  const person: Data<Employee> = {
+    name: '',
+    city: '',
+    active: true
+  }
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -47,11 +51,7 @@
   async function createPerson () {
     changeEmail()
     const name = combineName(firstName, lastName)
-    const person: Data<Person> = {
-      name,
-      city: object.city
-    }
-
+    person.name = name
     person.avatar = await avatarEditor.createAvatar()
 
     await client.createDoc(contact.class.Person, contact.space.Contacts, person, id)
@@ -68,7 +68,7 @@
     })
 
     const sendInvite = await getResource(login.function.SendInvite)
-    await sendInvite(email.trim())
+    await sendInvite(email.trim(), id, AccountRole.User)
 
     for (const channel of channels) {
       await client.addCollection(contact.class.Channel, contact.space.Contacts, id, contact.class.Person, 'channels', {
@@ -82,12 +82,7 @@
     dispatch('close')
   }
 
-  let channels: AttachedData<Channel>[] = [
-    {
-      provider: contact.channelProvider.Email,
-      value: ''
-    }
-  ]
+  let channels: AttachedData<Channel>[] = []
 
   let exists: PersonAccount | undefined
   const query = createQuery()
@@ -170,7 +165,7 @@
     </div>
     <div class="ml-4">
       <EditableAvatar
-        avatar={object.avatar}
+        avatar={person.avatar}
         name={combineName(firstName, lastName)}
         {email}
         size={'large'}

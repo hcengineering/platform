@@ -13,16 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Person, PersonAccount, Employee } from '@hcengineering/contact'
+  import contact, { Employee, Person, PersonAccount } from '@hcengineering/contact'
   import {
     Account,
     AccountRole,
     DocumentQuery,
-    getCurrentAccount,
     Ref,
-    roleOrder,
     SortingOrder,
-    Space
+    Space,
+    getCurrentAccount,
+    hasAccountRole
   } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
@@ -86,7 +86,7 @@
   }
 
   const account = getCurrentAccount()
-  $: canRemove = roleOrder[account.role] >= roleOrder[AccountRole.Maintainer] && space.createdBy === account._id
+  $: canRemove = hasAccountRole(account, AccountRole.Maintainer) || space.createdBy === account._id
 </script>
 
 <div class="flex-row-reverse mb-3 mt-3"><SearchEdit bind:value={search} /></div>

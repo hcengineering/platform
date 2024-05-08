@@ -91,6 +91,9 @@
         {/if}
       </span>
     {/await}
+    {#if hasSeparator}
+      <span class="ml-1" />
+    {/if}
   {/if}
 {/if}
 

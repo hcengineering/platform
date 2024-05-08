@@ -30,21 +30,21 @@
   $: icon = client.getHierarchy().getClass(value._class).icon
 </script>
 
-{#if value && type === 'link'}
-  <NavLink app={chunterId} space={value._id}>
-    <div class="flex-presenter">
-      {#if !inline && shouldShowAvatar}
-        <div class="icon">
-          {#if icon}
-            <Icon {icon} size={'small'} />
-          {/if}
-        </div>
-      {/if}
-      <span class="label">{value.name}</span>
-    </div>
-  </NavLink>
-{/if}
-
-{#if value && type === 'text'}
-  <span class="overflow-label" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>{value.name}</span>
+{#if value}
+  {#if type === 'link'}
+    <NavLink app={chunterId} space={`${value._id}|${value._class}`}>
+      <div class="flex-presenter">
+        {#if !inline && shouldShowAvatar}
+          <div class="icon">
+            {#if icon}
+              <Icon {icon} size={'small'} />
+            {/if}
+          </div>
+        {/if}
+        <span class="label">{value.name}</span>
+      </div>
+    </NavLink>
+  {:else}
+    <span class="overflow-label" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>{value.name}</span>
+  {/if}
 {/if}

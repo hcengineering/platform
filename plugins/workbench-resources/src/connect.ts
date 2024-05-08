@@ -67,7 +67,11 @@ export async function connect (title: string): Promise<Client | undefined> {
   const tokens: Record<string, string> = fetchMetadataLocalStorage(login.metadata.LoginTokens) ?? {}
   let token = tokens[ws]
 
-  if (token === undefined && getMetadata(presentation.metadata.Token) !== undefined) {
+  if (
+    token === undefined &&
+    (getMetadata(presentation.metadata.Token) !== undefined ||
+      fetchMetadataLocalStorage(login.metadata.LastToken) != null)
+  ) {
     const selectWorkspace = await getResource(login.function.SelectWorkspace)
     const loginInfo = await ctx.with('select-workspace', {}, async () => (await selectWorkspace(ws))[1])
     if (loginInfo !== undefined) {

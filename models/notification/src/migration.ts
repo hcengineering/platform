@@ -14,9 +14,8 @@
 //
 
 import activity, { type ActivityMessage, type DocUpdateMessage } from '@hcengineering/activity'
-import core, {
+import {
   DOMAIN_TX,
-  TxOperations,
   TxProcessor,
   generateId,
   type AttachedDoc,
@@ -24,9 +23,12 @@ import core, {
   type Domain,
   type Ref,
   type TxCUD,
-  type TxCollectionCUD
+  type TxCollectionCUD,
+  type Class,
+  type DocumentQuery
 } from '@hcengineering/core'
 import {
+  createDefaultSpace,
   tryMigrate,
   tryUpgrade,
   type MigrateOperation,
@@ -49,27 +51,6 @@ interface InboxData {
 }
 
 const DOMAIN_ACTIVITY = 'activity' as Domain
-
-async function createSpace (client: MigrationUpgradeClient): Promise<void> {
-  const txop = new TxOperations(client, core.account.System)
-  const currentTemplate = await txop.findOne(core.class.Space, {
-    _id: notification.space.Notifications
-  })
-  if (currentTemplate === undefined) {
-    await txop.createDoc(
-      core.class.Space,
-      core.space.Space,
-      {
-        name: 'Notification space',
-        description: 'Notification space',
-        private: false,
-        archived: false,
-        members: []
-      },
-      notification.space.Notifications
-    )
-  }
-}
 
 async function getActivityMessages (
   client: MigrationClient,
@@ -237,16 +218,16 @@ async function migrateInboxNotifications (client: MigrationClient): Promise<void
   }
 }
 
-export async function removeHiddenNotifications (client: MigrationClient): Promise<void> {
-  const processedIds: Ref<DocNotifyContext>[] = []
-
+export async function removeNotifications (
+  client: MigrationClient,
+  query: DocumentQuery<DocNotifyContext>
+): Promise<void> {
   while (true) {
     const contexts = await client.find<DocNotifyContext>(
       DOMAIN_NOTIFICATION,
       {
         _class: notification.class.DocNotifyContext,
-        _id: { $nin: processedIds },
-        hidden: true
+        ...query
       },
       { limit: 500 }
     )
@@ -257,8 +238,6 @@ export async function removeHiddenNotifications (client: MigrationClient): Promi
 
     const ids = contexts.map(({ _id }) => _id)
 
-    processedIds.push(...ids)
-
     await client.deleteMany(DOMAIN_NOTIFICATION, {
       _class: notification.class.CommonInboxNotification,
       docNotifyContext: { $in: ids }
@@ -267,6 +246,16 @@ export async function removeHiddenNotifications (client: MigrationClient): Promi
     await client.deleteMany(DOMAIN_NOTIFICATION, {
       _class: notification.class.ActivityInboxNotification,
       docNotifyContext: { $in: ids }
+    })
+
+    await client.deleteMany(DOMAIN_NOTIFICATION, {
+      _class: notification.class.MentionInboxNotification,
+      docNotifyContext: { $in: ids }
+    })
+
+    await client.deleteMany(DOMAIN_NOTIFICATION, {
+      _class: notification.class.DocNotifyContext,
+      _id: { $in: ids }
     })
   }
 }
@@ -281,17 +270,30 @@ export const notificationOperation: MigrateOperation = {
     ])
     await tryMigrate(client, notificationId, [
       {
-        state: 'remove-hidden-notifications',
-        func: removeHiddenNotifications
+        state: 'delete-hidden-notifications',
+        func: async (client) => {
+          await removeNotifications(client, { hidden: true })
+        }
+      }
+    ])
+    await tryMigrate(client, notificationId, [
+      {
+        state: 'delete-invalid-notifications',
+        func: async (client) => {
+          await removeNotifications(client, { attachedToClass: 'chunter:class:Comment' as Ref<Class<Doc>> })
+        }
       }
     ])
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     await tryUpgrade(client, notificationId, [
       {
-        state: 'create-defaults',
+        state: 'create-defaults-v2',
         func: async (client) => {
-          await createSpace(client)
+          await createDefaultSpace(client, notification.space.Notifications, {
+            name: 'Notifications',
+            description: 'Space for all notifications'
+          })
         }
       }
     ])

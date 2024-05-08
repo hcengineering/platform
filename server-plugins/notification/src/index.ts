@@ -150,7 +150,6 @@ export default plugin(serverNotificationId, {
     OnAttributeCreate: '' as Resource<TriggerFunc>,
     OnAttributeUpdate: '' as Resource<TriggerFunc>,
     OnReactionChanged: '' as Resource<TriggerFunc>,
-    OnChatMessageCreate: '' as Resource<TriggerFunc>,
     OnActivityNotificationViewed: '' as Resource<TriggerFunc>,
     OnDocRemove: '' as Resource<TriggerFunc>
   },

@@ -13,19 +13,19 @@
 // limitations under the License.
 //
 import { type Channel, type ChatMessage, type DirectMessage, type ThreadMessage } from '@hcengineering/chunter'
-import contact, { type Employee, type PersonAccount, getName, type Person } from '@hcengineering/contact'
+import contact, { type Employee, getName, type Person, type PersonAccount } from '@hcengineering/contact'
 import { employeeByIdStore, PersonIcon } from '@hcengineering/contact-resources'
 import {
+  type Account,
+  type Class,
   type Client,
   type Doc,
+  generateId,
   getCurrentAccount,
   type IdMap,
   type Ref,
   type Space,
-  type Class,
-  type Timestamp,
-  type Account,
-  generateId
+  type Timestamp
 } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import { type AnySvelteComponent } from '@hcengineering/ui'
@@ -82,6 +82,8 @@ export async function buildDmName (client: Client, employeeAccounts: PersonAccou
   const names: string[] = []
   const processedPersons: Array<Ref<Person>> = []
 
+  let myName = ''
+
   for (const acc of employeeAccounts) {
     if (processedPersons.includes(acc.person)) {
       continue
@@ -89,12 +91,20 @@ export async function buildDmName (client: Client, employeeAccounts: PersonAccou
 
     const employee = map.get(acc.person as unknown as Ref<Employee>)
 
-    if (employee !== undefined && me.person !== employee._id) {
-      names.push(getName(client.getHierarchy(), employee))
-      processedPersons.push(acc.person)
+    if (employee === undefined) {
+      continue
     }
+
+    if (me.person === employee._id) {
+      myName = getName(client.getHierarchy(), employee)
+      processedPersons.push(acc.person)
+      continue
+    }
+
+    names.push(getName(client.getHierarchy(), employee))
+    processedPersons.push(acc.person)
   }
-  return names.join(', ')
+  return names.length > 0 ? names.join(', ') : myName
 }
 
 export async function dmIdentifierProvider (): Promise<string> {
@@ -146,13 +156,9 @@ async function getDmAccounts (client: Client, space?: Space): Promise<PersonAcco
     return []
   }
 
-  const myAccId = getCurrentAccount()._id
-
-  const employeeAccounts: PersonAccount[] = await client.findAll(contact.class.PersonAccount, {
+  return await client.findAll(contact.class.PersonAccount, {
     _id: { $in: (space.members ?? []) as Array<Ref<PersonAccount>> }
   })
-
-  return employeeAccounts.filter((p) => p._id !== myAccId)
 }
 
 export async function getDmPersons (client: Client, space: Space): Promise<Person[]> {
@@ -161,15 +167,27 @@ export async function getDmPersons (client: Client, space: Space): Promise<Perso
   const persons: Person[] = []
 
   const personRefs = new Set(personAccounts.map(({ person }) => person))
+  let myPerson: Person | undefined
 
   for (const personRef of personRefs) {
     const person = await client.findOne(contact.class.Person, { _id: personRef })
-    if (person !== undefined && me.person !== person._id) {
-      persons.push(person)
+    if (person === undefined) {
+      continue
     }
+
+    if (me.person === person._id) {
+      myPerson = person
+      continue
+    }
+
+    persons.push(person)
   }
 
-  return persons
+  if (persons.length > 0) {
+    return persons
+  }
+
+  return myPerson !== undefined ? [myPerson] : []
 }
 
 export async function DirectTitleProvider (client: Client, id: Ref<DirectMessage>): Promise<string> {
@@ -194,7 +212,6 @@ export async function ChannelTitleProvider (client: Client, id: Ref<Channel>): P
 
 export enum SearchType {
   Messages,
-  Channels,
   Files,
   Contacts
 }

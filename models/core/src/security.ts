@@ -70,12 +70,19 @@ export class TSpace extends TDoc implements Space {
     archived!: boolean
 
   @Prop(ArrOf(TypeRef(core.class.Account)), core.string.Members)
-  @Hidden()
     members!: Arr<Ref<Account>>
 
   @Prop(ArrOf(TypeRef(core.class.Account)), core.string.Owners)
     owners?: Ref<Account>[]
+
+  @Prop(TypeBoolean(), getEmbeddedLabel('Auto-Join members'))
+  @Hidden() // let's hide it for now
+    autoJoin?: boolean
 }
+
+@Model(core.class.SystemSpace, core.class.Space)
+@UX(core.string.Space, undefined, undefined, 'name')
+export class TSystemSpace extends TSpace implements Space {}
 
 @Model(core.class.TypedSpace, core.class.Space)
 @UX(core.string.TypedSpace, undefined, undefined, 'name')

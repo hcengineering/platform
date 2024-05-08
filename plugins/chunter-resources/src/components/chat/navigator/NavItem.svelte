@@ -14,16 +14,15 @@
 -->
 <script lang="ts">
   import {
-    Action,
+    type Action,
     ActionIcon,
-    AnySvelteComponent,
+    type AnySvelteComponent,
     Icon,
     IconMoreH,
-    IconRight,
     IconSize,
-    Label,
     Menu,
-    showPopup
+    showPopup,
+    NavItem
   } from '@hcengineering/ui'
   import { NotifyMarker } from '@hcengineering/notification-resources'
   import { Asset, IntlString } from '@hcengineering/platform'
@@ -31,18 +30,17 @@
   export let id: string
   export let icon: Asset | AnySvelteComponent | undefined
   export let iconProps: any | undefined = undefined
-  export let iconSize: IconSize = 'x-small'
-  export let iconPadding: string | null = null
-  export let padding: string | null = null
-  export let withIconBackground = true
-  export let isSelected = false
-  export let isSecondary = false
-  export let notificationsCount = 0
+  export let iconSize: IconSize = 'small'
+  export let withIconBackground: boolean = true
+  export let isSelected: boolean = false
+  export let isSecondary: boolean = false
+  export let count: number | null = null
   export let title: string | undefined = undefined
   export let intlTitle: IntlString | undefined = undefined
   export let description: string | undefined = undefined
   export let actions: Action[] = []
-  export let elementsCount = 0
+  export let elementsCount: number = 0
+  export let type: 'type-link' | 'type-tag' | 'type-anchor-link' | 'type-object' = 'type-link'
 
   let menuOpened = false
   let inlineActions: Action[] = []
@@ -63,173 +61,64 @@
   }
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<div class="root" class:pressed={menuOpened || isSelected} style:padding on:click>
-  {#if icon}
-    <div class="icon" class:withBackground={withIconBackground} style:padding={iconPadding}>
-      <Icon
-        {icon}
-        {iconProps}
-        size={iconSize}
-        fill={isSelected ? 'var(--theme-link-color)' : 'var(--global-primary-TextColor)'}
-      />
-    </div>
-  {/if}
-
-  <div class="content">
-    <span
-      class="label overflow-label"
-      class:secondary={isSecondary}
-      class:extraBold={notificationsCount > 0}
-      class:selected={isSelected}
-      style="flex-shrink: 0"
-    >
-      {#if title}
-        {title}
-      {:else if intlTitle}
-        <Label label={intlTitle} />
-      {/if}
-      {#if description}
-        <span class="label overflow-label ml-1-5" title={description}>
-          {description}
-        </span>
-      {/if}
-    </span>
-  </div>
-
-  <div class="grower" />
-
-  <div class="controls">
-    <div class="flex-center">
-      {#each inlineActions as action}
-        <div
-          class="action"
-          class:pressed={menuOpened}
-          on:click|preventDefault|stopPropagation={(ev) => handleInlineActionClicked(ev, action)}
-        >
-          <Icon icon={action.icon ?? ActionIcon} size="small" />
-        </div>
-      {/each}
-      {#if menuActions.length > 0}
-        <div class="action" class:pressed={menuOpened} on:click|preventDefault|stopPropagation={handleMenuClicked}>
-          <IconMoreH size={'small'} />
-        </div>
-      {/if}
-      {#if elementsCount > 0}
-        <div class="ml-2" />
-        <div class="elementsCounter">{elementsCount}</div>
-      {/if}
-      {#if notificationsCount > 0}
-        <div class="ml-2" />
-        <NotifyMarker count={notificationsCount} />
-      {/if}
-      {#if isSelected}
-        <div class="ml-2" />
-        <IconRight size="small" fill="var(--theme-link-color)" />
-      {/if}
-    </div>
-  </div>
-</div>
+<NavItem
+  {icon}
+  {iconProps}
+  {iconSize}
+  label={intlTitle}
+  {title}
+  {description}
+  selected={isSelected}
+  {isSecondary}
+  count={elementsCount > 0 ? elementsCount : null}
+  {type}
+  withBackground={withIconBackground}
+  showMenu={menuOpened}
+  on:click
+  on:contextmenu
+>
+  <svelte:fragment slot="actions">
+    {#each inlineActions as action}
+      <button
+        class="action"
+        class:pressed={menuOpened}
+        on:click|preventDefault|stopPropagation={(ev) => handleInlineActionClicked(ev, action)}
+      >
+        <Icon icon={action.icon ?? ActionIcon} size="small" />
+      </button>
+    {/each}
+    {#if menuActions.length > 0}
+      <button class="action" class:pressed={menuOpened} on:click|preventDefault|stopPropagation={handleMenuClicked}>
+        <IconMoreH size={'small'} />
+      </button>
+    {/if}
+  </svelte:fragment>
+  <svelte:fragment slot="notify">
+    {#if count != null && count > 0}
+      <div class="antiHSpacer" />
+      <NotifyMarker {count} />
+      <div class="antiHSpacer" />
+    {/if}
+  </svelte:fragment>
+</NavItem>
 
 <style lang="scss">
-  .root {
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-    padding: var(--spacing-0_5) var(--spacing-0_5);
-    border-radius: var(--small-BorderRadius);
-    cursor: pointer;
-    position: relative;
-
-    &:hover {
-      background-color: var(--global-ui-highlight-BackgroundColor);
-
-      .action {
-        visibility: visible;
-      }
-    }
-
-    &.pressed {
-      background-color: var(--global-ui-highlight-BackgroundColor);
-    }
-
-    .action {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0.25rem;
-      border-radius: 0.25rem;
-      flex-shrink: 0;
-      margin-left: 0.5rem;
-      visibility: hidden;
-
-      &:hover,
-      &.pressed {
-        visibility: visible;
-        color: var(--global-primary-TextColor);
-        background-color: var(--global-ui-highlight-BackgroundColor);
-      }
-    }
-  }
-
-  .grower {
-    flex-grow: 1;
-    min-width: 0;
-  }
-
-  .icon {
+  .action {
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    margin-right: 0.375rem;
-    color: var(--global-primary-TextColor);
-
-    &.withBackground {
-      background: var(--global-ui-BackgroundColor);
-      width: 1.5rem;
-      height: 1.5rem;
-      border-radius: var(--extra-small-BorderRadius);
-      border: 1px solid var(--global-subtle-ui-BorderColor);
-    }
-  }
-
-  .label {
-    font-size: 0.875rem;
-    color: var(--global-primary-TextColor);
-    font-weight: 400;
-
-    &.secondary {
-      font-size: 0.75rem;
-      font-weight: 500;
-    }
-
-    &.extraBold {
-      font-weight: 700;
-    }
-
-    &.selected {
-      color: var(--global-accent-TextColor);
-    }
-  }
-
-  .controls {
-    display: flex;
-    height: 100%;
-    align-items: flex-start;
-  }
-
-  .content {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    justify-content: center;
-    max-height: 3.75rem;
-  }
-
-  .elementsCounter {
+    margin-left: var(--spacing-1);
+    padding: var(--spacing-0_5);
     color: var(--global-tertiary-TextColor);
-    font-size: 0.75rem;
+    border: none;
+    border-radius: var(--extra-small-BorderRadius);
+    outline: none;
+
+    &:hover,
+    &.pressed {
+      color: var(--global-primary-TextColor);
+      background-color: var(--global-ui-highlight-BackgroundColor);
+    }
   }
 </style>

@@ -20,11 +20,9 @@ import { Extension, onAuthenticatePayload } from '@hocuspocus/server'
 
 import { getWorkspaceInfo } from '../account'
 import { Context, buildContext } from '../context'
-import { Controller } from '../platform'
 
 export interface AuthenticationConfiguration {
   ctx: MeasureContext
-  controller: Controller
 }
 
 export class AuthenticationExtension implements Extension {
@@ -35,20 +33,21 @@ export class AuthenticationExtension implements Extension {
   }
 
   async onAuthenticate (data: onAuthenticatePayload): Promise<Context> {
-    this.configuration.ctx.measure('authenticate', 1)
-
+    const ctx = this.configuration.ctx
     const { workspaceUrl, collaborativeDoc } = parseDocumentId(data.documentName as DocumentId)
 
-    // verify workspace can be accessed with the token
-    const workspaceInfo = await getWorkspaceInfo(data.token)
+    return await ctx.with('authenticate', { workspace: workspaceUrl }, async () => {
+      // verify workspace can be accessed with the token
+      const workspaceInfo = await getWorkspaceInfo(data.token)
 
-    // verify workspace url in the document matches the token
-    if (workspaceInfo.workspace !== workspaceUrl) {
-      throw new Error('documentName must include workspace')
-    }
+      // verify workspace url in the document matches the token
+      if (workspaceInfo.workspace !== workspaceUrl) {
+        throw new Error('documentName must include workspace')
+      }
 
-    data.connection.readOnly = isReadonlyDoc(collaborativeDoc)
+      data.connection.readOnly = isReadonlyDoc(collaborativeDoc)
 
-    return buildContext(data, this.configuration.controller)
+      return buildContext(data)
+    })
   }
 }

@@ -57,6 +57,7 @@
     "ReassignToDoConfirm": "Вы хотите изменить исполнителя Todo? Todo будет удалена из планирования текущего исполнителя.",
     "Icon": "Иконка",
     "Color": "Цвет",
-    "RoleLabel": "Роль: {role}"
+    "RoleLabel": "Роль: {role}",
+    "Embeddings": "Вложения"
   }
 }

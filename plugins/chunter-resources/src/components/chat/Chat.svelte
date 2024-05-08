@@ -133,7 +133,7 @@
 <div class="flex-row-top h-full">
   {#if visibleNav}
     <div class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'}">
-      <div class="antiPanel-wrap__content">
+      <div class="antiPanel-wrap__content hulyNavPanel-container">
         <ChatNavigator objectId={selectedData?._id} {object} {currentSpecial} on:select={handleChannelSelected} />
       </div>
       <Separator name="chat" float={navFloat ? 'navigator' : true} index={0} />

@@ -15,7 +15,7 @@
 
 import activity from '@hcengineering/activity'
 import type { Class, CollaborativeDoc, CollectionSize, Domain, Role, RolesAssignment } from '@hcengineering/core'
-import { IndexKind, Account, Ref } from '@hcengineering/core'
+import { IndexKind, Account, Ref, AccountRole } from '@hcengineering/core'
 import {
   type Document,
   type DocumentEmbedding,
@@ -206,6 +206,20 @@ function defineTeamspace (builder: Builder): void {
   builder.mixin(document.class.Teamspace, core.class.Class, view.mixin.SpacePresenter, {
     presenter: document.component.TeamspaceSpacePresenter
   })
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: document.class.Teamspace,
+      descriptor: view.viewlet.Table,
+      configOptions: {
+        hiddenKeys: ['name', 'description']
+      },
+      config: ['', 'members', 'private', 'archived']
+    },
+    document.viewlet.TeamspaceTable
+  )
 
   // Actions
 
@@ -451,7 +465,20 @@ function defineApplication (builder: Builder): void {
       hidden: false,
       locationResolver: document.resolver.Location,
       navigatorModel: {
-        specials: [],
+        specials: [
+          {
+            id: 'browser',
+            accessLevel: AccountRole.User,
+            label: document.string.Teamspaces,
+            icon: view.icon.List,
+            component: workbench.component.SpecialView,
+            componentProps: {
+              _class: document.class.Teamspace,
+              label: document.string.Teamspaces
+            },
+            position: 'top'
+          }
+        ],
         spaces: [
           {
             id: 'teamspaces',
@@ -459,7 +486,6 @@ function defineApplication (builder: Builder): void {
             spaceClass: document.class.Teamspace,
             addSpaceLabel: document.string.CreateTeamspace,
             createComponent: document.component.CreateTeamspace,
-            visibleIf: document.function.IsTeamspaceVisible,
             icon: document.icon.Teamspace,
             // intentionally left empty in order to make space presenter working
             specials: []

@@ -113,7 +113,17 @@ async function getRequestNotificationTx (tx: TxCollectionCUD<Doc, Request>, cont
   })
 
   for (const target of collaborators) {
-    const txes = await getNotificationTxes(control, request, tx.tx, tx, target, true, false, notifyContexts, messages)
+    const txes = await getNotificationTxes(
+      control,
+      request,
+      tx.tx,
+      tx,
+      target,
+      { isOwn: true, isSpace: false, shouldUpdateTimestamp: true },
+      notifyContexts,
+      messages,
+      new Map()
+    )
     res.push(...txes)
   }
 

@@ -14,7 +14,7 @@
 //
 
 import activity from '@hcengineering/activity'
-import { type Lookup, type Ref, SortingOrder } from '@hcengineering/core'
+import { AccountRole, SortingOrder, type Lookup, type Ref } from '@hcengineering/core'
 import { type Builder } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import calendar from '@hcengineering/model-calendar'
@@ -26,36 +26,27 @@ import presentation from '@hcengineering/model-presentation'
 import tags from '@hcengineering/model-tags'
 import task, { actionTemplates } from '@hcengineering/model-task'
 import tracker from '@hcengineering/model-tracker'
-import view, { actionTemplates as viewTemplates, createAction, showColorsViewOption } from '@hcengineering/model-view'
-import workbench, { type Application, createNavigateAction } from '@hcengineering/model-workbench'
+import view, { createAction, showColorsViewOption, actionTemplates as viewTemplates } from '@hcengineering/model-view'
+import workbench, { createNavigateAction, type Application } from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import { type IntlString } from '@hcengineering/platform'
-import { type Applicant, recruitId } from '@hcengineering/recruit'
+import { recruitId, type Applicant } from '@hcengineering/recruit'
 import setting from '@hcengineering/setting'
 import { type KeyBinding, type ViewOptionModel, type ViewOptionsModel } from '@hcengineering/view'
 
 import recruit from './plugin'
 import { createReviewModel, reviewTableConfig, reviewTableOptions } from './review'
-import {
-  TApplicant,
-  TApplicantMatch,
-  TCandidate,
-  TCandidates,
-  TOpinion,
-  TReview,
-  TVacancy,
-  TVacancyList
-} from './types'
 import { defineSpaceType } from './spaceType'
+import { TApplicant, TApplicantMatch, TCandidate, TOpinion, TReview, TVacancy, TVacancyList } from './types'
 
 export { recruitId } from '@hcengineering/recruit'
 export { recruitOperation } from './migration'
 export { default } from './plugin'
-export * from './types'
 export * from './spaceType'
+export * from './types'
 
 export function createModel (builder: Builder): void {
-  builder.createModel(TVacancy, TCandidates, TCandidate, TApplicant, TReview, TOpinion, TVacancyList, TApplicantMatch)
+  builder.createModel(TVacancy, TCandidate, TApplicant, TReview, TOpinion, TVacancyList, TApplicantMatch)
 
   builder.mixin(recruit.class.Vacancy, core.class.Class, activity.mixin.ActivityDoc, {})
   builder.mixin(recruit.class.Applicant, core.class.Class, activity.mixin.ActivityDoc, {})
@@ -206,6 +197,7 @@ export function createModel (builder: Builder): void {
             component: workbench.component.SpecialView,
             icon: recruit.icon.Talents,
             label: recruit.string.Talents,
+            accessLevel: AccountRole.User,
             componentProps: {
               _class: recruit.mixin.Candidate,
               icon: contact.icon.Person,
@@ -219,6 +211,7 @@ export function createModel (builder: Builder): void {
           {
             id: skillsId,
             component: recruit.component.SkillsView,
+            accessLevel: AccountRole.User,
             icon: recruit.icon.Skills,
             label: recruit.string.SkillsLabel,
             createItemLabel: recruit.string.SkillCreateLabel,
@@ -373,8 +366,6 @@ export function createModel (builder: Builder): void {
         'comments',
         '$lookup.company',
         '$lookup.company.$lookup.channels',
-        'location',
-        'description',
         {
           key: '@applications.modifiedOn',
           label: core.string.ModifiedDate

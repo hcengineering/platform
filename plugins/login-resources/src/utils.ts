@@ -14,7 +14,7 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { concatLink } from '@hcengineering/core'
+import { AccountRole, type Doc, type Ref, concatLink } from '@hcengineering/core'
 import login, { type LoginInfo, type Workspace, type WorkspaceLoginInfo } from '@hcengineering/login'
 import {
   OK,
@@ -310,7 +310,7 @@ export async function selectWorkspace (workspace: string): Promise<[Status, Work
     }
   }
 
-  const token = getMetadata(presentation.metadata.Token)
+  const token = getMetadata(presentation.metadata.Token) ?? fetchMetadataLocalStorage(login.metadata.LastToken)
   if (token === undefined) {
     const loc = getCurrentLocation()
     loc.path[0] = 'login'
@@ -526,7 +526,13 @@ export async function checkJoined (inviteId: string): Promise<[Status, Workspace
   }
 }
 
-export async function getInviteLink (expHours: number = 1, emailMask: string = '', limit: number = -1): Promise<string> {
+export async function getInviteLink (
+  expHours: number,
+  emailMask: string,
+  limit: number,
+  role: AccountRole = AccountRole.User,
+  personId?: Ref<Doc>
+): Promise<string> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   const exp = expHours * 1000 * 60 * 60
@@ -544,9 +550,14 @@ export async function getInviteLink (expHours: number = 1, emailMask: string = '
     return ''
   }
 
+  const params = [exp, emailMask, limit, role]
+  if (personId !== undefined) {
+    params.push(personId)
+  }
+
   const request = {
     method: 'getInviteLink',
-    params: [exp, emailMask, limit]
+    params
   }
 
   const response = await fetch(accountsUrl, {
@@ -724,7 +735,7 @@ export async function leaveWorkspace (email: string): Promise<void> {
   })
 }
 
-export async function sendInvite (email: string): Promise<void> {
+export async function sendInvite (email: string, personId?: Ref<Doc>, role?: AccountRole): Promise<void> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   if (accountsUrl === undefined) {
@@ -740,9 +751,11 @@ export async function sendInvite (email: string): Promise<void> {
   }
   const token = getMetadata(presentation.metadata.Token) as string
 
+  const params = [email, personId, role]
+
   const request = {
     method: 'sendInvite',
-    params: [email]
+    params
   }
 
   await fetch(accountsUrl, {

@@ -114,6 +114,7 @@ async function createDefaultProject (tx: TxOperations): Promise<void> {
             archived: false,
             identifier: 'TSK',
             sequence: 0,
+            autoJoin: true,
             defaultIssueStatus: state._id,
             defaultTimeReportDay: TimeReportDayType.PreviousWorkDay,
             defaultAssignee: undefined,

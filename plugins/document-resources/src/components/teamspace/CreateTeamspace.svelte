@@ -242,8 +242,7 @@
 
     if (removedMembersSet.size > 0 && rolesAssignment !== undefined) {
       for (const [key, value] of Object.entries(rolesAssignment)) {
-        rolesAssignment[key as Ref<Role>] =
-          value !== undefined ? value.filter((m) => !removedMembersSet.has(m)) : undefined
+        rolesAssignment[key as Ref<Role>] = value != null ? value.filter((m) => !removedMembersSet.has(m)) : undefined
       }
     }
 

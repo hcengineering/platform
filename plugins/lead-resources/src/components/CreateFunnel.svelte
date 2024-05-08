@@ -33,6 +33,7 @@
   import { createEventDispatcher } from 'svelte'
 
   import leadRes from '../plugin'
+  import view from '@hcengineering/view'
 
   export let funnel: Funnel | undefined = undefined
   const dispatch = createEventDispatcher()
@@ -140,8 +141,7 @@
 
     if (removedMembersSet.size > 0 && rolesAssignment !== undefined) {
       for (const [key, value] of Object.entries(rolesAssignment)) {
-        rolesAssignment[key as Ref<Role>] =
-          value !== undefined ? value.filter((m) => !removedMembersSet.has(m)) : undefined
+        rolesAssignment[key as Ref<Role>] = value != null ? value.filter((m) => !removedMembersSet.has(m)) : undefined
       }
     }
 
@@ -164,7 +164,7 @@
 </script>
 
 <SpaceCreateCard
-  label={leadRes.string.CreateFunnel}
+  label={funnel ? view.string.EdifFunnel : leadRes.string.CreateFunnel}
   okAction={save}
   okLabel={!isNew ? ui.string.Save : undefined}
   {canSave}

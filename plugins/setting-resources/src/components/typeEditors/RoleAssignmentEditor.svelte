@@ -18,7 +18,7 @@
   import { IntlString } from '@hcengineering/platform'
   import { ButtonKind, ButtonSize } from '@hcengineering/ui'
 
-  export let object: TypedSpace
+  export let object: TypedSpace | undefined
   export let label: IntlString
   export let value: Ref<Account>[]
   export let onChange: ((refs: Ref<Account>[]) => void) | undefined
@@ -30,13 +30,15 @@
   $: members = object?.members ?? []
 </script>
 
-<AccountArrayEditor
-  {value}
-  {label}
-  readonly={readonly || (object.private && members.length === 0)}
-  includeItems={object.private ? members : undefined}
-  {onChange}
-  {size}
-  width={width ?? 'min-content'}
-  {kind}
-/>
+{#if object !== undefined}
+  <AccountArrayEditor
+    {value}
+    {label}
+    readonly={readonly || (object.private && members.length === 0)}
+    includeItems={object.private ? members : undefined}
+    {onChange}
+    {size}
+    width={width ?? 'min-content'}
+    {kind}
+  />
+{/if}

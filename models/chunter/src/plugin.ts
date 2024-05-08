@@ -21,7 +21,7 @@ import { type NotificationGroup } from '@hcengineering/notification'
 import type { IntlString, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import type { AnyComponent, Location } from '@hcengineering/ui/src/types'
-import type { Action, ActionCategory, ViewAction, ViewletDescriptor } from '@hcengineering/view'
+import type { Action, ActionCategory, ViewAction, Viewlet, ViewletDescriptor } from '@hcengineering/view'
 
 export default mergeIds(chunterId, chunter, {
   component: {
@@ -76,7 +76,8 @@ export default mergeIds(chunterId, chunter, {
     RepliedToThread: '' as IntlString
   },
   viewlet: {
-    Chat: '' as Ref<ViewletDescriptor>
+    Chat: '' as Ref<ViewletDescriptor>,
+    Channels: '' as Ref<Viewlet>
   },
   ids: {
     TxCommentCreate: '' as Ref<TxViewlet>,

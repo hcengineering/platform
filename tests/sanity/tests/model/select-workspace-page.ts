@@ -13,8 +13,8 @@ export class SelectWorkspacePage extends CommonPage {
   buttonCreateWorkspace = (): Locator => this.page.locator('button > span', { hasText: 'Create workspace' })
   buttonWorkspaceName = (): Locator => this.page.locator('input')
   buttonCreateNewWorkspace = (): Locator => this.page.locator('div.form-row button')
-
   workspaceButtonByName = (workspace: string): Locator => this.buttonWorkspace().filter({ hasText: workspace })
+  createAnotherWorkspace = (): Locator => this.page.getByRole('link', { name: 'Create workspace' })
 
   async selectWorkspace (workspace: string): Promise<void> {
     await this.workspaceButtonByName(workspace).click()
@@ -24,10 +24,17 @@ export class SelectWorkspacePage extends CommonPage {
     await this.buttonWorkspaceName().fill(workspaceName)
   }
 
-  async createWorkspace (workspaceName: string): Promise<void> {
-    await this.buttonCreateWorkspace().waitFor({ state: 'visible' })
-    await this.enterWorkspaceName(workspaceName)
-    expect(await this.buttonCreateNewWorkspace().isEnabled()).toBe(true)
-    await this.buttonCreateNewWorkspace().click()
+  async createWorkspace (workspaceName: string, worskpaceNew: boolean = true): Promise<void> {
+    if (worskpaceNew) {
+      await this.buttonCreateWorkspace().waitFor({ state: 'visible' })
+      await this.enterWorkspaceName(workspaceName)
+      expect(await this.buttonCreateNewWorkspace().isEnabled()).toBe(true)
+      await this.buttonCreateNewWorkspace().click()
+    } else {
+      await this.createAnotherWorkspace().click()
+      await this.enterWorkspaceName(workspaceName)
+      expect(await this.buttonCreateNewWorkspace().isEnabled()).toBe(true)
+      await this.buttonCreateNewWorkspace().click()
+    }
   }
 }

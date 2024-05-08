@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import core, { TxOperations } from '@hcengineering/core'
 import {
+  createDefaultSpace,
   tryUpgrade,
   type MigrateOperation,
   type MigrationClient,
@@ -23,35 +23,14 @@ import {
 import bitrix from './plugin'
 import { bitrixId } from '@hcengineering/bitrix'
 
-async function createSpace (tx: TxOperations): Promise<void> {
-  const current = await tx.findOne(core.class.Space, {
-    _id: bitrix.space.Mappings
-  })
-  if (current === undefined) {
-    await tx.createDoc(
-      core.class.Space,
-      core.space.Space,
-      {
-        name: 'Bitrix mappings',
-        description: 'Bitrix mappings',
-        private: false,
-        archived: false,
-        members: []
-      },
-      bitrix.space.Mappings
-    )
-  }
-}
-
 export const bitrixOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     await tryUpgrade(client, bitrixId, [
       {
-        state: 'create-defaults',
+        state: 'create-defaults-v2',
         func: async (client) => {
-          const tx = new TxOperations(client, core.account.System)
-          await createSpace(tx)
+          await createDefaultSpace(client, bitrix.space.Mappings, { name: 'Bitrix mappings' })
         }
       }
     ])

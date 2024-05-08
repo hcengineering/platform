@@ -83,3 +83,11 @@ export async function attachScreenshot (name: string, page: Page): Promise<void>
   })
   await page.screenshot({ path: `screenshots/${name}` })
 }
+
+export async function checkIfUrlContains (page: Page, url: string): Promise<void> {
+  expect(page.url()).toContain(url)
+}
+
+export async function waitForNetworIdle (page: Page, timeout = 2000): Promise<void> {
+  await Promise.race([page.waitForLoadState('networkidle'), new Promise((resolve) => setTimeout(resolve, timeout))])
+}

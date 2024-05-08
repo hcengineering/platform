@@ -21,7 +21,7 @@ import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineer
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { type TagCategory } from '@hcengineering/tags'
 import { type AnyComponent } from '@hcengineering/ui'
-import { type Action, type ActionCategory, type ViewAction } from '@hcengineering/view'
+import { type Viewlet, type Action, type ActionCategory, type ViewAction } from '@hcengineering/view'
 
 export default mergeIds(documentId, document, {
   component: {
@@ -44,6 +44,9 @@ export default mergeIds(documentId, document, {
   },
   action: {
     PublicLink: '' as Ref<Action<Doc, any>>
+  },
+  viewlet: {
+    TeamspaceTable: '' as Ref<Viewlet>
   },
   category: {
     Document: '' as Ref<ActionCategory>,
