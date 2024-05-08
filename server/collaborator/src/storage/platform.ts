@@ -29,6 +29,7 @@ import core, {
   CollaborativeDoc,
   Doc,
   MeasureContext,
+  TxOperations,
   collaborativeDocWithLastVersion,
   toWorkspaceString
 } from '@hcengineering/core'
@@ -87,7 +88,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
       const { platformDocumentId } = context
       if (platformDocumentId !== undefined) {
         ctx.info('load document platform content', { documentId, platformDocumentId })
-        const ydoc = await ctx.with('load-document', { storage: 'platform' }, async (ctx) => {
+        const ydoc = await ctx.with('load-from-platform', {}, async (ctx) => {
           try {
             return await this.loadDocumentFromPlatform(ctx, platformDocumentId, context)
           } catch (err) {
@@ -112,27 +113,37 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
   }
 
   async saveDocument (ctx: MeasureContext, documentId: DocumentId, document: YDoc, context: Context): Promise<void> {
-    let snapshot: YDocVersion | undefined
-    try {
-      ctx.info('take document snapshot', { documentId })
-      snapshot = await this.takeSnapshot(ctx, documentId, document, context)
-    } catch (err) {
-      ctx.error('failed to take document snapshot', { documentId, error: err })
-    }
+    const { clientFactory } = context
+
+    const client = await ctx.with('connect', {}, async () => {
+      return await clientFactory()
+    })
 
     try {
-      ctx.info('save document content', { documentId })
-      await this.saveDocumentToStorage(ctx, documentId, document, context)
-    } catch (err) {
-      ctx.error('failed to save document', { documentId, error: err })
-    }
+      let snapshot: YDocVersion | undefined
+      try {
+        ctx.info('take document snapshot', { documentId })
+        snapshot = await this.takeSnapshot(ctx, client, documentId, document, context)
+      } catch (err) {
+        ctx.error('failed to take document snapshot', { documentId, error: err })
+      }
 
-    const { platformDocumentId } = context
-    if (platformDocumentId !== undefined) {
-      ctx.info('save document content to platform', { documentId, platformDocumentId })
-      await ctx.with('save-document', { storage: 'platform' }, async (ctx) => {
-        await this.saveDocumentToPlatform(ctx, documentId, platformDocumentId, document, snapshot, context)
-      })
+      try {
+        ctx.info('save document content', { documentId })
+        await this.saveDocumentToStorage(ctx, documentId, document, context)
+      } catch (err) {
+        ctx.error('failed to save document', { documentId, error: err })
+      }
+
+      const { platformDocumentId } = context
+      if (platformDocumentId !== undefined) {
+        ctx.info('save document content to platform', { documentId, platformDocumentId })
+        await ctx.with('save-to-platform', {}, async (ctx) => {
+          await this.saveDocumentToPlatform(ctx, client, documentId, platformDocumentId, document, snapshot, context)
+        })
+      }
+    } finally {
+      await client.close()
     }
   }
 
@@ -180,6 +191,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
 
   async takeSnapshot (
     ctx: MeasureContext,
+    client: Omit<TxOperations, 'close'>,
     documentId: DocumentId,
     document: YDoc,
     context: Context
@@ -187,9 +199,8 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     const { storage, collaborativeDoc } = parseDocumentId(documentId)
     const adapter = this.getStorageAdapter(storage)
 
-    const { clientFactory, workspaceId } = context
+    const { workspaceId } = context
 
-    const client = await clientFactory({ derived: false })
     const timestamp = Date.now()
 
     const yDocVersion: YDocVersion = {
@@ -233,6 +244,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
 
   async saveDocumentToPlatform (
     ctx: MeasureContext,
+    client: Omit<TxOperations, 'close'>,
     documentName: string,
     platformDocumentId: PlatformDocumentId,
     document: YDoc,
@@ -240,12 +252,6 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     context: Context
   ): Promise<void> {
     const { objectClass, objectId, objectAttr } = parsePlatformDocumentId(platformDocumentId)
-
-    const { clientFactory } = context
-
-    const client = await ctx.with('connect', {}, async () => {
-      return await clientFactory({ derived: false })
-    })
 
     const attribute = client.getHierarchy().findAttribute(objectClass, objectAttr)
     if (attribute === undefined) {

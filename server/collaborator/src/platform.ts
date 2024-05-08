@@ -15,7 +15,7 @@
 
 import client from '@hcengineering/client'
 import clientResources from '@hcengineering/client-resources'
-import core, { Client, Tx, TxOperations, WorkspaceId, systemAccountEmail, toWorkspaceString } from '@hcengineering/core'
+import core, { Client, TxOperations, WorkspaceId, systemAccountEmail, toWorkspaceString } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import { Token, generateToken } from '@hcengineering/server-token'
 import config from './config'
@@ -52,13 +52,25 @@ export interface ClientFactoryParams {
 /**
  * @public
  */
-export type ClientFactory = (params: ClientFactoryParams) => Promise<TxOperations>
+export type ClientFactory = (params?: ClientFactoryParams) => Promise<TxOperations>
 
 /**
  * @public
  */
-export function getClientFactory (token: Token, controller: Controller): ClientFactory {
-  return async ({ derived }: ClientFactoryParams) => {
+export function simpleClientFactory (token: Token): ClientFactory {
+  return async (params?: ClientFactoryParams) => {
+    const derived = params?.derived ?? false
+    const client = await connect(generateToken(token.email, token.workspace))
+    return await getTxOperations(client, token, derived)
+  }
+}
+
+/**
+ * @public
+ */
+export function reusableClientFactory (token: Token, controller: Controller): ClientFactory {
+  return async (params?: ClientFactoryParams) => {
+    const derived = params?.derived ?? false
     const workspaceClient = await controller.get(token.workspace)
     return await getTxOperations(workspaceClient.client, token, derived)
   }
@@ -94,16 +106,10 @@ export class Controller {
  * @public
  */
 export class WorkspaceClient {
-  private readonly txHandlers: ((...tx: Tx[]) => Promise<void>)[] = []
-
   private constructor (
     readonly workspace: WorkspaceId,
     readonly client: Client
-  ) {
-    this.client.notify = (...tx: Tx[]) => {
-      void this.txHandler(...tx)
-    }
-  }
+  ) {}
 
   static async create (workspace: WorkspaceId): Promise<WorkspaceClient> {
     const token = generateToken(systemAccountEmail, workspace)
@@ -113,11 +119,5 @@ export class WorkspaceClient {
 
   async close (): Promise<void> {
     await this.client.close()
-  }
-
-  private async txHandler (...tx: Tx[]): Promise<void> {
-    for (const h of this.txHandlers) {
-      await h(...tx)
-    }
   }
 }
