@@ -50,10 +50,7 @@
         size="small"
       />
     </div>
-    <span
-      class="label no-underline nowrap"
-      class:fs-bold={accent}
-    >
+    <span class="label no-underline nowrap" class:fs-bold={accent}>
       {value.name}
       {#if value.archived}
         <Label label={presentation.string.Archived} />

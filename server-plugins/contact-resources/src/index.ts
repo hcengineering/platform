@@ -34,7 +34,9 @@ import core, {
   Hierarchy,
   Ref,
   Tx,
+  TxCreateDoc,
   TxMixin,
+  TxProcessor,
   TxRemoveDoc,
   TxUpdateDoc,
   concatLink
@@ -49,6 +51,26 @@ export async function OnEmployeeCreate (tx: Tx, control: TriggerControl): Promis
   if (mixinTx.attributes.active !== true) return []
   const acc = await control.modelDb.findOne(contact.class.PersonAccount, { person: mixinTx.objectId })
   if (acc === undefined) return []
+  const spaces = await control.findAll(core.class.Space, { autoJoin: true })
+  const result: Tx[] = []
+  for (const space of spaces) {
+    if (space.members.includes(acc._id)) continue
+    const pushTx = control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, {
+      $push: {
+        members: acc._id
+      }
+    })
+    result.push(pushTx)
+  }
+  return result
+}
+
+export async function OnPersonAccountCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const acc = TxProcessor.createDoc2Doc(tx as TxCreateDoc<PersonAccount>)
+  const person = (
+    await control.findAll(contact.mixin.Employee, { _id: acc.person as Ref<Employee>, active: true }, { limit: 1 })
+  )[0]
+  if (person === undefined) return []
   const spaces = await control.findAll(core.class.Space, { autoJoin: true })
   const result: Tx[] = []
   for (const space of spaces) {
@@ -283,6 +305,7 @@ export async function getContactFirstName (
 export default async () => ({
   trigger: {
     OnEmployeeCreate,
+    OnPersonAccountCreate,
     OnContactDelete,
     OnChannelUpdate
   },

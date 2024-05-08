@@ -32,7 +32,8 @@ export default plugin(serverContactId, {
   trigger: {
     OnContactDelete: '' as Resource<TriggerFunc>,
     OnChannelUpdate: '' as Resource<TriggerFunc>,
-    OnEmployeeCreate: '' as Resource<TriggerFunc>
+    OnEmployeeCreate: '' as Resource<TriggerFunc>,
+    OnPersonAccountCreate: '' as Resource<TriggerFunc>
   },
   function: {
     PersonHTMLPresenter: '' as Resource<Presenter>,

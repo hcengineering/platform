@@ -81,6 +81,14 @@ export function createModel (builder: Builder): void {
     }
   })
 
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverContact.trigger.OnPersonAccountCreate,
+    txMatch: {
+      objectClass: contact.class.PersonAccount,
+      _class: core.class.TxCreateDoc
+    }
+  })
+
   builder.mixin(
     contact.templateField.CurrentEmployeeName,
     templates.class.TemplateField,
