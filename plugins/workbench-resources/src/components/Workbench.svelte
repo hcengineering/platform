@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import contact, { Employee, Person, PersonAccount } from '@hcengineering/contact'
+  import contact, { Person, PersonAccount } from '@hcengineering/contact'
   import core, { AccountRole, Class, Doc, Ref, Space, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import notification, { DocNotifyContext, InboxNotification, notificationId } from '@hcengineering/notification'
