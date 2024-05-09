@@ -477,6 +477,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/uws",
+      "projectFolder": "server/uws",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/dev-storage",
       "projectFolder": "dev/storage",
       "shouldPublish": false
