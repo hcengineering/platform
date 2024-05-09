@@ -59,7 +59,23 @@
     {
       id: 'smileys',
       label: plugin.string.Smileys,
-      emojis: [...getEmojis(0x1f600, 0x1f64f), ...getEmojis(0x1f90c, 0x1f92f)],
+      emojis: [
+        ...getEmojis(0x1f600, 0x1f64b),
+        ...getEmojis(0x1f64d, 0x1f64e),
+        ...getEmojis(0x1f910, 0x1f917),
+        ...getEmojis(0x1f920, 0x1f92f),
+        ...getEmojis(0x1fae0, 0x1fae8),
+        ...getEmojis(0x1f64f, 0x1f64f),
+        ...getEmojis(0x1f64c, 0x1f64c),
+        ...getEmojis(0x1f918, 0x1f91f),
+        ...getEmojis(0x270a, 0x270d),
+        ...getEmojis(0x1f90c, 0x1f90c),
+        ...getEmojis(0x1faf0, 0x1faf8),
+        ...getEmojis(0x1f446, 0x1f450),
+        ...getEmojis(0x1f4aa, 0x1f4aa),
+        ...getEmojis(0x1f9be, 0x1f9bf),
+        ...getEmojis(0x1f9b5, 0x1f9b7)
+      ],
       icon: Emoji
     },
     {
