@@ -128,18 +128,6 @@ dependencies:
   '@rush-temp/core':
     specifier: file:./projects/core.tgz
     version: file:projects/core.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2)
-  '@rush-temp/dev-account':
-    specifier: file:./projects/dev-account.tgz
-    version: file:projects/dev-account.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2)
-  '@rush-temp/dev-client-resources':
-    specifier: file:./projects/dev-client-resources.tgz
-    version: file:projects/dev-client-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2)
-  '@rush-temp/dev-server':
-    specifier: file:./projects/dev-server.tgz
-    version: file:projects/dev-server.tgz(@types/node@20.11.19)(esbuild@0.20.1)
-  '@rush-temp/dev-storage':
-    specifier: file:./projects/dev-storage.tgz
-    version: file:projects/dev-storage.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2)
   '@rush-temp/devmodel':
     specifier: file:./projects/devmodel.tgz
     version: file:projects/devmodel.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2)
@@ -18326,133 +18314,6 @@ packages:
       - ts-node
     dev: false
 
-  file:projects/dev-account.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-LWWFUvgYWEbSKEbgl0DW088ikIIbxd94B+J5g5qGsBZUnVs2EfYKIOHZ6IkY3RcaqnLEYlwml6JHS2BuaPWh+A==, tarball: file:projects/dev-account.tgz}
-    id: file:projects/dev-account.tgz
-    name: '@rush-temp/dev-account'
-    version: 0.0.0
-    dependencies:
-      '@types/jest': 29.5.12
-      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
-      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
-      eslint: 8.56.0
-      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
-      eslint-plugin-import: 2.29.1(eslint@8.56.0)
-      eslint-plugin-n: 15.7.0(eslint@8.56.0)
-      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
-      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      prettier: 3.2.5
-      simplytyped: 3.3.0(typescript@5.3.3)
-      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
-      typescript: 5.3.3
-    transitivePeerDependencies:
-      - '@babel/core'
-      - '@jest/types'
-      - '@types/node'
-      - babel-jest
-      - babel-plugin-macros
-      - esbuild
-      - node-notifier
-      - supports-color
-      - ts-node
-    dev: false
-
-  file:projects/dev-client-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-cGChKmk9nSzZ32ne0g+PFZ2wCnZQN2UYQ/6Sf475WKMOU5n6vFcnTWjgPoDjNhGDN9Eqb/N42dGE/9FrFm5ypg==, tarball: file:projects/dev-client-resources.tgz}
-    id: file:projects/dev-client-resources.tgz
-    name: '@rush-temp/dev-client-resources'
-    version: 0.0.0
-    dependencies:
-      '@types/jest': 29.5.12
-      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
-      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
-      eslint: 8.56.0
-      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
-      eslint-plugin-import: 2.29.1(eslint@8.56.0)
-      eslint-plugin-n: 15.7.0(eslint@8.56.0)
-      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
-      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      prettier: 3.2.5
-      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
-      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
-      typescript: 5.3.3
-    transitivePeerDependencies:
-      - '@babel/core'
-      - '@jest/types'
-      - '@types/node'
-      - babel-jest
-      - babel-plugin-macros
-      - esbuild
-      - node-notifier
-      - supports-color
-      - ts-node
-    dev: false
-
-  file:projects/dev-server.tgz(@types/node@20.11.19)(esbuild@0.20.1):
-    resolution: {integrity: sha512-ejFT8uh0XsPvXdz1nxvESgUii09Eo5kTjqSiR5tnm7Xijo9nUAS8NCELlQ5CXdgh0ho2DUZWsLBAKx158E+YUQ==, tarball: file:projects/dev-server.tgz}
-    id: file:projects/dev-server.tgz
-    name: '@rush-temp/dev-server'
-    version: 0.0.0
-    dependencies:
-      '@types/jest': 29.5.12
-      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
-      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
-      eslint: 8.56.0
-      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
-      eslint-plugin-import: 2.29.1(eslint@8.56.0)
-      eslint-plugin-n: 15.7.0(eslint@8.56.0)
-      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
-      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      jwt-simple: 0.5.6
-      prettier: 3.2.5
-      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
-      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
-      ts-node: 10.9.2(@types/node@20.11.19)(typescript@5.3.3)
-      typescript: 5.3.3
-    transitivePeerDependencies:
-      - '@babel/core'
-      - '@jest/types'
-      - '@swc/core'
-      - '@swc/wasm'
-      - '@types/node'
-      - babel-jest
-      - babel-plugin-macros
-      - esbuild
-      - node-notifier
-      - supports-color
-    dev: false
-
-  file:projects/dev-storage.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-cgVla92iBIDPB+2c/z+YMbTFaONzy46pEas/QIYS8j6pNBGEIm8JjXwVy/ThSW+6wpi9vmwlUWOQe1ILsUdNXA==, tarball: file:projects/dev-storage.tgz}
-    id: file:projects/dev-storage.tgz
-    name: '@rush-temp/dev-storage'
-    version: 0.0.0
-    dependencies:
-      '@types/jest': 29.5.12
-      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
-      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
-      eslint: 8.56.0
-      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
-      eslint-plugin-import: 2.29.1(eslint@8.56.0)
-      eslint-plugin-n: 15.7.0(eslint@8.56.0)
-      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
-      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
-      prettier: 3.2.5
-      prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
-      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
-      typescript: 5.3.3
-    transitivePeerDependencies:
-      - '@babel/core'
-      - '@jest/types'
-      - '@types/node'
-      - babel-jest
-      - babel-plugin-macros
-      - esbuild
-      - node-notifier
-      - supports-color
-      - ts-node
-    dev: false
-
   file:projects/devmodel-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
     resolution: {integrity: sha512-NDdNczJE2bG7cuAqbD38xHMKXFndVeF3z0tvfBKVs6sVWauXThe448YkAMVY6NxEIczGqAqmyPHK0IHbuvEqgg==, tarball: file:projects/devmodel-resources.tgz}
     id: file:projects/devmodel-resources.tgz
@@ -21282,7 +21143,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz(bufferutil@4.0.8)(sass@1.71.1)(ts-node@10.9.2)(utf-8-validate@6.0.3):
-    resolution: {integrity: sha512-/CKLzPjaTfkDNjT0evklXES1ISDy11ikLCJKFuyI4OQ6nfbt84wTqkO80Egr9IZScuNA0M0MEeJP+01pO2LNdA==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-ApNm3LLGsu8aU/ySQbpHVWR+td2eUUeCzgjnkwdw83E4QZ9mFj8I9hTN0z4gC32PAOFdxRt6P0J8vA78WBNfGw==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0
@@ -24360,7 +24221,7 @@ packages:
     dev: false
 
   file:projects/tool.tgz(bufferutil@4.0.8)(utf-8-validate@6.0.3):
-    resolution: {integrity: sha512-aCu871KUBezC10ng0g9MwVF4UdeqlKVlMvLH4r0eBFvZx/XkEPiP++bL5dDuYo9o4cU2bhj+7uTzLCePUQVDZQ==, tarball: file:projects/tool.tgz}
+    resolution: {integrity: sha512-mudcpqzHDkcN8NfVsWXUj+rtgp9QfGvIsmYSFEjvU9yzw+WIZJ3eqnU72/Vbhn1WgtMEKLweb3oqEtS9tmGAog==, tarball: file:projects/tool.tgz}
     id: file:projects/tool.tgz
     name: '@rush-temp/tool'
     version: 0.0.0

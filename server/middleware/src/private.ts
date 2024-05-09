@@ -30,7 +30,7 @@ import core, {
   systemAccountEmail
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { BroadcastFunc, Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
+import { Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
 import { DOMAIN_PREFERENCE } from '@hcengineering/server-preference'
 import { BaseMiddleware } from './base'
 import { getUser, mergeTargets } from './utils'
@@ -45,12 +45,7 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
     super(storage, next)
   }
 
-  static async create (
-    ctx: MeasureContext,
-    broadcast: BroadcastFunc,
-    storage: ServerStorage,
-    next?: Middleware
-  ): Promise<PrivateMiddleware> {
+  static async create (ctx: MeasureContext, storage: ServerStorage, next?: Middleware): Promise<PrivateMiddleware> {
     return new PrivateMiddleware(storage, next)
   }
 
@@ -72,11 +67,11 @@ export class PrivateMiddleware extends BaseMiddleware implements Middleware {
       }
     }
     const res = await this.provideTx(ctx, tx)
-    return [res[0], res[1], mergeTargets(target, res[2])]
-  }
-
-  handleBroadcast (tx: Tx[], targets?: string[]): Tx[] {
-    return this.provideHandleBroadcast(tx, targets)
+    // Add target to all broadcasts
+    ctx.derived.forEach((it) => {
+      it.target = mergeTargets(target, it.target)
+    })
+    return res
   }
 
   override async findAll<T extends Doc>(

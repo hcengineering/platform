@@ -16,7 +16,7 @@
 import { LoadModelResponse } from '.'
 import type { Class, Doc, Domain, Ref, Timestamp } from './classes'
 import { Hierarchy } from './hierarchy'
-import { MeasureContext } from './measurements'
+import { MeasureContext, type FullParamsType, type ParamsType } from './measurements'
 import { ModelDb } from './memdb'
 import type {
   DocumentQuery,
@@ -43,6 +43,22 @@ export interface DocInfo {
 export interface StorageIterator {
   next: (ctx: MeasureContext) => Promise<DocInfo | undefined>
   close: (ctx: MeasureContext) => Promise<void>
+}
+
+export interface SessionOperationContext {
+  ctx: MeasureContext
+  // A parts of derived data to deal with after operation will be complete
+  derived: {
+    derived: Tx[]
+    target?: string[]
+  }[]
+
+  with: <T>(
+    name: string,
+    params: ParamsType,
+    op: (ctx: SessionOperationContext) => T | Promise<T>,
+    fullParams?: FullParamsType
+  ) => Promise<T>
 }
 
 /**
@@ -78,8 +94,8 @@ export interface ServerStorage extends LowLevelStorage {
     }
   ) => Promise<FindResult<T>>
   searchFulltext: (ctx: MeasureContext, query: SearchQuery, options: SearchOptions) => Promise<SearchResult>
-  tx: (ctx: MeasureContext, tx: Tx) => Promise<[TxResult, Tx[]]>
-  apply: (ctx: MeasureContext, tx: Tx[], broadcast: boolean) => Promise<TxResult>
+  tx: (ctx: SessionOperationContext, tx: Tx) => Promise<TxResult>
+  apply: (ctx: SessionOperationContext, tx: Tx[], broadcast: boolean) => Promise<TxResult>
   close: () => Promise<void>
   loadModel: (last: Timestamp, hash?: string) => Promise<Tx[] | LoadModelResponse>
 }

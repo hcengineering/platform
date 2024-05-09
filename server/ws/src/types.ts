@@ -7,7 +7,6 @@ import {
   type MeasureContext,
   type Ref,
   type Tx,
-  type TxResult,
   type WorkspaceId,
   type WorkspaceIdWithUrl
 } from '@hcengineering/core'
@@ -31,6 +30,17 @@ export interface StatisticsElement {
   find: number
   tx: number
 }
+
+export interface ClientSessionCtx {
+  ctx: MeasureContext
+  sendResponse: (msg: any) => Promise<void>
+  sendError: (msg: any, error: any) => Promise<void>
+
+  // target === undefined, send to all except exclude
+  // target !== undefined, send to selected target only, exclude is not used.
+  send: (msg: Tx[], target?: string, exclude?: string[]) => Promise<void>
+}
+
 /**
  * @public
  */
@@ -38,14 +48,21 @@ export interface Session {
   createTime: number
   getUser: () => string
   pipeline: () => Pipeline
-  ping: () => Promise<string>
+  ping: (ctx: ClientSessionCtx) => Promise<void>
   findAll: <T extends Doc>(
+    ctx: ClientSessionCtx,
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T>
+  ) => Promise<void>
+  findAllRaw: <T extends Doc>(
     ctx: MeasureContext,
     _class: Ref<Class<T>>,
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
-  tx: (ctx: MeasureContext, tx: Tx) => Promise<TxResult>
+  tx: (ctx: ClientSessionCtx, tx: Tx) => Promise<void>
+  txRaw: (ctx: MeasureContext, tx: Tx) => Promise<void>
 
   // Session restore information
   sessionId: string
@@ -56,8 +73,6 @@ export interface Session {
 
   binaryMode: boolean
   useCompression: boolean
-  useBroadcast: boolean
-
   total: StatisticsElement
   current: StatisticsElement
   mins5: StatisticsElement
@@ -70,16 +85,6 @@ export interface Session {
 
   getMode: () => string
 }
-
-/**
- * @public
- */
-export type BroadcastCall = (
-  from: Session | null,
-  workspaceId: WorkspaceId,
-  resp: Response<any>,
-  target?: string[]
-) => void
 
 /**
  * @public
@@ -161,7 +166,7 @@ export interface SessionManager {
 
   broadcastAll: (workspace: Workspace, tx: Tx[], targets?: string[]) => void
 
-  close: (ws: ConnectionSocket, workspaceId: string) => Promise<void>
+  close: (ctx: MeasureContext, ws: ConnectionSocket, workspaceId: string) => Promise<void>
 
   closeAll: (
     wsId: string,
@@ -175,8 +180,6 @@ export interface SessionManager {
 
   closeWorkspaces: (ctx: MeasureContext) => Promise<void>
 
-  broadcast: (from: Session | null, workspaceId: WorkspaceId, resp: Response<any>, target?: string[]) => void
-
   scheduleMaintenance: (timeMinutes: number) => void
 }
 
@@ -189,8 +192,7 @@ export type HandleRequestFunction = <S extends Session>(
   ws: ConnectionSocket,
   msg: Request<any>,
   workspaceId: string
-) => Promise<Response<any> | undefined>
-
+) => void
 /**
  * @public
  */

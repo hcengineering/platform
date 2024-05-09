@@ -255,7 +255,7 @@ export function startHttpServer (
       doSessionOp(webSocketData, (s) => {
         if (!(s.session.workspaceClosed ?? false)) {
           // remove session after 1seconds, give a time to reconnect.
-          void sessions.close(cs, toWorkspaceString(token.workspace))
+          void sessions.close(ctx, cs, toWorkspaceString(token.workspace))
         }
       })
     })
@@ -352,7 +352,7 @@ function createWebsocketClientSocket (
       }
       const smsg = serialize(msg, binary)
 
-      while (ws.bufferedAmount > 128 && ws.readyState === ws.OPEN) {
+      while (ws.bufferedAmount > 16 * 1024 && ws.readyState === ws.OPEN) {
         await new Promise<void>((resolve) => {
           setImmediate(resolve)
         })

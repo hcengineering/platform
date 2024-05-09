@@ -15,15 +15,19 @@
 //
 
 import core, {
-  type Account,
-  type AttachedDoc,
-  type Class,
   ClassifierKind,
-  type Client,
-  type Collection,
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
   DOMAIN_TX,
+  TxFactory,
+  TxProcessor,
+  cutObjectArray,
+  toFindResult,
+  type Account,
+  type AttachedDoc,
+  type Class,
+  type Client,
+  type Collection,
   type Doc,
   type DocumentQuery,
   type DocumentUpdate,
@@ -40,22 +44,19 @@ import core, {
   type SearchQuery,
   type SearchResult,
   type ServerStorage,
+  type SessionOperationContext,
   type StorageIterator,
   type Timestamp,
   type Tx,
   type TxApplyIf,
   type TxCUD,
   type TxCollectionCUD,
-  TxFactory,
-  TxProcessor,
   type TxRemoveDoc,
   type TxResult,
   type TxUpdateDoc,
-  type WorkspaceIdWithUrl,
-  cutObjectArray,
-  toFindResult
+  type WorkspaceIdWithUrl
 } from '@hcengineering/core'
-import { type Metadata, getResource } from '@hcengineering/platform'
+import { getResource, type Metadata } from '@hcengineering/platform'
 import { LiveQuery as LQ } from '@hcengineering/query'
 import crypto from 'node:crypto'
 import { type DbAdapter } from '../adapter'
@@ -555,7 +556,7 @@ export class TServerStorage implements ServerStorage {
   }
 
   private async processDerived (
-    ctx: MeasureContext,
+    ctx: SessionOperationContext,
     txes: Tx[],
     triggerFx: Effects,
     findAll: ServerStorage['findAll'],
@@ -570,11 +571,13 @@ export class TServerStorage implements ServerStorage {
         ): Promise<FindResult<T>> =>
           findAll(mctx, clazz, query, options)
 
-    const removed = await ctx.with('process-remove', {}, (ctx) => this.processRemove(ctx, txes, findAll, removedMap))
-    const collections = await ctx.with('process-collection', {}, (ctx) =>
-      this.processCollection(ctx, txes, findAll, removedMap)
+    const removed = await ctx.with('process-remove', {}, (ctx) =>
+      this.processRemove(ctx.ctx, txes, findAll, removedMap)
     )
-    const moves = await ctx.with('process-move', {}, (ctx) => this.processMove(ctx, txes, findAll))
+    const collections = await ctx.with('process-collection', {}, (ctx) =>
+      this.processCollection(ctx.ctx, txes, findAll, removedMap)
+    )
+    const moves = await ctx.with('process-move', {}, (ctx) => this.processMove(ctx.ctx, txes, findAll))
 
     const triggerControl: Omit<TriggerControl, 'txFactory' | 'ctx' | 'result'> = {
       removedMap,
@@ -594,7 +597,7 @@ export class TServerStorage implements ServerStorage {
       serviceFx: (f) => {
         triggerFx.fx(() => f(this.serviceAdaptersManager))
       },
-      findAll: fAll(ctx),
+      findAll: fAll(ctx.ctx),
       findAllCtx: findAll,
       modelDb: this.modelDb,
       hierarchy: this.hierarchy,
@@ -614,8 +617,8 @@ export class TServerStorage implements ServerStorage {
       result.push(
         ...(await this.triggers.apply(ctx, txes, {
           ...triggerControl,
-          ctx,
-          findAll: fAll(ctx),
+          ctx: ctx.ctx,
+          findAll: fAll(ctx.ctx),
           result
         }))
       )
@@ -629,14 +632,14 @@ export class TServerStorage implements ServerStorage {
 
   private async processDerivedTxes (
     derived: Tx[],
-    ctx: MeasureContext,
+    ctx: SessionOperationContext,
     triggerFx: Effects,
     findAll: ServerStorage['findAll'],
     removedMap: Map<Ref<Doc>, Doc>
   ): Promise<Tx[]> {
     derived.sort((a, b) => a.modifiedOn - b.modifiedOn)
 
-    await ctx.with('derived-route-tx', {}, (ctx) => this.routeTx(ctx, removedMap, ...derived))
+    await ctx.with('derived-route-tx', {}, (ctx) => this.routeTx(ctx.ctx, removedMap, ...derived))
 
     const nestedTxes: Tx[] = []
     if (derived.length > 0) {
@@ -692,17 +695,8 @@ export class TServerStorage implements ServerStorage {
     return { passed, onEnd }
   }
 
-  async apply (ctx: MeasureContext, txes: Tx[], broadcast: boolean, target?: string[]): Promise<TxResult[]> {
-    const result = await this.processTxes(ctx, txes)
-    let derived: Tx[] = []
-
-    derived = result[1]
-
-    if (broadcast) {
-      this.options?.broadcast?.([...txes, ...derived], target)
-    }
-
-    return result[0]
+  async apply (ctx: SessionOperationContext, txes: Tx[], broadcast: boolean, target?: string[]): Promise<TxResult> {
+    return await this.processTxes(ctx, txes, broadcast, target)
   }
 
   fillTxes (txes: Tx[], txToStore: Tx[], modelTx: Tx[], txToProcess: Tx[], applyTxes: Tx[]): void {
@@ -727,7 +721,12 @@ export class TServerStorage implements ServerStorage {
     }
   }
 
-  async processTxes (ctx: MeasureContext, txes: Tx[]): Promise<[TxResult[], Tx[]]> {
+  async processTxes (
+    ctx: SessionOperationContext,
+    txes: Tx[],
+    broadcast: boolean,
+    target?: string[]
+  ): Promise<TxResult> {
     // store tx
     const _findAll: ServerStorage['findAll'] = async <T extends Doc>(
       ctx: MeasureContext,
@@ -745,14 +744,14 @@ export class TServerStorage implements ServerStorage {
     const removedMap = new Map<Ref<Doc>, Doc>()
     const onEnds: (() => void)[] = []
     const result: TxResult[] = []
-    let derived: Tx[] = []
+    const derived: Tx[] = [...txes].filter((it) => it._class !== core.class.TxApplyIf)
 
     try {
       this.fillTxes(txes, txToStore, modelTx, txToProcess, applyTxes)
       for (const tx of applyTxes) {
         const applyIf = tx as TxApplyIf
         // Wait for scope promise if found
-        const passed = await this.verifyApplyIf(ctx, applyIf, _findAll)
+        const passed = await this.verifyApplyIf(ctx.ctx, applyIf, _findAll)
         onEnds.push(passed.onEnd)
         if (passed.passed) {
           result.push({
@@ -760,7 +759,7 @@ export class TServerStorage implements ServerStorage {
             success: true
           })
           this.fillTxes(applyIf.txes, txToStore, modelTx, txToProcess, applyTxes)
-          derived = [...applyIf.txes]
+          derived.push(...applyIf.txes)
         } else {
           result.push({
             derived: [],
@@ -776,35 +775,37 @@ export class TServerStorage implements ServerStorage {
         await this.triggers.tx(tx)
         await this.modelDb.tx(tx)
       }
-      await ctx.with('domain-tx', {}, async (ctx) => await this.getAdapter(DOMAIN_TX).tx(ctx, ...txToStore))
-      result.push(...(await ctx.with('apply', {}, (ctx) => this.routeTx(ctx, removedMap, ...txToProcess))))
+      await ctx.with('domain-tx', {}, async (ctx) => await this.getAdapter(DOMAIN_TX).tx(ctx.ctx, ...txToStore))
+      result.push(...(await ctx.with('apply', {}, (ctx) => this.routeTx(ctx.ctx, removedMap, ...txToProcess))))
 
       // invoke triggers and store derived objects
-      derived = derived.concat(await this.processDerived(ctx, txToProcess, triggerFx, _findAll, removedMap))
+      derived.push(...(await this.processDerived(ctx, txToProcess, triggerFx, _findAll, removedMap)))
 
       // index object
       await ctx.with('fulltext-tx', {}, async (ctx) => {
-        await this.fulltext.tx(ctx, [...txToProcess, ...derived])
+        await this.fulltext.tx(ctx.ctx, [...txToProcess, ...derived])
       })
 
       for (const fx of triggerFx.effects) {
         await fx()
       }
     } catch (err: any) {
-      ctx.error('error process tx', { error: err })
+      ctx.ctx.error('error process tx', { error: err })
       throw err
     } finally {
       onEnds.forEach((p) => {
         p()
       })
     }
-    return [result, derived]
+    if (derived.length > 0 && broadcast) {
+      ctx.derived.push({ derived, target })
+    }
+    return result[0]
   }
 
-  async tx (ctx: MeasureContext, tx: Tx): Promise<[TxResult, Tx[]]> {
+  async tx (ctx: SessionOperationContext, tx: Tx): Promise<TxResult> {
     return await ctx.with('client-tx', { _class: tx._class }, async (ctx) => {
-      const result = await this.processTxes(ctx, [tx])
-      return [result[0][0], result[1]]
+      return await this.processTxes(ctx, [tx], true)
     })
   }
 

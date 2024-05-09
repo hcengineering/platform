@@ -45,7 +45,7 @@ import core, {
   systemAccountEmail
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { BroadcastFunc, Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
+import { Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
 import { BaseMiddleware } from './base'
 import { getUser, isOwner, isSystem, mergeTargets } from './utils'
 
@@ -74,21 +74,16 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     core.space.Tx
   ]
 
-  private constructor (
-    private readonly broadcast: BroadcastFunc,
-    storage: ServerStorage,
-    next?: Middleware
-  ) {
+  private constructor (storage: ServerStorage, next?: Middleware) {
     super(storage, next)
   }
 
   static async create (
     ctx: MeasureContext,
-    broadcast: BroadcastFunc,
     storage: ServerStorage,
     next?: Middleware
   ): Promise<SpaceSecurityMiddleware> {
-    const res = new SpaceSecurityMiddleware(broadcast, storage, next)
+    const res = new SpaceSecurityMiddleware(storage, next)
     res.spaceMeasureCtx = ctx.newChild('space chain', {})
     res.spaceSecurityInit = res.init(res.spaceMeasureCtx)
     return res
@@ -180,6 +175,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
   }
 
   private async pushMembersHandle (
+    ctx: SessionContext,
     addedMembers: Ref<Account> | Position<Ref<Account>>,
     space: Ref<Space>
   ): Promise<void> {
@@ -187,14 +183,15 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       for (const member of addedMembers.$each) {
         this.addMemberSpace(member, space)
       }
-      await this.brodcastEvent(addedMembers.$each, space)
+      await this.brodcastEvent(ctx, addedMembers.$each, space)
     } else {
       this.addMemberSpace(addedMembers, space)
-      await this.brodcastEvent([addedMembers], space)
+      await this.brodcastEvent(ctx, [addedMembers], space)
     }
   }
 
   private async pullMembersHandle (
+    ctx: SessionContext,
     removedMembers: Partial<Ref<Account>> | PullArray<Ref<Account>>,
     space: Ref<Space>
   ): Promise<void> {
@@ -204,15 +201,15 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
         for (const member of $in) {
           this.removeMemberSpace(member, space)
         }
-        await this.brodcastEvent($in, space)
+        await this.brodcastEvent(ctx, $in, space)
       }
     } else {
       this.removeMemberSpace(removedMembers, space)
-      await this.brodcastEvent([removedMembers], space)
+      await this.brodcastEvent(ctx, [removedMembers], space)
     }
   }
 
-  private async syncMembers (members: Ref<Account>[], space: SpaceWithMembers): Promise<void> {
+  private async syncMembers (ctx: SessionContext, members: Ref<Account>[], space: SpaceWithMembers): Promise<void> {
     const oldMembers = new Set(space.members)
     const newMembers = new Set(members)
     const changed: Ref<Account>[] = []
@@ -229,11 +226,11 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       }
     }
     if (changed.length > 0) {
-      await this.brodcastEvent(changed, space._id)
+      await this.brodcastEvent(ctx, changed, space._id)
     }
   }
 
-  private async brodcastEvent (users: Ref<Account>[], space?: Ref<Space>): Promise<void> {
+  private async brodcastEvent (ctx: SessionContext, users: Ref<Account>[], space?: Ref<Space>): Promise<void> {
     const targets = await this.getTargets(users)
     const tx: TxWorkspaceEvent = {
       _class: core.class.TxWorkspaceEvent,
@@ -245,12 +242,16 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       space: core.space.DerivedTx,
       params: null
     }
-    this.broadcast([tx], targets)
+    ctx.derived.push({
+      derived: [tx],
+      target: targets
+    })
   }
 
-  private async broadcastNonMembers (space: SpaceWithMembers): Promise<void> {
+  private async broadcastNonMembers (ctx: SessionContext, space: SpaceWithMembers): Promise<void> {
     const users = await this.storage.modelDb.findAll(core.class.Account, { _id: { $nin: space?.members } })
     await this.brodcastEvent(
+      ctx,
       users.map((p) => p._id),
       space._id
     )
@@ -268,23 +269,23 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
         if (updateDoc.operations.private) {
           this.privateSpaces.add(updateDoc.objectId)
           this.publicSpaces.delete(updateDoc.objectId)
-          await this.broadcastNonMembers(space)
+          await this.broadcastNonMembers(ctx, space)
         } else if (!updateDoc.operations.private) {
           this.privateSpaces.delete(updateDoc.objectId)
           this.publicSpaces.add(updateDoc.objectId)
-          await this.broadcastNonMembers(space)
+          await this.broadcastNonMembers(ctx, space)
         }
       }
 
       if (updateDoc.operations.members !== undefined) {
-        await this.syncMembers(updateDoc.operations.members, space)
+        await this.syncMembers(ctx, updateDoc.operations.members, space)
       }
       if (updateDoc.operations.$push?.members !== undefined) {
-        await this.pushMembersHandle(updateDoc.operations.$push.members, space._id)
+        await this.pushMembersHandle(ctx, updateDoc.operations.$push.members, space._id)
       }
 
       if (updateDoc.operations.$pull?.members !== undefined) {
-        await this.pullMembersHandle(updateDoc.operations.$pull.members, space._id)
+        await this.pullMembersHandle(ctx, updateDoc.operations.$pull.members, space._id)
       }
       const updatedSpace = TxProcessor.updateDoc2Doc(space as any, updateDoc)
       this.spacesMap.set(updateDoc.objectId, updatedSpace)
@@ -380,9 +381,9 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       }
       await this.processTxSpaceDomain(tx as TxCUD<Doc>)
       if (h.isDerived(cudTx.objectClass, core.class.Account) && cudTx._class === core.class.TxUpdateDoc) {
-        const ctx = cudTx as TxUpdateDoc<Account>
-        if (ctx.operations.role !== undefined) {
-          await this.brodcastEvent([ctx.objectId])
+        const cud = cudTx as TxUpdateDoc<Account>
+        if (cud.operations.role !== undefined) {
+          await this.brodcastEvent(ctx, [cud.objectId])
         }
       }
     }
@@ -397,23 +398,25 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     await this.processTx(ctx, tx)
     const targets = await this.getTxTargets(ctx, tx)
     const res = await this.provideTx(ctx, tx)
-    for (const tx of res[1]) {
-      await this.processTx(ctx, tx)
+    for (const txd of ctx.derived) {
+      for (const tx of txd.derived) {
+        await this.processTx(ctx, tx)
+      }
     }
-    return [res[0], res[1], mergeTargets(targets, res[2])]
-  }
+    ctx.derived.forEach((it) => {
+      it.target = mergeTargets(targets, it.target)
+    })
 
-  handleBroadcast (tx: Tx[], targets?: string[]): Tx[] {
-    const process = async (): Promise<void> => {
-      await this.waitInit()
-      for (const t of tx) {
+    await this.waitInit()
+    for (const tt of ctx.derived) {
+      for (const t of tt.derived) {
         if (this.storage.hierarchy.isDerived(t._class, core.class.TxCUD)) {
           await this.processTxSpaceDomain(t as TxCUD<Doc>)
         }
       }
     }
-    void process()
-    return this.provideHandleBroadcast(tx, targets)
+
+    return res
   }
 
   private getAllAllowedSpaces (account: Account, isData: boolean): Ref<Space>[] {

@@ -26,7 +26,7 @@ import {
   clone,
   toFindResult
 } from '@hcengineering/core'
-import { BroadcastFunc, Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
+import { Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
 import { BaseMiddleware } from './base'
 
 /**
@@ -37,21 +37,12 @@ export class LookupMiddleware extends BaseMiddleware implements Middleware {
     super(storage, next)
   }
 
-  static async create (
-    ctx: MeasureContext,
-    broadcast: BroadcastFunc,
-    storage: ServerStorage,
-    next?: Middleware
-  ): Promise<LookupMiddleware> {
+  static async create (ctx: MeasureContext, storage: ServerStorage, next?: Middleware): Promise<LookupMiddleware> {
     return new LookupMiddleware(storage, next)
   }
 
   async tx (ctx: SessionContext, tx: Tx): Promise<TxMiddlewareResult> {
     return await this.provideTx(ctx, tx)
-  }
-
-  handleBroadcast (tx: Tx[], targets?: string[]): Tx[] {
-    return this.provideHandleBroadcast(tx, targets)
   }
 
   override async findAll<T extends Doc>(

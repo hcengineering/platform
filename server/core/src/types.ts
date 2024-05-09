@@ -14,6 +14,7 @@
 //
 
 import {
+  MeasureMetricsContext,
   type Account,
   type Class,
   type Doc,
@@ -23,7 +24,6 @@ import {
   type Hierarchy,
   type LowLevelStorage,
   type MeasureContext,
-  MeasureMetricsContext,
   type ModelDb,
   type Obj,
   type Ref,
@@ -31,6 +31,7 @@ import {
   type SearchQuery,
   type SearchResult,
   type ServerStorage,
+  type SessionOperationContext,
   type Space,
   type Storage,
   type Timestamp,
@@ -48,7 +49,7 @@ import { type StorageAdapter } from './storage'
 /**
  * @public
  */
-export interface SessionContext extends MeasureContext {
+export interface SessionContext extends SessionOperationContext {
   userEmail: string
   sessionId: string
   admin?: boolean
@@ -66,8 +67,6 @@ export interface Middleware {
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
   searchFulltext: (ctx: SessionContext, query: SearchQuery, options: SearchOptions) => Promise<SearchResult>
-
-  handleBroadcast: (tx: Tx[], targets?: string[]) => Tx[]
 }
 
 /**
@@ -82,17 +81,12 @@ export type HandledBroadcastFunc = (tx: Tx[], targets?: string[]) => Tx[]
 /**
  * @public
  */
-export type MiddlewareCreator = (
-  ctx: MeasureContext,
-  broadcast: BroadcastFunc,
-  storage: ServerStorage,
-  next?: Middleware
-) => Promise<Middleware>
+export type MiddlewareCreator = (ctx: MeasureContext, storage: ServerStorage, next?: Middleware) => Promise<Middleware>
 
 /**
  * @public
  */
-export type TxMiddlewareResult = [TxResult, Tx[], string[] | undefined]
+export type TxMiddlewareResult = TxResult
 
 /**
  * @public
@@ -107,7 +101,7 @@ export interface Pipeline extends LowLevelStorage {
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
   searchFulltext: (ctx: SessionContext, query: SearchQuery, options: SearchOptions) => Promise<SearchResult>
-  tx: (ctx: SessionContext, tx: Tx) => Promise<[TxResult, Tx[], string[] | undefined]>
+  tx: (ctx: SessionContext, tx: Tx) => Promise<TxResult>
   close: () => Promise<void>
 }
 
@@ -137,7 +131,7 @@ export interface TriggerControl {
   serviceFx: (f: (adapter: ServiceAdaptersManager) => Promise<void>) => void
   // Bulk operations in case trigger require some
   apply: (tx: Tx[], broadcast: boolean, target?: string[]) => Promise<TxResult>
-  applyCtx: (ctx: MeasureContext, tx: Tx[], broadcast: boolean, target?: string[]) => Promise<TxResult>
+  applyCtx: (ctx: SessionOperationContext, tx: Tx[], broadcast: boolean, target?: string[]) => Promise<TxResult>
 
   // Will create a live query if missing and return values immediately if already asked.
   queryFind: <T extends Doc>(
@@ -411,7 +405,7 @@ export interface ServerStorageOptions {
   // Indexing is not required to be started for upgrade mode.
   upgrade: boolean
 
-  broadcast?: BroadcastFunc
+  broadcast: BroadcastFunc
 }
 
 export interface ServiceAdapter {
