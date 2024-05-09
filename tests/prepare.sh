@@ -21,9 +21,7 @@ fi
 ./tool.sh assign-workspace user1 sanity-ws
 ./tool.sh assign-workspace user2 sanity-ws
 # Make user the workspace maintainer
-./tool.sh set-user-role user1 sanity-ws 1
 ./tool.sh confirm-email user1
-./tool.sh set-user-role user2 sanity-ws 1
 ./tool.sh confirm-email user2
 
 ./restore-workspace.sh

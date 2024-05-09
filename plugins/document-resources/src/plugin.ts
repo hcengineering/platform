@@ -14,8 +14,8 @@
 //
 
 import { type Client, type Doc, type Ref } from '@hcengineering/core'
-import document, { type Teamspace, documentId } from '@hcengineering/document'
-import { type IntlString, type Resource, mergeIds } from '@hcengineering/platform'
+import document, { documentId } from '@hcengineering/document'
+import { mergeIds, type IntlString, type Resource } from '@hcengineering/platform'
 import { type AnyComponent, type Location } from '@hcengineering/ui'
 
 export default mergeIds(documentId, document, {
@@ -29,8 +29,7 @@ export default mergeIds(documentId, document, {
   function: {
     DocumentTitleProvider: '' as Resource<<T extends Doc>(client: Client, ref: Ref<T>, doc?: T) => Promise<string>>,
     GetDocumentLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
-    GetObjectLinkFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
-    IsTeamspaceVisible: '' as Resource<(space: Teamspace) => Promise<boolean>>
+    GetObjectLinkFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>
   },
   string: {
     DocumentNamePlaceholder: '' as IntlString,

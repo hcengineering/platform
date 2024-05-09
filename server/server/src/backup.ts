@@ -1,7 +1,7 @@
-import { Doc, DocChunk, DocInfo, Domain, MeasureContext, Ref, StorageIterator } from '@hcengineering/core'
-import { estimateDocSize, Pipeline } from '@hcengineering/server-core'
+import { Doc, DocInfo, Domain, Ref, StorageIterator } from '@hcengineering/core'
+import { Pipeline, estimateDocSize } from '@hcengineering/server-core'
 import { Token } from '@hcengineering/server-token'
-import { BroadcastCall, ClientSession, Session } from '@hcengineering/server-ws'
+import { ClientSession, Session, type ClientSessionCtx } from '@hcengineering/server-ws'
 
 const chunkSize = 2 * 1024 * 1024
 
@@ -19,9 +19,9 @@ export interface ChunkInfo {
  * @public
  */
 export interface BackupSession extends Session {
-  loadChunk: (ctx: MeasureContext, domain: Domain, idx?: number) => Promise<DocChunk>
-  closeChunk: (ctx: MeasureContext, idx: number) => Promise<void>
-  loadDocs: (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => Promise<Doc[]>
+  loadChunk: (ctx: ClientSessionCtx, domain: Domain, idx?: number) => Promise<void>
+  closeChunk: (ctx: ClientSessionCtx, idx: number) => Promise<void>
+  loadDocs: (ctx: ClientSessionCtx, domain: Domain, docs: Ref<Doc>[]) => Promise<void>
 }
 
 /**
@@ -29,19 +29,18 @@ export interface BackupSession extends Session {
  */
 export class BackupClientSession extends ClientSession implements BackupSession {
   constructor (
-    protected readonly broadcast: BroadcastCall,
     protected readonly token: Token,
     protected readonly _pipeline: Pipeline
   ) {
-    super(broadcast, token, _pipeline)
+    super(token, _pipeline)
   }
 
   idIndex = 0
   chunkInfo = new Map<number, ChunkInfo>()
 
-  async loadChunk (ctx: MeasureContext, domain: Domain, idx?: number): Promise<DocChunk> {
+  async loadChunk (_ctx: ClientSessionCtx, domain: Domain, idx?: number): Promise<void> {
     this.lastRequest = Date.now()
-    return await ctx.with('load-chunk', { domain }, async (ctx) => {
+    await _ctx.ctx.with('load-chunk', { domain }, async (ctx) => {
       idx = idx ?? this.idIndex++
       let chunk: ChunkInfo | undefined = this.chunkInfo.get(idx)
       if (chunk !== undefined) {
@@ -71,37 +70,40 @@ export class BackupClientSession extends ClientSession implements BackupSession 
         docs.push(doc)
       }
 
-      return {
+      await _ctx.sendResponse({
         idx,
         docs,
         finished: chunk.finished
-      }
+      })
     })
   }
 
-  async closeChunk (ctx: MeasureContext, idx: number): Promise<void> {
+  async closeChunk (ctx: ClientSessionCtx, idx: number): Promise<void> {
     this.lastRequest = Date.now()
-    await ctx.with('close-chunk', {}, async () => {
+    await ctx.ctx.with('close-chunk', {}, async () => {
       const chunk = this.chunkInfo.get(idx)
       this.chunkInfo.delete(idx)
       if (chunk != null) {
-        await chunk.iterator.close(ctx)
+        await chunk.iterator.close(ctx.ctx)
       }
+      await ctx.sendResponse({})
     })
   }
 
-  async loadDocs (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
+  async loadDocs (ctx: ClientSessionCtx, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
     this.lastRequest = Date.now()
-    return await this._pipeline.storage.load(ctx, domain, docs)
+    await ctx.sendResponse(await this._pipeline.storage.load(ctx.ctx, domain, docs))
   }
 
-  async upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
+  async upload (ctx: ClientSessionCtx, domain: Domain, docs: Doc[]): Promise<void> {
     this.lastRequest = Date.now()
-    await this._pipeline.storage.upload(ctx, domain, docs)
+    await this._pipeline.storage.upload(ctx.ctx, domain, docs)
+    await ctx.sendResponse({})
   }
 
-  async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
+  async clean (ctx: ClientSessionCtx, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
     this.lastRequest = Date.now()
-    await this._pipeline.storage.clean(ctx, domain, docs)
+    await this._pipeline.storage.clean(ctx.ctx, domain, docs)
+    await ctx.sendResponse({})
   }
 }

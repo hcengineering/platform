@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type Class, DOMAIN_MODEL, type Ref, type Space } from '@hcengineering/core'
+import { type Class, DOMAIN_MODEL, type Ref, type Space, type AccountRole } from '@hcengineering/core'
 import { type Builder, Mixin, Model, Prop, TypeRef, UX } from '@hcengineering/model'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import { createAction } from '@hcengineering/model-view'
@@ -41,6 +41,7 @@ export class TApplication extends TDoc implements Application {
   alias!: string
   position?: 'top' | 'mid'
   hidden!: boolean
+  accessLevel?: AccountRole
 }
 
 @Model(workbench.class.ApplicationNavModel, core.class.Doc, DOMAIN_MODEL)

@@ -212,7 +212,6 @@ export async function ChannelTitleProvider (client: Client, id: Ref<Channel>): P
 
 export enum SearchType {
   Messages,
-  Channels,
   Files,
   Contacts
 }

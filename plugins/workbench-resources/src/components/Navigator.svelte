@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Doc, Ref, SortingOrder, Space } from '@hcengineering/core'
+  import core, { Doc, Ref, SortingOrder, Space, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import preference, { SpacePreference } from '@hcengineering/preference'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -46,9 +46,8 @@
     query.query(
       core.class.Space,
       {
-        _class: { $in: classes }
-        // temp disabled, need way for default spaces
-        // members: getCurrentAccount()._id
+        _class: { $in: classes },
+        members: getCurrentAccount()._id
       },
       (result) => {
         spaces = result
@@ -103,13 +102,17 @@
     spaces: Space[],
     requestIndex: number
   ): Promise<[Map<string, SpecialNavModel[]>, number]> {
+    const me = getCurrentAccount()
     const result = new Map<string, SpecialNavModel[]>()
 
     const spHandlers = await Promise.all(
       specials.map(async (sp) => {
         const pos = sp.position ?? 'top'
         let visible = true
-        if (sp.visibleIf !== undefined) {
+        if (sp.accessLevel !== undefined && !hasAccountRole(me, sp.accessLevel)) {
+          visible = false
+        }
+        if (visible && sp.visibleIf !== undefined) {
           const f = await getResource(sp.visibleIf)
           visible = await f(spaces)
         }

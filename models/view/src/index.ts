@@ -197,6 +197,7 @@ export class TArrayEditor extends TClass implements ArrayEditor {
 @Mixin(view.mixin.AttributePresenter, core.class.Class)
 export class TAttributePresenter extends TClass implements AttributePresenter {
   presenter!: AnyComponent
+  arrayPresenter?: AnyComponent
 }
 
 @Mixin(view.mixin.AttributeFilterPresenter, core.class.Class)
@@ -1103,6 +1104,10 @@ export function createModel (builder: Builder): void {
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_VIEW,
     disabled: [{ space: 1 }, { modifiedOn: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { createdOn: -1 }]
+  })
+
+  builder.mixin(core.class.Space, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [view.action.Open, view.action.OpenInNewTab, view.action.Delete]
   })
 }
 

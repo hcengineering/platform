@@ -181,6 +181,7 @@ export interface CollectionPresenter extends Class<Doc> {
  */
 export interface AttributePresenter extends Class<Doc> {
   presenter: AnyComponent
+  arrayPresenter?: AnyComponent
 }
 
 /**

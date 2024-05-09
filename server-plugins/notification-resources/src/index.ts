@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import activity, { ActivityMessage } from '@hcengineering/activity'
+import activity, { ActivityMessage, DocUpdateMessage } from '@hcengineering/activity'
 import chunter, { ChatMessage } from '@hcengineering/chunter'
 import contact, {
   Employee,
@@ -108,20 +108,6 @@ export function getPushCollaboratorTx (
   }
 
   return undefined
-}
-
-export async function isMessageAlreadyNotified (
-  _id: Ref<ActivityMessage>,
-  user: Ref<Account>,
-  control: TriggerControl
-): Promise<boolean> {
-  const exists = await control.findAll(
-    notification.class.ActivityInboxNotification,
-    { attachedTo: _id, user },
-    { limit: 1, projection: { _id: 1 } }
-  )
-
-  return exists.length > 0
 }
 
 export async function getCommonNotificationTxes (
@@ -411,7 +397,7 @@ export async function pushInboxNotifications (
       const updateTx = control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, {
         lastUpdateTimestamp: modifiedOn
       })
-      await control.apply([updateTx], true)
+      res.push(updateTx)
     }
     docNotifyContextId = context._id
   }
@@ -531,7 +517,7 @@ export async function createPushFromInbox (
   _class: Ref<Class<InboxNotification>>,
   senderId: Ref<PersonAccount>,
   _id: Ref<Doc>,
-  cache: Map<Ref<Doc>, Doc>
+  cache: Map<Ref<Doc>, Doc> = new Map<Ref<Doc>, Doc>()
 ): Promise<Tx | undefined> {
   let title: string = ''
   let body: string = ''
@@ -701,43 +687,54 @@ export async function getNotificationTxes (
   cache: Map<Ref<Doc>, Doc>
 ): Promise<Tx[]> {
   const res: Tx[] = []
-  const notifyResult = await isShouldNotifyTx(control, tx, originTx, object, target, params.isOwn, params.isSpace)
-
-  if (notifyResult.allowed) {
-    await pushActivityInboxNotifications(
-      originTx,
+  for (const message of activityMessages) {
+    const docMessage = message._class === activity.class.DocUpdateMessage ? (message as DocUpdateMessage) : undefined
+    const notifyResult = await isShouldNotifyTx(
       control,
-      res,
-      target,
+      tx,
+      originTx,
       object,
-      docNotifyContexts,
-      activityMessages,
-      params.shouldUpdateTimestamp,
-      notifyResult.push,
-      cache
+      target,
+      params.isOwn,
+      params.isSpace,
+      docMessage
     )
-  }
 
-  if (notifyResult.emails.length === 0) {
-    return res
-  }
-  const acc = await getPersonAccountById(target, control)
-  if (acc === undefined) {
-    return res
-  }
-  const emp = await getEmployee(acc.person as Ref<Employee>, control)
-  if (emp?.active === true) {
-    for (const type of notifyResult.emails) {
-      await notifyByEmail(
+    if (notifyResult.allowed) {
+      await pushActivityInboxNotifications(
+        originTx,
         control,
-        type._id,
+        res,
+        target,
         object,
-        originTx.modifiedBy as Ref<PersonAccount>,
-        target as Ref<PersonAccount>
+        docNotifyContexts,
+        [message],
+        params.shouldUpdateTimestamp,
+        notifyResult.push,
+        cache
       )
     }
-  }
 
+    if (notifyResult.emails.length === 0) {
+      continue
+    }
+    const acc = await getPersonAccountById(target, control)
+    if (acc === undefined) {
+      continue
+    }
+    const emp = await getEmployee(acc.person as Ref<Employee>, control)
+    if (emp?.active === true) {
+      for (const type of notifyResult.emails) {
+        await notifyByEmail(
+          control,
+          type._id,
+          object,
+          originTx.modifiedBy as Ref<PersonAccount>,
+          target as Ref<PersonAccount>
+        )
+      }
+    }
+  }
   return res
 }
 

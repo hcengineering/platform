@@ -27,21 +27,20 @@ import {
   type GetAvatarUrl,
   type Member,
   type Organization,
-  type Organizations,
   type Person,
   type PersonAccount,
-  type Persons,
   type Status
 } from '@hcengineering/contact'
 import {
+  AccountRole,
   DOMAIN_MODEL,
   DateRangeMode,
   IndexKind,
   type Class,
   type Domain,
+  type Markup,
   type Ref,
-  type Timestamp,
-  type Markup
+  type Timestamp
 } from '@hcengineering/core'
 import {
   Collection,
@@ -53,17 +52,18 @@ import {
   ReadOnly,
   TypeAttachment,
   TypeBoolean,
+  TypeCollaborativeMarkup,
   TypeDate,
   TypeRef,
   TypeString,
   TypeTimestamp,
   UX,
-  type Builder,
-  TypeCollaborativeMarkup
+  type Builder
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
-import core, { TAccount, TAttachedDoc, TDoc, TSpace } from '@hcengineering/model-core'
+import core, { TAccount, TAttachedDoc, TDoc } from '@hcengineering/model-core'
+import { createPublicLinkAction } from '@hcengineering/model-guest'
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 import presentation from '@hcengineering/model-presentation'
 import view, { createAction, type Viewlet } from '@hcengineering/model-view'
@@ -75,7 +75,6 @@ import templates from '@hcengineering/templates'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type Action } from '@hcengineering/view'
 import contact from './plugin'
-import { createPublicLinkAction } from '@hcengineering/model-guest'
 
 export { contactId } from '@hcengineering/contact'
 export { contactOperation } from './migration'
@@ -197,14 +196,6 @@ export class TPersonAccount extends TAccount implements PersonAccount {
   person!: Ref<Person>
 }
 
-@Model(contact.class.Organizations, core.class.Space)
-@UX(contact.string.OrganizationsFolder, contact.icon.Company)
-export class TOrganizations extends TSpace implements Organizations {}
-
-@Model(contact.class.Persons, core.class.Space)
-@UX(contact.string.PersonsFolder, contact.icon.Person)
-export class TPersons extends TSpace implements Persons {}
-
 @Model(contact.class.ContactsTab, core.class.Doc, DOMAIN_MODEL)
 export class TContactsTab extends TDoc implements ContactsTab {
   label!: IntlString
@@ -218,9 +209,7 @@ export function createModel (builder: Builder): void {
     TChannelProvider,
     TContact,
     TPerson,
-    TPersons,
     TOrganization,
-    TOrganizations,
     TEmployee,
     TPersonAccount,
     TChannel,
@@ -311,6 +300,7 @@ export function createModel (builder: Builder): void {
       label: contact.string.Contacts,
       icon: contact.icon.ContactApplication,
       alias: contactId,
+      accessLevel: AccountRole.User,
       hidden: false,
       // component: contact.component.ContactsTabs,
       locationResolver: contact.resolver.Location,
@@ -735,7 +725,8 @@ export function createModel (builder: Builder): void {
     presenter: contact.component.PersonAccountPresenter
   })
   builder.mixin(core.class.Account, core.class.Class, view.mixin.AttributePresenter, {
-    presenter: contact.component.PersonAccountRefPresenter
+    presenter: contact.component.PersonAccountRefPresenter,
+    arrayPresenter: contact.component.AccountArrayEditor
   })
 
   builder.mixin(contact.class.Organization, core.class.Class, view.mixin.ObjectPresenter, {

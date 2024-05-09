@@ -102,6 +102,7 @@
     "Employees": "Employees",
     "People": "People",
     "For": "For",
-    "SelectUsers": "Select users"
+    "SelectUsers": "Select users",
+    "AddGuest": "Add guest"
   }
 }

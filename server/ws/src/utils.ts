@@ -35,25 +35,21 @@ export function processRequest (
   handleRequest: HandleRequestFunction
 ): void {
   const request = readRequest(buff, session.binaryMode)
-  void handleRequest(context, session, cs, request, workspaceId).then((resp) => {
-    if (resp !== undefined) {
-      void handleSend(context, cs, resp, 32 * 1024, session.binaryMode, session.useCompression)
-    }
-  })
+  handleRequest(context, session, cs, request, workspaceId)
 }
 
-export function sendResponse (
+export async function sendResponse (
   ctx: MeasureContext,
   session: Session,
   socket: ConnectionSocket,
   resp: Response<any>
-): void {
-  void handleSend(ctx, socket, resp, 32 * 1024, session.binaryMode, session.useCompression)
+): Promise<void> {
+  await handleSend(ctx, socket, resp, 32 * 1024, session.binaryMode, session.useCompression)
 }
 
 function waitNextTick (): Promise<void> | undefined {
   return new Promise<void>((resolve) => {
-    setImmediate(resolve)
+    setTimeout(resolve)
   })
 }
 export async function handleSend (

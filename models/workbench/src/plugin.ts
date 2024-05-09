@@ -22,12 +22,10 @@ import workbench from '@hcengineering/workbench-resources/src/plugin'
 export default mergeIds(workbenchId, workbench, {
   component: {
     ApplicationPresenter: '' as AnyComponent,
-    SpecialView: '' as AnyComponent,
     ServerManager: '' as AnyComponent
   },
   string: {
     Application: '' as IntlString,
-    SpaceBrowser: '' as IntlString,
     HiddenApplication: '' as IntlString
   },
   function: {

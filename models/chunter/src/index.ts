@@ -38,7 +38,8 @@ import {
   type Ref,
   type Space,
   type Timestamp,
-  IndexKind
+  IndexKind,
+  SortingOrder
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -205,7 +206,7 @@ const actionTemplates = template({
   }
 })
 
-export function createModel (builder: Builder, options = { addApplication: true }): void {
+export function createModel (builder: Builder): void {
   builder.createModel(
     TChunterSpace,
     TChannel,
@@ -345,6 +346,25 @@ export function createModel (builder: Builder, options = { addApplication: true 
     chunter.action.ArchiveChannel
   )
 
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: chunter.class.Channel,
+      descriptor: view.viewlet.Table,
+      viewOptions: {
+        orderBy: [['modifiedOn', SortingOrder.Descending]],
+        groupBy: [],
+        other: []
+      },
+      configOptions: {
+        strict: true
+      },
+      config: ['', 'topic', 'private', 'archived', 'members']
+    },
+    chunter.viewlet.Channels
+  )
+
   createAction(
     builder,
     {
@@ -382,21 +402,19 @@ export function createModel (builder: Builder, options = { addApplication: true 
     chunter.action.ConvertToPrivate
   )
 
-  if (options.addApplication) {
-    builder.createDoc(
-      workbench.class.Application,
-      core.space.Model,
-      {
-        label: chunter.string.ApplicationLabelChunter,
-        icon: chunter.icon.Chunter,
-        alias: chunterId,
-        hidden: false,
-        component: chunter.component.Chat,
-        aside: chunter.component.ChatAside
-      },
-      chunter.app.Chunter
-    )
-  }
+  builder.createDoc(
+    workbench.class.Application,
+    core.space.Model,
+    {
+      label: chunter.string.ApplicationLabelChunter,
+      icon: chunter.icon.Chunter,
+      alias: chunterId,
+      hidden: false,
+      component: chunter.component.Chat,
+      aside: chunter.component.ChatAside
+    },
+    chunter.app.Chunter
+  )
 
   builder.mixin(activity.class.ActivityMessage, core.class.Class, view.mixin.LinkProvider, {
     encode: chunter.function.GetMessageLink
@@ -456,6 +474,7 @@ export function createModel (builder: Builder, options = { addApplication: true 
       hidden: false,
       txClasses: [core.class.TxCreateDoc],
       objectClass: chunter.class.ChatMessage,
+      attachedToClass: chunter.class.DirectMessage,
       providers: {
         [notification.providers.EmailNotification]: false,
         [notification.providers.BrowserNotification]: true,

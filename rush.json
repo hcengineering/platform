@@ -477,13 +477,8 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/dev-storage",
-      "projectFolder": "dev/storage",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/dev-server",
-      "projectFolder": "dev/server",
+      "packageName": "@hcengineering/uws",
+      "projectFolder": "server/uws",
       "shouldPublish": false
     },
     {
@@ -511,11 +506,6 @@
       "projectFolder": "dev/prod",
       "shouldPublish": false
     },
-    // {
-    //   "packageName": "@hcengineering/prod-tracker",
-    //   "projectFolder": "products/tracker",
-    //   "shouldPublish": false
-    // },
     {
       "packageName": "@hcengineering/server-core",
       "projectFolder": "server/core",
@@ -657,11 +647,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/dev-client-resources",
-      "projectFolder": "dev/client-resources",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/model-workbench",
       "projectFolder": "models/workbench",
       "shouldPublish": false
@@ -734,11 +719,6 @@
     {
       "packageName": "@hcengineering/model-server-core",
       "projectFolder": "models/server-core",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/dev-account",
-      "projectFolder": "dev/account",
       "shouldPublish": false
     },
     {

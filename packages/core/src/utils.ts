@@ -36,6 +36,7 @@ import {
   Permission,
   Ref,
   Role,
+  roleOrder,
   Space,
   TypedSpace
 } from './classes'
@@ -773,6 +774,9 @@ export function reduceCalls<T extends (...args: ReduceParameters<T>) => Promise<
 
 export function isOwnerOrMaintainer (): boolean {
   const account = getCurrentAccount()
+  return hasAccountRole(account, AccountRole.Maintainer)
+}
 
-  return [AccountRole.Owner, AccountRole.Maintainer].includes(account.role)
+export function hasAccountRole (acc: Account, targerRole: AccountRole): boolean {
+  return roleOrder[acc.role] >= roleOrder[targerRole]
 }

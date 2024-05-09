@@ -87,6 +87,7 @@ export default plugin(telegramId, {
     SharedMessages: '' as Ref<Class<SharedTelegramMessages>>
   },
   space: {
+    // todo should be removed
     Telegram: '' as Ref<Space>
   },
   templateField: {

@@ -33,6 +33,7 @@
   import { createEventDispatcher } from 'svelte'
 
   import leadRes from '../plugin'
+  import view from '@hcengineering/view'
 
   export let funnel: Funnel | undefined = undefined
   const dispatch = createEventDispatcher()
@@ -163,7 +164,7 @@
 </script>
 
 <SpaceCreateCard
-  label={leadRes.string.CreateFunnel}
+  label={funnel ? view.string.EdifFunnel : leadRes.string.CreateFunnel}
   okAction={save}
   okLabel={!isNew ? ui.string.Save : undefined}
   {canSave}

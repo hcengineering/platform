@@ -101,7 +101,7 @@
 
   async function onMessage (event: CustomEvent) {
     loading = true
-    const doneOp = await getClient().measure(`chunter.create.${_class}`)
+    const doneOp = await getClient().measure(`chunter.create.${_class} ${object._class}`)
     try {
       draftController.remove()
       inputRef.removeDraft(false)

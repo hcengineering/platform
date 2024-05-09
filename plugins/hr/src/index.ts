@@ -15,10 +15,10 @@
 
 import type { Contact, Employee, PersonAccount } from '@hcengineering/contact'
 import type { Arr, AttachedDoc, Class, Doc, Markup, Mixin, Ref, Space, Type } from '@hcengineering/core'
+import { NotificationType } from '@hcengineering/notification'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { Viewlet } from '@hcengineering/view'
-import { NotificationType } from '@hcengineering/notification'
 
 /**
  * @public

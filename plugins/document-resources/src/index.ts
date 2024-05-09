@@ -14,36 +14,35 @@
 //
 
 import {
+  generateId,
   type Class,
   type Client,
   type DocumentQuery,
   type Ref,
   type RelatedDocument,
-  type WithLookup,
-  generateId,
-  getCurrentAccount
+  type WithLookup
 } from '@hcengineering/core'
 import { type Document, type Teamspace } from '@hcengineering/document'
 import { type Resources } from '@hcengineering/platform'
 import preference from '@hcengineering/preference'
-import { type ObjectSearchResult, getClient } from '@hcengineering/presentation'
+import { getClient, type ObjectSearchResult } from '@hcengineering/presentation'
 import { showPopup } from '@hcengineering/ui'
 import { openDoc } from '@hcengineering/view-resources'
 
 import CreateDocument from './components/CreateDocument.svelte'
-import DocumentPresenter from './components/DocumentPresenter.svelte'
-import Documents from './components/Documents.svelte'
-import MyDocuments from './components/MyDocuments.svelte'
-import EditDoc from './components/EditDoc.svelte'
-import DocumentItem from './components/DocumentItem.svelte'
-import NewDocumentHeader from './components/NewDocumentHeader.svelte'
-import CreateTeamspace from './components/teamspace/CreateTeamspace.svelte'
-import TeamspaceSpacePresenter from './components/navigator/TeamspaceSpacePresenter.svelte'
-import DocumentSearchIcon from './components/DocumentSearchIcon.svelte'
-import NotificationDocumentPresenter from './components/NotificationDocumentPresenter.svelte'
-import Move from './components/Move.svelte'
-import DocumentToDoPresenter from './components/DocumentToDoPresenter.svelte'
 import DocumentIcon from './components/DocumentIcon.svelte'
+import DocumentItem from './components/DocumentItem.svelte'
+import DocumentPresenter from './components/DocumentPresenter.svelte'
+import DocumentSearchIcon from './components/DocumentSearchIcon.svelte'
+import DocumentToDoPresenter from './components/DocumentToDoPresenter.svelte'
+import Documents from './components/Documents.svelte'
+import EditDoc from './components/EditDoc.svelte'
+import Move from './components/Move.svelte'
+import MyDocuments from './components/MyDocuments.svelte'
+import NewDocumentHeader from './components/NewDocumentHeader.svelte'
+import NotificationDocumentPresenter from './components/NotificationDocumentPresenter.svelte'
+import TeamspaceSpacePresenter from './components/navigator/TeamspaceSpacePresenter.svelte'
+import CreateTeamspace from './components/teamspace/CreateTeamspace.svelte'
 
 import document from './plugin'
 import { createEmptyDocument, documentTitleProvider, getDocumentLink, getDocumentUrl, resolveLocation } from './utils'
@@ -154,7 +153,6 @@ export default async (): Promise<Resources> => ({
   function: {
     GetDocumentLink: getDocumentUrl,
     GetObjectLinkFragment: getDocumentLink,
-    IsTeamspaceVisible: async (space: Teamspace) => !space.private || space.members.includes(getCurrentAccount()._id),
     DocumentTitleProvider: documentTitleProvider
   },
   resolver: {

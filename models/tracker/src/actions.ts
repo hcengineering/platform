@@ -719,9 +719,6 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
     },
     tracker.action.DeleteMilestone
   )
-  builder.mixin(tracker.class.Project, core.class.Class, view.mixin.IgnoreActions, {
-    actions: [view.action.Open]
-  })
   builder.mixin(tracker.class.Milestone, core.class.Class, view.mixin.IgnoreActions, {
     actions: [view.action.Delete]
   })

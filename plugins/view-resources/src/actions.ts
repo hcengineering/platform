@@ -18,13 +18,13 @@ import { Analytics } from '@hcengineering/analytics'
 import core, {
   AccountRole,
   getCurrentAccount,
+  hasAccountRole,
   matchQuery,
   type Class,
   type Client,
   type Doc,
   type Ref,
-  type WithLookup,
-  roleOrder
+  type WithLookup
 } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
@@ -172,7 +172,7 @@ export function filterActions (
 ): Array<WithLookup<Action>> {
   let result: Array<WithLookup<Action>> = []
   const hierarchy = client.getHierarchy()
-  const role = getCurrentAccount().role
+  const me = getCurrentAccount()
   const clazz = hierarchy.getClass(doc._class)
   const ignoreActions = hierarchy.as(clazz, view.mixin.IgnoreActions)
   const ignore: Array<Ref<Action>> = getIgnoreActions(ignoreActions?.actions ?? [], doc)
@@ -199,7 +199,7 @@ export function filterActions (
     if (ignore.includes(action._id)) {
       continue
     }
-    if (roleOrder[role] < roleOrder[AccountRole.Maintainer] && action.secured === true) {
+    if (!hasAccountRole(me, AccountRole.Maintainer) && action.secured === true) {
       continue
     }
     if (

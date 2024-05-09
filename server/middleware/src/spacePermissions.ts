@@ -37,7 +37,7 @@ import core, {
   TypedSpace
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { BroadcastFunc, Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
+import { Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
 
 import { BaseMiddleware } from './base'
 import { getUser } from './utils'
@@ -54,7 +54,6 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
 
   static async create (
     ctx: MeasureContext,
-    broadcast: BroadcastFunc,
     storage: ServerStorage,
     next?: Middleware
   ): Promise<SpacePermissionsMiddleware> {
@@ -317,14 +316,12 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
     await this.processPermissionsUpdatesFromTx(ctx, tx)
     await this.checkPermissions(ctx, tx)
     const res = await this.provideTx(ctx, tx)
-    for (const tx of res[1]) {
-      await this.processPermissionsUpdatesFromTx(ctx, tx)
+    for (const txd of ctx.derived) {
+      for (const tx of txd.derived) {
+        await this.processPermissionsUpdatesFromTx(ctx, tx)
+      }
     }
     return res
-  }
-
-  handleBroadcast (tx: Tx[], targets?: string[]): Tx[] {
-    return this.provideHandleBroadcast(tx, targets)
   }
 
   protected async checkPermissions (ctx: SessionContext, tx: Tx): Promise<void> {

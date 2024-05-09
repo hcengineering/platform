@@ -14,7 +14,7 @@
 //
 import type { IntlString, Plugin, StatusCode } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import { Mixin, type Rank, Version } from '.'
+import { Mixin, Version, type Rank } from '.'
 import type {
   Account,
   AnyAttribute,
@@ -49,6 +49,7 @@ import type {
   Space,
   SpaceType,
   SpaceTypeDescriptor,
+  SystemSpace,
   Timestamp,
   Type,
   TypeAny,
@@ -102,6 +103,7 @@ export default plugin(coreId, {
     TxUpdateDoc: '' as Ref<Class<TxUpdateDoc<Doc>>>,
     TxRemoveDoc: '' as Ref<Class<TxRemoveDoc<Doc>>>,
     Space: '' as Ref<Class<Space>>,
+    SystemSpace: '' as Ref<Class<SystemSpace>>,
     TypedSpace: '' as Ref<Class<TypedSpace>>,
     SpaceTypeDescriptor: '' as Ref<Class<SpaceTypeDescriptor>>,
     SpaceType: '' as Ref<Class<SpaceType>>,

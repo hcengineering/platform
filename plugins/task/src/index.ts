@@ -187,15 +187,6 @@ export interface ProjectTypeDescriptor extends SpaceTypeDescriptor {
 /**
  * @public
  */
-export enum TaskGrouping {
-  State = 'state',
-  Assignee = 'assignee',
-  NoGrouping = '#no_category'
-}
-
-/**
- * @public
- */
 export enum TaskOrdering {
   State = 'state',
   LastUpdated = 'modifiedOn',

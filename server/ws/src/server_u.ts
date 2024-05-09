@@ -31,7 +31,7 @@ import {
 } from './types'
 
 import { doSessionOp, processRequest, type WebsocketData } from './utils'
-import uWebSockets, { DISABLED, SHARED_COMPRESSOR, type HttpResponse, type WebSocket } from './uws'
+import uWebSockets, { DISABLED, SHARED_COMPRESSOR, type HttpResponse, type WebSocket } from '@hcengineering/uws'
 
 interface WebsocketUserData extends WebsocketData {
   backPressure?: Promise<void>
@@ -177,7 +177,11 @@ export function startUWebsocketServer (
       doSessionOp(data, (s) => {
         if (!(s.session.workspaceClosed ?? false)) {
           // remove session after 1seconds, give a time to reconnect.
-          void sessions.close(data.connectionSocket as ConnectionSocket, toWorkspaceString(data.payload.workspace))
+          void sessions.close(
+            ctx,
+            data.connectionSocket as ConnectionSocket,
+            toWorkspaceString(data.payload.workspace)
+          )
         }
       })
     }

@@ -13,15 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee } from '@hcengineering/contact'
+  import contact, { Employee, Person } from '@hcengineering/contact'
   import type { Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
-  import { getClient } from '@hcengineering/presentation'
+  import { ObjectCreate, getClient } from '@hcengineering/presentation'
   import type { ButtonKind, ButtonSize, TooltipAlignment } from '@hcengineering/ui'
   import { Button, Label, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../plugin'
-  import { employeeByIdStore } from '../utils'
+  import { personByIdStore } from '../utils'
   import CombineAvatars from './CombineAvatars.svelte'
   import UserInfo from './UserInfo.svelte'
   import UsersPopup from './UsersPopup.svelte'
@@ -39,22 +39,29 @@
   export let labelDirection: TooltipAlignment | undefined = undefined
   export let emptyLabel: IntlString = plugin.string.Members
   export let readonly: boolean = false
+  export let create: ObjectCreate | undefined = undefined
 
   function filter (items: Ref<Employee>[]): Ref<Employee>[] {
     return items.filter((it, idx, arr) => arr.indexOf(it) === idx)
   }
 
-  let persons: Employee[] = filter(items)
-    .map((p) => $employeeByIdStore.get(p))
+  let persons: Person[] = filter(items)
+    .map((p) => $personByIdStore.get(p))
     .filter((p) => p !== undefined) as Employee[]
   $: persons = filter(items)
-    .map((p) => $employeeByIdStore.get(p))
+    .map((p) => $personByIdStore.get(p))
     .filter((p) => p !== undefined) as Employee[]
 
   const dispatch = createEventDispatcher()
   const client = getClient()
 
   async function addPerson (evt: Event): Promise<void> {
+    const accounts = new Set(
+      client
+        .getModel()
+        .findAllSync(contact.class.PersonAccount, {})
+        .map((p) => p.person)
+    )
     showPopup(
       UsersPopup,
       {
@@ -71,8 +78,10 @@
             const isSelected = items.some((selectedItem) => selectedItem === it._id)
             return isActive || isSelected
           }
+          return accounts.has(it._id as Ref<Person>)
         },
-        readonly
+        readonly,
+        create
       },
       evt.target as HTMLElement,
       undefined,

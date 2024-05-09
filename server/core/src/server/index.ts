@@ -144,7 +144,7 @@ export async function createServerStorage (
           space: core.space.DerivedTx,
           params: evt
         }
-        options.broadcast?.([tx])
+        options.broadcast([tx])
       }
     )
     return new FullTextIndex(

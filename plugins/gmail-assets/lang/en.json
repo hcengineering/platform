@@ -2,7 +2,7 @@
   "string": {
     "MessageID": "MessageID",
     "IntegrationLabel": "Gmail",
-    "IntegrationDescription": "Use gmail integration",
+    "IntegrationDescription": "Integrate with Gmail",
     "SharedMessages": "shared emails",
     "To": "To:",
     "From": "From:",
@@ -12,7 +12,7 @@
     "CreateMessage": "Create message",
     "ShareMessages": "Share messages",
     "Connect": "Connect",
-    "RedirectGoogle": "You will be redirect to google auth page",
+    "RedirectGoogle": "You will be redirected to the Google authentication page. Please make sure to select all permissions.",
     "ConnectGmail": "Connect Gmail account",
     "Reply": "Reply",
     "Subject": "Subject",

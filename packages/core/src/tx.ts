@@ -142,7 +142,6 @@ export interface TxApplyIf extends Tx {
 
 export interface TxApplyResult {
   success: boolean
-  derived: Tx[] // Some derived transactions to handle.
 }
 
 /**

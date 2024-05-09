@@ -329,14 +329,13 @@ function defineApplication (
           {
             id: 'all-projects',
             component: workbench.component.SpecialView,
-            icon: view.icon.Archive,
+            icon: view.icon.List,
             label: tracker.string.AllProjects,
             position: 'bottom',
             spaceClass: tracker.class.Project,
             componentProps: {
               _class: tracker.class.Project,
-              label: tracker.string.AllProjects,
-              icon: tracker.icon.Issues
+              label: tracker.string.AllProjects
             }
           }
         ],

@@ -16,7 +16,17 @@
 <script lang="ts">
   import contact, { Contact } from '@hcengineering/contact'
   import { UserBox } from '@hcengineering/contact-resources'
-  import { AttachedData, AttachedDoc, generateId, Ref, SortingOrder, Status as TaskStatus } from '@hcengineering/core'
+  import {
+    AccountRole,
+    AttachedData,
+    AttachedDoc,
+    generateId,
+    getCurrentAccount,
+    hasAccountRole,
+    Ref,
+    SortingOrder,
+    Status as TaskStatus
+  } from '@hcengineering/core'
   import type { Customer, Funnel, Lead } from '@hcengineering/lead'
   import { OK, Status } from '@hcengineering/platform'
   import { Card, createQuery, getClient, InlineAttributeBar, SpaceSelector } from '@hcengineering/presentation'
@@ -140,10 +150,12 @@
       kind={'regular'}
       size={'large'}
       bind:space={_space}
-      create={{
-        component: lead.component.CreateFunnel,
-        label: lead.string.CreateFunnel
-      }}
+      create={hasAccountRole(getCurrentAccount(), AccountRole.User)
+        ? {
+            component: lead.component.CreateFunnel,
+            label: lead.string.CreateFunnel
+          }
+        : undefined}
     />
     <TaskKindSelector projectType={funnel?.type} bind:value={kind} baseClass={lead.class.Lead} />
   </svelte:fragment>

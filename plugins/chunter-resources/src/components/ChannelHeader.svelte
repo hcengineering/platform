@@ -19,7 +19,6 @@
   import { Channel } from '@hcengineering/chunter'
   import { ActivityMessagesFilter } from '@hcengineering/activity'
   import contact from '@hcengineering/contact'
-  import { DocNotifyContext } from '@hcengineering/notification'
 
   import Header from './Header.svelte'
   import chunter from '../plugin'

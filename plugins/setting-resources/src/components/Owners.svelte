@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
   import contact, { PersonAccount } from '@hcengineering/contact'
   import { EmployeePresenter, personByIdStore } from '@hcengineering/contact-resources'
-  import { AccountRole, SortingOrder, getCurrentAccount, roleOrder } from '@hcengineering/core'
+  import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
-  import { DropdownIntlItem, DropdownLabelsIntl, EditBox, Header, Breadcrumb, Scroller } from '@hcengineering/ui'
+  import { Breadcrumb, DropdownIntlItem, DropdownLabelsIntl, EditBox, Header, Scroller } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
   import setting from '../plugin'
 
   export let visibleNav: boolean = true
@@ -73,7 +73,7 @@
               </div>
               <DropdownLabelsIntl
                 label={setting.string.Role}
-                disabled={roleOrder[account.role] > roleOrder[currentRole] ||
+                disabled={!hasAccountRole(account, currentRole) ||
                   (account.role === AccountRole.Owner && owners.length === 1)}
                 kind={'primary'}
                 size={'medium'}

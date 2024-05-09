@@ -1,4 +1,5 @@
 import core, {
+  Class,
   Client,
   DOMAIN_MIGRATION,
   Data,
@@ -13,6 +14,7 @@ import core, {
   ObjQueryType,
   PushOptions,
   Ref,
+  Space,
   TxOperations,
   UnsetOptions,
   generateId
@@ -176,5 +178,39 @@ export async function tryUpgrade (
     }
     const tx = new TxOperations(client, core.account.System)
     await tx.createDoc(core.class.MigrationState, core.space.Configuration, st)
+  }
+}
+
+type DefaultSpaceData<T extends Space> = Pick<T, 'description' | 'private' | 'archived' | 'members'>
+type RequiredData<T extends Space> = Omit<Data<T>, keyof DefaultSpaceData<T>> & Partial<DefaultSpaceData<T>>
+
+/**
+ * @public
+ */
+export async function createDefaultSpace<T extends Space> (
+  client: MigrationUpgradeClient,
+  _id: Ref<T>,
+  props: RequiredData<T>,
+  _class: Ref<Class<T>> = core.class.SystemSpace
+): Promise<void> {
+  const defaults: DefaultSpaceData<T> = {
+    description: '',
+    private: false,
+    archived: false,
+    members: []
+  }
+  const data: Data<Space> = {
+    ...defaults,
+    ...props
+  }
+  const tx = new TxOperations(client, core.account.System)
+  const current = await tx.findOne(core.class.Space, {
+    _id
+  })
+  if (current === undefined || current._class !== _class) {
+    if (current !== undefined && current._class !== _class) {
+      await tx.remove(current)
+    }
+    await tx.createDoc(_class, core.space.Space, data, _id)
   }
 }

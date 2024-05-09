@@ -15,22 +15,22 @@
 //
 
 import core, {
+  TxFactory,
+  matchQuery,
   type AttachedDoc,
   type Class,
   type Doc,
   type DocumentQuery,
   type Hierarchy,
-  type MeasureContext,
   type Obj,
   type Ref,
+  type SessionOperationContext,
   type Tx,
   type TxCollectionCUD,
-  type TxCreateDoc,
-  TxFactory,
-  matchQuery
+  type TxCreateDoc
 } from '@hcengineering/core'
 
-import { type Resource, getResource } from '@hcengineering/platform'
+import { getResource, type Resource } from '@hcengineering/platform'
 import type { Trigger, TriggerControl, TriggerFunc } from './types'
 
 import serverCore from './plugin'
@@ -58,7 +58,7 @@ export class Triggers {
     }
   }
 
-  async apply (ctx: MeasureContext, tx: Tx[], ctrl: Omit<TriggerControl, 'txFactory'>): Promise<Tx[]> {
+  async apply (ctx: SessionOperationContext, tx: Tx[], ctrl: Omit<TriggerControl, 'txFactory'>): Promise<Tx[]> {
     const result: Tx[] = []
     for (const [query, trigger, resource] of this.triggers) {
       let matches = tx
@@ -73,9 +73,9 @@ export class Triggers {
             result.push(
               ...(await trigger(tx, {
                 ...ctrl,
-                ctx,
+                ctx: ctx.ctx,
                 txFactory: new TxFactory(tx.modifiedBy, true),
-                findAll: async (clazz, query, options) => await ctrl.findAllCtx(ctx, clazz, query, options),
+                findAll: async (clazz, query, options) => await ctrl.findAllCtx(ctx.ctx, clazz, query, options),
                 apply: async (tx, broadcast, target) => {
                   return await ctrl.applyCtx(ctx, tx, broadcast, target)
                 },

@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import core, { MeasureContext, ServerStorage, Tx, systemAccountEmail, TxCollectionCUD } from '@hcengineering/core'
-import { BroadcastFunc, Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
+import core, { MeasureContext, ServerStorage, Tx, TxCollectionCUD, systemAccountEmail } from '@hcengineering/core'
+import { Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
 import { BaseMiddleware } from './base'
 
 /**
@@ -25,17 +25,8 @@ export class ModifiedMiddleware extends BaseMiddleware implements Middleware {
     super(storage, next)
   }
 
-  static async create (
-    ctx: MeasureContext,
-    broadcast: BroadcastFunc,
-    storage: ServerStorage,
-    next?: Middleware
-  ): Promise<ModifiedMiddleware> {
+  static async create (ctx: MeasureContext, storage: ServerStorage, next?: Middleware): Promise<ModifiedMiddleware> {
     return new ModifiedMiddleware(storage, next)
-  }
-
-  handleBroadcast (tx: Tx[], targets?: string[]): Tx[] {
-    return this.provideHandleBroadcast(tx, targets)
   }
 
   async tx (ctx: SessionContext, tx: Tx): Promise<TxMiddlewareResult> {

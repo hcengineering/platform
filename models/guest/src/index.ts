@@ -31,7 +31,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       email: guestAccountEmail,
-      role: AccountRole.Guest
+      role: AccountRole.DocGuest
     },
     guest.account.Guest
   )

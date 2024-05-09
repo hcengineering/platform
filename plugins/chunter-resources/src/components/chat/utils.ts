@@ -13,11 +13,21 @@
 // limitations under the License.
 //
 import notification, { type DocNotifyContext } from '@hcengineering/notification'
-import { type Class, type Doc, generateId, type Ref, SortingOrder, type WithLookup } from '@hcengineering/core'
+import {
+  type Class,
+  type Doc,
+  generateId,
+  type Ref,
+  SortingOrder,
+  type WithLookup,
+  hasAccountRole,
+  getCurrentAccount,
+  AccountRole
+} from '@hcengineering/core'
 import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
 import { get, writable } from 'svelte/store'
 import view from '@hcengineering/view'
-import { type SpecialNavModel } from '@hcengineering/workbench'
+import workbench, { type SpecialNavModel } from '@hcengineering/workbench'
 import attachment, { type SavedAttachments } from '@hcengineering/attachment'
 import activity, { type ActivityMessage } from '@hcengineering/activity'
 import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
@@ -112,6 +122,19 @@ export const chatSpecials: SpecialNavModel[] = [
     label: chunter.string.ChunterBrowser,
     icon: view.icon.Database,
     component: chunter.component.ChunterBrowser,
+    position: 'top'
+  },
+  {
+    id: 'channels',
+    label: chunter.string.Channels,
+    icon: view.icon.List,
+    component: workbench.component.SpecialView,
+    componentProps: {
+      _class: chunter.class.Channel,
+      label: chunter.string.Channels,
+      createLabel: chunter.string.CreateChannel,
+      createComponent: chunter.component.CreateChannel
+    },
     position: 'top'
   }
   // TODO: Should be reworked or removed
@@ -246,27 +269,31 @@ async function unpinAllChannels (contexts: DocNotifyContext[]): Promise<void> {
 }
 
 function getChannelsActions (): Action[] {
-  return [
-    {
-      icon: chunter.icon.Hashtag,
-      label: chunter.string.CreateChannel,
-      action: async (): Promise<void> => {
-        showPopup(chunter.component.CreateChannel, {}, 'top')
-      }
-    }
-  ]
+  return hasAccountRole(getCurrentAccount(), AccountRole.User)
+    ? [
+        {
+          icon: chunter.icon.Hashtag,
+          label: chunter.string.CreateChannel,
+          action: async (): Promise<void> => {
+            showPopup(chunter.component.CreateChannel, {}, 'top')
+          }
+        }
+      ]
+    : []
 }
 
 function getDirectActions (): Action[] {
-  return [
-    {
-      label: chunter.string.NewDirectChat,
-      icon: chunter.icon.Thread,
-      action: async (): Promise<void> => {
-        showPopup(chunter.component.CreateDirectChat, {}, 'top')
-      }
-    }
-  ]
+  return hasAccountRole(getCurrentAccount(), AccountRole.User)
+    ? [
+        {
+          label: chunter.string.NewDirectChat,
+          icon: chunter.icon.Thread,
+          action: async (): Promise<void> => {
+            showPopup(chunter.component.CreateDirectChat, {}, 'top')
+          }
+        }
+      ]
+    : []
 }
 
 function getActivityActions (contexts: DocNotifyContext[]): Action[] {

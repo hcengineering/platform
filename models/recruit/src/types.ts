@@ -15,15 +15,15 @@
 
 import type { Employee, Organization } from '@hcengineering/contact'
 import {
-  type Domain,
+  Account,
   IndexKind,
+  type Domain,
   type Markup,
   type Ref,
-  type Status,
-  type Timestamp,
-  type RolesAssignment,
   type Role,
-  Account
+  type RolesAssignment,
+  type Status,
+  type Timestamp
 } from '@hcengineering/core'
 import {
   Collection,
@@ -45,7 +45,7 @@ import attachment from '@hcengineering/model-attachment'
 import calendar, { TEvent } from '@hcengineering/model-calendar'
 import chunter from '@hcengineering/model-chunter'
 import contact, { TOrganization, TPerson } from '@hcengineering/model-contact'
-import core, { TAttachedDoc, TSpace } from '@hcengineering/model-core'
+import core, { TAttachedDoc } from '@hcengineering/model-core'
 import tags from '@hcengineering/model-tags'
 import task, { DOMAIN_TASK, TProject, TTask } from '@hcengineering/model-task'
 import { getEmbeddedLabel } from '@hcengineering/platform'
@@ -53,7 +53,6 @@ import type {
   Applicant,
   ApplicantMatch,
   Candidate,
-  Candidates,
   Opinion,
   Review,
   Vacancy,
@@ -89,10 +88,6 @@ export class TVacancy extends TProject implements Vacancy {
   @Hidden()
     number!: number
 }
-
-@Model(recruit.class.Candidates, core.class.Space)
-@UX(recruit.string.TalentPools, recruit.icon.RecruitApplication)
-export class TCandidates extends TSpace implements Candidates {}
 
 @Mixin(recruit.mixin.Candidate, contact.class.Person)
 @UX(recruit.string.Talent, recruit.icon.RecruitApplication, 'TLNT', 'name', undefined, recruit.string.Talents)

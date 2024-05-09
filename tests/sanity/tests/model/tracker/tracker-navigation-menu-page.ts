@@ -30,6 +30,15 @@ export class TrackerNavigationMenuPage extends CommonPage {
       hasText: 'Components'
     })
 
+  newIssue = (): Locator => this.page.locator('button', { hasText: 'New issue' })
+  myIssues = (): Locator => this.page.getByRole('link', { name: 'My issues', exact: true })
+  allIssues = (): Locator => this.page.getByRole('link', { name: 'All issues', exact: true })
+  allProjects = (): Locator => this.page.getByRole('link', { name: 'All projects' })
+  issues = (): Locator => this.page.getByRole('link', { name: 'Issues', exact: true })
+  components = (): Locator => this.page.getByRole('link', { name: 'Components' })
+  milestone = (): Locator => this.page.getByRole('link', { name: 'Milestones' })
+  templates = (): Locator => this.page.getByRole('link', { name: 'Templates' })
+
   createProjectButton = (): Locator => this.buttonCreateProject().locator('button.small')
 
   async pressCreateProjectButton (): Promise<void> {
@@ -73,5 +82,19 @@ export class TrackerNavigationMenuPage extends CommonPage {
 
   async openComponentsForProject (projectName: string): Promise<void> {
     await this.componentsLinkForProject(projectName).click()
+  }
+
+  async checkIfTrackerSidebarIsVisible (): Promise<void> {
+    await expect(this.newIssue()).toBeVisible()
+    await expect(this.myIssues()).toBeVisible()
+    await expect(this.allIssues()).toBeVisible()
+    await expect(this.allProjects()).toBeVisible()
+  }
+
+  async checkIfTrackerSidebarIsVisibleForLiveProject (): Promise<void> {
+    await expect(this.issues()).toBeVisible()
+    await expect(this.components()).toBeVisible()
+    await expect(this.milestone()).toBeVisible()
+    await expect(this.templates()).toBeVisible()
   }
 }

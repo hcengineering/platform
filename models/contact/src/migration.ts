@@ -1,56 +1,20 @@
 //
 
-import { type Class, DOMAIN_TX, type Doc, type Domain, type Ref, TxOperations } from '@hcengineering/core'
+import { DOMAIN_TX, type Space, TxOperations, type Class, type Doc, type Domain, type Ref } from '@hcengineering/core'
 import {
+  createDefaultSpace,
+  tryMigrate,
+  tryUpgrade,
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient,
-  type ModelLogger,
-  tryMigrate,
-  tryUpgrade
+  type ModelLogger
 } from '@hcengineering/model'
+import activity, { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 import core from '@hcengineering/model-core'
 import { DOMAIN_VIEW } from '@hcengineering/model-view'
-import activity, { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 
 import contact, { DOMAIN_CONTACT, contactId } from './index'
-
-async function createSpace (tx: TxOperations): Promise<void> {
-  const current = await tx.findOne(core.class.Space, {
-    _id: contact.space.Employee
-  })
-  if (current === undefined) {
-    await tx.createDoc(
-      core.class.Space,
-      core.space.Space,
-      {
-        name: 'Employees',
-        description: 'Employees',
-        private: false,
-        archived: false,
-        members: []
-      },
-      contact.space.Employee
-    )
-  }
-  const contacts = await tx.findOne(core.class.Space, {
-    _id: contact.space.Contacts
-  })
-  if (contacts === undefined) {
-    await tx.createDoc(
-      core.class.Space,
-      core.space.Space,
-      {
-        name: 'Contacts',
-        description: 'Contacts',
-        private: false,
-        archived: false,
-        members: []
-      },
-      contact.space.Contacts
-    )
-  }
-}
 
 async function createEmployeeEmail (client: TxOperations): Promise<void> {
   const employees = await client.findAll(contact.mixin.Employee, {})
@@ -205,16 +169,29 @@ export const contactOperation: MigrateOperation = {
             }
           )
         }
+      },
+      {
+        state: 'removeEmployeeSpace',
+        func: async (client) => {
+          await client.update(
+            DOMAIN_CONTACT,
+            {
+              space: 'contact:space:Employee' as Ref<Space>
+            },
+            {
+              space: contact.space.Contacts
+            }
+          )
+        }
       }
     ])
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     await tryUpgrade(client, contactId, [
       {
-        state: 'createSpace',
+        state: 'createSpace-v2',
         func: async (client) => {
-          const tx = new TxOperations(client, core.account.System)
-          await createSpace(tx)
+          await createDefaultSpace(client, contact.space.Contacts, { name: 'Contacts', description: 'Contacts' })
         }
       },
       {
