@@ -32,7 +32,7 @@ export default plugin(serverChunterId, {
     OnDirectMessageSent: '' as Resource<TriggerFunc>,
     OnChatMessageRemoved: '' as Resource<TriggerFunc>,
     OnChannelMembersChanged: '' as Resource<TriggerFunc>,
-    OnChatMessageCreate: '' as Resource<TriggerFunc>
+    ChatNotificationsHandler: '' as Resource<TriggerFunc>
   },
   function: {
     CommentRemove: '' as Resource<ObjectDDParticipantFunc>,

@@ -41,7 +41,7 @@ import core, {
   TxRemoveDoc,
   TxUpdateDoc
 } from '@hcengineering/core'
-import notification, { ClassCollaborators, Collaborators, NotificationContent } from '@hcengineering/notification'
+import notification, { Collaborators, NotificationContent } from '@hcengineering/notification'
 import { getMetadata, IntlString } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import {
@@ -143,15 +143,25 @@ async function OnThreadMessageCreated (tx: Tx, control: TriggerControl): Promise
   return [lastReplyTx, employeeTx]
 }
 
-async function updateCollaborators (
-  targetDoc: Doc | undefined,
-  tx: TxCUD<Doc>,
-  control: TriggerControl,
-  message: ChatMessage,
-  mixin?: ClassCollaborators
-): Promise<Tx[]> {
-  if (targetDoc === undefined || mixin === undefined) return []
+async function OnChatMessageCreated (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
   const hierarchy = control.hierarchy
+  const actualTx = TxProcessor.extractTx(tx) as TxCreateDoc<ChatMessage>
+
+  if (
+    actualTx._class !== core.class.TxCreateDoc ||
+    !hierarchy.isDerived(actualTx.objectClass, chunter.class.ChatMessage)
+  ) {
+    return []
+  }
+
+  const message = TxProcessor.createDoc2Doc(actualTx)
+  const mixin = hierarchy.classHierarchyMixin(message.attachedToClass, notification.mixin.ClassCollaborators)
+
+  if (mixin === undefined) {
+    return []
+  }
+
+  const targetDoc = (await control.findAll(message.attachedToClass, { _id: message.attachedTo }, { limit: 1 }))[0]
   const isChannel = hierarchy.isDerived(targetDoc._class, chunter.class.Channel)
   const res: Tx[] = []
 
@@ -187,8 +197,7 @@ async function updateCollaborators (
   return res
 }
 
-async function OnChatMessageCreate (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
-  const hierarchy = control.hierarchy
+async function ChatNotificationsHandler (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
   const actualTx = TxProcessor.extractTx(tx) as TxCreateDoc<ChatMessage>
 
   if (actualTx._class !== core.class.TxCreateDoc) {
@@ -196,26 +205,8 @@ async function OnChatMessageCreate (tx: TxCUD<Doc>, control: TriggerControl): Pr
   }
 
   const chatMessage = TxProcessor.createDoc2Doc(actualTx)
-  const cache = new Map<Ref<Doc>, Doc>()
 
-  const mixin = hierarchy.classHierarchyMixin(chatMessage.attachedToClass, notification.mixin.ClassCollaborators)
-
-  let targetDoc: Doc | undefined
-
-  if (mixin !== undefined) {
-    targetDoc = (await control.findAll(chatMessage.attachedToClass, { _id: chatMessage.attachedTo }, { limit: 1 }))[0]
-  }
-
-  if (targetDoc !== undefined) {
-    cache.set(targetDoc._id, targetDoc)
-  }
-
-  const res = await Promise.all([
-    createCollaboratorNotifications(control.ctx, tx, control, [chatMessage], undefined, cache),
-    updateCollaborators(targetDoc, tx, control, chatMessage, mixin)
-  ])
-
-  return res.flat()
+  return await createCollaboratorNotifications(control.ctx, tx, control, [chatMessage])
 }
 
 function joinChannel (control: TriggerControl, channel: Channel, user: Ref<Account>): Tx[] {
@@ -271,11 +262,12 @@ async function OnThreadMessageDeleted (tx: Tx, control: TriggerControl): Promise
 /**
  * @public
  */
-export async function ChunterTrigger (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+export async function ChunterTrigger (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
   const res = await Promise.all([
     OnThreadMessageCreated(tx, control),
     OnThreadMessageDeleted(tx, control),
-    OnCollaboratorsChanged(tx as TxMixin<Doc, Collaborators>, control)
+    OnCollaboratorsChanged(tx as TxMixin<Doc, Collaborators>, control),
+    OnChatMessageCreated(tx, control)
   ])
   return res.flat()
 }
@@ -531,7 +523,7 @@ export default async () => ({
     OnDirectMessageSent,
     OnChatMessageRemoved,
     OnChannelMembersChanged,
-    OnChatMessageCreate
+    ChatNotificationsHandler
   },
   function: {
     CommentRemove,
