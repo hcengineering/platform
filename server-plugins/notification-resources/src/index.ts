@@ -64,7 +64,8 @@ import notification, {
   NotificationStatus,
   PushSubscription,
   NotificationType,
-  PushData
+  PushData,
+  BrowserNotification
 } from '@hcengineering/notification'
 import { getMetadata, getResource, translate } from '@hcengineering/platform'
 import type { TriggerControl } from '@hcengineering/server-core'
@@ -375,6 +376,14 @@ export async function pushInboxNotifications (
   shouldUpdateTimestamp = true,
   cache: Map<Ref<Doc>, Doc> = new Map<Ref<Doc>, Doc>()
 ): Promise<void> {
+  const account = (cache.get(targetUser) as PersonAccount) ?? (await getPersonAccountById(targetUser, control))
+
+  if (account === undefined) {
+    return
+  }
+
+  cache.set(account._id, account)
+
   const context = getDocNotifyContext(contexts, targetUser, attachedTo, res)
 
   // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
@@ -390,14 +399,14 @@ export async function pushInboxNotifications (
       hidden: false,
       lastUpdateTimestamp: shouldUpdateTimestamp ? modifiedOn : undefined
     })
-    await control.apply([createContextTx], true)
+    await control.apply([createContextTx], true, [account.email])
     docNotifyContextId = createContextTx.objectId
   } else {
-    if (shouldUpdateTimestamp) {
+    if (shouldUpdateTimestamp && context.lastUpdateTimestamp !== modifiedOn) {
       const updateTx = control.txFactory.createTxUpdateDoc(context._class, context.space, context._id, {
         lastUpdateTimestamp: modifiedOn
       })
-      res.push(updateTx)
+      await control.apply([updateTx], true, [account.email])
     }
     docNotifyContextId = context._id
   }
@@ -412,7 +421,7 @@ export async function pushInboxNotifications (
     const notificationTx = control.txFactory.createTxCreateDoc(_class, space, notificationData)
     res.push(notificationTx)
     if (shouldPush) {
-      const now = Date.now()
+      // const now = Date.now()
       const pushTx = await createPushFromInbox(
         control,
         targetUser,
@@ -424,7 +433,7 @@ export async function pushInboxNotifications (
         notificationTx.objectId,
         cache
       )
-      console.log('Push takes', Date.now() - now, 'ms')
+      // console.log('Push takes', Date.now() - now, 'ms')
       if (pushTx !== undefined) {
         res.push(pushTx)
       }
@@ -1200,6 +1209,55 @@ export async function OnAttributeUpdate (tx: Tx, control: TriggerControl): Promi
   return [res]
 }
 
+async function applyUserTxes (
+  control: TriggerControl,
+  txes: Tx[],
+  cache: Map<Ref<Doc>, Doc> = new Map<Ref<Doc>, Doc>()
+): Promise<Tx[]> {
+  const map: Map<Ref<Account>, Tx[]> = new Map<Ref<Account>, Tx[]>()
+  const res: Tx[] = []
+
+  for (const tx of txes) {
+    const ttx = tx as TxCUD<Doc>
+    if (
+      control.hierarchy.isDerived(ttx.objectClass, notification.class.InboxNotification) &&
+      ttx._class === core.class.TxCreateDoc
+    ) {
+      const notification = TxProcessor.createDoc2Doc(ttx as TxCreateDoc<InboxNotification>)
+
+      if (map.has(notification.user)) {
+        map.get(notification.user)?.push(tx)
+      } else {
+        map.set(notification.user, [tx])
+      }
+    } else if (
+      control.hierarchy.isDerived(ttx.objectClass, notification.class.BrowserNotification) &&
+      ttx._class === core.class.TxCreateDoc
+    ) {
+      const notification = TxProcessor.createDoc2Doc(ttx as TxCreateDoc<BrowserNotification>)
+
+      if (map.has(notification.user)) {
+        map.get(notification.user)?.push(tx)
+      } else {
+        map.set(notification.user, [tx])
+      }
+    } else {
+      res.push(tx)
+    }
+  }
+
+  for (const [user, txs] of map.entries()) {
+    const account = (cache.get(user) as PersonAccount) ?? (await getPersonAccountById(user, control))
+
+    if (account !== undefined) {
+      cache.set(account._id, account)
+      await control.apply(txs, true, [account.email])
+    }
+  }
+
+  return res
+}
+
 export async function createCollaboratorNotifications (
   ctx: MeasureContext,
   tx: TxCUD<Doc>,
@@ -1217,8 +1275,11 @@ export async function createCollaboratorNotifications (
   }
 
   switch (tx._class) {
-    case core.class.TxCreateDoc:
-      return await createCollaboratorDoc(tx as TxCreateDoc<Doc>, control, activityMessages, originTx ?? tx, cache)
+    case core.class.TxCreateDoc: {
+      const res = await createCollaboratorDoc(tx as TxCreateDoc<Doc>, control, activityMessages, originTx ?? tx, cache)
+
+      return await applyUserTxes(control, res)
+    }
     case core.class.TxUpdateDoc:
     case core.class.TxMixin: {
       let res = await updateCollaboratorDoc(tx as TxUpdateDoc<Doc>, control, originTx ?? tx, activityMessages, cache)
@@ -1231,10 +1292,12 @@ export async function createCollaboratorNotifications (
           cache
         )
       )
-      return res
+      return await applyUserTxes(control, res)
     }
-    case core.class.TxCollectionCUD:
-      return await collectionCollabDoc(tx as TxCollectionCUD<Doc, AttachedDoc>, control, activityMessages, cache)
+    case core.class.TxCollectionCUD: {
+      const res = await collectionCollabDoc(tx as TxCollectionCUD<Doc, AttachedDoc>, control, activityMessages, cache)
+      return await applyUserTxes(control, res)
+    }
   }
 
   return []
