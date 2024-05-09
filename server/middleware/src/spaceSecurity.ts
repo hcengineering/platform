@@ -331,7 +331,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
           if (!isOwner(account, ctx)) {
             const cudTx = tx as TxCUD<Doc>
             const isSpace = h.isDerived(cudTx.objectClass, core.class.Space)
-            const allowed = this.allowedSpaces[account._id]
+            const allowed = this.getAllAllowedSpaces(account, !isSpace)
             if (allowed === undefined || !allowed.includes(isSpace ? (cudTx.objectId as Ref<Space>) : tx.objectSpace)) {
               throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
             }
@@ -543,7 +543,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
   async isUnavailable (ctx: SessionContext, space: Ref<Space>): Promise<boolean> {
     const account = await getUser(this.storage, ctx)
     if (isSystem(account)) return false
-    return !this.allowedSpaces[account._id]?.includes(space)
+    return !this.getAllAllowedSpaces(account, true).includes(space)
   }
 
   async filterLookup<T extends Doc>(ctx: SessionContext, lookup: LookupData<T>): Promise<void> {
