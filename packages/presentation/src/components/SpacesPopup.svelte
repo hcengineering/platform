@@ -51,6 +51,7 @@
   $: query.query(
     _class,
     {
+      members: me,
       ...(spaceQuery ?? {}),
       ...(search !== undefined && search !== ''
         ? {
@@ -59,7 +60,7 @@
         : {})
     },
     (res) => {
-      spaces = res.filter((p) => !p.private || p.members.includes(me))
+      spaces = res
     },
     spaceOptions
   )
