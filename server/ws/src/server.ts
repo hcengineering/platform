@@ -18,7 +18,6 @@ import core, {
   TxFactory,
   WorkspaceEvent,
   generateId,
-  getWorkspaceId,
   systemAccountEmail,
   toWorkspaceString,
   versionToString,
@@ -371,7 +370,8 @@ class TSessionManager implements SessionManager {
     workspace.sessions.set(session.sessionId, { session, socket: ws })
 
     // We do not need to wait for set-status, just return session to client
-    void ctx.with('set-status', {}, (ctx) => this.trySetStatus(ctx, session, true))
+    const _workspace = workspace
+    void ctx.with('set-status', {}, (ctx) => this.trySetStatus(ctx, session, true, _workspace.workspaceId))
 
     if (this.timeMinutes > 0) {
       void ws.send(ctx, { result: this.createMaintenanceWarning() }, session.binaryMode, session.useCompression)
@@ -428,20 +428,27 @@ class TSessionManager implements SessionManager {
       ctx,
       { ...token.workspace, workspaceUrl, workspaceName },
       true,
-      (tx, targets) => {
-        this.broadcastAll(workspace, tx, targets)
+      (tx, targets, exclude) => {
+        this.broadcastAll(workspace, tx, targets, exclude)
       }
     )
     return await workspace.pipeline
   }
 
-  broadcastAll (workspace: Workspace, tx: Tx[], targets?: string[]): void {
+  broadcastAll (workspace: Workspace, tx: Tx[], target?: string | string[], exclude?: string[]): void {
     if (workspace.upgrade) {
       return
     }
+    if (target !== undefined && !Array.isArray(target)) {
+      target = [target]
+    }
     const ctx = this.ctx.newChild('📬 broadcast-all', {})
     const sessions = [...workspace.sessions.values()].filter((it) => {
-      return it !== undefined && (targets === undefined || targets.includes(it.session.getUser()))
+      if (it === undefined) {
+        return false
+      }
+      const tt = it.session.getUser()
+      return (target === undefined && !(exclude ?? []).includes(tt)) || (target?.includes(tt) ?? false)
     })
     function send (): void {
       for (const session of sessions) {
@@ -540,18 +547,28 @@ class TSessionManager implements SessionManager {
     return workspace
   }
 
-  private async trySetStatus (ctx: MeasureContext, session: Session, online: boolean): Promise<void> {
+  private async trySetStatus (
+    ctx: MeasureContext,
+    session: Session,
+    online: boolean,
+    workspaceId: WorkspaceId
+  ): Promise<void> {
     const current = this.statusPromises.get(session.getUser())
     if (current !== undefined) {
       await current
     }
-    const promise = this.setStatus(ctx, session, online)
+    const promise = this.setStatus(ctx, session, online, workspaceId)
     this.statusPromises.set(session.getUser(), promise)
     await promise
     this.statusPromises.delete(session.getUser())
   }
 
-  private async setStatus (ctx: MeasureContext, session: Session, online: boolean): Promise<void> {
+  private async setStatus (
+    ctx: MeasureContext,
+    session: Session,
+    online: boolean,
+    workspaceId: WorkspaceId
+  ): Promise<void> {
     try {
       const user = (
         await session.pipeline().modelDb.findAll(
@@ -563,6 +580,20 @@ class TSessionManager implements SessionManager {
         )
       )[0]
       if (user === undefined) return
+
+      const clientCtx: ClientSessionCtx = {
+        sendResponse: async (msg) => {
+          // No response
+        },
+        ctx,
+        send: async (msg, target, exclude) => {
+          this.broadcast(null, workspaceId, msg, target, exclude)
+        },
+        sendError: async (msg, error: Status) => {
+          // Assume no error send
+        }
+      }
+
       const status = (await session.findAllRaw(ctx, core.class.UserStatus, { user: user._id }, { limit: 1 }))[0]
       const txFactory = new TxFactory(user._id, true)
       if (status === undefined) {
@@ -570,12 +601,12 @@ class TSessionManager implements SessionManager {
           online,
           user: user._id
         })
-        await session.txRaw(ctx, tx)
+        await session.tx(clientCtx, tx)
       } else if (status.online !== online) {
         const tx = txFactory.createTxUpdateDoc(status._class, status.space, status._id, {
           online
         })
-        await session.txRaw(ctx, tx)
+        await session.tx(clientCtx, tx)
       }
     } catch {}
   }
@@ -607,7 +638,7 @@ class TSessionManager implements SessionManager {
           if (workspace !== undefined) {
             const another = Array.from(workspace.sessions.values()).findIndex((p) => p.session.getUser() === user)
             if (another === -1 && !workspace.upgrade) {
-              void this.trySetStatus(workspace.context, sessionRef.session, false)
+              void this.trySetStatus(workspace.context, sessionRef.session, false, workspace.workspaceId)
             }
           }
         }, this.timeouts.reconnectTimeout)
@@ -761,7 +792,7 @@ class TSessionManager implements SessionManager {
     service: S,
     ws: ConnectionSocket,
     request: Request<any>,
-    workspace: string
+    workspace: string // wsId, toWorkspaceString()
   ): void {
     const userCtx = requestCtx.newChild('📞 client', {
       workspace: '🧲 ' + workspace
@@ -778,16 +809,26 @@ class TSessionManager implements SessionManager {
           const delta = Date.now() - request.time
           userCtx.measure('receive msg', delta)
         }
+        const wsRef = this.workspaces.get(workspace)
+        if (wsRef === undefined) {
+          await ws.send(
+            ctx,
+            {
+              id: request.id,
+              error: unknownError('No workspace')
+            },
+            service.binaryMode,
+            service.useCompression
+          )
+          return
+        }
         if (request.method === 'forceClose') {
-          const wsRef = this.workspaces.get(workspace)
           let done = false
-          if (wsRef !== undefined) {
-            if (wsRef.upgrade) {
-              done = true
-              console.log('FORCE CLOSE', workspace)
-              // In case of upgrade, we need to force close workspace not in interval handler
-              await this.forceClose(workspace, ws)
-            }
+          if (wsRef.upgrade) {
+            done = true
+            console.log('FORCE CLOSE', workspace)
+            // In case of upgrade, we need to force close workspace not in interval handler
+            await this.forceClose(workspace, ws)
           }
           const forceCloseResponse: Response<any> = {
             id: request.id,
@@ -840,7 +881,7 @@ class TSessionManager implements SessionManager {
           },
           ctx,
           send: async (msg, target, exclude) => {
-            this.broadcast(service, getWorkspaceId(workspace), msg, target, exclude)
+            this.broadcast(service, wsRef.workspaceId, msg, target, exclude)
           },
           sendError: async (msg, error: Status) => {
             await sendResponse(ctx, service, ws, {

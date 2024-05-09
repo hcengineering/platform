@@ -83,6 +83,7 @@ export function createModel (builder: Builder): void {
       _class: core.class.TxCollectionCUD,
       'tx._class': core.class.TxCreateDoc,
       'tx.objectClass': chunter.class.ChatMessage
-    }
+    },
+    isAsync: true
   })
 }

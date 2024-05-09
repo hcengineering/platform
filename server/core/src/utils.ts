@@ -1,5 +1,18 @@
-import { getTypeOf } from '@hcengineering/core'
+import core, {
+  WorkspaceEvent,
+  generateId,
+  getTypeOf,
+  type BulkUpdateEvent,
+  type Class,
+  type Doc,
+  type FullParamsType,
+  type MeasureContext,
+  type ParamsType,
+  type Ref,
+  type TxWorkspaceEvent
+} from '@hcengineering/core'
 import { type Hash } from 'crypto'
+import type { SessionContext } from './types'
 
 /**
  * Return some estimation for object size
@@ -114,5 +127,44 @@ export function updateHashForDoc (hash: Hash, _obj: any): void {
           hash.update(value.toString())
       }
     }
+  }
+}
+
+export class SessionContextImpl implements SessionContext {
+  constructor (
+    readonly ctx: MeasureContext,
+    readonly userEmail: string,
+    readonly sessionId: string,
+    readonly admin: boolean | undefined,
+    readonly derived: SessionContext['derived']
+  ) {}
+
+  with<T>(
+    name: string,
+    params: ParamsType,
+    op: (ctx: SessionContext) => T | Promise<T>,
+    fullParams?: FullParamsType
+  ): Promise<T> {
+    return this.ctx.with(
+      name,
+      params,
+      async (ctx) => await op(new SessionContextImpl(ctx, this.userEmail, this.sessionId, this.admin, this.derived)),
+      fullParams
+    )
+  }
+}
+
+export function createBroadcastEvent (classes: Ref<Class<Doc>>[]): TxWorkspaceEvent<BulkUpdateEvent> {
+  return {
+    _class: core.class.TxWorkspaceEvent,
+    _id: generateId(),
+    event: WorkspaceEvent.BulkUpdate,
+    params: {
+      _class: classes
+    },
+    modifiedBy: core.account.System,
+    modifiedOn: Date.now(),
+    objectSpace: core.space.DerivedTx,
+    space: core.space.DerivedTx
   }
 }

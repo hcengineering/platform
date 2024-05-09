@@ -62,7 +62,6 @@ export interface Session {
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
   tx: (ctx: ClientSessionCtx, tx: Tx) => Promise<void>
-  txRaw: (ctx: MeasureContext, tx: Tx) => Promise<void>
 
   // Session restore information
   sessionId: string

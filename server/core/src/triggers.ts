@@ -35,11 +35,15 @@ import type { Trigger, TriggerControl, TriggerFunc } from './types'
 
 import serverCore from './plugin'
 
+interface TriggerRecord {
+  query?: DocumentQuery<Tx>
+  trigger: { op: TriggerFunc, resource: Resource<TriggerFunc>, isAsync: boolean }
+}
 /**
  * @public
  */
 export class Triggers {
-  private readonly triggers: [DocumentQuery<Tx> | undefined, TriggerFunc, Resource<TriggerFunc>][] = []
+  private readonly triggers: TriggerRecord[] = []
 
   constructor (protected readonly hierarchy: Hierarchy) {}
 
@@ -50,17 +54,59 @@ export class Triggers {
     if (tx._class === core.class.TxCreateDoc) {
       const createTx = tx as TxCreateDoc<Doc>
       if (createTx.objectClass === serverCore.class.Trigger) {
-        const trigger = (createTx as TxCreateDoc<Trigger>).attributes.trigger
         const match = (createTx as TxCreateDoc<Trigger>).attributes.txMatch
+
+        const trigger = (createTx as TxCreateDoc<Trigger>).attributes.trigger
         const func = await getResource(trigger)
-        this.triggers.push([match, func, trigger])
+        const isAsync = (createTx as TxCreateDoc<Trigger>).attributes.isAsync === true
+
+        this.triggers.push({
+          query: match,
+          trigger: { op: func, resource: trigger, isAsync }
+        })
       }
     }
   }
 
-  async apply (ctx: SessionOperationContext, tx: Tx[], ctrl: Omit<TriggerControl, 'txFactory'>): Promise<Tx[]> {
+  async apply (
+    ctx: SessionOperationContext,
+    tx: Tx[],
+    ctrl: Omit<TriggerControl, 'txFactory'>
+  ): Promise<{
+      transactions: Tx[]
+      performAsync?: (ctx: SessionOperationContext) => Promise<Tx[]>
+    }> {
     const result: Tx[] = []
-    for (const [query, trigger, resource] of this.triggers) {
+
+    const asyncRequest: {
+      matches: Tx[]
+      trigger: TriggerRecord['trigger']
+    }[] = []
+
+    const applyTrigger = async (
+      ctx: SessionOperationContext,
+      matches: Tx[],
+      trigger: TriggerRecord['trigger'],
+      result: Tx[]
+    ): Promise<void> => {
+      for (const tx of matches) {
+        result.push(
+          ...(await trigger.op(tx, {
+            ...ctrl,
+            ctx: ctx.ctx,
+            txFactory: new TxFactory(tx.modifiedBy, true),
+            findAll: async (clazz, query, options) => await ctrl.findAllCtx(ctx.ctx, clazz, query, options),
+            apply: async (tx, broadcast, target) => {
+              return await ctrl.applyCtx(ctx, tx, broadcast, target)
+            },
+            result
+          }))
+        )
+      }
+    }
+
+    const promises: Promise<void>[] = []
+    for (const { query, trigger } of this.triggers) {
       let matches = tx
       if (query !== undefined) {
         this.addDerived(query, 'objectClass')
@@ -68,25 +114,39 @@ export class Triggers {
         matches = matchQuery(tx, query, core.class.Tx, ctrl.hierarchy) as Tx[]
       }
       if (matches.length > 0) {
-        await ctx.with(resource, {}, async (ctx) => {
-          for (const tx of matches) {
-            result.push(
-              ...(await trigger(tx, {
-                ...ctrl,
-                ctx: ctx.ctx,
-                txFactory: new TxFactory(tx.modifiedBy, true),
-                findAll: async (clazz, query, options) => await ctrl.findAllCtx(ctx.ctx, clazz, query, options),
-                apply: async (tx, broadcast, target) => {
-                  return await ctrl.applyCtx(ctx, tx, broadcast, target)
-                },
-                result
-              }))
-            )
-          }
-        })
+        if (trigger.isAsync) {
+          asyncRequest.push({
+            matches,
+            trigger
+          })
+        } else {
+          promises.push(
+            ctx.with(trigger.resource, {}, async (ctx) => {
+              await applyTrigger(ctx, matches, trigger, result)
+            })
+          )
+        }
       }
     }
-    return result
+    // Wait all regular triggers to complete in parallel
+    await Promise.all(promises)
+
+    return {
+      transactions: result,
+      performAsync:
+        asyncRequest.length > 0
+          ? async (ctx) => {
+            // If we have async triggers let's sheculed them after IO phase.
+            const result: Tx[] = []
+            for (const request of asyncRequest) {
+              await ctx.with(request.trigger.resource, {}, async (ctx) => {
+                await applyTrigger(ctx, request.matches, request.trigger, result)
+              })
+            }
+            return result
+          }
+          : undefined
+    }
   }
 
   private addDerived (q: DocumentQuery<Tx>, key: string): void {
