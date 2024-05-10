@@ -50,7 +50,7 @@
     {#each persons as person, index}
       <div class="item" class:withoutBorder={index === persons.length - 1}>
         <div class="item__content" class:disabled={disableRemoveFor.includes(person._id)}>
-          <UserDetails {person} showStatus background="var(--global-surface-01-BackgroundColor)" />
+          <UserDetails {person} showStatus />
           {#if !disableRemoveFor.includes(person._id)}
             <div class="item__action">
               <ButtonIcon

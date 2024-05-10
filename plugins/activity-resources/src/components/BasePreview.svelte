@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import { getClient, MessageViewer } from '@hcengineering/presentation'
-  import { Person, type PersonAccount } from '@hcengineering/contact'
+  import contact, { Person, type PersonAccount } from '@hcengineering/contact'
   import {
     Avatar,
     EmployeePresenter,
@@ -43,6 +43,7 @@
   export let header: IntlString | undefined = undefined
 
   const client = getClient()
+  const hierarchy = client.getHierarchy()
   const limit = 300
 
   let isActionsOpened = false
@@ -88,6 +89,8 @@
   } else {
     tooltipLabel = core.string.System
   }
+
+  $: showStatus = !!person && hierarchy.hasMixin(person, contact.mixin.Employee)
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -115,7 +118,7 @@
           {#if headerObject}
             <Icon icon={headerIcon ?? classIcon(client, headerObject._class) ?? activity.icon.Activity} size="small" />
           {:else if person}
-            <Avatar size="card" avatar={person.avatar} name={person.name} />
+            <Avatar size="card" avatar={person.avatar} name={person.name} {showStatus} {account} />
           {:else}
             <SystemAvatar size="card" />
           {/if}

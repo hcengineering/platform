@@ -107,6 +107,208 @@
   }
 }
 
+/* Avatar */
+.hulyAvatar-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 0;
+  min-height: 0;
+  flex-shrink: 0;
+  aspect-ratio: 1;
+  background-color: var(--theme-button-default);
+  pointer-events: none;
+
+  &.withStatus {
+    mask-repeat: no-repeat;
+    mask-size: cover;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M10,13.5c0-1.9,1.6-3.5,3.5-3.5c1,0,1.9,0.4,2.5,1.1V0H0v16h11.1C10.4,15.4,10,14.5,10,13.5z' /%3E%3C/svg%3E");
+  }
+
+  &.circle,
+  &.circle img.ava-image { border-radius: 50%; }
+  &.roundedRect,
+  &.roundedRect img.ava-image { border-radius: 20%; }
+  &.standby {
+    opacity: .5;
+    transition: opacity .5s ease-in-out;
+    pointer-events: all;
+
+    &:hover,
+    &.standbyOn { opacity: 1; }
+    &:hover { transition-duration: .1s; }
+  }
+
+  &.no-img {
+    color: var(--primary-button-color);
+    border-color: transparent;
+  }
+  &.bordered {
+    color: var(--theme-dark-color);
+    border: 1px solid var(--theme-button-border);
+  }
+  &.border {
+    border: 1px solid var(--theme-bg-color);
+    outline: 2px solid var(--border-color);
+
+    &.hulyAvatarSize-xx-small,
+    &.hulyAvatarSize-inline,
+    &.hulyAvatarSize-tiny,
+    &.hulyAvatarSize-card,
+    &.hulyAvatarSize-x-small { outline-width: 1px; }
+    &.hulyAvatarSize-large,
+    &.hulyAvatarSize-x-large,
+    &.hulyAvatarSize-2x-large { border-width: 2px; }
+  }
+  img { object-fit: cover; }
+  .icon,
+  .ava-text::after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+  }
+  .icon {
+    width: 100%;
+    height: 100%;
+    color: inherit;
+    transform-origin: center;
+    transform: translate(-50%, -50%) scale(.6);
+  }
+  .ava-text {
+    font-weight: 500;
+    letter-spacing: -.05em;
+
+    &::after {
+      content: attr(data-name);
+      transform: translate(-50%, -50%);
+    }
+  }
+}
+
+/* Avatar sizes */
+.hulyAvatarSize-xx-small {
+  width: .75rem; // 12 - 10
+  .small-font & { width: 10px; }
+
+  .ava-text { font-size: .375rem; }
+}
+.hulyAvatarSize-inline {
+  width: .875rem; // 14 - 12
+  .small-font & { width: 12px; }
+
+  .ava-text { font-size: .525rem; }
+}
+.hulyAvatarSize-tiny {
+  width: 1.125rem; // 18 - 16
+  .small-font & { width: 16px; }
+
+  .ava-text { font-size: .625rem; }
+}
+.hulyAvatarSize-card {
+  width: 1.25rem; // 20 - 18
+  .small-font & { width: 18px; }
+
+  .ava-text { font-size: .75rem; }
+}
+.hulyAvatarSize-x-small {
+  width: 1.5rem; // 24 - 22
+  .small-font & { width: 22px; }
+
+  .ava-text { font-size: .875rem; }
+}
+.hulyAvatarSize-smaller {
+  width: 1.75rem; // 28 - 25
+  .small-font & { width: 25px; }
+
+  .ava-text { font-size: 1rem; }
+}
+.hulyAvatarSize-small {
+  width: 2rem; // 32 - 28
+
+  .ava-text { font-size: 1.125rem; }
+}
+.hulyAvatarSize-medium {
+  width: 2.5rem; // 40 - 35
+
+  .ava-text { font-size: 1.375rem; }
+}
+.hulyAvatarSize-large {
+  width: 4.5rem; // 72 - 63
+
+  .ava-text { font-size: 2.75rem; }
+}
+.hulyAvatarSize-x-large {
+  width: 7.5rem; // 120 - 105
+
+  .ava-text { font-size: 4.5rem; }
+}
+.hulyAvatarSize-2x-large {
+  width: 10rem; // 160 - 140
+
+  .ava-text { font-size: 6rem; }
+}
+.hulyAvatarSize-full {
+  width: 100%;
+
+  .ava-text { font-size: inherit; }
+}
+
+/* Avatar status marker */
+.hulyAvatar-statusMarker {
+  position: absolute;
+  right: -4%;
+  bottom: -4%;
+  width: 39%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+
+  &.xx-small,
+  &.inline,
+  &.tiny,
+  &.card,
+  &.x-small,
+  &.smaller,
+  &.small,
+  &.medium {
+    right: 0;
+    bottom: 0;
+  }
+  .small-font &.xx-small { width: 3px; }
+  &.xx-small,
+  &.inline,
+  .small-font &.inline { width: 4px; }
+  .small-font &.tiny { width: 5px; }
+  &.tiny,
+  &.card,
+  .small-font &.card { width: 6px; }
+  .small-font &.x-small { width: 7px; }
+  &.x-small,
+  .small-font &.smaller { width: 8px; }
+  &.smaller,
+  .small-font &.small { width: 9px; }
+  &.small { width: 10px; }
+  .small-font &.medium { width: 11px; }
+  &.medium { width: 13px; }
+  &.large {
+    right: -.125rem;
+    bottom: -.125rem;
+    width: 36.5%;
+
+    .small-font & { 
+      right: -2px;
+      bottom: -2px;
+      width: 37%;
+    }
+  }
+  &.online { background-color: var(--global-online-color); }
+  &.offline {
+    border: 1px solid var(--global-offline-color);
+
+    &:not(.xx-small, .inline, .tiny, .card, .x-small, .smaller, .small, .medium) { border-width: 2px; }
+  }
+}
+
 /* Header */
 .hulyHeader-container {
   display: flex;

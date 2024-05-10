@@ -37,19 +37,16 @@
   import {
     AnySvelteComponent,
     ColorDefinition,
-    Icon,
     IconSize,
     getPlatformAvatarColorByName,
     getPlatformAvatarColorForTextDef,
     getPlatformColor,
-    resizeObserver,
     themeStore
   } from '@hcengineering/ui'
   import { onMount } from 'svelte'
   import { Account } from '@hcengineering/core'
-
-  import AvatarIcon from './icons/Avatar.svelte'
-  import UserStatus from './UserStatus.svelte'
+  import AvatarInstance from './AvatarInstance.svelte'
+  import { loadUsersStatus, statusByUserStore } from '../utils'
 
   export let avatar: string | null | undefined = undefined
   export let name: string | null | undefined = undefined
@@ -59,32 +56,18 @@
   export let variant: 'circle' | 'roundedRect' | 'none' = 'roundedRect'
   export let borderColor: number | undefined = undefined
   export let standby: boolean = false
-  export let showStatus = false
+  export let showStatus: boolean = true
   export let account: Ref<Account> | undefined = undefined
-  export let background: string | undefined = undefined
 
   export function pulse (): void {
-    if (element) element.animate(pulsating, { duration: 150, easing: 'ease-out' })
-    if (standby) {
-      standbyMode = false
-      if (timer) clearTimeout(timer)
-      timer = setTimeout(() => {
-        standbyMode = true
-      }, 2000)
-    }
+    avatarInst.pulse()
   }
 
   let url: string[] | undefined
   let avatarProvider: AvatarProvider | undefined
   let color: ColorDefinition | undefined = undefined
-  let standbyMode: boolean = standby
-  let timer: any | undefined = undefined
-  let fontSize: number = 16
   let element: HTMLElement
-  const pulsating: Keyframe[] = [
-    { boxShadow: '0 0 .125rem 0 var(--theme-bg-color), 0 0 0 .125rem var(--border-color)' },
-    { boxShadow: '0 0 .375rem .375rem var(--theme-bg-color), 0 0 0 .25rem var(--border-color)' }
-  ]
+  let avatarInst: AvatarInstance
 
   $: displayName = getDisplayName(name)
   $: bColor = borderColor !== undefined ? getPlatformColor(borderColor, $themeStore.dark) : undefined
@@ -138,264 +121,48 @@
   $: srcset = url?.slice(1)?.join(', ')
 
   onMount(() => {
-    if (size === 'full' && !url && name && displayName && displayName !== '' && element) {
-      fontSize = element.clientWidth * 0.6
-    }
+    loadUsersStatus()
   })
 
-  function getStatusSize (avaSize: IconSize): 'small' | 'medium' {
-    switch (avaSize) {
-      case 'inline':
-      case 'tiny':
-      case 'card':
-      case 'x-small':
-        return 'small'
-      case 'small':
-      case 'medium':
-      case 'large':
-      case 'x-large':
-      case '2x-large':
-        return 'medium'
-      default:
-        return 'small'
-    }
-  }
+  $: userStatus = account ? $statusByUserStore.get(account) : undefined
 </script>
 
-{#if size === 'full' && !url && name && displayName && displayName !== ''}
-  <div
-    bind:this={element}
-    class="ava-{size} flex-center avatar-container {variant}"
-    class:no-img={!url && color}
-    class:bordered={!url && color === undefined}
-    class:border={bColor !== undefined}
-    class:standby
-    class:standbyOn={standby && !standbyMode}
-    style:--border-color={bColor ?? 'var(--primary-button-default)'}
-    style:background-color={color && !url ? color.icon : 'var(--theme-button-default)'}
-    use:resizeObserver={(element) => {
-      fontSize = element.clientWidth * 0.6
-    }}
-  >
-    <div
-      class="ava-text"
-      style:color={color ? color.iconText : 'var(--primary-button-color)'}
-      style:font-size={`${fontSize}px`}
-      data-name={displayName.toLocaleUpperCase()}
+{#if showStatus && account}
+  <div class="relative">
+    <AvatarInstance
+      bind:this={avatarInst}
+      {url}
+      {srcset}
+      {displayName}
+      {size}
+      {icon}
+      {variant}
+      {color}
+      {bColor}
+      {standby}
+      bind:element
+      withStatus
     />
+    {#if showStatus && account}
+      <div
+        class="hulyAvatar-statusMarker {size}"
+        class:online={userStatus?.online}
+        class:offline={!userStatus?.online}
+      />
+    {/if}
   </div>
 {:else}
-  <div
-    bind:this={element}
-    class="ava-{size} flex-center avatar-container {variant}"
-    class:no-img={!url && color}
-    class:bordered={!url && color === undefined}
-    class:border={bColor !== undefined}
-    class:standby
-    class:standbyOn={standby && !standbyMode}
-    style:--border-color={bColor ?? 'var(--primary-button-default)'}
-    style:background-color={color && !url ? color.icon : 'var(--theme-button-default)'}
-  >
-    {#if url}
-      <img class="ava-{size} ava-image" src={url[0]} {srcset} alt={''} />
-    {:else if name && displayName && displayName !== ''}
-      <div
-        class="ava-text"
-        style:color={color ? color.iconText : 'var(--primary-button-color)'}
-        data-name={displayName.toLocaleUpperCase()}
-      />
-    {:else}
-      <div class="icon">
-        <Icon icon={icon ?? AvatarIcon} size={'full'} />
-      </div>
-    {/if}
-    {#if showStatus && account}
-      <span class="status">
-        <UserStatus user={account} size={getStatusSize(size)} {background} />
-      </span>
-    {/if}
-  </div>
+  <AvatarInstance
+    bind:this={avatarInst}
+    {url}
+    {srcset}
+    {displayName}
+    {size}
+    {icon}
+    {variant}
+    {color}
+    {bColor}
+    {standby}
+    bind:element
+  />
 {/if}
-
-<style lang="scss">
-  .avatar-container {
-    flex-shrink: 0;
-    position: relative;
-    background-color: var(--theme-button-default);
-    pointer-events: none;
-
-    &.circle,
-    &.circle img.ava-image {
-      border-radius: 50%;
-    }
-    &.roundedRect,
-    &.roundedRect img.ava-image {
-      border-radius: 20%;
-    }
-    &.standby {
-      opacity: 0.5;
-      transition: opacity 0.5s ease-in-out;
-      pointer-events: all;
-
-      &:hover,
-      &.standbyOn {
-        opacity: 1;
-      }
-      &:hover {
-        transition-duration: 0.1s;
-      }
-    }
-
-    &.no-img {
-      color: var(--primary-button-color);
-      border-color: transparent;
-    }
-    &.bordered {
-      color: var(--theme-dark-color);
-      border: 1px solid var(--theme-button-border);
-    }
-    &.border {
-      border: 1px solid var(--theme-bg-color);
-      outline: 2px solid var(--border-color);
-
-      &.ava-inline,
-      &.ava-tiny,
-      &.ava-card,
-      &.ava-x-small {
-        outline-width: 1px;
-      }
-      &.ava-large,
-      &.ava-x-large,
-      &.ava-2x-large {
-        border-width: 2px;
-      }
-    }
-    img {
-      object-fit: cover;
-    }
-    .icon,
-    .ava-text::after {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-    }
-    .icon {
-      width: 100%;
-      height: 100%;
-      color: inherit;
-      transform-origin: center;
-      transform: translate(-50%, -50%) scale(0.6);
-    }
-    .ava-text {
-      font-weight: 500;
-      letter-spacing: -0.05em;
-
-      &::after {
-        content: attr(data-name);
-        transform: translate(-50%, -50%);
-      }
-    }
-  }
-
-  .ava-inline {
-    width: 0.875rem; // 24
-    height: 0.875rem;
-
-    .ava-text {
-      font-size: 0.525rem;
-    }
-  }
-
-  .ava-tiny {
-    width: 1.13rem; // ~18
-    height: 1.13rem;
-
-    .ava-text {
-      font-size: 0.625rem;
-    }
-  }
-
-  .ava-card {
-    width: 1.25rem; // 20
-    height: 1.25rem;
-
-    .ava-text {
-      font-size: 0.75rem;
-    }
-  }
-
-  .ava-x-small {
-    width: 1.5rem; // 24
-    height: 1.5rem;
-
-    .ava-text {
-      font-size: 0.875rem;
-    }
-  }
-  .ava-smaller {
-    width: 1.75rem; // 28
-    height: 1.75rem;
-
-    .ava-text {
-      font-size: 1rem;
-    }
-  }
-  .ava-small {
-    width: 2rem; // 32
-    height: 2rem;
-
-    .ava-text {
-      font-size: 1.125rem;
-    }
-  }
-  .ava-medium {
-    width: 2.5rem; // 40
-    height: 2.5rem;
-
-    .ava-text {
-      font-size: 1.375rem;
-    }
-  }
-  .ava-large {
-    width: 4.5rem; // 72
-    height: 4.5rem;
-
-    .ava-text {
-      font-size: 2.75rem;
-    }
-  }
-
-  .ava-x-large {
-    width: 7.5rem; // 120
-    height: 7.5rem;
-
-    .ava-text {
-      font-size: 4.5rem;
-    }
-  }
-
-  .ava-2x-large {
-    width: 10rem; // 120
-    height: 10rem;
-
-    .ava-text {
-      font-size: 6rem;
-    }
-  }
-
-  .ava-full {
-    width: 100%;
-    height: 100%;
-    aspect-ratio: 1;
-
-    .ava-text {
-      font-size: inherit;
-    }
-  }
-
-  .status {
-    position: absolute;
-    bottom: -0.125rem;
-    right: -0.25rem;
-  }
-</style>

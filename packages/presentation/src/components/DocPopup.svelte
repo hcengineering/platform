@@ -58,7 +58,8 @@
   export let disallowDeselect: Ref<Doc>[] | undefined = undefined
   export let created: Doc[] = []
   export let embedded: boolean = false
-  export let loading = false
+  export let loading: boolean = false
+  export let type: 'text' | 'object' = 'text'
 
   let search: string = ''
 
@@ -220,9 +221,13 @@
               void handleSelection(undefined, objects, item)
             }}
           >
-            <span class="label" class:disabled={readonly || isDeselectDisabled || loading}>
+            {#if type === 'text'}
+              <span class="label" class:disabled={readonly || isDeselectDisabled || loading}>
+                <slot name="item" item={obj} />
+              </span>
+            {:else}
               <slot name="item" item={obj} />
-            </span>
+            {/if}
             {#if (allowDeselect && selected) || multiSelect || selected}
               <div class="check" class:disabled={readonly}>
                 {#if obj._id === selected || selectedElements.has(obj._id)}

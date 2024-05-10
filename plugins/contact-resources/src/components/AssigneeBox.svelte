@@ -161,7 +161,7 @@
     >
       <span
         slot="content"
-        class="overflow-label flex-grow"
+        class="overflow-label flex-grow h-full flex-center"
         class:flex-between={showNavigate && selected}
         class:dark-color={value == null}
       >
