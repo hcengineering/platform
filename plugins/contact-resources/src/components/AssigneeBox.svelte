@@ -66,6 +66,7 @@
   export let shouldShowName: boolean = true
   export let id: string | undefined = undefined
   export let short: boolean = false
+  export let showStatus = false
 
   const icon = IconPerson
 
@@ -147,6 +148,7 @@
       shouldShowName={false}
       shouldShowPlaceholder
       onEmployeeEdit={_click}
+      {showStatus}
     />
   {:else}
     <Button

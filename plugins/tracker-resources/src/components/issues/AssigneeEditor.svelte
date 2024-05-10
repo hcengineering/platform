@@ -40,6 +40,7 @@
   export let shrink: number = 0
   export let isAction: boolean = false
   export let readonly: boolean = false
+  export let showStatus = true
 
   $: _object =
     (typeof object !== 'string' ? object : undefined) ?? (typeof value !== 'string' ? value : undefined) ?? []
@@ -189,6 +190,7 @@
       {shrink}
       {readonly}
       {shouldShowName}
+      {showStatus}
       showNavigate={false}
       justify={'left'}
       showTooltip={{
