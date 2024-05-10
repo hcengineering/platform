@@ -224,7 +224,7 @@ function defineTeamspace (builder: Builder): void {
   // Actions
 
   builder.mixin(document.class.Teamspace, core.class.Class, view.mixin.IgnoreActions, {
-    actions: [tracker.action.EditRelatedTargets]
+    actions: [tracker.action.EditRelatedTargets, tracker.action.NewRelatedIssue]
   })
 
   createAction(
@@ -256,6 +256,9 @@ function defineTeamspace (builder: Builder): void {
       category: document.category.Document,
       target: document.class.Teamspace,
       inline: true,
+      query: {
+        archived: false
+      },
       context: {
         mode: ['context', 'browser'],
         application: document.app.Documents,
