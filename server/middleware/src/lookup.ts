@@ -87,7 +87,7 @@ export class LookupMiddleware extends BaseMiddleware implements Middleware {
             if (!Array.isArray(v)) {
               newDoc.$lookup[k] = v != null ? mapDoc(v) : v
             } else {
-              newDoc.$lookup[k] = v.map((it) => it != null ? mapDoc(it) : it)
+              newDoc.$lookup[k] = v.map((it) => (it != null ? mapDoc(it) : it))
             }
           }
         }
