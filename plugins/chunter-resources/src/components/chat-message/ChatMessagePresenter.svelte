@@ -21,7 +21,7 @@
   import { getDocLinkTitle, LinkPresenter } from '@hcengineering/view-resources'
   import { Action, Button, IconEdit, ShowMore } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import activity, { DisplayActivityMessage } from '@hcengineering/activity'
+  import activity, { ActivityMessageViewType, DisplayActivityMessage } from '@hcengineering/activity'
   import { ActivityDocLink, ActivityMessageTemplate } from '@hcengineering/activity-resources'
   import chunter, { ChatMessage, ChatMessageViewlet } from '@hcengineering/chunter'
   import { Attachment } from '@hcengineering/attachment'
@@ -49,6 +49,7 @@
   export let videoPreload = true
   export let hideLink = false
   export let compact = false
+  export let type: ActivityMessageViewType = 'default'
   export let onClick: (() => void) | undefined = undefined
 
   const client = getClient()
@@ -181,6 +182,7 @@
     {hoverStyles}
     {skipLabel}
     showDatePreposition={hideLink}
+    {type}
     {onClick}
   >
     <svelte:fragment slot="header">

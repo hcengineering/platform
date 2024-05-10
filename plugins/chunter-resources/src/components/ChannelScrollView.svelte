@@ -24,7 +24,8 @@
   import { Loading, Scroller, ScrollParams } from '@hcengineering/ui'
   import {
     ActivityExtension as ActivityExtensionComponent,
-    ActivityMessagePresenter
+    ActivityMessagePresenter,
+    canGroupMessages
   } from '@hcengineering/activity-resources'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { get } from 'svelte/store'
@@ -34,7 +35,7 @@
   import ActivityMessagesSeparator from './ChannelMessagesSeparator.svelte'
   import { filterChatMessages, getClosestDate, readChannelMessages } from '../utils'
   import HistoryLoading from './LoadingHistory.svelte'
-  import { ChannelDataProvider } from '../channelDataProvider'
+  import { ChannelDataProvider, MessageMetadata } from '../channelDataProvider'
   import JumpToDateSelector from './JumpToDateSelector.svelte'
 
   export let provider: ChannelDataProvider
@@ -71,6 +72,7 @@
   const isLoadingMoreStore = provider.isLoadingMoreStore
   const newTimestampStore = provider.newTimestampStore
   const datesStore = provider.datesStore
+  const metadataStore = provider.metadataStore
 
   let messages: ActivityMessage[] = []
   let displayMessages: DisplayActivityMessage[] = []
@@ -553,6 +555,17 @@
   }
 
   $: void compensateAside(isAsideOpened)
+
+  function canGroupChatMessages (message: ActivityMessage, prevMessage?: ActivityMessage) {
+    let prevMetadata: MessageMetadata | undefined = undefined
+
+    if (prevMessage === undefined) {
+      const metadata = $metadataStore
+      prevMetadata = metadata.find((_, index) => metadata[index + 1]?._id === message._id)
+    }
+
+    return canGroupMessages(message, prevMessage ?? prevMetadata)
+  }
 </script>
 
 {#if isLoading}
@@ -589,6 +602,7 @@
 
       {#each displayMessages as message, index (message._id)}
         {@const isSelected = message._id === selectedMessageId}
+        {@const canGroup = canGroupChatMessages(message, displayMessages[index - 1])}
 
         {#if separatorIndex === index}
           <ActivityMessagesSeparator bind:element={separatorElement} label={activity.string.New} />
@@ -609,6 +623,7 @@
             withShowMore={false}
             attachmentImageSize="x-large"
             showLinksPreview={false}
+            type={canGroup ? 'short' : 'default'}
             hideLink
           />
         </div>
@@ -633,7 +648,6 @@
 <style lang="scss">
   .msg {
     margin: 0;
-    min-height: 4.375rem;
     height: auto;
     display: flex;
     flex-direction: column;

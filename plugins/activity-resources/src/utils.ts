@@ -17,7 +17,8 @@ import core, {
   TxProcessor,
   type TxUpdateDoc,
   matchQuery,
-  getCurrentAccount
+  getCurrentAccount,
+  isOtherHour
 } from '@hcengineering/core'
 import { type Asset, type IntlString, getResource, translate } from '@hcengineering/platform'
 import { getAttributePresenterClass, getClient } from '@hcengineering/presentation'
@@ -520,9 +521,36 @@ export async function unpinMessage (message?: ActivityMessage): Promise<void> {
   await client.update(message, { isPinned: false })
 }
 
-export function getIsTextType (attributeModel: AttributeModel): boolean {
+export function getIsTextType (attributeModel?: AttributeModel): boolean {
+  if (attributeModel === undefined) {
+    return false
+  }
+
   return (
     attributeModel.attribute?.type?._class === core.class.TypeMarkup ||
     attributeModel.attribute?.type?._class === core.class.TypeCollaborativeMarkup
   )
+}
+
+const groupMessagesThresholdMs = 15 * 60 * 1000
+
+type MessageData = Pick<ActivityMessage, '_class' | 'createdBy' | 'createdOn' | 'modifiedOn'>
+
+export function canGroupMessages (message: MessageData, prevMessage?: MessageData): boolean {
+  if (prevMessage === undefined) {
+    return false
+  }
+
+  if (message.createdBy !== prevMessage.createdBy || message._class !== prevMessage._class) {
+    return false
+  }
+
+  const time1 = message.createdOn ?? message.modifiedOn
+  const time2 = prevMessage.createdOn ?? prevMessage.modifiedOn
+
+  if (isOtherHour(time1, time2)) {
+    return false
+  }
+
+  return time1 - time2 < groupMessagesThresholdMs
 }

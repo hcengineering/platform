@@ -313,6 +313,7 @@ export interface UserMentionInfo extends AttachedDoc {
 export interface IgnoreActivity extends Class<Doc> {}
 
 export type ActivityMessagePreviewType = 'full' | 'content-only'
+export type ActivityMessageViewType = 'default' | 'short'
 
 export default plugin(activityId, {
   mixin: {
