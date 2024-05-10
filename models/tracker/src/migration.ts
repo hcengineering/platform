@@ -504,6 +504,35 @@ async function restoreTaskTypes (client: MigrationClient): Promise<void> {
   }
 }
 
+async function migrateIssueStatuses (client: MigrationClient): Promise<void> {
+  await client.update(
+    DOMAIN_TX,
+    {
+      objectClass: task.class.TaskType,
+      'attributes.ofClass': tracker.class.Issue,
+      'attributes.statusClass': core.class.Status
+    },
+    {
+      $set: {
+        'attributes.statusClass': tracker.class.IssueStatus
+      }
+    }
+  )
+
+  await client.update(
+    DOMAIN_STATUS,
+    {
+      _class: core.class.Status,
+      ofAttribute: tracker.attribute.IssueStatus
+    },
+    {
+      $set: {
+        _class: tracker.class.IssueStatus
+      }
+    }
+  )
+}
+
 export const trackerOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, trackerId, [
@@ -647,6 +676,10 @@ export const trackerOperation: MigrateOperation = {
       {
         state: 'restoreTaskTypes',
         func: restoreTaskTypes
+      },
+      {
+        state: 'fixIssueStatuses',
+        func: migrateIssueStatuses
       }
     ])
   },
