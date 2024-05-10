@@ -65,7 +65,14 @@ import serverCore from '../plugin'
 import { type ServiceAdaptersManager } from '../service'
 import { type StorageAdapter } from '../storage'
 import { type Triggers } from '../triggers'
-import type { FullTextAdapter, ObjectDDParticipant, ServerStorageOptions, TriggerControl } from '../types'
+import type {
+  FullTextAdapter,
+  ObjectDDParticipant,
+  ServerStorageOptions,
+  SessionContext,
+  TriggerControl
+} from '../types'
+import { SessionContextImpl, createBroadcastEvent } from '../utils'
 
 export class TServerStorage implements ServerStorage {
   private readonly fulltext: FullTextIndex
@@ -86,7 +93,7 @@ export class TServerStorage implements ServerStorage {
     hierarchy: Hierarchy,
     private readonly triggers: Triggers,
     private readonly fulltextAdapter: FullTextAdapter,
-    readonly storageAdapter: StorageAdapter | undefined,
+    readonly storageAdapter: StorageAdapter,
     private readonly serviceAdaptersManager: ServiceAdaptersManager,
     readonly modelDb: ModelDb,
     private readonly workspace: WorkspaceIdWithUrl,
@@ -555,10 +562,82 @@ export class TServerStorage implements ServerStorage {
     return result
   }
 
+  private async broadcastCtx (derived: SessionOperationContext['derived']): Promise<void> {
+    const toSendTarget = new Map<string, Tx[]>()
+
+    const getTxes = (key: string): Tx[] => {
+      let txes = toSendTarget.get(key)
+      if (txes === undefined) {
+        txes = []
+        toSendTarget.set(key, txes)
+      }
+      return txes
+    }
+
+    // Put current user as send target
+    for (const txd of derived) {
+      if (txd.target === undefined) {
+        getTxes('') // Be sure we have empty one
+
+        // Also add to all other targeted sends
+        for (const v of toSendTarget.values()) {
+          v.push(...txd.derived)
+        }
+      } else {
+        for (const t of txd.target) {
+          getTxes(t).push(...txd.derived)
+        }
+      }
+    }
+
+    const sendWithPart = async (
+      derived: Tx[],
+      target: string | undefined,
+      exclude: string[] | undefined
+    ): Promise<void> => {
+      const classes = new Set<Ref<Class<Doc>>>()
+      for (const dtx of derived) {
+        if (this.hierarchy.isDerived(dtx._class, core.class.TxCUD)) {
+          classes.add((dtx as TxCUD<Doc>).objectClass)
+        }
+        const etx = TxProcessor.extractTx(dtx)
+        if (this.hierarchy.isDerived(etx._class, core.class.TxCUD)) {
+          classes.add((etx as TxCUD<Doc>).objectClass)
+        }
+      }
+      console.log('Broadcasting compact bulk', derived.length)
+      const bevent = createBroadcastEvent(Array.from(classes))
+      this.options.broadcast([bevent], target, exclude)
+    }
+
+    const handleSend = async (derived: Tx[], target?: string, exclude?: string[]): Promise<void> => {
+      if (derived.length === 0) {
+        return
+      }
+
+      if (derived.length > 10000) {
+        await sendWithPart(derived, target, exclude)
+      } else {
+        // Let's send after our response will go out
+        console.log('Broadcasting', derived.length, derived.length)
+        this.options.broadcast(derived, target, exclude)
+      }
+    }
+
+    const toSendAll = toSendTarget.get('') ?? []
+    toSendTarget.delete('')
+
+    // Then send targeted and all other
+    for (const [k, v] of toSendTarget.entries()) {
+      void handleSend(v, k)
+    }
+    // Send all other except us.
+    void handleSend(toSendAll, undefined, Array.from(toSendTarget.keys()))
+  }
+
   private async processDerived (
     ctx: SessionOperationContext,
     txes: Tx[],
-    triggerFx: Effects,
     findAll: ServerStorage['findAll'],
     removedMap: Map<Ref<Doc>, Doc>
   ): Promise<Tx[]> {
@@ -582,21 +661,8 @@ export class TServerStorage implements ServerStorage {
     const triggerControl: Omit<TriggerControl, 'txFactory' | 'ctx' | 'result'> = {
       removedMap,
       workspace: this.workspace,
-      fx: triggerFx.fx,
-      fulltextFx: (f) => {
-        triggerFx.fx(() => f(this.fulltextAdapter))
-      },
-      storageFx: (f) => {
-        const adapter = this.storageAdapter
-        if (adapter === undefined) {
-          return
-        }
-
-        triggerFx.fx(() => f(adapter, this.workspace))
-      },
-      serviceFx: (f) => {
-        triggerFx.fx(() => f(this.serviceAdaptersManager))
-      },
+      storageAdapter: this.storageAdapter,
+      serviceAdaptersManager: this.serviceAdaptersManager,
       findAll: fAll(ctx.ctx),
       findAllCtx: findAll,
       modelDb: this.modelDb,
@@ -614,26 +680,46 @@ export class TServerStorage implements ServerStorage {
     }
     const triggers = await ctx.with('process-triggers', {}, async (ctx) => {
       const result: Tx[] = []
-      result.push(
-        ...(await this.triggers.apply(ctx, txes, {
-          ...triggerControl,
-          ctx: ctx.ctx,
-          findAll: fAll(ctx.ctx),
-          result
-        }))
-      )
+      const { transactions, performAsync } = await this.triggers.apply(ctx, txes, {
+        ...triggerControl,
+        ctx: ctx.ctx,
+        findAll: fAll(ctx.ctx),
+        result
+      })
+      result.push(...transactions)
+
+      if (performAsync !== undefined) {
+        const asyncTriggerProcessor = async (): Promise<void> => {
+          await ctx.with('process-async-triggers', {}, async (ctx) => {
+            const sctx = ctx as SessionContext
+            const applyCtx: SessionContextImpl = new SessionContextImpl(
+              ctx.ctx,
+              sctx.userEmail,
+              sctx.sessionId,
+              sctx.admin,
+              []
+            )
+            const result = await performAsync(applyCtx)
+            // We need to broadcast changes
+            await this.broadcastCtx([{ derived: result }, ...applyCtx.derived])
+          })
+        }
+        setImmediate(() => {
+          void asyncTriggerProcessor()
+        })
+      }
+
       return result
     })
 
     const derived = [...removed, ...collections, ...moves, ...triggers]
 
-    return await this.processDerivedTxes(derived, ctx, triggerFx, findAll, removedMap)
+    return await this.processDerivedTxes(derived, ctx, findAll, removedMap)
   }
 
   private async processDerivedTxes (
     derived: Tx[],
     ctx: SessionOperationContext,
-    triggerFx: Effects,
     findAll: ServerStorage['findAll'],
     removedMap: Map<Ref<Doc>, Doc>
   ): Promise<Tx[]> {
@@ -643,7 +729,7 @@ export class TServerStorage implements ServerStorage {
 
     const nestedTxes: Tx[] = []
     if (derived.length > 0) {
-      nestedTxes.push(...(await this.processDerived(ctx, derived, triggerFx, findAll, removedMap)))
+      nestedTxes.push(...(await this.processDerived(ctx, derived, findAll, removedMap)))
     }
 
     const res = [...derived, ...nestedTxes]
@@ -740,7 +826,6 @@ export class TServerStorage implements ServerStorage {
     const modelTx: Tx[] = []
     const applyTxes: Tx[] = []
     const txToProcess: Tx[] = []
-    const triggerFx = new Effects()
     const removedMap = new Map<Ref<Doc>, Doc>()
     const onEnds: (() => void)[] = []
     const result: TxResult[] = []
@@ -779,16 +864,12 @@ export class TServerStorage implements ServerStorage {
       result.push(...(await ctx.with('apply', {}, (ctx) => this.routeTx(ctx.ctx, removedMap, ...txToProcess))))
 
       // invoke triggers and store derived objects
-      derived.push(...(await this.processDerived(ctx, txToProcess, triggerFx, _findAll, removedMap)))
+      derived.push(...(await this.processDerived(ctx, txToProcess, _findAll, removedMap)))
 
       // index object
       await ctx.with('fulltext-tx', {}, async (ctx) => {
         await this.fulltext.tx(ctx.ctx, [...txToProcess, ...derived])
       })
-
-      for (const fx of triggerFx.effects) {
-        await fx()
-      }
     } catch (err: any) {
       ctx.ctx.error('error process tx', { error: err })
       throw err
@@ -823,18 +904,5 @@ export class TServerStorage implements ServerStorage {
 
   async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
     await this.getAdapter(domain).clean(ctx, domain, docs)
-  }
-}
-
-type Effect = () => Promise<void>
-class Effects {
-  private readonly _effects: Effect[] = []
-
-  public fx = (f: Effect): void => {
-    this._effects.push(f)
-  }
-
-  get effects (): Effect[] {
-    return [...this._effects]
   }
 }

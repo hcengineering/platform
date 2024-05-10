@@ -72,7 +72,7 @@ export interface Middleware {
 /**
  * @public
  */
-export type BroadcastFunc = (tx: Tx[], targets?: string[]) => void
+export type BroadcastFunc = (tx: Tx[], targets?: string | string[], exclude?: string[]) => void
 /**
  * @public
  */
@@ -123,12 +123,10 @@ export interface TriggerControl {
   modelDb: ModelDb
   removedMap: Map<Ref<Doc>, Doc>
 
-  fulltextFx: (f: (adapter: FullTextAdapter) => Promise<void>) => void
   // Since we don't have other storages let's consider adapter is MinioClient
   // Later can be replaced with generic one with bucket encapsulated inside.
-  storageFx: (f: (adapter: StorageAdapter, workspaceId: WorkspaceId) => Promise<void>) => void
-  fx: (f: () => Promise<void>) => void
-  serviceFx: (f: (adapter: ServiceAdaptersManager) => Promise<void>) => void
+  storageAdapter: StorageAdapter
+  serviceAdaptersManager: ServiceAdaptersManager
   // Bulk operations in case trigger require some
   apply: (tx: Tx[], broadcast: boolean, target?: string[]) => Promise<TxResult>
   applyCtx: (ctx: SessionOperationContext, tx: Tx[], broadcast: boolean, target?: string[]) => Promise<TxResult>
@@ -154,6 +152,9 @@ export type TriggerFunc = (tx: Tx, ctrl: TriggerControl) => Promise<Tx[]>
  */
 export interface Trigger extends Doc {
   trigger: Resource<TriggerFunc>
+
+  // In case defiled, trigger will be executed asyncronously after transaction will be done, trigger shouod use
+  isAsync?: boolean
 
   // We should match transaction
   txMatch?: DocumentQuery<Tx>

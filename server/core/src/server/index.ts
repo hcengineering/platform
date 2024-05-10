@@ -54,7 +54,7 @@ export async function createServerStorage (
   const adapters = new Map<string, DbAdapter>()
   const modelDb = new ModelDb(hierarchy)
 
-  const storageAdapter = conf.storageFactory?.()
+  const storageAdapter = conf.storageFactory()
 
   await ctx.with('create-adapters', {}, async (ctx) => {
     for (const key in conf.adapters) {

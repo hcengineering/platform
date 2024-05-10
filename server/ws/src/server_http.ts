@@ -234,9 +234,9 @@ export function startHttpServer (
       try {
         let buff: any | undefined
         if (msg instanceof Buffer) {
-          buff = msg
+          buff = Buffer.copyBytesFrom(msg)
         } else if (Array.isArray(msg)) {
-          buff = Buffer.concat(msg)
+          buff = Buffer.copyBytesFrom(Buffer.concat(msg))
         }
         if (buff !== undefined) {
           doSessionOp(webSocketData, (s) => {
@@ -347,24 +347,26 @@ function createWebsocketClientSocket (
     },
     data: () => data,
     send: async (ctx: MeasureContext, msg, binary, compression) => {
-      if (ws.readyState !== ws.OPEN && !cs.isClosed) {
-        return 0
-      }
       const smsg = serialize(msg, binary)
 
-      while (ws.bufferedAmount > 16 * 1024 && ws.readyState === ws.OPEN) {
-        await new Promise<void>((resolve) => {
-          setImmediate(resolve)
-        })
-      }
       ctx.measure('send-data', smsg.length)
       await new Promise<void>((resolve, reject) => {
-        ws.send(smsg, { binary: true, compress: compression }, (err) => {
-          if (err != null) {
-            reject(err)
+        const doSend = (): void => {
+          if (ws.readyState !== ws.OPEN && !cs.isClosed) {
+            return
           }
-          resolve()
-        })
+          if (ws.bufferedAmount > 16 * 1024) {
+            setImmediate(doSend)
+            return
+          }
+          ws.send(smsg, { binary: true, compress: compression }, (err) => {
+            if (err != null) {
+              reject(err)
+            }
+            resolve()
+          })
+        }
+        doSend()
       })
       return smsg.length
     }

@@ -90,7 +90,7 @@ export async function OnPersonAccountCreate (tx: Tx, control: TriggerControl): P
  */
 export async function OnContactDelete (
   tx: Tx,
-  { findAll, hierarchy, storageFx, removedMap, txFactory, ctx }: TriggerControl
+  { findAll, hierarchy, storageAdapter, workspace, removedMap, txFactory, ctx }: TriggerControl
 ): Promise<Tx[]> {
   const rmTx = tx as TxRemoveDoc<Contact>
 
@@ -112,20 +112,18 @@ export async function OnContactDelete (
     return []
   }
 
-  storageFx(async (adapter, bucket) => {
-    await adapter.remove(ctx, bucket, [avatar])
+  await storageAdapter.remove(ctx, workspace, [avatar])
 
-    if (avatar != null) {
-      const extra = await adapter.list(ctx, bucket, avatar)
-      if (extra.length > 0) {
-        await adapter.remove(
-          ctx,
-          bucket,
-          Array.from(extra.entries()).map((it) => it[1]._id)
-        )
-      }
+  if (avatar != null) {
+    const extra = await storageAdapter.list(ctx, workspace, avatar)
+    if (extra.length > 0) {
+      await storageAdapter.remove(
+        ctx,
+        workspace,
+        Array.from(extra.entries()).map((it) => it[1]._id)
+      )
     }
-  })
+  }
 
   const result: Tx[] = []
 

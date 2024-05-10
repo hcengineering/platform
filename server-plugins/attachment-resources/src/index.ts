@@ -15,7 +15,7 @@
 //
 
 import type { Attachment } from '@hcengineering/attachment'
-import type { Doc, Ref, Tx, TxRemoveDoc } from '@hcengineering/core'
+import type { Tx, TxRemoveDoc } from '@hcengineering/core'
 import { TxProcessor } from '@hcengineering/core'
 import type { TriggerControl } from '@hcengineering/server-core'
 
@@ -24,7 +24,7 @@ import type { TriggerControl } from '@hcengineering/server-core'
  */
 export async function OnAttachmentDelete (
   tx: Tx,
-  { findAll, hierarchy, fulltextFx, storageFx, removedMap, ctx }: TriggerControl
+  { removedMap, ctx, storageAdapter, workspace }: TriggerControl
 ): Promise<Tx[]> {
   const rmTx = TxProcessor.extractTx(tx) as TxRemoveDoc<Attachment>
 
@@ -34,13 +34,8 @@ export async function OnAttachmentDelete (
   if (attach === undefined) {
     return []
   }
-  fulltextFx(async (adapter) => {
-    await adapter.remove([attach.file as Ref<Doc>])
-  })
 
-  storageFx(async (adapter, bucket) => {
-    await adapter.remove(ctx, bucket, [attach.file])
-  })
+  await storageAdapter.remove(ctx, workspace, [attach.file])
 
   return []
 }

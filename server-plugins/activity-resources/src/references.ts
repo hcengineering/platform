@@ -597,27 +597,25 @@ async function ActivityReferenceCreate (tx: TxCUD<Doc>, control: TriggerControl)
   if (control.hierarchy.isDerived(ctx.objectClass, notification.class.InboxNotification)) return []
   if (control.hierarchy.isDerived(ctx.objectClass, activity.class.ActivityReference)) return []
 
-  control.storageFx(async (adapter) => {
-    const txFactory = new TxFactory(control.txFactory.account)
+  const txFactory = new TxFactory(control.txFactory.account)
 
-    const doc = TxProcessor.createDoc2Doc(ctx)
-    const targetTx = guessReferenceTx(control.hierarchy, tx)
+  const doc = TxProcessor.createDoc2Doc(ctx)
+  const targetTx = guessReferenceTx(control.hierarchy, tx)
 
-    const txes: Tx[] = await getCreateReferencesTxes(
-      control,
-      adapter,
-      txFactory,
-      doc,
-      targetTx.objectId,
-      targetTx.objectClass,
-      targetTx.objectSpace,
-      tx
-    )
+  const txes: Tx[] = await getCreateReferencesTxes(
+    control,
+    control.storageAdapter,
+    txFactory,
+    doc,
+    targetTx.objectId,
+    targetTx.objectClass,
+    targetTx.objectSpace,
+    tx
+  )
 
-    if (txes.length !== 0) {
-      await control.apply(txes, true)
-    }
-  })
+  if (txes.length !== 0) {
+    await control.apply(txes, true)
+  }
 
   return []
 }
@@ -647,26 +645,24 @@ async function ActivityReferenceUpdate (tx: TxCUD<Doc>, control: TriggerControl)
     return []
   }
 
-  control.storageFx(async (adapter) => {
-    const txFactory = new TxFactory(control.txFactory.account)
-    const doc = TxProcessor.updateDoc2Doc(rawDoc, ctx)
-    const targetTx = guessReferenceTx(control.hierarchy, tx)
+  const txFactory = new TxFactory(control.txFactory.account)
+  const doc = TxProcessor.updateDoc2Doc(rawDoc, ctx)
+  const targetTx = guessReferenceTx(control.hierarchy, tx)
 
-    const txes: Tx[] = await getUpdateReferencesTxes(
-      control,
-      adapter,
-      txFactory,
-      doc,
-      targetTx.objectId,
-      targetTx.objectClass,
-      targetTx.objectSpace,
-      tx
-    )
+  const txes: Tx[] = await getUpdateReferencesTxes(
+    control,
+    control.storageAdapter,
+    txFactory,
+    doc,
+    targetTx.objectId,
+    targetTx.objectClass,
+    targetTx.objectSpace,
+    tx
+  )
 
-    if (txes.length !== 0) {
-      await control.apply(txes, true)
-    }
-  })
+  if (txes.length !== 0) {
+    await control.apply(txes, true)
+  }
 
   return []
 }

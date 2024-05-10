@@ -17,57 +17,26 @@ import core, {
   AccountRole,
   TxFactory,
   TxProcessor,
-  WorkspaceEvent,
-  generateId,
   toIdMap,
   type Account,
-  type BulkUpdateEvent,
   type Class,
   type Doc,
   type DocumentQuery,
   type FindOptions,
   type FindResult,
-  type FullParamsType,
   type MeasureContext,
-  type ParamsType,
   type Ref,
   type SearchOptions,
   type SearchQuery,
-  type SessionOperationContext,
   type Timestamp,
   type Tx,
   type TxApplyIf,
   type TxApplyResult,
-  type TxCUD,
-  type TxWorkspaceEvent
+  type TxCUD
 } from '@hcengineering/core'
-import { type Pipeline, type SessionContext } from '@hcengineering/server-core'
+import { SessionContextImpl, createBroadcastEvent, type Pipeline } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
 import { type ClientSessionCtx, type Session, type SessionRequest, type StatisticsElement } from './types'
-
-class SessionContextImpl implements SessionContext {
-  constructor (
-    readonly ctx: MeasureContext,
-    readonly userEmail: string,
-    readonly sessionId: string,
-    readonly admin: boolean | undefined,
-    readonly derived: SessionContext['derived']
-  ) {}
-
-  with<T>(
-    name: string,
-    params: ParamsType,
-    op: (ctx: SessionOperationContext) => T | Promise<T>,
-    fullParams?: FullParamsType
-  ): Promise<T> {
-    return this.ctx.with(
-      name,
-      params,
-      async (ctx) => await op(new SessionContextImpl(ctx, this.userEmail, this.sessionId, this.admin, this.derived)),
-      fullParams
-    )
-  }
-}
 
 /**
  * @public
@@ -197,11 +166,6 @@ export class ClientSession implements Session {
     await ctx.sendResponse(await this._pipeline.searchFulltext(context, query, options))
   }
 
-  async txRaw (ctx: MeasureContext, tx: Tx): Promise<void> {
-    // Just do Tx and do not send anything
-    await this.tx({ ctx, sendResponse: async () => {}, send: async () => {}, sendError: async () => {} }, tx)
-  }
-
   async tx (ctx: ClientSessionCtx, tx: Tx): Promise<void> {
     this.lastRequest = Date.now()
     this.total.tx++
@@ -238,7 +202,7 @@ export class ClientSession implements Session {
     toSendTarget.set(this.getUser(), [])
     for (const txd of context.derived) {
       if (txd.target === undefined) {
-        getTxes('').push(...txd.derived)
+        getTxes('') // be sure we have empty one
 
         // Also add to all other targeted sends
         for (const v of toSendTarget.values()) {
@@ -320,22 +284,7 @@ export class ClientSession implements Session {
       }
     }
     console.log('Broadcasting compact bulk', derived.length)
-    const bevent = this.createBroadcastEvent(Array.from(classes))
+    const bevent = createBroadcastEvent(Array.from(classes))
     await ctx.send([bevent], target, exclude)
-  }
-
-  private createBroadcastEvent (classes: Ref<Class<Doc>>[]): TxWorkspaceEvent<BulkUpdateEvent> {
-    return {
-      _class: core.class.TxWorkspaceEvent,
-      _id: generateId(),
-      event: WorkspaceEvent.BulkUpdate,
-      params: {
-        _class: classes
-      },
-      modifiedBy: core.account.System,
-      modifiedOn: Date.now(),
-      objectSpace: core.space.DerivedTx,
-      space: core.space.DerivedTx
-    }
   }
 }

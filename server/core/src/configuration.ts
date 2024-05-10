@@ -69,5 +69,5 @@ export interface DbConfiguration {
   contentAdapters: Record<string, ContentTextAdapterConfiguration>
   serviceAdapters: Record<string, ServiceAdapterConfig>
   defaultContentAdapter: string
-  storageFactory?: () => StorageAdapter
+  storageFactory: () => StorageAdapter
 }
