@@ -14,8 +14,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getMetadata } from '@hcengineering/platform'
-  import { Button, IconClose, Label } from '@hcengineering/ui'
+  import { getMetadata, translate } from '@hcengineering/platform'
+  import { Button, IconClose, Label, themeStore } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import gmail from '../plugin'
   import { concatLink } from '@hcengineering/core'
@@ -45,6 +45,12 @@
     window.open(redirectTo)
     dispatch('close')
   }
+
+  let label = ''
+
+  $: translate(gmail.string.GooglePrivacy, {}, $themeStore.language).then((res) => {
+    label = res
+  })
 </script>
 
 <div class="card">
@@ -63,6 +69,10 @@
   </div>
   <div class="content">
     <Label label={gmail.string.RedirectGoogle} />
+    <div class="mt-2">
+      {@html label}
+    </div>
+
     <div class="footer">
       <Button label={gmail.string.Connect} kind={'primary'} disabled={connecting} on:click={sendRequest} />
     </div>
