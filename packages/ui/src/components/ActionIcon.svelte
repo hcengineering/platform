@@ -13,12 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { IntlString, Asset } from '@hcengineering/platform'
-  import type { AnySvelteComponent, TooltipAlignment } from '../types'
+  import type { Asset, IntlString } from '@hcengineering/platform'
   import { ComponentType } from 'svelte'
+  import type { AnySvelteComponent, TooltipAlignment } from '../types'
 
-  import Icon from './Icon.svelte'
   import { tooltip } from '../tooltips'
+  import Icon from './Icon.svelte'
 
   export let label: IntlString = '' as IntlString
   export let labelProps: any = undefined
@@ -29,11 +29,12 @@
   export let action: (ev: MouseEvent) => Promise<void> | void = async () => {}
   export let invisible: boolean = false
   export let disabled: boolean = false
+  export let keys: string[] | undefined = undefined
 </script>
 
 <button
   class="button {size}"
-  use:tooltip={{ label, direction, props: labelProps }}
+  use:tooltip={{ label, direction, props: labelProps, keys }}
   tabindex="0"
   on:click|stopPropagation|preventDefault={action}
   on:contextmenu
