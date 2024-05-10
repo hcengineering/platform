@@ -650,6 +650,36 @@ export function createModel (builder: Builder): void {
     view.action.Archive
   )
 
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.Join,
+      label: view.string.Join,
+      icon: view.icon.Join,
+      category: view.category.General,
+      input: 'focus',
+      target: core.class.Space,
+      visibilityTester: view.function.CanJoinSpace,
+      context: { mode: ['context', 'browser'], group: 'tools' }
+    },
+    view.action.Join
+  )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.Leave,
+      label: view.string.Leave,
+      icon: view.icon.Leave,
+      category: view.category.General,
+      input: 'focus',
+      target: core.class.Space,
+      visibilityTester: view.function.CanLeaveSpace,
+      context: { mode: ['context', 'browser'], group: 'tools' }
+    },
+    view.action.Leave
+  )
+
   // Keyboard actions.
   createAction(
     builder,
