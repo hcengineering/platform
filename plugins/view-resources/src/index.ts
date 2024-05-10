@@ -120,7 +120,14 @@ import {
 import { IndexedDocumentPreview } from '@hcengineering/presentation'
 import { AggregationMiddleware, AnalyticsMiddleware } from './middleware'
 import { showEmptyGroups } from './viewOptions'
-import { canArchiveSpace, canDeleteObject, canDeleteSpace, canEditSpace } from './visibilityTester'
+import {
+  canArchiveSpace,
+  canDeleteObject,
+  canDeleteSpace,
+  canEditSpace,
+  canJoinSpace,
+  canLeaveSpace
+} from './visibilityTester'
 export { canArchiveSpace, canDeleteObject, canDeleteSpace, canEditSpace } from './visibilityTester'
 export { getActions, getContextActions, invokeAction, showMenu } from './actions'
 export { default as ActionButton } from './components/ActionButton.svelte'
@@ -307,6 +314,8 @@ export default async (): Promise<Resources> => ({
     CanDeleteObject: canDeleteObject,
     CanEditSpace: canEditSpace,
     CanArchiveSpace: canArchiveSpace,
-    CanDeleteSpace: canDeleteSpace
+    CanDeleteSpace: canDeleteSpace,
+    CanJoinSpace: canJoinSpace,
+    CanLeaveSpace: canLeaveSpace
   }
 })

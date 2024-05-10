@@ -24,6 +24,8 @@ export default mergeIds(viewId, view, {
   actionImpl: {
     Delete: '' as ViewAction,
     Archive: '' as ViewAction,
+    Join: '' as ViewAction,
+    Leave: '' as ViewAction,
     Move: '' as ViewAction,
     MoveLeft: '' as ViewAction,
     MoveRight: '' as ViewAction,
@@ -128,7 +130,9 @@ export default mergeIds(viewId, view, {
     CanDeleteObject: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     CanEditSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     CanArchiveSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
-    CanDeleteSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
+    CanDeleteSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    CanJoinSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    CanLeaveSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
   },
   pipeline: {
     PresentationMiddleware: '' as Ref<PresentationMiddlewareFactory>,

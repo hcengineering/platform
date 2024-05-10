@@ -114,6 +114,8 @@
     "ToViewCommands": "para ver los comandos disponibles",
     "UnArchive": "Desarchivar",
     "Pin": "Fijar",
-    "Unpin": "Desfijar"
+    "Unpin": "Desfijar",
+    "Leave": "Salir",
+    "Join": "Unirse"
   }
 }
