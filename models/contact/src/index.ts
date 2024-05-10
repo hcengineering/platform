@@ -446,7 +446,7 @@ export function createModel (builder: Builder): void {
       attachTo: contact.mixin.Employee,
       descriptor: view.viewlet.Table,
       config: [
-        '',
+        { key: '', props: { showStatus: true } },
         'city',
         'attachments',
         'modifiedOn',

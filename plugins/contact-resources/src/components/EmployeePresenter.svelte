@@ -22,7 +22,7 @@
   // export let element: HTMLElement | undefined = undefined
   export let noUnderline: boolean = false
   export let compact: boolean = false
-  export let showStatus: boolean = true
+  export let showStatus: boolean = false
 
   $: employeeValue = typeof value === 'string' ? $personByIdStore.get(value) : value
 
@@ -45,7 +45,7 @@
   {defaultName}
   {noUnderline}
   {compact}
-  {showStatus}
+  showStatus={showStatus && active}
   statusLabel={!active && shouldShowName && showStatus ? contact.string.Inactive : undefined}
   on:accent-color
 />

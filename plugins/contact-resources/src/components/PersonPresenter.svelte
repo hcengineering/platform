@@ -42,7 +42,7 @@
   export let maxWidth = ''
   export let compact = false
   export let type: ObjectPresenterType = 'link'
-  export let showStatus: boolean = true
+  export let showStatus: boolean = false
 
   const client = getClient()
   $: personValue = typeof value === 'string' ? $personByIdStore.get(value) : value

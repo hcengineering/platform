@@ -33,6 +33,7 @@
   export let skipCurrentAccount = false
   export let disableDeselectFor: Ref<Employee>[] = []
   export let showStatus = true
+  export let skipInactive = false
 
   const dispatch = createEventDispatcher()
 
@@ -90,6 +91,7 @@
           {showStatus}
           {disableDeselectFor}
           {skipCurrentAccount}
+          {skipInactive}
           on:select={handleSelectionChanged}
         />
       </Scroller>
