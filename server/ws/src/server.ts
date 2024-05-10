@@ -951,6 +951,7 @@ class TSessionManager implements SessionManager {
       if (service.measureCtx !== undefined) {
         serverTime = Date.now() - service.measureCtx.time
         service.measureCtx.ctx.end(serverTime)
+        service.measureCtx = undefined
       }
     }
     try {
