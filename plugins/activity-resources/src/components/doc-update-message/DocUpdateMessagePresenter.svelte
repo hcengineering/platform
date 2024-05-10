@@ -15,6 +15,7 @@
 <script lang="ts">
   import activity, {
     ActivityMessage,
+    ActivityMessageViewType,
     DisplayActivityMessage,
     DisplayDocUpdateMessage,
     DocUpdateMessage,
@@ -35,6 +36,7 @@
   import DocUpdateMessageHeader from './DocUpdateMessageHeader.svelte'
 
   import { getAttributeModel, getCollectionAttribute } from '../../activityMessagesUtils'
+  import { getIsTextType } from '../../utils'
 
   export let value: DisplayDocUpdateMessage
   export let showNotify: boolean = false
@@ -50,6 +52,7 @@
   export let hoverable = true
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
   export let hideLink = false
+  export let type: ActivityMessageViewType = 'default'
   export let onClick: (() => void) | undefined = undefined
 
   const client = getClient()
@@ -169,6 +172,7 @@
   {skipLabel}
   {hoverable}
   {hoverStyles}
+  type={viewlet?.label || getIsTextType(attributeModel) ? 'default' : type}
   showDatePreposition={hideLink}
   {onClick}
 >

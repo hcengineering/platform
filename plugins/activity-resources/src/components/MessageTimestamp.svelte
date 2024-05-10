@@ -19,6 +19,7 @@
   import { getEmbeddedLabel } from '@hcengineering/platform'
 
   export let date: Timestamp
+  export let shortTime = false
 
   $: fullDate = new Date(date).toLocaleString('default', {
     minute: '2-digit',
@@ -27,8 +28,14 @@
     month: 'short',
     year: 'numeric'
   })
+
+  function getShortTime (date: Timestamp): string {
+    const options: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: 'numeric' }
+
+    return new Date(date).toLocaleTimeString('default', options).split(' ')[0]
+  }
 </script>
 
 <span class="text-sm" use:tooltip={{ label: getEmbeddedLabel(fullDate) }}>
-  {getDisplayTime(date)}
+  {shortTime ? getShortTime(date) : getDisplayTime(date)}
 </span>

@@ -21,6 +21,7 @@
   import ActivityExtensionComponent from './ActivityExtension.svelte'
   import ActivityFilter from './ActivityFilter.svelte'
   import { combineActivityMessages } from '../activityMessagesUtils'
+  import { canGroupMessages } from '../utils'
 
   export let object: Doc
   export let showCommenInput: boolean = true
@@ -95,14 +96,16 @@
 <div class="p-activity select-text" id={activity.string.Activity} class:newest-first={isNewestFirst}>
   {#if filteredMessages.length}
     <Grid column={1} rowGap={0}>
-      {#each filteredMessages as message}
+      {#each filteredMessages as message, index}
+        {@const canGroup = canGroupMessages(message, filteredMessages[index - 1])}
         <Lazy>
           <Component
             is={activity.component.ActivityMessagePresenter}
             props={{
               value: message,
               hideLink: true,
-              boundary
+              boundary,
+              type: canGroup ? 'short' : 'default'
             }}
           />
         </Lazy>

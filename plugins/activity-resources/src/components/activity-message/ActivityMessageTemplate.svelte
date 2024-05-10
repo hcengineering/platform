@@ -13,7 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import activity, { ActivityMessageViewlet, DisplayActivityMessage } from '@hcengineering/activity'
+  import activity, {
+    ActivityMessageViewlet,
+    DisplayActivityMessage,
+    ActivityMessageViewType
+  } from '@hcengineering/activity'
   import { Person } from '@hcengineering/contact'
   import { Avatar, EmployeePresenter, SystemAvatar } from '@hcengineering/contact-resources'
   import core from '@hcengineering/core'
@@ -47,6 +51,7 @@
   export let hoverable = true
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
   export let showDatePreposition = false
+  export let type: ActivityMessageViewType = 'default'
   export let onClick: (() => void) | undefined = undefined
 
   const client = getClient()
@@ -93,6 +98,12 @@
 
   let readonly: boolean = false
   $: readonly = $restrictionStore.disableComments
+
+  function canDisplayShort (type: ActivityMessageViewType, isSaved: boolean): boolean {
+    return type === 'short' && !isSaved && (message.replies ?? 0) === 0
+  }
+
+  $: isShort = canDisplayShort(type, isSaved)
 </script>
 
 {#if !isHidden}
@@ -119,10 +130,16 @@
         isActionsOpened = true
       }}
     >
-      {#if showNotify && !embedded}
+      {#if showNotify && !embedded && !isShort}
         <div class="notify" />
       {/if}
-      {#if !embedded}
+      {#if embedded}
+        <div class="embeddedMarker" />
+      {:else if isShort}
+        <span class="text-sm lower time">
+          <MessageTimestamp date={message.createdOn ?? message.modifiedOn} shortTime />
+        </span>
+      {:else}
         <div class="min-w-6 mt-1 relative">
           {#if $$slots.icon}
             <slot name="icon" />
@@ -137,33 +154,33 @@
             </div>
           {/if}
         </div>
-      {:else}
-        <div class="embeddedMarker" />
       {/if}
       <div class="flex-col ml-2 w-full clear-mins message-content">
-        <div class="header clear-mins">
-          {#if person}
-            <EmployeePresenter value={person} shouldShowAvatar={false} compact />
-          {:else}
-            <div class="strong">
-              <Label label={core.string.System} />
-            </div>
-          {/if}
+        {#if !isShort}
+          <div class="header clear-mins">
+            {#if person}
+              <EmployeePresenter value={person} shouldShowAvatar={false} compact />
+            {:else}
+              <div class="strong">
+                <Label label={core.string.System} />
+              </div>
+            {/if}
 
-          {#if !skipLabel}
-            <slot name="header" />
-          {/if}
+            {#if !skipLabel}
+              <slot name="header" />
+            {/if}
 
-          {#if !skipLabel && showDatePreposition}
+            {#if !skipLabel && showDatePreposition}
+              <span class="text-sm lower">
+                <Label label={activity.string.At} />
+              </span>
+            {/if}
+
             <span class="text-sm lower">
-              <Label label={activity.string.At} />
+              <MessageTimestamp date={message.createdOn ?? message.modifiedOn} />
             </span>
-          {/if}
-
-          <span class="text-sm lower">
-            <MessageTimestamp date={message.createdOn ?? message.modifiedOn} />
-          </span>
-        </div>
+          </div>
+        {/if}
 
         <slot name="content" />
 
@@ -203,7 +220,7 @@
     position: relative;
     display: flex;
     flex-shrink: 0;
-    padding: 0.75rem 0.75rem 0.75rem 1rem;
+    padding: 0.5rem 0.75rem 0.5rem 1rem;
     gap: 1rem;
     //overflow: hidden;
     border: 1px solid transparent;
@@ -241,6 +258,18 @@
 
     &:hover > .actions {
       visibility: visible;
+    }
+
+    &:hover > .time {
+      visibility: visible;
+    }
+
+    .time {
+      display: flex;
+      justify-content: end;
+      width: 2.5rem;
+      visibility: hidden;
+      margin-top: 0.125rem;
     }
 
     &.actionsOpened {
