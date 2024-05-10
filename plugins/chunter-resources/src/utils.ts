@@ -390,6 +390,7 @@ export async function readChannelMessages (
   const lastTimestamp = messages[messages.length - 1].createdOn ?? 0
 
   if ((context.lastViewedTimestamp ?? 0) < lastTimestamp) {
+    context.lastViewedTimestamp = lastTimestamp
     void client.update(context, { lastViewedTimestamp: lastTimestamp })
   }
 }
