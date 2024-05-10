@@ -354,6 +354,35 @@ async function migrateDefaultProjectOwners (client: MigrationClient): Promise<vo
   )
 }
 
+async function migrateIssueStatuses (client: MigrationClient): Promise<void> {
+  await client.update(
+    DOMAIN_TX,
+    {
+      objectClass: task.class.TaskType,
+      'attributes.ofClass': tracker.class.Issue,
+      'attributes.statusClass': core.class.Status
+    },
+    {
+      $set: {
+        'attributes.statusClass': tracker.class.IssueStatus
+      }
+    }
+  )
+
+  await client.update(
+    DOMAIN_STATUS,
+    {
+      _class: core.class.Status,
+      ofAttribute: tracker.attribute.IssueStatus
+    },
+    {
+      $set: {
+        _class: tracker.class.IssueStatus
+      }
+    }
+  )
+}
+
 export const trackerOperation: MigrateOperation = {
   async preMigrate (client: MigrationClient, logger: ModelLogger): Promise<void> {
     await tryMigrate(client, trackerId, [
@@ -372,6 +401,10 @@ export const trackerOperation: MigrateOperation = {
       {
         state: 'passIdentifierToParentInfo',
         func: passIdentifierToParentInfo
+      },
+      {
+        state: 'fixIncorrectIssueStatuses',
+        func: migrateIssueStatuses
       },
       {
         state: 'statusesToModel-2',
