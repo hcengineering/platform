@@ -55,7 +55,7 @@
   let calendars: Calendar[] = []
   let todayDate = new Date()
 
-  $: calendarsQ.query(calendar.class.Calendar, { members: acc, archived: false }, (res) => {
+  $: calendarsQ.query(calendar.class.Calendar, { createdBy: acc, hidden: false }, (res) => {
     calendars = res
   })
 

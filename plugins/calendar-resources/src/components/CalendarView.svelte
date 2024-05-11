@@ -118,7 +118,7 @@
 
   let calendars: Calendar[] = []
 
-  calendarsQuery.query(calendar.class.Calendar, { members: me._id, hidden: false }, (res) => {
+  calendarsQuery.query(calendar.class.Calendar, { createdBy: me._id, hidden: false }, (res) => {
     calendars = res
   })
 

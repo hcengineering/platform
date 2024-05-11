@@ -98,7 +98,7 @@
   )
 
   const calendarQuery = createQuery()
-  $: calendarQuery.query(calendar.class.Calendar, { archived: false }, (res) => {
+  $: calendarQuery.query(calendar.class.Calendar, { hidden: false }, (res) => {
     calendarIds = res.map((p) => p._id)
     calendars = toIdMap(res)
   })
