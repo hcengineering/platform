@@ -25,10 +25,17 @@ import {
   type Visibility
 } from '@hcengineering/calendar'
 import { type Contact } from '@hcengineering/contact'
-import { DateRangeMode, type Domain, IndexKind, type Markup, type Ref, type Timestamp } from '@hcengineering/core'
+import {
+  DateRangeMode,
+  IndexKind,
+  type SystemSpace,
+  type Domain,
+  type Markup,
+  type Ref,
+  type Timestamp
+} from '@hcengineering/core'
 import {
   ArrOf,
-  type Builder,
   Collection,
   Index,
   Mixin,
@@ -41,12 +48,12 @@ import {
   TypeRef,
   TypeString,
   TypeTimestamp,
-  UX
+  UX,
+  type Builder
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import contact from '@hcengineering/model-contact'
-import core, { TAttachedDoc, TClass } from '@hcengineering/model-core'
-import { TProject } from '@hcengineering/model-task'
+import core, { TAttachedDoc, TClass, TDoc } from '@hcengineering/model-core'
 import view, { createAction } from '@hcengineering/model-view'
 import notification from '@hcengineering/notification'
 import setting from '@hcengineering/setting'
@@ -59,9 +66,11 @@ export { calendarOperation } from './migration'
 
 export const DOMAIN_CALENDAR = 'calendar' as Domain
 
-@Model(calendar.class.Calendar, core.class.Space)
+@Model(calendar.class.Calendar, core.class.Doc)
 @UX(calendar.string.Calendar, calendar.icon.Calendar)
-export class TCalendar extends TProject implements Calendar {
+export class TCalendar extends TDoc implements Calendar {
+  name!: string
+  hidden!: boolean
   visibility!: Visibility
 }
 
@@ -76,7 +85,10 @@ export class TExternalCalendar extends TCalendar implements ExternalCalendar {
 @Model(calendar.class.Event, core.class.AttachedDoc, DOMAIN_CALENDAR)
 @UX(calendar.string.Event, calendar.icon.Calendar)
 export class TEvent extends TAttachedDoc implements Event {
-  declare space: Ref<Calendar>
+  declare space: Ref<SystemSpace>
+
+  @Prop(TypeRef(calendar.class.Calendar), calendar.string.Calendar)
+    calendar!: Ref<Calendar>
 
   eventId!: string
 

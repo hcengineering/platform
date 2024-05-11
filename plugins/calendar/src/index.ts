@@ -12,7 +12,7 @@
 // limitations under the License.
 
 import { Contact } from '@hcengineering/contact'
-import type { AttachedDoc, Class, Doc, Markup, Mixin, Ref, Space, Timestamp } from '@hcengineering/core'
+import type { AttachedDoc, Class, Doc, Markup, Mixin, Ref, SystemSpace, Timestamp } from '@hcengineering/core'
 import { NotificationType } from '@hcengineering/notification'
 import type { Asset, IntlString, Metadata, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -27,7 +27,9 @@ export type Visibility = 'public' | 'freeBusy' | 'private'
 /**
  * @public
  */
-export interface Calendar extends Space {
+export interface Calendar extends Doc {
+  name: string
+  hidden: boolean
   visibility: Visibility
 }
 
@@ -76,10 +78,12 @@ export interface ReccuringEvent extends Event {
  * @public
  */
 export interface Event extends AttachedDoc {
-  space: Ref<Calendar>
+  space: Ref<SystemSpace>
   eventId: string
   title: string
   description: Markup
+
+  calendar: Ref<Calendar>
 
   location?: string
 
@@ -161,8 +165,7 @@ const calendarPlugin = plugin(calendarId, {
     Permissions: '' as Asset
   },
   space: {
-    // deprecated
-    PersonalEvents: '' as Ref<Calendar>
+    Calendar: '' as Ref<SystemSpace>
   },
   app: {
     Calendar: '' as Ref<Doc>

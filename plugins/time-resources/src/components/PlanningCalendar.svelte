@@ -65,7 +65,7 @@
   function update (calendars: Calendar[]): void {
     q.query<Event>(
       calendar.class.Event,
-      { space: { $in: calendars.map((p) => p._id) } },
+      { calendar: { $in: calendars.map((p) => p._id) } },
       (result) => {
         raw = result
       },
@@ -115,7 +115,7 @@
         current.dueDate = new Date(e.detail.date).setMinutes(new Date(e.detail.date).getMinutes() + 30)
       } else {
         const me = getCurrentAccount() as PersonAccount
-        const space = `${me._id}_calendar` as Ref<Calendar>
+        const _calendar = `${me._id}_calendar` as Ref<Calendar>
         const ev: WorkSlot = {
           _id: dragItemId,
           allDay: false,
@@ -128,7 +128,8 @@
           _class: time.class.WorkSlot,
           collection: 'events',
           visibility: 'public',
-          space,
+          calendar: _calendar,
+          space: calendar.space.Calendar,
           modifiedBy: me._id,
           participants: [me.person],
           modifiedOn: Date.now(),

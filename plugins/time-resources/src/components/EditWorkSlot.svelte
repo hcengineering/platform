@@ -45,7 +45,7 @@
 
   let description = object.description
   let visibility = object.visibility ?? 'public'
-  let space = object.space
+  let _calendar = object.calendar
 
   let _doc: ToDo | undefined
 
@@ -84,8 +84,8 @@
     if (object.visibility !== visibility) {
       update.visibility = visibility
     }
-    if (object.space !== space) {
-      update.space = space
+    if (object.calendar !== _calendar) {
+      update.calendar = _calendar
     }
     if (!deepEqual(object.reminders, reminders)) {
       update.reminders = reminders
@@ -137,7 +137,7 @@
     <TaskSelector bind:value={_doc} focusIndex={10006} />
   </div>
   <div class="block rightCropPadding">
-    <CalendarSelector bind:value={space} disabled={readOnly} focusIndex={10007} />
+    <CalendarSelector bind:value={_calendar} disabled={readOnly} focusIndex={10007} />
     <div class="flex-row-center flex-gap-1">
       <Icon icon={calendar.icon.Hidden} size={'small'} />
       <VisibilityEditor bind:value={visibility} kind={'tertiary'} withoutIcon disabled={readOnly} focusIndex={10008} />

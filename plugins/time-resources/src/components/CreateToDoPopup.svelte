@@ -84,14 +84,15 @@
         rank: makeRank(undefined, latestTodo?.rank)
       }
     )
-    const space = `${acc._id}_calendar` as Ref<Calendar>
+    const _calendar = `${acc._id}_calendar` as Ref<Calendar>
     for (const slot of slots) {
-      await ops.addCollection(time.class.WorkSlot, space, id, time.class.ToDo, 'workslots', {
+      await ops.addCollection(time.class.WorkSlot, calendar.space.Calendar, id, time.class.ToDo, 'workslots', {
         eventId: generateEventId(),
         date: slot.date,
         dueDate: slot.dueDate,
         description: todo.description,
         participants: [acc.person],
+        calendar: _calendar,
         title: todo.title,
         allDay: false,
         access: 'owner',
@@ -107,12 +108,12 @@
   }
 
   const currentUser = getCurrentAccount() as PersonAccount
-  let space: Ref<Calendar> = `${currentUser._id}_calendar` as Ref<Calendar>
+  let _calendar: Ref<Calendar> = `${currentUser._id}_calendar` as Ref<Calendar>
 
   const q = createQuery()
   q.query(calendar.class.ExternalCalendar, { default: true, members: currentUser._id }, (res) => {
     if (res.length > 0) {
-      space = res[0]._id
+      _calendar = res[0]._id
     }
   })
 
@@ -142,7 +143,8 @@
       access: 'owner',
       visibility: todo.visibility,
       reminders: [],
-      space,
+      calendar: _calendar,
+      space: calendar.space.Calendar,
       _id: generateId(),
       _class: time.class.WorkSlot,
       attachedTo: generateId(),

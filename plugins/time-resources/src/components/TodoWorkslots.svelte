@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Calendar, generateEventId } from '@hcengineering/calendar'
+  import calendar, { Calendar, generateEventId } from '@hcengineering/calendar'
   import contact, { PersonAccount } from '@hcengineering/contact'
   import { Ref, getCurrentAccount } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -55,12 +55,13 @@
     const now = Date.now()
     const date = Math.ceil(now / (30 * 60 * 1000)) * (30 * 60 * 1000)
     const currentUser = getCurrentAccount() as PersonAccount
-    const space = `${currentUser._id}_calendar` as Ref<Calendar>
+    const _calendar = `${currentUser._id}_calendar` as Ref<Calendar>
     const dueDate = date + defaultDuration
-    await client.addCollection(time.class.WorkSlot, space, todo._id, todo._class, 'workslots', {
+    await client.addCollection(time.class.WorkSlot, calendar.space.Calendar, todo._id, todo._class, 'workslots', {
       eventId: generateEventId(),
       date,
       dueDate,
+      calendar: _calendar,
       description: todo.description,
       participants: [currentUser.person],
       title: todo.title,
