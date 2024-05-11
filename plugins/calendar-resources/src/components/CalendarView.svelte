@@ -118,7 +118,7 @@
 
   let calendars: Calendar[] = []
 
-  calendarsQuery.query(calendar.class.Calendar, { members: me._id }, (res) => {
+  calendarsQuery.query(calendar.class.Calendar, { createdBy: me._id, hidden: false }, (res) => {
     calendars = res
   })
 
@@ -132,7 +132,7 @@
   ): void {
     q.query<Event>(
       _class,
-      query ?? { space: { $in: calendars.map((p) => p._id) } },
+      query ?? { calendar: { $in: calendars.map((p) => p._id) } },
       (result) => {
         raw = result
       },
@@ -257,11 +257,12 @@
           attachedToClass: dragItem._class,
           _class: dragEventClass,
           collection: 'events',
-          space: `${me._id}_calendar` as Ref<Calendar>,
+          calendar: `${me._id}_calendar` as Ref<Calendar>,
           modifiedBy: me._id,
           participants: [me.person],
           modifiedOn: Date.now(),
           date: e.detail.date.getTime(),
+          space: calendar.space.Calendar,
           dueDate: new Date(e.detail.date).setMinutes(new Date(e.detail.date).getMinutes() + 30)
         }
         raw.push(temp)

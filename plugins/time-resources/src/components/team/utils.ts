@@ -91,15 +91,11 @@ export function groupTeamData (
   }
 
   for (const event of events) {
-    const space = calendars.get(event.space)
-    if (space === undefined) {
+    const _calendar = calendars.get(event.calendar)
+    if (_calendar === undefined) {
       continue
     }
     for (const p of event.participants) {
-      const accounts = personAccounts.filter((it) => it.person === p)
-      if (!accounts.some((it) => space.members.includes(it._id))) {
-        continue
-      }
       const mapping: EventPersonMapping = result.get(p) ?? {
         busy: {
           slots: [],

@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import { calendarId, type Calendar, type Event, type ReccuringEvent } from '@hcengineering/calendar'
-import contact from '@hcengineering/contact'
-import core, { TxOperations, type Ref } from '@hcengineering/core'
+import { calendarId, type Event, type ReccuringEvent } from '@hcengineering/calendar'
+import { type Ref, type Space } from '@hcengineering/core'
 import {
+  createDefaultSpace,
   tryMigrate,
   tryUpgrade,
   type MigrateOperation,
@@ -24,68 +24,47 @@ import {
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import { DOMAIN_SPACE } from '@hcengineering/model-core'
-import { DOMAIN_SETTING } from '@hcengineering/model-setting'
-import { type Integration } from '@hcengineering/setting'
 import { DOMAIN_CALENDAR } from '.'
 import calendar from './plugin'
 
-async function migrateCalendars (tx: TxOperations): Promise<void> {
-  const existCalendars = new Set((await tx.findAll(calendar.class.Calendar, {})).map((p) => p._id))
-  const users = await tx.findAll(contact.class.PersonAccount, {})
-  for (const user of users) {
-    if (!existCalendars.has(`${user._id}_calendar` as Ref<Calendar>)) {
-      await tx.createDoc(
-        calendar.class.Calendar,
-        core.space.Space,
-        {
-          name: user.email,
-          description: '',
-          archived: false,
-          private: false,
-          members: [user._id],
-          visibility: 'public'
-        },
-        `${user._id}_calendar` as Ref<Calendar>,
-        undefined,
-        user._id
-      )
-    }
-  }
-  const events = await tx.findAll(calendar.class.Event, { space: calendar.space.PersonalEvents })
-  for (const event of events) {
-    await tx.update(event, { space: (event.createdBy ?? event.modifiedBy) as string as Ref<Calendar> })
-  }
-  const space = await tx.findOne(calendar.class.Calendar, { _id: calendar.space.PersonalEvents })
-  if (space !== undefined) {
-    await tx.remove(space)
-  }
+async function migrateCalendars (client: MigrationClient): Promise<void> {
+  await client.move(
+    DOMAIN_SPACE,
+    { _class: { $in: [calendar.class.Calendar, calendar.class.ExternalCalendar] } },
+    DOMAIN_CALENDAR
+  )
+  await client.update(
+    DOMAIN_CALENDAR,
+    { _class: { $in: [calendar.class.Calendar, calendar.class.ExternalCalendar] } },
+    { space: calendar.space.Calendar }
+  )
+  await client.update(
+    DOMAIN_CALENDAR,
+    { _class: { $in: [calendar.class.Calendar, calendar.class.ExternalCalendar] }, archived: true },
+    { hidden: true }
+  )
+  await client.update(
+    DOMAIN_CALENDAR,
+    { _class: { $in: [calendar.class.Calendar, calendar.class.ExternalCalendar] }, archived: false },
+    { hidden: false }
+  )
+  await client.update(
+    DOMAIN_CALENDAR,
+    { _class: { $in: [calendar.class.Calendar, calendar.class.ExternalCalendar] } },
+    { $unset: { type: true, private: true, members: true, archived: true } }
+  )
 
-  const calendars = await tx.findAll(calendar.class.Calendar, { visibility: { $exists: false } })
-  for (const calendar of calendars) {
-    await tx.update(calendar, { visibility: 'public' })
-  }
-}
-
-async function migrateExternalCalendars (client: MigrationClient): Promise<void> {
-  const calendars = await client.find<Calendar>(DOMAIN_SPACE, { _class: calendar.class.Calendar })
-  const integrations = await client.find<Integration>(DOMAIN_SETTING, {
-    type: calendar.integrationType.Calendar,
-    disabled: false,
-    value: { $ne: '' }
+  const events = await client.find<Event>(DOMAIN_CALENDAR, {
+    space: { $ne: calendar.space.Calendar }
   })
-  for (const val of calendars) {
-    if (val._id.endsWith('_calendar')) continue
-    const integration = integrations.find((i) => i.createdBy === val.createdBy)
-    await client.update(
-      DOMAIN_SPACE,
-      { _id: val._id },
-      {
-        _class: calendar.class.ExternalCalendar,
-        externalId: val._id,
-        externalUser: integration?.value ?? '',
-        default: val._id === integration?.value
-      }
-    )
+  const eventByCalendar = new Map<Ref<Space>, Ref<Event>[]>()
+  for (const event of events) {
+    const events = eventByCalendar.get(event.space) ?? []
+    events.push(event._id)
+    eventByCalendar.set(event.space, events)
+  }
+  for (const [_calendar, ids] of eventByCalendar) {
+    await client.update(DOMAIN_CALENDAR, { _id: { $in: ids } }, { space: calendar.space.Calendar, calendar: _calendar })
   }
 }
 
@@ -148,23 +127,23 @@ export const calendarOperation: MigrateOperation = {
           await migrateReminders(client)
           await fillOriginalStartTime(client)
           await migrateSync(client)
-          await migrateExternalCalendars(client)
         }
       },
       {
         state: 'timezone',
         func: migrateTimezone
+      },
+      {
+        state: 'migrate_calendars',
+        func: migrateCalendars
       }
     ])
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     await tryUpgrade(client, calendarId, [
       {
-        state: 'u-calendar0002',
-        func: async (client) => {
-          const tx = new TxOperations(client, core.account.System)
-          await migrateCalendars(tx)
-        }
+        state: 'default-space',
+        func: () => createDefaultSpace(client, calendar.space.Calendar, { name: 'Space for all events and calendars' })
       }
     ])
   }

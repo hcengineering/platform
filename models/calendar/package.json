@@ -34,7 +34,6 @@
     "@hcengineering/view": "^0.6.9",
     "@hcengineering/model-attachment": "^0.6.0",
     "@hcengineering/setting": "^0.6.11",
-    "@hcengineering/model-task": "^0.6.0",
     "@hcengineering/calendar": "^0.6.17",
     "@hcengineering/calendar-resources": "^0.6.0",
     "@hcengineering/platform": "^0.6.9",

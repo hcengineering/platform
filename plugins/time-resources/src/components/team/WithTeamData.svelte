@@ -60,7 +60,7 @@
     calendar.class.Event,
     {
       _class: { $nin: [calendar.class.ReccuringEvent] },
-      space: { $in: calendarIds },
+      calendar: { $in: calendarIds },
       date: { $lte: toDate },
       dueDate: { $gte: fromDate },
       participants: { $in: persons } as any
@@ -72,7 +72,7 @@
 
   $: queryR.query(
     calendar.class.ReccuringEvent,
-    { space: { $in: calendarIds }, participants: { $in: persons } as any },
+    { calendar: { $in: calendarIds }, participants: { $in: persons } as any },
     (res) => {
       rawReq = res
     }
@@ -98,7 +98,7 @@
   )
 
   const calendarQuery = createQuery()
-  $: calendarQuery.query(calendar.class.Calendar, { archived: false }, (res) => {
+  $: calendarQuery.query(calendar.class.Calendar, { hidden: false }, (res) => {
     calendarIds = res.map((p) => p._id)
     calendars = toIdMap(res)
   })

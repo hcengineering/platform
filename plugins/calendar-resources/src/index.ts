@@ -90,6 +90,7 @@ async function deleteRecHandler (res: any, object: ReccuringInstance): Promise<v
         description: object.description,
         date: object.date,
         dueDate: object.dueDate,
+        calendar: object.calendar,
         allDay: object.allDay,
         participants: object.participants,
         externalParticipants: object.externalParticipants,
