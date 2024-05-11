@@ -66,7 +66,7 @@ export { calendarOperation } from './migration'
 
 export const DOMAIN_CALENDAR = 'calendar' as Domain
 
-@Model(calendar.class.Calendar, core.class.Doc)
+@Model(calendar.class.Calendar, core.class.Doc, DOMAIN_CALENDAR)
 @UX(calendar.string.Calendar, calendar.icon.Calendar)
 export class TCalendar extends TDoc implements Calendar {
   name!: string
