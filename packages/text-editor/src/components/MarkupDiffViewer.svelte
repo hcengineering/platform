@@ -19,13 +19,10 @@
   import { Plugin, PluginKey } from '@tiptap/pm/state'
   import { DecorationSet } from '@tiptap/pm/view'
   import { onDestroy, onMount } from 'svelte'
-  import { getMetadata } from '@hcengineering/platform'
-  import presentation from '@hcengineering/presentation'
   import { MarkupNode, ReferenceNode, jsonToPmNode } from '@hcengineering/text'
 
   import { calculateDecorations } from './diff/decorations'
   import { defaultEditorAttributes } from './editor/editorProps'
-  import { ImageExtension } from './extension/imageExt'
   import { EditorKit } from '../kits/editor-kit'
 
   export let content: MarkupNode
@@ -82,14 +79,7 @@
       element,
       content,
       editable: false,
-      extensions: [
-        EditorKit,
-        ReferenceNode,
-        ImageExtension.configure({
-          uploadUrl: getMetadata(presentation.metadata.UploadURL)
-        }),
-        DecorationExtension
-      ],
+      extensions: [EditorKit, ReferenceNode, DecorationExtension],
       onTransaction: () => {
         // force re-render so `editor.isActive` works as expected
         editor = editor

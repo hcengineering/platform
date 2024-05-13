@@ -21,6 +21,7 @@
 
   import { AnyExtension, Content, Editor, FocusPosition, mergeAttributes } from '@tiptap/core'
   import Placeholder from '@tiptap/extension-placeholder'
+  import { ParseOptions } from '@tiptap/pm/model'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
 
   import { deleteAttachment } from '../command/deleteAttachment'
@@ -34,8 +35,6 @@
   import { InlineStyleToolbarExtension } from './extension/inlineStyleToolbar'
   import { SubmitExtension } from './extension/submit'
   import { EditorKit } from '../kits/editor-kit'
-  import { FileAttachFunction } from './extension/types'
-  import { ParseOptions } from '@tiptap/pm/model'
 
   export let content: Markup = EmptyMarkup
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
@@ -45,7 +44,6 @@
   export let editorAttributes: Record<string, string> = {}
   export let boundary: HTMLElement | undefined = undefined
   export let autofocus: FocusPosition = false
-  export let attachFile: FileAttachFunction | undefined = undefined
 
   let element: HTMLElement
   let editor: Editor
