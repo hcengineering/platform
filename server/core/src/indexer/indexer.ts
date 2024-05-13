@@ -93,6 +93,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
 
   async cancel (): Promise<void> {
     this.cancelling = true
+    clearTimeout(this.updateBroadcast)
     clearTimeout(this.skippedReiterationTimeout)
     this.triggerIndexing()
     await this.indexing

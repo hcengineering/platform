@@ -119,8 +119,10 @@ export class ClientSession implements Session {
         await this._pipeline.tx(context, createTx)
         const acc = TxProcessor.createDoc2Doc(createTx)
         await ctx.sendResponse(acc)
+        return
       } else {
         await ctx.sendResponse(systemAccount[0])
+        return
       }
     }
     await ctx.sendResponse(account[0])

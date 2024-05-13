@@ -22,9 +22,11 @@ import {
   createWorkspace,
   dropAccount,
   dropWorkspace,
+  dropWorkspaceFull,
   getAccount,
   getWorkspaceById,
   listAccounts,
+  listWorkspacesByAccount,
   listWorkspacesPure,
   listWorkspacesRaw,
   replacePassword,
@@ -79,10 +81,10 @@ import {
 } from './clean'
 import { checkOrphanWorkspaces } from './cleanOrphan'
 import { changeConfiguration } from './configuration'
+import { fixJsonMarkup } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { openAIConfig } from './openai'
 import { fixAccountEmails, renameAccount } from './renameAccount'
-import { fixJsonMarkup } from './markup'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -395,15 +397,65 @@ export function devTool (
   program
     .command('drop-workspace <name>')
     .description('drop workspace')
-    .action(async (workspace, cmd) => {
-      const { mongodbUri } = prepareTools()
-      await withDatabase(mongodbUri, async (db) => {
+    .option('--full [full]', 'Force remove all data', false)
+    .action(async (workspace, cmd: { full: boolean }) => {
+      const { mongodbUri, storageAdapter } = prepareTools()
+      await withDatabase(mongodbUri, async (db, client) => {
         const ws = await getWorkspaceById(db, productId, workspace)
         if (ws === null) {
           console.log('no workspace exists')
           return
         }
-        await dropWorkspace(toolCtx, db, productId, workspace)
+        if (cmd.full) {
+          await dropWorkspaceFull(toolCtx, db, client, productId, workspace, storageAdapter)
+        } else {
+          await dropWorkspace(toolCtx, db, productId, workspace)
+        }
+      })
+    })
+
+  program
+    .command('drop-workspace-by-email <email>')
+    .description('drop workspace')
+    .option('--full [full]', 'Force remove all data', false)
+    .action(async (email, cmd: { full: boolean }) => {
+      const { mongodbUri, storageAdapter } = prepareTools()
+      await withDatabase(mongodbUri, async (db, client) => {
+        for (const workspace of await listWorkspacesByAccount(db, productId, email)) {
+          if (cmd.full) {
+            await dropWorkspaceFull(toolCtx, db, client, productId, workspace.workspace, storageAdapter)
+          } else {
+            await dropWorkspace(toolCtx, db, productId, workspace.workspace)
+          }
+        }
+      })
+    })
+  program
+    .command('list-workspace-by-email <email>')
+    .description('drop workspace')
+    .option('--full [full]', 'Force remove all data', false)
+    .action(async (email, cmd: { full: boolean }) => {
+      const { mongodbUri } = prepareTools()
+      await withDatabase(mongodbUri, async (db, client) => {
+        for (const workspace of await listWorkspacesByAccount(db, productId, email)) {
+          console.log(workspace.workspace, workspace.workspaceUrl, workspace.workspaceName)
+        }
+      })
+    })
+
+  program
+    .command('drop-workspace-last-visit')
+    .description('drop old workspaces')
+    .action(async (cmd: any) => {
+      const { mongodbUri, storageAdapter } = prepareTools()
+      await withDatabase(mongodbUri, async (db, client) => {
+        const workspacesJSON = await listWorkspacesPure(db, productId)
+        for (const ws of workspacesJSON) {
+          const lastVisit = Math.floor((Date.now() - ws.lastVisit) / 1000 / 3600 / 24)
+          if (lastVisit > 30) {
+            await dropWorkspaceFull(toolCtx, db, client, productId, ws.workspace, storageAdapter)
+          }
+        }
       })
     })
 

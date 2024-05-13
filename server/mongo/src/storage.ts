@@ -57,7 +57,13 @@ import core, {
   type WithLookup,
   type WorkspaceId
 } from '@hcengineering/core'
-import { estimateDocSize, updateHashForDoc, type DbAdapter, type TxAdapter } from '@hcengineering/server-core'
+import {
+  estimateDocSize,
+  updateHashForDoc,
+  type DbAdapter,
+  type DomainHelperOperations,
+  type TxAdapter
+} from '@hcengineering/server-core'
 import { calculateObjectSize } from 'bson'
 import { createHash } from 'crypto'
 import {
@@ -70,7 +76,7 @@ import {
   type Sort,
   type UpdateFilter
 } from 'mongodb'
-import { getMongoClient, getWorkspaceDB, type MongoClientReference } from './utils'
+import { DBCollectionHelper, getMongoClient, getWorkspaceDB, type MongoClientReference } from './utils'
 
 function translateDoc (doc: Doc): Document {
   return { ...doc, '%hash%': null }
@@ -107,19 +113,31 @@ export async function toArray<T> (cursor: AbstractCursor<T>): Promise<T[]> {
 }
 
 abstract class MongoAdapterBase implements DbAdapter {
+  _db: DBCollectionHelper
+
   constructor (
     protected readonly db: Db,
     protected readonly hierarchy: Hierarchy,
     protected readonly modelDb: ModelDb,
     protected readonly client: MongoClientReference
-  ) {}
+  ) {
+    this._db = new DBCollectionHelper(db)
+  }
 
-  async init (): Promise<void> {}
+  abstract init (): Promise<void>
+
+  collection<TSchema extends Document = Document>(domain: Domain): Collection<TSchema> {
+    return this._db.collection(domain)
+  }
+
+  helper (): DomainHelperOperations {
+    return this._db
+  }
 
   async createIndexes (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>): Promise<void> {
     for (const vv of config.indexes) {
       try {
-        await this.db.collection(domain).createIndex(vv)
+        await this.collection(domain).createIndex(vv)
       } catch (err: any) {
         console.error('failed to create index', domain, vv, err)
       }
@@ -128,12 +146,11 @@ abstract class MongoAdapterBase implements DbAdapter {
 
   async removeOldIndex (domain: Domain, deletePattern: RegExp, keepPattern: RegExp): Promise<void> {
     try {
-      const existingIndexes = await this.db.collection(domain).indexes()
+      const existingIndexes = await this.collection(domain).indexes()
       for (const existingIndex of existingIndexes) {
         const name: string = existingIndex.name
         if (deletePattern.test(name) && !keepPattern.test(name)) {
-          console.log('removing old index', name, keepPattern)
-          await this.db.collection(domain).dropIndex(existingIndex.name)
+          await this.collection(domain).dropIndex(existingIndex.name)
         }
       }
     } catch (err: any) {
@@ -465,17 +482,17 @@ abstract class MongoAdapterBase implements DbAdapter {
 
     // const domain = this.hierarchy.getDomain(clazz)
     const domain = options?.domain ?? this.hierarchy.getDomain(clazz)
-    const cursor = this.db.collection(domain).aggregate(pipeline, {
+    const cursor = this.collection(domain).aggregate<WithLookup<T>>(pipeline, {
       checkKeys: false,
       enableUtf8Validation: false
     })
     let result: WithLookup<T>[] = []
     let total = options?.total === true ? 0 : -1
     try {
-      result = (await ctx.with('toArray', {}, async (ctx) => await toArray(cursor), {
+      result = await ctx.with('toArray', {}, async (ctx) => await toArray(cursor), {
         domain,
         pipeline
-      })) as any[]
+      })
     } catch (e) {
       console.error('error during executing cursor in findWithPipeline', clazz, cutObjectArray(query), options, e)
       throw e
@@ -488,7 +505,7 @@ abstract class MongoAdapterBase implements DbAdapter {
     }
     if (options?.total === true) {
       totalPipeline.push({ $count: 'total' })
-      const totalCursor = this.db.collection(domain).aggregate(totalPipeline, {
+      const totalCursor = this.collection(domain).aggregate(totalPipeline, {
         checkKeys: false
       })
       const arr = await toArray(totalCursor)
@@ -590,7 +607,7 @@ abstract class MongoAdapterBase implements DbAdapter {
       return await ctx.with('pipeline', {}, async (ctx) => await this.findWithPipeline(ctx, _class, query, options))
     }
     const domain = options?.domain ?? this.hierarchy.getDomain(_class)
-    const coll = this.db.collection(domain)
+    const coll = this.collection(domain)
     const mongoQuery = this.translateQuery(_class, query)
 
     let cursor = coll.find<T>(mongoQuery, {
@@ -801,7 +818,7 @@ abstract class MongoAdapterBase implements DbAdapter {
 
   async upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
     await ctx.with('upload', { domain }, async () => {
-      const coll = this.db.collection(domain)
+      const coll = this.collection(domain)
 
       await uploadDocuments(ctx, docs, coll)
     })
@@ -809,7 +826,7 @@ abstract class MongoAdapterBase implements DbAdapter {
 
   async update (ctx: MeasureContext, domain: Domain, operations: Map<Ref<Doc>, DocumentUpdate<Doc>>): Promise<void> {
     await ctx.with('update', { domain }, async () => {
-      const coll = this.db.collection(domain)
+      const coll = this.collection(domain)
 
       // remove old and insert new ones
       const ops = Array.from(operations.entries())
@@ -866,6 +883,10 @@ interface DomainOperation {
 }
 
 class MongoAdapter extends MongoAdapterBase {
+  async init (): Promise<void> {
+    await this._db.init()
+  }
+
   getOperations (tx: Tx): DomainOperation | undefined {
     switch (tx._class) {
       case core.class.TxCreateDoc:
@@ -981,7 +1002,7 @@ class MongoAdapter extends MongoAdapterBase {
   protected txRemoveDoc (tx: TxRemoveDoc<Doc>): DomainOperation {
     const domain = this.hierarchy.getDomain(tx.objectClass)
     return {
-      raw: () => this.db.collection(domain).deleteOne({ _id: tx.objectId }),
+      raw: async () => await this.collection(domain).deleteOne({ _id: tx.objectId }),
       domain,
       bulk: [{ deleteOne: { filter: { _id: tx.objectId } } }]
     }
@@ -1011,14 +1032,14 @@ class MongoAdapter extends MongoAdapterBase {
           }
         ]
         return {
-          raw: async () => await this.db.collection(domain).bulkWrite(ops),
+          raw: async () => await this.collection(domain).bulkWrite(ops),
           domain,
           bulk: ops
         }
       }
       const update = { ...this.translateMixinAttrs(tx.mixin, tx.attributes), $set: { ...modifyOp } }
       return {
-        raw: async () => await this.db.collection(domain).updateOne(filter, update),
+        raw: async () => await this.collection(domain).updateOne(filter, update),
         domain,
         bulk: [
           {
@@ -1032,7 +1053,7 @@ class MongoAdapter extends MongoAdapterBase {
     }
     const update = { $set: { ...this.translateMixinAttrs(tx.mixin, tx.attributes), ...modifyOp } }
     return {
-      raw: async () => await this.db.collection(domain).updateOne(filter, update),
+      raw: async () => await this.collection(domain).updateOne(filter, update),
       domain,
       bulk: [
         {
@@ -1070,7 +1091,7 @@ class MongoAdapter extends MongoAdapterBase {
     const domain = this.hierarchy.getDomain(doc._class)
     const tdoc = translateDoc(doc)
     return {
-      raw: async () => await this.db.collection(domain).insertOne(tdoc),
+      raw: async () => await this.collection(domain).insertOne(tdoc),
       domain,
       bulk: [
         {
@@ -1123,7 +1144,7 @@ class MongoAdapter extends MongoAdapterBase {
           }
         ]
         return {
-          raw: async () => await this.db.collection(domain).bulkWrite(ops),
+          raw: async () => await this.collection(domain).bulkWrite(ops),
           domain,
           bulk: ops
         }
@@ -1160,14 +1181,14 @@ class MongoAdapter extends MongoAdapterBase {
           }
         ]
         return {
-          raw: async () => await this.db.collection(domain).bulkWrite(ops),
+          raw: async () => await this.collection(domain).bulkWrite(ops),
           domain,
           bulk: ops
         }
       } else {
         if (tx.retrieve === true) {
           const raw = async (): Promise<TxResult> => {
-            const result = await this.db.collection(domain).findOneAndUpdate(
+            const result = await this.collection(domain).findOneAndUpdate(
               { _id: tx.objectId },
               {
                 ...tx.operations,
@@ -1197,7 +1218,7 @@ class MongoAdapter extends MongoAdapterBase {
             }
           }
           return {
-            raw: async () => await this.db.collection(domain).updateOne(filter, update),
+            raw: async () => await this.collection(domain).updateOne(filter, update),
             domain,
             bulk: [{ updateOne: { filter, update } }]
           }
@@ -1221,7 +1242,7 @@ class MongoAdapter extends MongoAdapterBase {
               .findOneAndUpdate(filter, update, { returnDocument: 'after', includeResultMetadata: true })
             return { object: result.value }
           }
-          : async () => await this.db.collection(domain).updateOne(filter, update)
+          : async () => await this.collection(domain).updateOne(filter, update)
 
       // Disable bulk for operators
       return {
@@ -1235,6 +1256,10 @@ class MongoAdapter extends MongoAdapterBase {
 
 class MongoTxAdapter extends MongoAdapterBase implements TxAdapter {
   txColl: Collection | undefined
+
+  async init (): Promise<void> {
+    await this._db.init(DOMAIN_TX)
+  }
 
   override async tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {
     if (tx.length === 0) {
