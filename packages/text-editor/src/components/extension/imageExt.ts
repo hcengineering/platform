@@ -12,16 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { PDFViewer, getImageSize } from '@hcengineering/presentation'
+import { PDFViewer } from '@hcengineering/presentation'
+import { showPopup } from '@hcengineering/ui'
 import { ImageNode, type ImageOptions as ImageNodeOptions } from '@hcengineering/text'
-import { type IconSize, getIconSize2x, showPopup } from '@hcengineering/ui'
+import { type IconSize, getIconSize2x } from '@hcengineering/ui'
 import { mergeAttributes, nodeInputRule } from '@tiptap/core'
-import { type Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
-import { type EditorView } from '@tiptap/pm/view'
-import { setPlatformStatus, unknownError } from '@hcengineering/platform'
-
-import { type FileAttachFunction } from './types'
 
 /**
  * @public
@@ -32,8 +28,6 @@ export type ImageAlignment = 'center' | 'left' | 'right'
  * @public
  */
 export interface ImageOptions extends ImageNodeOptions {
-  attachFile?: FileAttachFunction
-  reportNode?: (id: string, node: ProseMirrorNode) => void
   uploadUrl: string
 }
 
@@ -70,16 +64,8 @@ declare module '@tiptap/core' {
  */
 export const inputRegex = /(?:^|\s)(!\[(.+|:?)]\((\S+)(?:(?:\s+)["'](\S+)["'])?\))$/
 
-function getType (type: string): 'image' | 'other' {
-  if (type.startsWith('image/')) {
-    return 'image'
-  }
-
-  return 'other'
-}
-
 // This is a simplified version of getFileUrl from presentation plugin, which we cannot use
-function getFileUrl (fileId: string, size: IconSize = 'full', uploadUrl: string): string {
+export function getFileUrl (fileId: string, size: IconSize = 'full', uploadUrl: string): string {
   return `${uploadUrl}?file=${fileId}&size=${size as string}`
 }
 
@@ -149,7 +135,6 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
       }
       imgAttributes.class = 'text-editor-image'
       imgAttributes.contentEditable = false
-      this.options.reportNode?.(id, node)
     }
 
     return ['div', divAttributes, ['img', imgAttributes]]
@@ -203,90 +188,12 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
   },
 
   addProseMirrorPlugins () {
-    const attachFile = this.options.attachFile
-    const uploadUrl = this.options.uploadUrl
-
-    function handleDrop (
-      view: EditorView,
-      pos: { pos: number, inside: number } | null,
-      dataTransfer: DataTransfer
-    ): any {
-      const uris = (dataTransfer.getData('text/uri-list') ?? '').split('\r\n').filter((it) => !it.startsWith('#'))
-      let result = false
-      for (const uri of uris) {
-        if (uri !== '') {
-          const url = new URL(uri)
-          if (uploadUrl === undefined || !url.href.includes(uploadUrl)) {
-            continue
-          }
-
-          const _file = (url.searchParams.get('file') ?? '').split('/').join('')
-
-          if (_file.trim().length === 0) {
-            continue
-          }
-
-          const ctype = dataTransfer.getData('application/contentType')
-          const type = getType(ctype ?? 'other')
-
-          if (type === 'image') {
-            const node = view.state.schema.nodes.image.create({
-              'file-id': _file,
-              src: getFileUrl(_file, 'full', uploadUrl)
-            })
-            const transaction = view.state.tr.insert(pos?.pos ?? 0, node)
-            view.dispatch(transaction)
-            result = true
-          }
-        }
-      }
-      if (result) {
-        return result
-      }
-
-      const files = dataTransfer?.files
-      if (files !== undefined && attachFile !== undefined) {
-        for (let i = 0; i < files.length; i++) {
-          const file = files.item(i)
-          if (file != null) {
-            result = true
-            void handleImageUpload(file, view, pos, attachFile, uploadUrl)
-          }
-        }
-      }
-      return result
-    }
-
     return [
-      new Plugin({
-        key: new PluginKey('handle-image-paste'),
-        props: {
-          handlePaste (view, event) {
-            const dataTransfer = event.clipboardData
-            if (dataTransfer !== null) {
-              const res = handleDrop(view, { pos: view.state.selection.$from.pos, inside: 0 }, dataTransfer)
-              if (res === true) {
-                event.preventDefault()
-                event.stopPropagation()
-              }
-              return res
-            }
-          },
-          handleDrop (view, event) {
-            event.preventDefault()
-            event.stopPropagation()
-            const dataTransfer = event.dataTransfer
-            if (dataTransfer !== null) {
-              return handleDrop(view, view.posAtCoords({ left: event.x, top: event.y }), dataTransfer)
-            }
-          }
-        }
-      }),
       new Plugin({
         key: new PluginKey('handle-image-open'),
         props: {
           handleDoubleClickOn (view, pos, node, nodePos, event) {
-            if (node.type.name !== 'image') {
+            if (node.type.name !== ImageExtension.name) {
               return
             }
 
@@ -310,37 +217,3 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
     ]
   }
 })
-
-async function handleImageUpload (
-  file: File,
-  view: EditorView,
-  pos: { pos: number, inside: number } | null,
-  attachFile: FileAttachFunction,
-  uploadUrl: string
-): Promise<void> {
-  const attached = await attachFile(file)
-
-  if (attached === undefined) {
-    return
-  }
-
-  if (!attached.type.includes('image')) {
-    return
-  }
-
-  try {
-    const url = getFileUrl(attached.file, 'full', uploadUrl)
-    const size = await getImageSize(file, url)
-    const node = view.state.schema.nodes.image.create({
-      'file-id': attached.file,
-      src: url,
-      width: Math.round(size.width / size.pixelRatio)
-    })
-
-    const transaction = view.state.tr.insert(pos?.pos ?? 0, node)
-
-    view.dispatch(transaction)
-  } catch (e) {
-    void setPlatformStatus(unknownError(e))
-  }
-}

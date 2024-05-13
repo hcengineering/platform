@@ -16,11 +16,8 @@ import { getFileUrl, PDFViewer } from '@hcengineering/presentation'
 import { FileNode, type FileOptions as FileNodeOptions } from '@hcengineering/text'
 import { showPopup } from '@hcengineering/ui'
 import { nodeInputRule } from '@tiptap/core'
-import { type Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
-import { type EditorView } from '@tiptap/pm/view'
 import filesize from 'filesize'
-
 import { type FileAttachFunction } from './types'
 
 const attachIcon =
@@ -33,7 +30,6 @@ const imageIcon =
  */
 export interface FileOptions extends FileNodeOptions {
   attachFile?: FileAttachFunction
-  reportNode?: (id: string, node: ProseMirrorNode) => void
 }
 
 /**
@@ -84,7 +80,6 @@ export const FileExtension = FileNode.extend<FileOptions>({
     let href: string = ''
     if (id != null) {
       href = getFileUrl(id, 'full', fileName)
-      this.options.reportNode?.(id, node)
     }
     const linkAttributes = {
       class: 'file-name',
@@ -115,74 +110,15 @@ export const FileExtension = FileNode.extend<FileOptions>({
   },
 
   addProseMirrorPlugins () {
-    const opt = this.options
-    function handleDrop (
-      view: EditorView,
-      pos: { pos: number, inside: number } | null,
-      dataTransfer: DataTransfer
-    ): any {
-      let result = false
-
-      const files = dataTransfer?.files
-      if (files !== undefined && opt.attachFile !== undefined) {
-        let hasNotImageFile: boolean = false
-        for (let i = 0; i < files.length; i++) {
-          const file = files.item(i)
-          if (file != null) {
-            if (!file.type.startsWith('image')) {
-              hasNotImageFile = true
-            }
-          }
-        }
-        if (!hasNotImageFile) {
-          return false
-        }
-
-        for (let i = 0; i < files.length; i++) {
-          const file = files.item(i)
-          if (file != null) {
-            result = true
-            void opt.attachFile(file).then((id) => {
-              if (id !== undefined) {
-                const node = view.state.schema.nodes.file.create({
-                  'file-id': id.file,
-                  'data-file-name': file.name,
-                  'data-file-type': file.type,
-                  'data-file-size': file.size
-                })
-                const transaction = view.state.tr.insert(pos?.pos ?? 0, node)
-                view.dispatch(transaction)
-              }
-            })
-          }
-        }
-      }
-      return result
-    }
     return [
       new Plugin({
-        key: new PluginKey('handle-file-paste'),
+        key: new PluginKey('handle-file-open'),
         props: {
-          handlePaste (view, event) {
-            const dataTransfer = event.clipboardData
-            if (dataTransfer !== null) {
-              const res = handleDrop(view, { pos: view.state.selection.$from.pos, inside: 0 }, dataTransfer)
-              if (res === true) {
-                event.preventDefault()
-                event.stopPropagation()
-              }
-              return res
-            }
-          },
-          handleDrop (view, event) {
-            event.preventDefault()
-            event.stopPropagation()
-            const dataTransfer = event.dataTransfer
-            if (dataTransfer !== null) {
-              return handleDrop(view, view.posAtCoords({ left: event.x, top: event.y }), dataTransfer)
-            }
-          },
           handleDoubleClickOn (view, pos, node, nodePos, event) {
+            if (node.type.name !== FileExtension.name) {
+              return
+            }
+
             const fileId = node.attrs['file-id'] ?? ''
             if (fileId === '') return
             const fileName = node.attrs['data-file-name'] ?? ''

@@ -21,7 +21,7 @@
   import {
     CollaboratorEditor,
     HeadingsExtension,
-    ImageOptions,
+    ImageUploadOptions,
     SvelteNodeViewRenderer,
     TodoItemExtension,
     TodoListExtension
@@ -37,7 +37,7 @@
   export let object: Document
   export let readonly = false
   export let boundary: HTMLElement | undefined = undefined
-  export let attachFile: ImageOptions['attachFile'] | undefined = undefined
+  export let attachFile: ImageUploadOptions['attachFile'] | undefined = undefined
   export let focusIndex = -1
   export let overflow: 'auto' | 'none' = 'none'
   export let editorAttributes: Record<string, string> = {}
