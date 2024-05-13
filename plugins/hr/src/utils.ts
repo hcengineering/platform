@@ -17,6 +17,19 @@ import { TzDate } from '.'
 /**
  * @public
  */
+export function timeToTzDate (val: number): TzDate {
+  const date = new Date(val)
+  return {
+    year: date.getFullYear(),
+    month: date.getMonth(),
+    day: date.getDate(),
+    offset: date.getTimezoneOffset()
+  }
+}
+
+/**
+ * @public
+ */
 export function toTzDate (date: Date): TzDate {
   return {
     year: date.getFullYear(),

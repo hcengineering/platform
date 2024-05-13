@@ -37,7 +37,9 @@
       {
         _id: objectId
       },
-      (res) => ([value] = res)
+      (res) => {
+        value = res[0]
+      }
     )
 
   function add (e: MouseEvent) {

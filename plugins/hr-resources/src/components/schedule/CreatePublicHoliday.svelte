@@ -13,23 +13,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import presentation, { Card, getClient, SpaceSelector } from '@hcengineering/presentation'
+  import { Data, Ref, Timestamp } from '@hcengineering/core'
+  import { Department, PublicHoliday, timeToTzDate } from '@hcengineering/hr'
+  import presentation, { Card, getClient } from '@hcengineering/presentation'
   import { Button, DateRangePresenter, EditBox, Label } from '@hcengineering/ui'
-  import hr from '../../plugin'
-  import core, { Data, Ref } from '@hcengineering/core'
-  import { toTzDate, PublicHoliday, Department } from '@hcengineering/hr'
   import { createEventDispatcher } from 'svelte'
+  import hr from '../../plugin'
+  import DepartmentEditor from '../DepartmentEditor.svelte'
 
   let description: string
   let title: string
-  export let date: Date
+  export let date: Timestamp
   export let department: Ref<Department>
   const client = getClient()
   let existingHoliday: PublicHoliday | undefined = undefined
   const dispatch = createEventDispatcher()
 
   async function findHoliday () {
-    existingHoliday = await client.findOne(hr.class.PublicHoliday, { date: toTzDate(date) })
+    existingHoliday = await client.findOne(hr.class.PublicHoliday, { date: timeToTzDate(date) })
     if (existingHoliday !== undefined) {
       title = existingHoliday.title
       description = existingHoliday.description
@@ -39,7 +40,7 @@
 
   async function saveHoliday () {
     if (existingHoliday !== undefined) {
-      await client.updateDoc(hr.class.PublicHoliday, core.space.Space, existingHoliday._id, {
+      await client.updateDoc(hr.class.PublicHoliday, hr.space.HR, existingHoliday._id, {
         title,
         description
       })
@@ -47,10 +48,10 @@
       const holiday: Data<PublicHoliday> = {
         title,
         description,
-        date: toTzDate(date),
+        date: timeToTzDate(date),
         department
       }
-      await client.createDoc(hr.class.PublicHoliday, core.space.Space, holiday)
+      await client.createDoc(hr.class.PublicHoliday, hr.space.HR, holiday)
     }
   }
   findHoliday()
@@ -83,7 +84,7 @@
   <svelte:fragment slot="pool">
     <div class="flex-row-center flex-grow flex-gap-3">
       <Label label={hr.string.Department} />
-      <SpaceSelector _class={hr.class.Department} label={hr.string.ParentDepartmentLabel} bind:space={department} />
+      <DepartmentEditor bind:value={department} />
     </div>
   </svelte:fragment>
   <svelte:fragment slot="buttons">

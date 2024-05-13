@@ -16,11 +16,11 @@
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import calendar from '@hcengineering/calendar'
   import { Employee } from '@hcengineering/contact'
+  import { EmployeeBox } from '@hcengineering/contact-resources'
   import core, { DocumentQuery, generateId, Markup, Ref } from '@hcengineering/core'
-  import { Request, RequestType, Staff, toTzDate } from '@hcengineering/hr'
+  import { Request, RequestType, Staff, timeToTzDate } from '@hcengineering/hr'
   import { translate } from '@hcengineering/platform'
   import { Card, createQuery, getClient } from '@hcengineering/presentation'
-  import { EmployeeBox } from '@hcengineering/contact-resources'
   import { EmptyMarkup } from '@hcengineering/text-editor'
   import ui, {
     Button,
@@ -75,11 +75,12 @@
     if (date === undefined) return
     if (type === undefined) return
     if (employee === null) return
-    await client.addCollection(hr.class.Request, staff.department, employee, staff._class, 'requests', {
+    await client.addCollection(hr.class.Request, hr.space.HR, employee, staff._class, 'requests', {
       type: type._id,
-      tzDate: toTzDate(new Date(date)),
-      tzDueDate: toTzDate(new Date(dueDate)),
-      description
+      tzDate: timeToTzDate(date),
+      tzDueDate: timeToTzDate(dueDate),
+      description,
+      department: staff.department
     })
     await descriptionBox.createAttachments()
   }
@@ -145,7 +146,7 @@
     bind:this={descriptionBox}
     {objectId}
     _class={hr.class.Request}
-    space={staff.department}
+    space={hr.space.HR}
     alwaysEdit
     showButtons={false}
     maxHeight={'card'}

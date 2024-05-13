@@ -15,29 +15,28 @@
 
 import { type Contact, type Employee } from '@hcengineering/contact'
 import {
+  AccountRole,
+  DOMAIN_MODEL,
+  IndexKind,
   type Arr,
   type Class,
-  DOMAIN_MODEL,
   type Domain,
-  IndexKind,
   type Markup,
   type Ref,
-  type Type,
-  AccountRole
+  type Type
 } from '@hcengineering/core'
 import {
+  hrId,
   type Department,
   type DepartmentMember,
   type PublicHoliday,
   type Request,
   type RequestType,
   type Staff,
-  type TzDate,
-  hrId
+  type TzDate
 } from '@hcengineering/hr'
 import {
   ArrOf,
-  type Builder,
   Collection,
   Hidden,
   Index,
@@ -48,13 +47,14 @@ import {
   TypeMarkup,
   TypeRef,
   TypeString,
-  UX
+  UX,
+  type Builder
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import calendar from '@hcengineering/model-calendar'
 import chunter from '@hcengineering/model-chunter'
 import contact, { TEmployee, TPersonAccount } from '@hcengineering/model-contact'
-import core, { TAttachedDoc, TDoc, TSpace, TType } from '@hcengineering/model-core'
+import core, { TAttachedDoc, TDoc, TType } from '@hcengineering/model-core'
 import view, { classPresenter, createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
@@ -68,16 +68,20 @@ export { default } from './plugin'
 
 export const DOMAIN_HR = 'hr' as Domain
 
-@Model(hr.class.Department, core.class.Space)
+@Model(hr.class.Department, core.class.Doc, DOMAIN_HR)
 @UX(hr.string.Department, hr.icon.Department)
-export class TDepartment extends TSpace implements Department {
+export class TDepartment extends TDoc implements Department {
   @Prop(TypeRef(hr.class.Department), hr.string.ParentDepartmentLabel)
   @Index(IndexKind.Indexed)
-  declare space: Ref<Department>
+    parent?: Ref<Department>
 
   @Prop(TypeString(), core.string.Name)
   @Index(IndexKind.FullText)
-  declare name: string
+    name!: string
+
+  @Prop(TypeString(), core.string.Description)
+  @Index(IndexKind.FullText)
+    description!: string
 
   @Prop(Collection(contact.class.Channel), contact.string.ContactInfo)
     channels?: number
@@ -94,7 +98,7 @@ export class TDepartment extends TSpace implements Department {
     teamLead!: Ref<Employee> | null
 
   @Prop(ArrOf(TypeRef(hr.class.DepartmentMember)), contact.string.Members)
-  declare members: Arr<Ref<DepartmentMember>>
+    members!: Arr<Ref<DepartmentMember>>
 
   @Prop(ArrOf(TypeRef(contact.class.Contact)), hr.string.Subscribers)
     subscribers?: Arr<Ref<Contact>>
@@ -154,7 +158,7 @@ export class TRequest extends TAttachedDoc implements Request {
 
   @Prop(TypeRef(hr.class.Department), hr.string.Department)
   @Index(IndexKind.Indexed)
-  declare space: Ref<Department>
+    department!: Ref<Department>
 
   @Prop(TypeRef(hr.class.RequestType), hr.string.RequestType)
   @Hidden()
@@ -567,5 +571,9 @@ export function createModel (builder: Builder): void {
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_HR,
     disabled: [{ modifiedOn: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { attachedToClass: 1 }, { createdOn: -1 }]
+  })
+
+  builder.mixin(hr.class.Department, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: hr.component.DepartmentPresenter
   })
 }

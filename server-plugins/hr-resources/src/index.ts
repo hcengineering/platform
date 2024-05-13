@@ -68,8 +68,8 @@ async function buildHierarchy (_id: Ref<Department>, control: TriggerControl): P
   const ancestors = new Map<Ref<Department>, Ref<Department>>()
   const departments = await control.findAll(hr.class.Department, {})
   for (const department of departments) {
-    if (department._id === hr.ids.Head) continue
-    ancestors.set(department._id, department.space)
+    if (department._id === hr.ids.Head || department.parent === undefined) continue
+    ancestors.set(department._id, department.parent)
   }
   const departmentsMap = toIdMap(departments)
   while (true) {
@@ -100,13 +100,13 @@ function getTxes (
   removed?: Ref<Department>[]
 ): Tx[] {
   const pushTxes = added.map((dep) =>
-    factory.createTxUpdateDoc(hr.class.Department, core.space.Space, dep, {
+    factory.createTxUpdateDoc(hr.class.Department, hr.space.HR, dep, {
       $push: { members: account }
     })
   )
   if (removed === undefined) return pushTxes
   const pullTxes = removed.map((dep) =>
-    factory.createTxUpdateDoc(hr.class.Department, core.space.Space, dep, {
+    factory.createTxUpdateDoc(hr.class.Department, hr.space.HR, dep, {
       $pull: { members: account }
     })
   )
@@ -162,8 +162,8 @@ export async function OnDepartmentStaff (tx: Tx, control: TriggerControl): Promi
 export async function OnDepartmentRemove (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const ctx = TxProcessor.extractTx(tx) as TxRemoveDoc<Department>
 
-  const department = (await control.findAll(hr.class.Department, { _id: ctx.objectSpace as Ref<Department> }))[0]
-
+  const department = control.removedMap.get(ctx.objectId) as Department
+  if (department === undefined) return []
   const targetAccounts = await control.modelDb.findAll(contact.class.PersonAccount, {
     _id: { $in: department.members }
   })
@@ -298,13 +298,7 @@ export async function OnRequestCreate (tx: Tx, control: TriggerControl): Promise
 
   const request = TxProcessor.createDoc2Doc(ctx)
 
-  await sendEmailNotifications(
-    control,
-    sender,
-    request,
-    ctx.objectSpace as Ref<Department>,
-    hr.ids.CreateRequestNotification
-  )
+  await sendEmailNotifications(control, sender, request, request.department, hr.ids.CreateRequestNotification)
   return []
 }
 
@@ -320,13 +314,7 @@ export async function OnRequestUpdate (tx: Tx, control: TriggerControl): Promise
   const request = (await control.findAll(hr.class.Request, { _id: ctx.objectId }))[0] as Request
   if (request === undefined) return []
 
-  await sendEmailNotifications(
-    control,
-    sender,
-    request,
-    ctx.objectSpace as Ref<Department>,
-    hr.ids.UpdateRequestNotification
-  )
+  await sendEmailNotifications(control, sender, request, request.department, hr.ids.UpdateRequestNotification)
   return []
 }
 
@@ -342,13 +330,7 @@ export async function OnRequestRemove (tx: Tx, control: TriggerControl): Promise
   const request = control.removedMap.get(ctx.objectId) as Request
   if (request === undefined) return []
 
-  await sendEmailNotifications(
-    control,
-    sender,
-    request,
-    ctx.objectSpace as Ref<Department>,
-    hr.ids.RemoveRequestNotification
-  )
+  await sendEmailNotifications(control, sender, request, request.department, hr.ids.RemoveRequestNotification)
   return []
 }
 

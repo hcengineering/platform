@@ -14,23 +14,21 @@
 -->
 <script lang="ts">
   import { Card } from '@hcengineering/presentation'
+  import { DropdownIntlItem, DropdownLabelsIntl, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { DropdownLabelsIntl, Label } from '@hcengineering/ui'
   import hr from '../../plugin'
 
   const dispatch = createEventDispatcher()
-  export let items = []
+  export let items: DropdownIntlItem[] = []
 
   let selectedSeparator = items[0].id
+
+  function close (): void {
+    dispatch('close', selectedSeparator)
+  }
 </script>
 
-<Card
-  label={hr.string.Export}
-  okLabel={hr.string.Export}
-  okAction={() => dispatch('close', selectedSeparator)}
-  canSave
-  on:close
->
+<Card label={hr.string.Export} okLabel={hr.string.Export} okAction={close} canSave on:close>
   <div class="flex-row-center">
     <Label label={hr.string.ChooseSeparator} />
     <DropdownLabelsIntl {items} label={hr.string.Separator} bind:selected={selectedSeparator} />

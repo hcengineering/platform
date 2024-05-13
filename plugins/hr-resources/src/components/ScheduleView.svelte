@@ -16,8 +16,8 @@
   import { CalendarMode } from '@hcengineering/calendar-resources'
   import { Employee, PersonAccount } from '@hcengineering/contact'
   import contact from '@hcengineering/contact-resources/src/plugin'
-  import { DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
-  import { Department, fromTzDate, Request, RequestType, Staff } from '@hcengineering/hr'
+  import { DocumentQuery, Ref, getCurrentAccount } from '@hcengineering/core'
+  import { Department, DepartmentMember, Request, RequestType, Staff, fromTzDate } from '@hcengineering/hr'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import tracker, { Issue } from '@hcengineering/tracker'
   import { Label } from '@hcengineering/ui'
@@ -138,7 +138,7 @@
   }
 
   function isEditable (department: Department): boolean {
-    return department.teamLead === currentEmployee || department.managers.includes(currentEmployee)
+    return department.teamLead === currentEmployee || department.managers.includes(currentEmployee as Ref<Employee>)
   }
 
   function checkDepartmentEditable (
@@ -170,7 +170,7 @@
     departmentStaff: Staff[],
     descendants: Map<Ref<Department>, Department[]>
   ) {
-    editableList = [currentEmployee]
+    editableList = [currentEmployee as Ref<Employee>]
     checkDepartmentEditable(departmentById, hr.ids.Head, departmentStaff, descendants)
     editableList = editableList
   }
@@ -235,7 +235,7 @@
       holidays = new Map()
       for (const groupKey in group) {
         holidays.set(
-          groupKey,
+          groupKey as Ref<Department>,
           group[groupKey].map((holiday) => new Date(fromTzDate(holiday.date)))
         )
       }
@@ -266,7 +266,7 @@
       const ids = departmentStaff.map((staff) => staff._id)
       const staffs = await client.findAll(contact.class.PersonAccount, { person: { $in: ids } })
       const departments = await client.findAll(hr.class.Department, {
-        members: { $in: staffs.map((staff) => staff._id) }
+        members: { $in: staffs.map((staff) => staff._id as Ref<DepartmentMember>) }
       })
       staffs.forEach((staff) => {
         const filteredDepartments = departments.filter((department) => department.members.includes(staff._id))
