@@ -15,7 +15,7 @@
 
 import { type Builder } from '@hcengineering/model'
 
-import core, { AccountRole } from '@hcengineering/core'
+import core from '@hcengineering/core'
 import lead from '@hcengineering/model-lead'
 import notification from '@hcengineering/notification'
 import serverCore from '@hcengineering/server-core'
@@ -46,9 +46,7 @@ export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverLead.trigger.OnWorkspaceOwnerAdded,
     txMatch: {
-      _class: core.class.TxUpdateDoc,
-      objectClass: contact.class.PersonAccount,
-      'operations.role': AccountRole.Owner
+      objectClass: contact.class.PersonAccount
     }
   })
 }
