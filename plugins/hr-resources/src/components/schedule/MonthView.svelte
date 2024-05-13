@@ -249,7 +249,9 @@
   $: rows = buildTimelineRows(departmentStaff, employeeRequests)
 
   function getClickHandler (day: Date, staff: Staff): (e: MouseEvent, day: Date, staff: Staff) => void {
-    return (e) => { createRequest(e, day, staff) }
+    return (e) => {
+      createRequest(e, day, staff)
+    }
   }
 </script>
 
