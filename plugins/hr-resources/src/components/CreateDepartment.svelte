@@ -14,14 +14,15 @@
 -->
 <script lang="ts">
   import { Employee } from '@hcengineering/contact'
-  import { Ref } from '@hcengineering/core'
-  import { Card, getClient, SpaceSelector } from '@hcengineering/presentation'
   import { EmployeeBox } from '@hcengineering/contact-resources'
-  import { Button, createFocusManager, EditBox, FocusHandler } from '@hcengineering/ui'
+  import { Ref } from '@hcengineering/core'
+  import { Card, getClient } from '@hcengineering/presentation'
+  import { Button, EditBox, FocusHandler, createFocusManager } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import hr from '../plugin'
+  import DepartmentEditor from './DepartmentEditor.svelte'
 
-  export let space = hr.ids.Head
+  export let parent = hr.ids.Head
 
   const dispatch = createEventDispatcher()
 
@@ -35,11 +36,10 @@
   const client = getClient()
 
   async function createDepartment () {
-    const id = await client.createDoc(hr.class.Department, space, {
+    const id = await client.createDoc(hr.class.Department, hr.space.HR, {
       name,
       description: '',
-      private: false,
-      archived: false,
+      parent,
       members: [],
       teamLead: lead,
       managers: []
@@ -75,13 +75,7 @@
     </div>
   </div>
   <svelte:fragment slot="header">
-    <SpaceSelector
-      _class={hr.class.Department}
-      label={hr.string.ParentDepartmentLabel}
-      bind:space
-      kind={'regular'}
-      size={'large'}
-    />
+    <DepartmentEditor label={hr.string.ParentDepartmentLabel} bind:value={parent} kind={'regular'} size={'large'} />
   </svelte:fragment>
   <svelte:fragment slot="pool">
     <EmployeeBox

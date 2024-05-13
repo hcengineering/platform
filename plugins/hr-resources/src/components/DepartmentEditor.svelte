@@ -16,20 +16,20 @@
   import { Ref } from '@hcengineering/core'
   import { Department } from '@hcengineering/hr'
   import { IntlString } from '@hcengineering/platform'
-  import { SpaceSelector } from '@hcengineering/presentation'
   import { ButtonKind, ButtonSize } from '@hcengineering/ui'
+  import { ObjectBox } from '@hcengineering/view-resources'
   import hr from '../plugin'
 
   export let value: Ref<Department> | undefined
   export let label: IntlString = hr.string.ParentDepartmentLabel
-  export let onChange: (value: any) => void
+  export let onChange: (value: any) => void = () => {}
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = undefined
 </script>
 
-<SpaceSelector
+<ObjectBox
   _class={hr.class.Department}
   {label}
   {size}
@@ -37,9 +37,9 @@
   {justify}
   allowDeselect
   {width}
+  showNavigate={false}
   autoSelect={false}
-  focus={false}
-  bind:space={value}
+  bind:value
   on:change={(e) => {
     onChange(e.detail)
   }}

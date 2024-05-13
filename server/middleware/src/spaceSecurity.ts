@@ -325,6 +325,8 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       const account = await getUser(this.storage, ctx)
       if (tx.objectSpace === (account._id as string)) {
         targets = [account.email, systemAccountEmail]
+      } else if ([...this.systemSpaces, ...this.mainSpaces].includes(tx.objectSpace)) {
+        return
       } else {
         const cudTx = tx as TxCUD<Doc>
         const isSpace = h.isDerived(cudTx.objectClass, core.class.Space)

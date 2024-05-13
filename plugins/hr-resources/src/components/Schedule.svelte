@@ -17,7 +17,7 @@
   import calendar from '@hcengineering/calendar-resources/src/plugin'
   import { Employee, PersonAccount } from '@hcengineering/contact'
   import { employeeByIdStore } from '@hcengineering/contact-resources'
-  import { DocumentQuery, getCurrentAccount, Ref } from '@hcengineering/core'
+  import { DocumentQuery, Ref, getCurrentAccount } from '@hcengineering/core'
   import { Department, Staff } from '@hcengineering/hr'
   import { createQuery } from '@hcengineering/presentation'
   import type { TabItem } from '@hcengineering/ui'
@@ -27,10 +27,10 @@
     IconForward,
     Label,
     SearchEdit,
+    Separator,
     TabList,
-    workbenchSeparators,
     defineSeparators,
-    Separator
+    workbenchSeparators
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
 
@@ -77,9 +77,11 @@
     departments.clear()
     descendants.clear()
     for (const doc of res) {
-      const current = descendants.get(doc.space) ?? []
-      current.push(doc)
-      descendants.set(doc.space, current)
+      if (doc.parent !== undefined) {
+        const current = descendants.get(doc.parent) ?? []
+        current.push(doc)
+        descendants.set(doc.parent, current)
+      }
       departments.set(doc._id, doc)
     }
     departments = departments

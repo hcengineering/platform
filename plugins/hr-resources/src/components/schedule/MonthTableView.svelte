@@ -18,7 +18,7 @@
   import type { Request, RequestType, Staff } from '@hcengineering/hr'
   import { Department } from '@hcengineering/hr'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { Button, Label, Loading, showPopup, tableToCSV } from '@hcengineering/ui'
+  import { Button, DropdownIntlItem, Label, Loading, showPopup, tableToCSV } from '@hcengineering/ui'
   import { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
   import { TableBrowser, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
   import hr from '../../plugin'
@@ -320,7 +320,10 @@
     return result
   }
   function exportTable (evt: Event) {
-    const items = [
+    interface ExportPopupItem extends DropdownIntlItem {
+      separator: ',' | ';'
+    }
+    const items: ExportPopupItem[] = [
       {
         id: '0',
         label: getEmbeddedLabel(', (csv)'),
