@@ -22,7 +22,10 @@ import {
   type WithLookup,
   hasAccountRole,
   getCurrentAccount,
-  AccountRole
+  AccountRole,
+  type IdMap,
+  type Account,
+  type UserStatus
 } from '@hcengineering/core'
 import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
 import { get, writable } from 'svelte/store'
@@ -32,9 +35,10 @@ import attachment, { type SavedAttachments } from '@hcengineering/attachment'
 import activity, { type ActivityMessage } from '@hcengineering/activity'
 import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
 import { type Action, showPopup } from '@hcengineering/ui'
-import contact from '@hcengineering/contact'
+import contact, { type PersonAccount } from '@hcengineering/contact'
+import { type DirectMessage } from '@hcengineering/chunter'
 
-import { type ChatNavGroupModel, type ChatNavItemModel } from './types'
+import { type ChatNavGroupModel, type ChatNavItemModel, type SortFnOptions } from './types'
 import chunter from '../../plugin'
 
 const channelStorageKey = 'chunter.openedChannel'
@@ -184,7 +188,7 @@ export const chatNavGroupModels: ChatNavGroupModel[] = [
   },
   {
     id: 'direct',
-    sortFn: sortAlphabetically,
+    sortFn: sortDirects,
     wrap: true,
     getActionsFn: getDirectActions,
     query: {
@@ -212,7 +216,85 @@ function sortAlphabetically (items: ChatNavItemModel[]): ChatNavItemModel[] {
   return items.sort((i1, i2) => i1.title.localeCompare(i2.title))
 }
 
-function sortActivityChannels (items: ChatNavItemModel[], contexts: DocNotifyContext[]): ChatNavItemModel[] {
+function getDirectCompanion (
+  direct: DirectMessage,
+  me: PersonAccount,
+  personAccountById: IdMap<PersonAccount>
+): Ref<Account> | undefined {
+  return direct.members.find((member) => personAccountById.get(member as Ref<PersonAccount>)?.person !== me.person)
+}
+
+function isOnline (account: Ref<Account> | undefined, userStatusByAccount: Map<Ref<Account>, UserStatus>): boolean {
+  if (account === undefined) {
+    return false
+  }
+
+  return userStatusByAccount.get(account)?.online ?? false
+}
+
+function isGroupChat (direct: DirectMessage, personAccountById: IdMap<PersonAccount>): boolean {
+  const persons = new Set(
+    direct.members
+      .map((member) => personAccountById.get(member as Ref<PersonAccount>)?.person)
+      .filter((it) => it !== undefined)
+  )
+
+  return persons.size > 2
+}
+
+function sortDirects (items: ChatNavItemModel[], option: SortFnOptions): ChatNavItemModel[] {
+  const { userStatusByAccount, personAccountById } = option
+  const me = getCurrentAccount() as PersonAccount
+
+  return items.sort((i1, i2) => {
+    const direct1 = i1.object as DirectMessage
+    const direct2 = i2.object as DirectMessage
+
+    const isGroupChat1 = isGroupChat(direct1, personAccountById)
+    const isGroupChat2 = isGroupChat(direct2, personAccountById)
+
+    if (isGroupChat1 && isGroupChat2) {
+      return i1.title.localeCompare(i2.title)
+    }
+
+    if (isGroupChat1 && !isGroupChat2) {
+      const isOnline2 = isOnline(getDirectCompanion(direct2, me, personAccountById), userStatusByAccount)
+      return isOnline2 ? 1 : -1
+    }
+
+    if (!isGroupChat1 && isGroupChat2) {
+      const isOnline1 = isOnline(getDirectCompanion(direct1, me, personAccountById), userStatusByAccount)
+      return isOnline1 ? -1 : 1
+    }
+
+    const account1 = getDirectCompanion(direct1, me, personAccountById)
+    const account2 = getDirectCompanion(direct2, me, personAccountById)
+
+    if (account1 === undefined) {
+      return 1
+    }
+
+    if (account2 === undefined) {
+      return -1
+    }
+
+    const isOnline1 = isOnline(account1, userStatusByAccount)
+    const isOnline2 = isOnline(account2, userStatusByAccount)
+
+    if (isOnline1 === isOnline2) {
+      return i1.title.localeCompare(i2.title)
+    }
+
+    if (isOnline1 && !isOnline2) {
+      return -1
+    }
+
+    return 1
+  })
+}
+
+function sortActivityChannels (items: ChatNavItemModel[], option: SortFnOptions): ChatNavItemModel[] {
+  const { contexts } = option
   const contextByDoc = new Map(contexts.map((context) => [context.attachedTo, context]))
 
   return items.sort((i1, i2) => {
