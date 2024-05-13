@@ -14,7 +14,7 @@
 //
 
 import { PersonAccount } from '@hcengineering/contact'
-import core, { concatLink, Doc, Tx, TxUpdateDoc } from '@hcengineering/core'
+import core, { AccountRole, concatLink, Doc, Ref, Tx, TxCreateDoc, TxUpdateDoc } from '@hcengineering/core'
 import lead, { Lead, leadId } from '@hcengineering/lead'
 import { getMetadata } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
@@ -44,6 +44,25 @@ export async function leadTextPresenter (doc: Doc): Promise<string> {
  * @public
  */
 export async function OnWorkspaceOwnerAdded (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  let ownerId: Ref<PersonAccount> | undefined
+  if (control.hierarchy.isDerived(tx._class, core.class.TxCreateDoc)) {
+    const createTx = tx as TxCreateDoc<PersonAccount>
+
+    if (createTx.attributes.role === AccountRole.Owner) {
+      ownerId = createTx.objectId
+    }
+  } else if (control.hierarchy.isDerived(tx._class, core.class.TxUpdateDoc)) {
+    const updateTx = tx as TxUpdateDoc<PersonAccount>
+
+    if (updateTx.operations.role === AccountRole.Owner) {
+      ownerId = updateTx.objectId
+    }
+  }
+
+  if (ownerId === undefined) {
+    return []
+  }
+
   const targetFunnel = (
     await control.findAll(lead.class.Funnel, {
       _id: lead.space.DefaultFunnel
@@ -54,21 +73,18 @@ export async function OnWorkspaceOwnerAdded (tx: Tx, control: TriggerControl): P
     return []
   }
 
-  const res: Tx[] = []
-  const actualTx = tx as TxUpdateDoc<PersonAccount>
-
   if (
     targetFunnel.owners === undefined ||
     targetFunnel.owners.length === 0 ||
     targetFunnel.owners[0] === core.account.System
   ) {
     const updTx = control.txFactory.createTxUpdateDoc(lead.class.Funnel, targetFunnel.space, targetFunnel._id, {
-      owners: [actualTx.objectId]
+      owners: [ownerId]
     })
-    res.push(updTx)
+    return [updTx]
   }
 
-  return res
+  return []
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type

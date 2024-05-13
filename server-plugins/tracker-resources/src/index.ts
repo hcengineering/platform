@@ -15,6 +15,7 @@
 
 import core, {
   Account,
+  AccountRole,
   AttachedDoc,
   concatLink,
   Doc,
@@ -183,6 +184,25 @@ export async function OnComponentRemove (tx: Tx, control: TriggerControl): Promi
  * @public
  */
 export async function OnWorkspaceOwnerAdded (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  let ownerId: Ref<PersonAccount> | undefined
+  if (control.hierarchy.isDerived(tx._class, core.class.TxCreateDoc)) {
+    const createTx = tx as TxCreateDoc<PersonAccount>
+
+    if (createTx.attributes.role === AccountRole.Owner) {
+      ownerId = createTx.objectId
+    }
+  } else if (control.hierarchy.isDerived(tx._class, core.class.TxUpdateDoc)) {
+    const updateTx = tx as TxUpdateDoc<PersonAccount>
+
+    if (updateTx.operations.role === AccountRole.Owner) {
+      ownerId = updateTx.objectId
+    }
+  }
+
+  if (ownerId === undefined) {
+    return []
+  }
+
   const targetProject = (
     await control.findAll(tracker.class.Project, {
       _id: tracker.project.DefaultProject
@@ -193,21 +213,18 @@ export async function OnWorkspaceOwnerAdded (tx: Tx, control: TriggerControl): P
     return []
   }
 
-  const res: Tx[] = []
-  const actualTx = tx as TxUpdateDoc<PersonAccount>
-
   if (
     targetProject.owners === undefined ||
     targetProject.owners.length === 0 ||
     targetProject.owners[0] === core.account.System
   ) {
     const updTx = control.txFactory.createTxUpdateDoc(tracker.class.Project, targetProject.space, targetProject._id, {
-      owners: [actualTx.objectId]
+      owners: [ownerId]
     })
-    res.push(updTx)
+    return [updTx]
   }
 
-  return res
+  return []
 }
 
 /**
