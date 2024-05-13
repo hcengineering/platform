@@ -13,17 +13,24 @@
 // limitations under the License.
 //
 import { type Asset, type IntlString } from '@hcengineering/platform'
-import { type Doc, type DocumentQuery, type Ref } from '@hcengineering/core'
+import { type Account, type Doc, type DocumentQuery, type IdMap, type Ref, type UserStatus } from '@hcengineering/core'
 import { type DocNotifyContext } from '@hcengineering/notification'
 import { type AnySvelteComponent, type IconSize, type Action } from '@hcengineering/ui'
+import { type PersonAccount } from '@hcengineering/contact'
 
 export type ChatGroup = 'activity' | 'direct' | 'channels' | 'starred'
+
+export interface SortFnOptions {
+  contexts: DocNotifyContext[]
+  userStatusByAccount: Map<Ref<Account>, UserStatus>
+  personAccountById: IdMap<PersonAccount>
+}
 
 export interface ChatNavGroupModel {
   id: ChatGroup
   label?: IntlString
   query: DocumentQuery<DocNotifyContext>
-  sortFn: (items: ChatNavItemModel[], contexts: DocNotifyContext[]) => ChatNavItemModel[]
+  sortFn: (items: ChatNavItemModel[], options: SortFnOptions) => ChatNavItemModel[]
   wrap: boolean
   getActionsFn?: (contexts: DocNotifyContext[]) => Action[]
   maxSectionItems?: number
