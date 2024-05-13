@@ -27,7 +27,8 @@ export function createModel (builder: Builder): void {
     txMatch: {
       collection: 'reactions',
       _class: core.class.TxCollectionCUD
-    }
+    },
+    isAsync: true
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {

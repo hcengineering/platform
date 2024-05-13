@@ -326,14 +326,20 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       if (tx.objectSpace === (account._id as string)) {
         targets = [account.email, systemAccountEmail]
       } else {
+        const cudTx = tx as TxCUD<Doc>
+        const isSpace = h.isDerived(cudTx.objectClass, core.class.Space)
+
+        if (isSpace) {
+          return undefined
+        }
+
         const space = this.spacesMap.get(tx.objectSpace)
+
         if (space !== undefined) {
           targets = await this.getTargets(space.members)
           if (!isOwner(account, ctx)) {
-            const cudTx = tx as TxCUD<Doc>
-            const isSpace = h.isDerived(cudTx.objectClass, core.class.Space)
-            const allowed = this.getAllAllowedSpaces(account, !isSpace)
-            if (allowed === undefined || !allowed.includes(isSpace ? (cudTx.objectId as Ref<Space>) : tx.objectSpace)) {
+            const allowed = this.getAllAllowedSpaces(account, true)
+            if (allowed === undefined || !allowed.includes(tx.objectSpace)) {
               throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
             }
           } else if (!targets.includes(account.email)) {
