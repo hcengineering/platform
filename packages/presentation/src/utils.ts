@@ -42,7 +42,8 @@ import core, {
   type Tx,
   type TxResult,
   type TypeAny,
-  type WithLookup
+  type WithLookup,
+  type Space
 } from '@hcengineering/core'
 import { getMetadata, getResource } from '@hcengineering/platform'
 import { LiveQuery as LQ } from '@hcengineering/query'
@@ -565,4 +566,8 @@ export function decodeTokenPayload (token: string): any {
 
 export function isAdminUser (): boolean {
   return decodeTokenPayload(getMetadata(plugin.metadata.Token) ?? '').admin === 'true'
+}
+
+export function isSpace (space: Doc): space is Space {
+  return getClient().getHierarchy().isDerived(space._class, core.class.Space)
 }

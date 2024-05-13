@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { type DocUpdateMessage } from '@hcengineering/activity'
-import core, { type Class, type Doc, type Domain, type Ref } from '@hcengineering/core'
+import { type ActivityMessage, type DocUpdateMessage, type Reaction } from '@hcengineering/activity'
+import core, { type Class, type Doc, type Domain, groupByArray, type Ref, type Space } from '@hcengineering/core'
 import {
   type MigrateOperation,
   type MigrateUpdate,
@@ -111,6 +111,71 @@ async function processMigrateMarkupFor (
   }
 }
 
+export async function migrateMessagesSpace (
+  client: MigrationClient,
+  _class: Ref<Class<ActivityMessage>>,
+  getSpaceId: (message: ActivityMessage) => Ref<Doc>,
+  getSpaceClass: (message: ActivityMessage) => Ref<Class<Doc>>
+): Promise<void> {
+  const skipped: Ref<ActivityMessage>[] = []
+  while (true) {
+    const messages = await client.find<ActivityMessage>(
+      DOMAIN_ACTIVITY,
+      {
+        _class,
+        space: core.space.Space,
+        _id: { $nin: skipped }
+      },
+      { limit: 500 }
+    )
+
+    if (messages.length === 0) {
+      break
+    }
+
+    const map = groupByArray(messages, getSpaceId)
+
+    for (const [spaceId, msgs] of map) {
+      const spaceClass = getSpaceClass(msgs[0])
+
+      if (!client.hierarchy.isDerived(spaceClass, core.class.Space)) {
+        skipped.push(...msgs.map(({ _id }) => _id))
+        continue
+      }
+
+      const space = spaceId as Ref<Space>
+
+      await client.update(
+        DOMAIN_ACTIVITY,
+        {
+          _class,
+          _id: { $in: msgs.map(({ _id }) => _id) }
+        },
+        { space }
+      )
+
+      await client.update<Reaction>(
+        DOMAIN_ACTIVITY,
+        {
+          _class: activity.class.Reaction,
+          attachedTo: { $in: msgs.map(({ _id }) => _id) }
+        },
+        { space }
+      )
+
+      await client.update<DocUpdateMessage>(
+        DOMAIN_ACTIVITY,
+        {
+          _class: activity.class.DocUpdateMessage,
+          objectClass: activity.class.Reaction,
+          attachedTo: { $in: msgs.map(({ _id }) => _id) }
+        },
+        { space }
+      )
+    }
+  }
+}
+
 export const activityOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, activityId, [
@@ -121,6 +186,17 @@ export const activityOperation: MigrateOperation = {
       {
         state: 'markup',
         func: migrateMarkup
+      },
+      {
+        state: 'migrate-doc-update-messages-space',
+        func: async (client) => {
+          await migrateMessagesSpace(
+            client,
+            activity.class.DocUpdateMessage,
+            ({ attachedTo }) => attachedTo,
+            ({ attachedToClass }) => attachedToClass
+          )
+        }
       }
     ])
   },
