@@ -304,6 +304,12 @@ async function getMessageNotifyResult (
     return { allowed: false, emails: [], push: false }
   }
 
+  const mixin = control.hierarchy.as(doc, notification.mixin.Collaborators)
+
+  if (mixin === undefined || !mixin.collaborators.includes(receiver)) {
+    return { allowed: false, emails: [], push: false }
+  }
+
   if (!hierarchy.isDerived(reference.attachedDocClass, activity.class.ActivityMessage)) {
     return { allowed: false, emails: [], push: false }
   }
