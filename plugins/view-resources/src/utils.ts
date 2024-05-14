@@ -36,6 +36,7 @@ import core, {
   type Lookup,
   type Mixin,
   type Obj,
+  type Permission,
   type Ref,
   type RefTo,
   type ReverseLookup,
@@ -48,22 +49,19 @@ import core, {
   type TxOperations,
   type TxUpdateDoc,
   type TypeAny,
-  type TypedSpace,
-  type Permission
+  type TypedSpace
 } from '@hcengineering/core'
 import { type Restrictions } from '@hcengineering/guest'
 import type { Asset, IntlString } from '@hcengineering/platform'
 import { getResource, translate } from '@hcengineering/platform'
 import {
-  type AttributeCategory,
-  AttributeCategoryOrder,
+  createQuery,
   getAttributePresenterClass,
   getClient,
-  hasResource,
-  type KeyedAttribute,
   getFiltredKeys,
+  hasResource,
   isAdminUser,
-  createQuery
+  type KeyedAttribute
 } from '@hcengineering/presentation'
 import { type CollaborationUser } from '@hcengineering/text-editor'
 import {
@@ -81,8 +79,10 @@ import {
   type Location
 } from '@hcengineering/ui'
 import view, {
-  type AttributePresenter,
+  AttributeCategoryOrder,
+  type AttributeCategory,
   type AttributeModel,
+  type AttributePresenter,
   type BuildModelKey,
   type BuildModelOptions,
   type CollectionPresenter,
@@ -179,37 +179,58 @@ export async function getAttributePresenter (
   _class: Ref<Class<Obj>>,
   key: string,
   preserveKey: BuildModelKey,
-  mixinClass?: Ref<Mixin<CollectionPresenter>>
+  mixinClass?: Ref<Mixin<CollectionPresenter>>,
+  _category?: AttributeCategory
 ): Promise<AttributeModel> {
   const actualMixinClass = mixinClass ?? view.mixin.AttributePresenter
 
   const hierarchy = client.getHierarchy()
   const attribute = hierarchy.getAttribute(_class, key)
+  let { attrClass, category } = getAttributePresenterClass(hierarchy, attribute)
+  if (_category !== undefined) {
+    category = _category
+  }
 
-  const presenterClass = getAttributePresenterClass(hierarchy, attribute)
-  const isCollectionAttr = presenterClass.category === 'collection'
+  let overridedPresenter = await client
+    .getModel()
+    .findOne(view.class.AttrPresenter, { objectClass: _class, attribute: attribute._id, category })
+  if (overridedPresenter === undefined) {
+    overridedPresenter = await client
+      .getModel()
+      .findOne(view.class.AttrPresenter, { attribute: attribute._id, category })
+  }
+
+  const isCollectionAttr = category === 'collection'
   const mixin = isCollectionAttr ? view.mixin.CollectionPresenter : actualMixinClass
 
   let presenterMixin: AttributePresenter | CollectionPresenter | undefined = hierarchy.classHierarchyMixin(
-    presenterClass.attrClass,
+    attrClass,
     mixin
   )
 
   if (presenterMixin?.presenter === undefined && mixinClass != null && mixin === mixinClass) {
-    presenterMixin = hierarchy.classHierarchyMixin(presenterClass.attrClass, view.mixin.AttributePresenter)
+    presenterMixin = hierarchy.classHierarchyMixin(attrClass, view.mixin.AttributePresenter)
   }
 
-  let presenter: AnySvelteComponent
+  let presenter: AnySvelteComponent | undefined
 
-  const attributePresenter = presenterMixin as AttributePresenter
-  if (presenterClass.category === 'array' && attributePresenter.arrayPresenter !== undefined) {
-    presenter = await getResource(attributePresenter.arrayPresenter)
-  } else if (presenterMixin?.presenter !== undefined) {
-    presenter = await getResource(presenterMixin.presenter)
-  } else if (presenterClass.attrClass === core.class.TypeAny) {
-    const typeAny = attribute.type as TypeAny
-    presenter = await getResource(typeAny.presenter)
-  } else {
+  if (overridedPresenter !== undefined) {
+    presenter = await getResource(overridedPresenter.component)
+  }
+
+  if (presenter === undefined) {
+    const attributePresenter = presenterMixin as AttributePresenter
+    if (category === 'array' && attributePresenter.arrayPresenter !== undefined) {
+      presenter = await getResource(attributePresenter.arrayPresenter)
+    } else if (presenterMixin?.presenter !== undefined) {
+      presenter = await getResource(presenterMixin.presenter)
+    } else if (attrClass === core.class.TypeAny) {
+      const typeAny = attribute.type as TypeAny
+      presenter = await getResource(typeAny.presenter)
+    }
+  }
+
+  if (presenter === undefined) {
     throw new Error('attribute presenter not found for ' + JSON.stringify(preserveKey))
   }
 
@@ -223,7 +244,7 @@ export async function getAttributePresenter (
   return {
     key: preserveKey.key,
     sortingKey,
-    _class: presenterClass.attrClass,
+    _class: attrClass,
     label: preserveKey.label ?? attribute.shortLabel ?? attribute.label,
     presenter,
     props: preserveKey.props,
@@ -265,7 +286,8 @@ export async function getPresenter<T extends Doc> (
   key: BuildModelKey,
   preserveKey: BuildModelKey,
   lookup?: Lookup<T>,
-  isCollectionAttr: boolean = false
+  isCollectionAttr: boolean = false,
+  _category?: AttributeCategory
 ): Promise<AttributeModel> {
   if (key.presenter !== undefined) {
     const { presenter, label, sortingKey } = key
@@ -294,7 +316,7 @@ export async function getPresenter<T extends Doc> (
       }
       return await getLookupPresenter(client, _class, key, preserveKey, lookup)
     }
-    return await getAttributePresenter(client, _class, key.key, preserveKey)
+    return await getAttributePresenter(client, _class, key.key, preserveKey, undefined, _category)
   }
 }
 

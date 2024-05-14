@@ -107,6 +107,7 @@ import UserDetails from './components/UserDetails.svelte'
 import EditOrganizationPanel from './components/EditOrganizationPanel.svelte'
 import ChannelIcon from './components/ChannelIcon.svelte'
 import CreateGuest from './components/CreateGuest.svelte'
+import SpaceMembersEditor from './components/SpaceMembersEditor.svelte'
 
 import contact from './plugin'
 import {
@@ -342,7 +343,8 @@ export default async (): Promise<Resources> => ({
     PersonAccountRefPresenter,
     PersonIcon,
     EditOrganizationPanel,
-    ChannelIcon
+    ChannelIcon,
+    SpaceMembersEditor
   },
   completion: {
     EmployeeQuery: async (

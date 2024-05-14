@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee, Person } from '@hcengineering/contact'
+  import contact, { Contact, Employee, Person } from '@hcengineering/contact'
   import type { Class, Doc, DocumentQuery, Ref } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import { ObjectCreate, getClient } from '@hcengineering/presentation'
@@ -27,9 +27,9 @@
   import UsersPopup from './UsersPopup.svelte'
   import Members from './icons/Members.svelte'
 
-  export let items: Ref<Employee>[] = []
-  export let _class: Ref<Class<Employee>> = contact.mixin.Employee
-  export let docQuery: DocumentQuery<Employee> | undefined = {}
+  export let items: Ref<Person>[] = []
+  export let _class: Ref<Class<Person>> = contact.mixin.Employee
+  export let docQuery: DocumentQuery<Person> | undefined = {}
 
   export let label: IntlString | undefined = undefined
   export let kind: ButtonKind = 'no-border'
@@ -41,16 +41,18 @@
   export let readonly: boolean = false
   export let create: ObjectCreate | undefined = undefined
 
-  function filter (items: Ref<Employee>[]): Ref<Employee>[] {
+  export let sort: ((a: Person, b: Person) => number) | undefined = undefined
+
+  function filter (items: Ref<Person>[]): Ref<Person>[] {
     return items.filter((it, idx, arr) => arr.indexOf(it) === idx)
   }
 
   let persons: Person[] = filter(items)
     .map((p) => $personByIdStore.get(p))
-    .filter((p) => p !== undefined) as Employee[]
+    .filter((p) => p !== undefined) as Person[]
   $: persons = filter(items)
     .map((p) => $personByIdStore.get(p))
-    .filter((p) => p !== undefined) as Employee[]
+    .filter((p) => p !== undefined) as Person[]
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -62,36 +64,34 @@
         .findAllSync(contact.class.PersonAccount, {})
         .map((p) => p.person)
     )
-    showPopup(
-      UsersPopup,
-      {
-        _class,
-        label,
-        docQuery,
-        multiSelect: true,
-        allowDeselect: false,
-        selectedUsers: filter(items),
-        filter: (it: Doc) => {
-          const h = client.getHierarchy()
-          if (h.hasMixin(it, contact.mixin.Employee)) {
-            const isActive = h.as(it, contact.mixin.Employee).active
-            const isSelected = items.some((selectedItem) => selectedItem === it._id)
-            return isActive || isSelected
-          }
-          return accounts.has(it._id as Ref<Person>)
-        },
-        readonly,
-        create
-      },
-      evt.target as HTMLElement,
-      undefined,
-      (result) => {
-        if (result != null) {
-          items = filter(result)
-          dispatch('update', items)
+    const popupProps: any = {
+      _class,
+      label,
+      docQuery,
+      multiSelect: true,
+      allowDeselect: false,
+      selectedUsers: filter(items),
+      filter: (it: Doc) => {
+        const h = client.getHierarchy()
+        if (h.hasMixin(it, contact.mixin.Employee)) {
+          const isActive = h.as(it, contact.mixin.Employee).active
+          const isSelected = items.some((selectedItem) => selectedItem === it._id)
+          return isActive || isSelected
         }
+        return accounts.has(it._id as Ref<Person>)
+      },
+      readonly,
+      create
+    }
+    if (sort !== undefined) {
+      popupProps.sort = sort
+    }
+    showPopup(UsersPopup, popupProps, evt.target as HTMLElement, undefined, (result) => {
+      if (result != null) {
+        items = filter(result)
+        dispatch('update', items)
       }
-    )
+    })
   }
 </script>
 

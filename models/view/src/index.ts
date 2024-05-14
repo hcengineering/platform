@@ -23,7 +23,8 @@ import {
   type DocumentQuery,
   type Domain,
   type Ref,
-  type Space
+  type Space,
+  type AnyAttribute
 } from '@hcengineering/core'
 import { type Builder, Mixin, Model, UX } from '@hcengineering/model'
 import core, { TClass, TDoc } from '@hcengineering/model-core'
@@ -87,10 +88,13 @@ import {
   type ViewletPreference,
   type ObjectIdentifier,
   type ObjectIcon,
-  type ObjectTooltip
+  type ObjectTooltip,
+  type AttrPresenter,
+  type AttributeCategory
 } from '@hcengineering/view'
 
 import view from './plugin'
+import { classPresenter, createAction } from './utils'
 
 export { viewId } from '@hcengineering/view'
 export { viewOperation } from './migration'
@@ -98,38 +102,7 @@ export type { ViewAction, Viewlet }
 
 export const DOMAIN_VIEW = 'view' as Domain
 
-export function createAction<T extends Doc = Doc, P = Record<string, any>> (
-  builder: Builder,
-  data: Data<Action<T, P>>,
-  id?: Ref<Action<T, P>>
-): void {
-  const { label, ...adata } = data
-  builder.createDoc<Action<T, P>>(view.class.Action, core.space.Model, { label, ...adata }, id)
-}
-
-export function classPresenter (
-  builder: Builder,
-  _class: Ref<Class<Doc>>,
-  presenter: AnyComponent,
-  editor?: AnyComponent,
-  popup?: AnyComponent,
-  activity?: AnyComponent
-): void {
-  builder.mixin(_class, core.class.Class, view.mixin.AttributePresenter, {
-    presenter
-  })
-  if (editor !== undefined) {
-    builder.mixin(_class, core.class.Class, view.mixin.AttributeEditor, {
-      inlineEditor: editor,
-      popup
-    })
-  }
-  if (activity !== undefined) {
-    builder.mixin(_class, core.class.Class, view.mixin.ActivityAttributePresenter, {
-      presenter: activity
-    })
-  }
-}
+export * from './utils'
 
 @Model(view.class.FilteredView, core.class.Doc, DOMAIN_VIEW)
 @UX(view.string.FilteredViews)
@@ -383,6 +356,14 @@ export class TObjectPanel extends TClass implements ObjectPanel {
   component!: AnyComponent
 }
 
+@Model(view.class.AttrPresenter, core.class.Doc, DOMAIN_MODEL)
+export class TAttrPresenter extends TDoc implements AttrPresenter {
+  category!: AttributeCategory
+  objectClass!: Ref<Class<Doc<Space>>>
+  attribute!: Ref<AnyAttribute>
+  component!: AnyComponent
+}
+
 export type ActionTemplate = Partial<Data<Action>>
 
 /**
@@ -467,7 +448,8 @@ export function createModel (builder: Builder): void {
     TGroupping,
     TObjectIdentifier,
     TObjectTooltip,
-    TObjectIcon
+    TObjectIcon,
+    TAttrPresenter
   )
 
   classPresenter(

@@ -18,9 +18,7 @@ import activity, { type ActivityMessage } from '@hcengineering/activity'
 import chunter from '@hcengineering/chunter'
 import {
   DOMAIN_MODEL,
-  Hierarchy,
   IndexKind,
-  type Space,
   type Account,
   type AttachedDoc,
   type Class,
@@ -31,6 +29,7 @@ import {
   type Domain,
   type Markup,
   type Ref,
+  type Space,
   type Timestamp,
   type Tx
 } from '@hcengineering/core'
@@ -700,11 +699,7 @@ export function generateClassNotificationTypes (
   ignoreKeys: string[] = [],
   defaultEnabled: string[] = []
 ): void {
-  const txes = builder.getTxes()
-  const hierarchy = new Hierarchy()
-  for (const tx of txes) {
-    hierarchy.tx(tx)
-  }
+  const hierarchy = builder.hierarchy
   const attributes = hierarchy.getAllAttributes(
     _class,
     hierarchy.isDerived(_class, core.class.AttachedDoc) ? core.class.AttachedDoc : core.class.Doc

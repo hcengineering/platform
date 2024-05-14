@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Employee, PersonAccount } from '@hcengineering/contact'
-  import core, { Account, Ref } from '@hcengineering/core'
+  import { Contact, Employee, PersonAccount, getName } from '@hcengineering/contact'
+  import core, { Account, Ref, getCurrentAccount } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { ButtonKind, ButtonSize } from '@hcengineering/ui'
@@ -33,7 +33,7 @@
   export let includeItems: Ref<Account>[] | undefined = undefined
   export let excludeItems: Ref<Account>[] | undefined = undefined
   export let emptyLabel: IntlString | undefined = undefined
-  export let allowGuests: boolean = true
+  export let allowGuests: boolean = false
 
   let timer: any = null
   const client = getClient()
@@ -103,6 +103,29 @@
               : {})
           }
         }
+
+  const hierarchy = client.getHierarchy()
+  const me = getCurrentAccount() as PersonAccount
+
+  function sort (a: Contact, b: Contact): number {
+    if (me.person === a._id) {
+      return -1
+    }
+    if (me.person === b._id) {
+      return 1
+    }
+    const aIncludes = employees.includes(a._id as Ref<Employee>)
+    const bIncludes = employees.includes(b._id as Ref<Employee>)
+    if (aIncludes && !bIncludes) {
+      return -1
+    }
+    if (!aIncludes && bIncludes) {
+      return 1
+    }
+    const aName = getName(hierarchy, a)
+    const bName = getName(hierarchy, b)
+    return aName.localeCompare(bName)
+  }
 </script>
 
 <UserBoxList
@@ -114,6 +137,7 @@
   {docQuery}
   on:update={onUpdate}
   {size}
+  {sort}
   justify={'left'}
   width={width ?? 'min-content'}
   {kind}

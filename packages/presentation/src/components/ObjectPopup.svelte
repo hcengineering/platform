@@ -61,6 +61,12 @@
     return true
   }
 
+  export let sort: <T extends Doc>(a: T, b: T) => number = (a, b) => {
+    const aval: string = `${getObjectValue(groupBy, a as any)}`
+    const bval: string = `${getObjectValue(groupBy, b as any)}`
+    return aval.localeCompare(bval)
+  }
+
   const created: Doc[] = []
   const dispatch = createEventDispatcher()
 
@@ -84,11 +90,7 @@
       _id: { $nin: ignoreObjects, ..._idExtra }
     },
     (result) => {
-      result.sort((a, b) => {
-        const aval: string = `${getObjectValue(groupBy, a as any)}`
-        const bval: string = `${getObjectValue(groupBy, b as any)}`
-        return aval.localeCompare(bval)
-      })
+      result.sort(sort)
       if (created.length > 0) {
         const cmap = new Set(created.map((it) => it._id))
         objects = [...created, ...result.filter((d) => !cmap.has(d._id))].filter(filter)

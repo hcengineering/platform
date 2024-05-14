@@ -188,7 +188,8 @@ export const contactPlugin = plugin(contactId, {
     PersonIcon: '' as AnyComponent,
     EditOrganizationPanel: '' as AnyComponent,
     CollaborationUserAvatar: '' as AnyComponent,
-    CreateGuest: '' as AnyComponent
+    CreateGuest: '' as AnyComponent,
+    SpaceMembersEditor: '' as AnyComponent
   },
   channelProvider: {
     Email: '' as Ref<ChannelProvider>,
