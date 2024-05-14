@@ -17,16 +17,12 @@ import contact from '@hcengineering/contact'
 import core, {
   BackupClient,
   Client as CoreClient,
-  Doc,
-  Domain,
   DOMAIN_MIGRATION,
   DOMAIN_MODEL,
+  DOMAIN_TRANSIENT,
   DOMAIN_TX,
-  FieldIndex,
   groupByArray,
   Hierarchy,
-  IndexKind,
-  IndexOrder,
   MeasureContext,
   MigrationState,
   ModelDb,
@@ -34,15 +30,14 @@ import core, {
   WorkspaceId
 } from '@hcengineering/core'
 import { consoleModelLogger, MigrateOperation, ModelLogger } from '@hcengineering/model'
-import { createMongoTxAdapter, getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
+import { createMongoTxAdapter, DBCollectionHelper, getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server'
-import { StorageAdapter, StorageConfiguration } from '@hcengineering/server-core'
+import { DomainIndexHelperImpl, StorageAdapter, StorageConfiguration } from '@hcengineering/server-core'
 import { Db, Document } from 'mongodb'
 import { connect } from './connect'
 import toolPlugin from './plugin'
 import { MigrateClientImpl } from './upgrade'
 
-import { deepEqual } from 'fast-equals'
 import fs from 'fs'
 import path from 'path'
 
@@ -387,162 +382,27 @@ async function createUpdateIndexes (
   logger: ModelLogger,
   progress: (value: number) => Promise<void>
 ): Promise<void> {
-  const classes = await ctx.with('find-classes', {}, async () => await connection.findAll(core.class.Class, {}))
-
-  const domainConfigurations = await ctx.with(
-    'find-domain-configs',
-    {},
-    async () => await connection.findAll(core.class.DomainIndexConfiguration, {})
-  )
-
-  const hierarchy = connection.getHierarchy()
-  const domains = new Map<Domain, Set<string | FieldIndex<Doc>>>()
-  // Find all domains and indexed fields inside
-  for (const c of classes) {
-    try {
-      const domain = hierarchy.findDomain(c._id)
-      if (domain === undefined || domain === DOMAIN_MODEL) {
-        continue
-      }
-      const attrs = hierarchy.getAllAttributes(c._id)
-      const domainAttrs = domains.get(domain) ?? new Set<string | FieldIndex<Doc>>()
-      for (const a of attrs.values()) {
-        if (a.index !== undefined && (a.index === IndexKind.Indexed || a.index === IndexKind.IndexedDsc)) {
-          if (a.index === IndexKind.Indexed) {
-            domainAttrs.add(a.name)
-          } else {
-            domainAttrs.add({ [a.name]: IndexOrder.Descending })
-          }
-        }
-      }
-
-      // Handle extra configurations
-      if (hierarchy.hasMixin(c, core.mixin.IndexConfiguration)) {
-        const config = hierarchy.as(c, core.mixin.IndexConfiguration)
-        for (const attr of config.indexes) {
-          domainAttrs.add(attr)
-        }
-      }
-
-      domains.set(domain, domainAttrs)
-    } catch (err: any) {
-      // Ignore, since we have classes without domain.
-    }
-  }
-
-  const collections = await ctx.with(
-    'list-collections',
-    {},
-    async () => await db.listCollections({}, { nameOnly: true }).toArray()
-  )
+  const domainHelper = new DomainIndexHelperImpl(connection.getHierarchy(), connection.getModel())
+  const dbHelper = new DBCollectionHelper(db)
+  await dbHelper.init()
   let completed = 0
-  const allDomains = Array.from(domains.entries())
-  for (const [d, v] of allDomains) {
-    const cfg = domainConfigurations.find((it) => it.domain === d)
-
-    const collInfo = collections.find((it) => it.name === d)
-
-    if (cfg?.disableCollection === true && collInfo != null) {
-      try {
-        await db.dropCollection(d)
-      } catch (err) {
-        logger.error('error: failed to delete collection', { d, err })
-      }
+  const allDomains = connection.getHierarchy().domains()
+  for (const domain of allDomains) {
+    if (domain === DOMAIN_MODEL || domain === DOMAIN_TRANSIENT) {
       continue
     }
-
-    if (collInfo == null) {
-      await ctx.with('create-collection', { d }, async () => await db.createCollection(d))
-    }
-    const collection = db.collection(d)
-    const bb: (string | FieldIndex<Doc>)[] = []
-    const added = new Set<string>()
-
-    const allIndexes = (await collection.listIndexes().toArray()).filter((it) => it.name !== '_id_')
-
-    for (const vv of [...v.values(), ...(cfg?.indexes ?? [])]) {
+    const result = await domainHelper.checkDomain(ctx, domain, false, dbHelper)
+    if (!result && dbHelper.exists(domain)) {
       try {
-        const name =
-          typeof vv === 'string'
-            ? `${vv}_1`
-            : Object.entries(vv)
-              .map(([key, val]) => `${key}_${val}`)
-              .join('_')
-
-        // Check if index is disabled or not
-        const isDisabled =
-          cfg?.disabled?.some((it) => {
-            const _it = typeof it === 'string' ? { [it]: 1 } : it
-            const _vv = typeof vv === 'string' ? { [vv]: 1 } : vv
-            return deepEqual(_it, _vv)
-          }) ?? false
-        if (isDisabled) {
-          // skip index since it is disabled
-          continue
+        logger.log('dropping domain', { domain })
+        if ((await db.collection(domain).countDocuments({})) === 0) {
+          await db.dropCollection(domain)
         }
-        if (added.has(name)) {
-          // Index already added
-          continue
-        }
-        added.add(name)
-
-        const existingOne = allIndexes.findIndex((it) => it.name === name)
-        if (existingOne !== -1) {
-          allIndexes.splice(existingOne, 1)
-        }
-        const exists = existingOne !== -1
-        // Check if index exists
-        if (!exists) {
-          if (!isDisabled) {
-            // Check if not disabled
-            bb.push(vv)
-            await collection.createIndex(vv, {
-              background: true,
-              name
-            })
-          }
-        }
-      } catch (err: any) {
-        logger.error('error: failed to create index', { d, vv, err })
+      } catch (err) {
+        logger.error('error: failed to delete collection', { domain, err })
       }
     }
-    if (allIndexes.length > 0) {
-      for (const c of allIndexes) {
-        try {
-          if (cfg?.skip !== undefined) {
-            if (Array.from(cfg.skip ?? []).some((it) => c.name.includes(it))) {
-              continue
-            }
-          }
-          logger.log('drop unused indexes', { name: c.name })
-          await collection.dropIndex(c.name)
-        } catch (err) {
-          console.error('error: failed to drop index', { c, err })
-        }
-      }
-    }
-
-    if (bb.length > 0) {
-      logger.log('created indexes', { d, bb })
-    }
-
-    const pos = collections.findIndex((it) => it.name === d)
-    if (pos !== -1) {
-      collections.splice(pos, 1)
-    }
-
     completed++
     await progress((100 / allDomains.length) * completed)
-  }
-  if (collections.length > 0) {
-    // We could drop unused collections.
-    for (const c of collections) {
-      try {
-        logger.log('drop unused collection', { name: c.name })
-        await db.dropCollection(c.name)
-      } catch (err) {
-        console.error('error: failed to drop collection', { c, err })
-      }
-    }
   }
 }

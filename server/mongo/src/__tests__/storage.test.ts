@@ -35,7 +35,8 @@ import core, {
   type WorkspaceId,
   type SessionOperationContext,
   type ParamsType,
-  type FullParamsType
+  type FullParamsType,
+  type ServerStorage
 } from '@hcengineering/core'
 import {
   type ContentTextAdapter,
@@ -89,6 +90,7 @@ describe('mongo operations', () => {
   let model: ModelDb
   let client: Client
   let operations: TxOperations
+  let serverStorage: ServerStorage
 
   beforeAll(async () => {
     mongoClient = getMongoClient(mongodbUri)
@@ -106,6 +108,7 @@ describe('mongo operations', () => {
     try {
       await (await mongoClient.getClient()).db(dbId).dropDatabase()
     } catch (eee) {}
+    await serverStorage.close()
   })
 
   async function initDb (): Promise<void> {
@@ -172,7 +175,7 @@ describe('mongo operations', () => {
       storageFactory: () => createNullStorageFactory()
     }
     const ctx = new MeasureMetricsContext('client', {})
-    const serverStorage = await createServerStorage(ctx, conf, {
+    serverStorage = await createServerStorage(ctx, conf, {
       upgrade: false,
       broadcast: () => {}
     })

@@ -19,6 +19,7 @@ import {
   type DocumentQuery,
   type DocumentUpdate,
   type Domain,
+  type FieldIndex,
   type FindOptions,
   type FindResult,
   type Hierarchy,
@@ -32,6 +33,24 @@ import {
   type WorkspaceId
 } from '@hcengineering/core'
 import { type StorageAdapter } from './storage'
+
+export interface DomainHelperOperations {
+  create: (domain: Domain) => Promise<void>
+  exists: (domain: Domain) => boolean
+  createIndex: (domain: Domain, value: string | FieldIndex<Doc>, options?: { name: string }) => Promise<void>
+  dropIndex: (domain: Domain, name: string) => Promise<void>
+  listIndexes: (domain: Domain) => Promise<{ name: string }[]>
+  hasDocuments: (domain: Domain, count: number) => Promise<boolean>
+}
+
+export interface DomainHelper {
+  checkDomain: (
+    ctx: MeasureContext,
+    domain: Domain,
+    forceCreate: boolean,
+    operations: DomainHelperOperations
+  ) => Promise<boolean>
+}
 
 /**
  * @public
@@ -51,6 +70,9 @@ export interface RawDBAdapter {
  * @public
  */
 export interface DbAdapter {
+  init?: () => Promise<void>
+
+  helper?: () => DomainHelperOperations
   createIndexes: (domain: Domain, config: Pick<IndexingConfiguration<Doc>, 'indexes'>) => Promise<void>
   removeOldIndex: (domain: Domain, deletePattern: RegExp, keepPattern: RegExp) => Promise<void>
 

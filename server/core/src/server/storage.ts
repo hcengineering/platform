@@ -59,8 +59,9 @@ import core, {
 import { getResource, type Metadata } from '@hcengineering/platform'
 import { LiveQuery as LQ } from '@hcengineering/query'
 import crypto from 'node:crypto'
-import { type DbAdapter } from '../adapter'
+import { type DbAdapter, type DomainHelper } from '../adapter'
 import { type FullTextIndex } from '../fulltext'
+import { DummyDbAdapter } from '../mem'
 import serverCore from '../plugin'
 import { type ServiceAdaptersManager } from '../service'
 import { type StorageAdapter } from '../storage'
@@ -86,6 +87,17 @@ export class TServerStorage implements ServerStorage {
 
   liveQuery: LQ
 
+  domainInfo = new Map<
+  Domain,
+  {
+    exists: boolean
+    checkPromise: Promise<boolean>
+    lastCheck: number
+  }
+  >()
+
+  emptyAdapter = new DummyDbAdapter()
+
   constructor (
     private readonly _domains: Record<string, string>,
     private readonly defaultAdapter: string,
@@ -99,8 +111,9 @@ export class TServerStorage implements ServerStorage {
     private readonly workspace: WorkspaceIdWithUrl,
     readonly indexFactory: (storage: ServerStorage) => FullTextIndex,
     readonly options: ServerStorageOptions,
-    metrics: MeasureContext,
-    readonly model: Tx[]
+    readonly metrics: MeasureContext,
+    readonly model: Tx[],
+    readonly domainHelper: DomainHelper
   ) {
     this.liveQuery = new LQ(this.newCastClient(hierarchy, modelDb, metrics))
     this.hierarchy = hierarchy
@@ -147,6 +160,13 @@ export class TServerStorage implements ServerStorage {
 
   async close (): Promise<void> {
     await this.fulltext.close()
+    for (const [domain, info] of this.domainInfo.entries()) {
+      if (info.checkPromise !== undefined) {
+        console.log('wait for check domain', domain)
+        // We need to be sure we wait for check to be complete
+        await info.checkPromise
+      }
+    }
     for (const o of this.adapters.values()) {
       await o.close()
     }
@@ -154,12 +174,34 @@ export class TServerStorage implements ServerStorage {
     await this.serviceAdaptersManager.close()
   }
 
-  private getAdapter (domain: Domain): DbAdapter {
+  private getAdapter (domain: Domain, requireExists: boolean): DbAdapter {
     const name = this._domains[domain] ?? this.defaultAdapter
     const adapter = this.adapters.get(name)
     if (adapter === undefined) {
       throw new Error('adapter not provided: ' + name)
     }
+
+    const helper = adapter.helper?.()
+    if (helper !== undefined) {
+      let info = this.domainInfo.get(domain)
+      if (info == null || Date.now() - info.lastCheck > 5 * 60 * 1000) {
+        // Re-check every 5 minutes
+        const exists = helper.exists(domain)
+        // We will create necessary indexes if required, and not touch collection if not required.
+        info = {
+          exists,
+          lastCheck: Date.now(),
+          checkPromise: this.domainHelper.checkDomain(this.metrics, domain, requireExists, helper)
+        }
+        this.domainInfo.set(domain, info)
+      }
+      if (!info.exists && !requireExists) {
+        return this.emptyAdapter
+      }
+      // If we require it exists, it will be exists
+      info.exists = true
+    }
+
     return adapter
   }
 
@@ -171,7 +213,7 @@ export class TServerStorage implements ServerStorage {
       if (part.length > 0) {
         // Find all deleted documents
 
-        const adapter = this.getAdapter(lastDomain as Domain)
+        const adapter = this.getAdapter(lastDomain as Domain, true)
         const toDelete = part.filter((it) => it._class === core.class.TxRemoveDoc).map((it) => it.objectId)
 
         if (toDelete.length > 0) {
@@ -397,7 +439,7 @@ export class TServerStorage implements ServerStorage {
       p + '-find-all',
       { _class: clazz },
       (ctx) => {
-        return this.getAdapter(domain).findAll(ctx, clazz, query, options)
+        return this.getAdapter(domain, false).findAll(ctx, clazz, query, options)
       },
       { clazz, query, options }
     )
@@ -860,7 +902,7 @@ export class TServerStorage implements ServerStorage {
         await this.triggers.tx(tx)
         await this.modelDb.tx(tx)
       }
-      await ctx.with('domain-tx', {}, async (ctx) => await this.getAdapter(DOMAIN_TX).tx(ctx.ctx, ...txToStore))
+      await ctx.with('domain-tx', {}, async (ctx) => await this.getAdapter(DOMAIN_TX, true).tx(ctx.ctx, ...txToStore))
       result.push(...(await ctx.with('apply', {}, (ctx) => this.routeTx(ctx.ctx, removedMap, ...txToProcess))))
 
       // invoke triggers and store derived objects
@@ -891,18 +933,18 @@ export class TServerStorage implements ServerStorage {
   }
 
   find (ctx: MeasureContext, domain: Domain): StorageIterator {
-    return this.getAdapter(domain).find(ctx, domain)
+    return this.getAdapter(domain, false).find(ctx, domain)
   }
 
   async load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
-    return await this.getAdapter(domain).load(ctx, domain, docs)
+    return await this.getAdapter(domain, false).load(ctx, domain, docs)
   }
 
   async upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
-    await this.getAdapter(domain).upload(ctx, domain, docs)
+    await this.getAdapter(domain, true).upload(ctx, domain, docs)
   }
 
   async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
-    await this.getAdapter(domain).clean(ctx, domain, docs)
+    await this.getAdapter(domain, true).clean(ctx, domain, docs)
   }
 }

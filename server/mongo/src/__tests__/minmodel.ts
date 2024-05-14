@@ -220,5 +220,14 @@ export function genMinModel (): TxCUD<Doc>[] {
       members: [u1]
     })
   )
+
+  txes.push(
+    createClass(core.class.DomainIndexConfiguration, {
+      label: 'DomainIndexConfiguration' as IntlString,
+      extends: core.class.Doc,
+      kind: ClassifierKind.CLASS,
+      domain: DOMAIN_MODEL
+    })
+  )
   return txes
 }

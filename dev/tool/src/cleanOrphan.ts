@@ -1,7 +1,6 @@
-import { dropWorkspace, setWorkspaceDisabled, type Workspace } from '@hcengineering/account'
-import core, { AccountRole, type MeasureContext, MeasureMetricsContext, SortingOrder } from '@hcengineering/core'
+import { dropWorkspaceFull, setWorkspaceDisabled, type Workspace } from '@hcengineering/account'
+import core, { AccountRole, MeasureMetricsContext, SortingOrder, type MeasureContext } from '@hcengineering/core'
 import contact from '@hcengineering/model-contact'
-import { getWorkspaceDB } from '@hcengineering/mongo'
 import { type StorageAdapter } from '@hcengineering/server-core'
 import { connect } from '@hcengineering/server-tool'
 import { type Db, type MongoClient } from 'mongodb'
@@ -66,18 +65,14 @@ export async function checkOrphanWorkspaces (
           await setWorkspaceDisabled(db, ws._id, true)
         }
         if (cmd.remove) {
-          await dropWorkspace(new MeasureMetricsContext('tool', {}), db, productId, ws.workspace)
-          const workspaceDb = getWorkspaceDB(client, { name: ws.workspace, productId })
-          await workspaceDb.dropDatabase()
-          if (storageAdapter !== undefined && hasBucket) {
-            const docs = await storageAdapter.list(ctx, wspace)
-            await storageAdapter.remove(
-              ctx,
-              wspace,
-              docs.map((it) => it._id)
-            )
-            await storageAdapter.delete(ctx, wspace)
-          }
+          await dropWorkspaceFull(
+            new MeasureMetricsContext('tool', {}),
+            db,
+            client,
+            productId,
+            ws.workspace,
+            storageAdapter
+          )
         }
       }
     }
