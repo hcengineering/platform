@@ -1,5 +1,8 @@
 {
   "string": {
-    "Storage": "Хранилище"
+    "Storage": "Хранилище",
+    "Storages": "Хранилища",
+    "CreateStorage": "Создать хранилище",
+    "EditStorage": "Редактировать хранилище"
   }
 }

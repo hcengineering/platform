@@ -70,7 +70,7 @@
 
   $: isNew = teamspace === undefined
 
-  let typeId: Ref<SpaceType> | undefined = teamspace?.type || document.spaceType.DefaultTeamspaceType
+  let typeId: Ref<SpaceType> | undefined = teamspace?.type ?? document.spaceType.DefaultTeamspaceType
   let spaceType: WithLookup<SpaceType> | undefined
 
   $: void loadSpaceType(typeId)

@@ -217,6 +217,7 @@ export default plugin(coreId, {
     Account: '' as IntlString,
     StatusCategory: '' as IntlString,
     Rank: '' as IntlString,
+    Members: '' as IntlString,
     Owners: '' as IntlString,
     Permission: '' as IntlString,
     CreateObject: '' as IntlString,

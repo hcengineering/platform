@@ -15,6 +15,10 @@
 
 import { type Resources } from '@hcengineering/platform'
 
+import CreateStorage from './components/CreateStorage.svelte'
+
 export default async (): Promise<Resources> => ({
-  component: {}
+  component: {
+    CreateStorage
+  }
 })

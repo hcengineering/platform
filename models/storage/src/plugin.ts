@@ -13,14 +13,27 @@
 // limitations under the License.
 //
 
+import type { Ref } from '@hcengineering/core'
+import {} from '@hcengineering/core'
+import { storageId } from '@hcengineering/storage'
+import storage from '@hcengineering/storage-resources/src/plugin'
 import { type IntlString, mergeIds } from '@hcengineering/platform'
-import storage, { storageId } from '@hcengineering/storage'
+import { type AnyComponent } from '@hcengineering/ui'
+import { type Viewlet, type ActionCategory } from '@hcengineering/view'
 
 export default mergeIds(storageId, storage, {
-  component: {},
+  component: {
+    CreateStorage: '' as AnyComponent,
+    StorageSpacePresenter: '' as AnyComponent
+  },
+  viewlet: {
+    StorageTable: '' as Ref<Viewlet>
+  },
+  category: {
+    Storage: '' as Ref<ActionCategory>
+  },
   string: {
-    CreateStorage: '' as IntlString,
-    EditStorage: '' as IntlString,
-    RoleLabel: '' as IntlString
+    Storages: '' as IntlString,
+    Description: '' as IntlString
   }
 })

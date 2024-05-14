@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import { Doc, Space } from '@hcengineering/core'
+import { Doc, TypedSpace } from '@hcengineering/core'
 
 /** @public */
-export interface Storage extends Space {}
+export interface Storage extends TypedSpace {}
 
 /** @public */
 export interface Folder extends Doc {}

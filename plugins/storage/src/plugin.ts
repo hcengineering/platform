@@ -13,9 +13,10 @@
 // limitations under the License.
 //
 
-import type { Doc, Ref } from '@hcengineering/core'
+import type { Class, Doc, Mixin, Ref, SpaceType, SpaceTypeDescriptor } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
+import { Storage } from './types'
 
 export * from './types'
 
@@ -25,7 +26,12 @@ export * from './types'
 export const storageId = 'storage' as Plugin
 
 export const storagePlugin = plugin(storageId, {
-  class: {},
+  class: {
+    Storage: '' as Ref<Class<Storage>>
+  },
+  mixin: {
+    DefaultStorageTypeData: '' as Ref<Mixin<Storage>>
+  },
   icon: {
     Storage: '' as Asset
   },
@@ -34,6 +40,12 @@ export const storagePlugin = plugin(storageId, {
   },
   string: {
     Storage: '' as IntlString
+  },
+  descriptor: {
+    StorageType: '' as Ref<SpaceTypeDescriptor>
+  },
+  spaceType: {
+    DefaultStorage: '' as Ref<SpaceType>
   }
 })
 
