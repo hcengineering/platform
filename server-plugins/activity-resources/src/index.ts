@@ -28,7 +28,8 @@ import core, {
   TxCreateDoc,
   TxProcessor,
   matchQuery,
-  Hierarchy
+  Hierarchy,
+  Space
 } from '@hcengineering/core'
 import { ActivityControl, DocObjectCache } from '@hcengineering/server-activity'
 import type { TriggerControl } from '@hcengineering/server-core'
@@ -146,6 +147,10 @@ function isActivityDoc (_class: Ref<Class<Doc>>, hierarchy: Hierarchy): boolean 
   return mixin !== undefined
 }
 
+function isSpace (space: Doc, hierarchy: Hierarchy): space is Space {
+  return hierarchy.isDerived(space._class, core.class.Space)
+}
+
 function getDocUpdateMessageTx (
   control: ActivityControl,
   originTx: TxCUD<Doc>,
@@ -153,9 +158,11 @@ function getDocUpdateMessageTx (
   rawMessage: Data<DocUpdateMessage>,
   modifiedBy?: Ref<Account>
 ): TxCollectionCUD<Doc, DocUpdateMessage> {
+  const { hierarchy } = control
+  const space = isSpace(object, hierarchy) ? object._id : object.space
   const innerTx = control.txFactory.createTxCreateDoc(
     activity.class.DocUpdateMessage,
-    object.space,
+    space,
     rawMessage,
     undefined,
     originTx.modifiedOn,
@@ -165,7 +172,7 @@ function getDocUpdateMessageTx (
   return control.txFactory.createTxCollectionCUD(
     rawMessage.attachedToClass,
     rawMessage.attachedTo,
-    object.space,
+    space,
     rawMessage.collection,
     innerTx,
     originTx.modifiedOn,

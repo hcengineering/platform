@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { chunterId } from '@hcengineering/chunter'
+import { chunterId, type ThreadMessage } from '@hcengineering/chunter'
 import core, {
   type Account,
   TxOperations,
@@ -30,10 +30,10 @@ import {
   type MigrationClient,
   type MigrationUpgradeClient
 } from '@hcengineering/model'
-import activity, { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
+import activity, { migrateMessagesSpace, DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 import notification from '@hcengineering/notification'
-
 import contactPlugin, { type PersonAccount } from '@hcengineering/contact'
+
 import chunter from './plugin'
 
 export const DOMAIN_COMMENT = 'comment' as Domain
@@ -185,6 +185,28 @@ export const chunterOperation: MigrateOperation = {
       {
         state: 'remove-backlinks',
         func: removeBacklinks
+      },
+      {
+        state: 'migrate-chat-messages-space',
+        func: async (client) => {
+          await migrateMessagesSpace(
+            client,
+            chunter.class.ChatMessage,
+            ({ attachedTo }) => attachedTo,
+            ({ attachedToClass }) => attachedToClass
+          )
+        }
+      },
+      {
+        state: 'migrate-thread-messages-space',
+        func: async (client) => {
+          await migrateMessagesSpace(
+            client,
+            chunter.class.ThreadMessage,
+            (msg) => (msg as ThreadMessage).objectId,
+            (msg) => (msg as ThreadMessage).objectClass
+          )
+        }
       }
     ])
   },
