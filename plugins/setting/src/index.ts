@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Account, Class, Configuration, Doc, Mixin, Ref, Space } from '@hcengineering/core'
+import type { Account, AccountRole, Class, Configuration, Doc, Mixin, Ref, Space } from '@hcengineering/core'
 import type { Plugin } from '@hcengineering/platform'
 import { Asset, IntlString, plugin, Resource } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
@@ -87,7 +87,7 @@ export interface SettingsCategory extends Doc {
 
   // If defined, will sort using order.
   order?: number
-  secured: boolean
+  role: AccountRole
 
   expandable?: boolean
   adminOnly?: boolean

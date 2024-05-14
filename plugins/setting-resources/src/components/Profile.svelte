@@ -15,7 +15,7 @@
 <script lang="ts">
   import { createEventDispatcher, onDestroy } from 'svelte'
   import contact, { Employee, PersonAccount, combineName, getFirstName, getLastName } from '@hcengineering/contact'
-  import { ChannelsEditor, EditableAvatar, employeeByIdStore } from '@hcengineering/contact-resources'
+  import { ChannelsEditor, EditableAvatar, employeeByIdStore, personByIdStore } from '@hcengineering/contact-resources'
   import { Ref, getCurrentAccount } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { getResource } from '@hcengineering/platform'
@@ -32,12 +32,12 @@
   let avatarEditor: EditableAvatar
 
   const account = getCurrentAccount() as PersonAccount
-  const employee = account !== undefined ? $employeeByIdStore.get(account.person as Ref<Employee>) : undefined
+  const employee = account !== undefined ? $personByIdStore.get(account.person) : undefined
   let firstName = employee ? getFirstName(employee.name) : ''
   let lastName = employee ? getLastName(employee.name) : ''
 
   onDestroy(
-    employeeByIdStore.subscribe((p) => {
+    personByIdStore.subscribe((p) => {
       const emp = p.get(account.person as Ref<Employee>)
       if (emp !== undefined) {
         firstName = getFirstName(emp.name)

@@ -14,7 +14,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { deepEqual } from 'fast-equals'
   import { AccountArrayEditor } from '@hcengineering/contact-resources'
   import core, {
     Account,
@@ -22,18 +21,17 @@
     Ref,
     Role,
     RolesAssignment,
-    SortingOrder,
     SpaceType,
     WithLookup
   } from '@hcengineering/core'
   import lead, { Funnel } from '@hcengineering/lead'
-  import presentation, { createQuery, getClient, SpaceCreateCard } from '@hcengineering/presentation'
+  import presentation, { getClient, SpaceCreateCard } from '@hcengineering/presentation'
   import task, { ProjectType } from '@hcengineering/task'
   import ui, { Component, EditBox, Grid, Label, ToggleWithLabel } from '@hcengineering/ui'
+  import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
 
   import leadRes from '../plugin'
-  import view from '@hcengineering/view'
 
   export let funnel: Funnel | undefined = undefined
   const dispatch = createEventDispatcher()
@@ -157,10 +155,7 @@
   }
 
   $: canSave =
-    name.trim().length > 0 &&
-    !(members.length === 0 && isPrivate) &&
-    owners.length > 0 &&
-    (!isPrivate || owners.some((o) => members.includes(o)))
+    name.trim().length > 0 && members.length > 0 && owners.length > 0 && owners.some((o) => members.includes(o))
 </script>
 
 <SpaceCreateCard

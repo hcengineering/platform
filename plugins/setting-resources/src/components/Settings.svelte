@@ -57,7 +57,7 @@
     setting.class.SettingsCategory,
     {},
     (res) => {
-      categories = hasAccountRole(account, AccountRole.Maintainer) ? res : res.filter((p) => !p.secured)
+      categories = res.filter((p) => hasAccountRole(account, p.role))
       category = findCategory(categoryId)
     },
     { sort: { order: 1 } }
@@ -167,11 +167,13 @@
             label={setting.string.SelectWorkspace}
             on:click={selectWorkspace}
           />
-          <NavItem
-            icon={setting.icon.InviteWorkspace}
-            label={setting.string.InviteWorkspace}
-            on:click={inviteWorkspace}
-          />
+          {#if hasAccountRole(account, AccountRole.User)}
+            <NavItem
+              icon={setting.icon.InviteWorkspace}
+              label={setting.string.InviteWorkspace}
+              on:click={inviteWorkspace}
+            />
+          {/if}
           <NavItem icon={setting.icon.Signout} label={setting.string.Signout} on:click={signOut} />
         </NavFooter>
       </div>

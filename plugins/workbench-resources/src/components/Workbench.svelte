@@ -14,20 +14,14 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import contact, { Person, PersonAccount } from '@hcengineering/contact'
+  import contact, { PersonAccount } from '@hcengineering/contact'
+  import { personByIdStore } from '@hcengineering/contact-resources'
   import core, { AccountRole, Class, Doc, Ref, Space, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import notification, { DocNotifyContext, InboxNotification, notificationId } from '@hcengineering/notification'
   import { BrowserNotificatator, InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { IntlString, broadcastEvent, getMetadata, getResource } from '@hcengineering/platform'
-  import {
-    ActionContext,
-    ComponentExtensions,
-    createQuery,
-    getClient,
-    isAdminUser,
-    reduceCalls
-  } from '@hcengineering/presentation'
+  import { ActionContext, ComponentExtensions, getClient, isAdminUser, reduceCalls } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
   import support, { SupportStatus, supportLink } from '@hcengineering/support'
   import {
@@ -148,20 +142,7 @@
 
   const account = getCurrentAccount() as PersonAccount
 
-  let person: Person | undefined
-  const personQ = createQuery()
-
-  $: account &&
-    personQ.query<Person>(
-      contact.class.Person,
-      {
-        _id: account?.person
-      },
-      (res) => {
-        person = res[0]
-      },
-      { limit: 1 }
-    )
+  $: person = $personByIdStore.get(account.person)
 
   const workspaceId = $location.path[1]
   const inboxClient = InboxNotificationsClientImpl.createClient()
