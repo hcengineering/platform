@@ -88,6 +88,7 @@
     "@hcengineering/model-document": "^0.6.0",
     "@hcengineering/model-server-document": "^0.6.0",
     "@hcengineering/model-time": "^0.6.0",
-    "@hcengineering/model-server-time": "^0.6.0"
+    "@hcengineering/model-server-time": "^0.6.0",
+    "@hcengineering/model-storage": "^0.6.0"
   }
 }

@@ -1656,6 +1656,26 @@
       "packageName": "@hcengineering/model-server-document",
       "projectFolder": "models/server-document",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/storage",
+      "projectFolder": "plugins/storage",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/storage-assets",
+      "projectFolder": "plugins/storage-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/storage-resources",
+      "projectFolder": "plugins/storage-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-storage",
+      "projectFolder": "models/storage",
+      "shouldPublish": false
     }
   ]
 }

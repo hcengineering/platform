@@ -113,6 +113,7 @@ import { preferenceId } from '@hcengineering/preference'
 import { recruitId } from '@hcengineering/recruit'
 import { requestId } from '@hcengineering/request'
 import { settingId } from '@hcengineering/setting'
+import { storageId } from '@hcengineering/storage'
 import { supportId } from '@hcengineering/support'
 import { tagsId } from '@hcengineering/tags'
 import { taskId } from '@hcengineering/task'
@@ -143,6 +144,7 @@ import preferenceEn from '@hcengineering/preference-assets/lang/en.json'
 import recruitEn from '@hcengineering/recruit-assets/lang/en.json'
 import requestEn from '@hcengineering/request-assets/lang/en.json'
 import settingEn from '@hcengineering/setting-assets/lang/en.json'
+import storageEn from '@hcengineering/storage-assets/lang/en.json'
 import supportEn from '@hcengineering/support-assets/lang/en.json'
 import tagsEn from '@hcengineering/tags-assets/lang/en.json'
 import taskEn from '@hcengineering/task-assets/lang/en.json'
@@ -164,6 +166,7 @@ addStringsLoader(contactId, async (lang: string) => contactEn)
 addStringsLoader(recruitId, async (lang: string) => recruitEn)
 addStringsLoader(activityId, async (lang: string) => activityEn)
 addStringsLoader(settingId, async (lang: string) => settingEn)
+addStringsLoader(storageId, async (lang: string) => storageEn)
 addStringsLoader(supportId, async (lang: string) => supportEn)
 addStringsLoader(telegramId, async (lang: string) => telegramEn)
 addStringsLoader(leadId, async (lang: string) => leadEn)
