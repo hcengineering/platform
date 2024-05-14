@@ -152,9 +152,9 @@
     if (hierarchy.isDerived(type._class, core.class.RefTo)) {
       return '$lookup.' + name
     }
-    if (hierarchy.isDerived(type._class, core.class.ArrOf)) {
-      return getValue(name, (type as ArrOf<any>).of)
-    }
+    // if (hierarchy.isDerived(type._class, core.class.ArrOf)) {
+    //   return getValue(name, (type as ArrOf<any>).of)
+    // }
     return name
   }
 

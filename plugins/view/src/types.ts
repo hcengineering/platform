@@ -780,4 +780,21 @@ export interface IconProps {
   color?: number
 }
 
+export type AttributeCategory = 'attribute' | 'inplace' | 'collection' | 'array' | 'object'
+
+export const AttributeCategoryOrder: Record<AttributeCategory, number> = {
+  attribute: 0,
+  inplace: 1,
+  collection: 2,
+  array: 3,
+  object: 4
+}
+
 export type ObjectPresenterType = 'link' | 'text'
+
+export interface AttrPresenter extends Doc {
+  attribute: Ref<AnyAttribute>
+  category: AttributeCategory
+  objectClass: Ref<Class<Doc>>
+  component: AnyComponent
+}

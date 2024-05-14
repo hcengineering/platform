@@ -52,6 +52,7 @@ import {
   ObjectTitle,
   ObjectTooltip,
   ObjectValidator,
+  AttrPresenter,
   PreviewPresenter,
   SpaceHeader,
   SpaceName,
@@ -116,7 +117,8 @@ const view = plugin(viewId, {
     ActionCategory: '' as Ref<Class<ActionCategory>>,
     LinkPresenter: '' as Ref<Class<LinkPresenter>>,
     FilterMode: '' as Ref<Class<FilterMode>>,
-    FilteredView: '' as Ref<Class<FilteredView>>
+    FilteredView: '' as Ref<Class<FilteredView>>,
+    AttrPresenter: '' as Ref<Class<AttrPresenter>>
   },
   action: {
     Delete: '' as Ref<Action>,

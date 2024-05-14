@@ -211,6 +211,10 @@ export function createModel (builder: Builder): void {
     inlineEditor: hr.component.DepartmentEditor
   })
 
+  builder.mixin(hr.class.Department, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: hr.component.DepartmentRefPresenter
+  })
+
   builder.mixin(hr.class.Department, core.class.Class, view.mixin.ObjectEditor, {
     editor: hr.component.EditDepartment
   })
