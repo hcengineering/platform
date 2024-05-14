@@ -39,6 +39,8 @@
     return firstName === '' && lastName === '' && email === ''
   }
 
+  let saving: boolean = false
+
   const person: Data<Employee> = {
     name: '',
     city: '',
@@ -49,37 +51,49 @@
   const client = getClient()
 
   async function createPerson () {
-    changeEmail()
-    const name = combineName(firstName, lastName)
-    person.name = name
-    person.avatar = await avatarEditor.createAvatar()
+    try {
+      saving = true
+      changeEmail()
+      const name = combineName(firstName, lastName)
+      person.name = name
+      person.avatar = await avatarEditor.createAvatar()
 
-    await client.createDoc(contact.class.Person, contact.space.Contacts, person, id)
-    await client.createMixin(id, contact.class.Person, contact.space.Contacts, contact.mixin.Employee, {
-      active: true
-    })
-
-    const mail = email.trim()
-
-    await client.createDoc(contact.class.PersonAccount, core.space.Model, {
-      email: mail,
-      person: id,
-      role: AccountRole.User
-    })
-
-    const sendInvite = await getResource(login.function.SendInvite)
-    await sendInvite(email.trim(), id, AccountRole.User)
-
-    for (const channel of channels) {
-      await client.addCollection(contact.class.Channel, contact.space.Contacts, id, contact.class.Person, 'channels', {
-        value: channel.value,
-        provider: channel.provider
+      await client.createDoc(contact.class.Person, contact.space.Contacts, person, id)
+      await client.createMixin(id, contact.class.Person, contact.space.Contacts, contact.mixin.Employee, {
+        active: true
       })
+
+      const mail = email.trim()
+
+      await client.createDoc(contact.class.PersonAccount, core.space.Model, {
+        email: mail,
+        person: id,
+        role: AccountRole.User
+      })
+
+      const sendInvite = await getResource(login.function.SendInvite)
+      await sendInvite(email.trim(), id, AccountRole.User)
+
+      for (const channel of channels) {
+        await client.addCollection(
+          contact.class.Channel,
+          contact.space.Contacts,
+          id,
+          contact.class.Person,
+          'channels',
+          {
+            value: channel.value,
+            provider: channel.provider
+          }
+        )
+      }
+      if (onCreate) {
+        await onCreate(id)
+      }
+      dispatch('close', id)
+    } finally {
+      saving = false
     }
-    if (onCreate) {
-      await onCreate(id)
-    }
-    dispatch('close')
   }
 
   let channels: AttachedData<Channel>[] = []
@@ -128,7 +142,7 @@
   on:changeContent
 >
   <svelte:fragment slot="error">
-    {#if exists !== undefined}
+    {#if exists !== undefined && !saving}
       <div class="flex-row-center error-color">
         <IconInfo size={'small'} />
         <span class="text-sm overflow-label ml-2">

@@ -212,6 +212,7 @@
     </div>
     <AccountArrayEditor
       value={members}
+      allowGuests
       label={leadRes.string.Members}
       onChange={handleMembersChanged}
       kind={'regular'}

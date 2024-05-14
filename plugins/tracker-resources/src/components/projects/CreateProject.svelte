@@ -471,6 +471,7 @@
       <AccountArrayEditor
         value={owners}
         label={core.string.Owners}
+        allowGuests
         onChange={handleOwnersChanged}
         kind={'regular'}
         size={'large'}

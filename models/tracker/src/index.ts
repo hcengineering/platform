@@ -17,7 +17,7 @@ import activity from '@hcengineering/activity'
 import chunter from '@hcengineering/chunter'
 import { type Builder } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
-import { type Ref, type Status } from '@hcengineering/core'
+import { AccountRole, type Ref, type Status } from '@hcengineering/core'
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 import presentation from '@hcengineering/model-presentation'
 import task from '@hcengineering/model-task'
@@ -330,6 +330,7 @@ function defineApplication (
             id: 'all-projects',
             component: workbench.component.SpecialView,
             icon: view.icon.List,
+            accessLevel: AccountRole.User,
             label: tracker.string.AllProjects,
             position: 'bottom',
             spaceClass: tracker.class.Project,
