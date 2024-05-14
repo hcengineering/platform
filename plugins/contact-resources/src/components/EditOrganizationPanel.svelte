@@ -5,13 +5,12 @@
   import { Panel } from '@hcengineering/panel'
   import { getResource } from '@hcengineering/platform'
   import presentation, {
-    type AttributeCategory,
     createQuery,
     getClient,
     type KeyedAttribute
   } from '@hcengineering/presentation'
   import { type AnyComponent, Button, Component, IconMixin, IconMoreH, Label } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
+  import view, { AttributeCategory } from '@hcengineering/view'
   import {
     DocAttributeBar,
     DocNavLink,
