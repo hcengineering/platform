@@ -94,11 +94,12 @@
       props={{
         message: displayMessage,
         notification: value,
-        actions
+        actions,
+        actionsProps: { addThreadToQuery: true }
       }}
       on:click
     />
   {:else}
-    <ActivityMessagePreview value={displayMessage} {actions} on:click />
+    <ActivityMessagePreview value={displayMessage} {actions} actionsProps={{ addThreadToQuery: true }} on:click />
   {/if}
 {/if}

@@ -31,7 +31,8 @@ import {
   getEventPositionElement,
   closePopup,
   showPopup,
-  EmojiPopup
+  EmojiPopup,
+  getCurrentResolvedLocation
 } from '@hcengineering/ui'
 import view, { type AttributeModel, type BuildModelKey, type BuildModelOptions } from '@hcengineering/view'
 import { getObjectPresenter } from '@hcengineering/view-resources'
@@ -553,4 +554,9 @@ export function canGroupMessages (message: MessageData, prevMessage?: MessageDat
   }
 
   return time1 - time2 < groupMessagesThresholdMs
+}
+
+export function shouldScrollToActivity (): boolean {
+  const loc = getCurrentResolvedLocation()
+  return getMessageFromLoc(loc) !== undefined
 }

@@ -27,6 +27,7 @@
   export let readonly = false
   export let type: ActivityMessagePreviewType = 'full'
   export let actions: Action[] = []
+  export let actionsProps: Record<string, any> = {}
 
   const attachmentsQuery = createQuery()
 
@@ -54,7 +55,15 @@
     : undefined
 </script>
 
-<BaseMessagePreview text={text ? value.message : undefined} message={value} {type} {readonly} {actions} on:click>
+<BaseMessagePreview
+  text={text ? value.message : undefined}
+  message={value}
+  {type}
+  {readonly}
+  {actions}
+  {actionsProps}
+  on:click
+>
   {#if value.attachments && type === 'full' && text}
     <div class="attachments" use:tooltip={{ component: AttachmentsTooltip, props: { attachments } }}>
       {value.attachments}

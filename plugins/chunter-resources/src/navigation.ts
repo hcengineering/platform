@@ -98,17 +98,21 @@ export async function chunterSpaceLinkFragmentProvider (doc: ChunterSpace): Prom
   return loc
 }
 
+interface ReplyToThreadProps {
+  addThreadToQuery?: boolean
+}
+
 export function buildThreadLink (
   loc: Location,
   _id: Ref<Doc>,
   _class: Ref<Class<Doc>>,
-  threadParent: Ref<ActivityMessage>
+  threadParent: Ref<ActivityMessage>,
+  props?: ReplyToThreadProps
 ): Location {
   const specials = chatSpecials.map(({ id }) => id)
   const id = encodeChannelURI(_id, _class)
   const isSameChannel = loc.path[3] === id
-
-  if (!isSameChannel) {
+  if (!isSameChannel || props?.addThreadToQuery === true) {
     loc.query = { message: threadParent }
   }
 
@@ -134,14 +138,14 @@ export async function getThreadLink (doc: ThreadMessage): Promise<Location> {
   return buildThreadLink(loc, doc.objectId, doc.objectClass, doc.attachedTo)
 }
 
-export async function replyToThread (message: ActivityMessage): Promise<void> {
+export async function replyToThread (message: ActivityMessage, _: Event, props?: ReplyToThreadProps): Promise<void> {
   const loc = getCurrentLocation()
 
   if (loc.path[2] !== notificationId) {
     loc.path[2] = chunterId
   }
 
-  navigate(buildThreadLink(loc, message.attachedTo, message.attachedToClass, message._id))
+  navigate(buildThreadLink(loc, message.attachedTo, message.attachedToClass, message._id, props))
 }
 
 export async function getMessageLocation (doc: ActivityMessage): Promise<Location> {

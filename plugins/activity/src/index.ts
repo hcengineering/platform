@@ -389,6 +389,9 @@ export default plugin(activityId, {
     ActivityReferencePreview: '' as AnyComponent,
     ActivityInfoMessagePreview: '' as AnyComponent
   },
+  function: {
+    ShouldScrollToActivity: '' as Resource<() => boolean>
+  },
   ids: {
     AllFilter: '' as Ref<ActivityMessagesFilter>,
     MentionNotification: '' as Ref<Doc>

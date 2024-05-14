@@ -20,6 +20,7 @@
   import { Class, Doc, Ref } from '@hcengineering/core'
 
   export let value: DisplayActivityMessage
+  export let viewport: HTMLElement | undefined = undefined
   export let showNotify: boolean = false
   export let isHighlighted: boolean = false
   export let isSelected: boolean = false
@@ -52,6 +53,7 @@
     is={objectPresenter.presenter}
     props={{
       value,
+      viewport,
       showNotify,
       skipLabel,
       isHighlighted,

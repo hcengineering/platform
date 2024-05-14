@@ -16,12 +16,12 @@
   import activity, { ActivityExtension, ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
   import { Doc, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Component, Grid, Label, Lazy, Spinner } from '@hcengineering/ui'
+  import { Component, Grid, Label, Lazy, Spinner, location } from '@hcengineering/ui'
 
   import ActivityExtensionComponent from './ActivityExtension.svelte'
   import ActivityFilter from './ActivityFilter.svelte'
   import { combineActivityMessages } from '../activityMessagesUtils'
-  import { canGroupMessages } from '../utils'
+  import { canGroupMessages, getMessageFromLoc } from '../utils'
 
   export let object: Doc
   export let showCommenInput: boolean = true
@@ -42,6 +42,17 @@
 
   $: void client.findAll(activity.class.ActivityExtension, { ofClass: object._class }).then((res) => {
     extensions = res
+  })
+
+  let selectedMessageId: Ref<ActivityMessage> | undefined = undefined
+
+  location.subscribe((loc) => {
+    const id = getMessageFromLoc(loc)
+
+    if (id === undefined && selectedMessageId !== id) {
+      boundary?.scrollTo({ top: 0 })
+    }
+    selectedMessageId = id
   })
 
   async function updateActivityMessages (objectId: Ref<Doc>, order: SortingOrder): Promise<void> {
@@ -98,17 +109,26 @@
     <Grid column={1} rowGap={0}>
       {#each filteredMessages as message, index}
         {@const canGroup = canGroupMessages(message, filteredMessages[index - 1])}
-        <Lazy>
+        {@const props = {
+          value: message,
+          hideLink: true,
+          viewport: boundary,
+          type: canGroup ? 'short' : 'default'
+        }}
+        {#if selectedMessageId}
           <Component
             is={activity.component.ActivityMessagePresenter}
             props={{
-              value: message,
-              hideLink: true,
-              boundary,
-              type: canGroup ? 'short' : 'default'
+              ...props,
+              isHighlighted: selectedMessageId === message._id,
+              shouldScroll: selectedMessageId === message._id
             }}
           />
-        </Lazy>
+        {:else}
+          <Lazy>
+            <Component is={activity.component.ActivityMessagePresenter} {props} />
+          </Lazy>
+        {/if}
       {/each}
     </Grid>
   {/if}

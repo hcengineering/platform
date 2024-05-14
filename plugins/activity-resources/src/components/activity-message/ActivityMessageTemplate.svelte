@@ -24,6 +24,7 @@
   import { getClient } from '@hcengineering/presentation'
   import { Action, Icon, Label } from '@hcengineering/ui'
   import { getActions, restrictionStore, showMenu } from '@hcengineering/view-resources'
+  import { tick } from 'svelte'
 
   import ReactionsPresenter from '../reactions/ReactionsPresenter.svelte'
   import ActivityMessagePresenter from './ActivityMessagePresenter.svelte'
@@ -36,6 +37,7 @@
   export let message: DisplayActivityMessage
   export let parentMessage: DisplayActivityMessage | undefined = undefined
 
+  export let viewport: HTMLElement | undefined = undefined
   export let viewlet: ActivityMessageViewlet | undefined = undefined
   export let person: Person | undefined = undefined
   export let actions: Action[] = []
@@ -72,15 +74,42 @@
       menuActionIds = res.map(({ _id }) => _id)
     })
 
-  function scrollToMessage (): void {
-    if (element != null && shouldScroll) {
-      element.scrollIntoView({ behavior: 'auto', block: 'end' })
+  const maxScrollCount = 10
+
+  let scrollCount = 0
+  let clearTimer: any
+
+  function isMessageInViewport (el: HTMLElement) {
+    const rect = el.getBoundingClientRect()
+
+    return rect.top >= 0 && rect.bottom <= (viewport?.clientHeight ?? window.innerHeight)
+  }
+
+  async function scrollToMessage () {
+    if (element == null || !shouldScroll) {
+      return
+    }
+
+    element.scrollIntoView({ behavior: 'auto', block: 'end' })
+    scrollCount++
+
+    const isVisible = isMessageInViewport(element)
+
+    if (!isVisible && scrollCount < maxScrollCount) {
+      shouldScroll = true
+      await tick()
+      void scrollToMessage()
+    } else {
       shouldScroll = false
     }
   }
 
   $: if (element != null && shouldScroll) {
-    setTimeout(scrollToMessage, 100)
+    clearTimeout(clearTimer)
+    clearTimer = setTimeout(() => {
+      scrollCount = 0
+      void scrollToMessage()
+    }, 100)
   }
 
   function handleActionsOpened (): void {
@@ -212,7 +241,7 @@
 <style lang="scss">
   @keyframes highlight {
     50% {
-      background-color: var(--global-ui-highlight-BackgroundColor);
+      background-color: var(--global-ui-hover-highlight-BackgroundColor);
     }
   }
 

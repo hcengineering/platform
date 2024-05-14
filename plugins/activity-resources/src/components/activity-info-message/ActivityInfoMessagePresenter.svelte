@@ -31,6 +31,7 @@
   import ActivityMessageHeader from '../activity-message/ActivityMessageHeader.svelte'
 
   export let value: ActivityInfoMessage
+  export let viewport: HTMLElement | undefined = undefined
   export let showNotify: boolean = false
   export let isHighlighted: boolean = false
   export let isSelected: boolean = false
@@ -62,6 +63,7 @@
 
 <ActivityMessageTemplate
   message={value}
+  {viewport}
   parentMessage={undefined}
   {person}
   {showNotify}
