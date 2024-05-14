@@ -57,7 +57,7 @@ test.describe('channel tests', () => {
     await leftSideMenuPageSecond.clickChunter()
     await channelPageSecond.checkIfChannelDefaultExist(false, data.channelName)
     await channelPageSecond.clickChannelTab()
-    await channelPageSecond.checkIfChannelTableExist()
+    await channelPageSecond.checkIfChannelTableExist(data.channelName, false)
   })
 
   test('create new public channel tests and check if the new user have access to it by default', async ({
@@ -86,6 +86,6 @@ test.describe('channel tests', () => {
     await leftSideMenuPageSecond.clickChunter()
     await channelPageSecond.checkIfChannelDefaultExist(false, data.channelName)
     await channelPageSecond.clickChannelTab()
-    await channelPageSecond.checkIfChannelTableExist()
+    await channelPageSecond.checkIfChannelTableExist(data.channelName, true)
   })
 })

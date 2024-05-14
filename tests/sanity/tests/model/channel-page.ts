@@ -35,7 +35,12 @@ export class ChannelPage {
     }
   }
 
-  async checkIfChannelTableExist (): Promise<void> {
-    await expect(this.channelTable()).toBeVisible()
+  async checkIfChannelTableExist (channel: string, publicChannel: boolean): Promise<void> {
+    if (publicChannel) {
+      await expect(this.channelTable()).toBeVisible()
+      await expect(this.channelTable()).toContainText(channel)
+    } else {
+      await expect(this.channelTable()).not.toContainText(channel)
+    }
   }
 }
