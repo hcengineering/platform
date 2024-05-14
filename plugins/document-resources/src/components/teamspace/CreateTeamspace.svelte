@@ -375,6 +375,7 @@
       </div>
       <AccountArrayEditor
         value={members}
+        allowGuests
         label={documentRes.string.TeamspaceMembers}
         onChange={handleMembersChanged}
         kind={'regular'}

@@ -1895,7 +1895,7 @@ export async function sendInvite (
   const inviteId = await getInviteLink(ctx, db, productId, token, exp, email, 1)
   const link = concatLink(front, `/login/join?inviteId=${inviteId.toString()}`)
 
-  const ws = workspace.workspace
+  const ws = workspace.workspaceName ?? workspace.workspace
   const text = await translate(accountPlugin.string.InviteText, { link, ws, expHours })
   const html = await translate(accountPlugin.string.InviteHTML, { link, ws, expHours })
   const subject = await translate(accountPlugin.string.InviteSubject, { ws })

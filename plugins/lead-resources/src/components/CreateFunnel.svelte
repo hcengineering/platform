@@ -164,7 +164,7 @@
 </script>
 
 <SpaceCreateCard
-  label={funnel ? view.string.EdifFunnel : leadRes.string.CreateFunnel}
+  label={funnel ? leadRes.string.EditFunnel : leadRes.string.CreateFunnel}
   okAction={save}
   okLabel={!isNew ? ui.string.Save : undefined}
   {canSave}
@@ -212,6 +212,7 @@
     </div>
     <AccountArrayEditor
       value={members}
+      allowGuests
       label={leadRes.string.Members}
       onChange={handleMembersChanged}
       kind={'regular'}

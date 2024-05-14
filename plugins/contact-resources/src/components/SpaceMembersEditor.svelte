@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Account, Ref, getCurrentAccount } from '@hcengineering/core'
+  import { Account, AccountRole, Ref, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { Button, ButtonKind, ButtonSize } from '@hcengineering/ui'
   import view from '@hcengineering/view'
@@ -41,5 +41,14 @@
 {#if !joined && onChange !== undefined}
   <Button label={view.string.Join} {size} {width} kind={'primary'} on:click={join} />
 {:else}
-  <AccountArrayEditor {label} {value} {onChange} {readonly} {kind} {size} {width} allowGuests />
+  <AccountArrayEditor
+    {label}
+    {value}
+    {onChange}
+    readonly={readonly || !hasAccountRole(getCurrentAccount(), AccountRole.User)}
+    {kind}
+    {size}
+    {width}
+    allowGuests
+  />
 {/if}
