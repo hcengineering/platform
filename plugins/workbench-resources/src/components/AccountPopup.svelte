@@ -13,8 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee, PersonAccount, formatName } from '@hcengineering/contact'
-  import { AccountRole, Ref, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
+  import contact, { PersonAccount, formatName } from '@hcengineering/contact'
+  import { personByIdStore } from '@hcengineering/contact-resources'
+  import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { createQuery } from '@hcengineering/presentation'
   import setting, { SettingsCategory, settingId } from '@hcengineering/setting'
@@ -41,25 +42,13 @@
     setting.class.SettingsCategory,
     {},
     (res) => {
-      items = hasAccountRole(getCurrentAccount(), AccountRole.Maintainer) ? res : res.filter((p) => !p.secured)
+      items = res.filter((p) => hasAccountRole(getCurrentAccount(), p.role))
     },
     { sort: { order: 1 } }
   )
 
   const account = getCurrentAccount() as PersonAccount
-  let employee: Employee | undefined
-  const employeeQ = createQuery()
-
-  employeeQ.query(
-    contact.mixin.Employee,
-    {
-      _id: account.person as Ref<Employee>
-    },
-    (res) => {
-      employee = res[0]
-    },
-    { limit: 1 }
-  )
+  $: person = $personByIdStore.get(account.person)
 
   function selectCategory (sp?: SettingsCategory): void {
     closePopup()
@@ -130,16 +119,18 @@
         selectCategory()
       }
     })
-    actions.push(
-      ...getMenu(items, ['main']),
-      {
+    actions.push(...getMenu(items, ['main']))
+    if (hasAccountRole(account, AccountRole.User)) {
+      actions.push({
         icon: setting.icon.InviteWorkspace,
         label: setting.string.InviteWorkspace,
         action: async () => {
           inviteWorkspace()
         },
         group: 'end'
-      },
+      })
+    }
+    actions.push(
       {
         icon: setting.icon.Support,
         label: workbench.string.HelpAndSupport,
@@ -175,16 +166,13 @@
         editProfile(items)
       }}
     >
-      {#if employee}
-        <Component
-          is={contact.component.Avatar}
-          props={{ avatar: employee.avatar, size: 'medium', name: employee.name }}
-        />
+      {#if person}
+        <Component is={contact.component.Avatar} props={{ avatar: person.avatar, size: 'medium', name: person.name }} />
       {/if}
       <div class="ml-2 flex-col">
         {#if account}
           <div class="overflow-label fs-bold caption-color">
-            {employee !== undefined ? formatName(employee.name) : ''}
+            {person !== undefined ? formatName(person.name) : ''}
           </div>
           <div class="overflow-label text-sm content-dark-color">{account.email}</div>
         {/if}

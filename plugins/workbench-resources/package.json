@@ -50,6 +50,7 @@
     "@hcengineering/request": "^0.6.6",
     "@hcengineering/notification": "^0.6.16",
     "@hcengineering/notification-resources": "^0.6.0",
+    "@hcengineering/contact-resources": "^0.6.0",
     "@hcengineering/preference": "^0.6.9",
     "@hcengineering/contact": "^0.6.20",
     "@hcengineering/support": "^0.6.1",

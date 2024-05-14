@@ -7,7 +7,7 @@
     "RecoveryHTML": "<p>Recebemos um pedido para repor a senha da sua conta. Para repor a sua senha, clique no link abaixo: <a href={link}>Repor senha</a></p><p>Se o link Repor senha acima não funcionar, cole o seguinte link na barra de endereço do seu navegador web: {link}</p><p>Se não solicitou a recuperação da senha, ignore esta mensagem.</p>",
     "RecoverySubject": "Recuperação de Senha",
     "InviteText": "Foi convidado para {ws}. Para se juntar, cole o seguinte link na barra de URL do seu navegador web: {link}. Link válido por {expHours} horas.",
-    "InviteHTML": "<p>Foi convidado para ${ws}. Para se juntar, clique no link abaixo: <a href={link}>Juntar-se</a></p><p>Se o link de convite acima não funcionar, cole o seguinte link na barra de URL do seu navegador web: {link}</p><p>Link válido por {expHours} horas.</p>",
+    "InviteHTML": "<p>Foi convidado para {ws}. Para se juntar, clique no link abaixo: <a href={link}>Juntar-se</a></p><p>Se o link de convite acima não funcionar, cole o seguinte link na barra de URL do seu navegador web: {link}</p><p>Link válido por {expHours} horas.</p>",
     "InviteSubject": "Convite para {ws}"
   }
 }

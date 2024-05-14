@@ -635,7 +635,7 @@ export function createModel (builder: Builder): void {
     icon: tracker.icon.Relations,
     component: tracker.component.SettingsRelatedTargets,
     group: 'settings-editor',
-    secured: false,
+    role: AccountRole.Maintainer,
     order: 4000
   })
 

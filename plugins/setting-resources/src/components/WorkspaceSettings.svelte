@@ -45,7 +45,7 @@
     setting.class.WorkspaceSettingCategory,
     {},
     (res) => {
-      categories = hasAccountRole(account, AccountRole.Maintainer) ? res : res.filter((p) => !p.secured)
+      categories = res.filter((p) => hasAccountRole(account, p.role))
       if (!admin) {
         categories = categories.filter((p) => !(p.adminOnly ?? false))
       }

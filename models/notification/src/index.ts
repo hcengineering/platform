@@ -17,6 +17,7 @@
 import activity, { type ActivityMessage } from '@hcengineering/activity'
 import chunter from '@hcengineering/chunter'
 import {
+  AccountRole,
   DOMAIN_MODEL,
   IndexKind,
   type Account,
@@ -390,7 +391,7 @@ export function createModel (builder: Builder): void {
       icon: notification.icon.Notifications,
       component: notification.component.NotificationSettings,
       group: 'settings-account',
-      secured: false,
+      role: AccountRole.Guest,
       order: 1500
     },
     notification.ids.NotificationSettings
