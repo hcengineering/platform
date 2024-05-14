@@ -4,11 +4,7 @@
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource } from '@hcengineering/platform'
-  import presentation, {
-    createQuery,
-    getClient,
-    type KeyedAttribute
-  } from '@hcengineering/presentation'
+  import presentation, { createQuery, getClient, type KeyedAttribute } from '@hcengineering/presentation'
   import { type AnyComponent, Button, Component, IconMixin, IconMoreH, Label } from '@hcengineering/ui'
   import view, { AttributeCategory } from '@hcengineering/view'
   import {
