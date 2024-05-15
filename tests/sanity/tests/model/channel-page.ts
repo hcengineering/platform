@@ -13,14 +13,23 @@ export class ChannelPage {
   readonly channelName = (channel: string): Locator => this.page.getByText('general random').getByText(channel)
   readonly channelTab = (): Locator => this.page.getByRole('link', { name: 'Channels' }).getByRole('button')
   readonly channelTable = (): Locator => this.page.locator('[class="antiTable metaColumn highlightRows"]')
+  readonly channel  = (channel: string): Locator => this.page.getByRole('button', { name: channel })
 
   async sendMessage (message: string): Promise<void> {
     await this.inputMessage().fill(message)
     await this.buttonSendMessage().click()
   }
 
-  async checkMessageExist (message: string): Promise<void> {
-    await expect(this.textMessage().filter({ hasText: message })).toBeVisible()
+  async clickChannel (channel: string): Promise<void> {
+    await this.channel(channel).click()
+  }
+
+  async checkMessageExist (message: string, messageExists: boolean): Promise<void> {
+    if (messageExists) {
+      await expect(this.textMessage().filter({ hasText: message })).toBeVisible()
+    } else {
+      await expect(this.textMessage().filter({ hasText: message })).toBeHidden()
+    }
   }
 
   async clickChannelTab (): Promise<void> {
@@ -41,6 +50,15 @@ export class ChannelPage {
       await expect(this.channelTable()).toContainText(channel)
     } else {
       await expect(this.channelTable()).not.toContainText(channel)
+    }
+  }
+  
+  async checkIfMessageExist (messageExists: boolean): Promise<void> {
+    if (messageExists) {
+    await expect(this.textMessage()).toBeVisible()
+    }
+    else {
+    await expect(this.textMessage()).toBeHidden()
     }
   }
 }

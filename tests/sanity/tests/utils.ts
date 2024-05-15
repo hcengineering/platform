@@ -11,12 +11,14 @@ export const PlatformSettingSecond = process.env.SETTING_SECOND as string
 export const DefaultWorkspace = 'SanityTest'
 export const AccountUrl = process.env.ACCOUNT_URL as string
 
-export const data = {
-  workspaceName: faker.lorem.word(),
-  userName: faker.internet.userName(),
-  firstName: faker.person.firstName(),
-  lastName: faker.person.lastName(),
-  channelName: faker.lorem.word()
+export function generateTestData() {
+  return {
+    workspaceName: faker.lorem.word(),
+    userName: faker.internet.userName(),
+    firstName: faker.person.firstName(),
+    lastName: faker.person.lastName(),
+    channelName: faker.lorem.word()
+  };
 }
 
 function toHex (value: number, chars: number): string {

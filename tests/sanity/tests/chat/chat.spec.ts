@@ -1,5 +1,5 @@
 import { test } from '@playwright/test'
-import { PlatformURI, data } from '../utils'
+import { PlatformURI, generateTestData } from '../utils'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { ChunterPage } from '../model/chunter-page'
 import { ChannelPage } from '../model/channel-page'
@@ -15,14 +15,19 @@ test.describe('channel tests', () => {
   let channelPage: ChannelPage
   let loginPage: LoginPage
   let api: ApiEndpoint
-  const newUser2: SignUpData = {
-    firstName: faker.person.firstName(),
-    lastName: faker.person.lastName(),
-    email: faker.internet.email(),
-    password: '1234'
-  }
+  let newUser2: SignUpData
+  let data: { workspaceName: string, userName: string, firstName: string, lastName: string, channelName: string }
+
 
   test.beforeEach(async ({ page, request }) => {
+    data = generateTestData();
+    newUser2 = {
+      firstName: faker.person.firstName(),
+      lastName: faker.person.lastName(),
+      email: faker.internet.email(),
+      password: '1234'
+    }
+
     leftSideMenuPage = new LeftSideMenuPage(page)
     chunterPage = new ChunterPage(page)
     channelPage = new ChannelPage(page)
@@ -34,6 +39,38 @@ test.describe('channel tests', () => {
     await loginPage.login(data.userName, '1234')
   })
 
+  test('create new private channel and check if the messages stays on it', async ({ browser, page }) => {
+    await leftSideMenuPage.clickChunter()
+    await chunterPage.clickChannelBrowser()
+    await chunterPage.clickNewChannelHeader()
+    await chunterPage.createPrivateChannel(data.channelName, true)
+    await channelPage.checkIfChannelDefaultExist(true, data.channelName)
+    await channelPage.sendMessage('Test message')
+    await channelPage.checkMessageExist('Test message', true)
+    await channelPage.clickChannel("general")
+    await channelPage.checkMessageExist("Test message", false)
+    await channelPage.clickChannel(data.channelName)
+    await channelPage.checkMessageExist("Test message", true)
+    await page.reload()
+    await channelPage.checkMessageExist("Test message", true)
+  })
+
+  test('create new public channel and check if the messages stays on it', async ({ browser, page }) => {
+    await leftSideMenuPage.clickChunter()
+    await chunterPage.clickChannelBrowser()
+    await chunterPage.clickNewChannelHeader()
+    await chunterPage.createPrivateChannel(data.channelName, false)
+    await channelPage.checkIfChannelDefaultExist(true, data.channelName)
+    await channelPage.sendMessage('Test message')
+    await channelPage.checkMessageExist('Test message', true)
+    await channelPage.clickChannel("general")
+    await channelPage.checkMessageExist("Test message", false)
+    await channelPage.clickChannel(data.channelName)
+    await channelPage.checkMessageExist("Test message", true)
+    await page.reload()
+    await channelPage.checkMessageExist("Test message", true)
+  })
+
   test('create new private channel tests and check if the new user have access to it', async ({ browser, page }) => {
     await leftSideMenuPage.clickChunter()
     await chunterPage.clickChannelBrowser()
@@ -41,7 +78,7 @@ test.describe('channel tests', () => {
     await chunterPage.createPrivateChannel(data.channelName, true)
     await channelPage.checkIfChannelDefaultExist(true, data.channelName)
     await channelPage.sendMessage('Test message')
-    await channelPage.checkMessageExist('Test message')
+    await channelPage.checkMessageExist('Test message', true)
     await leftSideMenuPage.openProfileMenu()
     await leftSideMenuPage.inviteToWorkspace()
     await leftSideMenuPage.getInviteLink()
@@ -70,7 +107,7 @@ test.describe('channel tests', () => {
     await chunterPage.createPrivateChannel(data.channelName, false)
     await channelPage.checkIfChannelDefaultExist(true, data.channelName)
     await channelPage.sendMessage('Test message')
-    await channelPage.checkMessageExist('Test message')
+    await channelPage.checkMessageExist('Test message', true)
     await leftSideMenuPage.openProfileMenu()
     await leftSideMenuPage.inviteToWorkspace()
     await leftSideMenuPage.getInviteLink()
