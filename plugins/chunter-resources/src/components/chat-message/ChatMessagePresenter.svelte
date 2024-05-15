@@ -171,6 +171,7 @@
 {:else if value && !inline}
   <ActivityMessageTemplate
     message={value}
+    {viewport}
     {viewlet}
     {parentMessage}
     {person}

@@ -16,12 +16,13 @@
   import activity, { ActivityExtension, ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
   import { Doc, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Component, Grid, Label, Lazy, Spinner, location } from '@hcengineering/ui'
+  import { Grid, Label, Lazy, Spinner, location } from '@hcengineering/ui'
 
   import ActivityExtensionComponent from './ActivityExtension.svelte'
   import ActivityFilter from './ActivityFilter.svelte'
   import { combineActivityMessages } from '../activityMessagesUtils'
   import { canGroupMessages, getMessageFromLoc } from '../utils'
+  import ActivityMessagePresenter from './activity-message/ActivityMessagePresenter.svelte'
 
   export let object: Doc
   export let showCommenInput: boolean = true
@@ -109,25 +110,23 @@
     <Grid column={1} rowGap={0}>
       {#each filteredMessages as message, index}
         {@const canGroup = canGroupMessages(message, filteredMessages[index - 1])}
+        {@const type = canGroup ? 'short' : 'default'}
         {@const props = {
-          value: message,
           hideLink: true,
           viewport: boundary,
-          doc: object,
-          type: canGroup ? 'short' : 'default'
+          doc: object
         }}
         {#if selectedMessageId}
-          <Component
-            is={activity.component.ActivityMessagePresenter}
-            props={{
-              ...props,
-              isHighlighted: selectedMessageId === message._id,
-              shouldScroll: selectedMessageId === message._id
-            }}
+          <ActivityMessagePresenter
+            {...props}
+            value={message}
+            {type}
+            isHighlighted={selectedMessageId === message._id}
+            shouldScroll={selectedMessageId === message._id}
           />
         {:else}
           <Lazy>
-            <Component is={activity.component.ActivityMessagePresenter} {props} />
+            <ActivityMessagePresenter {...props} value={message} {type} />
           </Lazy>
         {/if}
       {/each}

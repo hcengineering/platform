@@ -100,7 +100,7 @@
     const isVisible = isMessageInViewport(element)
 
     if (!isVisible && scrollAttempts < maxScrollAttempt) {
-      setTimeout(() => scrollToMessage, 50)
+      setTimeout(scrollToMessage, 50)
     } else {
       shouldScroll = false
     }
