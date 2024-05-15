@@ -73,21 +73,7 @@
 
   async function getLink (expHours: number, mask: string, limit: number | undefined, role: AccountRole): Promise<void> {
     loading = true
-    const inviteId = await getInviteLink(expHours, mask, limit, role)
-    const loc = getCurrentLocation()
-    loc.path[0] = loginId
-    loc.path[1] = 'join'
-    loc.path.length = 2
-    loc.query = {
-      inviteId
-    }
-    loc.fragment = undefined
-
-    const url = locationToUrl(loc)
-
-    const frontUrl = getMetadata(presentation.metadata.FrontUrl)
-    const host = frontUrl ?? document.location.origin
-    link = host + url
+    link = await getInviteLink(expHours, mask, limit ?? -1, role)
     loading = false
   }
 

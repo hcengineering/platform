@@ -205,7 +205,8 @@ const view = plugin(viewId, {
     Pin: '' as IntlString,
     Unpin: '' as IntlString,
     Join: '' as IntlString,
-    Leave: '' as IntlString
+    Leave: '' as IntlString,
+    Copied: '' as IntlString
   },
   icon: {
     Table: '' as Asset,
@@ -243,7 +244,8 @@ const view = plugin(viewId, {
     SeparatorLine: '' as Asset,
     Circle: '' as Asset,
     Join: '' as Asset,
-    Leave: '' as Asset
+    Leave: '' as Asset,
+    Copy: '' as Asset
   },
   category: {
     General: '' as Ref<ActionCategory>,
