@@ -25,7 +25,7 @@
 
   import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
   import DocNotifyContextCard from '../DocNotifyContextCard.svelte'
-  import { archiveContextNotifications, unarchiveContextNotifications } from '../../utils'
+  import { archiveContextNotifications, notificationsComparator, unarchiveContextNotifications } from '../../utils'
   import { InboxData } from '../../types'
 
   export let data: InboxData
@@ -51,19 +51,9 @@
   $: updateDisplayData(data)
 
   function updateDisplayData (data: InboxData): void {
-    displayData = Array.from(data.entries()).sort(([, notifications1], [, notifications2]) => {
-      const createdOn1 = notifications1[0].createdOn ?? 0
-      const createdOn2 = notifications2[0].createdOn ?? 0
-
-      if (createdOn1 > createdOn2) {
-        return -1
-      }
-      if (createdOn1 < createdOn2) {
-        return 1
-      }
-
-      return 0
-    })
+    displayData = Array.from(data.entries()).sort(([, notifications1], [, notifications2]) =>
+      notificationsComparator(notifications1[0], notifications2[0])
+    )
   }
 
   function onKeydown (key: KeyboardEvent): void {
