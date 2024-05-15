@@ -13,12 +13,32 @@
 // limitations under the License.
 //
 
+import drive, { type Drive, type Folder } from '@hcengineering/drive'
 import { type Resources } from '@hcengineering/platform'
 
 import CreateDrive from './components/CreateDrive.svelte'
+import CreateFolder from './components/CreateFolder.svelte'
+import { showPopup } from '@hcengineering/ui'
+
+async function createRootFolder (doc: Drive): Promise<void> {
+  showPopup(CreateFolder, { space: doc._id, parent: drive.ids.Root })
+}
+
+async function createChildFolder (doc: Folder): Promise<void> {
+  showPopup(CreateFolder, { space: doc.space, parent: doc._id })
+}
+
+async function editDrive (drive: Drive): Promise<void> {
+  showPopup(CreateDrive, { drive })
+}
 
 export default async (): Promise<Resources> => ({
   component: {
     CreateDrive
+  },
+  actionImpl: {
+    CreateChildFolder: createChildFolder,
+    CreateRootFolder: createRootFolder,
+    EditDrive: editDrive
   }
 })

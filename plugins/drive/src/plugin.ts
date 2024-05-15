@@ -16,7 +16,7 @@
 import type { Class, Doc, Mixin, Ref, SpaceType, SpaceTypeDescriptor } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import { Drive } from './types'
+import { Drive, File, Folder, StarredFile } from './types'
 
 export * from './types'
 
@@ -27,19 +27,29 @@ export const driveId = 'drive' as Plugin
 
 export const drivePlugin = plugin(driveId, {
   class: {
-    Drive: '' as Ref<Class<Drive>>
+    Drive: '' as Ref<Class<Drive>>,
+    File: '' as Ref<Class<File>>,
+    Folder: '' as Ref<Class<Folder>>,
+    StarredFile: '' as Ref<Class<StarredFile>>
   },
   mixin: {
     DefaultDriveTypeData: '' as Ref<Mixin<Drive>>
   },
   icon: {
-    Storage: '' as Asset
+    Drive: '' as Asset,
+    File: '' as Asset,
+    Folder: '' as Asset
   },
   app: {
     Drive: '' as Ref<Doc>
   },
+  ids: {
+    Root: '' as Ref<Folder>
+  },
   string: {
-    Drive: '' as IntlString
+    Drive: '' as IntlString,
+    File: '' as IntlString,
+    Folder: '' as IntlString
   },
   descriptor: {
     DriveType: '' as Ref<SpaceTypeDescriptor>

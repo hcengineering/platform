@@ -19,12 +19,12 @@ import { driveId } from '@hcengineering/drive'
 import drive from '@hcengineering/drive-resources/src/plugin'
 import { type IntlString, mergeIds } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui'
-import { type Viewlet, type ActionCategory } from '@hcengineering/view'
+import { type Action, type ActionCategory, type ViewAction, type Viewlet } from '@hcengineering/view'
 
 export default mergeIds(driveId, drive, {
   component: {
     CreateDrive: '' as AnyComponent,
-    DriveeSpacePresenter: '' as AnyComponent
+    DriveSpacePresenter: '' as AnyComponent
   },
   viewlet: {
     DriveTable: '' as Ref<Viewlet>
@@ -32,8 +32,23 @@ export default mergeIds(driveId, drive, {
   category: {
     Drive: '' as Ref<ActionCategory>
   },
+  action: {
+    CreateChildFolder: '' as Ref<Action>,
+    CreateRootFolder: '' as Ref<Action>,
+    EditDrive: '' as Ref<Action>
+  },
+  actionImpl: {
+    CreateChildFolder: '' as ViewAction,
+    CreateRootFolder: '' as ViewAction,
+    EditDrive: '' as ViewAction
+  },
   string: {
-    Drives: '' as IntlString,
-    Description: '' as IntlString
+    Name: '' as IntlString,
+    Description: '' as IntlString,
+    Size: '' as IntlString,
+    Type: '' as IntlString,
+    Parent: '' as IntlString,
+    Path: '' as IntlString,
+    Drives: '' as IntlString
   }
 })

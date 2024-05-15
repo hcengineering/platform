@@ -13,13 +13,32 @@
 // limitations under the License.
 //
 
-import { Doc, TypedSpace } from '@hcengineering/core'
+import { Doc, Ref, TypedSpace } from '@hcengineering/core'
+import { Preference } from '@hcengineering/preference'
 
 /** @public */
 export interface Drive extends TypedSpace {}
 
 /** @public */
-export interface Folder extends Doc<Drive> {}
+export interface Folder extends Doc<Drive> {
+  name: string
+  parent: Ref<Folder>
+  path: Ref<Folder>[]
+}
 
 /** @public */
-export interface File extends Doc<Drive> {}
+export interface File extends Doc<Drive> {
+  name: string
+
+  parent: Ref<Folder>
+  path: Ref<Folder>[]
+
+  file: string
+  size: number
+  type: string
+}
+
+/** @public */
+export interface StarredFile extends Preference {
+  attachedTo: Ref<File>
+}

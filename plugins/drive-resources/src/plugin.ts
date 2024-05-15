@@ -20,7 +20,9 @@ export default mergeIds(driveId, drive, {
   component: {},
   string: {
     CreateDrive: '' as IntlString,
+    CreateFolder: '' as IntlString,
     EditDrive: '' as IntlString,
-    RoleLabel: '' as IntlString
+    RoleLabel: '' as IntlString,
+    Root: '' as IntlString
   }
 })

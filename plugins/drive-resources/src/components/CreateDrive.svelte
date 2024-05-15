@@ -36,15 +36,13 @@
   import driveRes from '../plugin'
 
   export let drive: Drive | undefined = undefined
-  export let namePlaceholder: string = ''
-  export let descriptionPlaceholder: string = ''
 
   const dispatch = createEventDispatcher()
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  let name: string = drive?.name ?? namePlaceholder
-  let description: string = drive?.description ?? descriptionPlaceholder
+  let name: string = drive?.name ?? ''
+  let description: string = drive?.description ?? ''
   let isPrivate: boolean = drive?.private ?? false
 
   let members: Ref<Account>[] =
@@ -106,7 +104,7 @@
   }
 
   async function updateDrive (): Promise<void> {
-    if (drive === undefined) {
+    if (drive === undefined || spaceType?.targetClass === undefined) {
       return
     }
 
@@ -151,6 +149,7 @@
         drive._id,
         driveRes.class.Drive,
         core.space.Space,
+        spaceType.targetClass,
         rolesAssignment
       )
     }

@@ -13,13 +13,14 @@
 // limitations under the License.
 //
 
-import core, { type Role, type RolesAssignment, Account, AccountRole, Ref } from '@hcengineering/core'
-import { type Builder, Model, UX, Mixin } from '@hcengineering/model'
-import { TTypedSpace } from '@hcengineering/model-core'
+import core, { type Domain, type Role, type RolesAssignment, Account, AccountRole, Ref, IndexKind } from '@hcengineering/core'
+import { type Builder, Model, UX, Mixin, Prop, TypeString, Index, TypeAttachment, TypeRef } from '@hcengineering/model'
+import { TDoc, TTypedSpace } from '@hcengineering/model-core'
+import preference, { TPreference } from '@hcengineering/model-preference'
 import tracker from '@hcengineering/model-tracker'
-import view from '@hcengineering/model-view'
+import view, { createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
-import { type Drive, driveId } from '@hcengineering/drive'
+import { type Drive, type File, type Folder, type StarredFile, driveId } from '@hcengineering/drive'
 
 import drive from './plugin'
 import { getEmbeddedLabel } from '@hcengineering/platform'
@@ -27,14 +28,69 @@ import { getEmbeddedLabel } from '@hcengineering/platform'
 export { driveId } from '@hcengineering/drive'
 export { drive as default }
 
+export const DOMAIN_DRIVE = 'drive' as Domain
+
 @Model(drive.class.Drive, core.class.TypedSpace)
-@UX(drive.string.Drive, drive.icon.Drive, 'Drive', 'name')
+@UX(drive.string.Drive)
 export class TDrive extends TTypedSpace implements Drive {}
 
 @Mixin(drive.mixin.DefaultDriveTypeData, drive.class.Drive)
-@UX(getEmbeddedLabel('Default drive type'), drive.icon.Drive)
+@UX(getEmbeddedLabel('Default drive type'))
 export class TDefaultDriveTypeData extends TDrive implements RolesAssignment {
   [key: Ref<Role>]: Ref<Account>[]
+}
+
+@Model(drive.class.Folder, core.class.Doc, DOMAIN_DRIVE)
+@UX(drive.string.Folder)
+export class TFolder extends TDoc implements Folder {
+  declare space: Ref<Drive>
+
+  @Prop(TypeString(), drive.string.Name)
+  @Index(IndexKind.FullText)
+    name!: string
+
+  @Prop(TypeRef(drive.class.Folder), drive.string.Parent)
+  @Index(IndexKind.Indexed)
+    parent!: Ref<Folder>
+
+  @Prop(TypeRef(drive.class.Folder), drive.string.Parent)
+    path!: Ref<Folder>[]
+}
+
+@Model(drive.class.File, core.class.Doc, DOMAIN_DRIVE)
+@UX(drive.string.File)
+export class TFile extends TDoc implements File {
+  declare space: Ref<Drive>
+
+  @Prop(TypeString(), drive.string.Name)
+  @Index(IndexKind.FullText)
+    name!: string
+
+  @Prop(TypeAttachment(), drive.string.File)
+    file!: string
+
+  @Prop(TypeString(), drive.string.Description)
+  @Index(IndexKind.FullText)
+    description!: string
+
+  @Prop(TypeString(), drive.string.Size)
+    size!: number
+
+  @Prop(TypeString(), drive.string.Type)
+    type!: string
+
+  @Prop(TypeRef(drive.class.Folder), drive.string.Parent)
+  @Index(IndexKind.Indexed)
+    parent!: Ref<Folder>
+
+  @Prop(TypeRef(drive.class.Folder), drive.string.Path)
+    path!: Ref<Folder>[]
+}
+
+@Model(drive.class.StarredFile, preference.class.Preference)
+export class TStarredFile extends TPreference implements StarredFile {
+  @Prop(TypeRef(drive.class.File), drive.string.File)
+  declare attachedTo: Ref<File>
 }
 
 function defineDrive (builder: Builder): void {
@@ -96,24 +152,80 @@ function defineDrive (builder: Builder): void {
     actions: [tracker.action.EditRelatedTargets, tracker.action.NewRelatedIssue]
   })
 
-  // createAction(
-  //   builder,
-  //   {
-  //     action: drive.actionImpl.EditTeamspace,
-  //     label: drive.string.EditTeamspace,
-  //     icon: view.icon.Edit,
-  //     input: 'focus',
-  //     category: document.category.Document,
-  //     target: document.class.Teamspace,
-  //     visibilityTester: view.function.CanEditSpace,
-  //     query: {},
-  //     context: {
-  //       mode: ['context', 'browser'],
-  //       group: 'edit'
-  //     }
-  //   },
-  //   drive.action.EditTeamspace
-  // )
+  createAction(
+    builder,
+    {
+      action: drive.actionImpl.EditDrive,
+      label: drive.string.EditDrive,
+      icon: view.icon.Edit,
+      input: 'focus',
+      category: drive.category.Drive,
+      target: drive.class.Drive,
+      visibilityTester: view.function.CanEditSpace,
+      query: {},
+      context: {
+        mode: ['context', 'browser'],
+        group: 'edit'
+      }
+    },
+    drive.action.EditDrive
+  )
+
+  createAction(
+    builder,
+    {
+      action: drive.actionImpl.CreateRootFolder,
+      label: drive.string.CreateFolder,
+      icon: drive.icon.Folder,
+      category: view.category.General,
+      input: 'none',
+      target: drive.class.Drive,
+      context: {
+        mode: ['context', 'browser'],
+        application: drive.app.Drive,
+        group: 'create'
+      }
+    },
+    drive.action.CreateRootFolder
+  )
+}
+
+function defineFolder (builder: Builder): void {
+  builder.createModel(TFolder)
+
+  // Actions
+
+  builder.mixin(drive.class.Folder, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [tracker.action.EditRelatedTargets, tracker.action.NewRelatedIssue]
+  })
+
+  createAction(
+    builder,
+    {
+      action: drive.actionImpl.CreateChildFolder,
+      label: drive.string.CreateFolder,
+      icon: drive.icon.Folder,
+      category: view.category.General,
+      input: 'none',
+      target: drive.class.Folder,
+      context: {
+        mode: ['context', 'browser'],
+        application: drive.app.Drive,
+        group: 'create'
+      }
+    },
+    drive.action.CreateChildFolder
+  )
+}
+
+function defineFile (builder: Builder): void {
+  builder.createModel(TFile, TStarredFile)
+
+  // Actions
+
+  builder.mixin(drive.class.File, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [tracker.action.EditRelatedTargets, tracker.action.NewRelatedIssue]
+  })
 }
 
 function defineApplication (builder: Builder): void {
@@ -162,5 +274,7 @@ function defineApplication (builder: Builder): void {
 
 export function createModel (builder: Builder): void {
   defineDrive(builder)
+  defineFolder(builder)
+  defineFile(builder)
   defineApplication(builder)
 }
