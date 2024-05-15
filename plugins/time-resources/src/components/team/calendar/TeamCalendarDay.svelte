@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Calendar, Event, getAllEvents } from '@hcengineering/calendar'
-  import { calendarStore } from '@hcengineering/calendar-resources'
+  import { calendarByIdStore } from '@hcengineering/calendar-resources'
   import { Person, PersonAccount } from '@hcengineering/contact'
   import { IdMap, Ref, getCurrentAccount } from '@hcengineering/core'
   import { Project } from '@hcengineering/task'
@@ -34,7 +34,6 @@
   const me = (getCurrentAccount() as PersonAccount).person
 
   let project: Project | undefined
-  let calendars: IdMap<Calendar> = new Map()
   let personAccounts: PersonAccount[] = []
   let slots: WorkSlot[] = []
   let events: Event[] = []
@@ -84,7 +83,6 @@
   {fromDate}
   {toDate}
   bind:project
-  bind:calendars
   bind:personAccounts
   bind:todos
   bind:slots
@@ -136,7 +134,7 @@
     {@const dayTo = new Date(day).setHours(23, 59, 59, 999)}
     {@const totalSlots = toSlots(getAllEvents(slots, dayFrom, dayTo))}
     {@const totalEvents = getAllEvents(events, dayFrom, dayTo)}
-    {@const grouped = groupTeamData(totalSlots, todos, totalEvents, personAccounts, calendars, me, $calendarStore)}
+    {@const grouped = groupTeamData(totalSlots, todos, totalEvents, personAccounts, me, $calendarByIdStore)}
     {@const gitem = grouped.find((it) => it.user === person)}
     {@const hourWidths = calcHourWidth([...totalSlots, ...totalEvents], width)}
     {#if gitem}

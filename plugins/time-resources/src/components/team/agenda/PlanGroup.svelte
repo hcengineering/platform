@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { Calendar, Event } from '@hcengineering/calendar'
-  import { calendarStore } from '@hcengineering/calendar-resources'
+  import { Event } from '@hcengineering/calendar'
+  import { calendarByIdStore } from '@hcengineering/calendar-resources'
   import { PersonAccount } from '@hcengineering/contact'
   import { IdMap, getCurrentAccount } from '@hcengineering/core'
   import { ToDo, WorkSlot } from '@hcengineering/time'
@@ -12,12 +12,11 @@
   export let showAssignee: boolean = false
 
   export let personAccounts: PersonAccount[]
-  export let calendars: IdMap<Calendar>
   export let todos: IdMap<ToDo>
 
   const me = (getCurrentAccount() as PersonAccount).person
 
-  $: grouped = groupTeamData(slots, todos, events, personAccounts, calendars, me, $calendarStore)
+  $: grouped = groupTeamData(slots, todos, events, personAccounts, me, $calendarByIdStore)
 </script>
 
 <div class="container flex-col background-comp-header-color">

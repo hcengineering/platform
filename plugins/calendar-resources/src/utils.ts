@@ -70,7 +70,9 @@ export function isVisible (value: Event, calendars: IdMap<Calendar>): boolean {
   }
 }
 
-export const calendarStore = writable<IdMap<Calendar>>(new Map())
+export const calendarByIdStore = writable<IdMap<Calendar>>(new Map())
+export const calendarStore = writable<Calendar[]>([])
+export const visibleCalendarStore = writable<Calendar[]>([])
 
 function fillStores (): void {
   const client = getClient()
@@ -78,7 +80,9 @@ function fillStores (): void {
   if (client !== undefined) {
     const query = createQuery(true)
     query.query(calendar.class.Calendar, {}, (res) => {
-      calendarStore.set(toIdMap(res))
+      calendarStore.set(res)
+      visibleCalendarStore.set(res.filter((p) => !p.hidden))
+      calendarByIdStore.set(toIdMap(res))
     })
   } else {
     setTimeout(() => {
