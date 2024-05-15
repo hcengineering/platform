@@ -49,7 +49,6 @@ export default mergeIds(contactId, contact, {
     NoExpire: '' as IntlString,
     StatusDueDateTooltip: '' as IntlString,
     CopyToClipboard: '' as IntlString,
-    Copied: '' as IntlString,
     ViewFullProfile: '' as IntlString,
     Member: '' as IntlString,
     Members: '' as IntlString,

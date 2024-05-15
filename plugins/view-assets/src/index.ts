@@ -53,5 +53,6 @@ loadMetadata(view.icon, {
   SeparatorLine: `${icons}#separator-line`,
   Circle: `${icons}#circle`,
   Join: `${icons}#join`,
-  Leave: `${icons}#leave`
+  Leave: `${icons}#leave`,
+  Copy: `${icons}#copy`
 })
