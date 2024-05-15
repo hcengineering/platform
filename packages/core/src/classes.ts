@@ -341,12 +341,6 @@ export const DOMAIN_BLOB = 'blob' as Domain
  * Special domain to access s3 blob data.
  * @public
  */
-export const DOMAIN_BLOB_DATA = 'blob-data' as Domain
-
-/**
- * Special domain to access s3 blob data.
- * @public
- */
 export const DOMAIN_FULLTEXT_BLOB = 'fulltext-blob' as Domain
 
 /**
@@ -496,18 +490,6 @@ export interface MigrationState extends Doc {
  */
 export function versionToString (version: Version | Data<Version>): string {
   return `${version?.major}.${version?.minor}.${version?.patch}`
-}
-
-/**
- * Blob data from s3 storage
- * @public
- */
-export interface BlobData extends Doc {
-  name: string
-  size: number
-  type: string
-  provider?: string // If node defined, will be default one
-  base64Data: string // base64 encoded data
 }
 
 /**

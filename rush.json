@@ -467,6 +467,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/storage",
+      "projectFolder": "packages/storage",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/collaboration",
       "projectFolder": "server/collaboration",
       "shouldPublish": false
@@ -519,6 +524,11 @@
     {
       "packageName": "@hcengineering/server",
       "projectFolder": "server/server",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-storage",
+      "projectFolder": "server/server-storage",
       "shouldPublish": false
     },
     {

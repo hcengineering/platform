@@ -16,8 +16,8 @@
 
 import { MeasureContext } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
-import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server'
 import { StorageConfiguration } from '@hcengineering/server-core'
+import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverToken from '@hcengineering/server-token'
 import { start } from '.'
 
@@ -135,6 +135,7 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
   const shutdown = start(ctx, config, SERVER_PORT, extraConfig)
 
   const close = (): void => {
+    void storageAdapter.close()
     console.trace('Exiting from server')
     console.log('Shutdown request accepted')
     shutdown()

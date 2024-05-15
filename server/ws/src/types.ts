@@ -11,7 +11,7 @@ import {
   type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 import { type Request, type Response } from '@hcengineering/rpc'
-import { type BroadcastFunc, type Pipeline } from '@hcengineering/server-core'
+import { type BroadcastFunc, type Pipeline, type StorageAdapter } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
 
 /**
@@ -204,5 +204,6 @@ export type ServerFactory = (
   port: number,
   productId: string,
   enableCompression: boolean,
-  accountsUrl: string
+  accountsUrl: string,
+  externalStorage: StorageAdapter
 ) => () => Promise<void>

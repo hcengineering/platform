@@ -1,6 +1,5 @@
-import { MinioConfig, MinioService } from '@hcengineering/minio'
-import { createRawMongoDBAdapter } from '@hcengineering/mongo'
-import { StorageAdapter, StorageConfiguration, buildStorage } from '@hcengineering/server-core'
+import { MinioConfig } from '@hcengineering/minio'
+import { StorageConfiguration } from '@hcengineering/server-core'
 
 export function storageConfigFromEnv (): StorageConfiguration {
   const storageConfig: StorageConfiguration = JSON.parse(
@@ -138,38 +137,4 @@ export function serverConfigFromEnv (): ServerEnv {
     pushPrivateKey,
     pushSubject
   }
-}
-
-// Temporary solution, until migration will be implemented.
-const ONLY_MINIO = true
-
-export function buildStorageFromConfig (config: StorageConfiguration, dbUrl: string): StorageAdapter {
-  if (ONLY_MINIO) {
-    const minioConfig = config.storages.find((it) => it.kind === 'minio') as MinioConfig
-    if (minioConfig === undefined) {
-      throw new Error('minio config is required')
-    }
-
-    return new MinioService({
-      accessKey: minioConfig.accessKeyId,
-      secretKey: minioConfig.secretAccessKey,
-      endPoint: minioConfig.endpoint,
-      port: minioConfig.port,
-      useSSL: minioConfig.useSSL
-    })
-  }
-  return buildStorage(config, createRawMongoDBAdapter(dbUrl), (kind, config) => {
-    if (kind === MinioService.config) {
-      const c = config as MinioConfig
-      return new MinioService({
-        accessKey: c.accessKeyId,
-        secretKey: c.secretAccessKey,
-        endPoint: c.endpoint,
-        port: c.port,
-        useSSL: c.useSSL
-      })
-    } else {
-      throw new Error('Unsupported storage kind:' + kind)
-    }
-  })
 }

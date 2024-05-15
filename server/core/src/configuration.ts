@@ -69,5 +69,7 @@ export interface DbConfiguration {
   contentAdapters: Record<string, ContentTextAdapterConfiguration>
   serviceAdapters: Record<string, ServiceAdapterConfig>
   defaultContentAdapter: string
-  storageFactory: () => StorageAdapter
+
+  // Should not be closed by server
+  storageFactory: StorageAdapter
 }

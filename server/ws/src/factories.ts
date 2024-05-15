@@ -5,7 +5,17 @@ import { type ServerFactory } from './types'
  */
 export const serverFactories: Record<string, ServerFactory> = {
   ws: startHttpServer,
-  uweb: (sessions, handleRequest, ctx, pipelineFactory, port, productId, enableCompression, accountsUrl) => {
+  uweb: (
+    sessions,
+    handleRequest,
+    ctx,
+    pipelineFactory,
+    port,
+    productId,
+    enableCompression,
+    accountsUrl,
+    externalStorage
+  ) => {
     try {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const serverHttp = require('./server_u')
@@ -17,7 +27,8 @@ export const serverFactories: Record<string, ServerFactory> = {
         port,
         productId,
         enableCompression,
-        accountsUrl
+        accountsUrl,
+        externalStorage
       )
     } catch (err: any) {
       console.error('uwebsocket.js is not supported, switcg back to nodejs ws')
@@ -29,7 +40,8 @@ export const serverFactories: Record<string, ServerFactory> = {
         port,
         productId,
         enableCompression,
-        accountsUrl
+        accountsUrl,
+        externalStorage
       )
     }
   }

@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+export type { StorageAdapter } from '@hcengineering/storage'
 export * from './adapter'
 export * from './configuration'
 export * from './fulltext'

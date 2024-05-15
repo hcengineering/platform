@@ -30,6 +30,9 @@ import {
   type SessionManager
 } from './types'
 
+import type { StorageAdapter } from '@hcengineering/server-core'
+import { Readable } from 'stream'
+import { getFile, getFileRange, type BlobResponse } from './blobs'
 import { doSessionOp, processRequest, type WebsocketData } from './utils'
 import uWebSockets, { DISABLED, SHARED_COMPRESSOR, type HttpResponse, type WebSocket } from '@hcengineering/uws'
 
@@ -51,7 +54,8 @@ export function startUWebsocketServer (
   port: number,
   productId: string,
   enableCompression: boolean,
-  accountsUrl: string
+  accountsUrl: string,
+  externalStorage: StorageAdapter
 ): () => Promise<void> {
   if (LOGGING_ENABLED) console.log(`starting U server on port ${port} ...`)
 
@@ -71,9 +75,7 @@ export function startUWebsocketServer (
     })
     .ws<WebsocketUserData>('/*', {
     /* There are many common helper features */
-    // idleTimeout: 32,
-    maxBackpressure: 256 * 1024,
-    maxPayloadLength: 50 * 1024 * 1024,
+    maxPayloadLength: 250 * 1024 * 1024,
     compression: enableCompression ? SHARED_COMPRESSOR : DISABLED,
     idleTimeout: 0,
     maxLifetime: 0,
@@ -156,7 +158,6 @@ export function startUWebsocketServer (
       })
     },
     drain: (ws) => {
-      console.log(`WebSocket backpressure: ${ws.getBufferedAmount()}`)
       const data = ws.getUserData()
       while (data.unsendMsg.length > 0) {
         if (ws.send(data.unsendMsg[0].data, data.unsendMsg[0].binary, data.unsendMsg[0].compression) !== 1) {
@@ -263,6 +264,64 @@ export function startUWebsocketServer (
         writeStatus(res, '404 ERROR').end()
       }
     })
+    .get('/api/v1/blob/*', (res, req) => {
+      try {
+        const authHeader = req.getHeader('authorization')
+        if (authHeader === undefined) {
+          res.status(403).send({ error: 'Unauthorized' })
+          return
+        }
+
+        const payload = decodeToken(authHeader.split(' ')[1])
+
+        const name = req.getQuery('name') as string
+
+        const range = req.getHeader('range')
+        if (range !== undefined) {
+          void ctx.with('file-range', { workspace: payload.workspace.name }, async (ctx) => {
+            await getFileRange(ctx, range, externalStorage, payload.workspace, name, wrapRes(res))
+          })
+        } else {
+          void getFile(ctx, externalStorage, payload.workspace, name, wrapRes(res))
+        }
+      } catch (err: any) {
+        Analytics.handleError(err)
+      }
+    })
+    .put('/api/v1/blob/*', (res, req) => {
+      try {
+        const authHeader = req.getHeader('authorization')
+        if (authHeader === undefined) {
+          res.status(403).send({ error: 'Unauthorized' })
+          return
+        }
+
+        const payload = decodeToken(authHeader.split(' ')[1])
+
+        const name = req.getQuery('name') as string
+        const contentType = req.getQuery('contentType') as string
+
+        const pipe = pipeFromRequest(res)
+        void ctx
+          .with(
+            'storage upload',
+            { workspace: payload.workspace.name },
+            async () => await externalStorage.put(ctx, payload.workspace, name, pipe, contentType),
+            { file: name, contentType }
+          )
+          .then(() => {
+            res.cork(() => {
+              res.writeStatus('200 OK')
+              res.end()
+            })
+          })
+      } catch (err: any) {
+        Analytics.handleError(err)
+        console.error(err)
+        res.writeStatus('404 ERROR')
+        res.end()
+      }
+    })
     .any('/*', (res, req) => {
       res.end('')
     })
@@ -313,4 +372,83 @@ function createWebSocketClientSocket (
     }
   }
   return cs
+}
+
+/* Helper function converting Node.js buffer to ArrayBuffer */
+function toArrayBuffer (buffer: Buffer): ArrayBufferLike {
+  return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength)
+}
+
+/* Either onAborted or simply finished request */
+function onAbortedOrFinishedResponse (res: HttpResponse, readStream: Readable): void {
+  if (res.id === -1) {
+    console.log('ERROR! onAbortedOrFinishedResponse called twice for the same res!')
+  } else {
+    readStream.destroy()
+  }
+
+  /* Mark this response already accounted for */
+  res.id = -1
+}
+
+function pipeFromRequest (res: HttpResponse): Readable {
+  const readable = new Readable()
+  readable._read = () => {}
+
+  res.onAborted(() => {
+    readable.push(null)
+  })
+  res.onData((ab, isLast) => {
+    const chunk = Buffer.copyBytesFrom(Buffer.from(ab))
+    readable.push(chunk)
+    if (isLast) {
+      readable.push(null)
+    }
+  })
+  return readable
+}
+
+function pipeStreamOverResponse (res: HttpResponse, readStream: Readable, totalSize: number): void {
+  readStream
+    .on('data', (chunk) => {
+      const ab = toArrayBuffer(chunk)
+      const lastOffset = res.getWriteOffset()
+      const [ok, done] = res.tryEnd(ab, totalSize)
+      if (done) {
+        onAbortedOrFinishedResponse(res, readStream)
+      } else if (!ok) {
+        readStream.pause()
+        res.ab = ab
+        res.abOffset = lastOffset
+        res.onWritable((offset) => {
+          const [ok, done] = res.tryEnd(res.ab.slice(offset - res.abOffset), totalSize)
+          if (done) {
+            onAbortedOrFinishedResponse(res, readStream)
+          } else if (ok) {
+            readStream.resume()
+          }
+          return ok
+        })
+      }
+    })
+    .on('error', (err) => {
+      Analytics.handleError(err)
+      res.close()
+    })
+
+  /* If you plan to asyncronously respond later on, you MUST listen to onAborted BEFORE returning */
+  res.onAborted(() => {
+    onAbortedOrFinishedResponse(res, readStream)
+  })
+}
+
+function wrapRes (res: HttpResponse): BlobResponse {
+  return {
+    end: () => res.end(),
+    status: (code) => res.status(code),
+    pipeFrom: (readable, size) => {
+      pipeStreamOverResponse(res, readable, size)
+    },
+    writeHead: (code, header) => res.writeHead(code, header)
+  }
 }

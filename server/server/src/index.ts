@@ -14,11 +14,11 @@
 // limitations under the License.
 //
 
-export * from './server'
+export { buildStorageFromConfig, createStorageDataAdapter, storageConfigFromEnv } from '@hcengineering/server-storage'
 export * from './apm'
-export * from './minio'
 export * from './backup'
 export * from './metrics'
 export * from './rekoni'
-export * from './ydoc'
+export * from './server'
 export * from './starter'
+export * from './ydoc'

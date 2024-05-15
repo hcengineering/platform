@@ -172,7 +172,7 @@ describe('mongo operations', () => {
       serviceAdapters: {},
       defaultContentAdapter: 'default',
       workspace: { ...getWorkspaceId(dbId, ''), workspaceName: '', workspaceUrl: '' },
-      storageFactory: () => createNullStorageFactory()
+      storageFactory: createNullStorageFactory()
     }
     const ctx = new MeasureMetricsContext('client', {})
     serverStorage = await createServerStorage(ctx, conf, {

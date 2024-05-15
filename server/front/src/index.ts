@@ -199,9 +199,7 @@ async function getFile (
           'Cache-Control': cacheControlValue
         })
 
-        dataStream.on('data', function (chunk) {
-          res.write(chunk)
-        })
+        dataStream.pipe(res)
         await new Promise<void>((resolve, reject) => {
           dataStream.on('end', function () {
             res.end()
@@ -209,7 +207,6 @@ async function getFile (
             resolve()
           })
           dataStream.on('error', function (err) {
-            res.status(500).send()
             Analytics.handleError(err)
             ctx.error('error', { err })
             reject(err)

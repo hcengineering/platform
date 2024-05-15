@@ -69,7 +69,10 @@ export class FileModelLogger implements ModelLogger {
 /**
  * @public
  */
-export function prepareTools (rawTxes: Tx[]): { mongodbUri: string, storageAdapter: StorageAdapter, txes: Tx[] } {
+export function prepareTools (rawTxes: Tx[]): {
+  mongodbUri: string
+  txes: Tx[]
+} {
   const minioEndpoint = process.env.MINIO_ENDPOINT
   if (minioEndpoint === undefined) {
     console.error('please provide minio endpoint')
@@ -94,11 +97,10 @@ export function prepareTools (rawTxes: Tx[]): { mongodbUri: string, storageAdapt
     process.exit(1)
   }
 
-  const storageConfig: StorageConfiguration = storageConfigFromEnv()
-
-  const storageAdapter = buildStorageFromConfig(storageConfig, mongodbUri)
-
-  return { mongodbUri, storageAdapter, txes: JSON.parse(JSON.stringify(rawTxes)) as Tx[] }
+  return {
+    mongodbUri,
+    txes: JSON.parse(JSON.stringify(rawTxes)) as Tx[]
+  }
 }
 
 /**
@@ -113,7 +115,7 @@ export async function initModel (
   logger: ModelLogger = consoleModelLogger,
   progress: (value: number) => Promise<void>
 ): Promise<void> {
-  const { mongodbUri, storageAdapter: minio, txes } = prepareTools(rawTxes)
+  const { mongodbUri, txes } = prepareTools(rawTxes)
   if (txes.some((tx) => tx.objectSpace !== core.space.Model)) {
     throw Error('Model txes must target only core.space.Model')
   }
@@ -121,6 +123,8 @@ export async function initModel (
   const _client = getMongoClient(mongodbUri)
   const client = await _client.getClient()
   let connection: (CoreClient & BackupClient) | undefined
+  const storageConfig: StorageConfiguration = storageConfigFromEnv()
+  const storageAdapter = buildStorageFromConfig(storageConfig, mongodbUri)
   try {
     const db = getWorkspaceDB(client, workspaceId)
 
@@ -136,9 +140,11 @@ export async function initModel (
     await progress(20)
 
     logger.log('create minio bucket', { workspaceId })
-    if (!(await minio.exists(ctx, workspaceId))) {
-      await minio.make(ctx, workspaceId)
+
+    if (!(await storageAdapter.exists(ctx, workspaceId))) {
+      await storageAdapter.make(ctx, workspaceId)
     }
+
     connection = (await connect(
       transactorUrl,
       workspaceId,
@@ -174,7 +180,11 @@ export async function initModel (
       logger.error('error', { error: e })
       throw e
     }
+  } catch (err: any) {
+    ctx.error('Failed to create workspace', { error: err })
+    throw err
   } finally {
+    await storageAdapter.close()
     await connection?.sendForceClose()
     await connection?.close()
     _client.close()
@@ -203,6 +213,9 @@ export async function upgradeModel (
   // const client = new MongoClient(mongodbUri)
   const _client = getMongoClient(mongodbUri)
   const client = await _client.getClient()
+  const storageConfig: StorageConfiguration = storageConfigFromEnv()
+  const storageAdapter = buildStorageFromConfig(storageConfig, mongodbUri)
+
   try {
     const db = getWorkspaceDB(client, workspaceId)
 
@@ -211,7 +224,9 @@ export async function upgradeModel (
       db,
       prevModel.hierarchy,
       prevModel.modelDb,
-      logger
+      logger,
+      storageAdapter,
+      workspaceId
     )
 
     await progress(0)
@@ -263,7 +278,14 @@ export async function upgradeModel (
     }
 
     const { hierarchy, modelDb, model } = await fetchModelFromMongo(ctx, mongodbUri, workspaceId)
-    const { migrateClient, migrateState } = await prepareMigrationClient(db, hierarchy, modelDb, logger)
+    const { migrateClient, migrateState } = await prepareMigrationClient(
+      db,
+      hierarchy,
+      modelDb,
+      logger,
+      storageAdapter,
+      workspaceId
+    )
 
     await ctx.with('migrate', {}, async () => {
       let i = 0
@@ -325,6 +347,7 @@ export async function upgradeModel (
     }
     return model
   } finally {
+    await storageAdapter.close()
     _client.close()
   }
 }
@@ -333,12 +356,14 @@ async function prepareMigrationClient (
   db: Db,
   hierarchy: Hierarchy,
   model: ModelDb,
-  logger: ModelLogger
+  logger: ModelLogger,
+  storageAdapter: StorageAdapter,
+  workspaceId: WorkspaceId
 ): Promise<{
     migrateClient: MigrateClientImpl
     migrateState: Map<string, Set<string>>
   }> {
-  const migrateClient = new MigrateClientImpl(db, hierarchy, model, logger)
+  const migrateClient = new MigrateClientImpl(db, hierarchy, model, logger, storageAdapter, workspaceId)
   const states = await migrateClient.find<MigrationState>(DOMAIN_MIGRATION, { _class: core.class.MigrationState })
   const sts = Array.from(groupByArray(states, (it) => it.plugin).entries())
   const migrateState = new Map(sts.map((it) => [it[0], new Set(it[1].map((q) => q.state))]))

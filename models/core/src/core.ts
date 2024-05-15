@@ -14,9 +14,7 @@
 //
 
 import {
-  type Blob,
   DOMAIN_BLOB,
-  DOMAIN_BLOB_DATA,
   DOMAIN_CONFIGURATION,
   DOMAIN_DOC_INDEX_STATE,
   DOMAIN_FULLTEXT_BLOB,
@@ -27,7 +25,7 @@ import {
   type AnyAttribute,
   type ArrOf,
   type AttachedDoc,
-  type BlobData,
+  type Blob,
   type Class,
   type ClassifierKind,
   type Collection,
@@ -36,6 +34,7 @@ import {
   type Doc,
   type DocIndexState,
   type Domain,
+  type DomainIndexConfiguration,
   type Enum,
   type EnumOf,
   type FieldIndex,
@@ -54,8 +53,7 @@ import {
   type Timestamp,
   type Type,
   type TypeAny,
-  type Version,
-  type DomainIndexConfiguration
+  type Version
 } from '@hcengineering/core'
 import {
   Hidden,
@@ -133,7 +131,7 @@ export class TAttachedDoc extends TDoc implements AttachedDoc {
     collection!: string
 }
 
-@Model(core.class.Blob, core.class.Doc, DOMAIN_BLOB_DATA)
+@Model(core.class.Blob, core.class.Doc, DOMAIN_BLOB)
 @UX(core.string.Object)
 export class TBlob extends TDoc implements Blob {
   @Prop(TypeString(), core.string.Blob)
@@ -142,6 +140,7 @@ export class TBlob extends TDoc implements Blob {
 
   @Prop(TypeString(), core.string.BlobContentType)
   @ReadOnly()
+  @Index(IndexKind.Indexed)
     contentType!: string
 
   @Prop(TypeString(), core.string.BlobStorageId)
@@ -306,16 +305,6 @@ export class TPluginConfiguration extends TDoc implements PluginConfiguration {
   enabled!: boolean
   beta!: boolean
 }
-
-@Model(core.class.BlobData, core.class.Doc, DOMAIN_BLOB)
-export class TBlobData extends TDoc implements BlobData {
-  name!: string
-  file!: string
-  size!: number
-  type!: string
-  base64Data!: string
-}
-
 @Model(core.class.FulltextData, core.class.Doc, DOMAIN_FULLTEXT_BLOB)
 export class TFulltextData extends TDoc implements FullTextData {
   data!: any

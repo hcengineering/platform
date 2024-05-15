@@ -13,17 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
   import attachment from '@hcengineering/attachment'
+  import { AvatarType } from '@hcengineering/contact'
+  import { Asset, getResource } from '@hcengineering/platform'
   import {
     AnySvelteComponent,
     IconSize,
-    showPopup,
     getPlatformAvatarColorForTextDef,
+    showPopup,
     themeStore
   } from '@hcengineering/ui'
-  import { AvatarType } from '@hcengineering/contact'
-  import { Asset, getResource } from '@hcengineering/platform'
+  import { createEventDispatcher } from 'svelte'
 
   import AvatarComponent from './Avatar.svelte'
   import SelectAvatarPopup from './SelectAvatarPopup.svelte'
@@ -55,7 +55,7 @@
   export async function createAvatar (): Promise<string | undefined> {
     if (selectedAvatarType === AvatarType.IMAGE && direct !== undefined) {
       const uploadFile = await getResource(attachment.helper.UploadFile)
-      const file = new File([direct], 'avatar')
+      const file = new File([direct], 'avatar', { type: direct.type })
 
       return await uploadFile(file)
     }

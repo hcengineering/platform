@@ -17,19 +17,20 @@
 import core, {
   AttachedDoc,
   BackupClient,
-  BlobData,
   Client as CoreClient,
   Doc,
   Domain,
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
   MeasureContext,
+  RateLimiter,
   Ref,
   SortingOrder,
   TxCollectionCUD,
-  WorkspaceId
+  WorkspaceId,
+  type Blob
 } from '@hcengineering/core'
-import { connect } from '@hcengineering/server-tool'
+import { BlobClient, connect } from '@hcengineering/server-tool'
 import { createGzip } from 'node:zlib'
 import { join } from 'path'
 import { Writable } from 'stream'
@@ -42,7 +43,19 @@ const dataBlobSize = 50 * 1024 * 1024
 const dataUploadSize = 2 * 1024 * 1024
 const retrieveChunkSize = 2 * 1024 * 1024
 
-const defaultLevel = 9
+const defaultLevel = 1
+
+/**
+ * Blob data from s3 storage
+ * @public
+ */
+interface BlobData extends Doc {
+  name: string
+  size: number
+  type: string
+  provider?: string // If node defined, will be default one
+  base64Data: string // base64 encoded data
+}
 
 /**
  * @public
@@ -384,6 +397,7 @@ export async function backup (
   timeout: number = -1
 ): Promise<void> {
   ctx = ctx.newChild('backup', { workspaceId: workspaceId.name, force })
+
   const connection = await ctx.with(
     'connect',
     {},
@@ -392,6 +406,8 @@ export async function backup (
         mode: 'backup'
       })) as unknown as CoreClient & BackupClient
   )
+
+  const blobClient = new BlobClient(transactorUrl, workspaceId)
   ctx.info('starting backup', { workspace: workspaceId.name })
 
   let canceled = false
@@ -601,46 +617,45 @@ export async function backup (
           continue
         }
 
-        // Chunk data into small pieces
-        if (addedDocuments > dataBlobSize && _pack !== undefined) {
-          _pack.finalize()
-          _pack = undefined
-          addedDocuments = 0
-
-          if (changed > 0) {
-            snapshot.domains[domain] = domainInfo
-            domainInfo.added += processedChanges.added.size
-            domainInfo.updated += processedChanges.updated.size
-            domainInfo.removed += processedChanges.removed.length
-
-            const snapshotFile = join(backupIndex, `${domain}-${snapshot.date}-${snapshotIndex}.snp.gz`)
-            snapshotIndex++
-            domainInfo.snapshots = [...(domainInfo.snapshots ?? []), snapshotFile]
-            await writeChanges(storage, snapshotFile, processedChanges)
-
-            processedChanges.added.clear()
-            processedChanges.removed = []
-            processedChanges.updated.clear()
-            await storage.writeFile(
-              infoFile,
-              gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel })
-            )
-          }
-        }
-        if (_pack === undefined) {
-          _pack = pack()
-          stIndex++
-          const storageFile = join(backupIndex, `${domain}-data-${snapshot.date}-${stIndex}.tar.gz`)
-          ctx.info('storing from domain', { domain, storageFile, workspace: workspaceId.name })
-          domainInfo.storage = [...(domainInfo.storage ?? []), storageFile]
-          const dataStream = await storage.write(storageFile)
-          const storageZip = createGzip({ level: defaultLevel })
-
-          _pack.pipe(storageZip)
-          storageZip.pipe(dataStream)
-        }
-
         while (docs.length > 0) {
+          // Chunk data into small pieces
+          if (addedDocuments > dataBlobSize && _pack !== undefined) {
+            _pack.finalize()
+            _pack = undefined
+            addedDocuments = 0
+
+            if (changed > 0) {
+              snapshot.domains[domain] = domainInfo
+              domainInfo.added += processedChanges.added.size
+              domainInfo.updated += processedChanges.updated.size
+              domainInfo.removed += processedChanges.removed.length
+
+              const snapshotFile = join(backupIndex, `${domain}-${snapshot.date}-${snapshotIndex}.snp.gz`)
+              snapshotIndex++
+              domainInfo.snapshots = [...(domainInfo.snapshots ?? []), snapshotFile]
+              await writeChanges(storage, snapshotFile, processedChanges)
+
+              processedChanges.added.clear()
+              processedChanges.removed = []
+              processedChanges.updated.clear()
+              await storage.writeFile(
+                infoFile,
+                gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel })
+              )
+            }
+          }
+          if (_pack === undefined) {
+            _pack = pack()
+            stIndex++
+            const storageFile = join(backupIndex, `${domain}-data-${snapshot.date}-${stIndex}.tar.gz`)
+            ctx.info('storing from domain', { domain, storageFile, workspace: workspaceId.name })
+            domainInfo.storage = [...(domainInfo.storage ?? []), storageFile]
+            const dataStream = await storage.write(storageFile)
+            const storageZip = createGzip({ level: defaultLevel, memLevel: 9 })
+
+            _pack.pipe(storageZip)
+            storageZip.pipe(dataStream)
+          }
           if (canceled) {
             return
           }
@@ -657,17 +672,16 @@ export async function backup (
             processedChanges.updated.set(d._id, changes.updated.get(d._id) ?? '')
             changes.updated.delete(d._id)
           }
-          if (d._class === core.class.BlobData) {
-            const blob = d as BlobData
-            const data = Buffer.from(blob.base64Data, 'base64')
-            blob.base64Data = ''
+          if (d._class === core.class.Blob) {
+            const blob = d as Blob
             const descrJson = JSON.stringify(d)
             addedDocuments += descrJson.length
-            addedDocuments += data.length
+            addedDocuments += blob.size
             _pack.entry({ name: d._id + '.json' }, descrJson, function (err) {
               if (err != null) throw err
             })
-            _pack.entry({ name: d._id }, data, function (err) {
+
+            _pack.entry({ name: d._id }, await blobClient.pipeFromStorage(blob._id, blob.size), function (err) {
               if (err != null) throw err
             })
           } else {
@@ -755,7 +769,8 @@ export async function restore (
   workspaceId: WorkspaceId,
   storage: BackupStorage,
   date: number,
-  merge?: boolean
+  merge?: boolean,
+  parallel?: number
 ): Promise<void> {
   const infoFile = 'backup.json.gz'
 
@@ -787,6 +802,8 @@ export async function restore (
     mode: 'backup',
     model: 'upgrade'
   })) as unknown as CoreClient & BackupClient
+
+  const blobClient = new BlobClient(transactorUrl, workspaceId)
   console.log('connected')
 
   // We need to find empty domains and clean them.
@@ -819,7 +836,7 @@ export async function restore (
         }
 
         if (el > 2500) {
-          console.log(' loaded from server', loaded, el, chunks)
+          console.log(c, ' loaded from server', loaded, el, chunks)
           el = 0
           chunks = 0
         }
@@ -897,13 +914,14 @@ export async function restore (
                     blobs.set(name, { doc: undefined, buffer: bf })
                     next()
                   } else {
-                    const d = blobs.get(name)
                     blobs.delete(name)
-                    const doc = d?.doc as BlobData
-                    doc.base64Data = bf.toString('base64') ?? ''
-                    void sendChunk(doc, bf.length).finally(() => {
-                      requiredDocs.delete(doc._id)
-                      next()
+                    const doc = d?.doc as Blob
+                    ;(doc as any)['%hash%'] = changeset.get(doc._id)
+                    void blobClient.upload(doc._id, doc.size, doc.contentType, bf).then(() => {
+                      void sendChunk(doc, bf.length).finally(() => {
+                        requiredDocs.delete(doc._id)
+                        next()
+                      })
                     })
                   }
                 })
@@ -916,19 +934,21 @@ export async function restore (
                 stream.on('end', () => {
                   const bf = Buffer.concat(chunks)
                   const doc = JSON.parse(bf.toString()) as Doc
-                  if (doc._class === core.class.BlobData) {
+                  if (doc._class === core.class.Blob || doc._class === 'core:class:BlobData') {
+                    migradeBlobData(doc as Blob, changeset.get(doc._id) as string)
                     const d = blobs.get(bname)
                     if (d === undefined) {
                       blobs.set(bname, { doc, buffer: undefined })
                       next()
                     } else {
-                      const d = blobs.get(bname)
                       blobs.delete(bname)
-                      ;(doc as BlobData).base64Data = d?.buffer?.toString('base64') ?? ''
-                      ;(doc as any)['%hash%'] = changeset.get(doc._id)
-                      void sendChunk(doc, bf.length).finally(() => {
-                        requiredDocs.delete(doc._id)
-                        next()
+                      const blob = doc as Blob
+                      void blobClient.upload(blob._id, blob.size, blob.contentType, d.buffer as Buffer).then(() => {
+                        ;(doc as any)['%hash%'] = changeset.get(doc._id)
+                        void sendChunk(doc, bf.length).finally(() => {
+                          requiredDocs.delete(doc._id)
+                          next()
+                        })
                       })
                     }
                   } else {
@@ -976,29 +996,34 @@ export async function restore (
     }
   }
 
+  const limiter = new RateLimiter(parallel ?? 1)
+
   try {
     for (const c of domains) {
-      console.log('processing domain', c)
-      let retry = 5
-      let delay = 1
-      while (retry > 0) {
-        retry--
-        try {
-          await processDomain(c)
-          if (delay > 1) {
-            console.log('retry-success')
-          }
-          break
-        } catch (err: any) {
-          console.error('error', err)
-          if (retry !== 0) {
-            console.log('cool-down to retry', delay)
-            await new Promise((resolve) => setTimeout(resolve, delay * 1000))
-            delay++
+      await limiter.exec(async () => {
+        console.log('processing domain', c)
+        let retry = 5
+        let delay = 1
+        while (retry > 0) {
+          retry--
+          try {
+            await processDomain(c)
+            if (delay > 1) {
+              console.log('retry-success')
+            }
+            break
+          } catch (err: any) {
+            console.error('error', err)
+            if (retry !== 0) {
+              console.log('cool-down to retry', delay)
+              await new Promise((resolve) => setTimeout(resolve, delay * 1000))
+              delay++
+            }
           }
         }
-      }
+      })
     }
+    await limiter.waitProcessing()
   } finally {
     await connection.sendForceClose()
     await connection.close()
@@ -1094,7 +1119,7 @@ export async function compactBackup (
 
       const blobs = new Map<string, { doc: Doc | undefined, buffer: Buffer | undefined }>()
 
-      async function pushDocs (docs: Doc[], size: number): Promise<void> {
+      async function pushDocs (docs: Doc[], size: number, blobData: Record<Ref<Doc>, Buffer>): Promise<void> {
         addedDocuments += size
         changed += docs.length
         // Chunk data into small pieces
@@ -1145,10 +1170,10 @@ export async function compactBackup (
           // Move processed document to processedChanges
           processedChanges.added.set(d._id, digestAdded.get(d._id) ?? '')
 
-          if (d._class === core.class.BlobData) {
-            const blob = d as BlobData
-            const data = Buffer.from(blob.base64Data, 'base64')
-            blob.base64Data = ''
+          if (d._class === core.class.Blob || d._class === 'core:class:BlobData') {
+            const blob = d as Blob | BlobData
+
+            const data = blobData[blob._id]
             const descrJson = JSON.stringify(d)
             addedDocuments += descrJson.length
             addedDocuments += data.length
@@ -1167,12 +1192,12 @@ export async function compactBackup (
           }
         }
       }
-      async function sendChunk (doc: Doc | undefined, len: number): Promise<void> {
+      async function sendChunk (doc: Doc | undefined, len: number, blobData: Record<Ref<Doc>, Buffer>): Promise<void> {
         if (doc !== undefined) {
           const hash = digest.get(doc._id)
           digest.delete(doc._id)
           digestAdded.set(doc._id, hash ?? '')
-          await pushDocs([doc], len)
+          await pushDocs([doc], len, blobData)
         }
       }
 
@@ -1212,9 +1237,8 @@ export async function compactBackup (
                     } else {
                       const d = blobs.get(name)
                       blobs.delete(name)
-                      const doc = d?.doc as BlobData
-                      doc.base64Data = bf.toString('base64') ?? ''
-                      void sendChunk(doc, bf.length).finally(() => {
+                      const doc = d?.doc as Blob
+                      void sendChunk(doc, bf.length, { [doc._id]: bf }).finally(() => {
                         requiredDocs.delete(doc._id)
                         next()
                       })
@@ -1229,24 +1253,22 @@ export async function compactBackup (
                   stream.on('end', () => {
                     const bf = Buffer.concat(chunks)
                     const doc = JSON.parse(bf.toString()) as Doc
-                    if (doc._class === core.class.BlobData) {
+                    if (doc._class === core.class.Blob || doc._class === 'core:class:BlobData') {
                       const d = blobs.get(bname)
                       if (d === undefined) {
                         blobs.set(bname, { doc, buffer: undefined })
                         next()
                       } else {
-                        const d = blobs.get(bname)
                         blobs.delete(bname)
-                        ;(doc as BlobData).base64Data = d?.buffer?.toString('base64') ?? ''
                         ;(doc as any)['%hash%'] = digest.get(doc._id)
-                        void sendChunk(doc, bf.length).finally(() => {
+                        void sendChunk(doc, bf.length, { [doc._id]: d?.buffer as Buffer }).finally(() => {
                           requiredDocs.delete(doc._id)
                           next()
                         })
                       }
                     } else {
                       ;(doc as any)['%hash%'] = digest.get(doc._id)
-                      void sendChunk(doc, bf.length).finally(() => {
+                      void sendChunk(doc, bf.length, {}).finally(() => {
                         requiredDocs.delete(doc._id)
                         next()
                       })
@@ -1326,3 +1348,14 @@ export async function compactBackup (
 }
 
 export * from './service'
+function migradeBlobData (blob: Blob, etag: string): void {
+  if (blob._class === 'core:class:BlobData') {
+    const bd = blob as unknown as BlobData
+    blob.contentType = blob.contentType ?? bd.type
+    blob.storageId = bd._id
+    blob.etag = etag
+    blob._class = core.class.Blob
+    delete (blob as any).type
+    delete (blob as any).base64Data
+  }
+}
