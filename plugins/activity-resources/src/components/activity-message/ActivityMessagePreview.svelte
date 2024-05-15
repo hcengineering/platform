@@ -25,6 +25,7 @@
   export let readonly = false
   export let type: ActivityMessagePreviewType = 'full'
   export let actions: Action[] = []
+  export let actionsProps: Record<string, any> = {}
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -42,7 +43,8 @@
       value,
       type,
       readonly,
-      actions
+      actions,
+      actionsProps
     }}
     on:click
   />

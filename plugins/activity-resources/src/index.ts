@@ -37,7 +37,8 @@ import {
   pinMessage,
   canSaveForLater,
   canUnpinMessage,
-  removeFromSaved
+  removeFromSaved,
+  shouldScrollToActivity
 } from './utils'
 
 export * from './activity'
@@ -84,7 +85,8 @@ export default async (): Promise<Resources> => ({
     CanSaveForLater: canSaveForLater,
     CanRemoveFromSaved: canRemoveFromSaved,
     CanPinMessage: canPinMessage,
-    CanUnpinMessage: canUnpinMessage
+    CanUnpinMessage: canUnpinMessage,
+    ShouldScrollToActivity: shouldScrollToActivity
   },
   backreference: {
     Update: updateReferences

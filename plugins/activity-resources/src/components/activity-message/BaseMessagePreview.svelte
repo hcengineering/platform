@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import { IntlString } from '@hcengineering/platform'
-  import activity, { ActivityMessage, ActivityMessagePreviewType } from '@hcengineering/activity'
+  import { ActivityMessage, ActivityMessagePreviewType } from '@hcengineering/activity'
 
   import ActivityMessageActions from '../ActivityMessageActions.svelte'
   import ReactionsPreview from '../reactions/ReactionsPreview.svelte'
@@ -28,6 +28,7 @@
   export let type: ActivityMessagePreviewType = 'full'
   export let message: ActivityMessage
   export let actions: Action[] = []
+  export let actionsProps: Record<string, any> = {}
 
   let previewElement: BasePreview
   let isCompact = false
@@ -58,6 +59,7 @@
       <ActivityMessageActions
         {message}
         {actions}
+        {actionsProps}
         withActionMenu={false}
         onOpen={previewElement.onActionsOpened}
         onClose={previewElement.onActionsClosed}

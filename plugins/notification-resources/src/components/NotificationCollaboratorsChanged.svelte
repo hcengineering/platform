@@ -23,6 +23,7 @@
 
   export let message: DisplayDocUpdateMessage
   export let actions: Action[] = []
+  export let actionsProps: Record<string, any> = {}
 
   const me = getCurrentAccount()._id
 
@@ -39,7 +40,7 @@
   }
 </script>
 
-<BaseMessagePreview {actions} {message}>
+<BaseMessagePreview {actions} {message} {actionsProps}>
   <span class="overflow-label flex-presenter flex-gap-1-5">
     <Icon icon={contact.icon.Person} size="small" />
     <Label

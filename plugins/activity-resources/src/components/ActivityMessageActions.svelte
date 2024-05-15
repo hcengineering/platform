@@ -26,6 +26,7 @@
   export let message: ActivityMessage | undefined
   export let actions: Action[] = []
   export let withActionMenu = true
+  export let actionsProps: Record<string, any> = {}
   export let onOpen: () => void
   export let onClose: () => void
 
@@ -88,7 +89,7 @@
             size={inline.actionProps?.size ?? 'small'}
             icon={inline.icon}
             iconProps={inline.actionProps?.iconProps}
-            action={(ev) => action(message, ev, { onOpen, onClose })}
+            action={(ev) => action(message, ev, { ...actionsProps, onOpen, onClose })}
           />
         {/await}
       {/if}

@@ -411,4 +411,39 @@ export class ChannelDataProvider implements IChannelDataProvider {
     this.clearMessages()
     await this.loadInitialMessages(msg._id)
   }
+
+  public jumpToMessage (message: ActivityMessage): boolean {
+    const metadata = get(this.metadataStore).find(({ _id }) => _id === message._id)
+
+    if (metadata === undefined) {
+      return false
+    }
+
+    const loadedMsg = get(this.messagesStore).find(({ _id }) => _id === message._id)
+    if (loadedMsg !== undefined) {
+      return false
+    }
+    this.clearMessages()
+    void this.loadInitialMessages(message._id)
+    return true
+  }
+
+  public jumpToEnd (): boolean {
+    const last = get(this.metadataStore)[get(this.metadataStore).length - 1]
+
+    if (last === undefined) {
+      return false
+    }
+
+    const loadedMsg = get(this.messagesStore).find(({ _id }) => _id === last._id)
+
+    if (loadedMsg !== undefined) {
+      return false
+    }
+
+    this.clearMessages()
+    void this.loadInitialMessages()
+
+    return true
+  }
 }

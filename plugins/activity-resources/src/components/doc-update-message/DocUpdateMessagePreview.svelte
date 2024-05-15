@@ -36,6 +36,7 @@
   export let readonly = false
   export let type: ActivityMessagePreviewType = 'full'
   export let actions: Action[] = []
+  export let actionsProps: Record<string, any> = {}
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -84,7 +85,7 @@
   }
 </script>
 
-<BaseMessagePreview message={value} {type} {readonly} {actions} on:click>
+<BaseMessagePreview message={value} {type} {readonly} {actions} {actionsProps} on:click>
   <span class="textContent overflow-label flex-presenter" class:contentOnly={type === 'content-only'}>
     {#if viewlet?.component && object}
       <span class="customContent flex-presenter">

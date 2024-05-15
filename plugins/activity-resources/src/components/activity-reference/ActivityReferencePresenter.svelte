@@ -28,6 +28,7 @@
   import ActivityMessageTemplate from '../activity-message/ActivityMessageTemplate.svelte'
 
   export let value: ActivityReference
+  export let viewport: HTMLElement | undefined = undefined
   export let showNotify: boolean = false
   export let isHighlighted: boolean = false
   export let isSelected: boolean = false
@@ -96,6 +97,7 @@
 
 <ActivityMessageTemplate
   message={value}
+  {viewport}
   {person}
   {showNotify}
   {isHighlighted}

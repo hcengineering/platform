@@ -21,6 +21,7 @@
   import { Doc } from '@hcengineering/core'
   import { Component, deviceOptionsStore as deviceInfo, Panel, Scroller } from '@hcengineering/ui'
   import type { ButtonItem } from '@hcengineering/ui'
+  import { getResource } from '@hcengineering/platform'
 
   export let title: string | undefined = undefined
   export let withoutActivity: boolean = false
@@ -88,7 +89,13 @@
     }, 50)
   }
 
-  afterUpdate(() => {
+  afterUpdate(async () => {
+    const fn = await getResource(activity.function.ShouldScrollToActivity)
+
+    if (!withoutActivity && fn?.()) {
+      return
+    }
+
     if (lastHref !== window.location.href) {
       startScrollHeightCheck()
     }

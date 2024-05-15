@@ -36,6 +36,7 @@
   export let message: DisplayActivityMessage
   export let parentMessage: DisplayActivityMessage | undefined = undefined
 
+  export let viewport: HTMLElement | undefined = undefined
   export let viewlet: ActivityMessageViewlet | undefined = undefined
   export let person: Person | undefined = undefined
   export let actions: Action[] = []
@@ -72,15 +73,44 @@
       menuActionIds = res.map(({ _id }) => _id)
     })
 
+  const maxScrollAttempt = 10
+
+  let scrollAttempts = 0
+
+  function isMessageInViewport (el: HTMLElement): boolean {
+    const rect = el.getBoundingClientRect()
+    const containerRect = viewport?.getBoundingClientRect() ?? document.body.getBoundingClientRect()
+
+    return (
+      rect.top > 0 &&
+      rect.top < containerRect.bottom &&
+      rect.bottom > containerRect.top + 100 &&
+      rect.bottom < containerRect.bottom
+    )
+  }
+
   function scrollToMessage (): void {
-    if (element != null && shouldScroll) {
-      element.scrollIntoView({ behavior: 'auto', block: 'end' })
+    if (element == null || !shouldScroll) {
+      return
+    }
+
+    element.scrollIntoView({ behavior: 'auto', block: 'end' })
+    scrollAttempts++
+
+    const isVisible = isMessageInViewport(element)
+
+    if (!isVisible && scrollAttempts < maxScrollAttempt) {
+      setTimeout(scrollToMessage, 50)
+    } else {
       shouldScroll = false
     }
   }
 
   $: if (element != null && shouldScroll) {
-    setTimeout(scrollToMessage, 100)
+    setTimeout(() => {
+      scrollAttempts = 0
+      scrollToMessage()
+    }, 50)
   }
 
   function handleActionsOpened (): void {
@@ -212,7 +242,7 @@
 <style lang="scss">
   @keyframes highlight {
     50% {
-      background-color: var(--global-ui-highlight-BackgroundColor);
+      background-color: var(--global-ui-hover-highlight-BackgroundColor);
     }
   }
 
