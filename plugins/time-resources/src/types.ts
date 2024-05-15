@@ -50,22 +50,22 @@ export const todoPriorities: Record<number, ToDoPrioritiesItem> = {
     name: 'no-priority'
   },
   [ToDoPriority.Low]: {
-    label: time.string.LowPriority,
+    label: time.string.Low,
     shortLabel: time.string.Low,
     name: 'low'
   },
   [ToDoPriority.Medium]: {
-    label: time.string.MediumPriority,
+    label: time.string.Medium,
     shortLabel: time.string.Medium,
     name: 'medium'
   },
   [ToDoPriority.High]: {
-    label: time.string.HighPriority,
+    label: time.string.High,
     shortLabel: time.string.High,
     name: 'high'
   },
   [ToDoPriority.Urgent]: {
-    label: time.string.UrgentPriority,
+    label: time.string.Urgent,
     shortLabel: time.string.Urgent,
     name: 'urgent'
   }
