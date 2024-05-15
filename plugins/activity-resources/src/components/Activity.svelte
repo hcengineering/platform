@@ -113,6 +113,7 @@
           value: message,
           hideLink: true,
           viewport: boundary,
+          doc: object,
           type: canGroup ? 'short' : 'default'
         }}
         {#if selectedMessageId}

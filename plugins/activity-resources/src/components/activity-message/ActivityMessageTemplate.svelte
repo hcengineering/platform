@@ -24,7 +24,6 @@
   import { getClient } from '@hcengineering/presentation'
   import { Action, Icon, Label } from '@hcengineering/ui'
   import { getActions, restrictionStore, showMenu } from '@hcengineering/view-resources'
-  import { tick } from 'svelte'
 
   import ReactionsPresenter from '../reactions/ReactionsPresenter.svelte'
   import ActivityMessagePresenter from './ActivityMessagePresenter.svelte'
@@ -74,42 +73,44 @@
       menuActionIds = res.map(({ _id }) => _id)
     })
 
-  const maxScrollCount = 10
+  const maxScrollAttempt = 10
 
-  let scrollCount = 0
-  let clearTimer: any
+  let scrollAttempts = 0
 
-  function isMessageInViewport (el: HTMLElement) {
+  function isMessageInViewport (el: HTMLElement): boolean {
     const rect = el.getBoundingClientRect()
+    const containerRect = viewport?.getBoundingClientRect() ?? document.body.getBoundingClientRect()
 
-    return rect.top >= 0 && rect.bottom <= (viewport?.clientHeight ?? window.innerHeight)
+    return (
+      rect.top > 0 &&
+      rect.top < containerRect.bottom &&
+      rect.bottom > containerRect.top + 100 &&
+      rect.bottom < containerRect.bottom
+    )
   }
 
-  async function scrollToMessage () {
+  function scrollToMessage (): void {
     if (element == null || !shouldScroll) {
       return
     }
 
     element.scrollIntoView({ behavior: 'auto', block: 'end' })
-    scrollCount++
+    scrollAttempts++
 
     const isVisible = isMessageInViewport(element)
 
-    if (!isVisible && scrollCount < maxScrollCount) {
-      shouldScroll = true
-      await tick()
-      void scrollToMessage()
+    if (!isVisible && scrollAttempts < maxScrollAttempt) {
+      setTimeout(() => scrollToMessage, 50)
     } else {
       shouldScroll = false
     }
   }
 
   $: if (element != null && shouldScroll) {
-    clearTimeout(clearTimer)
-    clearTimer = setTimeout(() => {
-      scrollCount = 0
-      void scrollToMessage()
-    }, 100)
+    setTimeout(() => {
+      scrollAttempts = 0
+      scrollToMessage()
+    }, 50)
   }
 
   function handleActionsOpened (): void {
