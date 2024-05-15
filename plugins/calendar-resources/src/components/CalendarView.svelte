@@ -39,7 +39,7 @@
     getMonday,
     showPopup
   } from '@hcengineering/ui'
-  import { CalendarMode, DayCalendar, calendarStore, hidePrivateEvents } from '../index'
+  import { CalendarMode, DayCalendar, calendarByIdStore, hidePrivateEvents } from '../index'
   import calendar from '../plugin'
   import Day from './Day.svelte'
 
@@ -140,7 +140,7 @@
     )
   }
   $: update(_class, query, calendars, options)
-  $: visible = hidePrivateEvents(raw, $calendarStore)
+  $: visible = hidePrivateEvents(raw, $calendarByIdStore)
   $: objects = getAllEvents(visible, from, to)
 
   function inRange (start: Date, end: Date, startPeriod: Date, period: 'day' | 'hour'): boolean {
@@ -276,7 +276,7 @@
   function clear (dragItem: Doc | undefined) {
     if (dragItem === undefined) {
       raw = raw.filter((p) => p._id !== dragItemId)
-      visible = hidePrivateEvents(raw, $calendarStore)
+      visible = hidePrivateEvents(raw, $calendarByIdStore)
       objects = getAllEvents(visible, from, to)
     }
   }

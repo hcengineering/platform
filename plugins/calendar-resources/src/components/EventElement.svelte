@@ -19,7 +19,7 @@
   import { Component, MILLISECONDS_IN_MINUTE, showPopup, tooltip } from '@hcengineering/ui'
   import view, { ObjectEditor } from '@hcengineering/view'
   import { showMenu } from '@hcengineering/view-resources'
-  import { calendarStore, isVisible } from '../utils'
+  import { calendarByIdStore, isVisible } from '../utils'
   import EventPresenter from './EventPresenter.svelte'
 
   export let event: Event
@@ -48,7 +48,7 @@
 
   let div: HTMLDivElement
 
-  $: visible = isVisible(event, $calendarStore)
+  $: visible = isVisible(event, $calendarByIdStore)
 
   function contextMenu (e: MouseEvent): void {
     showMenu(e, { object: event })

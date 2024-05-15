@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import calendar, { Calendar, Event, getAllEvents } from '@hcengineering/calendar'
-  import { calendarStore } from '@hcengineering/calendar-resources'
+  import calendar, { Event, getAllEvents } from '@hcengineering/calendar'
+  import { calendarByIdStore } from '@hcengineering/calendar-resources'
   import { Person, PersonAccount } from '@hcengineering/contact'
   import core, {
     Account,
@@ -32,9 +32,9 @@
   import { Asset } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Project } from '@hcengineering/task'
+  import { ToDo, WorkSlot } from '@hcengineering/time'
   import { Icon, tooltip } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { ToDo, WorkSlot } from '@hcengineering/time'
   import time from '../../../plugin'
   import TimePresenter from '../../presenters/TimePresenter.svelte'
   import WithTeamData from '../WithTeamData.svelte'
@@ -51,7 +51,6 @@
   const me = (getCurrentAccount() as PersonAccount).person
 
   let project: Project | undefined
-  let calendars: IdMap<Calendar> = new Map()
   let personAccounts: PersonAccount[] = []
   let slots: WorkSlot[] = []
   let events: Event[] = []
@@ -145,7 +144,6 @@
   {fromDate}
   {toDate}
   bind:project
-  bind:calendars
   bind:personAccounts
   bind:todos
   bind:slots
@@ -162,9 +160,8 @@
       todos,
       getAllEvents(allEvents, dayFrom, dayTo),
       personAccounts,
-      calendars,
       me,
-      $calendarStore
+      $calendarByIdStore
     )}
     {@const gitem = grouped.find((it) => it.user === person)}
     {@const planned = gitem?.mappings.reduce((it, val) => it + val.total, 0) ?? 0}

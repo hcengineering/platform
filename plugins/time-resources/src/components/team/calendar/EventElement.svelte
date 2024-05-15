@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import calendar, { CalendarEventPresenter, Event } from '@hcengineering/calendar'
-  import { EventPresenter, calendarStore, isVisible } from '@hcengineering/calendar-resources'
+  import { EventPresenter, calendarByIdStore, isVisible } from '@hcengineering/calendar-resources'
   import { Doc } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Component, MILLISECONDS_IN_MINUTE, showPopup, tooltip } from '@hcengineering/ui'
@@ -47,7 +47,7 @@
 
   let div: HTMLDivElement
 
-  $: visible = isVisible(event, $calendarStore)
+  $: visible = isVisible(event, $calendarByIdStore)
 
   function onContext (e: MouseEvent): void {
     showMenu(e, { object: event })
