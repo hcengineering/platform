@@ -545,7 +545,25 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     const newQuery = { ...query }
     const account = await getUser(this.storage, ctx)
     if (!isSystem(account)) {
-      newQuery.spaces = this.getAllAllowedSpaces(account, true)
+      const allSpaces = this.getAllAllowedSpaces(account, true)
+      if (query.classes !== undefined) {
+        const res = new Set<Ref<Space>>()
+        const passedDomains = new Set<string>()
+        for (const _class of query.classes) {
+          const domain = this.storage.hierarchy.getDomain(_class)
+          if (passedDomains.has(domain)) {
+            continue
+          }
+          passedDomains.add(domain)
+          const spaces = await this.filterByDomain(domain, allSpaces)
+          for (const space of spaces) {
+            res.add(space)
+          }
+        }
+        newQuery.spaces = [...res]
+      } else {
+        newQuery.spaces = allSpaces
+      }
     }
     const result = await this.provideSearchFulltext(ctx, newQuery, options)
     return result
