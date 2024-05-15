@@ -13,7 +13,7 @@ export class ChannelPage {
   readonly channelName = (channel: string): Locator => this.page.getByText('general random').getByText(channel)
   readonly channelTab = (): Locator => this.page.getByRole('link', { name: 'Channels' }).getByRole('button')
   readonly channelTable = (): Locator => this.page.locator('[class="antiTable metaColumn highlightRows"]')
-  readonly channel  = (channel: string): Locator => this.page.getByRole('button', { name: channel })
+  readonly channel = (channel: string): Locator => this.page.getByRole('button', { name: channel })
 
   async sendMessage (message: string): Promise<void> {
     await this.inputMessage().fill(message)
@@ -52,13 +52,12 @@ export class ChannelPage {
       await expect(this.channelTable()).not.toContainText(channel)
     }
   }
-  
+
   async checkIfMessageExist (messageExists: boolean): Promise<void> {
     if (messageExists) {
-    await expect(this.textMessage()).toBeVisible()
-    }
-    else {
-    await expect(this.textMessage()).toBeHidden()
+      await expect(this.textMessage()).toBeVisible()
+    } else {
+      await expect(this.textMessage()).toBeHidden()
     }
   }
 }

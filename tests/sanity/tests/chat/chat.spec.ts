@@ -18,9 +18,8 @@ test.describe('channel tests', () => {
   let newUser2: SignUpData
   let data: { workspaceName: string, userName: string, firstName: string, lastName: string, channelName: string }
 
-
   test.beforeEach(async ({ page, request }) => {
-    data = generateTestData();
+    data = generateTestData()
     newUser2 = {
       firstName: faker.person.firstName(),
       lastName: faker.person.lastName(),
@@ -47,12 +46,12 @@ test.describe('channel tests', () => {
     await channelPage.checkIfChannelDefaultExist(true, data.channelName)
     await channelPage.sendMessage('Test message')
     await channelPage.checkMessageExist('Test message', true)
-    await channelPage.clickChannel("general")
-    await channelPage.checkMessageExist("Test message", false)
+    await channelPage.clickChannel('general')
+    await channelPage.checkMessageExist('Test message', false)
     await channelPage.clickChannel(data.channelName)
-    await channelPage.checkMessageExist("Test message", true)
+    await channelPage.checkMessageExist('Test message', true)
     await page.reload()
-    await channelPage.checkMessageExist("Test message", true)
+    await channelPage.checkMessageExist('Test message', true)
   })
 
   test('create new public channel and check if the messages stays on it', async ({ browser, page }) => {
@@ -63,12 +62,12 @@ test.describe('channel tests', () => {
     await channelPage.checkIfChannelDefaultExist(true, data.channelName)
     await channelPage.sendMessage('Test message')
     await channelPage.checkMessageExist('Test message', true)
-    await channelPage.clickChannel("general")
-    await channelPage.checkMessageExist("Test message", false)
+    await channelPage.clickChannel('general')
+    await channelPage.checkMessageExist('Test message', false)
     await channelPage.clickChannel(data.channelName)
-    await channelPage.checkMessageExist("Test message", true)
+    await channelPage.checkMessageExist('Test message', true)
     await page.reload()
-    await channelPage.checkMessageExist("Test message", true)
+    await channelPage.checkMessageExist('Test message', true)
   })
 
   test('create new private channel tests and check if the new user have access to it', async ({ browser, page }) => {
