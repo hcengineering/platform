@@ -23,6 +23,7 @@ import { chunterId } from '@hcengineering/chunter'
 import client, { clientId } from '@hcengineering/client'
 import contactPlugin, { contactId } from '@hcengineering/contact'
 import { documentId } from '@hcengineering/document'
+import { driveId } from '@hcengineering/drive'
 import gmail, { gmailId } from '@hcengineering/gmail'
 import guest, { guestId } from '@hcengineering/guest'
 import { hrId } from '@hcengineering/hr'
@@ -35,7 +36,6 @@ import { recruitId } from '@hcengineering/recruit'
 import rekoni from '@hcengineering/rekoni'
 import { requestId } from '@hcengineering/request'
 import { settingId } from '@hcengineering/setting'
-import { storageId } from '@hcengineering/storage'
 import { supportId } from '@hcengineering/support'
 import { tagsId } from '@hcengineering/tags'
 import { taskId } from '@hcengineering/task'
@@ -57,6 +57,7 @@ import '@hcengineering/calendar-assets'
 import '@hcengineering/chunter-assets'
 import '@hcengineering/contact-assets'
 import '@hcengineering/document-assets'
+import '@hcengineering/drive-assets'
 import '@hcengineering/gmail-assets'
 import '@hcengineering/guest-assets'
 import '@hcengineering/hr-assets'
@@ -68,7 +69,6 @@ import '@hcengineering/preference-assets'
 import '@hcengineering/recruit-assets'
 import '@hcengineering/request-assets'
 import '@hcengineering/setting-assets'
-import '@hcengineering/storage-assets'
 import '@hcengineering/support-assets'
 import '@hcengineering/tags-assets'
 import '@hcengineering/task-assets'
@@ -123,6 +123,7 @@ function configureI18n(): void {
    addStringsLoader(calendarId, async (lang: string) => await import(`@hcengineering/calendar-assets/lang/${lang}.json`))
    addStringsLoader(chunterId, async (lang: string) => await import(`@hcengineering/chunter-assets/lang/${lang}.json`))
    addStringsLoader(contactId, async (lang: string) => await import(`@hcengineering/contact-assets/lang/${lang}.json`))
+   addStringsLoader(driveId, async (lang: string) => await import(`@hcengineering/drive-assets/lang/${lang}.json`))
    addStringsLoader(gmailId, async (lang: string) => await import(`@hcengineering/gmail-assets/lang/${lang}.json`))
    addStringsLoader(hrId, async (lang: string) => await import(`@hcengineering/hr-assets/lang/${lang}.json`))
    addStringsLoader(inventoryId, async (lang: string) => await import(`@hcengineering/inventory-assets/lang/${lang}.json`))
@@ -133,7 +134,6 @@ function configureI18n(): void {
    addStringsLoader(recruitId, async (lang: string) => await import(`@hcengineering/recruit-assets/lang/${lang}.json`))
    addStringsLoader(requestId, async (lang: string) => await import(`@hcengineering/request-assets/lang/${lang}.json`))
    addStringsLoader(settingId, async (lang: string) => await import(`@hcengineering/setting-assets/lang/${lang}.json`))
-   addStringsLoader(storageId, async (lang: string) => await import(`@hcengineering/storage-assets/lang/${lang}.json`))
    addStringsLoader(supportId, async (lang: string) => await import(`@hcengineering/support-assets/lang/${lang}.json`))
    addStringsLoader(tagsId, async (lang: string) => await import(`@hcengineering/tags-assets/lang/${lang}.json`))
    addStringsLoader(taskId, async (lang: string) => await import(`@hcengineering/task-assets/lang/${lang}.json`))
@@ -231,11 +231,11 @@ export async function configurePlatform() {
   addLocation(hrId, () => import(/* webpackChunkName: "hr" */ '@hcengineering/hr-resources'))
   addLocation(bitrixId, () => import(/* webpackChunkName: "bitrix" */ '@hcengineering/bitrix-resources'))
   addLocation(requestId, () => import(/* webpackChunkName: "request" */ '@hcengineering/request-resources'))
-  addLocation(storageId, () => import(/* webpackChunkName: "storage" */ '@hcengineering/storage-resources'))
   addLocation(supportId, () => import(/* webpackChunkName: "support" */ '@hcengineering/support-resources'))
   addLocation(documentId, () => import(/* webpackChunkName: "document" */ '@hcengineering/document-resources'))
   addLocation(guestId, () => import(/* webpackChunkName: "guest" */ '@hcengineering/guest-resources'))
   addLocation(timeId, () => import(/* webpackChunkName: "time" */ '@hcengineering/time-resources'))
+  addLocation(driveId, () => import(/* webpackChunkName: "drive" */ '@hcengineering/drive-resources'))
 
   setMetadata(client.metadata.FilterModel, true)
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])

@@ -13,13 +13,12 @@
 // limitations under the License.
 //
 
-import { Doc, TypedSpace } from '@hcengineering/core'
+import { type Resources } from '@hcengineering/platform'
 
-/** @public */
-export interface Storage extends TypedSpace {}
+import CreateDrive from './components/CreateDrive.svelte'
 
-/** @public */
-export interface Folder extends Doc {}
-
-/** @public */
-export interface File extends Doc {}
+export default async (): Promise<Resources> => ({
+  component: {
+    CreateDrive
+  }
+})

@@ -1658,23 +1658,23 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/storage",
-      "projectFolder": "plugins/storage",
+      "packageName": "@hcengineering/drive",
+      "projectFolder": "plugins/drive",
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/storage-assets",
-      "projectFolder": "plugins/storage-assets",
+      "packageName": "@hcengineering/drive-assets",
+      "projectFolder": "plugins/drive-assets",
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/storage-resources",
-      "projectFolder": "plugins/storage-resources",
+      "packageName": "@hcengineering/drive-resources",
+      "projectFolder": "plugins/drive-resources",
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/model-storage",
-      "projectFolder": "models/storage",
+      "packageName": "@hcengineering/model-drive",
+      "projectFolder": "models/drive",
       "shouldPublish": false
     }
   ]

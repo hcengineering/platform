@@ -13,12 +13,14 @@
 // limitations under the License.
 //
 
-import { type Resources } from '@hcengineering/platform'
+import { type IntlString, mergeIds } from '@hcengineering/platform'
+import drive, { driveId } from '@hcengineering/drive'
 
-import CreateStorage from './components/CreateStorage.svelte'
-
-export default async (): Promise<Resources> => ({
-  component: {
-    CreateStorage
+export default mergeIds(driveId, drive, {
+  component: {},
+  string: {
+    CreateDrive: '' as IntlString,
+    EditDrive: '' as IntlString,
+    RoleLabel: '' as IntlString
   }
 })

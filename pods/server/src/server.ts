@@ -103,6 +103,7 @@ import { calendarId } from '@hcengineering/calendar'
 import { chunterId } from '@hcengineering/chunter'
 import { contactId } from '@hcengineering/contact'
 import { documentId } from '@hcengineering/document'
+import { driveId } from '@hcengineering/drive'
 import { gmailId } from '@hcengineering/gmail'
 import { hrId } from '@hcengineering/hr'
 import { inventoryId } from '@hcengineering/inventory'
@@ -113,7 +114,6 @@ import { preferenceId } from '@hcengineering/preference'
 import { recruitId } from '@hcengineering/recruit'
 import { requestId } from '@hcengineering/request'
 import { settingId } from '@hcengineering/setting'
-import { storageId } from '@hcengineering/storage'
 import { supportId } from '@hcengineering/support'
 import { tagsId } from '@hcengineering/tags'
 import { taskId } from '@hcengineering/task'
@@ -135,6 +135,7 @@ import calendarEn from '@hcengineering/calendar-assets/lang/en.json'
 import chunterEn from '@hcengineering/chunter-assets/lang/en.json'
 import contactEn from '@hcengineering/contact-assets/lang/en.json'
 import documentEn from '@hcengineering/document-assets/lang/en.json'
+import driveEn from '@hcengineering/drive-assets/lang/en.json'
 import gmailEn from '@hcengineering/gmail-assets/lang/en.json'
 import hrEn from '@hcengineering/hr-assets/lang/en.json'
 import inventoryEn from '@hcengineering/inventory-assets/lang/en.json'
@@ -144,7 +145,6 @@ import preferenceEn from '@hcengineering/preference-assets/lang/en.json'
 import recruitEn from '@hcengineering/recruit-assets/lang/en.json'
 import requestEn from '@hcengineering/request-assets/lang/en.json'
 import settingEn from '@hcengineering/setting-assets/lang/en.json'
-import storageEn from '@hcengineering/storage-assets/lang/en.json'
 import supportEn from '@hcengineering/support-assets/lang/en.json'
 import tagsEn from '@hcengineering/tags-assets/lang/en.json'
 import taskEn from '@hcengineering/task-assets/lang/en.json'
@@ -166,7 +166,6 @@ addStringsLoader(contactId, async (lang: string) => contactEn)
 addStringsLoader(recruitId, async (lang: string) => recruitEn)
 addStringsLoader(activityId, async (lang: string) => activityEn)
 addStringsLoader(settingId, async (lang: string) => settingEn)
-addStringsLoader(storageId, async (lang: string) => storageEn)
 addStringsLoader(supportId, async (lang: string) => supportEn)
 addStringsLoader(telegramId, async (lang: string) => telegramEn)
 addStringsLoader(leadId, async (lang: string) => leadEn)
@@ -184,6 +183,7 @@ addStringsLoader(hrId, async (lang: string) => hrEn)
 addStringsLoader(bitrixId, async (lang: string) => bitrixEn)
 addStringsLoader(requestId, async (lang: string) => requestEn)
 addStringsLoader(documentId, async (lang: string) => documentEn)
+addStringsLoader(driveId, async (lang: string) => driveEn)
 
 /**
  * @public

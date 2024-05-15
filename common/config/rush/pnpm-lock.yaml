@@ -146,6 +146,15 @@ dependencies:
   '@rush-temp/document-resources':
     specifier: file:./projects/document-resources.tgz
     version: file:projects/document-resources.tgz(@tiptap/pm@2.2.4)(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
+  '@rush-temp/drive':
+    specifier: file:./projects/drive.tgz
+    version: file:projects/drive.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2)
+  '@rush-temp/drive-assets':
+    specifier: file:./projects/drive-assets.tgz
+    version: file:projects/drive-assets.tgz(esbuild@0.20.1)(ts-node@10.9.2)
+  '@rush-temp/drive-resources':
+    specifier: file:./projects/drive-resources.tgz
+    version: file:projects/drive-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2)
   '@rush-temp/elastic':
     specifier: file:./projects/elastic.tgz
     version: file:projects/elastic.tgz(@types/node@20.11.19)(esbuild@0.20.1)
@@ -254,6 +263,9 @@ dependencies:
   '@rush-temp/model-document':
     specifier: file:./projects/model-document.tgz
     version: file:projects/model-document.tgz
+  '@rush-temp/model-drive':
+    specifier: file:./projects/model-drive.tgz
+    version: file:projects/model-drive.tgz
   '@rush-temp/model-gmail':
     specifier: file:./projects/model-gmail.tgz
     version: file:projects/model-gmail.tgz
@@ -19610,6 +19622,112 @@ packages:
       - ts-node
     dev: false
 
+  file:projects/drive-assets.tgz(esbuild@0.20.1)(ts-node@10.9.2):
+    resolution: {integrity: sha512-nSFnPSUpwp1cjsI5P3PnJmba3E3A9Cz4c2ZuiL51QjbtuAY7ctFZsveQrV6sfbfS/c+vvoBfw+WXcBXcPrlnXA==, tarball: file:projects/drive-assets.tgz}
+    id: file:projects/drive-assets.tgz
+    name: '@rush-temp/drive-assets'
+    version: 0.0.0
+    dependencies:
+      '@types/jest': 29.5.12
+      '@types/node': 20.11.19
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      prettier: 3.2.5
+      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - ts-node
+    dev: false
+
+  file:projects/drive-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
+    resolution: {integrity: sha512-BBdM7ceE8ceFW4/E1ErlagEphl8+HiEz/LVNpH52NOttS9antEUfXiJQbN1vmL1ylJCPBNiuRhdIAZd7AVPKRw==, tarball: file:projects/drive-resources.tgz}
+    id: file:projects/drive-resources.tgz
+    name: '@rush-temp/drive-resources'
+    version: 0.0.0
+    dependencies:
+      '@types/jest': 29.5.12
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      eslint-plugin-svelte: 2.35.1(eslint@8.56.0)(svelte@4.2.12)(ts-node@10.9.2)
+      fast-equals: 5.0.1
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      prettier: 3.2.5
+      prettier-plugin-svelte: 3.2.2(prettier@3.2.5)(svelte@4.2.12)
+      sass: 1.71.1
+      svelte: 4.2.12
+      svelte-check: 3.6.9(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)
+      svelte-eslint-parser: 0.33.1(svelte@4.2.12)
+      svelte-loader: 3.2.0(svelte@4.2.12)
+      svelte-preprocess: 5.1.3(postcss-load-config@4.0.2)(postcss@8.4.35)(sass@1.71.1)(svelte@4.2.12)(typescript@5.3.3)
+      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@types/node'
+      - babel-jest
+      - babel-plugin-macros
+      - coffeescript
+      - esbuild
+      - less
+      - node-notifier
+      - postcss
+      - postcss-load-config
+      - pug
+      - stylus
+      - sugarss
+      - supports-color
+      - ts-node
+    dev: false
+
+  file:projects/drive.tgz(@types/node@20.11.19)(esbuild@0.20.1)(ts-node@10.9.2):
+    resolution: {integrity: sha512-f6zcKbTeUTjfaDd2cJhVkPPbwxlaiMEWKVk69GAzcNmdtTPbT8avCQ+rAY8USH+AD+XpAllPnR0qtQf7KgRm5g==, tarball: file:projects/drive.tgz}
+    id: file:projects/drive.tgz
+    name: '@rush-temp/drive'
+    version: 0.0.0
+    dependencies:
+      '@types/jest': 29.5.12
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      jest: 29.7.0(@types/node@20.11.19)(ts-node@10.9.2)
+      prettier: 3.2.5
+      ts-jest: 29.1.2(esbuild@0.20.1)(jest@29.7.0)(typescript@5.3.3)
+      typescript: 5.3.3
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@jest/types'
+      - '@types/node'
+      - babel-jest
+      - babel-plugin-macros
+      - esbuild
+      - node-notifier
+      - supports-color
+      - ts-node
+    dev: false
+
   file:projects/elastic.tgz(@types/node@20.11.19)(esbuild@0.20.1):
     resolution: {integrity: sha512-iUKt8+1LhjnXTCYZv0DssFNwm1pHB+ioIePMutpYZrtO7HvwaZN4kHVneHjk5hA0EeE96JOkCwgYcPka35UvuA==, tarball: file:projects/elastic.tgz}
     id: file:projects/elastic.tgz
@@ -20553,7 +20671,7 @@ packages:
     dev: false
 
   file:projects/model-all.tgz:
-    resolution: {integrity: sha512-2OrA8LVIJi2SmLHH/eIPGz3aWSD38swpk1SGyko75AbEoyJAXU6NHR8eFLbCGJIEOhF889Z9aJmXtAkuI7zpbw==, tarball: file:projects/model-all.tgz}
+    resolution: {integrity: sha512-soNLtiDtGB4DJfaQC9sNrENnqe/Svvaq2VFqVF14gjjx6+AC40fzAdUqaWZHo2o72LOqYRTSVQNYkRBsKqoJAg==, tarball: file:projects/model-all.tgz}
     name: '@rush-temp/model-all'
     version: 0.0.0
     dependencies:
@@ -20724,6 +20842,24 @@ packages:
       eslint-plugin-promise: 6.1.1(eslint@8.56.0)
       prettier: 3.2.5
       prettier-plugin-svelte: 3.2.1(prettier@3.2.5)(svelte@4.2.11)
+      typescript: 5.3.3
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  file:projects/model-drive.tgz:
+    resolution: {integrity: sha512-5pICbxesh3QPsIPXb5WomVv9bNtv4AzH2zdTWy2Tnbxc6j0iLFQvxLyZhv6ydzroZTyZGanfGp7NrVwC222ptQ==, tarball: file:projects/model-drive.tgz}
+    name: '@rush-temp/model-drive'
+    version: 0.0.0
+    dependencies:
+      '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)
+      '@typescript-eslint/parser': 6.21.0(eslint@8.56.0)(typescript@5.3.3)
+      eslint: 8.56.0
+      eslint-config-standard-with-typescript: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0)(eslint-plugin-import@2.29.1)(eslint-plugin-n@15.7.0)(eslint-plugin-promise@6.1.1)(eslint@8.56.0)(typescript@5.3.3)
+      eslint-plugin-import: 2.29.1(eslint@8.56.0)
+      eslint-plugin-n: 15.7.0(eslint@8.56.0)
+      eslint-plugin-promise: 6.1.1(eslint@8.56.0)
+      prettier: 3.2.5
       typescript: 5.3.3
     transitivePeerDependencies:
       - supports-color
@@ -22252,7 +22388,7 @@ packages:
     dev: false
 
   file:projects/prod.tgz(bufferutil@4.0.8)(sass@1.71.1)(ts-node@10.9.2)(utf-8-validate@6.0.3):
-    resolution: {integrity: sha512-ApNm3LLGsu8aU/ySQbpHVWR+td2eUUeCzgjnkwdw83E4QZ9mFj8I9hTN0z4gC32PAOFdxRt6P0J8vA78WBNfGw==, tarball: file:projects/prod.tgz}
+    resolution: {integrity: sha512-bKs2TKH4PWmMHqOvZ0AnVGxZPUW/aoR0ZD5tjwAbVZvJdSAszi6RKEnlxWftEYrujB96qzg+PT/s9NcoSm97Dw==, tarball: file:projects/prod.tgz}
     id: file:projects/prod.tgz
     name: '@rush-temp/prod'
     version: 0.0.0

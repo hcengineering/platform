@@ -13,10 +13,13 @@
 // limitations under the License.
 //
 
-import { loadMetadata } from '@hcengineering/platform'
-import storage from '@hcengineering/storage'
+import { Doc, TypedSpace } from '@hcengineering/core'
 
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
-loadMetadata(storage.icon, {
-  Storage: `${icons}#storage`
-})
+/** @public */
+export interface Drive extends TypedSpace {}
+
+/** @public */
+export interface Folder extends Doc<Drive> {}
+
+/** @public */
+export interface File extends Doc<Drive> {}

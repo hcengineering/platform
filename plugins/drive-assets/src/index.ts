@@ -13,9 +13,10 @@
 // limitations under the License.
 //
 
-import { storageId, storagePlugin } from './plugin'
+import { loadMetadata } from '@hcengineering/platform'
+import drive from '@hcengineering/drive'
 
-export * from './types'
-export { storageId }
-
-export default storagePlugin
+const icons = require('../assets/icons.svg') as string // eslint-disable-line
+loadMetadata(drive.icon, {
+  Drive: `${icons}#drive`
+})

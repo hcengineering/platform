@@ -13,14 +13,9 @@
 // limitations under the License.
 //
 
-import { type IntlString, mergeIds } from '@hcengineering/platform'
-import storage, { storageId } from '@hcengineering/storage'
+import { driveId, drivePlugin } from './plugin'
 
-export default mergeIds(storageId, storage, {
-  component: {},
-  string: {
-    CreateStorage: '' as IntlString,
-    EditStorage: '' as IntlString,
-    RoleLabel: '' as IntlString
-  }
-})
+export * from './types'
+export { driveId }
+
+export default drivePlugin

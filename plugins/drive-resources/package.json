@@ -1,5 +1,5 @@
 {
-  "name": "@hcengineering/storage-resources",
+  "name": "@hcengineering/drive-resources",
   "version": "0.6.0",
   "main": "src/index.ts",
   "author": "Hardcore Engineering Inc.",
@@ -42,7 +42,7 @@
     "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/core": "^0.6.28",
     "@hcengineering/attachment": "^0.6.9",
-    "@hcengineering/storage": "^0.6.0",
+    "@hcengineering/drive": "^0.6.0",
     "@hcengineering/contact-resources": "^0.6.0",
     "@hcengineering/presentation": "^0.6.2",
     "@hcengineering/ui": "^0.6.11",

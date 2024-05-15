@@ -28,14 +28,14 @@
     getCurrentAccount,
     WithLookup
   } from '@hcengineering/core'
+  import { Drive } from '@hcengineering/drive'
   import presentation, { Card, getClient, reduceCalls } from '@hcengineering/presentation'
-  import { Storage } from '@hcengineering/storage'
   import { EditBox, Label, Toggle } from '@hcengineering/ui'
   import { SpaceTypeSelector } from '@hcengineering/view-resources'
 
-  import storageRes from '../plugin'
+  import driveRes from '../plugin'
 
-  export let storage: Storage | undefined = undefined
+  export let drive: Drive | undefined = undefined
   export let namePlaceholder: string = ''
   export let descriptionPlaceholder: string = ''
 
@@ -43,17 +43,17 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  let name: string = storage?.name ?? namePlaceholder
-  let description: string = storage?.description ?? descriptionPlaceholder
-  let isPrivate: boolean = storage?.private ?? false
+  let name: string = drive?.name ?? namePlaceholder
+  let description: string = drive?.description ?? descriptionPlaceholder
+  let isPrivate: boolean = drive?.private ?? false
 
   let members: Ref<Account>[] =
-    storage?.members !== undefined ? hierarchy.clone(storage.members) : [getCurrentAccount()._id]
+    drive?.members !== undefined ? hierarchy.clone(drive.members) : [getCurrentAccount()._id]
   let owners: Ref<Account>[] =
-    storage?.owners !== undefined ? hierarchy.clone(storage.owners) : [getCurrentAccount()._id]
+    drive?.owners !== undefined ? hierarchy.clone(drive.owners) : [getCurrentAccount()._id]
   let rolesAssignment: RolesAssignment = {}
 
-  let typeId: Ref<SpaceType> | undefined = storage?.type ?? storageRes.spaceType.DefaultStorage
+  let typeId: Ref<SpaceType> | undefined = drive?.type ?? driveRes.spaceType.DefaultDrive
   let spaceType: WithLookup<SpaceType> | undefined
 
   $: void loadSpaceType(typeId)
@@ -65,7 +65,7 @@
           .findOne(core.class.SpaceType, { _id: id }, { lookup: { _id: { roles: core.class.Role } } })
         : undefined
 
-    if (storage === undefined || spaceType?.targetClass === undefined || spaceType?.$lookup?.roles === undefined) {
+    if (drive === undefined || spaceType?.targetClass === undefined || spaceType?.$lookup?.roles === undefined) {
       return
     }
 
@@ -73,11 +73,11 @@
   })
 
   function getRolesAssignment (): RolesAssignment {
-    if (storage === undefined || spaceType?.targetClass === undefined || spaceType?.$lookup?.roles === undefined) {
+    if (drive === undefined || spaceType?.targetClass === undefined || spaceType?.$lookup?.roles === undefined) {
       return {}
     }
 
-    const asMixin = hierarchy.as(storage, spaceType?.targetClass)
+    const asMixin = hierarchy.as(drive, spaceType?.targetClass)
 
     return spaceType.$lookup.roles.reduce<RolesAssignment>((prev, { _id }) => {
       prev[_id as Ref<Role>] = (asMixin as any)[_id] ?? []
@@ -87,14 +87,14 @@
   }
 
   async function handleSave (): Promise<void> {
-    if (storage === undefined) {
-      await createStorage()
+    if (drive === undefined) {
+      await createDrive()
     } else {
-      await updateStorage()
+      await updateDrive()
     }
   }
 
-  function getStorageData (): Omit<Data<Storage>, 'type'> {
+  function getDriveData (): Omit<Data<Drive>, 'type'> {
     return {
       name,
       description,
@@ -105,51 +105,51 @@
     }
   }
 
-  async function updateStorage (): Promise<void> {
-    if (storage === undefined) {
+  async function updateDrive (): Promise<void> {
+    if (drive === undefined) {
       return
     }
 
-    const storageData = getStorageData()
-    const update: DocumentUpdate<Storage> = {}
-    if (storageData.name !== storage?.name) {
-      update.name = storageData.name
+    const data = getDriveData()
+    const update: DocumentUpdate<Drive> = {}
+    if (data.name !== drive?.name) {
+      update.name = data.name
     }
-    if (storageData.description !== storage?.description) {
-      update.description = storageData.description
+    if (data.description !== drive?.description) {
+      update.description = data.description
     }
-    if (storageData.private !== storage?.private) {
-      update.private = storageData.private
+    if (data.private !== drive?.private) {
+      update.private = data.private
     }
-    if (storageData.members.length !== storage?.members.length) {
-      update.members = storageData.members
+    if (data.members.length !== drive?.members.length) {
+      update.members = data.members
     } else {
-      for (const member of storageData.members) {
-        if (storage.members.findIndex((p) => p === member) === -1) {
-          update.members = storageData.members
+      for (const member of data.members) {
+        if (drive.members.findIndex((p) => p === member) === -1) {
+          update.members = data.members
           break
         }
       }
     }
-    if (storageData.owners?.length !== storage?.owners?.length) {
-      update.owners = storageData.owners
+    if (data.owners?.length !== drive?.owners?.length) {
+      update.owners = data.owners
     } else {
-      for (const owner of storageData.owners ?? []) {
-        if (storage.owners?.findIndex((p) => p === owner) === -1) {
-          update.owners = storageData.owners
+      for (const owner of data.owners ?? []) {
+        if (drive.owners?.findIndex((p) => p === owner) === -1) {
+          update.owners = data.owners
           break
         }
       }
     }
 
     if (Object.keys(update).length > 0) {
-      await client.update(storage, update)
+      await client.update(drive, update)
     }
 
     if (!deepEqual(rolesAssignment, getRolesAssignment())) {
       await client.updateMixin(
-        storage._id,
-        storageRes.class.Storage,
+        drive._id,
+        driveRes.class.Drive,
         core.space.Space,
         rolesAssignment
       )
@@ -158,29 +158,29 @@
     close()
   }
 
-  async function createStorage (): Promise<void> {
+  async function createDrive (): Promise<void> {
     if (typeId === undefined || spaceType?.targetClass === undefined) {
       return
     }
 
-    const storageId = generateId<Storage>()
-    const storageData = getStorageData()
+    const driveId = generateId<Drive>()
+    const driveData = getDriveData()
 
-    await client.createDoc(storageRes.class.Storage, core.space.Space, { ...storageData, type: typeId }, storageId)
+    await client.createDoc(driveRes.class.Drive, core.space.Space, { ...driveData, type: typeId }, driveId)
 
     // Create space type's mixin with roles assignments
     await client.createMixin(
-      storageId,
-      storageRes.class.Storage,
+      driveId,
+      driveRes.class.Drive,
       core.space.Space,
       spaceType.targetClass,
       rolesAssignment
     )
 
-    close(storageId)
+    close(driveId)
   }
 
-  function close (id?: Ref<Storage>): void {
+  function close (id?: Ref<Drive>): void {
     dispatch('close', id)
   }
 
@@ -229,8 +229,8 @@
 </script>
 
 <Card
-  label={storage ? storageRes.string.EditStorage : storageRes.string.CreateStorage}
-  okLabel={storage ? presentation.string.Create : presentation.string.Save}
+  label={drive ? driveRes.string.EditDrive : driveRes.string.CreateDrive}
+  okLabel={drive ? presentation.string.Create : presentation.string.Save}
   okAction={handleSave}
   {canSave}
   accentHeader
@@ -246,8 +246,8 @@
       </div>
 
       <SpaceTypeSelector
-        disabled={storage !== undefined}
-        descriptors={[storageRes.descriptor.StorageType]}
+        disabled={drive !== undefined}
+        descriptors={[driveRes.descriptor.DriveType]}
         type={typeId}
         focusIndex={4}
         kind="regular"
@@ -323,7 +323,7 @@
     {#each roles as role}
       <div class="antiGrid-row">
         <div class="antiGrid-row__header">
-          <Label label={storageRes.string.RoleLabel} params={{ role: role.name }} />
+          <Label label={driveRes.string.RoleLabel} params={{ role: role.name }} />
         </div>
         <AccountArrayEditor
           value={rolesAssignment?.[role._id] ?? []}

@@ -15,25 +15,25 @@
 
 import type { Ref } from '@hcengineering/core'
 import {} from '@hcengineering/core'
-import { storageId } from '@hcengineering/storage'
-import storage from '@hcengineering/storage-resources/src/plugin'
+import { driveId } from '@hcengineering/drive'
+import drive from '@hcengineering/drive-resources/src/plugin'
 import { type IntlString, mergeIds } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui'
 import { type Viewlet, type ActionCategory } from '@hcengineering/view'
 
-export default mergeIds(storageId, storage, {
+export default mergeIds(driveId, drive, {
   component: {
-    CreateStorage: '' as AnyComponent,
-    StorageSpacePresenter: '' as AnyComponent
+    CreateDrive: '' as AnyComponent,
+    DriveeSpacePresenter: '' as AnyComponent
   },
   viewlet: {
-    StorageTable: '' as Ref<Viewlet>
+    DriveTable: '' as Ref<Viewlet>
   },
   category: {
-    Storage: '' as Ref<ActionCategory>
+    Drive: '' as Ref<ActionCategory>
   },
   string: {
-    Storages: '' as IntlString,
+    Drives: '' as IntlString,
     Description: '' as IntlString
   }
 })

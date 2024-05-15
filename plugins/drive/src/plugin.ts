@@ -16,37 +16,37 @@
 import type { Class, Doc, Mixin, Ref, SpaceType, SpaceTypeDescriptor } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import { Storage } from './types'
+import { Drive } from './types'
 
 export * from './types'
 
 /**
  * @public
  */
-export const storageId = 'storage' as Plugin
+export const driveId = 'drive' as Plugin
 
-export const storagePlugin = plugin(storageId, {
+export const drivePlugin = plugin(driveId, {
   class: {
-    Storage: '' as Ref<Class<Storage>>
+    Drive: '' as Ref<Class<Drive>>
   },
   mixin: {
-    DefaultStorageTypeData: '' as Ref<Mixin<Storage>>
+    DefaultDriveTypeData: '' as Ref<Mixin<Drive>>
   },
   icon: {
     Storage: '' as Asset
   },
   app: {
-    Storage: '' as Ref<Doc>
+    Drive: '' as Ref<Doc>
   },
   string: {
-    Storage: '' as IntlString
+    Drive: '' as IntlString
   },
   descriptor: {
-    StorageType: '' as Ref<SpaceTypeDescriptor>
+    DriveType: '' as Ref<SpaceTypeDescriptor>
   },
   spaceType: {
-    DefaultStorage: '' as Ref<SpaceType>
+    DefaultDrive: '' as Ref<SpaceType>
   }
 })
 
-export default storagePlugin
+export default drivePlugin

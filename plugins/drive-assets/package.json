@@ -1,5 +1,5 @@
 {
-  "name": "@hcengineering/storage-assets",
+  "name": "@hcengineering/drive-assets",
   "version": "0.6.0",
   "main": "src/index.ts",
   "author": "Hardcore Engineering Inc.",
@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/storage": "^0.6.0"
+    "@hcengineering/drive": "^0.6.0"
   },
   "repository": "https://github.com/hcenginneing/anticrm",
   "publishConfig": {
