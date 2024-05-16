@@ -91,7 +91,7 @@ export class BlobClient {
 
   async pipeFromStorage (name: string, size: number): Promise<Buffer> {
     let written = 0
-    const chunkSize = 256 * 1024
+    const chunkSize = 1024 * 1024
     const chunks: Buffer[] = []
 
     // Use ranges to iterave through file with retry if required.
@@ -107,6 +107,9 @@ export class BlobClient {
           const chunk = Buffer.from(await response.arrayBuffer())
           chunks.push(chunk)
           written += chunk.length
+          if (size > 1024 * 1024) {
+            console.log('Downloaded', Math.round(written / (1024 * 1024)), 'Mb of', Math.round(size / (1024 * 1024)))
+          }
           break
         } catch (err: any) {
           if (i === 4) {

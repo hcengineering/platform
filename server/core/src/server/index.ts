@@ -197,7 +197,6 @@ export function createNullStorageFactory (): StorageAdapter {
     make: async (ctx, workspaceId: WorkspaceId) => {},
     remove: async (ctx, workspaceId: WorkspaceId, objectNames: string[]) => {},
     delete: async (ctx, workspaceId: WorkspaceId) => {},
-    list: async (ctx, workspaceId: WorkspaceId, prefix?: string) => [],
     listStream: async (ctx, workspaceId, prefix) => {
       return {
         next: async () => undefined,

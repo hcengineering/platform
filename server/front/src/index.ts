@@ -16,7 +16,7 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import { MeasureContext, WorkspaceId, metricsAggregate } from '@hcengineering/core'
-import { StorageAdapter } from '@hcengineering/server-core'
+import { StorageAdapter, removeAllObjects } from '@hcengineering/storage'
 import { Token, decodeToken } from '@hcengineering/server-token'
 import bp from 'body-parser'
 import cors from 'cors'
@@ -533,14 +533,7 @@ export function start (
 
       // TODO: Add support for related documents.
       // TODO: Move support of image resize/format change to separate place.
-      const extra = await config.storageAdapter.list(ctx, payload.workspace, uuid)
-      if (extra.length > 0) {
-        await config.storageAdapter.remove(
-          ctx,
-          payload.workspace,
-          Array.from(extra.entries()).map((it) => it[1]._id)
-        )
-      }
+      await removeAllObjects(ctx, config.storageAdapter, payload.workspace, uuid)
 
       res.status(200).send()
     } catch (error: any) {

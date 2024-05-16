@@ -34,9 +34,9 @@ export function startBackup (ctx: MeasureContext): void {
   }
 
   const storageAdapter: StorageAdapter = new MinioService({
-    endPoint: minioEndpoint,
+    endpoint: minioEndpoint,
     port: minioPort,
-    useSSL: false,
+    useSSL: 'false',
     accessKey: config.MinioAccessKey,
     secretKey: config.MinioSecretKey
   })

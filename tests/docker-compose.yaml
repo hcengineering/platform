@@ -45,9 +45,7 @@ services:
       - MONGO_URL=mongodb://mongodb:27018
       - TRANSACTOR_URL=ws://transactor:3334
       - ENDPOINT_URL=ws://localhost:3334
-      - MINIO_ENDPOINT=minio
-      - MINIO_ACCESS_KEY=minioadmin
-      - MINIO_SECRET_KEY=minioadmin
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
       - MODEL_ENABLED=*
   front:
     image: hardcoreeng/front
@@ -75,9 +73,7 @@ services:
       - TELEGRAM_URL=http://localhost:8086
       - COLLABORATOR_URL=ws://localhost:3079
       - COLLABORATOR_API_URL=http://localhost:3079
-      - MINIO_ENDPOINT=minio
-      - MINIO_ACCESS_KEY=minioadmin
-      - MINIO_SECRET_KEY=minioadmin
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
       - LAST_NAME_FIRST=true
   transactor:
     image: hardcoreeng/transactor
@@ -98,9 +94,7 @@ services:
       - MONGO_URL=mongodb://mongodb:27018
       - METRICS_CONSOLE=false
       - METRICS_FILE=metrics.txt
-      - MINIO_ENDPOINT=minio
-      - MINIO_ACCESS_KEY=minioadmin
-      - MINIO_SECRET_KEY=minioadmin  
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
       - REKONI_URL=http://rekoni:4005
       - FRONT_URL=http://localhost:8083
       - UPLOAD_URL=http://localhost:8083/files
@@ -122,9 +116,7 @@ services:
       - TRANSACTOR_URL=ws://transactor:3334
       - UPLOAD_URL=/files
       - MONGO_URL=mongodb://mongodb:27018
-      - MINIO_ENDPOINT=minio
-      - MINIO_ACCESS_KEY=minioadmin
-      - MINIO_SECRET_KEY=minioadmin
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
     restart: unless-stopped
   rekoni:
     image: hardcoreeng/rekoni-service

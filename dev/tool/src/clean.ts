@@ -73,9 +73,13 @@ export async function cleanWorkspace (
       attachments.map((it) => it.file).concat(contacts.map((it) => it.avatar).filter((it) => it) as string[])
     )
 
-    const minioList = await storageAdapter.list(ctx, workspaceId)
+    const minioList = await storageAdapter.listStream(ctx, workspaceId)
     const toClean: string[] = []
-    for (const mv of minioList) {
+    while (true) {
+      const mv = await minioList.next()
+      if (mv === undefined) {
+        break
+      }
       if (!files.has(mv._id)) {
         toClean.push(mv._id)
       }
@@ -158,10 +162,13 @@ export async function fixMinioBW (
 ): Promise<void> {
   console.log('try clean bw miniature for ', workspaceId.name)
   const from = new Date(new Date().setDate(new Date().getDate() - 7)).getTime()
-  const list = await storageService.list(ctx, workspaceId)
-  console.log('found', list.length)
+  const list = await storageService.listStream(ctx, workspaceId)
   let removed = 0
-  for (const obj of list) {
+  while (true) {
+    const obj = await list.next()
+    if (obj === undefined) {
+      break
+    }
     if (obj.modifiedOn < from) continue
     if ((obj._id as string).includes('%size%')) {
       await storageService.remove(ctx, workspaceId, [obj._id])

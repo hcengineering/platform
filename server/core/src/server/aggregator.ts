@@ -93,13 +93,6 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
     await this.dbAdapter.clean(ctx, workspaceId, DOMAIN_BLOB, objectNames as Ref<Blob>[])
   }
 
-  async list (ctx: MeasureContext, workspaceId: WorkspaceId, prefix?: string | undefined): Promise<ListBlobResult[]> {
-    return await this.dbAdapter.find<Blob>(ctx, workspaceId, DOMAIN_BLOB, {
-      _class: core.class.Blob,
-      _id: { $regex: `${prefix ?? ''}.*` }
-    })
-  }
-
   async listStream (
     ctx: MeasureContext,
     workspaceId: WorkspaceId,
