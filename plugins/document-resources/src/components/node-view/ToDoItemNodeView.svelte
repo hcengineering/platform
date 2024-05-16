@@ -36,7 +36,7 @@
     }
   )
 
-  async function syncTodo (todo: ToDo | undefined): Promise<void> {
+  async function syncTodo(todo: ToDo | undefined): Promise<void> {
     if (todo !== undefined) {
       const todoChecked = todo.doneOn != null
       if (todo._id !== todoId || todo.user !== userId || todoChecked !== checked) {
@@ -56,7 +56,7 @@
     }
   }
 
-  async function markDone (): Promise<void> {
+  async function markDone(): Promise<void> {
     if (todo !== undefined) {
       await client.update(todo, { doneOn: todo.doneOn == null ? Date.now() : null })
     } else {
@@ -64,7 +64,7 @@
     }
   }
 
-  async function assignTodo (user: Ref<Person>): Promise<void> {
+  async function assignTodo(user: Ref<Person>): Promise<void> {
     if (todo !== undefined && todo.user === user) return
     if (object === undefined) return
 
@@ -97,6 +97,7 @@
       user,
       workslots: 0,
       priority: ToDoPriority.NoPriority,
+      breakpoint: 0,
       visibility: 'public',
       doneOn,
       rank
@@ -110,7 +111,7 @@
     })
   }
 
-  async function unassignTodo (): Promise<void> {
+  async function unassignTodo(): Promise<void> {
     updateAttributes({
       todoid: null,
       userid: null
@@ -121,7 +122,7 @@
     }
   }
 
-  async function assignTodoConfirm (user: Ref<Person>): Promise<void> {
+  async function assignTodoConfirm(user: Ref<Person>): Promise<void> {
     showPopup(
       MessageBox,
       {
@@ -137,7 +138,7 @@
     )
   }
 
-  async function unassignTodoConfirm (): Promise<void> {
+  async function unassignTodoConfirm(): Promise<void> {
     showPopup(
       MessageBox,
       {
@@ -153,7 +154,7 @@
     )
   }
 
-  async function changeAssignee (user: Ref<Person> | undefined): Promise<void> {
+  async function changeAssignee(user: Ref<Person> | undefined): Promise<void> {
     const shouldConfirm = todo !== undefined && todo?.workslots > 0
     if (user !== undefined) {
       shouldConfirm ? await assignTodoConfirm(user) : await assignTodo(user)
@@ -164,7 +165,7 @@
 
   let hovered = false
 
-  function handleAssigneeEdit (ev: MouseEvent): void {
+  function handleAssigneeEdit(ev: MouseEvent): void {
     ev.preventDefault()
     ev.stopPropagation()
 

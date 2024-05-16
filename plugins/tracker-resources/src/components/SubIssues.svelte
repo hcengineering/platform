@@ -33,7 +33,7 @@
   export let subIssues: IssueDraft[] = []
   let lastProject = project
   let isCollapsed = false
-  async function handleIssueSwap (ev: CustomEvent<{ fromIndex: number, toIndex: number }>) {
+  async function handleIssueSwap(ev: CustomEvent<{ fromIndex: number; toIndex: number }>) {
     if (subIssues) {
       const { fromIndex, toIndex } = ev.detail
       const [fromIssue] = subIssues.splice(fromIndex, 1)
@@ -43,7 +43,7 @@
     }
   }
   $: onProjectChange(project)
-  function onProjectChange (project: Project | undefined) {
+  function onProjectChange(project: Project | undefined) {
     if (lastProject?._id === project?._id) return
     lastProject = project
     if (project === undefined) return
@@ -54,7 +54,7 @@
   }
   const client = getClient()
   // TODO: move to utils
-  export async function save (parents: IssueParentInfo[], _id: Ref<Doc>) {
+  export async function save(parents: IssueParentInfo[], _id: Ref<Doc>) {
     if (project === undefined) return
     saved = true
     for (const subIssue of subIssues) {
@@ -87,6 +87,7 @@
         reportedTime: 0,
         remainingTime: 0,
         estimation: subIssue.estimation,
+        breakpoint: subIssue.breakpoint,
         reports: 0,
         relations: [],
         childInfo: [],
@@ -114,7 +115,7 @@
       saveAttachments(childId)
     }
   }
-  async function saveAttachments (issue: Ref<Issue>) {
+  async function saveAttachments(issue: Ref<Issue>) {
     const draftAttachments = $draftsStore[`${issue}_attachments`]
     if (draftAttachments) {
       for (const key in draftAttachments) {
@@ -123,7 +124,7 @@
     }
     removeDraft(issue)
   }
-  async function saveAttachment (doc: Attachment, issue: Ref<Issue>): Promise<void> {
+  async function saveAttachment(doc: Attachment, issue: Ref<Issue>): Promise<void> {
     await client.addCollection(
       attachment.class.Attachment,
       projectId,
@@ -134,7 +135,7 @@
       doc._id
     )
   }
-  export function load (value: IssueDraft[]) {
+  export function load(value: IssueDraft[]) {
     subIssues = value
   }
   let saved = false
@@ -146,7 +147,7 @@
     }
   })
   // TODO: move to utils
-  export async function removeDraft (_id: string, removeFiles: boolean = false): Promise<void> {
+  export async function removeDraft(_id: string, removeFiles: boolean = false): Promise<void> {
     const draftAttachments = $draftsStore[`${_id}_attachments`]
     DraftController.remove(`${_id}_attachments`)
     if (removeFiles && draftAttachments) {

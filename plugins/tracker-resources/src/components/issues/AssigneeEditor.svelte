@@ -80,7 +80,7 @@
 
   let categories: AssigneeCategory[] = []
 
-  function getCategories (object: AssigneeObject | AssigneeObject[]): void {
+  function getCategories(object: AssigneeObject | AssigneeObject[]): void {
     categories = []
     if (cdocs.length > 0) {
       categories.push({

@@ -21,6 +21,7 @@ export enum ViewletSelectors {
 }
 
 export const PRIORITIES = ['No priority', 'Urgent', 'High', 'Medium', 'Low']
+
 export const DEFAULT_STATUSES = ['Backlog', 'Todo', 'In Progress', 'Done', 'Canceled']
 export const DEFAULT_USER = 'Appleseed John'
 
@@ -32,12 +33,12 @@ export const DEFAULT_STATUSES_ID = new Map([
   ['Canceled', 'task:statusCategory:Lost']
 ])
 
-export async function navigate (page: Page): Promise<void> {
+export async function navigate(page: Page): Promise<void> {
   await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
   await page.click('[id="app-tracker\\:string\\:TrackerApplication"]')
 }
 
-export async function setViewGroup (page: Page, groupName: string): Promise<void> {
+export async function setViewGroup(page: Page, groupName: string): Promise<void> {
   await page.click('button:has-text("View")')
   await page.click('.antiCard >> .grouping >> button >> nth=0')
   await page.click(`.menu-item:has-text("${groupName}")`)
@@ -46,7 +47,7 @@ export async function setViewGroup (page: Page, groupName: string): Promise<void
   await page.keyboard.press('Escape')
 }
 
-export async function setViewOrder (page: Page, orderName: string): Promise<void> {
+export async function setViewOrder(page: Page, orderName: string): Promise<void> {
   await page.click('button:has-text("View")')
   await page.click('.antiCard >> .ordering >> button')
   await page.click(`.menu-item:has-text("${orderName}")`)
@@ -55,7 +56,7 @@ export async function setViewOrder (page: Page, orderName: string): Promise<void
   await page.keyboard.press('Escape')
 }
 
-export async function fillIssueForm (page: Page, props: IssueProps): Promise<void> {
+export async function fillIssueForm(page: Page, props: IssueProps): Promise<void> {
   const { name, description, status, assignee, labels, priority, component, milestone } = props
   const af = 'form '
   const issueTitle = page.locator(af + '[placeholder="Issue\\ title"]')
@@ -100,7 +101,7 @@ export async function fillIssueForm (page: Page, props: IssueProps): Promise<voi
   }
 }
 
-export async function createIssue (page: Page, props: IssueProps): Promise<void> {
+export async function createIssue(page: Page, props: IssueProps): Promise<void> {
   await page.waitForSelector('span:has-text("Default")')
   await page.click('button:has-text("New issue")')
   await fillIssueForm(page, props)
@@ -108,7 +109,7 @@ export async function createIssue (page: Page, props: IssueProps): Promise<void>
   await page.waitForSelector('form.antiCard', { state: 'detached' })
 }
 
-export async function createComponent (page: Page, componentName: string): Promise<void> {
+export async function createComponent(page: Page, componentName: string): Promise<void> {
   await page.click('text=Components')
   await expect(page).toHaveURL(
     `${PlatformURI}/workbench/sanity-ws/tracker/tracker%3Aproject%3ADefaultProject/components`
@@ -119,7 +120,7 @@ export async function createComponent (page: Page, componentName: string): Promi
   await page.click('button:has-text("Create component")')
 }
 
-export async function createMilestone (page: Page, milestoneName: string): Promise<void> {
+export async function createMilestone(page: Page, milestoneName: string): Promise<void> {
   await page.click('text=Milestones')
   await expect(page).toHaveURL(
     `${PlatformURI}/workbench/sanity-ws/tracker/tracker%3Aproject%3ADefaultProject/milestones`
@@ -130,13 +131,13 @@ export async function createMilestone (page: Page, milestoneName: string): Promi
   await page.click('button:has-text("Create")')
 }
 
-export async function createSubissue (page: Page, props: IssueProps): Promise<void> {
+export async function createSubissue(page: Page, props: IssueProps): Promise<void> {
   await page.click('button:has-text("Add sub-issue")')
   await fillIssueForm(page, props)
   await page.click('button:has-text("Create issue")')
 }
 
-export async function createLabel (page: Page, label: string): Promise<void> {
+export async function createLabel(page: Page, label: string): Promise<void> {
   await page.click('button:has-text("New issue")')
   await page.click('button:has-text("Labels")')
   await page.click('button:nth-child(3)')
@@ -148,7 +149,7 @@ export async function createLabel (page: Page, label: string): Promise<void> {
   await page.keyboard.press('Escape')
 }
 
-export async function checkIssue (page: Page, props: IssueProps): Promise<void> {
+export async function checkIssue(page: Page, props: IssueProps): Promise<void> {
   const { name, description, status, assignee, labels, priority, component, milestone } = props
 
   if (name !== undefined) {
@@ -178,7 +179,7 @@ export async function checkIssue (page: Page, props: IssueProps): Promise<void> 
   }
 }
 
-export async function checkIssueDraft (page: Page, props: IssueProps): Promise<void> {
+export async function checkIssueDraft(page: Page, props: IssueProps): Promise<void> {
   await expect(page.locator('#issue-name input')).toHaveValue(props.name)
 
   if (props.description !== undefined) {
@@ -192,7 +193,6 @@ export async function checkIssueDraft (page: Page, props: IssueProps): Promise<v
   if (props.priority !== undefined) {
     await expect(page.locator('#priority-editor')).toHaveText(props.priority)
   }
-
   if (props.assignee !== undefined) {
     await expect(page.locator('#assignee-editor')).toHaveText(props.assignee)
   }
@@ -206,22 +206,22 @@ export async function checkIssueDraft (page: Page, props: IssueProps): Promise<v
   }
 }
 
-export async function checkIssueFromList (page: Page, issueName: string): Promise<void> {
+export async function checkIssueFromList(page: Page, issueName: string): Promise<void> {
   await page.click(ViewletSelectors.Board)
   await expect(page.locator(`.panel-container:has-text("${issueName}")`)).toContainText(issueName)
 }
 
-export async function openIssue (page: Page, name: string): Promise<void> {
+export async function openIssue(page: Page, name: string): Promise<void> {
   await page.click(`.antiList__row:has-text("${name}") .presenter-label a`, {
     timeout: 15000
   })
 }
 
-export async function floorFractionDigits (n: number | string, amount: number): Promise<number> {
+export async function floorFractionDigits(n: number | string, amount: number): Promise<number> {
   return Number(Number(n).toFixed(amount))
 }
 
-export async function toTime (value: number): Promise<string> {
+export async function toTime(value: number): Promise<string> {
   if (value <= 0) {
     return '0h'
   }
@@ -240,7 +240,7 @@ export async function toTime (value: number): Promise<string> {
   ].join(' ')
 }
 export const getIssueName = (postfix: string = generateId()): string => `issue-${postfix}`
-export async function performPanelTest (page: Page, statuses: string[], panel: string, mode: string): Promise<void> {
+export async function performPanelTest(page: Page, statuses: string[], panel: string, mode: string): Promise<void> {
   const locator = page.locator('.list-container')
   const excluded = DEFAULT_STATUSES.filter((status) => !statuses.includes(status))
   await new TrackerNavigationMenuPage(page).openIssuesForProject('Default')

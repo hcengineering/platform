@@ -31,6 +31,7 @@
   import AssigneeEditor from '../issues/AssigneeEditor.svelte'
   import PriorityEditor from '../issues/PriorityEditor.svelte'
   import EstimationEditor from './EstimationEditor.svelte'
+  import BreakpointEditor from '../issues/BreakpointEditor.svelte'
 
   export let projectId: Ref<Project>
   export let milestone: Ref<Milestone> | null = null
@@ -59,7 +60,7 @@
     attr: client.getHierarchy().getAttribute(tracker.class.IssueTemplate, 'labels')
   }
 
-  function getIssueDefaults (): IssueTemplateChild {
+  function getIssueDefaults(): IssueTemplateChild {
     return {
       id: generateId(),
       title: '',
@@ -68,24 +69,25 @@
       component: null,
       priority: IssuePriority.NoPriority,
       milestone,
-      estimation: 0
+      estimation: 0,
+      breakpoint: 0
     }
   }
 
-  function resetToDefaults () {
+  function resetToDefaults() {
     newIssue = getIssueDefaults()
     focusIssueTitle?.()
   }
 
-  function getTitle (value: string) {
+  function getTitle(value: string) {
     return value.trim()
   }
 
-  function close () {
+  function close() {
     dispatch('close')
   }
 
-  async function createIssue () {
+  async function createIssue() {
     if (!canSave) {
       return
     }
@@ -105,7 +107,7 @@
     resetToDefaults()
   }
 
-  function addTagRef (tag: TagElement): void {
+  function addTagRef(tag: TagElement): void {
     labels = [...labels, tag]
   }
 
@@ -181,6 +183,14 @@
         bind:value={newIssue}
         on:change={(evt) => {
           newIssue.estimation = evt.detail
+        }}
+      />
+      <BreakpointEditor
+        kind={'no-border'}
+        size={'small'}
+        bind:value={newIssue}
+        on:change={(evt) => {
+          newIssue.breakpoint = evt.detail
         }}
       />
       <Component

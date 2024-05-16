@@ -30,6 +30,7 @@
   import PriorityEditor from '../PriorityEditor.svelte'
   import RelationEditor from '../RelationEditor.svelte'
   import StatusEditor from '../StatusEditor.svelte'
+  import BreakpointEditor from '../BreakpointEditor.svelte'
 
   export let issue: Issue
   export let showAllMixins: boolean = false
@@ -62,7 +63,7 @@
 
   let keys: KeyedAttribute[] = []
 
-  function updateKeys (_class: Ref<Class<Issue>>, ignoreKeys: string[]): void {
+  function updateKeys(_class: Ref<Class<Issue>>, ignoreKeys: string[]): void {
     const filtredKeys = getFiltredKeys(hierarchy, _class, ignoreKeys)
     keys = filtredKeys.filter((key) => !isCollectionAttr(hierarchy, key))
   }
@@ -71,7 +72,7 @@
 
   $: getMixins(issue, showAllMixins)
 
-  function getMixins (object: Issue, showAllMixins: boolean): void {
+  function getMixins(object: Issue, showAllMixins: boolean): void {
     const descendants = hierarchy.getDescendants(core.class.Doc).map((p) => hierarchy.getClass(p))
 
     mixins = descendants.filter(
@@ -82,7 +83,7 @@
     )
   }
 
-  function getMixinKeys (mixin: Ref<Mixin<Doc>>): KeyedAttribute[] {
+  function getMixinKeys(mixin: Ref<Mixin<Doc>>): KeyedAttribute[] {
     const mixinClass = hierarchy.getClass(mixin)
     const filtredKeys = getFiltredKeys(
       hierarchy,
@@ -176,6 +177,11 @@
     <Label label={tracker.string.Assignee} />
   </span>
   <AssigneeEditor object={issue} size={'medium'} avatarSize={'card'} width="100%" {readonly} />
+
+  <span class="labelOnPanel">
+    <Label label={'Breakpoint'} />
+  </span>
+  <BreakpointEditor value={issue} size={'medium'} isEditable={!readonly} />
 
   <span class="labelTop">
     <Label label={tracker.string.Labels} />

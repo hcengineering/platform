@@ -211,6 +211,7 @@
     "MoveAndDeleteMilestone": "Mover tarefas para {newMilestone} e Apagar {deleteMilestone}",
     "MoveAndDeleteMilestoneConfirm": "Deseja apagar o objetivo e mover tarefas para outro objetivo?",
     "Estimation": "Estimativa",
+    "Breakpoint": "Ponto de paragem",
     "ReportedTime": "Tempo gasto",
     "RemainingTime": "Tempo restante",
     "TimeSpendReports": "Relatórios de tempo gasto",

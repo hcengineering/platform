@@ -45,6 +45,7 @@ export interface ToDo extends AttachedDoc {
   description: Markup
   dueDate?: Timestamp | null
   priority: ToDoPriority
+  breakpoint: number
   visibility: Visibility
   doneOn?: Timestamp | null
   user: Ref<Person>

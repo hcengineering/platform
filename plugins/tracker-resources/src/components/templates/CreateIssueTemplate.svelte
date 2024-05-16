@@ -29,6 +29,7 @@
   import MilestoneSelector from '../milestones/MilestoneSelector.svelte'
   import ProjectPresenter from '../projects/ProjectPresenter.svelte'
   import EstimationEditor from './EstimationEditor.svelte'
+  import BreakpointEditor from '../issues/BreakpointEditor.svelte'
   import SubIssueTemplates from './IssueTemplateChilds.svelte'
 
   export let space: Ref<Project>
@@ -49,6 +50,7 @@
     milestone,
     priority,
     estimation: 0,
+    breakpoint: 1,
     children: [],
     labels: [],
     comments: 0,
@@ -68,15 +70,15 @@
 
   $: canSave = getTitle(object.title ?? '').length > 0
 
-  function getTitle (value: string) {
+  function getTitle(value: string) {
     return value.trim()
   }
 
-  export function canClose (): boolean {
+  export function canClose(): boolean {
     return !canSave
   }
 
-  async function createIssueTemplate () {
+  async function createIssueTemplate() {
     if (!canSave) {
       return
     }
@@ -89,6 +91,7 @@
       milestone: object.milestone,
       priority: object.priority,
       estimation: object.estimation,
+      breakpoint: object.breakpoint,
       children: object.children,
       comments: 0,
       attachments: 0,
@@ -116,7 +119,7 @@
     object = { ...object, milestone: milestoneId }
   }
 
-  function addTagRef (tag: TagElement): void {
+  function addTagRef(tag: TagElement): void {
     labels = [...labels, tag]
   }
 </script>
@@ -202,6 +205,7 @@
       }}
     />
     <EstimationEditor kind={'regular'} size={'large'} value={object} />
+    <BreakpointEditor kind={'regular'} size={'large'} value={object} />
     <ComponentSelector
       {space}
       value={object.component}

@@ -211,6 +211,7 @@
     "MoveAndDeleteMilestone": "Mover problemas a {newMilestone} y eliminar {deleteMilestone}",
     "MoveAndDeleteMilestoneConfirm": "¿Desea eliminar el hito y mover los problemas a otro hito?",
     "Estimation": "Estimación",
+    "Breakpoint": "Breakpoint",
     "ReportedTime": "Tiempo empleado",
     "RemainingTime": "Tiempo restante",
     "TimeSpendReports": "Informes de tiempo empleado",

@@ -107,6 +107,7 @@ import MilestoneStatusPresenter from './components/milestones/MilestoneStatusPre
 import MilestoneTitlePresenter from './components/milestones/MilestoneTitlePresenter.svelte'
 
 import SubIssuesSelector from './components/issues/edit/SubIssuesSelector.svelte'
+import BreakpointEditor from './components/issues/BreakpointEditor.svelte'
 import EstimationEditor from './components/issues/timereport/EstimationEditor.svelte'
 import ReportedTimeEditor from './components/issues/timereport/ReportedTimeEditor.svelte'
 import TimeSpendReport from './components/issues/timereport/TimeSpendReport.svelte'
@@ -162,6 +163,7 @@ import { get } from 'svelte/store'
 import { settingId } from '@hcengineering/setting'
 import { getAllStates } from '@hcengineering/task-resources'
 import EstimationValueEditor from './components/issues/timereport/EstimationValueEditor.svelte'
+import BreakpointValueEditor from './components/issues/BreakpointValueEditor.svelte'
 import TimePresenter from './components/issues/timereport/TimePresenter.svelte'
 
 export { default as AssigneeEditor } from './components/issues/AssigneeEditor.svelte'
@@ -171,7 +173,7 @@ export { default as StatusPresenter } from './components/issues/StatusPresenter.
 
 export { activeProjects, CreateProject, IssuePresenter, PriorityEditor, StatusEditor, TitlePresenter }
 
-export async function queryIssue<D extends Issue> (
+export async function queryIssue<D extends Issue>(
   _class: Ref<Class<D>>,
   client: Client,
   search: string,
@@ -215,11 +217,11 @@ export async function queryIssue<D extends Issue> (
   }))
 }
 
-async function move (issues: Issue | Issue[]): Promise<void> {
+async function move(issues: Issue | Issue[]): Promise<void> {
   showPopup(MoveIssues, { selected: issues }, 'top')
 }
 
-async function editWorkflowStatuses (project: Project): Promise<void> {
+async function editWorkflowStatuses(project: Project): Promise<void> {
   const loc = getCurrentLocation()
   loc.path[2] = settingId
   loc.path[3] = 'statuses'
@@ -227,13 +229,13 @@ async function editWorkflowStatuses (project: Project): Promise<void> {
   navigate(loc)
 }
 
-async function editProject (project: Project | undefined): Promise<void> {
+async function editProject(project: Project | undefined): Promise<void> {
   if (project !== undefined) {
     showPopup(CreateProject, { project })
   }
 }
 
-async function deleteIssue (issue: Issue | Issue[]): Promise<void> {
+async function deleteIssue(issue: Issue | Issue[]): Promise<void> {
   const issueCount = Array.isArray(issue) ? issue.length : 1
   let subissues: number = 0
   if (Array.isArray(issue)) {
@@ -266,7 +268,7 @@ async function deleteIssue (issue: Issue | Issue[]): Promise<void> {
   )
 }
 
-async function deleteProject (project: Project | undefined): Promise<void> {
+async function deleteProject(project: Project | undefined): Promise<void> {
   if (project !== undefined) {
     const client = getClient()
 
@@ -369,7 +371,7 @@ async function deleteProject (project: Project | undefined): Promise<void> {
   }
 }
 
-async function moveAndDeleteMilestones (
+async function moveAndDeleteMilestones(
   client: TxOperations,
   oldMilestones: Milestone[],
   newMilestone?: Milestone
@@ -401,7 +403,7 @@ async function moveAndDeleteMilestones (
   )
 }
 
-async function deleteMilestone (milestones: Milestone | Milestone[]): Promise<void> {
+async function deleteMilestone(milestones: Milestone | Milestone[]): Promise<void> {
   const client = getClient()
   const milestoneArray = Array.isArray(milestones) ? milestones : [milestones]
   // Check if available to move issues to another milestone
@@ -477,6 +479,7 @@ export default async (): Promise<Resources> => ({
     ReportedTimeEditor,
     TimeSpendReport,
     EstimationEditor,
+    BreakpointEditor,
     SubIssuesSelector,
     RelatedIssues,
     RelatedIssueTemplates,
@@ -506,6 +509,7 @@ export default async (): Promise<Resources> => ({
     SettingsRelatedTargets,
     TimePresenter,
     EstimationValueEditor,
+    BreakpointValueEditor,
     IssueStatusIcon,
     MilestoneStatusIcon,
     PriorityIconPresenter,

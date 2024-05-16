@@ -74,6 +74,6 @@ export const todoPriorities: Record<number, ToDoPrioritiesItem> = {
 /**
  * @public
  */
-export function getToDoPriorityColor (priority: ToDoPriority): string {
+export function getToDoPriorityColor(priority: ToDoPriority): string {
   return `var(--global-${todoPriorities[priority].name}-PriorityColor)`
 }

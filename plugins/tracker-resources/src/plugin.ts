@@ -255,6 +255,7 @@ export default mergeIds(trackerId, tracker, {
     MoveAndDeleteMilestoneConfirm: '' as IntlString,
 
     Estimation: '' as IntlString,
+    Breakpoint: '' as IntlString,
     ReportedTime: '' as IntlString,
     RemainingTime: '' as IntlString,
     TimeSpendReport: '' as IntlString,
@@ -355,8 +356,10 @@ export default mergeIds(trackerId, tracker, {
     ReportedTimeEditor: '' as AnyComponent,
     TimePresenter: '' as AnyComponent,
     EstimationValueEditor: '' as AnyComponent,
+    BreakpoiintValueEditor: '' as AnyComponent,
     TimeSpendReport: '' as AnyComponent,
     EstimationEditor: '' as AnyComponent,
+    BreakpointEditor: '' as AnyComponent,
     TemplateEstimationEditor: '' as AnyComponent,
     DeleteComponentPresenter: '' as AnyComponent,
 

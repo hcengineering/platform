@@ -50,7 +50,7 @@ export default mergeIds(trackerId, tracker, {
   activity: {
     TxIssueCreated: '' as AnyComponent,
     StatusIcon: '' as AnyComponent,
-    PriorityIcon: '' as AnyComponent
+    PriorityIcon: '' as AnyComponent,
   },
   component: {
     MilestoneSelector: '' as AnyComponent,

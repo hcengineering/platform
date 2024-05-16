@@ -56,7 +56,7 @@
   let okProcessing = false
   $: headerDivide = hideContent && numberOfBlocks > 1
 
-  function handleKeyDown (event: KeyboardEvent) {
+  function handleKeyDown(event: KeyboardEvent) {
     const target = event.target as HTMLInputElement
 
     if (target) {
@@ -73,7 +73,7 @@
     }
   }
 
-  function handleOkClick (): void {
+  function handleOkClick(): void {
     if (canSave) {
       if (okProcessing) {
         return

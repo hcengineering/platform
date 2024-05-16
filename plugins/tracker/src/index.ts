@@ -51,7 +51,7 @@ import { Action, ActionCategory, IconProps } from '@hcengineering/view'
 /**
  * @public
  */
-export interface IssueStatus extends Status {}
+export interface IssueStatus extends Status { }
 
 /**
  * @public
@@ -204,6 +204,9 @@ export interface Issue extends Task {
   // Remaining time in man hours
   remainingTime: number
 
+  // breakpoint
+  breakpoint: number
+
   // ReportedTime time, auto updated using trigger.
   reportedTime: number
   // Collection of reportedTime entries, for proper time estimations per person.
@@ -237,6 +240,7 @@ export interface IssueDraft {
 
   // Estimation in man days
   estimation: number
+  breakpoint: number
   parentIssue?: Ref<Issue>
   attachments?: number
   labels: TagReference[]
@@ -264,6 +268,7 @@ export interface IssueTemplateData {
 
   // Estimation in man days
   estimation: number
+  breakpoint: number
 
   labels?: Ref<TagElement>[]
 
@@ -325,6 +330,7 @@ export interface IssueParentInfo {
 export interface IssueChildInfo {
   childId: Ref<Issue>
   estimation: number
+  breakpoint: number
   reportedTime: number
 }
 
@@ -358,19 +364,19 @@ export interface Component extends Doc {
  * Allow to query for status keys/values.
  */
 export class ComponentManager extends DocManager {
-  get (ref: Ref<WithLookup<Component>>): WithLookup<Component> | undefined {
+  get(ref: Ref<WithLookup<Component>>): WithLookup<Component> | undefined {
     return this.getIdMap().get(ref) as WithLookup<Component>
   }
 
-  getDocs (): Array<WithLookup<Component>> {
+  getDocs(): Array<WithLookup<Component>> {
     return this.docs as Component[]
   }
 
-  getIdMap (): IdMap<WithLookup<Component>> {
+  getIdMap(): IdMap<WithLookup<Component>> {
     return this.byId as IdMap<WithLookup<Component>>
   }
 
-  filter (predicate: (value: Component) => boolean): Component[] {
+  filter(predicate: (value: Component) => boolean): Component[] {
     return this.getDocs().filter(predicate)
   }
 }
@@ -393,6 +399,7 @@ const pluginState = plugin(trackerId, {
     TimeSpendReport: '' as Ref<Class<TimeSpendReport>>,
     TypeReportedTime: '' as Ref<Class<Type<number>>>,
     TypeEstimation: '' as Ref<Class<Type<number>>>,
+    TypeBreakpoint: '' as Ref<Class<Type<number>>>,
     TypeRemainingTime: '' as Ref<Class<Type<number>>>,
     RelatedIssueTarget: '' as Ref<Class<RelatedIssueTarget>>,
     ProjectTargetPreference: '' as Ref<Class<ProjectTargetPreference>>
@@ -479,7 +486,7 @@ const pluginState = plugin(trackerId, {
 
     TimeReport: '' as Asset,
     Estimation: '' as Asset,
-
+    Breakpoint: '' as Asset,
     // Project icons
     Home: '' as Asset,
     RedCircle: '' as Asset
@@ -591,7 +598,7 @@ export const baseIssueTaskStatuses: TaskStatusFactory[] = [
 /**
  * @public
  */
-export function createStatesData (data: TaskStatusFactory[]): Omit<Data<Status>, 'rank'>[] {
+export function createStatesData(data: TaskStatusFactory[]): Omit<Data<Status>, 'rank'>[] {
   const states: Omit<Data<Status>, 'rank'>[] = []
 
   for (const category of data) {

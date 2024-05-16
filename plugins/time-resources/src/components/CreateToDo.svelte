@@ -14,7 +14,7 @@
   const client = getClient()
   const acc = getCurrentAccount() as PersonAccount
 
-  async function save (): Promise<void> {
+  async function save(): Promise<void> {
     let [name, description] = value.split('//')
     name = name.trim()
     if (name.length === 0) return
@@ -36,6 +36,7 @@
       user: acc.person,
       workslots: 0,
       priority: ToDoPriority.NoPriority,
+      breakpoint: 1,
       visibility: 'private',
       rank: makeRank(undefined, latestTodo?.rank)
     })
@@ -43,11 +44,11 @@
     clear()
   }
 
-  function clear () {
+  function clear() {
     value = ''
   }
 
-  function openPopup () {
+  function openPopup() {
     showPopup(CreateToDoPopup, {}, 'top')
   }
 </script>

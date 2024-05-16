@@ -32,7 +32,7 @@
 
   let keys: KeyedAttribute[] = []
 
-  function updateKeys (ignoreKeys: string[]): void {
+  function updateKeys(ignoreKeys: string[]): void {
     const filtredKeys = getFiltredKeys(hierarchy, issue._class, ignoreKeys)
     keys = filtredKeys.filter((key) => !isCollectionAttr(hierarchy, key))
   }

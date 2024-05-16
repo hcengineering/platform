@@ -34,6 +34,7 @@ export const issuesOptions = (kanban: boolean): ViewOptionsModel => ({
     'createdBy',
     'modifiedBy',
     'estimation',
+    'breakpoint',
     'remainingTime',
     'reportedTime'
   ],
@@ -46,6 +47,7 @@ export const issuesOptions = (kanban: boolean): ViewOptionsModel => ({
     ['dueDate', SortingOrder.Ascending],
     ['rank', SortingOrder.Ascending],
     ['estimation', SortingOrder.Descending],
+    ['breakpoint', SortingOrder.Descending],
     ['remainingTime', SortingOrder.Descending],
     ['reportedTime', SortingOrder.Descending]
   ],
@@ -70,7 +72,7 @@ export const issuesOptions = (kanban: boolean): ViewOptionsModel => ({
   ]
 })
 
-export function issueConfig (
+export function issueConfig(
   key: string = '',
   compact: boolean = false,
   milestone: boolean = true,
@@ -135,41 +137,41 @@ export function issueConfig (
     },
     ...(milestone
       ? [
-          {
-            key: '',
-            label: tracker.string.Milestone,
-            presenter: tracker.component.MilestoneEditor,
-            props: {
-              kind: 'list',
-              size: 'small',
-              shouldShowPlaceholder: false
-            },
-            displayProps: {
-              key: key + 'milestone',
-              excludeByKey: 'milestone',
-              compression: true
-            }
+        {
+          key: '',
+          label: tracker.string.Milestone,
+          presenter: tracker.component.MilestoneEditor,
+          props: {
+            kind: 'list',
+            size: 'small',
+            shouldShowPlaceholder: false
+          },
+          displayProps: {
+            key: key + 'milestone',
+            excludeByKey: 'milestone',
+            compression: true
           }
-        ]
+        }
+      ]
       : []),
     ...(component
       ? [
-          {
-            key: '',
-            label: tracker.string.Component,
-            presenter: tracker.component.ComponentEditor,
-            props: {
-              kind: 'list',
-              size: 'small',
-              shouldShowPlaceholder: false
-            },
-            displayProps: {
-              key: key + 'component',
-              excludeByKey: 'component',
-              compression: true
-            }
+        {
+          key: '',
+          label: tracker.string.Component,
+          presenter: tracker.component.ComponentEditor,
+          props: {
+            kind: 'list',
+            size: 'small',
+            shouldShowPlaceholder: false
+          },
+          displayProps: {
+            key: key + 'component',
+            excludeByKey: 'component',
+            compression: true
           }
-        ]
+        }
+      ]
       : []),
     {
       key: '',
@@ -186,6 +188,13 @@ export function issueConfig (
       displayProps: { key: key + 'estimation', fixed: 'left', dividerBefore: true, optional: true }
     },
     {
+      key: '',
+      label: tracker.string.Breakpoint,
+      presenter: tracker.component.BreakpointEditor,
+      props: { type: 'breakpoint', kind: 'list', size: 'small' },
+      displayProps: { key: key + 'breakpoint', fixed: 'left', dividerBefore: true, optional: true }
+    },
+    {
       key: 'modifiedOn',
       presenter: tracker.component.ModificationDatePresenter,
       displayProps: { key: key + 'modified', fixed: 'left', dividerBefore: true }
@@ -199,7 +208,7 @@ export function issueConfig (
   ]
 }
 
-export function defineViewlets (builder: Builder): void {
+export function defineViewlets(builder: Builder): void {
   builder.createDoc(
     view.class.ViewletDescriptor,
     core.space.Model,
@@ -232,6 +241,7 @@ export function defineViewlets (builder: Builder): void {
           'component',
           'milestone',
           'estimation',
+          'breakpoint',
           'remainingTime',
           'status',
           'dueDate',
@@ -278,6 +288,7 @@ export function defineViewlets (builder: Builder): void {
           'dueDate',
           'milestone',
           'estimation',
+          'breakpoint',
           'remainingTime',
           'createdBy',
           'modifiedBy'
@@ -320,6 +331,7 @@ export function defineViewlets (builder: Builder): void {
           'dueDate',
           'milestone',
           'estimation',
+          'breakpoint',
           'remainingTime',
           'createdBy',
           'modifiedBy'
@@ -335,7 +347,6 @@ export function defineViewlets (builder: Builder): void {
     orderBy: [
       ['rank', SortingOrder.Ascending],
       ['status', SortingOrder.Ascending],
-      ['priority', SortingOrder.Ascending],
       ['modifiedOn', SortingOrder.Descending],
       ['createdOn', SortingOrder.Descending],
       ['dueDate', SortingOrder.Ascending]
@@ -362,6 +373,7 @@ export function defineViewlets (builder: Builder): void {
           'dueDate',
           'component',
           'estimation',
+          'breakpoint',
           'remainingTime',
           'createdBy',
           'modifiedBy'
@@ -393,6 +405,7 @@ export function defineViewlets (builder: Builder): void {
         hiddenKeys: [
           'milestone',
           'estimation',
+          'breakpoint',
           'remainingTime',
           'reportedTime',
           'component',
@@ -442,6 +455,16 @@ export function defineViewlets (builder: Builder): void {
           },
           displayProps: { key: 'estimation', compression: true }
         },
+        {
+          key: '',
+          label: tracker.string.Breakpoint,
+          presenter: tracker.component.TemplateBreakpointEditor,
+          props: {
+            kind: 'list',
+            size: 'small'
+          },
+          displayProps: { key: 'breakpoint', compression: true }
+        },
         { key: '', displayProps: { grow: true } },
         {
           key: 'modifiedOn',
@@ -471,7 +494,7 @@ export function defineViewlets (builder: Builder): void {
       configOptions: {
         strict: true
       },
-      config: ['subIssues', 'priority', 'component', 'dueDate', 'labels', 'estimation', 'attachments', 'comments']
+      config: ['subIssues', 'priority', 'component', 'dueDate', 'labels', 'estimation', 'breakpoint', 'attachments', 'comments']
     },
     tracker.viewlet.IssueKanban
   )

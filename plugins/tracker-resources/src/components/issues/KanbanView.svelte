@@ -80,7 +80,7 @@
   import PriorityEditor from './PriorityEditor.svelte'
   import StatusEditor from './StatusEditor.svelte'
   import EstimationEditor from './timereport/EstimationEditor.svelte'
-
+  import BreakpointEditor from './BreakpointEditor.svelte'
   const _class = tracker.class.Issue
   export let space: Ref<Project> | undefined = undefined
   export let baseMenuClass: Ref<Class<Doc>> | undefined = undefined
@@ -115,7 +115,7 @@
 
   $: queryNoLookup = getCategoryQueryNoLookup(resultQuery)
 
-  function toIssue (object: any): WithLookup<Issue> {
+  function toIssue(object: any): WithLookup<Issue> {
     return object as WithLookup<Issue>
   }
 
@@ -191,7 +191,7 @@
 
   const queryId = generateId()
 
-  function update (): void {
+  function update(): void {
     void updateTaskKanbanCategories(
       client,
       viewlet,
@@ -227,7 +227,7 @@
 
   const fullFilled: Record<string, boolean> = {}
 
-  function getHeader (_class: Ref<Class<Doc>>, groupByKey: string): void {
+  function getHeader(_class: Ref<Class<Doc>>, groupByKey: string): void {
     if (groupByKey === noCategory) {
       headerComponent = undefined
     } else {
@@ -252,13 +252,15 @@
     }
   }
 
-  async function shouldShowFooter (
+  async function shouldShowFooter(
     config: (string | BuildModelKey)[],
     reports: number,
     estimations: number,
+    breakpoints: number,
     issue: WithLookup<Issue>
   ): Promise<boolean> {
     if (enabledConfig(config, 'estimation') && (reports > 0 || estimations > 0)) return true
+    if (enabledConfig(config, 'breakpoint') && (reports > 0 || breakpoints > 0)) return true
     if (enabledConfig(config, 'comments')) {
       if ((issue.comments ?? 0) > 0) return true
       if ((issue.$lookup?.attachedTo?.comments ?? 0) > 0) return true
@@ -387,6 +389,7 @@
       {@const reports =
         issue.reportedTime + (issue.childInfo ?? []).map((it) => it.reportedTime).reduce((a, b) => a + b, 0)}
       {@const estimations = (issue.childInfo ?? []).map((it) => it.estimation).reduce((a, b) => a + b, 0)}
+      {@const breakpoints = (issue.childInfo ?? []).map((it) => it.breakpoint).reduce((a, b) => a + b, 0)}
       {#key issueId}
         <div
           class="tracker-card"
@@ -458,11 +461,14 @@
               />
             </div>
           {/if}
-          {#await shouldShowFooter(config, reports, estimations, object) then withFooter}
+          {#await shouldShowFooter(config, reports, estimations, breakpoints, object) then withFooter}
             {#if withFooter}
               <div class="card-footer flex-between">
                 {#if enabledConfig(config, 'estimation')}
                   <EstimationEditor kind={'list'} size={'small'} value={issue} />
+                {/if}
+                {#if enabledConfig(config, 'breakpoint')}
+                  <BreakpointEditor kind={'list'} size={'small'} value={issue} />
                 {/if}
                 <div class="flex-row-center gap-3 reverse">
                   {#if enabledConfig(config, 'attachments') && (object.attachments ?? 0) > 0}

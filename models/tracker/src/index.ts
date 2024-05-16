@@ -58,7 +58,7 @@ export { trackerId } from '@hcengineering/tracker'
 export { trackerOperation } from './migration'
 export { default } from './plugin'
 
-function defineSortAndGrouping (builder: Builder): void {
+function defineSortAndGrouping(builder: Builder): void {
   builder.mixin(tracker.class.IssueStatus, core.class.Class, view.mixin.SortFuncs, {
     func: tracker.function.IssueStatusSort
   })
@@ -79,6 +79,7 @@ function defineSortAndGrouping (builder: Builder): void {
     func: tracker.function.GetAllPriority
   })
 
+
   builder.mixin(tracker.class.Component, core.class.Class, view.mixin.AllValuesFunc, {
     func: tracker.function.GetAllComponents
   })
@@ -92,7 +93,7 @@ function defineSortAndGrouping (builder: Builder): void {
   })
 }
 
-function defineNotifications (builder: Builder): void {
+function defineNotifications(builder: Builder): void {
   builder.createDoc(
     notification.class.NotificationGroup,
     core.space.Model,
@@ -142,7 +143,7 @@ function defineNotifications (builder: Builder): void {
 /**
  * Define filters
  */
-function defineFilters (builder: Builder): void {
+function defineFilters(builder: Builder): void {
   //
   // Issue
   //
@@ -167,7 +168,7 @@ function defineFilters (builder: Builder): void {
         showNested: false
       }
     ],
-    ignoreKeys: ['number', 'estimation', 'attachedTo'],
+    ignoreKeys: ['number', 'estimation', 'attachedTo', 'breakpoint'],
     getVisibleFilters: tracker.function.GetVisibleFilters
   })
 
@@ -271,7 +272,7 @@ function defineFilters (builder: Builder): void {
   })
 }
 
-function defineApplication (
+function defineApplication(
   builder: Builder,
   opt: {
     myIssuesId: string
@@ -392,7 +393,7 @@ function defineApplication (
   )
 }
 
-export function createModel (builder: Builder): void {
+export function createModel(builder: Builder): void {
   builder.createModel(
     TProject,
     TComponent,
@@ -547,6 +548,9 @@ export function createModel (builder: Builder): void {
         },
         estimation: {
           icon: tracker.icon.Estimation
+        },
+        breakpoint: {
+          icon: tracker.icon.Breakpoint
         }
       }
     },
@@ -695,6 +699,7 @@ export function createModel (builder: Builder): void {
       { status: 1 },
       { project: 1 },
       { priority: 1 },
+      { breakpoint: 1 },
       { assignee: 1 },
       { sprint: 1 },
       { component: 1 },
@@ -711,7 +716,7 @@ export function createModel (builder: Builder): void {
   defineSpaceType(builder)
 }
 
-function defineSpaceType (builder: Builder): void {
+function defineSpaceType(builder: Builder): void {
   builder.createModel(TClassicProjectTypeData)
   builder.createDoc(
     task.class.ProjectTypeDescriptor,

@@ -48,6 +48,7 @@
     "PersonAlreadyExists": "Contato já existe...",
     "Status": "Estado",
     "SetStatus": "Definir estado",
+    "SetBreakpoint": "Definir ponto de interrupção",
     "ClearStatus": "Limpar estado",
     "SaveStatus": "Salvar",
     "Cancel": "Cancelar",

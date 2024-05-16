@@ -22,7 +22,7 @@ import tracker from './plugin'
 /**
  * Define presenters
  */
-export function definePresenters (builder: Builder): void {
+export function definePresenters(builder: Builder): void {
   //
   // Issue
   //
@@ -88,7 +88,6 @@ export function definePresenters (builder: Builder): void {
   builder.mixin(tracker.class.TypeIssuePriority, core.class.Class, view.mixin.AttributeEditor, {
     inlineEditor: tracker.component.PriorityInlineEditor
   })
-
   //
   // Project
   //
@@ -162,5 +161,12 @@ export function definePresenters (builder: Builder): void {
     tracker.class.TypeRemainingTime,
     tracker.component.TimePresenter,
     tracker.component.EstimationValueEditor
+  )
+
+  classPresenter(
+    builder,
+    tracker.class.TypeBreakpoint,
+    tracker.component.TimePresenter,
+    tracker.component.BreakpointValueEditor
   )
 }
