@@ -957,7 +957,7 @@ async function updateCollaboratorsMixin (
           docNotifyContexts,
           activityMessages,
           true,
-          true,
+          false,
           cache
         )
       }
