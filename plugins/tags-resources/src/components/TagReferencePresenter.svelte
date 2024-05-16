@@ -44,7 +44,7 @@
       }}
     >
       <div class="color" style:background-color={color.color} />
-      <span class="label overflow-label ml-1 text-sm caption-color max-w-40">{value.title}</span>
+      <span class="label overflow-label ml-1 text-sm leading-4 caption-color max-w-40">{value.title}</span>
     </button>
   {:else if kind === 'list'}
     <div

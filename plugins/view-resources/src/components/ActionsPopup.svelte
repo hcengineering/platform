@@ -438,6 +438,7 @@
             {/if}
           </svelte:fragment>
         </ListView>
+        <div class="antiVSpacer x2" />
       </div>
     </div>
     <div class="actionsHint">

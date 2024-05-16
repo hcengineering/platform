@@ -59,16 +59,12 @@
       margin: 0;
     }
 
-    &.default {
-      &:hover:not(.highlighted) {
-        background-color: var(--theme-popup-divider);
-      }
+    &.default.highlighted:hover {
+      background-color: var(--theme-popup-divider);
     }
 
-    &.lumia {
-      &:hover:not(.highlighted) {
-        background-color: var(--global-ui-highlight-BackgroundColor);
-      }
+    &.lumia.highlighted:hover {
+      background-color: var(--global-ui-highlight-BackgroundColor);
     }
 
     &.selection:not(.highlighted) {
