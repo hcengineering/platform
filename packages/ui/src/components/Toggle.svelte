@@ -25,9 +25,8 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<label class="toggle" use:tooltip={showTooltip} class:disabled>
+<label {id} class="toggle" use:tooltip={showTooltip} class:disabled>
   <input
-    {id}
     class="chBox"
     type="checkbox"
     {disabled}
