@@ -12,7 +12,7 @@ export class NewProjectPage extends CommonTrackerPage {
   inputIdentifier = (): Locator => this.page.locator('div[id="project-identifier"] input')
   inputDescription = (): Locator => this.page.locator('div[id="project-description"] input')
   buttonChooseIcon = (): Locator => this.page.locator('div.antiGrid-row button.only-icon')
-  buttonMakePrivate = (): Locator => this.page.locator('div.antiGrid-row span.toggle-switch')
+  buttonMakePrivate = (): Locator => this.page.locator('[id="project-private"]')
   buttonCreateProject = (): Locator => this.page.locator('form[id="tracker:string:NewProject"] button[type="submit"]')
   projectTypeButton = (): Locator =>
     this.page.locator('div[class*="header"]', { hasText: 'Project type' }).locator('xpath=..').locator('button')

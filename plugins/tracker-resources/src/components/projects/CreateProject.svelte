@@ -500,7 +500,7 @@
         <Label label={presentation.string.MakePrivate} />
         <span><Label label={presentation.string.MakePrivateDescription} /></span>
       </div>
-      <Toggle bind:on={isPrivate} disabled={!isPrivate && members.length === 0} />
+      <Toggle id={'project-private'} bind:on={isPrivate} disabled={!isPrivate && members.length === 0} />
     </div>
 
     <div class="antiGrid-row">
