@@ -91,7 +91,7 @@
                   {/each}
                 </div>
               {/each}
-            {/each}  
+            {/each}
           </div>
         {/if}
         {#if item.id === selected}
