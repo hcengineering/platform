@@ -17,6 +17,7 @@
   import { LabelAndProps } from '../types'
   import { tooltip } from '../tooltips'
 
+  export let id: string | undefined = undefined
   export let on: boolean = false
   export let disabled: boolean = false
   export let showTooltip: LabelAndProps | undefined = undefined
@@ -26,6 +27,7 @@
 
 <label class="toggle" use:tooltip={showTooltip} class:disabled>
   <input
+    {id}
     class="chBox"
     type="checkbox"
     {disabled}
