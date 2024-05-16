@@ -103,7 +103,7 @@
     <PlanningCalendar
       {dragItem}
       bind:currentDate
-      displayedDaysCount={3}
+      displayedDaysCount={5}
       on:dragDrop={drop}
       on:change={(event) => (visibleNav = event.detail)}
     />

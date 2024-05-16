@@ -54,32 +54,31 @@
 </script>
 
 <div class="w-full flex-row-center">
-  <div class="flex-grow">
-    <Button
-      {focusIndex}
-      width="100%"
-      {icon}
-      {size}
-      {kind}
-      disabled={disabled || loading}
-      shape={hasDropdown ? 'rectangle-right' : undefined}
-      {justify}
-      borderStyle="none"
-      on:click
-      showTooltip={showTooltipMain}
-      id={mainButtonId}
-    >
-      <div class="flex w-full" slot="content">
-        <div class="flex-row-center w-full flex-between relative">
-          {#if label}
-            <Label {label} params={labelParams} />
-            <slot name="content" />
-            <div class="{kind} vertical-divider max-h-5 h-5" />
-          {/if}
-        </div>
+  <Button
+    {focusIndex}
+    width="100%"
+    {icon}
+    {size}
+    {kind}
+    disabled={disabled || loading}
+    shape={hasDropdown ? 'rectangle-right' : undefined}
+    {justify}
+    shrink={1}
+    borderStyle="none"
+    on:click
+    showTooltip={showTooltipMain}
+    id={mainButtonId}
+  >
+    <svelte:fragment slot="content">
+      <div class="flex-row-center w-full flex-between relative">
+        {#if label}
+          <span class="overflow-label"><Label {label} params={labelParams} /></span>
+          <slot name="content" />
+          <div class="{kind} vertical-divider max-h-5 h-5" />
+        {/if}
       </div>
-    </Button>
-  </div>
+    </svelte:fragment>
+  </Button>
   {#if hasDropdown}
     <Button
       width="1.75rem"

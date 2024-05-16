@@ -20,6 +20,7 @@
   import Scroller from './Scroller.svelte'
   import Icon from './Icon.svelte'
   import { resizeObserver } from '..'
+  import { capitalizeFirstLetter, formatKey } from '../utils'
 
   export let items: DropdownIntlItem[]
   export let selected: DropdownIntlItem['id'] | undefined = undefined
@@ -46,6 +47,7 @@
       <!-- svelte-ignore a11y-mouse-events-have-key-events -->
       <button
         class="hulyPopup-row"
+        class:withKeys={item.keys}
         on:mouseover={(ev) => {
           ev.currentTarget.focus()
         }}
@@ -73,9 +75,30 @@
         {:else}
           <div class="hulyPopup-row__label"><Label label={item.label} params={item.params ?? params} /></div>
         {/if}
-        <div class="hulyPopup-row__icon">
-          {#if item.id === selected}<IconCheck size={'small'} />{/if}
-        </div>
+        {#if item.keys}
+          <div class="hulyPopup-row__keys">
+            {#each item.keys as key, j}
+              {#if j !== 0}
+                <div class="mr-1 ml-1">/</div>
+              {/if}
+              {#each formatKey(key) as k, jj}
+                <div class="key">
+                  {#each k as kk, j}
+                    {#if j !== 0}
+                      +
+                    {/if}
+                    {capitalizeFirstLetter(kk.trim())}
+                  {/each}
+                </div>
+              {/each}
+            {/each}  
+          </div>
+        {/if}
+        {#if item.id === selected}
+          <div class="hulyPopup-row__icon">
+            <IconCheck size={'small'} />
+          </div>
+        {/if}
       </button>
     {/each}
   </Scroller>
