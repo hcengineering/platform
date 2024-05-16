@@ -38,8 +38,7 @@ export class DocumentsPage extends CommonPage {
   readonly buttonModalEditTeamspaceDescription = (): Locator =>
     this.formEditTeamspace().locator('div[id="teamspace-description"] input')
 
-  readonly buttonModalEditTeamspacePrivate = (): Locator =>
-    this.formEditTeamspace().locator('[id="teamspace-private"]')
+  readonly buttonModalEditTeamspacePrivate = (): Locator => this.formEditTeamspace().locator('[id="teamspace-private"]')
 
   readonly buttonModalEditTeamspaceSave = (): Locator => this.formEditTeamspace().locator('button[type="submit"]')
   readonly buttonModalEditTeamspaceClose = (): Locator => this.formEditTeamspace().locator('button#card-close')
