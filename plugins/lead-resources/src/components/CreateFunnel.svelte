@@ -27,7 +27,7 @@
   import lead, { Funnel } from '@hcengineering/lead'
   import presentation, { getClient, SpaceCreateCard } from '@hcengineering/presentation'
   import task, { ProjectType } from '@hcengineering/task'
-  import ui, { Component, EditBox, Grid, Label, ToggleWithLabel } from '@hcengineering/ui'
+  import ui, { Component, EditBox, Label, Toggle, ToggleWithLabel } from '@hcengineering/ui'
   import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
 
@@ -99,6 +99,7 @@
       private: isPrivate,
       archived: false,
       members,
+      autoJoin,
       owners,
       type: typeId
     })
@@ -111,7 +112,11 @@
     if (isNew) {
       await createFunnel()
     } else if (funnel !== undefined && spaceType?.targetClass !== undefined) {
-      await client.diffUpdate<Funnel>(funnel, { name, description, members, owners, private: isPrivate }, Date.now())
+      await client.diffUpdate<Funnel>(
+        funnel,
+        { name, description, members, owners, private: isPrivate, autoJoin },
+        Date.now()
+      )
 
       if (!deepEqual(rolesAssignment, getRolesAssignment())) {
         await client.updateMixin(
@@ -133,6 +138,7 @@
   }
 
   function handleMembersChanged (newMembers: Ref<Account>[]): void {
+    membersChanged = true
     // If a member was removed we need to remove it from any roles assignments as well
     const newMembersSet = new Set(newMembers)
     const removedMembersSet = new Set(members.filter((m) => !newMembersSet.has(m)))
@@ -156,6 +162,21 @@
 
   $: canSave =
     name.trim().length > 0 && members.length > 0 && owners.length > 0 && owners.some((o) => members.includes(o))
+
+  let autoJoin = funnel?.autoJoin ?? spaceType?.autoJoin ?? false
+
+  $: setDefaultMembers(spaceType)
+
+  let membersChanged: boolean = false
+
+  function setDefaultMembers (typeType: SpaceType | undefined): void {
+    if (typeType === undefined) return
+    if (membersChanged) return
+    if (funnel !== undefined) return
+    autoJoin = typeType.autoJoin ?? false
+    if (typeType.members === undefined || typeType.members.length === 0) return
+    members = typeType.members
+  }
 </script>
 
 <SpaceCreateCard
@@ -167,27 +188,37 @@
     dispatch('close')
   }}
 >
-  <Grid column={1} rowGap={1.5}>
+  <div class="antiGrid-row">
     <EditBox label={leadRes.string.FunnelName} bind:value={name} placeholder={leadRes.string.FunnelName} autoFocus />
+  </div>
+
+  <div class="antiGrid-row">
     <ToggleWithLabel
       label={presentation.string.MakePrivate}
       description={presentation.string.MakePrivateDescription}
       bind:on={isPrivate}
     />
+  </div>
 
+  <div class="antiGrid-row">
+    <div class="antiGrid-row__header">
+      <Label label={task.string.ProjectType} />
+    </div>
     <Component
       is={task.component.ProjectTypeSelector}
       disabled={!isNew}
       props={{
         descriptors: [leadRes.descriptors.FunnelType],
         type: typeId,
+        kind: 'regular',
+        size: 'large',
         disabled: funnel !== undefined
       }}
       on:change={(evt) => {
         typeId = evt.detail
       }}
     />
-  </Grid>
+  </div>
   <div class="antiGrid-row">
     <div class="antiGrid-row__header">
       <Label label={core.string.Owners} />
@@ -201,7 +232,7 @@
     />
   </div>
 
-  <div class="antiGrid-row mt-4">
+  <div class="antiGrid-row">
     <div class="antiGrid-row__header">
       <Label label={leadRes.string.Members} />
     </div>
@@ -213,6 +244,13 @@
       kind={'regular'}
       size={'large'}
     />
+  </div>
+  <div class="antiGrid-row">
+    <div class="antiGrid-row__header withDesciption">
+      <Label label={core.string.AutoJoin} />
+      <span><Label label={core.string.AutoJoinDescr} /></span>
+    </div>
+    <Toggle bind:on={autoJoin} />
   </div>
 
   {#each roles as role}

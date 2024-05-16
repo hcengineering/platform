@@ -13,9 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { type SpaceType, type SpaceTypeDescriptor } from '@hcengineering/core'
-  import { ButtonIcon, IconSquareExpand, ModernButton, ModernEditbox, TextArea } from '@hcengineering/ui'
+  import contact from '@hcengineering/contact'
+  import { AccountArrayEditor } from '@hcengineering/contact-resources'
+  import core, { Account, Ref, type SpaceType, type SpaceTypeDescriptor } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
+  import { ButtonIcon, IconSquareExpand, Label, ModernButton, ModernEditbox, TextArea, Toggle } from '@hcengineering/ui'
 
   import settingRes from '../../../plugin'
 
@@ -49,6 +51,33 @@
     }
 
     await client.update(type, { [field]: value })
+  }
+
+  async function changeMembers (members: Ref<Account>[]): Promise<void> {
+    if (disabled || type === undefined) {
+      return
+    }
+
+    const push = new Set<Ref<Account>>(members)
+    const pull = new Set<Ref<Account>>()
+    for (const member of type.members ?? []) {
+      if (!push.has(member)) {
+        pull.add(member)
+      } else {
+        push.delete(member)
+      }
+    }
+    if (push.size === 0 && pull.size === 0) {
+      return
+    }
+    const ops = client.apply(`typeMembers_${type._id}`)
+    for (const pushMem of push) {
+      ops.update(type, { $push: { members: pushMem } })
+    }
+    for (const pullMem of pull) {
+      ops.update(type, { $pull: { members: pullMem } })
+    }
+    await ops.commit()
   }
 </script>
 
@@ -90,6 +119,24 @@
         attributeUpdated('shortDescription', shortDescription)
       }}
     />
+    <div class="flex-between">
+      <AccountArrayEditor
+        value={type?.members ?? []}
+        label={contact.string.Members}
+        onChange={changeMembers}
+        readonly={disabled}
+      />
+      <div class="flex-row-center flex-gap-2">
+        <Label label={core.string.AutoJoin} />
+        <Toggle
+          on={type?.autoJoin ?? false}
+          on:change={(evt) => {
+            attributeUpdated('autoJoin', evt.detail)
+          }}
+          {disabled}
+        />
+      </div>
+    </div>
     <slot name="extra" />
   </div>
 {/if}

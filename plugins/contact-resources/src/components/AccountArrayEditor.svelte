@@ -25,7 +25,7 @@
 
   export let label: IntlString
   export let value: Ref<Account>[]
-  export let onChange: ((refs: Ref<Account>[]) => void) | undefined
+  export let onChange: ((refs: Ref<Account>[]) => void | Promise<void>) | undefined
   export let readonly = false
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'

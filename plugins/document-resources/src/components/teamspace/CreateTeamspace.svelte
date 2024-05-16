@@ -118,6 +118,7 @@
       private: isPrivate,
       members,
       owners,
+      autoJoin,
       archived: false,
       icon,
       color
@@ -145,6 +146,9 @@
     }
     if (teamspaceData.color !== teamspace?.color) {
       update.color = teamspaceData.color
+    }
+    if (teamspaceData.autoJoin !== teamspace?.autoJoin) {
+      update.autoJoin = teamspaceData.autoJoin
     }
     if (teamspaceData.members.length !== teamspace?.members.length) {
       update.members = teamspaceData.members
@@ -236,6 +240,7 @@
   }
 
   function handleMembersChanged (newMembers: Ref<Account>[]): void {
+    membersChanged = true
     // If a member was removed we need to remove it from any roles assignments as well
     const newMembersSet = new Set(newMembers)
     const removedMembersSet = new Set(members.filter((m) => !newMembersSet.has(m)))
@@ -255,6 +260,21 @@
     }
 
     rolesAssignment[roleId] = newMembers
+  }
+
+  let autoJoin = teamspace?.autoJoin ?? spaceType?.autoJoin ?? false
+
+  $: setDefaultMembers(spaceType)
+
+  let membersChanged: boolean = false
+
+  function setDefaultMembers (typeType: SpaceType | undefined): void {
+    if (typeType === undefined) return
+    if (membersChanged) return
+    if (teamspace !== undefined) return
+    autoJoin = typeType.autoJoin ?? false
+    if (typeType.members === undefined || typeType.members.length === 0) return
+    members = typeType.members
   }
 
   $: canSave =
@@ -381,6 +401,14 @@
         kind={'regular'}
         size={'large'}
       />
+    </div>
+
+    <div class="antiGrid-row">
+      <div class="antiGrid-row__header withDesciption">
+        <Label label={core.string.AutoJoin} />
+        <span><Label label={core.string.AutoJoinDescr} /></span>
+      </div>
+      <Toggle bind:on={autoJoin} />
     </div>
 
     {#each roles as role}

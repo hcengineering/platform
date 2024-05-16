@@ -230,7 +230,9 @@ export default plugin(coreId, {
     DeleteObjectDescription: '' as IntlString,
     ForbidDeleteObjectDescription: '' as IntlString,
     UpdateSpaceDescription: '' as IntlString,
-    ArchiveSpaceDescription: '' as IntlString
+    ArchiveSpaceDescription: '' as IntlString,
+    AutoJoin: '' as IntlString,
+    AutoJoinDescr: '' as IntlString
   },
   descriptor: {
     SpacesType: '' as Ref<SpaceTypeDescriptor>

@@ -17,7 +17,7 @@
   import { BooleanIcon, Label } from '@hcengineering/ui'
   import { getBooleanLabel } from '../utils'
 
-  export let value: any
+  export let value: boolean | null | undefined
   export let inline: boolean = false
 </script>
 

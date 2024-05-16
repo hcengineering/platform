@@ -75,8 +75,7 @@ export class TSpace extends TDoc implements Space {
   @Prop(ArrOf(TypeRef(core.class.Account)), core.string.Owners)
     owners?: Ref<Account>[]
 
-  @Prop(TypeBoolean(), getEmbeddedLabel('Auto-Join members'))
-  @Hidden() // let's hide it for now
+  @Prop(TypeBoolean(), core.string.AutoJoin)
     autoJoin?: boolean
 }
 
@@ -119,6 +118,12 @@ export class TSpaceType extends TDoc implements SpaceType {
 
   @Prop(Collection(core.class.Role), core.string.Roles)
     roles!: CollectionSize<Role>
+
+  @Prop(ArrOf(TypeRef(core.class.Account)), core.string.Members)
+    members!: Arr<Ref<Account>>
+
+  @Prop(TypeBoolean(), core.string.AutoJoin)
+    autoJoin?: boolean
 }
 
 @Model(core.class.Role, core.class.AttachedDoc, DOMAIN_MODEL)

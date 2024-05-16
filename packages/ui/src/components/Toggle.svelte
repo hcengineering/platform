@@ -24,7 +24,7 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<label class="toggle" use:tooltip={showTooltip}>
+<label class="toggle" use:tooltip={showTooltip} class:disabled>
   <input
     class="chBox"
     type="checkbox"
@@ -47,6 +47,12 @@
     vertical-align: middle;
     font-size: inherit;
     user-select: none;
+    cursor: pointer;
+
+    &.disabled {
+      cursor: default;
+    }
+
     .chBox {
       position: absolute;
       width: 1px;
@@ -66,9 +72,6 @@
           left: 1.125rem;
           background: var(--theme-toggle-on-sw-color);
         }
-      }
-      &:not(:disabled) + .toggle-switch {
-        cursor: pointer;
       }
       &:disabled + .toggle-switch {
         filter: grayscale(70%);
