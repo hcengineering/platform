@@ -24,6 +24,7 @@ import core, {
 } from '@hcengineering/core'
 
 import {
+  removeAllObjects,
   type BlobStorageIterator,
   type ListBlobResult,
   type StorageAdapter,
@@ -41,13 +42,10 @@ export function getBucketId (workspaceId: WorkspaceId): string {
 
 export interface MinioConfig extends StorageConfig {
   kind: 'minio'
-  region: string
-  endpoint: string
-  accessKeyId: string
-  secretAccessKey: string
-
-  port: number
-  useSSL: boolean
+  accessKey: string
+  secretKey: string
+  useSSL?: string
+  region?: string
 }
 
 /**
@@ -56,17 +54,15 @@ export interface MinioConfig extends StorageConfig {
 export class MinioService implements StorageAdapter {
   static config = 'minio'
   client: Client
-  constructor (
-    readonly opt: {
-      endPoint: string
-      port: number
-      accessKey: string
-      secretKey: string
-      useSSL: boolean
-      region?: string
-    }
-  ) {
-    this.client = new Client(opt)
+  constructor (readonly opt: Omit<MinioConfig, 'name' | 'kind'>) {
+    this.client = new Client({
+      endPoint: opt.endpoint,
+      accessKey: opt.accessKey,
+      secretKey: opt.secretKey,
+      region: opt.region ?? 'us-east-1',
+      port: opt.port ?? 9000,
+      useSSL: opt.useSSL === 'true'
+    })
   }
 
   async initialize (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {}
@@ -78,7 +74,7 @@ export class MinioService implements StorageAdapter {
   }
 
   async make (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {
-    await this.client.makeBucket(getBucketId(workspaceId), this.opt.region)
+    await this.client.makeBucket(getBucketId(workspaceId), this.opt.region ?? 'us-east-1')
   }
 
   async remove (ctx: MeasureContext, workspaceId: WorkspaceId, objectNames: string[]): Promise<void> {
@@ -86,46 +82,8 @@ export class MinioService implements StorageAdapter {
   }
 
   async delete (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {
+    await removeAllObjects(ctx, this, workspaceId)
     await this.client.removeBucket(getBucketId(workspaceId))
-  }
-
-  async list (ctx: MeasureContext, workspaceId: WorkspaceId, prefix?: string): Promise<ListBlobResult[]> {
-    try {
-      const items = new Map<string, ListBlobResult>()
-      const list = this.client.listObjects(getBucketId(workspaceId), prefix, true)
-      await new Promise((resolve, reject) => {
-        list.on('data', (data) => {
-          if (data.name !== undefined) {
-            items.set(data.name, {
-              _id: data.name as Ref<Blob>,
-              _class: core.class.Blob,
-              etag: data.etag,
-              size: data.size,
-              provider: 'minio',
-              space: core.space.Configuration,
-              modifiedBy: core.account.ConfigUser,
-              modifiedOn: data.lastModified.getTime(),
-              storageId: data.name
-            })
-          }
-        })
-        list.on('end', () => {
-          list.destroy()
-          resolve(null)
-        })
-        list.on('error', (err) => {
-          list.destroy()
-          reject(err)
-        })
-      })
-      return Array.from(items.values())
-    } catch (err: any) {
-      const msg = (err?.message as string) ?? ''
-      if (msg.includes('Invalid bucket name') || msg.includes('The specified bucket does not exist')) {
-        return []
-      }
-      throw err
-    }
   }
 
   async listStream (

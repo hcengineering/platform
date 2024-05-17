@@ -101,9 +101,7 @@ export async function createStorageDataAdapter (
   }
   // We need to create bucket if it doesn't exist
   if (storage !== undefined) {
-    if (!(await storage.exists(ctx, workspaceId))) {
-      await storage.make(ctx, workspaceId)
-    }
+    await storage.make(ctx, workspaceId)
   }
   const blobAdapter = await createMongoAdapter(ctx, hierarchy, url, workspaceId, modelDb, undefined, {
     calculateHash: (d) => {

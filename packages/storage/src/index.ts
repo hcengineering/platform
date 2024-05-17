@@ -37,7 +37,6 @@ export interface StorageAdapter {
   delete: (ctx: MeasureContext, workspaceId: WorkspaceId) => Promise<void>
 
   remove: (ctx: MeasureContext, workspaceId: WorkspaceId, objectNames: string[]) => Promise<void>
-  list: (ctx: MeasureContext, workspaceId: WorkspaceId, prefix?: string) => Promise<ListBlobResult[]>
   listStream: (ctx: MeasureContext, workspaceId: WorkspaceId, prefix?: string) => Promise<BlobStorageIterator>
   stat: (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string) => Promise<Blob | undefined>
   get: (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string) => Promise<Readable>
@@ -134,4 +133,30 @@ export class DummyStorageAdapter implements StorageAdapter, StorageAdapterEx {
 
 export function createDummyStorageAdapter (): StorageAdapter {
   return new DummyStorageAdapter()
+}
+
+export async function removeAllObjects (
+  ctx: MeasureContext,
+  storage: StorageAdapter,
+  workspaceId: WorkspaceId,
+  prefix?: string
+): Promise<void> {
+  // We need to list all files and delete them
+  const iterator = await storage.listStream(ctx, workspaceId, prefix)
+  let bulk: string[] = []
+  while (true) {
+    const obj = await iterator.next()
+    if (obj === undefined) {
+      break
+    }
+    bulk.push(obj.storageId)
+    if (bulk.length > 50) {
+      await storage.remove(ctx, workspaceId, bulk)
+      bulk = []
+    }
+  }
+  if (bulk.length > 0) {
+    await storage.remove(ctx, workspaceId, bulk)
+    bulk = []
+  }
 }

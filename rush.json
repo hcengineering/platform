@@ -1418,6 +1418,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/s3",
+      "projectFolder": "server/s3",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/bitrix",
       "projectFolder": "plugins/bitrix",
       "shouldPublish": true

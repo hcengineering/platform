@@ -425,6 +425,8 @@ export interface ServiceAdapterConfig {
 export interface StorageConfig {
   name: string
   kind: string
+  endpoint: string
+  port?: number
 }
 
 export interface StorageConfiguration {

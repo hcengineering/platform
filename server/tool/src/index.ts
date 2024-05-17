@@ -31,8 +31,8 @@ import core, {
 } from '@hcengineering/core'
 import { consoleModelLogger, MigrateOperation, ModelLogger } from '@hcengineering/model'
 import { createMongoTxAdapter, DBCollectionHelper, getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
-import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server'
 import { DomainIndexHelperImpl, StorageAdapter, StorageConfiguration } from '@hcengineering/server-core'
+import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { Db, Document } from 'mongodb'
 import { connect } from './connect'
 import toolPlugin from './plugin'
@@ -73,24 +73,6 @@ export function prepareTools (rawTxes: Tx[]): {
   mongodbUri: string
   txes: Tx[]
 } {
-  const minioEndpoint = process.env.MINIO_ENDPOINT
-  if (minioEndpoint === undefined) {
-    console.error('please provide minio endpoint')
-    process.exit(1)
-  }
-
-  const minioAccessKey = process.env.MINIO_ACCESS_KEY
-  if (minioAccessKey === undefined) {
-    console.error('please provide minio access key')
-    process.exit(1)
-  }
-
-  const minioSecretKey = process.env.MINIO_SECRET_KEY
-  if (minioSecretKey === undefined) {
-    console.error('please provide minio secret key')
-    process.exit(1)
-  }
-
   const mongodbUri = process.env.MONGO_URL
   if (mongodbUri === undefined) {
     console.error('please provide mongodb url.')
