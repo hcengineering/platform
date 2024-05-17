@@ -13,21 +13,44 @@
 // limitations under the License.
 //
 
-import type { Ref } from '@hcengineering/core'
+import type { Doc, Ref } from '@hcengineering/core'
 import {} from '@hcengineering/core'
 import { driveId } from '@hcengineering/drive'
 import drive from '@hcengineering/drive-resources/src/plugin'
-import { type IntlString, mergeIds } from '@hcengineering/platform'
-import { type AnyComponent } from '@hcengineering/ui'
-import { type Action, type ActionCategory, type ViewAction, type Viewlet } from '@hcengineering/view'
+import { type IntlString, type Resource, mergeIds } from '@hcengineering/platform'
+import { type AnyComponent, type Location } from '@hcengineering/ui'
+import {
+  type Action,
+  type ActionCategory,
+  type ViewAction,
+  type Viewlet,
+  type ViewletDescriptor
+} from '@hcengineering/view'
 
 export default mergeIds(driveId, drive, {
   component: {
+    GridView: '' as AnyComponent,
     CreateDrive: '' as AnyComponent,
-    DriveSpacePresenter: '' as AnyComponent
+    DriveSpaceHeader: '' as AnyComponent,
+    DriveSpacePresenter: '' as AnyComponent,
+    DrivePanel: '' as AnyComponent,
+    DrivePresenter: '' as AnyComponent,
+    EditFolder: '' as AnyComponent,
+    FolderPanel: '' as AnyComponent,
+    FolderPresenter: '' as AnyComponent,
+    FilePresenter: '' as AnyComponent,
+    FileSizePresenter: '' as AnyComponent,
+    ResourcePresenter: '' as AnyComponent
+  },
+  function: {
+    DriveLinkProvider: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
+    FolderLinkProvider: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>
   },
   viewlet: {
-    DriveTable: '' as Ref<Viewlet>
+    Grid: '' as Ref<ViewletDescriptor>,
+    DriveTable: '' as Ref<Viewlet>,
+    FileTable: '' as Ref<Viewlet>,
+    FileGrid: '' as Ref<Viewlet>
   },
   category: {
     Drive: '' as Ref<ActionCategory>
@@ -35,20 +58,24 @@ export default mergeIds(driveId, drive, {
   action: {
     CreateChildFolder: '' as Ref<Action>,
     CreateRootFolder: '' as Ref<Action>,
-    EditDrive: '' as Ref<Action>
+    EditDrive: '' as Ref<Action>,
+    DownloadFile: '' as Ref<Action>
   },
   actionImpl: {
     CreateChildFolder: '' as ViewAction,
     CreateRootFolder: '' as ViewAction,
-    EditDrive: '' as ViewAction
+    EditDrive: '' as ViewAction,
+    DownloadFile: '' as ViewAction
   },
   string: {
     Name: '' as IntlString,
     Description: '' as IntlString,
     Size: '' as IntlString,
     Type: '' as IntlString,
+    LastModified: '' as IntlString,
     Parent: '' as IntlString,
     Path: '' as IntlString,
-    Drives: '' as IntlString
+    Drives: '' as IntlString,
+    Download: '' as IntlString
   }
 })

@@ -20,5 +20,8 @@ const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(drive.icon, {
   Drive: `${icons}#drive`,
   File: `${icons}#file`,
-  Folder: `${icons}#folder`
+  Folder: `${icons}#folder`,
+  FolderOpen: `${icons}#folder-open`,
+  FolderClosed: `${icons}#folder-closed`,
+  Download: `${icons}#download`
 })

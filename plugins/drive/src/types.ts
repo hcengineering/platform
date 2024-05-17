@@ -14,31 +14,43 @@
 //
 
 import { Doc, Ref, TypedSpace } from '@hcengineering/core'
-import { Preference } from '@hcengineering/preference'
+
+/** @public */
+export type FileSize = number
 
 /** @public */
 export interface Drive extends TypedSpace {}
 
 /** @public */
-export interface Folder extends Doc<Drive> {
+export interface Resource extends Doc<Drive> {
   name: string
-  parent: Ref<Folder>
-  path: Ref<Folder>[]
+
+  parent: Ref<Resource>
+  path: Ref<Resource>[]
+
+  type?: string
+  size?: FileSize
+  lastModified?: number
 }
 
 /** @public */
-export interface File extends Doc<Drive> {
-  name: string
-
+export interface Folder extends Resource {
   parent: Ref<Folder>
   path: Ref<Folder>[]
 
+  type?: undefined
+  size?: undefined
+  lastModified?: undefined
+}
+
+/** @public */
+export interface File extends Resource {
   file: string
-  size: number
-  type: string
-}
 
-/** @public */
-export interface StarredFile extends Preference {
-  attachedTo: Ref<File>
+  parent: Ref<Folder>
+  path: Ref<Folder>[]
+
+  type: string
+  size: FileSize
+  lastModified: number
 }

@@ -46,6 +46,7 @@ import {
 import { serverContactId, createModel as serverContactModel } from '@hcengineering/model-server-contact'
 import { serverCoreId, createModel as serverCoreModel } from '@hcengineering/model-server-core'
 import { serverDocumentId, createModel as serverDocumentModel } from '@hcengineering/model-server-document'
+import { serverDriveId, createModel as serverDriveModel } from '@hcengineering/model-server-drive'
 import { serverGmailId, createModel as serverGmailModel } from '@hcengineering/model-server-gmail'
 import { serverGuestId, createModel as serverGuestModel } from '@hcengineering/model-server-guest'
 import { serverHrId, createModel as serverHrModel } from '@hcengineering/model-server-hr'
@@ -325,7 +326,8 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [serverOpenAI, openAIId],
     [serverDocumentModel, serverDocumentId],
     [serverTimeModel, serverTimeId],
-    [serverGuestModel, serverGuestId]
+    [serverGuestModel, serverGuestId],
+    [serverDriveModel, serverDriveId]
   ]
 
   for (const [b, id, config] of builders) {

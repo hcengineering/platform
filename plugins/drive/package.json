@@ -34,7 +34,8 @@
   "dependencies": {
     "@hcengineering/core": "^0.6.28",
     "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/preference": "^0.6.9"
+    "@hcengineering/preference": "^0.6.9",
+    "@hcengineering/ui": "^0.6.11"
   },
   "repository": "https://github.com/hcengineering/anticrm",
   "publishConfig": {

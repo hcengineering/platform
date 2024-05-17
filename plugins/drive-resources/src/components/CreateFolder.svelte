@@ -29,7 +29,7 @@
   }
 
   export let space: Ref<Drive>
-  export let parent: Ref<Folder> | undefined = undefined
+  export let parent: Ref<Folder>
 
   const id: Ref<Folder> = generateId()
 
@@ -37,7 +37,7 @@
   const client = getClient()
 
   let _space = space
-  let _parent = parent
+  let _parent = parent !== drive.ids.Root ? parent : undefined
   let name = ''
 
   $: if (_space !== space) _parent = undefined
@@ -50,7 +50,7 @@
   async function create (): Promise<void> {
     let path: Ref<Folder>[] = []
 
-    if (_parent !== undefined) {
+    if (_parent != null && _parent !== drive.ids.Root) {
       const parent = await client.findOne(drive.class.Folder, { _id: _parent })
       if (parent === undefined) {
         throw new Error('parent not found')
@@ -64,7 +64,8 @@
       {
         name: getTitle(name),
         parent: _parent ?? drive.ids.Root,
-        path
+        path,
+        size: 1
       },
       id
     )
@@ -106,20 +107,16 @@
       size={'small'}
       label={drive.string.Root}
       searchField={'name'}
-      allowDeselect={true}
+      allowDeselect
       showNavigate={false}
       docProps={{ disabled: true, noUnderline: true }}
-      focusIndex={20000}
+      on:object={(evt) => {
+        console.log('selected', evt)
+      }}
     />
   </svelte:fragment>
 
   <div class="flex-row-center clear-mins">
-    <EditBox
-      placeholder={core.string.Name}
-      bind:value={name}
-      kind={'large-style'}
-      autoFocus
-      focusIndex={1}
-    />
+    <EditBox placeholder={core.string.Name} bind:value={name} kind={'large-style'} autoFocus focusIndex={1} />
   </div>
 </Card>

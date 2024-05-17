@@ -14,15 +14,19 @@
 -->
 <script lang="ts">
   import { AttachedDoc, Doc } from '@hcengineering/core'
-  import { Breadcrumbs, BreadcrumbsModel, getClient } from '@hcengineering/presentation'
-  import { getObjectPresenter, isAttachedDoc, restrictionStore } from '../utils'
-  import { AttributeModel } from '@hcengineering/view'
+  import { getClient } from '@hcengineering/presentation'
+  import { isAttachedDoc } from '../utils'
+  import DocsNavigator from './DocsNavigator.svelte'
 
   export let element: Doc | AttachedDoc
 
   const client = getClient()
 
-  async function getParents (doc: AttachedDoc): Promise<readonly Doc[]> {
+  async function getParents (doc: Doc | AttachedDoc): Promise<readonly Doc[]> {
+    if (!isAttachedDoc(doc)) {
+      return []
+    }
+
     const parents: Doc[] = []
 
     let currentDoc: Doc | undefined = doc
@@ -40,43 +44,8 @@
 
     return parents.reverse()
   }
-
-  async function getBreadcrumbsModels (doc: typeof element): Promise<readonly BreadcrumbsModel[]> {
-    if (!isAttachedDoc(doc)) {
-      return []
-    }
-
-    const parents = await getParents(doc)
-    if (parents.length === 0) {
-      return []
-    }
-
-    const models: BreadcrumbsModel[] = []
-    for (const parent of parents) {
-      const attributeModel: AttributeModel | undefined = await getObjectPresenter(client, parent._class, { key: '' })
-
-      if (attributeModel) {
-        const breadcrumbsModel: BreadcrumbsModel = {
-          component: attributeModel.presenter,
-          props: {
-            shouldShowAvatar: false,
-            noUnderline: true,
-            noSelect: true,
-            ...(attributeModel.props ?? {}),
-            value: parent
-          }
-        }
-
-        models.push(breadcrumbsModel)
-      }
-    }
-
-    return models
-  }
 </script>
 
-{#await getBreadcrumbsModels(element) then models}
-  {#if models.length > 0}
-    <Breadcrumbs {models} disabled={$restrictionStore.disableNavigation} />
-  {/if}
+{#await getParents(element) then parents}
+  <DocsNavigator elements={parents} />
 {/await}

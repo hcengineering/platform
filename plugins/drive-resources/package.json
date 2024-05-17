@@ -44,11 +44,13 @@
     "@hcengineering/attachment": "^0.6.9",
     "@hcengineering/drive": "^0.6.0",
     "@hcengineering/contact-resources": "^0.6.0",
+    "@hcengineering/panel": "^0.6.15",
     "@hcengineering/presentation": "^0.6.2",
     "@hcengineering/ui": "^0.6.11",
     "@hcengineering/view": "^0.6.9",
     "@hcengineering/view-resources": "^0.6.0",
     "svelte": "^4.2.12",
-    "fast-equals": "^5.0.1"
+    "fast-equals": "^5.0.1",
+    "filesize": "^8.0.3"
   }
 }

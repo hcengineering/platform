@@ -1,5 +1,5 @@
 //
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,22 +13,51 @@
 // limitations under the License.
 //
 
-import core, { type Domain, type Role, type RolesAssignment, Account, AccountRole, Ref, IndexKind } from '@hcengineering/core'
-import { type Builder, Model, UX, Mixin, Prop, TypeString, Index, TypeAttachment, TypeRef } from '@hcengineering/model'
-import { TDoc, TTypedSpace } from '@hcengineering/model-core'
-import preference, { TPreference } from '@hcengineering/model-preference'
+import core, {
+  type Domain,
+  type Role,
+  type RolesAssignment,
+  type Type,
+  Account,
+  AccountRole,
+  Ref,
+  IndexKind,
+  DOMAIN_MODEL
+} from '@hcengineering/core'
+import { type Drive, type File, type Folder, type Resource, driveId } from '@hcengineering/drive'
+import {
+  type Builder,
+  Model,
+  UX,
+  Mixin,
+  Prop,
+  TypeString,
+  Index,
+  TypeAttachment,
+  TypeRef,
+  TypeTimestamp,
+  ReadOnly
+} from '@hcengineering/model'
+import { TDoc, TType, TTypedSpace } from '@hcengineering/model-core'
 import tracker from '@hcengineering/model-tracker'
-import view, { createAction } from '@hcengineering/model-view'
+import view, { type Viewlet, classPresenter, createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
-import { type Drive, type File, type Folder, type StarredFile, driveId } from '@hcengineering/drive'
+import { getEmbeddedLabel } from '@hcengineering/platform'
 
 import drive from './plugin'
-import { getEmbeddedLabel } from '@hcengineering/platform'
 
 export { driveId } from '@hcengineering/drive'
 export { drive as default }
 
 export const DOMAIN_DRIVE = 'drive' as Domain
+
+/** @public */
+export function TypeFilesize (): Type<number> {
+  return { _class: drive.class.TypeFileSize, label: drive.string.Size }
+}
+
+@Model(drive.class.TypeFileSize, core.class.Type, DOMAIN_MODEL)
+export class TTypeFileSize extends TType {}
 
 @Model(drive.class.Drive, core.class.TypedSpace)
 @UX(drive.string.Drive)
@@ -40,61 +69,93 @@ export class TDefaultDriveTypeData extends TDrive implements RolesAssignment {
   [key: Ref<Role>]: Ref<Account>[]
 }
 
-@Model(drive.class.Folder, core.class.Doc, DOMAIN_DRIVE)
-@UX(drive.string.Folder)
-export class TFolder extends TDoc implements Folder {
+@Model(drive.class.Resource, core.class.Doc, DOMAIN_DRIVE)
+@UX(drive.string.Resource)
+export class TResource extends TDoc implements Resource {
   declare space: Ref<Drive>
 
   @Prop(TypeString(), drive.string.Name)
   @Index(IndexKind.FullText)
     name!: string
 
-  @Prop(TypeRef(drive.class.Folder), drive.string.Parent)
-  @Index(IndexKind.Indexed)
-    parent!: Ref<Folder>
-
-  @Prop(TypeRef(drive.class.Folder), drive.string.Parent)
-    path!: Ref<Folder>[]
-}
-
-@Model(drive.class.File, core.class.Doc, DOMAIN_DRIVE)
-@UX(drive.string.File)
-export class TFile extends TDoc implements File {
-  declare space: Ref<Drive>
-
-  @Prop(TypeString(), drive.string.Name)
-  @Index(IndexKind.FullText)
-    name!: string
-
-  @Prop(TypeAttachment(), drive.string.File)
-    file!: string
-
-  @Prop(TypeString(), drive.string.Description)
-  @Index(IndexKind.FullText)
-    description!: string
-
-  @Prop(TypeString(), drive.string.Size)
-    size!: number
+  @Prop(TypeFilesize(), drive.string.Size)
+  @ReadOnly()
+    size?: number
 
   @Prop(TypeString(), drive.string.Type)
-    type!: string
+  @ReadOnly()
+    type?: string
+
+  @Prop(TypeTimestamp(), drive.string.LastModified)
+  @ReadOnly()
+    lastModified?: number
+
+  @Prop(TypeRef(drive.class.Resource), drive.string.Parent)
+  @Index(IndexKind.Indexed)
+  @ReadOnly()
+    parent!: Ref<Resource>
+
+  @Prop(TypeRef(drive.class.Resource), drive.string.Path)
+  @ReadOnly()
+    path!: Ref<Resource>[]
+}
+
+@Model(drive.class.Folder, drive.class.Resource, DOMAIN_DRIVE)
+@UX(drive.string.Folder)
+export class TFolder extends TResource implements Folder {
+  @Prop(TypeRef(drive.class.Folder), drive.string.Parent)
+  @Index(IndexKind.Indexed)
+  @ReadOnly()
+  declare parent: Ref<Folder>
+
+  @Prop(TypeRef(drive.class.Folder), drive.string.Path)
+  @ReadOnly()
+  declare path: Ref<Folder>[]
+}
+
+@Model(drive.class.File, drive.class.Resource, DOMAIN_DRIVE)
+@UX(drive.string.File)
+export class TFile extends TResource implements File {
+  @Prop(TypeAttachment(), drive.string.File)
+  @ReadOnly()
+    file!: string
 
   @Prop(TypeRef(drive.class.Folder), drive.string.Parent)
   @Index(IndexKind.Indexed)
-    parent!: Ref<Folder>
+  @ReadOnly()
+  declare parent: Ref<Folder>
 
   @Prop(TypeRef(drive.class.Folder), drive.string.Path)
-    path!: Ref<Folder>[]
-}
+  @ReadOnly()
+  declare path: Ref<Folder>[]
 
-@Model(drive.class.StarredFile, preference.class.Preference)
-export class TStarredFile extends TPreference implements StarredFile {
-  @Prop(TypeRef(drive.class.File), drive.string.File)
-  declare attachedTo: Ref<File>
+  @Prop(TypeFilesize(), drive.string.Size)
+  @ReadOnly()
+  declare size: number
+
+  @Prop(TypeString(), drive.string.Type)
+  @ReadOnly()
+  declare type: string
+
+  @Prop(TypeTimestamp(), drive.string.LastModified)
+  @ReadOnly()
+  declare lastModified: number
 }
 
 function defineDrive (builder: Builder): void {
   builder.createModel(TDrive, TDefaultDriveTypeData)
+
+  builder.mixin(drive.class.Drive, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: drive.component.DrivePresenter
+  })
+
+  builder.mixin(drive.class.Drive, core.class.Class, view.mixin.ObjectPanel, {
+    component: drive.component.DrivePanel
+  })
+
+  builder.mixin(drive.class.Drive, core.class.Class, view.mixin.LinkProvider, {
+    encode: drive.function.DriveLinkProvider
+  })
 
   // Space type
 
@@ -128,6 +189,7 @@ function defineDrive (builder: Builder): void {
   )
 
   // Navigator
+
   builder.mixin(drive.class.Drive, core.class.Class, view.mixin.SpacePresenter, {
     presenter: drive.component.DriveSpacePresenter
   })
@@ -177,7 +239,7 @@ function defineDrive (builder: Builder): void {
       action: drive.actionImpl.CreateRootFolder,
       label: drive.string.CreateFolder,
       icon: drive.icon.Folder,
-      category: view.category.General,
+      category: drive.category.Drive,
       input: 'none',
       target: drive.class.Drive,
       context: {
@@ -190,13 +252,74 @@ function defineDrive (builder: Builder): void {
   )
 }
 
+function defineResource (builder: Builder): void {
+  builder.createModel(TTypeFileSize, TResource)
+
+  classPresenter(builder, drive.class.TypeFileSize, drive.component.FileSizePresenter)
+
+  builder.mixin(drive.class.Resource, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: drive.component.ResourcePresenter
+  })
+
+  builder.createDoc<Viewlet>(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: drive.class.Resource,
+      descriptor: view.viewlet.Table,
+      config: ['', 'type', 'size', 'lastModified', 'createdBy'],
+      configOptions: {
+        hiddenKeys: ['name', 'file', 'parent', 'path'],
+        sortable: true
+      }
+    },
+    drive.viewlet.FileTable
+  )
+
+  // builder.createDoc<Viewlet>(
+  //   view.class.Viewlet,
+  //   core.space.Model,
+  //   {
+  //     attachTo: drive.class.Resource,
+  //     descriptor: drive.viewlet.Grid,
+  //     config: ['', 'type', 'size', 'lastModified', 'createdBy'],
+  //     configOptions: {
+  //       hiddenKeys: ['name', 'file', 'parent', 'path'],
+  //       sortable: true
+  //     }
+  //   },
+  //   drive.viewlet.FileGrid
+  // )
+}
+
 function defineFolder (builder: Builder): void {
   builder.createModel(TFolder)
+
+  builder.mixin(drive.class.Folder, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: drive.component.FolderPresenter
+  })
+
+  builder.mixin(drive.class.Folder, core.class.Class, view.mixin.ObjectEditor, {
+    editor: drive.component.EditFolder
+  })
+
+  builder.mixin(drive.class.Folder, core.class.Class, view.mixin.ObjectPanel, {
+    component: drive.component.FolderPanel
+  })
+
+  builder.mixin(drive.class.Folder, core.class.Class, view.mixin.LinkProvider, {
+    encode: drive.function.FolderLinkProvider
+  })
 
   // Actions
 
   builder.mixin(drive.class.Folder, core.class.Class, view.mixin.IgnoreActions, {
-    actions: [tracker.action.EditRelatedTargets, tracker.action.NewRelatedIssue]
+    actions: [
+      view.action.Open,
+      view.action.OpenInNewTab,
+      tracker.action.EditRelatedTargets,
+      tracker.action.NewRelatedIssue
+    ]
   })
 
   createAction(
@@ -205,7 +328,7 @@ function defineFolder (builder: Builder): void {
       action: drive.actionImpl.CreateChildFolder,
       label: drive.string.CreateFolder,
       icon: drive.icon.Folder,
-      category: view.category.General,
+      category: drive.category.Drive,
       input: 'none',
       target: drive.class.Folder,
       context: {
@@ -219,13 +342,35 @@ function defineFolder (builder: Builder): void {
 }
 
 function defineFile (builder: Builder): void {
-  builder.createModel(TFile, TStarredFile)
+  builder.createModel(TFile)
+
+  builder.mixin(drive.class.File, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: drive.component.FilePresenter
+  })
 
   // Actions
 
   builder.mixin(drive.class.File, core.class.Class, view.mixin.IgnoreActions, {
-    actions: [tracker.action.EditRelatedTargets, tracker.action.NewRelatedIssue]
+    actions: [view.action.OpenInNewTab, tracker.action.EditRelatedTargets, tracker.action.NewRelatedIssue]
   })
+
+  createAction(
+    builder,
+    {
+      action: drive.actionImpl.DownloadFile,
+      label: drive.string.Download,
+      icon: drive.icon.Download,
+      category: drive.category.Drive,
+      input: 'none',
+      target: drive.class.File,
+      context: {
+        mode: ['context', 'browser'],
+        application: drive.app.Drive,
+        group: 'tools'
+      }
+    },
+    drive.action.DownloadFile
+  )
 }
 
 function defineApplication (builder: Builder): void {
@@ -237,7 +382,7 @@ function defineApplication (builder: Builder): void {
       icon: drive.icon.Drive,
       alias: driveId,
       hidden: false,
-      // locationResolver: drive.resolver.Location,
+      locationResolver: drive.resolver.Location,
       navigatorModel: {
         specials: [
           {
@@ -265,15 +410,27 @@ function defineApplication (builder: Builder): void {
             specials: []
           }
         ]
-      }
-      // navHeaderComponent: document.component.NewDocumentHeader
+      },
+      navHeaderComponent: drive.component.DriveSpaceHeader
     },
     drive.app.Drive
   )
 }
 
 export function createModel (builder: Builder): void {
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: view.string.Grid,
+      icon: view.icon.Table,
+      component: drive.component.GridView
+    },
+    drive.viewlet.Grid
+  )
+
   defineDrive(builder)
+  defineResource(builder)
   defineFolder(builder)
   defineFile(builder)
   defineApplication(builder)

@@ -133,6 +133,7 @@ export { getActions, getContextActions, invokeAction, showMenu } from './actions
 export { default as ActionButton } from './components/ActionButton.svelte'
 export { default as ActionHandler } from './components/ActionHandler.svelte'
 export { default as BaseDocPresenter } from './components/BaseDocPresenter.svelte'
+export { default as DocsNavigator } from './components/DocsNavigator.svelte'
 export { default as FixedColumn } from './components/FixedColumn.svelte'
 export { default as LinkPresenter } from './components/LinkPresenter.svelte'
 export { default as MarkupDiffPresenter } from './components/MarkupDiffPresenter.svelte'

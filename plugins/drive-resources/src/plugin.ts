@@ -21,6 +21,8 @@ export default mergeIds(driveId, drive, {
   string: {
     CreateDrive: '' as IntlString,
     CreateFolder: '' as IntlString,
+    UploadFile: '' as IntlString,
+    UploadFolder: '' as IntlString,
     EditDrive: '' as IntlString,
     RoleLabel: '' as IntlString,
     Root: '' as IntlString

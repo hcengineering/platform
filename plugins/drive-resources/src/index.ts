@@ -13,32 +13,82 @@
 // limitations under the License.
 //
 
-import drive, { type Drive, type Folder } from '@hcengineering/drive'
+import { type Doc, type Ref } from '@hcengineering/core'
+import drive, { type Drive, type File, type Folder } from '@hcengineering/drive'
 import { type Resources } from '@hcengineering/platform'
+import { getFileUrl } from '@hcengineering/presentation'
+import { type Location, showPopup } from '@hcengineering/ui'
 
 import CreateDrive from './components/CreateDrive.svelte'
-import CreateFolder from './components/CreateFolder.svelte'
-import { showPopup } from '@hcengineering/ui'
+import DrivePanel from './components/DrivePanel.svelte'
+import DriveSpaceHeader from './components/DriveSpaceHeader.svelte'
+import DriveSpacePresenter from './components/DriveSpacePresenter.svelte'
+import DrivePresenter from './components/DrivePresenter.svelte'
+import EditFolder from './components/EditFolder.svelte'
+import FilePresenter from './components/FilePresenter.svelte'
+import FileSizePresenter from './components/FileSizePresenter.svelte'
+import FolderPanel from './components/FolderPanel.svelte'
+import FolderPresenter from './components/FolderPresenter.svelte'
+import GridView from './components/GridView.svelte'
+import ResourcePresenter from './components/ResourcePresenter.svelte'
 
-async function createRootFolder (doc: Drive): Promise<void> {
-  showPopup(CreateFolder, { space: doc._id, parent: drive.ids.Root })
+import { getDriveLink, getFolderLink, resolveLocation } from './navigation'
+import { createFolder } from './utils'
+
+async function CreateRootFolder (doc: Drive): Promise<void> {
+  await createFolder(doc._id, drive.ids.Root)
 }
 
-async function createChildFolder (doc: Folder): Promise<void> {
-  showPopup(CreateFolder, { space: doc.space, parent: doc._id })
+async function CreateChildFolder (doc: Folder): Promise<void> {
+  await createFolder(doc.space, doc._id)
 }
 
-async function editDrive (drive: Drive): Promise<void> {
+async function EditDrive (drive: Drive): Promise<void> {
   showPopup(CreateDrive, { drive })
+}
+
+async function DownloadFile (doc: File | File[]): Promise<void> {
+  const files = Array.isArray(doc) ? doc : [doc]
+  for (const file of files) {
+    const url = getFileUrl(file.file, 'full', file.name)
+    window.open(url, '_blank')
+  }
+}
+
+async function DriveLinkProvider (doc: Doc): Promise<Location> {
+  return getDriveLink(doc._id as Ref<Drive>)
+}
+
+async function FolderLinkProvider (doc: Doc): Promise<Location> {
+  return getFolderLink(doc._id as Ref<Folder>)
 }
 
 export default async (): Promise<Resources> => ({
   component: {
-    CreateDrive
+    CreateDrive,
+    DrivePanel,
+    DriveSpaceHeader,
+    DriveSpacePresenter,
+    DrivePresenter,
+    EditFolder,
+    FilePresenter,
+    FileSizePresenter,
+    FolderPanel,
+    FolderPresenter,
+    GridView,
+    ResourcePresenter
   },
   actionImpl: {
-    CreateChildFolder: createChildFolder,
-    CreateRootFolder: createRootFolder,
-    EditDrive: editDrive
+    CreateChildFolder,
+    CreateRootFolder,
+    EditDrive,
+    DownloadFile
+  },
+  function: {
+    DriveLinkProvider,
+    FolderLinkProvider
+  },
+  resolver: {
+    Location: resolveLocation
   }
 })

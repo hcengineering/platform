@@ -170,6 +170,8 @@
     "@hcengineering/drive": "^0.6.0",
     "@hcengineering/drive-assets": "^0.6.0",
     "@hcengineering/drive-resources": "^0.6.0",
+    "@hcengineering/server-drive": "^0.6.0",
+    "@hcengineering/server-drive-resources": "^0.6.0",
     "@hcengineering/support": "^0.6.1",
     "@hcengineering/support-assets": "^0.6.1",
     "@hcengineering/support-resources": "^0.6.0",

@@ -1676,6 +1676,21 @@
       "packageName": "@hcengineering/model-drive",
       "projectFolder": "models/drive",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-drive",
+      "projectFolder": "server-plugins/drive",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-server-drive",
+      "projectFolder": "models/server-drive",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-drive-resources",
+      "projectFolder": "server-plugins/drive-resources",
+      "shouldPublish": false
     }
   ]
 }

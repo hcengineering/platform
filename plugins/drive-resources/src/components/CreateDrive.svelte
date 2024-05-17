@@ -47,8 +47,7 @@
 
   let members: Ref<Account>[] =
     drive?.members !== undefined ? hierarchy.clone(drive.members) : [getCurrentAccount()._id]
-  let owners: Ref<Account>[] =
-    drive?.owners !== undefined ? hierarchy.clone(drive.owners) : [getCurrentAccount()._id]
+  let owners: Ref<Account>[] = drive?.owners !== undefined ? hierarchy.clone(drive.owners) : [getCurrentAccount()._id]
   let rolesAssignment: RolesAssignment = {}
 
   let typeId: Ref<SpaceType> | undefined = drive?.type ?? driveRes.spaceType.DefaultDrive
@@ -168,13 +167,7 @@
     await client.createDoc(driveRes.class.Drive, core.space.Space, { ...driveData, type: typeId }, driveId)
 
     // Create space type's mixin with roles assignments
-    await client.createMixin(
-      driveId,
-      driveRes.class.Drive,
-      core.space.Space,
-      spaceType.targetClass,
-      rolesAssignment
-    )
+    await client.createMixin(driveId, driveRes.class.Drive, core.space.Space, spaceType.targetClass, rolesAssignment)
 
     close(driveId)
   }
@@ -260,13 +253,7 @@
         <Label label={core.string.Name} />
       </div>
       <div class="padding">
-        <EditBox
-          id="teamspace-title"
-          bind:value={name}
-          placeholder={core.string.Name}
-          kind={'large-style'}
-          autoFocus
-        />
+        <EditBox id="teamspace-title" bind:value={name} placeholder={core.string.Name} kind={'large-style'} autoFocus />
       </div>
     </div>
 
@@ -275,11 +262,7 @@
         <Label label={core.string.Description} />
       </div>
       <div class="padding">
-        <EditBox
-          id="teamspace-description"
-          bind:value={description}
-          placeholder={core.string.Description}
-        />
+        <EditBox id="teamspace-description" bind:value={description} placeholder={core.string.Description} />
       </div>
     </div>
   </div>

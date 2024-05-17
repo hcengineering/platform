@@ -13,10 +13,11 @@
 // limitations under the License.
 //
 
-import type { Class, Doc, Mixin, Ref, SpaceType, SpaceTypeDescriptor } from '@hcengineering/core'
-import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
+import type { Class, Doc, Mixin, Ref, SpaceType, SpaceTypeDescriptor, Type } from '@hcengineering/core'
+import type { Asset, IntlString, Plugin, Resource as PlatformResource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import { Drive, File, Folder, StarredFile } from './types'
+import type { Location, ResolvedLocation } from '@hcengineering/ui'
+import { Drive, File, FileSize, Folder, Resource } from './types'
 
 export * from './types'
 
@@ -30,7 +31,8 @@ export const drivePlugin = plugin(driveId, {
     Drive: '' as Ref<Class<Drive>>,
     File: '' as Ref<Class<File>>,
     Folder: '' as Ref<Class<Folder>>,
-    StarredFile: '' as Ref<Class<StarredFile>>
+    Resource: '' as Ref<Class<Resource>>,
+    TypeFileSize: '' as Ref<Class<Type<FileSize>>>
   },
   mixin: {
     DefaultDriveTypeData: '' as Ref<Mixin<Drive>>
@@ -38,7 +40,10 @@ export const drivePlugin = plugin(driveId, {
   icon: {
     Drive: '' as Asset,
     File: '' as Asset,
-    Folder: '' as Asset
+    Folder: '' as Asset,
+    FolderOpen: '' as Asset,
+    FolderClosed: '' as Asset,
+    Download: '' as Asset
   },
   app: {
     Drive: '' as Ref<Doc>
@@ -46,10 +51,14 @@ export const drivePlugin = plugin(driveId, {
   ids: {
     Root: '' as Ref<Folder>
   },
+  resolver: {
+    Location: '' as PlatformResource<(loc: Location) => Promise<ResolvedLocation | undefined>>
+  },
   string: {
     Drive: '' as IntlString,
     File: '' as IntlString,
-    Folder: '' as IntlString
+    Folder: '' as IntlString,
+    Resource: '' as IntlString
   },
   descriptor: {
     DriveType: '' as Ref<SpaceTypeDescriptor>
