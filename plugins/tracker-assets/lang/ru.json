@@ -35,6 +35,7 @@
     "TargetDate": "Дата завершения",
     "Planned": "Запланирован",
     "InProgress": "В работе",
+    "Verification": "Verification",
     "Paused": "Приостановлен",
     "Completed": "Завершен",
     "Canceled": "Отменено",
@@ -66,13 +67,11 @@
     "Back": "Назад",
     "List": "Список",
     "NumberLabels": "{count, plural, =0 {нет меток} one {# метка} few {# метки} other {# меток}}",
-
     "CategoryBacklog": "Пул",
     "CategoryUnstarted": "Не запущенные",
     "CategoryStarted": "Запущенный",
     "CategoryCompleted": "Завершенные",
     "CategoryCanceled": "Отменённые",
-
     "Title": "Заголовок",
     "Name": "Имя",
     "Description": "Описание",
@@ -81,10 +80,13 @@
     "Assignee": "Исполнитель",
     "AssignTo": "Назначить...",
     "AssignedTo": "Назначен на {value}",
+    "Dependency": "Dependency",
+    "SetDependency": "Set dependency",
     "Parent": "Родительская задача",
     "SetParent": "Задать родительскую задачу\u2026",
     "ChangeParent": "Изменить родительскую задачу\u2026",
     "RemoveParent": "Удалить родительскую задачу",
+    "RemoveDependency": "Remove dependency",
     "OpenParent": "Открыть родительскую задачу",
     "SubIssues": "Подзадачи",
     "SubIssuesList": "Подзадачи ({subIssues})",
@@ -142,14 +144,12 @@
     "ComponentMembersSearchPlaceholder": "Изменить участников компонента\u2026",
     "MoveToProject": "Изменить проект",
     "Duplicate": "Дублировать",
-
     "GotoIssues": "Перейти к задачам",
     "GotoActive": "Перейти к активным задачам",
     "GotoBacklog": "Перейти к пулу задач",
     "GotoComponents": "Перейти к компоненту",
     "GotoMyIssues": "Перейти к моим задачам",
     "GotoTrackerApplication": "Перейти к приложению Трекер",
-
     "CreatedOne": "Создана",
     "MoveIssues": "Переместить задачи",
     "MoveIssuesDescription": "Выберите проект, в который вы хотите переместить задачи",
@@ -161,7 +161,6 @@
     "Replacement": "ЗАМЕНА",
     "Original": "ОРИГИНАЛ",
     "OriginalDescription": "Элементы из этой секции будут созданы в новом проекте",
-
     "Relations": "Зависимости",
     "RemoveRelation": "Удалить зависимость...",
     "AddBlockedBy": "Отметить как блокируемую...",
@@ -176,7 +175,6 @@
     "Blocks": "Блокирует",
     "Related": "Связан",
     "RelatedIssues": "Связанные задачи",
-
     "EditIssue": "Редактирование {title}",
     "EditWorkflowStatuses": "Редактировать статусы задач",
     "EditProject": "Редактировать проект",
@@ -191,21 +189,17 @@
     "DeleteWorkflowStatus": "Удалить статус задачи",
     "DeleteWorkflowStatusConfirm": "Вы действительно хотите удалить \"{status}\" статус?",
     "DeleteWorkflowStatusErrorDescription": "Статус \"{status}\" {count, plural, one {имеет # задача} few {имеет $ задачи} other {имеют # задач}}. Пожалуйста, выберите статус для перемещения.",
-
     "Save": "Сохранить",
     "IncludeItemsThatMatch": "Включить элементы, которые соответствуют",
     "AnyFilter": "любому фильтру",
     "AllFilters": "всем фильтрам",
     "NoDescription": "Нет описания",
     "SearchIssue": "Поиск задачи...",
-
     "StatusHistory": "История состояний",
     "NewSubIssue": "Добавить под-задачу...",
     "AddLabel": "Добавить метку",
-
     "DeleteIssue": "Удалить {issueCount, plural, =1 {задачу} one {# задачу} few {# задачи} other {задач}}",
     "DeleteIssueConfirm": "Вы действительно хотите удалить {issueCount, plural, =1 {задачу} one {# задачу} few {# задачи} other {задач}}{subIssueCount, plural, =0 {?} =1 { и под-задачу?} one { и # под-задачу?} other { и # под-задач?}}",
-
     "Milestone": "Этап",
     "NoMilestone": "Без Этапа",
     "MoveToMilestone": "Выбрать Этап",
@@ -216,13 +210,10 @@
     "ClosedMilestones": "Завершено",
     "AddToMilestone": "Добавить в Этап",
     "MilestoneNamePlaceholder": "Название Этапа",
-
     "NewMilestone": "Новый Этап",
     "CreateMilestone": "Создать",
-
     "MoveAndDeleteMilestone": "Переместить Задачи в {newMilestone} и Удалить {deleteMilestone}",
     "MoveAndDeleteMilestoneConfirm": "Вы действительно хотите удалить этап и перенести задачи в другой?",
-
     "Estimation": "Оценка",
     "ReportedTime": "Потраченное времени",
     "RemainingTime": "Осталось времени",
@@ -241,11 +232,9 @@
     "CapacityValue": "из {value}d",
     "NewRelatedIssue": "Завести связанную задачу",
     "RelatedIssuesNotFound": "Связанные задачи не найдены",
-
     "AddedReference": "Добавлена зависимость",
     "AddedAsBlocked": "Отмечено как заблокировано",
     "AddedAsBlocking": "Отмечено как блокирующее",
-
     "IssueTemplate": "Шаблон",
     "IssueTemplates": "Шаблоны",
     "NewProcess": "Новый шаблон",
@@ -254,12 +243,10 @@
     "TemplateReplace": "Вы хотите применить выбранный шаблон?",
     "TemplateReplaceConfirm": "Все внесенные изменения в будут заменены значениями из нового шаблона",
     "Apply": "Применить",
-
     "CurrentWorkDay": "Текущий Рабочий День",
     "PreviousWorkDay": "Предыдущий Рабочий День",
     "TimeReportDayTypeLabel": "Выберите тип дня для временного отчета",
     "DefaultAssignee": "Исполнитель задачи по умолчанию",
-
     "SevenHoursLength": "Семь Часов",
     "EightHoursLength": "Восемь Часов",
     "HourLabel": "ч",
@@ -271,6 +258,7 @@
     "ConfigDescription": "Расширение по управлению задачами, чтобы все было в срок.",
     "NoStatusFound": "Статус не найдет",
     "CreateMissingStatus": "Создать отсутствующий статус",
+    "UnsetDependency": "Dependency isuue will be unset",
     "UnsetParent": "Родительская задача будет убрана",
     "Unarchive": "Разархивировать",
     "UnarchiveConfirm": "Вы действительно хотите разархивировать?",

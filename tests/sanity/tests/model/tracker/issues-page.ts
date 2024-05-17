@@ -97,7 +97,7 @@ export class IssuesPage extends CommonTrackerPage {
     this.commonAncestorForOperations(issueName).locator('button > div[slot="content"]').first()
 
   inProgressHeader = (): Locator => this.page.locator('.categoryHeader :text-is("In Progress")').first()
-  backlogHeader = (): Locator => this.page.locator('.categoryHeader :text-is("Backlog")').first()
+  inVerificationHeader = (): Locator => this.page.locator('.categoryHeader :text-is("Verification")').first()
   todoHeader = (): Locator => this.page.locator('.categoryHeader :text-is("Todo")').first()
   doneHeader = (): Locator => this.page.locator('.categoryHeader :text-is("Done")').first()
   canceledHeader = (): Locator => this.page.locator('.categoryHeader :text-is("Canceled")').first()
@@ -153,12 +153,12 @@ export class IssuesPage extends CommonTrackerPage {
   inputTextPlaceholder = (): Locator => this.page.getByPlaceholder('Type text...')
   confirmInput = (): Locator => this.page.locator('.ml-2 > .antiButton')
 
-  async navigateToIssues (): Promise<void> {
+  async navigateToIssues(): Promise<void> {
     await this.page.click('text="Issues"')
     await this.page.keyboard.press('Escape')
   }
 
-  async createAndOpenIssue (name: string, assignee: string, status: string): Promise<void> {
+  async createAndOpenIssue(name: string, assignee: string, status: string): Promise<void> {
     try {
       await this.notificationTimeoutSetting('5000')
       await createIssue(this.page, { name, assignee, status })
@@ -169,7 +169,7 @@ export class IssuesPage extends CommonTrackerPage {
     }
   }
 
-  async reportTime (time: number): Promise<void> {
+  async reportTime(time: number): Promise<void> {
     await this.reportedTimeEditor().click()
     await this.page.waitForSelector('text="Time spent reports"')
     await this.addReportButton().click()
@@ -181,179 +181,179 @@ export class IssuesPage extends CommonTrackerPage {
     await this.okButton().click()
   }
 
-  async verifyReportedTime (time: number): Promise<void> {
+  async verifyReportedTime(time: number): Promise<void> {
     // Assuming toTime is defined elsewhere
     await expect(this.page.locator('#ReportedTimeEditor')).toContainText(await toTime(time))
   }
 
   // ACTIONS
 
-  async clickOnReportedTimeEditor (): Promise<void> {
+  async clickOnReportedTimeEditor(): Promise<void> {
     await this.reportedTimeEditor().click()
   }
 
-  async clickButtonCreateNewIssue (): Promise<void> {
+  async clickButtonCreateNewIssue(): Promise<void> {
     await this.buttonCreateNewIssue().click()
   }
 
-  async clickButtonCreateIssue (): Promise<void> {
+  async clickButtonCreateIssue(): Promise<void> {
     await this.buttonCreateIssue().click()
   }
 
-  async clickOnIssues (): Promise<void> {
+  async clickOnIssues(): Promise<void> {
     await this.issues().click()
   }
 
-  async clickOnSubIssues (): Promise<void> {
+  async clickOnSubIssues(): Promise<void> {
     await this.subIssues().click()
   }
 
-  async clickOnNewIssue (): Promise<void> {
+  async clickOnNewIssue(): Promise<void> {
     await this.newIssue().click()
   }
 
-  async navigateToMyIssues (): Promise<void> {
+  async navigateToMyIssues(): Promise<void> {
     await this.myIssuesButton().click()
   }
 
-  async clickReportedTimeEditor (): Promise<void> {
+  async clickReportedTimeEditor(): Promise<void> {
     await this.reportedTimeEditor().click()
   }
 
-  async waitForTimeSpentReports (): Promise<void> {
+  async waitForTimeSpentReports(): Promise<void> {
     await this.timeSpentReports().waitFor()
   }
 
-  async clickAddReportButton (): Promise<void> {
+  async clickAddReportButton(): Promise<void> {
     await this.addReportButton().click()
   }
 
-  async waitForAddTimeReport (): Promise<void> {
+  async waitForAddTimeReport(): Promise<void> {
     await this.addTimeReport().waitFor()
   }
 
-  async fillSpentTime (time: number): Promise<void> {
+  async fillSpentTime(time: number): Promise<void> {
     await this.spentTimeInput().fill(`${time}`)
   }
 
-  async checkCreateButtonEnabled (): Promise<void> {
+  async checkCreateButtonEnabled(): Promise<void> {
     await expect(this.createButton()).toBeEnabled()
   }
 
-  async clickCreateButton (): Promise<void> {
+  async clickCreateButton(): Promise<void> {
     await this.createButton().click()
   }
 
-  async clickCloseButton (): Promise<void> {
+  async clickCloseButton(): Promise<void> {
     await this.closeButton().click()
   }
 
-  async clickIssuesIndex (index: number): Promise<void> {
+  async clickIssuesIndex(index: number): Promise<void> {
     await this.issuesButton().nth(index).click()
   }
 
-  async clickIssues (): Promise<void> {
+  async clickIssues(): Promise<void> {
     await this.issuesButton().click()
   }
 
-  async clickView (): Promise<void> {
+  async clickView(): Promise<void> {
     await this.viewButton().click()
   }
 
-  async clickOrdering (): Promise<void> {
+  async clickOrdering(): Promise<void> {
     await this.orderingButton().click()
   }
 
-  async selectModifiedDate (): Promise<void> {
+  async selectModifiedDate(): Promise<void> {
     await this.modifiedDateMenuItem().click()
   }
 
-  async pressEscape (): Promise<void> {
+  async pressEscape(): Promise<void> {
     await this.page.keyboard.press('Escape')
   }
 
-  async clickEstimationContainer (): Promise<void> {
+  async clickEstimationContainer(): Promise<void> {
     await this.estimationContainer().click()
   }
 
-  async waitForEstimation (): Promise<void> {
+  async waitForEstimation(): Promise<void> {
     await this.page.waitForSelector('text="Estimation"')
   }
 
-  async clickAddTimeReport (): Promise<void> {
+  async clickAddTimeReport(): Promise<void> {
     await this.addTimeReportButton().click()
   }
 
-  async waitForTimeReportAdd (): Promise<void> {
+  async waitForTimeReportAdd(): Promise<void> {
     await this.timeReportCreationArea().waitFor()
   }
 
-  async expectCreateEnabled (): Promise<void> {
+  async expectCreateEnabled(): Promise<void> {
     await expect(this.createButton()).toBeEnabled()
   }
 
-  async clickCreate (): Promise<void> {
+  async clickCreate(): Promise<void> {
     await this.createButton().click()
   }
 
-  async clickOkButton (): Promise<void> {
+  async clickOkButton(): Promise<void> {
     await this.okButton().click()
   }
 
-  async checkEstimation (count: number): Promise<void> {
+  async checkEstimation(count: number): Promise<void> {
     // Assuming toTime is defined elsewhere
     await expect(this.estimationSpan()).toContainText(await toTime(count))
   }
 
-  async clickNewIssue (): Promise<void> {
+  async clickNewIssue(): Promise<void> {
     await this.newIssueButton().click()
   }
 
-  async clickAndFillIssueName (issueName: string): Promise<void> {
+  async clickAndFillIssueName(issueName: string): Promise<void> {
     await this.issueNameInput().click()
     await this.issueNameInput().fill(issueName)
   }
 
-  async clickAndFillIssueDescription (issueDescription: string): Promise<void> {
+  async clickAndFillIssueDescription(issueDescription: string): Promise<void> {
     await this.issueDescriptionInput().click()
     await this.issueDescriptionInput().fill(issueDescription)
   }
 
-  async selectStatus (): Promise<void> {
+  async selectStatus(): Promise<void> {
     await this.statusEditor().click()
     await this.todoButton().click()
   }
 
-  async selectPriority (): Promise<void> {
+  async selectPriority(): Promise<void> {
     await this.priorityEditor().click()
     await this.urgentButton().click()
   }
 
-  async clickAssignee (): Promise<void> {
+  async clickAssignee(): Promise<void> {
     await this.assigneeEditor().click()
     await this.appleseedJohnButton().click()
   }
 
-  async inputTextPlaceholderFill (text: string): Promise<void> {
+  async inputTextPlaceholderFill(text: string): Promise<void> {
     await this.inputTextPlaceholder().fill(text)
     await this.confirmInput().click()
   }
 
-  async setEstimation (): Promise<void> {
+  async setEstimation(): Promise<void> {
     await this.estimationEditor().click()
   }
 
-  async setDueDate (day: string): Promise<void> {
+  async setDueDate(day: string): Promise<void> {
     await this.dueDateButton().click()
     await this.specificDay(day).click()
   }
 
-  async pressEscapeTwice (): Promise<void> {
+  async pressEscapeTwice(): Promise<void> {
     await this.page.keyboard.press('Escape')
     await this.page.keyboard.press('Escape')
   }
 
-  async checkIssuePresenceInTabs (issueName: string, presence: boolean): Promise<void> {
+  async checkIssuePresenceInTabs(issueName: string, presence: boolean): Promise<void> {
     const tabs = [this.assignedTab(), this.createdTab(), this.subscribedTab()]
     const checks = [false, true, true]
 
@@ -368,7 +368,7 @@ export class IssuesPage extends CommonTrackerPage {
     }
   }
 
-  async stopTrackingIssue (issueName: string): Promise<void> {
+  async stopTrackingIssue(issueName: string): Promise<void> {
     await this.notTrackButton().click()
     await this.selectPopup().click()
     await this.page.waitForTimeout(100)
@@ -379,27 +379,27 @@ export class IssuesPage extends CommonTrackerPage {
 
   // ACTIONS
 
-  async clickLinkSidebarAll (): Promise<void> {
+  async clickLinkSidebarAll(): Promise<void> {
     await this.linkSidebarAll().click()
   }
 
-  async clickModelSelectorAll (): Promise<void> {
+  async clickModelSelectorAll(): Promise<void> {
     await this.modelSelectorAll().click()
   }
 
-  async clickMdelSelectorBacklog (): Promise<void> {
+  async clickMdelSelectorBacklog(): Promise<void> {
     await this.modelSelectorBacklog().click()
   }
 
-  async clickModalSelectorActive (): Promise<void> {
+  async clickModalSelectorActive(): Promise<void> {
     await this.modelSelectorActive().click()
   }
 
-  async clickLinkSidebarMyIssue (): Promise<void> {
+  async clickLinkSidebarMyIssue(): Promise<void> {
     await this.linkSidebarMyIssue().click()
   }
 
-  async createNewIssue (data: NewIssue, closeNotification: boolean = false): Promise<void> {
+  async createNewIssue(data: NewIssue, closeNotification: boolean = false): Promise<void> {
     await this.buttonCreateNewIssue().click()
     await this.fillNewIssueForm(data)
     await this.clickButtonCreateIssue()
@@ -409,7 +409,7 @@ export class IssuesPage extends CommonTrackerPage {
     await attachScreenshot(`createdNewIssue-${data.title}.png`, this.page)
   }
 
-  async fillNewIssueForm (data: NewIssue): Promise<void> {
+  async fillNewIssueForm(data: NewIssue): Promise<void> {
     await this.inputPopupCreateNewIssueTitle().fill(data.title)
     await this.inputPopupCreateNewIssueDescription().fill(data.description)
     if (data.status != null) {
@@ -479,7 +479,7 @@ export class IssuesPage extends CommonTrackerPage {
     }
   }
 
-  async searchIssueByName (issueName: string): Promise<void> {
+  async searchIssueByName(issueName: string): Promise<void> {
     for (let i = 0; i < 5; i++) {
       await this.inputSearch().fill(issueName)
       const v = await this.inputSearch().inputValue()
@@ -490,23 +490,23 @@ export class IssuesPage extends CommonTrackerPage {
     }
   }
 
-  async openIssueByName (issueName: string): Promise<void> {
+  async openIssueByName(issueName: string): Promise<void> {
     await this.issupeByName(issueName).click()
   }
 
-  async checkIssueNotExist (issueName: string): Promise<void> {
+  async checkIssueNotExist(issueName: string): Promise<void> {
     await expect(this.issueNotExist(issueName)).toHaveCount(0)
   }
 
-  async checkFilteredIssueExist (issueName: string): Promise<void> {
+  async checkFilteredIssueExist(issueName: string): Promise<void> {
     await expect(this.filterRowExists(issueName)).toHaveCount(1)
   }
 
-  async checkFilteredIssueNotExist (issueName: string): Promise<void> {
+  async checkFilteredIssueNotExist(issueName: string): Promise<void> {
     await expect(this.filterRowExists(issueName)).toHaveCount(0)
   }
 
-  async checkAllIssuesInStatus (statusId?: string, statusName?: string): Promise<void> {
+  async checkAllIssuesInStatus(statusId?: string, statusName?: string): Promise<void> {
     if (statusId === undefined) throw new Error(`Unknown status id ${statusId}`)
 
     for await (const locator of iterateLocator(this.issuesList())) {
@@ -514,16 +514,16 @@ export class IssuesPage extends CommonTrackerPage {
     }
   }
 
-  async checkParentIssue (issueName: string, parentName: string): Promise<void> {
+  async checkParentIssue(issueName: string, parentName: string): Promise<void> {
     await expect(this.parentIssueLocator(issueName)).toHaveText(parentName)
   }
 
-  async doActionOnIssue (issueName: string, action: string): Promise<void> {
+  async doActionOnIssue(issueName: string, action: string): Promise<void> {
     await this.issupeByName(issueName).click({ button: 'right' })
     await this.selectFromDropdown(this.page, action)
   }
 
-  async checkAllIssuesByPriority (priorityName: string): Promise<void> {
+  async checkAllIssuesByPriority(priorityName: string): Promise<void> {
     await expect(async () => {
       for await (const locator of iterateLocator(this.issuesList())) {
         const href = await this.priorityContainer(locator).getAttribute('href')
@@ -534,66 +534,66 @@ export class IssuesPage extends CommonTrackerPage {
     })
   }
 
-  async getIssueId (issueLabel: string, position: number = 0): Promise<string> {
+  async getIssueId(issueLabel: string, position: number = 0): Promise<string> {
     const id = await this.issueIdLocator(issueLabel).nth(position).textContent()
     return id?.trim() ?? ''
   }
 
-  async openIssueById (issueId: string): Promise<void> {
+  async openIssueById(issueId: string): Promise<void> {
     await this.issueAnchorById(issueId).click()
   }
 
-  async checkIssuesCount (issueName: string, count: number): Promise<void> {
+  async checkIssuesCount(issueName: string, count: number): Promise<void> {
     await expect(this.issueAnchorByName(issueName)).toHaveCount(count)
   }
 
-  async selectTemplate (templateName: string): Promise<void> {
+  async selectTemplate(templateName: string): Promise<void> {
     await this.buttonPopupCreateNewIssueTemplate().click()
     await this.selectMenuItem(this.page, templateName)
   }
 
-  async attachFileToNewIssueForm (filePath: string): Promise<void> {
+  async attachFileToNewIssueForm(filePath: string): Promise<void> {
     await this.inputPopupCreateNewIssueFile().setInputFiles(path.join(__dirname, `../../files/${filePath}`))
     await expect(this.textPopupCreateNewIssueFile().filter({ hasText: filePath })).toBeVisible()
   }
 
-  async checkAttachmentsCount (issueName: string, count: string): Promise<void> {
+  async checkAttachmentsCount(issueName: string, count: string): Promise<void> {
     await expect(this.attachmentContentButton(issueName)).toHaveText(count)
   }
 
-  async addAttachmentToIssue (issueName: string, filePath: string): Promise<void> {
+  async addAttachmentToIssue(issueName: string, filePath: string): Promise<void> {
     await this.addAttachmentButton(issueName).click()
     await this.inputPopupAddAttachmentsFile().setInputFiles(path.join(__dirname, `../../files/${filePath}`))
     await expect(this.textPopupAddAttachmentsFile().filter({ hasText: filePath })).toBeVisible()
   }
 
-  async deleteAttachmentToIssue (issueName: string, filePath: string): Promise<void> {
+  async deleteAttachmentToIssue(issueName: string, filePath: string): Promise<void> {
     await this.addAttachmentButton(issueName).click()
     await this.deleteAttachmentLink(filePath).hover()
     await this.deleteAttachmentLink(filePath).click()
     await expect(this.textPopupAddAttachmentsFile().filter({ hasText: filePath })).toBeVisible({ visible: false })
   }
 
-  async checkCannotDeleteAttachmentToIssue (issueName: string, filePath: string): Promise<void> {
+  async checkCannotDeleteAttachmentToIssue(issueName: string, filePath: string): Promise<void> {
     await this.addAttachmentButton(issueName).click()
     await this.deleteAttachmentLink(filePath).hover()
     await expect(this.deleteAttachmentLink(filePath)).not.toBeVisible()
   }
 
-  async checkAddAttachmentPopupContainsFile (issueName: string, filePath: string): Promise<void> {
+  async checkAddAttachmentPopupContainsFile(issueName: string, filePath: string): Promise<void> {
     await this.addAttachmentButton(issueName).click()
     await expect(this.textPopupAddAttachmentsFile().filter({ hasText: filePath })).toBeVisible()
   }
 
-  async checkCommentsCount (issueName: string, count: string): Promise<void> {
+  async checkCommentsCount(issueName: string, count: string): Promise<void> {
     await expect(this.commentCountLocator(issueName)).toHaveText(count)
   }
 
-  async openCommentPopupForIssueByName (issueName: string): Promise<void> {
+  async openCommentPopupForIssueByName(issueName: string): Promise<void> {
     await this.commentButton(issueName).click()
   }
 
-  async verifyCategoryHeadersVisibility (): Promise<void> {
+  async verifyCategoryHeadersVisibility(): Promise<void> {
     await expect(this.inProgressHeader()).toBeVisible()
     await expect(this.backlogHeader()).toBeVisible()
     await expect(this.todoHeader()).toBeVisible()
@@ -601,17 +601,17 @@ export class IssuesPage extends CommonTrackerPage {
     await expect(this.canceledHeader()).toBeVisible()
   }
 
-  async openAllCategories (): Promise<void> {
+  async openAllCategories(): Promise<void> {
     for await (const category of iterateLocator(this.buttonCollapsedCategories())) {
       await category.click()
     }
   }
 
-  async checkTotalFooter (expectedTotal: number): Promise<void> {
+  async checkTotalFooter(expectedTotal: number): Promise<void> {
     await expect(this.totalFooter()).toContainText(`Total: ${expectedTotal}`)
   }
 
-  async checkCreateButtonDisabled (): Promise<void> {
+  async checkCreateButtonDisabled(): Promise<void> {
     await expect(this.createButton()).toBeDisabled()
   }
 }

@@ -51,7 +51,7 @@ import { Action, ActionCategory, IconProps } from '@hcengineering/view'
 /**
  * @public
  */
-export interface IssueStatus extends Status {}
+export interface IssueStatus extends Status { }
 
 /**
  * @public
@@ -155,6 +155,7 @@ export enum IssuesDateModificationPeriod {
 export enum MilestoneStatus {
   Planned,
   InProgress,
+  Verification,
   Completed,
   Canceled
 }
@@ -193,7 +194,7 @@ export interface Issue extends Task {
   blockedBy?: RelatedDocument[]
   relations?: RelatedDocument[]
   parents: IssueParentInfo[]
-
+  dependency: IssueParentInfo[]
   space: Ref<Project>
 
   milestone?: Ref<Milestone> | null
@@ -238,6 +239,7 @@ export interface IssueDraft {
   // Estimation in man days
   estimation: number
   parentIssue?: Ref<Issue>
+  dependencyIssue?: Ref<Issue>
   attachments?: number
   labels: TagReference[]
   subIssues: IssueDraft[]
@@ -358,19 +360,19 @@ export interface Component extends Doc {
  * Allow to query for status keys/values.
  */
 export class ComponentManager extends DocManager {
-  get (ref: Ref<WithLookup<Component>>): WithLookup<Component> | undefined {
+  get(ref: Ref<WithLookup<Component>>): WithLookup<Component> | undefined {
     return this.getIdMap().get(ref) as WithLookup<Component>
   }
 
-  getDocs (): Array<WithLookup<Component>> {
+  getDocs(): Array<WithLookup<Component>> {
     return this.docs as Component[]
   }
 
-  getIdMap (): IdMap<WithLookup<Component>> {
+  getIdMap(): IdMap<WithLookup<Component>> {
     return this.byId as IdMap<WithLookup<Component>>
   }
 
-  filter (predicate: (value: Component) => boolean): Component[] {
+  filter(predicate: (value: Component) => boolean): Component[] {
     return this.getDocs().filter(predicate)
   }
 }
@@ -403,6 +405,7 @@ const pluginState = plugin(trackerId, {
   },
   ids: {
     NoParent: '' as Ref<Issue>,
+    NoDependency: '' as Ref<Issue>,
     IssueDraft: '',
     IssueDraftChild: ''
   },
@@ -410,6 +413,7 @@ const pluginState = plugin(trackerId, {
     Backlog: '' as Ref<Status>,
     Todo: '' as Ref<Status>,
     InProgress: '' as Ref<Status>,
+    Verification: '' as Ref<Status>,
     Coding: '' as Ref<Status>,
     UnderReview: '' as Ref<Status>,
     Done: '' as Ref<Status>,
@@ -449,6 +453,7 @@ const pluginState = plugin(trackerId, {
     Labels: '' as Asset,
     DueDate: '' as Asset,
     Parent: '' as Asset,
+    Dependency: '' as Asset,
     Milestone: '' as Asset,
     IssueTemplates: '' as Asset,
     Start: '' as Asset,
@@ -559,6 +564,10 @@ export const classicIssueTaskStatuses: TaskStatusFactory[] = [
     category: task.statusCategory.Active,
     statuses: [['In Progress', PaletteColorIndexes.Cerulean, pluginState.status.InProgress]]
   },
+  {
+    category: task.statusCategory.Active,
+    statuses: [['Verification', PaletteColorIndexes.Cerulean, pluginState.status.Verification]]
+  },
   { category: task.statusCategory.Won, statuses: [['Done', PaletteColorIndexes.Grass, pluginState.status.Done]] },
   {
     category: task.statusCategory.Lost,
@@ -591,7 +600,7 @@ export const baseIssueTaskStatuses: TaskStatusFactory[] = [
 /**
  * @public
  */
-export function createStatesData (data: TaskStatusFactory[]): Omit<Data<Status>, 'rank'>[] {
+export function createStatesData(data: TaskStatusFactory[]): Omit<Data<Status>, 'rank'>[] {
   const states: Omit<Data<Status>, 'rank'>[] = []
 
   for (const category of data) {

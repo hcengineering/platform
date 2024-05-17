@@ -73,7 +73,7 @@
   const inboxClient = getResource(notification.function.GetInboxNotificationsClient).then((res) => res())
 
   $: read(_id)
-  function read (_id: Ref<Doc>): void {
+  function read(_id: Ref<Doc>): void {
     if (lastId !== _id) {
       const prev = lastId
       lastId = _id
@@ -106,9 +106,10 @@
 
   $: canSave = title.trim().length > 0
   $: hasParentIssue = issue?.attachedTo !== tracker.ids.NoParent
+  $: hasDependencyIssue = issue?.attachedTo !== tracker.ids.NoDependency
 
   let saved = false
-  async function save (): Promise<void> {
+  async function save(): Promise<void> {
     if (issue === undefined || !canSave) {
       return
     }
@@ -120,14 +121,14 @@
     }
   }
 
-  function showContextMenu (ev: MouseEvent): void {
+  function showContextMenu(ev: MouseEvent): void {
     if (issue !== undefined) {
       showMenu(ev, { object: issue, excludedActions: [view.action.Open] })
     }
   }
 
   const manager = createFocusManager()
-  export function canClose (): boolean {
+  export function canClose(): boolean {
     if (descriptionBox.isFocused()) {
       return false
     }
@@ -140,9 +141,9 @@
 
   $: descriptionKey = hierarchy.getAttribute(tracker.class.Issue, 'description')
 
-  function getEditorFooter (
+  function getEditorFooter(
     _class?: Ref<Class<Doc>>
-  ): { footer: AnyComponent, props?: Record<string, any> } | undefined {
+  ): { footer: AnyComponent; props?: Record<string, any> } | undefined {
     if (_class === undefined) {
       return
     }

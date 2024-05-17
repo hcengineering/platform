@@ -1,17 +1,3 @@
-<!--
-// Copyright © 2022 Hardcore Engineering Inc.
-//
-// Licensed under the Eclipse Public License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License. You may
-// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//
-// See the License for the specific language governing permissions and
-// limitations under the License.
--->
 <script lang="ts">
   import core, { AttachedData, FindOptions, type Rank, Ref, SortingOrder } from '@hcengineering/core'
   import { ObjectPopup, getClient } from '@hcengineering/presentation'
@@ -33,21 +19,21 @@
     sort: { modifiedOn: SortingOrder.Descending }
   }
 
-  async function onClose({ detail: parentIssue }: CustomEvent<Issue | undefined | null>): Promise<void> {
+  async function onClose({ detail: dependencyIssue }: CustomEvent<Issue | undefined | null>): Promise<void> {
     const vv = Array.isArray(value) ? value : [value]
     for (const docValue of vv) {
       if (
         '_class' in docValue &&
-        parentIssue !== undefined &&
-        parentIssue?._id !== docValue.attachedTo &&
-        parentIssue?._id !== docValue._id
+        dependencyIssue !== undefined &&
+        dependencyIssue?._id !== docValue.attachedTo &&
+        dependencyIssue?._id !== docValue._id
       ) {
         let rank: Rank | null = null
 
-        if (parentIssue) {
+        if (dependencyIssue) {
           const lastAttachedIssue = await client.findOne<Issue>(
             tracker.class.Issue,
-            { attachedTo: parentIssue._id },
+            { attachedTo: dependencyIssue._id },
             { sort: { rank: SortingOrder.Descending } }
           )
 
@@ -55,19 +41,19 @@
         }
 
         await client.update(docValue, {
-          attachedTo: parentIssue === null ? tracker.ids.NoParent : parentIssue._id,
+          attachedTo: dependencyIssue === null ? tracker.ids.NoDependency : dependencyIssue._id,
           ...(rank ? { rank } : {})
         })
       }
     }
 
-    dispatch('close', parentIssue)
+    dispatch('close', dependencyIssue)
   }
 
   $: selected = !Array.isArray(value) ? ('attachedTo' in value ? value.attachedTo : undefined) : undefined
   $: ignoreObjects = !Array.isArray(value) ? ('_id' in value ? [value._id] : []) : undefined
   $: docQuery = {
-    'parents.parentId': {
+    'dependency.dependencyId': {
       $nin: [
         ...new Set(
           (Array.isArray(value) ? value : [value])
@@ -86,7 +72,7 @@
   {selected}
   multiSelect={false}
   allowDeselect={true}
-  placeholder={tracker.string.SetParent}
+  placeholder={tracker.string.SetDependency}
   create={undefined}
   {ignoreObjects}
   shadows={true}

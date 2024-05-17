@@ -54,7 +54,7 @@ const toObjectSearchResult = (e: WithLookup<Document>): ObjectSearchResult => ({
   component: DocumentItem
 })
 
-async function queryDocument (
+async function queryDocument(
   _class: Ref<Class<Document>>,
   client: Client,
   search: string,
@@ -73,7 +73,7 @@ async function queryDocument (
   return (await client.findAll(_class, q, { limit: 200 })).map(toObjectSearchResult)
 }
 
-async function createChildDocument (object: Document): Promise<void> {
+async function createChildDocument(object: Document): Promise<void> {
   const id: Ref<Document> = generateId()
   const space = object.space
   const parent = object._id
@@ -81,14 +81,15 @@ async function createChildDocument (object: Document): Promise<void> {
   await _createDocument(id, space, parent)
 }
 
-async function createDocument (space: Teamspace): Promise<void> {
+async function createDocument(space: Teamspace): Promise<void> {
   const id: Ref<Document> = generateId()
   const parent = document.ids.NoParent
-
+  const dependency = document.ids.noDepeendency
   await _createDocument(id, space._id, parent)
+  await _createDocument(id, space._id, dependency)
 }
 
-async function _createDocument (id: Ref<Document>, space: Ref<Teamspace>, parent: Ref<Document>): Promise<void> {
+async function _createDocument(id: Ref<Document>, space: Ref<Teamspace>, parent: Ref<Document>): Promise<void> {
   const client = getClient()
 
   await createEmptyDocument(client, id, space, parent, {})
@@ -99,13 +100,13 @@ async function _createDocument (id: Ref<Document>, space: Ref<Teamspace>, parent
   }
 }
 
-async function editTeamspace (teamspace: Teamspace | undefined): Promise<void> {
+async function editTeamspace(teamspace: Teamspace | undefined): Promise<void> {
   if (teamspace !== undefined) {
     showPopup(CreateTeamspace, { teamspace })
   }
 }
 
-export async function starDocument (doc: Document): Promise<void> {
+export async function starDocument(doc: Document): Promise<void> {
   const client = getClient()
 
   await client.createDoc(document.class.SavedDocument, preference.space.Preference, {
@@ -113,7 +114,7 @@ export async function starDocument (doc: Document): Promise<void> {
   })
 }
 
-export async function unstarDocument (doc: Document): Promise<void> {
+export async function unstarDocument(doc: Document): Promise<void> {
   const client = getClient()
 
   const current = await client.findOne(document.class.SavedDocument, { attachedTo: doc._id })

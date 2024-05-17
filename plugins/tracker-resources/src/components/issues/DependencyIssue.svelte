@@ -1,17 +1,3 @@
-<!--
-// Copyright © 2022 Hardcore Engineering Inc.
-//
-// Licensed under the Eclipse Public License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License. You may
-// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//
-// See the License for the specific language governing permissions and
-// limitations under the License.
--->
 <script lang="ts">
   import { Issue } from '@hcengineering/tracker'
   import { Button, IconClose } from '@hcengineering/ui'
@@ -20,13 +6,13 @@
   import PriorityRefPresenter from './PriorityRefPresenter.svelte'
 
   export let issue: Issue
-  console.log('issue from paarent', issue)
-
   const dispatch = createEventDispatcher()
+  console.log('issue from dependency', issue)
+  console.log('tracker.string dependency', tracker.string)
 </script>
 
-<span class="overflow-label">{'Parent Issues'}</span>
-<div class="parentIssue-container">
+<span class="overflow-label">{'Dependency Issue'}</span>
+<div class="dependencyIssue-container">
   <div class="flex-no-shrink mr-1-5">
     <PriorityRefPresenter value={issue.priority} shouldShowLabel={false} />
   </div>
@@ -34,7 +20,7 @@
   <span class="overflow-label issue-title">{issue.title}</span>
   <Button
     icon={IconClose}
-    showTooltip={{ label: tracker.string.RemoveParent, direction: 'bottom' }}
+    showTooltip={{ label: tracker.string.RemoveDependency, direction: 'bottom' }}
     kind={'ghost'}
     size={'small'}
     on:click={() => dispatch('close')}
@@ -42,24 +28,13 @@
 </div>
 
 <style lang="scss">
-  .parentIssue-container {
-    display: flex;
-    align-items: center;
-    padding: 0.25rem 0.25rem 0.25rem 0.75rem;
-    max-width: fit-content;
-    min-width: 0;
-    // line-height: 150%;
-    height: 2.25rem;
-    border: 1px solid var(--theme-button-border);
-    border-radius: 0.25rem;
-  }
-
   .dependencyIssue-container {
     display: flex;
     align-items: center;
     padding: 0.25rem 0.25rem 0.25rem 0.75rem;
     max-width: fit-content;
     min-width: 0;
+    // line-height: 150%;
     height: 2.25rem;
     border: 1px solid var(--theme-button-border);
     border-radius: 0.25rem;

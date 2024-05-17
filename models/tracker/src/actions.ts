@@ -27,7 +27,7 @@ import tracker from './plugin'
 import tags from '@hcengineering/tags'
 import { defaultPriorities, issuePriorities } from '@hcengineering/tracker-resources/src/types'
 
-function createGotoSpecialAction (
+function createGotoSpecialAction(
   builder: Builder,
   id: string,
   key: KeyBinding,
@@ -42,7 +42,7 @@ function createGotoSpecialAction (
     query
   })
 }
-export function createActions (builder: Builder, issuesId: string, componentsId: string, myIssuesId: string): void {
+export function createActions(builder: Builder, issuesId: string, componentsId: string, myIssuesId: string): void {
   createGotoSpecialAction(builder, issuesId, 'keyG->keyE', tracker.string.GotoIssues)
   createGotoSpecialAction(builder, issuesId, 'keyG->keyA', tracker.string.GotoActive, { mode: 'active' })
   createGotoSpecialAction(builder, issuesId, 'keyG->keyB', tracker.string.GotoBacklog, { mode: 'backlog' })
@@ -303,6 +303,32 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
     {
       action: view.actionImpl.ShowPopup,
       actionProps: {
+        component: tracker.component.SetDependencyIssueActionPopup,
+        element: 'top',
+        fillProps: {
+          _objects: 'value'
+        }
+      },
+      label: tracker.string.SetDependency,
+      icon: tracker.icon.Dependency,
+      keyBinding: [],
+      input: 'none',
+      category: tracker.category.Tracker,
+      target: tracker.class.DependencyIssue,
+      context: {
+        mode: ['context'],
+        application: tracker.app.Tracker,
+        group: 'associate'
+      }
+    },
+    tracker.action.SetDependency
+  )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
         component: tracker.component.CreateIssue,
         element: 'top',
         fillProps: {
@@ -341,6 +367,30 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
     category: tracker.category.Tracker,
     target: tracker.class.Issue,
     override: [tracker.action.SetParent],
+    context: {
+      mode: ['browser'],
+      application: tracker.app.Tracker,
+      group: 'associate'
+    }
+  })
+
+  createAction(builder, {
+    action: view.actionImpl.ShowPopup,
+    actionPopup: tracker.component.SetParenDependencyIssueActionPopup,
+    actionProps: {
+      component: tracker.component.SetParenDependencyIssueActionPopup,
+      element: 'top',
+      fillProps: {
+        _object: 'value'
+      }
+    },
+    label: tracker.string.SetDependency,
+    icon: tracker.icon.Dependency,
+    keyBinding: [],
+    input: 'none',
+    category: tracker.category.Tracker,
+    target: tracker.class.Issue,
+    override: [tracker.action.SetDependency],
     context: {
       mode: ['browser'],
       application: tracker.app.Tracker,
