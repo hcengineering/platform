@@ -38,6 +38,21 @@
     "StatusCategory": "Categoría de estado",
     "Account": "Cuenta",
     "Rank": "Rango",
-    "Owners": "Propietarios"
+    "Owners": "Propietarios",
+    "Permission": "Permiso",
+    "CreateObject": "Crear objeto",
+    "UpdateObject": "Actualizar objeto",
+    "DeleteObject": "Eliminar objeto",
+    "ForbidDeleteObject": "Prohibir eliminar objeto",
+    "UpdateSpace": "Actualizar espacio",
+    "ArchiveSpace": "Archivar espacio",
+    "CreateObjectDescription": "Concede a los usuarios la capacidad de crear objetos en el espacio",
+    "UpdateObjectDescription": "Concede a los usuarios la capacidad de actualizar objetos en el espacio",
+    "DeleteObjectDescription": "Concede a los usuarios la capacidad de eliminar objetos en el espacio",
+    "ForbidDeleteObjectDescription": "Prohíbe a los usuarios eliminar objetos en el espacio",
+    "UpdateSpaceDescription": "Concede a los usuarios la capacidad de actualizar el espacio",
+    "ArchiveSpaceDescription": "Concede a los usuarios la capacidad de archivar el espacio",
+    "AutoJoin": "Auto unirse",
+    "AutoJoinDescr": "Unirse automáticamente a los nuevos empleados a este espacio"
   }
 }

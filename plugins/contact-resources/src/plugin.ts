@@ -51,7 +51,6 @@ export default mergeIds(contactId, contact, {
     CopyToClipboard: '' as IntlString,
     ViewFullProfile: '' as IntlString,
     Member: '' as IntlString,
-    Members: '' as IntlString,
     NoMembers: '' as IntlString,
     AddMember: '' as IntlString,
     KickEmployee: '' as IntlString,

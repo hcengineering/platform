@@ -40,6 +40,8 @@
     EditBox,
     FocusHandler,
     IconAttachment,
+    Label,
+    Toggle,
     createFocusManager,
     showPopup
   } from '@hcengineering/ui'
@@ -61,13 +63,25 @@
   let issueTemplates: IssueTemplate[] = []
   let fullDescription: string = ''
 
+  let members = [getCurrentAccount()._id]
+  let membersChanged: boolean = false
+
+  $: setDefaultMembers(typeType)
+
+  function setDefaultMembers (typeType: ProjectType | undefined): void {
+    if (typeType === undefined) return
+    if (membersChanged) return
+    if (typeType.members === undefined || typeType.members.length === 0) return
+    members = typeType.members
+  }
+
   export let company: Ref<Organization> | undefined
   export let preserveCompany: boolean = false
 
   let vacancyData: Data<VacancyClass> = {
     archived: false,
     description: '',
-    members: [getCurrentAccount()._id],
+    members,
     name: '',
     number: 0,
     private: false,
@@ -219,7 +233,8 @@
         archived: false,
         number: (incResult as any).object.sequence,
         company,
-        members: [getCurrentAccount()._id],
+        members,
+        autoJoin: typeType.autoJoin ?? false,
         owners: [getCurrentAccount()._id],
         type: typeId
       },
@@ -363,6 +378,16 @@
       toClass={core.class.Space}
       ignoreKeys={['fullDescription', 'company', 'type']}
       extraProps={{ showNavigate: false }}
+    />
+
+    <AccountArrayEditor
+      bind:value={members}
+      label={contact.string.Members}
+      onChange={() => {
+        membersChanged = true
+      }}
+      kind={'regular'}
+      size={'large'}
     />
 
     {#each roles as role}

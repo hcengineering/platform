@@ -76,7 +76,9 @@
   let defaultStatus: Ref<IssueStatus> | undefined = project?.defaultIssueStatus
   let rolesAssignment: RolesAssignment | undefined
 
-  let changeIdentityRef: HTMLElement
+  let typeId: Ref<ProjectType> | undefined = project?.type
+  $: typeType = typeId !== undefined ? $typeStore.get(typeId) : undefined
+  let autoJoin = project?.autoJoin ?? typeType?.autoJoin ?? false
 
   const dispatch = createEventDispatcher()
 
@@ -100,6 +102,7 @@
       members,
       owners,
       archived: false,
+      autoJoin,
       identifier: identifier.toUpperCase(),
       sequence: 0,
       defaultAssignee: defaultAssignee ?? undefined,
@@ -155,6 +158,9 @@
     if (projectData.defaultTimeReportDay !== project?.defaultTimeReportDay) {
       update.defaultTimeReportDay = projectData.defaultTimeReportDay
     }
+    if (projectData.autoJoin !== project?.autoJoin) {
+      update.autoJoin = projectData.autoJoin
+    }
     if (projectData.members.length !== project?.members.length) {
       update.members = projectData.members
     } else {
@@ -195,8 +201,16 @@
     close()
   }
 
-  let typeId: Ref<ProjectType> | undefined = project?.type
-  $: typeType = typeId !== undefined ? $typeStore.get(typeId) : undefined
+  $: setDefaultMembers(typeType)
+
+  function setDefaultMembers (typeType: ProjectType | undefined): void {
+    if (typeType === undefined) return
+    if (membersChanged) return
+    if (project !== undefined) return
+    autoJoin = typeType.autoJoin ?? false
+    if (typeType.members === undefined || typeType.members.length === 0) return
+    members = typeType.members
+  }
 
   function findTaskTypes (typeId: Ref<SpaceType>): TaskType[] {
     return Array.from($taskTypeStore.values()).filter(
@@ -254,6 +268,8 @@
     dispatch('close', id)
   }
 
+  let membersChanged: boolean = false
+
   $: projectsQuery.query(tracker.class.Project, { _id: { $nin: project ? [project._id] : [] } }, (res) => {
     projectsIdentifiers = new Set(res.map(({ identifier }) => identifier))
   })
@@ -296,6 +312,7 @@
   }
 
   function handleMembersChanged (newMembers: Ref<Account>[]): void {
+    membersChanged = true
     // If a member was removed we need to remove it from any roles assignments as well
     const newMembersSet = new Set(newMembers)
     const removedMembersSet = new Set(members.filter((m) => !newMembersSet.has(m)))
@@ -382,7 +399,7 @@
         <Label label={tracker.string.Identifier} />
         <span><Label label={tracker.string.UsedInIssueIDs} /></span>
       </div>
-      <div bind:this={changeIdentityRef} class="padding flex-row-center relative">
+      <div class="padding flex-row-center relative">
         <EditBox
           id="project-identifier"
           bind:value={identifier}
@@ -483,7 +500,7 @@
         <Label label={presentation.string.MakePrivate} />
         <span><Label label={presentation.string.MakePrivateDescription} /></span>
       </div>
-      <Toggle bind:on={isPrivate} disabled={!isPrivate && members.length === 0} />
+      <Toggle id={'project-private'} bind:on={isPrivate} disabled={!isPrivate && members.length === 0} />
     </div>
 
     <div class="antiGrid-row">
@@ -497,6 +514,14 @@
         kind={'regular'}
         size={'large'}
       />
+    </div>
+
+    <div class="antiGrid-row">
+      <div class="antiGrid-row__header withDesciption">
+        <Label label={core.string.AutoJoin} />
+        <span><Label label={core.string.AutoJoinDescr} /></span>
+      </div>
+      <Toggle bind:on={autoJoin} />
     </div>
 
     {#each roles as role}

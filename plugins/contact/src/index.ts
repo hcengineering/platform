@@ -263,7 +263,8 @@ export const contactPlugin = plugin(contactId, {
     Position: '' as IntlString,
     For: '' as IntlString,
     SelectUsers: '' as IntlString,
-    AddGuest: '' as IntlString
+    AddGuest: '' as IntlString,
+    Members: '' as IntlString
   },
   viewlet: {
     TableMember: '' as Ref<Viewlet>,
