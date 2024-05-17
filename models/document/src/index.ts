@@ -361,7 +361,6 @@ function defineDocument (builder: Builder): void {
       },
       label: document.string.CopyDocumentUrl,
       icon: view.icon.CopyLink,
-      keyBinding: [],
       input: 'focus',
       category: document.category.Document,
       target: document.class.Document,

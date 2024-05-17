@@ -589,7 +589,6 @@ export function createModel (builder: Builder): void {
       },
       label: lead.string.CreateLead,
       icon: lead.icon.Lead,
-      keyBinding: [],
       input: 'none',
       category: lead.category.Lead,
       target: core.class.Doc,

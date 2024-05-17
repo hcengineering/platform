@@ -433,7 +433,6 @@ export function createModel (builder: Builder): void {
       },
       label: chunter.string.CopyLink,
       icon: chunter.icon.Copy,
-      keyBinding: [],
       input: 'none',
       category: chunter.category.Chunter,
       target: activity.class.ActivityMessage,

@@ -33,6 +33,7 @@ import { type IntlString } from '@hcengineering/platform'
 import { recruitId, type Applicant } from '@hcengineering/recruit'
 import setting from '@hcengineering/setting'
 import { type KeyBinding, type ViewOptionModel, type ViewOptionsModel } from '@hcengineering/view'
+import gmail from '@hcengineering/model-gmail'
 
 import recruit from './plugin'
 import { createReviewModel, reviewTableConfig, reviewTableOptions } from './review'
@@ -988,7 +989,6 @@ export function createModel (builder: Builder): void {
     },
     label: recruit.string.CreateVacancy,
     icon: recruit.icon.Create,
-    keyBinding: [],
     input: 'none',
     category: recruit.category.Recruit,
     target: core.class.Doc,
@@ -1009,7 +1009,6 @@ export function createModel (builder: Builder): void {
       },
       label: recruit.string.CreateApplication,
       icon: recruit.icon.Create,
-      keyBinding: [],
       input: 'none',
       category: recruit.category.Recruit,
       target: core.class.Doc,
@@ -1164,7 +1163,6 @@ export function createModel (builder: Builder): void {
     },
     label: recruit.string.AssignRecruiter,
     icon: contact.icon.Person,
-    keyBinding: [],
     input: 'none',
     category: recruit.category.Recruit,
     target: recruit.class.Applicant,
@@ -1205,7 +1203,6 @@ export function createModel (builder: Builder): void {
       },
       label: recruit.string.CopyId,
       icon: view.icon.CopyId,
-      keyBinding: [],
       input: 'none',
       category: recruit.category.Recruit,
       target: recruit.class.Applicant,
@@ -1226,7 +1223,6 @@ export function createModel (builder: Builder): void {
       },
       label: recruit.string.CopyLink,
       icon: view.icon.CopyLink,
-      keyBinding: [],
       input: 'none',
       category: recruit.category.Recruit,
       target: recruit.class.Applicant,
@@ -1247,7 +1243,6 @@ export function createModel (builder: Builder): void {
       },
       label: recruit.string.CopyLink,
       icon: view.icon.CopyLink,
-      keyBinding: [],
       input: 'none',
       category: recruit.category.Recruit,
       target: recruit.class.Vacancy,
@@ -1469,7 +1464,6 @@ export function createModel (builder: Builder): void {
     },
     input: 'any',
     category: recruit.category.Recruit,
-    keyBinding: [],
     target: recruit.mixin.Candidate,
     context: {
       mode: ['context', 'browser'],
@@ -1538,7 +1532,6 @@ export function createModel (builder: Builder): void {
       },
       label: recruit.string.GetTalentIds,
       icon: view.icon.CopyId,
-      keyBinding: [],
       input: 'any',
       category: recruit.category.Recruit,
       target: recruit.mixin.Candidate,
@@ -1549,6 +1542,30 @@ export function createModel (builder: Builder): void {
       }
     },
     recruit.action.GetTalentIds
+  )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: gmail.component.NewMessages,
+        element: 'float',
+        fillProps: {
+          attachedTo: 'value'
+        }
+      },
+      label: gmail.string.WriteEmail,
+      icon: contact.icon.Email,
+      visibilityTester: recruit.function.ApplicantHasEmail,
+      input: 'any',
+      category: recruit.category.Recruit,
+      target: recruit.class.Applicant,
+      context: {
+        mode: ['context', 'browser']
+      }
+    },
+    recruit.action.WriteEmail
   )
 
   defineSpaceType(builder)

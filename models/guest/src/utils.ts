@@ -18,7 +18,6 @@ export function createPublicLinkAction (builder: Builder, _class: Ref<Class<Doc>
       },
       label: guest.string.PublicLink,
       icon: guest.icon.Link,
-      keyBinding: [],
       input: 'any',
       category: guest.category.Guest,
       target: _class,
