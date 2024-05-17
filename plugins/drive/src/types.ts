@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Doc, Ref, TypedSpace } from '@hcengineering/core'
+import { Blob, Doc, Ref, TypedSpace } from '@hcengineering/core'
 
 /** @public */
 export type FileSize = number
@@ -24,13 +24,10 @@ export interface Drive extends TypedSpace {}
 /** @public */
 export interface Resource extends Doc<Drive> {
   name: string
+  file?: Ref<Blob>
 
   parent: Ref<Resource>
   path: Ref<Resource>[]
-
-  type?: string
-  size?: FileSize
-  lastModified?: number
 }
 
 /** @public */
@@ -38,19 +35,13 @@ export interface Folder extends Resource {
   parent: Ref<Folder>
   path: Ref<Folder>[]
 
-  type?: undefined
-  size?: undefined
-  lastModified?: undefined
+  file?: undefined
 }
 
 /** @public */
 export interface File extends Resource {
-  file: string
+  file: Ref<Blob>
 
   parent: Ref<Folder>
   path: Ref<Folder>[]
-
-  type: string
-  size: FileSize
-  lastModified: number
 }

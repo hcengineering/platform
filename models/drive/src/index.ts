@@ -22,22 +22,11 @@ import core, {
   AccountRole,
   Ref,
   IndexKind,
-  DOMAIN_MODEL
+  DOMAIN_MODEL,
+  type Blob
 } from '@hcengineering/core'
 import { type Drive, type File, type Folder, type Resource, driveId } from '@hcengineering/drive'
-import {
-  type Builder,
-  Model,
-  UX,
-  Mixin,
-  Prop,
-  TypeString,
-  Index,
-  TypeAttachment,
-  TypeRef,
-  TypeTimestamp,
-  ReadOnly
-} from '@hcengineering/model'
+import { type Builder, Model, UX, Mixin, Prop, TypeString, Index, TypeRef, ReadOnly } from '@hcengineering/model'
 import { TDoc, TType, TTypedSpace } from '@hcengineering/model-core'
 import tracker from '@hcengineering/model-tracker'
 import view, { type Viewlet, classPresenter, createAction } from '@hcengineering/model-view'
@@ -78,17 +67,9 @@ export class TResource extends TDoc implements Resource {
   @Index(IndexKind.FullText)
     name!: string
 
-  @Prop(TypeFilesize(), drive.string.Size)
+  @Prop(TypeRef(core.class.Blob), drive.string.File)
   @ReadOnly()
-    size?: number
-
-  @Prop(TypeString(), drive.string.Type)
-  @ReadOnly()
-    type?: string
-
-  @Prop(TypeTimestamp(), drive.string.LastModified)
-  @ReadOnly()
-    lastModified?: number
+    file?: Ref<Blob>
 
   @Prop(TypeRef(drive.class.Resource), drive.string.Parent)
   @Index(IndexKind.Indexed)
@@ -111,14 +92,16 @@ export class TFolder extends TResource implements Folder {
   @Prop(TypeRef(drive.class.Folder), drive.string.Path)
   @ReadOnly()
   declare path: Ref<Folder>[]
+
+  declare file: undefined
 }
 
 @Model(drive.class.File, drive.class.Resource, DOMAIN_DRIVE)
 @UX(drive.string.File)
 export class TFile extends TResource implements File {
-  @Prop(TypeAttachment(), drive.string.File)
+  @Prop(TypeRef(core.class.Blob), drive.string.File)
   @ReadOnly()
-    file!: string
+  declare file: Ref<Blob>
 
   @Prop(TypeRef(drive.class.Folder), drive.string.Parent)
   @Index(IndexKind.Indexed)
@@ -128,18 +111,6 @@ export class TFile extends TResource implements File {
   @Prop(TypeRef(drive.class.Folder), drive.string.Path)
   @ReadOnly()
   declare path: Ref<Folder>[]
-
-  @Prop(TypeFilesize(), drive.string.Size)
-  @ReadOnly()
-  declare size: number
-
-  @Prop(TypeString(), drive.string.Type)
-  @ReadOnly()
-  declare type: string
-
-  @Prop(TypeTimestamp(), drive.string.LastModified)
-  @ReadOnly()
-  declare lastModified: number
 }
 
 function defineDrive (builder: Builder): void {
@@ -267,7 +238,22 @@ function defineResource (builder: Builder): void {
     {
       attachTo: drive.class.Resource,
       descriptor: view.viewlet.Table,
-      config: ['', 'type', 'size', 'lastModified', 'createdBy'],
+      config: [
+        {
+          key: '',
+          presenter: drive.component.ResourcePresenter,
+          label: drive.string.Name
+        },
+        {
+          key: '$lookup.file.size',
+          presenter: drive.component.FileSizePresenter,
+          label: drive.string.Size
+        },
+        {
+          key: '$lookup.file.modifiedOn'
+        },
+        'createdBy'
+      ],
       configOptions: {
         hiddenKeys: ['name', 'file', 'parent', 'path'],
         sortable: true

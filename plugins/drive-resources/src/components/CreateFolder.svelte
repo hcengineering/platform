@@ -64,8 +64,7 @@
       {
         name: getTitle(name),
         parent: _parent ?? drive.ids.Root,
-        path,
-        size: 1
+        path
       },
       id
     )

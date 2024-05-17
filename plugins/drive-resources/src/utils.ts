@@ -14,7 +14,7 @@
 //
 
 import attachment from '@hcengineering/attachment'
-import { type Class, type Doc, type Ref } from '@hcengineering/core'
+import { type Blob, type Class, type Doc, type Ref } from '@hcengineering/core'
 import drive, { type Drive, type Folder } from '@hcengineering/drive'
 import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
@@ -75,10 +75,7 @@ export async function createFile (file: File, space: Ref<Drive>, parent: Folder 
 
     await client.createDoc(drive.class.File, space, {
       name: file.name,
-      file: uuid,
-      type: file.type,
-      size: file.size,
-      lastModified: file.lastModified,
+      file: uuid as Ref<Blob>,
       parent: parent?._id ?? drive.ids.Root,
       path: parent !== undefined ? [parent._id, ...parent.path] : []
     })

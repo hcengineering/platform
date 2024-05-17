@@ -13,7 +13,18 @@
 // limitations under the License.
 //
 
-import { type Class, type Doc, type Hierarchy, type Ref, type Tx, type TxRemoveDoc, TxProcessor, DocumentQuery, FindOptions, FindResult } from '@hcengineering/core'
+import {
+  type Class,
+  type Doc,
+  type Hierarchy,
+  type Ref,
+  type Tx,
+  type TxRemoveDoc,
+  TxProcessor,
+  DocumentQuery,
+  FindOptions,
+  FindResult
+} from '@hcengineering/core'
 import drive, { type File, type Folder } from '@hcengineering/drive'
 import type { TriggerControl } from '@hcengineering/server-core'
 
