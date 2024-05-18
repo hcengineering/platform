@@ -37,8 +37,7 @@
 
   export let issue: WithLookup<Issue>
   $: parentIssueId = issue.attachedTo !== tracker.ids.NoParent ? issue.attachedTo : undefined
-  $: dependencyIssueId =
-    issue.attachedToDependency !== tracker.ids.NoDependency ? issue.attachedToDependency : undefined
+  $: dependencyIssueId = issue.dependency.length ? issue.dependency[0]?.dependencyId : undefined
   let parentIssue: Issue | undefined = undefined
   let dependencyIssue: Issue | undefined = undefined
   const parentQuery = createQuery()
@@ -78,6 +77,7 @@
   }
 
   $: areSubIssuesLoading = !subIssues
+
   $: if (parentIssueId) {
     subIssuesQuery.query(
       tracker.class.Issue,
@@ -128,6 +128,7 @@
       { _id: dependencyIssueId },
       (res) => {
         dependencyIssue = res[0]
+        console.log(dependencyIssue, 'RES')
       },
       {
         limit: 1
@@ -139,40 +140,13 @@
     dependencyIssue = undefined
     subIssues = []
   }
-
-  $: if (dependencyIssueId) {
-    subIssuesQuery.query(
-      tracker.class.Issue,
-      { attachedToDependency: dependencyIssueId },
-      (res) => {
-        subIssues = res
-      },
-      {
-        sort: { modifiedOn: SortingOrder.Descending },
-        lookup: {
-          status: [tracker.class.IssueStatus, { category: core.class.StatusCategory }]
-        }
-      }
-    )
-    dependencyQuery.query(
-      tracker.class.Issue,
-      { _id: dependencyIssueId },
-      (res) => {
-        dependencyIssue = res[0]
-      },
-      {
-        limit: 1
-      }
-    )
-  } else {
-    subIssuesQuery.unsubscribe()
-    dependencyQuery.unsubscribe()
-    dependencyIssue = undefined
-    subIssues = []
-  }
+  console.log(dependencyIssue, 'DEP ISSUE')
+  console.log(parentIssue, 'PARENT ISSUE')
 
   $: parentStatus = parentIssue ? $statusStore.byId.get(parentIssue.status) : undefined
   $: dependencyStatus = dependencyIssue ? $statusStore.byId.get(dependencyIssue.status) : undefined
+  console.log(parentStatus, 'stattuss')
+  // console.log($statusStore.byId.get('tracker:status:Backlog'), 'STSTUS')
 
   let categories: IdMap<StatusCategory> = new Map()
 
@@ -221,8 +195,10 @@
           : undefined
     }
   })
-  console.log(issue, 'issue')
-  console.log(tracker.ids, 'TRACK')
+  console.log(issue, 'ISSUE')
+
+  console.log(dependencyIssue, 'DEP ISSUE')
+  console.log(parentIssue, 'paar issue')
 </script>
 
 {#if parentIssue}

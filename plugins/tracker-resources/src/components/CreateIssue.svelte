@@ -91,6 +91,7 @@
   import EstimationEditor from './issues/timereport/EstimationEditor.svelte'
   import MilestoneSelector from './milestones/MilestoneSelector.svelte'
   import ProjectPresenter from './projects/ProjectPresenter.svelte'
+  import { log } from 'console'
 
   export let space: Ref<Project> | undefined
   export let status: Ref<IssueStatus> | undefined = undefined
@@ -584,8 +585,8 @@
                 dependencyTitle: dependencyIssue.title,
                 space: dependencyIssue.space,
                 identifier: dependencyIssue.identifier
-              },
-              ...dependencyIssue.dependency
+              }
+              // ...dependencyIssue.dependency
             ]
           : [{ dependencyId: _id, dependencyTitle: value.title, space: _space, identifier }]
       await subIssuesComponent.save(dependency, _id)
@@ -728,15 +729,27 @@
 
   async function findDefaultSpace(): Promise<Project | undefined> {
     let targetRef: Ref<Project> | undefined
+    let targetRefDependency: Ref<Project> | undefined
     if (relatedTo !== undefined) {
       const targets = await client.findAll(tracker.class.RelatedIssueTarget, {})
       // Find a space target first
       targetRef =
         targets.find((t) => t.rule.kind === 'spaceRule' && t.rule.space === relatedTo?.space && t.target !== undefined)
           ?.target ?? undefined
+      targetRefDependency =
+        targets.find((t) => t.rule.kind === 'spaceRule' && t.rule.space === relatedTo?.space && t.target !== undefined)
+          ?.target ?? undefined
       // Find a class target as second
       targetRef =
         targetRef ??
+        targets.find(
+          (t) =>
+            t.rule.kind === 'classRule' &&
+            client.getHierarchy().isDerived(relatedTo?._class as Ref<Class<Doc>>, t.rule.ofClass)
+        )?.target ??
+        undefined
+      targetRefDependency =
+        targetRefDependency ??
         targets.find(
           (t) =>
             t.rule.kind === 'classRule' &&
@@ -757,7 +770,19 @@
       }
     }
 
-    // Find first starred project
+    if (targetRefDependency === undefined) {
+      // Use last created issue in first.
+      const projects = await client.findAll(
+        tracker.class.ProjectTargetPreference,
+        {},
+        { sort: { usedOn: SortingOrder.Descending } }
+      )
+      if (projects.length > 0) {
+        targetRefDependency = projects[0]?.attachedToDependency
+      }
+    }
+
+    // Find first started project
     if (targetRef === undefined) {
       const prefs = await client.findAll<SpacePreference>(
         preference.class.SpacePreference,
@@ -772,6 +797,26 @@
       if (projects.length > 0) {
         return projects[0]
       }
+    }
+
+    if (targetRefDependency === undefined) {
+      const prefs = await client.findAll<SpacePreference>(
+        preference.class.SpacePreference,
+        {},
+        { sort: { modifiedOn: SortingOrder.Ascending } }
+      )
+      const projects = await client.findAll<Project>(tracker.class.Project, {
+        _id: {
+          $in: Array.from(prefs.map((it) => it.attachedToDependency as Ref<Project>).filter((it) => it != null))
+        }
+      })
+      if (projects.length > 0) {
+        return projects[0]
+      }
+    }
+
+    if (targetRefDependency !== undefined) {
+      return await client.findOne(tracker.class.Project, { _id: targetRefDependency })
     }
 
     if (targetRef !== undefined) {
@@ -796,6 +841,7 @@
     if (spacePreferences === undefined) {
       void client.createDoc(tracker.class.ProjectTargetPreference, currentProject, {
         attachedTo: currentProject,
+        attachedToDependency: currentProject,
         props: [],
         usedOn: Date.now()
       })

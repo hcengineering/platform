@@ -88,6 +88,7 @@
     "RemoveParent": "Remover problema superior",
     "RemoveDependency": "Remove dependency",
     "OpenParent": "Abrir problema superior",
+    "OpenDependency": "Open dependency issue",
     "SubIssues": "Sub-problemas",
     "SubIssuesList": "Sub-problemas ({subIssues})",
     "OpenSubIssues": "Abrir sub-problemas",

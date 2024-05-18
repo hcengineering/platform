@@ -88,6 +88,7 @@
     "RemoveParent": "Удалить родительскую задачу",
     "RemoveDependency": "Remove dependency",
     "OpenParent": "Открыть родительскую задачу",
+    "OpenDependency": "Open dependency issue",
     "SubIssues": "Подзадачи",
     "SubIssuesList": "Подзадачи ({subIssues})",
     "OpenSubIssues": "Открыть подзадачи",

@@ -50,7 +50,11 @@
     dispatch('close', dependencyIssue)
   }
 
-  $: selected = !Array.isArray(value) ? ('attachedTo' in value ? value.attachedToDependency : undefined) : undefined
+  $: selected = !Array.isArray(value)
+    ? 'attachedToDependency' in value
+      ? value.attachedToDependency
+      : undefined
+    : undefined
   $: ignoreObjects = !Array.isArray(value) ? ('_id' in value ? [value._id] : []) : undefined
   $: docQuery = {
     'dependency.dependencyId': {
