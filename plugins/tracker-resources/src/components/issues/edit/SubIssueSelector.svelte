@@ -37,32 +37,43 @@
 
   export let issue: WithLookup<Issue>
   $: parentIssueId = issue.attachedTo !== tracker.ids.NoParent ? issue.attachedTo : undefined
+  $: dependencyIssueId =
+    issue.attachedToDependency !== tracker.ids.NoDependency ? issue.attachedToDependency : undefined
   let parentIssue: Issue | undefined = undefined
+  let dependencyIssue: Issue | undefined = undefined
   const parentQuery = createQuery()
+  const dependencyQuery = createQuery()
 
   const subIssuesQuery = createQuery()
 
   let subIssues: WithLookup<Issue>[] | undefined
   let subIssuesElement: Element
 
-  async function openIssue (target: Issue) {
+  async function openIssue(target: Issue) {
     if (target._id !== issue._id) {
       const loc = await issueLinkFragmentProvider(target)
       navigate(loc)
     }
   }
 
-  function openSubIssue (target: Ref<Issue>) {
+  function openSubIssue(target: Ref<Issue>) {
     const subIssue = subIssues?.find((p) => p._id === target)
     if (subIssue !== undefined) {
       openIssue(subIssue)
     }
   }
 
-  function openParentIssue () {
+  function openParentIssue() {
     if (parentIssue) {
       closeTooltip()
       openIssue(parentIssue)
+    }
+  }
+
+  function openDependencyIssue() {
+    if (dependencyIssue) {
+      closeTooltip()
+      openIssue(dependencyIssue)
     }
   }
 
@@ -98,7 +109,70 @@
     subIssues = []
   }
 
+  $: if (dependencyIssueId) {
+    subIssuesQuery.query(
+      tracker.class.Issue,
+      { attachedToDependency: dependencyIssueId },
+      (res) => {
+        subIssues = res
+      },
+      {
+        sort: { modifiedOn: SortingOrder.Descending },
+        lookup: {
+          status: [tracker.class.IssueStatus, { category: core.class.StatusCategory }]
+        }
+      }
+    )
+    dependencyQuery.query(
+      tracker.class.Issue,
+      { _id: dependencyIssueId },
+      (res) => {
+        dependencyIssue = res[0]
+      },
+      {
+        limit: 1
+      }
+    )
+  } else {
+    subIssuesQuery.unsubscribe()
+    dependencyQuery.unsubscribe()
+    dependencyIssue = undefined
+    subIssues = []
+  }
+
+  $: if (dependencyIssueId) {
+    subIssuesQuery.query(
+      tracker.class.Issue,
+      { attachedToDependency: dependencyIssueId },
+      (res) => {
+        subIssues = res
+      },
+      {
+        sort: { modifiedOn: SortingOrder.Descending },
+        lookup: {
+          status: [tracker.class.IssueStatus, { category: core.class.StatusCategory }]
+        }
+      }
+    )
+    dependencyQuery.query(
+      tracker.class.Issue,
+      { _id: dependencyIssueId },
+      (res) => {
+        dependencyIssue = res[0]
+      },
+      {
+        limit: 1
+      }
+    )
+  } else {
+    subIssuesQuery.unsubscribe()
+    dependencyQuery.unsubscribe()
+    dependencyIssue = undefined
+    subIssues = []
+  }
+
   $: parentStatus = parentIssue ? $statusStore.byId.get(parentIssue.status) : undefined
+  $: dependencyStatus = dependencyIssue ? $statusStore.byId.get(dependencyIssue.status) : undefined
 
   let categories: IdMap<StatusCategory> = new Map()
 
@@ -147,6 +221,8 @@
           : undefined
     }
   })
+  console.log(issue, 'issue')
+  console.log(tracker.ids, 'TRACK')
 </script>
 
 {#if parentIssue}
@@ -199,6 +275,28 @@
           </div>
         </div>
       {/if}
+    </div>
+  </div>
+{/if}
+
+{#if dependencyIssue}
+  <div class="flex root">
+    <div class="item clear-mins">
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <div
+        class="flex-center parent-issue cursor-pointer"
+        use:tooltip={{ label: tracker.string.OpenDependency, direction: 'bottom' }}
+        on:click={openDependencyIssue}
+      >
+        {#if dependencyStatus}
+          <div class="pr-2">
+            <IssueStatusIcon space={dependencyIssue.space} value={dependencyStatus} size="small" />
+          </div>
+        {/if}
+        <span class="overflow-label flex-no-shrink mr-2">{dependencyIssue.identifier}</span>
+        <span class="overflow-label issue-title">{dependencyIssue.title}</span>
+      </div>
     </div>
   </div>
 {/if}

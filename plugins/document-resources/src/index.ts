@@ -84,9 +84,7 @@ async function createChildDocument(object: Document): Promise<void> {
 async function createDocument(space: Teamspace): Promise<void> {
   const id: Ref<Document> = generateId()
   const parent = document.ids.NoParent
-  const dependency = document.ids.noDepeendency
   await _createDocument(id, space._id, parent)
-  await _createDocument(id, space._id, dependency)
 }
 
 async function _createDocument(id: Ref<Document>, space: Ref<Teamspace>, parent: Ref<Document>): Promise<void> {

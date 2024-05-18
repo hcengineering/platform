@@ -289,6 +289,8 @@
       _id: generateId(),
       attachedTo: '' as Ref<Doc>,
       attachedToClass: tracker.class.Issue,
+      attachedToDependency: '' as Ref<Doc>,
+      attachedToDependencyClass: tracker.class.Issue,
       collection: 'labels',
       space: tags.space.Tags,
       modifiedOn: 0,
@@ -502,6 +504,17 @@
                 ...parentIssue.parents
               ]
             : [],
+        dependency:
+          dependencyIssue != null
+            ? [
+                {
+                  dependencyId: dependencyIssue._id,
+                  dependencyTitle: dependencyIssue.title,
+                  space: dependencyIssue.space,
+                  identifier: dependencyIssue.identifier
+                }
+              ]
+            : [],
         reportedTime: 0,
         remainingTime: 0,
         estimation: object.estimation,
@@ -561,6 +574,21 @@
             ]
           : [{ parentId: _id, parentTitle: value.title, space: _space, identifier }]
       await subIssuesComponent.save(parents, _id)
+
+      const dependency: IssueParentInfo[] =
+        dependencyIssue != null
+          ? [
+              { dependencyId: _id, dependencyTitle: value.title, space: dependencyIssue.space, identifier },
+              {
+                dependencyId: dependencyIssue._id,
+                dependencyTitle: dependencyIssue.title,
+                space: dependencyIssue.space,
+                identifier: dependencyIssue.identifier
+              },
+              ...dependencyIssue.dependency
+            ]
+          : [{ dependencyId: _id, dependencyTitle: value.title, space: _space, identifier }]
+      await subIssuesComponent.save(dependency, _id)
       addNotification(
         await translate(tracker.string.IssueCreated, {}, $themeStore.language),
         getTitle(object.title),
@@ -608,7 +636,7 @@
   async function setDependencyIssue(): Promise<void> {
     showPopup(
       SetDependencyIssueActionPopup,
-      { value: { ...object, space: _space, attachedTo: dependencyIssue?._id } },
+      { value: { ...object, space: _space, attachedToDependency: dependencyIssue?._id } },
       'top',
       (selectedIssue) => {
         console.log('selectedIssue from dependency', selectedIssue)

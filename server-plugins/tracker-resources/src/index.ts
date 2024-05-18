@@ -34,14 +34,14 @@ import core, {
 import { getMetadata, IntlString } from '@hcengineering/platform'
 import { Person, PersonAccount } from '@hcengineering/contact'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
-import tracker, { Component, Issue, IssueParentInfo, TimeSpendReport, trackerId } from '@hcengineering/tracker'
+import tracker, { Component, Issue, IssueParentInfo, IssueDependencyInfo, TimeSpendReport, trackerId } from '@hcengineering/tracker'
 import { NotificationContent } from '@hcengineering/notification'
 import { workbenchId } from '@hcengineering/workbench'
 import { stripTags } from '@hcengineering/text'
 import chunter, { ChatMessage } from '@hcengineering/chunter'
 import { NOTIFICATION_BODY_SIZE } from '@hcengineering/server-notification'
 
-async function updateSubIssues (
+async function updateSubIssues(
   updateTx: TxUpdateDoc<Issue>,
   control: TriggerControl,
   update: DocumentUpdate<Issue> | ((node: Issue) => DocumentUpdate<Issue>)
@@ -57,7 +57,7 @@ async function updateSubIssues (
 /**
  * @public
  */
-export async function issueHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
+export async function issueHTMLPresenter(doc: Doc, control: TriggerControl): Promise<string> {
   const issue = doc as Issue
   const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
   const path = `${workbenchId}/${control.workspace.workspaceUrl}/${trackerId}/${issue.identifier}`
@@ -68,7 +68,7 @@ export async function issueHTMLPresenter (doc: Doc, control: TriggerControl): Pr
 /**
  * @public
  */
-export async function getIssueId (doc: Issue, control: TriggerControl): Promise<string> {
+export async function getIssueId(doc: Issue, control: TriggerControl): Promise<string> {
   const issue = doc
   const project = (await control.findAll(tracker.class.Project, { _id: issue.space }))[0]
   return `${project?.identifier ?? '?'}-${issue.number}`
@@ -77,12 +77,12 @@ export async function getIssueId (doc: Issue, control: TriggerControl): Promise<
 /**
  * @public
  */
-export async function issueTextPresenter (doc: Doc): Promise<string> {
+export async function issueTextPresenter(doc: Doc): Promise<string> {
   const issue = doc as Issue
   return `${issue.identifier} ${issue.title}`
 }
 
-function isSamePerson (control: TriggerControl, assignee: Ref<Person>, target: Ref<Account>): boolean {
+function isSamePerson(control: TriggerControl, assignee: Ref<Person>, target: Ref<Account>): boolean {
   const targetAccount = control.modelDb.getObject(target) as PersonAccount
   return assignee === targetAccount?.person
 }
@@ -90,7 +90,7 @@ function isSamePerson (control: TriggerControl, assignee: Ref<Person>, target: R
 /**
  * @public
  */
-export async function getIssueNotificationContent (
+export async function getIssueNotificationContent(
   doc: Doc,
   tx: TxCUD<Doc>,
   target: Ref<Account>,
@@ -160,7 +160,7 @@ export async function getIssueNotificationContent (
 /**
  * @public
  */
-export async function OnComponentRemove (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+export async function OnComponentRemove(tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const ctx = TxProcessor.extractTx(tx) as TxRemoveDoc<Component>
 
   const issues = await control.findAll(tracker.class.Issue, {
@@ -183,7 +183,7 @@ export async function OnComponentRemove (tx: Tx, control: TriggerControl): Promi
 /**
  * @public
  */
-export async function OnWorkspaceOwnerAdded (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+export async function OnWorkspaceOwnerAdded(tx: Tx, control: TriggerControl): Promise<Tx[]> {
   let ownerId: Ref<PersonAccount> | undefined
   if (control.hierarchy.isDerived(tx._class, core.class.TxCreateDoc)) {
     const createTx = tx as TxCreateDoc<PersonAccount>
@@ -230,7 +230,7 @@ export async function OnWorkspaceOwnerAdded (tx: Tx, control: TriggerControl): P
 /**
  * @public
  */
-export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+export async function OnIssueUpdate(tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const actualTx = TxProcessor.extractTx(tx)
 
   // Check TimeReport operations
@@ -251,6 +251,7 @@ export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<T
       const issue = TxProcessor.createDoc2Doc(createTx)
       const res: Tx[] = []
       updateIssueParentEstimations(issue, res, control, [], issue.parents)
+      updateIssueDependencyEstimations(issue, res, control, [], issue.dependency)
 
       return res
     }
@@ -268,10 +269,20 @@ export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<T
       const parentIssue = await control.findAll(tracker.class.Issue, {
         'childInfo.childId': removeTx.objectId
       })
+      const dependencyIssue = await control.findAll(tracker.class.Issue, {
+        'childInfo.childId': removeTx.objectId
+      })
       const res: Tx[] = []
       const parents: IssueParentInfo[] = parentIssue.map((it) => ({
         parentId: it._id,
         parentTitle: it.title,
+        identifier: it.identifier,
+        space: it.space
+      }))
+
+      const dependency: IssueDependencyInfo[] = dependencyIssue.map((it) => ({
+        dependencyId: it._id,
+        dependencyTitle: it.title,
         identifier: it.identifier,
         space: it.space
       }))
@@ -285,6 +296,7 @@ export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<T
         res,
         control,
         parents,
+        dependency,
         []
       )
       return res
@@ -293,7 +305,7 @@ export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<T
   return []
 }
 
-async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control: TriggerControl): Promise<Tx[]> {
+async function doTimeReportUpdate(cud: TxCUD<TimeSpendReport>, tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const parentTx = tx as TxCollectionCUD<Issue, TimeSpendReport>
   switch (cud._class) {
     case core.class.TxCreateDoc: {
@@ -368,7 +380,7 @@ async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control:
   return []
 }
 
-async function doIssueUpdate (
+async function doIssueUpdate(
   updateTx: TxUpdateDoc<Issue>,
   control: TriggerControl,
   tx: TxCollectionCUD<Issue, AttachedDoc>
@@ -377,7 +389,7 @@ async function doIssueUpdate (
 
   let currentIssue: WithLookup<Issue> | undefined
 
-  async function getCurrentIssue (): Promise<WithLookup<Issue>> {
+  async function getCurrentIssue(): Promise<WithLookup<Issue>> {
     if (currentIssue !== undefined) {
       return currentIssue
     }
@@ -396,17 +408,17 @@ async function doIssueUpdate (
     const updatedParents: IssueParentInfo[] =
       newParent !== undefined
         ? [
-            {
-              parentId: newParent._id,
-              parentTitle: newParent.title,
-              space: newParent.space,
-              identifier: newParent.identifier
-            },
-            ...newParent.parents
-          ]
+          {
+            parentId: newParent._id,
+            parentTitle: newParent.title,
+            space: newParent.space,
+            identifier: newParent.identifier
+          },
+          ...newParent.parents
+        ]
         : []
 
-    function update (issue: Issue): DocumentUpdate<Issue> {
+    function update(issue: Issue): DocumentUpdate<Issue> {
       const parentInfoIndex = issue.parents.findIndex(({ parentId }) => parentId === updateTx.objectId)
       const parentsUpdate =
         parentInfoIndex === -1
@@ -428,6 +440,49 @@ async function doIssueUpdate (
     updateIssueParentEstimations(issue, res, control, issue.parents, updatedParents)
   }
 
+
+  if (Object.prototype.hasOwnProperty.call(updateTx.operations, 'attachedToDependency')) {
+    const [newDependency] = await control.findAll(
+      tracker.class.Issue,
+      { _id: updateTx.operations.attachedToDependency as Ref<Issue> },
+      { limit: 1 }
+    )
+
+    const updatedDependency: IssueDependencyInfo[] =
+      newDependency !== undefined
+        ? [
+          {
+            dependencyId: newDependency._id,
+            dependencyTitle: newDependency.title,
+            space: newDependency.space,
+            identifier: newDependency.identifier
+          },
+          ...newDependency.dependency
+        ]
+        : []
+
+    function update(issue: Issue): DocumentUpdate<Issue> {
+      const dependencyInfoIndex = issue.dependency.findIndex(({ dependencyId }) => dependencyId === updateTx.objectId)
+      const dependencyUpdate =
+        dependencyInfoIndex === -1
+          ? {}
+          : { dependency: [...issue.dependency].slice(0, dependencyInfoIndex + 1).concat(updatedDependency) }
+
+      return { ...dependencyUpdate }
+    }
+
+    res.push(
+      control.txFactory.createTxUpdateDoc(updateTx.objectClass, updateTx.objectSpace, updateTx.objectId, {
+        dependency: updatedDependency
+      }),
+      ...(await updateSubIssues(updateTx, control, update))
+    )
+
+    // Remove from parent estimation list.
+    const issue = await getCurrentIssue()
+    updateIssueDependencyEstimations(issue, res, control, issue.dependency, updatedDependency)
+  }
+
   if (
     Object.prototype.hasOwnProperty.call(updateTx.operations, 'estimation') ||
     Object.prototype.hasOwnProperty.call(updateTx.operations, 'reportedTime') ||
@@ -447,17 +502,24 @@ async function doIssueUpdate (
     )
 
     updateIssueParentEstimations(issue, res, control, issue.parents, issue.parents)
+    updateIssueDependencyEstimations(issue, res, control, issue.dependency, issue.dependency)
   }
 
   if (Object.prototype.hasOwnProperty.call(updateTx.operations, 'title')) {
-    function update (issue: Issue): DocumentUpdate<Issue> {
+    function update(issue: Issue): DocumentUpdate<Issue> {
       const parentInfoIndex = issue.parents.findIndex(({ parentId }) => parentId === updateTx.objectId)
+      const dependecyInfoIndex = issue.dependency.findIndex(({ dependencyId }) => dependencyId === updateTx.objectId)
       const updatedParentInfo = { ...issue.parents[parentInfoIndex], parentTitle: updateTx.operations.title as string }
+      const updatedDependencyInfo = { ...issue.dependency[dependecyInfoIndex], dependencyTitle: updateTx.operations.title as string }
+
       const updatedParents = [...issue.parents]
 
-      updatedParents[parentInfoIndex] = updatedParentInfo
+      const updatedDependency = [...issue.dependency]
 
-      return { parents: updatedParents }
+      updatedParents[parentInfoIndex] = updatedParentInfo
+      updatedDependency[dependecyInfoIndex] = updatedDependencyInfo
+
+      return { parents: updatedParents, dependency: updatedDependency }
     }
 
     res.push(...(await updateSubIssues(updateTx, control, update)))
@@ -465,7 +527,7 @@ async function doIssueUpdate (
 
   return res
 }
-function updateIssueParentEstimations (
+function updateIssueParentEstimations(
   issue: {
     _id: Ref<Issue>
     space: Ref<Space>
@@ -489,6 +551,42 @@ function updateIssueParentEstimations (
   for (const pinfo of targetParents) {
     res.push(
       control.txFactory.createTxUpdateDoc(tracker.class.Issue, pinfo.space, pinfo.parentId, {
+        $push: {
+          childInfo: {
+            childId: issue._id,
+            estimation: issue.estimation,
+            reportedTime: issue.reportedTime
+          }
+        }
+      })
+    )
+  }
+}
+
+function updateIssueDependencyEstimations(
+  issue: {
+    _id: Ref<Issue>
+    space: Ref<Space>
+    estimation: number
+    reportedTime: number
+  },
+  res: Tx[],
+  control: TriggerControl,
+  sourceDependency: IssueDependencyInfo[],
+  targetDependency: IssueDependencyInfo[]
+): void {
+  for (const pinfo of sourceDependency) {
+    res.push(
+      control.txFactory.createTxUpdateDoc(tracker.class.Issue, pinfo.space, pinfo.DependencyId, {
+        $pull: {
+          childInfo: { childId: issue._id }
+        }
+      })
+    )
+  }
+  for (const pinfo of targetDependency) {
+    res.push(
+      control.txFactory.createTxUpdateDoc(tracker.class.Issue, pinfo.space, pinfo.dependencyId, {
         $push: {
           childInfo: {
             childId: issue._id,

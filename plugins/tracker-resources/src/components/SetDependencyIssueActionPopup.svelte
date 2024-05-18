@@ -25,7 +25,7 @@
       if (
         '_class' in docValue &&
         dependencyIssue !== undefined &&
-        dependencyIssue?._id !== docValue.attachedTo &&
+        dependencyIssue?._id !== docValue.attachedToDependency &&
         dependencyIssue?._id !== docValue._id
       ) {
         let rank: Rank | null = null
@@ -33,7 +33,7 @@
         if (dependencyIssue) {
           const lastAttachedIssue = await client.findOne<Issue>(
             tracker.class.Issue,
-            { attachedTo: dependencyIssue._id },
+            { attachedToDependency: dependencyIssue._id },
             { sort: { rank: SortingOrder.Descending } }
           )
 
@@ -41,7 +41,7 @@
         }
 
         await client.update(docValue, {
-          attachedTo: dependencyIssue === null ? tracker.ids.NoDependency : dependencyIssue._id,
+          attachedToDependency: dependencyIssue === null ? tracker.ids.NoDependency : dependencyIssue._id,
           ...(rank ? { rank } : {})
         })
       }
@@ -50,7 +50,7 @@
     dispatch('close', dependencyIssue)
   }
 
-  $: selected = !Array.isArray(value) ? ('attachedTo' in value ? value.attachedTo : undefined) : undefined
+  $: selected = !Array.isArray(value) ? ('attachedTo' in value ? value.attachedToDependency : undefined) : undefined
   $: ignoreObjects = !Array.isArray(value) ? ('_id' in value ? [value._id] : []) : undefined
   $: docQuery = {
     'dependency.dependencyId': {

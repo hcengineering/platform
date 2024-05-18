@@ -176,6 +176,9 @@ export class TIssue extends TTask implements Issue {
   @Prop(TypeRef(tracker.class.Issue), tracker.string.Parent)
   declare attachedTo: Ref<Issue>
 
+  @Prop(TypeRef(tracker.class.Issue), tracker.string.Dependency)
+  declare attachedToDependency: Ref<Issue>
+
   @Prop(TypeString(), tracker.string.Title)
   @Index(IndexKind.FullText)
   title!: string

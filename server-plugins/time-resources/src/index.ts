@@ -48,7 +48,7 @@ import time, { ProjectToDo, ToDo, ToDoPriority, TodoAutomationHelper, WorkSlot }
 /**
  * @public
  */
-export async function OnTask (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+export async function OnTask(tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const actualTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
   const mixin = control.hierarchy.classHierarchyMixin<Class<Doc>, ToDoFactory>(
     actualTx.objectClass,
@@ -67,7 +67,7 @@ export async function OnTask (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   return []
 }
 
-export async function OnWorkSlotCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+export async function OnWorkSlotCreate(tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const actualTx = TxProcessor.extractTx(tx) as TxCUD<WorkSlot>
   if (!control.hierarchy.isDerived(actualTx.objectClass, time.class.WorkSlot)) return []
   if (!control.hierarchy.isDerived(actualTx._class, core.class.TxCreateDoc)) return []
@@ -102,6 +102,8 @@ export async function OnWorkSlotCreate (tx: Tx, control: TriggerControl): Promis
           const outerTx = factory.createTxCollectionCUD(
             issue.attachedToClass,
             issue.attachedTo,
+            issue.attachedToDependency,
+            issue.attachedToDependencyClass,
             issue.space,
             issue.collection,
             innerTx
@@ -115,7 +117,7 @@ export async function OnWorkSlotCreate (tx: Tx, control: TriggerControl): Promis
   return []
 }
 
-export async function OnToDoRemove (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+export async function OnToDoRemove(tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const actualTx = TxProcessor.extractTx(tx) as TxCUD<ToDo>
   if (!control.hierarchy.isDerived(actualTx.objectClass, time.class.ToDo)) return []
   if (!control.hierarchy.isDerived(actualTx._class, core.class.TxRemoveDoc)) return []
@@ -148,6 +150,8 @@ export async function OnToDoRemove (tx: Tx, control: TriggerControl): Promise<Tx
           const outerTx = factory.createTxCollectionCUD(
             issue.attachedToClass,
             issue.attachedTo,
+            issue.attachedToDependency,
+            issue.attachedToDependencyClass,
             issue.space,
             issue.collection,
             innerTx
@@ -161,7 +165,7 @@ export async function OnToDoRemove (tx: Tx, control: TriggerControl): Promise<Tx
   return []
 }
 
-export async function OnToDoCreate (tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
+export async function OnToDoCreate(tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
   const hierarchy = control.hierarchy
   const createTx = TxProcessor.extractTx(tx) as TxCreateDoc<ToDo>
 
@@ -221,7 +225,7 @@ export async function OnToDoCreate (tx: TxCUD<Doc>, control: TriggerControl): Pr
 /**
  * @public
  */
-export async function OnToDoUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+export async function OnToDoUpdate(tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const actualTx = TxProcessor.extractTx(tx) as TxCUD<ToDo>
   if (!control.hierarchy.isDerived(actualTx.objectClass, time.class.ToDo)) return []
   if (!control.hierarchy.isDerived(actualTx._class, core.class.TxUpdateDoc)) return []
@@ -320,7 +324,7 @@ export async function OnToDoUpdate (tx: Tx, control: TriggerControl): Promise<Tx
 /**
  * @public
  */
-export async function IssueToDoFactory (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+export async function IssueToDoFactory(tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const actualTx = TxProcessor.extractTx(tx) as TxCUD<Issue>
   if (!control.hierarchy.isDerived(actualTx.objectClass, tracker.class.Issue)) return []
   if (control.hierarchy.isDerived(actualTx._class, core.class.TxCreateDoc)) {
@@ -336,7 +340,7 @@ export async function IssueToDoFactory (tx: Tx, control: TriggerControl): Promis
 /**
  * @public
  */
-export async function IssueToDoDone (control: TriggerControl, workslots: WorkSlot[], todo: ToDo): Promise<Tx[]> {
+export async function IssueToDoDone(control: TriggerControl, workslots: WorkSlot[], todo: ToDo): Promise<Tx[]> {
   const res: Tx[] = []
   let total = 0
   for (const workslot of workslots) {
@@ -379,6 +383,8 @@ export async function IssueToDoDone (control: TriggerControl, workslots: WorkSlo
                 const outerTx = factory.createTxCollectionCUD(
                   issue.attachedToClass,
                   issue.attachedTo,
+                  issue.attachedToDependency,
+                  issue.attachedToDependencyClass,
                   issue.space,
                   issue.collection,
                   innerTx
@@ -413,7 +419,7 @@ export async function IssueToDoDone (control: TriggerControl, workslots: WorkSlo
   return res
 }
 
-async function createIssueHandler (issue: Issue, control: TriggerControl): Promise<Tx[]> {
+async function createIssueHandler(issue: Issue, control: TriggerControl): Promise<Tx[]> {
   if (issue.assignee != null) {
     const project = (await control.findAll(task.class.Project, { _id: issue.space }))[0]
     if (project === undefined) return []
@@ -431,7 +437,7 @@ async function createIssueHandler (issue: Issue, control: TriggerControl): Promi
   return []
 }
 
-async function getPersonAccount (person: Ref<Person>, control: TriggerControl): Promise<PersonAccount | undefined> {
+async function getPersonAccount(person: Ref<Person>, control: TriggerControl): Promise<PersonAccount | undefined> {
   const account = (
     await control.modelDb.findAll(
       contact.class.PersonAccount,
@@ -444,7 +450,7 @@ async function getPersonAccount (person: Ref<Person>, control: TriggerControl): 
   return account
 }
 
-async function getIssueToDoData (
+async function getIssueToDoData(
   issue: Issue,
   user: Ref<Person>,
   control: TriggerControl
@@ -478,7 +484,7 @@ async function getIssueToDoData (
   return data
 }
 
-async function getCreateToDoTx (issue: Issue, user: Ref<Person>, control: TriggerControl): Promise<Tx | undefined> {
+async function getCreateToDoTx(issue: Issue, user: Ref<Person>, control: TriggerControl): Promise<Tx | undefined> {
   const data = await getIssueToDoData(issue, user, control)
   if (data === undefined) return
   const innerTx = control.txFactory.createTxCreateDoc(
@@ -492,7 +498,7 @@ async function getCreateToDoTx (issue: Issue, user: Ref<Person>, control: Trigge
   return outerTx
 }
 
-async function changeIssueAssigneeHandler (
+async function changeIssueAssigneeHandler(
   control: TriggerControl,
   newAssignee: Ref<Person>,
   issueId: Ref<Issue>
@@ -521,7 +527,7 @@ async function changeIssueAssigneeHandler (
   return []
 }
 
-async function changeIssueStatusHandler (
+async function changeIssueStatusHandler(
   control: TriggerControl,
   newStatus: Ref<IssueStatus>,
   issueId: Ref<Issue>
@@ -546,7 +552,7 @@ async function changeIssueStatusHandler (
   return []
 }
 
-async function changeIssueNumberHandler (control: TriggerControl, issueId: Ref<Issue>): Promise<Tx[]> {
+async function changeIssueNumberHandler(control: TriggerControl, issueId: Ref<Issue>): Promise<Tx[]> {
   const res: Tx[] = []
   const issue = (await control.findAll(tracker.class.Issue, { _id: issueId }))[0]
   if (issue !== undefined) {
@@ -582,7 +588,7 @@ async function changeIssueNumberHandler (control: TriggerControl, issueId: Ref<I
   return res
 }
 
-async function updateIssueHandler (tx: TxUpdateDoc<Issue>, control: TriggerControl): Promise<Tx[]> {
+async function updateIssueHandler(tx: TxUpdateDoc<Issue>, control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
   const project = (await control.findAll(task.class.Project, { _id: tx.objectSpace as Ref<Project> }))[0]
   if (project === undefined) return []
