@@ -103,6 +103,7 @@ import { calendarId } from '@hcengineering/calendar'
 import { chunterId } from '@hcengineering/chunter'
 import { contactId } from '@hcengineering/contact'
 import { documentId } from '@hcengineering/document'
+import { driveId } from '@hcengineering/drive'
 import { gmailId } from '@hcengineering/gmail'
 import { hrId } from '@hcengineering/hr'
 import { inventoryId } from '@hcengineering/inventory'
@@ -134,6 +135,7 @@ import calendarEn from '@hcengineering/calendar-assets/lang/en.json'
 import chunterEn from '@hcengineering/chunter-assets/lang/en.json'
 import contactEn from '@hcengineering/contact-assets/lang/en.json'
 import documentEn from '@hcengineering/document-assets/lang/en.json'
+import driveEn from '@hcengineering/drive-assets/lang/en.json'
 import gmailEn from '@hcengineering/gmail-assets/lang/en.json'
 import hrEn from '@hcengineering/hr-assets/lang/en.json'
 import inventoryEn from '@hcengineering/inventory-assets/lang/en.json'
@@ -181,6 +183,7 @@ addStringsLoader(hrId, async (lang: string) => hrEn)
 addStringsLoader(bitrixId, async (lang: string) => bitrixEn)
 addStringsLoader(requestId, async (lang: string) => requestEn)
 addStringsLoader(documentId, async (lang: string) => documentEn)
+addStringsLoader(driveId, async (lang: string) => driveEn)
 
 /**
  * @public

@@ -95,6 +95,8 @@
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/server-document": "^0.6.0",
     "@hcengineering/server-document-resources": "^0.6.0",
+    "@hcengineering/server-drive": "^0.6.0",
+    "@hcengineering/server-drive-resources": "^0.6.0",
     "@hcengineering/server-gmail": "^0.6.0",
     "@hcengineering/server-gmail-resources": "^0.6.0",
     "@hcengineering/server-hr": "^0.6.0",
