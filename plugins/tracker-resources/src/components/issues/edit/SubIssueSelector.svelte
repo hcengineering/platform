@@ -128,7 +128,6 @@
       { _id: dependencyIssueId },
       (res) => {
         dependencyIssue = res[0]
-        console.log(dependencyIssue, 'RES')
       },
       {
         limit: 1
@@ -140,13 +139,9 @@
     dependencyIssue = undefined
     subIssues = []
   }
-  console.log(dependencyIssue, 'DEP ISSUE')
-  console.log(parentIssue, 'PARENT ISSUE')
 
   $: parentStatus = parentIssue ? $statusStore.byId.get(parentIssue.status) : undefined
   $: dependencyStatus = dependencyIssue ? $statusStore.byId.get(dependencyIssue.status) : undefined
-  console.log(parentStatus, 'stattuss')
-  // console.log($statusStore.byId.get('tracker:status:Backlog'), 'STSTUS')
 
   let categories: IdMap<StatusCategory> = new Map()
 
@@ -195,10 +190,7 @@
           : undefined
     }
   })
-  console.log(issue, 'ISSUE')
 
-  console.log(dependencyIssue, 'DEP ISSUE')
-  console.log(parentIssue, 'paar issue')
 </script>
 
 {#if parentIssue}

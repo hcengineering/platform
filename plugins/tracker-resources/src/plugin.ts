@@ -92,6 +92,7 @@ export default mergeIds(trackerId, tracker, {
     Todo: '' as IntlString,
     Done: '' as IntlString,
     SetPriority: '' as IntlString,
+    Blocked: '' as IntlString,
     SetStatus: '' as IntlString,
     Priority: '' as IntlString,
     NoPriority: '' as IntlString,

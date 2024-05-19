@@ -41,7 +41,7 @@ import { stripTags } from '@hcengineering/text'
 import chunter, { ChatMessage } from '@hcengineering/chunter'
 import { NOTIFICATION_BODY_SIZE } from '@hcengineering/server-notification'
 
-async function updateSubIssues(
+async function updateSubIssues (
   updateTx: TxUpdateDoc<Issue>,
   control: TriggerControl,
   update: DocumentUpdate<Issue> | ((node: Issue) => DocumentUpdate<Issue>)
@@ -57,7 +57,7 @@ async function updateSubIssues(
 /**
  * @public
  */
-export async function issueHTMLPresenter(doc: Doc, control: TriggerControl): Promise<string> {
+export async function issueHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const issue = doc as Issue
   const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
   const path = `${workbenchId}/${control.workspace.workspaceUrl}/${trackerId}/${issue.identifier}`
@@ -68,7 +68,7 @@ export async function issueHTMLPresenter(doc: Doc, control: TriggerControl): Pro
 /**
  * @public
  */
-export async function getIssueId(doc: Issue, control: TriggerControl): Promise<string> {
+export async function getIssueId (doc: Issue, control: TriggerControl): Promise<string> {
   const issue = doc
   const project = (await control.findAll(tracker.class.Project, { _id: issue.space }))[0]
   return `${project?.identifier ?? '?'}-${issue.number}`
@@ -77,12 +77,12 @@ export async function getIssueId(doc: Issue, control: TriggerControl): Promise<s
 /**
  * @public
  */
-export async function issueTextPresenter(doc: Doc): Promise<string> {
+export async function issueTextPresenter (doc: Doc): Promise<string> {
   const issue = doc as Issue
   return `${issue.identifier} ${issue.title}`
 }
 
-function isSamePerson(control: TriggerControl, assignee: Ref<Person>, target: Ref<Account>): boolean {
+function isSamePerson (control: TriggerControl, assignee: Ref<Person>, target: Ref<Account>): boolean {
   const targetAccount = control.modelDb.getObject(target) as PersonAccount
   return assignee === targetAccount?.person
 }
@@ -90,7 +90,7 @@ function isSamePerson(control: TriggerControl, assignee: Ref<Person>, target: Re
 /**
  * @public
  */
-export async function getIssueNotificationContent(
+export async function getIssueNotificationContent (
   doc: Doc,
   tx: TxCUD<Doc>,
   target: Ref<Account>,
@@ -160,7 +160,7 @@ export async function getIssueNotificationContent(
 /**
  * @public
  */
-export async function OnComponentRemove(tx: Tx, control: TriggerControl): Promise<Tx[]> {
+export async function OnComponentRemove (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const ctx = TxProcessor.extractTx(tx) as TxRemoveDoc<Component>
 
   const issues = await control.findAll(tracker.class.Issue, {
@@ -183,7 +183,7 @@ export async function OnComponentRemove(tx: Tx, control: TriggerControl): Promis
 /**
  * @public
  */
-export async function OnWorkspaceOwnerAdded(tx: Tx, control: TriggerControl): Promise<Tx[]> {
+export async function OnWorkspaceOwnerAdded (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   let ownerId: Ref<PersonAccount> | undefined
   if (control.hierarchy.isDerived(tx._class, core.class.TxCreateDoc)) {
     const createTx = tx as TxCreateDoc<PersonAccount>
@@ -230,7 +230,7 @@ export async function OnWorkspaceOwnerAdded(tx: Tx, control: TriggerControl): Pr
 /**
  * @public
  */
-export async function OnIssueUpdate(tx: Tx, control: TriggerControl): Promise<Tx[]> {
+export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const actualTx = TxProcessor.extractTx(tx)
 
   // Check TimeReport operations
@@ -284,8 +284,7 @@ export async function OnIssueUpdate(tx: Tx, control: TriggerControl): Promise<Tx
         dependencyId: it._id,
         dependencyTitle: it.title,
         identifier: it.identifier,
-        space: it.space,
-        status: it.status
+        space: it.space
       }))
       updateIssueParentEstimations(
         {
@@ -306,7 +305,7 @@ export async function OnIssueUpdate(tx: Tx, control: TriggerControl): Promise<Tx
   return []
 }
 
-async function doTimeReportUpdate(cud: TxCUD<TimeSpendReport>, tx: Tx, control: TriggerControl): Promise<Tx[]> {
+async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const parentTx = tx as TxCollectionCUD<Issue, TimeSpendReport>
   switch (cud._class) {
     case core.class.TxCreateDoc: {
@@ -381,7 +380,7 @@ async function doTimeReportUpdate(cud: TxCUD<TimeSpendReport>, tx: Tx, control: 
   return []
 }
 
-async function doIssueUpdate(
+async function doIssueUpdate (
   updateTx: TxUpdateDoc<Issue>,
   control: TriggerControl,
   tx: TxCollectionCUD<Issue, AttachedDoc>
@@ -409,17 +408,17 @@ async function doIssueUpdate(
     const updatedParents: IssueParentInfo[] =
       newParent !== undefined
         ? [
-          {
-            parentId: newParent._id,
-            parentTitle: newParent.title,
-            space: newParent.space,
-            identifier: newParent.identifier
-          },
-          ...newParent.parents
-        ]
+            {
+              parentId: newParent._id,
+              parentTitle: newParent.title,
+              space: newParent.space,
+              identifier: newParent.identifier
+            },
+            ...newParent.parents
+          ]
         : []
 
-    function update(issue: Issue): DocumentUpdate<Issue> {
+    function update (issue: Issue): DocumentUpdate<Issue> {
       const parentInfoIndex = issue.parents.findIndex(({ parentId }) => parentId === updateTx.objectId)
       const parentsUpdate =
         parentInfoIndex === -1
@@ -452,18 +451,17 @@ async function doIssueUpdate(
     const updatedDependency: IssueDependencyInfo[] =
       newDependency !== undefined
         ? [
-          {
-            dependencyId: newDependency._id,
-            dependencyTitle: newDependency.title,
-            space: newDependency.space,
-            identifier: newDependency.identifier,
-            status: newDependency.status
-          },
-          ...newDependency.dependency
-        ]
+            {
+              dependencyId: newDependency._id,
+              dependencyTitle: newDependency.title,
+              space: newDependency.space,
+              identifier: newDependency.identifier
+            },
+            ...newDependency.dependency
+          ]
         : []
 
-    function update(issue: Issue): DocumentUpdate<Issue> {
+    function update (issue: Issue): DocumentUpdate<Issue> {
       const dependencyInfoIndex = issue.dependency.findIndex(({ dependencyId }) => dependencyId === updateTx.objectId)
       const dependencyUpdate =
         dependencyInfoIndex === -1
@@ -508,7 +506,7 @@ async function doIssueUpdate(
   }
 
   if (Object.prototype.hasOwnProperty.call(updateTx.operations, 'title')) {
-    function update(issue: Issue): DocumentUpdate<Issue> {
+    function update (issue: Issue): DocumentUpdate<Issue> {
       const parentInfoIndex = issue.parents.findIndex(({ parentId }) => parentId === updateTx.objectId)
       const dependecyInfoIndex = issue.dependency.findIndex(({ dependencyId }) => dependencyId === updateTx.objectId)
       const updatedParentInfo = { ...issue.parents[parentInfoIndex], parentTitle: updateTx.operations.title as string }
@@ -529,7 +527,7 @@ async function doIssueUpdate(
 
   return res
 }
-function updateIssueParentEstimations(
+function updateIssueParentEstimations (
   issue: {
     _id: Ref<Issue>
     space: Ref<Space>
@@ -565,7 +563,7 @@ function updateIssueParentEstimations(
   }
 }
 
-function updateIssueDependencyEstimations(
+function updateIssueDependencyEstimations (
   issue: {
     _id: Ref<Issue>
     space: Ref<Space>

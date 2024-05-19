@@ -24,7 +24,6 @@
   export let value: ValueType
 
   let statuses: WithLookup<IssueStatus>[] | undefined = undefined
-  /* || (value?.dependency && value?.dependency[0]?.status !== 'tracker:status:Done') */
   export let isEditable: boolean = true
   export let shouldShowLabel: boolean = false
   export let tooltipAlignment: TooltipAlignment | undefined = undefined
@@ -37,9 +36,12 @@
   export let defaultIssueStatus: Ref<IssueStatus> | undefined = undefined
   export let focusIndex: number | undefined = undefined
   export let short: boolean = false
+  let dependencyIssue: Issue | undefined = undefined
 
   const client = getClient()
   const dispatch = createEventDispatcher()
+  const dependencyQuery = createQuery()
+
   const changeStatus = async (newStatus: Ref<IssueStatus> | undefined, refocus: boolean = true) => {
     if (!isEditable || newStatus == null || value.status === newStatus) {
       return
@@ -53,6 +55,21 @@
     if ('_class' in value) {
       await client.update(value, { status: newStatus })
     }
+  }
+
+  $: if (value.dependency?.length) {
+    dependencyQuery.query(
+      tracker.class.Issue,
+      { _id: value.dependency?.[0].dependencyId },
+      (res) => {
+        dependencyIssue = res[0]
+      },
+      {
+        limit: 1
+      }
+    )
+  } else {
+    dependencyIssue = undefined
   }
 
   const handleStatusEditorOpened = (event: MouseEvent) => {
@@ -133,8 +150,13 @@
     </div>
   {:else}
     <Button
-      showTooltip={isEditable ? { label: tracker.string.SetStatus, direction: tooltipAlignment } : undefined}
-      disabled={!isEditable}
+      showTooltip={isEditable ? dependencyIssue?.status 
+        ? (dependencyIssue.status === 'tracker:status:Done' 
+            ? { label: tracker.string.SetStatus, direction: tooltipAlignment } 
+            : { label: tracker.string.Blocked, direction: tooltipAlignment }) 
+            : { label: tracker.string.SetStatus, direction: tooltipAlignment }
+        : undefined}
+      disabled={!isEditable || (dependencyIssue?.status && dependencyIssue?.status !== 'tracker:status:Done')}
       {justify}
       {size}
       {kind}

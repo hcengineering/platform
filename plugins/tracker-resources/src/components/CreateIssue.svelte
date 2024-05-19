@@ -142,9 +142,6 @@
   }
 
   $: if (object.parentIssue !== undefined) {
-    console.log('parentIssue', object.parentIssue)
-    console.log('tracker.class', tracker.class)
-
     parentQuery.query(
       tracker.class.Issue,
       {
@@ -160,8 +157,6 @@
   }
 
   $: if (object.dependencyIssue !== undefined) {
-    console.log('dependencyIssue', object.dependencyIssue)
-    console.log('tracker.class', tracker.class)
     dependencyQuery.query(
       tracker.class.Issue,
       {
@@ -513,9 +508,7 @@
                   dependencyTitle: dependencyIssue.title,
                   space: dependencyIssue.space,
                   identifier: dependencyIssue.identifier,
-                  status: dependencyIssue.status
                 },
-                ...dependencyIssue.dependency
               ]
             : [],
         reportedTime: 0,
@@ -586,18 +579,15 @@
                 dependencyTitle: value.title,
                 space: dependencyIssue.space,
                 identifier,
-                status
               },
               {
                 dependencyId: dependencyIssue._id,
                 dependencyTitle: dependencyIssue.title,
                 space: dependencyIssue.space,
                 identifier: dependencyIssue.identifier,
-                status: dependencyIssue.status
               }
-              // ...dependencyIssue.dependency
             ]
-          : [{ dependencyId: _id, dependencyTitle: value.title, space: _space, identifier, status }]
+          : [{ dependencyId: _id, dependencyTitle: value.title, space: _space, identifier }]
       await subIssuesComponent.save(dependency, _id)
       addNotification(
         await translate(tracker.string.IssueCreated, {}, $themeStore.language),
@@ -633,12 +623,10 @@
       { value: { ...object, space: _space, attachedTo: parentIssue?._id } },
       'top',
       (selectedIssue) => {
-        console.log('selectedIssue from parent', selectedIssue)
         if (selectedIssue !== undefined) {
           parentIssue = selectedIssue
           object.parentIssue = parentIssue?._id
         }
-        console.log('parentIssue', parentIssue)
       }
     )
   }
@@ -649,12 +637,10 @@
       { value: { ...object, space: _space, attachedToDependency: dependencyIssue?._id } },
       'top',
       (selectedIssue) => {
-        console.log('selectedIssue from dependency', selectedIssue)
         if (selectedIssue !== undefined) {
           dependencyIssue = selectedIssue
           object.dependencyIssue = dependencyIssue?._id
         }
-        console.log('dependencyIssue', dependencyIssue)
       }
     )
   }

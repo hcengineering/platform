@@ -20,8 +20,6 @@
   import PriorityRefPresenter from './PriorityRefPresenter.svelte'
 
   export let issue: Issue
-  console.log('issue from paarent', issue)
-
   const dispatch = createEventDispatcher()
 </script>
 

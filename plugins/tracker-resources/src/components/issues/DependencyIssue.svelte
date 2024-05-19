@@ -7,8 +7,6 @@
 
   export let issue: Issue
   const dispatch = createEventDispatcher()
-  console.log('issue from dependency', issue)
-  console.log('tracker.string dependency', tracker.string)
 </script>
 
 <span class="overflow-label">{'Dependency Issue'}</span>

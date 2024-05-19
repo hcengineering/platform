@@ -329,7 +329,6 @@ export interface IssueDependencyInfo {
   identifier: string
   dependencyTitle: string
   space: Ref<Space>
-  status: Ref<IssueStatus>
 }
 
 /**

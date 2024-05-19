@@ -38,6 +38,7 @@ export default mergeIds(contactId, contact, {
     ContactCreateLabel: '' as IntlString,
     SocialLinks: '' as IntlString,
     ViewActivity: '' as IntlString,
+    Blocked: '' as IntlString,
     Status: '' as IntlString,
     SetStatus: '' as IntlString,
     ClearStatus: '' as IntlString,

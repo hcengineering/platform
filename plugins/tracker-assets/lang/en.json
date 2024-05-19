@@ -55,6 +55,7 @@
     "ResumeDraft": "Resume draft",
     "SaveIssue": "Create issue",
     "SetPriority": "Set priority\u2026",
+    "Blocked": "Blocked by dependency",
     "SetStatus": "Set status\u2026",
     "SelectIssue": "Select issue",
     "Priority": "Priority",
