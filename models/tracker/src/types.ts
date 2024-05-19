@@ -58,6 +58,7 @@ import {
   type Issue,
   type IssueChildInfo,
   type IssueParentInfo,
+  type IssueDependencyInfo,
   type IssuePriority,
   type IssueStatus,
   type IssueTemplate,
@@ -225,7 +226,7 @@ export class TIssue extends TTask implements Issue {
 
   parents!: IssueParentInfo[]
 
-  dependency!: IssueParentInfo[]
+  dependency!: IssueDependencyInfo[]
 
   @Prop(Collection(tags.class.TagReference), tracker.string.Labels)
   declare labels: number

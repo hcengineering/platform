@@ -52,6 +52,7 @@
     Issue,
     IssueDraft,
     IssueParentInfo,
+    IssueDependencyInfo,
     IssuePriority,
     IssueStatus,
     IssueTemplate,
@@ -73,7 +74,7 @@
     themeStore
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { ObjectBox } from '@hcengineering/view-resources'
+  import { ObjectBox, statusStore } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy } from 'svelte'
 
   import { activeComponent, activeMilestone, generateIssueShortLink, updateIssueRelation } from '../issues'
@@ -91,7 +92,6 @@
   import EstimationEditor from './issues/timereport/EstimationEditor.svelte'
   import MilestoneSelector from './milestones/MilestoneSelector.svelte'
   import ProjectPresenter from './projects/ProjectPresenter.svelte'
-  import { log } from 'console'
 
   export let space: Ref<Project> | undefined
   export let status: Ref<IssueStatus> | undefined = undefined
@@ -512,8 +512,10 @@
                   dependencyId: dependencyIssue._id,
                   dependencyTitle: dependencyIssue.title,
                   space: dependencyIssue.space,
-                  identifier: dependencyIssue.identifier
-                }
+                  identifier: dependencyIssue.identifier,
+                  status: dependencyIssue.status
+                },
+                ...dependencyIssue.dependency
               ]
             : [],
         reportedTime: 0,
@@ -576,19 +578,26 @@
           : [{ parentId: _id, parentTitle: value.title, space: _space, identifier }]
       await subIssuesComponent.save(parents, _id)
 
-      const dependency: IssueParentInfo[] =
+      const dependency: IssueDependencyInfo[] =
         dependencyIssue != null
           ? [
-              { dependencyId: _id, dependencyTitle: value.title, space: dependencyIssue.space, identifier },
+              {
+                dependencyId: _id,
+                dependencyTitle: value.title,
+                space: dependencyIssue.space,
+                identifier,
+                status
+              },
               {
                 dependencyId: dependencyIssue._id,
                 dependencyTitle: dependencyIssue.title,
                 space: dependencyIssue.space,
-                identifier: dependencyIssue.identifier
+                identifier: dependencyIssue.identifier,
+                status: dependencyIssue.status
               }
               // ...dependencyIssue.dependency
             ]
-          : [{ dependencyId: _id, dependencyTitle: value.title, space: _space, identifier }]
+          : [{ dependencyId: _id, dependencyTitle: value.title, space: _space, identifier, status }]
       await subIssuesComponent.save(dependency, _id)
       addNotification(
         await translate(tracker.string.IssueCreated, {}, $themeStore.language),

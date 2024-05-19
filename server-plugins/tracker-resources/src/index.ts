@@ -284,7 +284,8 @@ export async function OnIssueUpdate(tx: Tx, control: TriggerControl): Promise<Tx
         dependencyId: it._id,
         dependencyTitle: it.title,
         identifier: it.identifier,
-        space: it.space
+        space: it.space,
+        status: it.status
       }))
       updateIssueParentEstimations(
         {
@@ -455,7 +456,8 @@ async function doIssueUpdate(
             dependencyId: newDependency._id,
             dependencyTitle: newDependency.title,
             space: newDependency.space,
-            identifier: newDependency.identifier
+            identifier: newDependency.identifier,
+            status: newDependency.status
           },
           ...newDependency.dependency
         ]
