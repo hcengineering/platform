@@ -94,6 +94,29 @@ export const isRowSelected = (rowIndex: number, selection: Selection): boolean =
   return false
 }
 
+function getSelectedRect (selection: CellSelection, map: TableMap): Rect {
+  const start = selection.$anchorCell.start(-1)
+  return map.rectBetween(selection.$anchorCell.pos - start, selection.$headCell.pos - start)
+}
+
+export const getSelectedRows = (selection: Selection, map: TableMap): number[] => {
+  if (selection instanceof CellSelection && selection.isRowSelection()) {
+    const selectedRect = getSelectedRect(selection, map)
+    return [...Array(selectedRect.bottom - selectedRect.top).keys()].map(idx => idx + selectedRect.top)
+  }
+
+  return []
+}
+
+export const getSelectedColumns = (selection: Selection, map: TableMap): number[] => {
+  if (selection instanceof CellSelection && selection.isColSelection()) {
+    const selectedRect = getSelectedRect(selection, map)
+    return [...Array(selectedRect.right - selectedRect.left).keys()].map(idx => idx + selectedRect.left)
+  }
+
+  return []
+}
+
 export const isTableSelected = (selection: Selection): boolean => {
   if (selection instanceof CellSelection) {
     const { height, width } = TableMap.get(selection.$anchorCell.node(-1))
@@ -106,13 +129,20 @@ export const isTableSelected = (selection: Selection): boolean => {
 
 export const isRectSelected = (rect: Rect, selection: CellSelection): boolean => {
   const map = TableMap.get(selection.$anchorCell.node(-1))
-  const start = selection.$anchorCell.start(-1)
   const cells = map.cellsInRect(rect)
-  const selectedCells = map.cellsInRect(
-    map.rectBetween(selection.$anchorCell.pos - start, selection.$headCell.pos - start)
-  )
+  const selectedCells = map.cellsInRect(getSelectedRect(selection, map))
 
   return cells.every((cell) => selectedCells.includes(cell))
+}
+
+export const findCellRow = (map: TableMap, pos: number): number => {
+  const idx = map.map.indexOf(pos)
+  return idx >= 0 ? Math.floor(idx / map.width) : -1
+}
+
+export const findCellColumn = (map: TableMap, pos: number): number => {
+  const idx = map.map.indexOf(pos)
+  return idx >= 0 ? idx % map.width : -1
 }
 
 export const findTable = (selection: Selection): TableNodeLocation | undefined => {

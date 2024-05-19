@@ -15,14 +15,18 @@
 
 import { type Editor } from '@tiptap/core'
 import { type EditorState } from '@tiptap/pm/state'
-import { TableMap } from '@tiptap/pm/tables'
+import { CellSelection, TableMap } from '@tiptap/pm/tables'
 import { Decoration } from '@tiptap/pm/view'
 
 import { type TableNodeLocation } from '../types'
-import { isColumnSelected, selectColumn } from '../utils'
+import { findCellColumn, findTable, getSelectedColumns, isColumnSelected, selectColumn } from '../utils'
 
-import { moveColumn } from './actions'
+import { duplicateColumns, moveColumn } from './actions'
 import { handleSvg } from './icons'
+import DeleteCol from '../../../icons/table/DeleteCol.svelte'
+import Duplicate from '../../../icons/table/Duplicate.svelte'
+import textEditorPlugin from '../../../../plugin'
+import { type OptionItem, createOptionsButton } from './optionsButton'
 import {
   dropMarkerWidthPx,
   getColDragMarker,
@@ -39,10 +43,34 @@ interface TableColumn {
   widthPx: number
 }
 
+const createOptionItems = (editor: Editor): OptionItem[] => [
+  {
+    id: 'delete',
+    icon: DeleteCol,
+    label: textEditorPlugin.string.DeleteColumn,
+    action: () => editor.commands.deleteColumn()
+  },
+  {
+    id: 'duplicate',
+    icon: Duplicate,
+    label: textEditorPlugin.string.Duplicate,
+    action: () => {
+      const table = findTable(editor.state.selection)
+      if (table !== undefined) {
+        let tr = editor.state.tr
+        const selectedColumns = getSelectedColumns(editor.state.selection, TableMap.get(table.node))
+        tr = duplicateColumns(table, selectedColumns, tr)
+        editor.view.dispatch(tr)
+      }
+    }
+  }
+]
+
 export const columnHandlerDecoration = (state: EditorState, table: TableNodeLocation, editor: Editor): Decoration[] => {
   const decorations: Decoration[] = []
 
   const tableMap = TableMap.get(table.node)
+  const selectedColumns: number[] = []
   for (let col = 0; col < tableMap.width; col++) {
     const pos = getTableCellWidgetDecorationPos(table, tableMap, col)
 
@@ -50,12 +78,22 @@ export const columnHandlerDecoration = (state: EditorState, table: TableNodeLoca
     handle.classList.add('table-col-handle')
     if (isColumnSelected(col, state.selection)) {
       handle.classList.add('table-col-handle__selected')
+      selectedColumns.push(col)
     }
     handle.innerHTML = handleSvg
     handle.addEventListener('mousedown', (e) => {
       handleMouseDown(col, table, e, editor)
     })
     decorations.push(Decoration.widget(pos, handle))
+  }
+
+  if (selectedColumns.length > 0 && state.selection instanceof CellSelection) {
+    const start = state.selection.$anchorCell.start(-1)
+    const pos = getTableCellWidgetDecorationPos(
+      table, tableMap,
+      findCellColumn(tableMap, state.selection.$headCell.pos - start)
+    )
+    decorations.push(Decoration.widget(pos, createOptionsButton(editor, createOptionItems(editor), 'column')))
   }
 
   return decorations

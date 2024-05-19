@@ -25,6 +25,8 @@ table.proseTable {
   --table-drag-and-drop-z-index: 110;
   --table-handlers-z-index: 120;
 
+  --table-options-button-size: 1.25rem;
+
   border-collapse: collapse;
   table-layout: fixed;
   position: relative;
@@ -296,6 +298,44 @@ table.proseTable {
     svg {
       height: 100%;
       transform: rotate(90deg);
+    }
+  }
+
+  .table-options-button {
+    position: absolute;
+    cursor: pointer;
+    width: var(--table-options-button-size);
+    height: var(--table-options-button-size);
+    border-radius: 50%;
+
+    border-color: var(--button-secondary-BorderColor);
+    background-color: var(--button-secondary-BackgroundColor);
+
+    svg {
+      color: var(--button-subtle-LabelColor);
+    }
+    &:hover {
+      background-color: var(--button-secondary-hover-BackgroundColor);
+    }
+    &:active,
+    &.pressed {
+      background-color: var(--button-secondary-active-BackgroundColor);
+    }
+
+    &.row {
+      top: 0;
+      bottom: 0;
+      left: calc(var(--table-handle-indent) - var(--table-options-button-size) - 0.5rem);
+      margin-top: auto;
+      margin-bottom: auto;
+    }
+
+    &.column {
+      left: 0;
+      right: 0;
+      top: calc(var(--table-handle-indent) - var(--table-options-button-size) - 0.5rem);
+      margin-left: auto;
+      margin-right: auto;
     }
   }
 }
