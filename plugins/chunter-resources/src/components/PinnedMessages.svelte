@@ -13,10 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { eventToHTMLElement, Label, ModernButton, showPopup } from '@hcengineering/ui'
+  import { eventToHTMLElement, Label, ModernButton, showPopup, Icon } from '@hcengineering/ui'
   import PinnedMessagesPopup from './PinnedMessagesPopup.svelte'
   import { createQuery } from '@hcengineering/presentation'
-  import { DocNotifyContext } from '@hcengineering/notification'
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import { Class, Doc, Ref } from '@hcengineering/core'
   import view from '@hcengineering/view'
@@ -43,19 +42,9 @@
 </script>
 
 {#if pinnedMessagesCount > 0}
-  <div class="mr-2">
-    <ModernButton
-      icon={view.icon.Pin}
-      size="small"
-      label={chunter.string.PinnedCount}
-      labelParams={{ count: pinnedMessagesCount }}
-      on:click={openMessagesPopup}
-    />
-  </div>
+  <div class="antiHSpacer x2" />
+  <ModernButton size={'extra-small'} on:click={openMessagesPopup}>
+    <Icon icon={view.icon.Pin} size={'x-small'} />
+    <span class="text-sm"><Label label={chunter.string.PinnedCount} params={{ count: pinnedMessagesCount }} /></span>
+  </ModernButton>
 {/if}
-
-<style lang="scss">
-  .container {
-    padding-left: 2.5rem;
-  }
-</style>
