@@ -159,7 +159,6 @@
 <ActivityMessageTemplate
   message={value}
   {parentMessage}
-  {space}
   {person}
   {showNotify}
   {isHighlighted}
