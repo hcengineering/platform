@@ -182,7 +182,7 @@ export class TProjectType extends TSpaceType implements ProjectType {
 
   @Prop(TypeString(), task.string.Description)
   @Index(IndexKind.FullText)
-    escription!: string
+    description!: string
 
   @Prop(ArrOf(TypeRef(task.class.TaskType)), getEmbeddedLabel('Tasks'))
     tasks!: Ref<TaskType>[]

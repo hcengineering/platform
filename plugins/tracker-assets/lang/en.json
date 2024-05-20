@@ -66,11 +66,13 @@
     "Back": "Back",
     "List": "List",
     "NumberLabels": "{count, plural, =0 {no labels} =1 {1 label} other {# labels}}",
+
     "CategoryBacklog": "Backlog",
     "CategoryUnstarted": "Unstarted",
     "CategoryStarted": "Started",
     "CategoryCompleted": "Completed",
     "CategoryCanceled": "Canceled",
+
     "Title": "Title",
     "Name": "Name",
     "Description": "Description",
@@ -140,12 +142,14 @@
     "ComponentMembersSearchPlaceholder": "Change component members\u2026",
     "MoveToProject": "Move to project",
     "Duplicate": "Duplicate",
+
     "GotoIssues": "Go to issues",
     "GotoActive": "Go to active issues",
     "GotoBacklog": "Go to backlog",
     "GotoComponents": "Go to components",
     "GotoMyIssues": "Go to my issues",
     "GotoTrackerApplication": "Switch to Tracker Application",
+
     "CreatedOne": "Created",
     "MoveIssues": "Move issues",
     "MoveIssuesDescription": "Select the project you want to move issues to",
@@ -157,6 +161,7 @@
     "Replacement": "REPLACEMENT",
     "Original": "ORIGINAL",
     "OriginalDescription": "Items from this section will be created in the new project",
+
     "Relations": "Relations",
     "RemoveRelation": "Remove relation...",
     "AddBlockedBy": "Mark as blocked by...",
@@ -171,6 +176,7 @@
     "Blocks": "Blocks",
     "Related": "Related",
     "RelatedIssues": "Related issues",
+
     "EditIssue": "Edit {title}",
     "EditWorkflowStatuses": "Edit issue statuses",
     "EditProject": "Edit project",
@@ -185,17 +191,21 @@
     "DeleteWorkflowStatus": "Delete issue status",
     "DeleteWorkflowStatusConfirm": "Do you want to delete the \"{status}\" status?",
     "DeleteWorkflowStatusErrorDescription": "The \"{status}\" status has {count, plural, =1 {1 issue} other {# issues}} assigned. Please select a status to move",
+    
     "Save": "Save",
     "IncludeItemsThatMatch": "Include items that match",
     "AnyFilter": "any filter",
     "AllFilters": "all filters",
     "NoDescription": "No description",
     "SearchIssue": "Search for task...",
+
     "StatusHistory": "State History",
     "NewSubIssue": "Add sub-issue...",
     "AddLabel": "Add label",
+
     "DeleteIssue": "Delete {issueCount, plural, =1 {issue} other {# issues}}",
     "DeleteIssueConfirm": "Do you want to delete {issueCount, plural, =1 {issue} other {issues}}{subIssueCount, plural, =0 {?} =1 { and sub-issue?} other { and sub-issues?}}",
+
     "Milestone": "Milestone",
     "NoMilestone": "No Milestone",
     "MoveToMilestone": "Select Milestone",
@@ -206,10 +216,13 @@
     "ClosedMilestones": "Done",
     "AddToMilestone": "Add to Milestone",
     "MilestoneNamePlaceholder": "Milestone name",
+
     "NewMilestone": "New Milestone",
     "CreateMilestone": "Create",
+
     "MoveAndDeleteMilestone": "Move Issues to {newMilestone} and Delete {deleteMilestone}",
     "MoveAndDeleteMilestoneConfirm": "Do you want to delete milestone and move issues to another milestone?",
+
     "Breakpoint": "Breakpoint",
     "Estimation": "Estimation",
     "ReportedTime": "Spent time",
@@ -229,9 +242,11 @@
     "CapacityValue": "of {value}d",
     "NewRelatedIssue": "New related issue",
     "RelatedIssuesNotFound": "Related issues not found",
+
     "AddedReference": "Added reference",
     "AddedAsBlocked": "Marked as blocked",
     "AddedAsBlocking": "Marked as blocking",
+
     "IssueTemplate": "Template",
     "IssueTemplates": "Templates",
     "NewProcess": "New Template",
@@ -240,10 +255,12 @@
     "TemplateReplace": "Do you want to apply the new template?",
     "TemplateReplaceConfirm": "All fields will be overwritten by the new template values",
     "Apply": "Apply",
+
     "CurrentWorkDay": "Current Working Day",
     "PreviousWorkDay": "Previous Working Day",
     "TimeReportDayTypeLabel": "Select time report day type",
     "DefaultAssignee": "Default assignee for issues",
+    
     "SevenHoursLength": "Seven Hours",
     "EightHoursLength": "Eight Hours",
     "HourLabel": "h",

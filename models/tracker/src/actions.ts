@@ -419,6 +419,7 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
     },
     tracker.action.SetStatus
   )
+
   createAction(
     builder,
     {
