@@ -43,7 +43,7 @@
     }
   }
   $: onProjectChange(project)
-  function onProjectChange(project: Project | undefined) {
+  function onProjectChange (project: Project | undefined) {
     if (lastProject?._id === project?._id) return
     lastProject = project
     if (project === undefined) return

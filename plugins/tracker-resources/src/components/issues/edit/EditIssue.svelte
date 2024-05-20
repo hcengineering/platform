@@ -140,7 +140,7 @@
 
   $: descriptionKey = hierarchy.getAttribute(tracker.class.Issue, 'description')
 
-  function getEditorFooter(
+  function getEditorFooter (
     _class?: Ref<Class<Doc>>
   ): { footer: AnyComponent; props?: Record<string, any> } | undefined {
     if (_class === undefined) {

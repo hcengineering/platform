@@ -42,7 +42,7 @@ function createGotoSpecialAction (
     query
   })
 }
-export function createActions(builder: Builder, issuesId: string, componentsId: string, myIssuesId: string): void {
+export function createActions (builder: Builder, issuesId: string, componentsId: string, myIssuesId: string): void {
   createGotoSpecialAction(builder, issuesId, 'keyG->keyE', tracker.string.GotoIssues)
   createGotoSpecialAction(builder, issuesId, 'keyG->keyA', tracker.string.GotoActive, { mode: 'active' })
   createGotoSpecialAction(builder, issuesId, 'keyG->keyB', tracker.string.GotoBacklog, { mode: 'backlog' })

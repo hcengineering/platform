@@ -406,17 +406,17 @@ export class TMilestone extends TDoc implements Milestone {
 
 @UX(core.string.Number)
 @Model(tracker.class.TypeReportedTime, core.class.Type)
-export class TTypeReportedTime extends TType { }
+export class TTypeReportedTime extends TType {}
 
 @UX(core.string.Number)
 @Model(tracker.class.TypeEstimation, core.class.Type)
-export class TTypeEstimation extends TType { }
+export class TTypeEstimation extends TType {}
 @Model(tracker.class.TypeBreakpoint, core.class.Type)
-export class TTypeBreakpoint extends TType { }
+export class TTypeBreakpoint extends TType {}
 
 @UX(core.string.Number)
 @Model(tracker.class.TypeRemainingTime, core.class.Type)
-export class TTypeRemainingTime extends TType { }
+export class TTypeRemainingTime extends TType {}
 
 @Model(tracker.class.ProjectTargetPreference, preference.class.Preference)
 export class TProjectTargetPreference extends TPreference implements ProjectTargetPreference {
@@ -438,4 +438,4 @@ export class TClassicProjectTypeData extends TProject implements RolesAssignment
 
 @Mixin(tracker.mixin.IssueTypeData, tracker.class.Issue)
 @UX(getEmbeddedLabel('Issue'), tracker.icon.Issue)
-export class TIssueTypeData extends TIssue { }
+export class TIssueTypeData extends TIssue {}

@@ -594,7 +594,7 @@
   function addTagRef (tag: TagElement): void {
     object.labels = [...object.labels, tagAsRef(tag)]
   }
-  function handleTemplateChange(evt: CustomEvent<Ref<IssueTemplate>>): void {
+  function handleTemplateChange (evt: CustomEvent<Ref<IssueTemplate>>): void {
     if (templateId == null) {
       templateId = evt.detail
       return

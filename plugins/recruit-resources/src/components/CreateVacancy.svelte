@@ -130,7 +130,7 @@
     rolesQuery.unsubscribe()
   }
 
-  async function saveIssue(
+  async function saveIssue (
     id: Ref<VacancyClass>,
     space: Ref<Project>,
     template: IssueTemplateData,
