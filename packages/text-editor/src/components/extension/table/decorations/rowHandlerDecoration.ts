@@ -15,18 +15,17 @@
 
 import { type Editor } from '@tiptap/core'
 import { type EditorState } from '@tiptap/pm/state'
-import { CellSelection, TableMap } from '@tiptap/pm/tables'
+import { TableMap } from '@tiptap/pm/tables'
 import { Decoration } from '@tiptap/pm/view'
 
 import { type TableNodeLocation } from '../types'
-import { findCellRow, findTable, getSelectedRows, isRowSelected, selectRow } from '../utils'
+import { findTable, getSelectedRows, isRowSelected, selectRow } from '../utils'
 
 import { duplicateRows, moveRow } from './actions'
-import { handleSvg } from './icons'
 import DeleteRow from '../../../icons/table/DeleteRow.svelte'
 import Duplicate from '../../../icons/table/Duplicate.svelte'
 import textEditorPlugin from '../../../../plugin'
-import { type OptionItem, createOptionsButton } from './optionsButton'
+import { createCellsHandle, type OptionItem } from './cellsHandle'
 import {
   dropMarkerWidthPx,
   getDropMarker,
@@ -70,41 +69,33 @@ export const rowHandlerDecoration = (state: EditorState, table: TableNodeLocatio
   const decorations: Decoration[] = []
 
   const tableMap = TableMap.get(table.node)
-  const selectedRows: number[] = []
   for (let row = 0; row < tableMap.height; row++) {
     const pos = getTableCellWidgetDecorationPos(table, tableMap, row * tableMap.width)
+    const isSelected = isRowSelected(row, state.selection)
 
-    const handle = document.createElement('div')
+    const handle = createCellsHandle(createOptionItems(editor))
     handle.classList.add('table-row-handle')
-    if (isRowSelected(row, state.selection)) {
+    if (isSelected) {
       handle.classList.add('table-row-handle__selected')
-      selectedRows.push(row)
     }
-    handle.innerHTML = handleSvg
     handle.addEventListener('mousedown', (e) => {
-      handleMouseDown(row, table, e, editor)
+      handleMouseDown(row, table, e, editor, isSelected)
     })
-    decorations.push(Decoration.widget(pos, handle))
-  }
 
-  if (selectedRows.length > 0 && state.selection instanceof CellSelection) {
-    const start = state.selection.$anchorCell.start(-1)
-    const pos = getTableCellWidgetDecorationPos(
-      table, tableMap,
-      findCellRow(tableMap, state.selection.$headCell.pos - start) * tableMap.width
-    )
-    decorations.push(Decoration.widget(pos, createOptionsButton(editor, createOptionItems(editor), 'row')))
+    decorations.push(Decoration.widget(pos, handle))
   }
 
   return decorations
 }
 
-const handleMouseDown = (row: number, table: TableNodeLocation, event: MouseEvent, editor: Editor): void => {
+const handleMouseDown = (row: number, table: TableNodeLocation, event: MouseEvent, editor: Editor, isSelected: boolean): void => {
   event.stopPropagation()
   event.preventDefault()
 
   // select row
-  editor.view.dispatch(selectRow(table, row, editor.state.tr))
+  if (!isSelected) {
+    editor.view.dispatch(selectRow(table, row, editor.state.tr))
+  }
 
   // drag row
   const tableHeightPx = getTableHeightPx(table, editor)

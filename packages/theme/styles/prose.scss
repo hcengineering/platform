@@ -1,14 +1,14 @@
 //
 // Copyright © 2022, 2023 Hardcore Engineering Inc.
-// 
+//
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// 
+//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
@@ -24,8 +24,6 @@ table.proseTable {
   --table-selection-z-index: 100;
   --table-drag-and-drop-z-index: 110;
   --table-handlers-z-index: 120;
-
-  --table-options-button-size: 1.25rem;
 
   border-collapse: collapse;
   table-layout: fixed;
@@ -97,9 +95,15 @@ table.proseTable {
       justify-content: center;
       align-items: center;
 
-      svg {
-        color: var(--theme-button-contrast-hovered);
+      button {
+        background-color: transparent;
+        border-radius: var(--table-selection-border-radius);
         opacity: 0;
+        transition: background-color 0.3s ease-in-out;
+
+        svg {
+          color: var(--theme-button-contrast-hovered);
+        }
       }
 
       &__selected {
@@ -117,10 +121,22 @@ table.proseTable {
           right: var(--table-selection-border-indent);
         }
 
-        svg {
-          z-index: var(--table-handlers-z-index);
-          color: white;
+        button {
           opacity: 1;
+          z-index: var(--table-handlers-z-index);
+
+          svg {
+            color: white;
+          }
+
+          &:hover {
+            background-color: var(--primary-button-hovered);
+          }
+
+          &:active,
+          &.pressed {
+            background-color: var(--primary-button-pressed);
+          }
         }
       }
     }
@@ -132,12 +148,19 @@ table.proseTable {
       top: var(--table-handle-indent);
       left: 0;
 
+      button {
+        height: 70%;
+        padding: 0 4px;
+      }
+
       &:hover {
         &:not(.table-col-handle__selected) {
           background-color: var(--theme-button-hovered);
         }
 
-        svg { opacity: 1; }
+        button {
+          opacity: 1;
+        }
       }
 
       &__selected {
@@ -159,8 +182,13 @@ table.proseTable {
       top: 0;
       left: var(--table-handle-indent);
 
-      svg {
-        transform: rotate(90deg);
+      button {
+        width: 70%;
+        padding: 4px 0;
+
+        svg {
+          transform: rotate(90deg);
+        }
       }
 
       &:hover {
@@ -168,7 +196,7 @@ table.proseTable {
           background-color: var(--theme-button-hovered);
         }
 
-        svg {
+        button {
           opacity: 1;
         }
       }
@@ -298,44 +326,6 @@ table.proseTable {
     svg {
       height: 100%;
       transform: rotate(90deg);
-    }
-  }
-
-  .table-options-button {
-    position: absolute;
-    cursor: pointer;
-    width: var(--table-options-button-size);
-    height: var(--table-options-button-size);
-    border-radius: 50%;
-
-    border-color: var(--button-secondary-BorderColor);
-    background-color: var(--button-secondary-BackgroundColor);
-
-    svg {
-      color: var(--button-subtle-LabelColor);
-    }
-    &:hover {
-      background-color: var(--button-secondary-hover-BackgroundColor);
-    }
-    &:active,
-    &.pressed {
-      background-color: var(--button-secondary-active-BackgroundColor);
-    }
-
-    &.row {
-      top: 0;
-      bottom: 0;
-      left: calc(var(--table-handle-indent) - var(--table-options-button-size) - 0.5rem);
-      margin-top: auto;
-      margin-bottom: auto;
-    }
-
-    &.column {
-      left: 0;
-      right: 0;
-      top: calc(var(--table-handle-indent) - var(--table-options-button-size) - 0.5rem);
-      margin-left: auto;
-      margin-right: auto;
     }
   }
 }

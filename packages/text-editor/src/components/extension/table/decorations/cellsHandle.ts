@@ -1,6 +1,5 @@
-import type { Editor } from '@tiptap/core'
 import { type AnySvelteComponent, ModernPopup, showPopup } from '@hcengineering/ui'
-import { optionsSvg } from './icons'
+import { handleSvg } from './icons'
 
 export interface OptionItem {
   id: string
@@ -9,13 +8,12 @@ export interface OptionItem {
   action: () => void
 }
 
-export function createOptionsButton (editor: Editor, options: OptionItem[], className?: string): HTMLElement {
+export function createCellsHandle (options: OptionItem[]): HTMLElement {
+  const handle = document.createElement('div')
+
   const button = document.createElement('button')
-
-  button.className = 'table-options-button' + (className !== undefined ? ` ${className}` : '')
-  button.innerHTML = optionsSvg
-
-  button.addEventListener('mousedown', () => {
+  button.innerHTML = handleSvg
+  button.addEventListener('click', () => {
     button.classList.add('pressed')
     showPopup(ModernPopup, { items: options }, button, (result) => {
       const option = options.find((it) => it.id === result)
@@ -26,5 +24,7 @@ export function createOptionsButton (editor: Editor, options: OptionItem[], clas
     })
   })
 
-  return button
+  handle.appendChild(button)
+
+  return handle
 }

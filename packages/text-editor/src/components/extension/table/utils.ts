@@ -135,16 +135,6 @@ export const isRectSelected = (rect: Rect, selection: CellSelection): boolean =>
   return cells.every((cell) => selectedCells.includes(cell))
 }
 
-export const findCellRow = (map: TableMap, pos: number): number => {
-  const idx = map.map.indexOf(pos)
-  return idx >= 0 ? Math.floor(idx / map.width) : -1
-}
-
-export const findCellColumn = (map: TableMap, pos: number): number => {
-  const idx = map.map.indexOf(pos)
-  return idx >= 0 ? idx % map.width : -1
-}
-
 export const findTable = (selection: Selection): TableNodeLocation | undefined => {
   return findParentNode((node) => node.type.spec.tableRole === 'table')(selection)
 }
