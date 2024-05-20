@@ -70,8 +70,8 @@
   <Header icon={activity.icon.Bookmark} intlLabel={chunter.string.Saved} titleKind="breadcrumbs" />
 </div>
 
-<div class="body h-full w-full">
-  <Scroller padding="0.75rem 0.5rem">
+<div class="body h-full w-full clear-mins">
+  <Scroller padding={'.75rem .5rem'} bottomPadding={'.75rem'}>
     {#if savedMessages.length > 0 || savedAttachments.length > 0}
       {#each savedMessages as message}
         {#if message.$lookup?.attachedTo}
