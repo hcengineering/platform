@@ -172,7 +172,7 @@ export { default as StatusPresenter } from './components/issues/StatusPresenter.
 
 export { activeProjects, CreateProject, IssuePresenter, PriorityEditor, StatusEditor, TitlePresenter }
 
-export async function queryIssue<D extends Issue>(
+export async function queryIssue<D extends Issue> (
   _class: Ref<Class<D>>,
   client: Client,
   search: string,

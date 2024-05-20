@@ -84,6 +84,7 @@ async function createChildDocument (object: Document): Promise<void> {
 async function createDocument (space: Teamspace): Promise<void> {
   const id: Ref<Document> = generateId()
   const parent = document.ids.NoParent
+
   await _createDocument(id, space._id, parent)
 }
 

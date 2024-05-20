@@ -257,7 +257,7 @@
 
   let descriptionBox: AttachmentStyledBox
 
-  function handleTypeChange(evt: CustomEvent<Ref<ProjectType>>): void {
+  function handleTypeChange (evt: CustomEvent<Ref<ProjectType>>): void {
     if (typeId == null) {
       typeId = evt.detail
       return

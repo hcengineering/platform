@@ -389,7 +389,7 @@ async function doIssueUpdate (
 
   let currentIssue: WithLookup<Issue> | undefined
 
-  async function getCurrentIssue(): Promise<WithLookup<Issue>> {
+  async function getCurrentIssue (): Promise<WithLookup<Issue>> {
     if (currentIssue !== undefined) {
       return currentIssue
     }

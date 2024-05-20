@@ -55,21 +55,21 @@
     }
   }
 
-  function openSubIssue(target: Ref<Issue>) {
+  function openSubIssue (target: Ref<Issue>) {
     const subIssue = subIssues?.find((p) => p._id === target)
     if (subIssue !== undefined) {
       openIssue(subIssue)
     }
   }
 
-  function openParentIssue() {
+  function openParentIssue () {
     if (parentIssue) {
       closeTooltip()
       openIssue(parentIssue)
     }
   }
 
-  function openDependencyIssue() {
+  function openDependencyIssue () {
     if (dependencyIssue) {
       closeTooltip()
       openIssue(dependencyIssue)

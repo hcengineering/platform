@@ -144,7 +144,7 @@
   let showManageAttributes: boolean = false
   $: isManageAttributesAvailable = issueToUpdate.size > 0 && docs[0]?.space !== targetProject?._id
 
-  function setOriginalAttributes() {
+  function setOriginalAttributes () {
     for (const issue of toMove) {
       const upd = issueToUpdate.get(issue._id) ?? {}
       upd.createComponent = false
@@ -168,7 +168,7 @@
     }
   }
 
-  function setReplacementAttributres(currentSpace: Project) {
+  function setReplacementAttributres (currentSpace: Project) {
     for (const issue of toMove) {
       const upd = issueToUpdate.get(issue._id) ?? {}
 

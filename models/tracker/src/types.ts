@@ -81,7 +81,7 @@ export const DOMAIN_TRACKER = 'tracker' as Domain
 
 @Model(tracker.class.IssueStatus, core.class.Status)
 @UX(tracker.string.IssueStatus, undefined, undefined, 'rank', 'name')
-export class TIssueStatus extends TStatus implements IssueStatus { }
+export class TIssueStatus extends TStatus implements IssueStatus {}
 /**
  * @public
  */
@@ -107,7 +107,7 @@ export function TypeMilestoneStatus (): Type<MilestoneStatus> {
  */
 
 @Model(tracker.class.TypeMilestoneStatus, core.class.Type, DOMAIN_MODEL)
-export class TTypeMilestoneStatus extends TType { }
+export class TTypeMilestoneStatus extends TType {}
 /**
  * @public
  */
@@ -397,15 +397,15 @@ export class TMilestone extends TDoc implements Milestone {
 
 @UX(core.string.Number)
 @Model(tracker.class.TypeReportedTime, core.class.Type)
-export class TTypeReportedTime extends TType { }
+export class TTypeReportedTime extends TType {}
 
 @UX(core.string.Number)
 @Model(tracker.class.TypeEstimation, core.class.Type)
-export class TTypeEstimation extends TType { }
+export class TTypeEstimation extends TType {}
 
 @UX(core.string.Number)
 @Model(tracker.class.TypeRemainingTime, core.class.Type)
-export class TTypeRemainingTime extends TType { }
+export class TTypeRemainingTime extends TType {}
 
 @Model(tracker.class.ProjectTargetPreference, preference.class.Preference)
 export class TProjectTargetPreference extends TPreference implements ProjectTargetPreference {
@@ -427,4 +427,4 @@ export class TClassicProjectTypeData extends TProject implements RolesAssignment
 
 @Mixin(tracker.mixin.IssueTypeData, tracker.class.Issue)
 @UX(getEmbeddedLabel('Issue'), tracker.icon.Issue)
-export class TIssueTypeData extends TIssue { }
+export class TIssueTypeData extends TIssue {}

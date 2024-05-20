@@ -135,7 +135,7 @@
   let template: IssueTemplate | undefined = undefined
   const templateQuery = createQuery()
 
-  function objectChange(object: IssueDraft, empty: any): void {
+  function objectChange (object: IssueDraft, empty: any): void {
     if (shouldSaveDraft) {
       draftController.save(object, empty)
     }
@@ -186,7 +186,7 @@
     }
   }
 
-  function getDefaultObject(id: Ref<Issue> | undefined = undefined, ignoreOriginal = false): IssueDraft {
+  function getDefaultObject (id: Ref<Issue> | undefined = undefined, ignoreOriginal = false): IssueDraft {
     const base: IssueDraft = {
       _id: id ?? generateId(),
       title: '',
@@ -263,7 +263,7 @@
     object.space = _space
   }
 
-  function resetObject(): void {
+  function resetObject (): void {
     templateId = undefined
     template = undefined
     object = getDefaultObject(undefined, true)
@@ -279,7 +279,7 @@
     templateQuery.unsubscribe()
   }
 
-  function tagAsRef(tag: TagElement): TagReference {
+  function tagAsRef (tag: TagElement): TagReference {
     return {
       _class: tags.class.TagReference,
       _id: generateId(),
@@ -297,7 +297,7 @@
     }
   }
 
-  async function updateTemplate(template: IssueTemplate): Promise<void> {
+  async function updateTemplate (template: IssueTemplate): Promise<void> {
     if (object.template?.template === template._id) {
       return
     }
@@ -381,19 +381,19 @@
 
   const docCreateManager = DocCreateExtensionManager.create(tracker.class.Issue)
 
-  function updateIssueStatusId(object: IssueDraft, currentProject: Project | undefined): void {
+  function updateIssueStatusId (object: IssueDraft, currentProject: Project | undefined): void {
     if (currentProject?.defaultIssueStatus !== undefined && object.status === undefined) {
       object.status = currentProject.defaultIssueStatus
     }
   }
 
-  function resetDefaultAssigneeId(): void {
+  function resetDefaultAssigneeId (): void {
     if (!isAssigneeTouched && !(object.assignee == null) && object.assignee === currentProject?.defaultAssignee) {
       object = { ...object, assignee: assignee ?? null }
     }
   }
 
-  function updateAssigneeId(object: IssueDraft, currentProject: Project | undefined): void {
+  function updateAssigneeId (object: IssueDraft, currentProject: Project | undefined): void {
     if (!isAssigneeTouched && object.assignee == null && currentProject !== undefined) {
       if (currentProject.defaultAssignee !== undefined) {
         object.assignee = currentProject.defaultAssignee
@@ -402,29 +402,29 @@
       }
     }
   }
-  function clearParentIssue(): void {
+  function clearParentIssue (): void {
     object.parentIssue = undefined
     parentQuery.unsubscribe()
     parentIssue = undefined
   }
 
-  function clearDependencyIssue(): void {
+  function clearDependencyIssue (): void {
     object.dependencyIssue = undefined
     dependencyQuery.unsubscribe()
     dependencyIssue = undefined
   }
 
-  function getTitle(value: string): string {
+  function getTitle (value: string): string {
     return value.trim()
   }
 
   let subIssuesComponent: SubIssues
 
-  export function canClose(): boolean {
+  export function canClose (): boolean {
     return true
   }
 
-  export function onOutsideClick(): void {
+  export function onOutsideClick (): void {
     if (shouldSaveDraft) {
       draftController.save(object, empty)
     }
@@ -437,7 +437,7 @@
   })
   $: spacePreferences = preferences.find((it) => it.attachedTo === _space)
 
-  async function createIssue(): Promise<void> {
+  async function createIssue (): Promise<void> {
     const _id: Ref<Issue> = generateId()
     if (
       !canSave ||
@@ -617,7 +617,7 @@
     }
   }
 
-  async function setParentIssue(): Promise<void> {
+  async function setParentIssue (): Promise<void> {
     showPopup(
       SetParentIssueActionPopup,
       { value: { ...object, space: _space, attachedTo: parentIssue?._id } },
@@ -631,7 +631,7 @@
     )
   }
 
-  async function setDependencyIssue(): Promise<void> {
+  async function setDependencyIssue (): Promise<void> {
     showPopup(
       SetDependencyIssueActionPopup,
       { value: { ...object, space: _space, attachedToDependency: dependencyIssue?._id } },
@@ -661,7 +661,7 @@
     object.milestone = milestoneId
   }
 
-  function addTagRef(tag: TagElement): void {
+  function addTagRef (tag: TagElement): void {
     object.labels = [...object.labels, tagAsRef(tag)]
   }
   function handleTemplateChange(evt: CustomEvent<Ref<IssueTemplate>>): void {
@@ -691,7 +691,7 @@
     )
   }
 
-  async function showConfirmationDialog(): Promise<void> {
+  async function showConfirmationDialog (): Promise<void> {
     draftController.save(object, empty)
     const isFormEmpty = draft === undefined
 
@@ -722,7 +722,7 @@
 
   let attachments: Map<Ref<Attachment>, Attachment> = new Map<Ref<Attachment>, Attachment>()
 
-  async function findDefaultSpace(): Promise<Project | undefined> {
+  async function findDefaultSpace (): Promise<Project | undefined> {
     let targetRef: Ref<Project> | undefined
     let targetRefDependency: Ref<Project> | undefined
     if (relatedTo !== undefined) {
@@ -832,7 +832,7 @@
     preferences
   }
 
-  function updateCurrentProjectPref(currentProject: Ref<Project>): void {
+  function updateCurrentProjectPref (currentProject: Ref<Project>): void {
     if (spacePreferences === undefined) {
       void client.createDoc(tracker.class.ProjectTargetPreference, currentProject, {
         attachedTo: currentProject,
