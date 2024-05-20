@@ -472,14 +472,14 @@ export function groupByPersonAccountCategories (categories: any[]): AggregateVal
     if (personAccount !== undefined) {
       let fst = personMap.get(personAccount.person)
       if (fst === undefined) {
-        const components = mgr
+        const people = mgr
           .getDocs()
           .filter(
             (it) => it.person === personAccount.person && (categories.includes(it._id) || usedSpaces.has(it.space))
           )
           .sort((a, b) => a.email.localeCompare(b.email))
           .map((it) => new AggregateValueData(it.person, it._id, it.space))
-        fst = new AggregateValue(personAccount.person, components)
+        fst = new AggregateValue(personAccount.person, people)
         personMap.set(personAccount.person, fst)
         existingCategories.push(fst)
       }
