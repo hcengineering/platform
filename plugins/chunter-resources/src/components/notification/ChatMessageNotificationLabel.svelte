@@ -13,13 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Label } from '@hcengineering/ui'
+  import { Label, tooltip } from '@hcengineering/ui'
   import { DocNotifyContext } from '@hcengineering/notification'
   import { getClient } from '@hcengineering/presentation'
   import { Class, Doc, Ref } from '@hcengineering/core'
-  import { getDocLinkTitle, ObjectIcon } from '@hcengineering/view-resources'
+  import { getDocLinkTitle, getDocTitle, ObjectIcon } from '@hcengineering/view-resources'
   import { ChatMessage, ThreadMessage } from '@hcengineering/chunter'
   import contact from '@hcengineering/contact'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
 
   import chunter from '../../plugin'
   import ChatMessagePreview from '../chat-message/ChatMessagePreview.svelte'
@@ -74,21 +75,24 @@
     {:else}
       <Label label={chunter.string.Message} />
     {/if}
-    {#if title}
+    {#if title && object}
       <span class="lower">
         <Label label={chunter.string.In} />
       </span>
-      <span class="flex-presenter flex-gap-0-5">
-        {#if object}
+      {#await getDocTitle(client, object._id, object._class, object) then tooltipLabel}
+        <span
+          class="flex-presenter flex-gap-0-5"
+          use:tooltip={tooltipLabel ? { label: getEmbeddedLabel(tooltipLabel) } : undefined}
+        >
           <ObjectIcon
             value={object}
             size={hierarchy.isDerived(object._class, contact.class.Person) ? 'tiny' : 'small'}
           />
-        {/if}
-        <div class="overflow-label">
-          {title}
-        </div>
-      </span>
+          <span class="overflow-label">
+            {title}
+          </span>
+        </span>
+      {/await}
     {/if}
   </span>
   <span class="font-normal">

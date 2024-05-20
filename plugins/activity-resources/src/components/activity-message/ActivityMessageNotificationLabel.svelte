@@ -13,12 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Label } from '@hcengineering/ui'
+  import { Label, tooltip } from '@hcengineering/ui'
   import { DocNotifyContext } from '@hcengineering/notification'
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Doc, Ref } from '@hcengineering/core'
-  import { getDocLinkTitle, ObjectIcon } from '@hcengineering/view-resources'
+  import { getDocLinkTitle, getDocTitle, ObjectIcon } from '@hcengineering/view-resources'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
   import contact from '@hcengineering/contact'
 
   import ActivityMessagePreview from './ActivityMessagePreview.svelte'
@@ -56,13 +57,18 @@
         <Label label={activity.string.In} />
       </span>
       {#if object}
-        <span class="flex-presenter flex-gap-0-5">
-          <ObjectIcon
-            value={object}
-            size={hierarchy.isDerived(object._class, contact.class.Person) ? 'tiny' : 'small'}
-          />
-          {title}
-        </span>
+        {#await getDocTitle(client, object._id, object._class, object) then tooltipLabel}
+          <span
+            class="flex-presenter flex-gap-0-5"
+            use:tooltip={tooltipLabel ? { label: getEmbeddedLabel(tooltipLabel) } : undefined}
+          >
+            <ObjectIcon
+              value={object}
+              size={hierarchy.isDerived(object._class, contact.class.Person) ? 'tiny' : 'small'}
+            />
+            {title}
+          </span>
+        {/await}
       {/if}
     {/if}
   </span>
