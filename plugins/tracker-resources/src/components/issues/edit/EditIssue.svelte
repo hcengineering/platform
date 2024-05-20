@@ -128,7 +128,7 @@
   }
 
   const manager = createFocusManager()
-  export function canClose(): boolean {
+  export function canClose (): boolean {
     if (descriptionBox.isFocused()) {
       return false
     }

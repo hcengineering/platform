@@ -54,7 +54,7 @@
   }
   const client = getClient()
   // TODO: move to utils
-  export async function save(parents: IssueParentInfo[], _id: Ref<Doc>) {
+  export async function save (parents: IssueParentInfo[], _id: Ref<Doc>) {
     if (project === undefined) return
     saved = true
     for (const subIssue of subIssues) {
@@ -114,7 +114,7 @@
       saveAttachments(childId)
     }
   }
-  async function saveAttachments(issue: Ref<Issue>) {
+  async function saveAttachments (issue: Ref<Issue>) {
     const draftAttachments = $draftsStore[`${issue}_attachments`]
     if (draftAttachments) {
       for (const key in draftAttachments) {
@@ -123,7 +123,7 @@
     }
     removeDraft(issue)
   }
-  async function saveAttachment(doc: Attachment, issue: Ref<Issue>): Promise<void> {
+  async function saveAttachment (doc: Attachment, issue: Ref<Issue>): Promise<void> {
     await client.addCollection(
       attachment.class.Attachment,
       projectId,
@@ -134,7 +134,7 @@
       doc._id
     )
   }
-  export function load(value: IssueDraft[]) {
+  export function load (value: IssueDraft[]) {
     subIssues = value
   }
   let saved = false
@@ -146,7 +146,7 @@
     }
   })
   // TODO: move to utils
-  export async function removeDraft(_id: string, removeFiles: boolean = false): Promise<void> {
+  export async function removeDraft (_id: string, removeFiles: boolean = false): Promise<void> {
     const draftAttachments = $draftsStore[`${_id}_attachments`]
     DraftController.remove(`${_id}_attachments`)
     if (removeFiles && draftAttachments) {

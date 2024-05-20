@@ -125,6 +125,7 @@
   <span class="labelOnPanel">
     <Label label={tracker.string.Status} />
   </span>
+  
   <StatusEditor value={issue} size={'medium'} iconSize={'small'} shouldShowLabel isEditable={!readonly} />
 
   {#if issue.blockedBy?.length}

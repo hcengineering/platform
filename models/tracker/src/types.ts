@@ -94,7 +94,7 @@ export function TypeIssuePriority (): Type<IssuePriority> {
  */
 
 @Model(tracker.class.TypeIssuePriority, core.class.Type, DOMAIN_MODEL)
-export class TTypeIssuePriority extends TType { }
+export class TTypeIssuePriority extends TType {}
 /**
  * @public
  */
