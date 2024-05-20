@@ -158,7 +158,7 @@
     slots = slots
   }
 
-  function changeSlot (e: CustomEvent<{ startDate: number; dueDate: number; slot: Ref<WorkSlot> }>): void {
+  function changeSlot (e: CustomEvent<{ startDate: number, dueDate: number; slot: Ref<WorkSlot> }>): void {
     const { startDate, dueDate, slot } = e.detail
     const workslot = slots.find((s) => s._id === slot)
     if (workslot !== undefined) {
@@ -168,7 +168,7 @@
     }
   }
 
-  function changeDueSlot (e: CustomEvent<{ dueDate: number; slot: Ref<WorkSlot> }>): void {
+  function changeDueSlot (e: CustomEvent<{ dueDate: number, slot: Ref<WorkSlot> }>): void {
     const { dueDate, slot } = e.detail
     const workslot = slots.find((s) => s._id === slot)
     if (workslot !== undefined) {

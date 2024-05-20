@@ -347,6 +347,7 @@ export function defineViewlets (builder: Builder): void {
     orderBy: [
       ['rank', SortingOrder.Ascending],
       ['status', SortingOrder.Ascending],
+      ['priority', SortingOrder.Ascending],
       ['modifiedOn', SortingOrder.Descending],
       ['createdOn', SortingOrder.Descending],
       ['dueDate', SortingOrder.Ascending]
