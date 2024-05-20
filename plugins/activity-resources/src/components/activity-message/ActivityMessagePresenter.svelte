@@ -51,6 +51,7 @@
   <Component
     is={objectPresenter.presenter}
     props={{
+      space: value.space,
       value,
       showNotify,
       skipLabel,

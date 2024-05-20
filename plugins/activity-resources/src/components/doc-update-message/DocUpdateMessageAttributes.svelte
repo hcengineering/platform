@@ -23,11 +23,13 @@
   import AddedAttributesPresenter from './attributes/AddedAttributesPresenter.svelte'
   import RemovedAttributesPresenter from './attributes/RemovedAttributesPresenter.svelte'
   import SetAttributesPresenter from './attributes/SetAttributesPresenter.svelte'
+  import { Ref, Space } from '@hcengineering/core'
 
   export let viewlet: DocUpdateMessageViewlet | undefined
   export let attributeUpdates: DocAttributeUpdates
   export let attributeModel: AttributeModel
   export let preview = false
+  export let space: Ref<Space> | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -39,7 +41,7 @@
 </script>
 
 {#if presenter}
-  <Component is={presenter} props={{ value: attributeUpdates }} />
+  <Component is={presenter} props={{ value: attributeUpdates, space }} />
 {:else}
   {#if attributeUpdates.added.length}
     <AddedAttributesPresenter {viewlet} {attributeModel} values={attributeUpdates.added} {preview} />
@@ -52,6 +54,7 @@
       {viewlet}
       {attributeModel}
       values={attributeUpdates.set}
+      {space}
       prevValue={attributeUpdates.prevValue}
       {preview}
     />

@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
-  import { matchQuery } from '@hcengineering/core'
+  import { Ref, Space, matchQuery } from '@hcengineering/core'
   import notification, {
     ActivityInboxNotification,
     ActivityNotificationViewlet,
@@ -32,6 +32,7 @@
 
   export let value: DisplayActivityInboxNotification
   export let viewlets: ActivityNotificationViewlet[] = []
+  export let space: Ref<Space> | undefined = undefined
 
   const client = getClient()
 
@@ -99,6 +100,6 @@
       on:click
     />
   {:else}
-    <ActivityMessagePreview value={displayMessage} {actions} on:click />
+    <ActivityMessagePreview value={displayMessage} {actions} {space} on:click />
   {/if}
 {/if}

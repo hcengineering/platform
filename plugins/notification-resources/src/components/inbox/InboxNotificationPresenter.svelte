@@ -16,11 +16,12 @@
   import view from '@hcengineering/view'
   import { getClient } from '@hcengineering/presentation'
   import { Component } from '@hcengineering/ui'
-  import { Class, Doc, Ref } from '@hcengineering/core'
+  import { Class, Doc, type Ref, type Space } from '@hcengineering/core'
   import { ActivityNotificationViewlet, DisplayInboxNotification } from '@hcengineering/notification'
 
   export let value: DisplayInboxNotification
   export let viewlets: ActivityNotificationViewlet[] = []
+  export let space: Ref<Space> | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -29,5 +30,5 @@
 </script>
 
 {#if objectPresenter}
-  <Component is={objectPresenter.presenter} props={{ value, viewlets }} on:click />
+  <Component is={objectPresenter.presenter} props={{ value, viewlets, space }} on:click />
 {/if}

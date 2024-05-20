@@ -242,6 +242,7 @@
           <InboxNotificationPresenter
             value={group[0]}
             {viewlets}
+            space={value.space}
             on:click={(e) => {
               e.preventDefault()
               e.stopPropagation()
