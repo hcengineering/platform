@@ -97,7 +97,6 @@ export class IssuesPage extends CommonTrackerPage {
     this.commonAncestorForOperations(issueName).locator('button > div[slot="content"]').first()
 
   inProgressHeader = (): Locator => this.page.locator('.categoryHeader :text-is("In Progress")').first()
-  inVerificationHeader = (): Locator => this.page.locator('.categoryHeader :text-is("Verification")').first()
   todoHeader = (): Locator => this.page.locator('.categoryHeader :text-is("Todo")').first()
   doneHeader = (): Locator => this.page.locator('.categoryHeader :text-is("Done")').first()
   canceledHeader = (): Locator => this.page.locator('.categoryHeader :text-is("Canceled")').first()

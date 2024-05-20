@@ -155,7 +155,6 @@ export enum IssuesDateModificationPeriod {
 export enum MilestoneStatus {
   Planned,
   InProgress,
-  Verification,
   Completed,
   Canceled
 }
@@ -423,7 +422,6 @@ const pluginState = plugin(trackerId, {
     Backlog: '' as Ref<Status>,
     Todo: '' as Ref<Status>,
     InProgress: '' as Ref<Status>,
-    Verification: '' as Ref<Status>,
     Coding: '' as Ref<Status>,
     UnderReview: '' as Ref<Status>,
     Done: '' as Ref<Status>,
@@ -573,10 +571,6 @@ export const classicIssueTaskStatuses: TaskStatusFactory[] = [
   {
     category: task.statusCategory.Active,
     statuses: [['In Progress', PaletteColorIndexes.Cerulean, pluginState.status.InProgress]]
-  },
-  {
-    category: task.statusCategory.Active,
-    statuses: [['Verification', PaletteColorIndexes.Cerulean, pluginState.status.Verification]]
   },
   { category: task.statusCategory.Won, statuses: [['Done', PaletteColorIndexes.Grass, pluginState.status.Done]] },
   {

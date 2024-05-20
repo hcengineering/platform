@@ -72,7 +72,6 @@ export default mergeIds(trackerId, tracker, {
     TargetDate: '' as IntlString,
     Planned: '' as IntlString,
     InProgress: '' as IntlString,
-    Verification: '' as IntlString,
     Paused: '' as IntlString,
     Completed: '' as IntlString,
     Canceled: '' as IntlString,
