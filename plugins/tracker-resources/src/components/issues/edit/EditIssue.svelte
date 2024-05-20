@@ -106,7 +106,7 @@
 
   $: canSave = title.trim().length > 0
   $: hasParentIssue = issue?.attachedTo !== tracker.ids.NoParent
-  $: hasDependencyIssue = issue?.dependency.length > 0
+  $: hasDependencyIssue = issue?.dependency?.length > 0
 
   let saved = false
   async function save (): Promise<void> {
