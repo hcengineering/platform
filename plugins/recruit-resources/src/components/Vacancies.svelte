@@ -169,7 +169,7 @@
     <SearchEdit bind:value={search} on:change={(e) => (search = e.detail)} />
     <!-- <ActionIcon icon={IconMoreH} size={'small'} /> -->
     <div class="buttons-divider" />
-    <FilterButton _class={recruit.class.Vacancy} />
+    <FilterButton _class={recruit.class.Vacancy} {viewOptions} />
   </div>
   <div class="ac-header-full medium-gap">
     <ViewletSettingButton bind:viewOptions bind:viewlet />
