@@ -728,7 +728,7 @@
         <!-- svelte-ignore a11y-no-static-element-interactions -->
         {#if navFloat}<div class="cover shown" on:click={() => (visibleNav = false)} />{/if}
         <div class="antiPanel-navigator no-print {appsDirection === 'horizontal' ? 'portrait' : 'landscape'}">
-          <div class="antiPanel-wrap__content">
+          <div class="antiPanel-wrap__content hulyNavPanel-container">
             {#if currentApplication}
               <NavHeader label={currentApplication.label} />
               {#if currentApplication.navHeaderComponent}

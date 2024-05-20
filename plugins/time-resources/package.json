@@ -63,6 +63,7 @@
     "@hcengineering/time": "^0.6.0",
     "fast-equals": "^5.0.1",
     "@hcengineering/activity": "^0.6.0",
-    "@hcengineering/activity-resources": "^0.6.1"
+    "@hcengineering/activity-resources": "^0.6.1",
+    "@hcengineering/workbench-resources": "~0.6.1"
   }
 }

@@ -270,8 +270,10 @@
   <TreeNode
     _id={'tree-saved'}
     label={view.string.FilteredViews}
-    node
+    selected={selectedId !== undefined}
     actions={async () => await getActions(availableFilteredViews)}
+    isFold
+    empty={myFilteredViews.length === 0}
   >
     {#each myFilteredViews as fv}
       <TreeItem

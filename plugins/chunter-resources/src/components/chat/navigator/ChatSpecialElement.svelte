@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import { SpecialNavModel } from '@hcengineering/workbench'
   import { getResource } from '@hcengineering/platform'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
@@ -28,6 +29,8 @@
   export let special: SpecialNavModel
   export let currentSpecial: SpecialNavModel | undefined = undefined
   export let type: 'type-link' | 'type-tag' | 'type-anchor-link' | 'type-object' = 'type-link'
+
+  const dispatch = createEventDispatcher()
 
   const notificationsClient = InboxNotificationsClientImpl.getClient()
   const notificationsByContextStore = notificationsClient.inboxNotificationsByContext
@@ -67,7 +70,7 @@
 </script>
 
 <NavItem
-  id={special.id}
+  _id={special.id}
   icon={special.icon}
   intlTitle={special.label}
   withIconBackground={false}
@@ -75,4 +78,5 @@
   {elementsCount}
   isSelected={special.id === currentSpecial?.id}
   {type}
+  on:click={() => dispatch('select', null)}
 />

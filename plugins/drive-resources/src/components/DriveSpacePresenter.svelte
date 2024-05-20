@@ -15,19 +15,22 @@
 <script lang="ts">
   import { Doc, Ref, SortingOrder, Space } from '@hcengineering/core'
   import { Drive, Folder } from '@hcengineering/drive'
-  import { createQuery } from '@hcengineering/presentation'
-  import { Action, navigate } from '@hcengineering/ui'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Action, navigate, IconEdit } from '@hcengineering/ui'
+  import { TreeNode, TreeItem, getActions as getContributedActions } from '@hcengineering/view-resources'
+    import { getResource } from '@hcengineering/platform'
 
   import drive from '../plugin'
   import { getDriveLink, getFolderIdFromFragment, getFolderLink } from '../navigation'
   import FolderTreeLevel from './FolderTreeLevel.svelte'
-  import FolderTreeElement from './FolderTreeElement.svelte'
 
   export let space: Drive
   export let currentSpace: Ref<Space> | undefined
   export let currentSpecial: string | undefined
   export let currentFragment: string | undefined
   export let getActions: (space: Space) => Promise<Action[]> = async () => []
+
+  const client = getClient()
 
   let folders: Ref<Folder>[] = []
   let folderById: Map<Ref<Folder>, Folder> = new Map<Ref<Folder>, Folder>()
@@ -38,7 +41,9 @@
   }
 
   let selected: Ref<Doc> | undefined
+  let visibleItem: Folder | undefined
   $: selected = getFolderIdFromFragment(currentFragment ?? '')
+  $: visibleItem = selected !== undefined ? folderById.get(selected as Ref<Folder>) : undefined
 
   const query = createQuery()
   query.query(
@@ -75,15 +80,33 @@
   function handleFolderSelected (_id: Ref<Folder>): void {
     navigate(getFolderLink(_id))
   }
+
+  async function getFolderActions (obj: Folder): Promise<Action[]> {
+    const result: Action[] = []
+    const extraActions = await getContributedActions(client, obj)
+    for (const act of extraActions) {
+      result.push({
+        icon: act.icon ?? IconEdit,
+        label: act.label,
+        action: async (ctx: any, evt: Event) => {
+          const impl = await getResource(act.action)
+          await impl(obj, evt, act.actionProps)
+        }
+      })
+    }
+    return result
+  }
 </script>
 
 {#if space}
-  <FolderTreeElement
+  <TreeNode
     _id={space._id}
     icon={drive.icon.Drive}
     title={space.name}
-    selected={currentSpace === space._id && selected === space._id}
-    parent={descendants.size > 0}
+    selected={currentSpace === space._id}
+    visible={currentSpace === space._id}
+    nested
+    empty={descendants.size === 0}
     actions={() => getActions(space)}
     on:click={() => {
       handleDriveSelected(space._id)
@@ -98,5 +121,18 @@
         handleFolderSelected(ev.detail)
       }}
     />
-  </FolderTreeElement>
+    <svelte:fragment slot="visible">
+      {#if selected !== undefined && visibleItem !== undefined}
+        <TreeItem
+          _id={visibleItem._id}
+          icon={drive.icon.Folder}
+          title={visibleItem.name}
+          selected
+          isFold
+          empty
+          actions={async () => await getFolderActions(visibleItem)}
+        />
+      {/if}
+    </svelte:fragment>
+  </TreeNode>
 {/if}

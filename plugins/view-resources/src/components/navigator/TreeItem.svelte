@@ -27,8 +27,11 @@
   export let notifications = 0
   export let actions: (originalEvent?: MouseEvent) => Promise<Action[]> = async () => []
   export let selected: boolean = false
+  export let empty: boolean = false
   export let bold: boolean = false
   export let indent: boolean = false
+  export let isFold: boolean = false
+  export let level: number = 0
   export let showNotify: boolean = false
 </script>
 
@@ -44,6 +47,11 @@
   {bold}
   {indent}
   {showNotify}
-  collapsed
+  {isFold}
+  {empty}
+  {level}
   on:click
-/>
+>
+  <svelte:fragment slot="dropbox"><slot name="dropbox" /></svelte:fragment>
+  <svelte:fragment slot="visible"><slot name="visible" /></svelte:fragment>
+</TreeElement>

@@ -17,12 +17,11 @@
   import { getResource } from '@hcengineering/platform'
   import preference, { SpacePreference } from '@hcengineering/preference'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Scroller } from '@hcengineering/ui'
+  import { Scroller, NavItem } from '@hcengineering/ui'
   import { NavLink } from '@hcengineering/view-resources'
   import type { Application, NavigatorModel, SpecialNavModel } from '@hcengineering/workbench'
   import { getSpecialSpaceClass } from '../utils'
   import SpacesNav from './navigator/SpacesNav.svelte'
-  import SpecialElement from './navigator/SpecialElement.svelte'
   import StarredNav from './navigator/StarredNav.svelte'
   import TreeSeparator from './navigator/TreeSeparator.svelte'
   import SavedView from './SavedView.svelte'
@@ -150,7 +149,7 @@
         {/if}
         {#await checkIsDisabled(special) then disabled}
           <NavLink space={special.id} {disabled}>
-            <SpecialElement
+            <NavItem
               label={special.label}
               icon={special.icon}
               selected={menuSelection ? false : special.id === currentSpecial}
@@ -160,8 +159,8 @@
         {/await}
       {/each}
     {/if}
+    <div class="min-h-3 flex-no-shrink" />
 
-    {#if specials.length > 0 && (starred.length > 0 || savedMenu)}<TreeSeparator line />{/if}
     <SavedView
       {currentApplication}
       on:shown={(res) => (savedMenu = res.detail)}
@@ -181,7 +180,6 @@
     {/if}
 
     {#each model.spaces as m, i (m.label)}
-      {#if (i === 0 && (specials.length > 0 || starred.length > 0 || savedMenu)) || i !== 0}<TreeSeparator line />{/if}
       <SpacesNav
         spaces={shownSpaces.filter((it) => hierarchy.isDerived(it._class, m.spaceClass))}
         {currentSpace}
@@ -190,9 +188,8 @@
         on:open
         {currentSpecial}
         {currentFragment}
-        deselect={menuSelection}
+        deselect={menuSelection || starred.some((s) => s._id === currentSpace)}
       />
     {/each}
-    <div class="antiNav-space" />
   </Scroller>
 {/if}

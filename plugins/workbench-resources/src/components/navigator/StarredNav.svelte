@@ -111,7 +111,13 @@
   }
 </script>
 
-<TreeNode _id={'tree-stared'} {label} node actions={async () => [unStarAll]}>
+<TreeNode
+  _id={'tree-stared'}
+  {label}
+  actions={async () => [unStarAll]}
+  selected={spaces.some((s) => s._id === currentSpace) && !deselect}
+  isFold={spaces.length > 0}
+>
   {#each spaces as space (space._id)}
     {@const model = getSpaceModel(space._class)}
     {#await getSpacePresenter(client, space._class) then presenter}
@@ -125,6 +131,7 @@
           {currentFragment}
           {getActions}
           {deselect}
+          nested
         />
       {:else}
         {#await getSpaceName(client, space) then name}

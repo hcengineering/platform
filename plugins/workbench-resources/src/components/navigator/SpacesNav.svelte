@@ -166,7 +166,14 @@
   }
 </script>
 
-<TreeNode _id={'tree-' + model.id} label={model.label} node actions={async () => getParentActions()}>
+<TreeNode
+  _id={'tree-' + model.id}
+  label={model.label}
+  actions={async () => getParentActions()}
+  selected={currentSpace !== undefined && !deselect}
+  isFold
+  empty={filteredSpaces.length === 0}
+>
   {#each filteredSpaces as space, i (space._id)}
     {#await getSpacePresenter(client, space._class) then presenter}
       {#if separate && model.specials && i !== 0}<TreeSeparator line />{/if}
@@ -180,6 +187,7 @@
           {currentFragment}
           {getActions}
           {deselect}
+          nested
         />
       {:else}
         <NavLink space={space._id}>

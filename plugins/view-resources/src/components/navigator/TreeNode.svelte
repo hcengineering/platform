@@ -26,9 +26,12 @@
   export let actions: () => Promise<Action[]> = async () => []
   export let notifications: number = 0
   export let parent: boolean = true
-  export let node: boolean = false
-  export let folder: boolean = false
+  export let nested: boolean = false
+  export let isFold: boolean = false
+  export let empty: boolean = false
+  export let visible: boolean = false
   export let collapsed: boolean = false
+  export let selected: boolean = false
 </script>
 
 <TreeElement
@@ -40,10 +43,14 @@
   {notifications}
   {collapsed}
   {actions}
-  {node}
-  {folder}
+  {nested}
+  {isFold}
+  {empty}
+  {visible}
   {parent}
+  {selected}
   on:click
 >
   <slot />
+  <svelte:fragment slot="visible"><slot name="visible" /></svelte:fragment>
 </TreeElement>

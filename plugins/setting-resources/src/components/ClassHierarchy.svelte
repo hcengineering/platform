@@ -56,6 +56,7 @@
   {@const clazz = client.getHierarchy().getClass(cl)}
   {@const desc = getDescendants(cl)}
   <NavItem
+    _id={clazz._id}
     label={clazz.label}
     isFold
     empty
