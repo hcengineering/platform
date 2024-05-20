@@ -25,7 +25,7 @@
     Loading,
     resizeObserver
   } from '@hcengineering/ui'
-  import { Filter } from '@hcengineering/view'
+  import { Filter, ViewOptions } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { FILTER_DEBOUNCE_MS, sortFilterValues } from '../../filter'
   import view from '../../plugin'
@@ -35,6 +35,7 @@
   export let space: Ref<Space> | undefined = undefined
   export let filter: Filter
   export let onChange: (e: Filter) => void
+  export let viewOptions: ViewOptions | undefined = undefined
 
   filter.modes = [view.filter.FilterValueIn, view.filter.FilterValueNin]
   filter.mode = filter.mode === undefined ? filter.modes[0] : filter.mode
@@ -96,7 +97,13 @@
         _class,
         {
           ...resultQuery,
-          ...(space ? { space } : isDerivedFromSpace ? { archived: false } : { space: { $in: spaces } }),
+          ...(space
+            ? { space }
+            : isDerivedFromSpace
+              ? viewOptions === undefined || viewOptions?.hideArchived === true
+                ? { archived: false }
+                : {}
+              : { space: { $in: spaces } }),
           ...(first1000 ? { [filter.key.key]: { $nin: first1000 } } : {})
         },
         {
