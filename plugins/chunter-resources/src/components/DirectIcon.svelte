@@ -41,7 +41,7 @@
   let avatarSize = size
 
   $: if (size === 'small') {
-    avatarSize = 'tiny'
+    avatarSize = 'x-small'
   }
 
   function getAccountByPerson (accountById: IdMap<PersonAccount>, person: Person): Account | undefined {

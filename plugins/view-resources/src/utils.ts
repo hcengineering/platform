@@ -591,7 +591,7 @@ function getLookup (
   return current !== undefined ? [current, parent, false] : undefined
 }
 
-export function getBooleanLabel (value: boolean | undefined): IntlString {
+export function getBooleanLabel (value: boolean | undefined | null): IntlString {
   if (value === true) return plugin.string.LabelYes
   if (value === false) return plugin.string.LabelNo
   return plugin.string.LabelNA

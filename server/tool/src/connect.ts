@@ -18,6 +18,7 @@ import client, { clientId } from '@hcengineering/client'
 import { Client, LoadModelResponse, systemAccountEmail, Tx, WorkspaceId } from '@hcengineering/core'
 import { addLocation, getMetadata, getResource, setMetadata } from '@hcengineering/platform'
 import { generateToken } from '@hcengineering/server-token'
+import { mkdtempSync } from 'fs'
 import crypto from 'node:crypto'
 import plugin from './plugin'
 
@@ -71,4 +72,68 @@ export async function connect (
 
   const clientFactory = await getResource(client.function.GetClient)
   return await clientFactory(token, transactorUrl)
+}
+
+// Will use temporary file to store huge content into
+export class BlobClient {
+  transactorAPIUrl: string
+  token: string
+  tmpDir: string
+  index: number
+  constructor (transactorUrl: string, workspace: WorkspaceId, email?: string, extra?: Record<string, string>) {
+    this.index = 0
+    this.token = generateToken(email ?? systemAccountEmail, workspace, extra)
+
+    this.transactorAPIUrl = transactorUrl.replaceAll('wss://', 'https://').replace('ws://', 'http://') + '/api/v1/blob/'
+
+    this.tmpDir = mkdtempSync('blobs')
+  }
+
+  async pipeFromStorage (name: string, size: number): Promise<Buffer> {
+    let written = 0
+    const chunkSize = 1024 * 1024
+    const chunks: Buffer[] = []
+
+    // Use ranges to iterave through file with retry if required.
+    while (written < size) {
+      for (let i = 0; i < 5; i++) {
+        try {
+          const response = await fetch(this.transactorAPIUrl + `?name=${encodeURIComponent(name)}`, {
+            headers: {
+              Authorization: 'Bearer ' + this.token,
+              Range: `bytes=${written}-${Math.min(size - 1, written + chunkSize)}`
+            }
+          })
+          const chunk = Buffer.from(await response.arrayBuffer())
+          chunks.push(chunk)
+          written += chunk.length
+          if (size > 1024 * 1024) {
+            console.log('Downloaded', Math.round(written / (1024 * 1024)), 'Mb of', Math.round(size / (1024 * 1024)))
+          }
+          break
+        } catch (err: any) {
+          if (i === 4) {
+            console.error(err)
+            throw err
+          }
+          // retry
+        }
+      }
+    }
+    return Buffer.concat(chunks)
+  }
+
+  async upload (name: string, size: number, contentType: string, buffer: Buffer): Promise<void> {
+    await fetch(
+      this.transactorAPIUrl + `?name=${encodeURIComponent(name)}&contentType=${encodeURIComponent(contentType)}`,
+      {
+        method: 'PUT',
+        headers: {
+          Authorization: 'Bearer ' + this.token,
+          'Content-Type': 'application/octet-stream'
+        },
+        body: buffer
+      }
+    )
+  }
 }

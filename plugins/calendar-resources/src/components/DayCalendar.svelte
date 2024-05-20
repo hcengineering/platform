@@ -59,7 +59,7 @@
   export let displayedHours = 24
   export let startHour = 0
   export let startFromWeekStart = true
-  export let weekFormat: 'narrow' | 'short' | 'long' | undefined = displayedDaysCount > 4 ? 'short' : 'long'
+  export let weekFormat: 'narrow' | 'short' | 'long' = 'long'
   export let showHeader: boolean = true
   export let showFooter: boolean = true
   export let clearCells: boolean = false
@@ -1140,6 +1140,7 @@
     mask-image: var(--mask-image, none);
     --webkit-mask-image: var(--mask-image, none);
     border-radius: 0.25rem;
+    outline: none;
 
     &:not(.withPointer) {
       pointer-events: none;

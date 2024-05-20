@@ -14,7 +14,7 @@
 //
 
 import { MeasureContext } from '@hcengineering/core'
-import { MinioService } from '@hcengineering/minio'
+import type { StorageAdapter } from '@hcengineering/server-core'
 import { Hocuspocus } from '@hocuspocus/server'
 import { Transformer } from '@hocuspocus/transformer'
 import { Context } from '../context'
@@ -39,6 +39,6 @@ export type RpcMethod = (
 
 export interface RpcMethodParams {
   hocuspocus: Hocuspocus
-  minio: MinioService
+  minio: StorageAdapter
   transformer: Transformer
 }

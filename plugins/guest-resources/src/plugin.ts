@@ -7,7 +7,6 @@ export default mergeIds(guestId, guest, {
     PublicLink: '' as IntlString,
     Revoke: '' as IntlString,
     Copy: '' as IntlString,
-    Copied: '' as IntlString,
     RevokeConfirmation: '' as IntlString,
     LinkWasRevoked: '' as IntlString
   }

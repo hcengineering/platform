@@ -13,20 +13,30 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ButtonIcon, CheckBox, Component, IconMoreV, Label, showPopup, Spinner } from '@hcengineering/ui'
+  import { ButtonIcon, CheckBox, Component, IconMoreV, Label, showPopup, Spinner, tooltip } from '@hcengineering/ui'
   import notification, {
     ActivityNotificationViewlet,
     DisplayInboxNotification,
-    DocNotifyContext
+    DocNotifyContext,
+    InboxNotification
   } from '@hcengineering/notification'
   import { getClient } from '@hcengineering/presentation'
   import { getDocTitle, getDocIdentifier, Menu } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
-  import { WithLookup } from '@hcengineering/core'
+  import { Class, Doc, IdMap, Ref, WithLookup } from '@hcengineering/core'
+  import chunter from '@hcengineering/chunter'
+  import { personAccountByIdStore } from '@hcengineering/contact-resources'
+  import { Person, PersonAccount } from '@hcengineering/contact'
 
+  import MessagesPopup from './MessagePopup.svelte'
   import InboxNotificationPresenter from './inbox/InboxNotificationPresenter.svelte'
   import NotifyContextIcon from './NotifyContextIcon.svelte'
-  import { archiveContextNotifications, unarchiveContextNotifications } from '../utils'
+  import {
+    archiveContextNotifications,
+    isActivityNotification,
+    isMentionNotification,
+    unarchiveContextNotifications
+  } from '../utils'
 
   export let value: DocNotifyContext
   export let notifications: WithLookup<DisplayInboxNotification>[]
@@ -59,6 +69,62 @@
     value.attachedToClass,
     notification.mixin.NotificationContextPresenter
   )
+
+  let groupedNotifications: Array<InboxNotification[]> = []
+
+  $: groupedNotifications = groupNotificationsByUser(notifications, $personAccountByIdStore)
+
+  function isTextMessage (_class: Ref<Class<Doc>>): boolean {
+    return hierarchy.isDerived(_class, chunter.class.ChatMessage)
+  }
+
+  const canGroup = (it: InboxNotification): boolean => {
+    if (isActivityNotification(it) && isTextMessage(it.attachedToClass)) {
+      return true
+    }
+
+    return isMentionNotification(it) && isTextMessage(it.mentionedInClass)
+  }
+
+  function groupNotificationsByUser (
+    notifications: WithLookup<InboxNotification>[],
+    personAccountById: IdMap<PersonAccount>
+  ): Array<InboxNotification[]> {
+    const result: Array<InboxNotification[]> = []
+    let group: InboxNotification[] = []
+    let person: Ref<Person> | undefined = undefined
+
+    for (const it of notifications) {
+      const account = it.createdBy ?? it.modifiedBy
+      const curPerson = personAccountById.get(account as Ref<PersonAccount>)?.person
+      const allowGroup = canGroup(it)
+
+      if (!allowGroup || curPerson === undefined) {
+        if (group.length > 0) {
+          result.push(group)
+          group = []
+          person = undefined
+        }
+        result.push([it])
+        continue
+      }
+
+      if (curPerson === person || person === undefined) {
+        group.push(it)
+      } else {
+        result.push(group)
+        group = [it]
+      }
+
+      person = curPerson
+    }
+
+    if (group.length > 0) {
+      result.push(group)
+    }
+
+    return result
+  }
 
   function showMenu (ev: MouseEvent): void {
     ev.stopPropagation()
@@ -98,6 +164,16 @@
     archivingPromise = archived ? unarchiveContextNotifications(value) : archiveContextNotifications(value)
     await archivingPromise
     archivingPromise = undefined
+  }
+
+  function canShowTooltip (group: InboxNotification[]): boolean {
+    const first = group[0]
+
+    return canGroup(first)
+  }
+
+  function getKey (group: InboxNotification[]): string {
+    return group.map((it) => it._id).join('-')
   }
 </script>
 
@@ -152,16 +228,24 @@
 
   <div class="content">
     <div class="notifications">
-      {#each notifications.slice(0, maxNotifications) as notification}
-        <div class="notification">
+      {#each groupedNotifications.slice(0, maxNotifications) as group (getKey(group))}
+        <div
+          class="notification"
+          use:tooltip={canShowTooltip(group)
+            ? {
+                component: MessagesPopup,
+                props: { context: value, notifications: group }
+              }
+            : undefined}
+        >
           <div class="embeddedMarker" />
           <InboxNotificationPresenter
-            value={notification}
+            value={group[0]}
             {viewlets}
             on:click={(e) => {
               e.preventDefault()
               e.stopPropagation()
-              dispatch('click', { context: value, notification })
+              dispatch('click', { context: value, notification: group[0] })
             }}
           />
         </div>

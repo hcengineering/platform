@@ -39,7 +39,6 @@ export function groupTeamData (
   todos: IdMap<ToDo>,
   events: Event[],
   personAccounts: PersonAccount[],
-  calendars: IdMap<Calendar>,
   mePerson: Ref<Person>,
   calendarStore: IdMap<Calendar>
 ): EventPersonMapping[] {
@@ -91,8 +90,8 @@ export function groupTeamData (
   }
 
   for (const event of events) {
-    const _calendar = calendars.get(event.calendar)
-    if (_calendar === undefined) {
+    const _calendar = calendarStore.get(event.calendar)
+    if (_calendar === undefined || _calendar.hidden) {
       continue
     }
     for (const p of event.participants) {
@@ -126,12 +125,6 @@ export function groupTeamData (
       }
     }
   }
-  console.log(
-    Array.from(totalEventsMap.entries()).map(([k, it]) => [
-      k,
-      it.toSorted((a, b) => a.date - b.date).map((q) => [new Date(q.date), new Date(q.dueDate)])
-    ])
-  )
   return Array.from(result.values())
 }
 

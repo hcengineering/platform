@@ -14,24 +14,29 @@
 //
 
 import core, {
+  DOMAIN_BLOB,
   DOMAIN_DOC_INDEX_STATE,
   DOMAIN_STATUS,
   DOMAIN_TX,
+  MeasureMetricsContext,
   coreId,
   generateId,
   isClassIndexable,
+  type Blob,
+  type Ref,
   type Space,
   type Status,
   type TxCreateDoc
 } from '@hcengineering/core'
 import {
-  type MigrateOperation,
-  type MigrationClient,
-  type MigrationUpgradeClient,
   createDefaultSpace,
   tryMigrate,
-  tryUpgrade
+  tryUpgrade,
+  type MigrateOperation,
+  type MigrationClient,
+  type MigrationUpgradeClient
 } from '@hcengineering/model'
+import { type StorageAdapterEx } from '@hcengineering/storage'
 import { DOMAIN_SPACE } from './security'
 
 async function migrateStatusesToModel (client: MigrationClient): Promise<void> {
@@ -131,6 +136,7 @@ export const coreOperation: MigrateOperation = {
         }
       }
     )
+    const exAdapter: StorageAdapterEx = client.storageAdapter as StorageAdapterEx
     await tryMigrate(client, coreId, [
       {
         state: 'statuses-to-model',
@@ -143,6 +149,12 @@ export const coreOperation: MigrateOperation = {
       {
         state: 'add-spaces-owner',
         func: migrateSpacesOwner
+      },
+      {
+        state: 'storage_blobs_v1',
+        func: async (client: MigrationClient) => {
+          await migrateBlobData(exAdapter, client)
+        }
       }
     ])
   },
@@ -160,5 +172,42 @@ export const coreOperation: MigrateOperation = {
         }
       }
     ])
+  }
+}
+async function migrateBlobData (exAdapter: StorageAdapterEx, client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('storage_upgrade', {})
+
+  for (const [provider, adapter] of exAdapter.adapters?.entries() ?? []) {
+    const blobs = await adapter.listStream(ctx, client.workspaceId, '')
+    const bulk = new Map<Ref<Blob>, Blob>()
+    try {
+      const push = async (force: boolean): Promise<void> => {
+        if (bulk.size > 1000 || force) {
+          await client.deleteMany(DOMAIN_BLOB, { _id: { $in: Array.from(bulk.keys()) } })
+          await client.create(DOMAIN_BLOB, Array.from(bulk.values()))
+          bulk.clear()
+        }
+      }
+      while (true) {
+        const blob = await blobs.next()
+        if (blob === undefined) {
+          break
+        }
+        // We need to state details for blob.
+        const blobData = await adapter.stat(ctx, client.workspaceId, blob._id)
+        if (blobData !== undefined) {
+          bulk.set(blobData._id, {
+            ...blobData,
+            provider
+          })
+        }
+        await push(false)
+      }
+      await push(true)
+    } catch (err: any) {
+      ctx.error('Error during blob migration', { error: err.message })
+    } finally {
+      await blobs.close()
+    }
   }
 }

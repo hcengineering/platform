@@ -178,7 +178,8 @@ export {
   SelectUsersPopup,
   IconAddMember,
   UserDetails,
-  DeleteConfirmationPopup
+  DeleteConfirmationPopup,
+  CreateGuest
 }
 
 const toObjectSearchResult = (e: WithLookup<Contact>): ObjectSearchResult => ({

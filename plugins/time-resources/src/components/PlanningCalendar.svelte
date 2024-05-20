@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import calendar, { Calendar, Event, generateEventId, getAllEvents } from '@hcengineering/calendar'
-  import { DayCalendar, calendarStore, hidePrivateEvents } from '@hcengineering/calendar-resources'
+  import { DayCalendar, calendarByIdStore, hidePrivateEvents } from '@hcengineering/calendar-resources'
   import { PersonAccount } from '@hcengineering/contact'
   import { Ref, SortingOrder, Timestamp, getCurrentAccount } from '@hcengineering/core'
   import { IntlString, getEmbeddedLabel } from '@hcengineering/platform'
@@ -75,7 +75,7 @@
 
   $: update(calendars)
   $: all = getAllEvents(raw, from, to)
-  $: objects = hidePrivateEvents(all, $calendarStore)
+  $: objects = hidePrivateEvents(all, $calendarByIdStore)
 
   function inc (val: number): void {
     if (val === 0) {
@@ -140,7 +140,7 @@
       }
       raw = raw
       all = getAllEvents(raw, from, to)
-      objects = hidePrivateEvents(all, $calendarStore)
+      objects = hidePrivateEvents(all, $calendarByIdStore)
     }
   }
   function dragLeave (event: DragEvent) {
@@ -155,7 +155,7 @@
     if (dragItem === null) {
       raw = raw.filter((p) => p._id !== dragItemId)
       all = getAllEvents(raw, from, to)
-      objects = hidePrivateEvents(all, $calendarStore)
+      objects = hidePrivateEvents(all, $calendarByIdStore)
     }
   }
   $: clear(dragItem)

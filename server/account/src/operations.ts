@@ -52,7 +52,7 @@ import toolPlugin, { connect, initModel, upgradeModel } from '@hcengineering/ser
 import { pbkdf2Sync, randomBytes } from 'crypto'
 import { Binary, Db, Filter, ObjectId, type MongoClient } from 'mongodb'
 import fetch from 'node-fetch'
-import type { StorageAdapter } from '../../core/types'
+import { type StorageAdapter } from '../../core/types'
 import { accountPlugin } from './plugin'
 
 const WORKSPACE_COLLECTION = 'workspace'
@@ -1775,12 +1775,6 @@ export async function dropWorkspaceFull (
   const wspace = getWorkspaceId(workspaceId, productId)
   const hasBucket = await storageAdapter?.exists(ctx, wspace)
   if (storageAdapter !== undefined && hasBucket === true) {
-    const docs = await storageAdapter.list(ctx, wspace)
-    await storageAdapter.remove(
-      ctx,
-      wspace,
-      docs.map((it) => it._id)
-    )
     await storageAdapter.delete(ctx, wspace)
   }
   ctx.info('Workspace fully dropped', { workspace: ws.workspace })

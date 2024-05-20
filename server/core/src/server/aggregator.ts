@@ -1,6 +1,5 @@
 import core, {
-  DOMAIN_BLOB_DATA,
-  generateId,
+  DOMAIN_BLOB,
   groupByArray,
   type Blob,
   type MeasureContext,
@@ -9,15 +8,28 @@ import core, {
 } from '@hcengineering/core'
 import { type Readable } from 'stream'
 import { type RawDBAdapter } from '../adapter'
-import { type ListBlobResult, type StorageAdapter, type UploadedObjectInfo } from '../storage'
 
-import { v4 as uuid } from 'uuid'
+import {
+  type BlobStorageIterator,
+  type ListBlobResult,
+  type StorageAdapter,
+  type StorageAdapterEx,
+  type UploadedObjectInfo
+} from '@hcengineering/storage'
 import { type StorageConfig, type StorageConfiguration } from '../types'
+
+class NoSuchKeyError extends Error {
+  code: string
+  constructor (msg: string) {
+    super(msg)
+    this.code = 'NoSuchKey'
+  }
+}
 
 /**
  * Perform operations on storage adapter and map required information into BinaryDocument into provided DbAdapter storage.
  */
-export class AggregatorStorageAdapter implements StorageAdapter {
+export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterEx {
   constructor (
     readonly adapters: Map<string, StorageAdapter>,
     readonly defaultAdapter: string, // Adapter will be used to put new documents into
@@ -26,6 +38,13 @@ export class AggregatorStorageAdapter implements StorageAdapter {
 
   async initialize (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {
     // We need to initialize internal table if it miss documents.
+  }
+
+  async close (): Promise<void> {
+    for (const a of this.adapters.values()) {
+      await a.close()
+    }
+    await this.dbAdapter.close()
   }
 
   async exists (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<boolean> {
@@ -54,7 +73,7 @@ export class AggregatorStorageAdapter implements StorageAdapter {
   }
 
   async remove (ctx: MeasureContext, workspaceId: WorkspaceId, objectNames: string[]): Promise<void> {
-    const docs = await this.dbAdapter.find<Blob>(ctx, workspaceId, DOMAIN_BLOB_DATA, {
+    const docs = await this.dbAdapter.find<Blob>(ctx, workspaceId, DOMAIN_BLOB, {
       _class: core.class.Blob,
       _id: { $in: objectNames as Ref<Blob>[] }
     })
@@ -71,25 +90,37 @@ export class AggregatorStorageAdapter implements StorageAdapter {
         )
       }
     }
+    await this.dbAdapter.clean(ctx, workspaceId, DOMAIN_BLOB, objectNames as Ref<Blob>[])
   }
 
-  async list (ctx: MeasureContext, workspaceId: WorkspaceId, prefix?: string | undefined): Promise<ListBlobResult[]> {
-    return await this.dbAdapter.find<Blob>(ctx, workspaceId, DOMAIN_BLOB_DATA, {
+  async listStream (
+    ctx: MeasureContext,
+    workspaceId: WorkspaceId,
+    prefix?: string | undefined
+  ): Promise<BlobStorageIterator> {
+    const data = await this.dbAdapter.findStream<Blob>(ctx, workspaceId, DOMAIN_BLOB, {
       _class: core.class.Blob,
-      _id: { $regex: `/^${prefix ?? ''}/i` }
+      _id: { $regex: `${prefix ?? ''}.*` }
     })
+    return {
+      next: async (): Promise<ListBlobResult | undefined> => {
+        return await data.next()
+      },
+      close: async () => {
+        await data.close()
+      }
+    }
   }
 
   async stat (ctx: MeasureContext, workspaceId: WorkspaceId, name: string): Promise<Blob | undefined> {
-    return (
-      await this.dbAdapter.find<Blob>(
-        ctx,
-        workspaceId,
-        DOMAIN_BLOB_DATA,
-        { _class: core.class.Blob, _id: name as Ref<Blob> },
-        { limit: 1 }
-      )
-    ).shift()
+    const result = await this.dbAdapter.find<Blob>(
+      ctx,
+      workspaceId,
+      DOMAIN_BLOB,
+      { _class: core.class.Blob, _id: name as Ref<Blob> },
+      { limit: 1 }
+    )
+    return result.shift()
   }
 
   async get (ctx: MeasureContext, workspaceId: WorkspaceId, name: string): Promise<Readable> {
@@ -106,17 +137,17 @@ export class AggregatorStorageAdapter implements StorageAdapter {
       await this.dbAdapter.find<Blob>(
         ctx,
         workspaceId,
-        DOMAIN_BLOB_DATA,
+        DOMAIN_BLOB,
         { _class: core.class.Blob, _id: objectName as Ref<Blob> },
         { limit: 1 }
       )
     ).shift()
     if (stat === undefined) {
-      throw new Error('No such object found')
+      throw new NoSuchKeyError(`No such object found ${objectName}`)
     }
     const provider = this.adapters.get(stat.provider)
     if (provider === undefined) {
-      throw new Error('No such provider found')
+      throw new NoSuchKeyError('No such provider found')
     }
     return { provider, stat }
   }
@@ -147,15 +178,13 @@ export class AggregatorStorageAdapter implements StorageAdapter {
   ): Promise<UploadedObjectInfo> {
     const provider = this.adapters.get(this.defaultAdapter)
     if (provider === undefined) {
-      throw new Error('No such provider found')
+      throw new NoSuchKeyError('No such provider found')
     }
 
-    const storageId = uuid()
-
-    const result = await provider.put(ctx, workspaceId, storageId, stream, contentType, size)
+    const result = await provider.put(ctx, workspaceId, objectName, stream, contentType, size)
 
     if (size === undefined || size === 0) {
-      const docStats = await provider.stat(ctx, workspaceId, storageId)
+      const docStats = await provider.stat(ctx, workspaceId, objectName)
       if (docStats !== undefined) {
         if (contentType !== docStats.contentType) {
           contentType = docStats.contentType
@@ -166,19 +195,19 @@ export class AggregatorStorageAdapter implements StorageAdapter {
 
     const blobDoc: Blob = {
       _class: core.class.Blob,
-      _id: generateId(),
+      _id: objectName as Ref<Blob>,
       modifiedBy: core.account.System,
       modifiedOn: Date.now(),
       space: core.space.Configuration,
       provider: this.defaultAdapter,
-      storageId,
+      storageId: objectName,
       size: size ?? 0,
       contentType,
       etag: result.etag,
       version: result.versionId ?? null
     }
 
-    await this.dbAdapter.upload<Blob>(ctx, workspaceId, DOMAIN_BLOB_DATA, [blobDoc])
+    await this.dbAdapter.upload<Blob>(ctx, workspaceId, DOMAIN_BLOB, [blobDoc])
     return result
   }
 }

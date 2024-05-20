@@ -448,7 +448,6 @@ export function createModel (builder: Builder): void {
     },
     label: hr.string.Department,
     icon: hr.icon.Department,
-    keyBinding: [],
     input: 'none',
     category: hr.category.HR,
     target: hr.mixin.Staff,

@@ -13,14 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, onDestroy } from 'svelte'
   import contact, { Employee, PersonAccount, combineName, getFirstName, getLastName } from '@hcengineering/contact'
   import { ChannelsEditor, EditableAvatar, employeeByIdStore, personByIdStore } from '@hcengineering/contact-resources'
   import { Ref, getCurrentAccount } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { getResource } from '@hcengineering/platform'
-  import { AttributeEditor, getClient, MessageBox } from '@hcengineering/presentation'
-  import { Button, createFocusManager, EditBox, FocusHandler, showPopup, Header, Breadcrumb } from '@hcengineering/ui'
+  import { AttributeEditor, MessageBox, getClient } from '@hcengineering/presentation'
+  import { Breadcrumb, Button, EditBox, FocusHandler, Header, createFocusManager, showPopup } from '@hcengineering/ui'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import setting from '../plugin'
 
   export let visibleNav: boolean = true

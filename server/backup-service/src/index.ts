@@ -20,6 +20,7 @@ import { backupService } from '@hcengineering/server-backup'
 import serverToken, { generateToken } from '@hcengineering/server-token'
 import toolPlugin from '@hcengineering/server-tool'
 import config from './config'
+import { StorageAdapter } from '@hcengineering/server-core'
 
 export function startBackup (ctx: MeasureContext): void {
   setMetadata(serverToken.metadata.Secret, config.Secret)
@@ -32,10 +33,10 @@ export function startBackup (ctx: MeasureContext): void {
     minioPort = parseInt(sp[1])
   }
 
-  const storageAdapter = new MinioService({
-    endPoint: minioEndpoint,
+  const storageAdapter: StorageAdapter = new MinioService({
+    endpoint: minioEndpoint,
     port: minioPort,
-    useSSL: false,
+    useSSL: 'false',
     accessKey: config.MinioAccessKey,
     secretKey: config.MinioSecretKey
   })

@@ -31,10 +31,12 @@
     "Unplanned": "Unplanned",
     "Planned": "Planned",
     "AddSlot": "Add Slot",
+
     "SetBreakpoint": "Set breakpoint",
     "Breakpoint": "Breakpoint",
     "SetPriority": "Set Priority",
     "NoPriority": "No Priority",
+    
     "LowPriority": "Low Priority",
     "MediumPriority": "Medium Priority",
     "HighPriority": "High Priority",

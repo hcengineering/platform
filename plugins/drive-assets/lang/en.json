@@ -1,0 +1,24 @@
+{
+  "string": {
+    "Drive": "Drive",
+    "Drives": "Drives",
+    "File": "File",
+    "Folder": "Folder",
+    "Resource": "Resource",
+    "Name": "Name",
+    "Description": "Description",
+    "Size": "Size",
+    "Type": "Type",
+    "LastModified": "Last modified",
+    "Parent": "Parent",
+    "Path": "Path",
+    "Download": "Download",
+    "CreateDrive": "Create Drive",
+    "CreateFolder": "Create Folder",
+    "UploadFile": "Upload File",
+    "UploadFolder": "Upload Folder",
+    "EditDrive": "Edit Drive",
+    "RoleLabel": "Role",
+    "Root": "/"
+  }
+}

@@ -58,6 +58,8 @@
     "DeleteObjectDescription": "Grants users ability to delete objects in the space",
     "ForbidDeleteObjectDescription": "Forbid users deleting objects in the space",
     "UpdateSpaceDescription": "Grants users ability to update the space",
-    "ArchiveSpaceDescription": "Grants users ability to archive the space"
+    "ArchiveSpaceDescription": "Grants users ability to archive the space",
+    "AutoJoin": "Auto join",
+    "AutoJoinDescr": "Automatically join new employees to this space"
   }
 }

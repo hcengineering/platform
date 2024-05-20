@@ -49,10 +49,8 @@ export default mergeIds(contactId, contact, {
     NoExpire: '' as IntlString,
     StatusDueDateTooltip: '' as IntlString,
     CopyToClipboard: '' as IntlString,
-    Copied: '' as IntlString,
     ViewFullProfile: '' as IntlString,
     Member: '' as IntlString,
-    Members: '' as IntlString,
     NoMembers: '' as IntlString,
     AddMember: '' as IntlString,
     KickEmployee: '' as IntlString,
@@ -79,8 +77,7 @@ export default mergeIds(contactId, contact, {
     DeleteEmployee: '' as IntlString,
     DeleteEmployeeDescr: '' as IntlString,
     HasMessagesIn: '' as IntlString,
-    HasNewMessagesIn: '' as IntlString,
-    AddGuest: '' as IntlString
+    HasNewMessagesIn: '' as IntlString
   },
   function: {
     GetContactLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,

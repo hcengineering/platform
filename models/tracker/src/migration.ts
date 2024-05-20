@@ -368,6 +368,18 @@ async function migrateIssueStatuses (client: MigrationClient): Promise<void> {
       }
     }
   )
+  await client.update(
+    DOMAIN_TX,
+    {
+      objectClass: core.class.Status,
+      'attributes.ofAttribute': tracker.attribute.IssueStatus
+    },
+    {
+      $set: {
+        objectClass: tracker.class.IssueStatus
+      }
+    }
+  )
 
   await client.update(
     DOMAIN_STATUS,
@@ -387,6 +399,10 @@ export const trackerOperation: MigrateOperation = {
   async preMigrate (client: MigrationClient, logger: ModelLogger): Promise<void> {
     await tryMigrate(client, trackerId, [
       {
+        state: 'fixIncorrectIssueStatuses',
+        func: migrateIssueStatuses
+      },
+      {
         state: 'migrate-default-statuses',
         func: (client) => migrateDefaultStatuses(client, logger)
       }
@@ -401,10 +417,6 @@ export const trackerOperation: MigrateOperation = {
       {
         state: 'passIdentifierToParentInfo',
         func: passIdentifierToParentInfo
-      },
-      {
-        state: 'fixIncorrectIssueStatuses',
-        func: migrateIssueStatuses
       },
       {
         state: 'statusesToModel-2',

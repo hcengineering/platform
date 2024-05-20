@@ -46,6 +46,7 @@ import {
 import { serverContactId, createModel as serverContactModel } from '@hcengineering/model-server-contact'
 import { serverCoreId, createModel as serverCoreModel } from '@hcengineering/model-server-core'
 import { serverDocumentId, createModel as serverDocumentModel } from '@hcengineering/model-server-document'
+import { serverDriveId, createModel as serverDriveModel } from '@hcengineering/model-server-drive'
 import { serverGmailId, createModel as serverGmailModel } from '@hcengineering/model-server-gmail'
 import { serverGuestId, createModel as serverGuestModel } from '@hcengineering/model-server-guest'
 import { serverHrId, createModel as serverHrModel } from '@hcengineering/model-server-hr'
@@ -63,6 +64,7 @@ import { serverTimeId, createModel as serverTimeModel } from '@hcengineering/mod
 import { serverTrackerId, createModel as serverTrackerModel } from '@hcengineering/model-server-tracker'
 import { serverViewId, createModel as serverViewModel } from '@hcengineering/model-server-view'
 import setting, { settingId, createModel as settingModel } from '@hcengineering/model-setting'
+import { driveId, createModel as driveModel } from '@hcengineering/model-drive'
 import { supportId, createModel as supportModel } from '@hcengineering/model-support'
 import { tagsId, createModel as tagsModel } from '@hcengineering/model-tags'
 import { taskId, createModel as taskModel } from '@hcengineering/model-task'
@@ -296,6 +298,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       }
     ],
     [timeModel, timeId],
+    [driveModel, driveId],
     [supportModel, supportId],
 
     [serverCoreModel, serverCoreId],
@@ -323,7 +326,8 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [serverOpenAI, openAIId],
     [serverDocumentModel, serverDocumentId],
     [serverTimeModel, serverTimeId],
-    [serverGuestModel, serverGuestId]
+    [serverGuestModel, serverGuestId],
+    [serverDriveModel, serverDriveId]
   ]
 
   for (const [b, id, config] of builders) {

@@ -14,41 +14,30 @@
 // limitations under the License.
 //
 
-import { MeasureContext } from '@hcengineering/core'
-import { MinioService } from '@hcengineering/minio'
 import { setMetadata } from '@hcengineering/platform'
 import serverToken from '@hcengineering/server-token'
-import { MongoClient } from 'mongodb'
 
+import type { MeasureContext } from '@hcengineering/core'
+import { getMongoClient } from '@hcengineering/mongo'
+import type { StorageConfiguration } from '@hcengineering/server-core'
+import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import config from './config'
 import { start } from './server'
 
 export async function startCollaborator (ctx: MeasureContext, onClose?: () => void): Promise<void> {
   setMetadata(serverToken.metadata.Secret, config.Secret)
 
-  let minioPort = 9000
-  let minioEndpoint = config.MinioEndpoint
-  const sp = minioEndpoint.split(':')
-  if (sp.length > 1) {
-    minioEndpoint = sp[0]
-    minioPort = parseInt(sp[1])
-  }
+  const storageConfig: StorageConfiguration = storageConfigFromEnv()
+  const storageAdapter = buildStorageFromConfig(storageConfig, config.MongoUrl)
 
-  const minioClient = new MinioService({
-    endPoint: minioEndpoint,
-    port: minioPort,
-    useSSL: false,
-    accessKey: config.MinioAccessKey,
-    secretKey: config.MinioSecretKey
-  })
+  const mongoClient = getMongoClient(config.MongoUrl)
 
-  const mongoClient = await MongoClient.connect(config.MongoUrl)
-
-  const shutdown = await start(ctx, config, minioClient, mongoClient)
+  const shutdown = await start(ctx, config, storageAdapter, mongoClient)
 
   const close = (): void => {
+    void storageAdapter.close()
     void shutdown().then(() => {
-      void mongoClient.close()
+      mongoClient.close()
     })
     onClose?.()
   }

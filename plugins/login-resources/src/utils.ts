@@ -15,7 +15,7 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import { AccountRole, type Doc, type Ref, concatLink } from '@hcengineering/core'
-import login, { type LoginInfo, type Workspace, type WorkspaceLoginInfo } from '@hcengineering/login'
+import login, { loginId, type LoginInfo, type Workspace, type WorkspaceLoginInfo } from '@hcengineering/login'
 import {
   OK,
   PlatformError,
@@ -527,6 +527,29 @@ export async function checkJoined (inviteId: string): Promise<[Status, Workspace
 }
 
 export async function getInviteLink (
+  expHours: number,
+  mask: string,
+  limit: number | undefined,
+  role: AccountRole
+): Promise<string> {
+  const inviteId = await getInviteLinkId(expHours, mask, limit ?? -1, role)
+  const loc = getCurrentLocation()
+  loc.path[0] = loginId
+  loc.path[1] = 'join'
+  loc.path.length = 2
+  loc.query = {
+    inviteId
+  }
+  loc.fragment = undefined
+
+  const url = locationToUrl(loc)
+
+  const frontUrl = getMetadata(presentation.metadata.FrontUrl)
+  const host = frontUrl ?? document.location.origin
+  return concatLink(host, url)
+}
+
+export async function getInviteLinkId (
   expHours: number,
   emailMask: string,
   limit: number,

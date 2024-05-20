@@ -24,8 +24,9 @@ import {
   type RelatedDocument
 } from '@hcengineering/core'
 import { OK, Severity, Status, type Resources } from '@hcengineering/platform'
-import { createQuery, type ObjectSearchResult } from '@hcengineering/presentation'
+import { createQuery, getClient, type ObjectSearchResult } from '@hcengineering/presentation'
 import { type Applicant, type Candidate, type Vacancy } from '@hcengineering/recruit'
+import contact from '@hcengineering/contact'
 import task from '@hcengineering/task'
 import { showPopup } from '@hcengineering/ui'
 import { type Filter } from '@hcengineering/view'
@@ -316,6 +317,30 @@ export async function hideArchivedVacancies (value: any, query: DocumentQuery<Do
   return query
 }
 
+export async function applicantHasEmail (doc: Doc | Doc[] | undefined): Promise<boolean> {
+  if (doc === undefined) return false
+  const client = getClient()
+  const applicants = Array.isArray(doc) ? (doc as Applicant[]) : ([doc] as Applicant[])
+  const hierarchy = client.getHierarchy()
+  for (const app of applicants) {
+    if (!hierarchy.isDerived(app._class, recruit.class.Applicant)) return false
+  }
+  const ids = applicants.map((p) => p.attachedTo)
+  const res = await client.findAll(
+    contact.class.Channel,
+    {
+      provider: contact.channelProvider.Email,
+      attachedTo: { $in: ids }
+    },
+    { projection: { _id: 1, attachedTo: 1 } }
+  )
+  const set = new Set(res.map((p) => p.attachedTo))
+  for (const val of ids) {
+    if (!set.has(val)) return false
+  }
+  return true
+}
+
 export default async (): Promise<Resources> => ({
   actionImpl: {
     CreateOpinion: createOpinion,
@@ -385,7 +410,8 @@ export default async (): Promise<Resources> => ({
     GetObjectLinkFragment: getSequenceLink,
     GetIdObjectLinkFragment: getObjectLink,
     HideDoneState: hideDoneState,
-    HideArchivedVacancies: hideArchivedVacancies
+    HideArchivedVacancies: hideArchivedVacancies,
+    ApplicantHasEmail: applicantHasEmail
   },
   resolver: {
     Location: resolveLocation

@@ -1,14 +1,14 @@
 <script lang="ts">
-  import { Calendar, Event, getAllEvents } from '@hcengineering/calendar'
+  import { Event, getAllEvents } from '@hcengineering/calendar'
+  import { Person, PersonAccount } from '@hcengineering/contact'
   import { IdMap, Ref } from '@hcengineering/core'
   import { Project } from '@hcengineering/task'
-  import Border from '../../Border.svelte'
-  import WithTeamData from '../WithTeamData.svelte'
-  import DayPlan from './DayPlan.svelte'
-  import { toSlots } from '../utils'
-  import { Person, PersonAccount } from '@hcengineering/contact'
   import { ToDo, WorkSlot } from '@hcengineering/time'
+  import Border from '../../Border.svelte'
   import Header from '../../Header.svelte'
+  import WithTeamData from '../WithTeamData.svelte'
+  import { toSlots } from '../utils'
+  import DayPlan from './DayPlan.svelte'
 
   export let space: Ref<Project>
   export let currentDate: Date
@@ -22,7 +22,6 @@
   $: todayTo = new Date(tomorrow).setHours(0, 0, 0, 0)
 
   let project: Project | undefined
-  let calendars: IdMap<Calendar> = new Map()
   let personAccounts: PersonAccount[] = []
   let slots: WorkSlot[] = []
   let events: Event[] = []
@@ -47,7 +46,6 @@
   fromDate={yesterdayFrom}
   toDate={todayTo}
   bind:project
-  bind:calendars
   bind:personAccounts
   bind:todos
   bind:slots
@@ -67,7 +65,6 @@
         {persons}
         {personAccounts}
         {project}
-        {calendars}
         {todos}
       />
     </div>
@@ -83,7 +80,6 @@
         {persons}
         {personAccounts}
         {project}
-        {calendars}
         {todos}
       />
     </div>

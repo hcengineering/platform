@@ -39,7 +39,7 @@
   }
 </script>
 
-<BaseMessagePreview {actions} {message}>
+<BaseMessagePreview {actions} {message} on:click>
   <span class="overflow-label flex-presenter flex-gap-1-5">
     <Icon icon={contact.icon.Person} size="small" />
     <Label

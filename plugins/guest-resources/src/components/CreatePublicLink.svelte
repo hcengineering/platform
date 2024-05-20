@@ -116,7 +116,7 @@
       <Button label={guest.string.Revoke} kind={'dangerous'} size={'large'} on:click={revoke} />
     {/if}
     {#if link?.url !== undefined && link.url !== ''}
-      <Button label={copied ? guest.string.Copied : guest.string.Copy} size={'medium'} on:click={copy} />
+      <Button label={copied ? view.string.Copied : guest.string.Copy} size={'medium'} on:click={copy} />
     {/if}
   </svelte:fragment>
 </Card>

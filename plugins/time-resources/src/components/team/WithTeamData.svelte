@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import calendar, { Calendar, Event } from '@hcengineering/calendar'
-  import { calendarStore, hidePrivateEvents } from '@hcengineering/calendar-resources'
+  import { visibleCalendarStore, hidePrivateEvents, calendarByIdStore } from '@hcengineering/calendar-resources'
   import contact, { Person, PersonAccount } from '@hcengineering/contact'
   import { IdMap, Ref, toIdMap } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -25,7 +25,6 @@
   export let fromDate: number
   export let toDate: number
   export let project: Project | undefined
-  export let calendars: IdMap<Calendar> = new Map()
   export let personAccounts: PersonAccount[] = []
   export let slots: WorkSlot[] = []
   export let events: Event[] = []
@@ -78,9 +77,9 @@
     }
   )
 
-  $: raw = rawEvent.concat(rawReq)
+  $: raw = rawEvent.concat(rawReq).filter((it, idx, arr) => arr.findIndex((e) => e.eventId === it.eventId) === idx)
 
-  $: visible = hidePrivateEvents(raw, $calendarStore, false)
+  $: visible = hidePrivateEvents(raw, $calendarByIdStore, false)
 
   const todoQuery = createQuery()
 
@@ -97,11 +96,7 @@
     }
   )
 
-  const calendarQuery = createQuery()
-  $: calendarQuery.query(calendar.class.Calendar, { hidden: false }, (res) => {
-    calendarIds = res.map((p) => p._id)
-    calendars = toIdMap(res)
-  })
+  $: calendarIds = $visibleCalendarStore.map((p) => p._id)
 
   const personMapQuery = createQuery()
   $: personMapQuery.query(contact.class.PersonAccount, { person: { $in: persons } }, (res) => {

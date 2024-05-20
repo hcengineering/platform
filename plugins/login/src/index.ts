@@ -79,6 +79,9 @@ export default plugin(loginId, {
   },
   function: {
     SendInvite: '' as Resource<(email: string, personId?: Ref<Doc>, role?: AccountRole) => Promise<void>>,
+    GetInviteLink: '' as Resource<
+    (expHours: number, mask: string, limit: number | undefined, role: AccountRole) => Promise<string>
+    >,
     LeaveWorkspace: '' as Resource<(email: string) => Promise<void>>,
     ChangePassword: '' as Resource<(oldPassword: string, password: string) => Promise<void>>,
     SelectWorkspace: '' as Resource<(workspace: string) => Promise<[Status, WorkspaceLoginInfo | undefined]>>,
