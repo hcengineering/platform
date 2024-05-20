@@ -15,6 +15,7 @@ export class UserProfilePage {
   leaveWorkspaceCancelButton = (): Locator => this.page.getByRole('button', { name: 'Cancel' })
   leaveWorkspaceConfirmButton = (): Locator => this.page.getByRole('button', { name: 'Ok' })
   accountDissabledMessage = (): Locator => this.page.getByRole('heading')
+  changeAccount = (): Locator => this.page.getByRole('link', { name: 'Change account' })
 
   constructor (page: Page) {
     this.page = page
@@ -30,6 +31,10 @@ export class UserProfilePage {
 
   async openProfileMenu (): Promise<void> {
     await this.profileButton().click()
+  }
+
+  async clickChangeAccount (): Promise<void> {
+    await this.changeAccount().click()
   }
 
   async clickLeaveWorkspaceButton (): Promise<void> {

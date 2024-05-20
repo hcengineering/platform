@@ -22,6 +22,13 @@ export function generateTestData (): TestData {
   }
 }
 
+// Consistent data
+export const workspaceName = faker.lorem.word()
+export const userName = faker.internet.userName()
+export const firstName = faker.person.firstName()
+export const lastName = faker.person.lastName()
+export const channelName = faker.lorem.word()
+
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
   if (result.length < chars) {

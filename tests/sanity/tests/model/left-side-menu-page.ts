@@ -17,6 +17,7 @@ export class LeftSideMenuPage extends CommonPage {
   profileButton = (): Locator => this.page.locator('#profile-button')
   inviteToWorkspaceButton = (): Locator => this.page.locator('button:has-text("Invite to workspace")')
   getInviteLinkButton = (): Locator => this.page.locator('button:has-text("Get invite link")')
+  clickCloseOnInviteLinkButton = (): Locator => this.page.getByRole('button', { name: 'Close' })
 
   // Actions
   async openProfileMenu (): Promise<void> {
@@ -49,6 +50,10 @@ export class LeftSideMenuPage extends CommonPage {
 
   async clickDocuments (): Promise<void> {
     await this.buttonDocuments().click()
+  }
+
+  async clickOnCloseInvite (): Promise<void> {
+    await this.clickCloseOnInviteLinkButton().click()
   }
 
   // Retrieve the last token from local storage
