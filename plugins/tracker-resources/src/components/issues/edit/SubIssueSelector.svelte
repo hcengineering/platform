@@ -48,7 +48,7 @@
   let subIssues: WithLookup<Issue>[] | undefined
   let subIssuesElement: Element
 
-  async function openIssue(target: Issue) {
+  async function openIssue (target: Issue) {
     if (target._id !== issue._id) {
       const loc = await issueLinkFragmentProvider(target)
       navigate(loc)

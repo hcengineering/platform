@@ -51,7 +51,7 @@ import { Action, ActionCategory, IconProps } from '@hcengineering/view'
 /**
  * @public
  */
-export interface IssueStatus extends Status { }
+export interface IssueStatus extends Status {}
 
 /**
  * @public
@@ -369,19 +369,19 @@ export interface Component extends Doc {
  * Allow to query for status keys/values.
  */
 export class ComponentManager extends DocManager {
-  get(ref: Ref<WithLookup<Component>>): WithLookup<Component> | undefined {
+  get (ref: Ref<WithLookup<Component>>): WithLookup<Component> | undefined {
     return this.getIdMap().get(ref) as WithLookup<Component>
   }
 
-  getDocs(): Array<WithLookup<Component>> {
+  getDocs (): Array<WithLookup<Component>> {
     return this.docs as Component[]
   }
 
-  getIdMap(): IdMap<WithLookup<Component>> {
+  getIdMap (): IdMap<WithLookup<Component>> {
     return this.byId as IdMap<WithLookup<Component>>
   }
 
-  filter(predicate: (value: Component) => boolean): Component[] {
+  filter (predicate: (value: Component) => boolean): Component[] {
     return this.getDocs().filter(predicate)
   }
 }
@@ -604,7 +604,7 @@ export const baseIssueTaskStatuses: TaskStatusFactory[] = [
 /**
  * @public
  */
-export function createStatesData(data: TaskStatusFactory[]): Omit<Data<Status>, 'rank'>[] {
+export function createStatesData (data: TaskStatusFactory[]): Omit<Data<Status>, 'rank'>[] {
   const states: Omit<Data<Status>, 'rank'>[] = []
 
   for (const category of data) {

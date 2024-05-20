@@ -27,7 +27,7 @@
 
   const dispatch = createEventDispatcher()
 
-  function onEdit() {
+  function onEdit () {
     showPopup(
       EmployeeSetStatusPopup,
       {

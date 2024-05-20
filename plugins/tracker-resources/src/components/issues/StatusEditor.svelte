@@ -87,7 +87,7 @@
 
   $: statuses = getTaskTypeStates(value.kind, $taskTypeStore, $statusStore.byId)
 
-  function getSelectedStatus(
+  function getSelectedStatus (
     statuses: WithLookup<IssueStatus>[] | undefined,
     value: ValueType,
     defaultStatus: Ref<IssueStatus> | undefined

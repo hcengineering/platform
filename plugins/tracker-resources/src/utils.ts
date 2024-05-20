@@ -299,7 +299,7 @@ export const listIssueKanbanStatusOrder = [
   task.statusCategory.Lost
 ] as const
 
-export async function issueStatusSort(
+export async function issueStatusSort (
   client: TxOperations,
   value: Array<Ref<IssueStatus>>,
   space: Ref<Project> | undefined,
@@ -362,7 +362,7 @@ export async function issueStatusSort(
   return value
 }
 
-export async function issuePrioritySort(client: TxOperations, value: IssuePriority[]): Promise<IssuePriority[]> {
+export async function issuePrioritySort (client: TxOperations, value: IssuePriority[]): Promise<IssuePriority[]> {
   value.sort((a, b) => {
     const i1 = defaultPriorities.indexOf(a)
     const i2 = defaultPriorities.indexOf(b)
@@ -372,7 +372,7 @@ export async function issuePrioritySort(client: TxOperations, value: IssuePriori
   return value
 }
 
-export async function milestoneSort(
+export async function milestoneSort (
   client: TxOperations,
   value: Array<Ref<Milestone>>
 ): Promise<Array<Ref<Milestone>>> {
@@ -386,7 +386,7 @@ export async function milestoneSort(
     })
   })
 }
-export async function moveIssuesToAnotherMilestone(
+export async function moveIssuesToAnotherMilestone (
   client: TxOperations,
   oldMilestone: Milestone,
   newMilestone: Milestone | undefined
@@ -414,7 +414,7 @@ export async function moveIssuesToAnotherMilestone(
   }
 }
 
-export function getTimeReportDate(type: TimeReportDayType): number {
+export function getTimeReportDate (type: TimeReportDayType): number {
   const date = new Date(Date.now())
 
   if (type === TimeReportDayType.PreviousWorkDay) {
@@ -429,7 +429,7 @@ export function getTimeReportDate(type: TimeReportDayType): number {
   return date.valueOf()
 }
 
-export function getTimeReportDayType(timestamp: number): TimeReportDayType | undefined {
+export function getTimeReportDayType (timestamp: number): TimeReportDayType | undefined {
   const date = new Date(timestamp)
   const currentWorkDate = new Date(getTimeReportDate(TimeReportDayType.CurrentWorkDay))
   const previousWorkDate = new Date(getTimeReportDate(TimeReportDayType.PreviousWorkDay))
@@ -441,11 +441,11 @@ export function getTimeReportDayType(timestamp: number): TimeReportDayType | und
   }
 }
 
-export function subIssueQuery(value: boolean, query: DocumentQuery<Issue>): DocumentQuery<Issue> {
+export function subIssueQuery (value: boolean, query: DocumentQuery<Issue>): DocumentQuery<Issue> {
   return value ? query : { ...query, attachedTo: tracker.ids.NoParent }
 }
 
-async function getAllSomething(
+async function getAllSomething (
   _class: Ref<Class<Doc>>,
   query: DocumentQuery<Doc> | undefined,
   onUpdate: () => void,
@@ -468,7 +468,7 @@ async function getAllSomething(
   return await promise
 }
 
-export async function getAllPriority(
+export async function getAllPriority (
   query: DocumentQuery<Doc> | undefined,
   onUpdate: () => void,
   queryId: Ref<Doc>
@@ -476,7 +476,7 @@ export async function getAllPriority(
   return defaultPriorities
 }
 
-export async function getAllComponents(
+export async function getAllComponents (
   query: DocumentQuery<Doc> | undefined,
   onUpdate: () => void,
   queryId: Ref<Doc>
@@ -484,7 +484,7 @@ export async function getAllComponents(
   return await getAllSomething(tracker.class.Component, query, onUpdate, queryId)
 }
 
-export async function getAllMilestones(
+export async function getAllMilestones (
   query: DocumentQuery<Doc> | undefined,
   onUpdate: () => void,
   queryId: Ref<Doc>
@@ -492,7 +492,7 @@ export async function getAllMilestones(
   return await getAllSomething(tracker.class.Milestone, query, onUpdate, queryId)
 }
 
-export function subIssueListProvider(subIssues: Issue[], target: Ref<Issue>): void {
+export function subIssueListProvider (subIssues: Issue[], target: Ref<Issue>): void {
   const listProvider = new ListSelectionProvider((offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection) => {
     if (dir === 'vertical') {
       let pos = subIssues.findIndex((p) => p._id === of?._id)
@@ -513,7 +513,7 @@ export function subIssueListProvider(subIssues: Issue[], target: Ref<Issue>): vo
   }
 }
 
-export async function getPreviousAssignees(objectId: Ref<Doc> | undefined): Promise<Array<Ref<Contact>>> {
+export async function getPreviousAssignees (objectId: Ref<Doc> | undefined): Promise<Array<Ref<Contact>>> {
   if (objectId === undefined) {
     return []
   }
@@ -542,7 +542,7 @@ export async function getPreviousAssignees(objectId: Ref<Doc> | undefined): Prom
   return Array.from(set)
 }
 
-async function updateIssuesOnMove(
+async function updateIssuesOnMove (
   client: TxOperations,
   applyOps: ApplyOperations,
   doc: Doc,
@@ -595,7 +595,7 @@ async function updateIssuesOnMove(
 /**
  * @public
  */
-export async function moveIssueToSpace(
+export async function moveIssueToSpace (
   client: TxOperations,
   docs: Issue[],
   space: Project,
@@ -636,7 +636,7 @@ export async function moveIssueToSpace(
  *
  * Will collect all issues to be moved.
  */
-export async function collectIssues(client: TxOperations, docs: Doc[]): Promise<Issue[]> {
+export async function collectIssues (client: TxOperations, docs: Doc[]): Promise<Issue[]> {
   const result: Issue[] = []
   const hierarchy = client.getHierarchy()
   for (const doc of docs) {
@@ -674,7 +674,7 @@ export async function collectIssues(client: TxOperations, docs: Doc[]): Promise<
 /**
  * @public
  */
-export function issueToAttachedData(issue: Issue): AttachedData<Issue> {
+export function issueToAttachedData (issue: Issue): AttachedData<Issue> {
   const { _id, _class, space, ...data } = issue
   return { ...data }
 }
@@ -690,16 +690,16 @@ export const IssuePriorityColor = {
   [IssuePriority.Low]: PaletteColorIndexes.Cloud
 }
 
-export async function getVisibleFilters(filters: KeyFilter[], space?: Ref<Space>): Promise<KeyFilter[]> {
+export async function getVisibleFilters (filters: KeyFilter[], space?: Ref<Space>): Promise<KeyFilter[]> {
   // Removes the "Project" filter if a specific space is provided
   return space === undefined ? filters : filters.filter((f) => f.key !== 'space')
 }
 
-export function getIssueChatTitle(object: Issue): string {
+export function getIssueChatTitle (object: Issue): string {
   return object.title
 }
 
-export function getIssueStatusCategories(project: ProjectType): Array<Ref<StatusCategory>> {
+export function getIssueStatusCategories (project: ProjectType): Array<Ref<StatusCategory>> {
   if (project.classic) {
     return [
       task.statusCategory.UnStarted,
@@ -731,13 +731,13 @@ export interface ComponentToUpdate {
   create?: boolean
 }
 
-export async function getComponentTitle(client: TxOperations, ref: Ref<Component>): Promise<string> {
+export async function getComponentTitle (client: TxOperations, ref: Ref<Component>): Promise<string> {
   const object = await client.findOne(tracker.class.Component, { _id: ref })
 
   return object?.label ?? ''
 }
 
-export async function getMilestoneTitle(client: TxOperations, ref: Ref<Milestone>): Promise<string> {
+export async function getMilestoneTitle (client: TxOperations, ref: Ref<Milestone>): Promise<string> {
   const object = await client.findOne(tracker.class.Milestone, { _id: ref })
 
   return object?.label ?? ''

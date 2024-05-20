@@ -50,7 +50,7 @@
 
   let processing = false
 
-  async function createMissingComponent(c: Ref<Component>): Promise<void> {
+  async function createMissingComponent (c: Ref<Component>): Promise<void> {
     const cur = $componentStore.get(c)
     const components = $componentStore.filter((it) => it.space === targetProject?._id)
     if (
