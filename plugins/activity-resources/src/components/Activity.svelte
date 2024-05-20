@@ -104,6 +104,7 @@
             props={{
               value: message,
               hideLink: true,
+              space: object.space,
               boundary,
               type: canGroup ? 'short' : 'default'
             }}

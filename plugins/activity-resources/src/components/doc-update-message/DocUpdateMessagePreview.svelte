@@ -22,7 +22,7 @@
   import { Action, Component, Icon } from '@hcengineering/ui'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { IntlString } from '@hcengineering/platform'
-  import { AttachedDoc, Class, Collection, Doc, Ref } from '@hcengineering/core'
+  import { AttachedDoc, Class, Collection, Doc, Ref, Space } from '@hcengineering/core'
   import { AttributeModel } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { buildRemovedDoc, checkIsObjectRemoved } from '@hcengineering/view-resources'
@@ -36,6 +36,7 @@
   export let readonly = false
   export let type: ActivityMessagePreviewType = 'full'
   export let actions: Action[] = []
+  export let space: Ref<Space> | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -118,7 +119,13 @@
         preview
       />
     {:else if value.attributeUpdates && attributeModel}
-      <DocUpdateMessageAttributes attributeUpdates={value.attributeUpdates} {attributeModel} {viewlet} preview />
+      <DocUpdateMessageAttributes
+        attributeUpdates={value.attributeUpdates}
+        {attributeModel}
+        {space}
+        {viewlet}
+        preview
+      />
     {/if}
   </span>
 </BaseMessagePreview>

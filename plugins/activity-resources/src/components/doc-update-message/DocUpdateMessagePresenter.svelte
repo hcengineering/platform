@@ -23,7 +23,7 @@
   } from '@hcengineering/activity'
   import { Person, PersonAccount } from '@hcengineering/contact'
   import { personAccountByIdStore, personByIdStore } from '@hcengineering/contact-resources'
-  import { Account, AttachedDoc, Class, Collection, Doc, Ref } from '@hcengineering/core'
+  import { Account, AttachedDoc, Class, Collection, Doc, Ref, Space } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Component, ShowMore, Action } from '@hcengineering/ui'
@@ -53,6 +53,7 @@
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
   export let hideLink = false
   export let type: ActivityMessageViewType = 'default'
+  export let space: Ref<Space> | undefined = undefined
   export let onClick: (() => void) | undefined = undefined
 
   const client = getClient()
@@ -206,7 +207,7 @@
         />
       </ShowMore>
     {:else if value.attributeUpdates && attributeModel}
-      <DocUpdateMessageAttributes attributeUpdates={value.attributeUpdates} {attributeModel} {viewlet} />
+      <DocUpdateMessageAttributes attributeUpdates={value.attributeUpdates} {attributeModel} {viewlet} {space} />
     {/if}
   </svelte:fragment>
 </ActivityMessageTemplate>
