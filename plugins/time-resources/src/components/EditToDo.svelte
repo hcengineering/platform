@@ -24,7 +24,6 @@
     ModernEditbox,
     CheckBox,
     Component,
-    EditBox,
     IconClose,
     Label,
     Modal,
@@ -68,40 +67,40 @@
     return true
   }
 
-  async function updateName() {
+  async function updateName () {
     if (object.title !== title) {
       await client.update(object, { title })
     }
   }
 
-  async function updateDescription() {
+  async function updateDescription () {
     if (object.description !== description) {
       await client.update(object, { description })
     }
   }
 
-  async function markDone() {
+  async function markDone () {
     object.doneOn = object.doneOn == null ? Date.now() : null
     await client.update(object, { doneOn: object.doneOn })
   }
 
-  async function dueDateChange(value: Date | null) {
+  async function dueDateChange (value: Date | null) {
     const dueDate = value != null ? value.getTime() : null
     await client.update(object, { dueDate })
     object.dueDate = dueDate
   }
 
-  async function priorityChange(priority: ToDoPriority) {
+  async function priorityChange (priority: ToDoPriority) {
     await client.update(object, { priority })
     object.priority = priority
   }
 
-  async function visibilityChange(visibility: Visibility) {
+  async function visibilityChange (visibility: Visibility) {
     await client.update(object, { visibility })
     object.visibility = visibility
   }
 
-  async function spaceChange(space: Space | null) {
+  async function spaceChange (space: Space | null) {
     const oldSpace = object.attachedSpace ?? undefined
     const newSpace = space?._id ?? undefined
     if (newSpace !== oldSpace) {

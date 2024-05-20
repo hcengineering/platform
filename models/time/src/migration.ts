@@ -32,7 +32,7 @@ import { timeId, type ToDo, ToDoPriority } from '@hcengineering/time'
 import { DOMAIN_TIME } from '.'
 import time from './plugin'
 
-export async function migrateWorkSlots(client: TxOperations): Promise<void> {
+export async function migrateWorkSlots (client: TxOperations): Promise<void> {
   const h = client.getHierarchy()
   const desc = h.getDescendants(task.class.Task)
   const oldWorkSlots = await client.findAll(time.class.WorkSlot, {
@@ -97,7 +97,7 @@ export async function migrateWorkSlots(client: TxOperations): Promise<void> {
   }
 }
 
-async function migrateTodosSpace(client: TxOperations): Promise<void> {
+async function migrateTodosSpace (client: TxOperations): Promise<void> {
   const oldTodos = await client.findAll(time.class.ToDo, {
     space: { $ne: time.space.ToDos }
   })
@@ -113,7 +113,7 @@ async function migrateTodosSpace(client: TxOperations): Promise<void> {
   }
 }
 
-async function migrateTodosRanks(client: TxOperations): Promise<void> {
+async function migrateTodosRanks (client: TxOperations): Promise<void> {
   const doneTodos = await client.findAll(
     time.class.ToDo,
     {
@@ -151,7 +151,7 @@ async function migrateTodosRanks(client: TxOperations): Promise<void> {
   }
 }
 
-async function fillProps(client: MigrationClient): Promise<void> {
+async function fillProps (client: MigrationClient): Promise<void> {
   await client.update(
     DOMAIN_TIME,
     { _class: time.class.ProjectToDo, visibility: { $exists: false } },
@@ -166,7 +166,7 @@ async function fillProps(client: MigrationClient): Promise<void> {
 }
 
 export const timeOperation: MigrateOperation = {
-  async migrate(client: MigrationClient): Promise<void> {
+  async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, timeId, [
       {
         state: 'm-time-001',
@@ -176,7 +176,7 @@ export const timeOperation: MigrateOperation = {
       }
     ])
   },
-  async upgrade(client: MigrationUpgradeClient): Promise<void> {
+  async upgrade (client: MigrationUpgradeClient): Promise<void> {
     await tryUpgrade(client, timeId, [
       {
         state: 'create-defaults-v2',

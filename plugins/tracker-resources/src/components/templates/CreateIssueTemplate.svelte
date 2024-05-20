@@ -70,15 +70,15 @@
 
   $: canSave = getTitle(object.title ?? '').length > 0
 
-  function getTitle(value: string) {
+  function getTitle (value: string) {
     return value.trim()
   }
 
-  export function canClose(): boolean {
+  export function canClose (): boolean {
     return !canSave
   }
 
-  async function createIssueTemplate() {
+  async function createIssueTemplate () {
     if (!canSave) {
       return
     }
@@ -119,7 +119,7 @@
     object = { ...object, milestone: milestoneId }
   }
 
-  function addTagRef(tag: TagElement): void {
+  function addTagRef (tag: TagElement): void {
     labels = [...labels, tag]
   }
 </script>

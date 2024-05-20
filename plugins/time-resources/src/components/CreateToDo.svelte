@@ -14,7 +14,7 @@
   const client = getClient()
   const acc = getCurrentAccount() as PersonAccount
 
-  async function save(): Promise<void> {
+  async function save (): Promise<void> {
     let [name, description] = value.split('//')
     name = name.trim()
     if (name.length === 0) return

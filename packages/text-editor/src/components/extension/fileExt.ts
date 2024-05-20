@@ -41,14 +41,14 @@ export const inputRegex = /(?:^|\s)(!\[(.+|:?)]\((\S+)(?:(?:\s+)["'](\S+)["'])?\
  * @public
  */
 export const FileExtension = FileNode.extend<FileOptions>({
-  addOptions() {
+  addOptions () {
     return {
       inline: false,
       HTMLAttributes: {}
     }
   },
 
-  parseHTML() {
+  parseHTML () {
     return [
       {
         tag: `div[data-type="${this.name}"]`
@@ -67,7 +67,7 @@ export const FileExtension = FileNode.extend<FileOptions>({
 
   priority: 1100,
 
-  renderHTML({ node, HTMLAttributes }) {
+  renderHTML ({ node, HTMLAttributes }) {
     const nodeAttributes = {
       class: 'text-editor-file-container',
       'data-type': this.name
@@ -100,7 +100,7 @@ export const FileExtension = FileNode.extend<FileOptions>({
     ]
   },
 
-  addInputRules() {
+  addInputRules () {
     return [
       nodeInputRule({
         find: inputRegex,
@@ -109,7 +109,7 @@ export const FileExtension = FileNode.extend<FileOptions>({
     ]
   },
 
-  addProseMirrorPlugins() {
+  addProseMirrorPlugins () {
     return [
       new Plugin({
         key: new PluginKey('handle-file-open'),

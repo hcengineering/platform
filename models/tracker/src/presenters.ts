@@ -22,7 +22,7 @@ import tracker from './plugin'
 /**
  * Define presenters
  */
-export function definePresenters(builder: Builder): void {
+export function definePresenters (builder: Builder): void {
   //
   // Issue
   //

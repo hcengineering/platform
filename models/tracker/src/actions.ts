@@ -27,7 +27,7 @@ import tracker from './plugin'
 import tags from '@hcengineering/tags'
 import { defaultPriorities, issuePriorities } from '@hcengineering/tracker-resources/src/types'
 
-function createGotoSpecialAction(
+function createGotoSpecialAction (
   builder: Builder,
   id: string,
   key: KeyBinding,

@@ -73,7 +73,7 @@
   const inboxClient = getResource(notification.function.GetInboxNotificationsClient).then((res) => res())
 
   $: read(_id)
-  function read(_id: Ref<Doc>): void {
+  function read (_id: Ref<Doc>): void {
     if (lastId !== _id) {
       const prev = lastId
       lastId = _id
@@ -108,7 +108,7 @@
   $: hasParentIssue = issue?.attachedTo !== tracker.ids.NoParent
 
   let saved = false
-  async function save(): Promise<void> {
+  async function save (): Promise<void> {
     if (issue === undefined || !canSave) {
       return
     }
@@ -120,7 +120,7 @@
     }
   }
 
-  function showContextMenu(ev: MouseEvent): void {
+  function showContextMenu (ev: MouseEvent): void {
     if (issue !== undefined) {
       showMenu(ev, { object: issue, excludedActions: [view.action.Open] })
     }

@@ -58,7 +58,7 @@ export { trackerId } from '@hcengineering/tracker'
 export { trackerOperation } from './migration'
 export { default } from './plugin'
 
-function defineSortAndGrouping(builder: Builder): void {
+function defineSortAndGrouping (builder: Builder): void {
   builder.mixin(tracker.class.IssueStatus, core.class.Class, view.mixin.SortFuncs, {
     func: tracker.function.IssueStatusSort
   })
@@ -79,7 +79,6 @@ function defineSortAndGrouping(builder: Builder): void {
     func: tracker.function.GetAllPriority
   })
 
-
   builder.mixin(tracker.class.Component, core.class.Class, view.mixin.AllValuesFunc, {
     func: tracker.function.GetAllComponents
   })
@@ -93,7 +92,7 @@ function defineSortAndGrouping(builder: Builder): void {
   })
 }
 
-function defineNotifications(builder: Builder): void {
+function defineNotifications (builder: Builder): void {
   builder.createDoc(
     notification.class.NotificationGroup,
     core.space.Model,
@@ -143,7 +142,7 @@ function defineNotifications(builder: Builder): void {
 /**
  * Define filters
  */
-function defineFilters(builder: Builder): void {
+function defineFilters (builder: Builder): void {
   //
   // Issue
   //
@@ -272,7 +271,7 @@ function defineFilters(builder: Builder): void {
   })
 }
 
-function defineApplication(
+function defineApplication (
   builder: Builder,
   opt: {
     myIssuesId: string
@@ -393,7 +392,7 @@ function defineApplication(
   )
 }
 
-export function createModel(builder: Builder): void {
+export function createModel (builder: Builder): void {
   builder.createModel(
     TProject,
     TComponent,
@@ -716,7 +715,7 @@ export function createModel(builder: Builder): void {
   defineSpaceType(builder)
 }
 
-function defineSpaceType(builder: Builder): void {
+function defineSpaceType (builder: Builder): void {
   builder.createModel(TClassicProjectTypeData)
   builder.createDoc(
     task.class.ProjectTypeDescriptor,

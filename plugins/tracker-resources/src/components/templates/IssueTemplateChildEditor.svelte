@@ -60,7 +60,7 @@
     attr: client.getHierarchy().getAttribute(tracker.class.IssueTemplate, 'labels')
   }
 
-  function getIssueDefaults(): IssueTemplateChild {
+  function getIssueDefaults (): IssueTemplateChild {
     return {
       id: generateId(),
       title: '',
@@ -74,20 +74,20 @@
     }
   }
 
-  function resetToDefaults() {
+  function resetToDefaults () {
     newIssue = getIssueDefaults()
     focusIssueTitle?.()
   }
 
-  function getTitle(value: string) {
+  function getTitle (value: string) {
     return value.trim()
   }
 
-  function close() {
+  function close () {
     dispatch('close')
   }
 
-  async function createIssue() {
+  async function createIssue () {
     if (!canSave) {
       return
     }
@@ -107,7 +107,7 @@
     resetToDefaults()
   }
 
-  function addTagRef(tag: TagElement): void {
+  function addTagRef (tag: TagElement): void {
     labels = [...labels, tag]
   }
 

@@ -72,7 +72,7 @@ export const issuesOptions = (kanban: boolean): ViewOptionsModel => ({
   ]
 })
 
-export function issueConfig(
+export function issueConfig (
   key: string = '',
   compact: boolean = false,
   milestone: boolean = true,
@@ -137,41 +137,41 @@ export function issueConfig(
     },
     ...(milestone
       ? [
-        {
-          key: '',
-          label: tracker.string.Milestone,
-          presenter: tracker.component.MilestoneEditor,
-          props: {
-            kind: 'list',
-            size: 'small',
-            shouldShowPlaceholder: false
-          },
-          displayProps: {
-            key: key + 'milestone',
-            excludeByKey: 'milestone',
-            compression: true
+          {
+            key: '',
+            label: tracker.string.Milestone,
+            presenter: tracker.component.MilestoneEditor,
+            props: {
+              kind: 'list',
+              size: 'small',
+              shouldShowPlaceholder: false
+            },
+            displayProps: {
+              key: key + 'milestone',
+              excludeByKey: 'milestone',
+              compression: true
+            }
           }
-        }
-      ]
+        ]
       : []),
     ...(component
       ? [
-        {
-          key: '',
-          label: tracker.string.Component,
-          presenter: tracker.component.ComponentEditor,
-          props: {
-            kind: 'list',
-            size: 'small',
-            shouldShowPlaceholder: false
-          },
-          displayProps: {
-            key: key + 'component',
-            excludeByKey: 'component',
-            compression: true
+          {
+            key: '',
+            label: tracker.string.Component,
+            presenter: tracker.component.ComponentEditor,
+            props: {
+              kind: 'list',
+              size: 'small',
+              shouldShowPlaceholder: false
+            },
+            displayProps: {
+              key: key + 'component',
+              excludeByKey: 'component',
+              compression: true
+            }
           }
-        }
-      ]
+        ]
       : []),
     {
       key: '',
@@ -208,7 +208,7 @@ export function issueConfig(
   ]
 }
 
-export function defineViewlets(builder: Builder): void {
+export function defineViewlets (builder: Builder): void {
   builder.createDoc(
     view.class.ViewletDescriptor,
     core.space.Model,

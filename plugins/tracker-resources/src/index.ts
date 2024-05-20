@@ -173,7 +173,7 @@ export { default as StatusPresenter } from './components/issues/StatusPresenter.
 
 export { activeProjects, CreateProject, IssuePresenter, PriorityEditor, StatusEditor, TitlePresenter }
 
-export async function queryIssue<D extends Issue>(
+export async function queryIssue<D extends Issue> (
   _class: Ref<Class<D>>,
   client: Client,
   search: string,
@@ -217,11 +217,11 @@ export async function queryIssue<D extends Issue>(
   }))
 }
 
-async function move(issues: Issue | Issue[]): Promise<void> {
+async function move (issues: Issue | Issue[]): Promise<void> {
   showPopup(MoveIssues, { selected: issues }, 'top')
 }
 
-async function editWorkflowStatuses(project: Project): Promise<void> {
+async function editWorkflowStatuses (project: Project): Promise<void> {
   const loc = getCurrentLocation()
   loc.path[2] = settingId
   loc.path[3] = 'statuses'
@@ -229,13 +229,13 @@ async function editWorkflowStatuses(project: Project): Promise<void> {
   navigate(loc)
 }
 
-async function editProject(project: Project | undefined): Promise<void> {
+async function editProject (project: Project | undefined): Promise<void> {
   if (project !== undefined) {
     showPopup(CreateProject, { project })
   }
 }
 
-async function deleteIssue(issue: Issue | Issue[]): Promise<void> {
+async function deleteIssue (issue: Issue | Issue[]): Promise<void> {
   const issueCount = Array.isArray(issue) ? issue.length : 1
   let subissues: number = 0
   if (Array.isArray(issue)) {
@@ -268,7 +268,7 @@ async function deleteIssue(issue: Issue | Issue[]): Promise<void> {
   )
 }
 
-async function deleteProject(project: Project | undefined): Promise<void> {
+async function deleteProject (project: Project | undefined): Promise<void> {
   if (project !== undefined) {
     const client = getClient()
 
@@ -371,7 +371,7 @@ async function deleteProject(project: Project | undefined): Promise<void> {
   }
 }
 
-async function moveAndDeleteMilestones(
+async function moveAndDeleteMilestones (
   client: TxOperations,
   oldMilestones: Milestone[],
   newMilestone?: Milestone
@@ -403,7 +403,7 @@ async function moveAndDeleteMilestones(
   )
 }
 
-async function deleteMilestone(milestones: Milestone | Milestone[]): Promise<void> {
+async function deleteMilestone (milestones: Milestone | Milestone[]): Promise<void> {
   const client = getClient()
   const milestoneArray = Array.isArray(milestones) ? milestones : [milestones]
   // Check if available to move issues to another milestone

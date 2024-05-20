@@ -63,7 +63,7 @@
 
   let descriptionBox: AttachmentStyledBox
 
-  function getIssueDefaults(): IssueDraft {
+  function getIssueDefaults (): IssueDraft {
     return {
       _id: generateId(),
       title: '',
@@ -93,7 +93,7 @@
     milestone
   }
 
-  function objectChange(object: IssueDraft, empty: any) {
+  function objectChange (object: IssueDraft, empty: any) {
     if (shouldSaveDraft) {
       draftController.save(object, empty)
     }
@@ -101,25 +101,25 @@
 
   $: objectChange(object, empty)
 
-  function resetToDefaults() {
+  function resetToDefaults () {
     object = getIssueDefaults()
     focusIssueTitle?.()
   }
 
-  function getTitle(value: string) {
+  function getTitle (value: string) {
     return value.trim()
   }
 
-  export function removeDraft() {
+  export function removeDraft () {
     draftController.remove()
   }
 
-  function close() {
+  function close () {
     removeDraft()
     dispatch('close')
   }
 
-  async function createIssue() {
+  async function createIssue () {
     if (!canSave) {
       return
     }
@@ -130,7 +130,7 @@
     resetToDefaults()
   }
 
-  function tagAsRef(tag: TagElement): TagReference {
+  function tagAsRef (tag: TagElement): TagReference {
     return {
       _class: tags.class.TagReference,
       _id: generateId(),
@@ -146,7 +146,7 @@
     }
   }
 
-  function addTagRef(tag: TagElement): void {
+  function addTagRef (tag: TagElement): void {
     object.labels = [...object.labels, tagAsRef(tag)]
   }
 

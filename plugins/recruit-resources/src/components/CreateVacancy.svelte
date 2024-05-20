@@ -78,7 +78,7 @@
     location: '',
     type: typeId as Ref<ProjectType>
   }
-  export function canClose(): boolean {
+  export function canClose (): boolean {
     return name === '' && typeId !== undefined
   }
 
@@ -196,7 +196,7 @@
     return resId
   }
 
-  async function createVacancy(): Promise<void> {
+  async function createVacancy (): Promise<void> {
     if (typeId === undefined || typeType === undefined) {
       throw Error(`Failed to find target project type: ${typeId}`)
     }
@@ -257,7 +257,7 @@
 
   let descriptionBox: AttachmentStyledBox
 
-  function handleTypeChange(evt: CustomEvent<Ref<ProjectType>>): void {
+  function handleTypeChange (evt: CustomEvent<Ref<ProjectType>>): void {
     if (typeId == null) {
       typeId = evt.detail
       return
@@ -279,7 +279,7 @@
     )
   }
 
-  function handleRoleAssignmentChanged(roleId: Ref<Role>, newMembers: Ref<Account>[]): void {
+  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: Ref<Account>[]): void {
     if (rolesAssignment === undefined) {
       rolesAssignment = {}
     }
