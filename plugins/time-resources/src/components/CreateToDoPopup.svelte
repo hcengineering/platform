@@ -48,13 +48,13 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
 
-  export function canClose(): boolean {
+  export function canClose (): boolean {
     return true
   }
 
   let loading = false
 
-  async function saveToDo(): Promise<void> {
+  async function saveToDo (): Promise<void> {
     loading = true
     const ops = client.apply('todo-' + generateId())
     const latestTodo = await ops.findOne(

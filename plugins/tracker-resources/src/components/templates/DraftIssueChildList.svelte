@@ -37,7 +37,7 @@
   let draggingIndex: number | null = null
   let hoveringIndex: number | null = null
 
-  function openIssue(evt: MouseEvent, target: IssueDraft) {
+  function openIssue (evt: MouseEvent, target: IssueDraft) {
     showPopup(
       DraftIssueChildEditor,
       {
@@ -60,12 +60,12 @@
     )
   }
 
-  function resetDrag() {
+  function resetDrag () {
     draggingIndex = null
     hoveringIndex = null
   }
 
-  function handleDragStart(ev: DragEvent, index: number) {
+  function handleDragStart (ev: DragEvent, index: number) {
     if (ev.dataTransfer) {
       ev.dataTransfer.effectAllowed = 'move'
       ev.dataTransfer.dropEffect = 'move'
@@ -73,7 +73,7 @@
     }
   }
 
-  function handleDrop(ev: DragEvent, toIndex: number) {
+  function handleDrop (ev: DragEvent, toIndex: number) {
     if (ev.dataTransfer && draggingIndex !== null && toIndex !== draggingIndex) {
       ev.dataTransfer.dropEffect = 'move'
 
@@ -95,7 +95,7 @@
   )
   let currentProject: Project | undefined = undefined
 
-  function getIssueTemplateId(currentProject: Project | undefined, issue: IssueDraft): string {
+  function getIssueTemplateId (currentProject: Project | undefined, issue: IssueDraft): string {
     return currentProject
       ? `${currentProject.identifier}-${issues.findIndex((it) => it._id === issue._id)}`
       : `${issues.findIndex((it) => it._id === issue._id)}}`

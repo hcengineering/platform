@@ -63,7 +63,7 @@
       }
     })
 
-  export function canClose(): boolean {
+  export function canClose (): boolean {
     return true
   }
 

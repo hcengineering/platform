@@ -114,7 +114,7 @@ export const FileExtension = FileNode.extend<FileOptions>({
       new Plugin({
         key: new PluginKey('handle-file-open'),
         props: {
-          handleDoubleClickOn(view, pos, node, nodePos, event) {
+          handleDoubleClickOn (view, pos, node, nodePos, event) {
             if (node.type.name !== FileExtension.name) {
               return
             }

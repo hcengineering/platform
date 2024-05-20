@@ -21,7 +21,6 @@ export enum ViewletSelectors {
 }
 
 export const PRIORITIES = ['No priority', 'Urgent', 'High', 'Medium', 'Low']
-
 export const DEFAULT_STATUSES = ['Backlog', 'Todo', 'In Progress', 'Done', 'Canceled']
 export const DEFAULT_USER = 'Appleseed John'
 
@@ -193,6 +192,7 @@ export async function checkIssueDraft (page: Page, props: IssueProps): Promise<v
   if (props.priority !== undefined) {
     await expect(page.locator('#priority-editor')).toHaveText(props.priority)
   }
+
   if (props.assignee !== undefined) {
     await expect(page.locator('#assignee-editor')).toHaveText(props.assignee)
   }

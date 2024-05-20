@@ -91,7 +91,7 @@ export class TWorkSlot extends TEvent implements WorkSlot {
 }
 
 @Model(time.class.TypeToDoPriority, core.class.Type, DOMAIN_MODEL)
-export class TTypeToDoPriority extends TType { }
+export class TTypeToDoPriority extends TType {}
 
 @Model(time.class.ToDo, core.class.AttachedDoc, DOMAIN_TIME)
 @UX(time.string.ToDo, time.icon.Planned)

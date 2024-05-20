@@ -44,11 +44,11 @@
     clear()
   }
 
-  function clear() {
+  function clear () {
     value = ''
   }
 
-  function openPopup() {
+  function openPopup () {
     showPopup(CreateToDoPopup, {}, 'top')
   }
 </script>

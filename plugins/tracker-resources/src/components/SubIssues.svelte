@@ -33,7 +33,7 @@
   export let subIssues: IssueDraft[] = []
   let lastProject = project
   let isCollapsed = false
-  async function handleIssueSwap (ev: CustomEvent<{ fromIndex: number; toIndex: number }>) {
+  async function handleIssueSwap (ev: CustomEvent<{ fromIndex: number, toIndex: number }>) {
     if (subIssues) {
       const { fromIndex, toIndex } = ev.detail
       const [fromIssue] = subIssues.splice(fromIndex, 1)
