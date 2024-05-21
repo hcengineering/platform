@@ -14,13 +14,13 @@
 -->
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
-  import { Doc, getCurrentAccount } from '@hcengineering/core'
-  import { getFileUrl, getClient } from '@hcengineering/presentation'
-  import { Icon, IconMoreV, showPopup, Menu } from '@hcengineering/ui'
-  import FileDownload from './icons/FileDownload.svelte'
+  import { Doc, getCurrentAccount, type WithLookup } from '@hcengineering/core'
+  import { getBlobHref, getClient } from '@hcengineering/presentation'
+  import { Icon, IconMoreV, Menu, showPopup } from '@hcengineering/ui'
   import { AttachmentGalleryPresenter } from '..'
+  import FileDownload from './icons/FileDownload.svelte'
 
-  export let attachments: Attachment[]
+  export let attachments: WithLookup<Attachment>[]
   let selectedFileNumber: number | undefined
   const myAccId = getCurrentAccount()._id
   const client = getClient()
@@ -57,7 +57,10 @@
       <AttachmentGalleryPresenter value={attachment}>
         <svelte:fragment slot="rowMenu">
           <div class="eAttachmentCellActions" class:fixed={i === selectedFileNumber}>
-            <a href={getFileUrl(attachment.file, 'full', attachment.name)} download={attachment.name}>
+            <a
+              href={getBlobHref(attachment.$lookup?.file, attachment.file, attachment.name)}
+              download={attachment.name}
+            >
               <Icon icon={FileDownload} size={'small'} />
             </a>
             <div class="eAttachmentCellMenu" on:click={(event) => showFileMenu(event, attachment, i)}>

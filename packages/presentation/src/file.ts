@@ -13,14 +13,14 @@
 // limitations under the License.
 //
 
-import { type Blob, type Ref, concatLink } from '@hcengineering/core'
+import { concatLink, type Blob, type Ref } from '@hcengineering/core'
 import { PlatformError, Severity, Status, getMetadata, getResource } from '@hcengineering/platform'
 import { type PopupAlignment } from '@hcengineering/ui'
 import { writable } from 'svelte/store'
 
-import { type BlobMetadata, type FilePreviewExtension } from './types'
-import { createQuery } from './utils'
 import plugin from './plugin'
+import type { BlobMetadata, FilePreviewExtension } from './types'
+import { createQuery } from './utils'
 
 /**
  * @public

@@ -39,7 +39,7 @@ export async function blobVideoMetadata (file: File, blob: Ref<Blob>): Promise<B
   }
 }
 
-async function getVideoSize (uuid: string): Promise<{ width: number, height: number } | undefined> {
+async function getVideoSize (uuid: Ref<Blob>): Promise<{ width: number, height: number } | undefined> {
   const promise = new Promise<{ width: number, height: number }>((resolve, reject) => {
     const element = document.createElement('video')
 
@@ -51,7 +51,7 @@ async function getVideoSize (uuid: string): Promise<{ width: number, height: num
     }
 
     element.onerror = reject
-    element.src = getFileUrl(uuid, 'full')
+    element.src = getFileUrl(uuid)
   })
 
   return await promise

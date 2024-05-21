@@ -13,12 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getFileUrl } from '@hcengineering/presentation'
+  import { getBlobHref } from '@hcengineering/presentation'
   import type { Attachment } from '@hcengineering/attachment'
 
   import AttachmentPresenter from './AttachmentPresenter.svelte'
+  import type { WithLookup } from '@hcengineering/core'
 
-  export let value: Attachment
+  export let value: WithLookup<Attachment>
   export let preload = true
 
   const maxSizeRem = 20
@@ -57,7 +58,7 @@
 </script>
 
 <video controls width={dimensions.width} height={dimensions.height} preload={preload ? 'auto' : 'none'}>
-  <source src={getFileUrl(value.file, 'full', value.name)} />
+  <source src={getBlobHref(value.$lookup?.file, value.file, value.name)} />
   <track kind="captions" label={value.name} />
   <div class="container">
     <AttachmentPresenter {value} />

@@ -54,7 +54,7 @@
   function openOriginalImage (): void {
     const attributes = textEditor.getAttributes('image')
     const fileId = attributes['file-id'] ?? attributes.src
-    const url = getFileUrl(fileId, 'full')
+    const url = getFileUrl(fileId)
     window.open(url, '_blank')
   }
 

@@ -560,6 +560,22 @@ export interface Blob extends Doc {
 }
 
 /**
+ * For every blob will automatically add a lookup.
+ *
+ * It extends Blob to allow for $lookup operations work as expected.
+ */
+export interface BlobLookup extends Blob {
+  // An URL document could be downloaded from, with ${id} to put blobId into
+  downloadUrl: string
+  // A URL document could be updated at
+  uploadUrl?: string
+  // A URL document could be previewed at
+  previewUrl?: string
+  // A formats preview is available at
+  previewFormats?: string[]
+}
+
+/**
  * @public
  *
  * If defined for class, this class will be enabled for embedding search like openai.

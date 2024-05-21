@@ -14,14 +14,15 @@
 -->
 <script lang="ts">
   // import { Doc } from '@hcengineering/core'
+  import type { Blob, Ref } from '@hcengineering/core'
   import { Button, Dialog, Label, Spinner } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import presentation from '..'
-  import { getFileUrl } from '../utils'
-  import Download from './icons/Download.svelte'
+  import { getBlobHref, getFileUrl } from '../utils'
   import ActionContext from './ActionContext.svelte'
+  import Download from './icons/Download.svelte'
 
-  export let file: string | undefined
+  export let file: Blob | Ref<Blob> | undefined
   export let name: string
   export let contentType: string | undefined
   // export let popupOptions: PopupOptions
@@ -44,7 +45,8 @@
     }
   })
   let download: HTMLAnchorElement
-  $: src = file === undefined ? '' : getFileUrl(file, 'full', name)
+  $: src = file === undefined ? '' : typeof file === 'string' ? getFileUrl(file, name) : getBlobHref(file, file._id)
+
   $: isImage = contentType !== undefined && contentType.startsWith('image/')
 
   let frame: HTMLIFrameElement | undefined = undefined

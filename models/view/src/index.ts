@@ -460,7 +460,7 @@ export function createModel (builder: Builder): void {
     view.component.StringEditor,
     view.component.StringEditorPopup
   )
-  classPresenter(builder, core.class.TypeAttachment, view.component.StringPresenter)
+  classPresenter(builder, core.class.TypeBlob, view.component.StringPresenter)
   classPresenter(
     builder,
     core.class.TypeHyperlink,

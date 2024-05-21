@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Channel, combineName, Person, PersonAccount } from '@hcengineering/contact'
+  import { AvatarType, Channel, combineName, Person, PersonAccount } from '@hcengineering/contact'
   import core, { AccountRole, AttachedData, Data, generateId, Ref } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { getResource } from '@hcengineering/platform'
@@ -48,7 +48,8 @@
       const name = combineName(firstName, lastName)
       const person: Data<Person> = {
         name,
-        city: ''
+        city: '',
+        avatarType: AvatarType.COLOR
       }
 
       await client.createDoc(contact.class.Person, contact.space.Contacts, person, id)

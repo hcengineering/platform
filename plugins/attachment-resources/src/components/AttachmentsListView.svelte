@@ -14,13 +14,13 @@
 -->
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
-  import { Doc, getCurrentAccount } from '@hcengineering/core'
-  import { getFileUrl, getClient } from '@hcengineering/presentation'
+  import { Doc, getCurrentAccount, type WithLookup } from '@hcengineering/core'
+  import { getFileUrl, getClient, getBlobHref } from '@hcengineering/presentation'
   import { Icon, IconMoreV, showPopup, Menu } from '@hcengineering/ui'
   import FileDownload from './icons/FileDownload.svelte'
   import { AttachmentPresenter } from '..'
 
-  export let attachments: Attachment[]
+  export let attachments: WithLookup<Attachment>[]
   let selectedFileNumber: number | undefined
   const myAccId = getCurrentAccount()._id
   const client = getClient()
@@ -56,7 +56,7 @@
         <AttachmentPresenter value={attachment} />
       </div>
       <div class="eAttachmentRowActions" class:fixed={i === selectedFileNumber}>
-        <a href={getFileUrl(attachment.file, 'full', attachment.name)} download={attachment.name}>
+        <a href={getBlobHref(attachment.$lookup?.file, attachment.file, attachment.name)} download={attachment.name}>
           <Icon icon={FileDownload} size={'small'} />
         </a>
         <!-- svelte-ignore a11y-click-events-have-key-events -->

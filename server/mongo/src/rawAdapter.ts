@@ -4,10 +4,12 @@ import {
   toFindResult,
   type Doc,
   type DocumentQuery,
+  type DocumentUpdate,
   type Domain,
   type FindOptions,
   type FindResult,
   type MeasureContext,
+  type Ref,
   type WorkspaceId
 } from '@hcengineering/core'
 import type { RawDBAdapter, RawDBAdapterStream } from '@hcengineering/server-core'
@@ -118,6 +120,56 @@ export function createRawMongoDBAdapter (url: string): RawDBAdapter {
       const db = getWorkspaceDB(await client.getClient(), workspace)
       const coll = db.collection<Doc>(domain)
       await coll.deleteMany({ _id: { $in: docs } })
+    },
+    update: async (
+      ctx: MeasureContext,
+      workspace: WorkspaceId,
+      domain: Domain,
+      operations: Map<Ref<Doc>, DocumentUpdate<Doc>>
+    ): Promise<void> => {
+      await ctx.with('update', { domain }, async () => {
+        const db = getWorkspaceDB(await client.getClient(), workspace)
+        const coll = db.collection(domain)
+
+        // remove old and insert new ones
+        const ops = Array.from(operations.entries())
+        let skip = 500
+        while (ops.length > 0) {
+          const part = ops.splice(0, skip)
+          try {
+            await ctx.with('bulk-write', {}, async () => {
+              await coll.bulkWrite(
+                part.map((it) => {
+                  const { $unset, ...set } = it[1] as any
+                  if ($unset !== undefined) {
+                    for (const k of Object.keys(set)) {
+                      if ($unset[k] === '') {
+                        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+                        delete $unset[k]
+                      }
+                    }
+                  }
+                  return {
+                    updateOne: {
+                      filter: { _id: it[0] },
+                      update: {
+                        $set: { ...set, '%hash%': null },
+                        ...($unset !== undefined ? { $unset } : {})
+                      }
+                    }
+                  }
+                })
+              )
+            })
+          } catch (err: any) {
+            ctx.error('failed on bulk write', { error: err, skip })
+            if (skip !== 1) {
+              ops.push(...part)
+              skip = 1 // Let's update one by one, to loose only one failed variant.
+            }
+          }
+        }
+      })
     }
   }
 }

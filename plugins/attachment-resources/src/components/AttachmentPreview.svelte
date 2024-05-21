@@ -27,8 +27,9 @@
   import { AttachmentImageSize } from '../types'
   import AttachmentImagePreview from './AttachmentImagePreview.svelte'
   import AttachmentVideoPreview from './AttachmentVideoPreview.svelte'
+  import type { WithLookup } from '@hcengineering/core'
 
-  export let value: Attachment
+  export let value: WithLookup<Attachment>
   export let isSaved: boolean = false
   export let listProvider: ListSelectionProvider | undefined = undefined
   export let imageSize: AttachmentImageSize = 'auto'
@@ -50,7 +51,7 @@
       if (listProvider !== undefined) listProvider.updateFocus(value)
       const popupInfo = showPopup(
         FilePreviewPopup,
-        { file: value.file, name: value.name, contentType: value.type },
+        { file: value.$lookup?.file ?? value.file, name: value.name, contentType: value.type },
         value.type.startsWith('image/') ? 'centered' : 'float'
       )
       dispatch('open', popupInfo.id)

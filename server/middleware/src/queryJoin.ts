@@ -13,18 +13,8 @@
 // limitations under the License.
 //
 
-import {
-  Class,
-  Doc,
-  DocumentQuery,
-  FindOptions,
-  FindResult,
-  MeasureContext,
-  Ref,
-  ServerStorage,
-  Tx
-} from '@hcengineering/core'
-import { Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
+import { Class, Doc, DocumentQuery, FindOptions, FindResult, MeasureContext, Ref, Tx } from '@hcengineering/core'
+import { Middleware, SessionContext, TxMiddlewareResult, type ServerStorage } from '@hcengineering/server-core'
 import { BaseMiddleware } from './base'
 
 import { deepEqual } from 'fast-equals'

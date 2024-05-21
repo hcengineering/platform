@@ -80,7 +80,7 @@
     {#if value.icon}
       <SystemAvatar size="medium" icon={value.icon} iconProps={value.iconProps} />
     {:else if person}
-      <Avatar size="medium" avatar={person.avatar} name={person.name} />
+      <Avatar size="medium" {person} name={person.name} />
     {:else}
       <SystemAvatar size="medium" />
     {/if}

@@ -14,6 +14,7 @@
 //
 import { Node, mergeAttributes } from '@tiptap/core'
 import { getDataAttribute } from './utils'
+import type { Ref, Blob } from '@hcengineering/core'
 
 /**
  * @public
@@ -21,12 +22,8 @@ import { getDataAttribute } from './utils'
 export interface ImageOptions {
   inline: boolean
   HTMLAttributes: Record<string, any>
-  uploadUrl?: string
-}
-
-// This is a simplified version of getFileUrl from presentation plugin, which we cannot use
-function getFileUrl (uploadUrl: string, fileId: string, size: string = 'full'): string {
-  return `${uploadUrl}?file=${fileId}&size=${size}`
+  getFileUrl: (fileId: Ref<Blob>, filename?: string) => string
+  getFileUrlSrcSet: (fileId: Ref<Blob>, size?: number) => string
 }
 
 /**
@@ -39,7 +36,8 @@ export const ImageNode = Node.create<ImageOptions>({
     return {
       inline: true,
       HTMLAttributes: {},
-      uploadUrl: ''
+      getFileUrl: () => '',
+      getFileUrlSrcSet: () => ''
     }
   },
 
@@ -107,8 +105,8 @@ export const ImageNode = Node.create<ImageOptions>({
 
     const fileId = imgAttributes['file-id']
     if (fileId != null) {
-      const uploadUrl = this.options.uploadUrl ?? ''
-      imgAttributes.src = getFileUrl(uploadUrl, fileId)
+      imgAttributes.src = this.options.getFileUrl(fileId)
+      imgAttributes.srcset = this.options.getFileUrlSrcSet(fileId)
     }
 
     return ['div', divAttributes, ['img', imgAttributes]]

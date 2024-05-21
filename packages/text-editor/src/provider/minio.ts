@@ -18,6 +18,8 @@ import { collaborativeDocParse, concatLink } from '@hcengineering/core'
 import { ObservableV2 as Observable } from 'lib0/observable'
 import { type Doc as YDoc, applyUpdate } from 'yjs'
 import { type DocumentId, parseDocumentId } from '@hcengineering/collaborator-client'
+import { workspaceId } from '@hcengineering/ui'
+import { get } from 'svelte/store'
 
 interface EVENTS {
   synced: (...args: any[]) => void
@@ -29,7 +31,7 @@ async function fetchContent (doc: YDoc, name: string): Promise<void> {
       const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
 
       try {
-        const res = await fetch(concatLink(frontUrl, `/files?file=${name}`))
+        const res = await fetch(concatLink(frontUrl, `/files/${get(workspaceId)}?file=${name}`))
 
         if (res.ok) {
           const blob = await res.blob()

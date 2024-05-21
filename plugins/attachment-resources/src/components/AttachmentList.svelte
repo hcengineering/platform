@@ -14,13 +14,13 @@
 -->
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
-  import { Ref } from '@hcengineering/core'
+  import { Ref, type WithLookup } from '@hcengineering/core'
   import { Scroller } from '@hcengineering/ui'
 
   import AttachmentPreview from './AttachmentPreview.svelte'
   import { AttachmentImageSize } from '../types'
 
-  export let attachments: Attachment[] = []
+  export let attachments: WithLookup<Attachment>[] = []
   export let savedAttachmentsIds: Ref<Attachment>[] = []
   export let imageSize: AttachmentImageSize | undefined = undefined
   export let videoPreload = true

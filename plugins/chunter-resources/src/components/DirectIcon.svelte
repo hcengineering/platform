@@ -55,7 +55,7 @@
 
 {#if persons.length === 1}
   <Avatar
-    avatar={persons[0].avatar}
+    person={persons[0]}
     size={avatarSize}
     name={persons[0].name}
     {showStatus}
@@ -66,7 +66,7 @@
 {#if persons.length > 1 && size === 'medium'}
   <div class="group">
     {#each persons.slice(0, visiblePersons - 1) as person}
-      <Avatar avatar={person.avatar} size="tiny" name={person.name} />
+      <Avatar {person} size="tiny" name={person.name} />
     {/each}
     {#if persons.length > visiblePersons}
       <div class="rect">

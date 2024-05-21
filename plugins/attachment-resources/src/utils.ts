@@ -15,9 +15,9 @@
 //
 
 import { type Attachment } from '@hcengineering/attachment'
-import { type Class, type Data, type Doc, type Ref, type Space, type TxOperations as Client } from '@hcengineering/core'
-import { getFileMetadata, uploadFile } from '@hcengineering/presentation'
+import { type Class, type TxOperations as Client, type Data, type Doc, type Ref, type Space } from '@hcengineering/core'
 import { setPlatformStatus, unknownError } from '@hcengineering/platform'
+import { getFileMetadata, uploadFile } from '@hcengineering/presentation'
 
 import attachment from './plugin'
 

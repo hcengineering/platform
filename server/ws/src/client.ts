@@ -114,7 +114,8 @@ export class ClientSession implements Session {
           this.token.email,
           this.sessionId,
           this.token.extra?.admin === 'true',
-          []
+          [],
+          this._pipeline.storage.workspaceId
         )
         await this._pipeline.tx(context, createTx)
         const acc = TxProcessor.createDoc2Doc(createTx)
@@ -142,7 +143,8 @@ export class ClientSession implements Session {
       this.token.email,
       this.sessionId,
       this.token.extra?.admin === 'true',
-      []
+      [],
+      this._pipeline.storage.workspaceId
     )
     return await this._pipeline.findAll(context, _class, query, options)
   }
@@ -163,7 +165,8 @@ export class ClientSession implements Session {
       this.token.email,
       this.sessionId,
       this.token.extra?.admin === 'true',
-      []
+      [],
+      this._pipeline.storage.workspaceId
     )
     await ctx.sendResponse(await this._pipeline.searchFulltext(context, query, options))
   }
@@ -177,7 +180,8 @@ export class ClientSession implements Session {
       this.token.email,
       this.sessionId,
       this.token.extra?.admin === 'true',
-      []
+      [],
+      this._pipeline.storage.workspaceId
     )
 
     const result = await this._pipeline.tx(context, tx)

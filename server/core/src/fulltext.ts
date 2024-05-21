@@ -29,7 +29,6 @@ import core, {
   type SearchOptions,
   type SearchQuery,
   type SearchResult,
-  type ServerStorage,
   type Tx,
   type TxCUD,
   type TxCollectionCUD,
@@ -46,7 +45,7 @@ import { type FullTextIndexPipeline } from './indexer'
 import { createStateDoc } from './indexer/utils'
 import { getScoringConfig, mapSearchResultDoc } from './mapper'
 import { type StorageAdapter } from './storage'
-import type { FullTextAdapter, IndexedDoc, WithFind } from './types'
+import type { FullTextAdapter, IndexedDoc, ServerStorage, WithFind } from './types'
 
 /**
  * @public

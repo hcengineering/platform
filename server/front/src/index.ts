@@ -16,8 +16,8 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import { MeasureContext, WorkspaceId, metricsAggregate } from '@hcengineering/core'
-import { StorageAdapter, removeAllObjects } from '@hcengineering/storage'
 import { Token, decodeToken } from '@hcengineering/server-token'
+import { StorageAdapter, removeAllObjects } from '@hcengineering/storage'
 import bp from 'body-parser'
 import cors from 'cors'
 import express, { Request, Response } from 'express'
@@ -34,7 +34,10 @@ import { preConditions } from './utils'
 const cacheControlValue = 'public, max-age=365d'
 const cacheControlNoCache = 'public, no-store, no-cache, must-revalidate, max-age=0'
 
-async function minioUpload (
+type SupportedFormat = 'jpeg' | 'avif' | 'heif' | 'webp' | 'png'
+const supportedFormats: SupportedFormat[] = ['avif', 'webp', 'heif', 'jpeg', 'png']
+
+async function storageUpload (
   ctx: MeasureContext,
   storageAdapter: StorageAdapter,
   workspace: WorkspaceId,
@@ -335,147 +338,116 @@ export function start (
     })
   )
 
-  async function handleHead (ctx: MeasureContext, req: Request, res: Response): Promise<void> {
-    try {
-      const token = req.query.token as string
-      const payload = decodeToken(token)
-      let uuid = req.query.file as string
-      const size = req.query.size as 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' | 'full'
-
-      uuid = await getResizeID(ctx, size, uuid, config, payload)
-      const stat = await config.storageAdapter.stat(ctx, payload.workspace, uuid)
-      if (stat === undefined) {
-        ctx.error('No such key', { file: req.query.file })
-        res.status(404).send()
-        return
-      }
-
-      const fileSize = stat.size
-
-      res.writeHead(200, {
-        'accept-ranges': 'bytes',
-        'content-length': fileSize,
-        Etag: stat.etag,
-        'Last-Modified': new Date(stat.modifiedOn).toISOString()
-      })
-      res.status(200)
-
-      res.end()
-    } catch (error: any) {
-      if (error?.code === 'NoSuchKey' || error?.code === 'NotFound') {
-        ctx.error('No such key', { file: req.query.file })
-        res.status(404).send()
-        return
-      } else {
-        ctx.error('error-handle-files', error)
-      }
-      res.status(500).send()
-    }
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  app.head('/files', (req, res) => {
-    void ctx.with(
-      'head-handle-file',
-      {},
-      async (ctx) => {
-        await handleHead(ctx, req, res)
-      },
-      { url: req.path, query: req.query }
-    )
-  })
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  app.head('/files/*', (req, res) => {
-    void ctx.with(
-      'head-handle-file',
-      {},
-      async (ctx) => {
-        await handleHead(ctx, req, res)
-      },
-      { url: req.path, query: req.query }
-    )
-  })
-
-  const filesHandler = async (ctx: MeasureContext, req: Request, res: Response): Promise<void> => {
-    let payload: Token
-    try {
-      const cookies = ((req?.headers?.cookie as string) ?? '').split(';').map((it) => it.trim().split('='))
-
-      const token = cookies.find((it) => it[0] === 'presentation-metadata-Token')?.[1]
-      payload =
-        token !== undefined
-          ? decodeToken(token)
-          : { email: 'guest', workspace: { name: req.query.workspace as string, productId: '' } }
-
-      let uuid = req.query.file as string
-      if (token === undefined) {
-        const d = await ctx.with(
-          'notoken-stat',
-          { workspace: payload.workspace.name },
-          async () => await config.storageAdapter.stat(ctx, payload.workspace, uuid)
-        )
-        if (d !== undefined && !(d.contentType ?? '').includes('image')) {
-          // Do not allow to return non images with no token.
-          if (token === undefined) {
-            res.status(403).send()
-            return
-          }
-        }
-      }
-
-      const size = req.query.size as 'inline' | 'tiny' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large' | 'full'
-
-      uuid = await ctx.with('resize', {}, async () => await getResizeID(ctx, size, uuid, config, payload))
-
-      const range = req.headers.range
-      if (range !== undefined) {
-        await ctx.with('file-range', { workspace: payload.workspace.name }, async (ctx) => {
-          await getFileRange(ctx, range, config.storageAdapter, payload.workspace, uuid, res)
-        })
-      } else {
-        await ctx.with(
-          'file',
-          { workspace: payload.workspace.name },
-          async (ctx) => {
-            await getFile(ctx, config.storageAdapter, payload.workspace, uuid, req, res)
-          },
-          { uuid }
-        )
-      }
-    } catch (error: any) {
-      if (error?.code === 'NoSuchKey' || error?.code === 'NotFound') {
-        ctx.error('No such key', { file: req.query.file })
-        res.status(404).send()
-        return
-      } else {
-        ctx.error('error-handle-files', error)
-      }
-      res.status(500).send()
-    }
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
-  app.get('/files', (req, res) => {
-    void ctx.with(
+  const filesHandler = async (req: Request<any>, res: Response<any>): Promise<void> => {
+    await ctx.with(
       'handle-file',
       {},
       async (ctx) => {
-        await filesHandler(ctx, req, res)
+        let payload: Token
+        try {
+          const cookies = ((req?.headers?.cookie as string) ?? '').split(';').map((it) => it.trim().split('='))
+
+          const token = cookies.find((it) => it[0] === 'presentation-metadata-Token')?.[1]
+          payload =
+            token !== undefined
+              ? decodeToken(token)
+              : { email: 'guest', workspace: { name: req.query.workspace as string, productId: '' } }
+
+          let uuid = req.params.file ?? req.query.file
+          if (uuid === undefined) {
+            res.status(404).send()
+            return
+          }
+          const format: SupportedFormat | undefined = supportedFormats.find((it) => uuid.endsWith(it))
+          if (format !== undefined) {
+            uuid = uuid.slice(0, uuid.length - format.length - 1)
+          }
+          if (token === undefined) {
+            const d = await ctx.with(
+              'notoken-stat',
+              { workspace: payload.workspace.name },
+              async () => await config.storageAdapter.stat(ctx, payload.workspace, uuid)
+            )
+            if (d !== undefined && !(d.contentType ?? '').includes('image')) {
+              // Do not allow to return non images with no token.
+              if (token === undefined) {
+                res.status(403).send()
+                return
+              }
+            }
+          }
+
+          if (req.method === 'HEAD') {
+            const d = await ctx.with(
+              'notoken-stat',
+              { workspace: payload.workspace.name },
+              async () => await config.storageAdapter.stat(ctx, payload.workspace, uuid)
+            )
+            if (d === undefined) {
+              res.status(404).send()
+              return
+            }
+            res.writeHead(200, {
+              'accept-ranges': 'bytes',
+              'content-length': d.size,
+              Etag: d.etag,
+              'Last-Modified': new Date(d.modifiedOn).toISOString()
+            })
+            res.status(200)
+
+            res.end()
+            return
+          }
+
+          const size = req.query.size !== undefined ? parseInt(req.query.size as string) : undefined
+          if (format !== undefined) {
+            uuid = await ctx.with(
+              'resize',
+              {},
+              async () => await getGeneratePreview(ctx, size ?? -1, uuid, config, payload, format)
+            )
+          }
+
+          const range = req.headers.range
+          if (range !== undefined) {
+            await ctx.with('file-range', { workspace: payload.workspace.name }, async (ctx) => {
+              await getFileRange(ctx, range, config.storageAdapter, payload.workspace, uuid, res)
+            })
+          } else {
+            await ctx.with(
+              'file',
+              { workspace: payload.workspace.name },
+              async (ctx) => {
+                await getFile(ctx, config.storageAdapter, payload.workspace, uuid, req, res)
+              },
+              { uuid }
+            )
+          }
+        } catch (error: any) {
+          if (error?.code === 'NoSuchKey' || error?.code === 'NotFound') {
+            ctx.error('No such key', { file: req.query.file })
+            res.status(404).send()
+            return
+          } else {
+            ctx.error('error-handle-files', error)
+          }
+          res.status(500).send()
+        }
       },
       { url: req.path, query: req.query }
     )
+  }
+
+  app.get('/files', (req, res) => {
+    void filesHandler(req, res)
   })
 
-  // eslint-disable-next-line @typescript-eslint/no-misused-promises
+  app.head('/files/*', (req, res) => {
+    void filesHandler(req, res)
+  })
+
   app.get('/files/*', (req, res) => {
-    void ctx.with(
-      'handle-file*',
-      {},
-      async (ctx) => {
-        await filesHandler(ctx, req, res)
-      },
-      { url: req.path, query: req.query }
-    )
+    void filesHandler(req, res)
   })
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -500,7 +472,7 @@ export function start (
         try {
           const token = authHeader.split(' ')[1]
           const payload = decodeToken(token)
-          const uuid = await minioUpload(ctx, config.storageAdapter, payload.workspace, file)
+          const uuid = await storageUpload(ctx, config.storageAdapter, payload.workspace, file)
 
           res.status(200).send(uuid)
         } catch (error: any) {
@@ -740,72 +712,74 @@ export function start (
   }
 }
 
-// export type IconSize =
-//   | 'inline'
-//   | 'tiny'
-//   | 'card'
-//   | 'x-small'
-//   | 'smaller'
-//   | 'small'
-//   | 'medium'
-//   | 'large'
-//   | 'x-large'
-//   | '2x-large'
-//   | 'full'
-async function getResizeID (
+async function getGeneratePreview (
   ctx: MeasureContext,
-  size: string,
+  size: number | undefined,
   uuid: string,
   config: { storageAdapter: StorageAdapter },
-  payload: Token
+  payload: Token,
+  format: SupportedFormat = 'jpeg'
 ): Promise<string> {
-  if (size !== undefined && size !== 'full') {
-    let width = 64
-    switch (size) {
-      case 'inline':
-      case 'tiny':
-      case 'card':
-      case 'x-small':
-      case 'smaller':
-      case 'small':
-      case 'medium':
-        width = 64
-        break
-      case 'large':
-        width = 256
-        break
-      case 'x-large':
-        width = 512
-        break
-      case '2x-large':
-        size = '2x-large_v2'
-        width = 1024
-        break
+  if (size === undefined) {
+    return uuid
+  }
+  const sizeId = uuid + `%preview%${size}${format !== 'jpeg' ? format : ''}`
+
+  const d = await config.storageAdapter.stat(ctx, payload.workspace, sizeId)
+  const hasSmall = d !== undefined && d.size > 0
+
+  if (hasSmall) {
+    // We have cached small document, let's proceed with it.
+    uuid = sizeId
+  } else {
+    // Let's get data and resize it
+    const data = Buffer.concat(await config.storageAdapter.read(ctx, payload.workspace, uuid))
+
+    let pipeline = sharp(data)
+
+    // const metadata = await pipeline.metadata()
+
+    if (size !== -1) {
+      pipeline = pipeline.resize({
+        width: size,
+        fit: 'cover',
+        withoutEnlargement: true
+      })
     }
-    let hasSmall = false
-    const sizeId = uuid + `%size%${width}`
 
-    const d = await config.storageAdapter.stat(ctx, payload.workspace, sizeId)
-    hasSmall = d !== undefined && d.size > 0
-
-    if (hasSmall) {
-      // We have cached small document, let's proceed with it.
-      uuid = sizeId
-    } else {
-      // Let's get data and resize it
-      const data = Buffer.concat(await config.storageAdapter.read(ctx, payload.workspace, uuid))
-
-      const dataBuff = await sharp(data)
-        .resize({
-          width
+    let contentType = 'image/jpeg'
+    switch (format) {
+      case 'jpeg':
+        pipeline = pipeline.jpeg({})
+        contentType = 'image/jpeg'
+        break
+      case 'avif':
+        pipeline = pipeline.avif({
+          quality: size !== undefined && size < 128 ? undefined : 85
         })
-        .jpeg()
-        .toBuffer()
-
-      // Add support of avif as well.
-      await config.storageAdapter.put(ctx, payload.workspace, sizeId, dataBuff, 'image/jpeg', dataBuff.length)
-      uuid = sizeId
+        contentType = 'image/avif'
+        break
+      case 'heif':
+        pipeline = pipeline.heif({
+          quality: size !== undefined && size < 128 ? undefined : 80
+        })
+        contentType = 'image/heif'
+        break
+      case 'webp':
+        pipeline = pipeline.webp()
+        contentType = 'image/webp'
+        break
+      case 'png':
+        pipeline = pipeline.png()
+        contentType = 'image/png'
+        break
     }
+
+    const dataBuff = await pipeline.toBuffer()
+
+    // Add support of avif as well.
+    await config.storageAdapter.put(ctx, payload.workspace, sizeId, dataBuff, contentType, dataBuff.length)
+    uuid = sizeId
   }
   return uuid
 }

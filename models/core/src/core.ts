@@ -213,8 +213,8 @@ export class TTypeString extends TType {}
 export class TTypeRecord extends TType {}
 
 @UX(core.string.String)
-@Model(core.class.TypeAttachment, core.class.Type)
-export class TTypeAttachment extends TType {}
+@Model(core.class.TypeBlob, core.class.Type)
+export class TTypeBlob extends TType {}
 
 @UX(core.string.Hyperlink)
 @Model(core.class.TypeHyperlink, core.class.Type)

@@ -24,12 +24,11 @@ import core, {
   FindResult,
   MeasureContext,
   Ref,
-  ServerStorage,
   Tx,
   TxCUD
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
+import { Middleware, SessionContext, TxMiddlewareResult, type ServerStorage } from '@hcengineering/server-core'
 import { BaseMiddleware } from './base'
 
 const configurationAccountEmail = '#configurator@hc.engineering'

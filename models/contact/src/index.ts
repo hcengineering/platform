@@ -36,6 +36,7 @@ import {
   DOMAIN_MODEL,
   DateRangeMode,
   IndexKind,
+  type Blob,
   type Class,
   type Domain,
   type Markup,
@@ -50,10 +51,11 @@ import {
   Model,
   Prop,
   ReadOnly,
-  TypeAttachment,
+  TypeBlob,
   TypeBoolean,
   TypeCollaborativeMarkup,
   TypeDate,
+  TypeRecord,
   TypeRef,
   TypeString,
   TypeTimestamp,
@@ -104,10 +106,23 @@ export class TContact extends TDoc implements Contact {
   @Index(IndexKind.FullText)
     name!: string
 
-  @Prop(TypeAttachment(), contact.string.Avatar)
+  @Prop(TypeString(), contact.string.Avatar)
   @Index(IndexKind.FullText)
   @Hidden()
-    avatar?: string | null
+    avatarType!: AvatarType
+
+  @Prop(TypeBlob(), contact.string.Avatar)
+  @Index(IndexKind.FullText)
+  @Hidden()
+    avatar!: Ref<Blob> | null | undefined
+
+  @Prop(TypeRecord(), contact.string.Avatar)
+  @Index(IndexKind.FullText)
+  @Hidden()
+    avatarProps?: {
+    color?: string
+    url?: string
+  }
 
   @Prop(Collection(contact.class.Channel), contact.string.ContactInfo)
     channels?: number
@@ -707,6 +722,16 @@ export function createModel (builder: Builder): void {
       getUrl: contact.function.GetGravatarUrl
     },
     contact.avatarProvider.Gravatar
+  )
+
+  builder.createDoc(
+    contact.class.AvatarProvider,
+    core.space.Model,
+    {
+      type: AvatarType.EXTERNAL,
+      getUrl: contact.function.GetExternalUrl
+    },
+    contact.avatarProvider.Color
   )
 
   builder.mixin(contact.class.Person, core.class.Class, view.mixin.ObjectPresenter, {

@@ -96,7 +96,7 @@
     <div class="flex-row-center">
       <div class="avatars">
         {#each displayPersons as person}
-          <Avatar size="x-small" avatar={person.avatar} name={person.name} />
+          <Avatar size="x-small" {person} name={person.name} />
         {/each}
       </div>
 

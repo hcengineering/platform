@@ -98,7 +98,7 @@ export class ContentRetrievalStage implements FullTextPipelineStage {
 
     try {
       for (const [, val] of Object.entries(attributes)) {
-        if (val.type._class === core.class.TypeAttachment) {
+        if (val.type._class === core.class.TypeBlob) {
           // We need retrieve value of attached document content.
           const ref = doc.attributes[docKey(val.name, { _class: val.attributeOf })] as Ref<Doc>
           if (ref !== undefined && ref !== '') {

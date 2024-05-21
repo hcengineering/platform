@@ -123,7 +123,7 @@
       <div class="mr-2">
         <Button icon={IconAdd} kind={'list'} on:click={createChild} />
       </div>
-      <Avatar size={'medium'} avatar={value.avatar} icon={hr.icon.Department} name={value.name} />
+      <Avatar size={'medium'} person={value} icon={hr.icon.Department} name={value.name} />
       <div class="flex-row ml-2 mr-4">
         <div class="fs-title">
           {value.name}

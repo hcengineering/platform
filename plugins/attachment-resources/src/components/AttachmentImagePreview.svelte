@@ -13,13 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getIconSize2x, IconSize } from '@hcengineering/ui'
-  import { getFileUrl } from '@hcengineering/presentation'
   import type { Attachment } from '@hcengineering/attachment'
+  import { getBlobHref, getBlobSrcSet, getFileUrlSrcSet, sizeToWidth } from '@hcengineering/presentation'
+  import { IconSize } from '@hcengineering/ui'
 
+  import type { WithLookup } from '@hcengineering/core'
   import { AttachmentImageSize } from '../types'
 
-  export let value: Attachment
+  export let value: WithLookup<Attachment>
   export let size: AttachmentImageSize = 'auto'
 
   interface Dimensions {
@@ -104,15 +105,13 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <img
-  src={getFileUrl(value.file, urlSize)}
+  src={getBlobHref(value.$lookup?.file, value.file, value.name)}
   style:object-fit={getObjectFit(dimensions)}
   width={dimensions.width}
   height={dimensions.height}
-  srcset={`${getFileUrl(value.file, urlSize, value.name)} 1x, ${getFileUrl(
-    value.file,
-    getIconSize2x(urlSize),
-    value.name
-  )} 2x`}
+  srcset={value.$lookup?.file !== undefined
+    ? getBlobSrcSet(value.$lookup?.file, value.file, sizeToWidth(urlSize))
+    : getFileUrlSrcSet(value.file, sizeToWidth(urlSize))}
   alt={value.name}
 />
 

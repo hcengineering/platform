@@ -13,7 +13,9 @@
 // limitations under the License.
 //
 
+import type { Blob, Ref } from '@hcengineering/core'
+
 /**
  * @public
  */
-export type FileAttachFunction = (file: File) => Promise<{ file: string, type: string } | undefined>
+export type FileAttachFunction = (file: File) => Promise<{ file: Ref<Blob>, type: string } | undefined>

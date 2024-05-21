@@ -167,7 +167,7 @@
       }}
     >
       {#if person}
-        <Component is={contact.component.Avatar} props={{ avatar: person.avatar, size: 'medium', name: person.name }} />
+        <Component is={contact.component.Avatar} props={{ person, size: 'medium', name: person.name }} />
       {/if}
       <div class="ml-2 flex-col">
         {#if account}

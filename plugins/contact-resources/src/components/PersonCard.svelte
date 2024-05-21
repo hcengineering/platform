@@ -42,7 +42,7 @@
 <div class="antiContactCard">
   <div class="label uppercase"><Label label={contact.string.Person} /></div>
   <div class="flex-center logo">
-    <Avatar avatar={object.avatar} size={'large'} icon={contact.icon.Company} name={object.name} />
+    <Avatar person={object} size={'large'} icon={contact.icon.Company} name={object.name} />
   </div>
   {#if object}
     <!-- svelte-ignore a11y-click-events-have-key-events -->

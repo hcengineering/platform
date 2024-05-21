@@ -13,10 +13,19 @@
 // limitations under the License.
 //
 
-import { type Blob, type MeasureContext, type WorkspaceId } from '@hcengineering/core'
+import {
+  type Blob,
+  type DocumentUpdate,
+  type MeasureContext,
+  type Ref,
+  type WorkspaceId,
+  type WorkspaceIdWithUrl
+} from '@hcengineering/core'
+import type { BlobLookup } from '@hcengineering/core/src/classes'
 import { type Readable } from 'stream'
 
 export type ListBlobResult = Omit<Blob, 'contentType' | 'version'>
+
 export interface UploadedObjectInfo {
   etag: string
   versionId: string | null
@@ -25,6 +34,11 @@ export interface UploadedObjectInfo {
 export interface BlobStorageIterator {
   next: () => Promise<ListBlobResult | undefined>
   close: () => Promise<void>
+}
+
+export interface BlobLookupResult {
+  lookups: BlobLookup[]
+  updates?: Map<Ref<Blob>, DocumentUpdate<BlobLookup>>
 }
 
 export interface StorageAdapter {
@@ -56,6 +70,9 @@ export interface StorageAdapter {
     offset: number,
     length?: number
   ) => Promise<Readable>
+
+  // Lookup will extend Blob with lookup information.
+  lookup: (ctx: MeasureContext, workspaceId: WorkspaceIdWithUrl, docs: Blob[]) => Promise<BlobLookupResult>
 }
 
 export interface StorageAdapterEx extends StorageAdapter {
@@ -132,6 +149,10 @@ export class DummyStorageAdapter implements StorageAdapter, StorageAdapterEx {
     size?: number | undefined
   ): Promise<UploadedObjectInfo> {
     throw new Error('not implemented')
+  }
+
+  async lookup (ctx: MeasureContext, workspaceId: WorkspaceIdWithUrl, docs: Blob[]): Promise<BlobLookupResult> {
+    return { lookups: [] }
   }
 }
 

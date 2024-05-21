@@ -14,12 +14,13 @@
 -->
 <script lang="ts">
   import type { Attachment } from '@hcengineering/attachment'
-  import { showPopup, closeTooltip } from '@hcengineering/ui'
-  import { FilePreviewPopup, getFileUrl } from '@hcengineering/presentation'
-  import { getType } from '../utils'
+  import type { WithLookup } from '@hcengineering/core'
+  import { FilePreviewPopup, getBlobHref } from '@hcengineering/presentation'
+  import { closeTooltip, showPopup } from '@hcengineering/ui'
   import filesize from 'filesize'
+  import { getType } from '../utils'
 
-  export let value: Attachment
+  export let value: WithLookup<Attachment>
 
   const maxLength: number = 18
   const trimFilename = (fname: string): string =>
@@ -44,7 +45,7 @@
     showPopup(
       FilePreviewPopup,
       {
-        file: value.file,
+        file: value.$lookup?.file ?? value.file,
         name: value.name,
         contentType: value.type,
         metadata: value.metadata
@@ -60,7 +61,7 @@
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div class="cellImagePreview" on:click={openAttachment}>
-        <img class={'img-fit'} src={getFileUrl(value.file, 'full', value.name)} alt={value.name} />
+        <img class={'img-fit'} src={getBlobHref(value.$lookup?.file, value.file, value.name)} alt={value.name} />
       </div>
     {:else}
       <div class="cellMiscPreview">
@@ -71,7 +72,7 @@
             {extensionIconLabel(value.name)}
           </div>
         {:else}
-          <a class="no-line" href={getFileUrl(value.file, 'full', value.name)} download={value.name}>
+          <a class="no-line" href={getBlobHref(value.$lookup?.file, value.file, value.name)} download={value.name}>
             <div class="flex-center extensionIcon">{extensionIconLabel(value.name)}</div>
           </a>
         {/if}
@@ -86,7 +87,7 @@
           {extensionIconLabel(value.name)}
         </div>
       {:else}
-        <a class="no-line" href={getFileUrl(value.file, 'full', value.name)} download={value.name}>
+        <a class="no-line" href={getBlobHref(value.$lookup?.file, value.file, value.name)} download={value.name}>
           <div class="flex-center extensionIcon">{extensionIconLabel(value.name)}</div>
         </a>
       {/if}
@@ -99,7 +100,9 @@
           </div>
         {:else}
           <div class="eCellInfoFilename">
-            <a href={getFileUrl(value.file, 'full', value.name)} download={value.name}>{trimFilename(value.name)}</a>
+            <a href={getBlobHref(value.$lookup?.file, value.file, value.name)} download={value.name}
+              >{trimFilename(value.name)}</a
+            >
           </div>
         {/if}
         <div class="eCellInfoFilesize">{filesize(value.size)}</div>

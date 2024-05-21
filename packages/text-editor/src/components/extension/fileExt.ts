@@ -79,7 +79,7 @@ export const FileExtension = FileNode.extend<FileOptions>({
     const fileType = HTMLAttributes['data-file-type']
     let href: string = ''
     if (id != null) {
-      href = getFileUrl(id, 'full', fileName)
+      href = getFileUrl(id, fileName)
     }
     const linkAttributes = {
       class: 'file-name',

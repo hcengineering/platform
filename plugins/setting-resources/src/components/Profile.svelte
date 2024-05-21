@@ -53,9 +53,7 @@
       await avatarEditor.removeAvatar(employee.avatar)
     }
     const avatar = await avatarEditor.createAvatar()
-    await client.update(employee, {
-      avatar
-    })
+    await client.diffUpdate(employee, avatar)
   }
 
   const manager = createFocusManager()
@@ -97,7 +95,7 @@
       <div class="flex flex-grow w-full">
         <div class="mr-8">
           <EditableAvatar
-            avatar={employee.avatar}
+            person={employee}
             email={account.email}
             size={'x-large'}
             name={employee.name}

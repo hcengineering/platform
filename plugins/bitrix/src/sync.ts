@@ -1,5 +1,5 @@
 import attachment, { Attachment } from '@hcengineering/attachment'
-import contact, { Channel, combineName, Contact, Employee, PersonAccount } from '@hcengineering/contact'
+import contact, { AvatarType, Channel, combineName, Contact, Employee, PersonAccount } from '@hcengineering/contact'
 import core, {
   Account,
   AccountRole,
@@ -21,7 +21,8 @@ import core, {
   Timestamp,
   TxOperations,
   TxProcessor,
-  WithLookup
+  WithLookup,
+  type Blob as PlatformBlob
 } from '@hcengineering/core'
 import gmail, { Message } from '@hcengineering/gmail'
 import recruit from '@hcengineering/recruit'
@@ -242,7 +243,7 @@ export async function syncDocument (
                 body: data
               })
               if (resp.status === 200) {
-                const uuid = await resp.text()
+                const uuid = (await resp.text()) as Ref<PlatformBlob>
 
                 ed.file = uuid
                 ed._id = attachmentId as Ref<Attachment & BitrixSyncDoc>
@@ -812,7 +813,7 @@ async function downloadComments (
               attachedToClass: c._class,
               bitrixId: `attach-${v.id}`,
               collection: 'attachments',
-              file: '',
+              file: '' as Ref<PlatformBlob>,
               lastModified: Date.now(),
               modifiedBy: userList.get(it.AUTHOR_ID) ?? core.account.System,
               modifiedOn: new Date(it.CREATED ?? new Date().toString()).getTime(),
@@ -941,7 +942,8 @@ async function synchronizeUsers (
       if (accountId === undefined) {
         const employeeId = await ops.client.createDoc(contact.class.Person, contact.space.Contacts, {
           name: combineName(u.NAME, u.LAST_NAME),
-          avatar: u.PERSONAL_PHOTO,
+          avatarType: AvatarType.EXTERNAL,
+          avatarProps: { url: u.PERSONAL_PHOTO },
           city: u.PERSONAL_CITY
         })
         await ops.client.createMixin(employeeId, contact.class.Person, contact.space.Contacts, contact.mixin.Employee, {

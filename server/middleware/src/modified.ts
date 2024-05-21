@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import core, { MeasureContext, ServerStorage, Tx, TxCollectionCUD, systemAccountEmail } from '@hcengineering/core'
-import { Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
+import core, { MeasureContext, Tx, TxCollectionCUD, systemAccountEmail } from '@hcengineering/core'
+import { Middleware, SessionContext, TxMiddlewareResult, type ServerStorage } from '@hcengineering/server-core'
 import { BaseMiddleware } from './base'
 
 /**

@@ -31,6 +31,7 @@ import {
 import core, {
   getCurrentAccount,
   toIdMap,
+  type Account,
   type Class,
   type Client,
   type Doc,
@@ -39,8 +40,8 @@ import core, {
   type Ref,
   type Timestamp,
   type TxOperations,
-  type Account,
-  type UserStatus
+  type UserStatus,
+  type WithLookup
 } from '@hcengineering/core'
 import notification, { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
 import { getEmbeddedLabel, getResource, translate } from '@hcengineering/platform'
@@ -287,14 +288,14 @@ async function generateLocation (loc: Location, id: Ref<Contact>): Promise<Resol
   }
 }
 
-export const employeeByIdStore = writable<IdMap<Employee>>(new Map())
-export const employeesStore = writable<Employee[]>([])
+export const employeeByIdStore = writable<IdMap<WithLookup<Employee>>>(new Map())
+export const employeesStore = writable<Array<WithLookup<Employee>>>([])
 
 export const personAccountByIdStore = writable<IdMap<PersonAccount>>(new Map())
 
 export const channelProviders = writable<ChannelProvider[]>([])
 
-export const personAccountPersonByIdStore = writable<IdMap<Person>>(new Map())
+export const personAccountPersonByIdStore = writable<IdMap<WithLookup<Person>>>(new Map())
 
 export const statusByUserStore = writable<Map<Ref<Account>, UserStatus>>(new Map())
 
@@ -311,10 +312,19 @@ function fillStores (): void {
     const accountPersonQuery = createQuery(true)
 
     const query = createQuery(true)
-    query.query(contact.mixin.Employee, {}, (res) => {
-      employeesStore.set(res)
-      employeeByIdStore.set(toIdMap(res))
-    })
+    query.query(
+      contact.mixin.Employee,
+      {},
+      (res) => {
+        employeesStore.set(res)
+        employeeByIdStore.set(toIdMap(res))
+      },
+      {
+        lookup: {
+          avatar: core.class.Blob
+        }
+      }
+    )
 
     const accountQ = createQuery(true)
     accountQ.query(contact.class.PersonAccount, {}, (res) => {
@@ -322,11 +332,16 @@ function fillStores (): void {
 
       const persons = res.map((it) => it.person)
 
-      accountPersonQuery.query(
+      accountPersonQuery.query<Person>(
         contact.class.Person,
         { _id: { $in: persons }, [contact.mixin.Employee]: { $exists: false } },
         (res) => {
           personAccountPersonByIdStore.set(toIdMap(res))
+        },
+        {
+          lookup: {
+            avatar: core.class.Blob
+          }
         }
       )
     })

@@ -22,5 +22,5 @@
 </script>
 
 {#if value}
-  <Avatar avatar={value.avatar} {size} name={value.name} />
+  <Avatar person={value} {size} name={value.name} />
 {/if}

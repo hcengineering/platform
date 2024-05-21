@@ -22,7 +22,8 @@ import contact, {
   getAvatarProviderId,
   getGravatarUrl,
   Person,
-  PersonAccount
+  PersonAccount,
+  type AvatarInfo
 } from '@hcengineering/contact'
 import core, {
   Account,
@@ -559,7 +560,7 @@ export async function createPushFromInbox (
     notificationId,
     encodeObjectURI(attachedTo, attachedToClass)
   ]
-  await createPushNotification(control, targetUser, title, body, _id, senderPerson?.avatar, path)
+  await createPushNotification(control, targetUser, title, body, _id, senderPerson, path)
   return control.txFactory.createTxCreateDoc(notification.class.BrowserNotification, notification.space.Notifications, {
     user: targetUser,
     status: NotificationStatus.New,
@@ -579,7 +580,7 @@ export async function createPushNotification (
   title: string,
   body: string,
   _id: string,
-  senderAvatar?: string | null,
+  senderAvatar?: Data<AvatarInfo>,
   path?: string[]
 ): Promise<void> {
   const publicKey = getMetadata(notification.metadata.PushPublicKey)
@@ -606,15 +607,11 @@ export async function createPushNotification (
     data.url = url
   }
   if (senderAvatar != null) {
-    const provider = getAvatarProviderId(senderAvatar)
+    const provider = getAvatarProviderId(senderAvatar.avatarType)
     if (provider === contact.avatarProvider.Image) {
-      if (senderAvatar.includes('://')) {
-        data.icon = senderAvatar
-      } else {
-        data.icon = concatLink(uploadUrl, `?file=${senderAvatar}`)
-      }
-    } else if (provider === contact.avatarProvider.Gravatar) {
-      data.icon = getGravatarUrl(senderAvatar.split('://')[1], 'medium')
+      data.icon = concatLink(uploadUrl, `?file=${senderAvatar.avatar}`)
+    } else if (provider === contact.avatarProvider.Gravatar && senderAvatar.avatarProps?.url !== undefined) {
+      data.icon = getGravatarUrl(senderAvatar.avatarProps?.url, 512)
     }
   }
 

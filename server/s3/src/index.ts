@@ -13,18 +13,22 @@
 // limitations under the License.
 //
 
-import { S3 } from '@aws-sdk/client-s3'
+import { GetObjectCommand, S3 } from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
 import core, {
   toWorkspaceString,
   withContext,
   type Blob,
+  type BlobLookup,
   type MeasureContext,
   type Ref,
-  type WorkspaceId
+  type WorkspaceId,
+  type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 
 import {
+  addBlobPreviewLookup,
   type BlobStorageIterator,
   type ListBlobResult,
   type StorageAdapter,
@@ -33,7 +37,7 @@ import {
 } from '@hcengineering/server-core'
 import { Readable } from 'stream'
 
-import { removeAllObjects } from '@hcengineering/storage'
+import { removeAllObjects, type BlobLookupResult } from '@hcengineering/storage'
 import type { ReadableStream } from 'stream/web'
 
 export interface S3Config extends StorageConfig {
@@ -47,6 +51,17 @@ export interface S3Config extends StorageConfig {
 
   // A prefix string to be added to a bucketId in case rootBucket not used
   bucketPrefix?: string
+
+  // Override preview URL.
+  // :workspace - will be replaced with current workspace
+  // :downloadFile - will be replaced with direct download link
+  // :blobId - will be replaced with blobId
+  previewUrl?: string
+  // Comma separated list of preview formats
+  // Defaults: ['avif', 'webp', 'heif', 'jpeg']
+  formats?: string
+
+  allowPresign?: boolean
 }
 
 /**
@@ -80,6 +95,33 @@ export class S3Service implements StorageAdapter {
   async initialize (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {}
 
   async close (): Promise<void> {}
+
+  async lookup (ctx: MeasureContext, workspaceId: WorkspaceIdWithUrl, docs: Blob[]): Promise<BlobLookupResult> {
+    const result: BlobLookupResult = {
+      lookups: [],
+      updates: new Map()
+    }
+    for (const d of docs) {
+      // Let's add current from URI for previews.
+      const bl = d as BlobLookup
+      const command = new GetObjectCommand({
+        Bucket: this.getBucketId(workspaceId),
+        Key: this.getDocumentKey(workspaceId, d.storageId)
+      })
+      if (bl.downloadUrl === undefined && (this.opt.allowPresign ?? true)) {
+        bl.downloadUrl = await getSignedUrl(this.client, command)
+        result.updates?.set(bl._id, {
+          downloadUrl: bl.downloadUrl
+        })
+      }
+
+      // Add default or override preview service
+      addBlobPreviewLookup(workspaceId, bl, this.opt.formats, this.opt.previewUrl)
+      result.lookups.push(bl)
+    }
+    // this.client.presignedUrl(httpMethod, bucketName, objectName, callback)
+    return result
+  }
 
   async exists (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<boolean> {
     try {

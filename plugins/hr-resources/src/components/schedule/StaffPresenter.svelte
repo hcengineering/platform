@@ -34,7 +34,7 @@
   <DocNavLink object={value}>
     <div class="flex-row-center">
       <div class="member-icon mr-2">
-        <Avatar size={'medium'} avatar={value.avatar} name={value.name} />
+        <Avatar size={'medium'} person={value} name={value.name} />
       </div>
       <div class="flex-col">
         <div class="member-title fs-title">

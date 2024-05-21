@@ -15,10 +15,10 @@
 -->
 <script lang="ts">
   import { Photo } from '@hcengineering/attachment'
-  import { Class, Doc, Ref, Space } from '@hcengineering/core'
+  import { Class, Doc, Ref, Space, type WithLookup } from '@hcengineering/core'
   import { setPlatformStatus, unknownError } from '@hcengineering/platform'
-  import { FilePreviewPopup, createQuery, getClient, getFileUrl, uploadFile } from '@hcengineering/presentation'
-  import { Button, IconAdd, Label, showPopup, Spinner } from '@hcengineering/ui'
+  import { FilePreviewPopup, createQuery, getBlobHref, getClient, uploadFile } from '@hcengineering/presentation'
+  import { Button, IconAdd, Label, Spinner, showPopup } from '@hcengineering/ui'
   import attachment from '../plugin'
   import UploadDuo from './icons/UploadDuo.svelte'
 
@@ -28,7 +28,7 @@
 
   let inputFile: HTMLInputElement
   let loading = 0
-  let images: Photo[] = []
+  let images: WithLookup<Photo>[] = []
 
   const client = getClient()
   const query = createQuery()
@@ -42,12 +42,12 @@
     }
   )
 
-  async function create (file: File) {
+  async function create (file: File): Promise<void> {
     if (!file.type.startsWith('image/')) return
     loading++
     try {
       const uuid = await uploadFile(file)
-      client.addCollection(attachment.class.Photo, space, objectId, _class, 'attachments', {
+      await client.addCollection(attachment.class.Photo, space, objectId, _class, 'attachments', {
         name: file.name,
         file: uuid,
         type: file.type,
@@ -55,40 +55,44 @@
         lastModified: file.lastModified
       })
     } catch (err: any) {
-      setPlatformStatus(unknownError(err))
+      await setPlatformStatus(unknownError(err))
     } finally {
       loading--
     }
   }
 
-  function fileSelected () {
+  function fileSelected (): void {
     const list = inputFile.files
     if (list === null || list.length === 0) return
     for (let index = 0; index < list.length; index++) {
       const file = list.item(index)
-      if (file !== null) create(file)
+      if (file !== null) {
+        void create(file)
+      }
     }
     inputFile.value = ''
   }
 
-  function fileDrop (e: DragEvent) {
+  function fileDrop (e: DragEvent): void {
     const list = e.dataTransfer?.files
     if (list === undefined || list.length === 0) return
     for (let index = 0; index < list.length; index++) {
       const file = list.item(index)
-      if (file !== null) create(file)
+      if (file !== null) {
+        void create(file)
+      }
     }
   }
 
   let dragover = false
 
-  function click (ev: Event, item?: Photo): void {
+  function click (ev: Event, item?: WithLookup<Photo>): void {
     const el: HTMLElement = ev.currentTarget as HTMLElement
     el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
     if (item !== undefined) {
       showPopup(
         FilePreviewPopup,
-        { file: item.file, name: item.name, contentType: item.type },
+        { file: item.$lookup?.file ?? item.file, name: item.name, contentType: item.type },
         item.type.startsWith('image/') ? 'centered' : 'float'
       )
     } else {
@@ -145,7 +149,7 @@
           click(ev, image)
         }}
       >
-        <img src={getFileUrl(image.file, 'full', image.name)} alt={image.name} />
+        <img src={getBlobHref(image.$lookup?.file, image.file, image.name)} alt={image.name} />
       </div>
     {/each}
     <!-- svelte-ignore a11y-click-events-have-key-events -->

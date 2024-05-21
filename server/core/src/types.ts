@@ -19,9 +19,11 @@ import {
   type Class,
   type Doc,
   type DocumentQuery,
+  type Domain,
   type FindOptions,
   type FindResult,
   type Hierarchy,
+  type LoadModelResponse,
   type LowLevelStorage,
   type MeasureContext,
   type ModelDb,
@@ -30,7 +32,6 @@ import {
   type SearchOptions,
   type SearchQuery,
   type SearchResult,
-  type ServerStorage,
   type SessionOperationContext,
   type Space,
   type Storage,
@@ -49,10 +50,37 @@ import { type StorageAdapter } from './storage'
 /**
  * @public
  */
+export interface ServerStorage extends LowLevelStorage {
+  hierarchy: Hierarchy
+  modelDb: ModelDb
+  findAll: <T extends Doc>(
+    ctx: MeasureContext,
+    _class: Ref<Class<T>>,
+    query: DocumentQuery<T>,
+    options?: FindOptions<T> & {
+      domain?: Domain // Allow to find for Doc's in specified domain only.
+      prefix?: string
+    }
+  ) => Promise<FindResult<T>>
+  searchFulltext: (ctx: MeasureContext, query: SearchQuery, options: SearchOptions) => Promise<SearchResult>
+  tx: (ctx: SessionOperationContext, tx: Tx) => Promise<TxResult>
+  apply: (ctx: SessionOperationContext, tx: Tx[], broadcast: boolean) => Promise<TxResult>
+  close: () => Promise<void>
+  loadModel: (last: Timestamp, hash?: string) => Promise<Tx[] | LoadModelResponse>
+  workspaceId: WorkspaceIdWithUrl
+
+  storageAdapter: StorageAdapter
+}
+
+/**
+ * @public
+ */
 export interface SessionContext extends SessionOperationContext {
   userEmail: string
   sessionId: string
   admin?: boolean
+
+  workspace: WorkspaceIdWithUrl
 }
 
 /**

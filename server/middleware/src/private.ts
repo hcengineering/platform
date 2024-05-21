@@ -24,13 +24,12 @@ import core, {
   LookupData,
   MeasureContext,
   Ref,
-  ServerStorage,
   Tx,
   TxCUD,
   systemAccountEmail
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
+import { Middleware, SessionContext, TxMiddlewareResult, type ServerStorage } from '@hcengineering/server-core'
 import { DOMAIN_PREFERENCE } from '@hcengineering/server-preference'
 import { BaseMiddleware } from './base'
 import { getUser, mergeTargets } from './utils'

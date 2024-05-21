@@ -23,10 +23,9 @@ import {
   SearchOptions,
   SearchQuery,
   SearchResult,
-  ServerStorage,
   Tx
 } from '@hcengineering/core'
-import { Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
+import { Middleware, SessionContext, TxMiddlewareResult, type ServerStorage } from '@hcengineering/server-core'
 
 /**
  * @public

@@ -12,21 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import { setPlatformStatus, unknownError } from '@hcengineering/platform'
 import { getImageSize } from '@hcengineering/presentation'
 import { Extension } from '@tiptap/core'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { type EditorView } from '@tiptap/pm/view'
-import { setPlatformStatus, unknownError } from '@hcengineering/platform'
 
-import { getFileUrl } from './imageExt'
 import { type FileAttachFunction } from './types'
+import type { Blob, Ref } from '@hcengineering/core'
 
 /**
  * @public
  */
 export interface ImageUploadOptions {
   attachFile?: FileAttachFunction
-  uploadUrl: string
+  getFileUrl: (fileId: Ref<Blob>) => string
 }
 
 function getType (type: string): 'image' | 'other' {
@@ -43,13 +43,13 @@ function getType (type: string): 'image' | 'other' {
 export const ImageUploadExtension = Extension.create<ImageUploadOptions>({
   addOptions () {
     return {
-      uploadUrl: ''
+      getFileUrl: () => ''
     }
   },
 
   addProseMirrorPlugins () {
     const attachFile = this.options.attachFile
-    const uploadUrl = this.options.uploadUrl
+    const getFileUrl = this.options.getFileUrl
 
     function handleDrop (
       view: EditorView,
@@ -61,9 +61,6 @@ export const ImageUploadExtension = Extension.create<ImageUploadOptions>({
       for (const uri of uris) {
         if (uri !== '') {
           const url = new URL(uri)
-          if (uploadUrl === undefined || !url.href.includes(uploadUrl)) {
-            continue
-          }
 
           const _file = (url.searchParams.get('file') ?? '').split('/').join('')
 
@@ -77,7 +74,7 @@ export const ImageUploadExtension = Extension.create<ImageUploadOptions>({
           if (type === 'image') {
             const node = view.state.schema.nodes.image.create({
               'file-id': _file,
-              src: getFileUrl(_file, 'full', uploadUrl)
+              src: getFileUrl(_file as Ref<Blob>)
             })
             const transaction = view.state.tr.insert(pos?.pos ?? 0, node)
             view.dispatch(transaction)
@@ -95,7 +92,7 @@ export const ImageUploadExtension = Extension.create<ImageUploadOptions>({
           const file = files.item(i)
           if (file != null && file.type.startsWith('image/')) {
             result = true
-            void handleImageUpload(file, view, pos, attachFile, uploadUrl)
+            void handleImageUpload(file, view, pos, attachFile, getFileUrl)
           }
         }
       }
@@ -136,7 +133,7 @@ async function handleImageUpload (
   view: EditorView,
   pos: { pos: number, inside: number } | null,
   attachFile: FileAttachFunction,
-  uploadUrl: string
+  getFileUrl: (fileId: Ref<Blob>) => string
 ): Promise<void> {
   const attached = await attachFile(file)
 
@@ -149,7 +146,7 @@ async function handleImageUpload (
   }
 
   try {
-    const url = getFileUrl(attached.file, 'full', uploadUrl)
+    const url = getFileUrl(attached.file)
     const size = await getImageSize(file, url)
     const node = view.state.schema.nodes.image.create({
       'file-id': attached.file,

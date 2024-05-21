@@ -25,14 +25,13 @@ import core, {
   isFullTextAttribute,
   type MeasureContext,
   type Ref,
-  type ServerStorage,
   type WorkspaceId,
   getFullTextContext
 } from '@hcengineering/core'
 import { jsonToText, markupToJSON } from '@hcengineering/text'
 import { type DbAdapter } from '../adapter'
 import { updateDocWithPresenter } from '../mapper'
-import { type FullTextAdapter, type IndexedDoc } from '../types'
+import { type FullTextAdapter, type IndexedDoc, type ServerStorage } from '../types'
 import { summaryStageId } from './summary'
 import {
   contentStageId,

@@ -1412,14 +1412,12 @@ async function createPerson (
   withEmployee: boolean
 ): Promise<Ref<Person>> {
   const id = generateId<Person>()
-  let avatar = `${AvatarType.COLOR}://${getAvatarColorForId(id)}`
   const email = cleanEmail(_email)
+  let hasGravatar = false
+  let gravatarId = ''
   if (isEmail(email)) {
-    const gravatarId = buildGravatarId(email)
-    const hasGravatar = await checkHasGravatar(gravatarId)
-    if (hasGravatar) {
-      avatar = `${AvatarType.GRAVATAR}://${gravatarId}`
-    }
+    gravatarId = buildGravatarId(email)
+    hasGravatar = await checkHasGravatar(gravatarId)
   }
 
   await ops.createDoc(
@@ -1428,7 +1426,8 @@ async function createPerson (
     {
       name,
       city: '',
-      avatar
+      avatarType: hasGravatar ? AvatarType.GRAVATAR : AvatarType.COLOR,
+      avatarProps: hasGravatar ? { url: gravatarId } : { color: getAvatarColorForId(id) }
     },
     id
   )
@@ -1469,9 +1468,9 @@ async function replaceCurrentAccount (
 
     await ops.update(employee, {
       name,
-      avatar: hasGravatar
-        ? `${AvatarType.GRAVATAR}://${gravatarId}`
-        : `${AvatarType.COLOR}://${getAvatarColorForId(employee._id)}`,
+      avatarType: hasGravatar ? AvatarType.GRAVATAR : AvatarType.COLOR,
+      avatarProps: hasGravatar ? { url: gravatarId } : { color: getAvatarColorForId(employee._id) },
+
       ...(employee.active ? {} : { active: true })
     })
     const currentChannel = await ops.findOne(contact.class.Channel, {

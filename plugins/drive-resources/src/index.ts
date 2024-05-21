@@ -13,17 +13,17 @@
 // limitations under the License.
 //
 
-import { type Doc, type Ref } from '@hcengineering/core'
+import { type Doc, type Ref, type WithLookup } from '@hcengineering/core'
 import drive, { type Drive, type File, type Folder } from '@hcengineering/drive'
 import { type Resources } from '@hcengineering/platform'
-import { getFileUrl } from '@hcengineering/presentation'
-import { type Location, showPopup } from '@hcengineering/ui'
+import { getBlobHref } from '@hcengineering/presentation'
+import { showPopup, type Location } from '@hcengineering/ui'
 
 import CreateDrive from './components/CreateDrive.svelte'
 import DrivePanel from './components/DrivePanel.svelte'
+import DrivePresenter from './components/DrivePresenter.svelte'
 import DriveSpaceHeader from './components/DriveSpaceHeader.svelte'
 import DriveSpacePresenter from './components/DriveSpacePresenter.svelte'
-import DrivePresenter from './components/DrivePresenter.svelte'
 import EditFolder from './components/EditFolder.svelte'
 import FilePresenter from './components/FilePresenter.svelte'
 import FileSizePresenter from './components/FileSizePresenter.svelte'
@@ -47,10 +47,10 @@ async function EditDrive (drive: Drive): Promise<void> {
   showPopup(CreateDrive, { drive })
 }
 
-async function DownloadFile (doc: File | File[]): Promise<void> {
+async function DownloadFile (doc: WithLookup<File> | Array<WithLookup<File>>): Promise<void> {
   const files = Array.isArray(doc) ? doc : [doc]
   for (const file of files) {
-    const href = getFileUrl(file.file, 'full', file.name)
+    const href = getBlobHref(file.$lookup?.file, file.file, file.name)
     const link = document.createElement('a')
     link.style.display = 'none'
     link.target = '_blank'

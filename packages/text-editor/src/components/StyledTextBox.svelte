@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Markup } from '@hcengineering/core'
-  import { IntlString, getMetadata } from '@hcengineering/platform'
+  import { IntlString } from '@hcengineering/platform'
   import presentation, { MessageViewer, getFileUrl, getImageSize } from '@hcengineering/presentation'
   import { EmptyMarkup } from '@hcengineering/text'
   import {
@@ -17,21 +17,21 @@
     registerFocus,
     resizeObserver
   } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
   import type { AnyExtension } from '@tiptap/core'
+  import { createEventDispatcher } from 'svelte'
 
   import { Completion } from '../Completion'
   import textEditorPlugin from '../plugin'
   import StyledTextEditor from './StyledTextEditor.svelte'
 
-  import { completionConfig, inlineCommandsConfig } from './extensions'
+  import { RefAction } from '../types'
+  import { addTableHandler } from '../utils'
   import { EmojiExtension } from './extension/emoji'
   import { FocusExtension } from './extension/focus'
   import { ImageUploadExtension } from './extension/imageUploadExt'
   import { InlineCommandsExtension } from './extension/inlineCommands'
   import { type FileAttachFunction } from './extension/types'
-  import { RefAction } from '../types'
-  import { addTableHandler } from '../utils'
+  import { completionConfig, inlineCommandsConfig } from './extensions'
 
   export let label: IntlString | undefined = undefined
   export let content: Markup
@@ -177,7 +177,7 @@
   function configureExtensions (): AnyExtension[] {
     const imageUploadPlugin = ImageUploadExtension.configure({
       attachFile,
-      uploadUrl: getMetadata(presentation.metadata.UploadURL)
+      getFileUrl
     })
 
     const completionPlugin = Completion.configure({
@@ -251,10 +251,7 @@
       return
     }
 
-    const size = await getImageSize(
-      file,
-      getFileUrl(attached.file, 'full', getMetadata(presentation.metadata.UploadURL))
-    )
+    const size = await getImageSize(file, getFileUrl(attached.file))
 
     textEditor.editorHandler.insertContent(
       {

@@ -52,7 +52,7 @@
     {#each employees as employee}
       <Button size={'x-large'} selected={employee._id === selected} on:click={() => (selected = employee._id)}>
         <svelte:fragment slot="content">
-          <Avatar avatar={employee.avatar} name={employee.name} size={'smaller'} />
+          <Avatar person={employee} name={employee.name} size={'smaller'} />
           <span class="ml-2">{getName(client.getHierarchy(), employee)}</span>
         </svelte:fragment>
       </Button>

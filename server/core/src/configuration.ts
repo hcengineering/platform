@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { type MeasureContext, type ServerStorage, type WorkspaceIdWithUrl } from '@hcengineering/core'
+import { type MeasureContext, type WorkspaceIdWithUrl } from '@hcengineering/core'
 import { type DbAdapterFactory } from './adapter'
 import { type FullTextPipelineStage } from './indexer/types'
 import { type StorageAdapter } from './storage'
@@ -23,6 +23,7 @@ import type {
   ContentTextAdapterFactory,
   FullTextAdapter,
   FullTextAdapterFactory,
+  ServerStorage,
   ServiceAdapterConfig
 } from './types'
 

@@ -77,7 +77,10 @@ export async function start (
   const extensions = [
     ServerKit.configure({
       image: {
-        uploadUrl: config.UploadUrl
+        getFileUrl: (fileId, size) => {
+          const sz = size !== undefined ? `&size=${size}` : ''
+          return `${config.UploadUrl}?file=${fileId}${sz}`
+        }
       }
     })
   ]

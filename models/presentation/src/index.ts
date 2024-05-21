@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { type Blob, type Class, type Doc, type Ref, DOMAIN_MODEL } from '@hcengineering/core'
-import { type Builder, Model, Prop, TypeRef, TypeString } from '@hcengineering/model'
+import { DOMAIN_MODEL, type Blob, type Class, type Doc, type Ref } from '@hcengineering/core'
+import { Model, Prop, TypeRef, TypeString, type Builder } from '@hcengineering/model'
 import core, { TDoc } from '@hcengineering/model-core'
 import { type Asset, type IntlString, type Resource } from '@hcengineering/platform'
 // Import types to prevent .svelte components to being exposed to type typescript.
@@ -27,12 +27,12 @@ import {
   type ComponentPointExtension,
   type CreateExtensionKind,
   type DocAttributeRule,
-  type DocRules,
   type DocCreateExtension,
   type DocCreateFunction,
+  type DocRules,
   type FilePreviewExtension,
-  type ObjectSearchContext,
   type ObjectSearchCategory,
+  type ObjectSearchContext,
   type ObjectSearchFactory
 } from '@hcengineering/presentation/src/types'
 import { type AnyComponent, type ComponentExtensionId } from '@hcengineering/ui/src/types'

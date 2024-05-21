@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Channel, combineName, findPerson, Person } from '@hcengineering/contact'
+  import { AvatarType, Channel, combineName, findPerson, Person } from '@hcengineering/contact'
   import { AttachedData, Data, generateId } from '@hcengineering/core'
   import { Card, getClient } from '@hcengineering/presentation'
   import { createFocusManager, EditBox, FocusHandler, IconInfo, Label } from '@hcengineering/ui'
@@ -42,10 +42,14 @@
   async function createPerson () {
     const person: Data<Person> = {
       name: combineName(firstName, lastName),
-      city: object.city
+      city: object.city,
+      avatarType: AvatarType.COLOR
     }
 
-    person.avatar = await avatarEditor.createAvatar()
+    const info = await avatarEditor.createAvatar()
+    person.avatar = info.avatar
+    person.avatarType = info.avatarType
+    person.avatarProps = info.avatarProps
 
     const personId = await client.createDoc(contact.class.Person, contact.space.Contacts, person, id)
 
@@ -115,12 +119,7 @@
       </div>
     </div>
     <div class="ml-4">
-      <EditableAvatar
-        avatar={object.avatar}
-        name={combineName(firstName, lastName)}
-        size={'large'}
-        bind:this={avatarEditor}
-      />
+      <EditableAvatar person={object} name={combineName(firstName, lastName)} size={'large'} bind:this={avatarEditor} />
     </div>
   </div>
   <svelte:fragment slot="pool">
