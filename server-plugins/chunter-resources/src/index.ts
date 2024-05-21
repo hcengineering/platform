@@ -13,14 +13,7 @@
 // limitations under the License.
 //
 
-import chunter, {
-  Channel,
-  ChatMessage,
-  chunterId,
-  ChunterSpace,
-  DirectMessage,
-  ThreadMessage
-} from '@hcengineering/chunter'
+import chunter, { Channel, ChatMessage, chunterId, ChunterSpace, ThreadMessage } from '@hcengineering/chunter'
 import core, {
   Account,
   AttachedDoc,
@@ -47,7 +40,6 @@ import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import {
   getDocCollaborators,
   getMixinTx,
-  pushActivityInboxNotifications,
   createCollaboratorNotifications
 } from '@hcengineering/server-notification-resources'
 import { workbenchId } from '@hcengineering/workbench'
@@ -274,84 +266,6 @@ export async function ChunterTrigger (tx: TxCUD<Doc>, control: TriggerControl): 
 
 /**
  * @public
- * Sends notification to the message sender in case when DM
- * notifications are deleted or hidden. This is required for
- * the DM to re-appear in the sender's inbox.
- */
-export async function OnDirectMessageSent (originTx: Tx, control: TriggerControl): Promise<Tx[]> {
-  const tx = TxProcessor.extractTx(originTx) as TxCreateDoc<ChatMessage>
-
-  if (tx._class !== core.class.TxCreateDoc) {
-    return []
-  }
-
-  const message = TxProcessor.createDoc2Doc(tx)
-
-  if (
-    message.createdBy === undefined ||
-    !control.hierarchy.isDerived(message.attachedToClass, chunter.class.DirectMessage)
-  ) {
-    return []
-  }
-
-  const directChannel = (
-    await control.findAll(chunter.class.DirectMessage, { _id: message.attachedTo as Ref<DirectMessage> })
-  ).shift()
-
-  if (directChannel === undefined || directChannel.members.length !== 2 || !directChannel.private) {
-    return []
-  }
-
-  const notifyContexts = await control.findAll(notification.class.DocNotifyContext, { attachedTo: directChannel._id })
-
-  // binding notification to the DM creation tx to properly display it in inbox
-  const dmCreationTx = (
-    await control.findAll(core.class.TxCreateDoc, { objectClass: directChannel._class, objectId: directChannel._id })
-  ).shift()
-
-  if (dmCreationTx === undefined) {
-    return []
-  }
-
-  const sender = message.createdBy
-  const notifyContext = notifyContexts.find(({ user }) => user === sender)
-  const res: Tx[] = []
-
-  if (notifyContext === undefined) {
-    let anotherPerson: Ref<Account> | undefined
-    for (const person of directChannel.members) {
-      if (person !== sender) {
-        anotherPerson = person
-        break
-      }
-    }
-
-    if (anotherPerson == null) return []
-
-    await pushActivityInboxNotifications(
-      dmCreationTx,
-      control,
-      res,
-      anotherPerson,
-      directChannel,
-      notifyContexts,
-      [message],
-      true,
-      true
-    )
-  } else if (notifyContext.hidden) {
-    res.push(
-      control.txFactory.createTxUpdateDoc(notifyContext._class, notifyContext.space, notifyContext._id, {
-        hidden: false
-      })
-    )
-  }
-
-  return res
-}
-
-/**
- * @public
  */
 export async function getChunterNotificationContent (
   _: Doc,
@@ -520,7 +434,6 @@ async function OnCollaboratorsChanged (tx: TxMixin<Doc, Collaborators>, control:
 export default async () => ({
   trigger: {
     ChunterTrigger,
-    OnDirectMessageSent,
     OnChatMessageRemoved,
     OnChannelMembersChanged,
     ChatNotificationsHandler
