@@ -13,12 +13,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, Ref } from '@hcengineering/core'
-  import { defineSeparators, location as locationStore, panelSeparators, Separator } from '@hcengineering/ui'
+  import core, { Doc, getCurrentAccount, Ref, Space } from '@hcengineering/core'
+  import {
+    defineSeparators,
+    Label,
+    location as locationStore,
+    ModernButton,
+    panelSeparators,
+    Separator
+  } from '@hcengineering/ui'
   import { DocNotifyContext } from '@hcengineering/notification'
   import { ActivityMessagesFilter } from '@hcengineering/activity'
   import { getClient } from '@hcengineering/presentation'
   import { Channel } from '@hcengineering/chunter'
+  import view from '@hcengineering/view'
 
   import ChannelComponent from './Channel.svelte'
   import ChannelHeader from './ChannelHeader.svelte'
@@ -33,6 +41,7 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
+  const me = getCurrentAccount()._id
 
   let isThreadOpened = false
   let isAsideShown = false
@@ -43,11 +52,27 @@
     isThreadOpened = newLocation.path[4] != null
   })
 
+  $: showJoinOverlay = shouldShowJoinOverlay(object)
   $: isDocChat = !hierarchy.isDerived(object._class, chunter.class.ChunterSpace)
-  $: withAside = !embedded && !isThreadOpened && !hierarchy.isDerived(object._class, chunter.class.DirectMessage)
+  $: withAside =
+    !embedded && !isThreadOpened && !hierarchy.isDerived(object._class, chunter.class.DirectMessage) && !showJoinOverlay
 
-  function toChannel (object?: Doc): Channel | undefined {
-    return object as Channel | undefined
+  function toChannel (object: Doc): Channel {
+    return object as Channel
+  }
+
+  function shouldShowJoinOverlay (object: Doc): boolean {
+    if (hierarchy.isDerived(object._class, core.class.Space)) {
+      const space = object as Space
+
+      return !space.members.includes(me)
+    }
+
+    return false
+  }
+
+  async function join (): Promise<void> {
+    await client.update(object as Space, { $push: { members: me } })
   }
 
   defineSeparators('aside', panelSeparators)
@@ -72,7 +97,27 @@
   <div class="popupPanel-body" class:asideShown={withAside && isAsideShown}>
     <div class="popupPanel-body__main">
       {#key object._id}
-        <ChannelComponent {context} {object} {filters} isAsideOpened={(withAside && isAsideShown) || isThreadOpened} />
+        {#if shouldShowJoinOverlay(object)}
+          <div class="body h-full w-full clear-mins flex-center">
+            <div class="joinOverlay">
+              <div class="an-element__label header">
+                <Label label={chunter.string.JoinChannelHeader} />
+              </div>
+              <span class="an-element__label">
+                <Label label={chunter.string.JoinChannelText} />
+              </span>
+              <span class="mt-4"> </span>
+              <ModernButton label={view.string.Join} kind="primary" on:click={join} />
+            </div>
+          </div>
+        {:else}
+          <ChannelComponent
+            {context}
+            {object}
+            {filters}
+            isAsideOpened={(withAside && isAsideShown) || isThreadOpened}
+          />
+        {/if}
       {/key}
     </div>
 
@@ -91,3 +136,21 @@
     {/if}
   </div>
 </div>
+
+<style lang="scss">
+  .joinOverlay {
+    display: flex;
+    align-self: center;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    height: inherit;
+    width: 35rem;
+  }
+
+  .header {
+    font-weight: 600;
+    margin: 1rem;
+  }
+</style>
