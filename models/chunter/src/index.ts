@@ -38,8 +38,7 @@ import {
   type Ref,
   type Space,
   type Timestamp,
-  IndexKind,
-  SortingOrder
+  IndexKind
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -352,15 +351,11 @@ export function createModel (builder: Builder): void {
     {
       attachTo: chunter.class.Channel,
       descriptor: view.viewlet.Table,
-      viewOptions: {
-        orderBy: [['modifiedOn', SortingOrder.Descending]],
-        groupBy: [],
-        other: []
-      },
       configOptions: {
         strict: true
       },
-      config: ['', 'topic', 'private', 'archived', 'members']
+      config: ['', 'topic', 'private', 'archived', 'members'],
+      props: { enableChecking: false }
     },
     chunter.viewlet.Channels
   )

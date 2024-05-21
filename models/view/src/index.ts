@@ -300,6 +300,7 @@ export class TViewlet extends TDoc implements Viewlet {
   config!: (BuildModelKey | string)[]
   hiddenKeys?: string[]
   viewOptions?: ViewOptionsModel
+  props?: Record<string, any>
 }
 
 @Model(view.class.Action, core.class.Doc, DOMAIN_MODEL)
