@@ -8,6 +8,12 @@ import { Document, documentId } from '@hcengineering/document'
 import { getMetadata } from '@hcengineering/platform'
 import { workbenchId } from '@hcengineering/workbench'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
+import slugify from 'slugify'
+
+function getDocumentId (doc: Document): string {
+  const slug = slugify(doc.name, { lower: true })
+  return `${slug}-${doc._id}`
+}
 
 /**
  * @public
@@ -15,7 +21,7 @@ import serverCore, { TriggerControl } from '@hcengineering/server-core'
 export async function documentHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const document = doc as Document
   const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
-  const path = `${workbenchId}/${control.workspace.workspaceUrl}/${documentId}/${doc._id}`
+  const path = `${workbenchId}/${control.workspace.workspaceUrl}/${documentId}/${getDocumentId(document)}`
   const link = concatLink(front, path)
   return `<a href="${link}">${document.name}</a>`
 }
