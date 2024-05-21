@@ -72,6 +72,7 @@ export default plugin(textEditorId, {
     AddRowAfter: '' as IntlString,
     DeleteRow: '' as IntlString,
     DeleteTable: '' as IntlString,
+    Duplicate: '' as IntlString,
     CategoryRow: '' as IntlString,
     CategoryColumn: '' as IntlString,
     Table: '' as IntlString,

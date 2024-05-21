@@ -35,6 +35,49 @@ export function moveRow (table: TableNodeLocation, from: number, to: number, tr:
   return tr
 }
 
+function isNotNull<T> (value: T | null): value is T {
+  return value !== null
+}
+
+export function duplicateRows (table: TableNodeLocation, rowIndices: number[], tr: Transaction): Transaction {
+  const rows = tableToCells(table)
+
+  const { map, width } = TableMap.get(table.node)
+  const mapStart = tr.mapping.maps.length
+
+  const lastRowPos = map[rowIndices[rowIndices.length - 1] * width + width - 1]
+  const nextRowStart = lastRowPos + (table.node.nodeAt(lastRowPos)?.nodeSize ?? 0) + 1
+  const insertPos = tr.mapping.slice(mapStart).map(table.start + nextRowStart)
+
+  for (let i = rowIndices.length - 1; i >= 0; i--) {
+    tr.insert(insertPos, rows[rowIndices[i]].filter(isNotNull))
+  }
+
+  return tr
+}
+
+export function duplicateColumns (table: TableNodeLocation, columnIndices: number[], tr: Transaction): Transaction {
+  const rows = tableToCells(table)
+
+  const { map, width, height } = TableMap.get(table.node)
+  const mapStart = tr.mapping.maps.length
+
+  for (let row = 0; row < height; row++) {
+    const lastColumnPos = map[row * width + columnIndices[columnIndices.length - 1]]
+    const nextColumnStart = lastColumnPos + (table.node.nodeAt(lastColumnPos)?.nodeSize ?? 0)
+    const insertPos = tr.mapping.slice(mapStart).map(table.start + nextColumnStart)
+
+    for (let i = columnIndices.length - 1; i >= 0; i--) {
+      const copiedNode = rows[row][columnIndices[i]]
+      if (copiedNode !== null) {
+        tr.insert(insertPos, copiedNode)
+      }
+    }
+  }
+
+  return tr
+}
+
 function moveRowInplace (rows: TableRows, from: number, to: number): void {
   rows.splice(to, 0, rows.splice(from, 1)[0])
 }

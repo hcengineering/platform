@@ -19,10 +19,13 @@ import { TableMap } from '@tiptap/pm/tables'
 import { Decoration } from '@tiptap/pm/view'
 
 import { type TableNodeLocation } from '../types'
-import { isColumnSelected, selectColumn } from '../utils'
+import { findTable, getSelectedColumns, isColumnSelected, selectColumn } from '../utils'
 
-import { moveColumn } from './actions'
-import { handleSvg } from './icons'
+import { duplicateColumns, moveColumn } from './actions'
+import DeleteCol from '../../../icons/table/DeleteCol.svelte'
+import Duplicate from '../../../icons/table/Duplicate.svelte'
+import textEditorPlugin from '../../../../plugin'
+import { createCellsHandle, type OptionItem } from './cellsHandle'
 import {
   dropMarkerWidthPx,
   getColDragMarker,
@@ -39,34 +42,66 @@ interface TableColumn {
   widthPx: number
 }
 
+const createOptionItems = (editor: Editor): OptionItem[] => [
+  {
+    id: 'delete',
+    icon: DeleteCol,
+    label: textEditorPlugin.string.DeleteColumn,
+    action: () => editor.commands.deleteColumn()
+  },
+  {
+    id: 'duplicate',
+    icon: Duplicate,
+    label: textEditorPlugin.string.Duplicate,
+    action: () => {
+      const table = findTable(editor.state.selection)
+      if (table !== undefined) {
+        let tr = editor.state.tr
+        const selectedColumns = getSelectedColumns(editor.state.selection, TableMap.get(table.node))
+        tr = duplicateColumns(table, selectedColumns, tr)
+        editor.view.dispatch(tr)
+      }
+    }
+  }
+]
+
 export const columnHandlerDecoration = (state: EditorState, table: TableNodeLocation, editor: Editor): Decoration[] => {
   const decorations: Decoration[] = []
 
   const tableMap = TableMap.get(table.node)
   for (let col = 0; col < tableMap.width; col++) {
     const pos = getTableCellWidgetDecorationPos(table, tableMap, col)
+    const isSelected = isColumnSelected(col, state.selection)
 
-    const handle = document.createElement('div')
+    const handle = createCellsHandle(createOptionItems(editor))
     handle.classList.add('table-col-handle')
-    if (isColumnSelected(col, state.selection)) {
+    if (isSelected) {
       handle.classList.add('table-col-handle__selected')
     }
-    handle.innerHTML = handleSvg
     handle.addEventListener('mousedown', (e) => {
-      handleMouseDown(col, table, e, editor)
+      handleMouseDown(col, table, e, editor, isSelected)
     })
+
     decorations.push(Decoration.widget(pos, handle))
   }
 
   return decorations
 }
 
-const handleMouseDown = (col: number, table: TableNodeLocation, event: MouseEvent, editor: Editor): void => {
+const handleMouseDown = (
+  col: number,
+  table: TableNodeLocation,
+  event: MouseEvent,
+  editor: Editor,
+  isSelected: boolean
+): void => {
   event.stopPropagation()
   event.preventDefault()
 
   // select column
-  editor.view.dispatch(selectColumn(table, col, editor.state.tr))
+  if (!isSelected) {
+    editor.view.dispatch(selectColumn(table, col, editor.state.tr))
+  }
 
   // drag column
   const tableWidthPx = getTableWidthPx(table, editor)
