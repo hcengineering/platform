@@ -27,7 +27,6 @@ import { Action } from '@hcengineering/view'
  */
 export interface ChunterSpace extends Space {
   lastMessage?: Timestamp
-  pinned?: Ref<ChunterMessage>[]
 }
 
 /**

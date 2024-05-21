@@ -76,9 +76,6 @@ export const DOMAIN_CHUNTER = 'chunter' as Domain
 export class TChunterSpace extends TSpace implements ChunterSpace {
   @Prop(TypeTimestamp(), chunter.string.LastMessage)
     lastMessage?: Timestamp
-
-  @Prop(ArrOf(TypeRef(chunter.class.ChunterMessage)), chunter.string.PinnedMessages)
-    pinned?: Ref<ChunterMessage>[]
 }
 
 @Model(chunter.class.Channel, chunter.class.ChunterSpace)
@@ -733,6 +730,11 @@ export function createModel (builder: Builder): void {
     },
     chunter.action.ReplyToThreadAction
   )
+
+  builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.ClassFilters, {
+    filters: ['name', 'topic', 'private', 'archived', 'members'],
+    strict: true
+  })
 }
 
 export default chunter
