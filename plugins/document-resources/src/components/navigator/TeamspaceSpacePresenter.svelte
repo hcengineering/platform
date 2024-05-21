@@ -143,24 +143,22 @@
 >
   <DocHierarchy {documents} {descendants} {documentById} {selected} />
   <svelte:fragment slot="visible">
-    {#if selected !== undefined && visibleItem !== undefined}
+    {#if selected && visibleItem}
+      {@const item = visibleItem}
       <DocTreeElement
-        doc={visibleItem}
-        icon={visibleItem.icon === view.ids.IconWithEmoji ? IconWithEmoji : visibleItem.icon ?? document.icon.Document}
-        iconProps={visibleItem.icon === view.ids.IconWithEmoji
+        doc={item}
+        icon={item.icon === view.ids.IconWithEmoji ? IconWithEmoji : item.icon ?? document.icon.Document}
+        iconProps={item.icon === view.ids.IconWithEmoji
           ? { icon: visibleItem.color }
           : {
-              fill:
-                visibleItem.color !== undefined
-                  ? getPlatformColorDef(visibleItem.color, $themeStore.dark).icon
-                  : 'currentColor'
+              fill: item.color !== undefined ? getPlatformColorDef(item.color, $themeStore.dark).icon : 'currentColor'
             }}
-        title={visibleItem.name}
+        title={item.name}
         selected
         isFold
         empty
-        actions={getDocActions(visibleItem)}
-        moreActions={() => getMoreActions(visibleItem)}
+        actions={getDocActions(item)}
+        moreActions={() => getMoreActions(item)}
       />
     {/if}
   </svelte:fragment>

@@ -18,7 +18,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Action, navigate, IconEdit } from '@hcengineering/ui'
   import { TreeNode, TreeItem, getActions as getContributedActions } from '@hcengineering/view-resources'
-    import { getResource } from '@hcengineering/platform'
+  import { getResource } from '@hcengineering/platform'
 
   import drive from '../plugin'
   import { getDriveLink, getFolderIdFromFragment, getFolderLink } from '../navigation'
@@ -122,15 +122,16 @@
       }}
     />
     <svelte:fragment slot="visible">
-      {#if selected !== undefined && visibleItem !== undefined}
+      {#if selected && visibleItem}
+        {@const folder = visibleItem}
         <TreeItem
-          _id={visibleItem._id}
+          _id={folder._id}
           icon={drive.icon.Folder}
-          title={visibleItem.name}
+          title={folder.name}
           selected
           isFold
           empty
-          actions={async () => await getFolderActions(visibleItem)}
+          actions={async () => await getFolderActions(folder)}
         />
       {/if}
     </svelte:fragment>

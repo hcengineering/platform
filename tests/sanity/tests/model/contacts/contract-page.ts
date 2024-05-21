@@ -20,9 +20,11 @@ export class ContractPage {
 
   readonly appContact = (): Locator => this.page.locator('[id="app-contact\\:string\\:Contacts"]')
   readonly employeeNavElement = (Employee: string): Locator =>
-    this.page.locator(`.antiNav-element:has-text("${Employee}")`)
+    this.page.locator(`.hulyNavItem-container:has-text("${Employee}")`)
 
-  readonly employeeButton = (Employee: string): Locator => this.page.locator(`button:has-text("${Employee}")`)
+  readonly employeeButton = (Employee: string): Locator =>
+    this.page.locator(`button:not(.hulyNavItem-container):has-text("${Employee}")`)
+
   readonly firstNameInput = (): Locator => this.page.locator('[placeholder="First name"]')
   readonly lastNameInput = (): Locator => this.page.locator('[placeholder="Last name"]')
   readonly emailInput = (): Locator => this.page.locator('[placeholder="Email"]')
@@ -54,8 +56,8 @@ export class ContractPage {
   readonly personName = (person: string): Locator => this.page.locator(`text=${person}`)
   readonly personTable = (): Locator => this.page.locator('.antiTable-body__row')
   readonly personMarina = (): Locator => this.page.getByRole('link', { name: 'MM M. Marina' })
-  readonly comapnyTab = (): Locator => this.page.locator('.antiNav-element:has-text("Company")')
-  readonly addCompany = (): Locator => this.page.locator('button:has-text("Company")')
+  readonly comapnyTab = (): Locator => this.page.locator('.hulyNavItem-container:has-text("Company")')
+  readonly addCompany = (): Locator => this.page.locator('button.antiButton:has-text("Company")')
   readonly companyName = (): Locator => this.page.locator('[placeholder="Company name"]')
   readonly companyCreateButton = (): Locator => this.page.locator('button:has-text("Create")')
   readonly companyByName = (company: string): Locator => this.page.locator(`text=${company}`)
