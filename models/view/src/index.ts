@@ -598,6 +598,56 @@ export function createModel (builder: Builder): void {
     view.pipeline.AnalyticsMiddleware
   )
 
+  builder.createDoc(
+    presentation.class.BlobContentTypeExtension,
+    core.space.Model,
+    {
+      contentType: ['audio/*'],
+      alignment: 'centered',
+      component: view.component.AudioViewer,
+      extension: presentation.extension.BlobContentTypeExtension
+    },
+    view.extension.Audio
+  )
+
+  builder.createDoc(
+    presentation.class.BlobContentTypeExtension,
+    core.space.Model,
+    {
+      contentType: 'image/*',
+      alignment: 'centered',
+      component: view.component.ImageViewer,
+      metadataProvider: view.function.BlobImageMetadata,
+      extension: presentation.extension.BlobContentTypeExtension
+    },
+    view.extension.Image
+  )
+
+  builder.createDoc(
+    presentation.class.BlobContentTypeExtension,
+    core.space.Model,
+    {
+      contentType: ['video/*'],
+      alignment: 'centered',
+      component: view.component.VideoViewer,
+      metadataProvider: view.function.BlobVideoMetadata,
+      extension: presentation.extension.BlobContentTypeExtension
+    },
+    view.extension.Video
+  )
+
+  builder.createDoc(
+    presentation.class.BlobContentTypeExtension,
+    core.space.Model,
+    {
+      contentType: ['application/pdf', 'application/json', 'text/*'],
+      alignment: 'float',
+      component: view.component.PDFViewer,
+      extension: presentation.extension.BlobContentTypeExtension
+    },
+    view.extension.PDF
+  )
+
   createAction(
     builder,
     {

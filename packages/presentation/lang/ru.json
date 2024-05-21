@@ -31,6 +31,11 @@
     "Created": "Созданные",
     "NoResults": "Нет результатов",
     "Next": "Далее",
-    "FailedToPreview": "Ошибка предпросмотра"
+    "FailedToPreview": "Ошибка предпросмотра",
+    "ContentType": "Тип контента",
+    "ContentTypeNotSupported": "Тип контента не поддерживается"
+  },
+  "status": {
+    "FileTooLarge": "Файл слишком большой"
   }
 }

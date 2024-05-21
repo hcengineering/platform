@@ -13,8 +13,8 @@
 // limitations under the License.
 //
 
-import { type Class, DOMAIN_MODEL, type Doc, type Ref } from '@hcengineering/core'
-import { type Builder, Model, Prop, TypeRef } from '@hcengineering/model'
+import { type Blob, type Class, type Doc, type Ref, DOMAIN_MODEL } from '@hcengineering/core'
+import { type Builder, Model, Prop, TypeRef, TypeString } from '@hcengineering/model'
 import core, { TDoc } from '@hcengineering/model-core'
 import { type Asset, type IntlString, type Resource } from '@hcengineering/platform'
 // Import types to prevent .svelte components to being exposed to type typescript.
@@ -23,6 +23,8 @@ import {
   type PresentationMiddlewareFactory
 } from '@hcengineering/presentation/src/pipeline'
 import {
+  type BlobMetadata,
+  type BlobContentTypeExtension,
   type ComponentPointExtension,
   type CreateExtensionKind,
   type DocAttributeRule,
@@ -82,12 +84,23 @@ export class TDocRules extends TDoc implements DocRules {
   fieldRules!: DocAttributeRule[]
 }
 
+@Model(presentation.class.BlobContentTypeExtension, presentation.class.ComponentPointExtension)
+export class TBlobContentTypeExtension extends TComponentPointExtension implements BlobContentTypeExtension {
+  @Prop(TypeString(), presentation.string.ContentType)
+    contentType!: string | string[]
+
+  alignment?: string
+  metadataProvider?: Resource<(file: File, blob: Ref<Blob>) => Promise<BlobMetadata | undefined>>
+  availabilityChecker?: Resource<() => Promise<boolean>>
+}
+
 export function createModel (builder: Builder): void {
   builder.createModel(
     TObjectSearchCategory,
     TPresentationMiddlewareFactory,
     TComponentPointExtension,
     TDocCreateExtension,
-    TDocRules
+    TDocRules,
+    TBlobContentTypeExtension
   )
 }

@@ -13,11 +13,10 @@
 // limitations under the License.
 //
 
-import attachment from '@hcengineering/attachment'
-import { type Blob, type Class, type Doc, type Ref } from '@hcengineering/core'
+import { type Class, type Doc, type Ref } from '@hcengineering/core'
 import drive, { type Drive, type Folder } from '@hcengineering/drive'
-import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
-import { getClient } from '@hcengineering/presentation'
+import { setPlatformStatus, unknownError } from '@hcengineering/platform'
+import { getClient, getFileMetadata, uploadFile } from '@hcengineering/presentation'
 import { showPopup } from '@hcengineering/ui'
 import { openDoc } from '@hcengineering/view-resources'
 
@@ -68,14 +67,13 @@ export async function createFile (file: File, space: Ref<Drive>, parent: Folder 
   const client = getClient()
 
   try {
-    const uploadFile = await getResource(attachment.helper.UploadFile)
     const uuid = await uploadFile(file)
-    // TODO obtain metadata
-    // const metadata = await getAttachmentMetadata(file, uuid)
+    const metadata = await getFileMetadata(file, uuid)
 
     await client.createDoc(drive.class.File, space, {
       name: file.name,
-      file: uuid as Ref<Blob>,
+      file: uuid,
+      metadata,
       parent: parent?._id ?? drive.ids.Root,
       path: parent !== undefined ? [parent._id, ...parent.path] : []
     })

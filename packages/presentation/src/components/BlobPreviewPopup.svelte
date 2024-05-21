@@ -13,52 +13,54 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  // import { Doc } from '@hcengineering/core'
-  import { Button, Dialog, Label, Spinner } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
-  import presentation from '..'
-  import { getFileUrl } from '../utils'
-  import Download from './icons/Download.svelte'
-  import ActionContext from './ActionContext.svelte'
+  import { type Blob, type Ref } from '@hcengineering/core'
+  import { Label, Dialog, Button, Component, Spinner } from '@hcengineering/ui'
 
-  export let file: string | undefined
+  import presentation from '../plugin'
+
+  import { getPreviewType, previewTypes } from '../blob'
+  import { BlobMetadata, BlobContentTypeExtension } from '../types'
+  import { getFileUrl } from '../utils'
+
+  import ActionContext from './ActionContext.svelte'
+  import Download from './icons/Download.svelte'
+
+  export let value: Ref<Blob> | undefined
   export let name: string
-  export let contentType: string | undefined
-  // export let popupOptions: PopupOptions
-  // export let value: Doc
-  export let showIcon = true
+  export let contentType: string
+  export let metadata: BlobMetadata | undefined
+  export let props: Record<string, any> = {}
+
   export let fullSize = false
+  export let showIcon = true
   export let isLoading = false
-  export let css: string | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
-  function iconLabel (name: string): string {
-    const parts = name.split('.')
-    const ext = parts[parts.length - 1]
-    return ext.substring(0, 4).toUpperCase()
-  }
   onMount(() => {
     if (fullSize) {
       dispatch('fullsize')
     }
   })
-  let download: HTMLAnchorElement
-  $: src = file === undefined ? '' : getFileUrl(file, 'full', name)
-  $: isImage = contentType !== undefined && contentType.startsWith('image/')
 
-  let frame: HTMLIFrameElement | undefined = undefined
-  // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-  $: if (css !== undefined && frame !== undefined && frame !== null) {
-    frame.onload = () => {
-      const head = frame?.contentDocument?.querySelector('head')
-
-      // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-      if (css !== undefined && head !== undefined && head !== null) {
-        head.appendChild(document.createElement('style')).textContent = css
-      }
-    }
+  function iconLabel (name: string): string {
+    const parts = `${name}`.split('.')
+    const ext = parts[parts.length - 1]
+    return ext.substring(0, 4).toUpperCase()
   }
+
+  let previewType: BlobContentTypeExtension | undefined = undefined
+  $: if (value !== undefined) {
+    void getPreviewType(contentType, $previewTypes).then((res) => {
+      previewType = res
+    })
+  } else {
+    previewType = undefined
+  }
+
+  let download: HTMLAnchorElement
+  $: src = value === undefined ? '' : getFileUrl(value, 'full', name)
 </script>
 
 <ActionContext context={{ mode: 'browser' }} />
@@ -102,12 +104,22 @@
       <div class="centered">
         <Label label={presentation.string.FailedToPreview} />
       </div>
-    {:else if isImage}
-      <div class="pdfviewer-content img">
-        <img class="img-fit" {src} alt="" />
+    {:else if previewType !== undefined}
+      <div class="content flex-col flex-grow">
+        <Component is={previewType.component} props={{ value, name, contentType, metadata, ...props }} />
       </div>
     {:else}
-      <iframe bind:this={frame} class="pdfviewer-content" src={src + '#view=FitH&navpanes=0'} title="" />
+      <div class="centered flex-col flex-gap-3">
+        <Label label={presentation.string.ContentTypeNotSupported} />
+        <Button
+          label={presentation.string.Download}
+          kind={'primary'}
+          on:click={() => {
+            download.click()
+          }}
+          showTooltip={{ label: presentation.string.Download }}
+        />
+      </div>
     {/if}
   {:else}
     <div class="centered">
@@ -130,25 +142,10 @@
     border-radius: 0.5rem;
     cursor: pointer;
   }
-  .pdfviewer-content {
+  .content {
     flex-grow: 1;
     overflow: auto;
     border: none;
-
-    &.img {
-      display: flex;
-      align-items: center;
-      min-width: 0;
-      min-height: 0;
-    }
-  }
-  .img-fit {
-    margin: 0 auto;
-    width: fit-content;
-    height: fit-content;
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
   }
   .centered {
     flex-grow: 1;
