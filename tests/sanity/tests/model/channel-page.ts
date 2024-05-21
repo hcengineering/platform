@@ -18,6 +18,7 @@ export class ChannelPage {
   readonly closePopupWindow = (): Locator => this.page.locator('.root > div > .antiButton').first()
   readonly openAddMemberToChannel = (userName: string): Locator => this.page.getByRole('button', { name: userName })
   readonly addMemberToChannelButton = (userName: string): Locator => this.page.getByRole('button', { name: userName })
+  readonly joinChannelButton = (): Locator => this.page.getByRole('button', { name: 'Join' })
 
   async sendMessage (message: string): Promise<void> {
     await this.inputMessage().fill(message)
@@ -54,6 +55,10 @@ export class ChannelPage {
 
   async addMemberToChannel (user: string): Promise<void> {
     await this.openAddMemberToChannel(user).click()
+  }
+
+  async clickJoinChannelButton (): Promise<void> {
+    await this.joinChannelButton().click()
   }
 
   async checkIfChannelDefaultExist (shouldExist: boolean, channel: string): Promise<void> {
