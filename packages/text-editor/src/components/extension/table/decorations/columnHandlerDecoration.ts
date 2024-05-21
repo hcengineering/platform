@@ -88,7 +88,13 @@ export const columnHandlerDecoration = (state: EditorState, table: TableNodeLoca
   return decorations
 }
 
-const handleMouseDown = (col: number, table: TableNodeLocation, event: MouseEvent, editor: Editor, isSelected: boolean): void => {
+const handleMouseDown = (
+  col: number,
+  table: TableNodeLocation,
+  event: MouseEvent,
+  editor: Editor,
+  isSelected: boolean
+): void => {
   event.stopPropagation()
   event.preventDefault()
 

@@ -102,7 +102,7 @@ function getSelectedRect (selection: CellSelection, map: TableMap): Rect {
 export const getSelectedRows = (selection: Selection, map: TableMap): number[] => {
   if (selection instanceof CellSelection && selection.isRowSelection()) {
     const selectedRect = getSelectedRect(selection, map)
-    return [...Array(selectedRect.bottom - selectedRect.top).keys()].map(idx => idx + selectedRect.top)
+    return [...Array(selectedRect.bottom - selectedRect.top).keys()].map((idx) => idx + selectedRect.top)
   }
 
   return []
@@ -111,7 +111,7 @@ export const getSelectedRows = (selection: Selection, map: TableMap): number[] =
 export const getSelectedColumns = (selection: Selection, map: TableMap): number[] => {
   if (selection instanceof CellSelection && selection.isColSelection()) {
     const selectedRect = getSelectedRect(selection, map)
-    return [...Array(selectedRect.right - selectedRect.left).keys()].map(idx => idx + selectedRect.left)
+    return [...Array(selectedRect.right - selectedRect.left).keys()].map((idx) => idx + selectedRect.left)
   }
 
   return []
