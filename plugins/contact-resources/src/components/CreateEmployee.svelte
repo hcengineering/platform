@@ -159,12 +159,14 @@
         kind={'large-style'}
         autoFocus
         focusIndex={1}
+        maxlength="50"
       />
       <EditBox
         placeholder={contact.string.PersonLastNamePlaceholder}
         bind:value={lastName}
         kind={'large-style'}
         focusIndex={2}
+        maxlength="50"
       />
       <div class="mt-1">
         <EditBox
@@ -173,6 +175,7 @@
           kind={'small-style'}
           focusIndex={3}
           on:blur={changeEmail}
+          maxlength="50"
         />
       </div>
       <slot name="extraControls" />

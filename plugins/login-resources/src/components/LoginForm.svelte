@@ -28,12 +28,12 @@
   export let navigateUrl: string | undefined = undefined
 
   const fields = [
-    { id: 'email', name: 'username', i18n: login.string.Email },
+    { id: 'email', name: 'username', i18n: login.string.Email, maxlength: "50", rules: [{rule: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, ruleDescr: login.string.InvalidEmail, notMatch: false}] },
     {
       id: 'current-password',
       name: 'password',
       i18n: login.string.Password,
-      password: true
+      password: true, maxlength: "50"
     }
   ]
 

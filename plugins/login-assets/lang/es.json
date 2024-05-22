@@ -42,6 +42,7 @@
     "ConfirmationSent": "Se ha enviado un mensaje a su correo electrónico con un enlace para confirmar su dirección.",
     "ConfirmationSent2": "Por favor, siga el enlace para completar su registro.",
     "Slogan": "Un lugar único para gestionar todo tu trabajo\nBienvenido/a a la Plataforma",
-    "ContinueWith": "Continuar com {provider}"
+    "ContinueWith": "Continuar com {provider}",
+    "InvalidEmail": "Email inválido"
   }
 }

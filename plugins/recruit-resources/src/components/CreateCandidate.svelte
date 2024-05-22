@@ -586,6 +586,7 @@
         autoFocus
         maxWidth={'30rem'}
         focusIndex={1}
+        maxlength="50"
       />
       <EditBox
         disabled={loading}
@@ -594,6 +595,7 @@
         maxWidth={'30rem'}
         kind={'large-style'}
         focusIndex={2}
+        maxlength="50"
       />
       <div class="mt-1">
         <EditBox
@@ -612,6 +614,7 @@
         kind={'small-style'}
         focusIndex={4}
         maxWidth={'30rem'}
+        maxlength="50"
       />
     </div>
     <div class="ml-4">

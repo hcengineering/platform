@@ -108,6 +108,7 @@
       kind={'large-style'}
       autoFocus
       focusIndex={1}
+      maxlength="50"
     />
   </div>
 

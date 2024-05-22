@@ -113,6 +113,7 @@
             autoFocus
             focusIndex={1}
             on:change={nameChange}
+            maxlength="50"
           />
           <EditBox
             placeholder={contact.string.PersonLastNamePlaceholder}
@@ -120,6 +121,7 @@
             kind={'large-style'}
             focusIndex={2}
             on:change={nameChange}
+            maxlength="50"
           />
           <div class="location">
             <AttributeEditor

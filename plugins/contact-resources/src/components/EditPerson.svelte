@@ -102,6 +102,7 @@
           bind:value={firstName}
           on:change={firstNameChange}
           focusIndex={1}
+          maxlength="50"
         />
       </div>
       <div class="name">
@@ -111,6 +112,7 @@
           bind:value={lastName}
           on:change={lastNameChange}
           focusIndex={2}
+          maxlength="50"
         />
       </div>
       <div class="location">

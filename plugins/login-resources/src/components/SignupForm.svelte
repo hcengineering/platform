@@ -22,11 +22,11 @@
   import Form from './Form.svelte'
 
   const fields = [
-    { id: 'given-name', name: 'first', i18n: login.string.FirstName, short: true },
-    { id: 'family-name', name: 'last', i18n: login.string.LastName, short: true },
-    { id: 'email', name: 'username', i18n: login.string.Email },
-    { id: 'new-password', name: 'password', i18n: login.string.Password, password: true },
-    { id: 'new-password', name: 'password2', i18n: login.string.PasswordRepeat, password: true }
+    { id: 'given-name', name: 'first', i18n: login.string.FirstName, short: true, maxlength: "50" },
+    { id: 'family-name', name: 'last', i18n: login.string.LastName, short: true, maxlength: "50" },
+    { id: 'email', name: 'username', i18n: login.string.Email, maxlength: "50",  rules: [{rule: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, ruleDescr: login.string.InvalidEmail, notMatch: false }]},
+    { id: 'new-password', name: 'password', i18n: login.string.Password, password: true,  maxlength: "50" },
+    { id: 'new-password', name: 'password2', i18n: login.string.PasswordRepeat, password: true,  maxlength: "50" }
   ]
 
   const object = {

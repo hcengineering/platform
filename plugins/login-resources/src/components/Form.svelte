@@ -183,6 +183,7 @@
           label={field.i18n}
           name={field.id}
           password={field.password}
+          maxlength={field.maxlength} 
           bind:value={object[field.name]}
           on:input={() => validate($themeStore.language)}
           on:blur={() => {
