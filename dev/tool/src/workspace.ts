@@ -22,7 +22,8 @@ import core, {
   type Tx,
   type WorkspaceId,
   type Ref,
-  type Doc
+  type Doc,
+  DOMAIN_DOC_INDEX_STATE
 } from '@hcengineering/core'
 import { getWorkspaceDB } from '@hcengineering/mongo'
 import { MongoClient } from 'mongodb'
@@ -96,4 +97,21 @@ export async function updateField (
   } finally {
     await connection.close()
   }
+}
+
+export async function recreateElastic (
+  mongoUrl: string,
+  workspaceId: WorkspaceId,
+) {
+  const client = new MongoClient(mongoUrl)
+  try {
+    await client.connect()
+    const db = getWorkspaceDB(client, workspaceId)
+    await db
+      .collection(DOMAIN_DOC_INDEX_STATE)
+      .updateMany({ _class: core.class.DocIndexState }, { $set: { stages: {} } })
+  } finally {
+    await client.close()
+  }
+  
 }

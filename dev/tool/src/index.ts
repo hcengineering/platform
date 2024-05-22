@@ -51,7 +51,7 @@ import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/ser
 import { program, type Command } from 'commander'
 import { type Db, type MongoClient } from 'mongodb'
 import { clearTelegramHistory } from './telegram'
-import { diffWorkspace, updateField } from './workspace'
+import { diffWorkspace, recreateElastic, updateField } from './workspace'
 
 import core, {
   AccountRole,
@@ -976,6 +976,18 @@ export function devTool (
       ) => {
         const { mongodbUri } = prepareTools()
         await updateField(mongodbUri, getWorkspaceId(workspace, productId), transactorUrl, cmd)
+      }
+    )
+  
+  program
+    .command('recreate-elastic-indexes <workspace>')
+    .description('reindex workspace to elastic')
+    .action(
+      async (
+        workspace: string,
+      ) => {
+        const { mongodbUri } = prepareTools()
+        await recreateElastic(mongodbUri, getWorkspaceId(workspace, productId))
       }
     )
 
