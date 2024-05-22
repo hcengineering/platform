@@ -50,8 +50,13 @@ async function EditDrive (drive: Drive): Promise<void> {
 async function DownloadFile (doc: File | File[]): Promise<void> {
   const files = Array.isArray(doc) ? doc : [doc]
   for (const file of files) {
-    const url = getFileUrl(file.file, 'full', file.name)
-    window.open(url, '_blank')
+    const href = getFileUrl(file.file, 'full', file.name)
+    const link = document.createElement('a')
+    link.style.display = 'none'
+    link.target = '_blank'
+    link.href = href
+    link.download = file.name
+    link.click()
   }
 }
 
