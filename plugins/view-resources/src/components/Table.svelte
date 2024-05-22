@@ -139,7 +139,7 @@
         objectsRecieved = true
         loading = 0
       },
-      { sort: getSort(sortKey), limit, ...options, lookup, total: false }
+      { limit, ...options, sort: getSort(sortKey), lookup, total: false }
     )
       ? 1
       : 0
@@ -155,7 +155,7 @@
     (result) => {
       total = result.total
     },
-    { sort: getSort(_sortKey), limit: 1, ...options, lookup, total: true }
+    { limit: 1, ...options, sort: getSort(_sortKey), lookup, total: true }
   )
 
   const showContextMenu = async (ev: MouseEvent, object: Doc, row: number): Promise<void> => {

@@ -23,6 +23,7 @@ import core, {
   AccountRole,
   IndexKind,
   Ref,
+  SortingOrder,
   DOMAIN_MODEL
 } from '@hcengineering/core'
 import { type Drive, type File, type Folder, type Resource, driveId } from '@hcengineering/drive'
@@ -259,18 +260,25 @@ function defineResource (builder: Builder): void {
         {
           key: '',
           presenter: drive.component.ResourcePresenter,
-          label: drive.string.Name
+          label: drive.string.Name,
+          sortingKey: 'name'
         },
         {
           key: '$lookup.file.size',
           presenter: drive.component.FileSizePresenter,
-          label: drive.string.Size
+          label: drive.string.Size,
+          sortingKey: '$lookup.file.size'
         },
         {
           key: '$lookup.file.modifiedOn'
         },
         'createdBy'
       ],
+      options: {
+        sort: {
+          _class: SortingOrder.Descending
+        }
+      },
       configOptions: {
         hiddenKeys: ['name', 'file', 'parent', 'path'],
         sortable: true
