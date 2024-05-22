@@ -19,6 +19,22 @@ export class ChannelPage {
   readonly openAddMemberToChannel = (userName: string): Locator => this.page.getByRole('button', { name: userName })
   readonly addMemberToChannelButton = (userName: string): Locator => this.page.getByRole('button', { name: userName })
   readonly joinChannelButton = (): Locator => this.page.getByRole('button', { name: 'Join' })
+  readonly addEmojiButton = (): Locator => this.page.locator('.root > button').first()
+  readonly selectEmoji = (emoji: string): Locator => this.page.getByText(emoji)
+  readonly saveMessageButton = (): Locator => this.page.locator('.root > button:nth-child(2)')
+  readonly pinMessageButton = (): Locator => this.page.locator('.root > button:nth-child(3)')
+  readonly replyButton = (): Locator => this.page.locator('.root > button:nth-child(4)')
+  readonly openMoreButton = (): Locator => this.page.locator('.root > button:nth-child(5)')
+  readonly messageSaveMarker = (): Locator => this.page.locator('.saveMarker')
+  readonly saveMessageTab = (): Locator => this.page.getByRole('button', { name: 'Saved' })
+  readonly pinnedMessageButton = (): Locator => this.page.getByRole('button', { name: 'pinned' })
+  readonly pinnedMessage = (message: string): Locator => this.page.locator('.antiPopup').getByText(message)
+  readonly closeReplyButton = (): Locator => this.page.locator('.close > .svg-medium')
+  readonly openReplyMessage = (): Locator => this.page.getByText('1 reply Last reply less than')
+  readonly editMessageButton = (): Locator => this.page.getByRole('button', { name: 'Edit' })
+  readonly copyLinkButton = (): Locator => this.page.getByRole('button', { name: 'Copy link' })
+  readonly deleteMessageButton = (): Locator => this.page.getByRole('button', { name: 'Delete' })
+  readonly updateButton = (): Locator => this.page.getByRole('button', { name: 'Update' })
 
   async sendMessage (message: string): Promise<void> {
     await this.inputMessage().fill(message)
@@ -29,16 +45,77 @@ export class ChannelPage {
     await this.channel(channel).click()
   }
 
+  async clickDeleteMessageButton (): Promise<void> {
+    await this.deleteMessageButton().click()
+  }
+
+  async clickSaveMessageTab (): Promise<void> {
+    await this.saveMessageTab().click()
+  }
+
+  async clickOpenMoreButton (message: string): Promise<void> {
+    await this.textMessage(message).hover()
+    await this.openMoreButton().click()
+  }
+
+  async clickEditMessageButton (editedMessage: string): Promise<void> {
+    await this.editMessageButton().click()
+    await this.page.waitForTimeout(500)
+    await this.page.keyboard.type(editedMessage)
+  }
+
+  async clickCopyLinkButton (): Promise<void> {
+    await this.copyLinkButton().click()
+  }
+
+  async clickOnUpdateButton (): Promise<void> {
+    await this.updateButton().click()
+  }
+
+  async getClipboardCopyMessage (): Promise<void> {
+    await this.page.evaluate(async () => {
+      return await navigator.clipboard.readText()
+    })
+  }
+
+  async checkIfMessageIsCopied (message: string): Promise<void> {
+    expect(this.getClipboardCopyMessage()).toContain(message)
+  }
+
   async clickChooseChannel (channel: string): Promise<void> {
     await this.chooseChannel(channel).click({ force: true })
   }
 
-  async checkMessageExist (message: string, messageExists: boolean, messageText: string): Promise<void> {
-    if (messageExists) {
-      await expect(this.textMessage(messageText).filter({ hasText: message })).toBeVisible()
-    } else {
-      await expect(this.textMessage(messageText).filter({ hasText: message })).toBeHidden()
-    }
+  async addEmoji (textMessage: string, emoji: string): Promise<void> {
+    await this.textMessage(textMessage).hover()
+    await this.addEmojiButton().click()
+    await this.selectEmoji(emoji).click()
+  }
+
+  async saveMessage (message: string): Promise<void> {
+    await this.textMessage(message).hover()
+    await this.saveMessageButton().click()
+    await expect(this.messageSaveMarker()).toBeVisible()
+  }
+
+  async pinMessage (message: string): Promise<void> {
+    await this.textMessage(message).hover()
+    await this.pinMessageButton().click()
+    await this.pinnedMessageButton().click()
+    await expect(this.pinnedMessage(message)).toBeVisible()
+  }
+
+  async replyToMessage (message: string, messageReply: string): Promise<void> {
+    await this.textMessage(message).hover()
+    await this.replyButton().click()
+    await this.page.waitForTimeout(500)
+    await this.page.keyboard.type(messageReply)
+    await this.page.keyboard.press('Enter')
+  }
+
+  async closeAndOpenReplyMessage (): Promise<void> {
+    await this.closeReplyButton().click()
+    await this.openReplyMessage().click()
   }
 
   async clickChannelTab (): Promise<void> {
@@ -84,5 +161,17 @@ export class ChannelPage {
     } else {
       await expect(this.textMessage(messageText)).toBeHidden()
     }
+  }
+
+  async checkMessageExist (message: string, messageExists: boolean, messageText: string): Promise<void> {
+    if (messageExists) {
+      await expect(this.textMessage(messageText).filter({ hasText: message })).toBeVisible()
+    } else {
+      await expect(this.textMessage(messageText).filter({ hasText: message })).toBeHidden()
+    }
+  }
+
+  async checkIfEmojiIsAdded (emoji: string): Promise<void> {
+    await expect(this.selectEmoji(emoji + ' 1')).toBeVisible()
   }
 }

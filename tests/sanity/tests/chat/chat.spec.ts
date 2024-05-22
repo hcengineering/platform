@@ -1,4 +1,4 @@
-import { test } from '@playwright/test'
+import { test, expect } from '@playwright/test'
 import { PlatformURI, generateTestData } from '../utils'
 import { LeftSideMenuPage } from '../model/left-side-menu-page'
 import { ChunterPage } from '../model/chunter-page'
@@ -255,5 +255,70 @@ test.describe('channel tests', () => {
     await channelPage.clickOnClosePopupButton()
     await channelPage.clickChannel('random')
     await channelPage.checkMessageExist('One two', true, 'One two')
+  })
+
+  test('check if user can add emoji', async () => {
+    await leftSideMenuPage.clickChunter()
+    await channelPage.clickChannel('random')
+    await channelPage.sendMessage('Test message')
+    await channelPage.checkMessageExist('Test message', true, 'Test message')
+    await channelPage.addEmoji('Test message', '😤')
+    await channelPage.checkIfEmojiIsAdded('😤')
+  })
+
+  test('check if user can save message', async () => {
+    await leftSideMenuPage.clickChunter()
+    await channelPage.clickChannel('random')
+    await channelPage.sendMessage('Test message')
+    await channelPage.saveMessage('Test message')
+    await channelPage.sendMessage('Test message')
+    await channelPage.clickSaveMessageTab()
+    await channelPage.checkIfMessageExist(true, 'Test message')
+  })
+
+  test('check if user can pin message', async () => {
+    await leftSideMenuPage.clickChunter()
+    await channelPage.clickChannel('random')
+    await channelPage.sendMessage('Test message')
+    await channelPage.replyToMessage('Test message', 'Reply message')
+    await channelPage.checkIfMessageExist(true, 'Reply message')
+    await channelPage.closeAndOpenReplyMessage()
+    await channelPage.checkIfMessageExist(true, 'Reply message')
+  })
+
+  test('check if user can edit message', async ({ page }) => {
+    await leftSideMenuPage.clickChunter()
+    await channelPage.clickChannel('random')
+    await channelPage.sendMessage('Test message')
+    await channelPage.clickOpenMoreButton('Test message')
+    await channelPage.clickEditMessageButton(' edited message')
+    await page.keyboard.press('Enter')
+    await channelPage.checkIfMessageExist(true, 'Test message edited message')
+    await channelPage.clickOpenMoreButton('Test message edited message')
+    await channelPage.clickEditMessageButton(' 1')
+    await channelPage.clickOnUpdateButton()
+    await channelPage.checkIfMessageExist(true, 'Test message edited message 1')
+  })
+
+  test('check if user can copy message', async ({ page }) => {
+    const expectedUrl = `http://localhost:8083/workbench/${data.workspaceName}/chunter/chunter:space:Random|chunter:class:Channel?message=`
+    await leftSideMenuPage.clickChunter()
+    await channelPage.clickChannel('random')
+    await channelPage.sendMessage('Test message')
+    await channelPage.clickOpenMoreButton('Test message')
+    await channelPage.clickCopyLinkButton()
+    const clipboardContent = await page.evaluate(async () => {
+      return await navigator.clipboard.readText()
+    })
+    expect(clipboardContent).toContain(expectedUrl)
+  })
+
+  test('check if user can delete messages', async ({ page }) => {
+    await leftSideMenuPage.clickChunter()
+    await channelPage.clickChannel('random')
+    await channelPage.sendMessage('Test message')
+    await channelPage.clickOpenMoreButton('Test message')
+    await channelPage.clickDeleteMessageButton()
+    await channelPage.checkIfMessageExist(false, 'Test message')
   })
 })

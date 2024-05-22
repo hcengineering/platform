@@ -13,12 +13,17 @@ export const DefaultWorkspace = 'SanityTest'
 export const AccountUrl = process.env.ACCOUNT_URL as string
 
 export function generateTestData (): TestData {
+  const generateWordStartingWithA = (): string => {
+    const randomWord = faker.lorem.word()
+    return 'A' + randomWord.slice(1)
+  }
+
   return {
     workspaceName: faker.lorem.word(),
     userName: faker.internet.userName(),
     firstName: faker.person.firstName(),
     lastName: faker.person.lastName(),
-    channelName: faker.lorem.word()
+    channelName: generateWordStartingWithA()
   }
 }
 
