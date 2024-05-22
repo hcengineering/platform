@@ -31,7 +31,7 @@ async function navigateToDoc (_id: Ref<Doc>, _class: Ref<Class<Doc>>): Promise<v
   }
 }
 
-export async function createFolder (space: Ref<Drive>, parent: Ref<Folder>, open = false): Promise<void> {
+export async function createFolder (space: Ref<Drive> | undefined, parent: Ref<Folder>, open = false): Promise<void> {
   showPopup(CreateFolder, { space, parent }, 'top', async (id) => {
     if (open && id !== undefined && id !== null) {
       await navigateToDoc(id, drive.class.Folder)
