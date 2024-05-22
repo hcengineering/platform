@@ -47,7 +47,7 @@
 
 <style lang="scss">
   .icon-place {
-    width: 20px;
+    width: 1.75rem;
   }
   .searchResult {
     display: flex;
