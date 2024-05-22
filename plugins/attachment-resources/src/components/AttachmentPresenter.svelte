@@ -82,7 +82,7 @@
     showPopup(
       FilePreviewPopup,
       {
-        value: value.file,
+        file: value.file,
         name: value.name,
         contentType: value.type,
         metadata: value.metadata

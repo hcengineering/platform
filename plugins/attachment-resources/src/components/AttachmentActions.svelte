@@ -61,7 +61,7 @@
     showPopup(
       FilePreviewPopup,
       {
-        value: attachment.file,
+        file: attachment.file,
         name: attachment.name,
         contentType: attachment.type ?? '',
         metadata: attachment.metadata

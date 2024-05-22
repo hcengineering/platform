@@ -127,7 +127,7 @@ export const FileExtension = FileNode.extend<FileOptions>({
             showPopup(
               FilePreviewPopup,
               {
-                value: fileId,
+                file: fileId,
                 name: fileName,
                 contentType: fileType,
                 fullSize: false,

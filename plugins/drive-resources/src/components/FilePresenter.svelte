@@ -47,7 +47,7 @@
     showPopup(
       FilePreviewPopup,
       {
-        value: blob._id,
+        file: blob._id,
         contentType: blob.contentType,
         name: value.name,
         metadata: value.metadata

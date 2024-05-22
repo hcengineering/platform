@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import type { Attachment } from '@hcengineering/attachment'
-  import { PDFViewer } from '@hcengineering/presentation'
+  import { FilePreviewPopup } from '@hcengineering/presentation'
   import { showPopup, closeTooltip } from '@hcengineering/ui'
   import { ListSelectionProvider } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
@@ -49,7 +49,7 @@
       closeTooltip()
       if (listProvider !== undefined) listProvider.updateFocus(value)
       const popupInfo = showPopup(
-        PDFViewer,
+        FilePreviewPopup,
         { file: value.file, name: value.name, contentType: value.type },
         value.type.startsWith('image/') ? 'centered' : 'float'
       )

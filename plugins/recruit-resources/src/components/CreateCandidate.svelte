@@ -742,7 +742,7 @@
               showPopup(
                 FilePreviewPopup,
                 {
-                  value: object.resumeUuid,
+                  file: object.resumeUuid,
                   contentType: object.resumeType ?? 'application/pdf',
                   name: object.resumeName
                 },

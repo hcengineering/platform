@@ -202,7 +202,7 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
             showPopup(
               FilePreviewPopup,
               {
-                value: fileId,
+                file: fileId,
                 name: fileName,
                 contentType: 'image/*',
                 fullSize: true,

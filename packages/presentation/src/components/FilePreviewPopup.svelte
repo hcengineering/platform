@@ -26,7 +26,7 @@
   import ActionContext from './ActionContext.svelte'
   import Download from './icons/Download.svelte'
 
-  export let value: Ref<Blob> | undefined
+  export let file: Ref<Blob> | undefined
   export let name: string
   export let contentType: string
   export let metadata: BlobMetadata | undefined
@@ -50,7 +50,7 @@
   }
 
   let previewType: FilePreviewExtension | undefined = undefined
-  $: if (value !== undefined) {
+  $: if (file !== undefined) {
     void getPreviewType(contentType, $previewTypes).then((res) => {
       previewType = res
     })
@@ -59,7 +59,7 @@
   }
 
   let download: HTMLAnchorElement
-  $: src = value === undefined ? '' : getFileUrl(value, 'full', name)
+  $: src = file === undefined ? '' : getFileUrl(file, 'full', name)
 </script>
 
 <ActionContext context={{ mode: 'browser' }} />
@@ -104,7 +104,7 @@
     </div>
   {:else if previewType !== undefined}
     <div class="content flex-col flex-grow">
-      <Component is={previewType.component} props={{ value, name, contentType, metadata, ...props }} />
+      <Component is={previewType.component} props={{ value: file, name, contentType, metadata, ...props }} />
     </div>
   {:else}
     <div class="centered flex-col flex-gap-3">
