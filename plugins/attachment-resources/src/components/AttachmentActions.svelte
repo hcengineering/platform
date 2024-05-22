@@ -16,7 +16,7 @@
   import { type Attachment } from '@hcengineering/attachment'
   import { getResource } from '@hcengineering/platform'
   import {
-    BlobPreviewPopup,
+    FilePreviewPopup,
     getFileUrl,
     previewTypes,
     canPreviewFile,
@@ -59,7 +59,7 @@
     closeTooltip()
 
     showPopup(
-      BlobPreviewPopup,
+      FilePreviewPopup,
       {
         value: attachment.file,
         name: attachment.name,

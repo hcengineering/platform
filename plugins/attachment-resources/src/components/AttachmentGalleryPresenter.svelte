@@ -15,7 +15,7 @@
 <script lang="ts">
   import type { Attachment } from '@hcengineering/attachment'
   import { showPopup, closeTooltip } from '@hcengineering/ui'
-  import { BlobPreviewPopup, getFileUrl } from '@hcengineering/presentation'
+  import { FilePreviewPopup, getFileUrl } from '@hcengineering/presentation'
   import { getType } from '../utils'
   import filesize from 'filesize'
 
@@ -42,7 +42,7 @@
   function openAttachment (): void {
     closeTooltip()
     showPopup(
-      BlobPreviewPopup,
+      FilePreviewPopup,
       {
         value: value.file,
         name: value.name,

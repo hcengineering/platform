@@ -19,8 +19,8 @@
 
   import presentation from '../plugin'
 
-  import { getPreviewType, previewTypes } from '../blob'
-  import { BlobMetadata, BlobContentTypeExtension } from '../types'
+  import { getPreviewType, previewTypes } from '../file'
+  import { BlobMetadata, FilePreviewExtension } from '../types'
   import { getFileUrl } from '../utils'
 
   import ActionContext from './ActionContext.svelte'
@@ -49,7 +49,7 @@
     return ext.substring(0, 4).toUpperCase()
   }
 
-  let previewType: BlobContentTypeExtension | undefined = undefined
+  let previewType: FilePreviewExtension | undefined = undefined
   $: if (value !== undefined) {
     void getPreviewType(contentType, $previewTypes).then((res) => {
       previewType = res

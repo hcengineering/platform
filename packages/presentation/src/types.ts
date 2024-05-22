@@ -176,7 +176,7 @@ export type BlobMetadata = Record<string, any>
 /**
  * @public
  */
-export interface BlobContentTypeExtension extends ComponentPointExtension {
+export interface FilePreviewExtension extends ComponentPointExtension {
   contentType: string | string[]
   alignment?: string
   metadataProvider?: Resource<(file: File, blob: Ref<Blob>) => Promise<BlobMetadata | undefined>>

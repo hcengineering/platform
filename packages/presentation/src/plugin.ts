@@ -20,10 +20,10 @@ import { plugin } from '@hcengineering/platform'
 import { type ComponentExtensionId } from '@hcengineering/ui'
 import { type PresentationMiddlewareFactory } from './pipeline'
 import {
-  type BlobContentTypeExtension,
   type ComponentPointExtension,
   type DocRules,
   type DocCreateExtension,
+  type FilePreviewExtension,
   type ObjectSearchCategory
 } from './types'
 
@@ -36,10 +36,10 @@ export default plugin(presentationId, {
   class: {
     ObjectSearchCategory: '' as Ref<Class<ObjectSearchCategory>>,
     PresentationMiddlewareFactory: '' as Ref<Class<PresentationMiddlewareFactory>>,
-    BlobContentTypeExtension: '' as Ref<Class<BlobContentTypeExtension>>,
     ComponentPointExtension: '' as Ref<Class<ComponentPointExtension>>,
     DocCreateExtension: '' as Ref<Class<DocCreateExtension>>,
-    DocRules: '' as Ref<Class<DocRules>>
+    DocRules: '' as Ref<Class<DocRules>>,
+    FilePreviewExtension: '' as Ref<Class<FilePreviewExtension>>
   },
   string: {
     Create: '' as IntlString,
@@ -80,7 +80,7 @@ export default plugin(presentationId, {
     ContentTypeNotSupported: '' as IntlString
   },
   extension: {
-    BlobContentTypeExtension: '' as ComponentExtensionId
+    FilePreviewExtension: '' as ComponentExtensionId
   },
   metadata: {
     RequiredVersion: '' as Metadata<string>,

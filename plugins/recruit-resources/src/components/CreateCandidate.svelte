@@ -32,7 +32,7 @@
   } from '@hcengineering/core'
   import { getMetadata, getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import presentation, {
-    BlobPreviewPopup,
+    FilePreviewPopup,
     Card,
     createQuery,
     DraftController,
@@ -740,7 +740,7 @@
             icon={FileIcon}
             on:click={() => {
               showPopup(
-                BlobPreviewPopup,
+                FilePreviewPopup,
                 {
                   value: object.resumeUuid,
                   contentType: object.resumeType ?? 'application/pdf',

@@ -18,7 +18,7 @@ import { PlatformError, Severity, Status, getMetadata, getResource } from '@hcen
 import { type PopupAlignment } from '@hcengineering/ui'
 import { writable } from 'svelte/store'
 
-import { type BlobMetadata, type BlobContentTypeExtension } from './types'
+import { type BlobMetadata, type FilePreviewExtension } from './types'
 import { createQuery } from './utils'
 import plugin from './plugin'
 
@@ -93,13 +93,13 @@ export async function getFileMetadata (file: File, uuid: Ref<Blob>): Promise<Blo
 /**
  * @public
  */
-export const previewTypes = writable<BlobContentTypeExtension[]>([])
+export const previewTypes = writable<FilePreviewExtension[]>([])
 const previewTypesQuery = createQuery(true)
-previewTypesQuery.query(plugin.class.BlobContentTypeExtension, {}, (result) => {
+previewTypesQuery.query(plugin.class.FilePreviewExtension, {}, (result) => {
   previewTypes.set(result)
 })
 
-let $previewTypes: BlobContentTypeExtension[] = []
+let $previewTypes: FilePreviewExtension[] = []
 previewTypes.subscribe((it) => {
   $previewTypes = it
 })
@@ -107,7 +107,7 @@ previewTypes.subscribe((it) => {
 /**
  * @public
  */
-export async function canPreviewFile (contentType: string, _previewTypes: BlobContentTypeExtension[]): Promise<boolean> {
+export async function canPreviewFile (contentType: string, _previewTypes: FilePreviewExtension[]): Promise<boolean> {
   for (const previewType of _previewTypes) {
     if (await isApplicableType(previewType, contentType)) {
       return true
@@ -122,9 +122,9 @@ export async function canPreviewFile (contentType: string, _previewTypes: BlobCo
  */
 export async function getPreviewType (
   contentType: string,
-  _previewTypes: BlobContentTypeExtension[]
-): Promise<BlobContentTypeExtension | undefined> {
-  const applicableTypes: BlobContentTypeExtension[] = []
+  _previewTypes: FilePreviewExtension[]
+): Promise<FilePreviewExtension | undefined> {
+  const applicableTypes: FilePreviewExtension[] = []
   for (const previewType of _previewTypes) {
     if (await isApplicableType(previewType, contentType)) {
       applicableTypes.push(previewType)
@@ -152,7 +152,7 @@ function getPreviewTypeRegExp (type: string): RegExp {
 }
 
 async function isApplicableType (
-  { contentType, availabilityChecker }: BlobContentTypeExtension,
+  { contentType, availabilityChecker }: FilePreviewExtension,
   _contentType: string
 ): Promise<boolean> {
   const checkAvailability = availabilityChecker !== undefined ? await getResource(availabilityChecker) : undefined
@@ -166,7 +166,7 @@ async function isApplicableType (
   )
 }
 
-function comparePreviewTypes (a: BlobContentTypeExtension, b: BlobContentTypeExtension): number {
+function comparePreviewTypes (a: FilePreviewExtension, b: FilePreviewExtension): number {
   if (a.order === undefined && b.order === undefined) {
     return 0
   } else if (a.order === undefined) {

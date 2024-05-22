@@ -18,7 +18,7 @@
   import { WithLookup } from '@hcengineering/core'
   import { File } from '@hcengineering/drive'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { BlobPreviewPopup } from '@hcengineering/presentation'
+  import { FilePreviewPopup } from '@hcengineering/presentation'
   import { Icon, showPopup, tooltip } from '@hcengineering/ui'
   import { ObjectPresenterType } from '@hcengineering/view'
   import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
@@ -45,7 +45,7 @@
     const blob = value.$lookup?.file
 
     showPopup(
-      BlobPreviewPopup,
+      FilePreviewPopup,
       {
         value: blob._id,
         contentType: blob.contentType,

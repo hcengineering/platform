@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { getFileUrl, BlobPreviewPopup } from '@hcengineering/presentation'
+import { FilePreviewPopup, getFileUrl } from '@hcengineering/presentation'
 import { FileNode, type FileOptions as FileNodeOptions } from '@hcengineering/text'
 import { showPopup } from '@hcengineering/ui'
 import { nodeInputRule } from '@tiptap/core'
@@ -125,7 +125,7 @@ export const FileExtension = FileNode.extend<FileOptions>({
             const fileType: string = node.attrs['data-file-type'] ?? ''
 
             showPopup(
-              BlobPreviewPopup,
+              FilePreviewPopup,
               {
                 value: fileId,
                 name: fileName,

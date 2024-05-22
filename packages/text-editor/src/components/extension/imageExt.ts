@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { BlobPreviewPopup } from '@hcengineering/presentation'
+import { FilePreviewPopup } from '@hcengineering/presentation'
 import { ImageNode, type ImageOptions as ImageNodeOptions } from '@hcengineering/text'
 import { type IconSize, getIconSize2x, showPopup } from '@hcengineering/ui'
 import { mergeAttributes, nodeInputRule } from '@tiptap/core'
@@ -200,7 +200,7 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
             const fileName = node.attrs.alt ?? ''
 
             showPopup(
-              BlobPreviewPopup,
+              FilePreviewPopup,
               {
                 value: fileId,
                 name: fileName,

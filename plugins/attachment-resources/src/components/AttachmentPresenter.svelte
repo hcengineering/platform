@@ -18,14 +18,12 @@
   import { createEventDispatcher } from 'svelte'
   import type { Attachment } from '@hcengineering/attachment'
   import core from '@hcengineering/core'
-  import { showPopup, closeTooltip, Label, getIconSize2x, Loading, PopupAlignment } from '@hcengineering/ui'
+  import { showPopup, closeTooltip, Label, getIconSize2x, Loading } from '@hcengineering/ui'
   import presentation, {
-    BlobContentTypeExtension,
-    BlobPreviewPopup,
+    FilePreviewPopup,
     canPreviewFile,
     getFileUrl,
     getPreviewAlignment,
-    getPreviewType,
     previewTypes
   } from '@hcengineering/presentation'
   import { permissionsStore } from '@hcengineering/view-resources'
@@ -82,7 +80,7 @@
     }
     closeTooltip()
     showPopup(
-      BlobPreviewPopup,
+      FilePreviewPopup,
       {
         value: value.file,
         name: value.name,

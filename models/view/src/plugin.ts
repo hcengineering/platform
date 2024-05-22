@@ -17,7 +17,7 @@ import { type Blob, type Doc, type Ref } from '@hcengineering/core'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type FilterFunction, type ViewAction, type ViewCategoryAction, viewId } from '@hcengineering/view'
-import { type BlobMetadata, type BlobContentTypeExtension } from '@hcengineering/presentation'
+import { type BlobMetadata, type FilePreviewExtension } from '@hcengineering/presentation'
 import { type PresentationMiddlewareFactory } from '@hcengineering/presentation/src/pipeline'
 import view from '@hcengineering/view-resources/src/plugin'
 
@@ -146,9 +146,9 @@ export default mergeIds(viewId, view, {
     AnalyticsMiddleware: '' as Ref<PresentationMiddlewareFactory>
   },
   extension: {
-    Audio: '' as Ref<BlobContentTypeExtension>,
-    Image: '' as Ref<BlobContentTypeExtension>,
-    Video: '' as Ref<BlobContentTypeExtension>,
-    PDF: '' as Ref<BlobContentTypeExtension>
+    Audio: '' as Ref<FilePreviewExtension>,
+    Image: '' as Ref<FilePreviewExtension>,
+    Video: '' as Ref<FilePreviewExtension>,
+    PDF: '' as Ref<FilePreviewExtension>
   }
 })

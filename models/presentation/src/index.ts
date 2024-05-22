@@ -24,13 +24,13 @@ import {
 } from '@hcengineering/presentation/src/pipeline'
 import {
   type BlobMetadata,
-  type BlobContentTypeExtension,
   type ComponentPointExtension,
   type CreateExtensionKind,
   type DocAttributeRule,
   type DocRules,
   type DocCreateExtension,
   type DocCreateFunction,
+  type FilePreviewExtension,
   type ObjectSearchContext,
   type ObjectSearchCategory,
   type ObjectSearchFactory
@@ -84,8 +84,8 @@ export class TDocRules extends TDoc implements DocRules {
   fieldRules!: DocAttributeRule[]
 }
 
-@Model(presentation.class.BlobContentTypeExtension, presentation.class.ComponentPointExtension)
-export class TBlobContentTypeExtension extends TComponentPointExtension implements BlobContentTypeExtension {
+@Model(presentation.class.FilePreviewExtension, presentation.class.ComponentPointExtension)
+export class TFilePreviewExtension extends TComponentPointExtension implements FilePreviewExtension {
   @Prop(TypeString(), presentation.string.ContentType)
     contentType!: string | string[]
 
@@ -101,6 +101,6 @@ export function createModel (builder: Builder): void {
     TComponentPointExtension,
     TDocCreateExtension,
     TDocRules,
-    TBlobContentTypeExtension
+    TFilePreviewExtension
   )
 }
