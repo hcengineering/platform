@@ -78,7 +78,8 @@ import {
   fixMinioBW,
   fixSkills,
   optimizeModel,
-  restoreRecruitingTaskTypes
+  restoreRecruitingTaskTypes,
+  restoreHrTaskTypesFromUpdates
 } from './clean'
 import { checkOrphanWorkspaces } from './cleanOrphan'
 import { changeConfiguration } from './configuration'
@@ -958,6 +959,15 @@ export function devTool (
       const { mongodbUri } = prepareTools()
       console.log('Restoring recruiting task types in workspace ', workspace, '...')
       await restoreRecruitingTaskTypes(mongodbUri, getWorkspaceId(workspace, productId), transactorUrl)
+    })
+
+  program
+    .command('restore-ats-types-2 <workspace>')
+    .description('Restore recruiting task types for workspace 2')
+    .action(async (workspace: string) => {
+      const { mongodbUri } = prepareTools()
+      console.log('Restoring recruiting task types in workspace ', workspace, '...')
+      await restoreHrTaskTypesFromUpdates(mongodbUri, getWorkspaceId(workspace, productId), transactorUrl)
     })
 
   program

@@ -33,19 +33,26 @@ import core, {
   type WorkspaceId,
   type StatusCategory,
   type TxMixin,
-  type TxCUD
+  type TxCUD,
+  type TxUpdateDoc,
+  DOMAIN_STATUS,
+  type Status,
+  toIdMap,
+  type Class,
+  ClassifierKind
 } from '@hcengineering/core'
 import { getWorkspaceDB } from '@hcengineering/mongo'
-import recruit from '@hcengineering/recruit'
-import recruitModel from '@hcengineering/model-recruit'
+import recruit, { type Applicant, type Vacancy } from '@hcengineering/recruit'
+import recruitModel, { defaultApplicantStatuses } from '@hcengineering/model-recruit'
 import { type StorageAdapter } from '@hcengineering/server-core'
 import { connect } from '@hcengineering/server-tool'
 import tags, { type TagCategory, type TagElement, type TagReference } from '@hcengineering/tags'
-import task, { type ProjectType, type TaskType } from '@hcengineering/task'
+import task, { type Task, type ProjectType, type TaskType } from '@hcengineering/task'
 import tracker from '@hcengineering/tracker'
 import { deepEqual } from 'fast-equals'
 import { MongoClient } from 'mongodb'
 import { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
+import { DOMAIN_SPACE } from '@hcengineering/model-core'
 
 export async function cleanWorkspace (
   ctx: MeasureContext,
@@ -808,6 +815,214 @@ export async function restoreRecruitingTaskTypes (
         }
         console.log('Successfully restored ', updateTxes.length, ' CUD transactions')
       }
+    }
+  } catch (err: any) {
+    console.trace(err)
+  } finally {
+    await client.close()
+    await connection.close()
+  }
+}
+
+export async function restoreHrTaskTypesFromUpdates (
+  mongoUrl: string,
+  workspaceId: WorkspaceId,
+  transactorUrl: string
+): Promise<void> {
+  const connection = (await connect(transactorUrl, workspaceId, undefined, {
+    mode: 'backup',
+    model: 'upgrade'
+  })) as unknown as CoreClient & BackupClient
+  const client = new MongoClient(mongoUrl)
+  try {
+    await client.connect()
+    const db = getWorkspaceDB(client, workspaceId)
+    const hierarchy = connection.getHierarchy()
+    const descr = connection.getModel().getObject(recruit.descriptors.VacancyType)
+    const knownCategories = [
+      task.statusCategory.UnStarted,
+      task.statusCategory.Active,
+      task.statusCategory.Won,
+      task.statusCategory.Lost
+    ]
+
+    const supersededStatusesCursor = db.collection(DOMAIN_STATUS).find<Status>({ __superseded: true })
+    const supersededStatusesById = toIdMap(await supersededStatusesCursor.toArray())
+
+    // Query all vacancies
+    const vacancies = await connection.findAll<Vacancy>(recruit.class.Vacancy, {})
+
+    for (const vacancy of vacancies) {
+      console.log('Checking vacancy: ', vacancy.name)
+      // Find if task type exists
+      const projectType = await connection.findOne<ProjectType>(task.class.ProjectType, {
+        _id: vacancy.type
+      })
+
+      if (projectType !== undefined) {
+        console.log('Found project type for vacancy: ', vacancy.name)
+        continue
+      }
+
+      console.log('Restoring project type for: ', vacancy.name)
+
+      const projectTypeId = generateId<ProjectType>()
+
+      // Find task type from any task
+      const applicant = await connection.findOne<Applicant>(recruit.class.Applicant, {
+        space: vacancy._id
+      })
+
+      if (applicant === undefined) {
+        // there are no tasks, just make it of the default system type
+        console.log('No tasks found for the vacancy: ', vacancy.name)
+        console.log('Changing vacancy to default type')
+        await db
+          .collection(DOMAIN_SPACE)
+          .updateOne({ _id: vacancy._id }, { $set: { type: recruitModel.template.DefaultVacancy } })
+        continue
+      }
+
+      const taskTypeId = applicant.kind
+
+      // Check if there's a create transaction for the task type
+      let createTaskTypeTx = await connection.findOne<TxCreateDoc<TaskType>>(core.class.TxCreateDoc, {
+        objectId: taskTypeId
+      })
+
+      if (createTaskTypeTx === undefined) {
+        // Restore it based on the update transaction
+        const updateTaskTypeTx = await connection.findOne<TxUpdateDoc<TaskType>>(core.class.TxUpdateDoc, {
+          objectId: taskTypeId,
+          objectClass: task.class.TaskType,
+          'operations.statuses': { $exists: true }
+        })
+
+        if (updateTaskTypeTx === undefined) {
+          console.error(new Error('No task type found for the vacancy ' + vacancy.name))
+          continue
+        }
+
+        const statuses =
+          updateTaskTypeTx.operations.statuses?.map((s) => {
+            const ssedStatus = supersededStatusesById.get(s)
+            if (ssedStatus === undefined) {
+              return s
+            } else {
+              const defStatus = defaultApplicantStatuses.find((st) => st.name === ssedStatus.name)
+
+              if (defStatus === undefined) {
+                console.error(new Error('No default status found for the superseded status ' + ssedStatus.name))
+                return s
+              }
+
+              return defStatus.id
+            }
+          }) ?? []
+
+        const taskTargetClassId = `${taskTypeId}:type:mixin` as Ref<Class<Task>>
+        const ofClassClass = hierarchy.getClass(recruit.class.Applicant)
+
+        await db.collection<TxCreateDoc<Doc>>(DOMAIN_TX).insertOne({
+          _id: generateId(),
+          _class: core.class.TxCreateDoc,
+          space: core.space.Tx,
+          objectId: taskTargetClassId,
+          objectClass: core.class.Mixin,
+          objectSpace: core.space.Model,
+          modifiedBy: core.account.ConfigUser,
+          modifiedOn: Date.now(),
+          createdBy: core.account.ConfigUser,
+          createdOn: Date.now(),
+          attributes: {
+            extends: recruit.class.Applicant,
+            kind: ClassifierKind.MIXIN,
+            label: ofClassClass.label,
+            icon: ofClassClass.icon
+          }
+        })
+
+        createTaskTypeTx = {
+          _id: generateId(),
+          _class: core.class.TxCreateDoc,
+          space: core.space.Tx,
+          objectId: taskTypeId,
+          objectClass: task.class.TaskType,
+          objectSpace: core.space.Model,
+          modifiedBy: core.account.ConfigUser,
+          modifiedOn: Date.now(),
+          createdBy: core.account.ConfigUser,
+          createdOn: Date.now(),
+          attributes: {
+            name: 'Applicant',
+            descriptor: recruitModel.descriptors.Application,
+            ofClass: recruit.class.Applicant,
+            targetClass: taskTargetClassId,
+            statusClass: core.class.Status,
+            allowedAsChildOf: [taskTypeId],
+            statuses,
+            statusCategories: knownCategories,
+            parent: projectTypeId,
+            kind: 'task',
+            icon: descr.icon
+          }
+        }
+
+        await db.collection<TxCreateDoc<TaskType>>(DOMAIN_TX).insertOne(createTaskTypeTx)
+        console.log('Restored task type id: ', taskTypeId)
+      }
+
+      // Restore the project type
+      const targetClassId = `${projectTypeId}:type:mixin` as Ref<Class<Task>>
+      const ofClassClass = hierarchy.getClass(recruit.class.Vacancy)
+
+      await db.collection<TxCreateDoc<Doc>>(DOMAIN_TX).insertOne({
+        _id: generateId(),
+        _class: core.class.TxCreateDoc,
+        space: core.space.Tx,
+        objectId: targetClassId,
+        objectClass: core.class.Mixin,
+        objectSpace: core.space.Model,
+        modifiedBy: core.account.ConfigUser,
+        modifiedOn: Date.now(),
+        createdBy: core.account.ConfigUser,
+        createdOn: Date.now(),
+        attributes: {
+          extends: recruit.class.Vacancy,
+          kind: ClassifierKind.MIXIN,
+          label: ofClassClass.label,
+          icon: ofClassClass.icon
+        }
+      })
+
+      const createProjectTypeTx: TxCreateDoc<ProjectType> = {
+        _id: generateId(),
+        _class: core.class.TxCreateDoc,
+        space: core.space.Tx,
+        objectId: projectTypeId,
+        objectClass: task.class.ProjectType,
+        objectSpace: core.space.Model,
+        modifiedBy: core.account.ConfigUser,
+        modifiedOn: Date.now(),
+        createdBy: core.account.ConfigUser,
+        createdOn: Date.now(),
+        attributes: {
+          descriptor: recruit.descriptors.VacancyType,
+          tasks: [taskTypeId],
+          classic: true,
+          statuses: createTaskTypeTx.attributes.statuses.map((s) => ({
+            _id: s,
+            taskType: taskTypeId
+          })),
+          targetClass: targetClassId,
+          name: vacancy.name,
+          description: '',
+          roles: 0
+        }
+      }
+
+      await db.collection<TxCreateDoc<ProjectType>>(DOMAIN_TX).insertOne(createProjectTypeTx)
+      console.log('Restored project type id: ', projectTypeId)
     }
   } catch (err: any) {
     console.trace(err)
