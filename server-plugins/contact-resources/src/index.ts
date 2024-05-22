@@ -29,10 +29,12 @@ import contact, {
   getName
 } from '@hcengineering/contact'
 import core, {
+  Account,
   Class,
   Doc,
   Hierarchy,
   Ref,
+  SpaceType,
   Tx,
   TxCreateDoc,
   TxMixin,
@@ -43,8 +45,40 @@ import core, {
 } from '@hcengineering/core'
 import notification, { Collaborators } from '@hcengineering/notification'
 import { getMetadata } from '@hcengineering/platform'
-import serverCore, { TriggerControl } from '@hcengineering/server-core'
+import serverCore, { TriggerControl, removeAllObjects } from '@hcengineering/server-core'
 import { workbenchId } from '@hcengineering/workbench'
+
+export async function OnSpaceTypeMembers (tx: Tx, control: TriggerControl): Promise<Tx[]> {
+  const ctx = tx as TxUpdateDoc<SpaceType>
+  const result: Tx[] = []
+  const newMember = ctx.operations.$push?.members as Ref<Account>
+  if (newMember !== undefined) {
+    const spaces = await control.findAll(core.class.Space, { type: ctx.objectId })
+    for (const space of spaces) {
+      if (space.members.includes(newMember)) continue
+      const pushTx = control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, {
+        $push: {
+          members: newMember
+        }
+      })
+      result.push(pushTx)
+    }
+  }
+  const oldMember = ctx.operations.$pull?.members as Ref<Account>
+  if (ctx.operations.$pull?.members !== undefined) {
+    const spaces = await control.findAll(core.class.Space, { type: ctx.objectId })
+    for (const space of spaces) {
+      if (!space.members.includes(oldMember)) continue
+      const pullTx = control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, {
+        $pull: {
+          members: oldMember
+        }
+      })
+      result.push(pullTx)
+    }
+  }
+  return result
+}
 
 export async function OnEmployeeCreate (tx: Tx, control: TriggerControl): Promise<Tx[]> {
   const mixinTx = tx as TxMixin<Person, Employee>
@@ -90,7 +124,7 @@ export async function OnPersonAccountCreate (tx: Tx, control: TriggerControl): P
  */
 export async function OnContactDelete (
   tx: Tx,
-  { findAll, hierarchy, storageFx, removedMap, txFactory, ctx }: TriggerControl
+  { findAll, hierarchy, storageAdapter, workspace, removedMap, txFactory, ctx }: TriggerControl
 ): Promise<Tx[]> {
   const rmTx = tx as TxRemoveDoc<Contact>
 
@@ -112,20 +146,11 @@ export async function OnContactDelete (
     return []
   }
 
-  storageFx(async (adapter, bucket) => {
-    await adapter.remove(ctx, bucket, [avatar])
+  await storageAdapter.remove(ctx, workspace, [avatar])
 
-    if (avatar != null) {
-      const extra = await adapter.list(ctx, bucket, avatar)
-      if (extra.length > 0) {
-        await adapter.remove(
-          ctx,
-          bucket,
-          Array.from(extra.entries()).map((it) => it[1]._id)
-        )
-      }
-    }
-  })
+  if (avatar != null) {
+    await removeAllObjects(ctx, storageAdapter, workspace, avatar)
+  }
 
   const result: Tx[] = []
 
@@ -307,7 +332,8 @@ export default async () => ({
     OnEmployeeCreate,
     OnPersonAccountCreate,
     OnContactDelete,
-    OnChannelUpdate
+    OnChannelUpdate,
+    OnSpaceTypeMembers
   },
   function: {
     PersonHTMLPresenter: personHTMLPresenter,

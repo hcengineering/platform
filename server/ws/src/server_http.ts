@@ -20,7 +20,7 @@ import { serialize, type Response } from '@hcengineering/rpc'
 import { decodeToken, type Token } from '@hcengineering/server-token'
 import compression from 'compression'
 import cors from 'cors'
-import express from 'express'
+import express, { type Response as ExpressResponse } from 'express'
 import http, { type IncomingMessage } from 'http'
 import os from 'os'
 import { WebSocketServer, type RawData, type WebSocket } from 'ws'
@@ -33,8 +33,10 @@ import {
   type SessionManager
 } from './types'
 
+import type { StorageAdapter } from '@hcengineering/server-core'
 import 'bufferutil'
 import 'utf-8-validate'
+import { getFile, getFileRange, type BlobResponse } from './blobs'
 import { doSessionOp, processRequest, type WebsocketData } from './utils'
 
 /**
@@ -51,7 +53,8 @@ export function startHttpServer (
   port: number,
   productId: string,
   enableCompression: boolean,
-  accountsUrl: string
+  accountsUrl: string,
+  externalStorage: StorageAdapter
 ): () => Promise<void> {
   if (LOGGING_ENABLED) {
     ctx.info('starting server on', {
@@ -161,6 +164,62 @@ export function startHttpServer (
     }
   })
 
+  app.put('/api/v1/blob', (req, res) => {
+    try {
+      const authHeader = req.headers.authorization
+      if (authHeader === undefined) {
+        res.status(403).send({ error: 'Unauthorized' })
+        return
+      }
+
+      const payload = decodeToken(authHeader.split(' ')[1])
+
+      const name = req.query.name as string
+      const contentType = req.query.contentType as string
+
+      void ctx
+        .with(
+          'storage upload',
+          { workspace: payload.workspace.name },
+          async () => await externalStorage.put(ctx, payload.workspace, name, req, contentType),
+          { file: name, contentType }
+        )
+        .then(() => {
+          res.writeHead(200, { 'Cache-Control': 'no-cache' })
+          res.end()
+        })
+    } catch (err: any) {
+      Analytics.handleError(err)
+      console.error(err)
+      res.writeHead(404, {})
+      res.end()
+    }
+  })
+  app.get('/api/v1/blob', (req, res) => {
+    try {
+      const authHeader = req.headers.authorization
+      if (authHeader === undefined) {
+        res.status(403).send({ error: 'Unauthorized' })
+        return
+      }
+
+      const payload = decodeToken(authHeader.split(' ')[1])
+
+      const name = req.query.name as string
+
+      const range = req.headers.range
+      if (range !== undefined) {
+        void ctx.with('file-range', { workspace: payload.workspace.name }, async (ctx) => {
+          await getFileRange(ctx, range, externalStorage, payload.workspace, name, wrapRes(res))
+        })
+      } else {
+        void getFile(ctx, externalStorage, payload.workspace, name, wrapRes(res))
+      }
+    } catch (err: any) {
+      Analytics.handleError(err)
+    }
+  })
+
   const httpServer = http.createServer(app)
 
   const wss = new WebSocketServer({
@@ -186,7 +245,8 @@ export function startHttpServer (
           // should not be compressed if context takeover is disabled.
         }
       : false,
-    skipUTF8Validation: true
+    skipUTF8Validation: true,
+    maxPayload: 250 * 1024 * 1024
   })
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   const handleConnection = async (
@@ -234,9 +294,9 @@ export function startHttpServer (
       try {
         let buff: any | undefined
         if (msg instanceof Buffer) {
-          buff = msg
+          buff = Buffer.copyBytesFrom(msg)
         } else if (Array.isArray(msg)) {
-          buff = Buffer.concat(msg)
+          buff = Buffer.copyBytesFrom(Buffer.concat(msg))
         }
         if (buff !== undefined) {
           doSessionOp(webSocketData, (s) => {
@@ -255,7 +315,7 @@ export function startHttpServer (
       doSessionOp(webSocketData, (s) => {
         if (!(s.session.workspaceClosed ?? false)) {
           // remove session after 1seconds, give a time to reconnect.
-          void sessions.close(cs, toWorkspaceString(token.workspace))
+          void sessions.close(ctx, cs, toWorkspaceString(token.workspace))
         }
       })
     })
@@ -347,27 +407,37 @@ function createWebsocketClientSocket (
     },
     data: () => data,
     send: async (ctx: MeasureContext, msg, binary, compression) => {
-      if (ws.readyState !== ws.OPEN && !cs.isClosed) {
-        return 0
-      }
       const smsg = serialize(msg, binary)
 
-      while (ws.bufferedAmount > 128 && ws.readyState === ws.OPEN) {
-        await new Promise<void>((resolve) => {
-          setImmediate(resolve)
-        })
-      }
       ctx.measure('send-data', smsg.length)
       await new Promise<void>((resolve, reject) => {
-        ws.send(smsg, { binary: true, compress: compression }, (err) => {
-          if (err != null) {
-            reject(err)
+        const doSend = (): void => {
+          if (ws.readyState !== ws.OPEN && !cs.isClosed) {
+            return
           }
-          resolve()
-        })
+          if (ws.bufferedAmount > 16 * 1024) {
+            setImmediate(doSend)
+            return
+          }
+          ws.send(smsg, { binary: true, compress: compression }, (err) => {
+            if (err != null) {
+              reject(err)
+            }
+            resolve()
+          })
+        }
+        doSend()
       })
       return smsg.length
     }
   }
   return cs
+}
+function wrapRes (res: ExpressResponse): BlobResponse {
+  return {
+    end: () => res.end(),
+    pipeFrom: (readable) => readable.pipe(res),
+    status: (code) => res.status(code),
+    writeHead: (code, header) => res.writeHead(code, header)
+  }
 }

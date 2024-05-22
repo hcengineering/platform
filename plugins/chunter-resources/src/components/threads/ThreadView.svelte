@@ -121,7 +121,7 @@
           loadMoreAllowed={false}
         >
           <svelte:fragment slot="header">
-            <div class="mt-3 mr-6 ml-6">
+            <div class="mt-3">
               <ThreadParentMessage {message} />
             </div>
             <div class="separator">

@@ -15,7 +15,7 @@
 
 import activity from '@hcengineering/activity'
 import contact from '@hcengineering/contact'
-import { DOMAIN_MODEL, type Account, type Domain, type Ref } from '@hcengineering/core'
+import { AccountRole, DOMAIN_MODEL, type Account, type Domain, type Ref } from '@hcengineering/core'
 import { Mixin, Model, type Builder, UX } from '@hcengineering/model'
 import core, { TClass, TConfiguration, TDoc } from '@hcengineering/model-core'
 import view, { createAction } from '@hcengineering/model-view'
@@ -62,7 +62,7 @@ export class TSettingsCategory extends TDoc implements SettingsCategory {
   label!: IntlString
   icon!: Asset
   component!: AnyComponent
-  secured!: boolean
+  role!: AccountRole
   adminOnly?: boolean
 }
 
@@ -72,7 +72,7 @@ export class TWorkspaceSettingCategory extends TDoc implements SettingsCategory 
   label!: IntlString
   icon!: Asset
   component!: AnyComponent
-  secured!: boolean
+  role!: AccountRole
 }
 
 @Model(setting.class.IntegrationType, core.class.Doc, DOMAIN_MODEL)
@@ -150,7 +150,7 @@ export function createModel (builder: Builder): void {
       icon: setting.icon.AccountSettings,
       component: setting.component.Profile,
       group: 'settings-account',
-      secured: false,
+      role: AccountRole.Guest,
       order: 0
     },
     setting.ids.Profile
@@ -165,7 +165,7 @@ export function createModel (builder: Builder): void {
       icon: setting.icon.Password,
       component: setting.component.Password,
       group: 'settings-account',
-      secured: false,
+      role: AccountRole.Guest,
       order: 1000
     },
     setting.ids.Password
@@ -182,7 +182,7 @@ export function createModel (builder: Builder): void {
         navigation: setting.component.WorkspaceSettings
       },
       group: 'settings',
-      secured: false,
+      role: AccountRole.User,
       order: 2000
     },
     setting.ids.Setting
@@ -196,7 +196,7 @@ export function createModel (builder: Builder): void {
       icon: setting.icon.Integrations,
       component: setting.component.Integrations,
       group: 'settings-account',
-      secured: false,
+      role: AccountRole.User,
       order: 1500
     },
     setting.ids.Integrations
@@ -210,7 +210,7 @@ export function createModel (builder: Builder): void {
       icon: setting.icon.Owners,
       component: setting.component.Owners,
       order: 1000,
-      secured: true
+      role: AccountRole.Maintainer
     },
     setting.ids.Owners
   )
@@ -223,7 +223,7 @@ export function createModel (builder: Builder): void {
       icon: setting.icon.Views,
       component: setting.component.Spaces,
       order: 1100,
-      secured: true
+      role: AccountRole.Maintainer
     },
     setting.ids.Spaces
   )
@@ -236,7 +236,7 @@ export function createModel (builder: Builder): void {
       icon: setting.icon.Setting,
       component: setting.component.Configure,
       order: 1200,
-      secured: true,
+      role: AccountRole.Owner,
       adminOnly: true
     },
     setting.ids.Configure
@@ -250,7 +250,7 @@ export function createModel (builder: Builder): void {
       icon: setting.icon.AccountSettings,
       component: setting.component.WorkspaceSetting,
       order: 1300,
-      secured: true
+      role: AccountRole.Owner
     },
     setting.ids.WorkspaceSetting
   )
@@ -263,7 +263,7 @@ export function createModel (builder: Builder): void {
       icon: setting.icon.Clazz,
       component: setting.component.ClassSetting,
       group: 'settings-editor',
-      secured: false,
+      role: AccountRole.Maintainer,
       order: 4500
     },
     setting.ids.ClassSetting
@@ -277,7 +277,7 @@ export function createModel (builder: Builder): void {
       icon: setting.icon.Enums,
       component: setting.component.EnumSetting,
       group: 'settings-editor',
-      secured: false,
+      role: AccountRole.User,
       order: 4600,
       expandable: true
     },
@@ -292,7 +292,7 @@ export function createModel (builder: Builder): void {
       icon: setting.icon.InviteSettings,
       component: setting.component.InviteSetting,
       group: 'settings-editor',
-      secured: true,
+      role: AccountRole.Maintainer,
       order: 4700
     },
     setting.ids.InviteSettings
@@ -603,7 +603,7 @@ export function createModel (builder: Builder): void {
         tools: setting.component.ManageSpaceTypesTools
       },
       group: 'settings-editor',
-      secured: false,
+      role: AccountRole.User,
       order: 6000,
       expandable: true
     },

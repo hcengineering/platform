@@ -47,7 +47,8 @@
   export let colorInherit: boolean = false
   export let accent: boolean = false
   export let maxWidth = ''
-  export let compact = false
+  export let compact: boolean = false
+  export let showStatus: boolean = false
   export let type: ObjectPresenterType = 'link'
 
   const client = getClient()
@@ -91,6 +92,7 @@
         {accent}
         {type}
         {maxWidth}
+        {showStatus}
       />
       <span class="status">
         <Label label={statusLabel} />
@@ -113,6 +115,7 @@
       {accent}
       {type}
       {maxWidth}
+      {showStatus}
     />
   {/if}
 {:else if shouldShowPlaceholder}
@@ -127,7 +130,7 @@
   >
     {#if !inline && shouldShowAvatar}
       <span class="ap-icon" class:mr-2={shouldShowName && !enlargedText} class:mr-3={shouldShowName && enlargedText}>
-        <Avatar size={avatarSize} on:accent-color />
+        <Avatar size={avatarSize} {showStatus} on:accent-color />
       </span>
     {/if}
     {#if shouldShowName && defaultName}

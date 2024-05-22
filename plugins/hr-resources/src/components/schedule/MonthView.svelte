@@ -202,7 +202,7 @@
   }
 
   function setPublicHoliday (date: Date): void {
-    showPopup(CreatePublicHoliday, { date, department })
+    showPopup(CreatePublicHoliday, { date: date.getTime(), department })
   }
 
   function getRowHeight (row: TimelineRow): number {
@@ -247,6 +247,12 @@
 
   let rows: TimelineRow[]
   $: rows = buildTimelineRows(departmentStaff, employeeRequests)
+
+  function getClickHandler (day: Date, staff: Staff): (e: MouseEvent, day: Date, staff: Staff) => void {
+    return (e) => {
+      createRequest(e, day, staff)
+    }
+  }
 </script>
 
 {#if rows.length}
@@ -350,7 +356,7 @@
                 {/each}
               </div>
 
-              {#each values as value, i}
+              {#each values as value}
                 {@const day = getDay(startDate, value)}
                 {@const today = areDatesEqual(todayDate, day)}
                 {@const weekend = isWeekend(day)}
@@ -360,9 +366,11 @@
                 )}
                 {@const requests = getRequests(employeeRequests, day, day, employee._id)}
                 {@const tooltipValue = getTooltip(requests, day, employee)}
+                {@const clickHandler = getClickHandler(day, employee)}
 
                 {#key [tooltipValue, editable]}
                   <!-- svelte-ignore a11y-click-events-have-key-events -->
+                  <!-- svelte-ignore a11y-no-static-element-interactions -->
                   <div
                     class="timeline-cell"
                     class:timeline-cell--today={today}
@@ -370,9 +378,7 @@
                     class:timeline-cell--holiday={holiday}
                     style={getCellStyle()}
                     use:tooltip={tooltipValue}
-                    on:click={(e) => {
-                      createRequest(e, day, employee)
-                    }}
+                    on:click={clickHandler}
                   >
                     {#if today}
                       <div class="timeline-cell-today-marker" />

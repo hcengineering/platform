@@ -47,6 +47,7 @@
 <BasePreview
   headerIcon={value.headerIcon}
   header={value.header}
+  headerParams={value.intlParams}
   {headerObject}
   text={content}
   account={value.createdBy ?? value.modifiedBy}

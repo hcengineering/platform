@@ -20,7 +20,7 @@
   import { AnyComponent, Component } from '@hcengineering/ui'
   import { Action, ViewContextType } from '@hcengineering/view'
   import { fly } from 'svelte/transition'
-  import { getContextActions, getSelection } from '../actions'
+  import { getContextActionsSync, getSelection } from '../actions'
   import { ListSelectionProvider, SelectionStore, focusStore, previewDocument, selectionStore } from '../selection'
   import { getObjectPreview, restrictionStore } from '../utils'
 
@@ -45,14 +45,14 @@
   let delayedAction: (() => Promise<void>) | undefined
   let timer: any | undefined
 
-  async function getCurrentActions (
+  function getCurrentActions (
     context: {
       mode: ViewContextType
       application?: Ref<Doc>
     },
     focus: Doc | undefined | null,
     selection: SelectionStore
-  ): Promise<Action[]> {
+  ): Action[] {
     let docs: Doc | Doc[] = []
     if (selection.docs.find((it) => it._id === focus?._id) === undefined && focus != null) {
       docs = focus
@@ -60,7 +60,7 @@
       docs = selection.docs
     }
 
-    return await getContextActions(client, docs, context)
+    return getContextActionsSync(client, docs, context)
   }
 
   $: ctx = $contextStore.getLastContext()
@@ -132,7 +132,7 @@
 
   $: disableActions = $restrictionStore.disableActions
 
-  async function handleKeys (evt: KeyboardEvent): Promise<void> {
+  function handleKeys (evt: KeyboardEvent): void {
     // For none we ignore all actions.
     if (disableActions || ctx?.mode === 'none') return
     const targetTagName = (evt.target as any)?.tagName?.toLowerCase()
@@ -157,22 +157,23 @@
     }
 
     if (currentActions === undefined) {
-      currentActions = await getCurrentActions(
-        { mode: mode as ViewContextType, application },
-        $focusStore.focus,
-        $selectionStore
-      )
       if (targetTagName === 'input' || targetTagName === 'button' || targetTagName === 'textarea') {
         // Retrieve actual list of actions for input context
-        currentActions = await getContextActions(client, selectionDocs, { ...ctx, mode: 'input' })
+        currentActions = getContextActionsSync(client, selectionDocs, { ...ctx, mode: 'input' })
+      } else {
+        currentActions = getCurrentActions(
+          { mode: mode as ViewContextType, application },
+          $focusStore.focus,
+          $selectionStore
+        )
       }
     }
 
     clearTimeout(timer)
 
-    async function activateAction (a: Action): Promise<boolean> {
+    async function activateAction (a: Action): Promise<void> {
       const action = await getResource(a.action)
-      if (action === undefined) return false
+      if (action === undefined) return
 
       lastKey = undefined
       delayedAction = undefined
@@ -181,7 +182,6 @@
       if (!Object.prototype.hasOwnProperty.call(actionProps, 'props')) actionProps.props = {}
       actionProps.props.space = currentSpace
       await action(selectionDocs, evt, actionProps)
-      return true
     }
 
     // 3 cases for keyBinding
@@ -196,7 +196,9 @@
       if (a.keyBinding === undefined || a.keyBinding.length < 1) continue
       if (isContentEditable && a.allowedForEditableContent !== true) continue
       const t = lastKey
-      if (t !== undefined && a.keyBinding.some((it) => matchKeySequence(evt, it, t)) && (await activateAction(a))) {
+      if (t !== undefined && a.keyBinding.some((it) => matchKeySequence(evt, it, t))) {
+        evt.preventDefault()
+        activateAction(a)
         return
       }
       if (!postpone && a.keyBinding.some((p) => findKeySequence(p, evt))) {
@@ -209,19 +211,20 @@
     }
 
     if (delayedAction !== undefined) {
-      await delayedAction()
+      delayedAction()
       delayedAction = undefined
     }
 
     const t = nonSequenceAction
     if (t !== undefined) {
       if (!postpone) {
-        await activateAction(t)
+        evt.preventDefault()
+        activateAction(t)
         return
       }
 
       delayedAction = async () => {
-        await activateAction(t)
+        activateAction(t)
       }
     }
 

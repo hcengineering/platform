@@ -42,12 +42,13 @@ import core, {
   type Tx,
   type TxResult,
   type TypeAny,
-  type WithLookup
+  type WithLookup,
+  type Space
 } from '@hcengineering/core'
 import { getMetadata, getResource } from '@hcengineering/platform'
 import { LiveQuery as LQ } from '@hcengineering/query'
 import { type AnyComponent, type AnySvelteComponent, type IconSize } from '@hcengineering/ui'
-import view, { type AttributeEditor } from '@hcengineering/view'
+import view, { type AttributeCategory, type AttributeEditor } from '@hcengineering/view'
 import { deepEqual } from 'fast-equals'
 import { onDestroy } from 'svelte'
 import { type KeyedAttribute } from '..'
@@ -409,16 +410,6 @@ export async function copyTextToClipboard (text: string): Promise<void> {
 /**
  * @public
  */
-export type AttributeCategory = 'object' | 'attribute' | 'inplace' | 'collection' | 'array'
-
-/**
- * @public
- */
-export const AttributeCategoryOrder = { attribute: 0, inplace: 1, collection: 2, array: 2, object: 3 }
-
-/**
- * @public
- */
 export function getAttributePresenterClass (
   hierarchy: Hierarchy,
   attribute: AnyAttribute
@@ -565,4 +556,8 @@ export function decodeTokenPayload (token: string): any {
 
 export function isAdminUser (): boolean {
   return decodeTokenPayload(getMetadata(plugin.metadata.Token) ?? '').admin === 'true'
+}
+
+export function isSpace (space: Doc): space is Space {
+  return getClient().getHierarchy().isDerived(space._class, core.class.Space)
 }

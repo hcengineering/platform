@@ -79,7 +79,6 @@ export function createModel (builder: Builder): void {
     },
     label: getEmbeddedLabel('Server statistics'),
     icon: view.icon.Configure,
-    keyBinding: [],
     input: 'none',
     category: view.category.General,
     target: core.class.Doc,

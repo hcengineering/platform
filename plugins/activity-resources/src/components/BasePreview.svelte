@@ -41,6 +41,7 @@
   export let headerObject: Doc | undefined = undefined
   export let headerIcon: Asset | undefined = undefined
   export let header: IntlString | undefined = undefined
+  export let headerParams: Record<string, any> = {}
 
   const client = getClient()
   const limit = 300
@@ -124,7 +125,10 @@
         {#if !isCompact}
           {#if headerObject}
             <DocNavLink object={headerObject} colorInherit>
-              <Label label={header ?? client.getHierarchy().getClass(headerObject._class).label} />
+              <Label
+                label={header ?? client.getHierarchy().getClass(headerObject._class).label}
+                params={headerParams}
+              />
             </DocNavLink>
           {:else if person}
             <EmployeePresenter value={person} shouldShowAvatar={false} compact showStatus={false} />

@@ -39,7 +39,6 @@ export function groupTeamData (
   todos: IdMap<ToDo>,
   events: Event[],
   personAccounts: PersonAccount[],
-  calendars: IdMap<Calendar>,
   mePerson: Ref<Person>,
   calendarStore: IdMap<Calendar>
 ): EventPersonMapping[] {
@@ -91,15 +90,11 @@ export function groupTeamData (
   }
 
   for (const event of events) {
-    const space = calendars.get(event.space)
-    if (space === undefined) {
+    const _calendar = calendarStore.get(event.calendar)
+    if (_calendar === undefined || _calendar.hidden) {
       continue
     }
     for (const p of event.participants) {
-      const accounts = personAccounts.filter((it) => it.person === p)
-      if (!accounts.some((it) => space.members.includes(it._id))) {
-        continue
-      }
       const mapping: EventPersonMapping = result.get(p) ?? {
         busy: {
           slots: [],
@@ -130,12 +125,6 @@ export function groupTeamData (
       }
     }
   }
-  console.log(
-    Array.from(totalEventsMap.entries()).map(([k, it]) => [
-      k,
-      it.toSorted((a, b) => a.date - b.date).map((q) => [new Date(q.date), new Date(q.dueDate)])
-    ])
-  )
   return Array.from(result.values())
 }
 

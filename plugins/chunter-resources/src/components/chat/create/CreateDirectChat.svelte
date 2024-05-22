@@ -115,6 +115,7 @@
       {
         okLabel: presentation.string.Next,
         skipCurrentAccount: false,
+        skipInactive: true,
         selected: employeeIds,
         showStatus: true
       },

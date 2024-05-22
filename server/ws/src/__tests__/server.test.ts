@@ -40,7 +40,7 @@ import {
   type Tx,
   type TxResult
 } from '@hcengineering/core'
-import { type SessionContext } from '@hcengineering/server-core'
+import { createDummyStorageAdapter, type SessionContext } from '@hcengineering/server-core'
 import { ClientSession } from '../client'
 import { startHttpServer } from '../server_http'
 import { genMinModel } from './minmodel'
@@ -83,11 +83,12 @@ describe('server', () => {
         return { docs: [] }
       }
     }),
-    sessionFactory: (token, pipeline, broadcast) => new ClientSession(broadcast, token, pipeline),
+    sessionFactory: (token, pipeline) => new ClientSession(token, pipeline),
     port: 3335,
     productId: '',
     serverFactory: startHttpServer,
-    accountsUrl: ''
+    accountsUrl: '',
+    externalStorage: createDummyStorageAdapter()
   })
 
   function connect (): WebSocket {
@@ -182,11 +183,12 @@ describe('server', () => {
           return { docs: [] }
         }
       }),
-      sessionFactory: (token, pipeline, broadcast) => new ClientSession(broadcast, token, pipeline),
+      sessionFactory: (token, pipeline) => new ClientSession(token, pipeline),
       port: 3336,
       productId: '',
       serverFactory: startHttpServer,
-      accountsUrl: ''
+      accountsUrl: '',
+      externalStorage: createDummyStorageAdapter()
     })
 
     async function findClose (token: string, timeoutPromise: Promise<void>, code: number): Promise<string> {

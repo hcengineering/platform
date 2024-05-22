@@ -50,8 +50,9 @@ import { cloneWorkspace } from '@hcengineering/server-backup'
 import { decodeToken, generateToken } from '@hcengineering/server-token'
 import toolPlugin, { connect, initModel, upgradeModel } from '@hcengineering/server-tool'
 import { pbkdf2Sync, randomBytes } from 'crypto'
-import { Binary, Db, Filter, ObjectId } from 'mongodb'
+import { Binary, Db, Filter, ObjectId, type MongoClient } from 'mongodb'
 import fetch from 'node-fetch'
+import { type StorageAdapter } from '../../core/types'
 import { accountPlugin } from './plugin'
 
 const WORKSPACE_COLLECTION = 'workspace'
@@ -684,6 +685,22 @@ export async function listWorkspaces (
 ): Promise<WorkspaceInfo[]> {
   decodeToken(token) // Just verify token is valid
   return (await db.collection<Workspace>(WORKSPACE_COLLECTION).find(withProductId(productId, {})).toArray())
+    .map((it) => ({ ...it, productId }))
+    .filter((it) => it.disabled !== true)
+    .map(trimWorkspaceInfo)
+}
+
+/**
+ * @public
+ */
+export async function listWorkspacesByAccount (db: Db, productId: string, email: string): Promise<WorkspaceInfo[]> {
+  const account = await getAccount(db, email)
+  return (
+    await db
+      .collection<Workspace>(WORKSPACE_COLLECTION)
+      .find(withProductId(productId, { _id: { $in: account?.workspaces } }))
+      .toArray()
+  )
     .map((it) => ({ ...it, productId }))
     .filter((it) => it.disabled !== true)
     .map(trimWorkspaceInfo)
@@ -1727,7 +1744,7 @@ export async function dropWorkspace (
   db: Db,
   productId: string,
   workspaceId: string
-): Promise<void> {
+): Promise<Workspace> {
   const ws = await getWorkspaceById(db, productId, workspaceId)
   if (ws === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspace: workspaceId }))
@@ -1738,6 +1755,29 @@ export async function dropWorkspace (
     .updateMany({ _id: { $in: ws.accounts ?? [] } }, { $pull: { workspaces: ws._id } })
 
   ctx.info('Workspace dropped', { workspace: ws.workspace })
+  return ws
+}
+
+/**
+ * @public
+ */
+export async function dropWorkspaceFull (
+  ctx: MeasureContext,
+  db: Db,
+  client: MongoClient,
+  productId: string,
+  workspaceId: string,
+  storageAdapter?: StorageAdapter
+): Promise<void> {
+  const ws = await dropWorkspace(ctx, db, productId, workspaceId)
+  const workspaceDb = client.db(ws.workspace)
+  await workspaceDb.dropDatabase()
+  const wspace = getWorkspaceId(workspaceId, productId)
+  const hasBucket = await storageAdapter?.exists(ctx, wspace)
+  if (storageAdapter !== undefined && hasBucket === true) {
+    await storageAdapter.delete(ctx, wspace)
+  }
+  ctx.info('Workspace fully dropped', { workspace: ws.workspace })
 }
 
 /**
@@ -1849,7 +1889,7 @@ export async function sendInvite (
   const inviteId = await getInviteLink(ctx, db, productId, token, exp, email, 1)
   const link = concatLink(front, `/login/join?inviteId=${inviteId.toString()}`)
 
-  const ws = workspace.workspace
+  const ws = workspace.workspaceName ?? workspace.workspace
   const text = await translate(accountPlugin.string.InviteText, { link, ws, expHours })
   const html = await translate(accountPlugin.string.InviteHTML, { link, ws, expHours })
   const subject = await translate(accountPlugin.string.InviteSubject, { ws })

@@ -15,7 +15,6 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import { MeasureContext, generateId, metricsAggregate } from '@hcengineering/core'
-import { MinioService } from '@hcengineering/minio'
 import { Token, decodeToken } from '@hcengineering/server-token'
 import { ServerKit } from '@hcengineering/text'
 import { Hocuspocus } from '@hocuspocus/server'
@@ -24,9 +23,10 @@ import compression from 'compression'
 import cors from 'cors'
 import express from 'express'
 import { IncomingMessage, createServer } from 'http'
-import { MongoClient } from 'mongodb'
 import { WebSocket, WebSocketServer } from 'ws'
 
+import type { MongoClientReference } from '@hcengineering/mongo'
+import type { StorageAdapter } from '@hcengineering/server-core'
 import { Config } from './config'
 import { Context } from './context'
 import { AuthenticationExtension } from './extensions/authentication'
@@ -47,12 +47,13 @@ export type Shutdown = () => Promise<void>
 export async function start (
   ctx: MeasureContext,
   config: Config,
-  minio: MinioService,
-  mongo: MongoClient
+  minio: StorageAdapter,
+  mongoClient: MongoClientReference
 ): Promise<Shutdown> {
   const port = config.Port
 
   ctx.info('Starting collaborator server', { port })
+  const mongo = await mongoClient.getClient()
 
   const app = express()
   app.use(cors())

@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Client, type UploadedObjectInfo } from 'minio'
+import { Client, type BucketItem, type BucketStream } from 'minio'
 
 import core, {
   toWorkspaceString,
@@ -23,7 +23,14 @@ import core, {
   type WorkspaceId
 } from '@hcengineering/core'
 
-import { type ListBlobResult, type StorageAdapter, type StorageConfig } from '@hcengineering/server-core'
+import {
+  removeAllObjects,
+  type BlobStorageIterator,
+  type ListBlobResult,
+  type StorageAdapter,
+  type StorageConfig,
+  type UploadedObjectInfo
+} from '@hcengineering/server-core'
 import { type Readable } from 'stream'
 
 /**
@@ -35,13 +42,10 @@ export function getBucketId (workspaceId: WorkspaceId): string {
 
 export interface MinioConfig extends StorageConfig {
   kind: 'minio'
-  region: string
-  endpoint: string
-  accessKeyId: string
-  secretAccessKey: string
-
-  port: number
-  useSSL: boolean
+  accessKey: string
+  secretKey: string
+  useSSL?: string
+  region?: string
 }
 
 /**
@@ -50,18 +54,27 @@ export interface MinioConfig extends StorageConfig {
 export class MinioService implements StorageAdapter {
   static config = 'minio'
   client: Client
-  constructor (opt: { endPoint: string, port: number, accessKey: string, secretKey: string, useSSL: boolean }) {
-    this.client = new Client(opt)
+  constructor (readonly opt: Omit<MinioConfig, 'name' | 'kind'>) {
+    this.client = new Client({
+      endPoint: opt.endpoint,
+      accessKey: opt.accessKey,
+      secretKey: opt.secretKey,
+      region: opt.region ?? 'us-east-1',
+      port: opt.port ?? 9000,
+      useSSL: opt.useSSL === 'true'
+    })
   }
 
   async initialize (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {}
+
+  async close (): Promise<void> {}
 
   async exists (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<boolean> {
     return await this.client.bucketExists(getBucketId(workspaceId))
   }
 
   async make (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {
-    await this.client.makeBucket(getBucketId(workspaceId), 'k8s')
+    await this.client.makeBucket(getBucketId(workspaceId), this.opt.region ?? 'us-east-1')
   }
 
   async remove (ctx: MeasureContext, workspaceId: WorkspaceId, objectNames: string[]): Promise<void> {
@@ -69,45 +82,87 @@ export class MinioService implements StorageAdapter {
   }
 
   async delete (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {
+    await removeAllObjects(ctx, this, workspaceId)
     await this.client.removeBucket(getBucketId(workspaceId))
   }
 
-  async list (ctx: MeasureContext, workspaceId: WorkspaceId, prefix?: string): Promise<ListBlobResult[]> {
-    try {
-      const items = new Map<string, ListBlobResult>()
-      const list = this.client.listObjects(getBucketId(workspaceId), prefix, true)
-      await new Promise((resolve, reject) => {
-        list.on('data', (data) => {
-          if (data.name !== undefined) {
-            items.set(data.name, {
-              _id: data.name as Ref<Blob>,
-              _class: core.class.Blob,
-              etag: data.etag,
-              size: data.size,
-              provider: 'minio',
-              space: core.space.Configuration,
-              modifiedBy: core.account.ConfigUser,
-              modifiedOn: data.lastModified.getTime(),
-              storageId: data.name
+  async listStream (
+    ctx: MeasureContext,
+    workspaceId: WorkspaceId,
+    prefix?: string | undefined
+  ): Promise<BlobStorageIterator> {
+    let hasMore = true
+    let stream: BucketStream<BucketItem> | undefined
+    let error: Error | undefined
+    let onNext: () => void = () => {}
+    const buffer: ListBlobResult[] = []
+    return {
+      next: async (): Promise<ListBlobResult | undefined> => {
+        try {
+          if (stream === undefined) {
+            stream = this.client.listObjects(getBucketId(workspaceId), prefix, true)
+            stream.on('end', () => {
+              stream?.destroy()
+              stream = undefined
+              hasMore = false
+              onNext()
+            })
+            stream.on('error', (err) => {
+              stream?.destroy()
+              stream = undefined
+              error = err
+              hasMore = false
+              onNext()
+            })
+            stream.on('data', (data) => {
+              if (data.name !== undefined) {
+                buffer.push({
+                  _id: data.name as Ref<Blob>,
+                  _class: core.class.Blob,
+                  etag: data.etag,
+                  size: data.size,
+                  provider: 'minio',
+                  space: core.space.Configuration,
+                  modifiedBy: core.account.ConfigUser,
+                  modifiedOn: data.lastModified.getTime(),
+                  storageId: data.name
+                })
+              }
+              onNext()
+              if (buffer.length > 5) {
+                stream?.pause()
+              }
             })
           }
+        } catch (err: any) {
+          const msg = (err?.message as string) ?? ''
+          if (msg.includes('Invalid bucket name') || msg.includes('The specified bucket does not exist')) {
+            hasMore = false
+            return
+          }
+          error = err
+        }
+
+        if (buffer.length > 0) {
+          return buffer.shift()
+        }
+        if (!hasMore) {
+          return undefined
+        }
+        return await new Promise<ListBlobResult | undefined>((resolve, reject) => {
+          onNext = () => {
+            if (error != null) {
+              reject(error)
+            }
+            onNext = () => {}
+            resolve(buffer.shift())
+          }
+          stream?.resume()
         })
-        list.on('end', () => {
-          list.destroy()
-          resolve(null)
-        })
-        list.on('error', (err) => {
-          list.destroy()
-          reject(err)
-        })
-      })
-      return Array.from(items.values())
-    } catch (err: any) {
-      const msg = (err?.message as string) ?? ''
-      if (msg.includes('Invalid bucket name') || msg.includes('The specified bucket does not exist')) {
-        return []
+      },
+      close: async () => {
+        stream?.destroy()
       }
-      throw err
     }
   }
 

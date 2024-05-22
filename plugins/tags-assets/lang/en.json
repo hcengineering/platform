@@ -17,7 +17,7 @@
     "CancelLabel": "Cancel",
     "SearchCreate": "Search/Name ...",
     "QuickAddItems": "Quick Add {word} \"{title}\"",
-    "NoItems": "There is no {word} added ...",
+    "NoItems": "There are no {word} added ...",
     "TagDescriptionLabel": "Description",
     "TagDescriptionPlaceholder": "Please type description here",
     "TagTooltip": "{text}",

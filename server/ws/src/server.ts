@@ -28,14 +28,14 @@ import core, {
   type TxWorkspaceEvent,
   type WorkspaceId
 } from '@hcengineering/core'
-import { unknownError } from '@hcengineering/platform'
+import { unknownError, type Status } from '@hcengineering/platform'
 import { type HelloRequest, type HelloResponse, type Request, type Response } from '@hcengineering/rpc'
-import type { Pipeline, SessionContext } from '@hcengineering/server-core'
+import type { Pipeline, StorageAdapter } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
 
 import {
   LOGGING_ENABLED,
-  type BroadcastCall,
+  type ClientSessionCtx,
   type ConnectionSocket,
   type PipelineFactory,
   type ServerFactory,
@@ -67,10 +67,6 @@ function timeoutPromise (time: number): { promise: Promise<void>, cancelHandle: 
   }
 }
 
-function onNextTick (op: () => void): void {
-  setImmediate(op)
-}
-
 /**
  * @public
  */
@@ -95,7 +91,7 @@ class TSessionManager implements SessionManager {
 
   constructor (
     readonly ctx: MeasureContext,
-    readonly sessionFactory: (token: Token, pipeline: Pipeline, broadcast: BroadcastCall) => Session,
+    readonly sessionFactory: (token: Token, pipeline: Pipeline) => Session,
     readonly timeouts: Timeouts
   ) {
     this.checkInterval = setInterval(() => {
@@ -175,7 +171,7 @@ class TSessionManager implements SessionManager {
           this.ctx.warn('session hang, closing...', { wsId, user: s[1].session.getUser() })
 
           // Force close workspace if only one client and it hang.
-          void this.close(s[1].socket, wsId)
+          void this.close(this.ctx, s[1].socket, wsId)
           continue
         }
         if (diff > 20000 && diff < 60000 && this.ticks % 10 === 0) {
@@ -218,7 +214,7 @@ class TSessionManager implements SessionManager {
   }
 
   createSession (token: Token, pipeline: Pipeline): Session {
-    return this.sessionFactory(token, pipeline, this.broadcast.bind(this))
+    return this.sessionFactory(token, pipeline)
   }
 
   @withContext('get-workspace-info')
@@ -374,7 +370,8 @@ class TSessionManager implements SessionManager {
     workspace.sessions.set(session.sessionId, { session, socket: ws })
 
     // We do not need to wait for set-status, just return session to client
-    void ctx.with('set-status', {}, (ctx) => this.trySetStatus(ctx, session, true))
+    const _workspace = workspace
+    void ctx.with('set-status', {}, (ctx) => this.trySetStatus(ctx, session, true, _workspace.workspaceId))
 
     if (this.timeMinutes > 0) {
       void ws.send(ctx, { result: this.createMaintenanceWarning() }, session.binaryMode, session.useCompression)
@@ -431,25 +428,32 @@ class TSessionManager implements SessionManager {
       ctx,
       { ...token.workspace, workspaceUrl, workspaceName },
       true,
-      (tx, targets) => {
-        this.broadcastAll(workspace, tx, targets)
+      (tx, targets, exclude) => {
+        this.broadcastAll(workspace, tx, targets, exclude)
       }
     )
     return await workspace.pipeline
   }
 
-  broadcastAll (workspace: Workspace, tx: Tx[], targets?: string[]): void {
+  broadcastAll (workspace: Workspace, tx: Tx[], target?: string | string[], exclude?: string[]): void {
     if (workspace.upgrade) {
       return
     }
+    if (target !== undefined && !Array.isArray(target)) {
+      target = [target]
+    }
     const ctx = this.ctx.newChild('📬 broadcast-all', {})
     const sessions = [...workspace.sessions.values()].filter((it) => {
-      return it !== undefined && (targets === undefined || targets.includes(it.session.getUser()))
+      if (it === undefined) {
+        return false
+      }
+      const tt = it.session.getUser()
+      return (target === undefined && !(exclude ?? []).includes(tt)) || (target?.includes(tt) ?? false)
     })
     function send (): void {
       for (const session of sessions) {
         try {
-          sendResponse(ctx, session.session, session.socket, { result: tx })
+          void sendResponse(ctx, session.session, session.socket, { result: tx })
         } catch (err: any) {
           Analytics.handleError(err)
           ctx.error('error during send', { error: err })
@@ -459,7 +463,52 @@ class TSessionManager implements SessionManager {
     }
     if (sessions.length > 0) {
       // We need to send broadcast after our client response so put it after all IO
-      onNextTick(send)
+      send()
+    } else {
+      ctx.end()
+    }
+  }
+
+  broadcast (
+    from: Session | null,
+    workspaceId: WorkspaceId,
+    resp: Tx[],
+    target: string | undefined,
+    exclude?: string[]
+  ): void {
+    const workspace = this.workspaces.get(toWorkspaceString(workspaceId))
+    if (workspace === undefined) {
+      this.ctx.error('internal: cannot find sessions', {
+        workspaceId: workspaceId.name,
+        target,
+        userId: from?.getUser() ?? '$unknown'
+      })
+      return
+    }
+    if (workspace?.upgrade ?? false) {
+      return
+    }
+    if (LOGGING_ENABLED) {
+      this.ctx.info('server broadcasting to clients...', {
+        workspace: workspaceId.name,
+        count: workspace.sessions.size
+      })
+    }
+
+    const sessions = [...workspace.sessions.values()]
+    const ctx = this.ctx.newChild('📭 broadcast', {})
+    function send (): void {
+      for (const sessionRef of sessions) {
+        const tt = sessionRef.session.getUser()
+        if ((target === undefined && !(exclude ?? []).includes(tt)) || (target?.includes(tt) ?? false)) {
+          void sendResponse(ctx, sessionRef.session, sessionRef.socket, { result: resp })
+        }
+      }
+      ctx.end()
+    }
+    if (sessions.length > 0) {
+      // We need to send broadcast after our client response so put it after all IO
+      send()
     } else {
       ctx.end()
     }
@@ -498,18 +547,28 @@ class TSessionManager implements SessionManager {
     return workspace
   }
 
-  private async trySetStatus (ctx: MeasureContext, session: Session, online: boolean): Promise<void> {
+  private async trySetStatus (
+    ctx: MeasureContext,
+    session: Session,
+    online: boolean,
+    workspaceId: WorkspaceId
+  ): Promise<void> {
     const current = this.statusPromises.get(session.getUser())
     if (current !== undefined) {
       await current
     }
-    const promise = this.setStatus(ctx, session, online)
+    const promise = this.setStatus(ctx, session, online, workspaceId)
     this.statusPromises.set(session.getUser(), promise)
     await promise
     this.statusPromises.delete(session.getUser())
   }
 
-  private async setStatus (ctx: MeasureContext, session: Session, online: boolean): Promise<void> {
+  private async setStatus (
+    ctx: MeasureContext,
+    session: Session,
+    online: boolean,
+    workspaceId: WorkspaceId
+  ): Promise<void> {
     try {
       const user = (
         await session.pipeline().modelDb.findAll(
@@ -521,28 +580,51 @@ class TSessionManager implements SessionManager {
         )
       )[0]
       if (user === undefined) return
-      const status = (await session.findAll(ctx, core.class.UserStatus, { user: user._id }, { limit: 1 }))[0]
+
+      const clientCtx: ClientSessionCtx = {
+        sendResponse: async (msg) => {
+          // No response
+        },
+        ctx,
+        send: async (msg, target, exclude) => {
+          this.broadcast(null, workspaceId, msg, target, exclude)
+        },
+        sendError: async (msg, error: Status) => {
+          // Assume no error send
+        }
+      }
+
+      const status = (await session.findAllRaw(ctx, core.class.UserStatus, { user: user._id }, { limit: 1 }))[0]
       const txFactory = new TxFactory(user._id, true)
       if (status === undefined) {
         const tx = txFactory.createTxCreateDoc(core.class.UserStatus, core.space.Space, {
           online,
           user: user._id
         })
-        await session.tx(ctx, tx)
+        await session.tx(clientCtx, tx)
       } else if (status.online !== online) {
         const tx = txFactory.createTxUpdateDoc(status._class, status.space, status._id, {
           online
         })
-        await session.tx(ctx, tx)
+        await session.tx(clientCtx, tx)
       }
     } catch {}
   }
 
-  async close (ws: ConnectionSocket, wsid: string): Promise<void> {
+  async close (ctx: MeasureContext, ws: ConnectionSocket, wsid: string): Promise<void> {
     const workspace = this.workspaces.get(wsid)
 
     const sessionRef = this.sessions.get(ws.id)
     if (sessionRef !== undefined) {
+      ctx.info('bye happen', {
+        workspace: workspace?.workspaceName,
+        user: sessionRef.session.getUser(),
+        binary: sessionRef.session.binaryMode,
+        compression: sessionRef.session.useCompression,
+        totalTime: Date.now() - sessionRef.session.createTime,
+        workspaceUsers: workspace?.sessions?.size,
+        totalUsers: this.sessions.size
+      })
       this.sessions.delete(ws.id)
       if (workspace !== undefined) {
         workspace.sessions.delete(sessionRef.session.sessionId)
@@ -556,7 +638,7 @@ class TSessionManager implements SessionManager {
           if (workspace !== undefined) {
             const another = Array.from(workspace.sessions.values()).findIndex((p) => p.session.getUser() === user)
             if (another === -1 && !workspace.upgrade) {
-              void this.trySetStatus(workspace.context, sessionRef.session, false)
+              void this.trySetStatus(workspace.context, sessionRef.session, false, workspace.workspaceId)
             }
           }
         }, this.timeouts.reconnectTimeout)
@@ -705,57 +787,16 @@ class TSessionManager implements SessionManager {
     }
   }
 
-  broadcast (from: Session | null, workspaceId: WorkspaceId, resp: Response<any>, target?: string[]): void {
-    const workspace = this.workspaces.get(toWorkspaceString(workspaceId))
-    if (workspace === undefined) {
-      this.ctx.error('internal: cannot find sessions', {
-        workspaceId: workspaceId.name,
-        target,
-        userId: from?.getUser() ?? '$unknown'
-      })
-      return
-    }
-    if (workspace?.upgrade ?? false) {
-      return
-    }
-    if (LOGGING_ENABLED) {
-      this.ctx.info('server broadcasting to clients...', {
-        workspace: workspaceId.name,
-        count: workspace.sessions.size
-      })
-    }
-
-    const sessions = [...workspace.sessions.values()]
-    const ctx = this.ctx.newChild('📭 broadcast', {})
-    function send (): void {
-      for (const sessionRef of sessions) {
-        if (sessionRef !== undefined && sessionRef.session.sessionId !== from?.sessionId) {
-          if (target === undefined || target.includes(sessionRef.session.getUser())) {
-            sendResponse(ctx, sessionRef.session, sessionRef.socket, resp)
-          }
-        }
-      }
-      ctx.end()
-    }
-    if (sessions.length > 0) {
-      // We need to send broadcast after our client response so put it after all IO
-      onNextTick(send)
-    } else {
-      ctx.end()
-    }
-  }
-
-  async handleRequest<S extends Session>(
+  handleRequest<S extends Session>(
     requestCtx: MeasureContext,
     service: S,
     ws: ConnectionSocket,
     request: Request<any>,
-    workspace: string
-  ): Promise<Response<any> | undefined> {
+    workspace: string // wsId, toWorkspaceString()
+  ): void {
     const userCtx = requestCtx.newChild('📞 client', {
       workspace: '🧲 ' + workspace
-    }) as SessionContext
-    userCtx.sessionId = service.sessionInstanceId ?? ''
+    })
 
     // Calculate total number of clients
     const reqId = generateId()
@@ -763,21 +804,31 @@ class TSessionManager implements SessionManager {
     const st = Date.now()
     try {
       const backupMode = 'loadChunk' in service
-      return await userCtx.with(`🧭 ${backupMode ? 'handleBackup' : 'handleRequest'}`, {}, async (ctx) => {
+      void userCtx.with(`🧭 ${backupMode ? 'handleBackup' : 'handleRequest'}`, {}, async (ctx) => {
         if (request.time != null) {
           const delta = Date.now() - request.time
           userCtx.measure('receive msg', delta)
         }
+        const wsRef = this.workspaces.get(workspace)
+        if (wsRef === undefined) {
+          await ws.send(
+            ctx,
+            {
+              id: request.id,
+              error: unknownError('No workspace')
+            },
+            service.binaryMode,
+            service.useCompression
+          )
+          return
+        }
         if (request.method === 'forceClose') {
-          const wsRef = this.workspaces.get(workspace)
           let done = false
-          if (wsRef !== undefined) {
-            if (wsRef.upgrade) {
-              done = true
-              console.log('FORCE CLOSE', workspace)
-              // In case of upgrade, we need to force close workspace not in interval handler
-              await this.forceClose(workspace, ws)
-            }
+          if (wsRef.upgrade) {
+            done = true
+            console.log('FORCE CLOSE', workspace)
+            // In case of upgrade, we need to force close workspace not in interval handler
+            await this.forceClose(workspace, ws)
           }
           const forceCloseResponse: Response<any> = {
             id: request.id,
@@ -790,7 +841,6 @@ class TSessionManager implements SessionManager {
           const hello = request as HelloRequest
           service.binaryMode = hello.binary ?? false
           service.useCompression = hello.compression ?? false
-          service.useBroadcast = hello.broadcast ?? false
 
           if (LOGGING_ENABLED) {
             ctx.info('hello happen', {
@@ -818,8 +868,36 @@ class TSessionManager implements SessionManager {
           await ws.send(ctx, helloResponse, false, false)
           return
         }
+        const opContext = (ctx: MeasureContext): ClientSessionCtx => ({
+          sendResponse: async (msg) => {
+            await sendResponse(ctx, service, ws, {
+              id: request.id,
+              result: msg,
+              time: Date.now() - st,
+              bfst: Date.now(),
+              queue: service.requests.size
+            })
+            userCtx.end()
+          },
+          ctx,
+          send: async (msg, target, exclude) => {
+            this.broadcast(service, wsRef.workspaceId, msg, target, exclude)
+          },
+          sendError: async (msg, error: Status) => {
+            await sendResponse(ctx, service, ws, {
+              id: request.id,
+              result: msg,
+              error,
+              time: Date.now() - st,
+              bfst: Date.now(),
+              queue: service.requests.size
+            })
+          }
+        })
+
         if (request.method === 'measure' || request.method === 'measure-done') {
-          return await this.handleMeasure<S>(service, request, ctx, ws)
+          await this.handleMeasure<S>(service, request, opContext(ctx))
+          return
         }
         service.requests.set(reqId, {
           id: reqId,
@@ -835,28 +913,24 @@ class TSessionManager implements SessionManager {
         try {
           const params = [...request.params]
 
-          const result =
-            service.measureCtx?.ctx !== undefined
-              ? await f.apply(service, [service.measureCtx?.ctx, ...params])
-              : await ctx.with('🧨 process', {}, async (callTx) => f.apply(service, [callTx, ...params]))
-
-          return {
-            id: request.id,
-            result,
-            time: Date.now() - st,
-            bfst: Date.now(),
-            queue: service.requests.size
-          }
+          service.measureCtx?.ctx !== undefined
+            ? await f.apply(service, [opContext(service.measureCtx?.ctx), ...params])
+            : await ctx.with('🧨 process', {}, async (callTx) => f.apply(service, [opContext(callTx), ...params]))
         } catch (err: any) {
           Analytics.handleError(err)
           if (LOGGING_ENABLED) {
             this.ctx.error('error handle request', { error: err, request })
           }
-          return {
-            id: request.id,
-            error: unknownError(err),
-            result: JSON.parse(JSON.stringify(err?.stack))
-          }
+          await ws.send(
+            ctx,
+            {
+              id: request.id,
+              error: unknownError(err),
+              result: JSON.parse(JSON.stringify(err?.stack))
+            },
+            service.binaryMode,
+            service.useCompression
+          )
         }
       })
     } finally {
@@ -868,30 +942,26 @@ class TSessionManager implements SessionManager {
   private async handleMeasure<S extends Session>(
     service: S,
     request: Request<any[]>,
-    ctx: MeasureContext,
-    ws: ConnectionSocket
-  ): Promise<Response<any> | undefined> {
+    ctx: ClientSessionCtx
+  ): Promise<void> {
     let serverTime = 0
     if (request.method === 'measure') {
-      service.measureCtx = { ctx: ctx.newChild('📶 ' + request.params[0], {}), time: Date.now() }
+      service.measureCtx = { ctx: ctx.ctx.newChild('📶 ' + request.params[0], {}), time: Date.now() }
     } else {
       if (service.measureCtx !== undefined) {
         serverTime = Date.now() - service.measureCtx.time
         service.measureCtx.ctx.end(serverTime)
+        service.measureCtx = undefined
       }
     }
     try {
-      return { id: request.id, result: request.method === 'measure' ? 'started' : serverTime }
+      await ctx.sendResponse(request.method === 'measure' ? 'started' : serverTime)
     } catch (err: any) {
       Analytics.handleError(err)
       if (LOGGING_ENABLED) {
-        ctx.error('error handle measure', { error: err, request })
+        ctx.ctx.error('error handle measure', { error: err, request })
       }
-      return {
-        id: request.id,
-        error: unknownError(err),
-        result: JSON.parse(JSON.stringify(err?.stack))
-      }
+      await ctx.sendError(JSON.parse(JSON.stringify(err?.stack)), unknownError(err))
     }
   }
 }
@@ -904,11 +974,12 @@ export function start (
   opt: {
     port: number
     pipelineFactory: PipelineFactory
-    sessionFactory: (token: Token, pipeline: Pipeline, broadcast: BroadcastCall) => Session
+    sessionFactory: (token: Token, pipeline: Pipeline) => Session
     productId: string
     serverFactory: ServerFactory
     enableCompression?: boolean
     accountsUrl: string
+    externalStorage: StorageAdapter
   } & Partial<Timeouts>
 ): () => Promise<void> {
   const sessions = new TSessionManager(ctx, opt.sessionFactory, {
@@ -917,12 +988,15 @@ export function start (
   })
   return opt.serverFactory(
     sessions,
-    (rctx, service, ws, msg, workspace) => sessions.handleRequest(rctx, service, ws, msg, workspace),
+    (rctx, service, ws, msg, workspace) => {
+      sessions.handleRequest(rctx, service, ws, msg, workspace)
+    },
     ctx,
     opt.pipelineFactory,
     opt.port,
     opt.productId,
     opt.enableCompression ?? true,
-    opt.accountsUrl
+    opt.accountsUrl,
+    opt.externalStorage
   )
 }

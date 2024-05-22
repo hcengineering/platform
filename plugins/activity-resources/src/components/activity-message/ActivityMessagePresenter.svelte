@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { DisplayActivityMessage } from '@hcengineering/activity'
+  import { DisplayActivityMessage, ActivityMessageViewType } from '@hcengineering/activity'
   import view from '@hcengineering/view'
   import { getClient } from '@hcengineering/presentation'
   import { Action, Component } from '@hcengineering/ui'
@@ -34,6 +34,7 @@
   export let hoverStyles: 'borderedHover' | 'filledHover' = 'borderedHover'
   export let withShowMore: boolean = true
   export let attachmentImageSize: 'x-large' | undefined = undefined
+  export let type: ActivityMessageViewType = 'default'
   export let showLinksPreview = true
   export let videoPreload = true
   export let hideLink = false
@@ -50,6 +51,7 @@
   <Component
     is={objectPresenter.presenter}
     props={{
+      space: value.space,
       value,
       showNotify,
       skipLabel,
@@ -68,6 +70,7 @@
       showLinksPreview,
       videoPreload,
       hideLink,
+      type,
       compact,
       onClick
     }}

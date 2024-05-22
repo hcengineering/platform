@@ -58,17 +58,6 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverChunter.trigger.OnDirectMessageSent,
-    txMatch: {
-      _class: core.class.TxCollectionCUD,
-      objectClass: chunter.class.DirectMessage,
-      collection: 'messages',
-      'tx._class': core.class.TxCreateDoc,
-      'tx.objectClass': chunter.class.ChatMessage
-    }
-  })
-
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverChunter.trigger.OnChatMessageRemoved,
     txMatch: {
       _class: core.class.TxCollectionCUD,
@@ -78,11 +67,12 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverChunter.trigger.OnChatMessageCreate,
+    trigger: serverChunter.trigger.ChatNotificationsHandler,
     txMatch: {
       _class: core.class.TxCollectionCUD,
       'tx._class': core.class.TxCreateDoc,
       'tx.objectClass': chunter.class.ChatMessage
-    }
+    },
+    isAsync: true
   })
 }

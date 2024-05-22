@@ -28,10 +28,6 @@ export interface Config {
   TransactorUrl: string
   MongoUrl: string
   UploadUrl: string
-
-  MinioEndpoint: string
-  MinioAccessKey: string
-  MinioSecretKey: string
 }
 
 const envMap: { [key in keyof Config]: string } = {
@@ -42,23 +38,10 @@ const envMap: { [key in keyof Config]: string } = {
   AccountsUrl: 'ACCOUNTS_URL',
   TransactorUrl: 'TRANSACTOR_URL',
   MongoUrl: 'MONGO_URL',
-  UploadUrl: 'UPLOAD_URL',
-  MinioEndpoint: 'MINIO_ENDPOINT',
-  MinioAccessKey: 'MINIO_ACCESS_KEY',
-  MinioSecretKey: 'MINIO_SECRET_KEY'
+  UploadUrl: 'UPLOAD_URL'
 }
 
-const required: Array<keyof Config> = [
-  'Secret',
-  'ServiceID',
-  'Port',
-  'AccountsUrl',
-  'TransactorUrl',
-  'MongoUrl',
-  'MinioEndpoint',
-  'MinioAccessKey',
-  'MinioSecretKey'
-]
+const required: Array<keyof Config> = ['Secret', 'ServiceID', 'Port', 'AccountsUrl', 'TransactorUrl', 'MongoUrl']
 
 const config: Config = (() => {
   const params: Partial<Config> = {
@@ -69,10 +52,7 @@ const config: Config = (() => {
     AccountsUrl: process.env[envMap.AccountsUrl],
     TransactorUrl: process.env[envMap.TransactorUrl],
     MongoUrl: process.env[envMap.MongoUrl],
-    UploadUrl: process.env[envMap.UploadUrl] ?? '/files',
-    MinioEndpoint: process.env[envMap.MinioEndpoint],
-    MinioAccessKey: process.env[envMap.MinioAccessKey],
-    MinioSecretKey: process.env[envMap.MinioSecretKey]
+    UploadUrl: process.env[envMap.UploadUrl] ?? '/files'
   }
 
   const missingEnv = required.filter((key) => params[key] === undefined).map((key) => envMap[key])

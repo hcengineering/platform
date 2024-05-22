@@ -1,5 +1,7 @@
 import { Browser, BrowserContext, Locator, Page, expect } from '@playwright/test'
 import { allure } from 'allure-playwright'
+import { faker } from '@faker-js/faker'
+import { TestData } from './chat/types'
 
 export const PlatformURI = process.env.PLATFORM_URI as string
 export const PlatformTransactor = process.env.PLATFORM_TRANSACTOR as string
@@ -8,6 +10,17 @@ export const PlatformUserSecond = process.env.PLATFORM_USER_SECOND as string
 export const PlatformSetting = process.env.SETTING as string
 export const PlatformSettingSecond = process.env.SETTING_SECOND as string
 export const DefaultWorkspace = 'SanityTest'
+export const AccountUrl = process.env.ACCOUNT_URL as string
+
+export function generateTestData (): TestData {
+  return {
+    workspaceName: faker.lorem.word(),
+    userName: faker.internet.userName(),
+    firstName: faker.person.firstName(),
+    lastName: faker.person.lastName(),
+    channelName: faker.lorem.word()
+  }
+}
 
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)

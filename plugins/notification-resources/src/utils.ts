@@ -672,3 +672,17 @@ function arrayBufferToBase64 (buffer: ArrayBuffer | null): string {
     return ''
   }
 }
+
+export function notificationsComparator (notifications1: InboxNotification, notifications2: InboxNotification): number {
+  const createdOn1 = notifications1.createdOn ?? 0
+  const createdOn2 = notifications2.createdOn ?? 0
+
+  if (createdOn1 > createdOn2) {
+    return -1
+  }
+  if (createdOn1 < createdOn2) {
+    return 1
+  }
+
+  return 0
+}

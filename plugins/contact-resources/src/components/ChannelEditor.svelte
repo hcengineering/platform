@@ -55,7 +55,7 @@
 
   const copyChannel = (): void => {
     if (label === plugin.string.CopyToClipboard) {
-      copyTextToClipboard(value).then(() => (label = plugin.string.Copied))
+      copyTextToClipboard(value).then(() => (label = view.string.Copied))
       setTimeout(() => {
         label = plugin.string.CopyToClipboard
       }, 3000)
@@ -98,7 +98,7 @@
 <FocusHandler manager={mgr} />
 {#if editable}
   <div class="editor-container {dir} buttons-group xsmall-gap">
-    <div class="cover-channel" class:show class:copied={label === plugin.string.Copied} data-tooltip={lTraslate}>
+    <div class="cover-channel" class:show class:copied={label === view.string.Copied} data-tooltip={lTraslate}>
       <input
         bind:this={input}
         class="search"
@@ -179,7 +179,7 @@
     <span
       class="select-text cover-channel overflow-label with-tooltip"
       class:show
-      class:copied={label === plugin.string.Copied}
+      class:copied={label === view.string.Copied}
       class:cursor-pointer={openable}
       data-tooltip={lTraslate}
       on:click={() => {

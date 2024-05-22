@@ -23,10 +23,12 @@ import Schedule from './components/Schedule.svelte'
 import Structure from './components/Structure.svelte'
 import TzDatePresenter from './components/TzDatePresenter.svelte'
 import TzDateEditor from './components/TzDateEditor.svelte'
+import DepartmentPresenter from './components/DepartmentPresenter.svelte'
 import RequestPresenter from './components/RequestPresenter.svelte'
 import { showPopup } from '@hcengineering/ui'
 import { type Request } from '@hcengineering/hr'
 import EditRequestType from './components/EditRequestType.svelte'
+import DepartmentRefPresenter from './components/DepartmentRefPresenter.svelte'
 
 async function editRequestType (object: Request): Promise<void> {
   showPopup(EditRequestType, { object })
@@ -44,7 +46,9 @@ export default async (): Promise<Resources> => ({
     TzDatePresenter,
     TzDateEditor,
     RequestPresenter,
-    EditRequestType
+    EditRequestType,
+    DepartmentPresenter,
+    DepartmentRefPresenter
   },
   actionImpl: {
     EditRequestType: editRequestType

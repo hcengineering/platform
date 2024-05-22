@@ -21,7 +21,6 @@ import type {
   ArrOf,
   AttachedDoc,
   Blob,
-  BlobData,
   Class,
   Collection,
   Configuration,
@@ -134,7 +133,6 @@ export default plugin(coreId, {
     Version: '' as Ref<Class<Version>>,
     PluginConfiguration: '' as Ref<Class<PluginConfiguration>>,
     UserStatus: '' as Ref<Class<UserStatus>>,
-    BlobData: '' as Ref<Class<BlobData>>,
     FulltextData: '' as Ref<Class<FullTextData>>,
     TypeRelatedDocument: '' as Ref<Class<Type<RelatedDocument>>>,
     DocIndexState: '' as Ref<Class<DocIndexState>>,
@@ -219,6 +217,7 @@ export default plugin(coreId, {
     Account: '' as IntlString,
     StatusCategory: '' as IntlString,
     Rank: '' as IntlString,
+    Members: '' as IntlString,
     Owners: '' as IntlString,
     Permission: '' as IntlString,
     CreateObject: '' as IntlString,
@@ -232,7 +231,9 @@ export default plugin(coreId, {
     DeleteObjectDescription: '' as IntlString,
     ForbidDeleteObjectDescription: '' as IntlString,
     UpdateSpaceDescription: '' as IntlString,
-    ArchiveSpaceDescription: '' as IntlString
+    ArchiveSpaceDescription: '' as IntlString,
+    AutoJoin: '' as IntlString,
+    AutoJoinDescr: '' as IntlString
   },
   descriptor: {
     SpacesType: '' as Ref<SpaceTypeDescriptor>

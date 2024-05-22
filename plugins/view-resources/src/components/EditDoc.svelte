@@ -20,7 +20,6 @@
   import { getResource } from '@hcengineering/platform'
   import {
     ActionContext,
-    AttributeCategory,
     AttributesBar,
     KeyedAttribute,
     createQuery,
@@ -29,7 +28,7 @@
     reduceCalls
   } from '@hcengineering/presentation'
   import { AnyComponent, Button, Component, IconMixin, IconMoreH } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
+  import view, { AttributeCategory } from '@hcengineering/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
 
   import { DocNavLink, ParentsNavigator, getDocAttrsInfo, getDocLabel, getDocMixins, showMenu } from '..'

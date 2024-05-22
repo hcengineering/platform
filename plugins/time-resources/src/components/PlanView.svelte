@@ -53,12 +53,13 @@
     const currentUser = getCurrentAccount() as PersonAccount
     const extCalendar = await client.findOne(calendar.class.ExternalCalendar, {
       members: currentUser._id,
-      archived: false,
+      hidden: false,
       default: true
     })
-    const space = extCalendar ? extCalendar._id : (`${currentUser._id}_calendar` as Ref<Calendar>)
+    const _calendar = extCalendar ? extCalendar._id : (`${currentUser._id}_calendar` as Ref<Calendar>)
     const dueDate = date + defaultDuration
-    await client.addCollection(time.class.WorkSlot, space, doc._id, doc._class, 'workslots', {
+    await client.addCollection(time.class.WorkSlot, calendar.space.Calendar, doc._id, doc._class, 'workslots', {
+      calendar: _calendar,
       eventId: generateEventId(),
       date,
       dueDate,
@@ -102,7 +103,7 @@
     <PlanningCalendar
       {dragItem}
       bind:currentDate
-      displayedDaysCount={3}
+      displayedDaysCount={5}
       on:dragDrop={drop}
       on:change={(event) => (visibleNav = event.detail)}
     />

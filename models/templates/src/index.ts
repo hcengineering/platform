@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { type Domain, DOMAIN_MODEL, IndexKind, type Ref, type Markup } from '@hcengineering/core'
+import { type Domain, DOMAIN_MODEL, IndexKind, type Ref, type Markup, AccountRole } from '@hcengineering/core'
 import { type Builder, Index, Model, Prop, TypeString, UX, TypeMarkup } from '@hcengineering/model'
 import core, { TDoc, TSpace } from '@hcengineering/model-core'
 import textEditor from '@hcengineering/model-text-editor'
@@ -76,7 +76,7 @@ export function createModel (builder: Builder): void {
       icon: templates.icon.Templates,
       component: templates.component.Templates,
       group: 'settings-editor',
-      secured: false,
+      role: AccountRole.User,
       order: 3500
     },
     templates.ids.Templates

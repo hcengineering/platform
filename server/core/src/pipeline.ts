@@ -35,7 +35,6 @@ import { type DbConfiguration } from './configuration'
 import { createServerStorage } from './server'
 import {
   type BroadcastFunc,
-  type HandledBroadcastFunc,
   type Middleware,
   type MiddlewareCreator,
   type Pipeline,
@@ -52,30 +51,16 @@ export async function createPipeline (
   upgrade: boolean,
   broadcast: BroadcastFunc
 ): Promise<Pipeline> {
-  let broadcastHook: HandledBroadcastFunc = (): Tx[] => {
-    return []
-  }
   const storage = await ctx.with(
     'create-server-storage',
     {},
     async (ctx) =>
       await createServerStorage(ctx, conf, {
         upgrade,
-        broadcast: (tx: Tx[], targets?: string[]) => {
-          const sendTx = broadcastHook?.(tx, targets) ?? tx
-          broadcast(sendTx, targets)
-        }
+        broadcast
       })
   )
-  const pipelineResult = await PipelineImpl.create(
-    ctx.newChild('pipeline-operations', {}),
-    storage,
-    constructors,
-    broadcast
-  )
-  broadcastHook = (tx, targets) => {
-    return pipelineResult.handleBroadcast(tx, targets)
-  }
+  const pipelineResult = await PipelineImpl.create(ctx.newChild('pipeline-operations', {}), storage, constructors)
   return pipelineResult
 }
 
@@ -86,30 +71,21 @@ class PipelineImpl implements Pipeline {
     this.modelDb = storage.modelDb
   }
 
-  handleBroadcast (tx: Tx[], targets?: string[]): Tx[] {
-    return this.head?.handleBroadcast(tx, targets) ?? tx
-  }
-
   static async create (
     ctx: MeasureContext,
     storage: ServerStorage,
-    constructors: MiddlewareCreator[],
-    broadcast: BroadcastFunc
+    constructors: MiddlewareCreator[]
   ): Promise<PipelineImpl> {
     const pipeline = new PipelineImpl(storage)
-    pipeline.head = await pipeline.buildChain(ctx, constructors, broadcast)
+    pipeline.head = await pipeline.buildChain(ctx, constructors)
     return pipeline
   }
 
-  private async buildChain (
-    ctx: MeasureContext,
-    constructors: MiddlewareCreator[],
-    broadcast: BroadcastFunc
-  ): Promise<Middleware | undefined> {
+  private async buildChain (ctx: MeasureContext, constructors: MiddlewareCreator[]): Promise<Middleware | undefined> {
     let current: Middleware | undefined
     for (let index = constructors.length - 1; index >= 0; index--) {
       const element = constructors[index]
-      current = await ctx.with('build chain', {}, async (ctx) => await element(ctx, broadcast, this.storage, current))
+      current = await ctx.with('build chain', {}, async (ctx) => await element(ctx, this.storage, current))
     }
     return current
   }
@@ -122,19 +98,18 @@ class PipelineImpl implements Pipeline {
   ): Promise<FindResult<T>> {
     return this.head !== undefined
       ? await this.head.findAll(ctx, _class, query, options)
-      : await this.storage.findAll(ctx, _class, query, options)
+      : await this.storage.findAll(ctx.ctx, _class, query, options)
   }
 
   async searchFulltext (ctx: SessionContext, query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
     return this.head !== undefined
       ? await this.head.searchFulltext(ctx, query, options)
-      : await this.storage.searchFulltext(ctx, query, options)
+      : await this.storage.searchFulltext(ctx.ctx, query, options)
   }
 
-  async tx (ctx: SessionContext, tx: Tx): Promise<[TxResult, Tx[], string[] | undefined]> {
+  async tx (ctx: SessionContext, tx: Tx): Promise<TxResult> {
     if (this.head === undefined) {
-      const res = await this.storage.tx(ctx, tx)
-      return [...res, undefined]
+      return await this.storage.tx(ctx, tx)
     } else {
       return await this.head.tx(ctx, tx)
     }

@@ -52,6 +52,7 @@ import {
   ObjectTitle,
   ObjectTooltip,
   ObjectValidator,
+  AttrPresenter,
   PreviewPresenter,
   SpaceHeader,
   SpaceName,
@@ -116,11 +117,14 @@ const view = plugin(viewId, {
     ActionCategory: '' as Ref<Class<ActionCategory>>,
     LinkPresenter: '' as Ref<Class<LinkPresenter>>,
     FilterMode: '' as Ref<Class<FilterMode>>,
-    FilteredView: '' as Ref<Class<FilteredView>>
+    FilteredView: '' as Ref<Class<FilteredView>>,
+    AttrPresenter: '' as Ref<Class<AttrPresenter>>
   },
   action: {
     Delete: '' as Ref<Action>,
     Archive: '' as Ref<Action>,
+    Join: '' as Ref<Action>,
+    Leave: '' as Ref<Action>,
     Move: '' as Ref<Action>,
     MoveLeft: '' as Ref<Action>,
     MoveRight: '' as Ref<Action>,
@@ -199,7 +203,10 @@ const view = plugin(viewId, {
     Archived: '' as IntlString,
     MoreActions: '' as IntlString,
     Pin: '' as IntlString,
-    Unpin: '' as IntlString
+    Unpin: '' as IntlString,
+    Join: '' as IntlString,
+    Leave: '' as IntlString,
+    Copied: '' as IntlString
   },
   icon: {
     Table: '' as Asset,
@@ -235,7 +242,10 @@ const view = plugin(viewId, {
     Table2: '' as Asset,
     CodeBlock: '' as Asset,
     SeparatorLine: '' as Asset,
-    Circle: '' as Asset
+    Circle: '' as Asset,
+    Join: '' as Asset,
+    Leave: '' as Asset,
+    Copy: '' as Asset
   },
   category: {
     General: '' as Ref<ActionCategory>,

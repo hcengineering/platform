@@ -27,6 +27,7 @@ import core, {
   Domain,
   Enum,
   EnumOf,
+  Hierarchy,
   Hyperlink,
   Mixin as IMixin,
   IndexKind,
@@ -290,6 +291,7 @@ function _generateTx (tx: ClassTxes): Tx[] {
  */
 export class Builder {
   private readonly txes: Tx[] = []
+  readonly hierarchy = new Hierarchy()
 
   onTx?: (tx: Tx) => void
 
@@ -322,7 +324,7 @@ export class Builder {
     for (const tx of generated) {
       this.txes.push(tx)
       this.onTx?.(tx)
-      // this.hierarchy.tx(tx)
+      this.hierarchy.tx(tx)
     }
   }
 
@@ -352,6 +354,7 @@ export class Builder {
     }
     this.txes.push(tx)
     this.onTx?.(tx)
+    this.hierarchy.tx(tx)
     return TxProcessor.createDoc2Doc(tx)
   }
 
@@ -364,6 +367,7 @@ export class Builder {
     const tx = txFactory.createTxMixin(objectId, objectClass, core.space.Model, mixin, attributes)
     this.txes.push(tx)
     this.onTx?.(tx)
+    this.hierarchy.tx(tx)
   }
 
   getTxes (): Tx[] {

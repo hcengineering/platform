@@ -341,12 +341,6 @@ export const DOMAIN_BLOB = 'blob' as Domain
  * Special domain to access s3 blob data.
  * @public
  */
-export const DOMAIN_BLOB_DATA = 'blob-data' as Domain
-
-/**
- * Special domain to access s3 blob data.
- * @public
- */
 export const DOMAIN_FULLTEXT_BLOB = 'fulltext-blob' as Domain
 
 /**
@@ -407,6 +401,8 @@ export interface SpaceType extends Doc {
   name: string
   shortDescription?: string
   descriptor: Ref<SpaceTypeDescriptor>
+  members?: Ref<Account>[] // this members will be added automatically to new space, also change this fiield will affect existing spaces
+  autoJoin?: boolean // if true, all new users will be added to space automatically
   targetClass: Ref<Class<Space>> // A dynamic mixin for Spaces to hold custom attributes and roles assignment of the space type
   roles: CollectionSize<Role>
 }
@@ -496,18 +492,6 @@ export interface MigrationState extends Doc {
  */
 export function versionToString (version: Version | Data<Version>): string {
   return `${version?.major}.${version?.minor}.${version?.patch}`
-}
-
-/**
- * Blob data from s3 storage
- * @public
- */
-export interface BlobData extends Doc {
-  name: string
-  size: number
-  type: string
-  provider?: string // If node defined, will be default one
-  base64Data: string // base64 encoded data
 }
 
 /**

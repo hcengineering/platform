@@ -5,7 +5,6 @@
     "Revoke": "Revoke",
     "RevokeConfirmation": "This will cause previously shared link to stop working. Are you sure you want to revoke this public link?",
     "LinkWasRevoked": "Public link was revoked",
-    "Copy": "Copy",
-    "Copied": "Copied"
+    "Copy": "Copy"
   }
 }

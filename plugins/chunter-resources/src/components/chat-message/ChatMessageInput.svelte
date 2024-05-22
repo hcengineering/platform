@@ -17,7 +17,7 @@
   import { createEventDispatcher } from 'svelte'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import { Class, Doc, generateId, getCurrentAccount, Ref } from '@hcengineering/core'
-  import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
+  import { createQuery, DraftController, draftsStore, getClient, isSpace } from '@hcengineering/presentation'
   import chunter, { ChatMessage, ThreadMessage } from '@hcengineering/chunter'
   import { PersonAccount } from '@hcengineering/contact'
   import activity, { ActivityMessage } from '@hcengineering/activity'
@@ -162,7 +162,7 @@
     } else {
       await operations.addCollection<Doc, ChatMessage>(
         _class,
-        object.space,
+        isSpace(object) ? object._id : object.space,
         object._id,
         object._class,
         collection,

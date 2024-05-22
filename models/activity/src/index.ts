@@ -76,7 +76,7 @@ import { type AnyComponent } from '@hcengineering/ui/src/types'
 import activity from './plugin'
 
 export { activityId } from '@hcengineering/activity'
-export { activityOperation } from './migration'
+export { activityOperation, migrateMessagesSpace } from './migration'
 
 export const DOMAIN_ACTIVITY = 'activity' as Domain
 

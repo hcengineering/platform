@@ -467,6 +467,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/storage",
+      "projectFolder": "packages/storage",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/collaboration",
       "projectFolder": "server/collaboration",
       "shouldPublish": false
@@ -477,13 +482,8 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/dev-storage",
-      "projectFolder": "dev/storage",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/dev-server",
-      "projectFolder": "dev/server",
+      "packageName": "@hcengineering/uws",
+      "projectFolder": "server/uws",
       "shouldPublish": false
     },
     {
@@ -511,11 +511,6 @@
       "projectFolder": "dev/prod",
       "shouldPublish": false
     },
-    // {
-    //   "packageName": "@hcengineering/prod-tracker",
-    //   "projectFolder": "products/tracker",
-    //   "shouldPublish": false
-    // },
     {
       "packageName": "@hcengineering/server-core",
       "projectFolder": "server/core",
@@ -529,6 +524,11 @@
     {
       "packageName": "@hcengineering/server",
       "projectFolder": "server/server",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-storage",
+      "projectFolder": "server/server-storage",
       "shouldPublish": false
     },
     {
@@ -657,11 +657,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/dev-client-resources",
-      "projectFolder": "dev/client-resources",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/model-workbench",
       "projectFolder": "models/workbench",
       "shouldPublish": false
@@ -734,11 +729,6 @@
     {
       "packageName": "@hcengineering/model-server-core",
       "projectFolder": "models/server-core",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/dev-account",
-      "projectFolder": "dev/account",
       "shouldPublish": false
     },
     {
@@ -1428,6 +1418,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/s3",
+      "projectFolder": "server/s3",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/bitrix",
       "projectFolder": "plugins/bitrix",
       "shouldPublish": true
@@ -1660,6 +1655,41 @@
     {
       "packageName": "@hcengineering/model-server-document",
       "projectFolder": "models/server-document",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/drive",
+      "projectFolder": "plugins/drive",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/drive-assets",
+      "projectFolder": "plugins/drive-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/drive-resources",
+      "projectFolder": "plugins/drive-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-drive",
+      "projectFolder": "models/drive",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-drive",
+      "projectFolder": "server-plugins/drive",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-server-drive",
+      "projectFolder": "models/server-drive",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-drive-resources",
+      "projectFolder": "server-plugins/drive-resources",
       "shouldPublish": false
     }
   ]

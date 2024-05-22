@@ -66,7 +66,7 @@ import core, { TAccount, TAttachedDoc, TDoc } from '@hcengineering/model-core'
 import { createPublicLinkAction } from '@hcengineering/model-guest'
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 import presentation from '@hcengineering/model-presentation'
-import view, { createAction, type Viewlet } from '@hcengineering/model-view'
+import view, { createAction, createAttributePresenter, type Viewlet } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
@@ -446,7 +446,7 @@ export function createModel (builder: Builder): void {
       attachTo: contact.mixin.Employee,
       descriptor: view.viewlet.Table,
       config: [
-        '',
+        { key: '', props: { showStatus: true } },
         'city',
         'attachments',
         'modifiedOn',
@@ -1142,4 +1142,6 @@ export function createModel (builder: Builder): void {
     domain: DOMAIN_CONTACT,
     disabled: [{ attachedToClass: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { createdOn: -1 }, { attachedTo: 1 }]
   })
+
+  createAttributePresenter(builder, contact.component.SpaceMembersEditor, core.class.Space, 'members', 'array')
 }

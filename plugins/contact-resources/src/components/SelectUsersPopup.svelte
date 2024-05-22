@@ -32,7 +32,8 @@
   export let selected: Ref<Employee>[] = []
   export let skipCurrentAccount = false
   export let disableDeselectFor: Ref<Employee>[] = []
-  export let showStatus = false
+  export let showStatus = true
+  export let skipInactive = false
 
   const dispatch = createEventDispatcher()
 
@@ -90,7 +91,7 @@
           {showStatus}
           {disableDeselectFor}
           {skipCurrentAccount}
-          background="var(--theme-popup-color)"
+          {skipInactive}
           on:select={handleSelectionChanged}
         />
       </Scroller>

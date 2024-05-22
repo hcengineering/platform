@@ -188,7 +188,8 @@ export const contactPlugin = plugin(contactId, {
     PersonIcon: '' as AnyComponent,
     EditOrganizationPanel: '' as AnyComponent,
     CollaborationUserAvatar: '' as AnyComponent,
-    CreateGuest: '' as AnyComponent
+    CreateGuest: '' as AnyComponent,
+    SpaceMembersEditor: '' as AnyComponent
   },
   channelProvider: {
     Email: '' as Ref<ChannelProvider>,
@@ -261,7 +262,9 @@ export const contactPlugin = plugin(contactId, {
     NumberMembers: '' as IntlString,
     Position: '' as IntlString,
     For: '' as IntlString,
-    SelectUsers: '' as IntlString
+    SelectUsers: '' as IntlString,
+    AddGuest: '' as IntlString,
+    Members: '' as IntlString
   },
   viewlet: {
     TableMember: '' as Ref<Viewlet>,

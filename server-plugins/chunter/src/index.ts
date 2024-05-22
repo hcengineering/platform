@@ -29,10 +29,9 @@ export const serverChunterId = 'server-chunter' as Plugin
 export default plugin(serverChunterId, {
   trigger: {
     ChunterTrigger: '' as Resource<TriggerFunc>,
-    OnDirectMessageSent: '' as Resource<TriggerFunc>,
     OnChatMessageRemoved: '' as Resource<TriggerFunc>,
     OnChannelMembersChanged: '' as Resource<TriggerFunc>,
-    OnChatMessageCreate: '' as Resource<TriggerFunc>
+    ChatNotificationsHandler: '' as Resource<TriggerFunc>
   },
   function: {
     CommentRemove: '' as Resource<ObjectDDParticipantFunc>,

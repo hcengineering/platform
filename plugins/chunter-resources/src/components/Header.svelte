@@ -72,11 +72,6 @@
       />
       <div class="antiHSpacer x2" />
     {/if}
-    {#if withFilters}
-      <div class="mr-2">
-        <ChannelMessagesFilter bind:selectedFilters={filters} />
-      </div>
-    {/if}
     <slot />
     {#if titleKind === 'breadcrumbs'}
       <Breadcrumbs
@@ -91,7 +86,7 @@
       />
     {:else}
       {#if icon}
-        <div class="ac-header__icon">
+        <div class="ac-header__icon pl-2">
           <Icon {icon} size={'small'} {iconProps} />
         </div>
       {/if}
@@ -108,6 +103,9 @@
     <div class="ac-header__description over-underline" style="flex: 1" title={description}>{description}</div>
   {/if}
 </div>
+{#if withFilters}
+  <ChannelMessagesFilter bind:selectedFilters={filters} />
+{/if}
 {#if canOpen && object}
   <Button
     icon={view.icon.Open}

@@ -21,7 +21,14 @@ import { recruitId } from '@hcengineering/recruit'
 import recruit from '@hcengineering/recruit-resources/src/plugin'
 import { type TaskTypeDescriptor, type ProjectType } from '@hcengineering/task'
 import type { AnyComponent, Location } from '@hcengineering/ui/src/types'
-import type { Action, ActionCategory, ViewAction, ViewQueryAction, Viewlet } from '@hcengineering/view'
+import type {
+  Action,
+  ActionCategory,
+  ViewAction,
+  ViewActionAvailabilityFunction,
+  ViewQueryAction,
+  Viewlet
+} from '@hcengineering/view'
 import { type DocUpdateMessageViewlet } from '@hcengineering/activity'
 import { type ChatMessageViewlet } from '@hcengineering/chunter'
 
@@ -34,6 +41,7 @@ export default mergeIds(recruitId, recruit, {
     CopyCandidateLink: '' as Ref<Action<Doc, any>>,
     MoveApplicant: '' as Ref<Action>,
     GetTalentIds: '' as Ref<Action<Doc, any>>,
+    WriteEmail: '' as Ref<Action<Doc, any>>,
     EditStatuses: '' as Ref<Action>
   },
   actionImpl: {
@@ -49,7 +57,8 @@ export default mergeIds(recruitId, recruit, {
     GetObjectLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
     GetTalentId: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
     HideDoneState: '' as ViewQueryAction,
-    HideArchivedVacancies: '' as ViewQueryAction
+    HideArchivedVacancies: '' as ViewQueryAction,
+    ApplicantHasEmail: '' as Resource<ViewActionAvailabilityFunction>
   },
   string: {
     ApplicationsShort: '' as IntlString,

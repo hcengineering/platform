@@ -1,6 +1,6 @@
 import { getResource } from '@hcengineering/platform'
 import { type ComponentType } from 'svelte'
-import { derived, writable } from 'svelte/store'
+import { derived, get, writable } from 'svelte/store'
 import type {
   AnyComponent,
   AnySvelteComponent,
@@ -63,6 +63,17 @@ function addPopup (props: CompAndProps): void {
     return popups
   })
 }
+
+function checkDockPosition (refId: string | undefined): boolean {
+  if (refId !== undefined && localStorage.getItem('dock-popup') === refId) {
+    const docked = get(dockStore)
+    if (docked === undefined) {
+      return true
+    }
+  }
+  return false
+}
+
 let popupId: number = 0
 export function showPopup (
   component: AnySvelteComponent | AnyComponent | ComponentType,
@@ -91,17 +102,29 @@ export function showPopup (
     })
   }
   const _element = element instanceof HTMLElement ? getPopupPositionElement(element) : element
+  const data: Omit<CompAndProps, 'is'> = {
+    id,
+    props,
+    element: _element,
+    onClose,
+    onUpdate,
+    close: closePopupOp,
+    options
+  }
+  if (checkDockPosition(options.refId)) {
+    data.dock = true
+  }
   if (typeof component === 'string') {
     getResource(component)
       .then((resolved) => {
-        addPopup({ id, is: resolved, props, element: _element, onClose, onUpdate, close: closePopupOp, options })
+        addPopup({ ...data, is: resolved })
       })
       .catch((err) => {
         Analytics.handleError(err)
         console.error(err)
       })
   } else {
-    addPopup({ id, is: component, props, element: _element, onClose, onUpdate, close: closePopupOp, options })
+    addPopup({ ...data, is: component })
   }
   return {
     id,
@@ -426,7 +449,11 @@ export function getEventPositionElement (evt: MouseEvent): PopupAlignment | unde
 
 export function pin (id: string): void {
   popupstore.update((popups) => {
+    const current = popups.find((p) => p.id === id)
     popups.forEach((p) => (p.dock = p.id === id))
+    if (current?.options.refId !== undefined) {
+      localStorage.setItem('dock-popup', current.options.refId)
+    }
     return popups
   })
 }
@@ -436,4 +463,5 @@ export function unpin (): void {
     popups.forEach((p) => (p.dock = false))
     return popups
   })
+  localStorage.removeItem('dock-popup')
 }

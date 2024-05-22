@@ -20,6 +20,12 @@ export function getDay (time: Timestamp): Timestamp {
   return date.getTime()
 }
 
+export function getHour (time: Timestamp): Timestamp {
+  const date: Date = new Date(time)
+  date.setMinutes(0, 0, 0)
+  return date.getTime()
+}
+
 export function getDisplayTime (time: number): string {
   let options: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: 'numeric' }
   if (!isToday(time)) {
@@ -35,6 +41,10 @@ export function getDisplayTime (time: number): string {
 
 export function isOtherDay (time1: Timestamp, time2: Timestamp): boolean {
   return getDay(time1) !== getDay(time2)
+}
+
+export function isOtherHour (time1: Timestamp, time2: Timestamp): boolean {
+  return getHour(time1) !== getHour(time2)
 }
 
 function isToday (time: number): boolean {

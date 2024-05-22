@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { Calendar, Event } from '@hcengineering/calendar'
+  import { Event } from '@hcengineering/calendar'
   import { Person, PersonAccount } from '@hcengineering/contact'
   import { IdMap, Ref, Timestamp } from '@hcengineering/core'
   import { IntlString, getEmbeddedLabel } from '@hcengineering/platform'
   import { Project } from '@hcengineering/task'
-  import { Label, Scroller, areDatesEqual, ticker } from '@hcengineering/ui'
   import { ToDo, WorkSlot } from '@hcengineering/time'
+  import { Label, Scroller, areDatesEqual, ticker } from '@hcengineering/ui'
   import time from '../../../plugin'
   import PlanGroup from './PlanGroup.svelte'
 
@@ -15,7 +15,6 @@
   export let showAssignee: boolean = false
   export let persons: Ref<Person>[]
   export let personAccounts: PersonAccount[]
-  export let calendars: IdMap<Calendar>
   export let project: Project
   export let todos: IdMap<ToDo>
 
@@ -44,6 +43,6 @@
 </div>
 
 <Scroller padding={'0 1rem'} noStretch shrink>
-  <PlanGroup {slots} {events} {showAssignee} {personAccounts} {calendars} {todos} />
+  <PlanGroup {slots} {events} {showAssignee} {personAccounts} {todos} />
 </Scroller>
 <div class="antiVSpacer x4" />

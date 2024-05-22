@@ -34,8 +34,8 @@
   <AccountArrayEditor
     {value}
     {label}
-    readonly={readonly || (object.private && members.length === 0)}
-    includeItems={object.private ? members : undefined}
+    readonly={readonly || members.length === 0}
+    includeItems={members}
     {onChange}
     {size}
     width={width ?? 'min-content'}

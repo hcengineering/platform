@@ -107,13 +107,13 @@ export async function getPersonNotificationTxes (
     return []
   }
 
-  const isAvailable = await isSpaceAvailable(receiver, space, control)
+  const res: Tx[] = []
+  const isAvailable = await checkSpace(receiver, space, control, res)
 
   if (!isAvailable) {
     return []
   }
 
-  const res: Tx[] = []
   const doc = (await control.findAll(reference.srcDocClass, { _id: reference.srcDocId }))[0]
 
   const collaboratorsTx = await getCollaboratorsTxes(reference, control, receiver, doc)
@@ -215,14 +215,25 @@ export async function getPersonNotificationTxes (
   return res
 }
 
-async function isSpaceAvailable (user: PersonAccount, spaceId: Ref<Space>, control: TriggerControl): Promise<boolean> {
+async function checkSpace (
+  user: PersonAccount,
+  spaceId: Ref<Space>,
+  control: TriggerControl,
+  res: Tx[]
+): Promise<boolean> {
   const space = (await control.findAll<Space>(core.class.Space, { _id: spaceId }))[0]
-
-  if (!space?.private) {
-    return true
+  const isMember = space.members.includes(user._id)
+  if (space.private) {
+    return isMember
   }
 
-  return space.members.includes(user._id)
+  if (!isMember) {
+    res.push(
+      control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, { $push: { members: user._id } })
+    )
+  }
+
+  return true
 }
 
 async function getCollaboratorsTxes (
@@ -290,6 +301,12 @@ async function getMessageNotifyResult (
     reference.attachedDocId === undefined ||
     tx._class !== core.class.TxCreateDoc
   ) {
+    return { allowed: false, emails: [], push: false }
+  }
+
+  const mixin = control.hierarchy.as(doc, notification.mixin.Collaborators)
+
+  if (mixin === undefined || !mixin.collaborators.includes(receiver)) {
     return { allowed: false, emails: [], push: false }
   }
 
@@ -597,27 +614,25 @@ async function ActivityReferenceCreate (tx: TxCUD<Doc>, control: TriggerControl)
   if (control.hierarchy.isDerived(ctx.objectClass, notification.class.InboxNotification)) return []
   if (control.hierarchy.isDerived(ctx.objectClass, activity.class.ActivityReference)) return []
 
-  control.storageFx(async (adapter) => {
-    const txFactory = new TxFactory(control.txFactory.account)
+  const txFactory = new TxFactory(control.txFactory.account)
 
-    const doc = TxProcessor.createDoc2Doc(ctx)
-    const targetTx = guessReferenceTx(control.hierarchy, tx)
+  const doc = TxProcessor.createDoc2Doc(ctx)
+  const targetTx = guessReferenceTx(control.hierarchy, tx)
 
-    const txes: Tx[] = await getCreateReferencesTxes(
-      control,
-      adapter,
-      txFactory,
-      doc,
-      targetTx.objectId,
-      targetTx.objectClass,
-      targetTx.objectSpace,
-      tx
-    )
+  const txes: Tx[] = await getCreateReferencesTxes(
+    control,
+    control.storageAdapter,
+    txFactory,
+    doc,
+    targetTx.objectId,
+    targetTx.objectClass,
+    targetTx.objectSpace,
+    tx
+  )
 
-    if (txes.length !== 0) {
-      await control.apply(txes, true)
-    }
-  })
+  if (txes.length !== 0) {
+    await control.apply(txes, true)
+  }
 
   return []
 }
@@ -647,26 +662,24 @@ async function ActivityReferenceUpdate (tx: TxCUD<Doc>, control: TriggerControl)
     return []
   }
 
-  control.storageFx(async (adapter) => {
-    const txFactory = new TxFactory(control.txFactory.account)
-    const doc = TxProcessor.updateDoc2Doc(rawDoc, ctx)
-    const targetTx = guessReferenceTx(control.hierarchy, tx)
+  const txFactory = new TxFactory(control.txFactory.account)
+  const doc = TxProcessor.updateDoc2Doc(rawDoc, ctx)
+  const targetTx = guessReferenceTx(control.hierarchy, tx)
 
-    const txes: Tx[] = await getUpdateReferencesTxes(
-      control,
-      adapter,
-      txFactory,
-      doc,
-      targetTx.objectId,
-      targetTx.objectClass,
-      targetTx.objectSpace,
-      tx
-    )
+  const txes: Tx[] = await getUpdateReferencesTxes(
+    control,
+    control.storageAdapter,
+    txFactory,
+    doc,
+    targetTx.objectId,
+    targetTx.objectClass,
+    targetTx.objectSpace,
+    tx
+  )
 
-    if (txes.length !== 0) {
-      await control.apply(txes, true)
-    }
-  })
+  if (txes.length !== 0) {
+    await control.apply(txes, true)
+  }
 
   return []
 }

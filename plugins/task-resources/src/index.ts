@@ -251,7 +251,7 @@ async function statusSort (
     for (const state of value) {
       if (res.has(state)) continue
       const index = types.findIndex((p) => p.tasks.some((q) => taskTypes.get(q)?.statuses.includes(state)))
-      if (index === -1) break
+      if (index === -1) continue
       const type = types.splice(index, 1)[0]
       const statuses =
         type.tasks.map((it) => taskTypes.get(it)).find((it) => it?.statuses.includes(state))?.statuses ?? []

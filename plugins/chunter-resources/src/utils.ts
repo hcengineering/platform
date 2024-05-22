@@ -12,7 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { type Channel, type ChatMessage, type DirectMessage, type ThreadMessage } from '@hcengineering/chunter'
+import {
+  type Channel,
+  type ChatMessage,
+  chunterId,
+  type DirectMessage,
+  type ThreadMessage
+} from '@hcengineering/chunter'
 import contact, { type Employee, getName, type Person, type PersonAccount } from '@hcengineering/contact'
 import { employeeByIdStore, PersonIcon } from '@hcengineering/contact-resources'
 import {
@@ -28,7 +34,7 @@ import {
   type Timestamp
 } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
-import { type AnySvelteComponent } from '@hcengineering/ui'
+import { type AnySvelteComponent, getCurrentLocation, navigate } from '@hcengineering/ui'
 import { type Asset, translate } from '@hcengineering/platform'
 import { classIcon, getDocLinkTitle, getDocTitle } from '@hcengineering/view-resources'
 import activity, {
@@ -49,6 +55,7 @@ import { get, type Unsubscriber } from 'svelte/store'
 import chunter from './plugin'
 import DirectIcon from './components/DirectIcon.svelte'
 import ChannelIcon from './components/ChannelIcon.svelte'
+import { decodeChannelURI } from './navigation'
 
 export async function getDmName (client: Client, space?: Space): Promise<string> {
   if (space === undefined) {
@@ -390,8 +397,24 @@ export async function readChannelMessages (
   const lastTimestamp = messages[messages.length - 1].createdOn ?? 0
 
   if ((context.lastViewedTimestamp ?? 0) < lastTimestamp) {
+    context.lastViewedTimestamp = lastTimestamp
     void client.update(context, { lastViewedTimestamp: lastTimestamp })
   }
+}
+
+function resetChunterLoc (objectId: Ref<Doc>): void {
+  const loc = getCurrentLocation()
+  const [_id] = decodeChannelURI(loc.path[3])
+
+  if (loc.path[2] !== chunterId || _id !== objectId) {
+    return
+  }
+
+  loc.path[3] = ''
+  loc.path[4] = ''
+  loc.query = {}
+  loc.path.length = 3
+  navigate(loc)
 }
 
 export async function leaveChannelAction (context?: DocNotifyContext): Promise<void> {
@@ -406,6 +429,7 @@ export async function leaveChannelAction (context?: DocNotifyContext): Promise<v
   }
 
   await leaveChannel(channel, getCurrentAccount()._id)
+  resetChunterLoc(channel._id)
 }
 
 export async function removeChannelAction (context?: DocNotifyContext): Promise<void> {
@@ -417,6 +441,8 @@ export async function removeChannelAction (context?: DocNotifyContext): Promise<
 
   await archiveContextNotifications(context)
   await client.remove(context)
+
+  resetChunterLoc(context.attachedTo)
 }
 
 export function isThreadMessage (message: ActivityMessage): message is ThreadMessage {

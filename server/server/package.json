@@ -47,6 +47,7 @@
     "@hcengineering/server-token": "^0.6.7",
     "@hcengineering/middleware": "^0.6.0",
     "@hcengineering/text": "^0.6.1",
-    "got": "^11.8.3"
+    "got": "^11.8.3",
+    "@hcengineering/server-storage": "^0.6.0"
   }
 }

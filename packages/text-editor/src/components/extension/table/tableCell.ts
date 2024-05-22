@@ -28,7 +28,7 @@ import { rowHandlerDecoration } from './decorations/rowHandlerDecoration'
 
 export const TableCell = TiptapTableCell.extend({
   addProseMirrorPlugins () {
-    return [...(this.parent?.() ?? []), tableCellDecorationPlugin(this.editor)]
+    return [tableCellDecorationPlugin(this.editor)]
   }
 })
 

@@ -54,10 +54,17 @@
   export let readonly = false
   export let disallowDeselect: Ref<Doc>[] | undefined = undefined
   export let embedded: boolean = false
-  export let loading = false
+  export let loading: boolean = false
+  export let type: 'text' | 'object' = 'text'
 
   export let filter: (it: Doc) => boolean = () => {
     return true
+  }
+
+  export let sort: <T extends Doc>(a: T, b: T) => number = (a, b) => {
+    const aval: string = `${getObjectValue(groupBy, a as any)}`
+    const bval: string = `${getObjectValue(groupBy, b as any)}`
+    return aval.localeCompare(bval)
   }
 
   const created: Doc[] = []
@@ -83,11 +90,7 @@
       _id: { $nin: ignoreObjects, ..._idExtra }
     },
     (result) => {
-      result.sort((a, b) => {
-        const aval: string = `${getObjectValue(groupBy, a as any)}`
-        const bval: string = `${getObjectValue(groupBy, b as any)}`
-        return aval.localeCompare(bval)
-      })
+      result.sort(sort)
       if (created.length > 0) {
         const cmap = new Set(created.map((it) => it._id))
         objects = [...created, ...result.filter((d) => !cmap.has(d._id))].filter(filter)
@@ -119,6 +122,7 @@
   {disallowDeselect}
   {embedded}
   {loading}
+  {type}
   on:update
   on:close
   on:changeContent

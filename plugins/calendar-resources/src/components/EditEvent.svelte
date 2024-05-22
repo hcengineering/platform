@@ -56,7 +56,7 @@
   let allDay = object.allDay
   let visibility = object.visibility ?? 'public'
   let reminders = [...(object.reminders ?? [])]
-  let space = object.space
+  let _calendar = object.calendar
   let timeZone: string = object.timeZone ?? getUserTimezone()
 
   let description = object.description
@@ -88,8 +88,8 @@
     if (object.visibility !== visibility) {
       update.visibility = visibility
     }
-    if (object.space !== space) {
-      update.space = space
+    if (object.calendar !== _calendar) {
+      update.calendar = _calendar
     }
     if (object.location !== location) {
       update.location = location
@@ -216,7 +216,7 @@
     </div>
     <div class="divider" />
     <div class="block rightCropPadding">
-      <CalendarSelector bind:value={space} focusIndex={10008} />
+      <CalendarSelector bind:value={_calendar} focusIndex={10008} />
       <div class="flex-row-center flex-gap-1">
         <Icon icon={calendar.icon.Hidden} size={'small'} />
         <VisibilityEditor bind:value={visibility} kind={'tertiary'} withoutIcon focusIndex={10009} />

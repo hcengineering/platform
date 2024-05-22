@@ -90,7 +90,6 @@ import { serverViewId } from '@hcengineering/server-view'
 import {
   ClientSession,
   start as startJsonRpc,
-  type BroadcastCall,
   type PipelineFactory,
   type ServerFactory,
   type Session
@@ -104,6 +103,7 @@ import { calendarId } from '@hcengineering/calendar'
 import { chunterId } from '@hcengineering/chunter'
 import { contactId } from '@hcengineering/contact'
 import { documentId } from '@hcengineering/document'
+import { driveId } from '@hcengineering/drive'
 import { gmailId } from '@hcengineering/gmail'
 import { hrId } from '@hcengineering/hr'
 import { inventoryId } from '@hcengineering/inventory'
@@ -135,6 +135,7 @@ import calendarEn from '@hcengineering/calendar-assets/lang/en.json'
 import chunterEn from '@hcengineering/chunter-assets/lang/en.json'
 import contactEn from '@hcengineering/contact-assets/lang/en.json'
 import documentEn from '@hcengineering/document-assets/lang/en.json'
+import driveEn from '@hcengineering/drive-assets/lang/en.json'
 import gmailEn from '@hcengineering/gmail-assets/lang/en.json'
 import hrEn from '@hcengineering/hr-assets/lang/en.json'
 import inventoryEn from '@hcengineering/inventory-assets/lang/en.json'
@@ -182,6 +183,7 @@ addStringsLoader(hrId, async (lang: string) => hrEn)
 addStringsLoader(bitrixId, async (lang: string) => bitrixEn)
 addStringsLoader(requestId, async (lang: string) => requestEn)
 addStringsLoader(documentId, async (lang: string) => documentEn)
+addStringsLoader(driveId, async (lang: string) => driveEn)
 
 /**
  * @public
@@ -308,7 +310,7 @@ export function start (
       domains: {
         [DOMAIN_TX]: 'MongoTx',
         [DOMAIN_TRANSIENT]: 'InMemory',
-        [DOMAIN_BLOB]: 'MinioData',
+        [DOMAIN_BLOB]: 'Blob',
         [DOMAIN_FULLTEXT_BLOB]: 'FullTextBlob',
         [DOMAIN_MODEL]: 'Null'
       },
@@ -331,9 +333,9 @@ export function start (
           factory: createInMemoryAdapter,
           url: ''
         },
-        MinioData: {
+        Blob: {
           factory: createStorageDataAdapter,
-          url: ''
+          url: dbUrl
         },
         FullTextBlob: {
           factory: createElasticBackupDataAdapter,
@@ -367,26 +369,31 @@ export function start (
       },
       serviceAdapters: {},
       defaultContentAdapter: 'Rekoni',
-      storageFactory: () => externalStorage,
+      storageFactory: externalStorage,
       workspace
     }
     return createPipeline(ctx, conf, middlewares, upgrade, broadcast)
   }
 
-  const sessionFactory = (token: Token, pipeline: Pipeline, broadcast: BroadcastCall): Session => {
+  const sessionFactory = (token: Token, pipeline: Pipeline): Session => {
     if (token.extra?.mode === 'backup') {
-      return new BackupClientSession(broadcast, token, pipeline)
+      return new BackupClientSession(token, pipeline)
     }
-    return new ClientSession(broadcast, token, pipeline)
+    return new ClientSession(token, pipeline)
   }
 
-  return startJsonRpc(getMetricsContext(), {
+  const onClose = startJsonRpc(getMetricsContext(), {
     pipelineFactory,
     sessionFactory,
     port: opt.port,
     productId: opt.productId,
     serverFactory: opt.serverFactory,
     enableCompression: opt.enableCompression,
-    accountsUrl: opt.accountsUrl
+    accountsUrl: opt.accountsUrl,
+    externalStorage
   })
+  return async () => {
+    await externalStorage.close()
+    await onClose()
+  }
 }

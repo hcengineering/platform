@@ -64,9 +64,9 @@
   import { noSelectionRender, renderCursor } from './editor/collaboration'
   import { defaultEditorAttributes } from './editor/editorProps'
   import { EmojiExtension } from './extension/emoji'
-  import { ImageExtension } from './extension/imageExt'
+  import { ImageUploadExtension } from './extension/imageUploadExt'
   import { type FileAttachFunction } from './extension/types'
-  import { FileExtension } from './extension/fileExt'
+  import { FileUploadExtension } from './extension/fileUploadExt'
   import { LeftMenuExtension } from './extension/leftMenu'
   import { InlineCommandsExtension } from './extension/inlineCommands'
   import { InlinePopupExtension } from './extension/inlinePopup'
@@ -279,16 +279,14 @@
   if (attachFile !== undefined) {
     if (canEmbedFiles) {
       optionalExtensions.push(
-        FileExtension.configure({
-          inline: true,
+        FileUploadExtension.configure({
           attachFile
         })
       )
     }
     if (canEmbedImages) {
       optionalExtensions.push(
-        ImageExtension.configure({
-          inline: true,
+        ImageUploadExtension.configure({
           attachFile,
           uploadUrl: getMetadata(presentation.metadata.UploadURL)
         })

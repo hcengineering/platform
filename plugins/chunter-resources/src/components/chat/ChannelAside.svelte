@@ -103,6 +103,7 @@
       {
         okLabel: presentation.string.Add,
         disableDeselectFor: disabledRemoveFor,
+        skipInactive: true,
         selected: members,
         showStatus: true
       },

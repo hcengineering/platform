@@ -37,8 +37,8 @@ export function hidePrivateEvents (events: Event[], calendars: IdMap<Calendar>, 
           res.push(event)
         }
       } else {
-        const space = calendars.get(event.space)
-        if (space != null && space.visibility !== 'private') {
+        const calendar = calendars.get(event.calendar)
+        if (calendar != null && calendar.visibility !== 'private') {
           res.push(event)
         }
       }
@@ -62,15 +62,17 @@ export function isVisible (value: Event, calendars: IdMap<Calendar>): boolean {
   } else if (value.visibility === 'public') {
     return true
   }
-  const space = calendars.get(value.space)
-  if (space == null) {
+  const calendar = calendars.get(value.calendar)
+  if (calendar == null) {
     return true
   } else {
-    return space.visibility === 'public'
+    return calendar.visibility === 'public'
   }
 }
 
-export const calendarStore = writable<IdMap<Calendar>>(new Map())
+export const calendarByIdStore = writable<IdMap<Calendar>>(new Map())
+export const calendarStore = writable<Calendar[]>([])
+export const visibleCalendarStore = writable<Calendar[]>([])
 
 function fillStores (): void {
   const client = getClient()
@@ -78,7 +80,9 @@ function fillStores (): void {
   if (client !== undefined) {
     const query = createQuery(true)
     query.query(calendar.class.Calendar, {}, (res) => {
-      calendarStore.set(toIdMap(res))
+      calendarStore.set(res)
+      visibleCalendarStore.set(res.filter((p) => !p.hidden))
+      calendarByIdStore.set(toIdMap(res))
     })
   } else {
     setTimeout(() => {
@@ -93,7 +97,7 @@ export async function updatePast (ops: DocumentUpdate<Event>, object: ReccuringI
   const client = getClient()
   const origin = await client.findOne(calendar.class.ReccuringEvent, {
     eventId: object.recurringEventId,
-    space: object.space
+    calendar: object.calendar
   })
   if (origin !== undefined) {
     await client.addCollection(
@@ -158,6 +162,7 @@ export async function updateReccuringInstance (
                   reminders: object.reminders,
                   location: object.location,
                   eventId: object.eventId,
+                  calendar: object.calendar,
                   access: 'owner',
                   rules: object.rules,
                   exdate: object.exdate,
@@ -170,7 +175,7 @@ export async function updateReccuringInstance (
               resolve(true)
             } else if (res.mode === 'all') {
               const base = await client.findOne(calendar.class.ReccuringEvent, {
-                space: object.space,
+                calendar: object.calendar,
                 eventId: object.recurringEventId
               })
               if (base !== undefined) {

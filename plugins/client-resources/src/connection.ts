@@ -36,7 +36,6 @@ import core, {
   Timestamp,
   Tx,
   TxApplyIf,
-  TxApplyResult,
   TxHandler,
   TxResult,
   TxWorkspaceEvent,
@@ -442,8 +441,7 @@ class Connection implements ClientConnection {
         params: [],
         id: -1,
         binary: useBinary,
-        compression: useCompression,
-        broadcast: true
+        compression: useCompression
       }
       this.websocket?.send(serialize(helloRequest, false))
     }
@@ -623,20 +621,7 @@ class Connection implements ClientConnection {
           return (await this.findAll(core.class.Tx, { _id: (tx as TxApplyIf).txes[0]._id }, { limit: 1 })).length === 0
         }
         return (await this.findAll(core.class.Tx, { _id: tx._id }, { limit: 1 })).length === 0
-      },
-      handleResult:
-        tx._class === core.class.TxApplyIf
-          ? async (result) => {
-            if (tx._class === core.class.TxApplyIf) {
-              // We need to check extra broadcast's and perform them before
-              const r = result as TxApplyResult
-              const dr = r?.derived ?? []
-              if (dr.length > 0) {
-                this.handler(...dr)
-              }
-            }
-          }
-          : undefined
+      }
     })
   }
 

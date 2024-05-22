@@ -38,8 +38,7 @@ import {
   type Ref,
   type Space,
   type Timestamp,
-  IndexKind,
-  SortingOrder
+  IndexKind
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -77,9 +76,6 @@ export const DOMAIN_CHUNTER = 'chunter' as Domain
 export class TChunterSpace extends TSpace implements ChunterSpace {
   @Prop(TypeTimestamp(), chunter.string.LastMessage)
     lastMessage?: Timestamp
-
-  @Prop(ArrOf(TypeRef(chunter.class.ChunterMessage)), chunter.string.PinnedMessages)
-    pinned?: Ref<ChunterMessage>[]
 }
 
 @Model(chunter.class.Channel, chunter.class.ChunterSpace)
@@ -352,15 +348,11 @@ export function createModel (builder: Builder): void {
     {
       attachTo: chunter.class.Channel,
       descriptor: view.viewlet.Table,
-      viewOptions: {
-        orderBy: [['modifiedOn', SortingOrder.Descending]],
-        groupBy: [],
-        other: []
-      },
       configOptions: {
         strict: true
       },
-      config: ['', 'topic', 'private', 'archived', 'members']
+      config: ['', 'topic', 'private', 'archived', 'members'],
+      props: { enableChecking: false }
     },
     chunter.viewlet.Channels
   )
@@ -433,7 +425,6 @@ export function createModel (builder: Builder): void {
       },
       label: chunter.string.CopyLink,
       icon: chunter.icon.Copy,
-      keyBinding: [],
       input: 'none',
       category: chunter.category.Chunter,
       target: activity.class.ActivityMessage,
@@ -739,6 +730,11 @@ export function createModel (builder: Builder): void {
     },
     chunter.action.ReplyToThreadAction
   )
+
+  builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.ClassFilters, {
+    filters: ['name', 'topic', 'private', 'archived', 'members'],
+    strict: true
+  })
 }
 
 export default chunter

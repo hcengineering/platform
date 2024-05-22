@@ -146,6 +146,70 @@ export async function getContextActions (
   return result
 }
 
+function getKeyboardActionsSync (
+  client: Client,
+  doc: Doc | Doc[],
+  derived: Ref<Class<Doc>> = core.class.Doc,
+  mode: ViewContextType = 'context'
+): Action[] {
+  const actions: Action[] = client.getModel().findAllSync(view.class.Action, {
+    'context.mode': mode,
+    keyBinding: { $exists: true }
+  })
+
+  const filteredActions = filterAvailableActionsSync(actions, client, doc, derived)
+
+  const categories: Partial<Record<ActionGroup | 'top', number>> = { top: 1, tools: 50, other: 100, remove: 200 }
+  filteredActions.sort((a, b) => {
+    const aTarget = categories[a.context.group ?? 'top'] ?? 0
+    const bTarget = categories[b.context.group ?? 'top'] ?? 0
+    return aTarget - bTarget
+  })
+  return filteredActions
+}
+
+function filterAvailableActionsSync (
+  actions: Action[],
+  client: Client,
+  doc: Doc | Doc[],
+  derived: Ref<Class<Doc>> = core.class.Doc
+): Action[] {
+  actions = (Array.isArray(doc) ? doc : [doc]).reduce(
+    (actions, doc) => filterActions(client, doc, actions, derived),
+    actions
+  )
+
+  const input = (['none'] as ViewActionInput[])
+    .concat(Array.isArray(doc) && doc.length > 0 ? ['selection', 'any'] : [])
+    .concat(!Array.isArray(doc) || doc.length === 1 ? ['focus', 'any'] : [])
+  actions = actions.filter((it) => input.includes(it.input))
+
+  const result: Action[] = []
+  for (const action of actions) {
+    if (action.visibilityTester == null) {
+      result.push(action)
+    }
+  }
+
+  return result
+}
+
+export function getContextActionsSync (
+  client: Client,
+  doc: Doc | Doc[],
+  context: {
+    mode: ViewContextType
+    application?: Ref<Doc>
+  }
+): Action[] {
+  const result = getKeyboardActionsSync(client, doc, undefined, context.mode)
+
+  if (context.application !== undefined) {
+    return result.filter((it) => it.context.application === context.application || it.context.application === undefined)
+  }
+  return result
+}
+
 function getIgnoreActions (ignoreActions: Array<Ref<Action> | ActionIgnore>, doc: Doc): Array<Ref<Action>> {
   const ignore: Array<Ref<Action>> = []
   const h = getClient().getHierarchy()

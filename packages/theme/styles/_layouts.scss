@@ -132,6 +132,10 @@ p:last-child { margin-block-end: 0; }
 
   &.contrast { color: var(--global-primary-TextColor); }
   &:not(.contrast) { color: var(--theme-content-color); }
+  &.overflow-label::after {
+    content: '';
+    display: block;
+  }
 }
 
 a.noUnderline {
@@ -153,6 +157,9 @@ a.noBold {
 
 .inline-height2 {
   line-height: 200%;
+}
+.leading-4 {
+  line-height: 1rem;
 }
 
 .float-left-box {
@@ -713,6 +720,7 @@ input.search {
 .min-w-full { min-width: 100%; }
 .min-h-0 { min-height: 0; }
 .min-h-2 { min-height: .5rem; }
+.min-h-3 { min-height: .75rem; }
 .min-h-4 { min-height: 1rem; }
 .min-h-5 { min-height: 1.25rem; }
 .min-h-6 { min-height: 1.5rem; }

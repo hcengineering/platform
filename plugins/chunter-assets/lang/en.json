@@ -106,6 +106,8 @@
     "StarChannel": "Star channel",
     "StarConversation": "Star conversation",
     "UnstarChannel": "Unstar channel",
-    "UnstarConversation": "Unstar conversation"
+    "UnstarConversation": "Unstar conversation",
+    "JoinChannelHeader": "Click \"Join\" to get started.",
+    "JoinChannelText": "Once you've joined, you'll be able to read all messages and contribute to the discussion."
   }
 }

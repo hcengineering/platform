@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Contact, getFirstName, getLastName, Person } from '@hcengineering/contact'
+  import contact, { Contact, getFirstName, getLastName, getName, Person } from '@hcengineering/contact'
   import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
   import type { Asset, IntlString } from '@hcengineering/platform'
   import presentation, { getClient, ObjectCreate, ObjectPopup } from '@hcengineering/presentation'
@@ -35,6 +35,14 @@
     return true
   }
 
+  const hierarchy = getClient().getHierarchy()
+
+  export let sort: (a: Doc, b: Doc) => number = (a, b) => {
+    const aName = getName(hierarchy, a as Contact)
+    const bName = getName(hierarchy, b as Contact)
+    return aName.localeCompare(bName)
+  }
+
   export let multiSelect: boolean = false
   export let allowDeselect: boolean = false
   export let titleDeselect: IntlString | undefined = undefined
@@ -46,7 +54,6 @@
   export let create: ObjectCreate | undefined = undefined
   export let readonly = false
 
-  const hierarchy = getClient().getHierarchy()
   const dispatch = createEventDispatcher()
 
   $: _create =
@@ -69,8 +76,10 @@
   {allowDeselect}
   {titleDeselect}
   {placeholder}
+  type={'object'}
   docQuery={readonly ? { ...docQuery, _id: { $in: selectedUsers } } : docQuery}
   {filter}
+  {sort}
   groupBy={'_class'}
   bind:selectedObjects={selectedUsers}
   bind:ignoreObjects={ignoreUsers}
@@ -83,7 +92,7 @@
   {readonly}
 >
   <svelte:fragment slot="item" let:item={person}>
-    <div class="flex flex-grow overflow-label">
+    <div class="flex-row-center flex-grow">
       <UserInfo size={'smaller'} value={person} {icon} />
     </div>
   </svelte:fragment>

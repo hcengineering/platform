@@ -27,7 +27,7 @@ import { serverCalendarId } from '@hcengineering/server-calendar'
 import { serverChunterId } from '@hcengineering/server-chunter'
 import { serverCollaborationId } from '@hcengineering/server-collaboration'
 import { serverContactId } from '@hcengineering/server-contact'
-import { type StorageAdapter } from '@hcengineering/server-core'
+import { serverDriveId } from '@hcengineering/server-drive'
 import { serverDocumentId } from '@hcengineering/server-document'
 import { serverGmailId } from '@hcengineering/server-gmail'
 import { serverGuestId } from '@hcengineering/server-guest'
@@ -67,10 +67,10 @@ addLocation(serverViewId, () => import('@hcengineering/server-view-resources'))
 addLocation(serverDocumentId, () => import('@hcengineering/server-document-resources'))
 addLocation(serverTimeId, () => import('@hcengineering/server-time-resources'))
 addLocation(serverGuestId, () => import('@hcengineering/server-guest-resources'))
+addLocation(serverDriveId, () => import('@hcengineering/server-drive-resources'))
 
 function prepareTools (): {
   mongodbUri: string
-  storageAdapter: StorageAdapter
   txes: Tx[]
   version: Data<Version>
   migrateOperations: [string, MigrateOperation][]

@@ -51,5 +51,8 @@ loadMetadata(view.icon, {
   Table2: `${icons}#table2`,
   CodeBlock: `${icons}#code-block`,
   SeparatorLine: `${icons}#separator-line`,
-  Circle: `${icons}#circle`
+  Circle: `${icons}#circle`,
+  Join: `${icons}#join`,
+  Leave: `${icons}#leave`,
+  Copy: `${icons}#copy`
 })

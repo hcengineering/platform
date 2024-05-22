@@ -23,14 +23,16 @@ import { Viewlet } from '@hcengineering/view'
 /**
  * @public
  */
-export interface Department extends Space {
-  space: Ref<Department>
+export interface Department extends Doc {
+  name: string
+  description: string
+  parent?: Ref<Department>
   avatar?: string | null
   teamLead: Ref<Employee> | null
   attachments?: number
   comments?: number
   channels?: number
-  members: Arr<Ref<DepartmentMember>>
+  members: Ref<DepartmentMember>[]
   subscribers?: Arr<Ref<Contact>>
   managers: Arr<Ref<Employee>>
 }
@@ -85,7 +87,7 @@ export interface Request extends AttachedDoc {
 
   attachedToClass: Ref<Class<Staff>>
 
-  space: Ref<Department>
+  department: Ref<Department>
 
   type: Ref<RequestType>
 
@@ -120,6 +122,9 @@ const hr = plugin(hrId, {
   },
   mixin: {
     Staff: '' as Ref<Mixin<Staff>>
+  },
+  space: {
+    HR: '' as Ref<Space>
   },
   icon: {
     HR: '' as Asset,

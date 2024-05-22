@@ -17,9 +17,11 @@ import core, {
   Space,
   TxOperations,
   UnsetOptions,
+  WorkspaceId,
   generateId
 } from '@hcengineering/core'
 import { ModelLogger } from './utils'
+import { StorageAdapter } from '@hcengineering/storage'
 
 /**
  * @public
@@ -102,6 +104,9 @@ export interface MigrationClient {
   model: ModelDb
 
   migrateState: Map<string, Set<string>>
+  storageAdapter?: StorageAdapter
+
+  workspaceId: WorkspaceId
 }
 
 /**

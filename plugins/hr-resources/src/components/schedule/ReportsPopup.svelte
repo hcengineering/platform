@@ -51,7 +51,6 @@
     <EmployeePresenter value={employee} disabled />
   </svelte:fragment>
   <TableBrowser
-    showFilterBar={false}
     _class={tracker.class.TimeSpendReport}
     query={{ _id: { $in: reports.map((it) => it._id) } }}
     config={['$lookup.attachedTo', '$lookup.attachedTo.title', '', 'employee', 'date']}

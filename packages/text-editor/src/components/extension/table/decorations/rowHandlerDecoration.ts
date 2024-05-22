@@ -19,10 +19,13 @@ import { TableMap } from '@tiptap/pm/tables'
 import { Decoration } from '@tiptap/pm/view'
 
 import { type TableNodeLocation } from '../types'
-import { isRowSelected, selectRow } from '../utils'
+import { findTable, getSelectedRows, isRowSelected, selectRow } from '../utils'
 
-import { moveRow } from './actions'
-import { handleSvg } from './icons'
+import { duplicateRows, moveRow } from './actions'
+import DeleteRow from '../../../icons/table/DeleteRow.svelte'
+import Duplicate from '../../../icons/table/Duplicate.svelte'
+import textEditorPlugin from '../../../../plugin'
+import { createCellsHandle, type OptionItem } from './cellsHandle'
 import {
   dropMarkerWidthPx,
   getDropMarker,
@@ -39,34 +42,66 @@ interface TableRow {
   heightPx: number
 }
 
+const createOptionItems = (editor: Editor): OptionItem[] => [
+  {
+    id: 'delete',
+    icon: DeleteRow,
+    label: textEditorPlugin.string.DeleteRow,
+    action: () => editor.commands.deleteRow()
+  },
+  {
+    id: 'duplicate',
+    icon: Duplicate,
+    label: textEditorPlugin.string.Duplicate,
+    action: () => {
+      const table = findTable(editor.state.selection)
+      if (table !== undefined) {
+        let tr = editor.state.tr
+        const selectedRows = getSelectedRows(editor.state.selection, TableMap.get(table.node))
+        tr = duplicateRows(table, selectedRows, tr)
+        editor.view.dispatch(tr)
+      }
+    }
+  }
+]
+
 export const rowHandlerDecoration = (state: EditorState, table: TableNodeLocation, editor: Editor): Decoration[] => {
   const decorations: Decoration[] = []
 
   const tableMap = TableMap.get(table.node)
   for (let row = 0; row < tableMap.height; row++) {
     const pos = getTableCellWidgetDecorationPos(table, tableMap, row * tableMap.width)
+    const isSelected = isRowSelected(row, state.selection)
 
-    const handle = document.createElement('div')
+    const handle = createCellsHandle(createOptionItems(editor))
     handle.classList.add('table-row-handle')
-    if (isRowSelected(row, state.selection)) {
+    if (isSelected) {
       handle.classList.add('table-row-handle__selected')
     }
-    handle.innerHTML = handleSvg
     handle.addEventListener('mousedown', (e) => {
-      handleMouseDown(row, table, e, editor)
+      handleMouseDown(row, table, e, editor, isSelected)
     })
+
     decorations.push(Decoration.widget(pos, handle))
   }
 
   return decorations
 }
 
-const handleMouseDown = (row: number, table: TableNodeLocation, event: MouseEvent, editor: Editor): void => {
+const handleMouseDown = (
+  row: number,
+  table: TableNodeLocation,
+  event: MouseEvent,
+  editor: Editor,
+  isSelected: boolean
+): void => {
   event.stopPropagation()
   event.preventDefault()
 
   // select row
-  editor.view.dispatch(selectRow(table, row, editor.state.tr))
+  if (!isSelected) {
+    editor.view.dispatch(selectRow(table, row, editor.state.tr))
+  }
 
   // drag row
   const tableHeightPx = getTableHeightPx(table, editor)

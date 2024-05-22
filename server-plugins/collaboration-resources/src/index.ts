@@ -21,7 +21,10 @@ import type { TriggerControl } from '@hcengineering/server-core'
 /**
  * @public
  */
-export async function OnDelete (tx: Tx, { hierarchy, storageFx, removedMap, ctx }: TriggerControl): Promise<Tx[]> {
+export async function OnDelete (
+  tx: Tx,
+  { hierarchy, storageAdapter, workspace, removedMap, ctx }: TriggerControl
+): Promise<Tx[]> {
   const rmTx = TxProcessor.extractTx(tx) as TxRemoveDoc<Doc>
 
   if (rmTx._class !== core.class.TxRemoveDoc) {
@@ -44,12 +47,10 @@ export async function OnDelete (tx: Tx, { hierarchy, storageFx, removedMap, ctx 
     }
   }
 
-  storageFx(async (adapter, bucket) => {
-    // TODO This is not accurate way to delete collaborative document
-    // Even though we are deleting it here, the document can be currently in use by someone else
-    // and when editing session ends, the collborator service will recreate the document again
-    await removeCollaborativeDoc(adapter, bucket, toDelete, ctx)
-  })
+  // TODO This is not accurate way to delete collaborative document
+  // Even though we are deleting it here, the document can be currently in use by someone else
+  // and when editing session ends, the collborator service will recreate the document again
+  await removeCollaborativeDoc(storageAdapter, workspace, toDelete, ctx)
 
   return []
 }

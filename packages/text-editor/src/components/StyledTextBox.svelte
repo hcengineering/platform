@@ -27,7 +27,7 @@
   import { completionConfig, inlineCommandsConfig } from './extensions'
   import { EmojiExtension } from './extension/emoji'
   import { FocusExtension } from './extension/focus'
-  import { ImageExtension } from './extension/imageExt'
+  import { ImageUploadExtension } from './extension/imageUploadExt'
   import { InlineCommandsExtension } from './extension/inlineCommands'
   import { type FileAttachFunction } from './extension/types'
   import { RefAction } from '../types'
@@ -175,9 +175,7 @@
   }
 
   function configureExtensions (): AnyExtension[] {
-    const imagePlugin = ImageExtension.configure({
-      inline: true,
-      HTMLAttributes: {},
+    const imageUploadPlugin = ImageUploadExtension.configure({
       attachFile,
       uploadUrl: getMetadata(presentation.metadata.UploadURL)
     })
@@ -194,7 +192,7 @@
       extensions.push(completionPlugin)
     }
     extensions.push(
-      imagePlugin,
+      imageUploadPlugin,
       FocusExtension.configure({ onCanBlur: (value: boolean) => (canBlur = value), onFocus: handleFocus })
     )
     if (enableEmojiReplace) {

@@ -17,7 +17,7 @@
   import { DocumentQuery, Ref, WithLookup } from '@hcengineering/core'
   import type { Department, Staff } from '@hcengineering/hr'
   import { createQuery } from '@hcengineering/presentation'
-  import { Button, eventToHTMLElement, Label, Scroller, SearchEdit, showPopup, IconAdd } from '@hcengineering/ui'
+  import { Button, IconAdd, Label, Scroller, SearchEdit, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import hr from '../plugin'
   import CreateDepartment from './CreateDepartment.svelte'
   import DepartmentCard from './DepartmentCard.svelte'
@@ -50,9 +50,11 @@
       head = res.find((p) => p._id === hr.ids.Head)
       descendants.clear()
       for (const doc of res) {
-        const current = descendants.get(doc.space) ?? []
-        current.push(doc)
-        descendants.set(doc.space, current)
+        if (doc.parent !== undefined) {
+          const current = descendants.get(doc.parent) ?? []
+          current.push(doc)
+          descendants.set(doc.parent, current)
+        }
       }
       descendants = descendants
     },

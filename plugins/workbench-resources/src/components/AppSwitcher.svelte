@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Ref } from '@hcengineering/core'
+  import { getCurrentAccount, type Ref } from '@hcengineering/core'
   import type { Application } from '@hcengineering/workbench'
   import { createQuery } from '@hcengineering/presentation'
   import workbench from '@hcengineering/workbench'
-  import { hideApplication, showApplication } from '../utils'
+  import { hideApplication, isAppAllowed, showApplication } from '../utils'
   import { Loading, IconCheck, Label, Icon } from '@hcengineering/ui'
   import preference from '@hcengineering/preference'
   // import Drag from './icons/Drag.svelte'
@@ -66,6 +66,10 @@
       loaded = true
     }
   )
+
+  const me = getCurrentAccount()
+
+  const filteredApps = apps.filter((it) => !hiddenAppsIds.includes(it._id) && isAppAllowed(it, me))
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -74,7 +78,7 @@
   <div class="ap-scroll">
     <div class="ap-box">
       {#if loaded}
-        {#each apps as app, i}
+        {#each filteredApps as app, i}
           <button
             bind:this={btns[i]}
             class="ap-menuItem withIcon flex-row-center flex-grow"

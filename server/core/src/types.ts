@@ -14,6 +14,7 @@
 //
 
 import {
+  MeasureMetricsContext,
   type Account,
   type Class,
   type Doc,
@@ -23,7 +24,6 @@ import {
   type Hierarchy,
   type LowLevelStorage,
   type MeasureContext,
-  MeasureMetricsContext,
   type ModelDb,
   type Obj,
   type Ref,
@@ -31,6 +31,7 @@ import {
   type SearchQuery,
   type SearchResult,
   type ServerStorage,
+  type SessionOperationContext,
   type Space,
   type Storage,
   type Timestamp,
@@ -48,7 +49,7 @@ import { type StorageAdapter } from './storage'
 /**
  * @public
  */
-export interface SessionContext extends MeasureContext {
+export interface SessionContext extends SessionOperationContext {
   userEmail: string
   sessionId: string
   admin?: boolean
@@ -66,14 +67,12 @@ export interface Middleware {
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
   searchFulltext: (ctx: SessionContext, query: SearchQuery, options: SearchOptions) => Promise<SearchResult>
-
-  handleBroadcast: (tx: Tx[], targets?: string[]) => Tx[]
 }
 
 /**
  * @public
  */
-export type BroadcastFunc = (tx: Tx[], targets?: string[]) => void
+export type BroadcastFunc = (tx: Tx[], targets?: string | string[], exclude?: string[]) => void
 /**
  * @public
  */
@@ -82,17 +81,12 @@ export type HandledBroadcastFunc = (tx: Tx[], targets?: string[]) => Tx[]
 /**
  * @public
  */
-export type MiddlewareCreator = (
-  ctx: MeasureContext,
-  broadcast: BroadcastFunc,
-  storage: ServerStorage,
-  next?: Middleware
-) => Promise<Middleware>
+export type MiddlewareCreator = (ctx: MeasureContext, storage: ServerStorage, next?: Middleware) => Promise<Middleware>
 
 /**
  * @public
  */
-export type TxMiddlewareResult = [TxResult, Tx[], string[] | undefined]
+export type TxMiddlewareResult = TxResult
 
 /**
  * @public
@@ -107,7 +101,7 @@ export interface Pipeline extends LowLevelStorage {
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
   searchFulltext: (ctx: SessionContext, query: SearchQuery, options: SearchOptions) => Promise<SearchResult>
-  tx: (ctx: SessionContext, tx: Tx) => Promise<[TxResult, Tx[], string[] | undefined]>
+  tx: (ctx: SessionContext, tx: Tx) => Promise<TxResult>
   close: () => Promise<void>
 }
 
@@ -129,15 +123,13 @@ export interface TriggerControl {
   modelDb: ModelDb
   removedMap: Map<Ref<Doc>, Doc>
 
-  fulltextFx: (f: (adapter: FullTextAdapter) => Promise<void>) => void
   // Since we don't have other storages let's consider adapter is MinioClient
   // Later can be replaced with generic one with bucket encapsulated inside.
-  storageFx: (f: (adapter: StorageAdapter, workspaceId: WorkspaceId) => Promise<void>) => void
-  fx: (f: () => Promise<void>) => void
-  serviceFx: (f: (adapter: ServiceAdaptersManager) => Promise<void>) => void
+  storageAdapter: StorageAdapter
+  serviceAdaptersManager: ServiceAdaptersManager
   // Bulk operations in case trigger require some
   apply: (tx: Tx[], broadcast: boolean, target?: string[]) => Promise<TxResult>
-  applyCtx: (ctx: MeasureContext, tx: Tx[], broadcast: boolean, target?: string[]) => Promise<TxResult>
+  applyCtx: (ctx: SessionOperationContext, tx: Tx[], broadcast: boolean, target?: string[]) => Promise<TxResult>
 
   // Will create a live query if missing and return values immediately if already asked.
   queryFind: <T extends Doc>(
@@ -160,6 +152,9 @@ export type TriggerFunc = (tx: Tx, ctrl: TriggerControl) => Promise<Tx[]>
  */
 export interface Trigger extends Doc {
   trigger: Resource<TriggerFunc>
+
+  // In case defiled, trigger will be executed asyncronously after transaction will be done, trigger shouod use
+  isAsync?: boolean
 
   // We should match transaction
   txMatch?: DocumentQuery<Tx>
@@ -411,7 +406,7 @@ export interface ServerStorageOptions {
   // Indexing is not required to be started for upgrade mode.
   upgrade: boolean
 
-  broadcast?: BroadcastFunc
+  broadcast: BroadcastFunc
 }
 
 export interface ServiceAdapter {
@@ -430,6 +425,8 @@ export interface ServiceAdapterConfig {
 export interface StorageConfig {
   name: string
   kind: string
+  endpoint: string
+  port?: number
 }
 
 export interface StorageConfiguration {

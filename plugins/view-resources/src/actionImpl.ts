@@ -5,7 +5,8 @@ import {
   Hierarchy,
   type Ref,
   type Space,
-  type TxResult
+  type TxResult,
+  getCurrentAccount
 } from '@hcengineering/core'
 import { type Asset, type IntlString, type Resource, getResource } from '@hcengineering/platform'
 import { MessageBox, getClient, updateAttribute, type ContextStore, contextStore } from '@hcengineering/presentation'
@@ -119,6 +120,32 @@ function Archive (object: Space | Space[]): void {
     },
     undefined
   )
+}
+
+async function Leave (object: Space | Space[]): Promise<void> {
+  const client = getClient()
+  const promises: Array<Promise<TxResult>> = []
+  const objs = Array.isArray(object) ? object : [object]
+  const me = getCurrentAccount()._id
+  for (const obj of objs) {
+    if (obj.members.includes(me)) {
+      promises.push(client.update(obj, { $pull: { members: me } }))
+    }
+  }
+  await Promise.all(promises)
+}
+
+async function Join (object: Space | Space[]): Promise<void> {
+  const client = getClient()
+  const promises: Array<Promise<TxResult>> = []
+  const objs = Array.isArray(object) ? object : [object]
+  const me = getCurrentAccount()._id
+  for (const obj of objs) {
+    if (!obj.members.includes(me)) {
+      promises.push(client.update(obj, { $push: { members: me } }))
+    }
+  }
+  await Promise.all(promises)
 }
 
 async function Move (docs: Doc | Doc[]): Promise<void> {
@@ -507,6 +534,8 @@ export const actionImpl = {
   CopyTextToClipboard,
   Delete,
   Archive,
+  Join,
+  Leave,
   Move,
   MoveUp,
   MoveDown,

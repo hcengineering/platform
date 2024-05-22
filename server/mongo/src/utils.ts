@@ -13,9 +13,10 @@
 // limitations under the License.
 //
 
-import { toWorkspaceString, type WorkspaceId } from '@hcengineering/core'
+import { toWorkspaceString, type Doc, type Domain, type FieldIndex, type WorkspaceId } from '@hcengineering/core'
 import { PlatformError, unknownStatus } from '@hcengineering/platform'
-import { type Db, MongoClient, type MongoClientOptions } from 'mongodb'
+import { type DomainHelperOperations } from '@hcengineering/server-core'
+import { MongoClient, type Collection, type Db, type Document, type MongoClientOptions } from 'mongodb'
 
 const connections = new Map<string, MongoClientReferenceImpl>()
 
@@ -134,4 +135,68 @@ export function getMongoClient (uri: string, options?: MongoClientOptions): Mong
  */
 export function getWorkspaceDB (client: MongoClient, workspaceId: WorkspaceId): Db {
   return client.db(toWorkspaceString(workspaceId))
+}
+
+export class DBCollectionHelper implements DomainHelperOperations {
+  collections = new Map<string, Collection<any>>()
+  constructor (readonly db: Db) {}
+
+  async init (domain?: Domain): Promise<void> {
+    if (domain === undefined) {
+      // Init existing collecfions
+      for (const c of (await this.db.listCollections({}, { nameOnly: true }).toArray()).map((it) => it.name)) {
+        this.collections.set(c, this.db.collection(c))
+      }
+    } else {
+      this.collections.set(domain, this.db.collection(domain))
+    }
+  }
+
+  collection<TSchema extends Document = Document>(domain: Domain): Collection<TSchema> {
+    let info = this.collections.get(domain)
+    if (info === undefined) {
+      info = this.db.collection(domain as string)
+      this.collections.set(domain, info)
+    }
+    return info
+  }
+
+  async create (domain: Domain): Promise<void> {
+    if (this.collections.get(domain) === undefined) {
+      const coll = this.db.collection(domain as string)
+      this.collections.set(domain, coll)
+
+      while (true) {
+        const exists = await this.db.listCollections({ name: domain }).next()
+        if (exists === undefined) {
+          console.log('check connection to be created', domain)
+          await new Promise<void>((resolve) => {
+            setTimeout(resolve)
+          })
+        } else {
+          break
+        }
+      }
+    }
+  }
+
+  exists (domain: Domain): boolean {
+    return this.collections.has(domain)
+  }
+
+  async createIndex (domain: Domain, value: string | FieldIndex<Doc>, options?: { name: string }): Promise<void> {
+    await this.collection(domain).createIndex(value, options)
+  }
+
+  async dropIndex (domain: Domain, name: string): Promise<void> {
+    await this.collection(domain).dropIndex(name)
+  }
+
+  async listIndexes (domain: Domain): Promise<{ name: string }[]> {
+    return await this.collection(domain).listIndexes().toArray()
+  }
+
+  async hasDocuments (domain: Domain, count: number): Promise<boolean> {
+    return (await this.collection(domain).countDocuments({}, { limit: count })) >= count
+  }
 }

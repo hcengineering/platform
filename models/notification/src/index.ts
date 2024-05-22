@@ -17,10 +17,9 @@
 import activity, { type ActivityMessage } from '@hcengineering/activity'
 import chunter from '@hcengineering/chunter'
 import {
+  AccountRole,
   DOMAIN_MODEL,
-  Hierarchy,
   IndexKind,
-  type Space,
   type Account,
   type AttachedDoc,
   type Class,
@@ -31,6 +30,7 @@ import {
   type Domain,
   type Markup,
   type Ref,
+  type Space,
   type Timestamp,
   type Tx
 } from '@hcengineering/core'
@@ -391,7 +391,7 @@ export function createModel (builder: Builder): void {
       icon: notification.icon.Notifications,
       component: notification.component.NotificationSettings,
       group: 'settings-account',
-      secured: false,
+      role: AccountRole.Guest,
       order: 1500
     },
     notification.ids.NotificationSettings
@@ -624,7 +624,6 @@ export function createModel (builder: Builder): void {
       action: notification.actionImpl.ArchiveAll,
       label: notification.string.ArchiveAll,
       icon: view.icon.CheckCircle,
-      keyBinding: [],
       input: 'none',
       category: notification.category.Notification,
       target: core.class.Doc,
@@ -642,7 +641,6 @@ export function createModel (builder: Builder): void {
       action: notification.actionImpl.ReadAll,
       label: notification.string.MarkReadAll,
       icon: view.icon.Eye,
-      keyBinding: [],
       input: 'none',
       category: notification.category.Notification,
       target: core.class.Doc,
@@ -660,7 +658,6 @@ export function createModel (builder: Builder): void {
       action: notification.actionImpl.UnreadAll,
       label: notification.string.MarkUnreadAll,
       icon: view.icon.EyeCrossed,
-      keyBinding: [],
       input: 'none',
       category: notification.category.Notification,
       target: core.class.Doc,
@@ -700,11 +697,7 @@ export function generateClassNotificationTypes (
   ignoreKeys: string[] = [],
   defaultEnabled: string[] = []
 ): void {
-  const txes = builder.getTxes()
-  const hierarchy = new Hierarchy()
-  for (const tx of txes) {
-    hierarchy.tx(tx)
-  }
+  const hierarchy = builder.hierarchy
   const attributes = hierarchy.getAllAttributes(
     _class,
     hierarchy.isDerived(_class, core.class.AttachedDoc) ? core.class.AttachedDoc : core.class.Doc

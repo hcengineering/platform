@@ -41,7 +41,7 @@ export type QuerySelector<T> = {
 /**
  * @public
  */
-export type ObjQueryType<T> = (T extends Array<infer U> ? U | U[] : T) | QuerySelector<T>
+export type ObjQueryType<T> = (T extends Array<infer U> ? U | U[] | QuerySelector<U> : T) | QuerySelector<T>
 
 /**
  * @public

@@ -14,13 +14,13 @@
 -->
 <script lang="ts">
   import contact, { Person, PersonAccount } from '@hcengineering/contact'
-  import { personAccountByIdStore } from '@hcengineering/contact-resources'
+  import { CreateGuest, personAccountByIdStore } from '@hcengineering/contact-resources'
   import { IdMap, Ref } from '@hcengineering/core'
   import { IntlString, translate } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { Integration } from '@hcengineering/setting'
   import { themeStore } from '@hcengineering/theme'
-  import { closePopup, registerFocus, resizeObserver, showPopup } from '@hcengineering/ui'
+  import { Button, IconAdd, closePopup, registerFocus, resizeObserver, showPopup } from '@hcengineering/ui'
   import { afterUpdate, createEventDispatcher, onMount } from 'svelte'
   import calendar from '../plugin'
   import ParticipantsPopup from './ParticipantsPopup.svelte'
@@ -161,6 +161,15 @@
       closePopup('participants')
     }
   }
+
+  function addGuest (e: MouseEvent) {
+    showPopup(CreateGuest, {}, undefined, (res) => {
+      if (res) {
+        value = ''
+        dispatch('ref', res)
+      }
+    })
+  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -185,21 +194,35 @@
   }}
 >
   <div class="hidden-text" bind:this={text} />
-  <div class="ghost flex-row-center clear-mins" class:focusable class:w-full={fullSize}>
-    <input
-      {disabled}
-      bind:this={input}
-      type="text"
-      bind:value
-      placeholder={phTraslate}
-      {style}
-      on:input={(ev) => {
-        computeSize(ev.target)
-      }}
-      on:change
-      on:keydown
-      on:keypress
-      on:blur
-    />
+  <div class="flex-row-center w-full">
+    <div class="ghost flex-row-center clear-mins" class:focusable class:w-full={fullSize}>
+      <input
+        {disabled}
+        bind:this={input}
+        type="text"
+        bind:value
+        placeholder={phTraslate}
+        {style}
+        on:input={(ev) => {
+          computeSize(ev.target)
+        }}
+        on:change
+        on:keydown
+        on:keypress
+        on:blur
+      />
+    </div>
+    <div class="ml-2">
+      <Button
+        focusIndex={2}
+        kind={'ghost'}
+        size={'small'}
+        icon={IconAdd}
+        showTooltip={{
+          label: contact.string.AddGuest
+        }}
+        on:click={addGuest}
+      />
+    </div>
   </div>
 </div>

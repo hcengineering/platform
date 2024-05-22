@@ -30,8 +30,8 @@
   export let selected: Ref<Employee>[] = []
   export let skipCurrentAccount = false
   export let disableDeselectFor: Ref<Employee>[] = []
-  export let showStatus = false
-  export let background: string | undefined = undefined
+  export let showStatus = true
+  export let skipInactive = false
 
   const dispatch = createEventDispatcher()
   const query = createQuery()
@@ -55,7 +55,8 @@
           ? { $search: search }
           : { [searchField]: { $like: '%' + search + '%' } }
         : {}),
-      ...(skipCurrentAccount && currentPerson ? { _id: { $ne: currentPerson._id as Ref<Employee> } } : {})
+      ...(skipCurrentAccount && currentPerson ? { _id: { $ne: currentPerson._id as Ref<Employee> } } : {}),
+      ...(skipInactive ? { active: true } : {})
     },
     (result) => {
       result.sort((a, b) => {
@@ -116,7 +117,7 @@
           handleSelection(persons, index)
         }}
       >
-        <UserDetails avatarSize="small" {person} {showStatus} {background} />
+        <UserDetails avatarSize="small" {person} {showStatus} />
         <CheckBox
           checked={selectedItems.has(person._id)}
           readonly={disabled}

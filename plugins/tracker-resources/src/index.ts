@@ -542,7 +542,7 @@ export default async (): Promise<Resources> => ({
     ) => await getAllStates(query, onUpdate, queryId, attr, false),
     GetVisibleFilters: getVisibleFilters,
     IssueChatTitleProvider: getIssueChatTitle,
-    IsProjectJoined: async (project: Project) => !project.private || project.members.includes(getCurrentAccount()._id),
+    IsProjectJoined: async (project: Project) => project.members.includes(getCurrentAccount()._id),
     GetIssueStatusCategories: getIssueStatusCategories
   },
   actionImpl: {

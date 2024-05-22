@@ -22,10 +22,14 @@ import TaskList from '@tiptap/extension-task-list'
 
 import { DefaultKit, type DefaultKitOptions } from './default-kit'
 
+import { getMetadata } from '@hcengineering/platform'
+import presentation from '@hcengineering/presentation'
 import { CodeBlockExtension, codeBlockOptions } from '@hcengineering/text'
 import { CodemarkExtension } from '../components/extension/codemark'
 import { NodeUuidExtension } from '../components/extension/nodeUuid'
 import { Table, TableCell, TableRow } from '../components/extension/table'
+import { type ImageOptions, ImageExtension } from '../components/extension/imageExt'
+import { type FileOptions, FileExtension } from '../components/extension/fileExt'
 
 const headingLevels: Level[] = [1, 2, 3]
 
@@ -53,6 +57,8 @@ export const taskListExtensions = [
 
 export interface EditorKitOptions extends DefaultKitOptions {
   history?: false
+  file?: Partial<FileOptions> | false
+  image?: Partial<ImageOptions> | false
 }
 
 export const EditorKit = Extension.create<EditorKitOptions>({
@@ -86,7 +92,24 @@ export const EditorKit = Extension.create<EditorKitOptions>({
         ]
       }),
       NodeUuidExtension,
-      ...tableExtensions
+      ...tableExtensions,
+      ...(this.options.file !== false
+        ? [
+            FileExtension.configure({
+              inline: true,
+              ...this.options.file
+            })
+          ]
+        : []),
+      ...(this.options.image !== false
+        ? [
+            ImageExtension.configure({
+              inline: true,
+              uploadUrl: getMetadata(presentation.metadata.UploadURL) ?? '',
+              ...this.options.image
+            })
+          ]
+        : [])
       // ...taskListExtensions // Disable since tasks are not working properly now.
     ]
   }

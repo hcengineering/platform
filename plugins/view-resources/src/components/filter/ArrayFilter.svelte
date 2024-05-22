@@ -51,7 +51,7 @@
 
   const client = getClient()
   const key = { key: filter.key.key }
-  const promise = getPresenter(client, filter.key._class, key, key)
+  const promise = getPresenter(client, filter.key._class, key, key, undefined, false, 'attribute')
 
   let values = new Set<any>()
   let selectedValues: Set<any> = new Set<any>(filter.value.map((p) => p[0]))

@@ -49,7 +49,9 @@ export default mergeIds(hrId, hr, {
     EditRequest: '' as AnyComponent,
     TzDatePresenter: '' as AnyComponent,
     TzDateEditor: '' as AnyComponent,
-    RequestPresenter: '' as AnyComponent
+    RequestPresenter: '' as AnyComponent,
+    DepartmentPresenter: '' as AnyComponent,
+    DepartmentRefPresenter: '' as AnyComponent
   },
   category: {
     HR: '' as Ref<ActionCategory>

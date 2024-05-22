@@ -17,7 +17,7 @@
   import { DisplayActivityMessage, ActivityMessagePreviewType } from '@hcengineering/activity'
   import { getClient } from '@hcengineering/presentation'
   import { Action, Component } from '@hcengineering/ui'
-  import { Class, Doc, Ref } from '@hcengineering/core'
+  import { Class, Doc, Ref, Space } from '@hcengineering/core'
 
   import activity from '../../plugin'
 
@@ -25,6 +25,7 @@
   export let readonly = false
   export let type: ActivityMessagePreviewType = 'full'
   export let actions: Action[] = []
+  export let space: Ref<Space> | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -42,7 +43,8 @@
       value,
       type,
       readonly,
-      actions
+      actions,
+      space
     }}
     on:click
   />

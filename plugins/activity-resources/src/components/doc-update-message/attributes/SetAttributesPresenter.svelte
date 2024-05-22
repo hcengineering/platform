@@ -19,12 +19,14 @@
 
   import ChangeAttributesTemplate from './ChangeAttributesTemplate.svelte'
   import { getIsTextType } from '../../../utils'
+  import { Ref, Space } from '@hcengineering/core'
 
   export let viewlet: DocUpdateMessageViewlet | undefined
   export let attributeModel: AttributeModel
   export let values: DocAttributeUpdates['set']
   export let prevValue: any
   export let preview = false
+  export let space: Ref<Space> | undefined = undefined
 
   $: attrViewletConfig = viewlet?.config?.[attributeModel.key]
   $: attributeIcon = attrViewletConfig?.icon ?? attributeModel.icon ?? IconEdit
@@ -66,7 +68,7 @@
     {/if}
   {/if}
 {:else}
-  <ChangeAttributesTemplate {viewlet} {attributeModel} {values} {preview}>
+  <ChangeAttributesTemplate {viewlet} {attributeModel} {values} {preview} {space}>
     <svelte:fragment slot="text">
       <Label label={attributeModel.label} />
       <span class="lower"><Label label={activity.string.Set} /></span>

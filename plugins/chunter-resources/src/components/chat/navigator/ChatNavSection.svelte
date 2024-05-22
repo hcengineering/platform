@@ -21,10 +21,11 @@
   import contact from '@hcengineering/contact'
   import { getResource, translate } from '@hcengineering/platform'
   import view from '@hcengineering/view'
+  import { personAccountByIdStore, statusByUserStore } from '@hcengineering/contact-resources'
 
   import ChatNavItem from './ChatNavItem.svelte'
   import chunter from '../../../plugin'
-  import { ChatNavItemModel } from '../types'
+  import { ChatNavItemModel, SortFnOptions } from '../types'
   import { getObjectIcon, getChannelName } from '../../../utils'
   import { navigatorStateStore, toggleSections } from '../utils'
 
@@ -35,11 +36,12 @@
   export let actions: Action[] = []
   export let maxItems: number | undefined = undefined
   export let objectId: Ref<Doc> | undefined
-  export let sortFn: (items: ChatNavItemModel[], contexts: DocNotifyContext[]) => ChatNavItemModel[]
+  export let sortFn: (items: ChatNavItemModel[], options: SortFnOptions) => ChatNavItemModel[]
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
+  let sortedItems: ChatNavItemModel[] = []
   let items: ChatNavItemModel[] = []
   let visibleItems: ChatNavItemModel[] = []
 
@@ -50,12 +52,17 @@
   $: isCollapsed = $navigatorStateStore.collapsedSections.includes(id)
 
   $: void getChatNavItems(objects).then((res) => {
-    items = sortFn(res, contexts)
+    items = res
   })
 
+  $: sortedItems = sortFn(items, {
+    contexts,
+    userStatusByAccount: $statusByUserStore,
+    personAccountById: $personAccountByIdStore
+  })
   $: canShowMore = !!maxItems && items.length > maxItems
 
-  $: visibleItems = getVisibleItems(canShowMore, isShownMore, maxItems, items, objectId)
+  $: visibleItems = getVisibleItems(canShowMore, isShownMore, maxItems, sortedItems, objectId)
 
   async function getChatNavItems (objects: Doc[]): Promise<ChatNavItemModel[]> {
     const items: ChatNavItemModel[] = []
@@ -83,7 +90,7 @@
         title: (await getChannelName(object._id, object._class, object)) ?? (await translate(titleIntl, {})),
         description: isDocChat && !isPerson ? await getDocTitle(client, object._id, object._class, object) : undefined,
         icon: icon ?? getObjectIcon(_class),
-        iconProps: { showStatus: true, background: 'var(--global-surface-01-BackgroundColor)' },
+        iconProps: { showStatus: true },
         iconSize,
         withIconBackground: !isDirect && !isPerson,
         isSecondary: isDocChat && !isPerson
@@ -132,7 +139,7 @@
   }
 </script>
 
-{#if items.length > 0 && contexts.length > 0}
+{#if visibleItems.length > 0 && contexts.length > 0}
   <NavGroup
     title={header}
     categoryName={id}
@@ -161,7 +168,7 @@
         </div>
       {/if}
     {:else if objectId}
-      {@const item = items.find(({ id }) => id === objectId)}
+      {@const item = visibleItems.find(({ id }) => id === objectId)}
       {#if item}
         {@const context = contexts.find(({ attachedTo }) => attachedTo === item.id)}
         <ChatNavItem {context} isSelected {item} on:select />

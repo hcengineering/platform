@@ -38,7 +38,7 @@
     "Mentioned": "Упомянул(а)",
     "You": "Вы",
     "Mentions": "Упоминания",
-    "MentionedYouIn": "Упомянул(а) вас в",
+    "MentionedYouIn": "Упомянул(а) вас в {title}",
     "Messages": "Cообщения",
     "Thread": "Обсуждение",
     "AddReaction": "Добавить реакцию",

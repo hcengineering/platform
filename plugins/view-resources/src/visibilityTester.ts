@@ -108,3 +108,23 @@ export async function canDeleteSpace (doc?: Doc | Doc[]): Promise<boolean> {
 
   return false
 }
+
+export async function canJoinSpace (doc?: Doc | Doc[]): Promise<boolean> {
+  if (doc === undefined || Array.isArray(doc)) {
+    return false
+  }
+
+  const space = doc as Space
+
+  return !space.members?.includes(getCurrentAccount()._id)
+}
+
+export async function canLeaveSpace (doc?: Doc | Doc[]): Promise<boolean> {
+  if (doc === undefined || Array.isArray(doc)) {
+    return false
+  }
+
+  const space = doc as Space
+
+  return space.members?.includes(getCurrentAccount()._id)
+}

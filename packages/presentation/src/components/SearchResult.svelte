@@ -30,12 +30,14 @@
       <Icon {icon} size={'medium'} />
     {/if}
     {#if iconComponent}
-      {#await getResource(iconComponent) then component}
-        <svelte:component this={component} size={'smaller'} {...value.iconProps} />
-      {/await}
+      <div class="icon-place">
+        {#await getResource(iconComponent) then component}
+          <svelte:component this={component} size={'smaller'} {...value.iconProps} />
+        {/await}
+      </div>
     {/if}
   </div>
-  <span class="ml-2 max-w-120 overflow-label searchResult">
+  <span class="ml-1 max-w-120 overflow-label searchResult">
     {#if value.shortTitle !== undefined}
       <span class="shortTitle">{value.shortTitle}</span>
     {/if}
@@ -44,6 +46,9 @@
 </div>
 
 <style lang="scss">
+  .icon-place {
+    width: 1.75rem;
+  }
   .searchResult {
     display: flex;
     flex-direction: row;

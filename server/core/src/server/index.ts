@@ -15,20 +15,20 @@
 //
 
 import core, {
-  type Class,
   DOMAIN_DOC_INDEX_STATE,
   DOMAIN_TX,
-  type Doc,
   Hierarchy,
+  ModelDb,
+  WorkspaceEvent,
+  generateId,
+  type Class,
+  type Doc,
   type IndexingUpdateEvent,
   type MeasureContext,
-  ModelDb,
   type Ref,
   type ServerStorage,
   type TxWorkspaceEvent,
-  WorkspaceEvent,
-  type WorkspaceId,
-  generateId
+  type WorkspaceId
 } from '@hcengineering/core'
 import { type DbAdapter, type TxAdapter } from '../adapter'
 import { type DbConfiguration } from '../configuration'
@@ -39,6 +39,7 @@ import { createServiceAdaptersManager } from '../service'
 import { type StorageAdapter } from '../storage'
 import { Triggers } from '../triggers'
 import { type ServerStorageOptions } from '../types'
+import { DomainIndexHelperImpl } from './domainHelper'
 import { TServerStorage } from './storage'
 
 /**
@@ -54,7 +55,7 @@ export async function createServerStorage (
   const adapters = new Map<string, DbAdapter>()
   const modelDb = new ModelDb(hierarchy)
 
-  const storageAdapter = conf.storageFactory?.()
+  const storageAdapter = conf.storageFactory
 
   await ctx.with('create-adapters', {}, async (ctx) => {
     for (const key in conf.adapters) {
@@ -66,6 +67,11 @@ export async function createServerStorage (
     }
   })
 
+  await ctx.with('init-adapters', {}, async (ctx) => {
+    for (const adapter of adapters.values()) {
+      await adapter.init?.()
+    }
+  })
   const txAdapter = adapters.get(conf.domains[DOMAIN_TX]) as TxAdapter
 
   const model = await ctx.with('get model', {}, async (ctx) => {
@@ -144,7 +150,7 @@ export async function createServerStorage (
           space: core.space.DerivedTx,
           params: evt
         }
-        options.broadcast?.([tx])
+        options.broadcast([tx])
       }
     )
     return new FullTextIndex(
@@ -157,6 +163,9 @@ export async function createServerStorage (
       options.upgrade ?? false
     )
   }
+
+  const domainHelper = new DomainIndexHelperImpl(hierarchy, modelDb)
+
   return new TServerStorage(
     conf.domains,
     conf.defaultAdapter,
@@ -171,7 +180,8 @@ export async function createServerStorage (
     indexFactory,
     options,
     metrics,
-    model
+    model,
+    domainHelper
   )
 }
 
@@ -187,14 +197,21 @@ export function createNullStorageFactory (): StorageAdapter {
     make: async (ctx, workspaceId: WorkspaceId) => {},
     remove: async (ctx, workspaceId: WorkspaceId, objectNames: string[]) => {},
     delete: async (ctx, workspaceId: WorkspaceId) => {},
-    list: async (ctx, workspaceId: WorkspaceId, prefix?: string) => [],
+    listStream: async (ctx, workspaceId, prefix) => {
+      return {
+        next: async () => undefined,
+        close: async () => {}
+      }
+    },
     stat: async (ctx, workspaceId: WorkspaceId, objectName: string) => ({}) as any,
     get: async (ctx, workspaceId: WorkspaceId, objectName: string) => ({}) as any,
     put: async (ctx, workspaceId: WorkspaceId, objectName: string, stream: any, contentType: string, size?: number) =>
       ({}) as any,
     read: async (ctx, workspaceId: WorkspaceId, name: string) => ({}) as any,
-    partial: async (ctx, workspaceId: WorkspaceId, objectName: string, offset: number, length?: number) => ({}) as any
+    partial: async (ctx, workspaceId: WorkspaceId, objectName: string, offset: number, length?: number) => ({}) as any,
+    close: async () => {}
   }
 }
 
 export { AggregatorStorageAdapter, buildStorage } from './aggregator'
+export { DomainIndexHelperImpl } from './domainHelper'

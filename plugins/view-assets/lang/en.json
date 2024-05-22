@@ -121,6 +121,9 @@
     "Pin": "Pin",
     "Unpin": "Unpin",
     "Archived": "Archived",
-    "MoreActions": "More actions"
+    "MoreActions": "More actions",
+    "Leave": "Leave",
+    "Join": "Join",
+    "Copied": "Copied"
   }
 }

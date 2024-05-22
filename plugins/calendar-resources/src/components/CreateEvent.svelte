@@ -65,12 +65,12 @@
   let description: Markup = EmptyMarkup
   let visibility: Visibility = 'private'
   const me = getCurrentAccount()
-  let space: Ref<Calendar> = `${me._id}_calendar` as Ref<Calendar>
+  let _calendar: Ref<Calendar> = `${me._id}_calendar` as Ref<Calendar>
 
   const q = createQuery()
-  q.query(calendar.class.ExternalCalendar, { default: true, members: me._id, archived: false }, (res) => {
+  q.query(calendar.class.ExternalCalendar, { default: true, members: me._id, hidden: false }, (res) => {
     if (res.length > 0) {
-      space = res[0]._id
+      _calendar = res[0]._id
     }
   })
 
@@ -93,27 +93,36 @@
     if (date === undefined) return
     if (title === '') return
     if (rules.length > 0) {
-      await client.addCollection(calendar.class.ReccuringEvent, space, attachedTo, attachedToClass, 'events', {
-        eventId: generateEventId(),
-        date: allDay ? saveUTC(date) : date,
-        dueDate: allDay ? saveUTC(dueDate) : dueDate,
-        externalParticipants,
-        rdate: [],
-        exdate: [],
-        rules,
-        reminders,
-        description,
-        participants,
-        visibility,
-        title,
-        location,
-        allDay,
-        access: 'owner',
-        originalStartTime: allDay ? saveUTC(date) : date,
-        timeZone
-      })
+      await client.addCollection(
+        calendar.class.ReccuringEvent,
+        calendar.space.Calendar,
+        attachedTo,
+        attachedToClass,
+        'events',
+        {
+          calendar: _calendar,
+          eventId: generateEventId(),
+          date: allDay ? saveUTC(date) : date,
+          dueDate: allDay ? saveUTC(dueDate) : dueDate,
+          externalParticipants,
+          rdate: [],
+          exdate: [],
+          rules,
+          reminders,
+          description,
+          participants,
+          visibility,
+          title,
+          location,
+          allDay,
+          access: 'owner',
+          originalStartTime: allDay ? saveUTC(date) : date,
+          timeZone
+        }
+      )
     } else {
-      await client.addCollection(calendar.class.Event, space, attachedTo, attachedToClass, 'events', {
+      await client.addCollection(calendar.class.Event, calendar.space.Calendar, attachedTo, attachedToClass, 'events', {
+        calendar: _calendar,
         eventId: generateEventId(),
         date: allDay ? saveUTC(date) : date,
         dueDate: allDay ? saveUTC(dueDate) : dueDate,
@@ -210,7 +219,7 @@
       />
     </div>
     <div class="block rightCropPadding">
-      <CalendarSelector bind:value={space} focusIndex={10101} />
+      <CalendarSelector bind:value={_calendar} focusIndex={10101} />
       <div class="flex-row-center flex-gap-1">
         <Icon icon={calendar.icon.Hidden} size={'small'} />
         <VisibilityEditor bind:value={visibility} kind={'tertiary'} focusIndex={10102} withoutIcon />

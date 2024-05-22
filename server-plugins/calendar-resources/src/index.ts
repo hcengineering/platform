@@ -15,7 +15,7 @@
 
 import calendar, { Calendar, Event } from '@hcengineering/calendar'
 import { PersonAccount } from '@hcengineering/contact'
-import core, {
+import {
   Class,
   Doc,
   DocumentQuery,
@@ -85,13 +85,10 @@ export async function OnPersonAccountCreate (tx: Tx, control: TriggerControl): P
 
   const res: TxCreateDoc<Calendar> = control.txFactory.createTxCreateDoc(
     calendar.class.Calendar,
-    core.space.Space,
+    calendar.space.Calendar,
     {
       name: user.email,
-      description: '',
-      archived: false,
-      private: false,
-      members: [user._id],
+      hidden: false,
       visibility: 'public'
     },
     `${user._id}_calendar` as Ref<Calendar>,

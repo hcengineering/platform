@@ -16,7 +16,7 @@
   import { Class, Doc, Ref, Space } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Button, IconFilter, eventToHTMLElement, resolvedLocationStore, showPopup } from '@hcengineering/ui'
-  import { Filter } from '@hcengineering/view'
+  import { Filter, ViewOptions } from '@hcengineering/view'
   import { filterStore, getFilterKey, selectedFilterStore, setFilters } from '../../filter'
   import view from '../../plugin'
   import FilterTypePopup from './FilterTypePopup.svelte'
@@ -25,6 +25,7 @@
 
   export let _class: Ref<Class<Doc>> | undefined
   export let space: Ref<Space> | undefined = undefined
+  export let viewOptions: ViewOptions | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -69,7 +70,8 @@
         space,
         target,
         index: 1,
-        onChange
+        onChange,
+        viewOptions
       },
       target
     )

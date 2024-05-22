@@ -16,7 +16,7 @@
   import core, { AnyAttribute, ArrOf, Class, Doc, Ref, RefTo, Space, Type } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Label, Scroller, Submenu, closePopup, closeTooltip, resizeObserver, showPopup } from '@hcengineering/ui'
-  import { ClassFilters, Filter, KeyFilter, KeyFilterPreset } from '@hcengineering/view'
+  import { ClassFilters, Filter, KeyFilter, KeyFilterPreset, ViewOptions } from '@hcengineering/view'
   import { getResource } from '@hcengineering/platform'
   import { createEventDispatcher } from 'svelte'
   import { FilterQuery, buildFilterKey } from '../../filter'
@@ -29,6 +29,7 @@
   export let index: number
   export let onChange: (e: Filter) => void
   export let nestedFrom: KeyFilter | undefined = undefined
+  export let viewOptions: ViewOptions | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -212,7 +213,8 @@
             value: [],
             index
           },
-          onChange: change
+          onChange: change,
+          viewOptions
         },
         target
       )
@@ -227,7 +229,8 @@
             value: [],
             index
           },
-          onChange
+          onChange,
+          viewOptions
         },
         target
       )

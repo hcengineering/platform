@@ -316,6 +316,7 @@ export interface DropdownIntlItem {
   params?: Record<string, any>
   description?: IntlString
   paramsDescription?: Record<string, any>
+  keys?: string[]
 }
 
 export interface PopupOptions {

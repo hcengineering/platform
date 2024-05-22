@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import calendar, { Calendar, Event, generateEventId, getAllEvents } from '@hcengineering/calendar'
-  import { DayCalendar, calendarStore, hidePrivateEvents } from '@hcengineering/calendar-resources'
+  import { DayCalendar, calendarByIdStore, hidePrivateEvents } from '@hcengineering/calendar-resources'
   import { PersonAccount } from '@hcengineering/contact'
   import { Ref, SortingOrder, Timestamp, getCurrentAccount } from '@hcengineering/core'
   import { IntlString, getEmbeddedLabel } from '@hcengineering/platform'
@@ -55,7 +55,7 @@
   let calendars: Calendar[] = []
   let todayDate = new Date()
 
-  $: calendarsQ.query(calendar.class.Calendar, { members: acc, archived: false }, (res) => {
+  $: calendarsQ.query(calendar.class.Calendar, { createdBy: acc, hidden: false }, (res) => {
     calendars = res
   })
 
@@ -65,7 +65,7 @@
   function update (calendars: Calendar[]): void {
     q.query<Event>(
       calendar.class.Event,
-      { space: { $in: calendars.map((p) => p._id) } },
+      { calendar: { $in: calendars.map((p) => p._id) } },
       (result) => {
         raw = result
       },
@@ -75,7 +75,7 @@
 
   $: update(calendars)
   $: all = getAllEvents(raw, from, to)
-  $: objects = hidePrivateEvents(all, $calendarStore)
+  $: objects = hidePrivateEvents(all, $calendarByIdStore)
 
   function inc (val: number): void {
     if (val === 0) {
@@ -115,7 +115,7 @@
         current.dueDate = new Date(e.detail.date).setMinutes(new Date(e.detail.date).getMinutes() + 30)
       } else {
         const me = getCurrentAccount() as PersonAccount
-        const space = `${me._id}_calendar` as Ref<Calendar>
+        const _calendar = `${me._id}_calendar` as Ref<Calendar>
         const ev: WorkSlot = {
           _id: dragItemId,
           allDay: false,
@@ -128,7 +128,8 @@
           _class: time.class.WorkSlot,
           collection: 'events',
           visibility: 'public',
-          space,
+          calendar: _calendar,
+          space: calendar.space.Calendar,
           modifiedBy: me._id,
           participants: [me.person],
           modifiedOn: Date.now(),
@@ -139,7 +140,7 @@
       }
       raw = raw
       all = getAllEvents(raw, from, to)
-      objects = hidePrivateEvents(all, $calendarStore)
+      objects = hidePrivateEvents(all, $calendarByIdStore)
     }
   }
   function dragLeave (event: DragEvent) {
@@ -154,7 +155,7 @@
     if (dragItem === null) {
       raw = raw.filter((p) => p._id !== dragItemId)
       all = getAllEvents(raw, from, to)
-      objects = hidePrivateEvents(all, $calendarStore)
+      objects = hidePrivateEvents(all, $calendarByIdStore)
     }
   }
   $: clear(dragItem)
