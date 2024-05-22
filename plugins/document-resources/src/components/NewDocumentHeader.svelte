@@ -36,11 +36,13 @@
   const client = getClient()
   const query = createQuery()
 
+  const me = getCurrentAccount()
+
   let loading = true
   let hasTeamspace = false
   query.query(
     document.class.Teamspace,
-    { archived: false },
+    { archived: false, members: me._id },
     (res) => {
       hasTeamspace = res.length > 0
       loading = false
@@ -73,7 +75,7 @@
     }
   }
 
-  const dropdownItems = hasAccountRole(getCurrentAccount(), AccountRole.User)
+  const dropdownItems = hasAccountRole(me, AccountRole.User)
     ? [
         { id: document.string.CreateDocument, label: document.string.CreateDocument },
         { id: document.string.CreateTeamspace, label: document.string.CreateTeamspace }
