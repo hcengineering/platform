@@ -1524,8 +1524,12 @@
   th, td {
     padding: .5rem 1.5rem;
     text-align: left;
-    &:first-child { padding-left: 0; }
-    &:last-child { padding-right: 0; }
+    &:first-child { .metaColumn {
+      padding-left: 0; }
+    }
+    &:last-child { .metaColumn {
+      padding-right: 0; }
+    }
   }
   th {
     height: 3rem;

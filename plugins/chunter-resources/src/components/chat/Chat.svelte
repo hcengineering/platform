@@ -61,7 +61,10 @@
   })
 
   openedChannelStore.subscribe((data) => {
-    if (data && selectedData?._id !== data._id) {
+    if (data === undefined) {
+      selectedData = undefined
+      object = undefined
+    } else if (selectedData?._id !== data._id) {
       selectedData = data
       openChannel(data._id, data._class, data.thread)
     }
@@ -94,6 +97,8 @@
     const id = loc.path[3]
 
     if (!id) {
+      currentSpecial = undefined
+      clearChannel()
       return
     }
 

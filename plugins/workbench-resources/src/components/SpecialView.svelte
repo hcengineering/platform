@@ -129,7 +129,8 @@
       createItemDialog: createComponent,
       createItemLabel: createLabel,
       query: resultQuery,
-      totalQuery: query
+      totalQuery: query,
+      ...viewlet.props
     }}
   />
 {/if}
