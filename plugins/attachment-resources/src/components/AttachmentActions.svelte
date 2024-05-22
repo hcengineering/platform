@@ -13,22 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachmentPreviewExtension, type Attachment } from '@hcengineering/attachment'
+  import { type Attachment } from '@hcengineering/attachment'
   import { getResource } from '@hcengineering/platform'
-  import { getFileUrl } from '@hcengineering/presentation'
   import {
-    Action as UIAction,
-    ActionIcon,
-    IconMoreH,
-    IconOpen,
-    Menu,
-    closeTooltip,
-    showPopup,
-    PopupAlignment
-  } from '@hcengineering/ui'
+    FilePreviewPopup,
+    getFileUrl,
+    previewTypes,
+    canPreviewFile,
+    getPreviewAlignment
+  } from '@hcengineering/presentation'
+  import { Action as UIAction, ActionIcon, IconMoreH, IconOpen, Menu, closeTooltip, showPopup } from '@hcengineering/ui'
   import view, { Action } from '@hcengineering/view'
 
-  import { previewTypes, getPreviewType, isOpenable } from '../utils'
   import attachmentPlugin from '../plugin'
   import FileDownload from './icons/FileDownload.svelte'
 
@@ -39,24 +35,18 @@
   let download: HTMLAnchorElement
 
   $: contentType = attachment?.type ?? ''
-  let openable = false
-  $: {
-    void isOpenable(contentType, $previewTypes).then((res) => {
-      openable = res
-    })
-  }
 
-  let previewType: AttachmentPreviewExtension | undefined = undefined
-  $: if (openable) {
-    void getPreviewType(contentType, $previewTypes).then((res) => {
-      previewType = res
+  let canPreview: boolean = false
+  $: if (attachment !== undefined) {
+    void canPreviewFile(contentType, $previewTypes).then((res) => {
+      canPreview = res
     })
   } else {
-    previewType = undefined
+    canPreview = false
   }
 
   function showPreview (e: MouseEvent): void {
-    if (!openable || previewType === undefined) {
+    if (!canPreview) {
       return
     }
 
@@ -69,9 +59,14 @@
     closeTooltip()
 
     showPopup(
-      previewType.component,
-      { ...(previewType.props ?? {}), file: attachment.file, name: attachment.name, contentType, value: attachment },
-      (previewType.alignment ?? 'center') as PopupAlignment
+      FilePreviewPopup,
+      {
+        file: attachment.file,
+        name: attachment.name,
+        contentType: attachment.type ?? '',
+        metadata: attachment.metadata
+      },
+      getPreviewAlignment(attachment.type ?? '')
     )
   }
 
@@ -95,7 +90,7 @@
 
   const showMenu = (ev: Event) => {
     const actions: UIAction[] = []
-    if (openable) {
+    if (canPreview) {
       actions.push(openAction)
     }
     actions.push({
@@ -133,7 +128,7 @@
     bind:this={download}
     on:click|stopPropagation
   >
-    {#if openable}
+    {#if canPreview}
       <ActionIcon
         icon={IconOpen}
         size={'medium'}

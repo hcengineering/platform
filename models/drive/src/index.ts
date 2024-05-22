@@ -14,19 +14,31 @@
 //
 
 import core, {
+  type Blob,
   type Domain,
   type Role,
   type RolesAssignment,
   type Type,
   Account,
   AccountRole,
-  Ref,
   IndexKind,
-  DOMAIN_MODEL,
-  type Blob
+  Ref,
+  DOMAIN_MODEL
 } from '@hcengineering/core'
 import { type Drive, type File, type Folder, type Resource, driveId } from '@hcengineering/drive'
-import { type Builder, Model, UX, Mixin, Prop, TypeString, Index, TypeRef, ReadOnly } from '@hcengineering/model'
+import {
+  type Builder,
+  Hidden,
+  Index,
+  Mixin,
+  Model,
+  Prop,
+  ReadOnly,
+  TypeRecord,
+  TypeRef,
+  TypeString,
+  UX
+} from '@hcengineering/model'
 import { TDoc, TType, TTypedSpace } from '@hcengineering/model-core'
 import tracker from '@hcengineering/model-tracker'
 import view, { type Viewlet, classPresenter, createAction } from '@hcengineering/model-view'
@@ -102,6 +114,11 @@ export class TFile extends TResource implements File {
   @Prop(TypeRef(core.class.Blob), drive.string.File)
   @ReadOnly()
   declare file: Ref<Blob>
+
+  @Prop(TypeRecord(), drive.string.Metadata)
+  @ReadOnly()
+  @Hidden()
+    metadata?: Record<string, any>
 
   @Prop(TypeRef(drive.class.Folder), drive.string.Parent)
   @Index(IndexKind.Indexed)

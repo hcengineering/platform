@@ -16,6 +16,7 @@
   import attachment from '@hcengineering/attachment'
   import { AvatarType } from '@hcengineering/contact'
   import { Asset, getResource } from '@hcengineering/platform'
+  import { uploadFile } from '@hcengineering/presentation'
   import {
     AnySvelteComponent,
     IconSize,

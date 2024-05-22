@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { getFileUrl, PDFViewer } from '@hcengineering/presentation'
+import { FilePreviewPopup, getFileUrl } from '@hcengineering/presentation'
 import { FileNode, type FileOptions as FileNodeOptions } from '@hcengineering/text'
 import { showPopup } from '@hcengineering/ui'
 import { nodeInputRule } from '@tiptap/core'
@@ -123,15 +123,14 @@ export const FileExtension = FileNode.extend<FileOptions>({
             if (fileId === '') return
             const fileName = node.attrs['data-file-name'] ?? ''
             const fileType: string = node.attrs['data-file-type'] ?? ''
-            if (!(fileType.startsWith('image/') || fileType === 'text/plain' || fileType === 'application/pdf')) return
 
             showPopup(
-              PDFViewer,
+              FilePreviewPopup,
               {
                 file: fileId,
                 name: fileName,
                 contentType: fileType,
-                fullSize: true,
+                fullSize: false,
                 showIcon: false
               },
               'centered'

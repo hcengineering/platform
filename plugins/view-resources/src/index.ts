@@ -93,6 +93,12 @@ import TreeItem from './components/navigator/TreeItem.svelte'
 import TreeNode from './components/navigator/TreeNode.svelte'
 import StatusPresenter from './components/status/StatusPresenter.svelte'
 import StatusRefPresenter from './components/status/StatusRefPresenter.svelte'
+import AudioViewer from './components/viewer/AudioViewer.svelte'
+import ImageViewer from './components/viewer/ImageViewer.svelte'
+import VideoViewer from './components/viewer/VideoViewer.svelte'
+import PDFViewer from './components/viewer/PDFViewer.svelte'
+
+import { blobImageMetadata, blobVideoMetadata } from './blob'
 
 import {
   afterResult,
@@ -281,7 +287,11 @@ export default async (): Promise<Resources> => ({
     StringFilterPresenter,
     AttachedDocPanel,
     ObjectMention,
-    SearchSelector
+    SearchSelector,
+    AudioViewer,
+    ImageViewer,
+    VideoViewer,
+    PDFViewer
   },
   popup: {
     PositionElementAlignment
@@ -317,6 +327,8 @@ export default async (): Promise<Resources> => ({
     CanArchiveSpace: canArchiveSpace,
     CanDeleteSpace: canDeleteSpace,
     CanJoinSpace: canJoinSpace,
-    CanLeaveSpace: canLeaveSpace
+    CanLeaveSpace: canLeaveSpace,
+    BlobImageMetadata: blobImageMetadata,
+    BlobVideoMetadata: blobVideoMetadata
   }
 })

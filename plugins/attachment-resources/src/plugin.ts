@@ -15,7 +15,7 @@
 //
 
 import attachment, { attachmentId } from '@hcengineering/attachment'
-import type { IntlString, StatusCode } from '@hcengineering/platform'
+import type { IntlString } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import { type ViewAction } from '@hcengineering/view'
 
@@ -41,9 +41,6 @@ export default mergeIds(attachmentId, attachment, {
     AddAttachmentToSaved: '' as IntlString,
     RemoveAttachmentFromSaved: '' as IntlString,
     Pinned: '' as IntlString
-  },
-  status: {
-    FileTooLarge: '' as StatusCode
   },
   actionImpl: {
     AddAttachmentToSaved: '' as ViewAction,

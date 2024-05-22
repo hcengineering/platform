@@ -13,52 +13,53 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  // import { Doc } from '@hcengineering/core'
-  import { Button, Dialog, Label, Spinner } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
-  import presentation from '..'
-  import { getFileUrl } from '../utils'
-  import Download from './icons/Download.svelte'
-  import ActionContext from './ActionContext.svelte'
+  import { type Blob, type Ref } from '@hcengineering/core'
+  import { Label, Dialog, Button, Component } from '@hcengineering/ui'
 
-  export let file: string | undefined
+  import presentation from '../plugin'
+
+  import { getPreviewType, previewTypes } from '../file'
+  import { BlobMetadata, FilePreviewExtension } from '../types'
+  import { getFileUrl } from '../utils'
+
+  import ActionContext from './ActionContext.svelte'
+  import Download from './icons/Download.svelte'
+
+  export let file: Ref<Blob> | undefined
   export let name: string
-  export let contentType: string | undefined
-  // export let popupOptions: PopupOptions
-  // export let value: Doc
-  export let showIcon = true
+  export let contentType: string
+  export let metadata: BlobMetadata | undefined
+  export let props: Record<string, any> = {}
+
   export let fullSize = false
-  export let isLoading = false
-  export let css: string | undefined = undefined
+  export let showIcon = true
 
   const dispatch = createEventDispatcher()
 
-  function iconLabel (name: string): string {
-    const parts = name.split('.')
-    const ext = parts[parts.length - 1]
-    return ext.substring(0, 4).toUpperCase()
-  }
   onMount(() => {
     if (fullSize) {
       dispatch('fullsize')
     }
   })
+
+  function iconLabel (name: string): string {
+    const parts = `${name}`.split('.')
+    const ext = parts[parts.length - 1]
+    return ext.substring(0, 4).toUpperCase()
+  }
+
+  let previewType: FilePreviewExtension | undefined = undefined
+  $: if (file !== undefined) {
+    void getPreviewType(contentType, $previewTypes).then((res) => {
+      previewType = res
+    })
+  } else {
+    previewType = undefined
+  }
+
   let download: HTMLAnchorElement
   $: src = file === undefined ? '' : getFileUrl(file, 'full', name)
-  $: isImage = contentType !== undefined && contentType.startsWith('image/')
-
-  let frame: HTMLIFrameElement | undefined = undefined
-  // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-  $: if (css !== undefined && frame !== undefined && frame !== null) {
-    frame.onload = () => {
-      const head = frame?.contentDocument?.querySelector('head')
-
-      // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-      if (css !== undefined && head !== undefined && head !== null) {
-        head.appendChild(document.createElement('style')).textContent = css
-      }
-    }
-  }
 </script>
 
 <ActionContext context={{ mode: 'browser' }} />
@@ -83,7 +84,7 @@
   </svelte:fragment>
 
   <svelte:fragment slot="utils">
-    {#if !isLoading && src !== ''}
+    {#if src !== ''}
       <a class="no-line" href={src} download={name} bind:this={download}>
         <Button
           icon={Download}
@@ -97,21 +98,25 @@
     {/if}
   </svelte:fragment>
 
-  {#if !isLoading}
-    {#if src === ''}
-      <div class="centered">
-        <Label label={presentation.string.FailedToPreview} />
-      </div>
-    {:else if isImage}
-      <div class="pdfviewer-content img">
-        <img class="img-fit" {src} alt="" />
-      </div>
-    {:else}
-      <iframe bind:this={frame} class="pdfviewer-content" src={src + '#view=FitH&navpanes=0'} title="" />
-    {/if}
-  {:else}
+  {#if src === ''}
     <div class="centered">
-      <Spinner size="medium" />
+      <Label label={presentation.string.FailedToPreview} />
+    </div>
+  {:else if previewType !== undefined}
+    <div class="content flex-col flex-grow">
+      <Component is={previewType.component} props={{ value: file, name, contentType, metadata, ...props }} />
+    </div>
+  {:else}
+    <div class="centered flex-col flex-gap-3">
+      <Label label={presentation.string.ContentTypeNotSupported} />
+      <Button
+        label={presentation.string.Download}
+        kind={'primary'}
+        on:click={() => {
+          download.click()
+        }}
+        showTooltip={{ label: presentation.string.Download }}
+      />
     </div>
   {/if}
 </Dialog>
@@ -130,25 +135,10 @@
     border-radius: 0.5rem;
     cursor: pointer;
   }
-  .pdfviewer-content {
+  .content {
     flex-grow: 1;
     overflow: auto;
     border: none;
-
-    &.img {
-      display: flex;
-      align-items: center;
-      min-width: 0;
-      min-height: 0;
-    }
-  }
-  .img-fit {
-    margin: 0 auto;
-    width: fit-content;
-    height: fit-content;
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
   }
   .centered {
     flex-grow: 1;

@@ -15,13 +15,15 @@
 //
 
 import { type Class, type Ref } from '@hcengineering/core'
-import type { Asset, IntlString, Metadata, Plugin } from '@hcengineering/platform'
+import type { Asset, IntlString, Metadata, Plugin, StatusCode } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
+import { type ComponentExtensionId } from '@hcengineering/ui'
 import { type PresentationMiddlewareFactory } from './pipeline'
 import {
   type ComponentPointExtension,
   type DocRules,
   type DocCreateExtension,
+  type FilePreviewExtension,
   type ObjectSearchCategory
 } from './types'
 
@@ -36,7 +38,8 @@ export default plugin(presentationId, {
     PresentationMiddlewareFactory: '' as Ref<Class<PresentationMiddlewareFactory>>,
     ComponentPointExtension: '' as Ref<Class<ComponentPointExtension>>,
     DocCreateExtension: '' as Ref<Class<DocCreateExtension>>,
-    DocRules: '' as Ref<Class<DocRules>>
+    DocRules: '' as Ref<Class<DocRules>>,
+    FilePreviewExtension: '' as Ref<Class<FilePreviewExtension>>
   },
   string: {
     Create: '' as IntlString,
@@ -72,7 +75,12 @@ export default plugin(presentationId, {
     Created: '' as IntlString,
     NoResults: '' as IntlString,
     Next: '' as IntlString,
-    FailedToPreview: '' as IntlString
+    FailedToPreview: '' as IntlString,
+    ContentType: '' as IntlString,
+    ContentTypeNotSupported: '' as IntlString
+  },
+  extension: {
+    FilePreviewExtension: '' as ComponentExtensionId
   },
   metadata: {
     RequiredVersion: '' as Metadata<string>,
@@ -82,5 +90,8 @@ export default plugin(presentationId, {
     CollaboratorApiUrl: '' as Metadata<string>,
     Token: '' as Metadata<string>,
     FrontUrl: '' as Asset
+  },
+  status: {
+    FileTooLarge: '' as StatusCode
   }
 })

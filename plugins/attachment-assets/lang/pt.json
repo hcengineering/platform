@@ -53,8 +53,5 @@
     "FilterAttachments": "Anexos",
     "RemovedAttachment": "Anexo removido",
     "ContentType": "Tipo de conteúdo"
-  },
-  "status": {
-    "FileTooLarge": "Ficheiro demasiado grande"
   }
 }

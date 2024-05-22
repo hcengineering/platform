@@ -1,4 +1,5 @@
 import {
+  type Blob,
   type Class,
   type Client,
   type Doc,
@@ -165,4 +166,20 @@ export interface DocRules extends Doc {
     disallowQuery: DocumentQuery<Space>
     mixin?: Ref<Mixin<Space>>
   }
+}
+
+/**
+ * @public
+ */
+export type BlobMetadata = Record<string, any>
+
+/**
+ * @public
+ */
+export interface FilePreviewExtension extends ComponentPointExtension {
+  contentType: string | string[]
+  alignment?: string
+  metadataProvider?: Resource<(file: File, blob: Ref<Blob>) => Promise<BlobMetadata | undefined>>
+  // Extension is only available if this checker returns true
+  availabilityChecker?: Resource<() => Promise<boolean>>
 }

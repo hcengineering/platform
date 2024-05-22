@@ -15,28 +15,53 @@
 //
 -->
 <script lang="ts">
+  import { WithLookup } from '@hcengineering/core'
   import { File } from '@hcengineering/drive'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { Icon, tooltip } from '@hcengineering/ui'
-  import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
+  import { FilePreviewPopup } from '@hcengineering/presentation'
+  import { Icon, showPopup, tooltip } from '@hcengineering/ui'
   import { ObjectPresenterType } from '@hcengineering/view'
+  import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
 
   import drive from '../plugin'
 
-  export let value: File
+  export let value: WithLookup<File>
   export let inline: boolean = false
   export let disabled: boolean = false
   export let accent: boolean = false
   export let noUnderline: boolean = false
   export let shouldShowAvatar = true
   export let type: ObjectPresenterType = 'link'
+
+  function handleClick (): void {
+    if (disabled) {
+      return
+    }
+
+    if (value.$lookup?.file === undefined) {
+      return
+    }
+
+    const blob = value.$lookup?.file
+
+    showPopup(
+      FilePreviewPopup,
+      {
+        file: blob._id,
+        contentType: blob.contentType,
+        name: value.name,
+        metadata: value.metadata
+      },
+      'float'
+    )
+  }
 </script>
 
 {#if value}
   {#if inline}
     <ObjectMention object={value} {disabled} {accent} {noUnderline} />
   {:else if type === 'link'}
-    <DocNavLink {disabled} object={value} {accent} {noUnderline}>
+    <DocNavLink object={value} onClick={handleClick} {disabled} {accent} {noUnderline}>
       <div class="flex-presenter" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
         {#if shouldShowAvatar}
           <div class="icon">

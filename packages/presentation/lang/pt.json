@@ -31,6 +31,11 @@
     "Created": "Criado",
     "NoResults": "Sem resultados para mostrar",
     "Next": "Seguinte",
-    "FailedToPreview": "Falha ao pré-visualizar"
+    "FailedToPreview": "Falha ao pré-visualizar",
+    "ContentType": "Tipo de conteúdo",
+    "ContentTypeNotSupported": "Tipo de conteúdo não suportado"
+  },
+  "status": {
+    "FileTooLarge": "Ficheiro demasiado grande"
   }
 }
