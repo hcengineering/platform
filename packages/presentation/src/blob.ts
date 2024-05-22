@@ -15,6 +15,7 @@
 
 import { type Blob, type Ref, concatLink } from '@hcengineering/core'
 import { PlatformError, Severity, Status, getMetadata, getResource } from '@hcengineering/platform'
+import { type PopupAlignment } from '@hcengineering/ui'
 import { writable } from 'svelte/store'
 
 import { type BlobMetadata, type BlobContentTypeExtension } from './types'
@@ -106,6 +107,19 @@ previewTypes.subscribe((it) => {
 /**
  * @public
  */
+export async function canPreviewFile (contentType: string, _previewTypes: BlobContentTypeExtension[]): Promise<boolean> {
+  for (const previewType of _previewTypes) {
+    if (await isApplicableType(previewType, contentType)) {
+      return true
+    }
+  }
+
+  return false
+}
+
+/**
+ * @public
+ */
 export async function getPreviewType (
   contentType: string,
   _previewTypes: BlobContentTypeExtension[]
@@ -118,6 +132,19 @@ export async function getPreviewType (
   }
 
   return applicableTypes.sort(comparePreviewTypes)[0]
+}
+
+/**
+ * @public
+ */
+export function getPreviewAlignment (contentType: string): PopupAlignment {
+  if (contentType.startsWith('image/')) {
+    return 'centered'
+  } else if (contentType.startsWith('video/')) {
+    return 'centered'
+  } else {
+    return 'float'
+  }
 }
 
 function getPreviewTypeRegExp (type: string): RegExp {

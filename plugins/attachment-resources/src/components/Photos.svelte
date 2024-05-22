@@ -17,10 +17,9 @@
   import { Photo } from '@hcengineering/attachment'
   import { Class, Doc, Ref, Space } from '@hcengineering/core'
   import { setPlatformStatus, unknownError } from '@hcengineering/platform'
-  import { createQuery, getClient, getFileUrl, PDFViewer } from '@hcengineering/presentation'
+  import { createQuery, getClient, getFileUrl, PDFViewer, uploadFile } from '@hcengineering/presentation'
   import { Button, IconAdd, Label, showPopup, Spinner } from '@hcengineering/ui'
   import attachment from '../plugin'
-  import { uploadFile } from '../utils'
   import UploadDuo from './icons/UploadDuo.svelte'
 
   export let objectId: Ref<Doc>

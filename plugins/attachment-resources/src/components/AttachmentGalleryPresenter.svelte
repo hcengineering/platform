@@ -15,8 +15,7 @@
 <script lang="ts">
   import type { Attachment } from '@hcengineering/attachment'
   import { showPopup, closeTooltip } from '@hcengineering/ui'
-  import { PDFViewer, getFileUrl } from '@hcengineering/presentation'
-  import MediaViewer from './MediaViewer.svelte'
+  import { BlobPreviewPopup, getFileUrl } from '@hcengineering/presentation'
   import { getType } from '../utils'
   import filesize from 'filesize'
 
@@ -32,22 +31,24 @@
     return ext.substring(0, 4).toUpperCase()
   }
 
-  function isPlayable (contentType: string) {
-    const type = getType(contentType)
-    return type === 'video' || type === 'audio'
-  }
-  function isImage (contentType: string) {
+  function isImage (contentType: string): boolean {
     return getType(contentType) === 'image'
   }
-  function isEmbedded (contentType: string) {
+
+  function isEmbedded (contentType: string): boolean {
     return getType(contentType) !== 'other'
   }
 
-  function openAttachment () {
+  function openAttachment (): void {
     closeTooltip()
     showPopup(
-      isPlayable(value.type) ? MediaViewer : PDFViewer,
-      { file: value.file, name: value.name, contentType: value.type, value },
+      BlobPreviewPopup,
+      {
+        value: value.file,
+        name: value.name,
+        contentType: value.type,
+        metadata: value.metadata
+      },
       isImage(value.type) ? 'centered' : 'float'
     )
   }

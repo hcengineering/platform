@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { PDFViewer } from '@hcengineering/presentation'
-import { showPopup } from '@hcengineering/ui'
+import { BlobPreviewPopup } from '@hcengineering/presentation'
 import { ImageNode, type ImageOptions as ImageNodeOptions } from '@hcengineering/text'
-import { type IconSize, getIconSize2x } from '@hcengineering/ui'
+import { type IconSize, getIconSize2x, showPopup } from '@hcengineering/ui'
 import { mergeAttributes, nodeInputRule } from '@tiptap/core'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 
@@ -201,9 +200,9 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
             const fileName = node.attrs.alt ?? ''
 
             showPopup(
-              PDFViewer,
+              BlobPreviewPopup,
               {
-                file: fileId,
+                value: fileId,
                 name: fileName,
                 contentType: 'image/*',
                 fullSize: true,

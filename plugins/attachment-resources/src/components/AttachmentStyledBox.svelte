@@ -17,12 +17,19 @@
   import { Attachment } from '@hcengineering/attachment'
   import { Account, Class, Doc, generateId, Markup, Ref, Space, toIdMap } from '@hcengineering/core'
   import { IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
-  import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
+  import {
+    createQuery,
+    DraftController,
+    deleteFile,
+    draftsStore,
+    getClient,
+    getFileMetadata,
+    uploadFile
+  } from '@hcengineering/presentation'
   import textEditor, { AttachIcon, EmptyMarkup, type RefAction, StyledTextBox } from '@hcengineering/text-editor'
   import { ButtonSize } from '@hcengineering/ui'
 
   import attachment from '../plugin'
-  import { deleteFile, getAttachmentMetadata, uploadFile } from '../utils'
   import AttachmentsGrid from './AttachmentsGrid.svelte'
 
   export let objectId: Ref<Doc> | undefined = undefined
@@ -134,7 +141,7 @@
     if (space === undefined || objectId === undefined || _class === undefined) return
     try {
       const uuid = await uploadFile(file)
-      const metadata = await getAttachmentMetadata(file, uuid)
+      const metadata = await getFileMetadata(file, uuid)
       const _id: Ref<Attachment> = generateId()
 
       attachments.set(_id, {

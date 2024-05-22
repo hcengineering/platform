@@ -15,7 +15,7 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
   import { type Blob, type Ref } from '@hcengineering/core'
-  import { Label, Dialog, Button, Component, Spinner } from '@hcengineering/ui'
+  import { Label, Dialog, Button, Component } from '@hcengineering/ui'
 
   import presentation from '../plugin'
 
@@ -34,7 +34,6 @@
 
   export let fullSize = false
   export let showIcon = true
-  export let isLoading = false
 
   const dispatch = createEventDispatcher()
 
@@ -85,7 +84,7 @@
   </svelte:fragment>
 
   <svelte:fragment slot="utils">
-    {#if !isLoading && src !== ''}
+    {#if src !== ''}
       <a class="no-line" href={src} download={name} bind:this={download}>
         <Button
           icon={Download}
@@ -99,31 +98,25 @@
     {/if}
   </svelte:fragment>
 
-  {#if !isLoading}
-    {#if src === ''}
-      <div class="centered">
-        <Label label={presentation.string.FailedToPreview} />
-      </div>
-    {:else if previewType !== undefined}
-      <div class="content flex-col flex-grow">
-        <Component is={previewType.component} props={{ value, name, contentType, metadata, ...props }} />
-      </div>
-    {:else}
-      <div class="centered flex-col flex-gap-3">
-        <Label label={presentation.string.ContentTypeNotSupported} />
-        <Button
-          label={presentation.string.Download}
-          kind={'primary'}
-          on:click={() => {
-            download.click()
-          }}
-          showTooltip={{ label: presentation.string.Download }}
-        />
-      </div>
-    {/if}
-  {:else}
+  {#if src === ''}
     <div class="centered">
-      <Spinner size="medium" />
+      <Label label={presentation.string.FailedToPreview} />
+    </div>
+  {:else if previewType !== undefined}
+    <div class="content flex-col flex-grow">
+      <Component is={previewType.component} props={{ value, name, contentType, metadata, ...props }} />
+    </div>
+  {:else}
+    <div class="centered flex-col flex-gap-3">
+      <Label label={presentation.string.ContentTypeNotSupported} />
+      <Button
+        label={presentation.string.Download}
+        kind={'primary'}
+        on:click={() => {
+          download.click()
+        }}
+        showTooltip={{ label: presentation.string.Download }}
+      />
     </div>
   {/if}
 </Dialog>

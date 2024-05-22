@@ -20,24 +20,16 @@
   export let name: string
   export let contentType: string
   export let metadata: BlobMetadata | undefined
-  export let css: string | undefined = undefined
 
   $: src = value === undefined ? '' : getFileUrl(value, 'full', name)
-
-  let frame: HTMLIFrameElement | undefined = undefined
-  // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-  $: if (css !== undefined && frame !== undefined && frame !== null) {
-    frame.onload = () => {
-      const head = frame?.contentDocument?.querySelector('head')
-
-      // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-      if (css !== undefined && head !== undefined && head !== null) {
-        head.appendChild(document.createElement('style')).textContent = css
-      }
-    }
-  }
 </script>
 
 {#if src}
-  <iframe bind:this={frame} src={src + '#view=FitH&navpanes=0'} class="w-full h-full" title={name} />
+  <iframe src={src + '#view=FitH&navpanes=0'} class="w-full h-full" title={name} />
 {/if}
+
+<style lang="scss">
+  iframe {
+    border: none;
+  }
+</style>

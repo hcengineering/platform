@@ -15,7 +15,6 @@
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
   import attachment from '@hcengineering/attachment'
-  import { deleteFile } from '@hcengineering/attachment-resources/src/utils'
   import contact, { Channel, ChannelProvider, combineName, findContacts, Person } from '@hcengineering/contact'
   import { ChannelsDropdown, EditableAvatar, PersonPresenter } from '@hcengineering/contact-resources'
   import {
@@ -33,6 +32,7 @@
   } from '@hcengineering/core'
   import { getMetadata, getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import presentation, {
+    BlobPreviewPopup,
     Card,
     createQuery,
     DraftController,
@@ -41,7 +41,7 @@
     KeyedAttribute,
     MessageBox,
     MultipleDraftController,
-    PDFViewer
+    deleteFile
   } from '@hcengineering/presentation'
   import type { Candidate, CandidateDraft } from '@hcengineering/recruit'
   import { recognizeDocument } from '@hcengineering/rekoni'
@@ -740,8 +740,12 @@
             icon={FileIcon}
             on:click={() => {
               showPopup(
-                PDFViewer,
-                { file: object.resumeUuid, name: object.resumeName },
+                BlobPreviewPopup,
+                {
+                  value: object.resumeUuid,
+                  contentType: object.resumeType ?? 'application/pdf',
+                  name: object.resumeName
+                },
                 object.resumeType?.startsWith('image/') ? 'centered' : 'float'
               )
             }}

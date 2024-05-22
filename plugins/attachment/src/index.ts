@@ -18,8 +18,8 @@ import type { AttachedDoc, Class, Ref } from '@hcengineering/core'
 import type { Asset, Plugin } from '@hcengineering/platform'
 import { IntlString, plugin, Resource } from '@hcengineering/platform'
 import type { Preference } from '@hcengineering/preference'
-import { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
-import { type ComponentPointExtension } from '@hcengineering/presentation'
+import { type BlobMetadata } from '@hcengineering/presentation'
+import { AnyComponent } from '@hcengineering/ui'
 
 /**
  * @public
@@ -41,24 +41,7 @@ export interface Attachment extends AttachedDoc {
 /**
  * @public
  */
-export type AttachmentMetadata = ImageMetadata | VideoMetadata
-
-/**
- * @public
- */
-export interface ImageMetadata {
-  originalWidth: number
-  originalHeight: number
-  pixelRatio: number
-}
-
-/**
- * @public
- */
-export interface VideoMetadata {
-  originalWidth: number
-  originalHeight: number
-}
+export type AttachmentMetadata = BlobMetadata
 
 /**
  * @public
@@ -75,16 +58,6 @@ export interface SavedAttachments extends Preference {
 /**
  * @public
  */
-export interface AttachmentPreviewExtension extends ComponentPointExtension {
-  contentType: string | string[]
-  alignment?: string
-  // Extension is only available if this checker returns true
-  availabilityChecker?: Resource<() => Promise<boolean>>
-}
-
-/**
- * @public
- */
 export const attachmentId = 'attachment' as Plugin
 
 export default plugin(attachmentId, {
@@ -93,8 +66,7 @@ export default plugin(attachmentId, {
     Photos: '' as AnyComponent,
     AttachmentsPresenter: '' as AnyComponent,
     FileBrowser: '' as AnyComponent,
-    PDFViewer: '' as AnyComponent,
-    MediaViewer: '' as AnyComponent
+    PDFViewer: '' as AnyComponent
   },
   icon: {
     Attachment: '' as Asset,
@@ -103,8 +75,7 @@ export default plugin(attachmentId, {
   class: {
     Attachment: '' as Ref<Class<Attachment>>,
     Photo: '' as Ref<Class<Photo>>,
-    SavedAttachments: '' as Ref<Class<SavedAttachments>>,
-    AttachmentPreviewExtension: '' as Ref<Class<AttachmentPreviewExtension>>
+    SavedAttachments: '' as Ref<Class<SavedAttachments>>
   },
   helper: {
     UploadFile: '' as Resource<(file: File) => Promise<string>>,
@@ -130,13 +101,5 @@ export default plugin(attachmentId, {
     DeleteFile: '' as IntlString,
     Attachments: '' as IntlString,
     FileBrowser: '' as IntlString
-  },
-  previewExtension: {
-    Image: '' as Ref<AttachmentPreviewExtension>,
-    Media: '' as Ref<AttachmentPreviewExtension>,
-    PDF: '' as Ref<AttachmentPreviewExtension>
-  },
-  extension: {
-    AttachmentPreview: '' as ComponentExtensionId
   }
 })

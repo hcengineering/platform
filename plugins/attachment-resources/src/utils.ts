@@ -1,6 +1,6 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2021, 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,78 +14,12 @@
 // limitations under the License.
 //
 
-import { writable } from 'svelte/store'
-import attachments, {
-  type AttachmentPreviewExtension,
-  type Attachment,
-  type AttachmentMetadata
-} from '@hcengineering/attachment'
-import {
-  type Class,
-  concatLink,
-  type Data,
-  type Doc,
-  type Ref,
-  type Space,
-  type TxOperations as Client
-} from '@hcengineering/core'
-import presentation, { createQuery, getFileUrl, getImageSize } from '@hcengineering/presentation'
-import {
-  PlatformError,
-  Severity,
-  Status,
-  getMetadata,
-  getResource,
-  setPlatformStatus,
-  unknownError
-} from '@hcengineering/platform'
+import { type Attachment } from '@hcengineering/attachment'
+import { type Class, type Data, type Doc, type Ref, type Space, type TxOperations as Client } from '@hcengineering/core'
+import { getFileMetadata, uploadFile } from '@hcengineering/presentation'
+import { setPlatformStatus, unknownError } from '@hcengineering/platform'
 
 import attachment from './plugin'
-
-export async function uploadFile (file: File): Promise<string> {
-  const uploadUrl = getMetadata(presentation.metadata.UploadURL)
-
-  if (uploadUrl === undefined) {
-    throw Error('UploadURL is not defined')
-  }
-
-  const data = new FormData()
-  data.append('file', file)
-
-  const resp = await fetch(uploadUrl, {
-    method: 'POST',
-    headers: {
-      Authorization: 'Bearer ' + (getMetadata(presentation.metadata.Token) as string)
-    },
-    body: data
-  })
-
-  if (resp.status !== 200) {
-    if (resp.status === 413) {
-      throw new PlatformError(new Status(Severity.ERROR, attachment.status.FileTooLarge, {}))
-    } else {
-      throw Error(`Failed to upload file: ${resp.statusText}`)
-    }
-  }
-
-  return await resp.text()
-}
-
-export async function deleteFile (id: string): Promise<void> {
-  const uploadUrl = getMetadata(presentation.metadata.UploadURL) ?? ''
-
-  const url = concatLink(uploadUrl, `?file=${id}`)
-  const resp = await fetch(url, {
-    method: 'DELETE',
-    headers: {
-      Authorization: 'Bearer ' + (getMetadata(presentation.metadata.Token) as string)
-    }
-  })
-
-  if (resp.status !== 200) {
-    throw new Error('Failed to delete file')
-  }
-}
 
 export async function createAttachments (
   client: Client,
@@ -100,7 +34,7 @@ export async function createAttachments (
       const file = list.item(index)
       if (file !== null) {
         const uuid = await uploadFile(file)
-        const metadata = await getAttachmentMetadata(file, uuid)
+        const metadata = await getFileMetadata(file, uuid)
 
         await client.addCollection(attachmentClass, space, objectId, objectClass, 'attachments', {
           ...extraData,
@@ -139,115 +73,4 @@ export function getType (type: string): 'image' | 'text' | 'json' | 'video' | 'a
   }
 
   return 'other'
-}
-
-export async function getAttachmentMetadata (file: File, uuid: string): Promise<AttachmentMetadata | undefined> {
-  const type = getType(file.type)
-
-  if (type === 'video') {
-    const size = await getVideoSize(uuid)
-
-    if (size === undefined) {
-      return undefined
-    }
-
-    return {
-      originalHeight: size.height,
-      originalWidth: size.width
-    }
-  }
-
-  if (type === 'image') {
-    const size = await getImageSize(file, getFileUrl(uuid, 'full'))
-
-    return {
-      originalHeight: size.height,
-      originalWidth: size.width,
-      pixelRatio: size.pixelRatio
-    }
-  }
-
-  return undefined
-}
-
-async function getVideoSize (uuid: string): Promise<{ width: number, height: number } | undefined> {
-  const promise = new Promise<{ width: number, height: number }>((resolve, reject) => {
-    const element = document.createElement('video')
-
-    element.onloadedmetadata = () => {
-      const height = element.videoHeight
-      const width = element.videoWidth
-
-      resolve({ height, width })
-    }
-
-    element.onerror = reject
-    element.src = getFileUrl(uuid, 'full')
-  })
-
-  return await promise
-}
-
-export const previewTypes = writable<AttachmentPreviewExtension[]>([])
-const previewTypesQuery = createQuery(true)
-previewTypesQuery.query(attachments.class.AttachmentPreviewExtension, {}, (result) => {
-  previewTypes.set(result)
-})
-
-function getPreviewTypeRegExp (type: string): RegExp {
-  return new RegExp(`^${type.replaceAll('/', '\\/').replaceAll('*', '.*')}$`)
-}
-
-/**
- * @public
- */
-export async function isOpenable (contentType: string, _previewTypes: AttachmentPreviewExtension[]): Promise<boolean> {
-  for (const previewType of _previewTypes) {
-    if (await isApplicableType(previewType, contentType)) {
-      return true
-    }
-  }
-
-  return false
-}
-
-async function isApplicableType (
-  { contentType, availabilityChecker }: AttachmentPreviewExtension,
-  _contentType: string
-): Promise<boolean> {
-  const checkAvailability = availabilityChecker !== undefined ? await getResource(availabilityChecker) : undefined
-  const isAvailable: boolean = checkAvailability === undefined || (await checkAvailability())
-
-  return (
-    isAvailable &&
-    (Array.isArray(contentType) ? contentType : [contentType]).some((type) =>
-      getPreviewTypeRegExp(type).test(_contentType)
-    )
-  )
-}
-
-function comparePreviewTypes (a: AttachmentPreviewExtension, b: AttachmentPreviewExtension): number {
-  if (a.order === undefined && b.order === undefined) {
-    return 0
-  } else if (a.order === undefined) {
-    return -1
-  } else if (b.order === undefined) {
-    return 1
-  } else {
-    return a.order - b.order
-  }
-}
-
-export async function getPreviewType (
-  contentType: string,
-  _previewTypes: AttachmentPreviewExtension[]
-): Promise<AttachmentPreviewExtension | undefined> {
-  const applicableTypes: AttachmentPreviewExtension[] = []
-  for (const previewType of _previewTypes) {
-    if (await isApplicableType(previewType, contentType)) {
-      applicableTypes.push(previewType)
-    }
-  }
-
-  return applicableTypes.sort(comparePreviewTypes)[0]
 }

@@ -16,13 +16,12 @@
 <script lang="ts">
   import type { Doc } from '@hcengineering/core'
   import { Attachment } from '@hcengineering/attachment'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient, getFileMetadata, uploadFile } from '@hcengineering/presentation'
   import { ActionIcon, IconAdd, Label, Loading } from '@hcengineering/ui'
   import { setPlatformStatus, unknownError } from '@hcengineering/platform'
 
   import { AttachmentPresenter } from '..'
   import attachment from '../plugin'
-  import { getAttachmentMetadata, uploadFile } from '../utils'
 
   // export let attachments: number
   export let object: Doc
@@ -55,7 +54,7 @@
   async function createAttachment (file: File) {
     try {
       const uuid = await uploadFile(file)
-      const metadata = await getAttachmentMetadata(file, uuid)
+      const metadata = await getFileMetadata(file, uuid)
 
       await client.addCollection(attachment.class.Attachment, object.space, object._id, object._class, 'attachments', {
         name: file.name,

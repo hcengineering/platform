@@ -15,7 +15,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { PDFViewer, getFileUrl } from '@hcengineering/presentation'
+  import { BlobPreviewPopup, getFileUrl } from '@hcengineering/presentation'
   import { IconExpand, IconMoreH, IconSize, SelectPopup, getEventPositionElement, showPopup } from '@hcengineering/ui'
   import { Editor } from '@tiptap/core'
   import IconAlignCenter from './icons/AlignCenter.svelte'
@@ -42,8 +42,8 @@
     const fileId = attributes['file-id'] ?? attributes.src
     const fileName = attributes.alt ?? ''
     showPopup(
-      PDFViewer,
-      { file: fileId, name: fileName, contentType: 'image/*', fullSize: true, showIcon: false },
+      BlobPreviewPopup,
+      { value: fileId, name: fileName, contentType: 'image/*', fullSize: true, showIcon: false },
       'centered',
       () => {
         dispatch('focus')

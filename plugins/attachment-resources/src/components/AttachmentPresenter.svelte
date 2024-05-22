@@ -14,14 +14,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import type { Attachment, AttachmentPreviewExtension } from '@hcengineering/attachment'
-  import { showPopup, closeTooltip, Label, getIconSize2x, Loading, PopupAlignment } from '@hcengineering/ui'
-  import presentation, { getFileUrl } from '@hcengineering/presentation'
   import filesize from 'filesize'
+  import { createEventDispatcher } from 'svelte'
+  import type { Attachment } from '@hcengineering/attachment'
   import core from '@hcengineering/core'
+  import { showPopup, closeTooltip, Label, getIconSize2x, Loading, PopupAlignment } from '@hcengineering/ui'
+  import presentation, {
+    BlobContentTypeExtension,
+    BlobPreviewPopup,
+    canPreviewFile,
+    getFileUrl,
+    getPreviewAlignment,
+    getPreviewType,
+    previewTypes
+  } from '@hcengineering/presentation'
   import { permissionsStore } from '@hcengineering/view-resources'
-  import { getType, isOpenable, previewTypes, getPreviewType } from '../utils'
+  import { getType } from '../utils'
 
   import AttachmentName from './AttachmentName.svelte'
 
@@ -54,28 +62,18 @@
     return getType(contentType) === 'image'
   }
 
-  let openable = false
+  let canPreview: boolean = false
   $: if (value !== undefined) {
-    void isOpenable(value.type, $previewTypes).then((res) => {
-      openable = res
+    void canPreviewFile(value.type, $previewTypes).then((res) => {
+      canPreview = res
     })
   } else {
-    openable = false
-  }
-
-  let previewType: AttachmentPreviewExtension | undefined = undefined
-  $: if (openable && value !== undefined) {
-    void getPreviewType(value.type, $previewTypes).then((res) => {
-      previewType = res
-    })
-  } else {
-    previewType = undefined
+    canPreview = false
   }
 
   function clickHandler (e: MouseEvent): void {
-    if (value === undefined) return
+    if (value === undefined || !canPreview) return
 
-    if (!openable || previewType === undefined) return
     e.preventDefault()
     e.stopPropagation()
     if (e.metaKey || e.ctrlKey) {
@@ -84,9 +82,14 @@
     }
     closeTooltip()
     showPopup(
-      previewType.component,
-      { ...(previewType.props ?? {}), file: value.file, name: value.name, contentType: value.type, value },
-      (previewType.alignment ?? 'center') as PopupAlignment
+      BlobPreviewPopup,
+      {
+        value: value.file,
+        name: value.name,
+        contentType: value.type,
+        metadata: value.metadata
+      },
+      getPreviewAlignment(value.type)
     )
   }
 
