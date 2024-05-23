@@ -21,7 +21,7 @@
   import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
   import { ObjectPresenterType } from '@hcengineering/view'
 
-  import drive from '../plugin'
+  import FolderIcon from './icons/Folder.svelte'
 
   export let value: Folder
   export let inline: boolean = false
@@ -40,7 +40,7 @@
       <div class="flex-presenter" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
         {#if shouldShowAvatar}
           <div class="icon">
-            <Icon icon={drive.icon.Folder} size={'small'} />
+            <Icon icon={FolderIcon} size={'small'} fill="#5195D7" />
           </div>
         {/if}
         <span class="label nowrap" class:no-underline={noUnderline || disabled} class:fs-bold={accent}>

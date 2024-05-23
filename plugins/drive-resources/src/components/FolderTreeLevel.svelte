@@ -22,8 +22,7 @@
   import { getActions as getContributedActions } from '@hcengineering/view-resources'
 
   import FolderTreeElement from './FolderTreeElement.svelte'
-
-  import drive from '../plugin'
+  import FolderIcon from './icons/Folder.svelte'
 
   export let folders: Ref<Folder>[]
   export let folderById: Map<Ref<Folder>, Folder>
@@ -69,7 +68,10 @@
   {#if doc}
     <FolderTreeElement
       _id={doc._id}
-      icon={drive.icon.Folder}
+      icon={FolderIcon}
+      iconProps={{
+        fill: '#5195D7'
+      }}
       title={doc.name}
       selected={selected === doc._id}
       parent={desc.length > 0}

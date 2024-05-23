@@ -23,7 +23,7 @@
   import { ObjectPresenterType } from '@hcengineering/view'
   import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
 
-  import drive from '../plugin'
+  import { getFileTypeIcon } from '../utils'
 
   export let value: WithLookup<File>
   export let inline: boolean = false
@@ -32,6 +32,8 @@
   export let noUnderline: boolean = false
   export let shouldShowAvatar = true
   export let type: ObjectPresenterType = 'link'
+
+  $: icon = getFileTypeIcon(value.$lookup?.file?.contentType ?? '')
 
   function handleClick (): void {
     if (disabled) {
@@ -65,7 +67,7 @@
       <div class="flex-presenter" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
         {#if shouldShowAvatar}
           <div class="icon">
-            <Icon icon={drive.icon.File} size={'small'} />
+            <Icon {icon} size={'small'} />
           </div>
         {/if}
         <span class="label nowrap" class:no-underline={noUnderline || disabled} class:fs-bold={accent}>

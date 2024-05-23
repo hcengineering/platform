@@ -15,14 +15,20 @@
 
 import { type Class, type Doc, type Ref } from '@hcengineering/core'
 import drive, { type Drive, type Folder, type Resource } from '@hcengineering/drive'
-import { setPlatformStatus, unknownError } from '@hcengineering/platform'
+import { type Asset, setPlatformStatus, unknownError } from '@hcengineering/platform'
 import { getClient, getFileMetadata, uploadFile } from '@hcengineering/presentation'
-import { showPopup } from '@hcengineering/ui'
+import { type AnySvelteComponent, showPopup } from '@hcengineering/ui'
 import { openDoc } from '@hcengineering/view-resources'
 
 import CreateDrive from './components/CreateDrive.svelte'
 import CreateFolder from './components/CreateFolder.svelte'
 import RenamePopup from './components/RenamePopup.svelte'
+
+import FileTypeAudio from './components/icons/FileTypeAudio.svelte'
+import FileTypeImage from './components/icons/FileTypeImage.svelte'
+import FileTypeVideo from './components/icons/FileTypeVideo.svelte'
+import FileTypePdf from './components/icons/FileTypePdf.svelte'
+import FileTypeText from './components/icons/FileTypeText.svelte'
 
 async function navigateToDoc (_id: Ref<Doc>, _class: Ref<Class<Doc>>): Promise<void> {
   const client = getClient()
@@ -90,4 +96,17 @@ export async function renameResource (resource: Resource): Promise<void> {
       await client.update(resource, { name: res })
     }
   })
+}
+
+const fileTypesMap: Record<string, AnySvelteComponent> = {
+  'application/pdf': FileTypePdf,
+  audio: FileTypeAudio,
+  image: FileTypeImage,
+  video: FileTypeVideo,
+  text: FileTypeText
+}
+
+export function getFileTypeIcon (contentType: string): Asset | AnySvelteComponent {
+  const type = contentType.split('/', 1)[0]
+  return fileTypesMap[type] ?? fileTypesMap[contentType] ?? drive.icon.File
 }
