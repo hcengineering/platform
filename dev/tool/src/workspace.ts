@@ -102,16 +102,21 @@ export async function updateField (
 export async function recreateElastic (
   mongoUrl: string,
   workspaceId: WorkspaceId,
-) {
+  transactorUrl: string
+): Promise<void> {
   const client = new MongoClient(mongoUrl)
+  const connection = (await connect(transactorUrl, workspaceId, undefined, {
+    mode: 'backup'
+  })) as unknown as CoreClient & BackupClient
   try {
     await client.connect()
     const db = getWorkspaceDB(client, workspaceId)
     await db
       .collection(DOMAIN_DOC_INDEX_STATE)
       .updateMany({ _class: core.class.DocIndexState }, { $set: { stages: {} } })
+    await connection.sendForceClose()
   } finally {
     await client.close()
+    await connection.close()
   }
-  
 }

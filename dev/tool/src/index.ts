@@ -978,18 +978,14 @@ export function devTool (
         await updateField(mongodbUri, getWorkspaceId(workspace, productId), transactorUrl, cmd)
       }
     )
-  
+
   program
     .command('recreate-elastic-indexes <workspace>')
     .description('reindex workspace to elastic')
-    .action(
-      async (
-        workspace: string,
-      ) => {
-        const { mongodbUri } = prepareTools()
-        await recreateElastic(mongodbUri, getWorkspaceId(workspace, productId))
-      }
-    )
+    .action(async (workspace: string) => {
+      const { mongodbUri } = prepareTools()
+      await recreateElastic(mongodbUri, getWorkspaceId(workspace, productId), transactorUrl)
+    })
 
   program
     .command('fix-json-markup <workspace>')
