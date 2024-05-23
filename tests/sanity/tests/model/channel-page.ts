@@ -58,8 +58,9 @@ export class ChannelPage {
     await this.changeChannelNameConfirm().click()
   }
 
-  async changeChannelPrivateOrPublic (change: string, YesNo: string, changed: string): Promise<void> {
+  async changeChannelPrivacyOrAutoJoin (change: string, YesNo: string, changed: string): Promise<void> {
     await this.privateOrPublicChangeButton(change).click()
+    await this.page.waitForTimeout(200)
     await this.page.getByText(YesNo).click()
     await expect(this.privateOrPublicChangeButton(changed)).toBeVisible()
   }

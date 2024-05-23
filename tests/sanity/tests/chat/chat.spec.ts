@@ -340,6 +340,17 @@ test.describe('channel tests', () => {
     await chunterPage.createPrivateChannel(data.channelName, false)
     await channelPage.checkIfChannelDefaultExist(true, data.channelName)
     await channelPage.clickOnOpenChannelDetails()
-    await channelPage.changeChannelPrivateOrPublic('No', 'Yes', 'Yes')
+    await channelPage.changeChannelPrivacyOrAutoJoin('No', 'Yes', 'Yes')
+    await channelPage.changeChannelPrivacyOrAutoJoin('Yes', 'No', 'No')
+  })
+
+  test('Check if user can switch auto join', async ({ browser, page }) => {
+    await leftSideMenuPage.clickChunter()
+    await chunterPage.clickChannelBrowser()
+    await chunterPage.clickNewChannelHeader()
+    await chunterPage.createPrivateChannel(data.channelName, false)
+    await channelPage.checkIfChannelDefaultExist(true, data.channelName)
+    await channelPage.clickOnOpenChannelDetails()
+    await channelPage.changeChannelPrivacyOrAutoJoin('N/A', 'Yes', 'Yes')
   })
 })
