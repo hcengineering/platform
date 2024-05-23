@@ -19,7 +19,7 @@
   import presentation, { HTMLViewer } from '..'
 
   export let label: IntlString
-  export let labelProps: IntlString
+  export let labelProps: Record<string, any>
   export let message: IntlString
   export let richMessage: boolean = false
   export let params: Record<string, any> = {}
