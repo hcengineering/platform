@@ -501,7 +501,7 @@ export async function confirm (ctx: MeasureContext, db: Db, productId: string, b
   return result
 }
 
-async function sendConfirmation (productId: string, account: Account): Promise<void> {
+async function sendConfirmation (productId: string, branding: Branding | null, account: Account): Promise<void> {
   const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
   if (sesURL === undefined || sesURL === '') {
     console.info('Please provide email service url to enable email confirmations.')
@@ -522,10 +522,11 @@ async function sendConfirmation (productId: string, account: Account): Promise<v
 
   const link = concatLink(front, `/login/confirm?id=${token}`)
 
-  const name = getMetadata(accountPlugin.metadata.ProductName)
-  const text = await translate(accountPlugin.string.ConfirmationText, { name, link })
-  const html = await translate(accountPlugin.string.ConfirmationHTML, { name, link })
-  const subject = await translate(accountPlugin.string.ConfirmationSubject, { name })
+  const name = branding?.title ?? getMetadata(accountPlugin.metadata.ProductName)
+  const lang = branding?.language
+  const text = await translate(accountPlugin.string.ConfirmationText, { name, link }, lang)
+  const html = await translate(accountPlugin.string.ConfirmationHTML, { name, link }, lang)
+  const subject = await translate(accountPlugin.string.ConfirmationSubject, { name }, lang)
 
   if (sesURL !== undefined && sesURL !== '') {
     const to = account.email
@@ -567,6 +568,7 @@ export async function signUpJoin (
     ctx,
     db,
     productId,
+    branding,
     email,
     password,
     first,
@@ -597,6 +599,7 @@ export async function createAcc (
   ctx: MeasureContext,
   db: Db,
   productId: string,
+  branding: Branding | null,
   _email: string,
   password: string | null,
   first: string,
@@ -639,7 +642,7 @@ export async function createAcc (
   const sesURL = getMetadata(accountPlugin.metadata.SES_URL)
   if (!confirmed) {
     if (sesURL !== undefined && sesURL !== '') {
-      await sendConfirmation(productId, newAccount)
+      await sendConfirmation(productId, branding, newAccount)
     } else {
       ctx.info('Please provide email service url to enable email confirmations.')
       await confirmEmail(db, email)
@@ -668,6 +671,7 @@ export async function createAccount (
     ctx,
     db,
     productId,
+    branding,
     email,
     password,
     first,
@@ -1657,10 +1661,10 @@ export async function requestPassword (ctx: MeasureContext, db: Db, productId: s
   )
 
   const link = concatLink(front, `/login/recovery?id=${token}`)
-
-  const text = await translate(accountPlugin.string.RecoveryText, { link })
-  const html = await translate(accountPlugin.string.RecoveryHTML, { link })
-  const subject = await translate(accountPlugin.string.RecoverySubject, {})
+  const lang = branding?.language
+  const text = await translate(accountPlugin.string.RecoveryText, { link }, lang)
+  const html = await translate(accountPlugin.string.RecoveryHTML, { link }, lang)
+  const subject = await translate(accountPlugin.string.RecoverySubject, {}, lang)
 
   const to = account.email
   await fetch(concatLink(sesURL, '/send'), {
@@ -1915,9 +1919,10 @@ export async function sendInvite (
   const link = concatLink(front, `/login/join?inviteId=${inviteId.toString()}`)
 
   const ws = workspace.workspaceName ?? workspace.workspace
-  const text = await translate(accountPlugin.string.InviteText, { link, ws, expHours })
-  const html = await translate(accountPlugin.string.InviteHTML, { link, ws, expHours })
-  const subject = await translate(accountPlugin.string.InviteSubject, { ws })
+  const lang = branding?.language
+  const text = await translate(accountPlugin.string.InviteText, { link, ws, expHours }, lang)
+  const html = await translate(accountPlugin.string.InviteHTML, { link, ws, expHours }, lang)
+  const subject = await translate(accountPlugin.string.InviteSubject, { ws }, lang)
 
   const to = email
   await fetch(concatLink(sesURL, '/send'), {
@@ -1962,6 +1967,8 @@ async function deactivatePersonAccount (
 }
 
 export interface Branding {
+  title?: string
+  language?: string
   initWorkspace?: string
 }
 
@@ -2059,7 +2066,7 @@ export async function joinWithProvider (
     return result
   }
 
-  const newAccount = await createAcc(ctx, db, productId, email, null, first, last, true, extra)
+  const newAccount = await createAcc(ctx, db, productId, branding, email, null, first, last, true, extra)
   const token = generateToken(email, getWorkspaceId('', productId), getExtra(newAccount))
   const ws = await assignWorkspace(
     ctx,
@@ -2108,7 +2115,7 @@ export async function loginWithProvider (
     }
     return result
   }
-  const newAccount = await createAcc(ctx, db, productId, email, null, first, last, true, extra)
+  const newAccount = await createAcc(ctx, db, productId, branding, email, null, first, last, true, extra)
 
   const result = {
     endpoint: getEndpoint(),

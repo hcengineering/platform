@@ -183,7 +183,7 @@ export function devTool (
       const { mongodbUri } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
         console.log(`creating account ${cmd.first as string} ${cmd.last as string} (${email})...`)
-        await createAcc(toolCtx, db, productId, email, cmd.password, cmd.first, cmd.last, true)
+        await createAcc(toolCtx, db, productId, null, email, cmd.password, cmd.first, cmd.last, true)
       })
     })
 
