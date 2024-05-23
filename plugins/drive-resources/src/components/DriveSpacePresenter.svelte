@@ -89,22 +89,6 @@
       handleDriveSelected(space._id)
     }}
   >
-    <!-- <TreeNode
-    {collapsed}
-    _id={space._id}
-    icon={drive.icon.Drive}
-    title={space.name}
-    folder
-    parent={descendants.size > 0}
-    actions={() => getActions(space)}
-    on:click={() => {
-      if (selected === space?._id) {
-        collapsed = !collapsed
-      } else {
-        handleDriveSelected(space._id)
-      }
-    }}
-  > -->
     <FolderTreeLevel
       {folders}
       {descendants}
@@ -114,6 +98,5 @@
         handleFolderSelected(ev.detail)
       }}
     />
-    <!-- </TreeNode> -->
   </FolderTreeElement>
 {/if}
