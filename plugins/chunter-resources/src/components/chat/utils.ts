@@ -14,8 +14,6 @@
 //
 import notification, { type DocNotifyContext } from '@hcengineering/notification'
 import {
-  type Class,
-  type Doc,
   generateId,
   type Ref,
   SortingOrder,
@@ -32,7 +30,7 @@ import { get, writable } from 'svelte/store'
 import view from '@hcengineering/view'
 import workbench, { type SpecialNavModel } from '@hcengineering/workbench'
 import attachment, { type SavedAttachments } from '@hcengineering/attachment'
-import activity, { type ActivityMessage } from '@hcengineering/activity'
+import activity from '@hcengineering/activity'
 import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
 import { type Action, showPopup } from '@hcengineering/ui'
 import contact, { type PersonAccount } from '@hcengineering/contact'
@@ -41,33 +39,14 @@ import { type DirectMessage } from '@hcengineering/chunter'
 import { type ChatNavGroupModel, type ChatNavItemModel, type SortFnOptions } from './types'
 import chunter from '../../plugin'
 
-const channelStorageKey = 'chunter.openedChannel'
 const navigatorStateStorageKey = 'chunter.navigatorState'
 
-interface ChannelMetadata {
-  _id: Ref<Doc>
-  _class: Ref<Class<Doc>>
-  thread?: Ref<ActivityMessage>
-}
 interface NavigatorState {
   collapsedSections: string[]
 }
 
 export const savedAttachmentsStore = writable<Array<WithLookup<SavedAttachments>>>([])
-export const openedChannelStore = writable<ChannelMetadata | undefined>(restoreChannel())
 export const navigatorStateStore = writable<NavigatorState>(restoreNavigatorState())
-
-function restoreChannel (): ChannelMetadata | undefined {
-  const raw = localStorage.getItem(channelStorageKey)
-
-  if (raw == null) return undefined
-
-  try {
-    return JSON.parse(raw) as ChannelMetadata
-  } catch (e) {
-    return undefined
-  }
-}
 
 function restoreNavigatorState (): NavigatorState {
   const raw = localStorage.getItem(navigatorStateStorageKey)
@@ -91,18 +70,6 @@ export function toggleSections (_id: string): void {
 
   localStorage.setItem(navigatorStateStorageKey, JSON.stringify(result))
   navigatorStateStore.set(result)
-}
-
-export function clearChannel (): void {
-  localStorage.removeItem(channelStorageKey)
-  openedChannelStore.set(undefined)
-}
-
-export function storeChannel (_id: Ref<Doc>, _class: Ref<Class<Doc>>, thread?: Ref<ActivityMessage>): void {
-  const data: ChannelMetadata = { _id, _class, thread }
-
-  localStorage.setItem(channelStorageKey, JSON.stringify(data))
-  openedChannelStore.set(data)
 }
 
 export const chatSpecials: SpecialNavModel[] = [

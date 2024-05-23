@@ -22,7 +22,8 @@
     location,
     navigate,
     Separator,
-    Location
+    Location,
+    restoreLocation
   } from '@hcengineering/ui'
 
   import { NavigatorModel, SpecialNavModel } from '@hcengineering/workbench'
@@ -33,7 +34,7 @@
 
   import ChatNavigator from './navigator/ChatNavigator.svelte'
   import ChannelView from '../ChannelView.svelte'
-  import { chatSpecials, loadSavedAttachments, storeChannel, openedChannelStore, clearChannel } from './utils'
+  import { chatSpecials, loadSavedAttachments } from './utils'
   import { SelectChannelEvent } from './types'
   import { decodeChannelURI, openChannel } from '../../navigation'
 
@@ -58,16 +59,6 @@
 
   location.subscribe((loc) => {
     syncLocation(loc)
-  })
-
-  openedChannelStore.subscribe((data) => {
-    if (data === undefined) {
-      selectedData = undefined
-      object = undefined
-    } else if (selectedData?._id !== data._id) {
-      selectedData = data
-      openChannel(data._id, data._class, data.thread)
-    }
   })
 
   $: void loadObject(selectedData?._id, selectedData?._class)
@@ -98,18 +89,20 @@
 
     if (!id) {
       currentSpecial = undefined
-      clearChannel()
+      selectedData = undefined
+      object = undefined
+      restoreLocation(loc, chunterId)
       return
     }
 
     currentSpecial = navigatorModel?.specials?.find((special) => special.id === id)
 
     if (currentSpecial !== undefined) {
-      clearChannel()
+      selectedData = undefined
+      object = undefined
     } else {
       const [_id, _class] = decodeChannelURI(loc.path[3])
-
-      storeChannel(_id, _class, loc.path[4] as Ref<ActivityMessage>)
+      selectedData = { _id, _class }
     }
   }
 
