@@ -244,10 +244,7 @@ export function start (
     calendarUrl: string
     collaboratorUrl: string
     collaboratorApiUrl: string
-    title?: string
-    languages: string
-    defaultLanguage: string
-    lastNameFirst?: string
+    brandingUrl?: string
   },
   port: number,
   extraConfig?: Record<string, string | undefined>
@@ -281,10 +278,7 @@ export function start (
       CALENDAR_URL: config.calendarUrl,
       COLLABORATOR_URL: config.collaboratorUrl,
       COLLABORATOR_API_URL: config.collaboratorApiUrl,
-      TITLE: config.title,
-      LANGUAGES: config.languages,
-      DEFAULT_LANGUAGE: config.defaultLanguage,
-      LAST_NAME_FIRST: config.lastNameFirst,
+      BRANDING_URL: config.brandingUrl,
       ...(extraConfig ?? {})
     }
     res.set('Cache-Control', cacheControlNoCache)

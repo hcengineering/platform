@@ -234,7 +234,7 @@ export function devTool (
         }
         console.log('assigning to workspace', workspaceInfo)
         try {
-          await assignWorkspace(toolCtx, db, productId, email, workspaceInfo.workspace, AccountRole.User)
+          await assignWorkspace(toolCtx, db, productId, null, email, workspaceInfo.workspace, AccountRole.User)
         } catch (err: any) {
           console.error(err)
         }
@@ -281,7 +281,8 @@ export function devTool (
     .description('create workspace')
     .requiredOption('-w, --workspaceName <workspaceName>', 'Workspace name')
     .option('-e, --email <email>', 'Author email', 'platform@email.com')
-    .action(async (workspace, cmd) => {
+    .option('-i, --init <ws>', 'Init from workspace')
+    .action(async (workspace, cmd: { email: string, workspaceName: string, init?: string }) => {
       const { mongodbUri, txes, version, migrateOperations } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
         await createWorkspace(
@@ -291,6 +292,7 @@ export function devTool (
           migrateOperations,
           db,
           productId,
+          cmd.init !== undefined ? { initWorkspace: cmd.init } : null,
           cmd.email,
           cmd.workspaceName,
           workspace
@@ -429,9 +431,9 @@ export function devTool (
             return
           }
           if (cmd.full) {
-            await dropWorkspaceFull(toolCtx, db, client, productId, workspace, storageAdapter)
+            await dropWorkspaceFull(toolCtx, db, client, productId, null, workspace, storageAdapter)
           } else {
-            await dropWorkspace(toolCtx, db, productId, workspace)
+            await dropWorkspace(toolCtx, db, productId, null, workspace)
           }
         })
       })
@@ -447,9 +449,9 @@ export function devTool (
         await withDatabase(mongodbUri, async (db, client) => {
           for (const workspace of await listWorkspacesByAccount(db, productId, email)) {
             if (cmd.full) {
-              await dropWorkspaceFull(toolCtx, db, client, productId, workspace.workspace, storageAdapter)
+              await dropWorkspaceFull(toolCtx, db, client, productId, null, workspace.workspace, storageAdapter)
             } else {
-              await dropWorkspace(toolCtx, db, productId, workspace.workspace)
+              await dropWorkspace(toolCtx, db, productId, null, workspace.workspace)
             }
           }
         })
@@ -480,7 +482,7 @@ export function devTool (
           for (const ws of workspacesJSON) {
             const lastVisit = Math.floor((Date.now() - ws.lastVisit) / 1000 / 3600 / 24)
             if (lastVisit > 30) {
-              await dropWorkspaceFull(toolCtx, db, client, productId, ws.workspace, storageAdapter)
+              await dropWorkspaceFull(toolCtx, db, client, productId, null, ws.workspace, storageAdapter)
             }
           }
         })
@@ -575,7 +577,7 @@ export function devTool (
     .action(async (email: string, cmd) => {
       const { mongodbUri } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
-        await dropAccount(toolCtx, db, productId, email)
+        await dropAccount(toolCtx, db, productId, null, email)
       })
     })
 

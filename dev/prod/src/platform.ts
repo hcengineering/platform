@@ -101,11 +101,27 @@ interface Config {
   COLLABORATOR_URL: string
   COLLABORATOR_API_URL: string
   PUSH_PUBLIC_KEY: string
-  TITLE?: string
-  LANGUAGES?: string
-  DEFAULT_LANGUAGE?: string
-  LAST_NAME_FIRST?: string
+  BRANDING_URL?: string
 }
+
+export interface Branding {
+  title?: string
+  links?: {
+    rel: string
+    href: string
+    type?: string
+    sizes?: string
+  }[]
+  languages?: string
+  lastNameFirst?: string
+  defaultLanguage?: string
+  defaultApplication?: string
+  defaultSpace?: string
+  defaultSpecial?: string
+  initWorkspace?: string
+}
+
+export type BrandingMap = Record<string, Branding>
 
 const devConfig = process.env.CLIENT_TYPE === 'dev-production'
 
@@ -164,7 +180,33 @@ export async function configurePlatform() {
   configureI18n()
 
   const config: Config = await (await fetch(devConfig? '/config-dev.json' : '/config.json')).json()
+  const branding: BrandingMap = await (await fetch(config.BRANDING_URL ?? '/branding.json')).json()
+  const myBranding = branding[window.location.host] ?? {}
+
   console.log('loading configuration', config)
+  console.log('loaded branding', myBranding)
+
+  const title = myBranding.title ?? 'Platform'
+
+  // apply branding
+  window.document.title = title
+
+  for (const link of myBranding.links ?? []) {
+    const htmlLink = document.createElement('link')
+    htmlLink.rel = link.rel
+    htmlLink.href = link.href
+
+    if (link.type !== undefined) {
+      htmlLink.type = link.type
+    }
+
+    if (link.sizes !== undefined) {
+      htmlLink.setAttribute('sizes', link.sizes)
+    }
+
+    document.head.appendChild(htmlLink)
+  }
+
   setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)
   setMetadata(presentation.metadata.UploadURL, config.UPLOAD_URL)
   setMetadata(presentation.metadata.CollaboratorUrl, config.COLLABORATOR_URL)
@@ -187,8 +229,8 @@ export async function configurePlatform() {
 
   setMetadata(uiPlugin.metadata.DefaultApplication, login.component.LoginApp)
 
-  setMetadata(contactPlugin.metadata.LastNameFirst, config.LAST_NAME_FIRST === 'true' ?? false)
-  const languages = config.LANGUAGES ? (config.LANGUAGES as string).split(',').map((l) => l.trim()) : ['en', 'ru', 'es', 'pt']
+  setMetadata(contactPlugin.metadata.LastNameFirst, myBranding.lastNameFirst === 'true' ?? false)
+  const languages = myBranding.languages ? (myBranding.languages as string).split(',').map((l) => l.trim()) : ['en', 'ru', 'es', 'pt']
 
   setMetadata(uiPlugin.metadata.Languages, languages)
   setMetadata(
@@ -245,10 +287,10 @@ export async function configurePlatform() {
   // Disable for now, since it causes performance issues on linux/docker/kubernetes boxes for now.
   setMetadata(client.metadata.UseProtocolCompression, true)
 
-  setMetadata(uiPlugin.metadata.PlatformTitle, config.TITLE ?? 'Platform')
-  setMetadata(workbench.metadata.PlatformTitle, config.TITLE ?? 'Platform')
-  setDefaultLanguage(config.DEFAULT_LANGUAGE ?? 'en')
-  setMetadata(workbench.metadata.DefaultApplication, 'tracker')
-  setMetadata(workbench.metadata.DefaultSpace, tracker.project.DefaultProject)
-  setMetadata(workbench.metadata.DefaultSpecial, 'issues')
+  setMetadata(uiPlugin.metadata.PlatformTitle, title)
+  setMetadata(workbench.metadata.PlatformTitle, title)
+  setDefaultLanguage(myBranding.defaultLanguage ?? 'en')
+  setMetadata(workbench.metadata.DefaultApplication, myBranding.defaultApplication ?? 'tracker')
+  setMetadata(workbench.metadata.DefaultSpace, myBranding.defaultSpace ?? tracker.project.DefaultProject)
+  setMetadata(workbench.metadata.DefaultSpecial, myBranding.defaultSpecial ?? 'issues')
 }

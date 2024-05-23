@@ -22,8 +22,6 @@ import serverToken from '@hcengineering/server-token'
 import { start } from '.'
 
 export function startFront (ctx: MeasureContext, extraConfig?: Record<string, string | undefined>): void {
-  const defaultLanguage = process.env.DEFAULT_LANGUAGE ?? 'en'
-  const languages = process.env.LANGUAGES ?? 'en,ru'
   const SERVER_PORT = parseInt(process.env.SERVER_PORT ?? '8080')
 
   const transactorEndpoint = process.env.TRANSACTOR_URL
@@ -107,9 +105,7 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     process.exit(1)
   }
 
-  const lastNameFirst = process.env.LAST_NAME_FIRST
-
-  const title = process.env.TITLE
+  const brandingUrl = process.env.BRANDING_URL
 
   setMetadata(serverToken.metadata.Secret, serverSecret)
 
@@ -121,15 +117,12 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     uploadUrl,
     modelVersion,
     gmailUrl,
-    lastNameFirst,
     telegramUrl,
     rekoniUrl,
     calendarUrl,
     collaboratorUrl,
     collaboratorApiUrl,
-    title,
-    languages,
-    defaultLanguage
+    brandingUrl
   }
   console.log('Starting Front service with', config)
   const shutdown = start(ctx, config, SERVER_PORT, extraConfig)
