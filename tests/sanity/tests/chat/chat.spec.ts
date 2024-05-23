@@ -321,4 +321,25 @@ test.describe('channel tests', () => {
     await channelPage.clickDeleteMessageButton()
     await channelPage.checkIfMessageExist(false, 'Test message')
   })
+
+  test('Check if user can change the name of chat', async ({ browser, page }) => {
+    await leftSideMenuPage.clickChunter()
+    await chunterPage.clickChannelBrowser()
+    await chunterPage.clickNewChannelHeader()
+    await chunterPage.createPrivateChannel(data.channelName, false)
+    await channelPage.checkIfChannelDefaultExist(true, data.channelName)
+    await channelPage.clickOnOpenChannelDetails()
+    await channelPage.changeChannelName(data.channelName)
+    await channelPage.checkIfNameIsChanged('New Channel Name')
+  })
+
+  test('Check if user can switch to private or public', async ({ browser, page }) => {
+    await leftSideMenuPage.clickChunter()
+    await chunterPage.clickChannelBrowser()
+    await chunterPage.clickNewChannelHeader()
+    await chunterPage.createPrivateChannel(data.channelName, false)
+    await channelPage.checkIfChannelDefaultExist(true, data.channelName)
+    await channelPage.clickOnOpenChannelDetails()
+    await channelPage.changeChannelPrivateOrPublic('No', 'Yes', 'Yes')
+  })
 })

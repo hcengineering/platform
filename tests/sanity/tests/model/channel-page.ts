@@ -35,14 +35,33 @@ export class ChannelPage {
   readonly copyLinkButton = (): Locator => this.page.getByRole('button', { name: 'Copy link' })
   readonly deleteMessageButton = (): Locator => this.page.getByRole('button', { name: 'Delete' })
   readonly updateButton = (): Locator => this.page.getByRole('button', { name: 'Update' })
+  readonly openChannelDetails = (): Locator => this.page.locator('.ac-header > .antiButton')
+  readonly changeChannelNameConfirm = (): Locator => this.page.locator('.ml-2 > .antiButton')
+  readonly privateOrPublicChangeButton = (change: string): Locator => this.page.getByRole('button', { name: change })
 
   async sendMessage (message: string): Promise<void> {
     await this.inputMessage().fill(message)
     await this.buttonSendMessage().click()
   }
 
+  async clickOnOpenChannelDetails (): Promise<void> {
+    await this.openChannelDetails().click()
+  }
+
   async clickChannel (channel: string): Promise<void> {
     await this.channel(channel).click()
+  }
+
+  async changeChannelName (channel: string): Promise<void> {
+    await this.channel(channel).nth(2).click()
+    await this.page.keyboard.type('New Channel Name')
+    await this.changeChannelNameConfirm().click()
+  }
+
+  async changeChannelPrivateOrPublic (change: string, YesNo: string, changed: string): Promise<void> {
+    await this.privateOrPublicChangeButton(change).click()
+    await this.page.getByText(YesNo).click()
+    await expect(this.privateOrPublicChangeButton(changed)).toBeVisible()
   }
 
   async clickDeleteMessageButton (): Promise<void> {
@@ -173,5 +192,11 @@ export class ChannelPage {
 
   async checkIfEmojiIsAdded (emoji: string): Promise<void> {
     await expect(this.selectEmoji(emoji + ' 1')).toBeVisible()
+  }
+
+  async checkIfNameIsChanged (channel: string): Promise<void> {
+    await expect(this.channel(channel).nth(0)).toBeVisible()
+    await expect(this.channel(channel).nth(1)).toBeVisible()
+    await expect(this.channel(channel).nth(2)).toBeVisible()
   }
 }
