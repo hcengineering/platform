@@ -157,6 +157,7 @@
         selected
         isFold
         empty
+        shouldTooltip
         actions={getDocActions(item)}
         moreActions={() => getMoreActions(item)}
       />

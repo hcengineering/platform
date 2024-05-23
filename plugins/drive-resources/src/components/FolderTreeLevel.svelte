@@ -81,6 +81,7 @@
       empty={desc.length === 0}
       actions={async () => await getActions(doc)}
       {level}
+      shouldTooltip
       on:click={() => {
         handleSelected(doc._id)
       }}

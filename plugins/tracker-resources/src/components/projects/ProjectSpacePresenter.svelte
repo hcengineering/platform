@@ -34,6 +34,7 @@
   export let currentSpecial: string | undefined
   export let getActions: (space: Project) => Promise<Action[]> = async () => []
   export let deselect: boolean = false
+  export let forciblyСollapsed: boolean = false
 
   let specials: SpecialNavModel[] = []
 
@@ -55,10 +56,11 @@
   }
 
   $: updateSpecials(model, space)
-  $: visible = !deselect && currentSpace !== undefined && currentSpecial !== undefined && space._id === currentSpace
+  $: visible = (!deselect && currentSpace !== undefined && currentSpecial !== undefined && space._id === currentSpace) || forciblyСollapsed
 </script>
 
 {#if specials}
+  <!-- v: {visible} fc: {forciblyСollapsed} -->
   <TreeNode
     _id={space?._id}
     icon={space?.icon === view.ids.IconWithEmoji ? IconWithEmoji : space?.icon ?? model.icon}
@@ -75,6 +77,7 @@
     selected={space._id === currentSpace}
     {visible}
     actions={() => getActions(space)}
+    {forciblyСollapsed}
   >
     {#each specials as special}
       <NavLink space={space._id} special={special.id}>
@@ -86,12 +89,13 @@
         />
       </NavLink>
     {/each}
+
     <svelte:fragment slot="visible">
       {#if visible}
         {@const item = specials.find((sp) => sp.id === currentSpecial && currentSpace === space._id)}
         {#if item}
           <NavLink space={space._id} special={item.id}>
-            <SpecialElement indent label={item.label} icon={item.icon} selected />
+            <SpecialElement indent label={item.label} icon={item.icon} selected forciblyСollapsed />
           </NavLink>
         {/if}
       {/if}

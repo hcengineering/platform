@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import type { Asset, IntlString } from '@hcengineering/platform'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
   import {
     Icon,
     Label,
@@ -22,7 +23,8 @@
     AnySvelteComponent,
     IconSize,
     getTreeCollapsed,
-    setTreeCollapsed
+    setTreeCollapsed,
+    tooltip
   } from '..'
 
   export let icon: Asset | AnySvelteComponent | undefined = undefined
@@ -43,8 +45,11 @@
   export let isSecondary: boolean = false
   export let withBackground: boolean = false
   export let showMenu: boolean = false
+  export let shouldTooltip: boolean = false
   export let empty: boolean = false
+  export let collapsedPrefix: string = ''
   export let visible: boolean = false
+  export let forciblyСollapsed: boolean = false
   export let level: number = 0
   export let _id: any = undefined
 
@@ -55,8 +60,8 @@
   $: showArrow = selected && (type === 'type-link' || type === 'type-object')
   $: if (!showMenu && levelReset && !hovered) levelReset = false
   $: if (empty) isOpen = false
-  $: isOpen = !getTreeCollapsed(_id)
-  $: setTreeCollapsed(_id, !isOpen)
+  $: isOpen = !getTreeCollapsed(_id, collapsedPrefix)
+  $: setTreeCollapsed(_id, !isOpen, collapsedPrefix)
 </script>
 
 <!-- svelte-ignore a11y-mouse-events-have-key-events -->
@@ -107,6 +112,7 @@
   {/if}
   <span
     bind:clientWidth={labelWidth}
+    use:tooltip={shouldTooltip ? { label: label ?? getEmbeddedLabel(title ?? ''), direction: 'top' } : undefined}
     class="{description ? 'hulyNavItem-wideLabel' : 'hulyNavItem-label'} overflow-label"
     class:flex-grow={!(type === 'type-anchor-link')}
     style:color={type === 'type-tag' && selected ? color : null}
@@ -124,6 +130,7 @@
       <slot />
     {/if}
   </span>
+  {#if $$slots.extra}<slot name="extra" />{/if}
   {#if showMenu || $$slots.actions}
     <div class="hulyNavItem-actions">
       <slot name="actions" />
@@ -139,9 +146,9 @@
     <div class="hulyNavItem-icon right"><IconOpenedArrow size={'small'} /></div>
   {/if}
 </button>
-{#if isFold && (isOpen || (!isOpen && visible)) && !empty}
+{#if isFold && (isOpen || (!isOpen && visible)) && !empty || forciblyСollapsed}
   <div class="hulyNavItem-dropbox">
-    {#if !isOpen && visible}
+    {#if (!isOpen && visible) || forciblyСollapsed}
       <slot name="visible" {isOpen} />
     {:else}
       <slot name="dropbox" />

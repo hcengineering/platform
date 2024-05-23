@@ -28,6 +28,7 @@
   export let selected: boolean = false
   export let isFold: boolean = false
   export let empty: boolean = false
+  export let shouldTooltip: boolean = false
   export let level: number = 0
   export let actions: Action[] = []
   export let moreActions: (originalEvent?: MouseEvent) => Promise<Action[]> | undefined = async () => []
@@ -59,6 +60,7 @@
   {empty}
   {selected}
   showMenu={hovered}
+  {shouldTooltip}
   on:click={() => {
     selectDocument()
     dispatch('click')
@@ -71,7 +73,7 @@
           icon={action.icon}
           kind={'tertiary'}
           size={'extra-small'}
-          tooltip={{ label: action.label }}
+          tooltip={{ label: action.label, direction: 'top' }}
           on:click={(evt) => action.action({}, evt)}
         />
       {/if}

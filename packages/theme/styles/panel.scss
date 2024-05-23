@@ -136,7 +136,9 @@
 
     &.showMenu,
     &.selected,
-    &:hover .hulyNavGroup-header__tools { display: flex; }
+    &:hover {
+      .hulyNavGroup-header__tools { display: flex; }
+    }
     &.showMenu,
     &.selected {
       .hulyNavGroup-header__label { background-color: var(--global-ui-BackgroundColor); }

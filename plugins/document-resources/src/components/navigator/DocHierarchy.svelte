@@ -102,6 +102,7 @@
       empty={desc.length === 0}
       actions={getActions(doc)}
       moreActions={() => getMoreActions(doc)}
+      shouldTooltip
       on:click={() => {
         handleDocumentSelected(doc._id)
       }}

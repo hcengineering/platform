@@ -16,6 +16,7 @@
   import type { Doc, Ref } from '@hcengineering/core'
   import { createEventDispatcher } from 'svelte'
   import type { Asset, IntlString } from '@hcengineering/platform'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
   import type { AnyComponent, IconSize, AnySvelteComponent } from '..'
   import {
     showPopup,
@@ -27,7 +28,8 @@
     IconDownOutline,
     Icon,
     getTreeCollapsed,
-    setTreeCollapsed
+    setTreeCollapsed,
+    tooltip
   } from '..'
 
   export let icon: Asset | AnySvelteComponent | undefined = undefined
@@ -40,11 +42,14 @@
   export let isOpen: boolean = true
   export let isFold: boolean = false
   export let empty: boolean = false
+  export let collapsedPrefix: string = ''
   export let visible: boolean = false
   export let selected: boolean = false
   export let nested: boolean = false
   export let noDivider: boolean = false
   export let showMenu: boolean = false
+  export let shouldTooltip: boolean = false
+  export let forciblyСollapsed: boolean = false
   export let actions: Action[] = []
   export let _id: Ref<Doc> | string | undefined = undefined
 
@@ -68,8 +73,8 @@
     })
   }
   $: if (empty) isOpen = false
-  $: isOpen = !getTreeCollapsed(_id)
-  $: setTreeCollapsed(_id, !isOpen)
+  $: isOpen = !getTreeCollapsed(_id, collapsedPrefix)
+  $: setTreeCollapsed(_id, !isOpen, collapsedPrefix)
 </script>
 
 <div class="hulyNavGroup-container" class:nested class:noDivider>
@@ -93,7 +98,10 @@
           <Icon {icon} size={iconSize} {iconProps} />
         </div>
       {/if}
-      <span class="overflow-label">
+      <span
+        use:tooltip={shouldTooltip ? { label: label ?? getEmbeddedLabel(title ?? ''), direction: 'top' } : undefined}
+        class="overflow-label"
+      >
         {#if label}<Label {label} />{/if}
         {#if title}{title}{/if}
       </span>
@@ -102,6 +110,7 @@
       {/if}
     </div>
     <div class="flex-grow" />
+    {#if $$slots.extra}<slot name="extra" />{/if}
     {#if tools || $$slots.tools}
       <div class="hulyNavGroup-header__tools">
         {#if tools}
@@ -118,7 +127,7 @@
     {/if}
   </button>
   <div {id} class="hulyNavGroup-content">
-    {#if !isOpen && visible}
+    {#if (!isOpen && visible) || forciblyСollapsed}
       <slot name="visible" {isOpen} />
     {:else}
       <slot />

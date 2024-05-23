@@ -42,13 +42,17 @@
   export let empty: boolean = false
   export let visible: boolean = false
   export let level: number = 0
-  export let collapsed: boolean = getTreeCollapsed(_id)
+  export let collapsedPrefix: string = ''
+  export let collapsed: boolean = getTreeCollapsed(_id, collapsedPrefix)
   export let selected: boolean = false
   export let bold: boolean = false
+  export let shouldTooltip: boolean = false
+  export let showMenu: boolean = false
   export let showNotify: boolean = false
+  export let forciblyСollapsed: boolean = false
   export let actions: (originalEvent?: MouseEvent) => Promise<Action[]> = async () => []
 
-  let hovered: boolean = false
+  let pressed: boolean = false
   let inlineActions: Action[] = []
   let popupMenuActions: Action[] = []
 
@@ -59,11 +63,11 @@
 
   async function onMenuClick (ev: MouseEvent): Promise<void> {
     // Read actual popup actions on open as visibility might have been changed
+    pressed = true
     popupMenuActions = await actions().then((res) => res.filter((action) => action.inline !== true))
     showPopup(Menu, { actions: popupMenuActions, ctx: _id }, ev.target as HTMLElement, () => {
-      hovered = false
+      pressed = false
     })
-    hovered = true
   }
 
   async function onInlineClick (ev: MouseEvent, action: Action): Promise<void> {
@@ -82,15 +86,19 @@
     {title}
     {selected}
     isOpen={!collapsed}
+    {collapsedPrefix}
     {nested}
     {isFold}
     {empty}
     {visible}
-    showMenu={hovered}
+    {forciblyСollapsed}
+    {shouldTooltip}
+    showMenu={showMenu || pressed}
     on:toggle={(ev) => {
       if (ev.detail !== undefined) collapsed = !ev.detail
     }}
   >
+    <svelte:fragment slot="extra"><slot name="extra" /></svelte:fragment>
     <svelte:fragment slot="tools">
       {#if inlineActions.length > 0}
         {#each inlineActions as action}
@@ -108,13 +116,13 @@
           icon={popupMenuActions[0].icon}
           size={'extra-small'}
           kind={'tertiary'}
-          tooltip={{ label: popupMenuActions[0].label }}
+          tooltip={{ label: popupMenuActions[0].label, direction: 'top' }}
           on:click={async (ev) => {
             void popupMenuActions[0].action(_id, ev)
           }}
         />
       {:else if popupMenuActions.length > 0}
-        <ButtonIcon icon={IconMoreH} size={'extra-small'} kind={'tertiary'} pressed={hovered} on:click={onMenuClick} />
+        <ButtonIcon icon={IconMoreH} size={'extra-small'} kind={'tertiary'} {pressed} on:click={onMenuClick} />
       {/if}
     </svelte:fragment>
     <svelte:fragment slot="visible"><slot name="visible" /></svelte:fragment>
@@ -132,14 +140,18 @@
     {bold}
     {indent}
     isOpen={!collapsed}
+    {collapsedPrefix}
     {isFold}
     {empty}
     {visible}
+    {forciblyСollapsed}
     {level}
-    showMenu={hovered}
+    {shouldTooltip}
+    showMenu={showMenu || pressed}
     on:click
   >
     <slot />
+    <svelte:fragment slot="extra"><slot name="extra" /></svelte:fragment>
     <svelte:fragment slot="actions">
       {#if $$slots.actions}<slot name="actions" />{/if}
       {#if inlineActions.length > 0}
@@ -158,13 +170,13 @@
           icon={popupMenuActions[0].icon}
           size={'extra-small'}
           kind={'tertiary'}
-          tooltip={{ label: popupMenuActions[0].label }}
+          tooltip={{ label: popupMenuActions[0].label, direction: 'top' }}
           on:click={async (ev) => {
             void popupMenuActions[0].action(_id, ev)
           }}
         />
       {:else if popupMenuActions.length > 0}
-        <ButtonIcon icon={IconMoreH} size={'extra-small'} kind={'tertiary'} pressed={hovered} on:click={onMenuClick} />
+        <ButtonIcon icon={IconMoreH} size={'extra-small'} kind={'tertiary'} {pressed} on:click={onMenuClick} />
       {/if}
     </svelte:fragment>
     <svelte:fragment slot="notify">

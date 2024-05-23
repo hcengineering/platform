@@ -132,6 +132,7 @@
           isFold
           empty
           actions={async () => await getFolderActions(folder)}
+          shouldTooltip
         />
       {/if}
     </svelte:fragment>

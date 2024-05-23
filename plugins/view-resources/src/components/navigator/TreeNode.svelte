@@ -31,7 +31,11 @@
   export let empty: boolean = false
   export let visible: boolean = false
   export let collapsed: boolean = false
+  export let collapsedPrefix: string = ''
   export let selected: boolean = false
+  export let showMenu: boolean = false
+  export let shouldTooltip: boolean = false
+  export let forciblyСollapsed: boolean = false
 </script>
 
 <TreeElement
@@ -41,7 +45,8 @@
   {iconProps}
   {icon}
   {notifications}
-  {collapsed}
+  bind:collapsed
+  {collapsedPrefix}
   {actions}
   {nested}
   {isFold}
@@ -49,8 +54,12 @@
   {visible}
   {parent}
   {selected}
+  {shouldTooltip}
+  {showMenu}
+  {forciblyСollapsed}
   on:click
 >
   <slot />
+  <svelte:fragment slot="extra"><slot name="extra" /></svelte:fragment>
   <svelte:fragment slot="visible"><slot name="visible" /></svelte:fragment>
 </TreeElement>
