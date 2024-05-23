@@ -37,6 +37,7 @@
   import { EmojiExtension } from './extension/emoji'
   import { IsEmptyContentExtension } from './extension/isEmptyContent'
   import Send from './icons/Send.svelte'
+  import { EditorView } from '@tiptap/pm/view'
 
   export let content: Markup = EmptyMarkup
   export let showHeader = false
@@ -52,6 +53,9 @@
   export let focusable: boolean = false
   export let boundary: HTMLElement | undefined = undefined
   export let autofocus: FocusPosition = false
+  export let canEmbedFiles = true
+  export let canEmbedImages = true
+  export let onPaste: ((view: EditorView, event: ClipboardEvent) => boolean) | undefined = undefined
 
   const dispatch = createEventDispatcher()
   const buttonSize = 'medium'
@@ -151,6 +155,8 @@
       bind:this={textEditor}
       {autofocus}
       {boundary}
+      {canEmbedFiles}
+      {canEmbedImages}
       on:content={(ev) => {
         if (canSubmit) {
           dispatch('message', ev.detail)
@@ -172,6 +178,7 @@
         EmojiExtension.configure(),
         IsEmptyContentExtension.configure({ onChange: (value) => (isEmpty = value) })
       ]}
+      {onPaste}
       on:update
       placeholder={placeholder ?? textEditorPlugin.string.EditorPlaceholder}
       textFormatCategories={[

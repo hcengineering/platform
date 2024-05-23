@@ -35,6 +35,7 @@
   import { InlineStyleToolbarExtension } from './extension/inlineStyleToolbar'
   import { SubmitExtension } from './extension/submit'
   import { EditorKit } from '../kits/editor-kit'
+  import { EditorView } from '@tiptap/pm/view'
 
   export let content: Markup = EmptyMarkup
   export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
@@ -44,6 +45,9 @@
   export let editorAttributes: Record<string, string> = {}
   export let boundary: HTMLElement | undefined = undefined
   export let autofocus: FocusPosition = false
+  export let canEmbedFiles = true
+  export let canEmbedImages = true
+  export let onPaste: ((view: EditorView, event: ClipboardEvent) => boolean) | undefined = undefined
 
   let element: HTMLElement
   let editor: Editor
@@ -163,11 +167,17 @@
     void ph.then(() => {
       editor = new Editor({
         element,
-        editorProps: { attributes: mergeAttributes(defaultEditorAttributes, editorAttributes) },
+        editorProps: {
+          attributes: mergeAttributes(defaultEditorAttributes, editorAttributes),
+          handlePaste: onPaste
+        },
         content: markupToJSON(content),
         autofocus,
         extensions: [
-          EditorKit,
+          EditorKit.configure({
+            file: canEmbedFiles ? {} : false,
+            image: canEmbedImages ? {} : false
+          }),
           ...(supportSubmit ? [Handle] : []), // order important
           Placeholder.configure({ placeholder: placeHolderStr }),
           ...extensions,
