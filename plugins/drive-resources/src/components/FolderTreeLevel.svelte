@@ -19,12 +19,8 @@
   import { getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { Action, IconEdit } from '@hcengineering/ui'
-  import { getActions as getContributedActions } from '@hcengineering/view-resources'
-
-  import FolderTreeElement from './FolderTreeElement.svelte'
   import FolderIcon from './icons/Folder.svelte'
   import { getActions as getContributedActions, TreeItem } from '@hcengineering/view-resources'
-  import drive from '../plugin'
 
   export let folders: Ref<Folder>[]
   export let folderById: Map<Ref<Folder>, Folder>

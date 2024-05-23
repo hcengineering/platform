@@ -60,7 +60,6 @@
 </script>
 
 {#if specials}
-  <!-- v: {visible} fc: {forciblyСollapsed} -->
   <TreeNode
     _id={space?._id}
     icon={space?.icon === view.ids.IconWithEmoji ? IconWithEmoji : space?.icon ?? model.icon}

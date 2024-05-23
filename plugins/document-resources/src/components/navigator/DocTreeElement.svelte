@@ -32,6 +32,7 @@
   export let level: number = 0
   export let actions: Action[] = []
   export let moreActions: (originalEvent?: MouseEvent) => Promise<Action[]> | undefined = async () => []
+  export let forciblyСollapsed: boolean = false
 
   let hovered: boolean = false
   async function onMenuClick (ev: MouseEvent): Promise<void> {
@@ -61,6 +62,7 @@
   {selected}
   showMenu={hovered}
   {shouldTooltip}
+  {forciblyСollapsed}
   on:click={() => {
     selectDocument()
     dispatch('click')

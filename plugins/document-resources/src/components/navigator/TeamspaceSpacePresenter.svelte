@@ -42,6 +42,7 @@
   export let currentFragment: string | undefined
   export let getActions: (space: Space) => Promise<Action[]> = async () => []
   export let deselect: boolean = false
+  export let forciblyСollapsed: boolean = false
 
   const client = getClient()
 
@@ -138,12 +139,14 @@
   nested
   parent
   selected={currentSpace === space._id}
-  visible={currentSpace === space._id}
+  visible={currentSpace === space._id || forciblyСollapsed}
   actions={() => getActions(space)}
+  {forciblyСollapsed}
 >
   <DocHierarchy {documents} {descendants} {documentById} {selected} />
+
   <svelte:fragment slot="visible">
-    {#if selected && visibleItem}
+    {#if (selected || forciblyСollapsed) && visibleItem}
       {@const item = visibleItem}
       <DocTreeElement
         doc={item}
@@ -160,6 +163,7 @@
         shouldTooltip
         actions={getDocActions(item)}
         moreActions={() => getMoreActions(item)}
+        forciblyСollapsed
       />
     {/if}
   </svelte:fragment>
