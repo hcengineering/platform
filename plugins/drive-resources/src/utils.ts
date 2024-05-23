@@ -14,7 +14,7 @@
 //
 
 import { type Class, type Doc, type Ref } from '@hcengineering/core'
-import drive, { type Drive, type Folder } from '@hcengineering/drive'
+import drive, { type Drive, type Folder, type Resource } from '@hcengineering/drive'
 import { setPlatformStatus, unknownError } from '@hcengineering/platform'
 import { getClient, getFileMetadata, uploadFile } from '@hcengineering/presentation'
 import { showPopup } from '@hcengineering/ui'
@@ -22,6 +22,7 @@ import { openDoc } from '@hcengineering/view-resources'
 
 import CreateDrive from './components/CreateDrive.svelte'
 import CreateFolder from './components/CreateFolder.svelte'
+import RenamePopup from './components/RenamePopup.svelte'
 
 async function navigateToDoc (_id: Ref<Doc>, _class: Ref<Class<Doc>>): Promise<void> {
   const client = getClient()
@@ -80,4 +81,13 @@ export async function createFile (file: File, space: Ref<Drive>, parent: Folder 
   } catch (e) {
     void setPlatformStatus(unknownError(e))
   }
+}
+
+export async function renameResource (resource: Resource): Promise<void> {
+  showPopup(RenamePopup, { value: resource.name, format: 'text' }, undefined, async (res) => {
+    if (res != null && res !== resource.name) {
+      const client = getClient()
+      await client.update(resource, { name: res })
+    }
+  })
 }
