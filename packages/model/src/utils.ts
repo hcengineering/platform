@@ -11,6 +11,10 @@ function diffAttributes (doc: Data<Doc>, newDoc: Data<Doc>): DocumentUpdate<Doc>
   const newDocuments = new Map(Object.entries(newDoc))
 
   for (const [key, value] of allDocuments) {
+    if (!newDocuments.has(key)) {
+      continue
+    }
+
     const newValue = toUndef(newDocuments.get(key))
     if (!deepEqual(newValue, toUndef(value))) {
       // update is required, since values are different
