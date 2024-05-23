@@ -33,7 +33,7 @@ import GridView from './components/GridView.svelte'
 import ResourcePresenter from './components/ResourcePresenter.svelte'
 
 import { getDriveLink, getFolderLink, resolveLocation } from './navigation'
-import { createFolder } from './utils'
+import { createFolder, renameResource } from './utils'
 
 async function CreateRootFolder (doc: Drive): Promise<void> {
   await createFolder(doc._id, drive.ids.Root)
@@ -68,6 +68,26 @@ async function FolderLinkProvider (doc: Doc): Promise<Location> {
   return getFolderLink(doc._id as Ref<Folder>)
 }
 
+async function RenameFile (doc: File | File[]): Promise<void> {
+  if (!Array.isArray(doc)) {
+    await renameResource(doc)
+  }
+}
+
+async function RenameFolder (doc: Folder | Folder[]): Promise<void> {
+  if (!Array.isArray(doc)) {
+    await renameResource(doc)
+  }
+}
+
+export async function CanRenameFile (doc: File | File[] | undefined): Promise<boolean> {
+  return doc !== undefined && !Array.isArray(doc)
+}
+
+export async function CanRenameFolder (doc: Folder | Folder[] | undefined): Promise<boolean> {
+  return doc !== undefined && !Array.isArray(doc)
+}
+
 export default async (): Promise<Resources> => ({
   component: {
     CreateDrive,
@@ -87,11 +107,15 @@ export default async (): Promise<Resources> => ({
     CreateChildFolder,
     CreateRootFolder,
     EditDrive,
-    DownloadFile
+    DownloadFile,
+    RenameFile,
+    RenameFolder
   },
   function: {
     DriveLinkProvider,
-    FolderLinkProvider
+    FolderLinkProvider,
+    CanRenameFile,
+    CanRenameFolder
   },
   resolver: {
     Location: resolveLocation

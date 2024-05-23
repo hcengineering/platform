@@ -350,6 +350,25 @@ function defineFolder (builder: Builder): void {
     },
     drive.action.CreateChildFolder
   )
+
+  createAction(
+    builder,
+    {
+      action: drive.actionImpl.RenameFolder,
+      label: drive.string.Rename,
+      icon: view.icon.Edit,
+      category: drive.category.Drive,
+      input: 'none',
+      target: drive.class.Folder,
+      context: {
+        mode: ['context', 'browser'],
+        application: drive.app.Drive,
+        group: 'edit'
+      },
+      visibilityTester: drive.function.CanRenameFolder
+    },
+    drive.action.RenameFolder
+  )
 }
 
 function defineFile (builder: Builder): void {
@@ -362,7 +381,12 @@ function defineFile (builder: Builder): void {
   // Actions
 
   builder.mixin(drive.class.File, core.class.Class, view.mixin.IgnoreActions, {
-    actions: [view.action.OpenInNewTab, tracker.action.EditRelatedTargets, tracker.action.NewRelatedIssue]
+    actions: [
+      view.action.Open,
+      view.action.OpenInNewTab,
+      tracker.action.EditRelatedTargets,
+      tracker.action.NewRelatedIssue
+    ]
   })
 
   createAction(
@@ -381,6 +405,25 @@ function defineFile (builder: Builder): void {
       }
     },
     drive.action.DownloadFile
+  )
+
+  createAction(
+    builder,
+    {
+      action: drive.actionImpl.RenameFile,
+      label: drive.string.Rename,
+      icon: view.icon.Edit,
+      category: drive.category.Drive,
+      input: 'none',
+      target: drive.class.File,
+      context: {
+        mode: ['context', 'browser'],
+        application: drive.app.Drive,
+        group: 'edit'
+      },
+      visibilityTester: drive.function.CanRenameFile
+    },
+    drive.action.RenameFile
   )
 }
 
