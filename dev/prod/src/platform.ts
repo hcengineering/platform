@@ -191,20 +191,27 @@ export async function configurePlatform() {
   // apply branding
   window.document.title = title
 
-  for (const link of myBranding.links ?? []) {
-    const htmlLink = document.createElement('link')
-    htmlLink.rel = link.rel
-    htmlLink.href = link.href
+  const links = myBranding.links ?? []
+  if (links.length > 0) {
+    // remove the default favicon
+    // it's only needed for Safari which cannot use dynamically added links for favicons
+    document.getElementById('default-favicon')?.remove()
 
-    if (link.type !== undefined) {
-      htmlLink.type = link.type
+    for (const link of links) {
+      const htmlLink = document.createElement('link')
+      htmlLink.rel = link.rel
+      htmlLink.href = link.href
+
+      if (link.type !== undefined) {
+        htmlLink.type = link.type
+      }
+
+      if (link.sizes !== undefined) {
+        htmlLink.setAttribute('sizes', link.sizes)
+      }
+
+      document.head.appendChild(htmlLink)
     }
-
-    if (link.sizes !== undefined) {
-      htmlLink.setAttribute('sizes', link.sizes)
-    }
-
-    document.head.appendChild(htmlLink)
   }
 
   setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)
