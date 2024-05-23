@@ -59,6 +59,8 @@ services:
       - transactor
     ports:
       - 8083:8083
+    volumes:
+      - ./branding-test.json:/app/dist/branding-test.json
     environment:
       - SERVER_PORT=8083
       - SERVER_SECRET=secret
@@ -74,7 +76,7 @@ services:
       - COLLABORATOR_URL=ws://localhost:3079
       - COLLABORATOR_API_URL=http://localhost:3079
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - LAST_NAME_FIRST=true
+      - BRANDING_URL=/branding-test.json
   transactor:
     image: hardcoreeng/transactor
     pull_policy: never
