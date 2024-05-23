@@ -47,9 +47,19 @@ export function registerGithub (
       if (email !== undefined) {
         try {
           if (ctx.query?.state != null) {
-            const loginInfo = await joinWithProvider(measureCtx, db, productId, null, email, first, last, ctx.query.state, {
-              githubId: ctx.state.user.id
-            })
+            const loginInfo = await joinWithProvider(
+              measureCtx,
+              db,
+              productId,
+              null,
+              email,
+              first,
+              last,
+              ctx.query.state,
+              {
+                githubId: ctx.state.user.id
+              }
+            )
             if (ctx.session != null) {
               ctx.session.loginInfo = loginInfo
             }

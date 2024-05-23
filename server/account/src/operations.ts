@@ -482,7 +482,13 @@ export async function confirmEmail (db: Db, _email: string): Promise<Account> {
 /**
  * @public
  */
-export async function confirm (ctx: MeasureContext, db: Db, productId: string, branding: Branding | null, token: string): Promise<LoginInfo> {
+export async function confirm (
+  ctx: MeasureContext,
+  db: Db,
+  productId: string,
+  branding: Branding | null,
+  token: string
+): Promise<LoginInfo> {
   const decode = decodeToken(token)
   const _email = decode.extra?.confirm
   if (_email === undefined) {
@@ -1049,7 +1055,14 @@ export async function upgradeWorkspace (
  */
 export const createUserWorkspace =
   (version: Data<Version>, txes: Tx[], migrationOperation: [string, MigrateOperation][]) =>
-    async (ctx: MeasureContext, db: Db, productId: string, branding: Branding | null, token: string, workspaceName: string): Promise<LoginInfo> => {
+    async (
+      ctx: MeasureContext,
+      db: Db,
+      productId: string,
+      branding: Branding | null,
+      token: string,
+      workspaceName: string
+    ): Promise<LoginInfo> => {
       const { email } = decodeToken(token)
 
       ctx.info('Creating workspace', { workspaceName, email })
@@ -1634,7 +1647,13 @@ export async function replacePassword (db: Db, productId: string, email: string,
 /**
  * @public
  */
-export async function requestPassword (ctx: MeasureContext, db: Db, productId: string, branding: Branding | null, _email: string): Promise<void> {
+export async function requestPassword (
+  ctx: MeasureContext,
+  db: Db,
+  productId: string,
+  branding: Branding | null,
+  _email: string
+): Promise<void> {
   const email = cleanEmail(_email)
   const account = await getAccount(db, email)
 
@@ -1810,7 +1829,13 @@ export async function dropWorkspaceFull (
 /**
  * @public
  */
-export async function dropAccount (ctx: MeasureContext, db: Db, productId: string, branding: Branding | null, email: string): Promise<void> {
+export async function dropAccount (
+  ctx: MeasureContext,
+  db: Db,
+  productId: string,
+  branding: Branding | null,
+  email: string
+): Promise<void> {
   const account = await getAccount(db, email)
   if (account === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
@@ -1987,9 +2012,22 @@ export type AccountMethod = (
 ) => Promise<any>
 
 function wrap (
-  accountMethod: (ctx: MeasureContext, db: Db, productId: string, branding: Branding | null, ...args: any[]) => Promise<any>
+  accountMethod: (
+    ctx: MeasureContext,
+    db: Db,
+    productId: string,
+    branding: Branding | null,
+    ...args: any[]
+  ) => Promise<any>
 ): AccountMethod {
-  return async function (ctx: MeasureContext, db: Db, productId: string, branding: Branding | null, request: any, token?: string): Promise<any> {
+  return async function (
+    ctx: MeasureContext,
+    db: Db,
+    productId: string,
+    branding: Branding | null,
+    request: any,
+    token?: string
+  ): Promise<any> {
     if (token !== undefined) request.params.unshift(token)
     return await accountMethod(ctx, db, productId, branding, ...request.params)
       .then((result) => ({ id: request.id, result }))
@@ -2060,7 +2098,15 @@ export async function joinWithProvider (
       invite?.role ?? AccountRole.User,
       invite?.personId
     )
-    const result = await selectWorkspace(ctx, db, productId, branding, token, wsRes.workspaceUrl ?? wsRes.workspace, false)
+    const result = await selectWorkspace(
+      ctx,
+      db,
+      productId,
+      branding,
+      token,
+      wsRes.workspaceUrl ?? wsRes.workspace,
+      false
+    )
 
     await useInvite(db, inviteId)
     return result
