@@ -19,10 +19,10 @@
     "format": "format tests",
     "ci": "playwright install --with-deps chromium",
     "test": "",
-    "uitest": "playwright test -c ./tests/playwright.config.ts --grep-invert '@livness'",
-    "dev-uitest": "cross-env PLATFORM_URI=http://localhost:8080 PLATFORM_TRANSACTOR=ws://localhost:3333 SETTING=storage-dev.json SETTING_SECOND=storageSecond-dev.json playwright test -c ./tests/playwright.config.ts --grep-invert '@livness'",
+    "uitest": "playwright test -c ./tests/playwright.config.ts",
+    "dev-uitest": "cross-env PLATFORM_URI=http://localhost:8080 PLATFORM_TRANSACTOR=ws://localhost:3333 SETTING=storage-dev.json SETTING_SECOND=storageSecond-dev.json playwright test -c ./tests/playwright.config.ts",
     "debug": "playwright test -c ./tests/playwright.config.ts --debug --headed",
-    "dev-debug": "cross-env PLATFORM_URI=http://localhost:8080 PLATFORM_TRANSACTOR=ws://localhost:3333 SETTING=storage-dev.json SETTING_SECOND=storageSecond-dev.json playwright test -c ./tests/playwright.config.ts --debug --headed --grep-invert '@livness'",
+    "dev-debug": "cross-env PLATFORM_URI=http://localhost:8080 PLATFORM_TRANSACTOR=ws://localhost:3333 SETTING=storage-dev.json SETTING_SECOND=storageSecond-dev.json playwright test -c ./tests/playwright.config.ts --debug --headed",
     "codegen": "playwright codegen --load-storage storage.json http://localhost:8083/workbench/sanity-ws/",
     "dev-codegen": "cross-env playwright codegen --load-storage storage-dev.json http://localhost:8080/workbench/sanity-ws/",
     "allure:generate": "allure generate allure-results -o allure-report --clean"
