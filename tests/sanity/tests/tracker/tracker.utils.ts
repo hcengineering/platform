@@ -113,7 +113,7 @@ export async function createComponent (page: Page, componentName: string): Promi
   await expect(page).toHaveURL(
     `${PlatformURI}/workbench/sanity-ws/tracker/tracker%3Aproject%3ADefaultProject/components`
   )
-  await page.click('button:has-text("Component")')
+  await page.getByRole('button', { name: 'Component', exact: true }).click()
   await page.click('[placeholder="Component\\ name"]')
   await page.fill('[placeholder="Component\\ name"]', componentName)
   await page.click('button:has-text("Create component")')
@@ -124,7 +124,7 @@ export async function createMilestone (page: Page, milestoneName: string): Promi
   await expect(page).toHaveURL(
     `${PlatformURI}/workbench/sanity-ws/tracker/tracker%3Aproject%3ADefaultProject/milestones`
   )
-  await page.click('button:has-text("Milestone")')
+  await page.getByRole('button', { name: 'Milestone', exact: true }).click()
   await page.click('[placeholder="Milestone\\ name"]')
   await page.fill('[placeholder="Milestone\\ name"]', milestoneName)
   await page.click('button:has-text("Create")')

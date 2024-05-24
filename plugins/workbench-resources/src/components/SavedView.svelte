@@ -264,7 +264,7 @@
       return []
     }
   }
-  $: visibleFilter = myFilteredViews.find(fv => fv._id === selectedId)
+  $: visibleFilter = myFilteredViews.find((fv) => fv._id === selectedId)
 </script>
 
 {#if shown}
@@ -292,12 +292,7 @@
     <svelte:fragment slot="visible">
       {#if visibleFilter}
         {@const item = visibleFilter}
-        <TreeItem
-          _id={item._id}
-          title={item.name}
-          selected
-          actions={async (ov) => await viewAction(item, ov)}
-        />
+        <TreeItem _id={item._id} title={item.name} selected actions={async (ov) => await viewAction(item, ov)} />
       {/if}
     </svelte:fragment>
   </TreeNode>

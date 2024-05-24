@@ -20,7 +20,9 @@ export class DocumentsPage extends CommonPage {
   readonly buttonCreateDocument = (): Locator =>
     this.page.locator('div[data-float="navigator"] button[id="new-document"]')
 
-  readonly divTeamspacesParent = (): Locator => this.page.locator('div#navGroup-tree-teamspaces').locator('xpath=../button[1]')
+  readonly divTeamspacesParent = (): Locator =>
+    this.page.locator('div#navGroup-tree-teamspaces').locator('xpath=../button[1]')
+
   readonly buttonCreateTeamspace = (): Locator => this.page.locator('button#tree-teamspaces')
   readonly formNewTeamspace = (): Locator => this.page.locator('form[id="document:string:NewTeamspace"]')
   readonly formEditTeamspace = (): Locator => this.page.locator('form[id="document:string:EditTeamspace"]')
@@ -71,7 +73,9 @@ export class DocumentsPage extends CommonPage {
   }
 
   async checkTeamspaceExist (name: string): Promise<void> {
-    await expect(this.page.locator('div[class*="hulyNavGroup-content"] span[class*="label"]', { hasText: name })).toHaveCount(1)
+    await expect(
+      this.page.locator('div[class*="hulyNavGroup-content"] span[class*="label"]', { hasText: name })
+    ).toHaveCount(1)
   }
 
   async checkTeamspaceNotExist (name: string): Promise<void> {
@@ -82,7 +86,9 @@ export class DocumentsPage extends CommonPage {
 
   async moreActionTeamspace (name: string, action: string): Promise<void> {
     await this.page.locator('button.hulyNavGroup-header span[class*="label"]', { hasText: name }).hover()
-    await this.page.locator(`xpath=//span[text()="${name}"]/../../div[@class="hulyNavGroup-header__tools"]/button[last()]`).click()
+    await this.page
+      .locator(`xpath=//span[text()="${name}"]/../../div[@class="hulyNavGroup-header__tools"]/button[last()]`)
+      .click()
     await this.selectFromDropdown(this.page, action)
   }
 

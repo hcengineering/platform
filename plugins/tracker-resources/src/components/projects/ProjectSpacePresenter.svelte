@@ -56,7 +56,9 @@
   }
 
   $: updateSpecials(model, space)
-  $: visible = (!deselect && currentSpace !== undefined && currentSpecial !== undefined && space._id === currentSpace) || forciblyСollapsed
+  $: visible =
+    (!deselect && currentSpace !== undefined && currentSpecial !== undefined && space._id === currentSpace) ||
+    forciblyСollapsed
 </script>
 
 {#if specials}

@@ -48,7 +48,9 @@ export class TalentsPage extends CommonRecruitingPage {
   talentsLink = (): Locator => this.page.locator('text=Talents')
   firstNameInput = (): Locator => this.page.locator('[placeholder="First name"]')
   lastNameInput = (): Locator => this.page.locator('[placeholder="Last name"]')
-  skillsButton = (): Locator => this.page.locator('button:has-text("Skills")')
+  skillsButton = (): Locator =>
+    this.page.locator('[id="recruit\\:string\\:CreateTalent"]').getByRole('button', { name: 'Skills' })
+
   addSkillButton = (): Locator => this.page.locator('.header > button:nth-child(3)')
   skillTitleInput = (): Locator => this.page.getByPlaceholder('Please type  title')
   createSkillInput = (): Locator => this.page.getByPlaceholder('Please type skill title')
@@ -58,7 +60,7 @@ export class TalentsPage extends CommonRecruitingPage {
   createCandidateButton = (): Locator => this.page.locator('button:has-text("Create")')
   openOtherSkills = (): Locator => this.page.getByText('Other')
   skillsLink = (): Locator => this.page.locator('text=Skills')
-  newSkillButton = (): Locator => this.page.locator('button:has-text("Skill")')
+  newSkillButton = (): Locator => this.page.getByRole('button', { name: 'Skill', exact: true })
   emailContact = (): Locator =>
     this.page.locator('div[class^="popupPanel-body__header"] button[id="gmail:string:Email"]')
 

@@ -10,7 +10,7 @@ export class RecruitingPage {
   recruitApplication = (): Locator => this.page.locator('[id="app-recruit\\:string\\:RecruitApplication"]')
   talentsNavElement = (): Locator => this.page.locator('text=Talents')
   reviews = (): Locator => this.page.locator('text=Reviews')
-  reviewButton = (): Locator => this.page.locator('button:has-text("Review")')
+  reviewButton = (): Locator => this.page.getByRole('button', { name: 'Review', exact: true })
 
   frontendEngineerOption = (): Locator => this.page.locator('td:has-text("Frontend Engineer")')
   searchOrRunCommandInput = (): Locator => this.page.locator('[placeholder="Search\\ or\\ run\\ a\\ command\\.\\.\\."]')
@@ -35,7 +35,7 @@ export class RecruitingPage {
 
   generalChatLink = (): Locator => this.page.locator('text=general')
   contactsButton = (): Locator => this.page.locator('[id="app-contact\\:string\\:Contacts"]')
-  employeeSection = (): Locator => this.page.locator('.antiNav-element:has-text("Employee")')
+  employeeSection = (): Locator => this.page.getByRole('button', { name: 'Employee' })
   johnAppleseed = (): Locator => this.page.locator('text=Appleseed John')
 
   async clickRecruitApplication (): Promise<void> {

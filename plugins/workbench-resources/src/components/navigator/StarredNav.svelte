@@ -73,7 +73,7 @@
     if (notifyContext === undefined) return false
     return !notifyContext.hidden && !!inboxNotificationsByContext.get(notifyContext._id)?.length
   }
-  $: visibleSpace = spaces.find(space => currentSpace === space._id)
+  $: visibleSpace = spaces.find((space) => currentSpace === space._id)
 </script>
 
 <TreeNode

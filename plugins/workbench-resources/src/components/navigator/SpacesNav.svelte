@@ -138,7 +138,7 @@
   } else {
     filteredSpaces = spaces
   }
-  $: visibleSpace = filteredSpaces.find(fs => fs._id === currentSpace)
+  $: visibleSpace = filteredSpaces.find((fs) => fs._id === currentSpace)
 </script>
 
 <TreeNode

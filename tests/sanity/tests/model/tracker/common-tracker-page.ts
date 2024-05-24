@@ -81,7 +81,7 @@ export class CommonTrackerPage extends CalendarPage {
 
   trackerApplicationButton = (): Locator => this.page.locator('[id="app-tracker\\:string\\:TrackerApplication"]')
   componentsLink = (): Locator => this.page.locator('text=Components')
-  createComponentButton = (): Locator => this.page.locator('button:has-text("Component")')
+  createComponentButton = (): Locator => this.page.getByRole('button', { name: 'Component', exact: true })
   componentNameInput = (): Locator => this.page.locator('[placeholder="Component\\ name"]')
   createComponentConfirmButton = (): Locator => this.page.locator('button:has-text("Create component")')
   newIssueButton = (): Locator => this.page.locator('button:has-text("New issue")')

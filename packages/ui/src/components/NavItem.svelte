@@ -146,7 +146,7 @@
     <div class="hulyNavItem-icon right"><IconOpenedArrow size={'small'} /></div>
   {/if}
 </button>
-{#if isFold && (isOpen || (!isOpen && visible)) && !empty || forciblyСollapsed}
+{#if (isFold && (isOpen || (!isOpen && visible)) && !empty) || forciblyСollapsed}
   <div class="hulyNavItem-dropbox">
     {#if (!isOpen && visible) || forciblyСollapsed}
       <slot name="visible" {isOpen} />

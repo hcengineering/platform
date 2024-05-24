@@ -3,7 +3,7 @@ import { CommonTrackerPage } from './common-tracker-page'
 import { NewIssue } from './types'
 
 export class TemplatePage extends CommonTrackerPage {
-  buttonNewTemplate = (): Locator => this.page.locator('button > span', { hasText: 'Template' })
+  buttonNewTemplate = (): Locator => this.page.getByRole('button', { name: 'Template', exact: true })
   inputIssueTitle = (): Locator => this.page.locator('form[id$="NewProcess"] input[type="text"]')
   inputIssueDescription = (): Locator => this.page.locator('form[id$="NewProcess"] div.tiptap')
   buttonPopupCreateNewTemplatePriority = (): Locator =>
