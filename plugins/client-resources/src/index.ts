@@ -24,6 +24,7 @@ import core, {
   TxPersistenceStore,
   TxWorkspaceEvent,
   WorkspaceEvent,
+  concatLink,
   createClient
 } from '@hcengineering/core'
 import platform, {
@@ -88,7 +89,7 @@ export default async () => {
 
         let client = createClient(
           (handler: TxHandler) => {
-            const url = new URL(`/${token}`, endpoint)
+            const url = concatLink(endpoint, `/${token}`)
 
             const upgradeHandler: TxHandler = (...txes: Tx[]) => {
               for (const tx of txes) {
@@ -109,7 +110,7 @@ export default async () => {
             }
             const tokenPayload: { workspace: string, email: string } = decodeTokenPayload(token)
             return connect(
-              url.href,
+              url,
               upgradeHandler,
               tokenPayload.workspace,
               tokenPayload.email,
