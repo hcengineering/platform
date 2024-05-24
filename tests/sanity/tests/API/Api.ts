@@ -1,14 +1,16 @@
 import { APIRequestContext } from '@playwright/test'
-import { PlatformURI, AccountUrl } from '../utils'
+import { PlatformURI, LocalUrl, DevUrl } from '../utils'
 
 export class ApiEndpoint {
   private readonly request: APIRequestContext
+  private readonly baseUrl: string
 
-  constructor (request: APIRequestContext) {
+  constructor(request: APIRequestContext) {
     this.request = request
+    this.baseUrl = DevUrl || LocalUrl  
   }
 
-  private getDefaultHeaders (token: string = ''): Record<string, string> {
+  private getDefaultHeaders(token: string = ''): Record<string, string> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       Origin: PlatformURI,
@@ -20,8 +22,8 @@ export class ApiEndpoint {
     return headers
   }
 
-  private async loginAndGetToken (username: string, password: string): Promise<string> {
-    const loginUrl = AccountUrl
+  private async loginAndGetToken(username: string, password: string): Promise<string> {
+    const loginUrl = this.baseUrl
     const loginPayload = {
       method: 'login',
       params: [username, password]
@@ -32,13 +34,16 @@ export class ApiEndpoint {
       Referer: PlatformURI
     }
     const response = await this.request.post(loginUrl, { data: loginPayload, headers })
+    if (response.status() !== 200) {
+      throw new Error(`Login failed with status: ${response.status()}`)
+    }
     const token = (await response.json()).result.token
     return token
   }
 
-  async createWorkspaceWithLogin (workspaceName: string, username: string, password: string): Promise<any> {
+  async createWorkspaceWithLogin(workspaceName: string, username: string, password: string): Promise<any> {
     const token = await this.loginAndGetToken(username, password)
-    const url = AccountUrl
+    const url = this.baseUrl
     const payload = {
       method: 'createWorkspace',
       params: [workspaceName]
@@ -48,8 +53,8 @@ export class ApiEndpoint {
     return await response.json()
   }
 
-  async createAccount (username: string, password: string, firstName: string, lastName: string): Promise<any> {
-    const url = AccountUrl
+  async createAccount(username: string, password: string, firstName: string, lastName: string): Promise<any> {
+    const url = this.baseUrl
     const payload = {
       method: 'createAccount',
       params: [username, password, firstName, lastName]

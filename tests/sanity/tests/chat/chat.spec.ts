@@ -9,7 +9,7 @@ import { SignUpData } from '../model/common-types'
 import { faker } from '@faker-js/faker'
 import { SignInJoinPage } from '../model/signin-page'
 
-test.describe.skip('channel tests', () => {
+test.describe('channel tests', () => {
   let leftSideMenuPage: LeftSideMenuPage
   let chunterPage: ChunterPage
   let channelPage: ChannelPage
