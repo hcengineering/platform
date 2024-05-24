@@ -28,7 +28,7 @@
     ]
   },
   "localhost:8087": {
-    "title": "Platform",
+    "title": "DevPlatform",
     "languages": "en,ru,pt,es",
     "defaultLanguage": "en",
     "defaultApplication": "tracker",
