@@ -329,6 +329,14 @@ export class LiveQuery implements WithTx, Client {
       const queueIndex = this.queue.indexOf(q)
       if (queueIndex !== -1) {
         this.queue.splice(queueIndex, 1)
+        const queries = this.queries.get(q._class)
+        const pos = queries?.indexOf(q) ?? -1
+        if (pos >= 0 && queries !== undefined) {
+          queries.splice(pos, 1)
+          if (queries?.length === 0) {
+            this.queries.delete(q._class)
+          }
+        }
         if (update) {
           if (!(q.result instanceof Promise)) {
             this.updateDocuments(q, q.result, true)
@@ -1296,12 +1304,12 @@ export class LiveQuery implements WithTx, Client {
     // We need to add trigger once more, since elastic could have a huge lag with document availability.
     if (trigger || this.triggerCounter > 0) {
       if (trigger) {
-        this.triggerCounter = 5 // Schedule 5 refreshes on every 5 seconds.
+        this.triggerCounter = 2 // Schedule 2 refreshes on every 10 seconds.
       }
       setTimeout(() => {
         this.triggerCounter--
         void this.checkUpdateEvents(evt, false)
-      }, 5000)
+      }, 10000)
     }
 
     const h = this.client.getHierarchy()

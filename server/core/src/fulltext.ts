@@ -248,16 +248,13 @@ export class FullTextIndex implements WithFind {
     // Just assign scores based on idex
     result.forEach((it) => {
       const idDoc = indexedDocMap.get(it._id)
-      const { _score, id, _class, ...extra } = idDoc as any
+      const { _score } = idDoc as any
       it.$source = {
-        ...extra,
         $score: _score
       }
     })
     if (scoreSearch !== undefined) {
       result.sort((a, b) => scoreSearch * ((a.$source?.$score ?? 0) - (b.$source?.$score ?? 0)))
-    }
-    if (scoreSearch !== undefined) {
       if (options?.limit !== undefined && options?.limit < result.length) {
         result = toFindResult(result.slice(0, options?.limit), result.total)
       }
