@@ -38,6 +38,9 @@ export class ChannelPage {
   readonly openChannelDetails = (): Locator => this.page.locator('.ac-header > .antiButton')
   readonly changeChannelNameConfirm = (): Locator => this.page.locator('.ml-2 > .antiButton')
   readonly privateOrPublicChangeButton = (change: string): Locator => this.page.getByRole('button', { name: change })
+  readonly userAdded = (user: string): Locator => this.page.getByText(user)
+  private readonly addMemberPreview = (): Locator => this.page.getByRole('button', { name: 'Add members' })
+  private readonly addButtonPreview = (): Locator => this.page.getByRole('button', { name: 'Add', exact: true })
 
   async sendMessage (message: string): Promise<void> {
     await this.inputMessage().fill(message)
@@ -71,6 +74,21 @@ export class ChannelPage {
 
   async clickSaveMessageTab (): Promise<void> {
     await this.saveMessageTab().click()
+  }
+
+  async addMemberToChannelPreview (user: string): Promise<void> {
+    await this.addMemberPreview().click()
+    await this.addMemberToChannelButton(user).click()
+    await this.addButtonPreview().click()
+    await expect(this.userAdded(user)).toBeVisible()
+  }
+
+  async checkIfUserIsAdded (user: string, added: boolean): Promise<void> {
+    if (added) {
+      await expect(this.userAdded(user)).toBeHidden()
+    } else {
+      await expect(this.userAdded(user)).toBeVisible()
+    }
   }
 
   async clickOpenMoreButton (message: string): Promise<void> {

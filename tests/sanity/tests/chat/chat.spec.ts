@@ -353,4 +353,50 @@ test.describe('channel tests', () => {
     await channelPage.clickOnOpenChannelDetails()
     await channelPage.changeChannelPrivacyOrAutoJoin('N/A', 'Yes', 'Yes')
   })
+
+  test('Check if the user can be added through preview tab', async ({ browser, page }) => {
+    await leftSideMenuPage.openProfileMenu()
+    await leftSideMenuPage.inviteToWorkspace()
+    await leftSideMenuPage.getInviteLink()
+
+    const linkText = await page.locator('.antiPopup .link').textContent()
+    const page2 = await browser.newPage()
+    const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
+    const channelPageSecond = new ChannelPage(page2)
+
+    await leftSideMenuPage.clickOnCloseInvite()
+    await api.createAccount(newUser2.email, newUser2.password, newUser2.firstName, newUser2.lastName)
+    await page2.goto(linkText ?? '')
+    const joinPage = new SignInJoinPage(page2)
+    await joinPage.join(newUser2)
+    await leftSideMenuPageSecond.clickChunter()
+    await channelPageSecond.clickChannel('general')
+    await channelPageSecond.clickOnOpenChannelDetails()
+    await channelPageSecond.checkIfUserIsAdded(data.lastName + ' ' + data.firstName, false)
+  })
+
+  test('Check if we can create new public channel tests and check if the new user have can be added through preview', async ({
+    browser,
+    page
+  }) => {
+    await leftSideMenuPage.clickChunter()
+    await chunterPage.clickChannelBrowser()
+    await chunterPage.clickNewChannelHeader()
+    await chunterPage.createPrivateChannel(data.channelName, false)
+    await channelPage.checkIfChannelDefaultExist(true, data.channelName)
+    await leftSideMenuPage.openProfileMenu()
+    await leftSideMenuPage.inviteToWorkspace()
+    await leftSideMenuPage.getInviteLink()
+    const linkText = await page.locator('.antiPopup .link').textContent()
+    await leftSideMenuPage.clickOnCloseInvite()
+    const page2 = await browser.newPage()
+    await api.createAccount(newUser2.email, newUser2.password, newUser2.firstName, newUser2.lastName)
+    await page2.goto(linkText ?? '')
+    const joinPage = new SignInJoinPage(page2)
+    await joinPage.join(newUser2)
+    await leftSideMenuPage.clickChunter()
+    await channelPage.clickChannel(data.channelName)
+    await channelPage.clickOnOpenChannelDetails()
+    await channelPage.addMemberToChannelPreview(newUser2.lastName + ' ' + newUser2.firstName)
+  })
 })
