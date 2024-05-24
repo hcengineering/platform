@@ -5,12 +5,12 @@ export class ApiEndpoint {
   private readonly request: APIRequestContext
   private readonly baseUrl: string
 
-  constructor(request: APIRequestContext) {
+  constructor (request: APIRequestContext) {
     this.request = request
-    this.baseUrl = DevUrl || LocalUrl  
+    this.baseUrl = typeof DevUrl === 'string' && DevUrl.trim() !== '' ? DevUrl : LocalUrl
   }
 
-  private getDefaultHeaders(token: string = ''): Record<string, string> {
+  private getDefaultHeaders (token: string = ''): Record<string, string> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       Origin: PlatformURI,
@@ -22,7 +22,7 @@ export class ApiEndpoint {
     return headers
   }
 
-  private async loginAndGetToken(username: string, password: string): Promise<string> {
+  private async loginAndGetToken (username: string, password: string): Promise<string> {
     const loginUrl = this.baseUrl
     const loginPayload = {
       method: 'login',
@@ -41,7 +41,7 @@ export class ApiEndpoint {
     return token
   }
 
-  async createWorkspaceWithLogin(workspaceName: string, username: string, password: string): Promise<any> {
+  async createWorkspaceWithLogin (workspaceName: string, username: string, password: string): Promise<any> {
     const token = await this.loginAndGetToken(username, password)
     const url = this.baseUrl
     const payload = {
@@ -53,7 +53,7 @@ export class ApiEndpoint {
     return await response.json()
   }
 
-  async createAccount(username: string, password: string, firstName: string, lastName: string): Promise<any> {
+  async createAccount (username: string, password: string, firstName: string, lastName: string): Promise<any> {
     const url = this.baseUrl
     const payload = {
       method: 'createAccount',
