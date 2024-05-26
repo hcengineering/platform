@@ -97,6 +97,8 @@
     "Cor": "Cor",
     "Identificador": "Identificador",
     "RenomearStatus": "Renomear um status para um novo nome",
-    "AtualizarPedidoDeStatusDaTarefa": "O status está sendo usado em {total} tarefas e precisará ser atualizado em todas elas. Por favor, confirme."
+    "AtualizarPedidoDeStatusDaTarefa": "O status está sendo usado em {total} tarefas e precisará ser atualizado em todas elas. Por favor, confirme.",
+    "TaskTypes": "Tipos de Tarefas",
+    "Collections": "Coleções"
   }
 }

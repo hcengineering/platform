@@ -1,5 +1,25 @@
 {
   "string": {
-    "Storage": "Depósito"
+    "Drive": "Unidad",
+    "Drives": "Unidades",
+    "File": "Archivo",
+    "Folder": "Carpeta",
+    "Resource": "Recurso",
+    "Name": "Nombre",
+    "Description": "Descripción",
+    "Size": "Tamaño",
+    "Type": "Tipo",
+    "LastModified": "Última modificación",
+    "Parent": "Padre",
+    "Path": "Ruta",
+    "Download": "Descargar",
+    "CreateDrive": "Crear unidad",
+    "CreateFolder": "Crear carpeta",
+    "UploadFile": "Subir archivo",
+    "UploadFolder": "Subir carpeta",
+    "EditDrive": "Editar unidad",
+    "Rename": "Renombrar",
+    "RoleLabel": "Rol",
+    "Root": "/"
   }
 }

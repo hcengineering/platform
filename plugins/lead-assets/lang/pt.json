@@ -32,6 +32,8 @@
     "UnAssign": "Desatribuir",
     "ConfigLabel": "CRM",
     "ConfigDescription": "Extensão para gestão de relacionamento com o Cliente",
-    "EditFunnel": "Editar Funil"
+    "EditFunnel": "Editar Funil",
+    "FunnelMembers": "Membros",
+    "RoleLabel": "Cargo: {role}"
   }
 }
