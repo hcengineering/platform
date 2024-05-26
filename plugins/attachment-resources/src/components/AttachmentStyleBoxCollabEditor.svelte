@@ -17,7 +17,7 @@
   import contact from '@hcengineering/contact'
   import { Account, Doc, Ref, generateId } from '@hcengineering/core'
   import { IntlString, getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
-  import { KeyedAttribute, createQuery, getClient } from '@hcengineering/presentation'
+  import { KeyedAttribute, createQuery, getClient, uploadFile } from '@hcengineering/presentation'
   import { getCollaborationUser, getObjectLinkFragment } from '@hcengineering/view-resources'
   import textEditor, {
     AttachIcon,
@@ -32,7 +32,6 @@
   import { defaultRefActions, getModelRefActions } from '@hcengineering/text-editor/src/components/editor/actions'
 
   import AttachmentsGrid from './AttachmentsGrid.svelte'
-  import { uploadFile } from '../utils'
 
   export let object: Doc
   export let key: KeyedAttribute

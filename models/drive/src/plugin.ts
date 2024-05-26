@@ -23,6 +23,7 @@ import {
   type Action,
   type ActionCategory,
   type ViewAction,
+  type ViewActionAvailabilityFunction,
   type Viewlet,
   type ViewletDescriptor
 } from '@hcengineering/view'
@@ -44,7 +45,9 @@ export default mergeIds(driveId, drive, {
   },
   function: {
     DriveLinkProvider: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
-    FolderLinkProvider: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>
+    FolderLinkProvider: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
+    CanRenameFile: '' as Resource<ViewActionAvailabilityFunction>,
+    CanRenameFolder: '' as Resource<ViewActionAvailabilityFunction>
   },
   viewlet: {
     Grid: '' as Ref<ViewletDescriptor>,
@@ -59,19 +62,24 @@ export default mergeIds(driveId, drive, {
     CreateChildFolder: '' as Ref<Action>,
     CreateRootFolder: '' as Ref<Action>,
     EditDrive: '' as Ref<Action>,
-    DownloadFile: '' as Ref<Action>
+    DownloadFile: '' as Ref<Action>,
+    RenameFile: '' as Ref<Action>,
+    RenameFolder: '' as Ref<Action>
   },
   actionImpl: {
     CreateChildFolder: '' as ViewAction,
     CreateRootFolder: '' as ViewAction,
     EditDrive: '' as ViewAction,
-    DownloadFile: '' as ViewAction
+    DownloadFile: '' as ViewAction,
+    RenameFile: '' as ViewAction,
+    RenameFolder: '' as ViewAction
   },
   string: {
     Name: '' as IntlString,
     Description: '' as IntlString,
     Size: '' as IntlString,
     Type: '' as IntlString,
+    Metadata: '' as IntlString,
     LastModified: '' as IntlString,
     Parent: '' as IntlString,
     Path: '' as IntlString,

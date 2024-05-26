@@ -53,8 +53,5 @@
     "FilterAttachments": "Вложения",
     "RemovedAttachment": "Удалил(а) вложение",
     "ContentType": "Тип контента"
-  },
-  "status": {
-    "FileTooLarge": "Файл слишком большой"
   }
 }

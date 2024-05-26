@@ -33,7 +33,7 @@ import GridView from './components/GridView.svelte'
 import ResourcePresenter from './components/ResourcePresenter.svelte'
 
 import { getDriveLink, getFolderLink, resolveLocation } from './navigation'
-import { createFolder } from './utils'
+import { createFolder, renameResource } from './utils'
 
 async function CreateRootFolder (doc: Drive): Promise<void> {
   await createFolder(doc._id, drive.ids.Root)
@@ -50,8 +50,13 @@ async function EditDrive (drive: Drive): Promise<void> {
 async function DownloadFile (doc: File | File[]): Promise<void> {
   const files = Array.isArray(doc) ? doc : [doc]
   for (const file of files) {
-    const url = getFileUrl(file.file, 'full', file.name)
-    window.open(url, '_blank')
+    const href = getFileUrl(file.file, 'full', file.name)
+    const link = document.createElement('a')
+    link.style.display = 'none'
+    link.target = '_blank'
+    link.href = href
+    link.download = file.name
+    link.click()
   }
 }
 
@@ -61,6 +66,26 @@ async function DriveLinkProvider (doc: Doc): Promise<Location> {
 
 async function FolderLinkProvider (doc: Doc): Promise<Location> {
   return getFolderLink(doc._id as Ref<Folder>)
+}
+
+async function RenameFile (doc: File | File[]): Promise<void> {
+  if (!Array.isArray(doc)) {
+    await renameResource(doc)
+  }
+}
+
+async function RenameFolder (doc: Folder | Folder[]): Promise<void> {
+  if (!Array.isArray(doc)) {
+    await renameResource(doc)
+  }
+}
+
+export async function CanRenameFile (doc: File | File[] | undefined): Promise<boolean> {
+  return doc !== undefined && !Array.isArray(doc)
+}
+
+export async function CanRenameFolder (doc: Folder | Folder[] | undefined): Promise<boolean> {
+  return doc !== undefined && !Array.isArray(doc)
 }
 
 export default async (): Promise<Resources> => ({
@@ -82,11 +107,15 @@ export default async (): Promise<Resources> => ({
     CreateChildFolder,
     CreateRootFolder,
     EditDrive,
-    DownloadFile
+    DownloadFile,
+    RenameFile,
+    RenameFolder
   },
   function: {
     DriveLinkProvider,
-    FolderLinkProvider
+    FolderLinkProvider,
+    CanRenameFile,
+    CanRenameFolder
   },
   resolver: {
     Location: resolveLocation

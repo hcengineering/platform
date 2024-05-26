@@ -14,9 +14,8 @@
  -->
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
-  import { deleteFile } from '@hcengineering/attachment-resources/src/utils'
   import core, { AttachedData, Doc, Ref, SortingOrder } from '@hcengineering/core'
-  import { DraftController, draftsStore, getClient } from '@hcengineering/presentation'
+  import { DraftController, draftsStore, getClient, deleteFile } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
   import { makeRank } from '@hcengineering/task'
   import { Component, Issue, IssueDraft, IssueParentInfo, Milestone, Project } from '@hcengineering/tracker'

@@ -1,7 +1,13 @@
 import { MinioConfig, MinioService } from '@hcengineering/minio'
 import { createRawMongoDBAdapter } from '@hcengineering/mongo'
 import { S3Service, type S3Config } from '@hcengineering/s3'
-import { StorageAdapter, StorageConfiguration, buildStorage, type StorageConfig } from '@hcengineering/server-core'
+import {
+  AggregatorStorageAdapter,
+  StorageAdapter,
+  StorageConfiguration,
+  buildStorage,
+  type StorageConfig
+} from '@hcengineering/server-core'
 import { addMinioFallback } from './minio'
 
 /*
@@ -71,7 +77,7 @@ export function parseStorageEnv (storageEnv: string, storageConfig: StorageConfi
   }
 }
 
-export function buildStorageFromConfig (config: StorageConfiguration, dbUrl: string): StorageAdapter {
+export function buildStorageFromConfig (config: StorageConfiguration, dbUrl: string): AggregatorStorageAdapter {
   return buildStorage(config, createRawMongoDBAdapter(dbUrl), (kind, config): StorageAdapter => {
     if (kind === MinioService.config) {
       const c = config as MinioConfig

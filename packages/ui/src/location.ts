@@ -14,8 +14,10 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { clone } from '@hcengineering/core'
+import { clone, type Ref, type Space } from '@hcengineering/core'
 import { derived, get, writable } from 'svelte/store'
+import { type Plugin } from '@hcengineering/platform'
+
 import { closePopup } from './popups'
 import { type Location as PlatformLocation } from './types'
 
@@ -206,4 +208,24 @@ export const setTreeCollapsed = (_id: any, collapsed: boolean): void => {
   if (_id === undefined || _id === 'undefined') return
   const key = getCollapsedKey(_id)
   collapsed ? localStorage.setItem(key, COLLAPSED) : localStorage.removeItem(key)
+}
+
+export function restoreLocation (loc: PlatformLocation, app: Plugin): void {
+  const last = localStorage.getItem(`${locationStorageKeyId}_${app}`)
+
+  if (last !== null) {
+    const newLocation: PlatformLocation = JSON.parse(last)
+
+    if (newLocation.path[3] != null) {
+      loc.path[3] = newLocation.path[3] as Ref<Space>
+      loc.path[4] = newLocation.path[4]
+      if (loc.path[4] == null) {
+        loc.path.length = 4
+      } else {
+        loc.path.length = 5
+      }
+
+      navigate(loc)
+    }
+  }
 }

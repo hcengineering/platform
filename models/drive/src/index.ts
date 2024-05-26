@@ -14,19 +14,32 @@
 //
 
 import core, {
+  type Blob,
   type Domain,
   type Role,
   type RolesAssignment,
   type Type,
   Account,
   AccountRole,
-  Ref,
   IndexKind,
-  DOMAIN_MODEL,
-  type Blob
+  Ref,
+  SortingOrder,
+  DOMAIN_MODEL
 } from '@hcengineering/core'
 import { type Drive, type File, type Folder, type Resource, driveId } from '@hcengineering/drive'
-import { type Builder, Model, UX, Mixin, Prop, TypeString, Index, TypeRef, ReadOnly } from '@hcengineering/model'
+import {
+  type Builder,
+  Hidden,
+  Index,
+  Mixin,
+  Model,
+  Prop,
+  ReadOnly,
+  TypeRecord,
+  TypeRef,
+  TypeString,
+  UX
+} from '@hcengineering/model'
 import { TDoc, TType, TTypedSpace } from '@hcengineering/model-core'
 import tracker from '@hcengineering/model-tracker'
 import view, { type Viewlet, classPresenter, createAction } from '@hcengineering/model-view'
@@ -102,6 +115,11 @@ export class TFile extends TResource implements File {
   @Prop(TypeRef(core.class.Blob), drive.string.File)
   @ReadOnly()
   declare file: Ref<Blob>
+
+  @Prop(TypeRecord(), drive.string.Metadata)
+  @ReadOnly()
+  @Hidden()
+    metadata?: Record<string, any>
 
   @Prop(TypeRef(drive.class.Folder), drive.string.Parent)
   @Index(IndexKind.Indexed)
@@ -242,18 +260,25 @@ function defineResource (builder: Builder): void {
         {
           key: '',
           presenter: drive.component.ResourcePresenter,
-          label: drive.string.Name
+          label: drive.string.Name,
+          sortingKey: 'name'
         },
         {
           key: '$lookup.file.size',
           presenter: drive.component.FileSizePresenter,
-          label: drive.string.Size
+          label: drive.string.Size,
+          sortingKey: '$lookup.file.size'
         },
         {
           key: '$lookup.file.modifiedOn'
         },
         'createdBy'
       ],
+      options: {
+        sort: {
+          _class: SortingOrder.Descending
+        }
+      },
       configOptions: {
         hiddenKeys: ['name', 'file', 'parent', 'path'],
         sortable: true
@@ -325,6 +350,25 @@ function defineFolder (builder: Builder): void {
     },
     drive.action.CreateChildFolder
   )
+
+  createAction(
+    builder,
+    {
+      action: drive.actionImpl.RenameFolder,
+      label: drive.string.Rename,
+      icon: view.icon.Edit,
+      category: drive.category.Drive,
+      input: 'none',
+      target: drive.class.Folder,
+      context: {
+        mode: ['context', 'browser'],
+        application: drive.app.Drive,
+        group: 'edit'
+      },
+      visibilityTester: drive.function.CanRenameFolder
+    },
+    drive.action.RenameFolder
+  )
 }
 
 function defineFile (builder: Builder): void {
@@ -337,7 +381,12 @@ function defineFile (builder: Builder): void {
   // Actions
 
   builder.mixin(drive.class.File, core.class.Class, view.mixin.IgnoreActions, {
-    actions: [view.action.OpenInNewTab, tracker.action.EditRelatedTargets, tracker.action.NewRelatedIssue]
+    actions: [
+      view.action.Open,
+      view.action.OpenInNewTab,
+      tracker.action.EditRelatedTargets,
+      tracker.action.NewRelatedIssue
+    ]
   })
 
   createAction(
@@ -356,6 +405,25 @@ function defineFile (builder: Builder): void {
       }
     },
     drive.action.DownloadFile
+  )
+
+  createAction(
+    builder,
+    {
+      action: drive.actionImpl.RenameFile,
+      label: drive.string.Rename,
+      icon: view.icon.Edit,
+      category: drive.category.Drive,
+      input: 'none',
+      target: drive.class.File,
+      context: {
+        mode: ['context', 'browser'],
+        application: drive.app.Drive,
+        group: 'edit'
+      },
+      visibilityTester: drive.function.CanRenameFile
+    },
+    drive.action.RenameFile
   )
 }
 

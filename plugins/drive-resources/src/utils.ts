@@ -13,16 +13,22 @@
 // limitations under the License.
 //
 
-import attachment from '@hcengineering/attachment'
-import { type Blob, type Class, type Doc, type Ref } from '@hcengineering/core'
-import drive, { type Drive, type Folder } from '@hcengineering/drive'
-import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
-import { getClient } from '@hcengineering/presentation'
-import { showPopup } from '@hcengineering/ui'
+import { type Class, type Doc, type Ref } from '@hcengineering/core'
+import drive, { type Drive, type Folder, type Resource } from '@hcengineering/drive'
+import { type Asset, setPlatformStatus, unknownError } from '@hcengineering/platform'
+import { getClient, getFileMetadata, uploadFile } from '@hcengineering/presentation'
+import { type AnySvelteComponent, showPopup } from '@hcengineering/ui'
 import { openDoc } from '@hcengineering/view-resources'
 
 import CreateDrive from './components/CreateDrive.svelte'
 import CreateFolder from './components/CreateFolder.svelte'
+import RenamePopup from './components/RenamePopup.svelte'
+
+import FileTypeAudio from './components/icons/FileTypeAudio.svelte'
+import FileTypeImage from './components/icons/FileTypeImage.svelte'
+import FileTypeVideo from './components/icons/FileTypeVideo.svelte'
+import FileTypePdf from './components/icons/FileTypePdf.svelte'
+import FileTypeText from './components/icons/FileTypeText.svelte'
 
 async function navigateToDoc (_id: Ref<Doc>, _class: Ref<Class<Doc>>): Promise<void> {
   const client = getClient()
@@ -32,7 +38,7 @@ async function navigateToDoc (_id: Ref<Doc>, _class: Ref<Class<Doc>>): Promise<v
   }
 }
 
-export async function createFolder (space: Ref<Drive>, parent: Ref<Folder>, open = false): Promise<void> {
+export async function createFolder (space: Ref<Drive> | undefined, parent: Ref<Folder>, open = false): Promise<void> {
   showPopup(CreateFolder, { space, parent }, 'top', async (id) => {
     if (open && id !== undefined && id !== null) {
       await navigateToDoc(id, drive.class.Folder)
@@ -68,18 +74,39 @@ export async function createFile (file: File, space: Ref<Drive>, parent: Folder 
   const client = getClient()
 
   try {
-    const uploadFile = await getResource(attachment.helper.UploadFile)
     const uuid = await uploadFile(file)
-    // TODO obtain metadata
-    // const metadata = await getAttachmentMetadata(file, uuid)
+    const metadata = await getFileMetadata(file, uuid)
 
     await client.createDoc(drive.class.File, space, {
       name: file.name,
-      file: uuid as Ref<Blob>,
+      file: uuid,
+      metadata,
       parent: parent?._id ?? drive.ids.Root,
       path: parent !== undefined ? [parent._id, ...parent.path] : []
     })
   } catch (e) {
     void setPlatformStatus(unknownError(e))
   }
+}
+
+export async function renameResource (resource: Resource): Promise<void> {
+  showPopup(RenamePopup, { value: resource.name, format: 'text' }, undefined, async (res) => {
+    if (res != null && res !== resource.name) {
+      const client = getClient()
+      await client.update(resource, { name: res })
+    }
+  })
+}
+
+const fileTypesMap: Record<string, AnySvelteComponent> = {
+  'application/pdf': FileTypePdf,
+  audio: FileTypeAudio,
+  image: FileTypeImage,
+  video: FileTypeVideo,
+  text: FileTypeText
+}
+
+export function getFileTypeIcon (contentType: string): Asset | AnySvelteComponent {
+  const type = contentType.split('/', 1)[0]
+  return fileTypesMap[type] ?? fileTypesMap[contentType] ?? drive.icon.File
 }

@@ -53,8 +53,5 @@
     "FilterAttachments": "Attachments",
     "RemovedAttachment": "Removed attachment",
     "ContentType": "Content type"
-  }, 
-  "status": {
-    "FileTooLarge": "File too large"
   }
 }

@@ -17,7 +17,8 @@
     ActivityInboxNotification,
     decodeObjectURI,
     DocNotifyContext,
-    InboxNotification
+    InboxNotification,
+    notificationId
   } from '@hcengineering/notification'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
   import view from '@hcengineering/view'
@@ -28,6 +29,7 @@
     Label,
     location as locationStore,
     Location,
+    restoreLocation,
     Scroller,
     Separator,
     TabItem,
@@ -147,6 +149,16 @@
 
   async function syncLocation (newLocation: Location): Promise<void> {
     const loc = await resolveLocation(newLocation)
+    if (loc?.loc.path[2] !== notificationId) {
+      return
+    }
+
+    if (loc?.loc.path[3] == null) {
+      selectedContext = undefined
+      restoreLocation(newLocation, notificationId)
+      return
+    }
+
     const [_id] = decodeObjectURI(loc?.loc.path[3] ?? '')
     const context = $contextByDocStore.get(_id)
 

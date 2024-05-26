@@ -25,13 +25,15 @@
   export let currentSpace: Ref<Drive> | undefined
   export let currentFragment: string | undefined
 
+  const me = getCurrentAccount()
+
   const query = createQuery()
 
   let loading = true
   let hasDrive = false
   query.query(
     drive.class.Drive,
-    { archived: false },
+    { archived: false, members: me._id },
     (res) => {
       hasDrive = res.length > 0
       loading = false
@@ -56,9 +58,7 @@
   }
 
   async function handleCreateFolder (): Promise<void> {
-    if (currentSpace !== undefined) {
-      await createFolder(currentSpace, parent, true)
-    }
+    await createFolder(currentSpace, parent, true)
   }
 
   async function handleUploadFile (): Promise<void> {
@@ -67,7 +67,7 @@
     }
   }
 
-  const dropdownItems = hasAccountRole(getCurrentAccount(), AccountRole.User)
+  const dropdownItems = hasAccountRole(me, AccountRole.User)
     ? [
         { id: drive.string.CreateDrive, label: drive.string.CreateDrive, icon: drive.icon.Drive },
         { id: drive.string.CreateFolder, label: drive.string.CreateFolder, icon: drive.icon.Folder },

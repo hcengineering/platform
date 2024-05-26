@@ -17,10 +17,17 @@
   import { Attachment } from '@hcengineering/attachment'
   import { Account, Class, Doc, generateId, IdMap, Markup, Ref, Space, toIdMap } from '@hcengineering/core'
   import { IntlString, setPlatformStatus, unknownError, Asset } from '@hcengineering/platform'
-  import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
+  import {
+    createQuery,
+    DraftController,
+    deleteFile,
+    draftsStore,
+    getClient,
+    getFileMetadata,
+    uploadFile
+  } from '@hcengineering/presentation'
   import textEditor, { AttachIcon, EmptyMarkup, type RefAction, ReferenceInput } from '@hcengineering/text-editor'
   import { Loading, type AnySvelteComponent } from '@hcengineering/ui'
-  import { deleteFile, getAttachmentMetadata, uploadFile } from '../utils'
   import attachment from '../plugin'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
 
@@ -104,7 +111,7 @@
   async function createAttachment (file: File) {
     try {
       const uuid = await uploadFile(file)
-      const metadata = await getAttachmentMetadata(file, uuid)
+      const metadata = await getFileMetadata(file, uuid)
 
       const _id: Ref<Attachment> = generateId()
       attachments.set(_id, {
@@ -237,35 +244,43 @@
     dispatch('update', { message: event.detail, attachments: attachments.size })
   }
 
-  async function pasteAction (evt: ClipboardEvent): Promise<void> {
-    let t: HTMLElement | null = evt.target as HTMLElement
+  async function loadFiles (evt: ClipboardEvent): Promise<void> {
+    progress = true
+    const files = (evt.clipboardData?.files ?? []) as File[]
+
+    for (const file of files) {
+      await createAttachment(file)
+    }
+
+    progress = false
+  }
+
+  function pasteAction (_: any, evt: ClipboardEvent): boolean {
+    let target: HTMLElement | null = evt.target as HTMLElement
     let allowed = false
-    while (t != null) {
-      t = t.parentElement
-      if (t === refContainer) {
+
+    while (target != null) {
+      target = target.parentElement
+      if (target === refContainer) {
         allowed = true
       }
     }
     if (!allowed) {
-      return
+      return false
     }
 
-    const items = evt.clipboardData?.items ?? []
-    progress = true
-    for (const index in items) {
-      const item = items[index]
-      if (item.kind === 'file') {
-        const blob = item.getAsFile()
-        if (blob !== null) {
-          await createAttachment(blob)
-        }
-      }
+    const hasFiles = Array.from(evt.clipboardData?.items ?? []).some((i) => i.kind === 'file')
+
+    if (!hasFiles) {
+      return false
     }
-    progress = false
+
+    void loadFiles(evt)
+    return true
   }
 </script>
 
-<div class="no-print" bind:this={refContainer} on:paste={pasteAction}>
+<div class="no-print" bind:this={refContainer}>
   <input
     bind:this={inputFile}
     multiple
@@ -293,6 +308,8 @@
       autofocus={autofocus ? 'end' : false}
       loading={loading || progress}
       {boundary}
+      canEmbedFiles={false}
+      canEmbedImages={false}
       extraActions={[
         ...extraActions,
         {
@@ -311,6 +328,7 @@
       on:blur
       on:message={onMessage}
       on:update={onUpdate}
+      onPaste={pasteAction}
       {placeholder}
     >
       <div slot="header">

@@ -17,10 +17,9 @@
   import { Photo } from '@hcengineering/attachment'
   import { Class, Doc, Ref, Space } from '@hcengineering/core'
   import { setPlatformStatus, unknownError } from '@hcengineering/platform'
-  import { createQuery, getClient, getFileUrl, PDFViewer } from '@hcengineering/presentation'
+  import { FilePreviewPopup, createQuery, getClient, getFileUrl, uploadFile } from '@hcengineering/presentation'
   import { Button, IconAdd, Label, showPopup, Spinner } from '@hcengineering/ui'
   import attachment from '../plugin'
-  import { uploadFile } from '../utils'
   import UploadDuo from './icons/UploadDuo.svelte'
 
   export let objectId: Ref<Doc>
@@ -88,7 +87,7 @@
     el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
     if (item !== undefined) {
       showPopup(
-        PDFViewer,
+        FilePreviewPopup,
         { file: item.file, name: item.name, contentType: item.type },
         item.type.startsWith('image/') ? 'centered' : 'float'
       )

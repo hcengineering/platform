@@ -36,6 +36,28 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
     readonly dbAdapter: RawDBAdapter
   ) {}
 
+  async syncBlobFromStorage (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<void> {
+    const current = await this.dbAdapter.find<Blob>(
+      ctx,
+      workspaceId,
+      DOMAIN_BLOB,
+      { _class: core.class.Blob, _id: objectName as Ref<Blob> },
+      { limit: 1 }
+    )
+    const provider = this.adapters.get(current[0]?.provider ?? this.defaultAdapter)
+    if (provider === undefined) {
+      throw new NoSuchKeyError('No such provider found')
+    }
+    const stat = await provider.stat(ctx, workspaceId, objectName)
+    if (stat !== undefined) {
+      stat.provider = current[0]?.provider ?? this.defaultAdapter
+      if (current[0] !== undefined) {
+        await this.dbAdapter.clean(ctx, workspaceId, DOMAIN_BLOB, [current[0]._id])
+      }
+      await this.dbAdapter.upload<Blob>(ctx, workspaceId, DOMAIN_BLOB, [stat])
+    }
+  }
+
   async initialize (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {
     // We need to initialize internal table if it miss documents.
   }
@@ -219,7 +241,7 @@ export function buildStorage (
   config: StorageConfiguration,
   dbAdapter: RawDBAdapter,
   storageFactory: (kind: string, config: StorageConfig) => StorageAdapter
-): StorageAdapter {
+): AggregatorStorageAdapter {
   const adapters = new Map<string, StorageAdapter>()
   for (const c of config.storages) {
     adapters.set(c.name, storageFactory(c.kind, c))

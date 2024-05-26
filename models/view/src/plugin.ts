@@ -13,10 +13,11 @@
 // limitations under the License.
 //
 
-import { type Doc, type Ref } from '@hcengineering/core'
+import { type Blob, type Doc, type Ref } from '@hcengineering/core'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type FilterFunction, type ViewAction, type ViewCategoryAction, viewId } from '@hcengineering/view'
+import { type BlobMetadata, type FilePreviewExtension } from '@hcengineering/presentation'
 import { type PresentationMiddlewareFactory } from '@hcengineering/presentation/src/pipeline'
 import view from '@hcengineering/view-resources/src/plugin'
 
@@ -82,7 +83,11 @@ export default mergeIds(viewId, view, {
     StatusPresenter: '' as AnyComponent,
     StatusRefPresenter: '' as AnyComponent,
     DateFilterPresenter: '' as AnyComponent,
-    StringFilterPresenter: '' as AnyComponent
+    StringFilterPresenter: '' as AnyComponent,
+    AudioViewer: '' as AnyComponent,
+    ImageViewer: '' as AnyComponent,
+    VideoViewer: '' as AnyComponent,
+    PDFViewer: '' as AnyComponent
   },
   string: {
     Table: '' as IntlString,
@@ -132,10 +137,18 @@ export default mergeIds(viewId, view, {
     CanArchiveSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     CanDeleteSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     CanJoinSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
-    CanLeaveSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>
+    CanLeaveSpace: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    BlobImageMetadata: '' as Resource<(file: File, blob: Ref<Blob>) => Promise<BlobMetadata | undefined>>,
+    BlobVideoMetadata: '' as Resource<(file: File, blob: Ref<Blob>) => Promise<BlobMetadata | undefined>>
   },
   pipeline: {
     PresentationMiddleware: '' as Ref<PresentationMiddlewareFactory>,
     AnalyticsMiddleware: '' as Ref<PresentationMiddlewareFactory>
+  },
+  extension: {
+    Audio: '' as Ref<FilePreviewExtension>,
+    Image: '' as Ref<FilePreviewExtension>,
+    Video: '' as Ref<FilePreviewExtension>,
+    PDF: '' as Ref<FilePreviewExtension>
   }
 })

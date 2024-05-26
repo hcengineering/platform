@@ -28,8 +28,8 @@
     return name === ''
   }
 
-  export let space: Ref<Drive>
-  export let parent: Ref<Folder>
+  export let space: Ref<Drive> | undefined
+  export let parent: Ref<Folder> | undefined
 
   const id: Ref<Folder> = generateId()
 
@@ -48,6 +48,10 @@
   }
 
   async function create (): Promise<void> {
+    if (_space === undefined) {
+      return
+    }
+
     let path: Ref<Folder>[] = []
 
     if (_parent != null && _parent !== drive.ids.Root) {
@@ -60,7 +64,7 @@
 
     await client.createDoc(
       drive.class.Folder,
-      space,
+      _space,
       {
         name: getTitle(name),
         parent: _parent ?? drive.ids.Root,

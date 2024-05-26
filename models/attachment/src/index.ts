@@ -14,14 +14,7 @@
 //
 
 import activity from '@hcengineering/activity'
-import type {
-  Attachment,
-  AttachmentMetadata,
-  Photo,
-  SavedAttachments,
-  AttachmentPreviewExtension
-} from '@hcengineering/attachment'
-import presentation, { TComponentPointExtension } from '@hcengineering/model-presentation'
+import type { Attachment, AttachmentMetadata, Photo, SavedAttachments } from '@hcengineering/attachment'
 import { type Domain, IndexKind, type Ref } from '@hcengineering/core'
 import {
   type Builder,
@@ -38,7 +31,6 @@ import {
 import core, { TAttachedDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import view, { createAction } from '@hcengineering/model-view'
-import { type Resource } from '@hcengineering/platform'
 
 import attachment from './plugin'
 
@@ -86,17 +78,8 @@ export class TSavedAttachments extends TPreference implements SavedAttachments {
   declare attachedTo: Ref<Attachment>
 }
 
-@Model(attachment.class.AttachmentPreviewExtension, presentation.class.ComponentPointExtension)
-export class TAttachmentPreviewExtension extends TComponentPointExtension implements AttachmentPreviewExtension {
-  @Prop(TypeString(), attachment.string.ContentType)
-    contentType!: string | string[]
-
-  alignment?: string
-  availabilityChecker?: Resource<() => Promise<boolean>>
-}
-
 export function createModel (builder: Builder): void {
-  builder.createModel(TAttachment, TPhoto, TSavedAttachments, TAttachmentPreviewExtension)
+  builder.createModel(TAttachment, TPhoto, TSavedAttachments)
 
   builder.mixin(attachment.class.Attachment, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: attachment.component.AttachmentPresenter
@@ -179,42 +162,6 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     { label: attachment.string.Attachments, visible: true },
     attachment.category.Attachments
-  )
-
-  builder.createDoc(
-    attachment.class.AttachmentPreviewExtension,
-    core.space.Model,
-    {
-      contentType: 'image/*',
-      alignment: 'centered',
-      component: attachment.component.PDFViewer,
-      extension: attachment.extension.AttachmentPreview
-    },
-    attachment.previewExtension.Image
-  )
-
-  builder.createDoc(
-    attachment.class.AttachmentPreviewExtension,
-    core.space.Model,
-    {
-      contentType: ['video/*', 'audio/*'],
-      alignment: 'centered',
-      component: attachment.component.MediaViewer,
-      extension: attachment.extension.AttachmentPreview
-    },
-    attachment.previewExtension.Media
-  )
-
-  builder.createDoc(
-    attachment.class.AttachmentPreviewExtension,
-    core.space.Model,
-    {
-      contentType: ['application/pdf', 'application/json', 'text/*'],
-      alignment: 'float',
-      component: attachment.component.PDFViewer,
-      extension: attachment.extension.AttachmentPreview
-    },
-    attachment.previewExtension.PDF
   )
 
   createAction(builder, {

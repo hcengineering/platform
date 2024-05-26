@@ -41,6 +41,7 @@ export interface Folder extends Resource {
 /** @public */
 export interface File extends Resource {
   file: Ref<Blob>
+  metadata?: Record<string, any>
 
   parent: Ref<Folder>
   path: Ref<Folder>[]
