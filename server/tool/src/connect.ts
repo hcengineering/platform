@@ -15,11 +15,19 @@
 //
 
 import client, { clientId } from '@hcengineering/client'
-import { Client, LoadModelResponse, systemAccountEmail, Tx, WorkspaceId } from '@hcengineering/core'
+import {
+  Client,
+  LoadModelResponse,
+  systemAccountEmail,
+  Tx,
+  WorkspaceId,
+  type MeasureContext
+} from '@hcengineering/core'
 import { addLocation, getMetadata, getResource, setMetadata } from '@hcengineering/platform'
 import { generateToken } from '@hcengineering/server-token'
 import { mkdtempSync } from 'fs'
 import crypto from 'node:crypto'
+import { type Writable } from 'stream'
 import plugin from './plugin'
 
 /**
@@ -89,14 +97,33 @@ export class BlobClient {
     this.tmpDir = mkdtempSync('blobs')
   }
 
-  async pipeFromStorage (name: string, size: number): Promise<Buffer> {
+  async checkFile (ctx: MeasureContext, name: string): Promise<boolean> {
+    try {
+      const response = await fetch(this.transactorAPIUrl + `?name=${encodeURIComponent(name)}`, {
+        headers: {
+          Authorization: 'Bearer ' + this.token,
+          Range: 'bytes=0-1'
+        }
+      })
+      if (response.status === 404) {
+        return false
+      }
+      const buff = await response.arrayBuffer()
+      return buff.byteLength > 0
+    } catch (err: any) {
+      ctx.error('Failed to check file', { name, error: err })
+      return false
+    }
+  }
+
+  async writeTo (ctx: MeasureContext, name: string, size: number, writable: Writable): Promise<void> {
     let written = 0
     const chunkSize = 1024 * 1024
-    const chunks: Buffer[] = []
 
     // Use ranges to iterave through file with retry if required.
     while (written < size) {
-      for (let i = 0; i < 5; i++) {
+      let i = 0
+      for (; i < 5; i++) {
         try {
           const response = await fetch(this.transactorAPIUrl + `?name=${encodeURIComponent(name)}`, {
             headers: {
@@ -104,23 +131,40 @@ export class BlobClient {
               Range: `bytes=${written}-${Math.min(size - 1, written + chunkSize)}`
             }
           })
+          if (response.status === 404) {
+            i = 5
+            // No file, so make it empty
+            throw new Error(`No file for ${this.transactorAPIUrl}/${name}`)
+          }
           const chunk = Buffer.from(await response.arrayBuffer())
-          chunks.push(chunk)
+          await new Promise<void>((resolve, reject) => {
+            writable.write(chunk, (err) => {
+              if (err != null) {
+                reject(err)
+              }
+              resolve()
+            })
+          })
+
           written += chunk.length
           if (size > 1024 * 1024) {
-            console.log('Downloaded', Math.round(written / (1024 * 1024)), 'Mb of', Math.round(size / (1024 * 1024)))
+            ctx.info('Downloaded', {
+              name,
+              written: Math.round(written / (1024 * 1024)),
+              of: Math.round(size / (1024 * 1024))
+            })
           }
           break
         } catch (err: any) {
-          if (i === 4) {
-            console.error(err)
+          if (i > 4) {
+            writable.end()
             throw err
           }
           // retry
         }
       }
     }
-    return Buffer.concat(chunks)
+    writable.end()
   }
 
   async upload (name: string, size: number, contentType: string, buffer: Buffer): Promise<void> {

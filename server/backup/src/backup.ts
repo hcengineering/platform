@@ -664,32 +664,59 @@ export async function backup (
             break
           }
 
-          // Move processed document to processedChanges
-          if (changes.added.has(d._id)) {
-            processedChanges.added.set(d._id, changes.added.get(d._id) ?? '')
-            changes.added.delete(d._id)
-          } else {
-            processedChanges.updated.set(d._id, changes.updated.get(d._id) ?? '')
-            changes.updated.delete(d._id)
+          function processChanges (d: Doc, error: boolean = false): void {
+            // Move processed document to processedChanges
+            if (changes.added.has(d._id)) {
+              if (!error) {
+                processedChanges.added.set(d._id, changes.added.get(d._id) ?? '')
+              }
+              changes.added.delete(d._id)
+            } else {
+              if (!error) {
+                processedChanges.updated.set(d._id, changes.updated.get(d._id) ?? '')
+              }
+              changes.updated.delete(d._id)
+            }
           }
           if (d._class === core.class.Blob) {
             const blob = d as Blob
             const descrJson = JSON.stringify(d)
             addedDocuments += descrJson.length
             addedDocuments += blob.size
+
+            let blobFiled = false
+            if (!(await blobClient.checkFile(ctx, blob._id))) {
+              ctx.error('failed to download blob', { blob: blob._id, provider: blob.provider })
+              processChanges(d, true)
+              continue
+            }
+
             _pack.entry({ name: d._id + '.json' }, descrJson, function (err) {
               if (err != null) throw err
             })
-
-            _pack.entry({ name: d._id }, await blobClient.pipeFromStorage(blob._id, blob.size), function (err) {
-              if (err != null) throw err
-            })
+            try {
+              const entry = _pack?.entry({ name: d._id, size: blob.size }, (err) => {
+                if (err != null) {
+                  ctx.error('error packing file', err)
+                }
+              })
+              await blobClient.writeTo(ctx, blob._id, blob.size, entry)
+            } catch (err: any) {
+              if (err.message?.startsWith('No file for') === true) {
+                ctx.error('failed to download blob', { message: err.message })
+              } else {
+                ctx.error('failed to download blob', { err })
+              }
+              blobFiled = true
+            }
+            processChanges(d, blobFiled)
           } else {
             const data = JSON.stringify(d)
             addedDocuments += data.length
             _pack.entry({ name: d._id + '.json' }, data, function (err) {
               if (err != null) throw err
             })
+            processChanges(d)
           }
         }
       }

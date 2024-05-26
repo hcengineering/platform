@@ -14,32 +14,18 @@
 //
 
 import { MeasureContext, systemAccountEmail } from '@hcengineering/core'
-import { MinioService } from '@hcengineering/minio'
 import { setMetadata } from '@hcengineering/platform'
 import { backupService } from '@hcengineering/server-backup'
+import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverToken, { generateToken } from '@hcengineering/server-token'
 import toolPlugin from '@hcengineering/server-tool'
 import config from './config'
-import { StorageAdapter } from '@hcengineering/server-core'
 
 export function startBackup (ctx: MeasureContext): void {
   setMetadata(serverToken.metadata.Secret, config.Secret)
 
-  let minioPort = 9000
-  let minioEndpoint = config.MinioEndpoint
-  const sp = minioEndpoint.split(':')
-  if (sp.length > 1) {
-    minioEndpoint = sp[0]
-    minioPort = parseInt(sp[1])
-  }
-
-  const storageAdapter: StorageAdapter = new MinioService({
-    endpoint: minioEndpoint,
-    port: minioPort,
-    useSSL: 'false',
-    accessKey: config.MinioAccessKey,
-    secretKey: config.MinioSecretKey
-  })
+  const storageConfiguration = storageConfigFromEnv()
+  const storageAdapter = buildStorageFromConfig(storageConfiguration, config.MongoURL)
 
   setMetadata(toolPlugin.metadata.UserAgent, config.ServiceID)
 

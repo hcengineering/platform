@@ -44,6 +44,7 @@
     "tar-stream": "^2.2.0",
     "@hcengineering/server-tool": "^0.6.0",
     "@hcengineering/server-core": "^0.6.1",
+    "@hcengineering/server-storage": "^0.6.0",
     "@hcengineering/server-backup": "^0.6.0",
     "@hcengineering/minio": "^0.6.0",
     "@hcengineering/server-token": "^0.6.7"

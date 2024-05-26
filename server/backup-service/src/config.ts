@@ -25,9 +25,7 @@ interface Config extends Omit<BackupConfig, 'Token'> {
   Timeout: number // Timeout in seconds
   BucketName: string
 
-  MinioEndpoint: string
-  MinioAccessKey: string
-  MinioSecretKey: string
+  MongoURL: string
 }
 
 const envMap: { [key in keyof Config]: string } = {
@@ -37,22 +35,11 @@ const envMap: { [key in keyof Config]: string } = {
   Secret: 'SECRET',
   BucketName: 'BUCKET_NAME',
   Interval: 'INTERVAL',
-  MinioEndpoint: 'MINIO_ENDPOINT',
-  MinioAccessKey: 'MINIO_ACCESS_KEY',
-  MinioSecretKey: 'MINIO_SECRET_KEY',
-  Timeout: 'TIMEOUT'
+  Timeout: 'TIMEOUT',
+  MongoURL: 'MONGO_URL'
 }
 
-const required: Array<keyof Config> = [
-  'TransactorURL',
-  'AccountsURL',
-  'Secret',
-  'ServiceID',
-  'BucketName',
-  'MinioEndpoint',
-  'MinioAccessKey',
-  'MinioSecretKey'
-]
+const required: Array<keyof Config> = ['TransactorURL', 'AccountsURL', 'Secret', 'ServiceID', 'BucketName', 'MongoURL']
 
 const config: Config = (() => {
   const params: Partial<Config> = {
@@ -62,10 +49,8 @@ const config: Config = (() => {
     BucketName: process.env[envMap.BucketName] ?? 'backups',
     ServiceID: process.env[envMap.ServiceID] ?? 'backup-service',
     Interval: parseInt(process.env[envMap.Interval] ?? '3600'),
-    MinioEndpoint: process.env[envMap.MinioEndpoint],
-    MinioAccessKey: process.env[envMap.MinioAccessKey],
-    MinioSecretKey: process.env[envMap.MinioSecretKey],
-    Timeout: parseInt(process.env[envMap.Timeout] ?? '3600')
+    Timeout: parseInt(process.env[envMap.Timeout] ?? '3600'),
+    MongoURL: process.env[envMap.MongoURL]
   }
 
   const missingEnv = required.filter((key) => params[key] === undefined).map((key) => envMap[key])

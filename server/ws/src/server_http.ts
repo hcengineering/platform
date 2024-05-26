@@ -419,12 +419,18 @@ function createWebsocketClientSocket (
             setImmediate(doSend)
             return
           }
-          ws.send(smsg, { binary: true, compress: compression }, (err) => {
-            if (err != null) {
-              reject(err)
+          try {
+            ws.send(smsg, { binary: true, compress: compression }, (err) => {
+              if (err != null) {
+                reject(err)
+              }
+              resolve()
+            })
+          } catch (err: any) {
+            if (err.message !== 'WebSocket is not open') {
+              ctx.error('send error', { err })
             }
-            resolve()
-          })
+          }
         }
         doSend()
       })
