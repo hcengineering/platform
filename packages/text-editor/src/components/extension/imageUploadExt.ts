@@ -118,11 +118,14 @@ export const ImageUploadExtension = Extension.create<ImageUploadOptions>({
             }
           },
           handleDrop (view, event) {
-            event.preventDefault()
-            event.stopPropagation()
             const dataTransfer = event.dataTransfer
             if (dataTransfer !== null) {
-              return handleDrop(view, view.posAtCoords({ left: event.x, top: event.y }), dataTransfer)
+              const res = handleDrop(view, view.posAtCoords({ left: event.x, top: event.y }), dataTransfer)
+              if (res === true) {
+                event.preventDefault()
+                event.stopPropagation()
+              }
+              return res
             }
           }
         }
