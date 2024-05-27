@@ -45,7 +45,7 @@ import {
   restore
 } from '@hcengineering/server-backup'
 import serverToken, { decodeToken, generateToken } from '@hcengineering/server-token'
-import toolPlugin from '@hcengineering/server-tool'
+import toolPlugin, { BlobClient } from '@hcengineering/server-tool'
 
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { program, type Command } from 'commander'
@@ -87,6 +87,7 @@ import { fixJsonMarkup } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { openAIConfig } from './openai'
 import { fixAccountEmails, renameAccount } from './renameAccount'
+import { readFileSync } from 'fs'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -831,6 +832,19 @@ export function devTool (
       }
     })
   })
+  program
+    .command('upload-file <workspace> <local> <remote> <contentType>')
+    .action(async (workspace: string, local: string, remote: string, contentType: string, cmd: any) => {
+      const { mongodbUri } = prepareTools()
+      await withStorage(mongodbUri, async (adapter) => {
+        const blobClient = new BlobClient(transactorUrl, {
+          name: workspace,
+          productId
+        })
+        const buffer = readFileSync(local)
+        await blobClient.upload(remote, buffer.length, contentType, buffer)
+      })
+    })
 
   program.command('fix-bw-workspace <workspace>').action(async (workspace: string) => {
     const { mongodbUri } = prepareTools()
