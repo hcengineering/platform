@@ -94,15 +94,13 @@ export async function createStorageDataAdapter (
   url: string,
   workspaceId: WorkspaceId,
   modelDb: ModelDb,
-  storage?: StorageAdapter
+  storage: StorageAdapter
 ): Promise<DbAdapter> {
   if (storage === undefined) {
     throw new Error('minio storage adapter require minio')
   }
   // We need to create bucket if it doesn't exist
-  if (storage !== undefined) {
-    await storage.make(ctx, workspaceId)
-  }
+  await storage.make(ctx, workspaceId)
   const blobAdapter = await createMongoAdapter(ctx, hierarchy, url, workspaceId, modelDb, undefined, {
     calculateHash: (d) => {
       return (d as Blob).etag
