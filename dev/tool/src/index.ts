@@ -78,8 +78,8 @@ import {
   fixMinioBW,
   fixSkills,
   optimizeModel,
-  restoreRecruitingTaskTypes,
-  restoreHrTaskTypesFromUpdates
+  restoreHrTaskTypesFromUpdates,
+  restoreRecruitingTaskTypes
 } from './clean'
 import { checkOrphanWorkspaces } from './cleanOrphan'
 import { changeConfiguration } from './configuration'
@@ -814,6 +814,23 @@ export function devTool (
         })
       })
     })
+  program.command('clean-empty-buckets').action(async (cmd: any) => {
+    const { mongodbUri } = prepareTools()
+    await withStorage(mongodbUri, async (adapter) => {
+      const buckets = await adapter.listBuckets(toolCtx, productId)
+      for (const ws of buckets) {
+        const l = await ws.list()
+        if ((await l.next()) === undefined) {
+          await l.close()
+          // No data, we could delete it.
+          console.log('Clean bucket', ws.name)
+          await ws.delete()
+        } else {
+          await l.close()
+        }
+      }
+    })
+  })
 
   program.command('fix-bw-workspace <workspace>').action(async (workspace: string) => {
     const { mongodbUri } = prepareTools()

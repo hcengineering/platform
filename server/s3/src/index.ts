@@ -37,7 +37,7 @@ import {
 } from '@hcengineering/server-core'
 import { Readable } from 'stream'
 
-import { removeAllObjects, type BlobLookupResult } from '@hcengineering/storage'
+import { removeAllObjects, type BlobLookupResult, type BucketInfo } from '@hcengineering/storage'
 import type { ReadableStream } from 'stream/web'
 
 export interface S3Config extends StorageConfig {
@@ -148,6 +148,27 @@ export class S3Service implements StorageAdapter {
     } catch (err: any) {
       ctx.error('error during create bucket', { err })
     }
+  }
+
+  async listBuckets (ctx: MeasureContext, productId: string): Promise<BucketInfo[]> {
+    const productPostfix = this.getBucketFolder({
+      name: '',
+      productId
+    })
+    const buckets = await this.client.listBuckets()
+    return (buckets.Buckets ?? [])
+      .filter((it) => it.Name !== undefined && it.Name.endsWith(productPostfix))
+      .map((it) => {
+        let name = it.Name ?? ''
+        name = name.slice(0, name.length - productPostfix.length)
+        return {
+          name,
+          delete: async () => {
+            await this.delete(ctx, { name, productId })
+          },
+          list: async () => await this.listStream(ctx, { name, productId })
+        }
+      })
   }
 
   getDocumentKey (workspace: WorkspaceId, name: string): string {

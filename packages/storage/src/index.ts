@@ -41,6 +41,12 @@ export interface BlobLookupResult {
   updates?: Map<Ref<Blob>, DocumentUpdate<BlobLookup>>
 }
 
+export interface BucketInfo {
+  name: string
+  delete: () => Promise<void>
+  list: () => Promise<BlobStorageIterator>
+}
+
 export interface StorageAdapter {
   initialize: (ctx: MeasureContext, workspaceId: WorkspaceId) => Promise<void>
 
@@ -50,6 +56,7 @@ export interface StorageAdapter {
   make: (ctx: MeasureContext, workspaceId: WorkspaceId) => Promise<void>
   delete: (ctx: MeasureContext, workspaceId: WorkspaceId) => Promise<void>
 
+  listBuckets: (ctx: MeasureContext, productId: string) => Promise<BucketInfo[]>
   remove: (ctx: MeasureContext, workspaceId: WorkspaceId, objectNames: string[]) => Promise<void>
   listStream: (ctx: MeasureContext, workspaceId: WorkspaceId, prefix?: string) => Promise<BlobStorageIterator>
   stat: (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string) => Promise<Blob | undefined>
@@ -93,6 +100,10 @@ export class DummyStorageAdapter implements StorageAdapter, StorageAdapterEx {
 
   async exists (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<boolean> {
     return false
+  }
+
+  async listBuckets (ctx: MeasureContext, productId: string): Promise<BucketInfo[]> {
+    return []
   }
 
   async make (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {}
@@ -184,4 +195,5 @@ export async function removeAllObjects (
     await storage.remove(ctx, workspaceId, bulk)
     bulk = []
   }
+  await iterator.close()
 }

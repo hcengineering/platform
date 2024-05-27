@@ -14,6 +14,7 @@ import { type RawDBAdapter } from '../adapter'
 import {
   type BlobLookupResult,
   type BlobStorageIterator,
+  type BucketInfo,
   type ListBlobResult,
   type StorageAdapter,
   type StorageAdapterEx,
@@ -87,6 +88,14 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
         await a.make(ctx, workspaceId)
       }
     }
+  }
+
+  async listBuckets (ctx: MeasureContext, productId: string): Promise<BucketInfo[]> {
+    const result: BucketInfo[] = []
+    for (const a of this.adapters.values()) {
+      result.push(...(await a.listBuckets(ctx, productId)))
+    }
+    return result
   }
 
   async delete (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {
