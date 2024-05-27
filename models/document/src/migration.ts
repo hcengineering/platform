@@ -14,7 +14,14 @@
 //
 
 import { type Attachment } from '@hcengineering/attachment'
-import { DOMAIN_TX, getCollaborativeDoc, type Class, type Doc, type Ref } from '@hcengineering/core'
+import {
+  DOMAIN_TX,
+  getCollaborativeDoc,
+  MeasureMetricsContext,
+  type Class,
+  type Doc,
+  type Ref
+} from '@hcengineering/core'
 import { type Document, type Teamspace } from '@hcengineering/document'
 import {
   tryMigrate,
@@ -27,6 +34,7 @@ import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 import { type Asset } from '@hcengineering/platform'
 
 import document, { documentId, DOMAIN_DOCUMENT } from './index'
+import { loadCollaborativeDoc, saveCollaborativeDoc, yDocCopyXmlField } from '@hcengineering/collaboration'
 
 async function migrateCollaborativeContent (client: MigrationClient): Promise<void> {
   const attachedFiles = await client.find<Attachment>(DOMAIN_ATTACHMENT, {
@@ -265,6 +273,36 @@ async function migrateTeamspacesMixins (client: MigrationClient): Promise<void> 
   )
 }
 
+async function migrateContentField (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('migrate_content_field', {})
+
+  const storage = client.storageAdapter
+  if (storage === undefined) {
+    return
+  }
+
+  const documents = await client.find<Document>(DOMAIN_DOCUMENT, {
+    content: { $exists: true }
+  })
+
+  for (const document of documents) {
+    try {
+      const ydoc = await loadCollaborativeDoc(storage, client.workspaceId, document.content, ctx)
+      if (ydoc === undefined) {
+        continue
+      }
+
+      if (!ydoc.share.has('')) {
+        continue
+      }
+
+      yDocCopyXmlField(ydoc, '', 'content')
+
+      await saveCollaborativeDoc(storage, client.workspaceId, document.content, ydoc, ctx)
+    } catch {}
+  }
+}
+
 export const documentOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, documentId, [
@@ -296,15 +334,15 @@ export const documentOperation: MigrateOperation = {
       },
       {
         state: 'migrate-timespaces',
-        func: async (client) => {
-          await migrateTeamspaces(client)
-        }
+        func: migrateTeamspaces
       },
       {
         state: 'migrate-teamspaces-mixins',
-        func: async (client) => {
-          await migrateTeamspacesMixins(client)
-        }
+        func: migrateTeamspacesMixins
+      },
+      {
+        state: 'migrateContentField',
+        func: migrateContentField
       }
     ])
   },

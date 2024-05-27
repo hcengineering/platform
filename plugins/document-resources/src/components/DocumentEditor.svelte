@@ -93,6 +93,7 @@
   objectClass={object._class}
   objectId={object._id}
   objectAttr="content"
+  field="content"
   {user}
   {userComponent}
   {focusIndex}

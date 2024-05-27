@@ -30,7 +30,7 @@
 
   export let collaborativeDoc: CollaborativeDoc
   export let initialCollaborativeDoc: CollaborativeDoc | undefined = undefined
-  export let field: string | undefined = undefined
+  export let field: string
 
   export let objectClass: Ref<Class<Doc>> | undefined = undefined
   export let objectId: Ref<Doc> | undefined = undefined
