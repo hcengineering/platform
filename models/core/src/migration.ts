@@ -178,6 +178,9 @@ async function migrateBlobData (exAdapter: StorageAdapterEx, client: MigrationCl
   const ctx = new MeasureMetricsContext('storage_upgrade', {})
 
   for (const [provider, adapter] of exAdapter.adapters?.entries() ?? []) {
+    if (!(await adapter.exists(ctx, client.workspaceId))) {
+      continue
+    }
     const blobs = await adapter.listStream(ctx, client.workspaceId, '')
     const bulk = new Map<Ref<Blob>, Blob>()
     try {

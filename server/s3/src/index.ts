@@ -225,7 +225,7 @@ export class S3Service implements StorageAdapter {
             }
           }
         } catch (err: any) {
-          console.error(err)
+          ctx.error('Failed to get list', { error: err, workspaceId: workspaceId.name, prefix })
         }
 
         if (buffer.length > 0) {
