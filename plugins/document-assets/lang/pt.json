@@ -50,6 +50,8 @@
     "ReassignToDo": "Alterar responsável pela tarefa",
     "ReassignToDoConfirm": "Você deseja alterar o responsável pela tarefa? A tarefa será removida do planejamento atual do responsável.",
     "Icon": "Ícone",
-    "Color": "Cor"
+    "Color": "Cor",
+    "RoleLabel": "Papel: {role}",
+    "Embeddings": "Incorporações"
   }
 }

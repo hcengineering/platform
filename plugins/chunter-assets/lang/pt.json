@@ -106,6 +106,8 @@
     "StarChannel": "Colocar em destaque o canal",
     "StarConversation": "Colocar em destaque a conversa",
     "UnstarChannel": "Remover destaque do canal",
-    "UnstarConversation": "Remover destaque da conversa"
+    "UnstarConversation": "Remover destaque da conversa",
+    "JoinChannelHeader": "Clique em \"Participar\" para começar.",
+    "JoinChannelText": "Depois de entrar, você poderá ler todas as mensagens e contribuir na discussão."
   }
 }

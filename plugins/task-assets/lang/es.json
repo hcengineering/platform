@@ -96,6 +96,8 @@
     "Color": "Color",
     "Identifier": "Identificador",
     "RenameStatus": "Renombra un estado a un nuevo nombre",
-    "UpdateTasksStatusRequest": "El estado se usa con {total} tareas, se requerirá la actualización de todas ellas. Por favor, apruebe."
+    "UpdateTasksStatusRequest": "El estado se usa con {total} tareas, se requerirá la actualización de todas ellas. Por favor, apruebe.",
+    "TaskTypes": "Tipos de Tareas",
+    "Collections": "Colecciones"
   }
 }

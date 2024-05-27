@@ -1,5 +1,25 @@
 {
   "string": {
-    "Storage": "Armazenagem"
+    "Drive": "Unidade",
+    "Drives": "Unidades",
+    "File": "Ficheiro",
+    "Folder": "Pasta",
+    "Resource": "Recurso",
+    "Name": "Nome",
+    "Description": "Descrição",
+    "Size": "Tamanho",
+    "Type": "Tipo",
+    "LastModified": "Última modificação",
+    "Parent": "Pai",
+    "Path": "Caminho",
+    "Download": "Descarregar",
+    "CreateDrive": "Criar unidade",
+    "CreateFolder": "Criar pasta",
+    "UploadFile": "Carregar ficheiro",
+    "UploadFolder": "Carregar pasta",
+    "EditDrive": "Editar unidade",
+    "Rename": "Renomear",
+    "RoleLabel": "Papel",
+    "Root": "/"
   }
 }

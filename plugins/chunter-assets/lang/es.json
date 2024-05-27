@@ -106,6 +106,8 @@
     "StarChannel": "Marcar canal",
     "StarConversation": "Marcar conversación",
     "UnstarChannel": "Desmarcar canal",
-    "UnstarConversation": "Desmarcar conversación"
+    "UnstarConversation": "Desmarcar conversación",
+    "JoinChannelHeader": "Haga clic en \"Unirse\" para comenzar.",
+    "JoinChannelText": "Una vez que se haya unido, podrá leer todos los mensajes y contribuir a la discusión."
   }
 }

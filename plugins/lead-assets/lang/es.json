@@ -32,6 +32,8 @@
     "UnAssign": "Desasignar",
     "ConfigLabel": "CRM",
     "ConfigDescription": "Extensión para la gestión de las relaciones con los Clientes",
-    "EditFunnel": "Editar Embudo"
+    "EditFunnel": "Editar Embudo",
+    "FunnelMembers": "Miembros",
+    "RoleLabel": "Role: {role}"
   }
 }

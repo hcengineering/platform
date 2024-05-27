@@ -37,6 +37,11 @@
     "Mentioned": "Mencionado",
     "You": "Tú",
     "Mentions": "Menciones",
-    "MentionedYouIn": "Has sido Mencionado en {title}"
+    "MentionedYouIn": "Has sido Mencionado en {title}",
+    "Messages": "Mensajes",
+    "Thread": "Tópico",
+    "AddReaction": "Adicionar Reacción",
+    "SaveForLater": "Guardar para mas tarde",
+    "RemoveFromLater": "Remover de los Guardados"
   }
 }

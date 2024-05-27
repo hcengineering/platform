@@ -50,6 +50,8 @@
     "ReassignToDo": "Cambiar asignado de la tarea",
     "ReassignToDoConfirm": "¿Desea cambiar el asignado de la tarea? La tarea será removida del planificador actual del asignado.",
     "Icon": "Icono",
-    "Color": "Color"
+    "Color": "Color",
+    "RoleLabel": "Role: {role}",
+    "Embeddings": "Incrustaciones"
   }
 }

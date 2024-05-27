@@ -269,7 +269,8 @@
     "MapRelatedIssues": "Configurar projetos padrão de problemas relacionados",
     "DefaultIssueStatus": "Estado padrão do problema",
     "IssueStatus": "Estado",
-    "Extensions": "Extensions"
+    "Extensions": "Extensions",
+    "RoleLabel": "Cargo: {role}"
   },
   "status": {}
 }
