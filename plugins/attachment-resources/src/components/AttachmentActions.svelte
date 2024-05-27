@@ -14,21 +14,31 @@
 -->
 <script lang="ts">
   import { type Attachment } from '@hcengineering/attachment'
-  import { getResource } from '@hcengineering/platform'
+  import { getResource, getEmbeddedLabel } from '@hcengineering/platform'
   import {
     FilePreviewPopup,
-    getFileUrl,
     previewTypes,
     canPreviewFile,
-    getPreviewAlignment
+    getPreviewAlignment,
+    getBlobHref
   } from '@hcengineering/presentation'
-  import { Action as UIAction, ActionIcon, IconMoreH, IconOpen, Menu, closeTooltip, showPopup } from '@hcengineering/ui'
+  import {
+    Action as UIAction,
+    ActionIcon,
+    IconMoreH,
+    IconOpen,
+    Menu,
+    closeTooltip,
+    showPopup,
+    tooltip
+  } from '@hcengineering/ui'
   import view, { Action } from '@hcengineering/view'
 
   import attachmentPlugin from '../plugin'
   import FileDownload from './icons/FileDownload.svelte'
+  import type { WithLookup } from '@hcengineering/core'
 
-  export let attachment: Attachment
+  export let attachment: WithLookup<Attachment>
   export let isSaved = false
   export let removable = false
 
@@ -61,7 +71,7 @@
     showPopup(
       FilePreviewPopup,
       {
-        file: attachment.file,
+        file: attachment.$lookup?.file ?? attachment.file,
         name: attachment.name,
         contentType: attachment.type ?? '',
         metadata: attachment.metadata
@@ -123,9 +133,10 @@
 <div class="flex">
   <a
     class="mr-1 flex-row-center gap-2 p-1"
-    href={getFileUrl(attachment.file, 'full', attachment.name)}
+    href={getBlobHref(attachment.$lookup?.file, attachment.file, attachment.name)}
     download={attachment.name}
     bind:this={download}
+    use:tooltip={{ label: getEmbeddedLabel(attachment.name) }}
     on:click|stopPropagation
   >
     {#if canPreview}

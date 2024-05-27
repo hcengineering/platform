@@ -43,7 +43,6 @@ import core, {
   type SearchOptions,
   type SearchQuery,
   type SearchResult,
-  type ServerStorage,
   type SessionOperationContext,
   type StorageIterator,
   type Timestamp,
@@ -69,6 +68,7 @@ import { type Triggers } from '../triggers'
 import type {
   FullTextAdapter,
   ObjectDDParticipant,
+  ServerStorage,
   ServerStorageOptions,
   SessionContext,
   TriggerControl
@@ -108,7 +108,7 @@ export class TServerStorage implements ServerStorage {
     readonly storageAdapter: StorageAdapter,
     private readonly serviceAdaptersManager: ServiceAdaptersManager,
     readonly modelDb: ModelDb,
-    private readonly workspace: WorkspaceIdWithUrl,
+    readonly workspaceId: WorkspaceIdWithUrl,
     readonly indexFactory: (storage: ServerStorage) => FullTextIndex,
     readonly options: ServerStorageOptions,
     readonly metrics: MeasureContext,
@@ -702,7 +702,7 @@ export class TServerStorage implements ServerStorage {
 
     const triggerControl: Omit<TriggerControl, 'txFactory' | 'ctx' | 'result'> = {
       removedMap,
-      workspace: this.workspace,
+      workspace: this.workspaceId,
       storageAdapter: this.storageAdapter,
       serviceAdaptersManager: this.serviceAdaptersManager,
       findAll: fAll(ctx.ctx),
@@ -739,7 +739,8 @@ export class TServerStorage implements ServerStorage {
               sctx.userEmail,
               sctx.sessionId,
               sctx.admin,
-              []
+              [],
+              this.workspaceId
             )
             const result = await performAsync(applyCtx)
             // We need to broadcast changes

@@ -26,7 +26,6 @@ import {
   type SearchOptions,
   type SearchQuery,
   type SearchResult,
-  type ServerStorage,
   type StorageIterator,
   type Tx,
   type TxResult
@@ -38,6 +37,7 @@ import {
   type Middleware,
   type MiddlewareCreator,
   type Pipeline,
+  type ServerStorage,
   type SessionContext
 } from './types'
 

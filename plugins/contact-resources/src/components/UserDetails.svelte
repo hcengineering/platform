@@ -37,7 +37,7 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="flex-row-center" on:click>
   <Avatar
-    avatar={person.avatar}
+    {person}
     size={avatarSize}
     name={person.name}
     on:accent-color

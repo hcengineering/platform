@@ -76,6 +76,12 @@ export interface RawDBAdapter {
     options?: Omit<FindOptions<T>, 'projection' | 'lookup'>
   ) => Promise<RawDBAdapterStream<T>>
   upload: <T extends Doc>(ctx: MeasureContext, workspace: WorkspaceId, domain: Domain, docs: T[]) => Promise<void>
+  update: <T extends Doc>(
+    ctx: MeasureContext,
+    workspace: WorkspaceId,
+    domain: Domain,
+    docs: Map<Ref<T>, DocumentUpdate<T>>
+  ) => Promise<void>
   clean: <T extends Doc>(ctx: MeasureContext, workspace: WorkspaceId, domain: Domain, docs: Ref<T>[]) => Promise<void>
   close: () => Promise<void>
 }

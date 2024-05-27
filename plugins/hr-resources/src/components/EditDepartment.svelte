@@ -37,9 +37,7 @@
       await avatarEditor.removeAvatar(object.avatar)
     }
     const avatar = await avatarEditor.createAvatar()
-    await client.updateDoc(object._class, object.space, object._id, {
-      avatar
-    })
+    await client.diffUpdate(object, avatar)
   }
 
   async function nameChange (): Promise<void> {
@@ -73,7 +71,7 @@
     <div class="mr-8">
       {#key object}
         <EditableAvatar
-          avatar={object.avatar}
+          person={object}
           size={'x-large'}
           icon={hr.icon.Department}
           bind:this={avatarEditor}

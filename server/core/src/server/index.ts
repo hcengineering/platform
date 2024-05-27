@@ -26,9 +26,7 @@ import core, {
   type IndexingUpdateEvent,
   type MeasureContext,
   type Ref,
-  type ServerStorage,
-  type TxWorkspaceEvent,
-  type WorkspaceId
+  type TxWorkspaceEvent
 } from '@hcengineering/core'
 import { type DbAdapter, type TxAdapter } from '../adapter'
 import { type DbConfiguration } from '../configuration'
@@ -36,9 +34,9 @@ import { createContentAdapter } from '../content'
 import { FullTextIndex } from '../fulltext'
 import { FullTextIndexPipeline } from '../indexer'
 import { createServiceAdaptersManager } from '../service'
-import { type StorageAdapter } from '../storage'
+import { DummyStorageAdapter, type StorageAdapter } from '../storage'
 import { Triggers } from '../triggers'
-import { type ServerStorageOptions } from '../types'
+import { type ServerStorage, type ServerStorageOptions } from '../types'
 import { DomainIndexHelperImpl } from './domainHelper'
 import { TServerStorage } from './storage'
 
@@ -189,28 +187,7 @@ export async function createServerStorage (
  * @public
  */
 export function createNullStorageFactory (): StorageAdapter {
-  return {
-    initialize: async (ctx, workspaceId) => {},
-    exists: async (ctx, workspaceId: WorkspaceId) => {
-      return false
-    },
-    make: async (ctx, workspaceId: WorkspaceId) => {},
-    remove: async (ctx, workspaceId: WorkspaceId, objectNames: string[]) => {},
-    delete: async (ctx, workspaceId: WorkspaceId) => {},
-    listStream: async (ctx, workspaceId, prefix) => {
-      return {
-        next: async () => undefined,
-        close: async () => {}
-      }
-    },
-    stat: async (ctx, workspaceId: WorkspaceId, objectName: string) => ({}) as any,
-    get: async (ctx, workspaceId: WorkspaceId, objectName: string) => ({}) as any,
-    put: async (ctx, workspaceId: WorkspaceId, objectName: string, stream: any, contentType: string, size?: number) =>
-      ({}) as any,
-    read: async (ctx, workspaceId: WorkspaceId, name: string) => ({}) as any,
-    partial: async (ctx, workspaceId: WorkspaceId, objectName: string, offset: number, length?: number) => ({}) as any,
-    close: async () => {}
-  }
+  return new DummyStorageAdapter()
 }
 
 export { AggregatorStorageAdapter, buildStorage } from './aggregator'

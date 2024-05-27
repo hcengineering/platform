@@ -14,24 +14,26 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import filesize from 'filesize'
-  import { createEventDispatcher } from 'svelte'
   import type { Attachment } from '@hcengineering/attachment'
-  import core from '@hcengineering/core'
-  import { showPopup, closeTooltip, Label, getIconSize2x, Loading } from '@hcengineering/ui'
+  import core, { type WithLookup } from '@hcengineering/core'
   import presentation, {
     FilePreviewPopup,
     canPreviewFile,
-    getFileUrl,
+    getBlobHref,
+    getBlobSrcSet,
     getPreviewAlignment,
-    previewTypes
+    previewTypes,
+    sizeToWidth
   } from '@hcengineering/presentation'
+  import { Label, closeTooltip, showPopup } from '@hcengineering/ui'
   import { permissionsStore } from '@hcengineering/view-resources'
+  import filesize from 'filesize'
+  import { createEventDispatcher } from 'svelte'
   import { getType } from '../utils'
 
   import AttachmentName from './AttachmentName.svelte'
 
-  export let value: Attachment | undefined
+  export let value: WithLookup<Attachment> | undefined
   export let removable: boolean = false
   export let showPreview = false
   export let preview = false
@@ -82,7 +84,7 @@
     showPopup(
       FilePreviewPopup,
       {
-        file: value.file,
+        file: value.$lookup?.file ?? value.file,
         name: value.name,
         contentType: value.type,
         metadata: value.metadata
@@ -100,24 +102,6 @@
 
   let download: HTMLAnchorElement
 
-  $: imgStyle = getImageStyle(value)
-
-  function getImageStyle (value?: Attachment): string {
-    if (value === undefined) return ''
-
-    return isImage(value.type)
-      ? `background-image: url(${getFileUrl(value.file, 'large')});
-       background-image: -webkit-image-set(
-        ${getFileUrl(value.file, 'large')} 1x,
-        ${getFileUrl(value.file, getIconSize2x('large'))} 2x
-      );
-      background-image: image-set(
-        ${getFileUrl(value.file, 'large')} 1x,
-        ${getFileUrl(value.file, getIconSize2x('large'))} 2x
-      );`
-      : ''
-  }
-
   function dragStart (event: DragEvent): void {
     if (value === undefined) return
     event.dataTransfer?.setData('application/contentType', value.type)
@@ -132,25 +116,21 @@
       <a
         class="no-line"
         style:flex-shrink={0}
-        href={getFileUrl(value.file, 'full', value.name)}
+        href={getBlobHref(value.$lookup?.file, value.file, value.name)}
         download={value.name}
         on:click={clickHandler}
         on:mousedown={middleClickHandler}
         on:dragstart={dragStart}
       >
-        {#if showPreview}
-          <div
+        {#if showPreview && isImage(value.type)}
+          <img
+            src={getBlobHref(value.$lookup?.file, value.file)}
+            srcset={getBlobSrcSet(value.$lookup?.file, value.file, sizeToWidth('large'))}
             class="flex-center icon"
             class:svg={value.type === 'image/svg+xml'}
             class:image={isImage(value.type)}
-            style={imgStyle}
-          >
-            {#if progress}
-              <div class="flex p-3">
-                <Loading />
-              </div>
-            {:else if !isImage(value.type)}{iconLabel(value.name)}{/if}
-          </div>
+            alt={value.name}
+          />
         {:else}
           <div class="flex-center icon">
             {iconLabel(value.name)}
@@ -160,7 +140,7 @@
       <div class="flex-col info-container">
         <div class="name">
           <a
-            href={getFileUrl(value.file, 'full', value.name)}
+            href={getBlobHref(value.$lookup?.file, value.file, value.name)}
             download={value.name}
             on:click={clickHandler}
             on:mousedown={middleClickHandler}
@@ -174,7 +154,7 @@
             <span>•</span>
             <a
               class="no-line colorInherit"
-              href={getFileUrl(value.file, 'full', value.name)}
+              href={getBlobHref(value.$lookup?.file, value.file, value.name)}
               download={value.name}
               bind:this={download}
             >

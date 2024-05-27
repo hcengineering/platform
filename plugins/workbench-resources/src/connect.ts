@@ -14,16 +14,23 @@ import core, {
 } from '@hcengineering/core'
 import login, { loginId } from '@hcengineering/login'
 import { addEventListener, broadcastEvent, getMetadata, getResource, setMetadata } from '@hcengineering/platform'
-import presentation, { closeClient, purgeClient, refreshClient, setClient } from '@hcengineering/presentation'
+import presentation, {
+  closeClient,
+  purgeClient,
+  refreshClient,
+  setClient,
+  setPresentationCookie
+} from '@hcengineering/presentation'
 import {
   fetchMetadataLocalStorage,
   getCurrentLocation,
   locationStorageKeyId,
   navigate,
   networkStatus,
-  setMetadataLocalStorage
+  setMetadataLocalStorage,
+  workspaceId
 } from '@hcengineering/ui'
-import { writable } from 'svelte/store'
+import { writable, get } from 'svelte/store'
 import plugin from './plugin'
 import { workspaceCreating } from './utils'
 
@@ -97,8 +104,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     }
   }
 
-  document.cookie =
-    encodeURIComponent(presentation.metadata.Token.replaceAll(':', '-')) + '=' + encodeURIComponent(token) + '; path=/'
+  setPresentationCookie(token, get(workspaceId))
 
   const endpoint = fetchMetadataLocalStorage(login.metadata.LoginEndpoint)
   const email = fetchMetadataLocalStorage(login.metadata.LoginEmail)
@@ -344,8 +350,7 @@ function clearMetadata (ws: string): void {
   }
   setMetadata(presentation.metadata.Token, null)
   setMetadataLocalStorage(login.metadata.LastToken, null)
-  document.cookie =
-    encodeURIComponent(presentation.metadata.Token.replaceAll(':', '-')) + '=' + encodeURIComponent('') + '; path=/'
+  setPresentationCookie('', get(workspaceId))
   setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
   setMetadataLocalStorage(login.metadata.LoginEmail, null)
   void closeClient()

@@ -15,7 +15,7 @@
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
   import contact from '@hcengineering/contact'
-  import { Account, Doc, Ref, generateId } from '@hcengineering/core'
+  import { Account, Doc, Ref, generateId, type Blob } from '@hcengineering/core'
   import { IntlString, getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { KeyedAttribute, createQuery, getClient, uploadFile } from '@hcengineering/presentation'
   import { getCollaborationUser, getObjectLinkFragment } from '@hcengineering/view-resources'
@@ -132,7 +132,7 @@
     progress = false
   }
 
-  async function createAttachment (file: File): Promise<{ file: string, type: string } | undefined> {
+  async function createAttachment (file: File): Promise<{ file: Ref<Blob>, type: string } | undefined> {
     try {
       const uuid = await uploadFile(file)
       const _id: Ref<Attachment> = generateId()

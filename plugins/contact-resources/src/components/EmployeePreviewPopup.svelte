@@ -60,7 +60,7 @@
 >
   {#if employee}
     <div class="flex-col-center pb-2">
-      <Avatar size={'x-large'} avatar={employee.avatar} name={employee.name} />
+      <Avatar size={'x-large'} person={employee} name={employee.name} />
     </div>
     <div class="pb-2">{getName(client.getHierarchy(), employee)}</div>
     <DocNavLink object={employee}>

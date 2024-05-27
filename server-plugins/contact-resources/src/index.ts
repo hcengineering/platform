@@ -133,24 +133,11 @@ export async function OnContactDelete (
     return []
   }
 
-  const avatar: string | undefined = [removeContact.avatar].filter((x): x is string => x !== undefined).slice(-1)[0]
-
-  if (avatar === undefined) {
+  if (removeContact.avatar == null) {
     return []
   }
 
-  if (avatar?.includes('://') && !avatar?.startsWith('image://')) {
-    return []
-  }
-  if (avatar === '') {
-    return []
-  }
-
-  await storageAdapter.remove(ctx, workspace, [avatar])
-
-  if (avatar != null) {
-    await removeAllObjects(ctx, storageAdapter, workspace, avatar)
-  }
+  await removeAllObjects(ctx, storageAdapter, workspace, removeContact.avatar)
 
   const result: Tx[] = []
 

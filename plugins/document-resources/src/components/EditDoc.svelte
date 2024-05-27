@@ -16,7 +16,7 @@
 -->
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
-  import core, { Doc, Ref, WithLookup, generateId } from '@hcengineering/core'
+  import core, { Doc, Ref, WithLookup, generateId, type Blob } from '@hcengineering/core'
   import { Document } from '@hcengineering/document'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
@@ -102,7 +102,7 @@
     isStarred = res.length !== 0
   })
 
-  async function createEmbedding (file: File): Promise<{ file: string, type: string } | undefined> {
+  async function createEmbedding (file: File): Promise<{ file: Ref<Blob>, type: string } | undefined> {
     if (doc === undefined) {
       return undefined
     }

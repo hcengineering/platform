@@ -23,7 +23,7 @@
     personByIdStore,
     SystemAvatar
   } from '@hcengineering/contact-resources'
-  import core, { Account, Doc, Ref, Timestamp } from '@hcengineering/core'
+  import core, { Account, Doc, Ref, Timestamp, type WithLookup } from '@hcengineering/core'
   import { Icon, Label, resizeObserver, TimeSince, tooltip } from '@hcengineering/ui'
   import { Asset, getEmbeddedLabel, IntlString } from '@hcengineering/platform'
   import activity, { ActivityMessage, ActivityMessagePreviewType } from '@hcengineering/activity'
@@ -47,7 +47,7 @@
   const limit = 300
 
   let isActionsOpened = false
-  let person: Person | undefined = undefined
+  let person: WithLookup<Person> | undefined = undefined
 
   let width: number
 
@@ -59,7 +59,7 @@
     _id: Ref<Account> | undefined,
     accountById: Map<Ref<PersonAccount>, PersonAccount>,
     personById: Map<Ref<Person>, Person>
-  ): Person | undefined {
+  ): WithLookup<Person> | undefined {
     if (_id === undefined) {
       return undefined
     }
@@ -116,7 +116,7 @@
           {#if headerObject}
             <Icon icon={headerIcon ?? classIcon(client, headerObject._class) ?? activity.icon.Activity} size="small" />
           {:else if person}
-            <Avatar size="card" avatar={person.avatar} name={person.name} />
+            <Avatar size="card" {person} name={person.name} />
           {:else}
             <SystemAvatar size="card" />
           {/if}

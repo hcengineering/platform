@@ -14,19 +14,20 @@
 -->
 <script lang="ts">
   import type { Attachment } from '@hcengineering/attachment'
-  import { getFileUrl } from '@hcengineering/presentation'
+  import { getBlobHref, getFileUrl } from '@hcengineering/presentation'
   import { CircleButton, Progress } from '@hcengineering/ui'
   import Play from './icons/Play.svelte'
   import Pause from './icons/Pause.svelte'
+  import type { WithLookup } from '@hcengineering/core'
 
-  export let value: Attachment
+  export let value: WithLookup<Attachment>
   export let fullSize = false
 
   let time = 0
   let duration = Number.POSITIVE_INFINITY
   let paused = true
 
-  function buttonClick () {
+  function buttonClick (): void {
     paused = !paused
   }
 
@@ -47,7 +48,7 @@
   </div>
 </div>
 <audio bind:duration bind:currentTime={time} bind:paused>
-  <source src={getFileUrl(value.file, 'full', value.name)} type={value.type} />
+  <source src={getBlobHref(value.$lookup?.file, value.file, value.name)} type={value.type} />
 </audio>
 
 <style lang="scss">

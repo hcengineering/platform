@@ -22,6 +22,7 @@ import core, {
   type AnyAttribute,
   type ArrOf,
   type AttachedDoc,
+  type BlobLookup,
   type Class,
   type Client,
   type Collection,
@@ -34,23 +35,25 @@ import core, {
   type MeasureDoneOperation,
   type Mixin,
   type Obj,
+  type Blob as PlatformBlob,
   type Ref,
   type RefTo,
   type SearchOptions,
   type SearchQuery,
   type SearchResult,
+  type Space,
   type Tx,
   type TxResult,
   type TypeAny,
-  type WithLookup,
-  type Space
+  type WithLookup
 } from '@hcengineering/core'
 import { getMetadata, getResource } from '@hcengineering/platform'
 import { LiveQuery as LQ } from '@hcengineering/query'
-import { type AnyComponent, type AnySvelteComponent, type IconSize } from '@hcengineering/ui'
+import { workspaceId, type AnyComponent, type AnySvelteComponent } from '@hcengineering/ui'
 import view, { type AttributeCategory, type AttributeEditor } from '@hcengineering/view'
 import { deepEqual } from 'fast-equals'
 import { onDestroy } from 'svelte'
+import { get } from 'svelte/store'
 import { type KeyedAttribute } from '..'
 import { OptimizeQueryMiddleware, PresentationPipelineImpl, type PresentationPipeline } from './pipeline'
 import plugin from './plugin'
@@ -357,19 +360,117 @@ export function createQuery (dontDestroy?: boolean): LiveQuery {
   return new LiveQuery(dontDestroy)
 }
 
+function getSrcSet (_blob: PlatformBlob, width?: number): string {
+  let result = ''
+  const blob = _blob as BlobLookup
+
+  if (blob.previewUrl === undefined) {
+    return ''
+  }
+  for (const f of blob.previewFormats ?? []) {
+    if (result.length > 0) {
+      result += ', '
+    }
+    const fu = blob.previewUrl.replaceAll(':format', f)
+    if (width !== undefined) {
+      result +=
+        fu.replaceAll(':size', `${width}`) +
+        ', ' +
+        fu.replaceAll(':size', `${width * 2}`) +
+        ', ' +
+        fu.replaceAll(':size', `${width * 3}`)
+    } else {
+      result += fu.replaceAll(':size', `${-1}`)
+    }
+  }
+  return result
+}
+
 /**
  * @public
  */
-export function getFileUrl (file: string, size: IconSize = 'full', filename?: string): string {
+export function getFileUrlSrcSet (
+  file: Ref<PlatformBlob>,
+  width?: number,
+  formats: string[] = supportedFormats
+): string {
   if (file.includes('://')) {
     return file
   }
   const uploadUrl = getMetadata(plugin.metadata.UploadURL)
 
-  if (filename !== undefined) {
-    return `${uploadUrl as string}/${filename}?file=${file}&size=${size as string}`
+  let result = ''
+
+  for (const f of formats) {
+    if (result.length > 0) {
+      result += ', '
+    }
+    if (width !== undefined) {
+      const fu = `${uploadUrl as string}/${get(workspaceId)}?file=${file}.${f}&size=:size`
+      result +=
+        fu.replaceAll(':size', `${width}`) +
+        ', ' +
+        fu.replaceAll(':size', `${width * 2}`) +
+        ', ' +
+        fu.replaceAll(':size', `${width * 3}`)
+    } else {
+      result += `${uploadUrl as string}/${get(workspaceId)}?file=${file}.${f}`
+    }
   }
-  return `${uploadUrl as string}?file=${file}&size=${size as string}`
+  return result
+}
+
+export function getBlobHref (_blob: PlatformBlob | undefined, file: Ref<PlatformBlob>, filename?: string): string {
+  const blob = _blob as BlobLookup
+  return blob?.downloadUrl ?? getFileUrl(file, filename)
+}
+
+export function getBlobSrcSet (_blob: PlatformBlob | undefined, file: Ref<PlatformBlob>, width?: number): string {
+  return _blob !== undefined ? getSrcSet(_blob, width) : getFileUrlSrcSet(file, width)
+}
+
+/**
+ * @public
+ */
+export function getFileUrl (file: Ref<PlatformBlob>, filename?: string): string {
+  if (file.includes('://')) {
+    return file
+  }
+  const uploadUrl = getMetadata(plugin.metadata.UploadURL)
+  if (filename !== undefined) {
+    return `${uploadUrl as string}/${get(workspaceId)}/${encodeURIComponent(filename)}?file=${file}`
+  }
+  return `${uploadUrl as string}/${get(workspaceId)}?file=${file}`
+}
+
+type SupportedFormat = 'jpeg' | 'avif' | 'heif' | 'webp' | 'png'
+const supportedFormats: SupportedFormat[] = ['avif', 'webp', 'heif', 'jpeg', 'png']
+
+export function sizeToWidth (size: string): number | undefined {
+  let width: number | undefined
+  switch (size) {
+    case 'inline':
+    case 'tiny':
+    case 'card':
+    case 'x-small':
+    case 'smaller':
+    case 'small':
+      width = 32
+      break
+    case 'medium':
+      width = 64
+      break
+    case 'large':
+      width = 256
+      break
+    case 'x-large':
+      width = 512
+      break
+    case '2x-large':
+      width = 1024
+      break
+  }
+  return width
 }
 
 /**
@@ -560,4 +661,15 @@ export function isAdminUser (): boolean {
 
 export function isSpace (space: Doc): space is Space {
   return getClient().getHierarchy().isDerived(space._class, core.class.Space)
+}
+
+export function setPresentationCookie (token: string, workspaceId: string): void {
+  function setToken (path: string): void {
+    document.cookie =
+      encodeURIComponent(plugin.metadata.Token.replaceAll(':', '-')) +
+      '=' +
+      encodeURIComponent(token) +
+      `; path=${path}`
+  }
+  setToken('/files/' + workspaceId)
 }

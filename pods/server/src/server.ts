@@ -22,13 +22,13 @@ import {
   DOMAIN_TRANSIENT,
   DOMAIN_TX,
   type MeasureContext,
-  type ServerStorage,
   type WorkspaceId
 } from '@hcengineering/core'
 import { createElasticAdapter, createElasticBackupDataAdapter } from '@hcengineering/elastic'
 import {
   ConfigurationMiddleware,
   LookupMiddleware,
+  BlobLookupMiddleware,
   ModifiedMiddleware,
   PrivateMiddleware,
   QueryJoinMiddleware,
@@ -68,7 +68,8 @@ import {
   type MiddlewareCreator,
   type Pipeline,
   type StorageAdapter,
-  type StorageConfiguration
+  type StorageConfiguration,
+  type ServerStorage
 } from '@hcengineering/server-core'
 import { serverDocumentId } from '@hcengineering/server-document'
 import { serverGmailId } from '@hcengineering/server-gmail'
@@ -232,6 +233,7 @@ export function start (
 
   const middlewares: MiddlewareCreator[] = [
     LookupMiddleware.create,
+    BlobLookupMiddleware.create,
     ModifiedMiddleware.create,
     PrivateMiddleware.create,
     SpaceSecurityMiddleware.create,

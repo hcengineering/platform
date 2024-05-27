@@ -31,7 +31,6 @@ import core, {
   SearchOptions,
   SearchQuery,
   SearchResult,
-  ServerStorage,
   Space,
   Tx,
   TxCUD,
@@ -45,7 +44,7 @@ import core, {
   systemAccountEmail
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
+import { Middleware, SessionContext, TxMiddlewareResult, type ServerStorage } from '@hcengineering/server-core'
 import { BaseMiddleware } from './base'
 import { getUser, isOwner, isSystem, mergeTargets } from './utils'
 

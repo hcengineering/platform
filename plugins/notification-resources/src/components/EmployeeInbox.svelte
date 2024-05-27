@@ -181,7 +181,7 @@
 <div class="flex-between header bottom-divider">
   <div class="flex-row-center">
     {#if employee}
-      <Avatar size={'smaller'} avatar={employee.avatar} name={employee.name} />
+      <Avatar size={'smaller'} person={employee} name={employee.name} />
       <span class="font-medium mx-2">{getName(client.getHierarchy(), employee)}</span>
     {/if}
     {#if newTxes > 0}

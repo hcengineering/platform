@@ -11,6 +11,9 @@ dependencies:
   '@aws-sdk/client-s3':
     specifier: ^3.575.0
     version: 3.577.0
+  '@aws-sdk/s3-request-presigner':
+    specifier: ^3.582.0
+    version: 3.582.0
   '@elastic/elasticsearch':
     specifier: ^7.14.0
     version: 7.17.13
@@ -1857,6 +1860,21 @@ packages:
       tslib: 2.6.2
     dev: false
 
+  /@aws-sdk/middleware-sdk-s3@3.582.0:
+    resolution: {integrity: sha512-PJqQpLoLaZPRI4L/XZUeHkd9UVK8VAr9R38wv0osGeMTvzD9iwzzk0I2TtBqFda/5xEB1YgVYZwyqvmStXmttg==}
+    engines: {node: '>=16.0.0'}
+    dependencies:
+      '@aws-sdk/types': 3.577.0
+      '@aws-sdk/util-arn-parser': 3.568.0
+      '@smithy/node-config-provider': 3.0.0
+      '@smithy/protocol-http': 4.0.0
+      '@smithy/signature-v4': 3.0.0
+      '@smithy/smithy-client': 3.0.1
+      '@smithy/types': 3.0.0
+      '@smithy/util-config-provider': 3.0.0
+      tslib: 2.6.2
+    dev: false
+
   /@aws-sdk/middleware-signing@3.577.0:
     resolution: {integrity: sha512-QS/dh3+NqZbXtY0j/DZ867ogP413pG5cFGqBy9OeOhDMsolcwLrQbi0S0c621dc1QNq+er9ffaMhZ/aPkyXXIg==}
     engines: {node: '>=16.0.0'}
@@ -1902,11 +1920,37 @@ packages:
       tslib: 2.6.2
     dev: false
 
+  /@aws-sdk/s3-request-presigner@3.582.0:
+    resolution: {integrity: sha512-h2tn0IjJ3Tsnh0Ep8FUqYwAJIjursK68gegrWEUpf7oeJlJer5gaNlD5CXCeRHwyhNiA1uzHaX4BjjyeKHl0Kw==}
+    engines: {node: '>=16.0.0'}
+    dependencies:
+      '@aws-sdk/signature-v4-multi-region': 3.582.0
+      '@aws-sdk/types': 3.577.0
+      '@aws-sdk/util-format-url': 3.577.0
+      '@smithy/middleware-endpoint': 3.0.0
+      '@smithy/protocol-http': 4.0.0
+      '@smithy/smithy-client': 3.0.1
+      '@smithy/types': 3.0.0
+      tslib: 2.6.2
+    dev: false
+
   /@aws-sdk/signature-v4-multi-region@3.577.0:
     resolution: {integrity: sha512-mMykGRFBYmlDcMhdbhNM0z1JFUaYYZ8r9WV7Dd0T2PWELv2brSAjDAOBHdJLHObDMYRnM6H0/Y974qTl3icEcQ==}
     engines: {node: '>=16.0.0'}
     dependencies:
       '@aws-sdk/middleware-sdk-s3': 3.577.0
+      '@aws-sdk/types': 3.577.0
+      '@smithy/protocol-http': 4.0.0
+      '@smithy/signature-v4': 3.0.0
+      '@smithy/types': 3.0.0
+      tslib: 2.6.2
+    dev: false
+
+  /@aws-sdk/signature-v4-multi-region@3.582.0:
+    resolution: {integrity: sha512-aFCOjjNqEX2l+V8QjOWy5F7CtHIC/RlYdBuv3No6yxn+pMvVUUe6zdMk2yHWcudVpHWsyvcZzAUBliAPeFLPsQ==}
+    engines: {node: '>=16.0.0'}
+    dependencies:
+      '@aws-sdk/middleware-sdk-s3': 3.582.0
       '@aws-sdk/types': 3.577.0
       '@smithy/protocol-http': 4.0.0
       '@smithy/signature-v4': 3.0.0
@@ -1950,6 +1994,16 @@ packages:
       '@aws-sdk/types': 3.577.0
       '@smithy/types': 3.0.0
       '@smithy/util-endpoints': 2.0.0
+      tslib: 2.6.2
+    dev: false
+
+  /@aws-sdk/util-format-url@3.577.0:
+    resolution: {integrity: sha512-SyEGC2J+y/krFRuPgiF02FmMYhqbiIkOjDE6k4nYLJQRyS6XEAGxZoG+OHeOVEM+bsDgbxokXZiM3XKGu6qFIg==}
+    engines: {node: '>=16.0.0'}
+    dependencies:
+      '@aws-sdk/types': 3.577.0
+      '@smithy/querystring-builder': 3.0.0
+      '@smithy/types': 3.0.0
       tslib: 2.6.2
     dev: false
 
@@ -19662,7 +19716,7 @@ packages:
     dev: false
 
   file:projects/drive-resources.tgz(@types/node@20.11.19)(esbuild@0.20.1)(postcss-load-config@4.0.2)(postcss@8.4.35)(ts-node@10.9.2):
-    resolution: {integrity: sha512-E2zO+OiX83Ig7B8ZJHiKJZydZf0RqPxXrHBnGl99l3biAcxNId4UJryMUM8KC7PQQw16ue/bERRU1dOBIs9Hng==, tarball: file:projects/drive-resources.tgz}
+    resolution: {integrity: sha512-BxbFyIUUuLwK5yzY3OTgPRmKE1fZxRUW9ZJ3iC/7nxvu5b32end9aJqm2fwZwNQZJxxeyw1AMbf9t7EDiadfMg==, tarball: file:projects/drive-resources.tgz}
     id: file:projects/drive-resources.tgz
     name: '@rush-temp/drive-resources'
     version: 0.0.0
@@ -20629,7 +20683,7 @@ packages:
     dev: false
 
   file:projects/minio.tgz(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-9iaGGSGj2mgvQwhe6oLTf5RzaROFLBsi+kU/nMGXxw3m7pvmELcgVW2Ijk4R+P/AHBZF5TDp0jWdFif8WWvwXg==, tarball: file:projects/minio.tgz}
+    resolution: {integrity: sha512-wjtXX+XX515IIjugAtzTrJN8TyMp3iPEgBlQBXvxMuOpIBEmLQLnuOOD4LN7S9sdKYLXOP0IgmDVwyDp0bZvyw==, tarball: file:projects/minio.tgz}
     id: file:projects/minio.tgz
     name: '@rush-temp/minio'
     version: 0.0.0
@@ -22817,12 +22871,13 @@ packages:
     dev: false
 
   file:projects/s3.tgz(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-2gkJlE5D6k8qqIbcjFSxW2ytwlziBej2ZJz7KRaEiAU5uDaMCiL378VaVvS1DmvPvPxmHJ7swZ5IkL/WRqxwqg==, tarball: file:projects/s3.tgz}
+    resolution: {integrity: sha512-545xE/hFO0K5PpSsSnM7hTqQilfo1Psno9mMs6XSYEC8SZQFX/mV1j0/W9l3++yX7lZQwxHKHBv/morA8v/RAA==, tarball: file:projects/s3.tgz}
     id: file:projects/s3.tgz
     name: '@rush-temp/s3'
     version: 0.0.0
     dependencies:
       '@aws-sdk/client-s3': 3.577.0
+      '@aws-sdk/s3-request-presigner': 3.582.0
       '@types/jest': 29.5.12
       '@types/node': 20.11.19
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.56.0)(typescript@5.3.3)

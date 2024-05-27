@@ -13,29 +13,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createQuery, getFileUrl, getFileUrlSrcSet } from '@hcengineering/presentation'
   import setting, { WorkspaceSetting } from '@hcengineering/setting'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Component, Icon } from '@hcengineering/ui'
-  import contact, { type GetAvatarUrl } from '@hcengineering/contact'
-  import { getResource } from '@hcengineering/platform'
 
   export let mini: boolean = false
   export let workspace: string
   const wsSettingQuery = createQuery()
-  let getFileUrl: undefined | GetAvatarUrl = undefined
-  getResource(contact.function.GetFileUrl).then((r) => (getFileUrl = r))
-  const client = getClient()
+
   let workspaceSetting: WorkspaceSetting | undefined = undefined
   wsSettingQuery.query(setting.class.WorkspaceSetting, {}, (res) => {
     workspaceSetting = res[0]
   })
-  $: url =
-    getFileUrl !== undefined && workspaceSetting?.icon != null ? getFileUrl(workspaceSetting.icon, 'large') : ['']
-  $: srcset = url?.slice(1)?.join(', ')
+  $: url = workspaceSetting?.icon != null ? getFileUrl(workspaceSetting.icon) : undefined
+  $: srcset = workspaceSetting?.icon != null ? getFileUrlSrcSet(workspaceSetting.icon, 128) : undefined
 </script>
 
-{#if getFileUrl !== undefined && workspaceSetting?.icon != null}
-  <img class="logo-medium" src={url[0]} {srcset} alt={''} />
+{#if getFileUrl !== undefined && workspaceSetting?.icon != null && url != null}
+  <img class="logo-medium" src={url} {srcset} alt={''} />
 {:else}
   <div class="antiLogo red" class:mini>{workspace?.toUpperCase()?.[0] ?? ''}</div>
 {/if}

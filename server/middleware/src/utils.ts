@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import core, { Account, AccountRole, ServerStorage, systemAccountEmail } from '@hcengineering/core'
+import core, { Account, AccountRole, systemAccountEmail } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { SessionContext } from '@hcengineering/server-core'
+import { SessionContext, type ServerStorage } from '@hcengineering/server-core'
 
 export function mergeTargets (current: string[] | undefined, prev: string[] | undefined): string[] | undefined {
   if (current === undefined) return prev

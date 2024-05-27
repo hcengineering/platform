@@ -15,62 +15,56 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
 
-  import { AvatarType, buildGravatarId, checkHasGravatar } from '@hcengineering/contact'
+  import { AvatarType, buildGravatarId, checkHasGravatar, type AvatarInfo } from '@hcengineering/contact'
+  import type { Ref } from '@hcengineering/core'
+  import { Blob as PlatformBlob } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
+  import presentation, { Card, getFileUrl } from '@hcengineering/presentation'
   import {
     AnySvelteComponent,
+    ColorDefinition,
     Label,
-    showPopup,
     TabList,
     eventToHTMLElement,
-    getPlatformAvatarColorForTextDef,
     getPlatformAvatarColorByName,
+    getPlatformAvatarColorForTextDef,
     getPlatformAvatarColors,
-    ColorDefinition,
+    showPopup,
     themeStore
   } from '@hcengineering/ui'
   import { ColorsPopup } from '@hcengineering/view-resources'
-  import presentation, { Card, getFileUrl } from '@hcengineering/presentation'
   import contact from '../plugin'
   import { getAvatarTypeDropdownItems } from '../utils'
   import AvatarComponent from './Avatar.svelte'
   import EditAvatarPopup from './EditAvatarPopup.svelte'
 
-  export let avatar: string | null | undefined = undefined
+  export let selectedAvatarType: AvatarType
+  export let selectedAvatar: AvatarInfo['avatar']
+  export let selectedAvatarProps: AvatarInfo['avatarProps']
+
+  const initialSelectedAvatarType = selectedAvatarType
+  const initialSelectedAvatar = selectedAvatar
+  const initialSelectedAvatarProps = { ...selectedAvatarProps }
+
   export let name: string | null | undefined = undefined
   export let email: string | undefined
   export let file: Blob | undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let imageOnly: boolean = false
   export let lessCrop: boolean = false
-  export let onSubmit: (avatarType?: AvatarType, avatar?: string, file?: Blob) => void
+  export let onSubmit: (
+    submittedAvatarType: AvatarType,
+    submittedAvatar: Ref<PlatformBlob> | undefined | null,
+    submittedProps: Record<string, any> | undefined,
+    submittedDirect?: Blob
+  ) => void
 
-  const [schema, uri] = avatar?.split('://') || []
   const colors = getPlatformAvatarColors($themeStore.dark)
   let color: ColorDefinition | undefined =
-    (schema as AvatarType) === AvatarType.COLOR ? getPlatformAvatarColorByName(uri, $themeStore.dark) : undefined
+    (selectedAvatarType as AvatarType) === AvatarType.COLOR
+      ? getPlatformAvatarColorByName(selectedAvatarProps?.color ?? '', $themeStore.dark)
+      : undefined
 
-  const initialSelectedType = (() => {
-    if (file) {
-      return AvatarType.IMAGE
-    }
-    if (!avatar) {
-      return AvatarType.COLOR
-    }
-
-    return avatar.includes('://') ? (schema as AvatarType) : AvatarType.IMAGE
-  })()
-
-  const initialSelectedAvatar = (() => {
-    if (!avatar) {
-      return getPlatformAvatarColorForTextDef(name ?? '', $themeStore.dark).name
-    }
-
-    return avatar.includes('://') ? uri : avatar
-  })()
-
-  let selectedAvatarType: AvatarType = initialSelectedType
-  let selectedAvatar: string = initialSelectedAvatar
   let selectedFile: Blob | undefined = file
 
   let hasGravatar = false
@@ -82,38 +76,43 @@
   const dispatch = createEventDispatcher()
 
   function submit () {
-    onSubmit(selectedAvatarType, selectedAvatar, selectedAvatarType === AvatarType.IMAGE ? selectedFile : undefined)
+    onSubmit(
+      selectedAvatarType,
+      selectedAvatar,
+      selectedAvatarProps,
+      selectedAvatarType === AvatarType.IMAGE ? selectedFile : undefined
+    )
   }
   let inputRef: HTMLInputElement
   const targetMimes = ['image/png', 'image/jpg', 'image/jpeg']
 
   function handleDropdownSelection (e: any) {
     if (selectedAvatarType === AvatarType.GRAVATAR && email) {
-      selectedAvatar = buildGravatarId(email)
+      selectedAvatarProps = { url: buildGravatarId(email) }
     } else if (selectedAvatarType === AvatarType.IMAGE) {
       if (selectedFile) {
         return
       }
       if (file) {
         selectedFile = file
-      } else if (avatar && !avatar.includes('://')) {
-        selectedAvatar = avatar
       } else {
-        selectedAvatar = ''
+        selectedAvatar = undefined
         inputRef.click()
       }
     } else {
-      selectedAvatar = color ? color.name : getPlatformAvatarColorForTextDef(name ?? '', $themeStore.dark).name
+      selectedAvatarProps = {
+        color: color ? color.name : getPlatformAvatarColorForTextDef(name ?? '', $themeStore.dark).name
+      }
     }
   }
 
-  async function handleImageAvatarClick () {
+  async function handleImageAvatarClick (): Promise<void> {
     let editableFile: Blob
 
     if (selectedFile !== undefined) {
       editableFile = selectedFile
     } else if (selectedAvatar && !(imageOnly && selectedAvatar === initialSelectedAvatar)) {
-      const url = getFileUrl(selectedAvatar, 'full')
+      const url = getFileUrl(selectedAvatar)
       editableFile = await (await fetch(url)).blob()
     } else {
       inputRef.click()
@@ -122,18 +121,21 @@
     if (editableFile.size > 0) showCropper(editableFile)
   }
 
-  function showCropper (editableFile: Blob) {
+  function showCropper (editableFile: Blob): void {
     showPopup(EditAvatarPopup, { file: editableFile, lessCrop }, undefined, (blob) => {
       if (blob === undefined) {
-        if (!selectedFile && (!avatar || avatar.includes('://'))) {
+        if (!selectedFile && !initialSelectedAvatar) {
           selectedAvatarType = AvatarType.COLOR
-          selectedAvatar = getPlatformAvatarColorForTextDef(name ?? '', $themeStore.dark).name
+          selectedAvatarProps = { color: getPlatformAvatarColorForTextDef(name ?? '', $themeStore.dark).name }
         }
         return
       }
       if (blob === null) {
         selectedAvatarType = AvatarType.COLOR
-        selectedAvatar = imageOnly ? '' : getPlatformAvatarColorForTextDef(name ?? '', $themeStore.dark).name
+        selectedAvatar = undefined
+        selectedAvatarProps = {
+          color: imageOnly ? '' : getPlatformAvatarColorForTextDef(name ?? '', $themeStore.dark).name
+        }
         selectedFile = undefined
       } else {
         selectedFile = blob
@@ -142,7 +144,7 @@
     })
   }
 
-  function onSelectFile (e: any) {
+  function onSelectFile (e: any): void {
     const targetFile = e.target?.files[0] as File | undefined
 
     if (targetFile === undefined || !targetMimes.includes(targetFile.type)) {
@@ -153,13 +155,14 @@
     document.body.onfocus = null
   }
 
-  function handleFileSelectionCancel () {
+  function handleFileSelectionCancel (): void {
     document.body.onfocus = null
 
     if (!inputRef.value.length) {
       if (!selectedFile) {
         selectedAvatarType = AvatarType.COLOR
-        selectedAvatar = getPlatformAvatarColorForTextDef(name ?? '', $themeStore.dark).name
+        selectedAvatar = undefined
+        selectedAvatarProps = { color: getPlatformAvatarColorForTextDef(name ?? '', $themeStore.dark).name }
       }
     }
   }
@@ -170,14 +173,14 @@
       {
         colors,
         columns: 6,
-        selected: getPlatformAvatarColorByName(selectedAvatar, $themeStore.dark),
+        selected: getPlatformAvatarColorByName(selectedAvatarProps?.color ?? '', $themeStore.dark),
         key: 'icon'
       },
       eventToHTMLElement(event),
       (col) => {
         if (col != null) {
           color = colors[col]
-          selectedAvatar = color.name
+          selectedAvatarProps = { color: color.name }
         }
       }
     )
@@ -189,10 +192,10 @@
   okLabel={presentation.string.Save}
   width={'x-small'}
   accentHeader
-  canSave={selectedAvatarType !== initialSelectedType ||
+  canSave={selectedAvatarType !== initialSelectedAvatarType ||
     selectedAvatar !== initialSelectedAvatar ||
-    selectedFile !== file ||
-    !avatar}
+    JSON.stringify(initialSelectedAvatarProps) !== JSON.stringify(selectedAvatarProps) ||
+    selectedFile !== file}
   okAction={submit}
   on:close={() => {
     dispatch('close')
@@ -214,11 +217,11 @@
       }}
     >
       <AvatarComponent
-        avatar={selectedAvatarType === AvatarType.IMAGE
-          ? selectedAvatar === ''
-            ? `${AvatarType.COLOR}://${color?.color}`
-            : selectedAvatar
-          : `${selectedAvatarType}://${selectedAvatar}`}
+        person={{
+          avatarType: selectedAvatarType,
+          avatar: selectedAvatar,
+          avatarProps: selectedAvatarProps
+        }}
         direct={selectedAvatarType === AvatarType.IMAGE ? selectedFile : undefined}
         size={'2x-large'}
         {icon}

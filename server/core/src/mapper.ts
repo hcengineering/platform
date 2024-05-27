@@ -1,8 +1,8 @@
 import {
+  docKey,
   type Class,
   type Doc,
   type DocIndexState,
-  docKey,
   type Hierarchy,
   type Ref,
   type RefTo,
@@ -36,7 +36,7 @@ function createIndexedReader (
     get: (attr: string) => {
       const realAttr = hierarchy.findAttribute(_class, attr)
       if (realAttr !== undefined) {
-        return doc.attributes[docKey(attr, { _class: realAttr.attributeOf })]
+        return doc.attributes[docKey(attr, { _class: realAttr.attributeOf })] ?? (doc as any)[attr]
       }
       return undefined
     },

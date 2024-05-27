@@ -14,18 +14,19 @@
 -->
 <script lang="ts">
   import { type Blob, type Ref } from '@hcengineering/core'
-  import { type BlobMetadata, getFileUrl } from '@hcengineering/presentation'
+  import { getBlobHref, getFileUrl, type BlobMetadata } from '@hcengineering/presentation'
 
-  export let value: Ref<Blob>
+  export let value: Blob | Ref<Blob>
   export let name: string
   export let contentType: string
   export let metadata: BlobMetadata | undefined
 
-  $: src = value === undefined ? '' : getFileUrl(value, 'full', name)
+  $: src =
+    value === undefined ? '' : typeof value === 'string' ? getFileUrl(value, name) : getBlobHref(value, value._id)
 </script>
 
 {#if src}
-  <img class="w-full h-full img-fit" {src} alt="" />
+  <img class="w-full h-full img-fit" {src} alt={name} />
 {/if}
 
 <style lang="scss">

@@ -14,11 +14,23 @@
 // limitations under the License.
 //
 
-import { Account, AttachedDoc, Class, Doc, Ref, Space, Timestamp, UXObject } from '@hcengineering/core'
+import {
+  Account,
+  AttachedDoc,
+  Class,
+  Doc,
+  Ref,
+  Space,
+  Timestamp,
+  UXObject,
+  type Blob,
+  type Data,
+  type WithLookup
+} from '@hcengineering/core'
 import type { Asset, Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
 import { TemplateField, TemplateFieldCategory } from '@hcengineering/templates'
-import type { AnyComponent, IconSize, ResolvedLocation } from '@hcengineering/ui'
+import type { AnyComponent, ColorDefinition, ResolvedLocation } from '@hcengineering/ui'
 import { Action, FilterMode, Viewlet } from '@hcengineering/view'
 
 /**
@@ -65,13 +77,19 @@ export interface ChannelItem extends AttachedDoc {
 export enum AvatarType {
   COLOR = 'color',
   IMAGE = 'image',
-  GRAVATAR = 'gravatar'
+  GRAVATAR = 'gravatar',
+
+  EXTERNAL = 'external'
 }
 
 /**
  * @public
  */
-export type GetAvatarUrl = (uri: string, size: IconSize) => string[]
+export type GetAvatarUrl = (
+  uri: Data<WithLookup<AvatarInfo>>,
+  name: string,
+  width?: number
+) => { url?: string, srcSet?: string, color: ColorDefinition }
 
 /**
  * @public
@@ -81,12 +99,19 @@ export interface AvatarProvider extends Doc {
   getUrl: Resource<GetAvatarUrl>
 }
 
+export interface AvatarInfo extends Doc {
+  avatarType: AvatarType
+  avatar?: Ref<Blob> | null
+  avatarProps?: {
+    color?: string
+    url?: string
+  }
+}
 /**
  * @public
  */
-export interface Contact extends Doc {
+export interface Contact extends Doc, AvatarInfo {
   name: string
-  avatar?: string | null
   attachments?: number
   comments?: number
   channels?: number
@@ -180,6 +205,7 @@ export const contactPlugin = plugin(contactId, {
     ChannelsPresenter: '' as AnyComponent,
     MembersPresenter: '' as AnyComponent,
     Avatar: '' as AnyComponent,
+    AvatarRef: '' as AnyComponent,
     UserBoxList: '' as AnyComponent,
     ChannelPresenter: '' as AnyComponent,
     SpaceMembers: '' as AnyComponent,
@@ -212,7 +238,8 @@ export const contactPlugin = plugin(contactId, {
   function: {
     GetColorUrl: '' as Resource<GetAvatarUrl>,
     GetFileUrl: '' as Resource<GetAvatarUrl>,
-    GetGravatarUrl: '' as Resource<GetAvatarUrl>
+    GetGravatarUrl: '' as Resource<GetAvatarUrl>,
+    GetExternalUrl: '' as Resource<GetAvatarUrl>
   },
   icon: {
     ContactApplication: '' as Asset,

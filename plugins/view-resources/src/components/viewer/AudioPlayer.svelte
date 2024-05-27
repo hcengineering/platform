@@ -18,9 +18,9 @@
 
   import Play from '../icons/Play.svelte'
   import Pause from '../icons/Pause.svelte'
-  import { getFileUrl } from '@hcengineering/presentation'
+  import { getBlobHref, getFileUrl } from '@hcengineering/presentation'
 
-  export let value: Ref<Blob>
+  export let value: Blob | Ref<Blob>
   export let name: string
   export let contentType: string
   export let fullSize = false
@@ -34,6 +34,8 @@
   }
 
   $: icon = !paused ? Pause : Play
+  $: src =
+    value === undefined ? '' : typeof value === 'string' ? getFileUrl(value, name) : getBlobHref(value, value._id)
 </script>
 
 <div class="container flex-between" class:fullSize>
@@ -49,7 +51,7 @@
 </div>
 
 <audio bind:duration bind:currentTime={time} bind:paused>
-  <source src={getFileUrl(value, 'full', name)} type={contentType} />
+  <source {src} type={contentType} />
 </audio>
 
 <style lang="scss">

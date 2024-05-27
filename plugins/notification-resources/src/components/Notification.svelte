@@ -22,7 +22,7 @@
   <svelte:fragment slot="content">
     <div class="flex-row-center flex-wrap gap-2">
       {#if sender}
-        <Avatar avatar={sender.avatar} name={sender.name} size={'small'} />
+        <Avatar person={sender} name={sender.name} size={'small'} />
       {/if}
       <span class="overflow-label">
         {value.body}

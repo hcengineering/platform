@@ -17,42 +17,42 @@ import attachment from '@hcengineering/attachment'
 import chunter, { type ChatMessage } from '@hcengineering/chunter'
 import contact from '@hcengineering/contact'
 import core, {
+  ClassifierKind,
+  DOMAIN_STATUS,
   DOMAIN_TX,
-  type MeasureContext,
   SortingOrder,
   TxOperations,
   TxProcessor,
   generateId,
   getObjectValue,
+  toIdMap,
   type BackupClient,
+  type Class,
   type Client as CoreClient,
   type Doc,
   type Domain,
+  type MeasureContext,
   type Ref,
-  type TxCreateDoc,
-  type WorkspaceId,
-  type StatusCategory,
-  type TxMixin,
-  type TxCUD,
-  type TxUpdateDoc,
-  DOMAIN_STATUS,
   type Status,
-  toIdMap,
-  type Class,
-  ClassifierKind
+  type StatusCategory,
+  type TxCUD,
+  type TxCreateDoc,
+  type TxMixin,
+  type TxUpdateDoc,
+  type WorkspaceId
 } from '@hcengineering/core'
+import { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
+import { DOMAIN_SPACE } from '@hcengineering/model-core'
+import recruitModel, { defaultApplicantStatuses } from '@hcengineering/model-recruit'
 import { getWorkspaceDB } from '@hcengineering/mongo'
 import recruit, { type Applicant, type Vacancy } from '@hcengineering/recruit'
-import recruitModel, { defaultApplicantStatuses } from '@hcengineering/model-recruit'
 import { type StorageAdapter } from '@hcengineering/server-core'
 import { connect } from '@hcengineering/server-tool'
 import tags, { type TagCategory, type TagElement, type TagReference } from '@hcengineering/tags'
-import task, { type Task, type ProjectType, type TaskType } from '@hcengineering/task'
+import task, { type ProjectType, type Task, type TaskType } from '@hcengineering/task'
 import tracker from '@hcengineering/tracker'
 import { deepEqual } from 'fast-equals'
 import { MongoClient } from 'mongodb'
-import { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
-import { DOMAIN_SPACE } from '@hcengineering/model-core'
 
 export async function cleanWorkspace (
   ctx: MeasureContext,
@@ -77,7 +77,7 @@ export async function cleanWorkspace (
     const contacts = await ops.findAll(contact.class.Contact, {})
 
     const files = new Set(
-      attachments.map((it) => it.file).concat(contacts.map((it) => it.avatar).filter((it) => it) as string[])
+      attachments.map((it) => it.file as string).concat(contacts.map((it) => it.avatar).filter((it) => it) as string[])
     )
 
     const minioList = await storageAdapter.listStream(ctx, workspaceId)
@@ -177,7 +177,7 @@ export async function fixMinioBW (
       break
     }
     if (obj.modifiedOn < from) continue
-    if ((obj._id as string).includes('%size%')) {
+    if ((obj._id as string).includes('%preview%')) {
       await storageService.remove(ctx, workspaceId, [obj._id])
       removed++
       if (removed % 100 === 0) {

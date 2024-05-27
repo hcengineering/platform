@@ -10,9 +10,15 @@ import core, {
 } from '@hcengineering/core'
 import login, { loginId } from '@hcengineering/login'
 import { getMetadata, getResource, setMetadata } from '@hcengineering/platform'
-import presentation, { closeClient, refreshClient, setClient } from '@hcengineering/presentation'
-import { fetchMetadataLocalStorage, getCurrentLocation, navigate, setMetadataLocalStorage } from '@hcengineering/ui'
-import { writable } from 'svelte/store'
+import presentation, { closeClient, refreshClient, setClient, setPresentationCookie } from '@hcengineering/presentation'
+import {
+  fetchMetadataLocalStorage,
+  getCurrentLocation,
+  navigate,
+  setMetadataLocalStorage,
+  workspaceId
+} from '@hcengineering/ui'
+import { writable, get } from 'svelte/store'
 
 export const versionError = writable<string | undefined>(undefined)
 
@@ -31,8 +37,8 @@ export async function connect (title: string): Promise<Client | undefined> {
     return
   }
   setMetadata(presentation.metadata.Token, token)
-  document.cookie =
-    encodeURIComponent(presentation.metadata.Token.replaceAll(':', '-')) + '=' + encodeURIComponent(token) + '; path=/'
+
+  setPresentationCookie(token, get(workspaceId))
 
   const getEndpoint = await getResource(login.function.GetEndpoint)
   const endpoint = await getEndpoint()
@@ -183,8 +189,7 @@ function clearMetadata (ws: string): void {
   }
   setMetadata(presentation.metadata.Token, null)
   setMetadataLocalStorage(login.metadata.LastToken, null)
-  document.cookie =
-    encodeURIComponent(presentation.metadata.Token.replaceAll(':', '-')) + '=' + encodeURIComponent('') + '; path=/'
+  setPresentationCookie('', get(workspaceId))
   setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
   setMetadataLocalStorage(login.metadata.LoginEmail, null)
   void closeClient()

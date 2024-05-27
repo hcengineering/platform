@@ -35,8 +35,7 @@ import core, {
   type WorkspaceId,
   type SessionOperationContext,
   type ParamsType,
-  type FullParamsType,
-  type ServerStorage
+  type FullParamsType
 } from '@hcengineering/core'
 import {
   type ContentTextAdapter,
@@ -46,7 +45,8 @@ import {
   type DbConfiguration,
   DummyDbAdapter,
   DummyFullTextAdapter,
-  type FullTextAdapter
+  type FullTextAdapter,
+  type ServerStorage
 } from '@hcengineering/server-core'
 import { createMongoAdapter, createMongoTxAdapter } from '..'
 import { getMongoClient, type MongoClientReference, shutdown } from '../utils'

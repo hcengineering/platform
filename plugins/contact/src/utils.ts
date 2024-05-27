@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-import { AttachedData, Class, Client, Doc, FindResult, Ref, Hierarchy } from '@hcengineering/core'
-import { IconSize, ColorDefinition } from '@hcengineering/ui'
-import { MD5 } from 'crypto-js'
-import { AvatarProvider, AvatarType, Channel, Contact, contactPlugin, Person } from '.'
-import { AVATAR_COLORS, GravatarPlaceholderType } from './types'
+import { AttachedData, Class, Client, Doc, FindResult, Hierarchy, Ref } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
+import { ColorDefinition } from '@hcengineering/ui'
+import { MD5 } from 'crypto-js'
+import { AvatarProvider, AvatarType, Channel, Contact, Person, contactPlugin } from '.'
+import { AVATAR_COLORS, GravatarPlaceholderType } from './types'
 
 /**
  * @public
@@ -58,16 +58,8 @@ export function buildGravatarId (email: string): string {
 /**
  * @public
  */
-export function getAvatarProviderId (avatar?: string | null): Ref<AvatarProvider> | undefined {
-  if (avatar === null || avatar === undefined || avatar === '') {
-    return
-  }
-  if (!avatar.includes('://')) {
-    return contactPlugin.avatarProvider.Image
-  }
-  const [schema] = avatar.split('://')
-
-  switch (schema) {
+export function getAvatarProviderId (kind: AvatarType): Ref<AvatarProvider> | undefined {
+  switch (kind) {
     case AvatarType.GRAVATAR:
       return contactPlugin.avatarProvider.Gravatar
     case AvatarType.COLOR:
@@ -81,31 +73,9 @@ export function getAvatarProviderId (avatar?: string | null): Ref<AvatarProvider
  */
 export function getGravatarUrl (
   gravatarId: string,
-  size: IconSize = 'full',
+  width: number = 64,
   placeholder: GravatarPlaceholderType = 'identicon'
 ): string {
-  let width = 64
-  switch (size) {
-    case 'inline':
-    case 'tiny':
-    case 'x-small':
-    case 'small':
-    case 'medium':
-      width = 128
-      break
-    case 'large':
-      width = 256
-      break
-    case 'x-large':
-      width = 512
-      break
-    case '2x-large':
-      width = 1024
-      break
-    case 'full':
-      width = 2048
-      break
-  }
   return `https://gravatar.com/avatar/${gravatarId}?s=${width}&d=${placeholder}`
 }
 
@@ -114,7 +84,7 @@ export function getGravatarUrl (
  */
 export async function checkHasGravatar (gravatarId: string, fetch?: typeof window.fetch): Promise<boolean> {
   try {
-    return (await (fetch ?? window.fetch)(getGravatarUrl(gravatarId, 'full', '404'))).ok
+    return (await (fetch ?? window.fetch)(getGravatarUrl(gravatarId, 2048, '404'))).ok
   } catch {
     return false
   }

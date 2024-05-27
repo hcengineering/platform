@@ -70,9 +70,7 @@
       await avatarEditor.removeAvatar(object.avatar)
     }
     const avatar = await avatarEditor.createAvatar()
-    await client.update(object, {
-      avatar
-    })
+    await client.diffUpdate(object, avatar)
   }
 
   const manager = createFocusManager()
@@ -86,7 +84,7 @@
       {#key object}
         <EditableAvatar
           disabled={readonly}
-          avatar={object.avatar}
+          person={object}
           size={'x-large'}
           name={object.name}
           bind:this={avatarEditor}

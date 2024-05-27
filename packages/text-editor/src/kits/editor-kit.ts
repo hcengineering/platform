@@ -22,14 +22,13 @@ import TaskList from '@tiptap/extension-task-list'
 
 import { DefaultKit, type DefaultKitOptions } from './default-kit'
 
-import { getMetadata } from '@hcengineering/platform'
-import presentation from '@hcengineering/presentation'
+import { getFileUrl, getFileUrlSrcSet } from '@hcengineering/presentation'
 import { CodeBlockExtension, codeBlockOptions } from '@hcengineering/text'
 import { CodemarkExtension } from '../components/extension/codemark'
+import { FileExtension, type FileOptions } from '../components/extension/fileExt'
+import { ImageExtension, type ImageOptions } from '../components/extension/imageExt'
 import { NodeUuidExtension } from '../components/extension/nodeUuid'
 import { Table, TableCell, TableRow } from '../components/extension/table'
-import { type ImageOptions, ImageExtension } from '../components/extension/imageExt'
-import { type FileOptions, FileExtension } from '../components/extension/fileExt'
 
 const headingLevels: Level[] = [1, 2, 3]
 
@@ -105,7 +104,8 @@ export const EditorKit = Extension.create<EditorKitOptions>({
         ? [
             ImageExtension.configure({
               inline: true,
-              uploadUrl: getMetadata(presentation.metadata.UploadURL) ?? '',
+              getFileUrl,
+              getFileUrlSrcSet,
               ...this.options.image
             })
           ]

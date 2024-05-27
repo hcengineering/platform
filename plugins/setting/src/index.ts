@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Account, AccountRole, Class, Configuration, Doc, Mixin, Ref, Space } from '@hcengineering/core'
+import type { Account, AccountRole, Blob, Class, Configuration, Doc, Mixin, Ref, Space } from '@hcengineering/core'
 import type { Plugin } from '@hcengineering/platform'
 import { Asset, IntlString, plugin, Resource } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
@@ -106,7 +106,7 @@ export interface InviteSettings extends Configuration {
  * @public
  */
 export interface WorkspaceSetting extends Doc {
-  icon?: string
+  icon?: Ref<Blob> | null
 }
 
 /**

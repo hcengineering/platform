@@ -9,7 +9,8 @@ import core, {
   type MeasureContext,
   type ParamsType,
   type Ref,
-  type TxWorkspaceEvent
+  type TxWorkspaceEvent,
+  type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 import { type Hash } from 'crypto'
 import type { SessionContext } from './types'
@@ -136,7 +137,8 @@ export class SessionContextImpl implements SessionContext {
     readonly userEmail: string,
     readonly sessionId: string,
     readonly admin: boolean | undefined,
-    readonly derived: SessionContext['derived']
+    readonly derived: SessionContext['derived'],
+    readonly workspace: WorkspaceIdWithUrl
   ) {}
 
   with<T>(
@@ -148,7 +150,8 @@ export class SessionContextImpl implements SessionContext {
     return this.ctx.with(
       name,
       params,
-      async (ctx) => await op(new SessionContextImpl(ctx, this.userEmail, this.sessionId, this.admin, this.derived)),
+      async (ctx) =>
+        await op(new SessionContextImpl(ctx, this.userEmail, this.sessionId, this.admin, this.derived, this.workspace)),
       fullParams
     )
   }

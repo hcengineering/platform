@@ -63,7 +63,7 @@
             class:mr-2={shouldShowName && !enlargedText}
             class:mr-3={shouldShowName && enlargedText}
           >
-            <Avatar size={avatarSize} avatar={value.avatar} name={value.name} {showStatus} account={account?._id} />
+            <Avatar size={avatarSize} person={value} name={value.name} {showStatus} account={account?._id} />
           </span>
         {/if}
         {#if shouldShowName}

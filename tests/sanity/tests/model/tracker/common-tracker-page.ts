@@ -279,7 +279,7 @@ export class CommonTrackerPage extends CalendarPage {
 
   async checkCommentWithImageExist (commentHeader: string, fileName: string): Promise<void> {
     await this.checkActivityExist(commentHeader)
-    const srcset = await this.commentImg().getAttribute('srcset')
+    const srcset = await this.commentImg().getAttribute('alt')
     expect(srcset).toContain(fileName)
   }
 

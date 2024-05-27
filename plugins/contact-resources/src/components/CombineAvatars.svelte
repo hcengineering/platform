@@ -57,7 +57,7 @@
     {/if}
     {#each persons as person, i}
       <div class="combine-avatar {size}" data-over={getDataOver(persons.length === i + 1, items)}>
-        <Avatar avatar={person.avatar} {size} name={person.name} showStatus={false} />
+        <Avatar {person} {size} name={person.name} showStatus={false} />
       </div>
     {/each}
   </div>

@@ -13,23 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, onDestroy } from 'svelte'
-  import contact, { Employee, PersonAccount, combineName, getFirstName, getLastName } from '@hcengineering/contact'
-  import { ChannelsEditor, EditableAvatar, employeeByIdStore } from '@hcengineering/contact-resources'
-  import { AttributeEditor, getClient, MessageBox } from '@hcengineering/presentation'
-  import {
-    Button,
-    createFocusManager,
-    EditBox,
-    FocusHandler,
-    showPopup,
-    Header,
-    Breadcrumb,
-    Label
-  } from '@hcengineering/ui'
-  import setting from '../plugin'
-  import { WorkspaceSetting } from '@hcengineering/setting'
+  import { AvatarType } from '@hcengineering/contact'
+  import { EditableAvatar } from '@hcengineering/contact-resources'
   import { getEmbeddedLabel } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
+  import { WorkspaceSetting } from '@hcengineering/setting'
+  import { FocusHandler, Label, createFocusManager } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
+  import setting from '../plugin'
 
   export let visibleNav: boolean = true
 
@@ -49,18 +40,19 @@
       await client.createDoc(
         setting.class.WorkspaceSetting,
         setting.space.Setting,
-        { icon: avatar },
+        { icon: avatar.avatar },
         setting.ids.WorkspaceSetting
       )
       return
     }
 
-    if (workspaceSettings.icon != null) {
+    const avatar = await avatarEditor.createAvatar()
+    if (workspaceSettings.icon != null && workspaceSettings.icon !== avatar.avatar) {
+      // Different avatar
       await avatarEditor.removeAvatar(workspaceSettings.icon)
     }
-    const avatar = await avatarEditor.createAvatar()
     await client.update(workspaceSettings, {
-      icon: avatar
+      icon: avatar.avatar
     })
   }
 
@@ -71,7 +63,10 @@
 
 <div class="hulyComponent p-10 flex ac-body row">
   <EditableAvatar
-    avatar={workspaceSettings?.icon}
+    person={{
+      avatarType: AvatarType.IMAGE,
+      avatar: workspaceSettings?.icon
+    }}
     size={'x-large'}
     bind:this={avatarEditor}
     on:done={onAvatarDone}

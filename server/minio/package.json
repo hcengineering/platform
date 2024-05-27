@@ -36,6 +36,7 @@
   },
   "dependencies": {
     "@hcengineering/core": "^0.6.28",
+    "@hcengineering/platform": "^0.6.9",
     "@hcengineering/server-core": "^0.6.1",
     "minio": "^7.0.26"
   }

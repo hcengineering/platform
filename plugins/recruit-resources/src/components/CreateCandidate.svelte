@@ -15,7 +15,14 @@
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
   import attachment from '@hcengineering/attachment'
-  import contact, { Channel, ChannelProvider, combineName, findContacts, Person } from '@hcengineering/contact'
+  import contact, {
+    AvatarType,
+    Channel,
+    ChannelProvider,
+    combineName,
+    findContacts,
+    Person
+  } from '@hcengineering/contact'
   import { ChannelsDropdown, EditableAvatar, PersonPresenter } from '@hcengineering/contact-resources'
   import {
     Account,
@@ -182,11 +189,13 @@
     const candidate: Data<Person> = {
       name: combineName(object.firstName ?? '', object.lastName ?? ''),
       city: object.city,
-      channels: 0
+      channels: 0,
+      avatarType: AvatarType.COLOR
     }
-    if (avatar !== undefined) {
-      candidate.avatar = await avatarEditor.createAvatar()
-    }
+    const info = await avatarEditor.createAvatar()
+    candidate.avatar = info.avatar
+    candidate.avatarType = info.avatarType
+    candidate.avatarProps = info.avatarProps
     const candidateData: MixinData<Person, Candidate> = {
       title: object.title,
       onsite: object.onsite,
@@ -619,7 +628,9 @@
         disabled={loading}
         bind:this={avatarEditor}
         bind:direct={object.avatar}
-        avatar={undefined}
+        person={{
+          avatarType: AvatarType.COLOR
+        }}
         size={'large'}
         name={combineName(object?.firstName?.trim() ?? '', object?.lastName?.trim() ?? '')}
       />

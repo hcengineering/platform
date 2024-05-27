@@ -111,7 +111,7 @@ export default plugin(coreId, {
     Account: '' as Ref<Class<Account>>,
     Type: '' as Ref<Class<Type<any>>>,
     TypeString: '' as Ref<Class<Type<string>>>,
-    TypeAttachment: '' as Ref<Class<Type<string>>>,
+    TypeBlob: '' as Ref<Class<Type<Ref<Blob>>>>,
     TypeIntlString: '' as Ref<Class<Type<IntlString>>>,
     TypeHyperlink: '' as Ref<Class<Type<Hyperlink>>>,
     TypeNumber: '' as Ref<Class<Type<number>>>,

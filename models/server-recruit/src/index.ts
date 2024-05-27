@@ -57,8 +57,8 @@ export function createModel (builder: Builder): void {
   builder.mixin(recruit.class.Applicant, core.class.Class, serverCore.mixin.SearchPresenter, {
     searchConfig: {
       iconConfig: {
-        component: contact.component.Avatar,
-        props: [{ avatar: ['attachedTo', 'avatar'] }, { name: ['attachedTo', 'name'] }]
+        component: contact.component.AvatarRef,
+        props: [{ _id: ['attachedTo'] }]
       },
       shortTitle: 'identifier',
       title: {

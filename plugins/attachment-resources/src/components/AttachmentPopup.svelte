@@ -14,12 +14,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Doc } from '@hcengineering/core'
   import { Attachment } from '@hcengineering/attachment'
   import { createQuery, getClient, getFileMetadata, uploadFile } from '@hcengineering/presentation'
   import { ActionIcon, IconAdd, Label, Loading } from '@hcengineering/ui'
-  import { setPlatformStatus, unknownError } from '@hcengineering/platform'
 
+  import type { Doc, WithLookup } from '@hcengineering/core'
+  import core from '@hcengineering/core'
+  import { setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { AttachmentPresenter } from '..'
   import attachment from '../plugin'
 
@@ -30,7 +31,7 @@
 
   const client = getClient()
 
-  let docs: Attachment[] = []
+  let docs: WithLookup<Attachment>[] = []
 
   let progress = false
 
@@ -42,6 +43,11 @@
     },
     (res) => {
       docs = res
+    },
+    {
+      lookup: {
+        file: core.class.Blob
+      }
     }
   )
 

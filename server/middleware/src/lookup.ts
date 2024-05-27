@@ -21,12 +21,11 @@ import {
   FindResult,
   MeasureContext,
   Ref,
-  ServerStorage,
   Tx,
   clone,
   toFindResult
 } from '@hcengineering/core'
-import { Middleware, SessionContext, TxMiddlewareResult } from '@hcengineering/server-core'
+import { Middleware, SessionContext, TxMiddlewareResult, type ServerStorage } from '@hcengineering/server-core'
 import { BaseMiddleware } from './base'
 
 /**

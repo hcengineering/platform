@@ -17,7 +17,7 @@
   import { AnySvelteComponent, ColorDefinition, Icon, IconSize, resizeObserver } from '@hcengineering/ui'
   import AvatarIcon from './icons/Avatar.svelte'
 
-  export let url: string[] | undefined
+  export let url: string | undefined
   export let srcset: string | undefined
   export let displayName: string
   export let size: IconSize
@@ -86,7 +86,7 @@
     style:background-color={color && !url ? color.icon : 'var(--theme-button-default)'}
   >
     {#if url}
-      <img class="hulyAvatarSize-{size} ava-image" src={url[0]} {srcset} alt={''} />
+      <img class="hulyAvatarSize-{size} ava-image" src={url} {srcset} alt={''} />
     {:else if displayName && displayName !== ''}
       <div
         class="ava-text"

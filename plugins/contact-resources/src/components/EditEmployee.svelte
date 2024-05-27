@@ -92,9 +92,7 @@
       await avatarEditor.removeAvatar(object.avatar)
     }
     const avatar = await avatarEditor.createAvatar()
-    await client.update(object, {
-      avatar
-    })
+    await client.diffUpdate(object, avatar)
   }
 
   const manager = createFocusManager()
@@ -108,7 +106,7 @@
       {#key object}
         {#if editable}
           <EditableAvatar
-            avatar={object.avatar}
+            person={object}
             {email}
             size={'x-large'}
             name={object.name}
@@ -116,7 +114,7 @@
             on:done={onAvatarDone}
           />
         {:else}
-          <Avatar avatar={object.avatar} size={'x-large'} name={object.name} />
+          <Avatar person={object} size={'x-large'} name={object.name} />
         {/if}
       {/key}
     </div>

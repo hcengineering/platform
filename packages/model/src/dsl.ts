@@ -387,8 +387,8 @@ export function TypeString (): Type<string> {
 /**
  * @public
  */
-export function TypeAttachment (): Type<string> {
-  return { _class: core.class.TypeAttachment, label: core.string.String }
+export function TypeBlob (): Type<string> {
+  return { _class: core.class.TypeBlob, label: core.string.String }
 }
 
 /**

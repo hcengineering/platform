@@ -14,12 +14,12 @@
 -->
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
-  import type { Doc, Ref } from '@hcengineering/core'
+  import core, { type Doc, type Ref, type WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
 
   import attachment from '../plugin'
-  import AttachmentList from './AttachmentList.svelte'
   import { AttachmentImageSize } from '../types'
+  import AttachmentList from './AttachmentList.svelte'
 
   export let value: Doc & { attachments?: number }
   export let attachments: Attachment[] | undefined = undefined
@@ -30,7 +30,7 @@
   const savedAttachmentsQuery = createQuery()
 
   let savedAttachmentsIds: Ref<Attachment>[] = []
-  let resAttachments: Attachment[] = []
+  let resAttachments: WithLookup<Attachment>[] = []
 
   $: updateQuery(value, attachments)
 
@@ -48,6 +48,11 @@
         },
         (res) => {
           resAttachments = res
+        },
+        {
+          lookup: {
+            file: core.class.Blob
+          }
         }
       )
     } else {

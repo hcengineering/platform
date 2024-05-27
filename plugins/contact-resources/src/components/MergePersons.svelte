@@ -107,7 +107,7 @@
       if (_update.avatar !== undefined || sourcePerson.avatar === targetPerson.avatar) {
         // We replace avatar, we need to update source with target
         await client.update(sourcePerson, {
-          avatar: sourcePerson.avatar === targetPerson.avatar ? '' : targetPerson.avatar
+          avatar: sourcePerson.avatar === targetPerson.avatar ? null : targetPerson.avatar
         })
       }
       await client.update(targetPerson, _update)
@@ -360,7 +360,7 @@
           selected={update.avatar !== undefined}
         >
           <svelte:fragment slot="item" let:item>
-            <Avatar avatar={item.avatar} size={'x-large'} icon={contact.icon.Person} name={item.name} />
+            <Avatar person={item} size={'x-large'} icon={contact.icon.Person} name={item.name} />
           </svelte:fragment>
         </MergeComparer>
         <MergeComparer

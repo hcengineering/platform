@@ -2,14 +2,17 @@ import core, {
   DOMAIN_BLOB,
   groupByArray,
   type Blob,
+  type BlobLookup,
   type MeasureContext,
   type Ref,
-  type WorkspaceId
+  type WorkspaceId,
+  type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 import { type Readable } from 'stream'
 import { type RawDBAdapter } from '../adapter'
 
 import {
+  type BlobLookupResult,
   type BlobStorageIterator,
   type ListBlobResult,
   type StorageAdapter,
@@ -231,6 +234,25 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
 
     await this.dbAdapter.upload<Blob>(ctx, workspaceId, DOMAIN_BLOB, [blobDoc])
     return result
+  }
+
+  async lookup (ctx: MeasureContext, workspaceId: WorkspaceIdWithUrl, docs: Blob[]): Promise<BlobLookupResult> {
+    const result: BlobLookup[] = []
+
+    const byProvider = groupByArray(docs, (it) => it.provider)
+    for (const [k, v] of byProvider.entries()) {
+      const provider = this.adapters.get(k)
+      if (provider?.lookup !== undefined) {
+        const upd = await provider.lookup(ctx, workspaceId, v)
+        if (upd.updates !== undefined) {
+          await this.dbAdapter.update(ctx, workspaceId, DOMAIN_BLOB, upd.updates)
+        }
+        result.push(...upd.lookups)
+      }
+    }
+    // Check if we need to perform diff update for blobs
+
+    return { lookups: result }
   }
 }
 

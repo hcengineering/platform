@@ -1,12 +1,14 @@
 //
 
-import { DOMAIN_TX, type Space, TxOperations, type Class, type Doc, type Domain, type Ref } from '@hcengineering/core'
+import { DOMAIN_TX, TxOperations, type Class, type Doc, type Domain, type Ref, type Space } from '@hcengineering/core'
 import {
   createDefaultSpace,
   tryMigrate,
   tryUpgrade,
   type MigrateOperation,
+  type MigrateUpdate,
   type MigrationClient,
+  type MigrationDocumentQuery,
   type MigrationUpgradeClient,
   type ModelLogger
 } from '@hcengineering/model'
@@ -14,6 +16,7 @@ import activity, { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 import core from '@hcengineering/model-core'
 import { DOMAIN_VIEW } from '@hcengineering/model-view'
 
+import { AvatarType, type Contact } from '@hcengineering/contact'
 import contact, { DOMAIN_CONTACT, contactId } from './index'
 
 async function createEmployeeEmail (client: TxOperations): Promise<void> {
@@ -46,6 +49,55 @@ async function createEmployeeEmail (client: TxOperations): Promise<void> {
       await client.update(current, { value: acc.email.trim() }, false, current.modifiedOn)
     }
   }
+}
+
+const colorPrefix = 'color://'
+const gravatarPrefix = 'gravatar://'
+
+async function migrateAvatars (client: MigrationClient): Promise<void> {
+  const classes = client.hierarchy.getDescendants(contact.class.Contact)
+  const i = await client.traverse<Contact>(DOMAIN_CONTACT, {
+    _class: { $in: classes },
+    avatar: { $regex: 'color|gravatar://.*' }
+  })
+  while (true) {
+    const docs = await i.next(50)
+    if (docs === null || docs?.length === 0) {
+      break
+    }
+    const updates: { filter: MigrationDocumentQuery<Contact>, update: MigrateUpdate<Contact> }[] = []
+    for (const d of docs) {
+      if (d.avatar?.startsWith(colorPrefix) ?? false) {
+        d.avatarProps = { color: d.avatar?.slice(colorPrefix.length) ?? '' }
+        updates.push({
+          filter: { _id: d._id },
+          update: {
+            avatarType: AvatarType.COLOR,
+            avatar: null,
+            avatarProps: { color: d.avatar?.slice(colorPrefix.length) ?? '' }
+          }
+        })
+      } else if (d.avatar?.startsWith(gravatarPrefix) ?? false) {
+        updates.push({
+          filter: { _id: d._id },
+          update: {
+            avatarType: AvatarType.GRAVATAR,
+            avatar: null,
+            avatarProps: { url: d.avatar?.slice(gravatarPrefix.length) ?? '' }
+          }
+        })
+      }
+    }
+    if (updates.length > 0) {
+      await client.bulk(DOMAIN_CONTACT, updates)
+    }
+  }
+
+  await client.update(
+    DOMAIN_CONTACT,
+    { _class: { $in: classes }, avatarKind: { $exists: false } },
+    { avatarKind: AvatarType.IMAGE }
+  )
 }
 
 export const contactOperation: MigrateOperation = {
@@ -182,6 +234,12 @@ export const contactOperation: MigrateOperation = {
               space: contact.space.Contacts
             }
           )
+        }
+      },
+      {
+        state: 'avatars',
+        func: async (client) => {
+          await migrateAvatars(client)
         }
       }
     ])

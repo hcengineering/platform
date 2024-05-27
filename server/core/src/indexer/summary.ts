@@ -26,13 +26,12 @@ import core, {
   isFullTextAttribute,
   type MeasureContext,
   type Ref,
-  type ServerStorage,
   getFullTextContext
 } from '@hcengineering/core'
 import { translate } from '@hcengineering/platform'
 import { jsonToText, markupToJSON } from '@hcengineering/text'
 import { type DbAdapter } from '../adapter'
-import { type IndexedDoc } from '../types'
+import { type IndexedDoc, type ServerStorage } from '../types'
 import {
   contentStageId,
   type DocUpdateHandler,
@@ -291,7 +290,7 @@ export async function extractIndexedValues (
       if (!isFullTextAttribute(keyAttr)) {
         continue
       }
-      if (keyAttr.type._class === core.class.TypeAttachment && extra.length === 0) {
+      if (keyAttr.type._class === core.class.TypeBlob && extra.length === 0) {
         // Skip attachment id values.
         continue
       }

@@ -49,7 +49,7 @@
     showPopup(
       FilePreviewPopup,
       {
-        file: blob._id,
+        file: value.$lookup?.file ?? value.file,
         contentType: blob.contentType,
         name: value.name,
         metadata: value.metadata

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Channel, combineName, Contact, findContacts } from '@hcengineering/contact'
+  import { AvatarType, Channel, combineName, Contact, findContacts } from '@hcengineering/contact'
   import { ChannelsDropdown, EditableAvatar, PersonPresenter } from '@hcengineering/contact-resources'
   import contact from '@hcengineering/contact-resources/src/plugin'
   import { AttachedData, Class, Data, Doc, generateId, MixinData, Ref, WithLookup } from '@hcengineering/core'
@@ -60,10 +60,14 @@
   async function createCustomer () {
     const candidate: Data<Contact> = {
       name: formatName(targetClass._id, firstName, lastName, object.name),
-      city: object.city
+      city: object.city,
+      avatarType: AvatarType.COLOR
     }
     if (avatar !== undefined) {
-      candidate.avatar = await avatarEditor.createAvatar()
+      const info = await avatarEditor.createAvatar()
+      candidate.avatar = info.avatar
+      candidate.avatarType = info.avatarType
+      candidate.avatarProps = info.avatarProps
     }
     const candidateData: MixinData<Contact, Customer> = {
       description: object.description
@@ -188,7 +192,7 @@
       </div>
       <div class="ml-4 flex">
         <EditableAvatar
-          avatar={object.avatar}
+          person={object}
           size={'large'}
           name={object.name}
           bind:this={avatarEditor}

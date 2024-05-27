@@ -14,7 +14,8 @@ import core, {
   Space,
   TxOperations,
   WithLookup,
-  generateId
+  generateId,
+  type Blob as PlatformBlob
 } from '@hcengineering/core'
 import { Message } from '@hcengineering/gmail'
 import recruit, { Applicant, Candidate, Vacancy } from '@hcengineering/recruit'
@@ -561,7 +562,7 @@ export async function convert (
           const attachDoc: Attachment & BitrixSyncDoc = {
             _id: generateId(),
             bitrixId: `${blobRef.id}`,
-            file: '', // Empty since not uploaded yet.
+            file: '' as Ref<PlatformBlob>, // Empty since not uploaded yet.
             name: blobRef.id,
             size: -1,
             type: 'application/octet-stream',

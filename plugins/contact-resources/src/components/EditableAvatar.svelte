@@ -14,22 +14,16 @@
 -->
 <script lang="ts">
   import attachment from '@hcengineering/attachment'
-  import { AvatarType } from '@hcengineering/contact'
+  import { AvatarType, type AvatarInfo } from '@hcengineering/contact'
   import { Asset, getResource } from '@hcengineering/platform'
-  import { uploadFile } from '@hcengineering/presentation'
-  import {
-    AnySvelteComponent,
-    IconSize,
-    getPlatformAvatarColorForTextDef,
-    showPopup,
-    themeStore
-  } from '@hcengineering/ui'
+  import { AnySvelteComponent, IconSize, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
+  import type { Data, Blob as PlatformBlob, Ref, WithLookup } from '@hcengineering/core'
   import AvatarComponent from './Avatar.svelte'
   import SelectAvatarPopup from './SelectAvatarPopup.svelte'
 
-  export let avatar: string | null | undefined
+  export let person: Data<WithLookup<AvatarInfo>> | undefined
   export let name: string | null | undefined = undefined
   export let email: string | undefined = undefined
   export let size: IconSize
@@ -39,30 +33,24 @@
   export let imageOnly: boolean = false
   export let lessCrop: boolean = false
 
-  $: [schema, uri] = avatar?.split('://') || []
+  $: selectedAvatarType = person?.avatarType ?? AvatarType.COLOR
+  $: selectedAvatar = person?.avatar
+  $: selectedAvatarProps = person?.avatarProps
 
-  let selectedAvatarType: AvatarType | undefined
-  let selectedAvatar: string | null | undefined
-  $: selectedAvatarType = avatar?.includes('://')
-    ? (schema as AvatarType)
-    : avatar === undefined
-      ? AvatarType.COLOR
-      : AvatarType.IMAGE
-  $: selectedAvatar = selectedAvatarType === AvatarType.IMAGE ? avatar : uri
-  $: if (selectedAvatar === undefined && selectedAvatarType === AvatarType.COLOR) {
-    selectedAvatar = getPlatformAvatarColorForTextDef(name ?? '', $themeStore.dark).name
-  }
+  export async function createAvatar (): Promise<Data<AvatarInfo>> {
+    const result: Data<AvatarInfo> = {
+      avatarType: selectedAvatarType,
+      avatarProps: selectedAvatarProps,
+      avatar: selectedAvatar
+    }
 
-  export async function createAvatar (): Promise<string | undefined> {
     if (selectedAvatarType === AvatarType.IMAGE && direct !== undefined) {
       const uploadFile = await getResource(attachment.helper.UploadFile)
       const file = new File([direct], 'avatar', { type: direct.type })
 
-      return await uploadFile(file)
+      result.avatar = await uploadFile(file)
     }
-    if (selectedAvatarType != null && selectedAvatar) {
-      return `${selectedAvatarType}://${selectedAvatar}`
-    }
+    return result
   }
 
   export async function removeAvatar (avatar: string) {
@@ -72,11 +60,16 @@
     }
   }
 
-  function handlePopupSubmit (submittedAvatarType?: AvatarType, submittedAvatar?: string, submittedDirect?: Blob) {
+  function handlePopupSubmit (
+    submittedAvatarType: AvatarType,
+    submittedAvatar: Ref<PlatformBlob> | undefined | null,
+    submittedProps: Record<string, any> | undefined,
+    submittedDirect?: Blob
+  ) {
     selectedAvatarType = submittedAvatarType
     selectedAvatar = submittedAvatar
+    selectedAvatarProps = submittedProps
     direct = submittedDirect
-    avatar = selectedAvatarType === AvatarType.IMAGE ? selectedAvatar : `${selectedAvatarType}://${selectedAvatar}`
     dispatch('done')
   }
   const dispatch = createEventDispatcher()
@@ -84,12 +77,10 @@
   async function showSelectionPopup (e: MouseEvent) {
     if (!disabled) {
       showPopup(SelectAvatarPopup, {
-        avatar:
-          selectedAvatarType === AvatarType.IMAGE
-            ? selectedAvatar
-            : selectedAvatarType === AvatarType.COLOR && avatar == null
-              ? undefined
-              : `${selectedAvatarType}://${selectedAvatar}`,
+        avatar: selectedAvatar,
+        selectedAvatarType,
+        selectedAvatarProps,
+        selectedAvatar,
         email,
         name,
         file: direct,
@@ -109,11 +100,11 @@
     {direct}
     {size}
     {icon}
-    avatar={selectedAvatarType === AvatarType.IMAGE
-      ? selectedAvatar
-      : selectedAvatarType === AvatarType.COLOR && avatar == null
-        ? undefined
-        : `${selectedAvatarType}://${selectedAvatar}`}
+    person={{
+      avatarType: selectedAvatarType,
+      avatarProps: selectedAvatarProps,
+      avatar: selectedAvatar
+    }}
     {name}
   />
 </div>

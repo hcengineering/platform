@@ -13,20 +13,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte'
   import { type Blob, type Ref } from '@hcengineering/core'
-  import { Label, Dialog, Button, Component } from '@hcengineering/ui'
+  import { Button, Component, Dialog, Label } from '@hcengineering/ui'
+  import { createEventDispatcher, onMount } from 'svelte'
 
   import presentation from '../plugin'
 
   import { getPreviewType, previewTypes } from '../file'
   import { BlobMetadata, FilePreviewExtension } from '../types'
-  import { getFileUrl } from '../utils'
+  import { getBlobHref, getFileUrl } from '../utils'
 
   import ActionContext from './ActionContext.svelte'
   import Download from './icons/Download.svelte'
 
-  export let file: Ref<Blob> | undefined
+  export let file: Blob | Ref<Blob> | undefined
   export let name: string
   export let contentType: string
   export let metadata: BlobMetadata | undefined
@@ -57,9 +57,8 @@
   } else {
     previewType = undefined
   }
-
   let download: HTMLAnchorElement
-  $: src = file === undefined ? '' : getFileUrl(file, 'full', name)
+  $: src = file === undefined ? '' : typeof file === 'string' ? getFileUrl(file, name) : getBlobHref(file, file._id)
 </script>
 
 <ActionContext context={{ mode: 'browser' }} />

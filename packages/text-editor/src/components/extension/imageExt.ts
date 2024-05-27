@@ -14,7 +14,7 @@
 //
 import { FilePreviewPopup } from '@hcengineering/presentation'
 import { ImageNode, type ImageOptions as ImageNodeOptions } from '@hcengineering/text'
-import { type IconSize, getIconSize2x, showPopup } from '@hcengineering/ui'
+import { showPopup } from '@hcengineering/ui'
 import { mergeAttributes, nodeInputRule } from '@tiptap/core'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 
@@ -26,9 +26,7 @@ export type ImageAlignment = 'center' | 'left' | 'right'
 /**
  * @public
  */
-export interface ImageOptions extends ImageNodeOptions {
-  uploadUrl: string
-}
+export interface ImageOptions extends ImageNodeOptions {}
 
 export interface ImageAlignmentOptions {
   align?: ImageAlignment
@@ -63,11 +61,6 @@ declare module '@tiptap/core' {
  */
 export const inputRegex = /(?:^|\s)(!\[(.+|:?)]\((\S+)(?:(?:\s+)["'](\S+)["'])?\))$/
 
-// This is a simplified version of getFileUrl from presentation plugin, which we cannot use
-export function getFileUrl (fileId: string, size: IconSize = 'full', uploadUrl: string): string {
-  return `${uploadUrl}?file=${fileId}&size=${size as string}`
-}
-
 /**
  * @public
  */
@@ -76,7 +69,8 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
     return {
       inline: true,
       HTMLAttributes: {},
-      uploadUrl: ''
+      getFileUrl: () => '',
+      getFileUrlSrcSet: () => ''
     }
   },
 
@@ -105,33 +99,32 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
       this.options.HTMLAttributes,
       HTMLAttributes
     )
-
-    const uploadUrl = this.options.uploadUrl ?? ''
+    const getFileUrl = this.options.getFileUrl
+    const getFileUrlSrcSet = this.options.getFileUrlSrcSet
 
     const id = imgAttributes['file-id']
     if (id != null) {
-      imgAttributes.src = getFileUrl(id, 'full', uploadUrl)
-      let width: IconSize | undefined
+      imgAttributes.src = getFileUrl(id)
+      let width: number | undefined
+      // TODO: Use max width of component may be?
       switch (imgAttributes.width) {
         case '32px':
-          width = 'small'
+          width = 32
           break
         case '64px':
-          width = 'medium'
+          width = 64
           break
         case '128px':
+          width = 128
+          break
         case '256px':
-          width = 'large'
+          width = 256
           break
         case '512px':
-          width = 'x-large'
+          width = 512
           break
       }
-      if (width !== undefined) {
-        imgAttributes.src = getFileUrl(id, width, uploadUrl)
-        imgAttributes.srcset =
-          getFileUrl(id, width, uploadUrl) + ' 1x,' + getFileUrl(id, getIconSize2x(width), uploadUrl) + ' 2x'
-      }
+      imgAttributes.srcset = getFileUrlSrcSet(id, width)
       imgAttributes.class = 'text-editor-image'
       imgAttributes.contentEditable = false
     }

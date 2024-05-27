@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Channel, combineName, Employee, PersonAccount } from '@hcengineering/contact'
+  import { AvatarType, Channel, combineName, Employee, PersonAccount } from '@hcengineering/contact'
   import core, { AccountRole, AttachedData, Data, generateId, Ref } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { getResource } from '@hcengineering/platform'
@@ -44,7 +44,8 @@
   const person: Data<Employee> = {
     name: '',
     city: '',
-    active: true
+    active: true,
+    avatarType: AvatarType.COLOR
   }
 
   const dispatch = createEventDispatcher()
@@ -56,7 +57,10 @@
       changeEmail()
       const name = combineName(firstName, lastName)
       person.name = name
-      person.avatar = await avatarEditor.createAvatar()
+      const info = await avatarEditor.createAvatar()
+      person.avatar = info.avatar
+      person.avatarType = info.avatarType
+      person.avatarProps = info.avatarProps
 
       await client.createDoc(contact.class.Person, contact.space.Contacts, person, id)
       await client.createMixin(id, contact.class.Person, contact.space.Contacts, contact.mixin.Employee, {
@@ -179,7 +183,7 @@
     </div>
     <div class="ml-4">
       <EditableAvatar
-        avatar={person.avatar}
+        {person}
         name={combineName(firstName, lastName)}
         {email}
         size={'large'}
