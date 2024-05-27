@@ -63,4 +63,16 @@ export class ApiEndpoint {
     const response = await this.request.post(url, { data: payload, headers })
     return await response.json()
   }
+
+  async leaveWorkspace (email: string, username: string, password: string): Promise<any> {
+    const token = await this.loginAndGetToken(username, password)
+    const url = AccountUrl
+    const payload = {
+      method: 'leaveWorkspace',
+      params: [email]
+    }
+    const headers = this.getDefaultHeaders(token)
+    const response = await this.request.post(url, { data: payload, headers })
+    return await response.json()
+  }
 }

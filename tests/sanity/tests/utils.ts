@@ -14,14 +14,26 @@ export const LocalUrl = process.env.LOCAL_URL as string
 export const DevUrl = process.env.DEV_URL as string
 
 export function generateTestData (): TestData {
+  const generateWordStartingWithA = (): string => {
+    const randomWord = faker.lorem.word()
+    return 'A' + randomWord.slice(1)
+  }
+
   return {
     workspaceName: faker.lorem.word(),
     userName: faker.internet.userName(),
     firstName: faker.person.firstName(),
     lastName: faker.person.lastName(),
-    channelName: faker.lorem.word()
+    channelName: generateWordStartingWithA()
   }
 }
+
+// Consistent data
+export const workspaceName = faker.lorem.word()
+export const userName = faker.internet.userName()
+export const firstName = faker.person.firstName()
+export const lastName = faker.person.lastName()
+export const channelName = faker.lorem.word()
 
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
