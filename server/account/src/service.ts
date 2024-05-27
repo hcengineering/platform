@@ -18,7 +18,8 @@ import { MigrateOperation, ModelLogger } from '@hcengineering/model'
 import { FileModelLogger } from '@hcengineering/server-tool'
 import { Db, MongoClient } from 'mongodb'
 import path from 'path'
-import { listWorkspacesRaw, updateWorkspace, upgradeWorkspace, Workspace, WorkspaceInfo } from './operations'
+import { Workspace, WorkspaceInfo, listWorkspacesRaw, updateWorkspace, upgradeWorkspace } from './operations'
+import { Analytics } from '@hcengineering/analytics'
 
 export type UpgradeErrorHandler = (workspace: BaseWorkspaceInfo, error: any) => Promise<void>
 
@@ -148,24 +149,34 @@ export class UpgradeWorker {
     this.st = Date.now()
     this.total = workspaces.length
 
-    if (opt.parallel !== 0) {
+    if (opt.parallel > 1) {
       const parallel = opt.parallel
       const rateLimit = new RateLimiter(parallel)
       ctx.info('parallel upgrade', { parallel })
-      await Promise.all(
-        workspaces.map((it) =>
-          rateLimit.add(async () => {
+
+      for (const it of workspaces) {
+        await rateLimit.add(async () => {
+          try {
             await ctx.with('do-upgrade', {}, async () => {
               await this._upgradeWorkspace(ctx, it, opt)
             })
-          })
-        )
-      )
+          } catch (err: any) {
+            ctx.error('Failed to update', { err })
+            Analytics.handleError(err)
+          }
+        })
+      }
+      await rateLimit.waitProcessing()
       ctx.info('Upgrade done')
     } else {
       ctx.info('UPGRADE write logs at:', { logs: opt.logs })
       for (const ws of workspaces) {
-        await this._upgradeWorkspace(ctx, ws, opt)
+        try {
+          await this._upgradeWorkspace(ctx, ws, opt)
+        } catch (err: any) {
+          ctx.error('Failed to update', { err })
+          Analytics.handleError(err)
+        }
       }
       if (withError.length > 0) {
         ctx.info('Failed workspaces', withError)
