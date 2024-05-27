@@ -134,8 +134,6 @@ export class S3Service implements StorageAdapter {
         // No bucket exisrs
         return false
       }
-      // Ignore
-      console.error(err)
     }
     // No API to check is bucket exists or not, so we need to call make and check if it already exists.
     return false
@@ -148,7 +146,7 @@ export class S3Service implements StorageAdapter {
         Bucket: this.getBucketId(workspaceId)
       })
     } catch (err: any) {
-      console.error(err)
+      ctx.error('error during create bucket', { err })
     }
   }
 
