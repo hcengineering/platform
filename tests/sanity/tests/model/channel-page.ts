@@ -12,7 +12,7 @@ export class ChannelPage {
   readonly textMessage = (messageText: string): Locator => this.page.getByText(messageText)
   readonly channelName = (channel: string): Locator => this.page.getByText('general random').getByText(channel)
   readonly channelTab = (): Locator => this.page.getByRole('link', { name: 'Channels' }).getByRole('button')
-  readonly channelTable = (): Locator => this.page.locator('[class="antiTable metaColumn highlightRows"]')
+  readonly channelTable = (): Locator => this.page.getByRole('table')
   readonly channel = (channel: string): Locator => this.page.getByRole('button', { name: channel })
   readonly chooseChannel = (channel: string): Locator => this.page.getByRole('link', { name: channel })
   readonly closePopupWindow = (): Locator => this.page.locator('.root > div > .antiButton').first()
