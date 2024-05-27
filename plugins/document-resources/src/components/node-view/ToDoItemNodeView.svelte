@@ -215,6 +215,7 @@
 <style lang="scss">
   .todo-item {
     .assignee {
+      width: 1.25rem;
       cursor: pointer;
     }
     .assignee,
