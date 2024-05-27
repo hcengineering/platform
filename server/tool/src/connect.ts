@@ -25,9 +25,7 @@ import {
 } from '@hcengineering/core'
 import { addLocation, getMetadata, getResource, setMetadata } from '@hcengineering/platform'
 import { generateToken } from '@hcengineering/server-token'
-import { mkdtempSync } from 'fs'
 import crypto from 'node:crypto'
-import { type Writable } from 'stream'
 import plugin from './plugin'
 
 /**
@@ -86,15 +84,21 @@ export async function connect (
 export class BlobClient {
   transactorAPIUrl: string
   token: string
-  tmpDir: string
   index: number
-  constructor (transactorUrl: string, workspace: WorkspaceId, email?: string, extra?: Record<string, string>) {
+  constructor (
+    readonly transactorUrl: string,
+    readonly workspace: WorkspaceId,
+    email?: string,
+    extra?: Record<string, string>
+  ) {
     this.index = 0
     this.token = generateToken(email ?? systemAccountEmail, workspace, extra)
+    let url = transactorUrl
+    if (url.endsWith('/')) {
+      url = url.slice(0, url.length - 1)
+    }
 
-    this.transactorAPIUrl = transactorUrl.replaceAll('wss://', 'https://').replace('ws://', 'http://') + '/api/v1/blob/'
-
-    this.tmpDir = mkdtempSync('blobs')
+    this.transactorAPIUrl = url.replaceAll('wss://', 'https://').replace('ws://', 'http://') + '/api/v1/blob/'
   }
 
   async checkFile (ctx: MeasureContext, name: string): Promise<boolean> {
@@ -116,7 +120,15 @@ export class BlobClient {
     }
   }
 
-  async writeTo (ctx: MeasureContext, name: string, size: number, writable: Writable): Promise<void> {
+  async writeTo (
+    ctx: MeasureContext,
+    name: string,
+    size: number,
+    writable: {
+      write: (buffer: Buffer, cb: (err?: any) => void) => void
+      end: () => void
+    }
+  ): Promise<void> {
     let written = 0
     const chunkSize = 1024 * 1024
 
@@ -134,7 +146,7 @@ export class BlobClient {
           if (response.status === 404) {
             i = 5
             // No file, so make it empty
-            throw new Error(`No file for ${this.transactorAPIUrl}/${name}`)
+            throw new Error(`No file for ${this.transactorAPIUrl}/${this.workspace.name}/${name}`)
           }
           const chunk = Buffer.from(await response.arrayBuffer())
           await new Promise<void>((resolve, reject) => {

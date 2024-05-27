@@ -123,9 +123,7 @@ export async function initModel (
 
     logger.log('create minio bucket', { workspaceId })
 
-    if (!(await storageAdapter.exists(ctx, workspaceId))) {
-      await storageAdapter.make(ctx, workspaceId)
-    }
+    await storageAdapter.make(ctx, workspaceId)
 
     connection = (await connect(
       transactorUrl,

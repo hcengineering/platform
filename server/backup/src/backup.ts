@@ -23,6 +23,7 @@ import core, {
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
   MeasureContext,
+  MeasureMetricsContext,
   RateLimiter,
   Ref,
   SortingOrder,
@@ -232,6 +233,10 @@ export async function cloneWorkspace (
     model: 'upgrade',
     admin: 'true'
   })) as unknown as CoreClient & BackupClient
+
+  const blobClientSource = new BlobClient(transactorUrl, sourceWorkspaceId)
+  const blobClientTarget = new BlobClient(transactorUrl, targetWorkspaceId)
+
   try {
     const domains = sourceConnection
       .getHierarchy()
@@ -335,6 +340,25 @@ export async function cloneWorkspace (
                 }
               }
             })
+          }
+          for (const d of docs) {
+            if (d._class === core.class.Blob) {
+              const blob = d as Blob
+              const blobs: Buffer[] = []
+              try {
+                await blobClientSource.writeTo(new MeasureMetricsContext('upload', {}), blob._id, blob.size, {
+                  write: (b, cb) => {
+                    blobs.push(b)
+                    cb()
+                  },
+                  end: () => {}
+                })
+
+                await blobClientTarget.upload(blob._id, blob.size, blob.contentType, Buffer.concat(blobs))
+              } catch (err: any) {
+                console.error(err)
+              }
+            }
           }
           await targetConnection.upload(c, docs)
         } catch (err: any) {
