@@ -149,7 +149,7 @@ export class DomainIndexHelperImpl implements DomainHelper {
                 continue
               }
             }
-            ctx.info('drop indexe', { domain, name: c.name, has50Documents })
+            ctx.info('drop index', { domain, name: c.name, has50Documents })
             await operations.dropIndex(domain, c.name)
           } catch (err) {
             console.error('error: failed to drop index', { c, err })

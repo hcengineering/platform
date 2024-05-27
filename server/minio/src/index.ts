@@ -30,6 +30,7 @@ import {
   removeAllObjects,
   type BlobLookupResult,
   type BlobStorageIterator,
+  type BucketInfo,
   type ListBlobResult,
   type StorageAdapter,
   type StorageConfig,
@@ -88,6 +89,27 @@ export class MinioService implements StorageAdapter {
 
   async initialize (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {}
 
+  async listBuckets (ctx: MeasureContext, productId: string): Promise<BucketInfo[]> {
+    const productPostfix = getBucketId({
+      name: '',
+      productId
+    })
+    const buckets = await this.client.listBuckets()
+    return buckets
+      .filter((it) => it.name.endsWith(productPostfix))
+      .map((it) => {
+        let name = it.name
+        name = name.slice(0, name.length - productPostfix.length)
+        return {
+          name,
+          delete: async () => {
+            await this.delete(ctx, { name, productId })
+          },
+          list: async () => await this.listStream(ctx, { name, productId })
+        }
+      })
+  }
+
   async close (): Promise<void> {}
 
   async exists (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<boolean> {
@@ -103,7 +125,11 @@ export class MinioService implements StorageAdapter {
   }
 
   async delete (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {
-    await removeAllObjects(ctx, this, workspaceId)
+    try {
+      await removeAllObjects(ctx, this, workspaceId)
+    } catch (err: any) {
+      ctx.error('failed t oclean all objecrs', { error: err })
+    }
     await this.client.removeBucket(getBucketId(workspaceId))
   }
 

@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
 import { deepEqual } from 'fast-equals'
 import {
   Account,
@@ -46,7 +47,6 @@ import { TxOperations } from './operations'
 import { isPredicate } from './predicate'
 import { DocumentQuery, FindResult } from './storage'
 import { DOMAIN_TX } from './tx'
-import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
 
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
@@ -368,7 +368,10 @@ export class RateLimiter {
     if (this.processingQueue.size < this.rate) {
       void this.exec(op, args)
     } else {
-      await this.exec(op, args)
+      while (this.processingQueue.size > this.rate) {
+        await Promise.race(this.processingQueue.values())
+      }
+      void this.exec(op, args)
     }
   }
 
