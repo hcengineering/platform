@@ -8,7 +8,7 @@ import { DocumentContentPage } from '../model/documents/document-content-page'
 test.use({
   storageState: PlatformSetting
 })
-// ADDED NEW
+
 test.describe('Documents tests', () => {
   let leftSideMenuPage: LeftSideMenuPage
   let documentsPage: DocumentsPage
@@ -19,7 +19,7 @@ test.describe('Documents tests', () => {
     documentsPage = new DocumentsPage(page)
     documentContentPage = new DocumentContentPage(page)
 
-    await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
+    await page.goto(`${PlatformURI}/workbench/sanity-ws`)
   })
 
   test('Create a document', async () => {
@@ -35,7 +35,7 @@ test.describe('Documents tests', () => {
     await documentContentPage.checkDocumentTitle(newDocument.title)
   })
 
-  test('Edit document', async ({ page }) => {
+  test('Edit document', async () => {
     const contentOne = ' * Text first line'
     const contentTwo = ' * Text second line'
     const newDocumentTitle = `Edit Updated Document Title-${generateId()}`
@@ -43,11 +43,13 @@ test.describe('Documents tests', () => {
       title: `Edit Document Title-${generateId()}`,
       space: 'Default'
     }
+
     await leftSideMenuPage.clickDocuments()
     await documentsPage.clickOnButtonCreateDocument()
     await documentsPage.createDocument(editDocument)
     await documentsPage.openDocument(editDocument.title)
     await documentContentPage.checkDocumentTitle(editDocument.title)
+
     let content = await documentContentPage.addContentToTheNewLine(contentOne)
     await documentContentPage.checkContent(content)
     content = await documentContentPage.addContentToTheNewLine(contentTwo)
@@ -56,7 +58,7 @@ test.describe('Documents tests', () => {
     await documentContentPage.checkDocumentTitle(newDocumentTitle)
   })
 
-  test('Move document', async ({ page }) => {
+  test('Move document', async () => {
     const contentFirst = 'Text first line'
     const moveDocument: NewDocument = {
       title: `Move Document Title-${generateId()}`,
@@ -85,12 +87,12 @@ test.describe('Documents tests', () => {
     await documentContentPage.checkDocumentTitle(moveDocument.title)
   })
 
-  test('Collarabotive edit document content', async ({ page, browser }) => {
+  test('Collaborative edit document content', async ({ page, browser }) => {
     let content = ''
-    const contentFirstUser = 'First first!!! This string come from from the first user'
-    const contentSecondUser = 'Second second!!! This string come from from the second user'
+    const contentFirstUser = 'First first!!! This string comes from the first user'
+    const contentSecondUser = 'Second second!!! This string comes from the second user'
     const colDocument: NewDocument = {
-      title: `Collarabotive edit Title-${generateId()}`,
+      title: `Collaborative edit Title-${generateId()}`,
       space: 'Default'
     }
 
@@ -107,23 +109,21 @@ test.describe('Documents tests', () => {
 
     await test.step('User2. Add content second user', async () => {
       const { page: userSecondPage, context } = await getSecondPage(browser)
-      try {
-        await (await userSecondPage.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
 
-        const leftSideMenuPageSecond = new LeftSideMenuPage(userSecondPage)
-        await leftSideMenuPageSecond.clickDocuments()
-        const documentsPageSecond = new DocumentsPage(userSecondPage)
-        await documentsPageSecond.openTeamspace(colDocument.space)
-        await documentsPageSecond.openDocument(colDocument.title)
-        const documentContentPageSecond = new DocumentContentPage(page)
-        await documentContentPageSecond.checkDocumentTitle(colDocument.title)
-        await documentContentPageSecond.checkContent(content)
-        content = await documentContentPageSecond.addContentToTheNewLine(contentSecondUser)
-        await documentContentPageSecond.checkContent(content)
-      } finally {
-        await userSecondPage.close()
-        await context.close()
-      }
+      await userSecondPage.goto(`${PlatformURI}/workbench/sanity-ws`)
+      const leftSideMenuPageSecond = new LeftSideMenuPage(userSecondPage)
+      await leftSideMenuPageSecond.clickDocuments()
+      const documentsPageSecond = new DocumentsPage(userSecondPage)
+      await documentsPageSecond.openTeamspace(colDocument.space)
+      await documentsPageSecond.openDocument(colDocument.title)
+      const documentContentPageSecond = new DocumentContentPage(userSecondPage)
+      await documentContentPageSecond.checkDocumentTitle(colDocument.title)
+      await documentContentPageSecond.checkContent(content)
+      content = await documentContentPageSecond.addContentToTheNewLine(contentSecondUser)
+      await documentContentPageSecond.checkContent(content)
+
+      await userSecondPage.close()
+      await context.close()
     })
 
     await test.step('User1. Check final content', async () => {
@@ -132,7 +132,7 @@ test.describe('Documents tests', () => {
     })
   })
 
-  test('Add Link to the Document', async ({ page }) => {
+  test('Add Link to the Document', async () => {
     const contentLink = 'Lineforthelink'
     const linkDocument: NewDocument = {
       title: `Links Document Title-${generateId()}`,

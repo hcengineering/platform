@@ -12,59 +12,54 @@ test.describe('Documents link tests', () => {
       title: `Document Public link revoke-${generateId()}`,
       space: 'Default'
     }
-    // ADDED NEW
+
     const newContext = await browser.newContext({ storageState: PlatformSetting })
     const page = await newContext.newPage()
-    try {
-      await (await page.goto(`${PlatformURI}/workbench/sanity-ws`))?.finished()
 
-      const leftSideMenuPage = new LeftSideMenuPage(page)
-      await leftSideMenuPage.clickDocuments()
+    await page.goto(`${PlatformURI}/workbench/sanity-ws`)
 
-      const documentsPage = new DocumentsPage(page)
-      await documentsPage.clickOnButtonCreateDocument()
+    const leftSideMenuPage = new LeftSideMenuPage(page)
+    await leftSideMenuPage.clickDocuments()
 
-      await documentsPage.createDocument(publicLinkDocument)
-      await documentsPage.openDocument(publicLinkDocument.title)
+    const documentsPage = new DocumentsPage(page)
+    await documentsPage.clickOnButtonCreateDocument()
+    await documentsPage.createDocument(publicLinkDocument)
+    await documentsPage.openDocument(publicLinkDocument.title)
 
-      const documentContentPage = new DocumentContentPage(page)
-      await documentContentPage.executeMoreAction('Public link')
+    const documentContentPage = new DocumentContentPage(page)
+    await documentContentPage.executeMoreAction('Public link')
 
-      // remove after UBERF-5994 fixed
-      await documentContentPage.closePopup()
-      await page.reload({ waitUntil: 'commit' })
-      await documentContentPage.executeMoreAction('Public link')
+    // remove after UBERF-5994 fixed
+    await documentContentPage.closePopup()
+    await page.reload({ waitUntil: 'commit' })
+    await documentContentPage.executeMoreAction('Public link')
 
+    const publicLinkPopup = new PublicLinkPopup(page)
+    const link = await publicLinkPopup.getPublicLink()
+
+    const clearSession = await browser.newContext()
+    const clearPage = await clearSession.newPage()
+
+    await test.step('Check guest access to the document', async () => {
+      await clearPage.goto(link)
+      const documentContentClearPage = new DocumentContentPage(clearPage)
+      await documentContentClearPage.checkDocumentTitle(publicLinkDocument.title)
+      expect(clearPage.url()).toContain('guest')
+    })
+
+    await test.step('Revoke guest access to the document', async () => {
       const publicLinkPopup = new PublicLinkPopup(page)
-      const link = await publicLinkPopup.getPublicLink()
+      await publicLinkPopup.revokePublicLink()
+    })
 
-      const clearSession = await browser.newContext()
-      const clearPage = await clearSession.newPage()
-      try {
-        await test.step('Check guest access to the document', async () => {
-          await clearPage.goto(link)
+    await test.step('Check guest access to the document after the revoke', async () => {
+      await clearPage.goto(link)
+      await expect(clearPage.locator('div.antiPopup > h1')).toHaveText('Public link was revoked')
+    })
 
-          const documentContentClearPage = new DocumentContentPage(clearPage)
-          await documentContentClearPage.checkDocumentTitle(publicLinkDocument.title)
-          expect(clearPage.url()).toContain('guest')
-        })
-
-        await test.step('Revoke guest access to the document', async () => {
-          const publicLinkPopup = new PublicLinkPopup(page)
-          await publicLinkPopup.revokePublicLink()
-        })
-
-        await test.step('Check guest access to the document after the revoke', async () => {
-          await clearPage.goto(link)
-          await expect(clearPage.locator('div.antiPopup > h1')).toHaveText('Public link was revoked')
-        })
-      } finally {
-        await clearPage.close()
-        await clearSession.close()
-      }
-    } finally {
-      await page.close()
-      await newContext.close()
-    }
+    await clearPage.close()
+    await clearSession.close()
+    await page.close()
+    await newContext.close()
   })
 })
