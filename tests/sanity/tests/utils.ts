@@ -10,7 +10,8 @@ export const PlatformUserSecond = process.env.PLATFORM_USER_SECOND as string
 export const PlatformSetting = process.env.SETTING as string
 export const PlatformSettingSecond = process.env.SETTING_SECOND as string
 export const DefaultWorkspace = 'SanityTest'
-export const AccountUrl = process.env.ACCOUNT_URL as string
+export const LocalUrl = process.env.LOCAL_URL as string
+export const DevUrl = process.env.DEV_URL as string
 
 export function generateTestData (): TestData {
   return {
