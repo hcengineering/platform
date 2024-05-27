@@ -329,14 +329,6 @@ export class LiveQuery implements WithTx, Client {
       const queueIndex = this.queue.indexOf(q)
       if (queueIndex !== -1) {
         this.queue.splice(queueIndex, 1)
-        const queries = this.queries.get(q._class)
-        const pos = queries?.indexOf(q) ?? -1
-        if (pos >= 0 && queries !== undefined) {
-          queries.splice(pos, 1)
-          if (queries?.length === 0) {
-            this.queries.delete(q._class)
-          }
-        }
         if (update) {
           if (!(q.result instanceof Promise)) {
             this.updateDocuments(q, q.result, true)
@@ -1326,6 +1318,15 @@ export class LiveQuery implements WithTx, Client {
             } catch (err: any) {
               Analytics.handleError(err)
               console.error(err)
+            }
+          } else {
+            const queries = this.queries.get(q._class)
+            const pos = queries?.indexOf(q) ?? -1
+            if (pos >= 0 && queries !== undefined) {
+              queries.splice(pos, 1)
+              if (queries?.length === 0) {
+                this.queries.delete(q._class)
+              }
             }
           }
         }
