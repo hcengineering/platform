@@ -27,8 +27,8 @@ export function getPanelFragment<T extends Doc> (object: Pick<T, '_class' | '_id
 }
 
 export function getFolderIdFromFragment (fragment: string): Ref<Folder> | undefined {
-  const [, _id] = decodeURIComponent(fragment).split('|')
-  return _id as Ref<Folder>
+  const [, _id, _class] = decodeURIComponent(fragment).split('|')
+  return _class === drive.class.Folder ? (_id as Ref<Folder>) : drive.ids.Root
 }
 
 export function getDriveLink (_id: Ref<Drive>): Location {
