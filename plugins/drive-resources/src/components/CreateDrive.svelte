@@ -222,7 +222,7 @@
 
 <Card
   label={drive ? driveRes.string.EditDrive : driveRes.string.CreateDrive}
-  okLabel={drive ? presentation.string.Create : presentation.string.Save}
+  okLabel={drive ? presentation.string.Save : presentation.string.Create}
   okAction={handleSave}
   {canSave}
   accentHeader
