@@ -116,7 +116,8 @@
         ofAttribute: attr._id,
         icon: undefined,
         color: 0,
-        icons
+        icons,
+        readonly
       }
     }
   }

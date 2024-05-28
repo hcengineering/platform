@@ -286,7 +286,8 @@
               ofAttribute,
               icon,
               color,
-              icons
+              icons,
+              readonly
             }
           }
         }
@@ -329,7 +330,8 @@
         icon,
         color,
         icons,
-        valuePattern: pattern
+        valuePattern: pattern,
+        readonly
       }
     }
   }
