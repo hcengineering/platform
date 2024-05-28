@@ -68,7 +68,7 @@
   let _calendar: Ref<Calendar> = `${me._id}_calendar` as Ref<Calendar>
 
   const q = createQuery()
-  q.query(calendar.class.ExternalCalendar, { default: true, members: me._id, hidden: false }, (res) => {
+  q.query(calendar.class.ExternalCalendar, { default: true, createdBy: me._id, hidden: false }, (res) => {
     if (res.length > 0) {
       _calendar = res[0]._id
     }
@@ -176,7 +176,6 @@
       focusIndex={10001}
     />
     <div class="flex-row-center gap-1 flex-no-shrink ml-3">
-      <Button id="card-more" focusIndex={10002} icon={IconMoreH} kind={'ghost'} size={'small'} on:click={() => {}} />
       <Button
         id="card-close"
         focusIndex={10003}
