@@ -19,7 +19,7 @@
   import ui, { Action, AnySvelteComponent, IconSize, ModernButton, NavGroup } from '@hcengineering/ui'
   import { getDocTitle } from '@hcengineering/view-resources'
   import contact from '@hcengineering/contact'
-  import { getResource, translate } from '@hcengineering/platform'
+  import { getResource, IntlString, translate } from '@hcengineering/platform'
   import view from '@hcengineering/view'
   import { personAccountByIdStore, statusByUserStore } from '@hcengineering/contact-resources'
 
@@ -30,7 +30,7 @@
   import { navigatorStateStore, toggleSections } from '../utils'
 
   export let id: string
-  export let header: string
+  export let header: IntlString
   export let objects: Doc[]
   export let contexts: DocNotifyContext[]
   export let actions: Action[] = []
@@ -141,7 +141,7 @@
 
 {#if visibleItems.length > 0 && contexts.length > 0}
   <NavGroup
-    title={header}
+    label={header}
     categoryName={id}
     {actions}
     isOpen={!isCollapsed}

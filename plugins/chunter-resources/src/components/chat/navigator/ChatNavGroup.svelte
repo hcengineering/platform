@@ -17,7 +17,7 @@
   import notification, { DocNotifyContext } from '@hcengineering/notification'
   import { createQuery, getClient, LiveQuery } from '@hcengineering/presentation'
   import activity from '@hcengineering/activity'
-  import { translate } from '@hcengineering/platform'
+  import { IntlString } from '@hcengineering/platform'
   import { Action } from '@hcengineering/ui'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
 
@@ -32,7 +32,7 @@
   interface Section {
     id: string
     _class?: Ref<Class<Doc>>
-    label: string
+    label: IntlString
     objects: Doc[]
   }
 
@@ -124,7 +124,7 @@
       result.push({
         id: model.id,
         objects: Array.from(objectsByClass.values()).flat(),
-        label: await translate(model.label ?? chunter.string.Channels, {})
+        label: model.label ?? chunter.string.Channels
       })
 
       return result
@@ -153,7 +153,7 @@
         id: _class,
         _class,
         objects: sectionObjects,
-        label: await translate(clazz.pluralLabel ?? clazz.label, {})
+        label: clazz.pluralLabel ?? clazz.label
       })
     }
 
@@ -164,7 +164,7 @@
         id: object._id,
         _class: object._class,
         objects: [object],
-        label: await translate(clazz.pluralLabel ?? clazz.label, {})
+        label: clazz.pluralLabel ?? clazz.label
       })
     }
 
