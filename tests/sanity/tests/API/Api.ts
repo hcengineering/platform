@@ -66,7 +66,7 @@ export class ApiEndpoint {
 
   async leaveWorkspace (email: string, username: string, password: string): Promise<any> {
     const token = await this.loginAndGetToken(username, password)
-    const url = AccountUrl
+    const url = this.baseUrl
     const payload = {
       method: 'leaveWorkspace',
       params: [email]
