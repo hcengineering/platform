@@ -114,7 +114,7 @@ export async function createState<T extends Status> (
   if (exists !== undefined) {
     return exists._id as Ref<T>
   }
-  const res = await client.createDoc(_class, task.space.Statuses, data)
+  const res = await client.createDoc(_class, core.space.Model, data)
   return res
 }
 
