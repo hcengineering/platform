@@ -106,6 +106,7 @@ services:
   collaborator:
     image: hardcoreeng/collaborator
     links:
+      - mongodb
       - minio
       - transactor
     ports:
@@ -116,6 +117,7 @@ services:
       - ACCOUNTS_URL=http://account:3003
       - TRANSACTOR_URL=ws://transactor:3334
       - UPLOAD_URL=/files
+      - MONGO_URL=mongodb://mongodb:27018
       - STORAGE_CONFIG=${STORAGE_CONFIG}
     restart: unless-stopped
   rekoni:
