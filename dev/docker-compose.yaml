@@ -83,7 +83,6 @@ services:
       - TRANSACTOR_URL=ws://localhost:3333
       - ELASTIC_URL=http://elastic:9200
       - COLLABORATOR_URL=ws://localhost:3078
-      - COLLABORATOR_API_URL=http://localhost:3078
       - STORAGE_CONFIG=${STORAGE_CONFIG}
     restart: unless-stopped
   collaborator:
@@ -147,6 +146,7 @@ services:
       # - APM_SERVER_URL=http://apm-server:8200
       - SERVER_PROVIDER=ws
       - ACCOUNTS_URL=http://account:3000
+      - COLLABORATOR_URL=http://collaborator:3078
       - LAST_NAME_FIRST=true
       - ELASTIC_INDEX_NAME=local_storage_index
     restart: unless-stopped

@@ -112,7 +112,6 @@ interface Config {
   GMAIL_URL: string
   CALENDAR_URL: string
   COLLABORATOR_URL: string
-  COLLABORATOR_API_URL: string
   PUSH_PUBLIC_KEY: string
   BRANDING_URL?: string
   PREVIEW_CONFIG: string
@@ -241,7 +240,6 @@ export async function configurePlatform() {
   setMetadata(login.metadata.AccountsUrl, config.ACCOUNTS_URL)
   setMetadata(presentation.metadata.UploadURL, config.UPLOAD_URL)
   setMetadata(presentation.metadata.CollaboratorUrl, config.COLLABORATOR_URL)
-  setMetadata(presentation.metadata.CollaboratorApiUrl, config.COLLABORATOR_API_URL)
   setMetadata(presentation.metadata.PreviewConfig, parsePreviewConfig(config.PREVIEW_CONFIG))
 
   if (config.MODEL_VERSION != null) {

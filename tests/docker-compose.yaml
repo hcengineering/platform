@@ -74,7 +74,6 @@ services:
       - REKONI_URL=http://rekoni:4005
       - TELEGRAM_URL=http://localhost:8086
       - COLLABORATOR_URL=ws://localhost:3079
-      - COLLABORATOR_API_URL=http://localhost:3079
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - BRANDING_URL=/branding-test.json
   transactor:
@@ -101,6 +100,7 @@ services:
       - FRONT_URL=http://localhost:8083
       - UPLOAD_URL=http://localhost:8083/files
       - ACCOUNTS_URL=http://account:3003
+      - COLLABORATOR_URL=http://collaborator:3079
       - LAST_NAME_FIRST=true
       - ELASTIC_INDEX_NAME=local_storage_index
   collaborator:

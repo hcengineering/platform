@@ -121,7 +121,8 @@ export function getClient (
   token: string,
   collaboratorUrl: string
 ): CollaboratorClient {
-  return new CollaboratorClientImpl(hierarchy, workspaceId, token, collaboratorUrl)
+  const url = collaboratorUrl.replaceAll('wss://', 'https://').replace('ws://', 'http://')
+  return new CollaboratorClientImpl(hierarchy, workspaceId, token, url)
 }
 
 class CollaboratorClientImpl implements CollaboratorClient {

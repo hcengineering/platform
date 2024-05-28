@@ -88,7 +88,6 @@ export default plugin(presentationId, {
     Draft: '' as Metadata<Record<string, any>>,
     UploadURL: '' as Metadata<string>,
     CollaboratorUrl: '' as Metadata<string>,
-    CollaboratorApiUrl: '' as Metadata<string>,
     Token: '' as Metadata<string>,
     FrontUrl: '' as Asset,
     PreviewConfig: '' as Metadata<PreviewConfig>
