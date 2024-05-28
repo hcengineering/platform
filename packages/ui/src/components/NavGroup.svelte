@@ -45,7 +45,7 @@
   export let collapsedPrefix: string = ''
   export let visible: boolean = false
   export let selected: boolean = false
-  export let nested: boolean = false
+  export let type: 'default' | 'nested' | 'nested-selectable' = 'default'
   export let noDivider: boolean = false
   export let showMenu: boolean = false
   export let shouldTooltip: boolean = false
@@ -72,12 +72,17 @@
       pressed = false
     })
   }
-  $: if (empty) isOpen = false
   $: isOpen = !getTreeCollapsed(_id, collapsedPrefix)
+  $: if (empty) isOpen = false
   $: setTreeCollapsed(_id, !isOpen, collapsedPrefix)
 </script>
 
-<div class="hulyNavGroup-container" class:nested class:noDivider>
+<div
+  class="hulyNavGroup-container"
+  class:nested={type === 'nested' || type === 'nested-selectable'}
+  class:selectable={type === 'nested-selectable'}
+  class:noDivider
+>
   <button
     class="hulyNavGroup-header"
     class:isOpen={isOpen || visible}
@@ -126,11 +131,13 @@
       </div>
     {/if}
   </button>
-  <div {id} class="hulyNavGroup-content">
-    {#if (!isOpen && visible) || forciblyСollapsed}
-      <slot name="visible" {isOpen} />
-    {:else}
-      <slot />
-    {/if}
-  </div>
+  {#if !empty}
+    <div {id} class="hulyNavGroup-content">
+      {#if (!isOpen && visible) || forciblyСollapsed}
+        <slot name="visible" {isOpen} />
+      {:else}
+        <slot />
+      {/if}
+    </div>
+  {/if}
 </div>

@@ -26,7 +26,7 @@
   export let actions: () => Promise<Action[]> = async () => []
   export let notifications: number = 0
   export let parent: boolean = true
-  export let nested: boolean = false
+  export let type: 'default' | 'nested' | 'nested-selectable' = 'default'
   export let isFold: boolean = false
   export let empty: boolean = false
   export let visible: boolean = false
@@ -48,7 +48,7 @@
   bind:collapsed
   {collapsedPrefix}
   {actions}
-  {nested}
+  {type}
   {isFold}
   {empty}
   {visible}

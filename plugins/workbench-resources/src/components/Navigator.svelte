@@ -152,7 +152,9 @@
             <NavItem
               label={special.label}
               icon={special.icon}
-              selected={menuSelection ? false : special.id === currentSpecial}
+              selected={menuSelection
+                ? false
+                : special.id === currentSpecial && (currentFragment === undefined || currentFragment === '')}
               {disabled}
             />
           </NavLink>

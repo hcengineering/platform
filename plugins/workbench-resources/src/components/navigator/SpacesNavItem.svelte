@@ -72,7 +72,7 @@
       {getActions}
       {deselect}
       {forciblyСollapsed}
-      nested
+      selected={deselect ? false : currentSpace === space._id}
     />
   {:else}
     <NavLink space={space._id}>

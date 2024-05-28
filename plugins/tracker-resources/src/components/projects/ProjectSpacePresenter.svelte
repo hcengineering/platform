@@ -74,7 +74,7 @@
               : getPlatformColorForTextDef(space.name, $themeStore.dark).icon
         }}
     title={space.name}
-    nested
+    type={'nested'}
     selected={space._id === currentSpace}
     {visible}
     actions={() => getActions(space)}

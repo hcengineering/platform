@@ -92,7 +92,7 @@
     <button
       class="hulyNavItem-chevron"
       class:isOpen
-      style:margin-left={`${(levelReset ? 1 : level) * 1.25}rem`}
+      style:margin-left={`${(levelReset ? 0 : level) * 1.25}rem`}
       disabled={empty}
       on:click|stopPropagation={() => {
         if (!empty) isOpen = !isOpen

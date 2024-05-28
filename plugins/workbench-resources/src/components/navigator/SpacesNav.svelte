@@ -139,16 +139,19 @@
     filteredSpaces = spaces
   }
   $: visibleSpace = filteredSpaces.find((fs) => fs._id === currentSpace)
+  $: empty = filteredSpaces.length === 0 || filteredSpaces === undefined
+  $: visible =
+    ((visibleSpace !== undefined && !deselect) || !(currentFragment === undefined || currentFragment === '')) && !empty
 </script>
 
 <TreeNode
   _id={'tree-' + model.id}
   label={model.label}
   actions={async () => getParentActions()}
-  selected={visibleSpace !== undefined && !deselect || currentFragment !== undefined}
-  isFold
-  empty={filteredSpaces.length === 0 || filteredSpaces === undefined}
-  visible={visibleSpace !== undefined && !deselect || currentFragment !== undefined}
+  selected={visible}
+  isFold={!empty}
+  {empty}
+  {visible}
 >
   {#each filteredSpaces as space, i (space._id)}
     {#if separate && model.specials && i !== 0}<TreeSeparator line />{/if}

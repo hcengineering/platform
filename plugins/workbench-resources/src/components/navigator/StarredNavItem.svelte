@@ -81,7 +81,7 @@
       {getActions}
       {deselect}
       {forciblyСollapsed}
-      nested
+      type={'nested'}
     />
   {:else}
     {#await getSpaceName(client, space) then name}

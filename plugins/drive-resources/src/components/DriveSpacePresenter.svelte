@@ -30,6 +30,7 @@
   export let currentFragment: string | undefined
   export let getActions: (space: Space) => Promise<Action[]> = async () => []
   export let forciblyСollapsed: boolean = false
+  export let deselect: boolean = false
 
   const client = getClient()
 
@@ -97,6 +98,15 @@
     }
     return result
   }
+  // $: console.log('[!!!] currentSpace: ', currentSpace)
+  // $: console.log('[!!!] currentFragment: ', currentFragment)
+  // $: console.log('[!!!] descendants: ', descendants)
+  // $: console.log('[!!!] empty: ', descendants.size === 0)
+  // $: console.log('[!!!] selected: ', selected)
+  // $: console.log('[!!!] visible: ', currentSpace === space._id && descendants.size !== 0)
+
+  // selected={currentSpace === space._id && !deselect}
+  // visible={currentSpace === space._id && descendants.size !== 0 && !deselect }
 </script>
 
 {#if space}
@@ -104,9 +114,9 @@
     _id={space._id}
     icon={drive.icon.Drive}
     title={space.name}
-    selected={currentSpace === space._id}
-    visible={currentSpace === space._id}
-    nested
+    selected={selected && !deselect}
+    visible={selected && !deselect && descendants.size !== 0}
+    type={'nested-selectable'}
     empty={descendants.size === 0}
     actions={() => getActions(space)}
     {forciblyСollapsed}

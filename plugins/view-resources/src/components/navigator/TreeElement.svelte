@@ -36,7 +36,7 @@
   export let title: string | undefined = undefined
   export let notifications = 0
   export let parent: boolean = false
-  export let nested: boolean = false
+  export let type: 'default' | 'nested' | 'nested-selectable' = 'default'
   export let indent: boolean = false
   export let isFold: boolean = false
   export let empty: boolean = false
@@ -87,7 +87,7 @@
     {selected}
     isOpen={!collapsed}
     {collapsedPrefix}
-    {nested}
+    {type}
     {isFold}
     {empty}
     {visible}
