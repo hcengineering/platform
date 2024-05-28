@@ -109,7 +109,6 @@
         )
       } else {
         ;({ url, srcSet, color } = (await getResource(avatarProvider.getUrl))(avatar, displayName, width))
-        console.log(url, srcSet, color)
       }
     } else if (name != null) {
       color = getPlatformAvatarColorForTextDef(name, $themeStore.dark)
