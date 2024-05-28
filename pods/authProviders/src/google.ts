@@ -48,12 +48,21 @@ export function registerGoogle (
       if (email !== undefined) {
         try {
           if (ctx.query?.state != null) {
-            const loginInfo = await joinWithProvider(measureCtx, db, productId, email, first, last, ctx.query.state)
+            const loginInfo = await joinWithProvider(
+              measureCtx,
+              db,
+              productId,
+              null,
+              email,
+              first,
+              last,
+              ctx.query.state
+            )
             if (ctx.session != null) {
               ctx.session.loginInfo = loginInfo
             }
           } else {
-            const loginInfo = await loginWithProvider(measureCtx, db, productId, email, first, last)
+            const loginInfo = await loginWithProvider(measureCtx, db, productId, null, email, first, last)
             if (ctx.session != null) {
               ctx.session.loginInfo = loginInfo
             }

@@ -7,7 +7,8 @@ import account, {
   UpgradeWorker,
   accountId,
   cleanInProgressWorkspaces,
-  getMethods
+  getMethods,
+  type BrandingMap
 } from '@hcengineering/account'
 import accountEn from '@hcengineering/account/lang/en.json'
 import accountRu from '@hcengineering/account/lang/ru.json'
@@ -34,8 +35,10 @@ export function serveAccount (
   txes: Tx[],
   migrateOperations: [string, MigrateOperation][],
   productId: string,
+  brandings: BrandingMap,
   onClose?: () => void
 ): void {
+  console.log('Starting account service with brandings: ', brandings)
   const methods = getMethods(version, txes, migrateOperations)
   const ACCOUNT_PORT = parseInt(process.env.ACCOUNT_PORT ?? '3000')
   const dbUri = process.env.MONGO_URL
@@ -141,7 +144,14 @@ export function serveAccount (
       client = await client
     }
     const db = client.db(ACCOUNT_DB)
-    const result = await method(measureCtx, db, productId, request, token)
+
+    let host: string | undefined
+    const origin = ctx.request.headers.origin ?? ctx.request.headers.referer
+    if (origin !== undefined) {
+      host = new URL(origin).host
+    }
+    const branding = host !== undefined ? brandings[host] : null
+    const result = await method(measureCtx, db, productId, branding, request, token)
 
     worker?.updateResponseStatistics(result)
     ctx.body = result

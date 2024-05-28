@@ -70,6 +70,7 @@ export async function checkOrphanWorkspaces (
             db,
             client,
             productId,
+            null,
             ws.workspace,
             storageAdapter
           )
