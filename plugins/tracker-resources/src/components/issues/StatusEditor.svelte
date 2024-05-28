@@ -96,15 +96,18 @@
         return current
       }
     }
+
     if (defaultIssueStatus !== undefined) {
       const res = statuses?.find((status) => status._id === defaultStatus)
-      void changeStatus(res?._id, false)
-      return res
+      // Might not exist for projects with multiple task types with different statuses
+      if (res != null) {
+        void changeStatus(res?._id, false)
+        return res
+      }
     }
+
     // We need to choose first one, since it should not be case without status.
-    if (value.status === undefined) {
-      void changeStatus(statuses?.[0]?._id, false)
-    }
+    void changeStatus(statuses?.[0]?._id, false)
   }
 
   $: selectedStatus = getSelectedStatus(statuses, value, defaultIssueStatus)
