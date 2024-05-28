@@ -60,7 +60,7 @@
       members: [accountId],
       topic: description
     })
-    await client.createDoc(notification.class.DocNotifyContext, core.space.Space, {
+    await client.createDoc(notification.class.DocNotifyContext, channelId, {
       user: accountId,
       attachedTo: channelId,
       attachedToClass: chunter.class.Channel,
