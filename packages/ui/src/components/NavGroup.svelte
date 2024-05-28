@@ -19,7 +19,6 @@
   import { showPopup, Menu, Action, Label, Component, IconOpenedArrow } from '..'
 
   export let label: IntlString | undefined = undefined
-  export let titleIntl: IntlString | undefined = undefined
   export let title: string | undefined = undefined
   export let categoryName: string
   export let tools: AnyComponent | undefined = undefined
@@ -60,10 +59,7 @@
         on:click|stopPropagation={handleMenuClicked}
       >
         {#if label}<Label {label} />{/if}
-        {#if title}{title}
-        {:else if titleIntl}
-          <Label label={titleIntl} />
-        {/if}
+        {#if title}{title}{/if}
       </span>
     </div>
     {#if isFold}<div class="flex-grow" />{/if}

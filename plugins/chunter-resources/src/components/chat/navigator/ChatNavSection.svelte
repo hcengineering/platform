@@ -141,7 +141,7 @@
 
 {#if visibleItems.length > 0 && contexts.length > 0}
   <NavGroup
-    titleIntl={header}
+    label={header}
     categoryName={id}
     {actions}
     isOpen={!isCollapsed}
