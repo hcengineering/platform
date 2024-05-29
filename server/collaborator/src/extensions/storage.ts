@@ -49,18 +49,21 @@ export class StorageExtension implements Extension {
   }
 
   async onLoadDocument ({ context, documentName }: withContext<onLoadDocumentPayload>): Promise<any> {
-    this.configuration.ctx.info('load document', { documentName })
+    const { connectionId } = context
+
+    this.configuration.ctx.info('load document', { documentName, connectionId })
     return await this.loadDocument(documentName as DocumentId, context)
   }
 
   async onStoreDocument ({ context, documentName, document }: withContext<onStoreDocumentPayload>): Promise<void> {
     const { ctx } = this.configuration
+    const { connectionId } = context
 
-    ctx.info('store document', { documentName })
+    ctx.info('store document', { documentName, connectionId })
 
     const collaborators = this.collaborators.get(documentName)
     if (collaborators === undefined || collaborators.size === 0) {
-      ctx.info('no changes for document', { documentName })
+      ctx.info('no changes for document', { documentName, connectionId })
       return
     }
 
@@ -83,7 +86,7 @@ export class StorageExtension implements Extension {
 
     const collaborators = this.collaborators.get(documentName)
     if (collaborators === undefined || !collaborators.has(connectionId)) {
-      ctx.info('no changes for document', { documentName })
+      ctx.info('no changes for document', { documentName, connectionId })
       return
     }
 
