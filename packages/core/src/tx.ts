@@ -320,7 +320,7 @@ export interface SpaceUpdate {
 /**
  * @public
  */
-export interface MarkupOptions<T extends object> {
+export interface MarkupOptions<T extends Data<Doc>> {
   $markup?: Partial<OmitNever<ColalborativeDocAsMarkup<T>>>
 }
 

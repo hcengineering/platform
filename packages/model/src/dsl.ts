@@ -265,21 +265,25 @@ function _generateTx (tx: ClassTxes): Tx[] {
     [ClassifierKind.INTERFACE]: core.class.Interface,
     [ClassifierKind.MIXIN]: core.class.Mixin
   }
-  const createTx = txFactory.createTxCreateDoc<Doc>(
+  const createTx = txFactory.createTxCreateDoc<Classifier>(
     _cl[tx.kind],
     core.space.Model,
     {
       ...(tx.domain !== undefined ? { domain: tx.domain } : {}),
       kind: tx.kind,
+      label: tx.label,
+      icon: tx.icon,
       ...(tx.kind === ClassifierKind.INTERFACE
         ? { extends: tx.implements }
         : { extends: tx.extends, implements: tx.implements }),
-      label: tx.label,
-      icon: tx.icon,
-      shortLabel: tx.shortLabel,
-      sortingKey: tx.sortingKey,
-      filteringKey: tx.filteringKey,
-      pluralLabel: tx.pluralLabel
+      ...(tx.kind === ClassifierKind.INTERFACE
+        ? { extends: tx.implements }
+        : {
+            shortLabel: tx.shortLabel,
+            sortingKey: tx.sortingKey,
+            filteringKey: tx.filteringKey,
+            pluralLabel: tx.pluralLabel
+          })
     },
     objectId
   )
