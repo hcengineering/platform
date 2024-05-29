@@ -1,5 +1,5 @@
 import { deepEqual } from 'fast-equals'
-import { DocumentUpdate, Hierarchy, MixinData, MixinUpdate, ModelDb, toFindResult } from '.'
+import { DocumentUpdate, DOMAIN_MODEL, Hierarchy, MixinData, MixinUpdate, ModelDb, toFindResult } from '.'
 import type {
   Account,
   AnyAttribute,
@@ -92,6 +92,9 @@ export class TxOperations implements Omit<Client, 'notify'> {
     const hierarchy = this.client.getHierarchy()
     if (hierarchy.isDerived(_class, core.class.AttachedDoc)) {
       throw new Error('createDoc cannot be used for objects inherited from AttachedDoc')
+    }
+    if (hierarchy.findDomain(_class) === DOMAIN_MODEL && space !== core.space.Model) {
+      throw new Error('createDoc cannot be called for DOMAIN_MODEL classes with non-model space')
     }
     const tx = this.txFactory.createTxCreateDoc(_class, space, attributes, id, modifiedOn, modifiedBy)
     await this.client.tx(tx)
