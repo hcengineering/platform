@@ -25,7 +25,6 @@ import express from 'express'
 import { IncomingMessage, createServer } from 'http'
 import { WebSocket, WebSocketServer } from 'ws'
 
-import type { MongoClientReference } from '@hcengineering/mongo'
 import type { StorageAdapter } from '@hcengineering/server-core'
 import { Config } from './config'
 import { Context } from './context'
@@ -44,16 +43,10 @@ export type Shutdown = () => Promise<void>
 /**
  * @public
  */
-export async function start (
-  ctx: MeasureContext,
-  config: Config,
-  minio: StorageAdapter,
-  mongoClient: MongoClientReference
-): Promise<Shutdown> {
+export async function start (ctx: MeasureContext, config: Config, minio: StorageAdapter): Promise<Shutdown> {
   const port = config.Port
 
   ctx.info('Starting collaborator server', { port })
-  const mongo = await mongoClient.getClient()
 
   const app = express()
   app.use(cors())
