@@ -301,7 +301,8 @@ test.describe('channel tests', () => {
   })
 
   test('check if user can copy message', async ({ page }) => {
-    const expectedUrl = `http://localhost:8083/workbench/${data.workspaceName}/chunter/chunter:space:Random|chunter:class:Channel?message=`
+    const baseURL = process.env.PLATFORM_URI ?? 'http://localhost:8083'
+    const expectedUrl = `${baseURL}/workbench/${data.workspaceName}/chunter/chunter:space:Random|chunter:class:Channel?message=`
     await leftSideMenuPage.clickChunter()
     await channelPage.clickChannel('random')
     await channelPage.sendMessage('Test message')
