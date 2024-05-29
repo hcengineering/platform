@@ -36,7 +36,6 @@ import type {
   IndexStageState,
   IndexingConfiguration,
   Interface,
-  Markup,
   MigrationState,
   Obj,
   Permission,

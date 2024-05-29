@@ -23,6 +23,9 @@ export { serverCollaborationId } from '@hcengineering/server-collaboration'
 
 export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverCollaboration.trigger.OnDelete
+    trigger: serverCollaboration.trigger.OnCreate
+  })
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverCollaboration.trigger.MarkupTrigger
   })
 }

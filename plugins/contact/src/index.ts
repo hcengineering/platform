@@ -18,6 +18,7 @@ import {
   Account,
   AttachedDoc,
   Class,
+  CollaborativeDoc,
   Doc,
   Ref,
   Space,
@@ -136,7 +137,7 @@ export interface Member extends AttachedDoc {
  */
 export interface Organization extends Contact {
   members: number
-  description?: string
+  description?: CollaborativeDoc
 }
 
 /**

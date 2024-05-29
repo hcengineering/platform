@@ -13,14 +13,8 @@
 // limitations under the License.
 //
 
-import {
-  type AttachedData,
-  type Client,
-  type Ref,
-  type TxOperations,
-  makeCollaborativeDoc
-} from '@hcengineering/core'
-import { documentId, type Document, type Teamspace } from '@hcengineering/document'
+import { type AttachedData, type Client, type Ref, type TxOperations, makeCollaborativeDoc } from '@hcengineering/core'
+import { type Document, type Teamspace, documentId } from '@hcengineering/document'
 import { getMetadata, translate } from '@hcengineering/platform'
 import presentation, { getClient } from '@hcengineering/presentation'
 import { getCurrentResolvedLocation, getPanelURI, type Location, type ResolvedLocation } from '@hcengineering/ui'

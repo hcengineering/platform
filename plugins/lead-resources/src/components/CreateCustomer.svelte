@@ -16,9 +16,20 @@
   import { AvatarType, Channel, combineName, Contact, findContacts } from '@hcengineering/contact'
   import { ChannelsDropdown, EditableAvatar, PersonPresenter } from '@hcengineering/contact-resources'
   import contact from '@hcengineering/contact-resources/src/plugin'
-  import { AttachedData, Class, Data, Doc, generateId, MixinData, Ref, WithLookup } from '@hcengineering/core'
+  import {
+    AttachedData,
+    Class,
+    Data,
+    Doc,
+    generateId,
+    makeCollaborativeDoc,
+    MixinData,
+    Ref,
+    WithLookup
+  } from '@hcengineering/core'
   import type { Customer } from '@hcengineering/lead'
   import { Card, getClient, InlineAttributeBar } from '@hcengineering/presentation'
+  import { EmptyMarkup } from '@hcengineering/text-editor'
   import {
     Button,
     createFocusManager,
@@ -35,6 +46,7 @@
 
   let firstName = ''
   let lastName = ''
+  let description = EmptyMarkup
 
   export function canClose (): boolean {
     return firstName === '' && lastName === ''
@@ -57,9 +69,9 @@
     return targetClass === contact.class.Person ? combineName(firstName.trim(), lastName.trim()) : objectName
   }
 
-  async function createCustomer () {
+  async function createCustomer (): Promise<void> {
     const candidate: Data<Contact> = {
-      name: formatName(targetClass._id, firstName, lastName, object.name),
+      name,
       city: object.city,
       avatarType: AvatarType.COLOR
     }
@@ -70,7 +82,10 @@
       candidate.avatarProps = info.avatarProps
     }
     const candidateData: MixinData<Contact, Customer> = {
-      description: object.description
+      description: makeCollaborativeDoc(customerId, 'description'),
+      $markup: {
+        description
+      }
     }
 
     const id = await client.createDoc(targetClass._id, contact.space.Contacts, { ...candidate, ...object }, customerId)
@@ -129,19 +144,18 @@
       }
     )
   }
-  $: canSave = formatName(targetClass._id, firstName, lastName, object.name).length > 0
+  $: name = formatName(targetClass._id, firstName, lastName, object.name)
+  $: canSave = name.trim().length > 0
 
   const manager = createFocusManager()
 
   let matches: WithLookup<Contact>[] = []
   let matchedChannels: AttachedData<Channel>[] = []
   $: if (targetClass !== undefined) {
-    findContacts(client, targetClass._id, formatName(targetClass._id, firstName, lastName, object.name), channels).then(
-      (p) => {
-        matches = p.contacts
-        matchedChannels = p.channels
-      }
-    )
+    void findContacts(client, targetClass._id, name, channels).then((p) => {
+      matches = p.contacts
+      matchedChannels = p.channels
+    })
   }
 </script>
 
@@ -185,7 +199,7 @@
         </div>
         <EditBox
           placeholder={lead.string.IssueDescriptionPlaceholder}
-          bind:value={object.description}
+          bind:value={description}
           kind={'small-style'}
           focusIndex={4}
         />

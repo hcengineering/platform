@@ -45,6 +45,7 @@ setMetadata(serverNotification.metadata.PushSubject, config.pushSubject)
 setMetadata(contactPlugin.metadata.LastNameFirst, lastNameFirst)
 setMetadata(serverCore.metadata.ElasticIndexName, config.elasticIndexName)
 setMetadata(serverCore.metadata.ElasticIndexVersion, 'v1')
+setMetadata(serverCore.metadata.CollaboratorUrl, config.collaboratorUrl)
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 console.log(

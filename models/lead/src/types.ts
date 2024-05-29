@@ -17,12 +17,12 @@ import type { Employee } from '@hcengineering/contact'
 import {
   Account,
   IndexKind,
+  type CollaborativeDoc,
   type Role,
   type RolesAssignment,
   type Ref,
   type Status,
-  type Timestamp,
-  CollaborativeDoc
+  type Timestamp
 } from '@hcengineering/core'
 import { type Customer, type Funnel, type Lead } from '@hcengineering/lead'
 import {

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { CollaborativeDoc, Doc, makeCollaborativeDoc } from '@hcengineering/core'
+  import core, { CollaborativeDoc, Doc } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { KeyedAttribute, getAttribute, getClient } from '@hcengineering/presentation'
   import { AnySvelteComponent, registerFocus } from '@hcengineering/ui'
@@ -48,19 +48,7 @@
 
   let editor: CollaborativeTextEditor
 
-  $: collaborativeDoc = getCollaborativeDocFromAttribute(object, key)
-
-  function getCollaborativeDocFromAttribute (object: Doc, key: KeyedAttribute): CollaborativeDoc {
-    const value = getAttribute(getClient(), object, key)
-    if (key.attr.type._class === core.class.TypeCollaborativeDoc) {
-      return value as CollaborativeDoc
-    } else if (key.attr.type._class === core.class.TypeCollaborativeDocVersion) {
-      return value as CollaborativeDoc
-    } else {
-      // TODO Remove this when we migrate to minio
-      return makeCollaborativeDoc(object._id, key.key)
-    }
-  }
+  $: collaborativeDoc = getAttribute(getClient(), object, key)
 
   // Focusable control with index
   let canBlur = true

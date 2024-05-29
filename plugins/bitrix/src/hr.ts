@@ -1,5 +1,16 @@
 import { Organization } from '@hcengineering/contact'
-import core, { Account, Client, Data, Doc, Ref, SortingOrder, Status, TxOperations, generateId, makeCollaborativeDoc } from '@hcengineering/core'
+import core, {
+  Account,
+  Client,
+  Data,
+  Doc,
+  Ref,
+  SortingOrder,
+  Status,
+  TxOperations,
+  generateId,
+  makeCollaborativeDoc
+} from '@hcengineering/core'
 import recruit, { Applicant, Vacancy } from '@hcengineering/recruit'
 import task, { ProjectType, makeRank } from '@hcengineering/task'
 
@@ -24,20 +35,25 @@ export async function createVacancy (
   const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
 
   const id: Ref<Vacancy> = generateId()
-  await client.createDoc(recruit.class.Vacancy, core.space.Space, {
-    name,
-    description: type.shortDescription ?? '',
-    fullDescription: makeCollaborativeDoc(id, 'fullDescription'),
-    private: false,
-    archived: false,
-    company,
-    number: (incResult as any).object.sequence,
-    members: [],
-    type: typeId
-    // $content: {
-    //   fullDescription: type.description
-    // }
-  }, id)
+  await client.createDoc(
+    recruit.class.Vacancy,
+    core.space.Space,
+    {
+      name,
+      description: type.shortDescription ?? '',
+      fullDescription: makeCollaborativeDoc(id, 'fullDescription'),
+      private: false,
+      archived: false,
+      company,
+      number: (incResult as any).object.sequence,
+      members: [],
+      type: typeId,
+      $markup: {
+        fullDescription: type.description
+      }
+    },
+    id
+  )
 
   return id
 }
