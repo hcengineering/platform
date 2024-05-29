@@ -351,7 +351,9 @@ export async function cloneWorkspace (
                     blobs.push(b)
                     cb()
                   },
-                  end: () => {}
+                  end: (cb) => {
+                    cb()
+                  }
                 })
 
                 await blobClientTarget.upload(blob._id, blob.size, blob.contentType, Buffer.concat(blobs))
@@ -416,40 +418,50 @@ export async function backup (
   transactorUrl: string,
   workspaceId: WorkspaceId,
   storage: BackupStorage,
-  skipDomains: string[] = [],
-  force: boolean = false,
-  timeout: number = -1
+  options: {
+    skipDomains: string[]
+    force: boolean
+    recheck: boolean
+    timeout: number
+    connectTimeout: number
+  } = { force: false, recheck: false, timeout: 0, skipDomains: [], connectTimeout: 30000 }
 ): Promise<void> {
-  ctx = ctx.newChild('backup', { workspaceId: workspaceId.name, force })
-
-  const connection = await ctx.with(
-    'connect',
-    {},
-    async () =>
-      (await connect(transactorUrl, workspaceId, undefined, {
-        mode: 'backup'
-      })) as unknown as CoreClient & BackupClient
-  )
-
-  const blobClient = new BlobClient(transactorUrl, workspaceId)
-  ctx.info('starting backup', { workspace: workspaceId.name })
+  ctx = ctx.newChild('backup', {
+    workspaceId: workspaceId.name,
+    force: options.force,
+    recheck: options.recheck,
+    timeout: options.timeout
+  })
 
   let canceled = false
   let timer: any
 
-  if (timeout > 0) {
+  if (options.timeout > 0) {
     timer = setTimeout(() => {
-      ctx.error('Timeout during backup', { workspace: workspaceId.name, timeout: timeout / 1000 })
+      ctx.error('Timeout during backup', { workspace: workspaceId.name, timeout: options.timeout / 1000 })
       canceled = true
-    }, timeout)
+    }, options.timeout)
   }
+  const connection = (await connect(
+    transactorUrl,
+    workspaceId,
+    undefined,
+    {
+      mode: 'backup'
+    },
+    undefined,
+    options.connectTimeout
+  )) as unknown as CoreClient & BackupClient
+
+  const blobClient = new BlobClient(transactorUrl, workspaceId)
+  ctx.info('starting backup', { workspace: workspaceId.name })
 
   try {
     const domains = [
       ...connection
         .getHierarchy()
         .domains()
-        .filter((it) => it !== DOMAIN_TRANSIENT && it !== DOMAIN_MODEL && !skipDomains.includes(it))
+        .filter((it) => it !== DOMAIN_TRANSIENT && it !== DOMAIN_MODEL && !options.skipDomains.includes(it))
     ]
     ctx.info('domains for dump', { domains: domains.length })
 
@@ -479,7 +491,7 @@ export async function backup (
       { limit: 1, sort: { modifiedOn: SortingOrder.Descending } }
     )
     if (lastTx !== undefined) {
-      if (lastTx._id === backupInfo.lastTxId && !force) {
+      if (lastTx._id === backupInfo.lastTxId && !options.force) {
         ctx.info('No transaction changes. Skipping backup.', { workspace: workspaceId.name })
         return
       }
@@ -498,6 +510,22 @@ export async function backup (
       backupIndex = '0' + backupIndex
     }
 
+    let downloadedMb = 0
+    let downloaded = 0
+
+    const printDownloaded = (msg: string, size: number): void => {
+      downloaded += size
+      const newDownloadedMb = Math.round(downloaded / (1024 * 1024))
+      const newId = Math.round(newDownloadedMb / 10)
+      if (downloadedMb !== newId) {
+        downloadedMb = newId
+        ctx.info('Downloaded', {
+          msg,
+          written: newDownloadedMb
+        })
+      }
+    }
+
     async function loadChangesFromServer (
       ctx: MeasureContext,
       domain: Domain,
@@ -512,7 +540,11 @@ export async function backup (
       // Load all digest from collection.
       while (true) {
         try {
-          const currentChunk = await ctx.with('loadChunk', {}, async () => await connection.loadChunk(domain, idx))
+          const currentChunk = await ctx.with(
+            'loadChunk',
+            {},
+            async () => await connection.loadChunk(domain, idx, options.recheck)
+          )
           idx = currentChunk.idx
 
           let needRetrieve: Ref<Doc>[] = []
@@ -564,7 +596,7 @@ export async function backup (
           console.error(err)
           ctx.error('failed to load chunks', { error: err })
           if (idx !== undefined) {
-            await ctx.with('loadChunk', {}, async () => {
+            await ctx.with('closeChunk', {}, async () => {
               await connection.closeChunk(idx as number)
             })
           }
@@ -709,7 +741,7 @@ export async function backup (
             addedDocuments += blob.size
 
             let blobFiled = false
-            if (!(await blobClient.checkFile(ctx, blob._id))) {
+            if (blob.size !== 0 && !(await blobClient.checkFile(ctx, blob._id))) {
               ctx.error('failed to download blob', { blob: blob._id, provider: blob.provider })
               processChanges(d, true)
               continue
@@ -718,13 +750,27 @@ export async function backup (
             _pack.entry({ name: d._id + '.json' }, descrJson, function (err) {
               if (err != null) throw err
             })
+            printDownloaded(blob._id, descrJson.length)
             try {
               const entry = _pack?.entry({ name: d._id, size: blob.size }, (err) => {
                 if (err != null) {
                   ctx.error('error packing file', err)
                 }
               })
-              await blobClient.writeTo(ctx, blob._id, blob.size, entry)
+              if (blob.size === 0) {
+                entry.end()
+              } else {
+                await blobClient.writeTo(ctx, blob._id, blob.size, {
+                  write (buffer, cb) {
+                    entry.write(buffer, cb)
+                  },
+                  end: (cb: () => void) => {
+                    entry.end(cb)
+                  }
+                })
+              }
+
+              printDownloaded(blob._id, blob.size)
             } catch (err: any) {
               if (err.message?.startsWith('No file for') === true) {
                 ctx.error('failed to download blob', { message: err.message })
@@ -741,6 +787,7 @@ export async function backup (
               if (err != null) throw err
             })
             processChanges(d)
+            printDownloaded(d._id, data.length)
           }
         }
       }
@@ -788,7 +835,7 @@ export async function backup (
     ctx.info('end backup', { workspace: workspaceId.name })
     await connection.close()
     ctx.end()
-    if (timeout !== -1) {
+    if (options.timeout !== -1) {
       clearTimeout(timer)
     }
   }
@@ -821,7 +868,8 @@ export async function restore (
   storage: BackupStorage,
   date: number,
   merge?: boolean,
-  parallel?: number
+  parallel?: number,
+  recheck?: boolean
 ): Promise<void> {
   const infoFile = 'backup.json.gz'
 
@@ -875,7 +923,7 @@ export async function restore (
     try {
       while (true) {
         const st = Date.now()
-        const it = await connection.loadChunk(c, idx)
+        const it = await connection.loadChunk(c, idx, recheck)
         chunks++
 
         idx = it.idx

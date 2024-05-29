@@ -83,6 +83,7 @@ export interface StorageAdapter {
 }
 
 export interface StorageAdapterEx extends StorageAdapter {
+  defaultAdapter: string
   adapters?: Map<string, StorageAdapter>
 
   syncBlobFromStorage: (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string) => Promise<void>
@@ -92,6 +93,7 @@ export interface StorageAdapterEx extends StorageAdapter {
  * Ad dummy storage adapter for tests
  */
 export class DummyStorageAdapter implements StorageAdapter, StorageAdapterEx {
+  defaultAdapter: string = ''
   async syncBlobFromStorage (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<void> {}
 
   async initialize (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {}

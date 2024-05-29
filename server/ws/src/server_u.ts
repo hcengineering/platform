@@ -31,10 +31,10 @@ import {
 } from './types'
 
 import type { StorageAdapter } from '@hcengineering/server-core'
+import uWebSockets, { DISABLED, SHARED_COMPRESSOR, type HttpResponse, type WebSocket } from '@hcengineering/uws'
 import { Readable } from 'stream'
 import { getFile, getFileRange, type BlobResponse } from './blobs'
 import { doSessionOp, processRequest, type WebsocketData } from './utils'
-import uWebSockets, { DISABLED, SHARED_COMPRESSOR, type HttpResponse, type WebSocket } from '@hcengineering/uws'
 
 interface WebsocketUserData extends WebsocketData {
   backPressure?: Promise<void>
@@ -70,9 +70,6 @@ export function startUWebsocketServer (
   }
 
   uAPP
-    .trace('/*', (res, req) => {
-      console.log(req.getUrl(), req.getMethod())
-    })
     .ws<WebsocketUserData>('/*', {
     /* There are many common helper features */
     maxPayloadLength: 250 * 1024 * 1024,
@@ -275,17 +272,22 @@ export function startUWebsocketServer (
         const payload = decodeToken(authHeader.split(' ')[1])
 
         const name = req.getQuery('name') as string
+        const wrappedRes = wrapRes(res)
 
+        res.onAborted(() => {
+          wrappedRes.aborted = true
+        })
         const range = req.getHeader('range')
         if (range !== undefined) {
           void ctx.with('file-range', { workspace: payload.workspace.name }, async (ctx) => {
-            await getFileRange(ctx, range, externalStorage, payload.workspace, name, wrapRes(res))
+            await getFileRange(ctx, range, externalStorage, payload.workspace, name, wrappedRes)
           })
         } else {
-          void getFile(ctx, externalStorage, payload.workspace, name, wrapRes(res))
+          void getFile(ctx, externalStorage, payload.workspace, name, wrappedRes)
         }
       } catch (err: any) {
         Analytics.handleError(err)
+        writeStatus(res, '404 ERROR').end()
       }
     })
     .put('/api/v1/blob/*', (res, req) => {
@@ -318,12 +320,11 @@ export function startUWebsocketServer (
       } catch (err: any) {
         Analytics.handleError(err)
         console.error(err)
-        res.writeStatus('404 ERROR')
-        res.end()
+        writeStatus(res, '404 ERROR').end()
       }
     })
     .any('/*', (res, req) => {
-      res.end('')
+      writeStatus(res, '404 ERROR').end()
     })
 
     .listen(port, (s) => {})
@@ -408,28 +409,39 @@ function pipeFromRequest (res: HttpResponse): Readable {
   return readable
 }
 
-function pipeStreamOverResponse (res: HttpResponse, readStream: Readable, totalSize: number): void {
+function pipeStreamOverResponse (
+  res: HttpResponse,
+  readStream: Readable,
+  totalSize: number,
+  checkAborted: () => boolean
+): void {
   readStream
     .on('data', (chunk) => {
+      if (checkAborted()) {
+        readStream.destroy()
+        return
+      }
       const ab = toArrayBuffer(chunk)
       const lastOffset = res.getWriteOffset()
-      const [ok, done] = res.tryEnd(ab, totalSize)
-      if (done) {
-        onAbortedOrFinishedResponse(res, readStream)
-      } else if (!ok) {
-        readStream.pause()
-        res.ab = ab
-        res.abOffset = lastOffset
-        res.onWritable((offset) => {
-          const [ok, done] = res.tryEnd(res.ab.slice(offset - res.abOffset), totalSize)
-          if (done) {
-            onAbortedOrFinishedResponse(res, readStream)
-          } else if (ok) {
-            readStream.resume()
-          }
-          return ok
-        })
-      }
+      res.cork(() => {
+        const [ok, done] = res.tryEnd(ab, totalSize)
+        if (done) {
+          onAbortedOrFinishedResponse(res, readStream)
+        } else if (!ok) {
+          readStream.pause()
+          res.ab = ab
+          res.abOffset = lastOffset
+          res.onWritable((offset) => {
+            const [ok, done] = res.tryEnd(res.ab.slice(offset - res.abOffset), totalSize)
+            if (done) {
+              onAbortedOrFinishedResponse(res, readStream)
+            } else if (ok) {
+              readStream.resume()
+            }
+            return ok
+          })
+        }
+      })
     })
     .on('error', (err) => {
       Analytics.handleError(err)
@@ -443,12 +455,64 @@ function pipeStreamOverResponse (res: HttpResponse, readStream: Readable, totalS
 }
 
 function wrapRes (res: HttpResponse): BlobResponse {
-  return {
-    end: () => res.end(),
-    status: (code) => res.status(code),
-    pipeFrom: (readable, size) => {
-      pipeStreamOverResponse(res, readable, size)
+  const result: BlobResponse = {
+    aborted: false,
+    cork: (cb: () => void) => {
+      if (result.aborted || res.id === -1) {
+        cb()
+        return
+      }
+      res.cork(cb)
     },
-    writeHead: (code, header) => res.writeHead(code, header)
+    end: () => {
+      if (result.aborted || res.id === -1) {
+        return
+      }
+      res.end()
+    },
+    status: (code) => {
+      if (result.aborted || res.id === -1) {
+        return
+      }
+      switch (code) {
+        case 200:
+          res.writeStatus(`${code} OK`)
+          break
+        case 206:
+          res.writeStatus(`${code} Partial Content`)
+          break
+        case 304:
+          res.writeStatus(`${code} Not Modified`)
+          break
+        case 400:
+          res.writeStatus(`${code} Bad Request`)
+          break
+        case 404:
+          res.writeStatus(`${code} Not Found`)
+          break
+        case 416:
+          res.writeStatus(`${code} Range Not Satisfiable`)
+          break
+        default:
+          res.writeStatus(`${code} ERROR`)
+          break
+      }
+    },
+    pipeFrom: (readable, size) => {
+      if (result.aborted || res.id === -1) {
+        return
+      }
+      pipeStreamOverResponse(res, readable, size, () => result.aborted)
+    },
+    writeHead: (code, header) => {
+      if (result.aborted || res.id === -1) {
+        return
+      }
+      result.status(code)
+      for (const [k, v] of Object.entries(header)) {
+        res.writeHeader(k, `${v}`)
+      }
+    }
   }
+  return result
 }

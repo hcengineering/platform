@@ -31,7 +31,7 @@ export const serverFactories: Record<string, ServerFactory> = {
         externalStorage
       )
     } catch (err: any) {
-      console.error('uwebsocket.js is not supported, switcg back to nodejs ws')
+      console.error('uwebsocket.js is not supported, switcg back to nodejs ws', err)
       return startHttpServer(
         sessions,
         handleRequest,

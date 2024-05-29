@@ -69,6 +69,7 @@ import { getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
 import { openAIConfigDefaults } from '@hcengineering/openai'
 import type { StorageAdapter } from '@hcengineering/server-core'
 import { deepEqual } from 'fast-equals'
+import { createWriteStream, readFileSync } from 'fs'
 import { benchmark, benchmarkWorker } from './benchmark'
 import {
   cleanArchivedSpaces,
@@ -87,7 +88,6 @@ import { fixJsonMarkup } from './markup'
 import { fixMixinForeignAttributes, showMixinForeignAttributes } from './mixin'
 import { openAIConfig } from './openai'
 import { fixAccountEmails, renameAccount } from './renameAccount'
-import { readFileSync } from 'fs'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -586,17 +586,24 @@ export function devTool (
     .description('dump workspace transactions and minio resources')
     .option('-s, --skip <skip>', 'A list of ; separated domain names to skip during backup', '')
     .option('-f, --force', 'Force backup', false)
-    .action(async (dirName: string, workspace: string, cmd: { skip: string, force: boolean }) => {
-      const storage = await createFileBackupStorage(dirName)
-      await backup(
-        toolCtx,
-        transactorUrl,
-        getWorkspaceId(workspace, productId),
-        storage,
-        (cmd.skip ?? '').split(';').map((it) => it.trim()),
-        cmd.force
-      )
-    })
+    .option('-c, --recheck', 'Force hash recheck on server', false)
+    .option('-t, --timeout <timeout>', 'Connect timeout in seconds', '30')
+    .action(
+      async (
+        dirName: string,
+        workspace: string,
+        cmd: { skip: string, force: boolean, recheck: boolean, timeout: string }
+      ) => {
+        const storage = await createFileBackupStorage(dirName)
+        await backup(toolCtx, transactorUrl, getWorkspaceId(workspace, productId), storage, {
+          force: cmd.force,
+          recheck: cmd.recheck,
+          skipDomains: (cmd.skip ?? '').split(';').map((it) => it.trim()),
+          timeout: 0,
+          connectTimeout: parseInt(cmd.timeout) * 1000
+        })
+      }
+    )
 
   program
     .command('backup-compact <dirName>')
@@ -611,19 +618,23 @@ export function devTool (
     .command('backup-restore <dirName> <workspace> [date]')
     .option('-m, --merge', 'Enable merge of remote and backup content.', false)
     .option('-p, --parallel <parallel>', 'Enable merge of remote and backup content.', '1')
+    .option('-c, --recheck', 'Force hash recheck on server', false)
     .description('dump workspace transactions and minio resources')
-    .action(async (dirName: string, workspace: string, date, cmd: { merge: boolean, parallel: string }) => {
-      const storage = await createFileBackupStorage(dirName)
-      await restore(
-        toolCtx,
-        transactorUrl,
-        getWorkspaceId(workspace, productId),
-        storage,
-        parseInt(date ?? '-1'),
-        cmd.merge,
-        parseInt(cmd.parallel ?? '1')
-      )
-    })
+    .action(
+      async (dirName: string, workspace: string, date, cmd: { merge: boolean, parallel: string, recheck: boolean }) => {
+        const storage = await createFileBackupStorage(dirName)
+        await restore(
+          toolCtx,
+          transactorUrl,
+          getWorkspaceId(workspace, productId),
+          storage,
+          parseInt(date ?? '-1'),
+          cmd.merge,
+          parseInt(cmd.parallel ?? '1'),
+          cmd.recheck
+        )
+      }
+    )
 
   program
     .command('backup-list <dirName>')
@@ -845,6 +856,27 @@ export function devTool (
         })
         const buffer = readFileSync(local)
         await blobClient.upload(remote, buffer.length, contentType, buffer)
+      })
+    })
+
+  program
+    .command('download-file <workspace> <remote> <local>')
+    .action(async (workspace: string, remote: string, local: string, cmd: any) => {
+      const { mongodbUri } = prepareTools()
+      await withStorage(mongodbUri, async (adapter) => {
+        const blobClient = new BlobClient(transactorUrl, {
+          name: workspace,
+          productId
+        })
+        const wrstream = createWriteStream(local)
+        await blobClient.writeTo(toolCtx, remote, -1, {
+          write: (buffer, cb) => {
+            wrstream.write(buffer, cb)
+          },
+          end: (cb) => {
+            wrstream.end(cb)
+          }
+        })
       })
     })
 

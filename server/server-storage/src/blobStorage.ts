@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import {
+import core, {
   Class,
   Doc,
   DocumentQuery,
@@ -34,7 +34,7 @@ import {
 } from '@hcengineering/core'
 import { createMongoAdapter } from '@hcengineering/mongo'
 import { PlatformError, unknownError } from '@hcengineering/platform'
-import { DbAdapter, StorageAdapter } from '@hcengineering/server-core'
+import { DbAdapter, StorageAdapter, type StorageAdapterEx } from '@hcengineering/server-core'
 
 class StorageBlobAdapter implements DbAdapter {
   constructor (
@@ -73,6 +73,15 @@ class StorageBlobAdapter implements DbAdapter {
   }
 
   async upload (ctx: MeasureContext, domain: Domain, docs: Doc[]): Promise<void> {
+    // We need to update docs to have provider === defualt one.
+    if ('adapters' in this.client) {
+      const adapterEx = this.client as StorageAdapterEx
+      for (const d of docs) {
+        if (d._class === core.class.Blob) {
+          ;(d as Blob).provider = adapterEx.defaultAdapter
+        }
+      }
+    }
     await this.blobAdapter.upload(ctx, domain, docs)
   }
 

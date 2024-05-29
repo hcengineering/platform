@@ -39,6 +39,7 @@ export async function connect (handler: (tx: Tx) => void): Promise<
 AccountClient &
 BackupClient &
 FulltextStorage & {
+  isConnected: () => boolean
   loadModel: (last: Timestamp, hash?: string) => Promise<Tx[] | LoadModelResponse>
 }
 > {
@@ -65,6 +66,7 @@ FulltextStorage & {
   }
 
   return {
+    isConnected: () => true,
     findAll,
     findOne: async (_class, query, options) => (await findAll(_class, query, { ...options, limit: 1 })).shift(),
     getHierarchy: () => hierarchy,
@@ -80,7 +82,7 @@ FulltextStorage & {
       return {}
     },
     close: async () => {},
-    loadChunk: async (domain: Domain, idx?: number) => ({
+    loadChunk: async (domain: Domain, idx?: number, recheck?: boolean) => ({
       idx: -1,
       index: -1,
       docs: [],

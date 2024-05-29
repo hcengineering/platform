@@ -19,7 +19,7 @@ export interface ChunkInfo {
  * @public
  */
 export interface BackupSession extends Session {
-  loadChunk: (ctx: ClientSessionCtx, domain: Domain, idx?: number) => Promise<void>
+  loadChunk: (ctx: ClientSessionCtx, domain: Domain, idx?: number, recheck?: boolean) => Promise<void>
   closeChunk: (ctx: ClientSessionCtx, idx: number) => Promise<void>
   loadDocs: (ctx: ClientSessionCtx, domain: Domain, docs: Ref<Doc>[]) => Promise<void>
 }
@@ -38,7 +38,7 @@ export class BackupClientSession extends ClientSession implements BackupSession 
   idIndex = 0
   chunkInfo = new Map<number, ChunkInfo>()
 
-  async loadChunk (_ctx: ClientSessionCtx, domain: Domain, idx?: number): Promise<void> {
+  async loadChunk (_ctx: ClientSessionCtx, domain: Domain, idx?: number, recheck?: boolean): Promise<void> {
     this.lastRequest = Date.now()
     await _ctx.ctx.with('load-chunk', { domain }, async (ctx) => {
       idx = idx ?? this.idIndex++
@@ -53,7 +53,7 @@ export class BackupClientSession extends ClientSession implements BackupSession 
           }
         }
       } else {
-        chunk = { idx, iterator: this._pipeline.storage.find(ctx, domain), finished: false, index: 0 }
+        chunk = { idx, iterator: this._pipeline.storage.find(ctx, domain, recheck), finished: false, index: 0 }
         this.chunkInfo.set(idx, chunk)
       }
       let size = 0
