@@ -15,15 +15,8 @@
 //
 
 import {
-  getGravatarUrl,
-  getName,
+  type Channel,
   type AvatarInfo,
-  type Channel,
-  type Contact,
-  type Person
-} from '@hcengineering/contact'
-import {
-  type Channel,
   type Contact,
   getGravatarUrl,
   getName,
@@ -131,7 +124,7 @@ import ExpandRightDouble from './components/icons/ExpandRightDouble.svelte'
 import IconMembers from './components/icons/Members.svelte'
 import { AggregationManager } from '@hcengineering/view-resources'
 
-import { get } from 'svelte/store'
+import { get, writable } from 'svelte/store'
 import contact from './plugin'
 import {
   channelIdentifierProvider,
@@ -153,7 +146,6 @@ import {
   grouppingPersonManager,
   resolveLocation
 } from './utils'
-import { writable } from 'svelte/store'
 
 export * from './utils'
 export { employeeByIdStore, employeesStore } from './utils'
