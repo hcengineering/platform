@@ -116,33 +116,53 @@ describe('areEqualMarkups', () => {
     expect(areEqualMarkups(markup, markup)).toBeTruthy()
   })
   it('returns true for empty content', async () => {
-    const markup1 = '{"type":"doc","content":[{"type":"paragraph"}]}'
-    const markup2 = '{"type":"doc","content":[{"type":"paragraph","content":[]}]}'
-    expect(areEqualMarkups(markup1, markup2)).toBeTruthy()
+    expect(
+      areEqualMarkups('{"type":"doc","content":[]}', '{"type":"doc","content":[{"type":"paragraph"}]}')
+    ).toBeTruthy()
+    expect(
+      areEqualMarkups(
+        '{"type":"doc","content":[{"type":"paragraph"}]}',
+        '{"type":"doc","content":[{"type":"paragraph","content":[]}]}'
+      )
+    ).toBeTruthy()
   })
-  it('returns true for similar content', async () => {
-    const markup1 = '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
-    const markup2 =
-      '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello","content":[],"marks":[],"attrs": {"color": null}}]}]}'
-    expect(areEqualMarkups(markup1, markup2)).toBeTruthy()
+  it('returns true for same content but empty marks and attrs', async () => {
+    expect(
+      areEqualMarkups(
+        '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}',
+        '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello","content":[],"marks":[],"attrs": {"color": null}}]}]}'
+      )
+    ).toBeTruthy()
   })
-  it('returns false for the same content with different spaces', async () => {
-    const markup1 = '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
-    const markup2 =
-      '{"type":"doc","content":[{"type":"hardBreak"},{"type":"paragraph","content":[{"type":"text","text":"hello"}]},{"type":"hardBreak"}]}'
-    expect(areEqualMarkups(markup1, markup2)).toBeFalsy()
+  it('returns false for same content but trailing hard breaks', async () => {
+    expect(
+      areEqualMarkups(
+        '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello","marks":[]}]}]}',
+        '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"},{"type":"hardBreak"}]}]}'
+      )
+    ).toBeFalsy()
+    expect(
+      areEqualMarkups(
+        '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}',
+        '{"type":"doc","content":[{"type":"hardBreak"},{"type":"paragraph","content":[{"type":"text","text":"hello"}]},{"type":"hardBreak"}]}'
+      )
+    ).toBeFalsy()
   })
   it('returns false for different content', async () => {
-    const markup1 = '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
-    const markup2 = '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"world"}]}]}'
-    expect(areEqualMarkups(markup1, markup2)).toBeFalsy()
+    expect(
+      areEqualMarkups(
+        '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}',
+        '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"world"}]}]}'
+      )
+    ).toBeFalsy()
   })
   it('returns false for different marks', async () => {
-    const markup1 =
-      '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello","marks":[{"type":"bold"}]}]}]}'
-    const markup2 =
-      '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello","marks":[{"type":"italic"}]}]}]}'
-    expect(areEqualMarkups(markup1, markup2)).toBeFalsy()
+    expect(
+      areEqualMarkups(
+        '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello","marks":[{"type":"bold"}]}]}]}',
+        '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello","marks":[{"type":"italic"}]}]}]}'
+      )
+    ).toBeFalsy()
   })
 })
 
