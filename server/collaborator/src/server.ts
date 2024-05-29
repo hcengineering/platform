@@ -178,9 +178,6 @@ export async function start (
       return
     }
 
-    const token = decodeToken(authHeader.split(' ')[1])
-    const context = getContext(token)
-
     const request = req.body as RpcRequest
     const method = methods[request.method]
     if (method === undefined) {
@@ -189,6 +186,10 @@ export async function start (
       }
       res.status(400).send(response)
     } else {
+      const token = decodeToken(authHeader.split(' ')[1])
+      const context = getContext(token)
+
+      rpcCtx.info('rpc', { method: request.method, connectionId: context.connectionId, mode: token.extra?.mode ?? '' })
       await rpcCtx.with('/rpc', { method: request.method }, async (ctx) => {
         try {
           const response: RpcResponse = await rpcCtx.with(request.method, {}, async (ctx) => {
