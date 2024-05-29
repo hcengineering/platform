@@ -14,7 +14,7 @@
 //
 
 import { PersonAccount } from '@hcengineering/contact'
-import type { AttachedDoc, Class, Doc, Mixin, Ref, Tx } from '@hcengineering/core'
+import type { AttachedDoc, Class, Doc, Mixin, Ref, Timestamp, Tx } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
@@ -26,10 +26,12 @@ import { ChatMessage } from '@hcengineering/chunter'
 export interface Request extends AttachedDoc {
   requested: Ref<PersonAccount>[]
   approved: Ref<PersonAccount>[]
+  approvedDates?: Timestamp[]
   requiredApprovesCount: number
   rejected?: Ref<PersonAccount>
   status: RequestStatus
   tx: Tx
+  rejectedTx?: Tx
   comments?: number
 }
 

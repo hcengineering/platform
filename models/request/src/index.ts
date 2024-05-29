@@ -16,7 +16,7 @@
 import activity from '@hcengineering/activity'
 import type { PersonAccount } from '@hcengineering/contact'
 import contact from '@hcengineering/contact'
-import { type Domain, type Ref, type Tx } from '@hcengineering/core'
+import { type Timestamp, type Domain, type Ref, type Tx } from '@hcengineering/core'
 import {
   ArrOf,
   type Builder,
@@ -59,6 +59,8 @@ export class TRequest extends TAttachedDoc implements Request {
   @ReadOnly()
     approved!: Ref<PersonAccount>[]
 
+  approvedDates?: Timestamp[]
+
   requiredApprovesCount!: number
 
   @Prop(TypeString(), request.string.Status)
@@ -66,6 +68,7 @@ export class TRequest extends TAttachedDoc implements Request {
     status!: RequestStatus
 
   tx!: Tx
+  rejectedTx?: Tx
 
   @Prop(TypeRef(contact.class.PersonAccount), request.string.Rejected)
   @ReadOnly()
