@@ -140,7 +140,11 @@
         <Icon
           icon={categoryIcons[category._id]}
           {size}
-          iconProps={{ index, count: sameCategory.length + 1, fill: projectState?.color ?? value?.color ?? category?.color }}
+          iconProps={{
+            index,
+            count: sameCategory.length + 1,
+            fill: projectState?.color ?? value?.color ?? category?.color
+          }}
         />
       {:else}
         <Icon
