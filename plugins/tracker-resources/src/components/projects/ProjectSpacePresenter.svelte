@@ -75,7 +75,7 @@
         }}
     title={space.name}
     type={'nested'}
-    selected={space._id === currentSpace}
+    highlighted={space._id === currentSpace}
     {visible}
     actions={() => getActions(space)}
     {forciblyСollapsed}

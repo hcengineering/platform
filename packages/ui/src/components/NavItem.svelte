@@ -24,10 +24,13 @@
     IconSize,
     getTreeCollapsed,
     setTreeCollapsed,
-    tooltip
+    tooltip,
+    IconFolderExpanded,
+    IconFolderCollapsed
   } from '..'
 
   export let icon: Asset | AnySvelteComponent | undefined = undefined
+  export let folderIcon: boolean = false
   export let iconProps: any | undefined = undefined
   export let iconSize: IconSize = 'small'
   export let label: IntlString | undefined = undefined
@@ -59,9 +62,9 @@
 
   $: showArrow = selected && (type === 'type-link' || type === 'type-object')
   $: if (!showMenu && levelReset && !hovered) levelReset = false
-  $: if (empty) isOpen = false
   $: isOpen = !getTreeCollapsed(_id, collapsedPrefix)
   $: setTreeCollapsed(_id, !isOpen, collapsedPrefix)
+  $: visibleIcon = folderIcon ? (isOpen && !empty ? IconFolderExpanded : IconFolderCollapsed) : icon
 </script>
 
 <!-- svelte-ignore a11y-mouse-events-have-key-events -->
@@ -101,10 +104,10 @@
       {#if !empty}<IconDown size={'x-small'} />{/if}
     </button>
   {/if}
-  {#if icon || (type === 'type-tag' && color)}
+  {#if visibleIcon || (type === 'type-tag' && color)}
     <div class="hulyNavItem-icon" class:withBackground class:w-auto={iconSize === 'x-small'}>
-      {#if type !== 'type-tag' && icon}
-        <Icon {icon} size={iconSize} {iconProps} />
+      {#if type !== 'type-tag' && visibleIcon}
+        <Icon icon={visibleIcon} size={iconSize} {iconProps} />
       {:else if type === 'type-tag'}
         <div style:background-color={color} class="hulyNavItem-icon__tag" />
       {/if}
@@ -255,19 +258,19 @@
       cursor: auto;
       background-color: var(--global-ui-highlight-BackgroundColor);
 
-      &:not(.type-anchor-link) .hulyNavItem-label:not(.description) {
-        font-weight: 700;
-      }
+      // &:not(.type-anchor-link) .hulyNavItem-label:not(.description) {
+      //   font-weight: 700;
+      // }
       .hulyNavItem-count {
         color: var(--global-secondary-TextColor);
       }
     }
-    &.bold:not(.type-anchor-link) .hulyNavItem-label:not(.description) {
-      font-weight: 700;
-    }
+    // &.bold:not(.type-anchor-link) .hulyNavItem-label:not(.description) {
+    //   font-weight: 700;
+    // }
 
     &.type-link {
-      padding: 0 var(--spacing-1_25);
+      padding: 0 var(--spacing-0_5) 0 var(--spacing-1_25);
 
       &.selected {
         padding: 0 var(--spacing-0_75) 0 var(--spacing-1_25);

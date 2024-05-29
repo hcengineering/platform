@@ -30,6 +30,7 @@
 
   export let _id: Ref<Doc> | string | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
+  export let folderIcon: boolean = false
   export let iconProps: Record<string, any> | undefined = undefined
   export let iconSize: IconSize = 'small'
   export let label: IntlString | undefined = undefined
@@ -44,6 +45,7 @@
   export let level: number = 0
   export let collapsedPrefix: string = ''
   export let collapsed: boolean = getTreeCollapsed(_id, collapsedPrefix)
+  export let highlighted: boolean = false
   export let selected: boolean = false
   export let bold: boolean = false
   export let shouldTooltip: boolean = false
@@ -80,10 +82,12 @@
     {_id}
     categoryName={_id ?? 'nav'}
     {icon}
+    {folderIcon}
     {iconProps}
     {iconSize}
     {label}
     {title}
+    {highlighted}
     {selected}
     isOpen={!collapsed}
     {collapsedPrefix}
@@ -94,6 +98,7 @@
     {forciblyСollapsed}
     {shouldTooltip}
     showMenu={showMenu || pressed}
+    on:click
     on:toggle={(ev) => {
       if (ev.detail !== undefined) collapsed = !ev.detail
     }}
@@ -134,6 +139,7 @@
     {label}
     {title}
     {icon}
+    {folderIcon}
     {iconProps}
     {iconSize}
     {selected}

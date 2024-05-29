@@ -98,15 +98,6 @@
     }
     return result
   }
-  // $: console.log('[!!!] currentSpace: ', currentSpace)
-  // $: console.log('[!!!] currentFragment: ', currentFragment)
-  // $: console.log('[!!!] descendants: ', descendants)
-  // $: console.log('[!!!] empty: ', descendants.size === 0)
-  // $: console.log('[!!!] selected: ', selected)
-  // $: console.log('[!!!] visible: ', currentSpace === space._id && descendants.size !== 0)
-
-  // selected={currentSpace === space._id && !deselect}
-  // visible={currentSpace === space._id && descendants.size !== 0 && !deselect }
 </script>
 
 {#if space}
@@ -114,10 +105,12 @@
     _id={space._id}
     icon={drive.icon.Drive}
     title={space.name}
-    selected={selected && !deselect}
-    visible={selected && !deselect && descendants.size !== 0}
+    highlighted={currentSpace === space._id && !deselect}
+    selected={selected === space._id && !deselect}
+    visible={(currentSpace === space._id && !deselect && descendants.size !== 0 && selected !== space._id) ||
+      (forciblyСollapsed && currentFragment !== undefined)}
     type={'nested-selectable'}
-    empty={descendants.size === 0}
+    empty={descendants.size === 0 || (forciblyСollapsed && selected === space._id && !deselect)}
     actions={() => getActions(space)}
     {forciblyСollapsed}
     on:click={() => {
@@ -139,7 +132,8 @@
         {@const folder = visibleItem}
         <TreeItem
           _id={folder._id}
-          icon={drive.icon.Folder}
+          folderIcon
+          iconProps={{ fill: 'var(--global-accent-IconColor)' }}
           title={folder.name}
           selected
           isFold

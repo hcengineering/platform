@@ -138,7 +138,7 @@
                 _id={_category._id}
                 label={_category.label}
                 categoryName={_category.name}
-                selected={_category.name === categoryId}
+                highlighted={_category.name === categoryId}
                 tools={_category.extraComponents?.tools}
               >
                 <Component

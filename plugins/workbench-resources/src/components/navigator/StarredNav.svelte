@@ -80,7 +80,7 @@
   _id={'tree-stared'}
   {label}
   actions={async () => [unStarAll]}
-  selected={spaces.some((s) => s._id === currentSpace) && !deselect}
+  highlighted={spaces.some((s) => s._id === currentSpace) && !deselect}
   isFold
   empty={spaces.length === 0}
   visible={visibleSpace !== undefined && !deselect}

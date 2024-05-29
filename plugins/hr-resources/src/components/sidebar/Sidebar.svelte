@@ -40,7 +40,7 @@
       <TreeNode
         _id={'tree-hr'}
         label={hr.string.Departments}
-        selected={department !== undefined}
+        highlighted={department !== undefined}
         isFold={department !== undefined}
       >
         <DepartmentsHierarchy {departments} {descendants} {departmentById} selected={department} on:selected />

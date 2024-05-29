@@ -142,7 +142,7 @@
     label={header}
     categoryName={id}
     {actions}
-    selected={items.some((it) => it.id === objectId)}
+    highlighted={items.some((it) => it.id === objectId)}
     isFold
     empty={visibleItems.length === 0}
     visible={visibleItem !== undefined}

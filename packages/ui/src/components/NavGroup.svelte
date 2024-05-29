@@ -26,6 +26,9 @@
     Component,
     IconDown,
     IconDownOutline,
+    IconOpenedArrow,
+    IconFolderCollapsed,
+    IconFolderExpanded,
     Icon,
     getTreeCollapsed,
     setTreeCollapsed,
@@ -33,6 +36,7 @@
   } from '..'
 
   export let icon: Asset | AnySvelteComponent | undefined = undefined
+  export let folderIcon: boolean = false
   export let iconProps: any | undefined = undefined
   export let iconSize: IconSize = 'small'
   export let label: IntlString | undefined = undefined
@@ -44,6 +48,7 @@
   export let empty: boolean = false
   export let collapsedPrefix: string = ''
   export let visible: boolean = false
+  export let highlighted: boolean = false
   export let selected: boolean = false
   export let type: 'default' | 'nested' | 'nested-selectable' = 'default'
   export let noDivider: boolean = false
@@ -59,9 +64,11 @@
   let pressed: boolean = false
 
   const toggle = (): void => {
-    if (empty) return
-    isOpen = !isOpen
-    dispatch('toggle', isOpen)
+    if ((!selected || empty) && type === 'nested-selectable') dispatch('click')
+    else if (!empty) {
+      isOpen = !isOpen
+      dispatch('toggle', isOpen)
+    }
   }
 
   function handleMenuClicked (ev: MouseEvent): void {
@@ -73,8 +80,8 @@
     })
   }
   $: isOpen = !getTreeCollapsed(_id, collapsedPrefix)
-  $: if (empty) isOpen = false
   $: setTreeCollapsed(_id, !isOpen, collapsedPrefix)
+  $: visibleIcon = folderIcon ? (isOpen && !empty ? IconFolderExpanded : IconFolderCollapsed) : icon
 </script>
 
 <div
@@ -85,7 +92,8 @@
 >
   <button
     class="hulyNavGroup-header"
-    class:isOpen={isOpen || visible}
+    class:isOpen={(isOpen || visible) && !empty}
+    class:highlighted
     class:selected
     class:showMenu={showMenu || pressed}
     on:click={toggle}
@@ -98,9 +106,9 @@
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="hulyNavGroup-header__label font-medium-12" on:click={handleMenuClicked}>
-      {#if icon}
+      {#if visibleIcon}
         <div class="hulyNavGroup-header__icon">
-          <Icon {icon} size={iconSize} {iconProps} />
+          <Icon icon={visibleIcon} size={iconSize} {iconProps} />
         </div>
       {/if}
       <span
@@ -129,6 +137,9 @@
         {/if}
         <slot name="tools" />
       </div>
+    {/if}
+    {#if selected && type === 'nested-selectable'}
+      <div class="hulyNavGroup-header__arrow"><IconOpenedArrow size={'small'} /></div>
     {/if}
   </button>
   {#if !empty}

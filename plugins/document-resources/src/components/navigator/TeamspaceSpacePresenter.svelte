@@ -137,8 +137,7 @@
       }}
   title={space.name}
   type={'nested'}
-  parent
-  selected={currentSpace === space._id}
+  highlighted={currentSpace === space._id}
   visible={currentSpace === space._id || forciblyСollapsed}
   actions={() => getActions(space)}
   {forciblyСollapsed}

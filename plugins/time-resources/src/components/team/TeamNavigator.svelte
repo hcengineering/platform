@@ -53,7 +53,7 @@
         label={time.string.Team}
         isFold
         empty={projects.length === 0}
-        selected={selected !== undefined}
+        highlighted={selected !== undefined}
         visible={selected !== undefined}
       >
         {#each projects as _project}

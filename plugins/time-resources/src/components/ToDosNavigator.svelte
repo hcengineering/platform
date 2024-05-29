@@ -166,7 +166,7 @@
         <NavGroup
           _id={'planner-tags'}
           label={tagsPlugin.string.Tags}
-          selected={mode === 'tag'}
+          highlighted={mode === 'tag'}
           categoryName={'tags'}
           noDivider
           isFold

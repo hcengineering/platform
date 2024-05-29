@@ -271,7 +271,7 @@
   <TreeNode
     _id={'tree-saved'}
     label={view.string.FilteredViews}
-    selected={selectedId !== undefined}
+    highlighted={selectedId !== undefined}
     actions={async () => await getActions(availableFilteredViews)}
     isFold
     empty={myFilteredViews.length === 0}

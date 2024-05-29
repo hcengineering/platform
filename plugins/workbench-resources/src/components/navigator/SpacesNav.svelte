@@ -148,7 +148,7 @@
   _id={'tree-' + model.id}
   label={model.label}
   actions={async () => getParentActions()}
-  selected={visible}
+  highlighted={visible}
   isFold={!empty}
   {empty}
   {visible}

@@ -21,6 +21,7 @@
 
   export let _id: Ref<Doc> | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
+  export let folderIcon: boolean = false
   export let iconProps: Record<string, any> | undefined = undefined
   export let iconSize: IconSize = 'small'
   export let title: string
@@ -42,12 +43,13 @@
 <TreeElement
   {_id}
   {icon}
+  {folderIcon}
   {iconSize}
+  {iconProps}
   {title}
   {notifications}
   {selected}
   {actions}
-  {iconProps}
   {bold}
   {indent}
   {showNotify}

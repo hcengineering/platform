@@ -19,7 +19,6 @@
   import { getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { Action, IconEdit } from '@hcengineering/ui'
-  import FolderIcon from './icons/Folder.svelte'
   import { getActions as getContributedActions, TreeItem } from '@hcengineering/view-resources'
 
   export let folders: Ref<Folder>[]
@@ -67,10 +66,8 @@
   {#if doc}
     <TreeItem
       _id={doc._id}
-      icon={FolderIcon}
-      iconProps={{
-        fill: '#5195D7'
-      }}
+      folderIcon
+      iconProps={{ fill: 'var(--global-accent-IconColor)' }}
       title={doc.name}
       selected={selected === doc._id}
       isFold
