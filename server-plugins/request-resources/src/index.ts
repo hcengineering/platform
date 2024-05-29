@@ -49,24 +49,52 @@ export async function OnRequest (tx: Tx, control: TriggerControl): Promise<Tx[]>
 
 async function OnRequestUpdate (tx: TxCollectionCUD<Doc, Request>, control: TriggerControl): Promise<Tx[]> {
   const ctx = tx.tx as TxUpdateDoc<Request>
-  if (ctx.operations.$push?.approved === undefined) return []
-  const request = (await control.findAll(ctx.objectClass, { _id: ctx.objectId }))[0]
-  if (request.approved.length === request.requiredApprovesCount) {
-    const collectionTx = control.txFactory.createTxUpdateDoc(ctx.objectClass, ctx.objectSpace, ctx.objectId, {
-      status: RequestStatus.Completed
-    })
-    collectionTx.space = core.space.Tx
-    const resTx = control.txFactory.createTxCollectionCUD(
+  const applyTxes: Tx[] = []
+
+  if (ctx.operations.$push?.approved !== undefined) {
+    const request = (await control.findAll(ctx.objectClass, { _id: ctx.objectId }))[0]
+
+    if (request.approved.length === request.requiredApprovesCount) {
+      const collectionTx = control.txFactory.createTxUpdateDoc(ctx.objectClass, ctx.objectSpace, ctx.objectId, {
+        status: RequestStatus.Completed
+      })
+      collectionTx.space = core.space.Tx
+      const resTx = control.txFactory.createTxCollectionCUD(
+        tx.objectClass,
+        tx.objectId,
+        tx.objectSpace,
+        'requests',
+        collectionTx
+      )
+      resTx.space = core.space.Tx
+
+      applyTxes.push(resTx)
+      applyTxes.push(request.tx)
+    }
+
+    const approvedDateTx = control.txFactory.createTxCollectionCUD(
       tx.objectClass,
       tx.objectId,
       tx.objectSpace,
       'requests',
-      collectionTx
+      control.txFactory.createTxUpdateDoc(ctx.objectClass, ctx.objectSpace, ctx.objectId, {
+        $push: { approvedDates: Date.now() }
+      })
     )
-    resTx.space = core.space.Tx
-
-    await control.apply([resTx, request.tx], true)
+    applyTxes.push(approvedDateTx)
   }
+
+  if (ctx.operations.status === RequestStatus.Rejected) {
+    const request = (await control.findAll(ctx.objectClass, { _id: ctx.objectId }))[0]
+    if (request.rejectedTx != null) {
+      applyTxes.push(request.rejectedTx)
+    }
+  }
+
+  if (applyTxes.length > 0) {
+    await control.apply(applyTxes, true)
+  }
+
   return []
 }
 
