@@ -16,6 +16,7 @@
 
 import core, {
   TxFactory,
+  cutObjectArray,
   matchQuery,
   type AttachedDoc,
   type Class,
@@ -32,6 +33,7 @@ import core, {
 
 import { getResource, type Resource } from '@hcengineering/platform'
 import type { Trigger, TriggerControl, TriggerFunc } from './types'
+import { Analytics } from '@hcengineering/analytics'
 
 import serverCore from './plugin'
 
@@ -90,18 +92,23 @@ export class Triggers {
       result: Tx[]
     ): Promise<void> => {
       for (const tx of matches) {
-        result.push(
-          ...(await trigger.op(tx, {
-            ...ctrl,
-            ctx: ctx.ctx,
-            txFactory: new TxFactory(tx.modifiedBy, true),
-            findAll: async (clazz, query, options) => await ctrl.findAllCtx(ctx.ctx, clazz, query, options),
-            apply: async (tx, broadcast, target) => {
-              return await ctrl.applyCtx(ctx, tx, broadcast, target)
-            },
-            result
-          }))
-        )
+        try {
+          result.push(
+            ...(await trigger.op(tx, {
+              ...ctrl,
+              ctx: ctx.ctx,
+              txFactory: new TxFactory(tx.modifiedBy, true),
+              findAll: async (clazz, query, options) => await ctrl.findAllCtx(ctx.ctx, clazz, query, options),
+              apply: async (tx, broadcast, target) => {
+                return await ctrl.applyCtx(ctx, tx, broadcast, target)
+              },
+              result
+            }))
+          )
+        } catch (err: any) {
+          ctx.ctx.error('failed to process trigger', { trigger: trigger.resource, tx, err })
+          Analytics.handleError(err)
+        }
       }
     }
 
@@ -139,9 +146,18 @@ export class Triggers {
             // If we have async triggers let's sheculed them after IO phase.
             const result: Tx[] = []
             for (const request of asyncRequest) {
-              await ctx.with(request.trigger.resource, {}, async (ctx) => {
-                await applyTrigger(ctx, request.matches, request.trigger, result)
-              })
+              try {
+                await ctx.with(request.trigger.resource, {}, async (ctx) => {
+                  await applyTrigger(ctx, request.matches, request.trigger, result)
+                })
+              } catch (err: any) {
+                ctx.ctx.error('failed to process trigger', {
+                  trigger: request.trigger.resource,
+                  matches: cutObjectArray(request.matches),
+                  err
+                })
+                Analytics.handleError(err)
+              }
             }
             return result
           }

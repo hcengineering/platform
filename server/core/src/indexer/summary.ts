@@ -40,6 +40,7 @@ import {
   type FullTextPipelineStage
 } from './types'
 import { collectPropagate, collectPropagateClasses, isCustomAttr, loadIndexStageStage } from './utils'
+import { Analytics } from '@hcengineering/analytics'
 
 /**
  * @public
@@ -309,7 +310,7 @@ export async function extractIndexedValues (
         currentReplacement[attr] = repl
       }
     } catch (err: any) {
-      console.log(err)
+      Analytics.handleError(err)
     }
   }
   let embeddingText = ''

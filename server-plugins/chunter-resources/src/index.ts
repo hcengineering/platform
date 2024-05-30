@@ -154,6 +154,9 @@ async function OnChatMessageCreated (tx: TxCUD<Doc>, control: TriggerControl): P
   }
 
   const targetDoc = (await control.findAll(message.attachedToClass, { _id: message.attachedTo }, { limit: 1 }))[0]
+  if (targetDoc === undefined) {
+    return []
+  }
   const isChannel = hierarchy.isDerived(targetDoc._class, chunter.class.Channel)
   const res: Tx[] = []
 

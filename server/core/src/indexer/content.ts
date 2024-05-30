@@ -36,6 +36,7 @@ import {
   type FullTextPipelineStage
 } from './types'
 import { docKey, docUpdKey } from './utils'
+import { Analytics } from '@hcengineering/analytics'
 
 /**
  * @public
@@ -155,6 +156,7 @@ export class ContentRetrievalStage implements FullTextPipelineStage {
         }
       }
     } catch (err: any) {
+      Analytics.handleError(err)
       const wasError = (doc as any).error !== undefined
 
       await pipeline.update(doc._id, false, { [docKey('error')]: JSON.stringify({ message: err.message, err }) })

@@ -14,6 +14,7 @@
 //
 
 import { GetObjectCommand, S3 } from '@aws-sdk/client-s3'
+import { Upload } from '@aws-sdk/lib-storage'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
 import core, {
@@ -315,11 +316,36 @@ export class S3Service implements StorageAdapter {
     contentType: string,
     size?: number
   ): Promise<UploadedObjectInfo> {
+    if (size === undefined) {
+      const uploadTask = new Upload({
+        client: this.client,
+        params: {
+          Bucket: this.getBucketId(workspaceId),
+          Key: this.getDocumentKey(workspaceId, objectName),
+          ContentType: contentType,
+          Body: stream
+        },
+
+        // (optional) concurrency configuration
+        queueSize: 1,
+
+        // (optional) size of each part, in bytes, at least 5MB
+        partSize: 1024 * 1024 * 5,
+        leavePartsOnError: false
+      })
+
+      const output = await uploadTask.done()
+      return {
+        etag: output.ETag ?? '',
+        versionId: output.VersionId ?? null
+      }
+    }
+
     const result = await this.client.putObject({
       Bucket: this.getBucketId(workspaceId),
       Key: this.getDocumentKey(workspaceId, objectName),
-      ContentLength: size,
       ContentType: contentType,
+      ContentLength: size,
       Body: stream
     })
     return {

@@ -10,6 +10,7 @@ import type {
 import core, { DOMAIN_MODEL, IndexKind, IndexOrder } from '@hcengineering/core'
 import { deepEqual } from 'fast-equals'
 import type { DomainHelper, DomainHelperOperations } from '../adapter'
+import { Analytics } from '@hcengineering/analytics'
 
 export class DomainIndexHelperImpl implements DomainHelper {
   domains = new Map<Domain, Set<string | FieldIndex<Doc>>>()
@@ -137,6 +138,7 @@ export class DomainIndexHelperImpl implements DomainHelper {
               }
             }
           } catch (err: any) {
+            Analytics.handleError(err)
             ctx.error('error: failed to create index', { domain, vv, err })
           }
         }
@@ -151,13 +153,14 @@ export class DomainIndexHelperImpl implements DomainHelper {
             }
             ctx.info('drop index', { domain, name: c.name, has50Documents })
             await operations.dropIndex(domain, c.name)
-          } catch (err) {
+          } catch (err: any) {
+            Analytics.handleError(err)
             console.error('error: failed to drop index', { c, err })
           }
         }
       }
     } catch (err: any) {
-      console.error(err)
+      Analytics.handleError(err)
     }
 
     if (bb.length > 0) {

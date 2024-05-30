@@ -46,6 +46,7 @@ import { createStateDoc } from './indexer/utils'
 import { getScoringConfig, mapSearchResultDoc } from './mapper'
 import { type StorageAdapter } from './storage'
 import type { FullTextAdapter, IndexedDoc, ServerStorage, WithFind } from './types'
+import { Analytics } from '@hcengineering/analytics'
 
 /**
  * @public
@@ -177,7 +178,7 @@ export class FullTextIndex implements WithFind {
         }
       }
     } catch (err: any) {
-      console.error(err)
+      Analytics.handleError(err)
     }
 
     classes = classes.filter((it, idx, arr) => arr.indexOf(it) === idx)
