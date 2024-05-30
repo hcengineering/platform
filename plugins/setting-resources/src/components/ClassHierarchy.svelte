@@ -23,7 +23,7 @@
   export let classes: Ref<Class<Doc>>[] = ['contact:class:Contact' as Ref<Class<Doc>>]
   export let _class: Ref<Class<Doc>> | undefined
   export let ofClass: Ref<Class<Doc>> | undefined
-  export let level: number = 1
+  export let level: number = 0
 
   const client = getClient()
   const dispatch = createEventDispatcher()

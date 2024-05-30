@@ -77,6 +77,7 @@
   class:indent
   class:disabled
   class:showMenu
+  class:noActions={$$slots.actions === undefined}
   on:mouseover={() => {
     if (!levelReset && labelWidth < 16 && level > 0) levelReset = true
     if (!hovered) hovered = true
@@ -220,12 +221,6 @@
         border: 1px solid var(--global-subtle-ui-BorderColor);
         border-radius: var(--extra-small-BorderRadius);
       }
-      &.folder {
-        width: 1.25rem;
-        height: 1.25rem;
-        background-color: var(--theme-navpanel-selected);
-        border-radius: var(--extra-small-BorderRadius);
-      }
     }
     .hulyNavItem-label,
     .hulyNavItem-wideLabel {
@@ -348,9 +343,10 @@
       background-color: var(--button-tertiary-hover-BackgroundColor);
     }
 
-    &:hover .hulyNavItem-actions,
-    &.showMenu .hulyNavItem-actions {
-      display: flex;
+    &:not(.noActions):hover,
+    &:not(.noActions).showMenu {
+      .hulyNavItem-actions { display: flex; }
+      .hulyNavItem-icon.right { display: none; }
     }
     &.disabled {
       cursor: not-allowed;

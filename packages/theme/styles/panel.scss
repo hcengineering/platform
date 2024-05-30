@@ -77,7 +77,7 @@
     align-items: center;
     flex-shrink: 0;
     margin: 0;
-    padding: var(--spacing-1) var(--spacing-2);
+    padding: var(--spacing-1) var(--spacing-2_25) var(--spacing-1) var(--spacing-2);
     min-height: var(--global-medium-Size);
     border: none;
     outline: none;
@@ -175,7 +175,7 @@
   }
   &.nested.selectable .hulyNavGroup-header {
     margin: 0 var(--spacing-1_5) var(--spacing-1_5);
-    padding: var(--spacing-0_5) var(--spacing-0_5);
+    padding: var(--spacing-0_5) var(--spacing-0_75) var(--spacing-0_5) var(--spacing-0_5);
     min-height: var(--global-small-Size);
     border-radius: var(--small-BorderRadius);
 

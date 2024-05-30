@@ -67,7 +67,6 @@
     <TreeItem
       _id={doc._id}
       folderIcon
-      iconProps={{ fill: 'var(--global-accent-IconColor)' }}
       title={doc.name}
       selected={selected === doc._id}
       isFold
