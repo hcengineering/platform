@@ -276,10 +276,10 @@ export function startHttpServer (
 
     if (webSocketData.session instanceof Promise) {
       void webSocketData.session.then((s) => {
-        if ('upgrade' in s || 'error' in s) {
-          if ('error' in s) {
-            ctx.error('error', { error: s.error?.message, stack: s.error?.stack })
-          }
+        if ('error' in s) {
+          ctx.error('error', { error: s.error?.message, stack: s.error?.stack })
+        }
+        if ('upgrade' in s) {
           void cs
             .send(ctx, { id: -1, result: { state: 'upgrading', stats: (s as any).upgradeInfo } }, false, false)
             .then(() => {

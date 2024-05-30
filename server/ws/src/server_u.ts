@@ -126,7 +126,8 @@ export function startUWebsocketServer (
         mode: data.payload.extra?.mode,
         model: data.payload.extra?.model
       }
-      data.connectionSocket = createWebSocketClientSocket(wrData, ws, data)
+      const cs = createWebSocketClientSocket(wrData, ws, data)
+      data.connectionSocket = cs
 
       data.session = sessions.addSession(
         ctx,
@@ -138,6 +139,21 @@ export function startUWebsocketServer (
         undefined,
         accountsUrl
       )
+
+      if (data.session instanceof Promise) {
+        void data.session.then((s) => {
+          if ('error' in s) {
+            ctx.error('error', { error: s.error?.message, stack: s.error?.stack })
+          }
+          if ('upgrade' in s) {
+            void cs
+              .send(ctx, { id: -1, result: { state: 'upgrading', stats: (s as any).upgradeInfo } }, false, false)
+              .then(() => {
+                cs.close()
+              })
+          }
+        })
+      }
     },
     message: (ws, message, isBinary) => {
       const data = ws.getUserData()
