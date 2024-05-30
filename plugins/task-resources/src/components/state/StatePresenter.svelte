@@ -135,18 +135,22 @@
   {#if kind === 'table-attrs'}
     <button class="hulyTableAttr-content__row-icon-wrapper" on:click>
       {#if icon != null}
-        <Icon {icon} {size} iconProps={{ icon: projectState?.color ?? category?.color }} />
+        <Icon {icon} {size} iconProps={{ icon: projectState?.color ?? value?.color ?? category?.color }} />
       {:else if category?._id === task.statusCategory.Active}
         <Icon
           icon={categoryIcons[category._id]}
           {size}
-          iconProps={{ index, count: sameCategory.length + 1, fill: projectState?.color ?? category?.color }}
+          iconProps={{
+            index,
+            count: sameCategory.length + 1,
+            fill: projectState?.color ?? value?.color ?? category?.color
+          }}
         />
       {:else}
         <Icon
           icon={categoryIcons[category?._id ?? task.statusCategory.UnStarted]}
           {size}
-          iconProps={{ fill: projectState?.color ?? category?.color }}
+          iconProps={{ fill: projectState?.color ?? value?.color ?? category?.color }}
         />
       {/if}
     </button>
@@ -175,18 +179,22 @@
           title={shouldShowTooltip ? value.name : undefined}
         >
           {#if icon != null}
-            <Icon {icon} {size} iconProps={{ icon: projectState?.color ?? category?.color }} />
+            <Icon {icon} {size} iconProps={{ icon: projectState?.color ?? value?.color ?? category?.color }} />
           {:else if category?._id === task.statusCategory.Active}
             <Icon
               icon={categoryIcons[category._id]}
               {size}
-              iconProps={{ index, count: sameCategory.length + 1, fill: projectState?.color ?? category?.color }}
+              iconProps={{
+                index,
+                count: sameCategory.length + 1,
+                fill: projectState?.color ?? value?.color ?? category?.color
+              }}
             />
           {:else}
             <Icon
               icon={categoryIcons[category?._id ?? task.statusCategory.UnStarted]}
               {size}
-              iconProps={{ fill: projectState?.color ?? category?.color }}
+              iconProps={{ fill: projectState?.color ?? value?.color ?? category?.color }}
             />
           {/if}
         </div>
