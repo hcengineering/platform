@@ -11,6 +11,9 @@ dependencies:
   '@aws-sdk/client-s3':
     specifier: ^3.575.0
     version: 3.577.0
+  '@aws-sdk/lib-storage':
+    specifier: ^3.583.0
+    version: 3.583.0(@aws-sdk/client-s3@3.577.0)
   '@aws-sdk/s3-request-presigner':
     specifier: ^3.582.0
     version: 3.582.0
@@ -917,9 +920,6 @@ dependencies:
   '@types/koa-bodyparser':
     specifier: ^4.3.3
     version: 4.3.12
-  '@types/koa-morgan':
-    specifier: ^1.0.8
-    version: 1.0.8
   '@types/koa-passport':
     specifier: ^6.0.0
     version: 6.0.3
@@ -1151,9 +1151,6 @@ dependencies:
   koa-bodyparser:
     specifier: ^4.3.0
     version: 4.4.1
-  koa-morgan:
-    specifier: ^1.0.1
-    version: 1.0.1
   koa-passport:
     specifier: ~6.0.0
     version: 6.0.0
@@ -1767,6 +1764,22 @@ packages:
       '@aws-sdk/types': 3.577.0
       '@smithy/property-provider': 3.0.0
       '@smithy/types': 3.0.0
+      tslib: 2.6.2
+    dev: false
+
+  /@aws-sdk/lib-storage@3.583.0(@aws-sdk/client-s3@3.577.0):
+    resolution: {integrity: sha512-To3mCeSpJiHWxAh00S5+cRfx8BkbdmWvZG2Rvcz20Qqh/GmhMWeDbN4OjDTqcewWpqNhU0n1ShZY/GcIWSn+Pg==}
+    engines: {node: '>=16.0.0'}
+    peerDependencies:
+      '@aws-sdk/client-s3': ^3.583.0
+    dependencies:
+      '@aws-sdk/client-s3': 3.577.0
+      '@smithy/abort-controller': 3.0.0
+      '@smithy/middleware-endpoint': 3.0.0
+      '@smithy/smithy-client': 3.0.1
+      buffer: 5.6.0
+      events: 3.3.0
+      stream-browserify: 3.0.0
       tslib: 2.6.2
     dev: false
 
@@ -8952,6 +8965,13 @@ packages:
 
   /buffer-from@1.1.2:
     resolution: {integrity: sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==}
+    dev: false
+
+  /buffer@5.6.0:
+    resolution: {integrity: sha512-/gDYp/UtU0eA1ys8bOs9J6a+E/KWIY+DZ+Q2WESNUA0jFRsJOc0SNUO6xJ5SGA1xueg3NL65W6s+NY5l9cunuw==}
+    dependencies:
+      base64-js: 1.5.1
+      ieee754: 1.2.1
     dev: false
 
   /buffer@5.7.1:
@@ -16394,6 +16414,13 @@ packages:
       - utf-8-validate
     dev: false
 
+  /stream-browserify@3.0.0:
+    resolution: {integrity: sha512-H73RAHsVBapbim0tU2JwwOiXUj+fikfiaoYAKHF3VJfA0pe2BCzkhAHBlLG6REzE+2WNZcxOXjK7lkso+9euLA==}
+    dependencies:
+      inherits: 2.0.4
+      readable-stream: 3.6.2
+    dev: false
+
   /stream-chopper@3.0.1:
     resolution: {integrity: sha512-f7h+ly8baAE26iIjcp3VbnBkbIRGtrvV0X0xxFM/d7fwLTYnLzDPTXRKNxa2HZzohOrc96NTrR+FaV3mzOelNA==}
     dependencies:
@@ -18263,7 +18290,7 @@ packages:
     dev: false
 
   file:projects/account-service.tgz:
-    resolution: {integrity: sha512-41LxbvGXCGm44FSbEJRQju/3/rEYOoqGcOTtxFlhFha68GQApiBjYnesZZh5DUrkFsXt8/RUVNz5OUutPoENpg==, tarball: file:projects/account-service.tgz}
+    resolution: {integrity: sha512-nobaJJXk2cwnaGafGa8skzZZ4Y3tn6AfYwO3SMo0hMyh5VSL6qzpqPo0Qyaf8PEgk/0IhyEt9fY9hqPzGnozAg==, tarball: file:projects/account-service.tgz}
     name: '@rush-temp/account-service'
     version: 0.0.0
     dependencies:
@@ -18691,7 +18718,7 @@ packages:
     dev: false
 
   file:projects/backup-service.tgz(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-tMU5TaEJAhjWjFJZsV2Vx/PUPFL7UIVy4SrVGzuYJvXD+5rAbfeVw2HjGVwazFmmPfTnvD8qwSxsL0od2FjJ2A==, tarball: file:projects/backup-service.tgz}
+    resolution: {integrity: sha512-YSs79WP+Awv9iu+GkQs8oGv3yLoJGiUIlVcMzXrPnV4tsCI+k5+US6cWjKbFYBreMdehjVx4Ri5IFMBMlpU8JA==, tarball: file:projects/backup-service.tgz}
     id: file:projects/backup-service.tgz
     name: '@rush-temp/backup-service'
     version: 0.0.0
@@ -20893,7 +20920,7 @@ packages:
     dev: false
 
   file:projects/model-document.tgz:
-    resolution: {integrity: sha512-St2Jwm/oU5EpPdS6Vlfb+C6OQzOM5NCyUW4MP3oM6XKLczldB2AykV1z4UuPPhw27w42e+9kgQ55Tet582412g==, tarball: file:projects/model-document.tgz}
+    resolution: {integrity: sha512-Nx227HyaO4nkHt18fA59V5w1rZM4UkBVeIWWIZxRoSEm3PhvvWN1y754S0CYmDISHusw+MtbxN86XBWGK5ZRrg==, tarball: file:projects/model-document.tgz}
     name: '@rush-temp/model-document'
     version: 0.0.0
     dependencies:
@@ -22871,12 +22898,13 @@ packages:
     dev: false
 
   file:projects/s3.tgz(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-545xE/hFO0K5PpSsSnM7hTqQilfo1Psno9mMs6XSYEC8SZQFX/mV1j0/W9l3++yX7lZQwxHKHBv/morA8v/RAA==, tarball: file:projects/s3.tgz}
+    resolution: {integrity: sha512-goEhEM88h+c7TwKuVhjIeU6Tj9sbGPC0yIMZs73pTnsc6tfBrguYcDwMFCn5r4YNzDIrK6lIOva3jlhSEai63Q==, tarball: file:projects/s3.tgz}
     id: file:projects/s3.tgz
     name: '@rush-temp/s3'
     version: 0.0.0
     dependencies:
       '@aws-sdk/client-s3': 3.577.0
+      '@aws-sdk/lib-storage': 3.583.0(@aws-sdk/client-s3@3.577.0)
       '@aws-sdk/s3-request-presigner': 3.582.0
       '@types/jest': 29.5.12
       '@types/node': 20.11.19
@@ -23309,7 +23337,7 @@ packages:
     dev: false
 
   file:projects/server-core.tgz(esbuild@0.20.1)(ts-node@10.9.2):
-    resolution: {integrity: sha512-nnEMB1zXtGYZYkx8LQ3LcxHqJ8rINXMKaqdzfnRIPRxYrdBocaE8QK56QJuFioera/FYZxJui4mrXrSXmMkDpg==, tarball: file:projects/server-core.tgz}
+    resolution: {integrity: sha512-igJYqfFaPwOzhEA/uED0MqboUq/VGhhiRBUVGWqnfm42Xbl6SF07e7jdJGWkWzt8pEsQKgN732C9cuHm2Otx4A==, tarball: file:projects/server-core.tgz}
     id: file:projects/server-core.tgz
     name: '@rush-temp/server-core'
     version: 0.0.0

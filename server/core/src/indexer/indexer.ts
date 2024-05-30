@@ -37,6 +37,7 @@ import { type DbAdapter } from '../adapter'
 import { RateLimiter } from '../limitter'
 import type { IndexedDoc } from '../types'
 import { type FullTextPipeline, type FullTextPipelineStage } from './types'
+import { Analytics } from '@hcengineering/analytics'
 
 export * from './content'
 export * from './field'
@@ -135,7 +136,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
       try {
         await this.storage.update(this.metrics, DOMAIN_DOC_INDEX_STATE, this.pending)
       } catch (err: any) {
-        console.error(err)
+        Analytics.handleError(err)
         // Go one by one.
         for (const o of this.pending) {
           await this.storage.update(this.metrics, DOMAIN_DOC_INDEX_STATE, new Map([o]))
@@ -470,6 +471,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
                   toRemove.map((it) => it._id)
                 )
               } catch (err: any) {
+                Analytics.handleError(err)
                 // QuotaExceededError, ignore
               }
             }
@@ -532,6 +534,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
               }
             }
           } catch (err: any) {
+            Analytics.handleError(err)
             this.metrics.error('error during index', { error: err })
           }
         }

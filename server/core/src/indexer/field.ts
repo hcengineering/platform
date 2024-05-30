@@ -45,6 +45,7 @@ import {
   isFullTextAttribute,
   loadIndexStageStage
 } from './utils'
+import { Analytics } from '@hcengineering/analytics'
 
 /**
  * @public
@@ -235,7 +236,7 @@ export class IndexedFieldStage implements FullTextPipelineStage {
 
           await pipeline.update(docState._id, this.stageValue, docUpdate)
         } catch (err: any) {
-          console.error(err)
+          Analytics.handleError(err)
           continue
         }
       }

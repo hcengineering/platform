@@ -42,6 +42,7 @@ import {
   fullTextPushStageId
 } from './types'
 import { collectPropagate, collectPropagateClasses, docKey, isCustomAttr } from './utils'
+import { Analytics } from '@hcengineering/analytics'
 
 /**
  * @public
@@ -76,7 +77,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
         this.dimmVectors[k] = Array.from(Array(v).keys()).map((it) => 0)
       }
     } catch (err: any) {
-      console.error(err)
+      Analytics.handleError(err)
     }
   }
 
@@ -194,6 +195,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
           this.checkIntegrity(elasticDoc)
           bulk.push(elasticDoc)
         } catch (err: any) {
+          Analytics.handleError(err)
           const wasError = (doc as any).error !== undefined
 
           await pipeline.update(doc._id, false, { [docKey('error')]: JSON.stringify({ message: err.message, err }) })
@@ -212,7 +214,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
           await pipeline.update(doc._id, true, {})
         }
       } catch (err: any) {
-        console.error(err)
+        Analytics.handleError(err)
       }
     }
   }
@@ -287,7 +289,9 @@ function updateDoc2Elastic (
           }
         }
       }
-    } catch (e) {}
+    } catch (err: any) {
+      Analytics.handleError(err)
+    }
 
     docId = docIdOverride ?? docId
     if (docId === undefined) {

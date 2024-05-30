@@ -74,6 +74,7 @@ import type {
   TriggerControl
 } from '../types'
 import { SessionContextImpl, createBroadcastEvent } from '../utils'
+import { Analytics } from '@hcengineering/analytics'
 
 export class TServerStorage implements ServerStorage {
   private readonly fulltext: FullTextIndex
@@ -915,6 +916,7 @@ export class TServerStorage implements ServerStorage {
       })
     } catch (err: any) {
       ctx.ctx.error('error process tx', { error: err })
+      Analytics.handleError(err)
       throw err
     } finally {
       onEnds.forEach((p) => {

@@ -38,6 +38,7 @@
     "@hcengineering/core": "^0.6.28",
     "@hcengineering/platform": "^0.6.9",
     "@hcengineering/text": "^0.6.1",
+    "@hcengineering/analytics": "^0.6.0",
     "@hcengineering/query": "^0.6.8",
     "fast-equals": "^5.0.1",
     "@hcengineering/storage": "^0.6.0",
