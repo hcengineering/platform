@@ -396,6 +396,7 @@ test.describe('channel tests', () => {
     const joinPage = new SignInJoinPage(page2)
     await joinPage.join(newUser2)
     await leftSideMenuPage.clickChunter()
+    await channelPage.clickChannel('general')
     await channelPage.clickChannel(data.channelName)
     await channelPage.clickOnOpenChannelDetails()
     await channelPage.addMemberToChannelPreview(newUser2.lastName + ' ' + newUser2.firstName)
