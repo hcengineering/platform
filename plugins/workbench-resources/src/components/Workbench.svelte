@@ -260,7 +260,13 @@
         loc.path[4] = (currentSpecial as string) ?? resolved.defaultLocation.path[4]
       } else {
         loc.path[3] = resolvedSpace
-        loc.path[4] = resolvedSpecial ?? currentSpecial ?? resolved.defaultLocation.path[4]
+        if (resolvedSpecial) {
+          loc.path[4] = resolvedSpecial
+        } else if (currentSpace && currentSpecial) {
+          loc.path[4] = currentSpecial
+        } else {
+          loc.path[4] = resolved.defaultLocation.path[4]
+        }
       }
     }
     for (let index = 0; index < loc.path.length; index++) {
