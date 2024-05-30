@@ -197,7 +197,7 @@ export type ArrayAsElement<T> = {
 /**
  * @public
  */
-export type ColalborativeDocAsMarkup<T> = {
+export type CollaborativeDocAsMarkup<T> = {
   [P in keyof T]-?: T[P] extends CollaborativeDoc ? Markup : never
 }
 
@@ -321,7 +321,7 @@ export interface SpaceUpdate {
  * @public
  */
 export interface MarkupOptions<T extends Data<Doc>> {
-  $markup?: Partial<OmitNever<ColalborativeDocAsMarkup<T>>>
+  $markup?: Partial<OmitNever<CollaborativeDocAsMarkup<T>>>
 }
 
 /**
@@ -392,7 +392,7 @@ export abstract class TxProcessor implements WithTx {
   }
 
   static createDoc2Doc<T extends Doc>(tx: TxCreateDoc<T>, doClone = true): T {
-    const attributes = Object.fromEntries(Object.entries(tx.attributes).filter(([k]) => k.startsWith('$')))
+    const attributes = Object.fromEntries(Object.entries(tx.attributes).filter(([key]) => !key.startsWith('$')))
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     return {
       ...(doClone ? clone(attributes) : attributes),

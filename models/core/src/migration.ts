@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { saveCollaborativeDoc } from '@hcengineering/collaboration'
 import core, {
   DOMAIN_BLOB,
   DOMAIN_DOC_INDEX_STATE,
@@ -22,7 +23,12 @@ import core, {
   coreId,
   generateId,
   isClassIndexable,
+  makeCollaborativeDoc,
+  type AnyAttribute,
   type Blob,
+  type Doc,
+  type Domain,
+  type MeasureContext,
   type Ref,
   type Space,
   type Status,
@@ -33,10 +39,14 @@ import {
   tryMigrate,
   tryUpgrade,
   type MigrateOperation,
+  type MigrateUpdate,
   type MigrationClient,
+  type MigrationDocumentQuery,
+  type MigrationIterator,
   type MigrationUpgradeClient
 } from '@hcengineering/model'
-import { type StorageAdapterEx } from '@hcengineering/storage'
+import { type StorageAdapter, type StorageAdapterEx } from '@hcengineering/storage'
+import { markupToYDoc } from '@hcengineering/text'
 import { DOMAIN_SPACE } from './security'
 
 async function migrateStatusesToModel (client: MigrationClient): Promise<void> {
@@ -143,6 +153,83 @@ async function migrateStatusTransactions (client: MigrationClient): Promise<void
   )
 }
 
+async function migrateCollaborativeContentToStorage (client: MigrationClient): Promise<void> {
+  const ctx = new MeasureMetricsContext('migrate_content', {})
+  const storageAdapter = client.storageAdapter as StorageAdapter
+
+  const hierarchy = client.hierarchy
+  const classes = hierarchy.getDescendants(core.class.Doc)
+  for (const _class of classes) {
+    const domain = hierarchy.findDomain(_class)
+    if (domain === undefined) continue
+
+    const attributes = hierarchy.getAllAttributes(_class)
+    const filtered = Array.from(attributes.values()).filter((attribute) => {
+      return hierarchy.isDerived(attribute.type._class, core.class.TypeCollaborativeDoc)
+    })
+    if (filtered.length === 0) continue
+
+    const iterator = await client.traverse(domain, { _class })
+    try {
+      console.log('processing', _class)
+      await processMigrateContentFor(ctx, domain, filtered, client, storageAdapter, iterator)
+    } finally {
+      await iterator.close()
+    }
+  }
+}
+
+async function processMigrateContentFor (
+  ctx: MeasureContext,
+  domain: Domain,
+  attributes: AnyAttribute[],
+  client: MigrationClient,
+  storageAdapter: StorageAdapter,
+  iterator: MigrationIterator<Doc>
+): Promise<void> {
+  let processed = 0
+  while (true) {
+    const docs = await iterator.next(1000)
+    if (docs === null || docs.length === 0) {
+      break
+    }
+
+    const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
+
+    for (const doc of docs) {
+      const update: MigrateUpdate<Doc> = {}
+
+      for (const attribute of attributes) {
+        const value = (doc as any)[attribute.name] as string
+        if (value != null && value.startsWith('{')) {
+          const collaborativeDoc = makeCollaborativeDoc(doc._id, attribute.name)
+          update[attribute.name] = collaborativeDoc
+
+          const ydoc = markupToYDoc(value, attribute.name)
+          await saveCollaborativeDoc(
+            storageAdapter,
+            client.workspaceId,
+            collaborativeDoc,
+            ydoc,
+            ctx
+          )
+        }
+      }
+
+      if (Object.keys(update).length > 0) {
+        operations.push({ filter: { _id: doc._id }, update })
+      }
+    }
+
+    if (operations.length > 0) {
+      await client.bulk(domain, operations)
+    }
+
+    processed += docs.length
+    console.log('...processed', processed)
+  }
+}
+
 export const coreOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     // We need to delete all documents in doc index state for missing classes
@@ -180,8 +267,13 @@ export const coreOperation: MigrateOperation = {
         }
       },
       {
+<<<<<<< HEAD
         state: 'old-statuses-transactions',
         func: migrateStatusTransactions
+=======
+        state: 'collaborative-content-to-storage',
+        func: migrateCollaborativeContentToStorage
+>>>>>>> 8843cd60a (Migrate collaborative markup to storage)
       }
     ])
   },
