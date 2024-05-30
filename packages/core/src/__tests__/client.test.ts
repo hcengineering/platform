@@ -93,6 +93,7 @@ describe('client', () => {
       }
 
       return {
+        isConnected: () => true,
         findAll,
 
         searchFulltext: async (query: SearchQuery, options: SearchOptions): Promise<SearchResult> => {
@@ -108,7 +109,7 @@ describe('client', () => {
         },
         close: async () => {},
 
-        loadChunk: async (domain: Domain, idx?: number) => ({
+        loadChunk: async (domain: Domain, idx?: number, recheck?: boolean) => ({
           idx: -1,
           index: -1,
           docs: [],

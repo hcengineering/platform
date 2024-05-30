@@ -74,6 +74,7 @@ import {
   type Db,
   type Document,
   type Filter,
+  type FindCursor,
   type Sort,
   type UpdateFilter
 } from 'mongodb'
@@ -718,20 +719,11 @@ abstract class MongoAdapterBase implements DbAdapter {
     return docs
   }
 
-  find (_ctx: MeasureContext, domain: Domain): StorageIterator {
+  find (_ctx: MeasureContext, domain: Domain, recheck?: boolean): StorageIterator {
     const ctx = _ctx.newChild('find', { domain })
     const coll = this.db.collection<Doc>(domain)
     let mode: 'hashed' | 'non-hashed' = 'hashed'
-    let iterator = coll.find(
-      { '%hash%': { $nin: ['', null] } },
-      {
-        projection: {
-          '%hash%': 1,
-          _id: 1
-        }
-      }
-    )
-
+    let iterator: FindCursor<Doc>
     const bulkUpdate = new Map<Ref<Doc>, string>()
     const flush = async (flush = false): Promise<void> => {
       if (bulkUpdate.size > 1000 || flush) {
@@ -756,6 +748,20 @@ abstract class MongoAdapterBase implements DbAdapter {
 
     return {
       next: async () => {
+        if (iterator === undefined) {
+          if (recheck === true) {
+            await coll.updateMany({ '%hash%': { $ne: null } }, { $set: { '%hash%': null } })
+          }
+          iterator = coll.find(
+            { '%hash%': { $nin: ['', null] } },
+            {
+              projection: {
+                '%hash%': 1,
+                _id: 1
+              }
+            }
+          )
+        }
         let d = await ctx.with('next', { mode }, async () => await iterator.next())
         if (d == null && mode === 'hashed') {
           mode = 'non-hashed'

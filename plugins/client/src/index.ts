@@ -80,6 +80,7 @@ export default plugin(clientId, {
     ExtraPlugins: '' as Metadata<Plugin[]>,
     UseBinaryProtocol: '' as Metadata<boolean>,
     UseProtocolCompression: '' as Metadata<boolean>,
+    ConnectionTimeout: '' as Metadata<number>,
     OverridePersistenceStore: '' as Metadata<TxPersistenceStore>
   },
   function: {

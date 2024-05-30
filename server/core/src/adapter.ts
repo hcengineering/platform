@@ -107,7 +107,7 @@ export interface DbAdapter {
   ) => Promise<FindResult<T>>
   tx: (ctx: MeasureContext, ...tx: Tx[]) => Promise<TxResult[]>
 
-  find: (ctx: MeasureContext, domain: Domain) => StorageIterator
+  find: (ctx: MeasureContext, domain: Domain, recheck?: boolean) => StorageIterator
 
   load: (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => Promise<Doc[]>
   upload: (ctx: MeasureContext, domain: Domain, docs: Doc[]) => Promise<void>

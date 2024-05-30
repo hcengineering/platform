@@ -102,7 +102,9 @@ class Connection implements ClientConnection {
     private readonly onUpgrade?: () => void,
     private readonly onUnauthorized?: () => void,
     readonly onConnect?: (event: ClientConnectEvent, data?: any) => Promise<void>
-  ) {}
+  ) {
+    this.scheduleOpen(false)
+  }
 
   private schedulePing (socketId: number): void {
     clearInterval(this.interval)
@@ -154,11 +156,15 @@ class Connection implements ClientConnection {
     }
   }
 
+  isConnected (): boolean {
+    return this.websocket != null && this.websocket.readyState === ClientSocketReadyState.OPEN
+  }
+
   delay = 0
   onConnectHandlers: (() => void)[] = []
 
   private waitOpenConnection (): Promise<void> | undefined {
-    if (this.websocket != null && this.websocket.readyState === ClientSocketReadyState.OPEN) {
+    if (this.isConnected()) {
       return undefined
     }
 
@@ -625,8 +631,8 @@ class Connection implements ClientConnection {
     })
   }
 
-  loadChunk (domain: Domain, idx?: number): Promise<DocChunk> {
-    return this.sendRequest({ method: 'loadChunk', params: [domain, idx] })
+  loadChunk (domain: Domain, idx?: number, recheck?: boolean): Promise<DocChunk> {
+    return this.sendRequest({ method: 'loadChunk', params: [domain, idx, recheck] })
   }
 
   closeChunk (idx: number): Promise<void> {
@@ -657,7 +663,7 @@ class Connection implements ClientConnection {
 /**
  * @public
  */
-export async function connect (
+export function connect (
   url: string,
   handler: TxHandler,
   workspace: string,
@@ -665,7 +671,7 @@ export async function connect (
   onUpgrade?: () => void,
   onUnauthorized?: () => void,
   onConnect?: (event: ClientConnectEvent, data?: any) => void
-): Promise<ClientConnection> {
+): ClientConnection {
   return new Connection(url, handler, workspace, user, onUpgrade, onUnauthorized, async (event, data) => {
     onConnect?.(event, data)
   })

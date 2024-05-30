@@ -6,10 +6,12 @@ import type { Readable } from 'stream'
 const cacheControlNoCache = 'public, no-store, no-cache, must-revalidate, max-age=0'
 
 export interface BlobResponse {
+  aborted: boolean
   writeHead: (code: number, header: Record<string, string | number>) => void
   status: (code: number) => void
   end: () => void
   pipeFrom: (readable: Readable, size: number) => void
+  cork: (cb: () => void) => void
 }
 
 export async function getFile (
@@ -22,8 +24,10 @@ export async function getFile (
   const stat = await ctx.with('stat', {}, async () => await client.stat(ctx, workspace, file))
   if (stat === undefined) {
     ctx.error('No such key', { file })
-    res.status(404)
-    res.end()
+    res.cork(() => {
+      res.status(404)
+      res.end()
+    })
     return
   }
 
@@ -33,31 +37,37 @@ export async function getFile (
     async (ctx) => {
       try {
         const dataStream = await ctx.with('readable', {}, async () => await client.get(ctx, workspace, file))
-        res.writeHead(200, {
-          'Content-Type': stat.contentType,
-          Etag: stat.etag,
-          'Last-Modified': new Date(stat.modifiedOn).toISOString(),
-          'Cache-Control': cacheControlNoCache
-        })
-
-        res.pipeFrom(dataStream, stat.size)
         await new Promise<void>((resolve, reject) => {
-          dataStream.on('end', function () {
-            res.end()
-            dataStream.destroy()
-            resolve()
-          })
-          dataStream.on('error', function (err) {
-            Analytics.handleError(err)
-            ctx.error('error', { err })
-            reject(err)
+          res.cork(() => {
+            res.writeHead(200, {
+              'Content-Type': stat.contentType,
+              Etag: stat.etag,
+              'Last-Modified': new Date(stat.modifiedOn).toISOString(),
+              'Cache-Control': cacheControlNoCache
+            })
+
+            res.pipeFrom(dataStream, stat.size)
+            dataStream.on('end', function () {
+              res.cork(() => {
+                res.end()
+              })
+              dataStream.destroy()
+              resolve()
+            })
+            dataStream.on('error', function (err) {
+              Analytics.handleError(err)
+              ctx.error('error', { err })
+              reject(err)
+            })
           })
         })
       } catch (err: any) {
         ctx.error('get-file-error', { workspace: workspace.name, err })
         Analytics.handleError(err)
-        res.status(500)
-        res.end()
+        res.cork(() => {
+          res.status(500)
+          res.end()
+        })
       }
     },
     {}
@@ -92,19 +102,26 @@ export async function getFileRange (
   const stat = await ctx.with('stats', {}, async () => await client.stat(ctx, workspace, uuid))
   if (stat === undefined) {
     ctx.error('No such key', { file: uuid })
-    res.status(404)
-    res.end()
+    res.cork(() => {
+      res.status(404)
+      res.end()
+    })
     return
   }
   const size: number = stat.size
 
-  const [start, end] = getRange(range, size)
+  let [start, end] = getRange(range, size)
 
-  if (start >= size || end >= size) {
-    res.writeHead(416, {
-      'Content-Range': `bytes */${size}`
+  if (end >= size) {
+    end = size // Allow to iterative return of entire document
+  }
+  if (start >= size) {
+    res.cork(() => {
+      res.writeHead(416, {
+        'Content-Range': `bytes */${size}`
+      })
+      res.end()
     })
-    res.end()
     return
   }
 
@@ -119,41 +136,52 @@ export async function getFileRange (
           async () => await client.partial(ctx, workspace, uuid, start, end - start + 1),
           {}
         )
-        res.writeHead(206, {
-          Connection: 'keep-alive',
-          'Content-Range': `bytes ${start}-${end}/${size}`,
-          'Accept-Ranges': 'bytes',
-          'Content-Length': end - start + 1,
-          'Content-Type': stat.contentType,
-          Etag: stat.etag,
-          'Last-Modified': new Date(stat.modifiedOn).toISOString()
-        })
-
-        res.pipeFrom(dataStream, end - start)
         await new Promise<void>((resolve, reject) => {
-          dataStream.on('end', function () {
-            res.end()
-            dataStream.destroy()
-            resolve()
-          })
-          dataStream.on('error', function (err) {
-            Analytics.handleError(err)
-            ctx.error('error', { err })
-            reject(err)
+          res.cork(() => {
+            res.writeHead(206, {
+              Connection: 'keep-alive',
+              'Content-Range': `bytes ${start}-${end}/${size}`,
+              'Accept-Ranges': 'bytes',
+              // 'Content-Length': end - start + 1,
+              'Content-Type': stat.contentType,
+              Etag: stat.etag,
+              'Last-Modified': new Date(stat.modifiedOn).toISOString()
+            })
+
+            res.pipeFrom(dataStream, end - start)
+            dataStream.on('end', function () {
+              res.cork(() => {
+                res.end()
+              })
+              dataStream.destroy()
+              resolve()
+            })
+            dataStream.on('error', function (err) {
+              Analytics.handleError(err)
+              ctx.error('error', { err })
+              res.cork(() => {
+                res.end()
+              })
+              reject(err)
+            })
           })
         })
       } catch (err: any) {
         if (err?.code === 'NoSuchKey' || err?.code === 'NotFound') {
           ctx.info('No such key', { workspace: workspace.name, uuid })
-          res.status(404)
-          res.end()
+          res.cork(() => {
+            res.status(404)
+            res.end()
+          })
           return
         } else {
           Analytics.handleError(err)
           ctx.error(err)
         }
-        res.status(500)
-        res.end()
+        res.cork(() => {
+          res.status(500)
+          res.end()
+        })
       }
     },
     { uuid, start, end: end - start + 1 }

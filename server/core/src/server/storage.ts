@@ -933,8 +933,8 @@ export class TServerStorage implements ServerStorage {
     })
   }
 
-  find (ctx: MeasureContext, domain: Domain): StorageIterator {
-    return this.getAdapter(domain, false).find(ctx, domain)
+  find (ctx: MeasureContext, domain: Domain, recheck?: boolean): StorageIterator {
+    return this.getAdapter(domain, false).find(ctx, domain, recheck)
   }
 
   async load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {

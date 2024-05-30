@@ -92,7 +92,6 @@ export async function cleanWorkspace (
       }
     }
     await storageAdapter.remove(ctx, workspaceId, toClean)
-    // connection.loadChunk(DOMAIN_BLOB, idx = )
 
     if (opt.recruit) {
       const contacts = await ops.findAll(recruit.mixin.Candidate, {})

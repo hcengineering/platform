@@ -62,19 +62,32 @@ class BackupWorker {
   async schedule (ctx: MeasureContext): Promise<void> {
     console.log('schedule timeout for', this.config.Interval, ' seconds')
     this.interval = setTimeout(() => {
-      void this.backup(ctx).then(() => {
-        void this.schedule(ctx)
+      void this.backup(ctx).then((failed) => {
+        if (failed.length > 0) {
+          ctx.info('Failed to backup workspaces, Retry failed workspaces once.', { failed: failed.length })
+          void this.doBackup(ctx, failed).then(() => {
+            void this.schedule(ctx)
+          })
+        } else {
+          void this.schedule(ctx)
+        }
       })
     }, this.config.Interval * 1000)
   }
 
-  async backup (ctx: MeasureContext): Promise<void> {
+  async backup (ctx: MeasureContext): Promise<BaseWorkspaceInfo[]> {
     const workspaces = await getWorkspaces(this.config.AccountsURL, this.config.Token)
     workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
+    return await this.doBackup(ctx, workspaces)
+  }
+
+  async doBackup (ctx: MeasureContext, workspaces: BaseWorkspaceInfo[]): Promise<BaseWorkspaceInfo[]> {
     let index = 0
+
+    const failedWorkspaces: BaseWorkspaceInfo[] = []
     for (const ws of workspaces) {
       if (this.canceled) {
-        return
+        return failedWorkspaces
       }
       index++
       ctx.info('\n\nBACKUP WORKSPACE ', {
@@ -91,20 +104,20 @@ class BackupWorker {
           ws.workspace
         )
         await ctx.with('backup', { workspace: ws.workspace }, async (ctx) => {
-          await backup(
-            ctx,
-            this.config.TransactorURL,
-            getWorkspaceId(ws.workspace, ws.productId),
-            storage,
-            [],
-            false,
-            this.config.Timeout * 1000
-          )
+          await backup(ctx, this.config.TransactorURL, getWorkspaceId(ws.workspace, ws.productId), storage, {
+            skipDomains: [],
+            force: false,
+            recheck: false,
+            timeout: this.config.Timeout * 1000,
+            connectTimeout: 5 * 60 * 1000 // 5 minutes to
+          })
         })
       } catch (err: any) {
         ctx.error('\n\nFAILED to BACKUP', { workspace: ws.workspace, err })
+        failedWorkspaces.push(ws)
       }
     }
+    return failedWorkspaces
   }
 }
 

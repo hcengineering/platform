@@ -25,7 +25,8 @@ import core, {
   TxWorkspaceEvent,
   WorkspaceEvent,
   concatLink,
-  createClient
+  createClient,
+  type ClientConnection
 } from '@hcengineering/core'
 import platform, {
   Severity,
@@ -109,7 +110,7 @@ export default async () => {
               handler(...txes)
             }
             const tokenPayload: { workspace: string, email: string } = decodeTokenPayload(token)
-            return connect(
+            const clientConnection = connect(
               url,
               upgradeHandler,
               tokenPayload.workspace,
@@ -118,6 +119,24 @@ export default async () => {
               onUnauthorized,
               onConnect
             )
+            const connectTimeout = getMetadata(clientPlugin.metadata.ConnectionTimeout)
+            if ((connectTimeout ?? 0) > 0) {
+              return new Promise<ClientConnection>((resolve, reject) => {
+                const connectTO = setTimeout(() => {
+                  if (!clientConnection.isConnected()) {
+                    clientConnection.onConnect = undefined
+                    void clientConnection?.close()
+                    reject(new Error(`Connection timeout, and no connection established to ${endpoint}`))
+                  }
+                }, connectTimeout)
+                clientConnection.onConnect = async (event) => {
+                  // Any event is fine, it means server is alive.
+                  clearTimeout(connectTO)
+                  resolve(clientConnection)
+                }
+              })
+            }
+            return Promise.resolve(clientConnection)
           },
           filterModel ? [...getPlugins(), ...(getMetadata(clientPlugin.metadata.ExtraPlugins) ?? [])] : undefined,
           createModelPersistence(getWSFromToken(token)),

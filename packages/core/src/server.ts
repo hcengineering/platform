@@ -54,7 +54,8 @@ export interface SessionOperationContext {
  */
 export interface LowLevelStorage {
   // Low level streaming API to retrieve information
-  find: (ctx: MeasureContext, domain: Domain) => StorageIterator
+  // If recheck is passed, all %hash% for documents, will be re-calculated.
+  find: (ctx: MeasureContext, domain: Domain, recheck?: boolean) => StorageIterator
 
   // Load passed documents from domain
   load: (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => Promise<Doc[]>

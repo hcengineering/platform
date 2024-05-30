@@ -419,18 +419,18 @@ function createWebsocketClientSocket (
             setImmediate(doSend)
             return
           }
-          try {
-            ws.send(smsg, { binary: true, compress: compression }, (err) => {
-              if (err != null) {
+          ws.send(smsg, { binary: true, compress: compression }, (err) => {
+            if (err != null) {
+              if (!`${err.message}`.includes('WebSocket is not open')) {
+                ctx.error('send error', { err })
+                Analytics.handleError(err)
                 reject(err)
               }
+              // In case socket not open, just resolve
               resolve()
-            })
-          } catch (err: any) {
-            if (err.message !== 'WebSocket is not open') {
-              ctx.error('send error', { err })
             }
-          }
+            resolve()
+          })
         }
         doSend()
       })
@@ -441,6 +441,10 @@ function createWebsocketClientSocket (
 }
 function wrapRes (res: ExpressResponse): BlobResponse {
   return {
+    aborted: false,
+    cork: (cb) => {
+      cb()
+    },
     end: () => res.end(),
     pipeFrom: (readable) => readable.pipe(res),
     status: (code) => res.status(code),

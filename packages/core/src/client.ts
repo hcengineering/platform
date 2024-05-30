@@ -89,6 +89,8 @@ export enum ClientConnectEvent {
  * @public
  */
 export interface ClientConnection extends Storage, FulltextStorage, BackupClient {
+  isConnected: () => boolean
+
   close: () => Promise<void>
   onConnect?: (event: ClientConnectEvent) => Promise<void>
 
@@ -184,8 +186,8 @@ class ClientImpl implements AccountClient, BackupClient, MeasureClient {
     await this.conn.close()
   }
 
-  async loadChunk (domain: Domain, idx?: number | undefined): Promise<DocChunk> {
-    return await this.conn.loadChunk(domain, idx)
+  async loadChunk (domain: Domain, idx?: number, recheck?: boolean): Promise<DocChunk> {
+    return await this.conn.loadChunk(domain, idx, recheck)
   }
 
   async closeChunk (idx: number): Promise<void> {
