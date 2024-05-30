@@ -141,7 +141,9 @@
   $: visibleSpace = filteredSpaces.find((fs) => fs._id === currentSpace)
   $: empty = filteredSpaces.length === 0 || filteredSpaces === undefined
   $: visible =
-    ((visibleSpace !== undefined && !deselect) || !(currentFragment === undefined || currentFragment === '')) && !deselect && !empty
+    ((visibleSpace !== undefined && !deselect) || !(currentFragment === undefined || currentFragment === '')) &&
+    !deselect &&
+    !empty
 </script>
 
 <TreeNode

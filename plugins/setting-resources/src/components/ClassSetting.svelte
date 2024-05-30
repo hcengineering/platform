@@ -119,7 +119,13 @@
         </div>
       </div>
       <Scroller>
-        <NavGroup label={setting.string.Classes} highlighted={_class !== undefined} categoryName={'classes'} noDivider isFold>
+        <NavGroup
+          label={setting.string.Classes}
+          highlighted={_class !== undefined}
+          categoryName={'classes'}
+          noDivider
+          isFold
+        >
           <ClassHierarchy
             {classes}
             {_class}

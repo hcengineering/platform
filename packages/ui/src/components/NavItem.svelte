@@ -345,8 +345,12 @@
 
     &:not(.noActions):hover,
     &:not(.noActions).showMenu {
-      .hulyNavItem-actions { display: flex; }
-      .hulyNavItem-icon.right { display: none; }
+      .hulyNavItem-actions {
+        display: flex;
+      }
+      .hulyNavItem-icon.right {
+        display: none;
+      }
     }
     &.disabled {
       cursor: not-allowed;
