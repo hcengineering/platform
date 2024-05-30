@@ -282,6 +282,7 @@ async function migrateContentField (client: MigrationClient): Promise<void> {
   }
 
   const documents = await client.find<Document>(DOMAIN_DOCUMENT, {
+    _class: document.class.Document,
     content: { $exists: true }
   })
 
