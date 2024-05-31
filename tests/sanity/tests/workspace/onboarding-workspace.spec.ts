@@ -10,6 +10,7 @@ import { test } from '@playwright/test'
 import { generateId, checkTextChunksVisibility, uploadFile } from '../utils'
 import { NotificationPage } from '../model/notification-page'
 import { UserProfilePage } from '../model/profile/user-profile-page'
+import { ApiEndpoint } from '../API/Api'
 
 test.describe.skip('Workspace tests', () => {
   let loginPage: LoginPage
@@ -20,8 +21,9 @@ test.describe.skip('Workspace tests', () => {
   let issuesDetailsPage: IssuesDetailsPage
   let notificationPage: NotificationPage
   let userProfilePage: UserProfilePage
+  let api: ApiEndpoint
 
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
     loginPage = new LoginPage(page)
     signUpPage = new SignUpPage(page)
     selectWorkspacePage = new SelectWorkspacePage(page)
@@ -30,6 +32,7 @@ test.describe.skip('Workspace tests', () => {
     issuesDetailsPage = new IssuesDetailsPage(page)
     notificationPage = new NotificationPage(page)
     userProfilePage = new UserProfilePage(page)
+    api = new ApiEndpoint(request)
   })
   test('Create a workspace from onboarding', async ({ page }) => {
     const newUser: SignUpData = {
@@ -129,5 +132,29 @@ test.describe.skip('Workspace tests', () => {
     await userProfilePage.openUserAvatarMenu()
     await uploadFile(page, 'Testingo.png')
     await userProfilePage.clickSavaAvatarButton()
+  })
+
+  test('User is able to change workspace', async ({ page }) => {
+    const newUser: SignUpData = {
+      firstName: `FirstName-${generateId()}`,
+      lastName: `LastName-${generateId()}`,
+      email: `sanity-email+${generateId()}@gmail.com`,
+      password: '1234'
+    }
+    const newWorkspaceName = `New Workspace Name - ${generateId(2)}`
+    const newWorkspaceName2 = `New Workspace Name - ${generateId(2)}`
+    await loginPage.goto()
+    await loginPage.linkSignUp().click()
+    await signUpPage.signUp(newUser)
+    await selectWorkspacePage.createWorkspace(newWorkspaceName)
+    await api.createWorkspaceWithLogin(newWorkspaceName2, newUser.email, '1234')
+    await leftSideMenuPage.buttonTracker().click()
+    await userProfilePage.openProfileMenu()
+    await userProfilePage.clickSettings()
+    await userProfilePage.clickSelectWorkspace()
+    await selectWorkspacePage.selectWorkspace(newWorkspaceName2)
+    await selectWorkspacePage.clickCreateWorkspaceLogo()
+    await selectWorkspacePage.checkIfWorkspaceExists(newWorkspaceName2)
+    await page.waitForTimeout(100)
   })
 })

@@ -20,6 +20,7 @@ export class UserProfilePage {
   accountSettings = (): Locator => this.page.getByRole('button', { name: 'Account settings' })
   userAvatarMenu = (): Locator => this.page.locator('.mr-8 > .cursor-pointer')
   savaAvatarButton = (): Locator => this.page.getByRole('button', { name: 'Save' }).nth(1)
+  selectWorkspace = (): Locator => this.page.getByRole('button', { name: 'Select workspace' })
 
   constructor (page: Page) {
     this.page = page
@@ -35,6 +36,10 @@ export class UserProfilePage {
 
   async openProfileMenu (): Promise<void> {
     await this.profileButton().click()
+  }
+
+  async clickSelectWorkspace (): Promise<void> {
+    await this.selectWorkspace().click()
   }
 
   async clickSettings (): Promise<void> {
