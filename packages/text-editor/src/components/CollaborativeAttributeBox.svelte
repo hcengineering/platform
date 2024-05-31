@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { CollaborativeDoc, Doc } from '@hcengineering/core'
+  import { Doc } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { KeyedAttribute, getAttribute, getClient } from '@hcengineering/presentation'
   import { AnySvelteComponent, registerFocus } from '@hcengineering/ui'
