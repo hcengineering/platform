@@ -49,7 +49,7 @@ import platform, { getMetadata, PlatformError, Severity, Status, translate } fro
 import { cloneWorkspace } from '@hcengineering/server-backup'
 import { decodeToken, generateToken } from '@hcengineering/server-token'
 import toolPlugin, { connect, initModel, upgradeModel } from '@hcengineering/server-tool'
-import { pbkdf2Sync, randomBytes } from 'crypto'
+import { randomBytes, pbkdf2, timingSafeEqual } from 'crypto'
 import { Binary, Db, Filter, ObjectId, type MongoClient } from 'mongodb'
 import fetch from 'node-fetch'
 import { type StorageAdapter } from '../../core/types'
@@ -146,12 +146,36 @@ export interface Invite {
  */
 export type AccountInfo = Omit<Account, 'hash' | 'salt'>
 
-function hashWithSalt (password: string, salt: Buffer): Buffer {
-  return pbkdf2Sync(password, salt, 1000, 32, 'sha256')
+const SALT_LEN: number = 32
+const PBKDF2_KEY_LEN: number = 32
+const PBKDF2_ITERATIONS: number = 1000
+const PBKDF2_DIGEST: string = 'sha256'
+
+/*
+TODO: remove 'salt' property
+*/
+const hashWithSalt = (password: string, salt: Buffer): Promise<Buffer> => {
+  return new Promise((resolve, reject) => {
+    pbkdf2(password, salt, PBKDF2_ITERATIONS, PBKDF2_KEY_LEN, PBKDF2_DIGEST, (err, derivedKey) => {
+      if (err) {
+        reject(err)
+        return
+      }
+      resolve(derivedKey)
+    })
+  })
 }
 
-function verifyPassword (password: string, hash: Buffer, salt: Buffer): boolean {
-  return Buffer.compare(hash, hashWithSalt(password, salt)) === 0
+const verifyPassword = (password: string, hash: Buffer, salt: Buffer): Promise<boolean> => {
+  return new Promise((resolve, reject) => {
+    pbkdf2(password, salt, PBKDF2_ITERATIONS, PBKDF2_KEY_LEN, PBKDF2_DIGEST, (err, derivedKey) => {
+      if (err) {
+        reject(err)
+        return
+      }
+      resolve(timingSafeEqual(hash, derivedKey))
+    })
+  })
 }
 
 function cleanEmail (email: string): string {
@@ -245,7 +269,7 @@ async function getAccountInfo (
   if (account.hash === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InvalidPassword, { account: email }))
   }
-  if (!verifyPassword(password, Buffer.from(account.hash.buffer), Buffer.from(account.salt.buffer))) {
+  if (!await verifyPassword(password, Buffer.from(account.hash.buffer), Buffer.from(account.salt.buffer))) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InvalidPassword, { account: email }))
   }
   return toAccountInfo(account)
@@ -614,8 +638,8 @@ export async function createAcc (
   extra?: Record<string, string>
 ): Promise<Account> {
   const email = cleanEmail(_email)
-  const salt = randomBytes(32)
-  const hash = password !== null ? hashWithSalt(password, salt) : null
+  const salt = randomBytes(SALT_LEN)
+  const hash = password !== null ? await hashWithSalt(password, salt) : null
 
   const systemEmails = [systemAccountEmail]
   if (systemEmails.includes(email)) {
@@ -1615,7 +1639,7 @@ export async function changePassword (
   const account = await getAccountInfo(ctx, db, productId, branding, email, oldPassword)
 
   const salt = randomBytes(32)
-  const hash = hashWithSalt(password, salt)
+  const hash = await hashWithSalt(password, salt)
 
   await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { salt, hash } })
   ctx.info('change-password success', { email })
@@ -1638,8 +1662,8 @@ export async function replacePassword (db: Db, productId: string, email: string,
   if (account === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
   }
-  const salt = randomBytes(32)
-  const hash = hashWithSalt(password, salt)
+  const salt = randomBytes(SALT_LEN)
+  const hash = await hashWithSalt(password, salt)
 
   await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { salt, hash } })
 }
@@ -1730,7 +1754,7 @@ export async function restorePassword (
 
 async function updatePassword (db: Db, account: Account, password: string | null): Promise<void> {
   const salt = randomBytes(32)
-  const hash = password !== null ? hashWithSalt(password, salt) : null
+  const hash = password !== null ? await hashWithSalt(password, salt) : null
 
   await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { salt, hash } })
 }
