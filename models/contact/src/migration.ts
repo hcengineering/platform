@@ -241,6 +241,16 @@ export const contactOperation: MigrateOperation = {
         func: async (client) => {
           await migrateAvatars(client)
         }
+      },
+      {
+        state: 'avatarsKind',
+        func: async (client) => {
+          await client.update(
+            DOMAIN_CONTACT,
+            { avatarKind: { $exists: true } },
+            { $rename: { avatarKind: 'avatarType' } }
+          )
+        }
       }
     ])
   },
