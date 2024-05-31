@@ -1,0 +1,15 @@
+{
+  "name": "platform",
+  "version": "1.0.0",
+  "description": "[![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/huly_io?style=for-the-badge)](https://x.com/huly_io) ![GitHub License](https://img.shields.io/github/license/hcengineering/platform?style=for-the-badge)",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

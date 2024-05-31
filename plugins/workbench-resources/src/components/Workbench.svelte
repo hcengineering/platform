@@ -578,7 +578,154 @@
     person && client.getHierarchy().hasMixin(person, contact.mixin.Employee)
       ? !client.getHierarchy().as(person, contact.mixin.Employee).active
       : false
+
+
+
+
+
+
+ 
+
+ 
+
+      let elements = [];
+let currentIndex = 0;
+let subElements = new Map();
+let subElementActive = false;
+let currentSubElements = [];
+
+let elementsData = {
+  0: {
+    name: 'Workspace',
+    id: 0,
+    text: 'Text 1',
+    subText: {}
+  },
+  1: {
+    name: 'Workspace',
+    id: 1,
+    text: 'Text 2',
+    subText: {}
+  },
+  2: {
+    name: 'Workspace',
+    id: 2,
+    text: 'Text 3',
+    subText: {
+      text: 'subText 1',
+    }
+  },
+  // добавьте другие элементы по мере необходимости
+};
+
+onMount(async () => {
+  await tick();
+  setTimeout(() => {
+    elements = Array.from(document.querySelectorAll('.noUnderline.noBold, .info-box > *, .topmenu-container, .logo-container'));
+    console.log('Elements found:', elements);
+    if (elements.length > 0) {
+      subElements.set(elements[2], document.querySelector('.ac-header > div:nth-child(2)'));
+      
+      pulseElement(elements[currentIndex], currentIndex);
+      if (shouldClick(elements[currentIndex])) {
+        elements[currentIndex].click();
+        if (subElements.has(elements[currentIndex])) {
+          handleSubElements(subElements.get(elements[currentIndex]));
+        }
+      }
+    } else {
+      console.warn('No elements found with the specified classes');
+    }
+  }, 500);
+});
+
+function pulseElement(element, index, isSubElement = false) {
+  element.style.boxShadow = '0 0 10px 2px yellow';
+  element.classList.add('pulsate');
+
+  const infoDiv = document.createElement('div');
+  if (elementsData[index]) {
+    infoDiv.textContent = isSubElement ? (elementsData[index].subText.text || 'Default sub text') : (elementsData[index].text || 'Default text'); 
+  } else {
+    infoDiv.textContent = 'Default text';
+  }
+  infoDiv.style.position = 'absolute';
+  infoDiv.style.zIndex = '1000';
+  infoDiv.style.backgroundColor = 'transparent';
+  infoDiv.style.border = '2px solid yellow';
+  infoDiv.style.padding = '20px';
+  infoDiv.style.borderRadius = '10px';
+  infoDiv.style.color = 'white';
+  infoDiv.style.fontWeight = 'bold';
+  infoDiv.style.fontSize = '16px';
+  infoDiv.style.textAlign = 'center';
+  infoDiv.style.boxShadow = '0 0 10px 2px yellow';
+
+  const rect = element.getBoundingClientRect();
+  infoDiv.style.left = `${rect.left + 50}px`;
+  infoDiv.style.top = `${rect.top}px`;
+
+  document.body.appendChild(infoDiv);
+
+  element.infoDiv = infoDiv;
+}
+
+function handleSubElements(subElement) {
+  pulseElement(subElement, 2, true);
+  subElement.click();
+}
+
+function handleNextButtonClick() {
+  if (elements.length > 0) {
+    resetElements(elements);
+    if (subElementActive && currentSubElements.length > 0) {
+      handleSubElements(currentSubElements.shift());
+    } else {
+      subElementActive = false;
+      currentIndex = (currentIndex + 1) % elements.length;
+      pulseElement(elements[currentIndex], currentIndex);
+      if (shouldClick(elements[currentIndex])) {
+        elements[currentIndex].click();
+        if (elements[currentIndex] === elements[2]) {
+          setTimeout(() => {
+            const subElement = document.querySelector('.ac-header > div:nth-child(2)');
+            if (subElement) {
+              subElements.set(elements[2], subElement);
+              currentSubElements = [subElement];
+              subElementActive = true;
+            }
+          }, 500);
+        }
+      }
+    }
+  } else {
+    console.warn('No elements in the list');
+  }
+}
+
+function shouldClick(element) {
+  return !(element.matches('.info-box > *:nth-child(2), .info-box > *:nth-child(1), .logo-container'));
+}
+
+function resetElements(elements) {
+  elements.forEach(element => {
+    element.style.boxShadow = '';
+    element.classList.remove('pulsate');
+    if (element.infoDiv) {
+      document.body.removeChild(element.infoDiv);
+      element.infoDiv = null;
+    }
+  });
+  subElements.forEach((subElement, key) => {
+    if (subElement && subElement.infoDiv) {
+      document.body.removeChild(subElement.infoDiv);
+      subElement.infoDiv = null;
+    }
+  });
+}
+
 </script>
+
 
 {#if person && deactivated && !isAdminUser()}
   <div class="flex-col-center justify-center h-full flex-grow">
@@ -620,6 +767,9 @@
     class:modern-app={modern}
     style:flex-direction={appsDirection === 'horizontal' ? 'column-reverse' : 'row'}
   >
+  <div class="overlay">
+  <button class="next-button" on:click={handleNextButtonClick}>Далее</button>
+</div>
     <div class="antiPanel-application {appsDirection} no-print" class:lastDivider={!visibleNav}>
       <div
         class="hamburger-container clear-mins"
@@ -826,6 +976,44 @@
 {/if}
 
 <style lang="scss">
+  @keyframes pulsate {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
+
+  :global(.pulsate) {
+    animation: pulsate 1s infinite;
+    box-shadow: 2px solid yellow;
+    position: relative;
+    z-index: 9999;
+    border-radius: 5px;
+  }
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding-bottom: 20px;
+  z-index: 999;
+}
+
+.next-button {
+  font-size: 1.2em;
+  padding: 10px 20px;
+  color: white;
+  background-color: var(--global-accent-TextColor);
+  border: none;
+  border-radius: 5px;
+
+}
+
   .workbench-container {
     display: flex;
     min-width: 0;
