@@ -16,6 +16,10 @@ export class UserProfilePage {
   leaveWorkspaceConfirmButton = (): Locator => this.page.getByRole('button', { name: 'Ok' })
   accountDissabledMessage = (): Locator => this.page.getByRole('heading')
   changeAccount = (): Locator => this.page.getByRole('link', { name: 'Change account' })
+  settings = (): Locator => this.page.getByRole('button', { name: 'Settings' })
+  accountSettings = (): Locator => this.page.getByRole('button', { name: 'Account settings' })
+  userAvatarMenu = (): Locator => this.page.locator('.mr-8 > .cursor-pointer')
+  savaAvatarButton = (): Locator => this.page.getByRole('button', { name: 'Save' }).nth(1)
 
   constructor (page: Page) {
     this.page = page
@@ -31,6 +35,22 @@ export class UserProfilePage {
 
   async openProfileMenu (): Promise<void> {
     await this.profileButton().click()
+  }
+
+  async clickSettings (): Promise<void> {
+    await this.settings().click()
+  }
+
+  async clickAccountSettings (): Promise<void> {
+    await this.accountSettings().click()
+  }
+
+  async openUserAvatarMenu (): Promise<void> {
+    await this.userAvatarMenu().click()
+  }
+
+  async clickSavaAvatarButton (): Promise<void> {
+    await this.savaAvatarButton().click()
   }
 
   async clickChangeAccount (): Promise<void> {
