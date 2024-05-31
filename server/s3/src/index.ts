@@ -62,7 +62,10 @@ export interface S3Config extends StorageConfig {
   // Defaults: ['avif', 'webp', 'heif', 'jpeg']
   formats?: string
 
-  allowPresign?: boolean
+  // If not specified will be enabled
+  allowPresign?: string
+  // Expire time for presigned URIs
+  expireTime?: string
 }
 
 /**
@@ -70,6 +73,7 @@ export interface S3Config extends StorageConfig {
  */
 export class S3Service implements StorageAdapter {
   static config = 's3'
+  expireTime: number
   client: S3
   constructor (readonly opt: S3Config) {
     this.client = new S3({
@@ -80,6 +84,8 @@ export class S3Service implements StorageAdapter {
       },
       region: opt.region ?? 'auto'
     })
+
+    this.expireTime = parseInt(this.opt.expireTime ?? '168') * 3600 // use 7 * 24 - hours as default value for expireF
   }
 
   /**
@@ -102,6 +108,7 @@ export class S3Service implements StorageAdapter {
       lookups: [],
       updates: new Map()
     }
+    const now = Date.now()
     for (const d of docs) {
       // Let's add current from URI for previews.
       const bl = d as BlobLookup
@@ -109,8 +116,14 @@ export class S3Service implements StorageAdapter {
         Bucket: this.getBucketId(workspaceId),
         Key: this.getDocumentKey(workspaceId, d.storageId)
       })
-      if (bl.downloadUrl === undefined && (this.opt.allowPresign ?? true)) {
-        bl.downloadUrl = await getSignedUrl(this.client, command)
+      if (
+        (bl.downloadUrl === undefined || (bl.downloadUrlExpire ?? 0) > now) &&
+        (this.opt.allowPresign ?? 'true') === 'true'
+      ) {
+        bl.downloadUrl = await getSignedUrl(this.client, command, {
+          expiresIn: this.expireTime
+        })
+        bl.downloadUrlExpire = now + this.expireTime * 1000
         result.updates?.set(bl._id, {
           downloadUrl: bl.downloadUrl
         })

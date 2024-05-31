@@ -567,6 +567,7 @@ export interface Blob extends Doc {
 export interface BlobLookup extends Blob {
   // An URL document could be downloaded from, with ${id} to put blobId into
   downloadUrl: string
+  downloadUrlExpire?: number
   // A URL document could be updated at
   uploadUrl?: string
   // A URL document could be previewed at
