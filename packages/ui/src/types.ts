@@ -512,3 +512,16 @@ export type MouseTargetEvent = MouseEvent & { currentTarget: EventTarget & HTMLE
 export interface ScrollParams {
   autoScrolling: boolean
 }
+
+export interface IWizardStep<T = string> {
+  id: T
+  title: IntlString
+}
+
+export enum StateType {
+  Ghost,
+  Negative,
+  Positive,
+  Primary,
+  Regular
+}

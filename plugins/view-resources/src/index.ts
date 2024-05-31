@@ -71,6 +71,7 @@ import UpDownNavigator from './components/UpDownNavigator.svelte'
 import ValueSelector from './components/ValueSelector.svelte'
 import ViewletContentView from './components/ViewletContentView.svelte'
 import ViewletSettingButton from './components/ViewletSettingButton.svelte'
+import ViewletPanelHeader from './components/ViewletPanelHeader.svelte'
 import ArrayFilter from './components/filter/ArrayFilter.svelte'
 import DateFilter from './components/filter/DateFilter.svelte'
 import DateFilterPresenter from './components/filter/DateFilterPresenter.svelte'
@@ -220,7 +221,8 @@ export {
   TreeNode,
   UpDownNavigator,
   ViewletContentView,
-  ViewletSettingButton
+  ViewletSettingButton,
+  ViewletPanelHeader
 }
 
 function PositionElementAlignment (e?: Event): PopupAlignment | undefined {

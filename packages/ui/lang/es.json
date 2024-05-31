@@ -84,6 +84,9 @@
     "ThemeDark": "Oscuro",
     "ThemeSystem": "Sistema",
     "NoTimeZonesFound": "No se encontraron zonas horarias",
-    "Selected": "Seleccionado:"
+    "Selected": "Seleccionado:",
+    "Submit": "Enviar",
+    "NextStep": "Siguiente paso",
+    "TypeHere": "Escribe aquí..."
   }
 }
