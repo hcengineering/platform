@@ -21,6 +21,9 @@ import RequestPresenter from './components/RequestPresenter.svelte'
 import RequestView from './components/RequestView.svelte'
 import NotificationRequestView from './components/NotificationRequestView.svelte'
 
+export { default as RequestStatusPresenter } from './components/RequestStatusPresenter.svelte'
+export { default as RequestDetailPopup } from './components/RequestDetailPopup.svelte'
+
 export default async (): Promise<Resources> => ({
   activity: {
     RequestLabel,
