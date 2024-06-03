@@ -1,5 +1,9 @@
 <script lang="ts">
-  import documents, { DocumentTemplate, DocumentSection, DocumentTemplateSection } from '@hcengineering/controlled-documents'
+  import documents, {
+    DocumentTemplate,
+    DocumentSection,
+    DocumentTemplateSection
+  } from '@hcengineering/controlled-documents'
   import { Class, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Button, getEventPopupPositionElement, Icon, IconAdd, Label, showPopup } from '@hcengineering/ui'

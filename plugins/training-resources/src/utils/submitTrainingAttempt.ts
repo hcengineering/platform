@@ -14,7 +14,12 @@
 //
 
 import { assessAnswers, findAnswers, findQuestions } from '@hcengineering/questions-resources'
-import { type Training, type TrainingAttempt, TrainingAttemptState, type TrainingRequest } from '@hcengineering/training'
+import {
+  type Training,
+  type TrainingAttempt,
+  TrainingAttemptState,
+  type TrainingRequest
+} from '@hcengineering/training'
 import { getClient } from '@hcengineering/presentation'
 import { canUpdateTrainingAttempt } from './canUpdateTrainingAttempt'
 import { getCurrentEmployeeRef } from './getCurrentEmployeeRef'

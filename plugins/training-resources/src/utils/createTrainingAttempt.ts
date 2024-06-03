@@ -2,7 +2,12 @@
 // Copyright @ 2024 Hardcore Engineering Inc.
 //
 
-import { type Training, type TrainingAttempt, TrainingAttemptState, type TrainingRequest } from '@hcengineering/training'
+import {
+  type Training,
+  type TrainingAttempt,
+  TrainingAttemptState,
+  type TrainingRequest
+} from '@hcengineering/training'
 import { type Ref } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import { navigate } from '@hcengineering/ui'

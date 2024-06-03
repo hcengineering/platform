@@ -16,7 +16,11 @@ import { type Attachment } from '@hcengineering/attachment'
 import { type Ref, generateId } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import { type CompAndProps, type PopupAlignment, popupstore, showPopup } from '@hcengineering/ui'
-import documents, { type Document, type DocumentSection, type DocumentComment } from '@hcengineering/controlled-documents'
+import documents, {
+  type Document,
+  type DocumentSection,
+  type DocumentComment
+} from '@hcengineering/controlled-documents'
 import { isDocumentCommentAttachedTo } from '../../../utils'
 import {
   DocumentCommentPopupCategory,

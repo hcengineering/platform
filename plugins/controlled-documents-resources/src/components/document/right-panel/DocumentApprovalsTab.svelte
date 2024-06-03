@@ -1,5 +1,9 @@
 <script lang="ts">
-  import documents, { ControlledDocumentState, DocumentRequest, DocumentState } from '@hcengineering/controlled-documents'
+  import documents, {
+    ControlledDocumentState,
+    DocumentRequest,
+    DocumentState
+  } from '@hcengineering/controlled-documents'
   import { SortingOrder } from '@hcengineering/core'
 
   import { createQuery, getClient } from '@hcengineering/presentation'

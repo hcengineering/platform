@@ -12,7 +12,11 @@
   import { Class, Ref } from '@hcengineering/core'
   import { UserBoxItems } from '@hcengineering/contact-resources'
   import { permissionsStore } from '@hcengineering/view-resources'
-  import documents, { ControlledDocument, ControlledDocumentState, DocumentRequest } from '@hcengineering/controlled-documents'
+  import documents, {
+    ControlledDocument,
+    ControlledDocumentState,
+    DocumentRequest
+  } from '@hcengineering/controlled-documents'
 
   import documentsRes from '../plugin'
   import { sendApprovalRequest, sendReviewRequest } from '../utils'

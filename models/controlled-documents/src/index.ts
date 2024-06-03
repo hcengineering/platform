@@ -13,7 +13,12 @@
 // limitations under the License.
 //
 
-import documentsPlugin, { documentsId, type Document, type DocumentSpace, DocumentState } from '@hcengineering/controlled-documents'
+import documentsPlugin, {
+  documentsId,
+  type Document,
+  type DocumentSpace,
+  DocumentState
+} from '@hcengineering/controlled-documents'
 import activity from '@hcengineering/activity'
 import contact from '@hcengineering/contact'
 import { type Builder } from '@hcengineering/model'

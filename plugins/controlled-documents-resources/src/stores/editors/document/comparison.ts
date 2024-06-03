@@ -14,7 +14,11 @@
 import { createEffect, createStore, forward } from 'effector'
 import { getClient } from '@hcengineering/presentation'
 import { SortingOrder } from '@hcengineering/core'
-import documents, { type Document, type DocumentSection, type DocumentSnapshot } from '@hcengineering/controlled-documents'
+import documents, {
+  type Document,
+  type DocumentSection,
+  type DocumentSnapshot
+} from '@hcengineering/controlled-documents'
 import { comparisonCleared, comparisonRequested, controlledDocumentClosed } from './actions'
 
 export const loadComparedDocumentSectionsFx = createEffect(
