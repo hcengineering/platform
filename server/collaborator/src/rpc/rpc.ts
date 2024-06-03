@@ -39,6 +39,6 @@ export type RpcMethod = (
 
 export interface RpcMethodParams {
   hocuspocus: Hocuspocus
-  minio: StorageAdapter
+  storage: StorageAdapter
   transformer: Transformer
 }

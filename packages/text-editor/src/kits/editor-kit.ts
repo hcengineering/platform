@@ -65,6 +65,8 @@ export const EditorKit = Extension.create<EditorKitOptions>({
 
   addExtensions () {
     return [
+      // have to be before default kit to ensure Tab works properly inside tables
+      ...tableExtensions,
       DefaultKit.configure({
         ...this.options,
         codeBlock: false,
@@ -91,7 +93,6 @@ export const EditorKit = Extension.create<EditorKitOptions>({
         ]
       }),
       NodeUuidExtension,
-      ...tableExtensions,
       ...(this.options.file !== false
         ? [
             FileExtension.configure({

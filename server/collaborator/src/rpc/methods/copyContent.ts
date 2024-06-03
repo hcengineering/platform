@@ -13,9 +13,10 @@
 // limitations under the License.
 //
 
-import { yDocCopyXmlField } from '@hcengineering/collaboration'
-import { type CopyContentRequest, type CopyContentResponse } from '@hcengineering/collaborator-client'
+import { YDocVersion, takeCollaborativeDocSnapshot, yDocCopyXmlField } from '@hcengineering/collaboration'
+import { parseDocumentId, type CopyContentRequest, type CopyContentResponse } from '@hcengineering/collaborator-client'
 import { MeasureContext } from '@hcengineering/core'
+import { Doc as YDoc } from 'yjs'
 import { Context } from '../../context'
 import { RpcMethodParams } from '../rpc'
 
@@ -25,17 +26,43 @@ export async function copyContent (
   payload: CopyContentRequest,
   params: RpcMethodParams
 ): Promise<CopyContentResponse> {
-  const { documentId, sourceField, targetField } = payload
-  const { hocuspocus } = params
+  const { documentId, sourceField, targetField, snapshot } = payload
+  const { hocuspocus, storage } = params
+  const { workspaceId } = context
 
   const connection = await ctx.with('connect', {}, async () => {
     return await hocuspocus.openDirectConnection(documentId, context)
   })
 
   try {
-    await connection.transact((document) => {
-      yDocCopyXmlField(document, sourceField, targetField)
+    await ctx.with('copy', {}, async () => {
+      await connection.transact((document) => {
+        yDocCopyXmlField(document, sourceField, targetField)
+      })
     })
+
+    if (snapshot !== undefined) {
+      const ydoc = connection.document ?? new YDoc()
+      const { collaborativeDoc } = parseDocumentId(documentId)
+
+      const version: YDocVersion = {
+        versionId: snapshot.versionId,
+        name: snapshot.versionName ?? snapshot.versionId,
+        createdBy: snapshot.createdBy,
+        createdOn: Date.now()
+      }
+
+      await ctx.with('snapshot', {}, async () => {
+        await takeCollaborativeDocSnapshot(
+          storage,
+          workspaceId,
+          collaborativeDoc,
+          ydoc,
+          version,
+          ctx
+        )
+      })
+    }
   } finally {
     await connection.disconnect()
   }

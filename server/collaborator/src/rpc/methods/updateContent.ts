@@ -14,10 +14,11 @@
 //
 
 import { MeasureContext } from '@hcengineering/core'
-import { type UpdateContentRequest, type UpdateContentResponse } from '@hcengineering/collaborator-client'
-import { applyUpdate, encodeStateAsUpdate } from 'yjs'
+import { parseDocumentId, type UpdateContentRequest, type UpdateContentResponse } from '@hcengineering/collaborator-client'
+import { Doc as YDoc, applyUpdate, encodeStateAsUpdate } from 'yjs'
 import { Context } from '../../context'
 import { RpcMethodParams } from '../rpc'
+import { YDocVersion, takeCollaborativeDocSnapshot } from '@hcengineering/collaboration'
 
 export async function updateContent (
   ctx: MeasureContext,
@@ -25,11 +26,12 @@ export async function updateContent (
   payload: UpdateContentRequest,
   params: RpcMethodParams
 ): Promise<UpdateContentResponse> {
-  const { documentId, field, html } = payload
-  const { hocuspocus, transformer } = params
+  const { documentId, field, markup, snapshot } = payload
+  const { hocuspocus, transformer, storage } = params
+  const { workspaceId } = context
 
   const update = await ctx.with('transform', {}, () => {
-    const ydoc = transformer.toYdoc(html, field)
+    const ydoc = transformer.toYdoc(markup, field)
     return encodeStateAsUpdate(ydoc)
   })
 
@@ -47,6 +49,29 @@ export async function updateContent (
         })
       })
     })
+
+    if (snapshot !== undefined) {
+      const ydoc = connection.document ?? new YDoc()
+      const { collaborativeDoc } = parseDocumentId(documentId)
+
+      const version: YDocVersion = {
+        versionId: snapshot.versionId,
+        name: snapshot.versionName ?? snapshot.versionId,
+        createdBy: snapshot.createdBy,
+        createdOn: Date.now()
+      }
+
+      await ctx.with('snapshot', {}, async () => {
+        await takeCollaborativeDocSnapshot(
+          storage,
+          workspaceId,
+          collaborativeDoc,
+          ydoc,
+          version,
+          ctx
+        )
+      })
+    }
   } finally {
     await connection.disconnect()
   }

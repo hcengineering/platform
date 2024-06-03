@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type CollaboratorClient, getClient as getCollaborator } from '@hcengineering/collaborator-client'
+import { type CollaboratorClient, getClient as getCollaborator, DocumentSnapshotParams } from '@hcengineering/collaborator-client'
 import { type CollaborativeDoc, type Markup, getCurrentAccount, getWorkspaceId } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import { getCurrentLocation } from '@hcengineering/ui'
@@ -62,10 +62,11 @@ export async function copyDocument (source: CollaborativeDoc, target: Collaborat
 /** @public */
 export async function takeSnapshot (
   collaborativeDoc: CollaborativeDoc,
-  snapshotName: string
+  versionName: string
 ): Promise<CollaborativeDoc> {
   const client = getCollaboratorClient()
   const createdBy = getCurrentAccount()._id
 
-  return await client.snapshot(collaborativeDoc, { createdBy, snapshotName })
+  const snapshot: DocumentSnapshotParams = { createdBy, versionId: `${Date.now()}`, versionName }
+  return await client.snapshot(collaborativeDoc, snapshot)
 }

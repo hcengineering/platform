@@ -26,6 +26,11 @@ export function createModel (builder: Builder): void {
     trigger: serverCollaboration.trigger.OnDelete
   })
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverCollaboration.trigger.MarkupTrigger
+    trigger: serverCollaboration.trigger.OnMarkupCreate
+  })
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverCollaboration.trigger.OnMarkupUpdate,
+    // isAsync: true
+    isAsync: false
   })
 }

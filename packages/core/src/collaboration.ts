@@ -44,12 +44,16 @@ export type CollaborativeDocVersion = string | typeof CollaborativeDocVersionHea
 export const CollaborativeDocVersionHead = 'HEAD'
 
 /** @public */
-export function makeCollaborativeDoc (objectId: Ref<Doc>, objectAttr?: string | undefined): CollaborativeDoc {
+export function makeCollaborativeDoc (
+  objectId: Ref<Doc>,
+  objectAttr?: string | undefined,
+  versionId?: string | undefined
+): CollaborativeDoc {
   const storageDocumentId = objectAttr !== undefined && objectAttr !== '' ? `${objectId}%${objectAttr}` : `${objectId}`
   return collaborativeDocFormat({
     documentId: storageDocumentId,
     versionId: CollaborativeDocVersionHead,
-    lastVersionId: CollaborativeDocVersionHead
+    lastVersionId: versionId ?? CollaborativeDocVersionHead
   })
 }
 

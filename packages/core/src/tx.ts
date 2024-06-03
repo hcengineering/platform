@@ -332,7 +332,6 @@ PushOptions<T> &
 SetEmbeddedOptions<T> &
 PushMixinOptions<T> &
 IncOptions<T> &
-MarkupOptions<T> &
 SpaceUpdate
 
 /**

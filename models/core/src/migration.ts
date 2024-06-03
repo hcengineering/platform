@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { saveCollaborativeDoc } from '@hcengineering/collaboration'
+import { saveCollaborativeDoc, takeCollaborativeDocSnapshot } from '@hcengineering/collaboration'
 import core, {
   DOMAIN_BLOB,
   DOMAIN_DOC_INDEX_STATE,
@@ -194,6 +194,9 @@ async function processMigrateContentFor (
       break
     }
 
+    const timestamp = Date.now()
+    const revisionId = `${timestamp}`
+
     const operations: { filter: MigrationDocumentQuery<Doc>, update: MigrateUpdate<Doc> }[] = []
 
     for (const doc of docs) {
@@ -202,8 +205,7 @@ async function processMigrateContentFor (
       for (const attribute of attributes) {
         const value = (doc as any)[attribute.name] as string
         if (value != null && value.startsWith('{')) {
-          const collaborativeDoc = makeCollaborativeDoc(doc._id, attribute.name)
-          update[attribute.name] = collaborativeDoc
+          const collaborativeDoc = makeCollaborativeDoc(doc._id, attribute.name, revisionId)
 
           const ydoc = markupToYDoc(value, attribute.name)
           await saveCollaborativeDoc(
@@ -213,6 +215,21 @@ async function processMigrateContentFor (
             ydoc,
             ctx
           )
+          await takeCollaborativeDocSnapshot(
+            storageAdapter,
+            client.workspaceId,
+            collaborativeDoc,
+            ydoc,
+            {
+              versionId: revisionId,
+              name: 'Migration to storage',
+              createdBy: core.account.System,
+              createdOn: Date.now()
+            },
+            ctx
+          )
+
+          update[attribute.name] = collaborativeDoc
         }
       }
 

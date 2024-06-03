@@ -21,11 +21,19 @@ import {
   Ref,
   Timestamp,
   WorkspaceId,
+  collaborativeDocWithLastVersion,
   collaborativeDocWithVersion,
   concatLink
 } from '@hcengineering/core'
 import { DocumentId } from './types'
 import { formatMinioDocumentId } from './utils'
+
+/** @public */
+export interface DocumentSnapshotParams {
+  createdBy: Ref<Account>
+  versionId: string
+  versionName?: string
+}
 
 /** @public */
 export interface GetContentRequest {
@@ -35,14 +43,15 @@ export interface GetContentRequest {
 
 /** @public */
 export interface GetContentResponse {
-  html: string
+  markup: string
 }
 
 /** @public */
 export interface UpdateContentRequest {
   documentId: DocumentId
   field: string
-  html: string
+  markup: Markup
+  snapshot?: DocumentSnapshotParams
 }
 
 /** @public */
@@ -54,6 +63,7 @@ export interface CopyContentRequest {
   documentId: DocumentId
   sourceField: string
   targetField: string
+  snapshot?: DocumentSnapshotParams
 }
 
 /** @public */
@@ -82,8 +92,7 @@ export interface RemoveDocumentResponse {}
 /** @public */
 export interface TakeSnapshotRequest {
   documentId: DocumentId
-  createdBy: Ref<Account>
-  snapshotName: string
+  snapshot: DocumentSnapshotParams
 }
 
 /** @public */
@@ -96,22 +105,26 @@ export interface TakeSnapshotResponse {
 }
 
 /** @public */
-export interface CollaborativeDocSnapshotParams {
-  snapshotName: string
-  createdBy: Ref<Account>
-}
-
-/** @public */
 export interface CollaboratorClient {
   // field operations
   getContent: (collaborativeDoc: CollaborativeDoc, field: string) => Promise<Markup>
-  updateContent: (collaborativeDoc: CollaborativeDoc, field: string, value: Markup) => Promise<void>
-  copyContent: (collaborativeDoc: CollaborativeDoc, sourceField: string, targetField: string) => Promise<void>
+  updateContent: (
+    document: CollaborativeDoc,
+    field: string,
+    value: Markup,
+    snapshot?: DocumentSnapshotParams
+  ) => Promise<CollaborativeDoc>
+  copyContent: (
+    document: CollaborativeDoc,
+    sourceField: string,
+    targetField: string,
+    snapshot?: DocumentSnapshotParams
+  ) => Promise<CollaborativeDoc>
 
   // document operations
   branch: (source: CollaborativeDoc, target: CollaborativeDoc) => Promise<void>
   remove: (collaborativeDoc: CollaborativeDoc) => Promise<void>
-  snapshot: (collaborativeDoc: CollaborativeDoc, params: CollaborativeDocSnapshotParams) => Promise<CollaborativeDoc>
+  snapshot: (collaborativeDoc: CollaborativeDoc, params: DocumentSnapshotParams) => Promise<CollaborativeDoc>
 }
 
 /** @public */
@@ -161,23 +174,41 @@ class CollaboratorClientImpl implements CollaboratorClient {
     const payload: GetContentRequest = { documentId, field }
     const res = (await this.rpc('getContent', payload)) as GetContentResponse
 
-    return res.html ?? ''
+    return res.markup ?? ''
   }
 
-  async updateContent (document: CollaborativeDoc, field: string, value: Markup): Promise<void> {
+  async updateContent (
+    document: CollaborativeDoc,
+    field: string,
+    markup: Markup,
+    snapshot?: DocumentSnapshotParams
+  ): Promise<CollaborativeDoc> {
     const workspace = this.workspace.name
 
     const documentId = formatMinioDocumentId(workspace, document)
-    const payload: UpdateContentRequest = { documentId, field, html: value }
+    const payload: UpdateContentRequest = { documentId, field, markup, snapshot }
     await this.rpc('updateContent', payload)
+
+    return snapshot !== undefined
+      ? collaborativeDocWithLastVersion(document, snapshot.versionId)
+      : document
   }
 
-  async copyContent (document: CollaborativeDoc, sourceField: string, targetField: string): Promise<void> {
+  async copyContent (
+    document: CollaborativeDoc,
+    sourceField: string,
+    targetField: string,
+    snapshot?: DocumentSnapshotParams
+  ): Promise<CollaborativeDoc> {
     const workspace = this.workspace.name
 
     const documentId = formatMinioDocumentId(workspace, document)
-    const payload: CopyContentRequest = { documentId, sourceField, targetField }
+    const payload: CopyContentRequest = { documentId, sourceField, targetField, snapshot }
     await this.rpc('copyContent', payload)
+
+    return snapshot !== undefined
+      ? collaborativeDocWithLastVersion(document, snapshot.versionId)
+      : document
   }
 
   async branch (source: CollaborativeDoc, target: CollaborativeDoc): Promise<void> {
@@ -199,11 +230,11 @@ class CollaboratorClientImpl implements CollaboratorClient {
     await this.rpc('removeDocument', payload)
   }
 
-  async snapshot (document: CollaborativeDoc, params: CollaborativeDocSnapshotParams): Promise<CollaborativeDoc> {
+  async snapshot (document: CollaborativeDoc, snapshot: DocumentSnapshotParams): Promise<CollaborativeDoc> {
     const workspace = this.workspace.name
 
     const documentId = formatMinioDocumentId(workspace, document)
-    const payload: TakeSnapshotRequest = { documentId, ...params }
+    const payload: TakeSnapshotRequest = { documentId, snapshot }
     const res = (await this.rpc('takeSnapshot', payload)) as TakeSnapshotResponse
 
     return collaborativeDocWithVersion(document, res.versionId)

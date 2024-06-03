@@ -189,7 +189,7 @@ export async function start (ctx: MeasureContext, config: Config, minio: Storage
       await rpcCtx.with('/rpc', { method: request.method }, async (ctx) => {
         try {
           const response: RpcResponse = await rpcCtx.with(request.method, {}, async (ctx) => {
-            return await method(ctx, context, request.payload, { hocuspocus, minio, transformer })
+            return await method(ctx, context, request.payload, { hocuspocus, storage: minio, transformer })
           })
           res.status(200).send(response)
         } catch (err: any) {

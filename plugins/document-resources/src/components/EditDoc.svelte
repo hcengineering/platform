@@ -285,6 +285,7 @@
                   size: 'large',
                   fill: doc.color !== undefined ? getPlatformColorDef(doc.color, $themeStore.dark).icon : 'currentColor'
                 }}
+            disabled={readonly}
             on:click={chooseIcon}
           />
         </div>
