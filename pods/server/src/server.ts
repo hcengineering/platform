@@ -88,6 +88,8 @@ import { serverTimeId } from '@hcengineering/server-time'
 import { type Token } from '@hcengineering/server-token'
 import { serverTrackerId } from '@hcengineering/server-tracker'
 import { serverViewId } from '@hcengineering/server-view'
+import { serverTrainingId } from '@hcengineering/server-training'
+import { serverDocumentsId } from '@hcengineering/server-controlled-documents'
 import {
   ClientSession,
   start as startJsonRpc,
@@ -123,6 +125,9 @@ import { templatesId } from '@hcengineering/templates'
 import { trackerId } from '@hcengineering/tracker'
 import { viewId } from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
+import { documentsId } from '@hcengineering/controlled-documents'
+import { productsId } from '@hcengineering/products'
+import { trainingId } from '@hcengineering/training'
 
 import coreEng from '@hcengineering/core/lang/en.json'
 import loginEng from '@hcengineering/login-assets/lang/en.json'
@@ -154,6 +159,9 @@ import templatesEn from '@hcengineering/templates-assets/lang/en.json'
 import trackerEn from '@hcengineering/tracker-assets/lang/en.json'
 import viewEn from '@hcengineering/view-assets/lang/en.json'
 import workbenchEn from '@hcengineering/workbench-assets/lang/en.json'
+import documentsEn from '@hcengineering/controlled-documents-assets/lang/en.json'
+import productsEn from '@hcengineering/products-assets/lang/en.json'
+import trainingEn from '@hcengineering/training-assets/lang/en.json'
 
 addStringsLoader(coreId, async (lang: string) => coreEng)
 addStringsLoader(loginId, async (lang: string) => loginEng)
@@ -185,6 +193,9 @@ addStringsLoader(bitrixId, async (lang: string) => bitrixEn)
 addStringsLoader(requestId, async (lang: string) => requestEn)
 addStringsLoader(documentId, async (lang: string) => documentEn)
 addStringsLoader(driveId, async (lang: string) => driveEn)
+addStringsLoader(documentsId, async (lang: string) => documentsEn)
+addStringsLoader(productsId, async (lang: string) => productsEn)
+addStringsLoader(trainingId, async (lang: string) => trainingEn)
 
 /**
  * @public
@@ -230,6 +241,8 @@ export function start (
   addLocation(openAIId, () => Promise.resolve({ default: openAIPluginImpl }))
   addLocation(serverDocumentId, () => import('@hcengineering/server-document-resources'))
   addLocation(serverTimeId, () => import('@hcengineering/server-time-resources'))
+  addLocation(serverDocumentsId, () => import('@hcengineering/server-controlled-documents-resources'))
+  addLocation(serverTrainingId, () => import('@hcengineering/server-training-resources'))
 
   const middlewares: MiddlewareCreator[] = [
     LookupMiddleware.create,

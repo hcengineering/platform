@@ -14,7 +14,8 @@
     "lib": [
       "es2016",
       "dom",
-      "ES2021.String"
+      "ES2021.String",
+      "ESNext.Array"
     ]
   }
 }

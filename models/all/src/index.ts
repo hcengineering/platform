@@ -79,6 +79,19 @@ import workbench, { workbenchId, createModel as workbenchModel } from '@hcengine
 import { openAIId, createModel as serverOpenAI } from '@hcengineering/model-server-openai'
 import { createModel as serverTranslate, translateId } from '@hcengineering/model-server-translate'
 
+import { printId, createModel as printModel } from '@hcengineering/model-print'
+
+import { questionsId, createModel as questionsModel } from '@hcengineering/model-questions'
+import trainings, { trainingId, createModel as trainingModel } from '@hcengineering/model-training'
+import documents, { documentsId, createModel as documentsModel } from '@hcengineering/model-controlled-documents'
+import products, { productsId, createModel as productsModel } from '@hcengineering/model-products'
+import { serverProductsId, createModel as serverProductsModel } from '@hcengineering/model-server-products'
+import { serverTrainingId, createModel as serverTrainingModel } from '@hcengineering/model-server-training'
+import {
+  serverDocumentsId,
+  createModel as serverDocumentsModel
+} from '@hcengineering/model-server-controlled-documents'
+
 import { type Plugin } from '@hcengineering/platform'
 
 interface ConfigurablePlugin extends Omit<Data<PluginConfiguration>, 'pluginId' | 'transactions'> {}
@@ -298,8 +311,51 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       }
     ],
     [timeModel, timeId],
+    [printModel, printId],
     [driveModel, driveId],
     [supportModel, supportId],
+    [
+      documentsModel,
+      documentsId,
+      {
+        label: documents.string.ConfigLabel,
+        description: documents.string.ConfigDescription,
+        enabled: false,
+        beta: false,
+        classFilter: defaultFilter
+      }
+    ],
+    [
+      questionsModel,
+      questionsId,
+      {
+        enabled: false,
+        beta: false,
+        classFilter: defaultFilter
+      }
+    ],
+    [
+      trainingModel,
+      trainingId,
+      {
+        label: trainings.string.ConfigLabel,
+        description: trainings.string.ConfigDescription,
+        enabled: false,
+        beta: false,
+        classFilter: defaultFilter
+      }
+    ],
+    [
+      productsModel,
+      productsId,
+      {
+        label: products.string.ConfigLabel,
+        description: products.string.ConfigDescription,
+        enabled: false,
+        beta: false,
+        classFilter: defaultFilter
+      }
+    ],
 
     [serverCoreModel, serverCoreId],
     [serverAttachmentModel, serverAttachmentId],
@@ -327,7 +383,10 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [serverDocumentModel, serverDocumentId],
     [serverTimeModel, serverTimeId],
     [serverGuestModel, serverGuestId],
-    [serverDriveModel, serverDriveId]
+    [serverDriveModel, serverDriveId],
+    [serverProductsModel, serverProductsId],
+    [serverTrainingModel, serverTrainingId],
+    [serverDocumentsModel, serverDocumentsId]
   ]
 
   for (const [b, id, config] of builders) {

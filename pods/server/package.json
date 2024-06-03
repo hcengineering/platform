@@ -102,6 +102,10 @@
     "@hcengineering/server-guest": "^0.6.0",
     "@hcengineering/server-guest-resources": "^0.6.0",
     "@hcengineering/server-token": "^0.6.7",
+    "@hcengineering/server-controlled-documents": "^0.1.0",
+    "@hcengineering/server-controlled-documents-resources": "^0.1.0",
+    "@hcengineering/server-training": "^0.1.0",
+    "@hcengineering/server-training-resources": "^0.1.0",
     "@hcengineering/middleware": "^0.6.0",
     "@hcengineering/minio": "^0.6.0",
     "@hcengineering/openai": "^0.6.0",
@@ -133,6 +137,9 @@
     "@hcengineering/bitrix-assets": "^0.6.0",
     "@hcengineering/request-assets": "^0.6.0",
     "@hcengineering/document-assets": "^0.6.0",
+    "@hcengineering/controlled-documents-assets": "^0.1.0",
+    "@hcengineering/products-assets": "~0.1.0",
+    "@hcengineering/training-assets": "^0.1.0",
     "@hcengineering/login": "^0.6.8",
     "@hcengineering/view": "^0.6.9",
     "@hcengineering/task": "^0.6.13",
@@ -159,6 +166,9 @@
     "@hcengineering/bitrix": "^0.6.44",
     "@hcengineering/request": "^0.6.6",
     "@hcengineering/support": "^0.6.1",
-    "@hcengineering/document": "^0.6.0"
+    "@hcengineering/document": "^0.6.0",
+    "@hcengineering/controlled-documents": "^0.1.0",
+    "@hcengineering/products": "~0.1.0",
+    "@hcengineering/training": "^0.1.0"
   }
 }

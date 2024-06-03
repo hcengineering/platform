@@ -42,6 +42,10 @@ import { activityOperation } from '@hcengineering/model-activity'
 import { activityServerOperation } from '@hcengineering/model-server-activity'
 import { documentOperation } from '@hcengineering/model-document'
 import { textEditorOperation } from '@hcengineering/model-text-editor'
+import { questionsOperation } from '@hcengineering/model-questions'
+import { trainingOperation } from '@hcengineering/model-training'
+import { documentsOperation } from '@hcengineering/model-controlled-documents'
+import { productsOperation } from '@hcengineering/model-products'
 
 export const migrateOperations: [string, MigrateOperation][] = [
   ['core', coreOperation],
@@ -62,6 +66,10 @@ export const migrateOperations: [string, MigrateOperation][] = [
   ['tags', tagsOperation],
   ['setting', settingOperation],
   ['tracker', trackerOperation],
+  ['documents', documentsOperation],
+  ['questions', questionsOperation],
+  ['training', trainingOperation],
+  ['products', productsOperation],
   ['board', boardOperation],
   ['hr', hrOperation],
   ['bitrix', bitrixOperation],

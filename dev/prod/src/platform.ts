@@ -48,6 +48,12 @@ import view, { viewId } from '@hcengineering/view'
 import workbench, { workbenchId } from '@hcengineering/workbench'
 
 import { bitrixId } from '@hcengineering/bitrix'
+import print, { printId } from '@hcengineering/print'
+import sign from '@hcengineering/sign'
+import { productsId } from '@hcengineering/products'
+import { questionsId } from '@hcengineering/questions'
+import { trainingId } from '@hcengineering/training'
+import { documentsId } from '@hcengineering/controlled-documents'
 
 import '@hcengineering/activity-assets'
 import '@hcengineering/attachment-assets'
@@ -78,6 +84,11 @@ import '@hcengineering/time-assets'
 import '@hcengineering/tracker-assets'
 import '@hcengineering/view-assets'
 import '@hcengineering/workbench-assets'
+import '@hcengineering/print-assets'
+import '@hcengineering/questions-assets'
+import '@hcengineering/training-assets'
+import '@hcengineering/products-assets'
+import '@hcengineering/controlled-documents-assets'
 
 import { coreId } from '@hcengineering/core'
 import presentation, { presentationId } from '@hcengineering/presentation'
@@ -161,6 +172,11 @@ function configureI18n(): void {
    addStringsLoader(timeId, async (lang: string) => await import(`@hcengineering/time-assets/lang/${lang}.json`))
    addStringsLoader(documentId, async (lang: string) => await import(`@hcengineering/document-assets/lang/${lang}.json`))
    addStringsLoader(guestId, async (lang: string) => await import(`@hcengineering/guest-assets/lang/${lang}.json`))
+   addStringsLoader(documentsId, async (lang: string) => await import(`@hcengineering/controlled-documents-assets/lang/${lang}.json`))
+   addStringsLoader(productsId, async (lang: string) => await import(`@hcengineering/products-assets/lang/${lang}.json`))
+   addStringsLoader(questionsId, async (lang: string) => await import(`@hcengineering/questions-assets/lang/${lang}.json`))
+   addStringsLoader(trainingId, async (lang: string) => await import(`@hcengineering/training-assets/lang/${lang}.json`))
+   addStringsLoader(printId, async (lang: string) => await import(`@hcengineering/print-assets/lang/${lang}.json`))
 }
 
 export async function configurePlatform() {
@@ -285,6 +301,11 @@ export async function configurePlatform() {
   addLocation(guestId, () => import(/* webpackChunkName: "guest" */ '@hcengineering/guest-resources'))
   addLocation(timeId, () => import(/* webpackChunkName: "time" */ '@hcengineering/time-resources'))
   addLocation(driveId, () => import(/* webpackChunkName: "drive" */ '@hcengineering/drive-resources'))
+  addLocation(questionsId, () => import(/* webpackChunkName: "training" */ '@hcengineering/questions-resources'))
+  addLocation(trainingId, () => import(/* webpackChunkName: "training" */ '@hcengineering/training-resources'))
+  addLocation(productsId, () => import(/* webpackChunkName: "products" */ '@hcengineering/products-resources'))
+  addLocation(documentsId, () => import(/* webpackChunkName: "documents" */ '@hcengineering/controlled-documents-resources'))
+  addLocation(printId, () => import(/* webpackChunkName: "print" */ '@hcengineering/print-resources'))
 
   setMetadata(client.metadata.FilterModel, true)
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])

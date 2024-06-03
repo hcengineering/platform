@@ -1691,6 +1691,146 @@
       "packageName": "@hcengineering/server-drive-resources",
       "projectFolder": "server-plugins/drive-resources",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/controlled-documents",
+      "projectFolder": "plugins/controlled-documents",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/controlled-documents-assets",
+      "projectFolder": "plugins/controlled-documents-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/controlled-documents-resources",
+      "projectFolder": "plugins/controlled-documents-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-controlled-documents",
+      "projectFolder": "models/controlled-documents",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-controlled-documents",
+      "projectFolder": "server-plugins/controlled-documents",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-controlled-documents-resources",
+      "projectFolder": "server-plugins/controlled-documents-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-server-controlled-documents",
+      "projectFolder": "models/server-controlled-documents",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/print",
+      "projectFolder": "plugins/print",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/print-assets",
+      "projectFolder": "plugins/print-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/print-resources",
+      "projectFolder": "plugins/print-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-print",
+      "projectFolder": "models/print",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/sign",
+      "projectFolder": "plugins/sign",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/products",
+      "projectFolder": "plugins/products",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/products-assets",
+      "projectFolder": "plugins/products-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/products-resources",
+      "projectFolder": "plugins/products-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-products",
+      "projectFolder": "models/products",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-server-products",
+      "projectFolder": "models/server-products",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/questions",
+      "projectFolder": "plugins/questions",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/questions-assets",
+      "projectFolder": "plugins/questions-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/questions-resources",
+      "projectFolder": "plugins/questions-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-questions",
+      "projectFolder": "models/questions",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/training",
+      "projectFolder": "plugins/training",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/training-assets",
+      "projectFolder": "plugins/training-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/training-resources",
+      "projectFolder": "plugins/training-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-training",
+      "projectFolder": "server-plugins/training",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-training-resources",
+      "projectFolder": "server-plugins/training-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-training",
+      "projectFolder": "models/training",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-server-training",
+      "projectFolder": "models/server-training",
+      "shouldPublish": false
     }
   ]
 }
