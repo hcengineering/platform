@@ -2,8 +2,12 @@ import {
   Account,
   AttachedDoc,
   Class,
+  CollaborativeDoc,
+  collaborativeDocFromLastVersion,
   Doc,
   Hierarchy,
+  Markup,
+  MeasureContext,
   Mixin,
   Ref,
   RefTo,
@@ -12,14 +16,17 @@ import {
   TxCUD,
   TxMixin,
   TxProcessor,
-  TxUpdateDoc
+  TxUpdateDoc,
+  WorkspaceId
 } from '@hcengineering/core'
 import core from '@hcengineering/core/src/component'
 import { ActivityMessageControl, DocAttributeUpdates, DocUpdateAction } from '@hcengineering/activity'
 import { ActivityControl, DocObjectCache, getAllObjectTransactions } from '@hcengineering/server-activity'
 import { getDocCollaborators } from '@hcengineering/server-notification-resources'
 import notification from '@hcengineering/notification'
-import { TriggerControl } from '@hcengineering/server-core'
+import { StorageAdapter, TriggerControl } from '@hcengineering/server-core'
+import { loadCollaborativeDoc } from '@hcengineering/collaboration'
+import { EmptyMarkup, yDocToMarkup } from '@hcengineering/text'
 
 function getAvailableAttributesKeys (tx: TxCUD<Doc>, hierarchy: Hierarchy): string[] {
   if (hierarchy.isDerived(tx._class, core.class.TxUpdateDoc)) {
@@ -220,6 +227,7 @@ export async function getAttributeDiff (
 }
 
 export async function getTxAttributesUpdates (
+  ctx: MeasureContext,
   control: ActivityControl,
   originTx: TxCUD<Doc>,
   tx: TxCUD<Doc>,
@@ -315,6 +323,15 @@ export async function getTxAttributesUpdates (
       }
     }
 
+    // we don't want to show collaborative documents in activity
+    // instead we show their content as Markup
+    // TODO this should be generalized via activity extension
+    if (attrClass === core.class.TypeCollaborativeDoc) {
+      attrClass = core.class.TypeMarkup
+      attrValue = await getMarkup(ctx, control.storageAdapter, control.workspace, attrValue, key)
+      prevValue = await getMarkup(ctx, control.storageAdapter, control.workspace, prevValue, key)
+    }
+
     let setAttr = []
 
     if (Array.isArray(attrValue)) {
@@ -341,4 +358,16 @@ function getHiddenAttrs (hierarchy: Hierarchy, _class: Ref<Class<Doc>>): Set<str
   return new Set(
     [...hierarchy.getAllAttributes(_class).entries()].filter(([, attr]) => attr.hidden === true).map(([k]) => k)
   )
+}
+
+async function getMarkup (
+  ctx: MeasureContext,
+  storage: StorageAdapter,
+  workspace: WorkspaceId,
+  value: CollaborativeDoc,
+  field: string
+): Promise<Markup> {
+  value = collaborativeDocFromLastVersion(value)
+  const ydoc = await loadCollaborativeDoc(storage, workspace, value, ctx)
+  return ydoc !== undefined ? yDocToMarkup(ydoc, field) : EmptyMarkup
 }

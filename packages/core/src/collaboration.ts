@@ -53,7 +53,7 @@ export function makeCollaborativeDoc (
   return collaborativeDocFormat({
     documentId: storageDocumentId,
     versionId: CollaborativeDocVersionHead,
-    lastVersionId: versionId ?? CollaborativeDocVersionHead
+    lastVersionId: versionId ?? '0'
   })
 }
 

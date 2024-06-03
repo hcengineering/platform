@@ -30,7 +30,6 @@ export const serverCollaborationId = 'server-collaboration' as Plugin
 export default plugin(serverCollaborationId, {
   trigger: {
     OnMarkupCreate: '' as Resource<TriggerFunc>,
-    OnMarkupUpdate: '' as Resource<TriggerFunc>,
     OnDelete: '' as Resource<TriggerFunc>
   }
 })

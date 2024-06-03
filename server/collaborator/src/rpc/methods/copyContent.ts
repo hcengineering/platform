@@ -41,7 +41,7 @@ export async function copyContent (
       })
     })
 
-    if (snapshot !== undefined) {
+    if (snapshot !== undefined && snapshot.versionId !== 'HEAD') {
       const ydoc = connection.document ?? new YDoc()
       const { collaborativeDoc } = parseDocumentId(documentId)
 
