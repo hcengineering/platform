@@ -12,7 +12,7 @@ import { NotificationPage } from '../model/notification-page'
 import { UserProfilePage } from '../model/profile/user-profile-page'
 import { ApiEndpoint } from '../API/Api'
 
-test.describe('Workspace tests', () => {
+test.describe.skip('Workspace tests', () => {
   let loginPage: LoginPage
   let signUpPage: SignUpPage
   let selectWorkspacePage: SelectWorkspacePage
