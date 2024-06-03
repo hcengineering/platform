@@ -27,5 +27,7 @@
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
+  <div class="menu-space" />
   <TableOfContentsContent {items} {selected} on:close />
+  <div class="menu-space" />
 </div>

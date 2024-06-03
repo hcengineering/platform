@@ -15,7 +15,8 @@
 //
 -->
 <script lang="ts">
-  import { FocusHandler, Label, Scroller, createFocusManager } from '@hcengineering/ui'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
+  import { FocusHandler, Label, createFocusManager, tooltip } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import textEditorPlugin from '../../plugin'
   import { Heading } from '../../types'
@@ -36,23 +37,30 @@
 <FocusHandler {manager} />
 
 <div class="header">
-  <span class="fs-title overflow-label title">
-    <Label label={textEditorPlugin.string.TableOfContents} />
-  </span>
+  <div class="m-2">
+    <span class="fs-title overflow-label title">
+      <Label label={textEditorPlugin.string.TableOfContents} />
+    </span>
+  </div>
 </div>
-<Scroller align="start">
-  {#each items as item}
-    {@const level = getIndentLevel(item.level)}
-    <button class="menu-item no-focus flex-row-center item" on:click={() => dispatch('close', item)}>
-      <div class="label overflow-label flex-grow" class:selected={item.id === selected?.id}>
-        <span style={`padding-left: ${level * 1.5}rem;`}>
-          {item.title}
-        </span>
-      </div>
-    </button>
-  {/each}
-</Scroller>
-<div class="menu-space" />
+<div class="scroll">
+  <div class="box">
+    {#each items as item}
+      {@const level = getIndentLevel(item.level)}
+      <button
+        class="menu-item no-focus flex-row-center item"
+        on:click={() => dispatch('close', item)}
+        use:tooltip={{ label: getEmbeddedLabel(item.title) }}
+      >
+        <div class="label overflow-label flex-grow" class:selected={item.id === selected?.id}>
+          <span style={`padding-left: ${level * 1.5}rem;`}>
+            {item.title}
+          </span>
+        </div>
+      </button>
+    {/each}
+  </div>
+</div>
 
 <style lang="scss">
   .selected {
@@ -60,6 +68,7 @@
   }
 
   .title {
+    margin: 0 0.5rem;
     @media print {
       line-height: 3rem;
       margin-left: 0;
