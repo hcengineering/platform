@@ -13,20 +13,21 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import contact, { Employee } from '@hcengineering/contact'
   import type { Class, Doc, DocumentQuery, IdMap, Ref } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import { Label, showPopup, ActionIcon, IconClose, IconAdd, Icon } from '@hcengineering/ui'
   import type { IconSize } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
+  import { getClient } from '@hcengineering/presentation'
+
   import plugin from '../plugin'
   import { employeeByIdStore } from '../utils'
   import UserInfo from './UserInfo.svelte'
   import UsersPopup from './UsersPopup.svelte'
-  import { getClient } from '@hcengineering/presentation'
 
   export let items: Ref<Employee>[] = []
-  export let readonlyItems: Ref<Employee>[] = []
+  export let readonlyItems = new Set<Ref<Employee>>()
   export let _class: Ref<Class<Employee>> = contact.mixin.Employee
   export let docQuery: DocumentQuery<Employee> | undefined = {}
 
@@ -36,10 +37,10 @@
   export let width: string | undefined = undefined
   export let readonly: boolean = false
 
-  let persons: Employee[] = getPersons(items, $employeeByIdStore)
-  $: persons = getPersons(items, $employeeByIdStore)
-  let readonlyPersons: Employee[] = getPersons(readonlyItems, $employeeByIdStore)
-  $: readonlyPersons = getPersons(readonlyItems, $employeeByIdStore)
+  $: fixedItems = readonly ? items : items.filter((item) => readonlyItems.has(item))
+  $: editableItems = readonly ? [] : items.filter((item) => !readonlyItems.has(item))
+  $: fixedPersons = getPersons(fixedItems, $employeeByIdStore)
+  $: editablePersons = getPersons(editableItems, $employeeByIdStore)
 
   const client = getClient()
 
@@ -55,7 +56,7 @@
         multiSelect: true,
         allowDeselect: false,
         selectedUsers: items,
-        ignoreUsers: readonlyItems,
+        ignoreUsers: fixedItems,
         readonly,
         filter: (it: Doc) => {
           if (client.getHierarchy().hasMixin(it, contact.mixin.Employee)) {
@@ -68,18 +69,17 @@
       undefined,
       (result) => {
         if (result != null) {
-          items = result
-          dispatch('update', items)
+          dispatch('update', fixedItems.concat(result))
         }
       }
     )
   }
 
-  function getPersons (employees: Ref<Employee>[], employeeById: IdMap<Employee>) {
+  function getPersons (employees: Ref<Employee>[], employeeById: IdMap<Employee>): Employee[] {
     return employees.map((p) => employeeById.get(p)).filter((p) => p !== undefined) as Employee[]
   }
 
-  const removePerson = (removed: Employee) => {
+  function removePerson (removed: Employee): void {
     const newItems = items.filter((it) => it !== removed._id)
     dispatch('update', newItems)
   }
@@ -87,12 +87,12 @@
 
 <div class="flex-col" style:width={width ?? 'auto'}>
   <div class="flex-row-center flex-wrap">
-    {#each readonlyPersons as person}
+    {#each fixedPersons as person}
       <div class="usertag-container gap-1-5">
         <UserInfo value={person} {size} />
       </div>
     {/each}
-    {#each persons as person}
+    {#each editablePersons as person}
       <div class="usertag-container gap-1-5">
         <UserInfo value={person} {size} />
         <ActionIcon
@@ -110,7 +110,7 @@
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       class="addButton {size === 'inline' ? 'small' : 'medium'} overflow-label gap-2 cursor-pointer"
-      class:mt-2={persons.length > 0}
+      class:mt-2={editablePersons.length > 0}
       on:click={addPerson}
     >
       <span><Label label={actionLabel} /></span>

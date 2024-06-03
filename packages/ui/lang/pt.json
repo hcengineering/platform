@@ -84,6 +84,9 @@
     "ThemeDark": "Escuro",
     "ThemeSystem": "Sistema",
     "NoTimeZonesFound": "Nenhum fuso horário encontrado",
-    "Selected": "Selecionado:"
+    "Selected": "Selecionado:",
+    "Submit": "Enviar",
+    "NextStep": "Seguinte passo",
+    "TypeHere": "Escreva aqui..."
   }
 }

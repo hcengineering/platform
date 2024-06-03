@@ -110,7 +110,10 @@ export const uis = plugin(uiId, {
     ThemeDark: '' as IntlString,
     ThemeSystem: '' as IntlString,
     NoTimeZonesFound: '' as IntlString,
-    Selected: '' as IntlString
+    Selected: '' as IntlString,
+    Submit: '' as IntlString,
+    NextStep: '' as IntlString,
+    TypeHere: '' as IntlString
   },
   metadata: {
     DefaultApplication: '' as Metadata<AnyComponent>,
