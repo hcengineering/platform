@@ -13,11 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getBlobHref } from '@hcengineering/presentation'
   import type { Attachment } from '@hcengineering/attachment'
+  import { getBlobHref } from '@hcengineering/presentation'
 
-  import AttachmentPresenter from './AttachmentPresenter.svelte'
   import type { WithLookup } from '@hcengineering/core'
+  import AttachmentPresenter from './AttachmentPresenter.svelte'
 
   export let value: WithLookup<Attachment>
   export let preload = true
@@ -58,7 +58,9 @@
 </script>
 
 <video controls width={dimensions.width} height={dimensions.height} preload={preload ? 'auto' : 'none'}>
-  <source src={getBlobHref(value.$lookup?.file, value.file, value.name)} />
+  {#await getBlobHref(value.$lookup?.file, value.file, value.name) then href}
+    <source src={href} />
+  {/await}
   <track kind="captions" label={value.name} />
   <div class="container">
     <AttachmentPresenter {value} />

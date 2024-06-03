@@ -105,6 +105,13 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     process.exit(1)
   }
 
+  let previewConfig = process.env.PREVIEW_CONFIG
+
+  if (previewConfig === undefined) {
+    // Use universal preview config
+    previewConfig = `*|${uploadUrl}/:workspace?file=:file.:format&size=:size`
+  }
+
   const brandingUrl = process.env.BRANDING_URL
 
   setMetadata(serverToken.metadata.Secret, serverSecret)
@@ -122,7 +129,8 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     calendarUrl,
     collaboratorUrl,
     collaboratorApiUrl,
-    brandingUrl
+    brandingUrl,
+    previewConfig
   }
   console.log('Starting Front service with', config)
   const shutdown = start(ctx, config, SERVER_PORT, extraConfig)

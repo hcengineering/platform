@@ -26,6 +26,7 @@ import {
   type FilePreviewExtension,
   type ObjectSearchCategory
 } from './types'
+import type { PreviewConfig } from './preview'
 
 /**
  * @public
@@ -89,7 +90,8 @@ export default plugin(presentationId, {
     CollaboratorUrl: '' as Metadata<string>,
     CollaboratorApiUrl: '' as Metadata<string>,
     Token: '' as Metadata<string>,
-    FrontUrl: '' as Asset
+    FrontUrl: '' as Asset,
+    PreviewConfig: '' as Metadata<PreviewConfig>
   },
   status: {
     FileTooLarge: '' as StatusCode

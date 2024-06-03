@@ -16,18 +16,18 @@
 <script lang="ts">
   import type { Attachment } from '@hcengineering/attachment'
   import { FilePreviewPopup } from '@hcengineering/presentation'
-  import { showPopup, closeTooltip } from '@hcengineering/ui'
+  import { closeTooltip, showPopup } from '@hcengineering/ui'
   import { ListSelectionProvider } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
 
-  import { getType } from '../utils'
-  import AttachmentPresenter from './AttachmentPresenter.svelte'
-  import AttachmentActions from './AttachmentActions.svelte'
-  import AudioPlayer from './AudioPlayer.svelte'
-  import { AttachmentImageSize } from '../types'
-  import AttachmentImagePreview from './AttachmentImagePreview.svelte'
-  import AttachmentVideoPreview from './AttachmentVideoPreview.svelte'
   import type { WithLookup } from '@hcengineering/core'
+  import { AttachmentImageSize } from '../types'
+  import { getType } from '../utils'
+  import AttachmentActions from './AttachmentActions.svelte'
+  import AttachmentImagePreview from './AttachmentImagePreview.svelte'
+  import AttachmentPresenter from './AttachmentPresenter.svelte'
+  import AttachmentVideoPreview from './AttachmentVideoPreview.svelte'
+  import AudioPlayer from './AudioPlayer.svelte'
 
   export let value: WithLookup<Attachment>
   export let isSaved: boolean = false

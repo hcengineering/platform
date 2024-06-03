@@ -866,10 +866,14 @@ export async function restore (
   transactorUrl: string,
   workspaceId: WorkspaceId,
   storage: BackupStorage,
-  date: number,
-  merge?: boolean,
-  parallel?: number,
-  recheck?: boolean
+  opt: {
+    date: number
+    merge?: boolean
+    parallel?: number
+    recheck?: boolean
+    include?: Set<string>
+    skip?: Set<string>
+  }
 ): Promise<void> {
   const infoFile = 'backup.json.gz'
 
@@ -878,16 +882,16 @@ export async function restore (
   }
   const backupInfo: BackupInfo = JSON.parse(gunzipSync(await storage.loadFile(infoFile)).toString())
   let snapshots = backupInfo.snapshots
-  if (date !== -1) {
-    const bk = backupInfo.snapshots.findIndex((it) => it.date === date)
+  if (opt.date !== -1) {
+    const bk = backupInfo.snapshots.findIndex((it) => it.date === opt.date)
     if (bk === -1) {
-      throw new Error(`${infoFile} could not restore to ${date}. Snapshot is missing.`)
+      throw new Error(`${infoFile} could not restore to ${opt.date}. Snapshot is missing.`)
     }
     snapshots = backupInfo.snapshots.slice(0, bk + 1)
   } else {
-    date = snapshots[snapshots.length - 1].date
+    opt.date = snapshots[snapshots.length - 1].date
   }
-  console.log('restore to ', date, new Date(date))
+  console.log('restore to ', opt.date, new Date(opt.date))
   const rsnapshots = Array.from(snapshots).reverse()
 
   // Collect all possible domains
@@ -912,7 +916,7 @@ export async function restore (
   }
 
   async function processDomain (c: Domain): Promise<void> {
-    const changeset = await loadDigest(ctx, storage, snapshots, c, date)
+    const changeset = await loadDigest(ctx, storage, snapshots, c, opt.date)
     // We need to load full changeset from server
     const serverChangeset = new Map<Ref<Doc>, string>()
 
@@ -923,7 +927,7 @@ export async function restore (
     try {
       while (true) {
         const st = Date.now()
-        const it = await connection.loadChunk(c, idx, recheck)
+        const it = await connection.loadChunk(c, idx, opt.recheck)
         chunks++
 
         idx = it.idx
@@ -1086,7 +1090,7 @@ export async function restore (
     }
 
     await sendChunk(undefined, 0)
-    if (docsToRemove.length > 0 && merge !== true) {
+    if (docsToRemove.length > 0 && opt.merge !== true) {
       console.log('cleanup', docsToRemove.length)
       while (docsToRemove.length > 0) {
         const part = docsToRemove.splice(0, 10000)
@@ -1095,10 +1099,16 @@ export async function restore (
     }
   }
 
-  const limiter = new RateLimiter(parallel ?? 1)
+  const limiter = new RateLimiter(opt.parallel ?? 1)
 
   try {
     for (const c of domains) {
+      if (opt.include !== undefined && !opt.include.has(c)) {
+        continue
+      }
+      if (opt.skip?.has(c) === true) {
+        continue
+      }
       await limiter.exec(async () => {
         console.log('processing domain', c)
         let retry = 5

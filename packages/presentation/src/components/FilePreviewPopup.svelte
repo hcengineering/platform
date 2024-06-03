@@ -21,8 +21,8 @@
 
   import { getPreviewType, previewTypes } from '../file'
   import { BlobMetadata, FilePreviewExtension } from '../types'
-  import { getBlobHref, getFileUrl } from '../utils'
 
+  import { getBlobSrcFor } from '../preview'
   import ActionContext from './ActionContext.svelte'
   import Download from './icons/Download.svelte'
 
@@ -58,7 +58,8 @@
     previewType = undefined
   }
   let download: HTMLAnchorElement
-  $: src = file === undefined ? '' : typeof file === 'string' ? getFileUrl(file, name) : getBlobHref(file, file._id)
+
+  $: srcRef = getBlobSrcFor(file, name)
 </script>
 
 <ActionContext context={{ mode: 'browser' }} />
@@ -83,41 +84,45 @@
   </svelte:fragment>
 
   <svelte:fragment slot="utils">
-    {#if src !== ''}
-      <a class="no-line" href={src} download={name} bind:this={download}>
+    {#await srcRef then src}
+      {#if src !== ''}
+        <a class="no-line" href={src} download={name} bind:this={download}>
+          <Button
+            icon={Download}
+            kind={'ghost'}
+            on:click={() => {
+              download.click()
+            }}
+            showTooltip={{ label: presentation.string.Download }}
+          />
+        </a>
+      {/if}
+    {/await}
+  </svelte:fragment>
+
+  {#await srcRef then src}
+    {#if src === ''}
+      <div class="centered">
+        <Label label={presentation.string.FailedToPreview} />
+      </div>
+    {:else if previewType !== undefined}
+      <div class="content flex-col flex-grow">
+        <Component is={previewType.component} props={{ value: file, name, contentType, metadata, ...props }} />
+      </div>
+    {:else}
+      <div class="centered flex-col flex-gap-3">
+        <Label label={presentation.string.ContentTypeNotSupported} />
         <Button
-          icon={Download}
-          kind={'ghost'}
+          label={presentation.string.Download}
+          kind={'primary'}
           on:click={() => {
             download.click()
           }}
           showTooltip={{ label: presentation.string.Download }}
         />
-      </a>
+      </div>
     {/if}
-  </svelte:fragment>
-
-  {#if src === ''}
-    <div class="centered">
-      <Label label={presentation.string.FailedToPreview} />
-    </div>
-  {:else if previewType !== undefined}
-    <div class="content flex-col flex-grow">
-      <Component is={previewType.component} props={{ value: file, name, contentType, metadata, ...props }} />
-    </div>
-  {:else}
-    <div class="centered flex-col flex-gap-3">
-      <Label label={presentation.string.ContentTypeNotSupported} />
-      <Button
-        label={presentation.string.Download}
-        kind={'primary'}
-        on:click={() => {
-          download.click()
-        }}
-        showTooltip={{ label: presentation.string.Download }}
-      />
-    </div>
-  {/if}
+  {/await}
 </Dialog>
 
 <style lang="scss">

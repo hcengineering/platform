@@ -12,14 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { getMetadata } from '@hcengineering/platform'
-import presentation from '@hcengineering/presentation'
+import { parseDocumentId, type DocumentId } from '@hcengineering/collaborator-client'
 import { collaborativeDocParse, concatLink } from '@hcengineering/core'
+import { getMetadata } from '@hcengineering/platform'
+import presentation, { getCurrentWorkspaceUrl } from '@hcengineering/presentation'
 import { ObservableV2 as Observable } from 'lib0/observable'
-import { type Doc as YDoc, applyUpdate } from 'yjs'
-import { type DocumentId, parseDocumentId } from '@hcengineering/collaborator-client'
-import { workspaceId } from '@hcengineering/ui'
-import { get } from 'svelte/store'
+import { applyUpdate, type Doc as YDoc } from 'yjs'
 
 interface EVENTS {
   synced: (...args: any[]) => void
@@ -31,7 +29,7 @@ async function fetchContent (doc: YDoc, name: string): Promise<void> {
       const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
 
       try {
-        const res = await fetch(concatLink(frontUrl, `/files/${get(workspaceId)}?file=${name}`))
+        const res = await fetch(concatLink(frontUrl, `/files/${getCurrentWorkspaceUrl()}?file=${name}`))
 
         if (res.ok) {
           const blob = await res.blob()

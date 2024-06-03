@@ -16,6 +16,7 @@ import login, { loginId } from '@hcengineering/login'
 import { addEventListener, broadcastEvent, getMetadata, getResource, setMetadata } from '@hcengineering/platform'
 import presentation, {
   closeClient,
+  getCurrentWorkspaceUrl,
   purgeClient,
   refreshClient,
   setClient,
@@ -27,10 +28,9 @@ import {
   locationStorageKeyId,
   navigate,
   networkStatus,
-  setMetadataLocalStorage,
-  workspaceId
+  setMetadataLocalStorage
 } from '@hcengineering/ui'
-import { writable, get } from 'svelte/store'
+import { writable } from 'svelte/store'
 import plugin from './plugin'
 import { workspaceCreating } from './utils'
 
@@ -104,7 +104,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     }
   }
 
-  setPresentationCookie(token, get(workspaceId))
+  setPresentationCookie(token, getCurrentWorkspaceUrl())
 
   const endpoint = fetchMetadataLocalStorage(login.metadata.LoginEndpoint)
   const email = fetchMetadataLocalStorage(login.metadata.LoginEmail)
@@ -350,7 +350,7 @@ function clearMetadata (ws: string): void {
   }
   setMetadata(presentation.metadata.Token, null)
   setMetadataLocalStorage(login.metadata.LastToken, null)
-  setPresentationCookie('', get(workspaceId))
+  setPresentationCookie('', getCurrentWorkspaceUrl())
   setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
   setMetadataLocalStorage(login.metadata.LoginEmail, null)
   void closeClient()

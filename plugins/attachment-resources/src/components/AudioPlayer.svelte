@@ -48,7 +48,9 @@
   </div>
 </div>
 <audio bind:duration bind:currentTime={time} bind:paused>
-  <source src={getBlobHref(value.$lookup?.file, value.file, value.name)} type={value.type} />
+  {#await getBlobHref(value.$lookup?.file, value.file, value.name) then href}
+    <source src={href} type={value.type} />
+  {/await}
 </audio>
 
 <style lang="scss">

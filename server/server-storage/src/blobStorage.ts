@@ -64,8 +64,8 @@ class StorageBlobAdapter implements DbAdapter {
     await this.blobAdapter.close()
   }
 
-  find (ctx: MeasureContext, domain: Domain): StorageIterator {
-    return this.blobAdapter.find(ctx, domain)
+  find (ctx: MeasureContext, domain: Domain, recheck?: boolean): StorageIterator {
+    return this.blobAdapter.find(ctx, domain, recheck)
   }
 
   async load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
@@ -110,9 +110,16 @@ export async function createStorageDataAdapter (
   }
   // We need to create bucket if it doesn't exist
   await storage.make(ctx, workspaceId)
+
+  const storageEx = 'adapters' in storage ? (storage as StorageAdapterEx) : undefined
+
   const blobAdapter = await createMongoAdapter(ctx, hierarchy, url, workspaceId, modelDb, undefined, {
     calculateHash: (d) => {
-      return (d as Blob).etag
+      const blob = d as Blob
+      if (storageEx?.adapters !== undefined && storageEx.adapters.get(blob.provider) === undefined) {
+        return blob.etag + '_' + storageEx.defaultAdapter // Replace tag to be able to move to new provider
+      }
+      return blob.etag
     }
   })
   return new StorageBlobAdapter(workspaceId, storage, ctx, blobAdapter)

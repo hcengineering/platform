@@ -24,7 +24,7 @@
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter } from '@hcengineering/attachment-resources'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { Ref } from '@hcengineering/core'
+  import core, { Ref } from '@hcengineering/core'
 
   export let currentMessage: SharedMessage
   export let newMessage: boolean
@@ -52,6 +52,11 @@
       },
       (res) => {
         attachments = res
+      },
+      {
+        lookup: {
+          file: core.class.Blob
+        }
       }
     )
 

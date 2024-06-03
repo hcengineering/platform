@@ -22,7 +22,7 @@ import TaskList from '@tiptap/extension-task-list'
 
 import { DefaultKit, type DefaultKitOptions } from './default-kit'
 
-import { getFileUrl, getFileUrlSrcSet } from '@hcengineering/presentation'
+import { getFileUrl, getFileSrcSet } from '@hcengineering/presentation'
 import { CodeBlockExtension, codeBlockOptions } from '@hcengineering/text'
 import { CodemarkExtension } from '../components/extension/codemark'
 import { FileExtension, type FileOptions } from '../components/extension/fileExt'
@@ -105,7 +105,7 @@ export const EditorKit = Extension.create<EditorKitOptions>({
             ImageExtension.configure({
               inline: true,
               getFileUrl,
-              getFileUrlSrcSet,
+              getFileUrlSrcSet: getFileSrcSet,
               ...this.options.image
             })
           ]

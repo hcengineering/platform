@@ -16,6 +16,7 @@
 import { Client, type BucketItem, type BucketStream } from 'minio'
 
 import core, {
+  concatLink,
   toWorkspaceString,
   type Blob,
   type BlobLookup,
@@ -25,8 +26,8 @@ import core, {
   type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 
-import {
-  addBlobPreviewLookup,
+import { getMetadata } from '@hcengineering/platform'
+import serverCore, {
   removeAllObjects,
   type BlobLookupResult,
   type BlobStorageIterator,
@@ -51,11 +52,6 @@ export interface MinioConfig extends StorageConfig {
   secretKey: string
   useSSL?: string
   region?: string
-
-  // Preview URL override
-  previewUrl?: string
-
-  formats?: string
 }
 
 /**
@@ -76,13 +72,11 @@ export class MinioService implements StorageAdapter {
   }
 
   async lookup (ctx: MeasureContext, workspaceId: WorkspaceIdWithUrl, docs: Blob[]): Promise<BlobLookupResult> {
+    const frontUrl = getMetadata(serverCore.metadata.FrontUrl) ?? ''
     for (const d of docs) {
       // Let's add current from URI for previews.
       const bl = d as BlobLookup
-      bl.downloadUrl = `/files/${workspaceId.workspaceUrl}?file=${d._id}`
-
-      // Add default or override preview service
-      addBlobPreviewLookup(workspaceId, bl, this.opt.formats, this.opt.previewUrl)
+      bl.downloadUrl = concatLink(frontUrl, `/files/${workspaceId.workspaceUrl}?file=${d._id}`)
     }
     return { lookups: docs as BlobLookup[] }
   }

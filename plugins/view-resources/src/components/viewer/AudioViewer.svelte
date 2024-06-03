@@ -14,21 +14,16 @@
 -->
 <script lang="ts">
   import { type Blob, type Ref } from '@hcengineering/core'
-  import { getBlobHref, getFileUrl, type BlobMetadata } from '@hcengineering/presentation'
+  import { type BlobMetadata } from '@hcengineering/presentation'
   import AudioPlayer from './AudioPlayer.svelte'
 
   export let value: Blob | Ref<Blob>
   export let name: string
   export let contentType: string
   export let metadata: BlobMetadata | undefined
-
-  $: src =
-    value === undefined ? '' : typeof value === 'string' ? getFileUrl(value, name) : getBlobHref(value, value._id)
 </script>
 
-{#if src}
-  <AudioPlayer {value} {name} {contentType} fullSize={true} />
-{/if}
+<AudioPlayer {value} {name} {contentType} fullSize={true} />
 
 <style lang="scss">
   .img-fit {

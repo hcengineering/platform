@@ -108,7 +108,8 @@
           $themeStore.dark
         )
       } else {
-        ;({ url, srcSet, color } = (await getResource(avatarProvider.getUrl))(avatar, displayName, width))
+        const getUrlHandler = await getResource(avatarProvider.getUrl)
+        ;({ url, srcSet, color } = await getUrlHandler(avatar, displayName, width))
       }
     } else if (name != null) {
       color = getPlatformAvatarColorForTextDef(name, $themeStore.dark)

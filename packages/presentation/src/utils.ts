@@ -17,6 +17,7 @@
 import { Analytics } from '@hcengineering/analytics'
 import core, {
   TxOperations,
+  concatLink,
   getCurrentAccount,
   reduceCalls,
   type AnyAttribute,
@@ -49,7 +50,7 @@ import core, {
 } from '@hcengineering/core'
 import { getMetadata, getResource } from '@hcengineering/platform'
 import { LiveQuery as LQ } from '@hcengineering/query'
-import { workspaceId, type AnyComponent, type AnySvelteComponent } from '@hcengineering/ui'
+import { getRawCurrentLocation, workspaceId, type AnyComponent, type AnySvelteComponent } from '@hcengineering/ui'
 import view, { type AttributeCategory, type AttributeEditor } from '@hcengineering/view'
 import { deepEqual } from 'fast-equals'
 import { onDestroy } from 'svelte'
@@ -360,73 +361,24 @@ export function createQuery (dontDestroy?: boolean): LiveQuery {
   return new LiveQuery(dontDestroy)
 }
 
-function getSrcSet (_blob: PlatformBlob, width?: number): string {
-  let result = ''
-  const blob = _blob as BlobLookup
-
-  if (blob.previewUrl === undefined) {
-    return ''
-  }
-  for (const f of blob.previewFormats ?? []) {
-    if (result.length > 0) {
-      result += ', '
-    }
-    const fu = blob.previewUrl.replaceAll(':format', f)
-    if (width !== undefined) {
-      result +=
-        fu.replaceAll(':size', `${width}`) +
-        ', ' +
-        fu.replaceAll(':size', `${width * 2}`) +
-        ', ' +
-        fu.replaceAll(':size', `${width * 3}`)
-    } else {
-      result += fu.replaceAll(':size', `${-1}`)
-    }
-  }
-  return result
-}
-
-/**
- * @public
- */
-export function getFileUrlSrcSet (
+export async function getBlobHref (
+  _blob: PlatformBlob | undefined,
   file: Ref<PlatformBlob>,
-  width?: number,
-  formats: string[] = supportedFormats
-): string {
-  if (file.includes('://')) {
-    return file
+  filename?: string
+): Promise<string> {
+  let blob = _blob as BlobLookup
+  if (blob?.downloadUrl === undefined) {
+    blob = (await getClient().findOne(core.class.Blob, { _id: file })) as BlobLookup
   }
-  const uploadUrl = getMetadata(plugin.metadata.UploadURL)
-
-  let result = ''
-
-  for (const f of formats) {
-    if (result.length > 0) {
-      result += ', '
-    }
-    if (width !== undefined) {
-      const fu = `${uploadUrl as string}/${get(workspaceId)}?file=${file}.${f}&size=:size`
-      result +=
-        fu.replaceAll(':size', `${width}`) +
-        ', ' +
-        fu.replaceAll(':size', `${width * 2}`) +
-        ', ' +
-        fu.replaceAll(':size', `${width * 3}`)
-    } else {
-      result += `${uploadUrl as string}/${get(workspaceId)}?file=${file}.${f}`
-    }
-  }
-  return result
-}
-
-export function getBlobHref (_blob: PlatformBlob | undefined, file: Ref<PlatformBlob>, filename?: string): string {
-  const blob = _blob as BlobLookup
   return blob?.downloadUrl ?? getFileUrl(file, filename)
 }
 
-export function getBlobSrcSet (_blob: PlatformBlob | undefined, file: Ref<PlatformBlob>, width?: number): string {
-  return _blob !== undefined ? getSrcSet(_blob, width) : getFileUrlSrcSet(file, width)
+export function getCurrentWorkspaceUrl (): string {
+  const wsId = get(workspaceId)
+  if (wsId == null) {
+    return getRawCurrentLocation().path[1]
+  }
+  return wsId
 }
 
 /**
@@ -436,15 +388,13 @@ export function getFileUrl (file: Ref<PlatformBlob>, filename?: string): string 
   if (file.includes('://')) {
     return file
   }
-  const uploadUrl = getMetadata(plugin.metadata.UploadURL)
-  if (filename !== undefined) {
-    return `${uploadUrl as string}/${get(workspaceId)}/${encodeURIComponent(filename)}?file=${file}`
+  const frontUrl = getMetadata(plugin.metadata.FrontUrl) ?? window.location.origin
+  let uploadUrl = getMetadata(plugin.metadata.UploadURL) ?? ''
+  if (!uploadUrl.includes('://')) {
+    uploadUrl = concatLink(frontUrl ?? '', uploadUrl)
   }
-  return `${uploadUrl as string}/${get(workspaceId)}?file=${file}`
+  return `${uploadUrl}/${getCurrentWorkspaceUrl()}${filename !== undefined ? '/' + encodeURIComponent(filename) : ''}?file=${file}`
 }
-
-type SupportedFormat = 'jpeg' | 'avif' | 'heif' | 'webp' | 'png'
-const supportedFormats: SupportedFormat[] = ['avif', 'webp', 'heif', 'jpeg', 'png']
 
 export function sizeToWidth (size: string): number | undefined {
   let width: number | undefined

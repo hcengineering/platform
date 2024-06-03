@@ -17,8 +17,8 @@
   import { Ref, type WithLookup } from '@hcengineering/core'
   import { Scroller } from '@hcengineering/ui'
 
-  import AttachmentPreview from './AttachmentPreview.svelte'
   import { AttachmentImageSize } from '../types'
+  import AttachmentPreview from './AttachmentPreview.svelte'
 
   export let attachments: WithLookup<Attachment>[] = []
   export let savedAttachmentsIds: Ref<Attachment>[] = []
