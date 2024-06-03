@@ -35,6 +35,7 @@ export const userName = faker.internet.userName()
 export const firstName = faker.person.firstName()
 export const lastName = faker.person.lastName()
 export const channelName = faker.lorem.word()
+export const email = faker.internet.email()
 
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)

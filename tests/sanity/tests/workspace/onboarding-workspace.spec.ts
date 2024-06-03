@@ -12,7 +12,7 @@ import { NotificationPage } from '../model/notification-page'
 import { UserProfilePage } from '../model/profile/user-profile-page'
 import { ApiEndpoint } from '../API/Api'
 
-test.describe.skip('Workspace tests', () => {
+test.describe('Workspace tests', () => {
   let loginPage: LoginPage
   let signUpPage: SignUpPage
   let selectWorkspacePage: SelectWorkspacePage
@@ -148,13 +148,34 @@ test.describe.skip('Workspace tests', () => {
     await signUpPage.signUp(newUser)
     await selectWorkspacePage.createWorkspace(newWorkspaceName)
     await api.createWorkspaceWithLogin(newWorkspaceName2, newUser.email, '1234')
-    await leftSideMenuPage.buttonTracker().click()
     await userProfilePage.openProfileMenu()
     await userProfilePage.clickSettings()
     await userProfilePage.clickSelectWorkspace()
     await selectWorkspacePage.selectWorkspace(newWorkspaceName2)
     await selectWorkspacePage.clickCreateWorkspaceLogo()
     await selectWorkspacePage.checkIfWorkspaceExists(newWorkspaceName2)
-    await page.waitForTimeout(100)
+  })
+
+  test('User is able to change password', async () => {
+    const newUser: SignUpData = {
+      firstName: `FirstName-${generateId()}`,
+      lastName: `LastName-${generateId()}`,
+      email: `sanity-email+${generateId()}@gmail.com`,
+      password: '1234'
+    }
+    const newWorkspaceName = `New Workspace Name - ${generateId(2)}`
+    const newWorkspaceName2 = `New Workspace Name - ${generateId(2)}`
+    await loginPage.goto()
+    await loginPage.linkSignUp().click()
+    await signUpPage.signUp(newUser)
+    await selectWorkspacePage.createWorkspace(newWorkspaceName)
+    await userProfilePage.openProfileMenu()
+    await userProfilePage.clickSettings()
+    await userProfilePage.changePassword('1234', '4321')
+    await userProfilePage.clickOnSignOutButton()
+    await loginPage.login(newUser.email, '4321')
+    await selectWorkspacePage.selectWorkspace(newWorkspaceName2)
+    await selectWorkspacePage.clickCreateWorkspaceLogo()
+    await selectWorkspacePage.checkIfWorkspaceExists(newWorkspaceName2)
   })
 })
