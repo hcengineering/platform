@@ -208,13 +208,7 @@ async function processMigrateContentFor (
           const collaborativeDoc = makeCollaborativeDoc(doc._id, attribute.name, revisionId)
 
           const ydoc = markupToYDoc(value, attribute.name)
-          await saveCollaborativeDoc(
-            storageAdapter,
-            client.workspaceId,
-            collaborativeDoc,
-            ydoc,
-            ctx
-          )
+          await saveCollaborativeDoc(storageAdapter, client.workspaceId, collaborativeDoc, ydoc, ctx)
           await takeCollaborativeDocSnapshot(
             storageAdapter,
             client.workspaceId,

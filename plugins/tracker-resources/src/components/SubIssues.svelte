@@ -14,7 +14,7 @@
  -->
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
-  import core, { AttachedData, Doc, Ref, SortingOrder } from '@hcengineering/core'
+  import core, { CreateAttachedData, Doc, Ref, SortingOrder, makeCollaborativeDoc } from '@hcengineering/core'
   import { DraftController, draftsStore, getClient, deleteFile } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
   import { makeRank } from '@hcengineering/task'
@@ -69,9 +69,9 @@
       )
       const number = (incResult as any).object.sequence
       const childId = subIssue._id
-      const cvalue: AttachedData<Issue> = {
+      const cvalue: CreateAttachedData<Issue> = {
         title: subIssue.title.trim(),
-        description: subIssue.description,
+        description: makeCollaborativeDoc(childId, 'description'),
         assignee: subIssue.assignee,
         component: subIssue.component,
         milestone: subIssue.milestone,
@@ -90,7 +90,10 @@
         relations: [],
         childInfo: [],
         kind: subIssue.kind,
-        identifier: `${project.identifier}-${number}`
+        identifier: `${project.identifier}-${number}`,
+        $markup: {
+          description: subIssue.description
+        }
       }
       await client.addCollection(
         tracker.class.Issue,

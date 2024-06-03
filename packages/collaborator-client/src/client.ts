@@ -189,9 +189,7 @@ class CollaboratorClientImpl implements CollaboratorClient {
     const payload: UpdateContentRequest = { documentId, field, markup, snapshot }
     await this.rpc('updateContent', payload)
 
-    return snapshot !== undefined
-      ? collaborativeDocWithLastVersion(document, snapshot.versionId)
-      : document
+    return snapshot !== undefined ? collaborativeDocWithLastVersion(document, snapshot.versionId) : document
   }
 
   async copyContent (
@@ -206,9 +204,7 @@ class CollaboratorClientImpl implements CollaboratorClient {
     const payload: CopyContentRequest = { documentId, sourceField, targetField, snapshot }
     await this.rpc('copyContent', payload)
 
-    return snapshot !== undefined
-      ? collaborativeDocWithLastVersion(document, snapshot.versionId)
-      : document
+    return snapshot !== undefined ? collaborativeDocWithLastVersion(document, snapshot.versionId) : document
   }
 
   async branch (source: CollaborativeDoc, target: CollaborativeDoc): Promise<void> {

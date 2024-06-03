@@ -14,7 +14,11 @@
 //
 
 import { MeasureContext } from '@hcengineering/core'
-import { parseDocumentId, type UpdateContentRequest, type UpdateContentResponse } from '@hcengineering/collaborator-client'
+import {
+  parseDocumentId,
+  type UpdateContentRequest,
+  type UpdateContentResponse
+} from '@hcengineering/collaborator-client'
 import { Doc as YDoc, applyUpdate, encodeStateAsUpdate } from 'yjs'
 import { Context } from '../../context'
 import { RpcMethodParams } from '../rpc'
@@ -62,14 +66,7 @@ export async function updateContent (
       }
 
       await ctx.with('snapshot', {}, async () => {
-        await takeCollaborativeDocSnapshot(
-          storage,
-          workspaceId,
-          collaborativeDoc,
-          ydoc,
-          version,
-          ctx
-        )
+        await takeCollaborativeDocSnapshot(storage, workspaceId, collaborativeDoc, ydoc, version, ctx)
       })
     }
   } finally {

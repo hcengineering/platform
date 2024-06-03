@@ -53,14 +53,7 @@ export async function copyContent (
       }
 
       await ctx.with('snapshot', {}, async () => {
-        await takeCollaborativeDocSnapshot(
-          storage,
-          workspaceId,
-          collaborativeDoc,
-          ydoc,
-          version,
-          ctx
-        )
+        await takeCollaborativeDocSnapshot(storage, workspaceId, collaborativeDoc, ydoc, version, ctx)
       })
     }
   } finally {

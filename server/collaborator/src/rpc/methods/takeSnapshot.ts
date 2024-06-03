@@ -55,14 +55,7 @@ export async function takeSnapshot (
     const ydoc = connection.document ?? new YDoc()
 
     await ctx.with('snapshot', {}, async () => {
-      await takeCollaborativeDocSnapshot(
-        storage,
-        workspaceId,
-        collaborativeDoc,
-        ydoc,
-        version,
-        ctx
-      )
+      await takeCollaborativeDocSnapshot(storage, workspaceId, collaborativeDoc, ydoc, version, ctx)
     })
 
     return { ...version }
