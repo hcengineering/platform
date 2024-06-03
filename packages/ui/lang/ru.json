@@ -84,6 +84,9 @@
     "ThemeDark": "Тёмная",
     "ThemeSystem": "Системная",
     "NoTimeZonesFound": "Временные зоны не найдены",
-    "Selected": "Выбрано:"
+    "Selected": "Выбрано:",
+    "Submit": "Отправить",
+    "NextStep": "Следующий шаг",
+    "TypeHere": "Вводите здесь..."
   }
 }

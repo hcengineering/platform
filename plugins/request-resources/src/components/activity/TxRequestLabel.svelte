@@ -22,7 +22,9 @@
   let request: Request | undefined = undefined
 
   const query = createQuery()
-  query.query(value._class, { _id: value._id }, (res) => ([request] = res))
+  query.query(value._class, { _id: value._id }, (res) => {
+    ;[request] = res
+  })
 </script>
 
 {#if request}
