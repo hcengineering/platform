@@ -29,7 +29,15 @@
     showPopup,
     Scroller
   } from '@hcengineering/ui'
-  import { ParticipantInfo, Room, RoomType, isOffice, loveId, roomAccessIcon, roomAccessLabel } from '@hcengineering/love'
+  import {
+    ParticipantInfo,
+    Room,
+    RoomType,
+    isOffice,
+    loveId,
+    roomAccessIcon,
+    roomAccessLabel
+  } from '@hcengineering/love'
   import { createEventDispatcher } from 'svelte'
   import love from '../plugin'
   import { currentRoom, infos, invites, myInfo, myOffice, myRequests } from '../stores'
