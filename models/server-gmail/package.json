@@ -28,14 +28,14 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.28",
-    "@hcengineering/gmail": "^0.6.15",
-    "@hcengineering/model": "^0.6.7",
-    "@hcengineering/contact": "^0.6.20",
-    "@hcengineering/platform": "^0.6.9",
+    "@hcengineering/core": "^0.6.32",
+    "@hcengineering/gmail": "^0.6.22",
+    "@hcengineering/model": "^0.6.11",
+    "@hcengineering/contact": "^0.6.24",
+    "@hcengineering/platform": "^0.6.11",
     "@hcengineering/server-gmail": "^0.6.0",
     "@hcengineering/server-core": "^0.6.1",
-    "@hcengineering/notification": "^0.6.16",
+    "@hcengineering/notification": "^0.6.23",
     "@hcengineering/server-notification": "^0.6.1"
   }
 }

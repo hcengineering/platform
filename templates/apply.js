@@ -110,6 +110,9 @@ function updatePackage(packageRoot, templates) {
   }
   currentPackage.scripts = update(currentPackage.scripts, packageJson.scripts, currentPackage['#override'] )
 
+  // Replace files section
+  currentPackage.files = packageJson.files
+
   if( template.package['#overrideKeys'] !== undefined) {
     for( const k of template.package['#overrideKeys'] ) {
       const v = packageJson[k]

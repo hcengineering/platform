@@ -4,6 +4,11 @@
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
+  "files": [
+    "lib/**/*",
+    "types/**/*",
+    "tsconfig.json"
+  ],
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
   "scripts": {
@@ -33,19 +38,19 @@
   },
   "dependencies": {
     "@hcengineering/activity": "^0.6.0",
-    "@hcengineering/core": "^0.6.28",
-    "@hcengineering/platform": "^0.6.9",
+    "@hcengineering/core": "^0.6.32",
+    "@hcengineering/platform": "^0.6.11",
     "@hcengineering/server-core": "^0.6.1",
-    "@hcengineering/contact": "^0.6.20",
-    "@hcengineering/chunter": "^0.6.12",
-    "@hcengineering/view": "^0.6.9",
-    "@hcengineering/login": "^0.6.8",
-    "@hcengineering/workbench": "^0.6.9",
+    "@hcengineering/contact": "^0.6.24",
+    "@hcengineering/chunter": "^0.6.20",
+    "@hcengineering/view": "^0.6.13",
+    "@hcengineering/login": "^0.6.12",
+    "@hcengineering/workbench": "^0.6.16",
     "@hcengineering/collaboration": "^0.6.0",
-    "@hcengineering/notification": "^0.6.16",
+    "@hcengineering/notification": "^0.6.23",
     "@hcengineering/server-notification": "^0.6.1",
     "@hcengineering/server-notification-resources": "^0.6.0",
     "@hcengineering/server": "^0.6.4",
-    "@hcengineering/text": "^0.6.1"
+    "@hcengineering/text": "^0.6.5"
   }
 }

@@ -34,8 +34,8 @@
     "@types/node": "~20.11.16"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.28",
-    "@hcengineering/platform": "^0.6.9",
+    "@hcengineering/core": "^0.6.32",
+    "@hcengineering/platform": "^0.6.11",
     "@hcengineering/server-core": "^0.6.1",
     "mongodb": "^6.3.0",
     "bson": "^6.3.0"

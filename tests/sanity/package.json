@@ -47,7 +47,7 @@
   "dependencies": {
     "dotenv": "~16.0.0",
     "cross-env": "~7.0.3",
-    "@hcengineering/core": "^0.6.28",
-    "@hcengineering/client-resources": "^0.6.23"
+    "@hcengineering/core": "^0.6.32",
+    "@hcengineering/client-resources": "^0.6.27"
   }
 }

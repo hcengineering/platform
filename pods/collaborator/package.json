@@ -45,8 +45,8 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.28",
+    "@hcengineering/core": "^0.6.32",
     "@hcengineering/collaborator": "^0.6.0",
-    "@hcengineering/platform": "^0.6.9"
+    "@hcengineering/platform": "^0.6.11"
   }
 }

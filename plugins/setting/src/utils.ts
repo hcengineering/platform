@@ -26,7 +26,6 @@ import core, {
   TypeAny as TypeAnyType,
   getRoleAttributeLabel
 } from '@hcengineering/core'
-import { TypeAny } from '@hcengineering/model'
 import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
 
 import setting from './index'
@@ -71,6 +70,16 @@ export interface RoleAttributeProps {
   roleType: TypeAnyType
 }
 
+/**
+ * @public
+ */
+function TypeAny<AnyComponent = any> (
+  presenter: AnyComponent,
+  label: IntlString,
+  editor?: AnyComponent
+): TypeAnyType<AnyComponent> {
+  return { _class: core.class.TypeAny, label, presenter, editor }
+}
 export function getRoleAttributeProps (name: string): RoleAttributeProps {
   const label = getRoleAttributeLabel(name)
   const roleType = TypeAny(setting.component.RoleAssignmentEditor, label, setting.component.RoleAssignmentEditor)

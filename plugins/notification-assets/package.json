@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/notification-assets",
-  "version": "0.6.10",
+  "version": "0.6.17",
   "main": "src/index.ts",
   "author": "Anticrm Platform Contributors",
   "template": "@hcengineering/assets-package",
@@ -33,8 +33,8 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/notification": "^0.6.16"
+    "@hcengineering/platform": "^0.6.11",
+    "@hcengineering/notification": "^0.6.23"
   },
   "repository": "https://github.com/hcenginneing/anticrm",
   "publishConfig": {

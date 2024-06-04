@@ -29,20 +29,20 @@
   },
   "dependencies": {
     "@hcengineering/activity": "^0.6.0",
-    "@hcengineering/chunter": "^0.6.12",
-    "@hcengineering/core": "^0.6.28",
-    "@hcengineering/inventory": "^0.6.7",
+    "@hcengineering/chunter": "^0.6.20",
+    "@hcengineering/core": "^0.6.32",
+    "@hcengineering/inventory": "^0.6.11",
     "@hcengineering/inventory-resources": "^0.6.0",
-    "@hcengineering/model": "^0.6.7",
+    "@hcengineering/model": "^0.6.11",
     "@hcengineering/model-attachment": "^0.6.0",
     "@hcengineering/model-chunter": "^0.6.0",
     "@hcengineering/model-core": "^0.6.0",
     "@hcengineering/model-view": "^0.6.0",
     "@hcengineering/model-workbench": "^0.6.1",
-    "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/setting": "^0.6.11",
-    "@hcengineering/ui": "^0.6.11",
-    "@hcengineering/view": "^0.6.9",
-    "@hcengineering/workbench": "^0.6.9"
+    "@hcengineering/platform": "^0.6.11",
+    "@hcengineering/setting": "^0.6.17",
+    "@hcengineering/ui": "^0.6.15",
+    "@hcengineering/view": "^0.6.13",
+    "@hcengineering/workbench": "^0.6.16"
   }
 }

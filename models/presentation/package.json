@@ -28,11 +28,11 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.28",
-    "@hcengineering/model": "^0.6.7",
-    "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/ui": "^0.6.11",
-    "@hcengineering/presentation": "^0.6.2",
+    "@hcengineering/core": "^0.6.32",
+    "@hcengineering/model": "^0.6.11",
+    "@hcengineering/platform": "^0.6.11",
+    "@hcengineering/ui": "^0.6.15",
+    "@hcengineering/presentation": "^0.6.3",
     "@hcengineering/model-core": "^0.6.0"
   }
 }

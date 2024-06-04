@@ -36,7 +36,7 @@ import {
 import { Asset, IntlString, Plugin, Resource, plugin } from '@hcengineering/platform'
 import { Preference } from '@hcengineering/preference'
 import { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
-import task, {
+import {
   ProjectTypeDescriptor,
   Task,
   Project as TaskProject,
@@ -45,7 +45,6 @@ import task, {
   TaskTypeDescriptor
 } from '@hcengineering/task'
 import { AnyComponent, ComponentExtensionId, Location, ResolvedLocation } from '@hcengineering/ui'
-import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 import { Action, ActionCategory, IconProps } from '@hcengineering/view'
 
 /**
@@ -545,48 +544,6 @@ const pluginState = plugin(trackerId, {
   }
 })
 export default pluginState
-
-/**
- * @public
- */
-export const classicIssueTaskStatuses: TaskStatusFactory[] = [
-  {
-    category: task.statusCategory.UnStarted,
-    statuses: [['Backlog', PaletteColorIndexes.Cloud, pluginState.status.Backlog]]
-  },
-  { category: task.statusCategory.ToDo, statuses: [['Todo', PaletteColorIndexes.Porpoise, pluginState.status.Todo]] },
-  {
-    category: task.statusCategory.Active,
-    statuses: [['In Progress', PaletteColorIndexes.Cerulean, pluginState.status.InProgress]]
-  },
-  { category: task.statusCategory.Won, statuses: [['Done', PaletteColorIndexes.Grass, pluginState.status.Done]] },
-  {
-    category: task.statusCategory.Lost,
-    statuses: [['Canceled', PaletteColorIndexes.Coin, pluginState.status.Canceled]]
-  }
-]
-
-/**
- * @public
- */
-export const baseIssueTaskStatuses: TaskStatusFactory[] = [
-  {
-    category: task.statusCategory.UnStarted,
-    statuses: [['Backlog', PaletteColorIndexes.Cloud, pluginState.status.Backlog]]
-  },
-  {
-    category: task.statusCategory.Active,
-    statuses: [
-      ['Coding', PaletteColorIndexes.Porpoise, pluginState.status.Coding],
-      ['Under review', PaletteColorIndexes.Cerulean, pluginState.status.UnderReview]
-    ]
-  },
-  { category: task.statusCategory.Won, statuses: [['Done', PaletteColorIndexes.Grass, pluginState.status.Done]] },
-  {
-    category: task.statusCategory.Lost,
-    statuses: [['Canceled', PaletteColorIndexes.Coin, pluginState.status.Canceled]]
-  }
-]
 
 /**
  * @public

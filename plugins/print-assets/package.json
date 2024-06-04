@@ -34,7 +34,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.6.9",
+    "@hcengineering/platform": "^0.6.11",
     "@hcengineering/print": "^0.6.0"
   }
 }

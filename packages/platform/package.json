@@ -1,13 +1,12 @@
 {
   "name": "@hcengineering/platform",
-  "version": "0.6.9",
+  "version": "0.6.11",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
   "files": [
     "lib/**/*",
-    "src/**/*",
-    "typings/**/*",
+    "types/**/*",
     "tsconfig.json"
   ],
   "author": "Anticrm Platform Contributors",
@@ -40,7 +39,7 @@
   "dependencies": {
     "intl-messageformat": "^9.7.1"
   },
-  "repository": "https://github.com/hcengineering/anticrm",
+  "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   }

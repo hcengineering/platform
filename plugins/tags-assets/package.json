@@ -33,7 +33,7 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/tags": "^0.6.12"
+    "@hcengineering/platform": "^0.6.11",
+    "@hcengineering/tags": "^0.6.16"
   }
 }

@@ -4,6 +4,11 @@
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
+  "files": [
+    "lib/**/*",
+    "types/**/*",
+    "tsconfig.json"
+  ],
   "#overrideKeys": ["main", "types", "svelte"],
   "scripts": {
     "_phase:build": "compile transpile src",

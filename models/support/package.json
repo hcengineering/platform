@@ -28,13 +28,13 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.28",
-    "@hcengineering/model": "^0.6.7",
+    "@hcengineering/core": "^0.6.32",
+    "@hcengineering/model": "^0.6.11",
     "@hcengineering/model-core": "^0.6.0",
     "@hcengineering/model-preference": "^0.6.0",
-    "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/support": "^0.6.1",
+    "@hcengineering/platform": "^0.6.11",
+    "@hcengineering/support": "^0.6.5",
     "@hcengineering/support-resources": "^0.6.0",
-    "@hcengineering/ui": "^0.6.11"
+    "@hcengineering/ui": "^0.6.15"
   }
 }

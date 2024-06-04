@@ -29,7 +29,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@hcengineering/attachment": "^0.6.9",
+    "@hcengineering/attachment": "^0.6.14",
     "@hcengineering/model-core": "^0.6.0",
     "@hcengineering/model-chunter": "^0.6.0",
     "@hcengineering/model-workbench": "^0.6.1",
@@ -40,21 +40,21 @@
     "@hcengineering/model-contact": "^0.6.1",
     "@hcengineering/model-request": "^0.6.0",
     "@hcengineering/model-print": "^0.6.0",
-    "@hcengineering/model": "^0.6.7",
-    "@hcengineering/setting": "^0.6.11",
-    "@hcengineering/core": "^0.6.28",
-    "@hcengineering/ui": "^0.6.11",
-    "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/view": "^0.6.9",
-    "@hcengineering/contact": "^0.6.20",
-    "@hcengineering/tags": "^0.6.12",
-    "@hcengineering/request": "^0.6.6",
+    "@hcengineering/model": "^0.6.11",
+    "@hcengineering/setting": "^0.6.17",
+    "@hcengineering/core": "^0.6.32",
+    "@hcengineering/ui": "^0.6.15",
+    "@hcengineering/platform": "^0.6.11",
+    "@hcengineering/view": "^0.6.13",
+    "@hcengineering/contact": "^0.6.24",
+    "@hcengineering/tags": "^0.6.16",
+    "@hcengineering/request": "^0.6.14",
     "@hcengineering/activity": "^0.6.0",
     "@hcengineering/controlled-documents": "^0.1.0",
     "@hcengineering/controlled-documents-resources": "^0.1.0",
     "@hcengineering/training": "^0.1.0",
-    "@hcengineering/notification": "^0.6.16",
+    "@hcengineering/notification": "^0.6.23",
     "@hcengineering/model-notification": "^0.6.0",
-    "@hcengineering/chunter": "^0.6.12"
+    "@hcengineering/chunter": "^0.6.20"
   }
 }

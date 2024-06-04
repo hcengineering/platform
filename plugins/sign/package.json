@@ -4,6 +4,11 @@
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
+  "files": [
+    "lib/**/*",
+    "types/**/*",
+    "tsconfig.json"
+  ],
   "author": "Uberflow Contributors",
   "license": "EPL-2.0",
   "scripts": {
@@ -33,6 +38,6 @@
     "prettier-plugin-svelte": "^3.2.2"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.6.9"
+    "@hcengineering/platform": "^0.6.11"
   }
 }
