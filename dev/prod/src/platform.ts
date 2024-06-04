@@ -48,6 +48,7 @@ import view, { viewId } from '@hcengineering/view'
 import workbench, { workbenchId } from '@hcengineering/workbench'
 
 import { bitrixId } from '@hcengineering/bitrix'
+import love, { loveId } from '@hcengineering/love'
 import print, { printId } from '@hcengineering/print'
 import sign from '@hcengineering/sign'
 import { productsId } from '@hcengineering/products'
@@ -84,6 +85,7 @@ import '@hcengineering/time-assets'
 import '@hcengineering/tracker-assets'
 import '@hcengineering/view-assets'
 import '@hcengineering/workbench-assets'
+import '@hcengineering/love-assets'
 import '@hcengineering/print-assets'
 import '@hcengineering/questions-assets'
 import '@hcengineering/training-assets'
@@ -114,6 +116,10 @@ interface Config {
   PUSH_PUBLIC_KEY: string
   BRANDING_URL?: string
   PREVIEW_CONFIG: string
+  LOVE_ENDPOINT?: string
+  LIVEKIT_WS?: string
+  SIGN_URL?: string
+  PRINT_URL?: string
 }
 
 export interface Branding {
@@ -177,6 +183,7 @@ function configureI18n(): void {
    addStringsLoader(productsId, async (lang: string) => await import(`@hcengineering/products-assets/lang/${lang}.json`))
    addStringsLoader(questionsId, async (lang: string) => await import(`@hcengineering/questions-assets/lang/${lang}.json`))
    addStringsLoader(trainingId, async (lang: string) => await import(`@hcengineering/training-assets/lang/${lang}.json`))
+   addStringsLoader(loveId, async (lang: string) => await import(`@hcengineering/love-assets/lang/${lang}.json`))
    addStringsLoader(printId, async (lang: string) => await import(`@hcengineering/print-assets/lang/${lang}.json`))
 }
 
@@ -249,7 +256,10 @@ export async function configurePlatform() {
   setMetadata(login.metadata.OverrideEndpoint, process.env.LOGIN_ENDPOINT)
 
   setMetadata(rekoni.metadata.RekoniUrl, config.REKONI_URL)
-
+  setMetadata(love.metadata.ServiceEnpdoint, config.LOVE_ENDPOINT)
+  setMetadata(love.metadata.WebSocketURL, config.LIVEKIT_WS)
+  setMetadata(print.metadata.PrintURL, config.PRINT_URL)
+  setMetadata(sign.metadata.SignURL, config.SIGN_URL)
   setMetadata(textEditor.metadata.CollaboratorUrl, config.COLLABORATOR_URL ?? 'ws://locahost:3078')
 
   setMetadata(uiPlugin.metadata.DefaultApplication, login.component.LoginApp)
@@ -307,6 +317,7 @@ export async function configurePlatform() {
   addLocation(trainingId, () => import(/* webpackChunkName: "training" */ '@hcengineering/training-resources'))
   addLocation(productsId, () => import(/* webpackChunkName: "products" */ '@hcengineering/products-resources'))
   addLocation(documentsId, () => import(/* webpackChunkName: "documents" */ '@hcengineering/controlled-documents-resources'))
+  addLocation(loveId, () => import(/* webpackChunkName: "love" */ '@hcengineering/love-resources'))
   addLocation(printId, () => import(/* webpackChunkName: "print" */ '@hcengineering/print-resources'))
 
   setMetadata(client.metadata.FilterModel, true)

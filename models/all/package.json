@@ -91,6 +91,8 @@
     "@hcengineering/model-server-time": "^0.6.0",
     "@hcengineering/model-drive": "^0.6.0",
     "@hcengineering/model-server-drive": "^0.6.0",
+    "@hcengineering/model-love": "^0.6.0",
+    "@hcengineering/model-server-love": "^0.6.0",
     "@hcengineering/model-print": "^0.6.0",
     "@hcengineering/model-questions": "^0.1.0",
     "@hcengineering/model-training": "^0.1.0",

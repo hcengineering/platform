@@ -40,6 +40,7 @@ import { calendarOperation } from '@hcengineering/model-calendar'
 import { timeOperation } from '@hcengineering/model-time'
 import { activityOperation } from '@hcengineering/model-activity'
 import { activityServerOperation } from '@hcengineering/model-server-activity'
+import { loveId, loveOperation } from '@hcengineering/model-love'
 import { documentOperation } from '@hcengineering/model-document'
 import { textEditorOperation } from '@hcengineering/model-text-editor'
 import { questionsOperation } from '@hcengineering/model-questions'
@@ -76,6 +77,7 @@ export const migrateOperations: [string, MigrateOperation][] = [
   ['inventiry', inventoryOperation],
   ['time', timeOperation],
   ['activityServer', activityServerOperation],
+  [loveId, loveOperation],
   ['document', documentOperation],
   ['textEditor', textEditorOperation],
   // We should call it after activityServer and chunter

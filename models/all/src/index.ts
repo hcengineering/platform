@@ -79,6 +79,8 @@ import workbench, { workbenchId, createModel as workbenchModel } from '@hcengine
 import { openAIId, createModel as serverOpenAI } from '@hcengineering/model-server-openai'
 import { createModel as serverTranslate, translateId } from '@hcengineering/model-server-translate'
 
+import love, { loveId, createModel as loveModel } from '@hcengineering/model-love'
+import { serverLoveId, createModel as serverLoveModel } from '@hcengineering/model-server-love'
 import { printId, createModel as printModel } from '@hcengineering/model-print'
 
 import { questionsId, createModel as questionsModel } from '@hcengineering/model-questions'
@@ -311,6 +313,18 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
       }
     ],
     [timeModel, timeId],
+    [
+      loveModel,
+      loveId,
+      {
+        label: love.string.Office,
+        description: love.string.LoveDescription,
+        enabled: true,
+        beta: true,
+        icon: love.icon.Love,
+        classFilter: defaultFilter
+      }
+    ],
     [printModel, printId],
     [driveModel, driveId],
     [supportModel, supportId],
@@ -381,6 +395,7 @@ export default function buildModel (enabled: string[] = ['*'], disabled: string[
     [serverTranslate, translateId],
     [serverOpenAI, openAIId],
     [serverDocumentModel, serverDocumentId],
+    [serverLoveModel, serverLoveId],
     [serverTimeModel, serverTimeId],
     [serverGuestModel, serverGuestId],
     [serverDriveModel, serverDriveId],

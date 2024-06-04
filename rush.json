@@ -1658,6 +1658,41 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/love",
+      "projectFolder": "plugins/love",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/love-assets",
+      "projectFolder": "plugins/love-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/love-resources",
+      "projectFolder": "plugins/love-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-love",
+      "projectFolder": "models/love",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-love",
+      "projectFolder": "server-plugins/love",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-love-resources",
+      "projectFolder": "server-plugins/love-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-server-love",
+      "projectFolder": "models/server-love",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/drive",
       "projectFolder": "plugins/drive",
       "shouldPublish": false
