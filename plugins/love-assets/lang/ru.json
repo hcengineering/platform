@@ -52,6 +52,7 @@
     "CopyGuestLink": "Скопировать гостевую ссылку",
     "Record": "Запись",
     "StopRecord": "Остановить запись",
-    "LeaveRoomConfirmation": "Вы уверены, что хотите покинуть комнату?"
+    "LeaveRoomConfirmation": "Вы уверены, что хотите покинуть комнату?",
+    "ServiceNotConfigured": "Сервис не настроен"
   }
 }

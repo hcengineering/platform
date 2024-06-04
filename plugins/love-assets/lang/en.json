@@ -52,6 +52,7 @@
     "CopyGuestLink": "Copy guest link",
     "Record": "Record",
     "StopRecord": "Stop record",
-    "LeaveRoomConfirmation": "Are you sure you want to leave the room?"
+    "LeaveRoomConfirmation": "Are you sure you want to leave the room?",
+    "ServiceNotConfigured": "Service is not configured"
   }
 }

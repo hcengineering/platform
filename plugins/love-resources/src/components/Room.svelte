@@ -17,6 +17,7 @@
   import { Ref } from '@hcengineering/core'
   import { Label, Loading, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { Room as TypeRoom } from '@hcengineering/love'
+  import { getMetadata } from '@hcengineering/platform'
   import {
     LocalParticipant,
     LocalTrackPublication,
@@ -185,6 +186,7 @@
   }
 
   let loading: boolean = false
+  let configured: boolean = false
 
   function handleLocalTrackUnsubscribed (publication: LocalTrackPublication, participant: LocalParticipant): void {
     if (publication?.track?.kind === Track.Kind.Video) {
@@ -203,6 +205,15 @@
 
   onMount(async () => {
     loading = true
+
+    const wsURL = getMetadata(love.metadata.WebSocketURL)
+
+    if (wsURL === undefined) {
+      return
+    }
+
+    configured = true
+
     await awaitConnect()
     for (const participant of lk.remoteParticipants.values()) {
       attachParticipant(participant)
@@ -287,6 +298,10 @@
   {#if $isConnected && !$isCurrentInstanceConnected}
     <div class="flex justify-center error h-full w-full clear-mins">
       <Label label={love.string.AnotherWindowError} />
+    </div>
+  {:else if !configured}
+    <div class="flex justify-center error h-full w-full clear-mins">
+      <Label label={love.string.ServiceNotConfigured} />
     </div>
   {:else if loading}
     <Loading />

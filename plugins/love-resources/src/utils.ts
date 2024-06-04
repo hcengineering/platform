@@ -691,7 +691,7 @@ export async function record (room: Room): Promise<void> {
   }
 }
 
-export async function chechRecordAvailable (): Promise<void> {
+export async function checkRecordAvailable (): Promise<void> {
   try {
     const endpoint = getMetadata(love.metadata.ServiceEnpdoint)
     if (endpoint === undefined) {
@@ -707,4 +707,4 @@ export async function chechRecordAvailable (): Promise<void> {
   }
 }
 
-void chechRecordAvailable()
+void checkRecordAvailable()

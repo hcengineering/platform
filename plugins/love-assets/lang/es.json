@@ -52,6 +52,7 @@
     "CopyGuestLink": "Copiar enlace de invitado",
     "Record": "Grabar",
     "StopRecord": "Detener grabación",
-    "LeaveRoomConfirmation": "¿Estás seguro de que quieres salir de la sala?"
+    "LeaveRoomConfirmation": "¿Estás seguro de que quieres salir de la sala?",
+    "ServiceNotConfigured": "El servicio no está configurado"
   }
 }

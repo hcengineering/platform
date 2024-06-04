@@ -65,6 +65,7 @@ export default mergeIds(loveId, love, {
     GuestLink: '' as IntlString,
     CopyGuestLink: '' as IntlString,
     Record: '' as IntlString,
-    StopRecord: '' as IntlString
+    StopRecord: '' as IntlString,
+    ServiceNotConfigured: '' as IntlString
   }
 })
