@@ -15,10 +15,10 @@
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { Doc, getCurrentAccount, type WithLookup } from '@hcengineering/core'
-  import { getFileUrl, getClient, getBlobHref } from '@hcengineering/presentation'
-  import { Icon, IconMoreV, showPopup, Menu } from '@hcengineering/ui'
-  import FileDownload from './icons/FileDownload.svelte'
+  import { getBlobHref, getClient } from '@hcengineering/presentation'
+  import { Icon, IconMoreV, Menu, showPopup } from '@hcengineering/ui'
   import { AttachmentPresenter } from '..'
+  import FileDownload from './icons/FileDownload.svelte'
 
   export let attachments: WithLookup<Attachment>[]
   let selectedFileNumber: number | undefined
@@ -56,9 +56,11 @@
         <AttachmentPresenter value={attachment} />
       </div>
       <div class="eAttachmentRowActions" class:fixed={i === selectedFileNumber}>
-        <a href={getBlobHref(attachment.$lookup?.file, attachment.file, attachment.name)} download={attachment.name}>
-          <Icon icon={FileDownload} size={'small'} />
-        </a>
+        {#await getBlobHref(attachment.$lookup?.file, attachment.file, attachment.name) then href}
+          <a {href} download={attachment.name}>
+            <Icon icon={FileDownload} size={'small'} />
+          </a>
+        {/await}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div class="eAttachmentRowMenu" on:click={(event) => showFileMenu(event, attachment, i)}>

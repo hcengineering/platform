@@ -210,7 +210,18 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
     contentType: string,
     size?: number | undefined
   ): Promise<UploadedObjectInfo> {
-    const provider = this.adapters.get(this.defaultAdapter)
+    // We need to reuse same provider for existing documents.
+    const stat = (
+      await this.dbAdapter.find<Blob>(
+        ctx,
+        workspaceId,
+        DOMAIN_BLOB,
+        { _class: core.class.Blob, _id: objectName as Ref<Blob> },
+        { limit: 1 }
+      )
+    ).shift()
+
+    const provider = this.adapters.get(stat?.provider ?? this.defaultAdapter)
     if (provider === undefined) {
       throw new NoSuchKeyError('No such provider found')
     }

@@ -16,9 +16,9 @@
   import { type Blob, type Ref } from '@hcengineering/core'
   import { CircleButton, Progress } from '@hcengineering/ui'
 
-  import Play from '../icons/Play.svelte'
+  import { getBlobSrcFor } from '@hcengineering/presentation'
   import Pause from '../icons/Pause.svelte'
-  import { getBlobHref, getFileUrl } from '@hcengineering/presentation'
+  import Play from '../icons/Play.svelte'
 
   export let value: Blob | Ref<Blob>
   export let name: string
@@ -34,8 +34,6 @@
   }
 
   $: icon = !paused ? Pause : Play
-  $: src =
-    value === undefined ? '' : typeof value === 'string' ? getFileUrl(value, name) : getBlobHref(value, value._id)
 </script>
 
 <div class="container flex-between" class:fullSize>
@@ -51,7 +49,9 @@
 </div>
 
 <audio bind:duration bind:currentTime={time} bind:paused>
-  <source {src} type={contentType} />
+  {#await getBlobSrcFor(value, name) then src}
+    <source {src} type={contentType} />
+  {/await}
 </audio>
 
 <style lang="scss">

@@ -33,7 +33,7 @@ import {
 } from '@hcengineering/core'
 import login from '@hcengineering/login'
 import { getResource, type IntlString, type Resources } from '@hcengineering/platform'
-import { MessageBox, getBlobHref, getBlobSrcSet, getClient, type ObjectSearchResult } from '@hcengineering/presentation'
+import { MessageBox, getBlobRef, getClient, type ObjectSearchResult } from '@hcengineering/presentation'
 import {
   getPlatformAvatarColorByName,
   getPlatformAvatarColorForTextDef,
@@ -390,28 +390,31 @@ export default async (): Promise<Resources> => ({
     ) => await queryContact(contact.class.Organization, client, query, filter)
   },
   function: {
-    GetFileUrl: (person: Data<WithLookup<AvatarInfo>>, name: string, width: number) => {
+    GetFileUrl: async (person: Data<WithLookup<AvatarInfo>>, name: string, width: number) => {
       if (person.avatar == null) {
         return {
           color: getPersonColor(person, name)
         }
       }
+      const blobRef = await getBlobRef(person.$lookup?.avatar, person.avatar, undefined, width)
       return {
-        url: getBlobHref(person.$lookup?.avatar, person.avatar),
-        srcset: getBlobSrcSet(person.$lookup?.avatar, person.avatar, width),
+        url: blobRef.src,
+        srcSet: blobRef.srcset,
         color: getPersonColor(person, name)
       }
     },
-    GetGravatarUrl: (person: Data<WithLookup<AvatarInfo>>, name: string, width: number) => ({
+    GetGravatarUrl: async (person: Data<WithLookup<AvatarInfo>>, name: string, width: number) => ({
       url: person.avatarProps?.url !== undefined ? getGravatarUrl(person.avatarProps?.url, width) : undefined,
-      srcset:
+      srcSet:
         person.avatarProps?.url !== undefined
           ? `${getGravatarUrl(person.avatarProps?.url, width)} 1x, ${getGravatarUrl(person.avatarProps?.url, width * 2)} 2x`
           : undefined,
       color: getPersonColor(person, name)
     }),
-    GetColorUrl: (person: Data<WithLookup<AvatarInfo>>, name: string) => ({ color: getPersonColor(person, name) }),
-    GetExternalUrl: (person: Data<WithLookup<AvatarInfo>>, name: string) => ({
+    GetColorUrl: async (person: Data<WithLookup<AvatarInfo>>, name: string) => ({
+      color: getPersonColor(person, name)
+    }),
+    GetExternalUrl: async (person: Data<WithLookup<AvatarInfo>>, name: string) => ({
       color: getPersonColor(person, name),
       url: person.avatarProps?.url
     }),

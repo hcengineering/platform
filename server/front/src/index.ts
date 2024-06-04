@@ -15,7 +15,7 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import { MeasureContext, WorkspaceId, metricsAggregate } from '@hcengineering/core'
+import { MeasureContext, Blob as PlatformBlob, WorkspaceId, metricsAggregate } from '@hcengineering/core'
 import { Token, decodeToken } from '@hcengineering/server-token'
 import { StorageAdapter, removeAllObjects } from '@hcengineering/storage'
 import bp from 'body-parser'
@@ -76,18 +76,13 @@ function getRange (range: string, size: number): [number, number] {
 
 async function getFileRange (
   ctx: MeasureContext,
+  stat: PlatformBlob,
   range: string,
   client: StorageAdapter,
   workspace: WorkspaceId,
   uuid: string,
   res: Response
 ): Promise<void> {
-  const stat = await ctx.with('stats', {}, async () => await client.stat(ctx, workspace, uuid))
-  if (stat === undefined) {
-    ctx.error('No such key', { file: uuid })
-    res.status(404).send()
-    return
-  }
   const size: number = stat.size
 
   const [start, end] = getRange(range, size)
@@ -157,19 +152,13 @@ async function getFileRange (
 
 async function getFile (
   ctx: MeasureContext,
+  stat: PlatformBlob,
   client: StorageAdapter,
   workspace: WorkspaceId,
   uuid: string,
   req: Request,
   res: Response
 ): Promise<void> {
-  const stat = await ctx.with('stat', {}, async () => await client.stat(ctx, workspace, uuid))
-  if (stat === undefined) {
-    ctx.error('No such key', { file: req.query.file })
-    res.status(404).send()
-    return
-  }
-
   const etag = stat.etag
 
   if (
@@ -245,6 +234,7 @@ export function start (
     collaboratorUrl: string
     collaboratorApiUrl: string
     brandingUrl?: string
+    previewConfig: string
   },
   port: number,
   extraConfig?: Record<string, string | undefined>
@@ -279,6 +269,7 @@ export function start (
       COLLABORATOR_URL: config.collaboratorUrl,
       COLLABORATOR_API_URL: config.collaboratorApiUrl,
       BRANDING_URL: config.brandingUrl,
+      PREVIEW_CONFIG: config.previewConfig,
       ...(extraConfig ?? {})
     }
     res.set('Cache-Control', cacheControlNoCache)
@@ -337,32 +328,39 @@ export function start (
       'handle-file',
       {},
       async (ctx) => {
-        let payload: Token
+        let payload: Token = { email: 'guest', workspace: { name: req.query.workspace as string, productId: '' } }
         try {
           const cookies = ((req?.headers?.cookie as string) ?? '').split(';').map((it) => it.trim().split('='))
 
           const token = cookies.find((it) => it[0] === 'presentation-metadata-Token')?.[1]
-          payload =
-            token !== undefined
-              ? decodeToken(token)
-              : { email: 'guest', workspace: { name: req.query.workspace as string, productId: '' } }
+          payload = token !== undefined ? decodeToken(token) : payload
 
           let uuid = req.params.file ?? req.query.file
           if (uuid === undefined) {
             res.status(404).send()
             return
           }
+
           const format: SupportedFormat | undefined = supportedFormats.find((it) => uuid.endsWith(it))
           if (format !== undefined) {
             uuid = uuid.slice(0, uuid.length - format.length - 1)
           }
+
+          const blobInfo = await ctx.with(
+            'notoken-stat',
+            { workspace: payload.workspace.name },
+            async () => await config.storageAdapter.stat(ctx, payload.workspace, uuid)
+          )
+
+          if (blobInfo === undefined) {
+            ctx.error('No such key', { file: uuid, workspace: payload.workspace })
+            res.status(404).send()
+            return
+          }
+          const isImage = blobInfo.contentType.includes('image/')
+
           if (token === undefined) {
-            const d = await ctx.with(
-              'notoken-stat',
-              { workspace: payload.workspace.name },
-              async () => await config.storageAdapter.stat(ctx, payload.workspace, uuid)
-            )
-            if (d !== undefined && !(d.contentType ?? '').includes('image')) {
+            if (blobInfo !== undefined && !isImage) {
               // Do not allow to return non images with no token.
               if (token === undefined) {
                 res.status(403).send()
@@ -372,20 +370,11 @@ export function start (
           }
 
           if (req.method === 'HEAD') {
-            const d = await ctx.with(
-              'notoken-stat',
-              { workspace: payload.workspace.name },
-              async () => await config.storageAdapter.stat(ctx, payload.workspace, uuid)
-            )
-            if (d === undefined) {
-              res.status(404).send()
-              return
-            }
             res.writeHead(200, {
               'accept-ranges': 'bytes',
-              'content-length': d.size,
-              Etag: d.etag,
-              'Last-Modified': new Date(d.modifiedOn).toISOString()
+              'content-length': blobInfo.size,
+              Etag: blobInfo.etag,
+              'Last-Modified': new Date(blobInfo.modifiedOn).toISOString()
             })
             res.status(200)
 
@@ -394,7 +383,7 @@ export function start (
           }
 
           const size = req.query.size !== undefined ? parseInt(req.query.size as string) : undefined
-          if (format !== undefined) {
+          if (format !== undefined && isImage && blobInfo.contentType !== 'image/gif') {
             uuid = await ctx.with(
               'resize',
               {},
@@ -405,25 +394,29 @@ export function start (
           const range = req.headers.range
           if (range !== undefined) {
             await ctx.with('file-range', { workspace: payload.workspace.name }, async (ctx) => {
-              await getFileRange(ctx, range, config.storageAdapter, payload.workspace, uuid, res)
+              await getFileRange(ctx, blobInfo, range, config.storageAdapter, payload.workspace, uuid, res)
             })
           } else {
             await ctx.with(
               'file',
               { workspace: payload.workspace.name },
               async (ctx) => {
-                await getFile(ctx, config.storageAdapter, payload.workspace, uuid, req, res)
+                await getFile(ctx, blobInfo, config.storageAdapter, payload.workspace, uuid, req, res)
               },
               { uuid }
             )
           }
         } catch (error: any) {
-          if (error?.code === 'NoSuchKey' || error?.code === 'NotFound') {
-            ctx.error('No such key', { file: req.query.file })
+          if (error?.code === 'NoSuchKey' || error?.code === 'NotFound' || error?.message === 'No such key') {
+            ctx.error('No such storage key', {
+              file: req.query.file,
+              workspace: payload?.workspace,
+              email: payload?.email
+            })
             res.status(404).send()
             return
           } else {
-            ctx.error('error-handle-files', error)
+            ctx.error('error-handle-files', { error })
           }
           res.status(500).send()
         }

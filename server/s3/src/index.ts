@@ -29,7 +29,6 @@ import core, {
 } from '@hcengineering/core'
 
 import {
-  addBlobPreviewLookup,
   type BlobStorageIterator,
   type ListBlobResult,
   type StorageAdapter,
@@ -52,15 +51,6 @@ export interface S3Config extends StorageConfig {
 
   // A prefix string to be added to a bucketId in case rootBucket not used
   bucketPrefix?: string
-
-  // Override preview URL.
-  // :workspace - will be replaced with current workspace
-  // :downloadFile - will be replaced with direct download link
-  // :blobId - will be replaced with blobId
-  previewUrl?: string
-  // Comma separated list of preview formats
-  // Defaults: ['avif', 'webp', 'heif', 'jpeg']
-  formats?: string
 
   // If not specified will be enabled
   allowPresign?: string
@@ -117,7 +107,7 @@ export class S3Service implements StorageAdapter {
         Key: this.getDocumentKey(workspaceId, d.storageId)
       })
       if (
-        (bl.downloadUrl === undefined || (bl.downloadUrlExpire ?? 0) > now) &&
+        (bl.downloadUrl === undefined || (bl.downloadUrlExpire ?? 0) < now) &&
         (this.opt.allowPresign ?? 'true') === 'true'
       ) {
         bl.downloadUrl = await getSignedUrl(this.client, command, {
@@ -129,8 +119,6 @@ export class S3Service implements StorageAdapter {
         })
       }
 
-      // Add default or override preview service
-      addBlobPreviewLookup(workspaceId, bl, this.opt.formats, this.opt.previewUrl)
       result.lookups.push(bl)
     }
     // this.client.presignedUrl(httpMethod, bucketName, objectName, callback)

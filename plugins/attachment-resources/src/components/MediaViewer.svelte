@@ -16,7 +16,7 @@
   // import { Doc } from '@hcengineering/core'
   import type { Attachment } from '@hcengineering/attachment'
   import type { WithLookup } from '@hcengineering/core'
-  import presentation, { ActionContext, IconDownload, getBlobHref } from '@hcengineering/presentation'
+  import presentation, { ActionContext, IconDownload, getBlobHref, getBlobRef } from '@hcengineering/presentation'
   import { Button, Dialog } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import { getType } from '../utils'
@@ -40,7 +40,7 @@
   })
   let download: HTMLAnchorElement
   $: type = getType(value.type)
-  $: src = getBlobHref(value.$lookup?.file, value.file, value.name)
+  $: srcRef = getBlobHref(value.$lookup?.file, value.file, value.name)
 </script>
 
 <ActionContext context={{ mode: 'browser' }} />
@@ -65,27 +65,33 @@
   </svelte:fragment>
 
   <svelte:fragment slot="utils">
-    <a class="no-line" href={src} download={value.name} bind:this={download}>
-      <Button
-        icon={IconDownload}
-        kind={'ghost'}
-        on:click={() => {
-          download.click()
-        }}
-        showTooltip={{ label: presentation.string.Download }}
-      />
-    </a>
+    {#await srcRef then src}
+      <a class="no-line" href={src} download={value.name} bind:this={download}>
+        <Button
+          icon={IconDownload}
+          kind={'ghost'}
+          on:click={() => {
+            download.click()
+          }}
+          showTooltip={{ label: presentation.string.Download }}
+        />
+      </a>
+    {/await}
   </svelte:fragment>
 
   {#if type === 'video'}
     <video controls preload={'auto'}>
-      <source {src} />
+      {#await srcRef then src}
+        <source {src} />
+      {/await}
       <track kind="captions" label={value.name} />
     </video>
   {:else if type === 'audio'}
     <AudioPlayer {value} fullSize={true} />
   {:else}
-    <iframe class="pdfviewer-content" src={src + '#view=FitH&navpanes=0'} title="" />
+    {#await srcRef then src}
+      <iframe class="pdfviewer-content" src={src + '#view=FitH&navpanes=0'} title="" />
+    {/await}
   {/if}
 </Dialog>
 

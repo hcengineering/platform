@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import type { Attachment } from '@hcengineering/attachment'
-  import { getBlobHref, getBlobSrcSet, getFileUrlSrcSet, sizeToWidth } from '@hcengineering/presentation'
+  import { getBlobRef, sizeToWidth } from '@hcengineering/presentation'
   import { IconSize } from '@hcengineering/ui'
 
   import type { WithLookup } from '@hcengineering/core'
@@ -104,16 +104,17 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<img
-  src={getBlobHref(value.$lookup?.file, value.file, value.name)}
-  style:object-fit={getObjectFit(dimensions)}
-  width={dimensions.width}
-  height={dimensions.height}
-  srcset={value.$lookup?.file !== undefined
-    ? getBlobSrcSet(value.$lookup?.file, value.file, sizeToWidth(urlSize))
-    : getFileUrlSrcSet(value.file, sizeToWidth(urlSize))}
-  alt={value.name}
-/>
+
+{#await getBlobRef(value.$lookup?.file, value.file, value.name, sizeToWidth(urlSize)) then blobSrc}
+  <img
+    src={blobSrc.src}
+    style:object-fit={getObjectFit(dimensions)}
+    width={dimensions.width}
+    height={dimensions.height}
+    srcset={blobSrc.srcset}
+    alt={value.name}
+  />
+{/await}
 
 <style lang="scss">
   img {

@@ -57,12 +57,11 @@
       <AttachmentGalleryPresenter value={attachment}>
         <svelte:fragment slot="rowMenu">
           <div class="eAttachmentCellActions" class:fixed={i === selectedFileNumber}>
-            <a
-              href={getBlobHref(attachment.$lookup?.file, attachment.file, attachment.name)}
-              download={attachment.name}
-            >
-              <Icon icon={FileDownload} size={'small'} />
-            </a>
+            {#await getBlobHref(attachment.$lookup?.file, attachment.file, attachment.name) then href}
+              <a {href} download={attachment.name}>
+                <Icon icon={FileDownload} size={'small'} />
+              </a>
+            {/await}
             <div class="eAttachmentCellMenu" on:click={(event) => showFileMenu(event, attachment, i)}>
               <IconMoreV size={'small'} />
             </div>

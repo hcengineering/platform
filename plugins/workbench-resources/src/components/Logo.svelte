@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery, getFileUrl, getFileUrlSrcSet } from '@hcengineering/presentation'
+  import { createQuery, getFileSrcSet, getFileUrl } from '@hcengineering/presentation'
   import setting, { WorkspaceSetting } from '@hcengineering/setting'
 
   export let mini: boolean = false
@@ -25,10 +25,10 @@
     workspaceSetting = res[0]
   })
   $: url = workspaceSetting?.icon != null ? getFileUrl(workspaceSetting.icon) : undefined
-  $: srcset = workspaceSetting?.icon != null ? getFileUrlSrcSet(workspaceSetting.icon, 128) : undefined
+  $: srcset = workspaceSetting?.icon != null ? getFileSrcSet(workspaceSetting.icon, 128) : undefined
 </script>
 
-{#if getFileUrl !== undefined && workspaceSetting?.icon != null && url != null}
+{#if workspaceSetting?.icon != null && url != null}
   <img class="logo-medium" src={url} {srcset} alt={''} />
 {:else}
   <div class="antiLogo red" class:mini>{workspace?.toUpperCase()?.[0] ?? ''}</div>

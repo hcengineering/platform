@@ -619,20 +619,25 @@ export function devTool (
     .option('-m, --merge', 'Enable merge of remote and backup content.', false)
     .option('-p, --parallel <parallel>', 'Enable merge of remote and backup content.', '1')
     .option('-c, --recheck', 'Force hash recheck on server', false)
+    .option('-s, --include <include>', 'A list of ; separated domain names to include during backup', '*')
+    .option('-s, --skip <skip>', 'A list of ; separated domain names to skip during backup', '')
     .description('dump workspace transactions and minio resources')
     .action(
-      async (dirName: string, workspace: string, date, cmd: { merge: boolean, parallel: string, recheck: boolean }) => {
+      async (
+        dirName: string,
+        workspace: string,
+        date,
+        cmd: { merge: boolean, parallel: string, recheck: boolean, include: string, skip: string }
+      ) => {
         const storage = await createFileBackupStorage(dirName)
-        await restore(
-          toolCtx,
-          transactorUrl,
-          getWorkspaceId(workspace, productId),
-          storage,
-          parseInt(date ?? '-1'),
-          cmd.merge,
-          parseInt(cmd.parallel ?? '1'),
-          cmd.recheck
-        )
+        await restore(toolCtx, transactorUrl, getWorkspaceId(workspace, productId), storage, {
+          date: parseInt(date ?? '-1'),
+          merge: cmd.merge,
+          parallel: parseInt(cmd.parallel ?? '1'),
+          recheck: cmd.recheck,
+          include: cmd.include === '*' ? undefined : new Set(cmd.include.split(';')),
+          skip: new Set(cmd.skip.split(';'))
+        })
       }
     )
 
@@ -708,7 +713,9 @@ export function devTool (
       const { mongodbUri } = prepareTools()
       await withStorage(mongodbUri, async (adapter) => {
         const storage = await createStorageBackupStorage(toolCtx, adapter, getWorkspaceId(bucketName), dirName)
-        await restore(toolCtx, transactorUrl, getWorkspaceId(workspace, productId), storage, parseInt(date ?? '-1'))
+        await restore(toolCtx, transactorUrl, getWorkspaceId(workspace, productId), storage, {
+          date: parseInt(date ?? '-1')
+        })
       })
     })
   program

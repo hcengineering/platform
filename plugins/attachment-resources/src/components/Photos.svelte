@@ -17,7 +17,14 @@
   import { Photo } from '@hcengineering/attachment'
   import { Class, Doc, Ref, Space, type WithLookup } from '@hcengineering/core'
   import { setPlatformStatus, unknownError } from '@hcengineering/platform'
-  import { FilePreviewPopup, createQuery, getBlobHref, getClient, uploadFile } from '@hcengineering/presentation'
+  import {
+    FilePreviewPopup,
+    createQuery,
+    getBlobHref,
+    getClient,
+    uploadFile,
+    getBlobRef
+  } from '@hcengineering/presentation'
   import { Button, IconAdd, Label, Spinner, showPopup } from '@hcengineering/ui'
   import attachment from '../plugin'
   import UploadDuo from './icons/UploadDuo.svelte'
@@ -149,7 +156,9 @@
           click(ev, image)
         }}
       >
-        <img src={getBlobHref(image.$lookup?.file, image.file, image.name)} alt={image.name} />
+        {#await getBlobRef(image.$lookup?.file, image.file, image.name) then blobRef}
+          <img src={blobRef.src} srcset={blobRef.srcset} alt={image.name} />
+        {/await}
       </div>
     {/each}
     <!-- svelte-ignore a11y-click-events-have-key-events -->

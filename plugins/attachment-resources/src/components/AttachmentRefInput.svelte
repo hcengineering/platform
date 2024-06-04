@@ -13,21 +13,21 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, onDestroy, tick } from 'svelte'
   import { Attachment } from '@hcengineering/attachment'
-  import { Account, Class, Doc, generateId, IdMap, Markup, Ref, Space, toIdMap } from '@hcengineering/core'
-  import { IntlString, setPlatformStatus, unknownError, Asset } from '@hcengineering/platform'
+  import core, { Account, Class, Doc, IdMap, Markup, Ref, Space, generateId, toIdMap } from '@hcengineering/core'
+  import { Asset, IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import {
-    createQuery,
     DraftController,
+    createQuery,
     deleteFile,
     draftsStore,
     getClient,
     getFileMetadata,
     uploadFile
   } from '@hcengineering/presentation'
-  import textEditor, { AttachIcon, EmptyMarkup, type RefAction, ReferenceInput } from '@hcengineering/text-editor'
+  import textEditor, { AttachIcon, EmptyMarkup, ReferenceInput, type RefAction } from '@hcengineering/text-editor'
   import { Loading, type AnySvelteComponent } from '@hcengineering/ui'
+  import { createEventDispatcher, onDestroy, tick } from 'svelte'
   import attachment from '../plugin'
   import AttachmentPresenter from './AttachmentPresenter.svelte'
 
@@ -96,6 +96,11 @@
         (res) => {
           originalAttachments = new Set(res.map((p) => p._id))
           attachments = toIdMap(res)
+        },
+        {
+          lookup: {
+            file: core.class.Blob
+          }
         }
       )
     }

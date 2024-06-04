@@ -14,13 +14,14 @@
 -->
 
 <script lang="ts">
-  import { createQuery } from '@hcengineering/presentation'
-  import { ChatMessage } from '@hcengineering/chunter'
+  import { ActivityMessagePreviewType } from '@hcengineering/activity'
   import { BaseMessagePreview } from '@hcengineering/activity-resources'
-  import { Action, Icon, Label, tooltip } from '@hcengineering/ui'
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { AttachmentsTooltip } from '@hcengineering/attachment-resources'
-  import { ActivityMessagePreviewType } from '@hcengineering/activity'
+  import { ChatMessage } from '@hcengineering/chunter'
+  import core from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import { Action, Icon, Label, tooltip } from '@hcengineering/ui'
   import { convert } from 'html-to-text'
 
   export let value: ChatMessage
@@ -40,6 +41,11 @@
       },
       (res) => {
         attachments = res
+      },
+      {
+        lookup: {
+          file: core.class.Blob
+        }
       }
     )
   } else {

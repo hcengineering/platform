@@ -17,7 +17,7 @@
   import attachment, { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter, FileDownload } from '@hcengineering/attachment-resources'
   import { ChunterSpace } from '@hcengineering/chunter'
-  import { Doc, SortingOrder, getCurrentAccount, type WithLookup } from '@hcengineering/core'
+  import core, { Doc, SortingOrder, getCurrentAccount, type WithLookup } from '@hcengineering/core'
   import { createQuery, getBlobHref, getClient } from '@hcengineering/presentation'
   import { Icon, IconMoreV, Label, Menu, getCurrentResolvedLocation, navigate, showPopup } from '@hcengineering/ui'
 
@@ -68,7 +68,10 @@
       {
         limit: ATTACHEMNTS_LIMIT,
         sort,
-        total: true
+        total: true,
+        lookup: {
+          file: core.class.Blob
+        }
       }
     )
 </script>
@@ -83,12 +86,11 @@
             <AttachmentPresenter value={attachment} />
           </div>
           <div class="eAttachmentRowActions" class:fixed={i === selectedRowNumber}>
-            <a
-              href={getBlobHref(attachment.$lookup?.file, attachment.file, attachment.name)}
-              download={attachment.name}
-            >
-              <Icon icon={FileDownload} size={'small'} />
-            </a>
+            {#await getBlobHref(attachment.$lookup?.file, attachment.file, attachment.name) then blobRef}
+              <a href={blobRef} download={attachment.name}>
+                <Icon icon={FileDownload} size={'small'} />
+              </a>
+            {/await}
             <!-- svelte-ignore a11y-click-events-have-key-events -->
             <!-- svelte-ignore a11y-no-static-element-interactions -->
             <div id="context-menu" class="eAttachmentRowMenu" on:click={(event) => showMenu(event, attachment, i)}>

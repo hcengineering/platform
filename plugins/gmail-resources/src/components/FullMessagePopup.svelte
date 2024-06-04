@@ -21,6 +21,7 @@
   import { Label } from '@hcengineering/ui'
   import gmail from '../plugin'
   import FullMessageContent from './FullMessageContent.svelte'
+  import core from '@hcengineering/core'
 
   export let message: SharedMessage
 
@@ -35,6 +36,11 @@
       },
       (res) => {
         attachments = res
+      },
+      {
+        lookup: {
+          file: core.class.Blob
+        }
       }
     )
 

@@ -89,7 +89,7 @@ export type GetAvatarUrl = (
   uri: Data<WithLookup<AvatarInfo>>,
   name: string,
   width?: number
-) => { url?: string, srcSet?: string, color: ColorDefinition }
+) => Promise<{ url?: string, srcSet?: string, color: ColorDefinition }>
 
 /**
  * @public

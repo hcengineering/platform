@@ -15,7 +15,7 @@
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
   import contact from '@hcengineering/contact'
-  import { Account, Doc, Ref, generateId, type Blob } from '@hcengineering/core'
+  import core, { Account, Doc, Ref, generateId, type Blob } from '@hcengineering/core'
   import { IntlString, getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { KeyedAttribute, createQuery, getClient, uploadFile } from '@hcengineering/presentation'
   import { getCollaborationUser, getObjectLinkFragment } from '@hcengineering/view-resources'
@@ -98,6 +98,11 @@
     },
     (res) => {
       attachments = res
+    },
+    {
+      lookup: {
+        file: core.class.Blob
+      }
     }
   )
 

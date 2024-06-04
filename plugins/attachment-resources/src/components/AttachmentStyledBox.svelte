@@ -15,7 +15,7 @@
 <script lang="ts">
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { Attachment } from '@hcengineering/attachment'
-  import { Account, Class, Doc, generateId, Markup, Ref, Space, toIdMap, type Blob } from '@hcengineering/core'
+  import core, { Account, Class, Doc, generateId, Markup, Ref, Space, toIdMap, type Blob } from '@hcengineering/core'
   import { IntlString, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import {
     createQuery,
@@ -125,6 +125,11 @@
           originalAttachments = new Set(res.map((p) => p._id))
           attachments = toIdMap(res)
           dispatch('attach', { action: 'saved', value: attachments.size })
+        },
+        {
+          lookup: {
+            file: core.class.Blob
+          }
         }
       )
     }

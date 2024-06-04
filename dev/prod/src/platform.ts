@@ -91,7 +91,7 @@ import '@hcengineering/products-assets'
 import '@hcengineering/controlled-documents-assets'
 
 import { coreId } from '@hcengineering/core'
-import presentation, { presentationId } from '@hcengineering/presentation'
+import presentation, { parsePreviewConfig, presentationId } from '@hcengineering/presentation'
 import textEditor, { textEditorId } from '@hcengineering/text-editor'
 
 import { setMetadata } from '@hcengineering/platform'
@@ -113,6 +113,7 @@ interface Config {
   COLLABORATOR_API_URL: string
   PUSH_PUBLIC_KEY: string
   BRANDING_URL?: string
+  PREVIEW_CONFIG: string
 }
 
 export interface Branding {
@@ -234,6 +235,7 @@ export async function configurePlatform() {
   setMetadata(presentation.metadata.UploadURL, config.UPLOAD_URL)
   setMetadata(presentation.metadata.CollaboratorUrl, config.COLLABORATOR_URL)
   setMetadata(presentation.metadata.CollaboratorApiUrl, config.COLLABORATOR_API_URL)
+  setMetadata(presentation.metadata.PreviewConfig, parsePreviewConfig(config.PREVIEW_CONFIG))
 
   if (config.MODEL_VERSION != null) {
     console.log('Minimal Model version requirement', config.MODEL_VERSION)

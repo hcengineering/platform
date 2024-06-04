@@ -14,20 +14,17 @@
 -->
 <script lang="ts">
   import { type Blob, type Ref } from '@hcengineering/core'
-  import { type BlobMetadata, getFileUrl, getBlobHref } from '@hcengineering/presentation'
+  import { getBlobSrcFor, type BlobMetadata } from '@hcengineering/presentation'
 
   export let value: Blob | Ref<Blob>
   export let name: string
   export let contentType: string
   export let metadata: BlobMetadata | undefined
-
-  $: src =
-    value === undefined ? '' : typeof value === 'string' ? getFileUrl(value, name) : getBlobHref(value, value._id)
 </script>
 
-{#if src}
+{#await getBlobSrcFor(value, name) then blobRef}
   <video controls preload={'auto'}>
-    <source {src} />
+    <source src={blobRef} />
     <track kind="captions" label={name} />
   </video>
-{/if}
+{/await}

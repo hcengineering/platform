@@ -56,15 +56,31 @@
 </script>
 
 <div class="gridCellOverlay">
-  <div class="gridCell">
-    {#if isImage(value.type)}
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div class="cellImagePreview" on:click={openAttachment}>
-        <img class={'img-fit'} src={getBlobHref(value.$lookup?.file, value.file, value.name)} alt={value.name} />
-      </div>
-    {:else}
-      <div class="cellMiscPreview">
+  {#await getBlobHref(value.$lookup?.file, value.file, value.name) then src}
+    <div class="gridCell">
+      {#if isImage(value.type)}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <div class="cellImagePreview" on:click={openAttachment}>
+          <img class={'img-fit'} {src} alt={value.name} />
+        </div>
+      {:else}
+        <div class="cellMiscPreview">
+          {#if isEmbedded(value.type)}
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <!-- svelte-ignore a11y-no-static-element-interactions -->
+            <div class="flex-center extensionIcon" on:click={openAttachment}>
+              {extensionIconLabel(value.name)}
+            </div>
+          {:else}
+            <a class="no-line" href={src} download={value.name}>
+              <div class="flex-center extensionIcon">{extensionIconLabel(value.name)}</div>
+            </a>
+          {/if}
+        </div>
+      {/if}
+
+      <div class="cellInfo">
         {#if isEmbedded(value.type)}
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -72,44 +88,28 @@
             {extensionIconLabel(value.name)}
           </div>
         {:else}
-          <a class="no-line" href={getBlobHref(value.$lookup?.file, value.file, value.name)} download={value.name}>
+          <a class="no-line" href={src} download={value.name}>
             <div class="flex-center extensionIcon">{extensionIconLabel(value.name)}</div>
           </a>
         {/if}
-      </div>
-    {/if}
-
-    <div class="cellInfo">
-      {#if isEmbedded(value.type)}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <div class="flex-center extensionIcon" on:click={openAttachment}>
-          {extensionIconLabel(value.name)}
+        <div class="eCellInfoData">
+          {#if isEmbedded(value.type)}
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <!-- svelte-ignore a11y-no-static-element-interactions -->
+            <div class="eCellInfoFilename" on:click={openAttachment}>
+              {trimFilename(value.name)}
+            </div>
+          {:else}
+            <div class="eCellInfoFilename">
+              <a href={src} download={value.name}>{trimFilename(value.name)}</a>
+            </div>
+          {/if}
+          <div class="eCellInfoFilesize">{filesize(value.size)}</div>
         </div>
-      {:else}
-        <a class="no-line" href={getBlobHref(value.$lookup?.file, value.file, value.name)} download={value.name}>
-          <div class="flex-center extensionIcon">{extensionIconLabel(value.name)}</div>
-        </a>
-      {/if}
-      <div class="eCellInfoData">
-        {#if isEmbedded(value.type)}
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <!-- svelte-ignore a11y-no-static-element-interactions -->
-          <div class="eCellInfoFilename" on:click={openAttachment}>
-            {trimFilename(value.name)}
-          </div>
-        {:else}
-          <div class="eCellInfoFilename">
-            <a href={getBlobHref(value.$lookup?.file, value.file, value.name)} download={value.name}
-              >{trimFilename(value.name)}</a
-            >
-          </div>
-        {/if}
-        <div class="eCellInfoFilesize">{filesize(value.size)}</div>
+        <div class="eCellInfoMenu"><slot name="rowMenu" /></div>
       </div>
-      <div class="eCellInfoMenu"><slot name="rowMenu" /></div>
     </div>
-  </div>
+  {/await}
 </div>
 
 <style lang="scss">
