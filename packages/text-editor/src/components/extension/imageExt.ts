@@ -15,7 +15,7 @@
 import { FilePreviewPopup } from '@hcengineering/presentation'
 import { ImageNode, type ImageOptions as ImageNodeOptions } from '@hcengineering/text'
 import { showPopup } from '@hcengineering/ui'
-import { mergeAttributes, nodeInputRule } from '@tiptap/core'
+import { nodeInputRule } from '@tiptap/core'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 
 /**
@@ -69,8 +69,7 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
     return {
       inline: true,
       HTMLAttributes: {},
-      getFileUrl: () => '',
-      getFileUrlSrcSet: () => ''
+      getBlobRef: async () => ({ src: '', srcset: '' })
     }
   },
 
@@ -83,53 +82,6 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
         tag: 'img[src]'
       }
     ]
-  },
-
-  renderHTML ({ node, HTMLAttributes }) {
-    const divAttributes = {
-      class: 'text-editor-image-container',
-      'data-type': this.name,
-      'data-align': node.attrs.align
-    }
-
-    const imgAttributes = mergeAttributes(
-      {
-        'data-type': this.name
-      },
-      this.options.HTMLAttributes,
-      HTMLAttributes
-    )
-    const getFileUrl = this.options.getFileUrl
-    const getFileUrlSrcSet = this.options.getFileUrlSrcSet
-
-    const id = imgAttributes['file-id']
-    if (id != null) {
-      imgAttributes.src = getFileUrl(id)
-      let width: number | undefined
-      // TODO: Use max width of component may be?
-      switch (imgAttributes.width) {
-        case '32px':
-          width = 32
-          break
-        case '64px':
-          width = 64
-          break
-        case '128px':
-          width = 128
-          break
-        case '256px':
-          width = 256
-          break
-        case '512px':
-          width = 512
-          break
-      }
-      imgAttributes.srcset = getFileUrlSrcSet(id, width)
-      imgAttributes.class = 'text-editor-image'
-      imgAttributes.contentEditable = false
-    }
-
-    return ['div', divAttributes, ['img', imgAttributes]]
   },
 
   addCommands () {
