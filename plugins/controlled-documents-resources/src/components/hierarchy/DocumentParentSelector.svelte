@@ -16,19 +16,17 @@
   import { createEventDispatcher } from 'svelte'
   import { WithLookup, type Doc, type Ref } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
-  import { getPlatformColorForTextDef, themeStore } from '@hcengineering/ui'
+  import { getPlatformColorForTextDef, themeStore, getTreeCollapsed } from '@hcengineering/ui'
   import documents, {
     type DocumentMeta,
     type DocumentSpace,
     type Project,
     type ProjectMeta
   } from '@hcengineering/controlled-documents'
+  import { TreeNode } from '@hcengineering/view-resources'
 
-  import FolderCollapsed from '../icons/FolderCollapsed.svelte'
-  import FolderExpanded from '../icons/FolderExpanded.svelte'
   import DocHierarchyLevel from './DocHierarchyLevel.svelte'
-  import DocHierarchyTreeElement from './DocHierarchyTreeElement.svelte'
-  import { getPrefixedTreeCollapsed, setPrefixedTreeCollapsed, getProjectDocsHierarchy } from '../../utils'
+  import { getProjectDocsHierarchy } from '../../utils'
 
   export let space: DocumentSpace
   export let project: Ref<Project> | undefined
@@ -36,9 +34,9 @@
   export let collapsedPrefix: string = ''
 
   const dispatch = createEventDispatcher()
-  let collapsed: boolean = getPrefixedTreeCollapsed(space._id, collapsedPrefix)
-  $: setPrefixedTreeCollapsed(space._id, collapsedPrefix, collapsed)
-  $: folderIcon = collapsed ? FolderCollapsed : FolderExpanded
+  // let collapsed: boolean = getPrefixedTreeCollapsed(space._id, collapsedPrefix)
+  // $: setPrefixedTreeCollapsed(space._id, collapsedPrefix, collapsed)
+  // $: folderIcon = collapsed ? FolderCollapsed : FolderExpanded
 
   let rootDocs: Array<WithLookup<ProjectMeta>> = []
   let childrenByParent: Record<Ref<DocumentMeta>, Array<WithLookup<ProjectMeta>>> = {}
@@ -56,29 +54,21 @@
   )
 </script>
 
-<div class="root">
-  <DocHierarchyTreeElement
-    bind:collapsed
-    docId={space?._id}
-    icon={folderIcon}
-    iconProps={{
-      fill: getPlatformColorForTextDef(space.name, $themeStore.dark).icon
-    }}
-    title={space.name}
-    folder
-    selected={selected === undefined}
-    parent={rootDocs.length > 0}
-    {collapsedPrefix}
-    on:click={() => {
-      dispatch('selected', space)
-    }}
-  >
-    <DocHierarchyLevel projectMeta={rootDocs} {childrenByParent} {selected} {collapsedPrefix} on:selected />
-  </DocHierarchyTreeElement>
-</div>
-
-<style lang="scss">
-  :global(.root .antiNav-element) {
-    margin: 0;
-  }
-</style>
+<TreeNode
+  _id={space?._id}
+  folderIcon
+  iconProps={{
+    fill: getPlatformColorForTextDef(space.name, $themeStore.dark).icon
+  }}
+  title={space.name}
+  highlighted={selected !== undefined}
+  selected={selected === undefined}
+  empty={rootDocs.length === 0}
+  {collapsedPrefix}
+  type={'nested-selectable'}
+  on:click={() => {
+    dispatch('selected', space)
+  }}
+>
+  <DocHierarchyLevel projectMeta={rootDocs} {childrenByParent} {selected} {collapsedPrefix} on:selected />
+</TreeNode>

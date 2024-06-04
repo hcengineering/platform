@@ -26,14 +26,13 @@
     getDocumentName,
     DocumentState
   } from '@hcengineering/controlled-documents'
-
-  import DocHierarchyTreeElement from './DocHierarchyTreeElement.svelte'
+  import { TreeItem } from '@hcengineering/view-resources'
   import { compareDocs } from '../../utils'
 
   export let projectMeta: ProjectMeta[] = []
   export let childrenByParent: Record<Ref<DocumentMeta>, Array<ProjectMeta>>
   export let selected: Ref<Doc> | undefined
-  export let level = 1
+  export let level: number = 0
   export let getMoreActions: ((obj: Doc, originalEvent?: MouseEvent) => Promise<Action[]>) | undefined = undefined
   export let collapsedPrefix: string = ''
 
@@ -111,33 +110,36 @@
 
   {#if doc}
     {@const children = childrenByParent[doc.attachedTo] ?? []}
-    <DocHierarchyTreeElement
-      docId={doc._id}
+    <TreeItem
+      _id={doc._id}
       icon={documents.icon.Document}
       iconProps={{
         fill: 'currentColor'
       }}
       title={getDocumentName(doc)}
-      selected={selected === prjdoc._id}
-      parent={children.length > 0}
-      getMoreActions={getMoreActions !== undefined ? () => getDocMoreActions(prjdoc) : undefined}
+      selected={selected === doc._id || selected === prjdoc._id}
+      isFold
+      empty={children.length === 0 || children === undefined}
+      actions={getMoreActions !== undefined ? () => getDocMoreActions(prjdoc) : undefined}
       {level}
       {collapsedPrefix}
       on:click={() => {
         dispatch('selected', prjdoc)
       }}
     >
-      {#if children.length}
-        <svelte:self
-          projectMeta={children}
-          {childrenByParent}
-          {selected}
-          {collapsedPrefix}
-          {getMoreActions}
-          level={level + 1}
-          on:selected
-        />
-      {/if}
-    </DocHierarchyTreeElement>
+      <svelte:fragment slot="dropbox">
+        {#if children.length}
+          <svelte:self
+            projectMeta={children}
+            {childrenByParent}
+            {selected}
+            {collapsedPrefix}
+            {getMoreActions}
+            level={level + 1}
+            on:selected
+          />
+        {/if}
+      </svelte:fragment>
+    </TreeItem>
   {/if}
 {/each}

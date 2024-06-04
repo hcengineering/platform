@@ -39,7 +39,8 @@
   button.type-link { width: 100%; }
 }
 .hulyNavPanel-container .hulyNavItem-container,
-.hulyNavPanel-container .hulyTaskNavLink-container {
+.hulyNavPanel-container .hulyTaskNavLink-container,
+.parentSelector .hulyNavItem-container {
   margin: 0 0.75rem;
 }
 .hulyNavPanel-header {
@@ -114,6 +115,11 @@
       background-color: var(--theme-navpanel-selected);
       border: 1px solid var(--global-subtle-ui-BorderColor);
       border-radius: var(--extra-small-BorderRadius);
+      
+      &.folder {
+        background-color: var(--theme-statusbar-color);
+        border-color: var(--global-surface-01-BorderColor);
+      }
     }
     &__label {
       display: inline-flex;

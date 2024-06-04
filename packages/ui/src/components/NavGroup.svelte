@@ -107,7 +107,7 @@
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="hulyNavGroup-header__label font-medium-12" on:click={handleMenuClicked}>
       {#if visibleIcon}
-        <div class="hulyNavGroup-header__icon">
+        <div class="hulyNavGroup-header__icon" class:folder={folderIcon}>
           <Icon icon={visibleIcon} size={iconSize} {iconProps} />
         </div>
       {/if}
