@@ -24,12 +24,9 @@
   export let visibleNav: boolean = true
 
   const dispatch = createEventDispatcher()
-
   const client = getClient()
-
   const query = createQuery()
-
-  const currentRole = getCurrentAccount().role
+  const currentAccount = getCurrentAccount()
 
   const items: DropdownIntlItem[] = [
     { id: AccountRole.User, label: setting.string.User },
@@ -73,7 +70,7 @@
               </div>
               <DropdownLabelsIntl
                 label={setting.string.Role}
-                disabled={!hasAccountRole(account, currentRole) ||
+                disabled={!hasAccountRole(currentAccount, account.role) ||
                   (account.role === AccountRole.Owner && owners.length === 1)}
                 kind={'primary'}
                 size={'medium'}
