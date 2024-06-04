@@ -33,8 +33,8 @@
     type Ref,
     type Mixin,
     generateId,
-    getCollaborativeDoc,
-    getCurrentAccount
+    getCurrentAccount,
+    makeCollaborativeDoc
   } from '@hcengineering/core'
   import { MessageBox, getClient } from '@hcengineering/presentation'
   import {
@@ -120,7 +120,7 @@
     sections: 0,
     snapshots: 0,
     changeControl: ccRecordId,
-    content: getCollaborativeDoc(generateId()),
+    content: makeCollaborativeDoc(generateId()),
 
     requests: 0,
     reviewers: [],

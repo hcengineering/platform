@@ -21,7 +21,7 @@
     AttachedData,
     Class,
     generateId,
-    getCollaborativeDoc,
+    makeCollaborativeDoc,
     getCurrentAccount,
     Mixin,
     Ref,
@@ -79,7 +79,7 @@
     approvers: [],
     coAuthors: [],
     changeControl: '' as Ref<ChangeControl>,
-    content: getCollaborativeDoc(generateId())
+    content: makeCollaborativeDoc(generateId())
   }
 
   let templateId: Ref<DocumentTemplate> | undefined = initTemplateId

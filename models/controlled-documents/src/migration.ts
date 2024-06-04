@@ -12,7 +12,7 @@ import {
   DOMAIN_TX,
   AccountRole,
   DOMAIN_DOC_INDEX_STATE,
-  getCollaborativeDoc
+  makeCollaborativeDoc
 } from '@hcengineering/core'
 import {
   createDefaultSpace,
@@ -468,7 +468,7 @@ async function createProductChangeControlTemplate (tx: TxOperations): Promise<vo
         state: DocumentState.Effective,
         sections: 0,
         commentSequence: 0,
-        content: getCollaborativeDoc(generateId())
+        content: makeCollaborativeDoc(generateId())
       },
       ccCategory,
       undefined,
