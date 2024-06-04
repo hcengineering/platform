@@ -94,6 +94,7 @@ export interface Middleware {
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ) => Promise<FindResult<T>>
+  handleBroadcast: HandleBroadcastFunc
   searchFulltext: (ctx: SessionContext, query: SearchQuery, options: SearchOptions) => Promise<SearchResult>
 }
 
@@ -101,10 +102,11 @@ export interface Middleware {
  * @public
  */
 export type BroadcastFunc = (tx: Tx[], targets?: string | string[], exclude?: string[]) => void
+
 /**
  * @public
  */
-export type HandledBroadcastFunc = (tx: Tx[], targets?: string[]) => Tx[]
+export type HandleBroadcastFunc = (tx: Tx[], targets?: string | string[], exclude?: string[]) => Promise<void>
 
 /**
  * @public

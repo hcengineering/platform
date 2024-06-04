@@ -49,6 +49,12 @@ export abstract class BaseMiddleware {
     return await this.provideSearchFulltext(ctx, query, options)
   }
 
+  async handleBroadcast (tx: Tx[], targets?: string | string[], exclude?: string[]): Promise<void> {
+    if (this.next !== undefined) {
+      await this.next.handleBroadcast(tx, targets, exclude)
+    }
+  }
+
   protected async provideTx (ctx: SessionContext, tx: Tx): Promise<TxMiddlewareResult> {
     if (this.next !== undefined) {
       return await this.next.tx(ctx, tx)

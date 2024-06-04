@@ -88,6 +88,10 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     return res
   }
 
+  private resyncDomains (): void {
+    this.spaceSecurityInit = this.init(this.spaceMeasureCtx)
+  }
+
   private addMemberSpace (member: Ref<Account>, space: Ref<Space>): void {
     const arr = this.allowedSpaces[member] ?? []
     arr.push(space)
@@ -393,6 +397,11 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
           await this.brodcastEvent(ctx, [cud.objectId])
         }
       }
+    } else if (tx._class === core.class.TxWorkspaceEvent) {
+      const event = tx as TxWorkspaceEvent
+      if (event.event === WorkspaceEvent.BulkUpdate) {
+        this.resyncDomains()
+      }
     }
   }
 
@@ -414,16 +423,27 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       it.target = mergeTargets(targets, it.target)
     })
 
-    await this.waitInit()
-    for (const tt of ctx.derived) {
-      for (const t of tt.derived) {
-        if (this.storage.hierarchy.isDerived(t._class, core.class.TxCUD)) {
-          await this.processTxSpaceDomain(t as TxCUD<Doc>)
+    return res
+  }
+
+  override async handleBroadcast (
+    txes: Tx[],
+    targets?: string | string[] | undefined,
+    exclude?: string[] | undefined
+  ): Promise<void> {
+    for (const tx of txes) {
+      const h = this.storage.hierarchy
+      if (h.isDerived(tx._class, core.class.TxCUD)) {
+        const cudTx = tx as TxCUD<Doc>
+        await this.processTxSpaceDomain(cudTx)
+      } else if (tx._class === core.class.TxWorkspaceEvent) {
+        const event = tx as TxWorkspaceEvent
+        if (event.event === WorkspaceEvent.BulkUpdate) {
+          this.resyncDomains()
         }
       }
     }
-
-    return res
+    await this.next?.handleBroadcast(txes, targets, exclude)
   }
 
   private getAllAllowedSpaces (account: Account, isData: boolean): Ref<Space>[] {

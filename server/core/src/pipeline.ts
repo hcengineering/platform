@@ -51,16 +51,27 @@ export async function createPipeline (
   upgrade: boolean,
   broadcast: BroadcastFunc
 ): Promise<Pipeline> {
+  const broadcastHandlers: BroadcastFunc[] = [broadcast]
+  const _broadcast: BroadcastFunc = (
+    tx: Tx[],
+    targets: string | string[] | undefined,
+    exclude: string[] | undefined
+  ) => {
+    for (const handler of broadcastHandlers) handler(tx, targets, exclude)
+  }
   const storage = await ctx.with(
     'create-server-storage',
     {},
     async (ctx) =>
       await createServerStorage(ctx, conf, {
         upgrade,
-        broadcast
+        broadcast: _broadcast
       })
   )
   const pipelineResult = await PipelineImpl.create(ctx.newChild('pipeline-operations', {}), storage, constructors)
+  broadcastHandlers.push((tx: Tx[], targets: string | string[] | undefined, exclude: string[] | undefined) => {
+    void pipelineResult.handleBroadcast(tx, targets, exclude)
+  })
   return pipelineResult
 }
 
@@ -112,6 +123,12 @@ class PipelineImpl implements Pipeline {
       return await this.storage.tx(ctx, tx)
     } else {
       return await this.head.tx(ctx, tx)
+    }
+  }
+
+  async handleBroadcast (tx: Tx[], targets?: string | string[], exclude?: string[]): Promise<void> {
+    if (this.head !== undefined) {
+      await this.head.handleBroadcast(tx, targets, exclude)
     }
   }
 
