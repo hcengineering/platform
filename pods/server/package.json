@@ -167,6 +167,10 @@
     "@hcengineering/request": "^0.6.6",
     "@hcengineering/support": "^0.6.1",
     "@hcengineering/document": "^0.6.0",
+    "@hcengineering/love": "^0.6.0",
+    "@hcengineering/love-assets": "^0.6.0",
+    "@hcengineering/server-love": "^0.6.0",
+    "@hcengineering/server-love-resources": "^0.6.0",
     "@hcengineering/controlled-documents": "^0.1.0",
     "@hcengineering/products": "~0.1.0",
     "@hcengineering/training": "^0.1.0"
