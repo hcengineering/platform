@@ -42,10 +42,10 @@ export function registerGithub (
     redirectURL,
     passport.authenticate('github', { failureRedirect: concatLink(frontUrl, '/login'), session: true }),
     async (ctx, next) => {
-      const email = ctx.state.user.emails?.[0]?.value ?? `github:${ctx.state.user.username}`
-      const [first, last] = ctx.state.user.displayName.split(' ')
-      if (email !== undefined) {
-        try {
+      try {
+        const email = ctx.state.user.emails?.[0]?.value ?? `github:${ctx.state.user.username}`
+        const [first, last] = ctx.state.user.displayName?.split(' ') ?? [ctx.state.user.username, '']
+        if (email !== undefined) {
           if (ctx.query?.state != null) {
             const loginInfo = await joinWithProvider(
               measureCtx,
@@ -73,9 +73,9 @@ export function registerGithub (
           }
           // Successful authentication, redirect to your application
           ctx.redirect(concatLink(frontUrl, '/login/auth'))
-        } catch (err: any) {
-          measureCtx.error('failed to auth', err)
         }
+      } catch (err: any) {
+        measureCtx.error('failed to auth', err)
       }
       await next()
     }
