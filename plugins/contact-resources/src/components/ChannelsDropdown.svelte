@@ -227,7 +227,7 @@
         },
         el,
         (result) => {
-          if (result === undefined && item.value === '') {
+          if (result === undefined && item.value.trim() === '') {
             remove(n)
           }
           if (result === 'open') {
@@ -242,7 +242,7 @@
             if (result === '') {
               remove(n)
             } else {
-              item.value = result
+              item.value = result.trim()
               if (displayItems[n] === undefined) {
                 displayItems = [...displayItems, item]
               }
@@ -256,9 +256,9 @@
         },
         (result) => {
           if (result != null) {
-            if (result === '') {
+            if (result.trim() === '') {
               remove(n)
-            } else if (item.value !== result) {
+            } else if (item.value.trim() !== result.trim()) {
               item.value = result
               saveItems()
               dispatch('save', item.channel)
