@@ -73,6 +73,11 @@ async function createUserInfo (acc: Ref<Account>, control: TriggerControl): Prom
   const account = control.modelDb.findAllSync(contact.class.PersonAccount, { _id: acc as Ref<PersonAccount> })[0]
   if (account === undefined) return []
   const personId = account.person
+
+  // we already have participantInfo for this person
+  const infos = await control.findAll(love.class.ParticipantInfo, { person: personId })
+  if (infos.length > 0) return []
+
   const person = (await control.findAll(contact.class.Person, { _id: personId }))[0]
   const room = (await control.findAll(love.class.Office, { person: personId }))[0]
   const tx = control.txFactory.createTxCreateDoc(love.class.ParticipantInfo, love.space.Rooms, {
@@ -98,15 +103,19 @@ async function createUserInfo (acc: Ref<Account>, control: TriggerControl): Prom
   return []
 }
 
-async function removeUserInfo (acc: Ref<Account>, control: TriggerControl): Promise<Tx[]> {
+async function removeUserInfo (acc: Ref<Account>, control: TriggerControl): Promise<void> {
   const account = control.modelDb.findAllSync(contact.class.PersonAccount, { _id: acc as Ref<PersonAccount> })[0]
-  if (account === undefined) return []
+  if (account === undefined) return
+
+  // recheck that user is still offline
+  const status = (await control.findAll(core.class.UserStatus, { user: acc }))[0]
+  if (status !== undefined && status.online) return
+
   const person = account.person
   const infos = await control.findAll(love.class.ParticipantInfo, { person })
   for (const info of infos) {
     await control.apply([control.txFactory.createTxRemoveDoc(info._class, info.space, info._id)], true)
   }
-  return []
 }
 
 export async function OnUserStatus (tx: Tx, control: TriggerControl): Promise<Tx[]> {
@@ -125,7 +134,10 @@ export async function OnUserStatus (tx: Tx, control: TriggerControl): Promise<Tx
       if (val) {
         return await createUserInfo(status.user, control)
       } else {
-        return await removeUserInfo(status.user, control)
+        setTimeout(() => {
+          void removeUserInfo(status.user, control)
+        }, 5000)
+        return []
       }
     }
   }
