@@ -124,19 +124,6 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
-    activity.class.TxViewlet,
-    core.space.Model,
-    {
-      objectClass: telegram.class.Message,
-      icon: contact.icon.Telegram,
-      txClass: core.class.TxCreateDoc,
-      component: telegram.activity.TxMessage,
-      display: 'inline'
-    },
-    telegram.ids.TxMessage
-  )
-
-  builder.createDoc(
     activity.class.DocUpdateMessageViewlet,
     core.space.Model,
     {
@@ -175,22 +162,6 @@ export function createModel (builder: Builder): void {
       onDisconnect: telegram.handler.DisconnectHandler
     },
     telegram.integrationType.Telegram
-  )
-
-  builder.createDoc(
-    activity.class.TxViewlet,
-    core.space.Model,
-    {
-      objectClass: telegram.class.SharedMessages,
-      icon: contact.icon.Telegram,
-      txClass: core.class.TxCreateDoc,
-      component: telegram.activity.TxSharedCreate,
-      label: telegram.string.SharedMessages,
-      display: 'content',
-      editable: true,
-      hideOnRemove: true
-    },
-    telegram.ids.TxSharedCreate
   )
 
   builder.createDoc(
@@ -233,24 +204,6 @@ export function createModel (builder: Builder): void {
       }
     },
     telegram.ids.NewMessageNotification
-  )
-
-  builder.createDoc(
-    activity.class.TxViewlet,
-    core.space.Model,
-    {
-      objectClass: telegram.class.Message,
-      icon: contact.icon.Telegram,
-      txClass: core.class.TxCreateDoc,
-      match: {
-        'attributes.incoming': true
-      },
-      label: telegram.string.NewIncomingMessage,
-      display: 'inline',
-      editable: false,
-      hideOnRemove: true
-    },
-    telegram.ids.NewMessageNotificationViewlet
   )
 
   builder.mixin(telegram.class.Message, core.class.Class, core.mixin.FullTextSearchContext, {

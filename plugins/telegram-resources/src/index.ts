@@ -21,9 +21,7 @@ import presentation from '@hcengineering/presentation'
 import Chat from './components/Chat.svelte'
 import Connect from './components/Connect.svelte'
 import Reconnect from './components/Reconnect.svelte'
-import TxMessage from './components/activity/TxMessage.svelte'
 import IconTelegram from './components/icons/TelegramColor.svelte'
-import TxSharedCreate from './components/activity/TxSharedCreate.svelte'
 import TelegramMessageCreated from './components/activity/TelegramMessageCreated.svelte'
 import MessagePresenter from './components/MessagePresenter.svelte'
 
@@ -41,8 +39,6 @@ export default async (): Promise<Resources> => ({
     MessagePresenter
   },
   activity: {
-    TxSharedCreate,
-    TxMessage,
     TelegramMessageCreated
   },
   function: {

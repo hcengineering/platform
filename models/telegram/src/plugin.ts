@@ -19,7 +19,7 @@ import { type IntlString, type Resource, mergeIds } from '@hcengineering/platfor
 import { telegramId } from '@hcengineering/telegram'
 import telegram from '@hcengineering/telegram-resources/src/plugin'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
-import type { DocUpdateMessageViewlet, TxViewlet } from '@hcengineering/activity'
+import type { DocUpdateMessageViewlet } from '@hcengineering/activity'
 import { type TemplateFieldFunc } from '@hcengineering/templates'
 import { type NotificationGroup } from '@hcengineering/notification'
 
@@ -39,9 +39,6 @@ export default mergeIds(telegramId, telegram, {
     NewIncomingMessage: '' as IntlString
   },
   ids: {
-    TxMessage: '' as Ref<TxViewlet>,
-    TxSharedCreate: '' as Ref<TxViewlet>,
-    NewMessageNotificationViewlet: '' as Ref<TxViewlet>,
     NotificationGroup: '' as Ref<NotificationGroup>,
     TelegramMessageSharedActivityViewlet: '' as Ref<DocUpdateMessageViewlet>,
     TelegramMessageCreatedActivityViewlet: '' as Ref<DocUpdateMessageViewlet>
@@ -51,8 +48,6 @@ export default mergeIds(telegramId, telegram, {
     GetIntegrationOwnerTG: '' as Resource<TemplateFieldFunc>
   },
   activity: {
-    TxMessage: '' as AnyComponent,
-    TxSharedCreate: '' as AnyComponent,
     TelegramMessageCreated: '' as AnyComponent
   }
 })

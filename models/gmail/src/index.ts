@@ -163,20 +163,6 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
-    activity.class.TxViewlet,
-    core.space.Model,
-    {
-      objectClass: gmail.class.Message,
-      icon: contact.icon.Email,
-      txClass: core.class.TxCreateDoc,
-      label: gmail.string.HaveWrittenEmail,
-      labelComponent: gmail.activity.TxWriteMessage,
-      display: 'inline'
-    },
-    gmail.ids.TxSharedCreate
-  )
-
-  builder.createDoc(
     activity.class.DocUpdateMessageViewlet,
     core.space.Model,
     {
@@ -187,22 +173,6 @@ export function createModel (builder: Builder): void {
       label: gmail.string.HaveWrittenEmail
     },
     gmail.ids.GmailWriteMessageActivityViewlet
-  )
-
-  builder.createDoc(
-    activity.class.TxViewlet,
-    core.space.Model,
-    {
-      objectClass: gmail.class.SharedMessages,
-      icon: contact.icon.Email,
-      txClass: core.class.TxCreateDoc,
-      component: gmail.activity.TxSharedCreate,
-      label: gmail.string.SharedMessages,
-      display: 'content',
-      editable: true,
-      hideOnRemove: true
-    },
-    gmail.ids.TxSharedCreate
   )
 
   builder.createDoc(
@@ -270,24 +240,6 @@ export function createModel (builder: Builder): void {
       }
     },
     gmail.ids.EmailNotification
-  )
-
-  builder.createDoc(
-    activity.class.TxViewlet,
-    core.space.Model,
-    {
-      objectClass: gmail.class.Message,
-      icon: contact.icon.Email,
-      txClass: core.class.TxCreateDoc,
-      match: {
-        'attributes.incoming': true
-      },
-      label: gmail.string.NewIncomingMessage,
-      display: 'inline',
-      editable: false,
-      hideOnRemove: true
-    },
-    gmail.ids.NewMessageNotification
   )
 
   builder.mixin(gmail.class.Message, core.class.Class, core.mixin.FullTextSearchContext, {
