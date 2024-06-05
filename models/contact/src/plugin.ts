@@ -27,7 +27,6 @@ import { type ChatMessageViewlet } from '@hcengineering/chunter'
 
 export default mergeIds(contactId, contact, {
   activity: {
-    TxNameChange: '' as AnyComponent,
     NameChangedActivityMessage: '' as AnyComponent
   },
   component: {

@@ -240,22 +240,6 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
-    activity.class.TxViewlet,
-    core.space.Model,
-    {
-      objectClass: calendar.class.Event,
-      icon: calendar.icon.Reminder,
-      txClass: core.class.TxUpdateDoc,
-      label: calendar.string.Reminder,
-      component: calendar.activity.ReminderViewlet,
-      display: 'emphasized',
-      editable: false,
-      hideOnRemove: true
-    },
-    calendar.ids.ReminderViewlet
-  )
-
-  builder.createDoc(
     activity.class.DocUpdateMessageViewlet,
     core.space.Model,
     {

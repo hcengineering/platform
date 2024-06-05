@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type DocUpdateMessageViewlet, type TxViewlet } from '@hcengineering/activity'
+import { type DocUpdateMessageViewlet } from '@hcengineering/activity'
 import { calendarId } from '@hcengineering/calendar'
 import calendar from '@hcengineering/calendar-resources/src/plugin'
 import { type Ref } from '@hcengineering/core'
@@ -65,7 +65,6 @@ export default mergeIds(calendarId, calendar, {
     CalendarEvent: '' as Ref<Viewlet>
   },
   ids: {
-    ReminderViewlet: '' as Ref<TxViewlet>,
     UpdateRemainderActivityViewlet: '' as Ref<DocUpdateMessageViewlet>,
     CalendarNotificationGroup: '' as Ref<NotificationGroup>
   }

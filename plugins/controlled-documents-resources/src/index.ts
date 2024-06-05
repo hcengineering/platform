@@ -80,10 +80,8 @@ import DocumentVersionPresenter from './components/document/presenters/DocumentV
 
 import DocumentSectionDeletePopup from './components/DocumentSectionDeletePopup.svelte'
 
-import TxCreateReviewRequest from './components/activity/TxCreateReviewRequest.svelte'
 import DocumentReviewRequest from './components/requests/DocumentReviewRequest.svelte'
 import DocumentReviewRequestPresenter from './components/requests/DocumentReviewRequestPresenter.svelte'
-import TxCreateApprovalRequest from './components/activity/TxCreateApprovalRequest.svelte'
 import DocumentApprovalRequest from './components/requests/DocumentApprovalRequest.svelte'
 import DocumentApprovalRequestPresenter from './components/requests/DocumentApprovalRequestPresenter.svelte'
 import ControlledStateFilterValuePresenter from './components/document/presenters/ControlledStateFilterValuePresenter.svelte'
@@ -331,10 +329,8 @@ export default async (): Promise<Resources> => ({
     DocumentSectionDeletePopup,
     CollaborativeSectionPresenter,
     AttachmentsSectionPresenter,
-    TxCreateReviewRequest,
     DocumentReviewRequest,
     DocumentReviewRequestPresenter,
-    TxCreateApprovalRequest,
     DocumentApprovalRequest,
     DocumentApprovalRequestPresenter,
     StateFilterValuePresenter,

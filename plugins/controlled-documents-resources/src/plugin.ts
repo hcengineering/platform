@@ -42,11 +42,9 @@ export default mergeIds(documentsId, documents, {
 
     DocumentReviewRequest: '' as AnyComponent,
     DocumentReviewRequestPresenter: '' as AnyComponent,
-    TxCreateReviewRequest: '' as AnyComponent,
 
     DocumentApprovalRequest: '' as AnyComponent,
     DocumentApprovalRequestPresenter: '' as AnyComponent,
-    TxCreateApprovalRequest: '' as AnyComponent,
 
     CreateDocumentsSpace: '' as AnyComponent
   },

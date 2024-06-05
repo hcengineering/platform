@@ -1,4 +1,3 @@
-import { TxViewlet } from '@hcengineering/activity'
 import {
   type Class,
   type Doc,
@@ -282,8 +281,6 @@ export const documentsPlugin = plugin(documentsId, {
     ConfigDescription: '' as IntlString
   },
   ids: {
-    TxReviewRequestCreated: '' as Ref<TxViewlet>,
-    TxApprovalRequestCreated: '' as Ref<TxViewlet>,
     NoParent: '' as Ref<DocumentMeta>,
     NoProject: '' as Ref<Project>
   },

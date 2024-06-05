@@ -245,21 +245,6 @@ export function createModel (builder: Builder): void {
 
   // Workflow
   builder.createDoc(
-    activity.class.TxViewlet,
-    core.space.Model,
-    {
-      objectClass: documents.class.DocumentRequest,
-      icon: request.icon.Requests,
-      txClass: core.class.TxCreateDoc,
-      component: request.activity.TxCreateRequest,
-      label: request.string.CreatedRequest,
-      labelComponent: request.activity.RequestLabel,
-      display: 'emphasized'
-    },
-    request.ids.TxRequestCreate
-  )
-
-  builder.createDoc(
     view.class.Viewlet,
     core.space.Model,
     {

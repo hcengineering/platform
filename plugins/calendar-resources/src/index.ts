@@ -29,7 +29,6 @@ import IntegrationConnect from './components/IntegrationConnect.svelte'
 import PersonsPresenter from './components/PersonsPresenter.svelte'
 import SaveEventReminder from './components/SaveEventReminder.svelte'
 import UpdateRecInstancePopup from './components/UpdateRecInstancePopup.svelte'
-import ReminderViewlet from './components/activity/ReminderViewlet.svelte'
 import CalendarIntegrationIcon from './components/icons/Calendar.svelte'
 import EventElement from './components/EventElement.svelte'
 import CalendarEventPresenter from './components/CalendarEventPresenter.svelte'
@@ -191,9 +190,6 @@ export default async (): Promise<Resources> => ({
     CalendarEventPresenter,
     IntegrationConfigure,
     ConnectApp
-  },
-  activity: {
-    ReminderViewlet
   },
   actionImpl: {
     SaveEventReminder: saveEventReminder,
