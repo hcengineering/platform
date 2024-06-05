@@ -7,7 +7,7 @@ export enum ButtonType {
   TextTemplate,
   RelatedIssues,
   Classes,
-  ButtonJoin,
+  Enums,
   InviteSettings
 }
 
@@ -24,7 +24,7 @@ export class WorkspaceSettingsPage {
   textTemplate = (): Locator => this.page.getByRole('button', { name: 'Text Templates' })
   relatedIssues = (): Locator => this.page.getByRole('button', { name: 'Related issues' })
   classes = (): Locator => this.page.getByRole('button', { name: 'Classes' })
-  buttonJoin = (): Locator => this.page.getByRole('button', { name: 'Enums' })
+  enums = (): Locator => this.page.getByRole('button', { name: 'Enums' })
   inviteSettings = (): Locator => this.page.getByRole('button', { name: 'Invite settings' })
 
   async selectWorkspaceSettingsTab (button: ButtonType): Promise<void> {
@@ -47,8 +47,8 @@ export class WorkspaceSettingsPage {
       case ButtonType.Classes:
         await this.classes().click()
         break
-      case ButtonType.ButtonJoin:
-        await this.buttonJoin().click()
+      case ButtonType.Enums:
+        await this.enums().click()
         break
       case ButtonType.InviteSettings:
         await this.inviteSettings().click()
