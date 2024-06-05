@@ -397,9 +397,6 @@ const notification = plugin(notificationId, {
     NotificationCollaboratorsChanged: '' as AnyComponent,
     ReactionNotificationPresenter: '' as AnyComponent
   },
-  activity: {
-    TxCollaboratorsChange: '' as AnyComponent
-  },
   action: {
     PinDocNotifyContext: '' as Ref<Action>,
     UnpinDocNotifyContext: '' as Ref<Action>,

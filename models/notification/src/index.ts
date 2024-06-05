@@ -455,36 +455,6 @@ export function createModel (builder: Builder): void {
     notification.ids.CollaboratoAddNotification
   )
 
-  builder.createDoc(
-    activity.class.TxViewlet,
-    core.space.Model,
-    {
-      objectClass: notification.mixin.Collaborators,
-      icon: notification.icon.Notifications,
-      txClass: core.class.TxMixin,
-      component: notification.activity.TxCollaboratorsChange,
-      display: 'inline',
-      editable: false,
-      hideOnRemove: true
-    },
-    notification.ids.TxCollaboratorsChange
-  )
-
-  builder.createDoc(
-    activity.class.TxViewlet,
-    core.space.Model,
-    {
-      objectClass: chunter.class.DirectMessage,
-      icon: chunter.icon.Chunter,
-      txClass: core.class.TxCreateDoc,
-      component: notification.activity.TxDmCreation,
-      display: 'inline',
-      editable: false,
-      hideOnRemove: true
-    },
-    notification.ids.TxDmCreation
-  )
-
   builder.createDoc(notification.class.ActivityNotificationViewlet, core.space.Model, {
     presenter: notification.component.NotificationCollaboratorsChanged,
     messageMatch: {

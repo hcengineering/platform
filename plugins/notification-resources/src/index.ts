@@ -19,8 +19,6 @@ import { type Resources } from '@hcengineering/platform'
 import Inbox from './components/inbox/Inbox.svelte'
 import NotificationSettings from './components/NotificationSettings.svelte'
 import NotificationPresenter from './components/NotificationPresenter.svelte'
-import TxCollaboratorsChange from './components/activity/TxCollaboratorsChange.svelte'
-import TxDmCreation from './components/activity/TxDmCreation.svelte'
 import DocNotifyContextPresenter from './components/DocNotifyContextPresenter.svelte'
 import CollaboratorsChanged from './components/activity/CollaboratorsChanged.svelte'
 import ActivityInboxNotificationPresenter from './components/inbox/ActivityInboxNotificationPresenter.svelte'
@@ -66,10 +64,6 @@ export default async (): Promise<Resources> => ({
     CommonInboxNotificationPresenter,
     NotificationCollaboratorsChanged,
     ReactionNotificationPresenter
-  },
-  activity: {
-    TxCollaboratorsChange,
-    TxDmCreation
   },
   function: {
     // eslint-disable-next-line @typescript-eslint/unbound-method
