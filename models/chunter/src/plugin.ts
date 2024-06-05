@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { ActivityMessage, TxViewlet } from '@hcengineering/activity'
+import type { ActivityMessage } from '@hcengineering/activity'
 import { chunterId, type Channel } from '@hcengineering/chunter'
 import chunter from '@hcengineering/chunter-resources/src/plugin'
 import { type Client, type Doc, type Ref } from '@hcengineering/core'
@@ -26,8 +26,6 @@ import type { Action, ActionCategory, ViewAction, Viewlet, ViewletDescriptor } f
 export default mergeIds(chunterId, chunter, {
   component: {
     ChannelPresenter: '' as AnyComponent,
-    DirectMessagePresenter: '' as AnyComponent,
-    MessagePresenter: '' as AnyComponent,
     DmPresenter: '' as AnyComponent,
     ChannelsPanel: '' as AnyComponent,
     Chat: '' as AnyComponent,
@@ -80,16 +78,7 @@ export default mergeIds(chunterId, chunter, {
     Channels: '' as Ref<Viewlet>
   },
   ids: {
-    TxCommentCreate: '' as Ref<TxViewlet>,
-    TxCommentRemove: '' as Ref<TxViewlet>,
-    TxMessageCreate: '' as Ref<TxViewlet>,
-    TxChatMessageCreate: '' as Ref<TxViewlet>,
-    TxChatMessageRemove: '' as Ref<TxViewlet>,
     ChunterNotificationGroup: '' as Ref<NotificationGroup>
-  },
-  activity: {
-    TxCommentCreate: '' as AnyComponent,
-    TxMessageCreate: '' as AnyComponent
   },
   space: {
     General: '' as Ref<Channel>,

@@ -376,15 +376,6 @@ export function createModel (builder: Builder): void {
     index: 100
   })
 
-  builder.createDoc(activity.class.TxViewlet, core.space.Model, {
-    objectClass: contact.class.Person,
-    icon: contact.icon.Person,
-    txClass: core.class.TxUpdateDoc,
-    labelComponent: contact.activity.TxNameChange,
-    display: 'inline',
-    match: { 'operations.name': { $exists: true } }
-  })
-
   builder.createDoc(activity.class.DocUpdateMessageViewlet, core.space.Model, {
     objectClass: contact.class.Person,
     action: 'update',

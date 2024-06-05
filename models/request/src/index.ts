@@ -151,20 +151,6 @@ export function createModel (builder: Builder): void {
     ['comments', 'approved', 'rejected', 'status']
   )
 
-  builder.createDoc(
-    activity.class.TxViewlet,
-    core.space.Model,
-    {
-      objectClass: request.class.Request,
-      icon: request.icon.Requests,
-      txClass: core.class.TxCreateDoc,
-      component: request.activity.TxCreateRequest,
-      label: request.string.CreatedRequest,
-      labelComponent: request.activity.RequestLabel,
-      display: 'emphasized'
-    },
-    request.ids.TxRequestCreate
-  )
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_REQUEST,
     disabled: [

@@ -27,7 +27,6 @@ import {
   Space,
   Timestamp,
   Tx,
-  TxCUD,
   TxOperations
 } from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Plugin, Resource } from '@hcengineering/platform'
@@ -195,34 +194,6 @@ export interface Collaborators extends Doc {
 
 /**
  * @public
- * @deprecated
- */
-export interface DocUpdateTx {
-  _id: Ref<TxCUD<Doc>>
-  modifiedBy: Ref<Account>
-  modifiedOn: Timestamp
-  isNew: boolean
-  title?: IntlString
-  body?: IntlString
-  intlParams?: Record<string, string | number>
-  intlParamsNotLocalized?: Record<string, IntlString>
-}
-
-/**
- * @public
- * @deprecated
- */
-export interface DocUpdates extends Doc {
-  user: Ref<Account>
-  attachedTo: Ref<Doc>
-  attachedToClass: Ref<Class<Doc>>
-  hidden: boolean
-  lastTxTime?: Timestamp
-  txes: DocUpdateTx[]
-}
-
-/**
- * @public
  */
 export const notificationId = 'notification' as Plugin
 
@@ -362,7 +333,6 @@ const notification = plugin(notificationId, {
     CommonNotificationType: '' as Ref<Class<CommonNotificationType>>,
     NotificationProvider: '' as Ref<Class<NotificationProvider>>,
     NotificationSetting: '' as Ref<Class<NotificationSetting>>,
-    DocUpdates: '' as Ref<Class<DocUpdates>>,
     NotificationGroup: '' as Ref<Class<NotificationGroup>>,
     NotificationPreferencesGroup: '' as Ref<Class<NotificationPreferencesGroup>>,
     DocNotifyContext: '' as Ref<Class<DocNotifyContext>>,
@@ -396,9 +366,6 @@ const notification = plugin(notificationId, {
     DocNotifyContextPresenter: '' as AnyComponent,
     NotificationCollaboratorsChanged: '' as AnyComponent,
     ReactionNotificationPresenter: '' as AnyComponent
-  },
-  activity: {
-    TxCollaboratorsChange: '' as AnyComponent
   },
   action: {
     PinDocNotifyContext: '' as Ref<Action>,

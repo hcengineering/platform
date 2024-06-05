@@ -17,39 +17,30 @@ import activity, { type ActivityMessage } from '@hcengineering/activity'
 import {
   type Channel,
   chunterId,
-  type ChunterMessage,
-  type ChunterMessageExtension,
   type DirectMessage,
-  type Message,
-  type DirectMessageInput,
   type ChatMessage,
   type ChatMessageViewlet,
   type ChunterSpace,
   type ObjectChatPanel,
   type ThreadMessage
 } from '@hcengineering/chunter'
-import contact, { type Person } from '@hcengineering/contact'
+import contact from '@hcengineering/contact'
 import {
-  type Account,
   type Class,
   type Doc,
   type Domain,
   DOMAIN_MODEL,
   type Ref,
-  type Space,
   type Timestamp,
   IndexKind
 } from '@hcengineering/core'
 import {
-  ArrOf,
   type Builder,
   Collection as PropCollection,
-  Collection,
   Index,
   Mixin,
   Model,
   Prop,
-  ReadOnly,
   TypeMarkup,
   TypeRef,
   TypeString,
@@ -57,11 +48,10 @@ import {
   UX
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
-import core, { TAttachedDoc, TClass, TDoc, TSpace } from '@hcengineering/model-core'
+import core, { TClass, TDoc, TSpace } from '@hcengineering/model-core'
 import notification, { notificationActionTemplates } from '@hcengineering/model-notification'
 import view, { createAction, template, actionTemplates as viewTemplates } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
-import { type AnyComponent } from '@hcengineering/ui/src/types'
 import type { IntlString } from '@hcengineering/platform'
 import { TActivityMessage } from '@hcengineering/model-activity'
 
@@ -73,10 +63,7 @@ export { chunterOperation } from './migration'
 export const DOMAIN_CHUNTER = 'chunter' as Domain
 
 @Model(chunter.class.ChunterSpace, core.class.Space)
-export class TChunterSpace extends TSpace implements ChunterSpace {
-  @Prop(TypeTimestamp(), chunter.string.LastMessage)
-    lastMessage?: Timestamp
-}
+export class TChunterSpace extends TSpace implements ChunterSpace {}
 
 @Model(chunter.class.Channel, chunter.class.ChunterSpace)
 @UX(chunter.string.Channel, chunter.icon.Hashtag, undefined, undefined, undefined, chunter.string.Channels)
@@ -89,50 +76,6 @@ export class TChannel extends TChunterSpace implements Channel {
 @Model(chunter.class.DirectMessage, chunter.class.ChunterSpace)
 @UX(chunter.string.DirectMessage, contact.icon.Person, undefined, undefined, undefined, chunter.string.DirectMessages)
 export class TDirectMessage extends TChunterSpace implements DirectMessage {}
-
-@Model(chunter.class.ChunterMessage, core.class.AttachedDoc, DOMAIN_CHUNTER)
-export class TChunterMessage extends TAttachedDoc implements ChunterMessage {
-  @Prop(TypeMarkup(), chunter.string.Content)
-  @Index(IndexKind.FullText)
-    content!: string
-
-  @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
-    attachments?: number
-
-  @Prop(TypeRef(core.class.Account), chunter.string.CreateBy)
-  @ReadOnly()
-    createBy!: Ref<Account>
-
-  @Prop(TypeTimestamp(), chunter.string.Edit)
-    editedOn?: Timestamp
-
-  @Prop(Collection(activity.class.Reaction), activity.string.Reactions)
-    reactions?: number
-}
-
-@Mixin(chunter.mixin.ChunterMessageExtension, chunter.class.ChunterMessage)
-export class TChunterMessageExtension extends TChunterMessage implements ChunterMessageExtension {}
-
-@Model(chunter.class.Message, chunter.class.ChunterMessage)
-@UX(chunter.string.Message, undefined, 'MSG')
-export class TMessage extends TChunterMessage implements Message {
-  declare attachedTo: Ref<Space>
-
-  declare attachedToClass: Ref<Class<Space>>
-
-  @Prop(ArrOf(TypeRef(contact.class.Person)), chunter.string.Replies)
-    replies?: Ref<Person>[]
-
-  repliesCount?: number
-
-  @Prop(TypeTimestamp(), activity.string.LastReply)
-    lastReply?: Timestamp
-}
-
-@Mixin(chunter.mixin.DirectMessageInput, core.class.Class)
-export class TDirectMessageInput extends TClass implements DirectMessageInput {
-  component!: AnyComponent
-}
 
 @Model(chunter.class.ChatMessage, activity.class.ActivityMessage)
 @UX(chunter.string.Message, chunter.icon.Thread, undefined, undefined, undefined, chunter.string.Threads)
@@ -206,11 +149,7 @@ export function createModel (builder: Builder): void {
   builder.createModel(
     TChunterSpace,
     TChannel,
-    TMessage,
-    TChunterMessage,
-    TChunterMessageExtension,
     TDirectMessage,
-    TDirectMessageInput,
     TChatMessage,
     TThreadMessage,
     TChatMessageViewlet,
@@ -233,12 +172,6 @@ export function createModel (builder: Builder): void {
       encode: chunter.function.GetChunterSpaceLinkFragment
     })
 
-    builder.mixin(spaceClass, core.class.Class, workbench.mixin.SpaceView, {
-      view: {
-        class: chunter.class.Message
-      }
-    })
-
     builder.mixin(spaceClass, core.class.Class, view.mixin.ObjectEditor, {
       editor: chunter.component.EditChannel
     })
@@ -246,10 +179,6 @@ export function createModel (builder: Builder): void {
     builder.mixin(spaceClass, core.class.Class, view.mixin.ObjectPanel, {
       component: chunter.component.ChannelPanel
     })
-  })
-
-  builder.mixin(chunter.class.Message, core.class.Class, notification.mixin.ClassCollaborators, {
-    fields: ['createdBy', 'replies']
   })
 
   builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.ObjectTitle, {
@@ -274,22 +203,6 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(chunter.class.DirectMessage, core.class.Class, notification.mixin.NotificationPreview, {
     presenter: chunter.component.ChannelPreview
-  })
-
-  builder.mixin(chunter.class.DirectMessage, core.class.Class, chunter.mixin.DirectMessageInput, {
-    component: chunter.component.DirectMessageInput
-  })
-
-  builder.mixin(chunter.class.Message, core.class.Class, notification.mixin.NotificationObjectPresenter, {
-    presenter: chunter.component.ThreadParentPresenter
-  })
-
-  builder.mixin(chunter.class.Message, core.class.Class, view.mixin.ObjectPanel, {
-    component: chunter.component.ThreadViewPanel
-  })
-
-  builder.mixin(chunter.class.Message, core.class.Class, view.mixin.ObjectPresenter, {
-    presenter: chunter.component.MessagePresenter
   })
 
   builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.ObjectPresenter, {
@@ -437,10 +350,6 @@ export function createModel (builder: Builder): void {
     },
     chunter.action.CopyChatMessageLink
   )
-
-  builder.mixin(chunter.class.ChunterMessage, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['space', '_class']
-  })
 
   builder.mixin(chunter.class.Channel, core.class.Class, view.mixin.ClassFilters, {
     filters: []

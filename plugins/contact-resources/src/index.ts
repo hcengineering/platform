@@ -117,7 +117,6 @@ import UsersList from './components/UsersList.svelte'
 import UsersPopup from './components/UsersPopup.svelte'
 import ActivityChannelPresenter from './components/activity/ActivityChannelPresenter.svelte'
 import NameChangedActivityMessage from './components/activity/NameChangedActivityMessage.svelte'
-import TxNameChange from './components/activity/TxNameChange.svelte'
 import IconAddMember from './components/icons/AddMember.svelte'
 import ExpandRightDouble from './components/icons/ExpandRightDouble.svelte'
 import IconMembers from './components/icons/Members.svelte'
@@ -320,7 +319,6 @@ export default async (): Promise<Resources> => ({
     OpenChannel: openChannelURL
   },
   activity: {
-    TxNameChange,
     NameChangedActivityMessage
   },
   component: {

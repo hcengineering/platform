@@ -32,7 +32,8 @@ import {
   type Ref,
   type Space,
   type Timestamp,
-  type Tx
+  type Tx,
+  type IndexingConfiguration
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -61,8 +62,6 @@ import {
   type CommonInboxNotification,
   type CommonNotificationType,
   type DocNotifyContext,
-  type DocUpdateTx,
-  type DocUpdates,
   type InboxNotification,
   type MentionInboxNotification,
   type NotificationContextPresenter,
@@ -78,7 +77,7 @@ import {
   type PushSubscription,
   type PushSubscriptionKeys
 } from '@hcengineering/notification'
-import { getEmbeddedLabel, type Asset, type IntlString, type Resource } from '@hcengineering/platform'
+import { type Asset, type IntlString, type Resource } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
 import { type AnyComponent, type Location } from '@hcengineering/ui/src/types'
 
@@ -183,25 +182,6 @@ export class TNotificationPreview extends TClass implements NotificationPreview 
 @Mixin(notification.mixin.NotificationContextPresenter, core.class.Class)
 export class TNotificationContextPresenter extends TClass implements NotificationContextPresenter {
   labelPresenter?: AnyComponent
-}
-
-@Model(notification.class.DocUpdates, core.class.Doc, DOMAIN_NOTIFICATION)
-export class TDocUpdates extends TDoc implements DocUpdates {
-  @Prop(TypeRef(core.class.Account), core.string.Account)
-  @Index(IndexKind.Indexed)
-    user!: Ref<Account>
-
-  @Prop(TypeRef(core.class.Account), core.string.AttachedTo)
-  @Index(IndexKind.Indexed)
-    attachedTo!: Ref<Doc>
-
-  @Prop(TypeRef(core.class.Account), getEmbeddedLabel('Hidden'))
-  // @Index(IndexKind.Indexed)
-    hidden!: boolean
-
-  attachedToClass!: Ref<Class<Doc>>
-  lastTxTime?: Timestamp
-  txes!: DocUpdateTx[]
 }
 
 @Model(notification.class.DocNotifyContext, core.class.Doc, DOMAIN_NOTIFICATION)
@@ -339,7 +319,6 @@ export function createModel (builder: Builder): void {
     TNotificationPreferencesGroup,
     TClassCollaborators,
     TCollaborators,
-    TDocUpdates,
     TNotificationObjectPresenter,
     TNotificationPreview,
     TDocNotifyContext,
@@ -453,36 +432,6 @@ export function createModel (builder: Builder): void {
       }
     },
     notification.ids.CollaboratoAddNotification
-  )
-
-  builder.createDoc(
-    activity.class.TxViewlet,
-    core.space.Model,
-    {
-      objectClass: notification.mixin.Collaborators,
-      icon: notification.icon.Notifications,
-      txClass: core.class.TxMixin,
-      component: notification.activity.TxCollaboratorsChange,
-      display: 'inline',
-      editable: false,
-      hideOnRemove: true
-    },
-    notification.ids.TxCollaboratorsChange
-  )
-
-  builder.createDoc(
-    activity.class.TxViewlet,
-    core.space.Model,
-    {
-      objectClass: chunter.class.DirectMessage,
-      icon: chunter.icon.Chunter,
-      txClass: core.class.TxCreateDoc,
-      component: notification.activity.TxDmCreation,
-      display: 'inline',
-      editable: false,
-      hideOnRemove: true
-    },
-    notification.ids.TxDmCreation
   )
 
   builder.createDoc(notification.class.ActivityNotificationViewlet, core.space.Model, {
@@ -688,6 +637,16 @@ export function createModel (builder: Builder): void {
     indexes: [{ user: 1, archived: 1 }],
     disabled: [{ modifiedOn: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { isViewed: 1 }, { hidden: 1 }]
   })
+
+  builder.mixin<Class<DocNotifyContext>, IndexingConfiguration<DocNotifyContext>>(
+    notification.class.DocNotifyContext,
+    core.class.Class,
+    core.mixin.IndexConfiguration,
+    {
+      searchDisabled: true,
+      indexes: []
+    }
+  )
 }
 
 export function generateClassNotificationTypes (

@@ -98,34 +98,6 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(
-    activity.class.TxViewlet,
-    core.space.Model,
-    {
-      objectClass: attachment.class.Attachment,
-      icon: attachment.icon.Attachment,
-      txClass: core.class.TxCreateDoc,
-      component: attachment.activity.TxAttachmentCreate,
-      label: attachment.string.AddAttachment,
-      display: 'emphasized'
-    },
-    attachment.ids.TxAttachmentCreate
-  )
-
-  builder.createDoc(
-    activity.class.TxViewlet,
-    core.space.Model,
-    {
-      objectClass: attachment.class.Attachment,
-      icon: attachment.icon.Attachment,
-      txClass: core.class.TxRemoveDoc,
-      component: attachment.activity.TxAttachmentCreate,
-      label: attachment.string.RemovedAttachment,
-      display: 'inline'
-    },
-    attachment.ids.TxAttachmentRemove
-  )
-
-  builder.createDoc(
     activity.class.DocUpdateMessageViewlet,
     core.space.Model,
     {

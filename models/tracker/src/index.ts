@@ -541,19 +541,6 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(
-    activity.class.TxViewlet,
-    core.space.Model,
-    {
-      objectClass: tracker.class.Issue,
-      icon: tracker.icon.Issue,
-      txClass: core.class.TxCreateDoc,
-      labelComponent: tracker.activity.TxIssueCreated,
-      display: 'inline'
-    },
-    tracker.ids.TxIssueCreated
-  )
-
-  builder.createDoc(
     activity.class.DocUpdateMessageViewlet,
     core.space.Model,
     {

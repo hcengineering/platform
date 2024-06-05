@@ -17,9 +17,7 @@ import { Person } from '@hcengineering/contact'
 import {
   Account,
   AttachedDoc,
-  Attribute,
   Class,
-  Collection,
   Doc,
   DocumentQuery,
   Mixin,
@@ -27,82 +25,12 @@ import {
   type RelatedDocument,
   Timestamp,
   Tx,
-  TxCreateDoc,
-  TxCUD,
-  TxMixin,
-  TxUpdateDoc
+  TxCUD
 } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { Preference } from '@hcengineering/preference'
 import type { AnyComponent } from '@hcengineering/ui'
-
-// TODO: remove TxViewlet
-/**
- * Define an display for all transaction kinds for particular class.
- * @public
- */
-export interface TxViewlet extends Doc {
-  icon: Asset
-  objectClass: Ref<Class<Doc>>
-  txClass: Ref<Class<Tx>>
-  // Component to display on.
-  component?: AnyComponent
-
-  // If defined, will be added to label displayed
-  labelComponent?: AnyComponent
-
-  // Filter
-  match?: DocumentQuery<Tx>
-
-  // Label will be displayed right after author
-  label?: IntlString
-  labelParams?: any
-  // Do component need to be emphasized or not.
-  display: 'inline' | 'content' | 'emphasized'
-
-  // If defined and true, will show context menu with Edit action, and will pass 'edit:true' to viewlet properties.
-  editable?: boolean
-
-  // If defined and true, will hide all transactions from object in case it is deleted.
-  hideOnRemove?: boolean
-}
-
-// TODO: remove DisplayTx
-/**
- * Transaction being displayed.
- * @public
- */
-export interface DisplayTx {
-  // Source tx
-  tx: TxCUD<Doc>
-
-  // A set of collapsed transactions.
-  txes: DisplayTx[]
-  txDocIds?: Set<Ref<Doc>>
-
-  // type check for createTx
-  createTx?: TxCreateDoc<Doc>
-
-  // Type check for updateTx
-  updateTx?: TxUpdateDoc<Doc>
-
-  // Type check for updateTx
-  mixinTx?: TxMixin<Doc, Doc>
-
-  // Document in case it is required.
-  doc?: Doc
-  // Previous document in case it is required.
-  prevDoc?: Doc
-
-  updated: boolean
-  mixin: boolean
-  removed: boolean
-  isOwnTx: boolean
-
-  collectionAttribute?: Attribute<Collection<AttachedDoc>>
-  originTx: TxCUD<Doc>
-}
 
 /**
  * @public
@@ -323,7 +251,6 @@ export default plugin(activityId, {
     IgnoreActivity: '' as Ref<Mixin<IgnoreActivity>>
   },
   class: {
-    TxViewlet: '' as Ref<Class<TxViewlet>>,
     DocUpdateMessage: '' as Ref<Class<DocUpdateMessage>>,
     ActivityMessage: '' as Ref<Class<ActivityMessage>>,
     ActivityInfoMessage: '' as Ref<Class<ActivityInfoMessage>>,

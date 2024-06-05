@@ -32,7 +32,6 @@ export default mergeIds(chunterId, chunter, {
     EditChannel: '' as AnyComponent,
     ChannelPreview: '' as AnyComponent,
     MessagePreview: '' as AnyComponent,
-    DirectMessageInput: '' as AnyComponent,
     CreateDocChannel: '' as AnyComponent,
     SavedMessages: '' as AnyComponent,
     Threads: '' as AnyComponent,

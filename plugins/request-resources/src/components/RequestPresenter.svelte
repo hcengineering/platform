@@ -13,13 +13,26 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Request } from '@hcengineering/request'
-  import TxView from './TxView.svelte'
+  import request, { Request } from '@hcengineering/request'
+  import { getClient } from '@hcengineering/presentation'
+  import { Doc } from '@hcengineering/core'
+  import { ObjectPresenter } from '@hcengineering/view-resources'
+  import { Label } from '@hcengineering/ui'
 
   export let value: Request
-  export let inline: boolean = false
+
+  const client = getClient()
+
+  let object: Doc | undefined
+
+  $: void client.findOne(value.attachedToClass, { _id: value.attachedTo }).then((res) => {
+    object = res
+  })
 </script>
 
-<div class="flex">
-  <TxView tx={value.tx} />
+<div class="flex-row-center flex-gap-2">
+  <Label label={request.string.Request} />
+  {#if object}
+    <ObjectPresenter objectId={object._id} _class={object._class} props={{ disableClick: true }} />
+  {/if}
 </div>

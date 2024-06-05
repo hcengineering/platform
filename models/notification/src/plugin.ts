@@ -20,7 +20,7 @@ import { type IntlString, type Resource, mergeIds } from '@hcengineering/platfor
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type Action, type ActionCategory, type ViewAction } from '@hcengineering/view'
 import { type Application } from '@hcengineering/workbench'
-import { type DocUpdateMessageViewlet, type TxViewlet } from '@hcengineering/activity'
+import { type DocUpdateMessageViewlet } from '@hcengineering/activity'
 
 export default mergeIds(notificationId, notification, {
   string: {
@@ -41,12 +41,7 @@ export default mergeIds(notificationId, notification, {
     Notification: '' as Ref<Application>,
     Inbox: '' as Ref<Application>
   },
-  activity: {
-    TxDmCreation: '' as AnyComponent
-  },
   ids: {
-    TxCollaboratorsChange: '' as Ref<TxViewlet>,
-    TxDmCreation: '' as Ref<TxViewlet>,
     CollaboratorsChangedMessage: '' as Ref<DocUpdateMessageViewlet>
   },
   component: {

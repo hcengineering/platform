@@ -356,22 +356,6 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
-    activity.class.TxViewlet,
-    core.space.Model,
-    {
-      objectClass: setting.class.Integration,
-      icon: setting.icon.Integrations,
-      txClass: core.class.TxUpdateDoc,
-      label: setting.string.IntegrationWith,
-      labelComponent: setting.activity.TxIntegrationDisable,
-      display: 'inline',
-      editable: false,
-      hideOnRemove: true
-    },
-    setting.ids.TxIntegrationDisable
-  )
-
-  builder.createDoc(
     activity.class.DocUpdateMessageViewlet,
     core.space.Model,
     {

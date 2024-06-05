@@ -145,7 +145,6 @@ import {
 import { ComponentAggregationManager, grouppingComponentManager } from './component'
 import PriorityIcon from './components/activity/PriorityIcon.svelte'
 import StatusIcon from './components/activity/StatusIcon.svelte'
-import TxIssueCreated from './components/activity/TxIssueCreated.svelte'
 import DeleteComponentPresenter from './components/components/DeleteComponentPresenter.svelte'
 import IssueStatusIcon from './components/issues/IssueStatusIcon.svelte'
 import MoveIssues from './components/issues/Move.svelte'
@@ -593,7 +592,6 @@ export async function importTasks (tasks: File, space: Ref<Project>): Promise<vo
 
 export default async (): Promise<Resources> => ({
   activity: {
-    TxIssueCreated,
     PriorityIcon,
     StatusIcon
   },

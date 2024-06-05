@@ -15,12 +15,8 @@
 
 import calendar, { calendarId } from '@hcengineering/calendar'
 import { type IntlString, mergeIds } from '@hcengineering/platform'
-import { type AnyComponent } from '@hcengineering/ui'
 
 export default mergeIds(calendarId, calendar, {
-  activity: {
-    ReminderViewlet: '' as AnyComponent
-  },
   string: {
     Events: '' as IntlString,
     RemindMeAt: '' as IntlString,
