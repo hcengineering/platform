@@ -78,7 +78,8 @@ const request = plugin(requestId, {
     RequestView: '' as AnyComponent
   },
   string: {
-    Requests: '' as IntlString
+    Requests: '' as IntlString,
+    Request: '' as IntlString
   },
   icon: {
     Requests: '' as Asset

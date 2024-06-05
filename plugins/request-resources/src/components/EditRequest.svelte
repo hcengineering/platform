@@ -20,7 +20,6 @@
   import request from '../plugin'
   import RequestActions from './RequestActions.svelte'
   import RequestDetail from './RequestDetail.svelte'
-  import TxView from './TxView.svelte'
   import { createQuery } from '@hcengineering/presentation'
   import { Doc } from '@hcengineering/core'
 
@@ -52,7 +51,6 @@
         </DocNavLink>
       </span>
     {/if}
-    <TxView tx={object.tx} />
   </div>
   <RequestDetail value={object} />
   <RequestActions value={object} />

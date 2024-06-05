@@ -29,7 +29,6 @@ export default mergeIds(requestId, request, {
     Remove: '' as IntlString,
     Completed: '' as IntlString,
     Reject: '' as IntlString,
-    Request: '' as IntlString,
     Rejected: '' as IntlString,
     Comment: '' as IntlString,
     PleaseTypeMessage: '' as IntlString,
