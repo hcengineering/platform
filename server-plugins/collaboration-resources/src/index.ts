@@ -16,11 +16,17 @@
 import { type CollaboratorClient, getClient as getCollaboratorClient } from '@hcengineering/collaborator-client'
 import type {
   CollaborativeDoc,
+  CreateData,
   Doc,
   Hierarchy,
   Markup,
+  Mixin,
+  MixinData,
+  Ref,
   Tx,
+  TxCUD,
   TxCreateDoc,
+  TxMixin,
   TxRemoveDoc,
   WorkspaceId
 } from '@hcengineering/core'
@@ -37,22 +43,29 @@ function getCollaborator (workspace: WorkspaceId, hierarchy: Hierarchy): Collabo
 }
 
 async function OnMarkupCreate (tx: Tx, { hierarchy, txFactory, workspace, ctx }: TriggerControl): Promise<Tx[]> {
-  const createTx = TxProcessor.extractTx(tx) as TxCreateDoc<Doc>
+  const cudTx = TxProcessor.extractTx(tx) as TxCUD<Doc>
 
-  if (createTx._class !== core.class.TxCreateDoc) {
+  let mixin: Ref<Mixin<Doc>> | undefined
+  let attributes: CreateData<Doc> | MixinData<Doc, Doc>
+  if (cudTx._class === core.class.TxCreateDoc) {
+    attributes = (cudTx as TxCreateDoc<Doc>).attributes
+  } else if (cudTx._class === core.class.TxMixin) {
+    attributes = (cudTx as TxMixin<Doc, Doc>).attributes
+    mixin = (cudTx as TxMixin<Doc, Doc>).mixin
+  } else {
     return []
   }
 
   const res: Tx[] = []
 
-  if (createTx.attributes.$markup !== undefined) {
+  if (attributes?.$markup !== undefined) {
     const collaborator = getCollaborator(workspace, hierarchy)
 
-    for (const [k, v] of Object.entries<Markup>(createTx.attributes.$markup)) {
-      const attr = hierarchy.getAttribute(createTx.objectClass, k)
+    for (const [k, v] of Object.entries<Markup>(attributes.$markup)) {
+      const attr = hierarchy.getAttribute(mixin ?? cudTx.objectClass, k)
       if (!hierarchy.isDerived(attr.type._class, core.class.TypeCollaborativeDoc)) continue
 
-      const collaborativeDoc = (createTx.attributes as any)[k] as CollaborativeDoc
+      const collaborativeDoc = (attributes as any)[k] as CollaborativeDoc
       if (collaborativeDoc !== undefined) {
         const { lastVersionId } = collaborativeDocParse(collaborativeDoc)
 

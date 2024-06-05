@@ -326,8 +326,9 @@ export async function getTxAttributesUpdates (
     // we don't want to show collaborative documents in activity
     // instead we show their content as Markup
     // TODO this should be generalized via activity extension
-    if (attrClass === core.class.TypeCollaborativeDoc) {
-      attrClass = core.class.TypeMarkup
+    const attrType = mixin !== undefined ? hierarchy.findAttribute(mixin, key) : clazz
+    if (attrType?.type?._class === core.class.TypeCollaborativeDoc) {
+      attrClass = isMixin ? attrClass : core.class.TypeMarkup
       attrValue = await getMarkup(ctx, control.storageAdapter, control.workspace, attrValue, key)
       prevValue = await getMarkup(ctx, control.storageAdapter, control.workspace, prevValue, key)
     }

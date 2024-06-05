@@ -29,7 +29,7 @@
   } from '@hcengineering/core'
   import type { Customer } from '@hcengineering/lead'
   import { Card, getClient, InlineAttributeBar } from '@hcengineering/presentation'
-  import { EmptyMarkup } from '@hcengineering/text-editor'
+  import { EmptyMarkup, StyledTextBox } from '@hcengineering/text-editor'
   import {
     Button,
     createFocusManager,
@@ -197,12 +197,16 @@
             focusIndex={3}
           />
         </div>
-        <EditBox
-          placeholder={lead.string.IssueDescriptionPlaceholder}
-          bind:value={description}
-          kind={'small-style'}
-          focusIndex={4}
-        />
+        <div class="mt-1">
+          <StyledTextBox
+            bind:content={description}
+            placeholder={lead.string.IssueDescriptionPlaceholder}
+            kind={'normal'}
+            alwaysEdit={true}
+            showButtons={false}
+            focusIndex={4}
+          />
+        </div>
       </div>
       <div class="ml-4 flex">
         <EditableAvatar

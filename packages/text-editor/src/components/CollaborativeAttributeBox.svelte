@@ -92,8 +92,8 @@
 <CollaborativeTextEditor
   bind:this={editor}
   {collaborativeDoc}
-  objectClass={object._class}
   objectId={object._id}
+  objectClass={key.attr.attributeOf}
   objectAttr={key.key}
   {user}
   {userComponent}
