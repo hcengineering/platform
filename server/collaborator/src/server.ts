@@ -77,9 +77,12 @@ export async function start (
   const extensions = [
     ServerKit.configure({
       image: {
-        getFileUrl: (fileId, size) => {
+        getBlobRef: async (fileId, name, size) => {
           const sz = size !== undefined ? `&size=${size}` : ''
-          return `${config.UploadUrl}?file=${fileId}${sz}`
+          return {
+            src: `${config.UploadUrl}?file=${fileId}`,
+            srcset: `${config.UploadUrl}?file=${fileId}${sz}`
+          }
         }
       }
     })
