@@ -29,7 +29,6 @@ import CreateDirectChat from './components/chat/create/CreateDirectChat.svelte'
 import DirectMessagePresenter from './components/DirectMessagePresenter.svelte'
 import DmHeader from './components/DmHeader.svelte'
 import DmPresenter from './components/DmPresenter.svelte'
-import DirectMessageInput from './components/DirectMessageInput.svelte'
 import EditChannel from './components/EditChannel.svelte'
 import ChannelPreview from './components/ChannelPreview.svelte'
 import ThreadView from './components/threads/ThreadView.svelte'
@@ -165,7 +164,6 @@ export default async (): Promise<Resources> => ({
     ChunterBrowser,
     DmHeader,
     DmPresenter,
-    DirectMessageInput,
     EditChannel,
     ThreadView,
     SavedMessages,

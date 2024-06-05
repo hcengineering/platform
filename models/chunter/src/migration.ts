@@ -35,6 +35,7 @@ import notification from '@hcengineering/notification'
 import contactPlugin, { type PersonAccount } from '@hcengineering/contact'
 
 import chunter from './plugin'
+import { DOMAIN_CHUNTER } from './index'
 
 export const DOMAIN_COMMENT = 'comment' as Domain
 
@@ -206,6 +207,13 @@ export const chunterOperation: MigrateOperation = {
             (msg) => (msg as ThreadMessage).objectId,
             (msg) => (msg as ThreadMessage).objectClass
           )
+        }
+      },
+      {
+        state: 'remove-old-classes',
+        func: async (client) => {
+          await client.deleteMany(DOMAIN_CHUNTER, { _class: 'chunter:class:ChunterMessage' as Ref<Class<Doc>> })
+          await client.deleteMany(DOMAIN_CHUNTER, { _class: 'chunter:class:Message' as Ref<Class<Doc>> })
         }
       }
     ])

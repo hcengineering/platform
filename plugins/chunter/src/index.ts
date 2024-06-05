@@ -14,8 +14,7 @@
 //
 
 import { ActivityMessage, ActivityMessageViewlet } from '@hcengineering/activity'
-import type { Person } from '@hcengineering/contact'
-import type { Account, AttachedDoc, Class, Doc, Markup, Mixin, Ref, Space, Timestamp } from '@hcengineering/core'
+import type { Class, Doc, Markup, Mixin, Ref, Space, Timestamp } from '@hcengineering/core'
 import { NotificationType } from '@hcengineering/notification'
 import type { Asset, Plugin } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
@@ -25,9 +24,7 @@ import { Action } from '@hcengineering/view'
 /**
  * @public
  */
-export interface ChunterSpace extends Space {
-  lastMessage?: Timestamp
-}
+export interface ChunterSpace extends Space {}
 
 /**
  * @public
@@ -40,42 +37,6 @@ export interface Channel extends ChunterSpace {
  * @public
  */
 export interface DirectMessage extends ChunterSpace {}
-
-/**
- * @public
- * @deprecated use ChatMessage instead
- */
-export interface ChunterMessage extends AttachedDoc {
-  content: Markup
-  attachments?: number
-  createBy: Ref<Account>
-  editedOn?: Timestamp
-  reactions?: number
-}
-
-/**
- * @public
- */
-export interface ChunterMessageExtension extends ChunterMessage {}
-
-/**
- * @public
- * @deprecated use ChatMessage instead
- */
-export interface Message extends ChunterMessage {
-  attachedTo: Ref<Space>
-  attachedToClass: Ref<Class<Space>>
-  replies?: Ref<Person>[]
-  repliesCount?: number
-  lastReply?: Timestamp
-}
-
-/**
- * @public
- */
-export interface DirectMessageInput extends Class<Doc> {
-  component: AnyComponent
-}
 
 /**
  * @public
@@ -141,8 +102,6 @@ export default plugin(chunterId, {
     ThreadMessagePreview: '' as AnyComponent
   },
   class: {
-    Message: '' as Ref<Class<Message>>,
-    ChunterMessage: '' as Ref<Class<ChunterMessage>>,
     ThreadMessage: '' as Ref<Class<ThreadMessage>>,
     ChunterSpace: '' as Ref<Class<ChunterSpace>>,
     Channel: '' as Ref<Class<Channel>>,
@@ -151,8 +110,6 @@ export default plugin(chunterId, {
     ChatMessageViewlet: '' as Ref<Class<ChatMessageViewlet>>
   },
   mixin: {
-    DirectMessageInput: '' as Ref<Mixin<DirectMessageInput>>,
-    ChunterMessageExtension: '' as Ref<Mixin<ChunterMessageExtension>>,
     ObjectChatPanel: '' as Ref<Mixin<ObjectChatPanel>>
   },
   string: {
