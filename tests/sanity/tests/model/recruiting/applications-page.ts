@@ -12,7 +12,9 @@ export class ApplicationsPage extends CommonRecruitingPage {
   }
 
   readonly pageHeader = (): Locator => this.page.locator('span[class*="header"]', { hasText: 'Applications' })
-  readonly buttonCreateApplication = (): Locator => this.page.locator('button > span', { hasText: 'Application' })
+  readonly buttonCreateApplication = (): Locator =>
+    this.page.locator('button.antiButton > span', { hasText: 'Application' })
+
   readonly buttonTalentSelector = (): Locator => this.page.locator('div[id="vacancy.talant.selector"]')
   readonly buttonSpaceSelector = (): Locator => this.page.locator('div[id="space.selector"]')
   readonly buttonAssignedRecruiter = (): Locator =>

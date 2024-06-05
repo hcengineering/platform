@@ -17,8 +17,10 @@
   import { Label } from '@hcengineering/ui'
 
   export let label: IntlString
+  export let withButton: boolean = false
 </script>
 
-<div class="antiNav-header overflow-label">
-  <Label {label} />
+<div class="hulyNavPanel-header" class:withButton>
+  <span class="overflow-label"><Label {label} /></span>
+  <slot />
 </div>

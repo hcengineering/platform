@@ -22,13 +22,22 @@
   export let title: string | undefined = undefined
   export let label: IntlString | undefined = undefined
   export let icon: Asset | AnySvelteComponent | undefined = undefined
+  export let folderIcon: boolean = false
   export let iconProps: Record<string, any> | undefined = undefined
   export let actions: () => Promise<Action[]> = async () => []
   export let notifications: number = 0
   export let parent: boolean = true
-  export let node: boolean = false
-  export let folder: boolean = false
+  export let type: 'default' | 'nested' | 'nested-selectable' = 'default'
+  export let isFold: boolean = false
+  export let empty: boolean = false
+  export let visible: boolean = false
   export let collapsed: boolean = false
+  export let collapsedPrefix: string = ''
+  export let highlighted: boolean = false
+  export let selected: boolean = false
+  export let showMenu: boolean = false
+  export let shouldTooltip: boolean = false
+  export let forciblyСollapsed: boolean = false
 </script>
 
 <TreeElement
@@ -37,13 +46,24 @@
   {label}
   {iconProps}
   {icon}
+  {folderIcon}
   {notifications}
-  {collapsed}
+  bind:collapsed
+  {collapsedPrefix}
   {actions}
-  {node}
-  {folder}
+  {type}
+  {isFold}
+  {empty}
+  {visible}
   {parent}
+  {highlighted}
+  {selected}
+  {shouldTooltip}
+  {showMenu}
+  {forciblyСollapsed}
   on:click
 >
   <slot />
+  <svelte:fragment slot="extra"><slot name="extra" /></svelte:fragment>
+  <svelte:fragment slot="visible"><slot name="visible" /></svelte:fragment>
 </TreeElement>

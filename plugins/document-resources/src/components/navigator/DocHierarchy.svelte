@@ -32,7 +32,7 @@
   export let documentById: Map<Ref<Document>, Document>
 
   export let selected: Ref<Document> | undefined
-  export let level = 1
+  export let level: number = 0
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -97,10 +97,12 @@
           }}
       title={doc.name}
       selected={selected === doc._id}
-      parent={desc.length > 0}
+      isFold
+      {level}
+      empty={desc.length === 0}
       actions={getActions(doc)}
       moreActions={() => getMoreActions(doc)}
-      {level}
+      shouldTooltip
       on:click={() => {
         handleDocumentSelected(doc._id)
       }}

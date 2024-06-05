@@ -260,7 +260,13 @@
         loc.path[4] = (currentSpecial as string) ?? resolved.defaultLocation.path[4]
       } else {
         loc.path[3] = resolvedSpace
-        loc.path[4] = resolvedSpecial ?? currentSpecial ?? resolved.defaultLocation.path[4]
+        if (resolvedSpecial) {
+          loc.path[4] = resolvedSpecial
+        } else if (currentSpace && currentSpecial) {
+          loc.path[4] = currentSpecial
+        } else {
+          loc.path[4] = resolved.defaultLocation.path[4]
+        }
       }
     }
     for (let index = 0; index < loc.path.length; index++) {
@@ -728,7 +734,7 @@
         <!-- svelte-ignore a11y-no-static-element-interactions -->
         {#if navFloat}<div class="cover shown" on:click={() => (visibleNav = false)} />{/if}
         <div class="antiPanel-navigator no-print {appsDirection === 'horizontal' ? 'portrait' : 'landscape'}">
-          <div class="antiPanel-wrap__content">
+          <div class="antiPanel-wrap__content hulyNavPanel-container">
             {#if currentApplication}
               <NavHeader label={currentApplication.label} />
               {#if currentApplication.navHeaderComponent}

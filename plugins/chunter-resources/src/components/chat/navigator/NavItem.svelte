@@ -27,7 +27,7 @@
   import { NotifyMarker } from '@hcengineering/notification-resources'
   import { Asset, IntlString } from '@hcengineering/platform'
 
-  export let id: string
+  export let _id: string
   export let icon: Asset | AnySvelteComponent | undefined
   export let iconProps: any | undefined = undefined
   export let iconSize: IconSize = 'small'
@@ -50,7 +50,7 @@
   $: menuActions = actions.filter(({ inline }) => inline !== true)
 
   function handleMenuClicked (ev: MouseEvent): void {
-    showPopup(Menu, { actions: menuActions, ctx: id }, ev.target as HTMLElement, () => {
+    showPopup(Menu, { actions: menuActions, ctx: _id }, ev.target as HTMLElement, () => {
       menuOpened = false
     })
     menuOpened = true
@@ -62,6 +62,7 @@
 </script>
 
 <NavItem
+  {_id}
   {icon}
   {iconProps}
   {iconSize}

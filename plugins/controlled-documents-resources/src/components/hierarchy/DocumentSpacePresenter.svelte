@@ -16,32 +16,22 @@
   import { WithLookup, type Doc, type Ref, type Space } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { getResource } from '@hcengineering/platform'
-  import {
-    type Action,
-    getTreeCollapsed,
-    setTreeCollapsed,
-    getPlatformColorForTextDef,
-    themeStore,
-    navigate,
-    IconEdit,
-    Label
-  } from '@hcengineering/ui'
-  import { getActions as getContributedActions } from '@hcengineering/view-resources'
+  import { type Action, getPlatformColorForTextDef, themeStore, navigate, IconEdit, Label } from '@hcengineering/ui'
+  import { getActions as getContributedActions, TreeNode, TreeItem } from '@hcengineering/view-resources'
   import { ActionGroup } from '@hcengineering/view'
   import {
+    type ControlledDocument,
     type DocumentMeta,
     type DocumentSpace,
     type DocumentSpaceType,
     type Project,
     type ProjectDocument,
-    type ProjectMeta
+    type ProjectMeta,
+    getDocumentName
   } from '@hcengineering/controlled-documents'
 
-  import FolderCollapsed from '../icons/FolderCollapsed.svelte'
-  import FolderExpanded from '../icons/FolderExpanded.svelte'
   import ProjectSelector from '../project/ProjectSelector.svelte'
   import DocHierarchyLevel from './DocHierarchyLevel.svelte'
-  import DocHierarchyRootElement from './DocHierarchyRootElement.svelte'
   import { getDocumentIdFromFragment, getProjectDocumentLink } from '../../navigation'
   import {
     getCurrentProject,
@@ -55,12 +45,16 @@
   import documents from '../../plugin'
 
   export let space: DocumentSpace
+  export let currentSpace: Ref<Space> | undefined
   export let currentFragment: string | undefined
   export let getActions: (space: Space) => Promise<Action[]> = async () => []
+  export let deselect: boolean = false
+  export let forciblyСollapsed: boolean = false
 
   const client = getClient()
 
   let spaceType: DocumentSpaceType | undefined
+  let pressed: boolean = false
 
   const spaceTypeQuery = createQuery()
   $: spaceTypeQuery.query(documents.class.DocumentSpaceType, { _id: space.type }, (result) => {
@@ -68,10 +62,6 @@
   })
 
   $: selected = getDocumentIdFromFragment(currentFragment ?? '')
-
-  let collapsed: boolean = getTreeCollapsed(space._id)
-  $: setTreeCollapsed(space._id, collapsed)
-  $: folderIcon = collapsed ? FolderCollapsed : FolderExpanded
 
   let project: Ref<Project> = documents.ids.NoProject
   $: void selectProject(space)
@@ -95,6 +85,35 @@
       }
     }
   )
+
+  let selectedControlledDoc: ControlledDocument | undefined = undefined
+
+  $: if (selected !== undefined) {
+    void client
+      .findOne(
+        documents.class.ProjectDocument,
+        { _id: selected },
+        {
+          lookup: {
+            document: documents.class.ControlledDocument
+          }
+        }
+      )
+      .then((result) => {
+        if (result !== undefined) {
+          selectedControlledDoc = result.$lookup?.document as ControlledDocument
+        } else {
+          // There's some issue with resolving which needs to be fixed later
+          void client
+            .findOne(documents.class.ControlledDocument, { _id: selected as unknown as Ref<ControlledDocument> })
+            .then((result) => {
+              selectedControlledDoc = result
+            })
+        }
+      })
+  } else {
+    selectedControlledDoc = undefined
+  }
 
   async function selectProject (space: DocumentSpace): Promise<void> {
     project = getCurrentProject(space._id) ?? (await getLatestProjectId(space._id)) ?? documents.ids.NoProject
@@ -161,17 +180,21 @@
   }
 </script>
 
-<DocHierarchyRootElement
-  bind:collapsed
+<TreeNode
   _id={space?._id}
-  icon={folderIcon}
+  folderIcon
   iconProps={{
     fill: getPlatformColorForTextDef(space.name, $themeStore.dark).icon
   }}
   title={space.name}
-  getMoreActions={() => getSpaceActions(space)}
+  highlighted={space._id === currentSpace && currentFragment !== undefined && !deselect}
+  visible={(space._id === currentSpace && currentFragment !== undefined && !deselect) || forciblyСollapsed}
+  showMenu={pressed}
+  {forciblyСollapsed}
+  actions={() => getSpaceActions(space)}
+  type={'nested'}
 >
-  <div slot="extra">
+  <svelte:fragment slot="extra">
     {#if spaceType?.projects === true}
       <ProjectSelector
         value={project}
@@ -180,13 +203,14 @@
         kind={'ghost'}
         size={'x-small'}
         showDropdownIcon
+        bind:pressed
         on:change={(evt) => {
           project = evt.detail
           setCurrentProject(space._id, project)
         }}
       />
     {/if}
-  </div>
+  </svelte:fragment>
 
   {#if rootDocs.length > 0}
     <DocHierarchyLevel
@@ -203,7 +227,26 @@
       <Label label={documents.string.NoDocuments} />
     </div>
   {/if}
-</DocHierarchyRootElement>
+
+  <svelte:fragment slot="visible">
+    {#if (selected || forciblyСollapsed) && selectedControlledDoc}
+      {@const doc = selectedControlledDoc}
+      <TreeItem
+        _id={doc._id}
+        icon={documents.icon.Document}
+        iconProps={{
+          fill: 'currentColor'
+        }}
+        title={getDocumentName(doc)}
+        actions={() => getDocumentActions(doc)}
+        selected
+        isFold
+        empty
+        forciblyСollapsed
+      />
+    {/if}
+  </svelte:fragment>
+</TreeNode>
 
 <style lang="scss">
   .pseudo-element {

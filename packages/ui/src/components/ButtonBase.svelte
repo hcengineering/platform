@@ -49,6 +49,7 @@
   } else if (type === 'type-button' && !hasMenu) {
     actualIconSize = 'medium'
   }
+  $: iconOnly = title === undefined && label === undefined && $$slots.default === undefined && icon !== undefined
 
   export function focus () {
     element?.focus()
@@ -94,6 +95,7 @@
   class:inheritColor
   class:inheritFont
   class:menu={hasMenu}
+  class:iconOnly
   disabled={loading || disabled}
   use:tp={tooltip}
   on:click|stopPropagation
@@ -153,9 +155,10 @@
       height: var(--global-large-Size);
       border-radius: var(--medium-BorderRadius);
 
-      &.type-button {
+      &.type-button:not(.iconOnly) {
         padding: 0 var(--spacing-2);
       }
+      &.iconOnly,
       &.type-button-icon {
         width: var(--global-large-Size);
       }
@@ -164,9 +167,10 @@
       height: var(--global-medium-Size);
       border-radius: var(--medium-BorderRadius);
 
-      &.type-button {
+      &.type-button:not(.iconOnly) {
         padding: 0 var(--spacing-2);
       }
+      &.iconOnly,
       &.type-button-icon {
         width: var(--global-medium-Size);
       }
@@ -176,9 +180,10 @@
       gap: var(--spacing-0_5);
       border-radius: var(--small-BorderRadius);
 
-      &.type-button {
+      &.type-button:not(.iconOnly) {
         padding: 0 var(--spacing-1);
       }
+      &.iconOnly,
       &.type-button-icon {
         width: var(--global-small-Size);
       }
@@ -187,9 +192,10 @@
       height: var(--global-extra-small-Size);
       border-radius: var(--extra-small-BorderRadius);
 
-      &.type-button {
+      &.type-button:not(.iconOnly) {
         padding: 0 var(--spacing-1);
       }
+      &.iconOnly,
       &.type-button-icon {
         width: var(--global-extra-small-Size);
       }

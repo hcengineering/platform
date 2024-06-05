@@ -18,7 +18,7 @@
   import { DocNotifyContext } from '@hcengineering/notification'
   import { SpecialNavModel } from '@hcengineering/workbench'
   import { NavLink } from '@hcengineering/view-resources'
-  import { TreeSeparator } from '@hcengineering/workbench-resources'
+  import { TreeSeparator, NavFooter } from '@hcengineering/workbench-resources'
   import { getResource } from '@hcengineering/platform'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
 
@@ -35,6 +35,7 @@
 
   const notificationClient = InboxNotificationsClientImpl.getClient()
   const contextsStore = notificationClient.contexts
+  let pressed: boolean = false
 
   const globalActions = [
     {
@@ -66,16 +67,19 @@
   }
 
   function addButtonClicked (ev: MouseEvent): void {
-    showPopup(Menu, { actions: globalActions }, ev.target as HTMLElement)
+    pressed = true
+    showPopup(Menu, { actions: globalActions }, ev.target as HTMLElement, () => {
+      pressed = false
+    })
   }
 </script>
 
-<div class="hulyNavPanel-header">
+<div class="hulyNavPanel-header withButton">
   <span class="overflow-label">
     <Label label={chunter.string.Chat} />
   </span>
   {#if hasAccountRole(getCurrentAccount(), AccountRole.User)}
-    <ButtonIcon icon={IconAdd} kind={'primary'} size={'small'} on:click={addButtonClicked} />
+    <ButtonIcon icon={IconAdd} hasMenu {pressed} kind={'primary'} size={'small'} on:click={addButtonClicked} />
   {/if}
 </div>
 
@@ -86,7 +90,7 @@
   {#await isSpecialVisible(special, $contextsStore) then isVisible}
     {#if isVisible}
       <NavLink space={special.id}>
-        <ChatSpecialElement {special} {currentSpecial} />
+        <ChatSpecialElement {special} {currentSpecial} on:select />
       </NavLink>
     {/if}
   {/await}
@@ -106,16 +110,16 @@
     }}
   />
 </div>
-<Scroller>
+<Scroller shrink>
   {#each chatNavGroupModels as model}
     <ChatNavGroup {object} {objectId} {model} on:select />
   {/each}
-  <div class="antiNav-space" />
 </Scroller>
+<NavFooter />
 
 <style lang="scss">
   .search {
-    padding: var(--spacing-3) var(--spacing-1_5) var(--spacing-1_5);
+    padding: var(--spacing-1_5);
     border-bottom: 1px solid var(--theme-navpanel-divider);
   }
 </style>

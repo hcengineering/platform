@@ -20,8 +20,6 @@
     IconWithEmoji,
     getPlatformColorDef,
     getPlatformColorForTextDef,
-    getTreeCollapsed,
-    setTreeCollapsed,
     themeStore,
     type Action
   } from '@hcengineering/ui'
@@ -36,9 +34,7 @@
   export let currentSpecial: string | undefined
   export let getActions: (space: Project) => Promise<Action[]> = async () => []
   export let deselect: boolean = false
-
-  let collapsed: boolean = getTreeCollapsed(space._id)
-  $: setTreeCollapsed(space._id, collapsed)
+  export let forciblyСollapsed: boolean = false
 
   let specials: SpecialNavModel[] = []
 
@@ -60,11 +56,13 @@
   }
 
   $: updateSpecials(model, space)
+  $: visible =
+    (!deselect && currentSpace !== undefined && currentSpecial !== undefined && space._id === currentSpace) ||
+    forciblyСollapsed
 </script>
 
 {#if specials}
   <TreeNode
-    {collapsed}
     _id={space?._id}
     icon={space?.icon === view.ids.IconWithEmoji ? IconWithEmoji : space?.icon ?? model.icon}
     iconProps={space?.icon === view.ids.IconWithEmoji
@@ -76,9 +74,11 @@
               : getPlatformColorForTextDef(space.name, $themeStore.dark).icon
         }}
     title={space.name}
-    folder
+    type={'nested'}
+    highlighted={space._id === currentSpace}
+    {visible}
     actions={() => getActions(space)}
-    on:click={() => (collapsed = !collapsed)}
+    {forciblyСollapsed}
   >
     {#each specials as special}
       <NavLink space={space._id} special={special.id}>
@@ -90,5 +90,16 @@
         />
       </NavLink>
     {/each}
+
+    <svelte:fragment slot="visible">
+      {#if visible}
+        {@const item = specials.find((sp) => sp.id === currentSpecial && currentSpace === space._id)}
+        {#if item}
+          <NavLink space={space._id} special={item.id}>
+            <SpecialElement indent label={item.label} icon={item.icon} selected forciblyСollapsed />
+          </NavLink>
+        {/if}
+      {/if}
+    </svelte:fragment>
   </TreeNode>
 {/if}

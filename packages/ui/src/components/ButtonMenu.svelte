@@ -16,7 +16,7 @@
   import type { Asset, IntlString } from '@hcengineering/platform'
   import { deepEqual } from 'fast-equals'
   import { ComponentType, createEventDispatcher } from 'svelte'
-  import { closePopup, showPopup } from '..'
+  import { closePopup, showPopup, type LabelAndProps, closeTooltip } from '..'
   import { AnySvelteComponent, DropdownIntlItem } from '../types'
   import ButtonBase from './ButtonBase.svelte'
   import ModernPopup from './ModernPopup.svelte'
@@ -32,6 +32,8 @@
   export let loading: boolean = false
   export let inheritColor: boolean = false
   export let noSelection: boolean = false
+  export let autoSelectionIfOne: boolean = false
+  export let tooltip: LabelAndProps | undefined = undefined
 
   export let items: DropdownIntlItem[]
   export let params: Record<string, any> = {}
@@ -46,7 +48,13 @@
 
   function openPopup () {
     if (!opened) {
+      if (autoSelectionIfOne && items.length === 1) {
+        selected = items[0].id
+        dispatch('selected', selected)
+        return
+      }
       opened = true
+      closeTooltip()
       showPopup(ModernPopup, { items, selected: noSelection ? undefined : selected, params }, element, (result) => {
         if (result) {
           selected = result
@@ -86,5 +94,6 @@
   pressed={opened}
   {focusIndex}
   {id}
+  {tooltip}
   on:click={openPopup}
 />

@@ -21,21 +21,19 @@
     Label,
     getPlatformColorDef,
     getPlatformColorForTextDef,
-    showPopup,
     themeStore
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { canEditSpace } from '@hcengineering/view-resources'
-  import { CreateProject } from '../..'
   import tracker from '../../plugin'
 
   export let value: Project | undefined
   export let inline: boolean = false
   export let accent: boolean = false
+  export let colorInherit: boolean = false
 </script>
 
 {#if value}
-  <div class="flex-presenter cursor-default" class:inline-presenter={inline}>
+  <div class="flex-presenter cursor-default" class:inline-presenter={inline} class:colorInherit>
     <div class="icon" class:emoji={value.icon === view.ids.IconWithEmoji}>
       <Icon
         icon={value.icon === view.ids.IconWithEmoji ? IconWithEmoji : value.icon ?? tracker.icon.Home}

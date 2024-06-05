@@ -33,13 +33,7 @@ import presentation, { copyDocumentContent, getClient } from '@hcengineering/pre
 import contact, { type Employee, type PersonAccount } from '@hcengineering/contact'
 import request, { RequestStatus } from '@hcengineering/request'
 import textEditor, { isEmptyMarkup } from '@hcengineering/text-editor'
-import {
-  getEventPositionElement,
-  showPopup,
-  getTreeCollapsed,
-  setTreeCollapsed,
-  type Location
-} from '@hcengineering/ui'
+import { getEventPositionElement, showPopup, type Location } from '@hcengineering/ui'
 import { type KeyFilter } from '@hcengineering/view'
 import chunter from '@hcengineering/chunter'
 import documents, {
@@ -677,22 +671,6 @@ export async function canDeleteDocumentCategory (doc?: Doc | Doc[]): Promise<boo
   }
 
   return await checkPermission(client, documents.permission.DeleteDocumentCategory, (doc as DocumentCategory).space)
-}
-
-function getPrefixedTreeId (_id: string, prefix: string): string {
-  return `${prefix}_###_${_id}`
-}
-
-export function getPrefixedTreeCollapsed (_id: string, prefix: string): boolean {
-  if (_id === undefined || _id === 'undefined') return false
-
-  return getTreeCollapsed(prefix === '' ? _id : getPrefixedTreeId(_id, prefix))
-}
-
-export function setPrefixedTreeCollapsed (_id: string, prefix: string, collapsed: boolean): void {
-  if (_id === undefined || _id === 'undefined') return
-
-  setTreeCollapsed(prefix === '' ? _id : getPrefixedTreeId(_id, prefix), collapsed)
 }
 
 function getCurrentProjectId (space: Ref<DocumentSpace>): string {

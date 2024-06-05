@@ -360,6 +360,7 @@ input.search {
       color: var(--theme-content-color);
     }
   }
+  &.colorInherit .label { color: inherit; }
 }
 .flex-presenter {
   display: flex;

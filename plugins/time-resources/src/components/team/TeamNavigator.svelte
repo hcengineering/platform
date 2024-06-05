@@ -16,8 +16,9 @@
   import { Ref, getCurrentAccount } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import task, { Project } from '@hcengineering/task'
-  import { Label, Separator } from '@hcengineering/ui'
+  import { Label, Separator, Scroller, NavItem } from '@hcengineering/ui'
   import { ObjectPresenter, TreeNode } from '@hcengineering/view-resources'
+  import { NavFooter } from '@hcengineering/workbench-resources'
   import time from '../../plugin'
 
   export let navFloat: boolean = false
@@ -37,30 +38,55 @@
       projects = result
     }
   )
+  $: selectedItem = projects.find((pr) => pr._id === selected)
 </script>
 
 <div class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'}">
-  <div class="antiPanel-wrap__content">
-    <div class="antiNav-header overflow-label">
-      <Label label={time.string.Team} />
-      <Label label={time.string.Planner} />
+  <div class="antiPanel-wrap__content hulyNavPanel-container">
+    <div class="hulyNavPanel-header">
+      <span class="overflow-label"><Label label={time.string.TeamPlanner} /></span>
     </div>
-    <TreeNode _id={'projects-planning'} label={time.string.Team} node>
-      {#each projects as _project}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div
-          class="antiNav-element parent"
-          class:selected={selected === _project._id}
-          on:click={() => {
-            selected = _project._id
-            localStorage.setItem('team_last_mode', selected)
-          }}
-        >
-          <ObjectPresenter objectId={_project._id} _class={_project._class} value={_project} />
-        </div>
-      {/each}
-    </TreeNode>
-    <div class="antiNav-divider line" />
+
+    <Scroller shrink>
+      <TreeNode
+        _id={'projects-planning'}
+        label={time.string.Team}
+        isFold
+        empty={projects.length === 0}
+        highlighted={selected !== undefined}
+        visible={selected !== undefined}
+      >
+        {#each projects as _project}
+          <NavItem
+            selected={selected === _project._id}
+            on:click={() => {
+              selected = _project._id
+              localStorage.setItem('team_last_mode', selected)
+            }}
+          >
+            <ObjectPresenter
+              objectId={_project._id}
+              _class={_project._class}
+              value={_project}
+              colorInherit={selected === _project._id}
+            />
+          </NavItem>
+        {/each}
+        <svelte:fragment slot="visible">
+          {#if selected && selectedItem}
+            <NavItem selected>
+              <ObjectPresenter
+                objectId={selectedItem._id}
+                _class={selectedItem._class}
+                value={selectedItem}
+                colorInherit
+              />
+            </NavItem>
+          {/if}
+        </svelte:fragment>
+      </TreeNode>
+    </Scroller>
+    <NavFooter />
   </div>
   <Separator
     name={'time'}

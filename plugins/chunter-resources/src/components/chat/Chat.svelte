@@ -107,6 +107,11 @@
   }
 
   function handleChannelSelected (event: CustomEvent): void {
+    if (event.detail === null) {
+      selectedData = undefined
+      return
+    }
+
     const detail = (event.detail ?? {}) as SelectChannelEvent
 
     selectedData = { _id: detail.object._id, _class: detail.object._class }

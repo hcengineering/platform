@@ -51,7 +51,7 @@ export class VacanciesPage extends CommonRecruitingPage {
   readonly vacancyRow = (vacancyId: string): Locator =>
     this.page.locator(`tr:has-text("${vacancyId}") > td:nth-child(3) >> .sm-tool-icon`)
 
-  readonly applicationButton = (): Locator => this.page.locator('button:has-text("Application")')
+  readonly applicationButton = (): Locator => this.page.getByRole('button', { name: 'Application', exact: true })
   readonly talentSelector = (): Locator =>
     this.page.locator('form[id="recruit:string:CreateApplication"] [id="vacancy.talant.selector"]')
 

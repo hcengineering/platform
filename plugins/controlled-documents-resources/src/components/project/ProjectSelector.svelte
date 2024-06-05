@@ -26,7 +26,8 @@
 
   export let value: Ref<Project> | undefined
   export let space: Ref<Space>
-  export let disabled = false
+  export let disabled: boolean = false
+  export let pressed: boolean = false
   export let focusIndex = -1
   export let maxWidth = ''
   export let kind: ButtonKind = 'link'
@@ -48,11 +49,13 @@
   function showVersionsPopup (): void {
     if (disabled) return
 
+    pressed = true
     showPopup(ProjectSelectorPopup, { space, showReadonly, selected: value }, container, (result) => {
       if (result !== undefined) {
         value = result
         dispatch('change', result)
       }
+      pressed = false
     })
   }
 
@@ -68,6 +71,7 @@
     {size}
     {justify}
     {disabled}
+    stopPropagation
     on:click={showVersionsPopup}
     showTooltip={{
       label: project !== undefined ? getEmbeddedLabel(project.name) : documents.string.Project

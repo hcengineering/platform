@@ -3,6 +3,7 @@
   import { Ref, getCurrentAccount } from '@hcengineering/core'
   import { Asset, IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
+  import { NavFooter } from '@hcengineering/workbench-resources'
   import tagsPlugin, { TagElement as TagElementType } from '@hcengineering/tags'
   import ui, {
     Label,
@@ -12,8 +13,7 @@
     Scroller,
     Month,
     getPlatformColorDef,
-    themeStore,
-    areDatesEqual
+    themeStore
   } from '@hcengineering/ui'
   import { ToDosMode } from '..'
   import time from '../plugin'
@@ -126,8 +126,9 @@
           }}
         />
       {/each}
+      <div class="min-h-3 flex-no-shrink" />
 
-      <div class="hulyAccordionItem-container border pb-2">
+      <div class="hulyAccordionItem-container border" class:noBorder={tags.length === 0}>
         <Month
           currentDate={mode === 'date' ? currentDate : null}
           on:update={(event) => {
@@ -162,7 +163,15 @@
       </div>
 
       {#if tags.length > 0}
-        <NavGroup label={tagsPlugin.string.Tags} selected={mode === 'tag'} categoryName={'tags'} second>
+        <NavGroup
+          _id={'planner-tags'}
+          label={tagsPlugin.string.Tags}
+          highlighted={mode === 'tag'}
+          categoryName={'tags'}
+          noDivider
+          isFold
+          visible={tag !== undefined}
+        >
           {#each tags as _tag}
             {@const color = getPlatformColorDef(_tag.color ?? 0, $themeStore.dark)}
             <NavItem
@@ -178,9 +187,19 @@
               }}
             />
           {/each}
+          <svelte:fragment slot="visible" let:isOpen>
+            {#if !isOpen}
+              {@const visibleTag = tags.find((t) => t._id === tag)}
+              {#if visibleTag}
+                {@const color = getPlatformColorDef(visibleTag.color ?? 0, $themeStore.dark)}
+                <NavItem color={color.color} title={visibleTag.title} selected type={'type-tag'} />
+              {/if}
+            {/if}
+          </svelte:fragment>
         </NavGroup>
       {/if}
     </Scroller>
+    <NavFooter />
   </div>
   <Separator
     name={'time'}
@@ -229,5 +248,8 @@
     gap: 1px;
     top: 0.1875rem;
     right: 0.1875rem;
+  }
+  .noBorder {
+    border-bottom-color: transparent;
   }
 </style>

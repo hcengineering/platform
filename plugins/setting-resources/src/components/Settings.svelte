@@ -135,9 +135,10 @@
           {#each categories as _category}
             {#if _category.extraComponents?.navigation && (_category.expandable ?? _category._id === setting.ids.Setting)}
               <NavGroup
+                _id={_category._id}
                 label={_category.label}
                 categoryName={_category.name}
-                selected={_category.name === categoryId}
+                highlighted={_category.name === categoryId}
                 tools={_category.extraComponents?.tools}
               >
                 <Component

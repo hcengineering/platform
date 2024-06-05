@@ -25,6 +25,7 @@
   export let props: Record<string, any> = {}
   export let inline: boolean = false
   export let accent: boolean = false
+  export let colorInherit: boolean = false
   export let shouldShowAvatar: boolean = true
   export let noUnderline: boolean = false
   export let disabled: boolean = false
@@ -75,6 +76,7 @@
     value={doc}
     {inline}
     {accent}
+    {colorInherit}
     {shouldShowAvatar}
     {shouldShowName}
     {noUnderline}

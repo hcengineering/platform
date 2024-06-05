@@ -19,17 +19,15 @@
   import { getResource } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { Action, IconEdit } from '@hcengineering/ui'
-  import { getActions as getContributedActions } from '@hcengineering/view-resources'
-
-  import FolderTreeElement from './FolderTreeElement.svelte'
-  import FolderIcon from './icons/Folder.svelte'
+  import { getActions as getContributedActions, TreeItem } from '@hcengineering/view-resources'
 
   export let folders: Ref<Folder>[]
   export let folderById: Map<Ref<Folder>, Folder>
   export let descendants: Map<Ref<Folder>, Folder[]>
 
   export let selected: Ref<Doc> | undefined
-  export let level = 1
+  export let level: number = 0
+  export let once: boolean = false
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -66,24 +64,25 @@
   {@const desc = _descendants.get(doc._id) ?? []}
 
   {#if doc}
-    <FolderTreeElement
+    <TreeItem
       _id={doc._id}
-      icon={FolderIcon}
-      iconProps={{
-        fill: '#5195D7'
-      }}
+      folderIcon
       title={doc.name}
       selected={selected === doc._id}
-      parent={desc.length > 0}
+      isFold
+      empty={desc.length === 0}
       actions={async () => await getActions(doc)}
       {level}
+      shouldTooltip
       on:click={() => {
         handleSelected(doc._id)
       }}
     >
-      {#if desc.length}
-        <svelte:self folders={desc} {descendants} {folderById} {selected} level={level + 1} on:selected />
-      {/if}
-    </FolderTreeElement>
+      <svelte:fragment slot="dropbox">
+        {#if desc.length > 0 && !once}
+          <svelte:self folders={desc} {descendants} {folderById} {selected} level={level + 1} on:selected />
+        {/if}
+      </svelte:fragment>
+    </TreeItem>
   {/if}
 {/each}

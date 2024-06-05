@@ -9,24 +9,23 @@ export class TrackerNavigationMenuPage extends CommonPage {
     this.page = page
   }
 
-  buttonCreateProject = (): Locator => this.page.locator('div#tree-projects').locator('xpath=..')
-  buttonProjectsParent = (): Locator => this.page.locator('div.parent > span')
+  buttonCreateProject = (): Locator => this.page.locator('div#navGroup-tree-projects').locator('xpath=../button[1]')
+  buttonProjectsParent = (): Locator => this.page.locator('button.hulyNavGroup-header span')
   templateLinkForProject = (projectName: string): Locator =>
     this.page.locator(`a[href$="templates"][href*="${projectName}"]`)
 
   issuesLinkForProject = (projectName: string): Locator =>
-    this.page.locator(
-      `xpath=//div[contains(@class, "parent")]/span[text()="${projectName}"]/../following-sibling::div[1]/a[contains(@href, "issues")]`,
-      { hasText: 'Issues' }
-    )
+    this.page
+      .getByRole('button', { name: projectName, exact: true })
+      .locator('xpath=following-sibling::div[1]/a[contains(@href, "issues")]', { hasText: 'Issues' })
 
   milestonesLinkForProject = (projectName: string): Locator =>
-    this.page.locator(`div[class*="antiNav-element"] a[href$="milestones"][href*="${projectName}"]> div > span`, {
+    this.page.locator(`a[href$="milestones"][href*="${projectName}"] > button[class*="hulyNavItem-container"] > span`, {
       hasText: 'Milestones'
     })
 
   componentsLinkForProject = (projectName: string): Locator =>
-    this.page.locator(`div[class*="antiNav-element"] a[href$="components"][href*="${projectName}"]> div > span`, {
+    this.page.locator(`a[href$="components"][href*="${projectName}"] > button[class*="hulyNavItem-container"] > span`, {
       hasText: 'Components'
     })
 
@@ -39,7 +38,7 @@ export class TrackerNavigationMenuPage extends CommonPage {
   milestone = (): Locator => this.page.getByRole('link', { name: 'Milestones' })
   templates = (): Locator => this.page.getByRole('link', { name: 'Templates' })
 
-  createProjectButton = (): Locator => this.buttonCreateProject().locator('button.small')
+  createProjectButton = (): Locator => this.buttonCreateProject().locator('#tree-projects')
 
   async pressCreateProjectButton (): Promise<void> {
     await this.buttonCreateProject().hover()
@@ -70,8 +69,8 @@ export class TrackerNavigationMenuPage extends CommonPage {
     await this.buttonProjectsParent().filter({ hasText: projectName }).hover()
     await this.buttonProjectsParent()
       .filter({ hasText: projectName })
-      .locator('xpath=..')
-      .locator('div[class*="tool"]:not([class*="arrow"])')
+      .locator('xpath=../..')
+      .locator('div[class*="tools"] button')
       .click()
     await this.selectFromDropdown(this.page, action)
   }

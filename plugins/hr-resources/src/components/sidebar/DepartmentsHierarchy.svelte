@@ -26,7 +26,7 @@
   export let descendants: Map<Ref<Department>, Department[]>
   export let departmentById: Map<Ref<Department>, Department>
   export let selected: Ref<Department> | undefined
-  export let level = 1
+  export let level: number = 0
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -68,16 +68,19 @@
       icon={hr.icon.Department}
       title={department.name}
       selected={selected === department._id}
-      parent={desc.length > 0}
+      isFold
+      empty={desc.length === 0}
       actions={() => getActions(department)}
       {level}
       on:click={() => {
         handleDepartmentSelected(department._id)
       }}
     >
-      {#if desc.length}
-        <svelte:self departments={desc} {descendants} {departmentById} {selected} level={level + 1} on:selected />
-      {/if}
+      <svelte:fragment slot="dropbox">
+        {#if desc.length}
+          <svelte:self departments={desc} {descendants} {departmentById} {selected} level={level + 1} on:selected />
+        {/if}
+      </svelte:fragment>
     </TreeElement>
   {/if}
 {/each}

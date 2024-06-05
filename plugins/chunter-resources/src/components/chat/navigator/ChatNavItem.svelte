@@ -115,7 +115,7 @@
 </script>
 
 <NavItem
-  id={item.id}
+  _id={item.id}
   icon={item.icon}
   withIconBackground={item.withIconBackground}
   isSecondary={item.isSecondary}

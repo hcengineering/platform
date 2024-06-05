@@ -13,25 +13,27 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, SortingOrder, Space } from '@hcengineering/core'
+  import { Ref, SortingOrder, Space, generateId } from '@hcengineering/core'
   import { Document, Teamspace } from '@hcengineering/document'
-  import { createQuery } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import {
     IconWithEmoji,
-    getTreeCollapsed,
-    setTreeCollapsed,
+    IconEdit,
     getPlatformColorDef,
     getPlatformColorForTextDef,
     themeStore,
-    Action
+    Action,
+    IconAdd
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { TreeNode } from '@hcengineering/view-resources'
+  import { TreeNode, openDoc, getActions as getContributedActions } from '@hcengineering/view-resources'
   import { SpacesNavModel } from '@hcengineering/workbench'
+  import { getResource } from '@hcengineering/platform'
 
   import document from '../../plugin'
-  import { getDocumentIdFromFragment } from '../../utils'
+  import { getDocumentIdFromFragment, createEmptyDocument } from '../../utils'
   import DocHierarchy from './DocHierarchy.svelte'
+  import DocTreeElement from './DocTreeElement.svelte'
 
   export let space: Teamspace
   export let model: SpacesNavModel
@@ -40,9 +42,9 @@
   export let currentFragment: string | undefined
   export let getActions: (space: Space) => Promise<Action[]> = async () => []
   export let deselect: boolean = false
+  export let forciblyСollapsed: boolean = false
 
-  let collapsed: boolean = getTreeCollapsed(space._id)
-  $: setTreeCollapsed(space._id, collapsed)
+  const client = getClient()
 
   let documents: Ref<Document>[] = []
   let documentById: Map<Ref<Document>, Document> = new Map<Ref<Document>, Document>()
@@ -54,6 +56,8 @@
 
   let selected: Ref<Document> | undefined
   $: selected = getDocumentIdFromFragment(currentFragment ?? '')
+  let visibleItem: Document | undefined
+  $: visibleItem = selected !== undefined ? documentById.get(selected) : undefined
 
   // TODO expand tree until the selected document ?
 
@@ -84,10 +88,43 @@
       }
     }
   )
+
+  function getDocActions (doc: Document): Action[] {
+    return [
+      {
+        icon: IconAdd,
+        label: document.string.CreateDocument,
+        action: async (ctx: any, evt: Event) => {
+          const id: Ref<Document> = generateId()
+          await createEmptyDocument(client, id, doc.space, doc._id, {})
+
+          const object = await client.findOne(document.class.Document, { _id: id })
+          if (object !== undefined) {
+            openDoc(client.getHierarchy(), object)
+          }
+        }
+      }
+    ]
+  }
+
+  async function getMoreActions (obj: Document): Promise<Action[]> {
+    const result: Action[] = []
+    const extraActions = await getContributedActions(client, obj)
+    for (const act of extraActions) {
+      result.push({
+        icon: act.icon ?? IconEdit,
+        label: act.label,
+        action: async (ctx: any, evt: Event) => {
+          const impl = await getResource(act.action)
+          await impl(obj, evt, act.actionProps)
+        }
+      })
+    }
+    return result
+  }
 </script>
 
 <TreeNode
-  {collapsed}
   _id={space?._id}
   icon={space?.icon === view.ids.IconWithEmoji ? IconWithEmoji : space?.icon ?? model.icon}
   iconProps={space?.icon === view.ids.IconWithEmoji
@@ -99,10 +136,34 @@
             : getPlatformColorForTextDef(space.name, $themeStore.dark).icon
       }}
   title={space.name}
-  folder
-  parent={descendants.size > 0}
+  type={'nested'}
+  highlighted={currentSpace === space._id}
+  visible={currentSpace === space._id || forciblyСollapsed}
   actions={() => getActions(space)}
-  on:click={() => (collapsed = !collapsed)}
+  {forciblyСollapsed}
 >
   <DocHierarchy {documents} {descendants} {documentById} {selected} />
+
+  <svelte:fragment slot="visible">
+    {#if (selected || forciblyСollapsed) && visibleItem}
+      {@const item = visibleItem}
+      <DocTreeElement
+        doc={item}
+        icon={item.icon === view.ids.IconWithEmoji ? IconWithEmoji : item.icon ?? document.icon.Document}
+        iconProps={item.icon === view.ids.IconWithEmoji
+          ? { icon: visibleItem.color }
+          : {
+              fill: item.color !== undefined ? getPlatformColorDef(item.color, $themeStore.dark).icon : 'currentColor'
+            }}
+        title={item.name}
+        selected
+        isFold
+        empty
+        shouldTooltip
+        actions={getDocActions(item)}
+        moreActions={() => getMoreActions(item)}
+        forciblyСollapsed
+      />
+    {/if}
+  </svelte:fragment>
 </TreeNode>

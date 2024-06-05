@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, IconAdd, showPopup } from '@hcengineering/ui'
+  import { ButtonIcon, IconAdd, showPopup } from '@hcengineering/ui'
   import CreateSpaceType from './CreateSpaceType.svelte'
   import { isOwnerOrMaintainer } from '@hcengineering/core'
 
@@ -24,5 +24,5 @@
 </script>
 
 {#if isOwnerOrMaintainer()}
-  <Button id="new-space-type" icon={IconAdd} kind="link" size="small" on:click={handleAdd} />
+  <ButtonIcon id={'new-space-type'} icon={IconAdd} kind={'tertiary'} size={'extra-small'} on:click={handleAdd} />
 {/if}

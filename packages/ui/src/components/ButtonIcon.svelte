@@ -30,6 +30,7 @@
   export let inheritColor: boolean = false
   export let tooltip: LabelAndProps | undefined = undefined
   export let focusIndex = -1
+  export let id: string | undefined = undefined
 
   let element: ButtonBase | undefined
 
@@ -53,6 +54,7 @@
   {hasMenu}
   {tooltip}
   {focusIndex}
+  {id}
   on:click
   on:keydown
 />

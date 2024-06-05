@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
   import { Department } from '@hcengineering/hr'
-  import { Scroller, Separator, EditBox } from '@hcengineering/ui'
+  import { Scroller, Separator } from '@hcengineering/ui'
   import { TreeNode } from '@hcengineering/view-resources'
   import { NavFooter, NavHeader } from '@hcengineering/workbench-resources'
 
@@ -33,14 +33,18 @@
 </script>
 
 <div class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'}">
-  <div class="antiPanel-wrap__content">
+  <div class="antiPanel-wrap__content hulyNavPanel-container">
     <NavHeader label={hr.string.HRApplication} />
 
     <Scroller shrink>
-      <TreeNode _id={'tree-hr'} label={hr.string.Departments} node>
+      <TreeNode
+        _id={'tree-hr'}
+        label={hr.string.Departments}
+        highlighted={department !== undefined}
+        isFold={department !== undefined}
+      >
         <DepartmentsHierarchy {departments} {descendants} {departmentById} selected={department} on:selected />
       </TreeNode>
-      <div class="antiNav-space" />
     </Scroller>
 
     <NavFooter />

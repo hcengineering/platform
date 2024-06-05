@@ -23,6 +23,7 @@
   export let inheritFont: boolean = false
   export let focusIndex = -1
   export let tooltip: LabelAndProps | undefined = undefined
+  export let id: string | undefined = undefined
 </script>
 
 <ButtonBase
@@ -41,6 +42,7 @@
   {focusIndex}
   {tooltip}
   {autoFocus}
+  {id}
   on:click
 >
   <slot />

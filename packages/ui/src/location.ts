@@ -197,16 +197,17 @@ export function navigate (location: PlatformLocation, replace = false): boolean 
 }
 
 const COLLAPSED = 'COLLAPSED'
-export const getCollapsedKey = (_id: string): string => `${getCurrentLocation().path[1]}_${_id}_collapsed`
+export const getCollapsedKey = (_id: string, prefix?: string): string =>
+  `${getCurrentLocation().path[1]}_${prefix !== undefined && prefix !== '' ? prefix + '_###_' + _id : _id}_collapsed`
 
-export const getTreeCollapsed = (_id: any): boolean => {
+export const getTreeCollapsed = (_id: any, prefix?: string): boolean => {
   if (_id === undefined || _id === 'undefined') return false
-  return localStorage.getItem(getCollapsedKey(_id as string)) === COLLAPSED
+  return localStorage.getItem(getCollapsedKey(_id as string, prefix)) === COLLAPSED
 }
 
-export const setTreeCollapsed = (_id: any, collapsed: boolean): void => {
+export const setTreeCollapsed = (_id: any, collapsed: boolean, prefix?: string): void => {
   if (_id === undefined || _id === 'undefined') return
-  const key = getCollapsedKey(_id)
+  const key = getCollapsedKey(_id, prefix)
   collapsed ? localStorage.setItem(key, COLLAPSED) : localStorage.removeItem(key)
 }
 

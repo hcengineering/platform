@@ -17,19 +17,7 @@
   import { Document } from '@hcengineering/document'
   import type { Asset, IntlString } from '@hcengineering/platform'
   import type { Action, AnySvelteComponent } from '@hcengineering/ui'
-  import {
-    ActionIcon,
-    Icon,
-    IconChevronDown,
-    IconMoreH,
-    Label,
-    Menu,
-    navigate,
-    showPopup,
-    getTreeCollapsed,
-    setTreeCollapsed
-  } from '@hcengineering/ui'
-
+  import { IconMoreH, Menu, navigate, showPopup, NavItem, ButtonIcon } from '@hcengineering/ui'
   import { getDocumentLink } from '../../utils'
 
   export let doc: Document
@@ -37,14 +25,16 @@
   export let iconProps: Record<string, any> | undefined = undefined
   export let label: IntlString | undefined = undefined
   export let title: string | undefined = undefined
-  export let parent: boolean = false
-  export let collapsed: boolean = getTreeCollapsed(doc._id)
   export let selected: boolean = false
+  export let isFold: boolean = false
+  export let empty: boolean = false
+  export let shouldTooltip: boolean = false
   export let level: number = 0
   export let actions: Action[] = []
   export let moreActions: (originalEvent?: MouseEvent) => Promise<Action[]> | undefined = async () => []
+  export let forciblyСollapsed: boolean = false
 
-  let hovered = false
+  let hovered: boolean = false
   async function onMenuClick (ev: MouseEvent): Promise<void> {
     showPopup(Menu, { actions: await moreActions(ev), ctx: doc._id }, ev.target as HTMLElement, () => {
       hovered = false
@@ -58,59 +48,41 @@
   }
 
   const dispatch = createEventDispatcher()
-  $: collapsed = getTreeCollapsed(doc._id)
-  $: setTreeCollapsed(doc._id, collapsed)
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<div
-  class="antiNav-element tree"
-  class:selected
-  class:hovered
-  class:parent
-  class:collapsed
-  style:padding-left={`${level > 0 ? level * 1.25 + 0.125 : 0.75}rem`}
+<NavItem
+  _id={doc._id}
+  {icon}
+  {iconProps}
+  {label}
+  {title}
+  {isFold}
+  {level}
+  {empty}
+  {selected}
+  showMenu={hovered}
+  {shouldTooltip}
+  {forciblyСollapsed}
   on:click={() => {
     selectDocument()
-    if (selected) {
-      collapsed = !collapsed
-    }
     dispatch('click')
   }}
 >
-  <div
-    class="an-element__tool arrow"
-    class:empty={!parent}
-    on:click|preventDefault|stopPropagation={() => {
-      if (parent) collapsed = !collapsed
-    }}
-  >
-    {#if parent}<IconChevronDown size={'small'} filled />{/if}
-  </div>
-
-  {#if icon}
-    <div class="an-element__icon" class:folder={level === 0}>
-      <Icon {icon} {iconProps} size={'small'} />
-    </div>
-  {/if}
-  <span class="an-element__label">
-    {#if label}<Label {label} />{:else}{title}{/if}
-  </span>
-  <div class="an-element__grow" />
-
-  {#each actions as action}
-    {#if action.icon}
-      <div class="an-element__tool">
-        <ActionIcon label={action.label} icon={action.icon} size={'small'} action={(evt) => action.action({}, evt)} />
-      </div>
-    {/if}
-  {/each}
-  <div class="an-element__tool" class:pressed={hovered} on:click|preventDefault|stopPropagation={onMenuClick}>
-    <IconMoreH size={'small'} />
-  </div>
-</div>
-
-{#if parent && !collapsed}
-  <div class="antiNav-element__dropbox"><slot /></div>
-{/if}
+  <svelte:fragment slot="actions">
+    {#each actions as action}
+      {#if action.icon}
+        <ButtonIcon
+          icon={action.icon}
+          kind={'tertiary'}
+          size={'extra-small'}
+          tooltip={{ label: action.label, direction: 'top' }}
+          on:click={(evt) => action.action({}, evt)}
+        />
+      {/if}
+    {/each}
+    <ButtonIcon icon={IconMoreH} kind={'tertiary'} size={'extra-small'} pressed={hovered} on:click={onMenuClick} />
+  </svelte:fragment>
+  <svelte:fragment slot="dropbox">
+    <slot />
+  </svelte:fragment>
+</NavItem>

@@ -226,6 +226,8 @@ export { default as IconDropdownRight } from './components/icons/DropdownRight.s
 export { default as IconKeyCommand } from './components/icons/KeyCommand.svelte'
 export { default as IconKeyOption } from './components/icons/KeyOption.svelte'
 export { default as IconKeyShift } from './components/icons/KeyShift.svelte'
+export { default as IconFolderCollapsed } from './components/icons/FolderCollapsed.svelte'
+export { default as IconFolderExpanded } from './components/icons/FolderExpanded.svelte'
 export { default as IconCheckmark } from './components/icons/Checkmark.svelte'
 
 export { default as PanelInstance } from './components/PanelInstance.svelte'

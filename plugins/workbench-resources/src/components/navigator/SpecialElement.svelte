@@ -15,7 +15,7 @@
 <script lang="ts">
   import type { Asset, IntlString } from '@hcengineering/platform'
   import type { Action } from '@hcengineering/ui'
-  import { ActionIcon, Icon, Label } from '@hcengineering/ui'
+  import { ButtonIcon, NavItem } from '@hcengineering/ui'
 
   export let icon: Asset | undefined = undefined
   export let iconProps: Record<string, any> | undefined = undefined
@@ -25,35 +25,33 @@
   export let selected: boolean = false
   export let disabled: boolean = false
   export let indent: boolean = false
+  export let forciblyСollapsed: boolean = false
 </script>
 
-<!-- svelte-ignore a11y-mouse-events-have-key-events -->
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<div class="antiNav-element" class:selected class:disabled class:indent>
-  <div class="an-element__icon">
-    {#if icon}
-      <Icon {icon} size={'small'} {iconProps} />
-    {/if}
-  </div>
-  <span class="an-element__label">
-    {#if label}<Label {label} />{/if}
-  </span>
-  <div class="an-element__grow" />
-  {#each actions as action}
-    {#if action.icon}
-      <div class="an-element__tool">
-        <ActionIcon
-          label={action.label}
+<NavItem
+  {icon}
+  {iconProps}
+  iconSize={'small'}
+  {label}
+  count={notifications > 0 ? notifications : null}
+  {selected}
+  {disabled}
+  {indent}
+  {forciblyСollapsed}
+>
+  <svelte:fragment slot="actions">
+    {#each actions as action}
+      {#if action.icon}
+        <ButtonIcon
           icon={action.icon}
-          size={'small'}
-          action={async (evt) => {
+          kind={'tertiary'}
+          size={'extra-small'}
+          tooltip={{ label: action.label }}
+          on:click={async (evt) => {
             await action.action({}, evt)
           }}
         />
-      </div>
-    {/if}
-  {/each}
-  {#if notifications > 0}
-    <div class="an-element__counter">{notifications}</div>
-  {/if}
-</div>
+      {/if}
+    {/each}
+  </svelte:fragment>
+</NavItem>

@@ -20,8 +20,10 @@ export class DocumentsPage extends CommonPage {
   readonly buttonCreateDocument = (): Locator =>
     this.page.locator('div[data-float="navigator"] button[id="new-document"]')
 
-  readonly divTeamspacesParent = (): Locator => this.page.locator('div#tree-teamspaces').locator('xpath=..')
-  readonly buttonCreateTeamspace = (): Locator => this.page.locator('div#tree-teamspaces > button')
+  readonly divTeamspacesParent = (): Locator =>
+    this.page.locator('div#navGroup-tree-teamspaces').locator('xpath=../button[1]')
+
+  readonly buttonCreateTeamspace = (): Locator => this.page.locator('button#tree-teamspaces')
   readonly formNewTeamspace = (): Locator => this.page.locator('form[id="document:string:NewTeamspace"]')
   readonly formEditTeamspace = (): Locator => this.page.locator('form[id="document:string:EditTeamspace"]')
   readonly inputModalNewTeamspaceTitle = (): Locator =>
@@ -62,25 +64,31 @@ export class DocumentsPage extends CommonPage {
 
   async openTeamspace (name: string): Promise<void> {
     const classes = await this.page
-      .locator('div.antiNav-element span[class*="label"]', { hasText: name })
-      .locator('xpath=..')
+      .locator('button.hulyNavGroup-header span[class*="label"]', { hasText: name })
+      .locator('xpath=../..')
       .getAttribute('class')
-    if (classes != null && classes.includes('collapsed')) {
-      await this.page.locator('div.antiNav-element span[class*="label"]', { hasText: name }).click()
+    if (classes != null && !classes.includes('isOpen')) {
+      await this.page.getByRole('button', { name }).click()
     }
   }
 
   async checkTeamspaceExist (name: string): Promise<void> {
-    await expect(this.page.locator('div[class*="dropbox"] span[class*="label"]', { hasText: name })).toHaveCount(1)
+    await expect(
+      this.page.locator('div[class*="hulyNavGroup-content"] span[class*="label"]', { hasText: name })
+    ).toHaveCount(1)
   }
 
   async checkTeamspaceNotExist (name: string): Promise<void> {
-    await expect(this.page.locator('div[class*="dropbox"] span[class*="label"]', { hasText: name })).toHaveCount(0)
+    await expect(
+      this.page.locator('button[class*="hulyNavGroup-header"] span[class*="label"]', { hasText: name })
+    ).toHaveCount(0)
   }
 
   async moreActionTeamspace (name: string, action: string): Promise<void> {
-    await this.page.locator('div[class*="dropbox"] > div > span[class*="label"]', { hasText: name }).hover()
-    await this.page.locator(`xpath=//span[text()="${name}"]/../div[last()]`).click()
+    await this.page.locator('button.hulyNavGroup-header span[class*="label"]', { hasText: name }).hover()
+    await this.page
+      .locator(`xpath=//span[text()="${name}"]/../../div[@class="hulyNavGroup-header__tools"]/button[last()]`)
+      .click()
     await this.selectFromDropdown(this.page, action)
   }
 
@@ -89,14 +97,14 @@ export class DocumentsPage extends CommonPage {
   }
 
   async openDocument (name: string): Promise<void> {
-    await this.page.locator('div.tree > span[class*="label"]', { hasText: name }).click()
+    await this.page.locator('button.hulyNavItem-container > span[class*="label"]', { hasText: name }).click()
   }
 
   async openDocumentForTeamspace (spaceName: string, documentName: string): Promise<void> {
     await this.page
-      .locator('div.parent > span[class*="label"]', { hasText: spaceName })
-      .locator('xpath=../following-sibling::div[1]')
-      .locator('div.tree > span[class*="label"]', { hasText: documentName })
+      .locator('button.hulyNavGroup-header span[class*="label"]', { hasText: spaceName })
+      .locator('xpath=../../following-sibling::div[1]')
+      .locator('button.hulyNavItem-container span[class*="label"]', { hasText: documentName })
       .click()
   }
 
@@ -120,10 +128,11 @@ export class DocumentsPage extends CommonPage {
   }
 
   async moreActionsOnDocument (documentName: string, action: string): Promise<void> {
+    await this.page.locator('button.hulyNavItem-container span[class*="label"]', { hasText: documentName }).hover()
     await this.page
-      .locator('div.tree > span[class*="label"]', { hasText: documentName })
+      .locator('button.hulyNavItem-container > span[class*="label"]', { hasText: documentName })
       .locator('xpath=..')
-      .locator('div[class*="tool"]:nth-child(6)')
+      .locator('div.hulyNavItem-actions > button:last-child')
       .click()
     await this.selectFromDropdown(this.page, action)
   }

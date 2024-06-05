@@ -14,24 +14,16 @@
 -->
 <script lang="ts">
   import type { Class, Doc, Ref, Space } from '@hcengineering/core'
-  import core from '@hcengineering/core'
   import { DocNotifyContext, InboxNotification } from '@hcengineering/notification'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
-  import { IntlString, getResource } from '@hcengineering/platform'
+  import { IntlString } from '@hcengineering/platform'
   import preference from '@hcengineering/preference'
   import { getClient } from '@hcengineering/presentation'
-  import { Action, IconEdit } from '@hcengineering/ui'
+  import { Action } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import {
-    NavLink,
-    TreeItem,
-    TreeNode,
-    getActions as getContributedActions,
-    getSpacePresenter,
-    classIcon
-  } from '@hcengineering/view-resources'
+  import { TreeNode } from '@hcengineering/view-resources'
   import { SpacesNavModel } from '@hcengineering/workbench'
-  import { getSpaceName } from '../../utils'
+  import StarredNavItem from './StarredNavItem.svelte'
 
   export let label: IntlString
   export let spaces: Space[]
@@ -42,17 +34,6 @@
   export let deselect: boolean = false
 
   const client = getClient()
-
-  const unStarSpace: Action = {
-    label: preference.string.Unstar,
-    icon: preference.icon.Star,
-    action: async (_id: Ref<Doc>): Promise<void> => {
-      const current = await client.findOne(preference.class.SpacePreference, { attachedTo: _id as Ref<Space> })
-      if (current !== undefined) {
-        await client.remove(current)
-      }
-    }
-  }
 
   const unStarAll: Action = {
     label: preference.string.DeleteStarred,
@@ -67,23 +48,6 @@
         })
       )
     }
-  }
-
-  async function getActions (space: Space): Promise<Action[]> {
-    const result = [unStarSpace]
-
-    const extraActions = await getContributedActions(client, space, core.class.Space)
-    for (const act of extraActions) {
-      result.push({
-        icon: act.icon ?? IconEdit,
-        label: act.label,
-        action: async (ctx: any, evt: Event) => {
-          const impl = await getResource(act.action)
-          await impl(space, evt, act.actionProps)
-        }
-      })
-    }
-    return result
   }
 
   function getSpaceModel (space: Ref<Class<Space>>): SpacesNavModel | undefined {
@@ -109,37 +73,44 @@
     if (notifyContext === undefined) return false
     return !notifyContext.hidden && !!inboxNotificationsByContext.get(notifyContext._id)?.length
   }
+  $: visibleSpace = spaces.find((space) => currentSpace === space._id)
 </script>
 
-<TreeNode _id={'tree-stared'} {label} node actions={async () => [unStarAll]}>
+<TreeNode
+  _id={'tree-stared'}
+  {label}
+  actions={async () => [unStarAll]}
+  highlighted={spaces.some((s) => s._id === currentSpace) && !deselect}
+  isFold
+  empty={spaces.length === 0}
+  visible={visibleSpace !== undefined && !deselect}
+>
   {#each spaces as space (space._id)}
     {@const model = getSpaceModel(space._class)}
-    {#await getSpacePresenter(client, space._class) then presenter}
-      {#if presenter && model}
-        <svelte:component
-          this={presenter}
-          {space}
-          {model}
-          {currentSpace}
-          {currentSpecial}
-          {currentFragment}
-          {getActions}
-          {deselect}
-        />
-      {:else}
-        {#await getSpaceName(client, space) then name}
-          <NavLink space={space._id}>
-            <TreeItem
-              _id={space._id}
-              title={name}
-              icon={classIcon(client, space._class)}
-              selected={currentSpace === space._id}
-              actions={async () => await getActions(space)}
-              bold={isChanged(space, $notifyContextByDocStore, $inboxNotificationsByContextStore)}
-            />
-          </NavLink>
-        {/await}
-      {/if}
-    {/await}
+    <StarredNavItem
+      {space}
+      {model}
+      {currentSpace}
+      {currentSpecial}
+      {currentFragment}
+      {deselect}
+      isChanged={isChanged(space, $notifyContextByDocStore, $inboxNotificationsByContextStore)}
+    />
   {/each}
+
+  <svelte:fragment slot="visible">
+    {#if visibleSpace}
+      {@const model = getSpaceModel(visibleSpace._class)}
+      <StarredNavItem
+        space={visibleSpace}
+        {model}
+        {currentSpace}
+        {currentSpecial}
+        {currentFragment}
+        {deselect}
+        isChanged={isChanged(visibleSpace, $notifyContextByDocStore, $inboxNotificationsByContextStore)}
+        forciblyСollapsed
+      />
+    {/if}
+  </svelte:fragment>
 </TreeNode>
