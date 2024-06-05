@@ -30,7 +30,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@hcengineering/model": "^0.6.7",
+    "@hcengineering/model": "^0.6.11",
     "@hcengineering/model-core": "^0.6.0",
     "@hcengineering/model-view": "^0.6.0",
     "@hcengineering/model-workbench": "^0.6.1",
@@ -63,8 +63,8 @@
     "@hcengineering/model-templates": "^0.6.0",
     "@hcengineering/model-notification": "^0.6.0",
     "@hcengineering/model-text-editor": "^0.6.0",
-    "@hcengineering/core": "^0.6.28",
-    "@hcengineering/platform": "^0.6.9",
+    "@hcengineering/core": "^0.6.32",
+    "@hcengineering/platform": "^0.6.11",
     "@hcengineering/model-tags": "^0.6.0",
     "@hcengineering/model-calendar": "^0.6.0",
     "@hcengineering/model-server-calendar": "^0.6.0",

@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/support-assets",
-  "version": "0.6.1",
+  "version": "0.6.5",
   "main": "src/index.ts",
   "author": "Anticrm Platform Contributors",
   "template": "@hcengineering/assets-package",
@@ -33,8 +33,8 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/support": "^0.6.1"
+    "@hcengineering/platform": "^0.6.11",
+    "@hcengineering/support": "^0.6.5"
   },
   "repository": "https://github.com/hcenginneing/anticrm",
   "publishConfig": {

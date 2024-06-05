@@ -1,9 +1,14 @@
 {
   "name": "@hcengineering/login",
-  "version": "0.6.8",
+  "version": "0.6.12",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
+  "files": [
+    "lib/**/*",
+    "types/**/*",
+    "tsconfig.json"
+  ],
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
   "scripts": {
@@ -32,9 +37,9 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.28",
-    "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/ui": "^0.6.11"
+    "@hcengineering/core": "^0.6.32",
+    "@hcengineering/platform": "^0.6.11",
+    "@hcengineering/ui": "^0.6.15"
   },
   "repository": "https://github.com/hcenginneing/anticrm",
   "publishConfig": {

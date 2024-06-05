@@ -38,13 +38,13 @@
     "svelte-eslint-parser": "^0.33.1"
   },
   "dependencies": {
-    "@hcengineering/ui": "^0.6.11",
+    "@hcengineering/ui": "^0.6.15",
     "svelte": "^4.2.12",
     "lexorank": "~1.0.4",
-    "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/core": "^0.6.28",
-    "@hcengineering/presentation": "^0.6.2",
-    "@hcengineering/notification": "^0.6.16",
-    "@hcengineering/rank": "^0.6.0"
+    "@hcengineering/platform": "^0.6.11",
+    "@hcengineering/core": "^0.6.32",
+    "@hcengineering/presentation": "^0.6.3",
+    "@hcengineering/notification": "^0.6.23",
+    "@hcengineering/rank": "^0.6.4"
   }
 }

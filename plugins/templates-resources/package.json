@@ -38,14 +38,14 @@
     "svelte-eslint-parser": "^0.33.1"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.6.9",
+    "@hcengineering/platform": "^0.6.11",
     "svelte": "^4.2.12",
-    "@hcengineering/templates": "^0.6.7",
-    "@hcengineering/ui": "^0.6.11",
-    "@hcengineering/presentation": "^0.6.2",
+    "@hcengineering/templates": "^0.6.11",
+    "@hcengineering/ui": "^0.6.15",
+    "@hcengineering/presentation": "^0.6.3",
     "@hcengineering/text-editor": "^0.6.0",
-    "@hcengineering/core": "^0.6.28",
-    "@hcengineering/view": "^0.6.9",
+    "@hcengineering/core": "^0.6.32",
+    "@hcengineering/view": "^0.6.13",
     "@hcengineering/view-resources": "^0.6.0",
     "@hcengineering/contact-resources": "^0.6.0"
   }

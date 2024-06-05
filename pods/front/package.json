@@ -55,18 +55,18 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/prod": "1.0.1",
+    "@hcengineering/prod": "^1.0.1",
     "@hcengineering/front": "^0.6.0",
-    "@hcengineering/core": "^0.6.28",
-    "@hcengineering/platform": "^0.6.9",
+    "@hcengineering/core": "^0.6.32",
+    "@hcengineering/platform": "^0.6.11",
     "express": "^4.18.3",
     "express-fileupload": "^1.4.3",
     "uuid": "^8.3.2",
     "cors": "^2.8.5",
     "@hcengineering/elastic": "^0.6.0",
     "@hcengineering/server-core": "^0.6.1",
-    "@hcengineering/server-token": "^0.6.7",
-    "@hcengineering/attachment": "^0.6.9",
+    "@hcengineering/server-token": "^0.6.11",
+    "@hcengineering/attachment": "^0.6.14",
     "body-parser": "^1.20.2",
     "compression": "~1.7.4",
     "sharp": "~0.32.0"

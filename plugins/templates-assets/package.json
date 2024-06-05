@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/templates-assets",
-  "version": "0.6.7",
+  "version": "0.6.11",
   "main": "src/index.ts",
   "author": "Anticrm Platform Contributors",
   "template": "@hcengineering/assets-package",
@@ -33,8 +33,8 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/templates": "^0.6.7"
+    "@hcengineering/platform": "^0.6.11",
+    "@hcengineering/templates": "^0.6.11"
   },
   "repository": "https://github.com/hcenginneing/anticrm",
   "publishConfig": {

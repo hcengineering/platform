@@ -1,9 +1,14 @@
 {
   "name": "@hcengineering/text",
-  "version": "0.6.1",
+  "version": "0.6.5",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
+  "files": [
+    "lib/**/*",
+    "types/**/*",
+    "tsconfig.json"
+  ],
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
   "scripts": {
@@ -33,7 +38,7 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.28",
+    "@hcengineering/core": "^0.6.32",
     "@tiptap/core": "^2.2.4",
     "@tiptap/html": "^2.2.4",
     "@tiptap/pm": "^2.2.4",

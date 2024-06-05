@@ -34,7 +34,7 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.28",
+    "@hcengineering/core": "^0.6.32",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/storage": "^0.6.0",
     "@aws-sdk/client-s3": "^3.575.0",

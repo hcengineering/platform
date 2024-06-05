@@ -15,9 +15,9 @@
 
 import activity from '@hcengineering/activity'
 import chunter from '@hcengineering/chunter'
+import { AccountRole, type Ref, type Status } from '@hcengineering/core'
 import { type Builder } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
-import { AccountRole, type Ref, type Status } from '@hcengineering/core'
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
 import presentation from '@hcengineering/model-presentation'
 import task from '@hcengineering/model-task'
@@ -25,17 +25,21 @@ import view from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import setting from '@hcengineering/setting'
-import { classicIssueTaskStatuses, trackerId } from '@hcengineering/tracker'
+import pluginState, { trackerId } from '@hcengineering/tracker'
 
+import type { TaskStatusFactory } from '@hcengineering/task'
+import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 import { createActions as defineActions } from './actions'
 import tracker from './plugin'
 import { definePresenters } from './presenters'
 import {
   DOMAIN_TRACKER,
+  TClassicProjectTypeData,
   TComponent,
   TIssue,
   TIssueStatus,
   TIssueTemplate,
+  TIssueTypeData,
   TMilestone,
   TProject,
   TProjectTargetPreference,
@@ -45,9 +49,7 @@ import {
   TTypeIssuePriority,
   TTypeMilestoneStatus,
   TTypeRemainingTime,
-  TTypeReportedTime,
-  TClassicProjectTypeData,
-  TIssueTypeData
+  TTypeReportedTime
 } from './types'
 import { defineViewlets } from './viewlets'
 
@@ -57,6 +59,26 @@ export { issuesOptions } from './viewlets'
 export { trackerId } from '@hcengineering/tracker'
 export { trackerOperation } from './migration'
 export { default } from './plugin'
+
+/**
+ * @public
+ */
+export const classicIssueTaskStatuses: TaskStatusFactory[] = [
+  {
+    category: task.statusCategory.UnStarted,
+    statuses: [['Backlog', PaletteColorIndexes.Cloud, pluginState.status.Backlog]]
+  },
+  { category: task.statusCategory.ToDo, statuses: [['Todo', PaletteColorIndexes.Porpoise, pluginState.status.Todo]] },
+  {
+    category: task.statusCategory.Active,
+    statuses: [['In Progress', PaletteColorIndexes.Cerulean, pluginState.status.InProgress]]
+  },
+  { category: task.statusCategory.Won, statuses: [['Done', PaletteColorIndexes.Grass, pluginState.status.Done]] },
+  {
+    category: task.statusCategory.Lost,
+    statuses: [['Canceled', PaletteColorIndexes.Coin, pluginState.status.Canceled]]
+  }
+]
 
 function defineSortAndGrouping (builder: Builder): void {
   builder.mixin(tracker.class.IssueStatus, core.class.Class, view.mixin.SortFuncs, {

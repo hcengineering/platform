@@ -4,6 +4,11 @@
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
+  "files": [
+    "lib/**/*",
+    "types/**/*",
+    "tsconfig.json"
+  ],
   "author": "Hardcore Engineering Inc.",
   "scripts": {
     "build": "compile",
@@ -31,13 +36,13 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/ui": "^0.6.11",
-    "@hcengineering/core": "^0.6.28",
-    "@hcengineering/view": "^0.6.9",
-    "@hcengineering/contact": "^0.6.20",
-    "@hcengineering/notification": "^0.6.16",
-    "@hcengineering/attachment": "^0.6.9",
-    "@hcengineering/preference": "^0.6.9"
+    "@hcengineering/platform": "^0.6.11",
+    "@hcengineering/ui": "^0.6.15",
+    "@hcengineering/core": "^0.6.32",
+    "@hcengineering/view": "^0.6.13",
+    "@hcengineering/contact": "^0.6.24",
+    "@hcengineering/notification": "^0.6.23",
+    "@hcengineering/attachment": "^0.6.14",
+    "@hcengineering/preference": "^0.6.13"
   }
 }

@@ -30,10 +30,10 @@
   "dependencies": {
     "@anticrm/skillset": "^0.6.0",
     "@hcengineering/activity": "^0.6.0",
-    "@hcengineering/chunter": "^0.6.12",
-    "@hcengineering/contact": "^0.6.20",
-    "@hcengineering/core": "^0.6.28",
-    "@hcengineering/model": "^0.6.7",
+    "@hcengineering/chunter": "^0.6.20",
+    "@hcengineering/contact": "^0.6.24",
+    "@hcengineering/core": "^0.6.32",
+    "@hcengineering/model": "^0.6.11",
     "@hcengineering/model-attachment": "^0.6.0",
     "@hcengineering/model-calendar": "^0.6.0",
     "@hcengineering/model-chunter": "^0.6.0",
@@ -47,14 +47,14 @@
     "@hcengineering/model-tracker": "^0.6.0",
     "@hcengineering/model-view": "^0.6.0",
     "@hcengineering/model-workbench": "^0.6.1",
-    "@hcengineering/notification": "^0.6.16",
-    "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/recruit": "^0.6.21",
+    "@hcengineering/notification": "^0.6.23",
+    "@hcengineering/platform": "^0.6.11",
+    "@hcengineering/recruit": "^0.6.29",
     "@hcengineering/recruit-resources": "^0.6.0",
-    "@hcengineering/setting": "^0.6.11",
-    "@hcengineering/task": "^0.6.13",
-    "@hcengineering/ui": "^0.6.11",
-    "@hcengineering/view": "^0.6.9",
-    "@hcengineering/workbench": "^0.6.9"
+    "@hcengineering/setting": "^0.6.17",
+    "@hcengineering/task": "^0.6.20",
+    "@hcengineering/ui": "^0.6.15",
+    "@hcengineering/view": "^0.6.13",
+    "@hcengineering/workbench": "^0.6.16"
   }
 }

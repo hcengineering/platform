@@ -18,8 +18,12 @@ import type { AttachedDoc, Blob, Class, Ref } from '@hcengineering/core'
 import type { Asset, Plugin } from '@hcengineering/platform'
 import { IntlString, plugin, Resource } from '@hcengineering/platform'
 import type { Preference } from '@hcengineering/preference'
-import { type BlobMetadata } from '@hcengineering/presentation'
 import { AnyComponent } from '@hcengineering/ui'
+
+/**
+ * @public
+ */
+export type BlobMetadata = Record<string, any>
 
 /**
  * @public

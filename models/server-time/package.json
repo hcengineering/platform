@@ -28,12 +28,12 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.28",
-    "@hcengineering/model": "^0.6.7",
-    "@hcengineering/platform": "^0.6.9",
+    "@hcengineering/core": "^0.6.32",
+    "@hcengineering/model": "^0.6.11",
+    "@hcengineering/platform": "^0.6.11",
     "@hcengineering/server-time": "^0.6.0",
     "@hcengineering/time": "^0.6.0",
-    "@hcengineering/tracker": "^0.6.13",
+    "@hcengineering/tracker": "^0.6.24",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/model-core": "^0.6.0"
   }

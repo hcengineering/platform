@@ -29,20 +29,20 @@
   },
   "dependencies": {
     "@hcengineering/activity": "^0.6.0",
-    "@hcengineering/model": "^0.6.7",
-    "@hcengineering/core": "^0.6.28",
-    "@hcengineering/platform": "^0.6.9",
+    "@hcengineering/model": "^0.6.11",
+    "@hcengineering/core": "^0.6.32",
+    "@hcengineering/platform": "^0.6.11",
     "@hcengineering/model-core": "^0.6.0",
     "@hcengineering/model-attachment": "^0.6.0",
     "@hcengineering/model-contact": "^0.6.1",
-    "@hcengineering/view": "^0.6.9",
+    "@hcengineering/view": "^0.6.13",
     "@hcengineering/model-view": "^0.6.0",
-    "@hcengineering/contact": "^0.6.20",
-    "@hcengineering/bitrix": "^0.6.44",
+    "@hcengineering/contact": "^0.6.24",
+    "@hcengineering/bitrix": "^0.6.52",
     "@hcengineering/bitrix-resources": "^0.6.0",
-    "@hcengineering/preference": "^0.6.9",
+    "@hcengineering/preference": "^0.6.13",
     "@hcengineering/model-preference": "^0.6.0",
-    "@hcengineering/setting": "^0.6.11",
-    "@hcengineering/ui": "^0.6.11"
+    "@hcengineering/setting": "^0.6.17",
+    "@hcengineering/ui": "^0.6.15"
   }
 }

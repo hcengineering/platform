@@ -28,14 +28,14 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.28",
+    "@hcengineering/core": "^0.6.32",
     "@hcengineering/model-core": "^0.6.0",
-    "@hcengineering/model": "^0.6.7",
+    "@hcengineering/model": "^0.6.11",
     "@hcengineering/model-view": "^0.6.0",
-    "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/view": "^0.6.9",
-    "@hcengineering/ui": "^0.6.11",
-    "@hcengineering/presentation": "^0.6.2",
+    "@hcengineering/platform": "^0.6.11",
+    "@hcengineering/view": "^0.6.13",
+    "@hcengineering/ui": "^0.6.15",
+    "@hcengineering/presentation": "^0.6.3",
     "@hcengineering/model-presentation": "^0.6.0",
     "@hcengineering/print-resources": "^0.6.0",
     "@hcengineering/print": "^0.6.0"

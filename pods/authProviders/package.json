@@ -4,6 +4,11 @@
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
+  "files": [
+    "lib/**/*",
+    "types/**/*",
+    "tsconfig.json"
+  ],
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
   "scripts": {
@@ -41,7 +46,7 @@
   },
   "dependencies": {
     "mongodb": "^6.3.0",
-    "@hcengineering/core": "^0.6.28",
+    "@hcengineering/core": "^0.6.32",
     "@hcengineering/account": "^0.6.0",
     "passport-google-oauth20": "~2.0.0",
     "passport-github2": "~0.1.12",

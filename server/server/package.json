@@ -4,6 +4,11 @@
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
+  "files": [
+    "lib/**/*",
+    "types/**/*",
+    "tsconfig.json"
+  ],
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
   "scripts": {
@@ -36,17 +41,17 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.28",
-    "@hcengineering/platform": "^0.6.9",
+    "@hcengineering/core": "^0.6.32",
+    "@hcengineering/platform": "^0.6.11",
     "@hcengineering/server-core": "^0.6.1",
     "@hcengineering/server-ws": "^0.6.11",
     "@hcengineering/mongo": "^0.6.1",
     "@hcengineering/minio": "^0.6.0",
     "@hcengineering/elastic": "^0.6.0",
     "elastic-apm-node": "~3.26.0",
-    "@hcengineering/server-token": "^0.6.7",
+    "@hcengineering/server-token": "^0.6.11",
     "@hcengineering/middleware": "^0.6.0",
-    "@hcengineering/text": "^0.6.1",
+    "@hcengineering/text": "^0.6.5",
     "got": "^11.8.3",
     "@hcengineering/server-storage": "^0.6.0"
   }

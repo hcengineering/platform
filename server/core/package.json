@@ -35,11 +35,11 @@
     "@types/uuid": "^8.3.1"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.6.28",
-    "@hcengineering/platform": "^0.6.9",
-    "@hcengineering/text": "^0.6.1",
+    "@hcengineering/core": "^0.6.32",
+    "@hcengineering/platform": "^0.6.11",
+    "@hcengineering/text": "^0.6.5",
     "@hcengineering/analytics": "^0.6.0",
-    "@hcengineering/query": "^0.6.8",
+    "@hcengineering/query": "^0.6.12",
     "fast-equals": "^5.0.1",
     "@hcengineering/storage": "^0.6.0",
     "html-to-text": "^9.0.3",
