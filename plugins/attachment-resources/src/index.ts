@@ -20,7 +20,6 @@ import preference from '@hcengineering/preference'
 import { PDFViewer, deleteFile, getClient, uploadFile } from '@hcengineering/presentation'
 import activity, { type ActivityMessage, type DocUpdateMessage } from '@hcengineering/activity'
 
-import TxAttachmentCreate from './components/activity/TxAttachmentCreate.svelte'
 import AddAttachment from './components/AddAttachment.svelte'
 import AttachmentDocList from './components/AttachmentDocList.svelte'
 import AttachmentDroppable from './components/AttachmentDroppable.svelte'
@@ -261,7 +260,6 @@ export default async (): Promise<Resources> => ({
     PDFViewer
   },
   activity: {
-    TxAttachmentCreate,
     AttachmentsUpdatedMessage
   },
   helper: {

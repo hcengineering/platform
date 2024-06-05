@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { TxViewlet, ActivityMessage, DocUpdateMessageViewlet } from '@hcengineering/activity'
+import type { ActivityMessage, DocUpdateMessageViewlet } from '@hcengineering/activity'
 import { attachmentId } from '@hcengineering/attachment'
 import attachment from '@hcengineering/attachment-resources/src/plugin'
 import type { Ref, Doc } from '@hcengineering/core'
@@ -44,13 +44,10 @@ export default mergeIds(attachmentId, attachment, {
     ContentType: '' as IntlString
   },
   ids: {
-    TxAttachmentCreate: '' as Ref<TxViewlet>,
-    TxAttachmentRemove: '' as Ref<TxViewlet>,
     AttachmentCreatedActivityViewlet: '' as Ref<DocUpdateMessageViewlet>,
     AttachmentRemovedActivityViewlet: '' as Ref<DocUpdateMessageViewlet>
   },
   activity: {
-    TxAttachmentCreate: '' as AnyComponent,
     AttachmentsUpdatedMessage: '' as AnyComponent
   },
   category: {
