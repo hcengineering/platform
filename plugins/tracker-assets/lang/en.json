@@ -44,6 +44,7 @@
     "ProjectTitlePlaceholder": "New project",
     "UsedInIssueIDs": "Used in issue IDs",
     "Identifier": "Identifier",
+    "Import": "Import",
     "ProjectIdentifier": "Project Identifier",
     "IdentifierExists": "Project identifier already exists",
     "ProjectIdentifierPlaceholder": "PRJCT",

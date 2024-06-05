@@ -44,6 +44,7 @@
     "ProjectTitlePlaceholder": "Новый проект",
     "UsedInIssueIDs": "Используется в идентификаторах задач",
     "Identifier": "Идентификатор",
+    "Import": "Импорт",
     "ProjectIdentifier": "Идентификатор проекта",
     "IdentifierExists": "Идентификатор уже существует проекта",
     "ProjectIdentifierPlaceholder": "ПКТ",
