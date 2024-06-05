@@ -150,7 +150,10 @@ async function exportTasks (docs: Task | Task[]): Promise<void> {
   const link = document.createElement('a')
   link.style.display = 'none'
   link.setAttribute('target', '_blank')
-  link.setAttribute('href', 'data:application/json;charset=utf-8,%EF%BB%BF' + encodeURIComponent(JSON.stringify(toExport)))
+  link.setAttribute(
+    'href',
+    'data:application/json;charset=utf-8,%EF%BB%BF' + encodeURIComponent(JSON.stringify(toExport))
+  )
   link.setAttribute('download', filename)
   document.body.appendChild(link)
   link.click()
