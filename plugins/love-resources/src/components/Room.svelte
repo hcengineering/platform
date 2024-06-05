@@ -32,14 +32,7 @@
   import { onDestroy, onMount, tick } from 'svelte'
   import love from '../plugin'
   import { currentRoom, infos, invites, myInfo, myRequests } from '../stores'
-  import {
-    awaitConnect,
-    isConnected,
-    isCurrentInstanceConnected,
-    lk,
-    screenSharing,
-    tryConnect
-  } from '../utils'
+  import { awaitConnect, isConnected, isCurrentInstanceConnected, lk, screenSharing, tryConnect } from '../utils'
   import ControlBar from './ControlBar.svelte'
   import ParticipantView from './ParticipantView.svelte'
 
