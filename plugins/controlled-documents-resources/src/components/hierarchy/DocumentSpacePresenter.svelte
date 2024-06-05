@@ -16,14 +16,7 @@
   import { WithLookup, type Doc, type Ref, type Space } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { getResource } from '@hcengineering/platform'
-  import {
-    type Action,
-    getPlatformColorForTextDef,
-    themeStore,
-    navigate,
-    IconEdit,
-    Label
-  } from '@hcengineering/ui'
+  import { type Action, getPlatformColorForTextDef, themeStore, navigate, IconEdit, Label } from '@hcengineering/ui'
   import { getActions as getContributedActions, TreeNode, TreeItem } from '@hcengineering/view-resources'
   import { ActionGroup } from '@hcengineering/view'
   import {
@@ -96,20 +89,28 @@
   let selectedControlledDoc: ControlledDocument | undefined = undefined
 
   $: if (selected !== undefined) {
-    void client.findOne(documents.class.ProjectDocument, { _id: selected }, {
-      lookup: {
-        document: documents.class.ControlledDocument
-      }
-    }).then((result) => {
-      if (result !== undefined) {
-        selectedControlledDoc = result.$lookup?.document
-      } else {
-        // There's some issue with resolving which needs to be fixed later
-        void client.findOne(documents.class.ControlledDocument, { _id: selected as unknown as Ref<ControlledDocument> }).then((result) => {
-          selectedControlledDoc = result
-        })
-      }
-    })
+    void client
+      .findOne(
+        documents.class.ProjectDocument,
+        { _id: selected },
+        {
+          lookup: {
+            document: documents.class.ControlledDocument
+          }
+        }
+      )
+      .then((result) => {
+        if (result !== undefined) {
+          selectedControlledDoc = result.$lookup?.document as ControlledDocument
+        } else {
+          // There's some issue with resolving which needs to be fixed later
+          void client
+            .findOne(documents.class.ControlledDocument, { _id: selected as unknown as Ref<ControlledDocument> })
+            .then((result) => {
+              selectedControlledDoc = result
+            })
+        }
+      })
   } else {
     selectedControlledDoc = undefined
   }
@@ -187,6 +188,7 @@
   }}
   title={space.name}
   highlighted={space._id === currentSpace && currentFragment !== undefined && !deselect}
+  visible={(space._id === currentSpace && currentFragment !== undefined && !deselect) || forciblyСollapsed}
   showMenu={pressed}
   {forciblyСollapsed}
   actions={() => getSpaceActions(space)}

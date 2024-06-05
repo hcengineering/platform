@@ -58,7 +58,7 @@
   let inlineActions: Action[] = []
   let popupMenuActions: Action[] = []
 
-  $: actions && actions().then((result) => {
+  $: actions().then((result) => {
     inlineActions = result.filter((action) => action.inline === true)
     popupMenuActions = result.filter((action) => action.inline !== true)
   })
