@@ -21,7 +21,6 @@ import { type Action, type ActionCategory } from '@hcengineering/view'
 import { timeId } from '@hcengineering/time'
 import time from '@hcengineering/time-resources/src/plugin'
 import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
-import { type TxViewlet } from '@hcengineering/activity'
 
 export default mergeIds(timeId, time, {
   action: {
@@ -59,8 +58,7 @@ export default mergeIds(timeId, time, {
   },
   ids: {
     TimeNotificationGroup: '' as Ref<NotificationGroup>,
-    ToDoCreated: '' as Ref<NotificationType>,
-    TxToDoCreated: '' as Ref<TxViewlet>
+    ToDoCreated: '' as Ref<NotificationType>
   },
   function: {
     ToDoTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>
