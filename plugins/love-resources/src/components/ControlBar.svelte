@@ -47,9 +47,6 @@
   const allowShare: boolean = true
   let allowLeave: boolean = false
 
-  let barWidth: number
-  $: noLabel = barWidth < 900
-
   $: allowCam = $currentRoom?.type === RoomType.Video
   $: allowLeave = $myInfo?.room !== ($myOffice?._id ?? love.ids.Reception)
 
@@ -104,7 +101,7 @@
   const micKeys = client.getModel().findAllSync(view.class.Action, { _id: love.action.ToggleMic })?.[0]?.keyBinding
 </script>
 
-<div bind:clientWidth={barWidth} class="bar w-full flex-center flex-gap-2 flex-no-shrink">
+<div class="bar w-full flex-center flex-gap-2 flex-no-shrink">
   {#if room._id !== love.ids.Reception}
     <ModernButton
       icon={roomAccessIcon[room.access]}
@@ -162,7 +159,7 @@
     {#if hasAccountRole(getCurrentAccount(), AccountRole.User)}
       <ModernButton
         icon={view.icon.Copy}
-        tooltip={{ label: !linkCopied ? love.string.CopyGuestLink : view.string.Copied }}
+        tooltip={{ label: !linkCopied ? love.string.CopyGuestLink : view.string.Copied, direction: 'top' }}
         kind={'secondary'}
         size={'large'}
         on:click={copyGuestLink}
@@ -171,8 +168,8 @@
     {#if allowLeave}
       <ModernButton
         icon={love.icon.LeaveRoom}
-        label={noLabel ? undefined : love.string.LeaveRoom}
-        tooltip={{ label: love.string.LeaveRoom }}
+        label={love.string.LeaveRoom}
+        tooltip={{ label: love.string.LeaveRoom, direction: 'top' }}
         kind={'negative'}
         size={'large'}
         on:click={leave}

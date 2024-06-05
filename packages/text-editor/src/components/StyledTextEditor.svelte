@@ -16,7 +16,7 @@
   import { Markup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { EmptyMarkup } from '@hcengineering/text'
-  import { Button, ButtonSize, Scroller } from '@hcengineering/ui'
+  import { Button, type ButtonSize, Scroller } from '@hcengineering/ui'
   import { AnyExtension, mergeAttributes } from '@tiptap/core'
   import { createEventDispatcher } from 'svelte'
   import textEditorPlugin from '../plugin'
@@ -50,8 +50,6 @@
   ]
 
   let textEditor: TextEditor | undefined = undefined
-
-  let contentHeight: number
 
   export function submit (): void {
     textEditor?.submit()
@@ -162,13 +160,7 @@
   on:click|preventDefault|stopPropagation={() => (needFocus = true)}
 >
   <div class="textInput">
-    <div
-      bind:clientHeight={contentHeight}
-      class="inputMsg"
-      class:showScroll={contentHeight > 32}
-      class:scrollable={isScrollable}
-      style="--texteditor-maxheight: {varsStyle};"
-    >
+    <div class="inputMsg" class:scrollable={isScrollable} style:--texteditor-maxheight={varsStyle}>
       {#if isScrollable}
         <Scroller>
           <TextEditor
@@ -257,10 +249,6 @@
 
         &.scrollable {
           max-height: var(--texteditor-maxheight);
-
-          &.showScroll {
-            overflow: auto;
-          }
         }
         &:not(.showScroll) {
           overflow-y: hidden;
