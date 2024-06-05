@@ -26,8 +26,6 @@ import type { Action, ActionCategory, ViewAction, Viewlet, ViewletDescriptor } f
 export default mergeIds(chunterId, chunter, {
   component: {
     ChannelPresenter: '' as AnyComponent,
-    DirectMessagePresenter: '' as AnyComponent,
-    MessagePresenter: '' as AnyComponent,
     DmPresenter: '' as AnyComponent,
     ChannelsPanel: '' as AnyComponent,
     Chat: '' as AnyComponent,
