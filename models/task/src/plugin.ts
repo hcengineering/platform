@@ -29,13 +29,15 @@ export default mergeIds(taskId, task, {
     ArchiveSpace: '' as Ref<Action>,
     UnarchiveSpace: '' as Ref<Action>,
     ArchiveState: '' as Ref<Action>,
-    PublicLink: '' as Ref<Action<Doc, any>>
+    PublicLink: '' as Ref<Action<Doc, any>>,
+    ExportTasks: '' as Ref<Action>
   },
   actionImpl: {
     EditStatuses: '' as ViewAction,
     ArchiveSpace: '' as ViewAction,
     UnarchiveSpace: '' as ViewAction,
-    SelectStatus: '' as ViewAction
+    SelectStatus: '' as ViewAction,
+    ExportTasks: '' as ViewAction
   },
   category: {
     Task: '' as Ref<ActionCategory>,
@@ -74,6 +76,7 @@ export default mergeIds(taskId, task, {
     ManageProjects: '' as IntlString,
     StateBacklog: '' as IntlString,
     StateActive: '' as IntlString,
-    StateUnstarted: '' as IntlString
+    StateUnstarted: '' as IntlString,
+    Export: '' as IntlString
   }
 })

@@ -44,6 +44,7 @@
     "ProjectTitlePlaceholder": "Nuevo proyecto",
     "UsedInIssueIDs": "Utilizado en IDs de tareas",
     "Identifier": "Identificador",
+    "Import": "Importar",
     "ProjectIdentifier": "Identificador del proyecto",
     "IdentifierExists": "El identificador del proyecto ya existe",
     "ProjectIdentifierPlaceholder": "PROJ",

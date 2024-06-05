@@ -20,6 +20,8 @@
   import { onDestroy } from 'svelte'
   import tracker from '../plugin'
   import CreateIssue from './CreateIssue.svelte'
+  import { importTasks } from '..'
+  import { Project } from '@hcengineering/tracker'
 
   export let currentSpace: Ref<Space> | undefined
 
@@ -50,6 +52,10 @@
         {
           id: tracker.string.NewIssue,
           label
+        },
+        {
+          id: tracker.string.Import,
+          label: tracker.string.Import
         }
       ]
     : [
@@ -61,6 +67,7 @@
   const client = getClient()
 
   let keys: string[] | undefined = undefined
+  let inputFile: HTMLInputElement
   async function dropdownItemSelected (res?: SelectPopupValueType['id']): Promise<void> {
     if (res == null) return
 
@@ -69,15 +76,38 @@
       showPopup(tracker.component.CreateProject, {}, 'top', () => {
         closed = true
       })
+    } else if (res === tracker.string.Import) {
+      inputFile.click()
     } else {
       await newIssue()
     }
   }
 
+  async function fileSelected (): Promise<void> {
+    const list = inputFile.files
+    if (list === null || list.length === 0) return
+    for (let index = 0; index < list.length; index++) {
+      const file = list.item(index)
+      if (file !== null && currentSpace != null) {
+        await importTasks(file, currentSpace as Ref<Project>)
+      }
+    }
+    inputFile.value = ''
+  }
   client.findOne(view.class.Action, { _id: tracker.action.NewIssue }).then((p) => (keys = p?.keyBinding))
 </script>
 
 <div class="antiNav-subheader">
+  <input
+    bind:this={inputFile}
+    multiple
+    type="file"
+    name="file"
+    id="tasksInput"
+    accept="application/json"
+    style="display: none"
+    on:change={fileSelected}
+  />
   <ButtonWithDropdown
     icon={IconAdd}
     justify={'left'}

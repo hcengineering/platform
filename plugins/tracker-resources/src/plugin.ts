@@ -101,6 +101,7 @@ export default mergeIds(trackerId, tracker, {
     Title: '' as IntlString,
     UsedInIssueIDs: '' as IntlString,
     Identifier: '' as IntlString,
+    Import: '' as IntlString,
     ProjectIdentifier: '' as IntlString,
     IdentifierExists: '' as IntlString,
     Description: '' as IntlString,
