@@ -30,7 +30,7 @@
 
 <div class="hulyPanels-container" class:left-divider={$screenSharing || $currentRoom?.type === RoomType.Video}>
   {#if ($currentRoom !== undefined && $screenSharing) || $currentRoom?.type === RoomType.Video}
-    <RoomComponent withVideo={$currentRoom.type === RoomType.Video} room={$currentRoom._id} />
+    <RoomComponent withVideo={$currentRoom.type === RoomType.Video} room={$currentRoom} />
   {:else}
     <Hall bind:visibleNav {navFloat} {appsDirection} />
   {/if}

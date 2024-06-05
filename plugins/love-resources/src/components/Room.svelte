@@ -14,10 +14,10 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import { Ref } from '@hcengineering/core'
-  import { Label, Loading, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
+  import { personByIdStore } from '@hcengineering/contact-resources'
   import { Room as TypeRoom } from '@hcengineering/love'
   import { getMetadata } from '@hcengineering/platform'
+  import { Label, Loading, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import {
     LocalParticipant,
     LocalTrackPublication,
@@ -31,13 +31,13 @@
   } from 'livekit-client'
   import { onDestroy, onMount, tick } from 'svelte'
   import love from '../plugin'
-  import { currentRoom, infos } from '../stores'
-  import { awaitConnect, isConnected, isCurrentInstanceConnected, lk, screenSharing } from '../utils'
+  import { currentRoom, infos, invites, myInfo, myRequests } from '../stores'
+  import { awaitConnect, isConnected, isCurrentInstanceConnected, lk, screenSharing, tryConnect } from '../utils'
   import ControlBar from './ControlBar.svelte'
   import ParticipantView from './ParticipantView.svelte'
 
   export let withVideo: boolean
-  export let room: Ref<TypeRoom>
+  export let room: TypeRoom
 
   interface ParticipantData {
     _id: string
@@ -214,6 +214,11 @@
 
     configured = true
 
+    if (!$isConnected && !$isCurrentInstanceConnected) {
+      const info = $infos.filter((p) => p.room === room._id)
+      await tryConnect($personByIdStore, $myInfo, room, info, $myRequests, $invites)
+    }
+
     await awaitConnect()
     for (const participant of lk.remoteParticipants.values()) {
       attachParticipant(participant)
@@ -259,7 +264,7 @@
   onDestroy(
     infos.subscribe((data) => {
       for (const info of data) {
-        if (info.room !== room) continue
+        if (info.room !== room._id) continue
         const current = participants.find((p) => p._id === info.person)
         if (current !== undefined) continue
         const value: ParticipantData = {
