@@ -56,6 +56,7 @@
   export let level: number = 0
   export let _id: any = undefined
 
+  let labelEl: HTMLSpanElement
   let labelWidth: number
   let levelReset: boolean = false
   let hovered: boolean = false
@@ -65,6 +66,14 @@
   $: isOpen = !getTreeCollapsed(_id, collapsedPrefix)
   $: setTreeCollapsed(_id, !isOpen, collapsedPrefix)
   $: visibleIcon = folderIcon ? (isOpen && !empty ? IconFolderExpanded : IconFolderCollapsed) : icon
+
+  const mouseOver = () => {
+    if (!hovered) {
+      labelWidth = labelEl.getBoundingClientRect().width
+      hovered = true
+    }
+    if (!levelReset && labelWidth < 16 && level > 0) levelReset = true
+  }
 </script>
 
 <!-- svelte-ignore a11y-mouse-events-have-key-events -->
@@ -78,10 +87,7 @@
   class:disabled
   class:showMenu
   class:noActions={$$slots.actions === undefined}
-  on:mouseover={() => {
-    if (!levelReset && labelWidth < 16 && level > 0) levelReset = true
-    if (!hovered) hovered = true
-  }}
+  on:mouseover={mouseOver}
   on:mouseleave={() => {
     if (levelReset && !showMenu) levelReset = false
     hovered = false
@@ -115,7 +121,7 @@
     </div>
   {/if}
   <span
-    bind:clientWidth={labelWidth}
+    bind:this={labelEl}
     use:tooltip={shouldTooltip ? { label: label ?? getEmbeddedLabel(title ?? ''), direction: 'top' } : undefined}
     class="{description ? 'hulyNavItem-wideLabel' : 'hulyNavItem-label'} overflow-label"
     class:flex-grow={!(type === 'type-anchor-link')}
