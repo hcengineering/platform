@@ -18,7 +18,6 @@ import { type Resources } from '@hcengineering/platform'
 import { getClient, MessageBox } from '@hcengineering/presentation'
 import { showPopup } from '@hcengineering/ui'
 import { deleteObject } from '@hcengineering/view-resources/src/utils'
-import TxIntegrationDisable from './components/activity/TxIntegrationDisable.svelte'
 import ClassSetting from './components/ClassSetting.svelte'
 import CreateMixin from './components/CreateMixin.svelte'
 import EditEnum from './components/EditEnum.svelte'
@@ -89,9 +88,6 @@ async function DeleteMixin (object: Mixin<Class<Doc>>): Promise<void> {
 }
 
 export default async (): Promise<Resources> => ({
-  activity: {
-    TxIntegrationDisable
-  },
   component: {
     Settings,
     Spaces,

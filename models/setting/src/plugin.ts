@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { DocUpdateMessageViewlet, TxViewlet } from '@hcengineering/activity'
+import type { DocUpdateMessageViewlet } from '@hcengineering/activity'
 import { type Doc, type Ref } from '@hcengineering/core'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { settingId } from '@hcengineering/setting'
@@ -24,11 +24,7 @@ import { type TemplateFieldFunc } from '@hcengineering/templates'
 import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
 
 export default mergeIds(settingId, setting, {
-  activity: {
-    TxIntegrationDisable: '' as AnyComponent
-  },
   ids: {
-    TxIntegrationDisable: '' as Ref<TxViewlet>,
     EnumSetting: '' as Ref<Doc>,
     Configure: '' as Ref<Doc>,
     SettingNotificationGroup: '' as Ref<NotificationGroup>,
