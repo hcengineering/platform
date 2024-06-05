@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type Doc, type Ref, type Class, type DocumentQuery } from '@hcengineering/core'
+import { type Doc, type Ref, type Class, type DocumentQuery, DOMAIN_TX } from '@hcengineering/core'
 import {
   createDefaultSpace,
   tryMigrate,
@@ -88,9 +88,10 @@ export const notificationOperation: MigrateOperation = {
     ])
     await tryMigrate(client, notificationId, [
       {
-        state: 'delete-old-notifications',
+        state: 'remove-old-classes',
         func: async (client) => {
           await client.deleteMany(DOMAIN_NOTIFICATION, { _class: 'notification:class:DocUpdates' as Ref<Class<Doc>> })
+          await client.deleteMany(DOMAIN_TX, { objectClass: 'notification:class:DocUpdates' as Ref<Class<Doc>> })
         }
       }
     ])

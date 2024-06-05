@@ -32,7 +32,8 @@ import {
   type Ref,
   type Space,
   type Timestamp,
-  type Tx
+  type Tx,
+  type IndexingConfiguration
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -636,6 +637,16 @@ export function createModel (builder: Builder): void {
     indexes: [{ user: 1, archived: 1 }],
     disabled: [{ modifiedOn: 1 }, { modifiedBy: 1 }, { createdBy: 1 }, { isViewed: 1 }, { hidden: 1 }]
   })
+
+  builder.mixin<Class<DocNotifyContext>, IndexingConfiguration<DocNotifyContext>>(
+    notification.class.DocNotifyContext,
+    core.class.Class,
+    core.mixin.IndexConfiguration,
+    {
+      searchDisabled: true,
+      indexes: []
+    }
+  )
 }
 
 export function generateClassNotificationTypes (

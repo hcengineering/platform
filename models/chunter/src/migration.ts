@@ -21,7 +21,8 @@ import core, {
   type Doc,
   type Domain,
   type Ref,
-  type Space
+  type Space,
+  DOMAIN_TX
 } from '@hcengineering/core'
 import {
   tryMigrate,
@@ -176,6 +177,21 @@ async function removeBacklinks (client: MigrationClient): Promise<void> {
   })
 }
 
+async function removeOldClasses (client: MigrationClient): Promise<void> {
+  const classes = [
+    'chunter:class:ChunterMessage',
+    'chunter:class:Message',
+    'chunter:class:Comment',
+    'chunter:class:Backlink'
+  ] as Ref<Class<Doc>>[]
+
+  for (const _class of classes) {
+    await client.deleteMany(DOMAIN_CHUNTER, { _class })
+    await client.deleteMany(DOMAIN_TX, { objectClass: _class })
+    await client.deleteMany(DOMAIN_TX, { 'tx.objectClass': _class })
+  }
+}
+
 export const chunterOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await tryMigrate(client, chunterId, [
@@ -212,8 +228,7 @@ export const chunterOperation: MigrateOperation = {
       {
         state: 'remove-old-classes',
         func: async (client) => {
-          await client.deleteMany(DOMAIN_CHUNTER, { _class: 'chunter:class:ChunterMessage' as Ref<Class<Doc>> })
-          await client.deleteMany(DOMAIN_CHUNTER, { _class: 'chunter:class:Message' as Ref<Class<Doc>> })
+          await removeOldClasses(client)
         }
       }
     ])
