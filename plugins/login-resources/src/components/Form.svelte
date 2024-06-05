@@ -136,12 +136,16 @@
   style:padding={$deviceInfo.docWidth <= 480 ? '.25rem 1.25rem' : '4rem 5rem'}
   style:min-height={$deviceInfo.docHeight > 720 ? '42rem' : '0'}
   on:keydown={(evt) => {
-    if (evt.key === 'Enter' && !inAction) {
-      validate($themeStore.language).then((res) => {
-        if (res) {
-          performAction(action)
-        }
-      })
+    if (evt.key === 'Enter') {
+      evt.preventDefault()
+      evt.stopPropagation()
+      if (!inAction) {
+        validate($themeStore.language).then((res) => {
+          if (res) {
+            performAction(action)
+          }
+        })
+      }
     }
   }}
 >
