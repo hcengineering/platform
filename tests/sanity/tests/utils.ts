@@ -135,7 +135,7 @@ export const checkTextChunksVisibility = async (page: Page, textChunks: string[]
  */
 
 function resolveFilePath (fileName: string): string {
-  return path.resolve(__dirname, fileName)
+  return path.resolve(__dirname,'.','files', fileName)
 }
 
 /**

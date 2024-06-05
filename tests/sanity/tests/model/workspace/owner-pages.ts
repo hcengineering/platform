@@ -21,12 +21,13 @@ export class OwnersPage {
   addEnum = (): Locator => this.page.locator('.buttons-group > button:nth-child(2)')
   enterEnumTitle = (): Locator => this.page.getByPlaceholder('Enum title')
   enterEnumName = (): Locator => this.page.getByPlaceholder('Enter option title')
-  saveEnum = (): Locator => this.page.getByRole('button', { name: 'Save' })
+  saveButton = (): Locator => this.page.getByRole('button', { name: 'Save' })
   createdEnum = (name: string): Locator => this.page.getByRole('button', { name: `${name} 1 option` })
   enum = (name: string): Locator => this.page.getByRole('button', { name })
   linkValidFor = (): Locator => this.page.getByRole('spinbutton')
   emailMask = (): Locator => this.page.getByRole('textbox', { name: 'Type text...' })
   noLimitToggleButton = (): Locator => this.page.locator('label span')
+  avatarLarge = (): Locator => this.page.locator('.hulyAvatarSize-x-large.ava-image');
 
   async addMember (memberName: string): Promise<void> {
     await expect(this.spacesAdminText()).toBeVisible()
@@ -58,9 +59,19 @@ export class OwnersPage {
     await this.addEnum().click()
     await this.enterEnumName().fill(enumName)
     await this.page.keyboard.press('Enter')
-    await this.saveEnum().click()
+    await this.saveButton().click()
     await expect(this.createdEnum(enumTitle)).toBeVisible()
     await this.createdEnum(enumTitle).click()
     await expect(this.enum(enumName)).toBeVisible()
+  }
+
+  async saveUploadedLogo (): Promise<void> {
+    await this.saveButton().nth(1).click()
+    await this.saveButton().click()
+  }
+
+  async checkIfPictureIsUploaded (): Promise<void> {
+    await expect(this.avatarLarge()).toBeVisible()
+    await expect(this.avatarLarge()).toHaveAttribute('src')
   }
 }

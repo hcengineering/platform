@@ -83,7 +83,8 @@ test.describe('Workspace tests', () => {
     await workspaceSettingsPage.selectWorkspaceSettingsTab(ButtonType.Branding)
     await ownersPage.clickOnWorkspaceLogo()
     await uploadFile(page, 'cat3.jpeg')
-    // ADD ASSERTION
+    await ownersPage.saveUploadedLogo()
+    await ownersPage.checkIfPictureIsUploaded()
   })
 
   test('User is able to create template', async ({ page }) => {
