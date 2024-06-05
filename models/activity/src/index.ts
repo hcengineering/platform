@@ -32,7 +32,6 @@ import {
   type IgnoreActivity,
   type Reaction,
   type SavedMessage,
-  type TxViewlet,
   type ReplyProvider
 } from '@hcengineering/activity'
 import contact, { type Person } from '@hcengineering/contact'
@@ -92,21 +91,6 @@ export class TActivityAttributeUpdatesPresenter extends TClass implements Activi
 
 @Mixin(activity.mixin.IgnoreActivity, core.class.Class)
 export class TIgnoreActivity extends TClass implements IgnoreActivity {}
-
-@Model(activity.class.TxViewlet, core.class.Doc, DOMAIN_MODEL)
-export class TTxViewlet extends TDoc implements TxViewlet {
-  icon!: Asset
-  objectClass!: Ref<Class<Doc>>
-  txClass!: Ref<Class<Tx>>
-  // Component to display on.
-  component!: AnyComponent
-  // Filter
-  match?: DocumentQuery<Tx>
-  label!: IntlString
-  display!: 'inline' | 'content' | 'emphasized'
-  editable!: boolean
-  hideOnRemove!: boolean
-}
 
 @Model(activity.class.ActivityMessage, core.class.AttachedDoc, DOMAIN_ACTIVITY)
 export class TActivityMessage extends TAttachedDoc implements ActivityMessage {
@@ -267,7 +251,6 @@ export class TUserMentionInfo extends TAttachedDoc {
 
 export function createModel (builder: Builder): void {
   builder.createModel(
-    TTxViewlet,
     TActivityDoc,
     TActivityMessagesFilter,
     TActivityMessage,
