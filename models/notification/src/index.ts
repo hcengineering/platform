@@ -61,8 +61,6 @@ import {
   type CommonInboxNotification,
   type CommonNotificationType,
   type DocNotifyContext,
-  type DocUpdateTx,
-  type DocUpdates,
   type InboxNotification,
   type MentionInboxNotification,
   type NotificationContextPresenter,
@@ -78,7 +76,7 @@ import {
   type PushSubscription,
   type PushSubscriptionKeys
 } from '@hcengineering/notification'
-import { getEmbeddedLabel, type Asset, type IntlString, type Resource } from '@hcengineering/platform'
+import { type Asset, type IntlString, type Resource } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
 import { type AnyComponent, type Location } from '@hcengineering/ui/src/types'
 
@@ -183,25 +181,6 @@ export class TNotificationPreview extends TClass implements NotificationPreview 
 @Mixin(notification.mixin.NotificationContextPresenter, core.class.Class)
 export class TNotificationContextPresenter extends TClass implements NotificationContextPresenter {
   labelPresenter?: AnyComponent
-}
-
-@Model(notification.class.DocUpdates, core.class.Doc, DOMAIN_NOTIFICATION)
-export class TDocUpdates extends TDoc implements DocUpdates {
-  @Prop(TypeRef(core.class.Account), core.string.Account)
-  @Index(IndexKind.Indexed)
-    user!: Ref<Account>
-
-  @Prop(TypeRef(core.class.Account), core.string.AttachedTo)
-  @Index(IndexKind.Indexed)
-    attachedTo!: Ref<Doc>
-
-  @Prop(TypeRef(core.class.Account), getEmbeddedLabel('Hidden'))
-  // @Index(IndexKind.Indexed)
-    hidden!: boolean
-
-  attachedToClass!: Ref<Class<Doc>>
-  lastTxTime?: Timestamp
-  txes!: DocUpdateTx[]
 }
 
 @Model(notification.class.DocNotifyContext, core.class.Doc, DOMAIN_NOTIFICATION)
@@ -339,7 +318,6 @@ export function createModel (builder: Builder): void {
     TNotificationPreferencesGroup,
     TClassCollaborators,
     TCollaborators,
-    TDocUpdates,
     TNotificationObjectPresenter,
     TNotificationPreview,
     TDocNotifyContext,
