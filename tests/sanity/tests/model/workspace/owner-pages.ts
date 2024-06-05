@@ -27,7 +27,7 @@ export class OwnersPage {
   linkValidFor = (): Locator => this.page.getByRole('spinbutton')
   emailMask = (): Locator => this.page.getByRole('textbox', { name: 'Type text...' })
   noLimitToggleButton = (): Locator => this.page.locator('label span')
-  avatarLarge = (): Locator => this.page.locator('.hulyAvatarSize-x-large.ava-image');
+  avatarLarge = (): Locator => this.page.locator('.hulyAvatarSize-x-large.ava-image')
 
   async addMember (memberName: string): Promise<void> {
     await expect(this.spacesAdminText()).toBeVisible()
