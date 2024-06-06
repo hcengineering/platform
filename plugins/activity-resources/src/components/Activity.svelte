@@ -16,7 +16,7 @@
   import activity, { ActivityExtension, ActivityMessage, DisplayActivityMessage } from '@hcengineering/activity'
   import { Doc, Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Grid, Label, Spinner, location } from '@hcengineering/ui'
+  import { Grid, Label, Spinner, location, Lazy } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
 
   import ActivityExtensionComponent from './ActivityExtension.svelte'
@@ -56,9 +56,6 @@
     if (id !== undefined) {
       selectedMessageId = id
       shouldScroll = true
-      // prevScrollTimestamp = 0
-      // prevContainerWidth = -1
-      // prevContainerHeight = -1
       void scrollToMessage(id)
       messageInFocus.set(undefined)
     }
@@ -140,8 +137,6 @@
 
     if (prevContainerWidth > 0 && container.clientWidth !== prevContainerWidth) {
       shouldScroll = false
-      // prevContainerHeight = -1
-      // prevContainerWidth = -1
       return
     }
 
@@ -229,12 +224,25 @@
     <Grid column={1} rowGap={0}>
       {#each filteredMessages as message, index}
         {@const canGroup = canGroupMessages(message, filteredMessages[index - 1])}
-        <ActivityMessagePresenter
-          value={message}
-          hideLink={true}
-          type={canGroup ? 'short' : 'default'}
-          isHighlighted={selectedMessageId === message._id}
-        />
+        {#if selectedMessageId}
+          <ActivityMessagePresenter
+            value={message}
+            doc={object}
+            hideLink={true}
+            type={canGroup ? 'short' : 'default'}
+            isHighlighted={selectedMessageId === message._id}
+          />
+        {:else}
+          <Lazy>
+            <ActivityMessagePresenter
+              value={message}
+              doc={object}
+              hideLink={true}
+              type={canGroup ? 'short' : 'default'}
+              isHighlighted={selectedMessageId === message._id}
+            />
+          </Lazy>
+        {/if}
       {/each}
     </Grid>
   {/if}

@@ -432,6 +432,29 @@
     }
   }
 
+  function reinitializeScroll (): void {
+    isScrollInitialized = false
+    void initializeScroll(isLoading, separatorElement, separatorIndex)
+  }
+
+  function adjustScrollPosition (selectedMessageId: Ref<ActivityMessage> | undefined): void {
+    if (isLoading || !isScrollInitialized || isInitialScrolling) {
+      return
+    }
+    const msg = messages.find(({ _id }) => _id === selectedMessageId)
+    if (msg !== undefined) {
+      const isReload = provider.jumpToMessage(msg)
+      if (isReload) {
+        reinitializeScroll()
+      }
+    } else {
+      provider.jumpToEnd()
+      reinitializeScroll()
+    }
+  }
+
+  $: adjustScrollPosition(selectedMessageId)
+
   function waitLastMessageRenderAndRead (onComplete?: () => void) {
     if (isLastMessageViewed()) {
       readViewportMessages()
@@ -614,6 +637,7 @@
 
         <div class="msg">
           <ActivityMessagePresenter
+            doc={object}
             value={message}
             skipLabel={skipLabels}
             {showEmbedded}
