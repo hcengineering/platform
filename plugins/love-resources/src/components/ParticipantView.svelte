@@ -16,7 +16,7 @@
   import { Person, formatName } from '@hcengineering/contact'
   import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
   import { Ref } from '@hcengineering/core'
-  import { Icon, Loading } from '@hcengineering/ui'
+  import { Icon, Loading, resizeObserver } from '@hcengineering/ui'
   import love from '../plugin'
 
   export let _id: string
@@ -28,6 +28,7 @@
 
   let parent: HTMLDivElement
   let activeTrack: boolean = false
+  let filled: boolean = false
 
   export function appendChild (track: HTMLMediaElement): void {
     const video = parent.querySelector('.video')
@@ -58,8 +59,21 @@
   $: user = $personByIdStore.get(_id as Ref<Person>)
 </script>
 
-<div id={_id} class="parent" class:small bind:clientWidth={parentWidth}>
-  <div class="label" class:filled bind:clientWidth={labelWidth}>
+<div
+  id={_id}
+  class="parent"
+  class:small
+  use:resizeObserver={(element) => {
+    parentWidth = element.clientWidth
+  }}
+>
+  <div
+    class="label"
+    class:filled
+    use:resizeObserver={(element) => {
+      labelWidth = element.clientWidth
+    }}
+  >
     <span class="overflow-label">{formatName(name)}</span>
     {#if connecting}
       <div class="loading">
@@ -70,9 +84,9 @@
       <Icon size="small" icon={love.icon.MicDisabled} />
     </div>
   </div>
-  <div bind:this={parent} class="cover" class:mirror={mirror && activeTrack}>
-    <div class="ava" class:hidden={activeTrack}>
-      <Avatar size={'full'} {name} person={user} />
+  <div bind:this={parent} class="cover" class:active={activeTrack} class:mirror={mirror && activeTrack}>
+    <div class="ava">
+      <Avatar size={'full'} {name} person={user} showStatus={false} />
     </div>
   </div>
 </div>
@@ -102,10 +116,17 @@
     }
 
     .ava {
-      height: 25%;
       overflow: hidden;
-      border-radius: 20%;
+      position: absolute;
+      height: 25%;
       aspect-ratio: 1;
+      border-radius: 20%;
+    }
+    &.active > .ava {
+      display: none;
+    }
+    &:not(.active) {
+      background-color: black;
     }
   }
   .parent {

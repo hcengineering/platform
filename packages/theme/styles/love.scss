@@ -132,6 +132,14 @@
   }
 }
 
+// Room
+@media only screen and (max-width: 1024px) {
+  .room-container + .bar > .bar__left-panel button span { display: none; }
+}
+@media only screen and (max-width: 700px) {
+  .room-container + .bar > .bar__left-panel { position: initial; }
+}
+
 // RoomPopup
 .room-popup {
   .room-btns {

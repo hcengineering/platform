@@ -17,7 +17,7 @@
   import { personByIdStore } from '@hcengineering/contact-resources'
   import { Room as TypeRoom } from '@hcengineering/love'
   import { getMetadata } from '@hcengineering/platform'
-  import { Label, Loading, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
+  import { Label, Loading, deviceOptionsStore as deviceInfo, resizeObserver } from '@hcengineering/ui'
   import {
     LocalParticipant,
     LocalTrackPublication,
@@ -317,8 +317,10 @@
     </div>
     {#if withVideo}
       <div
-        bind:clientWidth={roomWidth}
-        bind:clientHeight={roomHeight}
+        use:resizeObserver={(element) => {
+          roomWidth = element.clientWidth
+          roomHeight = element.clientHeight
+        }}
         class="videoGrid"
         style={$screenSharing ? '' : gridStyle}
         class:scroll-m-0={$screenSharing}
