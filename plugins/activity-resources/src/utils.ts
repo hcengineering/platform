@@ -2,7 +2,14 @@ import { get } from 'svelte/store'
 import type { ActivityMessage, Reaction } from '@hcengineering/activity'
 import core, { type Doc, type Ref, type TxOperations, getCurrentAccount, isOtherHour } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
-import { type Location, getEventPositionElement, closePopup, showPopup, EmojiPopup } from '@hcengineering/ui'
+import {
+  type Location,
+  getEventPositionElement,
+  closePopup,
+  showPopup,
+  EmojiPopup,
+  getCurrentResolvedLocation
+} from '@hcengineering/ui'
 import { type AttributeModel } from '@hcengineering/view'
 import preference from '@hcengineering/preference'
 
@@ -156,4 +163,9 @@ export function canGroupMessages (message: MessageData, prevMessage?: MessageDat
   }
 
   return time1 - time2 < groupMessagesThresholdMs
+}
+
+export function shouldScrollToActivity (): boolean {
+  const loc = getCurrentResolvedLocation()
+  return getMessageFromLoc(loc) !== undefined
 }

@@ -18,7 +18,7 @@ import activity, {
   type DisplayDocUpdateMessage,
   type DocUpdateMessage
 } from '@hcengineering/activity'
-import { activityMessagesComparator, combineActivityMessages } from '@hcengineering/activity-resources'
+import { activityMessagesComparator, combineActivityMessages, messageInFocus } from '@hcengineering/activity-resources'
 import {
   SortingOrder,
   getCurrentAccount,
@@ -540,7 +540,7 @@ export function openInboxDoc (
   }
 
   loc.query = { ...loc.query, message: message ?? null }
-
+  messageInFocus.set(message)
   navigate(loc)
 }
 

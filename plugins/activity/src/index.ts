@@ -320,6 +320,9 @@ export default plugin(activityId, {
     AllFilter: '' as Ref<ActivityMessagesFilter>,
     MentionNotification: '' as Ref<Doc>
   },
+  function: {
+    ShouldScrollToActivity: '' as Resource<() => boolean>
+  },
   backreference: {
     // Update list of back references
     Update: '' as Resource<(source: Doc, key: string, target: RelatedDocument[], label: IntlString) => Promise<void>>

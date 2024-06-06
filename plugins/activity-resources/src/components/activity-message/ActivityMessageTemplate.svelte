@@ -212,7 +212,7 @@
 <style lang="scss">
   @keyframes highlight {
     50% {
-      background-color: var(--global-ui-highlight-BackgroundColor);
+      background-color: var(--global-ui-hover-highlight-BackgroundColor);
     }
   }
 
