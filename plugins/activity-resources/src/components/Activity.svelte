@@ -104,6 +104,15 @@
     el.style.animation = ''
   }
 
+  function tryScrollToMessage (delay: number = 100): void {
+    if (timer) {
+      clearTimeout(timer)
+    }
+    timer = setTimeout(() => {
+      void scrollToMessage(selectedMessageId)
+    }, delay)
+  }
+
   async function scrollToMessage (id?: Ref<ActivityMessage>): Promise<void> {
     if (!id || boundary == null || activityBox == null) {
       return
@@ -113,12 +122,7 @@
     const msgElement = messagesElements[id as any] as HTMLElement | undefined
 
     if (msgElement == null && filteredMessages.some((msg) => msg._id === id)) {
-      if (timer) {
-        clearTimeout(timer)
-      }
-      timer = setTimeout(() => {
-        void scrollToMessage(selectedMessageId)
-      }, 100)
+      tryScrollToMessage()
       return
     } else if (msgElement == null) {
       return
@@ -145,7 +149,8 @@
       container.clientHeight !== prevContainerHeight &&
       container.clientHeight > prevContainerHeight
     ) {
-      void scrollToMessage(selectedMessageId)
+      // A little delay to avoid a lot of jumping/twitching
+      tryScrollToMessage(300)
     }
 
     prevContainerHeight = container.clientHeight
