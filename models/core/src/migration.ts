@@ -120,6 +120,29 @@ async function migrateSpacesOwner (client: MigrationClient): Promise<void> {
   }
 }
 
+async function migrateStatusTransactions (client: MigrationClient): Promise<void> {
+  await client.update(
+    DOMAIN_TX,
+    {
+      objectClass: core.class.Status,
+      'attributes.title': { $exists: true }
+    },
+    {
+      $rename: { 'attributes.title': 'attributes.name' }
+    }
+  )
+  await client.update(
+    DOMAIN_TX,
+    {
+      objectClass: core.class.Status,
+      'operations.title': { $exists: true }
+    },
+    {
+      $rename: { 'operations.title': 'operations.name' }
+    }
+  )
+}
+
 export const coreOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     // We need to delete all documents in doc index state for missing classes
@@ -155,6 +178,10 @@ export const coreOperation: MigrateOperation = {
         func: async (client: MigrationClient) => {
           await migrateBlobData(exAdapter, client)
         }
+      },
+      {
+        state: 'old-statuses-transactions',
+        func: migrateStatusTransactions
       }
     ])
   },
