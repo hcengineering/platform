@@ -93,6 +93,7 @@ export async function connect (title: string): Promise<Client | undefined> {
   let loginInfo = await ctx.with('select-workspace', {}, async () => (await fetchWorkspace(ws))[1])
   if (loginInfo?.creating === true) {
     while (true) {
+      if (ws !== getCurrentLocation().path[1]) return
       workspaceCreating.set(loginInfo?.createProgress ?? 0)
       loginInfo = await ctx.with('select-workspace', {}, async () => (await fetchWorkspace(ws))[1])
       workspaceCreating.set(loginInfo?.createProgress)
