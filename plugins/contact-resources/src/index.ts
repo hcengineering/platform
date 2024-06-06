@@ -401,7 +401,7 @@ export default async (): Promise<Resources> => ({
         color: getPersonColor(person, name)
       }
     },
-    GetGravatarUrl: async (person: Data<WithLookup<AvatarInfo>>, name: string, width: number) => ({
+    GetGravatarUrl: async (person: Data<WithLookup<AvatarInfo>>, name: string, width: number = 64) => ({
       url: person.avatarProps?.url !== undefined ? getGravatarUrl(person.avatarProps?.url, width) : undefined,
       srcSet:
         person.avatarProps?.url !== undefined
