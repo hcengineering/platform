@@ -218,17 +218,13 @@
   const applyStyles = (final: boolean = false): void => {
     if (separatorMap == null) return
     const side = direction === 'horizontal' ? 'width' : 'height'
-    const sum = separatorMap
-      .filter((f) => f.maxSize !== -1)
-      .map((el) => el.size)
-      .reduce((prev, a) => prev + a, separatorsWide.total)
     separatorMap.forEach((item) => {
       if (item.resize || final) {
         let style: string = `min-${side}:${
           item.maxSize !== -1 ? item.size + 'px' : item.minSize === -1 ? '0' : item.minSize + 'px'
         };`
         style += item.maxSize === -1 ? '' : `max-${side}:${item.size + 'px'};`
-        style += item.maxSize !== -1 ? `${side}:${item.size}px;` : '' // `${side}:calc(100% - ${sum}px);`
+        style += item.maxSize !== -1 ? `${side}:${item.size}px;` : ''
         if (item.styles !== null) {
           item.styles.forEach((value, key) => {
             if (key !== 'pointer-events' || final) style += `${key}:${value};`
@@ -525,14 +521,16 @@
                 if (forCrop > 0) {
                   const newSize = forCrop - diff < 0 ? minSize : box.size - diff
                   diff -= forCrop
-                  if (direction === 'horizontal') {
-                    box.element.style.width = `${newSize}px`
-                    box.element.style.minWidth = `${newSize}px`
-                    box.element.style.maxWidth = `${newSize}px`
-                  } else {
-                    box.element.style.height = `${newSize}px`
-                    box.element.style.minHeight = `${newSize}px`
-                    box.element.style.maxHeight = `${newSize}px`
+                  if (separ.maxSize !== 'auto') {
+                    if (direction === 'horizontal') {
+                      box.element.style.width = `${newSize}px`
+                      box.element.style.minWidth = `${newSize}px`
+                      box.element.style.maxWidth = `${newSize}px`
+                    } else {
+                      box.element.style.height = `${newSize}px`
+                      box.element.style.minHeight = `${newSize}px`
+                      box.element.style.maxHeight = `${newSize}px`
+                    }
                   }
                   separators[separators.length - i - 1].size = newSize
                 }
