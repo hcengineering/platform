@@ -371,3 +371,9 @@ pre.proseCodeBlock > pre.proseCode {
 }
 
 .proseHeading { line-height: 110%; }
+
+// Fixes for cursors
+.ProseMirror {
+  h1, h2, h3, p, pre, code { cursor: text; }
+  p div { cursor: auto; }
+}
