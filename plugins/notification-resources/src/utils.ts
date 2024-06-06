@@ -49,7 +49,8 @@ import {
   parseLocation,
   showPopup,
   type Location,
-  type ResolvedLocation
+  type ResolvedLocation,
+  locationStorageKeyId
 } from '@hcengineering/ui'
 import { get, writable } from 'svelte/store'
 
@@ -525,6 +526,7 @@ export function openInboxDoc (
   if (_id === undefined || _class === undefined) {
     loc.query = { message: null }
     loc.path.length = 3
+    localStorage.setItem(`${locationStorageKeyId}_${notificationId}`, JSON.stringify(loc))
     navigate(loc)
     return
   }

@@ -155,7 +155,7 @@
 
     if (loc?.loc.path[3] == null) {
       selectedContext = undefined
-      // restoreLocation(newLocation, notificationId)
+      restoreLocation(newLocation, notificationId)
       return
     }
 
