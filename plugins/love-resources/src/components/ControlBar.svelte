@@ -20,8 +20,8 @@
   import { copyTextToClipboard, getClient } from '@hcengineering/presentation'
   import { IconUpOutline, ModernButton, SplitButton, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { Room, RoomType, isOffice, roomAccessIcon } from '@hcengineering/love'
-  import love from '../plugin'
+  import love, { Room, RoomType, isOffice, roomAccessIcon } from '@hcengineering/love'
+  import plugin from '../plugin'
   import { currentRoom, myInfo, myOffice } from '../stores'
   import {
     isCameraEnabled,
@@ -30,6 +30,7 @@
     isRecording,
     isRecordingAvailable,
     isSharingEnabled,
+    isFullScreen,
     leaveRoom,
     record,
     screenSharing,
@@ -48,7 +49,7 @@
   let allowLeave: boolean = false
 
   $: allowCam = $currentRoom?.type === RoomType.Video
-  $: allowLeave = $myInfo?.room !== ($myOffice?._id ?? love.ids.Reception)
+  $: allowLeave = $myInfo?.room !== ($myOffice?._id ?? plugin.ids.Reception)
 
   async function changeMute (): Promise<void> {
     await setMic(!$isMicEnabled)
@@ -97,15 +98,15 @@
 
   const client = getClient()
 
-  const camKeys = client.getModel().findAllSync(view.class.Action, { _id: love.action.ToggleVideo })?.[0]?.keyBinding
-  const micKeys = client.getModel().findAllSync(view.class.Action, { _id: love.action.ToggleMic })?.[0]?.keyBinding
+  const camKeys = client.getModel().findAllSync(view.class.Action, { _id: plugin.action.ToggleVideo })?.[0]?.keyBinding
+  const micKeys = client.getModel().findAllSync(view.class.Action, { _id: plugin.action.ToggleMic })?.[0]?.keyBinding
 </script>
 
 <div class="bar w-full flex-center flex-gap-2 flex-no-shrink">
-  {#if room._id !== love.ids.Reception}
+  {#if room._id !== plugin.ids.Reception}
     <ModernButton
       icon={roomAccessIcon[room.access]}
-      tooltip={{ label: love.string.ChangeAccess }}
+      tooltip={{ label: plugin.string.ChangeAccess }}
       kind={'secondary'}
       size={'large'}
       disabled={isOffice(room) && room.person !== me}
@@ -115,8 +116,8 @@
   {#if $isConnected}
     <SplitButton
       size={'large'}
-      icon={$isMicEnabled ? love.icon.MicEnabled : love.icon.MicDisabled}
-      showTooltip={{ label: $isMicEnabled ? love.string.Mute : love.string.UnMute, keys: micKeys }}
+      icon={$isMicEnabled ? plugin.icon.MicEnabled : plugin.icon.MicDisabled}
+      showTooltip={{ label: $isMicEnabled ? plugin.string.Mute : plugin.string.UnMute, keys: micKeys }}
       action={changeMute}
       secondIcon={IconUpOutline}
       secondAction={micSettings}
@@ -125,8 +126,8 @@
     {#if allowCam}
       <SplitButton
         size={'large'}
-        icon={$isCameraEnabled ? love.icon.CamEnabled : love.icon.CamDisabled}
-        showTooltip={{ label: $isCameraEnabled ? love.string.StopVideo : love.string.StartVideo, keys: camKeys }}
+        icon={$isCameraEnabled ? plugin.icon.CamEnabled : plugin.icon.CamDisabled}
+        showTooltip={{ label: $isCameraEnabled ? plugin.string.StopVideo : plugin.string.StartVideo, keys: camKeys }}
         disabled={!$isConnected}
         action={changeCam}
         secondIcon={IconUpOutline}
@@ -136,8 +137,8 @@
     {/if}
     {#if allowShare}
       <ModernButton
-        icon={$isSharingEnabled ? love.icon.SharingEnabled : love.icon.SharingDisabled}
-        tooltip={{ label: $isSharingEnabled ? love.string.StopShare : love.string.Share }}
+        icon={$isSharingEnabled ? plugin.icon.SharingEnabled : plugin.icon.SharingDisabled}
+        tooltip={{ label: $isSharingEnabled ? plugin.string.StopShare : plugin.string.Share }}
         disabled={($screenSharing && !$isSharingEnabled) || !$isConnected}
         kind={'secondary'}
         size={'large'}
@@ -146,8 +147,8 @@
     {/if}
     {#if hasAccountRole(getCurrentAccount(), AccountRole.User) && $isRecordingAvailable}
       <ModernButton
-        icon={$isRecording ? love.icon.StopRecord : love.icon.Record}
-        tooltip={{ label: $isRecording ? love.string.StopRecord : love.string.Record }}
+        icon={$isRecording ? plugin.icon.StopRecord : plugin.icon.Record}
+        tooltip={{ label: $isRecording ? plugin.string.StopRecord : plugin.string.Record }}
         disabled={!$isConnected}
         kind={'secondary'}
         size={'large'}
@@ -156,10 +157,24 @@
     {/if}
   {/if}
   <div class="bar__left-panel flex-gap-2 flex-center">
+    {#if $isConnected}
+      <ModernButton
+        icon={$isFullScreen ? love.icon.ExitFullScreen : love.icon.FullScreen}
+        tooltip={{
+          label: $isFullScreen ? plugin.string.ExitingFullscreenMode : plugin.string.FullscreenMode,
+          direction: 'top'
+        }}
+        kind={'secondary'}
+        size={'large'}
+        on:click={() => {
+          $isFullScreen = !$isFullScreen
+        }}
+      />
+    {/if}
     {#if hasAccountRole(getCurrentAccount(), AccountRole.User)}
       <ModernButton
         icon={view.icon.Copy}
-        tooltip={{ label: !linkCopied ? love.string.CopyGuestLink : view.string.Copied, direction: 'top' }}
+        tooltip={{ label: !linkCopied ? plugin.string.CopyGuestLink : view.string.Copied, direction: 'top' }}
         kind={'secondary'}
         size={'large'}
         on:click={copyGuestLink}
@@ -167,9 +182,9 @@
     {/if}
     {#if allowLeave}
       <ModernButton
-        icon={love.icon.LeaveRoom}
-        label={love.string.LeaveRoom}
-        tooltip={{ label: love.string.LeaveRoom, direction: 'top' }}
+        icon={plugin.icon.LeaveRoom}
+        label={plugin.string.LeaveRoom}
+        tooltip={{ label: plugin.string.LeaveRoom, direction: 'top' }}
         kind={'negative'}
         size={'large'}
         on:click={leave}

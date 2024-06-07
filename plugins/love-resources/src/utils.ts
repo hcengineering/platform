@@ -116,6 +116,7 @@ export const isRecordingAvailable = writable<boolean | undefined>(undefined)
 export const isMicEnabled = writable<boolean>(false)
 export const isCameraEnabled = writable<boolean>(false)
 export const isSharingEnabled = writable<boolean>(false)
+export const isFullScreen = writable<boolean>(false)
 
 function handleTrackSubscribed (
   track: RemoteTrack,
