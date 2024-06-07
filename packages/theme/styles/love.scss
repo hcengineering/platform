@@ -30,6 +30,9 @@
 }
 
 .floorGrid-room {
+  &.hovered:hover {
+    z-index: 10;
+  }
   &__header {
     align-items: center;
     top: calc(100% / var(--huly-floor-roomHeight) / 3 * -1.6 + 0.375rem + 1px);
