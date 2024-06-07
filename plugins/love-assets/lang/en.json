@@ -55,6 +55,7 @@
     "Record": "Record",
     "StopRecord": "Stop record",
     "LeaveRoomConfirmation": "Are you sure you want to leave the room?",
-    "ServiceNotConfigured": "Service is not configured"
+    "ServiceNotConfigured": "Service is not configured",
+    "ExitFullScreen": "Exit full screen"
   }
 }

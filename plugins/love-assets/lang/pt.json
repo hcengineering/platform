@@ -55,6 +55,7 @@
     "Record": "Gravar",
     "StopRecord": "Parar gravação",
     "LeaveRoomConfirmation": "Tem certeza de que deseja sair da sala?",
-    "ServiceNotConfigured": "O serviço não está configurado"
+    "ServiceNotConfigured": "O serviço não está configurado",
+    "ExitFullScreen": "Sair do ecrã inteiro"
   }
 }

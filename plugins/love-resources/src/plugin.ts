@@ -67,6 +67,7 @@ export default mergeIds(loveId, love, {
     Record: '' as IntlString,
     StopRecord: '' as IntlString,
     ServiceNotConfigured: '' as IntlString,
+    ExitFullScreen: '' as IntlString,
     Invite: '' as IntlString,
     KnockAction: '' as IntlString
   }
