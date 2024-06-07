@@ -17,10 +17,7 @@
   import { DocNotifyContext, InboxNotification } from '@hcengineering/notification'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { IntlString } from '@hcengineering/platform'
-  import preference from '@hcengineering/preference'
   import { getClient } from '@hcengineering/presentation'
-  import { Action } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
   import { TreeNode } from '@hcengineering/view-resources'
   import { SpacesNavModel } from '@hcengineering/workbench'
   import StarredNavItem from './StarredNavItem.svelte'
@@ -34,21 +31,6 @@
   export let deselect: boolean = false
 
   const client = getClient()
-
-  const unStarAll: Action = {
-    label: preference.string.DeleteStarred,
-    icon: view.icon.Delete,
-    action: async (): Promise<void> => {
-      const ids = spaces.map((space) => space._id)
-      const current = await client.findAll(preference.class.SpacePreference, { attachedTo: { $in: ids } })
-
-      await Promise.all(
-        current.map(async (item) => {
-          await client.remove(item)
-        })
-      )
-    }
-  }
 
   function getSpaceModel (space: Ref<Class<Space>>): SpacesNavModel | undefined {
     const hierarchy = client.getHierarchy()
@@ -79,7 +61,6 @@
 <TreeNode
   _id={'tree-stared'}
   {label}
-  actions={async () => [unStarAll]}
   highlighted={spaces.some((s) => s._id === currentSpace) && !deselect}
   isFold
   empty={spaces.length === 0}
