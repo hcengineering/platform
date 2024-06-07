@@ -100,21 +100,24 @@
 
     return 'x-large'
   }
+
+  function toStyle (size: 'auto' | number): string {
+    return size === 'auto' ? 'auto' : `${size}px`
+  }
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-
-{#await getBlobRef(value.$lookup?.file, value.file, value.name, sizeToWidth(urlSize)) then blobSrc}
-  <img
-    src={blobSrc.src}
-    style:object-fit={getObjectFit(dimensions)}
-    width={dimensions.width}
-    height={dimensions.height}
-    srcset={blobSrc.srcset}
-    alt={value.name}
-  />
-{/await}
+<div class="container" style="width:{toStyle(dimensions.width)}; height:{toStyle(dimensions.height)}">
+  {#await getBlobRef(value.$lookup?.file, value.file, value.name, sizeToWidth(urlSize)) then blobSrc}
+    <img
+      src={blobSrc.src}
+      style:object-fit={getObjectFit(dimensions)}
+      width={dimensions.width}
+      height={dimensions.height}
+      srcset={blobSrc.srcset}
+      alt={value.name}
+    />
+  {/await}
+</div>
 
 <style lang="scss">
   img {
@@ -124,5 +127,9 @@
     object-fit: contain;
     min-height: 4rem;
     min-width: 4rem;
+  }
+
+  .container {
+    display: inline-flex;
   }
 </style>
