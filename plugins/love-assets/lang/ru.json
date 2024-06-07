@@ -39,6 +39,8 @@
     "RenameAFloor": "Переименовать этаж",
     "StartWithoutVideo": "Всегда начинать с выключенной камерой",
     "StartWithMutedMic": "Всегда начинать с выключенным звуком",
+    "Invite": "Пригласить",
+    "KnockAction": "Постучать",
     "InvitingYou": "{name} приглашает вас присоединиться",
     "YouInivite": "Вы приглашаете присоединиться",
     "NoiseCancellation": "Подавление шума",

@@ -134,7 +134,8 @@ const love = plugin(loveId, {
     Knock: '' as Asset,
     DND: '' as Asset,
     Record: '' as Asset,
-    StopRecord: '' as Asset
+    StopRecord: '' as Asset,
+    Invite: '' as Asset
   },
   metadata: {
     WebSocketURL: '' as Metadata<string>,
