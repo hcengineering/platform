@@ -204,7 +204,8 @@ export async function getWorkspaces (): Promise<Workspace[]> {
       return [
         {
           workspace: DEV_WORKSPACE,
-          workspaceId: DEV_WORKSPACE
+          workspaceId: DEV_WORKSPACE,
+          lastVisit: 0
         }
       ]
     }

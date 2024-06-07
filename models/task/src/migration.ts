@@ -18,6 +18,7 @@ import {
   DOMAIN_STATUS,
   DOMAIN_TX,
   TxOperations,
+  toIdMap,
   type Attribute,
   type Class,
   type Doc,
@@ -50,8 +51,8 @@ import {
   type TaskType
 } from '@hcengineering/task'
 
-import task from './plugin'
 import { DOMAIN_TASK } from '.'
+import task from './plugin'
 
 /**
  * @public
@@ -566,7 +567,24 @@ function areSameArrays (arr1: any[] | undefined, arr2: any[] | undefined): boole
 
 export const taskOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, taskId, [])
+    await tryMigrate(client, taskId, [
+      {
+        state: 'migrate-tt-model-states',
+        func: async (client) => {
+          const prTaskTypes = client.model.findAllSync(task.class.TaskType, {})
+
+          const allModelStatuses = toIdMap(client.model.findAllSync(core.class.Status, {}))
+          for (const tt of prTaskTypes) {
+            const missing = tt.statuses.filter((it) => !allModelStatuses.has(it))
+            await client.update(
+              DOMAIN_TX,
+              { objectId: { $in: missing }, objectSpace: 'task:space:Statuses' },
+              { $set: { objectSpace: core.space.Model } }
+            )
+          }
+        }
+      }
+    ])
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     await tryUpgrade(client, taskId, [

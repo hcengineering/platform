@@ -45,6 +45,7 @@
   export let disabled: boolean = false
   export let loading: boolean = false
   export let width: string | undefined = undefined
+  export let minWidth: string | undefined = undefined
   export let height: string | undefined = undefined
   export let resetIconSize: 'none' | 'icon' | 'full' = 'none'
   export let highlight: boolean = false
@@ -137,6 +138,7 @@
   disabled={disabled || loading}
   class:short
   class:resetIconSize={resetIconSize === 'full'}
+  style:min-width={minWidth}
   style:width
   style:height
   style:flex-shrink={shrink}

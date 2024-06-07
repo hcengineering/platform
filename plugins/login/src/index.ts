@@ -33,6 +33,8 @@ export interface Workspace {
 
   creating?: boolean
   createProgress?: number
+
+  lastVisit: number
 }
 
 /**

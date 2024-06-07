@@ -197,6 +197,7 @@
           <Button
             loading={okProcessing}
             focusIndex={10001}
+            minWidth={'5rem'}
             disabled={!canSave}
             label={okLabel}
             kind={'primary'}
