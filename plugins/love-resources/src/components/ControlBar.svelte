@@ -13,7 +13,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
   import { PersonAccount } from '@hcengineering/contact'
   import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import login from '@hcengineering/login'
@@ -31,6 +30,7 @@
     isRecording,
     isRecordingAvailable,
     isSharingEnabled,
+    isFullScreen,
     leaveRoom,
     record,
     screenSharing,
@@ -43,9 +43,6 @@
   import RoomAccessPopup from './RoomAccessPopup.svelte'
 
   export let room: Room
-  export let isFullScreen: boolean = false
-
-  const dispatch = createEventDispatcher()
 
   let allowCam: boolean = false
   const allowShare: boolean = true
@@ -160,13 +157,18 @@
     {/if}
   {/if}
   <div class="bar__left-panel flex-gap-2 flex-center">
-    {#if isFullScreen}
+    {#if $isConnected}
       <ModernButton
-        icon={love.icon.ExitFullScreen}
-        tooltip={{ label: plugin.string.ExitFullScreen, direction: 'top' }}
+        icon={$isFullScreen ? love.icon.ExitFullScreen : love.icon.FullScreen}
+        tooltip={{
+          label: $isFullScreen ? plugin.string.ExitingFullscreenMode : plugin.string.FullscreenMode,
+          direction: 'top'
+        }}
         kind={'secondary'}
         size={'large'}
-        on:click={() => dispatch('exitFullScreen')}
+        on:click={() => {
+          $isFullScreen = !$isFullScreen
+        }}
       />
     {/if}
     {#if hasAccountRole(getCurrentAccount(), AccountRole.User)}

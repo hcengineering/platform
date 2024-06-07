@@ -32,7 +32,15 @@
   import { onDestroy, onMount, tick } from 'svelte'
   import love from '../plugin'
   import { currentRoom, infos, invites, myInfo, myRequests } from '../stores'
-  import { awaitConnect, isConnected, isCurrentInstanceConnected, isFullScreen, lk, screenSharing, tryConnect } from '../utils'
+  import {
+    awaitConnect,
+    isConnected,
+    isCurrentInstanceConnected,
+    isFullScreen,
+    lk,
+    screenSharing,
+    tryConnect
+  } from '../utils'
   import ControlBar from './ControlBar.svelte'
   import ParticipantView from './ParticipantView.svelte'
 
@@ -301,9 +309,8 @@
 
   const handleFullScreen = () => ($isFullScreen = document.fullscreenElement != null)
 
-  function toggleFullscreen() {
+  function toggleFullscreen () {
     if (!document.fullscreenElement) {
-      window.focus()
       roomEl
         .requestFullscreen()
         .then(() => ($isFullScreen = true))
@@ -316,7 +323,7 @@
       $isFullScreen = false
     }
   }
-  $: if ($isFullScreen && roomEl) toggleFullscreen()
+  $: if (((document.fullscreenElement && !$isFullScreen) || $isFullScreen) && roomEl) toggleFullscreen()
 </script>
 
 <div bind:this={roomEl} class="flex-col-center w-full h-full" class:theme-dark={$isFullScreen}>
@@ -359,7 +366,7 @@
     {/if}
   </div>
   {#if $currentRoom}
-    <ControlBar room={$currentRoom} isFullScreen={$isFullScreen} on:exitFullScreen={toggleFullscreen} />
+    <ControlBar room={$currentRoom} />
   {/if}
 </div>
 

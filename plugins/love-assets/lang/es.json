@@ -56,6 +56,7 @@
     "StopRecord": "Detener grabación",
     "LeaveRoomConfirmation": "¿Estás seguro de que quieres salir de la sala?",
     "ServiceNotConfigured": "El servicio no está configurado",
-    "ExitFullScreen": "Salir de pantalla completa"
+    "FullscreenMode": "Modo de pantalla completa",
+    "ExitingFullscreenMode": "Salir del modo de pantalla completa"
   }
 }
