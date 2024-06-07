@@ -702,6 +702,7 @@ export class TServerStorage implements ServerStorage {
     const moves = await ctx.with('process-move', {}, (ctx) => this.processMove(ctx.ctx, txes, findAll))
 
     const triggerControl: Omit<TriggerControl, 'txFactory' | 'ctx' | 'result'> = {
+      operationContext: ctx,
       removedMap,
       workspace: this.workspaceId,
       storageAdapter: this.storageAdapter,
