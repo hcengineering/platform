@@ -30,7 +30,7 @@ import core, {
   type Ref,
   type RelatedDocument,
   type TxOperations,
-  type DocManager
+  type DocManager,
   AccountRole
 } from '@hcengineering/core'
 import chunter, { type ChatMessage } from '@hcengineering/chunter'
