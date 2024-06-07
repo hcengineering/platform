@@ -16,6 +16,18 @@ export class UserProfilePage {
   leaveWorkspaceConfirmButton = (): Locator => this.page.getByRole('button', { name: 'Ok' })
   accountDissabledMessage = (): Locator => this.page.getByRole('heading')
   changeAccount = (): Locator => this.page.getByRole('link', { name: 'Change account' })
+  settings = (): Locator => this.page.getByRole('button', { name: 'Settings' })
+  accountSettings = (): Locator => this.page.getByRole('button', { name: 'Account settings' })
+  userAvatarMenu = (): Locator => this.page.locator('.mr-8 > .cursor-pointer')
+  savaAvatarButton = (): Locator => this.page.getByRole('button', { name: 'Save' }).nth(1)
+  selectWorkspace = (): Locator => this.page.getByRole('button', { name: 'Select workspace' })
+  changePasswordButton = (): Locator => this.page.getByRole('button', { name: 'Change password' })
+  currentPassword = (): Locator => this.page.getByPlaceholder('Enter current password')
+  newPassword = (): Locator => this.page.getByPlaceholder('Enter new password')
+  repeatPassword = (): Locator => this.page.getByPlaceholder('Repeat new password')
+  savePassword = (): Locator => this.page.getByRole('button', { name: 'Save' })
+  savedButton = (): Locator => this.page.getByRole('button', { name: 'Saved' })
+  signOutButton = (): Locator => this.page.getByRole('button', { name: 'Sign out' })
 
   constructor (page: Page) {
     this.page = page
@@ -31,6 +43,26 @@ export class UserProfilePage {
 
   async openProfileMenu (): Promise<void> {
     await this.profileButton().click()
+  }
+
+  async clickSelectWorkspace (): Promise<void> {
+    await this.selectWorkspace().click()
+  }
+
+  async clickSettings (): Promise<void> {
+    await this.settings().click()
+  }
+
+  async clickAccountSettings (): Promise<void> {
+    await this.accountSettings().click()
+  }
+
+  async openUserAvatarMenu (): Promise<void> {
+    await this.userAvatarMenu().click()
+  }
+
+  async clickSavaAvatarButton (): Promise<void> {
+    await this.savaAvatarButton().click()
   }
 
   async clickChangeAccount (): Promise<void> {
@@ -61,6 +93,21 @@ export class UserProfilePage {
   async updateLocation (newLocation: string): Promise<void> {
     await this.locationInput().click()
     await this.locationInput().fill(newLocation)
+  }
+
+  async changePassword (currentPassword: string, newPassword: string): Promise<void> {
+    await this.changePasswordButton().click()
+    await this.currentPassword().fill(currentPassword)
+    await expect(this.savePassword()).toBeDisabled()
+    await this.newPassword().fill(newPassword)
+    await expect(this.savePassword()).toBeDisabled()
+    await this.repeatPassword().fill(newPassword)
+    await this.savePassword().click()
+    await expect(this.savedButton()).toBeDisabled()
+  }
+
+  async clickOnSignOutButton (): Promise<void> {
+    await this.signOutButton().click()
   }
 
   async addOrEditPhone (): Promise<void> {
