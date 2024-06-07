@@ -30,6 +30,7 @@
   import ChatMessageInput from './ChatMessageInput.svelte'
 
   export let value: WithLookup<ChatMessage> | undefined
+  export let doc: Doc | undefined = undefined
   export let showNotify: boolean = false
   export let isHighlighted: boolean = false
   export let isSelected: boolean = false
@@ -87,10 +88,13 @@
       parentMessage = res as DisplayActivityMessage
     })
 
-  $: value &&
-    client.findOne(value.attachedToClass, { _id: value.attachedTo }).then((result) => {
+  $: if (doc && value?.attachedTo === doc._id) {
+    object = doc
+  } else if (value) {
+    void client.findOne(value.attachedToClass, { _id: value.attachedTo }).then((result) => {
       object = result
     })
+  }
 
   $: parentMessage &&
     client.findOne(parentMessage.attachedToClass, { _id: parentMessage.attachedTo }).then((result) => {

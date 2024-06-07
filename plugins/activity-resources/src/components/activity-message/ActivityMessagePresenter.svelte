@@ -20,6 +20,7 @@
   import { Class, Doc, Ref } from '@hcengineering/core'
 
   export let value: DisplayActivityMessage
+  export let doc: Doc | undefined = undefined
   export let showNotify: boolean = false
   export let isHighlighted: boolean = false
   export let isSelected: boolean = false
@@ -53,6 +54,7 @@
     props={{
       space: value.space,
       value,
+      doc,
       showNotify,
       skipLabel,
       isHighlighted,

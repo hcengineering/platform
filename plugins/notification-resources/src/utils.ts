@@ -18,7 +18,7 @@ import activity, {
   type DisplayDocUpdateMessage,
   type DocUpdateMessage
 } from '@hcengineering/activity'
-import { activityMessagesComparator, combineActivityMessages } from '@hcengineering/activity-resources'
+import { activityMessagesComparator, combineActivityMessages, messageInFocus } from '@hcengineering/activity-resources'
 import {
   SortingOrder,
   getCurrentAccount,
@@ -49,7 +49,8 @@ import {
   parseLocation,
   showPopup,
   type Location,
-  type ResolvedLocation
+  type ResolvedLocation,
+  locationStorageKeyId
 } from '@hcengineering/ui'
 import { get, writable } from 'svelte/store'
 
@@ -525,6 +526,7 @@ export function openInboxDoc (
   if (_id === undefined || _class === undefined) {
     loc.query = { message: null }
     loc.path.length = 3
+    localStorage.setItem(`${locationStorageKeyId}_${notificationId}`, JSON.stringify(loc))
     navigate(loc)
     return
   }
@@ -540,7 +542,7 @@ export function openInboxDoc (
   }
 
   loc.query = { ...loc.query, message: message ?? null }
-
+  messageInFocus.set(message)
   navigate(loc)
 }
 

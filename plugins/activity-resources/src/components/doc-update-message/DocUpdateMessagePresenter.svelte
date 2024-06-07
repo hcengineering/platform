@@ -39,6 +39,7 @@
   import { getIsTextType } from '../../utils'
 
   export let value: DisplayDocUpdateMessage
+  export let doc: Doc | undefined = undefined
   export let showNotify: boolean = false
   export let isHighlighted: boolean = false
   export let isSelected: boolean = false
@@ -117,10 +118,16 @@
     return personById.get(personAccount.person)
   }
 
-  $: void loadObject(value.objectId, value.objectClass)
-  $: void loadParentObject(value, parentMessage)
+  $: void loadObject(value.objectId, value.objectClass, doc)
+  $: void loadParentObject(value, parentMessage, doc)
 
-  async function loadObject (_id: Ref<Doc>, _class: Ref<Class<Doc>>): Promise<void> {
+  async function loadObject (_id: Ref<Doc>, _class: Ref<Class<Doc>>, doc?: Doc): Promise<void> {
+    if (doc !== undefined && doc._id === _id) {
+      object = doc
+      isObjectRemoved = false
+      return
+    }
+
     isObjectRemoved = await checkIsObjectRemoved(client, _id, _class)
 
     if (isObjectRemoved) {
@@ -132,13 +139,23 @@
     }
   }
 
-  async function loadParentObject (message: DocUpdateMessage, parentMessage?: ActivityMessage): Promise<void> {
+  async function loadParentObject (
+    message: DocUpdateMessage,
+    parentMessage?: ActivityMessage,
+    doc?: Doc
+  ): Promise<void> {
     if (!parentMessage && message.objectId === message.attachedTo) {
       return
     }
 
     const _id = parentMessage ? parentMessage.attachedTo : message.attachedTo
     const _class = parentMessage ? parentMessage.attachedToClass : message.attachedToClass
+
+    if (doc !== undefined && doc._id === _id) {
+      parentObject = doc
+      return
+    }
+
     const isRemoved = await checkIsObjectRemoved(client, _id, _class)
 
     if (isRemoved) {

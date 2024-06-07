@@ -14,13 +14,14 @@
     // limitations under the License.
 -->
 <script lang="ts">
-  import { afterUpdate, createEventDispatcher } from 'svelte'
+  import { afterUpdate, createEventDispatcher, SvelteComponent } from 'svelte'
   import { Writable, writable } from 'svelte/store'
 
   import activity from '@hcengineering/activity'
   import { Doc } from '@hcengineering/core'
-  import { Component, deviceOptionsStore as deviceInfo, Panel, Scroller } from '@hcengineering/ui'
+  import { Component, deviceOptionsStore as deviceInfo, Panel, Scroller, resizeObserver } from '@hcengineering/ui'
   import type { ButtonItem } from '@hcengineering/ui'
+  import { getResource } from '@hcengineering/platform'
 
   export let title: string | undefined = undefined
   export let withoutActivity: boolean = false
@@ -63,6 +64,8 @@
   let count: number = 0
   let panel: Panel
 
+  let activityRef: SvelteComponent | undefined
+
   const waitCount = 10
   const PanelScrollTop: Writable<Record<string, number>> = writable<Record<string, number>>({})
 
@@ -88,7 +91,13 @@
     }, 50)
   }
 
-  afterUpdate(() => {
+  afterUpdate(async () => {
+    const fn = await getResource(activity.function.ShouldScrollToActivity)
+
+    if (!withoutActivity && fn?.()) {
+      return
+    }
+
     if (lastHref !== window.location.href) {
       startScrollHeightCheck()
     }
@@ -238,12 +247,19 @@
         }
       }}
     >
-      <div class={contentClasses ?? 'popupPanel-body__main-content py-8 clear-mins'} class:max={useMaxWidth}>
+      <div
+        class={contentClasses ?? 'popupPanel-body__main-content py-8'}
+        class:max={useMaxWidth}
+        use:resizeObserver={(element) => {
+          activityRef?.onContainerResized?.(element)
+        }}
+      >
         <slot />
         {#if !withoutActivity}
           {#key object._id}
             <Component
               is={activity.component.Activity}
+              bind:innerRef={activityRef}
               props={{
                 object,
                 showCommenInput: !withoutInput,
