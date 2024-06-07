@@ -44,6 +44,8 @@
     "NoiseCancellation": "Noise cancellation",
     "KnockingLabel": "Knocking",
     "InivitingLabel": "Invite",
+    "Invite": "Invite",
+    "KnockAction": "Knock",
     "NoiseCancellationNotSupported": "Noise cancellation is not supported in this browser",
     "Blur": "Background blur",
     "BlurRadius": "Radius",

@@ -16,6 +16,18 @@
   import { PersonAccount, formatName } from '@hcengineering/contact'
   import { Avatar, personByIdStore } from '@hcengineering/contact-resources'
   import { IdMap, Ref, getCurrentAccount, toIdMap } from '@hcengineering/core'
+  import {
+    Floor,
+    Invite,
+    JoinRequest,
+    Office,
+    ParticipantInfo,
+    RequestStatus,
+    Room,
+    RoomType,
+    isOffice,
+    loveId
+  } from '@hcengineering/love'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { MessageBox, createQuery, getClient } from '@hcengineering/presentation'
   import {
@@ -30,18 +42,6 @@
     tooltip
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import {
-    Floor,
-    Invite,
-    JoinRequest,
-    Office,
-    ParticipantInfo,
-    RequestStatus,
-    Room,
-    RoomType,
-    isOffice,
-    loveId
-  } from '@hcengineering/love'
   import { onDestroy } from 'svelte'
   import love from '../plugin'
   import {
@@ -60,7 +60,6 @@
     connectRoom,
     disconnect,
     getRoomName,
-    invite,
     isCameraEnabled,
     isConnected,
     isCurrentInstanceConnected,
@@ -77,6 +76,7 @@
   import FloorPopup from './FloorPopup.svelte'
   import InvitePopup from './InvitePopup.svelte'
   import MicSettingPopup from './MicSettingPopup.svelte'
+  import PersonActionPopup from './PersonActionPopup.svelte'
   import RequestPopup from './RequestPopup.svelte'
   import RequestingPopup from './RequestingPopup.svelte'
   import RoomPopup from './RoomPopup.svelte'
@@ -338,6 +338,18 @@
 
   const camKeys = client.getModel().findAllSync(view.class.Action, { _id: love.action.ToggleVideo })?.[0]?.keyBinding
   const micKeys = client.getModel().findAllSync(view.class.Action, { _id: love.action.ToggleMic })?.[0]?.keyBinding
+
+  function participantClickHandler (e: MouseEvent, participant: ParticipantInfo): void {
+    if ($myInfo !== undefined) {
+      showPopup(PersonActionPopup, { room: reception, person: participant.person }, eventToHTMLElement(e))
+    }
+  }
+
+  function getParticipantClickHandler (participant: ParticipantInfo): (e: MouseEvent) => void {
+    return (e: MouseEvent) => {
+      participantClickHandler(e, participant)
+    }
+  }
 </script>
 
 <div class="flex-row-center flex-gap-2">
@@ -422,11 +434,7 @@
         {#each receptionParticipants as participant (participant._id)}
           <div
             use:tooltip={{ label: getEmbeddedLabel(formatName(participant.name)) }}
-            on:click={() => {
-              if (myInfo) {
-                invite(participant.person, $myInfo?.room)
-              }
-            }}
+            on:click={getParticipantClickHandler(participant)}
           >
             <Avatar name={participant.name} size={'card'} person={$personByIdStore.get(participant.person)} />
           </div>
