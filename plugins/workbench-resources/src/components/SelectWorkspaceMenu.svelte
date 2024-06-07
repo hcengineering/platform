@@ -13,9 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import contact from '@hcengineering/contact'
   import login, { Workspace } from '@hcengineering/login'
   import { getMetadata, getResource } from '@hcengineering/platform'
-  import contact from '@hcengineering/contact'
+  import presentation, { decodeTokenPayload, isAdminUser } from '@hcengineering/presentation'
   import {
     Icon,
     IconCheck,
@@ -34,7 +35,6 @@
   import { workbenchId } from '@hcengineering/workbench'
   import { onDestroy, onMount } from 'svelte'
   import { workspacesStore } from '../utils'
-  import presentation, { isAdminUser } from '@hcengineering/presentation'
   // import Drag from './icons/Drag.svelte'
 
   onMount(() => {
@@ -134,20 +134,29 @@
   <div class="antiPopup" on:keydown={keyDown}>
     <div class="ap-space x2" />
     {#if isAdmin}
-      <div class="ml-2 mr-2 mb-2 flex-grow flex-row-center">
+      <div class="p-2 ml-2 mr-2 mb-2 flex-grow flex-row-center">
         <SearchEdit bind:value={search} width={'100%'} />
         {#if isAdminUser()}
           <div class="p-1">
+            {#if $workspacesStore.length > 500}
+              500 /
+            {/if}
             {$workspacesStore.length}
           </div>
         {/if}
       </div>
+      <div class="p-2 ml-2 mb-4 select-text flex-col bordered">
+        {decodeTokenPayload(getMetadata(presentation.metadata.Token) ?? '').workspace}
+      </div>
     {/if}
     <div class="ap-scroll">
       <div class="ap-box">
-        {#each $workspacesStore.filter((it) => search === '' || (it.workspaceName?.includes(search) ?? false) || it.workspace.includes(search)) as ws, i}
+        {#each $workspacesStore
+          .filter((it) => search === '' || (it.workspaceName?.includes(search) ?? false) || it.workspace.includes(search))
+          .slice(0, 500) as ws, i}
           {@const wsName = ws.workspaceName ?? ws.workspace}
           {@const _activeSession = activeSessions[ws.workspaceId]}
+          {@const lastUsageDays = Math.round((Date.now() - ws.lastVisit) / (1000 * 3600 * 24))}
           <a
             class="stealth"
             href={getWorkspaceLink(ws)}
@@ -168,8 +177,13 @@
               <!-- <div class="logo empty" /> -->
               <!-- <div class="flex-col flex-grow"> -->
               <div class="flex-col flex-grow">
-                <span class="label overflow-label flex-grow">
+                <span class="label overflow-label flex flex-grow flex-between">
                   {wsName}
+                  {#if isAdmin && ws.lastVisit != null && ws.lastVisit !== 0}
+                    <div class="text-sm">
+                      ({lastUsageDays} days)
+                    </div>
+                  {/if}
                 </span>
                 {#if isAdmin && wsName !== ws.workspace}
                   <span class="text-xs">

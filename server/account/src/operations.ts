@@ -1246,6 +1246,7 @@ export async function getUserWorkspaces (
     await db
       .collection<Workspace>(WORKSPACE_COLLECTION)
       .find(withProductId(productId, account.admin === true ? {} : { _id: { $in: account.workspaces } }))
+      .sort({ lastVisit: -1 })
       .toArray()
   )
     .filter((it) => it.disabled !== true || it.creating === true)
@@ -1272,6 +1273,7 @@ export async function getWorkspaceInfo (
   if (email !== systemAccountEmail && !guest) {
     account = await getAccount(db, email)
     if (account === null) {
+      ctx.error('no account', { email, productId, token })
       throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
     }
   } else if (guest) {
@@ -1294,6 +1296,7 @@ export async function getWorkspaceInfo (
     await db.collection<Workspace>(WORKSPACE_COLLECTION).find(withProductId(productId, query)).toArray()
   ).filter((it) => it.disabled !== true || account?.admin === true || it.creating === true)
   if (ws == null) {
+    ctx.error('no workspace', { workspace: workspace.name, email })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
   if (_updateLastVisit && isAccount(account)) {
