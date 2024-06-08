@@ -179,6 +179,7 @@ async function migrateCollaborativeContentToStorage (client: MigrationClient): P
   }
 }
 
+// TODO skip existing
 async function processMigrateContentFor (
   ctx: MeasureContext,
   domain: Domain,
@@ -278,13 +279,12 @@ export const coreOperation: MigrateOperation = {
         }
       },
       {
-<<<<<<< HEAD
         state: 'old-statuses-transactions',
         func: migrateStatusTransactions
-=======
+      },
+      {
         state: 'collaborative-content-to-storage',
         func: migrateCollaborativeContentToStorage
->>>>>>> 8843cd60a (Migrate collaborative markup to storage)
       }
     ])
   },
