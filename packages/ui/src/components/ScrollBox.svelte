@@ -67,7 +67,7 @@
 
     &.vertical {
       margin: 0 -0.5rem 0 -0.5rem;
-      overflow-x: hidden;
+      overflow-x: auto;
       overflow-y: auto;
       .box {
         flex-direction: column;

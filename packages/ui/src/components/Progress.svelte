@@ -64,12 +64,6 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="container" class:editable on:click={click} on:mousemove={move} on:mouseleave={save} on:mouseup={save}>
-  <div
-    class="bar"
-    style="background-color: {color !== undefined
-      ? getPlatformColor(color, $themeStore.dark)
-      : 'var(--theme-toggle-on-bg-color)'}; width: calc(100% * {position} / 100 + 0.5rem);"
-  />
   {#if editable}
     <div
       class="control"
