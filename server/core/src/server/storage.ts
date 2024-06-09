@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import { Analytics } from '@hcengineering/analytics'
 import core, {
   ClassifierKind,
   DOMAIN_MODEL,
@@ -74,7 +75,6 @@ import type {
   TriggerControl
 } from '../types'
 import { SessionContextImpl, createBroadcastEvent } from '../utils'
-import { Analytics } from '@hcengineering/analytics'
 
 export class TServerStorage implements ServerStorage {
   private readonly fulltext: FullTextIndex
@@ -749,7 +749,7 @@ export class TServerStorage implements ServerStorage {
             await this.broadcastCtx([{ derived: result }, ...applyCtx.derived])
           })
         }
-        setImmediate(() => {
+        setTimeout(() => {
           void asyncTriggerProcessor()
         })
       }
