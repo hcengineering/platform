@@ -412,11 +412,11 @@ function createWebsocketClientSocket (
       ctx.measure('send-data', smsg.length)
       await new Promise<void>((resolve, reject) => {
         const doSend = (): void => {
-          if (ws.readyState !== ws.OPEN && !cs.isClosed) {
+          if (ws.readyState !== ws.OPEN || cs.isClosed) {
             return
           }
           if (ws.bufferedAmount > 16 * 1024) {
-            setImmediate(doSend)
+            setTimeout(doSend)
             return
           }
           ws.send(smsg, { binary: true, compress: compression }, (err) => {
