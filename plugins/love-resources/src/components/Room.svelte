@@ -366,7 +366,7 @@
     {/if}
   </div>
   {#if $currentRoom}
-    <ControlBar room={$currentRoom} />
+    <ControlBar room={$currentRoom} fullScreen={$isFullScreen} />
   {/if}
 </div>
 
