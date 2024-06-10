@@ -27,15 +27,63 @@
   const client = getClient()
   const dispatch = createEventDispatcher()
 
+  let space: Ref<Teamspace> = value.space
+  let parent: Ref<Document> = value.attachedTo
+
+  let children: Ref<Document>[] = []
+  $: void updateChildren(value)
+
+  async function updateChildren (doc: Document): Promise<void> {
+    children = await findChildren(doc)
+  }
+
   async function save (): Promise<void> {
-    await client.update(value, {
+    const ops = client.apply(value._id)
+
+    await ops.update(value, {
       space,
       attachedTo: parent ?? document.ids.NoParent
     })
+
+    if (space !== value.space) {
+      const children = await findChildren(value)
+      for (const child of children) {
+        await client.updateDoc(document.class.Document, value.space, child, {
+          space
+        })
+      }
+    }
+
+    await ops.commit()
   }
 
-  let space: Ref<Teamspace> = value.space
-  let parent: Ref<Document> = value.attachedTo
+  async function findChildren (doc: Document): Promise<Array<Ref<Document>>> {
+    const documents = await client.findAll(
+      document.class.Document,
+      { space: doc.space, attachedTo: { $ne: document.ids.NoParent } },
+      { projection: { _id: 1, attachedTo: 1 } }
+    )
+
+    const byParent = new Map<Ref<Document>, Array<Ref<Document>>>()
+    for (const document of documents) {
+      const group = byParent.get(document.attachedTo) ?? []
+      group.push(document._id)
+      byParent.set(document.attachedTo, group)
+    }
+
+    const result: Ref<Document>[] = []
+
+    const queue = [doc._id]
+    while (true) {
+      const next = queue.pop()
+      if (next === undefined) break
+      const children = byParent.get(next) ?? []
+      result.push(...children)
+      queue.push(...children)
+    }
+
+    return result
+  }
 
   $: canSave = space !== value.space || parent !== value.attachedTo
 </script>
@@ -59,6 +107,9 @@
       defaultIcon={document.icon.Teamspace}
       kind={'regular'}
       size={'small'}
+      on:change={() => {
+        parent = document.ids.NoParent
+      }}
     />
     <ObjectBox
       bind:value={parent}
@@ -71,7 +122,7 @@
       allowDeselect={true}
       showNavigate={false}
       docProps={{ disabled: true, noUnderline: true }}
-      excluded={[value._id]}
+      excluded={[value._id, ...children]}
     />
   </div>
 </Card>
