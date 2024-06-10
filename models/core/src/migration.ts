@@ -20,6 +20,7 @@ import core, {
   DOMAIN_STATUS,
   DOMAIN_TX,
   MeasureMetricsContext,
+  collaborativeDocParse,
   coreId,
   generateId,
   isClassIndexable,
@@ -179,7 +180,6 @@ async function migrateCollaborativeContentToStorage (client: MigrationClient): P
   }
 }
 
-// TODO skip existing
 async function processMigrateContentFor (
   ctx: MeasureContext,
   domain: Domain,
@@ -208,21 +208,26 @@ async function processMigrateContentFor (
         if (value != null && value.startsWith('{')) {
           const collaborativeDoc = makeCollaborativeDoc(doc._id, attribute.name, revisionId)
 
-          const ydoc = markupToYDoc(value, attribute.name)
-          await saveCollaborativeDoc(storageAdapter, client.workspaceId, collaborativeDoc, ydoc, ctx)
-          await takeCollaborativeDocSnapshot(
-            storageAdapter,
-            client.workspaceId,
-            collaborativeDoc,
-            ydoc,
-            {
-              versionId: revisionId,
-              name: 'Migration to storage',
-              createdBy: core.account.System,
-              createdOn: Date.now()
-            },
-            ctx
-          )
+          const { documentId } = collaborativeDocParse(collaborativeDoc)
+          const blob = await storageAdapter.stat(ctx, client.workspaceId, documentId)
+          // only for documents not in storage
+          if (blob === undefined) {
+            const ydoc = markupToYDoc(value, attribute.name)
+            await saveCollaborativeDoc(storageAdapter, client.workspaceId, collaborativeDoc, ydoc, ctx)
+            await takeCollaborativeDocSnapshot(
+              storageAdapter,
+              client.workspaceId,
+              collaborativeDoc,
+              ydoc,
+              {
+                versionId: revisionId,
+                name: 'Migration to storage',
+                createdBy: core.account.System,
+                createdOn: Date.now()
+              },
+              ctx
+            )
+          }
 
           update[attribute.name] = collaborativeDoc
         }
