@@ -61,7 +61,7 @@ export class DirectStorageProvider extends Observable<EVENTS> {
     const { documentId, versionId } = collaborativeDocParse(collaborativeDoc)
 
     if (versionId === 'HEAD') {
-      void fetchContent(documentId, doc).then((synced) => {
+      void fetchContent(documentId as Ref<Blob>, doc).then((synced) => {
         if (synced) {
           this.emit('synced', [this])
         }
