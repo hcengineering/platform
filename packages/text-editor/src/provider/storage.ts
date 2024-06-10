@@ -12,14 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import core, {
-  type Blob,
-  type BlobLookup,
-  type CollaborativeDoc,
-  type Ref,
-  collaborativeDocParse
-} from '@hcengineering/core'
-import { getClient } from '@hcengineering/presentation'
+import { type Blob, type CollaborativeDoc, type Ref, collaborativeDocParse } from '@hcengineering/core'
+import { getBlobHref } from '@hcengineering/presentation'
 import { ObservableV2 as Observable } from 'lib0/observable'
 import { applyUpdate, type Doc as YDoc } from 'yjs'
 
@@ -27,28 +21,24 @@ interface EVENTS {
   synced: (...args: any[]) => void
 }
 
-async function fetchContent (_id: Ref<Blob>, doc: YDoc): Promise<boolean> {
-  const client = getClient()
-
-  const blob = await client.findOne(core.class.Blob, { _id })
-  if (blob !== undefined) {
-    const update = await fetchBlobContent(blob as BlobLookup)
-    if (update !== undefined) {
-      applyUpdate(doc, update)
-      return true
-    }
+async function fetchContent (blob: Ref<Blob>, doc: YDoc): Promise<boolean> {
+  const update = await fetchBlobContent(blob)
+  if (update !== undefined) {
+    applyUpdate(doc, update)
+    return true
   }
 
   return false
 }
 
-async function fetchBlobContent (blob: BlobLookup): Promise<Uint8Array | undefined> {
+async function fetchBlobContent (_id: Ref<Blob>): Promise<Uint8Array | undefined> {
   try {
-    const res = await fetch(blob.downloadUrl)
+    const href = await getBlobHref(undefined, _id)
+    const res = await fetch(href)
 
     if (res.ok) {
-      const b = await res.blob()
-      const buffer = await b.arrayBuffer()
+      const blob = await res.blob()
+      const buffer = await blob.arrayBuffer()
       return new Uint8Array(buffer)
     }
   } catch (err: any) {
