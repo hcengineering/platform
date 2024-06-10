@@ -67,7 +67,7 @@ export class OwnersPage {
 
   async saveUploadedLogo (): Promise<void> {
     await this.saveButton().nth(1).click()
-    await this.saveButton().click()
+    await this.saveButton().nth(0).click()
   }
 
   async checkIfPictureIsUploaded (): Promise<void> {
