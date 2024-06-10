@@ -88,7 +88,7 @@ export function getSrcSet (_blob: Blob, width?: number): string {
 
   const cfg = c.previewers[_blob.provider] ?? c.default
   if (cfg === undefined) {
-    return '' // No previewer is avaialble for blob
+    return '' // No previewer is available for blob
   }
 
   return blobToSrcSet(cfg, blob, width)
