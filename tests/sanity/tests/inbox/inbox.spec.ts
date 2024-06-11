@@ -41,7 +41,6 @@ test.describe('Inbox tests', () => {
 
     await leftSideMenuPage.clickNotification()
     await inboxPage.checkIfTaskIsPresentInInbox(newIssue.title)
-    await page.waitForTimeout(1000)
   })
 
   test('User is able to create a task, assign a himself and open it from inbox', async ({ page }) => {
