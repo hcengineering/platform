@@ -33,6 +33,5 @@ loadMetadata(love.icon, {
   Knock: `${icons}#knock`,
   DND: `${icons}#dnd`,
   Record: `${icons}#record`,
-  StopRecord: `${icons}#stopRecord`,
-  Invite: `${icons}#invite`
+  StopRecord: `${icons}#stopRecord`
 })
