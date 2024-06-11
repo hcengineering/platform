@@ -7,7 +7,7 @@ export class InboxPage {
     this.page = page
   }
 
-  readonly taskName = (taskName: string): Locator => this.page.getByTitle(taskName)
+  readonly taskName = (taskName: string): Locator => this.page.getByRole('paragraph').getByTitle(taskName)
   readonly toDoName = (): Locator => this.page.getByRole('paragraph')
   readonly leftSidePanelOpen = (): Locator => this.page.locator('#btnPAside')
   readonly leftSidePanelClose = (): Locator => this.page.locator('#btnPClose')
@@ -18,6 +18,10 @@ export class InboxPage {
     await this.taskName(taskName).click()
   }
 
+  async clickOnToDo (toDoName: string): Promise<void> {
+    await this.toDoName().filter({ hasText: toDoName }).click()
+  }
+
   async clickLeftSidePanelOpen (): Promise<void> {
     await this.leftSidePanelOpen().click()
   }
@@ -26,7 +30,7 @@ export class InboxPage {
     await this.leftSidePanelClose().click()
   }
 
-  async checkIfTaskIsPresentInInbox (toDoText): Promise<void> {
+  async checkIfTaskIsPresentInInbox (toDoText: string): Promise<void> {
     await expect(this.toDoName()).toContainText(toDoText)
   }
 }

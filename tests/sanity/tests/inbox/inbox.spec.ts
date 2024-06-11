@@ -56,7 +56,7 @@ test.describe('Inbox tests', () => {
 
     await leftSideMenuPage.clickNotification()
     await inboxPage.checkIfTaskIsPresentInInbox(newIssue.title)
-    await inboxPage.clickOnTask(newIssue.title)
+    await inboxPage.clickOnToDo(newIssue.title)
     await inboxPage.clickLeftSidePanelOpen()
     await issuesDetailsPage.checkIssue({
       ...newIssue,
@@ -78,7 +78,7 @@ test.describe('Inbox tests', () => {
 
     await leftSideMenuPage.clickNotification()
     await inboxPage.checkIfTaskIsPresentInInbox(newIssue.title)
-    await inboxPage.clickOnTask(newIssue.title)
+    await inboxPage.clickOnToDo(newIssue.title)
     await inboxPage.clickLeftSidePanelOpen()
     await issuesDetailsPage.checkIssue({
       ...newIssue,
