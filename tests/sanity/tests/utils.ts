@@ -2,7 +2,6 @@ import { Browser, BrowserContext, Locator, Page, expect } from '@playwright/test
 import { allure } from 'allure-playwright'
 import { faker } from '@faker-js/faker'
 import { TestData } from './chat/types'
-import path from 'path'
 
 export const PlatformURI = process.env.PLATFORM_URI as string
 export const PlatformTransactor = process.env.PLATFORM_TRANSACTOR as string
@@ -35,7 +34,6 @@ export const userName = faker.internet.userName()
 export const firstName = faker.person.firstName()
 export const lastName = faker.person.lastName()
 export const channelName = faker.lorem.word()
-export const email = faker.internet.email()
 
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
@@ -118,42 +116,4 @@ export async function checkIfUrlContains (page: Page, url: string): Promise<void
 
 export async function waitForNetworIdle (page: Page, timeout = 2000): Promise<void> {
   await Promise.race([page.waitForLoadState('networkidle'), new Promise((resolve) => setTimeout(resolve, timeout))])
-}
-
-// Check for text in the page
-export const checkTextChunksVisibility = async (page: Page, textChunks: string[]): Promise<void> => {
-  for (const textChunk of textChunks) {
-    await expect(page.locator(`text=${textChunk}`)).toBeVisible()
-  }
-}
-
-/**
- * Resolves the file path for a given file name located in the same directory as the test.
- *
- * @param fileName - name of the file to be resolved
- * @returns - resolved file path
- */
-
-function resolveFilePath (fileName: string): string {
-  return path.resolve(__dirname, '.', 'files', fileName)
-}
-
-/**
- * Uploads a single file using a file chooser in Playwright.
- *
- * @param page - Playwright Page object
- * @param fileName - name of the file to be uploaded
- * @param fileUploadTestId - test ID of the file input element (default: '@upload-file')
- */
-export async function uploadFile (page: Page, fileName: string, fileUploadTestId = 'Attached photo'): Promise<void> {
-  const uploadFileElement = page.getByText(fileUploadTestId)
-
-  const [fileChooser] = await Promise.all([page.waitForEvent('filechooser'), uploadFileElement.click()])
-
-  // Resolve the file path using the 'resolveFilePath' function
-  const filePath = resolveFilePath(fileName)
-  await fileChooser.setFiles(filePath)
-
-  // Replace with a more reliable condition for determining when the upload is complete, if possible.
-  await page.waitForTimeout(2000)
 }
