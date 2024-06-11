@@ -425,7 +425,7 @@ export async function setMic (value: boolean): Promise<void> {
           opt.deviceId = available.deviceId
         }
       }
-      await lk.localParticipant.setMicrophoneEnabled(value)
+      await lk.localParticipant.setMicrophoneEnabled(value, opt)
     } catch (err) {
       console.error(err)
     }
