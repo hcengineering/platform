@@ -166,7 +166,7 @@ async function roomJoinHandler (info: ParticipantInfo, control: TriggerControl, 
   }
 }
 
-async function rejetRequests (info: ParticipantInfo, control: TriggerControl, roomInfos: RoomInfo[]): Promise<Tx[]> {
+async function rejectJoinRequests (info: ParticipantInfo, control: TriggerControl, roomInfos: RoomInfo[]): Promise<Tx[]> {
   const res: Tx[] = []
   const oldRoomInfo = roomInfos.find((ri) => ri.persons.includes(info.person))
   if (oldRoomInfo !== undefined) {
@@ -231,7 +231,7 @@ export async function OnParticipantInfo (tx: Tx, control: TriggerControl): Promi
     const info = (await control.findAll(love.class.ParticipantInfo, { _id: actualTx.objectId }, { limit: 1 }))[0]
     if (info === undefined) return []
     const res: Tx[] = []
-    res.push(...(await rejetRequests(info, control, roomInfos)))
+    res.push(...(await rejectJoinRequests(info, control, roomInfos)))
     res.push(...setDefaultRoomAccess(info, roomInfos, control))
     res.push(...(await roomJoinHandler(info, control, roomInfos)))
     return res
