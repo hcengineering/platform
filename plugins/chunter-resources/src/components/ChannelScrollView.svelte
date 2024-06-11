@@ -425,9 +425,9 @@
         autoscroll = false
       })
     } else if (separatorElement) {
-      isScrollInitialized = true
       await wait()
       scrollToSeparator()
+      isScrollInitialized = true
       isInitialScrolling = false
     }
   }
@@ -554,7 +554,7 @@
   beforeUpdate(() => {
     if (!scrollElement) return
 
-    if (scrollElement.scrollHeight === scrollElement.clientHeight) {
+    if (isScrollInitialized && scrollElement.scrollHeight === scrollElement.clientHeight) {
       isScrollAtBottom = true
     }
   })
