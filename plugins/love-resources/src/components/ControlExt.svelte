@@ -162,7 +162,7 @@
   function checkRequests (requests: JoinRequest[], $myInfo: ParticipantInfo | undefined): void {
     if (activeRequest !== undefined) {
       // try to find active request, if it not exists close popup
-      if (requests.find((r) => r._id === activeRequest?._id) === undefined) {
+      if (requests.find((r) => r._id === activeRequest?._id && r.room === $myInfo?.room) === undefined) {
         closePopup(joinRequestCategory)
         activeRequest = undefined
       }
