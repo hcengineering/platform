@@ -166,7 +166,11 @@ async function roomJoinHandler (info: ParticipantInfo, control: TriggerControl, 
   }
 }
 
-async function rejectJoinRequests (info: ParticipantInfo, control: TriggerControl, roomInfos: RoomInfo[]): Promise<Tx[]> {
+async function rejectJoinRequests (
+  info: ParticipantInfo,
+  control: TriggerControl,
+  roomInfos: RoomInfo[]
+): Promise<Tx[]> {
   const res: Tx[] = []
   const oldRoomInfo = roomInfos.find((ri) => ri.persons.includes(info.person))
   if (oldRoomInfo !== undefined) {
