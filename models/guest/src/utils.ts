@@ -18,7 +18,7 @@ export function createPublicLinkAction (builder: Builder, _class: Ref<Class<Doc>
       },
       label: guest.string.PublicLink,
       icon: guest.icon.Link,
-      input: 'any',
+      input: 'focus',
       category: guest.category.Guest,
       target: _class,
       context: {
