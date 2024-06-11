@@ -55,8 +55,6 @@
     "Record": "Запись",
     "StopRecord": "Остановить запись",
     "LeaveRoomConfirmation": "Вы уверены, что хотите покинуть комнату?",
-    "ServiceNotConfigured": "Сервис не настроен",
-    "FullscreenMode": "Полноэкранный режим",
-    "ExitingFullscreenMode": "Выход из полноэкранного режима"
+    "ServiceNotConfigured": "Сервис не настроен"
   }
 }

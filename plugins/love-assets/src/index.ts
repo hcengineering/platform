@@ -34,7 +34,5 @@ loadMetadata(love.icon, {
   DND: `${icons}#dnd`,
   Record: `${icons}#record`,
   StopRecord: `${icons}#stopRecord`,
-  FullScreen: `${icons}#fullscreen`,
-  ExitFullScreen: `${icons}#exitfullscreen`,
   Invite: `${icons}#invite`
 })

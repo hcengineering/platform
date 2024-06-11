@@ -135,8 +135,6 @@ const love = plugin(loveId, {
     DND: '' as Asset,
     Record: '' as Asset,
     StopRecord: '' as Asset,
-    FullScreen: '' as Asset,
-    ExitFullScreen: '' as Asset,
     Invite: '' as Asset
   },
   metadata: {

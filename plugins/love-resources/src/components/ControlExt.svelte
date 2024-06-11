@@ -65,7 +65,6 @@
     isCurrentInstanceConnected,
     isMicEnabled,
     isSharingEnabled,
-    isFullScreen,
     leaveRoom,
     screenSharing,
     setCam,
@@ -392,13 +391,6 @@
         disabled={$screenSharing && !$isSharingEnabled}
         size={'small'}
         action={changeShare}
-      />
-      <ActionIcon
-        icon={$isFullScreen ? love.icon.ExitFullScreen : love.icon.FullScreen}
-        size={'small'}
-        action={() => {
-          $isFullScreen = !$isFullScreen
-        }}
       />
     {/if}
     {#if allowLeave}

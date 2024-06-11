@@ -17,7 +17,7 @@
   import { personByIdStore } from '@hcengineering/contact-resources'
   import { Room as TypeRoom } from '@hcengineering/love'
   import { getMetadata } from '@hcengineering/platform'
-  import { Label, Loading, resizeObserver } from '@hcengineering/ui'
+  import { Label, Loading, deviceOptionsStore as deviceInfo, resizeObserver } from '@hcengineering/ui'
   import {
     LocalParticipant,
     LocalTrackPublication,
@@ -32,15 +32,7 @@
   import { onDestroy, onMount, tick } from 'svelte'
   import love from '../plugin'
   import { currentRoom, infos, invites, myInfo, myRequests } from '../stores'
-  import {
-    awaitConnect,
-    isConnected,
-    isCurrentInstanceConnected,
-    isFullScreen,
-    lk,
-    screenSharing,
-    tryConnect
-  } from '../utils'
+  import { awaitConnect, isConnected, isCurrentInstanceConnected, lk, screenSharing, tryConnect } from '../utils'
   import ControlBar from './ControlBar.svelte'
   import ParticipantView from './ParticipantView.svelte'
 
@@ -58,7 +50,8 @@
   let participants: ParticipantData[] = []
   const participantElements: ParticipantView[] = []
   let screen: HTMLVideoElement
-  let roomEl: HTMLDivElement
+
+  const remToPx = (rem: number): number => rem * $deviceInfo.fontSize
 
   function handleTrackSubscribed (
     track: RemoteTrack,
@@ -259,7 +252,6 @@
     lk.on(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed)
     lk.on(RoomEvent.LocalTrackPublished, handleLocalTrack)
     lk.on(RoomEvent.LocalTrackUnpublished, handleLocalTrackUnsubscribed)
-    roomEl && roomEl.addEventListener('fullscreenchange', handleFullScreen)
     loading = false
   })
 
@@ -298,7 +290,6 @@
     lk.off(RoomEvent.TrackMuted, muteHandler)
     lk.off(RoomEvent.TrackUnmuted, muteHandler)
     lk.off(RoomEvent.LocalTrackUnpublished, handleLocalTrackUnsubscribed)
-    roomEl.removeEventListener('fullscreenchange', handleFullScreen)
   })
 
   function updateStyle (count: number, screenSharing: boolean): void {
@@ -306,27 +297,9 @@
     rows = Math.ceil(count / columns)
     gridStyle = `grid-template-columns: repeat(${columns}, 1fr); aspect-ratio: ${columns * 1280}/${rows * 720};`
   }
-
-  const handleFullScreen = () => ($isFullScreen = document.fullscreenElement != null)
-
-  function toggleFullscreen () {
-    if (!document.fullscreenElement) {
-      roomEl
-        .requestFullscreen()
-        .then(() => ($isFullScreen = true))
-        .catch((err) => {
-          console.log(`Error attempting to enable fullscreen mode: ${err.message} (${err.name})`)
-          $isFullScreen = false
-        })
-    } else {
-      document.exitFullscreen()
-      $isFullScreen = false
-    }
-  }
-  $: if (((document.fullscreenElement && !$isFullScreen) || $isFullScreen) && roomEl) toggleFullscreen()
 </script>
 
-<div bind:this={roomEl} class="flex-col-center w-full h-full" class:theme-dark={$isFullScreen}>
+<div class="flex-col-center w-full h-full">
   {#if $isConnected && !$isCurrentInstanceConnected}
     <div class="flex justify-center error h-full w-full clear-mins">
       <Label label={love.string.AnotherWindowError} />
