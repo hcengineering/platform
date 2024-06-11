@@ -70,9 +70,6 @@ async function OnMarkupCreate (tx: Tx, { hierarchy, txFactory, workspace, ctx }:
         const { lastVersionId } = collaborativeDocParse(collaborativeDoc)
 
         await ctx.with('update-content', {}, async () => {
-          // TODO Here we need to save proper revision id that can be used to fetch
-          // the document revision, currenlty it is HEAD that is always the latest one
-          // We cannot rely on update from collaborator because it will be an extra update
           await collaborator.updateContent(collaborativeDoc, k, v, {
             versionId: lastVersionId,
             versionName: lastVersionId,
