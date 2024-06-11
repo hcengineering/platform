@@ -18,7 +18,16 @@
   import login from '@hcengineering/login'
   import { getResource } from '@hcengineering/platform'
   import { copyTextToClipboard, getClient } from '@hcengineering/presentation'
-  import { IconUpOutline, ModernButton, SplitButton, eventToHTMLElement, showPopup } from '@hcengineering/ui'
+  import {
+    IconUpOutline,
+    ModernButton,
+    SplitButton,
+    eventToHTMLElement,
+    showPopup,
+    PopupInstance,
+    type CompAndProps,
+    type AnySvelteComponent
+  } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import love, { Room, RoomType, isOffice, roomAccessIcon } from '@hcengineering/love'
   import plugin from '../plugin'
@@ -43,10 +52,12 @@
   import RoomAccessPopup from './RoomAccessPopup.svelte'
 
   export let room: Room
+  export let fullScreen: boolean = false
 
   let allowCam: boolean = false
   const allowShare: boolean = true
   let allowLeave: boolean = false
+  let popup: CompAndProps | undefined = undefined
 
   $: allowCam = $currentRoom?.type === RoomType.Video
   $: allowLeave = $myInfo?.room !== ($myOffice?._id ?? plugin.ids.Reception)
@@ -67,17 +78,42 @@
     await leaveRoom($myInfo, $myOffice)
   }
 
+  function getPopup (component: AnySvelteComponent, e: MouseEvent, props: any = {}): CompAndProps {
+    return {
+      id: 'fsPopup',
+      is: component,
+      props,
+      element: eventToHTMLElement(e),
+      options: { category: 'popup', overlay: true },
+      close: () => {
+        popup = undefined
+      }
+    }
+  }
+
   function micSettings (e: MouseEvent): void {
-    showPopup(MicSettingPopup, {}, eventToHTMLElement(e))
+    if (fullScreen) {
+      popup = getPopup(MicSettingPopup, e)
+    } else {
+      showPopup(MicSettingPopup, {}, eventToHTMLElement(e))
+    }
   }
 
   function camSettings (e: MouseEvent): void {
-    showPopup(CamSettingPopup, {}, eventToHTMLElement(e))
+    if (fullScreen) {
+      popup = getPopup(CamSettingPopup, e)
+    } else {
+      showPopup(CamSettingPopup, {}, eventToHTMLElement(e))
+    }
   }
 
   function setAccess (e: MouseEvent): void {
     if (isOffice(room) && room.person !== me) return
-    showPopup(RoomAccessPopup, { room }, eventToHTMLElement(e))
+    if (fullScreen) {
+      popup = getPopup(RoomAccessPopup, e, { room })
+    } else {
+      showPopup(RoomAccessPopup, { room }, eventToHTMLElement(e))
+    }
   }
 
   async function copyGuestLink (): Promise<void> {
@@ -191,6 +227,21 @@
       />
     {/if}
   </div>
+  {#if popup && fullScreen}
+    <PopupInstance
+      is={popup.is}
+      props={popup.props}
+      element={popup.element}
+      onClose={popup.onClose}
+      onUpdate={popup.onUpdate}
+      zIndex={1}
+      top={true}
+      close={popup.close}
+      overlay={popup.options.overlay}
+      contentPanel={undefined}
+      {popup}
+    />
+  {/if}
 </div>
 
 <style lang="scss">

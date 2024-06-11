@@ -48,6 +48,7 @@
   let resizeInitParams: ResizeInitParams | undefined = undefined
   let floorContainer: HTMLDivElement
   let floorRect: DOMRect
+  let floorOffsetInline: number
   const floorSize: FloorSize = {
     cols: GRID_WIDTH + 2,
     rows: 5,
@@ -342,6 +343,7 @@
               if (event.detail === undefined) return
               const { room, size, offset } = event.detail
               floorRect = floorContainer.getBoundingClientRect()
+              floorOffsetInline = floorRect.x - divScroll.getBoundingClientRect().x
               dragged = {
                 x: size.x - floorRect.x + floorSize.cellRound,
                 y: size.y - floorRect.y + floorSize.cellRound,
@@ -363,7 +365,7 @@
           room={locked.room}
           cellSize={floorSize.cellSize}
           top={dragged.y}
-          left={dragged.x}
+          left={dragged.x + floorOffsetInline - floorSize.cellRound}
         />
       {/if}
     </Scroller>
