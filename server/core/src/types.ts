@@ -139,7 +139,6 @@ export interface Pipeline extends LowLevelStorage {
  * @public
  */
 export interface TriggerControl {
-  operationContext: SessionOperationContext
   ctx: MeasureContext
   workspace: WorkspaceIdWithUrl
   txFactory: TxFactory
