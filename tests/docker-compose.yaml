@@ -110,9 +110,9 @@ services:
       - minio
       - transactor
     ports:
-      - 3079:3078
+      - 3079:3079
     environment:
-      - COLLABORATOR_PORT=3078
+      - COLLABORATOR_PORT=3079
       - SECRET=secret
       - ACCOUNTS_URL=http://account:3003
       - TRANSACTOR_URL=ws://transactor:3334
