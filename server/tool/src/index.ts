@@ -125,6 +125,8 @@ export async function initModel (
 
     await storageAdapter.make(ctx, workspaceId)
 
+    logger.log('connecting to transactor', { workspaceId, transactorUrl })
+
     connection = (await connect(
       transactorUrl,
       workspaceId,

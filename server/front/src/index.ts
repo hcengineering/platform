@@ -331,7 +331,9 @@ export function start (
         try {
           const cookies = ((req?.headers?.cookie as string) ?? '').split(';').map((it) => it.trim().split('='))
 
-          const token = cookies.find((it) => it[0] === 'presentation-metadata-Token')?.[1]
+          const token =
+            cookies.find((it) => it[0] === 'presentation-metadata-Token')?.[1] ??
+            (req.query.token as string | undefined)
           payload = token !== undefined ? decodeToken(token) : payload
 
           let uuid = req.params.file ?? req.query.file

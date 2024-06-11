@@ -15,19 +15,19 @@
 
 import { MeasureMetricsContext, generateId } from '@hcengineering/core'
 import { objectsToArray, type StorageConfiguration } from '@hcengineering/server-core'
-import { MinioService, processConfigFromEnv, type MinioConfig } from '..'
+import { S3Service, processConfigFromEnv, type S3Config } from '..'
 
 describe('minio operations', () => {
   const config: StorageConfiguration = { default: 'minio', storages: [] }
   const minioConfigVar = processConfigFromEnv(config)
   if (minioConfigVar !== undefined || config.storages[0] === undefined) {
-    console.error('No Minio config env is configured:' + minioConfigVar)
-    it.skip('No Minio config env is configured', async () => {})
+    console.error('No S3 config env is configured:' + minioConfigVar)
+    it.skip('No S3 config env is configured', async () => {})
     return
   }
   const toolCtx = new MeasureMetricsContext('test', {})
   it('check root bucket', async () => {
-    const minioService = new MinioService({ ...(config.storages[0] as MinioConfig), rootBucket: 'test-bucket' })
+    const minioService = new S3Service({ ...(config.storages[0] as S3Config), rootBucket: 'haiodo-test-bucket' })
 
     let existingTestBuckets = await minioService.listBuckets(toolCtx, '')
     // Delete old buckets
