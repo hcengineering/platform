@@ -81,6 +81,23 @@ Development environment setup requires Docker to be installed on system.
 
 Support is available for both amd64 and arm64 containers on Linux and macOS.
 
+### Pre-requisite :
+Ensure wget and unzip are installed on the system and are available in system path, to check open terminal and use commands:
+
+```bash
+wget --version  # To check wget is installed or not
+unzip -v # To check unzip in installed or not
+```
+
+Install wget and unzip if not installed using the below commands:
+
+```bash
+brew install wget  # To install wget on macOS
+brew install unzip # To install unzip on macOS
+```
+
+Now proceed with next steps of Build and Run
+
 ```bash
 cd ./dev/
 rush build    # Will build all the required packages. 
