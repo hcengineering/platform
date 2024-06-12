@@ -3,6 +3,7 @@ import { getMetadata } from '@hcengineering/platform'
 import presentation, { getClient } from '@hcengineering/presentation'
 import { trackerId, type Component, type Issue, type Milestone } from '@hcengineering/tracker'
 import { getCurrentResolvedLocation, getPanelURI, type Location, type ResolvedLocation } from '@hcengineering/ui'
+import { accessDeniedStore } from '@hcengineering/view-resources'
 import { workbenchId } from '@hcengineering/workbench'
 import { writable } from 'svelte/store'
 import tracker from './plugin'
@@ -73,6 +74,7 @@ export async function generateIssueLocation (loc: Location, issueId: string): Pr
   const client = getClient()
   const issue = await client.findOne(tracker.class.Issue, { identifier: issueId })
   if (issue === undefined) {
+    accessDeniedStore.set(true)
     console.error(`Could not find issue ${issueId}.`)
     return undefined
   }

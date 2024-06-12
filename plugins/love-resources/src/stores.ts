@@ -1,6 +1,5 @@
 import { type Person, type PersonAccount } from '@hcengineering/contact'
 import { getCurrentAccount, type Ref } from '@hcengineering/core'
-import { createQuery, getClient } from '@hcengineering/presentation'
 import {
   RequestStatus,
   type DevicesPreference,
@@ -11,6 +10,7 @@ import {
   type ParticipantInfo,
   type Room
 } from '@hcengineering/love'
+import { createQuery, getClient } from '@hcengineering/presentation'
 import { derived, writable } from 'svelte/store'
 import love from './plugin'
 
