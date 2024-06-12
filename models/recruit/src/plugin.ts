@@ -62,7 +62,6 @@ export default mergeIds(recruitId, recruit, {
   },
   string: {
     ApplicationsShort: '' as IntlString,
-    RecruitApplication: '' as IntlString,
     TalentPools: '' as IntlString,
     SearchApplication: '' as IntlString,
     SearchVacancy: '' as IntlString,

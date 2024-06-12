@@ -68,7 +68,8 @@ export const documentPlugin = plugin(documentId, {
   },
   string: {
     ConfigLabel: '' as IntlString,
-    CreateDocument: '' as IntlString
+    CreateDocument: '' as IntlString,
+    Documents: '' as IntlString
   },
   ids: {
     NoParent: '' as Ref<Document>,
