@@ -21,7 +21,7 @@ import type { Project, Task } from '@hcengineering/task'
 
 /** @public */
 export interface Vacancy extends Project {
-  fullDescription?: CollaborativeDoc
+  fullDescription: CollaborativeDoc
   attachments?: number
   dueTo?: Timestamp
   location?: string

@@ -137,7 +137,7 @@ export interface Member extends AttachedDoc {
  */
 export interface Organization extends Contact {
   members: number
-  description?: CollaborativeDoc
+  description: CollaborativeDoc
 }
 
 /**

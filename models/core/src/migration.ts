@@ -204,10 +204,10 @@ async function processMigrateContentFor (
       const update: MigrateUpdate<Doc> = {}
 
       for (const attribute of attributes) {
+        const collaborativeDoc = makeCollaborativeDoc(doc._id, attribute.name, revisionId)
+
         const value = (doc as any)[attribute.name] as string
         if (value != null && value.startsWith('{')) {
-          const collaborativeDoc = makeCollaborativeDoc(doc._id, attribute.name, revisionId)
-
           const { documentId } = collaborativeDocParse(collaborativeDoc)
           const blob = await storageAdapter.stat(ctx, client.workspaceId, documentId)
           // only for documents not in storage
@@ -230,6 +230,8 @@ async function processMigrateContentFor (
           }
 
           update[attribute.name] = collaborativeDoc
+        } else if (value == null) {
+          update[attribute.name] = makeCollaborativeDoc(doc._id, attribute.name, revisionId)
         }
       }
 

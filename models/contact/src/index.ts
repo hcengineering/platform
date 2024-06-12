@@ -174,7 +174,7 @@ export class TMember extends TAttachedDoc implements Member {
 export class TOrganization extends TContact implements Organization {
   @Prop(TypeCollaborativeDoc(), core.string.Description)
   @Index(IndexKind.FullText)
-    description?: CollaborativeDoc
+    description!: CollaborativeDoc
 
   @Prop(Collection(contact.class.Member), contact.string.Members)
     members!: number
