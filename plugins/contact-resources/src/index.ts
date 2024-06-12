@@ -286,7 +286,10 @@ async function kickEmployee (doc: Person): Promise<void> {
     )
   }
 }
-async function openChannelURL (doc: Channel): Promise<void> {
+async function openChannelURL(doc: Channel): Promise<void> {
+  if (doc.value === undefined) {
+    return
+  }
   const url = parseURL(doc.value)
   if (url.startsWith('http://') || url.startsWith('https://')) {
     window.open(url)
