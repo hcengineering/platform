@@ -210,7 +210,7 @@ export function createModel (builder: Builder): void {
         spaces: [
           {
             id: 'orgspaces',
-            label: documents.string.Organisation,
+            label: documents.string.GeneralDocumentation,
             spaceClass: documents.class.OrgSpace,
             addSpaceLabel: documents.string.CreateOrgSpace,
             createComponent: documents.component.CreateDocumentsSpace,
@@ -225,7 +225,7 @@ export function createModel (builder: Builder): void {
           },
           {
             id: 'projectspaces',
-            label: documents.string.Projects,
+            label: documents.string.TechnicalDocumentation,
             spaceClass: documents.class.ExternalSpace,
             specials: [
               {

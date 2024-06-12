@@ -201,7 +201,8 @@
     "FieldIsEmpty": "{field} не задан",
     "ValidatingCredentials": "Проверка информации...",
 
-    "Organisation": "Организация",
+    "GeneralDocumentation": "Общая документация",
+    "TechnicalDocumentation": "Техническая документация",
     "UnsortedTemplates": "Несортированные шаблоны",
     "Project": "Проект",
     "Projects": "Проекты",

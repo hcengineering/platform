@@ -201,7 +201,8 @@
     "FieldIsEmpty": "{field} is empty",
     "ValidatingCredentials": "Validating credentials...",
 
-    "Organisation": "Organisation",
+    "GeneralDocumentation": "General documentation",
+    "TechnicalDocumentation": "Technical documentation",
     "UnsortedTemplates": "Unsorted templates",
     "Project": "Project",
     "Projects": "Projects",
