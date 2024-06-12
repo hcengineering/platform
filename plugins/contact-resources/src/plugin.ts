@@ -23,7 +23,6 @@ import { type FilterFunction, type SortFunc } from '@hcengineering/view'
 export default mergeIds(contactId, contact, {
   string: {
     Apply: '' as IntlString,
-    Contacts: '' as IntlString,
     CreatePerson: '' as IntlString,
     OrganizationNamePlaceholder: '' as IntlString,
     OrganizationsNamePlaceholder: '' as IntlString,

@@ -35,7 +35,6 @@ export default mergeIds(documentId, document, {
     DocumentNamePlaceholder: '' as IntlString,
     Name: '' as IntlString,
     Cancel: '' as IntlString,
-    Documents: '' as IntlString,
     Document: '' as IntlString,
     SearchDocument: '' as IntlString,
     Version: '' as IntlString,

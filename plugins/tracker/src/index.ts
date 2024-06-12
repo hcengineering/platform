@@ -520,6 +520,7 @@ const pluginState = plugin(trackerId, {
     Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>
   },
   string: {
+    TrackerApplication: '' as IntlString,
     ConfigLabel: '' as IntlString,
     NewRelatedIssue: '' as IntlString,
     IssueNotificationTitle: '' as IntlString,
