@@ -57,6 +57,8 @@
     "LeaveRoomConfirmation": "Are you sure you want to leave the room?",
     "ServiceNotConfigured": "Service is not configured",
     "FullscreenMode": "Full-screen mode",
-    "ExitingFullscreenMode": "Exiting fullscreen mode"
+    "ExitingFullscreenMode": "Exiting fullscreen mode",
+    "Select": "Select",
+    "ChooseShare": "Choose what to share"
   }
 }

@@ -70,6 +70,8 @@ export default mergeIds(loveId, love, {
     FullscreenMode: '' as IntlString,
     ExitingFullscreenMode: '' as IntlString,
     Invite: '' as IntlString,
-    KnockAction: '' as IntlString
+    KnockAction: '' as IntlString,
+    Select: '' as IntlString,
+    ChooseShare: '' as IntlString
   }
 })

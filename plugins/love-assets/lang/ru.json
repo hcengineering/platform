@@ -57,6 +57,8 @@
     "LeaveRoomConfirmation": "Вы уверены, что хотите покинуть комнату?",
     "ServiceNotConfigured": "Сервис не настроен",
     "FullscreenMode": "Полноэкранный режим",
-    "ExitingFullscreenMode": "Выход из полноэкранного режима"
+    "ExitingFullscreenMode": "Выход из полноэкранного режима",
+    "Select": "Выбрать",
+    "ChooseShare": "Выберите, чем вы хотите поделиться"
   }
 }

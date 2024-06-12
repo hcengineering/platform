@@ -22,6 +22,7 @@ import {
   ConnectionState,
   Room as LKRoom,
   LocalAudioTrack,
+  type LocalTrack,
   LocalVideoTrack,
   RoomEvent,
   Track,
@@ -94,6 +95,10 @@ export const lk: LKRoom = new LKRoom({
     }
   }
 })
+
+export function setCustomCreateScreenTracks (value: () => Promise<Array<LocalTrack<Track.Kind>>>): void {
+  lk.localParticipant.createScreenTracks = value
+}
 
 async function prepare (): Promise<void> {
   const wsURL = getMetadata(love.metadata.WebSocketURL)
