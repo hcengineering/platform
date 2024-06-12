@@ -112,7 +112,7 @@ test.describe('Inbox tests', () => {
     const joinPage = new SignInJoinPage(page2)
     await joinPage.join(newUser2)
 
-    const newIssue = createNewIssueData( newUser2.firstName, newUser2.lastName)
+    const newIssue = createNewIssueData(newUser2.firstName, newUser2.lastName)
     await prepareNewIssueWithOpenStep(page, newIssue)
     await issuesDetailsPage.checkIssue({
       ...newIssue,
@@ -124,7 +124,7 @@ test.describe('Inbox tests', () => {
     await inboxPageSecond.checkIfTaskIsPresentInInbox(newIssue.title)
   })
 
-  test('User is able to assign someone else and he should be able to open the task', async ({ page,browser }) => {
+  test('User is able to assign someone else and he should be able to open the task', async ({ page, browser }) => {
     await leftSideMenuPage.openProfileMenu()
     await leftSideMenuPage.inviteToWorkspace()
     await leftSideMenuPage.getInviteLink()
@@ -138,7 +138,7 @@ test.describe('Inbox tests', () => {
     const joinPage = new SignInJoinPage(page2)
     await joinPage.join(newUser2)
 
-    const newIssue = createNewIssueData( newUser2.firstName, newUser2.lastName)
+    const newIssue = createNewIssueData(newUser2.firstName, newUser2.lastName)
     await prepareNewIssueWithOpenStep(page, newIssue)
     await issuesDetailsPage.checkIssue({
       ...newIssue,
@@ -156,7 +156,7 @@ test.describe('Inbox tests', () => {
       estimation: '2h'
     })
   })
-  test.skip('User is able to create a task, assign a himself and close it from inbox', async ({ page, browser }) => {
+  test.skip('User is able to create a task, assign a other user and close it from inbox', async ({ page, browser }) => {
     await leftSideMenuPage.openProfileMenu()
     await leftSideMenuPage.inviteToWorkspace()
     await leftSideMenuPage.getInviteLink()
@@ -170,7 +170,7 @@ test.describe('Inbox tests', () => {
     const joinPage = new SignInJoinPage(page2)
     await joinPage.join(newUser2)
 
-    const newIssue = createNewIssueData( newUser2.firstName, newUser2.lastName)
+    const newIssue = createNewIssueData(newUser2.firstName, newUser2.lastName)
     await prepareNewIssueWithOpenStep(page, newIssue)
     await issuesDetailsPage.checkIssue({
       ...newIssue,
