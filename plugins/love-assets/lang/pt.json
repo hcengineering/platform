@@ -57,6 +57,8 @@
     "LeaveRoomConfirmation": "Tem certeza de que deseja sair da sala?",
     "ServiceNotConfigured": "O serviço não está configurado",
     "FullscreenMode": "Modo de ecrã inteiro",
-    "ExitingFullscreenMode": "Saindo do modo de tela cheia"
+    "ExitingFullscreenMode": "Saindo do modo de tela cheia",
+    "Select": "Seleccione",
+    "ChooseShare": "Escolha o que partilhar"
   }
 }

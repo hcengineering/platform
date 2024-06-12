@@ -4,10 +4,11 @@ import { Drive } from '@hcengineering/drive'
 import { NotificationType } from '@hcengineering/notification'
 import { Asset, IntlString, Metadata, Plugin, plugin } from '@hcengineering/platform'
 import { Preference } from '@hcengineering/preference'
+import { AnyComponent } from '@hcengineering/ui/src/types'
 import { Action } from '@hcengineering/view'
 
 export const loveId = 'love' as Plugin
-
+export type { ScreenSource } from './utils'
 export const GRID_WIDTH = 15
 
 export enum RoomAccess {
@@ -146,6 +147,9 @@ const love = plugin(loveId, {
   space: {
     Rooms: '' as Ref<Space>,
     Drive: '' as Ref<Drive>
+  },
+  component: {
+    SelectScreenSourcePopup: '' as AnyComponent
   }
 })
 
