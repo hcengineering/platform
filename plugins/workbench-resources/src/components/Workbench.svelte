@@ -65,6 +65,7 @@
     ActionHandler,
     ListSelectionProvider,
     NavLink,
+    accessDeniedStore,
     migrateViewOpttions,
     updateFocus
   } from '@hcengineering/view-resources'
@@ -282,6 +283,7 @@
   }
 
   async function syncLoc (loc: Location): Promise<void> {
+    accessDeniedStore.set(false)
     const originalLoc = JSON.stringify(loc)
 
     if (loc.path.length > 3 && getSpecialComponent(loc.path[3]) === undefined) {
@@ -412,6 +414,7 @@
           (props[4] ?? undefined) as AnyComponent
         )
       } else {
+        accessDeniedStore.set(true)
         closePanel(false)
       }
     } else {
@@ -799,6 +802,10 @@
             is={currentView.component}
             props={{ ...currentView.componentProps, currentView, visibleNav, navFloat, appsDirection }}
           />
+        {:else if $accessDeniedStore}
+          <div class="flex-center h-full">
+            <h2><Label label={workbench.string.AccessDenied} /></h2>
+          </div>
         {:else}
           <SpaceView {currentSpace} {currentView} {createItemDialog} {createItemLabel} />
         {/if}

@@ -14,20 +14,21 @@
 //
 
 import {
+  getCollaborativeDoc,
+  getCollaborativeDocId,
   type AttachedData,
   type Client,
   type Ref,
-  type TxOperations,
-  getCollaborativeDoc,
-  getCollaborativeDocId
+  type TxOperations
 } from '@hcengineering/core'
-import { type Document, type Teamspace, documentId } from '@hcengineering/document'
+import { documentId, type Document, type Teamspace } from '@hcengineering/document'
 import { getMetadata, translate } from '@hcengineering/platform'
 import presentation, { getClient } from '@hcengineering/presentation'
-import { type Location, type ResolvedLocation, getCurrentResolvedLocation, getPanelURI } from '@hcengineering/ui'
+import { getCurrentResolvedLocation, getPanelURI, type Location, type ResolvedLocation } from '@hcengineering/ui'
 import { workbenchId } from '@hcengineering/workbench'
 import slugify from 'slugify'
 
+import { accessDeniedStore } from '@hcengineering/view-resources'
 import document from './plugin'
 
 export async function createEmptyDocument (
@@ -83,6 +84,7 @@ export async function generateLocation (loc: Location, id: Ref<Document>): Promi
 
   const doc = await client.findOne(document.class.Document, { _id: id })
   if (doc === undefined) {
+    accessDeniedStore.set(true)
     console.error(`Could not find document ${id}.`)
     return undefined
   }

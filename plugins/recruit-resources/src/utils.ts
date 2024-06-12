@@ -12,6 +12,7 @@ import {
 } from '@hcengineering/recruit'
 import { getCurrentResolvedLocation, getPanelURI, type Location, type ResolvedLocation } from '@hcengineering/ui'
 import view from '@hcengineering/view'
+import { accessDeniedStore } from '@hcengineering/view-resources'
 import { workbenchId } from '@hcengineering/workbench'
 import recruit from './plugin'
 
@@ -67,6 +68,7 @@ async function generateIdLocation (loc: Location, shortLink: string): Promise<Re
   }
   const doc = await client.findOne(_class, { _id: _id as Ref<Doc> })
   if (doc === undefined) {
+    accessDeniedStore.set(true)
     console.error(`Could not find ${_class} with id ${_id}.`)
     return undefined
   }
@@ -113,6 +115,7 @@ async function generateLocation (loc: Location, shortLink: string): Promise<Reso
   }
   const doc = await client.findOne(_class, { number })
   if (doc === undefined) {
+    accessDeniedStore.set(true)
     console.error(`Could not find ${_class} with number ${number}.`)
     return undefined
   }
