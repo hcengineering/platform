@@ -118,6 +118,7 @@
   $: canEdit =
     !readonly &&
     object !== undefined &&
+    !object.archived &&
     ((object.owners?.includes(me) ?? false) ||
       checkMyPermission(core.permission.UpdateSpace, _id, $permissionsStore) ||
       checkMyPermission(core.permission.UpdateObject, core.space.Space, $permissionsStore))
