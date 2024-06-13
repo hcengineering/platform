@@ -15,6 +15,7 @@
 
 import {
   generateId,
+  getCurrentAccount,
   type Class,
   type Client,
   type DocumentQuery,
@@ -122,6 +123,35 @@ export async function unstarDocument (doc: Document): Promise<void> {
   }
 }
 
+export async function lockContent (doc: Document | Document[]): Promise<void> {
+  const client = getClient()
+  const me = getCurrentAccount()
+
+  const arr = Array.isArray(doc) ? doc : [doc]
+  for (const doc of arr) {
+    await client.diffUpdate(doc, { lockedBy: me._id })
+  }
+}
+
+export async function unlockContent (doc: Document | Document[]): Promise<void> {
+  const client = getClient()
+
+  const arr = Array.isArray(doc) ? doc : [doc]
+  for (const doc of arr) {
+    await client.diffUpdate(doc, { lockedBy: null })
+  }
+}
+
+export async function canLockDocument (doc: Document | Document[]): Promise<boolean> {
+  const arr = Array.isArray(doc) ? doc : [doc]
+  return arr.some((p) => p.lockedBy == null)
+}
+
+export async function canUnlockDocument (doc: Document | Document[]): Promise<boolean> {
+  const arr = Array.isArray(doc) ? doc : [doc]
+  return arr.some((p) => p.lockedBy != null)
+}
+
 export default async (): Promise<Resources> => ({
   component: {
     CreateDocument,
@@ -148,12 +178,16 @@ export default async (): Promise<Resources> => ({
   actionImpl: {
     CreateChildDocument: createChildDocument,
     CreateDocument: createDocument,
-    EditTeamspace: editTeamspace
+    EditTeamspace: editTeamspace,
+    LockContent: lockContent,
+    UnlockContent: unlockContent
   },
   function: {
     GetDocumentLink: getDocumentUrl,
     GetObjectLinkFragment: getDocumentLink,
-    DocumentTitleProvider: documentTitleProvider
+    DocumentTitleProvider: documentTitleProvider,
+    CanLockDocument: canLockDocument,
+    CanUnlockDocument: canUnlockDocument
   },
   resolver: {
     Location: resolveLocation

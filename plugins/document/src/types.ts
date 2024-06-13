@@ -14,7 +14,7 @@
 //
 
 import { Attachment } from '@hcengineering/attachment'
-import { AttachedDoc, Class, CollaborativeDoc, Ref, TypedSpace } from '@hcengineering/core'
+import { Account, AttachedDoc, Class, CollaborativeDoc, Ref, TypedSpace } from '@hcengineering/core'
 import { Preference } from '@hcengineering/preference'
 import { IconProps } from '@hcengineering/view'
 
@@ -27,6 +27,8 @@ export interface Document extends AttachedDoc<Document, 'children', Teamspace>, 
 
   name: string
   content: CollaborativeDoc
+
+  lockedBy?: Ref<Account> | null
 
   snapshots?: number
   attachments?: number
