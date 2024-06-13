@@ -282,6 +282,7 @@ export interface DateOrShift {
 }
 
 export interface LabelAndProps {
+  type?: 'tooltip'
   label?: IntlString
   element?: HTMLElement
   direction?: TooltipAlignment
