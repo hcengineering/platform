@@ -28,7 +28,7 @@
 
   let types: SpaceType[] = []
   const typesQ = createQuery()
-  const query = {
+  $: query = {
     descriptor: { $in: descriptors }
   }
   $: typesQ.query(core.class.SpaceType, query, (result) => {
