@@ -658,13 +658,15 @@
     }
     events = events
 
-    if (!scrollTimer) directionScroll(
-      e.clientY < containerRect.y + headerHeight + 16 && scroller.scrollTop > 0
-        ? 'top'
-        : e.clientY > containerRect.bottom - 16 && scroller.scrollHeight - scroller.scrollTop > scroller.clientHeight
-          ? 'bottom'
-          : 'none'
-    )
+    if (!scrollTimer) {
+      directionScroll(
+        e.clientY < containerRect.y + headerHeight + 16 && scroller.scrollTop > 0
+          ? 'top'
+          : e.clientY > containerRect.bottom - 16 && scroller.scrollHeight - scroller.scrollTop > scroller.clientHeight
+            ? 'bottom'
+            : 'none'
+      )
+    }
   }
   const directionScroll = (direction: 'top' | 'bottom' | 'none'): void => {
     if (direction === 'none') return
