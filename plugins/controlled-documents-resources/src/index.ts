@@ -87,6 +87,7 @@ import DocumentApprovalRequestPresenter from './components/requests/DocumentAppr
 import ControlledStateFilterValuePresenter from './components/document/presenters/ControlledStateFilterValuePresenter.svelte'
 import DocumentMetaPresenter from './components/DocumentMetaPresenter.svelte'
 import CreateDocumentsSpace from './components/docspace/CreateDocumentsSpace.svelte'
+import CreateDocumentSpaceType from './components/docspace/CreateDocumentSpaceType.svelte'
 
 import Projects from './components/project/Projects.svelte'
 import ProjectPresenter from './components/project/ProjectPresenter.svelte'
@@ -305,6 +306,7 @@ export default async (): Promise<Resources> => ({
     QmsDocumentWizard,
     QmsTemplateWizard,
     CreateDocumentsSpace,
+    CreateDocumentSpaceType,
     DocumentSpacePresenter,
     DocumentPresenter,
     Documents,

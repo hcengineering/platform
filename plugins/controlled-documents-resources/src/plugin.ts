@@ -46,7 +46,8 @@ export default mergeIds(documentsId, documents, {
     DocumentApprovalRequest: '' as AnyComponent,
     DocumentApprovalRequestPresenter: '' as AnyComponent,
 
-    CreateDocumentsSpace: '' as AnyComponent
+    CreateDocumentsSpace: '' as AnyComponent,
+    CreateDocumentSpaceType: '' as AnyComponent
   },
   string: {
     ID: '' as IntlString,

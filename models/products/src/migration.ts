@@ -15,9 +15,15 @@
 
 import { type Employee } from '@hcengineering/contact'
 import { type Ref, DOMAIN_TX } from '@hcengineering/core'
-import { type MigrateOperation, type MigrationClient, type MigrationUpgradeClient } from '@hcengineering/model'
+import {
+  tryMigrate,
+  type MigrateOperation,
+  type MigrationClient,
+  type MigrationUpgradeClient
+} from '@hcengineering/model'
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
-import { type Product } from '@hcengineering/products'
+import { type Product, productsId } from '@hcengineering/products'
+import documents from '@hcengineering/controlled-documents'
 
 import products from './plugin'
 
@@ -75,10 +81,33 @@ async function migrateProductOwner (client: MigrationClient): Promise<void> {
   }
 }
 
+async function migrateSpaceTypes (client: MigrationClient): Promise<void> {
+  await client.update(
+    DOMAIN_TX,
+    {
+      _class: core.class.TxCreateDoc,
+      objectClass: core.class.SpaceType,
+      'attributes.descriptor': products.spaceTypeDescriptor.ProductType
+    },
+    {
+      $set: {
+        objectClass: documents.class.DocumentSpaceType,
+        'attributes.projects': true
+      }
+    }
+  )
+}
+
 export const productsOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await migrateProductSpacesMixins(client)
     await migrateProductOwner(client)
+    await tryMigrate(client, productsId, [
+      {
+        state: 'migrateSpaceTypes',
+        func: migrateSpaceTypes
+      }
+    ])
   },
   async upgrade (client: MigrationUpgradeClient): Promise<void> {}
 }

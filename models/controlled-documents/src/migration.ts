@@ -680,6 +680,22 @@ async function migrateMetaIndexState (client: MigrationClient): Promise<void> {
   )
 }
 
+async function migrateSpaceTypes (client: MigrationClient): Promise<void> {
+  await client.update(
+    DOMAIN_TX,
+    {
+      _class: core.class.TxCreateDoc,
+      objectClass: core.class.SpaceType,
+      'attributes.descriptor': documents.descriptor.DocumentSpaceType
+    },
+    {
+      $set: {
+        objectClass: documents.class.DocumentSpaceType
+      }
+    }
+  )
+}
+
 export const documentsOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
     await migrateSpace(client)
@@ -701,6 +717,10 @@ export const documentsOperation: MigrateOperation = {
       {
         state: 'migrateMetaIndexState',
         func: migrateMetaIndexState
+      },
+      {
+        state: 'migrateSpaceTypes',
+        func: migrateSpaceTypes
       }
     ])
   },
