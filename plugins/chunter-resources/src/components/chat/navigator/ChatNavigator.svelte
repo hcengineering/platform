@@ -29,7 +29,6 @@
   import { userSearch } from '../../../index'
   import { navigateToSpecial } from '../../../navigation'
 
-  export let objectId: Ref<Doc> | undefined
   export let object: Doc | undefined
   export let currentSpecial: SpecialNavModel | undefined
 
@@ -112,7 +111,7 @@
 </div>
 <Scroller shrink>
   {#each chatNavGroupModels as model}
-    <ChatNavGroup {object} {objectId} {model} on:select />
+    <ChatNavGroup {object} {model} on:select />
   {/each}
 </Scroller>
 <NavFooter />

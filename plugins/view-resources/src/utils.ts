@@ -87,7 +87,8 @@ import view, {
   type BuildModelOptions,
   type CollectionPresenter,
   type Viewlet,
-  type ViewletDescriptor
+  type ViewletDescriptor,
+  type LinkIdProvider
 } from '@hcengineering/view'
 
 import contact, { getName, type Contact, type PersonAccount } from '@hcengineering/contact'
@@ -1447,4 +1448,52 @@ export function getCollaborationUser (): CollaborationUser {
     email: me.email,
     color
   }
+}
+
+export function decodeObjectURI (value: string): [Ref<Doc>, Ref<Class<Doc>>] {
+  return decodeURIComponent(value).split('|') as [Ref<Doc>, Ref<Class<Doc>>]
+}
+
+export function encodeObjectURI (_id: string, _class: Ref<Class<Doc>>): string {
+  return [_id, _class].join('|')
+}
+
+export async function getObjectLinkId (
+  providers: LinkIdProvider[],
+  _id: Ref<Doc>,
+  _class: Ref<Class<Doc>>,
+  doc?: Doc
+): Promise<string> {
+  const provider = providers.find(({ _id }) => _id === _class)
+
+  if (provider === undefined) {
+    return _id
+  }
+
+  const client = getClient()
+  const object = doc ?? (await client.findOne(_class, { _id }))
+
+  if (object === undefined) {
+    return _id
+  }
+
+  const encodeFn = await getResource(provider.encode)
+  return await encodeFn(object)
+}
+
+export async function getObjectIdFromLinkId<T extends Doc> (
+  providers: LinkIdProvider[],
+  id: string,
+  _class: Ref<Class<T>>
+): Promise<Ref<T> | undefined> {
+  const provider = providers.find(({ _id }) => _id === _class)
+  console.log({ provider })
+  if (provider === undefined) {
+    return id as Ref<T>
+  }
+
+  const decodeFn = await getResource(provider.decode)
+  const _id = await decodeFn(id)
+  console.log({ _id })
+  return _id as Ref<T> | undefined
 }

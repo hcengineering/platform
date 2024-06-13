@@ -126,3 +126,10 @@ export async function updateIssueRelation (
   }
   await client.update(value, update)
 }
+
+export async function getIssueIdByIdentifier (identifier: string): Promise<Ref<Issue> | undefined> {
+  const client = getClient()
+  const issue = await client.findOne(tracker.class.Issue, { identifier }, { projection: { _id: 1 } })
+
+  return issue?._id
+}

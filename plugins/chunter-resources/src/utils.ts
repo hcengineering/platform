@@ -12,13 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import {
-  type Channel,
-  type ChatMessage,
-  chunterId,
-  type DirectMessage,
-  type ThreadMessage
-} from '@hcengineering/chunter'
+import { type Channel, type ChatMessage, type DirectMessage, type ThreadMessage } from '@hcengineering/chunter'
 import contact, { type Employee, getName, type Person, type PersonAccount } from '@hcengineering/contact'
 import { employeeByIdStore, PersonIcon } from '@hcengineering/contact-resources'
 import {
@@ -34,7 +28,7 @@ import {
   type Timestamp
 } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
-import { type AnySvelteComponent, getCurrentLocation, navigate } from '@hcengineering/ui'
+import { type AnySvelteComponent } from '@hcengineering/ui'
 import { type Asset, translate } from '@hcengineering/platform'
 import { classIcon, getDocLinkTitle, getDocTitle } from '@hcengineering/view-resources'
 import activity, {
@@ -55,7 +49,7 @@ import { get, type Unsubscriber } from 'svelte/store'
 import chunter from './plugin'
 import DirectIcon from './components/DirectIcon.svelte'
 import ChannelIcon from './components/ChannelIcon.svelte'
-import { decodeChannelURI } from './navigation'
+import { resetChunterLocIfEqual } from './navigation'
 
 export async function getDmName (client: Client, space?: Space): Promise<string> {
   if (space === undefined) {
@@ -350,7 +344,7 @@ export async function leaveChannel (channel: Channel, value: Ref<Account> | Arra
     const context = await client.findOne(notification.class.DocNotifyContext, { attachedTo: channel._id })
 
     await client.update(channel, { $pull: { members: value } })
-    await removeChannelAction(context)
+    await removeChannelAction(context, undefined, { object: channel })
   }
 }
 
@@ -402,37 +396,31 @@ export async function readChannelMessages (
   }
 }
 
-function resetChunterLoc (objectId: Ref<Doc>): void {
-  const loc = getCurrentLocation()
-  const [_id] = decodeChannelURI(loc.path[3])
-
-  if (loc.path[2] !== chunterId || _id !== objectId) {
-    return
-  }
-
-  loc.path[3] = ''
-  loc.path[4] = ''
-  loc.query = {}
-  loc.path.length = 3
-  navigate(loc)
-}
-
-export async function leaveChannelAction (context?: DocNotifyContext): Promise<void> {
+export async function leaveChannelAction (
+  context?: DocNotifyContext,
+  _?: Event,
+  props?: { object?: Channel }
+): Promise<void> {
   if (context === undefined) {
     return
   }
   const client = getClient()
-  const channel = await client.findOne(chunter.class.Channel, { _id: context.attachedTo as Ref<Channel> })
+  const channel =
+    props?.object ?? (await client.findOne(chunter.class.Channel, { _id: context.attachedTo as Ref<Channel> }))
 
   if (channel === undefined) {
     return
   }
 
   await leaveChannel(channel, getCurrentAccount()._id)
-  resetChunterLoc(channel._id)
+  await resetChunterLocIfEqual(channel._id, channel._class, channel)
 }
 
-export async function removeChannelAction (context?: DocNotifyContext): Promise<void> {
+export async function removeChannelAction (
+  context?: DocNotifyContext,
+  _?: Event,
+  props?: { object?: Doc }
+): Promise<void> {
   if (context === undefined) {
     return
   }
@@ -442,7 +430,7 @@ export async function removeChannelAction (context?: DocNotifyContext): Promise<
   await archiveContextNotifications(context)
   await client.remove(context)
 
-  resetChunterLoc(context.attachedTo)
+  await resetChunterLocIfEqual(context.attachedTo, context.attachedToClass, props?.object)
 }
 
 export function isThreadMessage (message: ActivityMessage): message is ThreadMessage {

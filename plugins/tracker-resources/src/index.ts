@@ -89,6 +89,7 @@ import CreateIssueTemplate from './components/templates/CreateIssueTemplate.svel
 import IssueExtra from './components/issues/IssueExtra.svelte'
 import IssueStatusPresenter from './components/issues/IssueStatusPresenter.svelte'
 import {
+  getIssueIdByIdentifier,
   getIssueTitle,
   getTitle,
   issueIdentifierProvider,
@@ -689,6 +690,7 @@ export default async (): Promise<Resources> => ({
     ComponentTitleProvider: getComponentTitle,
     MilestoneTitleProvider: getMilestoneTitle,
     GetIssueId: getTitle,
+    GetIssueIdByIdentifier: getIssueIdByIdentifier,
     GetIssueLink: issueLinkProvider,
     GetIssueLinkFragment: issueLinkFragmentProvider,
     GetIssueTitle: getIssueTitle,

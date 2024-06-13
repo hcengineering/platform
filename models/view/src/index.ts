@@ -90,7 +90,8 @@ import {
   type ObjectIcon,
   type ObjectTooltip,
   type AttrPresenter,
-  type AttributeCategory
+  type AttributeCategory,
+  type LinkIdProvider
 } from '@hcengineering/view'
 
 import view from './plugin'
@@ -352,6 +353,12 @@ export class TLinkProvider extends TClass implements LinkProvider {
   encode!: Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>
 }
 
+@Mixin(view.mixin.LinkIdProvider, core.class.Class)
+export class TLinkIdProvider extends TClass implements LinkIdProvider {
+  encode!: Resource<(doc: Doc) => Promise<string>>
+  decode!: Resource<(id: string) => Promise<Ref<Doc> | undefined>>
+}
+
 @Mixin(view.mixin.ObjectPanel, core.class.Class)
 export class TObjectPanel extends TClass implements ObjectPanel {
   component!: AnyComponent
@@ -450,7 +457,8 @@ export function createModel (builder: Builder): void {
     TObjectIdentifier,
     TObjectTooltip,
     TObjectIcon,
-    TAttrPresenter
+    TAttrPresenter,
+    TLinkIdProvider
   )
 
   classPresenter(

@@ -25,7 +25,6 @@
   import ChatNavSection from './ChatNavSection.svelte'
   import chunter from '../../../plugin'
 
-  export let objectId: Ref<Doc> | undefined
   export let object: Doc | undefined
   export let model: ChatNavGroupModel
 
@@ -191,7 +190,7 @@
     id={section.id}
     objects={section.objects}
     {contexts}
-    {objectId}
+    objectId={object?._id}
     header={section.label}
     actions={getSectionActions(section, contexts)}
     sortFn={model.sortFn}
