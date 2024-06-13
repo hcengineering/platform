@@ -58,7 +58,6 @@ import notification, {
   Collaborators,
   CommonInboxNotification,
   DocNotifyContext,
-  encodeObjectURI,
   InboxNotification,
   MentionInboxNotification,
   notificationId,
@@ -80,6 +79,8 @@ import serverNotification, {
 import { stripTags } from '@hcengineering/text'
 import { workbenchId } from '@hcengineering/workbench'
 import webpush, { WebPushError } from 'web-push'
+import view, { encodeObjectURI } from '@hcengineering/view'
+
 import { Content, NotifyResult, NotifyParams } from './types'
 import {
   getHTMLPresenter,
@@ -554,12 +555,23 @@ export async function createPushFromInbox (
     cache.set(senderPerson._id, senderPerson)
   }
 
-  const path = [
-    workbenchId,
-    control.workspace.workspaceUrl,
-    notificationId,
-    encodeObjectURI(attachedTo, attachedToClass)
-  ]
+  const linkProviders = control.modelDb.findAllSync(view.mixin.LinkIdProvider, {})
+  const provider = linkProviders.find(({ _id }) => attachedToClass)
+
+  let id: string = attachedTo
+
+  if (provider !== undefined) {
+    const encodeFn = await getResource(provider.encode)
+    const doc = cache.get(attachedTo) ?? (await control.findAll(attachedToClass, { _id: attachedTo }))[0]
+
+    if (doc === undefined) {
+      return
+    }
+
+    id = await encodeFn(doc)
+  }
+
+  const path = [workbenchId, control.workspace.workspaceUrl, notificationId, encodeObjectURI(id, attachedToClass)]
   await createPushNotification(control, targetUser, title, body, _id, senderPerson, path)
   return control.txFactory.createTxCreateDoc(notification.class.BrowserNotification, notification.space.Notifications, {
     user: targetUser,

@@ -29,8 +29,8 @@
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { onMount } from 'svelte'
   import { chunterId } from '@hcengineering/chunter'
-  import view from '@hcengineering/view'
-  import { decodeObjectURI, getObjectIdFromLinkId, getObjectLinkId } from '@hcengineering/view-resources'
+  import view, { decodeObjectURI } from '@hcengineering/view'
+  import { getObjectIdFromLinkId, getObjectLinkId } from '@hcengineering/view-resources'
 
   import ChatNavigator from './navigator/ChatNavigator.svelte'
   import ChannelView from '../ChannelView.svelte'

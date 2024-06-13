@@ -1450,14 +1450,6 @@ export function getCollaborationUser (): CollaborationUser {
   }
 }
 
-export function decodeObjectURI (value: string): [Ref<Doc>, Ref<Class<Doc>>] {
-  return decodeURIComponent(value).split('|') as [Ref<Doc>, Ref<Class<Doc>>]
-}
-
-export function encodeObjectURI (_id: string, _class: Ref<Class<Doc>>): string {
-  return [_id, _class].join('|')
-}
-
 export async function getObjectLinkId (
   providers: LinkIdProvider[],
   _id: Ref<Doc>,

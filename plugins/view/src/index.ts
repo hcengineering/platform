@@ -65,6 +65,7 @@ import {
 } from './types'
 
 export * from './types'
+export * from './utils'
 
 /**
  * @public
