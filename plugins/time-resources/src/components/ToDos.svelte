@@ -32,7 +32,6 @@
   import ToDoGroup from './ToDoGroup.svelte'
   import MenuClose from './icons/MenuClose.svelte'
   import MenuOpen from './icons/MenuOpen.svelte'
-  import IconDiff from './icons/Diff.svelte'
   import time from '../plugin'
 
   export let mode: ToDosMode

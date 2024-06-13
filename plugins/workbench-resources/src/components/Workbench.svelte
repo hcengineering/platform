@@ -67,7 +67,8 @@
     NavLink,
     accessDeniedStore,
     migrateViewOpttions,
-    updateFocus
+    updateFocus,
+    getObjectIdFromLinkId
   } from '@hcengineering/view-resources'
   import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@hcengineering/workbench'
   import { getContext, onDestroy, onMount, tick } from 'svelte'
@@ -116,6 +117,8 @@
 
   let panelInstance: PanelInstance
   let popupInstance: Popup
+
+  const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
 
   let visibleNav: boolean = getMetadata(workbench.metadata.NavigationExpandedDefault) ?? true
   async function toggleNav (): Promise<void> {
@@ -398,7 +401,9 @@
     const props = decodeURIComponent(fragment).split('|')
 
     if (props.length >= 3) {
-      const doc = await client.findOne<Doc>(props[2] as Ref<Class<Doc>>, { _id: props[1] as Ref<Doc> })
+      const _class = props[2] as Ref<Class<Doc>>
+      const _id = (await getObjectIdFromLinkId(linkProviders, props[1], _class)) ?? (props[1] as Ref<Doc>)
+      const doc = await client.findOne<Doc>(_class, { _id })
 
       if (doc !== undefined) {
         const provider = ListSelectionProvider.Find(doc._id)
@@ -408,8 +413,8 @@
         })
         openPanel(
           props[0] as AnyComponent,
-          props[1],
-          props[2],
+          _id,
+          _class,
           (props[3] ?? undefined) as PopupAlignment,
           (props[4] ?? undefined) as AnyComponent
         )

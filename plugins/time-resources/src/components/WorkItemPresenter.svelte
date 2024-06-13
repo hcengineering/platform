@@ -20,6 +20,7 @@
   import { Component, showPanel } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import time from '../plugin'
+  import { getObjectLinkId } from '@hcengineering/view-resources'
 
   export let todo: ToDo
   export let kind: 'default' | 'todo-line' = 'default'
@@ -27,6 +28,9 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
+
+  const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
+
   $: presenter = hierarchy.classHierarchyMixin<Doc, ItemPresenter>(todo.attachedToClass, time.mixin.ItemPresenter)
 
   let doc: Doc | undefined = undefined
@@ -35,12 +39,14 @@
     doc = res[0]
   })
 
-  async function click (event: MouseEvent) {
+  async function click (event: MouseEvent): Promise<void> {
     event.stopPropagation()
     if (!doc) return
     const panelComponent = hierarchy.classHierarchyMixin<Class<Doc>, ObjectPanel>(doc._class, view.mixin.ObjectPanel)
     const component = panelComponent?.component ?? view.component.EditDoc
-    showPanel(component, doc._id, doc._class, 'content')
+    const id = await getObjectLinkId(linkProviders, doc._id, doc._class, doc)
+
+    showPanel(component, id, doc._class, 'content')
   }
 </script>
 
