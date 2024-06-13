@@ -13,7 +13,20 @@
 // limitations under the License.
 //
 
-import type { Account, Arr, Class, Data, Doc, Domain, Mixin, Obj, Ref, TxCreateDoc, TxCUD } from '@hcengineering/core'
+import type {
+  Account,
+  Arr,
+  Class,
+  Data,
+  Doc,
+  Domain,
+  Mixin,
+  Obj,
+  Ref,
+  Space,
+  TxCreateDoc,
+  TxCUD
+} from '@hcengineering/core'
 import core, { AccountRole, AttachedDoc, ClassifierKind, DOMAIN_MODEL, DOMAIN_TX, TxFactory } from '@hcengineering/core'
 import type { IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
@@ -54,16 +67,26 @@ export interface AttachedComment extends AttachedDoc {
   message: string
 }
 
+interface TestProject extends Space {
+  prjName: string
+}
+
+interface TestProjectMixin extends TestProject {
+  someField?: string
+}
+
 /**
  * @public
  */
 export const test = plugin('test' as Plugin, {
   mixin: {
-    TestMixin: '' as Ref<Mixin<TestMixin>>
+    TestMixin: '' as Ref<Mixin<TestMixin>>,
+    TestProjectMixin: '' as Ref<Mixin<TestProjectMixin>>
   },
   class: {
     TestComment: '' as Ref<Class<AttachedComment>>,
-    ParticipantsHolder: '' as Ref<Class<ParticipantsHolder>>
+    ParticipantsHolder: '' as Ref<Class<ParticipantsHolder>>,
+    TestProject: '' as Ref<Class<TestProject>>
   }
 })
 
@@ -89,18 +112,26 @@ export function genMinModel (): TxCUD<Doc>[] {
     createClass(core.class.Doc, { label: 'Doc' as IntlString, extends: core.class.Obj, kind: ClassifierKind.CLASS })
   )
   txes.push(
-    createClass(core.class.AttachedDoc, {
-      label: 'AttachedDoc' as IntlString,
-      extends: core.class.Doc,
-      kind: ClassifierKind.MIXIN
-    })
-  )
-  txes.push(
     createClass(core.class.Class, {
       label: 'Class' as IntlString,
       extends: core.class.Doc,
       kind: ClassifierKind.CLASS,
       domain: DOMAIN_MODEL
+    })
+  )
+  txes.push(
+    createClass(core.class.Mixin, {
+      label: 'Mixin' as IntlString,
+      extends: core.class.Class,
+      kind: ClassifierKind.CLASS,
+      domain: DOMAIN_MODEL
+    })
+  )
+  txes.push(
+    createClass(core.class.AttachedDoc, {
+      label: 'AttachedDoc' as IntlString,
+      extends: core.class.Doc,
+      kind: ClassifierKind.MIXIN
     })
   )
   txes.push(
@@ -164,11 +195,35 @@ export function genMinModel (): TxCUD<Doc>[] {
       kind: ClassifierKind.CLASS
     })
   )
+  txes.push(
+    createClass(core.class.TxMixin, {
+      label: 'TxMixin' as IntlString,
+      extends: core.class.TxCUD,
+      kind: ClassifierKind.CLASS
+    })
+  )
 
   txes.push(
     createClass(test.mixin.TestMixin, {
       label: 'TestMixin' as IntlString,
       extends: core.class.Doc,
+      kind: ClassifierKind.MIXIN
+    })
+  )
+
+  txes.push(
+    createClass(test.class.TestProject, {
+      label: 'TestProject' as IntlString,
+      extends: core.class.Space,
+      kind: ClassifierKind.CLASS,
+      domain: DOMAIN_TEST
+    })
+  )
+
+  txes.push(
+    createClass(test.mixin.TestProjectMixin, {
+      label: 'TestProjectMixin' as IntlString,
+      extends: test.class.TestProject,
       kind: ClassifierKind.MIXIN
     })
   )

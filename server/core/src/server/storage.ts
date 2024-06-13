@@ -146,7 +146,13 @@ export class TServerStorage implements ServerStorage {
       findOne: async (_class, query, options) => {
         return (
           await metrics.with('query', {}, async (ctx) => {
-            return await this.findAll(ctx, _class, query, { ...options, limit: 1 })
+            const results = await this.findAll(ctx, _class, query, { ...options, limit: 1 })
+            return toFindResult(
+              results.map((v) => {
+                return this.hierarchy.updateLookupMixin(_class, v, options)
+              }),
+              results.total
+            )
           })
         )[0]
       },
@@ -232,9 +238,7 @@ export class TServerStorage implements ServerStorage {
         const r = await ctx.with('adapter-tx', { domain: lastDomain }, async (ctx) => await adapter.tx(ctx, ...part))
 
         // Update server live queries.
-        for (const t of part) {
-          await this.liveQuery.tx(t)
-        }
+        await this.liveQuery.tx(...part)
         if (Array.isArray(r)) {
           result.push(...r)
         } else {
