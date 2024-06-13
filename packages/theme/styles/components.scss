@@ -774,6 +774,9 @@
     inset: 0;
     border-bottom: 1px solid var(--global-focus-BorderColor);
   }
+  &.dragging > * {
+    opacity: .5;
+  }
 }
 
 /* ToDo Line */
