@@ -142,7 +142,7 @@ const love = plugin(loveId, {
   },
   metadata: {
     WebSocketURL: '' as Metadata<string>,
-    ServiceEnpdoint: '' as Metadata<string>
+    ServiceEndpoint: '' as Metadata<string>
   },
   space: {
     Rooms: '' as Ref<Space>,
