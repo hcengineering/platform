@@ -280,7 +280,8 @@ function defineSpaceType (builder: Builder): void {
       icon: products.icon.ProductsApplication,
       baseClass: products.class.Product,
       availablePermissions: [...productPermissions],
-      projectClass: products.class.ProductVersion
+      projectClass: products.class.ProductVersion,
+      withProjects: true
     },
     products.spaceTypeDescriptor.ProductType
   )

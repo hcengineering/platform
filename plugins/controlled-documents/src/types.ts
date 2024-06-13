@@ -49,6 +49,7 @@ export interface DocumentSpaceType extends SpaceType {
  */
 export interface DocumentSpaceTypeDescriptor extends SpaceTypeDescriptor {
   projectClass?: Ref<Class<Project>>
+  withProjects?: boolean // Default value for projects in the space type
 }
 
 /**
