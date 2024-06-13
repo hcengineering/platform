@@ -30,7 +30,7 @@
   import { onMount } from 'svelte'
   import { chunterId } from '@hcengineering/chunter'
   import view, { decodeObjectURI } from '@hcengineering/view'
-  import { getObjectIdFromLinkId, getObjectLinkId } from '@hcengineering/view-resources'
+  import { parseLinkId, getObjectLinkId } from '@hcengineering/view-resources'
 
   import ChatNavigator from './navigator/ChatNavigator.svelte'
   import ChannelView from '../ChannelView.svelte'
@@ -73,7 +73,7 @@
       return
     }
 
-    const _id: Ref<Doc> | undefined = await getObjectIdFromLinkId(linkProviders, id, _class)
+    const _id: Ref<Doc> | undefined = await parseLinkId(linkProviders, id, _class)
 
     if (_id === undefined) {
       object = undefined

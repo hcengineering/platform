@@ -31,15 +31,7 @@
   import view, { AttributeCategory } from '@hcengineering/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
 
-  import {
-    DocNavLink,
-    ParentsNavigator,
-    getDocAttrsInfo,
-    getDocLabel,
-    getDocMixins,
-    showMenu,
-    getObjectIdFromLinkId
-  } from '..'
+  import { DocNavLink, ParentsNavigator, getDocAttrsInfo, getDocLabel, getDocMixins, showMenu, parseLinkId } from '..'
   import { getCollectionCounter } from '../utils'
   import DocAttributeBar from './DocAttributeBar.svelte'
 
@@ -58,7 +50,7 @@
   const inboxClient = getResource(notification.function.GetInboxNotificationsClient).then((res) => res())
   const linkProviders = pClient.getModel().findAllSync(view.mixin.LinkIdProvider, {})
 
-  $: void getObjectIdFromLinkId(linkProviders, _id, _class).then((res) => {
+  $: void parseLinkId(linkProviders, _id, _class).then((res) => {
     objectId = res ?? (_id as Ref<Doc>)
     if (lastId !== undefined) {
       return

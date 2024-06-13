@@ -149,7 +149,7 @@ export default mergeIds(recruitId, recruit, {
     CreateCandidate: '' as AnyComponent
   },
   function: {
-    IdProvider: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
+    IdProvider: '' as Resource<(doc: Doc) => Promise<string>>,
     AppTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
     AppIdentifierProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
     VacTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,

@@ -1473,7 +1473,7 @@ export async function getObjectLinkId (
   return await encodeFn(object)
 }
 
-export async function getObjectIdFromLinkId<T extends Doc> (
+export async function parseLinkId<T extends Doc> (
   providers: LinkIdProvider[],
   id: string,
   _class: Ref<Class<T>>
@@ -1486,6 +1486,6 @@ export async function getObjectIdFromLinkId<T extends Doc> (
 
   const decodeFn = await getResource(provider.decode)
   const _id = await decodeFn(id)
-  console.log({ _id })
+
   return _id as Ref<T> | undefined
 }

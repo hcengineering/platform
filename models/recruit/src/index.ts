@@ -932,6 +932,26 @@ export function createModel (builder: Builder): void {
     encode: recruit.function.GetIdObjectLinkFragment
   })
 
+  builder.mixin(recruit.class.Applicant, core.class.Class, view.mixin.LinkIdProvider, {
+    encode: recruit.function.IdProvider,
+    decode: recruit.function.ParseLinkId
+  })
+
+  builder.mixin(recruit.class.Opinion, core.class.Class, view.mixin.LinkIdProvider, {
+    encode: recruit.function.IdProvider,
+    decode: recruit.function.ParseLinkId
+  })
+
+  builder.mixin(recruit.class.Review, core.class.Class, view.mixin.LinkIdProvider, {
+    encode: recruit.function.IdProvider,
+    decode: recruit.function.ParseLinkId
+  })
+
+  builder.mixin(recruit.class.Vacancy, core.class.Class, view.mixin.LinkIdProvider, {
+    encode: recruit.function.IdProvider,
+    decode: recruit.function.ParseLinkId
+  })
+
   builder.createDoc(
     view.class.ActionCategory,
     core.space.Model,

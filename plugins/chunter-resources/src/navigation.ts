@@ -165,13 +165,18 @@ export async function getMessageLocation (doc: ActivityMessage): Promise<Locatio
 
 export async function resetChunterLocIfEqual (_id: Ref<Doc>, _class: Ref<Class<Doc>>, doc?: Doc): Promise<void> {
   const loc = getCurrentLocation()
+
+  if (loc.path[2] !== chunterId) {
+    return
+  }
+
   const client = getClient()
   const providers = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
   const id = await getObjectLinkId(providers, _id, _class, doc)
 
   const [locId] = decodeObjectURI(loc.path[3])
 
-  if (loc.path[2] !== chunterId || locId !== id) {
+  if (locId !== id) {
     return
   }
 

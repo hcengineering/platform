@@ -21,6 +21,7 @@ import serverCore from '@hcengineering/server-core'
 import serverNotification from '@hcengineering/server-notification'
 import serverTracker from '@hcengineering/server-tracker'
 import contact from '@hcengineering/contact'
+import serverView from '@hcengineering/server-view'
 
 export { serverTrackerId } from '@hcengineering/server-tracker'
 
@@ -35,6 +36,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(tracker.class.Issue, core.class.Class, serverNotification.mixin.NotificationPresenter, {
     presenter: serverTracker.function.IssueNotificationContentProvider
+  })
+
+  builder.mixin(tracker.class.Issue, core.class.Class, serverView.mixin.ServerLinkIdProvider, {
+    encode: serverTracker.function.IssueLinkIdProvider
   })
 
   builder.mixin(tracker.class.Issue, core.class.Class, serverCore.mixin.SearchPresenter, {

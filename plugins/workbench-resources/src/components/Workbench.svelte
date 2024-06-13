@@ -68,7 +68,7 @@
     accessDeniedStore,
     migrateViewOpttions,
     updateFocus,
-    getObjectIdFromLinkId
+    parseLinkId
   } from '@hcengineering/view-resources'
   import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@hcengineering/workbench'
   import { getContext, onDestroy, onMount, tick } from 'svelte'
@@ -402,7 +402,7 @@
 
     if (props.length >= 3) {
       const _class = props[2] as Ref<Class<Doc>>
-      const _id = (await getObjectIdFromLinkId(linkProviders, props[1], _class)) ?? (props[1] as Ref<Doc>)
+      const _id = (await parseLinkId(linkProviders, props[1], _class)) ?? (props[1] as Ref<Doc>)
       const doc = await client.findOne<Doc>(_class, { _id })
 
       if (doc !== undefined) {

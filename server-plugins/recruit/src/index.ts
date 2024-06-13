@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { Doc } from '@hcengineering/core'
 import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { TriggerFunc } from '@hcengineering/server-core'
@@ -31,7 +32,8 @@ export default plugin(serverRecruitId, {
     ApplicationHTMLPresenter: '' as Resource<Presenter>,
     ApplicationTextPresenter: '' as Resource<Presenter>,
     VacancyHTMLPresenter: '' as Resource<Presenter>,
-    VacancyTextPresenter: '' as Resource<Presenter>
+    VacancyTextPresenter: '' as Resource<Presenter>,
+    LinkIdProvider: '' as Resource<(doc: Doc) => Promise<string>>
   },
   trigger: {
     OnRecruitUpdate: '' as Resource<TriggerFunc>

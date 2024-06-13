@@ -34,7 +34,7 @@
   import { get } from 'svelte/store'
   import { translate } from '@hcengineering/platform'
   import { getCurrentAccount, groupByArray, IdMap, Ref, SortingOrder } from '@hcengineering/core'
-  import { getObjectIdFromLinkId } from '@hcengineering/view-resources'
+  import { parseLinkId } from '@hcengineering/view-resources'
 
   import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
   import SettingsButton from './SettingsButton.svelte'
@@ -156,7 +156,7 @@
     }
 
     const [id, _class] = decodeObjectURI(loc?.loc.path[3] ?? '')
-    const _id = await getObjectIdFromLinkId(linkProviders, id, _class)
+    const _id = await parseLinkId(linkProviders, id, _class)
     const context = _id ? $contextByDocStore.get(_id) : undefined
 
     selectedContextId = context?._id

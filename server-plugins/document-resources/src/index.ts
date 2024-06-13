@@ -26,6 +26,10 @@ export async function documentHTMLPresenter (doc: Doc, control: TriggerControl):
   return `<a href="${link}">${document.name}</a>`
 }
 
+export async function documentLinkIdProvider (doc: Document): Promise<string> {
+  return getDocumentId(doc)
+}
+
 /**
  * @public
  */
@@ -38,6 +42,7 @@ export async function documentTextPresenter (doc: Doc): Promise<string> {
 export default async () => ({
   function: {
     DocumentHTMLPresenter: documentHTMLPresenter,
-    DocumentTextPresenter: documentTextPresenter
+    DocumentTextPresenter: documentTextPresenter,
+    DocumentLinkIdProvider: documentLinkIdProvider
   }
 })

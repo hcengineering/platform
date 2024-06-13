@@ -79,7 +79,8 @@ import serverNotification, {
 import { stripTags } from '@hcengineering/text'
 import { workbenchId } from '@hcengineering/workbench'
 import webpush, { WebPushError } from 'web-push'
-import view, { encodeObjectURI } from '@hcengineering/view'
+import { encodeObjectURI } from '@hcengineering/view'
+import serverView from '@hcengineering/server-view'
 
 import { Content, NotifyResult, NotifyParams } from './types'
 import {
@@ -555,8 +556,8 @@ export async function createPushFromInbox (
     cache.set(senderPerson._id, senderPerson)
   }
 
-  const linkProviders = control.modelDb.findAllSync(view.mixin.LinkIdProvider, {})
-  const provider = linkProviders.find(({ _id }) => attachedToClass)
+  const linkProviders = control.modelDb.findAllSync(serverView.mixin.ServerLinkIdProvider, {})
+  const provider = linkProviders.find(({ _id }) => _id === attachedToClass)
 
   let id: string = attachedTo
 
@@ -568,7 +569,8 @@ export async function createPushFromInbox (
       return
     }
 
-    id = await encodeFn(doc)
+    cache.set(doc._id, doc)
+    id = await encodeFn(doc, control)
   }
 
   const path = [workbenchId, control.workspace.workspaceUrl, notificationId, encodeObjectURI(id, attachedToClass)]
