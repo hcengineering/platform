@@ -1479,7 +1479,7 @@ export async function getObjectIdFromLinkId<T extends Doc> (
   _class: Ref<Class<T>>
 ): Promise<Ref<T> | undefined> {
   const provider = providers.find(({ _id }) => _id === _class)
-  console.log({ provider })
+
   if (provider === undefined) {
     return id as Ref<T>
   }

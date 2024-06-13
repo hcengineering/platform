@@ -31,26 +31,45 @@
   import view, { AttributeCategory } from '@hcengineering/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
 
-  import { DocNavLink, ParentsNavigator, getDocAttrsInfo, getDocLabel, getDocMixins, showMenu } from '..'
+  import {
+    DocNavLink,
+    ParentsNavigator,
+    getDocAttrsInfo,
+    getDocLabel,
+    getDocMixins,
+    showMenu,
+    getObjectIdFromLinkId
+  } from '..'
   import { getCollectionCounter } from '../utils'
   import DocAttributeBar from './DocAttributeBar.svelte'
 
-  export let _id: Ref<Doc>
+  export let _id: Ref<Doc> | string
   export let _class: Ref<Class<Doc>>
   export let embedded: boolean = false
   export let readonly: boolean = false
 
   let realObjectClass: Ref<Class<Doc>> = _class
-  let lastId: Ref<Doc> = _id
+  let lastId: Ref<Doc> | undefined
+  let objectId: Ref<Doc> | undefined
   let object: Doc
 
   const pClient = getClient()
   const hierarchy = pClient.getHierarchy()
   const inboxClient = getResource(notification.function.GetInboxNotificationsClient).then((res) => res())
+  const linkProviders = pClient.getModel().findAllSync(view.mixin.LinkIdProvider, {})
 
-  $: read(_id)
-  function read (_id: Ref<Doc>): void {
-    if (lastId !== _id) {
+  $: void getObjectIdFromLinkId(linkProviders, _id, _class).then((res) => {
+    objectId = res ?? (_id as Ref<Doc>)
+    if (lastId !== undefined) {
+      return
+    }
+    lastId = objectId
+  })
+
+  $: read(objectId)
+
+  function read (_id?: Ref<Doc>): void {
+    if (objectId && lastId && lastId !== _id) {
       const prev = lastId
       lastId = _id
       void inboxClient.then(async (client) => {
@@ -61,14 +80,15 @@
 
   onDestroy(async () => {
     await inboxClient.then(async (client) => {
-      await client.readDoc(pClient, _id)
+      if (objectId === undefined) return
+      await client.readDoc(pClient, objectId)
     })
   })
 
   const query = createQuery()
-  $: updateQuery(_id, _class)
+  $: updateQuery(objectId, _class)
 
-  function updateQuery (_id: Ref<Doc>, _class: Ref<Class<Doc>>): void {
+  function updateQuery (_id?: Ref<Doc>, _class?: Ref<Class<Doc>>): void {
     if (_id && _class) {
       query.query(_class, { _id }, (result) => {
         object = result[0]
@@ -146,12 +166,13 @@
 
   $: editorFooter = getEditorFooter(_class, object)
 
-  const getEditorOrDefault = reduceCalls(async function (_class: Ref<Class<Doc>>, _id: Ref<Doc>): Promise<void> {
+  const getEditorOrDefault = reduceCalls(async function (_class: Ref<Class<Doc>>, _id?: Ref<Doc>): Promise<void> {
+    if (objectId === undefined) return
     await updateKeys()
     mainEditor = getEditor(_class)
   })
 
-  $: void getEditorOrDefault(realObjectClass, _id)
+  $: void getEditorOrDefault(realObjectClass, objectId)
 
   let title: string | undefined = undefined
   let rawTitle: string = ''
