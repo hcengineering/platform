@@ -24,12 +24,6 @@ import { start } from '.'
 export function startFront (ctx: MeasureContext, extraConfig?: Record<string, string | undefined>): void {
   const SERVER_PORT = parseInt(process.env.SERVER_PORT ?? '8080')
 
-  const transactorEndpoint = process.env.TRANSACTOR_URL
-  if (transactorEndpoint === undefined) {
-    console.error('please provide transactor url')
-    process.exit(1)
-  }
-
   const url = process.env.MONGO_URL
   if (url === undefined) {
     console.error('please provide mongodb url')
@@ -117,7 +111,6 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
   setMetadata(serverToken.metadata.Secret, serverSecret)
 
   const config = {
-    transactorEndpoint,
     elasticUrl,
     storageAdapter,
     accountsUrl,
