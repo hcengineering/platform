@@ -13,7 +13,11 @@
 // limitations under the License.
 //
 
-import { type CollaboratorClient, getClient as getCollaborator } from '@hcengineering/collaborator-client'
+import {
+  type CollaboratorClient,
+  getClient as getCollaborator,
+  type DocumentSnapshotParams
+} from '@hcengineering/collaborator-client'
 import { type CollaborativeDoc, type Markup, getCurrentAccount, getWorkspaceId } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import { getCurrentLocation } from '@hcengineering/ui'
@@ -26,7 +30,7 @@ export function getCollaboratorClient (): CollaboratorClient {
   const workspaceId = getWorkspaceId(getCurrentLocation().path[1] ?? '')
   const hierarchy = getClient().getHierarchy()
   const token = getMetadata(presentation.metadata.Token) ?? ''
-  const collaboratorURL = getMetadata(presentation.metadata.CollaboratorApiUrl) ?? ''
+  const collaboratorURL = getMetadata(presentation.metadata.CollaboratorUrl) ?? ''
 
   return getCollaborator(hierarchy, workspaceId, token, collaboratorURL)
 }
@@ -60,12 +64,10 @@ export async function copyDocument (source: CollaborativeDoc, target: Collaborat
 }
 
 /** @public */
-export async function takeSnapshot (
-  collaborativeDoc: CollaborativeDoc,
-  snapshotName: string
-): Promise<CollaborativeDoc> {
+export async function takeSnapshot (collaborativeDoc: CollaborativeDoc, versionName: string): Promise<CollaborativeDoc> {
   const client = getCollaboratorClient()
   const createdBy = getCurrentAccount()._id
 
-  return await client.snapshot(collaborativeDoc, { createdBy, snapshotName })
+  const snapshot: DocumentSnapshotParams = { createdBy, versionId: `${Date.now()}`, versionName }
+  return await client.snapshot(collaborativeDoc, snapshot)
 }

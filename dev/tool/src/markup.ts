@@ -7,7 +7,7 @@ import core, {
   type MeasureContext,
   type Ref,
   type WorkspaceId,
-  getCollaborativeDocId
+  makeCollaborativeDoc
 } from '@hcengineering/core'
 import { getWorkspaceDB } from '@hcengineering/mongo'
 import { type StorageAdapter } from '@hcengineering/server-core'
@@ -38,10 +38,7 @@ export async function fixJsonMarkup (
 
       const attributes = hierarchy.getAllAttributes(_class)
       const filtered = Array.from(attributes.values()).filter((attribute) => {
-        return (
-          hierarchy.isDerived(attribute.type._class, core.class.TypeMarkup) ||
-          hierarchy.isDerived(attribute.type._class, core.class.TypeCollaborativeMarkup)
-        )
+        return hierarchy.isDerived(attribute.type._class, core.class.TypeMarkup)
       })
       if (filtered.length === 0) continue
 
@@ -87,7 +84,7 @@ async function processFixJsonMarkupFor (
           }
           if (res !== value) {
             update[attribute.name] = res
-            remove.push(getCollaborativeDocId(doc._id, attribute.name))
+            remove.push(makeCollaborativeDoc(doc._id, attribute.name))
           }
         }
       } catch {}

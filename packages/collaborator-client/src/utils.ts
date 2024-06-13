@@ -17,7 +17,6 @@ import {
   Class,
   CollaborativeDoc,
   Doc,
-  Domain,
   Ref,
   collaborativeDocChain,
   collaborativeDocFormat,
@@ -80,24 +79,21 @@ export function parseDocumentId (documentId: DocumentId): {
 
 /** @public */
 export function formatPlatformDocumentId (
-  objectDomain: Domain,
   objectClass: Ref<Class<Doc>>,
   objectId: Ref<Doc>,
   objectAttr: string
 ): PlatformDocumentId {
-  return `${objectDomain}/${objectClass}/${objectId}/${objectAttr}` as PlatformDocumentId
+  return `${objectClass}/${objectId}/${objectAttr}` as PlatformDocumentId
 }
 
 /** @public */
 export function parsePlatformDocumentId (platformDocumentId: PlatformDocumentId): {
-  objectDomain: Domain
   objectClass: Ref<Class<Doc>>
   objectId: Ref<Doc>
   objectAttr: string
 } {
-  const [objectDomain, objectClass, objectId, objectAttr] = platformDocumentId.split('/')
+  const [objectClass, objectId, objectAttr] = platformDocumentId.split('/')
   return {
-    objectDomain: objectDomain as Domain,
     objectClass: objectClass as Ref<Class<Doc>>,
     objectId: objectId as Ref<Doc>,
     objectAttr

@@ -13,10 +13,10 @@
 // limitations under the License.
 //
 
-import { WorkspaceLoginInfo } from '@hcengineering/account'
+import { ClientWorkspaceInfo } from '@hcengineering/account'
 import config from './config'
 
-export async function getWorkspaceInfo (token: string): Promise<WorkspaceLoginInfo> {
+export async function getWorkspaceInfo (token: string): Promise<ClientWorkspaceInfo> {
   const accountsUrl = config.AccountsUrl
   const workspaceInfo = await (
     await fetch(accountsUrl, {
@@ -32,5 +32,5 @@ export async function getWorkspaceInfo (token: string): Promise<WorkspaceLoginIn
     })
   ).json()
 
-  return workspaceInfo.result as WorkspaceLoginInfo
+  return workspaceInfo.result as ClientWorkspaceInfo
 }

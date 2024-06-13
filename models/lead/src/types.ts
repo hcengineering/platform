@@ -17,6 +17,7 @@ import type { Employee } from '@hcengineering/contact'
 import {
   Account,
   IndexKind,
+  type CollaborativeDoc,
   type Role,
   type RolesAssignment,
   type Ref,
@@ -31,7 +32,7 @@ import {
   Model,
   Prop,
   ReadOnly,
-  TypeCollaborativeMarkup,
+  TypeCollaborativeDoc,
   TypeDate,
   TypeMarkup,
   TypeRef,
@@ -94,9 +95,9 @@ export class TCustomer extends TContact implements Customer {
   @Prop(Collection(lead.class.Lead), lead.string.Leads)
     leads?: number
 
-  @Prop(TypeCollaborativeMarkup(), core.string.Description)
+  @Prop(TypeCollaborativeDoc(), core.string.Description)
   @Index(IndexKind.FullText)
-    description!: string
+    description!: CollaborativeDoc
 }
 
 @Mixin(lead.mixin.DefaultFunnelTypeData, lead.class.Funnel)

@@ -27,16 +27,12 @@ import {
 } from '@hcengineering/collaborator-client'
 import core, {
   CollaborativeDoc,
-  Doc,
   MeasureContext,
   TxOperations,
-  collaborativeDocWithLastVersion,
-  toWorkspaceString
+  collaborativeDocWithLastVersion
 } from '@hcengineering/core'
 import { StorageAdapter } from '@hcengineering/server-core'
-import { areEqualMarkups } from '@hcengineering/text'
 import { Transformer } from '@hocuspocus/transformer'
-import { MongoClient } from 'mongodb'
 import { Doc as YDoc } from 'yjs'
 import { Context } from '../context'
 
@@ -47,7 +43,6 @@ export type StorageAdapters = Record<string, StorageAdapter>
 export class PlatformStorageAdapter implements CollabStorageAdapter {
   constructor (
     private readonly adapters: StorageAdapters,
-    private readonly mongodb: MongoClient,
     private readonly transformer: Transformer
   ) {}
 
@@ -84,27 +79,6 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
         }
       }
 
-      // finally try to load from the platform
-      const { platformDocumentId } = context
-      if (platformDocumentId !== undefined) {
-        ctx.info('load document platform content', { documentId, platformDocumentId })
-        const ydoc = await ctx.with('load-from-platform', {}, async (ctx) => {
-          try {
-            return await this.loadDocumentFromPlatform(ctx, platformDocumentId, context)
-          } catch (err) {
-            ctx.error('failed to load platform document', { documentId, platformDocumentId, error: err })
-          }
-        })
-
-        // if document was loaded from the initial content or storage we need to save
-        // it to ensure the next time we load it from the ydoc document
-        if (ydoc !== undefined) {
-          ctx.info('save document content', { documentId, platformDocumentId })
-          await this.saveDocumentToStorage(ctx, documentId, ydoc, context)
-          return ydoc
-        }
-      }
-
       // nothing found
       return undefined
     } catch (err) {
@@ -113,37 +87,39 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
   }
 
   async saveDocument (ctx: MeasureContext, documentId: DocumentId, document: YDoc, context: Context): Promise<void> {
-    const { clientFactory } = context
+    // TODO even though there were changes, the document content could be the same
+    // for example, when user added several words and then removed them
 
-    const client = await ctx.with('connect', {}, async () => {
-      return await clientFactory()
-    })
+    let snapshot: YDocVersion | undefined
 
     try {
-      let snapshot: YDocVersion | undefined
-      try {
-        ctx.info('take document snapshot', { documentId })
-        snapshot = await this.takeSnapshot(ctx, client, documentId, document, context)
-      } catch (err) {
-        ctx.error('failed to take document snapshot', { documentId, error: err })
-      }
+      ctx.info('save document content', { documentId })
+      await this.saveDocumentToStorage(ctx, documentId, document, context)
+    } catch (err) {
+      ctx.error('failed to save document', { documentId, error: err })
+    }
+
+    const { clientFactory, platformDocumentId } = context
+    if (platformDocumentId !== undefined) {
+      const client = await ctx.with('connect', {}, async () => {
+        return await clientFactory()
+      })
 
       try {
-        ctx.info('save document content', { documentId })
-        await this.saveDocumentToStorage(ctx, documentId, document, context)
-      } catch (err) {
-        ctx.error('failed to save document', { documentId, error: err })
-      }
+        try {
+          ctx.info('take document snapshot', { documentId })
+          snapshot = await this.takeSnapshot(ctx, client, documentId, document, context)
+        } catch (err) {
+          ctx.error('failed to take document snapshot', { documentId, error: err })
+        }
 
-      const { platformDocumentId } = context
-      if (platformDocumentId !== undefined) {
         ctx.info('save document content to platform', { documentId, platformDocumentId })
         await ctx.with('save-to-platform', {}, async (ctx) => {
-          await this.saveDocumentToPlatform(ctx, client, documentId, platformDocumentId, document, snapshot, context)
+          await this.saveDocumentToPlatform(ctx, client, documentId, platformDocumentId, snapshot)
         })
+      } finally {
+        await client.close()
       }
-    } finally {
-      await client.close()
     }
   }
 
@@ -217,45 +193,18 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     return yDocVersion
   }
 
-  async loadDocumentFromPlatform (
-    ctx: MeasureContext,
-    platformDocumentId: PlatformDocumentId,
-    context: Context
-  ): Promise<YDoc | undefined> {
-    const { mongodb, transformer } = this
-    const { workspaceId } = context
-    const { objectDomain, objectId, objectAttr } = parsePlatformDocumentId(platformDocumentId)
-
-    const doc = await ctx.with('query', {}, async () => {
-      const db = mongodb.db(toWorkspaceString(workspaceId))
-      return await db.collection<Doc>(objectDomain).findOne({ _id: objectId }, { projection: { [objectAttr]: 1 } })
-    })
-
-    const content = doc !== null && objectAttr in doc ? ((doc as any)[objectAttr] as string) : ''
-    if (content.startsWith('{') && content.endsWith('}')) {
-      return await ctx.with('transform', {}, () => {
-        return transformer.toYdoc(content, objectAttr)
-      })
-    }
-
-    // the content does not seem to be an HTML document
-    return undefined
-  }
-
   async saveDocumentToPlatform (
     ctx: MeasureContext,
     client: Omit<TxOperations, 'close'>,
     documentName: string,
     platformDocumentId: PlatformDocumentId,
-    document: YDoc,
-    snapshot: YDocVersion | undefined,
-    context: Context
+    snapshot: YDocVersion | undefined
   ): Promise<void> {
     const { objectClass, objectId, objectAttr } = parsePlatformDocumentId(platformDocumentId)
 
     const attribute = client.getHierarchy().findAttribute(objectClass, objectAttr)
     if (attribute === undefined) {
-      ctx.info('attribute not found', { documentName, objectClass, objectAttr })
+      ctx.warn('attribute not found', { documentName, objectClass, objectAttr })
       return
     }
 
@@ -264,6 +213,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     })
 
     if (current === undefined) {
+      ctx.warn('document not found', { documentName, objectClass, objectId })
       return
     }
 
@@ -278,16 +228,8 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
       await ctx.with('update', {}, async () => {
         await client.diffUpdate(current, { [objectAttr]: newCollaborativeDoc })
       })
-    } else if (hierarchy.isDerived(attribute.type._class, core.class.TypeCollaborativeMarkup)) {
-      // TODO a temporary solution while we are keeping Markup in Mongo
-      const content = await ctx.with('transform', {}, () => {
-        return this.transformer.fromYdoc(document, objectAttr)
-      })
-      if (!areEqualMarkups(content, (current as any)[objectAttr])) {
-        await ctx.with('update', {}, async () => {
-          await client.diffUpdate(current, { [objectAttr]: content })
-        })
-      }
+    } else {
+      ctx.error('unsupported attribute type', { documentName, objectClass, objectAttr })
     }
   }
 }

@@ -83,8 +83,6 @@ export async function loadCollaborativeDoc (
   return await ctx.with('loadCollaborativeDoc', { type: 'content' }, async (ctx) => {
     for (const source of sources) {
       const { documentId, versionId } = collaborativeDocParse(source)
-
-      ctx.info('loading collaborative document', { source })
       const ydoc = await loadCollaborativeDocVersion(ctx, storageAdapter, workspace, documentId, versionId)
 
       if (ydoc !== undefined) {

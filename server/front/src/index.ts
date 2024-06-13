@@ -231,7 +231,6 @@ export function start (
     gmailUrl: string
     calendarUrl: string
     collaboratorUrl: string
-    collaboratorApiUrl: string
     brandingUrl?: string
     previewConfig: string
   },
@@ -266,7 +265,6 @@ export function start (
       GMAIL_URL: config.gmailUrl,
       CALENDAR_URL: config.calendarUrl,
       COLLABORATOR_URL: config.collaboratorUrl,
-      COLLABORATOR_API_URL: config.collaboratorApiUrl,
       BRANDING_URL: config.brandingUrl,
       PREVIEW_CONFIG: config.previewConfig,
       ...(extraConfig ?? {})

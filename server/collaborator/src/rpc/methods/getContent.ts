@@ -32,7 +32,7 @@ export async function getContent (
   })
 
   try {
-    const html = await ctx.with('transform', {}, async () => {
+    const markup = await ctx.with('transform', {}, async () => {
       let content = ''
       await connection.transact((document) => {
         content = transformer.fromYdoc(document, field)
@@ -40,7 +40,7 @@ export async function getContent (
       return content
     })
 
-    return { html }
+    return { markup }
   } finally {
     await connection.disconnect()
   }

@@ -5,7 +5,14 @@ import {
   type ReccuringInstance,
   generateEventId
 } from '@hcengineering/calendar'
-import { type IdMap, type Timestamp, getCurrentAccount, toIdMap, type DocumentUpdate } from '@hcengineering/core'
+import {
+  type Doc,
+  type IdMap,
+  type Timestamp,
+  getCurrentAccount,
+  toIdMap,
+  type DocumentUpdate
+} from '@hcengineering/core'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import { showPopup, closePopup, DAY } from '@hcengineering/ui'
 import { writable } from 'svelte/store'
@@ -143,7 +150,7 @@ export async function updateReccuringInstance (
         if (res !== null) {
           try {
             if (res.mode === 'current') {
-              await client.addCollection(
+              await client.addCollection<Doc, ReccuringInstance>(
                 object._class,
                 object.space,
                 object.attachedTo,

@@ -21,7 +21,6 @@ import {
   formatPlatformDocumentId as origFormatPlatformDocumentId
 } from '@hcengineering/collaborator-client'
 import { getCurrentLocation } from '@hcengineering/ui'
-import { getClient } from '@hcengineering/presentation'
 
 function getWorkspace (): string {
   return getCurrentLocation().path[1] ?? ''
@@ -37,6 +36,5 @@ export function formatPlatformDocumentId (
   objectId: Ref<Doc>,
   objectAttr: string
 ): PlatformDocumentId {
-  const objectDomain = getClient().getHierarchy().getDomain(objectClass)
-  return origFormatPlatformDocumentId(objectDomain, objectClass, objectId, objectAttr)
+  return origFormatPlatformDocumentId(objectClass, objectId, objectAttr)
 }

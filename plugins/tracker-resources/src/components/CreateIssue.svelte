@@ -21,12 +21,13 @@
   import core, {
     Account,
     Class,
+    CreateDocData,
     Doc,
-    DocData,
     Ref,
     SortingOrder,
     fillDefaults,
     generateId,
+    makeCollaborativeDoc,
     toIdMap
   } from '@hcengineering/core'
   import { getResource, translate } from '@hcengineering/platform'
@@ -41,7 +42,8 @@
     MultipleDraftController,
     SpaceSelector,
     createQuery,
-    getClient
+    getClient,
+    getMarkup
   } from '@hcengineering/presentation'
   import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import { TaskType, makeRank } from '@hcengineering/task'
@@ -189,7 +191,6 @@
     if (originalIssue !== undefined && !ignoreOriginal) {
       const res: IssueDraft = {
         ...base,
-        description: originalIssue.description,
         status: originalIssue.status,
         priority: originalIssue.priority,
         component: originalIssue.component,
@@ -199,6 +200,9 @@
         parentIssue: originalIssue.parents[0]?.parentId,
         title: `${originalIssue.title} (copy)`
       }
+      void getMarkup(originalIssue.description, 'description').then((res) => {
+        object.description = res
+      })
       void client.findAll(tags.class.TagReference, { attachedTo: originalIssue._id }).then((p) => {
         object.labels = p
       })
@@ -445,9 +449,9 @@
 
       const identifier = `${currentProject?.identifier}-${number}`
 
-      const value: DocData<Issue> = {
+      const value: CreateDocData<Issue> = {
         title: getTitle(object.title),
-        description: object.description,
+        description: makeCollaborativeDoc(_id, 'description'),
         assignee: object.assignee,
         component: object.component,
         milestone: object.milestone,
@@ -477,7 +481,10 @@
         relations: relatedTo !== undefined ? [{ _id: relatedTo._id, _class: relatedTo._class }] : [],
         childInfo: [],
         kind,
-        identifier
+        identifier,
+        $markup: {
+          description: object.description
+        }
       }
 
       await docCreateManager.commit(operations, _id, currentProject, value, 'pre')

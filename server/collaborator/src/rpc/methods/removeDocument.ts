@@ -30,7 +30,7 @@ export async function removeDocument (
   params: RpcMethodParams
 ): Promise<RemoveDocumentResponse> {
   const { documentId } = payload
-  const { hocuspocus, minio } = params
+  const { hocuspocus, storage: minio } = params
   const { workspaceId } = context
 
   const document = hocuspocus.documents.get(documentId)

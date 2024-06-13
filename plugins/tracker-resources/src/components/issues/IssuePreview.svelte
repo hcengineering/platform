@@ -15,11 +15,13 @@
 <script lang="ts">
   import attachment from '@hcengineering/attachment'
   import { AttachmentDocList } from '@hcengineering/attachment-resources'
+  import { ChatMessagePopup } from '@hcengineering/chunter-resources'
   import { Ref } from '@hcengineering/core'
-  import { IconForward, MessageViewer, createQuery, getClient } from '@hcengineering/presentation'
+  import { IconForward, createQuery, getClient } from '@hcengineering/presentation'
+  import { CollaborativeTextEditor } from '@hcengineering/text-editor'
   import { Issue } from '@hcengineering/tracker'
   import { Label, Scroller, resizeObserver } from '@hcengineering/ui'
-  import { ChatMessagePopup } from '@hcengineering/chunter-resources'
+  import { getCollaborationUser } from '@hcengineering/view-resources'
 
   import tracker from '../../plugin'
   import AssigneeEditor from './AssigneeEditor.svelte'
@@ -33,6 +35,8 @@
 
   const client = getClient()
   const issueQuery = createQuery()
+
+  const user = getCollaborationUser()
 
   $: issueQuery.query(
     object._class,
@@ -91,7 +95,9 @@
     {#if issue.description}
       <div class="description-container" class:masked={cHeight > limit} style:max-height={`${limit}px`}>
         <div class="description-content" use:resizeObserver={(element) => (cHeight = element.clientHeight)}>
-          <MessageViewer message={issue.description} />
+          {#key issue._id}
+            <CollaborativeTextEditor collaborativeDoc={issue.description} field="description" {user} readonly />
+          {/key}
         </div>
       </div>
     {:else}

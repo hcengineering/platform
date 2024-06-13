@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AttachmentStyleBoxCollabEditor } from '@hcengineering/attachment-resources'
+  import { AttachmentStyleBoxEditor } from '@hcengineering/attachment-resources'
   import { Class, Doc, Ref, WithLookup } from '@hcengineering/core'
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
@@ -45,7 +45,7 @@
   let title = ''
   let innerWidth: number
 
-  let descriptionBox: AttachmentStyleBoxCollabEditor
+  let descriptionBox: AttachmentStyleBoxEditor
 
   const inboxClient = getResource(notification.function.GetInboxNotificationsClient).then((res) => res())
 
@@ -147,7 +147,7 @@
   >
     <EditBox bind:value={title} placeholder={tracker.string.IssueTitlePlaceholder} kind="large-style" on:blur={save} />
     <div class="w-full mt-6">
-      <AttachmentStyleBoxCollabEditor
+      <AttachmentStyleBoxEditor
         focusIndex={30}
         object={template}
         key={{ key: 'description', attr: descriptionKey }}

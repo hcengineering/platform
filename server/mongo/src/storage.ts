@@ -1030,7 +1030,8 @@ class MongoAdapter extends MongoAdapterBase {
       modifiedBy: tx.modifiedBy,
       modifiedOn: tx.modifiedOn
     }
-    if (isOperator(tx.attributes)) {
+    const attributes = this.excludeUnsupportedOperations(tx.attributes)
+    if (isOperator(attributes)) {
       const operator = Object.keys(tx.attributes)[0]
       if (operator === '$move') {
         const keyval = (tx.attributes as any).$move
@@ -1051,7 +1052,7 @@ class MongoAdapter extends MongoAdapterBase {
           bulk: ops
         }
       }
-      const update = { ...this.translateMixinAttrs(tx.mixin, tx.attributes), $set: { ...modifyOp } }
+      const update = { ...this.translateMixinAttrs(tx.mixin, attributes), $set: { ...modifyOp } }
       return {
         raw: async () => await this.collection(domain).updateOne(filter, update),
         domain,
@@ -1065,7 +1066,7 @@ class MongoAdapter extends MongoAdapterBase {
         ]
       }
     }
-    const update = { $set: { ...this.translateMixinAttrs(tx.mixin, tx.attributes), ...modifyOp } }
+    const update = { $set: { ...this.translateMixinAttrs(tx.mixin, attributes), ...modifyOp } }
     return {
       raw: async () => await this.collection(domain).updateOne(filter, update),
       domain,
@@ -1078,6 +1079,11 @@ class MongoAdapter extends MongoAdapterBase {
         }
       ]
     }
+  }
+
+  private excludeUnsupportedOperations (attributes: Record<string, any>): Record<string, any> {
+    const operations = ['$markup', '$pushMixin']
+    return Object.fromEntries(Object.entries(attributes).filter(([key]) => !operations.includes(key)))
   }
 
   private translateMixinAttrs (mixin: Ref<Mixin<Doc>>, attributes: Record<string, any>): Record<string, any> {
@@ -1117,8 +1123,9 @@ class MongoAdapter extends MongoAdapterBase {
 
   protected txUpdateDoc (tx: TxUpdateDoc<Doc>): DomainOperation {
     const domain = this.hierarchy.getDomain(tx.objectClass)
-    if (isOperator(tx.operations)) {
-      const operator = Object.keys(tx.operations)[0]
+    const operations = this.excludeUnsupportedOperations(tx.operations)
+    if (isOperator(operations)) {
+      const operator = Object.keys(operations)[0]
       if (operator === '$move') {
         const keyval = (tx.operations as any).$move
         const arr = Object.keys(keyval)[0]
@@ -1163,7 +1170,7 @@ class MongoAdapter extends MongoAdapterBase {
           bulk: ops
         }
       } else if (operator === '$update') {
-        const keyval = (tx.operations as any).$update
+        const keyval = (operations as any).$update
         const arr = Object.keys(keyval)[0]
         const desc = keyval[arr] as QueryUpdate<any>
         const ops = [
@@ -1224,7 +1231,7 @@ class MongoAdapter extends MongoAdapterBase {
         } else {
           const filter = { _id: tx.objectId }
           const update = {
-            ...tx.operations,
+            ...operations,
             $set: {
               modifiedBy: tx.modifiedBy,
               modifiedOn: tx.modifiedOn,
@@ -1242,7 +1249,7 @@ class MongoAdapter extends MongoAdapterBase {
       const filter = { _id: tx.objectId }
       const update = {
         $set: {
-          ...tx.operations,
+          ...operations,
           modifiedBy: tx.modifiedBy,
           modifiedOn: tx.modifiedOn,
           '%hash%': null

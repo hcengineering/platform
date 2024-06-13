@@ -45,9 +45,7 @@ async function migrateMarkup (client: MigrationClient): Promise<void> {
     DOMAIN_ACTIVITY,
     {
       _class: activity.class.DocUpdateMessage,
-      'attributeUpdates.attrClass': {
-        $in: [core.class.TypeMarkup, core.class.TypeCollaborativeMarkup]
-      }
+      'attributeUpdates.attrClass': core.class.TypeMarkup
     },
     {
       projection: {

@@ -18,8 +18,9 @@ import contact, { type Employee, type Person } from '@hcengineering/contact'
 import {
   DOMAIN_MODEL,
   DateRangeMode,
-  type Domain,
   IndexKind,
+  type CollaborativeDoc,
+  type Domain,
   type Markup,
   type Ref,
   type RelatedDocument,
@@ -38,7 +39,7 @@ import {
   Model,
   Prop,
   ReadOnly,
-  TypeCollaborativeMarkup,
+  TypeCollaborativeDoc,
   TypeDate,
   TypeMarkup,
   TypeNumber,
@@ -180,9 +181,9 @@ export class TIssue extends TTask implements Issue {
   @Index(IndexKind.FullText)
     title!: string
 
-  @Prop(TypeCollaborativeMarkup(), tracker.string.Description)
+  @Prop(TypeCollaborativeDoc(), tracker.string.Description)
   @Index(IndexKind.FullText)
-    description!: Markup
+    description!: CollaborativeDoc
 
   @Prop(TypeRef(tracker.class.IssueStatus), tracker.string.Status, {
     _id: tracker.attribute.IssueStatus,
@@ -270,7 +271,7 @@ export class TIssueTemplate extends TDoc implements IssueTemplate {
   @Index(IndexKind.FullText)
     title!: string
 
-  @Prop(TypeCollaborativeMarkup(), tracker.string.Description)
+  @Prop(TypeMarkup(), tracker.string.Description)
   @Index(IndexKind.FullText)
     description!: Markup
 

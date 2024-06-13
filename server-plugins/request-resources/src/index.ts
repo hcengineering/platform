@@ -123,7 +123,7 @@ async function getRequestNotificationTx (tx: TxCollectionCUD<Doc, Request>, cont
   if (doc === undefined) return []
 
   const res: Tx[] = []
-  const messagesTxes = await pushDocUpdateMessages(undefined, control, [], doc, tx)
+  const messagesTxes = await pushDocUpdateMessages(control.ctx, control, [], doc, tx)
 
   if (messagesTxes.length === 0) return []
 

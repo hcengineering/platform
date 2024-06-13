@@ -39,6 +39,7 @@ import {
   type DocObjectCache
 } from '@hcengineering/server-activity'
 import { generateDocUpdateMessages } from '@hcengineering/server-activity-resources'
+import { type StorageAdapter } from '@hcengineering/server-core'
 
 function getActivityControl (client: MigrationClient): ActivityControl {
   const txFactory = new TxFactory(core.account.System, false)
@@ -48,7 +49,9 @@ function getActivityControl (client: MigrationClient): ActivityControl {
     modelDb: client.model,
     hierarchy: client.hierarchy,
     findAll: async (_class, query, options) =>
-      toFindResult(await client.find(client.hierarchy.getDomain(_class), query, options))
+      toFindResult(await client.find(client.hierarchy.getDomain(_class), query, options)),
+    storageAdapter: client.storageAdapter as StorageAdapter,
+    workspace: client.workspaceId
   }
 }
 

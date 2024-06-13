@@ -1,8 +1,8 @@
 import {
   SortingOrder,
   type Class,
+  type CreateDocData,
   type Doc,
-  type DocData,
   type Ref,
   type Space,
   type TxOperations
@@ -55,7 +55,7 @@ export class DocCreateExtensionManager {
     ops: TxOperations,
     docId: Ref<Doc>,
     space: Space,
-    data: DocData<Doc>,
+    data: CreateDocData<Doc>,
     phase: DocCreatePhase
   ): Promise<void> {
     for (const e of this._extensions) {
