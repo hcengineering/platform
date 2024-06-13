@@ -293,7 +293,12 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
   }
 }
 
-async function withRetry<T> (ctx: MeasureContext, retries: number, op: () => Promise<T>, delay: number = 100): Promise<T> {
+async function withRetry<T> (
+  ctx: MeasureContext,
+  retries: number,
+  op: () => Promise<T>,
+  delay: number = 100
+): Promise<T> {
   let error: any
   while (retries > 0) {
     retries--
