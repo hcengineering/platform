@@ -168,7 +168,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     const adapter = this.getStorageAdapter(storage)
 
     return await ctx.with('load-document', { storage }, async (ctx) => {
-      return await withRetry(5, async () => {
+      return await withRetry(ctx, 5, async () => {
         return await loadCollaborativeDoc(adapter, context.workspaceId, collaborativeDoc, ctx)
       })
     })
@@ -184,7 +184,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     const adapter = this.getStorageAdapter(storage)
 
     await ctx.with('save-document', {}, async (ctx) => {
-      await withRetry(5, async () => {
+      await withRetry(ctx, 5, async () => {
         await saveCollaborativeDoc(adapter, context.workspaceId, collaborativeDoc, document, ctx)
       })
     })
@@ -293,7 +293,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
   }
 }
 
-async function withRetry<T> (retries: number, op: () => Promise<T>, delay: number = 100): Promise<T> {
+async function withRetry<T> (ctx: MeasureContext, retries: number, op: () => Promise<T>, delay: number = 100): Promise<T> {
   let error: any
   while (retries > 0) {
     retries--
@@ -301,7 +301,7 @@ async function withRetry<T> (retries: number, op: () => Promise<T>, delay: numbe
       return await op()
     } catch (err: any) {
       error = err
-      console.error('error', err)
+      ctx.error('error', err)
       if (retries !== 0) {
         await new Promise((resolve) => setTimeout(resolve, delay))
       }
