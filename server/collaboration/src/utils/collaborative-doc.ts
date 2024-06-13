@@ -28,7 +28,7 @@ import { StorageAdapter } from '@hcengineering/server-core'
 import { yDocBranch } from '../history/branch'
 import { YDocVersion } from '../history/history'
 import { createYdocSnapshot, restoreYdocSnapshot } from '../history/snapshot'
-import { yDocFromStorage, yDocToStorage } from './minio'
+import { yDocFromStorage, yDocToStorage } from './storage'
 
 /** @public */
 export function collaborativeHistoryDocId (id: string): string {
