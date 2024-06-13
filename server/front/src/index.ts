@@ -221,7 +221,6 @@ async function getFile (
 export function start (
   ctx: MeasureContext,
   config: {
-    transactorEndpoint: string
     elasticUrl: string
     storageAdapter: StorageAdapter
     accountsUrl: string

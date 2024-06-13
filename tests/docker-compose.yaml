@@ -67,7 +67,6 @@ services:
       - ACCOUNTS_URL=http://localhost:3003
       - MONGO_URL=mongodb://mongodb:27018
       - UPLOAD_URL=/files
-      - TRANSACTOR_URL=ws://localhost:3334
       - ELASTIC_URL=http://elastic:9200
       - GMAIL_URL=http://localhost:8088
       - CALENDAR_URL=http://localhost:8095
