@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@tiptap/extension-color": "^2.4.0",
+    "@tiptap/extension-text-style": "^2.4.0"
+  }
+}

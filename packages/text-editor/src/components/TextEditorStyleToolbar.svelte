@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { getEventPositionElement, IconSize, SelectPopup, showPopup } from '@hcengineering/ui'
   import { Editor } from '@tiptap/core'
@@ -43,6 +43,8 @@
   import DeleteTable from './icons/table/DeleteTable.svelte'
   import LinkPopup from './LinkPopup.svelte'
   import StyleButton from './StyleButton.svelte'
+  import TextColor from './icons/TextColor.svelte'
+  import ColorDropdown from './ColorDropdown.svelte'
 
   export let formatButtonSize: IconSize = 'small'
   export let textEditor: Editor
@@ -50,6 +52,33 @@
   export let textNodeActions: TextNodeAction[] = []
 
   const dispatch = createEventDispatcher()
+
+  let showDropdown = false
+  let dropdownElement: HTMLElement
+
+  function toggleDropdown () {
+    showDropdown = !showDropdown
+    dispatch('focus')
+  }
+
+  function closeDropdown () {
+    showDropdown = false
+  }
+
+  // function handleClickOutside (event) {
+  //   if (dropdownElement && !dropdownElement.contains(event.target)) {
+  //     closeDropdown()
+  //   }
+  // }
+  //
+  // onMount(() => {
+  //   document.addEventListener('click', handleClickOutside)
+  //   return () => {
+  //     document.removeEventListener('click', handleClickOutside)
+  //   }
+  // })
+
+  export let colors: string[] = ['#000000', '#958DF1', '#F98181', '#FBBC88', '#FAF594', '#70CFF8', '#94FADB']
 
   function getToggler (toggle: () => void) {
     return () => {
@@ -162,6 +191,7 @@
       }
     )
   }
+
 </script>
 
 {#if textEditor}
@@ -221,6 +251,19 @@
         showTooltip={{ label: textEditorPlugin.string.Underlined }}
         on:click={getToggler(textEditor.commands.toggleUnderline)}
       />
+      <!-- Add the new color style button -->
+      <div class="style-button-with-dropdown">
+        <StyleButton
+          icon={TextColor}
+          size={formatButtonSize}
+          selected={textEditor.isActive('textStyle', { color: textEditor.getAttributes('textStyle').color })}
+          showTooltip={{ label: textEditorPlugin.string.TextColor }}
+          on:click={toggleDropdown}
+        />
+        {#if showDropdown}
+            <ColorDropdown {textEditor} {colors} on:close={closeDropdown} />
+        {/if}
+      </div>
     {/if}
     {#if category === TextFormatCategory.Link}
       <StyleButton
@@ -303,3 +346,8 @@
     {/each}
   {/if}
 {/if}
+<style>
+    .style-button-with-dropdown {
+        position: relative;
+    }
+</style>

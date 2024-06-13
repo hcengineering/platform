@@ -45,6 +45,7 @@ export default plugin(textEditorId, {
     Bold: '' as IntlString,
     Italic: '' as IntlString,
     Strikethrough: '' as IntlString,
+    TextColor: '' as IntlString,
     Link: '' as IntlString,
     Save: '' as IntlString,
     OrderedList: '' as IntlString,

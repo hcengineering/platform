@@ -29,6 +29,8 @@ import { FileExtension, type FileOptions } from '../components/extension/fileExt
 import { ImageExtension, type ImageOptions } from '../components/extension/imageExt'
 import { NodeUuidExtension } from '../components/extension/nodeUuid'
 import { Table, TableCell, TableRow } from '../components/extension/table'
+import { TextStyle } from '@tiptap/extension-text-style'
+import { Color } from '@tiptap/extension-color'
 
 const headingLevels: Level[] = [1, 2, 3]
 
@@ -72,6 +74,8 @@ export const EditorKit = Extension.create<EditorKitOptions>({
           levels: headingLevels
         }
       }),
+      TextStyle,
+      Color,
       CodeBlockExtension.configure(codeBlockOptions),
       CodemarkExtension,
       ListKeymap.configure({
