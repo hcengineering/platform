@@ -107,8 +107,8 @@ export class StorageExtension implements Extension {
         return await adapter.loadDocument(ctx, documentId, context)
       })
     } catch (err) {
-      ctx.error('failed to load document content', { documentId, error: err })
-      return undefined
+      ctx.error('failed to load document', { documentId, error: err })
+      throw new Error('Failed to load document')
     }
   }
 
@@ -120,8 +120,8 @@ export class StorageExtension implements Extension {
         await adapter.saveDocument(ctx, documentId, document, context)
       })
     } catch (err) {
-      ctx.error('failed to save document content', { documentId, error: err })
-      return undefined
+      ctx.error('failed to save document', { documentId, error: err })
+      throw new Error('Failed to save document')
     }
   }
 }

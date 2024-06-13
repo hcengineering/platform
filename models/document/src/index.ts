@@ -96,6 +96,10 @@ export class TDocument extends TAttachedDoc implements Document {
   @Hidden()
     content!: CollaborativeDoc
 
+  @Prop(TypeRef(core.class.Account), document.string.LockedBy)
+  @Hidden()
+    lockedBy?: Ref<Account>
+
   @Prop(Collection(document.class.Document), document.string.ChildDocument)
     children!: CollectionSize<Document>
 
@@ -371,6 +375,44 @@ function defineDocument (builder: Builder): void {
       }
     },
     document.action.CopyDocumentLink
+  )
+
+  createAction(
+    builder,
+    {
+      action: document.actionImpl.LockContent,
+      label: document.string.Lock,
+      icon: document.icon.Lock,
+      input: 'focus',
+      category: document.category.Document,
+      target: document.class.Document,
+      context: {
+        mode: ['context', 'browser'],
+        application: document.app.Documents,
+        group: 'copy'
+      },
+      visibilityTester: document.function.CanLockDocument
+    },
+    document.action.LockContent
+  )
+
+  createAction(
+    builder,
+    {
+      action: document.actionImpl.UnlockContent,
+      label: document.string.Unlock,
+      icon: document.icon.Unlock,
+      input: 'focus',
+      category: document.category.Document,
+      target: document.class.Document,
+      context: {
+        mode: ['context', 'browser'],
+        application: document.app.Documents,
+        group: 'copy'
+      },
+      visibilityTester: document.function.CanUnlockDocument
+    },
+    document.action.UnlockContent
   )
 
   // Notifications

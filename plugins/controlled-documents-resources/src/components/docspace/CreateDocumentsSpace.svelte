@@ -74,6 +74,8 @@
 
     rolesAssignment = getRolesAssignment()
   }
+  $: descriptors =
+    spaceType?.descriptor !== undefined ? [spaceType.descriptor] : [documents.descriptor.DocumentSpaceType]
 
   function getRolesAssignment (): RolesAssignment {
     if (docSpace === undefined || spaceType?.targetClass === undefined || spaceType?.$lookup?.roles === undefined) {
@@ -239,7 +241,7 @@
 
       <SpaceTypeSelector
         disabled={!isNew}
-        descriptors={[documents.descriptor.DocumentSpaceType]}
+        {descriptors}
         type={typeId}
         focusIndex={4}
         kind="regular"

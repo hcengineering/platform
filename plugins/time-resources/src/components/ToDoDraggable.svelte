@@ -58,7 +58,7 @@
 
   function handleDragStart (event: DragEvent): void {
     if (event.dataTransfer) {
-      event.dataTransfer.effectAllowed = 'all'
+      event.dataTransfer.effectAllowed = 'move'
     }
     isDragging = true
     dragging.update((state) => ({

@@ -14,7 +14,7 @@
 //
 import { Prop, type Builder } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
-import { getRoleAttributeProps } from '@hcengineering/setting'
+import setting, { getRoleAttributeProps } from '@hcengineering/setting'
 import { type Permission, type Ref } from '@hcengineering/core'
 
 import { TDocumentSpaceTypeData } from './types'
@@ -43,7 +43,7 @@ export function defineSpaceType (builder: Builder): void {
   builder.createModel(TDocumentSpaceTypeData)
 
   builder.createDoc(
-    core.class.SpaceTypeDescriptor,
+    documents.class.DocumentSpaceTypeDescriptor,
     core.space.Model,
     {
       name: documents.string.DocumentApplication,
@@ -54,6 +54,10 @@ export function defineSpaceType (builder: Builder): void {
     },
     documents.descriptor.DocumentSpaceType
   )
+
+  builder.mixin(documents.class.DocumentSpaceTypeDescriptor, core.class.Class, setting.mixin.SpaceTypeCreator, {
+    extraComponent: documents.component.CreateDocumentSpaceType
+  })
 
   builder.createDoc(
     documents.class.DocumentSpaceType,

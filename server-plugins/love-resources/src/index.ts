@@ -136,7 +136,7 @@ export async function OnUserStatus (tx: Tx, control: TriggerControl): Promise<Tx
       } else {
         setTimeout(() => {
           void removeUserInfo(status.user, control)
-        }, 5000)
+        }, 20000)
         return []
       }
     }
@@ -164,6 +164,32 @@ async function roomJoinHandler (info: ParticipantInfo, control: TriggerControl, 
       })
     ]
   }
+}
+
+async function rejectJoinRequests (
+  info: ParticipantInfo,
+  control: TriggerControl,
+  roomInfos: RoomInfo[]
+): Promise<Tx[]> {
+  const res: Tx[] = []
+  const oldRoomInfo = roomInfos.find((ri) => ri.persons.includes(info.person))
+  if (oldRoomInfo !== undefined) {
+    const restPersons = oldRoomInfo.persons.filter((p) => p !== info.person)
+    if (restPersons.length === 0) {
+      const requests = await control.findAll(love.class.JoinRequest, {
+        room: oldRoomInfo.room,
+        status: RequestStatus.Pending
+      })
+      for (const request of requests) {
+        res.push(
+          control.txFactory.createTxUpdateDoc(love.class.JoinRequest, love.space.Rooms, request._id, {
+            status: RequestStatus.Rejected
+          })
+        )
+      }
+    }
+  }
+  return res
 }
 
 function setDefaultRoomAccess (info: ParticipantInfo, roomInfos: RoomInfo[], control: TriggerControl): Tx[] {
@@ -209,6 +235,7 @@ export async function OnParticipantInfo (tx: Tx, control: TriggerControl): Promi
     const info = (await control.findAll(love.class.ParticipantInfo, { _id: actualTx.objectId }, { limit: 1 }))[0]
     if (info === undefined) return []
     const res: Tx[] = []
+    res.push(...(await rejectJoinRequests(info, control, roomInfos)))
     res.push(...setDefaultRoomAccess(info, roomInfos, control))
     res.push(...(await roomJoinHandler(info, control, roomInfos)))
     return res

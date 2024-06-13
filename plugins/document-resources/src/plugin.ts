@@ -35,7 +35,6 @@ export default mergeIds(documentId, document, {
     DocumentNamePlaceholder: '' as IntlString,
     Name: '' as IntlString,
     Cancel: '' as IntlString,
-    Documents: '' as IntlString,
     Document: '' as IntlString,
     SearchDocument: '' as IntlString,
     Version: '' as IntlString,
@@ -71,6 +70,10 @@ export default mergeIds(documentId, document, {
     Star: '' as IntlString,
     Unstar: '' as IntlString,
     CopyDocumentUrl: '' as IntlString,
+
+    Lock: '' as IntlString,
+    Unlock: '' as IntlString,
+    Locked: '' as IntlString,
 
     ViewMode: '' as IntlString,
     EditMode: '' as IntlString,

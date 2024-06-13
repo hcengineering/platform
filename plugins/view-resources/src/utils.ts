@@ -1375,6 +1375,8 @@ export function checkMyPermission (_id: Ref<Permission>, space: Ref<TypedSpace>,
   return (store.whitelist.has(space) || store.ps[space]?.has(_id)) ?? false
 }
 
+export const accessDeniedStore = writable<boolean>(false)
+
 export const permissionsStore = writable<PermissionsStore>({
   ps: {},
   ap: {},

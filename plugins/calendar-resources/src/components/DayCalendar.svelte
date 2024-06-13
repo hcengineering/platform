@@ -162,6 +162,7 @@
   let scroller: HTMLElement
   let calendarWidth: number = 0
   let calendarRect: DOMRect
+  let containerRect: DOMRect
   let colWidth: number = 0
   let nowLineTop: number = -1
   let timeNow: string = '--:--'
@@ -539,14 +540,15 @@
       ? rem((heightAD + 0.125) * (adMaxRow <= minAD ? adMaxRow : minAD) + 0.25)
       : rem((heightAD + 0.125) * (adMaxRow <= maxAD ? adMaxRow : maxAD) + 0.25)
   $: showArrowAD = (!minimizedAD && adMaxRow > maxAD) || (minimizedAD && adMaxRow > minAD)
+  $: headerHeight = (showHeader ? rem(heightHeader) : 0) + styleAD
 
   const getMinutes = (exactly: number): number => {
     const roundStep = 60 / stepsPerHour
     return Math.round(exactly / roundStep) * roundStep
   }
 
-  const getExactly = (e: MouseEvent): number => {
-    return Math.round((e.offsetY * 60) / cellHeight)
+  const getExactly = (e: MouseEvent, correction: boolean = false): number => {
+    return Math.round((e.offsetY * 60) / cellHeight) - (correction ? 15 : 0)
   }
 
   const getStickyMinutes = (
@@ -596,6 +598,7 @@
   let oldTime: number = -1
   let originDate: Timestamp = 0
   let originDueDate: Timestamp = 0
+  let scrollTimer: any = null
 
   async function updateHandler (event: Event) {
     const update: DocumentUpdate<Event> = {}
@@ -631,6 +634,7 @@
     directionResize = direction
     originDate = event.date
     originDueDate = event.dueDate
+    containerRect = scroller.getBoundingClientRect()
     window.addEventListener('mouseup', mouseUpElement as any)
   }
   function mouseMoveElement (
@@ -653,11 +657,32 @@
       if (newDate - events[index].date >= 15 * 60000) events[index].dueDate = newDate
     }
     events = events
+
+    if (!scrollTimer) {
+      directionScroll(
+        e.clientY < containerRect.y + headerHeight + 16 && scroller.scrollTop > 0
+          ? 'top'
+          : e.clientY > containerRect.bottom - 16 && scroller.scrollHeight - scroller.scrollTop > scroller.clientHeight
+            ? 'bottom'
+            : 'none'
+      )
+    }
   }
+  const directionScroll = (direction: 'top' | 'bottom' | 'none'): void => {
+    if (direction === 'none') return
+    scrollTimer = setTimeout(() => (scrollTimer = null), 150)
+    scroller.scrollBy({ top: direction === 'top' ? -cellHeight * 2 : cellHeight * 2, left: 0, behavior: 'smooth' })
+  }
+
+  const transparentImage = new Image(1, 1)
+  transparentImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
 
   function dragStartElement (e: DragEvent & { currentTarget: EventTarget & HTMLDivElement }, event: Event): void {
     if (isReadOnly(event) || event.allDay) return
-    if (e.dataTransfer) e.dataTransfer.effectAllowed = 'all'
+    if (e.dataTransfer) {
+      e.dataTransfer.setDragImage(transparentImage, 0, 0)
+      e.dataTransfer.effectAllowed = 'move'
+    }
     originDate = event.date
     originDueDate = event.dueDate
     dragOnOld = null
@@ -674,7 +699,7 @@
 
   function dragDrop (e: DragEvent, day: Date, hourOfDay: number): void {
     const hour = hourOfDay + startHour
-    const newTime = new Date(day).setHours(hour, getExactly(e), 0, 0)
+    const newTime = new Date(day).setHours(hour, getExactly(e, true), 0, 0)
     if (dragId) {
       if (oldTime === -1) oldTime = newTime
       const index = events.findIndex((ev) => ev._id === dragId)
@@ -712,12 +737,15 @@
   }
 
   function dragOver (e: DragEvent, day: Date, hourOfDay: number): void {
-    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'
+    if (e.dataTransfer) {
+      e.dataTransfer.setDragImage(transparentImage, 0, 0)
+      e.dataTransfer.dropEffect = 'move'
+    }
     e.preventDefault()
     const dragOn: CalendarCell = {
       day,
       hourOfDay,
-      minutes: getExactly(e)
+      minutes: getExactly(e, true)
     }
     if (
       dragOnOld !== null &&
@@ -759,6 +787,11 @@
       dispatch('dragEnter', { date: new Date(new Date(newTime).setMinutes(stickyMinutes, 0, 0)) })
     }
   }
+
+  const dragLeave = (e: DragEvent): void => {
+    dispatch('dragOut')
+    e.preventDefault()
+  }
 </script>
 
 <Scroller
@@ -768,6 +801,7 @@
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div
     bind:this={container}
+    on:dragleave={dragLeave}
     on:dragleave
     class="calendar-container timeline-grid-bg"
     class:clearCells={clearCells || resizeId !== null || dragId !== null}
@@ -1150,29 +1184,28 @@
       position: absolute;
       left: 0;
       right: 0;
-      height: 0.5rem;
+      height: 0.25rem;
       border-radius: 0.5rem;
+      cursor: row-resize;
 
       &::after {
         position: absolute;
         content: '';
         left: -0.25rem;
         right: -0.25rem;
-        height: 1rem;
+        height: 0.5rem;
         border: 1px solid transparent;
-        border-radius: 0.5rem;
         transition-property: opacity, border-width, transform;
         transition-duration: 0.15s;
         transition-timing-function: var(--timing-main);
         transform: scale(0.9);
         opacity: 0;
-        cursor: row-resize;
-        filter: drop-shadow(0 0 2px var(--primary-edit-border-color));
         pointer-events: none;
+        z-index: 10;
       }
       &.allowed::after {
         pointer-events: all;
-        z-index: 10;
+        z-index: 100;
       }
       &.allowed:hover::after,
       &.hovered::after {
@@ -1185,6 +1218,7 @@
       top: 0;
       &::after {
         top: -0.25rem;
+        border-radius: 0.5rem 0.5rem 0 0;
         border-top-color: var(--primary-edit-border-color);
       }
     }
@@ -1192,6 +1226,7 @@
       bottom: 0;
       &::after {
         bottom: -0.25rem;
+        border-radius: 0 0 0.5rem 0.5rem;
         border-bottom-color: var(--primary-edit-border-color);
       }
     }

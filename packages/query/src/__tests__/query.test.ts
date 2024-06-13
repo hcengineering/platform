@@ -942,4 +942,31 @@ describe('query', () => {
     const result = await resolveP
     expect(result.length).toEqual(2)
   })
+
+  it('check query mixin projection', async () => {
+    const { liveQuery, factory } = await getClient()
+
+    let projects = await liveQuery.queryFind(test.mixin.TestProjectMixin, {}, { projection: { _id: 1 } })
+    expect(projects.length).toEqual(0)
+    const project = await factory.createDoc(test.class.TestProject, core.space.Space, {
+      archived: false,
+      description: '',
+      members: [],
+      private: false,
+      prjName: 'test project',
+      name: 'qwe'
+    })
+
+    projects = await liveQuery.queryFind(test.mixin.TestProjectMixin, {}, { projection: { _id: 1 } })
+    expect(projects.length).toEqual(0)
+    await factory.createMixin(project, test.class.TestProject, core.space.Space, test.mixin.TestProjectMixin, {
+      someField: 'qwe'
+    })
+    // We need to process all events before we could do query again
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 100)
+    })
+    projects = await liveQuery.queryFind(test.mixin.TestProjectMixin, {}, { projection: { _id: 1 } })
+    expect(projects.length).toEqual(1)
+  })
 })

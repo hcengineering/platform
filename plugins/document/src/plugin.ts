@@ -58,7 +58,9 @@ export const documentPlugin = plugin(documentId, {
     References: '' as Asset,
     History: '' as Asset,
     Star: '' as Asset,
-    Starred: '' as Asset
+    Starred: '' as Asset,
+    Lock: '' as Asset,
+    Unlock: '' as Asset
   },
   app: {
     Documents: '' as Ref<Doc>
@@ -68,7 +70,8 @@ export const documentPlugin = plugin(documentId, {
   },
   string: {
     ConfigLabel: '' as IntlString,
-    CreateDocument: '' as IntlString
+    CreateDocument: '' as IntlString,
+    Documents: '' as IntlString
   },
   ids: {
     NoParent: '' as Ref<Document>,

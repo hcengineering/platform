@@ -47,11 +47,9 @@ export default mergeIds(recruitId, recruit, {
     Talents: '' as IntlString,
     CreateApplication: '' as IntlString,
     ApplicationCreateLabel: '' as IntlString,
-    Vacancy: '' as IntlString,
     VacancyCreateLabel: '' as IntlString,
     CompanyCreateLabel: '' as IntlString,
     SelectVacancy: '' as IntlString,
-    Talent: '' as IntlString,
     TalentCreateLabel: '' as IntlString,
     CreateTalent: '' as IntlString,
     CreateTalentDialogClose: '' as IntlString,
@@ -89,8 +87,6 @@ export default mergeIds(recruitId, recruit, {
 
     CopyLink: '' as IntlString,
     CopyId: '' as IntlString,
-
-    Review: '' as IntlString,
     ReviewCreateLabel: '' as IntlString,
     NewReview: '' as IntlString,
     CreateReview: '' as IntlString,
@@ -124,7 +120,6 @@ export default mergeIds(recruitId, recruit, {
     Match: '' as IntlString,
     PerformMatch: '' as IntlString,
     MoveApplication: '' as IntlString,
-    Application: '' as IntlString,
     MyApplications: '' as IntlString,
 
     TemplateReplace: '' as IntlString,

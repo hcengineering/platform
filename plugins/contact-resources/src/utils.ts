@@ -56,7 +56,7 @@ import {
   type TabItem
 } from '@hcengineering/ui'
 import view, { type Filter } from '@hcengineering/view'
-import { FilterQuery } from '@hcengineering/view-resources'
+import { FilterQuery, accessDeniedStore } from '@hcengineering/view-resources'
 import { derived, get, writable } from 'svelte/store'
 
 import contact from './plugin'
@@ -262,6 +262,7 @@ async function generateLocation (loc: Location, id: Ref<Contact>): Promise<Resol
   const client = getClient()
   const doc = await client.findOne(contact.class.Contact, { _id: id })
   if (doc === undefined) {
+    accessDeniedStore.set(true)
     console.error(`Could not find contact ${id}.`)
     return undefined
   }

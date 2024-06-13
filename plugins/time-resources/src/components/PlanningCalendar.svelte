@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
   import calendar, { Calendar, Event, generateEventId, getAllEvents } from '@hcengineering/calendar'
   import { DayCalendar, calendarByIdStore, hidePrivateEvents } from '@hcengineering/calendar-resources'
   import { PersonAccount } from '@hcengineering/contact'
@@ -30,7 +29,6 @@
   export let displayedDaysCount = 1
   export let createComponent: AnyComponent | undefined = calendar.component.CreateEvent
 
-  const dispatch = createEventDispatcher()
   const q = createQuery()
 
   function getFrom (date: Date): Timestamp {
@@ -150,6 +148,11 @@
       raw = raw.filter((r) => r._id !== dragItemId)
     }
   }
+  function dragOut () {
+    if (dragItemId != null) {
+      raw = raw.filter((r) => r._id !== dragItemId)
+    }
+  }
 
   function clear (dragItem: ToDo | null) {
     if (dragItem === null) {
@@ -219,6 +222,7 @@
       clearCells={dragItem !== null}
       {dragItemId}
       on:dragEnter={dragEnter}
+      on:dragOut={dragOut}
       on:dragleave={dragLeave}
       on:create={(e) => {
         showCreateDialog(e.detail.date, e.detail.withTime)

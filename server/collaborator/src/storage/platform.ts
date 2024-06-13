@@ -52,64 +52,63 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
   ) {}
 
   async loadDocument (ctx: MeasureContext, documentId: DocumentId, context: Context): Promise<YDoc | undefined> {
+    // try to load document content
     try {
-      // try to load document content
+      ctx.info('load document content', { documentId })
+      const ydoc = await this.loadDocumentFromStorage(ctx, documentId, context)
+
+      if (ydoc !== undefined) {
+        return ydoc
+      }
+    } catch (err) {
+      ctx.error('failed to load document content', { documentId, error: err })
+      throw err
+    }
+
+    // then try to load from inital content
+    const { initialContentId } = context
+    if (initialContentId !== undefined && initialContentId.length > 0) {
       try {
-        ctx.info('load document content', { documentId })
-        const ydoc = await this.loadDocumentFromStorage(ctx, documentId, context)
-
-        if (ydoc !== undefined) {
-          return ydoc
-        }
-      } catch (err) {
-        ctx.error('failed to load document content', { documentId, error: err })
-      }
-
-      // then try to load from inital content
-      const { initialContentId } = context
-      if (initialContentId !== undefined && initialContentId.length > 0) {
-        try {
-          ctx.info('load document initial content', { documentId, initialContentId })
-          const ydoc = await this.loadDocumentFromStorage(ctx, initialContentId, context)
-
-          // if document was loaded from the initial content or storage we need to save
-          // it to ensure the next time we load it from the ydoc document
-          if (ydoc !== undefined) {
-            ctx.info('save document content', { documentId, initialContentId })
-            await this.saveDocumentToStorage(ctx, documentId, ydoc, context)
-            return ydoc
-          }
-        } catch (err) {
-          ctx.error('failed to load initial document content', { documentId, initialContentId, error: err })
-        }
-      }
-
-      // finally try to load from the platform
-      const { platformDocumentId } = context
-      if (platformDocumentId !== undefined) {
-        ctx.info('load document platform content', { documentId, platformDocumentId })
-        const ydoc = await ctx.with('load-from-platform', {}, async (ctx) => {
-          try {
-            return await this.loadDocumentFromPlatform(ctx, platformDocumentId, context)
-          } catch (err) {
-            ctx.error('failed to load platform document', { documentId, platformDocumentId, error: err })
-          }
-        })
+        ctx.info('load document initial content', { documentId, initialContentId })
+        const ydoc = await this.loadDocumentFromStorage(ctx, initialContentId, context)
 
         // if document was loaded from the initial content or storage we need to save
         // it to ensure the next time we load it from the ydoc document
         if (ydoc !== undefined) {
-          ctx.info('save document content', { documentId, platformDocumentId })
+          ctx.info('save document content', { documentId, initialContentId })
           await this.saveDocumentToStorage(ctx, documentId, ydoc, context)
           return ydoc
         }
+      } catch (err) {
+        ctx.error('failed to load initial document content', { documentId, initialContentId, error: err })
+        throw err
       }
-
-      // nothing found
-      return undefined
-    } catch (err) {
-      ctx.error('failed to load document', { documentId, error: err })
     }
+
+    // finally try to load from the platform
+    const { platformDocumentId } = context
+    if (platformDocumentId !== undefined) {
+      ctx.info('load document platform content', { documentId, platformDocumentId })
+      const ydoc = await ctx.with('load-from-platform', {}, async (ctx) => {
+        try {
+          return await this.loadDocumentFromPlatform(ctx, platformDocumentId, context)
+        } catch (err) {
+          ctx.error('failed to load platform document', { documentId, platformDocumentId, error: err })
+          throw err
+        }
+      })
+
+      // if document was loaded from the initial content or storage we need to save
+      // it to ensure the next time we load it from the ydoc document
+      if (ydoc !== undefined) {
+        ctx.info('save document content', { documentId, platformDocumentId })
+        await this.saveDocumentToStorage(ctx, documentId, ydoc, context)
+        return ydoc
+      }
+    }
+
+    // nothing found
+    return undefined
   }
 
   async saveDocument (ctx: MeasureContext, documentId: DocumentId, document: YDoc, context: Context): Promise<void> {
@@ -133,6 +132,9 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
         await this.saveDocumentToStorage(ctx, documentId, document, context)
       } catch (err) {
         ctx.error('failed to save document', { documentId, error: err })
+        // raise an error if failed to save document to storage
+        // this will prevent document from being unloaded from memory
+        throw err
       }
 
       const { platformDocumentId } = context
@@ -166,12 +168,9 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     const adapter = this.getStorageAdapter(storage)
 
     return await ctx.with('load-document', { storage }, async (ctx) => {
-      try {
+      return await withRetry(ctx, 5, async () => {
         return await loadCollaborativeDoc(adapter, context.workspaceId, collaborativeDoc, ctx)
-      } catch (err) {
-        ctx.error('failed to load storage document', { documentId, collaborativeDoc, error: err })
-        return undefined
-      }
+      })
     })
   }
 
@@ -185,7 +184,9 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     const adapter = this.getStorageAdapter(storage)
 
     await ctx.with('save-document', {}, async (ctx) => {
-      await saveCollaborativeDoc(adapter, context.workspaceId, collaborativeDoc, document, ctx)
+      await withRetry(ctx, 5, async () => {
+        await saveCollaborativeDoc(adapter, context.workspaceId, collaborativeDoc, document, ctx)
+      })
     })
   }
 
@@ -290,4 +291,26 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
       }
     }
   }
+}
+
+async function withRetry<T> (
+  ctx: MeasureContext,
+  retries: number,
+  op: () => Promise<T>,
+  delay: number = 100
+): Promise<T> {
+  let error: any
+  while (retries > 0) {
+    retries--
+    try {
+      return await op()
+    } catch (err: any) {
+      error = err
+      ctx.error('error', err)
+      if (retries !== 0) {
+        await new Promise((resolve) => setTimeout(resolve, delay))
+      }
+    }
+  }
+  throw error
 }

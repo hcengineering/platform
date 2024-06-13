@@ -50,7 +50,7 @@
   } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
 
-  import { starDocument, unstarDocument } from '..'
+  import { starDocument, unstarDocument, unlockContent } from '..'
   import document from '../plugin'
   import { getDocumentUrl } from '../utils'
   import DocumentEditor from './DocumentEditor.svelte'
@@ -64,7 +64,8 @@
   export let embedded: boolean = false
   export let kind: 'default' | 'modern' = 'default'
 
-  $: readonly = $restrictionStore.readonly
+  $: locked = doc?.lockedBy != null
+  $: readonly = $restrictionStore.readonly || locked
 
   export function canClose (): boolean {
     return false
@@ -248,6 +249,23 @@
     <svelte:fragment slot="title">
       <ParentsNavigator element={doc} />
       <DocumentPresenter value={doc} breadcrumb noUnderline />
+      {#if locked}
+        <div class="ml-2">
+          <Button
+            icon={document.icon.Lock}
+            iconProps={{ size: 'x-small' }}
+            label={document.string.Locked}
+            kind={'link-bordered'}
+            size={'small'}
+            noFocus
+            on:click={async () => {
+              if (doc !== undefined) {
+                await unlockContent(doc)
+              }
+            }}
+          />
+        </div>
+      {/if}
     </svelte:fragment>
 
     <svelte:fragment slot="utils">

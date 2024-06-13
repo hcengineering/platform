@@ -129,6 +129,7 @@ export class TDocumentSpaceType extends TSpaceType implements DocumentSpaceType 
 @Model(documents.class.DocumentSpaceTypeDescriptor, core.class.SpaceTypeDescriptor)
 export class TDocumentSpaceTypeDescriptor extends TSpaceTypeDescriptor implements DocumentSpaceTypeDescriptor {
   projectClass?: Ref<Class<Project>>
+  withProjects?: boolean
 }
 
 @Model(documents.class.OrgSpace, documents.class.DocumentSpace)

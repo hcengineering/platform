@@ -24,6 +24,8 @@ loadMetadata(document.icon, {
   Teamspace: `${icons}#teamspace`,
   References: `${icons}#references`,
   History: `${icons}#history`,
+  Lock: `${icons}#lock`,
+  Unlock: `${icons}#unlock`,
   Star: `${icons}#star`,
   Starred: `${icons}#starred`
 })
