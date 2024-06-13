@@ -103,7 +103,7 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
 
   if (previewConfig === undefined) {
     // Use universal preview config
-    previewConfig = `*|${uploadUrl}/:workspace?file=:file.:format&size=:size`
+    previewConfig = `*|${uploadUrl}/:workspace?file=:blobId.:format&size=:size`
   }
 
   const brandingUrl = process.env.BRANDING_URL
