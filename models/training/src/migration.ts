@@ -13,67 +13,18 @@
 // limitations under the License.
 //
 
-import {
-  tryMigrate,
-  type MigrateOperation,
-  type MigrationClient,
-  type MigrationUpgradeClient
-} from '@hcengineering/model'
+import { type MigrateOperation, type MigrationClient, type MigrationUpgradeClient } from '@hcengineering/model'
 import { type Ref, TxOperations, type TypedSpace } from '@hcengineering/core'
-import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
-import training, { trainingId, type Sequence } from '@hcengineering/training'
-import contact, { DOMAIN_CONTACT } from '@hcengineering/model-contact'
-import { Person, PersonAccount } from '@hcengineering/contact'
+import core from '@hcengineering/model-core'
+import training, { type Sequence } from '@hcengineering/training'
 
 export const trainingOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {
-    await tryMigrate(client, trainingId, [
-      {
-        state: 'migrateDefaultSpaceMembers',
-        func: migrateDefaultSpaceMembers
-      }
-    ])
-  },
+  async migrate (client: MigrationClient): Promise<void> {},
   async upgrade (client: MigrationUpgradeClient): Promise<void> {
     const tx = new TxOperations(client, core.account.System)
     await ensureTypedSpace(tx)
     await ensureSequence(tx)
   }
-}
-
-async function migrateDefaultSpaceMembers (client: MigrationClient): Promise<void> {
-  await client.update(
-    DOMAIN_SPACE,
-    {
-      _id: training.space.Trainings,
-      autoJoin: false
-    },
-    {
-      $set: {
-        autoJoin: true
-      }
-    }
-  )
-
-  const employees = await client.find<Person>(DOMAIN_CONTACT, {
-    _class: contact.class.Person,
-    [contact.mixin.Employee]: { $exists: true }
-  })
-  const empAccs = await client.model.findAll<PersonAccount>(contact.class.PersonAccount, {
-    person: { $in: employees.map((e) => e._id) }
-  })
-
-  await client.update(
-    DOMAIN_SPACE,
-    {
-      _id: training.space.Trainings
-    },
-    {
-      $addToSet: {
-        members: { $each: empAccs.map((e) => e._id) }
-      }
-    }
-  )
 }
 
 async function ensureTypedSpace (tx: TxOperations): Promise<Ref<TypedSpace>> {
