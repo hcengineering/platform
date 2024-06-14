@@ -500,6 +500,10 @@ export function createModel (builder: Builder): void {
     editor: view.component.CollaborativeDocEditor
   })
 
+  builder.mixin(core.class.TypeCollaborativeDoc, core.class.Class, view.mixin.ActivityAttributePresenter, {
+    presenter: view.component.CollaborativeDocActivityPresenter
+  })
+
   builder.mixin(core.class.TypeCollaborativeDocVersion, core.class.Class, view.mixin.InlineAttributEditor, {
     editor: view.component.CollaborativeDocEditor
   })

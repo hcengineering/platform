@@ -270,7 +270,6 @@ export class TDocument extends TDoc implements Document {
     state!: DocumentState
 
   @Prop(TypeCollaborativeDoc(), documents.string.CollaborativeDocument)
-  @Hidden()
     content!: CollaborativeDoc
 
   @Prop(Collection(tags.class.TagReference), documents.string.Labels)

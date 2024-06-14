@@ -28,6 +28,7 @@ import ClassPresenter from './components/ClassPresenter.svelte'
 import ClassRefPresenter from './components/ClassRefPresenter.svelte'
 import CollaborativeDocEditor from './components/CollaborativeDocEditor.svelte'
 import CollaborativeHTMLEditor from './components/CollaborativeHTMLEditor.svelte'
+import CollaborativeDocActivityPresenter from './components/CollaborativeDocActivityPresenter.svelte'
 import ColorsPopup from './components/ColorsPopup.svelte'
 import DateEditor from './components/DateEditor.svelte'
 import DatePresenter from './components/DatePresenter.svelte'
@@ -275,6 +276,7 @@ export default async (): Promise<Resources> => ({
     HTMLEditor,
     CollaborativeDocEditor,
     CollaborativeHTMLEditor,
+    CollaborativeDocActivityPresenter,
     ListView,
     GrowPresenter,
     DividerPresenter,

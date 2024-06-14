@@ -15,11 +15,12 @@
 
 import core, { Doc, Tx, TxCUD, TxCollectionCUD, TxCreateDoc, TxUpdateDoc, TxProcessor } from '@hcengineering/core'
 import request, { Request, RequestStatus } from '@hcengineering/request'
+import { getResource, translate } from '@hcengineering/platform'
 import type { TriggerControl } from '@hcengineering/server-core'
 import { pushDocUpdateMessages } from '@hcengineering/server-activity-resources'
 import { DocUpdateMessage } from '@hcengineering/activity'
 import notification from '@hcengineering/notification'
-import { getNotificationTxes, getCollaborators } from '@hcengineering/server-notification-resources'
+import { getNotificationTxes, getCollaborators, getTextPresenter } from '@hcengineering/server-notification-resources'
 
 /**
  * @public
@@ -158,8 +159,31 @@ async function getRequestNotificationTx (tx: TxCollectionCUD<Doc, Request>, cont
   return res
 }
 
+/**
+ * @public
+ */
+export async function requestTextPresenter (doc: Doc, control: TriggerControl): Promise<string> {
+  const request = doc as Request
+  let title = await translate(control.hierarchy.getClass(request._class).label, {})
+
+  const attachedDocTextPresenter = getTextPresenter(request.attachedToClass, control.hierarchy)
+  if (attachedDocTextPresenter !== undefined) {
+    const getTitle = await getResource(attachedDocTextPresenter.presenter)
+    const attachedDoc = (await control.findAll(request.attachedToClass, { _id: request.attachedTo }, { limit: 1 }))[0]
+
+    if (attachedDoc !== undefined) {
+      title = `${title} — ${await getTitle(attachedDoc, control)}`
+    }
+  }
+
+  return title
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
+  function: {
+    RequestTextPresenter: requestTextPresenter
+  },
   trigger: {
     OnRequest
   }
