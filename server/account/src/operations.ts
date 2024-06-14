@@ -886,7 +886,7 @@ async function generateWorkspaceRecord (
 
 let searchPromise: Promise<Workspace> | undefined
 
-const rateLimiter = new RateLimiter(3)
+const rateLimiter = new RateLimiter(parseInt(process.env.RATELIMIT ?? '10'))
 
 /**
  * @public
@@ -905,26 +905,26 @@ export async function createWorkspace (
   notifyHandler?: (workspace: Workspace) => void,
   postInitHandler?: (workspace: Workspace, model: Tx[]) => Promise<void>
 ): Promise<{ workspaceInfo: Workspace, err?: any, model?: Tx[] }> {
+  // We need to search for duplicate workspaceUrl
+  await searchPromise
+
+  // Safe generate workspace record.
+  searchPromise = generateWorkspaceRecord(db, email, productId, version, workspaceName, workspace)
+
+  const workspaceInfo = await searchPromise
+
+  notifyHandler?.(workspaceInfo)
+
+  const wsColl = db.collection<Omit<Workspace, '_id'>>(WORKSPACE_COLLECTION)
+
+  async function updateInfo (ops: Partial<Workspace>): Promise<void> {
+    await wsColl.updateOne({ _id: workspaceInfo._id }, { $set: ops })
+    console.log('update', ops)
+  }
+
+  await updateInfo({ createProgress: 10 })
+
   return await rateLimiter.exec(async () => {
-    // We need to search for duplicate workspaceUrl
-    await searchPromise
-
-    // Safe generate workspace record.
-    searchPromise = generateWorkspaceRecord(db, email, productId, version, workspaceName, workspace)
-
-    const workspaceInfo = await searchPromise
-
-    notifyHandler?.(workspaceInfo)
-
-    const wsColl = db.collection<Omit<Workspace, '_id'>>(WORKSPACE_COLLECTION)
-
-    async function updateInfo (ops: Partial<Workspace>): Promise<void> {
-      await wsColl.updateOne({ _id: workspaceInfo._id }, { $set: ops })
-      console.log('update', ops)
-    }
-
-    await updateInfo({ createProgress: 10 })
-
     const childLogger = ctx.newChild('createWorkspace', { workspace: workspaceInfo.workspace })
     const ctxModellogger: ModelLogger = {
       log: (msg, data) => {
@@ -959,7 +959,8 @@ export async function createWorkspace (
           true,
           async (value) => {
             await updateInfo({ createProgress: 20 + Math.round((Math.min(value, 100) / 100) * 30) })
-          }
+          },
+          true
         )
         await updateInfo({ createProgress: 50 })
         model = await upgradeModel(

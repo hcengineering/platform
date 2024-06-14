@@ -20,6 +20,7 @@ import core, {
   Client as CoreClient,
   Doc,
   Domain,
+  DOMAIN_FULLTEXT_BLOB,
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
   MeasureContext,
@@ -29,7 +30,8 @@ import core, {
   SortingOrder,
   TxCollectionCUD,
   WorkspaceId,
-  type Blob
+  type Blob,
+  type DocIndexState
 } from '@hcengineering/core'
 import { BlobClient, connect } from '@hcengineering/server-tool'
 import { createGzip } from 'node:zlib'
@@ -223,7 +225,8 @@ export async function cloneWorkspace (
   sourceWorkspaceId: WorkspaceId,
   targetWorkspaceId: WorkspaceId,
   clearTime: boolean = true,
-  progress: (value: number) => Promise<void>
+  progress: (value: number) => Promise<void>,
+  skipFullText: boolean
 ): Promise<void> {
   const sourceConnection = (await connect(transactorUrl, sourceWorkspaceId, undefined, {
     mode: 'backup'
@@ -245,6 +248,10 @@ export async function cloneWorkspace (
 
     let i = 0
     for (const c of domains) {
+      if (skipFullText && c === DOMAIN_FULLTEXT_BLOB) {
+        console.log('clone skip domain...', c)
+        continue
+      }
       console.log('clone domain...', c)
 
       // We need to clean target connection before copying something.
@@ -321,6 +328,12 @@ export async function cloneWorkspace (
               } catch (err: any) {
                 console.log(err)
               }
+
+              // if full text is skipped, we need to clean stages for indexes.
+              if (p._class === core.class.DocIndexState && skipFullText) {
+                ;(p as DocIndexState).stages = {}
+              }
+
               if (collectionCud) {
                 return {
                   ...p,
