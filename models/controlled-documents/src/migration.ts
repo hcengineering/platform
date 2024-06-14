@@ -2,18 +2,7 @@
 // Copyright @ 2022-2023 Hardcore Engineering Inc.
 //
 
-import {
-  type Data,
-  type Ref,
-  TxOperations,
-  type Class,
-  type Space,
-  generateId,
-  DOMAIN_TX,
-  AccountRole,
-  DOMAIN_DOC_INDEX_STATE,
-  getCollaborativeDoc
-} from '@hcengineering/core'
+import { type Data, type Ref, TxOperations, generateId, DOMAIN_TX, getCollaborativeDoc } from '@hcengineering/core'
 import {
   createDefaultSpace,
   createOrUpdate,
@@ -22,20 +11,11 @@ import {
   type MigrationClient,
   type MigrationUpgradeClient
 } from '@hcengineering/model'
-import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
-import contact from '@hcengineering/model-contact'
+import core from '@hcengineering/model-core'
 import tags from '@hcengineering/tags'
 import {
   type ChangeControl,
   type DocumentCategory,
-  type Document,
-  type DocumentMeta,
-  type DocumentSpace,
-  type HierarchyDocument,
-  type ProjectDocument,
-  type ProjectMeta,
-  TEMPLATE_PREFIX,
-  getDocumentId,
   DocumentState,
   documentsId,
   createDocumentTemplate,
@@ -43,154 +23,7 @@ import {
   createChangeControl
 } from '@hcengineering/controlled-documents'
 
-import documents, { DOMAIN_DOCUMENTS } from './index'
-
-async function migrateDocumentCategories (client: MigrationClient): Promise<void> {
-  const oldSpace = 'documents:space:Documents' as Ref<Space>
-
-  await client.update(
-    DOMAIN_DOCUMENTS,
-    {
-      _class: documents.class.DocumentCategory,
-      space: oldSpace
-    },
-    {
-      $set: {
-        space: documents.space.QualityDocuments
-      }
-    }
-  )
-}
-
-async function migrateUnusedDocumentSpaces (client: MigrationClient): Promise<void> {
-  const spaces: Ref<DocumentSpace>[] = [
-    'events:space:EventsDocuments' as Ref<DocumentSpace>,
-    'clients:space:ClientsDocuments' as Ref<DocumentSpace>,
-    'supplier:space:SuppliersDocuments' as Ref<DocumentSpace>,
-    'trainings:space:TrainingsDocuments' as Ref<DocumentSpace>
-  ]
-
-  await client.update(
-    DOMAIN_SPACE,
-    {
-      _id: { $in: spaces },
-      _class: documents.class.DocumentSpace,
-      archived: false
-    },
-    {
-      $set: {
-        archived: true
-      }
-    }
-  )
-}
-
-async function migrateProjectMeta (client: MigrationClient): Promise<void> {
-  type ExDocumentMeta = DocumentMeta & { path: Ref<DocumentMeta>[] }
-
-  const metaToMigrate = await client.find<ExDocumentMeta>(DOMAIN_DOCUMENTS, {
-    _class: documents.class.DocumentMeta,
-    path: { $exists: true }
-  })
-
-  for (const meta of metaToMigrate) {
-    const projectMetaId: Ref<ProjectMeta> = generateId()
-
-    const docs = await client.find<HierarchyDocument>(DOMAIN_DOCUMENTS, {
-      attachedTo: meta._id
-    })
-
-    for (const doc of docs) {
-      await client.create<ProjectDocument>(DOMAIN_DOCUMENTS, {
-        _id: generateId(),
-        _class: documents.class.ProjectDocument,
-        space: doc.space,
-        modifiedBy: core.account.System,
-        modifiedOn: Date.now(),
-        attachedTo: projectMetaId,
-        attachedToClass: documents.class.ProjectMeta,
-        collection: 'documents',
-        project: documents.ids.NoProject,
-        initial: documents.ids.NoProject,
-        document: doc._id
-      })
-    }
-
-    await client.create<ProjectMeta>(DOMAIN_DOCUMENTS, {
-      _id: projectMetaId,
-      _class: documents.class.ProjectMeta,
-      space: meta.space,
-      modifiedBy: core.account.System,
-      modifiedOn: Date.now(),
-      project: documents.ids.NoProject,
-      meta: meta._id,
-      path: meta.path,
-      parent: meta.path[0] ?? documents.ids.NoParent,
-      documents: docs.length
-    })
-
-    await client.update(
-      DOMAIN_DOCUMENTS,
-      { _id: meta._id },
-      {
-        $unset: {
-          path: undefined
-        }
-      }
-    )
-  }
-}
-
-async function migrateDocumentSpaces (client: MigrationClient): Promise<void> {
-  const affectedClasses: Ref<Class<DocumentSpace>>[] = [
-    documents.class.DocumentSpace,
-    documents.class.OrgSpace,
-    documents.class.ExternalSpace
-  ]
-
-  await client.update(
-    DOMAIN_SPACE,
-    {
-      _class: { $in: affectedClasses },
-      type: { $exists: false }
-    },
-    {
-      $set: {
-        type: documents.spaceType.DocumentSpaceType
-      }
-    }
-  )
-
-  await client.update(
-    DOMAIN_SPACE,
-    {
-      _class: { $in: affectedClasses },
-      type: 'documents:spaceType:DefaultDocLibraryType'
-    },
-    {
-      $set: {
-        type: documents.spaceType.DocumentSpaceType
-      },
-      $rename: {
-        'documents:spaceType:DefaultDocLibraryType:type:mixin': 'documents:spaceType:DocumentSpaceType:type:mixin'
-      }
-    }
-  )
-}
-
-async function migrateLibraryDocumentSpace (client: MigrationClient): Promise<void> {
-  await client.update(
-    DOMAIN_SPACE,
-    {
-      _class: 'documents:class:LibraryDocumentSpace' as Ref<Class<DocumentSpace>>
-    },
-    {
-      $set: {
-        _class: documents.class.DocumentSpace
-      }
-    }
-  )
-}
+import documents from './index'
 
 async function createTemplatesSpace (tx: TxOperations): Promise<void> {
   const existingSpace = await tx.findOne(documents.class.DocumentSpace, {
@@ -235,153 +68,6 @@ async function createQualityDocumentsSpace (tx: TxOperations): Promise<void> {
         type: documents.spaceType.DocumentSpaceType
       },
       documents.space.QualityDocuments
-    )
-  }
-}
-
-async function migrateSpace (client: MigrationClient): Promise<void> {
-  await client.update(
-    DOMAIN_SPACE,
-    {
-      _id: documents.space.Documents,
-      _class: documents.class.DocumentSpace
-    },
-    {
-      $set: {
-        _class: core.class.Space
-      }
-    }
-  )
-}
-
-async function migrateEffectiveDates (client: MigrationClient): Promise<void> {
-  await client.update(
-    DOMAIN_DOCUMENTS,
-    {
-      effectiveDate: 0
-    },
-    {
-      $set: {
-        plannedEffectiveDate: 0
-      },
-      $unset: {
-        effectiveDate: undefined
-      }
-    }
-  )
-
-  const docsToRelease = await client.find(DOMAIN_DOCUMENTS, { effectiveDate: { $gt: Date.now() } })
-
-  for (const doc of docsToRelease) {
-    const plannedEffectiveDate = (doc as any).effectiveDate
-    await client.update(
-      DOMAIN_DOCUMENTS,
-      { _id: doc._id },
-      {
-        $set: {
-          plannedEffectiveDate
-        },
-        $unset: {
-          effectiveDate: undefined
-        }
-      }
-    )
-  }
-}
-
-async function migrateChangeControls (client: MigrationClient): Promise<void> {
-  await client.update(
-    DOMAIN_DOCUMENTS,
-    { _class: documents.class.ChangeControl, impactedDocuments: { $exists: false } },
-    {
-      $set: {
-        impactedDocuments: []
-      }
-    }
-  )
-}
-
-async function migrateTemplatePrefixes (client: MigrationClient): Promise<void> {
-  const templatesToMigrate = await client.find<Document>(DOMAIN_DOCUMENTS, {
-    [documents.mixin.DocumentTemplate]: { $exists: true },
-    prefix: { $ne: TEMPLATE_PREFIX }
-  })
-
-  for (const tmp of templatesToMigrate) {
-    await client.update(
-      DOMAIN_DOCUMENTS,
-      {
-        _id: tmp._id
-      },
-      {
-        $set: {
-          prefix: TEMPLATE_PREFIX,
-          [`${documents.mixin.DocumentTemplate}.docPrefix`]: tmp.prefix
-        }
-      }
-    )
-  }
-}
-
-async function migrateDocumentCodes (client: MigrationClient): Promise<void> {
-  const classes = client.hierarchy.getDescendants(documents.class.Document)
-  const docsToMigrate = await client.find<Document>(DOMAIN_DOCUMENTS, {
-    _class: { $in: classes },
-    code: { $exists: false }
-  })
-
-  for (const doc of docsToMigrate) {
-    await client.update(
-      DOMAIN_DOCUMENTS,
-      {
-        _id: doc._id
-      },
-      {
-        $set: {
-          code: getDocumentId(doc)
-        }
-      }
-    )
-  }
-}
-
-async function migrateCollaborativeDocument (client: MigrationClient): Promise<void> {
-  const mixin = 'documents:mixin:CollaborativeDocument'
-
-  const docsToMigrate = await client.find(DOMAIN_DOCUMENTS, {
-    [`${mixin}.document`]: { $exists: true }
-  })
-
-  for (const doc of docsToMigrate) {
-    const content = (doc as any)[mixin].document
-    const snapshots = (doc as any)[mixin].snapshots ?? []
-
-    // move mixin document -> content field
-    await client.update(
-      DOMAIN_DOCUMENTS,
-      { _id: doc._id },
-      {
-        $set: {
-          content,
-          snapshots: snapshots.length
-        },
-        $unset: {
-          [mixin]: undefined
-        }
-      }
-    )
-
-    // make snapshots attached docs
-    await client.update(
-      DOMAIN_DOCUMENTS,
-      { _id: { $in: snapshots } },
-      {
-        $set: {
-          attachedTo: doc._id,
-          attachedToClass: doc._class,
-          collection: 'snapshots'
-        }
-      }
     )
   }
 }
@@ -582,104 +268,6 @@ async function createTagCategories (tx: TxOperations): Promise<void> {
   )
 }
 
-async function migrateDocumentSpacesMixins (client: MigrationClient): Promise<void> {
-  const oldSpaceTypeMixin = `${documents.spaceType.DocumentSpaceType}:type:mixin`
-  const newSpaceTypeMixin = documents.mixin.DocumentSpaceTypeData
-  const affectedClasses: Ref<Class<DocumentSpace>>[] = [
-    documents.class.DocumentSpace,
-    documents.class.OrgSpace,
-    documents.class.ExternalSpace
-  ]
-
-  await client.update(
-    DOMAIN_TX,
-    {
-      objectClass: core.class.Attribute,
-      'attributes.attributeOf': oldSpaceTypeMixin
-    },
-    {
-      $set: {
-        'attributes.attributeOf': newSpaceTypeMixin
-      }
-    }
-  )
-
-  await client.update(
-    DOMAIN_SPACE,
-    {
-      _class: { $in: affectedClasses },
-      [oldSpaceTypeMixin]: { $exists: true }
-    },
-    {
-      $rename: {
-        [oldSpaceTypeMixin]: newSpaceTypeMixin
-      }
-    }
-  )
-}
-
-async function migrateDefaultProjectOwners (client: MigrationClient): Promise<void> {
-  const workspaceOwners = await client.model.findAll(contact.class.PersonAccount, {
-    role: AccountRole.Owner
-  })
-
-  await client.update(
-    DOMAIN_SPACE,
-    {
-      _id: documents.space.QualityDocuments,
-      $or: [{ owners: { $exists: false } }, { owners: [core.account.System] }]
-    },
-    {
-      $set: {
-        owners: workspaceOwners.map((it) => it._id)
-      }
-    }
-  )
-}
-
-async function migrateMetaTitles (client: MigrationClient): Promise<void> {
-  const targetMetas = await client.find<DocumentMeta>(DOMAIN_DOCUMENTS, { title: { $exists: false } })
-
-  for (const meta of targetMetas) {
-    let targetDoc = (
-      await client.find<Document>(DOMAIN_DOCUMENTS, { attachedTo: meta._id, state: DocumentState.Effective })
-    )[0]
-
-    if (targetDoc === undefined) {
-      targetDoc = (await client.find<Document>(DOMAIN_DOCUMENTS, { attachedTo: meta._id }))[0]
-    }
-
-    if (targetDoc === undefined) {
-      continue
-    }
-
-    await client.update(
-      DOMAIN_DOCUMENTS,
-      { _id: meta._id },
-      {
-        $set: {
-          title: `${getDocumentId(targetDoc)} ${targetDoc.title}`
-        }
-      }
-    )
-  }
-}
-
-async function migrateMetaIndexState (client: MigrationClient): Promise<void> {
-  await client.update(
-    DOMAIN_DOC_INDEX_STATE,
-    {
-      _class: core.class.DocIndexState,
-      objectClass: documents.class.DocumentMeta
-    },
-    {
-      $set: {
-        stages: {}
-      }
-    }
-  )
-}
-
 async function migrateSpaceTypes (client: MigrationClient): Promise<void> {
   await client.update(
     DOMAIN_TX,
@@ -698,26 +286,7 @@ async function migrateSpaceTypes (client: MigrationClient): Promise<void> {
 
 export const documentsOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {
-    await migrateSpace(client)
-    await migrateEffectiveDates(client)
-    await migrateChangeControls(client)
-    await migrateTemplatePrefixes(client)
-    // Note: Order matters! It is important to migrate template prefixes first.
-    await migrateDocumentCodes(client)
-    await migrateCollaborativeDocument(client)
-    await migrateLibraryDocumentSpace(client)
-    await migrateDocumentSpaces(client)
-    await migrateDocumentCategories(client)
-    await migrateUnusedDocumentSpaces(client)
-    await migrateProjectMeta(client)
-    await migrateDocumentSpacesMixins(client)
-    await migrateDefaultProjectOwners(client)
-    await migrateMetaTitles(client)
     await tryMigrate(client, documentsId, [
-      {
-        state: 'migrateMetaIndexState',
-        func: migrateMetaIndexState
-      },
       {
         state: 'migrateSpaceTypes',
         func: migrateSpaceTypes
