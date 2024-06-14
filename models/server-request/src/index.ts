@@ -18,11 +18,17 @@ import { type Builder } from '@hcengineering/model'
 import core from '@hcengineering/core'
 import serverCore from '@hcengineering/server-core'
 import serverRequest from '@hcengineering/server-request'
+import serverNotification from '@hcengineering/server-notification'
+import request from '@hcengineering/model-request'
 
 export { serverRequestId } from '@hcengineering/server-request'
 
 export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverRequest.trigger.OnRequest
+  })
+
+  builder.mixin(request.class.Request, core.class.Class, serverNotification.mixin.TextPresenter, {
+    presenter: serverRequest.function.RequestTextPresenter
   })
 }

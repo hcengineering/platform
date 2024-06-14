@@ -93,7 +93,6 @@ export class TDocument extends TAttachedDoc implements Document {
     name!: string
 
   @Prop(TypeCollaborativeDoc(), document.string.Document)
-  @Hidden()
     content!: CollaborativeDoc
 
   @Prop(TypeRef(core.class.Account), document.string.LockedBy)

@@ -118,7 +118,7 @@
     <div class="label mr-1">
       <Label label={documents.string.CoAuthors} />
     </div>
-    {reviewers?.length}
+    {coAuthors?.length}
   </div>
   <div class="flex-col mt-4">
     <UserBoxItems

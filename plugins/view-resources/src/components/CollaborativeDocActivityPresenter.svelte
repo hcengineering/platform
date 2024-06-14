@@ -1,5 +1,5 @@
-//
-// Copyright © 2022 Hardcore Engineering Inc.
+<!--
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -11,25 +11,11 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
+<script lang="ts">
+  import { CollaborativeDoc } from '@hcengineering/core'
 
-import { Plugin, plugin, Resource } from '@hcengineering/platform'
-import type { TriggerFunc } from '@hcengineering/server-core'
-import { Presenter } from '@hcengineering/server-notification'
+  export let value: CollaborativeDoc
+</script>
 
-/**
- * @public
- */
-export const serverRequestId = 'server-request' as Plugin
-
-/**
- * @public
- */
-export default plugin(serverRequestId, {
-  function: {
-    RequestTextPresenter: '' as Resource<Presenter>
-  },
-  trigger: {
-    OnRequest: '' as Resource<TriggerFunc>
-  }
-})
+<span>{value}</span>
