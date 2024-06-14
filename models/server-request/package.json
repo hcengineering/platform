@@ -33,6 +33,8 @@
     "@hcengineering/model-core": "^0.6.0",
     "@hcengineering/platform": "^0.6.11",
     "@hcengineering/server-request": "^0.6.0",
-    "@hcengineering/server-core": "^0.6.1"
+    "@hcengineering/server-core": "^0.6.1",
+    "@hcengineering/model-request": "^0.6.0",
+    "@hcengineering/server-notification": "^0.6.1"
   }
 }

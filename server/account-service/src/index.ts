@@ -106,16 +106,19 @@ export function serveAccount (
     // We need to clean workspace with creating === true, since server is restarted.
     void cleanInProgressWorkspaces(db, productId)
 
-    worker = new UpgradeWorker(db, p, version, txes, migrateOperations, productId)
-    await worker.upgradeAll(measureCtx, {
-      errorHandler: async (ws, err) => {
-        Analytics.handleError(err)
-      },
-      force: false,
-      console: false,
-      logs: 'upgrade-logs',
-      parallel: parseInt(process.env.PARALLEL ?? '1')
-    })
+    const performUpgrade = (process.env.PERFORM_UPGRADE ?? 'true') === 'true'
+    if (performUpgrade) {
+      worker = new UpgradeWorker(db, p, version, txes, migrateOperations, productId)
+      await worker.upgradeAll(measureCtx, {
+        errorHandler: async (ws, err) => {
+          Analytics.handleError(err)
+        },
+        force: false,
+        console: false,
+        logs: 'upgrade-logs',
+        parallel: parseInt(process.env.PARALLEL ?? '1')
+      })
+    }
   })
 
   const extractToken = (header: IncomingHttpHeaders): string | undefined => {

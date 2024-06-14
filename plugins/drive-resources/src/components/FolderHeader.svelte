@@ -16,13 +16,11 @@
   import { toIdMap, type Doc, type Ref } from '@hcengineering/core'
   import drive, { type Folder } from '@hcengineering/drive'
   import { getClient } from '@hcengineering/presentation'
-  import { Button, IconDetails, IconMoreH } from '@hcengineering/ui'
-  import { DocsNavigator, showMenu } from '@hcengineering/view-resources'
+  import { DocsNavigator } from '@hcengineering/view-resources'
 
   import FolderPresenter from './FolderPresenter.svelte'
 
   export let object: Folder
-  export let asideShown: boolean = false
 
   const client = getClient()
 
@@ -50,32 +48,7 @@
   }
 </script>
 
-<div class="popupPanel-title">
-  <div class="popupPanel-title__content">
-    <DocsNavigator elements={parents} />
-    <div class="title">
-      <FolderPresenter value={object} shouldShowAvatar={false} disabled noUnderline />
-    </div>
-  </div>
-  <div class="flex-row-center ml-3 no-print">
-    <Button
-      icon={IconMoreH}
-      iconProps={{ size: 'medium' }}
-      kind={'icon'}
-      on:click={(ev) => {
-        showMenu(ev, { object })
-      }}
-    />
-    <div class="buttons-divider max-h-7 h-7 mx-2 no-print" />
-    <Button
-      focusIndex={10008}
-      icon={IconDetails}
-      iconProps={{ size: 'medium', filled: asideShown }}
-      kind={'icon'}
-      selected={asideShown}
-      on:click={() => {
-        asideShown = !asideShown
-      }}
-    />
-  </div>
+<DocsNavigator elements={parents} />
+<div class="title">
+  <FolderPresenter value={object} shouldShowAvatar={false} disabled noUnderline />
 </div>
