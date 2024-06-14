@@ -205,14 +205,15 @@
   async function getWindowTitle (loc: Location): Promise<string | undefined> {
     if (loc.fragment == null) return
     const hierarchy = client.getHierarchy()
-    const [, _id, _class] = decodeURIComponent(loc.fragment).split('|')
+    const [, id, _class] = decodeURIComponent(loc.fragment).split('|')
     if (_class == null) return
 
     const mixin = hierarchy.classHierarchyMixin(_class as Ref<Class<Doc>>, view.mixin.ObjectTitle)
     if (mixin === undefined) return
     const titleProvider = await getResource(mixin.titleProvider)
     try {
-      return await titleProvider(client, _id as Ref<Doc>)
+      const _id = await parseLinkId(linkProviders, id, _class as Ref<Class<Doc>>)
+      return await titleProvider(client, _id)
     } catch (err: any) {
       Analytics.handleError(err)
       console.error(err)
@@ -402,7 +403,7 @@
 
     if (props.length >= 3) {
       const _class = props[2] as Ref<Class<Doc>>
-      const _id = (await parseLinkId(linkProviders, props[1], _class)) ?? (props[1] as Ref<Doc>)
+      const _id = await parseLinkId(linkProviders, props[1], _class)
       const doc = await client.findOne<Doc>(_class, { _id })
 
       if (doc !== undefined) {

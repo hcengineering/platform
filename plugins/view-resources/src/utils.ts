@@ -1024,8 +1024,16 @@ export async function getObjectLinkFragment (
     }
   }
   const loc = getCurrentResolvedLocation()
+  const idProvider = hierarchy.classHierarchyMixin(Hierarchy.mixinOrClass(object), view.mixin.LinkIdProvider)
+
+  let id: string = object._id
+  if (idProvider !== undefined) {
+    const encodeFn = await getResource(idProvider.encode)
+    id = await encodeFn(object)
+  }
+
   if (hasResource(component) === true) {
-    loc.fragment = getPanelURI(component, object._id, Hierarchy.mixinOrClass(object), 'content')
+    loc.fragment = getPanelURI(component, id, Hierarchy.mixinOrClass(object), 'content')
   }
   return loc
 }
@@ -1477,7 +1485,7 @@ export async function parseLinkId<T extends Doc> (
   providers: LinkIdProvider[],
   id: string,
   _class: Ref<Class<T>>
-): Promise<Ref<T> | undefined> {
+): Promise<Ref<T>> {
   const provider = providers.find(({ _id }) => _id === _class)
 
   if (provider === undefined) {
@@ -1487,5 +1495,5 @@ export async function parseLinkId<T extends Doc> (
   const decodeFn = await getResource(provider.decode)
   const _id = await decodeFn(id)
 
-  return _id as Ref<T> | undefined
+  return (_id ?? id) as Ref<T>
 }

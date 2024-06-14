@@ -38,7 +38,7 @@
     setResolvedLocation
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { ListSelectionProvider, restrictionStore, updateFocus } from '@hcengineering/view-resources'
+  import { ListSelectionProvider, parseLinkId, restrictionStore, updateFocus } from '@hcengineering/view-resources'
   import workbench, { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@hcengineering/workbench'
   import { SpaceView, buildNavModel } from '@hcengineering/workbench-resources'
   import guest from '../plugin'
@@ -187,11 +187,17 @@
     }
   }
 
+  const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
+
   async function setOpenPanelFocus (fragment: string): Promise<void> {
     const props = decodeURIComponent(fragment).split('|')
 
     if (props.length >= 3) {
-      const doc = await client.findOne<Doc>(props[2] as Ref<Class<Doc>>, { _id: props[1] as Ref<Doc> })
+      const id = props[1]
+      const _class = props[2] as Ref<Class<Doc>>
+      const _id = await parseLinkId(linkProviders, id, _class)
+
+      const doc = await client.findOne<Doc>(_class, { _id })
       if (doc !== undefined) {
         await checkAccess(doc)
         const provider = ListSelectionProvider.Find(doc._id)
@@ -201,8 +207,8 @@
         })
         openPanel(
           props[0] as AnyComponent,
-          props[1],
-          props[2],
+          _id,
+          _class,
           (props[3] ?? undefined) as PopupAlignment,
           (props[4] ?? undefined) as AnyComponent
         )
@@ -251,14 +257,15 @@
   async function getWindowTitle (loc: Location): Promise<string | undefined> {
     if (loc.fragment == null) return
     const hierarchy = client.getHierarchy()
-    const [, _id, _class] = decodeURIComponent(loc.fragment).split('|')
+    const [, id, _class] = decodeURIComponent(loc.fragment).split('|')
     if (_class == null) return
 
     const mixin = hierarchy.classHierarchyMixin(_class as Ref<Class<Doc>>, view.mixin.ObjectTitle)
     if (mixin === undefined) return
     const titleProvider = await getResource(mixin.titleProvider)
     try {
-      return await titleProvider(client, _id as Ref<Doc>)
+      const _id = await parseLinkId(linkProviders, id, _class as Ref<Class<Doc>>)
+      return await titleProvider(client, _id)
     } catch (err: any) {
       Analytics.handleError(err)
       console.error(err)
