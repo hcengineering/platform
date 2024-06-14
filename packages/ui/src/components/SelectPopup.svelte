@@ -36,7 +36,8 @@
   export let onSelect: ((value: SelectPopupValueType['id'], event?: Event) => void) | undefined = undefined
   export let showShadow: boolean = true
   export let embedded: boolean = false
-  export let loading = false
+  export let componentLink: boolean = false
+  export let loading: boolean = false
 
   let popupElement: HTMLDivElement | undefined = undefined
   let search: string = ''
@@ -147,7 +148,7 @@
             }}
             disabled={loading}
           >
-            <div class="flex-row-center flex-grow pointer-events-none">
+            <div class="flex-row-center flex-grow" class:pointer-events-none={!componentLink}>
               {#if item.component}
                 <div class="flex-grow clear-mins"><svelte:component this={item.component} {...item.props} /></div>
               {:else}
