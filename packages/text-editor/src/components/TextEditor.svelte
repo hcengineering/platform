@@ -111,6 +111,11 @@
   export function insertSeparatorLine (): void {
     editor.commands.setHorizontalRule()
   }
+
+  export function insertEmoji (): void {
+    editor.commands.setHorizontalRule()
+  }
+
   export function insertContent (
     value: Content,
     options?: {

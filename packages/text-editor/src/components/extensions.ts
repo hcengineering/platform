@@ -14,6 +14,7 @@
 //
 
 import view from '@hcengineering/view'
+import activity from '../../../../plugins/activity'
 import { type Editor, type Range } from '@tiptap/core'
 
 import { type CompletionOptions } from '../Completion'
@@ -129,7 +130,7 @@ export const completionConfig: Partial<CompletionOptions> = {
   }
 }
 
-const inlineCommandsIds = ['image', 'table', 'code-block', 'separator-line'] as const
+const inlineCommandsIds = ['image', 'table', 'code-block', 'separator-line', 'emoji'] as const
 export type InlineCommandId = (typeof inlineCommandsIds)[number]
 
 /**
@@ -146,7 +147,8 @@ export function inlineCommandsConfig (
           { id: 'image', label: plugin.string.Image, icon: view.icon.Image },
           { id: 'table', label: plugin.string.Table, icon: view.icon.Table2 },
           { id: 'code-block', label: plugin.string.CodeBlock, icon: view.icon.CodeBlock },
-          { id: 'separator-line', label: plugin.string.SeparatorLine, icon: view.icon.SeparatorLine }
+          { id: 'separator-line', label: plugin.string.SeparatorLine, icon: view.icon.SeparatorLine },
+          { id: 'emoji', label: plugin.string.Emoji, icon: activity.icon.Emoji}
         ].filter(({ id }) => !excludedCommands.includes(id as InlineCommandId))
       },
       command: ({ editor, range, props }: { editor: Editor, range: Range, props: any }) => {

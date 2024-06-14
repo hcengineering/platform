@@ -94,6 +94,9 @@
     insertSeparatorLine: () => {
       textEditor?.insertSeparatorLine()
     },
+    insertEmoji: () => {
+      textEditor?.insertSeparatorLine()
+    },
     insertContent: (content) => {
       textEditor?.insertContent(content)
     },

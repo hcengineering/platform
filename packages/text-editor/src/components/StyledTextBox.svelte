@@ -232,6 +232,9 @@
       case 'separator-line':
         textEditor.editorHandler.insertSeparatorLine()
         break
+      case 'emoji':
+        textEditor.editorHandler.insertSeparatorLine()
+        break
     }
   }
 

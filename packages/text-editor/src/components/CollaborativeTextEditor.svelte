@@ -32,6 +32,7 @@
     themeStore
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import activity from '../../../../plugins/activity'
   import { AnyExtension, Editor, FocusPosition, mergeAttributes } from '@tiptap/core'
   import Collaboration, { isChangeOrigin } from '@tiptap/extension-collaboration'
   import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
@@ -202,6 +203,9 @@
     insertSeparatorLine: () => {
       editor?.commands.setHorizontalRule()
     },
+    insertEmoji: () => {
+      editor?.commands.setHorizontalRule()
+    },
     focus: () => {
       focus()
     }
@@ -308,7 +312,8 @@
             ...(canEmbedImages ? [{ id: 'image', label: textEditorPlugin.string.Image, icon: view.icon.Image }] : []),
             { id: 'table', label: textEditorPlugin.string.Table, icon: view.icon.Table2 },
             { id: 'code-block', label: textEditorPlugin.string.CodeBlock, icon: view.icon.CodeBlock },
-            { id: 'separator-line', label: textEditorPlugin.string.SeparatorLine, icon: view.icon.SeparatorLine }
+            { id: 'separator-line', label: textEditorPlugin.string.SeparatorLine, icon: view.icon.SeparatorLine },
+            { id: 'emoji', label: textEditorPlugin.string.Emoji, icon: activity.icon.Emoji }
           ],
           handleSelect: handleLeftMenuClick
         })
@@ -403,6 +408,9 @@
         editor.commands.focus(pos, { scrollIntoView: false })
         break
       case 'separator-line':
+        editor.commands.setHorizontalRule()
+        break
+      case 'emoji':
         editor.commands.setHorizontalRule()
         break
     }

@@ -15,6 +15,7 @@ export interface TextEditorHandler {
   insertTable: (options: { rows?: number, cols?: number, withHeaderRow?: boolean }) => void
   insertCodeBlock: (pos?: number) => void
   insertSeparatorLine: () => void
+  insertEmoji: () => void
   insertContent: (
     value: Content,
     options?: {

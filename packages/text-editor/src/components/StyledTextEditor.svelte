@@ -102,6 +102,9 @@
     insertSeparatorLine: () => {
       textEditor?.insertSeparatorLine()
     },
+    insertEmoji() {
+      textEditor?.insertSeparatorLine()
+    },
     insertContent: (value, options) => {
       textEditor?.insertContent(value, options)
     },
