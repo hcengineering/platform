@@ -218,17 +218,31 @@ export class BlobClient {
     })
   }
 
-  async upload (name: string, size: number, contentType: string, buffer: Buffer): Promise<void> {
-    await fetch(
-      this.transactorAPIUrl + `?name=${encodeURIComponent(name)}&contentType=${encodeURIComponent(contentType)}`,
-      {
-        method: 'PUT',
-        headers: {
-          Authorization: 'Bearer ' + this.token,
-          'Content-Type': 'application/octet-stream'
-        },
-        body: buffer
+  async upload (ctx: MeasureContext, name: string, size: number, contentType: string, buffer: Buffer): Promise<void> {
+    // TODO: We need to improve this logig, to allow restore of huge blobs
+    for (let i = 0; i < 5; i++) {
+      try {
+        await fetch(
+          this.transactorAPIUrl + `?name=${encodeURIComponent(name)}&contentType=${encodeURIComponent(contentType)}`,
+          {
+            method: 'PUT',
+            headers: {
+              Authorization: 'Bearer ' + this.token,
+              'Content-Type': 'application/octet-stream'
+            },
+            body: buffer
+          }
+        )
+        break
+      } catch (err: any) {
+        if (i === 4) {
+          ctx.error('failed to upload file', { name })
+          throw err
+        }
+        await new Promise<void>((resolve) => {
+          setTimeout(resolve, 500)
+        })
       }
-    )
+    }
   }
 }

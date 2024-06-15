@@ -862,7 +862,7 @@ export function devTool (
           productId
         })
         const buffer = readFileSync(local)
-        await blobClient.upload(remote, buffer.length, contentType, buffer)
+        await blobClient.upload(toolCtx, remote, buffer.length, contentType, buffer)
       })
     })
 
