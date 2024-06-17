@@ -11,6 +11,7 @@ export class InboxPage {
   readonly toDoName = (): Locator => this.page.getByRole('paragraph')
   readonly leftSidePanelOpen = (): Locator => this.page.locator('#btnPAside')
   readonly leftSidePanelClose = (): Locator => this.page.locator('#btnPClose')
+  readonly inboxChat = (text: string): Locator => this.page.getByText(text)
 
   // ACTIONS
 
@@ -32,5 +33,21 @@ export class InboxPage {
 
   async checkIfTaskIsPresentInInbox (toDoText: string): Promise<void> {
     await expect(this.toDoName()).toContainText(toDoText)
+  }
+
+  async clickOnInboxChat (text: string): Promise<void> {
+    await this.inboxChat(text).click()
+  }
+
+  async checkIfInboxChatExists (text: string, exists: boolean): Promise<void> {
+    if (exists) {
+      await expect(this.inboxChat(text)).toBeVisible()
+    } else {
+      await expect(this.inboxChat(text)).not.toBeVisible()
+    }
+  }
+
+  async checkIfTextInChatIsPresent (text: string): Promise<void> {
+    await expect(this.inboxChat(text).nth(1)).toBeVisible()
   }
 }
