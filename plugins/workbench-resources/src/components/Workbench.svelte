@@ -984,37 +984,6 @@
       display: block;
     }
   }
-  .splitter {
-    position: relative;
-    width: 1px;
-    min-width: 1px;
-    max-width: 1px;
-    height: 100%;
-    background-color: var(--theme-divider-color);
-    transition: background-color 0.15s ease-in-out;
-
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 0.5rem;
-      height: 100%;
-      border-left: 2px solid transparent;
-      cursor: col-resize;
-      z-index: 1;
-      transition: border-color 0.15s ease-in-out;
-    }
-    &:hover,
-    &.hovered {
-      transition-duration: 0;
-      background-color: var(--primary-bg-color);
-      &::before {
-        transition-duration: 0;
-        border-left: 2px solid var(--primary-bg-color);
-      }
-    }
-  }
 
   @media print {
     .workbench-container:has(~ .panel-instance) {
