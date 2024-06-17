@@ -52,7 +52,7 @@
     const date = e.detail.date.getTime()
     const currentUser = getCurrentAccount() as PersonAccount
     const extCalendar = await client.findOne(calendar.class.ExternalCalendar, {
-      members: currentUser._id,
+      createdBy: currentUser._id,
       hidden: false,
       default: true
     })
