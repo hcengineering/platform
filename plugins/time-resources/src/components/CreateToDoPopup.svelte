@@ -84,7 +84,6 @@
         rank: makeRank(undefined, latestTodo?.rank)
       }
     )
-    const _calendar = `${acc._id}_calendar` as Ref<Calendar>
     for (const slot of slots) {
       await ops.addCollection(time.class.WorkSlot, calendar.space.Calendar, id, time.class.ToDo, 'workslots', {
         eventId: generateEventId(),
@@ -111,7 +110,7 @@
   let _calendar: Ref<Calendar> = `${currentUser._id}_calendar` as Ref<Calendar>
 
   const q = createQuery()
-  q.query(calendar.class.ExternalCalendar, { default: true, members: currentUser._id }, (res) => {
+  q.query(calendar.class.ExternalCalendar, { default: true, hidden: false, createdBy: currentUser._id }, (res) => {
     if (res.length > 0) {
       _calendar = res[0]._id
     }
