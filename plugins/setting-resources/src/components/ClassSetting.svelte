@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import core, { Class, Doc, Obj, Ref } from '@hcengineering/core'
+  import core, { Class, Doc, Obj, Ref, isOwnerOrMaintainer } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
@@ -50,6 +50,7 @@
   export let useOfClassAttributes = true
   export let visibleNav: boolean = true
 
+  const canEdit = isOwnerOrMaintainer()
   const dispatch = createEventDispatcher()
 
   const loc = getLocation()
@@ -143,7 +144,7 @@
       <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
         <div class="hulyComponent-content">
           {#if _class !== undefined}
-            <ClassAttributes {_class} {ofClass} {attributeMapper} />
+            <ClassAttributes {_class} {ofClass} {attributeMapper} disabled={!canEdit} />
           {/if}
         </div>
       </Scroller>
