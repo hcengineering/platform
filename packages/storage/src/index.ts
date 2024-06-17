@@ -48,6 +48,11 @@ export interface BucketInfo {
 }
 
 export interface StorageAdapter {
+  // If specified will limit a blobs available to put into selected provider.
+  // A set of content type patterns supported by this storage provider.
+  // If not defined, will be suited for any other content types.
+  contentTypes?: string[]
+
   initialize: (ctx: MeasureContext, workspaceId: WorkspaceId) => Promise<void>
 
   close: () => Promise<void>
@@ -86,7 +91,12 @@ export interface StorageAdapterEx extends StorageAdapter {
   defaultAdapter: string
   adapters?: Map<string, StorageAdapter>
 
-  syncBlobFromStorage: (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string) => Promise<void>
+  syncBlobFromStorage: (
+    ctx: MeasureContext,
+    workspaceId: WorkspaceId,
+    objectName: string,
+    provider?: string
+  ) => Promise<void>
 }
 
 /**
@@ -198,4 +208,24 @@ export async function removeAllObjects (
     bulk = []
   }
   await iterator.close()
+}
+
+export async function objectsToArray (
+  ctx: MeasureContext,
+  storage: StorageAdapter,
+  workspaceId: WorkspaceId,
+  prefix?: string
+): Promise<ListBlobResult[]> {
+  // We need to list all files and delete them
+  const iterator = await storage.listStream(ctx, workspaceId, prefix)
+  const bulk: ListBlobResult[] = []
+  while (true) {
+    const obj = await iterator.next()
+    if (obj === undefined) {
+      break
+    }
+    bulk.push(obj)
+  }
+  await iterator.close()
+  return bulk
 }

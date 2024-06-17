@@ -18,6 +18,7 @@ import { Client, type BucketItem, type BucketStream } from 'minio'
 import core, {
   concatLink,
   toWorkspaceString,
+  withContext,
   type Blob,
   type BlobLookup,
   type MeasureContext,
@@ -35,16 +36,10 @@ import serverCore, {
   type ListBlobResult,
   type StorageAdapter,
   type StorageConfig,
+  type StorageConfiguration,
   type UploadedObjectInfo
 } from '@hcengineering/server-core'
 import { type Readable } from 'stream'
-
-/**
- * @public
- */
-export function getBucketId (workspaceId: WorkspaceId): string {
-  return toWorkspaceString(workspaceId, '.')
-}
 
 export interface MinioConfig extends StorageConfig {
   kind: 'minio'
@@ -52,6 +47,12 @@ export interface MinioConfig extends StorageConfig {
   secretKey: string
   useSSL?: string
   region?: string
+
+  // If defined, all resources will be inside selected root bucket.
+  rootBucket?: string
+
+  // A prefix string to be added to a bucketId in case rootBucket not used
+  bucketPrefix?: string
 }
 
 /**
@@ -60,7 +61,8 @@ export interface MinioConfig extends StorageConfig {
 export class MinioService implements StorageAdapter {
   static config = 'minio'
   client: Client
-  constructor (readonly opt: Omit<MinioConfig, 'name' | 'kind'>) {
+  contentTypes?: string[]
+  constructor (readonly opt: MinioConfig) {
     this.client = new Client({
       endPoint: opt.endpoint,
       accessKey: opt.accessKey,
@@ -69,7 +71,10 @@ export class MinioService implements StorageAdapter {
       port: opt.port ?? 9000,
       useSSL: opt.useSSL === 'true'
     })
+    this.contentTypes = opt.contentTypes
   }
+
+  async initialize (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {}
 
   async lookup (ctx: MeasureContext, workspaceId: WorkspaceIdWithUrl, docs: Blob[]): Promise<BlobLookupResult> {
     const frontUrl = getMetadata(serverCore.metadata.FrontUrl) ?? ''
@@ -81,52 +86,120 @@ export class MinioService implements StorageAdapter {
     return { lookups: docs as BlobLookup[] }
   }
 
-  async initialize (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {}
+  /**
+   * @public
+   */
+  getBucketId (workspaceId: WorkspaceId): string {
+    return this.opt.rootBucket ?? (this.opt.bucketPrefix ?? '') + toWorkspaceString(workspaceId, '.')
+  }
 
-  async listBuckets (ctx: MeasureContext, productId: string): Promise<BucketInfo[]> {
-    const productPostfix = getBucketId({
-      name: '',
-      productId
-    })
-    const buckets = await this.client.listBuckets()
-    return buckets
-      .filter((it) => it.name.endsWith(productPostfix))
-      .map((it) => {
-        let name = it.name
-        name = name.slice(0, name.length - productPostfix.length)
-        return {
-          name,
-          delete: async () => {
-            await this.delete(ctx, { name, productId })
-          },
-          list: async () => await this.listStream(ctx, { name, productId })
-        }
-      })
+  getBucketFolder (workspaceId: WorkspaceId): string {
+    return toWorkspaceString(workspaceId, '.')
   }
 
   async close (): Promise<void> {}
-
   async exists (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<boolean> {
-    return await this.client.bucketExists(getBucketId(workspaceId))
+    return await this.client.bucketExists(this.getBucketId(workspaceId))
   }
 
+  @withContext('make')
   async make (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {
-    await this.client.makeBucket(getBucketId(workspaceId), this.opt.region ?? 'us-east-1')
+    try {
+      await this.client.makeBucket(this.getBucketId(workspaceId), this.opt.region ?? 'us-east-1')
+    } catch (err: any) {
+      if (err.code === 'BucketAlreadyOwnedByYou') {
+        return
+      }
+      throw err
+    }
   }
 
+  async listBuckets (ctx: MeasureContext, productId: string): Promise<BucketInfo[]> {
+    if (this.opt.rootBucket !== undefined) {
+      const info = new Map<string, BucketInfo>()
+      const stream = this.client.listObjects(this.opt.rootBucket, '', false)
+      await new Promise<void>((resolve, reject) => {
+        stream.on('end', () => {
+          stream.destroy()
+          resolve()
+        })
+        stream.on('error', (err) => {
+          console.error(err)
+          stream?.destroy()
+          reject(err)
+        })
+        stream.on('data', (data) => {
+          const wsName = data.prefix?.split('/')?.[0]
+          if (wsName !== undefined && !info.has(wsName)) {
+            info.set(wsName, {
+              name: wsName,
+              delete: async () => {
+                await this.delete(ctx, { name: wsName, productId })
+              },
+              list: async () => await this.listStream(ctx, { name: wsName, productId })
+            })
+          }
+        })
+      })
+      stream.destroy()
+      return Array.from(info.values())
+    } else {
+      const productPostfix = this.getBucketFolder({
+        name: '',
+        productId
+      })
+      const buckets = await this.client.listBuckets()
+      return buckets
+        .filter((it) => it.name.endsWith(productPostfix))
+        .map((it) => {
+          let name = it.name
+          name = name.slice(0, name.length - productPostfix.length)
+          return {
+            name,
+            delete: async () => {
+              await this.delete(ctx, { name, productId })
+            },
+            list: async () => await this.listStream(ctx, { name, productId })
+          }
+        })
+    }
+  }
+
+  getDocumentKey (workspace: WorkspaceId, name: string): string {
+    return this.opt.rootBucket === undefined ? name : `${this.getBucketFolder(workspace)}/${name}`
+  }
+
+  @withContext('remove')
   async remove (ctx: MeasureContext, workspaceId: WorkspaceId, objectNames: string[]): Promise<void> {
-    await this.client.removeObjects(getBucketId(workspaceId), objectNames)
+    const toRemove = objectNames.map((it) => this.getDocumentKey(workspaceId, it))
+    await this.client.removeObjects(this.getBucketId(workspaceId), toRemove)
   }
 
+  @withContext('delete')
   async delete (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {
     try {
       await removeAllObjects(ctx, this, workspaceId)
     } catch (err: any) {
       ctx.error('failed t oclean all objecrs', { error: err })
     }
-    await this.client.removeBucket(getBucketId(workspaceId))
+    if (this.opt.rootBucket === undefined) {
+      // Also delete a bucket
+      await this.client.removeBucket(this.getBucketId(workspaceId))
+    }
   }
 
+  stripPrefix (prefix: string | undefined, key: string): string {
+    if (prefix !== undefined && key.startsWith(prefix)) {
+      return key.slice(prefix.length)
+    }
+    return key
+  }
+
+  rootPrefix (workspaceId: WorkspaceId): string | undefined {
+    return this.opt.rootBucket !== undefined ? this.getBucketFolder(workspaceId) + '/' : undefined
+  }
+
+  @withContext('listStream')
   async listStream (
     ctx: MeasureContext,
     workspaceId: WorkspaceId,
@@ -134,16 +207,21 @@ export class MinioService implements StorageAdapter {
   ): Promise<BlobStorageIterator> {
     let hasMore = true
     let stream: BucketStream<BucketItem> | undefined
+    let done = false
     let error: Error | undefined
     let onNext: () => void = () => {}
     const buffer: ListBlobResult[] = []
+
+    const rootPrefix = this.rootPrefix(workspaceId)
     return {
       next: async (): Promise<ListBlobResult | undefined> => {
         try {
-          if (stream === undefined) {
-            stream = this.client.listObjects(getBucketId(workspaceId), prefix, true)
+          if (stream === undefined && !done) {
+            const rprefix = rootPrefix !== undefined ? rootPrefix + (prefix ?? '') : prefix ?? ''
+            stream = this.client.listObjects(this.getBucketId(workspaceId), rprefix, true)
             stream.on('end', () => {
               stream?.destroy()
+              done = true
               stream = undefined
               hasMore = false
               onNext()
@@ -157,16 +235,17 @@ export class MinioService implements StorageAdapter {
             })
             stream.on('data', (data) => {
               if (data.name !== undefined) {
+                const _id = this.stripPrefix(rootPrefix, data.name)
                 buffer.push({
-                  _id: data.name as Ref<Blob>,
+                  _id: _id as Ref<Blob>,
                   _class: core.class.Blob,
                   etag: data.etag,
                   size: data.size,
-                  provider: 'minio',
+                  provider: this.opt.name,
                   space: core.space.Configuration,
                   modifiedBy: core.account.ConfigUser,
                   modifiedOn: data.lastModified.getTime(),
-                  storageId: data.name
+                  storageId: _id
                 })
               }
               onNext()
@@ -207,14 +286,19 @@ export class MinioService implements StorageAdapter {
     }
   }
 
+  @withContext('stat')
   async stat (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Blob | undefined> {
     try {
-      const result = await this.client.statObject(getBucketId(workspaceId), objectName)
+      const result = await this.client.statObject(
+        this.getBucketId(workspaceId),
+        this.getDocumentKey(workspaceId, objectName)
+      )
+      const rootPrefix = this.rootPrefix(workspaceId)
       return {
         provider: '',
         _class: core.class.Blob,
-        _id: objectName as Ref<Blob>,
-        storageId: objectName,
+        _id: this.stripPrefix(rootPrefix, objectName) as Ref<Blob>,
+        storageId: this.stripPrefix(rootPrefix, objectName),
         contentType: result.metaData['content-type'],
         size: result.size,
         etag: result.etag,
@@ -228,10 +312,12 @@ export class MinioService implements StorageAdapter {
     }
   }
 
+  @withContext('get')
   async get (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Readable> {
-    return await this.client.getObject(getBucketId(workspaceId), objectName)
+    return await this.client.getObject(this.getBucketId(workspaceId), this.getDocumentKey(workspaceId, objectName))
   }
 
+  @withContext('put')
   async put (
     ctx: MeasureContext,
     workspaceId: WorkspaceId,
@@ -240,13 +326,23 @@ export class MinioService implements StorageAdapter {
     contentType: string,
     size?: number
   ): Promise<UploadedObjectInfo> {
-    return await this.client.putObject(getBucketId(workspaceId), objectName, stream, size, {
-      'Content-Type': contentType
-    })
+    return await this.client.putObject(
+      this.getBucketId(workspaceId),
+      this.getDocumentKey(workspaceId, objectName),
+      stream,
+      size,
+      {
+        'Content-Type': contentType
+      }
+    )
   }
 
-  async read (ctx: MeasureContext, workspaceId: WorkspaceId, name: string): Promise<Buffer[]> {
-    const data = await this.client.getObject(getBucketId(workspaceId), name)
+  @withContext('read')
+  async read (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<Buffer[]> {
+    const data = await this.client.getObject(
+      this.getBucketId(workspaceId),
+      this.getDocumentKey(workspaceId, objectName)
+    )
     const chunks: Buffer[] = []
 
     await new Promise((resolve, reject) => {
@@ -269,6 +365,7 @@ export class MinioService implements StorageAdapter {
     return chunks
   }
 
+  @withContext('partial')
   async partial (
     ctx: MeasureContext,
     workspaceId: WorkspaceId,
@@ -276,6 +373,55 @@ export class MinioService implements StorageAdapter {
     offset: number,
     length?: number
   ): Promise<Readable> {
-    return await this.client.getPartialObject(getBucketId(workspaceId), objectName, offset, length)
+    return await this.client.getPartialObject(
+      this.getBucketId(workspaceId),
+      this.getDocumentKey(workspaceId, objectName),
+      offset,
+      length
+    )
+  }
+}
+
+export function processConfigFromEnv (storageConfig: StorageConfiguration): string | undefined {
+  let minioEndpoint = process.env.MINIO_ENDPOINT
+  if (minioEndpoint === undefined) {
+    return 'MINIO_ENDPOINT'
+  }
+  const minioAccessKey = process.env.MINIO_ACCESS_KEY
+  if (minioAccessKey === undefined) {
+    return 'MINIO_ACCESS_KEY'
+  }
+
+  let minioPort = 9000
+  const sp = minioEndpoint.split(':')
+  if (sp.length > 1) {
+    minioEndpoint = sp[0]
+    minioPort = parseInt(sp[1])
+  }
+
+  const minioSecretKey = process.env.MINIO_SECRET_KEY
+  if (minioSecretKey === undefined) {
+    return 'MINIO_SECRET_KEY'
+  }
+
+  const minioConfig: MinioConfig = {
+    kind: 'minio',
+    name: 'minio',
+    port: minioPort,
+    region: 'us-east-1',
+    useSSL: 'false',
+    endpoint: minioEndpoint,
+    accessKey: minioAccessKey,
+    secretKey: minioSecretKey
+  }
+  storageConfig.storages.push(minioConfig)
+  storageConfig.default = 'minio'
+}
+
+export function addMinioFallback (storageConfig: StorageConfiguration): void {
+  const required = processConfigFromEnv(storageConfig)
+  if (required !== undefined) {
+    console.error(`Required ${required} env to be configured`)
+    process.exit(1)
   }
 }

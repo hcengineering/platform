@@ -18,7 +18,7 @@ import { plugin } from '@hcengineering/platform'
 import type { Arr, Class, Data, Doc, Interface, Mixin, Obj, Ref } from '../classes'
 import { AttachedDoc, ClassifierKind, DOMAIN_MODEL } from '../classes'
 import core from '../component'
-import type { TxCreateDoc, TxCUD } from '../tx'
+import type { TxCUD, TxCreateDoc } from '../tx'
 import { DOMAIN_TX, TxFactory } from '../tx'
 
 const txFactory = new TxFactory(core.account.System)
@@ -180,6 +180,14 @@ export function genMinModel (): TxCUD<Doc>[] {
     createClass(core.class.TxCollectionCUD, {
       label: 'TxCollectionCUD' as IntlString,
       extends: core.class.TxCUD,
+      kind: ClassifierKind.CLASS
+    })
+  )
+
+  txes.push(
+    createClass(core.class.Blob, {
+      label: 'Blob' as IntlString,
+      extends: core.class.Blob,
       kind: ClassifierKind.CLASS
     })
   )

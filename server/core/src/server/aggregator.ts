@@ -36,29 +36,44 @@ class NoSuchKeyError extends Error {
 export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterEx {
   constructor (
     readonly adapters: Map<string, StorageAdapter>,
-    readonly defaultAdapter: string, // Adapter will be used to put new documents into
+    readonly defaultAdapter: string, // Adapter will be used to put new documents into, if not matched by content type
     readonly dbAdapter: RawDBAdapter
   ) {}
 
-  async syncBlobFromStorage (ctx: MeasureContext, workspaceId: WorkspaceId, objectName: string): Promise<void> {
-    const current = await this.dbAdapter.find<Blob>(
-      ctx,
-      workspaceId,
-      DOMAIN_BLOB,
-      { _class: core.class.Blob, _id: objectName as Ref<Blob> },
-      { limit: 1 }
-    )
-    const provider = this.adapters.get(current[0]?.provider ?? this.defaultAdapter)
+  async syncBlobFromStorage (
+    ctx: MeasureContext,
+    workspaceId: WorkspaceId,
+    objectName: string,
+    providerId?: string
+  ): Promise<void> {
+    let current: Blob | undefined = (
+      await this.dbAdapter.find<Blob>(
+        ctx,
+        workspaceId,
+        DOMAIN_BLOB,
+        { _class: core.class.Blob, _id: objectName as Ref<Blob> },
+        { limit: 1 }
+      )
+    ).shift()
+    if (current === undefined && providerId !== undefined) {
+      current = await this.adapters.get(providerId)?.stat(ctx, workspaceId, objectName)
+      if (current !== undefined) {
+        current.provider = providerId
+      }
+    }
+
+    const provider = this.adapters.get(current?.provider ?? this.defaultAdapter)
     if (provider === undefined) {
       throw new NoSuchKeyError('No such provider found')
     }
     const stat = await provider.stat(ctx, workspaceId, objectName)
     if (stat !== undefined) {
-      stat.provider = current[0]?.provider ?? this.defaultAdapter
-      if (current[0] !== undefined) {
-        await this.dbAdapter.clean(ctx, workspaceId, DOMAIN_BLOB, [current[0]._id])
+      stat.provider = current?.provider ?? this.defaultAdapter
+      if (current !== undefined) {
+        await this.dbAdapter.clean(ctx, workspaceId, DOMAIN_BLOB, [current._id])
       }
       await this.dbAdapter.upload<Blob>(ctx, workspaceId, DOMAIN_BLOB, [stat])
+      // TODO:  We need to send notification about Blob is changed.
     }
   }
 
@@ -202,6 +217,27 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
     return await provider.read(ctx, workspaceId, stat.storageId)
   }
 
+  selectProvider (
+    forceProvider: string | undefined,
+    contentType: string
+  ): { adapter: StorageAdapter | undefined, provider: string } {
+    if (forceProvider !== undefined) {
+      return { adapter: this.adapters.get(forceProvider), provider: forceProvider }
+    }
+    // try select provider based on content type matching.
+    for (const [provider, adapter] of this.adapters.entries()) {
+      if (adapter.contentTypes === undefined) {
+        continue
+      }
+      if (adapter.contentTypes.some((it) => contentType.includes(it))) {
+        // we have matched content type for adapter.
+        return { adapter, provider }
+      }
+    }
+
+    return { adapter: this.adapters.get(this.defaultAdapter), provider: this.defaultAdapter }
+  }
+
   async put (
     ctx: MeasureContext,
     workspaceId: WorkspaceId,
@@ -221,15 +257,15 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
       )
     ).shift()
 
-    const provider = this.adapters.get(stat?.provider ?? this.defaultAdapter)
-    if (provider === undefined) {
+    const { provider, adapter } = this.selectProvider(stat?.provider, contentType)
+    if (adapter === undefined) {
       throw new NoSuchKeyError('No such provider found')
     }
 
-    const result = await provider.put(ctx, workspaceId, objectName, stream, contentType, size)
+    const result = await adapter.put(ctx, workspaceId, objectName, stream, contentType, size)
 
     if (size === undefined || size === 0) {
-      const docStats = await provider.stat(ctx, workspaceId, objectName)
+      const docStats = await adapter.stat(ctx, workspaceId, objectName)
       if (docStats !== undefined) {
         if (contentType !== docStats.contentType) {
           contentType = docStats.contentType
@@ -244,7 +280,7 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
       modifiedBy: core.account.System,
       modifiedOn: Date.now(),
       space: core.space.Configuration,
-      provider: this.defaultAdapter,
+      provider,
       storageId: objectName,
       size: size ?? 0,
       contentType,
