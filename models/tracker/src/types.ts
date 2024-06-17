@@ -58,6 +58,7 @@ import {
   type Issue,
   type IssueChildInfo,
   type IssueParentInfo,
+  type IssueDependencyInfo,
   type IssuePriority,
   type IssueStatus,
   type IssueTemplate,
@@ -176,6 +177,9 @@ export class TIssue extends TTask implements Issue {
   @Prop(TypeRef(tracker.class.Issue), tracker.string.Parent)
   declare attachedTo: Ref<Issue>
 
+  @Prop(TypeRef(tracker.class.Issue), tracker.string.Dependency)
+  declare attachedToDependency: Ref<Issue>
+
   @Prop(TypeString(), tracker.string.Title)
   @Index(IndexKind.FullText)
     title!: string
@@ -221,6 +225,8 @@ export class TIssue extends TTask implements Issue {
     relations!: RelatedDocument[]
 
   parents!: IssueParentInfo[]
+
+  dependency!: IssueDependencyInfo[]
 
   @Prop(Collection(tags.class.TagReference), tracker.string.Labels)
   declare labels: number

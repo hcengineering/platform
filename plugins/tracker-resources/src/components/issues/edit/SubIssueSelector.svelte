@@ -37,8 +37,11 @@
 
   export let issue: WithLookup<Issue>
   $: parentIssueId = issue.attachedTo !== tracker.ids.NoParent ? issue.attachedTo : undefined
+  $: dependencyIssueId = issue.dependency.length ? issue.dependency[0]?.dependencyId : undefined
   let parentIssue: Issue | undefined = undefined
+  let dependencyIssue: Issue | undefined = undefined
   const parentQuery = createQuery()
+  const dependencyQuery = createQuery()
 
   const subIssuesQuery = createQuery()
 
@@ -66,7 +69,15 @@
     }
   }
 
+  function openDependencyIssue () {
+    if (dependencyIssue) {
+      closeTooltip()
+      openIssue(dependencyIssue)
+    }
+  }
+
   $: areSubIssuesLoading = !subIssues
+
   $: if (parentIssueId) {
     subIssuesQuery.query(
       tracker.class.Issue,
@@ -98,7 +109,39 @@
     subIssues = []
   }
 
+  $: if (dependencyIssueId) {
+    subIssuesQuery.query(
+      tracker.class.Issue,
+      { attachedToDependency: dependencyIssueId },
+      (res) => {
+        subIssues = res
+      },
+      {
+        sort: { modifiedOn: SortingOrder.Descending },
+        lookup: {
+          status: [tracker.class.IssueStatus, { category: core.class.StatusCategory }]
+        }
+      }
+    )
+    dependencyQuery.query(
+      tracker.class.Issue,
+      { _id: dependencyIssueId },
+      (res) => {
+        dependencyIssue = res[0]
+      },
+      {
+        limit: 1
+      }
+    )
+  } else {
+    subIssuesQuery.unsubscribe()
+    dependencyQuery.unsubscribe()
+    dependencyIssue = undefined
+    subIssues = []
+  }
+
   $: parentStatus = parentIssue ? $statusStore.byId.get(parentIssue.status) : undefined
+  $: dependencyStatus = dependencyIssue ? $statusStore.byId.get(dependencyIssue.status) : undefined
 
   let categories: IdMap<StatusCategory> = new Map()
 
@@ -147,6 +190,7 @@
           : undefined
     }
   })
+
 </script>
 
 {#if parentIssue}
@@ -199,6 +243,28 @@
           </div>
         </div>
       {/if}
+    </div>
+  </div>
+{/if}
+
+{#if dependencyIssue}
+  <div class="flex root">
+    <div class="item clear-mins">
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <div
+        class="flex-center parent-issue cursor-pointer"
+        use:tooltip={{ label: tracker.string.OpenDependency, direction: 'bottom' }}
+        on:click={openDependencyIssue}
+      >
+        {#if dependencyStatus}
+          <div class="pr-2">
+            <IssueStatusIcon space={dependencyIssue.space} value={dependencyStatus} size="small" />
+          </div>
+        {/if}
+        <span class="overflow-label flex-no-shrink mr-2">{dependencyIssue.identifier}</span>
+        <span class="overflow-label issue-title">{dependencyIssue.title}</span>
+      </div>
     </div>
   </div>
 {/if}

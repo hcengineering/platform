@@ -187,6 +187,7 @@
       subIssues: 0,
       dueDate: null,
       parents: [],
+      dependency: [],
       reportedTime: 0,
       remainingTime: 0,
       estimation: template.estimation,

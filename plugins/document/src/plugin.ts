@@ -75,6 +75,7 @@ export const documentPlugin = plugin(documentId, {
   },
   ids: {
     NoParent: '' as Ref<Document>,
+    NoDependency: '' as Ref<Document>,
     DocumentNotificationGroup: '' as Ref<NotificationGroup>,
     ContentNotification: '' as Ref<NotificationType>
   },

@@ -102,6 +102,8 @@ export async function OnWorkSlotCreate (tx: Tx, control: TriggerControl): Promis
           const outerTx = factory.createTxCollectionCUD(
             issue.attachedToClass,
             issue.attachedTo,
+            issue.attachedToDependency,
+            issue.attachedToDependencyClass,
             issue.space,
             issue.collection,
             innerTx
@@ -148,6 +150,8 @@ export async function OnToDoRemove (tx: Tx, control: TriggerControl): Promise<Tx
           const outerTx = factory.createTxCollectionCUD(
             issue.attachedToClass,
             issue.attachedTo,
+            issue.attachedToDependency,
+            issue.attachedToDependencyClass,
             issue.space,
             issue.collection,
             innerTx
@@ -379,6 +383,8 @@ export async function IssueToDoDone (control: TriggerControl, workslots: WorkSlo
                 const outerTx = factory.createTxCollectionCUD(
                   issue.attachedToClass,
                   issue.attachedTo,
+                  issue.attachedToDependency,
+                  issue.attachedToDependencyClass,
                   issue.space,
                   issue.collection,
                   innerTx

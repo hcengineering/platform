@@ -52,6 +52,7 @@
     Issue,
     IssueDraft,
     IssueParentInfo,
+    IssueDependencyInfo,
     IssuePriority,
     IssueStatus,
     IssueTemplate,
@@ -73,17 +74,19 @@
     themeStore
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { ObjectBox } from '@hcengineering/view-resources'
+  import { ObjectBox, statusStore } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy } from 'svelte'
 
   import { activeComponent, activeMilestone, generateIssueShortLink, updateIssueRelation } from '../issues'
   import tracker from '../plugin'
   import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
+  import SetDependencyIssueActionPopup from './SetDependencyIssueActionPopup.svelte'
   import SubIssues from './SubIssues.svelte'
   import ComponentSelector from './components/ComponentSelector.svelte'
   import AssigneeEditor from './issues/AssigneeEditor.svelte'
   import IssueNotification from './issues/IssueNotification.svelte'
   import ParentIssue from './issues/ParentIssue.svelte'
+  import DependencyIssue from './issues/DependencyIssue.svelte'
   import PriorityEditor from './issues/PriorityEditor.svelte'
   import StatusEditor from './issues/StatusEditor.svelte'
   import EstimationEditor from './issues/timereport/EstimationEditor.svelte'
@@ -99,6 +102,7 @@
   export let relatedTo: Doc | undefined
   export let shouldSaveDraft: boolean = true
   export let parentIssue: Issue | undefined
+  export let dependencyIssue: Issue | undefined
   export let originalIssue: Issue | undefined
 
   const mDraftController = new MultipleDraftController(tracker.ids.IssueDraft)
@@ -118,7 +122,7 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const parentQuery = createQuery()
-
+  const dependencyQuery = createQuery()
   let _space = draft?.space ?? space
   // let project: Project | undefined
   let object = getDefaultObjectFromDraft() ?? getDefaultObject(id)
@@ -152,7 +156,22 @@
     parentIssue = undefined
   }
 
-  function getDefaultObjectFromDraft (): IssueDraft | undefined {
+  $: if (object.dependencyIssue !== undefined) {
+    dependencyQuery.query(
+      tracker.class.Issue,
+      {
+        _id: object.dependencyIssue
+      },
+      (res) => {
+        ;[dependencyIssue] = res
+      }
+    )
+  } else {
+    dependencyQuery.unsubscribe()
+    dependencyIssue = undefined
+  }
+
+  function getDefaultObjectFromDraft(): IssueDraft | undefined {
     if (draft == null) {
       return
     }
@@ -184,6 +203,7 @@
       assignee,
       labels: [],
       parentIssue: parentIssue?._id,
+      dependencyIssue: dependencyIssue?._id,
       subIssues: []
     }
     if (originalIssue !== undefined && !ignoreOriginal) {
@@ -197,6 +217,7 @@
         assignee: originalIssue.assignee,
         estimation: originalIssue.estimation,
         parentIssue: originalIssue.parents[0]?.parentId,
+        dependencyIssue: originalIssue.dependency[0].dependencyId,
         title: `${originalIssue.title} (copy)`
       }
       void client.findAll(tags.class.TagReference, { attachedTo: originalIssue._id }).then((p) => {
@@ -228,6 +249,7 @@
     assignee: assignee ?? currentProject?.defaultAssignee,
     status: status ?? currentProject?.defaultIssueStatus,
     parentIssue: parentIssue?._id,
+    dependencyIssue: dependencyIssue?._id,
     description: EmptyMarkup,
     component: component ?? $activeComponent ?? null,
     milestone: milestone ?? $activeMilestone ?? null,
@@ -263,6 +285,8 @@
       _id: generateId(),
       attachedTo: '' as Ref<Doc>,
       attachedToClass: tracker.class.Issue,
+      attachedToDependency: '' as Ref<Doc>,
+      attachedToDependencyClass: tracker.class.Issue,
       collection: 'labels',
       space: tags.space.Tags,
       modifiedOn: 0,
@@ -384,6 +408,12 @@
     parentIssue = undefined
   }
 
+  function clearDependencyIssue (): void {
+    object.dependencyIssue = undefined
+    dependencyQuery.unsubscribe()
+    dependencyIssue = undefined
+  }
+
   function getTitle (value: string): string {
     return value.trim()
   }
@@ -470,6 +500,17 @@
                 ...parentIssue.parents
               ]
             : [],
+        dependency:
+          dependencyIssue != null
+            ? [
+                {
+                  dependencyId: dependencyIssue._id,
+                  dependencyTitle: dependencyIssue.title,
+                  space: dependencyIssue.space,
+                  identifier: dependencyIssue.identifier,
+                },
+              ]
+            : [],
         reportedTime: 0,
         remainingTime: 0,
         estimation: object.estimation,
@@ -529,6 +570,25 @@
             ]
           : [{ parentId: _id, parentTitle: value.title, space: _space, identifier }]
       await subIssuesComponent.save(parents, _id)
+
+      const dependency: IssueDependencyInfo[] =
+        dependencyIssue != null
+          ? [
+              {
+                dependencyId: _id,
+                dependencyTitle: value.title,
+                space: dependencyIssue.space,
+                identifier,
+              },
+              {
+                dependencyId: dependencyIssue._id,
+                dependencyTitle: dependencyIssue.title,
+                space: dependencyIssue.space,
+                identifier: dependencyIssue.identifier,
+              }
+            ]
+          : [{ dependencyId: _id, dependencyTitle: value.title, space: _space, identifier }]
+      await subIssuesComponent.save(dependency, _id)
       addNotification(
         await translate(tracker.string.IssueCreated, {}, $themeStore.language),
         getTitle(object.title),
@@ -566,6 +626,20 @@
         if (selectedIssue !== undefined) {
           parentIssue = selectedIssue
           object.parentIssue = parentIssue?._id
+        }
+      }
+    )
+  }
+
+  async function setDependencyIssue (): Promise<void> {
+    showPopup(
+      SetDependencyIssueActionPopup,
+      { value: { ...object, space: _space, attachedToDependency: dependencyIssue?._id } },
+      'top',
+      (selectedIssue) => {
+        if (selectedIssue !== undefined) {
+          dependencyIssue = selectedIssue
+          object.dependencyIssue = dependencyIssue?._id
         }
       }
     )
@@ -650,15 +724,27 @@
 
   async function findDefaultSpace (): Promise<Project | undefined> {
     let targetRef: Ref<Project> | undefined
+    let targetRefDependency: Ref<Project> | undefined
     if (relatedTo !== undefined) {
       const targets = await client.findAll(tracker.class.RelatedIssueTarget, {})
       // Find a space target first
       targetRef =
         targets.find((t) => t.rule.kind === 'spaceRule' && t.rule.space === relatedTo?.space && t.target !== undefined)
           ?.target ?? undefined
+      targetRefDependency =
+        targets.find((t) => t.rule.kind === 'spaceRule' && t.rule.space === relatedTo?.space && t.target !== undefined)
+          ?.target ?? undefined
       // Find a class target as second
       targetRef =
         targetRef ??
+        targets.find(
+          (t) =>
+            t.rule.kind === 'classRule' &&
+            client.getHierarchy().isDerived(relatedTo?._class as Ref<Class<Doc>>, t.rule.ofClass)
+        )?.target ??
+        undefined
+      targetRefDependency =
+        targetRefDependency ??
         targets.find(
           (t) =>
             t.rule.kind === 'classRule' &&
@@ -679,7 +765,19 @@
       }
     }
 
-    // Find first starred project
+    if (targetRefDependency === undefined) {
+      // Use last created issue in first.
+      const projects = await client.findAll(
+        tracker.class.ProjectTargetPreference,
+        {},
+        { sort: { usedOn: SortingOrder.Descending } }
+      )
+      if (projects.length > 0) {
+        targetRefDependency = projects[0]?.attachedToDependency
+      }
+    }
+
+    // Find first started project
     if (targetRef === undefined) {
       const prefs = await client.findAll<SpacePreference>(
         preference.class.SpacePreference,
@@ -696,6 +794,26 @@
       }
     }
 
+    if (targetRefDependency === undefined) {
+      const prefs = await client.findAll<SpacePreference>(
+        preference.class.SpacePreference,
+        {},
+        { sort: { modifiedOn: SortingOrder.Ascending } }
+      )
+      const projects = await client.findAll<Project>(tracker.class.Project, {
+        _id: {
+          $in: Array.from(prefs.map((it) => it.attachedToDependency as Ref<Project>).filter((it) => it != null))
+        }
+      })
+      if (projects.length > 0) {
+        return projects[0]
+      }
+    }
+
+    if (targetRefDependency !== undefined) {
+      return await client.findOne(tracker.class.Project, { _id: targetRefDependency })
+    }
+
     if (targetRef !== undefined) {
       return await client.findOne(tracker.class.Project, { _id: targetRef })
     }
@@ -709,6 +827,7 @@
     milestone: object.milestone,
     relatedTo,
     parentIssue,
+    dependencyIssue,
     originalIssue,
     preferences
   }
@@ -717,6 +836,7 @@
     if (spacePreferences === undefined) {
       void client.createDoc(tracker.class.ProjectTargetPreference, currentProject, {
         attachedTo: currentProject,
+        attachedToDependency: currentProject,
         props: [],
         usedOn: Date.now()
       })
@@ -742,7 +862,7 @@
   on:close={() => dispatch('close')}
   onCancel={showConfirmationDialog}
   hideAttachments={attachments.size === 0}
-  hideSubheader={parentIssue == null}
+  hideSubheader={parentIssue == null && dependencyIssue == null}
   noFade={true}
   on:changeContent
 >
@@ -807,6 +927,9 @@
   <svelte:fragment slot="subheader">
     {#if parentIssue}
       <ParentIssue issue={parentIssue} on:close={clearParentIssue} />
+    {/if}
+    {#if dependencyIssue}
+      <DependencyIssue issue={dependencyIssue} on:close={clearDependencyIssue} />
     {/if}
   </svelte:fragment>
   <div id="issue-name" class="m-3 clear-mins">
@@ -974,6 +1097,17 @@
         size={'large'}
         notSelected={object.parentIssue === undefined}
         on:click={object.parentIssue != null ? clearParentIssue : setParentIssue}
+      />
+    </div>
+    <div id="parentissue-editor" class="new-line">
+      <Button
+        focusIndex={11}
+        icon={tracker.icon.Dependency}
+        label={object.dependencyIssue != null ? tracker.string.RemoveDependency : tracker.string.SetDependency}
+        kind={'regular'}
+        size={'large'}
+        notSelected={object.dependencyIssue === undefined}
+        on:click={object.dependencyIssue != null ? clearDependencyIssue : setDependencyIssue}
       />
     </div>
     <DocCreateExtComponent manager={docCreateManager} kind={'pool'} space={currentProject} props={extraProps} />

@@ -118,12 +118,12 @@ export const issuesOrderKeyMap: Record<IssuesOrdering, IssuesOrderByKeys> = {
 }
 
 export const issuesGroupEditorMap: Record<'status' | 'priority' | 'component' | 'milestone', AnyComponent | undefined> =
-  {
-    status: tracker.component.StatusEditor,
-    priority: tracker.component.PriorityEditor,
-    component: tracker.component.ComponentEditor,
-    milestone: tracker.component.MilestoneEditor
-  }
+{
+  status: tracker.component.StatusEditor,
+  priority: tracker.component.PriorityEditor,
+  component: tracker.component.ComponentEditor,
+  milestone: tracker.component.MilestoneEditor
+}
 
 export const getIssuesModificationDatePeriodTime = (period: IssuesDateModificationPeriod | null): number => {
   const today = new Date(Date.now())
@@ -405,8 +405,7 @@ export async function moveIssuesToAnotherMilestone (
     return true
   } catch (error: any) {
     console.error(
-      `Error happened while moving issues between milestones from ${oldMilestone.label} to ${
-        newMilestone?.label ?? 'No Milestone'
+      `Error happened while moving issues between milestones from ${oldMilestone.label} to ${newMilestone?.label ?? 'No Milestone'
       }: `,
       error
     )

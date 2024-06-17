@@ -84,6 +84,7 @@ import ProjectFilterValuePresenter from './components/projects/ProjectFilterValu
 import RelationsPopup from './components/RelationsPopup.svelte'
 import SetDueDateActionPopup from './components/SetDueDateActionPopup.svelte'
 import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.svelte'
+import SetDependencyActionPopup from './components/SetDependencyIssueActionPopup.svelte'
 import SettingsRelatedTargets from './components/SettingsRelatedTargets.svelte'
 import CreateIssueTemplate from './components/templates/CreateIssueTemplate.svelte'
 import IssueExtra from './components/issues/IssueExtra.svelte'
@@ -623,6 +624,7 @@ export default async (): Promise<Resources> => ({
     LeadPresenter,
     SetDueDateActionPopup,
     SetParentIssueActionPopup,
+    SetDependencyActionPopup,
     EditComponent,
     IssuesView,
     KanbanView,

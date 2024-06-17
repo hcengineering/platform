@@ -300,6 +300,32 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
     {
       action: view.actionImpl.ShowPopup,
       actionProps: {
+        component: tracker.component.SetDependencyIssueActionPopup,
+        element: 'top',
+        fillProps: {
+          _objects: 'value'
+        }
+      },
+      label: tracker.string.SetDependency,
+      icon: tracker.icon.Dependency,
+      keyBinding: [],
+      input: 'none',
+      category: tracker.category.Tracker,
+      target: tracker.class.DependencyIssue,
+      context: {
+        mode: ['context'],
+        application: tracker.app.Tracker,
+        group: 'associate'
+      }
+    },
+    tracker.action.SetDependency
+  )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
         component: tracker.component.CreateIssue,
         element: 'top',
         fillProps: {
@@ -336,6 +362,30 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
     category: tracker.category.Tracker,
     target: tracker.class.Issue,
     override: [tracker.action.SetParent],
+    context: {
+      mode: ['browser'],
+      application: tracker.app.Tracker,
+      group: 'associate'
+    }
+  })
+
+  createAction(builder, {
+    action: view.actionImpl.ShowPopup,
+    actionPopup: tracker.component.SetParenDependencyIssueActionPopup,
+    actionProps: {
+      component: tracker.component.SetParenDependencyIssueActionPopup,
+      element: 'top',
+      fillProps: {
+        _object: 'value'
+      }
+    },
+    label: tracker.string.SetDependency,
+    icon: tracker.icon.Dependency,
+    keyBinding: [],
+    input: 'none',
+    category: tracker.category.Tracker,
+    target: tracker.class.Issue,
+    override: [tracker.action.SetDependency],
     context: {
       mode: ['browser'],
       application: tracker.app.Tracker,

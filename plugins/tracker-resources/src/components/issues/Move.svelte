@@ -203,6 +203,13 @@
         upd.attachedTo = tracker.ids.NoParent
         upd.attachedToClass = tracker.class.Issue
       }
+      if (
+        issue.attachedToDependency !== tracker.ids.NoDependency &&
+        toMove.find((it) => it._id === issue.attachedToDependency) === undefined
+      ) {
+        upd.attachedToDependency = tracker.ids.NoDependency
+        upd.attachedToDependencyClass = tracker.class.Issue
+      }
       issueToUpdate.set(issue._id, upd)
     }
   }

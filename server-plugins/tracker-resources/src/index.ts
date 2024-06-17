@@ -34,7 +34,7 @@ import core, {
 import { getMetadata, IntlString } from '@hcengineering/platform'
 import { Person, PersonAccount } from '@hcengineering/contact'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
-import tracker, { Component, Issue, IssueParentInfo, TimeSpendReport, trackerId } from '@hcengineering/tracker'
+import tracker, { Component, Issue, IssueParentInfo, IssueDependencyInfo, TimeSpendReport, trackerId } from '@hcengineering/tracker'
 import { NotificationContent } from '@hcengineering/notification'
 import { workbenchId } from '@hcengineering/workbench'
 import { stripTags } from '@hcengineering/text'
@@ -251,6 +251,7 @@ export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<T
       const issue = TxProcessor.createDoc2Doc(createTx)
       const res: Tx[] = []
       updateIssueParentEstimations(issue, res, control, [], issue.parents)
+      updateIssueDependencyEstimations(issue, res, control, [], issue.dependency)
 
       return res
     }
@@ -268,10 +269,20 @@ export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<T
       const parentIssue = await control.findAll(tracker.class.Issue, {
         'childInfo.childId': removeTx.objectId
       })
+      const dependencyIssue = await control.findAll(tracker.class.Issue, {
+        'childInfo.childId': removeTx.objectId
+      })
       const res: Tx[] = []
       const parents: IssueParentInfo[] = parentIssue.map((it) => ({
         parentId: it._id,
         parentTitle: it.title,
+        identifier: it.identifier,
+        space: it.space
+      }))
+
+      const dependency: IssueDependencyInfo[] = dependencyIssue.map((it) => ({
+        dependencyId: it._id,
+        dependencyTitle: it.title,
         identifier: it.identifier,
         space: it.space
       }))
@@ -285,6 +296,7 @@ export async function OnIssueUpdate (tx: Tx, control: TriggerControl): Promise<T
         res,
         control,
         parents,
+        dependency,
         []
       )
       return res
@@ -428,6 +440,49 @@ async function doIssueUpdate (
     updateIssueParentEstimations(issue, res, control, issue.parents, updatedParents)
   }
 
+
+  if (Object.prototype.hasOwnProperty.call(updateTx.operations, 'attachedToDependency')) {
+    const [newDependency] = await control.findAll(
+      tracker.class.Issue,
+      { _id: updateTx.operations.attachedToDependency as Ref<Issue> },
+      { limit: 1 }
+    )
+
+    const updatedDependency: IssueDependencyInfo[] =
+      newDependency !== undefined
+        ? [
+            {
+              dependencyId: newDependency._id,
+              dependencyTitle: newDependency.title,
+              space: newDependency.space,
+              identifier: newDependency.identifier
+            },
+            ...newDependency.dependency
+          ]
+        : []
+
+    function update (issue: Issue): DocumentUpdate<Issue> {
+      const dependencyInfoIndex = issue.dependency.findIndex(({ dependencyId }) => dependencyId === updateTx.objectId)
+      const dependencyUpdate =
+        dependencyInfoIndex === -1
+          ? {}
+          : { dependency: [...issue.dependency].slice(0, dependencyInfoIndex + 1).concat(updatedDependency) }
+
+      return { ...dependencyUpdate }
+    }
+
+    res.push(
+      control.txFactory.createTxUpdateDoc(updateTx.objectClass, updateTx.objectSpace, updateTx.objectId, {
+        dependency: updatedDependency
+      }),
+      ...(await updateSubIssues(updateTx, control, update))
+    )
+
+    // Remove from parent estimation list.
+    const issue = await getCurrentIssue()
+    updateIssueDependencyEstimations(issue, res, control, issue.dependency, updatedDependency)
+  }
+
   if (
     Object.prototype.hasOwnProperty.call(updateTx.operations, 'estimation') ||
     Object.prototype.hasOwnProperty.call(updateTx.operations, 'reportedTime') ||
@@ -447,17 +502,24 @@ async function doIssueUpdate (
     )
 
     updateIssueParentEstimations(issue, res, control, issue.parents, issue.parents)
+    updateIssueDependencyEstimations(issue, res, control, issue.dependency, issue.dependency)
   }
 
   if (Object.prototype.hasOwnProperty.call(updateTx.operations, 'title')) {
     function update (issue: Issue): DocumentUpdate<Issue> {
       const parentInfoIndex = issue.parents.findIndex(({ parentId }) => parentId === updateTx.objectId)
+      const dependecyInfoIndex = issue.dependency.findIndex(({ dependencyId }) => dependencyId === updateTx.objectId)
       const updatedParentInfo = { ...issue.parents[parentInfoIndex], parentTitle: updateTx.operations.title as string }
+      const updatedDependencyInfo = { ...issue.dependency[dependecyInfoIndex], dependencyTitle: updateTx.operations.title as string }
+
       const updatedParents = [...issue.parents]
 
-      updatedParents[parentInfoIndex] = updatedParentInfo
+      const updatedDependency = [...issue.dependency]
 
-      return { parents: updatedParents }
+      updatedParents[parentInfoIndex] = updatedParentInfo
+      updatedDependency[dependecyInfoIndex] = updatedDependencyInfo
+
+      return { parents: updatedParents, dependency: updatedDependency }
     }
 
     res.push(...(await updateSubIssues(updateTx, control, update)))
@@ -489,6 +551,42 @@ function updateIssueParentEstimations (
   for (const pinfo of targetParents) {
     res.push(
       control.txFactory.createTxUpdateDoc(tracker.class.Issue, pinfo.space, pinfo.parentId, {
+        $push: {
+          childInfo: {
+            childId: issue._id,
+            estimation: issue.estimation,
+            reportedTime: issue.reportedTime
+          }
+        }
+      })
+    )
+  }
+}
+
+function updateIssueDependencyEstimations (
+  issue: {
+    _id: Ref<Issue>
+    space: Ref<Space>
+    estimation: number
+    reportedTime: number
+  },
+  res: Tx[],
+  control: TriggerControl,
+  sourceDependency: IssueDependencyInfo[],
+  targetDependency: IssueDependencyInfo[]
+): void {
+  for (const pinfo of sourceDependency) {
+    res.push(
+      control.txFactory.createTxUpdateDoc(tracker.class.Issue, pinfo.space, pinfo.DependencyId, {
+        $pull: {
+          childInfo: { childId: issue._id }
+        }
+      })
+    )
+  }
+  for (const pinfo of targetDependency) {
+    res.push(
+      control.txFactory.createTxUpdateDoc(tracker.class.Issue, pinfo.space, pinfo.dependencyId, {
         $push: {
           childInfo: {
             childId: issue._id,

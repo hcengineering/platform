@@ -36,6 +36,7 @@ loadMetadata(tracker.icon, {
   Labels: `${icons}#priority-nopriority`, // TODO: add icon
   DueDate: `${icons}#dueDate`, // TODO: add icon
   Parent: `${icons}#parent-issue`, // TODO: add icon
+  Dependency: `${icons}#dependency`,
   Milestone: `${icons}#milestone`,
   IssueTemplates: `${icons}#issuetemplates`,
   Start: `${icons}#start`,

@@ -192,7 +192,7 @@ export interface Issue extends Task {
   blockedBy?: RelatedDocument[]
   relations?: RelatedDocument[]
   parents: IssueParentInfo[]
-
+  dependency: IssueDependencyInfo[]
   space: Ref<Project>
 
   milestone?: Ref<Milestone> | null
@@ -237,6 +237,7 @@ export interface IssueDraft {
   // Estimation in man days
   estimation: number
   parentIssue?: Ref<Issue>
+  dependencyIssue?: Ref<Issue>
   attachments?: number
   labels: TagReference[]
   subIssues: IssueDraft[]
@@ -315,6 +316,16 @@ export interface IssueParentInfo {
   parentId: Ref<Issue>
   identifier: string
   parentTitle: string
+  space: Ref<Space>
+}
+
+/**
+ * @public
+ */
+export interface IssueDependencyInfo {
+  dependencyId: Ref<Issue>
+  identifier: string
+  dependencyTitle: string
   space: Ref<Space>
 }
 
@@ -402,6 +413,7 @@ const pluginState = plugin(trackerId, {
   },
   ids: {
     NoParent: '' as Ref<Issue>,
+    NoDependency: '' as Ref<Issue>,
     IssueDraft: '',
     IssueDraftChild: ''
   },
@@ -448,6 +460,7 @@ const pluginState = plugin(trackerId, {
     Labels: '' as Asset,
     DueDate: '' as Asset,
     Parent: '' as Asset,
+    Dependency: '' as Asset,
     Milestone: '' as Asset,
     IssueTemplates: '' as Asset,
     Start: '' as Asset,
