@@ -830,7 +830,7 @@
     height: 100%;
   }
   .scroll {
-    will-change: opacity;
+    // will-change: opacity;
     flex-grow: 1;
     min-width: 0;
     min-height: 0;

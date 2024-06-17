@@ -84,7 +84,9 @@
   import Navigator from './Navigator.svelte'
   import SelectWorkspaceMenu from './SelectWorkspaceMenu.svelte'
   import SpaceView from './SpaceView.svelte'
+  import Guide from './Guide.svelte';
   import TopMenu from './icons/TopMenu.svelte'
+  import { text } from 'stream/consumers'
 
   let contentPanel: HTMLElement
 
@@ -587,7 +589,9 @@
     person && client.getHierarchy().hasMixin(person, contact.mixin.Employee)
       ? !client.getHierarchy().as(person, contact.mixin.Employee).active
       : false
+
 </script>
+
 
 {#if person && deactivated && !isAdminUser()}
   <div class="flex-col-center justify-center h-full flex-grow">
@@ -624,11 +628,13 @@
       />
     </clipPath>
   </svg>
+   <Guide />
   <div
     class="workbench-container"
     class:modern-app={modern}
     style:flex-direction={appsDirection === 'horizontal' ? 'column-reverse' : 'row'}
   >
+  
     <div class="antiPanel-application {appsDirection} no-print" class:lastDivider={!visibleNav}>
       <div
         class="hamburger-container clear-mins"
@@ -839,6 +845,7 @@
 {/if}
 
 <style lang="scss">
+
   .workbench-container {
     display: flex;
     min-width: 0;
