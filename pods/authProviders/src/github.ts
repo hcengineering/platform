@@ -35,6 +35,7 @@ export function registerGithub (
 
   router.get('/auth/github', async (ctx, next) => {
     const state = ctx.query?.inviteId
+    measureCtx.info('try auth via', { provider: 'github' })
     passport.authenticate('github', { scope: ['user:email'], session: true, state })(ctx, next)
   })
 
@@ -45,6 +46,7 @@ export function registerGithub (
       try {
         const email = ctx.state.user.emails?.[0]?.value ?? `github:${ctx.state.user.username}`
         const [first, last] = ctx.state.user.displayName?.split(' ') ?? [ctx.state.user.username, '']
+        measureCtx.info('Provider auth handler', { email, type: 'github' })
         if (email !== undefined) {
           if (ctx.query?.state != null) {
             const loginInfo = await joinWithProvider(
@@ -71,11 +73,12 @@ export function registerGithub (
               ctx.session.loginInfo = loginInfo
             }
           }
+          measureCtx.info('Success auth, redirect', { email, type: 'github' })
           // Successful authentication, redirect to your application
           ctx.redirect(concatLink(frontUrl, '/login/auth'))
         }
       } catch (err: any) {
-        measureCtx.error('failed to auth', err)
+        measureCtx.error('failed to auth', { err, type: 'github', user: ctx.state?.user })
       }
       await next()
     }

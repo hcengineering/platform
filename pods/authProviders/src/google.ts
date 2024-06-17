@@ -35,6 +35,7 @@ export function registerGoogle (
 
   router.get('/auth/google', async (ctx, next) => {
     const state = ctx.query?.inviteId
+    measureCtx.info('try auth via', { provider: 'google' })
     passport.authenticate('google', { scope: ['profile', 'email'], session: true, state })(ctx, next)
   })
 
@@ -45,6 +46,7 @@ export function registerGoogle (
       const email = ctx.state.user.emails?.[0]?.value
       const first = ctx.state.user.name.givenName
       const last = ctx.state.user.name.familyName
+      measureCtx.info('Provider auth handler', { email, type: 'google' })
       if (email !== undefined) {
         try {
           if (ctx.query?.state != null) {
@@ -69,9 +71,10 @@ export function registerGoogle (
           }
 
           // Successful authentication, redirect to your application
+          measureCtx.info('Success auth, redirect', { email, type: 'google' })
           ctx.redirect(concatLink(frontUrl, '/login/auth'))
         } catch (err: any) {
-          measureCtx.error('failed to auth', err)
+          measureCtx.error('failed to auth', { err, type: 'google', user: ctx.state?.user })
         }
       }
       await next()
