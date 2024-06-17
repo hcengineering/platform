@@ -28,6 +28,7 @@ export class UserProfilePage {
   savePassword = (): Locator => this.page.getByRole('button', { name: 'Save' })
   savedButton = (): Locator => this.page.getByRole('button', { name: 'Saved' })
   signOutButton = (): Locator => this.page.getByRole('button', { name: 'Sign out' })
+  notificationsButton = (): Locator => this.page.getByRole('button', { name: 'Notifications' })
 
   constructor (page: Page) {
     this.page = page
@@ -93,6 +94,10 @@ export class UserProfilePage {
   async updateLocation (newLocation: string): Promise<void> {
     await this.locationInput().click()
     await this.locationInput().fill(newLocation)
+  }
+
+  async clickOnNotificationsButton (): Promise<void> {
+    await this.notificationsButton().click()
   }
 
   async changePassword (currentPassword: string, newPassword: string): Promise<void> {

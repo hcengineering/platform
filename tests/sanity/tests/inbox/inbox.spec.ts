@@ -9,6 +9,9 @@ import { InboxPage } from '../model/inbox.ts/inbox-page'
 import { SignUpData } from '../model/common-types'
 import { faker } from '@faker-js/faker'
 import { SignInJoinPage } from '../model/signin-page'
+import { ChannelPage } from '../model/channel-page'
+import { UserProfilePage } from '../model/profile/user-profile-page'
+import { MenuItems, NotificationsPage } from '../model/profile/notifications-page'
 
 test.describe('Inbox tests', () => {
   let leftSideMenuPage: LeftSideMenuPage
@@ -189,5 +192,67 @@ test.describe('Inbox tests', () => {
     })
     await inboxPage.clickCloseLeftSidePanel()
     // ADD ASSERT ONCE THE ISSUE IS FIXED
+  })
+
+  test('User is able to send message to other user and he should see it in inbox', async ({ page, browser }) => {
+    const channelPage = new ChannelPage(page)
+    await leftSideMenuPage.openProfileMenu()
+    await leftSideMenuPage.inviteToWorkspace()
+    await leftSideMenuPage.getInviteLink()
+    const linkText = await page.locator('.antiPopup .link').textContent()
+    const page2 = await browser.newPage()
+
+    const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
+    const inboxPageSecond = new InboxPage(page2)
+    await leftSideMenuPage.clickOnCloseInvite()
+    await page2.goto(linkText ?? '')
+    const joinPage = new SignInJoinPage(page2)
+    await joinPage.join(newUser2)
+    await page.waitForTimeout(1000)
+
+    await leftSideMenuPage.clickChunter()
+    await channelPage.clickChannel('general')
+    await channelPage.sendMessage('Test message')
+
+    await channelPage.checkMessageExist('Test message', true, 'Test message')
+    await leftSideMenuPage.clickNotification()
+    await inboxPage.checkIfInboxChatExists('Channel general', false)
+    await leftSideMenuPageSecond.clickNotification()
+    await inboxPageSecond.checkIfInboxChatExists('Channel general', true)
+    await inboxPageSecond.clickOnInboxChat('Channel general')
+    await inboxPageSecond.checkIfTextInChatIsPresent('Test message')
+  })
+
+  test('User is able to turn off notification and he should not receive messages to inbox', async ({
+    page,
+    browser
+  }) => {
+    const channelPage = new ChannelPage(page)
+    await leftSideMenuPage.openProfileMenu()
+    await leftSideMenuPage.inviteToWorkspace()
+    await leftSideMenuPage.getInviteLink()
+    const linkText = await page.locator('.antiPopup .link').textContent()
+    const page2 = await browser.newPage()
+
+    const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
+    const inboxPageSecond = new InboxPage(page2)
+    const notificationPageSecond = new NotificationsPage(page2)
+    await leftSideMenuPage.clickOnCloseInvite()
+    await page2.goto(linkText ?? '')
+    const joinPage = new SignInJoinPage(page2)
+    await joinPage.join(newUser2)
+    const userProfilePageSecond = new UserProfilePage(page2)
+    await userProfilePageSecond.openProfileMenu()
+    await userProfilePageSecond.clickSettings()
+    await userProfilePageSecond.clickOnNotificationsButton()
+    await notificationPageSecond.clickMenuItem(MenuItems.CHAT)
+    await notificationPageSecond.toggleChatMessage()
+    await page.waitForTimeout(1000)
+    await leftSideMenuPage.clickChunter()
+    await channelPage.clickChannel('general')
+    await channelPage.sendMessage('Test message')
+    await channelPage.checkMessageExist('Test message', true, 'Test message')
+    await leftSideMenuPageSecond.clickNotification()
+    await inboxPageSecond.checkIfInboxChatExists('Channel general', false)
   })
 })
