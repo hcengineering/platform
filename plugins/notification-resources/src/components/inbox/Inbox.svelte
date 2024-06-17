@@ -33,7 +33,8 @@
     Scroller,
     Separator,
     TabItem,
-    TabList
+    TabList,
+    deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
   import chunter, { ThreadMessage } from '@hcengineering/chunter'
   import activity, { ActivityMessage } from '@hcengineering/activity'
@@ -49,10 +50,6 @@
   import InboxGroupedListView from './InboxGroupedListView.svelte'
   import notification from '../../plugin'
   import InboxMenuButton from './InboxMenuButton.svelte'
-
-  export let visibleNav: boolean = true
-  export let navFloat: boolean = false
-  export let appsDirection: 'vertical' | 'horizontal' = 'horizontal'
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -407,9 +404,9 @@
 />
 
 <div class="flex-row-top h-full">
-  {#if visibleNav}
+  {#if $deviceInfo.navigator.visible}
     <div
-      class="antiPanel-navigator {appsDirection === 'horizontal'
+      class="antiPanel-navigator {$deviceInfo.navigator.direction === 'horizontal'
         ? 'portrait'
         : 'landscape'} background-comp-header-color"
     >
@@ -437,9 +434,9 @@
           />
         </Scroller>
       </div>
-      <Separator name="inbox" float={navFloat ? 'navigator' : true} index={0} />
+      <Separator name="inbox" float={$deviceInfo.navigator.float ? 'navigator' : true} index={0} />
     </div>
-    <Separator name="inbox" float={navFloat} index={0} />
+    <Separator name="inbox" float={$deviceInfo.navigator.float} index={0} />
   {/if}
   <div class="antiPanel-component filled w-full">
     {#if selectedContext && selectedComponent}

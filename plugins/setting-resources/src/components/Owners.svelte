@@ -18,12 +18,8 @@
   import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import { Breadcrumb, DropdownIntlItem, DropdownLabelsIntl, EditBox, Header, Scroller } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
   import setting from '../plugin'
 
-  export let visibleNav: boolean = true
-
-  const dispatch = createEventDispatcher()
   const client = getClient()
   const query = createQuery()
   const currentAccount = getCurrentAccount()
@@ -50,7 +46,7 @@
 </script>
 
 <div class="hulyComponent">
-  <Header minimize={!visibleNav} on:resize={(event) => dispatch('change', event.detail)}>
+  <Header>
     <Breadcrumb icon={setting.icon.Owners} label={setting.string.Owners} size={'large'} isCurrent />
     <EditBox kind={'search-style'} focusIndex={1} bind:value={search} placeholder={presentation.string.Search} />
   </Header>

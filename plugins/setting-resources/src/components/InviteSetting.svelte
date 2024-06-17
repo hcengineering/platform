@@ -13,15 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
   import login from '@hcengineering/login'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { InviteSettings } from '@hcengineering/setting'
   import { Button, EditBox, MiniToggle, Header, Breadcrumb } from '@hcengineering/ui'
-
-  export let visibleNav: boolean = true
-
-  const dispatch = createEventDispatcher()
 
   const client = getClient()
   let expTime: number = 48
@@ -61,7 +56,7 @@
 </script>
 
 <div class="hulyComponent">
-  <Header minimize={!visibleNav} on:resize={(event) => dispatch('change', event.detail)}>
+  <Header>
     <Breadcrumb icon={setting.icon.InviteSettings} label={setting.string.InviteSettings} size={'large'} isCurrent />
   </Header>
   <div class="form">

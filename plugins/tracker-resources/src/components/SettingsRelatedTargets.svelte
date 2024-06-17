@@ -1,18 +1,14 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
   import { Space } from '@hcengineering/core'
   import { Header, Breadcrumb } from '@hcengineering/ui'
   import tracker from '../plugin'
   import EditRelatedTargets from './EditRelatedTargets.svelte'
 
   export let value: Space | undefined
-  export let visibleNav: boolean = true
-
-  const dispatch = createEventDispatcher()
 </script>
 
 <div class="hulyComponent">
-  <Header minimize={!visibleNav} on:resize={(event) => dispatch('change', event.detail)}>
+  <Header>
     <Breadcrumb icon={tracker.icon.Relations} label={tracker.string.RelatedIssues} size={'large'} isCurrent />
   </Header>
   <EditRelatedTargets {value} />

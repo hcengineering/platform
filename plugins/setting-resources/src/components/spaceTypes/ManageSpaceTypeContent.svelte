@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, onDestroy } from 'svelte'
+  import { onDestroy } from 'svelte'
   import core, {
     Class,
     Doc,
@@ -47,9 +47,6 @@
   import SpaceTypeEditorComponent from './editor/SpaceTypeEditor.svelte'
   import { clearSettingsStore } from '../../store'
 
-  export let visibleNav: boolean = true
-
-  const dispatch = createEventDispatcher()
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const canEdit = isOwnerOrMaintainer()
@@ -143,7 +140,7 @@
   }}
 >
   {#if type !== undefined && descriptor !== undefined}
-    <Header minimize={!visibleNav} on:resize={(event) => dispatch('change', event.detail)}>
+    <Header>
       {#if canEdit}
         <ButtonIcon
           icon={IconCopy}

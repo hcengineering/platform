@@ -19,13 +19,8 @@
   import presentation from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
   import { Breadcrumb, Button, EditBox, Header, Icon, Label } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
   import plugin from '../plugin'
   import Error from './icons/Error.svelte'
-
-  export let visibleNav: boolean = true
-
-  const dispatch = createEventDispatcher()
 
   let oldPassword: string = ''
   let password: string = ''
@@ -62,7 +57,7 @@
 </script>
 
 <div class="hulyComponent">
-  <Header minimize={!visibleNav} on:resize={(event) => dispatch('change', event.detail)}>
+  <Header>
     <Breadcrumb icon={setting.icon.Password} label={setting.string.ChangePassword} size={'large'} isCurrent />
   </Header>
   <div class="flex-row-stretch flex-grow p-10">

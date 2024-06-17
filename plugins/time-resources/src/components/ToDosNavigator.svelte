@@ -13,15 +13,14 @@
     Scroller,
     Month,
     getPlatformColorDef,
-    themeStore
+    themeStore,
+    deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
   import { ToDosMode } from '..'
   import time from '../plugin'
 
   export let mode: ToDosMode
   export let tag: Ref<TagElementType> | undefined
-  export let navFloat: boolean = false
-  export let appsDirection: 'vertical' | 'horizontal' = 'horizontal'
   export let currentDate: Date
 
   const acc = getCurrentAccount() as PersonAccount
@@ -104,7 +103,9 @@
   const today: Date = new Date()
 </script>
 
-<div class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'} border-left">
+<div
+  class="antiPanel-navigator {$deviceInfo.navigator.direction === 'horizontal' ? 'portrait' : 'landscape'} border-left"
+>
   <div class="antiPanel-wrap__content hulyNavPanel-container">
     <div class="hulyNavPanel-header">
       <Label label={time.string.Planner} />
@@ -203,7 +204,7 @@
   </div>
   <Separator
     name={'time'}
-    float={navFloat ? 'navigator' : true}
+    float={$deviceInfo.navigator.float ? 'navigator' : true}
     index={0}
     disabledWhen={['panel-aside']}
     color={'var(--theme-navpanel-border)'}

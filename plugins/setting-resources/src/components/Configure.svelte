@@ -13,15 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
   import { PluginConfiguration } from '@hcengineering/core'
   import { configurationStore, getClient } from '@hcengineering/presentation'
   import { Button, Icon, IconInfo, Label, Header, Breadcrumb, Scroller } from '@hcengineering/ui'
   import setting from '../plugin'
-
-  export let visibleNav: boolean = true
-
-  const dispatch = createEventDispatcher()
 
   const client = getClient()
 
@@ -33,7 +28,7 @@
 </script>
 
 <div class="hulyComponent">
-  <Header minimize={!visibleNav} on:resize={(event) => dispatch('change', event.detail)}>
+  <Header>
     <Breadcrumb icon={setting.icon.Setting} label={setting.string.Configuration} size={'large'} isCurrent />
   </Header>
   <div class="hulyComponent-content__column content">

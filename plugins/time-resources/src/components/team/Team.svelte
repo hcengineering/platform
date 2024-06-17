@@ -16,16 +16,13 @@
   import { Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { Project } from '@hcengineering/task'
-  import { Label, ModeSelector, Separator, defineSeparators } from '@hcengineering/ui'
+  import { Label, ModeSelector, Separator, defineSeparators, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import time from '../../plugin'
   import { teamSeparators } from '../../utils'
   import TeamNavigator from './TeamNavigator.svelte'
   import Agenda from './agenda/Agenda.svelte'
   import Calendar from './calendar/Calendar.svelte'
 
-  export let visibleNav: boolean = true
-  export let navFloat: boolean = false
-  export let appsDirection: 'vertical' | 'horizontal' = 'horizontal'
   let currentDate: Date = new Date()
 
   let space: Ref<Project> | undefined = undefined
@@ -45,11 +42,11 @@
 </script>
 
 <div class="background-comp-header-color w-full h-full flex-row-top">
-  {#if visibleNav}
-    <TeamNavigator {navFloat} {appsDirection} bind:selected={space} />
+  {#if $deviceInfo.navigator.visible}
+    <TeamNavigator bind:selected={space} />
     <Separator
       name={'team'}
-      float={navFloat}
+      float={$deviceInfo.navigator.float}
       index={0}
       disabledWhen={['panel-aside']}
       color={'var(--theme-navpanel-border)'}

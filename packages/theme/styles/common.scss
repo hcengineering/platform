@@ -137,8 +137,8 @@
 @media (max-width: 1024px) {
   .antiPanel-navigator {
     position: fixed;
-    top: var(--status-bar-height);
-    height: calc(100% - var(--status-bar-height));
+    top: calc(var(--status-bar-height) + 1px);
+    height: calc(100% - var(--status-bar-height) - 1px);
     background-color: var(--theme-navpanel-color);
     filter: drop-shadow(2px 0 1px rgba(0, 0, 0, .2));
     z-index: 450;
@@ -147,7 +147,8 @@
       left: 0;
     }
     &.landscape {
-      left: var(--app-panel-width);
+      .modern-app & { left: var(--app-panel-width); }
+      :not(.modern-app) & { left: calc(var(--app-panel-width) + 1px); }
     }
   }
 }
