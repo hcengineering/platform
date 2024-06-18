@@ -1287,89 +1287,84 @@ export class LiveQuery implements WithTx, Client {
     return result
   }
 
-  triggerCounter = 0
-  searchTriggerTimer: any
+  triggerInProgress = true
 
   private async checkUpdateEvents (evt: TxWorkspaceEvent, trigger = true): Promise<void> {
-    clearTimeout(this.searchTriggerTimer)
-
-    // We need to add trigger once more, since elastic could have a huge lag with document availability.
-    if (trigger || this.triggerCounter > 0) {
-      if (trigger) {
-        this.triggerCounter = 2 // Schedule 2 refreshes on every 10 seconds.
+    if (this.triggerInProgress) {
+      this.triggerInProgress = false
+      const h = this.client.getHierarchy()
+      function hasClass (q: Query, classes: Ref<Class<Doc>>[]): boolean {
+        return (
+          classes.includes(q._class) || classes.some((it) => h.isDerived(q._class, it) || h.isDerived(it, q._class))
+        )
       }
-      setTimeout(() => {
-        this.triggerCounter--
-        void this.checkUpdateEvents(evt, false)
-      }, 10000)
-    }
-
-    const h = this.client.getHierarchy()
-    function hasClass (q: Query, classes: Ref<Class<Doc>>[]): boolean {
-      return classes.includes(q._class) || classes.some((it) => h.isDerived(q._class, it) || h.isDerived(it, q._class))
-    }
-    if (evt.event === WorkspaceEvent.IndexingUpdate) {
-      const indexingParam = evt.params as IndexingUpdateEvent
-      for (const q of [...this.queue]) {
-        if (hasClass(q, indexingParam._class) && q.query.$search !== undefined) {
-          if (!this.removeFromQueue(q)) {
-            try {
-              await this.refresh(q, true)
-            } catch (err: any) {
-              Analytics.handleError(err)
-              console.error(err)
+      if (evt.event === WorkspaceEvent.IndexingUpdate) {
+        const indexingParam = evt.params as IndexingUpdateEvent
+        for (const q of [...this.queue]) {
+          if (hasClass(q, indexingParam._class) && q.query.$search !== undefined) {
+            if (!this.removeFromQueue(q)) {
+              try {
+                await this.refresh(q, true)
+              } catch (err: any) {
+                Analytics.handleError(err)
+                console.error(err)
+              }
+            } else {
+              const queries = this.queries.get(q._class)
+              const pos = queries?.indexOf(q) ?? -1
+              if (pos >= 0 && queries !== undefined) {
+                queries.splice(pos, 1)
+                if (queries?.length === 0) {
+                  this.queries.delete(q._class)
+                }
+              }
             }
-          } else {
-            const queries = this.queries.get(q._class)
-            const pos = queries?.indexOf(q) ?? -1
-            if (pos >= 0 && queries !== undefined) {
-              queries.splice(pos, 1)
-              if (queries?.length === 0) {
-                this.queries.delete(q._class)
+          }
+        }
+        for (const v of this.queries.values()) {
+          for (const q of v) {
+            if (hasClass(q, indexingParam._class) && q.query.$search !== undefined) {
+              try {
+                await this.refresh(q, true)
+              } catch (err: any) {
+                Analytics.handleError(err)
+                console.error(err)
               }
             }
           }
         }
       }
-      for (const v of this.queries.values()) {
-        for (const q of v) {
-          if (hasClass(q, indexingParam._class) && q.query.$search !== undefined) {
-            try {
-              await this.refresh(q, true)
-            } catch (err: any) {
-              Analytics.handleError(err)
-              console.error(err)
-            }
-          }
-        }
-      }
-    }
-    if (evt.event === WorkspaceEvent.BulkUpdate) {
-      const params = evt.params as BulkUpdateEvent
-      for (const q of [...this.queue]) {
-        if (hasClass(q, params._class)) {
-          if (!this.removeFromQueue(q)) {
-            try {
-              await this.refresh(q, true)
-            } catch (err: any) {
-              Analytics.handleError(err)
-              console.error(err)
-            }
-          }
-        }
-      }
-      for (const v of this.queries.values()) {
-        for (const q of v) {
+      if (evt.event === WorkspaceEvent.BulkUpdate) {
+        const params = evt.params as BulkUpdateEvent
+        for (const q of [...this.queue]) {
           if (hasClass(q, params._class)) {
-            try {
-              await this.refresh(q, true)
-            } catch (err: any) {
-              Analytics.handleError(err)
-              console.error(err)
+            if (!this.removeFromQueue(q)) {
+              try {
+                await this.refresh(q, true)
+              } catch (err: any) {
+                Analytics.handleError(err)
+                console.error(err)
+              }
+            }
+          }
+        }
+        for (const v of this.queries.values()) {
+          for (const q of v) {
+            if (hasClass(q, params._class)) {
+              try {
+                await this.refresh(q, true)
+              } catch (err: any) {
+                Analytics.handleError(err)
+                console.error(err)
+              }
             }
           }
         }
       }
+      setTimeout(() => {
+        this.triggerInProgress = true
+        void this.checkUpdateEvents(evt, false)
+      }, 20000)
     }
   }
 
