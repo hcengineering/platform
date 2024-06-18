@@ -46,7 +46,15 @@ import TeamspaceSpacePresenter from './components/navigator/TeamspaceSpacePresen
 import CreateTeamspace from './components/teamspace/CreateTeamspace.svelte'
 
 import document from './plugin'
-import { createEmptyDocument, documentTitleProvider, getDocumentLink, getDocumentUrl, resolveLocation } from './utils'
+import {
+  createEmptyDocument,
+  documentTitleProvider,
+  getDocumentLink,
+  getDocumentLinkId,
+  getDocumentUrl,
+  parseDocumentId,
+  resolveLocation
+} from './utils'
 
 const toObjectSearchResult = (e: WithLookup<Document>): ObjectSearchResult => ({
   doc: e,
@@ -187,7 +195,9 @@ export default async (): Promise<Resources> => ({
     GetObjectLinkFragment: getDocumentLink,
     DocumentTitleProvider: documentTitleProvider,
     CanLockDocument: canLockDocument,
-    CanUnlockDocument: canUnlockDocument
+    CanUnlockDocument: canUnlockDocument,
+    GetDocumentLinkId: getDocumentLinkId,
+    ParseDocumentId: parseDocumentId
   },
   resolver: {
     Location: resolveLocation

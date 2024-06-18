@@ -13,12 +13,12 @@
 // limitations under the License.
 //
 
-import { Ref, Doc, Class } from '@hcengineering/core'
+import type { Class, Doc, Ref } from '@hcengineering/core'
 
 export function decodeObjectURI (value: string): [Ref<Doc>, Ref<Class<Doc>>] {
   return decodeURIComponent(value).split('|') as [Ref<Doc>, Ref<Class<Doc>>]
 }
 
-export function encodeObjectURI (_id: Ref<Doc>, _class: Ref<Class<Doc>>): string {
+export function encodeObjectURI (_id: string, _class: Ref<Class<Doc>>): string {
   return [_id, _class].join('|')
 }

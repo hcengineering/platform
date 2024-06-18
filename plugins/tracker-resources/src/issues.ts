@@ -41,7 +41,7 @@ export async function getTitle (doc: Doc): Promise<string> {
 }
 
 export function generateIssuePanelUri (issue: Issue): string {
-  return getPanelURI(tracker.component.EditIssue, issue._id, issue._class, 'content')
+  return getPanelURI(tracker.component.EditIssue, issue.identifier, issue._class, 'content')
 }
 
 export async function issueLinkFragmentProvider (doc: Doc): Promise<Location> {
@@ -125,4 +125,11 @@ export async function updateIssueRelation (
       break
   }
   await client.update(value, update)
+}
+
+export async function getIssueIdByIdentifier (identifier: string): Promise<Ref<Issue> | undefined> {
+  const client = getClient()
+  const issue = await client.findOne(tracker.class.Issue, { identifier }, { projection: { _id: 1 } })
+
+  return issue?._id
 }

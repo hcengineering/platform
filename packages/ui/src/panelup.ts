@@ -53,12 +53,12 @@ export function openPanel (
   })
 }
 
-export function closePanel (shoulRedirect: boolean = true): void {
+export function closePanel (shouldRedirect: boolean = true): void {
   currentLocation = undefined
   panelstore.update(() => {
     return { panel: undefined }
   })
-  if (shoulRedirect) {
+  if (shouldRedirect) {
     const loc = getLocation()
     loc.fragment = undefined
     navigate(loc)

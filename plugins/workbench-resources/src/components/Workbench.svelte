@@ -67,7 +67,8 @@
     NavLink,
     accessDeniedStore,
     migrateViewOpttions,
-    updateFocus
+    updateFocus,
+    parseLinkId
   } from '@hcengineering/view-resources'
   import type { Application, NavigatorModel, SpecialNavModel, ViewConfiguration } from '@hcengineering/workbench'
   import { getContext, onDestroy, onMount, tick } from 'svelte'
@@ -117,7 +118,10 @@
   let panelInstance: PanelInstance
   let popupInstance: Popup
 
+  const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
+
   $deviceInfo.navigator.visible = getMetadata(workbench.metadata.NavigationExpandedDefault) ?? true
+
   async function toggleNav (): Promise<void> {
     $deviceInfo.navigator.visible = !$deviceInfo.navigator.visible
     closeTooltip()
@@ -202,14 +206,15 @@
   async function getWindowTitle (loc: Location): Promise<string | undefined> {
     if (loc.fragment == null) return
     const hierarchy = client.getHierarchy()
-    const [, _id, _class] = decodeURIComponent(loc.fragment).split('|')
+    const [, id, _class] = decodeURIComponent(loc.fragment).split('|')
     if (_class == null) return
 
     const mixin = hierarchy.classHierarchyMixin(_class as Ref<Class<Doc>>, view.mixin.ObjectTitle)
     if (mixin === undefined) return
     const titleProvider = await getResource(mixin.titleProvider)
     try {
-      return await titleProvider(client, _id as Ref<Doc>)
+      const _id = await parseLinkId(linkProviders, id, _class as Ref<Class<Doc>>)
+      return await titleProvider(client, _id)
     } catch (err: any) {
       Analytics.handleError(err)
       console.error(err)
@@ -398,7 +403,9 @@
     const props = decodeURIComponent(fragment).split('|')
 
     if (props.length >= 3) {
-      const doc = await client.findOne<Doc>(props[2] as Ref<Class<Doc>>, { _id: props[1] as Ref<Doc> })
+      const _class = props[2] as Ref<Class<Doc>>
+      const _id = await parseLinkId(linkProviders, props[1], _class)
+      const doc = await client.findOne<Doc>(_class, { _id })
 
       if (doc !== undefined) {
         const provider = ListSelectionProvider.Find(doc._id)
@@ -408,8 +415,8 @@
         })
         openPanel(
           props[0] as AnyComponent,
-          props[1],
-          props[2],
+          _id,
+          _class,
           (props[3] ?? undefined) as PopupAlignment,
           (props[4] ?? undefined) as AnyComponent
         )

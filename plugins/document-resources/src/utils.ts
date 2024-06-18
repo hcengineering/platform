@@ -105,12 +105,17 @@ export async function generateLocation (loc: Location, id: Ref<Document>): Promi
 }
 
 export function getDocumentIdFromFragment (fragment: string): Ref<Document> | undefined {
-  const [, _id] = decodeURIComponent(fragment).split('|')
-  return _id as Ref<Document>
+  const [, id] = decodeURIComponent(fragment).split('|')
+
+  if (id == null) {
+    return undefined
+  }
+
+  return (parseDocumentId(id) ?? id) as Ref<Document>
 }
 
 export function getDocumentUrl (doc: Document): string {
-  const id = getDocumentId(doc)
+  const id = getDocumentLinkId(doc)
 
   const location = getCurrentResolvedLocation()
   const frontUrl = getMetadata(presentation.metadata.FrontUrl)
@@ -124,17 +129,17 @@ export function getDocumentLink (doc: Document): Location {
   loc.fragment = undefined
   loc.query = undefined
   loc.path[2] = documentId
-  loc.path[3] = getDocumentId(doc)
+  loc.path[3] = getDocumentLinkId(doc)
 
   return loc
 }
 
-function getDocumentId (doc: Document): string {
+export function getDocumentLinkId (doc: Document): string {
   const slug = slugify(doc.name, { lower: true })
   return `${slug}-${doc._id}`
 }
 
-function parseDocumentId (shortLink: string): Ref<Document> | undefined {
+export function parseDocumentId (shortLink: string): Ref<Document> | undefined {
   const parts = shortLink.split('-')
   if (parts.length > 1) {
     return parts[parts.length - 1] as Ref<Document>

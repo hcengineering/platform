@@ -420,5 +420,4 @@ const notification = plugin(notificationId, {
   }
 })
 
-export * from './utils'
 export default notification

@@ -58,7 +58,8 @@ export default mergeIds(recruitId, recruit, {
     GetTalentId: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
     HideDoneState: '' as ViewQueryAction,
     HideArchivedVacancies: '' as ViewQueryAction,
-    ApplicantHasEmail: '' as Resource<ViewActionAvailabilityFunction>
+    ApplicantHasEmail: '' as Resource<ViewActionAvailabilityFunction>,
+    ParseLinkId: '' as Resource<(id: string) => Promise<Ref<Doc> | undefined>>
   },
   string: {
     ApplicationsShort: '' as IntlString,

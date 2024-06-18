@@ -76,6 +76,7 @@ import {
   getTalentId,
   getVacTitle,
   objectLinkProvider,
+  parseLinkId,
   resolveLocation
 } from './utils'
 
@@ -411,7 +412,8 @@ export default async (): Promise<Resources> => ({
     GetIdObjectLinkFragment: getObjectLink,
     HideDoneState: hideDoneState,
     HideArchivedVacancies: hideArchivedVacancies,
-    ApplicantHasEmail: applicantHasEmail
+    ApplicantHasEmail: applicantHasEmail,
+    ParseLinkId: parseLinkId
   },
   resolver: {
     Location: resolveLocation

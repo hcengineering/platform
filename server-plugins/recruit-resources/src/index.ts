@@ -110,7 +110,8 @@ export default async () => ({
     VacancyHTMLPresenter: vacancyHTMLPresenter,
     VacancyTextPresenter: vacancyTextPresenter,
     ApplicationHTMLPresenter: applicationHTMLPresenter,
-    ApplicationTextPresenter: applicationTextPresenter
+    ApplicationTextPresenter: applicationTextPresenter,
+    LinkIdProvider: getSequenceId
   },
   trigger: {
     OnRecruitUpdate

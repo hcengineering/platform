@@ -13,15 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import {
-    ActivityInboxNotification,
-    decodeObjectURI,
-    DocNotifyContext,
-    InboxNotification,
-    notificationId
-  } from '@hcengineering/notification'
+  import { DocNotifyContext, InboxNotification, notificationId } from '@hcengineering/notification'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
-  import view from '@hcengineering/view'
+  import view, { decodeObjectURI } from '@hcengineering/view'
   import {
     AnyComponent,
     Component,
@@ -36,16 +30,16 @@
     TabList,
     deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
-  import chunter, { ThreadMessage } from '@hcengineering/chunter'
+  import chunter from '@hcengineering/chunter'
   import activity, { ActivityMessage } from '@hcengineering/activity'
-  import { isActivityMessageClass, isReactionMessage } from '@hcengineering/activity-resources'
   import { get } from 'svelte/store'
   import { translate } from '@hcengineering/platform'
   import { getCurrentAccount, groupByArray, IdMap, Ref, SortingOrder } from '@hcengineering/core'
+  import { parseLinkId } from '@hcengineering/view-resources'
 
   import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
   import SettingsButton from './SettingsButton.svelte'
-  import { getDisplayInboxData, isMentionNotification, openInboxDoc, resolveLocation } from '../../utils'
+  import { getDisplayInboxData, resetInboxContext, resolveLocation, selectInboxContext } from '../../utils'
   import { InboxData, InboxNotificationsFilter } from '../../types'
   import InboxGroupedListView from './InboxGroupedListView.svelte'
   import notification from '../../plugin'
@@ -68,6 +62,8 @@
     id: 'all',
     labelIntl: notification.string.All
   }
+
+  const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
 
   let showArchive = false
   let archivedActivityNotifications: InboxNotification[] = []
@@ -156,8 +152,9 @@
       return
     }
 
-    const [_id] = decodeObjectURI(loc?.loc.path[3] ?? '')
-    const context = $contextByDocStore.get(_id)
+    const [id, _class] = decodeObjectURI(loc?.loc.path[3] ?? '')
+    const _id = await parseLinkId(linkProviders, id, _class)
+    const context = _id ? $contextByDocStore.get(_id) : undefined
 
     selectedContextId = context?._id
 
@@ -229,56 +226,13 @@
     selectedContextId = selectedContext?._id
 
     if (selectedContext === undefined) {
-      openInboxDoc()
+      resetInboxContext()
       return
     }
 
     const selectedNotification: InboxNotification | undefined = event?.detail?.notification
 
-    if (isMentionNotification(selectedNotification) && isActivityMessageClass(selectedNotification.mentionedInClass)) {
-      const selectedMsg = selectedNotification.mentionedIn as Ref<ActivityMessage>
-
-      openInboxDoc(
-        selectedContext.attachedTo,
-        selectedContext.attachedToClass,
-        isActivityMessageClass(selectedContext.attachedToClass)
-          ? (selectedContext.attachedTo as Ref<ActivityMessage>)
-          : undefined,
-        selectedMsg
-      )
-    } else if (hierarchy.isDerived(selectedContext.attachedToClass, activity.class.ActivityMessage)) {
-      const message = event?.detail?.notification?.$lookup?.attachedTo
-
-      if (selectedContext.attachedToClass === chunter.class.ThreadMessage) {
-        const thread = await client.findOne(chunter.class.ThreadMessage, {
-          _id: selectedContext.attachedTo as Ref<ThreadMessage>
-        })
-        openInboxDoc(selectedContext.attachedTo, selectedContext.attachedToClass, thread?.attachedTo, thread?._id)
-      } else if (isReactionMessage(message)) {
-        openInboxDoc(
-          selectedContext.attachedTo,
-          selectedContext.attachedToClass,
-          undefined,
-          selectedContext.attachedTo as Ref<ActivityMessage>
-        )
-      } else {
-        const selectedMsg = (selectedNotification as ActivityInboxNotification)?.attachedTo
-
-        openInboxDoc(
-          selectedContext.attachedTo,
-          selectedContext.attachedToClass,
-          selectedMsg ? (selectedContext.attachedTo as Ref<ActivityMessage>) : undefined,
-          selectedMsg ?? (selectedContext.attachedTo as Ref<ActivityMessage>)
-        )
-      }
-    } else {
-      openInboxDoc(
-        selectedContext.attachedTo,
-        selectedContext.attachedToClass,
-        undefined,
-        (selectedNotification as ActivityInboxNotification)?.attachedTo
-      )
-    }
+    void selectInboxContext(linkProviders, selectedContext, selectedNotification)
   }
 
   async function updateSelectedPanel (selectedContext?: DocNotifyContext): Promise<void> {

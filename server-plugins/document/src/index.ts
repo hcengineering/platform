@@ -3,6 +3,7 @@
 //
 //
 
+import { Doc } from '@hcengineering/core'
 import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { Presenter } from '@hcengineering/server-notification'
@@ -18,6 +19,7 @@ export const serverDocumentId = 'server-document' as Plugin
 export default plugin(serverDocumentId, {
   function: {
     DocumentHTMLPresenter: '' as Resource<Presenter>,
-    DocumentTextPresenter: '' as Resource<Presenter>
+    DocumentTextPresenter: '' as Resource<Presenter>,
+    DocumentLinkIdProvider: '' as Resource<(doc: Doc) => Promise<string>>
   }
 })

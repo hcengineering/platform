@@ -301,6 +301,11 @@ function defineDocument (builder: Builder): void {
     encode: document.function.GetObjectLinkFragment
   })
 
+  builder.mixin(document.class.Document, core.class.Class, view.mixin.LinkIdProvider, {
+    encode: document.function.GetDocumentLinkId,
+    decode: document.function.ParseDocumentId
+  })
+
   builder.mixin(document.class.Document, core.class.Class, view.mixin.ObjectIcon, {
     component: document.component.DocumentIcon
   })

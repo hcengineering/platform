@@ -501,12 +501,17 @@ function updateIssueParentEstimations (
   }
 }
 
+async function issueLinkIdProvider (issue: Issue): Promise<string> {
+  return issue.identifier
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   function: {
     IssueHTMLPresenter: issueHTMLPresenter,
     IssueTextPresenter: issueTextPresenter,
-    IssueNotificationContentProvider: getIssueNotificationContent
+    IssueNotificationContentProvider: getIssueNotificationContent,
+    IssueLinkIdProvider: issueLinkIdProvider
   },
   trigger: {
     OnIssueUpdate,

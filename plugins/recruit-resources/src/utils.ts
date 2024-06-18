@@ -92,15 +92,41 @@ async function generateIdLocation (loc: Location, shortLink: string): Promise<Re
   }
 }
 
-async function generateLocation (loc: Location, shortLink: string): Promise<ResolvedLocation | undefined> {
+export async function parseLinkId (id: string): Promise<Ref<Doc> | undefined> {
+  if (isShortId(id)) {
+    const client = getClient()
+    const hierarchy = client.getHierarchy()
+    const data = getShortLinkData(hierarchy, id)
+
+    if (data === undefined) {
+      return id as Ref<Doc>
+    }
+
+    const [_class, , number] = data
+
+    if (_class === undefined) {
+      return id as Ref<Doc>
+    }
+
+    const doc = await client.findOne(_class, { number }, { projection: { _id: 1 } })
+
+    return doc?._id
+  }
+
+  return id as Ref<Doc>
+}
+
+function getShortLinkData (
+  hierarchy: Hierarchy,
+  shortLink: string
+): [Ref<Class<Doc>> | undefined, string, number] | undefined {
   const tokens = shortLink.split('-')
   if (tokens.length < 2) {
     return undefined
   }
   const classLabel = tokens[0]
   const number = Number(tokens[1])
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
+
   const classes = [recruit.class.Applicant, recruit.class.Vacancy, recruit.class.Review]
   let _class: Ref<Class<Doc>> | undefined
   for (const clazz of classes) {
@@ -109,6 +135,21 @@ async function generateLocation (loc: Location, shortLink: string): Promise<Reso
       break
     }
   }
+
+  return [_class, classLabel, number]
+}
+
+async function generateLocation (loc: Location, shortLink: string): Promise<ResolvedLocation | undefined> {
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const data = getShortLinkData(hierarchy, shortLink)
+
+  if (data === undefined) {
+    return
+  }
+
+  const [_class, classLabel, number] = data
+
   if (_class === undefined) {
     console.error(`Not found class with short label ${classLabel}`)
     return undefined

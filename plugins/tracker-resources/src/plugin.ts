@@ -16,7 +16,7 @@ import { type StatusCategory, type Client, type Doc, type Ref, type Space } from
 import type { Asset, IntlString, Metadata, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import { type ProjectType } from '@hcengineering/task'
-import tracker, { trackerId, type IssueDraft } from '@hcengineering/tracker'
+import tracker, { trackerId, type IssueDraft, type Issue } from '@hcengineering/tracker'
 import { type AnyComponent, type Location } from '@hcengineering/ui'
 import {
   type CreateAggregationManagerFunc,
@@ -378,7 +378,7 @@ export default mergeIds(trackerId, tracker, {
     IssueIdentifierProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
     ComponentTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
     MilestoneTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
-    GetIssueId: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
+    GetIssueId: '' as Resource<(doc: Doc) => Promise<string>>,
     GetIssueLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
     GetIssueLinkFragment: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
     GetIssueTitle: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>,
@@ -393,7 +393,8 @@ export default mergeIds(trackerId, tracker, {
     GetVisibleFilters: '' as Resource<(filters: KeyFilter[], space?: Ref<Space>) => Promise<KeyFilter[]>>,
     IsProjectJoined: '' as Resource<(space: Space) => Promise<boolean>>,
     IssueChatTitleProvider: '' as Resource<(object: Doc) => string>,
-    GetIssueStatusCategories: '' as Resource<(project: ProjectType) => Array<Ref<StatusCategory>>>
+    GetIssueStatusCategories: '' as Resource<(project: ProjectType) => Array<Ref<StatusCategory>>>,
+    GetIssueIdByIdentifier: '' as Resource<(id: string) => Promise<Ref<Issue> | undefined>>
   },
   aggregation: {
     CreateComponentAggregationManager: '' as CreateAggregationManagerFunc,
