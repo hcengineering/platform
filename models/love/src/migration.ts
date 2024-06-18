@@ -16,6 +16,7 @@
 import contact from '@hcengineering/contact'
 import { TxOperations, type Ref } from '@hcengineering/core'
 import drive from '@hcengineering/drive'
+import { RoomAccess, RoomType, createDefaultRooms, isOffice, loveId, type Floor } from '@hcengineering/love'
 import {
   createDefaultSpace,
   tryUpgrade,
@@ -24,7 +25,6 @@ import {
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
-import { RoomAccess, RoomType, createDefaultRooms, isOffice, loveId, type Floor } from '@hcengineering/love'
 import love from './plugin'
 
 async function createDefaultFloor (tx: TxOperations): Promise<void> {
@@ -82,9 +82,8 @@ async function createReception (client: MigrationUpgradeClient): Promise<void> {
 
 export const loveOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    const tx = new TxOperations(client, core.account.System)
-    await tryUpgrade(client, loveId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
+    await tryUpgrade(state, client, loveId, [
       {
         state: 'create-defaults-v2',
         func: async (client) => {
@@ -94,6 +93,7 @@ export const loveOperation: MigrateOperation = {
       {
         state: 'initial-defaults',
         func: async (client) => {
+          const tx = new TxOperations(client, core.account.System)
           await createDefaultFloor(tx)
         }
       },
@@ -107,19 +107,23 @@ export const loveOperation: MigrateOperation = {
         func: async (client) => {
           await createReception(client)
         }
+      },
+      {
+        state: 'create-drive',
+        func: async (client) => {
+          await createDefaultSpace(
+            client,
+            love.space.Drive,
+            {
+              name: 'Records',
+              description: 'Office records',
+              type: drive.spaceType.DefaultDrive,
+              autoJoin: true
+            },
+            drive.class.Drive
+          )
+        }
       }
     ])
-
-    await createDefaultSpace(
-      client,
-      love.space.Drive,
-      {
-        name: 'Records',
-        description: 'Office records',
-        type: drive.spaceType.DefaultDrive,
-        autoJoin: true
-      },
-      drive.class.Drive
-    )
   }
 }

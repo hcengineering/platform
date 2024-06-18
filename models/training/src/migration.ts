@@ -13,17 +13,29 @@
 // limitations under the License.
 //
 
-import { type MigrateOperation, type MigrationClient, type MigrationUpgradeClient } from '@hcengineering/model'
-import { type Ref, TxOperations, type TypedSpace } from '@hcengineering/core'
+import { TxOperations, type Ref, type TypedSpace } from '@hcengineering/core'
+import {
+  tryUpgrade,
+  type MigrateOperation,
+  type MigrationClient,
+  type MigrationUpgradeClient
+} from '@hcengineering/model'
 import core from '@hcengineering/model-core'
-import training, { type Sequence } from '@hcengineering/training'
+import training, { trainingId, type Sequence } from '@hcengineering/training'
 
 export const trainingOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    const tx = new TxOperations(client, core.account.System)
-    await ensureTypedSpace(tx)
-    await ensureSequence(tx)
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
+    await tryUpgrade(state, client, trainingId, [
+      {
+        state: 'create-defaults',
+        func: async (client) => {
+          const tx = new TxOperations(client, core.account.System)
+          await ensureTypedSpace(tx)
+          await ensureSequence(tx)
+        }
+      }
+    ])
   }
 }
 

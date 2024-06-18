@@ -24,8 +24,8 @@ import preference, { preferenceId } from '@hcengineering/preference'
 
 export const preferenceOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    await tryUpgrade(client, preferenceId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
+    await tryUpgrade(state, client, preferenceId, [
       {
         state: 'create-defaults-v2',
         func: async (client) => {

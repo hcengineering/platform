@@ -139,11 +139,12 @@ export const calendarOperation: MigrateOperation = {
       }
     ])
   },
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    await tryUpgrade(client, calendarId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
+    await tryUpgrade(state, client, calendarId, [
       {
         state: 'default-space',
-        func: () => createDefaultSpace(client, calendar.space.Calendar, { name: 'Space for all events and calendars' })
+        func: (client) =>
+          createDefaultSpace(client, calendar.space.Calendar, { name: 'Space for all events and calendars' })
       }
     ])
   }
