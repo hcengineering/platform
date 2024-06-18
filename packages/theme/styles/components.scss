@@ -130,15 +130,6 @@
   &.circle img.ava-image { border-radius: 50%; }
   &.roundedRect,
   &.roundedRect img.ava-image { border-radius: 20%; }
-  &.standby {
-    opacity: .5;
-    transition: opacity .5s ease-in-out;
-    pointer-events: all;
-
-    &:hover,
-    &.standbyOn { opacity: 1; }
-    &:hover { transition-duration: .1s; }
-  }
 
   &.no-img {
     color: var(--primary-button-color);
@@ -152,6 +143,7 @@
     border: 1px solid var(--theme-bg-color);
     outline: 2px solid var(--border-color);
 
+    & > img { border: 1px solid var(--theme-bg-color); }
     &.hulyAvatarSize-xx-small,
     &.hulyAvatarSize-inline,
     &.hulyAvatarSize-tiny,
@@ -159,7 +151,10 @@
     &.hulyAvatarSize-x-small { outline-width: 1px; }
     &.hulyAvatarSize-large,
     &.hulyAvatarSize-x-large,
-    &.hulyAvatarSize-2x-large { border-width: 2px; }
+    &.hulyAvatarSize-2x-large {
+      border-width: 2px;
+      & > img { border-width: 2px; }
+    }
   }
   img { object-fit: cover; }
   .icon,
