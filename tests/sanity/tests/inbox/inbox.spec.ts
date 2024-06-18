@@ -275,7 +275,7 @@ test.describe('Inbox tests', () => {
     await channelPage.sendMessage('Test message')
     await leftSideMenuPage.clickTracker()
 
-    const newIssue = createNewIssueData(newUser2.lastName, newUser2.firstName)
+    const newIssue = createNewIssueData(newUser2.firstName, newUser2.lastName)
     await prepareNewIssueWithOpenStep(page, newIssue)
     await issuesDetailsPage.checkIssue({
       ...newIssue,
