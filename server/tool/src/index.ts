@@ -263,9 +263,9 @@ export async function upgradeModel (
       ...Array.from(
         prevModel.model.filter(
           (it) =>
-            it.modifiedBy !== core.account.System &&
-            ((it as TxCUD<Doc>).objectClass === contact.class.Person ||
-              (it as TxCUD<Doc>).objectClass === 'contact:class:EmployeeAccount')
+            it.modifiedBy !== core.account.System ||
+            (it as TxCUD<Doc>).objectClass === contact.class.Person ||
+            (it as TxCUD<Doc>).objectClass === 'contact:class:EmployeeAccount'
         )
       )
     ]
