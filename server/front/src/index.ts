@@ -728,6 +728,8 @@ async function getGeneratePreview (
 
       let pipeline = sharp(data)
 
+      sharp.cache(false)
+
       // const metadata = await pipeline.metadata()
 
       if (size !== -1) {
@@ -767,6 +769,7 @@ async function getGeneratePreview (
       }
 
       const dataBuff = await pipeline.toBuffer()
+      pipeline.destroy()
 
       // Add support of avif as well.
       await config.storageAdapter.put(ctx, payload.workspace, sizeId, dataBuff, contentType, dataBuff.length)
