@@ -2,6 +2,7 @@
   "string": {
     "Drive": "Drive",
     "Drives": "Drives",
+    "Grid": "Grid",
     "File": "File",
     "Folder": "Folder",
     "Resource": "Resource",
