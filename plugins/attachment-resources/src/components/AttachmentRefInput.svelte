@@ -143,8 +143,23 @@
     }
   }
 
+  const existingAttachmentsQuery = createQuery()
+  let existingAttachments: Ref<Attachment>[] = []
+  $: existingAttachmentsQuery.query(
+    attachment.class.Attachment,
+    {
+      space,
+      attachedTo: objectId,
+      attachedToClass: _class,
+      _id: { $in: Array.from(attachments.keys()) }
+    },
+    (res) => {
+      existingAttachments = res.map((p) => p._id)
+    }
+  )
+
   async function saveAttachment (doc: Attachment): Promise<void> {
-    await client.addCollection(attachment.class.Attachment, space, objectId, _class, 'attachments', doc, doc._id)
+    if (!existingAttachments.includes(doc._id)) { await client.addCollection(attachment.class.Attachment, space, objectId, _class, 'attachments', doc, doc._id) }
   }
 
   async function fileSelected (): Promise<void> {
@@ -208,6 +223,9 @@
           void deleteAttachment(attachment)
         }
       })
+    }
+    if (!saved && shouldSaveDraft) {
+      void createAttachments()
     }
   })
 
