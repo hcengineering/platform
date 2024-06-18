@@ -50,6 +50,7 @@
     "Russian": "Russian",
     "Portuguese": "Portuguese",
     "Spanish": "Spanish",
+    "French": "French",
     "MinutesBefore": "{minutes, plural, =1 {a minute before} other {# minutes before}}",
     "HoursBefore": "{hours, plural, =1 {an hour before} other {# hours before}}",
     "DaysBefore": "{days, plural, =1 {a day before} other {# days before}}",
@@ -87,6 +88,7 @@
     "Selected": "Selected:",
     "Spanish": "Spanish",
     "Portuguese": "Portuguese",
+    "French": "French",
     "Submit": "Submit",
     "NextStep": "Next step",
     "TypeHere": "Type here..."

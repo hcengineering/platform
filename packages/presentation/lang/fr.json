@@ -1,0 +1,41 @@
+{
+  "string": {
+    "Create": "Créer",
+    "Cancel": "Annuler",
+    "Ok": "Ok",
+    "Save": "Sauvegarder",
+    "Saved": "Enregistrement...",
+    "Download": "Télécharger",
+    "Delete": "Supprimer",
+    "Close": "Fermer",
+    "NotSelected": "Non sélectionné",
+    "Deselect": "Désélectionner",
+    "Archived": "(archivé)",
+    "AddSocialLinks": "Ajouter des liens sociaux",
+    "EditSocialLinks": "Modifier les liens sociaux",
+    "Change": "Changer",
+    "Remove": "Retirer",
+    "Search": "Recherche...",
+    "Spaces": "Espaces",
+    "NumberSpaces": "{count, plural, =0 {En} =1 {En 1 place} other {En # places}}",
+    "InThis": "Dans cette {space}",
+    "NoMatchesInThis": "Pas de correspondance dans cette {space}",
+    "NoMatchesFound": "Aucune correspondance trouvée",
+    "NotInThis": "Pas dans cette {space}",
+    "Match": "Correspondance",
+    "Add": "Ajouter",
+    "Edit": "Editer",
+    "DocumentPreview": "Aperçu",
+    "MakePrivate": "Rendre privé",
+    "MakePrivateDescription": "Seuls les membres peuvent le voir",
+    "Created": "Créée",
+    "NoResults": "Pas de résultats à montrer",
+    "Next": "Suivant",
+    "FailedToPreview": "Échec de la prévisualisation",
+    "ContentType": "Type de contenu",
+    "ContentTypeNotSupported": "Type de contenu non pris en charge"
+  },
+  "status": {
+    "FileTooLarge": "Fichier trop volumineux"
+  }
+}

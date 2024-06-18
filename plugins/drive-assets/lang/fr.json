@@ -1,0 +1,25 @@
+{
+  "string": {
+    "Drive": "Lecteur",
+    "Drives": "Lecteurs",
+    "File": "Fichier",
+    "Folder": "Dossier",
+    "Resource": "Ressource",
+    "Name": "Nom",
+    "Description": "Description",
+    "Size": "Taille",
+    "Type": "Type",
+    "LastModified": "Dernière modification",
+    "Parent": "Parent",
+    "Path": "Chemin",
+    "Download": "Télécharger",
+    "CreateDrive": "Créer un lecteur",
+    "CreateFolder": "Créer un dossier",
+    "UploadFile": "Téléverser un fichier",
+    "UploadFolder": "Téléverser un dossier",
+    "EditDrive": "Modifier un lecteur",
+    "Rename": "Renommer",
+    "RoleLabel": "Rôle",
+    "Root": "/"
+  }
+}

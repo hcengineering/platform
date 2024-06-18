@@ -49,6 +49,7 @@
     "English": "Английский",
     "Russian": "Русский",
     "Spanish": "Испанский",
+    "French": "франсе",
     "Portuguese": "Португальский",
     "MinutesBefore": "{minutes, plural, =1 {за минуту} one {за # минуту} few {за # минуты} other {за # минут}}",
     "HoursBefore": "{hours, plural, =1 {за час} one {за # час} few {за # часа} other {за # часов}}",
