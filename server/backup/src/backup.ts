@@ -1161,7 +1161,13 @@ export async function restore (
                       blobs.delete(bname)
                       const blob = doc as Blob
                       void blobClient
-                        .upload(ctx, blob._id, blob.size, blob.contentType, d.buffer as Buffer)
+                        .upload(
+                          ctx,
+                          blob._id,
+                          blob.size,
+                          blob.contentType,
+                          d instanceof Buffer ? d : (d.buffer as Buffer)
+                        )
                         .then(() => {
                           ;(doc as any)['%hash%'] = changeset.get(doc._id)
                           void sendChunk(doc, bf.length).finally(() => {
