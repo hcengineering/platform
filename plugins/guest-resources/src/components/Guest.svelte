@@ -35,7 +35,8 @@
     navigate,
     openPanel,
     defineSeparators,
-    setResolvedLocation
+    setResolvedLocation,
+    deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ListSelectionProvider, restrictionStore, updateFocus } from '@hcengineering/view-resources'
@@ -46,6 +47,7 @@
   import { workbenchGuestSeparators } from '..'
 
   const excludedApps = getMetadata(workbench.metadata.ExcludedApplications) ?? []
+  $deviceInfo.navigator.visible = false
 
   const client = getClient()
 
@@ -277,22 +279,18 @@
       <div class="workbench-container inner">
         <div class="antiPanel-component antiComponent" bind:this={contentPanel}>
           {#if currentApplication && currentApplication.component}
-            <Component is={currentApplication.component} props={{ currentSpace, visibleNav: false }} />
+            <Component is={currentApplication.component} props={{ currentSpace }} />
           {:else if specialComponent}
             <Component
               is={specialComponent.component}
               props={{
                 model: navigatorModel,
                 ...specialComponent.componentProps,
-                currentSpace,
-                visibleNav: false
+                currentSpace
               }}
             />
           {:else if currentView?.component !== undefined}
-            <Component
-              is={currentView.component}
-              props={{ ...currentView.componentProps, currentView, visibleNav: false }}
-            />
+            <Component is={currentView.component} props={{ ...currentView.componentProps, currentView }} />
           {:else}
             <SpaceView {currentSpace} {currentView} />
           {/if}

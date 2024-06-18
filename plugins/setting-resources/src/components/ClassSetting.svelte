@@ -13,7 +13,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
   import core, { Class, Doc, Obj, Ref, isOwnerOrMaintainer } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -48,10 +47,8 @@
   | undefined = undefined
   export let withoutHeader = false
   export let useOfClassAttributes = true
-  export let visibleNav: boolean = true
 
   const canEdit = isOwnerOrMaintainer()
-  const dispatch = createEventDispatcher()
 
   const loc = getLocation()
   const client = getClient()
@@ -105,7 +102,7 @@
 
 <div class="hulyComponent">
   {#if !withoutHeader}
-    <Header minimize={!visibleNav} on:resize={(event) => dispatch('change', event.detail)}>
+    <Header>
       <Breadcrumb icon={setting.icon.Clazz} label={setting.string.ClassSetting} size={'large'} isCurrent />
     </Header>
   {/if}

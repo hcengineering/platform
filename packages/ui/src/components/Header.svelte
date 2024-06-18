@@ -14,10 +14,9 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { IconMaximize, IconMinimize, IconClose, ButtonIcon } from '..'
+  import { IconMaximize, IconMinimize, IconClose, ButtonIcon, deviceOptionsStore as deviceInfo } from '..'
 
   export let type: 'type-aside' | 'type-popup' | 'type-component' | 'type-panel' = 'type-component'
-  export let minimize: boolean = false
   export let noResize: boolean = false
   export let hideSeparator: boolean = false
 
@@ -27,11 +26,14 @@
 <div class="hulyHeader-container" class:topIndent={type === 'type-panel'} class:hideSeparator>
   {#if type === 'type-component'}
     {#if !noResize}
-      <button class="hulyHeader-button" on:click={() => dispatch('resize', minimize)}>
-        {#if minimize}
-          <IconMinimize size={'small'} />
-        {:else}
+      <button
+        class="hulyHeader-button"
+        on:click={() => ($deviceInfo.navigator.visible = !$deviceInfo.navigator.visible)}
+      >
+        {#if $deviceInfo.navigator.visible}
           <IconMaximize size={'small'} />
+        {:else}
+          <IconMinimize size={'small'} />
         {/if}
       </button>
     {/if}

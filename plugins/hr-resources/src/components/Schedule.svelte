@@ -30,7 +30,8 @@
     Separator,
     TabList,
     defineSeparators,
-    workbenchSeparators
+    workbenchSeparators,
+    deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
 
@@ -38,10 +39,6 @@
 
   import ScheduleView from './ScheduleView.svelte'
   import Sidebar from './sidebar/Sidebar.svelte'
-
-  export let visibleNav: boolean = true
-  export let navFloat: boolean = false
-  export let appsDirection: 'vertical' | 'horizontal' = 'horizontal'
 
   const accountEmployee = $employeeByIdStore.get((getCurrentAccount() as PersonAccount).person as Ref<Employee>)
   let accountStaff: Staff | undefined
@@ -129,20 +126,18 @@
 </script>
 
 <div class="flex h-full clear-mins">
-  {#if visibleNav}
+  {#if $deviceInfo.navigator.visible}
     <Sidebar
       {department}
       {descendants}
       departmentById={departments}
-      {navFloat}
-      {appsDirection}
       on:selected={(e) => {
         departmentSelected(e.detail)
       }}
     />
     <Separator
       name={'workbench'}
-      float={navFloat}
+      float={$deviceInfo.navigator.float}
       disabledWhen={['panel-aside']}
       index={0}
       color={'var(--theme-navpanel-border)'}
