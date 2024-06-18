@@ -23,7 +23,8 @@
     navigate,
     Separator,
     Location,
-    restoreLocation
+    restoreLocation,
+    deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
   import { NavigatorModel, SpecialNavModel } from '@hcengineering/workbench'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
@@ -37,10 +38,6 @@
   import { chatSpecials, loadSavedAttachments } from './utils'
   import { SelectChannelEvent } from './types'
   import { openChannel } from '../../navigation'
-
-  export let visibleNav: boolean = true
-  export let navFloat: boolean = false
-  export let appsDirection: 'vertical' | 'horizontal' = 'horizontal'
 
   const notificationsClient = InboxNotificationsClientImpl.getClient()
   const contextByDocStore = notificationsClient.contextByDoc
@@ -149,14 +146,14 @@
 </script>
 
 <div class="flex-row-top h-full">
-  {#if visibleNav}
-    <div class="antiPanel-navigator {appsDirection === 'horizontal' ? 'portrait' : 'landscape'}">
+  {#if $deviceInfo.navigator.visible}
+    <div class="antiPanel-navigator {$deviceInfo.navigator.direction === 'horizontal' ? 'portrait' : 'landscape'}">
       <div class="antiPanel-wrap__content hulyNavPanel-container">
         <ChatNavigator {object} {currentSpecial} on:select={handleChannelSelected} />
       </div>
-      <Separator name="chat" float={navFloat ? 'navigator' : true} index={0} />
+      <Separator name="chat" float={$deviceInfo.navigator.float ? 'navigator' : true} index={0} />
     </div>
-    <Separator name="chat" float={navFloat} index={0} />
+    <Separator name="chat" float={$deviceInfo.navigator.float} index={0} />
   {/if}
 
   <div class="antiPanel-component filled w-full">
@@ -165,10 +162,7 @@
         is={currentSpecial.component}
         props={{
           model: navigatorModel,
-          ...currentSpecial.componentProps,
-          visibleNav,
-          navFloat,
-          appsDirection
+          ...currentSpecial.componentProps
         }}
         on:action={(e) => {
           if (e?.detail) {

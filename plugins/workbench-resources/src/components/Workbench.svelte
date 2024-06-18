@@ -120,9 +120,10 @@
 
   const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
 
-  let visibleNav: boolean = getMetadata(workbench.metadata.NavigationExpandedDefault) ?? true
+  $deviceInfo.navigator.visible = getMetadata(workbench.metadata.NavigationExpandedDefault) ?? true
+
   async function toggleNav (): Promise<void> {
-    visibleNav = !visibleNav
+    $deviceInfo.navigator.visible = !$deviceInfo.navigator.visible
     closeTooltip()
     if (currentApplication && navigatorModel && navigator) {
       await tick()
@@ -505,21 +506,20 @@
   let aside: HTMLElement
   let cover: HTMLElement
 
-  let navFloat: boolean = !($deviceInfo.docWidth < 1024)
-  $: if ($deviceInfo.docWidth <= 1024 && !navFloat) {
-    visibleNav = false
-    navFloat = true
-  } else if ($deviceInfo.docWidth > 1024 && navFloat) {
+  $deviceInfo.navigator.float = !($deviceInfo.docWidth < 1024)
+  $: if ($deviceInfo.docWidth <= 1024 && !$deviceInfo.navigator.float) {
+    $deviceInfo.navigator.visible = false
+    $deviceInfo.navigator.float = true
+  } else if ($deviceInfo.docWidth > 1024 && $deviceInfo.navigator.float) {
     if (getMetadata(workbench.metadata.NavigationExpandedDefault) === undefined) {
-      navFloat = false
-      visibleNav = true
+      $deviceInfo.navigator.float = false
+      $deviceInfo.navigator.visible = true
     }
   }
   const checkOnHide = (): void => {
-    if (visibleNav && $deviceInfo.docWidth <= 1024) visibleNav = false
+    if ($deviceInfo.navigator.visible && $deviceInfo.docWidth <= 1024) $deviceInfo.navigator.visible = false
   }
-  let appsDirection: 'vertical' | 'horizontal'
-  $: appsDirection = $deviceInfo.isMobile && $deviceInfo.isPortrait ? 'horizontal' : 'vertical'
+  $: $deviceInfo.navigator.direction = $deviceInfo.isMobile && $deviceInfo.isPortrait ? 'horizontal' : 'vertical'
   let appsMini: boolean
   $: appsMini =
     $deviceInfo.isMobile &&
@@ -527,13 +527,17 @@
       (!$deviceInfo.isPortrait && $deviceInfo.docHeight <= 480))
   let popupPosition: PopupPosAlignment
   $: popupPosition =
-    appsDirection === 'horizontal'
+    $deviceInfo.navigator.direction === 'horizontal'
       ? 'account-portrait'
-      : appsDirection === 'vertical' && $deviceInfo.isMobile
+      : $deviceInfo.navigator.direction === 'vertical' && $deviceInfo.isMobile
         ? 'account-mobile'
         : 'account'
   let popupSpacePosition: PopupPosAlignment
-  $: popupSpacePosition = appsMini ? 'logo-mini' : appsDirection === 'horizontal' ? 'logo-portrait' : 'logo'
+  $: popupSpacePosition = appsMini
+    ? 'logo-mini'
+    : $deviceInfo.navigator.direction === 'horizontal'
+      ? 'logo-portrait'
+      : 'logo'
 
   onMount(() => {
     subscribeMobile(setTheme)
@@ -633,13 +637,16 @@
   <div
     class="workbench-container"
     class:modern-app={modern}
-    style:flex-direction={appsDirection === 'horizontal' ? 'column-reverse' : 'row'}
+    style:flex-direction={$deviceInfo.navigator.direction === 'horizontal' ? 'column-reverse' : 'row'}
   >
-    <div class="antiPanel-application {appsDirection} no-print" class:lastDivider={!visibleNav}>
+    <div
+      class="antiPanel-application {$deviceInfo.navigator.direction} no-print"
+      class:lastDivider={!$deviceInfo.navigator.visible}
+    >
       <div
         class="hamburger-container clear-mins"
-        class:portrait={appsDirection === 'horizontal'}
-        class:landscape={appsDirection === 'vertical'}
+        class:portrait={$deviceInfo.navigator.direction === 'horizontal'}
+        class:landscape={$deviceInfo.navigator.direction === 'vertical'}
       >
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -655,8 +662,8 @@
         <div class="topmenu-container clear-mins flex-no-shrink" class:mini={appsMini}>
           <AppItem
             icon={TopMenu}
-            label={visibleNav ? workbench.string.HideMenu : workbench.string.ShowMenu}
-            selected={!visibleNav}
+            label={$deviceInfo.navigator.visible ? workbench.string.HideMenu : workbench.string.ShowMenu}
+            selected={!$deviceInfo.navigator.visible}
             size={appsMini ? 'small' : 'medium'}
             on:click={toggleNav}
           />
@@ -681,9 +688,13 @@
             notify={hasInboxNotifications}
           />
         </NavLink>
-        <Applications {apps} active={currentApplication?._id} direction={appsDirection} />
+        <Applications {apps} active={currentApplication?._id} direction={$deviceInfo.navigator.direction} />
       </div>
-      <div class="info-box {appsDirection}" class:vertical-mobile={appsDirection === 'vertical'} class:mini={appsMini}>
+      <div
+        class="info-box {$deviceInfo.navigator.direction}"
+        class:vertical-mobile={$deviceInfo.navigator.direction === 'vertical'}
+        class:mini={appsMini}
+      >
         <AppItem
           icon={IconSettings}
           label={setting.string.Settings}
@@ -715,7 +726,11 @@
             />
           {/if}
         {/await} -->
-        <div class="flex-center" class:mt-3={appsDirection === 'vertical'} class:ml-2={appsDirection === 'horizontal'}>
+        <div
+          class="flex-center"
+          class:mt-3={$deviceInfo.navigator.direction === 'vertical'}
+          class:ml-2={$deviceInfo.navigator.direction === 'horizontal'}
+        >
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <!-- svelte-ignore a11y-no-static-element-interactions -->
           <div
@@ -738,11 +753,17 @@
       }}
     />
     <div class="workbench-container inner">
-      {#if currentApplication && navigatorModel && navigator && visibleNav}
+      {#if currentApplication && navigatorModel && navigator && $deviceInfo.navigator.visible}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->
-        {#if navFloat}<div class="cover shown" on:click={() => (visibleNav = false)} />{/if}
-        <div class="antiPanel-navigator no-print {appsDirection === 'horizontal' ? 'portrait' : 'landscape'}">
+        {#if $deviceInfo.navigator.float}
+          <div class="cover shown" on:click={() => ($deviceInfo.navigator.visible = false)} />
+        {/if}
+        <div
+          class="antiPanel-navigator no-print {$deviceInfo.navigator.direction === 'horizontal'
+            ? 'portrait'
+            : 'landscape'}"
+        >
           <div class="antiPanel-wrap__content hulyNavPanel-container">
             {#if currentApplication}
               <NavHeader label={currentApplication.label} />
@@ -774,27 +795,25 @@
           </div>
           <Separator
             name={'workbench'}
-            float={navFloat ? 'navigator' : true}
+            float={$deviceInfo.navigator.float ? 'navigator' : true}
             index={0}
             color={'var(--theme-navpanel-border)'}
           />
         </div>
-        <Separator name={'workbench'} float={navFloat} index={0} color={'var(--theme-navpanel-border)'} />
+        <Separator
+          name={'workbench'}
+          float={$deviceInfo.navigator.float}
+          index={0}
+          color={'var(--theme-navpanel-border)'}
+        />
       {/if}
       <div class="antiPanel-component antiComponent" bind:this={contentPanel}>
         {#if currentApplication && currentApplication.component}
-          <Component is={currentApplication.component} props={{ currentSpace, visibleNav, navFloat, appsDirection }} />
+          <Component is={currentApplication.component} props={{ currentSpace }} />
         {:else if specialComponent}
           <Component
             is={specialComponent.component}
-            props={{
-              model: navigatorModel,
-              ...specialComponent.componentProps,
-              currentSpace,
-              visibleNav,
-              navFloat,
-              appsDirection
-            }}
+            props={{ model: navigatorModel, ...specialComponent.componentProps, currentSpace }}
             on:action={(e) => {
               if (e?.detail) {
                 const loc = getCurrentLocation()
@@ -804,10 +823,7 @@
             }}
           />
         {:else if currentView?.component !== undefined}
-          <Component
-            is={currentView.component}
-            props={{ ...currentView.componentProps, currentView, visibleNav, navFloat, appsDirection }}
-          />
+          <Component is={currentView.component} props={{ ...currentView.componentProps, currentView }} />
         {:else if $accessDeniedStore}
           <div class="flex-center h-full">
             <h2><Label label={workbench.string.AccessDenied} /></h2>
@@ -973,37 +989,6 @@
 
     &.shown {
       display: block;
-    }
-  }
-  .splitter {
-    position: relative;
-    width: 1px;
-    min-width: 1px;
-    max-width: 1px;
-    height: 100%;
-    background-color: var(--theme-divider-color);
-    transition: background-color 0.15s ease-in-out;
-
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 0.5rem;
-      height: 100%;
-      border-left: 2px solid transparent;
-      cursor: col-resize;
-      z-index: 1;
-      transition: border-color 0.15s ease-in-out;
-    }
-    &:hover,
-    &.hovered {
-      transition-duration: 0;
-      background-color: var(--primary-bg-color);
-      &::before {
-        transition-duration: 0;
-        border-left: 2px solid var(--primary-bg-color);
-      }
     }
   }
 

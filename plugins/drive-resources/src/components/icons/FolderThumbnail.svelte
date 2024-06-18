@@ -1,4 +1,4 @@
-//
+<!--
 // Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,18 +11,15 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
 
-import { loadMetadata } from '@hcengineering/platform'
-import drive from '@hcengineering/drive'
+<script lang="ts">
+  export let fill: string = 'currentColor'
+  export let size: 'small' | 'medium' | 'large' = 'small'
+</script>
 
-const icons = require('../assets/icons.svg') as string // eslint-disable-line
-loadMetadata(drive.icon, {
-  Drive: `${icons}#drive`,
-  Grid: `${icons}#grid`,
-  File: `${icons}#file`,
-  Folder: `${icons}#folder`,
-  FolderOpen: `${icons}#folder-open`,
-  FolderClosed: `${icons}#folder-closed`,
-  Download: `${icons}#download`
-})
+<svg class="svg-{size}" {fill} width="32" height="32" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <path
+    d="M426.666667 170.666667H170.666667c-47.36 0-85.333333 37.973333-85.333334 85.333333v512a85.333333 85.333333 0 0 0 85.333334 85.333333h682.666666a85.333333 85.333333 0 0 0 85.333334-85.333333V341.333333a85.333333 85.333333 0 0 0-85.333334-85.333333h-341.333333l-85.333333-85.333333z"
+  />
+</svg>

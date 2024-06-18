@@ -2,6 +2,7 @@
   "string": {
     "Drive": "Unidad",
     "Drives": "Unidades",
+    "Grid": "Red",
     "File": "Archivo",
     "Folder": "Carpeta",
     "Resource": "Recurso",

@@ -55,7 +55,12 @@
     const now = Date.now()
     const date = Math.ceil(now / (30 * 60 * 1000)) * (30 * 60 * 1000)
     const currentUser = getCurrentAccount() as PersonAccount
-    const _calendar = `${currentUser._id}_calendar` as Ref<Calendar>
+    const extCalendar = await client.findOne(calendar.class.ExternalCalendar, {
+      createdBy: currentUser._id,
+      hidden: false,
+      default: true
+    })
+    const _calendar = extCalendar ? extCalendar._id : (`${currentUser._id}_calendar` as Ref<Calendar>)
     const dueDate = date + defaultDuration
     await client.addCollection(time.class.WorkSlot, calendar.space.Calendar, todo._id, todo._class, 'workslots', {
       eventId: generateEventId(),

@@ -22,7 +22,8 @@
     Separator,
     defineSeparators,
     eventToHTMLElement,
-    showPopup
+    showPopup,
+    deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
   import { Floor as FloorType, Room } from '@hcengineering/love'
   import love from '../plugin'
@@ -31,9 +32,6 @@
   import EditFloorPopup from './EditFloorPopup.svelte'
   import FloorPreview from './FloorPreview.svelte'
 
-  export let visibleNav: boolean
-  export let navFloat: boolean = false
-  export let appsDirection: 'vertical' | 'horizontal' = 'horizontal'
   export let floor: Ref<FloorType>
   export let configure: boolean
 
@@ -53,9 +51,9 @@
   defineSeparators('love', loveSeparators)
 </script>
 
-{#if visibleNav}
+{#if $deviceInfo.navigator.visible}
   <div
-    class="antiPanel-navigator {appsDirection === 'horizontal'
+    class="antiPanel-navigator {$deviceInfo.navigator.direction === 'horizontal'
       ? 'portrait'
       : 'landscape'} border-left will-change-opacity"
   >
@@ -93,7 +91,14 @@
         {/each}
       </Scroller>
     </div>
-    <Separator name={'love'} float={navFloat ? 'navigator' : true} index={0} color={'transparent'} />
+    <Separator name={'love'} float={$deviceInfo.navigator.float ? 'navigator' : true} index={0} color={'transparent'} />
   </div>
-  <Separator name={'love'} float={navFloat} index={0} color={'transparent'} separatorSize={0} short />
+  <Separator
+    name={'love'}
+    float={$deviceInfo.navigator.float}
+    index={0}
+    color={'transparent'}
+    separatorSize={0}
+    short
+  />
 {/if}

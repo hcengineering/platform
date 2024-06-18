@@ -39,6 +39,7 @@ export const drivePlugin = plugin(driveId, {
   },
   icon: {
     Drive: '' as Asset,
+    Grid: '' as Asset,
     File: '' as Asset,
     Folder: '' as Asset,
     FolderOpen: '' as Asset,

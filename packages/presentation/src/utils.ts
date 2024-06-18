@@ -384,7 +384,7 @@ export function getCurrentWorkspaceUrl (): string {
 /**
  * @public
  */
-export function getFileUrl (file: Ref<PlatformBlob>, filename?: string): string {
+export function getFileUrl (file: Ref<PlatformBlob>, filename?: string, useToken?: boolean): string {
   if (file.includes('://')) {
     return file
   }
@@ -393,7 +393,8 @@ export function getFileUrl (file: Ref<PlatformBlob>, filename?: string): string 
   if (!uploadUrl.includes('://')) {
     uploadUrl = concatLink(frontUrl ?? '', uploadUrl)
   }
-  return `${uploadUrl}/${getCurrentWorkspaceUrl()}${filename !== undefined ? '/' + encodeURIComponent(filename) : ''}?file=${file}`
+  const token = getMetadata(plugin.metadata.Token) ?? ''
+  return `${uploadUrl}/${getCurrentWorkspaceUrl()}${filename !== undefined ? '/' + encodeURIComponent(filename) : ''}?file=${file}${useToken === true ? `&token=${token}` : ''}`
 }
 
 export function sizeToWidth (size: string): number | undefined {

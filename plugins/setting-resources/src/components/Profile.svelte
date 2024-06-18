@@ -20,12 +20,8 @@
   import { getResource } from '@hcengineering/platform'
   import { AttributeEditor, MessageBox, getClient } from '@hcengineering/presentation'
   import { Breadcrumb, Button, EditBox, FocusHandler, Header, createFocusManager, showPopup } from '@hcengineering/ui'
-  import { createEventDispatcher, onDestroy } from 'svelte'
+  import { onDestroy } from 'svelte'
   import setting from '../plugin'
-
-  export let visibleNav: boolean = true
-
-  const dispatch = createEventDispatcher()
 
   const client = getClient()
 
@@ -87,7 +83,7 @@
 <FocusHandler {manager} />
 
 <div class="hulyComponent">
-  <Header minimize={!visibleNav} on:resize={(event) => dispatch('change', event.detail)}>
+  <Header>
     <Breadcrumb icon={setting.icon.AccountSettings} label={setting.string.AccountSettings} size={'large'} isCurrent />
   </Header>
   <div class="ac-body p-10">

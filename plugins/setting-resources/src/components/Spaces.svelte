@@ -13,19 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import { Header, Breadcrumb, Label } from '@hcengineering/ui'
+  import { Header, Breadcrumb } from '@hcengineering/ui'
   import core, { Account, Ref, Role, RolesAssignment, SpaceType, TypedSpace, WithLookup } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { AccountArrayEditor } from '@hcengineering/contact-resources'
 
   import setting from '../plugin'
 
-  export let visibleNav: boolean = true
-
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const dispatch = createEventDispatcher()
 
   let space: TypedSpace
   let spaceType: WithLookup<SpaceType>
@@ -81,7 +77,7 @@
 </script>
 
 <div class="hulyComponent">
-  <Header minimize={!visibleNav} on:resize={(event) => dispatch('change', event.detail)}>
+  <Header>
     <Breadcrumb icon={setting.icon.Views} label={setting.string.Spaces} size="large" isCurrent />
   </Header>
   <div class="hulyComponent-content__column content">

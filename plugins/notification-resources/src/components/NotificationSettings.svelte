@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher, onDestroy } from 'svelte'
+  import { onDestroy } from 'svelte'
   import { Ref } from '@hcengineering/core'
   import type {
     BaseNotificationType,
@@ -39,10 +39,6 @@
   } from '@hcengineering/ui'
   import notification from '../plugin'
   import NotificationGroupSetting from './NotificationGroupSetting.svelte'
-
-  export let visibleNav: boolean = true
-
-  const dispatch = createEventDispatcher()
 
   const client = getClient()
   const groups: NotificationGroup[] = client.getModel().findAllSync(notification.class.NotificationGroup, {})
@@ -90,7 +86,7 @@
 </script>
 
 <div class="hulyComponent">
-  <Header minimize={!visibleNav} on:resize={(event) => dispatch('change', event.detail)}>
+  <Header>
     <Breadcrumb
       icon={notification.icon.Notifications}
       label={notification.string.Notifications}

@@ -25,9 +25,12 @@
 
   export let value: Account
   export let avatarSize: IconSize = 'x-small'
+  export let shouldShowAvatar: boolean = true
+  export let shouldShowName: boolean = true
   export let disabled: boolean = false
   export let inline: boolean = false
   export let accent: boolean = false
+  export let noUnderline: boolean = false
   export let compact = false
 
   $: employee = $employeeByIdStore.get((value as PersonAccount)?.person as Ref<Employee>)
@@ -39,9 +42,31 @@
 {#if value}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   {#if employee}
-    <EmployeePresenter value={employee} {disabled} {inline} {accent} {avatarSize} {compact} on:accent-color />
+    <EmployeePresenter
+      value={employee}
+      {shouldShowAvatar}
+      {shouldShowName}
+      {disabled}
+      {inline}
+      {accent}
+      {avatarSize}
+      {noUnderline}
+      {compact}
+      on:accent-color
+    />
   {:else if person}
-    <PersonPresenter value={person} {disabled} {inline} {accent} {avatarSize} {compact} on:accent-color />
+    <PersonPresenter
+      value={person}
+      {shouldShowAvatar}
+      {shouldShowName}
+      {disabled}
+      {inline}
+      {accent}
+      {avatarSize}
+      {noUnderline}
+      {compact}
+      on:accent-color
+    />
   {:else}
     <div class="flex-row-center">
       <Avatar size={avatarSize} />

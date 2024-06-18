@@ -276,6 +276,11 @@ export function createModel (builder: Builder): void {
     components: { input: chunter.component.ChatMessageInput }
   })
 
+  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
+    ofClass: contact.class.Member,
+    components: { input: chunter.component.ChatMessageInput }
+  })
+
   builder.mixin(contact.mixin.Employee, core.class.Class, view.mixin.ObjectFactory, {
     component: contact.component.CreateEmployee
   })

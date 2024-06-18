@@ -2,6 +2,7 @@
   "string": {
     "Drive": "Диск",
     "Drives": "Диски",
+    "Grid": "Сетка",
     "File": "Файл",
     "Folder": "Папка",
     "Resource": "Ресурс",
