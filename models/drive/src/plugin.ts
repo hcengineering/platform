@@ -75,6 +75,7 @@ export default mergeIds(driveId, drive, {
     RenameFolder: '' as ViewAction
   },
   string: {
+    Grid: '' as IntlString,
     Name: '' as IntlString,
     Description: '' as IntlString,
     Size: '' as IntlString,
@@ -84,6 +85,7 @@ export default mergeIds(driveId, drive, {
     Parent: '' as IntlString,
     Path: '' as IntlString,
     Drives: '' as IntlString,
-    Download: '' as IntlString
+    Download: '' as IntlString,
+    Preview: '' as IntlString
   }
 })
