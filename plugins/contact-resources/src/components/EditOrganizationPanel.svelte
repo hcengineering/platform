@@ -32,7 +32,7 @@
   const dispatch = createEventDispatcher()
   const inboxClient = getResource(notification.function.GetInboxNotificationsClient).then((res) => res())
 
-  const ignoreKeys = ['comments', 'name', 'channels', 'description', 'attachments']
+  const ignoreKeys = ['comments', 'name', 'channels', 'description']
 
   let object: Organization | undefined = undefined
   let lastId: Ref<Organization> | undefined = undefined
@@ -144,6 +144,7 @@
           {object}
           key={{ key: 'description', attr: descriptionKey }}
           placeholder={core.string.Description}
+          enableAttachments={false}
           on:saved={(evt) => {
             saved = evt.detail
           }}
