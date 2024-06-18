@@ -255,4 +255,40 @@ test.describe('Inbox tests', () => {
     await leftSideMenuPageSecond.clickNotification()
     await inboxPageSecond.checkIfInboxChatExists('Channel general', false)
   })
+
+  test('User is able to change filter in inbox', async ({ page, browser }) => {
+    const channelPage = new ChannelPage(page)
+    await leftSideMenuPage.openProfileMenu()
+    await leftSideMenuPage.inviteToWorkspace()
+    await leftSideMenuPage.getInviteLink()
+    const linkText = await page.locator('.antiPopup .link').textContent()
+    const page2 = await browser.newPage()
+    const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
+    const inboxPageSecond = new InboxPage(page2)
+    await leftSideMenuPage.clickOnCloseInvite()
+    await page2.goto(linkText ?? '')
+    const joinPage = new SignInJoinPage(page2)
+    await joinPage.join(newUser2)
+
+    await leftSideMenuPage.clickChunter()
+    await channelPage.clickChannel('general')
+    await channelPage.sendMessage('Test message')
+    await leftSideMenuPage.clickTracker()
+
+    const newIssue = createNewIssueData(newUser2.lastName, newUser2.firstName)
+    await prepareNewIssueWithOpenStep(page, newIssue)
+    await issuesDetailsPage.checkIssue({
+      ...newIssue,
+      milestone: 'Milestone',
+      estimation: '2h'
+    })
+    await leftSideMenuPageSecond.clickTracker()
+    await leftSideMenuPageSecond.clickNotification()
+    await inboxPageSecond.clickOnInboxFilter('Channels')
+    await inboxPageSecond.checkIfInboxChatExists(newIssue.title, false)
+    await inboxPageSecond.checkIfInboxChatExists('Test message', true)
+    await inboxPageSecond.clickOnInboxFilter('Issues')
+    await inboxPageSecond.checkIfIssueIsPresentInInbox(newIssue.title)
+    await inboxPageSecond.checkIfInboxChatExists('Channel general', false)
+  })
 })
