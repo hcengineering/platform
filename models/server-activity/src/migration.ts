@@ -30,7 +30,13 @@ import core, {
   type TxCollectionCUD,
   type TxCreateDoc
 } from '@hcengineering/core'
-import { tryMigrate, type MigrateOperation, type MigrationClient, type MigrationIterator } from '@hcengineering/model'
+import {
+  tryMigrate,
+  type MigrateOperation,
+  type MigrationClient,
+  type MigrationIterator,
+  type MigrationUpgradeClient
+} from '@hcengineering/model'
 import { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
 import {
   getAllObjectTransactions,
@@ -275,5 +281,5 @@ export const activityServerOperation: MigrateOperation = {
       }
     ])
   },
-  async upgrade (): Promise<void> {}
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {}
 }

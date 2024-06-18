@@ -13,15 +13,15 @@
 // limitations under the License.
 //
 
-import { type Card, boardId } from '@hcengineering/board'
+import { boardId, type Card } from '@hcengineering/board'
 import { TxOperations } from '@hcengineering/core'
 import {
-  type MigrateOperation,
-  type MigrationClient,
-  type MigrationUpgradeClient,
   createOrUpdate,
   tryMigrate,
-  tryUpgrade
+  tryUpgrade,
+  type MigrateOperation,
+  type MigrationClient,
+  type MigrationUpgradeClient
 } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import { DOMAIN_TASK, createSequence } from '@hcengineering/model-task'
@@ -90,11 +90,11 @@ export const boardOperation: MigrateOperation = {
       }
     ])
   },
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    await tryUpgrade(client, boardId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
+    await tryUpgrade(state, client, boardId, [
       {
         state: 'board0001',
-        func: async () => {
+        func: async (client) => {
           const ops = new TxOperations(client, core.account.System)
           await createDefaults(ops)
         }

@@ -96,8 +96,8 @@ export const notificationOperation: MigrateOperation = {
       }
     ])
   },
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    await tryUpgrade(client, notificationId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
+    await tryUpgrade(state, client, notificationId, [
       {
         state: 'create-defaults-v2',
         func: async (client) => {

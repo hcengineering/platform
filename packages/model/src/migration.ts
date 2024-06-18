@@ -20,8 +20,8 @@ import core, {
   WorkspaceId,
   generateId
 } from '@hcengineering/core'
-import { ModelLogger } from './utils'
 import { StorageAdapter } from '@hcengineering/storage'
+import { ModelLogger } from './utils'
 
 /**
  * @public
@@ -112,9 +112,7 @@ export interface MigrationClient {
 /**
  * @public
  */
-export type MigrationUpgradeClient = Client & {
-  migrateState: Map<string, Set<string>>
-}
+export type MigrationUpgradeClient = Client
 
 /**
  * @public
@@ -125,7 +123,11 @@ export interface MigrateOperation {
   // Perform low level migration
   migrate: (client: MigrationClient, logger: ModelLogger) => Promise<void>
   // Perform high level upgrade operations.
-  upgrade: (client: MigrationUpgradeClient, logger: ModelLogger) => Promise<void>
+  upgrade: (
+    state: Map<string, Set<string>>,
+    client: () => Promise<MigrationUpgradeClient>,
+    logger: ModelLogger
+  ) => Promise<void>
 }
 
 /**
@@ -169,19 +171,21 @@ export async function tryMigrate (client: MigrationClient, plugin: string, migra
  * @public
  */
 export async function tryUpgrade (
-  client: MigrationUpgradeClient,
+  state: Map<string, Set<string>>,
+  client: () => Promise<MigrationUpgradeClient>,
   plugin: string,
   migrations: UpgradeOperations[]
 ): Promise<void> {
-  const states = client.migrateState.get(plugin) ?? new Set()
+  const states = state.get(plugin) ?? new Set()
   for (const migration of migrations) {
     if (states.has(migration.state)) continue
-    await migration.func(client)
+    const _client = await client()
+    await migration.func(_client)
     const st: Data<MigrationState> = {
       plugin,
       state: migration.state
     }
-    const tx = new TxOperations(client, core.account.System)
+    const tx = new TxOperations(_client, core.account.System)
     await tx.createDoc(core.class.MigrationState, core.space.Configuration, st)
   }
 }

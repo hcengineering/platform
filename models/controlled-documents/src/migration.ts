@@ -7,6 +7,7 @@ import {
   createDefaultSpace,
   createOrUpdate,
   tryMigrate,
+  tryUpgrade,
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient
@@ -293,15 +294,22 @@ export const documentsOperation: MigrateOperation = {
       }
     ])
   },
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    const tx = new TxOperations(client, core.account.System)
-    await createDefaultSpace(client, documents.space.Documents, { name: 'Documents', description: 'Documents' })
-    await createQualityDocumentsSpace(tx)
-    await createTemplatesSpace(tx)
-    await createTemplateSequence(tx)
-    await createTagCategories(tx)
-    await createDocumentCategories(tx)
-    await fixChangeControlsForDocs(tx)
-    await createProductChangeControlTemplate(tx)
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
+    await tryUpgrade(state, client, documentsId, [
+      {
+        state: 'init-documents',
+        func: async (client) => {
+          const tx = new TxOperations(client, core.account.System)
+          await createDefaultSpace(client, documents.space.Documents, { name: 'Documents', description: 'Documents' })
+          await createQualityDocumentsSpace(tx)
+          await createTemplatesSpace(tx)
+          await createTemplateSequence(tx)
+          await createTagCategories(tx)
+          await createDocumentCategories(tx)
+          await fixChangeControlsForDocs(tx)
+          await createProductChangeControlTemplate(tx)
+        }
+      }
+    ])
   }
 }

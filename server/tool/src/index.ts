@@ -27,7 +27,9 @@ import core, {
   MigrationState,
   ModelDb,
   Tx,
-  WorkspaceId
+  WorkspaceId,
+  type Doc,
+  type TxCUD
 } from '@hcengineering/core'
 import { consoleModelLogger, MigrateOperation, ModelLogger } from '@hcengineering/model'
 import { createMongoTxAdapter, DBCollectionHelper, getMongoClient, getWorkspaceDB } from '@hcengineering/mongo'
@@ -141,13 +143,12 @@ export async function initModel (
     const states = await connection.findAll<MigrationState>(core.class.MigrationState, {})
     const sts = Array.from(groupByArray(states, (it) => it.plugin).entries())
     const migrateState = new Map(sts.map((it) => [it[0], new Set(it[1].map((q) => q.state))]))
-    ;(connection as any).migrateState = migrateState
 
     try {
       let i = 0
       for (const op of migrateOperations) {
         logger.log('Migrate', { name: op[0] })
-        await op[1].upgrade(connection as any, logger)
+        await op[1].upgrade(migrateState, async () => connection as any, logger)
         i++
         await progress(20 + (((100 / migrateOperations.length) * i) / 100) * 10)
       }
@@ -247,7 +248,6 @@ export async function upgradeModel (
           })
       )
       logger.log('transactions deleted.', { workspaceId: workspaceId.name, count: result.deletedCount })
-
       logger.log('creating model...', { workspaceId: workspaceId.name })
       const insert = await ctx.with(
         'mongo-insert',
@@ -258,8 +258,19 @@ export async function upgradeModel (
       logger.log('model transactions inserted.', { workspaceId: workspaceId.name, count: insert.insertedCount })
       await progress(20)
     }
+    const newModel = [
+      ...txes,
+      ...Array.from(
+        prevModel.model.filter(
+          (it) =>
+            it.modifiedBy !== core.account.System &&
+            ((it as TxCUD<Doc>).objectClass === contact.class.Person ||
+              (it as TxCUD<Doc>).objectClass === 'contact:class:EmployeeAccount')
+        )
+      )
+    ]
 
-    const { hierarchy, modelDb, model } = await fetchModelFromMongo(ctx, mongodbUri, workspaceId)
+    const { hierarchy, modelDb, model } = await fetchModelFromMongo(ctx, mongodbUri, workspaceId, newModel)
     const { migrateClient, migrateState } = await prepareMigrationClient(
       db,
       hierarchy,
@@ -286,11 +297,13 @@ export async function upgradeModel (
     })
     logger.log('Apply upgrade operations', { workspaceId: workspaceId.name })
 
-    const connection = (await ctx.with(
-      'connect-platform',
-      {},
-      async (ctx) =>
-        await connect(
+    let connection: (CoreClient & BackupClient) | undefined
+    const getUpgradeClient = async (): Promise<CoreClient & BackupClient> =>
+      await ctx.with('connect-platform', {}, async (ctx) => {
+        if (connection !== undefined) {
+          return connection
+        }
+        connection = (await connect(
           transactorUrl,
           workspaceId,
           undefined,
@@ -300,32 +313,23 @@ export async function upgradeModel (
             admin: 'true'
           },
           model
-        )
-    )) as CoreClient & BackupClient
+        )) as CoreClient & BackupClient
+        return connection
+      })
     try {
       await ctx.with('upgrade', {}, async () => {
         let i = 0
         for (const op of migrateOperations) {
           const t = Date.now()
-          ;(connection as any).migrateState = migrateState
-          await op[1].upgrade(connection as any, logger)
+          await op[1].upgrade(migrateState, getUpgradeClient, logger)
           logger.log('upgrade:', { operation: op[0], time: Date.now() - t, workspaceId: workspaceId.name })
           await progress(60 + ((100 / migrateOperations.length) * i * 40) / 100)
           i++
         }
       })
-
-      if (!skipTxUpdate) {
-        // Create update indexes
-        await ctx.with('create-indexes', {}, async (ctx) => {
-          await createUpdateIndexes(ctx, connection, db, logger, async (value) => {
-            await progress(40 + (Math.min(value, 100) / 100) * 20)
-          })
-        })
-      }
     } finally {
-      await connection.sendForceClose()
-      await connection.close()
+      await connection?.sendForceClose()
+      await connection?.close()
     }
     return model
   } finally {
@@ -357,26 +361,23 @@ async function prepareMigrationClient (
 async function fetchModelFromMongo (
   ctx: MeasureContext,
   mongodbUri: string,
-  workspaceId: WorkspaceId
+  workspaceId: WorkspaceId,
+  model?: Tx[]
 ): Promise<{ hierarchy: Hierarchy, modelDb: ModelDb, model: Tx[] }> {
   const hierarchy = new Hierarchy()
   const modelDb = new ModelDb(hierarchy)
 
   const txAdapter = await createMongoTxAdapter(ctx, hierarchy, mongodbUri, workspaceId, modelDb)
 
-  const model = await ctx.with('get-model', {}, async (ctx) => await txAdapter.getModel(ctx))
+  model = model ?? (await ctx.with('get-model', {}, async (ctx) => await txAdapter.getModel(ctx)))
 
   await ctx.with('build local model', {}, async () => {
-    for (const tx of model) {
+    for (const tx of model ?? []) {
       try {
         hierarchy.tx(tx)
       } catch (err: any) {}
     }
-    for (const tx of model) {
-      try {
-        await modelDb.tx(tx)
-      } catch (err: any) {}
-    }
+    modelDb.addTxes(ctx, model as Tx[], false)
   })
   await txAdapter.close()
   return { hierarchy, modelDb, model }

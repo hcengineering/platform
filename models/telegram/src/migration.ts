@@ -32,8 +32,8 @@ export async function createSpace (client: MigrationUpgradeClient): Promise<void
 
 export const telegramOperation: MigrateOperation = {
   async migrate (client: MigrationClient): Promise<void> {},
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    await tryUpgrade(client, telegramId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
+    await tryUpgrade(state, client, telegramId, [
       {
         state: 'defaults-v2',
         func: createSpace

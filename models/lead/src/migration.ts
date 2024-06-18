@@ -13,20 +13,20 @@
 // limitations under the License.
 //
 
-import { AccountRole, DOMAIN_TX, type Ref, type Status, TxOperations } from '@hcengineering/core'
-import { type Lead, leadId } from '@hcengineering/lead'
+import { AccountRole, DOMAIN_TX, TxOperations, type Ref, type Status } from '@hcengineering/core'
+import { leadId, type Lead } from '@hcengineering/lead'
 import {
-  type ModelLogger,
   tryMigrate,
   tryUpgrade,
   type MigrateOperation,
   type MigrationClient,
-  type MigrationUpgradeClient
+  type MigrationUpgradeClient,
+  type ModelLogger
 } from '@hcengineering/model'
 import core, { DOMAIN_SPACE } from '@hcengineering/model-core'
 
-import task, { DOMAIN_TASK, createSequence, migrateDefaultStatusesBase } from '@hcengineering/model-task'
 import contact from '@hcengineering/model-contact'
+import task, { DOMAIN_TASK, createSequence, migrateDefaultStatusesBase } from '@hcengineering/model-task'
 
 import lead from './plugin'
 import { defaultLeadStatuses } from './spaceType'
@@ -194,11 +194,11 @@ export const leadOperation: MigrateOperation = {
       }
     ])
   },
-  async upgrade (client: MigrationUpgradeClient): Promise<void> {
-    await tryUpgrade(client, leadId, [
+  async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {
+    await tryUpgrade(state, client, leadId, [
       {
         state: 'u-default-funnel',
-        func: async () => {
+        func: async (client) => {
           const ops = new TxOperations(client, core.account.System)
           await createDefaults(ops)
         }
