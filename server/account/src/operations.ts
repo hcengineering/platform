@@ -42,7 +42,8 @@ import core, {
   TxOperations,
   Version,
   versionToString,
-  WorkspaceId
+  WorkspaceId,
+  type Branding
 } from '@hcengineering/core'
 import { consoleModelLogger, MigrateOperation, ModelLogger } from '@hcengineering/model'
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
@@ -513,7 +514,7 @@ async function sendConfirmation (productId: string, branding: Branding | null, a
     console.info('Please provide email service url to enable email confirmations.')
     return
   }
-  const front = getMetadata(accountPlugin.metadata.FrontURL)
+  const front = branding?.front ?? getMetadata(accountPlugin.metadata.FrontURL)
   if (front === undefined || front === '') {
     throw new Error('Please provide front url')
   }
@@ -806,10 +807,12 @@ async function generateWorkspaceRecord (
   email: string,
   productId: string,
   version: Data<Version>,
+  branding: Branding | null,
   workspaceName: string,
   fixedWorkspace?: string
 ): Promise<Workspace> {
   const coll = db.collection<Omit<Workspace, '_id'>>(WORKSPACE_COLLECTION)
+  const brandingKey = branding?.key ?? 'huly'
   if (fixedWorkspace !== undefined) {
     const ws = await coll.find<Workspace>({ workspaceUrl: fixedWorkspace }).toArray()
     if ((await getWorkspaceById(db, productId, fixedWorkspace)) !== null || ws.length > 0) {
@@ -822,6 +825,7 @@ async function generateWorkspaceRecord (
       workspaceUrl: fixedWorkspace,
       productId,
       version,
+      branding: brandingKey,
       workspaceName,
       accounts: [],
       disabled: true,
@@ -854,6 +858,7 @@ async function generateWorkspaceRecord (
         workspaceUrl,
         productId,
         version,
+        branding: brandingKey,
         workspaceName,
         accounts: [],
         disabled: true,
@@ -909,7 +914,7 @@ export async function createWorkspace (
   await searchPromise
 
   // Safe generate workspace record.
-  searchPromise = generateWorkspaceRecord(db, email, productId, version, workspaceName, workspace)
+  searchPromise = generateWorkspaceRecord(db, email, productId, version, branding, workspaceName, workspace)
 
   const workspaceInfo = await searchPromise
 
@@ -1670,7 +1675,7 @@ export async function requestPassword (
   if (sesURL === undefined || sesURL === '') {
     throw new Error('Please provide email service url')
   }
-  const front = getMetadata(accountPlugin.metadata.FrontURL)
+  const front = branding?.front ?? getMetadata(accountPlugin.metadata.FrontURL)
   if (front === undefined || front === '') {
     throw new Error('Please provide front url')
   }
@@ -1936,7 +1941,7 @@ export async function sendInvite (
   if (sesURL === undefined || sesURL === '') {
     throw new Error('Please provide email service url')
   }
-  const front = getMetadata(accountPlugin.metadata.FrontURL)
+  const front = branding?.front ?? getMetadata(accountPlugin.metadata.FrontURL)
   if (front === undefined || front === '') {
     throw new Error('Please provide front url')
   }
@@ -1994,14 +1999,6 @@ async function deactivatePersonAccount (
     await connection.close()
   }
 }
-
-export interface Branding {
-  title?: string
-  language?: string
-  initWorkspace?: string
-}
-
-export type BrandingMap = Record<string, Branding>
 
 /**
  * @public

@@ -67,3 +67,14 @@ export interface LowLevelStorage {
   // Remove a list of documents.
   clean: (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]) => Promise<void>
 }
+
+export interface Branding {
+  key?: string
+  front?: string
+  title?: string
+  language?: string
+  initWorkspace?: string
+  lastNameFirst?: string
+}
+
+export type BrandingMap = Record<string, Branding>

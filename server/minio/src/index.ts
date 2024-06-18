@@ -24,7 +24,8 @@ import core, {
   type MeasureContext,
   type Ref,
   type WorkspaceId,
-  type WorkspaceIdWithUrl
+  type WorkspaceIdWithUrl,
+  type Branding
 } from '@hcengineering/core'
 
 import { getMetadata } from '@hcengineering/platform'
@@ -76,8 +77,13 @@ export class MinioService implements StorageAdapter {
 
   async initialize (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {}
 
-  async lookup (ctx: MeasureContext, workspaceId: WorkspaceIdWithUrl, docs: Blob[]): Promise<BlobLookupResult> {
-    const frontUrl = getMetadata(serverCore.metadata.FrontUrl) ?? ''
+  async lookup (
+    ctx: MeasureContext,
+    workspaceId: WorkspaceIdWithUrl,
+    branding: Branding | null,
+    docs: Blob[]
+  ): Promise<BlobLookupResult> {
+    const frontUrl = branding?.front ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
     for (const d of docs) {
       // Let's add current from URI for previews.
       const bl = d as BlobLookup

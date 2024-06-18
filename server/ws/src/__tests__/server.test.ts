@@ -82,9 +82,10 @@ describe('server', () => {
         return { docs: [] }
       }
     }),
-    sessionFactory: (token, pipeline) => new ClientSession(token, pipeline),
+    sessionFactory: (token, pipeline) => new ClientSession(token, pipeline, {}),
     port: 3335,
     productId: '',
+    brandingMap: {},
     serverFactory: startHttpServer,
     accountsUrl: '',
     externalStorage: createDummyStorageAdapter()
@@ -182,9 +183,10 @@ describe('server', () => {
           return { docs: [] }
         }
       }),
-      sessionFactory: (token, pipeline) => new ClientSession(token, pipeline),
+      sessionFactory: (token, pipeline) => new ClientSession(token, pipeline, {}),
       port: 3336,
       productId: '',
+      brandingMap: {},
       serverFactory: startHttpServer,
       accountsUrl: '',
       externalStorage: createDummyStorageAdapter()

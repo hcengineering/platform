@@ -5,7 +5,7 @@ import session from 'koa-session'
 import { Db } from 'mongodb'
 import { registerGithub } from './github'
 import { registerGoogle } from './google'
-import { MeasureContext } from '@hcengineering/core'
+import { BrandingMap, MeasureContext } from '@hcengineering/core'
 
 export type Passport = typeof passport
 
@@ -16,7 +16,8 @@ export type AuthProvider = (
   accountsUrl: string,
   db: Db,
   productId: string,
-  frontUrl: string
+  frontUrl: string,
+  brandings: BrandingMap
 ) => string | undefined
 
 export function registerProviders (
@@ -26,7 +27,8 @@ export function registerProviders (
   db: Db,
   productId: string,
   serverSecret: string,
-  frontUrl: string | undefined
+  frontUrl: string | undefined,
+  brandings: BrandingMap
 ): void {
   const accountsUrl = process.env.ACCOUNTS_URL
   if (accountsUrl === undefined) {
@@ -60,7 +62,7 @@ export function registerProviders (
   const res: string[] = []
   const providers: AuthProvider[] = [registerGoogle, registerGithub]
   for (const provider of providers) {
-    const value = provider(ctx, passport, router, accountsUrl, db, productId, frontUrl)
+    const value = provider(ctx, passport, router, accountsUrl, db, productId, frontUrl, brandings)
     if (value !== undefined) res.push(value)
   }
 

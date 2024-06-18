@@ -54,7 +54,7 @@ import { NOTIFICATION_BODY_SIZE } from '@hcengineering/server-notification'
  */
 export async function channelHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const channel = doc as ChunterSpace
-  const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
+  const front = control.branding?.front ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
   const path = `${workbenchId}/${control.workspace.workspaceUrl}/${chunterId}/${channel._id}`
   const link = concatLink(front, path)
   return `<a href='${link}'>${channel.name}</a>`

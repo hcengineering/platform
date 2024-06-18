@@ -3,6 +3,7 @@ import core, {
   ModelDb,
   TxProcessor,
   toFindResult,
+  type Branding,
   type Blob,
   type BlobLookup,
   type Class,
@@ -157,7 +158,12 @@ export class MemStorageAdapter implements StorageAdapter {
     throw new Error('NoSuchKey')
   }
 
-  async lookup (ctx: MeasureContext, workspaceId: WorkspaceIdWithUrl, docs: Blob[]): Promise<BlobLookupResult> {
+  async lookup (
+    ctx: MeasureContext,
+    workspaceId: WorkspaceIdWithUrl,
+    branding: Branding | null,
+    docs: Blob[]
+  ): Promise<BlobLookupResult> {
     return { lookups: docs as unknown as BlobLookup[] }
   }
 }

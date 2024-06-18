@@ -661,6 +661,7 @@ export interface BaseWorkspaceInfo {
   productId: string
   disabled?: boolean
   version?: Data<Version>
+  branding?: string
 
   workspaceUrl?: string | null // An optional url to the workspace, if not set workspace will be used
   workspaceName?: string // An displayed workspace name
