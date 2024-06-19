@@ -159,7 +159,9 @@
   )
 
   async function saveAttachment (doc: Attachment): Promise<void> {
-    if (!existingAttachments.includes(doc._id)) { await client.addCollection(attachment.class.Attachment, space, objectId, _class, 'attachments', doc, doc._id) }
+    if (!existingAttachments.includes(doc._id)) {
+      await client.addCollection(attachment.class.Attachment, space, objectId, _class, 'attachments', doc, doc._id)
+    }
   }
 
   async function fileSelected (): Promise<void> {
