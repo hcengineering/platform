@@ -289,6 +289,7 @@ test.describe('Tracker issue tests', () => {
     await issuesDetailsPage.waitDetailsOpened(commentIssue.title)
     await issuesDetailsPage.addComment(commentInside)
     await issuesDetailsPage.checkCommentExist(commentInside)
+    await issuesPage.linkSidebarAll().click()
     await issuesPage.clickModelSelectorAll()
     await issuesPage.searchIssueByName(commentIssue.title)
     await issuesPage.checkCommentsCount(commentIssue.title, '1')
