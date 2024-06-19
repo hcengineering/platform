@@ -189,14 +189,15 @@ function configureI18n(): void {
 
 export async function configurePlatform() {
   setMetadata(platform.metadata.LoadHelper, async (loader) => {
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 5; i++) {
       try {
         return loader()
       } catch (err: any) {
-        if (err.message.includes('Loading chunk') && i != 2) {
+        if (err.message.includes('Loading chunk') && i != 4) {
           continue
         }
         Analytics.handleError(err)
+        location.reload()
       }
     }
   })
@@ -265,7 +266,7 @@ export async function configurePlatform() {
   setMetadata(uiPlugin.metadata.DefaultApplication, login.component.LoginApp)
 
   setMetadata(contactPlugin.metadata.LastNameFirst, myBranding.lastNameFirst === 'true' ?? false)
-  const languages = myBranding.languages ? (myBranding.languages as string).split(',').map((l) => l.trim()) : ['en', 'ru', 'es', 'pt']
+  const languages = myBranding.languages ? (myBranding.languages as string).split(',').map((l) => l.trim()) : ['en', 'ru', 'es', 'pt', 'zh']
 
   setMetadata(uiPlugin.metadata.Languages, languages)
   setMetadata(
