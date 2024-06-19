@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import { Asset } from '@hcengineering/platform'
+  import { themeStore } from '@hcengineering/theme'
   import { AnySvelteComponent, ColorDefinition, Icon, IconSize, resizeObserver } from '@hcengineering/ui'
   import AvatarIcon from './icons/Avatar.svelte'
 
@@ -25,28 +26,22 @@
   export let variant: 'circle' | 'roundedRect' | 'none' = 'roundedRect'
   export let color: ColorDefinition | undefined = undefined
   export let bColor: string | undefined = undefined
-  export let standby: boolean = false
   export let withStatus: boolean = false
   export let element: HTMLElement
 
   export function pulse (): void {
-    if (element) element.animate(pulsating, { duration: 150, easing: 'ease-out' })
-    if (standby) {
-      standbyMode = false
-      if (timer) clearTimeout(timer)
-      timer = setTimeout(() => {
-        standbyMode = true
-      }, 2000)
-    }
+    if (element === undefined) return
+    const color: string = $themeStore.dark ? '255, 255, 255' : '50, 50, 50'
+    element.animate(
+      [
+        { boxShadow: `0 0 0 .125rem rgba(${color}, .35), 0 0 0 .25rem rgba(${color}, .15)` },
+        { boxShadow: `0 0 0 .125rem rgba(${color}, 0), 0 0 0 .25rem rgba(${color}, 0)` }
+      ],
+      { duration: 250, easing: 'ease-out' }
+    )
   }
 
-  let standbyMode: boolean = standby
-  let timer: any | undefined = undefined
   let fontSize: number = 16
-  const pulsating: Keyframe[] = [
-    { boxShadow: '0 0 .125rem 0 var(--theme-bg-color), 0 0 0 .125rem var(--border-color)' },
-    { boxShadow: '0 0 .375rem .375rem var(--theme-bg-color), 0 0 0 .25rem var(--border-color)' }
-  ]
 </script>
 
 {#if size === 'full' && !url && displayName && displayName !== ''}
@@ -56,8 +51,6 @@
     class:no-img={!url && color}
     class:bordered={!url && color === undefined}
     class:border={bColor !== undefined}
-    class:standby
-    class:standbyOn={standby && !standbyMode}
     class:withStatus
     style:--border-color={bColor ?? 'var(--primary-button-default)'}
     style:background-color={color && !url ? color.icon : 'var(--theme-button-default)'}
@@ -79,8 +72,6 @@
     class:no-img={!url && color}
     class:bordered={!url && color === undefined}
     class:border={bColor !== undefined}
-    class:standby
-    class:standbyOn={standby && !standbyMode}
     class:withStatus
     style:--border-color={bColor ?? 'var(--primary-button-default)'}
     style:background-color={color && !url ? color.icon : 'var(--theme-button-default)'}

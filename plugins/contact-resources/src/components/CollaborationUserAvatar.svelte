@@ -39,5 +39,5 @@
 </script>
 
 {#if person}
-  <Avatar bind:this={avatar} {size} {person} name={person.name} borderColor={user.color} standby />
+  <Avatar bind:this={avatar} {size} {person} name={person.name} borderColor={user.color} />
 {/if}
