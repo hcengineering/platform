@@ -29,7 +29,6 @@
   export let icon: Asset | AnySvelteComponent | undefined = undefined
   export let variant: 'circle' | 'roundedRect' | 'none' = 'roundedRect'
   export let borderColor: number | undefined = undefined
-  export let standby: boolean = false
   export let showStatus: boolean = true
   export let account: Ref<Account> | undefined = undefined
 
@@ -48,4 +47,4 @@
   }
 </script>
 
-<Avatar person={_contact} {name} {size} {icon} {variant} {borderColor} {standby} {showStatus} {account} />
+<Avatar person={_contact} {name} {size} {icon} {variant} {borderColor} {showStatus} {account} />

@@ -11,16 +11,16 @@ The Huly Platform is a robust framework designed to accelerate the development o
 This repository includes several applications, such as Chat, Project Management, CRM, HRM, and ATS. 
 Various teams are building products on top of the Platform, including [Huly](https://huly.io) and [TraceX](https://tracex.co).
 
-![Huly](https://v1.huly.io/_astro/dark-kanban.D2kAOX88_q4nnu.webp)
-
-## Activity
-
-![Alt](https://repobeats.axiom.co/api/embed/c42c99e21691fa60ea61b5cdf11c2e0647621534.svg "Repobeats analytics image")
+![Huly](https://repository-images.githubusercontent.com/392073243/6d27d5cc-38cd-4d88-affe-bb88b393180c)
 
 ## Self-Hosting
 
 If you're primarily interested in self-hosting Huly without the intention to modify or contribute to its development, please use [huly-selfhost](https://github.com/hcengineering/huly-selfhost). 
 This project offers a convenient method to host Huly using `docker`, designed for ease of use and quick setup. Explore this option to effortlessly enjoy Huly on your own server.
+
+## Activity
+
+![Alt](https://repobeats.axiom.co/api/embed/c42c99e21691fa60ea61b5cdf11c2e0647621534.svg "Repobeats analytics image")
 
 ## Table of Content
 
