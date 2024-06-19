@@ -209,6 +209,7 @@
           icon={love.icon.EnterRoom}
           label={love.string.EnterRoom}
           size={'large'}
+          kind={'primary'}
           autoFocus
           on:click={connect}
         />

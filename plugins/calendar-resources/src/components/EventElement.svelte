@@ -26,7 +26,7 @@
   // export let hourHeight: number
   export let size: { width: number, height: number }
 
-  $: oneRow = size.height < 25 || event.allDay
+  $: oneRow = size.height < 42 || event.allDay
   $: narrow = event.dueDate - event.date < MILLISECONDS_IN_MINUTE * 25
   $: empty = size.width < 44
 
