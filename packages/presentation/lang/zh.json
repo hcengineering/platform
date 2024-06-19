@@ -1,0 +1,41 @@
+{
+  "string": {
+    "Create": "Create",
+    "Cancel": "Cancel",
+    "Ok": "Ok",
+    "Save": "Save",
+    "Saved": "Saved...",
+    "Download": "Download",
+    "Delete": "Delete",
+    "Close": "Close",
+    "NotSelected": "Not selected",
+    "Deselect": "Deselect",
+    "Archived": "(archived)",
+    "AddSocialLinks": "Add social links",
+    "EditSocialLinks": "Edit social links",
+    "Change": "Change",
+    "Remove": "Remove",
+    "Search": "Search...",
+    "Spaces": "Spaces",
+    "NumberSpaces": "{count, plural, =0 {In} =1 {In 1 place} other {In # places}}",
+    "InThis": "In this {space}",
+    "NoMatchesInThis": "No matches in this {space}",
+    "NoMatchesFound": "No matches found",
+    "NotInThis": "Not in this {space}",
+    "Match": "Match",
+    "Add": "Add",
+    "Edit": "Edit",
+    "DocumentPreview": "Preview",
+    "MakePrivate": "Make private",
+    "MakePrivateDescription": "Only members can see it",
+    "Created": "Created",
+    "NoResults": "No results to show",
+    "Next": "Next",
+    "FailedToPreview": "Failed to preview",
+    "ContentType": "Content type",
+    "ContentTypeNotSupported": "Content type not supported"
+  },
+  "status": {
+    "FileTooLarge": "File too large"
+  }
+}

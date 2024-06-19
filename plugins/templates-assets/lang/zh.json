@@ -1,0 +1,21 @@
+{
+  "string": {
+    "Cancel": "Cancel",
+    "Templates": "Text Templates",
+    "TemplatesHeader": "TEXT TEMPLATES",
+    "CreateTemplate": "CREATE TEMPLATE",
+    "SaveTemplate": "Save template",
+    "EditTemplate": "Edit template",
+    "ViewTemplate": "View template",
+    "Suggested": "SUGGESTED",
+    "SearchTemplate": "search for template",
+    "TemplatePlaceholder": "New template",
+    "Title": "Title",
+    "Message": "Message",
+    "Field": "Field",
+    "TemplateCategory": "Template group",
+    "CreateTemplateCategory": "Create group",
+    "Copy": "Copy",
+    "Template": "Template"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "string": {
+    "More": "More...",
+    "Delete": "Delete",
+    "ShowMenu": "Show menu",
+    "HideMenu": "Hide menu",
+    "Archive": "Archive",
+    "Archived": "Archive",
+    "Open": "Open",
+    "General": "General",
+    "Members": "Members",
+    "Application": "Application",
+    "BrowseSpaces": "Browse spaces",
+    "AccountDisabled": "Account is disabled",
+    "AccountDisabledDescr": "Please contact the workspace administrator",
+    "HelpAndSupport": "Help & Support",
+    "HelpCenter": "Help Center",
+    "KeyboardShortcuts": "Keyboard Shortcuts",
+    "Documentation": "Documentation",
+    "OpenPlatformGuide": "Open Huly Docs",
+    "AccessWorkspaceSettings": "Access your workspace settings",
+    "HowToWorkFaster": "Learn how to work faster",
+    "HiddenApplication": "Hidden application",
+    "OpenInNewTab": "Open in a new tab",
+    "NewVersionAvailable": "New version is available",
+    "PleaseUpdate": "Please update",
+    "ServerUnderMaintenance": "Server is under maintenance",
+    "MobileNotSupported": "Sorry, mobile devices support coming soon. In the meantime, please use Desktop",
+    "LogInAnyway": "Log in anyway",
+    "WorkspaceCreating": "Creation in progress...",
+    "AccessDenied": "Object doesn't exist or you are not permitted to access it."
+  }
+}

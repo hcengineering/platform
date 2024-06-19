@@ -1,0 +1,23 @@
+{
+  "string": {
+    "Requests": "Requests",
+    "Request": "Request",
+    "Approve": "Approve",
+    "Approved": "Approved",
+    "CreatedRequest": "Created a ",
+    "For": "For",
+    "Change": "Change",
+    "Add": "Add",
+    "Remove": "Remove",
+    "Status": "Status",
+    "Requested": "Requested",
+    "Completed": "Completed",
+    "Reject": "Reject",
+    "Rejected": "Rejected",
+    "Comment": "Comment",
+    "PleaseTypeMessage": "Please type comment message to continue...",
+    "NoRequests": "No requests",
+    "Cancel": "Cancel",
+    "Cancelled": "Cancelled"
+  }
+}

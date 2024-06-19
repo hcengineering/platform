@@ -1,0 +1,23 @@
+{
+  "status": {
+    "LoadingPlugin": "Loading plugin {plugin}...",
+    "UnknownError": "Unknown error: {message}",
+    "InvalidId": "Invalid Id: {id}",
+    "BadRequest": "Bad request",
+    "Forbidden": "Forbidden",
+    "ExpiredLink": "This invite link is expired",
+    "Unauthorized": "Unauthorized",
+    "UnknownMethod": "Unknown method: {method}",
+    "InternalServerError": "Internal server error",
+    "MaintenanceWarning": "Maintenance Scheduled in {time, plural, =1 {less than a minute} other {# minutes}}",
+    "AccountNotFound": "Account not found",
+    "AccountNotConfirmed": "Account not confirmed",
+    "WorkspaceNotFound": "Workspace not found",
+    "InvalidPassword": "Invalid password",
+    "AccountAlreadyExists": "Account already exists",
+    "WorkspaceRateLimit": "Server is busy, Please wait a bit and try again",
+    "AccountAlreadyConfirmed": "Account already confirmed",
+    "WorkspaceAlreadyExists": "Workspace already exists",
+    "ProductIdMismatch": "Product Mismatch"
+  }
+}

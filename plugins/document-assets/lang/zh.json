@@ -1,0 +1,67 @@
+{
+  "string": {
+    "Document": "Document",
+    "ParentDocument": "Parent document",
+    "ChildDocument": "Child document",
+    "CreateDocument": "Create a document",
+    "Documents": "Documents",
+    "CreateAnVersion": "Create new version",
+    "DocumentNamePlaceholder": "Untitled",
+    "Name": "Name",
+    "Cancel": "Cancel",
+    "Version": "Version",
+    "SearchDocument": "Search document...",
+    "Snapshot": "Snapshot",
+    "NoVersions": "No version's defined",
+    "DocumentApplication": "Documents",
+    "MyDocuments": "My documents",
+    "Teamspace": "Teamspace",
+    "Teamspaces": "Teamspaces",
+    "Labels": "Labels",
+    "AddLabel": "Add label",
+    "Authors": "Authors",
+    "Backlinks": "Backlinks",
+    "History": "History",
+    "DescriptionPlaceholder": "type for details...",
+    "CreateTeamspace": "Create teamspace",
+    "EditTeamspace": "Edit teamspace",
+    "NewTeamspace": "New teamspace",
+    "TeamspaceTitle": "Teamspace title",
+    "TeamspaceTitlePlaceholder": "New teamspace",
+    "TeamspaceDescriptionPlaceholder": "Add description ...",
+    "ChooseIcon": "Choose icon",
+    "TeamspaceMembers": "Members",
+    "NoParentDocument": "No parent document",
+    "NoBacklinks": "No backlinks",
+    "NoHistory": "No previous history",
+    "Untitled": "Untitled",
+
+    "Description": "Description",
+
+    "CopyDocumentUrl": "Copy Document URL to clipboard",
+
+    "ViewMode": "View",
+    "EditMode": "Edit",
+    "SuggestMode": "Suggest",
+
+    "CompareTo": "Compare to...",
+    "Star": "Star",
+    "Unstar": "Unstar",
+
+    "Lock": "Lock",
+    "Unlock": "Unlock",
+    "Locked": "Locked",
+
+    "ConfigLabel": "Documents",
+    "ConfigDescription": "Extension for collaborative document editing",
+
+    "UnassignToDo": "Unassign Todo",
+    "UnassignToDoConfirm": "Do you want to unassign Todo? The Todo will be removed from the assignee planning.",
+    "ReassignToDo": "Change Todo assignee",
+    "ReassignToDoConfirm": "Do you want to change Todo assignee? The Todo will be removed from the current assignee's planning.",
+    "Icon": "Icon",
+    "Color": "Color",
+    "RoleLabel": "Role: {role}",
+    "Embeddings": "Embeddings"
+  }
+}
