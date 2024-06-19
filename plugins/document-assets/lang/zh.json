@@ -1,0 +1,67 @@
+{
+  "string": {
+    "Document": "文档",
+    "ParentDocument": "父文档",
+    "ChildDocument": "子文档",
+    "CreateDocument": "创建文档",
+    "Documents": "文档",
+    "CreateAnVersion": "创建新版本",
+    "DocumentNamePlaceholder": "无标题",
+    "Name": "名称",
+    "Cancel": "取消",
+    "Version": "版本",
+    "SearchDocument": "搜索文档...",
+    "Snapshot": "快照",
+    "NoVersions": "没有定义的版本",
+    "DocumentApplication": "文档",
+    "MyDocuments": "我的文档",
+    "Teamspace": "团队空间",
+    "Teamspaces": "团队空间",
+    "Labels": "标签",
+    "AddLabel": "添加标签",
+    "Authors": "作者",
+    "Backlinks": "反向链接",
+    "History": "历史",
+    "DescriptionPlaceholder": "输入详细信息...",
+    "CreateTeamspace": "创建团队空间",
+    "EditTeamspace": "编辑团队空间",
+    "NewTeamspace": "新团队空间",
+    "TeamspaceTitle": "团队空间标题",
+    "TeamspaceTitlePlaceholder": "新团队空间",
+    "TeamspaceDescriptionPlaceholder": "添加描述...",
+    "ChooseIcon": "选择图标",
+    "TeamspaceMembers": "成员",
+    "NoParentDocument": "没有父文档",
+    "NoBacklinks": "没有反向链接",
+    "NoHistory": "没有历史记录",
+    "Untitled": "无标题",
+
+    "Description": "描述",
+
+    "CopyDocumentUrl": "复制文档 URL 到剪贴板",
+
+    "ViewMode": "查看",
+    "EditMode": "编辑",
+    "SuggestMode": "建议",
+
+    "CompareTo": "比较...",
+    "Star": "星标",
+    "Unstar": "取消星标",
+
+    "Lock": "锁定",
+    "Unlock": "解锁",
+    "Locked": "已锁定",
+
+    "ConfigLabel": "文档",
+    "ConfigDescription": "协作文档编辑扩展",
+
+    "UnassignToDo": "未指派待办事项",
+    "UnassignToDoConfirm": "您要取消指派待办事项吗？待办事项将从被指派人计划中移除。",
+    "ReassignToDo": "更改待办事项被指派人",
+    "ReassignToDoConfirm": "您要更改待办事项被指派人吗？待办事项将从当前被指派人的计划中移除。",
+    "Icon": "图标",
+    "Color": "颜色",
+    "RoleLabel": "角色：{role}",
+    "Embeddings": "嵌入"
+  }
+}
