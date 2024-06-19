@@ -1,13 +1,13 @@
 {
   "string": {
-    "ConfirmationText": "Thank you for your interest in {name}. To complete the sign up process please copy the following link into your browser's URL bar {link}. Regards, {name} Team.",
-    "ConfirmationHTML": "<p>Hello,</p><p>Thank you for your interest in {name}. To complete the sign up process please follow <a href={link}>this link</a> or copy the following link into your browser's URL bar.</p><p>{link}</p><p>Regards,</p><p>{name} Team.</p>",
-    "ConfirmationSubject": "Confirm your email address to sign up for {name}",
-    "RecoveryText": "We received a request to reset the password for your account. To reset your password, please paste the following link in your web browser's address bar: {link}. If you have not ordered a password recovery just ignore this letter.",
-    "RecoveryHTML": "<p>We received a request to reset the password for your account. To reset your password, please click the link below: <a href={link}>Reset password</a></p><p>If the Reset password link above does not work, paste the following link in your web browser's address bar: {link}</p><p>If you have not ordered a password recovery just ignore this letter.</p>",
-    "RecoverySubject": "Password recovery",
-    "InviteText": "You were invited to {ws}. To join please paste the following link in your web browser's address bar: {link}. Link valid for {expHours} hours.",
-    "InviteHTML": "<p>You were invited to {ws}. To join, please click the link below: <a href={link}>Join</a></p><p>If the invite link above does not work, paste the following link in your web browser's address bar: {link}</p><p>Link valid for {expHours} hours.</p>",
-    "InviteSubject": "Invitation to {ws}"
+    "ConfirmationText": "感谢您对 {name} 的兴趣。要完成注册过程，请将以下链接复制到您的浏览器的 URL 栏中 {link}。此致，{name} 团队。",
+    "ConfirmationHTML": "<p>您好，</p><p>感谢您对 {name} 的兴趣。要完成注册过程，请点击 <a href={link}>此链接</a> 或将以下链接复制到您的浏览器的 URL 栏中。</p><p>{link}</p><p>此致，</p><p>{name} 团队。</p>",
+    "ConfirmationSubject": "确认您的电子邮件地址以注册 {name}",
+    "RecoveryText": "我们收到了重置您账户密码的请求。要重置您的密码，请将以下链接粘贴到您的浏览器地址栏中：{link}。如果您没有请求密码重置，请忽略此邮件。",
+    "RecoveryHTML": "<p>我们收到了重置您账户密码的请求。要重置您的密码，请点击以下链接：<a href={link}>重置密码</a></p><p>如果上面的重置密码链接不起作用，请将以下链接粘贴到您的浏览器地址栏中：{link}</p><p>如果您没有请求密码重置，请忽略此邮件。</p>",
+    "RecoverySubject": "密码恢复",
+    "InviteText": "您被邀请加入 {ws}。要加入，请将以下链接粘贴到您的浏览器地址栏中：{link}。链接有效期为 {expHours} 小时。",
+    "InviteHTML": "<p>您被邀请加入 {ws}。要加入，请点击以下链接：<a href={link}>加入</a></p><p>如果上面的邀请链接不起作用，请将以下链接粘贴到您的浏览器地址栏中：{link}</p><p>链接有效期为 {expHours} 小时。</p>",
+    "InviteSubject": "邀请加入 {ws}"
   }
 }
