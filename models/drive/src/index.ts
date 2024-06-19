@@ -13,6 +13,8 @@
 // limitations under the License.
 //
 
+import activity from '@hcengineering/activity'
+import chunter from '@hcengineering/chunter'
 import core, {
   type Blob,
   type Domain,
@@ -42,6 +44,7 @@ import {
   UX
 } from '@hcengineering/model'
 import { TDoc, TType, TTypedSpace } from '@hcengineering/model-core'
+import print from '@hcengineering/model-print'
 import tracker from '@hcengineering/model-tracker'
 import view, { type Viewlet, classPresenter, createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
@@ -207,7 +210,7 @@ function defineDrive (builder: Builder): void {
   // Actions
 
   builder.mixin(drive.class.Drive, core.class.Class, view.mixin.IgnoreActions, {
-    actions: [tracker.action.EditRelatedTargets, tracker.action.NewRelatedIssue]
+    actions: [tracker.action.EditRelatedTargets, print.action.Print, tracker.action.NewRelatedIssue]
   })
 
   createAction(
@@ -276,6 +279,7 @@ function defineResource (builder: Builder): void {
           label: drive.string.Size,
           sortingKey: '$lookup.file.size'
         },
+        'comments',
         {
           key: '$lookup.file.modifiedOn'
         },
@@ -388,6 +392,7 @@ function defineFolder (builder: Builder): void {
     actions: [
       view.action.Open,
       view.action.OpenInNewTab,
+      print.action.Print,
       tracker.action.EditRelatedTargets,
       tracker.action.NewRelatedIssue
     ]
@@ -438,12 +443,34 @@ function defineFile (builder: Builder): void {
     presenter: drive.component.FilePresenter
   })
 
+  builder.mixin(drive.class.File, core.class.Class, view.mixin.ObjectEditor, {
+    editor: drive.component.EditFile
+  })
+
+  builder.mixin(drive.class.File, core.class.Class, view.mixin.ObjectPanel, {
+    component: drive.component.FilePanel
+  })
+
+  builder.mixin(drive.class.File, core.class.Class, view.mixin.LinkProvider, {
+    encode: drive.function.FileLinkProvider
+  })
+
+  // Activity
+
+  builder.mixin(drive.class.File, core.class.Class, activity.mixin.ActivityDoc, {})
+
+  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
+    ofClass: drive.class.File,
+    components: { input: chunter.component.ChatMessageInput }
+  })
+
   // Actions
 
   builder.mixin(drive.class.File, core.class.Class, view.mixin.IgnoreActions, {
     actions: [
       view.action.Open,
       view.action.OpenInNewTab,
+      print.action.Print,
       tracker.action.EditRelatedTargets,
       tracker.action.NewRelatedIssue
     ]

@@ -13,20 +13,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { type Blob, type Ref } from '@hcengineering/core'
-  import { getBlobSrcFor, type BlobMetadata } from '@hcengineering/presentation'
+  import { type Doc } from '@hcengineering/core'
+  import { type File } from '@hcengineering/drive'
+  import { DocsNavigator } from '@hcengineering/view-resources'
 
-  export let value: Blob | Ref<Blob>
-  export let name: string
-  export let metadata: BlobMetadata | undefined
+  import FilePresenter from './FilePresenter.svelte'
+  import { resolveParents } from '../utils'
+
+  export let object: File
+
+  let parents: Doc[] = []
+  $: void updateParents(object)
+
+  async function updateParents (object: File): Promise<void> {
+    parents = await resolveParents(object)
+  }
 </script>
 
-{#await getBlobSrcFor(value, name) then href}
-  <iframe src={href + '#view=FitH&navpanes=0'} class="w-full h-full" title={name} />
-{/await}
-
-<style lang="scss">
-  iframe {
-    border: none;
-  }
-</style>
+<DocsNavigator elements={parents} />
+<div class="title">
+  <FilePresenter value={object} shouldShowAvatar={false} disabled noUnderline />
+</div>

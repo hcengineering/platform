@@ -18,7 +18,6 @@
 
   export let value: Blob | Ref<Blob>
   export let name: string
-  export let contentType: string
   export let metadata: BlobMetadata | undefined
 
   $: p = typeof value === 'string' ? getBlobRef(undefined, value, name) : getBlobRef(value, value._id)

@@ -18,13 +18,12 @@
 
   export let value: Blob | Ref<Blob>
   export let name: string
-  export let contentType: string
   export let metadata: BlobMetadata | undefined
 </script>
 
-{#await getBlobSrcFor(value, name) then blobRef}
+{#await getBlobSrcFor(value, name) then src}
   <video controls preload={'auto'}>
-    <source src={blobRef} />
+    <source {src} />
     <track kind="captions" label={name} />
   </video>
 {/await}

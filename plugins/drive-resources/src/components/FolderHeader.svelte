@@ -13,38 +13,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { toIdMap, type Doc, type Ref } from '@hcengineering/core'
-  import drive, { type Folder } from '@hcengineering/drive'
-  import { getClient } from '@hcengineering/presentation'
+  import { type Doc } from '@hcengineering/core'
+  import { type Folder } from '@hcengineering/drive'
   import { DocsNavigator } from '@hcengineering/view-resources'
 
   import FolderPresenter from './FolderPresenter.svelte'
+  import { resolveParents } from '../utils'
 
   export let object: Folder
 
-  const client = getClient()
-
   let parents: Doc[] = []
-  $: void updateParents(object.path)
+  $: void updateParents(object)
 
-  async function updateParents (path: Ref<Folder>[]): Promise<void> {
-    const docs: Array<Doc> = []
-
-    const folders = await client.findAll(drive.class.Folder, { _id: { $in: path } })
-    const byId = toIdMap(folders)
-    for (const p of path) {
-      const parent = byId.get(p)
-      if (parent !== undefined) {
-        docs.push(parent)
-      }
-    }
-
-    const root = await client.findOne(drive.class.Drive, { _id: object.space })
-    if (root !== undefined) {
-      docs.push(root)
-    }
-
-    parents = docs.reverse()
+  async function updateParents (object: Folder): Promise<void> {
+    parents = await resolveParents(object)
   }
 </script>
 

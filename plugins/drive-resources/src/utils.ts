@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { type Class, type Doc, type Ref } from '@hcengineering/core'
+import { toIdMap, type Class, type Doc, type Ref } from '@hcengineering/core'
 import drive, { type Drive, type Folder, type Resource } from '@hcengineering/drive'
 import { type Asset, setPlatformStatus, unknownError } from '@hcengineering/platform'
 import { getClient, getFileMetadata, uploadFile } from '@hcengineering/presentation'
@@ -109,4 +109,27 @@ const fileTypesMap: Record<string, AnySvelteComponent> = {
 export function getFileTypeIcon (contentType: string): Asset | AnySvelteComponent {
   const type = contentType.split('/', 1)[0]
   return fileTypesMap[type] ?? fileTypesMap[contentType] ?? drive.icon.File
+}
+
+export async function resolveParents (object: Resource): Promise<Doc[]> {
+  const client = getClient()
+
+  const parents: Doc[] = []
+
+  const path = object.path
+  const folders = await client.findAll(drive.class.Resource, { _id: { $in: path } })
+  const byId = toIdMap(folders)
+  for (const p of path) {
+    const parent = byId.get(p)
+    if (parent !== undefined) {
+      parents.push(parent)
+    }
+  }
+
+  const root = await client.findOne(drive.class.Drive, { _id: object.space })
+  if (root !== undefined) {
+    parents.push(root)
+  }
+
+  return parents.reverse()
 }
