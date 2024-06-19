@@ -229,8 +229,7 @@ async function notifyByEmail (
 
   if (sender !== undefined) {
     const senderPerson = (await control.findAll(contact.class.Person, { _id: sender.person }))[0]
-    senderName =
-      senderPerson !== undefined ? formatName(senderPerson.name, control.branding?.lastNameFirst === 'true') : ''
+    senderName = senderPerson !== undefined ? formatName(senderPerson.name, control.branding?.lastNameFirst) : ''
   }
 
   const content = await getContent(doc, senderName, type, control, data)

@@ -82,10 +82,7 @@ async function createUserInfo (acc: Ref<Account>, control: TriggerControl): Prom
   const room = (await control.findAll(love.class.Office, { person: personId }))[0]
   const tx = control.txFactory.createTxCreateDoc(love.class.ParticipantInfo, love.space.Rooms, {
     person: personId,
-    name:
-      person !== undefined
-        ? getName(control.hierarchy, person, control.branding?.lastNameFirst === 'true')
-        : account.email,
+    name: person !== undefined ? getName(control.hierarchy, person, control.branding?.lastNameFirst) : account.email,
     room: room?._id ?? love.ids.Reception,
     x: 0,
     y: 0
@@ -270,7 +267,7 @@ export async function OnKnock (tx: Tx, control: TriggerControl): Promise<Tx[]> {
             const path = [workbenchId, control.workspace.workspaceUrl, loveId]
             const title = await translate(love.string.KnockingLabel, {})
             const body = await translate(love.string.IsKnocking, {
-              name: formatName(from.name, control.branding?.lastNameFirst === 'true')
+              name: formatName(from.name, control.branding?.lastNameFirst)
             })
             await createPushNotification(control, userAcc._id, title, body, request._id, from, path)
           }
@@ -300,7 +297,7 @@ export async function OnInvite (tx: Tx, control: TriggerControl): Promise<Tx[]> 
         const body =
           from !== undefined
             ? await translate(love.string.InvitingYou, {
-              name: formatName(from.name, control.branding?.lastNameFirst === 'true')
+              name: formatName(from.name, control.branding?.lastNameFirst)
             })
             : await translate(love.string.InivitingLabel, {})
         await createPushNotification(control, userAcc._id, title, body, invite._id, from, path)

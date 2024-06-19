@@ -39,6 +39,8 @@ services:
       - minio
     ports:
       - 3003:3003
+    volumes:
+      - ./branding-test.json:/var/cfg/branding.json
     environment:
       - ACCOUNT_PORT=3003
       - SERVER_SECRET=secret
@@ -47,6 +49,7 @@ services:
       - ENDPOINT_URL=ws://localhost:3334
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - MODEL_ENABLED=*
+      - BRANDING_PATH=/var/cfg/branding.json
   front:
     image: hardcoreeng/front
     pull_policy: never
@@ -87,6 +90,8 @@ services:
       - account
     ports:
       - 3334:3334
+    volumes:
+      - ./branding-test.json:/var/cfg/branding.json
     environment:
       - SERVER_PROVIDER=${SERVER_PROVIDER}
       - SERVER_PORT=3334
@@ -102,6 +107,7 @@ services:
       - ACCOUNTS_URL=http://account:3003
       - LAST_NAME_FIRST=true
       - ELASTIC_INDEX_NAME=local_storage_index
+      - BRANDING_PATH=/var/cfg/branding.json
   collaborator:
     image: hardcoreeng/collaborator
     links:
