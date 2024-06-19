@@ -185,7 +185,7 @@ test.describe('Tracker sub-issues tests', () => {
 
     await issuesDetailsPage.moreActionOnIssue('Move to project')
     await issuesDetailsPage.fillMoveIssuesModal(secondProjectName)
-    await page.waitForTimeout(1000)
+    await page.waitForTimeout(1500)
     await issuesDetailsPage.openSubIssueByName(newSubIssue.title)
     await expect(issuesDetailsPage.textIdentifier()).toHaveText(/SECON-\d+/)
   })
