@@ -352,7 +352,7 @@ test.describe('channel tests', () => {
     await chunterPage.createPrivateChannel(data.channelName, false)
     await channelPage.checkIfChannelDefaultExist(true, data.channelName)
     await channelPage.clickOnOpenChannelDetails()
-    await channelPage.changeChannelPrivacyOrAutoJoin('N/A', 'Yes', 'Yes')
+    await channelPage.changeChannelPrivacyOrAutoJoin('N/A', 'Yes', 'Yes', true)
   })
 
   test('Check if the user can be added through preview tab', async ({ browser, page }) => {
