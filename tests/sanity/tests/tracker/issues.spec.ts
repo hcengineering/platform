@@ -289,7 +289,7 @@ test.describe('Tracker issue tests', () => {
     await issuesDetailsPage.waitDetailsOpened(commentIssue.title)
     await issuesDetailsPage.addComment(commentInside)
     await issuesDetailsPage.checkCommentExist(commentInside)
-    await trackerNavigationMenuPage.openIssuesForProject('Default')
+    await issuesPage.clickModelSelectorAll()
     await issuesPage.searchIssueByName(commentIssue.title)
     await issuesPage.checkCommentsCount(commentIssue.title, '1')
     await issuesPage.openCommentPopupForIssueByName(commentIssue.title)
