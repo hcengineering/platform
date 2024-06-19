@@ -14,6 +14,7 @@
 //
 
 import {
+  Branding,
   Doc,
   Hierarchy,
   Ref,
@@ -69,7 +70,8 @@ export async function getPublicLink (
   doc: Doc,
   client: TxOperations,
   workspace: WorkspaceIdWithUrl,
-  revokable: boolean = true
+  revokable: boolean = true,
+  branding: Branding | null
 ): Promise<string> {
   const current = await client.findOne(guest.class.PublicLink, { attachedTo: doc._id })
   if (current !== undefined) {
@@ -79,7 +81,7 @@ export async function getPublicLink (
     return current.url
   }
   const id = generateId<PublicLink>()
-  const url = generateUrl(id, workspace)
+  const url = generateUrl(id, workspace, branding?.front)
   const fragment = getDocFragment(doc, client)
   await client.createDoc(
     guest.class.PublicLink,
