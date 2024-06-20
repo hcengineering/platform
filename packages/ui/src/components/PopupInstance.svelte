@@ -280,7 +280,7 @@
   class:testing
   class:anim={(element === 'float' || element === 'centered') && !testing && !drag}
   bind:this={modalHTML}
-  style={`z-index: ${zIndex + 1};`}
+  style={`z-index: ${zIndex};`}
   style:top={options?.props?.top}
   style:bottom={options?.props?.bottom}
   style:left={options?.props?.left}
@@ -331,7 +331,7 @@
     class="modal-overlay"
     class:testing
     class:antiOverlay={options?.showOverlay && !drag}
-    style={`z-index: ${zIndex};`}
+    style={`z-index: ${zIndex - 1};`}
     on:click={handleOverlayClick}
     on:keydown|stopPropagation|preventDefault={() => {}}
   />
