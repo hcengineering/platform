@@ -104,7 +104,7 @@ export interface MigrationClient {
   model: ModelDb
 
   migrateState: Map<string, Set<string>>
-  storageAdapter?: StorageAdapter
+  storageAdapter: StorageAdapter
 
   workspaceId: WorkspaceId
 }
