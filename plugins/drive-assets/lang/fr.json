@@ -1,0 +1,26 @@
+{
+  "string": {
+    "Drive": "Disque",
+    "Drives": "Disques",
+    "Grid": "Grille",
+    "File": "Fichier",
+    "Folder": "Dossier",
+    "Resource": "Ressource",
+    "Name": "Nom",
+    "Description": "Description",
+    "Size": "Taille",
+    "Type": "Type",
+    "LastModified": "Dernière modification",
+    "Parent": "Parent",
+    "Path": "Chemin",
+    "Download": "Télécharger",
+    "CreateDrive": "Créer un disque",
+    "CreateFolder": "Créer un dossier",
+    "UploadFile": "Télécharger un fichier",
+    "UploadFolder": "Télécharger un dossier",
+    "EditDrive": "Modifier le disque",
+    "Rename": "Renommer",
+    "RoleLabel": "Rôle",
+    "Root": "/"
+  }
+}
