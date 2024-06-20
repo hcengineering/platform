@@ -40,149 +40,149 @@ env:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  build:
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0        
-          filter: tree:0
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-      - name: Cache node modules
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-node-platform
-        with:
-          path: |
-            common/temp
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+  # build:
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 60
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 0        
+  #         filter: tree:0
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version-file: '.nvmrc'
+  #     - name: Cache node modules
+  #       uses: actions/cache@v4
+  #       env:
+  #         cache-name: cache-node-platform
+  #       with:
+  #         path: |
+  #           common/temp
+  #         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
 
-      - name: Checking for mis-matching dependencies...
-        run: node common/scripts/install-run-rush.js check
+  #     - name: Checking for mis-matching dependencies...
+  #       run: node common/scripts/install-run-rush.js check
 
-      - name: Installing...
-        run: node common/scripts/install-run-rush.js install
+  #     - name: Installing...
+  #       run: node common/scripts/install-run-rush.js install
 
-      - name: Model version from git tags
-        run: node common/scripts/install-run-rush.js model-version
+  #     - name: Model version from git tags
+  #       run: node common/scripts/install-run-rush.js model-version
       
-      - name: Building...
-        run: node common/scripts/install-run-rush.js build -p 20
+  #     - name: Building...
+  #       run: node common/scripts/install-run-rush.js build -p 20
 
-      - name: Bundle...
-        run: node common/scripts/install-run-rush.js bundle -p 20
+  #     - name: Bundle...
+  #       run: node common/scripts/install-run-rush.js bundle -p 20
 
-      - name: Validate...
-        run: node common/scripts/install-run-rush.js validate -p 20
+  #     - name: Validate...
+  #       run: node common/scripts/install-run-rush.js validate -p 20
 
-      - name: Cache build results
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-build-results
-        with:
-          path: ${{ env.CacheFolders}}
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-  svelte-check:
-    needs: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          filter: tree:0
+  #     - name: Cache build results
+  #       uses: actions/cache@v4
+  #       env:
+  #         cache-name: cache-build-results
+  #       with:
+  #         path: ${{ env.CacheFolders}}
+  #         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+  #         restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+  # svelte-check:
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 60
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 0
+  #         filter: tree:0
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version-file: '.nvmrc'
 
-      - name: Cache build results
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-build-results
-        with:
-          path: ${{ env.CacheFolders}}
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-      - name: Checking svelte sources...
-        run: node common/scripts/install-run-rush.js svelte-check
-  formatting:
-    needs: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-      - name: Cache build results
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-build-results
-        with:
-          path: ${{ env.CacheFolders}}
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+  #     - name: Cache build results
+  #       uses: actions/cache@v4
+  #       env:
+  #         cache-name: cache-build-results
+  #       with:
+  #         path: ${{ env.CacheFolders}}
+  #         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+  #         restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+  #     - name: Checking svelte sources...
+  #       run: node common/scripts/install-run-rush.js svelte-check
+  # formatting:
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 60
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 0
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version-file: '.nvmrc'
+  #     - name: Cache build results
+  #       uses: actions/cache@v4
+  #       env:
+  #         cache-name: cache-build-results
+  #       with:
+  #         path: ${{ env.CacheFolders}}
+  #         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+  #         restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
 
-      - name: Apply templates...
-        run: node common/scripts/install-run-rush.js apply-templates
+  #     - name: Apply templates...
+  #       run: node common/scripts/install-run-rush.js apply-templates
 
-      - name: Check templates
-        run: |
-          echo '================================================================'
-          echo 'Checking for diff files'
-          echo '================================================================'
-          git diff '*.js' '*.ts' '*.svelte' '*.json' | cat
-          [ -z "$(git diff --name-only '*.js' '*.ts' '*.svelte' '*.json' | cat)" ]
-          echo '================================================================'
-      - name: Formatting...
-        run: node common/scripts/install-run-rush.js fast-format
-      - name: Check files formatting
-        run: |
-          echo '================================================================'
-          echo 'Checking for diff files'
-          echo '================================================================'
-          git diff '*.js' '*.ts' '*.svelte' '*.json' | cat
-          [ -z "$(git diff --name-only '*.js' '*.ts' '*.svelte' '*.json' | cat)" ]
-          echo '================================================================'
-  test:
-    needs: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          filter: tree:0
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-      - name: Cache build results
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-build-results
-        with:
-          path: ${{ env.CacheFolders}}
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+  #     - name: Check templates
+  #       run: |
+  #         echo '================================================================'
+  #         echo 'Checking for diff files'
+  #         echo '================================================================'
+  #         git diff '*.js' '*.ts' '*.svelte' '*.json' | cat
+  #         [ -z "$(git diff --name-only '*.js' '*.ts' '*.svelte' '*.json' | cat)" ]
+  #         echo '================================================================'
+  #     - name: Formatting...
+  #       run: node common/scripts/install-run-rush.js fast-format
+  #     - name: Check files formatting
+  #       run: |
+  #         echo '================================================================'
+  #         echo 'Checking for diff files'
+  #         echo '================================================================'
+  #         git diff '*.js' '*.ts' '*.svelte' '*.json' | cat
+  #         [ -z "$(git diff --name-only '*.js' '*.ts' '*.svelte' '*.json' | cat)" ]
+  #         echo '================================================================'
+  # test:
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 60
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 0
+  #         filter: tree:0
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version-file: '.nvmrc'
+  #     - name: Cache build results
+  #       uses: actions/cache@v4
+  #       env:
+  #         cache-name: cache-build-results
+  #       with:
+  #         path: ${{ env.CacheFolders}}
+  #         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
+  #         restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
 
-      - name: Prepare server
-        run: |
-          cd ./tests
-          ./prepare-tests.sh
-      - name: Testing...
-        run: node common/scripts/install-run-rush.js test
-        env:
-          ELASTIC_URL: 'http://localhost:9201'
-          MONGO_URL: 'mongodb://localhost:27018'
+  #     - name: Prepare server
+  #       run: |
+  #         cd ./tests
+  #         ./prepare-tests.sh
+  #     - name: Testing...
+  #       run: node common/scripts/install-run-rush.js test
+  #       env:
+  #         ELASTIC_URL: 'http://localhost:9201'
+  #         MONGO_URL: 'mongodb://localhost:27018'
   uitest:
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -226,7 +226,7 @@ jobs:
       - name: Run UI tests
         run: |
           cd ./tests/sanity
-          node ../../common/scripts/install-run-rushx.js uitest
+          node ../../common/scripts/install-run-rushx.js uitest -g 'Sub-issues move with parent issue' --repeat-each=25
       - name: "Store docker logs"
         if: always()
         run: |
@@ -282,122 +282,122 @@ jobs:
       #   with:
       #     name: db-snapshot
       #     path: ./tests/db_dump
-  uitest-uweb:
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          filter: tree:0
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-      - name: Cache node modules
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-node-platform
-        with:
-          path: |
-            common/temp
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+  # uitest-uweb:
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 60
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 0
+  #         filter: tree:0
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version-file: '.nvmrc'
+  #     - name: Cache node modules
+  #       uses: actions/cache@v4
+  #       env:
+  #         cache-name: cache-node-platform
+  #       with:
+  #         path: |
+  #           common/temp
+  #         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
   
-      - name: Checking for mis-matching dependencies...
-        run: node common/scripts/install-run-rush.js check
+  #     - name: Checking for mis-matching dependencies...
+  #       run: node common/scripts/install-run-rush.js check
     
-      - name: Installing...
-        run: node common/scripts/install-run-rush.js install
+  #     - name: Installing...
+  #       run: node common/scripts/install-run-rush.js install
   
-      - name: Docker Build
-        run: node common/scripts/install-run-rush.js docker:build  -p 20
-        env:
-          DOCKER_CLI_HINTS: false
-      - name: Prepare server
-        env: 
-          SERVER_PROVIDER: uweb
-        run: |
-          cd ./tests
-          ./prepare.sh 
-      - name: Install Playwright
-        run: |
-          cd ./tests/sanity
-          node ../../common/scripts/install-run-rushx.js ci
-      - name: Run UI tests
-        run: |
-          cd ./tests/sanity
-          node ../../common/scripts/install-run-rushx.js uitest
-      - name: "Store docker logs"
-        if: always()
-        run: |
-          cd ./tests/sanity
-          mkdir logs
-          docker logs $(docker ps | grep transactor | cut -f 1 -d ' ') > logs/uweb-transactor.log
-          docker logs $(docker ps | grep account | cut -f 1 -d ' ') > logs/uweb-account.log
-          docker logs $(docker ps | grep front | cut -f 1 -d ' ') > logs/uweb-front.log
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-results-uweb
-          path: ./tests/sanity/playwright-report/
-      - name: Upload Logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: docker-logs-uweb
-          path: ./tests/sanity/logs
-      # - name: Upload DB snapshot
-      #   if: always()
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: db-snapshot
-      #     path: ./tests/db_dump      
-  docker-build:    
-    needs: [build, test, svelte-check, uitest]
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          filter: tree:0
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
-      - name: Cache node modules
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-node-platform
-        with:
-          path: |
-            common/temp
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+  #     - name: Docker Build
+  #       run: node common/scripts/install-run-rush.js docker:build  -p 20
+  #       env:
+  #         DOCKER_CLI_HINTS: false
+  #     - name: Prepare server
+  #       env: 
+  #         SERVER_PROVIDER: uweb
+  #       run: |
+  #         cd ./tests
+  #         ./prepare.sh 
+  #     - name: Install Playwright
+  #       run: |
+  #         cd ./tests/sanity
+  #         node ../../common/scripts/install-run-rushx.js ci
+  #     - name: Run UI tests
+  #       run: |
+  #         cd ./tests/sanity
+  #         node ../../common/scripts/install-run-rushx.js uitest
+  #     - name: "Store docker logs"
+  #       if: always()
+  #       run: |
+  #         cd ./tests/sanity
+  #         mkdir logs
+  #         docker logs $(docker ps | grep transactor | cut -f 1 -d ' ') > logs/uweb-transactor.log
+  #         docker logs $(docker ps | grep account | cut -f 1 -d ' ') > logs/uweb-account.log
+  #         docker logs $(docker ps | grep front | cut -f 1 -d ' ') > logs/uweb-front.log
+  #     - name: Upload test results
+  #       if: always()
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: playwright-results-uweb
+  #         path: ./tests/sanity/playwright-report/
+  #     - name: Upload Logs
+  #       if: always()
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: docker-logs-uweb
+  #         path: ./tests/sanity/logs
+  #     # - name: Upload DB snapshot
+  #     #   if: always()
+  #     #   uses: actions/upload-artifact@v3
+  #     #   with:
+  #     #     name: db-snapshot
+  #     #     path: ./tests/db_dump      
+  # docker-build:    
+  #   needs: [build, test, svelte-check, uitest]
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 60
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 0
+  #         filter: tree:0
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version-file: '.nvmrc'
+  #     - name: Cache node modules
+  #       uses: actions/cache@v4
+  #       env:
+  #         cache-name: cache-node-platform
+  #       with:
+  #         path: |
+  #           common/temp
+  #         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
   
-      - name: Installing...
-        run: node common/scripts/install-run-rush.js install
+  #     - name: Installing...
+  #       run: node common/scripts/install-run-rush.js install
 
-      - name: Model version from git tags
-        run: node common/scripts/install-run-rush.js model-version
+  #     - name: Model version from git tags
+  #       run: node common/scripts/install-run-rush.js model-version
   
-      - name: Docker build
-        run: node common/scripts/install-run-rush.js docker:build -p 20
-        env:
-          DOCKER_CLI_HINTS: false
-      - name: Login to Docker Hub
-        if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') }}
-        uses: docker/login-action@v3
-        with:
-          username: hardcoreeng
-          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
-      - name: Docker push staging
-        if: ${{ github.ref == 'refs/heads/main' }}
-        run: node common/scripts/install-run-rush.js docker:staging
-      - name: Docker push tag
-        if: ${{ startsWith(github.ref, 'refs/tags/v') }}
-        run: |
-          echo Pushing release of tag ${{ github.ref }}
-          node common/scripts/install-run-rush.js docker:push
+  #     - name: Docker build
+  #       run: node common/scripts/install-run-rush.js docker:build -p 20
+  #       env:
+  #         DOCKER_CLI_HINTS: false
+  #     - name: Login to Docker Hub
+  #       if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') }}
+  #       uses: docker/login-action@v3
+  #       with:
+  #         username: hardcoreeng
+  #         password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+  #     - name: Docker push staging
+  #       if: ${{ github.ref == 'refs/heads/main' }}
+  #       run: node common/scripts/install-run-rush.js docker:staging
+  #     - name: Docker push tag
+  #       if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+  #       run: |
+  #         echo Pushing release of tag ${{ github.ref }}
+  #         node common/scripts/install-run-rush.js docker:push
