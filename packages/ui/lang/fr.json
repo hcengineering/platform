@@ -46,7 +46,7 @@
     "DueDatePopupOverdueTitle": "Était à échéance le {value}",
     "DueDatePopupDescription": "{value, plural, =0 {Aujourd'hui} =1 {Demain} other {# jours restants}}",
     "DueDatePopupOverdueDescription": "{value, plural, =1 {1 jour de retard} other {# jours de retard}}",
-    "English": "Anglais",
+    "English": "English",
     "Russian": "Русский",
     "Portuguese": "Português",
     "Spanish": "Español",
