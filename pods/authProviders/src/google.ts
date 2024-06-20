@@ -38,7 +38,7 @@ export function registerGoogle (
   router.get('/auth/google', async (ctx, next) => {
     measureCtx.info('try auth via', { provider: 'google' })
     const host = getHost(ctx.request.headers)
-    const branding = host !== undefined ? brandings[host]?.key ?? '' : ''
+    const branding = host !== undefined ? brandings[host]?.key ?? undefined : undefined
     const state = encodeURIComponent(
       JSON.stringify({
         inviteId: ctx.query?.inviteId,
@@ -53,14 +53,19 @@ export function registerGoogle (
     redirectURL,
     async (ctx, next) => {
       const state = safeParseAuthState(ctx.query?.state)
+      measureCtx.info('Auth state', { state })
       const branding = getBranding(brandings, state?.branding)
+      measureCtx.info('With branding', { branding })
+      const failureRedirect = concatLink(branding?.front ?? frontUrl, '/login')
+      measureCtx.info('With failure redirect', { failureRedirect })
 
       passport.authenticate('google', {
-        failureRedirect: concatLink(branding?.front ?? frontUrl, '/login'),
+        failureRedirect,
         session: true
       })(ctx, next)
     },
     async (ctx, next) => {
+      measureCtx.info('Provider auth success', { type: 'google', user: ctx.state?.user })
       const email = ctx.state.user.emails?.[0]?.value
       const first = ctx.state.user.name.givenName
       const last = ctx.state.user.name.familyName
