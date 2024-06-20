@@ -30,6 +30,7 @@
   }
 </script>
 
+<div class="antiHSpacer x2" />
 <DocsNavigator elements={parents} />
 <div class="title">
   <FilePresenter value={object} shouldShowAvatar={false} disabled noUnderline />

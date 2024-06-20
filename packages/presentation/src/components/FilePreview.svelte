@@ -43,7 +43,7 @@
       <Label label={presentation.string.FailedToPreview} />
     </div>
   {:else if previewType !== undefined}
-    <div class="content flex-col flex-grow">
+    <div class="content flex-col flex-grow items-center">
       <Component
         is={previewType.component}
         props={{ value: file, name, contentType: file.contentType, metadata, ...props }}
