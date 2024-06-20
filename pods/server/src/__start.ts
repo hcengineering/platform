@@ -20,7 +20,7 @@ import notification from '@hcengineering/notification'
 import { setMetadata } from '@hcengineering/platform'
 import { serverConfigFromEnv } from '@hcengineering/server'
 import { storageConfigFromEnv } from '@hcengineering/server-storage'
-import serverCore, { type StorageConfiguration } from '@hcengineering/server-core'
+import serverCore, { type StorageConfiguration, loadBrandingMap } from '@hcengineering/server-core'
 import serverNotification from '@hcengineering/server-notification'
 import serverToken from '@hcengineering/server-token'
 import { start } from '.'
@@ -61,6 +61,7 @@ const shutdown = start(config.url, {
   indexParallel: 2,
   indexProcessing: 50,
   productId: '',
+  brandingMap: loadBrandingMap(config.brandingPath),
   enableCompression: config.enableCompression,
   accountsUrl: config.accountsUrl
 })

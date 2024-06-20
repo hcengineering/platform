@@ -285,7 +285,8 @@ export function devTool (
     .requiredOption('-w, --workspaceName <workspaceName>', 'Workspace name')
     .option('-e, --email <email>', 'Author email', 'platform@email.com')
     .option('-i, --init <ws>', 'Init from workspace')
-    .action(async (workspace, cmd: { email: string, workspaceName: string, init?: string }) => {
+    .option('-b, --branding <key>', 'Branding key')
+    .action(async (workspace, cmd: { email: string, workspaceName: string, init?: string, branding?: string }) => {
       const { mongodbUri, txes, version, migrateOperations } = prepareTools()
       await withDatabase(mongodbUri, async (db) => {
         await createWorkspace(
@@ -295,7 +296,9 @@ export function devTool (
           migrateOperations,
           db,
           productId,
-          cmd.init !== undefined ? { initWorkspace: cmd.init } : null,
+          cmd.init !== undefined || cmd.branding !== undefined
+            ? { initWorkspace: cmd.init, key: cmd.branding ?? 'huly' }
+            : null,
           cmd.email,
           cmd.workspaceName,
           workspace

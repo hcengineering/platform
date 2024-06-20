@@ -6,7 +6,8 @@ import core, {
   type MeasureContext,
   type Ref,
   type WorkspaceId,
-  type WorkspaceIdWithUrl
+  type WorkspaceIdWithUrl,
+  type Branding
 } from '@hcengineering/core'
 import { type Readable } from 'stream'
 import { type RawDBAdapter } from '../adapter'
@@ -292,14 +293,19 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
     return result
   }
 
-  async lookup (ctx: MeasureContext, workspaceId: WorkspaceIdWithUrl, docs: Blob[]): Promise<BlobLookupResult> {
+  async lookup (
+    ctx: MeasureContext,
+    workspaceId: WorkspaceIdWithUrl,
+    branding: Branding | null,
+    docs: Blob[]
+  ): Promise<BlobLookupResult> {
     const result: BlobLookup[] = []
 
     const byProvider = groupByArray(docs, (it) => it.provider)
     for (const [k, v] of byProvider.entries()) {
       const provider = this.adapters.get(k)
       if (provider?.lookup !== undefined) {
-        const upd = await provider.lookup(ctx, workspaceId, v)
+        const upd = await provider.lookup(ctx, workspaceId, branding, v)
         if (upd.updates !== undefined) {
           await this.dbAdapter.update(ctx, workspaceId, DOMAIN_BLOB, upd.updates)
         }

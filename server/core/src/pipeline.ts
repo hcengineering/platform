@@ -28,7 +28,8 @@ import {
   type SearchResult,
   type StorageIterator,
   type Tx,
-  type TxResult
+  type TxResult,
+  type Branding
 } from '@hcengineering/core'
 import { type DbConfiguration } from './configuration'
 import { createServerStorage } from './server'
@@ -49,7 +50,8 @@ export async function createPipeline (
   conf: DbConfiguration,
   constructors: MiddlewareCreator[],
   upgrade: boolean,
-  broadcast: BroadcastFunc
+  broadcast: BroadcastFunc,
+  branding: Branding | null
 ): Promise<Pipeline> {
   const broadcastHandlers: BroadcastFunc[] = [broadcast]
   const _broadcast: BroadcastFunc = (
@@ -65,7 +67,8 @@ export async function createPipeline (
     async (ctx) =>
       await createServerStorage(ctx, conf, {
         upgrade,
-        broadcast: _broadcast
+        broadcast: _broadcast,
+        branding
       })
   )
   const pipelineResult = await PipelineImpl.create(ctx.newChild('pipeline-operations', {}), storage, constructors)

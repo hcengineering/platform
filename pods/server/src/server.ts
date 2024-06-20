@@ -22,7 +22,9 @@ import {
   DOMAIN_TRANSIENT,
   DOMAIN_TX,
   type MeasureContext,
-  type WorkspaceId
+  type WorkspaceId,
+  type BrandingMap,
+  type Branding
 } from '@hcengineering/core'
 import { createElasticAdapter, createElasticBackupDataAdapter } from '@hcengineering/elastic'
 import {
@@ -47,6 +49,7 @@ import {
   createYDocAdapter,
   getMetricsContext
 } from '@hcengineering/server'
+
 import { serverActivityId } from '@hcengineering/server-activity'
 import { serverAttachmentId } from '@hcengineering/server-attachment'
 import { serverCalendarId } from '@hcengineering/server-calendar'
@@ -212,6 +215,7 @@ export function start (
     rekoniUrl: string
     port: number
     productId: string
+    brandingMap: BrandingMap
     serverFactory: ServerFactory
 
     indexProcessing: number // 1000
@@ -267,6 +271,7 @@ export function start (
   function createIndexStages (
     fullText: MeasureContext,
     workspace: WorkspaceId,
+    branding: Branding | null,
     adapter: FullTextAdapter,
     storage: ServerStorage,
     storageAdapter: StorageAdapter,
@@ -309,7 +314,7 @@ export function start (
     stages.push(summaryStage)
 
     // Push all content to elastic search
-    const pushStage = new FullTextPushStage(storage, adapter, workspace)
+    const pushStage = new FullTextPushStage(storage, adapter, workspace, branding)
     stages.push(pushStage)
 
     // OpenAI prepare stage
@@ -324,7 +329,7 @@ export function start (
     return stages
   }
 
-  const pipelineFactory: PipelineFactory = (ctx, workspace, upgrade, broadcast) => {
+  const pipelineFactory: PipelineFactory = (ctx, workspace, upgrade, broadcast, branding) => {
     const wsMetrics = metrics.newChild('🧲 session', {})
     const conf: DbConfiguration = {
       domains: {
@@ -369,6 +374,7 @@ export function start (
           createIndexStages(
             wsMetrics.newChild('stages', {}),
             workspace,
+            branding,
             adapter,
             storage,
             storageAdapter,
@@ -392,14 +398,14 @@ export function start (
       storageFactory: externalStorage,
       workspace
     }
-    return createPipeline(ctx, conf, middlewares, upgrade, broadcast)
+    return createPipeline(ctx, conf, middlewares, upgrade, broadcast, branding)
   }
 
   const sessionFactory = (token: Token, pipeline: Pipeline): Session => {
     if (token.extra?.mode === 'backup') {
-      return new BackupClientSession(token, pipeline)
+      return new BackupClientSession(token, pipeline, opt.brandingMap)
     }
-    return new ClientSession(token, pipeline)
+    return new ClientSession(token, pipeline, opt.brandingMap)
   }
 
   const onClose = startJsonRpc(getMetricsContext(), {
@@ -407,6 +413,7 @@ export function start (
     sessionFactory,
     port: opt.port,
     productId: opt.productId,
+    brandingMap: opt.brandingMap,
     serverFactory: opt.serverFactory,
     enableCompression: opt.enableCompression,
     accountsUrl: opt.accountsUrl,

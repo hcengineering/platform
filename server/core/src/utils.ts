@@ -10,9 +10,12 @@ import core, {
   type ParamsType,
   type Ref,
   type TxWorkspaceEvent,
-  type WorkspaceIdWithUrl
+  type WorkspaceIdWithUrl,
+  type Branding,
+  type BrandingMap
 } from '@hcengineering/core'
 import { type Hash } from 'crypto'
+import fs from 'fs'
 import type { SessionContext } from './types'
 
 /**
@@ -138,7 +141,8 @@ export class SessionContextImpl implements SessionContext {
     readonly sessionId: string,
     readonly admin: boolean | undefined,
     readonly derived: SessionContext['derived'],
-    readonly workspace: WorkspaceIdWithUrl
+    readonly workspace: WorkspaceIdWithUrl,
+    readonly branding: Branding | null
   ) {}
 
   with<T>(
@@ -151,7 +155,17 @@ export class SessionContextImpl implements SessionContext {
       name,
       params,
       async (ctx) =>
-        await op(new SessionContextImpl(ctx, this.userEmail, this.sessionId, this.admin, this.derived, this.workspace)),
+        await op(
+          new SessionContextImpl(
+            ctx,
+            this.userEmail,
+            this.sessionId,
+            this.admin,
+            this.derived,
+            this.workspace,
+            this.branding
+          )
+        ),
       fullParams
     )
   }
@@ -170,4 +184,17 @@ export function createBroadcastEvent (classes: Ref<Class<Doc>>[]): TxWorkspaceEv
     objectSpace: core.space.DerivedTx,
     space: core.space.DerivedTx
   }
+}
+
+export function loadBrandingMap (brandingPath?: string): BrandingMap {
+  let brandings: BrandingMap = {}
+  if (brandingPath !== undefined && brandingPath !== '') {
+    brandings = JSON.parse(fs.readFileSync(brandingPath, 'utf8'))
+
+    for (const [host, value] of Object.entries(brandings)) {
+      value.front = `https://${host}/`
+    }
+  }
+
+  return brandings
 }

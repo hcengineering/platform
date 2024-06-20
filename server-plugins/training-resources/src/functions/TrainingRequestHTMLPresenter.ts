@@ -26,7 +26,7 @@ export const TrainingRequestHTMLPresenter: Presenter<TrainingRequest> = async (
   request: TrainingRequest,
   control: TriggerControl
 ) => {
-  const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
+  const front = control.branding?.front ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
   // TODO: Don't hardcode URLs, find a way to share routes info between front and server resources, and DRY
   const path = `${workbenchId}/${control.workspace.workspaceUrl}/${trainingId}/requests/${request._id}`
   const link = concatLink(front, path)

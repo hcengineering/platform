@@ -19,7 +19,8 @@ import {
   type MeasureContext,
   type Ref,
   type WorkspaceId,
-  type WorkspaceIdWithUrl
+  type WorkspaceIdWithUrl,
+  type Branding
 } from '@hcengineering/core'
 import type { BlobLookup } from '@hcengineering/core/src/classes'
 import { type Readable } from 'stream'
@@ -84,7 +85,12 @@ export interface StorageAdapter {
   ) => Promise<Readable>
 
   // Lookup will extend Blob with lookup information.
-  lookup: (ctx: MeasureContext, workspaceId: WorkspaceIdWithUrl, docs: Blob[]) => Promise<BlobLookupResult>
+  lookup: (
+    ctx: MeasureContext,
+    workspaceId: WorkspaceIdWithUrl,
+    branding: Branding | null,
+    docs: Blob[]
+  ) => Promise<BlobLookupResult>
 }
 
 export interface StorageAdapterEx extends StorageAdapter {
@@ -174,7 +180,12 @@ export class DummyStorageAdapter implements StorageAdapter, StorageAdapterEx {
     throw new Error('not implemented')
   }
 
-  async lookup (ctx: MeasureContext, workspaceId: WorkspaceIdWithUrl, docs: Blob[]): Promise<BlobLookupResult> {
+  async lookup (
+    ctx: MeasureContext,
+    workspaceId: WorkspaceIdWithUrl,
+    branding: Branding | null,
+    docs: Blob[]
+  ): Promise<BlobLookupResult> {
     return { lookups: [] }
   }
 }

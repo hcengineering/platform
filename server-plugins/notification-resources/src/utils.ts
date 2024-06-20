@@ -327,7 +327,7 @@ async function getFallbackNotificationFullfillment (
   if (account !== undefined) {
     const senderPerson = (cache.get(account.person) as Person) ?? (await findPersonForAccount(control, account.person))
     if (senderPerson !== undefined) {
-      intlParams.senderName = formatName(senderPerson.name)
+      intlParams.senderName = formatName(senderPerson.name, control.branding?.lastNameFirst)
       cache.set(senderPerson._id, senderPerson)
     }
   }
