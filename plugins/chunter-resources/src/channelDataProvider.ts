@@ -16,7 +16,7 @@ import { createQuery, getClient } from '@hcengineering/presentation'
 import {
   type Account,
   type Class,
-  type Doc,
+  type Doc, type DocumentQuery,
   getCurrentAccount,
   isOtherDay,
   type Ref,
@@ -31,6 +31,7 @@ import attachment from '@hcengineering/attachment'
 import { combineActivityMessages } from '@hcengineering/activity-resources'
 
 import chunter from './plugin'
+import { type ChatMessage } from '@hcengineering/chunter'
 
 export type LoadMode = 'forward' | 'backward'
 
@@ -213,7 +214,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
       const start = metadata[startPosition]?.createdOn
 
       if (startPosition === 0) {
-        await this.loadMore('forward', metadata[startPosition]?.createdOn, this.limit, true)
+        await this.loadMore('forward', metadata[startPosition]?.createdOn, this.limit)
       } else {
         await this.loadMore('backward', start, this.limit / 2)
         await this.loadMore('forward', metadata[startPosition - 1]?.createdOn, this.limit / 2)
@@ -224,7 +225,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
     this.isInitialLoadedStore.set(true)
   }
 
-  private loadTail (start?: Timestamp, afterLoad?: (msgs: ActivityMessage[]) => Promise<ActivityMessage[]>): void {
+  private loadTail (start?: Timestamp, afterLoad?: (msgs: ActivityMessage[]) => Promise<ActivityMessage[]>, query?: DocumentQuery<ActivityMessage>): void {
     if (this.chatId === undefined) {
       this.isTailLoading.set(false)
       return
@@ -238,6 +239,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
       this.msgClass,
       {
         attachedTo: this.chatId,
+        ...query,
         ...(this.tailStart !== undefined ? { createdOn: { $gte: this.tailStart } } : {})
       },
       async (res) => {
@@ -259,7 +261,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
     )
   }
 
-  public async loadMore (mode: LoadMode, loadAfter?: Timestamp, limit?: number, loadEqual = false): Promise<void> {
+  public async loadMore (mode: LoadMode, loadAfter?: Timestamp, limit?: number): Promise<void> {
     if (this.chatId === undefined || loadAfter === undefined) {
       return
     }
@@ -273,13 +275,21 @@ export class ChannelDataProvider implements IChannelDataProvider {
     const isBackward = mode === 'backward'
     const isForward = mode === 'forward'
 
+    const chunks = get(this.chunksStore)
+    const tail = get(this.tailStore)
+    const lastChunk: Chunk | undefined = isBackward ? chunks[0] : chunks[chunks.length - 1]
+    const skipIds =
+      (lastChunk?.data ?? []).concat(tail)
+        .filter(({ createdOn }) => createdOn === loadAfter)
+        .map(({ _id }) => _id) as Array<Ref<ChatMessage>>
+
     if (isForward) {
       const metadata = get(this.metadataStore)
       const metaIndex = metadata.findIndex(({ createdOn }) => createdOn === loadAfter)
       const shouldLoadTail = metaIndex >= 0 && metaIndex + this.limit >= metadata.length
 
       if (shouldLoadTail) {
-        this.loadTail(metadata[metaIndex + 1]?.createdOn)
+        this.loadTail(metadata[metaIndex + 1]?.createdOn, undefined, { _id: { $nin: skipIds } })
         this.isLoadingMoreStore.set(false)
         return
       }
@@ -290,14 +300,10 @@ export class ChannelDataProvider implements IChannelDataProvider {
       chunter.class.ChatMessage,
       {
         attachedTo: this.chatId,
-        hidden: { $ne: true },
+        _id: { $nin: skipIds },
         createdOn: isBackward
-          ? loadEqual
-            ? { $lte: loadAfter }
-            : { $lt: loadAfter }
-          : loadEqual
-            ? { $gte: loadAfter }
-            : { $gt: loadAfter }
+          ? { $lte: loadAfter }
+          : { $gte: loadAfter }
       },
       {
         limit: limit ?? this.limit,
@@ -321,8 +327,6 @@ export class ChannelDataProvider implements IChannelDataProvider {
       to: to.createdOn ?? to.modifiedOn,
       data: isBackward ? messages.reverse() : messages
     }
-
-    const chunks = get(this.chunksStore)
 
     this.chunksStore.set(isBackward ? [chunk, ...chunks] : [...chunks, chunk])
     this.isLoadingMoreStore.set(false)
