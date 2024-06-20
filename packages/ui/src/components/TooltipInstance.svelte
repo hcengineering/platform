@@ -322,7 +322,7 @@
         this={$tooltip.component}
         {...$tooltip.props}
         on:tooltip={(evt) => {
-          $modals = [ ...$modals.filter((t) => t.type !== 'tooltip'), { ...$tooltip, ...evt.detail, }]
+          $modals = [...$modals.filter((t) => t.type !== 'tooltip'), { ...$tooltip, ...evt.detail }]
         }}
         on:update={onUpdate !== undefined ? onUpdate : async () => {}}
       />
