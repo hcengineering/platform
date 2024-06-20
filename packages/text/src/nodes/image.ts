@@ -141,7 +141,7 @@ export const ImageNode = Node.create<ImageOptions>({
       if (fileId != null) {
         const setBrokenImg = setTimeout(() => {
           imgElement.src = this.options.loadingImgSrc ?? `platform://platform/files/workspace/?file=${fileId}`
-        }, 200)
+        }, 500)
         if (fileId != null) {
           void this.options.getBlobRef(fileId).then((val) => {
             clearTimeout(setBrokenImg)

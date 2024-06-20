@@ -109,7 +109,9 @@ class BackupWorker {
             force: false,
             recheck: false,
             timeout: this.config.Timeout * 1000,
-            connectTimeout: 5 * 60 * 1000 // 5 minutes to
+            connectTimeout: 5 * 60 * 1000, // 5 minutes to,
+            blobDownloadLimit: 100,
+            skipBlobContentTypes: []
           })
         })
       } catch (err: any) {

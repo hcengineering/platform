@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { GetObjectCommand, S3 } from '@aws-sdk/client-s3'
+import { CopyObjectCommand, GetObjectCommand, PutObjectCommand, S3 } from '@aws-sdk/client-s3'
 import { Upload } from '@aws-sdk/lib-storage'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
@@ -22,11 +22,11 @@ import core, {
   withContext,
   type Blob,
   type BlobLookup,
+  type Branding,
   type MeasureContext,
   type Ref,
   type WorkspaceId,
-  type WorkspaceIdWithUrl,
-  type Branding
+  type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 
 import {
@@ -268,6 +268,15 @@ export class S3Service implements StorageAdapter {
     return this.opt.rootBucket !== undefined ? this.getBucketFolder(workspaceId) + '/' : undefined
   }
 
+  async copy (sourceId: WorkspaceId, targetId: WorkspaceId, objectName: string): Promise<void> {
+    const copyOp = new CopyObjectCommand({
+      Bucket: this.getBucketId(targetId),
+      Key: this.getDocumentKey(targetId, objectName),
+      CopySource: `${this.getBucketId(sourceId)}/${this.getDocumentKey(sourceId, objectName)}`
+    })
+    await this.client.send(copyOp)
+  }
+
   @withContext('listStream')
   async listStream (
     ctx: MeasureContext,
@@ -382,41 +391,57 @@ export class S3Service implements StorageAdapter {
     contentType: string,
     size?: number
   ): Promise<UploadedObjectInfo> {
-    if (size === undefined) {
-      const uploadTask = new Upload({
-        client: this.client,
-        params: {
-          Bucket: this.getBucketId(workspaceId),
-          Key: this.getDocumentKey(workspaceId, objectName),
-          ContentType: contentType,
-          Body: stream
+    if (size !== undefined && size < 1024 * 1024 * 5) {
+      return await ctx.with(
+        'simple-put',
+        {},
+        async () => {
+          const cmd = new PutObjectCommand({
+            Bucket: this.getBucketId(workspaceId),
+            Key: this.getDocumentKey(workspaceId, objectName),
+            ContentType: contentType,
+            ContentLength: size,
+            Body: stream
+          })
+          const response = await this.client.send(cmd)
+          return {
+            etag: response.ETag ?? '',
+            versionId: response.VersionId ?? null
+          }
         },
+        { size, objectName, workspaceId: workspaceId.name }
+      )
+      // Less 5Mb
+    } else {
+      return await ctx.with(
+        'multipart-upload',
+        {},
+        async () => {
+          const uploadTask = new Upload({
+            client: this.client,
+            params: {
+              Bucket: this.getBucketId(workspaceId),
+              Key: this.getDocumentKey(workspaceId, objectName),
+              ContentType: contentType,
+              Body: stream
+            },
 
-        // (optional) concurrency configuration
-        queueSize: 1,
+            // (optional) concurrency configuration
+            // queueSize: 1,
 
-        // (optional) size of each part, in bytes, at least 5MB
-        partSize: 1024 * 1024 * 5,
-        leavePartsOnError: false
-      })
+            // (optional) size of each part, in bytes, at least 5MB
+            partSize: 1024 * 1024 * 5,
+            leavePartsOnError: false
+          })
 
-      const output = await uploadTask.done()
-      return {
-        etag: output.ETag ?? '',
-        versionId: output.VersionId ?? null
-      }
-    }
-
-    const result = await this.client.putObject({
-      Bucket: this.getBucketId(workspaceId),
-      Key: this.getDocumentKey(workspaceId, objectName),
-      ContentType: contentType,
-      ContentLength: size,
-      Body: stream
-    })
-    return {
-      etag: result.ETag ?? '',
-      versionId: result.VersionId ?? null
+          const output = await uploadTask.done()
+          return {
+            etag: output.ETag ?? '',
+            versionId: output.VersionId ?? null
+          }
+        },
+        { size, objectName, workspaceId: workspaceId.name }
+      )
     }
   }
 
@@ -426,12 +451,8 @@ export class S3Service implements StorageAdapter {
     const chunks: Buffer[] = []
 
     await new Promise((resolve, reject) => {
-      data.on('readable', () => {
-        let chunk
-        while ((chunk = data.read()) !== null) {
-          const b = chunk as Buffer
-          chunks.push(b)
-        }
+      data.on('data', (chunk) => {
+        chunks.push(chunk)
       })
 
       data.on('end', () => {
@@ -439,6 +460,7 @@ export class S3Service implements StorageAdapter {
         resolve(null)
       })
       data.on('error', (err) => {
+        data.destroy()
         reject(err)
       })
     })

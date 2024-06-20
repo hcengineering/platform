@@ -176,21 +176,29 @@ export function startHttpServer (
 
       const name = req.query.name as string
       const contentType = req.query.contentType as string
+      const size = parseInt((req.query.size as string) ?? '-1')
 
       void ctx
         .with(
           'storage upload',
           { workspace: payload.workspace.name },
-          async () => await externalStorage.put(ctx, payload.workspace, name, req, contentType),
+          async (ctx) =>
+            await externalStorage.put(ctx, payload.workspace, name, req, contentType, size !== -1 ? size : undefined),
           { file: name, contentType }
         )
         .then(() => {
           res.writeHead(200, { 'Cache-Control': 'no-cache' })
           res.end()
         })
+        .catch((err) => {
+          Analytics.handleError(err)
+          ctx.error('/api/v1/blob put error', { err })
+          res.writeHead(404, {})
+          res.end()
+        })
     } catch (err: any) {
       Analytics.handleError(err)
-      console.error(err)
+      ctx.error('/api/v1/blob put error', { err })
       res.writeHead(404, {})
       res.end()
     }
@@ -209,14 +217,27 @@ export function startHttpServer (
 
       const range = req.headers.range
       if (range !== undefined) {
-        void ctx.with('file-range', { workspace: payload.workspace.name }, async (ctx) => {
-          await getFileRange(ctx, range, externalStorage, payload.workspace, name, wrapRes(res))
-        })
+        void ctx
+          .with('file-range', { workspace: payload.workspace.name }, async (ctx) => {
+            await getFileRange(ctx, range, externalStorage, payload.workspace, name, wrapRes(res))
+          })
+          .catch((err) => {
+            Analytics.handleError(err)
+            ctx.error('/api/v1/blob get error', { err })
+            res.writeHead(404, {})
+            res.end()
+          })
       } else {
-        void getFile(ctx, externalStorage, payload.workspace, name, wrapRes(res))
+        void getFile(ctx, externalStorage, payload.workspace, name, wrapRes(res)).catch((err) => {
+          Analytics.handleError(err)
+          ctx.error('/api/v1/blob get error', { err })
+          res.writeHead(404, {})
+          res.end()
+        })
       }
     } catch (err: any) {
       Analytics.handleError(err)
+      ctx.error('/api/v1/blob get error', { err })
     }
   })
 

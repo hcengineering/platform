@@ -91,7 +91,7 @@ export default plugin(presentationId, {
     CollaboratorApiUrl: '' as Metadata<string>,
     Token: '' as Metadata<string>,
     FrontUrl: '' as Asset,
-    PreviewConfig: '' as Metadata<PreviewConfig>
+    PreviewConfig: '' as Metadata<PreviewConfig | undefined>
   },
   status: {
     FileTooLarge: '' as StatusCode

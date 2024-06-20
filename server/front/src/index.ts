@@ -31,6 +31,8 @@ import sharp from 'sharp'
 import { v4 as uuid } from 'uuid'
 import { preConditions } from './utils'
 
+import fs from 'fs'
+
 const cacheControlValue = 'public, max-age=365d'
 const cacheControlNoCache = 'public, no-store, no-cache, must-revalidate, max-age=0'
 
@@ -45,10 +47,11 @@ async function storageUpload (
 ): Promise<string> {
   const id = uuid()
 
+  const data = file.tempFilePath !== undefined ? fs.createReadStream(file.tempFilePath) : file.data
   const resp = await ctx.with(
     'storage upload',
     { workspace: workspace.name },
-    async () => await storageAdapter.put(ctx, workspace, id, file.data, file.mimetype, file.size),
+    async (ctx) => await storageAdapter.put(ctx, workspace, id, data, file.mimetype, file.size),
     { file: file.name, contentType: file.mimetype }
   )
 
@@ -80,7 +83,6 @@ async function getFileRange (
   range: string,
   client: StorageAdapter,
   workspace: WorkspaceId,
-  uuid: string,
   res: Response
 ): Promise<void> {
   const size: number = stat.size
@@ -103,7 +105,7 @@ async function getFileRange (
         const dataStream = await ctx.with(
           'partial',
           {},
-          async () => await client.partial(ctx, workspace, uuid, start, end - start + 1),
+          async (ctx) => await client.partial(ctx, workspace, stat._id, start, end - start + 1),
           {}
         )
         res.writeHead(206, {
@@ -155,7 +157,6 @@ async function getFile (
   stat: PlatformBlob,
   client: StorageAdapter,
   workspace: WorkspaceId,
-  uuid: string,
   req: Request,
   res: Response
 ): Promise<void> {
@@ -183,7 +184,7 @@ async function getFile (
     { contentType: stat.contentType },
     async (ctx) => {
       try {
-        const dataStream = await ctx.with('readable', {}, async () => await client.get(ctx, workspace, uuid))
+        const dataStream = await ctx.with('readable', {}, async (ctx) => await client.get(ctx, workspace, stat._id))
         res.writeHead(200, {
           'Content-Type': stat.contentType,
           Etag: stat.etag,
@@ -241,7 +242,11 @@ export function start (
   const app = express()
 
   app.use(cors())
-  app.use(fileUpload())
+  app.use(
+    fileUpload({
+      useTempFiles: true
+    })
+  )
   app.use(bp.json())
   app.use(bp.urlencoded({ extended: true }))
 
@@ -359,10 +364,10 @@ export function start (
             uuid = uuid.slice(0, uuid.length - format.length - 1)
           }
 
-          const blobInfo = await ctx.with(
+          let blobInfo = await ctx.with(
             'notoken-stat',
             { workspace: payload.workspace.name },
-            async () => await config.storageAdapter.stat(ctx, payload.workspace, uuid)
+            async (ctx) => await config.storageAdapter.stat(ctx, payload.workspace, uuid)
           )
 
           if (blobInfo === undefined) {
@@ -397,24 +402,25 @@ export function start (
 
           const size = req.query.size !== undefined ? parseInt(req.query.size as string) : undefined
           if (format !== undefined && isImage && blobInfo.contentType !== 'image/gif') {
-            uuid = await ctx.with(
+            blobInfo = await ctx.with(
               'resize',
               {},
-              async () => await getGeneratePreview(ctx, blobInfo, size ?? -1, uuid, config, payload, format)
+              async (ctx) =>
+                await getGeneratePreview(ctx, blobInfo as PlatformBlob, size ?? -1, uuid, config, payload, format)
             )
           }
 
           const range = req.headers.range
           if (range !== undefined) {
             await ctx.with('file-range', { workspace: payload.workspace.name }, async (ctx) => {
-              await getFileRange(ctx, blobInfo, range, config.storageAdapter, payload.workspace, uuid, res)
+              await getFileRange(ctx, blobInfo as PlatformBlob, range, config.storageAdapter, payload.workspace, res)
             })
           } else {
             await ctx.with(
               'file',
               { workspace: payload.workspace.name },
               async (ctx) => {
-                await getFile(ctx, blobInfo, config.storageAdapter, payload.workspace, uuid, req, res)
+                await getFile(ctx, blobInfo as PlatformBlob, config.storageAdapter, payload.workspace, req, res)
               },
               { uuid }
             )
@@ -720,9 +726,9 @@ async function getGeneratePreview (
   config: { storageAdapter: StorageAdapter },
   payload: Token,
   format: SupportedFormat = 'jpeg'
-): Promise<string> {
+): Promise<PlatformBlob> {
   if (size === undefined) {
-    return uuid
+    return blob
   }
   const sizeId = uuid + `%preview%${size}${format !== 'jpeg' ? format : ''}`
 
@@ -731,7 +737,7 @@ async function getGeneratePreview (
 
   if (hasSmall) {
     // We have cached small document, let's proceed with it.
-    uuid = sizeId
+    return d
   } else {
     let data: Buffer
     try {
@@ -785,7 +791,7 @@ async function getGeneratePreview (
 
       // Add support of avif as well.
       await config.storageAdapter.put(ctx, payload.workspace, sizeId, dataBuff, contentType, dataBuff.length)
-      uuid = sizeId
+      return (await config.storageAdapter.stat(ctx, payload.workspace, sizeId)) ?? blob
     } catch (err: any) {
       Analytics.handleError(err)
       ctx.error('failed to resize image', {
@@ -796,7 +802,9 @@ async function getGeneratePreview (
         size: blob.size,
         provider: blob.provider
       })
+
+      // Return original in case of error
+      return blob
     }
   }
-  return uuid
 }

@@ -183,7 +183,7 @@ export class MemRawDBAdapter implements RawDBAdapter {
     ctx: MeasureContext,
     workspace: WorkspaceId,
     domain: Domain,
-    query: { _class: Ref<Class<T>> } & DocumentQuery<T>,
+    query: DocumentQuery<T>,
     options?: Omit<FindOptions<T>, 'projection' | 'lookup'>
   ): Promise<FindResult<T>> {
     const db = this.workspaces.get(workspace.name)
@@ -197,7 +197,7 @@ export class MemRawDBAdapter implements RawDBAdapter {
     ctx: MeasureContext,
     workspace: WorkspaceId,
     domain: Domain,
-    query: { _class: Ref<Class<T>> } & DocumentQuery<T>,
+    query: DocumentQuery<T>,
     options?: Omit<FindOptions<T>, 'projection' | 'lookup'>
   ): Promise<RawDBAdapterStream<T>> {
     const db = this.workspaces.get(workspace.name)

@@ -15,12 +15,13 @@
 
 import {
   type Blob,
+  type Branding,
   type DocumentUpdate,
   type MeasureContext,
   type Ref,
+  type StorageIterator,
   type WorkspaceId,
-  type WorkspaceIdWithUrl,
-  type Branding
+  type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 import type { BlobLookup } from '@hcengineering/core/src/classes'
 import { type Readable } from 'stream'
@@ -103,6 +104,8 @@ export interface StorageAdapterEx extends StorageAdapter {
     objectName: string,
     provider?: string
   ) => Promise<void>
+
+  find: (ctx: MeasureContext, workspaceId: WorkspaceId) => StorageIterator
 }
 
 /**
@@ -118,6 +121,13 @@ export class DummyStorageAdapter implements StorageAdapter, StorageAdapterEx {
 
   async exists (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<boolean> {
     return false
+  }
+
+  find (ctx: MeasureContext, workspaceId: WorkspaceId): StorageIterator {
+    return {
+      next: async (ctx) => undefined,
+      close: async (ctx) => {}
+    }
   }
 
   async listBuckets (ctx: MeasureContext, productId: string): Promise<BucketInfo[]> {

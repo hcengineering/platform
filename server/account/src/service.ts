@@ -128,7 +128,11 @@ export class UpgradeWorker {
   }
 
   async upgradeAll (ctx: MeasureContext, opt: UpgradeOptions): Promise<void> {
-    const workspaces = await listWorkspacesRaw(this.db, this.productId)
+    const workspaces = await ctx.with(
+      'retrieve-workspaces',
+      {},
+      async (ctx) => await listWorkspacesRaw(this.db, this.productId)
+    )
     workspaces.sort((a, b) => b.lastVisit - a.lastVisit)
 
     // We need to update workspaces with missing workspaceUrl
@@ -157,7 +161,7 @@ export class UpgradeWorker {
       for (const it of workspaces) {
         await rateLimit.add(async () => {
           try {
-            await ctx.with('do-upgrade', {}, async () => {
+            await ctx.with('do-upgrade', {}, async (ctx) => {
               await this._upgradeWorkspace(ctx, it, opt)
             })
           } catch (err: any) {

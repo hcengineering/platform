@@ -1,13 +1,15 @@
 import core, {
   DOMAIN_BLOB,
   groupByArray,
+  withContext,
   type Blob,
   type BlobLookup,
+  type Branding,
   type MeasureContext,
   type Ref,
+  type StorageIterator,
   type WorkspaceId,
-  type WorkspaceIdWithUrl,
-  type Branding
+  type WorkspaceIdWithUrl
 } from '@hcengineering/core'
 import { type Readable } from 'stream'
 import { type RawDBAdapter } from '../adapter'
@@ -48,13 +50,7 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
     providerId?: string
   ): Promise<void> {
     let current: Blob | undefined = (
-      await this.dbAdapter.find<Blob>(
-        ctx,
-        workspaceId,
-        DOMAIN_BLOB,
-        { _class: core.class.Blob, _id: objectName as Ref<Blob> },
-        { limit: 1 }
-      )
+      await this.dbAdapter.find<Blob>(ctx, workspaceId, DOMAIN_BLOB, { _id: objectName as Ref<Blob> }, { limit: 1 })
     ).shift()
     if (current === undefined && providerId !== undefined) {
       current = await this.adapters.get(providerId)?.stat(ctx, workspaceId, objectName)
@@ -78,8 +74,40 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
     }
   }
 
-  async initialize (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {
-    // We need to initialize internal table if it miss documents.
+  async initialize (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {}
+
+  find (ctx: MeasureContext, workspaceId: WorkspaceId): StorageIterator {
+    const adapters = Array.from(this.adapters.values())
+    let iterator: BlobStorageIterator | undefined
+    return {
+      next: async (ctx) => {
+        while (true) {
+          if (iterator === undefined && adapters.length > 0) {
+            iterator = await (adapters.shift() as StorageAdapter).listStream(ctx, workspaceId)
+          }
+          if (iterator === undefined) {
+            return undefined
+          }
+          const docInfo = await iterator.next()
+          if (docInfo !== undefined) {
+            return {
+              hash: docInfo.etag,
+              id: docInfo._id,
+              size: docInfo.size
+            }
+          } else {
+            // We need to take next adapter
+            await iterator.close()
+            iterator = undefined
+          }
+        }
+      },
+      close: async (ctx) => {
+        if (iterator !== undefined) {
+          await iterator.close()
+        }
+      }
+    }
   }
 
   async close (): Promise<void> {
@@ -98,6 +126,7 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
     return true
   }
 
+  @withContext('aggregator-make', {})
   async make (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {
     for (const a of this.adapters.values()) {
       if (!(await a.exists(ctx, workspaceId))) {
@@ -106,6 +135,7 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
     }
   }
 
+  @withContext('aggregator-listBuckets', {})
   async listBuckets (ctx: MeasureContext, productId: string): Promise<BucketInfo[]> {
     const result: BucketInfo[] = []
     for (const a of this.adapters.values()) {
@@ -114,6 +144,7 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
     return result
   }
 
+  @withContext('aggregator-delete', {})
   async delete (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {
     for (const a of this.adapters.values()) {
       if (await a.exists(ctx, workspaceId)) {
@@ -122,9 +153,9 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
     }
   }
 
+  @withContext('aggregator-remove', {})
   async remove (ctx: MeasureContext, workspaceId: WorkspaceId, objectNames: string[]): Promise<void> {
     const docs = await this.dbAdapter.find<Blob>(ctx, workspaceId, DOMAIN_BLOB, {
-      _class: core.class.Blob,
       _id: { $in: objectNames as Ref<Blob>[] }
     })
 
@@ -149,7 +180,6 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
     prefix?: string | undefined
   ): Promise<BlobStorageIterator> {
     const data = await this.dbAdapter.findStream<Blob>(ctx, workspaceId, DOMAIN_BLOB, {
-      _class: core.class.Blob,
       _id: { $regex: `${prefix ?? ''}.*` }
     })
     return {
@@ -162,35 +192,32 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
     }
   }
 
+  @withContext('aggregator-stat', {})
   async stat (ctx: MeasureContext, workspaceId: WorkspaceId, name: string): Promise<Blob | undefined> {
     const result = await this.dbAdapter.find<Blob>(
       ctx,
       workspaceId,
       DOMAIN_BLOB,
-      { _class: core.class.Blob, _id: name as Ref<Blob> },
+      { _id: name as Ref<Blob> },
       { limit: 1 }
     )
     return result.shift()
   }
 
+  @withContext('aggregator-get', {})
   async get (ctx: MeasureContext, workspaceId: WorkspaceId, name: string): Promise<Readable> {
-    const { provider, stat } = await this.findProvider(workspaceId, ctx, name)
+    const { provider, stat } = await this.findProvider(ctx, workspaceId, name)
     return await provider.get(ctx, workspaceId, stat.storageId)
   }
 
+  @withContext('find-provider', {})
   private async findProvider (
-    workspaceId: WorkspaceId,
     ctx: MeasureContext,
+    workspaceId: WorkspaceId,
     objectName: string
   ): Promise<{ provider: StorageAdapter, stat: Blob }> {
     const stat = (
-      await this.dbAdapter.find<Blob>(
-        ctx,
-        workspaceId,
-        DOMAIN_BLOB,
-        { _class: core.class.Blob, _id: objectName as Ref<Blob> },
-        { limit: 1 }
-      )
+      await this.dbAdapter.find<Blob>(ctx, workspaceId, DOMAIN_BLOB, { _id: objectName as Ref<Blob> }, { limit: 1 })
     ).shift()
     if (stat === undefined) {
       throw new NoSuchKeyError(`No such object found ${objectName}`)
@@ -202,6 +229,7 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
     return { provider, stat }
   }
 
+  @withContext('aggregator-partial', {})
   async partial (
     ctx: MeasureContext,
     workspaceId: WorkspaceId,
@@ -209,12 +237,13 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
     offset: number,
     length?: number | undefined
   ): Promise<Readable> {
-    const { provider, stat } = await this.findProvider(workspaceId, ctx, objectName)
+    const { provider, stat } = await this.findProvider(ctx, workspaceId, objectName)
     return await provider.partial(ctx, workspaceId, stat.storageId, offset, length)
   }
 
+  @withContext('aggregator-read', {})
   async read (ctx: MeasureContext, workspaceId: WorkspaceId, name: string): Promise<Buffer[]> {
-    const { provider, stat } = await this.findProvider(workspaceId, ctx, name)
+    const { provider, stat } = await this.findProvider(ctx, workspaceId, name)
     return await provider.read(ctx, workspaceId, stat.storageId)
   }
 
@@ -239,6 +268,7 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
     return { adapter: this.adapters.get(this.defaultAdapter), provider: this.defaultAdapter }
   }
 
+  @withContext('aggregator-put', {})
   async put (
     ctx: MeasureContext,
     workspaceId: WorkspaceId,
@@ -249,13 +279,7 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
   ): Promise<UploadedObjectInfo> {
     // We need to reuse same provider for existing documents.
     const stat = (
-      await this.dbAdapter.find<Blob>(
-        ctx,
-        workspaceId,
-        DOMAIN_BLOB,
-        { _class: core.class.Blob, _id: objectName as Ref<Blob> },
-        { limit: 1 }
-      )
+      await this.dbAdapter.find<Blob>(ctx, workspaceId, DOMAIN_BLOB, { _id: objectName as Ref<Blob> }, { limit: 1 })
     ).shift()
 
     const { provider, adapter } = this.selectProvider(stat?.provider, contentType)
@@ -293,6 +317,7 @@ export class AggregatorStorageAdapter implements StorageAdapter, StorageAdapterE
     return result
   }
 
+  @withContext('aggregator-lookup', {})
   async lookup (
     ctx: MeasureContext,
     workspaceId: WorkspaceIdWithUrl,
