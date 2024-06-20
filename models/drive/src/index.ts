@@ -21,13 +21,11 @@ import core, {
   type FindOptions,
   type Role,
   type RolesAssignment,
-  type Type,
   Account,
   AccountRole,
   IndexKind,
   Ref,
-  SortingOrder,
-  DOMAIN_MODEL
+  SortingOrder
 } from '@hcengineering/core'
 import { type Drive, type File, type Folder, type Resource, driveId } from '@hcengineering/drive'
 import {
@@ -41,9 +39,10 @@ import {
   TypeRecord,
   TypeRef,
   TypeString,
-  UX
+  UX,
+  Collection
 } from '@hcengineering/model'
-import { TDoc, TType, TTypedSpace } from '@hcengineering/model-core'
+import { TDoc, TTypedSpace } from '@hcengineering/model-core'
 import print from '@hcengineering/model-print'
 import tracker from '@hcengineering/model-tracker'
 import view, { type Viewlet, classPresenter, createAction } from '@hcengineering/model-view'
@@ -56,14 +55,6 @@ export { driveId } from '@hcengineering/drive'
 export { drive as default }
 
 export const DOMAIN_DRIVE = 'drive' as Domain
-
-/** @public */
-export function TypeFilesize (): Type<number> {
-  return { _class: drive.class.TypeFileSize, label: drive.string.Size }
-}
-
-@Model(drive.class.TypeFileSize, core.class.Type, DOMAIN_MODEL)
-export class TTypeFileSize extends TType {}
 
 @Model(drive.class.Drive, core.class.TypedSpace)
 @UX(drive.string.Drive)
@@ -101,6 +92,9 @@ export class TResource extends TDoc implements Resource {
   @Prop(TypeRef(drive.class.Resource), drive.string.Path)
   @ReadOnly()
     path!: Ref<Resource>[]
+
+  @Prop(Collection(chunter.class.ChatMessage), chunter.string.Comments)
+    comments?: number
 }
 
 @Model(drive.class.Folder, drive.class.Resource, DOMAIN_DRIVE)
@@ -128,7 +122,6 @@ export class TFile extends TResource implements File {
 
   @Prop(TypeRecord(), drive.string.Metadata)
   @ReadOnly()
-  @Hidden()
     metadata?: Record<string, any>
 
   @Prop(TypeRef(drive.class.Folder), drive.string.Parent)
@@ -252,9 +245,7 @@ function defineDrive (builder: Builder): void {
 }
 
 function defineResource (builder: Builder): void {
-  builder.createModel(TTypeFileSize, TResource)
-
-  classPresenter(builder, drive.class.TypeFileSize, drive.component.FileSizePresenter)
+  builder.createModel(TResource)
 
   builder.mixin(drive.class.Resource, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: drive.component.ResourcePresenter
@@ -274,10 +265,7 @@ function defineResource (builder: Builder): void {
           sortingKey: 'name'
         },
         {
-          key: '$lookup.file.size',
-          presenter: drive.component.FileSizePresenter,
-          label: drive.string.Size,
-          sortingKey: '$lookup.file.size'
+          key: '$lookup.file.size'
         },
         'comments',
         {
@@ -338,8 +326,6 @@ function defineResource (builder: Builder): void {
         },
         {
           key: '$lookup.file.size',
-          presenter: drive.component.FileSizePresenter,
-          label: drive.string.Size,
           sortingKey: '$lookup.file.size'
         },
         {

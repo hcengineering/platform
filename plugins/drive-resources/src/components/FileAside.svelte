@@ -13,14 +13,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { humanReadableFileSize } from '@hcengineering/ui'
+  import { WithLookup } from '@hcengineering/core'
+  import { type File } from '@hcengineering/drive'
+  import { Scroller } from '@hcengineering/ui'
+  import { DocAttributeBar } from '@hcengineering/view-resources'
 
-  export let value: number | undefined
-  export let accent: boolean = false
+  export let object: WithLookup<File>
+  export let readonly: boolean = false
 </script>
 
-{#if value}
-  <span class="overflow-label select-text" class:fs-bold={accent}>
-    {value !== undefined ? humanReadableFileSize(value) : '-'}
-  </span>
-{/if}
+<Scroller>
+  <DocAttributeBar {object} {readonly} ignoreKeys={[]} />
+
+  {#if object.$lookup?.file}
+    <DocAttributeBar
+      object={object.$lookup.file}
+      {readonly}
+      ignoreKeys={['provider', 'storageId', 'etag', 'version']}
+    />
+  {/if}
+  <div class="space-divider bottom" />
+</Scroller>

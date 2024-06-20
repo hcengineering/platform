@@ -21,6 +21,7 @@
     core.class.TypeBoolean,
     core.class.TypeDate,
     core.class.TypeNumber,
+    core.class.TypeFileSize,
     core.class.EnumOf,
     core.class.Collection,
     core.class.ArrOf,

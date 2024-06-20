@@ -13,15 +13,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { type Ref } from '@hcengineering/core'
-  import drive, { type File } from '@hcengineering/drive'
+  import core, { WithLookup, type Ref } from '@hcengineering/core'
+  import { type File } from '@hcengineering/drive'
   import { Panel } from '@hcengineering/panel'
   import presentation, { IconDownload, createQuery, getBlobHref } from '@hcengineering/presentation'
-  import { Button, Scroller, IconMoreH } from '@hcengineering/ui'
-  import { DocAttributeBar, showMenu } from '@hcengineering/view-resources'
+  import { Button, IconMoreH, IconMixin } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
+  import { showMenu } from '@hcengineering/view-resources'
 
   import EditFile from './EditFile.svelte'
+  import FileAside from './FileAside.svelte'
   import FileHeader from './FileHeader.svelte'
+
+  import drive from '../plugin'
 
   export let _id: Ref<File>
   export let readonly: boolean = false
@@ -32,7 +36,7 @@
     return false
   }
 
-  let object: File | undefined = undefined
+  let object: WithLookup<File> | undefined = undefined
   let download: HTMLAnchorElement
 
   const query = createQuery()
@@ -48,6 +52,8 @@
       }
     }
   )
+
+  let showAllMixins = false
 </script>
 
 {#if object}
@@ -73,10 +79,10 @@
             icon={IconDownload}
             iconProps={{ size: 'medium' }}
             kind={'icon'}
+            showTooltip={{ label: presentation.string.Download }}
             on:click={() => {
               download.click()
             }}
-            showTooltip={{ label: presentation.string.Download }}
           />
         </a>
       {/await}
@@ -84,17 +90,24 @@
         icon={IconMoreH}
         iconProps={{ size: 'medium' }}
         kind={'icon'}
+        showTooltip={{ label: view.string.MoreActions }}
         on:click={(ev) => {
           showMenu(ev, { object })
+        }}
+      />
+      <Button
+        icon={IconMixin}
+        kind={'icon'}
+        iconProps={{ size: 'medium' }}
+        selected={showAllMixins}
+        on:click={() => {
+          showAllMixins = !showAllMixins
         }}
       />
     </svelte:fragment>
 
     <svelte:fragment slot="aside">
-      <Scroller>
-        <DocAttributeBar {object} {readonly} ignoreKeys={[]} />
-        <div class="space-divider bottom" />
-      </Scroller>
+      <FileAside {object} {readonly} {showAllMixins} />
     </svelte:fragment>
 
     <div class="flex-col flex-grow flex-no-shrink step-tb-6">

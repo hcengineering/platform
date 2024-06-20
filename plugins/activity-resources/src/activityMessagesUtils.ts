@@ -57,6 +57,7 @@ const valueTypes: ReadonlyArray<Ref<Class<Doc>>> = [
   core.class.EnumOf,
   core.class.TypeNumber,
   core.class.TypeDate,
+  core.class.TypeFileSize,
   core.class.TypeMarkup,
   core.class.TypeCollaborativeMarkup,
   core.class.TypeHyperlink
