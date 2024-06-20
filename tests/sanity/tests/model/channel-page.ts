@@ -14,10 +14,10 @@ export class ChannelPage {
   readonly channelTab = (): Locator => this.page.getByRole('link', { name: 'Channels' }).getByRole('button')
   readonly channelTable = (): Locator => this.page.getByRole('table')
   readonly channel = (channel: string): Locator => this.page.getByRole('button', { name: channel })
-  readonly chooseChannel = (channel: string): Locator => this.page.getByRole('link', { name: channel })
+  readonly chooseChannel = (channel: string): Locator => this.page.getByRole('button', { name: channel })
   readonly closePopupWindow = (): Locator => this.page.locator('.root > div > .antiButton').first()
   readonly openAddMemberToChannel = (userName: string): Locator => this.page.getByRole('button', { name: userName })
-  readonly addMemberToChannelButton = (userName: string): Locator => this.page.getByRole('button', { name: userName })
+  readonly addMemberToChannelButton = (userName: string): Locator => this.page.getByText(userName)
   readonly joinChannelButton = (): Locator => this.page.getByRole('button', { name: 'Join' })
   readonly addEmojiButton = (): Locator => this.page.locator('.root > button').first()
   readonly selectEmoji = (emoji: string): Locator => this.page.getByText(emoji)
@@ -37,7 +37,15 @@ export class ChannelPage {
   readonly updateButton = (): Locator => this.page.getByRole('button', { name: 'Update' })
   readonly openChannelDetails = (): Locator => this.page.locator('.ac-header > .antiButton')
   readonly changeChannelNameConfirm = (): Locator => this.page.locator('.ml-2 > .antiButton')
-  readonly privateOrPublicChangeButton = (change: string): Locator => this.page.getByRole('button', { name: change })
+  readonly privateOrPublicChangeButton = (change: string, autoJoin: boolean): Locator =>
+    this.page
+      .locator('span.labelOnPanel', { hasText: autoJoin ? 'Auto join' : 'Private' })
+      .locator('xpath=following-sibling::div[1]')
+      .locator('button', { hasText: change })
+
+  readonly privateOrPublicPopupButton = (change: string): Locator =>
+    this.page.locator('div.popup div.menu-item', { hasText: change })
+
   readonly userAdded = (user: string): Locator => this.page.getByText(user)
   private readonly addMemberPreview = (): Locator => this.page.getByRole('button', { name: 'Add members' })
   private readonly addButtonPreview = (): Locator => this.page.getByRole('button', { name: 'Add', exact: true })
@@ -61,11 +69,16 @@ export class ChannelPage {
     await this.changeChannelNameConfirm().click()
   }
 
-  async changeChannelPrivacyOrAutoJoin (change: string, YesNo: string, changed: string): Promise<void> {
-    await this.privateOrPublicChangeButton(change).click()
+  async changeChannelPrivacyOrAutoJoin (
+    change: string,
+    YesNo: string,
+    changed: string,
+    autoJoin: boolean = false
+  ): Promise<void> {
+    await this.privateOrPublicChangeButton(change, autoJoin).click()
     await this.page.waitForTimeout(200)
-    await this.page.getByText(YesNo).click()
-    await expect(this.privateOrPublicChangeButton(changed)).toBeVisible()
+    await this.privateOrPublicPopupButton(YesNo).click()
+    await expect(this.privateOrPublicChangeButton(changed, autoJoin)).toBeVisible()
   }
 
   async clickDeleteMessageButton (): Promise<void> {
