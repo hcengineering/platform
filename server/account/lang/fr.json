@@ -1,0 +1,13 @@
+{
+  "string": {
+    "ConfirmationText": "Merci pour votre intérêt pour {name}. Pour compléter le processus d'inscription, veuillez copier le lien suivant dans la barre d'URL de votre navigateur {link}. Cordialement, l'équipe {name}.",
+    "ConfirmationHTML": "<p>Bonjour,</p><p>Merci pour votre intérêt pour {name}. Pour compléter le processus d'inscription, veuillez suivre <a href={link}>ce lien</a> ou copier le lien suivant dans la barre d'URL de votre navigateur.</p><p>{link}</p><p>Cordialement,</p><p>L'équipe {name}.</p>",
+    "ConfirmationSubject": "Confirmez votre adresse e-mail pour vous inscrire à {name}",
+    "RecoveryText": "Nous avons reçu une demande de réinitialisation du mot de passe pour votre compte. Pour réinitialiser votre mot de passe, veuillez coller le lien suivant dans la barre d'adresse de votre navigateur web : {link}. Si vous n'avez pas demandé de réinitialisation de mot de passe, ignorez cette lettre.",
+    "RecoveryHTML": "<p>Nous avons reçu une demande de réinitialisation du mot de passe pour votre compte. Pour réinitialiser votre mot de passe, veuillez cliquer sur le lien ci-dessous : <a href={link}>Réinitialiser le mot de passe</a></p><p>Si le lien ci-dessus ne fonctionne pas, collez le lien suivant dans la barre d'adresse de votre navigateur web : {link}</p><p>Si vous n'avez pas demandé de réinitialisation de mot de passe, ignorez cette lettre.</p>",
+    "RecoverySubject": "Réinitialisation du mot de passe",
+    "InviteText": "Vous avez été invité à {ws}. Pour rejoindre, veuillez coller le lien suivant dans la barre d'adresse de votre navigateur web : {link}. Le lien est valable pendant {expHours} heures.",
+    "InviteHTML": "<p>Vous avez été invité à {ws}. Pour rejoindre, veuillez cliquer sur le lien ci-dessous : <a href={link}>Rejoindre</a></p><p>Si le lien d'invitation ci-dessus ne fonctionne pas, collez le lien suivant dans la barre d'adresse de votre navigateur web : {link}</p><p>Le lien est valable pendant {expHours} heures.</p>",
+    "InviteSubject": "Invitation à {ws}"
+  }
+}

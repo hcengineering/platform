@@ -1,0 +1,31 @@
+{
+  "string": {
+    "SharedMessages": "messages Telegram partagés",
+    "Next": "Suivant",
+    "Back": "Retour",
+    "Connect": "Connecter",
+    "Connecting": "Connexion...",
+    "ConnectFull": "Connecter le compte Telegram",
+    "Password": "Mot de passe",
+    "Phone": "Téléphone",
+    "PhonePlaceholder": "+1 555 333 7777",
+    "PhoneDescr": "Entrez votre numéro de téléphone Telegram pour connecter votre compte.",
+    "PasswordDescr": "Entrez votre mot de passe à double facteur",
+    "CodeDescr": "Entrez le code à 5 chiffres que vous avez reçu sur votre compte Telegram.",
+    "Cancel": "Annuler",
+    "Share": "Partager des messages",
+    "PublishSelected": "Publier les messages sélectionnés",
+    "SharedMessage": "Message partagé",
+    "Content": "Contenu",
+    "Incoming": "Entrant",
+    "Messages": "Messages",
+    "NewMessage": "Nouveau message",
+    "NewIncomingMessage": "Vous a envoyé un nouveau message",
+    "Telegram": "Telegram",
+    "TelegramIntegrationDesc": "Utilisez l'intégration Telegram",
+    "Status": "Statut",
+    "MessagesSelected": "messages sélectionnés",
+    "ConfigLabel": "Telegram",
+    "ConfigDescription": "Extension pour lire et écrire des messages Telegram"
+  }
+}

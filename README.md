@@ -24,18 +24,24 @@ This project offers a convenient method to host Huly using `docker`, designed fo
 
 ## Table of Content
 
-- [Pre-requisites](#pre-requisites)
-- [Fast start](#fast-start)
-- [Installation](#installation)
-- [Build and run](#build-and-run)
-- Development mode
+- [Huly Platform](#huly-platform)
+  - [About](#about)
+  - [Self-Hosting](#self-hosting)
+  - [Activity](#activity)
+  - [Table of Content](#table-of-content)
+  - [Pre-requisites](#pre-requisites)
+  - [Verification](#verification)
+  - [Installation](#installation)
+  - [Build and run](#build-and-run)
   - [Run in development mode](#run-in-development-mode)
   - [Update project structure and database](#update-project-structure-and-database)
-  - Tests
-    - [Tests](#tests)
+  - [Troubleshooting](#troubleshooting)
+  - [Build \& Watch](#build--watch)
+  - [Tests](#tests)
     - [Unit tests](#unit-tests)
     - [UI tests](#ui-tests)
   - [Package publishing](#package-publishing)
+  - [Additional testing](#additional-testing)
 
 ## Pre-requisites
 
@@ -222,3 +228,4 @@ node ./common/scripts/bump.js -p projectName
 This project is tested with BrowserStack.
 
 <sub><sup>&copy; 2024 <a href="https://hardcoreeng.com">Hardcore Engineering Inc</a>.</sup></sub>
+
