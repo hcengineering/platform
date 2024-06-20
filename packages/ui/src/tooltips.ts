@@ -46,7 +46,7 @@ export function tooltip (node: HTMLElement, options?: LabelAndProps): any {
             opt.kind,
             opt.keys
           )
-        }, 250)
+        }, 10)
       } else {
         showTooltip(
           opt.label,
