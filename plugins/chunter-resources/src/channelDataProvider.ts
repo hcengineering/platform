@@ -16,7 +16,8 @@ import { createQuery, getClient } from '@hcengineering/presentation'
 import {
   type Account,
   type Class,
-  type Doc, type DocumentQuery,
+  type Doc,
+  type DocumentQuery,
   getCurrentAccount,
   isOtherDay,
   type Ref,
@@ -225,7 +226,11 @@ export class ChannelDataProvider implements IChannelDataProvider {
     this.isInitialLoadedStore.set(true)
   }
 
-  private loadTail (start?: Timestamp, afterLoad?: (msgs: ActivityMessage[]) => Promise<ActivityMessage[]>, query?: DocumentQuery<ActivityMessage>): void {
+  private loadTail (
+    start?: Timestamp,
+    afterLoad?: (msgs: ActivityMessage[]) => Promise<ActivityMessage[]>,
+    query?: DocumentQuery<ActivityMessage>
+  ): void {
     if (this.chatId === undefined) {
       this.isTailLoading.set(false)
       return
@@ -278,10 +283,10 @@ export class ChannelDataProvider implements IChannelDataProvider {
     const chunks = get(this.chunksStore)
     const tail = get(this.tailStore)
     const lastChunk: Chunk | undefined = isBackward ? chunks[0] : chunks[chunks.length - 1]
-    const skipIds =
-      (lastChunk?.data ?? []).concat(tail)
-        .filter(({ createdOn }) => createdOn === loadAfter)
-        .map(({ _id }) => _id) as Array<Ref<ChatMessage>>
+    const skipIds = (lastChunk?.data ?? [])
+      .concat(tail)
+      .filter(({ createdOn }) => createdOn === loadAfter)
+      .map(({ _id }) => _id) as Array<Ref<ChatMessage>>
 
     if (isForward) {
       const metadata = get(this.metadataStore)
@@ -301,9 +306,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
       {
         attachedTo: this.chatId,
         _id: { $nin: skipIds },
-        createdOn: isBackward
-          ? { $lte: loadAfter }
-          : { $gte: loadAfter }
+        createdOn: isBackward ? { $lte: loadAfter } : { $gte: loadAfter }
       },
       {
         limit: limit ?? this.limit,
