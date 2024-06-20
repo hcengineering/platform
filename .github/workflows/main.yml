@@ -226,7 +226,7 @@ jobs:
       - name: Run UI tests
         run: |
           cd ./tests/sanity
-          node ../../common/scripts/install-run-rushx.js uitest -g 'Sub-issues move with parent issue' --repeat-each=25
+          node ../../common/scripts/install-run-rushx.js uitest -g 'Sub-issues move with parent issue' --repeat-each=200
       - name: "Store docker logs"
         if: always()
         run: |
