@@ -40,6 +40,7 @@ import EditDoc from './components/EditDoc.svelte'
 import EnumArrayEditor from './components/EnumArrayEditor.svelte'
 import EnumEditor from './components/EnumEditor.svelte'
 import EnumPresenter from './components/EnumPresenter.svelte'
+import FileSizePresenter from './components/FileSizePresenter.svelte'
 import HTMLEditor from './components/HTMLEditor.svelte'
 import HTMLPresenter from './components/HTMLPresenter.svelte'
 import HyperlinkEditor from './components/HyperlinkEditor.svelte'
@@ -285,6 +286,7 @@ export default async (): Promise<Resources> => ({
     SpaceTypeSelector,
     EnumArrayEditor,
     EnumPresenter,
+    FileSizePresenter,
     StatusPresenter,
     StatusRefPresenter,
     DateFilterPresenter,
