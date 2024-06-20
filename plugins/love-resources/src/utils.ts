@@ -117,7 +117,7 @@ isCurrentInstanceConnected.subscribe((value) => {
 })
 export const screenSharing = writable<boolean>(false)
 export const isRecording = writable<boolean>(false)
-export const isRecordingAvailable = writable<boolean | undefined>(undefined)
+export const isRecordingAvailable = writable<boolean>(false)
 export const isMicEnabled = writable<boolean>(false)
 export const isCameraEnabled = writable<boolean>(false)
 export const isSharingEnabled = writable<boolean>(false)
@@ -697,16 +697,18 @@ export async function record (room: Room): Promise<void> {
   }
 }
 
-export async function checkRecordAvailable (): Promise<void> {
+async function checkRecordAvailable (): Promise<void> {
   try {
     const endpoint = getMetadata(love.metadata.ServiceEnpdoint)
     if (endpoint === undefined) {
-      throw new Error('Love service endpoint not found')
+      setTimeout(() => {
+        void checkRecordAvailable()
+      }, 500)
+    } else {
+      const res = await fetch(concatLink(endpoint, '/checkRecordAvailable'))
+      const result = await res.json()
+      isRecordingAvailable.set(result)
     }
-
-    const res = await fetch(concatLink(endpoint, '/checkRecordAvailable'))
-    const result = await res.json()
-    isRecordingAvailable.set(result)
   } catch (err: any) {
     Analytics.handleError(err)
     console.error(err)
