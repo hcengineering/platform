@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { type Blob, type Ref } from '@hcengineering/core'
+  import { type Blob } from '@hcengineering/core'
   import { Button, Component, Label } from '@hcengineering/ui'
 
   import presentation from '../plugin'

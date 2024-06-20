@@ -45,7 +45,7 @@ import {
 import { TDoc, TTypedSpace } from '@hcengineering/model-core'
 import print from '@hcengineering/model-print'
 import tracker from '@hcengineering/model-tracker'
-import view, { type Viewlet, classPresenter, createAction } from '@hcengineering/model-view'
+import view, { type Viewlet, createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import { getEmbeddedLabel } from '@hcengineering/platform'
 
@@ -264,13 +264,9 @@ function defineResource (builder: Builder): void {
           label: drive.string.Name,
           sortingKey: 'name'
         },
-        {
-          key: '$lookup.file.size'
-        },
+        '$lookup.file.size',
         'comments',
-        {
-          key: '$lookup.file.modifiedOn'
-        },
+        '$lookup.file.modifiedOn',
         'createdBy'
       ],
       /* eslint-disable @typescript-eslint/consistent-type-assertions */
@@ -324,14 +320,8 @@ function defineResource (builder: Builder): void {
           label: drive.string.Name,
           sortingKey: 'name'
         },
-        {
-          key: '$lookup.file.size',
-          sortingKey: '$lookup.file.size'
-        },
-        {
-          key: '$lookup.file.modifiedOn',
-          label: core.string.ModifiedDate
-        },
+        '$lookup.file.size',
+        '$lookup.file.modifiedOn',
         'createdBy'
       ],
       configOptions: {

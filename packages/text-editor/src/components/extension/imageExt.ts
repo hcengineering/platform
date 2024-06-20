@@ -149,7 +149,6 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
               {
                 file: fileId,
                 name: fileName,
-                contentType: 'image/*',
                 fullSize: true,
                 showIcon: false
               },

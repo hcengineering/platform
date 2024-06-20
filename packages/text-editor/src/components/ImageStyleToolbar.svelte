@@ -43,7 +43,7 @@
     const fileName = attributes.alt ?? ''
     showPopup(
       FilePreviewPopup,
-      { file: fileId, name: fileName, contentType: 'image/*', fullSize: true, showIcon: false },
+      { file: fileId, name: fileName, fullSize: true, showIcon: false },
       'centered',
       () => {
         dispatch('focus')
