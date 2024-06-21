@@ -1486,7 +1486,9 @@ export async function parseLinkId<T extends Doc> (
   id: string,
   _class: Ref<Class<T>>
 ): Promise<Ref<T>> {
-  const provider = providers.find(({ _id }) => _id === _class)
+  const hierarchy = getClient().getHierarchy()
+  const provider =
+    providers.find(({ _id }) => id === _class) ?? providers.find(({ _id }) => hierarchy.isDerived(_class, _id))
 
   if (provider === undefined) {
     return id as Ref<T>
