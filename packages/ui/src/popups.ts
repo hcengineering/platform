@@ -1,6 +1,6 @@
 import { getResource } from '@hcengineering/platform'
 import { type ComponentType } from 'svelte'
-import { derived, get, writable } from 'svelte/store'
+import { derived, get } from 'svelte/store'
 import type {
   AnyComponent,
   AnySvelteComponent,
@@ -13,8 +13,10 @@ import type {
 } from './types'
 
 import { Analytics } from '@hcengineering/analytics'
+import { modalStore } from './modals'
 
 export interface CompAndProps {
+  type?: 'popup'
   id: string
   is: AnySvelteComponent | ComponentType
   props: any
@@ -41,26 +43,30 @@ export interface PopupResult {
   update: (props: Record<string, any>) => void
 }
 
-export const popupstore = writable<CompAndProps[]>([])
+export const popupstore = derived(modalStore, (modals) => {
+  return modals.filter((m) => m.type === 'popup') as CompAndProps[]
+})
 
-export const dockStore = derived(popupstore, (popups) => {
-  return popups.find((popup) => popup.dock)
+export const dockStore = derived(modalStore, (modals) => {
+  return (modals.filter((m) => m.type === 'popup') as CompAndProps[]).find((popup: CompAndProps) => popup.dock)
 })
 
 export function updatePopup (id: string, props: Partial<CompAndProps>): void {
-  popupstore.update((popups) => {
-    const popupIndex = popups.findIndex((p) => p.id === id)
+  modalStore.update((modals) => {
+    const popupIndex = (modals.filter((m) => m.type === 'popup') as CompAndProps[]).findIndex(
+      (p: CompAndProps) => p.id === id
+    )
     if (popupIndex !== -1) {
-      popups[popupIndex].update?.(props)
+      ;(modals[popupIndex] as CompAndProps).update?.(props)
     }
-    return popups
+    return modals
   })
 }
 
 function addPopup (props: CompAndProps): void {
-  popupstore.update((popups) => {
-    popups.push(props)
-    return popups
+  modalStore.update((modals) => {
+    modals.push(props)
+    return modals
   })
 }
 
@@ -93,8 +99,8 @@ export function showPopup (
 ): PopupResult {
   const id = `${popupId++}`
   const closePopupOp = (): void => {
-    popupstore.update((popups) => {
-      const pos = popups.findIndex((p) => p.id === id)
+    modalStore.update((popups) => {
+      const pos = popups.findIndex((p) => (p as CompAndProps).id === id && p.type === 'popup')
       if (pos !== -1) {
         popups.splice(pos, 1)
       }
@@ -109,7 +115,8 @@ export function showPopup (
     onClose,
     onUpdate,
     close: closePopupOp,
-    options
+    options,
+    type: 'popup'
   }
   if (checkDockPosition(options.refId)) {
     data.dock = true
@@ -136,19 +143,22 @@ export function showPopup (
 }
 
 export function closePopup (category?: string): void {
-  popupstore.update((popups) => {
+  modalStore.update((popups) => {
     if (category !== undefined) {
-      popups = popups.filter((p) => p.options.category !== category)
+      popups = popups.filter((p) => p.type === 'popup' && p.options.category !== category)
     } else {
       for (let i = popups.length - 1; i >= 0; i--) {
-        if (popups[i].options.fixed !== true) {
-          const isClosing = popups[i].closing ?? false
-          popups[i].closing = true
+        if (popups[i].type !== 'popup') continue
+        if ((popups[i] as CompAndProps).options.fixed !== true) {
+          const isClosing = (popups[i] as CompAndProps).closing ?? false
+          if (popups[i].type === 'popup') {
+            ;(popups[i] as CompAndProps).closing = true
+          }
           if (!isClosing) {
             // To prevent possible recursion, we need to check if we call some code from popup close, to do close.
-            popups[i].onClose?.(undefined)
+            ;(popups[i] as CompAndProps).onClose?.(undefined)
           }
-          popups[i].closing = false
+          ;(popups[i] as CompAndProps).closing = false
           popups.splice(i, 1)
           break
         }
@@ -448,9 +458,10 @@ export function getEventPositionElement (evt: MouseEvent): PopupAlignment | unde
 }
 
 export function pin (id: string): void {
-  popupstore.update((popups) => {
-    const current = popups.find((p) => p.id === id)
-    popups.forEach((p) => (p.dock = p.id === id))
+  modalStore.update((popups) => {
+    const currentPopups = popups.filter((m) => m.type === 'popup') as CompAndProps[]
+    const current = currentPopups.find((p) => p.id === id) as CompAndProps
+    ;(popups.filter((m) => m.type === 'popup') as CompAndProps[]).forEach((p) => (p.dock = p.id === id))
     if (current?.options.refId !== undefined) {
       localStorage.setItem('dock-popup', current.options.refId)
     }
@@ -459,8 +470,8 @@ export function pin (id: string): void {
 }
 
 export function unpin (): void {
-  popupstore.update((popups) => {
-    popups.forEach((p) => (p.dock = false))
+  modalStore.update((popups) => {
+    ;(popups.filter((m) => m.type === 'popup') as CompAndProps[]).forEach((p) => (p.dock = false))
     return popups
   })
   localStorage.removeItem('dock-popup')
