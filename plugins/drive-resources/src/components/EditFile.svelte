@@ -26,13 +26,9 @@
   const query = createQuery()
 
   let blob: Blob | undefined = undefined
-  $: query.query(
-    core.class.Blob,
-    { _id: object.file },
-    (res) => {
-      ;[blob] = res
-    }
-  )
+  $: query.query(core.class.Blob, { _id: object.file }, (res) => {
+    ;[blob] = res
+  })
 
   onMount(() => {
     dispatch('open', { ignoreKeys: ['file', 'preview', 'parent', 'path', 'metadata'] })
@@ -41,10 +37,6 @@
 
 {#if object !== undefined}
   {#if blob !== undefined}
-    <FilePreview
-      file={blob}
-      name={object.name}
-      metadata={object.metadata}
-    />
+    <FilePreview file={blob} name={object.name} metadata={object.metadata} />
   {/if}
 {/if}

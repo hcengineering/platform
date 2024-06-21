@@ -94,7 +94,7 @@
       height: 1rem;
       border-radius: 0.5rem;
       cursor: pointer;
-      
+
       .bar {
         border-radius: 0.5rem 0 0 0.5rem;
       }
@@ -107,7 +107,9 @@
         border-radius: 50%;
         background-color: var(--primary-button-color);
         border: 1px solid var(--theme-divider-color);
-        box-shadow: inset -.125rem -.125rem .175rem rgba(0, 0, 0, 0.1), 0 0 .25rem rgba(0, 0, 0, 0.25);
+        box-shadow:
+          inset -0.125rem -0.125rem 0.175rem rgba(0, 0, 0, 0.1),
+          0 0 0.25rem rgba(0, 0, 0, 0.25);
       }
     }
 

@@ -57,9 +57,7 @@
   $: void fetchBlob(file)
 
   async function fetchBlob (file: Blob | Ref<Blob> | undefined): Promise<void> {
-    blob = (typeof file === 'string')
-      ? await client.findOne(core.class.Blob, { _id: file })
-      : file
+    blob = typeof file === 'string' ? await client.findOne(core.class.Blob, { _id: file }) : file
   }
 
   $: srcRef = getBlobSrcFor(blob, name)

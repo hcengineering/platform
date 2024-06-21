@@ -25,12 +25,7 @@
 </script>
 
 {#await getBlobSrcFor(value, name) then src}
-  <video
-    style:max-width={maxWidth}
-    style:max-height={maxHeight}
-    controls
-    preload={'auto'}
-  >
+  <video style:max-width={maxWidth} style:max-height={maxHeight} controls preload={'auto'}>
     <source {src} />
     <track kind="captions" label={name} />
   </video>
