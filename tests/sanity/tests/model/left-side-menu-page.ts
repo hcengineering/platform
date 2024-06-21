@@ -12,6 +12,7 @@ export class LeftSideMenuPage extends CommonPage {
   buttonChunter = (): Locator => this.page.locator('button[id$="ApplicationLabelChunter"]')
   buttonContacts = (): Locator => this.page.locator('button[id$="Contacts"]')
   buttonTracker = (): Locator => this.page.locator('button[id$="TrackerApplication"]')
+  buttonRecruiting = (): Locator => this.page.locator('[id="app-recruit\\:string\\:RecruitApplication"]')
   buttonNotification = (): Locator => this.page.locator('button[id$="Inbox"]')
   buttonDocuments = (): Locator => this.page.locator('button[id$="document:string:DocumentApplication"]')
   profileButton = (): Locator => this.page.locator('#profile-button')
@@ -50,6 +51,10 @@ export class LeftSideMenuPage extends CommonPage {
 
   async clickDocuments (): Promise<void> {
     await this.buttonDocuments().click()
+  }
+
+  async clickRecruiting (): Promise<void> {
+    await this.buttonRecruiting().click()
   }
 
   async clickOnCloseInvite (): Promise<void> {
