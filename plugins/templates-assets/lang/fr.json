@@ -1,21 +1,21 @@
 {
   "string": {
     "Cancel": "Annuler",
-    "Templates": "Modèles de texte",
-    "TemplatesHeader": "MODÈLES DE TEXTE",
-    "CreateTemplate": "CRÉER UN MODÈLE",
-    "SaveTemplate": "Enregistrer le modèle",
-    "EditTemplate": "Modifier le modèle",
-    "ViewTemplate": "Voir le modèle",
+    "Templates": "Templates de texte",
+    "TemplatesHeader": "TEMPLATE DE DECOUMENT",
+    "CreateTemplate": "CRÉER UN TEMPLATE",
+    "SaveTemplate": "Enregistrer le template",
+    "EditTemplate": "Modifier le template",
+    "ViewTemplate": "Voir le template",
     "Suggested": "SUGGÉRÉ",
-    "SearchTemplate": "rechercher un modèle",
-    "TemplatePlaceholder": "Nouveau modèle",
+    "SearchTemplate": "rechercher un template",
+    "TemplatePlaceholder": "Nouveau template",
     "Title": "Titre",
     "Message": "Message",
     "Field": "Champ",
-    "TemplateCategory": "Groupe de modèles",
+    "TemplateCategory": "Groupe de templates",
     "CreateTemplateCategory": "Créer un groupe",
     "Copy": "Copier",
-    "Template": "Modèle"
+    "Template": "Template"
   }
 }
