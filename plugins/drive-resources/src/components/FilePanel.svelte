@@ -17,7 +17,7 @@
   import { type File } from '@hcengineering/drive'
   import { Panel } from '@hcengineering/panel'
   import presentation, { IconDownload, createQuery, getBlobHref } from '@hcengineering/presentation'
-  import { Button, IconMoreH, IconMixin } from '@hcengineering/ui'
+  import { Button, IconMoreH } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { showMenu } from '@hcengineering/view-resources'
 
@@ -52,8 +52,6 @@
       }
     }
   )
-
-  let showAllMixins = false
 </script>
 
 {#if object}
@@ -95,19 +93,10 @@
           showMenu(ev, { object })
         }}
       />
-      <Button
-        icon={IconMixin}
-        kind={'icon'}
-        iconProps={{ size: 'medium' }}
-        selected={showAllMixins}
-        on:click={() => {
-          showAllMixins = !showAllMixins
-        }}
-      />
     </svelte:fragment>
 
     <svelte:fragment slot="aside">
-      <FileAside {object} {readonly} {showAllMixins} />
+      <FileAside {object} {readonly} />
     </svelte:fragment>
 
     <div class="flex-col flex-grow flex-no-shrink step-tb-6">
