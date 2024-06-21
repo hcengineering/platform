@@ -236,7 +236,7 @@
 
     const { scrollHeight, scrollTop, clientHeight } = scrollElement
 
-    return Math.ceil(scrollTop + clientHeight) === scrollHeight
+    return scrollHeight - Math.ceil(scrollTop + clientHeight) <= 0
   }
 
   let scrollToRestore = 0
