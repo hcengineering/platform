@@ -58,7 +58,7 @@ export function registerGithub (
       passport.authenticate('github', {
         failureRedirect: concatLink(branding?.front ?? frontUrl, '/login'),
         session: true
-      })(ctx, next)
+      })
     },
     async (ctx, next) => {
       try {

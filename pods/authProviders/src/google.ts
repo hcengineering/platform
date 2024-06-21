@@ -62,7 +62,7 @@ export function registerGoogle (
       passport.authenticate('google', {
         failureRedirect,
         session: true
-      })(ctx, next)
+      })
     },
     async (ctx, next) => {
       measureCtx.info('Provider auth success', { type: 'google', user: ctx.state?.user })
