@@ -13,14 +13,23 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { humanReadableFileSize } from '@hcengineering/ui'
+  import { Button, ButtonSize, humanReadableFileSize } from '@hcengineering/ui'
 
   export let value: number | undefined
-  export let accent: boolean = false
+  export let kind: 'no-border' | 'link' | 'list' = 'no-border'
+  export let size: ButtonSize = 'small'
+  export let justify: 'left' | 'center' = 'center'
+  export let width: string | undefined = 'fit-content'
+
+  $: strValue = value != null ? humanReadableFileSize(value) : '-'
 </script>
 
-{#if value}
-  <span class="overflow-label select-text" class:fs-bold={accent}>
-    {value !== undefined ? humanReadableFileSize(value) : '-'}
-  </span>
+{#if kind === 'link'}
+  <Button {kind} {size} {justify} {width}>
+    <svelte:fragment slot="content">
+      {strValue}
+    </svelte:fragment>
+  </Button>
+{:else}
+  <span class="caption-color overflow-label">{strValue}</span>
 {/if}

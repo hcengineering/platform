@@ -93,7 +93,7 @@
 
     {#if viewlet !== undefined && viewOptions}
       <FilterBar {_class} {space} query={searchQuery} {viewOptions} on:change={(e) => (resultQuery = e.detail)} />
-      <div class="popupPanel rowContent">
+      <div class="popupPanel rowContent" on:contextmenu>
         {#if viewlet}
           <Scroller horizontal={true}>
             <ViewletContentView {_class} {viewlet} query={resultQuery} {space} {viewOptions} />

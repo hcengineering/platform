@@ -47,7 +47,6 @@
       {
         file: value.$lookup?.file ?? value.file,
         name: value.name,
-        contentType: value.type,
         metadata: value.metadata
       },
       isImage(value.type) ? 'centered' : 'float'

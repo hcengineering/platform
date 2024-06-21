@@ -81,6 +81,21 @@ export function floorFractionDigits (n: number | string, amount: number): number
 /**
  * @public
  */
+export function humanReadableFileSize (size: number, base: 2 | 10 = 10, fractionDigits: number = 2): string {
+  const units =
+    base === 10
+      ? ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+      : ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
+  const kb = base === 10 ? 1000 : 1024
+
+  const pow = size === 0 ? 0 : Math.floor(Math.log(size) / Math.log(kb))
+  const val = (1.0 * size) / Math.pow(kb, pow)
+  return `${val.toFixed(2)} ${units[pow]}`
+}
+
+/**
+ * @public
+ */
 export function addNotification (
   title: string,
   subTitle: string,

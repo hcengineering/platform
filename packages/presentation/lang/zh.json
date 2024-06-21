@@ -33,7 +33,7 @@
     "Next": "下一步",
     "FailedToPreview": "预览失败",
     "ContentType": "内容类型",
-    "ContentTypeNotSupported": "内容类型不支持"
+    "ContentTypeNotSupported": "此內容類型無法預覽"
   },
   "status": {
     "FileTooLarge": "文件太大"

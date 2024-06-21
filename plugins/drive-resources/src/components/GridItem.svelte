@@ -80,16 +80,16 @@
 
       <div class="flex-between flex-gap-2 h-4">
         <div class="flex-row-center flex-gap-2 font-regular-12">
-          <span class="flex-no-shrink">
-            <ObjectPresenter
-              _class={core.class.Account}
-              objectId={object.createdBy}
-              noUnderline
-              props={{ avatarSize: 'tiny' }}
-            />
-          </span>
+          <ObjectPresenter
+            _class={core.class.Account}
+            objectId={object.createdBy}
+            noUnderline
+            props={{ avatarSize: 'tiny' }}
+          />
           <span>•</span>
-          <TimestampPresenter value={object.$lookup?.file?.modifiedOn ?? object.createdOn ?? object.modifiedOn} />
+          <span class="flex-no-shrink">
+            <TimestampPresenter value={object.$lookup?.file?.modifiedOn ?? object.createdOn ?? object.modifiedOn} />
+          </span>
         </div>
         <div class="flex-no-shrink font-regular-12">
           <FileSizePresenter value={object.$lookup?.file?.size} />

@@ -13,14 +13,25 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { humanReadableFileSize } from '@hcengineering/ui'
+  import { type Doc } from '@hcengineering/core'
+  import { type File } from '@hcengineering/drive'
+  import { DocsNavigator } from '@hcengineering/view-resources'
 
-  export let value: number | undefined
-  export let accent: boolean = false
+  import FilePresenter from './FilePresenter.svelte'
+  import { resolveParents } from '../utils'
+
+  export let object: File
+
+  let parents: Doc[] = []
+  $: void updateParents(object)
+
+  async function updateParents (object: File): Promise<void> {
+    parents = await resolveParents(object)
+  }
 </script>
 
-{#if value}
-  <span class="overflow-label select-text" class:fs-bold={accent}>
-    {value !== undefined ? humanReadableFileSize(value) : '-'}
-  </span>
-{/if}
+<div class="antiHSpacer x2" />
+<DocsNavigator elements={parents} />
+<div class="title">
+  <FilePresenter value={object} shouldShowAvatar={false} disabled noUnderline />
+</div>

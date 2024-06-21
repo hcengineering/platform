@@ -64,6 +64,12 @@
       </Scroller>
     </svelte:fragment>
 
-    <FolderBrowser space={object._id} parent={drive.ids.Root} />
+    <FolderBrowser
+      space={object._id}
+      parent={drive.ids.Root}
+      on:contextmenu={(evt) => {
+        showMenu(evt, { object })
+      }}
+    />
   </Panel>
 {/if}

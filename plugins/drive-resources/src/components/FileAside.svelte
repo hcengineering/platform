@@ -13,23 +13,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { type Blob, type Ref } from '@hcengineering/core'
-  import { getBlobSrcFor, type BlobMetadata } from '@hcengineering/presentation'
+  import { WithLookup } from '@hcengineering/core'
+  import { type File } from '@hcengineering/drive'
+  import { Scroller } from '@hcengineering/ui'
+  import { DocAttributeBar } from '@hcengineering/view-resources'
 
-  export let value: Blob | Ref<Blob>
-  export let name: string
-  export let metadata: BlobMetadata | undefined
+  export let object: WithLookup<File>
+  export let readonly: boolean = false
 </script>
 
-{#await getBlobSrcFor(value, name) then href}
-  <iframe src={href + '#view=FitH&navpanes=0'} title={name} />
-{/await}
+<Scroller>
+  <DocAttributeBar {object} {readonly} ignoreKeys={[]} />
 
-<style lang="scss">
-  iframe {
-    width: 100%;
-    height: 80vh;
-    min-height: 20rem;
-    border: none;
-  }
-</style>
+  {#if object.$lookup?.file}
+    <DocAttributeBar
+      object={object.$lookup.file}
+      {readonly}
+      ignoreKeys={['provider', 'storageId', 'etag', 'version']}
+    />
+  {/if}
+  <div class="space-divider bottom" />
+</Scroller>
