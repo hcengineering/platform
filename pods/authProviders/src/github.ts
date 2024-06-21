@@ -38,7 +38,7 @@ export function registerGithub (
   router.get('/auth/github', async (ctx, next) => {
     measureCtx.info('try auth via', { provider: 'github' })
     const host = getHost(ctx.request.headers)
-    const branding = host !== undefined ? brandings[host]?.key ?? '' : ''
+    const branding = host !== undefined ? brandings[host]?.key ?? undefined : undefined
     const state = encodeURIComponent(
       JSON.stringify({
         inviteId: ctx.query?.inviteId,
