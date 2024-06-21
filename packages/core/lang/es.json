@@ -54,6 +54,7 @@
     "ArchiveSpaceDescription": "Concede a los usuarios la capacidad de archivar el espacio",
     "AutoJoin": "Auto unirse",
     "AutoJoinDescr": "Unirse automáticamente a los nuevos empleados a este espacio",
-    "BlobSize": "Tamaño"
+    "BlobSize": "Tamaño",
+    "BlobContentType": "Tipo de contenido"
   }
 }

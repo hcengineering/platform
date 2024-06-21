@@ -62,6 +62,13 @@
       </Scroller>
     </svelte:fragment>
 
-    <FolderBrowser space={object.space} parent={object._id} {readonly} />
+    <FolderBrowser
+      space={object.space}
+      parent={object._id}
+      {readonly}
+      on:contextmenu={(evt) => {
+        showMenu(evt, { object })
+      }}
+    />
   </Panel>
 {/if}

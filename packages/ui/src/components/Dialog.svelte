@@ -16,7 +16,7 @@
 <script lang="ts">
   import type { IntlString } from '@hcengineering/platform'
   import { createEventDispatcher } from 'svelte'
-  import { resizeObserver, Button, Label, IconClose, IconScale, IconScaleFull } from '..'
+  import { Button, Label, IconClose, IconScale, IconScaleFull, resizeObserver, tooltip } from '..'
 
   export let label: IntlString | undefined = undefined
   export let isFullSize: boolean = false
@@ -39,11 +39,11 @@
     <div class="flex-row-center gap-1-5">
       <Button icon={IconClose} kind={'ghost'} size={'medium'} on:click={() => dispatch('close')} />
       {#if label}
-        <span class="title"><Label {label} /></span>
+        <span class="title" use:tooltip={{ label }}><Label {label} /></span>
       {/if}
       {#if $$slots.title}<slot name="title" />{/if}
     </div>
-    <div class="flex-row-center gap-1-5">
+    <div class="flex-row-center flex-no-shrink gap-1-5">
       {#if $$slots.utils}
         <slot name="utils" />
       {/if}

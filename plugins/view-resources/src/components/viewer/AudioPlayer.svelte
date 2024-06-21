@@ -38,7 +38,7 @@
 
 <div class="container flex-between" class:fullSize>
   <CircleButton size="x-large" on:click={handleClick} {icon} />
-  <div class="w-full ml-4">
+  <div class="w-full ml-3 mr-2">
     <Progress
       value={time}
       max={Number.isFinite(duration) ? duration : 100}

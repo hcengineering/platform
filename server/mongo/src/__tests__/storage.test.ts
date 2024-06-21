@@ -177,7 +177,8 @@ describe('mongo operations', () => {
     const ctx = new MeasureMetricsContext('client', {})
     serverStorage = await createServerStorage(ctx, conf, {
       upgrade: false,
-      broadcast: () => {}
+      broadcast: () => {},
+      branding: null
     })
     const soCtx: SessionOperationContext = {
       ctx,

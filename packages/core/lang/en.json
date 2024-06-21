@@ -61,6 +61,7 @@
     "ArchiveSpaceDescription": "Grants users ability to archive the space",
     "AutoJoin": "Auto join",
     "AutoJoinDescr": "Automatically join new employees to this space",
-    "BlobSize": "Size"
+    "BlobSize": "Size",
+    "BlobContentType": "Content type"
   }
 }

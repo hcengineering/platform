@@ -211,8 +211,10 @@ export function getLastName (name: string): string {
 /**
  * @public
  */
-export function formatName (name: string): string {
-  return getMetadata(contactPlugin.metadata.LastNameFirst) === true
+export function formatName (name: string, lastNameFirst?: string): string {
+  const lastNameFirstCombined =
+    lastNameFirst !== undefined ? lastNameFirst === 'true' : getMetadata(contactPlugin.metadata.LastNameFirst) === true
+  return lastNameFirstCombined
     ? getLastName(name) + ' ' + getFirstName(name)
     : getFirstName(name) + ' ' + getLastName(name)
 }
@@ -220,9 +222,9 @@ export function formatName (name: string): string {
 /**
  * @public
  */
-export function getName (hierarchy: Hierarchy, value: Contact): string {
+export function getName (hierarchy: Hierarchy, value: Contact, lastNameFirst?: string): string {
   if (isPerson(hierarchy, value)) {
-    return formatName(value.name)
+    return formatName(value.name, lastNameFirst)
   }
   return value.name
 }
@@ -238,9 +240,14 @@ function isPersonClass (hierarchy: Hierarchy, _class: Ref<Class<Doc>>): boolean 
 /**
  * @public
  */
-export function formatContactName (hierarchy: Hierarchy, _class: Ref<Class<Doc>>, name: string): string {
+export function formatContactName (
+  hierarchy: Hierarchy,
+  _class: Ref<Class<Doc>>,
+  name: string,
+  lastNameFirst?: string
+): string {
   if (isPersonClass(hierarchy, _class)) {
-    return formatName(name)
+    return formatName(name, lastNameFirst)
   }
   return name
 }

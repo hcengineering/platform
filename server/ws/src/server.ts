@@ -26,7 +26,9 @@ import core, {
   type MeasureContext,
   type Tx,
   type TxWorkspaceEvent,
-  type WorkspaceId
+  type WorkspaceId,
+  type Branding,
+  type BrandingMap
 } from '@hcengineering/core'
 import { unknownError, type Status } from '@hcengineering/platform'
 import { type HelloRequest, type HelloResponse, type Request, type Response } from '@hcengineering/rpc'
@@ -92,7 +94,8 @@ class TSessionManager implements SessionManager {
   constructor (
     readonly ctx: MeasureContext,
     readonly sessionFactory: (token: Token, pipeline: Pipeline) => Session,
-    readonly timeouts: Timeouts
+    readonly timeouts: Timeouts,
+    readonly brandingMap: BrandingMap
   ) {
     this.checkInterval = setInterval(() => {
       this.handleInterval()
@@ -297,6 +300,10 @@ class TSessionManager implements SessionManager {
       await this.close(ctx, oldSession.socket, wsString)
     }
     const workspaceName = workspaceInfo.workspaceName ?? workspaceInfo.workspaceUrl ?? workspaceInfo.workspaceId
+    const branding =
+      (workspaceInfo.branding !== undefined
+        ? Object.values(this.brandingMap).find((b) => b.key === workspaceInfo.branding)
+        : null) ?? null
 
     if (workspace === undefined) {
       ctx.warn('open workspace', {
@@ -310,7 +317,8 @@ class TSessionManager implements SessionManager {
         pipelineFactory,
         token,
         workspaceInfo.workspaceUrl ?? workspaceInfo.workspaceId,
-        workspaceName
+        workspaceName,
+        branding
       )
     }
 
@@ -424,7 +432,8 @@ class TSessionManager implements SessionManager {
       true,
       (tx, targets, exclude) => {
         this.broadcastAll(workspace, tx, targets, exclude)
-      }
+      },
+      workspace.branding
     )
     return await workspace.pipeline
   }
@@ -513,7 +522,8 @@ class TSessionManager implements SessionManager {
     pipelineFactory: PipelineFactory,
     token: Token,
     workspaceUrl: string,
-    workspaceName: string
+    workspaceName: string,
+    branding: Branding | null
   ): Workspace {
     const upgrade = token.extra?.model === 'upgrade'
     const backup = token.extra?.mode === 'backup'
@@ -528,14 +538,16 @@ class TSessionManager implements SessionManager {
         upgrade,
         (tx, targets) => {
           this.broadcastAll(workspace, tx, targets)
-        }
+        },
+        branding
       ),
       sessions: new Map(),
       softShutdown: 3,
       upgrade,
       backup,
       workspaceId: token.workspace,
-      workspaceName
+      workspaceName,
+      branding
     }
     this.workspaces.set(toWorkspaceString(token.workspace), workspace)
     return workspace
@@ -970,16 +982,22 @@ export function start (
     pipelineFactory: PipelineFactory
     sessionFactory: (token: Token, pipeline: Pipeline) => Session
     productId: string
+    brandingMap: BrandingMap
     serverFactory: ServerFactory
     enableCompression?: boolean
     accountsUrl: string
     externalStorage: StorageAdapter
   } & Partial<Timeouts>
 ): () => Promise<void> {
-  const sessions = new TSessionManager(ctx, opt.sessionFactory, {
-    pingTimeout: opt.pingTimeout ?? 10000,
-    reconnectTimeout: 500
-  })
+  const sessions = new TSessionManager(
+    ctx,
+    opt.sessionFactory,
+    {
+      pingTimeout: opt.pingTimeout ?? 10000,
+      reconnectTimeout: 500
+    },
+    opt.brandingMap
+  )
   return opt.serverFactory(
     sessions,
     (rctx, service, ws, msg, workspace) => {

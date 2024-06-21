@@ -55,7 +55,7 @@
 
   const dateSelectorHeight = 30
   const headerHeight = 52
-  const minMsgHeightRem = 4.375
+  const minMsgHeightRem = 2
 
   const client = getClient()
   const inboxClient = InboxNotificationsClientImpl.getClient()
@@ -236,7 +236,7 @@
 
     const { scrollHeight, scrollTop, clientHeight } = scrollElement
 
-    return scrollTop + clientHeight === scrollHeight
+    return Math.ceil(scrollTop + clientHeight) === scrollHeight
   }
 
   let scrollToRestore = 0

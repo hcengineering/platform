@@ -229,7 +229,7 @@ async function notifyByEmail (
 
   if (sender !== undefined) {
     const senderPerson = (await control.findAll(contact.class.Person, { _id: sender.person }))[0]
-    senderName = senderPerson !== undefined ? formatName(senderPerson.name) : ''
+    senderName = senderPerson !== undefined ? formatName(senderPerson.name, control.branding?.lastNameFirst) : ''
   }
 
   const content = await getContent(doc, senderName, type, control, data)
@@ -611,7 +611,7 @@ export async function createPushNotification (
   if (_id !== undefined) {
     data.tag = _id
   }
-  const front = getMetadata(serverCore.metadata.FrontUrl) ?? ''
+  const front = control.branding?.front ?? getMetadata(serverCore.metadata.FrontUrl) ?? ''
   const uploadUrl = getMetadata(serverCore.metadata.UploadURL) ?? ''
   const domainPath = `${workbenchId}/${control.workspace.workspaceUrl}`
   const domain = concatLink(front, domainPath)

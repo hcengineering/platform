@@ -709,6 +709,7 @@ export class TServerStorage implements ServerStorage {
       operationContext: ctx,
       removedMap,
       workspace: this.workspaceId,
+      branding: this.options.branding,
       storageAdapter: this.storageAdapter,
       serviceAdaptersManager: this.serviceAdaptersManager,
       findAll: fAll(ctx.ctx),
@@ -746,7 +747,8 @@ export class TServerStorage implements ServerStorage {
               sctx.sessionId,
               sctx.admin,
               [],
-              this.workspaceId
+              this.workspaceId,
+              this.options.branding
             )
             const result = await performAsync(applyCtx)
             // We need to broadcast changes

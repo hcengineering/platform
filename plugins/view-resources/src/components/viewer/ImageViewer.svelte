@@ -18,23 +18,20 @@
 
   export let value: Blob | Ref<Blob>
   export let name: string
-  export let contentType: string
   export let metadata: BlobMetadata | undefined
 
   $: p = typeof value === 'string' ? getBlobRef(undefined, value, name) : getBlobRef(value, value._id)
+  $: maxWidth = metadata?.originalWidth ? `min(${metadata.originalWidth}px, 100%)` : undefined
+  $: maxHeight = metadata?.originalHeight ? `min(${metadata.originalHeight}px, 80vh)` : undefined
 </script>
 
 {#await p then blobRef}
-  <img class="w-full h-full img-fit" src={blobRef.src} srcset={blobRef.srcset} alt={name} />
+  <img
+    class="object-contain"
+    style:max-width={maxWidth}
+    style:max-height={maxHeight}
+    src={blobRef.src}
+    srcset={blobRef.srcset}
+    alt={name}
+  />
 {/await}
-
-<style lang="scss">
-  .img-fit {
-    margin: 0 auto;
-    width: fit-content;
-    height: fit-content;
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-  }
-</style>

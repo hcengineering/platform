@@ -61,6 +61,7 @@
     "ArchiveSpaceDescription": "授予用户归档空间的权限",
     "AutoJoin": "自动加入",
     "AutoJoinDescr": "自动将新员工加入此空间",
-    "BlobSize": "大小"
+    "BlobSize": "大小",
+    "BlobContentType": "內容類型"
   }
 }

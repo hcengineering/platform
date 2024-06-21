@@ -26,7 +26,8 @@ import core, {
   toIdMap,
   type Blob,
   type BlobLookup,
-  type WorkspaceIdWithUrl
+  type WorkspaceIdWithUrl,
+  type Branding
 } from '@hcengineering/core'
 import { Middleware, SessionContext, TxMiddlewareResult, type ServerStorage } from '@hcengineering/server-core'
 import { BaseMiddleware } from './base'
@@ -50,12 +51,13 @@ export class BlobLookupMiddleware extends BaseMiddleware implements Middleware {
   async fetchBlobInfo (
     ctx: MeasureContext,
     workspace: WorkspaceIdWithUrl,
+    branding: Branding | null,
     toUpdate: [Doc, Blob, string][]
   ): Promise<void> {
     if (this.storage.storageAdapter.lookup !== undefined) {
       const docsToUpdate = toUpdate.map((it) => it[1])
       const updatedBlobs = toIdMap<Blob>(
-        (await this.storage.storageAdapter.lookup(ctx, workspace, docsToUpdate)).lookups
+        (await this.storage.storageAdapter.lookup(ctx, workspace, branding, docsToUpdate)).lookups
       )
       for (const [doc, blob, key] of toUpdate) {
         const ublob = updatedBlobs.get(blob._id)
@@ -78,7 +80,8 @@ export class BlobLookupMiddleware extends BaseMiddleware implements Middleware {
     if (_class === core.class.Blob) {
       // Bulk update of info
       const updatedBlobs = toIdMap<Blob>(
-        (await this.storage.storageAdapter.lookup(ctx.ctx, ctx.workspace, result as unknown as Blob[])).lookups
+        (await this.storage.storageAdapter.lookup(ctx.ctx, ctx.workspace, ctx.branding, result as unknown as Blob[]))
+          .lookups
       )
       const res: T[] = []
       for (const d of result) {
@@ -102,13 +105,13 @@ export class BlobLookupMiddleware extends BaseMiddleware implements Middleware {
         }
         if (toUpdate.length > 50) {
           // Bulk update of info
-          await this.fetchBlobInfo(ctx.ctx, ctx.workspace, toUpdate)
+          await this.fetchBlobInfo(ctx.ctx, ctx.workspace, ctx.branding, toUpdate)
           toUpdate = []
         }
       }
       if (toUpdate.length > 0) {
         // Bulk update of info
-        await this.fetchBlobInfo(ctx.ctx, ctx.workspace, toUpdate)
+        await this.fetchBlobInfo(ctx.ctx, ctx.workspace, ctx.branding, toUpdate)
         toUpdate = []
       }
     }

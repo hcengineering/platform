@@ -25,7 +25,8 @@ import core, {
   type MeasureContext,
   type Ref,
   type WorkspaceId,
-  type WorkspaceIdWithUrl
+  type WorkspaceIdWithUrl,
+  type Branding
 } from '@hcengineering/core'
 
 import {
@@ -83,7 +84,12 @@ export class S3Service implements StorageAdapter {
 
   async initialize (ctx: MeasureContext, workspaceId: WorkspaceId): Promise<void> {}
 
-  async lookup (ctx: MeasureContext, workspaceId: WorkspaceIdWithUrl, docs: Blob[]): Promise<BlobLookupResult> {
+  async lookup (
+    ctx: MeasureContext,
+    workspaceId: WorkspaceIdWithUrl,
+    branding: Branding | null,
+    docs: Blob[]
+  ): Promise<BlobLookupResult> {
     const result: BlobLookupResult = {
       lookups: [],
       updates: new Map()

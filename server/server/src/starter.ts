@@ -13,6 +13,7 @@ export interface ServerEnv {
   pushPublicKey: string | undefined
   pushPrivateKey: string | undefined
   pushSubject: string | undefined
+  brandingPath: string | undefined
 }
 
 export function serverConfigFromEnv (): ServerEnv {
@@ -71,6 +72,8 @@ export function serverConfigFromEnv (): ServerEnv {
   const pushPublicKey = process.env.PUSH_PUBLIC_KEY
   const pushPrivateKey = process.env.PUSH_PRIVATE_KEY
   const pushSubject = process.env.PUSH_SUBJECT
+  const brandingPath = process.env.BRANDING_PATH
+
   return {
     url,
     elasticUrl,
@@ -85,6 +88,7 @@ export function serverConfigFromEnv (): ServerEnv {
     enableCompression,
     pushPublicKey,
     pushPrivateKey,
-    pushSubject
+    pushSubject,
+    brandingPath
   }
 }

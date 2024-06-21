@@ -304,6 +304,15 @@ export function start (
   const dist = resolve(process.env.PUBLIC_DIR ?? cwd(), 'dist')
   console.log('serving static files from', dist)
 
+  let brandingUrl: URL | undefined
+  if (config.brandingUrl !== undefined) {
+    try {
+      brandingUrl = new URL(config.brandingUrl)
+    } catch (e) {
+      console.error('Invalid branding URL. Must be absolute URL.', e)
+    }
+  }
+
   app.use(
     expressStaticGzip(dist, {
       serveStatic: {
@@ -314,7 +323,10 @@ export function start (
         lastModified: true,
         index: false,
         setHeaders (res, path) {
-          if (path.toLowerCase().includes('index.html')) {
+          if (
+            path.toLowerCase().includes('index.html') ||
+            (brandingUrl !== undefined && path.toLowerCase().includes(brandingUrl.pathname))
+          ) {
             res.setHeader('Cache-Control', cacheControlNoCache)
           }
         }

@@ -51,7 +51,7 @@
       if (listProvider !== undefined) listProvider.updateFocus(value)
       const popupInfo = showPopup(
         FilePreviewPopup,
-        { file: value.$lookup?.file ?? value.file, name: value.name, contentType: value.type },
+        { file: value.$lookup?.file ?? value.file, name: value.name },
         value.type.startsWith('image/') ? 'centered' : 'float'
       )
       dispatch('open', popupInfo.id)

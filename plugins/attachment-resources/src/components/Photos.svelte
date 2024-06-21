@@ -99,7 +99,7 @@
     if (item !== undefined) {
       showPopup(
         FilePreviewPopup,
-        { file: item.$lookup?.file ?? item.file, name: item.name, contentType: item.type },
+        { file: item.$lookup?.file ?? item.file, name: item.name },
         item.type.startsWith('image/') ? 'centered' : 'float'
       )
     } else {

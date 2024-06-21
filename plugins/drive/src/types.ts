@@ -29,6 +29,8 @@ export interface Resource extends Doc<Drive> {
 
   parent: Ref<Resource>
   path: Ref<Resource>[]
+
+  comments?: number
 }
 
 /** @public */

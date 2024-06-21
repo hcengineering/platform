@@ -7,14 +7,13 @@ import account, {
   UpgradeWorker,
   accountId,
   cleanInProgressWorkspaces,
-  getMethods,
-  type BrandingMap
+  getMethods
 } from '@hcengineering/account'
 import accountEn from '@hcengineering/account/lang/en.json'
 import accountRu from '@hcengineering/account/lang/ru.json'
 import { Analytics } from '@hcengineering/analytics'
 import { registerProviders } from '@hcengineering/auth-providers'
-import { type Data, type MeasureContext, type Tx, type Version } from '@hcengineering/core'
+import { type Data, type MeasureContext, type Tx, type Version, type BrandingMap } from '@hcengineering/core'
 import { type MigrateOperation } from '@hcengineering/model'
 import platform, { Severity, Status, addStringsLoader, setMetadata } from '@hcengineering/platform'
 import serverToken from '@hcengineering/server-token'
@@ -101,7 +100,7 @@ export function serveAccount (
 
   void client.then(async (p: MongoClient) => {
     const db = p.db(ACCOUNT_DB)
-    registerProviders(measureCtx, app, router, db, productId, serverSecret, frontURL)
+    registerProviders(measureCtx, app, router, db, productId, serverSecret, frontURL, brandings)
 
     // We need to clean workspace with creating === true, since server is restarted.
     void cleanInProgressWorkspaces(db, productId)

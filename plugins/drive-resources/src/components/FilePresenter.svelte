@@ -18,8 +18,7 @@
   import { WithLookup } from '@hcengineering/core'
   import { File } from '@hcengineering/drive'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { FilePreviewPopup } from '@hcengineering/presentation'
-  import { Icon, showPopup, tooltip } from '@hcengineering/ui'
+  import { Icon, tooltip } from '@hcengineering/ui'
   import { ObjectPresenterType } from '@hcengineering/view'
   import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
 
@@ -34,36 +33,13 @@
   export let type: ObjectPresenterType = 'link'
 
   $: icon = getFileTypeIcon(value.$lookup?.file?.contentType ?? '')
-
-  function handleClick (): void {
-    if (disabled) {
-      return
-    }
-
-    if (value.$lookup?.file === undefined) {
-      return
-    }
-
-    const blob = value.$lookup?.file
-
-    showPopup(
-      FilePreviewPopup,
-      {
-        file: value.$lookup?.file ?? value.file,
-        contentType: blob.contentType,
-        name: value.name,
-        metadata: value.metadata
-      },
-      'float'
-    )
-  }
 </script>
 
 {#if value}
   {#if inline}
     <ObjectMention object={value} {disabled} {accent} {noUnderline} />
   {:else if type === 'link'}
-    <DocNavLink object={value} onClick={handleClick} {disabled} {accent} {noUnderline}>
+    <DocNavLink object={value} {disabled} {accent} {noUnderline}>
       <div class="flex-presenter" use:tooltip={{ label: getEmbeddedLabel(value.name) }}>
         {#if shouldShowAvatar}
           <div class="icon">

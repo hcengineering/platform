@@ -278,7 +278,7 @@ async function sendEmailNotifications (
 
   const senderPerson = (await control.findAll(contact.class.Person, { _id: sender.person }))[0]
 
-  const senderName = senderPerson !== undefined ? formatName(senderPerson.name) : ''
+  const senderName = senderPerson !== undefined ? formatName(senderPerson.name, control.branding?.lastNameFirst) : ''
   const content = await getContent(doc, senderName, type, control, '')
   if (content === undefined) return
 
@@ -340,7 +340,7 @@ export async function OnRequestRemove (tx: Tx, control: TriggerControl): Promise
 export async function RequestHTMLPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const request = doc as Request
   const employee = (await control.findAll(contact.mixin.Employee, { _id: request.attachedTo }))[0]
-  const who = getName(control.hierarchy, employee)
+  const who = getName(control.hierarchy, employee, control.branding?.lastNameFirst)
   const type = await translate(control.modelDb.getObject(request.type).label, {})
 
   const date = tzDateEqual(request.tzDate, request.tzDueDate)
@@ -358,7 +358,7 @@ export async function RequestHTMLPresenter (doc: Doc, control: TriggerControl): 
 export async function RequestTextPresenter (doc: Doc, control: TriggerControl): Promise<string> {
   const request = doc as Request
   const employee = (await control.findAll(contact.mixin.Employee, { _id: request.attachedTo }))[0]
-  const who = getName(control.hierarchy, employee)
+  const who = getName(control.hierarchy, employee, control.branding?.lastNameFirst)
   const type = await translate(control.modelDb.getObject(request.type).label, {})
 
   const date = tzDateEqual(request.tzDate, request.tzDueDate)
@@ -401,7 +401,7 @@ export async function PublicHolidayHTMLPresenter (doc: Doc, control: TriggerCont
   if (sender === undefined) return ''
   const employee = await getEmployee(sender.person as Ref<Employee>, control)
   if (employee === undefined) return ''
-  const who = formatName(employee.name)
+  const who = formatName(employee.name, control.branding?.lastNameFirst)
 
   const date = `on ${new Date(fromTzDate(holiday.date)).toLocaleDateString()}`
 
@@ -417,7 +417,7 @@ export async function PublicHolidayTextPresenter (doc: Doc, control: TriggerCont
   if (sender === undefined) return ''
   const employee = await getEmployee(sender.person as Ref<Employee>, control)
   if (employee === undefined) return ''
-  const who = formatName(employee.name)
+  const who = formatName(employee.name, control.branding?.lastNameFirst)
 
   const date = `on ${new Date(fromTzDate(holiday.date)).toLocaleDateString()}`
 

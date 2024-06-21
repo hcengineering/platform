@@ -85,7 +85,6 @@
       {
         file: value.$lookup?.file ?? value.file,
         name: value.name,
-        contentType: value.type,
         metadata: value.metadata
       },
       getPreviewAlignment(value.type)

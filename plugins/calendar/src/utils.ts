@@ -206,20 +206,36 @@ function generateYearlyValues (
       if (endDate != null && date.getTime() > endDate) return
       if (date.getTime() > to) return
       if (
-        (byDay == null || matchesByDay(date, byDay)) &&
-        (byMonthDay == null || byMonthDay.includes(currentDate.getDate())) &&
-        (byYearDay == null || byYearDay.includes(getYearDay(currentDate))) &&
-        (byWeekNo == null || byWeekNo.includes(getWeekNumber(currentDate))) &&
-        (byMonth == null || byMonth.includes(currentDate.getMonth())) &&
-        (bySetPos == null || bySetPos.includes(getSetPos(currentDate)))
+        byDay == null &&
+        byMonthDay == null &&
+        byYearDay == null &&
+        byWeekNo == null &&
+        byMonth == null &&
+        bySetPos == null
       ) {
+        date = new Date(next)
         const res = currentDate.getTime()
         if (res >= from && res <= to) {
           values.push(res)
         }
         i++
+      } else {
+        if (
+          (byDay == null || matchesByDay(date, byDay)) &&
+          (byMonthDay == null || byMonthDay.includes(currentDate.getDate())) &&
+          (byYearDay == null || byYearDay.includes(getYearDay(currentDate))) &&
+          (byWeekNo == null || byWeekNo.includes(getWeekNumber(currentDate))) &&
+          (byMonth == null || byMonth.includes(currentDate.getMonth())) &&
+          (bySetPos == null || bySetPos.includes(getSetPos(currentDate)))
+        ) {
+          const res = currentDate.getTime()
+          if (res >= from && res <= to) {
+            values.push(res)
+          }
+          i++
+        }
+        date = new Date(date.setDate(date.getDate() + 1))
       }
-      date = new Date(date.setDate(date.getDate() + 1))
       if (count !== undefined && i === count) return
     }
     currentDate = new Date(next)

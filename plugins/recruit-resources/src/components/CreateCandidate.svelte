@@ -754,7 +754,6 @@
                 FilePreviewPopup,
                 {
                   file: object.resumeUuid,
-                  contentType: object.resumeType ?? 'application/pdf',
                   name: object.resumeName
                 },
                 object.resumeType?.startsWith('image/') ? 'centered' : 'float'

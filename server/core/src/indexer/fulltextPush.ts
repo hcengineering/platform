@@ -26,7 +26,8 @@ import core, {
   type MeasureContext,
   type Ref,
   type WorkspaceId,
-  getFullTextContext
+  getFullTextContext,
+  type Branding
 } from '@hcengineering/core'
 import { jsonToText, markupToJSON } from '@hcengineering/text'
 import { type DbAdapter } from '../adapter'
@@ -66,7 +67,8 @@ export class FullTextPushStage implements FullTextPipelineStage {
   constructor (
     private readonly dbStorage: ServerStorage,
     readonly fulltextAdapter: FullTextAdapter,
-    readonly workspace: WorkspaceId
+    readonly workspace: WorkspaceId,
+    readonly branding: Branding | null
   ) {}
 
   async initialize (ctx: MeasureContext, storage: DbAdapter, pipeline: FullTextPipeline): Promise<void> {
@@ -190,7 +192,7 @@ export class FullTextPushStage implements FullTextPipelineStage {
               })
           )
 
-          await updateDocWithPresenter(pipeline.hierarchy, doc, elasticDoc, { parentDoc, spaceDoc })
+          await updateDocWithPresenter(pipeline.hierarchy, doc, elasticDoc, { parentDoc, spaceDoc }, this.branding)
 
           this.checkIntegrity(elasticDoc)
           bulk.push(elasticDoc)

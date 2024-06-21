@@ -32,7 +32,9 @@ import core, {
   type Tx,
   type TxApplyIf,
   type TxApplyResult,
-  type TxCUD
+  type TxCUD,
+  type Branding,
+  type BrandingMap
 } from '@hcengineering/core'
 import { SessionContextImpl, createBroadcastEvent, type Pipeline } from '@hcengineering/server-core'
 import { type Token } from '@hcengineering/server-token'
@@ -56,7 +58,8 @@ export class ClientSession implements Session {
 
   constructor (
     protected readonly token: Token,
-    protected readonly _pipeline: Pipeline
+    protected readonly _pipeline: Pipeline,
+    protected readonly brandingMap: BrandingMap
   ) {}
 
   getUser (): string {
@@ -73,6 +76,14 @@ export class ClientSession implements Session {
 
   pipeline (): Pipeline {
     return this._pipeline
+  }
+
+  getBranding (brandingKey?: string): Branding | null {
+    if (brandingKey === undefined) {
+      return null
+    }
+
+    return this.brandingMap[brandingKey] ?? null
   }
 
   async ping (ctx: ClientSessionCtx): Promise<void> {
@@ -115,7 +126,8 @@ export class ClientSession implements Session {
           this.sessionId,
           this.token.extra?.admin === 'true',
           [],
-          this._pipeline.storage.workspaceId
+          this._pipeline.storage.workspaceId,
+          this.getBranding(this._pipeline.storage.branding)
         )
         await this._pipeline.tx(context, createTx)
         const acc = TxProcessor.createDoc2Doc(createTx)
@@ -144,7 +156,8 @@ export class ClientSession implements Session {
       this.sessionId,
       this.token.extra?.admin === 'true',
       [],
-      this._pipeline.storage.workspaceId
+      this._pipeline.storage.workspaceId,
+      this.getBranding(this._pipeline.storage.branding)
     )
     return await this._pipeline.findAll(context, _class, query, options)
   }
@@ -166,7 +179,8 @@ export class ClientSession implements Session {
       this.sessionId,
       this.token.extra?.admin === 'true',
       [],
-      this._pipeline.storage.workspaceId
+      this._pipeline.storage.workspaceId,
+      this.getBranding(this._pipeline.storage.branding)
     )
     await ctx.sendResponse(await this._pipeline.searchFulltext(context, query, options))
   }
@@ -181,7 +195,8 @@ export class ClientSession implements Session {
       this.sessionId,
       this.token.extra?.admin === 'true',
       [],
-      this._pipeline.storage.workspaceId
+      this._pipeline.storage.workspaceId,
+      this.getBranding(this._pipeline.storage.branding)
     )
 
     const result = await this._pipeline.tx(context, tx)

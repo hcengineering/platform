@@ -13,8 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { PersonAccount } from '@hcengineering/contact'
-  import { EmployeePresenter, personByIdStore } from '@hcengineering/contact-resources'
+  import contact, { PersonAccount, formatName } from '@hcengineering/contact'
+  import { EmployeePresenter, employeesStore } from '@hcengineering/contact-resources'
   import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import { Breadcrumb, DropdownIntlItem, DropdownLabelsIntl, EditBox, Header, Scroller } from '@hcengineering/ui'
@@ -31,9 +31,11 @@
   ]
 
   let accounts: PersonAccount[] = []
+  let owners: PersonAccount[] = []
   $: owners = accounts.filter((p) => p.role === AccountRole.Owner)
 
   query.query(contact.class.PersonAccount, {}, (res) => {
+    owners = res.filter((p) => p.role === AccountRole.Owner)
     accounts = res
   })
 
@@ -43,6 +45,10 @@
     })
   }
   let search = ''
+
+  $: employees = $employeesStore
+    .filter((p) => p.active)
+    .sort((a, b) => formatName(a.name).localeCompare(formatName(b.name)))
 </script>
 
 <div class="hulyComponent">
@@ -53,27 +59,23 @@
   <div class="hulyComponent-content__column content">
     <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
       <div class="hulyComponent-content">
-        {#each accounts as account (account._id)}
-          {@const employee = $personByIdStore.get(account.person)}
-          {#if employee?.name?.includes(search)}
+        {#each employees as employee (employee._id)}
+          {@const acc = accounts.find((p) => p.person === employee._id)}
+          {#if acc && employee.name?.includes(search)}
             <div class="flex-row-center p-2 flex-no-shrink">
               <div class="p-1 min-w-80">
-                {#if employee}
-                  <EmployeePresenter value={employee} disabled={false} />
-                {:else}
-                  {account.email}
-                {/if}
+                <EmployeePresenter value={employee} disabled={false} />
               </div>
               <DropdownLabelsIntl
                 label={setting.string.Role}
-                disabled={!hasAccountRole(currentAccount, account.role) ||
-                  (account.role === AccountRole.Owner && owners.length === 1)}
+                disabled={!hasAccountRole(currentAccount, acc.role) ||
+                  (acc.role === AccountRole.Owner && owners.length === 1)}
                 kind={'primary'}
                 size={'medium'}
                 {items}
-                selected={account.role}
+                selected={acc.role}
                 on:selected={(e) => {
-                  void change(account, e.detail)
+                  void change(acc, e.detail)
                 }}
               />
             </div>

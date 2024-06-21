@@ -16,6 +16,7 @@
   import { themeStore } from '@hcengineering/theme'
   import { getPlatformColor } from '../colors'
   import { createEventDispatcher } from 'svelte'
+  import { deviceOptionsStore } from '..'
 
   export let value: number
   export let min: number = 0
@@ -37,8 +38,8 @@
 
   function calcValue (e: MouseEvent): void {
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
-    const x = e.clientX - rect.left
-    let pos = x / rect.width
+    const x = e.clientX - rect.left - $deviceOptionsStore.fontSize / 2
+    let pos = x / (rect.width - $deviceOptionsStore.fontSize)
     if (pos > 100) pos = 100
     if (pos < 0) pos = 0
     value = (max - min) * pos + min
@@ -66,9 +67,10 @@
 <div class="container" class:editable on:click={click} on:mousemove={move} on:mouseleave={save} on:mouseup={save}>
   <div
     class="bar"
-    style="background-color: {color !== undefined
+    style:width={`calc(calc(100% - 1rem) * ${position} / 100 + .5rem)`}
+    style:background-color={color !== undefined
       ? getPlatformColor(color, $themeStore.dark)
-      : 'var(--theme-toggle-on-bg-color)'}; width: calc(100% * {position} / 100 + 0.5rem);"
+      : 'var(--theme-toggle-on-bg-color)'}
   />
   {#if editable}
     <div
@@ -76,7 +78,7 @@
       on:mousedown={() => {
         drag = true
       }}
-      style="left: calc(100% * {position} / 100 - 0.5rem);"
+      style:left={`calc(calc(100% - 1rem) * ${position} / 100)`}
     />
   {/if}
 </div>
@@ -94,7 +96,7 @@
       cursor: pointer;
 
       .bar {
-        border-radius: 0.5rem;
+        border-radius: 0.5rem 0 0 0.5rem;
       }
 
       .control {
@@ -103,8 +105,11 @@
         height: 1rem;
         width: 1rem;
         border-radius: 50%;
-        background-color: var(--caption-color);
+        background-color: var(--primary-button-color);
         border: 1px solid var(--theme-divider-color);
+        box-shadow:
+          inset -0.125rem -0.125rem 0.175rem rgba(0, 0, 0, 0.1),
+          0 0 0.25rem rgba(0, 0, 0, 0.25);
       }
     }
 

@@ -16,7 +16,7 @@
   import { Person, PersonAccount } from '@hcengineering/contact'
   import core, { Account, DocumentQuery, Ref, matchQuery } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { ButtonKind, ButtonSize } from '@hcengineering/ui'
+  import { ButtonKind, ButtonSize, IconSize } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import contact from '../plugin'
   import { personAccountByIdStore } from '../utils'
@@ -28,6 +28,9 @@
   export let docQuery: DocumentQuery<Account> = {}
   export let kind: ButtonKind = 'no-border'
   export let size: ButtonSize = 'small'
+  export let avatarSize: IconSize = 'card'
+  export let justify: 'left' | 'center' = 'center'
+  export let width: string | undefined = undefined
   export let readonly = false
 
   const client = getClient()
@@ -63,6 +66,9 @@
   showNavigate={false}
   {kind}
   {size}
+  {avatarSize}
+  {justify}
+  {width}
   {label}
   {readonly}
   value={selectedEmp}

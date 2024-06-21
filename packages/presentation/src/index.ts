@@ -39,6 +39,7 @@ export { default as IndexedDocumentPreview } from './components/IndexedDocumentP
 export { default as IndexedDocumentCompare } from './components/IndexedDocumentCompare.svelte'
 export { default as NavLink } from './components/NavLink.svelte'
 export { default as IconDownload } from './components/icons/Download.svelte'
+export { default as FilePreview } from './components/FilePreview.svelte'
 export { default as FilePreviewPopup } from './components/FilePreviewPopup.svelte'
 export { default as IconForward } from './components/icons/Forward.svelte'
 export { default as Breadcrumbs } from './components/breadcrumbs/Breadcrumbs.svelte'

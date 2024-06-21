@@ -24,14 +24,3 @@
 </script>
 
 <AudioPlayer {value} {name} {contentType} fullSize={true} />
-
-<style lang="scss">
-  .img-fit {
-    margin: 0 auto;
-    width: fit-content;
-    height: fit-content;
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-  }
-</style>
