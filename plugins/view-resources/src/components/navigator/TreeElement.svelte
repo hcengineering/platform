@@ -58,10 +58,12 @@
   let inlineActions: Action[] = []
   let popupMenuActions: Action[] = []
 
-  $: actions().then((result) => {
-    inlineActions = result.filter((action) => action.inline === true)
-    popupMenuActions = result.filter((action) => action.inline !== true)
-  })
+  $: if (actions !== undefined) {
+    actions().then((result) => {
+      inlineActions = result.filter((action) => action.inline === true)
+      popupMenuActions = result.filter((action) => action.inline !== true)
+    })
+  }
 
   async function onMenuClick (ev: MouseEvent): Promise<void> {
     // Read actual popup actions on open as visibility might have been changed
