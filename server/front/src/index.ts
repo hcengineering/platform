@@ -304,6 +304,7 @@ export function start (
   const dist = resolve(process.env.PUBLIC_DIR ?? cwd(), 'dist')
   console.log('serving static files from', dist)
 
+  const brandingUrl = config.brandingUrl !== undefined ? new URL(config.brandingUrl) : undefined
   app.use(
     expressStaticGzip(dist, {
       serveStatic: {
@@ -314,7 +315,10 @@ export function start (
         lastModified: true,
         index: false,
         setHeaders (res, path) {
-          if (path.toLowerCase().includes('index.html')) {
+          if (
+            path.toLowerCase().includes('index.html') ||
+            (brandingUrl !== undefined && path.toLowerCase().includes(brandingUrl.pathname))
+          ) {
             res.setHeader('Cache-Control', cacheControlNoCache)
           }
         }

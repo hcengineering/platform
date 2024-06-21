@@ -205,7 +205,7 @@ export async function configurePlatform() {
   configureI18n()
 
   const config: Config = await (await fetch(devConfig? '/config-dev.json' : '/config.json')).json()
-  const branding: BrandingMap = await (await fetch(config.BRANDING_URL ?? '/branding.json')).json()
+  const branding: BrandingMap = config.BRANDING_URL !== undefined ? await (await fetch(config.BRANDING_URL)).json() : {}
   const myBranding = branding[window.location.host] ?? {}
 
   console.log('loading configuration', config)
