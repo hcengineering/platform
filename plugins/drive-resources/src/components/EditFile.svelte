@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import core, { type Blob } from '@hcengineering/core'
-  import drive, { type File } from '@hcengineering/drive'
+  import { type File } from '@hcengineering/drive'
   import { FilePreview, createQuery } from '@hcengineering/presentation'
 
   import { createEventDispatcher, onMount } from 'svelte'
