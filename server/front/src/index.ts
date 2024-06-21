@@ -304,7 +304,15 @@ export function start (
   const dist = resolve(process.env.PUBLIC_DIR ?? cwd(), 'dist')
   console.log('serving static files from', dist)
 
-  const brandingUrl = config.brandingUrl !== undefined ? new URL(config.brandingUrl) : undefined
+  let brandingUrl: URL | undefined
+  if (config.brandingUrl !== undefined) {
+    try {
+      brandingUrl = new URL(config.brandingUrl)
+    } catch (e) {
+      console.error('Invalid branding URL. Must be absolute URL.', e)
+    }
+  }
+
   app.use(
     expressStaticGzip(dist, {
       serveStatic: {

@@ -78,7 +78,7 @@ services:
       - COLLABORATOR_URL=ws://localhost:3079
       - COLLABORATOR_API_URL=http://localhost:3079
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - BRANDING_URL=/branding-test.json
+      - BRANDING_URL=http://localhost:8083/branding-test.json
   transactor:
     image: hardcoreeng/transactor
     pull_policy: never
