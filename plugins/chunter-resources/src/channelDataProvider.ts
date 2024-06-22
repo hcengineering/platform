@@ -197,7 +197,7 @@ export class ChannelDataProvider implements IChannelDataProvider {
     const startPosition = this.getStartPosition(selectedMsg ?? this.selectedMsgId, firstNewMsgIndex)
 
     const count = metadata.length
-    const isLoadingLatest = startPosition === undefined || startPosition === -1
+    const isLoadingLatest = startPosition === undefined || startPosition === -1 || count - startPosition <= this.limit
 
     if (loadAll) {
       this.loadTail(undefined, combineActivityMessages)
@@ -206,20 +206,9 @@ export class ChannelDataProvider implements IChannelDataProvider {
       this.isTailLoading.set(true)
       const tailStart = metadata[startIndex]?.createdOn
       this.loadTail(tailStart)
-    } else if (count - startPosition <= this.limit) {
-      this.isTailLoading.set(true)
-      const tailStart = metadata[startPosition]?.createdOn
-      this.loadTail(tailStart)
-      await this.loadMore('backward', tailStart)
     } else {
-      const start = metadata[startPosition]?.createdOn
-
-      if (startPosition === 0) {
-        await this.loadMore('forward', metadata[startPosition]?.createdOn, this.limit)
-      } else {
-        await this.loadMore('backward', start, this.limit / 2)
-        await this.loadMore('forward', metadata[startPosition - 1]?.createdOn, this.limit / 2)
-      }
+      const newStart = Math.max(startPosition - this.limit / 2, 0)
+      await this.loadMore('forward', metadata[newStart]?.createdOn, this.limit)
     }
 
     this.isInitialLoadingStore.set(false)

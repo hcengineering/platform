@@ -232,6 +232,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     )
 
     for (const notification of notificationsToRead) {
+      notification.isViewed = true
       await client.update(notification, { isViewed: true })
     }
   }

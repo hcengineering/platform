@@ -32,6 +32,9 @@
 
   let object: Doc | undefined = undefined
 
+  $: if (object?._id !== value.attachedTo) {
+    object = undefined
+  }
   $: iconMixin = hierarchy.classHierarchyMixin(value.attachedToClass, view.mixin.ObjectIcon)
   $: iconMixin &&
     query.query(value.attachedToClass, { _id: value.attachedTo }, (res) => {
