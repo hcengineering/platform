@@ -1,0 +1,32 @@
+{
+  "string": {
+    "More": "Plus...",
+    "Delete": "Supprimer",
+    "ShowMenu": "Afficher le menu",
+    "HideMenu": "Masquer le menu",
+    "Archive": "Archiver",
+    "Archived": "Archivé",
+    "Open": "Ouvrir",
+    "General": "Général",
+    "Members": "Membres",
+    "Application": "Application",
+    "BrowseSpaces": "Parcourir les espaces",
+    "AccountDisabled": "Compte désactivé",
+    "AccountDisabledDescr": "Veuillez contacter l'administrateur de l'espace de travail",
+    "HelpAndSupport": "Aide & Support",
+    "HelpCenter": "Centre d'aide",
+    "KeyboardShortcuts": "Raccourcis clavier",
+    "Documentation": "Documentation",
+    "OpenPlatformGuide": "Ouvrir les documents Huly",
+    "AccessWorkspaceSettings": "Accéder aux paramètres de votre espace de travail",
+    "HowToWorkFaster": "Apprenez à travailler plus rapidement",
+    "HiddenApplication": "Application masquée",
+    "OpenInNewTab": "Ouvrir dans un nouvel onglet",
+    "NewVersionAvailable": "Nouvelle version disponible",
+    "PleaseUpdate": "Veuillez mettre à jour",
+    "ServerUnderMaintenance": "Serveur en maintenance",
+    "MobileNotSupported": "Désolé, le support des appareils mobiles arrive bientôt. En attendant, veuillez utiliser un ordinateur de bureau",
+    "LogInAnyway": "Se connecter quand même",
+    "WorkspaceCreating": "Création en cours..."
+  }
+}
