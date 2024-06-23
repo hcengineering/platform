@@ -21,8 +21,14 @@
   export let metadata: BlobMetadata | undefined
 
   $: p = typeof value === 'string' ? getBlobRef(undefined, value, name) : getBlobRef(value, value._id)
-  $: maxWidth = metadata?.originalWidth ? `min(${metadata.originalWidth}px, 100%)` : undefined
-  $: maxHeight = metadata?.originalHeight ? `min(${metadata.originalHeight}px, 80vh)` : undefined
+  $: maxWidth =
+    metadata?.originalWidth && metadata?.pixelRatio
+      ? `min(${metadata.originalWidth / metadata.pixelRatio}px, 100%)`
+      : undefined
+  $: maxHeight =
+    metadata?.originalHeight && metadata?.pixelRatio
+      ? `min(${metadata.originalHeight / metadata.pixelRatio}px, 80vh)`
+      : undefined
 </script>
 
 {#await p then blobRef}
