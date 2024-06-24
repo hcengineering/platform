@@ -1,13 +1,13 @@
 {
   "string": {
-    "ConfirmationText": "Thank you for your interest in {name}. To complete the sign up process please copy the following link into your browser's URL bar {link}. Regards, {name} Team.",
-    "ConfirmationHTML": "<p>Hello,</p><p>Thank you for your interest in {name}. To complete the sign up process please follow <a href={link}>this link</a> or copy the following link into your browser's URL bar.</p><p>{link}</p><p>Regards,</p><p>{name} Team.</p>",
+    "ConfirmationText": "Thank you for your interest in {name}. To complete the sign up process, please paste the following link into your browser's URL bar: {link}. Regards, {name} Team.",
+    "ConfirmationHTML": "<p>Hello,</p><p>Thank you for your interest in {name}. To complete the sign up process, please click <a href={link}>this link</a> or paste the following link into your browser's URL bar.</p><p>{link}</p><p>Regards,</p><p>{name} Team.</p>",
     "ConfirmationSubject": "Confirm your email address to sign up for {name}",
-    "RecoveryText": "We received a request to reset the password for your account. To reset your password, please paste the following link in your web browser's address bar: {link}. If you have not ordered a password recovery just ignore this letter.",
-    "RecoveryHTML": "<p>We received a request to reset the password for your account. To reset your password, please click the link below: <a href={link}>Reset password</a></p><p>If the Reset password link above does not work, paste the following link in your web browser's address bar: {link}</p><p>If you have not ordered a password recovery just ignore this letter.</p>",
+    "RecoveryText": "We received a request to reset the password for your account. To reset your password, please paste the following link into your browser's URL bar: {link}. If you have not requested a password reset, please ignore this email.",
+    "RecoveryHTML": "<p>We received a request to reset the password for your account. To reset your password, please click the link below: <a href={link}>Reset password</a></p><p>If the reset password link above does not work, paste the following link into your browser's URL bar: {link}</p><p>If you have not requested a password reset, please ignore this email.</p>",
     "RecoverySubject": "Password recovery",
-    "InviteText": "You were invited to {ws}. To join please paste the following link in your web browser's address bar: {link}. Link valid for {expHours} hours.",
-    "InviteHTML": "<p>You were invited to {ws}. To join, please click the link below: <a href={link}>Join</a></p><p>If the invite link above does not work, paste the following link in your web browser's address bar: {link}</p><p>Link valid for {expHours} hours.</p>",
+    "InviteText": "You were invited to {ws}. To join, please paste the following link into your browser's URL bar: {link}. The link is valid for {expHours} hours.",
+    "InviteHTML": "<p>You were invited to {ws}. To join, please click the link below: <a href={link}>Join</a></p><p>If the invite link above does not work, paste the following link into your browser's URL bar: {link}</p><p>The link is valid for {expHours} hours.</p>",
     "InviteSubject": "Invitation to {ws}"
   }
 }
