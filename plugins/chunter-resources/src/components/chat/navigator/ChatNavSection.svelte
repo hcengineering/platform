@@ -80,11 +80,14 @@
         icon = await getResource(iconMixin.component)
       }
 
+      const hasId = hierarchy.classHierarchyMixin(object._class, view.mixin.ObjectIdentifier) !== undefined
+      const showDescription = hasId && isDocChat && !isPerson
+
       items.push({
         id: object._id,
         object,
         title: (await getChannelName(object._id, object._class, object)) ?? (await translate(titleIntl, {})),
-        description: isDocChat && !isPerson ? await getDocTitle(client, object._id, object._class, object) : undefined,
+        description: showDescription ? await getDocTitle(client, object._id, object._class, object) : undefined,
         icon: icon ?? getObjectIcon(_class),
         iconProps: { showStatus: true },
         iconSize,
