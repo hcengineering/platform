@@ -1,5 +1,5 @@
-import { KeyboardShortcutCommand } from '@tiptap/core'
-import HardBreak, { HardBreakOptions as HardBreakOptionsBase } from '@tiptap/extension-hard-break'
+import { type KeyboardShortcutCommand } from '@tiptap/core'
+import HardBreak, { type HardBreakOptions as HardBreakOptionsBase } from '@tiptap/extension-hard-break'
 
 export interface HardBreakOptions extends HardBreakOptionsBase {
   shortcuts?: 'full' | 'compact'

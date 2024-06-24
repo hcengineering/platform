@@ -89,14 +89,8 @@ export const EditorKit = Extension.create<EditorKitOptions>({
               ...this.options.submit
             })
           ]
-        : []
-      ),
-      ...(mode === 'compact'
-        ? [
-            ParagraphExtension.configure()
-          ]
-        : []
-      ),
+        : []),
+      ...(mode === 'compact' ? [ParagraphExtension.configure()] : []),
       ListKeymap.configure({
         listTypes: [
           {

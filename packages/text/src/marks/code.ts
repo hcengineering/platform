@@ -20,12 +20,7 @@ export const CodeExtension = Code.extend({
         props: {
           // Typing a character inside of two backticks will wrap the character
           // in an inline code mark.
-          handleTextInput: (
-            view: EditorView,
-            from: number,
-            to: number,
-            text: string
-          ) => {
+          handleTextInput: (view: EditorView, from: number, to: number, text: string) => {
             const { state } = view
 
             // Prevent access out of document bounds
@@ -44,11 +39,7 @@ export const CodeExtension = Code.extend({
                 state.tr
                   .delete(start, end)
                   .insertText(text, start)
-                  .addMark(
-                    start,
-                    start + text.length,
-                    state.schema.marks.code.create()
-                  )
+                  .addMark(start, start + text.length, state.schema.marks.code.create())
               )
 
               return true
@@ -70,19 +61,11 @@ export const CodeExtension = Code.extend({
 
             const start = from - 1
             const end = to + 1
-            if (
-              from === to &&
-              state.doc.textBetween(start, from) === '`' &&
-              state.doc.textBetween(to, end) === '`'
-            ) {
+            if (from === to && state.doc.textBetween(start, from) === '`' && state.doc.textBetween(to, end) === '`') {
               view.dispatch(
                 state.tr
                   .replaceRange(start, end, slice)
-                  .addMark(
-                    start,
-                    start + slice.size,
-                    state.schema.marks.code.create()
-                  )
+                  .addMark(start, start + slice.size, state.schema.marks.code.create())
               )
               return true
             }
