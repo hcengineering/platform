@@ -3,7 +3,6 @@ import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { EditorView } from '@tiptap/pm/view'
 import { Slice } from '@tiptap/pm/model'
 import codemark from 'prosemirror-codemark'
-import 'prosemirror-codemark/dist/codemark.css'
 
 export const codeOptions: CodeOptions = {
   HTMLAttributes: {
@@ -11,6 +10,10 @@ export const codeOptions: CodeOptions = {
   }
 }
 
+/**
+ * Note: do not forget to include css import for UI use of this extension.
+ * import 'prosemirror-codemark/dist/codemark.css'
+ */
 export const CodeExtension = Code.extend({
   addProseMirrorPlugins () {
     return [

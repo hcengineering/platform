@@ -14,16 +14,20 @@
 //
 
 import { Extension } from '@tiptap/core'
-
+import type { CodeBlockOptions } from '@tiptap/extension-code-block'
+import type { CodeOptions } from '@tiptap/extension-code'
 import { Level } from '@tiptap/extension-heading'
 import Highlight from '@tiptap/extension-highlight'
 import Link from '@tiptap/extension-link'
 import Typography from '@tiptap/extension-typography'
 import Underline from '@tiptap/extension-underline'
-import StarterKit, { StarterKitOptions } from '@tiptap/starter-kit'
+import StarterKit from '@tiptap/starter-kit'
+import { codeBlockOptions } from '../nodes'
+import { codeOptions } from '../marks/code'
 
 export interface DefaultKitOptions {
-  codeBlock?: false
+  codeBlock?: Partial<CodeBlockOptions> | false
+  code?: Partial<CodeOptions> | false
   heading?: {
     levels?: Level[]
   }
@@ -34,28 +38,15 @@ export const DefaultKit = Extension.create<DefaultKitOptions>({
   name: 'defaultKit',
 
   addExtensions () {
-    const codeBlock: StarterKitOptions['codeBlock'] = this.options.codeBlock ?? {
-      languageClassPrefix: 'language-',
-      exitOnArrowDown: true,
-      exitOnTripleEnter: true,
-      HTMLAttributes: {
-        class: 'proseCodeBlock'
-      }
-    }
-
     return [
       StarterKit.configure({
-        code: {
-          HTMLAttributes: {
-            class: 'proseCode'
-          }
-        },
         blockquote: {
           HTMLAttributes: {
             class: 'proseBlockQuote'
           }
         },
-        codeBlock,
+        code: this.options.code ?? codeOptions,
+        codeBlock: this.options.codeBlock ?? codeBlockOptions,
         heading: this.options.heading,
         history: this.options.history
       }),

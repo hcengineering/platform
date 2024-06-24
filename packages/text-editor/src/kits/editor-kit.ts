@@ -21,7 +21,7 @@ import TaskItem from '@tiptap/extension-task-item'
 import TaskList from '@tiptap/extension-task-list'
 
 import { DefaultKit, type DefaultKitOptions } from './default-kit'
-
+import 'prosemirror-codemark/dist/codemark.css'
 import { getBlobRef } from '@hcengineering/presentation'
 import { CodeBlockExtension, codeBlockOptions, CodeExtension, codeOptions } from '@hcengineering/text'
 import { HardBreakExtension } from '../components/extension/hardBreak'

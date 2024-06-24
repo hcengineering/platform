@@ -73,6 +73,7 @@
     "@tiptap/extension-underline": "^2.2.4",
     "@tiptap/extension-list-keymap": "^2.2.4",
     "@hocuspocus/provider": "^2.9.0",
+    "prosemirror-codemark": "^0.4.2",
     "yjs": "^13.5.52",
     "y-websocket": "^1.5.0",
     "y-prosemirror": "^1.2.1",
