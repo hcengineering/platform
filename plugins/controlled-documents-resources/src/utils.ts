@@ -15,6 +15,7 @@ import core, {
   type AttachedData,
   type Class,
   type Doc,
+  type DocumentQuery,
   type Hierarchy,
   type Ref,
   type Tx,
@@ -689,16 +690,22 @@ export function setCurrentProject (space: Ref<DocumentSpace>, project: Ref<Proje
   }
 }
 
-async function getLatestProject (space: Ref<DocumentSpace>): Promise<Project | undefined> {
+async function getLatestProject (space: Ref<DocumentSpace>, includeReadonly = false): Promise<Project | undefined> {
   const client = getClient()
-  return await client.findOne(
-    documents.class.Project,
-    { space },
-    { limit: 1, sort: { createdOn: SortingOrder.Descending } }
-  )
+
+  // TODO we should use better approach on selecting the latest available project
+  // consider assigning sequential numbers to projects
+  const query: DocumentQuery<Project> = includeReadonly ? { space } : { space, readonly: false }
+  return await client.findOne(documents.class.Project, query, {
+    limit: 1,
+    sort: { createdOn: SortingOrder.Descending }
+  })
 }
 
-export async function getLatestProjectId (spaceRef: Ref<DocumentSpace>): Promise<Ref<Project> | undefined> {
+export async function getLatestProjectId (
+  spaceRef: Ref<DocumentSpace>,
+  editableOnly = false
+): Promise<Ref<Project> | undefined> {
   const client = getClient()
   const space = await client.findOne(
     documents.class.DocumentSpace,
@@ -714,7 +721,7 @@ export async function getLatestProjectId (spaceRef: Ref<DocumentSpace>): Promise
 
   if (space !== undefined) {
     if (space.$lookup?.type?.projects ?? false) {
-      const project = await getLatestProject(spaceRef)
+      const project = await getLatestProject(spaceRef, editableOnly)
       return project?._id
     } else {
       return documents.ids.NoProject
