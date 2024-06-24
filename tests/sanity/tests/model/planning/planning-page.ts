@@ -44,9 +44,9 @@ export class PlanningPage extends CalendarPage {
   readonly buttonPopupCreateAddSlot = (): Locator => this.popup().locator('button', { hasText: 'Add Slot' })
   readonly buttonPanelCreateAddSlot = (): Locator => this.panel().locator('button', { hasText: 'Add Slot' })
   readonly buttonCalendarToday = (): Locator => this.popup().locator('div.calendar button.day.today')
-  readonly buttonCreateToDo = (): Locator => this.popup().locator('button.antiButton', { hasText: 'Add ToDo' })
+  readonly buttonCreateToDo = (): Locator => this.popup().locator('button.antiButton', { hasText: 'Add Action Item' })
   readonly inputCreateToDoTitle = (): Locator =>
-    this.toDosContainer().locator('input[placeholder="Add todo, press Enter to save"]')
+    this.toDosContainer().locator('input[placeholder="Add Action Item, press Enter to save"]')
 
   readonly buttonCardClose = (): Locator =>
     this.panel().locator('.hulyHeader-container > .hulyHeader-buttonsGroup > .font-medium-14')
