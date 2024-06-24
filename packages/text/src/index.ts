@@ -20,6 +20,7 @@ export * from './markup/traverse'
 export * from './markup/utils'
 export * from './nodes'
 export * from './ydoc'
+export * from './marks/code'
 
 export * from './kits/default-kit'
 export * from './kits/server-kit'

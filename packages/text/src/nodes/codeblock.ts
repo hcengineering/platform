@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { isActive } from '@tiptap/core'
+import { isActive, textblockTypeInputRule } from '@tiptap/core'
 import CodeBlock, { CodeBlockOptions } from '@tiptap/extension-code-block'
 
 export const codeBlockOptions: CodeBlockOptions = {
@@ -24,6 +24,16 @@ export const codeBlockOptions: CodeBlockOptions = {
     class: 'proseCodeBlock'
   }
 }
+
+/**
+ * Matches a code block with backticks.
+ */
+export const backtickInputRegex = /^```$/
+
+/**
+ * Matches a code block with tildes.
+ */
+export const tildeInputRegex = /^~~~$/
 
 export const CodeBlockExtension = CodeBlock.extend({
   addCommands () {
@@ -110,5 +120,17 @@ export const CodeBlockExtension = CodeBlock.extend({
         rendered: false
       }
     }
+  },
+  addInputRules () {
+    return [
+      textblockTypeInputRule({
+        find: backtickInputRegex,
+        type: this.type
+      }),
+      textblockTypeInputRule({
+        find: tildeInputRegex,
+        type: this.type
+      })
+    ]
   }
 })

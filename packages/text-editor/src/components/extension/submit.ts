@@ -1,32 +1,13 @@
-import { Extension } from '@tiptap/core'
+import { Extension, type KeyboardShortcutCommand } from '@tiptap/core'
 
 export interface SubmitOptions {
   submit: () => void
+  useModKey?: boolean
 }
 
 export const SubmitExtension = Extension.create<SubmitOptions>({
   addKeyboardShortcuts () {
-    return {
-      'Ctrl-Enter': () => {
-        const res = this.editor.commands.splitListItem('listItem')
-        if (!res) {
-          this.editor.commands.first(({ commands }) => [
-            () => commands.newlineInCode(),
-            () => commands.createParagraphNear(),
-            () => commands.liftEmptyBlock(),
-            () => commands.splitBlock()
-          ])
-        }
-        return true
-      },
-      'Shift-Enter': () => {
-        this.editor.commands.setHardBreak()
-        return true
-      },
-      Enter: () => {
-        this.options.submit()
-        return true
-      },
+    const shortcuts: Record<string, KeyboardShortcutCommand> = {
       Space: () => {
         if (this.editor.isActive('link')) {
           this.editor.commands.toggleMark('link')
@@ -34,5 +15,17 @@ export const SubmitExtension = Extension.create<SubmitOptions>({
         return false
       }
     }
+    const submitHandle = (): boolean => {
+      this.options.submit()
+      return true
+    }
+
+    if (this.options.useModKey === true) {
+      shortcuts['Mod-Enter'] = submitHandle
+    } else {
+      shortcuts.Enter = submitHandle
+    }
+
+    return shortcuts
   }
 })

@@ -161,8 +161,6 @@
     needFocus = false
   }
 
-  const Handle = SubmitExtension.configure({ submit })
-
   onMount(() => {
     void ph.then(() => {
       editor = new Editor({
@@ -175,10 +173,11 @@
         autofocus,
         extensions: [
           EditorKit.configure({
+            mode: 'compact',
             file: canEmbedFiles ? {} : false,
-            image: canEmbedImages ? {} : false
+            image: canEmbedImages ? {} : false,
+            submit: supportSubmit ? { submit } : false
           }),
-          ...(supportSubmit ? [Handle] : []), // order important
           Placeholder.configure({ placeholder: placeHolderStr }),
           ...extensions,
           InlineStyleToolbarExtension.configure({

@@ -342,10 +342,10 @@ table.proseTable {
 
 .proseCode {
   display: inline;
-  margin: 0;
+  margin: 0 1px;
   padding: 0 .25rem;
   font-family: var(--mono-font);
-  color: var(--theme-content-color);
+  color: var(--text-editor-inline-code-color);
   background-color: var(--theme-button-default);
   border: 1px solid var(--theme-button-border);
   border-radius: .25rem;
