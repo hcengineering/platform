@@ -420,7 +420,7 @@
       element,
       editorProps: { attributes: mergeAttributes(defaultEditorAttributes, editorAttributes, { class: 'flex-grow' }) },
       extensions: [
-        EditorKit.configure({ history: false }),
+        EditorKit.configure({ history: false, submit: false }),
         ...optionalExtensions,
         Placeholder.configure({ placeholder: placeHolderStr }),
         InlineStyleToolbarExtension.configure({

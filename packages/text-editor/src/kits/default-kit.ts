@@ -13,9 +13,11 @@
 // limitations under the License.
 //
 
-import { codeBlockOptions } from '@hcengineering/text'
+import { codeBlockOptions, codeOptions } from '@hcengineering/text'
 import { Extension } from '@tiptap/core'
-import { type CodeOptions } from '@tiptap/extension-code'
+import type { CodeOptions } from '@tiptap/extension-code'
+import type { CodeBlockOptions } from '@tiptap/extension-code-block'
+import type { HardBreakOptions } from '@tiptap/extension-hard-break'
 import type { Level } from '@tiptap/extension-heading'
 import Highlight from '@tiptap/extension-highlight'
 import Link from '@tiptap/extension-link'
@@ -24,18 +26,15 @@ import Underline from '@tiptap/extension-underline'
 import StarterKit from '@tiptap/starter-kit'
 
 export interface DefaultKitOptions {
-  codeBlock?: false
+  codeBlock?: Partial<CodeBlockOptions> | false
+  code?: Partial<CodeOptions> | false
+  hardBreak?: Partial<HardBreakOptions> | false
   heading?: {
     levels?: Level[]
   }
   history?: false
 }
 
-export const codeOptions: CodeOptions = {
-  HTMLAttributes: {
-    class: 'proseCode'
-  }
-}
 export const DefaultKit = Extension.create<DefaultKitOptions>({
   name: 'defaultKit',
 
@@ -47,8 +46,9 @@ export const DefaultKit = Extension.create<DefaultKitOptions>({
             class: 'proseBlockQuote'
           }
         },
-        code: codeOptions,
+        code: this.options.code ?? codeOptions,
         codeBlock: this.options.codeBlock ?? codeBlockOptions,
+        hardBreak: this.options.hardBreak,
         heading: this.options.heading,
         history: this.options.history
       }),

@@ -21,14 +21,16 @@ import TaskItem from '@tiptap/extension-task-item'
 import TaskList from '@tiptap/extension-task-list'
 
 import { DefaultKit, type DefaultKitOptions } from './default-kit'
-
+import 'prosemirror-codemark/dist/codemark.css'
 import { getBlobRef } from '@hcengineering/presentation'
-import { CodeBlockExtension, codeBlockOptions } from '@hcengineering/text'
-import { CodemarkExtension } from '../components/extension/codemark'
+import { CodeBlockExtension, codeBlockOptions, CodeExtension, codeOptions } from '@hcengineering/text'
+import { HardBreakExtension } from '../components/extension/hardBreak'
 import { FileExtension, type FileOptions } from '../components/extension/fileExt'
 import { ImageExtension, type ImageOptions } from '../components/extension/imageExt'
 import { NodeUuidExtension } from '../components/extension/nodeUuid'
 import { Table, TableCell, TableRow } from '../components/extension/table'
+import { SubmitExtension, type SubmitOptions } from '../components/extension/submit'
+import { ParagraphExtension } from '../components/extension/paragraph'
 
 const headingLevels: Level[] = [1, 2, 3]
 
@@ -58,22 +60,37 @@ export interface EditorKitOptions extends DefaultKitOptions {
   history?: false
   file?: Partial<FileOptions> | false
   image?: Partial<ImageOptions> | false
+  mode?: 'full' | 'compact'
+  submit?: SubmitOptions | false
 }
 
 export const EditorKit = Extension.create<EditorKitOptions>({
   name: 'defaultKit',
 
   addExtensions () {
+    const mode = this.options.mode ?? 'full'
     return [
       DefaultKit.configure({
         ...this.options,
+        code: false,
         codeBlock: false,
+        hardBreak: false,
         heading: {
           levels: headingLevels
         }
       }),
       CodeBlockExtension.configure(codeBlockOptions),
-      CodemarkExtension,
+      CodeExtension.configure(codeOptions),
+      HardBreakExtension.configure({ shortcuts: mode }),
+      ...(this.options.submit !== false
+        ? [
+            SubmitExtension.configure({
+              useModKey: mode === 'full',
+              ...this.options.submit
+            })
+          ]
+        : []),
+      ...(mode === 'compact' ? [ParagraphExtension.configure()] : []),
       ListKeymap.configure({
         listTypes: [
           {

@@ -61,6 +61,7 @@
     "@tiptap/extension-collaboration-cursor": "^2.2.4",
     "@tiptap/extension-code-block": "^2.2.4",
     "@tiptap/extension-gapcursor": "^2.2.4",
+    "@tiptap/extension-hard-break": "^2.2.4",
     "@tiptap/extension-heading": "^2.2.4",
     "@tiptap/extension-history": "^2.2.4",
     "@tiptap/extension-table": "^2.2.4",
