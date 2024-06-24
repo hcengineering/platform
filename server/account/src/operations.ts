@@ -50,7 +50,7 @@ import platform, { getMetadata, PlatformError, Severity, Status, translate } fro
 import { cloneWorkspace } from '@hcengineering/server-backup'
 import { decodeToken, generateToken } from '@hcengineering/server-token'
 import toolPlugin, { connect, initModel, upgradeModel } from '@hcengineering/server-tool'
-import { pbkdf2Sync, randomBytes } from 'crypto'
+import { randomBytes, pbkdf2, timingSafeEqual } from 'crypto'
 import { Binary, Db, Filter, ObjectId, type MongoClient } from 'mongodb'
 import fetch from 'node-fetch'
 import { type StorageAdapter } from '../../core/types'
@@ -59,6 +59,11 @@ import { accountPlugin } from './plugin'
 const WORKSPACE_COLLECTION = 'workspace'
 const ACCOUNT_COLLECTION = 'account'
 const INVITE_COLLECTION = 'invite'
+
+const SALT_LEN: number = 32
+const PBKDF2_KEY_LEN: number = 32
+const PBKDF2_ITERATIONS: number = 1000
+const PBKDF2_DIGEST: string = 'sha256'
 
 /**
  * @public
@@ -147,12 +152,35 @@ export interface Invite {
  */
 export type AccountInfo = Omit<Account, 'hash' | 'salt'>
 
-function hashWithSalt (password: string, salt: Buffer): Buffer {
-  return pbkdf2Sync(password, salt, 1000, 32, 'sha256')
+const hashPassword = (password: string): Promise<Record<string, Buffer>> => {
+  return new Promise((resolve, reject) => {
+    randomBytes(SALT_LEN, (err, randomSalt) => {
+      if (err !== null) {
+        reject(err)
+        return
+      }
+      const callBack = (err: Error | null, derivedKey: Buffer): void => {
+        if (err !== null) {
+          reject(err)
+          return
+        }
+        resolve({ derivedKey, randomSalt })
+      }
+      pbkdf2(password, randomSalt, PBKDF2_ITERATIONS, PBKDF2_KEY_LEN, PBKDF2_DIGEST, callBack)
+    })
+  })
 }
 
-function verifyPassword (password: string, hash: Buffer, salt: Buffer): boolean {
-  return Buffer.compare(hash, hashWithSalt(password, salt)) === 0
+const verifyPassword = (password: string, hash: Buffer, salt: Buffer): Promise<boolean> => {
+  return new Promise((resolve, reject) => {
+    pbkdf2(password, salt, PBKDF2_ITERATIONS, PBKDF2_KEY_LEN, PBKDF2_DIGEST, (err, derivedKey) => {
+      if (err !== null) {
+        reject(err)
+        return
+      }
+      resolve(timingSafeEqual(hash, derivedKey))
+    })
+  })
 }
 
 function cleanEmail (email: string): string {
@@ -246,7 +274,7 @@ async function getAccountInfo (
   if (account.hash === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InvalidPassword, { account: email }))
   }
-  if (!verifyPassword(password, Buffer.from(account.hash.buffer), Buffer.from(account.salt.buffer))) {
+  if (!await verifyPassword(password, Buffer.from(account.hash.buffer), Buffer.from(account.salt.buffer))) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InvalidPassword, { account: email }))
   }
   return toAccountInfo(account)
@@ -615,8 +643,17 @@ export async function createAcc (
   extra?: Record<string, string>
 ): Promise<Account> {
   const email = cleanEmail(_email)
-  const salt = randomBytes(32)
-  const hash = password !== null ? hashWithSalt(password, salt) : null
+  let hash: Buffer | null = null
+  let salt: Buffer | null = null
+  try {
+    if (password !== null) {
+      const { derivedKey, randomSalt } = await hashPassword(password)
+      hash = derivedKey
+      salt = randomSalt
+    }
+  } catch (err) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, { account: email, err }))
+  }
 
   const systemEmails = [systemAccountEmail]
   if (systemEmails.includes(email)) {
@@ -1623,11 +1660,15 @@ export async function changePassword (
   const { email } = decodeToken(token)
   const account = await getAccountInfo(ctx, db, productId, branding, email, oldPassword)
 
-  const salt = randomBytes(32)
-  const hash = hashWithSalt(password, salt)
-
-  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { salt, hash } })
-  ctx.info('change-password success', { email })
+  try {
+    if (password !== null) {
+      const { derivedKey, randomSalt } = await hashPassword(password)
+      await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { randomSalt, derivedKey } })
+      ctx.info('change-password success', { email })
+    }
+  } catch (err) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, { account: email, err }))
+  }
 }
 
 /**
@@ -1647,10 +1688,15 @@ export async function replacePassword (db: Db, productId: string, email: string,
   if (account === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: email }))
   }
-  const salt = randomBytes(32)
-  const hash = hashWithSalt(password, salt)
 
-  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { salt, hash } })
+  try {
+    if (password !== null) {
+      const { derivedKey, randomSalt } = await hashPassword(password)
+      await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { randomSalt, derivedKey } })
+    }
+  } catch (err) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, { account: email, err }))
+  }
 }
 
 /**
@@ -1738,10 +1784,14 @@ export async function restorePassword (
 }
 
 async function updatePassword (db: Db, account: Account, password: string | null): Promise<void> {
-  const salt = randomBytes(32)
-  const hash = password !== null ? hashWithSalt(password, salt) : null
-
-  await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { salt, hash } })
+  try {
+    if (password !== null) {
+      const { derivedKey, randomSalt } = await hashPassword(password)
+      await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: account._id }, { $set: { randomSalt, derivedKey } })
+    }
+  } catch (err) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, { err }))
+  }
 }
 
 /**
