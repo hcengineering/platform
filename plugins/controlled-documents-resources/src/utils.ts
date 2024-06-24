@@ -704,7 +704,7 @@ async function getLatestProject (space: Ref<DocumentSpace>, includeReadonly = fa
 
 export async function getLatestProjectId (
   spaceRef: Ref<DocumentSpace>,
-  editableOnly = false
+  includeReadonly = false
 ): Promise<Ref<Project> | undefined> {
   const client = getClient()
   const space = await client.findOne(
@@ -721,7 +721,7 @@ export async function getLatestProjectId (
 
   if (space !== undefined) {
     if (space.$lookup?.type?.projects ?? false) {
-      const project = await getLatestProject(spaceRef, editableOnly)
+      const project = await getLatestProject(spaceRef, includeReadonly)
       return project?._id
     } else {
       return documents.ids.NoProject
