@@ -257,7 +257,7 @@ function updateDoc2Elastic (
     if (v == null) {
       continue
     }
-    let { _class, attr, docId, extra } = extractDocKey(k)
+    let { _class, attr, docId, extra, digest } = extractDocKey(k)
     if (attr.length === 0) {
       continue
     }
@@ -302,7 +302,7 @@ function updateDoc2Elastic (
       }
       continue
     }
-    const docIdAttr = docKey(attr, { _class, extra: extra.filter((it) => it !== 'base64') })
+    const docIdAttr = docKey(attr, { _class, extra: extra.filter((it) => it !== 'base64'), digest })
     if (vv !== null) {
       // Since we replace array of values, we could ignore null
       doc[docIdAttr] =

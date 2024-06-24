@@ -158,6 +158,7 @@ export interface IndexKeyOptions {
   _class?: Ref<Class<Obj>>
   docId?: Ref<DocIndexState>
   extra?: string[]
+  digest?: boolean
 }
 /**
  * @public
@@ -171,7 +172,8 @@ export function docUpdKey (name: string, opt?: IndexKeyOptions): string {
  */
 export function docKey (name: string, opt?: IndexKeyOptions): string {
   const extra = opt?.extra !== undefined && opt?.extra?.length > 0 ? `#${opt.extra?.join('#') ?? ''}` : ''
-  return opt?._class === undefined ? name : `${opt?._class}%${name}${extra}`
+  const digestName = opt?.digest === true ? name + '^digest' : name
+  return opt?._class === undefined ? digestName : `${opt?._class}%${digestName}${extra}`
 }
 
 /**
@@ -182,6 +184,7 @@ export function extractDocKey (key: string): {
   attr: string
   docId?: Ref<DocIndexState>
   extra: string[]
+  digest: boolean
 } {
   let k = key
   if (k.startsWith(attributesPrefix)) {
@@ -204,8 +207,14 @@ export function extractDocKey (key: string): {
   }
   const extra = attr.split('#')
   attr = extra.splice(0, 1)[0]
+  const digestPos = attr.indexOf('^digest')
+  let digest = false
+  if (digestPos !== -1) {
+    attr = attr.substring(0, digestPos)
+    digest = true
+  }
 
-  return { docId, attr, _class, extra }
+  return { docId, attr, _class, extra, digest }
 }
 
 /**

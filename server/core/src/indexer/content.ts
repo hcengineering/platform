@@ -46,7 +46,6 @@ export class ContentRetrievalStage implements FullTextPipelineStage {
   stageId = contentStageId
 
   extra = ['content', 'base64']
-  digest = '^digest'
 
   enabled = true
 
@@ -110,7 +109,7 @@ export class ContentRetrievalStage implements FullTextPipelineStage {
 
               if (!contentType.includes('image')) {
                 const digest = docInfo.etag
-                const digestKey = docKey(val.name + this.digest, { _class: val.attributeOf })
+                const digestKey = docKey(val.name, { _class: val.attributeOf, digest: true })
                 if (doc.attributes[digestKey] !== digest) {
                   ;(update as any)[docUpdKey(digestKey)] = digest
 
