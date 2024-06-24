@@ -193,8 +193,8 @@
       if (hierarchy.isDerived(_class, activity.class.ActivityMessage)) {
         if (messagesTab === undefined) {
           messagesTab = {
-            id: activity.class.ActivityMessage as string,
-            label: await translate(activity.string.Messages, {})
+            id: activity.class.ActivityMessage,
+            labelIntl: activity.string.Messages
           }
         }
         continue
@@ -204,7 +204,7 @@
       const intlLabel = clazz.pluralLabel ?? clazz.label ?? _class
       tabs.push({
         id: _class,
-        label: await translate(intlLabel, {})
+        labelIntl: intlLabel
       })
     }
 

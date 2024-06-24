@@ -15,7 +15,9 @@
 <script lang="ts">
   import type { Asset, IntlString } from '@hcengineering/platform'
   import { translate } from '@hcengineering/platform'
+  import { themeStore } from '@hcengineering/theme'
   import { createEventDispatcher, ComponentType } from 'svelte'
+
   import plugin from '../plugin'
   import type { AnySvelteComponent } from '../types'
   import Icon from './Icon.svelte'
@@ -42,7 +44,7 @@
     autoFocus = false
   }
 
-  $: void translate(placeholder, placeholderParam ?? {}).then((res) => {
+  $: void translate(placeholder, placeholderParam ?? {}, $themeStore.language).then((res) => {
     phTranslate = res
   })
   $: if (textHTML !== undefined) {
