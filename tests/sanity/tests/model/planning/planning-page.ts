@@ -71,7 +71,7 @@ export class PlanningPage extends CalendarPage {
   readonly buttonPopupSelectDateNextMonth = (): Locator =>
     this.popup().locator('div.header > div:last-child > button:last-child')
 
-  readonly selectInputToDo = (): Locator => this.toDosContainer().getByPlaceholder('Add ActionItem, press Enter to save')
+  readonly selectInputToDo = (): Locator => this.toDosContainer().getByPlaceholder('Add Action Item, press Enter to save')
   readonly selectTomorrow = (time: string): Locator =>
     this.schedule().locator(`div.time-cell:text-is('${time}')`).locator('xpath=following::div[2]')
 
