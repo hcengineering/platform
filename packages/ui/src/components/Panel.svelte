@@ -176,7 +176,7 @@
       {#if !withoutTitle}<slot name="title" />{/if}
     </div>
     <slot name="pre-utils" />
-    <div class="flex-row-center ml-3 no-print">
+    <div class="flex-row-center flex-no-shrink ml-3 no-print">
       <slot name="utils" />
       {#if $$slots.aside && isAside}
         {#if customAside}

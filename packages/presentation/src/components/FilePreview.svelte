@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { type Blob } from '@hcengineering/core'
-  import { Button, Component, Label } from '@hcengineering/ui'
+  import { Button, Component, Label, resizeObserver, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
   import presentation from '../plugin'
 
@@ -29,55 +29,89 @@
   export let props: Record<string, any> = {}
 
   let download: HTMLAnchorElement
+  let parentWidth: number
+  let minHeight: number | undefined
+  $: parentHeight = ($deviceInfo.docHeight * 80) / 100
 
   let previewType: FilePreviewExtension | undefined = undefined
   $: void getPreviewType(file.contentType, $previewTypes).then((res) => {
     previewType = res
   })
+
+  const updateHeight = (
+    pWidth: number,
+    pHeight: number,
+    pT: FilePreviewExtension | undefined,
+    mD: BlobMetadata | undefined
+  ): void => {
+    if (pT === undefined || mD?.originalWidth === undefined || mD?.originalHeight === undefined) {
+      minHeight = undefined
+      return
+    }
+    if (pT.contentType === 'audio/*') {
+      minHeight = $deviceInfo.fontSize * 3.375
+      return
+    }
+    if (Array.isArray(pT.contentType) && pT.contentType[0] === 'application/pdf') {
+      minHeight = parentHeight
+      return
+    }
+    const pR: number = mD?.pixelRatio ?? 1
+    const fWidth: number = mD.originalWidth / pR
+    const fHeight: number = mD.originalHeight / pR
+    let mHeight: number = 0
+    let scale: number = 1
+    if (fWidth > pWidth) {
+      scale = fWidth / pWidth
+      mHeight = fHeight / scale
+    }
+    if (fHeight > pHeight && fHeight / pHeight > scale) {
+      scale = fHeight / pHeight
+      mHeight = fHeight / scale
+    }
+    minHeight = scale === 1 ? fHeight : mHeight
+  }
+  $: updateHeight(parentWidth, parentHeight, previewType, metadata)
   $: srcRef = getBlobSrcFor(file, name)
 </script>
 
-{#await srcRef then src}
-  {#if src === ''}
-    <div class="centered">
-      <Label label={presentation.string.FailedToPreview} />
-    </div>
-  {:else if previewType !== undefined}
-    <div class="content flex-col flex-grow items-center">
+<div
+  use:resizeObserver={(element) => (parentWidth = element.clientWidth)}
+  class="content flex-col items-center w-full h-full"
+  style:min-height={`${minHeight ?? 0}px`}
+>
+  {#await srcRef then src}
+    {#if src === ''}
+      <div class="centered">
+        <Label label={presentation.string.FailedToPreview} />
+      </div>
+    {:else if previewType !== undefined}
       <Component
         is={previewType.component}
         props={{ value: file, name, contentType: file.contentType, metadata, ...props }}
       />
-    </div>
-  {:else}
-    <div class="centered flex-col flex-gap-3">
-      <Label label={presentation.string.ContentTypeNotSupported} />
-      <a class="no-line" href={src} download={name} bind:this={download}>
-        <Button
-          label={presentation.string.Download}
-          kind={'primary'}
-          on:click={() => {
-            download.click()
-          }}
-          showTooltip={{ label: presentation.string.Download }}
-        />
-      </a>
-    </div>
-  {/if}
-{/await}
+    {:else}
+      <div class="centered flex-col flex-gap-3">
+        <Label label={presentation.string.ContentTypeNotSupported} />
+        <a class="no-line" href={src} download={name} bind:this={download}>
+          <Button
+            label={presentation.string.Download}
+            kind={'primary'}
+            on:click={() => {
+              download.click()
+            }}
+            showTooltip={{ label: presentation.string.Download }}
+          />
+        </a>
+      </div>
+    {/if}
+  {/await}
+</div>
 
 <style lang="scss">
   .content {
     flex-grow: 1;
     overflow: auto;
     border: none;
-  }
-  .centered {
-    flex-grow: 1;
-    width: 100;
-    height: 100;
-    display: flex;
-    justify-content: center;
-    align-items: center;
   }
 </style>
