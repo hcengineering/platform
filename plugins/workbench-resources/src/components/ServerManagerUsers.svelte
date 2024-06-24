@@ -21,7 +21,6 @@
     await fetch(endpoint + `/api/v1/statistics?token=${token}`, {})
       .then(async (json) => {
         data = await json.json()
-        admin = data?.admin ?? false
       })
       .catch((err) => {
         console.error(err)

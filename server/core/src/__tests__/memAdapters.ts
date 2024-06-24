@@ -190,7 +190,7 @@ export class MemRawDBAdapter implements RawDBAdapter {
     if (db === undefined) {
       return toFindResult([])
     }
-    return await db.findAll(query._class as Ref<Class<T>>, query, options)
+    return await db.findAll(core.class.Blob as Ref<Class<T>>, query, options)
   }
 
   async findStream<T extends Doc>(
@@ -201,9 +201,10 @@ export class MemRawDBAdapter implements RawDBAdapter {
     options?: Omit<FindOptions<T>, 'projection' | 'lookup'>
   ): Promise<RawDBAdapterStream<T>> {
     const db = this.workspaces.get(workspace.name)
+
     let result: T[] = []
     if (db !== undefined) {
-      result = await db.findAll(query._class as Ref<Class<T>>, query, options)
+      result = await db.findAll(core.class.Blob as Ref<Class<T>>, query, options)
     }
     return {
       next: async () => {

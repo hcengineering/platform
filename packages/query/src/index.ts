@@ -1443,7 +1443,7 @@ export class LiveQuery implements WithTx, Client {
                 } else {
                   const d = await this.findOne(lookupClass, { _id: pops[pkey] }, { lookup: nestedLookup })
                   if (d !== undefined) {
-                    pp[pkey].push()
+                    pp[pkey].push(d)
                   }
                 }
               }
